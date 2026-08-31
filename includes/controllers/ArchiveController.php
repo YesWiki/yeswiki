@@ -33,31 +33,31 @@ class ArchiveController extends YesWikiController
                     ['error' => 'Not existing file ' . htmlspecialchars($id)],
                     Response::HTTP_BAD_REQUEST
                 );
-            } else {
-                // to prevent existing headers because of handlers /show or others
-                $nbObLevels = ob_get_level();
-                for ($i = 1; $i < $nbObLevels; $i++) {
-                    ob_end_clean();
-                }
-                for ($i = 1; $i < $nbObLevels; $i++) {
-                    ob_start();
-                }
-
-                $response = new BinaryFileResponse($filePath);
-                $response->setContentDisposition(ResponseHeaderBag::DISPOSITION_ATTACHMENT, $id);
-                $response->headers->set('Content-Type', 'application/zip');
-                $response->headers->set('Access-Control-Allow-Origin', '*');
-                $response->headers->set('Access-Control-Allow-Credentials', 'true');
-                $response->headers->set('Access-Control-Allow-Headers', 'X-Requested-With, Location, Slug, Accept, Content-Type');
-                $response->headers->set('Access-Control-Expose-Headers', 'Location, Slug, Accept, Content-Type');
-                $response->headers->set('Access-Control-Allow-Methods', 'POST, GET, OPTIONS, DELETE, PUT, PATCH');
-                $response->headers->set('Access-Control-Max-Age', '86400');
-
-                return $response;
             }
+            // to prevent existing headers because of handlers /show or others
+            $nbObLevels = ob_get_level();
+            for ($i = 1; $i < $nbObLevels; $i++) {
+                ob_end_clean();
+            }
+            for ($i = 1; $i < $nbObLevels; $i++) {
+                ob_start();
+            }
+
+            $response = new BinaryFileResponse($filePath);
+            $response->setContentDisposition(ResponseHeaderBag::DISPOSITION_ATTACHMENT, $id);
+            $response->headers->set('Content-Type', 'application/zip');
+            $response->headers->set('Access-Control-Allow-Origin', '*');
+            $response->headers->set('Access-Control-Allow-Credentials', 'true');
+            $response->headers->set('Access-Control-Allow-Headers', 'X-Requested-With, Location, Slug, Accept, Content-Type');
+            $response->headers->set('Access-Control-Expose-Headers', 'Location, Slug, Accept, Content-Type');
+            $response->headers->set('Access-Control-Allow-Methods', 'POST, GET, OPTIONS, DELETE, PUT, PATCH');
+            $response->headers->set('Access-Control-Max-Age', '86400');
+            $response->prepare($this->getRequest());
+
+            return $response;
         } catch (\Throwable $pThrowable) {
             return new ApiResponse(
-                ['error' => 'an exception occures : ' . $this->wiki->dumpThrowable ($pThrowable) ],
+                ['error' => 'an exception occures : ' . $this->wiki->dumpThrowable($pThrowable)],
                 Response::HTTP_INTERNAL_SERVER_ERROR
             );
         }
@@ -69,10 +69,11 @@ class ArchiveController extends YesWikiController
             $action = $this->getService(SecurityController::class)->filterInput(INPUT_POST, 'action', FILTER_DEFAULT, true);
             switch ($action) {
                 case 'delete':
+                    $post = $this->getRequest()->request;
                     if (!empty($id)) {
                         $filenames = [$id];
-                    } elseif (isset($_POST['filesnames']) && is_array($_POST['filesnames'])) {
-                        $filenames = $_POST['filesnames'];
+                    } elseif (is_array($post->all('filesnames'))) {
+                        $filenames = $post->all('filesnames');
                     } else {
                         return new ApiResponse(
                             ['error' => "\$_POST['filesnames'] should be set and be an array for action 'delete'"],
@@ -88,18 +89,22 @@ class ArchiveController extends YesWikiController
                     break;
                 case 'startArchive':
                     try {
-                        if (isset($_POST['params']) && !is_array($_POST['params'])) {
+                        $post = $this->getRequest()->request;
+                        $postParams = $post->all('params');
+                        if ($post->has('params') && !is_array($postParams)) {
                             return new ApiResponse(
                                 ['error' => "\$_POST['params'] should be set and be an array for action 'startArchive'"],
                                 Response::HTTP_BAD_REQUEST
                             );
                         }
-                        $params = (isset($_POST['params']) && is_array($_POST['params'])) ? $_POST['params'] : [];
-                        $callAsync = !isset($_POST['callAsync']) || in_array($_POST['callAsync'], [1, true, 'true', '1'], true);
+                        $params = is_array($postParams) ? $postParams : [];
+                        $callAsync = !$post->has('callAsync') || in_array($post->get('callAsync'), [1, true, 'true', '1'], true);
                         $uid = $this->startArchive($params, $callAsync);
                         if (empty($uid)) {
                             return new ApiResponse(
-                                ['error' => 'no process created when starting archive action'],
+                                ['error' => $callAsync
+                                    ? 'This server could not start a PHP command in the background, so no backup was started. Its "call_archive_async" parameter has to be set to false, and the backup asked for again without callAsync.'
+                                    : 'The backup produced no file.'],
                                 Response::HTTP_INTERNAL_SERVER_ERROR
                             );
                         }
@@ -110,19 +115,20 @@ class ArchiveController extends YesWikiController
                         );
                     } catch (\Throwable $pThrowable) {
                         return new ApiResponse(
-                            ['error' => 'A problem occures while starting the backup process. An exception occures : ' . $this->wiki->dumpThrowable ($pThrowable) ],
+                            ['error' => 'A problem occures while starting the backup process. An exception occures : ' . $this->wiki->dumpThrowable($pThrowable)],
                             Response::HTTP_INTERNAL_SERVER_ERROR
                         );
                     }
                     break;
                 case 'stopArchive':
-                    if (empty($_POST['uid']) || !is_string($_POST['uid'])) {
+                    $uidRaw = $this->getRequest()->request->get('uid');
+                    if (empty($uidRaw) || !is_string($uidRaw)) {
                         return new ApiResponse(
                             ['error' => "\$_POST['uid'] should be set and be an string for action 'stopArchive'"],
                             Response::HTTP_BAD_REQUEST
                         );
                     }
-                    $uid = htmlspecialchars($_POST['uid']);
+                    $uid = htmlspecialchars($uidRaw);
                     $result = $this->archiveService->stopArchive($uid);
 
                     return new ApiResponse(
@@ -137,11 +143,25 @@ class ArchiveController extends YesWikiController
                             Response::HTTP_BAD_REQUEST
                         );
                     }
-                    // TODO update code here when restore will work
-                    return new ApiResponse(
-                        ['error' => 'action not defined'],
-                        Response::HTTP_BAD_REQUEST
-                    );
+                    try {
+                        $post = $this->getRequest()->request;
+                        $restoreFiles = !$post->has('restoreFiles') || in_array($post->get('restoreFiles'), [1, true, 'true', '1'], true);
+                        $restoreDatabase = !$post->has('restoreDatabase') || in_array($post->get('restoreDatabase'), [1, true, 'true', '1'], true);
+                        $rewriteUrls = !$post->has('rewriteUrls') || in_array($post->get('rewriteUrls'), [1, true, 'true', '1'], true);
+
+                        return new ApiResponse(
+                            $this->archiveService->startRestore($id, $restoreFiles, $restoreDatabase, $rewriteUrls),
+                            Response::HTTP_OK
+                        );
+                    } catch (\Throwable $th) {
+                        return new ApiResponse(
+                            ['error' => 'Restore failed: ' . $this->wiki->dumpThrowable($th)],
+                            Response::HTTP_INTERNAL_SERVER_ERROR
+                        );
+                    }
+                    break;
+                case 'cancelRestore':
+                    return new ApiResponse($this->archiveService->cancelRestore(), Response::HTTP_OK);
                     break;
 
                 case 'futureDeletedArchives':
@@ -162,7 +182,26 @@ class ArchiveController extends YesWikiController
             }
         } catch (\Throwable $pThrowable) {
             return new ApiResponse(
-                ['error' => 'an exception occures : ' . $this->wiki->dumpThrowable ($pThrowable) ],
+                ['error' => 'an exception occures : ' . $this->wiki->dumpThrowable($pThrowable)],
+                Response::HTTP_INTERNAL_SERVER_ERROR
+            );
+        }
+    }
+
+    /**
+     * Advancing a restore holds the request for a while, so the session lock is released first.
+     */
+    public function getRestoreStatus()
+    {
+        if (session_status() === PHP_SESSION_ACTIVE) {
+            session_write_close();
+        }
+
+        try {
+            return new ApiResponse($this->archiveService->advanceRestore(), Response::HTTP_OK);
+        } catch (\Throwable $throwable) {
+            return new ApiResponse(
+                ['error' => $throwable->getMessage()],
                 Response::HTTP_INTERNAL_SERVER_ERROR
             );
         }
@@ -184,7 +223,7 @@ class ArchiveController extends YesWikiController
             );
         } catch (\Throwable $pThrowable) {
             return new ApiResponse(
-                ['error' => 'an exception occures : ' . $this->wiki->dumpThrowable ($pThrowable) ],
+                ['error' => 'an exception occures : ' . $this->wiki->dumpThrowable($pThrowable)],
                 Response::HTTP_INTERNAL_SERVER_ERROR
             );
         }

@@ -7,13 +7,21 @@ export default {
       if (newValues.columnswidth) {
         this.elements = []
         newValues.columnswidth.split(',').forEach((el) => {
-          this.elements.push({ field: el.split('=')[0], width: el.split('=')[1] })
+          this.elements.push({
+            field: el.split('=')[0],
+            width: el.split('=')[1],
+          })
         })
       }
     },
     getValues() {
-      return { columnswidth: this.elements.filter((m) => m.field && m.width).map((m) => `${m.field}=${m.width}`).join(',') }
-    }
+      return {
+        columnswidth: this.elements
+          .filter((m) => m.field && m.width)
+          .map((m) => `${m.field}=${m.width}`)
+          .join(','),
+      }
+    },
   },
   template: `
     <div class="multi-input-container" :class="name">
@@ -38,5 +46,5 @@ export default {
         <span v-if="config['btn-label-add']">{{ config['btn-label-add'] }}</span>
         <i v-else class="fa fa-plus"></i>
       </button>
-    </div>`
+    </div>`,
 }

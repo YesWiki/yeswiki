@@ -3,15 +3,14 @@ const isReady = {}
 
 const resolve = (name) => {
   isReady[name] = true
-  if (name in cacheResolveReject
-        && Array.isArray(cacheResolveReject[name])) {
+  if (name in cacheResolveReject && Array.isArray(cacheResolveReject[name])) {
     const listOfResolveReject = cacheResolveReject[name]
     cacheResolveReject[name] = []
     listOfResolveReject.forEach(({ base, resolve }) => resolve(base?.[name]))
   }
 }
 
-const waitFor = async(name, base) => {
+const waitFor = async (name, base) => {
   if (isReady?.[name]) {
     return base?.[name]
   }

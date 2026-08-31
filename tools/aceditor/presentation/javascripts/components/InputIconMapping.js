@@ -12,7 +12,12 @@ export default {
       }
     },
     getValues() {
-      return { icon: this.elements.filter((m) => m.id && m.icon).map((m) => `${m.icon}=${m.id}`).join(',') }
-    }
-  }
+      return {
+        icon: this.elements
+          .filter((m) => m.id && m.icon)
+          .map((m) => `${m.icon}=${m.id}`)
+          .join(','),
+      }
+    },
+  },
 }

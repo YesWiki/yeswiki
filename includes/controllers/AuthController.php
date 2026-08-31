@@ -3,7 +3,6 @@
 namespace YesWiki\Core\Controller;
 
 use DateTime;
-use Exception;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Core\Entity\CookieData;
 use YesWiki\Core\Entity\User;
@@ -22,9 +21,6 @@ trait LimitationsTrait
 {
     /**
      * init and store limitations in limitations array.
-     *
-     * @param mixed $type
-     * @param mixed $default
      */
     private function initLimitationHelper(string $parameterName, string $limitationKey, $type, $default, string $errorMessageKey)
     {
@@ -53,7 +49,7 @@ class AuthController extends YesWikiController
     protected $passwordHasherFactory;
     protected $securityController;
     protected $userManager;
-    private $loggedUserCache = null;
+    private $loggedUserCache;
 
     public function __construct(
         ParameterBagInterface $params,
@@ -140,10 +136,10 @@ class AuthController extends YesWikiController
         $this->cleanOldFormatCookie();
         try {
             try {
-                // faster to connect from session
                 $data = $this->connectUserFromSession();
-                if ($this->getExpirationTimeStamp($data['lastConnectionDate'], $data['remember']) < time()) {
-                    throw new BadUserConnectException('Not connected via session');
+                $sessionExpiresAt = $this->getExpirationTimeStamp($data['lastConnectionDate'], false);
+                if ($sessionExpiresAt < time()) {
+                    throw new BadUserConnectException('Session older than an hour, checking the cookies again');
                 }
             } catch (BadUserConnectException $th) {
                 // otherwise use cookies
@@ -157,10 +153,10 @@ class AuthController extends YesWikiController
             $this->login($data['user'], $data['remember'] ? 1 : 0);
         } catch (BadUserConnectException $th) {
             if (
-                empty($_SESSION['user']['name']) ||
-                empty($data['user']['name']) ||
-                $data['user']['name'] != $_SESSION['user']['name'] ||
-                !$this->wiki->UserIsAdmin($data['user']['name'])
+                empty($_SESSION['user']['name'])
+                || empty($data['user']['name'])
+                || $data['user']['name'] != $_SESSION['user']['name']
+                || !$this->wiki->UserIsAdmin($data['user']['name'])
             ) {
                 // do not disconnect admin during update
                 $this->logout();
@@ -195,13 +191,13 @@ class AuthController extends YesWikiController
         if ($user = $this->getLoggedUser()) {
             $name = $user['name'];
         } else {
-            $name = $this->wiki->isCli() ? '' : $_SERVER['REMOTE_ADDR'];
+            $name = $this->wiki->isCli() ? '' : $this->getRequest()->getClientIp();
         }
 
         return $name;
     }
 
-    public function getExpirationTimeStamp(DateTime $startTime, bool $remember): int
+    public function getExpirationTimeStamp(\DateTime $startTime, bool $remember): int
     {
         // 90 days if remember otherwise 1 hour
         return $startTime->getTimestamp() + ($remember ? 90 * 24 * 60 * 60 : 60 * 60);
@@ -209,25 +205,36 @@ class AuthController extends YesWikiController
 
     public function login($user, $remember = 0)
     {
+        $previousUserName = $_SESSION['user']['name'] ?? null;
         if (isset($_SESSION['user']) && $_SESSION['user']['name'] != $user['name']) {
             $this->cleanSensitiveDataFromSession();
         }
         $remember = filter_var($remember, FILTER_VALIDATE_BOOL);
 
-        $currentDateTime = new DateTime();
+        $currentDateTime = new \DateTime();
         $_SESSION['user'] =
             empty($user['name'])
             ? []
             : [
                 'name' => $user['name'],
                 'lastConnection' => $currentDateTime->getTimestamp(),
+                'remember' => $remember,
             ];
+
+        if (!empty($user['name']) && $user['name'] !== $previousUserName && !$this->wiki->isCli()) {
+            // regenerate the session ID whenever the authenticated identity actually changes
+            // (anonymous -> user, or user A -> user B) to prevent session fixation;
+            // this deliberately excludes connectUser()'s routine per-request re-hydration of
+            // an already logged-in user, which calls login() again with the same name each time
+            session_regenerate_id(true);
+        }
+
         if (!$this->wiki->isCli()) {
-            if (!($user instanceof User)) {
+            if (!$user instanceof User) {
                 if (!empty($user['name'])) {
                     $user = $this->userManager->getOneByName($user['name']);
                 } else {
-                    throw new Exception("`\$user['name']` must not be empty when retrieving user from `\$user['name']`");
+                    throw new \Exception("`\$user['name']` must not be empty when retrieving user from `\$user['name']`");
                 }
             }
             // prevent setting cookies in CLI (could be errors)
@@ -253,11 +260,11 @@ class AuthController extends YesWikiController
             // prevent setting cookies in CLI (could be errors)
 
             // delete cookies
-            if (!empty($_COOKIE['name'])) {
+            if (!empty($this->getRequest()->cookies->get('name'))) {
                 $this->setPersistentCookie('name', '', time() - 3600);
                 unset($_COOKIE['name']);
             }
-            if (!empty($_COOKIE['token'])) {
+            if (!empty($this->getRequest()->cookies->get('token'))) {
                 $this->setPersistentCookie('token', '', time() - 3600);
                 unset($_COOKIE['token']);
             }
@@ -305,12 +312,12 @@ class AuthController extends YesWikiController
         setcookie($name, '', [
             'path' => $this->wiki->CookiePath,
             'domain' => '',
-            'secure' => !empty($_SERVER['HTTPS']),
+            'secure' => $this->getRequest()->isSecure(),
             'httponly' => true,
             'samesite' => 'Lax',
             'expires' => time() - 3600,
         ]);
-        if (isset($_COOKIE[$name])) {
+        if ($this->getRequest()->cookies->has($name)) {
             unset($_COOKIE[$name]);
         }
     }
@@ -364,30 +371,30 @@ class AuthController extends YesWikiController
      */
     protected function connectUserFromSession(): array
     {
-        $userFromSession = $this->getLoggedUser();
-        if (empty($userFromSession['name'])) {
-            throw new BadUserConnectException('No use in session');
+        $sessionData = $_SESSION['user'] ?? [];
+        if (!is_array($sessionData) || empty($sessionData['name'])) {
+            throw new BadUserConnectException('No user in session');
         }
 
         // check if user ever existing
-        $user = $this->userManager->getOneByName($userFromSession['name']);
+        $user = $this->userManager->getOneByName($sessionData['name']);
 
         if (empty($user)) {
             throw new BadUserConnectException('Unknown name');
         }
-        if (empty($userFromSession['lastConnection'])) {
+        if (empty($sessionData['lastConnection'])) {
             throw new BadUserConnectException('No last connection date');
         }
 
-        $lastConnectionDate = DateTime::createFromFormat('U', $userFromSession['lastConnection']);
+        $lastConnectionDate = \DateTime::createFromFormat('U', (string)$sessionData['lastConnection']);
 
-        if ($lastConnectionDate === false || !($lastConnectionDate instanceof DateTime)) {
+        if ($lastConnectionDate === false || !($lastConnectionDate instanceof \DateTime)) {
             throw new BadUserConnectException('Last connection date badly formatted');
         }
 
         return [
             'user' => $user,
-            'remember' => false, // force usage of cookies if more than 1 hour
+            'remember' => !empty($sessionData['remember']),
             'lastConnectionDate' => $lastConnectionDate,
         ];
     }
@@ -399,23 +406,24 @@ class AuthController extends YesWikiController
      */
     protected function extractDataFromCookie(): CookieData
     {
-        if (empty($_COOKIE['name'])) {
+        $cookies = $this->getRequest()->cookies;
+        if (empty($cookies->get('name'))) {
             throw new BadUserConnectException('cookie \'name\' sould be set');
         }
-        $userName = strval($_COOKIE['name']);
+        $userName = strval($cookies->get('name'));
 
-        if (empty($_COOKIE['token'])) {
+        if (empty($cookies->get('token'))) {
             throw new BadUserConnectException('cookie \'token\' sould be set');
         }
-        $token = strval($_COOKIE['token']);
+        $token = strval($cookies->get('token'));
         if (strlen($token) <= self::DATE_LENGTH_IN_TOKEN) {
             throw new BadUserConnectException('cookie \'token\' is too short');
         }
 
         $lastConnectionDateStr = substr($token, 0, self::DATE_LENGTH_IN_TOKEN);
-        $lastConnectionDate = DateTime::createFromFormat(self::DATE_FORMAT_IN_TOKEN, $lastConnectionDateStr);
+        $lastConnectionDate = \DateTime::createFromFormat(self::DATE_FORMAT_IN_TOKEN, $lastConnectionDateStr);
 
-        if ($lastConnectionDate === false || !($lastConnectionDate instanceof DateTime)) {
+        if ($lastConnectionDate === false || !($lastConnectionDate instanceof \DateTime)) {
             throw new BadUserConnectException('cookie \'token\' does not begin by a date');
         }
 
@@ -429,7 +437,7 @@ class AuthController extends YesWikiController
     /**
      * prepare raw data from $lastConnectionDate, $remember, $hashedPassword.
      */
-    protected function prepareRawData(DateTime $lastConnectionDate, bool $remember, string $hashedPassword): string
+    protected function prepareRawData(\DateTime $lastConnectionDate, bool $remember, string $hashedPassword): string
     {
         return $hashedPassword . $lastConnectionDate->format(self::DATE_FORMAT_IN_TOKEN) . ($remember ? '1' : '0');
     }
@@ -457,10 +465,10 @@ class AuthController extends YesWikiController
     protected function cleanOldFormatCookie()
     {
         if (!$this->wiki->isCli()) {
-            if (!empty($_COOKIE['password'])) {
+            if (!empty($this->getRequest()->cookies->get('password'))) {
                 $this->deleteOldCookie('password');
             }
-            if (!empty($_COOKIE['remember'])) {
+            if (!empty($this->getRequest()->cookies->get('remember'))) {
                 $this->deleteOldCookie('remember');
             }
             // update session cookies to be only for session

@@ -9,26 +9,38 @@ export default {
     return { fields: [] }
   },
   mounted() {
-    const initalValues = this.value ? this.value.split(',') : [this.config.value || this.config.default]
-    this.fields = this.fieldOptions.filter((field) => initalValues.includes(field.id))
+    const initalValues = this.value
+      ? this.value.split(',')
+      : [this.config.value || this.config.default]
+    this.fields = this.fieldOptions.filter((field) =>
+      initalValues.includes(field.id),
+    )
   },
   computed: {
     fieldOptions() {
       const extraFields = this.formatExtraFieldsAsArray(this.config.extraFields)
-      if (extraFields.includes('id_typeannonce') && Object.keys(this.selectedForms).length < 2) {
+      if (
+        extraFields.includes('id_typeannonce') &&
+        Object.keys(this.selectedForms).length < 2
+      ) {
         extraFields.splice(extraFields.indexOf('id_typeannonce'), 1)
       }
-      let fields = this.getFieldsFormSelectedForms(this.selectedForms, extraFields)
+      let fields = this.getFieldsFormSelectedForms(
+        this.selectedForms,
+        extraFields,
+      )
       if (this.config.only == 'lists') {
-        fields = fields.filter((a) => (typeof a.options == 'object' && a.options !== null))
+        fields = fields.filter(
+          (a) => typeof a.options == 'object' && a.options !== null,
+        )
       }
       return fields
-    }
+    },
   },
   watch: {
     fields() {
       this.$emit('input', this.fields.map((f) => f.id).join(','))
-    }
+    },
   },
   template: `
     <div class="form-group" :class="config.type" :title="config.hint" >
@@ -49,5 +61,5 @@ export default {
       
       <input-hint :config="config"></input-hint>
     </div>
-    `
+    `,
 }

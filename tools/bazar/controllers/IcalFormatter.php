@@ -6,12 +6,10 @@
 
 namespace YesWiki\Bazar\Controller;
 
-use DateInterval;
-use DateTimeImmutable;
-use DateTimeZone;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpFoundation\Response;
 use YesWiki\Bazar\Field\DateField;
+use YesWiki\Bazar\Service\DateService as BazarDateService;
 use YesWiki\Core\Service\DateService;
 use YesWiki\Core\Service\Performer;
 use YesWiki\Core\YesWikiController;
@@ -42,8 +40,6 @@ class IcalFormatter extends YesWikiController
 
     /**
      * format api response.
-     *
-     * @param mixed $formId
      */
     public function apiResponse(array $entries, $formId = null, ?array $get = null, string $filename = ''): Response
     {
@@ -72,54 +68,56 @@ class IcalFormatter extends YesWikiController
                 $code = Response::HTTP_INTERNAL_SERVER_ERROR;
 
                 return new Response($obContent, $code);
-            } else {
-                $code = Response::HTTP_OK;
-
-                return new Response('', $code);
             }
-        } else {
             $code = Response::HTTP_OK;
-            if (empty($filename)) {
-                $filename = 'calendar';
-            }
-            if (!empty($obContent)) {
-                $comment = $this->splitAtnthChar(self::MAX_CHARS_BY_LINE, 'X-COMMENT:' . str_replace(["\n", "\r"], ['\\n', '\\r'], $obContent) . "\r\n");
-                $fileData = str_replace("BEGIN:VCALENDAR\r\n", "BEGIN:VCALENDAR\r\n" . $comment, $fileData);
-            }
-            $headers = [
-                'Access-Control-Allow-Origin' => '*',
-                'Access-Control-Allow-Credentials' => 'true',
-                'Access-Control-Allow-Headers' => 'X-Requested-With, Location, Slug, Accept, Content-Type',
-                'Access-Control-Expose-Headers' => 'Location, Slug, Accept, Content-Type',
-                'Access-Control-Allow-Methods' => 'POST, GET, OPTIONS, DELETE, PUT, PATCH',
-                'Access-Control-Max-Age' => '86400',
-                'Content-Type' => 'text/Calendar',
-                'Content-Disposition' => 'inline; filename=' . $filename . '.ics',
-            ];
 
-            return new Response($fileData, $code, $headers);
+            return new Response('', $code);
         }
+        $code = Response::HTTP_OK;
+        if (empty($filename)) {
+            $filename = 'calendar';
+        }
+        if (!empty($obContent)) {
+            $comment = $this->splitAtnthChar(self::MAX_CHARS_BY_LINE, 'X-COMMENT:' . str_replace(["\n", "\r"], ['\\n', '\\r'], $obContent) . "\r\n");
+            $fileData = str_replace("BEGIN:VCALENDAR\r\n", "BEGIN:VCALENDAR\r\n" . $comment, $fileData);
+        }
+        $headers = [
+            'Access-Control-Allow-Origin' => '*',
+            'Access-Control-Allow-Credentials' => 'true',
+            'Access-Control-Allow-Headers' => 'X-Requested-With, Location, Slug, Accept, Content-Type',
+            'Access-Control-Expose-Headers' => 'Location, Slug, Accept, Content-Type',
+            'Access-Control-Allow-Methods' => 'POST, GET, OPTIONS, DELETE, PUT, PATCH',
+            'Access-Control-Max-Age' => '86400',
+            'Content-Type' => 'text/Calendar',
+            'Content-Disposition' => 'inline; filename=' . $filename . '.ics',
+        ];
+
+        return new Response($fileData, $code, $headers);
     }
 
     /**
      * get data grom entries in GeoJSON format.
      *
-     * @param mixed $formId
-     *
      * @return string $fileData
      */
     public function formatToICAL(array $entries, $formId = null): string
     {
+        // legacy entries physically created by the old repetition mechanism: the parent
+        // now expands its own occurrences via RRULE, so these must not appear as their own VEVENT
+        $entries = array_filter($entries, function ($entry) {
+            return !BazarDateService::isLegacyRecurrenceChild($entry['bf_date_fin_evenement_data'] ?? null);
+        });
+
         $entriesWithIcal = array_filter(array_map(function ($entry) {
             $ical = $this->getICALData($entry);
             if (empty($ical)) {
                 return [];
-            } else {
-                return [
-                    'entry' => $entry,
-                    'ical' => $ical,
-                ];
             }
+
+            return [
+                'entry' => $entry,
+                'ical' => $ical,
+            ];
         }, $entries), function ($entry) {
             return !empty($entry);
         });
@@ -157,11 +155,11 @@ class IcalFormatter extends YesWikiController
             }
             // 24 h for end date if all day
             if ($this->isAllDay(strval($entry['bf_date_fin_evenement']))) {
-                $endDate = $endDate->add(new DateInterval('P1D'));
+                $endDate = $endDate->add(new \DateInterval('P1D'));
             }
             if ($startDate->diff($endDate)->invert > 0) {
                 // end date before start date not possible in ical : use start time + 1 hour
-                $endDate = $startDate->add(new DateInterval('PT1H'));
+                $endDate = $startDate->add(new \DateInterval('PT1H'));
             }
 
             return [
@@ -183,8 +181,6 @@ class IcalFormatter extends YesWikiController
 
     /**
      * add header and footer.
-     *
-     * @param mixed $formId
      *
      * @return string $fileData
      */
@@ -210,8 +206,6 @@ class IcalFormatter extends YesWikiController
 
     /**
      * get formatted event.
-     *
-     * @param array &$cache
      */
     private function formatEvent(array $entry, array $icalData, array &$cache): string
     {
@@ -222,6 +216,7 @@ class IcalFormatter extends YesWikiController
         $output .= 'DTSTAMP' . $this->formatDate('') . "\r\n";
         $output .= 'DTSTART' . $this->formatDate($icalData['startDate']) . "\r\n";
         $output .= 'DTEND' . $this->formatDate($icalData['endDate']) . "\r\n";
+        $output .= $this->formatRecurrenceLines($entry, $icalData);
         $output .= 'CREATED' . $this->formatDate($entry['date_creation_fiche']) . "\r\n";
         $output .= 'DATE-MOD' . $this->formatDate($entry['date_maj_fiche']) . "\r\n";
         $output .= $this->splitAtnthChar(self::MAX_CHARS_BY_LINE, 'SUMMARY:' . $entry['bf_titre'] . "\r\n");
@@ -262,12 +257,101 @@ class IcalFormatter extends YesWikiController
      */
     private function formatDate(string $date): string
     {
-        $dateObject = empty($date) ? new DateTimeImmutable() : new DateTimeImmutable($date);
-        $dateObject = $dateObject->setTimezone(new DateTimeZone('UTC'));
+        return ':' . $this->formatDateValue($date);
+    }
+
+    /**
+     * format date value only (no leading ':'), for use inside a property value
+     * (e.g. RRULE's UNTIL, or EXDATE) instead of as a standalone property.
+     */
+    private function formatDateValue(string $date): string
+    {
+        $dateObject = empty($date) ? new \DateTimeImmutable() : new \DateTimeImmutable($date);
+        $dateObject = $dateObject->setTimezone(new \DateTimeZone('UTC'));
         $localFormattedDate = $dateObject->format('Ymd');
         $localFormattedTime = $dateObject->format('His');
 
-        return ':' . $localFormattedDate . 'T' . $localFormattedTime . 'Z';
+        return $localFormattedDate . 'T' . $localFormattedTime . 'Z';
+    }
+
+    /**
+     * build RRULE (and EXDATE, if any) lines for a recurring entry, or '' if not recurrent.
+     *
+     * @param array $icalData ['startDate'=>'Y-m-d H:i:s', 'endDate'=>'Y-m-d H:i:s']
+     */
+    private function formatRecurrenceLines(array $entry, array $icalData): string
+    {
+        $data = $entry['bf_date_fin_evenement_data'] ?? null;
+        if (!is_array($data) || ($data['isRecurrent'] ?? null) !== '1' || empty($data['repetition'])) {
+            return '';
+        }
+
+        $freqs = ['d' => 'DAILY', 'w' => 'WEEKLY', 'm' => 'MONTHLY', 'y' => 'YEARLY'];
+        $freq = $freqs[$data['repetition']] ?? null;
+        if (empty($freq)) {
+            return '';
+        }
+
+        $parts = ['FREQ=' . $freq];
+
+        $step = intval($data['step'] ?? 1);
+        if ($step > 1) {
+            $parts[] = 'INTERVAL=' . $step;
+        }
+
+        $dayCodes = ['mon' => 'MO', 'tue' => 'TU', 'wed' => 'WE', 'thu' => 'TH', 'fri' => 'FR', 'sat' => 'SA', 'sun' => 'SU'];
+        $days = is_array($data['days'] ?? null) ? array_values(array_filter($data['days'], 'is_string')) : [];
+        $positions = [
+            'fisrtOfMonth' => 1,
+            'secondOfMonth' => 2,
+            'thirdOfMonth' => 3,
+            'forthOfMonth' => 4,
+            'lastOfMonth' => -1,
+        ];
+
+        if ($data['repetition'] === 'w') {
+            $byday = array_values(array_filter(array_map(function ($day) use ($dayCodes) {
+                return $dayCodes[$day] ?? null;
+            }, $days)));
+            if (!empty($byday)) {
+                $parts[] = 'BYDAY=' . implode(',', $byday);
+            }
+        } elseif (in_array($data['repetition'], ['m', 'y'], true)) {
+            $whenInMonth = $data['whenInMonth'] ?? '';
+            if ($whenInMonth === 'nthOfMonth' && isset($data['nth']) && is_scalar($data['nth'])) {
+                $parts[] = 'BYMONTHDAY=' . intval($data['nth']);
+            } elseif (isset($positions[$whenInMonth]) && !empty($days[0]) && isset($dayCodes[$days[0]])) {
+                $parts[] = 'BYDAY=' . $positions[$whenInMonth] . $dayCodes[$days[0]];
+            }
+            if ($data['repetition'] === 'y' && !empty($data['month'])) {
+                $months = ['jan' => 1, 'feb' => 2, 'mar' => 3, 'apr' => 4, 'may' => 5, 'jun' => 6, 'jul' => 7, 'aug' => 8, 'sep' => 9, 'oct' => 10, 'nov' => 11, 'dec' => 12];
+                if (isset($months[$data['month']])) {
+                    $parts[] = 'BYMONTH=' . $months[$data['month']];
+                }
+            }
+        }
+
+        if (!empty($data['limitdate']) && is_string($data['limitdate'])) {
+            $parts[] = 'UNTIL=' . $this->formatDateValue($data['limitdate'] . ' 00:00:00');
+        } elseif (!empty($data['nbmax']) && is_scalar($data['nbmax'])) {
+            // +1 to include the anchor occurrence itself, matching RRULE's COUNT (total instances)
+            $parts[] = 'COUNT=' . (min(intval($data['nbmax']), 600) + 1);
+        }
+
+        $output = $this->splitAtnthChar(self::MAX_CHARS_BY_LINE, 'RRULE:' . implode(';', $parts) . "\r\n");
+
+        if (!empty($data['except']) && is_array($data['except'])) {
+            // EXDATE must match DTSTART's value type/time-of-day exactly, or clients silently ignore it
+            $timeOfDay = substr($icalData['startDate'], 10);
+            $exdates = array_values(array_filter(array_map(function ($exceptDate) use ($timeOfDay) {
+                return is_string($exceptDate) ? $this->formatDateValue($exceptDate . $timeOfDay) : null;
+            }, $data['except'])));
+            if (!empty($exdates)) {
+                $output .= $this->splitAtnthChar(self::MAX_CHARS_BY_LINE, 'EXDATE:' . implode(',', $exdates) . "\r\n");
+            }
+        }
+
+        return $output;
     }
 
     /**
@@ -328,7 +412,6 @@ class IcalFormatter extends YesWikiController
     }
 
     /** test if form is ICAL.
-     * @param array $form
      */
     public function isICALForm(?array $form = null): bool
     {

@@ -21,7 +21,7 @@ var qq = qq || {}
 /**
  * Adds all missing properties from second obj to first obj
  */
-qq.extend = function(first, second) {
+qq.extend = function (first, second) {
   let prop
   for (prop in second) {
     first[prop] = second[prop]
@@ -32,7 +32,7 @@ qq.extend = function(first, second) {
  * Searches for a given element in the array, returns -1 if it is not present.
  * @param {Number} [from] The index at which to begin the search
  */
-qq.indexOf = function(arr, elt, from) {
+qq.indexOf = function (arr, elt, from) {
   if (arr.indexOf) {
     return arr.indexOf(elt, from)
   }
@@ -52,24 +52,24 @@ qq.indexOf = function(arr, elt, from) {
   return -1
 }
 
-qq.getUniqueId = (function() {
+qq.getUniqueId = (function () {
   let id = 0
-  return function() {
+  return function () {
     return id++
   }
-}())
+})()
 
 //
 // Events
 
-qq.attach = function(element, type, fn) {
+qq.attach = function (element, type, fn) {
   if (element.addEventListener) {
     element.addEventListener(type, fn, false)
   } else if (element.attachEvent) {
     element.attachEvent(`on${type}`, fn)
   }
 }
-qq.detach = function(element, type, fn) {
+qq.detach = function (element, type, fn) {
   if (element.removeEventListener) {
     element.removeEventListener(type, fn, false)
   } else if (element.attachEvent) {
@@ -77,7 +77,7 @@ qq.detach = function(element, type, fn) {
   }
 }
 
-qq.preventDefault = function(e) {
+qq.preventDefault = function (e) {
   if (e.preventDefault) {
     e.preventDefault()
   } else {
@@ -91,14 +91,14 @@ qq.preventDefault = function(e) {
 /**
  * Insert node a before node b.
  */
-qq.insertBefore = function(a, b) {
+qq.insertBefore = function (a, b) {
   b.parentNode.insertBefore(a, b)
 }
-qq.remove = function(element) {
+qq.remove = function (element) {
   element.parentNode.removeChild(element)
 }
 
-qq.contains = function(parent, descendant) {
+qq.contains = function (parent, descendant) {
   // compareposition returns false in this case
   if (parent == descendant) return true
 
@@ -112,15 +112,15 @@ qq.contains = function(parent, descendant) {
  * Creates and returns element from html string
  * Uses innerHTML to create an element
  */
-qq.toElement = (function() {
+qq.toElement = (function () {
   const div = document.createElement('div')
-  return function(html) {
+  return function (html) {
     div.innerHTML = html
     const element = div.firstChild
     div.removeChild(element)
     return element
   }
-}())
+})()
 
 //
 // Node properties and attributes
@@ -129,28 +129,33 @@ qq.toElement = (function() {
  * Sets styles for an element.
  * Fixes opacity in IE6-8.
  */
-qq.css = function(element, styles) {
+qq.css = function (element, styles) {
   if (styles.opacity != null) {
-    if (typeof element.style.opacity != 'string' && typeof (element.filters) != 'undefined') {
+    if (
+      typeof element.style.opacity != 'string' &&
+      typeof element.filters != 'undefined'
+    ) {
       styles.filter = `alpha(opacity=${Math.round(100 * styles.opacity)})`
     }
   }
   qq.extend(element.style, styles)
 }
-qq.hasClass = function(element, name) {
+qq.hasClass = function (element, name) {
   const re = new RegExp(`(^| )${name}( |$)`)
   return re.test(element.className)
 }
-qq.addClass = function(element, name) {
+qq.addClass = function (element, name) {
   if (!qq.hasClass(element, name)) {
     element.className += ` ${name}`
   }
 }
-qq.removeClass = function(element, name) {
+qq.removeClass = function (element, name) {
   const re = new RegExp(`(^| )${name}( |$)`)
-  element.className = element.className.replace(re, ' ').replace(/^\s+|\s+$/g, '')
+  element.className = element.className
+    .replace(re, ' ')
+    .replace(/^\s+|\s+$/g, '')
 }
-qq.setText = function(element, text) {
+qq.setText = function (element, text) {
   element.innerText = text
   element.textContent = text
 }
@@ -158,7 +163,7 @@ qq.setText = function(element, text) {
 //
 // Selecting elements
 
-qq.children = function(element) {
+qq.children = function (element) {
   const children = []
   let child = element.firstChild
 
@@ -172,7 +177,7 @@ qq.children = function(element) {
   return children
 }
 
-qq.getByClass = function(element, className) {
+qq.getByClass = function (element, className) {
   if (element.querySelectorAll) {
     return element.querySelectorAll(`.${className}`)
   }
@@ -205,36 +210,43 @@ qq.getByClass = function(element, className) {
  * @param  String current querystring-part
  * @return String encoded querystring
  */
-qq.obj2url = function(obj, temp, prefixDone) {
+qq.obj2url = function (obj, temp, prefixDone) {
   const uristrings = []
   let prefix = '&'
-  const add = function(nextObj, i) {
+  const add = function (nextObj, i) {
     const nextTemp = temp
-      ? (/\[\]$/.test(temp)) // prevent double-encoding
+      ? /\[\]$/.test(temp) // prevent double-encoding
         ? temp
         : `${temp}[${i}]`
       : i
-    if ((nextTemp != 'undefined') && (i != 'undefined')) {
+    if (nextTemp != 'undefined' && i != 'undefined') {
       uristrings.push(
-        (typeof nextObj === 'object')
+        typeof nextObj === 'object'
           ? qq.obj2url(nextObj, nextTemp, true)
-          : (Object.prototype.toString.call(nextObj) === '[object Function]')
+          : Object.prototype.toString.call(nextObj) === '[object Function]'
             ? `${encodeURIComponent(nextTemp)}=${encodeURIComponent(nextObj())}`
-            : `${encodeURIComponent(nextTemp)}=${encodeURIComponent(nextObj)}`
+            : `${encodeURIComponent(nextTemp)}=${encodeURIComponent(nextObj)}`,
       )
     }
   }
 
   if (!prefixDone && temp) {
-    prefix = (/\?/.test(temp)) ? (/\?$/.test(temp)) ? '' : '&' : '?'
+    prefix = /\?/.test(temp) ? (/\?$/.test(temp) ? '' : '&') : '?'
     uristrings.push(temp)
     uristrings.push(qq.obj2url(obj))
-  } else if ((Object.prototype.toString.call(obj) === '[object Array]') && (typeof obj != 'undefined')) {
+  } else if (
+    Object.prototype.toString.call(obj) === '[object Array]' &&
+    typeof obj != 'undefined'
+  ) {
     // we wont use a for-in-loop on an array (performance)
     for (var i = 0, len = obj.length; i < len; ++i) {
       add(obj[i], i)
     }
-  } else if ((typeof obj != 'undefined') && (obj !== null) && (typeof obj === 'object')) {
+  } else if (
+    typeof obj != 'undefined' &&
+    obj !== null &&
+    typeof obj === 'object'
+  ) {
     // for anything else but a scalar, we will use for-in-loop
     for (var i in obj) {
       add(obj[i], i)
@@ -243,9 +255,7 @@ qq.obj2url = function(obj, temp, prefixDone) {
     uristrings.push(`${encodeURIComponent(temp)}=${encodeURIComponent(obj)}`)
   }
 
-  return uristrings.join(prefix)
-    .replace(/^&/, '')
-    .replace(/%20/g, '+')
+  return uristrings.join(prefix).replace(/^&/, '').replace(/%20/g, '+')
 }
 
 //
@@ -259,7 +269,7 @@ var qq = qq || {}
 /**
  * Creates upload button, validates upload, but doesn't create file list or dd.
  */
-qq.FileUploaderBasic = function(o) {
+qq.FileUploaderBasic = function (o) {
   this._options = {
     // set to true to see the server response
     debug: false,
@@ -284,11 +294,18 @@ qq.FileUploaderBasic = function(o) {
       sizeError: '{file} is too large, maximum file size is {sizeLimit}.',
       minSizeError: '{file} is too small, minimum file size is {minSizeLimit}.',
       emptyError: '{file} is empty, please select files again without it.',
-      onLeave: 'The files are being uploaded, if you leave now the upload will be cancelled.'
+      onLeave:
+        'The files are being uploaded, if you leave now the upload will be cancelled.',
     },
     showMessage(message) {
-      alert(message.replace('&lt;', '<').replace('&gt;', '>').replace('&quot;', '"').replace('&amp;', '&'))
-    }
+      alert(
+        message
+          .replace('&lt;', '<')
+          .replace('&gt;', '>')
+          .replace('&quot;', '"')
+          .replace('&amp;', '&'),
+      )
+    },
   }
   qq.extend(this._options, o)
 
@@ -318,7 +335,7 @@ qq.FileUploaderBasic.prototype = {
       multiple: this._options.multiple && qq.UploadHandlerXhr.isSupported(),
       onChange(input) {
         self._onInputChange(input)
-      }
+      },
     })
   },
   _createUploadHandler() {
@@ -346,7 +363,7 @@ qq.FileUploaderBasic.prototype = {
       onCancel(id, fileName) {
         self._onCancel(id, fileName)
         self._options.onCancel(id, fileName)
-      }
+      },
     })
 
     return handler
@@ -408,8 +425,8 @@ qq.FileUploaderBasic.prototype = {
     }
   },
   _validateFile(file) {
-    let name; let
-      size
+    let name
+    let size
 
     if (file.value) {
       // it is a file input
@@ -424,13 +441,16 @@ qq.FileUploaderBasic.prototype = {
     if (!this._isAllowedExtension(name)) {
       this._error('typeError', name)
       return false
-    } if (size === 0) {
+    }
+    if (size === 0) {
       this._error('emptyError', name)
       return false
-    } if (size && this._options.sizeLimit && size > this._options.sizeLimit) {
+    }
+    if (size && this._options.sizeLimit && size > this._options.sizeLimit) {
       this._error('sizeError', name)
       return false
-    } if (size && size < this._options.minSizeLimit) {
+    }
+    if (size && size < this._options.minSizeLimit) {
       this._error('minSizeError', name)
       return false
     }
@@ -458,7 +478,10 @@ qq.FileUploaderBasic.prototype = {
     return name
   },
   _isAllowedExtension(fileName) {
-    const ext = (fileName.indexOf('.') !== -1) ? fileName.replace(/.*[.]/, '').toLowerCase() : ''
+    const ext =
+      fileName.indexOf('.') !== -1
+        ? fileName.replace(/.*[.]/, '').toLowerCase()
+        : ''
     const allowed = this._options.allowedExtensions
 
     if (!allowed.length) {
@@ -480,15 +503,17 @@ qq.FileUploaderBasic.prototype = {
       i++
     } while (bytes > 99)
 
-    return Math.max(bytes, 0.1).toFixed(1) + ['kB', 'MB', 'GB', 'TB', 'PB', 'EB'][i]
-  }
+    return (
+      Math.max(bytes, 0.1).toFixed(1) + ['kB', 'MB', 'GB', 'TB', 'PB', 'EB'][i]
+    )
+  },
 }
 
 /**
  * Class that creates upload widget with drag-and-drop and file list
  * @inherits qq.FileUploaderBasic
  */
-qq.FileUploader = function(o) {
+qq.FileUploader = function (o) {
   // call parent constructor
   qq.FileUploaderBasic.apply(this, arguments)
 
@@ -499,13 +524,14 @@ qq.FileUploader = function(o) {
     listElement: null,
 
     // template for one item in file list
-    fileTemplate: '<li>'
-      + '<span class="qq-upload-file"></span>'
-      + '<span class="qq-upload-spinner"></span>'
-      + '<span class="qq-upload-size"></span>'
-      + `<a class="qq-upload-cancel btn btn-danger" href="#">${_t('CANCEL')}</a>`
-      + `<span class="qq-upload-failed-text">${_t('ATTACH_FAILED')}</span>`
-      + '</li>',
+    fileTemplate:
+      '<li>' +
+      '<span class="qq-upload-file"></span>' +
+      '<span class="qq-upload-spinner"></span>' +
+      '<span class="qq-upload-size"></span>' +
+      `<a class="qq-upload-cancel btn btn-danger" href="#">${_t('CANCEL')}</a>` +
+      `<span class="qq-upload-failed-text">${_t('ATTACH_FAILED')}</span>` +
+      '</li>',
 
     classes: {
       // used to get elements from templates
@@ -522,14 +548,15 @@ qq.FileUploader = function(o) {
       // added to list item when upload completes
       // used in css to hide progress spinner
       success: 'qq-upload-success',
-      fail: 'qq-upload-fail'
-    }
+      fail: 'qq-upload-fail',
+    },
   })
   // overwrite options with user supplied
   qq.extend(this._options, o)
 
   this._element = this._options.element
-  this._listElement = this._options.listElement || this._find(this._element, 'list')
+  this._listElement =
+    this._options.listElement || this._find(this._element, 'list')
 
   this._classes = this._options.classes
 
@@ -574,7 +601,7 @@ qq.extend(qq.FileUploader.prototype, {
         dropArea.style.display = 'none'
         qq.removeClass(dropArea, self._classes.dropActive)
         self._uploadFileList(e.dataTransfer.files)
-      }
+      },
     })
 
     dropArea.style.display = 'none'
@@ -607,7 +634,7 @@ qq.extend(qq.FileUploader.prototype, {
 
     let text
     if (loaded != total) {
-      text = `${Math.round(loaded / total * 100)}% from ${this._formatSize(total)}`
+      text = `${Math.round((loaded / total) * 100)}% from ${this._formatSize(total)}`
     } else {
       text = this._formatSize(total)
     }
@@ -669,17 +696,17 @@ qq.extend(qq.FileUploader.prototype, {
         qq.remove(item)
       }
     })
-  }
+  },
 })
 
-qq.UploadDropZone = function(o) {
+qq.UploadDropZone = function (o) {
   this._options = {
     element: null,
     onEnter(e) {},
     onLeave(e) {},
     // is not fired when leaving element by hovering descendants
     onLeaveNotDescendants(e) {},
-    onDrop(e) {}
+    onDrop(e) {},
   }
   qq.extend(this._options, o)
 
@@ -726,7 +753,7 @@ qq.UploadDropZone.prototype = {
       self._options.onEnter(e)
     })
 
-    qq.attach(self._element, 'dragleave', function(e) {
+    qq.attach(self._element, 'dragleave', function (e) {
       if (!self._isValidFileDrag(e)) return
 
       self._options.onLeave(e)
@@ -752,12 +779,16 @@ qq.UploadDropZone.prototype = {
 
     // dt.effectAllowed is none in Safari 5
     // dt.types.contains check is for firefox
-    return dt && dt.effectAllowed != 'none'
-      && (dt.files || (!isWebkit && dt.types.contains && dt.types.contains('Files')))
-  }
+    return (
+      dt &&
+      dt.effectAllowed != 'none' &&
+      (dt.files ||
+        (!isWebkit && dt.types.contains && dt.types.contains('Files')))
+    )
+  },
 }
 
-qq.UploadButton = function(o) {
+qq.UploadButton = function (o) {
   this._options = {
     element: null,
     // if set to true adds multiple attribute to file input
@@ -766,7 +797,7 @@ qq.UploadButton = function(o) {
     name: 'file',
     onChange(input) {},
     hoverClass: 'qq-upload-button-hover',
-    focusClass: 'qq-upload-button-focus'
+    focusClass: 'qq-upload-button-focus',
   }
 
   qq.extend(this._options, o)
@@ -780,7 +811,7 @@ qq.UploadButton = function(o) {
     height: 'auto',
     // Make sure browse button is in the right side
     // in Internet Explorer
-    direction: 'ltr'
+    direction: 'ltr',
   })
 
   this._input = this._createInput()
@@ -823,7 +854,7 @@ qq.UploadButton.prototype = {
       padding: 0,
       cursor: 'pointer',
       opacity: 0,
-      zIndex: 2
+      zIndex: 2,
     })
 
     this._element.appendChild(input)
@@ -854,13 +885,13 @@ qq.UploadButton.prototype = {
     }
 
     return input
-  }
+  },
 }
 
 /**
  * Class for uploading files, uploading itself is handled by child classes
  */
-qq.UploadHandlerAbstract = function(o) {
+qq.UploadHandlerAbstract = function (o) {
   this._options = {
     debug: false,
     action: '/upload.php',
@@ -868,7 +899,7 @@ qq.UploadHandlerAbstract = function(o) {
     maxConnections: 999,
     onProgress(id, fileName, loaded, total) {},
     onComplete(id, fileName, response) {},
-    onCancel(id, fileName) {}
+    onCancel(id, fileName) {},
   }
   qq.extend(this._options, o)
 
@@ -952,14 +983,14 @@ qq.UploadHandlerAbstract.prototype = {
       const nextId = this._queue[max - 1]
       this._upload(nextId, this._params[nextId])
     }
-  }
+  },
 }
 
 /**
  * Class for uploading files using form and iframe
  * @inherits qq.UploadHandlerAbstract
  */
-qq.UploadHandlerForm = function(o) {
+qq.UploadHandlerForm = function (o) {
   qq.UploadHandlerAbstract.apply(this, arguments)
 
   this._inputs = {}
@@ -1004,7 +1035,9 @@ qq.extend(qq.UploadHandlerForm.prototype, {
     const input = this._inputs[id]
 
     if (!input) {
-      throw new Error('file with passed id was not added, or already uploaded or cancelled')
+      throw new Error(
+        'file with passed id was not added, or already uploaded or cancelled',
+      )
     }
 
     const fileName = this.getName(id)
@@ -1044,9 +1077,11 @@ qq.extend(qq.UploadHandlerForm.prototype, {
       }
 
       // fixing Opera 10.53
-      if (iframe.contentDocument
-        && iframe.contentDocument.body
-        && iframe.contentDocument.body.innerHTML == 'false') {
+      if (
+        iframe.contentDocument &&
+        iframe.contentDocument.body &&
+        iframe.contentDocument.body.innerHTML == 'false'
+      ) {
         // In Opera event is fired second time
         // when body.innerHTML changed from false
         // to server response approx. after 1 sec
@@ -1062,7 +1097,9 @@ qq.extend(qq.UploadHandlerForm.prototype, {
    */
   _getIframeContentJSON(iframe) {
     // iframe.contentWindow.document - for IE<7
-    const doc = iframe.contentDocument ? iframe.contentDocument : iframe.contentWindow.document
+    const doc = iframe.contentDocument
+      ? iframe.contentDocument
+      : iframe.contentWindow.document
     let response
 
     this.log("converting iframe's innerHTML to JSON")
@@ -1086,7 +1123,9 @@ qq.extend(qq.UploadHandlerForm.prototype, {
     // var iframe = document.createElement('iframe');
     // iframe.setAttribute('name', id);
 
-    const iframe = qq.toElement(`<iframe src="javascript:false;" name="${id}" />`)
+    const iframe = qq.toElement(
+      `<iframe src="javascript:false;" name="${id}" />`,
+    )
     // src="javascript:false;" removes ie6 prompt on https
 
     iframe.setAttribute('id', id)
@@ -1105,7 +1144,9 @@ qq.extend(qq.UploadHandlerForm.prototype, {
     // form.setAttribute('method', 'post');
     // form.setAttribute('enctype', 'multipart/form-data');
     // Because in this case file won't be attached to request
-    const form = qq.toElement('<form method="post" enctype="multipart/form-data"></form>')
+    const form = qq.toElement(
+      '<form method="post" enctype="multipart/form-data"></form>',
+    )
 
     const queryString = qq.obj2url(params, this._options.action)
 
@@ -1115,14 +1156,14 @@ qq.extend(qq.UploadHandlerForm.prototype, {
     document.body.appendChild(form)
 
     return form
-  }
+  },
 })
 
 /**
  * Class for uploading files using xhr
  * @inherits qq.UploadHandlerAbstract
  */
-qq.UploadHandlerXhr = function(o) {
+qq.UploadHandlerXhr = function (o) {
   qq.UploadHandlerAbstract.apply(this, arguments)
 
   this._files = []
@@ -1133,14 +1174,15 @@ qq.UploadHandlerXhr = function(o) {
 }
 
 // static method
-qq.UploadHandlerXhr.isSupported = function() {
+qq.UploadHandlerXhr.isSupported = function () {
   const input = document.createElement('input')
   input.type = 'file'
 
   return (
-    'multiple' in input
-    && typeof File != 'undefined'
-    && typeof (new XMLHttpRequest()).upload != 'undefined')
+    'multiple' in input &&
+    typeof File != 'undefined' &&
+    typeof new XMLHttpRequest().upload != 'undefined'
+  )
 }
 
 // @inherits qq.UploadHandlerAbstract
@@ -1184,17 +1226,17 @@ qq.extend(qq.UploadHandlerXhr.prototype, {
 
     this._loaded[id] = 0
 
-    const xhr = this._xhrs[id] = new XMLHttpRequest()
+    const xhr = (this._xhrs[id] = new XMLHttpRequest())
     const self = this
 
-    xhr.upload.onprogress = function(e) {
+    xhr.upload.onprogress = function (e) {
       if (e.lengthComputable) {
         self._loaded[id] = e.loaded
         self._options.onProgress(id, name, e.loaded, e.total)
       }
     }
 
-    xhr.onreadystatechange = function() {
+    xhr.onreadystatechange = function () {
       if (xhr.readyState == 4) {
         self._onComplete(id, xhr)
       }
@@ -1250,5 +1292,5 @@ qq.extend(qq.UploadHandlerXhr.prototype, {
       this._xhrs[id].abort()
       this._xhrs[id] = null
     }
-  }
+  },
 })

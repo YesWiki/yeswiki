@@ -2,7 +2,6 @@
 
 namespace YesWiki\Login;
 
-use Exception;
 use YesWiki\Core\Controller\AuthController;
 use YesWiki\Core\Entity\User;
 use YesWiki\Core\Exception\BadFormatPasswordException;
@@ -13,6 +12,15 @@ use YesWiki\Security\Controller\SecurityController;
 
 class LostPasswordAction extends YesWikiAction
 {
+    /**
+     * How long an answer to a submitted address takes, whatever that address is.
+     *
+     * Sending the recovery mail is the slow part, so without this an account is told
+     * apart from an unknown address by the clock rather than by what the page says.
+     * It has to stay above the time a send actually takes, SMTP included.
+     */
+    public const ANSWER_DELAY = 3000000;
+
     protected $authController;
     protected $errorType;
     protected $typeOfRendering;
@@ -32,17 +40,18 @@ class LostPasswordAction extends YesWikiAction
         $this->errorType = null;
         $this->typeOfRendering = 'emailForm';
 
-        if (isset($_POST['subStep']) && !isset($_GET['a'])) {
+        $request = $this->getRequest();
+        if ($request->request->has('subStep') && !$request->query->has('a')) {
             try {
                 $user = $this->manageSubStep(
                     $this->securityController->filterInput(INPUT_POST, 'subStep', FILTER_SANITIZE_NUMBER_INT, false, 'int')
                 );
-            } catch (Exception $ex) {
+            } catch (\Exception $ex) {
                 $this->typeOfRendering = 'directDangerMessage';
                 $this->errorType = 'exception';
                 $message = $ex->getMessage();
             }
-        } elseif (isset($_GET['a']) && $_GET['a'] === 'recover' && !empty($_GET['email'])) {
+        } elseif ($request->query->get('a') === 'recover' && !empty($request->query->get('email'))) {
             $this->typeOfRendering = 'directDangerMessage';
             $message = _t('LOGIN_INVALID_KEY');
             $hash = $this->securityController->filterInput(INPUT_GET, 'email', FILTER_DEFAULT, true);
@@ -108,9 +117,9 @@ class LostPasswordAction extends YesWikiAction
     /**
      * manage subStep.
      *
-     * @throws Exception
-     *
      * @return User|null $user
+     *
+     * @throws \Exception
      */
     private function manageSubStep(int $subStep): ?User
     {
@@ -122,25 +131,25 @@ class LostPasswordAction extends YesWikiAction
                     $this->errorType = 'emptyEmail';
                     $this->typeOfRendering = 'emailForm';
                 } else {
+                    $startedAt = microtime(true);
                     $user = $this->userManager->getOneByEmail($email);
+                    $this->typeOfRendering = 'successPage';
                     if (!empty($user)) {
-                        $this->typeOfRendering = 'successPage';
                         $this->userManager->sendPasswordRecoveryEmail($user);
-                    } else {
-                        $this->errorType = 'userNotFound';
-                        $this->typeOfRendering = 'userNotFound';
                     }
+                    $this->answerAfterConstantTime($startedAt);
                 }
                 break;
             case 2:
                 // we are submitting a new password (only for encrypted)
-                if (empty($_POST['userID']) || empty($_POST['key'])) {
+                $post = $this->getRequest()->request;
+                if (empty($post->get('userID')) || empty($post->get('key'))) {
                     $this->wiki->Redirect($this->wiki->Href('', $this->params->get('root_page')));
                 }
                 $userName = $this->securityController->filterInput(INPUT_POST, 'userID', FILTER_DEFAULT, true);
                 $user = $this->userManager->getOneByName($userName);
                 $this->typeOfRendering = 'recoverForm';
-                if (empty($_POST['pw0']) || empty($_POST['pw1']) || (strcmp($_POST['pw0'], $_POST['pw1']) != 0) || (trim($_POST['pw0']) == '')) {
+                if (empty($post->get('pw0')) || empty($post->get('pw1')) || (strcmp($post->get('pw0'), $post->get('pw1')) != 0) || (trim($post->get('pw0')) == '')) {
                     // No pw0 or different pwd
                     $this->errorType = 'differentPasswords';
                 } else {
@@ -172,6 +181,14 @@ class LostPasswordAction extends YesWikiAction
         return $user ?? null;
     }
 
+    private function answerAfterConstantTime(float $startedAt): void
+    {
+        $remaining = self::ANSWER_DELAY - (int)round((microtime(true) - $startedAt) * 1000000);
+        if ($remaining > 0) {
+            usleep($remaining);
+        }
+    }
+
     /**
      * In order to update h·er·is password, the user provides a key (sent using sendPasswordRecoveryEmail())
      * The new password is accepted only if the key matches with the value in triples table.
@@ -179,17 +196,16 @@ class LostPasswordAction extends YesWikiAction
      *
      * @param string $userName The user login
      * @param string $key      The password recovery key (sent by email)
-     * @param string $pwd      the new password value
      *
      * @return bool True if OK or false if any problems
      */
     private function resetPassword(string $userName, string $key, string $password)
     {
         if ($this->securityController->isWikiHibernated()) {
-            throw new Exception(_t('WIKI_IN_HIBERNATION'));
+            throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
         if ($this->checkEmailKey($key, $userName) === false) { // The password recovery key does not match
-            throw new Exception(_t('USER_INCORRECT_PASSWORD_KEY') . '.');
+            throw new \Exception(_t('USER_INCORRECT_PASSWORD_KEY') . '.');
         }
 
         $user = $this->userManager->getOneByName($userName);
@@ -200,14 +216,16 @@ class LostPasswordAction extends YesWikiAction
         }
         $this->authController->setPassword($user, $password);
         // Was able to update password => Remove the key from triples table
-        $this->tripleStore->delete($user['name'], UserManager::KEY_VOCABULARY, $key, '', '');
+        // (only one active key per user, so no need to match the exact value)
+        $this->tripleStore->delete($user['name'], UserManager::KEY_VOCABULARY, null, '', '');
 
         return true;
     }
 
     /** Part of the Password recovery process: Checks the provided key against the value stored for the provided user in triples table.
      *
-     * As part of the Password recovery process, a key is generated and stored as part of a (user, $this->keyVocabulary, key) triple in the triples table. This function checks wether the key is right or not.
+     * As part of the Password recovery process, a key is generated and stored as part of a (user, $this->keyVocabulary, "key:issuedAt") triple
+     * in the triples table. This function checks whether the key is right and still within its validity window.
      * See Password recovery process above
      * replaces checkEmailKey($hash, $key) from login.functions.php
      *         TODO : Add error handling
@@ -220,6 +238,19 @@ class LostPasswordAction extends YesWikiAction
     private function checkEmailKey(string $hash, string $user): bool
     {
         // Pas de detournement possible car utilisation de _vocabulary/key ....
-        return !is_null($this->tripleStore->exist($user, UserManager::KEY_VOCABULARY, $hash, '', ''));
+        $storedValue = $this->tripleStore->getOne($user, UserManager::KEY_VOCABULARY, '', '');
+        if (empty($storedValue)) {
+            return false;
+        }
+        $parts = explode(UserManager::KEY_VALUE_SEPARATOR, $storedValue);
+        if (count($parts) !== 2) {
+            return false; // malformed or legacy (pre-expiry) value : reject
+        }
+        [$storedHash, $issuedAt] = $parts;
+        if (!hash_equals($storedHash, $hash)) {
+            return false;
+        }
+
+        return (time() - (int)$issuedAt) <= UserManager::KEY_TTL;
     }
 }

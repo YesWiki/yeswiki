@@ -2,8 +2,6 @@
 
 namespace YesWiki\AutoUpdate\Entity;
 
-use Throwable;
-
 class Files
 {
     protected function tmpdir()
@@ -28,9 +26,9 @@ class Files
         if (is_file($path)) {
             if (@unlink($path)) {
                 return true;
-            } else {
-                return [$path];
             }
+
+            return [$path];
         }
 
         if (is_dir($path)) {
@@ -69,9 +67,9 @@ class Files
             if (@is_file($path)) {
                 if (@is_writable($path)) {
                     return true;
-                } else {
-                    return [$path];
                 }
+
+                return [$path];
             }
 
             if (@is_dir($path)) {
@@ -80,7 +78,7 @@ class Files
 
             // TODO Gérer les liens
             return [$path];
-        } catch (Throwable $pThrowable) {
+        } catch (\Throwable $pThrowable) {
             return [$path];
         }
     }
@@ -136,9 +134,9 @@ class Files
 
         if (count($vNotWritables) == 0) {
             return true;
-        } else {
-            return $vNotWritables;
         }
+
+        return $vNotWritables;
     }
 
     private function deleteFolder($path)
@@ -147,35 +145,34 @@ class Files
         if (is_link($path)) {
             if (@unlink($path)) {
                 return true;
-            } else {
-                return [$path];
             }
-        } else {
-            $vNotDeleteds = [];
 
-            if ($res = opendir($path)) {
-                while (($file = readdir($res)) !== false) {
-                    if (!in_array($file, $file2ignore)) {
-                        $vDeleteStatus = $this->delete(rtrim($path, '/') . '/' . $file);
+            return [$path];
+        }
+        $vNotDeleteds = [];
 
-                        if ($vDeleteStatus !== true) {
-                            $vNotDeleteds = array_merge($vNotDeleteds, $vDeleteStatus);
-                        }
+        if ($res = opendir($path)) {
+            while (($file = readdir($res)) !== false) {
+                if (!in_array($file, $file2ignore)) {
+                    $vDeleteStatus = $this->delete(rtrim($path, '/') . '/' . $file);
+
+                    if ($vDeleteStatus !== true) {
+                        $vNotDeleteds = array_merge($vNotDeleteds, $vDeleteStatus);
                     }
                 }
-                closedir($res);
             }
+            closedir($res);
+        }
 
-            if (!@rmdir($path)) {
-                $vNotDeleteds[] = $path;
-            }
+        if (!@rmdir($path)) {
+            $vNotDeleteds[] = $path;
         }
 
         if (count($vNotDeleteds) == 0) {
             return true;
-        } else {
-            return $vNotDeleteds;
         }
+
+        return $vNotDeleteds;
     }
 
     private function copyFolder($srcPath, $desPath)

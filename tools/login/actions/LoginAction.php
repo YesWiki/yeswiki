@@ -1,18 +1,5 @@
 <?php
 
-/**
- * $_REQUEST :
- * - action : login|logout|checklogged
- * $_SERVER :
- * - REQUEST_URI
- * $_POST :
- * - name
- * - email
- * - password
- * - remember
- * - userpage.
- */
-
 namespace YesWiki\Login;
 
 use Tamtamchik\SimpleFlash\Flash;
@@ -37,7 +24,7 @@ class LoginAction extends YesWikiAction
         $noSignupButton = (isset($arg['signupurl']) && $arg['signupurl'] === '0') || $this->wiki->GetConfigValue('noSignupButton', false);
         $incomingurl = !empty($arg['incomingurl'])
             ? $this->wiki->generateLink($arg['incomingurl'])
-            : $this->getIncomingUrlFromServer($_SERVER ?? []);
+        : $this->getIncomingUrlFromRequest();
         $this->templateEngine = $this->getService(TemplateEngine::class);
 
         return [
@@ -73,7 +60,7 @@ class LoginAction extends YesWikiAction
                     : $this->wiki->generateLink($arg['userpage'])
                 )
                 : (
-                    (isset($_REQUEST['action']) && $_REQUEST['action'] == 'logout')
+                    ($this->getRequest()->get('action') == 'logout')
                     ? preg_replace('/(&|\\\?)$/m', '', preg_replace('/(&|\\\?)action=logout(&)?/', '$1', $incomingurl))
                     : $incomingurl
                 ),
@@ -85,9 +72,9 @@ class LoginAction extends YesWikiAction
             'class' => !empty($arg['class']) ? $arg['class'] : '',
             'btnclass' => !empty($arg['btnclass']) ? $arg['btnclass'] : '',
             'nobtn' => $this->formatBoolean($arg, false, 'nobtn'),
-            'template' => (empty($arg['template']) ||
-                empty(basename($arg['template'])) ||
-                !$this->templateEngine->hasTemplate('@login/' . basename($arg['template'])))
+            'template' => (empty($arg['template'])
+                || empty(basename($arg['template']))
+                || !$this->templateEngine->hasTemplate('@login/' . basename($arg['template'])))
                 ? 'default.twig'
                 : basename($arg['template']),
         ];
@@ -101,8 +88,8 @@ class LoginAction extends YesWikiAction
         $this->securityController = $this->getService(SecurityController::class);
         $this->userManager = $this->getService(UserManager::class);
 
-        $action = $_REQUEST['action'] ?? '';
-        $vContext = $_REQUEST['context'] ?? $this->wiki->tag;
+        $action = $this->getRequest()->get('action', '');
+        $vContext = $this->getRequest()->get('context', $this->wiki->tag);
         if ($vContext !== $this->arguments['context']) {
             // no action if not in the good context
             $action = '';
@@ -123,13 +110,26 @@ class LoginAction extends YesWikiAction
         return null;
     }
 
-    private function getIncomingUrlFromServer(array $server): string
+    private function normalizePathSegment(string $input): string
     {
-        $protocol = (!empty($server['HTTPS']) && $server['HTTPS'] !== 'off') ? 'https' : 'http';
-        $host = $server['HTTP_HOST'];
-        $requestUri = $server['REQUEST_URI'];
+        $ampersandPos = strpos($input, '&');
 
-        $urlParts = parse_url($requestUri);
+        if ($ampersandPos === false) {
+            return rawurldecode($input);
+        }
+
+        $pathPart = substr($input, 0, $ampersandPos);
+        $queryPart = substr($input, $ampersandPos);
+        $decodedPath = rawurldecode(rtrim($pathPart, '='));
+
+        return $decodedPath . $queryPart;
+    }
+
+    private function getIncomingUrlFromRequest(): string
+    {
+        $request = $this->getRequest();
+
+        $urlParts = parse_url($request->getRequestUri());
         $queryParams = [];
 
         if (isset($urlParts['query'])) {
@@ -140,10 +140,9 @@ class LoginAction extends YesWikiAction
 
         $newQuery = http_build_query($queryParams);
         $clean = ($urlParts['path'] ?? '') . ($newQuery !== '' ? '?' . $newQuery : '');
+        $clean = $this->normalizePathSegment(rtrim($clean, '='));
 
-        $fullUrl = $protocol . '://' . $host . $clean;
-
-        return $fullUrl;
+        return $request->getScheme() . '://' . $request->getHttpHost() . $clean;
     }
 
     private function renderForm(string $action): string
@@ -166,8 +165,8 @@ class LoginAction extends YesWikiAction
 
         $output = $this->render("@login/{$this->arguments['template']}", [
             'connected' => $connected,
-            'user' => ((isset($user['name'])) ? $user['name'] : ((isset($_POST['name'])) ? $_POST['name'] : '')),
-            'email' => ((isset($user['email'])) ? $user['email'] : ((isset($_POST['email'])) ? $_POST['email'] : '')),
+            'user' => $user['name'] ?? $this->getRequest()->request->get('name', ''),
+            'email' => $user['email'] ?? $this->getRequest()->request->get('email', ''),
             'incomingurl' => $this->arguments['incomingurl'],
             'signupurl' => $this->arguments['signupurl'],
             'lostpasswordurl' => !boolval($this->params->get('contact_disable_email_for_password')) ? $this->arguments['lostpasswordurl'] : '',
@@ -191,26 +190,28 @@ class LoginAction extends YesWikiAction
             $incomingurl = $this->arguments['incomingurl'];
         }
         try {
+            $post = $this->getRequest()->request;
+            $emailFallback = $post->get('email', '');
             // First, try to find a user by name
-            if (!empty($_POST['name'])) {
+            if (!empty($post->get('name'))) {
                 // No need to filter the name, it will be escaped in the request to the database.
                 // It can be possible to filter the name with the regex PATTERN_USER_NAME in UserManager, but if this regex changes,
                 // existing users will be unable to login. So just let the database check if the user is here.
-                $name = $_POST['name'];
+                $name = $post->get('name');
 
                 $user = $this->userManager->getOneByName($name);
 
                 // TODO Strange, but the code allow an email to be pass in $_POST['name'] instead of $_POST['email']
                 // So if we don't find the user by name, it can be because it is an email instead of a username
-                if (empty($user) && empty($_POST['email'])) {
-                    $_POST['email'] = $_POST['name'];
+                if (empty($user) && empty($emailFallback)) {
+                    $emailFallback = $post->get('name');
                 }
             }
 
             // Then, try to find a user by email
-            if (empty($user) && !empty($_POST['email'])) {
+            if (empty($user) && !empty($emailFallback)) {
                 // No need to filter the email, it will be escaped in the request to the database.
-                $email = $_POST['email'];
+                $email = $emailFallback;
 
                 if (filter_var($email, FILTER_VALIDATE_EMAIL)) {
                     $user = $this->userManager->getOneByEmail($email);
@@ -230,7 +231,7 @@ class LoginAction extends YesWikiAction
             $this->authController->login($user, $remember);
 
             // si l'on veut utiliser la page d'accueil correspondant au nom d'utilisateur
-            if (((!empty($_POST['userpage']) && $_POST['userpage'] == 'user') || $this->arguments['userpage'] == 'user') && $this->pageManager->getOne($user['name'])) {
+            if ((($post->get('userpage') == 'user') || $this->arguments['userpage'] == 'user') && $this->pageManager->getOne($user['name'])) {
                 $this->wiki->Redirect($this->wiki->Href('', $user['name']));
             } else {
                 $this->wiki->Redirect($this->arguments['loggedinurl']);

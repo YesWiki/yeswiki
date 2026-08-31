@@ -1,11 +1,11 @@
-import { readConf, writeconf, defaultMapping } from './commons/attributes.js'
+import { readConf, writeconf } from './commons/attributes.js'
 
 export default {
   field: {
-    label: "horaires d'ouverture",
+    label: "Horaires d'ouverture",
     name: 'openinghours',
     attrs: { type: 'openinghours' },
-    icon: '<i class="far fa-calendar-alt"></i>'
+    icon: '<i class="far fa-calendar-alt"></i>',
   },
   defaultIdentifier: 'horaires_ouverture',
   attributes: {
@@ -14,7 +14,7 @@ export default {
     write: writeconf,
   },
   advancedAttributes: ['read', 'write'],
-  renderInput(fieldData) {
+  renderInput(_fieldData) {
     return { field: '<input type="date"/>' }
-  }
+  },
 }

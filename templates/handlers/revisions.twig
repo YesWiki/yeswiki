@@ -42,10 +42,14 @@
           {{ _t('REVISION_ON') ~ " {{selectedRevision.displayTime }}" }}
           {{ _t('REVISION_BY') ~ " {{ selectedRevision.user }}" }}
         </h3>        
-         <a :href="restoreUrl" class="btn btn-success btn-restore"
-            :class="{ disabled: isLastRevision }"
-            v-text="isLastRevision ? '{{ _t('CURRENT_VERSION') }}' : '{{ _t('RESTORE_REVISION') }}'">
-        </a>
+        <form method="post" action="{{ url({handler:'revisions'}) }}">
+          <input type="hidden" name="csrf-token" value="{{ csrfToken({id:'main',refresh:false})|e('html_attr') }}">
+          <input type="hidden" name="restoreRevisionId" :value="selectedRevision.id">
+          <button type="submit" class="btn btn-success btn-restore"
+                  :disabled="isLastRevision || null"
+                  v-text="isLastRevision ? '{{ _t('CURRENT_VERSION') }}' : '{{ _t('RESTORE_REVISION') }}'">
+          </button>
+        </form>
       </div>
       <i class="fa fa-chevron-right fa-4x" @click="moveRevision(false)" :disabled="isLastRevision || null"></i>
     </div>

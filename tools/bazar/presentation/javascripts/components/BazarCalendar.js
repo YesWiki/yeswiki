@@ -7,18 +7,22 @@ const BazarCalendar = {
     return {
       selectedEntry: null,
       calendar: null,
-      mounted: false
+      mounted: false,
     }
   },
   methods: {
     addEntry(entry) {
-      const newEvent = this.prepareEvent(entry)
-      if (Object.keys(newEvent).length > 0) {
-        this.calendar.addEvent(newEvent)
+      const hasEvents = this.calendar
+        .getEvents()
+        .some((event) => event.groupId === entry.id_fiche)
+      if (!hasEvents) {
+        this.prepareEvents(entry).forEach((event) =>
+          this.calendar.addEvent(event),
+        )
       }
     },
     addEntries(entries) {
-      const newEvents = entries.map((entry) => this.prepareEvent(entry))
+      const newEvents = entries.flatMap((entry) => this.prepareEvents(entry))
       if (Array.isArray(newEvents) && newEvents.length > 0) {
         this.calendar.addEventSource({ events: newEvents })
       }
@@ -28,7 +32,8 @@ const BazarCalendar = {
       if (a == null || b == null) return false
       if (a.length !== b.length) return false
 
-      a.sort(); b.sort()
+      a.sort()
+      b.sort()
       for (let i = 0; i < a.length; ++i) {
         if (a[i] !== b[i]) return false
       }
@@ -46,44 +51,64 @@ const BazarCalendar = {
       if (exportableDate) {
         return exportableDate
           .toLocaleString('en-GB', { timeZone: wiki.timezone })
-          .replace(/^([0-9]{2})\/([0-9]{2})\/([0-9]{4}), ([0-9]{2}):([0-9]{2}):([0-9]{2})$/, '$3-$2-$1T$4:$5:$6')
+          .replace(
+            /^([0-9]{2})\/([0-9]{2})\/([0-9]{4}), ([0-9]{2}):([0-9]{2}):([0-9]{2})$/,
+            '$3-$2-$1T$4:$5:$6',
+          )
       }
       return date
     },
     displaySideBar(info) {
       info.jsEvent.preventDefault()
       const { entries } = this
-      this.selectedEntry = entries.filter((entry) => (entry.id_fiche == info.event.id))[0]
+      this.selectedEntry = entries.filter(
+        (entry) => entry.id_fiche == info.event.groupId,
+      )[0]
     },
     getEventById(id) {
       return this.calendar ? this.calendar.getEventById(id) : null
     },
     isAllDayDate(date) {
-      return (date.length <= 10)
+      return date.length <= 10
     },
     isModalDisplay() {
-      return (this.params.entrydisplay == undefined || this.params.entrydisplay.length == 0 || this.params.entrydisplay == 'modal' || ['modal', 'newtab', 'direct', 'sidebar'].indexOf(this.params.entrydisplay) == -1)
+      return (
+        this.params.entrydisplay == null ||
+        this.params.entrydisplay.length == 0 ||
+        this.params.entrydisplay == 'modal' ||
+        ['modal', 'newtab', 'direct', 'sidebar'].indexOf(
+          this.params.entrydisplay,
+        ) == -1
+      )
     },
     isNewTabDisplay() {
-      return (this.params.entrydisplay != undefined && this.params.entrydisplay == 'newtab')
+      return (
+        this.params.entrydisplay != null && this.params.entrydisplay == 'newtab'
+      )
     },
     isDirectLinkDisplay() {
-      return (this.params.entrydisplay != undefined && this.params.entrydisplay == 'direct')
+      return (
+        this.params.entrydisplay != null && this.params.entrydisplay == 'direct'
+      )
     },
     formatEndDate(entry) {
       // Fixs bug, when no time is specified, is the event is on multiple day, calendJs show it like
       // it end one day earlier
       const startDate = this.retrieveTimeZone(entry.bf_date_debut_evenement)
       let endDate = null
-      if (entry.bf_date_fin_evenement != undefined) {
+      if (entry.bf_date_fin_evenement != null) {
         endDate = this.retrieveTimeZone(entry.bf_date_fin_evenement)
         try {
           endDate = new Date(endDate)
-        } catch (error) {
+        } catch (_error) {
           endDate = null
         }
       }
-      if (entry.bf_date_fin_evenement == undefined || endDate == null || endDate == 'Invalid Date') {
+      if (
+        entry.bf_date_fin_evenement == null ||
+        endDate == null ||
+        endDate == 'Invalid Date'
+      ) {
         if (startDate.length <= 10) {
           return startDate
         }
@@ -109,8 +134,11 @@ const BazarCalendar = {
         window.open(info.event.url)
       } else if (this.isDirectLinkDisplay()) {
         info.jsEvent.preventDefault()
-        window.location = info.event.url + (this.$root.isInIframe() ? '/iframe' : '')
-      } else if (['listWeek', 'listMonth', 'listYear'].indexOf(info.view.type) > -1) {
+        window.location =
+          info.event.url + (this.$root.isInIframe() ? '/iframe' : '')
+      } else if (
+        ['listWeek', 'listMonth', 'listYear'].indexOf(info.view.type) > -1
+      ) {
         info.jsEvent.preventDefault() // don't let the browser navigate
       }
     },
@@ -119,12 +147,12 @@ const BazarCalendar = {
         if (this.params.minical) {
           $(this.$el).addClass('minical')
         }
-        const calendarEl = $('<div>').on(
-          'dblclick',
-          (e) => false
-        )
+        const calendarEl = $('<div>').on('dblclick', (_e) => false)
         $(this.$el).prepend(calendarEl)
-        this.calendar = new FullCalendar.Calendar(calendarEl.get(0), this.calendarOptions)
+        this.calendar = new FullCalendar.Calendar(
+          calendarEl.get(0),
+          this.calendarOptions,
+        )
         this.calendar.setOption('eventDidMount', this.updateEventData)
         if (this.params.entrydisplay == 'sidebar') {
           this.calendar.setOption('eventClick', this.displaySideBar)
@@ -133,43 +161,71 @@ const BazarCalendar = {
         this.mounted = true
       }
     },
-    prepareEvent(entry) {
-      const entryId = entry.id_fiche
-      const existingEvent = this.getEventById(entryId)
-      if (!existingEvent && typeof entry.bf_date_debut_evenement != 'undefined') {
-        const backgroundColor = (entry.color == undefined || entry.color.length == 0) ? '' : entry.color
-        const newEvent = {
-          id: entryId,
-          title: entry.bf_titre,
-          start: this.retrieveTimeZone(entry.bf_date_debut_evenement),
-          end: this.formatEndDate(entry),
-          url: entry.url + (this.isModalDisplay() ? '/iframe' : ''),
-          allDay: this.isAllDayDate(entry.bf_date_debut_evenement),
-          className: `bazar-entry${this.isModalDisplay() ? ' modalbox' : ''}`,
-          backgroundColor,
-          borderColor: backgroundColor,
-          extendedProps: {
-            icon: (entry.icon == undefined || entry.icon.length == 0) ? '' : `<i class="${entry.icon}">&nbsp;</i>`,
-            htmlattributes: `${((entry.html_data != undefined) ? entry.html_data : '')
-              + (this.isModalDisplay() ? ' data-iframe="1"' : '')
-            } data-size="modal-lg"`
-          }
-        }
-        return newEvent
+    buildEventObject(entry, id, start, end) {
+      const backgroundColor =
+        entry.color == null || entry.color.length == 0 ? '' : entry.color
+      return {
+        id,
+        groupId: entry.id_fiche,
+        title: entry.bf_titre,
+        start,
+        end,
+        url: entry.url + (this.isModalDisplay() ? '/iframe' : ''),
+        allDay: this.isAllDayDate(start),
+        className: `bazar-entry${this.isModalDisplay() ? ' modalbox' : ''}`,
+        backgroundColor,
+        borderColor: backgroundColor,
+        extendedProps: {
+          icon:
+            entry.icon == null || entry.icon.length == 0
+              ? ''
+              : `<i class="${entry.icon}">&nbsp;</i>`,
+          htmlattributes: `${
+            (entry.html_data != null ? entry.html_data : '') +
+            (this.isModalDisplay() ? ' data-iframe="1"' : '')
+          } data-size="modal-lg"`,
+        },
       }
-      return {}
+    },
+    prepareEvents(entry) {
+      if (typeof entry.bf_date_debut_evenement === 'undefined') {
+        return []
+      }
+      const start = this.retrieveTimeZone(entry.bf_date_debut_evenement)
+      const end = this.formatEndDate(entry)
+      const recurrenceData = entry.bf_date_fin_evenement_data
+      const isRecurrent =
+        recurrenceData != null &&
+        typeof recurrenceData === 'object' &&
+        recurrenceData.isRecurrent === '1'
+      if (!isRecurrent) {
+        return [this.buildEventObject(entry, entry.id_fiche, start, end)]
+      }
+      const occurrences = window._bazarRecurrenceCalculator.generateOccurrences(
+        {
+          ...recurrenceData,
+          startDate: start,
+          endDate: end,
+        },
+      )
+      return occurrences.map((occurrence, index) =>
+        this.buildEventObject(
+          entry,
+          `${entry.id_fiche}::${index}`,
+          occurrence.start,
+          occurrence.end,
+        ),
+      )
     },
     removeEntry(entry) {
-      const entryId = entry.id_fiche
-      const existingEvent = this.getEventById(entryId)
-      if (existingEvent) {
-        existingEvent.remove()
-      }
+      this.calendar
+        .getEvents()
+        .filter((event) => event.groupId === entry.id_fiche)
+        .forEach((event) => event.remove())
     },
     retrieveTimeZone(dateAsString) {
       let exportableDate = dateAsString
-      if (typeof exportableDate === 'string'
-        && exportableDate?.length > 10) {
+      if (typeof exportableDate === 'string' && exportableDate?.length > 10) {
         if (exportableDate.match(/\+00:00$/)) {
           // could be an error
           const dateObj = new Date(exportableDate)
@@ -177,10 +233,16 @@ const BazarCalendar = {
             const browserTimezoneOffset = dateObj.getTimezoneOffset()
             const dateNoTimeZone = exportableDate.replace(/\+00:00$/, '')
             const dateObjNoTimezone = new Date(dateNoTimeZone)
-            const dateStringInServerTimeZone = this.getDateStringInServerTimeZone(dateNoTimeZone)
-            const diffBetweenServerAndBrowserTimeZone_ms = (new Date(dateStringInServerTimeZone)).getTime()
-               - dateObjNoTimezone.getTime()
-            dateObj.setTime(dateObj.getTime() + browserTimezoneOffset * 60000 - diffBetweenServerAndBrowserTimeZone_ms)
+            const dateStringInServerTimeZone =
+              this.getDateStringInServerTimeZone(dateNoTimeZone)
+            const diffBetweenServerAndBrowserTimeZone_ms =
+              new Date(dateStringInServerTimeZone).getTime() -
+              dateObjNoTimezone.getTime()
+            dateObj.setTime(
+              dateObj.getTime() +
+                browserTimezoneOffset * 60000 -
+                diffBetweenServerAndBrowserTimeZone_ms,
+            )
             exportableDate = dateObj.toISOString()
           }
         }
@@ -199,31 +261,42 @@ const BazarCalendar = {
       if (!$(element).hasClass('iconDefined')) {
         if (event.extendedProps.icon.length > 0) {
           if (!$(element).hasClass('fc-list-event')) {
-            $(element).find('.fc-event-title').prepend($(event.extendedProps.icon))
+            $(element)
+              .find('.fc-event-title')
+              .prepend($(event.extendedProps.icon))
           } else {
-            $(element).find('.fc-list-event-title a').prepend($(event.extendedProps.icon))
+            $(element)
+              .find('.fc-list-event-title a')
+              .prepend($(event.extendedProps.icon))
           }
         }
         $(element).addClass('iconDefined')
       }
       if ($(element).hasClass('fc-list-event') && this.isModalDisplay()) {
-        $(element).find('.fc-list-event-title a').each(function() {
-          $(this).attr('data-size', 'modal-lg')
-          $(this).attr('data-iframe', '1')
-          $(this).attr('title', event.title)
-        })
-      } else if ($(element).hasClass('fc-list-event') && this.isNewTabDisplay()) {
-        $(element).find('.fc-list-event-title a').each(function() {
-          $(this).addClass('new-window')
-          $(this).attr('title', event.title)
-        })
+        $(element)
+          .find('.fc-list-event-title a')
+          .each(function () {
+            $(this).attr('data-size', 'modal-lg')
+            $(this).attr('data-iframe', '1')
+            $(this).attr('title', event.title)
+          })
+      } else if (
+        $(element).hasClass('fc-list-event') &&
+        this.isNewTabDisplay()
+      ) {
+        $(element)
+          .find('.fc-list-event-title a')
+          .each(function () {
+            $(this).addClass('new-window')
+            $(this).attr('title', event.title)
+          })
       }
       if (!$(element).hasClass('toolTipDefined')) {
         $(element).tooltip({ title: event.title, html: true })
         $(element).addClass('toolTipDefined')
         $(element).attr('title', event.title)
       }
-    }
+    },
   },
   computed: {
     calendarOptions() {
@@ -251,8 +324,8 @@ const BazarCalendar = {
         case 'list':
           if (extendedList.length > 0) {
             initialView = extendedList.slice(1) // remove first char
-            break
           }
+          break
         case 'dayGridMonth':
         default:
           break
@@ -267,38 +340,46 @@ const BazarCalendar = {
         headerToolbar: {
           left: 'prev today',
           center: 'title',
-          right: `dayGridMonth,timeGridWeek,timeGridDay${extendedList} next`
+          right: `dayGridMonth,timeGridWeek,timeGridDay${extendedList} next`,
         },
         initialView,
         locale: wiki.locale,
         navLinks: true,
         views: {
-          dayGridMonth: { // name of view
+          dayGridMonth: {
+            // name of view
             eventTimeFormat: {
               hour: '2-digit',
               minute: '2-digit',
-              meridiem: false
-            }
+              meridiem: false,
+            },
             // other view-specific options here
-          }
+          },
         },
-        weekNumbers: true
+        weekNumbers: true,
       }
     },
     entries() {
-      return this.$root.entriesToDisplay.filter((entry) => entry.bf_date_debut_evenement)
+      return this.$root.entriesToDisplay.filter(
+        (entry) =>
+          entry.bf_date_debut_evenement &&
+          !window._bazarRecurrenceCalculator.isLegacyRecurrenceChild(
+            entry.bf_date_fin_evenement_data,
+          ),
+      )
     },
     events() {
       return this.calendar ? this.calendar.getEvents() : []
-    }
+    },
   },
   mounted() {
     this.mountCalendar()
   },
   watch: {
-    selectedEntry(newVal, oldVal) {
+    selectedEntry(_newVal, _oldVal) {
       if (this.selectedEntry) {
-        if (this.params.entrydisplay == 'sidebar') this.$root.getEntryRender(this.selectedEntry)
+        if (this.params.entrydisplay == 'sidebar')
+          this.$root.getEntryRender(this.selectedEntry)
       }
     },
     params() {
@@ -309,12 +390,12 @@ const BazarCalendar = {
       const oldIds = oldVal.map((e) => e.id_fiche)
       if (!this.arraysEqual(newIds, oldIds)) {
         const { entries } = this
-        this.$nextTick(function() {
+        this.$nextTick(function () {
           this.calendar.getEventSources().forEach((source) => source.remove())
           this.addEntries(entries)
         })
       }
-    }
+    },
   },
   template: `
     <div class="bazar-list-dynamic-template-container">
@@ -325,7 +406,7 @@ const BazarCalendar = {
       </div>
       <ButtonIcs v-if="this.params.showicalbutton" :bazarcalendar="this"/> 
     </div>
-  `
+  `,
 }
 
 if (!window._bazarDynamicComponents) window._bazarDynamicComponents = {}

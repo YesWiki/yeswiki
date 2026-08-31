@@ -13,7 +13,7 @@ $(document).ready(() => {
   gSavedHash = decodeURIComponent(document.location.hash.substring(1))
 
   // accordeon pour bazarliste
-  $('.titre_accordeon').on('click', function() {
+  $('.titre_accordeon').on('click', function () {
     if ($(this).hasClass('current')) {
       $(this).removeClass('current')
       $(this).next('div.pane').hide()
@@ -33,37 +33,39 @@ $(document).ready(() => {
   }
 
   // clic sur le lien d'une fiche, l'ouvre sur la carto
-  $('#markers a').on('click', function() {
+  $('#markers a').on('click', function () {
     const i = $(this).attr('rel')
 
     // this next line closes all open infowindows before opening the selected one
-    for (x = 0; x < arrInfoWindows.length; x++) {
+    for (let x = 0; x < arrInfoWindows.length; x++) {
       arrInfoWindows[x].close()
     }
 
     arrInfoWindows[i].open(map, arrMarkers[i])
     $('ul.css-tabs li').remove()
-    $('fieldset.tab').each(function(i) {
+    $('fieldset.tab').each(function (i) {
       $(this)
         .parent('div.BAZ_cadre_fiche')
         .prev('ul.css-tabs')
-        .append(`<li class='liste${i}'><a href="#">${$(this).find('legend:first').hide().html()}</a></li>`)
+        .append(
+          `<li class='liste${i}'><a href="#">${$(this).find('legend:first').hide().html()}</a></li>`,
+        )
     })
 
-    $('ul.css-tabs').tabs('fieldset.tab', { onClick() { } })
+    $('ul.css-tabs').tabs('fieldset.tab', { onClick() {} })
   })
 
   // initialise les tooltips pour l'aide et pour les cartes leaflet
-  $('img.tooltip_aide[title], .bazar-marker').each(function() {
+  $('img.tooltip_aide[title], .bazar-marker').each(function () {
     $(this).tooltip({
       animation: true,
       delay: 0,
-      position: 'top'
+      position: 'top',
     })
   })
 
   // on enleve la fonction doubleclic dans le cas d'une page contenant bazar
-  $('#formulaire, #map, #calendar, .accordion').bind('dblclick', (e) => false)
+  $('#formulaire, #map, #calendar, .accordion').bind('dblclick', (_e) => false)
 
   function emptyChildren(element) {
     if (typeof ConditionsChecking === 'undefined') {
@@ -81,18 +83,27 @@ $(document).ready(() => {
   function handleConditionnalListChoice() {
     const id = $(this).attr('id')
     $(`div[id^='${id}'], div[id^='${id.replace('liste', '')}']`)
-      .not(`div[id='${id}_${$(this).val()}'], div[id='${id.replace('liste', '')}_${$(this).val()}']`).hide()
-      .each(function() {
+      .not(
+        `div[id='${id}_${$(this).val()}'], div[id='${id.replace('liste', '')}_${$(this).val()}']`,
+      )
+      .hide()
+      .each(function () {
         emptyChildren(this)
       })
-    $(`div[id='${id}_${$(this).val()}'], div[id='${id.replace('liste', '')}_${$(this).val()}']`).show()
+    $(
+      `div[id='${id}_${$(this).val()}'], div[id='${id.replace('liste', '')}_${$(this).val()}']`,
+    ).show()
   }
   function handleConditionnalRadioChoice() {
     const id = $(this).attr('id')
-    const shortId = id.substr(0, id.length - $(this).val().toString().length - 1)
+    const shortId = id.substr(
+      0,
+      id.length - $(this).val().toString().length - 1,
+    )
     $(`div[id^='${shortId}']`)
-      .not(`div[id='${id}']`).hide()
-      .each(function() {
+      .not(`div[id='${id}']`)
+      .hide()
+      .each(function () {
         emptyChildren(this)
       })
     $(`div[id='${id}']`).show()
@@ -109,14 +120,18 @@ $(document).ready(() => {
     }
     if (m) {
       if ($(this).prop('checked') == true) {
-        $(`div[id='${m[1]}_${m[2]}']:not(.conditional_inversed_checkbox)`).show()
-        $(`div[id='${m[1]}_${m[2]}'].conditional_inversed_checkbox`).hide()
-          .each(function() {
+        $(
+          `div[id='${m[1]}_${m[2]}']:not(.conditional_inversed_checkbox)`,
+        ).show()
+        $(`div[id='${m[1]}_${m[2]}'].conditional_inversed_checkbox`)
+          .hide()
+          .each(function () {
             emptyChildren(this)
           })
       } else {
-        $(`div[id='${m[1]}_${m[2]}']:not(.conditional_inversed_checkbox)`).hide()
-          .each(function() {
+        $(`div[id='${m[1]}_${m[2]}']:not(.conditional_inversed_checkbox)`)
+          .hide()
+          .each(function () {
             emptyChildren(this)
           })
         $(`div[id='${m[1]}_${m[2]}'].conditional_inversed_checkbox`).show()
@@ -124,12 +139,18 @@ $(document).ready(() => {
     }
   }
 
-  $('select[id^=\'liste\']').each(handleConditionnalListChoice).change(handleConditionnalListChoice)
-  $('input.element_radio').each(handleConditionnalRadioChoice).change(handleConditionnalRadioChoice)
-  $('.element_checkbox[id^=\'checkboxListe\']').each(handleConditionnalCheckboxChoice).change(handleConditionnalCheckboxChoice)
+  $("select[id^='liste']")
+    .each(handleConditionnalListChoice)
+    .change(handleConditionnalListChoice)
+  $('input.element_radio')
+    .each(handleConditionnalRadioChoice)
+    .change(handleConditionnalRadioChoice)
+  $(".element_checkbox[id^='checkboxListe']")
+    .each(handleConditionnalCheckboxChoice)
+    .change(handleConditionnalCheckboxChoice)
 
   // choix de l'heure pour une date
-  $('.select-allday').change(function() {
+  $('.select-allday').change(function () {
     if ($(this).val() === '0') {
       $(this).parent().next('.select-time').removeClass('hide')
     } else if ($(this).val() === '1') {
@@ -138,24 +159,31 @@ $(document).ready(() => {
   })
 
   //= ===========longueur maximale d'un champ textarea
-  const $textareas = $('textarea[maxlength!=\'\']')
+  const $textareas = $("textarea[maxlength!='']")
 
   // si les textarea contiennent déja quelque chose, on calcule les caractères restants
-  $textareas.each(function() {
+  $textareas.each(function () {
     const $this = $(this)
     const max = $this.attr('maxlength')
     if ($this.hasClass('aceditor-textarea')) {
-      const { length } = window[`aceditor-${$this.attr('id')}`].editor.getValue()
-      $this.parents('.control-group').find('.charsRemaining').text(max - length)
+      const { length } =
+        window[`aceditor-${$this.attr('id')}`].editor.getValue()
+      $this
+        .parents('.control-group')
+        .find('.charsRemaining')
+        .text(max - length)
     } else if (!$this.hasClass('ace_text-input')) {
       const { length } = $this.val()
-      $this.parents('.control-group').find('.charsRemaining').text(max - length)
+      $this
+        .parents('.control-group')
+        .find('.charsRemaining')
+        .text(max - length)
     }
     if (length > max) {
       if ($this.hasClass('aceditor-textarea')) {
         const aceId = `aceditor-${$this.attr('id')}`
         window[aceId].editor.setValue(
-          window[aceId].editor.getValue().substr(0, max)
+          window[aceId].editor.getValue().substr(0, max),
         )
       } else if (!$this.hasClass('ace_text-input')) {
         $this.val($this.val().substr(0, max))
@@ -171,14 +199,17 @@ $(document).ready(() => {
         const { length } = $ed.val()
         if (length > max) {
           window[aceId].editor.setValue(
-            window[aceId].editor.getValue().substr(0, max)
+            window[aceId].editor.getValue().substr(0, max),
           )
         }
-        $this.parents('.control-group').find('.charsRemaining').text(max - length)
+        $this
+          .parents('.control-group')
+          .find('.charsRemaining')
+          .text(max - length)
       })
     } else if (!$this.hasClass('ace_text-input')) {
       // on empeche d'aller au dela de la limite du nombre de caracteres
-      $this.on('keyup', function() {
+      $this.on('keyup', function () {
         const $ed = $(this)
         const max = $ed.attr('maxlength')
         const { length } = $ed.val()
@@ -186,25 +217,32 @@ $(document).ready(() => {
           $ed.val($ed.val().substr(0, max))
         }
 
-        $this.parents('.control-group').find('.charsRemaining').text(max - length)
+        $this
+          .parents('.control-group')
+          .find('.charsRemaining')
+          .text(max - length)
       })
     }
   })
 
   // éviter la validation du formulaire en pressant la touche Entrée
-  document.querySelectorAll('form#formulaire .control-group.form-group input.form-control[type=text]').forEach((item) => {
-    item.addEventListener(
-      'keydown',
-      (event) => {
-        if (event.key === 'Enter') {
-          event.preventDefault()
-          event.stopPropagation()
-          return true
-        }
-      },
-      true
+  document
+    .querySelectorAll(
+      'form#formulaire .control-group.form-group input.form-control[type=text]',
     )
-  })
+    .forEach((item) => {
+      item.addEventListener(
+        'keydown',
+        (event) => {
+          if (event.key === 'Enter') {
+            event.preventDefault()
+            event.stopPropagation()
+            return true
+          }
+        },
+        true,
+      )
+    })
 
   //= =========== bidouille pour que les widgets en flash restent ===========
   //= =========== en dessous des éléments en survol ===========
@@ -223,26 +261,37 @@ $(document).ready(() => {
     errorPattern: -1,
     errorMessagePattern: '',
     filterVisibleInputs(key = 'requiredInputs') {
-      this[key] = (this[key]).filter(function() {
+      this[key] = this[key].filter(function () {
         let inputVisible = $(this).filter(':visible')
-        if ((
-          $(this).prop('tagName') == 'TEXTAREA' && ($(this).hasClass('aceditor-textarea') || $(this).hasClass('summernote'))
-        ) || $(this).siblings('.bootstrap-tagsinput').length > 0) {
+        if (
+          ($(this).prop('tagName') == 'TEXTAREA' &&
+            ($(this).hasClass('aceditor-textarea') ||
+              $(this).hasClass('summernote'))) ||
+          $(this).siblings('.bootstrap-tagsinput').length > 0
+        ) {
           inputVisible = $(this).parent().filter(':visible')
         }
         if (typeof inputVisible !== 'undefined' && inputVisible.length > 0) {
           return true
         }
         const notVisibleParents = $(this).parentsUntil(':visible')
-        if (typeof notVisibleParents === 'undefined' || notVisibleParents.length == 0) {
+        if (
+          typeof notVisibleParents === 'undefined' ||
+          notVisibleParents.length == 0
+        ) {
           return false
         }
         // check if visible in a tab
-        if ($(this).parentsUntil(':visible')
-          .filter(function() {
-            return $(this).css('display') == 'none'
-              && $(this).attr('role') != 'tabpanel'
-          }).length == 0) {
+        if (
+          $(this)
+            .parentsUntil(':visible')
+            .filter(function () {
+              return (
+                $(this).css('display') == 'none' &&
+                $(this).attr('role') != 'tabpanel'
+              )
+            }).length == 0
+        ) {
           return true
         }
         return false
@@ -312,20 +361,24 @@ $(document).ready(() => {
       return true
     },
     emailChecking(input) {
-      const reg = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/ // regex that works for 99,99%, following RFC 5322
+      const reg =
+        /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/ // regex that works for 99,99%, following RFC 5322
       if ($(input).prop('required') && !this.defaultChecking(input)) {
         return false
-      } if ($(input).val() != '' && reg.test($(input).val()) === false) {
+      }
+      if ($(input).val() != '' && reg.test($(input).val()) === false) {
         this.updateErrorMessage(_t('BAZ_FORM_INVALID_EMAIL'))
         return false
       }
       return true
     },
     urlChecking(input) {
-      const reg = /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/
+      const reg =
+        /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-/]))?/
       if ($(input).prop('required') && !this.defaultChecking(input)) {
         return false
-      } if ($(input).val() != '' && reg.test($(input).val()) === false) {
+      }
+      if ($(input).val() != '' && reg.test($(input).val()) === false) {
         this.updateErrorMessage(_t('BAZ_FORM_INVALID_URL'))
         return false
       }
@@ -349,11 +402,15 @@ $(document).ready(() => {
     },
     summernoteChecking(input) {
       if ($(input).summernote('isEmpty')) {
-        $(input).closest('.form-control.textarea.summernote').addClass('invalid')
+        $(input)
+          .closest('.form-control.textarea.summernote')
+          .addClass('invalid')
         this.updateErrorMessage(_t('BAZ_FORM_REQUIRED_FIELD'))
         return false
       }
-      $(input).closest('.form-control.textarea.summernote').removeClass('invalid')
+      $(input)
+        .closest('.form-control.textarea.summernote')
+        .removeClass('invalid')
       return true
     },
     checkboxChecking(input) {
@@ -412,11 +469,13 @@ $(document).ready(() => {
       const inputType = this.getInputType(input)
       if (typeof this[`${inputType}Checking`] !== 'function') {
         $(input).addClass('invalid')
-        this.updateErrorMessage(`Not possible to check field : unknown function requirementHelper.${inputType}Checking() !`)
+        this.updateErrorMessage(
+          `Not possible to check field : unknown function requirementHelper.${inputType}Checking() !`,
+        )
         if (saveError) {
           this.updateError(index)
         }
-      } else if (!(this[`${inputType}Checking`](input))) {
+      } else if (!this[`${inputType}Checking`](input)) {
         $(input).addClass('invalid')
         if (saveError) {
           this.updateError(index)
@@ -462,7 +521,9 @@ $(document).ready(() => {
           // panel ?
           const panel = $(input).parentsUntil(':visible').last()
           if ($(panel).attr('role') == 'tabpanel') {
-            $(`a[href="#${$(panel).attr('id')}"][role=tab]`).first().click()
+            $(`a[href="#${$(panel).attr('id')}"][role=tab]`)
+              .first()
+              .click()
           }
           if ($(input).filter(':visible').length == 0) {
             input = $(input).closest(':visible')
@@ -477,14 +538,14 @@ $(document).ready(() => {
     },
     initRequiredInputs(form) {
       this.requiredInputs = $(form).find(
-        'input[required],'
-        + 'select[required],'
-        + 'textarea[required],'
-        + ':not(.prev-holder) input[type=email],'
-        + ':not(.prev-holder) input[type=url],'
-        + '.chk_required,'
-        + '.radio_required,'
-        + '.geocode-input.required'
+        'input[required],' +
+          'select[required],' +
+          'textarea[required],' +
+          ':not(.prev-holder) input[type=email],' +
+          ':not(.prev-holder) input[type=url],' +
+          '.chk_required,' +
+          '.radio_required,' +
+          '.geocode-input.required',
       )
       this.error = -1
     },
@@ -527,7 +588,7 @@ $(document).ready(() => {
     wikitextareaInitlistener(input) {
       const reqChecking = this
       const aceditor = $(input)
-      aceditor.on('change', (event) => {
+      aceditor.on('change', (_event) => {
         reqChecking.runWhenUpdated(input, reqChecking)
       })
     },
@@ -535,14 +596,20 @@ $(document).ready(() => {
       const reqChecking = this
       const checkboxes = $(input).find('input[type=checkbox]')
       $(checkboxes).change((event) => {
-        reqChecking.runWhenUpdated($(event.target).closest('.chk_required'), reqChecking)
+        reqChecking.runWhenUpdated(
+          $(event.target).closest('.chk_required'),
+          reqChecking,
+        )
       })
     },
     radioInitlistener(input) {
       const reqChecking = this
       const radioButtons = $(input).find('input[type=radio]')
       $(radioButtons).change((event) => {
-        reqChecking.runWhenUpdated($(event.target).closest('.radio_required'), reqChecking)
+        reqChecking.runWhenUpdated(
+          $(event.target).closest('.radio_required'),
+          reqChecking,
+        )
       })
     },
     initListeners() {
@@ -552,31 +619,37 @@ $(document).ready(() => {
         const inputType = this.getInputType(input)
         if (['default', 'select', 'textarea', 'tags'].indexOf(inputType) > -1) {
           this.inputInitlistener(input)
-        } else if (['summernote', 'wikitextarea', 'checkbox', 'radio'].indexOf(inputType) > -1) {
+        } else if (
+          ['summernote', 'wikitextarea', 'checkbox', 'radio'].indexOf(
+            inputType,
+          ) > -1
+        ) {
           this[`${inputType}Initlistener`](input)
         }
       }
-    }
+    },
   }
 
   requirementHelper.initListeners()
-  $('#formulaire').submit(function(e) {
+  $('#formulaire').submit(function (e) {
     $(this).addClass('submitted')
 
     try {
       if (requirementHelper.run(this)) {
         // formulaire validé, on soumet le formulaire
         // mais juste avant on change le comportement du bouton pour éviter les validations multiples
-        $(this).find('.form-actions button[type=submit]').each(function() {
-          $(this).attr('disabled', true)
-          $(this).addClass('submit-disabled')
-          $(this).attr('title', _t('BAZ_SAVING'))
-          const button = $(this)
-          setTimeout(() => {
-            // on réactive le bouton au bout de 10s juste pour permettre de forcer une nouvelle validation si jamais ça a planté
-            $(button).removeAttr('disabled')
-          }, 10000)
-        })
+        $(this)
+          .find('.form-actions button[type=submit]')
+          .each(function () {
+            $(this).attr('disabled', true)
+            $(this).addClass('submit-disabled')
+            $(this).attr('title', _t('BAZ_SAVING'))
+            const button = $(this)
+            setTimeout(() => {
+              // on réactive le bouton au bout de 10s juste pour permettre de forcer une nouvelle validation si jamais ça a planté
+              $(button).removeAttr('disabled')
+            }, 10000)
+          })
         return true
       }
     } catch (error) {
@@ -601,62 +674,190 @@ $(document).ready(() => {
   // if ($dateinputs.length > 0 && (input.value == notADateValue)) {
   if ($dateinputs.length > 0) {
     $.fn.datepicker.dates.fr = {
-      days: ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY']
-        .map((day) => _t(day)),
-      daysShort: ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY']
-        .map((day) => _t(`BAZ_DATESHORT_${day}`)),
-      daysMin: ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY']
-        .map((day) => _t(`BAZ_DATEMIN_${day}`)),
-      months: ['JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE', 'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER']
-        .map((month) => _t(month)),
-      monthsShort: ['JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE', 'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER']
-        .map((month) => _t(`BAZ_DATESHORT_${month}`))
+      days: [
+        'SUNDAY',
+        'MONDAY',
+        'TUESDAY',
+        'WEDNESDAY',
+        'THURSDAY',
+        'FRIDAY',
+        'SATURDAY',
+        'SUNDAY',
+      ].map((day) => _t(day)),
+      daysShort: [
+        'SUNDAY',
+        'MONDAY',
+        'TUESDAY',
+        'WEDNESDAY',
+        'THURSDAY',
+        'FRIDAY',
+        'SATURDAY',
+        'SUNDAY',
+      ].map((day) => _t(`BAZ_DATESHORT_${day}`)),
+      daysMin: [
+        'SUNDAY',
+        'MONDAY',
+        'TUESDAY',
+        'WEDNESDAY',
+        'THURSDAY',
+        'FRIDAY',
+        'SATURDAY',
+        'SUNDAY',
+      ].map((day) => _t(`BAZ_DATEMIN_${day}`)),
+      months: [
+        'JANUARY',
+        'FEBRUARY',
+        'MARCH',
+        'APRIL',
+        'MAY',
+        'JUNE',
+        'JULY',
+        'AUGUST',
+        'SEPTEMBER',
+        'OCTOBER',
+        'NOVEMBER',
+        'DECEMBER',
+      ].map((month) => _t(month)),
+      monthsShort: [
+        'JANUARY',
+        'FEBRUARY',
+        'MARCH',
+        'APRIL',
+        'MAY',
+        'JUNE',
+        'JULY',
+        'AUGUST',
+        'SEPTEMBER',
+        'OCTOBER',
+        'NOVEMBER',
+        'DECEMBER',
+      ].map((month) => _t(`BAZ_DATESHORT_${month}`)),
     }
-    $dateinputs.datepicker({
-      format: 'yyyy-mm-dd',
-      weekStart: 1,
-      autoclose: true,
-      language: 'fr'
-    }).attr('autocomplete', 'off')
+    $dateinputs
+      .datepicker({
+        format: 'yyyy-mm-dd',
+        weekStart: 1,
+        autoclose: true,
+        language: 'fr',
+      })
+      .attr('autocomplete', 'off')
   }
 
-  // If start_date is greater than en_date, set end_date to start_date
+  // interdire dans le datepicker de fin les dates avant la date de début, et inversement
   const $startDate = $('#formulaire #bf_date_debut_evenement')
   const $endDate = $('#formulaire #bf_date_fin_evenement')
-  if ($startDate && $endDate) {
-    $startDate.change(() => {
-      if (new Date($startDate.val()) > new Date($endDate.val())) $endDate.val($startDate.val())
+  if ($startDate.length && $endDate.length) {
+    const startPicker = $startDate.data('datepicker')
+    const endPicker = $endDate.data('datepicker')
+    $startDate.on('changeDate', () => {
+      if ($startDate.val()) {
+        endPicker.setStartDate($startDate.val())
+        checkTimeConstraint('start')
+      }
     })
+    $endDate.on('changeDate', () => {
+      if ($endDate.val()) {
+        startPicker.setEndDate($endDate.val())
+        checkTimeConstraint('end')
+      }
+    })
+
+    // contrainte horaire : si même jour, l'heure de début doit être avant l'heure de fin
+    const $startAllDay = $('select[name="bf_date_debut_evenement_allday"]')
+    const $endAllDay = $('select[name="bf_date_fin_evenement_allday"]')
+    const $startHour = $('select[name="bf_date_debut_evenement_hour"]')
+    const $startMin = $('select[name="bf_date_debut_evenement_minutes"]')
+    const $endHour = $('select[name="bf_date_fin_evenement_hour"]')
+    const $endMin = $('select[name="bf_date_fin_evenement_minutes"]')
+
+    function hasTimeEnabled() {
+      return $startAllDay.val() === '0' && $endAllDay.val() === '0'
+    }
+
+    function isSameDay() {
+      return (
+        $startDate.val() &&
+        $endDate.val() &&
+        $startDate.val() === $endDate.val()
+      )
+    }
+
+    function getStartMinutes() {
+      return parseInt($startHour.val()) * 60 + parseInt($startMin.val())
+    }
+
+    function getEndMinutes() {
+      return parseInt($endHour.val()) * 60 + parseInt($endMin.val())
+    }
+
+    // sélectionne 5 minutes après l'heure de début
+    function adjustEndTime() {
+      let total = getStartMinutes() + 5
+      if (total >= 1440) total = 1435
+      const h = Math.floor(total / 60)
+      const m = Math.round((total % 60) / 5) * 5
+      $endHour.val(String(h).padStart(2, '0'))
+      $endMin.val(String(m).padStart(2, '0'))
+    }
+
+    // sélectionne 5 minutes avant l'heure de fin
+    function adjustStartTime() {
+      let total = getEndMinutes() - 5
+      if (total < 0) total = 0
+      const h = Math.floor(total / 60)
+      const m = Math.round((total % 60) / 5) * 5
+      $startHour.val(String(h).padStart(2, '0'))
+      $startMin.val(String(m).padStart(2, '0'))
+    }
+
+    function checkTimeConstraint(changed) {
+      if (!isSameDay() || !hasTimeEnabled()) return
+      if (getStartMinutes() >= getEndMinutes()) {
+        if (changed === 'start') adjustEndTime()
+        else adjustStartTime()
+      }
+    }
+
+    $startHour.add($startMin).on('change', () => checkTimeConstraint('start'))
+    $endHour.add($endMin).on('change', () => checkTimeConstraint('end'))
+    $startAllDay
+      .add($endAllDay)
+      .on('change', () => checkTimeConstraint('start'))
   }
 
   // Onglets
   // hack pour les fiches avec tabulations : on change les id pour qu'ils soient uniques
-  $('.bazar-entry').each(function(i) {
-    $(this).find('[data-toggle="tab"]').each(function() {
-      $(this).attr('href', `${$(this).attr('href')}-${i}`)
-    })
+  $('.bazar-entry').each(function (i) {
+    $(this)
+      .find('[data-toggle="tab"]')
+      .each(function () {
+        $(this).attr('href', `${$(this).attr('href')}-${i}`)
+      })
 
-    $(this).find('.tab-pane').each(function() {
-      $(this).attr('id', `${$(this).attr('id')}-${i}`)
-    })
+    $(this)
+      .find('.tab-pane')
+      .each(function () {
+        $(this).attr('id', `${$(this).attr('id')}-${i}`)
+      })
   })
 
   // cocher / decocher tous
   const checkboxselectall = $('.selectall')
-  checkboxselectall.click(function(event) {
+  checkboxselectall.click(function (_event) {
     const $this = $(this)
     let target = $this.parents('.controls').find('.yeswiki-checkbox')
     if ($this.data('target')) {
       target = $($this.data('target'))
     }
 
-    if (this.checked) { // check select status
-      target.each(function() {
+    if (this.checked) {
+      // check select status
+      target.each(function () {
         $(this).find(':checkbox').prop('checked', true)
         $(this).prop('checked', true)
       })
     } else {
-      target.each(function() {
+      target.each(function () {
         $(this).find(':checkbox').prop('checked', false)
         $(this).prop('checked', false)
       })
@@ -667,10 +868,13 @@ $(document).ready(() => {
 
   // recuperer un parametre donné de l'url
   function getURLParameter(name) {
-    return decodeURIComponent(
-      (new RegExp(`[?|&]${name}=` + '([^&;]+?)(&|#|;|$)').exec(location.search) || [, ''])[1]
-        .replace(/\+/g, '%20')
-    ) || null
+    return (
+      decodeURIComponent(
+        (new RegExp(`[?|&]${name}=` + '([^&;]+?)(&|#|;|$)').exec(
+          location.search,
+        ) || ['', ''])[1].replace(/\+/g, '%20'),
+      ) || null
+    )
   }
 
   // modifier un parametre de l'url pour les modifier dynamiquement
@@ -690,21 +894,22 @@ $(document).ready(() => {
 
       // pour les url dans une iframe
       if (window.frameElement && window.frameElement.nodeName == 'IFRAME') {
-        var iframeurlquery = `${window.top.location.search
-          .replace(`&${name}=`, '')}&${name}=${value}`
+        var iframeurlquery = `${window.top.location.search.replace(
+          `&${name}=`,
+          '',
+        )}&${name}=${value}`
         window.top.history.pushState({ filter: true }, null, iframeurlquery)
       }
     } else {
-      var s = location.search
+      s = location.search
       // console.log('s', s, s !== '', decodeURIComponent(s));
       // console.log('value', value);
-      var urlquery
       if (value !== '') {
         if (s !== '') {
           // console.log(s);
           urlquery = decodeURIComponent(s).replace(
             new RegExp(`&${name}=` + '([^&;]+?)(&|#|;|$)'),
-            `&${name}=${value}`
+            `&${name}=${value}`,
           )
           // console.log('location.search', s, urlquery);
         } else {
@@ -714,7 +919,7 @@ $(document).ready(() => {
         // console.log(s);
         urlquery = decodeURIComponent(s).replace(
           new RegExp(`[?|&]${name}=` + '([^&;]+?)(&|#|;|$)'),
-          ''
+          '',
         )
       }
 
@@ -722,9 +927,9 @@ $(document).ready(() => {
 
       // pour les url dans une iframe
       if (window.frameElement && window.frameElement.nodeName == 'IFRAME') {
-        var iframeurlquery = decodeURIComponent(window.top.location.search).replace(
+        iframeurlquery = decodeURIComponent(window.top.location.search).replace(
           new RegExp(`[?|&]${name}=` + '([^&;]+?)(&|#|;|$)'),
-          `&${name}=${value}`
+          `&${name}=${value}`,
         )
         window.top.history.pushState({ filter: true }, null, iframeurlquery)
       }
@@ -740,7 +945,7 @@ $(document).ready(() => {
     let newquery = ''
     let select
     // on filtre les resultat par boite de filtre pour faire l'intersection apres
-    e.data.$filterboxes.each(function() {
+    e.data.$filterboxes.each(function () {
       select = ''
       let first = true
       const filterschk = $(this).find('.filter-checkbox:checked')
@@ -798,14 +1003,14 @@ $(document).ready(() => {
       const $toHide = e.data.$entries.not(tabres)
       const idsToMatch = new Set()
 
-      $toHide.each(function() {
+      $toHide.each(function () {
         const id = $(this).attr('data-id_fiche')
         if (id) {
           idsToMatch.add(String(id))
         }
       })
 
-      const matchingGeometries = e.data.$geometries.filter(function() {
+      const matchingGeometries = e.data.$geometries.filter(function () {
         const geoId = $(this).attr('data-id')
         return idsToMatch.has(String(geoId))
       })
@@ -819,11 +1024,11 @@ $(document).ready(() => {
     }
     // on compte les résultats visibles (points et geometries confondus)
     const visibleIds = new Set()
-    e.data.$entries.filter(':visible').each(function() {
+    e.data.$entries.filter(':visible').each(function () {
       const id = $(this).attr('data-id_fiche')
       if (id) visibleIds.add(String(id))
     })
-    e.data.$geometries.filter(':visible').each(function() {
+    e.data.$geometries.filter(':visible').each(function () {
       const id = $(this).attr('data-id')
       if (id) visibleIds.add(String(id))
     })
@@ -837,7 +1042,7 @@ $(document).ready(() => {
       e.data.$resultslabel.hide()
     }
 
-    $('body').trigger('updatedfilters', (!tabres.length) ? [] : [tabres])
+    $('body').trigger('updatedfilters', !tabres.length ? [] : [tabres])
 
     const vParam = new URLSearchParams(document.location.search)
     const vKeywords = vParam.get('keywords')
@@ -845,10 +1050,9 @@ $(document).ready(() => {
     const vSortOrder = vParam.get('ordre')
 
     const vFacette = getURLParameter('facette')
-    let vQueries
     let vFilters = []
     if (vFacette) {
-      vQueries = getURLParameter('facette')
+      getURLParameter('facette')
         .split('|')
         .map(parseCondition)
         .forEach((pCondition) => {
@@ -861,7 +1065,7 @@ $(document).ready(() => {
 
   // process changes on visible entries according to filters
   setTimeout(() => {
-    $('.facette-container:not(.dynamic)').each(function() {
+    $('.facette-container:not(.dynamic)').each(function () {
       const $container = $(this)
       const $filters = $('.filter-checkbox', $container)
       const data = {
@@ -870,7 +1074,7 @@ $(document).ready(() => {
         $entries: $('.bazar-entry', $container),
         $geometries: $('.bazar-entry-geometry', $container),
         $resultlabel: $('.result-label', $container),
-        $resultslabel: $('.results-label', $container)
+        $resultslabel: $('.results-label', $container),
       }
       $filters.on('click', data, updateFilters)
       jQuery(window).ready((e) => {
@@ -881,10 +1085,9 @@ $(document).ready(() => {
   }, 500)
 
   // gestion de l'historique : on reapplique les filtres
-  window.onpopstate = function(e) {
+  window.onpopstate = function (e) {
     if (e.state && e.state.filter) {
-      $('.facette-container').each(function() {
-        const $this = $(this)
+      $('.facette-container').each(function () {
         $(this).find('input:checkbox').prop('checked', false)
         const urlparamfacette = getURLParameter('facette')
 
@@ -892,7 +1095,7 @@ $(document).ready(() => {
         for (let i = 0; i < tabfacette.length; i++) {
           const tabfilter = tabfacette[i].split('=')
           if (tabfilter[1] !== '') {
-            tabvalues = tabfilter[1].split(',')
+            const tabvalues = tabfilter[1].split(',')
             for (let j = 0; j < tabvalues.length; j++) {
               $(`#${tabfilter[0]}${tabvalues[j]}`).prop('checked', true)
             }
@@ -900,14 +1103,13 @@ $(document).ready(() => {
         }
 
         const $container = $(this)
-        const $filters = $('.filter-checkbox', $container)
         const data = {
           $nbresults: $('.nb-results', $container),
           $filterboxes: $('.filter-box', $container),
           $entries: $('.bazar-entry', $container),
           $geometries: $('.bazar-entry-geometry', $container),
           $resultlabel: $('.result-label', $container),
-          $resultslabel: $('.results-label', $container)
+          $resultslabel: $('.results-label', $container),
         }
         e.data = data
         updateFilters(e)
@@ -917,57 +1119,78 @@ $(document).ready(() => {
 
   // Tags
   // bidouille pour les typeahead des champs tags
-  $('.bootstrap-tagsinput input').on('keypress', function() {
+  $('.bootstrap-tagsinput input').on('keypress', function () {
     $(this).attr('size', $(this).val().length + 2)
   })
 
-  $('.bootstrap-tagsinput').on('change', function() {
-    $(this).parent().find('.yeswiki-input-entries, .yeswiki-input-pagetag').each(function() {
-      $(this).tagsinput('input').val('')
-    })
+  $('.bootstrap-tagsinput').on('change', function () {
+    $(this)
+      .parent()
+      .find('.yeswiki-input-entries, .yeswiki-input-pagetag')
+      .each(function () {
+        $(this).tagsinput('input').val('')
+      })
   })
 
-  $.extend($.fn.typeahead.Constructor.prototype, { val() { } })
+  $.extend($.fn.typeahead.Constructor.prototype, { val() {} })
 
   // on envoie la valeur au submit
-  $('#formulaire').on('submit', function() {
-    $(this).find('.yeswiki-input-entries, .yeswiki-input-pagetag').each(function() {
-      $(this).tagsinput('add', $(this).tagsinput('input').val())
-    })
+  $('#formulaire').on('submit', function () {
+    $(this)
+      .find('.yeswiki-input-entries, .yeswiki-input-pagetag')
+      .each(function () {
+        $(this).tagsinput('add', $(this).tagsinput('input').val())
+      })
   })
 
   const bazarList = []
-  $('.facette-container:not(.dynamic) .filter-bazar').on('keyup', function(e) {
-    const target = $(this).data('target')
-    let searchstring = $(this).val()
-    if (searchstring) {
-      searchstring = searchstring.toLowerCase()
-    }
-    if (bazarList[target] === undefined) {
-      bazarList[target] = []
-      $(`#${target} .bazar-entry`).each(function() {
-        bazarList[target][$(this).data('id_fiche')] = $(this).find(':visible').text().toLowerCase()
-      })
-    }
-    $(`#${target} .bazar-entry`).hide()
-    $(`#${target} .bazar-entry`).filter(function(i) {
-      return bazarList[target][$(this).data('id_fiche')].indexOf(searchstring) > -1
-    }).show()
-    const nbresults = $(`#${target} .bazar-entry:visible`).length
-    $(this).parents('.facette-container').find('.nb-results').html(nbresults)
-    if (nbresults > 1) {
-      $(this).parents('.facette-container').find('.result-label').hide()
-      $(this).parents('.facette-container').find('.results-label').show()
-    } else {
-      $(this).parents('.facette-container').find('.result-label').show()
-      $(this).parents('.facette-container').find('.results-label').hide()
-    }
-  })
+  $('.facette-container:not(.dynamic) .filter-bazar').on(
+    'keyup',
+    function (_e) {
+      const target = $(this).data('target')
+      let searchstring = $(this).val()
+      if (searchstring) {
+        searchstring = searchstring.toLowerCase()
+      }
+      if (bazarList[target] === undefined) {
+        bazarList[target] = []
+        $(`#${target} .bazar-entry`).each(function () {
+          bazarList[target][$(this).data('id_fiche')] = $(this)
+            .find(':visible')
+            .text()
+            .toLowerCase()
+        })
+      }
+      $(`#${target} .bazar-entry`).hide()
+      $(`#${target} .bazar-entry`)
+        .filter(function (_i) {
+          return (
+            bazarList[target][$(this).data('id_fiche')].indexOf(searchstring) >
+            -1
+          )
+        })
+        .show()
+      const nbresults = $(`#${target} .bazar-entry:visible`).length
+      $(this).parents('.facette-container').find('.nb-results').html(nbresults)
+      if (nbresults > 1) {
+        $(this).parents('.facette-container').find('.result-label').hide()
+        $(this).parents('.facette-container').find('.results-label').show()
+      } else {
+        $(this).parents('.facette-container').find('.result-label').show()
+        $(this).parents('.facette-container').find('.results-label').hide()
+      }
+    },
+  )
 
   // gestion du bouton de réinitialisation des filtres
-  $('.facette-container:not(.dynamic) .filters .reset-filters').on('click', () => {
-    $('.facette-container:not(.dynamic) .filters input.filter-checkbox:checked').click()
-  })
+  $('.facette-container:not(.dynamic) .filters .reset-filters').on(
+    'click',
+    () => {
+      $(
+        '.facette-container:not(.dynamic) .filters input.filter-checkbox:checked',
+      ).click()
+    },
+  )
 })
 
 function exportTableToCSV(filename, selector = 'table tr') {
@@ -975,8 +1198,8 @@ function exportTableToCSV(filename, selector = 'table tr') {
   const rows = document.querySelectorAll(selector)
 
   for (let i = 0; i < rows.length; i++) {
-    const row = []; const
-      cols = rows[i].querySelectorAll('td, th')
+    const row = []
+    const cols = rows[i].querySelectorAll('td, th')
 
     for (let j = 0; j < cols.length; j++) row.push(cols[j].innerText)
 
@@ -1015,13 +1238,15 @@ export function removeCSVCrochet(str) {
 
 // range input
 $(document).ready(() => {
-  const rangeInputs = document.querySelectorAll('.range-wrap input[type="range"]')
+  const rangeInputs = document.querySelectorAll(
+    '.range-wrap input[type="range"]',
+  )
   function handleInputChange(e) {
     const { target } = e
     const { min } = target
     const { max } = target
     const val = target.value
-    target.style.backgroundSize = `${(val - min) * 100 / (max - min)}% 100%`
+    target.style.backgroundSize = `${((val - min) * 100) / (max - min)}% 100%`
     $(target).siblings('output').val(val)
   }
 
@@ -1029,3 +1254,5 @@ $(document).ready(() => {
     input.addEventListener('input', handleInputChange)
   })
 })
+
+window.exportTableToCSV = exportTableToCSV

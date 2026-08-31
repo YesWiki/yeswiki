@@ -5,7 +5,6 @@ namespace YesWiki\Test\Core\Service;
 use PHPUnit\Framework\Attributes\CoversMethod;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Depends;
-use Throwable;
 use YesWiki\Core\Entity\User;
 use YesWiki\Core\Exception\UserEmailAlreadyUsedException;
 use YesWiki\Core\Exception\UserNameAlreadyUsedException;
@@ -92,8 +91,8 @@ class UserManagerTest extends YesWikiTestCase
         $firstUser = $users[array_key_first($users)];
         if ($name == 'newRandom') {
             do {
-                $name = $this->randomString(1, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ')
-                    . $this->randomString(25, 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 -_');
+                $name = trim($this->randomString(1, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ')
+                    . $this->randomString(25, 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 -_'));
             } while (!empty($userManager->getOneByName($name)));
         } elseif ($name == 'empty') {
             $name = '';
@@ -125,14 +124,14 @@ class UserManagerTest extends YesWikiTestCase
             $userNameAlreadyExist = true;
         } catch (UserEmailAlreadyUsedException $ex) {
             $emailAlreadyExist = true;
-        } catch (Throwable $ex) {
+        } catch (\Throwable $ex) {
             $exceptionThrown = true;
         }
         try {
             if (!empty($user)) {
                 $userManager->delete($user);
             }
-        } catch (Throwable $th) {
+        } catch (\Throwable $th) {
         }
 
         if ($userNameExist) {
@@ -162,8 +161,8 @@ class UserManagerTest extends YesWikiTestCase
             $email = strtolower($this->randomString(10)) . '@example.com';
         } while (!empty($userManager->getOneByEmail($email)));
         do {
-            $name = $this->randomString(1, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ')
-                . $this->randomString(25, 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 -_');
+            $name = trim($this->randomString(1, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ')
+                . $this->randomString(25, 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 -_'));
         } while (!empty($userManager->getOneByName($name)));
 
         $password = $this->randomString(25, 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 -_');
@@ -182,7 +181,7 @@ class UserManagerTest extends YesWikiTestCase
         try {
             $userManager->delete($user);
             $createdUser = $userManager->getOneByName($user['name']);
-        } catch (Throwable $th) {
+        } catch (\Throwable $th) {
             $exceptionThrown = true;
         }
 
@@ -280,7 +279,7 @@ class UserManagerTest extends YesWikiTestCase
             $userNameAlreadyExist = true;
         } catch (UserEmailAlreadyUsedException $ex) {
             $emailAlreadyExist = true;
-        } catch (Throwable $ex) {
+        } catch (\Throwable $ex) {
             $exceptionThrown = true;
             $exceptionMessage = $ex->getMessage();
         }
@@ -288,7 +287,7 @@ class UserManagerTest extends YesWikiTestCase
             if (!empty($user)) {
                 $userManager->delete($user);
             }
-        } catch (Throwable $th) {
+        } catch (\Throwable $th) {
         }
 
         if ($userNameExist) {
@@ -331,7 +330,7 @@ class UserManagerTest extends YesWikiTestCase
         $output = '';
         $maxIndex = strlen($charset) - 1;
 
-        for ($i = 0; $i < (max(1, $length)); $i++) {
+        for ($i = 0; $i < max(1, $length); $i++) {
             $output .= substr($charset, rand(0, $maxIndex), 1);
         }
 

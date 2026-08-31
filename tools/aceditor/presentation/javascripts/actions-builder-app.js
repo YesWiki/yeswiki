@@ -48,15 +48,18 @@ const components = {
   WikiCodeInput,
   PreviewAction,
   InputHint,
-  AddonIcon
+  AddonIcon,
 }
 
 // actionsBuilderData is defined is AceditorAction
-const data = typeof actionsBuilderData === 'object' ? actionsBuilderData : { forms: {}, action_groups: {} }
+const data =
+  typeof actionsBuilderData === 'object'
+    ? actionsBuilderData
+    : { forms: {}, action_groups: {} }
 
 // dynamically loads other components defined in extensions or in custom folder
 if (data.extraComponents) {
-  Object.entries(data.extraComponents).forEach(async([name, filepath]) => {
+  Object.entries(data.extraComponents).forEach(async ([name, filepath]) => {
     const { default: tmp } = await import(filepath)
     components[name] = tmp
   })
@@ -90,13 +93,15 @@ export const appConfig = {
       isEditingExistingAction: false,
       displayAdvancedParams: false,
       // Current Aceditor in use
-      editor: null
+      editor: null,
     }
   },
   computed: {
     actionGroup() {
       if (!this.currentGroupId) return { label: '', actions: {} }
-      return this.actionGroups[this.currentGroupId] || { label: '', actions: {} }
+      return (
+        this.actionGroups[this.currentGroupId] || { label: '', actions: {} }
+      )
     },
     actions() {
       const actions = this.actionGroup?.actions || {}
@@ -107,15 +112,24 @@ export const appConfig = {
       })
       return result
     },
-    selectedAction() { return this.actions[this.selectedActionId] },
-    needFormField() { return this.actionGroup?.needFormField },
+    selectedAction() {
+      return this.actions[this.selectedActionId]
+    },
+    needFormField() {
+      return this.actionGroup?.needFormField
+    },
     // Some action group (like bazar) have common properties available for each actions
     // so we always display those commons properties in different panels
     configPanels() {
       const result = []
-      if (this.selectedAction?.properties
-          && Object.values(this.selectedAction.properties).some((conf) => conf.type)) {
-        result.push({ params: this.selectedAction, class: 'specific-action-params' })
+      if (
+        this.selectedAction?.properties &&
+        Object.values(this.selectedAction.properties).some((conf) => conf.type)
+      ) {
+        result.push({
+          params: this.selectedAction,
+          class: 'specific-action-params',
+        })
       }
       Object.entries(this.actions).forEach(([actionName, params]) => {
         if (actionName.startsWith('common') && params) result.push({ params })
@@ -152,7 +166,8 @@ export const appConfig = {
       const wrappedContent = this.selectedAction?.wrappedContentExample || ''
       let content = wrappedContent
       if (this.selectedActionId === 'tabs' && this.actionParams.titles) {
-        content = this.actionParams.titles.split(',')
+        content = this.actionParams.titles
+          .split(',')
           .map((tabName) => wrappedContent.replace('{tabName}', tabName))
           .join('\n')
       }
@@ -169,7 +184,8 @@ export const appConfig = {
           content += `${wrappedContent.replace('{size}', size)}\n`
         }
       }
-      if (!['label', 'accordion', 'grid'].includes(this.selectedActionId)) content = `\n${content}\n`
+      if (!['label', 'accordion', 'grid'].includes(this.selectedActionId))
+        content = `\n${content}\n`
       return content
     },
     wikiCodeEnd() {
@@ -190,7 +206,7 @@ export const appConfig = {
         result += this.wikiCodeEnd
       }
       return result
-    }
+    },
   },
   methods: {
     open(editor, options) {
@@ -217,7 +233,11 @@ export const appConfig = {
         this.selectedActionId = newActionId
         // Get Action group
         for (const groupId in this.actionGroups) {
-          if (Object.keys(this.actionGroups[groupId].actions).includes(newActionId)) {
+          if (
+            Object.keys(this.actionGroups[groupId].actions).includes(
+              newActionId,
+            )
+          ) {
             this.currentGroupId = groupId
             break
           }
@@ -234,12 +254,25 @@ export const appConfig = {
         if (newActionId == 'bazarliste') {
           for (const actionId in this.actions) {
             const action = this.actions[actionId]
-            if (action && action.properties && action.properties.template && action.properties.template.value == this.values.template) { this.selectedActionId = actionId }
+            if (
+              action &&
+              action.properties &&
+              action.properties.template &&
+              action.properties.template.value == this.values.template
+            ) {
+              this.selectedActionId = actionId
+            }
           }
         }
-        if (this.$refs.specialInput) this.$refs.specialInput.forEach((component) => component.parseNewValues(this.values))
+        if (this.$refs.specialInput)
+          this.$refs.specialInput.forEach((component) =>
+            component.parseNewValues(this.values),
+          )
       } else {
-        if (this.$refs.specialInput) this.$refs.specialInput.forEach((component) => component.resetValues())
+        if (this.$refs.specialInput)
+          this.$refs.specialInput.forEach((component) =>
+            component.resetValues(),
+          )
         this.selectedFormsIds = null
         this.selectedActionId = ''
         // Bazar dynamic by default
@@ -248,7 +281,10 @@ export const appConfig = {
       this.updateActionParams()
       // If only one action available, select it
       if (Object.keys(this.actions).length == 1) {
-        if (this.selectedActionId == '' && previousSelectedActionId == Object.keys(this.actions)[0]) {
+        if (
+          this.selectedActionId == '' &&
+          previousSelectedActionId == Object.keys(this.actions)[0]
+        ) {
           this.selectedActionId = Object.keys(this.actions)[0]
           // force watcher without changing value because VueJs will not detect the change
           // The comparison between changes is done at regular interval, so there will not have detection
@@ -261,7 +297,11 @@ export const appConfig = {
     },
     // prefer methods to computed to prevent cache
     getSelectedFormId() {
-      if (!(this.selectedFormsIds instanceof Array) || this.selectedFormsIds.length == 0) return ''
+      if (
+        !(this.selectedFormsIds instanceof Array) ||
+        this.selectedFormsIds.length == 0
+      )
+        return ''
 
       return this.selectedFormsIds.slice(0, 1)[0] ?? '' // only the first one
     },
@@ -277,14 +317,19 @@ export const appConfig = {
       }
     },
     getValidFormsIds() {
-      return (this.values.id || '').split(',')
+      return (this.values.id || '')
+        .split(',')
         .filter((id) => ['number', 'string'].includes(typeof id))
         .map((id) => id.replace(/(^[0-9]$)|^https?:\/\/.+->([0-9]+)$/u, '$1$2'))
         .filter((e) => e.match(/^\d+$/))
     },
     getSelectedFormsByAjax() {
       if (!this.selectedFormsIds) return
-      if (this.selectedFormsIds.every((fid) => this.loadedForms.hasOwnProperty(fid))) {
+      if (
+        this.selectedFormsIds.every((fid) =>
+          Object.prototype.hasOwnProperty.call(this.loadedForms, fid),
+        )
+      ) {
         this.selectedForms = {}
         for (const key in this.loadedForms) {
           this.selectedForms[key] = this.loadedForms[key]
@@ -294,7 +339,11 @@ export const appConfig = {
           setTimeout(() => this.updateActionParams(), 0)
         }
       } else {
-        const idsToSearch = this.selectedFormsIds.filter((fid) => !this.loadedForms.hasOwnProperty(fid) && !this.loadingForms.includes(fid))
+        const idsToSearch = this.selectedFormsIds.filter(
+          (fid) =>
+            !Object.prototype.hasOwnProperty.call(this.loadedForms, fid) &&
+            !this.loadingForms.includes(fid),
+        )
         if (idsToSearch.length > 0) {
           idsToSearch.forEach((id) => this.loadingForms.push(id))
           const params = { demand: 'forms' }
@@ -306,12 +355,17 @@ export const appConfig = {
             })
           }
           $.getJSON(wiki.url('?wiki/json', params), (data) => {
-            this.loadingForms = this.loadingForms.filter((e) => !idsToSearch.includes(e))
+            this.loadingForms = this.loadingForms.filter(
+              (e) => !idsToSearch.includes(e),
+            )
             // keep ? because standart http rewrite waits for CamelCase and 'root' is not
-            if (Array.isArray(data) && data[0] != undefined) {
+            if (Array.isArray(data) && data[0] != null) {
               // copy forms
               data.forEach((form) => {
-                if (form.bn_id_nature != undefined && idsToSearch.includes(form.bn_id_nature)) {
+                if (
+                  form.bn_id_nature != null &&
+                  idsToSearch.includes(form.bn_id_nature)
+                ) {
                   this.loadedForms[form.bn_id_nature] = form
                 }
               })
@@ -319,15 +373,21 @@ export const appConfig = {
             // default forms for missing
             idsToSearch.forEach((fid) => {
               // fake empty form
-              if (!this.loadedForms.hasOwnProperty(fid)) {
+              if (
+                !Object.prototype.hasOwnProperty.call(this.loadedForms, fid)
+              ) {
                 this.loadedForms[fid] = { prepared: {} }
               }
             })
             // On first form loaded, we load again the values so the special components are rendered and we can parse values on each special component
-            if (!this.selectedForms && this.isEditingExistingAction) setTimeout(() => this.initValues(), 0)
+            if (!this.selectedForms && this.isEditingExistingAction)
+              setTimeout(() => this.initValues(), 0)
             this.selectedForms = {}
             for (const key in this.loadedForms) {
-              if (this.selectedFormsIds && this.selectedFormsIds.includes(key)) {
+              if (
+                this.selectedFormsIds &&
+                this.selectedFormsIds.includes(key)
+              ) {
                 this.selectedForms[key] = this.loadedForms[key]
               }
             }
@@ -350,10 +410,17 @@ export const appConfig = {
         // if editing, do not fill value with value when `!default == true`, use only default
         const configValue = this.isEditingExistingAction
           ? this.selectedAction.properties[propName].default
-          : (this.selectedAction.properties[propName].value || this.selectedAction.properties[propName].default)
-        if (configValue && !this.values[propName]) this.values[propName] = configValue
+          : this.selectedAction.properties[propName].value ||
+            this.selectedAction.properties[propName].default
+        if (configValue && !this.values[propName])
+          this.values[propName] = configValue
       }
-      if (this.isBazarListeAction && this.selectedAction.properties && this.selectedAction.properties.template) this.values.template = this.selectedAction.properties.template.value
+      if (
+        this.isBazarListeAction &&
+        this.selectedAction.properties &&
+        this.selectedAction.properties.template
+      )
+        this.values.template = this.selectedAction.properties.template.value
       setTimeout(() => this.updateActionParams(), 0)
     },
     updateActionParams() {
@@ -372,23 +439,38 @@ export const appConfig = {
       for (const key in this.values) {
         const config = this.selectedActionAllConfigs[key]
         const value = this.values[key]
-        if (result.hasOwnProperty(key) || value === undefined || config && config.default && `${value}` == `${config.default}`
-            || typeof value == 'object' || config && config.mapped === false
-            || config && !this.checkConfigDisplay(config)) { continue }
+        if (
+          Object.prototype.hasOwnProperty.call(result, key) ||
+          value === undefined ||
+          (config && config.default && `${value}` == `${config.default}`) ||
+          typeof value == 'object' ||
+          (config && config.mapped === false) ||
+          (config && !this.checkConfigDisplay(config))
+        ) {
+          continue
+        }
         result[key] = value
       }
       // Adds values from special components
-      if (this.$refs.specialInput) this.$refs.specialInput.forEach((p) => result = { ...result, ...p.getValues() })
+      if (this.$refs.specialInput)
+        this.$refs.specialInput.forEach(
+          (p) => (result = { ...result, ...p.getValues() }),
+        )
 
       // default value for 'bazarliste'
-      if (this.selectedActionId == 'bazarliste') result.template = result.template || 'liste_accordeon'
+      if (this.selectedActionId == 'bazarliste')
+        result.template = result.template || 'liste_accordeon'
 
       // put in first position 'id' and 'template' if existing
       const orderedResult = {}
       if (result.id) orderedResult.id = result.id
       if (result.template) orderedResult.template = result.template
       // Order params, and remove empty values
-      Object.keys(result).sort().forEach((key) => { if (result[key] !== '') orderedResult[key] = result[key] })
+      Object.keys(result)
+        .sort()
+        .forEach((key) => {
+          if (result[key] !== '') orderedResult[key] = result[key]
+        })
       this.actionParams = orderedResult
     },
     watchSelectedActionId() {
@@ -396,19 +478,22 @@ export const appConfig = {
         this.values = {}
       }
       this.initValuesOnActionSelected()
-    }
+    },
   },
   watch: {
     selectedFormsIds(val, oldVal) {
-      if (!oldVal || (val && (oldVal.length != val.length
-        || (Array.isArray(val) && !Array.isArray(oldVal))
-        || !val.every((e) => oldVal.includes(e))
-      ))) {
+      if (
+        !oldVal ||
+        (val &&
+          (oldVal.length != val.length ||
+            (Array.isArray(val) && !Array.isArray(oldVal)) ||
+            !val.every((e) => oldVal.includes(e))))
+      ) {
         this.getSelectedFormsByAjax()
       }
     },
     selectedActionId() {
       this.watchSelectedActionId()
-    }
-  }
+    },
+  },
 }

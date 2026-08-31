@@ -6,7 +6,13 @@ $finder = PhpCsFixer\Finder::create()
     ->exclude('vendor')
     ->exclude('cache')
     ->exclude('files')
-    ->exclude('node_modules');
+    ->exclude('node_modules')
+    // The instance's own config, not source: `wakka.config.php` is written by the installer
+    // and rewritten by every screen that saves a setting, and the other `*.config.php` at the
+    // root are its variants. All are gitignored. Without this, `make lint` reports files to
+    // fix on every working install and can never pass -- and `make fix` reformats a file the
+    // next config write undoes.
+    ->notName('*.config.php');
 
 $rules = [
     '@PSR12' => true, // Start with PSR-12 rules

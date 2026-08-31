@@ -1,41 +1,13 @@
-const rootsElementsRaw = document.getElementsByClassName('selector_is_recurrent')
+const rootsElementsRaw = document.getElementsByClassName(
+  'selector_is_recurrent',
+)
 const rootsElements = []
 for (let index = 0; index < rootsElementsRaw.length; index++) {
   rootsElements.push(rootsElementsRaw.item(index).parentNode)
 }
-const isVueJS3 = (typeof Vue.createApp == 'function')
+const isVueJS3 = typeof Vue.createApp == 'function'
 
 const defaultNbMax = 600
-const daysToCodeAssoc = {
-  mon: 1,
-  tue: 2,
-  wed: 3,
-  thu: 4,
-  fri: 5,
-  sat: 6,
-  sun: 7
-}
-const monthsToCodeAssoc = {
-  jan: 0,
-  feb: 1,
-  mar: 2,
-  apr: 3,
-  may: 4,
-  jun: 5,
-  jul: 6,
-  aug: 7,
-  sep: 8,
-  oct: 9,
-  nov: 10,
-  dec: 11
-}
-const wantedPositionList = {
-  fisrtOfMonth: 1,
-  secondOfMonth: 2,
-  thirdOfMonth: 3,
-  forthOfMonth: 4,
-  lastOfMonth: 99
-}
 
 const appParams = {
   components: {},
@@ -57,7 +29,7 @@ const appParams = {
       showRange: false,
       startDateInputInternal: null,
       stepInternal: 2,
-      whenInMonth: ''
+      whenInMonth: '',
     }
   },
   computed: {
@@ -73,11 +45,10 @@ const appParams = {
     datePickerForLimit() {
       let datePicker = this.datePickerForLimitInternal
       if (datePicker === null) {
-        datePicker = this
-          .baseElement
-          ?.parentNode
-          ?.querySelector('.event-container-for-datepicker input[name="bf_date_fin_evenement_data[limitdate]"]')
-                    ?? null
+        datePicker =
+          this.baseElement?.parentNode?.querySelector(
+            '.event-container-for-datepicker input[name="bf_date_fin_evenement_data[limitdate]"]',
+          ) ?? null
         this.datePickerForLimitInternal = datePicker
       }
       return datePicker
@@ -111,7 +82,9 @@ const appParams = {
     },
     startDateInput() {
       if (this.startDateInputInternal === null) {
-        this.startDateInputInternal = document.getElementById('bf_date_debut_evenement')
+        this.startDateInputInternal = document.getElementById(
+          'bf_date_debut_evenement',
+        )
       }
       return this.startDateInputInternal
     },
@@ -129,128 +102,86 @@ const appParams = {
         default:
           return this.stepInternal
       }
-    }
+    },
   },
   methods: {
     /**
-         * calculate available except
-         * @param {int} nbStep will be set to defaultNbMax if not furnished
-         * @returns {String[]} available Except
-         */
+     * calculate available except
+     * @param {int} nbStep will be set to defaultNbMax if not furnished
+     * @returns {String[]} available Except
+     */
     calculateAvailableExcept(nbStep = defaultNbMax) {
-      let date = this.getCurrentInputDate('startDateInput')
+      const date = this.getCurrentInputDate('startDateInput')
       if (date === null) {
         return []
       }
-
-      const except = []
-      for (let i = 0; i < nbStep; i++) {
-        let nextStartDate = null
-        switch (this.repetition) {
-          case 'd':
-            nextStartDate = new Date(date.getTime() + Number(this.step) * 24 * 3600 * 1000)
-            break
-          case 'w':
-            const currentStartDayCode = date.getDay() || 7
-            const daysTocode = this.days.map((d) => daysToCodeAssoc[d] ?? 1)
-            let nextWantedDay = null
-            const maxDaysToCode = daysTocode.reduce((acc, val) => Math.max(acc, val), 1)
-            if (!daysTocode.includes(currentStartDayCode) || currentStartDayCode === maxDaysToCode) {
-              nextWantedDay = daysTocode.reduce((acc, val) => Math.min(acc, val), 7)
-              nextStartDate = new Date(date.getTime())
-              nextStartDate.setDate(nextStartDate.getDate() + nextWantedDay + 7 * (Number(this.step) - 1) + 7 - currentStartDayCode)
-            } else {
-              nextWantedDay = daysTocode.filter((d) => d > currentStartDayCode).reduce((acc, val) => Math.min(acc, val), 7)
-              nextStartDate = new Date(date.getTime())
-              nextStartDate.setDate(nextStartDate.getDate() + nextWantedDay - currentStartDayCode)
-            }
-            break
-          case 'm':
-            const { nextStartMonth, currentStartYear } = this.calculateNextMonth(date.getMonth(), date.getFullYear(), Number(this.step))
-            nextStartDate = this.findNextStartDate(date, currentStartYear, nextStartMonth, (m, y) => this.calculateNextMonth(m, y, Number(this.step)))
-            break
-          case 'y':
-            nextStartDate = this.findNextStartDate(date, date.getFullYear() + Number(this.step), monthsToCodeAssoc?.[this.month] ?? 0, (m, y) => ({
-              currentStartYear: y + Number(this.step),
-              nextStartMonth: m
-            }))
-            break
-          default:
-            break
-        }
-        if (nextStartDate === null
-                    || nextStartDate.toString() === 'Invalid Date') {
-          return except
-        }
-        date = nextStartDate
-        if (this.endDateLimitTime < 0
-                     || nextStartDate.getTime() <= this.endDateLimitTime
-        ) {
-          except.push(this.convertDateToString(date))
-        }
-      }
-      return except
-    },
-    calculateNextMonth(nextStartMonth, currentStartYear, step) {
-      const newMonth = nextStartMonth + step
-      return newMonth > 11
-        ? {
-          nextStartMonth: newMonth - 12,
-          currentStartYear: currentStartYear + 1
-        }
-        : {
-          nextStartMonth: newMonth,
-          currentStartYear
-        }
+      const anchor = this.convertDateToString(date)
+      const occurrences = window._bazarRecurrenceCalculator.generateOccurrences(
+        {
+          startDate: anchor,
+          endDate: anchor,
+          repetition: this.repetition,
+          step: this.step,
+          days: this.days,
+          month: this.month,
+          whenInMonth: this.whenInMonth,
+          nth: this.nth,
+          nbmax: nbStep,
+          limitdate:
+            this.endDateLimitTime >= 0
+              ? this.convertDateToString(new Date(this.endDateLimitTime))
+              : null,
+          except: [],
+        },
+      )
+      // drop the anchor occurrence (#0): this picker only offers *future* candidate dates
+      return occurrences.slice(1).map((occurrence) => occurrence.start)
     },
     /**
-         * convert a Date object to a string YYYY-MM-DD
-         * @param {Date} date
-         * @returns {string}
-         */
+     * convert a Date object to a string YYYY-MM-DD
+     * @param {Date} date
+     * @returns {string}
+     */
     convertDateToString(date) {
       // work in UTC because ISO string is splitted
-      return (new Date(Date.UTC(
-        date.getFullYear(),
-        date.getMonth(),
-        date.getDate(),
-        date.getHours(),
-        date.getMinutes(),
-        date.getSeconds()
-      ))).toISOString().slice(0, 10)
-    },
-    getNbDaysInMonth(year, month) {
-      const firstDayOfMonth = new Date(year, month)
-      firstDayOfMonth.setDate(1)
-      const lastDayOfMonth = new Date(year + (month === 12 ? 1 : 0), (month % 12) + 1)
-      lastDayOfMonth.setDate(0)
-      return Math.round((lastDayOfMonth - firstDayOfMonth) / 1000 / 3600 / 24) + 1
+      return new Date(
+        Date.UTC(
+          date.getFullYear(),
+          date.getMonth(),
+          date.getDate(),
+          date.getHours(),
+          date.getMinutes(),
+          date.getSeconds(),
+        ),
+      )
+        .toISOString()
+        .slice(0, 10)
     },
     /**
-         * @return {int} nbMax estimated from limitDate
-         *   if there is no limit date return defaultNbMax
-         */
+     * @return {int} nbMax estimated from limitDate
+     *   if there is no limit date return defaultNbMax
+     */
     estimateNBMaxFromLimitDate() {
       if (this.endDateLimitTime <= 0) {
         return defaultNbMax
       }
       /**
-             * @var {Date} startDate
-             */
+       * @var {Date} startDate
+       */
       const startDate = this.getCurrentInputDate('startDateInput')
       if (startDate === null) {
         return defaultNbMax
       }
       /**
-             * @var {int} duration between start date end limit date
-             */
+       * @var {int} duration between start date end limit date
+       */
       const duration = this.endDateLimitTime - startDate.getTime()
       if (duration < 0) {
         return 0
       }
       /**
-             * @var {int} step step in days (very approximatively)
-             */
+       * @var {int} step step in days (very approximatively)
+       */
       let step = 1
       switch (this.repetition) {
         case 'y':
@@ -269,56 +200,22 @@ const appParams = {
       }
       return Math.ceil(duration / 1000 / 3600 / 24 / step) + 20 // margin of 20 to be really sure to catch all repetitions
     },
-    findNextStartDate(date, startYear, startMonth, callback) {
-      if (this.whenInMonth === 'nthOfMonth') {
-        let limit = 60
-        let currentStartYear = startYear
-        let nextStartMonth = startMonth
-        const nth = this.nth || 1
-        while (limit > 0 && nth > this.getNbDaysInMonth(currentStartYear, nextStartMonth)) {
-          const data = callback(nextStartMonth, currentStartYear)
-          nextStartMonth = data?.nextStartMonth ?? nextStartMonth
-          currentStartYear = data?.currentStartYear ?? currentStartYear
-          limit -= 1
-        }
-        const newStartDate = new Date(date.getTime())
-        newStartDate.setFullYear(currentStartYear, nextStartMonth, nth)
-        return newStartDate
-      }
-      const wantedPosition = wantedPositionList?.[this.whenInMonth] ?? 1
-      const nbDaysInMonth = this.getNbDaysInMonth(startYear, startMonth)
-      const day = this.days.reduce((acc, d) => Math.min(acc, daysToCodeAssoc?.[d] ?? 7), 7)
-      let counter = 0
-      const testedDate = new Date(date.getTime())
-      testedDate.setFullYear(startYear, startMonth)
-      let newStartDate = new Date(date.getTime())
-      for (let curDay = 1; curDay <= nbDaysInMonth; curDay++) {
-        if (counter < wantedPosition) {
-          testedDate.setDate(curDay)
-          if ((testedDate.getDay() || 7) === day) {
-            counter += 1
-            newStartDate = new Date(testedDate.getTime())
-          }
-        }
-      }
-      return newStartDate
-    },
     /**
-         * get current date from input
-         * @param {String} keyname
-         * @returns {Date} date , null if not available
-         */
+     * get current date from input
+     * @param {String} keyname
+     * @returns {Date} date , null if not available
+     */
     getCurrentInputDate(keyname) {
       /**
-             * @var {String} dateStr current value of input
-             */
+       * @var {String} dateStr current value of input
+       */
       const dateStr = this?.[keyname]?.value ?? ''
       if (dateStr === '') {
         return null
       }
       /**
-             * @var {Date} date current Date object from value
-             */
+       * @var {Date} date current Date object from value
+       */
       const date = new Date(dateStr)
       if (date.toString() === 'Invalid Date') {
         return null
@@ -352,7 +249,9 @@ const appParams = {
     },
     registerChangeOnStartDateInput() {
       this.startDateInput.addEventListener('blur', () => {
-        setTimeout(() => { this.setCurrentDayIfWeek() }, 200)
+        setTimeout(() => {
+          this.setCurrentDayIfWeek()
+        }, 200)
         this.updateAvailableExceptUpdatingNbMax()
       })
     },
@@ -360,7 +259,11 @@ const appParams = {
       if (this.repetitionInternal?.match(/w$/)) {
         const day = this.getCurrentStartDay()
         if (day !== '' && !this.days.includes(day)) {
-          if (day !== 'mon' && this.days.length === 1 && this.days.includes('mon')) {
+          if (
+            day !== 'mon' &&
+            this.days.length === 1 &&
+            this.days.includes('mon')
+          ) {
             this.days = [day]
           } else {
             this.days.push(day)
@@ -381,13 +284,15 @@ const appParams = {
     },
     updateAvailableExceptUpdatingNbMax() {
       /**
-             * @var {int} nbmax calculated nbmax after update of limit date
-             */
+       * @var {int} nbmax calculated nbmax after update of limit date
+       */
       const nbmax = this.estimateNBMaxFromLimitDate()
       /**
-             * @var {String[]} availableExcept to update the real value of nbMax
-             */
-      const availableExcept = this.calculateAvailableExcept(Math.min(nbmax, defaultNbMax))
+       * @var {String[]} availableExcept to update the real value of nbMax
+       */
+      const availableExcept = this.calculateAvailableExcept(
+        Math.min(nbmax, defaultNbMax),
+      )
       this.availableExcept = availableExcept
       this.nbmax = Math.max(2, availableExcept.length)
       if (nbmax > defaultNbMax) {
@@ -395,22 +300,22 @@ const appParams = {
       }
     },
     /**
-         * update the limit date if maximum number is reached
-         * @param {array} availableExcept
-         */
+     * update the limit date if maximum number is reached
+     * @param {array} availableExcept
+     */
     updateEndDateLimitInputIfNotEmpty(availableExcept) {
       /**
-             * @var {Date|null} endDateLimit
-             */
+       * @var {Date|null} endDateLimit
+       */
       const endDateLimit = this.getCurrentInputDate('datePickerForLimit')
       if (endDateLimit !== null && availableExcept.length > 0) {
         /**
-                 * @var {string} endDateLimitStr
-                 */
+         * @var {string} endDateLimitStr
+         */
         const endDateLimitStr = this.convertDateToString(endDateLimit)
         /**
-                 * @var {string} lastAvailableExcept
-                 */
+         * @var {string} lastAvailableExcept
+         */
         const lastAvailableExcept = availableExcept[availableExcept.length - 1]
         if (lastAvailableExcept < endDateLimitStr) {
           $(this.datePickerForLimit).datepicker('update', lastAvailableExcept)
@@ -419,15 +324,16 @@ const appParams = {
       }
     },
     updateEndDateLimitTime(newVal = null) {
-      const endDateLimit = (newVal === null)
-        ? this.getCurrentInputDate('datePickerForLimit')
-        : new Date(newVal)
-      this.endDateLimitTime = (endDateLimit === null
-                || endDateLimit.toString() === 'Invalid Date')
-        ? -1
-        : endDateLimit.getTime()
+      const endDateLimit =
+        newVal === null
+          ? this.getCurrentInputDate('datePickerForLimit')
+          : new Date(newVal)
+      this.endDateLimitTime =
+        endDateLimit === null || endDateLimit.toString() === 'Invalid Date'
+          ? -1
+          : endDateLimit.getTime()
       this.updateAvailableExceptUpdatingNbMax()
-    }
+    },
   },
   mounted() {
     const data = JSON.parse(this.dataset)
@@ -447,23 +353,20 @@ const appParams = {
       this.updateAvailableExceptUpdatingNbMax()
     }
     if (data?.isRecurrent !== '1') {
-      this.recurrenceBaseId = (
-        typeof data === 'string'
-                && data.match(/^\{"recurrentParentId":"([^"]+)"}$/)
-      )
-        ? data.replace(/^\{"recurrentParentId":"([^"]+)"}$/, '$1')
-        : ''
+      this.recurrenceBaseId =
+        window._bazarRecurrenceCalculator.isLegacyRecurrenceChild(data)
+          ? data.replace(/^\{"recurrentParentId":"([^"]+)"}$/, '$1')
+          : ''
     }
     const step = data?.step ?? 2
     this.stepInternal = step
     const repetition = data?.repetition ?? ''
-    this.repetitionInternal = (data?.isRecurrent === '1' && ['d', 'y', 'w', 'm'].includes(repetition))
-      ? (
-        Number(step) === 1
+    this.repetitionInternal =
+      data?.isRecurrent === '1' && ['d', 'y', 'w', 'm'].includes(repetition)
+        ? Number(step) === 1
           ? repetition
           : `x${repetition}`
-      )
-      : ''
+        : ''
     if (repetition.length > 0 && Number(step) > 1) {
       this.canCustomizeRepetition = true
     }
@@ -471,10 +374,8 @@ const appParams = {
     this.month = data?.month ?? ''
     this.nth = data?.nth ?? ''
     const nbmax = Number(data?.nbmax ?? defaultNbMax)
-    this.nbmax = (nbmax && nbmax > 0) ? nbmax : defaultNbMax
-    this.days = Array.isArray(data?.days)
-      ? data.days
-      : ['mon']
+    this.nbmax = nbmax && nbmax > 0 ? nbmax : defaultNbMax
+    this.days = Array.isArray(data?.days) ? data.days : ['mon']
     this.month = data?.month ?? ''
     this.except = Array.isArray(data?.except) ? data?.except : []
     this.mainParentElement?.classList?.add('ready')
@@ -488,8 +389,10 @@ const appParams = {
     },
     newExcept(newValue) {
       if (newValue.length > 0) {
-        if (!this.except.includes(newValue)
-                    && this.availableExceptFiltered.includes(newValue)) {
+        if (
+          !this.except.includes(newValue) &&
+          this.availableExceptFiltered.includes(newValue)
+        ) {
           this.except.push(newValue)
         }
         this.newExcept = ''
@@ -527,8 +430,8 @@ const appParams = {
     },
     whenInMonth() {
       this.updateAvailableExceptUpdatingNbMax()
-    }
-  }
+    },
+  },
 }
 if (isVueJS3) {
   const app = Vue.createApp(appParams)
@@ -543,7 +446,7 @@ if (isVueJS3) {
   rootsElements.forEach((elem) => {
     new Vue({
       ...{ el: elem },
-      ...appParams
+      ...appParams,
     })
   })
 }

@@ -1,4 +1,5 @@
 <?php
+
 /*
 * Souligneur générique pour colorier la syntaxe de langage de programmation
 *
@@ -46,42 +47,42 @@
 
 class Highlighter
 {
-    //sensibilite majuscule/minuscule
+    // sensibilite majuscule/minuscule
     public $isCaseSensitiv = false;
-    //commentaires
-    public $comment = [];	//commentaire multiligne
-    public $commentLine = [];	//commentaire monoligne
-    public $commentStyle = ''; //'color: red';
-    //directives de compilation
+    // commentaires
+    public $comment = [];	// commentaire multiligne
+    public $commentLine = [];	// commentaire monoligne
+    public $commentStyle = ''; // 'color: red';
+    // directives de compilation
     public $directive = [];
-    public $directiveStyle = ''; //'color: green';
-    //chaine de caracteres
+    public $directiveStyle = ''; // 'color: green';
+    // chaine de caracteres
     public $string = [];
     public $stringStyle = '';
-    //nombre
+    // nombre
     public $number = [];
     public $numberStyle = '';
-    //mots clé
+    // mots clé
     public $keywords = [];
-    //séparateurs
+    // séparateurs
     public $symboles = [];
     public $symbolesStyle = '';
-    //identifiant
+    // identifiant
     public $identifier = [];
     public $identStyle = '';
-    //*******************************************************
+    // *******************************************************
     // Variable privées
-    //*******************************************************
-    public $_patOpt = 'msU';		//option de recherche
-    public $_pattern = '';			//modele complet
-    public $_commentPattern = '';	//modele des commentaires
-    public $_directivePattern = ''; //modele des directives
-    public $_numberPattern = '';	//modele des nombres
-    public $_stringPattern = '';	//modele des chaine de caracteres
-    public $_keywordPattern = '';	//modele pour le mots cle
-    public $_symbolesPattern = '';	//modele pour les symbole
-    public $_separatorPattern = ''; //modele pour les sparateurs
-    public $_identPattern = '';	//modele pour les identifiants
+    // *******************************************************
+    public $_patOpt = 'msU';		// option de recherche
+    public $_pattern = '';			// modele complet
+    public $_commentPattern = '';	// modele des commentaires
+    public $_directivePattern = ''; // modele des directives
+    public $_numberPattern = '';	// modele des nombres
+    public $_stringPattern = '';	// modele des chaine de caracteres
+    public $_keywordPattern = '';	// modele pour le mots cle
+    public $_symbolesPattern = '';	// modele pour les symbole
+    public $_separatorPattern = ''; // modele pour les sparateurs
+    public $_identPattern = '';	// modele pour les identifiants
 
     /********************************************************
     Methodes de la classe
@@ -181,7 +182,7 @@ class Highlighter
         $this->_numberPattern = $this->_getNumberPattern();
         $this->_keywordPattern = $this->_getKeywordPattern();
         $this->_identPattern = $this->_getIdentifierPattern();
-        //construction du modele globale en fonction de l'existance d'un style(optimisation)
+        // construction du modele globale en fonction de l'existance d'un style(optimisation)
         if ($this->commentStyle) {
             $a[] = $this->_commentPattern;
         }
@@ -216,31 +217,31 @@ class Highlighter
         $text = $match[0];
         $pcreOpt = $this->_patOpt;
         $pcreOpt .= ($this->isCaseSensitiv) ? '' : 'i';
-        //commentaires
+        // commentaires
         if ($this->commentStyle) {
             if (preg_match('`' . $this->_commentPattern . "`$pcreOpt", $text, $m)) {
                 return "<span style=\"$this->commentStyle\">" . $match[0] . '</span>';
             }
         }
-        //directive de compilation
+        // directive de compilation
         if ($this->directiveStyle) {
             if (preg_match('`' . $this->_directivePattern . "`$pcreOpt", $text, $m)) {
                 return "<span style=\"$this->directiveStyle\">" . $match[0] . '</span>';
             }
         }
-        //chaine de caracteres
+        // chaine de caracteres
         if ($this->stringStyle) {
             if (preg_match('`' . $this->_stringPattern . "`$pcreOpt", $text, $m)) {
                 return "<span style=\"$this->stringStyle\">" . $match[0] . '</span>';
             }
         }
-        //nombres
+        // nombres
         if ($this->numberStyle) {
             if (preg_match('`' . $this->_numberPattern . "`$pcreOpt", $text, $m)) {
                 return "<span style=\"$this->numberStyle\">" . $match[0] . '</span>';
             }
         }
-        //mot clé
+        // mot clé
         if (count($this->keywords) > 0) {
             foreach ($this->keywords as $key => $keywords) {
                 if ($keywords['style']) {
@@ -250,13 +251,13 @@ class Highlighter
                 }
             }
         }
-        //symboles
+        // symboles
         if ($this->symbolesStyle) {
             if (preg_match('`' . $this->_symbolesPattern . "`$pcreOpt", $text, $m)) {
                 return "<span style=\"$this->symbolesStyle\">" . $match[0] . '</span>';
             }
         }
-        //identifiants
+        // identifiants
         if ($this->identStyle) {
             if (preg_match('`' . $this->_identPattern . "`$pcreOpt", $text, $m)) {
                 return "<span style=\"$this->identStyle\">" . $match[0] . '</span>';
@@ -283,4 +284,4 @@ class Highlighter
 
         return $text;
     }
-}	//class Highlighter
+}	// class Highlighter

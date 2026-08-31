@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Formatter from wakka syntax.
  */
@@ -64,7 +65,7 @@ if (!class_exists('\YesWiki\WikiniFormatter')) {
                 . "(?<!\w)_[^_]+_(?!\w)|" // markdown italic
                 . "(?<!\w)\\*[^*]+\\*(?!\w)|" // markdown italic
                 . "`[^`]+`(?![_\w])|" // inline code
-                . "(?<!\!)\[[^\]]+\]\([^\)]+\)(\{[^\}]*\})?|" // markdown links
+                . "(?<!\!)\[[^\]]{1,2000}\]\([^\)]{1,4000}\)(\{[^\}]{0,500}\})?|" // markdown links
                 . "\!\[[^\]]*\]\([^\)]+\)|" // markdown images
                 . '\b[a-z0-9]+:\/\/[^ \t\n\r\f"\|\\\\\^\`\{\}\[\]><]+|'
                 . '(?:^|(?<=\>""))(?!\\\\)\#{1,6} [^\\n\#]*\\n|' // markdown titles doit être avant la ligne suivante pour être prioritaire sur le ## ##
@@ -188,19 +189,17 @@ if (!class_exists('\YesWiki\WikiniFormatter')) {
                 $stack[] = $elem;
 
                 return $this->openTag($tag, $attr);
-            } else {
-                if (count($stack) == $idx - 1) { // it's the last one !
-                    array_pop($stack); // unset would not change the next insert index
-
-                    return $this->closeTag($tag);
-                } else {
-                    $res = $this->closeAllInLine($idx);
-                    unset($stack[$idx]);
-                    $stack = array_values($stack); // keys 0 1 3 4 => 0 1 2 3
-
-                    return $res . $this->openAllInLine($idx);
-                }
             }
+            if (count($stack) == $idx - 1) { // it's the last one !
+                array_pop($stack); // unset would not change the next insert index
+
+                return $this->closeTag($tag);
+            }
+            $res = $this->closeAllInLine($idx);
+            unset($stack[$idx]);
+            $stack = array_values($stack); // keys 0 1 3 4 => 0 1 2 3
+
+            return $res . $this->openAllInLine($idx);
         }
 
         public function callback($things)
@@ -246,7 +245,7 @@ if (!class_exists('\YesWiki\WikiniFormatter')) {
                 case '---': // forced line breaks
                     return "<br />\n";
                 case "\n": // new lines
-                    //fermeture des balises de liste
+                    // fermeture des balises de liste
                     $c = count($this->indentClosers);
                     if ($c) {
                         $result .= $this->closeAllInLine();
@@ -293,7 +292,7 @@ if (!class_exists('\YesWiki\WikiniFormatter')) {
                             $language = '';
                         }
 
-                        //Select formatter for syntaxe hightlighting
+                        // Select formatter for syntaxe hightlighting
                         if (file_exists('formatters/coloration_' . $language . '.php')) {
                             $formatter = 'coloration_' . $language;
                         } else {
@@ -320,9 +319,9 @@ if (!class_exists('\YesWiki\WikiniFormatter')) {
                             $url .= '/wakka.php?wiki=' . $text . '/raw';
 
                             return $wiki->Format($wiki->Format($url, 'raw'), 'wakka');
-                        } else {
-                            return htmlspecialchars($text, ENT_COMPAT, YW_CHARSET);
                         }
+
+                        return htmlspecialchars($text, ENT_COMPAT, YW_CHARSET);
                     }
                     // Links
                     // \S : any character that is not a whitespace character
@@ -347,7 +346,7 @@ if (!class_exists('\YesWiki\WikiniFormatter')) {
 
                         if ($url) {
                             // Early start/end of Inserted or Deleted ?
-                            if ($url != ($url = (preg_replace("/@@|££|\[\[/", '', $url)))) {
+                            if ($url != ($url = preg_replace("/@@|££|\[\[/", '', $url))) {
                                 $result = '</span>';
                             }
                             // Same filtering in the text (no need to
@@ -358,9 +357,9 @@ if (!class_exists('\YesWiki\WikiniFormatter')) {
                             $htmlAttrs['track'] = true;
 
                             return $result . $wiki->LinkTo($url, $text, $htmlAttrs);
-                        } else { // if there is no URL, return at least the text
-                            return htmlspecialchars($text, ENT_COMPAT, YW_CHARSET);
-                        }
+                        }   // if there is no URL, return at least the text
+
+                        return htmlspecialchars($text, ENT_COMPAT, YW_CHARSET);
                     }
                     // comment
                     elseif (preg_match("/^\{\#(.*?)\#\}$/s", $thing, $matches)) {
@@ -379,9 +378,9 @@ if (!class_exists('\YesWiki\WikiniFormatter')) {
                             $this->br = 0;
 
                             return $wiki->Action($matches[1]);
-                        } else {
-                            return '{{}}';
                         }
+
+                        return '{{}}';
                     }
                     // indented text
                     elseif (preg_match('`(^|\n)(\t+|([ ]{1})+)(-|([[:alnum:]]+)\))?`s', $thing, $matches)) {
@@ -414,13 +413,21 @@ if (!class_exists('\YesWiki\WikiniFormatter')) {
                         return $this->inLineTag('i') . htmlspecialchars($matches[1]) . $this->inLineTag('i');
                     }
                     // markdown images compatibility
-                    elseif (preg_match('/^\!\[([^\]]*)\]\(([^\) ]+)(?: "(.*)")?\)$/sm', $thing, $matches)) {
-                        $src = $matches[2];
+                    elseif (preg_match('/^\!\[([^\]]*)\]\(([^) \t\n\r\f"\|\\\\\^\`\{\}\[\]><]+)(?: "(.*)")?\)$/sm', $thing, $matches)) {
+                        // reject dangerous non-http(s) schemes (javascript:, data:, vbscript:, ...) ;
+                        // relative paths (wiki attachments) and http(s) links stay allowed, like the
+                        // plain-url autolink branch above
+                        if (preg_match('/^[a-z][a-z0-9+.-]*:/i', $matches[2]) && !preg_match('/^https?:/i', $matches[2])) {
+                            return htmlspecialchars($thing, ENT_COMPAT, YW_CHARSET);
+                        }
+
+                        $src = htmlspecialchars($matches[2]);
                         $alt = htmlspecialchars($matches[1] ?? '');
                         $title = htmlspecialchars($matches[3] ?? '');
 
                         return '<img loading="lazy" class="img-responsive" src="' . $src . '" alt="' . $alt . '" ' . (empty($title) ? '' : 'title="' . $title . '"') . ' />';
                     }
+
                     // if we reach this point, it must have been an accident.
                     return htmlspecialchars($thing, ENT_COMPAT, YW_CHARSET);
             } // switch($thing)
@@ -472,16 +479,16 @@ if (!class_exists('\YesWiki\WikiniFormatter')) {
             // liste ne soit transformé abusivement en <br />
             $this->br = 0;
 
-            //recherche du type de la liste
+            // recherche du type de la liste
             if (isset($matches[4])) {
                 $newIndentType = $matches[4];
             } else {
                 $newIndentType = '';
             }
 
-            //calcul de la balise ouvrante/fermante selon le type de liste
+            // calcul de la balise ouvrante/fermante selon le type de liste
             if (!$newIndentType) {
-                $opener = '' . '<ul class="fake-ul">';
+                $opener = '<ul class="fake-ul">';
                 $closer = "</li>\n</ul>\n";
             } elseif ($newIndentType == '-') {
                 $opener = "\n<ul>";
@@ -507,27 +514,27 @@ if (!class_exists('\YesWiki\WikiniFormatter')) {
                 $closer = "</li>\n</ol>\n";
             }
 
-            //calcul du niveau d'indentation
-            //si il y a des tabulations devant la liste alors le niveau = nbr de tab
+            // calcul du niveau d'indentation
+            // si il y a des tabulations devant la liste alors le niveau = nbr de tab
             if (strpos($matches[2], "\t")) {
                 $newIndentLevel = strlen($matches[2]);
-            } else { //pas de tab => la difference du nbre d'espace definie le niveau d'indentation
+            } else { // pas de tab => la difference du nbre d'espace definie le niveau d'indentation
                 $newIndentLevel = $this->oldIndentLevel;
-                //longeur de la chaine d'indentaton
+                // longeur de la chaine d'indentaton
                 $newIndentLength = strlen($matches[2]);
                 if ($newIndentLength > $this->oldIndentLength) {
-                    //si la chaine d'indentation est plus longue que la precedente
-                    //on incremente le niveau d'indentation
+                    // si la chaine d'indentation est plus longue que la precedente
+                    // on incremente le niveau d'indentation
                     $newIndentLevel++;
-                    //on stock la niveau correspondant a la longueur de la chaine d'indentation
-                    //la boucle for permet de corriger les erreurs de saisie d'espace.
-                    //$this->newIndentSpace[$newIndentLength]=$newIndentLevel;
+                    // on stock la niveau correspondant a la longueur de la chaine d'indentation
+                    // la boucle for permet de corriger les erreurs de saisie d'espace.
+                    // $this->newIndentSpace[$newIndentLength]=$newIndentLevel;
                     for ($i = $this->oldIndentLength + 1; $i <= $newIndentLength; $i++) {
                         $this->newIndentSpace[$i] = $newIndentLevel;
                     }
                 } elseif ($newIndentLength < $this->oldIndentLength) {
-                    //si la chaine d'indentation est plus courte que la precedente
-                    //on recupere le niveau d'indentation correspondant a la longueur de la chaune
+                    // si la chaine d'indentation est plus courte que la precedente
+                    // on recupere le niveau d'indentation correspondant a la longueur de la chaune
                     $newIndentLevel = $this->newIndentSpace[$newIndentLength];
                 }
             }
@@ -536,25 +543,25 @@ if (!class_exists('\YesWiki\WikiniFormatter')) {
             // il faut donc fermer les boites de type in-line
             $result .= $this->closeAllInLine();
 
-            //si le nouveau level est plus grand
+            // si le nouveau level est plus grand
             if ($newIndentLevel > $this->oldIndentLevel) {
                 for ($i = 0; $i < $newIndentLevel - $this->oldIndentLevel; $i++) {
-                    //on ajoute le tag d'ouverture de liste
+                    // on ajoute le tag d'ouverture de liste
                     $result .= $opener;
-                    //sauvegarde du tag de fermeture dans la pile
+                    // sauvegarde du tag de fermeture dans la pile
                     array_push($this->indentClosers, $closer);
                     $closeLI = false;
                 }
             }
-            //si le nouveau level est plus petit
+            // si le nouveau level est plus petit
             elseif ($newIndentLevel < $this->oldIndentLevel) {
                 for ($i = 0; $i < $this->oldIndentLevel - $newIndentLevel; $i++) {
-                    //on depile le tag de fermeture
+                    // on depile le tag de fermeture
                     $result .= array_pop($this->indentClosers);
                 }
                 $closeLI = true;
             }
-            //si c'est le meme level
+            // si c'est le meme level
             elseif ($newIndentLevel == $this->oldIndentLevel) {
                 $closeLI = true;
             }
@@ -574,5 +581,5 @@ if (!class_exists('\YesWiki\WikiniFormatter')) {
     } // class WikiniFormatter
 }
 
-$form = new \YesWiki\WikiniFormatter($this);
+$form = new WikiniFormatter($this);
 echo $form->format($text);

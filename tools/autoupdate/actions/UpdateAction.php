@@ -1,15 +1,20 @@
 <?php
 
+use Symfony\Component\Security\Csrf\Exception\TokenNotFoundException;
 use YesWiki\AutoUpdate\Entity\Messages;
 use YesWiki\AutoUpdate\Service\AutoUpdateService;
 use YesWiki\AutoUpdate\Service\MigrationService;
 use YesWiki\AutoUpdate\Service\UpdateAdminPagesService;
+use YesWiki\Core\Controller\CsrfTokenController;
 use YesWiki\Core\Service\ArchiveService;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Security\Controller\SecurityController;
 
 class UpdateAction extends YesWikiAction
 {
+    /** what installs, replaces or removes code, and may only be asked for by this wiki's own pages */
+    public const CONFIRMED_ACTIONS = ['upgrade', 'delete', 'update_admin_pages'];
+
     public function formatArguments($arg)
     {
         return [
@@ -70,6 +75,9 @@ class UpdateAction extends YesWikiAction
         $vMessages = new Messages();
 
         try {
+            if (in_array($vAction, self::CONFIRMED_ACTIONS, true)) {
+                $this->getService(CsrfTokenController::class)->checkToken('main', 'POST', 'csrf-token', false);
+            }
             switch ($vAction) {
                 case 'upgrade':
                     $vCanUpgrade = false;
@@ -77,7 +85,7 @@ class UpdateAction extends YesWikiAction
                     $vArchiveParams = $vArchiveService->getArchiveParams();
 
                     // Check if the preupdate backup is activated
-                    if (in_array(($vArchiveParams['preupdate_backup_activated'] ?? true), [true, 'true', 1, '1'])) {
+                    if (in_array($vArchiveParams['preupdate_backup_activated'] ?? true, [true, 'true', 1, '1'])) {
                         // It is so let's go further...
 
                         $vStatus = $vArchiveService->getArchivingStatus();
@@ -93,10 +101,9 @@ class UpdateAction extends YesWikiAction
                                 return $this->render('@core/preupdate-backup.twig', [
                                     'packageName' => $vPackageName,
                                 ]);
-                            } else {
-                                // else we can do the upgrade
-                                $vCanUpgrade = true;
                             }
+                            // else we can do the upgrade
+                            $vCanUpgrade = true;
                         } else {
                             $vMessages->add('AU_PRIVATE_PATH_NOT_WRITABLE', 'AU_ERROR');
                         }
@@ -104,20 +111,20 @@ class UpdateAction extends YesWikiAction
                         $vCanUpgrade = true;
                     }
 
-                   if ($vCanUpgrade) {
-                       // Perform the upgrade
+                    if ($vCanUpgrade) {
+                        // Perform the upgrade
 
-                       $vUpgradeMessages = $vUpdateService->upgrade($vPackageName);
+                        $vUpgradeMessages = $vUpdateService->upgrade($vPackageName);
 
-                       $vMessages->add($vUpgradeMessages);
+                        $vMessages->add($vUpgradeMessages);
 
-                       // Reload the page to perform postInstall operation with the new code
-                       $this->wiki->redirect($this->wiki->href('', '', [
-                           'action' => 'post_install',
-                           'messages' => json_encode($vMessages->toArray()),
-                           'previous_version' => YESWIKI_VERSION,
-                       ], false));
-                   }
+                        // Reload the page to perform postInstall operation with the new code
+                        $this->wiki->redirect($this->wiki->href('', '', [
+                            'action' => 'post_install',
+                            'messages' => json_encode($vMessages->toArray()),
+                            'previous_version' => YESWIKI_VERSION,
+                        ], false));
+                    }
                     break;
                 case 'post_install':
                     $vRawMessages = $vSecurityController->filterInput(INPUT_GET, 'messages', FILTER_UNSAFE_RAW, false, 'string');
@@ -133,7 +140,7 @@ class UpdateAction extends YesWikiAction
                 case 'update_admin_pages':
                     // Update admin pages
 
-                    $vUpdateAdminPagesMessages = vUpdateAdminPagesService->updateAll();
+                    $vUpdateAdminPagesMessages = $vUpdateAdminPagesService->updateAll();
 
                     $vMessages->add($vUpdateAdminPagesMessages);
                     break;
@@ -145,8 +152,10 @@ class UpdateAction extends YesWikiAction
                     $vMessages->add($vDeleteMessages);
                     break;
             }
+        } catch (TokenNotFoundException $pTokenNotFound) {
+            $vMessages->add($pTokenNotFound->getMessage(), 'AU_ERROR');
         } catch (Throwable $pThrowable) {
-            $vMessages->add(_t('PERFORMABLE_ERROR') . $this->wiki->dumpThrowable ($pThrowable), 'AU_ERROR');
+            $vMessages->add(_t('PERFORMABLE_ERROR') . $this->wiki->dumpThrowable($pThrowable), 'AU_ERROR');
         }
 
         // Display result of action, with a list of success/error messages

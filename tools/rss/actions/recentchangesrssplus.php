@@ -13,7 +13,13 @@ if ($this->GetMethod() != 'xml') {
     return;
 }
 
-if ($pages = $this->LoadAll('select tag, time, user, owner, LEFT(body,500) as body from ' . $this->config['table_prefix'] . "pages where latest = 'Y' and comment_on = '' order by time desc limit " . $max)) {
+$readableFilter = '';
+if (!$this->UserIsAdmin()) {
+    $aclRequest = $this->services->get(YesWiki\Core\Service\AclService::class)->updateRequestWithACL();
+    $readableFilter = empty($aclRequest) ? '' : ' and (' . $aclRequest . ')';
+}
+
+if ($pages = $this->LoadAll('select tag, time, user, owner, LEFT(body,500) as body from ' . $this->config['table_prefix'] . "pages where latest = 'Y' and comment_on = ''" . $readableFilter . ' order by time desc limit ' . $max)) {
     if (!($link = $this->GetParameter('link'))) {
         $link = $this->config['root_page'];
     }
@@ -28,15 +34,19 @@ if ($pages = $this->LoadAll('select tag, time, user, owner, LEFT(body,500) as bo
 
     $items = '';
     foreach ($pages as $i => $page) {
+        $tag = $page['tag'];
+
         list($day, $time) = explode(' ', $page['time']);
         $day = preg_replace('/-/', ' ', $day);
         list($hh, $mm, $ss) = explode(':', $time);
 
+        $body = htmlspecialchars($this->Format($page['body'], 'wakka', $page['tag']), ENT_COMPAT, YW_CHARSET);
+
         $items .= "<item>\n";
-        $items .= '<title>' . $page['tag'] . ' --- ' . _t('BY') . ' ' . $page['user'] . ' le ' . $day . ' - ' . $hh . ':' . $mm . "</title>\n";
-        $items .= '<description> ' . _t('RSS_CHANGE_OF') . ' ' . $page['tag'] . ' --- ' . _t('BY') . ' ' . $page['user'] . ' ' . _t('RSS_ON_DATE') . ' ' . $day . ' - ' . $hh . ':' . $mm . htmlspecialchars($this->Format($page['body'], 'wakka', $page['tag']), ENT_COMPAT, YW_CHARSET) . "</description>\n";
+        $items .= '<title>' . $tag . ' --- ' . _t('BY') . ' ' . $page['user'] . ' le ' . $day . ' - ' . $hh . ':' . $mm . "</title>\n";
+        $items .= '<description> ' . _t('RSS_CHANGE_OF') . ' ' . $tag . ' --- ' . _t('BY') . ' ' . $page['user'] . ' ' . _t('RSS_ON_DATE') . ' ' . $day . ' - ' . $hh . ':' . $mm . $body . "</description>\n";
         $items .= '<dc:format>text/html</dc:format>';
-        $items .= '<link>' . $this->config['base_url'] . $page['tag'] . '&amp;time=' . rawurlencode($page['time']) . "</link>\n";
+        $items .= '<link>' . $this->config['base_url'] . $tag . '&amp;time=' . rawurlencode($page['time']) . "</link>\n";
         $items .= "</item>\n";
     }
 

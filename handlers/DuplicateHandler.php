@@ -22,7 +22,7 @@ class DuplicateHandler extends YesWikiHandler
         $this->entryController = $this->getService(EntryController::class);
         $this->duplicationManager = $this->getService(DuplicationManager::class);
         $title = $error = '';
-        $toExternalWiki = isset($_GET['toUrl']) && $_GET['toUrl'] == '1';
+        $toExternalWiki = $this->getRequest()->query->get('toUrl') == '1';
         if (!$this->wiki->page) {
             $error .= $this->render('@templates\alert-message.twig', [
                 'type' => 'warning',
@@ -46,9 +46,9 @@ class DuplicateHandler extends YesWikiHandler
                     . $this->wiki->Format('{{login signupurl="0"}}' . "\n\n")
                     . '</div><!-- end .vertical-center -->' . "\n";
             }
-        } elseif (!empty($_POST)) {
+        } elseif (!empty($this->getRequest()->request->all())) {
             try {
-                $data = $this->duplicationManager->checkPostData($_POST);
+                $data = $this->duplicationManager->checkPostData($this->getRequest()->request->all());
                 $this->duplicationManager->duplicateLocally($data);
                 if ($data['duplicate-action'] == 'edit') {
                     $this->wiki->Redirect($this->wiki->href('edit', $data['newTag']));
@@ -120,7 +120,7 @@ class DuplicateHandler extends YesWikiHandler
             $title .= ' ' . _t('TO_ANOTHER_YESWIKI');
         }
         // in ajax request for modal, no title
-        if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
+        if ($this->getRequest()->isXmlHttpRequest()) {
             $title = '';
         }
 

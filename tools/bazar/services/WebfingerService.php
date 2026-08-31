@@ -2,51 +2,52 @@
 
 namespace YesWiki\Bazar\Service;
 
-use Exception;
-use YesWiki\Bazar\Service\WebFinger;
 use Symfony\Component\HttpClient\HttpClient;
 
 class WebfingerService
 {
     protected $httpClient;
+    protected $ssrfUrlValidator;
 
-    public function __construct()
+    public function __construct(SsrfUrlValidator $ssrfUrlValidator)
     {
         $this->httpClient = HttpClient::create();
+        $this->ssrfUrlValidator = $ssrfUrlValidator;
     }
 
-    public function splitHandle($handle) {
+    public function splitHandle($handle)
+    {
         if (!preg_match(
-                '/^@?(?P<user>[\w\-\.]+)@(?P<host>[\w\.\-]+)(?P<port>:[\d]+)?$/',
-                $handle,
-                $matches
-            )
+            '/^@?(?P<user>[\w\-\.]+)@(?P<host>[\w\.\-]+)(?P<port>:[\d]+)?$/',
+            $handle,
+            $matches
+        )
         ) {
-            throw new Exception(
-                "WebFinger handle is malformed '{$handle}'"
-            );
+            throw new \Exception("WebFinger handle is malformed '{$handle}'");
         }
 
         return $matches;
     }
 
-    public function formatLocalActor($handle, $actorUri) {
+    public function formatLocalActor($handle, $actorUri)
+    {
         $webfinger = new WebFinger();
 
         $webfinger->setSubject($handle);
         $webfinger->setAliases([$actorUri]);
         $webfinger->setLinks([
             [
-                "rel" => "self",
-                "type" => "application/activity+json",
-                "href" => $actorUri,
-            ]
+                'rel' => 'self',
+                'type' => 'application/activity+json',
+                'href' => $actorUri,
+            ],
         ]);
 
-        return ($webfinger->toArray());
+        return $webfinger->toArray();
     }
 
-    protected function getWebfingerObject($handle) {
+    protected function getWebfingerObject($handle)
+    {
         $matches = $this->splitHandle($handle);
 
         // Unformat Mastodon handle @user@host => user@host
@@ -62,24 +63,30 @@ class WebfingerService
             $handle
         );
 
+        $resolve = $this->ssrfUrlValidator->resolveSafe($webfingerUrl);
+
         $response = $this->httpClient->request('GET', $webfingerUrl, [
             'headers' => [
-                'Accept' => 'application/json'
-            ]
+                'Accept' => 'application/json',
+            ],
+            'max_redirects' => 0,
+            'resolve' => $resolve,
         ]);
 
-        $json = (array) json_decode($response->getContent(), true);
+        $json = (array)json_decode($response->getContent(), true);
 
         return new WebFinger($json);
     }
 
-    public function getRemoteActor($handle) {
+    public function getRemoteActor($handle)
+    {
         $webfinger = $this->getWebfingerObject($handle);
 
         return $webfinger->getProfileId();
     }
 
-     public function getInteractionUrl($handle, $actorToFollow) {
+    public function getInteractionUrl($handle, $actorToFollow)
+    {
         $webfinger = $this->getWebfingerObject($handle);
 
         $interactionUrl = $webfinger->getInteractionUrl();

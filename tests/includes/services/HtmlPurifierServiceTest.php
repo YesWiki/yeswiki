@@ -40,6 +40,7 @@ class HtmlPurifierServiceTest extends YesWikiTestCase
         if (str_contains($serialized, '&lt;')) {
             return 'This is a dirty iframe :<br />.&lt;/div&gt;&lt;/body&gt;&lt;/html&gt;';
         }
+
         return 'This is a dirty iframe :<br />.';
     }
 
@@ -92,16 +93,29 @@ class HtmlPurifierServiceTest extends YesWikiTestCase
                 'This is an attack ><img src="x" onerror="alert(\'Test !\');"/>.',
                 'This is an attack &gt;<img src="x" alt="x" />.',
             ],
-            'iframe' => [
+            'iframe with allowed https src' => [
                 'This is an iframe :<br /><iframe src="https://yeswiki.net"></iframe>',
-                'This is an iframe :<br />',
+                'This is an iframe :<br /><iframe src="https://yeswiki.net"></iframe>',
+            ],
+            'iframe with disallowed non-https src' => [
+                // src attribute is stripped (fails URI.SafeIframeRegexp), the empty iframe tag remains
+                'This is an iframe :<br /><iframe src="http://yeswiki.net"></iframe>',
+                'This is an iframe :<br /><iframe></iframe>',
+            ],
+            'iframe with allowed embed attributes' => [
+                'This is an iframe :<br /><iframe src="https://yeswiki.net" width="560" height="315" style="border:0;" title="Demo" frameborder="0" allow="fullscreen" referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe>',
+                'This is an iframe :<br /><iframe src="https://yeswiki.net" width="560" height="315" style="border:0;" title="Demo" frameborder="0" allow="fullscreen" referrerpolicy="no-referrer-when-downgrade" allowfullscreen="allowfullscreen"></iframe>',
+            ],
+            'iframe with disallowed script-ish attribute' => [
+                'This is an iframe :<br /><iframe src="https://yeswiki.net" onload="alert(1)"></iframe>',
+                'This is an iframe :<br /><iframe src="https://yeswiki.net"></iframe>',
             ],
             'dirty iframe' => [
                 // libxml serializes unclosed iframe differently depending on version — both outputs are valid
                 'This is a dirty iframe :<br /><iframe src="https://yeswiki.net">.',
                 [
-                    'This is a dirty iframe :<br />.',
-                    'This is a dirty iframe :<br />.&lt;/div&gt;&lt;/body&gt;&lt;/html&gt;',
+                    'This is a dirty iframe :<br /><iframe src="https://yeswiki.net">.</iframe>',
+                    'This is a dirty iframe :<br /><iframe src="https://yeswiki.net">.&lt;/div&gt;&lt;/body&gt;&lt;/html&gt;</iframe>',
                 ],
             ],
         ];

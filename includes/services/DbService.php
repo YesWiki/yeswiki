@@ -3,11 +3,12 @@
 namespace YesWiki\Core\Service;
 
 use DateInterval;
-use DateTime;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 
 class DbService
 {
+    /** an INSERT has to reach the server in a single packet, so it stays well under any max_allowed_packet */
+    protected const MAX_INSERT_LENGTH = 1048576;
     protected $params;
 
     protected $link;
@@ -117,7 +118,7 @@ class DbService
             }
         }
 
-        return $result;
+        return $result ?? null;
     }
 
     protected function getMicroTime()
@@ -223,6 +224,9 @@ class DbService
         $error = '';
         try {
             $tablesPrefix = trim($this->prefixTable(''));
+            if (empty($tablesPrefix)) {
+                throw new \Exception("'table_prefix' is empty in wakka.config.php — cannot determine which tables to back up");
+            }
             $tablesPostfix = [];
             // get Tables
             $tables = $this->loadAll('show tables');
@@ -230,15 +234,14 @@ class DbService
                 throw new \Exception("Error in '" . __METHOD__ . "' (line " . __LINE__ . ") : 'show tables' sql command did not return an array !");
             }
 
+            $tableNames = [];
             foreach ($tables as $tableInfo) {
                 if (!is_array($tableInfo)) {
                     throw new \Exception("Error in '" . __METHOD__ . "' (line " . __LINE__ . ") : '\$tableInfo' sql command did not return an array !");
                 }
-                $tableName = array_values($tableInfo)[0];
-                if (strpos($tableName, $tablesPrefix) === 0) {
-                    $tablesPostfix[] = $tableName;
-                }
+                $tableNames[] = array_values($tableInfo)[0];
             }
+            $tablesPostfix = DumpRewriter::ownTables($tableNames, $tablesPrefix);
 
             // generate file
             $date = (new \DateTime())->format('c');
@@ -304,45 +307,39 @@ class DbService
 
                 $rawData = $this->query('select * from ' . $tableName);
 
-                $firstRow = true;
+                $columns = [];
+                for ($i = 0; $i < mysqli_num_fields($rawData); $i++) {
+                    $columns[] = '`' . mysqli_fetch_field_direct($rawData, $i)->name . '`';
+                }
+                $insertHeader = "INSERT INTO `$tableName` (" . implode(', ', $columns) . ") VALUES\n";
+
+                $statementLength = 0;
                 while ($row = mysqli_fetch_array($rawData)) {
-                    if ($firstRow) {
-                        $sql .= "INSERT INTO `$tableName` ";
-                        $sql .= '(';
-                        for ($i = 0; $i < mysqli_num_fields($rawData); $i++) {
-                            if ($i != 0) {
-                                $sql .= ', ';
-                            }
-                            $sql .= '`' . mysqli_fetch_field_direct($rawData, $i)->name . '`';
-                        }
-                        $sql .= ") VALUES\n";
-                        $firstRow = false;
+                    $values = [];
+                    foreach ($columns as $i => $column) {
+                        // everything but NULL is quoted: the server casts what belongs to a number
+                        // column, while a type left unquoted (json, decimal, enum) breaks the dump
+                        $values[] = is_null($row[$i]) ? 'NULL' : "'" . $this->escape($row[$i]) . "'";
+                    }
+                    $line = '(' . implode(', ', $values) . ')';
+
+                    if ($statementLength === 0) {
+                        $sql .= $insertHeader;
                     } else {
                         $sql .= ",\n";
                     }
-                    $sql .= '(';
-                    for ($i = 0; $i < mysqli_num_fields($rawData); $i++) {
-                        if ($i != 0) {
-                            $sql .= ', ';
-                        }
-                        $strAdd = '';
-                        $field = mysqli_fetch_field_direct($rawData, $i);
-                        if (
-                            $field->type == 252 // text or blob cf https://www.php.net/manual/fr/mysqli-result.fetch-field-direct.php
-                            || $field->type == 253 // varchar
-                            || $field->type == 254 // char
-                            || $field->type == 10 // date
-                            || $field->type == 11 // time
-                            || $field->type == 12 // datetime
-                            || $field->type == 13 // year
-                        ) {
-                            $strAdd = "'";
-                        }
-                        $sql .= $strAdd . $this->escape($row[$i] ?? '') . $strAdd;
+                    $sql .= $line;
+                    $statementLength += strlen($line) + 2;
+
+                    // a single INSERT has to travel in one packet, and max_allowed_packet is small
+                    if ($statementLength > self::MAX_INSERT_LENGTH) {
+                        $sql .= ";\n";
+                        $statementLength = 0;
                     }
-                    $sql .= ')';
                 }
-                $sql .= ";\n";
+                if ($statementLength > 0) {
+                    $sql .= ";\n";
+                }
                 $sql .=
                     <<<SQL
 

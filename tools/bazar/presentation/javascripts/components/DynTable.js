@@ -4,35 +4,35 @@ export default {
   props: {
     columns: {
       type: Array,
-      required: true
+      required: true,
     },
     externalSearch: {
       type: String,
-      default: ''
+      default: '',
     },
     extraOptions: { type: Object },
     forceDisplayTotal: {
       type: Boolean,
-      default: false
+      default: false,
     },
     forceRefresh: {
       type: Boolean,
-      default: false
+      default: false,
     },
     rows: {
       type: Object,
-      required: true
+      required: true,
     },
     uuid: {
       type: String,
-      required: true
-    }
+      required: true,
+    },
   },
   data() {
     return {
       dataTable: null,
       displayedRows: {},
-      templatesForRendering: {}
+      templatesForRendering: {},
     }
   },
   computed: {
@@ -40,8 +40,11 @@ export default {
       return this.$el.parentNode
     },
     showFooter() {
-      return this.forceDisplayTotal || this.columns.some((col) => col?.class?.match(/sum-activated/))
-    }
+      return (
+        this.forceDisplayTotal ||
+        this.columns.some((col) => col?.class?.match(/sum-activated/))
+      )
+    },
   },
   methods: {
     addRows(dataTable, columns, rows) {
@@ -83,25 +86,35 @@ export default {
           ...{ footer: true },
           ...{
             exportOptions: {
-              ...(
-                option.extend != 'print'
-                  ? {
+              ...(option.extend != 'print'
+                ? {
                     orthogonal: 'sort', // use sort data for export
                     columns(idx, data, node) {
                       return !$(node).hasClass('not-export-this-col')
-                    }
+                    },
                   }
-                  : {
+                : {
                     columns(idx, data, node) {
                       const isVisible = $(node).data('visible')
-                      return !$(node).hasClass('not-export-this-col') && (
-                        isVisible == undefined || isVisible != false
-                      ) && !$(node).hasClass('not-printable')
-                    }
+                      return (
+                        !$(node).hasClass('not-export-this-col') &&
+                        (isVisible == null || isVisible != false) &&
+                        !$(node).hasClass('not-printable')
+                      )
+                    },
                   }),
-              ...{ format: { footer: (data, column) => this.dataTable.footer().to$().find(`> tr > th:nth-child(${column + 1})`).text() } }
-            }
-          }
+              ...{
+                format: {
+                  footer: (data, column) =>
+                    this.dataTable
+                      .footer()
+                      .to$()
+                      .find(`> tr > th:nth-child(${column + 1})`)
+                      .text(),
+                },
+              },
+            },
+          },
         })
       })
       const options = { ...DATATABLE_OPTIONS }
@@ -126,9 +139,9 @@ export default {
           ...this.getDatatableOptions(),
           ...{
             columns,
-            scrollX: true
+            scrollX: true,
           },
-          ...{ ...this.extraOptions }
+          ...{ ...this.extraOptions },
         })
         $(this.dataTable.table().node()).prop('id', this.getUuid())
         if (this.showFooter) {
@@ -149,7 +162,7 @@ export default {
           const app = createApp({
             render() {
               return h('div', {}, slotFn(params))
-            }
+            },
           })
           app.mount(tempContainer)
           let outerHtml = ''
@@ -178,14 +191,19 @@ export default {
       const footerNode = this.dataTable.footer().to$()
       if (footerNode[0] !== null) {
         const footer = $('<tr>')
-        let displayTotal = columns.some((col) => col?.class?.match(/sum-activated/))
+        let displayTotal = columns.some((col) =>
+          col?.class?.match(/sum-activated/),
+        )
         columns.forEach((col) => {
           let newElem = $('<th>')
           if ('footer' in col && col.footer.length > 0) {
             const element = $(col.footer)
             const isTh = $(element).prop('tagName') === 'TH'
             newElem = isTh ? element : $('<th>').append(element)
-          } else if (displayTotal && !col?.class?.match(/not-export-this-col/)) {
+          } else if (
+            displayTotal &&
+            !col?.class?.match(/not-export-this-col/)
+          ) {
             displayTotal = false
             newElem = $('<th>').text(this.render('sumtranslate', {}, 'Total'))
           }
@@ -201,13 +219,20 @@ export default {
       return null
     },
     removeRows(dataTable, newIds) {
-      const entryIdsToRemove = Object.keys(this.displayedRows).filter((id) => !newIds.includes(id))
+      const entryIdsToRemove = Object.keys(this.displayedRows).filter(
+        (id) => !newIds.includes(id),
+      )
       entryIdsToRemove.forEach((id) => {
         if (id in this.displayedRows) {
           delete this.displayedRows[id]
         }
       })
-      dataTable.rows((idx, data, node) => data?.id === undefined || entryIdsToRemove.includes(data?.id)).remove()
+      dataTable
+        .rows(
+          (idx, data, _node) =>
+            data?.id === undefined || entryIdsToRemove.includes(data?.id),
+        )
+        .remove()
     },
     render(name, replacement = {}, defaultContent = null, params = {}) {
       let output = this.getTemplateFromSlot(name, params)
@@ -225,7 +250,7 @@ export default {
         // because if orthogonal data is defined, value is an object
         sanitizedValue = val.display || ''
       }
-      return (isNaN(sanitizedValue)) ? 1 : Number(sanitizedValue)
+      return Number.isNaN(Number(sanitizedValue)) ? 1 : Number(sanitizedValue)
     },
     async updateRows(newVal) {
       const newIds = Object.keys(newVal)
@@ -242,7 +267,7 @@ export default {
     updateFooter() {
       if (this.dataTable !== null) {
         const activatedRows = []
-        this.dataTable.rows({ search: 'applied' }).every(function() {
+        this.dataTable.rows({ search: 'applied' }).every(function () {
           activatedRows.push(this.index())
         })
         this.dataTable.columns('.sum-activated').every((indexCol) => {
@@ -252,20 +277,24 @@ export default {
             const value = this.dataTable.row(indexRow).data()[col.dataSrc()]
             sum += this.sanitizeValue(Number(value))
           })
-          this.dataTable.footer().to$().find(`> tr > th:nth-child(${indexCol + 1})`).html(sum)
+          this.dataTable
+            .footer()
+            .to$()
+            .find(`> tr > th:nth-child(${indexCol + 1})`)
+            .html(sum)
         })
       }
-    }
+    },
   },
   mounted() {
-    $(this.element).on('dblclick', (e) => false)
+    $(this.element).on('dblclick', (_e) => false)
   },
   watch: {
     rows: {
       deep: true,
       handler(newVal) {
         this.updateRows(newVal).catch(this.manageError)
-      }
+      },
     },
     columns(newVal) {
       if (Array.isArray(newVal) && newVal.length > 0) {
@@ -282,7 +311,7 @@ export default {
         this.addRows(this.dataTable, this.columns, this.rows)
         this.dataTable.draw()
       }
-    }
+    },
   },
   template: `
     <div>
@@ -292,5 +321,5 @@ export default {
             </tfoot>
         </table>
     </div>
-  `
+  `,
 }

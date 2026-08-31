@@ -99,7 +99,6 @@ docker compose exec yeswiki-app composer install
 docker compose exec yeswiki-app yarn install
 ```
 
-
 ## Test
 
 The test docker-compose is similar to the dev one but it also launches a playwright server to launch e2e tests.
@@ -107,6 +106,7 @@ The test docker-compose is similar to the dev one but it also launches a playwri
 The tests are located in the `tests/e2e` directory and are written in typescript.
 
 You need to launch the server with the following command :
+
 ```
 docker compose -f docker-compose.yml -f docker-compose-test.yml up --build
 ```

@@ -2,6 +2,7 @@
 
 namespace YesWiki\Bazar\Service;
 
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Bazar\Field\CheckboxEntryField;
 use YesWiki\Bazar\Field\CheckboxField;
 use YesWiki\Bazar\Field\EnumField;
@@ -10,6 +11,7 @@ use YesWiki\Bazar\Field\ImageField;
 use YesWiki\Bazar\Field\MapField;
 use YesWiki\Bazar\Field\TagsField;
 use YesWiki\Bazar\Field\UserField;
+use YesWiki\Core\Service\StringUtilService;
 use YesWiki\Wiki;
 
 class CSVManager
@@ -27,7 +29,7 @@ class CSVManager
     public function __construct(
         EntryManager $entryManager,
         FormManager $formManager,
-        Wiki $wiki
+        Wiki $wiki,
     ) {
         $this->entryManager = $entryManager;
         $this->formManager = $formManager;
@@ -102,7 +104,7 @@ class CSVManager
 
             foreach ($data as $line) {
                 // output the column headings
-                fputcsv($csvResource, $line, ',', '"', '\\');
+                fputcsv($csvResource, $line, ',', '"', '');
             }
             rewind($csvResource);
 
@@ -119,7 +121,6 @@ class CSVManager
     /**
      * get CSV of all entries from form.
      *
-     * @param $pFormId : the form ID for SearchManager::search
      * @param <array> $pParams : parameters for SearchManager::search
      *	        	[
      *					"query" => <string>|<array> the query
@@ -136,7 +137,7 @@ class CSVManager
     public function getCSVfromFormId(
         $pFormID,
         array $pParams,
-        ?array $pOptions = null
+        ?array $pOptions = null,
     ): ?array {
         $vBazarListService = $this->wiki->services->get(BazarListService::class);
 
@@ -167,14 +168,15 @@ class CSVManager
                 ? array_keys($headers)
                 : array_map(function ($fieldHeader) {
                     return $fieldHeader['fullHeader'];
-                }, $headers)
+                }, $headers),
         ));
 
         if (!$vFakeMode) {
             $vSearchManager = $this->wiki->services->get(SearchManager::class);
 
-            $vQuery = $vSearchManager->aggregateQueries($pParams['query'] ?? null, $_GET);
-            $vKeywords = $vSearchManager->aggregateKeywords($arg['keywords'] ?? null, $_REQUEST['q'] ?? null, $_REQUEST['keywords'] ?? null);
+            $request = $this->wiki->request;
+            $vQuery = $vSearchManager->aggregateQueries($pParams['query'] ?? null, $request->query->all());
+            $vKeywords = $vSearchManager->aggregateKeywords($arg['keywords'] ?? null, $request->get('q'), $request->get('keywords'));
 
             // get lines for each entry
             $vEntries = $vBazarListService->getEntries(array_merge($pParams, [
@@ -272,7 +274,6 @@ class CSVManager
     /**
      * getLabelsFromEnumFieldOptions.
      *
-     * @param mixed               $value
      * @param BazarEnumFieldField $field
      *
      * @return mixed array|string|null
@@ -294,8 +295,8 @@ class CSVManager
         }
         if ($this->debug && !empty($reasonMessage)) {
             trigger_error('Error when exporting \'' . $field->getPropertyName() . '\''
-                . ' from entry \'' . ($entry['id_fiche'] ?? '<no id_fiche>') . '\'.' .
-                ' Waiting a string, giving ' . $reasonMessage
+                . ' from entry \'' . ($entry['id_fiche'] ?? '<no id_fiche>') . '\'.'
+                . ' Waiting a string, giving ' . $reasonMessage
                 . 'You should edit and save this entry to prevent error.');
         }
 
@@ -307,7 +308,7 @@ class CSVManager
                 $values = array_map(function ($tag) use ($options) {
                     return $options[$tag] ?? $tag;
                 }, $values);
-                $newValue = trim($this->arrayToCSV([$values]));
+                $newValue = rtrim($this->arrayToCSV([$values]), "\n");
             } else {
                 $newValue = $value;
             }
@@ -334,27 +335,27 @@ class CSVManager
                 $options = $header['field']->getOptions();
                 $nb = min(3, count($options));
                 if (!empty($options)) {
-                    $line[] = trim($this->arrayToCSV([ // emulate CSV
+                    $line[] = rtrim($this->arrayToCSV([ // emulate CSV
                         array_map(function ($index) use ($options) {
                             return $options[array_keys($options)[$index]];
                         }, range(0, $nb - 1)),
-                    ]));
+                    ]), "\n");
                 } else {
                     $line[] = 'ligne ' . $lineNumber . ' - champ ' . $columnNumber;
                 }
             } elseif ($header['field'] instanceof TagsField) {
-                $line[] = '"' . implode(',', array_map(function ($index) use ($lineNumber, $columnNumber) {
+                $line[] = implode(',', array_map(function ($index) use ($lineNumber, $columnNumber) {
                     return 'ligne ' . $lineNumber . ' - champ ' . $columnNumber . ' - tag ' . $index;
-                }, [1, 2, 3])) . '"';
+                }, [1, 2, 3]));
             } elseif ($header['field'] instanceof EnumField) {
                 $options = $header['field']->getOptions();
                 $index = rand(1, count($options)) - 1;
-                $line[] = trim($this->arrayToCSV([ // emulate CSV
-                    [ //emulate a line
-                        'ligne ' . $lineNumber . ' - champ ' . $columnNumber .
-                            (empty($options) ? '' : ' - ex: ' . $options[array_keys($options)[$index]]),
+                $line[] = rtrim($this->arrayToCSV([ // emulate CSV
+                    [ // emulate a line
+                        'ligne ' . $lineNumber . ' - champ ' . $columnNumber
+                            . (empty($options) ? '' : ' - ex: ' . $options[array_keys($options)[$index]]),
                     ],
-                ]));
+                ]), "\n");
             } else {
                 $line[] = 'ligne ' . $lineNumber . ' - champ ' . $columnNumber;
             }
@@ -376,8 +377,11 @@ class CSVManager
             $GLOBALS['_BAZAR_']['provenance'] = 'import';
             $createdEntries = [];
             foreach ($importedEntries as $entry) {
-                $entry = unserialize(base64_decode($entry), ['allowed_classes' => false]);
-                $entry = array_map('strval', $entry);
+                $entry = json_decode($entry, true);
+                if (!is_array($entry)) {
+                    continue;
+                }
+                $entry = array_map(fn ($value) => is_array($value) ? $value : strval($value), $entry);
 
                 $entry['antispam'] = 1;
                 if (isset($entry['id_fiche'])) {
@@ -403,7 +407,7 @@ class CSVManager
      *
      * @return array|null [['entry' => $extractedData,'errormsg' => ['error1','error2']],...]
      */
-    public function extractCSVfromCSVFile($pFormId, $filesData, bool $detectColumnsOnHeaders = true, $pForm = null)
+    public function extractCSVfromCSVFile($pFormId, $filesData, bool $detectColumnsOnHeaders = true, $pForm = null, bool $keepRemoteFilesAsUrl = false)
     {
         $vBazarListService = $this->wiki->services->get(BazarListService::class);
 
@@ -415,20 +419,20 @@ class CSVManager
 
             // import file
             if (!empty($filesData) && ($filesData['error'] == 0)) {
-                //Check if the file is csv
+                // Check if the file is csv
                 $filename = basename($filesData['name']);
                 $ext = substr($filename, strrpos($filename, '.') + 1);
                 if ($ext == 'csv') {
                     if (($handle = fopen($filesData['tmp_name'], 'r')) !== false) {
-                        if (($firstLine = fgetcsv($handle, 0, ',', '"', '\\')) !== false) {
-                            if ($columnIndexesForPropertyNames =
-                                $this->getColumnIndexesForPropertyNames($firstLine, $headers, $detectColumnsOnHeaders)
+                        if (($firstLine = fgetcsv($handle, 0, ',', '"', '')) !== false) {
+                            if ($columnIndexesForPropertyNames
+                                = $this->getColumnIndexesForPropertyNames($firstLine, $headers, $detectColumnsOnHeaders)
                             ) {
                                 // next lines
                                 $extracted = [];
-                                while (($data = fgetcsv($handle, 0, ',', '"', '\\')) !== false) { // init errors
+                                while (($data = fgetcsv($handle, 0, ',', '"', '')) !== false) { // init errors
                                     $this->errormsg = [];
-                                    $extractedData = $this->getEntryFromCSVLine($data, $headers, $columnIndexesForPropertyNames, $vID['id']);
+                                    $extractedData = $this->getEntryFromCSVLine($data, $headers, $columnIndexesForPropertyNames, $vID['id'], $keepRemoteFilesAsUrl);
                                     $extracted[] = [
                                         'entry' => $extractedData,
                                         'errormsg' => $this->errormsg,
@@ -494,8 +498,6 @@ class CSVManager
 
     /**
      * splice array from key.
-     *
-     * @param array &$line
      */
     private function array_splice_from_key(array &$line, string $key)
     {
@@ -641,7 +643,7 @@ class CSVManager
      *
      * @return array|null entry
      */
-    private function getEntryFromCSVLine(array $data, array $headers, array $columnIndexesForPropertyNames, string $formId): ?array
+    private function getEntryFromCSVLine(array $data, array $headers, array $columnIndexesForPropertyNames, string $formId, bool $keepRemoteFilesAsUrl = false): ?array
     {
         $entry = [];
         $skipFields = ['datetime_create', 'datetime_latest'];
@@ -664,17 +666,21 @@ class CSVManager
                         // for tags not needed to get keys because these are the same
                         // and do not filter on existing tags but allow alls tags
                         $value = $this->extractValueFromEnumFieldData($value, $field);
+                    } elseif ($field instanceof MapField) {
+                        $value = $this->extractValueFromMapFieldData($value, $field);
                     } elseif ($field instanceof ImageField) {
-                        // traitement des images (doivent être présentes dans le dossier files du wiki)
-                        $value = $this->extractValueFromImageFieldData($value, $field);
+                        if (!($keepRemoteFilesAsUrl && StringUtilService::isWebAddress(trim($value)))) {
+                            $value = $this->extractValueFromImageFieldData($value, $field);
+                        }
                     } elseif ($field instanceof FileField) {
-                        // traitement des images (doivent être présentes dans le dossier files du wiki)
-                        $value = $this->extractValueFromFileFieldData($value, $field);
+                        if (!($keepRemoteFilesAsUrl && StringUtilService::isWebAddress(trim($value)))) {
+                            $value = $this->extractValueFromFileFieldData($value, $field);
+                        }
                     } elseif (in_array($propertyName, ['datetime_latest', 'datetime_create'])) {
                         $datetime = \DateTime::createFromFormat(
                             'd/m/Y H:i:s',
                             $value,
-                            new \DateTimeZone($this->wiki->config['timezone'])
+                            new \DateTimeZone($this->wiki->config['timezone']),
                         );
                         $value = $datetime->getTimestamp();
                     }
@@ -741,7 +747,7 @@ class CSVManager
                     chr(154),
                     chr(155), chr(156), chr(159),
                 ],
-                $value
+                $value,
             );
         }
 
@@ -749,11 +755,11 @@ class CSVManager
     }
 
     /**
-     * extractValueFromEnumFieldData.
+     * convert a CSV list of labels or of keys into the comma separated list of keys stored in an entry.
      *
-     * @param string $value, CSV saved in value
+     * @param string $value CSV list read from one cell
      *
-     * @return string $newValue
+     * @return string comma separated keys
      */
     private function extractValueFromEnumFieldData(string $value, EnumField $field): string
     {
@@ -770,28 +776,47 @@ class CSVManager
             }
         }
 
-        // extract CSV and check if multiple values are present : they should be quoted
-        if (preg_match('/"[^"]+"/', $value)) {
-            $values = str_getcsv($value, ',', '"', '\\');
-        } else {
-            $values = [$value];
+        $values = str_getcsv($value, ',', '"', '');
+
+        $indexes = [];
+        foreach ($values as $option) {
+            $option = trim($option);
+            if ($option === '') {
+                continue;
+            }
+            if (isset($flippedOptions[$option])) {
+                $indexes[] = $flippedOptions[$option];
+            } elseif (isset($options[$option])) {
+                $indexes[] = $option;
+            } else {
+                $this->errormsg[] = _t('BAZ_UNKNOWN_OPTION') . ' : ' . $field->getPropertyName() . ' = ' . $option;
+            }
         }
 
-        // convert values to index
-        $indexes = array_map(function ($option) use ($options, $flippedOptions) {
-            $option = trim($option);
-            if (isset($flippedOptions[$option])) {
-                // search if $option is a correct value then take assoiacted index
-                return $flippedOptions[$option];
-            } elseif (isset($options[$option])) {
-                //search if $option is an index
-                return $option;
-            } else {
-                return null;
-            }
-        }, $values);
-
         return implode(',', $indexes);
+    }
+
+    /**
+     * turn the JSON cell written by the export back into the latitude/longitude/geometries structure.
+     *
+     * @return array|string the structure, or the raw cell when it cannot be read
+     */
+    private function extractValueFromMapFieldData(string $value, MapField $field)
+    {
+        $decoded = json_decode(trim($value), true);
+        if (!is_array($decoded)) {
+            $this->errormsg[] = _t('BAZ_UNREADABLE_MAP_VALUE') . ' : ' . $field->getPropertyName();
+
+            return $value;
+        }
+
+        $geometries = $decoded['geometries'] ?? '';
+
+        return [
+            'latitude' => (string)($decoded['latitude'] ?? $decoded['bf_latitude'] ?? ''),
+            'longitude' => (string)($decoded['longitude'] ?? $decoded['bf_longitude'] ?? ''),
+            'geometries' => is_string($geometries) ? $geometries : json_encode($geometries),
+        ];
     }
 
     /**
@@ -806,28 +831,38 @@ class CSVManager
         // TODO refactor this part if needed because only copied
         $imageorig = trim($value);
         $nomimage = renameUrlToSanitizedFilename($imageorig);
+
+        // reject the download outright if the destination extension is not an authorized image extension
+        // (renameUrlToSanitizedFilename only strips path/traversal characters, not the extension)
+        $imageExtPreg = $this->wiki->services->get(ParameterBagInterface::class)->get('attach_config')['ext_images'];
+        if (!preg_match("/({$imageExtPreg})$/i", $nomimage)) {
+            $this->errormsg[] = _t('BAZ_BAD_IMAGE_FILE_EXTENSION');
+
+            return $value;
+        }
+
         // test si c'est url vers l'image
         $fileCopied = copyUrlToLocalFile($imageorig, BAZ_CHEMIN_UPLOAD . $nomimage);
         if ($fileCopied) {
             $value = $nomimage;
         } elseif (file_exists(BAZ_CHEMIN_UPLOAD . $imageorig)) {
             if (preg_match('/(gif|jpeg|png|jpg)$/i', $nomimage)) {
-                //on enleve les accents sur les noms de fichiers, et les espaces
+                // on enleve les accents sur les noms de fichiers, et les espaces
                 $nomimage = preg_replace(
                     '/&([a-z])[a-z]+;/i',
                     '$1',
-                    $imageorig
+                    $imageorig,
                 );
                 $nomimage = str_replace(' ', '_', $nomimage);
                 $value = $nomimage;
                 $chemin_destination = BAZ_CHEMIN_UPLOAD . $nomimage;
 
-                //verification de la presence de ce fichier
+                // verification de la presence de ce fichier
                 if (!file_exists($chemin_destination)) {
                     rename(
-                        BAZ_CHEMIN_UPLOAD .
-                            $imageorig,
-                        $chemin_destination
+                        BAZ_CHEMIN_UPLOAD
+                            . $imageorig,
+                        $chemin_destination,
                     );
                     chmod($chemin_destination, 0755);
                 }
@@ -835,9 +870,9 @@ class CSVManager
                 $this->errormsg[] = _t('BAZ_BAD_IMAGE_FILE_EXTENSION');
             }
         } else {
-            $this->errormsg[] =
-                _t('BAZ_IMAGE_FILE_NOT_FOUND') .
-                ' : ' . $imageorig;
+            $this->errormsg[]
+                = _t('BAZ_IMAGE_FILE_NOT_FOUND')
+                . ' : ' . $imageorig;
         }
 
         return $value;
@@ -852,10 +887,18 @@ class CSVManager
      */
     private function extractValueFromFileFieldData(string $value, FileField $field): string
     {
-        // TODO refactor this part if needed because only copied
-
         $fileUrl = trim($value);
         $file = renameUrlToSanitizedFilename($fileUrl);
+
+        // reject the download outright if the destination extension is not in the upload allowlist
+        $extension = strtolower(pathinfo($file, PATHINFO_EXTENSION));
+        $authorizedExtensions = array_keys($this->wiki->services->get(ParameterBagInterface::class)->get('authorized-extensions'));
+        if ($extension === '' || !in_array($extension, $authorizedExtensions, true)) {
+            $this->errormsg[] = _t('BAZ_NOT_AUTHORIZED_FILE');
+
+            return $value;
+        }
+
         // test si c'est url vers l'image
         $fileCopied = copyUrlToLocalFile($fileUrl, BAZ_CHEMIN_UPLOAD . $file);
         if ($fileCopied) {
@@ -863,11 +906,11 @@ class CSVManager
         } elseif (file_exists(BAZ_CHEMIN_UPLOAD . $fileUrl)) {
             $value = $file;
             $chemin_destination = BAZ_CHEMIN_UPLOAD . $file;
-            //verification de la presence de ce fichier
+            // verification de la presence de ce fichier
             if (!file_exists($chemin_destination)) {
                 rename(
                     BAZ_CHEMIN_UPLOAD . $fileUrl,
-                    $chemin_destination
+                    $chemin_destination,
                 );
                 chmod($chemin_destination, 0755);
             }
@@ -930,7 +973,7 @@ class CSVManager
             $vFilename = $this->buildExportFilename($vFormID);
 
             $csvFiles[$vFilename] = $this->arrayToCSV(
-                $this->getCSVfromFormId(['locals' => [$vFormID], 'externals' => []], $pParams)
+                $this->getCSVfromFormId(['locals' => [$vFormID], 'externals' => []], $pParams),
             );
         }
 
@@ -938,7 +981,7 @@ class CSVManager
             $vFilename = $this->buildExportFilename($this->wiki->services->get(ExternalBazarService::class)->getExternalFormIDKey($vFormID));
 
             $csvFiles[$vFilename] = $this->arrayToCSV(
-                $this->getCSVfromFormId(['locals' => [], 'externals' => [$vFormID]], $pParams)
+                $this->getCSVfromFormId(['locals' => [], 'externals' => [$vFormID]], $pParams),
             );
         }
 

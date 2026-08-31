@@ -2,7 +2,7 @@
   margin-top: 15px;
 }
 .list-form
-  .list-node-container:not([data-depth="1"][data-index="0"])
+  .list-node-container:not([data-depth='1'][data-index='0'])
   > .list-node
   > input {
   border-top: 0;

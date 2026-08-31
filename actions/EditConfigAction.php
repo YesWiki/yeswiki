@@ -31,6 +31,7 @@ class EditConfigAction extends YesWikiAction
         'password_for_editing' => 'security',
         'password_for_editing_message' => 'security',
         'htmlPurifierActivated' => 'security',
+        'htmlPurifierSafeIframeRegexp' => 'security',
         'allowed_methods_in_iframe' => 'security',
 
         'contact_from' => 'contact', // merged in contact instead of email to prevent duplication of blocks
@@ -45,9 +46,9 @@ class EditConfigAction extends YesWikiAction
     public function formatArguments($arg)
     {
         return [
-            'saving' => $this->formatBoolean($_POST, false, self::SAVE_NAME),
-            'saved' => $this->formatBoolean($_GET, false, self::SAVED_NAME),
-            'post' => $_POST,
+            'saving' => $this->formatBoolean($this->getRequest()->request->all(), false, self::SAVE_NAME),
+            'saved' => $this->formatBoolean($this->getRequest()->query->all(), false, self::SAVED_NAME),
+            'post' => $this->getRequest()->request->all(),
         ];
     }
 
@@ -181,9 +182,9 @@ class EditConfigAction extends YesWikiAction
             }
 
             return $result;
-        } else {
-            return [];
         }
+
+        return [];
     }
 
     /**
@@ -413,15 +414,10 @@ class EditConfigAction extends YesWikiAction
 
     /**
      * extract associated values from config second level.
-     *
-     * @param Configuration $config
-     * @param string        $firstLevelKey
      */
 
     /**
      * array to string.
-     *
-     * @param mixed $value
      */
     private function array2Str($value): string
     {
@@ -448,7 +444,7 @@ class EditConfigAction extends YesWikiAction
         } elseif (!is_string($value)) {
             try {
                 $value = (($value === false) ? 'false' : (($value === true) ? 'true' : strval($value)));
-            } catch (\Throwable $th) {
+            } catch (Throwable $th) {
                 $value = '';
             }
         }
@@ -458,8 +454,6 @@ class EditConfigAction extends YesWikiAction
 
     /**
      * string to array if needed.
-     *
-     * @return mixed
      */
     private function strtoarray(string $value)
     {

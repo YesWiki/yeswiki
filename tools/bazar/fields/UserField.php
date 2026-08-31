@@ -2,7 +2,6 @@
 
 namespace YesWiki\Bazar\Field;
 
-use Exception;
 use Psr\Container\ContainerInterface;
 use YesWiki\Bazar\Exception\UserFieldException;
 use YesWiki\Bazar\Service\FormManager;
@@ -96,7 +95,7 @@ class UserField extends BazarField
             'userName' => $loggedUser['name'] ?? null,
             'userEmail' => $loggedUser['email'] ?? null,
             'forceLabel' => $this->propertyName . self::FORCE_LABEL,
-            'forceLabelChecked' => $_POST[$this->propertyName . self::FORCE_LABEL] ?? false,
+            'forceLabelChecked' => $this->getRequest()->request->get($this->propertyName . self::FORCE_LABEL, false),
         ]);
     }
 
@@ -113,7 +112,7 @@ class UserField extends BazarField
 
         if (
             $this->getWiki()->UserIsAdmin()
-            && in_array($_POST[$this->propertyName . self::FORCE_LABEL] ?? false, [true, 'true', 1, '1'], true)
+            && in_array($this->getRequest()->request->get($this->propertyName . self::FORCE_LABEL, false), [true, 'true', 1, '1'], true)
         ) {
             // force entry creation but do not create user if existing for this email
             $userManager = $this->getService(UserManager::class);
@@ -145,19 +144,19 @@ class UserField extends BazarField
                 if (
                     !$isImport
                     && (
-                        !isset($_POST[$this->propertyName . self::CONFIRM_NAME_SUFFIX])
-                        || !in_array($_POST[$this->propertyName . self::CONFIRM_NAME_SUFFIX], [true, 1, '1'], true)
+                        !$this->getRequest()->request->has($this->propertyName . self::CONFIRM_NAME_SUFFIX)
+                        || !in_array($this->getRequest()->request->get($this->propertyName . self::CONFIRM_NAME_SUFFIX), [true, 1, '1'], true)
                     )
                 ) {
                     throw new UserFieldException($this->render('@bazar/inputs/user-confirm.twig', ['confirmName' => $this->propertyName . self::CONFIRM_NAME_SUFFIX, 'wikiName' => $currentWikiName, 'newWikiName' => $wikiName]));
                 }
             }
             if (!isset($entry[$this->emailField])) {
-                throw new Exception("\$entry[{$this->emailField}] should be set in UserField->formatValuesBeforeSave(\$entry)");
+                throw new \Exception("\$entry[{$this->emailField}] should be set in UserField->formatValuesBeforeSave(\$entry)");
             }
             if (!$isImport) {
                 if (!isset($entry['mot_de_passe_repete_wikini'])) {
-                    throw new Exception("\$entry['mot_de_passe_repete_wikini'] should be set in UserField->formatValuesBeforeSave(\$entry)");
+                    throw new \Exception("\$entry['mot_de_passe_repete_wikini'] should be set in UserField->formatValuesBeforeSave(\$entry)");
                 }
                 if ($entry['mot_de_passe_wikini'] !== $entry['mot_de_passe_repete_wikini']) {
                     throw new UserFieldException(_t('USER_PASSWORDS_NOT_IDENTICAL'));
@@ -172,7 +171,7 @@ class UserField extends BazarField
                 ]);
             } catch (UserNameAlreadyUsedException $ex) {
                 throw new UserFieldException(_t('BAZ_USER_FIELD_EXISTING_USER_BY_EMAIL'));
-            } catch (Exception $ex) {
+            } catch (\Exception $ex) {
                 throw new UserFieldException($ex->getMessage() . ' User: ' . $wikiName . ' - Email: ' . $entry[$this->emailField], $ex->getCode(), $ex);
             }
 
@@ -307,7 +306,7 @@ class UserField extends BazarField
                     $userController->update($user, ['email' => $email]);
                 } catch (UserNameAlreadyUsedException $ex) {
                     throw new UserFieldException(_t('BAZ_USER_FIELD_EXISTING_USER_BY_EMAIL'));
-                } catch (Exception $ex) {
+                } catch (\Exception $ex) {
                     throw new UserFieldException($ex->getMessage(), $ex->getCode(), $ex);
                 }
             }
@@ -326,7 +325,7 @@ class UserField extends BazarField
             foreach ($groups as $group) {
                 $group = trim($group);
                 $forceGroupCreation = (substr($group, 0, 1) === '+');
-                $groupName = substr($group, ($forceGroupCreation ? 1 : 0));
+                $groupName = substr($group, $forceGroupCreation ? 1 : 0);
                 if (substr($groupName, 0, 1) !== '@') {
                     // field name
                     $field = $formManager->findFieldFromNameOrPropertyName($groupName, $entry['id_typeannonce']);

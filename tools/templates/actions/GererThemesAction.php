@@ -31,7 +31,7 @@ class GererThemesAction extends YesWikiAction
         $this->themeManager = $this->getService(ThemeManager::class);
 
         $errorMessage = '';
-        if (isset($_POST['theme_modifier'])) {
+        if ($this->getRequest()->request->has('theme_modifier')) {
             try {
                 $this->modifyTheme();
             } catch (Exception $th) {
@@ -72,44 +72,44 @@ class GererThemesAction extends YesWikiAction
      */
     protected function modifyTheme()
     {
-        if (!isset($_POST['selectpage'])) {
+        $post = $this->getRequest()->request;
+        if (!$post->has('selectpage')) {
             throw new Exception(_t('ACLS_NO_SELECTED_PAGE'), 1);
-        } elseif (!is_array($_POST['selectpage'])) {
+        } elseif (!is_array($post->all('selectpage'))) {
             throw new Exception('select page should be an array', 1);
-        } else {
-            $pagesTags = array_filter($_POST['selectpage'], 'is_string');
-            foreach ($pagesTags as $pageTag) {
-                if (!empty($_POST['typemaj']) && $_POST['typemaj'] === 'reinitialiser') {
-                    $this->pageManager->setMetadata($pageTag, [
-                        'theme' => null,
-                        'style' => null,
-                        'squelette' => null,
-                        'favorite_preset' => null,
-                    ]);
-                } else {
-                    $theme = $this->sanitizePost('theme_select');
-                    $style = $this->sanitizePost('style_select');
-                    $squelette = $this->sanitizePost('squelette_select');
-                    $presets = $this->sanitizePost('preset_select');
-                    $themes = $this->themeManager->getTemplates();
-                    if (!isset($themes[$theme]['presets'])) {
-                        $presets = '';
-                    }
-                    if (!empty($presets) && (substr($presets, -4) !== '.css')) {
-                        $presets .= '.css';
-                    }
-                    $this->pageManager->setMetadata($pageTag, [
-                        'theme' => $theme,
-                        'style' => $style . (substr($style, -4) === '.css' ? '' : '.css'),
-                        'squelette' => $squelette . (substr($squelette, -strlen('.tpl.html')) === '.tpl.html' ? '' : '.tpl.html'),
-                    ] + (
-                        !empty($_POST['preset_select'])
+        }
+        $pagesTags = array_filter($post->all('selectpage'), 'is_string');
+        foreach ($pagesTags as $pageTag) {
+            if ($post->get('typemaj') === 'reinitialiser') {
+                $this->pageManager->setMetadata($pageTag, [
+                    'theme' => null,
+                    'style' => null,
+                    'squelette' => null,
+                    'favorite_preset' => null,
+                ]);
+            } else {
+                $theme = $this->sanitizePost('theme_select');
+                $style = $this->sanitizePost('style_select');
+                $squelette = $this->sanitizePost('squelette_select');
+                $presets = $this->sanitizePost('preset_select');
+                $themes = $this->themeManager->getTemplates();
+                if (!isset($themes[$theme]['presets'])) {
+                    $presets = '';
+                }
+                if (!empty($presets) && (substr($presets, -4) !== '.css')) {
+                    $presets .= '.css';
+                }
+                $this->pageManager->setMetadata($pageTag, [
+                    'theme' => $theme,
+                    'style' => $style . (substr($style, -4) === '.css' ? '' : '.css'),
+                    'squelette' => $squelette . (substr($squelette, -strlen('.tpl.html')) === '.tpl.html' ? '' : '.tpl.html'),
+                ] + (
+                    !empty($post->get('preset_select'))
                 ? [
                     'favorite_preset' => $presets,
                 ]
                 : []
-                    ));
-                }
+                ));
             }
         }
     }
@@ -119,6 +119,8 @@ class GererThemesAction extends YesWikiAction
      */
     protected function sanitizePost(string $key): ?string
     {
-        return !empty($_POST[$key]) && is_string($_POST[$key]) ? $_POST[$key] : null;
+        $val = $this->getRequest()->request->get($key);
+
+        return !empty($val) && is_string($val) ? $val : null;
     }
 }

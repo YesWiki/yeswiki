@@ -2,63 +2,108 @@
 {{ include_javascript('javascripts/actions/admin-backups.js', false, true) }}
 {{ include_css('styles/actions/admin-backups.css') }}
 
-<div class="admin-backups admin-backups-container">
+<div class="admin-backups admin-backups-container no-dblclick">
   <h1>{{ _t('ADMIN_BACKUPS_TITLE') }}</h1>
-  <div class="well">
-    <fieldset>
-      <legend>{{ _t('ADMIN_BACKUPS_CREATE') }}</legend>
-      <div class="checkbox">
-        <label for="adminBackupsTypeFull">
-          <input type="radio" id="adminBackupsTypeFull" value="full" name="adminBackupsType" ref="adminBackupsTypeFull"
-            @click="updateType" :checked="savefiles && savedatabase"/>
-          <span>{{ _t('ADMIN_BACKUPS_ARCHIVE_TYPE_FULL') }}</span>
-        </label>
-      </div>
-      <div class="checkbox">
-        <label for="adminBackupsTypeOnlyFiles">
-          <input type="radio" id="adminBackupsTypeOnlyFiles" value="only_files" name="adminBackupsType" ref="adminBackupsTypeOnlyFiles"
-            @click="updateType" :checked="savefiles && !savedatabase"/>
-          <span>{{ _t('ADMIN_BACKUPS_ARCHIVE_TYPE_ONLY_FILES') }}</span>
-        </label>
-      </div>
-      <div class="checkbox">
-        <label for="adminBackupsTypeOnlyDb">
-          <input type="radio" id="adminBackupsTypeOnlyDb" value="only_db" name="adminBackupsType" ref="adminBackupsTypeOnlyDb"
-            @click="updateType" :checked="!savefiles && savedatabase"/>
-          <span>{{ _t('ADMIN_BACKUPS_ARCHIVE_TYPE_ONLY_DATABASES') }}</span>
-        </label>
-      </div>
+  <div class="row">
+    <div class="col-md-6">
+      <div class="well">
+        {% if not canArchive %}
+          <div class="alert alert-warning">{{ cannotArchiveMessage|raw }}</div>
+        {% else %}
+        <fieldset>
+          <legend>{{ _t('ADMIN_BACKUPS_CREATE') }}</legend>
+          <div class="checkbox">
+            <label for="adminBackupsTypeFull">
+              <input type="radio" id="adminBackupsTypeFull" value="full" name="adminBackupsType" ref="adminBackupsTypeFull"
+                @click="updateType" :checked="savefiles && savedatabase"/>
+              <span>{{ _t('ADMIN_BACKUPS_ARCHIVE_TYPE_FULL') }}</span>
+            </label>
+          </div>
+          <div class="checkbox">
+            <label for="adminBackupsTypeOnlyFiles">
+              <input type="radio" id="adminBackupsTypeOnlyFiles" value="only_files" name="adminBackupsType" ref="adminBackupsTypeOnlyFiles"
+                @click="updateType" :checked="savefiles && !savedatabase"/>
+              <span>{{ _t('ADMIN_BACKUPS_ARCHIVE_TYPE_ONLY_FILES') }}</span>
+            </label>
+          </div>
+          <div class="checkbox">
+            <label for="adminBackupsTypeOnlyDb">
+              <input type="radio" id="adminBackupsTypeOnlyDb" value="only_db" name="adminBackupsType" ref="adminBackupsTypeOnlyDb"
+                @click="updateType" :checked="!savefiles && savedatabase"/>
+              <span>{{ _t('ADMIN_BACKUPS_ARCHIVE_TYPE_ONLY_DATABASES') }}</span>
+            </label>
+          </div>
 
-      <div class="archive-buttons">
-        <button 
-            v-if="currentArchiveUid.length == 0 || !archiving"
-            @click="startArchive"
-            class="btn btn-primary"
-            :disabled="updating || currentArchiveUid.length > 0 || archiving" 
-            data-tooltip="toggle" 
-            title="{{ _t('ADMIN_BACKUPS_CREATE') }}">
-          <i class="fas fa-play"></i> {{ _t('ADMIN_BACKUPS_START') }}
-        </button>
-        <button
-            v-if="currentArchiveUid.length > 0 && archiving"
-            @click="stopArchive"
-            class="btn btn-danger"
-            :disabled="stoppingArchive" 
-            data-tooltip="toggle" 
-            title="{{ _t('ADMIN_BACKUPS_STOP_BACKUP') }}">
-          <i class="fas fa-stop"></i> {{ _t('ADMIN_BACKUPS_STOP') }}
-        </button>
+          <div class="archive-buttons">
+            <button 
+                v-if="currentArchiveUid.length == 0 || !archiving"
+                @click="startArchive"
+                class="btn btn-primary"
+                :disabled="updating || currentArchiveUid.length > 0 || archiving" 
+                data-tooltip="toggle" 
+                title="{{ _t('ADMIN_BACKUPS_CREATE') }}">
+              <i class="fas fa-play"></i> {{ _t('ADMIN_BACKUPS_START') }}
+            </button>
+            <button
+                v-if="currentArchiveUid.length > 0 && archiving"
+                @click="stopArchive"
+                class="btn btn-danger"
+                :disabled="stoppingArchive" 
+                data-tooltip="toggle" 
+                title="{{ _t('ADMIN_BACKUPS_STOP_BACKUP') }}">
+              <i class="fas fa-stop"></i> {{ _t('ADMIN_BACKUPS_STOP') }}
+            </button>
+          </div>
+        </fieldset>
+        <div v-if="archiveMessage.length > 0" v-html="archiveMessage" :class="archiveMessageClass"></div>
+        <div v-if="archiveMessage.length > 0 && askConfirmationToDelete"
+          @click="toggleconfimationToDeleteFiles()">
+          <input 
+            type="checkbox" 
+            name="confimationToDeleteFiles" 
+            value="1" 
+            :checked="canForceDelete">
+          <span>{{ _t('ADMIN_BACKUPS_CONFIRM_DELETE_FILES') }}</span>
+        </div>
+        {% endif %}
       </div>
-    </fieldset>
-    <div v-if="archiveMessage.length > 0" v-html="archiveMessage" :class="archiveMessageClass"></div>
-    <div v-if="archiveMessage.length > 0 && askConfirmationToDelete"
-      @click="toggleconfimationToDeleteFiles()">
-      <input 
-        type="checkbox" 
-        name="confimationToDeleteFiles" 
-        value="1" 
-        :checked="canForceDelete">
-      <span>{{ _t('ADMIN_BACKUPS_CONFIRM_DELETE_FILES') }}</span>
+    </div>
+    <div class="col-md-6">
+      <div class="well">
+        <fieldset>
+          <legend>{{ _t('ADMIN_BACKUPS_REMOTE_TITLE') }}</legend>
+          <p class="help-block">{{ _t('ADMIN_BACKUPS_REMOTE_HELP') }}</p>
+          <div class="form-group">
+            <label for="remoteBackupUrl">{{ _t('ADMIN_BACKUPS_REMOTE_URL') }}</label>
+            <input type="url" class="form-control" id="remoteBackupUrl" v-model="remoteUrl"
+              placeholder="https://…" :disabled="remoteRunning" @keyup.enter="startRemoteBackup">
+          </div>
+          <div class="form-group">
+            <label for="remoteBackupUsername">{{ _t('ADMIN_BACKUPS_REMOTE_USERNAME') }}</label>
+            <input type="text" class="form-control" id="remoteBackupUsername" v-model="remoteUsername"
+              autocomplete="off" :disabled="remoteRunning" @keyup.enter="startRemoteBackup">
+          </div>
+          <div class="form-group">
+            <label for="remoteBackupPassword">{{ _t('ADMIN_BACKUPS_REMOTE_PASSWORD') }}</label>
+            <input type="password" class="form-control" id="remoteBackupPassword" v-model="remotePassword"
+              autocomplete="new-password" :disabled="remoteRunning" @keyup.enter="startRemoteBackup">
+          </div>
+
+          <div class="archive-buttons">
+            <button v-if="!remoteRunning" @click="startRemoteBackup" class="btn btn-primary"
+                :disabled="updating || archiving || remoteUrl.length == 0">
+              <i class="fas fa-cloud-download-alt"></i> {{ _t('ADMIN_BACKUPS_REMOTE_START') }}
+            </button>
+            <button v-else @click="cancelRemoteBackup" class="btn btn-danger" :disabled="remoteCancelling">
+              <i class="fas fa-stop"></i> {{ _t('ADMIN_BACKUPS_REMOTE_CANCEL') }}
+            </button>
+          </div>
+        </fieldset>
+        <div v-if="remoteMessage.length > 0" v-html="remoteMessage" :class="remoteMessageClass"></div>
+        <div v-if="remoteRunning && remoteTotal > 0" class="progress">
+          <div class="progress-bar" role="progressbar" :style="{width: remotePercent + '%'}" v-html="remotePercent + '%'"></div>
+        </div>
+      </div>
     </div>
   </div>
   <div v-if="ready && Object.keys(archives).length == 0" class="alert alert-info">{{ _t('ADMIN_NO_BACKUP_FOUND') }}.</div>
@@ -111,10 +156,9 @@
               :disabled="updating">
             <i class="fa fa-trash"></i>
           </button>
-          {# TODO uncomment folowwing lines when restore will work #}
-          {# <button class="btn btn-xs btn-secondary-1" @click="restoreArchive(archive)" data-tooltip="toggle" title="{{ _t('RESTORE') }}">
-            <i class="fas fa-upload"></i>
-          </button> #}
+          <button class="btn btn-xs btn-warning" @click="restoreArchive(archive)" data-tooltip="toggle" :title="{{ _t('ADMIN_BACKUPS_RESTORE')|json_encode }}" :disabled="updating">
+            <i class="fas fa-undo-alt"></i>
+          </button>
         </div>
         <div class="archive-item" @click="toggleSelectedArchive(archive.filename)">
           <input 

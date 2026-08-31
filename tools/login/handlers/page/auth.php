@@ -8,9 +8,9 @@ header('Access-Control-Allow-Origin: *');
 
 if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
     if (isset($_SERVER['HTTP_ACCESS_CONTROL_REQUEST_METHOD']) && (
-        $_SERVER['HTTP_ACCESS_CONTROL_REQUEST_METHOD'] == 'POST' ||
-        $_SERVER['HTTP_ACCESS_CONTROL_REQUEST_METHOD'] == 'DELETE' ||
-        $_SERVER['HTTP_ACCESS_CONTROL_REQUEST_METHOD'] == 'PUT'
+        $_SERVER['HTTP_ACCESS_CONTROL_REQUEST_METHOD'] == 'POST'
+        || $_SERVER['HTTP_ACCESS_CONTROL_REQUEST_METHOD'] == 'DELETE'
+        || $_SERVER['HTTP_ACCESS_CONTROL_REQUEST_METHOD'] == 'PUT'
     )) {
         header('Access-Control-Allow-Credentials: true');
         header('Access-Control-Allow-Headers: X-Requested-With');

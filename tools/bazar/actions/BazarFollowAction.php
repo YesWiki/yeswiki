@@ -1,9 +1,9 @@
 <?php
 
-use YesWiki\Bazar\Service\FormManager;
-use YesWiki\Core\YesWikiAction;
 use YesWiki\Bazar\Service\ActivityPubService;
+use YesWiki\Bazar\Service\FormManager;
 use YesWiki\Bazar\Service\WebfingerService;
+use YesWiki\Core\YesWikiAction;
 
 class BazarFollowAction extends YesWikiAction
 {
@@ -15,10 +15,11 @@ class BazarFollowAction extends YesWikiAction
         $formId = $this->arguments['id'];
         $form = $this->getService(FormManager::class)->getOne($formId);
 
-        if (isset($_POST['actor_handle']) && $_POST['form_id'] == $formId) {
+        $post = $this->getRequest()->request;
+        if ($post->has('actor_handle') && $post->get('form_id') == $formId) {
             $formActorUri = $activityPubService->getFormActorUri($form);
 
-            $interactionUrl = $webfingerService->getInteractionUrl($_POST['actor_handle'], $formActorUri);
+            $interactionUrl = $webfingerService->getInteractionUrl($post->get('actor_handle'), $formActorUri);
 
             return $this->wiki->redirect($interactionUrl);
         }

@@ -11,7 +11,7 @@ class AutoUpdateService
 {
     public const DEFAULT_REPO = 'https://repository.yeswiki.net/';
     public const DEFAULT_VERS = 'Cercopitheque'; // Pour gérer les vielles version de YesWiki
-    public $repository = null;
+    public $repository;
 
     private $wiki;
 

@@ -6,12 +6,14 @@ use PHPUnit\Framework\Attributes\CoversMethod;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Depends;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use YesWiki\Core\Service\ArchiveFilename;
 use YesWiki\Core\Service\ArchiveService;
 use YesWiki\Core\Service\ConfigurationService;
 use YesWiki\Core\Service\ConsoleService;
+use YesWiki\Core\Service\DbService;
+use YesWiki\Core\Service\DumpRewriter;
 use YesWiki\Test\Core\YesWikiTestCase;
 use YesWiki\Wiki;
-use ZipArchive;
 
 require_once 'tests/YesWikiTestCase.php';
 
@@ -85,16 +87,344 @@ class ArchiveServiceTest extends YesWikiTestCase
             'archive only root files with database' => [
                 true, true, [], $defaultFoldersToInclude,
                 'ARCHIVE_SUFFIX', -1,
-                ['wakka.config.php', 'private', 'private/backups', 'private/backups/.htaccess', 'private/backups/README.md', 'private/backups/content.sql'],
+                ['wakka.config.php', 'private', 'private/backups', 'private/backups/.htaccess', 'private/backups/README.md', 'private/backups/content.sql', 'private/backups/restore.json'],
                 ['archive' => ['foldersToInclude' => $defaultFoldersToInclude, 'foldersToExclude' => array_merge($defaultFoldersToExclude, $defaultFoldersToInclude)]],
             ],
             'archive only database' => [
                 false, true, [], [],
-                'ARCHIVE_ONLY_DATABASE_SUFFIX', 5,
-                ['private', 'private/backups', 'private/backups/.htaccess', 'private/backups/README.md', 'private/backups/content.sql'],
+                'ARCHIVE_ONLY_DATABASE_SUFFIX', 6,
+                ['private', 'private/backups', 'private/backups/.htaccess', 'private/backups/README.md', 'private/backups/content.sql', 'private/backups/restore.json'],
                 null,
             ],
         ];
+    }
+
+    #[Depends('testArchiveServiceExisting')]
+    public function testADumpKeepsNullsAndQuotesEveryOtherValue(array $services)
+    {
+        $db = $services['wiki']->services->get(DbService::class);
+        $table = trim($db->prefixTable('testdumpvalues'));
+        $db->query("CREATE TABLE `$table` (`id` int NOT NULL, `text` mediumtext, `number` decimal(10,2) DEFAULT NULL)");
+        $db->query("INSERT INTO `$table` (`id`, `text`, `number`) VALUES (1, 'kept', 12.34), (2, NULL, NULL)");
+
+        try {
+            $sql = $services['wiki']->services->get(DbService::class)->getSQLContentBackupMethod()['sql'] ?? '';
+
+            $this->assertStringContainsString("('1', 'kept', '12.34')", $sql, 'every value is quoted, whatever its type');
+            $this->assertStringContainsString("('2', NULL, NULL)", $sql, 'a NULL stays a NULL');
+        } finally {
+            $db->query("DROP TABLE IF EXISTS `$table`");
+        }
+    }
+
+    /**
+     * Two other wikis sharing the database, as they are found in the wild: one with the core
+     * tables under a longer prefix, one whose tables a newer YesWiki names differently.
+     *
+     * @return array<string,string> the statement that creates each, keyed by table name
+     */
+    private static function neighbourTables(string $prefix): array
+    {
+        $tables = [];
+        foreach (['pages', 'acls', 'links', 'nature', 'referrers', 'triples', 'users'] as $coreTable) {
+            $tables["{$prefix}youpi__$coreTable"] = 'CREATE TABLE `%s` (`id` int NOT NULL, `tag` varchar(191) NOT NULL)';
+        }
+        $tables["{$prefix}ecto__pages"] = 'CREATE TABLE `%s` (`id` int NOT NULL, `tag` varchar(191) NOT NULL, `metadata` longtext DEFAULT NULL CHECK (json_valid(`metadata`)))';
+        $tables["{$prefix}ecto__triples"] = 'CREATE TABLE `%s` (`id` int NOT NULL, `tag` varchar(191) NOT NULL)';
+        $tables["{$prefix}ecto__search_index"] = 'CREATE TABLE `%s` (`id` int NOT NULL, `tag` varchar(191) NOT NULL)';
+
+        return $tables;
+    }
+
+    /**
+     * @param array<string,string> $tables
+     */
+    private static function createNeighbours(DbService $db, array $tables): void
+    {
+        foreach ($tables as $table => $creation) {
+            $db->query("DROP TABLE IF EXISTS `$table`");
+            $db->query(sprintf($creation, $table));
+            $db->query("INSERT INTO `$table` (`id`, `tag`) VALUES (1, 'THE NEIGHBOUR')");
+        }
+    }
+
+    /**
+     * @param array<string,string> $tables
+     */
+    private static function dropNeighbours(DbService $db, array $tables): void
+    {
+        foreach (array_keys($tables) as $table) {
+            $db->query("DROP TABLE IF EXISTS `$table`");
+        }
+    }
+
+    #[Depends('testArchiveServiceExisting')]
+    public function testADumpHoldsThisWikisTablesAndNoOther(array $services)
+    {
+        $db = $services['wiki']->services->get(DbService::class);
+        $prefix = trim($db->prefixTable(''));
+        $neighbours = self::neighbourTables($prefix);
+        $extension = "{$prefix}myextension";
+
+        try {
+            self::createNeighbours($db, $neighbours);
+            $db->query("DROP TABLE IF EXISTS `$extension`");
+            $db->query("CREATE TABLE `$extension` (`id` int NOT NULL)");
+
+            $sql = $db->getSQLContentBackupMethod()['sql'] ?? '';
+            preg_match_all('/^CREATE TABLE `([^`]+)`/m', $sql, $matches);
+            $dumped = $matches[1];
+
+            foreach (DumpRewriter::CORE_TABLES as $coreTable) {
+                $this->assertContains("$prefix$coreTable", $dumped, "the wiki's own $coreTable has to be in its backup");
+            }
+            $this->assertContains($extension, $dumped, 'a table of an extension of this wiki belongs to it');
+            foreach (array_keys($neighbours) as $table) {
+                $this->assertNotContains($table, $dumped, "$table belongs to another wiki");
+            }
+            $this->assertCount(count(DumpRewriter::CORE_TABLES) + 1, $dumped, 'nothing else was swept in');
+        } finally {
+            self::dropNeighbours($db, $neighbours);
+            $db->query("DROP TABLE IF EXISTS `$extension`");
+        }
+    }
+
+    #[Depends('testArchiveServiceExisting')]
+    public function testRestoringABackupLeavesTheOtherWikisOfTheDatabaseAlone(array $services)
+    {
+        $db = $services['wiki']->services->get(DbService::class);
+        $prefix = trim($db->prefixTable(''));
+        $neighbours = self::neighbourTables($prefix);
+        $countPages = fn () => $db->loadSingle('SELECT COUNT(*) AS n FROM ' . $db->prefixTable('pages'))['n'];
+        $countTriples = fn () => $db->loadSingle('SELECT COUNT(*) AS n FROM ' . $db->prefixTable('triples'))['n'];
+
+        $output = '';
+        $location = $services['archiveService']->archive($output, false, true);
+        $this->assertFileExists($location);
+        $pagesBefore = $countPages();
+        $triplesBefore = $countTriples();
+
+        try {
+            self::createNeighbours($db, $neighbours);
+            $services['archiveService']->restoreArchive(basename($location), false, true, false);
+
+            $this->assertSame($pagesBefore, $countPages(), 'the wiki got its own pages back');
+            $this->assertSame($triplesBefore, $countTriples());
+            foreach (array_keys($neighbours) as $table) {
+                $rows = $db->loadAll("SELECT `tag` FROM `$table`");
+                $this->assertCount(1, $rows, "$table still stands, with its row");
+                $this->assertSame('THE NEIGHBOUR', $rows[0]['tag']);
+            }
+        } finally {
+            self::dropNeighbours($db, $neighbours);
+            @unlink($location);
+        }
+    }
+
+    #[Depends('testArchiveServiceExisting')]
+    public function testRestoringAnOlderBackupDoesNotBringBackAnotherWikisTables(array $services)
+    {
+        $db = $services['wiki']->services->get(DbService::class);
+        $prefix = trim($db->prefixTable(''));
+        $neighbours = self::neighbourTables($prefix);
+
+        $output = '';
+        $location = $services['archiveService']->archive($output, false, true);
+        $this->assertFileExists($location);
+
+        try {
+            self::createNeighbours($db, $neighbours);
+
+            // an archive as older versions took them: the neighbours' tables swept in
+            $zip = new \ZipArchive();
+            $this->assertTrue($zip->open($location) === true);
+            $entry = ArchiveService::PRIVATE_FOLDER_NAME_IN_ZIP . '/' . ArchiveService::SQL_FILENAME_IN_PRIVATE_FOLDER_IN_ZIP;
+            $swept = $zip->getFromName($entry);
+            foreach ($neighbours as $table => $creation) {
+                $swept .= "\n" . sprintf($creation, $table) . ";\n"
+                    . "INSERT INTO `$table` (`id`, `tag`) VALUES (2, 'FROM THE OLD BACKUP');\n";
+            }
+            $zip->addFromString($entry, $swept);
+            $zip->close();
+
+            $services['archiveService']->restoreArchive(basename($location), false, true, false);
+
+            foreach (array_keys($neighbours) as $table) {
+                $rows = $db->loadAll("SELECT `tag` FROM `$table`");
+                $this->assertCount(1, $rows, "$table was not restored over");
+                $this->assertSame('THE NEIGHBOUR', $rows[0]['tag'], 'the live row of the other wiki stands');
+            }
+        } finally {
+            self::dropNeighbours($db, $neighbours);
+            @unlink($location);
+        }
+    }
+
+    #[Depends('testArchiveServiceExisting')]
+    public function testRestoringAFullBackupRemovesWhatItDoesNotContain(array $services)
+    {
+        $root = $this->makeTemporaryTree([
+            'custom/kept.txt' => 'in the backup',
+            'custom/gone.txt' => 'added since',
+            'custom/gonedir/deep.txt' => 'added since',
+            'untouched/keep.txt' => 'a folder the backup knows nothing about',
+        ]);
+        $zipPath = "$root/backup.zip";
+        $zip = new \ZipArchive();
+        $zip->open($zipPath, \ZipArchive::CREATE);
+        $zip->addFromString('custom/kept.txt', 'in the backup');
+        $zip->close();
+
+        try {
+            $zip->open($zipPath);
+            $this->callProtected($services['archiveService'], 'removeFilesAbsentFromArchive', [$zip, $root, microtime(true) + 30]);
+            $zip->close();
+
+            $this->assertFileExists("$root/custom/kept.txt");
+            $this->assertFileDoesNotExist("$root/custom/gone.txt");
+            $this->assertDirectoryDoesNotExist("$root/custom/gonedir");
+            $this->assertFileExists("$root/untouched/keep.txt", 'a folder the backup does not contain is left alone');
+        } finally {
+            $this->removeTemporaryTree($root);
+        }
+    }
+
+    #[Depends('testArchiveServiceExisting')]
+    public function testRestoringABackupKeepsWhatTiesThisInstallationToItsServer(array $services)
+    {
+        $root = $this->makeTemporaryTree([]);
+        $configFile = "$root/wakka.config.php";
+        file_put_contents($configFile, "<?php\n\n\$wakkaConfig = " . var_export([
+            'wakka_name' => 'this wiki',
+            'mysql_database' => 'mine',
+            'base_url' => 'https://mine.example/?',
+            'table_prefix' => 'mine_',
+            'archive' => ['privatePath' => '/here/private/backups'],
+            'timezone' => 'Europe/Paris',
+        ], true) . ";\n");
+
+        $zipPath = "$root/backup.zip";
+        $zip = new \ZipArchive();
+        $zip->open($zipPath, \ZipArchive::CREATE);
+        $zip->addFromString('wakka.config.php', "<?php\n\n\$wakkaConfig = " . var_export([
+            'wakka_name' => 'the backed up wiki',
+            'mysql_database' => '',
+            'base_url' => 'https://theirs.example/?',
+            'table_prefix' => 'theirs_',
+            'archive' => ['privatePath' => '/there/private/backups'],
+            'default_language' => 'en',
+        ], true) . ";\n");
+        $zip->close();
+
+        try {
+            $zip->open($zipPath);
+            $this->callProtected($services['archiveService'], 'restoreConfiguration', [$zip, $configFile]);
+            $zip->close();
+
+            $restored = [];
+            eval(str_replace(['<?php', '$wakkaConfig'], ['', '$restored'], file_get_contents($configFile)));
+
+            $this->assertSame('the backed up wiki', $restored['wakka_name'], 'settings come back from the backup');
+            $this->assertSame('en', $restored['default_language'], 'settings only the backup has come back too');
+            $this->assertArrayNotHasKey('timezone', $restored, 'settings the backup does not have are dropped');
+            $this->assertSame('mine', $restored['mysql_database'], 'the database of this installation is kept');
+            $this->assertSame('https://mine.example/?', $restored['base_url'], 'the address of this installation is kept');
+            $this->assertSame('mine_', $restored['table_prefix']);
+            $this->assertSame(['privatePath' => '/here/private/backups'], $restored['archive'], 'the backups folder of this installation is kept');
+        } finally {
+            $this->removeTemporaryTree($root);
+        }
+    }
+
+    /**
+     * @param array<string,string> $files
+     */
+    private function makeTemporaryTree(array $files): string
+    {
+        $root = sys_get_temp_dir() . '/yeswiki_restore_test_' . bin2hex(random_bytes(6));
+        mkdir($root, 0o777, true);
+        foreach ($files as $path => $content) {
+            $full = "$root/$path";
+            if (!is_dir(dirname($full))) {
+                mkdir(dirname($full), 0o777, true);
+            }
+            file_put_contents($full, $content);
+        }
+
+        return $root;
+    }
+
+    private function removeTemporaryTree(string $root): void
+    {
+        if (!is_dir($root)) {
+            return;
+        }
+        $items = new \RecursiveIteratorIterator(
+            new \RecursiveDirectoryIterator($root, \FilesystemIterator::SKIP_DOTS),
+            \RecursiveIteratorIterator::CHILD_FIRST
+        );
+        foreach ($items as $item) {
+            $item->isDir() ? rmdir($item->getPathname()) : unlink($item->getPathname());
+        }
+        rmdir($root);
+    }
+
+    /**
+     * @param array<int,mixed> $arguments
+     */
+    private function callProtected(object $target, string $method, array $arguments): mixed
+    {
+        $reflection = new \ReflectionMethod($target, $method);
+
+        return $reflection->invokeArgs($target, $arguments);
+    }
+
+    #[Depends('testArchiveServiceExisting')]
+    public function testAnArchiveIsNamedAfterTheWikiThatMadeIt(array $services)
+    {
+        $output = '';
+        $location = $services['archiveService']->archive($output, false, true);
+        $this->assertFileExists($location);
+
+        try {
+            $parts = ArchiveFilename::parse(basename($location));
+            $this->assertNotEmpty($parts, "'" . basename($location) . "' is not a readable backup name");
+            $this->assertSame(
+                ArchiveFilename::slug($services['wiki']->services->get(ParameterBagInterface::class)->get('base_url')),
+                $parts['source']
+            );
+            $this->assertSame('only_db', $parts['type']);
+        } finally {
+            @unlink($location);
+        }
+    }
+
+    #[Depends('testArchiveServiceExisting')]
+    public function testAnArchiveIsRenamedToTheTablePrefixOfTheWikiRestoringIt(array $services)
+    {
+        $output = '';
+        $location = $services['archiveService']->archive($output, false, true);
+        $this->assertFileExists($location);
+
+        try {
+            $zip = new \ZipArchive();
+            $this->assertTrue($zip->open($location) === true);
+            $entry = ArchiveService::PRIVATE_FOLDER_NAME_IN_ZIP . '/' . ArchiveService::INFO_FILENAME_IN_PRIVATE_FOLDER_IN_ZIP;
+            $info = json_decode($zip->getFromName($entry), true);
+            $prefix = trim($services['wiki']->services->get(ParameterBagInterface::class)->get('table_prefix'));
+            $this->assertSame($prefix, $info['table_prefix']);
+            $sqlContent = $zip->getFromName(ArchiveService::PRIVATE_FOLDER_NAME_IN_ZIP . '/' . ArchiveService::SQL_FILENAME_IN_PRIVATE_FOLDER_IN_ZIP);
+            $zip->close();
+
+            $this->assertSame($prefix, DumpRewriter::detectPrefix($sqlContent));
+            $renamed = DumpRewriter::rewriteTables($sqlContent, $prefix, 'anotherprefix_');
+            $this->assertNotEmpty(DumpRewriter::tables($renamed));
+            foreach (DumpRewriter::tables($renamed) as $table) {
+                $this->assertStringStartsWith('anotherprefix_', $table);
+            }
+        } finally {
+            @unlink($location);
+        }
     }
 
     /**
@@ -110,7 +440,7 @@ class ArchiveServiceTest extends YesWikiTestCase
             if (!preg_match("/^.*\.zip$/", $location)) {
                 $data['error'] = "\"\$location\" (\"$location\") is not a zip file !";
             } else {
-                $zip = new ZipArchive();
+                $zip = new \ZipArchive();
                 if ($zip->open($location) !== true) {
                     $data['error'] = "\"\$location\" (\"$location\") is not openable !";
                 } else {
@@ -188,10 +518,6 @@ class ArchiveServiceTest extends YesWikiTestCase
         }
     }
 
-    /**
-     * @param mixed $contentDefinition
-     * @param mixed $contentToCheck
-     */
     private function checkWakkaContent($contentDefinition, $contentToCheck)
     {
         if (is_array($contentDefinition)) {

@@ -1,6 +1,6 @@
-(function($) {
-// Creating the sweetPages jQuery plugin:
-  $.fn.sweetPages = function(opts) {
+;(function ($) {
+  // Creating the sweetPages jQuery plugin:
+  $.fn.sweetPages = function (opts) {
     // If no options were passed, create an empty opts object
     if (!opts) opts = {}
 
@@ -10,7 +10,7 @@
     const ul = this
     const li = ul.find('> li')
 
-    li.each(function() {
+    li.each(function () {
       // Calculating the height of each li element, and storing it with the data method:
       const el = $(this)
       el.data('height', el.outerHeight(true))
@@ -27,7 +27,9 @@
 
     for (let i = 0; i < pagesNumber; i++) {
       // Slice a portion of the lis, and wrap it in a swPage div:
-      li.slice(i * resultsPerPage, (i + 1) * resultsPerPage).wrapAll('<div class="swPage" />')
+      li.slice(i * resultsPerPage, (i + 1) * resultsPerPage).wrapAll(
+        '<div class="swPage" />',
+      )
 
       // Adding a link to the swControls div:
       swControls.append(`<a href="" class="swShowPage">${i + 1}</a>`)
@@ -39,15 +41,19 @@
     let totalWidth = 0
 
     const swPage = ul.find('.swPage')
-    swPage.each(function() {
+    swPage.each(function () {
       // Looping through all the newly created pages:
 
       const elem = $(this)
 
       let tmpHeight = 0
-      elem.find('li').each(function() { tmpHeight += $(this).data('height') })
+      elem.find('li').each(function () {
+        tmpHeight += $(this).data('height')
+      })
 
-      if (tmpHeight > maxHeight) { maxHeight = tmpHeight }
+      if (tmpHeight > maxHeight) {
+        maxHeight = tmpHeight
+      }
 
       totalWidth += elem.outerWidth()
 
@@ -64,13 +70,18 @@
 
     const hyperLinks = ul.find('a.swShowPage')
 
-    hyperLinks.click(function(e) {
+    hyperLinks.click(function (e) {
       // If one of the control links is clicked, slide the swSlider div
       // (which contains all the pages) and mark it as active:
 
       $(this).addClass('active').siblings().removeClass('active')
 
-      swSlider.stop().animate({ 'margin-left': -(parseInt($(this).text()) - 1) * ul.width() }, 'slow')
+      swSlider
+        .stop()
+        .animate(
+          { 'margin-left': -(parseInt($(this).text()) - 1) * ul.width() },
+          'slow',
+        )
       e.preventDefault()
     })
 
@@ -85,12 +96,12 @@
 
     return this
   }
-}(jQuery))
+})(jQuery)
 
 $(document).ready(() => {
   // Calling the jQuery plugin and splitting the
   // .liste_rss_paginee UL into pages of 2 LIs each:
-  $('.liste_rss_paginee').each(function() {
+  $('.liste_rss_paginee').each(function () {
     const classes = $(this).attr('class')
     const exp = /[0-9]/g
     const nb = classes.match(exp)

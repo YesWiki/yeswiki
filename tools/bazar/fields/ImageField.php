@@ -72,21 +72,21 @@ class ImageField extends FileField
         // Handle URL value
         if ($isUrl) {
             // Handle URL deletion
-            if (isset($_GET['suppr_image']) && urldecode($_GET['suppr_image']) === $value) {
+            if ($this->getRequest()->query->has('suppr_image') && urldecode($this->getRequest()->query->get('suppr_image')) === $value) {
                 if ($this->isAllowedToDeleteFile($entry, $value)) {
                     $this->updateEntryAfterFileDelete($entry);
                     $output = $this->render('@templates/alert-message.twig', [
                         'type' => 'info',
                         'message' => str_replace('{file}', $value, _t('BAZ_LE_FICHIER_A_ETE_EFFACE')),
                     ]);
+
                     // Return empty input after deletion
                     return $output . $this->render('@bazar/inputs/image.twig', ['maxSize' => $this->maxSize, 'isUrl' => false]);
-                } else {
-                    $output = $this->render('@templates/alert-message.twig', [
-                        'type' => 'info',
-                        'message' => _t('BAZ_DROIT_INSUFFISANT'),
-                    ]) . "\n";
                 }
+                $output = $this->render('@templates/alert-message.twig', [
+                    'type' => 'info',
+                    'message' => _t('BAZ_DROIT_INSUFFISANT'),
+                ]) . "\n";
             }
 
             return $output . $this->render('@bazar/inputs/image.twig', [
@@ -105,7 +105,7 @@ class ImageField extends FileField
             !empty($value)
             || (!empty($imgDefault) && file_exists($this->getBasePath() . $imgDefault))
         ) {
-            if (isset($_GET['suppr_image']) && $_GET['suppr_image'] === $value) {
+            if ($this->getRequest()->query->has('suppr_image') && $this->getRequest()->query->get('suppr_image') === $value) {
                 if ($this->securedDeleteImageAndCache($entry, $value)) {
                     $this->updateEntryAfterFileDelete($entry);
 
@@ -148,14 +148,13 @@ class ImageField extends FileField
                     'isAllowedToDeleteFile' => empty($entry) || empty($value) ? false : $this->isAllowedToDeleteFile($entry, $value),
                     'maxSize' => $this->maxSize,
                 ]);
-            } else {
-                $this->updateEntryAfterFileDelete($entry);
-
-                $alertMessage = $this->render('@templates/alert-message.twig', [
-                    'type' => 'danger',
-                    'message' => str_replace('{file}', $value, _t('BAZ_FICHIER_IMAGE_INEXISTANT')),
-                ]);
             }
+            $this->updateEntryAfterFileDelete($entry);
+
+            $alertMessage = $this->render('@templates/alert-message.twig', [
+                'type' => 'danger',
+                'message' => str_replace('{file}', $value, _t('BAZ_FICHIER_IMAGE_INEXISTANT')),
+            ]);
         }
 
         return ($alertMessage ?? '') . $this->render('@bazar/inputs/image.twig', ['maxSize' => $this->maxSize, 'isUrl' => false]);
@@ -298,9 +297,8 @@ class ImageField extends FileField
             if (substr($filename, 0, strlen($this->defineFilePrefix($entry))) == $this->defineFilePrefix($entry)) {
                 $attach = $this->getAttach();
                 $attach->fmDelete($filename);
-            } else {
-                // do not delete file if not same entry name (only remove from this entry)
             }
+            // do not delete file if not same entry name (only remove from this entry)
 
             return true;
         }

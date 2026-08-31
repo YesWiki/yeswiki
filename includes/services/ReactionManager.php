@@ -31,7 +31,7 @@ class ReactionManager
         TripleStore $tripleStore,
         DbService $dbService,
         EntryManager $entryManager,
-        formManager $formManager
+        FormManager $formManager
     ) {
         $this->wiki = $wiki;
         $this->dbService = $dbService;
@@ -119,9 +119,9 @@ class ReactionManager
     {
         if ($this->entryManager->isEntry($page)) {
             return $this->getActionParametersFromEntry($page, $idReaction = null);
-        } else {
-            return $this->getActionParametersFromPage($page, $idReaction = null);
         }
+
+        return $this->getActionParametersFromPage($page, $idReaction = null);
     }
 
     public function getActionParametersFromPage($page, $idReaction = null)
@@ -133,11 +133,10 @@ class ReactionManager
             if (!empty($params)) {
                 if ($idReaction != null && isset($params[$idReaction])) {
                     return [$idReaction => $params[$idReaction]];
-                } else {
-                    ksort($params);
-
-                    return $params;
                 }
+                ksort($params);
+
+                return $params;
             }
         }
 
@@ -163,11 +162,10 @@ class ReactionManager
             if (!empty($params)) {
                 if (!is_null($idReaction) && isset($params[$idReaction])) {
                     return [$idReaction => $params[$idReaction]];
-                } else {
-                    ksort($params);
-
-                    return $params;
                 }
+                ksort($params);
+
+                return $params;
             }
         }
 
@@ -198,7 +196,7 @@ class ReactionManager
                     $labels = array_map('trim', explode(',', $paramMatches[2][$k]));
                     $labelsWithId = [];
                     foreach ($labels as $lab) {
-                        $id = \URLify::slug($lab); //generate the id from the label
+                        $id = \URLify::slug($lab); // generate the id from the label
                         $labelsWithId[$id] = $lab;
                     }
                     $paramMatches[2][$k] = $labelsWithId;
@@ -223,7 +221,7 @@ class ReactionManager
                     }
                     $paramMatches[2][$k] = $htmlImages;
 
-                    $reactionId = \URLify::slug($title); //generate the id from the title
+                    $reactionId = \URLify::slug($title); // generate the id from the title
                     foreach ($paramMatches[0] as $idM => $paramMatch) {
                         $params[$reactionId][$paramMatches[1][$idM]] = $paramMatches[2][$idM];
                     }
@@ -352,8 +350,8 @@ class ReactionManager
                     'AND' .
                     "(`value` NOT LIKE '%\"date\":\"%')"
             );
-        } else {
-            return $this->tripleStore->delete($pageTag, self::TYPE_URI, null, '', '', 'value LIKE \'%user":"' . $this->dbService->escape($user) . '","idReaction":"' . $this->dbService->escape($reactionId) . '","id":"' . $this->dbService->escape($id) . '"%\'');
         }
+
+        return $this->tripleStore->delete($pageTag, self::TYPE_URI, null, '', '', 'value LIKE \'%user":"' . $this->dbService->escape($user) . '","idReaction":"' . $this->dbService->escape($reactionId) . '","id":"' . $this->dbService->escape($id) . '"%\'');
     }
 }

@@ -25,33 +25,32 @@ class EditGroupsAction extends YesWikiAction
         $selectedGroupName = '';
         $action = '';
         $error_message = '';
-        error_log('$_POST content: ' . print_r($_POST ?? null, true));
+        $post = $this->getRequest()->request;
 
-        if (empty($_POST)) {
-            error_log('$_POST empty');
+        if ($post->count() === 0) {
         } else {
-            if (empty($_POST['groupname'])) {
+            if (empty($post->get('groupname'))) {
                 $type = 'danger';
                 $message = _t('NO_VAR_GROUP');
-            } elseif (!is_string($_POST['groupname'])) {
+            } elseif (!is_string($post->get('groupname'))) {
                 $type = 'danger';
                 $message = 'Invalid ' . _t('GROUP_NOT_STRING');
             } else {
-                $selectedGroupName = strval($_POST['groupname']);
+                $selectedGroupName = strval($post->get('groupname'));
                 try {
                     $this->confirmToken();
-                    if (!empty($_POST['action-view'])) {
+                    if (!empty($post->get('action-view'))) {
                         $currentGroupAcl = $groupController->getMembers($selectedGroupName);
-                    } elseif (!empty($_POST['action-create'])) {
+                    } elseif (!empty($post->get('action-create'))) {
                         $groupController->create($selectedGroupName, []);
                         $type = 'success';
                         $message = str_replace('{group}', $selectedGroupName, _t('GROUP_CREATED'));
-                    } elseif (!empty($_POST['action-update'])) {
-                        $members = array_map('trim', $_POST['members']);
+                    } elseif (!empty($post->get('action-update'))) {
+                        $members = array_map('trim', $post->all('members'));
                         $groupController->update($selectedGroupName, $members);
                         $message = str_replace('{group}', $selectedGroupName, _t('GROUP_SAVED'));
                         $type = 'success';
-                    } elseif (!empty($_POST['action-delete'])) {
+                    } elseif (!empty($post->get('action-delete'))) {
                         $groupController->delete($selectedGroupName);
                         $message = str_replace('{group}', $selectedGroupName, _t('GROUP_DELETED'));
                         $type = 'success';
@@ -78,10 +77,8 @@ class EditGroupsAction extends YesWikiAction
         sort($users);
         $merged_list = array_merge(array_map(function ($el) { return '@' . $el; }, $list), $users);
         unset($merged_list[array_search('@' . $selectedGroupName, $merged_list)]);
-        error_log('selected_group_name ' . $selectedGroupName);
 
         $field = ['name' => '', 'propertyName' => '', 'required' => false, 'label' => $selectedGroupName];
-        error_log('render');
 
         return $this->render(
             '@core/actions/edit-group-action.twig',

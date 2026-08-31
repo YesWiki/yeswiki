@@ -5,6 +5,7 @@ use Tamtamchik\SimpleFlash\Flash;
 use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Bazar\Service\SearchManager;
 use YesWiki\Core\YesWikiAction;
+use YesWiki\Syndication\Service\SafeFile;
 
 include_once 'tools/syndication/libs/syndication.lib.php';
 require_once __DIR__ . '/../vendor/autoload.php';
@@ -66,11 +67,10 @@ class SyndicationAction extends YesWikiAction
             $this->addToBazar();
             if (empty($this->arguments['mapping']['id'])) {
                 return '<div class="alert alert-danger">' . _t('ERROR') . ' ' . _t('SYNDICATION_MAPPING_ID_REQUIRED') . ', ex: id=1400,title=bf_titre,url=bf_url,description=bf_description,image=imagebf_image,categories=bf_tags.</div>';
-            } else {
-                // we load all entries to check if entry were already created from feed
-                $vSearchManager = $this->getService(SearchManager::class);
-                $entries = $vSearchManager->search(['formsIds' => [$this->arguments['mapping']['id']]]);
             }
+            // we load all entries to check if entry were already created from feed
+            $vSearchManager = $this->getService(SearchManager::class);
+            $entries = $vSearchManager->search(['formsIds' => [$this->arguments['mapping']['id']]]);
         }
         if (!empty($this->arguments['url'])) {
             $nburl = 0;
@@ -78,9 +78,14 @@ class SyndicationAction extends YesWikiAction
             foreach ($this->arguments['url'] as $cle => $url) {
                 if ($url != '') {
                     $feed = new SimplePie\SimplePie();
+                    $feed->get_registry()->register(SimplePie\File::class, SafeFile::class);
                     $feed->set_feed_url($url);
                     $feed->enable_cache(true);
-                    $feed->init();
+                    try {
+                        $feed->init();
+                    } catch (Throwable $error) {
+                        return '<div class="alert alert-danger">' . _t('ERROR') . ' ' . htmlspecialchars($error->getMessage()) . '</div>' . "\n";
+                    }
                     $feed->handle_content_type();
                     if ($feed->error()) {
                         return '<div class="alert alert-danger">' . _t('ERROR') . ' ' . $feed->error() . '</div>' . "\n";
@@ -170,26 +175,26 @@ class SyndicationAction extends YesWikiAction
                                     $converter = new HtmlConverter(['strip_tags' => true]); // we will convert html to md, but safe
                                     foreach ($this->arguments['mapping'] as $key => $val) {
                                         switch ($key) {
-                                        case 'id':
-                                            $entry['id_typeannonce'] = $val;
-                                            break;
+                                            case 'id':
+                                                $entry['id_typeannonce'] = $val;
+                                                break;
 
-                                        case 'categories':
-                                            $entry[$val] = implode(',', $feedItem[$key]);
-                                            break;
+                                            case 'categories':
+                                                $entry[$val] = implode(',', $feedItem[$key]);
+                                                break;
 
-                                        case 'description':
-                                            $entry[$val] = $converter->convert($feedItem[$key] ?? '');
-                                            break;
+                                            case 'description':
+                                                $entry[$val] = $converter->convert($feedItem[$key] ?? '');
+                                                break;
 
-                                        case 'image':
-                                            $entry[$val] = $this->downloadFile($feedItem[$key] ?? '');
-                                            break;
+                                            case 'image':
+                                                $entry[$val] = $this->downloadFile($feedItem[$key] ?? '');
+                                                break;
 
-                                        default:
-                                            $entry[$val] = $feedItem[$key];
-                                            break;
-                                    }
+                                            default:
+                                                $entry[$val] = $feedItem[$key];
+                                                break;
+                                        }
                                     }
                                     $entry['date_creation_fiche'] = $item->get_date('Y-m-d H:i:s');
                                     $feedItem['mappingInput'] = json_encode($entry);
@@ -222,15 +227,20 @@ class SyndicationAction extends YesWikiAction
                     'ext' => $this->arguments['nouvellefenetre'],
                 ]) . "\n" .
             '</div>' . "\n";
-        } else {
-            return '<div class="alert alert-danger"><strong>' . _t('SYNDICATION_ACTION_SYNDICATION') . '</strong> : '
-        . _t('SYNDICATION_PARAM_URL_REQUIRED') . '.</div>' . "\n";
         }
+
+        return '<div class="alert alert-danger"><strong>' . _t('SYNDICATION_ACTION_SYNDICATION') . '</strong> : '
+        . _t('SYNDICATION_PARAM_URL_REQUIRED') . '.</div>' . "\n";
     }
 
     protected function downloadFile($sourceUrl, $noSSLCheck = false, $timeoutInSec = 10, $replaceExisting = false)
     {
         if (empty($sourceUrl)) {
+            return '';
+        }
+        try {
+            $pin = SafeFile::pin($sourceUrl);
+        } catch (Throwable $error) {
             return '';
         }
         $t = explode('/', $sourceUrl);
@@ -240,11 +250,14 @@ class SyndicationAction extends YesWikiAction
         if (!file_exists($destPath) || (file_exists($destPath) && $replaceExisting)) {
             $fp = fopen($destPath, 'wb');
             $ch = curl_init($sourceUrl);
+            foreach ($pin as $option => $optionValue) {
+                curl_setopt($ch, $option, $optionValue);
+            }
             curl_setopt($ch, CURLOPT_FILE, $fp);
             curl_setopt($ch, CURLOPT_HEADER, 0);
             curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $timeoutInSec);
             curl_setopt($ch, CURLOPT_TIMEOUT, $timeoutInSec);
-            curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+            curl_setopt($ch, CURLOPT_FOLLOWLOCATION, false);
             if ($noSSLCheck) {
                 curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
             }
@@ -264,8 +277,9 @@ class SyndicationAction extends YesWikiAction
 
     protected function addToBazar(): void
     {
-        if (!empty($_GET['mapping'])) {
-            $data = json_decode(urldecode($_GET['mapping']), true);
+        $mapping = $this->getRequest()->query->get('mapping');
+        if (!empty($mapping)) {
+            $data = json_decode(urldecode($mapping), true);
             if (!empty($data)) {
                 $data['antispam'] = 1;
                 $entryManager = $this->getService(EntryManager::class);

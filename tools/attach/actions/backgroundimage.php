@@ -34,7 +34,7 @@ if (!empty($file)) {
         $width = 1920;
     }
 
-    //recuperation des parametres necessaires
+    // recuperation des parametres necessaires
     $att->file = $file;
     $att->desc = 'background image ' . $file;
     $att->height = $height;
@@ -49,7 +49,7 @@ $class = $this->GetParameter('class');
 $id = $this->GetParameter('id');
 
 // container data attributes
-$data = $this->services->get(\YesWiki\Templates\Service\Utils::class)->getDataParameter();
+$data = $this->services->get(YesWiki\Templates\Service\Utils::class)->getDataParameter();
 
 echo '<div' . (!empty($id) ? ' id="' . $id . '"' : '') . ' class="background-image' . (!empty($class) ? ' ' . $class : '') . '" style="'
     . (!empty($bgcolor) ? 'background-color:' . $bgcolor . '; ' : '')
@@ -67,8 +67,8 @@ if (empty($nocontainer)) {
 } else {
     echo '<div>';
 }
-//test d'existance du fichier
+// test d'existance du fichier
 if (isset($fullFilename) and (!file_exists($fullFilename) or $fullFilename == '')) {
     $att->showFileNotExits();
-    //return;
+    // return;
 }

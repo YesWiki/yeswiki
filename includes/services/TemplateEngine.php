@@ -96,13 +96,14 @@ class TemplateEngine
         ]);
 
         // Adds Globals
+        $wikiRequest = $this->wiki->request;
         $this->twig->addGlobal('request', [
-            'get' => $_GET,
-            'post' => $_POST,
-            'request' => $_REQUEST,
+            'get' => $wikiRequest->query->all(),
+            'post' => $wikiRequest->request->all(),
+            'request' => array_merge($wikiRequest->query->all(), $wikiRequest->request->all()),
         ]);
         $this->twig->addGlobal('app', [
-            'server' => $_SERVER,
+            'server' => $wikiRequest->server->all(),
             'session' => $_SESSION,
         ]);
         $this->twig->addGlobal('user', [

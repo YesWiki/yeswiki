@@ -15,8 +15,8 @@ actions:
         type: list
         icon: search
         options:
-          "true": _t(AB_attach_yes)
-          "false": _t(AB_attach_no)
+          'true': _t(AB_attach_yes)
+          'false': _t(AB_attach_no)
           dynamic:
             label: _t(AB_bazar_commons_search_label_dynamic)
             showif: dynamic
@@ -142,16 +142,16 @@ actions:
       minical:
         label: _t(AB_bazar_commons_minical)
         type: checkbox
-        default: "false"
+        default: 'false'
         showOnlyFor:
           - bazarcalendar
       showexportbuttons:
         label: _t(AB_bazar_commons2_showexportbuttons)
         type: checkbox
         advanced: true
-        default: "0"
-        checkedvalue: "1"
-        uncheckedvalue: "0"
+        default: '0'
+        checkedvalue: '1'
+        uncheckedvalue: '0'
         showExceptFor:
           - bazarcarousel
           - bazarcalendar
@@ -160,9 +160,9 @@ actions:
         hint: _t(AB_bazar_commons2_showmapinlistview_hint)
         type: checkbox
         advanced: true
-        default: "0"
-        checkedvalue: "1"
-        uncheckedvalue: "0"
+        default: '0'
+        checkedvalue: '1'
+        uncheckedvalue: '0'
         showExceptFor:
           - bazarcarto
           - bazarmapandtable
@@ -195,9 +195,8 @@ actions:
         type: list
         advanced: true
         options:
-          "false": _t(AB_bazar_commons2_groupsexpanded_false)
-          "true": _t(AB_bazar_commons2_groupsexpanded_true)
-        showif: facettes
+          'false': _t(AB_bazar_commons2_groupsexpanded_false)
+          'true': _t(AB_bazar_commons2_groupsexpanded_true)
       filterposition:
         label: _t(AB_bazar_commons2_filterposition_label)
         type: list
@@ -205,7 +204,6 @@ actions:
         options:
           right: _t(AB_RIGHT)
           left: _t(AB_LEFT)
-        showif: facettes
         showExceptFor:
           - bazargogocarto
       filtercolsize:
@@ -214,12 +212,11 @@ actions:
         type: range
         min: 1
         max: 12
-        showif: facettes
       filteruserasowner:
         label: _t(AB_bazar_commons2_filter_user_as_owner)
         type: checkbox
         advanced: true
-        default: "false"
+        default: 'false'
       datefilter:
         label: _t(AB_bazar_commons2_filter_on_date)
         type: list
@@ -228,26 +225,24 @@ actions:
           futur: _t(AB_bazar_commons2_filter_on_date_future)
           past: _t(AB_bazar_commons2_filter_on_date_past)
           today: _t(AB_bazar_commons2_filter_on_date_today)
-          ">-1M": _t(AB_bazar_commons2_filter_on_date_for_one_month)
-          ">-0D&<+1M": _t(AB_bazar_commons2_filter_on_date_on_current_month)
-          ">-2Y": _t(AB_bazar_commons2_filter_on_date_for_two_years)
-          ">-7D&<+7D": _t(AB_bazar_commons2_filter_on_date_one_week_more_and_less)
+          '>-1M': _t(AB_bazar_commons2_filter_on_date_for_one_month)
+          '>-0D&<+1M': _t(AB_bazar_commons2_filter_on_date_on_current_month)
+          '>-2Y': _t(AB_bazar_commons2_filter_on_date_for_two_years)
+          '>-7D&<+7D': _t(AB_bazar_commons2_filter_on_date_one_week_more_and_less)
       filtersresultnb:
         label: _t(AB_bazar_commons2_filtersresultnb_label)
         advanced: true
         type: checkbox
         default: true
-        showif: facettes
         showExceptFor:
           - bazargogocarto
       resetfiltersbutton:
         label: _t(AB_bazar_commons2_resetfiltersbutton_label)
         advanced: true
         type: checkbox
-        default: "0"
-        checkedvalue: "1"
-        uncheckedvalue: "0"
-        showif: facettes
+        default: '0'
+        checkedvalue: '1'
+        uncheckedvalue: '0'
         showExceptFor:
           - bazargogocarto
       champ:
@@ -310,7 +305,7 @@ actions:
     description: _t(AB_bazarliste_description)
     properties:
       template:
-        value: "liste_accordeon"
+        value: 'liste_accordeon'
       displayfields:
         type: correspondance
         showif: dynamic
@@ -326,7 +321,7 @@ actions:
               - date_creation_fiche
               - date_maj_fiche
             label: _t(AB_bazarliste_displayfields_subtitle_label)
-            default: ""
+            default: ''
           floating:
             type: form-field
             extraFields:
@@ -334,7 +329,7 @@ actions:
               - date_creation_fiche
               - date_maj_fiche
             label: _t(AB_bazarliste_displayfields_floating_label)
-            default: ""
+            default: ''
           visual:
             type: form-field
             extraFields:
@@ -342,14 +337,14 @@ actions:
               - date_creation_fiche
               - date_maj_fiche
             label: _t(AB_bazarliste_displayfields_visual_label)
-            default: ""
+            default: ''
 
   bazarcard:
     label: _t(AB_bazarcard_label)
     description: _t(AB_bazarcard_description)
     properties: &bazarcard
       template:
-        value: "card"
+        value: 'card'
       nbcol:
         label: _t(AB_bazarmaterialcard_nbcol_label)
         type: number
@@ -393,21 +388,21 @@ actions:
             type: form-field
             extraFields: owner
             label: _t(AB_bazarliste_displayfields_subtitle_label)
-            default: ""
+            default: ''
           text:
             type: form-field
             label: _t(AB_bazarliste_displayfields_text_label)
-            default: ""
+            default: ''
           footer:
             type: form-field
             extraFields: owner
             label: _t(AB_bazarliste_displayfields_footer_label)
-            default: ""
+            default: ''
           floating:
             type: form-field
             extraFields: owner
             label: _t(AB_bazarliste_displayfields_floating_label)
-            default: ""
+            default: ''
 
       advanced:
         type: divider
@@ -479,7 +474,7 @@ actions:
       cluster:
         label: _t(AB_bazarcarto_cluster_label)
         type: checkbox
-        default: "false"
+        default: 'false'
       width:
         advanced: true
         label: _t(AB_bazarcarto_width_label)
@@ -506,45 +501,45 @@ actions:
       popuptemplate:
         label: _t(AB_bazarcarto_popuptemplate_label)
         type: list
-        value: "_map_popup_html.twig"
+        value: '_map_popup_html.twig'
         advanced: true
         options:
-          "_map_popup_html.twig": _t(AB_bazarcarto_popuptemplate_entry_from_html)
-          "_map_popup_from_data.twig": _t(AB_bazarcarto_popuptemplate_entry_from_data)
-          "custom": _t(AB_bazarcarto_popuptemplate_custom)
+          '_map_popup_html.twig': _t(AB_bazarcarto_popuptemplate_entry_from_html)
+          '_map_popup_from_data.twig': _t(AB_bazarcarto_popuptemplate_entry_from_data)
+          'custom': _t(AB_bazarcarto_popuptemplate_custom)
         showif:
           dynamic: true
-          entrydisplay: "popup"
+          entrydisplay: 'popup'
       popupcustomtemplate:
         label: _t(AB_bazarcarto_popupcustomtemplate_label)
         type: text
-        value: "custom_map_popup.twig"
+        value: 'custom_map_popup.twig'
         hint: _t(AB_bazarcarto_popupcustomtemplate_hint)
         advanced: true
         showif:
           dynamic: true
-          entrydisplay: "popup"
-          popuptemplate: "custom"
+          entrydisplay: 'popup'
+          popuptemplate: 'custom'
       popupselectedfields:
         type: form-field
         label: _t(AB_bazarliste_popupselectedfields_label)
         multiple: true
         advanced: true
-        default: ""
+        default: ''
         showif:
           dynamic: true
-          entrydisplay: "popup"
-          popuptemplate: "_map_popup_html.twig|custom"
+          entrydisplay: 'popup'
+          popuptemplate: '_map_popup_html.twig|custom'
       necessary_fields:
         type: form-field
         label: _t(AB_bazarliste_popupneededfields_label)
         multiple: true
         advanced: true
-        value: "bf_titre,imagebf_image"
+        value: 'bf_titre,imagebf_image'
         showif:
           dynamic: true
-          entrydisplay: "popup"
-          popuptemplate: "_map_popup_from_data.twig|custom"
+          entrydisplay: 'popup'
+          popuptemplate: '_map_popup_from_data.twig|custom'
       displayfields:
         type: correspondance
         showif: dynamic
@@ -558,14 +553,14 @@ actions:
         advanced: true
         label: _t(AB_bazarcarto_smallmarker_label)
         type: checkbox
-        default: "0"
-        checkedvalue: "1"
-        uncheckedvalue: "0"
+        default: '0'
+        checkedvalue: '1'
+        uncheckedvalue: '0'
       zoommolette:
         advanced: true
         label: _t(AB_bazarcarto_zoommolette_label)
         type: checkbox
-        default: "false"
+        default: 'false'
 
   bazarcalendar:
     label: _t(AB_bazarcalendar)
@@ -579,15 +574,15 @@ actions:
           bf_date_debut_evenement:
             type: form-field
             label: _t(AB_bazar_bf_date_debut_evenement_label)
-            default: ""
+            default: ''
           bf_date_fin_evenement:
             type: form-field
             label: _t(AB_bazar_bf_date_fin_evenement_label)
-            default: ""
+            default: ''
       showlist:
         type: list
         label: _t(AB_bazarcalendar_showlist_label)
-        default: "year"
+        default: 'year'
         options:
           week: _t(AB_bazarcalendar_showlist_week)
           month: _t(AB_bazarcalendar_showlist_month)
@@ -595,7 +590,7 @@ actions:
       initialview:
         type: list
         label: _t(AB_bazarcalendar_initialview_label)
-        default: "dayGridMonth"
+        default: 'dayGridMonth'
         options:
           dayGridMonth: _t(AB_bazarcalendar_initialview_month)
           timeGridWeek: _t(AB_bazarcalendar_initialview_week)
@@ -604,8 +599,8 @@ actions:
       entrydisplay:
         label: _t(AB_bazarcarto_entrydisplay_label)
         type: list
-        default: "modal"
-        value: "modal"
+        default: 'modal'
+        value: 'modal'
         advanced: true
         options:
           direct: _t(AB_bazarcarto_entrydisplay_option_direct)
@@ -615,7 +610,7 @@ actions:
       showicalbutton:
         label: _t(AB_bazarcarto_showicalbutton_label)
         type: checkbox
-        default: "false"
+        default: 'false'
 
   bazaragenda:
     label: _t(AB_bazaragenda_label)
@@ -632,14 +627,14 @@ actions:
               - date_creation_fiche
               - date_maj_fiche
             label: _t(AB_bazar_bf_date_debut_evenement_label)
-            default: ""
+            default: ''
           bf_date_fin_evenement:
             type: form-field
             extraFields:
               - date_creation_fiche
               - date_maj_fiche
             label: _t(AB_bazar_bf_date_fin_evenement_label)
-            default: ""
+            default: ''
       nbcol:
         label: _t(AB_bazaragenda_nbcol_label)
         type: number
@@ -650,7 +645,7 @@ actions:
         type: checkbox
         default:
         advanced: true
-        checkedvalue: "1"
+        checkedvalue: '1'
         uncheckedvalue:
 
   bazarannuaire:
@@ -681,7 +676,7 @@ actions:
               - date_creation_fiche
               - date_maj_fiche
             label: _t(AB_bazar_bf_date_debut_evenement_label)
-            default: ""
+            default: ''
 
   bazarcarousel:
     label: _t(AB_bazarcarousel_label)
@@ -718,7 +713,7 @@ actions:
             type: form-field
             extraFields: owner
             label: _t(AB_bazarcarousel_bf_titre_label)
-            default: ""
+            default: ''
 
   bazarlistephotobox:
     label: _t(AB_bazarlistephotobox_label)
@@ -745,23 +740,23 @@ actions:
       header:
         label: _t(AB_bazarblog_header_label)
         type: checkbox
-        default: "true"
-        checkedvalue: "true"
-        uncheckedvalue: "false"
+        default: 'true'
+        checkedvalue: 'true'
+        uncheckedvalue: 'false'
       show_author:
         label: _t(AB_bazarblog_show_author_label)
         advanced: true
         type: checkbox
-        default: "0"
-        checkedvalue: "1"
-        uncheckedvalue: "0"
+        default: '0'
+        checkedvalue: '1'
+        uncheckedvalue: '0'
       show_date:
         label: _t(AB_bazarblog_show_date_label)
         advanced: true
         type: checkbox
-        default: "0"
-        checkedvalue: "1"
-        uncheckedvalue: "0"
+        default: '0'
+        checkedvalue: '1'
+        uncheckedvalue: '0'
       correspondance:
         type: correspondance
         subproperties:
@@ -771,7 +766,7 @@ actions:
               - date_creation_fiche
               - date_maj_fiche
             label: _t(AB_bazarblog_date_creation_fiche_label)
-            default: ""
+            default: ''
 
   bazargogocarto:
     label: _t(AB_bazargogocarto_label)
@@ -817,7 +812,7 @@ actions:
         label: _t(AB_bazartableau_columnfieldsids_label)
         hint: _t(AB_bazartableau_columnfieldsids_hint)
         multiple: true
-        default: ""
+        default: ''
         extraFields:
           - id_typeannonce
           - date_creation_fiche
@@ -827,65 +822,65 @@ actions:
         type: text
         label: _t(AB_bazartableau_columntitles_label)
         hint: _t(AB_bazartableau_columntitles_hint)
-        default: ""
+        default: ''
       checkboxfieldsincolumns:
         type: checkbox
         label: _t(AB_bazartableau_checkboxfieldsincolumns_label)
-        default: "true"
-        checkedvalue: "true"
-        uncheckedvalue: "false"
+        default: 'true'
+        checkedvalue: 'true'
+        uncheckedvalue: 'false'
       displayimagesasthumbnails:
         type: checkbox
         label: _t(AB_bazartableau_displayimagesasthumbnails_label)
-        default: "false"
-        checkedvalue: "true"
-        uncheckedvalue: "false"
+        default: 'false'
+        checkedvalue: 'true'
+        uncheckedvalue: 'false'
       displayvaluesinsteadofkeys:
         type: checkbox
         label: _t(AB_bazartableau_displayvaluesinsteadofkeys_label)
-        default: "false"
-        checkedvalue: "true"
-        uncheckedvalue: "false"
+        default: 'false'
+        checkedvalue: 'true'
+        uncheckedvalue: 'false'
       sumfieldsids:
         type: form-field
         label: _t(AB_bazartableau_sumfieldsids_label)
         hint: _t(AB_bazartableau_sumfieldsids_hint)
         multiple: true
-        default: ""
+        default: ''
       displayadmincol:
         type: list
         label: _t(AB_bazartableau_displayadmincol_label)
         hint: _t(AB_bazartableau_displayadmincol_hint)
-        default: ""
+        default: ''
         options:
-          "": _t(NO)
+          '': _t(NO)
           yes: _t(YES)
           onlyadmins: _t(AB_bazartableau_displayadmincol_onlyadmins)
       displaycreationdate:
         type: list
         label: _t(AB_bazartableau_displaycreationdate_label)
         advanced: true
-        default: ""
+        default: ''
         options:
-          "": _t(NO)
+          '': _t(NO)
           yes: _t(YES)
           onlyadmins: _t(AB_bazartableau_displayadmincol_onlyadmins)
       displaylastchangedate:
         type: list
         label: _t(AB_bazartableau_displaylastchangedate_label)
         advanced: true
-        default: ""
+        default: ''
         options:
-          "": _t(NO)
+          '': _t(NO)
           yes: _t(YES)
           onlyadmins: _t(AB_bazartableau_displayadmincol_onlyadmins)
       displayowner:
         type: list
         label: _t(AB_bazartableau_displayowner_label)
         advanced: true
-        default: ""
+        default: ''
         options:
-          "": _t(NO)
+          '': _t(NO)
           yes: _t(YES)
           onlyadmins: _t(AB_bazartableau_displayadmincol_onlyadmins)
       defaultcolumnwidth:
@@ -893,7 +888,7 @@ actions:
         hint: _t(AB_bazartableau_defaultcolumnwidth_hint)
         type: text
         advanced: true
-        default: ""
+        default: ''
       columnswidth:
         label: _t(AB_bazartableau_columnswidth_label)
         hint: _t(AB_bazartableau_columnswidth_hint)
@@ -906,12 +901,12 @@ actions:
           width:
             label: _t(AB_bazartableau_columnswidth_width_label)
             type: text
-            default: ""
+            default: ''
       exportallcolumns:
         label: _t(AB_bazartableau_exportallcolumns_label)
         advanced: true
         type: checkbox
-        default: "false"
+        default: 'false'
 
   bazarmapandtable:
     label: _t(AB_BAZAR_MAP_AND_TABLE_LABEL)
@@ -970,7 +965,7 @@ actions:
       cluster:
         label: _t(AB_bazarcarto_cluster_label)
         type: checkbox
-        default: "false"
+        default: 'false'
       width:
         advanced: true
         label: _t(AB_bazarcarto_width_label)
@@ -997,45 +992,45 @@ actions:
       popuptemplate:
         label: _t(AB_bazarcarto_popuptemplate_label)
         type: list
-        value: "_map_popup_html.twig"
+        value: '_map_popup_html.twig'
         advanced: true
         options:
-          "_map_popup_html.twig": _t(AB_bazarcarto_popuptemplate_entry_from_html)
-          "_map_popup_from_data.twig": _t(AB_bazarcarto_popuptemplate_entry_from_data)
-          "custom": _t(AB_bazarcarto_popuptemplate_custom)
+          '_map_popup_html.twig': _t(AB_bazarcarto_popuptemplate_entry_from_html)
+          '_map_popup_from_data.twig': _t(AB_bazarcarto_popuptemplate_entry_from_data)
+          'custom': _t(AB_bazarcarto_popuptemplate_custom)
         showif:
           dynamic: true
-          entrydisplay: "popup"
+          entrydisplay: 'popup'
       popupcustomtemplate:
         label: _t(AB_bazarcarto_popupcustomtemplate_label)
         type: text
-        value: "custom_map_popup.twig"
+        value: 'custom_map_popup.twig'
         hint: _t(AB_bazarcarto_popupcustomtemplate_hint)
         advanced: true
         showif:
           dynamic: true
-          entrydisplay: "popup"
-          popuptemplate: "custom"
+          entrydisplay: 'popup'
+          popuptemplate: 'custom'
       popupselectedfields:
         type: form-field
         label: _t(AB_bazarliste_popupselectedfields_label)
         multiple: true
         advanced: true
-        default: ""
+        default: ''
         showif:
           dynamic: true
-          entrydisplay: "popup"
-          popuptemplate: "_map_popup_html.twig|custom"
+          entrydisplay: 'popup'
+          popuptemplate: '_map_popup_html.twig|custom'
       necessary_fields:
         type: form-field
         label: _t(AB_bazarliste_popupneededfields_label)
         multiple: true
         advanced: true
-        value: "bf_titre,imagebf_image"
+        value: 'bf_titre,imagebf_image'
         showif:
           dynamic: true
-          entrydisplay: "popup"
-          popuptemplate: "_map_popup_from_data.twig|custom"
+          entrydisplay: 'popup'
+          popuptemplate: '_map_popup_from_data.twig|custom'
       displayfields:
         type: correspondance
         showif: dynamic
@@ -1049,20 +1044,20 @@ actions:
         advanced: true
         label: _t(AB_bazarcarto_smallmarker_label)
         type: checkbox
-        default: "0"
-        checkedvalue: "1"
-        uncheckedvalue: "0"
+        default: '0'
+        checkedvalue: '1'
+        uncheckedvalue: '0'
       zoommolette:
         advanced: true
         label: _t(AB_bazarcarto_zoommolette_label)
         type: checkbox
-        default: "false"
+        default: 'false'
       columnfieldsids:
         type: form-field
         label: _t(AB_bazartableau_columnfieldsids_label)
         hint: _t(AB_bazartableau_columnfieldsids_hint)
         multiple: true
-        default: ""
+        default: ''
         extraFields:
           - id_typeannonce
           - date_creation_fiche
@@ -1072,65 +1067,65 @@ actions:
         type: text
         label: _t(AB_bazartableau_columntitles_label)
         hint: _t(AB_bazartableau_columntitles_hint)
-        default: ""
+        default: ''
       checkboxfieldsincolumns:
         type: checkbox
         label: _t(AB_bazartableau_checkboxfieldsincolumns_label)
-        default: "true"
-        checkedvalue: "true"
-        uncheckedvalue: "false"
+        default: 'true'
+        checkedvalue: 'true'
+        uncheckedvalue: 'false'
       displayimagesasthumbnails:
         type: checkbox
         label: _t(AB_bazartableau_displayimagesasthumbnails_label)
-        default: "false"
-        checkedvalue: "true"
-        uncheckedvalue: "false"
+        default: 'false'
+        checkedvalue: 'true'
+        uncheckedvalue: 'false'
       displayvaluesinsteadofkeys:
         type: checkbox
         label: _t(AB_bazartableau_displayvaluesinsteadofkeys_label)
-        default: "false"
-        checkedvalue: "true"
-        uncheckedvalue: "false"
+        default: 'false'
+        checkedvalue: 'true'
+        uncheckedvalue: 'false'
       sumfieldsids:
         type: form-field
         label: _t(AB_bazartableau_sumfieldsids_label)
         hint: _t(AB_bazartableau_sumfieldsids_hint)
         multiple: true
-        default: ""
+        default: ''
       displayadmincol:
         type: list
         label: _t(AB_bazartableau_displayadmincol_label)
         hint: _t(AB_bazartableau_displayadmincol_hint)
-        default: ""
+        default: ''
         options:
-          "": _t(NO)
+          '': _t(NO)
           yes: _t(YES)
           onlyadmins: _t(AB_bazartableau_displayadmincol_onlyadmins)
       displaycreationdate:
         type: list
         label: _t(AB_bazartableau_displaycreationdate_label)
         advanced: true
-        default: ""
+        default: ''
         options:
-          "": _t(NO)
+          '': _t(NO)
           yes: _t(YES)
           onlyadmins: _t(AB_bazartableau_displayadmincol_onlyadmins)
       displaylastchangedate:
         type: list
         label: _t(AB_bazartableau_displaylastchangedate_label)
         advanced: true
-        default: ""
+        default: ''
         options:
-          "": _t(NO)
+          '': _t(NO)
           yes: _t(YES)
           onlyadmins: _t(AB_bazartableau_displayadmincol_onlyadmins)
       displayowner:
         type: list
         label: _t(AB_bazartableau_displayowner_label)
         advanced: true
-        default: ""
+        default: ''
         options:
-          "": _t(NO)
+          '': _t(NO)
           yes: _t(YES)
           onlyadmins: _t(AB_bazartableau_displayadmincol_onlyadmins)
       defaultcolumnwidth:
@@ -1138,7 +1133,7 @@ actions:
         hint: _t(AB_bazartableau_defaultcolumnwidth_hint)
         type: text
         advanced: true
-        default: ""
+        default: ''
       columnswidth:
         label: _t(AB_bazartableau_columnswidth_label)
         hint: _t(AB_bazartableau_columnswidth_hint)
@@ -1151,17 +1146,17 @@ actions:
           width:
             label: _t(AB_bazartableau_columnswidth_width_label)
             type: text
-            default: ""
+            default: ''
       exportallcolumns:
         label: _t(AB_bazartableau_exportallcolumns_label)
         advanced: true
         type: checkbox
-        default: "false"
+        default: 'false'
       tablewith:
         label: _t(AB_BAZAR_MAP_AND_TABLE_TABLEWITH_LABEL)
         type: list
-        default: ""
+        default: ''
         options:
-          "": _t(AB_BAZAR_MAP_AND_TABLE_TABLEWITH_ALL)
+          '': _t(AB_BAZAR_MAP_AND_TABLE_TABLEWITH_ALL)
           only-geolocation: _t(AB_BAZAR_MAP_AND_TABLE_TABLEWITH_ONLY_GEOLOC)
           no-geolocation: _t(AB_BAZAR_MAP_AND_TABLE_TABLEWITH_NO_GEOLOC)

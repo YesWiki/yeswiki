@@ -7,6 +7,8 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Annotation\Route;
+use YesWiki\Bazar\Exception\RequiredFieldsException;
+use YesWiki\Bazar\Exception\TagAlreadyUsedException;
 use YesWiki\Bazar\Field\TextareaField;
 use YesWiki\Bazar\Service\ActivityPubService;
 use YesWiki\Bazar\Service\BazarListService;
@@ -70,9 +72,8 @@ class ApiController extends YesWikiController
             $actor = $activityPubService->getActor($form);
 
             return new ApiResponse($actor, Response::HTTP_OK, ['Content-Type' => 'application/activity+json']);
-        } else {
-            throw new NotFoundHttpException();
         }
+        throw new NotFoundHttpException();
     }
 
     /**
@@ -88,17 +89,16 @@ class ApiController extends YesWikiController
             $followers = $activityPubService->getFollowers($form);
 
             return new ApiResponse([
-                '@context' => "https://www.w3.org/ns/activitystreams",
+                '@context' => 'https://www.w3.org/ns/activitystreams',
                 'type' => 'Collection',
                 'id' => $activityPubService->getFormCollectionUri($form, 'followers'),
                 'items' => $followers,
             ], Response::HTTP_OK, ['Content-Type' => 'application/activity+json']);
-        } else {
-            throw new NotFoundHttpException();
         }
+        throw new NotFoundHttpException();
     }
 
-        /**
+    /**
      * @Route("/api/forms/{formId}/actor/following", methods={"GET"}, options={"acl":{"public"}})
      */
     public function getFormActorFollowing($formId, Request $request)
@@ -111,14 +111,13 @@ class ApiController extends YesWikiController
             $following = $activityPubService->getFollowing($form);
 
             return new ApiResponse([
-                '@context' => "https://www.w3.org/ns/activitystreams",
+                '@context' => 'https://www.w3.org/ns/activitystreams',
                 'type' => 'Collection',
                 'id' => $activityPubService->getFormCollectionUri($form, 'following'),
                 'items' => $following,
             ], Response::HTTP_OK, ['Content-Type' => 'application/activity+json']);
-        } else {
-            throw new NotFoundHttpException();
         }
+        throw new NotFoundHttpException();
     }
 
     /**
@@ -132,15 +131,23 @@ class ApiController extends YesWikiController
         $form = $this->getService(BazarListService::class)->getForms(['idtypeannonce' => $formId])[$formId];
 
         if ($activityPubService->isEnabled($form)) {
+            try {
+                $verifiedActor = $httpSignatureService->verifySignature($request);
+            } catch (\Exception $e) {
+                return new ApiResponse(['error' => $e->getMessage()], Response::HTTP_UNAUTHORIZED, ['Content-Type' => 'application/activity+json']);
+            }
+
             $activity = json_decode($request->getContent(), true);
 
-            $httpSignatureService->verifySignature($request);
-            $activityPubService->processActivity($activity, $form);
+            try {
+                $activityPubService->processActivity($activity, $form, $verifiedActor);
+            } catch (\Exception $e) {
+                return new ApiResponse(['error' => $e->getMessage()], Response::HTTP_FORBIDDEN, ['Content-Type' => 'application/activity+json']);
+            }
 
             return new ApiResponse(null, Response::HTTP_OK, ['Content-Type' => 'application/activity+json']);
-        } else {
-            throw new NotFoundHttpException();
         }
+        throw new NotFoundHttpException();
     }
 
     /**
@@ -159,11 +166,11 @@ class ApiController extends YesWikiController
                 'ordre' => 'asc',
                 'queries' => '',
                 // TODO Handle pagination
-                // 'nb' => 100 
+                // 'nb' => 100
             ]);
 
             return new ApiResponse([
-                '@context' => "https://www.w3.org/ns/activitystreams",
+                '@context' => 'https://www.w3.org/ns/activitystreams',
                 'type' => 'OrderedCollection',
                 'id' => $activityPubService->getFormCollectionUri($form, 'following'),
                 'totalItems' => count($entries),
@@ -171,6 +178,7 @@ class ApiController extends YesWikiController
                     $object = $this->getService(SemanticTransformer::class)->convertToSemanticData($form, $entry);
                     unset($object['@context']);
                     $published = new \DateTime($entry['date_creation_fiche']);
+
                     return [
                         'type' => 'Create',
                         'actor' => $activityPubService->getFormActorUri($form),
@@ -182,9 +190,8 @@ class ApiController extends YesWikiController
             ], Response::HTTP_OK, ['Content-Type' => 'application/activity+json']);
 
             return new ApiResponse(null, Response::HTTP_OK, ['Content-Type' => 'application/activity+json']);
-        } else {
-            throw new NotFoundHttpException();
         }
+        throw new NotFoundHttpException();
     }
 
     /**
@@ -206,9 +213,8 @@ class ApiController extends YesWikiController
             $actor = $webfingerService->formatLocalActor($handle, $actorUri);
 
             return new ApiResponse($actor, Response::HTTP_OK, ['Content-Type' => 'application/json']);
-        } else {
-            throw new NotFoundHttpException();
         }
+        throw new NotFoundHttpException();
     }
 
     /**
@@ -223,22 +229,23 @@ class ApiController extends YesWikiController
         }
 
         $vSearchManager = $this->getService(SearchManager::class);
+        $get = $this->getRequest()->query;
 
-        $vQuery = $_GET['query'] ?? $_GET['queries'] ?? null;
+        $vQuery = $get->get('query') ?? $get->get('queries') ?? null;
         $vQuery = $vSearchManager->aggregateQueries(
             !empty($selectedEntries) ? ['queries' => ['id_fiche' => $selectedEntries]] : [],
             isset($vQuery) ? urldecode($vQuery) : ''
         );
 
-        $vKeywords = $vSearchManager->aggregateKeywords($_GET['keywords'] ?? '', $_GET['q'] ?? '');
+        $vKeywords = $vSearchManager->aggregateKeywords($get->get('keywords', ''), $get->get('q', ''));
 
-        $vSearchFields = isset($_GET['searchfields']) ? urldecode($_GET['searchfields']) : null;
-        $vCorrespondance = isset($_GET['correspondance']) ? urldecode($_GET['correspondance']) : null;
-        $vDateFilter = isset($_GET['datefilter']) ? urldecode($_GET['datefilter']) : null;
-        $vOrdre = $_GET['ordre'] ?? 'asc';
-        $vChamp = $_GET['champ'] ?? 'bf_titre';
-        $vNb = intval($_GET['nbitem'] ?? $_GET['nb'] ?? null);
-        $vMinDate = urldecode($_GET['dateMin'] ?? $_GET['minDate'] ?? $_GET['period'] ?? '');
+        $vSearchFields = $get->has('searchfields') ? urldecode($get->get('searchfields')) : null;
+        $vCorrespondance = $get->has('correspondance') ? urldecode($get->get('correspondance')) : null;
+        $vDateFilter = $get->has('datefilter') ? urldecode($get->get('datefilter')) : null;
+        $vOrdre = $get->get('ordre', 'asc');
+        $vChamp = $get->get('champ', 'bf_titre');
+        $vNb = intval($get->get('nbitem') ?? $get->get('nb') ?? null);
+        $vMinDate = urldecode($get->get('dateMin') ?? $get->get('minDate') ?? $get->get('period') ?? '');
 
         if ($output == 'csv') { // Search is done in the CSV Manager
             $csvManager = $this->getService(CSVManager::class);
@@ -269,7 +276,8 @@ class ApiController extends YesWikiController
                 'minDate' => $vMinDate,
             ]);
 
-            if ($output == 'json-ld' || (isset($_SERVER['HTTP_ACCEPT']) && strpos($_SERVER['HTTP_ACCEPT'], 'application/ld+json') !== false)) {
+            $acceptHeader = $this->getRequest()->headers->get('accept', '');
+            if ($output == 'json-ld' || strpos($acceptHeader, 'application/ld+json') !== false) {
                 return $this->getAllSemanticEntries($formId, $entries);
             } // add entries in html format if asked
             elseif ($output == 'html') {
@@ -279,9 +287,9 @@ class ApiController extends YesWikiController
             } elseif ($output == 'geojson') {
                 $entries = $this->getService(GeoJSONFormatter::class)->formatToGeoJSON($entries);
             } elseif ($output == 'ical') {
-                return $this->getService(IcalFormatter::class)->apiResponse($entries, $formId, $_GET);
-            } elseif (isset($_GET['fields'])) {
-                $fields = explode(',', $_GET['fields']);
+                return $this->getService(IcalFormatter::class)->apiResponse($entries, $formId, $get->all());
+            } elseif ($get->has('fields')) {
+                $fields = explode(',', $get->get('fields'));
                 $lightEntries = [];
                 if (!empty($entries) && !empty($fields)) {
                     foreach ($entries as $id => $entry) {
@@ -310,11 +318,13 @@ class ApiController extends YesWikiController
     public function getAllEntries($output = null, $selectedEntries = null)
     {
         // fast access for one entry
-        if ($this->isEntryViewFastAccess($output, $selectedEntries, $_GET)) {
+        $get = $this->getRequest()->query;
+        if ($this->isEntryViewFastAccess($output, $selectedEntries, $get->all())) {
             $entryId = explode(',', $selectedEntries)[0];
             if ($this->getService(AclService::class)->hasAccess('read', $entryId)) {
                 $html = $this->getService(EntryController::class)->view($entryId, '', 1);
-                if ($_GET['isInIframe'] && $_GET['isInIframe'] == 'iframe') {
+                $isInIframe = $get->get('isInIframe');
+                if ($isInIframe && $isInIframe == 'iframe') {
                     $html = replaceLinksWithIframe($html);
                 }
             } else {
@@ -352,7 +362,8 @@ class ApiController extends YesWikiController
      */
     public function isEntryViewFastAccessHelper(): bool
     {
-        $route = array_keys($_GET)[0];
+        $queryAll = $this->getRequest()->query->all();
+        $route = array_key_first($queryAll);
         if (substr($route, strlen('api/entries/html'), 1) == '/') {
             $output = substr($route, strlen('api/entries/'), strlen('html'));
             $selectedEntries = substr($route, strlen('api/entries/html/'));
@@ -361,7 +372,7 @@ class ApiController extends YesWikiController
             $selectedEntries = '';
         }
 
-        return $this->isEntryViewFastAccess($output, $selectedEntries, $_GET);
+        return $this->isEntryViewFastAccess($output, $selectedEntries, $queryAll);
     }
 
     public function getAllSemanticEntries($formId, $entries)
@@ -419,16 +430,28 @@ class ApiController extends YesWikiController
      */
     public function createEntry($formId)
     {
-        if (strpos($_SERVER['CONTENT_TYPE'], 'application/ld+json') !== false) {
+        $request = $this->getRequest();
+        if (strpos($request->headers->get('content-type', ''), 'application/ld+json') !== false) {
             $this->createSemanticEntry($formId);
         }
 
-        $_POST['antispam'] = 1;
+        $postData = $request->request->all();
+        if (empty($postData) && strpos($request->headers->get('content-type', ''), 'application/json') !== false) {
+            $jsonData = json_decode($request->getContent(), true);
+            if (is_array($jsonData)) {
+                $postData = $jsonData;
+            }
+        }
+        $postData['antispam'] = 1;
 
-        if (!isset($_POST['id_fiche']) || !$this->getService(EntryManager::class)->isEntry($_POST['id_fiche'])) {
-            $entry = $this->getService(EntryManager::class)->create($formId, $_POST, false, $_SERVER['HTTP_SOURCE_URL'] ?? null);
-        } else {
-            $entry = $this->getService(EntryManager::class)->update($_POST['id_fiche'], $_POST, false, true);
+        try {
+            if (!isset($postData['id_fiche']) || !$this->getService(EntryManager::class)->isEntry($postData['id_fiche'])) {
+                $entry = $this->getService(EntryManager::class)->create($formId, $postData, false, $request->headers->get('source-url'));
+            } else {
+                $entry = $this->getService(EntryManager::class)->update($postData['id_fiche'], $postData, false, true);
+            }
+        } catch (RequiredFieldsException|TagAlreadyUsedException $e) {
+            throw new BadRequestHttpException($e->getMessage());
         }
 
         if (!$entry) {
@@ -446,8 +469,9 @@ class ApiController extends YesWikiController
      */
     public function createSemanticEntry($formId)
     {
-        $_POST['antispam'] = 1;
-        $entry = $this->getService(EntryManager::class)->create($formId, $_POST, true, $_SERVER['HTTP_SOURCE_URL']);
+        $postData = $this->getRequest()->request->all();
+        $postData['antispam'] = 1;
+        $entry = $this->getService(EntryManager::class)->create($formId, $postData, true, $this->getRequest()->headers->get('source-url'));
 
         if (!$entry) {
             throw new BadRequestHttpException();
@@ -467,28 +491,31 @@ class ApiController extends YesWikiController
         $vBazarListService = $this->getService(BazarListService::class);
 
         /* ------------------------------------ */
-        /*             Format Params            */
+        /*             Format Params */
         /* ------------------------------------ */
 
+        $queryAll = $this->getRequest()->query->all();
         $formattedGet = array_map(function ($value) {
             return ($value === 'true') ? true : (($value === 'false') ? false : $value);
-        }, $_GET);
+        }, $queryAll);
 
-        $searchfields = $_GET['searchfields'] ?? null;
+        $get = $this->getRequest()->query;
+        $searchfields = $get->get('searchfields');
         $searchfields = is_string($searchfields) ? explode(',', urldecode($searchfields)) : $searchfields;
         $searchfields = $searchfields == null ? [] : $searchfields;
 
-        $vKeywords = isset($_GET['keywords']) ? urldecode($_GET['keywords']) : '';
+        $vKeywords = $get->has('keywords') ? urldecode($get->get('keywords')) : '';
 
         $formattedGet['keywords'] = $vKeywords;
         $formattedGet['searchfields'] = $searchfields;
-        $formattedGet['idtypeannonce'] = $_GET['idtypeannonce'] ?? $_GET['id'] ?? null;
+        $formattedGet['idtypeannonce'] = $get->get('idtypeannonce') ?? $get->get('id') ?? null;
 
         /* ------------------------------------ */
-        /*               Get Data               */
+        /*               Get Data */
         /* ------------------------------------ */
         // All forms
-        $forms = $vBazarListService->getForms($formattedGet + ['refresh' => isset($_GET['refresh']) ? in_array($_GET['refresh'], [1, true, '1', 'true'], true) : false]);
+        $refreshVal = $get->get('refresh');
+        $forms = $vBazarListService->getForms($formattedGet + ['refresh' => isset($refreshVal) ? in_array($refreshVal, [1, true, '1', 'true'], true) : false]);
 
         // Entries
         $entries = $vBazarListService->getEntries($formattedGet, $forms);
@@ -497,7 +524,7 @@ class ApiController extends YesWikiController
         $filters = $vBazarListService->getFilters($formattedGet, $entries, $forms);
 
         /* ------------------------------------ */
-        /*            Transform Data            */
+        /*            Transform Data */
         /* ------------------------------------ */
 
         // Associated Forms
@@ -514,21 +541,23 @@ class ApiController extends YesWikiController
         // Basic fields
         $fieldList = ['id_fiche', 'bf_titre', 'url', '-is-external-', 'external-data'];
         // If no id, we need idtypeannonce (== formId) to filter
-        if (!isset($_GET['id'])) {
+        if (!$get->has('id')) {
             $fieldList[] = 'id_typeannonce';
         }
         // fields for color / icon
-        $fieldList = array_merge($fieldList, isset($_GET['colorfield']) ? [$_GET['colorfield']] : []);
-        $fieldList = array_merge($fieldList, isset($_GET['iconfield']) ? [$_GET['iconfield']] : []);
+        $colorfield = $get->get('colorfield');
+        $fieldList = array_merge($fieldList, $colorfield ? [$colorfield] : []);
+        $iconfield = $get->get('iconfield');
+        $fieldList = array_merge($fieldList, $iconfield ? [$iconfield] : []);
         // Fields used to search
         $fieldList = array_merge($fieldList, $searchfields);
         // Fields used to sort
-        $fieldList = array_merge($fieldList, $_GET['sortfields'] ?? []);
+        $fieldList = array_merge($fieldList, $get->has('sortfields') ? $get->all('sortfields') : []);
         // Fields used by template
-        $fieldList = array_merge($fieldList, $_GET['displayfields'] ?? []);
+        $fieldList = array_merge($fieldList, $get->has('displayfields') ? $get->all('displayfields') : []);
         // extra fields required by template
-        $fieldList = array_merge($fieldList, $_GET['necessary_fields'] ?? []);
-        $fieldList = array_merge($fieldList, $_GET['necessaryfields'] ?? []);
+        $fieldList = array_merge($fieldList, $get->has('necessary_fields') ? $get->all('necessary_fields') : []);
+        $fieldList = array_merge($fieldList, $get->has('necessaryfields') ? $get->all('necessaryfields') : []);
         // Fields for filters
         foreach ($filters as $filter) {
             $fieldList[] = $filter['propName'];

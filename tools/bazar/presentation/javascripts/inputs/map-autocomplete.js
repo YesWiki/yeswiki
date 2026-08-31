@@ -1,12 +1,19 @@
 $(document).ready(() => {
-  if (typeof autocompleteFieldnames == 'object' && 'postalCode' in autocompleteFieldnames && 'town' in autocompleteFieldnames) {
-    $(`input[name="${autocompleteFieldnames.postalCode}"],input[name="${autocompleteFieldnames.town}"]`).attr('autocomplete', 'off')
+  if (
+    typeof autocompleteFieldnames == 'object' &&
+    'postalCode' in autocompleteFieldnames &&
+    'town' in autocompleteFieldnames
+  ) {
+    $(
+      `input[name="${autocompleteFieldnames.postalCode}"],input[name="${autocompleteFieldnames.town}"]`,
+    ).attr('autocomplete', 'off')
     const $inputcp = $(`input[name="${autocompleteFieldnames.postalCode}"]`)
     $inputcp.typeahead({
       items: 'all',
       source(input, callback) {
         if (input.length === 5) {
-          geolocationHelper.getGelocationDataFromPostalCode('France', input)
+          geolocationHelper
+            .getGelocationDataFromPostalCode('France', input)
             .then((data) => {
               const result = []
               data.forEach((geoloc) => {
@@ -14,7 +21,7 @@ $(document).ready(() => {
                   result.push({
                     id: code,
                     name: `${code} ${geoloc.town}`,
-                    ville: geoloc.town
+                    ville: geoloc.town,
                   })
                 })
               })
@@ -32,7 +39,7 @@ $(document).ready(() => {
         $inputcp.val(item.id)
         $inputville.val(item.ville)
         $('.btn-geolocate-address').click()
-      }
+      },
     })
     var $inputville = $(`input[name="${autocompleteFieldnames.town}"]`)
     $inputville.typeahead({
@@ -40,7 +47,8 @@ $(document).ready(() => {
       minLength: 3,
       source(input, callback) {
         if (input.length >= 3) {
-          geolocationHelper.getGelocationDataFromTown('France', input)
+          geolocationHelper
+            .getGelocationDataFromTown('France', input)
             .then((data) => {
               const result = []
               if (data.length > 0) {
@@ -49,13 +57,15 @@ $(document).ready(() => {
                     result.push({
                       id: code,
                       name: `${code} ${geoloc.town}`,
-                      ville: geoloc.town
+                      ville: geoloc.town,
                     })
                   })
                 })
                 callback(result)
               } else {
-                callback([{ id: input, name: _t('BAZ_TOWN_NOT_FOUND', { input }) }])
+                callback([
+                  { id: input, name: _t('BAZ_TOWN_NOT_FOUND', { input }) },
+                ])
               }
             })
             .catch(() => {
@@ -70,7 +80,7 @@ $(document).ready(() => {
         $inputcp.val(item.id)
         $inputville.val(item.ville)
         $('.btn-geolocate-address').click()
-      }
+      },
     })
   }
 })

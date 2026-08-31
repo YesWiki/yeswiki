@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Admin backups.
  */
@@ -16,9 +17,8 @@ class AdminBackupsAction extends YesWikiAction
             ]);
         }
         $status = $this->getService(ArchiveService::class)->getArchivingStatus();
+        $message = '';
         if (!$status['canArchive']) {
-            $message = '';
-
             if ($status['archiving'] === true) {
                 $message = _t('ADMIN_BACKUPS_MESSAGE_ARCHIVING');
             } elseif ($status['hibernated'] === true) {
@@ -34,14 +34,34 @@ class AdminBackupsAction extends YesWikiAction
             } elseif ($status['dB'] == false) {
                 $message = _t('ADMIN_BACKUPS_MESSAGE_DB_NOT_ARCHIVABLE');
             }
+            $message = _t('ADMIN_BACKUPS_MESSAGE_ARCHIVE_CANNOT_BE_DONE') . ' ' . $message
+                . '<br /><a href="?doc#/docs/fr/admin?id=résoudre-les-problèmes-de-sauvegarde">' . _t('ADMIN_BACKUPS_MESSAGE_SEE_DOC') . '</a>.';
+        }
 
+        if (!$this->canReceiveBackups($status)) {
             return $this->render('@templates/alert-message.twig', [
                 'type' => 'warning',
-                'message' => _t('ADMIN_BACKUPS_MESSAGE_ARCHIVE_CANNOT_BE_DONE') . ' ' . $message . '<br /><a href="?doc#/docs/fr/admin?id=résoudre-les-problèmes-de-sauvegarde">' . _t('ADMIN_BACKUPS_MESSAGE_SEE_DOC') . '</a>.',
+                'message' => $message,
             ]);
         }
 
         return $this->render('@core/actions/admin-backups.twig', [
+            'canArchive' => $status['canArchive'],
+            'cannotArchiveMessage' => $message,
         ]);
+    }
+
+    /**
+     * Fetching a backup from another wiki asks nothing of the local one but a private folder to put it in.
+     *
+     * @param array<string,mixed> $status
+     */
+    private function canReceiveBackups(array $status): bool
+    {
+        return $status['privatePathWritable']
+            && $status['notAvailableOnTheInternet']
+            && $status['enoughSpace']
+            && !$status['archiving']
+            && !$status['hibernated'];
     }
 }

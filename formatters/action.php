@@ -13,9 +13,9 @@ if (!function_exists('wakka2callback')) {
         if (preg_match("/^\{\{(.*?)\}\}$/s", $thing, $matches)) {
             if ($matches[1]) {
                 return $wiki->Action($matches[1]);
-            } else {
-                return '{{}}';
             }
+
+            return '{{}}';
         } elseif (preg_match('/^.*$/s', $thing, $matches)) {
             return '';
         }

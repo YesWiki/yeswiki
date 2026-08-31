@@ -28,8 +28,40 @@ abstract class YesWikiAction extends YesWikiPerformable
                 'type' => 'danger',
                 'message' => "Action $actionName : " . _t('NOT_AUTORIZED') . '.',
             ]);
-        } else {
-            return null;
         }
+
+        return null;
+    }
+
+    /**
+     * This function check for corresponding "end" element and store result in
+     * $GLOBALS['check ' . $pagetag]['$element_name'].
+     *
+     * @return false if wrong number of closing element found
+     */
+    protected function check_end_elem(string $action_name): bool
+    {
+        $pagetag = $this->wiki->GetPageTag();
+        if (!isset($GLOBALS["check_$pagetag"][$action_name])) {
+            $GLOBALS["check_$pagetag"][$action_name] =
+                $this->wiki->services->get(\YesWiki\Templates\Service\Utils::class)
+                    ->checkGraphicalElements($action_name, $pagetag, $this->wiki->page['body'] ?? '');
+        }
+
+        return $GLOBALS["check_$pagetag"][$action_name];
+    }
+
+    protected function generate_error_msg(string $action_name): string
+    {
+        $action_name = strtoupper($action_name);
+
+        return '<div class="alert alert-danger"><strong>'
+            . _t("TEMPLATE_ACTION_$action_name") . '</strong> : '
+            . _t("TEMPLATE_ELEM_{$action_name}_NOT_CLOSED") . '.</div>' . "\n";
+    }
+
+    public function end(): string
+    {
+        return '\n</div>';
     }
 }

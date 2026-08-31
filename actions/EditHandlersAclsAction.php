@@ -21,23 +21,23 @@ class EditHandlersAclsAction extends YesWikiAction
         $res .= _t('HANDLER_RIGHTS') . ' <select name="handlername">';
         foreach ($list as $handler) {
             $res .= '<option value="' . $handler . '"';
-            if (!empty($_GET['handlername']) && $_GET['handlername'] == $handler) {
+            if ($this->getRequest()->query->get('handlername') == $handler) {
                 $res .= ' selected="selected"';
             }
             $res .= '>' . ucfirst($handler) . '</option>';
         }
         $res .= '</select> <input class="btn btn-default" type="submit" value="' . _t('SEE') . '" />' . $wiki->FormClose();
 
-        if ($_POST && !empty($_POST['handlername'])) { // save ACL's
-            $result = $wiki->SetModuleACL($name = $_POST['handlername'], 'handler', @$_POST['acl']);
+        $post = $this->getRequest()->request;
+        if ($post->count() > 0 && !empty($post->get('handlername'))) { // save ACL's
+            $result = $wiki->SetModuleACL($name = $post->get('handlername'), 'handler', $post->get('acl'));
             if ($result) {
                 return $res . _t('ERROR_WHILE_SAVING_HANDLER_ACL') . ' ' . ucfirst($name) . ' (' . _t('ERROR_CODE') . ' ' . $result . ')<br />';
-            } else {
-                $wiki->LogAdministrativeAction($wiki->GetUserName(), _t('NEW_ACL_FOR_HANDLER') . ' ' . ucfirst($name) . ' : ' . @$_POST['acl'] . "\n");
-
-                return $res . _t('NEW_ACL_SUCCESSFULLY_SAVED_FOR_HANDLER') . ' ' . ucfirst($name) . '.<br />';
             }
-        } elseif (!empty($_GET['handlername']) && in_array($name = $_GET['handlername'], $list)) {
+            $wiki->LogAdministrativeAction($wiki->GetUserName(), _t('NEW_ACL_FOR_HANDLER') . ' ' . ucfirst($name) . ' : ' . $post->get('acl') . "\n");
+
+            return $res . _t('NEW_ACL_SUCCESSFULLY_SAVED_FOR_HANDLER') . ' ' . ucfirst($name) . '.<br />';
+        } elseif (!empty($this->getRequest()->query->get('handlername')) && in_array($name = $this->getRequest()->query->get('handlername'), $list)) {
             $res .= $wiki->FormOpen();
             $res .= '<br />' . _t('EDIT_RIGHTS_FOR_HANDLER') . ' <strong>' . ucfirst($name) . '</strong>: <br />';
             $res .= '<input type="hidden" name="handlername" value="' . $name . '" />';

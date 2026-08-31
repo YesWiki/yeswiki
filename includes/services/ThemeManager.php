@@ -122,23 +122,25 @@ class ThemeManager implements EventSubscriberInterface
             // Sinon, on récupère premièrement les valeurs passées en REQUEST, ou deuxièmement les métasdonnées présentes pour la page, ou troisièmement les valeurs du fichier de configuration
             $requested = [];
             $keysToVerify = ['theme', 'squelette', 'style', 'preset'];
+            $request = $this->wiki->request;
             foreach ($keysToVerify as $val) {
                 $requested[$val] = null;
-                if (!empty($_REQUEST[$val])) {
-                    $path = str_replace('custom/', '', $_REQUEST[$val]); // exception for preset paths that may contain custom/<presetname>.css
+                $requestVal = $request->get($val);
+                if (!empty($requestVal)) {
+                    $path = str_replace('custom/', '', $requestVal); // exception for preset paths that may contain custom/<presetname>.css
                     if (preg_match('/\//', $path, $matches)) {
                         exit('ERROR: Suspicious path traversal attempt.');
                     }
                     switch ($val) {
                         case 'theme':
-                            $customThemePath = basename(realpath(getcwd() . '/custom/themes/' . $_REQUEST[$val]));
-                            $classicThemePath = basename(realpath(getcwd() . '/themes/' . $_REQUEST[$val]));
+                            $customThemePath = basename(realpath(getcwd() . '/custom/themes/' . $requestVal));
+                            $classicThemePath = basename(realpath(getcwd() . '/themes/' . $requestVal));
                             $requested[$val] = !empty($customThemePath) ? $customThemePath : $classicThemePath;
                             break;
 
                         case 'squelette':
-                            $customPath = basename(realpath(getcwd() . '/custom/themes/' . $requested['theme'] . '/squelettes/' . $_REQUEST[$val]));
-                            $classicPath = basename(realpath(getcwd() . '/themes/' . $requested['theme'] . '/squelettes/' . $_REQUEST[$val]));
+                            $customPath = basename(realpath(getcwd() . '/custom/themes/' . $requested['theme'] . '/squelettes/' . $requestVal));
+                            $classicPath = basename(realpath(getcwd() . '/themes/' . $requested['theme'] . '/squelettes/' . $requestVal));
                             $requested[$val] = null;
                             if (!empty($customPath) && file_exists(getcwd() . '/custom/themes/' . $requested['theme'] . '/squelettes/' . $customPath)) {
                                 $requested[$val] = $customPath;
@@ -153,8 +155,8 @@ class ThemeManager implements EventSubscriberInterface
 
                         default:
                             // ugly append of "s" to get the path of styleS, presetS and squeletteS
-                            $customPath = basename(realpath(getcwd() . '/custom/themes/' . $requested['theme'] . '/' . $val . 's/' . $_REQUEST[$val]));
-                            $classicPath = basename(realpath(getcwd() . '/themes/' . $requested['theme'] . '/' . $val . 's/' . $_REQUEST[$val]));
+                            $customPath = basename(realpath(getcwd() . '/custom/themes/' . $requested['theme'] . '/' . $val . 's/' . $requestVal));
+                            $classicPath = basename(realpath(getcwd() . '/themes/' . $requested['theme'] . '/' . $val . 's/' . $requestVal));
                             $requested[$val] = null;
                             if (!empty($customPath) && file_exists(getcwd() . '/custom/themes/' . $requested['theme'] . '/' . $val . 's/' . $customPath)) {
                                 $requested[$val] = $customPath;
@@ -191,8 +193,9 @@ class ThemeManager implements EventSubscriberInterface
                     $this->setFavorite('preset', $requested['preset']);
                 }
 
-                if (isset($_REQUEST['bgimg']) && is_file('files/backgrounds/' . $_REQUEST['bgimg'])) {
-                    $this->setFavorite('background_image', $_REQUEST['bgimg']);
+                $bgimg = $request->get('bgimg');
+                if (!empty($bgimg) && is_file('files/backgrounds/' . $bgimg)) {
+                    $this->setFavorite('background_image', $bgimg);
                 } else {
                     $this->setFavorite('background_image', BACKGROUND_IMAGE_PAR_DEFAUT);
                 }
@@ -347,7 +350,7 @@ class ThemeManager implements EventSubscriberInterface
         $templateCut = explode('{WIKINI_PAGE}', $fileContent);
         $this->templateHeader = $templateCut[0] ?? '';
         // ADD flash message just before page content
-        $this->templateHeader .= \Tamtamchik\SimpleFlash\Flash::display();
+        $this->templateHeader .= Flash::display();
         $this->templateFooter = (count($templateCut) > 0) ? $templateCut[1] : '';
 
         return true;
@@ -362,18 +365,18 @@ class ThemeManager implements EventSubscriberInterface
     {
         if ($this->fileLoaded || $this->loadTheme()) {
             return $this->renderActions($this->templateHeader);
-        } else {
-            return '';
         }
+
+        return '';
     }
 
     public function renderFooter(): string
     {
         if ($this->fileLoaded || $this->loadTheme()) {
             return $this->renderActions($this->templateFooter);
-        } else {
-            return '';
         }
+
+        return '';
     }
 
     public function getTemplates(): array
@@ -949,29 +952,33 @@ class ThemeManager implements EventSubscriberInterface
     public function saveMetadataIfNeeded(Event $event)
     {
         $data = $event->getData();
+        $request = $this->wiki->request;
+        $post = $request->request;
+        $query = $request->query;
         if (!empty($data['data']['tag'])
-            && !empty($_POST['newpage'])
-            && isset($_POST['theme'])) {
+            && !empty($post->get('newpage'))
+            && $post->has('theme')) {
             $tag = $data['data']['tag'];
             $previousMetadata = $this->pageManager->getMetadata($tag);
 
+            $wikiParam = $query->get('wiki');
             $tagIsCurrentPage = (
-                !empty($_GET['wiki'])
-                && is_string($_GET['wiki'])
-                && explode('/', $_GET['wiki'], 2)[0] === $tag
-            ) || explode('/', array_key_first($_GET), 2)[0] === $tag;
+                !empty($wikiParam)
+                && is_string($wikiParam)
+                && explode('/', $wikiParam, 2)[0] === $tag
+            ) || explode('/', array_key_first($query->all()), 2)[0] === $tag;
 
             if (empty($previousMetadata) // only if no previous metadata
                 && $tagIsCurrentPage) {
                 $metadata = [
-                    'theme' => $_POST['theme'],
-                    'style' => $_POST['style'] ?? CSS_PAR_DEFAUT,
-                    'squelette' => $_POST['squelette'] ?? SQUELETTE_PAR_DEFAUT,
-                    'bgimg' => $_POST['bgimg'] ?? null,
+                    'theme' => $post->get('theme'),
+                    'style' => $post->get('style') ?? CSS_PAR_DEFAUT,
+                    'squelette' => $post->get('squelette') ?? SQUELETTE_PAR_DEFAUT,
+                    'bgimg' => $post->get('bgimg') ?? null,
                 ];
                 foreach (ThemeManager::SPECIAL_METADATA as $metadataName) {
-                    if (!empty($_POST[$metadataName])) {
-                        $metadata[$metadataName] = $_POST[$metadataName];
+                    if (!empty($post->get($metadataName))) {
+                        $metadata[$metadataName] = $post->get($metadataName);
                     }
                 }
                 $this->pageManager->setMetadata($tag, $metadata);

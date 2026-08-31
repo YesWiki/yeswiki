@@ -5,6 +5,8 @@ namespace YesWiki\Bazar\Service;
 use Exception;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Bazar\Exception\ParsingMultipleException;
+use YesWiki\Bazar\Exception\RequiredFieldsException;
+use YesWiki\Bazar\Exception\TagAlreadyUsedException;
 use YesWiki\Bazar\Field\BazarField;
 use YesWiki\Bazar\Field\ImageField;
 use YesWiki\Bazar\Field\TitleField;
@@ -33,6 +35,7 @@ class EntryManager
     protected $activityPubService;
     protected $params;
     protected $searchManager;
+    protected $conditionsChecker;
 
     private $cachedEntriestags;
 
@@ -57,6 +60,7 @@ class EntryManager
         SearchManager $searchManager,
         SecurityController $securityController,
         ActivityPubService $activityPubService,
+        ConditionsChecker $conditionsChecker,
     ) {
         $this->wiki = $wiki;
         $this->mailer = $mailer;
@@ -71,6 +75,7 @@ class EntryManager
         $this->searchManager = $searchManager;
         $this->securityController = $securityController;
         $this->activityPubService = $activityPubService;
+        $this->conditionsChecker = $conditionsChecker;
         $this->cachedEntriestags = [];
     }
 
@@ -79,6 +84,9 @@ class EntryManager
      */
     public function isEntry($tag): bool
     {
+        if (empty($tag)) {
+            return false;
+        }
         if (!isset($this->cachedEntriestags[$tag])) {
             $this->cachedEntriestags[$tag] = !is_null($this->tripleStore->exist($tag, TripleStore::TYPE_URI, self::TRIPLES_ENTRY_ID, '', ''));
         }
@@ -283,20 +291,20 @@ class EntryManager
     {
         if ($pFlags & self::VALIDATE_FLAG_ANTISPAM) {
             if (!isset($data['antispam']) || !$data['antispam'] == 1) {
-                throw new Exception(_t('BAZ_PROTECTION_ANTISPAM'));
+                throw new \Exception(_t('BAZ_PROTECTION_ANTISPAM'));
             }
         }
 
         if ($pFlags & self::VALIDATE_FLAG_BF_TITRE) {
-            if (!isset($data['bf_titre'])) {
-                throw new Exception(_t('BAZ_FICHE_NON_SAUVEE_PAS_DE_TITRE'));
+            if (empty($data['bf_titre'] ?? null)) {
+                throw new \Exception(_t('BAZ_FICHE_NON_SAUVEE_PAS_DE_TITRE'));
             }
         }
 
         if ($pFlags & self::VALIDATE_FLAG_ID_TYPEANNONCE) {
             // form metadata
             if (!isset($data['id_typeannonce'])) {
-                throw new Exception(_t('BAZ_NO_FORMS_FOUND'));
+                throw new \Exception(_t('BAZ_NO_FORMS_FOUND'));
             }
         }
     }
@@ -323,6 +331,8 @@ class EntryManager
             $data = $this->semanticTransformer->convertFromSemanticData($formId, $data);
         }
 
+        $this->refuseTagOfAnExistingPage($data['id_fiche'] ?? null);
+
         // We need to check antispam before if it is removed from data
         $this->validate($data, self::VALIDATE_FLAG_ANTISPAM);
 
@@ -334,6 +344,8 @@ class EntryManager
 
         // Let's format the data
         $data = $this->formatDataBeforeSave($data);
+
+        $this->refuseTagOfAnExistingPage($data['id_fiche'] ?? null);
 
         // We need to check bf_titre and id_typeannonce once the data are formated
         $this->validate($data, self::VALIDATE_FLAG_BF_TITRE | self::VALIDATE_FLAG_ID_TYPEANNONCE);
@@ -408,11 +420,21 @@ class EntryManager
         }
 
         if ($this->activityPubService->isEnabled($form) && !$sourceUrl) {
-             // Notify followers about the new object
-             $this->activityPubService->notifyFollowers($form, $data, 'Create');
+            // Notify followers about the new object
+            $this->activityPubService->notifyFollowers($form, $data, 'Create');
         }
 
         return $data;
+    }
+
+    /**
+     * Creating an entry never writes over a page that is already there, whoever asks.
+     */
+    private function refuseTagOfAnExistingPage(?string $tag): void
+    {
+        if (!empty($tag) && $this->pageManager->getOne($tag, null, true, true)) {
+            throw new TagAlreadyUsedException(_t('BAZ_ENTRY_TAG_ALREADY_USED', ['tag' => $tag]));
+        }
     }
 
     /**
@@ -481,8 +503,8 @@ class EntryManager
 
         $isExternalEntry = !empty($this->tripleStore->getMatching($data['id_fiche'], TripleStore::SOURCE_URL_URI, null, '=', '=', ''));
         if ($this->activityPubService->isEnabled($form) && !$isExternalEntry) {
-             // Notify followers about the updated object (skip if external)
-             $this->activityPubService->notifyFollowers($form, $data, 'Update');
+            // Notify followers about the updated object (skip if external)
+            $this->activityPubService->notifyFollowers($form, $data, 'Update');
         }
 
         return $data;
@@ -601,18 +623,16 @@ class EntryManager
 
         $form = $this->wiki->services->get(FormManager::class)->getOne($fiche['id_typeannonce']);
 
+        $isExternalEntry = !empty($this->tripleStore->getMatching($tag, TripleStore::SOURCE_URL_URI, null, '=', '=', ''));
+
         $this->pageManager->deleteOrphaned($tag);
-        $this->tripleStore->delete($tag, TripleStore::TYPE_URI, null, '', '');
-        $this->tripleStore->delete($tag, TripleStore::SOURCE_URL_URI, null, '', '');
         $this->wiki->LogAdministrativeAction(
             $this->authController->getLoggedUserName(),
             'Suppression de la page ->""' . $tag . '""'
         );
-
-        $isExternalEntry = !empty($this->tripleStore->getMatching($tag, TripleStore::SOURCE_URL_URI, null, '=', '=', ''));
         if ($this->activityPubService->isEnabled($form) && !$isExternalEntry) {
-             // Notify followers about the deleted object
-             $this->activityPubService->notifyFollowers($form, $fiche, 'Delete');
+            // Notify followers about the deleted object
+            $this->activityPubService->notifyFollowers($form, $fiche, 'Delete');
         }
 
         unset($this->cachedEntriestags[$tag]);
@@ -647,21 +667,21 @@ class EntryManager
     {
         // Let's set the value of id_typeannonce
 
-        $data['id_typeannonce'] = isset($data['id_typeannonce']) ? $data['id_typeannonce'] : $_REQUEST['id_typeannonce'];
+        $data['id_typeannonce'] = isset($data['id_typeannonce']) ? $data['id_typeannonce'] : $this->wiki->request->get('id_typeannonce');
 
         // not possible to init the formManager in the constructor because of circular reference problem
         $form = $this->wiki->services->get(FormManager::class)->getOne($data['id_typeannonce']);
         if (empty($form)) {
-            throw new Exception('No form with id: ' . $data['id_typeannonce']);
+            throw new \Exception('No form with id: ' . $data['id_typeannonce']);
         }
 
         // We first need to ensure default values for uneditable fields are set
         // so we can use it later to build the automatic title if necessary
 
         foreach ($form['prepared'] as $bazarField) {
-            if ($bazarField instanceof BazarField &&
-                !($bazarField instanceof TitleField) &&
-                !($bazarField->requireIDFiche()) // Some fields like ImageField and File Field need the id_fiche to be defined before to call formatValuesBeforeSave. So we will handle them later.
+            if ($bazarField instanceof BazarField
+                && !($bazarField instanceof TitleField)
+                && !$bazarField->requireIDFiche() // Some fields like ImageField and File Field need the id_fiche to be defined before to call formatValuesBeforeSave. So we will handle them later.
             ) {
                 $tab = $bazarField->formatValuesBeforeSaveIfEditable($data);
 
@@ -679,6 +699,8 @@ class EntryManager
             }
         }
 
+        $data = $this->conditionsChecker->clearHiddenValues($form, $data);
+
         // We can now build the field title if there is one
 
         if (is_array($form['prepared'])) {
@@ -692,14 +714,17 @@ class EntryManager
         // Let's generate fiche id if necessary
 
         if (!isset($data['id_fiche'])) {
+            if (empty($data['bf_titre'] ?? null)) {
+                throw new \Exception(_t('BAZ_FICHE_NON_SAUVEE_PAS_DE_TITRE') . ' (received fields: ' . implode(', ', array_keys($data)) . ')');
+            }
             // Generate the ID from the title
             if (empty($data['id_fiche'] = genere_nom_wiki($data['bf_titre']))) {
-                throw new Exception('$data[\'id_fiche\'] can not be generated from $data[\'bf_titre\'] !');
+                throw new \Exception('$data[\'id_fiche\'] can not be generated from $data[\'bf_titre\'] (value: "' . $data['bf_titre'] . '") !');
             }
-            // TODO see if we can remove this
-            //$_POST['id_fiche'] = $data['id_fiche'];
+        // TODO see if we can remove this
+        // $_POST['id_fiche'] = $data['id_fiche'];
         } elseif (empty($data['id_fiche'])) {
-            throw new Exception('$data[\'id_fiche\'] is set but with empty value !');
+            throw new \Exception('$data[\'id_fiche\'] is set but with empty value !');
         }
 
         // We can now handle fields like ImageField and File Field that require id_fiche in order to format their values
@@ -736,12 +761,12 @@ class EntryManager
 
         // Let's ensure $data['id_typeannonce'] is not empty
         if (empty($data['id_typeannonce'])) {
-            throw new Exception('$data[\'id_typeannonce\'] is empty !');
+            throw new \Exception('$data[\'id_typeannonce\'] is empty !');
         }
 
         // Let's ensure $data['id_fiche'] is not empty
         if (empty($data['id_fiche'])) {
-            throw new Exception('$data[\'id_fiche\'] is empty !');
+            throw new \Exception('$data[\'id_fiche\'] is empty !');
         }
 
         $data['date_maj_fiche'] = $data['date_maj_fiche'] ?? date('Y-m-d H:i:s', time());
@@ -773,14 +798,26 @@ class EntryManager
 
         $data = $this->removeUnknownFields($data['id_typeannonce'], $data);
 
+        $data = $this->conditionsChecker->clearHiddenValues($form, $data);
+        $hidden = $this->conditionsChecker->hiddenPropertyNames($form, $data);
+        $missing = [];
+
         foreach ($form['prepared'] as $vBazarField) {
             if ($vBazarField instanceof BazarField) {
                 $vPropertyName = $vBazarField->getPropertyName();
 
-                if (!empty($vPropertyName) && $vBazarField->isRequired() && $vBazarField->isEmpty($data[$vPropertyName] ?? null)) {
-                    throw new Exception(_t('BAZ_CHAMPS_REQUIS') . ':' . $vPropertyName);
+                if (!empty($vPropertyName)
+                    && $vBazarField->isRequired()
+                    && !in_array($vPropertyName, $hidden, true)
+                    && $vBazarField->isEmpty($data[$vPropertyName] ?? null)
+                ) {
+                    $missing[$vPropertyName] = $vBazarField->getLabel() ?: $vPropertyName;
                 }
             }
+        }
+
+        if (!empty($missing)) {
+            throw new RequiredFieldsException($missing);
         }
 
         return $data;
@@ -886,25 +923,22 @@ class EntryManager
         // check if first and second separators are at least somewhere
         if (strpos($param, $secondseparator) === false) {
             throw new ParsingMultipleException("Not able to parse multiple parameters because '$secondseparator' is not included in furnished param.");
-        } else {
-            $params = explode($firstseparator, $param);
-            $params = array_map('trim', $params);
-            if (count($params) == 0) {
-                throw new ParsingMultipleException('There is no parameter to parse !');
+        }
+        $params = explode($firstseparator, $param);
+        $params = array_map('trim', $params);
+        if (count($params) == 0) {
+            throw new ParsingMultipleException('There is no parameter to parse !');
+        }
+        foreach ($params as $value) {
+            if (empty($value)) {
+                throw new ParsingMultipleException('One parameter should not be empty !');
+            }
+            $tab = explode($secondseparator, $value);
+            $tab = array_map('trim', $tab);
+            if (count($tab) > 1) {
+                $tabparam[$tab[0]] = $tab[1];
             } else {
-                foreach ($params as $value) {
-                    if (empty($value)) {
-                        throw new ParsingMultipleException('One parameter should not be empty !');
-                    } else {
-                        $tab = explode($secondseparator, $value);
-                        $tab = array_map('trim', $tab);
-                        if (count($tab) > 1) {
-                            $tabparam[$tab[0]] = $tab[1];
-                        } else {
-                            throw new ParsingMultipleException("One parameter does not contain '$secondseparator'!");
-                        }
-                    }
-                }
+                throw new ParsingMultipleException("One parameter does not contain '$secondseparator'!");
             }
         }
 
@@ -956,9 +990,9 @@ class EntryManager
         }
         if (!empty($formsIds)) {
             return $formManager->getMany($formsIds);
-        } else {
-            return $formManager->getAll();
         }
+
+        return $formManager->getAll();
     }
 
     /**
@@ -1063,6 +1097,10 @@ class EntryManager
         // add search for attributes
         $params['queries'] = ($params['queries'] ?? []) + $attributesQueries;
         $requete = $this->searchManager->prepareSearchRequest($params, false, $applyOnAllRevisions);
+
+        if ($requete === '') {
+            return [];
+        }
 
         $pages = $this->dbService->loadAll($requete);
 
@@ -1176,7 +1214,7 @@ class EntryManager
             'YesWiki\Bazar\Field\MapField', 'YesWiki\Bazar\Field\HiddenField', 'YesWiki\Bazar\Field\FileField', 'YesWiki\Bazar\Field\ImageField', 'YesWiki\Bazar\Field\LabelField', 'YesWiki\Bazar\Field\LinkField', 'YesWiki\Bazar\Field\TextareaField', 'YesWiki\Bazar\Field\TitleField', 'YesWiki\Bazar\Field\UserField',
         ];
         if (is_array($fiche) && isset($fiche['id_typeannonce'])) {
-            $form = isset($formtab[$fiche['id_typeannonce']]) ? $formtab[$fiche['id_typeannonce']] : $GLOBALS['wiki']->services->get(FormManager::class)->getOne($fiche['id_typeannonce']);
+            $form = isset($formtab[$fiche['id_typeannonce']]) ? $formtab[$fiche['id_typeannonce']] : $this->wiki->services->get(FormManager::class)->getOne($fiche['id_typeannonce']);
             foreach ($fiche as $key => $value) {
                 if (!empty($value)) {
                     if (

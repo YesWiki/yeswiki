@@ -2,7 +2,6 @@
 
 namespace YesWiki\Bazar\Field;
 
-use attach;
 use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Bazar\Service\DateService;
@@ -10,7 +9,10 @@ use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Bazar\Service\Guard;
 use YesWiki\Core\Service\AssetsManager;
 use YesWiki\Core\Service\EventDispatcher;
+use YesWiki\Core\Service\HtmlPurifierService;
+use YesWiki\Core\Service\StringUtilService;
 use YesWiki\Security\Controller\SecurityController;
+use YesWiki\Wiki;
 
 /**
  * @Field({"fichier"})
@@ -26,6 +28,11 @@ class FileField extends BazarField
     protected $maxSize;
     protected $authorizedExts;
 
+    public const FILE_PRESENT = 'present';
+    public const FILE_MISSING = 'missing';
+    public const FILE_UNREADABLE = 'unreadable';
+    public const FILE_REMOTE = 'remote';
+
     /**
      * Check if a value is a URL.
      */
@@ -34,7 +41,8 @@ class FileField extends BazarField
         if (empty($value)) {
             return false;
         }
-        return filter_var($value, FILTER_VALIDATE_URL) !== false;
+
+        return StringUtilService::isWebAddress($value);
     }
 
     public function __construct(array $values, ContainerInterface $services)
@@ -52,15 +60,15 @@ class FileField extends BazarField
         $this->authorizedExts = array_filter($exts, function ($ext) {
             return preg_match('/^\.[a-z0-9]{1,4}+$/', $ext);
         });
-        $maxFieldSize = $values[self::FIELD_MAX_SIZE] ?
-            $this->getWiki()->parse_size($values[self::FIELD_MAX_SIZE]) :
-            0;
+        $maxFieldSize = $values[self::FIELD_MAX_SIZE]
+            ? $this->getWiki()->parse_size($values[self::FIELD_MAX_SIZE])
+            : 0;
 
         // take the min size limit, excluding 0 values that mean no limit
         $this->maxSize = min(array_filter(
             [
                 $maxFieldSize,
-                $this->getService(ParameterBagInterface::class)->get('max-upload-size'), ]
+                $this->getService(ParameterBagInterface::class)->get('max-upload-size'), ],
         ));
     }
 
@@ -98,14 +106,14 @@ class FileField extends BazarField
             if (!empty($entry) && isset($_GET['delete_file']) && $_GET['delete_file'] === $value) {
                 if ($this->isAllowedToDeleteFile($entry, $value)) {
                     $this->updateEntryAfterFileDelete($entry);
+
                     // Return empty input after deletion
                     return $this->render('@bazar/inputs/file.twig', [
                         'maxSize' => $this->maxSize,
                         'isUrl' => false,
                     ]);
-                } else {
-                    $alertMessage = '<div class="alert alert-info">' . _t('BAZ_DROIT_INSUFFISANT') . '</div>' . "\n";
                 }
+                $alertMessage = '<div class="alert alert-info">' . _t('BAZ_DROIT_INSUFFISANT') . '</div>' . "\n";
             }
 
             return ($alertMessage ?? '') . $this->render('@bazar/inputs/file.twig', [
@@ -119,7 +127,8 @@ class FileField extends BazarField
             ]);
         }
 
-        return ($alertMessage ?? '') . $this->render('@bazar/inputs/file.twig', (
+        return ($alertMessage ?? '') . $this->render(
+            '@bazar/inputs/file.twig',
             empty($value) || !file_exists($this->getBasePath() . $value) || $deletedFile
             ? [
                 'maxSize' => $this->maxSize,
@@ -134,7 +143,7 @@ class FileField extends BazarField
                 'deleteUrl' => empty($entry) ? '' : $this->getWiki()->href('edit', $entry['id_fiche'], ['delete_file' => $value], false),
                 'isAllowedToDeleteFile' => empty($entry) ? false : $this->isAllowedToDeleteFile($entry, $value),
             ]
-        ));
+        );
     }
 
     /*
@@ -183,6 +192,11 @@ class FileField extends BazarField
                     }
                     move_uploaded_file($_FILES[$this->propertyName]['tmp_name'], $filePath);
                     chmod($filePath, 0755);
+
+                    if (in_array($extension, ['svg', 'html', 'htm'])) {
+                        $purifier = $this->getService(HtmlPurifierService::class);
+                        $purifier->cleanFile($filePath, $extension);
+                    }
                 } else {
                     echo _t('BAZ_FILE_ALREADY_EXISTING') . '<br />';
                 }
@@ -195,9 +209,9 @@ class FileField extends BazarField
             return [$this->propertyName => basename($filePath)];
         } elseif (!empty($value)) {
             return [$this->propertyName => file_exists($this->getBasePath() . $value) ? $value : ''];
-        } else {
-            return [$this->propertyName => ''];
         }
+
+        return [$this->propertyName => ''];
     }
 
     protected function renderStatic($entry)
@@ -295,7 +309,7 @@ class FileField extends BazarField
             [
                 'readLabel' => $this->getReadLabel(),
                 'authorizedExts' => $this->getAuthorizedExts(),
-            ]
+            ],
         );
     }
 
@@ -342,6 +356,37 @@ class FileField extends BazarField
         return $sanitizedFilename;
     }
 
+    /**
+     * Tell where the value stored on an entry points: a remote URL, a readable file,
+     * a missing one, or one the server refuses to read.
+     */
+    public function locateFile($entry, ?string $value): string
+    {
+        if (empty($value)) {
+            return self::FILE_MISSING;
+        }
+        if ($this->isUrl($value)) {
+            return self::FILE_REMOTE;
+        }
+
+        $path = $this->getUploadDirectory($entry) . $value;
+        if (!file_exists($path)) {
+            return self::FILE_MISSING;
+        }
+
+        return is_readable($path) ? self::FILE_PRESENT : self::FILE_UNREADABLE;
+    }
+
+    private function getUploadDirectory($entry): string
+    {
+        $uploadPath = rtrim($this->getService(ParameterBagInterface::class)->get('attach_config')['upload_path'], '/');
+        if (empty($this->getService(Wiki::class)->GetConfigValue('no_safe_mode'))) {
+            return $uploadPath . '/';
+        }
+
+        return $uploadPath . '/' . ($entry['id_fiche'] ?? '') . '/';
+    }
+
     protected function getBasePath(): string
     {
         $attach = $this->getAttach();
@@ -350,7 +395,7 @@ class FileField extends BazarField
         return $basePath . (substr($basePath, -1) != '/' ? '/' : '');
     }
 
-    protected function getAttach(): attach
+    protected function getAttach(): \attach
     {
         if (is_null($this->attach)) {
             if (!class_exists('attach')) {
@@ -359,7 +404,7 @@ class FileField extends BazarField
 
             $wiki = $this->getWiki();
 
-            $this->attach = new attach($wiki);
+            $this->attach = new \attach($wiki);
         }
 
         return $this->attach;

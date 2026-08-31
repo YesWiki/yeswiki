@@ -5,7 +5,6 @@ namespace YesWiki\Test\Core\Controller;
 use PHPUnit\Framework\Attributes\CoversMethod;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Depends;
-use Throwable;
 use YesWiki\Core\Controller\AuthController;
 use YesWiki\Core\Controller\GroupController;
 use YesWiki\Core\Controller\UserController;
@@ -20,7 +19,7 @@ require_once 'tests/YesWikiTestCase.php';
 #[CoversMethod(UserController::class, '__construct')]
 #[CoversMethod(UserController::class, 'getFirstAdmin')]
 #[CoversMethod(UserController::class, 'delete')]
-#[CoversMethod(UserController::class, 'deleteGroupsWhereUserIsAlone')]
+#[CoversMethod(UserController::class, 'removeFromGroups')]
 #[CoversMethod(UserController::class, 'create')]
 #[CoversMethod(UserController::class, 'sanitizeName')]
 class UserControllerTest extends YesWikiTestCase
@@ -187,7 +186,7 @@ class UserControllerTest extends YesWikiTestCase
             $userNameAlreadyExist = true;
         } catch (UserEmailAlreadyUsedException $ex) {
             $emailAlreadyExist = true;
-        } catch (Throwable $ex) {
+        } catch (\Throwable $ex) {
             $exceptionThrown = true;
             $exceptionMessage = $ex->getMessage();
         }
@@ -195,7 +194,7 @@ class UserControllerTest extends YesWikiTestCase
             if (!empty($user)) {
                 $userManager->delete($user);
             }
-        } catch (Throwable $th) {
+        } catch (\Throwable $th) {
         }
 
         if ($userNameExist) {
@@ -344,6 +343,67 @@ class UserControllerTest extends YesWikiTestCase
         $this->assertTrue($exceptionThrown, 'delete() should throw when user cannot be safely deleted');
     }
 
+    /**
+     * Deleting a user listed in a group must not leave a blank member behind,
+     * which would make every later save of that group fail.
+     */
+    #[Depends('testUserControllerExisting')]
+    #[Depends('testGetFirstAdmin')]
+    public function testDeleteUserLeavesNoBlankMemberInGroup(Wiki $wiki, string $firstAdmin)
+    {
+        $authController = $wiki->services->get(AuthController::class);
+        $groupController = $wiki->services->get(GroupController::class);
+        $userController = $wiki->services->get(UserController::class);
+        $userManager = $wiki->services->get(UserManager::class);
+
+        $names = [];
+        foreach ([0, 1] as $i) {
+            do {
+                $email = strtolower($wiki->generateRandomString(10, self::CHARS_FOR_EMAIL)) . '@example.com';
+            } while (!empty($userManager->getOneByEmail($email)));
+            do {
+                $name = $wiki->generateRandomString(1, self::UPPER_CHARS)
+                    . $wiki->generateRandomString(25, self::CHARS_FOR_PASSWORD);
+            } while (!empty($userManager->getOneByName($name)));
+            $userManager->create($name, $email, $wiki->generateRandomString(25, self::CHARS_FOR_PASSWORD));
+            $names[] = $name;
+        }
+        [$keptName, $deletedName] = $names;
+
+        do {
+            $groupName = $wiki->generateRandomString(8, self::UPPER_CHARS);
+        } while ($groupController->groupExists($groupName));
+        $groupController->create($groupName, [$keptName, $deletedName]);
+
+        $adminUser = $userManager->getOneByName($firstAdmin);
+        $authController->login($adminUser);
+
+        $saveMessage = '';
+        try {
+            $userController->delete($userManager->getOneByName($deletedName));
+            $members = $groupController->getMembers($groupName);
+            try {
+                $groupController->update($groupName, $members);
+            } catch (\Throwable $th) {
+                $saveMessage = $th->getMessage();
+            }
+        } finally {
+            $authController->logout();
+            foreach ($names as $name) {
+                $leftOver = $userManager->getOneByName($name);
+                if (!empty($leftOver)) {
+                    $userManager->delete($leftOver);
+                }
+            }
+            if ($groupController->groupExists($groupName)) {
+                $groupController->delete($groupName);
+            }
+        }
+
+        $this->assertEquals([$keptName], $members, 'the deleted user should leave neither their name nor a blank entry');
+        $this->assertEquals('', $saveMessage, 'the group should still be saveable after a member is deleted');
+    }
+
     public static function dataProviderTestSanitizeName()
     {
         // name,char,length,Other Exception
@@ -406,7 +466,7 @@ class UserControllerTest extends YesWikiTestCase
                 'password' => $password,
             ]);
             $user = $userManager->getOneByName($name);
-        } catch (Throwable $ex) {
+        } catch (\Throwable $ex) {
             $exceptionThrown = true;
             $exceptionMessage = $ex->getMessage();
         }
@@ -414,7 +474,7 @@ class UserControllerTest extends YesWikiTestCase
             if (!empty($user)) {
                 $userManager->delete($user);
             }
-        } catch (Throwable $th) {
+        } catch (\Throwable $th) {
         }
 
         if ($otherException) {

@@ -8,10 +8,13 @@ use YesWiki\Wiki;
 
 class BazarListService
 {
+    public const EXTERNAL_SCHEMES = ['http', 'https'];
+
     protected $entryManager;
     protected $entryExtraFields;
     protected $externalBazarService;
     protected $formManager;
+    protected $ssrfUrlValidator;
     protected $wiki;
 
     public function __construct(
@@ -19,13 +22,15 @@ class BazarListService
         EntryManager $entryManager,
         EntryExtraFieldsService $entryExtrafields,
         ExternalBazarService $externalBazarService,
-        FormManager $formManager
+        FormManager $formManager,
+        SsrfUrlValidator $ssrfUrlValidator,
     ) {
         $this->wiki = $wiki;
         $this->entryManager = $entryManager;
         $this->entryExtraFields = $entryExtrafields;
         $this->externalBazarService = $externalBazarService;
         $this->formManager = $formManager;
+        $this->ssrfUrlValidator = $ssrfUrlValidator;
     }
 
     public function getForms($pOptions = []): array
@@ -60,8 +65,8 @@ class BazarListService
                     $template,
                     function ($item) {
                         return $item[0] == 'image';
-                    }
-                )
+                    },
+                ),
             );
             foreach ($image_names as $image_name) {
                 $default_image_filename = "defaultimage{$id}_{$image_name}.jpg";
@@ -110,10 +115,10 @@ class BazarListService
                     $pOptions,
                     [
                         'formsIds' => $vLocalIDs,
-                    ]
+                    ],
                 ),
                 true, // filter on read ACL,
-                    true // use Guard
+                true, // use Guard
             );
         } else {
             $vLocalEntries = [];
@@ -124,7 +129,7 @@ class BazarListService
                 array_merge($pOptions, [
                     'idtypeannonce' => ['locals' => [], 'externals' => $vExternalIDs],
                     'forms' => $vForms,
-                ])
+                ]),
             );
         } else {
             $vExternalEntries = [];
@@ -267,9 +272,8 @@ class BazarListService
                                         $filter['nodes'][$value] = $this->createFilterNode($value, $label);
                                     }
                                 }
-                            } else {
-                                // TODO: options?
                             }
+                            // TODO: options?
                         }
                     }
                 }
@@ -311,7 +315,7 @@ class BazarListService
                 $entriesValues = array_column($entries, $propName);
                 // convert string values to array
                 $entriesValues = array_map(function ($val) {
-                    return explode(',', $val);
+                    return explode(',', $val ?? '');
                 }, $entriesValues);
                 // flatten the array
                 $entriesValues = array_merge(...$entriesValues);
@@ -337,11 +341,12 @@ class BazarListService
     // => ['field1' => ['3', '4'], 'field2' => ['web']]
     private function parseCheckedFiltersInURLForNonDynamic()
     {
-        if (empty($_GET['facette'])) {
+        $facette = $this->wiki->request->query->get('facette');
+        if (empty($facette)) {
             return [];
         }
         $result = [];
-        foreach (explode('|', $_GET['facette']) as $field) {
+        foreach (explode('|', $facette) as $field) {
             list($key, $values) = explode('=', $field);
             $result[$key] = explode(',', trim($values));
         }
@@ -467,9 +472,8 @@ class BazarListService
 
             if (isset($vUniqueExternalIDs[$vKey])) {
                 throw new \Exception('The external ID ' . $vExternalID['id'] . ' is requested multiple times for server ' . $vExternalID['url']);
-            } else {
-                $vUniqueExternalIDs[$vKey] = $vExternalID;
             }
+            $vUniqueExternalIDs[$vKey] = $vExternalID;
         }
 
         $vUniqueExternalIDs = array_values($vUniqueExternalIDs);
@@ -502,7 +506,13 @@ class BazarListService
 
     protected function isValidURL($pURL)
     {
-        return true; // keep it for later : URL extracted by getExternalURLsFromIDs should be correct
+        try {
+            $this->ssrfUrlValidator->resolveSafe($pURL, self::EXTERNAL_SCHEMES);
+        } catch (\Throwable $error) {
+            return false;
+        }
+
+        return true;
     }
 
     protected function parseIDs($pIDs)
@@ -511,14 +521,14 @@ class BazarListService
             if (isset($pIDs['locals'])) {
                 // already parsed
                 return $pIDs;
-            } else { // Ensure it is a string
-                $pIDs = implode(',', $pIDs);
-            } // Ensure $pIDs is a string
+            }   // Ensure it is a string
+            $pIDs = implode(',', $pIDs);
+            // Ensure $pIDs is a string
         }
 
         $pIDs = preg_replace('/[^,\s]*\s*\|(?:\s*(?:\([\s,0-9\->]*\))|(?:[0-9\->]*))/', '"\\0"', strip_tags($pIDs));
 
-        $vLines = str_getcsv($pIDs, ',', '"', '\\');
+        $vLines = str_getcsv($pIDs, ',', '"', '');
 
         $vLines = array_filter($vLines, function ($vLine) {
             return !empty($vLine) && trim($vLine) != '';
@@ -599,14 +609,14 @@ class BazarListService
             if ($ordre == 'desc') {
                 return strnatcmp(
                     $this->sanitizeStringForCompare($val2),
-                    $this->sanitizeStringForCompare($val1)
-                );
-            } else {
-                return strnatcmp(
                     $this->sanitizeStringForCompare($val1),
-                    $this->sanitizeStringForCompare($val2)
                 );
             }
+
+            return strnatcmp(
+                $this->sanitizeStringForCompare($val1),
+                $this->sanitizeStringForCompare($val2),
+            );
         };
     }
 

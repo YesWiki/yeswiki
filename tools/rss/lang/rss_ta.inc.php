@@ -3,7 +3,6 @@
 return [
     'RSS_CHANGE_OF' => 'மாற்றியமைத்தல் டி',
     'RSS_HISTORY' => 'வரலாறு',
-    'RSS_HIDDEN_CONTENT' => 'கான்டெனு மாச்குவே',
     'RSS_ON_DATE' => 'லே',
     'RSS_COMPARISON_OF' => 'காம்பரைசன் டி.இ.',
     'RSS_TO' => '& அக்ரேவ்;',

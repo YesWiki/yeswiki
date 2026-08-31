@@ -2,16 +2,36 @@ export default class {
   $btnContainer
   onComplete // callback to be called
 
-  get $modal() { return $('#UploadModal') }
-  get $form() { return this.$modal.find('form') }
-  get tempTag() { return this.$btnContainer.data('temptag') }
-  get $uploadUrl() { return wiki.url(`${wiki.pageTag}/ajaxupload`) }
-  get $downloadList() { return this.$modal.find('.qq-upload-list') }
-  get $fileDownloadText() { return this.$modal.find('.file-option .attach_link_text') }
-  get $hiddenFilenameInput() { return this.$modal.find('.filename') }
-  get $imagesOptions() { return this.$modal.find('.image-option') }
-  get $fileOptions() { return this.$modal.find('.file-option') }
-  get $pdfOptions() { return this.$modal.find('.pdf-option') }
+  get $modal() {
+    return $('#UploadModal')
+  }
+  get $form() {
+    return this.$modal.find('form')
+  }
+  get tempTag() {
+    return this.$btnContainer.data('temptag')
+  }
+  get $uploadUrl() {
+    return wiki.url(`${wiki.pageTag}/ajaxupload`)
+  }
+  get $downloadList() {
+    return this.$modal.find('.qq-upload-list')
+  }
+  get $fileDownloadText() {
+    return this.$modal.find('.file-option .attach_link_text')
+  }
+  get $hiddenFilenameInput() {
+    return this.$modal.find('.filename')
+  }
+  get $imagesOptions() {
+    return this.$modal.find('.image-option')
+  }
+  get $fileOptions() {
+    return this.$modal.find('.file-option')
+  }
+  get $pdfOptions() {
+    return this.$modal.find('.pdf-option')
+  }
 
   constructor() {
     // Cancel Button
@@ -24,7 +44,7 @@ export default class {
     this.$btnContainer = $btnContainer
     this.onComplete = onComplete
 
-    const uploader = new qq.FileUploader({
+    new qq.FileUploader({
       element: $btnContainer[0],
       action: this.$uploadUrl,
       params: this.tempTag ? { tempTag: this.tempTag } : {},
@@ -35,13 +55,18 @@ export default class {
         this.$modal.modal('show')
 
         // Insert Button
-        this.$modal.find('.btn-insert-upload').off('click').on('click', () => {
-          this.onComplete(this.buildCode())
-          this.hideUploadModal()
-        })
+        this.$modal
+          .find('.btn-insert-upload')
+          .off('click')
+          .on('click', () => {
+            this.onComplete(this.buildCode())
+            this.hideUploadModal()
+          })
       },
       onComplete: (id, fileName, responseJSON) => {
-        const fileuploaded = this.$downloadList.find('.qq-upload-success .qq-upload-file')
+        const fileuploaded = this.$downloadList.find(
+          '.qq-upload-success .qq-upload-file',
+        )
         const filesize = fileuploaded.siblings('.qq-upload-size')
         this.$modal.find('.modal-title').append(fileuploaded).append(filesize)
 
@@ -53,20 +78,26 @@ export default class {
           this.$fileOptions.show()
           this.$pdfOptions.show()
           this.$hiddenFilenameInput.val(responseJSON.simplefilename)
-          this.$fileDownloadText.val(`${responseJSON.simplefilename} (${filesize.text()})`)
+          this.$fileDownloadText.val(
+            `${responseJSON.simplefilename} (${filesize.text()})`,
+          )
         } else {
           this.$fileOptions.show()
           this.$hiddenFilenameInput.val(responseJSON.simplefilename)
-          this.$fileDownloadText.val(`${responseJSON.simplefilename} (${filesize.text()})`)
+          this.$fileDownloadText.val(
+            `${responseJSON.simplefilename} (${filesize.text()})`,
+          )
         }
       },
       onCancel: () => {
         this.hideUploadModal()
-      }
+      },
     })
 
     // We move the section where qq will display the upload progress into the modal
-    this.$modal.find('.modal-body').prepend($btnContainer.find('.qq-upload-list'))
+    this.$modal
+      .find('.modal-body')
+      .prepend($btnContainer.find('.qq-upload-list'))
   }
 
   // Private Methods
@@ -83,7 +114,9 @@ export default class {
     this.$form.find('.accordion-trigger.image-option').addClass('collapsed')
     $('#avanced-settings').collapse('hide')
     // Clean title
-    this.$modal.find('.modal-title .qq-upload-file, .modal-title .qq-upload-size').remove()
+    this.$modal
+      .find('.modal-title .qq-upload-file, .modal-title .qq-upload-size')
+      .remove()
   }
 
   hideUploadModal() {
@@ -100,7 +133,10 @@ export default class {
     const file = `${this.tempTag ? `${this.tempTag}/` : ''}${this.getParameterByName(formvals, 'filename')}`
     let result = `{{attach file="${file}" desc="${desctxt}"`
 
-    const displaypdf = this.getParameterByName(formvals, 'attach_action_display_pdf')
+    const displaypdf = this.getParameterByName(
+      formvals,
+      'attach_action_display_pdf',
+    )
     if (typeof displaypdf != 'undefined' && displaypdf == '1') {
       result += ' displaypdf="1"'
     }
@@ -113,9 +149,11 @@ export default class {
     const imagealign = this.getParameterByName(formvals, 'attach_align')
     if (typeof imagealign != 'undefined') {
       result += ` class="${imagealign}`
-      this.$form.find('input[name="attach_css_class"]:checked').each(function() {
-        result += ` ${$(this).val()}`
-      })
+      this.$form
+        .find('input[name="attach_css_class"]:checked')
+        .each(function () {
+          result += ` ${$(this).val()}`
+        })
       result += '"'
     }
 
@@ -129,7 +167,10 @@ export default class {
       result += ` caption="${imagecaption}"`
     }
 
-    const nofullimagelink = this.getParameterByName(formvals, 'attach_nofullimagelink')
+    const nofullimagelink = this.getParameterByName(
+      formvals,
+      'attach_nofullimagelink',
+    )
     if (typeof nofullimagelink != 'undefined' && nofullimagelink == '1') {
       result += ' nofullimagelink="1"'
     }
@@ -142,6 +183,8 @@ export default class {
     name = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
     const regex = new RegExp(`[\\?&]${name}=([^&#]*)`)
     const results = regex.exec(`?${querystring}`)
-    return results == null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '))
+    return results == null
+      ? ''
+      : decodeURIComponent(results[1].replace(/\+/g, ' '))
   }
 }

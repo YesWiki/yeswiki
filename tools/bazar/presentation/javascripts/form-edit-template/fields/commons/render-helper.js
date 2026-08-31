@@ -5,10 +5,10 @@ export default {
   ids: {},
   formFields: {},
   getFormField(fieldId) {
-    if (!this.formFields.hasOwnProperty(fieldId)) {
+    if (!Object.prototype.hasOwnProperty.call(this.formFields, fieldId)) {
       const formField = $(`.field-${fieldId}`).closest('li.form-field')
       const newFormField = {}
-      newFormField[fieldId] = (formField.length == 0) ? false : formField
+      newFormField[fieldId] = formField.length == 0 ? false : formField
       this.formFields = { ...this.formFields, ...newFormField }
     }
     return this.formFields[fieldId]
@@ -17,7 +17,7 @@ export default {
     const holder = this.getHolder(field)
     if (holder) {
       const formGroup = holder.find(`.${formGroupName}-wrap`)
-      if (typeof formGroup !== undefined && formGroup.length > 0) {
+      if (formGroup.length > 0) {
         return formGroup
       }
     }
@@ -25,7 +25,7 @@ export default {
   },
   getHolder(field) {
     const fieldId = field.id
-    if (!this.holders.hasOwnProperty(fieldId)) {
+    if (!Object.prototype.hasOwnProperty.call(this.holders, fieldId)) {
       const formField = this.getFormField(fieldId)
       const newHolder = {}
       const newId = {}
@@ -33,8 +33,7 @@ export default {
       if (formField) {
         id = $(formField).attr('id')
         const anchor = $(`#${id}-holder`)
-        if (typeof anchor === 'undefined'
-              || anchor.length == 0) {
+        if (typeof anchor === 'undefined' || anchor.length == 0) {
           newHolder[fieldId] = false
           newId[fieldId] = false
         } else {
@@ -52,17 +51,19 @@ export default {
   },
   getId(field) {
     const fieldId = field.id
-    if (!this.ids.hasOwnProperty(fieldId)) {
+    if (!Object.prototype.hasOwnProperty.call(this.ids, fieldId)) {
       this.getHolder(field)
     }
     return this.ids[fieldId]
   },
   initializeField(field) {
-    if (!field.hasClass('initialized')
-      || field.data('savedId') != field.prop('id')) {
+    if (
+      !field.hasClass('initialized') ||
+      field.data('savedId') != field.prop('id')
+    ) {
       field.addClass('initialized')
       field.data('savedId', field.prop('id'))
-      field.find('.initialized').each(function() {
+      field.find('.initialized').each(function () {
         $(this).removeClass('initialized')
       })
     }
@@ -72,9 +73,7 @@ export default {
     if (holder) {
       if (!holder.hasClass('hint-already-defined')) {
         const formElements = holder.find('.form-elements').first()
-        const helpMsg = $('<div/>')
-          .addClass('custom-hint')
-          .append(message)
+        const helpMsg = $('<div/>').addClass('custom-hint').append(message)
         formElements.prepend(helpMsg)
         holder.addClass('hint-already-defined')
       }
@@ -95,12 +94,14 @@ export default {
       const label = formGroup.find('label').first()
       if (!label.hasClass('label-hint-already-defined')) {
         label.append(' ')
-        label.append($('<i/>')
-          .addClass('fa fa-question-circle')
-          .attr('title', message)
-          .tooltip())
+        label.append(
+          $('<i/>')
+            .addClass('fa fa-question-circle')
+            .attr('title', message)
+            .tooltip(),
+        )
         label.addClass('label-hint-already-defined')
       }
     }
-  }
+  },
 }

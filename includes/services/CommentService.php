@@ -2,7 +2,6 @@
 
 namespace YesWiki\Core\Service;
 
-use Exception;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use YesWiki\Core\Entity\Event;
@@ -56,6 +55,12 @@ class CommentService implements EventSubscriberInterface
         ];
     }
 
+    /**
+     * Post a comment, or rewrite one that is already there.
+     *
+     * An edit is authorized against the comment being rewritten, and its parent is read back from
+     * it, so no other page can be reached through the parent named in the request.
+     */
     public function addCommentIfAuthorized($content, $idComment = '')
     {
         if (!$this->wiki->getUser()) {
@@ -63,101 +68,114 @@ class CommentService implements EventSubscriberInterface
                 'code' => 401,
                 'error' => _t('USER_MUST_BE_LOGGED_TO_COMMENT'),
             ];
-        } else {
-            if ($this->wiki->HasAccess('comment', $content['pagetag']) && $this->wiki->Loadpage($content['pagetag'])) {
-                if ($this->params->get('use_hashcash')) {
-                    require_once 'tools/security/secret/wp-hashcash.lib';
-                    if (!isset($content['hashcash_value']) || ($content['hashcash_value'] != hashcash_field_value())) {
-                        return [
-                            'code' => 400,
-                            'error' => _t('HASHCASH_COMMENT_NOT_SAVED_MAYBE_YOU_ARE_A_ROBOT'),
-                        ];
-                    }
-                }
-                if (empty($idComment)) {
-                    $newComment = true;
-                    // find number
-                    $sql = 'SELECT MAX(SUBSTRING(tag, 8) + 0) AS comment_id'
-                        . ' FROM ' . $this->wiki->GetConfigValue('table_prefix') . 'pages'
-                        . ' WHERE comment_on != ""';
-                    if ($lastComment = $this->wiki->LoadSingle($sql)) {
-                        $num = $lastComment['comment_id'] + 1;
-                    } else {
-                        $num = '1';
-                    }
-                    $idComment = 'Comment' . $num;
-                } else {
-                    $newComment = false;
-                }
-
-                $body = trim($content['body']);
-                if (!$body) {
-                    return [
-                        'code' => 400,
-                        'error' => _t('COMMENT_EMPTY_NOT_SAVED'),
-                    ];
-                } else {
-                    // store new comment
-                    $this->wiki->SavePage($idComment, $body, $content['pagetag']);
-                    if ($newComment) {
-                        // default ACLs for comments : visible for all, writable by owner, commentable like parent.
-                        $parentCommentAcl = $this->aclService->load($content['pagetag'], 'comment', false);
-                        $parentCommentAcl = empty($parentCommentAcl) || empty($parentCommentAcl['list']) ? $this->aclService->load($content['pagetag'], 'comment', true) : $parentCommentAcl;
-                        $parentCommentAcl = $parentCommentAcl['list'];
-                        $this->aclService->save($idComment, 'write', '%');
-                        $this->aclService->save($idComment, 'read', '*');
-                        $this->aclService->save($idComment, 'comment', $parentCommentAcl);
-                    }
-
-                    $comment = $this->wiki->LoadPage($idComment);
-                    $com['tag'] = $comment['tag'];
-                    $com['commentOn'] = $comment['comment_on'];
-                    $com['rawbody'] = $comment['body'];
-                    // Do the page change in any case (useful for attach or grid)
-                    $oldPage = $GLOBALS['wiki']->GetPageTag();
-                    $oldPageArray = $GLOBALS['wiki']->page;
-                    $GLOBALS['wiki']->tag = $comment['tag'];
-                    $GLOBALS['wiki']->page = $comment;
-                    $com['body'] = $GLOBALS['wiki']->Format($comment['body']);
-                    $GLOBALS['wiki']->tag = $oldPage;
-                    $GLOBALS['wiki']->page = $oldPageArray;
-                    $this->setUserData($comment, 'user', $com);
-                    $this->setUserData($comment, 'owner', $com);
-                    $com['date'] = 'le ' . date('d.m.Y à H:i:s', strtotime($comment['time']));
-                    if ($this->wiki->HasAccess('comment', $comment['tag'])) {
-                        $com['linkcomment'] = $this->wiki->href('pages/' . $comment['tag'] . '/comments', 'api');
-                    }
-                    if ($this->wiki->UserIsOwner($comment['tag']) || $this->wiki->UserIsAdmin()) {
-                        $com['linkeditcomment'] = $this->wiki->href('edit', $comment['tag']);
-                        $com['linkdeletecomment'] = $this->wiki->href("comments/{$comment['tag']}/delete", 'api');
-                        //$this->wiki->href('deletepage', $comment['tag']);
-                    }
-                    $com['reponses'] = $this->getCommentList($comment['tag'], false);
-                    $com['parentPage'] = $this->getParentPage($comment['tag']);
-                    $errors = $this->eventDispatcher->yesWikiDispatch($newComment ? 'comment.created' : 'comment.updated', [
-                        'id' => $com['tag'],
-                        'data' => $com,
-                    ]);
-
-                    return [
-                        'code' => 200,
-                        'success' => _t('COMMENT_PUBLISHED'),
-                        'html' => $this->wiki->render('@core/comment.twig', ['comment' => $com]),
-                    ] + $errors;
-                }
-            } else {
+        }
+        $content['pagetag'] = $content['pagetag'] ?? '';
+        if (!empty($idComment)) {
+            $edited = $this->pageManager->getOne($idComment, null, true, true);
+            if (empty($edited) || empty($edited['comment_on'])) {
                 return [
-                    'code' => 403,
-                    'error' => _t('USER_NOT_ALLOWED_TO_COMMENT'),
+                    'code' => 404,
+                    'error' => _t('COMMENT_NOT_FOUND'),
                 ];
             }
+            if (!$this->aclService->hasAccess('write', $idComment)) {
+                return [
+                    'code' => 403,
+                    'error' => _t('NOT_AUTORIZED_TO_EDIT_COMMENT'),
+                ];
+            }
+            $content['pagetag'] = $edited['comment_on'];
         }
+        if ($this->wiki->HasAccess('comment', $content['pagetag']) && $this->wiki->Loadpage($content['pagetag'])) {
+            if ($this->params->get('use_hashcash')) {
+                require_once 'tools/security/secret/wp-hashcash.lib';
+                if (!isset($content['hashcash_value']) || ($content['hashcash_value'] != hashcash_field_value())) {
+                    return [
+                        'code' => 400,
+                        'error' => _t('HASHCASH_COMMENT_NOT_SAVED_MAYBE_YOU_ARE_A_ROBOT'),
+                    ];
+                }
+            }
+            if (empty($idComment)) {
+                $newComment = true;
+                // find number
+                $sql = 'SELECT MAX(SUBSTRING(tag, 8) + 0) AS comment_id'
+                    . ' FROM ' . $this->wiki->GetConfigValue('table_prefix') . 'pages'
+                    . ' WHERE comment_on != ""';
+                if ($lastComment = $this->wiki->LoadSingle($sql)) {
+                    $num = $lastComment['comment_id'] + 1;
+                } else {
+                    $num = '1';
+                }
+                $idComment = 'Comment' . $num;
+            } else {
+                $newComment = false;
+            }
+
+            $body = trim($content['body']);
+            if (!$body) {
+                return [
+                    'code' => 400,
+                    'error' => _t('COMMENT_EMPTY_NOT_SAVED'),
+                ];
+            }
+            // store new comment
+            $this->wiki->SavePage($idComment, $body, $content['pagetag']);
+            if ($newComment) {
+                // default ACLs for comments : visible for all, writable by owner, commentable like parent.
+                $parentCommentAcl = $this->aclService->load($content['pagetag'], 'comment', false);
+                $parentCommentAcl = empty($parentCommentAcl) || empty($parentCommentAcl['list']) ? $this->aclService->load($content['pagetag'], 'comment', true) : $parentCommentAcl;
+                $parentCommentAcl = $parentCommentAcl['list'];
+                $this->aclService->save($idComment, 'write', '%');
+                $this->aclService->save($idComment, 'read', '*');
+                $this->aclService->save($idComment, 'comment', $parentCommentAcl);
+            }
+
+            $comment = $this->wiki->LoadPage($idComment);
+            $com['tag'] = $comment['tag'];
+            $com['commentOn'] = $comment['comment_on'];
+            $com['rawbody'] = $comment['body'];
+            // Do the page change in any case (useful for attach or grid)
+            $oldPage = $GLOBALS['wiki']->GetPageTag();
+            $oldPageArray = $GLOBALS['wiki']->page;
+            $GLOBALS['wiki']->tag = $comment['tag'];
+            $GLOBALS['wiki']->page = $comment;
+            $com['body'] = $GLOBALS['wiki']->Format($comment['body']);
+            $GLOBALS['wiki']->tag = $oldPage;
+            $GLOBALS['wiki']->page = $oldPageArray;
+            $this->setUserData($comment, 'user', $com);
+            $this->setUserData($comment, 'owner', $com);
+            $com['date'] = 'le ' . date('d.m.Y à H:i:s', strtotime($comment['time']));
+            if ($this->wiki->HasAccess('comment', $comment['tag'])) {
+                $com['linkcomment'] = $this->wiki->href('pages/' . $comment['tag'] . '/comments', 'api');
+            }
+            if ($this->wiki->UserIsOwner($comment['tag']) || $this->wiki->UserIsAdmin()) {
+                $com['linkeditcomment'] = $this->wiki->href('edit', $comment['tag']);
+                $com['linkdeletecomment'] = $this->wiki->href("comments/{$comment['tag']}/delete", 'api');
+                // $this->wiki->href('deletepage', $comment['tag']);
+            }
+            $com['reponses'] = $this->getCommentList($comment['tag'], false);
+            $com['parentPage'] = $this->getParentPage($comment['tag']);
+            $errors = $this->eventDispatcher->yesWikiDispatch($newComment ? 'comment.created' : 'comment.updated', [
+                'id' => $com['tag'],
+                'data' => $com,
+            ]);
+
+            return [
+                'code' => 200,
+                'success' => _t('COMMENT_PUBLISHED'),
+                'html' => $this->wiki->render('@core/comment.twig', ['comment' => $com]),
+            ] + $errors;
+        }
+
+        return [
+            'code' => 403,
+            'error' => _t('USER_NOT_ALLOWED_TO_COMMENT'),
+        ];
     }
 
     /**
      * delete a comment.
-     *
-     * @param array $errors
      */
     public function delete(string $commentTag): array
     {
@@ -206,7 +224,7 @@ class CommentService implements EventSubscriberInterface
      */
     public function loadComments($tag, bool $bypassAcls = false, $username = null)
     {
-        $query = 'SELECT * FROM ' . $this->wiki->config['table_prefix'] . 'pages ' . 'WHERE ';
+        $query = 'SELECT * FROM ' . $this->wiki->config['table_prefix'] . 'pages WHERE ';
         if (empty($tag)) {
             $query .= 'comment_on != "" ';
         } else {
@@ -220,7 +238,7 @@ class CommentService implements EventSubscriberInterface
         }
         // remove current comment to prevent infinite loop
         $query .= " AND `tag` != '{$this->dbService->escape($tag)}' ";
-        $query .= 'AND latest = "Y" ' . 'ORDER BY substring(tag, 8) + 0';
+        $query .= 'AND latest = "Y" ORDER BY substring(tag, 8) + 0';
         $comments = array_filter($this->wiki->LoadAll($query), function ($comment) {
             return !empty($comment['tag']);
         });
@@ -378,37 +396,37 @@ class CommentService implements EventSubscriberInterface
     {
         // Check inputs
         if (!is_int($min_brightness)) {
-            throw new Exception("$min_brightness is not an integer");
+            throw new \Exception("$min_brightness is not an integer");
         }
         if (!is_int($spec)) {
-            throw new Exception("$spec is not an integer");
+            throw new \Exception("$spec is not an integer");
         }
         if ($spec < 2 or $spec > 10) {
-            throw new Exception("$spec is out of range");
+            throw new \Exception("$spec is out of range");
         }
         if ($min_brightness < 0 or $min_brightness > 255) {
-            throw new Exception("$min_brightness is out of range");
+            throw new \Exception("$min_brightness is out of range");
         }
 
-        $hash = md5($text);  //Gen hash of text
+        $hash = md5($text);  // Gen hash of text
         $colors = [];
         for ($i = 0; $i < 3; $i++) {
-            $colors[$i] = max([round(((hexdec(substr($hash, $spec * $i, $spec))) / hexdec(str_pad('', $spec, 'F'))) * 255), $min_brightness]);
-        } //convert hash into 3 decimal values between 0 and 255
+            $colors[$i] = max([round((hexdec(substr($hash, $spec * $i, $spec)) / hexdec(str_pad('', $spec, 'F'))) * 255), $min_brightness]);
+        } // convert hash into 3 decimal values between 0 and 255
 
-        if ($min_brightness > 0) {  //only check brightness requirements if min_brightness is about 100
-            while (array_sum($colors) / 3 < $min_brightness) {  //loop until brightness is above or equal to min_brightness
+        if ($min_brightness > 0) {  // only check brightness requirements if min_brightness is about 100
+            while (array_sum($colors) / 3 < $min_brightness) {  // loop until brightness is above or equal to min_brightness
                 for ($i = 0; $i < 3; $i++) {
                     $colors[$i] += 10;
                 }
             }
-        }    //increase each color by 10
+        }    // increase each color by 10
 
         $output = '';
 
         for ($i = 0; $i < 3; $i++) {
             $output .= str_pad(dechex($colors[$i]), 2, 0, STR_PAD_LEFT);
-        }  //convert each color to hex and append to output
+        }  // convert each color to hex and append to output
 
         return '#' . $output;
     }
@@ -494,9 +512,9 @@ class CommentService implements EventSubscriberInterface
         $filteredUsers = [];
         foreach ($users as $user) {
             if (
-                $user['email'] != $loggedUser['email'] &&
-                (empty($owner) || ($user['email'] != $owner['email'])) &&
-                !in_array($user['name'], array_keys($filteredUsers))
+                $user['email'] != $loggedUser['email']
+                && (empty($owner) || ($user['email'] != $owner['email']))
+                && !in_array($user['name'], array_keys($filteredUsers))
             ) {
                 $filteredUsers[$user['name']] = $user;
             }
@@ -531,11 +549,10 @@ class CommentService implements EventSubscriberInterface
         } elseif (in_array($page['comment_on'], $alreadyFoundTags)) {
             // prevent infinite loop
             return null;
-        } else {
-            $foundTags = $alreadyFoundTags;
-            $foundTags[] = $commentTag;
-
-            return $this->getParentPage($page['comment_on'], $foundTags);
         }
+        $foundTags = $alreadyFoundTags;
+        $foundTags[] = $commentTag;
+
+        return $this->getParentPage($page['comment_on'], $foundTags);
     }
 }

@@ -3,7 +3,6 @@
 return [
     'RSS_CHANGE_OF' => 'Modificación de',
     'RSS_HISTORY' => 'histórico',
-    'RSS_HIDDEN_CONTENT' => 'contenido oculto',
     'RSS_ON_DATE' => 'el',
     'RSS_COMPARISON_OF' => 'Comparación de',
     'RSS_TO' => 'a',

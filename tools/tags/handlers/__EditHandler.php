@@ -20,13 +20,13 @@ class __EditHandler extends YesWikiHandler
             && $aclService->hasAccess('write')
         ) {
             // save new tag if authorized
+            $post = $this->getRequest()->request;
             if (
-                isset($_POST['submit'])
-                && $_POST['submit'] == SecurityController::EDIT_PAGE_SUBMIT_VALUE
-                && isset($_POST['pagetags'])
-                && $_POST['antispam'] == 1
+                $post->get('submit') == SecurityController::EDIT_PAGE_SUBMIT_VALUE
+                && $post->has('pagetags')
+                && $post->get('antispam') == 1
             ) {
-                $tagsManager->save($this->wiki->GetPageTag(), stripslashes($_POST['pagetags']));
+                $tagsManager->save($this->wiki->GetPageTag(), stripslashes($post->get('pagetags')));
             }
 
             // display

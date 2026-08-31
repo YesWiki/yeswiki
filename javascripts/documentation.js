@@ -1,6 +1,6 @@
 const AVAILABLE_LOCALES = ['fr'] // replace by ['fr', 'en'] when english documentation is available
 // replace by ['fr', 'en', 'es'] when english and spannish documentations are available
-const FALLBACK_LOCALE = 'fr'// do not change it
+const FALLBACK_LOCALE = 'fr' // do not change it
 if (!AVAILABLE_LOCALES.includes(locale)) locale = FALLBACK_LOCALE
 
 window.$docsify = {
@@ -11,7 +11,7 @@ window.$docsify = {
   auto2top: true,
   alias: {
     '.*/_sidebar.md': `/docs/${locale}/_sidebar.md`, // set default _sidebar.md to locale language
-    '.*/_navbar.md': `/docs/${locale}/_navbar.md` // set default _navbar.md to locale language
+    '.*/_navbar.md': `/docs/${locale}/_navbar.md`, // set default _navbar.md to locale language
   },
   search: {
     // maxAge: 0, // when developing, override cache by setting maxAge to 0. Also you need to clear your localStorage
@@ -32,22 +32,22 @@ window.$docsify = {
       `/docs/${locale}/asso-finances`,
       `/docs/${locale}/semantic`,
       `/docs/${locale}/usage-avance`,
-      ...extensions.map(ext => `/${ext.docPath}`)
-    ]
+      ...extensions.map((ext) => `/${ext.docPath}`),
+    ],
   },
   copyCode: {
     buttonText: {
       '/docs/fr/': 'Copier le code',
-      '/': 'Copy to clipboard' // default to English
+      '/': 'Copy to clipboard', // default to English
     },
     errorText: 'Error',
     successText: {
       '/docs/fr/': 'Copié',
-      '/': 'Copied' // default to English
-    }
+      '/': 'Copied', // default to English
+    },
   },
   plugins: [
-    function(hook, vm) {
+    function (hook, vm) {
       // In docsify v5, the active sidebar link detection changed from prefix matching to
       // exact URL matching. The dummy [Doc](/) link no longer matches any page except the
       // root, so the heading-based sub-sidebar is never generated.
@@ -84,8 +84,7 @@ window.$docsify = {
 
         // Build the current URL without the hash
         const currentUrlWithoutHash = new URL(
-          location.origin + location.pathname
-          + location.search
+          location.origin + location.pathname + location.search,
         )
 
         // Get the search parameters from the URL (before the hash)
@@ -101,7 +100,9 @@ window.$docsify = {
           dd && console.log('url or hash has id, will scroll to element')
 
           // Get the 'id' from either search or hash
-          const urlId = isUrlHasIdQuery ? urlQueryParam.get(TARGET_QUERY) : hashParams.get(TARGET_QUERY)
+          const urlId = isUrlHasIdQuery
+            ? urlQueryParam.get(TARGET_QUERY)
+            : hashParams.get(TARGET_QUERY)
 
           // Delay the scrolling to ensure everything is loaded
           setTimeout(() => {
@@ -111,19 +112,27 @@ window.$docsify = {
               dd && console.log('Target element ID:', urlId)
               if (targetElement) {
                 // Check if the target element is within an excluded parent
-                const excludedParent = targetElement.closest(`.${EXCLUDED_PARENT_CLASS}`)
+                const excludedParent = targetElement.closest(
+                  `.${EXCLUDED_PARENT_CLASS}`,
+                )
 
                 if (!excludedParent) {
                   // Use requestAnimationFrame for immediate scroll to the element
                   requestAnimationFrame(() => {
                     // Scroll smoothly to the element's top position
                     window.scrollTo({
-                      top: (targetElement.offsetTop + targetElement.offsetParent?.offsetTop || 0) - 160,
-                      behavior: 'smooth'
+                      top:
+                        (targetElement.offsetTop +
+                          targetElement.offsetParent?.offsetTop || 0) - 160,
+                      behavior: 'smooth',
                     })
                   })
                 } else {
-                  dd && console.log('Target is within an excluded parent:', excludedParent)
+                  dd &&
+                    console.log(
+                      'Target is within an excluded parent:',
+                      excludedParent,
+                    )
                 }
               } else {
                 dd && console.log('Element not found')
@@ -137,8 +146,14 @@ window.$docsify = {
 
       hook.afterEach((html) => {
         // Lazy load images and iframes
-        html = html.replace(/<img src=([^\s]*)/g, '<img class="lazyload" data-src=$1')
-        html = html.replace(/<iframe(.*) src=([^\s]*)/g, '<iframe$1 class="lazyload" data-src=$2')
+        html = html.replace(
+          /<img src=([^\s]*)/g,
+          '<img class="lazyload" data-src=$1',
+        )
+        html = html.replace(
+          /<iframe(.*) src=([^\s]*)/g,
+          '<iframe$1 class="lazyload" data-src=$2',
+        )
 
         // Adds footer
         if (vm.route.file.match(/^docs\/.*$/)) {
@@ -159,7 +174,9 @@ window.$docsify = {
         // ```yeswiki preview
         // {{button}}
         // `̀`
-        const yeswikiCodes = document.querySelectorAll('pre[data-lang^="yeswiki"]')
+        const yeswikiCodes = document.querySelectorAll(
+          'pre[data-lang^="yeswiki"]',
+        )
         yeswikiCodes.forEach((preDom) => {
           const data = preDom.getAttribute('data-lang')
           preDom.setAttribute('data-lang', data.split(' ')[0])
@@ -203,16 +220,21 @@ window.$docsify = {
         // Back to top button
         const backToTop = document.createElement('button')
         backToTop.classList = 'back-to-top'
-        backToTop.setAttribute('aria-label', locale === 'fr' ? 'Retour en haut' : 'Back to top')
+        backToTop.setAttribute(
+          'aria-label',
+          locale === 'fr' ? 'Retour en haut' : 'Back to top',
+        )
         backToTop.innerHTML = '<i class="gg-arrow-up"></i>'
-        backToTop.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }))
+        backToTop.addEventListener('click', () =>
+          window.scrollTo({ top: 0, behavior: 'smooth' }),
+        )
         document.querySelector('main').appendChild(backToTop)
         window.addEventListener('scroll', () => {
           backToTop.classList.toggle('visible', window.scrollY > 300)
         })
       })
-    }
-  ]
+    },
+  ],
 }
 
 function insertAfter(referenceNode, newNode) {
@@ -246,7 +268,7 @@ function initCustomNavMenu() {
   const menuIcon = document.createElement('div')
   menuIcon.innerHTML = "<i class='gg-menu'></i><i class='gg-close'></i>"
   menuIcon.classList = 'menu-icon'
-  menuIcon.addEventListener('click', function() {
+  menuIcon.addEventListener('click', function () {
     document.querySelector('nav > ul').classList.toggle('open')
     this.classList.toggle('open')
   })

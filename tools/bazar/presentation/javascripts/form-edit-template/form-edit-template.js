@@ -28,7 +28,7 @@ import openinghours from './fields/openinghours.js'
 
 import {
   parseWikiTextIntoJsonData,
-  formatJsonDataIntoWikiText
+  formatJsonDataIntoWikiText,
 } from './yeswiki-syntax-converter.js'
 import {
   copyMultipleSelectValues,
@@ -36,7 +36,7 @@ import {
   addAdvancedAttributesSection,
   adjustDefaultAcls,
   adjustJqueryBuilderUI,
-  convertToBytes
+  convertToBytes,
 } from './form-builder-helper.js'
 import { initListOrFormIdAttribute } from './attributes/list-form-id-attribute.js'
 import I18nOption from './i18n.js'
@@ -73,7 +73,7 @@ window.formBuilderFields = {
   tabs,
   tabchange,
   bookmarklet,
-  custom
+  custom,
 }
 
 function initializeFormbuilder() {
@@ -101,7 +101,7 @@ function initializeFormbuilder() {
     templates: mapFieldsConf((conf) => conf.renderInput),
     i18n: {
       locale: I18nOption[wiki.locale] ?? 'fr-FR',
-      location: `${wiki.baseUrl.replace('?', '')}javascripts/vendor/formbuilder-languages/`
+      location: `${wiki.baseUrl.replace('?', '')}javascripts/vendor/formbuilder-languages/`,
     },
     // Disable some default fields of Jquery formBuilder
     disableFields: [
@@ -115,7 +115,7 @@ function initializeFormbuilder() {
       'checkbox-group',
       'radio-group',
       'select',
-      'hidden'
+      'hidden',
     ],
     // disbale some default attributes of Jquery formBuilder for all fields
     disabledAttrs: [
@@ -126,7 +126,7 @@ function initializeFormbuilder() {
       'toggle',
       'description',
       'other',
-      'multiple'
+      'multiple',
     ],
     onAddField(fieldId, field) {
       adjustDefaultAcls(field)
@@ -136,7 +136,8 @@ function initializeFormbuilder() {
       // transform frmb-XXXX-fld-6  into frmb-XXXX-fld-7
       fieldId = fieldId.replace(
         /(.*)-fld-(\d+)$/gim,
-        (string, formId, fieldId) => `${formId}-fld-${parseInt(fieldId, 10) + 1}`
+        (string, formId, fieldId) =>
+          `${formId}-fld-${parseInt(fieldId, 10) + 1}`,
       )
 
       // Timeout to wait the field ot be rendered
@@ -147,7 +148,7 @@ function initializeFormbuilder() {
         adjustJqueryBuilderUI($field)
 
         // disable bf_titre identifier edition
-        $field.find('.fld-name').each(function() {
+        $field.find('.fld-name').each(function () {
           if ($(this).val() === 'bf_titre') {
             $(this).attr('disabled', true)
           }
@@ -168,7 +169,7 @@ function initializeFormbuilder() {
           if (image_content.length === 2) {
             const dataTransfer = new DataTransfer()
             dataTransfer.items.add(
-              new File(convertToBytes(image_content[1]), image_content[0])
+              new File(convertToBytes(image_content[1]), image_content[0]),
             )
             file_elem.files = dataTransfer.files
           }
@@ -176,7 +177,7 @@ function initializeFormbuilder() {
         if (file_elem.parentElement.childElementCount == 1) {
           const new_button = document.createElement('i')
           new_button.className = 'fas fa-remove btn-img-remove'
-          new_button.onclick = function() {
+          new_button.onclick = function () {
             file_elem.files = new DataTransfer().files
             window.defaultImage[image_name] = ''
           }
@@ -198,11 +199,11 @@ function initializeFormbuilder() {
         }
         const reader = new FileReader()
         reader.readAsDataURL(file)
-        reader.onload = function() {
+        reader.onload = function () {
           window.defaultImage[image_name] = `${file.name}|${reader.result}`
         }
       })
-    }
+    },
   })
 
   const defaultFieldsName = mapFieldsConf((conf) => conf.defaultIdentifier)
@@ -212,7 +213,8 @@ function initializeFormbuilder() {
   let existingFieldsIds = []
 
   setInterval(() => {
-    if (!formBuilder || !formBuilder.actions || !formBuilder.actions.setData) return
+    if (!formBuilder || !formBuilder.actions || !formBuilder.actions.setData)
+      return
     if (!formBuilderInitialized) {
       initializeBuilderFromTextInput()
       existingFieldsIds = getFieldsIds()
@@ -221,12 +223,12 @@ function initializeFormbuilder() {
     if ($formBuilderTextInput.is(':focus')) return
 
     existingFieldsNames = []
-    $('.fld-name').each(function() {
+    $('.fld-name').each(function () {
       existingFieldsNames.push($(this).val())
     })
 
     // Slugiy field names
-    $('.fld-name').each(function() {
+    $('.fld-name').each(function () {
       const newValue = $(this)
         .val()
         .replace(/[^a-z^A-Z^_^0-9^{^}]/g, '_')
@@ -239,8 +241,8 @@ function initializeFormbuilder() {
       // save base64 default image from buffer variable
       Object.keys(window.defaultImage).forEach((image_name) => {
         if (
-          window.defaultImage[image_name]
-          && window.defaultImage[image_name] != ''
+          window.defaultImage[image_name] &&
+          window.defaultImage[image_name] != ''
         ) {
           const image_names = image_name.split('-')
           const field_idx = Number(image_names[image_names.length - 1]) - 1
@@ -251,7 +253,7 @@ function initializeFormbuilder() {
       if (wikiText) $formBuilderTextInput.val(wikiText)
     }
 
-    $('.fld-name').each(function() {
+    $('.fld-name').each(function () {
       let name = $(this).val()
       const id = $(this).closest('.form-field').attr('id')
 
@@ -276,7 +278,7 @@ function initializeFormbuilder() {
             type: 'text',
             subtype: 'text',
             name: 'bf_adresse',
-            label: _t('BAZ_FORM_EDIT_ADDRESS')
+            label: _t('BAZ_FORM_EDIT_ADDRESS'),
           }
           const index = $(this).closest('.form-field').index()
           formBuilder.actions.addField(field, index)
@@ -288,7 +290,7 @@ function initializeFormbuilder() {
     existingFieldsIds = getFieldsIds()
 
     // Transform input[textarea] in real textarea
-    $('input[type="textarea"]').replaceWith(function() {
+    $('input[type="textarea"]').replaceWith(function () {
       const domTextarea = document.createElement('textarea')
       domTextarea.id = this.id
       domTextarea.name = this.name
@@ -300,7 +302,7 @@ function initializeFormbuilder() {
     })
 
     $('.text-field select[name=subtype]:not(.initialized)')
-      .on('change', function() {
+      .on('change', function () {
         $(this).addClass('initialized')
         const $parent = $(this).closest('.form-field')
         if ($(this).val() == 'range' || $(this).val() == 'number') {
@@ -323,7 +325,7 @@ function initializeFormbuilder() {
       .trigger('change')
 
     // in semantic field, we want to separate value by coma
-    $('.fld-semantic').each(function() {
+    $('.fld-semantic').each(function () {
       let newVal = $(this)
         .val()
         .replace(/\s*,\s*/g, ',')
@@ -342,7 +344,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 function getFieldsIds() {
   const result = []
-  $('.fld-name').each(function() {
+  $('.fld-name').each(function () {
     result.push($(this).closest('.form-field').attr('id'))
   })
   return result

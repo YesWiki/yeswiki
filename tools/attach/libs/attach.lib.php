@@ -2,7 +2,9 @@
 
 // Classe de gestion de l'action {{attach}}
 
+use stefangabos\Zebra_Image\Zebra_Image;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use YesWiki\Core\Controller\CsrfTokenController;
 use YesWiki\Core\Service\HtmlPurifierService;
 use YesWiki\Core\Service\LinkTracker;
 use YesWiki\Security\Controller\SecurityController;
@@ -32,6 +34,8 @@ if (!class_exists('attach')) {
         public $isSafeMode = true; // indicateur du safe mode de PHP
         public $data = ''; // indicateur du safe mode de PHP
         private $params;
+
+        public const FM_WRITE_OPERATIONS = ['restore', 'erase', 'del', 'emptytrash'];
 
         /**
          * Constructeur. Met les valeurs par defaut aux parametres de configuration.
@@ -80,9 +84,9 @@ if (!class_exists('attach')) {
             if ($unit) {
                 // Find the position of the unit in the ordered string which is the power of magnitude to multiply a kilobyte by.
                 return round($size * pow(1024, stripos('bkmgtpezy', $unit[0])));
-            } else {
-                return round($size);
             }
+
+            return round($size);
         }
 
         /**
@@ -181,6 +185,7 @@ if (!class_exists('attach')) {
                     )
             );
 
+            $file = [];
             // decompose le nom du fichier en nom+extension ou en page/nom+extension
             if (preg_match('`^((.+)/)?(.*)\.(.*)$`', str_replace(' ', '_', $this->file), $match)) {
                 list(, , $file['page'], $file['name'], $file['ext']) = $match;
@@ -847,6 +852,20 @@ if (!class_exists('attach')) {
         public function doFileManager($isAction = false)
         {
             $do = (isset($_GET['do']) && $_GET['do']) ? $_GET['do'] : '';
+            if (in_array($do, self::FM_WRITE_OPERATIONS, true)) {
+                $do = '';
+            }
+            if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST'
+                && isset($_POST['do'])
+                && in_array($_POST['do'], self::FM_WRITE_OPERATIONS, true)) {
+                try {
+                    $this->wiki->services->get(CsrfTokenController::class)->checkToken('main', 'POST', 'csrf-token', false);
+                    $do = $_POST['do'];
+                } catch (Throwable $th) {
+                    echo '<div class="alert alert-danger">' . htmlspecialchars($th->getMessage(), ENT_QUOTES, YW_CHARSET) . '</div>' . "\n";
+                    $do = in_array($_POST['do'], ['restore', 'erase', 'emptytrash'], true) ? 'trash' : '';
+                }
+            }
             switch ($do) {
                 case 'restore':
                     $this->fmRestore();
@@ -896,6 +915,7 @@ if (!class_exists('attach')) {
         public function size_readable($size, $max = null, $system = 'si', $retstring = '%01.2f %s')
         {
             // Pick units
+            $systems = [];
             $systems['si']['prefix'] = ['', 'Ko', 'Mo', 'Go', 'To', 'Po'];
             $systems['si']['size'] = 1000;
             $systems['bi']['prefix'] = ['B', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB'];
@@ -978,6 +998,14 @@ if (!class_exists('attach')) {
         }
 
         /**
+         * Nom du fichier vise par une operation du gestionnaire de fichiers.
+         */
+        public function fmPostedFileName(): string
+        {
+            return isset($_POST['file']) && is_string($_POST['file']) ? $_POST['file'] : '';
+        }
+
+        /**
          * Vide la corbeille.
          */
         public function fmEmptyTrash()
@@ -998,7 +1026,7 @@ if (!class_exists('attach')) {
         {
             $path = $this->GetUploadPath();
             // Sanitize file path
-            $filename = $this->GetUploadPath() . '/' . basename(realpath($_GET['file'] ? $_GET['file'] : ''));
+            $filename = $path . '/' . basename($this->fmPostedFileName());
             // Make sure that the filename ends with trash and a date
             if (file_exists($filename) && preg_match('/trash\d{14}$/', $filename)) {
                 unlink($filename);
@@ -1012,7 +1040,7 @@ if (!class_exists('attach')) {
         {
             $path = $this->GetUploadPath();
             $rawFileName = empty($rawFileName)
-                ? $this->wiki->services->get(SecurityController::class)->filterInput(INPUT_GET, 'file', FILTER_SANITIZE_FULL_SPECIAL_CHARS, false, 'string')
+                ? $this->wiki->services->get(SecurityController::class)->filterInput(INPUT_POST, 'file', FILTER_SANITIZE_FULL_SPECIAL_CHARS, false, 'string')
                 : $rawFileName;
             $filename = $path . '/' . basename($rawFileName);
             if (!empty($rawFileName) && file_exists($filename)) {
@@ -1058,7 +1086,7 @@ if (!class_exists('attach')) {
         public function fmRestore()
         {
             $path = $this->GetUploadPath();
-            $filename = $path . '/' . ($_GET['file'] ? $_GET['file'] : '');
+            $filename = $path . '/' . basename($this->fmPostedFileName());
             if (file_exists($filename)) {
                 $restFile = preg_replace('`^(.*\..*)trash\d{14}$`', '$1', $filename);
                 rename($filename, $restFile);
@@ -1135,48 +1163,57 @@ if (!class_exists('attach')) {
             $imgTrans->source_path = $image_src;
             $imgTrans->target_path = $image_dest;
 
-            if ($mode == 'crop') {
-                $wantedRatio = $largeur / $hauteur;
-                // get image info except for webp (code copier from Zebra_Image)
-                if (
-                    !(
-                        version_compare(PHP_VERSION, '7.0.0') >= 0
-                        && version_compare(PHP_VERSION, '7.1.0') < 0
-                        && (
-                            $imgTrans->source_type = strtolower(substr($imgTrans->source_path, strrpos($imgTrans->source_path, '.') + 1))
-                        ) === 'webp'
-                    )
-                    && !list($sourceImageWidth, $sourceImageHeight, $sourceImageType) = @getimagesize($imgTrans->source_path)
-                ) {
-                    return false;
-                }
-                $imageRatio = $sourceImageWidth / $sourceImageHeight;
+            // Zebra_Image still calls imagedestroy(), a no-op deprecated since PHP 8.5.
+            // Silence it here (rather than patching vendor/) so debug-mode deprecation
+            // output isn't echoed into an in-progress image response.
+            $previousErrorReporting = error_reporting();
+            error_reporting($previousErrorReporting & ~E_DEPRECATED);
+            try {
+                if ($mode == 'crop') {
+                    $wantedRatio = $largeur / $hauteur;
+                    // get image info except for webp (code copier from Zebra_Image)
+                    if (
+                        !(
+                            version_compare(PHP_VERSION, '7.0.0') >= 0
+                            && version_compare(PHP_VERSION, '7.1.0') < 0
+                            && (
+                                $imgTrans->source_type = strtolower(substr($imgTrans->source_path, strrpos($imgTrans->source_path, '.') + 1))
+                            ) === 'webp'
+                        )
+                        && !list($sourceImageWidth, $sourceImageHeight, $sourceImageType) = @getimagesize($imgTrans->source_path)
+                    ) {
+                        return false;
+                    }
+                    $imageRatio = $sourceImageWidth / $sourceImageHeight;
 
-                if ($imageRatio != $wantedRatio) {
-                    if ($imageRatio > $wantedRatio) {
-                        // width too large, keep height
-                        $newWidth = round($sourceImageHeight * $wantedRatio);
-                        $newHeight = $sourceImageHeight;
-                    } else {
-                        // height too large, keep width
-                        $newHeight = round($sourceImageWidth / $wantedRatio);
-                        $newWidth = $sourceImageWidth;
+                    if ($imageRatio != $wantedRatio) {
+                        if ($imageRatio > $wantedRatio) {
+                            // width too large, keep height
+                            $newWidth = round($sourceImageHeight * $wantedRatio);
+                            $newHeight = $sourceImageHeight;
+                        } else {
+                            // height too large, keep width
+                            $newHeight = round($sourceImageWidth / $wantedRatio);
+                            $newWidth = $sourceImageWidth;
+                        }
+                        // crop
+                        $ext = pathinfo($image_src)['extension'];
+                        do {
+                            $tempFile = tmpfile();
+                            $tempFileName = stream_get_meta_data($tempFile)['uri'] . ".$ext";
+                            unlink(stream_get_meta_data($tempFile)['uri']);
+                        } while (file_exists($tempFileName));
+                        $imgTrans->target_path = $tempFileName;
+                        if ($imgTrans->resize(intval($newWidth), intval($newHeight), ZEBRA_IMAGE_CROP_CENTER, -1)) {
+                            $imgTrans->source_path = $tempFileName;
+                        }
+                        $imgTrans->target_path = $image_dest;
                     }
-                    // crop
-                    $ext = pathinfo($image_src)['extension'];
-                    do {
-                        $tempFile = tmpfile();
-                        $tempFileName = stream_get_meta_data($tempFile)['uri'] . ".$ext";
-                        unlink(stream_get_meta_data($tempFile)['uri']);
-                    } while (file_exists($tempFileName));
-                    $imgTrans->target_path = $tempFileName;
-                    if ($imgTrans->resize(intval($newWidth), intval($newHeight), ZEBRA_IMAGE_CROP_CENTER, -1)) {
-                        $imgTrans->source_path = $tempFileName;
-                    }
-                    $imgTrans->target_path = $image_dest;
                 }
+                $result = $imgTrans->resize(intval($largeur), intval($hauteur), ZEBRA_IMAGE_NOT_BOXED, -1);
+            } finally {
+                error_reporting($previousErrorReporting);
             }
-            $result = $imgTrans->resize(intval($largeur), intval($hauteur), ZEBRA_IMAGE_NOT_BOXED, -1);
 
             if ($mode == 'crop' && !empty($tempFileName) && file_exists($tempFileName)) {
                 unlink($tempFileName);
@@ -1184,10 +1221,10 @@ if (!class_exists('attach')) {
             if (!$result) {
                 // in case of error, show error code
                 return $imgTrans->error;
-            // if there were no errors
-            } else {
-                return $imgTrans->target_path;
+                // if there were no errors
             }
+
+            return $imgTrans->target_path;
         }
     }
 }

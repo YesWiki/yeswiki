@@ -2,17 +2,12 @@
 
 namespace YesWiki\Core\Service;
 
-use DateInterval;
-use DateTime;
-use Exception;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Process\Process;
-use Throwable;
 use YesWiki\Core\Exception\StopArchiveException;
 use YesWiki\Security\Controller\SecurityController;
 use YesWiki\Wiki;
-use ZipArchive;
 
 class ArchiveService
 {
@@ -66,7 +61,37 @@ class ArchiveService
     public const ARCHIVE_ONLY_FILES_SUFFIX = '_archive_only_files';
     public const ARCHIVE_ONLY_DATABASE_SUFFIX = '_archive_only_db';
     public const PRIVATE_FOLDER_NAME_IN_ZIP = 'private/backups';
+    public const RESTORE_JOB_FILENAME = 'restore-job.json';
+    protected const SLICE_MIN_SECONDS = 3;
+    protected const SLICE_MAX_SECONDS = 20;
+    public const RESTORE_DUMP_FILENAME = 'restore-dump.sql';
+    public const RESTORE_IDLE = 'idle';
+    public const RESTORE_IMPORTING = 'importing';
+    public const RESTORE_SWAPPING = 'swapping';
+    public const RESTORE_FILES = 'files';
+    public const RESTORE_CONFIG = 'config';
+    public const RESTORE_SWEEPING = 'sweeping';
+    public const RESTORE_DONE = 'done';
+    /**
+     * Configuration entries that belong to this installation, not to the wiki that was backed up:
+     * where its database, its address, its mail server and its backups folder are.
+     */
+    public const CONFIG_KEYS_KEPT_ON_RESTORE = [
+        'mysql_host',
+        'mysql_database',
+        'mysql_user',
+        'mysql_password',
+        'table_prefix',
+        'db_charset',
+        'base_url',
+        'contact_smtp_host',
+        'contact_smtp_user',
+        'contact_smtp_pass',
+        'api_allowed_keys',
+        'archive',
+    ];
     public const SQL_FILENAME_IN_PRIVATE_FOLDER_IN_ZIP = 'content.sql';
+    public const INFO_FILENAME_IN_PRIVATE_FOLDER_IN_ZIP = DumpRewriter::INFO_FILENAME;
     public const PRIVATE_FOLDER_README_DEFAULT_CONTENT = "# Description of the usage of folder private/backups\n\n" .
         "This folder is **reserved to backups**.\n\n" .
         "It **MUST NOT** be accessible from the internet.\n\n" .
@@ -101,7 +126,7 @@ class ArchiveService
      *
      * @param string|OutputInterface &$output
      *
-     * @throws Exception
+     * @throws \Exception
      */
     public function archive(
         &$output,
@@ -124,7 +149,7 @@ class ArchiveService
             $this->unsetWikiStatus();
             $this->writeOutput($output, 'STOP', true, $outputFile);
 
-            throw new Exception(_t('AU_CANNOT_ARCHIVE') . implode(', ', $vMessages));
+            throw new \Exception(_t('AU_CANNOT_ARCHIVE') . implode(', ', $vMessages));
         }
         $privatePath = $this->getPrivateFolder();
 
@@ -137,13 +162,13 @@ class ArchiveService
         }
         if (!empty($outputFile)) {
             if (@file_put_contents($outputFile, '') === false) {
-                throw new Exception('Cannot write to archive output file. Please check file system access rights');
+                throw new \Exception('Cannot write to archive output file. Please check file system access rights');
             }
         }
 
         // checking folder not available on the internet
         if (@file_put_contents("$privatePath/tmpTestFile000.txt", 'test') === false) {
-            throw new Exception('Cannot write to test file. Please check file system access rights');
+            throw new \Exception('Cannot write to test file. Please check file system access rights');
         }
         $error = !$this->localPrivateFolderNotAvailableOnInternet($privatePath, 'tmpTestFile000.txt');
         if (file_exists("$privatePath/tmpTestFile000.txt")) {
@@ -161,7 +186,7 @@ class ArchiveService
         $blacklistedRootFolders = $this->generateListRootFolders('black', $foldersToExclude);
         try {
             $this->assertEnoughtSpace($blacklistedRootFolders);
-        } catch (Throwable $th) {
+        } catch (\Throwable $th) {
             $this->writeOutput($output, 'There is not enough free space.', true, $outputFile);
             $this->writeOutput($output, "=> {$th->getMessage()}", true, $outputFile);
             $this->unsetWikiStatus();
@@ -179,7 +204,7 @@ class ArchiveService
         $onlyDb = false;
         // check options and prepare file suffix
         if (!$savefiles && !$savedatabase) {
-            throw new Exception("Invalid options : It is not possible to use 'savefiles = false' and 'savedatabase = false' options in same time.");
+            throw new \Exception("Invalid options : It is not possible to use 'savefiles = false' and 'savedatabase = false' options in same time.");
         } elseif (!$savefiles) {
             $fileSuffix = self::ARCHIVE_ONLY_DATABASE_SUFFIX;
             $onlyDb = true;
@@ -197,16 +222,19 @@ class ArchiveService
         }
         // prepare location of zip file
 
-        $archiveFileName = (new DateTime())->format('Y-m-d\\TH-i-s') . "$fileSuffix.zip";
+        $archiveFileName = ArchiveFilename::withSource(
+            (new \DateTime())->format('Y-m-d\\TH-i-s') . "$fileSuffix.zip",
+            $this->params->get('base_url')
+        );
         $location = $privatePath . DIRECTORY_SEPARATOR . $archiveFileName;
         if (file_exists($location)) {
-            throw new Exception('Zip file already existing !');
+            throw new \Exception('Zip file already existing !');
         }
         if (file_exists($location)) {
-            throw new Exception('Zip file already existing !');
+            throw new \Exception('Zip file already existing !');
         }
         if ($this->securityController->isWikiHibernated()) {
-            throw new Exception(_t('WIKI_IN_HIBERNATION'));
+            throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
 
         try {
@@ -242,7 +270,7 @@ class ArchiveService
             $this->writeOutput($output, 'STOP', true, $outputFile);
 
             return '';
-        } catch (Throwable $th) {
+        } catch (\Throwable $th) {
             @unlink($location);
             $this->unsetWikiStatus();
             $this->writeOutput($output, 'STOP', true, $outputFile);
@@ -293,9 +321,9 @@ class ArchiveService
 
         if (trim($vConfig['wiki_status'] ?? '') == '') {
             return 'running';
-        } else {
-            return trim($vConfig['wiki_status']);
         }
+
+        return trim($vConfig['wiki_status']);
     }
 
     /**
@@ -312,8 +340,6 @@ class ArchiveService
 
     /**
      * check if a recent and valided backup is present.
-     *
-     * @param mixed $token
      */
     public function hasValidatedBackup($token): bool
     {
@@ -366,7 +392,7 @@ class ArchiveService
         }
         try {
             $privatePath = $this->getPrivateFolder();
-        } catch (Exception $th) {
+        } catch (\Exception $th) {
             $privatePathWritable = false;
             $privatePath = '';
         }
@@ -380,23 +406,23 @@ class ArchiveService
                 }
                 try {
                     if (@file_put_contents($tmpFileName, 'test') === false) {
-                        throw new Exception('Cannot write to tmp file. Please check file system access rights');
+                        throw new \Exception('Cannot write to tmp file. Please check file system access rights');
                     }
                     if (!file_exists($tmpFileName)) {
-                        throw new Exception('Not writable folder');
+                        throw new \Exception('Not writable folder');
                     }
                     $content = @file_get_contents($tmpFileName);
 
                     if ($content === false) {
-                        throw new Exception('Cannot read tmp file. Please check file system access rights');
+                        throw new \Exception('Cannot read tmp file. Please check file system access rights');
                     }
 
                     if ($content != 'test') {
-                        throw new Exception('Bad content');
+                        throw new \Exception('Bad content');
                     }
                     $notAvailableOnTheInternet = $this->localPrivateFolderNotAvailableOnInternet($privatePath, basename($tmpFileName));
                     unlink($tmpFileName);
-                } catch (Throwable $th) {
+                } catch (\Throwable $th) {
                     $privatePathWritable = false;
                     if (file_exists($tmpFileName)) {
                         unlink($tmpFileName);
@@ -411,13 +437,13 @@ class ArchiveService
             if (!empty($results)) {
                 $result = $results[array_key_first($results)];
                 if (
-                    empty($result['stderr']) && !empty($result['stdout']) &&
-                    preg_match("/Hello !(?:\r|\n)+/", $result['stdout'])
+                    !empty($result['stdout'])
+                    && preg_match("/Hello !(?:\r|\n)+/", $result['stdout'])
                 ) {
                     $canExec = true;
                 }
             }
-        } catch (Throwable $th) {
+        } catch (\Throwable $th) {
             $canExec = false;
         }
 
@@ -428,20 +454,20 @@ class ArchiveService
         // free space
         try {
             $this->assertEnoughtSpace();
-        } catch (Throwable $th) {
+        } catch (\Throwable $th) {
             $enoughSpace = false;
         }
 
         $canArchive = (
-            !$archiving &&
-            !$hibernated &&
-            $privatePathWritable &&
-            $notAvailableOnTheInternet &&
-            (
-                !$callAsync ||
-                $canExec
-            ) &&
-            $enoughSpace
+            !$archiving
+            && !$hibernated
+            && $privatePathWritable
+            && $notAvailableOnTheInternet
+            && (
+                !$callAsync
+                || $canExec
+            )
+            && $enoughSpace
         );
 
         return compact(['canArchive', 'archiving', 'hibernated', 'privatePathWritable', 'canExec', 'callAsync', 'notAvailableOnTheInternet', 'enoughSpace', 'dB']);
@@ -510,47 +536,53 @@ class ArchiveService
                 $this->updatePIDForUID($process->getPid(), $uidData['uid'], $privatePath);
 
                 return $uidData['uid'];
-            } else {
-                $this->cleanUID($uidData['uid'], $privatePath);
-
-                return '';
             }
-        } else {
-            $output = '';
-            $location = $this->archive($output, $savefiles, $savedatabase, $foldersToInclude, $foldersToExclude, null, $uidData['uid']);
-            if (empty($location)) {
-                $this->cleanUID($uidData['uid'], $privatePath);
+            $this->cleanUID($uidData['uid'], $privatePath);
 
-                return '';
-            } else {
-                return $uidData['uid'];
-            }
+            return '';
         }
+        $output = '';
+        $location = $this->archive($output, $savefiles, $savedatabase, $foldersToInclude, $foldersToExclude, null, $uidData['uid']);
+        if (empty($location)) {
+            $this->cleanUID($uidData['uid'], $privatePath);
+
+            return '';
+        }
+
+        return $uidData['uid'];
     }
 
     /**
      * get the list of archives in a array with information for each one.
+     *
+     * Reading the source address opens each archive, so only the screens offering a restore ask for it.
      */
-    public function getArchives(): array
+    public function getArchives(bool $withSourceBaseUrl = false): array
     {
         $archives = [];
         $privatePath = $this->getPrivateFolder();
         $files = scandir($privatePath);
         foreach ($files as $filename) {
-            if (preg_match("/^(\d{4})-(\d{2})-(\d{2})T(\d{2})-(\d{2})-(\d{2})_archive(?:_(only_files|only_db))?\.zip$/", $filename, $matches)) {
-                list(, $year, $month, $day, $hours, $minutes, $seconds) = $matches;
+            $parts = ArchiveFilename::parse($filename);
+            if (!empty($parts)) {
+                list($year, $month, $day) = explode('-', $parts['date']);
+                list($hours, $minutes, $seconds) = explode('-', $parts['time']);
                 $archives[] = [
                     'filename' => $filename,
-                    'date' => "$year-$month-{$day}T$hours-$minutes-$seconds",
+                    'date' => "{$parts['date']}T{$parts['time']}",
                     'year' => $year,
                     'month' => $month,
                     'day' => $day,
                     'hours' => $hours,
                     'minutes' => $minutes,
                     'seconds' => $seconds,
-                    'type' => $matches[7] ?? 'full',
+                    'type' => $parts['type'],
+                    'source' => $parts['source'],
                     'size' => filesize("$privatePath/$filename"),
                     'link' => $this->wiki->Href('', "api/archives/$filename"),
+                    'sourceBaseUrl' => ($withSourceBaseUrl && $parts['type'] !== 'only_files')
+                        ? $this->getArchiveSourceBaseUrl($filename)
+                        : '',
                 ];
             }
         }
@@ -580,9 +612,698 @@ class ArchiveService
     }
 
     /**
-     * delete archives.
+     * Restore a backup archive, from start to finish.
      *
-     * @param array $filesname
+     * @throws \Exception
+     */
+    public function restoreArchive(
+        string $filename,
+        bool $restoreFiles = true,
+        bool $restoreDatabase = true,
+        bool $rewriteUrls = true
+    ): void {
+        $state = $this->startRestore($filename, $restoreFiles, $restoreDatabase, $rewriteUrls);
+        while (!empty($state['running'])) {
+            $state = $this->advanceRestore();
+        }
+        if (!empty($state['error'])) {
+            throw new \Exception($state['error']);
+        }
+    }
+
+    /**
+     * Begin a restore, without doing any of it yet.
+     *
+     * A restore is cut into slices short enough for one request on a shared host: the state of
+     * what is left to do lives in a file, and advanceRestore() takes it further each time.
+     *
+     * @return array<string,mixed>
+     *
+     * @throws \Exception
+     */
+    public function startRestore(
+        string $filename,
+        bool $restoreFiles = true,
+        bool $restoreDatabase = true,
+        bool $rewriteUrls = true
+    ): array {
+        $filePath = $this->getFilePath($filename);
+        if (empty($filePath)) {
+            throw new \Exception("Archive not found: $filename");
+        }
+        $zip = new \ZipArchive();
+        if ($zip->open($filePath) !== true) {
+            throw new \Exception("Cannot open archive: $filename");
+        }
+        $entries = $zip->numFiles;
+        $zip->close();
+
+        $onlyFiles = str_ends_with($filename, self::ARCHIVE_ONLY_FILES_SUFFIX . '.zip');
+        $onlyDb = str_ends_with($filename, self::ARCHIVE_ONLY_DATABASE_SUFFIX . '.zip');
+
+        $job = [
+            'filename' => $filename,
+            'restoreFiles' => $restoreFiles && !$onlyDb,
+            'restoreDatabase' => $restoreDatabase && !$onlyFiles,
+            'rewriteUrls' => $rewriteUrls,
+            'sweep' => $restoreFiles && !$onlyDb && !$onlyFiles,
+            'step' => ($restoreDatabase && !$onlyFiles) ? self::RESTORE_IMPORTING : self::RESTORE_FILES,
+            'statementsDone' => 0,
+            'entriesDone' => 0,
+            'entries' => $entries,
+            'substitutions' => [],
+            'skip' => [],
+            'livePrefix' => '',
+            'stagingPrefix' => '',
+            'replacedPrefix' => '',
+        ];
+        $this->writeRestoreJob($job);
+
+        return $this->restoreState($job);
+    }
+
+    /**
+     * Take the running restore as far as one request can, and say where it got to.
+     *
+     * @return array<string,mixed>
+     */
+    public function advanceRestore(): array
+    {
+        $job = $this->readRestoreJob();
+        if (empty($job)) {
+            return ['step' => self::RESTORE_IDLE, 'running' => false];
+        }
+
+        $zip = new \ZipArchive();
+        $filePath = $this->getFilePath($job['filename']);
+        if (empty($filePath) || $zip->open($filePath) !== true) {
+            $this->cancelRestore();
+
+            return ['step' => self::RESTORE_IDLE, 'running' => false, 'error' => "Cannot open archive: {$job['filename']}"];
+        }
+
+        $deadline = $this->sliceDeadline();
+        try {
+            while (microtime(true) < $deadline && $job['step'] !== self::RESTORE_DONE) {
+                $job = $this->advanceRestoreStep($zip, $job, $deadline);
+            }
+        } catch (\Throwable $throwable) {
+            $zip->close();
+            $this->giveUpRestore($job);
+
+            return ['step' => self::RESTORE_IDLE, 'running' => false, 'error' => $throwable->getMessage()];
+        }
+        $zip->close();
+
+        if ($job['step'] === self::RESTORE_DONE) {
+            $this->finishRestore($job);
+        } else {
+            $this->writeRestoreJob($job);
+        }
+
+        return $this->restoreState($job);
+    }
+
+    /**
+     * @return array<string,mixed>
+     */
+    public function cancelRestore(): array
+    {
+        $job = $this->readRestoreJob();
+        if (!empty($job)) {
+            $this->giveUpRestore($job);
+        }
+
+        return ['step' => self::RESTORE_IDLE, 'running' => false];
+    }
+
+    /**
+     * @param array<string,mixed> $job
+     *
+     * @return array<string,mixed>
+     *
+     * @throws \Exception
+     */
+    protected function advanceRestoreStep(\ZipArchive $zip, array $job, float $deadline): array
+    {
+        switch ($job['step']) {
+            case self::RESTORE_IMPORTING:
+                return $this->importSlice($zip, $job, $deadline);
+            case self::RESTORE_SWAPPING:
+                $this->swapTables($job['livePrefix'], $job['stagingPrefix'], $job['replacedPrefix']);
+                $job['step'] = $job['restoreFiles'] ? self::RESTORE_FILES : self::RESTORE_DONE;
+
+                return $job;
+            case self::RESTORE_FILES:
+                return $this->filesSlice($zip, $job, $deadline);
+            case self::RESTORE_CONFIG:
+                $this->restoreConfiguration($zip, ConfigurationFileProvider::getConfigFileFromEnv());
+                $job['step'] = $job['sweep'] ? self::RESTORE_SWEEPING : self::RESTORE_DONE;
+
+                return $job;
+            case self::RESTORE_SWEEPING:
+                $finished = $this->removeFilesAbsentFromArchive($zip, realpath(getcwd()), $deadline);
+                $job['step'] = $finished ? self::RESTORE_DONE : self::RESTORE_SWEEPING;
+
+                return $job;
+            default:
+                $job['step'] = self::RESTORE_DONE;
+
+                return $job;
+        }
+    }
+
+    /**
+     * Import as many statements of the dump as the slice allows, remembering how far it got.
+     *
+     * @param array<string,mixed> $job
+     *
+     * @return array<string,mixed>
+     *
+     * @throws \Exception
+     */
+    protected function importSlice(\ZipArchive $zip, array $job, float $deadline): array
+    {
+        if ($job['statementsDone'] === 0) {
+            $job = $this->prepareImport($zip, $job);
+        }
+
+        $handle = fopen($this->dumpCopyPath(), 'r');
+        if ($handle === false) {
+            throw new \Exception('Cannot read the dump taken out of the archive');
+        }
+        $conn = $this->openRestoreConnection();
+        $maxPacket = SqlScript::maxAllowedPacket($conn);
+        $done = 0;
+        try {
+            foreach (SqlScript::statementsFromStream($handle) as $statement) {
+                if ($done++ < $job['statementsDone']) {
+                    continue;
+                }
+                if (SqlScript::isSessionPlumbing($statement) || $this->skipsForeignTable($job, $statement)) {
+                    $job['statementsDone'] = $done;
+                    continue;
+                }
+                $statement = strtr($statement, $job['substitutions']);
+                if (!mysqli_query($conn, $statement)) {
+                    throw new \Exception(SqlScript::errorMessage(mysqli_error($conn), $statement, $maxPacket));
+                }
+                $job['statementsDone'] = $done;
+                if (microtime(true) > $deadline) {
+                    return $job;
+                }
+            }
+        } finally {
+            fclose($handle);
+            mysqli_close($conn);
+        }
+        $job['step'] = self::RESTORE_SWAPPING;
+
+        return $job;
+    }
+
+    /**
+     * Another wiki sharing the database may be in an old backup: its tables are not restored,
+     * and above all not swapped away from under it.
+     *
+     * @param array<string,mixed> $job
+     */
+    protected function skipsForeignTable(array $job, string $statement): bool
+    {
+        foreach ($job['skip'] ?? [] as $table) {
+            if (strpos($statement, $table) !== false) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * @param array<string,mixed> $job
+     *
+     * @return array<string,mixed>
+     *
+     * @throws \Exception
+     */
+    protected function prepareImport(\ZipArchive $zip, array $job): array
+    {
+        $livePrefix = trim($this->dbService->prefixTable(''));
+        if (empty($livePrefix)) {
+            throw new \Exception('Table prefix is empty — refusing to restore');
+        }
+        $job['livePrefix'] = $livePrefix;
+        $job['stagingPrefix'] = $this->isolatedPrefix($livePrefix, 'staging');
+        $job['replacedPrefix'] = $this->isolatedPrefix($livePrefix, 'replaced');
+
+        $this->copyDumpOutOfArchive($zip);
+        $plan = DumpRewriter::plan(
+            $this->tablesOfDump(),
+            $this->readRestoreInfo($zip),
+            $job['stagingPrefix'],
+            $this->params->get('base_url'),
+            $job['rewriteUrls']
+        );
+        $job['substitutions'] = $plan->substitutions;
+        $job['skip'] = $plan->skip;
+
+        $this->dropTables($job['stagingPrefix']);
+        $this->dropTables($job['replacedPrefix']);
+
+        return $job;
+    }
+
+    /**
+     * Extract as many files as the slice allows, remembering how far it got.
+     *
+     * @param array<string,mixed> $job
+     *
+     * @return array<string,mixed>
+     */
+    protected function filesSlice(\ZipArchive $zip, array $job, float $deadline): array
+    {
+        $wikiRoot = realpath(getcwd());
+        $skipPrefix = self::PRIVATE_FOLDER_NAME_IN_ZIP . '/';
+        $skipFile = ConfigurationFileProvider::getConfigFileFromEnv();
+
+        for ($i = $job['entriesDone']; $i < $zip->numFiles; $i++) {
+            $name = $zip->getNameIndex($i);
+            $job['entriesDone'] = $i + 1;
+            if ($name === false || strpos($name, $skipPrefix) === 0 || $name === $skipFile || strpos($name, '..') !== false) {
+                continue;
+            }
+            if (str_ends_with($name, '/')) {
+                $dir = $wikiRoot . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $name);
+                if (!is_dir($dir)) {
+                    mkdir($dir, 0755, true);
+                }
+                continue;
+            }
+            $zip->extractTo($wikiRoot, $name);
+            if (microtime(true) > $deadline) {
+                return $job;
+            }
+        }
+        $job['step'] = self::RESTORE_CONFIG;
+
+        return $job;
+    }
+
+    /**
+     * How long a slice may take: half of what the host allows a request, and never all of it,
+     * since the answer still has to be written after the last statement.
+     */
+    protected function sliceDeadline(): float
+    {
+        $limit = (int)ini_get('max_execution_time');
+        $budget = $limit > 0 ? min(self::SLICE_MAX_SECONDS, max(self::SLICE_MIN_SECONDS, (int)($limit / 2))) : self::SLICE_MAX_SECONDS;
+
+        return microtime(true) + $budget;
+    }
+
+    protected function dumpCopyPath(): string
+    {
+        return $this->getPrivateFolder() . DIRECTORY_SEPARATOR . self::RESTORE_DUMP_FILENAME;
+    }
+
+    /**
+     * @throws \Exception
+     */
+    protected function copyDumpOutOfArchive(\ZipArchive $zip): void
+    {
+        $from = $this->openDump($zip);
+        $to = fopen($this->dumpCopyPath(), 'w');
+        if ($to === false) {
+            fclose($from);
+
+            throw new \Exception('Cannot write the dump into the backups folder');
+        }
+        stream_copy_to_stream($from, $to);
+        fclose($from);
+        fclose($to);
+    }
+
+    /**
+     * @param array<string,mixed> $job
+     */
+    protected function giveUpRestore(array $job): void
+    {
+        if (!empty($job['stagingPrefix'])) {
+            try {
+                $this->dropTables($job['stagingPrefix']);
+            } catch (\Throwable $throwable) {
+            }
+        }
+        $this->finishRestore($job);
+    }
+
+    /**
+     * @param array<string,mixed> $job
+     */
+    protected function finishRestore(array $job): void
+    {
+        if (!empty($job['replacedPrefix'])) {
+            try {
+                $this->dropTables($job['replacedPrefix']);
+            } catch (\Throwable $throwable) {
+            }
+        }
+        if (file_exists($this->dumpCopyPath())) {
+            @unlink($this->dumpCopyPath());
+        }
+        $path = $this->restoreJobPath();
+        if (file_exists($path)) {
+            @unlink($path);
+        }
+    }
+
+    /**
+     * @param array<string,mixed> $job
+     *
+     * @return array<string,mixed>
+     */
+    protected function restoreState(array $job): array
+    {
+        return [
+            'step' => $job['step'],
+            'running' => $job['step'] !== self::RESTORE_DONE,
+            'filename' => $job['filename'],
+            'statementsDone' => $job['statementsDone'],
+            'entriesDone' => $job['entriesDone'],
+            'entries' => $job['entries'],
+        ];
+    }
+
+    protected function restoreJobPath(): string
+    {
+        return $this->getPrivateFolder() . DIRECTORY_SEPARATOR . self::RESTORE_JOB_FILENAME;
+    }
+
+    /**
+     * @return array<string,mixed>
+     */
+    protected function readRestoreJob(): array
+    {
+        $path = $this->restoreJobPath();
+        if (!file_exists($path)) {
+            return [];
+        }
+        $job = json_decode((string)file_get_contents($path), true);
+
+        return is_array($job) ? $job : [];
+    }
+
+    /**
+     * @param array<string,mixed> $job
+     */
+    protected function writeRestoreJob(array $job): void
+    {
+        file_put_contents($this->restoreJobPath(), json_encode($job));
+    }
+
+    /**
+     * A prefix of its own, that no prefix-wide operation can confuse with the wiki's own tables.
+     */
+    protected function isolatedPrefix(string $livePrefix, string $tag): string
+    {
+        $prefix = 'yw' . $tag . substr(sha1($livePrefix), 0, 6) . '_';
+        while (str_starts_with($prefix, $livePrefix) || str_starts_with($livePrefix, $prefix)) {
+            $prefix = "x$prefix";
+        }
+
+        return $prefix;
+    }
+
+    /**
+     * The tables the dump creates, read without holding the dump in memory.
+     *
+     * @return string[]
+     *
+     * @throws \Exception
+     */
+    protected function tablesOfDump(): array
+    {
+        $handle = fopen($this->dumpCopyPath(), 'r');
+        if ($handle === false) {
+            throw new \Exception('Cannot read the dump taken out of the archive');
+        }
+        $tables = [];
+        try {
+            foreach (SqlScript::statementsFromStream($handle) as $statement) {
+                foreach (DumpRewriter::tables($statement) as $table) {
+                    $tables[$table] = true;
+                }
+            }
+        } finally {
+            fclose($handle);
+        }
+
+        return array_keys($tables);
+    }
+
+    /**
+     * Put the tables just imported in place of the wiki's own, all at once.
+     *
+     * @throws \Exception
+     */
+    protected function swapTables(string $livePrefix, string $stagingPrefix, string $replacedPrefix): void
+    {
+        $staged = $this->tablesWithPrefix($stagingPrefix);
+        if (empty($staged)) {
+            throw new \Exception('The backup created no table.');
+        }
+
+        $renames = [];
+        foreach ($this->tablesWithPrefix($livePrefix) as $table) {
+            $renames[] = "`$table` TO `" . $replacedPrefix . substr($table, strlen($livePrefix)) . '`';
+        }
+        foreach ($staged as $table) {
+            $renames[] = "`$table` TO `" . $livePrefix . substr($table, strlen($stagingPrefix)) . '`';
+        }
+
+        $this->dbService->query('RENAME TABLE ' . implode(', ', $renames));
+    }
+
+    /**
+     * @return resource
+     *
+     * @throws \Exception
+     */
+    protected function openDump(\ZipArchive $zip)
+    {
+        $handle = $zip->getStream(self::PRIVATE_FOLDER_NAME_IN_ZIP . '/' . self::SQL_FILENAME_IN_PRIVATE_FOLDER_IN_ZIP);
+        if ($handle === false) {
+            throw new \Exception('SQL file not found in archive');
+        }
+
+        return $handle;
+    }
+
+    /**
+     * @return string[]
+     */
+    protected function tablesWithPrefix(string $prefix): array
+    {
+        $names = [];
+        $tables = $this->dbService->loadAll('show tables');
+        foreach (is_array($tables) ? $tables : [] as $tableInfo) {
+            $names[] = array_values($tableInfo)[0];
+        }
+
+        return DumpRewriter::ownTables($names, $prefix);
+    }
+
+    /**
+     * @throws \Exception
+     */
+    protected function dropTables(string $tablesPrefix): void
+    {
+        if (trim($tablesPrefix) === '') {
+            throw new \Exception('Refusing to drop tables of no prefix at all');
+        }
+        $this->dbService->query('SET FOREIGN_KEY_CHECKS=0');
+        foreach ($this->tablesWithPrefix($tablesPrefix) as $tableName) {
+            $this->dbService->query('DROP TABLE IF EXISTS `' . $tableName . '`');
+        }
+        $this->dbService->query('SET FOREIGN_KEY_CHECKS=1');
+    }
+
+    /**
+     * A connection of its own, so the restore does not disturb the one the wiki is using.
+     *
+     * @throws \Exception
+     */
+    protected function openRestoreConnection(): \mysqli
+    {
+        $conn = mysqli_connect(
+            $this->params->get('mysql_host'),
+            $this->params->get('mysql_user'),
+            $this->params->get('mysql_password'),
+            $this->params->get('mysql_database')
+        );
+        if (!$conn) {
+            throw new \Exception('Cannot open database connection for restore');
+        }
+        mysqli_set_charset($conn, 'utf8mb4');
+        SqlScript::prepareSession($conn);
+
+        return $conn;
+    }
+
+    /**
+     * The settings of the wiki come back from the backup; what ties this installation to its
+     * database, its address and its mail server does not.
+     */
+    protected function restoreConfiguration(\ZipArchive $zip, string $configFile): void
+    {
+        $archivedContent = $zip->getFromName(basename($configFile));
+        if ($archivedContent === false) {
+            return;
+        }
+
+        $temporaryFile = tempnam(sys_get_temp_dir(), 'yeswiki_config');
+        if ($temporaryFile === false || file_put_contents($temporaryFile, $archivedContent) === false) {
+            throw new \Exception('Cannot read the configuration file of the archive');
+        }
+        $archived = $this->configurationService->getConfiguration($temporaryFile);
+        $archived->load();
+        @unlink($temporaryFile);
+        // ConfigurationFile serves _parameters through __get, which empty() and ?? cannot see
+        $archivedParameters = $archived->_parameters;
+        if (empty($archivedParameters)) {
+            return;
+        }
+
+        $config = $this->configurationService->getConfiguration($configFile);
+        $config->load();
+        $currentParameters = $config->_parameters;
+        $kept = array_intersect_key($currentParameters, array_flip(self::CONFIG_KEYS_KEPT_ON_RESTORE));
+        foreach (array_keys($currentParameters) as $key) {
+            unset($config[$key]);
+        }
+        foreach (array_merge($archivedParameters, $kept) as $key => $value) {
+            $config[$key] = $value;
+        }
+        if (!$config->write()) {
+            throw new \Exception('Cannot write the configuration file');
+        }
+    }
+
+    /**
+     * A full backup is the whole wiki, so what it does not contain has no place in the tree
+     * either. Deleting comes after extracting, so the wiki is never left without its own code.
+     */
+    protected function removeFilesAbsentFromArchive(\ZipArchive $zip, string $wikiRoot, float $deadline): bool
+    {
+        if (!is_dir($wikiRoot)) {
+            throw new \Exception("'$wikiRoot' is not a directory to restore into");
+        }
+        $keep = [ConfigurationFileProvider::getConfigFileFromEnv() => true];
+        $folders = [];
+        for ($i = 0; $i < $zip->numFiles; $i++) {
+            $name = rtrim($zip->getNameIndex($i), '/');
+            if ($name === '' || strpos($name, '..') !== false) {
+                continue;
+            }
+            $keep[$name] = true;
+            if (strpos($name, '/') !== false) {
+                $folders[strtok($name, '/')] = true;
+            }
+        }
+
+        foreach (array_keys($folders) as $folder) {
+            if (!$this->removeAbsentFiles("$wikiRoot/$folder", $folder, $keep, $deadline)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * @param array<string,bool> $keep
+     */
+    private function removeAbsentFiles(string $path, string $relativePath, array $keep, float $deadline): bool
+    {
+        if (!is_dir($path) || is_link($path) || $relativePath === self::PRIVATE_FOLDER_NAME_IN_ZIP) {
+            return true;
+        }
+        foreach (scandir($path) as $name) {
+            if ($name === '.' || $name === '..') {
+                continue;
+            }
+            $childPath = "$path/$name";
+            $childRelativePath = "$relativePath/$name";
+            if (is_dir($childPath) && !is_link($childPath)) {
+                if (!$this->removeAbsentFiles($childPath, $childRelativePath, $keep, $deadline)) {
+                    return false;
+                }
+                if (!isset($keep[$childRelativePath])) {
+                    @rmdir($childPath);
+                }
+            } elseif (!isset($keep[$childRelativePath])) {
+                @unlink($childPath);
+            }
+            if (microtime(true) > $deadline) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Describe the wiki the archive was taken from, so a restore can adapt links to another address.
+     */
+    protected function buildRestoreInfo(): string
+    {
+        return json_encode([
+            'base_url' => $this->params->get('base_url'),
+            'table_prefix' => $this->params->get('table_prefix'),
+            'yeswiki_version' => $this->params->get('yeswiki_version'),
+            'yeswiki_release' => $this->params->get('yeswiki_release'),
+            'date' => (new \DateTime())->format('c'),
+        ], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+    }
+
+    /**
+     * @return array<string,mixed>
+     */
+    protected function readRestoreInfo(\ZipArchive $zip): array
+    {
+        $content = $zip->getFromName(self::PRIVATE_FOLDER_NAME_IN_ZIP . '/' . self::INFO_FILENAME_IN_PRIVATE_FOLDER_IN_ZIP);
+        if ($content === false) {
+            return [];
+        }
+        $info = json_decode($content, true);
+
+        return is_array($info) ? $info : [];
+    }
+
+    /**
+     * base_url of the wiki an archive was taken from, empty when the archive predates the restore info file.
+     */
+    public function getArchiveSourceBaseUrl(string $filename): string
+    {
+        $filePath = $this->getFilePath($filename);
+        if (empty($filePath)) {
+            return '';
+        }
+        $zip = new \ZipArchive();
+        if ($zip->open($filePath) !== true) {
+            return '';
+        }
+        try {
+            $baseUrl = $this->readRestoreInfo($zip)['base_url'] ?? '';
+
+            return is_string($baseUrl) ? $baseUrl : '';
+        } finally {
+            $zip->close();
+        }
+    }
+
+    /**
+     * delete archives.
      *
      * @return array $results = ['filename' => bool]
      */
@@ -668,14 +1389,14 @@ class ArchiveService
         }
         $info = $this->getInfoFromFile();
         if (
-            !isset($info[$uid]) ||
-            empty($info[$uid]['input']) ||
-            !is_file($info[$uid]['input'])
+            !isset($info[$uid])
+            || empty($info[$uid]['input'])
+            || !is_file($info[$uid]['input'])
         ) {
             return false;
         }
         if (@file_put_contents($info[$uid]['input'], 'STOP') === false) {
-            throw new Exception('Cannot write to archive info file. Please check file system access rights');
+            throw new \Exception('Cannot write to archive info file. Please check file system access rights');
         }
 
         return true;
@@ -692,7 +1413,7 @@ class ArchiveService
         $content = @file_get_contents($inputFile);
 
         if ($content === false) {
-            throw new Exception('Cannot read archive input file. Please check file system access rights');
+            throw new \Exception('Cannot read archive input file. Please check file system access rights');
         }
 
         if (empty($content)) {
@@ -721,7 +1442,7 @@ class ArchiveService
         string $outputFile = ''
     ) {
         if (!file_exists('index.php') || !file_exists(ConfigurationFileProvider::getConfigFileFromEnv()) || !file_exists('composer.json') || !file_exists('composer.lock')) {
-            throw new Exception('Can only be started from main directory');
+            throw new \Exception('Can only be started from main directory');
         }
         $pathToArchive = getcwd();
 
@@ -732,11 +1453,11 @@ class ArchiveService
         $whitelistedRootFolders = $this->generateListRootFolders('white', $foldersToInclude);
 
         // open file
-        $zip = new ZipArchive();
+        $zip = new \ZipArchive();
 
         $vCanceled = false;
 
-        $resource = $zip->open($zipPath, ZipArchive::CREATE | ZipArchive::OVERWRITE);
+        $resource = $zip->open($zipPath, \ZipArchive::CREATE | \ZipArchive::OVERWRITE);
         if ($resource !== true) {
             return;
         }
@@ -750,9 +1471,9 @@ class ArchiveService
                     $vCanceled = true;
 
                     return -1;
-                } else {
-                    return 0;
                 }
+
+                return 0;
             });
         }
 
@@ -761,6 +1482,32 @@ class ArchiveService
             $zip->registerProgressCallback(0.1, function ($r) use (&$output, $outputFile) {
                 $this->writeOutput($output, 'Zip file creation : ' . strval(round($r * 100, 0)) . ' %', true, $outputFile);
             });
+        }
+
+        if (!$vCanceled && !empty($sqlContent)) {
+            $this->writeOutput($output, 'Adding SQL file', true, $outputFile);
+            $zip->addEmptyDir(self::PRIVATE_FOLDER_NAME_IN_ZIP);
+            $zip->addFromString(
+                self::PRIVATE_FOLDER_NAME_IN_ZIP . '/' . self::SQL_FILENAME_IN_PRIVATE_FOLDER_IN_ZIP,
+                $sqlContent
+            );
+
+            $this->writeOutput($output, 'Adding restore info file', true, $outputFile);
+            $zip->addFromString(
+                self::PRIVATE_FOLDER_NAME_IN_ZIP . '/' . self::INFO_FILENAME_IN_PRIVATE_FOLDER_IN_ZIP,
+                $this->buildRestoreInfo()
+            );
+
+            $this->writeOutput($output, 'Adding .htaccess file in folder ' . self::PRIVATE_FOLDER_NAME_IN_ZIP, true, $outputFile);
+            $zip->addFromString(
+                self::PRIVATE_FOLDER_NAME_IN_ZIP . '/.htaccess',
+                "DENY FROM ALL\n"
+            );
+
+            $zip->addFromString(
+                self::PRIVATE_FOLDER_NAME_IN_ZIP . '/README.md',
+                self::PRIVATE_FOLDER_README_DEFAULT_CONTENT
+            );
         }
 
         if (!$vCanceled && !$onlyDb) {
@@ -811,26 +1558,6 @@ class ArchiveService
             }
         }
 
-        if (!$vCanceled && !empty($sqlContent)) {
-            $this->writeOutput($output, 'Adding SQL file', true, $outputFile);
-            $zip->addEmptyDir(self::PRIVATE_FOLDER_NAME_IN_ZIP);
-            $zip->addFromString(
-                self::PRIVATE_FOLDER_NAME_IN_ZIP . '/' . self::SQL_FILENAME_IN_PRIVATE_FOLDER_IN_ZIP,
-                $sqlContent
-            );
-            $this->writeOutput($output, 'Adding .htaccess file in folder ' . self::PRIVATE_FOLDER_NAME_IN_ZIP, true, $outputFile);
-
-            $zip->addFromString(
-                self::PRIVATE_FOLDER_NAME_IN_ZIP . '/.htaccess',
-                "DENY FROM ALL\n"
-            );
-
-            $zip->addFromString(
-                self::PRIVATE_FOLDER_NAME_IN_ZIP . '/README.md',
-                self::PRIVATE_FOLDER_README_DEFAULT_CONTENT
-            );
-        }
-
         $vClosed = false;
         $vError = false;
 
@@ -878,8 +1605,8 @@ class ArchiveService
         array $blacklistedRootFolders
     ): bool {
         if (
-            in_array($relativeFolderName, $blacklistedRootFolders) ||
-            in_array(basename($relativeFolderName), $blacklistedRootFolders)
+            in_array($relativeFolderName, $blacklistedRootFolders)
+            || in_array(basename($relativeFolderName), $blacklistedRootFolders)
         ) {
             return false;
         }
@@ -909,13 +1636,13 @@ class ArchiveService
         return $outputList;
     }
 
-    private function getPrivateFolder(): string
+    public function getPrivateFolder(): string
     {
         $archiveParams = $this->getArchiveParams();
 
         $folderPath = (
-            empty($archiveParams[self::KEY_FOR_PRIVATE_FOLDER]) ||
-            !is_string($archiveParams[self::KEY_FOR_PRIVATE_FOLDER])
+            empty($archiveParams[self::KEY_FOR_PRIVATE_FOLDER])
+            || !is_string($archiveParams[self::KEY_FOR_PRIVATE_FOLDER])
         )
             ? self::PRIVATE_FOLDER_NAME_IN_ZIP
             : $archiveParams[self::KEY_FOR_PRIVATE_FOLDER];
@@ -925,9 +1652,8 @@ class ArchiveService
                 is_dir($folderPath)
             ) {
                 return preg_replace("/(\/|\\\\)$/", '', $folderPath);
-            } else {
-                throw new Exception(self::PARAMS_KEY_IN_WAKKA . '[' . self::KEY_FOR_PRIVATE_FOLDER . ']' . ' is not a directory.');
             }
+            throw new \Exception(self::PARAMS_KEY_IN_WAKKA . '[' . self::KEY_FOR_PRIVATE_FOLDER . '] is not a directory.');
         } else {
             $sanitizeWebsiteName = preg_replace(
                 '/-+$/',
@@ -954,7 +1680,7 @@ class ArchiveService
     private function createFolder(string $basePath, string $path)
     {
         if (file_exists($basePath . $path) && !is_dir($basePath . $path)) {
-            throw new Exception("Folder \"$path\" in \"$basePath\" should be a directory !");
+            throw new \Exception("Folder \"$path\" in \"$basePath\" should be a directory !");
         } elseif (!file_exists($basePath . $path)) {
             mkdir($basePath . $path);
         }
@@ -977,12 +1703,11 @@ class ArchiveService
     private function localPrivateFolderNotAvailableOnInternet(string $localPath, string $testFileName): bool
     {
         $isAbsolutePath = (
-            in_array(substr($localPath, 0, 1), ['/', DIRECTORY_SEPARATOR]) ||
-            (
-                DIRECTORY_SEPARATOR == '\\' &&
-                (
-                    preg_match('/^[A-Za-z]:.*$/', $localPath)
-                )
+            in_array(substr($localPath, 0, 1), ['/', DIRECTORY_SEPARATOR])
+            || (
+                DIRECTORY_SEPARATOR == '\\'
+
+                    && preg_match('/^[A-Za-z]:.*$/', $localPath)
             )
         );
         $basePath = realpath(getcwd());
@@ -995,7 +1720,7 @@ class ArchiveService
             return true;
         }
         if (!file_exists("$localPath/$testFileName")) {
-            throw new Exception("\"$localPath/$testFileName\" must exist for tests !");
+            throw new \Exception("\"$localPath/$testFileName\" must exist for tests !");
         }
         $url = preg_replace("/\??$/", '', $this->params->get('base_url'));
         $url .= str_replace(DIRECTORY_SEPARATOR, '/', "$localPath/$testFileName");
@@ -1022,7 +1747,7 @@ class ArchiveService
     {
         if (!empty($outputFile) && is_file($outputFile)) {
             if (@file_put_contents($outputFile, $text . ($newline ? "\n" : ''), FILE_APPEND) === false) {
-                throw new Exception('Cannot write to output file. Please check file system access rights');
+                throw new \Exception('Cannot write to output file. Please check file system access rights');
             }
         }
         if ($output instanceof OutputInterface) {
@@ -1030,7 +1755,7 @@ class ArchiveService
         } elseif (is_string($output)) {
             $output .= $text . ($newline ? "\n" : '');
         } else {
-            throw new Exception('"$output" should be string or OutputInterface !');
+            throw new \Exception('"$output" should be string or OutputInterface !');
         }
     }
 
@@ -1043,8 +1768,8 @@ class ArchiveService
         $config = $this->configurationService->getConfiguration(ConfigurationFileProvider::getConfigFileFromEnv());
         $config->load();
         if (
-            !isset($config[self::PARAMS_KEY_IN_WAKKA]) ||
-            !is_array($config[self::PARAMS_KEY_IN_WAKKA])
+            !isset($config[self::PARAMS_KEY_IN_WAKKA])
+            || !is_array($config[self::PARAMS_KEY_IN_WAKKA])
         ) {
             $data = [];
         } else {
@@ -1105,13 +1830,11 @@ class ArchiveService
 
     /**
      * test db export connection.
-     *
-     * @param string $privatePath
      */
     protected function testDb(): bool
     {
         try {
-            $results = $this->consoleService->startConsoleSync('archive:exportdb', [
+            $results = $this->consoleService->startConsoleSync('core:exportdb', [
                 '--test',
             ]);
             if (empty($results) || !is_array($results)) {
@@ -1119,8 +1842,8 @@ class ArchiveService
             }
             $result = $results[array_key_first($results)];
 
-            return empty($result['stderr']) && !empty($result['stdout']) && preg_match("/^OK\s*$/i", $result['stdout']);
-        } catch (Throwable $th) {
+            return !empty($result['stdout']) && preg_match("/^OK\s*$/i", $result['stdout']);
+        } catch (\Throwable $th) {
         }
 
         return false;
@@ -1131,8 +1854,8 @@ class ArchiveService
      *
      * @return string $sqlContent
      *
-     * @throws Exception
-     * @throws Throwable
+     * @throws \Exception
+     * @throws \Throwable
      */
     protected function getSQLContent(string $privatePath): string
     {
@@ -1149,7 +1872,7 @@ class ArchiveService
                     $sqlContent = @file_get_contents($resultFile);
 
                     if ($sqlContent === false) {
-                        throw new Exception('Cannot read sql content file. Please check file system access rights');
+                        throw new \Exception('Cannot read sql content file. Please check file system access rights');
                     }
 
                     @unlink($resultFile);
@@ -1169,11 +1892,11 @@ class ArchiveService
             // backup
             $results = $this->dbService->getSQLContentBackupMethod();
             if (empty($results['sql'])) {
-                throw new Exception($errorMessage . (empty($results['error']) ? 'SQL not exported via BackupMethod' : $results['error']));
-            } else {
-                return $results['sql'];
+                throw new \Exception($errorMessage . (empty($results['error']) ? 'SQL not exported via BackupMethod' : $results['error']));
             }
-        } catch (Throwable $th) {
+
+            return $results['sql'];
+        } catch (\Throwable $th) {
             if (file_exists($resultFile)) {
                 unlink($resultFile);
             }
@@ -1184,7 +1907,7 @@ class ArchiveService
     /**
      * check if there is enought free space before archive (size of files + custom + 300 Mo).
      *
-     * @throws Exception
+     * @throws \Exception
      */
     protected function assertEnoughtSpace(array $blacklistedRootFolders = [])
     {
@@ -1202,7 +1925,7 @@ class ArchiveService
 
         $freeSpace = disk_free_space(realpath(getcwd()));
         if ($freeSpace < $estimateZipSize) {
-            throw new Exception('Not enough free space for a new archive!');
+            throw new \Exception('Not enough free space for a new archive!');
         }
     }
 
@@ -1243,9 +1966,9 @@ class ArchiveService
     {
         $archiveParams = $this->getArchiveParams();
 
-        return (empty($archiveParams['max_nb_files']) ||
-            !is_scalar($archiveParams['max_nb_files']) ||
-            intval($archiveParams['max_nb_files']) < 3)
+        return (empty($archiveParams['max_nb_files'])
+            || !is_scalar($archiveParams['max_nb_files'])
+            || intval($archiveParams['max_nb_files']) < 3)
             ? 10
             : intval($archiveParams['max_nb_files']);
     }
@@ -1253,11 +1976,17 @@ class ArchiveService
     /**
      * extract list of archives to delete.
      *
+     * Only this wiki's own backups are rotated: one fetched from another wiki was asked for
+     * by hand and is not this wiki's to throw away.
+     *
      * @return array $files
      */
     public function archivesToDelete(bool $beforeArchive = false): array
     {
-        $archives = $this->getArchives();
+        $ownSource = ArchiveFilename::slug($this->params->get('base_url'));
+        $archives = array_values(array_filter($this->getArchives(), function ($archive) use ($ownSource) {
+            return empty($archive['source']) || $archive['source'] === $ownSource;
+        }));
         $maxNBFiles = $this->getMaxNbFiles();
         $nbFilesToRemove = count($archives) - $maxNBFiles + ($beforeArchive ? 1 : 0);
         if ($nbFilesToRemove > 0) {
@@ -1308,10 +2037,10 @@ class ArchiveService
             return [];
         }
         $indexes = [];
-        $nowMinusXDays = (new DateTime())->sub(new DateInterval("P{$days}D"));
+        $nowMinusXDays = (new \DateTime())->sub(new \DateInterval("P{$days}D"));
         foreach ($archives as $key => $archive) {
             // check the the last file is aged more than x days
-            $fileDateTime = (new DateTime())
+            $fileDateTime = (new \DateTime())
                 ->setDate($archive['year'], $archive['month'], $archive['day'])
                 ->setTime($archive['hours'], $archive['minutes'], $archive['seconds'], 0);
             if (
@@ -1326,8 +2055,6 @@ class ArchiveService
 
     /**
      * get content of info.json file from privatePath.
-     *
-     * @return mixed
      */
     private function getInfoFromFile(string $privateFolder = '')
     {
@@ -1336,13 +2063,13 @@ class ArchiveService
         }
         if (!file_exists("$privateFolder/info.json")) {
             if (@file_put_contents("$privateFolder/info.json", '{}') === false) {
-                throw new Exception('Cannot write to archive info file. Please check file system access rights');
+                throw new \Exception('Cannot write to archive info file. Please check file system access rights');
             }
         }
         $fileContent = @file_get_contents("$privateFolder/info.json");
 
         if ($fileContent === false) {
-            throw new Exception('Cannot read archive info file. Please check file system access rights');
+            throw new \Exception('Cannot read archive info file. Please check file system access rights');
         }
 
         $content = json_decode($fileContent, true);
@@ -1352,8 +2079,6 @@ class ArchiveService
 
     /**
      * set content to info.json file from privatePath.
-     *
-     * @param mixed $content
      */
     private function setInfoToFile($content, string $privateFolder = '')
     {
@@ -1362,7 +2087,7 @@ class ArchiveService
         }
 
         if (@file_put_contents("$privateFolder/info.json", json_encode($content)) === false) {
-            throw new Exception('Cannot set archive info to file. Please check file system access rights');
+            throw new \Exception('Cannot set archive info to file. Please check file system access rights');
         }
     }
 
@@ -1386,10 +2111,10 @@ class ArchiveService
         $input = "$privateFolder/input-$uid.log";
         $output = "$privateFolder/output-$uid.log";
         if (@file_put_contents($input, '') === false) {
-            throw new Exception('Cannot write to archive input file. Please check file system access rights');
+            throw new \Exception('Cannot write to archive input file. Please check file system access rights');
         }
         if (@file_put_contents($output, '') === false) {
-            throw new Exception('Cannot write to archive output file. Please check file system access rights');
+            throw new \Exception('Cannot write to archive output file. Please check file system access rights');
         }
 
         $info[$uid] = [
@@ -1448,7 +2173,7 @@ class ArchiveService
         $output = @file_get_contents($info['output']);
 
         if ($output === false) {
-            throw new Exception('Cannot read archive output file. Please check file system access rights');
+            throw new \Exception('Cannot read archive output file. Please check file system access rights');
         }
 
         $running = !empty(trim($output));
@@ -1480,8 +2205,8 @@ class ArchiveService
         $archiveParams = $this->getArchiveParams();
         $key = ($type == 'white') ? self::KEY_FOR_FOLDERS_TO_INCLUDE : self::KEY_FOR_FOLDERS_TO_EXCLUDE;
         if (
-            !empty($archiveParams[$key]) &&
-            is_array($archiveParams[$key])
+            !empty($archiveParams[$key])
+            && is_array($archiveParams[$key])
         ) {
             foreach ($this->sanitizeFileList($archiveParams[$key]) as $path) {
                 if (!in_array($path, $list)) {

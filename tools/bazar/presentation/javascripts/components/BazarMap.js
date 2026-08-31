@@ -8,14 +8,14 @@ const BazarMapComponent = {
   components: {
     'l-map': LMap,
     'l-marker-cluster': LeafletMarkerCluster,
-    'spinner-loader': SpinnerLoader
+    'spinner-loader': SpinnerLoader,
   },
   data() {
     return {
       selectedEntry: null,
       center: null,
       bounds: null,
-      layers: {}
+      layers: {},
     }
   },
   computed: {
@@ -23,7 +23,11 @@ const BazarMapComponent = {
       const vMe = this
       return this.$root.entriesToDisplay.filter((entry) => {
         const cGeolocation = vMe.getGeolocation(entry)
-        return cGeolocation && ((cGeolocation.latitude && cGeolocation.longitude) || cGeolocation.geometries)
+        return (
+          cGeolocation &&
+          ((cGeolocation.latitude && cGeolocation.longitude) ||
+            cGeolocation.geometries)
+        )
       })
     },
     map() {
@@ -35,15 +39,14 @@ const BazarMapComponent = {
         zoomControl: this.params.navigation,
         fullscreenControl: this.params.fullscreen,
         fullscreenControlOptions: {
-          forceSeparateButton: true,
           title: _t('BAZ_FULLSCREEN'), // change the title of the button, default Full Screen
           titleCancel: _t('BAZ_BACK_TO_NORMAL_VIEW'), // change the title of the button when fullscreen is on, default Exit Full Screen
           // content: '<i class="fa fa-expand-alt"></i>', // change the content of the button, can be HTML, default null
-          forceSeparateButton: true // force seperate button to detach from zoom buttons, default false
+          forceSeparateButton: true, // force seperate button to detach from zoom buttons, default false
         },
-        maxZoom: 18
+        maxZoom: 18,
       }
-    }
+    },
   },
   methods: {
     getGeolocation(pEntry) {
@@ -57,7 +60,11 @@ const BazarMapComponent = {
         lLongitude = lGeolocation.longitude ?? null
       }
 
-      if (lGeolocation && ((lLatitude && lLongitude) || lGeolocation.geometries)) return lGeolocation
+      if (
+        lGeolocation &&
+        ((lLatitude && lLongitude) || lGeolocation.geometries)
+      )
+        return lGeolocation
       return null
     },
     updateBounds() {
@@ -73,14 +80,20 @@ const BazarMapComponent = {
       const baseLayers = {}
       const providers = this.params.providers || []
       if (providers.length > 0) {
-        providers.forEach((p) => { baseLayers[p] = L.tileLayer.provider(p) })
+        providers.forEach((p) => {
+          baseLayers[p] = L.tileLayer.provider(p)
+        })
       } else {
-        baseLayers[this.params.provider] = L.tileLayer.provider(this.params.provider, provideOptions)
+        baseLayers[this.params.provider] = L.tileLayer.provider(
+          this.params.provider,
+          provideOptions,
+        )
       }
-      const defaultProvider = baseLayers[this.params.provider] || Object.values(baseLayers)[0]
+      const defaultProvider =
+        baseLayers[this.params.provider] || Object.values(baseLayers)[0]
       defaultProvider.addTo(this.map)
 
-      const rawLayers = (this.params.layers || [])
+      const rawLayers = this.params.layers || []
       for (const rawLayer of rawLayers) {
         let [label, type, options, url] = rawLayer.split('|')
         if (!url) {
@@ -95,39 +108,44 @@ const BazarMapComponent = {
             if (visibleByDefault) this.layers[label].addTo(this.map)
             break
           case 'geojson':
-            this.layers[label] = L.geoJson
-              .ajax(url, {
-                style(feature, latlng) {
-                  if (feature.geometry.type == 'Point') return
-                  const props = feature.properties || {}
-                  options.split(';').forEach((o) => {
-                    if (!o.trim()) return
-                    const [key, value] = o.split(':')
-                    if (key && value) props[key.trim()] = value.trim().replaceAll("'", '')
-                  })
-                  return {
-                    fillColor: props._umap_options?.color ?? wiki.cssVar('--primary-color'),
-                    fillOpacity: props._umap_options?.opacity ?? 0.3,
-                    color: props._umap_options?.color ?? wiki.cssVar('--primary-color'),
-                    opacity: 1,
-                    weight: 3,
-                    ...props
-                  }
-                },
-                pointToLayer(feature, latlng) {
-                  return L.circleMarker(latlng)
-                },
-                onEachFeature(feature, layer) {
-                  let str = ''
-                  for (const prop in feature.properties) {
-                    const content = prop.toLowerCase() == 'url'
+            this.layers[label] = L.geoJson.ajax(url, {
+              style(feature, _latlng) {
+                if (feature.geometry.type == 'Point') return
+                const props = feature.properties || {}
+                options.split(';').forEach((o) => {
+                  if (!o.trim()) return
+                  const [key, value] = o.split(':')
+                  if (key && value)
+                    props[key.trim()] = value.trim().replaceAll("'", '')
+                })
+                return {
+                  fillColor:
+                    props._umap_options?.color ??
+                    wiki.cssVar('--primary-color'),
+                  fillOpacity: props._umap_options?.opacity ?? 0.3,
+                  color:
+                    props._umap_options?.color ??
+                    wiki.cssVar('--primary-color'),
+                  opacity: 1,
+                  weight: 3,
+                  ...props,
+                }
+              },
+              pointToLayer(feature, latlng) {
+                return L.circleMarker(latlng)
+              },
+              onEachFeature(feature, layer) {
+                let str = ''
+                for (const prop in feature.properties) {
+                  const content =
+                    prop.toLowerCase() == 'url'
                       ? `<a href="${feature.properties[prop]}" target="_blank">${feature.properties[prop]}</a>`
                       : feature.properties[prop]
-                    str += `${prop}: ${content}<br/>`
-                  }
-                  layer.bindPopup(str)
+                  str += `${prop}: ${content}<br/>`
                 }
-              })
+                layer.bindPopup(str)
+              },
+            })
             if (visibleByDefault) this.layers[label].addTo(this.map)
             break
           default:
@@ -137,7 +155,10 @@ const BazarMapComponent = {
       }
 
       // Add layer control only if multiple layers are there
-      if (Object.keys(baseLayers).length > 1 || Object.keys(this.layers).length > 0) {
+      if (
+        Object.keys(baseLayers).length > 1 ||
+        Object.keys(this.layers).length > 0
+      ) {
         L.control.layers(baseLayers, this.layers).addTo(this.map)
       }
     },
@@ -161,11 +182,12 @@ const BazarMapComponent = {
         if (cGeolocation) {
           entry.marker = L.marker(
             [cGeolocation.latitude, cGeolocation.longitude],
-            { riseOnHover: true }
+            { riseOnHover: true },
           )
-          const isLink = this.isModalDisplay()
-            || this.isDirectLinkDisplay()
-            || this.isNewTabDisplay()
+          const isLink =
+            this.isModalDisplay() ||
+            this.isDirectLinkDisplay() ||
+            this.isNewTabDisplay()
           const tagName = isLink ? 'a' : 'div'
           const url = entry.url + (this.isModalDisplay() ? '/iframe' : '')
           const modalData = this.isModalDisplay()
@@ -184,25 +206,26 @@ const BazarMapComponent = {
 		              ${entry.markerhover || entry.bf_titre}
 		            </span>
 		          </div>
-		          <${tagName} class="bazar-entry ${this.isModalDisplay() ? 'modalbox' : ''}" `
-                + `${isLink ? `href="${url}"` : ''} style="color: ${entry.color}" ${modalData}>
+		          <${tagName} class="bazar-entry ${this.isModalDisplay() ? 'modalbox' : ''}" ` +
+                `${isLink ? `href="${url}"` : ''} style="color: ${entry.color}" ${modalData}>
 		            <i class="${entry.icon || 'fa fa-bullseye'}"></i>
-		          </${tagName}>`
-            })
+		          </${tagName}>`,
+            }),
           )
           if (this.isDirectLinkDisplay()) {
             entry.marker.on('click', () => {
-              event.preventDefault()
-              window.location = entry.url + (this.$root.isInIframe() ? '/iframe' : '')
+              window.event.preventDefault()
+              window.location =
+                entry.url + (this.$root.isInIframe() ? '/iframe' : '')
             })
           } else if (this.isNewTabDisplay()) {
-            entry.marker.on('click', function() {
-              event.preventDefault()
+            entry.marker.on('click', function () {
+              window.event.preventDefault()
               window.open(entry.url)
               this.selectedEntry = entry
             })
           } else if (!isLink) {
-            entry.marker.on('click', (ev) => {
+            entry.marker.on('click', (_ev) => {
               this.selectedEntry = entry
             })
           }
@@ -213,43 +236,41 @@ const BazarMapComponent = {
         console.error(
           `Entry ${entry.id_fiche} has invalid geolocation`,
           entry,
-          e
+          e,
         )
       }
     },
     isModalDisplay() {
       return (
-        this.params.entrydisplay != undefined
-        && this.params.entrydisplay == 'modal'
+        this.params.entrydisplay != null && this.params.entrydisplay == 'modal'
       )
     },
     isNewTabDisplay() {
       return (
-        this.params.entrydisplay != undefined
-        && this.params.entrydisplay == 'newtab'
+        this.params.entrydisplay != null && this.params.entrydisplay == 'newtab'
       )
     },
     isDirectLinkDisplay() {
       return (
-        this.params.entrydisplay != undefined
-        && this.params.entrydisplay == 'direct'
+        this.params.entrydisplay != null && this.params.entrydisplay == 'direct'
       )
     },
     openPopup(entry) {
-      if (entry.marker == undefined) {
+      if (entry.marker == null) {
         return false
       }
       // Vue 3: use $slots instead of $scopedSlots
       const slots = this.$slots
-      if (slots.popupentrywithhtmlrender != undefined) {
-        if (entry.html_render == undefined) {
+      if (slots.popupentrywithhtmlrender != null) {
+        if (entry.html_render == null) {
           let url = ''
           let excludeFields = ''
           if (
-            this.params.popupselectedfields
-            && this.params.popupselectedfields.length > 0
+            this.params.popupselectedfields &&
+            this.params.popupselectedfields.length > 0
           ) {
-            const necessaryFieldsArray = this.params.popupselectedfields.split(',')
+            const necessaryFieldsArray =
+              this.params.popupselectedfields.split(',')
             const keys = Object.keys(this.$root.formFields)
             for (let index = 0; index < keys.length; index++) {
               const key = keys[index]
@@ -261,18 +282,19 @@ const BazarMapComponent = {
                   'color',
                   'icon',
                   'visual',
-                  'marker'
-                ].indexOf(key) == -1
-                && necessaryFieldsArray.indexOf(key) == -1
+                  'marker',
+                ].indexOf(key) == -1 &&
+                necessaryFieldsArray.indexOf(key) == -1
               ) {
-                excludeFields = excludeFields.length == 0 ? key : `${excludeFields},${key}`
+                excludeFields =
+                  excludeFields.length == 0 ? key : `${excludeFields},${key}`
               }
             }
           }
           if (this.$root.isExternalUrl(entry)) {
             url = entry.url.replace(
               new RegExp(`${entry.id_fiche}$`),
-              `api/entries/html/${entry.id_fiche}`
+              `api/entries/html/${entry.id_fiche}`,
             )
             if (excludeFields.length > 0) {
               url = `${url + (url.match('?') ? '&' : '?')}excludeFields=${excludeFields}`
@@ -280,7 +302,7 @@ const BazarMapComponent = {
           } else {
             url = wiki.url(`?api/entries/html/${entry.id_fiche}`, {
               ...{ fields: 'html_output' },
-              ...(excludeFields.length > 0 ? { excludeFields } : {})
+              ...(excludeFields.length > 0 ? { excludeFields } : {}),
             })
           }
           this.$root.setEntryFromUrl(entry, url).then(() => {
@@ -291,21 +313,22 @@ const BazarMapComponent = {
           // Triggers when the component is ready
           this.$nextTick(() => this.definePopupContent(entry))
         }
-      } else if (slots.popupentry != undefined) {
+      } else if (slots.popupentry != null) {
         // Triggers when the component is ready
         this.$nextTick(() => this.definePopupContent(entry))
       }
     },
     definePopupContent(entry) {
       const slots = this.$slots
-      const renderedHtml = slots.popupentrywithhtml != undefined
-        ? $(this.$el)
-          .find('.popupentry-container.with-html-render > div')
-          .first()
-          .html()
-        : $(this.$el).find('.popupentry-container > div').first().html()
-      if (entry.marker.popup == undefined) {
-        if (renderedHtml != undefined && renderedHtml.length != 0) {
+      const renderedHtml =
+        slots.popupentrywithhtml != null
+          ? $(this.$el)
+              .find('.popupentry-container.with-html-render > div')
+              .first()
+              .html()
+          : $(this.$el).find('.popupentry-container > div').first().html()
+      if (entry.marker.popup == null) {
+        if (renderedHtml != null && renderedHtml.length != 0) {
           entry.marker
             .bindPopup(renderedHtml, { keepInView: true })
             .on('popupopen', () => {
@@ -353,7 +376,12 @@ const BazarMapComponent = {
               L.DomEvent.stopPropagation(e)
               this.selectedEntry = entry
             })
-            drawGeometries(entry.geometryGroup, geojsonGeometries.features, '', entry.id_fiche)
+            drawGeometries(
+              entry.geometryGroup,
+              geojsonGeometries.features,
+              '',
+              entry.id_fiche,
+            )
           } catch (e) {
             console.error(`Error drawing geometry for ${entry.id_fiche}`, e)
           }
@@ -391,11 +419,12 @@ const BazarMapComponent = {
       this.$nextTick(() => {
         this.loadMapEntries(this.entries, null)
       })
-    }
+    },
   },
   watch: {
     selectedEntry(newVal, oldVal) {
-      if (oldVal && oldVal.marker && oldVal.marker._icon) oldVal.marker._icon.classList.remove('selected')
+      if (oldVal && oldVal.marker && oldVal.marker._icon)
+        oldVal.marker._icon.classList.remove('selected')
       if (this.selectedEntry) {
         if (this.params.entrydisplay == 'newtab') {
           this.$root.openEntry(this.selectedEntry)
@@ -405,7 +434,7 @@ const BazarMapComponent = {
           this.openPopup(this.selectedEntry)
         }
 
-        this.$nextTick(function() {
+        this.$nextTick(function () {
           if (this.selectedEntry.marker && this.selectedEntry.marker._icon) {
             this.selectedEntry.marker._icon.classList.add('selected')
           }
@@ -416,7 +445,7 @@ const BazarMapComponent = {
       handler() {
         this.center = [this.params.latitude, this.params.longitude]
       },
-      immediate: true
+      immediate: true,
     },
     entries(newVal, oldVal) {
       if (!this.map) return
@@ -430,7 +459,7 @@ const BazarMapComponent = {
           this.loadMapEntries(newVal, oldVal)
         })
       }
-    }
+    },
   },
   template:
     `
@@ -449,9 +478,9 @@ const BazarMapComponent = {
       <div v-if="selectedEntry && this.params.entrydisplay == 'sidebar'" class="entry-container">
         <div class="btn-close" @click="selectedEntry = null"><i class="fa fa-times"></i></div>
         <div v-html="selectedEntry.html_render"></div>
-      </div>`
+      </div>` +
     // popup content
-    + `<div v-if="selectedEntry && this.params.entrydisplay == 'popup'" class="popupentry-container with-html-render">
+    `<div v-if="selectedEntry && this.params.entrydisplay == 'popup'" class="popupentry-container with-html-render">
         <slot name="popupentrywithhtmlrender" v-bind="{entry:selectedEntry}"></slot>
       </div>
       <div v-if="selectedEntry && this.params.entrydisplay == 'popup'" class="popupentry-container">
@@ -460,7 +489,7 @@ const BazarMapComponent = {
 
       <spinner-loader v-if="this.$root.isLoading || !this.$root.ready" class="overlay super-overlay"></spinner-loader>
     </div>
-  `
+  `,
 }
 
 // Register component globally for Vue 3 compatibility

@@ -11,7 +11,7 @@ export default {
         for (let i = 0; i < labels.length; i++) {
           this.elements.push({
             label: labels[i],
-            image: images.length >= i ? images[i] : ''
+            image: images.length >= i ? images[i] : '',
           })
         }
       }
@@ -25,8 +25,8 @@ export default {
         images: this.elements
           .map((g) => g.image)
           .filter((e) => e != '')
-          .join(',')
+          .join(','),
       }
-    }
-  }
+    },
+  },
 }

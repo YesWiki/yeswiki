@@ -16,26 +16,40 @@ const app = createApp({
       viewTypes: {
         current: _t('REVISIONS_PREVIEW'),
         commit_diff: _t('REVISIONS_COMMIT_DIFF'),
-        diff: _t('REVISIONS_DIFF')
+        diff: _t('REVISIONS_DIFF'),
       },
       displayWikiCode: false,
       selectedViewType: 'current',
-      revisionsCount: parseInt(elementDataset.revisionsCount, 10) || 0
+      revisionsCount: parseInt(elementDataset.revisionsCount, 10) || 0,
     }
   },
   computed: {
-    firstRevision() { return this.revisions[this.revisions.length - 1] },
-    lastRevision() { return this.revisions[0] },
+    firstRevision() {
+      return this.revisions[this.revisions.length - 1]
+    },
+    lastRevision() {
+      return this.revisions[0]
+    },
     isFirstRevision() {
-      return this.selectedRevision && this.firstRevision &&
+      return (
+        this.selectedRevision &&
+        this.firstRevision &&
         Vue.toRaw(this.selectedRevision) === Vue.toRaw(this.firstRevision)
+      )
     },
     isLastRevision() {
-      return this.selectedRevision && this.lastRevision &&
+      return (
+        this.selectedRevision &&
+        this.lastRevision &&
         Vue.toRaw(this.selectedRevision) === Vue.toRaw(this.lastRevision)
+      )
     },
-    restoreUrl() { return wiki.url(`${wiki.pageTag}/revisions`, { restoreRevisionId: this.selectedRevision.id }) },
-    previewUrl() { return wiki.url(`${wiki.pageTag}/iframe`, { time: this.selectedRevision.phpTime, iframelinks: 0 }) }
+    previewUrl() {
+      return wiki.url(`${wiki.pageTag}/iframe`, {
+        time: this.selectedRevision.phpTime,
+        iframelinks: 0,
+      })
+    },
   },
   mounted() {
     this.isEntry = elementDataset.isEntry == '1'
@@ -49,12 +63,15 @@ const app = createApp({
         month: 'short',
         day: 'numeric',
         hour: 'numeric',
-        minute: 'numeric'
+        minute: 'numeric',
       })
       // initial prop so it gets reactive
-      rev.current_code = ''; rev.current_html = ''
-      rev.commit_diff_html = ''; rev.commit_diff_code = ''
-      rev.diff_html = ''; rev.diff_code = ''
+      rev.current_code = ''
+      rev.current_html = ''
+      rev.commit_diff_html = ''
+      rev.commit_diff_code = ''
+      rev.diff_html = ''
+      rev.diff_code = ''
       rev.fullyRetrieved = false
       return rev
     })
@@ -66,7 +83,7 @@ const app = createApp({
       if (this.selectedRevision && !this.selectedRevision.fullyRetrieved) {
         const url = wiki.url(`?api/pages/${wiki.pageTag}`, {
           time: this.selectedRevision.phpTime,
-          includeDiff: true
+          includeDiff: true,
         })
         $.getJSON(url, (data) => {
           this.selectedRevision.current_html = data.html
@@ -78,15 +95,21 @@ const app = createApp({
           this.selectedRevision.fullyRetrieved = true
         })
       }
-    }
+    },
   },
   methods: {
     timelineItemStyle(revision, includeTransform = true) {
       let result = {}
       if (revision.placeInTimeLine < 50) {
-        result = { left: `${revision.placeInTimeLine}%`, transform: 'translateX(-50%) translateY(50%)' }
+        result = {
+          left: `${revision.placeInTimeLine}%`,
+          transform: 'translateX(-50%) translateY(50%)',
+        }
       } else {
-        result = { right: `${100 - revision.placeInTimeLine}%`, transform: 'translateX(50%) translateY(50%)' }
+        result = {
+          right: `${100 - revision.placeInTimeLine}%`,
+          transform: 'translateX(50%) translateY(50%)',
+        }
       }
       if (!includeTransform) result.transform = null
       result['z-index'] = revision.number
@@ -98,15 +121,21 @@ const app = createApp({
       if (newRevision) this.selectedRevision = newRevision
     },
     calculateRevisionsPlaceInTimeLine() {
-      const timelineLength = this.lastRevision.timestamp - this.firstRevision.timestamp
+      const timelineLength =
+        this.lastRevision.timestamp - this.firstRevision.timestamp
       let prevRevision
       this.revisions.forEach((rev, index) => {
         rev.number = this.revisionsCount - index
-        rev.placeInTimeLine = (rev.timestamp - this.firstRevision.timestamp) / timelineLength * 100
+        rev.placeInTimeLine =
+          ((rev.timestamp - this.firstRevision.timestamp) / timelineLength) *
+          100
         if (prevRevision) {
           // At least 1% gap between each, otherwise we don't see anything in the UI
           const minGap = this.minGapBetween(rev, prevRevision)
-          rev.placeInTimeLine = Math.min(rev.placeInTimeLine, prevRevision.placeInTimeLine - minGap)
+          rev.placeInTimeLine = Math.min(
+            rev.placeInTimeLine,
+            prevRevision.placeInTimeLine - minGap,
+          )
         }
         prevRevision = rev
       })
@@ -116,20 +145,28 @@ const app = createApp({
       if (this.firstRevision.placeInTimeLine < 0) {
         this.firstRevision.placeInTimeLine = 0
         prevRevision = null
-        this.revisions.slice().reverse().forEach((rev, index) => {
-          if (prevRevision) {
-            const minGap = this.minGapBetween(rev, prevRevision)
-            rev.placeInTimeLine = Math.max(rev.placeInTimeLine, prevRevision.placeInTimeLine + minGap)
-          }
-          prevRevision = rev
-        })
+        this.revisions
+          .slice()
+          .reverse()
+          .forEach((rev, _index) => {
+            if (prevRevision) {
+              const minGap = this.minGapBetween(rev, prevRevision)
+              rev.placeInTimeLine = Math.max(
+                rev.placeInTimeLine,
+                prevRevision.placeInTimeLine + minGap,
+              )
+            }
+            prevRevision = rev
+          })
       }
     },
     minGapBetween(rev1, rev2) {
       // Bigger gap if different day
-      return rev1.time.setHours(0, 0, 0, 0) == rev2.time.setHours(0, 0, 0, 0) ? 1.3 : 3
-    }
-  }
+      return rev1.time.setHours(0, 0, 0, 0) == rev2.time.setHours(0, 0, 0, 0)
+        ? 1.3
+        : 3
+    },
+  },
 })
 
 // Vue 3: Use app.config.globalProperties instead of Vue.prototype

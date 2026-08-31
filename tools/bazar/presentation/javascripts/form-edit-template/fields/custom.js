@@ -3,7 +3,7 @@ export default {
     label: _t('BAZ_FORM_EDIT_CUSTOM_LABEL'),
     name: 'custom',
     attrs: { type: 'custom' },
-    icon: '<i class="fas fa-question-circle"></i>'
+    icon: '<i class="fas fa-question-circle"></i>',
   },
   attributes: {
     param0: { label: 'Param0', value: '' },
@@ -21,7 +21,7 @@ export default {
     param12: { label: 'Param12', value: '' },
     param13: { label: 'Param13', value: '' },
     param14: { label: 'Param14', value: '' },
-    param15: { label: 'Param15', value: '' }
+    param15: { label: 'Param15', value: '' },
   },
   // disabledAttributes: [],
   attributesMapping: {
@@ -40,9 +40,9 @@ export default {
     12: 'param12',
     13: 'param13',
     14: 'param14',
-    15: 'param15'
+    15: 'param15',
   },
-  renderInput(field) {
+  renderInput(_field) {
     return { field: '' }
-  }
+  },
 }

@@ -3,7 +3,6 @@
 namespace YesWiki\Bazar\Service;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-use YesWiki\Bazar\Service\ActivityPubService;
 use YesWiki\Bazar\Field\BazarField;
 use YesWiki\Bazar\Field\ImageField;
 use YesWiki\Core\Service\DbService;
@@ -192,10 +191,12 @@ class FormManager
 
         return array_filter(
             $this->cachedForms,
-            function ($pKey) {
-                return intval($pKey) . '' === $pKey . '';
+            // require a valid numeric-id key *and* an actual form array : consumers (e.g.
+            // SearchManager::searchWithLists()) expect every entry to be a real form
+            function ($pForm, $pKey) {
+                return is_array($pForm) && intval($pKey) . '' === $pKey . '';
             },
-            ARRAY_FILTER_USE_KEY,
+            ARRAY_FILTER_USE_BOTH,
         );
     }
 
@@ -220,9 +221,18 @@ class FormManager
 
         foreach ($formsIds as $formId) {
             if (empty($this->cachedForms[$formId])) {
-                $this->cachedForms[$formId] = $this->getOne($formId);
+                $form = $this->getOne($formId);
+                // don't persist a "form not found" result into the shared cache : a
+                // subsequent getAll() only overwrites cache entries for ids that actually
+                // exist as `nature` rows, so a cached null here would otherwise leak into
+                // every later getAll() call for the rest of the request
+                if ($form !== null) {
+                    $this->cachedForms[$formId] = $form;
+                }
+            } else {
+                $form = $this->cachedForms[$formId];
             }
-            $results[$formId] = $this->cachedForms[$formId];
+            $results[$formId] = $form;
         }
 
         return $results;
@@ -239,7 +249,7 @@ class FormManager
             $data['bn_id_nature'] = $this->findNewId();
         }
 
-        $activitypubEnabled = (int) $this->activityPubService->isEnabled($data);
+        $activitypubEnabled = (int)$this->activityPubService->isEnabled($data);
 
         if ($activitypubEnabled) {
             $keyPair = $this->httpSignatureService->generateKeyPair();
@@ -268,6 +278,7 @@ class FormManager
                     . ($this->isAvailableOnlyOneEntryOption() ? ((isset($data['bn_only_one_entry']) && $data['bn_only_one_entry'] === 'Y') ? 'Y' : 'N') . '", "' : '", "')
                     . ($this->isAvailableOnlyOneEntryMessage() ? (empty($data['bn_only_one_entry_message']) ? '' : $this->dbService->escape(_convert($data['bn_only_one_entry_message'], YW_CHARSET, true))) . '", "' : '", "')
             . $this->dbService->escape(_convert($data['bn_condition'], YW_CHARSET, true)) . '")';
+
         return $this->dbService->query($query);
     }
 
@@ -282,7 +293,7 @@ class FormManager
         // reset cache
         $this->cacheValidatedForAll = false;
 
-        $activitypubEnabled = (int) $this->activityPubService->isEnabled($data);
+        $activitypubEnabled = (int)$this->activityPubService->isEnabled($data);
 
         if ($activitypubEnabled && $data['bn_activitypub_private_key'] === null) {
             $keyPair = $this->httpSignatureService->generateKeyPair();
@@ -314,10 +325,10 @@ class FormManager
             $data['bn_label_nature'] = $data['bn_label_nature'] . ' (' . _t('BAZ_DUPLICATE') . ')';
 
             return $this->create($data);
-        } else {
-            // raise error?
-            return false;
         }
+
+        // raise error?
+        return false;
     }
 
     public function delete($id)

@@ -41,7 +41,7 @@ class UsersTableAction extends YesWikiAction
         $isAdmin = $this->wiki->UserIsAdmin();
 
         // manage POST actions
-        $postActionMessages = $this->managePostActions($_POST ?? [], $isAdmin);
+        $postActionMessages = $this->managePostActions($this->getRequest()->request->all(), $isAdmin);
 
         // get Users
         $users = $this->userManager->getAll();
@@ -55,16 +55,16 @@ class UsersTableAction extends YesWikiAction
                 if (isset($a['signuptime']) && isset($b['signuptime'])) {
                     if ($a['signuptime'] == $b['signuptime']) {
                         return 0;
-                    } else {
-                        return ($a['signuptime'] < $b['signuptime']) ? $valueIfLower : -$valueIfLower;
                     }
+
+                    return ($a['signuptime'] < $b['signuptime']) ? $valueIfLower : -$valueIfLower;
                 } elseif (isset($a['signuptime'])) {
                     return -$valueIfLower;
                 } elseif (isset($b['signuptime'])) {
                     return $valueIfLower;
-                } else {
-                    return 0;
                 }
+
+                return 0;
             });
 
             // limit
@@ -126,20 +126,19 @@ class UsersTableAction extends YesWikiAction
                         'type' => 'danger',
                         'message' => str_replace('{username}', $userName, _t('USERSTABLE_NOT_EXISTING_USER')),
                     ]);
-                } else {
-                    try {
-                        $this->userController->delete($user);
+                }
+                try {
+                    $this->userController->delete($user);
 
-                        return $this->render('@templates/alert-message.twig', [
-                            'type' => 'success',
-                            'message' => str_replace('{username}', $userName, _t('USERSTABLE_USER_DELETED')),
-                        ]);
-                    } catch (DeleteUserException $ex) {
-                        return $this->render('@templates/alert-message.twig', [
-                            'type' => 'warning',
-                            'message' => $ex->getMessage(),
-                        ]);
-                    }
+                    return $this->render('@templates/alert-message.twig', [
+                        'type' => 'success',
+                        'message' => str_replace('{username}', $userName, _t('USERSTABLE_USER_DELETED')),
+                    ]);
+                } catch (DeleteUserException $ex) {
+                    return $this->render('@templates/alert-message.twig', [
+                        'type' => 'warning',
+                        'message' => $ex->getMessage(),
+                    ]);
                 }
             } catch (TokenNotFoundException $th) {
                 return $this->render('@templates/alert-message.twig', [

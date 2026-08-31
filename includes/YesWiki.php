@@ -84,6 +84,7 @@ class Wiki
         $this->tag = $init->page;
         $this->method = $init->method;
 
+        $this->request = Request::createFromGlobals();
         $this->services = $init->initCoreServices($this);
         $this->loadExtensions();
 
@@ -131,9 +132,9 @@ class Wiki
             return 'show';
         } elseif ($this->method == 'editiframe') {
             return 'edit';
-        } else {
-            return $this->method;
         }
+
+        return $this->method;
     }
 
     public function GetConfigValue($name, $default = null)
@@ -291,9 +292,9 @@ class Wiki
 
             // Retourne 0 seulement si tout c'est bien passe
             return 0;
-        } else {
-            return 1;
         }
+
+        return 1;
     }
 
     /**
@@ -436,9 +437,8 @@ class Wiki
     {
         if ($this->isCli()) {
             throw new ExitException($message);
-        } else {
-            exit($message);
         }
+        exit($message);
     }
 
     // returns just PageName[/method].
@@ -494,18 +494,17 @@ class Wiki
     {
         if (empty($link)) {
             return null;
-        } else {
-            $linkParts = $this->extractLinkParts($link);
-            if ($linkParts) {
-                return $this->Href($linkParts['method'], $linkParts['tag'], $linkParts['params']);
-            } elseif (filter_var($link, FILTER_VALIDATE_URL)) {
-                // a valid url
-                return $link;
-            } else {
-                // for now let's be tolerant : it may be a relative url or an anchor
-                return $link;
-            }
         }
+        $linkParts = $this->extractLinkParts($link);
+        if ($linkParts) {
+            return $this->Href($linkParts['method'], $linkParts['tag'], $linkParts['params']);
+        } elseif (filter_var($link, FILTER_VALIDATE_URL)) {
+            // a valid url
+            return $link;
+        }
+
+        // for now let's be tolerant : it may be a relative url or an anchor
+        return $link;
     }
 
     /**
@@ -536,9 +535,9 @@ class Wiki
                 'method' => $method,
                 'params' => $params,
             ];
-        } else {
-            return null;
         }
+
+        return null;
     }
 
     /**
@@ -921,7 +920,24 @@ class Wiki
         }
 
         // Query
-        return $this->LoadAll('select * from ' . $this->config['table_prefix'] . 'pages where comment_on != "" ' . "and latest = 'Y' " . 'order by time desc ' . $lim);
+        $comments = $this->LoadAll('select * from ' . $this->config['table_prefix'] . 'pages where comment_on != "" ' . "and latest = 'Y' " . 'order by time desc ' . $lim);
+
+        return $this->keepReadableComments($comments);
+    }
+
+    /**
+     * A comment names the page it hangs on, so it is only listable when that page is readable.
+     */
+    private function keepReadableComments($comments)
+    {
+        if (empty($comments) || !is_array($comments)) {
+            return $comments;
+        }
+        $aclService = $this->services->get(AclService::class);
+
+        return array_values(array_filter($comments, function ($comment) use ($aclService) {
+            return empty($comment['comment_on']) || $aclService->hasAccess('read', $comment['comment_on']);
+        }));
     }
 
     public function LoadRecentlyCommented($limit = 50)
@@ -938,7 +954,10 @@ class Wiki
             $comments = [];
             foreach ($ids as $id) {
                 $comment = $this->LoadSingle('select * from ' . $this->config['table_prefix'] . "pages where id = '" . $id['id'] . "' limit 1");
-                if (!isset($comments[$comment['comment_on']]) && $num < $limit) {
+                if (!isset($comments[$comment['comment_on']])
+                    && $num < $limit
+                    && $this->services->get(AclService::class)->hasAccess('read', $comment['comment_on'])
+                ) {
                     $comments[$comment['comment_on']] = $comment;
                     $num++;
                 }
@@ -1182,18 +1201,40 @@ class Wiki
     }
 
     // MAINTENANCE
+    protected const MAINTENANCE_INTERVAL = 1800; // run at most once every 30 minutes
+    protected const MAINTENANCE_LOCK_FILE = 'cache/maintenance.lock';
+
     public function Maintenance()
     {
         // purge referrers
         $this->PurgeReferrers();
         // purge old page revisions
         $this->PurgePages();
+        // purge expired password recovery keys
+        $this->services->get(UserManager::class)->purgeExpiredPasswordRecoveryKeys();
+    }
+
+    /**
+     * Poor man's cron: Maintenance() is only run once self::MAINTENANCE_INTERVAL has elapsed.
+     */
+    protected function shouldRunMaintenance(): bool
+    {
+        $lastRun = @filemtime(self::MAINTENANCE_LOCK_FILE) ?: 0;
+        if (time() - $lastRun < self::MAINTENANCE_INTERVAL) {
+            return false;
+        }
+        if (!is_dir('cache')) {
+            mkdir('cache', 0777, true);
+        }
+        touch(self::MAINTENANCE_LOCK_FILE);
+
+        return true;
     }
 
     // THE BIG EVIL NASTY ONE!
     public function Run($tag = '', $method = '')
     {
-        if (!(intval($this->GetMicroTime()) % 9)) {
+        if ($this->shouldRunMaintenance()) {
             $this->Maintenance();
         }
 
@@ -1213,8 +1254,6 @@ class Wiki
         }
 
         $this->services->get(AuthController::class)->connectUser();
-
-        $this->request = Request::createFromGlobals();
 
         // Is this a special page ?
         if (in_array($tag, ['api', 'doc'])) {
@@ -1405,9 +1444,9 @@ class Wiki
         if ($unit) {
             // Find the position of the unit in the ordered string which is the power of magnitude to multiply a kilobyte by.
             return intval(round((int)$size * pow(1024, stripos('bkmgtpezy', $unit[0]))));
-        } else {
-            return intval(round((int)$size));
         }
+
+        return intval(round((int)$size));
     }
 
     // Returns a file size limit in bytes based on the PHP upload_max_filesize,

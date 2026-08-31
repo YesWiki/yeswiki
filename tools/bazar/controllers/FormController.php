@@ -6,9 +6,9 @@ use Symfony\Component\Security\Csrf\Exception\TokenNotFoundException;
 use Tamtamchik\SimpleFlash\Flash;
 use YesWiki\Bazar\Field\MapField;
 use YesWiki\Bazar\Service\ActivityPubService;
-use YesWiki\Bazar\Service\WebfingerService;
 use YesWiki\Bazar\Service\FormManager;
 use YesWiki\Bazar\Service\Guard;
+use YesWiki\Bazar\Service\WebfingerService;
 use YesWiki\Core\Controller\CsrfTokenController;
 use YesWiki\Core\YesWikiController;
 use YesWiki\Security\Controller\SecurityController;
@@ -34,12 +34,13 @@ class FormController extends YesWikiController
     {
         $forms = $this->formManager->getAll();
 
+        $post = $this->getRequest()->request;
         // If there are forms to import
-        if (isset($_POST['imported-form'])) {
+        if ($post->has('imported-form')) {
             if (!$this->getService(Guard::class)->isAllowed('saisie_formulaire')) {
                 return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'formulaire', 'msg' => 'BAZ_AUTH_NEEDED'], false));
             }
-            foreach ($_POST['imported-form'] as $id => $value) {
+            foreach ($post->all('imported-form') as $id => $value) {
                 $value = json_decode($value, true);
                 $existingForms = multiArraySearch($forms, 'bn_label_nature', $value['bn_label_nature']);
                 // If a form with the same name exist, replace it
@@ -84,13 +85,13 @@ class FormController extends YesWikiController
     {
         if ($this->wiki->UserIsAdmin()) {
             $form = null;
-
-            if (isset($_POST['valider'])) {
-                $form = $this->formManager->getFromRawData($_POST);
+            $post = $this->getRequest()->request;
+            if ($post->has('valider')) {
+                $form = $this->formManager->getFromRawData($post->all());
                 if ($this->formIsValid($form)) {
-                    $this->formManager->create($_POST);
+                    $this->formManager->create($post->all());
 
-                    /* mrflos : i think this is not used*/
+                    /* mrflos : i think this is not used */
                     /* if ($this->activityPubService->isEnabled($form)) { */
                     /*     $this->activityPubService->postCreateActivity($form); */
                     /* } */
@@ -105,20 +106,20 @@ class FormController extends YesWikiController
                 'groupsList' => $this->getGroupsListIfEnabled(),
                 'onlyOneEntryOptionAvailable' => $this->formManager->isAvailableOnlyOneEntryOption(),
             ]);
-        } else {
-            return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'formulaire', 'msg' => 'BAZ_AUTH_NEEDED'], false));
         }
+
+        return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'formulaire', 'msg' => 'BAZ_AUTH_NEEDED'], false));
     }
 
     public function update($id)
     {
         if ($this->getService(Guard::class)->isAllowed('saisie_formulaire')) {
             $form = $this->formManager->getOne($id);
-
-            if (isset($_POST['valider'])) {
-                $form = $this->formManager->getFromRawData($_POST);
+            $post = $this->getRequest()->request;
+            if ($post->has('valider')) {
+                $form = $this->formManager->getFromRawData($post->all());
                 if ($this->formIsValid($form)) {
-                    $this->formManager->update($_POST);
+                    $this->formManager->update($post->all());
 
                     return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'formulaire', 'msg' => 'BAZ_FORMULAIRE_MODIFIE'], false));
                 }
@@ -130,9 +131,9 @@ class FormController extends YesWikiController
                 'groupsList' => $this->getGroupsListIfEnabled(),
                 'onlyOneEntryOptionAvailable' => $this->formManager->isAvailableOnlyOneEntryOption() && $this->formManager->isAvailableOnlyOneEntryMessage(),
             ]);
-        } else {
-            return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'formulaire', 'msg' => 'BAZ_NEED_ADMIN_RIGHTS'], false));
         }
+
+        return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'formulaire', 'msg' => 'BAZ_NEED_ADMIN_RIGHTS'], false));
     }
 
     private function formIsValid($form)
@@ -188,19 +189,25 @@ class FormController extends YesWikiController
             $this->formManager->clone($id);
 
             return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'formulaire', 'msg' => 'BAZ_FORM_CLONED'], false));
-        } else {
-            return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'formulaire', 'msg' => 'BAZ_AUTH_NEEDED'], false));
         }
+
+        return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'formulaire', 'msg' => 'BAZ_AUTH_NEEDED'], false));
     }
 
     public function manageAbonnements($id)
     {
         $form = $this->formManager->getOne($id);
 
-        if (isset($_POST['actor_handle'])) {
-            $recipientUri = str_starts_with($_POST['actor_handle'], 'http') ? $_POST['actor_handle'] : $this->webfingerService->getRemoteActor($_POST['actor_handle']);
+        $post = $this->getRequest()->request;
+        if ($post->has('actor_handle')) {
+            if (!$this->wiki->UserIsAdmin() || $this->securityController->isWikiHibernated()) {
+                return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'abonnements', 'action' => 'list', 'msg' => 'BAZ_NEED_ADMIN_RIGHTS', 'idformulaire' => $id], false));
+            }
 
-            $this->activityPubService->postActivity(["type" => "Follow", "object" => $recipientUri, "to" => $recipientUri], $form);
+            $actorHandle = $post->get('actor_handle');
+            $recipientUri = str_starts_with($actorHandle, 'http') ? $actorHandle : $this->webfingerService->getRemoteActor($actorHandle);
+
+            $this->activityPubService->postActivity(['type' => 'Follow', 'object' => $recipientUri, 'to' => $recipientUri], $form);
 
             return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'abonnements', 'action' => 'list', 'msg' => 'BAZ_FOLLOWING_ADDED', 'idformulaire' => $id], false));
         }
@@ -211,7 +218,7 @@ class FormController extends YesWikiController
         $domain = parse_url($this->wiki->GetBaseURL(), PHP_URL_HOST);
 
         return $this->render('@bazar/forms/abonnements.twig', [
-            'message' => isset($_GET['msg']) ? $_GET['msg'] : null,
+            'message' => $this->getRequest()->query->get('msg'),
             'form' => $form,
             'domain' => $domain,
             'followers' => $followers,
@@ -221,29 +228,37 @@ class FormController extends YesWikiController
 
     public function addFollowing($id, $actorUri)
     {
+        if (!$this->wiki->UserIsAdmin() || $this->securityController->isWikiHibernated()) {
+            return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'abonnements', 'action' => 'list', 'msg' => 'BAZ_NEED_ADMIN_RIGHTS', 'idformulaire' => $id], false));
+        }
+
         $form = $this->formManager->getOne($id);
 
-        $this->activityPubService->postActivity(["type" => "Follow", "object" => $actorUri, "to" => $actorUri], $form);
+        $this->activityPubService->postActivity(['type' => 'Follow', 'object' => $actorUri, 'to' => $actorUri], $form);
 
         return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'abonnements', 'action' => 'list', 'msg' => 'BAZ_FOLLOWING_ADDED', 'idformulaire' => $id], false));
     }
 
     public function removeFollowing($id, $actorUri)
     {
+        if (!$this->wiki->UserIsAdmin() || $this->securityController->isWikiHibernated()) {
+            return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'abonnements', 'action' => 'list', 'msg' => 'BAZ_NEED_ADMIN_RIGHTS', 'idformulaire' => $id], false));
+        }
+
         $form = $this->formManager->getOne($id);
         $formActorUri = $this->activityPubService->getFormActorUri($form);
 
         $this->activityPubService->removeFollowing($form, $actorUri);
 
         $this->activityPubService->postActivity([
-            "type" => "Undo",
-            "object" => [
-                "type" => "Follow",
-                "actor" => $formActorUri,
-                "object" => $actorUri,
-                "to" => $actorUri,
+            'type' => 'Undo',
+            'object' => [
+                'type' => 'Follow',
+                'actor' => $formActorUri,
+                'object' => $actorUri,
+                'to' => $actorUri,
             ],
-            "to" => $actorUri,
+            'to' => $actorUri,
         ], $form);
 
         return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'abonnements', 'action' => 'list', 'msg' => 'BAZ_FOLLOWING_REMOVED', 'idformulaire' => $id], false));
@@ -251,6 +266,10 @@ class FormController extends YesWikiController
 
     public function syncActorPosts($id, $actorUri)
     {
+        if (!$this->wiki->UserIsAdmin() || $this->securityController->isWikiHibernated()) {
+            return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'abonnements', 'action' => 'list', 'msg' => 'BAZ_NEED_ADMIN_RIGHTS', 'idformulaire' => $id], false));
+        }
+
         $form = $this->formManager->getOne($id);
         $stats = $this->activityPubService->syncActorPosts($actorUri, $form);
 
@@ -266,25 +285,29 @@ class FormController extends YesWikiController
 
     public function removeFollower($id, $actorUri)
     {
+        if (!$this->wiki->UserIsAdmin() || $this->securityController->isWikiHibernated()) {
+            return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'abonnements', 'action' => 'list', 'msg' => 'BAZ_NEED_ADMIN_RIGHTS', 'idformulaire' => $id], false));
+        }
+
         $form = $this->formManager->getOne($id);
         $formActorUri = $this->activityPubService->getFormActorUri($form);
 
         $this->activityPubService->removeFollower($form, $actorUri);
 
         $this->activityPubService->postActivity([
-            "type" => "Undo",
-            "object" => [
-                "type" => "Accept",
-                "actor" => $formActorUri,
-                "object" => [
-                    "type" => "Follow",
-                    "actor" => $formActorUri,
-                    "object" => $actorUri,
-                    "to" => $actorUri,
+            'type' => 'Undo',
+            'object' => [
+                'type' => 'Accept',
+                'actor' => $formActorUri,
+                'object' => [
+                    'type' => 'Follow',
+                    'actor' => $formActorUri,
+                    'object' => $actorUri,
+                    'to' => $actorUri,
                 ],
-                "to" => $actorUri,
+                'to' => $actorUri,
             ],
-            "to" => $actorUri,
+            'to' => $actorUri,
         ], $form);
 
         return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'abonnements', 'action' => 'list', 'msg' => 'BAZ_FOLLOWER_REMOVED', 'idformulaire' => $id], false));

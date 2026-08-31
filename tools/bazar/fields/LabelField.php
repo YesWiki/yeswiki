@@ -66,6 +66,11 @@ class LabelField extends BazarField
         return $this->viewText;
     }
 
+    public function getFormText(): ?string
+    {
+        return is_string($this->formText) ? $this->formText : null;
+    }
+
     // Format input values before save
     public function formatValuesBeforeSave($entry)
     {

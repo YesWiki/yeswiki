@@ -9,7 +9,7 @@ abstract class CheckboxField extends EnumField
     protected $displaySelectAllLimit; // number of items without selectall box ; false if no limit
     protected $displayFilterLimit; // number of items without filter ; false if no limit
     protected $displayMethod; // empty, tags or dragndrop
-    protected $formName; //form name for drag and drop
+    protected $formName; // form name for drag and drop
     protected $normalDisplayMode;
     protected $dragAndDropDisplayMode;
 
@@ -52,7 +52,7 @@ abstract class CheckboxField extends EnumField
                 return $this->render($this->dragAndDropDisplayMode, [
                     'options' => $this->getOptions(),
                     'selectedOptionsId' => $this->getValues($entry),
-                    'formName' => ($this->formName) ?? $this->getFormName(),
+                    'formName' => $this->formName ?? $this->getFormName(),
                     'name' => _t('BAZ_DRAG_n_DROP_CHECKBOX_LIST'),
                     'height' => empty($GLOBALS['wiki']->config['BAZ_CHECKBOX_DRAG_AND_DROP_MAX_HEIGHT']) ? null : $GLOBALS['wiki']->config['BAZ_CHECKBOX_DRAG_AND_DROP_MAX_HEIGHT'],
                     'oldValue' => $this->sanitizeValues($this->getValue($entry), 'string'),

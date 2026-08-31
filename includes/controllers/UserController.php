@@ -8,12 +8,11 @@ use YesWiki\Core\Exception\BadFormatPasswordException;
 use YesWiki\Core\Exception\DeleteUserException;
 use YesWiki\Core\Exception\UserEmailAlreadyUsedException;
 use YesWiki\Core\Service\DbService;
+use YesWiki\Core\Service\GroupManager;
 use YesWiki\Core\Service\PageManager;
-use YesWiki\Core\Service\TripleStore;
 use YesWiki\Core\Service\UserManager;
 use YesWiki\Core\YesWikiController;
 use YesWiki\Security\Controller\SecurityController;
-use YesWiki\Core\Controller\GroupController;
 
 class UserController extends YesWikiController
 {
@@ -41,29 +40,29 @@ class UserController extends YesWikiController
     protected $authController;
     protected $dbService;
     protected $groupController;
+    protected $groupManager;
     protected $pageManager;
     protected $params;
     protected $securityController;
-    protected $tripleStore;
     protected $userManager;
 
     public function __construct(
         AuthController $authController,
         DbService $dbService,
         GroupController $groupController,
+        GroupManager $groupManager,
         PageManager $pageManager,
         ParameterBagInterface $params,
         SecurityController $securityController,
-        TripleStore $tripleStore,
         UserManager $userManager
     ) {
         $this->authController = $authController;
         $this->dbService = $dbService;
         $this->groupController = $groupController;
+        $this->groupManager = $groupManager;
         $this->pageManager = $pageManager;
         $this->params = $params;
         $this->securityController = $securityController;
-        $this->tripleStore = $tripleStore;
         $this->userManager = $userManager;
         $this->initLimitations();
     }
@@ -196,8 +195,7 @@ class UserController extends YesWikiController
         if ($this->isRunner($user)) {
             throw new DeleteUserException(_t('USER_CANT_DELETE_ONESELF') . '.');
         }
-        $this->deleteGroupsWhereUserIsAlone($user);
-        $this->deleteUserFromEveryGroup($user);
+        $this->removeFromGroups($user);
         $this->removeOwnership($user);
         $this->userManager->delete($user);
     }
@@ -245,78 +243,37 @@ class UserController extends YesWikiController
     }
 
     /**
-     * Delete groups where user is the sole member (unless it's the admins group).
-     * For the admins group, still throws to prevent accidental lockout.
+     * Remove the user from every group, dropping groups left without any member.
+     * Refuses, before touching anything, to empty the admins group.
      *
      * @throws DeleteUserException
      */
-    private function deleteGroupsWhereUserIsAlone(User $user)
+    private function removeFromGroups(User $user)
     {
-        $grouptab = $this->userManager->groupsWhereIsMember($user, false);
-        foreach ($grouptab as $group) {
-            $groupmembers = $this->wiki->GetGroupACL($group);
-            $groupmembers = str_replace(["\r\n", "\r"], "\n", $groupmembers);
-            $groupmembers = explode("\n", $groupmembers);
-            $groupmembers = array_unique(array_filter(array_map('trim', $groupmembers)));
-            if (count($groupmembers) == 1) {
-                if (strtolower($group) === ADMIN_GROUP) {
-                    throw new DeleteUserException(_t('USER_DELETE_LONE_MEMBER_OF_GROUP') . " ($group).");
-                }
+        $obsolete = [$user['name'], '!' . $user['name']];
+        $updates = [];
+        foreach ($this->groupManager->getall() as $group) {
+            $members = $this->groupManager->getMembers($group);
+            $remaining = array_values(array_diff($members, $obsolete));
+            if ($remaining === $members) {
+                continue;
+            }
+            if (empty($remaining) && strtolower($group) === ADMIN_GROUP) {
+                throw new DeleteUserException(_t('USER_DELETE_LONE_MEMBER_OF_GROUP') . " ($group).");
+            }
+            $updates[$group] = $remaining;
+        }
+        foreach ($updates as $group => $remaining) {
+            if (empty($remaining)) {
                 $this->groupController->delete($group);
+            } else {
+                $this->groupManager->updateMembers($group, $remaining);
             }
         }
     }
 
     /**
-     * remove user from every group.
-     *
-     * @throws DeleteUserException
-     */
-    private function deleteUserFromEveryGroup(User $user)
-    {
-        // Delete user in every group
-        $searchedValue = $this->dbService->escape($user['name']);
-        $groups = $this->tripleStore->getMatching(
-            GROUP_PREFIX . '%',
-            'http://www.wikini.net/_vocabulary/acls',
-            "%$searchedValue%",
-            'LIKE',
-            '=',
-            'LIKE'
-        );
-        $error = false;
-        if (is_array($groups)) {
-            $pregQuoteSearchValue = preg_quote($searchedValue, '/');
-            $prefixLen = strlen(GROUP_PREFIX);
-            foreach ($groups as $group) {
-                $newValue = $group['value'];
-                $newValue = preg_replace("/(?<=^|\\n|\\r)$pregQuoteSearchValue(?:\\r\\n|\\n|\\r|$)/", '', $newValue);
-                if ($newValue != $group['value']) {
-                    // Check if the group is now empty after removing the user
-                    $groupName = substr($group['resource'], $prefixLen);
-                    $remainingMembers = array_filter(array_map('trim', preg_split("/[\\r\\n]+/", $newValue)));
-                    if (empty($remainingMembers) && strtolower($groupName) !== ADMIN_GROUP) {
-                        $this->groupController->delete($groupName);
-                    } elseif (!in_array($this->tripleStore->update(
-                        $group['resource'],
-                        $group['property'],
-                        $group['value'],
-                        $newValue,
-                        '',
-                        ''
-                    ), [0, 3])) {
-                        $error = true;
-                    }
-                }
-            }
-        }
-        if ($error) {
-            throw new DeleteUserException(_t('USER_DELETE_QUERY_FAILED') . '.');
-        }
-    }
-
-    /**
-     * remove user from every group.
+     * hand over every page owned by the user to the first admin.
      *
      * @throws \Exception
      */

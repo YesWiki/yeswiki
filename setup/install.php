@@ -19,8 +19,6 @@ $config['wikini_version'] = WIKINI_VERSION;
 $config['wakka_version'] = WAKKA_VERSION;
 $config['yeswiki_version'] = YESWIKI_VERSION;
 $config['yeswiki_release'] = YESWIKI_RELEASE;
-// default var
-$config['htmlPurifierActivated'] = true; // TODO ectoplasme remove this line
 // list of tableNames
 $tablesNames = ['pages', 'links', 'referrers', 'nature', 'triples', 'users', 'acls'];
 
@@ -115,7 +113,7 @@ $replacements = [
     'prefix' => $config['table_prefix'],
     'siteTitle' => $config['wakka_name'],
     'WikiName' => $admin_name,
-    'hashedpassword' => md5($admin_password),
+    'hashedpassword' => password_hash($admin_password, PASSWORD_DEFAULT),
     'email' => $admin_email,
     'rootPage' => $config['root_page'],
     'url' => $config['base_url'],
@@ -148,7 +146,7 @@ if (!$result) {
             ) { /* empty table */
                 mysqli_query($dblink, "DROP TABLE IF EXISTS `{$config['table_prefix']}$tableName`;");
             }
-        } catch (\Throwable $th) {
+        } catch (Throwable $th) {
         }
     }
 } else {

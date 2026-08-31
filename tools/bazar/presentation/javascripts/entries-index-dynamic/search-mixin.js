@@ -1,6 +1,6 @@
 // TODO better list and translatable
-import { parseCondition, parseKeywords, removeDiacritics, extractRegExp } from '../search.js'
-import { parseSearchParams, mergeSearchParams } from '../url.js'
+import { parseKeywords, removeDiacritics, extractRegExp } from '../search.js'
+import { mergeSearchParams } from '../url.js'
 
 const wordsToExcludeFromSearch = ['le', 'la', 'les', 'du', 'en', 'un', 'une']
 
@@ -8,11 +8,10 @@ export default {
   data() {
     return {
       isLoading: false,
-      pendingRequest: null
+      pendingRequest: null,
     }
   },
-  methods:
-  {
+  methods: {
     searchEntries(entries, search) {
       switch (this.params.search) {
         case 'dynamic':
@@ -33,12 +32,18 @@ export default {
       this.isLoading = true
       this.pendingRequest = null
 
-      const vParams = mergeSearchParams(this.params, { keywords: search }, { returnMode: 'object', overrideKeywords: false, overrideQuery: false })
+      const vParams = mergeSearchParams(
+        this.params,
+        { keywords: search },
+        { returnMode: 'object', overrideKeywords: false, overrideQuery: false },
+      )
 
       $.getJSON(wiki.url('?api/entries/bazarlist'), vParams, (data) => {
         this.isLoading = false
         const searchedIds = data.entries.map((entry) => entry[0])
-        this.searchedEntries = entries.filter((entry) => searchedIds.includes(entry.id_fiche))
+        this.searchedEntries = entries.filter((entry) =>
+          searchedIds.includes(entry.id_fiche),
+        )
         this.filterEntries()
         if (this.pendingRequest) {
           this.distantSearch(entries, this.pendingRequest)
@@ -48,21 +53,27 @@ export default {
     },
     // Search with existing data in javascript
     localSearch(entries, search) {
-    	const vThis = this
+      const vThis = this
 
       // Parse search as a keywords search string
 
       const vParsedKeywords = parseKeywords(search)
 
-      vParsedKeywords.CNF = vParsedKeywords.CNF
-        .map((pAnd) => pAnd
+      vParsedKeywords.CNF = vParsedKeywords.CNF.map((pAnd) =>
+        pAnd
           .map((pOr) => removeDiacritics(pOr))
-          .filter((pOr) => pOr.length > 2 && !wordsToExcludeFromSearch.includes(pOr)))
-        .filter((pAnd) => pAnd.length > 0)
+          .filter(
+            (pOr) => pOr.length > 2 && !wordsToExcludeFromSearch.includes(pOr),
+          ),
+      ).filter((pAnd) => pAnd.length > 0)
 
       vParsedKeywords.excludeds = vParsedKeywords.excludeds
         .map((pExcluded) => removeDiacritics(pExcluded))
-        .filter((pExcluded) => pExcluded.length > 2 && !wordsToExcludeFromSearch.includes(pExcluded))
+        .filter(
+          (pExcluded) =>
+            pExcluded.length > 2 &&
+            !wordsToExcludeFromSearch.includes(pExcluded),
+        )
 
       let vResult = entries.filter((pEntry) => {
         pEntry.searchScore = 1
@@ -83,7 +94,8 @@ export default {
             vThis.params.searchfields.forEach((pField) => {
               let vFieldValue = pEntry[pField] ? pEntry[pField] : ''
 
-              if (Array.isArray(vFieldValue)) vFieldValue = vFieldValue.join(' ')
+              if (Array.isArray(vFieldValue))
+                vFieldValue = vFieldValue.join(' ')
 
               vFieldValue = removeDiacritics(vFieldValue)
 
@@ -96,10 +108,13 @@ export default {
 
                 if (vMatches) {
                   vMatches.forEach((pMatch) => {
-                    vOrScore += pField == 'bf_titre' ? 2 * (pMatch.length + 1) : pMatch.length + 1
+                    vOrScore +=
+                      pField == 'bf_titre'
+                        ? 2 * (pMatch.length + 1)
+                        : pMatch.length + 1
                     vMatchedFields++
                   })
-						   }
+                }
               }
             })
 
@@ -122,9 +137,9 @@ export default {
           if (vMatchedOrs > 0) vMatchedAnds++
 
           return true
-		    })
+        })
 
-		    if (vAndsCount > 0) {
+        if (vAndsCount > 0) {
           pEntry.searchScore *= vMatchedAnds / vAndsCount
         }
 
@@ -138,8 +153,6 @@ export default {
 
             vFieldValue = vFieldValue.trim()
 
-            const vRegExp = extractRegExp(pExcluded)
-
             if (vFieldValue) {
               const vMatches = vFieldValue.match(new RegExp(pExcluded, 'g'))
 
@@ -150,11 +163,11 @@ export default {
           })
         })
 
-	        return pEntry.searchScore > 0
+        return pEntry.searchScore > 0
       })
 
-      vResult = vResult.sort((a, b) => ((a.searchScore > b.searchScore) ? -1 : 1))
+      vResult = vResult.sort((a, b) => (a.searchScore > b.searchScore ? -1 : 1))
       return vResult
-    }
-  }
+    },
+  },
 }

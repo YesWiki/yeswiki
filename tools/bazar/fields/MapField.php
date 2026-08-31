@@ -200,13 +200,13 @@ class MapField extends BazarField
                     'geometries' => $vGeometries,
                 ],
             ];
-        } else {
-            return [
-                'fields-to-remove' => [
-                    $this->getPropertyName(),
-                ],
-            ];
         }
+
+        return [
+            'fields-to-remove' => [
+                $this->getPropertyName(),
+            ],
+        ];
     }
 
     protected function renderStatic($entry)
@@ -223,7 +223,7 @@ class MapField extends BazarField
                     && $v['vars']['id'] == $entry['id_typeannonce'];
             });
         $lastAction = end($filteredActions);
-        $showMapInDynamicListView = (isset($_GET['showmapinlistview']) && $_GET['showmapinlistview'] === '1');
+        $showMapInDynamicListView = ($this->getRequest()->query->get('showmapinlistview') === '1');
         $showMapInListView = false;
         if (
             // classic list would perform action
@@ -234,7 +234,7 @@ class MapField extends BazarField
         ) {
             $showMapInListView = true;
         }
-        $currentUrlIsEntry = (explode('/', $_GET['wiki'])[0] === $entry['id_fiche']);
+        $currentUrlIsEntry = (explode('/', $this->getRequest()->query->get('wiki', ''))[0] === $entry['id_fiche']);
 
         // the map is only showed on the fullpage entry view,
         // or if action parameter showmapinlistview is set to '1'
@@ -243,7 +243,7 @@ class MapField extends BazarField
             || $showMapInListView
         ) {
             $mapFieldData = $this->getMapFieldData($entry);
-            if ((!empty($mapFieldData['latitude']) && !empty($mapFieldData['longitude']) || !empty($mapFieldData['geometries']))) {
+            if (!empty($mapFieldData['latitude']) && !empty($mapFieldData['longitude']) || !empty($mapFieldData['geometries'])) {
                 $output .= $this->render('@bazar/fields/map.twig', [
                     'tag' => $entry['id_fiche'],
                     'mapFieldData' => $mapFieldData,

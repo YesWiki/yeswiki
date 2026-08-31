@@ -22,9 +22,8 @@ if (!function_exists('wakka2callbacktoc')) {
             }
 
             // Fermeture du titre precedent
-            else {
-                return '==';
-            }
+
+            return '==';
         }
 
         // header level 4
@@ -41,9 +40,8 @@ if (!function_exists('wakka2callbacktoc')) {
             }
 
             // Fermeture du titre precedent
-            else {
-                return '===';
-            }
+
+            return '===';
         }
 
         // header level 3
@@ -61,9 +59,8 @@ if (!function_exists('wakka2callbacktoc')) {
             }
 
             // Fermeture du titre precedent
-            else {
-                return '====';
-            }
+
+            return '====';
         }
 
         // header level 2
@@ -81,9 +78,8 @@ if (!function_exists('wakka2callbacktoc')) {
             }
 
             // Fermeture du titre precedent
-            else {
-                return '=====';
-            }
+
+            return '=====';
         }
 
         // header level 1
@@ -101,9 +97,8 @@ if (!function_exists('wakka2callbacktoc')) {
             }
 
             // Fermeture du titre precedent
-            else {
-                return '======';
-            }
+
+            return '======';
         }
 
         // if we reach this point, it must have been an accident.
@@ -111,7 +106,7 @@ if (!function_exists('wakka2callbacktoc')) {
     }
 }
 
-if (preg_match_all('/' . '(\\{\\{toc)' . '(.*?)' . '(\\}\\})' . '/is', $text, $matches)) {
+if (preg_match_all('/(\\{\\{toc)(.*?)(\\}\\})/is', $text, $matches)) {
     $text = preg_replace_callback(
         '/(======|=====|====|===|==|' .
             "(?:^|(?<=\>\"\"))(?!\\\\)\#{1,5} (?=[^\\n\#]*\\n)|\n)/ms",

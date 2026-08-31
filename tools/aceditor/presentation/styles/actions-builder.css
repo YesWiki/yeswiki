@@ -23,9 +23,8 @@ input[type='range'] {
 
 /* ACTION BUILDER APP */
 
-#actions-builder-app
-{
-	overflow : hidden !important;
+#actions-builder-app {
+  overflow: hidden !important;
 }
 
 #actions-builder-app .form-group .control-label {
