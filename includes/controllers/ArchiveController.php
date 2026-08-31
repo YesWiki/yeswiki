@@ -102,7 +102,9 @@ class ArchiveController extends YesWikiController
                         $uid = $this->startArchive($params, $callAsync);
                         if (empty($uid)) {
                             return new ApiResponse(
-                                ['error' => 'no process created when starting archive action'],
+                                ['error' => $callAsync
+                                    ? 'This server could not start a PHP command in the background, so no backup was started. Its "call_archive_async" parameter has to be set to false, and the backup asked for again without callAsync.'
+                                    : 'The backup produced no file.'],
                                 Response::HTTP_INTERNAL_SERVER_ERROR
                             );
                         }

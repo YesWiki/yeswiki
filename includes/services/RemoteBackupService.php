@@ -396,14 +396,14 @@ class RemoteBackupService
     protected function assertRemoteCanArchive(string $baseUrl, string $cookie): void
     {
         $status = $this->call($baseUrl, 'api/archives/archivingStatus/', $cookie);
+        if (isset($status['canExec']) && !$status['canExec']) {
+            throw new \Exception('The remote wiki cannot run a backup in the background, so it cannot be fetched from here.');
+        }
         if (!empty($status['canArchive'])) {
             return;
         }
         if (!empty($status['archiving'])) {
             throw new \Exception('The remote wiki is already making a backup.');
-        }
-        if (isset($status['canExec']) && !$status['canExec']) {
-            throw new \Exception('The remote wiki cannot run a backup in the background, so it cannot be fetched from here.');
         }
 
         throw new \Exception('The remote wiki cannot make a backup right now.');
