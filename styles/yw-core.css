@@ -2878,6 +2878,102 @@ blockquote > cite {
   color: var(--yw-on-danger);
 }
 
+.form-screen__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--yw-space-md-y) var(--yw-space-md-x);
+  margin-bottom: var(--yw-space-lg-y);
+  padding-bottom: var(--yw-space-md-y);
+  border-bottom: var(--yw-border-width) solid var(--yw-border);
+}
+
+.form-screen__identity {
+  flex: 1 1 20rem;
+  min-width: 0;
+}
+
+.form-screen__title {
+  display: flex;
+  align-items: center;
+  gap: var(--yw-space-sm-x);
+  margin: 0;
+}
+
+.form-screen__icon {
+  display: inline-flex;
+  color: var(--yw-primary);
+}
+
+.form-screen__id {
+  color: var(--yw-text);
+  font-family: var(--yw-font-mono);
+  font-size: 0.6em;
+  font-weight: normal;
+}
+
+.form-screen__description {
+  margin: var(--yw-space-sm-y) 0 0;
+  color: var(--yw-text);
+}
+
+.form-screen__stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--yw-space-sm-y) var(--yw-space-md-x);
+  margin: var(--yw-space-sm-y) 0 0;
+  color: var(--yw-text);
+  font-size: 0.85em;
+}
+
+.form-screen__count--empty {
+  font-style: italic;
+}
+
+.form-screen__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--yw-space-sm-y) var(--yw-space-sm-x);
+}
+
+.form-screen__formats {
+  display: flex;
+  flex-basis: 100%;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--yw-space-sm-y) var(--yw-space-md-x);
+  margin: 0;
+  font-size: 0.85em;
+}
+
+.form-screen__formats-label {
+  color: var(--yw-text);
+  font-size: 0.9em;
+  text-transform: lowercase;
+}
+
+.form-screen__format {
+  padding: var(--yw-space-sm-y) var(--yw-space-sm-x);
+  border-radius: var(--yw-radius-sm);
+  color: var(--yw-text);
+  font-family: var(--yw-font-mono);
+  text-decoration: none;
+}
+
+.form-screen__toolbar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: var(--yw-space-md-y);
+}
+
+.form-screen__format:hover,
+.form-screen__format:focus-visible {
+  background: color-mix(in srgb, var(--yw-primary) 12%, transparent);
+  color: var(--yw-primary);
+  text-decoration: none;
+}
+
 .yw-datatable__toolbar {
   display: flex;
   flex-wrap: wrap;

@@ -45,6 +45,6 @@
                    name="query"
                    value="{{ params.query is iterable ? params.query|map(p => p.name ~ p.operator ~ p.value) |join(', ') : params.query }}">
         {% endif %}
-        <input type="hidden" name="facet" value="{{ facet }}">
+        <input type="hidden" name="facet" value="{{ facet is iterable ? facet|map((values, name) => name ~ '=' ~ (values is iterable ? values|join(',') : values))|join('|') : facet }}">
     </form>
 </div>

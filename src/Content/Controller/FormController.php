@@ -4,10 +4,16 @@ namespace YesWiki\Content\Controller;
 
 use Symfony\Component\Security\Csrf\Exception\TokenNotFoundException;
 use Tamtamchik\SimpleFlash\Flash;
+use YesWiki\Content\Action\BazarAction;
 use YesWiki\Content\Entity\ContentTypeSchema;
 use YesWiki\Content\Entity\FieldRole;
+use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Field\BazarField;
+use YesWiki\Content\Field\EnumField;
+use YesWiki\Content\Field\FileContentField;
+use YesWiki\Content\Field\PasswordField;
 use YesWiki\Content\Service\EntryDisplay;
+use YesWiki\Content\Service\FieldRoleResolver;
 use YesWiki\Content\Service\FormManager;
 use YesWiki\Content\Service\FormOverview;
 use YesWiki\Content\Service\FormPropertiesService;
@@ -22,9 +28,23 @@ use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Kernel\Service\LanguageService;
 use YesWiki\Kernel\Service\Redirector;
 use YesWiki\Kernel\Service\UrlFormatter;
+use YesWiki\Render\Service\Performer;
 
 class FormController extends YesWikiController
 {
+    /** What a form's own screen shows of its Content before paging. */
+    public const ROWS_PER_PAGE = '50';
+
+    /** The shapes a form's screen lists in, by the `display` query value: the template each one is. */
+    private const DISPLAYS = [
+        'card' => 'card',
+        'list' => 'list',
+        'table' => 'tableau',
+        'map' => 'map',
+        'calendar' => 'calendar',
+    ];
+    private const DEFAULT_DISPLAY = 'card';
+
     protected CsrfTokenChecker $csrfTokenChecker;
     protected FormManager $formManager;
     protected HibernationService $hibernationService;
@@ -50,6 +70,198 @@ class FormController extends YesWikiController
         return $this->render('@core/forms/forms_list.twig', [
             'message' => $message,
         ] + $this->getService(FormOverview::class)->all());
+    }
+
+    /**
+     * A form's own screen, at its tag: what it holds, a way to add to it, and the bazar views over it (ticket 63).
+     *
+     * The bare tag lists the form's Content; `view`/`action` in the query name any other bazar view, rooted here instead of at the BazaR page.
+     *
+     * @param array<string, mixed> $form
+     */
+    public function show(array $form): string
+    {
+        $query = $this->getRequest()->query;
+        $view = $query->get(BazarAction::URL_VIEW_PARAM);
+        $action = $query->get(BazarAction::URL_ACTION_PARAM);
+        $urlFormatter = $this->getService(UrlFormatter::class);
+
+        if ($view === BazarAction::VIEW_FORMS && $action === BazarAction::ACTION_FORM_EDIT) {
+            return $this->getService(Redirector::class)->redirect($urlFormatter->href('edit', '', [], false));
+        }
+
+        $displays = $this->displaysFor($form);
+        $display = $query->get('display');
+        if (!is_string($display) || !in_array($display, $displays, true)) {
+            $display = self::DEFAULT_DISPLAY;
+        }
+
+        $performer = $this->getService(Performer::class);
+        $body = $this->isListView($view, $action)
+            ? $performer->run('entrylist', 'action', $this->listArguments($form, $display))
+            : $performer->run('bazar', 'action', ['showmenu' => '0', 'id' => (string)$form['id']]);
+
+        $overview = $this->getService(FormOverview::class)->one($form);
+        $message = $query->get('msg');
+
+        return $this->render('@core/forms/form_screen.twig', [
+            'form' => $overview,
+            'key' => $form['id'],
+            'message' => is_string($message) && $message !== '' ? $message : null,
+            'isListView' => $this->isListView($view, $action),
+            'tag' => (string)($form['tag'] ?? ''),
+            'display' => $display,
+            'displays' => $displays,
+            'switchParams' => $this->queryPairsExcept(['display', 'pageID', 'wiki', (string)($form['tag'] ?? '')]),
+            'listUrl' => $urlFormatter->href('', '', [], false),
+            'editUrl' => $overview['canEdit'] ? $urlFormatter->href('edit', '', [], false) : null,
+            'allFormsUrl' => $this->getService(AclService::class)->isAdmin()
+                ? $urlFormatter->href('', 'dashboard', ['view' => BazarAction::VIEW_FORMS], false)
+                : null,
+            'body' => $body,
+        ]);
+    }
+
+    /** The bare tag, the search form's own submit, and where the designer sends back after saving all mean "the list". */
+    private function isListView(mixed $view, mixed $action): bool
+    {
+        if ($view === null) {
+            return true;
+        }
+        if ($view === BazarAction::VIEW_FORMS) {
+            return $action === null;
+        }
+
+        return $view === BazarAction::VIEW_SEARCH && in_array($action, [null, BazarAction::ACTION_SEARCH], true);
+    }
+
+    /**
+     * The displays this form's screen offers: cards, list and table for every form, a map and a calendar for the forms whose fields can draw one.
+     *
+     * @param array<string, mixed> $form
+     *
+     * @return list<string>
+     */
+    private function displaysFor(array $form): array
+    {
+        $roles = $this->getService(FieldRoleResolver::class);
+        $offered = ['card', 'list', 'table'];
+        if ($roles->hasRoles($form, FieldRole::GEOLOCATION)) {
+            $offered[] = 'map';
+        }
+        if ($roles->hasRoles($form, FieldRole::START_DATE)) {
+            $offered[] = 'calendar';
+        }
+
+        return $offered;
+    }
+
+    /**
+     * The current query as name/value pairs, minus the ones a display switch sets itself, so switching keeps the search and the facets.
+     *
+     * @param list<string> $except
+     *
+     * @return list<array{name: string, value: string}>
+     */
+    private function queryPairsExcept(array $except): array
+    {
+        $pairs = [];
+        $queryString = (string)parse_url($this->getRequest()->getRequestUri(), PHP_URL_QUERY);
+        foreach (explode('&', $queryString) as $part) {
+            if ($part === '') {
+                continue;
+            }
+            [$name, $value] = array_pad(explode('=', $part, 2), 2, '');
+            $name = urldecode($name);
+            $bare = (string)preg_replace('/\[.*$/', '', $name);
+            if (in_array($bare, $except, true) || strcasecmp($bare, $except[count($except) - 1]) === 0) {
+                continue;
+            }
+            $pairs[] = ['name' => $name, 'value' => urldecode($value)];
+        }
+
+        return $pairs;
+    }
+
+    /**
+     * How a form lists what it holds: fifty rows a page, facets above the list for its enum fields, export links that follow the search, cards by default, and a table of its input fields for a built-in type led by the title when no field already names the row -- its rows are pages, accounts or files, and a page's markup is not something to run forty times in a list.
+     *
+     * @param array<string, mixed> $form
+     *
+     * @return array<string, mixed>
+     */
+    private function listArguments(array $form, string $display): array
+    {
+        $arguments = [
+            'id' => (string)$form['id'],
+            'template' => self::DISPLAYS[$display] ?? self::DISPLAYS[self::DEFAULT_DISPLAY],
+            'search' => 'true',
+            'shownumentries' => 'true',
+            'pagination' => self::ROWS_PER_PAGE,
+            'filterposition' => 'top',
+            'resetfiltersbutton' => 'true',
+            'showexportbuttons' => 'true',
+            'displayfields' => $this->displayFieldsFor($form),
+        ];
+        $facets = [];
+        $columns = [];
+        foreach ($form['prepared'] ?? [] as $field) {
+            if (!$field instanceof BazarField || $field instanceof PasswordField || $field instanceof FileContentField) {
+                continue;
+            }
+            $name = $field->getPropertyName();
+            if (empty($name)) {
+                continue;
+            }
+            if ($field instanceof EnumField) {
+                $facets[] = $name;
+            }
+            if ($name !== PageBody::CONTENT) {
+                $columns[] = $name;
+            }
+        }
+        if ($facets !== []) {
+            $arguments['groups'] = implode(',', $facets);
+        }
+        if ($display !== 'table') {
+            return $arguments;
+        }
+        $arguments += [
+            'displayadmincol' => 'yes',
+            'displaylastchangedate' => 'yes',
+            'displayowner' => 'onlyadmins',
+            'displayimagesasthumbnails' => 'true',
+        ];
+        if (!ContentTypeSchema::isBuiltIn($form[ContentTypeSchema::CONTENT_TYPE] ?? null)) {
+            return $arguments;
+        }
+        if (!in_array(PageBody::TITLE, $columns, true) && ContentTypeSchema::tagMirrorField($form[ContentTypeSchema::CONTENT_TYPE] ?? null) === null) {
+            array_unshift($columns, PageBody::TITLE);
+        }
+
+        return $arguments + ['columnfieldsids' => implode(',', $columns)];
+    }
+
+    /**
+     * What a card or a list item shows of an entry, asked of the form's field roles; a page's markup is not a description.
+     *
+     * @param array<string, mixed> $form
+     *
+     * @return array<string, string>
+     */
+    private function displayFieldsFor(array $form): array
+    {
+        $roles = $this->getService(FieldRoleResolver::class);
+        $slots = [
+            'visual' => $roles->propertyName($form, FieldRole::IMAGE),
+            'description' => $roles->propertyName($form, FieldRole::DESCRIPTION),
+            'date' => $roles->propertyName($form, FieldRole::START_DATE),
+        ];
+        if ($slots['description'] === PageBody::CONTENT) {
+            $slots['description'] = null;
+        }
+
+        return array_filter($slots, static fn (?string $name): bool => $name !== null && $name !== '');
     }
 
     /**

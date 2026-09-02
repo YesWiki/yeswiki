@@ -27,27 +27,9 @@ class FormOverview
      */
     public function all(): array
     {
-        $hibernated = $this->hibernationService->isWikiHibernated();
-        $isAdmin = $this->aclService->isAdmin();
-        $mayEdit = !$hibernated && $this->guard->isAllowed('saisie_formulaire');
-
         $values = [];
         foreach ($this->formManager->getAll() as $form) {
-            $contentType = $form[ContentTypeSchema::CONTENT_TYPE] ?? null;
-            $values[$form['id']] = [
-                'title' => $form['label'],
-                'description' => $form['description'],
-                'canEdit' => $mayEdit,
-                'canDelete' => !$hibernated && $isAdmin,
-                'isSemantic' => !empty($form['sem_template']),
-                'isActivityPubEnabled' => $form['activitypub_enable'] === '1',
-                'isGeo' => !empty(array_filter($form['prepared'], fn ($field) => $field instanceof MapField)),
-                'isDate' => $this->icalFormatter->isICALForm($form),
-                'bookmarklet' => $form['entry_bookmarklet'] ?? null,
-                'isSystem' => ContentTypeSchema::isBuiltIn($contentType),
-                'contentType' => $contentType,
-                'canCreateContent' => ContentCreator::supports($contentType),
-            ];
+            $values[$form['id']] = $this->describe($form);
         }
 
         $systemForms = array_filter($values, fn ($form) => $form['isSystem']);
@@ -60,8 +42,48 @@ class FormOverview
         return [
             'systemForms' => $this->withStats($systemForms),
             'forms' => $this->withStats(array_filter($values, fn ($form) => !$form['isSystem'])),
-            'userIsAdmin' => $isAdmin,
-            'isWikiHibernated' => $hibernated,
+            'userIsAdmin' => $this->aclService->isAdmin(),
+            'isWikiHibernated' => $this->hibernationService->isWikiHibernated(),
+        ];
+    }
+
+    /**
+     * One form, described the way its card is (ticket 63: a form's own screen shares the card's header).
+     *
+     * @param array<string, mixed> $form
+     *
+     * @return array<string, mixed>
+     */
+    public function one(array $form): array
+    {
+        $described = $this->withStats([$form['id'] => $this->describe($form)]);
+
+        return $described[$form['id']];
+    }
+
+    /**
+     * @param array<string, mixed> $form
+     *
+     * @return array<string, mixed>
+     */
+    private function describe(array $form): array
+    {
+        $hibernated = $this->hibernationService->isWikiHibernated();
+        $contentType = $form[ContentTypeSchema::CONTENT_TYPE] ?? null;
+
+        return [
+            'title' => $form['label'],
+            'description' => $form['description'],
+            'canEdit' => !$hibernated && $this->guard->isAllowed('saisie_formulaire'),
+            'canDelete' => !$hibernated && $this->aclService->isAdmin(),
+            'isSemantic' => !empty($form['sem_template']),
+            'isActivityPubEnabled' => $form['activitypub_enable'] === '1',
+            'isGeo' => !empty(array_filter($form['prepared'], fn ($field) => $field instanceof MapField)),
+            'isDate' => $this->icalFormatter->isICALForm($form),
+            'bookmarklet' => $form['entry_bookmarklet'] ?? null,
+            'isSystem' => ContentTypeSchema::isBuiltIn($contentType),
+            'contentType' => $contentType,
+            'canCreateContent' => ContentCreator::supports($contentType),
         ];
     }
 

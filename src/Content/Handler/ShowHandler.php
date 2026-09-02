@@ -3,7 +3,9 @@
 namespace YesWiki\Content\Handler;
 
 use YesWiki\Content\Controller\EntryController;
+use YesWiki\Content\Controller\FormController;
 use YesWiki\Content\Entity\PageBody;
+use YesWiki\Content\Entity\PageType;
 use YesWiki\Content\Service\ContentTypeResolver;
 use YesWiki\Content\Service\EntryManager;
 use YesWiki\Content\Service\FormManager;
@@ -177,6 +179,21 @@ class ShowHandler extends YesWikiHandler implements RegisteredHandler
         return $plugin_output_new . (string)ob_get_clean();
     }
 
+    /**
+     * The form this tag holds, when the row is one (ticket 63): its screen is the form's, not a page's.
+     *
+     * @return array<string, mixed>|null
+     */
+    private function formAtThisTag(): ?array
+    {
+        $tag = $this->getService(PageContext::class)->getTag();
+        if ($this->getService(PageManager::class)->typeOf($tag) !== PageType::FORM) {
+            return null;
+        }
+
+        return $this->getService(FormManager::class)->getOne($tag);
+    }
+
     private function emit(): void
     {
         ob_start();
@@ -225,7 +242,10 @@ class ShowHandler extends YesWikiHandler implements RegisteredHandler
 
                 $this->getService(InclusionStack::class)->register($this->getService(PageContext::class)->getTag());
 
-                if ($this->getService(ContentTypeResolver::class)->formFor($this->getService(PageContext::class)->getTag()) !== null) {
+                $form = $this->formAtThisTag();
+                if ($form !== null) {
+                    echo $this->getService(FormController::class)->show($form);
+                } elseif ($this->getService(ContentTypeResolver::class)->formFor($this->getService(PageContext::class)->getTag()) !== null) {
                     $entryController = $this->getService(EntryController::class);
                     echo $entryController->view($this->getService(PageContext::class)->getTag(), $this->getService(PageContext::class)->getPage()['time'] ?? null);
                 } else {

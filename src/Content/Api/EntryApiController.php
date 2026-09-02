@@ -94,6 +94,7 @@ class EntryApiController extends YesWikiController
                 'nb' => $vNb,
                 'minDate' => $vMinDate,
             ]);
+            $entries = $vBazarListService->filterEntriesOnFacets($entries);
 
             $acceptHeader = (string)$this->getRequest()->headers->get('accept', '');
             if ($output == 'json-ld' || strpos($acceptHeader, 'application/ld+json') !== false) {

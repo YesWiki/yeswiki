@@ -303,7 +303,7 @@ class BazarListService
                 $entriesValues = array_column($entries, $propName);
 
                 $entriesValues = array_map(function ($val) {
-                    return explode(',', $val ?? '');
+                    return is_array($val) ? array_map('strval', $val) : explode(',', (string)($val ?? ''));
                 }, $entriesValues);
 
                 $entriesValues = array_merge(...$entriesValues);
@@ -404,7 +404,15 @@ class BazarListService
     private function entryValues(array $entry, string $propName): array
     {
         $raw = $entry[$propName] ?? null;
-        if ($raw === null || is_array($raw)) {
+        if (is_array($raw)) {
+            $values = array_is_list($raw) ? $raw : array_keys(array_filter($raw));
+
+            return array_values(array_filter(
+                array_map(static fn ($value): string => trim((string)$value), $values),
+                static fn (string $value): bool => $value !== ''
+            ));
+        }
+        if ($raw === null) {
             $found = [];
             preg_match_all(
                 '/data-' . preg_quote(strtolower($propName), '/') . '="([^"]*)"/i',

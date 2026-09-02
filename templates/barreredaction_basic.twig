@@ -1,12 +1,12 @@
 
 <div class="{{ class }}">
     {% if linkedit is defined %}
-        <nav class="yw-page-actions" aria-label="{{ _t("TEMPLATE_EDIT_THIS_PAGE") }}">
-            <a title="{{ _t("TEMPLATE_EDIT_THIS_PAGE") ~ ' ' ~ page }}"
+        <nav class="yw-page-actions" aria-label="{{ editLabel }}">
+            <a title="{{ editLabel ~ ' ' ~ page }}"
                href="{{ linkedit }}"
                class="yw-btn yw-page-actions__edit link-edit">
                 {{ icon('pencil') }}
-                <span>{{ _t("TEMPLATE_EDIT_THIS_PAGE") }}</span>
+                <span>{{ editLabel }}</span>
             </a>
             <div class="yw-page-actions__more">
                 {% if userIsAdmin %}
@@ -56,7 +56,7 @@
                     {% if linkedit is defined %}
                         <a class="link-edit"
                            href="{{ linkedit }}"
-                           title="{{ _t("TEMPLATE_EDIT_THIS_PAGE") ~ ' ' ~ page }}">
+                           title="{{ editLabel ~ ' ' ~ page }}">
                             {{ icon('pencil') }}
                             <span>{{ _t("TEMPLATE_EDIT") }}</span>
                         </a>

@@ -183,6 +183,7 @@ class CSVManager
                 'queries' => $vQuery,
                 'forms' => $vForms,
             ]));
+            $vEntries = $vBazarListService->filterEntriesOnFacets($vEntries);
 
             foreach ($vEntries as $vEntry) {
                 $csv_raw[] = $this->getCSVLineFromEntry($vEntry, $headers, $vKeysInsteadOfValues);

@@ -18,14 +18,16 @@
 
     <div class="results-col">
       {{ include("@core/entries/index/_entries.twig") }}
+      {% if not params.isInIframe and params.showexportbuttons %}
+        {{ include("@core/entries/index/_export_buttons.twig") }}
+      {% endif %}
     </div>
 
   </div>
 {% else %}
   {{ include("@core/entries/index/_entries.twig") }}
-{% endif %}
-
-{% if not params.isInIframe and params.showexportbuttons %}
-	{{ include("@core/entries/index/_export_buttons.twig") }}
+  {% if not params.isInIframe and params.showexportbuttons %}
+    {{ include("@core/entries/index/_export_buttons.twig") }}
+  {% endif %}
 {% endif %}
 

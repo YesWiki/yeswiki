@@ -3,11 +3,14 @@
 namespace YesWiki\Content\Handler;
 
 use YesWiki\Content\Controller\EntryController;
+use YesWiki\Content\Controller\FormController;
 use YesWiki\Content\Entity\ContentTypeSchema;
 use YesWiki\Content\Entity\PageBody;
+use YesWiki\Content\Entity\PageType;
 use YesWiki\Content\Field\BazarField;
 use YesWiki\Content\Service\ContentTypeResolver;
 use YesWiki\Content\Service\EntryManager;
+use YesWiki\Content\Service\FormManager;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Core\YesWikiHandler;
 use YesWiki\Identity\Controller\CaptchaController;
@@ -144,6 +147,18 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
 
         $entryManager = $this->getService(EntryManager::class);
         $entryController = $this->getService(EntryController::class);
+
+        $tag = $this->getService(PageContext::class)->getTag();
+        if ($this->getService(PageManager::class)->typeOf($tag) === PageType::FORM) {
+            $form = $this->getService(FormManager::class)->getOne($tag);
+            $designer = $this->isWikiHibernated() || $form === null
+                ? $this->getMessageWhenHibernated()
+                : $this->getService(FormController::class)->update($form['id']);
+
+            $this->getService(Redirector::class)->terminate(
+                $this->getService(TemplateEngine::class)->renderPage($designer)
+            );
+        }
 
         if ($this->getService(AclService::class)->hasAccess('write') && $entryManager->isEntry($this->getService(PageContext::class)->getTag())) {
             $plugin_output_new = '';

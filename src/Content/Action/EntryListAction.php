@@ -1778,6 +1778,13 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
                                 $columnsInfo[] = $col;
                             }
                             $this->tableauCollectOptions($field, $optionsIfDisplayvaluesinsteadofkeys, $sanitizedParams);
+                        } elseif ($fieldId === PageBody::TITLE) {
+                            $columnsInfo[] = [
+                                'propertyName' => PageBody::TITLE,
+                                'title' => _t('BAZ_TITREANNONCE'),
+                                'key' => null,
+                                'mapFieldId' => null,
+                            ];
                         }
                     }
                     if ($sanitizedParams['exportallcolumns']) {
@@ -1818,6 +1825,7 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
                 }
 
                 if (!$this->getService(AclService::class)->isAdmin()) {
+                    $displayedPropertyNames = array_column($columnsInfo, 'propertyName');
                     foreach ($entries as $index => $entry) {
                         $entryFormId = $entry['form_id'];
                         if (strval($entryFormId) != strval(intval($entryFormId))) {
@@ -1828,7 +1836,7 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
                                 unset($entries[$index]);
                             } else {
                                 foreach ($entryForm['prepared'] as $field) {
-                                    if (empty($field->getPropertyName())) {
+                                    if (empty($field->getPropertyName()) || !in_array($field->getPropertyName(), $displayedPropertyNames, true)) {
                                         continue;
                                     }
                                     if ($field instanceof EmailField && !$field->canRead($entries[$index], null)) {

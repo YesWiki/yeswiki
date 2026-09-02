@@ -86,9 +86,17 @@ params.period is defined
 )
 %}
 {%
+set vFacet = (
+facet is iterable and facet is not empty
+? { facet : facet|map((values, name) => name ~ '=' ~ (values is iterable ? values|join(',') : values))|join('|') }
+: {}
+)
+%}
+{%
 set vGenericParams = {}
 | merge (vQueryObject)
 | merge (vKeywords)
+| merge (vFacet)
 | merge (vSearchFields)
 | merge (vCorrespondance)
 | merge (vDateFilter)

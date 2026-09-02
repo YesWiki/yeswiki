@@ -1,0 +1,119 @@
+{% if message %}
+  <div class="yw-alert yw-alert--success">
+    <a data-yw-dismiss="alert" class="yw-close" type="button">&times;</a>
+    {{ _t(message) }}
+  </div>
+{% endif %}
+
+<header class="form-screen__header">
+  <div class="form-screen__identity">
+    <h1 class="form-screen__title">
+      {% if form.contentType %}
+        <span class="form-screen__icon">{{ icon({
+          page: 'file', user: 'user', file: 'paperclip', entry: 'briefcase',
+        }[form.contentType]|default('briefcase')) }}</span>
+      {% endif %}
+      {% if isListView %}
+        {{ form.title }}
+      {% else %}
+        <a href="{{ listUrl }}">{{ form.title }}</a>
+      {% endif %}
+      <span class="form-screen__id" title="{{ _t('BAZ_ID') }}">#{{ key }}</span>
+    </h1>
+    {% if form.description %}<p class="form-screen__description">{{ form.description }}</p>{% endif %}
+    <p class="form-screen__stats">
+      {% if form.stats.count is null %}
+        <span title="{{ _t('BAZ_FORM_ENTRY_COUNT_UNKNOWN_HINT') }}">{{ _t('BAZ_FORM_ENTRY_COUNT_UNKNOWN') }}</span>
+      {% elseif form.stats.count == 0 %}
+        <span class="form-screen__count--empty">{{ _t('BAZ_FORM_ENTRY_COUNT_NONE') }}</span>
+      {% elseif form.stats.count == 1 %}
+        <span>{{ _t('BAZ_FORM_ENTRY_COUNT_ONE') }}</span>
+      {% else %}
+        <span>{{ _t('BAZ_FORM_ENTRY_COUNT', { count: form.stats.count }) }}</span>
+      {% endif %}
+      {% if form.stats.last ?? '' %}
+        <span title="{{ form.stats.last }}">{{ _t('BAZ_FORM_LAST_ENTRY', { date: form.stats.last|date(_t('BAZ_FORM_DATE_FORMAT')) }) }}</span>
+      {% endif %}
+    </p>
+  </div>
+
+  <nav class="form-screen__actions" aria-label="{{ form.title }}">
+    {% if not isListView %}
+      <a class="yw-btn yw-btn--sm" href="{{ listUrl }}">
+        {{ icon('arrow-left') }}
+        {{ _t('FORM_SCREEN_BACK_TO_LIST') }}
+      </a>
+    {% endif %}
+    {% if form.canCreateContent %}
+      <a class="yw-btn yw-btn--primary form-screen__add" href="{{ url({ params: { view: 'saisir', action: 'saisir_fiche', id: key }}) }}">
+        {{ icon('plus') }}
+        {{ _t('BAZ_SAISIR_UNE_NOUVELLE_FICHE') }}
+      </a>
+    {% endif %}
+    {% if editUrl %}
+      <a class="yw-btn yw-btn--sm form-screen__edit" href="{{ editUrl }}">
+        {{ icon('pencil') }}
+        {{ _t('BAZ_MODIFIER_FORMULAIRE') }}
+      </a>
+    {% endif %}
+    {% if allFormsUrl %}
+      <a class="yw-btn yw-btn--sm" href="{{ allFormsUrl }}">
+        {{ icon('table') }}
+        {{ _t('FORM_SCREEN_ALL_FORMS') }}
+      </a>
+    {% endif %}
+  </nav>
+
+  <p class="form-screen__formats">
+    <span class="form-screen__formats-label">{{ _t('BAZ_DATA_FORMAT') }}</span>
+    <a class="form-screen__format" title="{{ _t('BAZ_RSS') }}" href="{{ url({ tag: 'api/entries/rss', params: { id: key }}) }}">RSS</a>
+    <a class="form-screen__format" title="{{ _t('BAZ_CSV') }}" href="{{ url({ tag: 'api', handler: 'forms/' ~ key ~ '/entries/csv'}) }}">CSV</a>
+    <a class="form-screen__format" target="_blank" title="{{ _t('BAZ_JSON') }}" href="{{ url({ tag: 'api', handler: 'forms/' ~ key ~ '/entries'}) }}">JSON</a>
+    {% if form.isSemantic %}
+      <a class="form-screen__format" target="_blank" title="{{ _t('BAZ_JSON_LD') }}" href="{{ url({ tag: 'api', handler: 'forms/' ~ key ~ '/entries/json-ld'}) }}">JSON-LD</a>
+    {% endif %}
+    {% if form.isGeo %}
+      <a class="form-screen__format" target="_blank" title="{{ _t('BAZ_GEOJSON') }}" href="{{ url({ tag: 'api', handler: 'forms/' ~ key ~ '/entries/geojson'}) }}">GeoJSON</a>
+    {% endif %}
+    {% if form.isDate %}
+      <a class="form-screen__format" target="_blank" title="{{ _t('BAZ_ICAL') }}" href="{{ url({ tag: 'api', handler: 'forms/' ~ key ~ '/entries/ical'}) }}">iCal</a>
+    {% endif %}
+    {% if form.isActivityPubEnabled %}
+      <a class="form-screen__format" target="_blank" title="{{ _t('BAZ_ACTIVITYPUB_ACTOR') }}" href="/actors/{{ key }}">ActivityPub</a>
+    {% endif %}
+  </p>
+</header>
+
+{% if isListView %}
+  {% set displayIcons = { card: 'layout-grid', list: 'layout-list', table: 'table', map: 'map-2', calendar: 'calendar' } %}
+  <form class="form-screen__toolbar" method="get" action="{{ listUrl }}">
+    {% for pair in switchParams %}
+      <input type="hidden" name="{{ pair.name }}" value="{{ pair.value }}">
+    {% endfor %}
+    <fieldset class="yw-display-switch" id="form-screen-display">
+      <legend class="sr-only">{{ _t('FORM_SCREEN_DISPLAY') }}</legend>
+      {% for mode in displays %}
+        <input type="radio" name="display" value="{{ mode }}" id="form-screen-display-{{ mode }}"
+               {{ display == mode ? 'checked' : '' }}
+               hx-get="{{ listUrl }}&display={{ mode }}"
+               hx-include="#form-screen-list form.filters"
+               hx-params="not display,pageID,{{ tag }}"
+               hx-target="#form-screen-list"
+               hx-select="#form-screen-list"
+               hx-swap="outerHTML"
+               hx-push-url="true"
+               hx-trigger="change" />
+        <label class="yw-display-switch__option"
+               for="form-screen-display-{{ mode }}"
+               title="{{ _t('FORM_SCREEN_DISPLAY_' ~ mode|upper) }}">
+          {{ icon(displayIcons[mode]) }}
+          <span class="sr-only">{{ _t('FORM_SCREEN_DISPLAY_' ~ mode|upper) }}</span>
+        </label>
+      {% endfor %}
+    </fieldset>
+  </form>
+{% endif %}
+
+<div id="form-screen-list" class="form-screen__body">
+  {{ body|raw }}
+</div>

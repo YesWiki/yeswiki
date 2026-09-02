@@ -4,6 +4,7 @@ namespace YesWiki\Render\Action;
 
 use Carbon\Carbon;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use YesWiki\Content\Entity\PageType;
 use YesWiki\Content\Service\ContentTypeResolver;
 use YesWiki\Content\Service\FavoritesManager;
 use YesWiki\Content\Service\PageManager;
@@ -24,6 +25,17 @@ use YesWiki\Render\Service\TemplateEngine;
 /** `{{editbar}}` -- converted from the procedural actions/barreredaction.php by ticket 06. */
 class EditBarAction extends YesWikiAction implements RegisteredAction
 {
+    /** What the edit button says, by what the row is (ticket 63). */
+    private const EDIT_LABELS = [
+        PageType::PAGE => 'TEMPLATE_EDIT_THIS_PAGE',
+        PageType::COMMENT => 'TEMPLATE_EDIT_THIS_PAGE',
+        PageType::ENTRY => 'TEMPLATE_EDIT_THIS_ENTRY',
+        PageType::USER => 'TEMPLATE_EDIT_THIS_ACCOUNT',
+        PageType::FILE => 'TEMPLATE_EDIT_THIS_FILE',
+        PageType::FORM => 'TEMPLATE_EDIT_THIS_FORM',
+        PageType::LIST => 'TEMPLATE_EDIT_THIS_LIST',
+    ];
+
     public static function performableName(): string
     {
         return 'editbar';
@@ -124,6 +136,7 @@ class EditBarAction extends YesWikiAction implements RegisteredAction
                     }
                 }
             }
+            $options['editLabel'] = _t(self::EDIT_LABELS[$this->getService(PageManager::class)->typeOf($page) ?? PageType::PAGE] ?? 'TEMPLATE_EDIT_THIS_PAGE');
             $options['linkduplicate'] = $this->getService(UrlFormatter::class)->href('duplicate', $page);
             $options['linkshare'] = $this->getService(UrlFormatter::class)->href('share', $page);
             $options += $this->contentFacts($page, $content);
