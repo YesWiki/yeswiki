@@ -54,7 +54,8 @@ class RemoteBackupService
         }
 
         $cookie = $this->login($baseUrl, $username, $password);
-        $this->assertRemoteCanArchive($baseUrl, $cookie);
+        $remote = $this->assertRemoteCanArchive($baseUrl, $cookie);
+        $this->assertLocalSpace((int)($remote['estimatedSize'] ?? 0));
 
         $job = [
             'baseUrl' => $baseUrl,
@@ -221,10 +222,7 @@ class RemoteBackupService
             return $job;
         }
 
-        $free = @disk_free_space($this->archiveService->getPrivateFolder());
-        if ($free !== false && $free < $size * 1.05) {
-            throw new \Exception("Not enough free space to download this backup ($size bytes needed).");
-        }
+        $this->assertLocalSpace((int)($size * 1.05));
 
         $job['filename'] = $this->freeLocalName($this->nameForSource($candidate['filename'], $job['baseUrl']));
         $job['remoteFilename'] = $candidate['filename'];
@@ -393,20 +391,71 @@ class RemoteBackupService
         return implode('; ', $cookies);
     }
 
-    protected function assertRemoteCanArchive(string $baseUrl, string $cookie): void
+    /**
+     * @return array<string,mixed> the remote's archiving status, with the size it expects when it is recent enough to say
+     *
+     * @throws \Exception
+     */
+    protected function assertRemoteCanArchive(string $baseUrl, string $cookie): array
     {
         $status = $this->call($baseUrl, 'api/archives/archivingStatus/', $cookie);
         if (isset($status['canExec']) && !$status['canExec']) {
             throw new \Exception('The remote wiki cannot run a backup in the background, so it cannot be fetched from here.');
         }
         if (!empty($status['canArchive'])) {
-            return;
+            return $status;
         }
         if (!empty($status['archiving'])) {
             throw new \Exception('The remote wiki is already making a backup.');
         }
+        if (isset($status['enoughSpace']) && !$status['enoughSpace']) {
+            throw new \Exception('The remote wiki has not enough free space to make its backup' . $this->spaceDetail((int)($status['estimatedSize'] ?? 0), $status['freeSpace'] ?? null) . '.');
+        }
 
         throw new \Exception('The remote wiki cannot make a backup right now.');
+    }
+
+    /**
+     * @throws \Exception when the backups folder cannot hold that many bytes
+     */
+    protected function assertLocalSpace(int $bytes): void
+    {
+        if ($bytes <= 0) {
+            return;
+        }
+        $free = $this->localFreeSpace();
+        if (!is_null($free) && $free < $bytes) {
+            throw new \Exception('Not enough free space here to download the backup' . $this->spaceDetail($bytes, $free) . '.');
+        }
+    }
+
+    protected function localFreeSpace(): ?int
+    {
+        $free = @disk_free_space($this->archiveService->getPrivateFolder());
+
+        return $free === false ? null : (int)$free;
+    }
+
+    protected function spaceDetail(int $needed, $free): string
+    {
+        if ($needed <= 0 || !is_numeric($free)) {
+            return '';
+        }
+
+        return ' (' . $this->humanSize($needed) . ' needed, ' . $this->humanSize((int)$free) . ' free)';
+    }
+
+    protected function humanSize(int $bytes): string
+    {
+        $units = ['B', 'kB', 'MB', 'GB', 'TB'];
+        $value = (float)$bytes;
+        $unit = 0;
+        while ($value >= 1024 && $unit < count($units) - 1) {
+            $value /= 1024;
+            $unit++;
+        }
+
+        return ($unit === 0 ? (string)$bytes : number_format($value, 1)) . ' ' . $units[$unit];
     }
 
     protected function startRemoteArchive(string $baseUrl, string $cookie): string

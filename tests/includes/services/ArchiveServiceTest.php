@@ -31,6 +31,24 @@ class ArchiveServiceTest extends YesWikiTestCase
     }
 
     #[Depends('testArchiveServiceExisting')]
+    public function testTheArchivingStatusSaysHowBigAnArchiveWillBeAndWhatRoomThereIs(array $services)
+    {
+        $status = $services['archiveService']->getArchivingStatus();
+
+        $this->assertIsInt($status['estimatedSize']);
+        $this->assertGreaterThan(0, $status['estimatedSize']);
+        $this->assertTrue(is_null($status['freeSpace']) || is_int($status['freeSpace']));
+        $this->assertSame(
+            is_null($status['freeSpace']) || $status['freeSpace'] >= $status['estimatedSize'],
+            $status['enoughSpace']
+        );
+        $this->assertLessThanOrEqual(
+            $status['estimatedSize'],
+            $services['archiveService']->estimateArchiveSize(['files', 'custom'])
+        );
+    }
+
+    #[Depends('testArchiveServiceExisting')]
     #[DataProvider('archiveProvider')]
     public function testArchive(
         bool $savefiles,
