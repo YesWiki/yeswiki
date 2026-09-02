@@ -1,3 +1,9 @@
+{# presentation
+   label: PRESENTATION_MAP_AND_TABLE
+   category: map
+   icon: pin
+   requires: geolocation
+#}
 {% extends "@core/entries/index-dynamic-templates/table.twig" %}
 
 {% set necessary_fields = ( necessary_fields|default([]))|merge(['geolocation']) %}

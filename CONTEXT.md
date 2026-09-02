@@ -127,6 +127,7 @@ _Avoid_: "block" (a callout and a `{{section}}` are both blocks and the distinct
 
 **Presentation**:
 A Component that renders a list of **Items** in one shape — Cards, Table, Accordion, Map, Calendar, Timeline. What a webmaster actually chooses between, so it is what the palette shows; _where the items come from_ is its first setting, not a separate palette entry. A Presentation is not tied to one Action: `Cards` is `{{entrylist template="card"}}` over a form and `{{syndication url="…" template="card"}}` over a feed, and looks the same either way.
+A template says what it is in a `{# presentation … #}` header at the top of its own file (`label`, `category`, `icon`, `requires`), which `PresentationCatalog` reads to offer a form the shapes its fields can draw (ADR-0027).
 _Avoid_: "template" for the concept (a template is the Twig file a Presentation renders through), "List" as the name of the accordion Presentation (`liste` is a Content type).
 
 **Source**:

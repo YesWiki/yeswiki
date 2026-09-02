@@ -7,6 +7,7 @@ use YesWiki\Content\Controller\EntryController;
 use YesWiki\Content\Controller\FormController;
 use YesWiki\Content\Controller\ListController;
 use YesWiki\Content\Service\BazarListService;
+use YesWiki\Content\Service\FormManager;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Component\Category;
 use YesWiki\Kernel\Component\Component;
@@ -14,6 +15,8 @@ use YesWiki\Kernel\Component\ProvidesComponents;
 use YesWiki\Kernel\Component\Setting;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\AssetRegistry;
+use YesWiki\Kernel\Service\PageContext;
+use YesWiki\Kernel\Service\Redirector;
 use YesWiki\Kernel\Service\UrlFormatter;
 
 class BazarAction extends YesWikiAction implements RegisteredAction, ProvidesComponents
@@ -307,10 +310,32 @@ class BazarAction extends YesWikiAction implements RegisteredAction, ProvidesCom
                         return $entryController->view($req->get('tag'), $req->get('time', ''));
                     case self::ACTION_SEARCH:
                     default:
+                        $formScreen = $this->formScreenFor($view, $action, $req);
+                        if ($formScreen !== null) {
+                            $this->getService(Redirector::class)->redirect($formScreen);
+                        }
                         $this->arguments['search'] = true;
 
                         return $this->callAction('entrylist', array_merge($this->arguments, ['id' => $this->arguments['id']['locals']]));
                 }
         }
+    }
+
+    /** Where the search over one form now lives: its own screen, which carries the display switch (ticket 63). */
+    private function formScreenFor(mixed $view, mixed $action, Request $req): ?string
+    {
+        $ids = $this->arguments['id']['locals'] ?? [];
+        if ($view !== self::VIEW_SEARCH || $action !== self::ACTION_SEARCH || !is_array($ids) || count($ids) !== 1) {
+            return null;
+        }
+        $form = $this->getService(FormManager::class)->getOne((string)reset($ids));
+        $tag = (string)($form['tag'] ?? '');
+        if ($tag === '' || strcasecmp($tag, $this->getService(PageContext::class)->getTag()) === 0) {
+            return null;
+        }
+        $params = $req->query->all();
+        unset($params[self::URL_VIEW_PARAM], $params[self::URL_ACTION_PARAM], $params['id'], $params['form_id'], $params['wiki'], $params[$this->getService(PageContext::class)->getTag()]);
+
+        return $this->getService(UrlFormatter::class)->href('', $tag, $params, false);
     }
 }

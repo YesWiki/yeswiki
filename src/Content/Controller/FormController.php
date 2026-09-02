@@ -13,6 +13,7 @@ use YesWiki\Content\Field\EnumField;
 use YesWiki\Content\Field\FileContentField;
 use YesWiki\Content\Field\PasswordField;
 use YesWiki\Content\Service\EntryDisplay;
+use YesWiki\Content\Service\ExportLinks;
 use YesWiki\Content\Service\FieldRoleResolver;
 use YesWiki\Content\Service\FormManager;
 use YesWiki\Content\Service\FormOverview;
@@ -28,22 +29,28 @@ use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Kernel\Service\LanguageService;
 use YesWiki\Kernel\Service\Redirector;
 use YesWiki\Kernel\Service\UrlFormatter;
+use YesWiki\Render\Entity\Presentation;
 use YesWiki\Render\Service\Performer;
+use YesWiki\Render\Service\PresentationCatalog;
 
 class FormController extends YesWikiController
 {
     /** What a form's own screen shows of its Content before paging. */
     public const ROWS_PER_PAGE = '50';
 
-    /** The shapes a form's screen lists in, by the `display` query value: the template each one is. */
-    private const DISPLAYS = [
-        'card' => 'card',
-        'list' => 'list',
-        'table' => 'tableau',
-        'map' => 'map',
-        'calendar' => 'calendar',
-    ];
+    /** The one presentation a form's own screen draws through another template: its admins want the datatable, not the Item table. */
+    private const RENDER_AS = ['table' => 'tableau'];
     private const DEFAULT_DISPLAY = 'card';
+
+    /** What the toolbar's sort offers, as the `field` and `order` the entry list takes. */
+    public const SORTS = [
+        'title:asc' => ['title', 'asc'],
+        'title:desc' => ['title', 'desc'],
+        'updated_at:desc' => ['updated_at', 'desc'],
+        'updated_at:asc' => ['updated_at', 'asc'],
+        'created_at:desc' => ['created_at', 'desc'],
+        'created_at:asc' => ['created_at', 'asc'],
+    ];
 
     protected CsrfTokenChecker $csrfTokenChecker;
     protected FormManager $formManager;
@@ -90,19 +97,23 @@ class FormController extends YesWikiController
             return $this->getService(Redirector::class)->redirect($urlFormatter->href('edit', '', [], false));
         }
 
-        $displays = $this->displaysFor($form);
+        $catalog = $this->getService(PresentationCatalog::class);
+        $fitting = $catalog->fitting($form);
         $display = $query->get('display');
-        if (!is_string($display) || !in_array($display, $displays, true)) {
+        if (!is_string($display) || !in_array($display, array_map(fn (Presentation $p) => $p->name, $fitting), true)) {
             $display = self::DEFAULT_DISPLAY;
         }
+        $presentation = $catalog->get($display) ?? new Presentation($display, $display, Presentation::categoryIcon('card'), 'card', [], true);
 
         $performer = $this->getService(Performer::class);
         $body = $this->isListView($view, $action)
-            ? $performer->run('entrylist', 'action', $this->listArguments($form, $display))
+            ? $performer->run('entrylist', 'action', $this->listArguments($form, $presentation))
             : $performer->run('bazar', 'action', ['showmenu' => '0', 'id' => (string)$form['id']]);
 
         $overview = $this->getService(FormOverview::class)->one($form);
         $message = $query->get('msg');
+        $keywords = $query->get('keywords');
+        $sort = $query->get('sort');
 
         return $this->render('@core/forms/form_screen.twig', [
             'form' => $overview,
@@ -111,13 +122,17 @@ class FormController extends YesWikiController
             'isListView' => $this->isListView($view, $action),
             'tag' => (string)($form['tag'] ?? ''),
             'display' => $display,
-            'displays' => $displays,
-            'switchParams' => $this->queryPairsExcept(['display', 'pageID', 'wiki', (string)($form['tag'] ?? '')]),
+            'keywords' => is_string($keywords) ? $keywords : '',
+            'sort' => is_string($sort) && isset(self::SORTS[$sort]) ? $sort : '',
+            'switcher' => $catalog->switcherFor($form),
+            'exports' => $this->getService(ExportLinks::class)->forForm($form, [
+                'keywords' => is_string($keywords) ? $keywords : '',
+                'field' => is_string($sort) ? (self::SORTS[$sort][0] ?? '') : '',
+                'order' => is_string($sort) ? (self::SORTS[$sort][1] ?? '') : '',
+                'facet' => $this->facetParameter(),
+            ]),
+            'switchParams' => $this->queryPairsExcept(['display', 'keywords', 'sort', 'pageID', 'wiki', 'view', 'action', 'id', (string)($form['tag'] ?? '')]),
             'listUrl' => $urlFormatter->href('', '', [], false),
-            'editUrl' => $overview['canEdit'] ? $urlFormatter->href('edit', '', [], false) : null,
-            'allFormsUrl' => $this->getService(AclService::class)->isAdmin()
-                ? $urlFormatter->href('', 'dashboard', ['view' => BazarAction::VIEW_FORMS], false)
-                : null,
             'body' => $body,
         ]);
     }
@@ -135,25 +150,19 @@ class FormController extends YesWikiController
         return $view === BazarAction::VIEW_SEARCH && in_array($action, [null, BazarAction::ACTION_SEARCH], true);
     }
 
-    /**
-     * The displays this form's screen offers: cards, list and table for every form, a map and a calendar for the forms whose fields can draw one.
-     *
-     * @param array<string, mixed> $form
-     *
-     * @return list<string>
-     */
-    private function displaysFor(array $form): array
+    /** The checked facets as the export endpoints spell them: `field=value,value|field=value`. */
+    private function facetParameter(): string
     {
-        $roles = $this->getService(FieldRoleResolver::class);
-        $offered = ['card', 'list', 'table'];
-        if ($roles->hasRoles($form, FieldRole::GEOLOCATION)) {
-            $offered[] = 'map';
-        }
-        if ($roles->hasRoles($form, FieldRole::START_DATE)) {
-            $offered[] = 'calendar';
+        $facets = $this->getRequest()->query->all('facet');
+        $parts = [];
+        foreach ($facets as $name => $values) {
+            $values = array_filter(array_map('strval', is_array($values) ? $values : [$values]), static fn (string $v): bool => $v !== '');
+            if ($values !== []) {
+                $parts[] = $name . '=' . implode(',', $values);
+            }
         }
 
-        return $offered;
+        return implode('|', $parts);
     }
 
     /**
@@ -190,19 +199,24 @@ class FormController extends YesWikiController
      *
      * @return array<string, mixed>
      */
-    private function listArguments(array $form, string $display): array
+    private function listArguments(array $form, Presentation $presentation): array
     {
         $arguments = [
             'id' => (string)$form['id'],
-            'template' => self::DISPLAYS[$display] ?? self::DISPLAYS[self::DEFAULT_DISPLAY],
-            'search' => 'true',
+            'template' => self::RENDER_AS[$presentation->name] ?? $presentation->name,
+            'dynamic' => $presentation->shared ? 'false' : 'true',
+            'search' => 'false',
             'shownumentries' => 'true',
             'pagination' => self::ROWS_PER_PAGE,
             'filterposition' => 'top',
             'resetfiltersbutton' => 'true',
-            'showexportbuttons' => 'true',
+            'showexportbuttons' => 'false',
             'displayfields' => $this->displayFieldsFor($form),
         ];
+        $sort = $this->getRequest()->query->get('sort');
+        if (is_string($sort) && isset(self::SORTS[$sort])) {
+            [$arguments['field'], $arguments['order']] = self::SORTS[$sort];
+        }
         $facets = [];
         $columns = [];
         foreach ($form['prepared'] ?? [] as $field) {
@@ -223,7 +237,7 @@ class FormController extends YesWikiController
         if ($facets !== []) {
             $arguments['groups'] = implode(',', $facets);
         }
-        if ($display !== 'table') {
+        if ($presentation->name !== 'table') {
             return $arguments;
         }
         $arguments += [

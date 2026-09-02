@@ -408,7 +408,6 @@ class YesWikiInit
             'sync_secret' => '',
 
             'admin_pages_to_update' => [
-                'BazaR',
                 'GererSite',
                 'GererDroits',
                 'GererDroitsActions',

@@ -1,3 +1,8 @@
+{# presentation
+   label: PRESENTATION_MAP
+   category: map
+   requires: geolocation
+#}
 {% extends '@core/entries/index-dynamic.twig' %}
 
 {% set necessary_fields = (params.necessary_fields|default([]))|merge ([ params.geolocationfield ]) %}
@@ -6,9 +11,9 @@
   {{ include_css('styles/vendor/leaflet/leaflet.css') }}
   {{ include_css('styles/vendor/leaflet-markercluster/leaflet-markercluster.css') }}
   {{ include_css('styles/vendor/leaflet-fullscreen/leaflet-fullscreen.css') }}
-  {{ include_javascript('javascripts/vendor/leaflet-draw/leaflet.draw.css') }}
+  {{ include_css('javascripts/vendor/leaflet-draw/leaflet.draw.css') }}
 
-  {{ include_css('styles/yw-map.css') }}
+  {{ include_css('styles/yw-entries.css') }}
 
   {{ include_javascript('javascripts/vendor/leaflet/leaflet.min.js') }}
   {{ include_javascript('javascripts/vendor/leaflet-markercluster/leaflet-markercluster.min.js') }}

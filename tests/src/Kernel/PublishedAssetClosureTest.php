@@ -39,14 +39,14 @@ class PublishedAssetClosureTest extends YesWikiTestCase
 
     public function testTheFilesAStylesheetPointsAtArePublishedWithIt(): void
     {
-        $url = AssetPublisher::publishedUrl('styles/yw-content.css', '1');
+        $url = AssetPublisher::publishedUrl('styles/yw-core.css', '1');
 
         $this->assertNotNull($url, 'the stylesheet itself');
 
-        foreach (['bazar/loading.gif', 'step-circle-icon.svg'] as $referenced) {
+        foreach (['step-circle-icon.svg', 'step-circle-icon--disabled.svg'] as $referenced) {
             $this->assertFileExists(
                 $this->published('src/assets/images/' . $referenced),
-                $referenced . ' is named by yw-content.css and must be published with it'
+                $referenced . ' is named by yw-core.css and must be published with it'
             );
         }
     }
@@ -212,8 +212,8 @@ class PublishedAssetClosureTest extends YesWikiTestCase
     /** An instance published by an older YesWiki has the sheets and not their imports. */
     public function testATreePublishedWithoutItsReferencesIsRepaired(): void
     {
-        AssetPublisher::publishedUrl('styles/yw-content.css', '1');
-        foreach (['bazar/loading.gif', 'step-circle-icon.svg'] as $referenced) {
+        AssetPublisher::publishedUrl('styles/yw-core.css', '1');
+        foreach (['step-circle-icon.svg', 'step-circle-icon--disabled.svg'] as $referenced) {
             unlink($this->published('src/assets/images/' . $referenced));
         }
         $marker = $this->instance . '/' . AssetPublisher::PUBLISHED_PREFIX . '1/.references-published';
@@ -223,7 +223,7 @@ class PublishedAssetClosureTest extends YesWikiTestCase
 
         AssetPublisher::publishedUrl('styles/yw-core.css', '1');
 
-        $this->assertFileExists($this->published('src/assets/images/bazar/loading.gif'));
+        $this->assertFileExists($this->published('src/assets/images/step-circle-icon.svg'));
         $this->assertFileExists(
             $marker,
             'and it is marked, so the sweep does not run on every request'

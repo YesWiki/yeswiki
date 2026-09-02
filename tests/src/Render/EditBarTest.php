@@ -250,6 +250,7 @@ class EditBarTest extends YesWikiTestCase
                 'userIsAdminOrOwner' => true,
                 'author' => 'someone',
                 'contentLabel' => 'Pages',
+                'contentUrl' => '/?pages',
 
                 'linkopencomments' => '/?SomePage/claim&action=opencomments',
                 'wikigroups' => ['admins'],
@@ -257,6 +258,7 @@ class EditBarTest extends YesWikiTestCase
         );
 
         $this->assertStringContainsString('dropdown-menu', $rendered, 'the premise: the dropdown is here');
+        $this->assertStringContainsString('<a href="/?pages">Pages</a>', $rendered, 'the Content type is not a link to its form');
         $this->assertStringNotContainsString(
             '<p',
             $rendered,

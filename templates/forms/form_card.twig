@@ -7,8 +7,7 @@
           page: 'file', user: 'user', file: 'paperclip', entry: 'briefcase',
         }[form.contentType]|default('briefcase')) }}</span>
       {% endif %}
-      {{ form.title }}
-      <span class="form-card__id" title="{{ _t('BAZ_ID') }}">#{{ key }}</span>
+      <a href="{{ url({ tag: form.tag }) }}">{{ form.title }}</a>
     </h3>
     {% if form.description %}<p class="form-card__description">{{ form.description }}</p>{% endif %}
 
@@ -31,7 +30,7 @@
   </header>
 
   <div class="form-card__entries">
-    <a class="yw-btn yw-btn--sm" href="{{ url({ params: { view: 'consulter', action: 'recherche', id: key }}) }}">
+    <a class="yw-btn yw-btn--sm" href="{{ url({ tag: form.tag }) }}">
       <svg class="yw-icon icon-search" aria-hidden="true"><use href="src/assets/icons.svg#loupe"/></svg>
       {{ _t('BAZ_RECHERCHER') }}
     </a>
@@ -44,24 +43,8 @@
     {% endif %}
   </div>
 
-  <div class="form-card__formats">
-    <span class="form-card__formats-label">{{ _t('BAZ_DATA_FORMAT') }}</span>
-
-    <a class="form-card__format" title="{{ _t('BAZ_RSS') }}" href="{{ url({ tag: 'api/entries/rss', params: { id: key }}) }}">RSS</a>
-    <a class="form-card__format" title="{{ _t('BAZ_CSV') }}" href="{{ url({ tag: 'api', handler: 'forms/' ~ key ~ '/entries/csv'}) }}">CSV</a>
-    <a class="form-card__format" target="_blank" title="{{ _t('BAZ_JSON') }}" href="{{ url({ tag: 'api', handler: 'forms/' ~ key ~ '/entries'}) }}">JSON</a>
-    {% if form.isSemantic %}
-      <a class="form-card__format" target="_blank" title="{{ _t('BAZ_JSON_LD') }}" href="{{ url({ tag: 'api', handler: 'forms/' ~ key ~ '/entries/json-ld'}) }}">JSON-LD</a>
-    {% endif %}
-    {% if form.isGeo %}
-      <a class="form-card__format" target="_blank" title="{{ _t('BAZ_GEOJSON') }}" href="{{ url({ tag: 'api', handler: 'forms/' ~ key ~ '/entries/geojson'}) }}">GeoJSON</a>
-    {% endif %}
-    {% if form.isDate %}
-      <a class="form-card__format" target="_blank" title="{{ _t('BAZ_ICAL') }}" href="{{ url({ tag: 'api', handler: 'forms/' ~ key ~ '/entries/ical'}) }}">iCal</a>
-    {% endif %}
-    {% if form.isActivityPubEnabled %}
-      <a class="form-card__format" target="_blank" title="{{ _t('BAZ_ACTIVITYPUB_ACTOR') }}" href="/actors/{{ key }}">ActivityPub</a>
-    {% endif %}
+  <div class="form-card__formats" aria-label="{{ _t('BAZ_DATA_FORMAT') }}">
+    {{ include('@core/forms/_form_formats.twig', { form: form, key: key, class: 'form-card__format' }) }}
   </div>
 
   <footer class="form-card__actions">

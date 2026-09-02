@@ -50,52 +50,37 @@ You can either create an "old school template" or a more recent dynamic template
 
 Old school templates might be easier to write, but dynamic templates will provide better performance and use latest features form yeswiki
 
-#### **Old schoold** bazarlist templates
+#### List templates
 
-Create a file inside `custom/templates/bazar`, either a `.twig` file or a `.tpl.html`
+A list template is a Twig file in one of two folders, and the wiki reads what it is from the file itself:
 
-```twig
-{# custom/templates/bazar/my-template.twig #}
-{% for fiche in fiches %}
-  <div>{{ fiche.bf_titre }}</div>
-{% endfor %}
-```
+- `templates/presentations/` holds the shared shapes drawn over Items (`card`, `list`, `table`, `timeline`). They work for every Source, a form or a feed alike.
+- `templates/entries/index-dynamic-templates/` holds the Vue templates (`calendar`, `map`, `map-and-table`, and the Vue variants of the shared shapes).
 
-```php
-/* custom/templates/bazar/my-template.tpl.html */
-<?php foreach($fiches as $fiche): ?>
-  <h2><?php echo $fiche['bf_titre'];?></h2>
-<?php endforeach; ?>
-```
+A wiki adds its own or overrides a shipped one under `custom/templates/core/` at the same path: `custom/templates/core/entries/index-dynamic-templates/my-template.twig`. Files whose name starts with `_` are partials and are never listed.
 
-Then you use it with `{{entrylist id="1" template="my-template.twig" }}` or `{{entrylist id="1" template="my-template.tpl.html" }}`
-
-You can also overide an existing template : `custom/templates/bazar/liste_accordeon.tpl.html`
-
-Custom template will appear in the entrylist component with default name : "Template custom : filename"
-
-If you need to personnalize the name add a translation in file /custom/lang/custom_fr.inc.php
-example : 'AB_filename_label' => 'Template custom annuaire',
-
-#### **Dynamic** bazarlist templates
-
-Create a file inside `custom/templates/bazar/entries/index-dynamic-templates/`
+Every template opens with a header comment that names it and says what it needs:
 
 ```twig
-{# custom/templates/bazar/entries/index-dynamic-templates/my-template.twig #}
-{% extends "@bazar/entries/index-dynamic.twig" %}
-
-{% block display_entries %}
-  <div v-for="entry in entriesToDisplay">
-    <a :href="entry.url" v-html="entry.bf_titre"></a>
-  </div>
-{% endblock %}
+{# presentation
+   label: PRESENTATION_MAP
+   category: map
+   icon: map-2
+   requires: geolocation
+#}
+{% extends "@core/entries/index-dynamic.twig" %}
 ```
 
-Then use it with `{{entrylist id=".." template="my-template" dynamic="true" }}`
+| Key        | Meaning                                                                                                                                                        |
+| ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `label`    | A translation key, or the literal name when there is no key. Custom keys go in `custom/lang/custom_LOCALE.inc.php`.                                            |
+| `category` | Where the form screen's switcher files it: `card`, `list`, `table`, `map` or `calendar`. Defaults to `list`.                                                   |
+| `icon`     | A sprite id from `src/assets/icons.svg`. Defaults to the category's icon.                                                                                      |
+| `requires` | The field roles a form must have for the template to draw anything, comma separated: `image`, `description`, `start_date`, `end_date`, `geolocation`, `email`. |
 
-Check [this file](https://github.com/YesWiki/yeswiki/blob/doryphore-dev/tools/bazar/presentation/javascripts/entries-index-dynamic.js) to know what data is available inside the template.
-Have also a look to [existing templates](https://github.com/YesWiki/yeswiki/tree/doryphore-dev/tools/bazar/templates/entries/index-dynamic-templates), although some of them might be overcomplicated...
+`PresentationCatalog` reads these headers. A form's own screen (`/?MyForm`) offers every template whose `requires` the form's fields satisfy, grouped by category, and a list rendered over a form that lacks a required role shows a warning naming it instead of coming out empty. A file with no header is still listed, under its file name, in the `list` category.
+
+Use a template with `{{entrylist id="1" template="my-template" dynamic="true"}}` for a Vue one, or `template="card"` for a shared shape.
 
 ##### VueJs Template
 

@@ -72,6 +72,7 @@ class FormOverview
         $contentType = $form[ContentTypeSchema::CONTENT_TYPE] ?? null;
 
         return [
+            'tag' => (string)($form['tag'] ?? ''),
             'title' => $form['label'],
             'description' => $form['description'],
             'canEdit' => !$hibernated && $this->guard->isAllowed('saisie_formulaire'),

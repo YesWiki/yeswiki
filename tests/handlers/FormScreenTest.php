@@ -27,6 +27,7 @@ class FormScreenTest extends YesWikiTestCase
     private const FORM_LABEL = 'Form screen probe';
     private const FORM_TAG = 'form-screen-probe';
     private const PAGE_TAG = 'FormScreenProbePage';
+    private const BAZAR_PAGE_TAG = 'FormScreenProbeBazar';
     private const PAGE_TITLE = 'Form screen probe page';
     private const MARKUP_SENTINEL = 'FormScreenSentinelMarkup';
     private const KEYWORD = 'form-screen-probe-keyword';
@@ -78,6 +79,7 @@ class FormScreenTest extends YesWikiTestCase
             $this->formManager->delete($this->form['id']);
         }
         $this->wiki->services->get(PageManager::class)->deleteOrphaned(self::PAGE_TAG);
+        $this->wiki->services->get(PageManager::class)->deleteOrphaned(self::BAZAR_PAGE_TAG);
 
         if ($this->previousRequest !== null) {
             $this->wiki->services->get(CurrentRequest::class)->replace($this->previousRequest);
@@ -99,10 +101,17 @@ class FormScreenTest extends YesWikiTestCase
         $output = $this->runHandler('show', self::FORM_TAG);
 
         $this->assertStringContainsString('form-screen__add', $output, 'no "add" button on the form screen');
-        $this->assertStringContainsString('bazar-search', $output, 'no search over the form\'s entries');
+        $this->assertStringContainsString('yw-list-toolbar', $output, 'no search over the form\'s entries');
         $this->assertStringContainsString('data-template="card.twig"', $output, 'the default display is not cards');
         $this->assertStringContainsString('name="display"', $output, 'no display switch');
-        $this->assertStringContainsString('export-links', $output, 'no export links');
+        $this->assertStringContainsString('form-screen-display-list', $output, 'the list display is not offered');
+        $this->assertStringNotContainsString('form-screen-display-calendar', $output, 'a form with no date field is offered a calendar');
+        $this->assertStringNotContainsString('form-screen-display-map', $output, 'a form with no location field is offered a map');
+        $this->assertStringNotContainsString('class="form-screen__id"', $output, 'the form id is still shown');
+        $this->assertStringNotContainsString('form-screen__edit', $output, 'the header still carries an edit button; the floating one does that');
+        $this->assertStringNotContainsString('form-screen__formats-label', $output, 'the formats still carry a label');
+        $this->assertStringContainsString('icons.svg#rss', $output, 'the RSS link has no icon');
+        $this->assertStringContainsString('yw-export-menu', $output, 'no export menu');
         $this->assertStringContainsString('view=saisir', $output, 'the add button does not open the entry form');
         $this->assertStringNotContainsString('form-builder-container', $output, 'the bare tag opened the designer');
     }
@@ -122,7 +131,7 @@ class FormScreenTest extends YesWikiTestCase
         $this->assertStringContainsString('data-template="tableau.twig"', $table, 'display=table does not list pages as a table');
         $this->assertStringContainsString(self::PAGE_TITLE, $table, 'the probe page is missing from the table');
         $this->assertStringNotContainsString(self::MARKUP_SENTINEL, $table, 'the table rendered a page\'s markup');
-        $this->assertStringContainsString('bazar-search', $table, 'a nested list took the search box away');
+        $this->assertStringContainsString('yw-list-toolbar', $table, 'a nested list took the search box away');
     }
 
     public function testAFacetOverAListValuedFieldMatchesItsValues(): void
@@ -144,8 +153,20 @@ class FormScreenTest extends YesWikiTestCase
         $output = $this->runHandler('show', self::FORM_TAG, ['view' => 'formulaire', 'msg' => 'BAZ_FORMULAIRE_MODIFIE']);
 
         $this->assertStringContainsString(_t('BAZ_FORMULAIRE_MODIFIE'), $output);
-        $this->assertStringContainsString('bazar-search', $output, 'view=formulaire on a form tag showed something other than its list');
+        $this->assertStringContainsString('yw-list-toolbar', $output, 'view=formulaire on a form tag showed something other than its list');
         $this->assertStringNotContainsString('forms-cards', $output, 'view=formulaire on a form tag listed every form');
+    }
+
+    public function testTheOldSearchViewOverOneFormLandsOnItsScreen(): void
+    {
+        $this->wiki->services->get(PageManager::class)->save(self::BAZAR_PAGE_TAG, [
+            PageBody::TITLE => 'Form screen probe bazar',
+            PageBody::CONTENT => '{{bazar}}',
+        ], '', true);
+
+        $output = $this->runHandlerOrRedirect('show', self::BAZAR_PAGE_TAG, ['view' => 'consulter', 'action' => 'recherche', 'id' => (string)$this->form['id']]);
+
+        $this->assertNull($output, 'view=consulter&action=recherche over one form did not redirect to the form\'s own screen');
     }
 
     public function testEditRefusesASignedOutVisitor(): void

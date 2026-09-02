@@ -173,6 +173,7 @@ class EditBarAction extends YesWikiAction implements RegisteredAction
         return [
             'author' => $this->authorName((string)$this->getService(PageManager::class)->getOwner($page)),
             'contentLabel' => $form['label'] ?? '',
+            'contentUrl' => empty($form['tag']) ? '' : $this->getService(UrlFormatter::class)->href('', $form['tag'], [], false),
 
             'createdAt' => $this->moment(
                 $body['created_at'] ?? $this->getService(PageManager::class)->getCreateTime($page)

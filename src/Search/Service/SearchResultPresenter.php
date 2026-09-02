@@ -64,10 +64,6 @@ class SearchResultPresenter
      */
     private function urlOf(array $row): string
     {
-        if ($row['content_type'] === SearchableTextExtractor::TYPE_FORM && $row['form_id'] !== '') {
-            return $this->urlFormatter->href('', 'BazaR', ['id' => $row['form_id']], false);
-        }
-
         return $this->urlFormatter->href('', $row['tag'], null, false);
     }
 

@@ -680,6 +680,7 @@ class SearchManager
             'isSplitted' => false,
             'descriptors' => [$vHash => array_merge($vFieldDescriptor, ['_ids_' => $vFormIDs])],
         ];
+        $vFields[PageBody::TITLE] = $vFields['tag'];
 
         $vFormManager = $this->container->get(FormManager::class);
 

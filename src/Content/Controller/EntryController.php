@@ -470,7 +470,7 @@ class EntryController extends YesWikiController
                 if (!$this->entryManager->isEntry($entryId)) {
                     if ($redirectAfter) {
                         Flash::success(_t('BAZ_FICHE_SUPPRIMEE') . " ($entryId)");
-                        $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href('', 'BazaR', ['view' => 'consulter'], false));
+                        $this->getService(Redirector::class)->redirect($this->afterDeletionUrl($entry));
                     }
 
                     return true;
@@ -478,7 +478,7 @@ class EntryController extends YesWikiController
             } catch (\Throwable $th) {
                 if ($redirectAfter) {
                     Flash::error(_t('DELETEPAGE_NOT_DELETED') . " ($entryId) : {$th->getMessage()}");
-                    $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href('', 'BazaR', ['view' => 'consulter'], false));
+                    $this->getService(Redirector::class)->redirect($this->afterDeletionUrl($entry ?? null));
                 }
                 throw new \Exception($th->getMessage(), $th->getCode(), $th);
             }
@@ -906,5 +906,20 @@ class EntryController extends YesWikiController
         }
 
         return empty($incomingUrl) ? '' : $incomingUrl;
+    }
+
+    /**
+     * Where a deletion sends back: the form's own screen, or the dashboard when the form is unknown.
+     *
+     * @param array<string, mixed>|null $entry
+     */
+    private function afterDeletionUrl(?array $entry): string
+    {
+        $form = empty($entry['form_id']) ? null : $this->getService(FormManager::class)->getOne((string)$entry['form_id']);
+        $urlFormatter = $this->getService(UrlFormatter::class);
+
+        return empty($form['tag'])
+            ? $urlFormatter->href('', 'dashboard', ['view' => 'formulaire'], false)
+            : $urlFormatter->href('', (string)$form['tag'], [], false);
     }
 }

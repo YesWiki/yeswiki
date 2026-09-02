@@ -2,7 +2,6 @@
 
 namespace YesWiki\Content\Action;
 
-use YesWiki\Content\Entity\FieldRole;
 use YesWiki\Content\Entity\Item;
 use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Entity\SuppliesItems;
@@ -40,6 +39,7 @@ use YesWiki\Kernel\Service\Paginator;
 use YesWiki\Kernel\Service\RuntimeConfig;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Kernel\Service\WikiUrls;
+use YesWiki\Render\Service\PresentationCatalog;
 use YesWiki\Render\Service\PresentationRenderer;
 use YesWiki\Search\Service\SearchManager;
 
@@ -1647,30 +1647,14 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
     }
 
     /**
-     * Roles a display cannot do without: an agenda with no start date and a map with no
-     * geolocation both come out empty, which reads as "no entries" rather than as
-     * "this form does not say which field holds that" (ticket 11).
-     *
-     * @var array<string, list<string>>
-     */
-    private const TEMPLATE_REQUIRED_ROLES = [
-        'agenda' => [FieldRole::START_DATE],
-        'calendar' => [FieldRole::START_DATE],
-        'map' => [FieldRole::GEOLOCATION],
-        'gogocarto' => [FieldRole::GEOLOCATION],
-        'gogomap' => [FieldRole::GEOLOCATION],
-        'map-and-table' => [FieldRole::GEOLOCATION],
-    ];
-
-    /**
      * An alert naming the roles none of the listed forms can answer, or '' when they can.
      *
      * @param array<int|string, mixed>|string $forms
      */
     private function missingRoleWarning(string $templateBaseName, $forms): string
     {
-        $required = self::TEMPLATE_REQUIRED_ROLES[$templateBaseName] ?? null;
-        if ($required === null || !is_array($forms) || empty($forms)) {
+        $required = $this->getService(PresentationCatalog::class)->requiredRoles($templateBaseName);
+        if ($required === [] || !is_array($forms) || empty($forms)) {
             return '';
         }
 
@@ -1895,7 +1879,7 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
         $js = '';
 
         $this->getService(AssetRegistry::class)->addCssFile('styles/vendor/leaflet/leaflet.css');
-        $this->getService(AssetRegistry::class)->addCssFile('styles/yw-map.css');
+        $this->getService(AssetRegistry::class)->addCssFile('styles/yw-entries.css');
         $this->getService(AssetRegistry::class)->addCssFile('javascripts/vendor/leaflet-draw/leaflet.draw.css');
         $this->getService(AssetRegistry::class)->addJsFile('javascripts/bazar.js', true, true);
         $this->getService(AssetRegistry::class)->addJsFile('javascripts/vendor/leaflet/leaflet.min.js');

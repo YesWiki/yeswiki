@@ -10,6 +10,8 @@ use YesWiki\Kernel\Component\Setting;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\PerformableArguments;
 use YesWiki\Kernel\Service\UrlFormatter;
+use YesWiki\Render\Service\PresentationCatalog;
+use YesWiki\Render\Service\PresentationRenderer;
 use YesWiki\Render\Service\TemplateEngine;
 use YesWiki\Search\Service\SearchIndexer;
 use YesWiki\Search\Service\SearchIndexQuery;
@@ -19,9 +21,6 @@ use YesWiki\Search\Service\SearchResultPresenter;
 /** `{{search}}` -- the search surface (ticket 26). */
 class SearchAction extends YesWikiAction implements RegisteredAction, ProvidesComponents
 {
-    /** The layouts the results fragment knows how to render. */
-    public const DISPLAY_MODES = ['list', 'accordion', 'cards'];
-
     public static function performableName(): string
     {
         return 'search';
@@ -70,6 +69,8 @@ class SearchAction extends YesWikiAction implements RegisteredAction, ProvidesCo
         $phrase = trim((string)($arguments->get('q', '') ?: ($_GET['q'] ?? '')));
         $type = trim((string)($arguments->get('type', '') ?: ($_GET['type'] ?? '')));
         $display = trim((string)($arguments->get('display', '') ?: ($_GET['display'] ?? 'list')));
+        $sort = trim((string)($_GET['sort'] ?? ''));
+        $form = trim((string)($_GET['form'] ?? ''));
 
         $tags = trim((string)($arguments->get('tags', '') ?: ($_GET['tags'] ?? '')));
 
@@ -78,7 +79,10 @@ class SearchAction extends YesWikiAction implements RegisteredAction, ProvidesCo
             'type' => $type,
             'tags' => $tags,
 
-            'display' => in_array($display, self::DISPLAY_MODES, true) ? $display : 'list',
+            'display' => PresentationRenderer::knows($display) ? $display : 'list',
+            'sort' => isset(SearchIndexQuery::SORTS[$sort]) ? $sort : '',
+            'form' => $form,
+            'switcher' => $this->getService(PresentationCatalog::class)->sharedSwitcher(),
             'limit' => (int)$arguments->get('limit', SearchIndexQuery::DEFAULT_LIMIT),
             'showFilters' => (string)$arguments->get('filters', '1') !== '0',
             'autofocus' => (string)$arguments->get('autofocus', '0') === '1',

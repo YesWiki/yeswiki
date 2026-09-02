@@ -19,7 +19,7 @@ test('a bazar form tag lists its entries with an add button', async ({
     'href',
     /view=saisir&action=saisir_fiche&id=1/,
   )
-  await expect(page.locator('.bazar-search')).toBeVisible()
+  await expect(page.locator('.yw-list-toolbar')).toBeVisible()
   await expect(page.locator('#form-builder-container')).toHaveCount(0)
 })
 
@@ -29,7 +29,7 @@ test('the Pages form tag lists pages, as cards and as a table', async ({
   await page.goto('/?pages')
 
   await expect(page.locator('.form-screen__title')).toContainText('Pages')
-  await expect(page.locator('.bazar-search')).toBeVisible()
+  await expect(page.locator('.yw-list-toolbar')).toBeVisible()
   await expect(
     page.locator('#form-screen-list .yw-item'),
     'the seeded pages are listed',
@@ -46,13 +46,46 @@ test('an enum field gives the list a facet above it, and the display switches', 
 
   await expect(page.locator('.yw-facet-select')).toBeVisible()
   await expect(page.locator('#form-screen-list .yw-items--card')).toBeVisible()
-  await expect(page.locator('.export-links')).toBeVisible()
+  await expect(page.locator('.yw-export-menu')).toBeVisible()
 
   await page.locator('label[for="form-screen-display-table"]').click()
   await expect(
     page.locator('#form-screen-list .in-tableau-template'),
   ).toBeVisible()
   await expect(page).toHaveURL(/display=table/)
+})
+
+test('the switcher groups templates by category and only offers what the form can draw', async ({
+  page,
+}) => {
+  await page.goto('/?Agenda')
+
+  const groups = page.locator('.yw-display-switch__group')
+  await expect(groups).toHaveCount(5)
+  await expect(page.locator('#form-screen-display-calendar')).toHaveCount(1)
+  await expect(page.locator('#form-screen-display-timeline')).toHaveCount(1)
+
+  const listGroup = groups.filter({
+    has: page.locator('label[for="form-screen-display-list"]'),
+  })
+  await listGroup.locator('> .yw-display-switch__option').hover()
+  await expect(
+    listGroup.locator('.yw-display-switch__menu', { hasText: 'Frise' }),
+  ).toBeVisible()
+  await listGroup
+    .locator(
+      '.yw-display-switch__menu label[for="form-screen-display-timeline"]',
+    )
+    .click()
+  await expect(
+    page.locator('#form-screen-list .yw-items--timeline'),
+  ).toBeVisible()
+  await expect(page).toHaveURL(/display=timeline/)
+
+  await page.goto('/?comptes')
+  await expect(page.locator('.yw-display-switch__group')).toHaveCount(3)
+  await expect(page.locator('#form-screen-display-calendar')).toHaveCount(0)
+  await expect(page.locator('#form-screen-display-map')).toHaveCount(0)
 })
 
 test('the add button opens the entry form on the same tag', async ({

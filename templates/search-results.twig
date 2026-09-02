@@ -1,139 +1,75 @@
+{% set htmx = {
+    'hx-get': url({tag: 'api/search'}),
+    'hx-target': '#yw-search-results',
+    'hx-include': '#yw-search-form',
+    'hx-indicator': '#yw-search-spinner',
+    'hx-trigger': 'change'
+} %}
+{% macro attrs(map) %}{% for k, v in map %}{{ k }}="{{ v }}" {% endfor %}{% endmacro %}
 
-
-{% set display = display in ['list', 'accordion', 'cards'] ? display : 'list' %}
-
-{% if tags is defined and tags is not empty %}
+<div id="yw-search-facets" class="yw-list-toolbar__facets" hx-swap-oob="true">
+  {% if tags is defined and tags is not empty %}
     <p class="yw-search-filter">
-        {{ _t('SEARCH_FILTERED_BY_KEYWORD') }}
-        {% for keyword in (tags is iterable ? tags : tags|split(',')) %}
-            <span class="yw-tag">{{ keyword|trim }}</span>
-        {% endfor %}
-        <a class="yw-search-filter__clear"
-           href="{{ url({tag: 'search', params: phrase is empty ? {} : {q: phrase}}) }}">{{ _t('SEARCH_CLEAR_KEYWORD') }}</a>
+      {{ _t('SEARCH_FILTERED_BY_KEYWORD') }}
+      {% for keyword in tags %}<span class="yw-tag">{{ keyword|trim }}</span>{% endfor %}
+      <a class="yw-search-filter__clear" href="{{ url({tag: 'search', params: phrase is empty ? {} : {q: phrase}}) }}">{{ _t('SEARCH_CLEAR_KEYWORD') }}</a>
     </p>
-{% endif %}
-{% if prompt %}
-    <p class="yw-search-prompt">{{ _t('SEARCH_TYPE_SOMETHING') }}</p>
-{% elseif results is empty and type is empty %}
-    <p class="yw-search-empty">{{ _t('NO_SEARCH_RESULT') }}.</p>
-{% else %}
-    {% if facets|length > 1 %}
-        {% set allCount = 0 %}
-        {% for count in facets %}{% set allCount = allCount + count %}{% endfor %}
-        <ul class="yw-facets" id="yw-search-facets">
-            <li class="yw-facet">
-                <input type="radio" name="type" value="" id="yw-facet-all"
-                       {{ type is empty ? 'checked' : '' }}
-                       hx-get="{{ url({tag: 'api/search'}) }}"
-                       hx-target="#yw-search-results"
-                       hx-include="#yw-search-form, #yw-search-facets"
-                       hx-indicator="#yw-search-spinner"
-                       hx-trigger="change" />
-                <label class="yw-facet__label" for="yw-facet-all">
-                    {{ _t('SEARCH_TYPE_ALL') }}
-                    <span class="yw-facet__count">{{ allCount }}{{ capped ? '+' : '' }}</span>
-                </label>
-            </li>
-            {% for facetType, count in facets %}
-                <li class="yw-facet">
-                    <input type="radio" name="type" value="{{ facetType }}" id="yw-facet-{{ facetType }}"
-                           {{ type == facetType ? 'checked' : '' }}
-                           hx-get="{{ url({tag: 'api/search'}) }}"
-                           hx-target="#yw-search-results"
-                           hx-include="#yw-search-form, #yw-search-facets"
-                           hx-indicator="#yw-search-spinner"
-                           hx-trigger="change" />
-                    <label class="yw-facet__label" for="yw-facet-{{ facetType }}">
-                        {{ _t('SEARCH_TYPE_' ~ facetType|upper) }}
-                        <span class="yw-facet__count">{{ count }}</span>
-                    </label>
+  {% endif %}
+  {% if facets|length > 1 %}
+    {% set allCount = 0 %}
+    {% for count in facets %}{% set allCount = allCount + count %}{% endfor %}
+    <ul class="yw-facets">
+      <li class="yw-facet">
+        <input type="radio" name="type" value="" id="yw-facet-all" {{ type is empty ? 'checked' : '' }} {{ _self.attrs(htmx) }} />
+        <label class="yw-facet__label" for="yw-facet-all">
+          {{ _t('SEARCH_TYPE_ALL') }}
+          <span class="yw-facet__count">{{ allCount }}{{ capped ? '+' : '' }}</span>
+        </label>
+      </li>
+      {% for facetType, count in facets %}
+        <li class="yw-facet{{ facetType == 'entry' and forms|length > 0 ? ' yw-facet--group' : '' }}">
+          <input type="radio" name="type" value="{{ facetType }}" id="yw-facet-{{ facetType }}" {{ type == facetType and form is empty ? 'checked' : '' }} {{ _self.attrs(htmx) }} />
+          <label class="yw-facet__label{{ type == facetType and form is not empty ? ' yw-facet__label--narrowed' : '' }}" for="yw-facet-{{ facetType }}">
+            {{ _t('SEARCH_TYPE_' ~ facetType|upper) }}
+            <span class="yw-facet__count">{{ count }}</span>
+          </label>
+          {% if facetType == 'entry' and forms|length > 0 %}
+            <ul class="yw-facet__menu" aria-label="{{ _t('SEARCH_NARROW_TO_FORM') }}">
+              {% for oneForm in forms %}
+                <li>
+                  <input type="radio" name="form" value="{{ oneForm.id }}" id="yw-facet-form-{{ oneForm.id }}" {{ form == oneForm.id ? 'checked' : '' }} {{ _self.attrs(htmx) }} />
+                  <label class="yw-facet__label" for="yw-facet-form-{{ oneForm.id }}">
+                    {{ oneForm.label }}
+                    <span class="yw-facet__count">{{ oneForm.count }}</span>
+                  </label>
                 </li>
-            {% endfor %}
-        </ul>
-    {% endif %}
+              {% endfor %}
+            </ul>
+          {% endif %}
+        </li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+</div>
 
-    {% if results is empty %}
-        <p class="yw-search-empty">{{ _t('NO_SEARCH_RESULT') }}.</p>
-    {% else %}
-        <p class="yw-search-count">
-            {%- if capped -%}
-                {{ _t('SEARCH_N_OR_MORE_RESULTS', {total: total}) }}
-            {%- else -%}
-                {{ _t('SEARCH_N_RESULTS', {total: total}) }}
-            {%- endif -%}
-        </p>
+<div id="yw-search-export" class="yw-list-toolbar__export" hx-swap-oob="true">
+  {{ include('@core/_export_menu.twig', { exports: exports, id: 'yw-search-export-menu' }) }}
+</div>
 
-        {% if display == 'accordion' %}
+{% if found == 0 %}
+  <p class="yw-search-empty">{{ _t('NO_SEARCH_RESULT') }}.</p>
+{% else %}
+  <div class="yw-search-results">{{ rendered|raw }}</div>
 
-            <div class="yw-accordion yw-search-results yw-search-results--accordion">
-                {% for result in results %}
-                    {% include '@core/_accordion-item.twig' with {
-                        class: 'yw-search-result yw-search-result--' ~ result.content_type,
-                        summary: '<span class="yw-search-result-title">' ~ result.title|e ~ '</span>'
-                            ~ '<span class="yw-search-result-type">' ~ _t('SEARCH_TYPE_' ~ result.content_type|upper)|e ~ '</span>',
-                        body: (result.excerpt is not empty
-                                ? '<p class="yw-search-result-excerpt">' ~ result.excerpt|e ~ '</p>'
-                                : '')
-                            ~ '<p><a href="' ~ result.url|e('html_attr') ~ '">' ~ _t('SEARCH_OPEN_RESULT')|e ~ '</a></p>'
-                    } only %}
-                {% endfor %}
-            </div>
-        {% elseif display == 'cards' %}
-
-            <div class="bazar-cards-container yw-search-results--cards">
-                {% for result in results %}
-                    <a class="bazar-card yw-search-result yw-search-result--{{ result.content_type }}"
-                       href="{{ result.url }}"
-                       title="{{ result.title }}">
-                        <div class="content">
-                            <h3 class="area title-area yw-search-result-title">
-                                {{ result.title }}
-                                <span class="yw-search-result-type">{{ _t('SEARCH_TYPE_' ~ result.content_type|upper) }}</span>
-                            </h3>
-                            {% if result.excerpt is not empty %}
-                                <p class="area yw-search-result-excerpt">{{ result.excerpt }}</p>
-                            {% endif %}
-                        </div>
-                    </a>
-                {% endfor %}
-            </div>
-        {% else %}
-            <ol class="yw-search-results" start="{{ (page - 1) * limit + 1 }}">
-                {% for result in results %}
-                    <li class="yw-search-result yw-search-result--{{ result.content_type }}">
-                        <h3 class="yw-search-result-title">
-                            <a href="{{ result.url }}">{{ result.title }}</a>
-                            <span class="yw-search-result-type">{{ _t('SEARCH_TYPE_' ~ result.content_type|upper) }}</span>
-                        </h3>
-                        {% if result.excerpt is not empty %}
-                            <p class="yw-search-result-excerpt">{{ result.excerpt }}</p>
-                        {% endif %}
-                    </li>
-                {% endfor %}
-            </ol>
-        {% endif %}
-
-        {% if pages > 1 %}
-
-            <nav class="yw-search-pagination" aria-label="{{ _t('SEARCH_PAGINATION') }}">
-                {% if page > 1 %}
-                    <button type="button" class="yw-btn yw-btn--sm"
-                            hx-get="{{ url({tag: 'api/search'}) }}"
-                            hx-target="#yw-search-results"
-                            hx-include="#yw-search-form, #yw-search-facets"
-                            hx-indicator="#yw-search-spinner"
-                            hx-vals='{"page": {{ page - 1 }}}'>{{ _t('PREVIOUS') }}</button>
-                {% endif %}
-                <span class="yw-search-page">{{ _t('SEARCH_PAGE_N_OF_M', {page: page, pages: pages}) }}</span>
-                {% if page < pages %}
-                    <button type="button" class="yw-btn yw-btn--sm"
-                            hx-get="{{ url({tag: 'api/search'}) }}"
-                            hx-target="#yw-search-results"
-                            hx-include="#yw-search-form, #yw-search-facets"
-                            hx-indicator="#yw-search-spinner"
-                            hx-vals='{"page": {{ page + 1 }}}'>{{ _t('NEXT') }}</button>
-                {% endif %}
-            </nav>
-        {% endif %}
-    {% endif %}
+  {% if pages > 1 %}
+    <nav class="yw-search-pagination" aria-label="{{ _t('SEARCH_PAGINATION') }}">
+      {% if page > 1 %}
+        <button type="button" class="yw-btn yw-btn--sm" {{ _self.attrs(htmx|merge({'hx-trigger': 'click'})) }} hx-vals='{"page": {{ page - 1 }}}'>{{ _t('PREVIOUS') }}</button>
+      {% endif %}
+      <span class="yw-search-page">{{ _t('SEARCH_PAGE_N_OF_M', {page: page, pages: pages}) }}</span>
+      {% if page < pages %}
+        <button type="button" class="yw-btn yw-btn--sm" {{ _self.attrs(htmx|merge({'hx-trigger': 'click'})) }} hx-vals='{"page": {{ page + 1 }}}'>{{ _t('NEXT') }}</button>
+      {% endif %}
+    </nav>
+  {% endif %}
 {% endif %}

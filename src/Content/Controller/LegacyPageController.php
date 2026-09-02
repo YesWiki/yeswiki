@@ -8,9 +8,12 @@ use YesWiki\Content\Service\PageManager;
 use YesWiki\Core\YesWikiController;
 use YesWiki\Kernel\Exception\ExitException;
 use YesWiki\Kernel\Service\PageContext;
+use YesWiki\Kernel\Service\UrlFormatter;
+use YesWiki\Render\Service\ActionRunner;
 use YesWiki\Render\Service\BoostedNavigation;
 use YesWiki\Render\Service\CoreAssets;
 use YesWiki\Render\Service\Performer;
+use YesWiki\Render\Service\ThemeManager;
 
 /**
  * Adapter so ordinary wiki tag/method pages (Performer-dispatched actions/handlers/formatters - unchanged, see Wiki::Method()) go through the same HttpKernel/event pipeline as the attribute-routed api/doc controllers (see Wiki::handleWithHttpKernel()), instead of the echo-straight-to-stdout dispatch this used to be.
@@ -28,6 +31,11 @@ class LegacyPageController extends YesWikiController
 
         if ($boosted->isBoosted() && !$boosted->fingerprintMatches()) {
             return $boosted->fullLoadResponse();
+        }
+
+        $bazar = $this->retiredBazarPage((string)$tag, $request);
+        if ($bazar !== null) {
+            return $bazar;
         }
 
         $this->getService(CoreAssets::class)->register();
@@ -66,5 +74,24 @@ class LegacyPageController extends YesWikiController
         }
 
         return new Response($content);
+    }
+
+    /**
+     * `BazaR` is no page any more: bare, it goes to the dashboard; with a bazar view in the query, the links the wiki still carries (an entry form in an iframe, a search) are still answered.
+     */
+    private function retiredBazarPage(string $tag, Request $request): ?Response
+    {
+        if (strcasecmp($tag, 'BazaR') !== 0 || $this->getService(PageManager::class)->getOne($tag) !== null) {
+            return null;
+        }
+        $query = $request->query;
+        if ($query->has('view') || $query->has('action') || $query->has('id') || $query->has('form_id')) {
+            $this->getService(CoreAssets::class)->register();
+            $content = $this->getService(ActionRunner::class)->action('bazar', ['showmenu' => '0']);
+
+            return $this->toResponse($this->getService(ThemeManager::class)->renderPage((string)$content), $this->getService(BoostedNavigation::class));
+        }
+
+        return new Response('', Response::HTTP_FOUND, ['Location' => $this->getService(UrlFormatter::class)->href('', 'dashboard', ['view' => 'formulaire'], false)]);
     }
 }

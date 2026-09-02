@@ -36,7 +36,7 @@ test('the search box takes focus on arrival, however you arrive', async ({
 test('the loading indicator does not move the results', async ({ page }) => {
   await page.goto('/?search')
   await page.locator('#yw-search-phrase').fill('annuaire')
-  await expect(page.locator('.yw-search-result').first()).toBeVisible()
+  await expect(page.locator('.yw-item').first()).toBeVisible()
 
   const idle = await page.locator('#yw-search-results').boundingBox()
   await page.evaluate(() =>
@@ -60,7 +60,7 @@ test('typing a phrase fetches results over htmx', async ({ page }) => {
   await search
 
   await expect(
-    page.locator('#yw-search-results .yw-search-result').first(),
+    page.locator('#yw-search-results .yw-item').first(),
   ).toBeVisible()
 })
 
@@ -74,22 +74,22 @@ test('a phrase matching nothing says so', async ({ page }) => {
   await search
 
   await expect(page.locator('#yw-search-results')).toContainText(/aucun/i)
-  await expect(
-    page.locator('#yw-search-results .yw-search-result'),
-  ).toHaveCount(0)
+  await expect(page.locator('#yw-search-results .yw-item')).toHaveCount(0)
 })
 
-test('the facet row appears only once a search has results', async ({
+test('the facet row carries counts once a search has results', async ({
   page,
 }) => {
   await page.goto('/?search')
 
-  await expect(page.locator('#yw-search-results')).toContainText(/Saisissez/i)
-  await expect(page.locator('#yw-search-facets')).toHaveCount(0)
+  await expect(
+    page.locator('#yw-search-results .yw-item').first(),
+    'an empty phrase lists the wiki',
+  ).toBeVisible()
 
   await page.locator('#yw-search-phrase').fill('annuaire')
   await expect(
-    page.locator('#yw-search-results .yw-search-result').first(),
+    page.locator('#yw-search-results .yw-item').first(),
   ).toBeVisible()
 
   await expect(page.locator('#yw-search-facets')).toBeVisible()
@@ -101,7 +101,7 @@ test('the facet row appears only once a search has results', async ({
 test('choosing a facet narrows results and stays chosen', async ({ page }) => {
   await page.goto('/?search')
 
-  const results = page.locator('#yw-search-results .yw-search-result')
+  const results = page.locator('#yw-search-results .yw-item')
 
   await page.locator('#yw-search-phrase').fill('annuaire')
   await expect(results.first()).toBeVisible()
@@ -111,9 +111,7 @@ test('choosing a facet narrows results and stays chosen', async ({ page }) => {
   await page.locator('#yw-search-facets label[for="yw-facet-form"]').click()
 
   await expect(
-    page.locator(
-      '#yw-search-results .yw-search-result:not(.yw-search-result--form)',
-    ),
+    page.locator('#yw-search-results .yw-item:not(.yw-item--form)'),
   ).toHaveCount(0)
   await expect(results.first()).toBeVisible()
   expect(await results.count()).toBeLessThanOrEqual(all)
@@ -129,22 +127,22 @@ test('the display switcher changes the layout and stays chosen', async ({
   await page.goto('/?search')
   await expect(page.locator('#yw-search-form #yw-search-display')).toBeVisible()
   await page.locator('#yw-search-phrase').fill('wiki')
-  await expect(page.locator('.yw-search-result').first()).toBeVisible()
+  await expect(page.locator('.yw-item').first()).toBeVisible()
 
-  await expect(page.locator('.yw-search-results--accordion')).toHaveCount(0)
+  await expect(page.locator('.yw-items--accordion')).toHaveCount(0)
 
   await page.locator('label[for="yw-display-accordion"]').click()
-  await expect(page.locator('.yw-search-results--accordion')).toBeVisible()
-  await page.locator('.yw-search-results--accordion summary').first().click()
+  await expect(page.locator('.yw-items--accordion')).toBeVisible()
+  await page.locator('.yw-items--accordion summary').first().click()
   await expect(
-    page.locator('.yw-search-results--accordion details[open]').first(),
+    page.locator('.yw-items--accordion details[open]').first(),
   ).toBeVisible()
 
   await page.locator('label[for="yw-display-cards"]').click()
-  await expect(page.locator('.yw-search-results--cards')).toBeVisible()
+  await expect(page.locator('.yw-items--cards')).toBeVisible()
 
   await page.locator('#yw-search-phrase').fill('annuaire')
-  await expect(page.locator('.yw-search-results--cards')).toBeVisible()
+  await expect(page.locator('.yw-items--cards')).toBeVisible()
   await expect(
     page.locator('#yw-search-display input[value="cards"]'),
   ).toBeChecked()
@@ -155,18 +153,18 @@ test('a search is shareable: the URL carries it, and reloading restores it', asy
 }) => {
   await page.goto('/?search')
   await page.locator('#yw-search-phrase').fill('annuaire')
-  await expect(page.locator('.yw-search-result').first()).toBeVisible()
+  await expect(page.locator('.yw-item').first()).toBeVisible()
 
   await expect(page).toHaveURL(/[?&]q=annuaire/)
 
   await page.locator('label[for="yw-display-cards"]').click()
-  await expect(page.locator('.yw-search-results--cards')).toBeVisible()
+  await expect(page.locator('.yw-items--cards')).toBeVisible()
   await expect(page).toHaveURL(/display=cards/)
 
   const shared = page.url()
   await page.goto(shared)
   await expect(page.locator('#yw-search-phrase')).toHaveValue('annuaire')
-  await expect(page.locator('.yw-search-results--cards')).toBeVisible()
+  await expect(page.locator('.yw-items--cards')).toBeVisible()
 })
 
 test('the search page offers no page actions in its footer', async ({
@@ -199,15 +197,12 @@ test('leaving a result behind leaves the search behind with it', async ({
   page,
 }) => {
   await page.goto('/?search&q=accueil')
-  await expect(page.locator('.yw-search-result a').first()).toBeVisible({
+  await expect(page.locator('.yw-item a').first()).toBeVisible({
     timeout: 15000,
   })
 
-  const target = await page
-    .locator('.yw-search-result a')
-    .first()
-    .getAttribute('href')
-  await page.locator('.yw-search-result a').first().click()
+  const target = await page.locator('.yw-item a').first().getAttribute('href')
+  await page.locator('.yw-item a').first().click()
   await page.waitForFunction((href) => window.location.href === href, target, {
     timeout: 10000,
   })
@@ -234,7 +229,7 @@ test('the cards display gets the wiki card layout', async ({ page }) => {
       boxWidth: Math.round(box.getBoundingClientRect().width),
       cardWidth: Math.round(card.getBoundingClientRect().width),
       titleOverflows: Array.from(
-        document.querySelectorAll('.yw-search-result-title'),
+        document.querySelectorAll('.yw-item-title'),
       ).some((t) => t.scrollWidth > t.clientWidth + 1),
     }
   })

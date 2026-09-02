@@ -80,7 +80,7 @@
                     {% endif %}
                     {% if showAuthor %}
                         <span class="yw-page-info__author">
-                            {{ _t("BAZ_ECRITE") }} {{ author }}{% if contentLabel is not empty %} <span class="yw-page-info__type">({{ contentLabel }})</span>{% endif %}
+                            {{ _t("BAZ_ECRITE") }} {{ author }}{% if contentLabel is not empty %} <span class="yw-page-info__type">({% if contentUrl is defined and contentUrl is not empty %}<a href="{{ contentUrl }}">{{ contentLabel }}</a>{% else %}{{ contentLabel }}{% endif %})</span>{% endif %}
                         </span>
                     {% endif %}
                     {% if linkacls is defined %}

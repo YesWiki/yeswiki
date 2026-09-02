@@ -1,0 +1,77 @@
+{#
+  The two lines every list has: the search box beside the sort and the presentation switch, then the facets and the exports.
+  `hidden` carries the query the row must keep; `inputAttrs`, `controlAttrs` and `buttonAttrs` say how each control fires (a form submit, or an htmx request).
+  `facets` and `exports` are slots: HTML the caller renders, or leaves for an out-of-band swap to fill.
+#}
+{% set sortOptions = sortOptions|default([
+  { value: 'title:asc', label: _t('SORT_TITLE_ASC') },
+  { value: 'title:desc', label: _t('SORT_TITLE_DESC') },
+  { value: 'updated_at:desc', label: _t('SORT_UPDATED_DESC') },
+  { value: 'updated_at:asc', label: _t('SORT_UPDATED_ASC') },
+  { value: 'created_at:desc', label: _t('SORT_CREATED_DESC') },
+  { value: 'created_at:asc', label: _t('SORT_CREATED_ASC') },
+]) %}
+<form class="yw-list-toolbar {{ class|default('') }}" method="get" action="{{ action }}" id="{{ id }}"
+      {% for attribute, attributeValue in formAttrs|default({}) %}{{ attribute }}="{{ attributeValue }}" {% endfor %}>
+  {% for pair in hidden|default([]) %}
+    <input type="hidden" name="{{ pair.name }}" value="{{ pair.value }}">
+  {% endfor %}
+
+  <div class="yw-list-toolbar__search">
+    {% include '@core/_searchbox.twig' with {
+      name: searchName|default('keywords'),
+      id: inputId|default(id ~ '-phrase'),
+      value: keywords|default(''),
+      placeholder: _t('BAZ_RECHERCHER'),
+      button: _t('BAZ_RECHERCHER'),
+      autofocus: autofocus|default(false),
+      spinner_id: spinnerId|default(''),
+      attrs: inputAttrs|default({}),
+      button_attrs: buttonAttrs|default({})
+    } only %}
+
+    <div class="yw-list-toolbar__side">
+      <label class="sr-only" for="{{ id }}-sort">{{ _t('SORT_LABEL') }}</label>
+      <select class="yw-input yw-list-toolbar__sort" name="sort" id="{{ id }}-sort"
+              {% for attribute, attributeValue in controlAttrs|default({}) %}{{ attribute }}="{{ attributeValue }}" {% endfor %}>
+        <option value="">{{ sortDefaultLabel|default(_t('SORT_DEFAULT')) }}</option>
+        {% for option in sortOptions %}
+          <option value="{{ option.value }}" {{ sort|default('') == option.value ? 'selected' : '' }}>{{ option.label }}</option>
+        {% endfor %}
+      </select>
+
+      <fieldset class="yw-display-switch" id="{{ id }}-display">
+        <legend class="sr-only">{{ _t('FORM_SCREEN_DISPLAY') }}</legend>
+        {% for category in switcher %}
+          {% set active = display in category.presentations|map(p => p.name) %}
+          {% set target = active ? display : (category.presentations|first).name %}
+          <div class="yw-display-switch__group">
+            <label class="yw-display-switch__option" for="{{ id }}-display-{{ target }}" title="{{ category.label }}">
+              {{ icon(category.icon) }}
+              <span class="sr-only">{{ category.label }}</span>
+            </label>
+            <ul class="yw-display-switch__menu" aria-label="{{ category.label }}">
+              {% for presentation in category.presentations %}
+                <li>
+                  <input type="radio" name="display" value="{{ presentation.name }}" id="{{ id }}-display-{{ presentation.name }}"
+                         {{ display == presentation.name ? 'checked' : '' }}
+                         {% for attribute, attributeValue in controlAttrs|default({}) %}{{ attribute }}="{{ attributeValue }}" {% endfor %} />
+                  <label class="yw-display-switch__option" for="{{ id }}-display-{{ presentation.name }}">
+                    {{ icon(presentation.icon) }}
+                    <span>{{ presentation.label }}</span>
+                    {% if presentation.custom %}<span class="yw-display-switch__custom">{{ _t('PRESENTATION_CUSTOM') }}</span>{% endif %}
+                  </label>
+                </li>
+              {% endfor %}
+            </ul>
+          </div>
+        {% endfor %}
+      </fieldset>
+    </div>
+  </div>
+
+  <div class="yw-list-toolbar__filters">
+    {{ facets|default('')|raw }}
+    {{ exports|default('')|raw }}
+  </div>
+</form>

@@ -14,7 +14,7 @@ class SearchController extends YesWikiController
     #[Route('/search', methods: ['GET'], options: ['acl' => ['public']])]
     public function show(): Response
     {
-        $content = $this->getService(ActionRunner::class)->action('search', ['autofocus' => '1']);
+        $content = $this->getService(ActionRunner::class)->action('search', ['autofocus' => '1', 'limit' => '50']);
 
         return new Response(
             $this->getService(TemplateEngine::class)->renderPage((string)$content)

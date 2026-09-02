@@ -1,0 +1,17 @@
+<a class="yw-btn yw-btn--sm {{ class }}" title="{{ _t('BAZ_RSS') }}" href="{{ url({ tag: 'api/entries/rss', params: { id: key }}) }}">
+  {{ icon('rss') }}<span class="sr-only">{{ _t('BAZ_RSS') }}</span>
+</a>
+<a class="yw-btn yw-btn--sm {{ class }}" title="{{ _t('BAZ_CSV') }}" href="{{ url({ tag: 'api', handler: 'forms/' ~ key ~ '/entries/csv'}) }}">CSV</a>
+<a class="yw-btn yw-btn--sm {{ class }}" target="_blank" title="{{ _t('BAZ_JSON') }}" href="{{ url({ tag: 'api', handler: 'forms/' ~ key ~ '/entries'}) }}">JSON</a>
+{% if form.isSemantic %}
+  <a class="yw-btn yw-btn--sm {{ class }}" target="_blank" title="{{ _t('BAZ_JSON_LD') }}" href="{{ url({ tag: 'api', handler: 'forms/' ~ key ~ '/entries/json-ld'}) }}">JSON-LD</a>
+{% endif %}
+{% if form.isGeo %}
+  <a class="yw-btn yw-btn--sm {{ class }}" target="_blank" title="{{ _t('BAZ_GEOJSON') }}" href="{{ url({ tag: 'api', handler: 'forms/' ~ key ~ '/entries/geojson'}) }}">GeoJSON</a>
+{% endif %}
+{% if form.isDate %}
+  <a class="yw-btn yw-btn--sm {{ class }}" target="_blank" title="{{ _t('BAZ_ICAL') }}" href="{{ url({ tag: 'api', handler: 'forms/' ~ key ~ '/entries/ical'}) }}">iCal</a>
+{% endif %}
+{% if form.isActivityPubEnabled %}
+  <a class="yw-btn yw-btn--sm {{ class }}" target="_blank" title="{{ _t('BAZ_ACTIVITYPUB_ACTOR') }}" href="/actors/{{ key }}">ActivityPub</a>
+{% endif %}

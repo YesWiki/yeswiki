@@ -122,7 +122,6 @@ textarea.aceditor-textarea {
 .scroll-container-toolbar {
   transition: all ease-in 0.2s;
   position: sticky;
-
   top: var(--yw-sticky-toolbar-top);
   z-index: 6;
 }
@@ -370,7 +369,6 @@ form:not(#ACEditor) .ace-container .ace_scroller {
   font-size: 0.8rem;
   line-height: 1.4;
   color: var(--yw-text);
-
   font-family:
     system-ui,
     -apple-system,
@@ -470,7 +468,6 @@ form:not(#ACEditor) .ace-container .ace_scroller {
 
 .yw-wrapper-layer > * {
   position: absolute;
-
   left: calc(var(--yw-editor-gutter, 0px) - var(--yw-paint-inset, 0px));
   right: calc(var(--yw-editor-gutter, 0px) - var(--yw-paint-inset, 0px));
   margin: 0;
@@ -488,7 +485,6 @@ form:not(#ACEditor) .ace-container .ace_scroller {
   width: auto !important;
   min-width: 0 !important;
   max-width: none !important;
-
   box-sizing: border-box !important;
   height: 100% !important;
   max-height: none !important;
@@ -542,15 +538,12 @@ form:not(#ACEditor) .ace-container .ace_scroller {
     var(--yw-viewport-width, 100vw) - 2 * var(--yw-editor-inset)
   );
   --yw-editor-gutter: max(15px, (100% - 1170px) / 2);
-
   position: relative;
   left: 50%;
   right: 50%;
-
   width: var(--yw-editor-width) !important;
   margin-left: calc(var(--yw-editor-width) / -2);
   margin-right: calc(var(--yw-editor-width) / -2);
-
   border-top: 0;
 }
 
@@ -644,7 +637,6 @@ form:not(#ACEditor) .ace-container .ace_scroller {
   --textarea-background-color: var(--yw-surface-raised);
   --textarea-text-color: var(--yw-text);
   --panel-background-color: var(--yw-surface-raised);
-
   border-radius: var(--yw-radius-sm);
   font-family: inherit;
 }
@@ -684,7 +676,6 @@ form:not(#ACEditor) .ace-container .ace_scroller {
   border: var(--yw-border-width) solid var(--yw-border);
   background-color: var(--yw-surface-raised);
   color: var(--yw-text);
-
   font-size: 14px;
   line-height: 1.4;
 }
@@ -947,7 +938,6 @@ input[type='range'] {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-
   width: auto;
   padding: 0;
   border: 0;
@@ -972,32 +962,6 @@ input[type='range'] {
 .checkbox {
   margin-bottom: var(--yw-space-md-y);
   margin-top: 0;
-}
-
-.iconpicker-popover.popover {
-  width: 400px;
-}
-
-.iconpicker .iconpicker-item {
-  width: 20px;
-  height: 20px;
-  padding: var(--yw-space-md-y) var(--yw-space-md-x);
-  margin: 0 var(--yw-space-sm-x) var(--yw-space-sm-y) 0;
-  text-align: center;
-  cursor: pointer;
-  border-radius: var(--yw-radius-sm);
-  font-size: 20px;
-}
-
-.yw-form-group.color .sp-original-input-container .sp-add-on {
-  order: 2;
-  border-radius: 0 var(--yw-radius-sm) var(--yw-radius-sm) 0 !important;
-  border: none !important;
-  width: 4rem !important;
-}
-
-#center-position-map {
-  margin-bottom: var(--yw-space-lg-y);
 }
 
 .panels-config-container {
@@ -1107,16 +1071,13 @@ input[type='range'] {
   text-align: left;
   font-size: 1rem;
 }
+
 #actions-builder-panel .config-panel h3:first-child {
   margin-bottom: var(--yw-space-md-y);
 }
 
 #actions-builder-panel .text-muted {
   font-size: 0.8em;
-}
-
-#actions-builder-panel .input-group .sp-original-input-container {
-  flex-grow: 1;
 }
 
 #actions-builder-panel .input-group-addon + label {
@@ -1140,7 +1101,6 @@ input[type='range'] {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   column-gap: var(--yw-space-md-x);
   row-gap: var(--yw-space-md-y);
-
   align-items: start;
 }
 

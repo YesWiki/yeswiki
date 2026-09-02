@@ -109,7 +109,7 @@ class SearchSurfaceTest extends YesWikiTestCase
         $html = $this->getWiki()->services->get(ActionRunner::class)->action('search');
 
         $this->assertStringNotContainsString('yw-facets', $html);
-        $this->assertStringNotContainsString('<select', $html);
+        $this->assertStringNotContainsString('name="type"', $html);
     }
 
     public function testAnEmbeddedBoxCanBeScopedToOneTypeAndSuppressItsFacets(): void
@@ -123,12 +123,26 @@ class SearchSurfaceTest extends YesWikiTestCase
         $this->assertStringContainsString('name="facets"', $scoped);
     }
 
-    public function testAnEmptyPhrasePromptsRatherThanListingTheWholeWiki(): void
+    public function testAnEmptyPhraseListsTheWholeWikiLatestChangeFirst(): void
     {
-        $html = $this->fragment(['q' => '']);
+        $this->savePage(self::PAGE_TAG, 'Le potager', 'un texte sur la ciboulette');
 
-        $this->assertStringContainsString(_t('SEARCH_TYPE_SOMETHING'), $html);
-        $this->assertStringNotContainsString('yw-search-result ', $html);
+        $html = $this->fragment(['q' => '', 'limit' => 50]);
+
+        $this->assertStringContainsString(self::PAGE_TAG, $html, 'the page just saved is not first in the whole-wiki listing');
+        $this->assertStringContainsString('yw-item', $html);
+        $this->assertStringContainsString('yw-facet-all', $html, 'the "all" facet carries the count');
+    }
+
+    public function testASortOrdersTheWholeWikiByTitle(): void
+    {
+        $asc = $this->fragment(['q' => '', 'sort' => 'title:asc', 'limit' => 200]);
+        $desc = $this->fragment(['q' => '', 'sort' => 'title:desc', 'limit' => 200]);
+
+        preg_match_all('/class="yw-item__title"[^>]*>([^<]*)</', $asc, $up);
+        preg_match_all('/class="yw-item__title"[^>]*>([^<]*)</', $desc, $down);
+        $this->assertNotEmpty($up[1]);
+        $this->assertSame(array_reverse($up[1]), $down[1], 'title:desc is not the reverse of title:asc');
     }
 
     public function testAMatchIsRenderedAsALinkedResultWithItsType(): void
@@ -140,7 +154,45 @@ class SearchSurfaceTest extends YesWikiTestCase
         $this->assertStringContainsString('Le potager', $html);
         $this->assertStringContainsString(self::PAGE_TAG, $html);
         $this->assertStringContainsString(_t('SEARCH_TYPE_PAGE'), $html);
-        $this->assertStringContainsString('yw-search-result--page', $html);
+        $this->assertStringContainsString('yw-item__badge', $html, 'the type is the item badge');
+    }
+
+    public function testAFormResultLinksToTheFormsOwnScreenNotToBazaR(): void
+    {
+        $formManager = $this->getWiki()->services->get(\YesWiki\Content\Service\FormManager::class);
+        $id = 9770;
+        while ($formManager->getOne((string)$id) !== null) {
+            $id++;
+        }
+        $this->assertSame(0, $formManager->create([
+            'id' => (string)$id,
+            'label' => 'Herbier des ciboulettes',
+            'entry_title_template' => '{{bf_titre}}',
+            'template' => [['type' => 'texte', 'name' => 'bf_titre', 'label' => 'Titre']],
+        ]));
+        $form = $formManager->getOne((string)$id);
+        try {
+            $this->getWiki()->services->get(SearchIndexer::class)->index((string)$form['tag']);
+            $html = $this->fragment(['q' => 'ciboulettes', 'type' => 'form']);
+
+            $this->assertStringContainsString('?' . $form['tag'] . '"', $html, 'the form result does not open the form screen');
+            $this->assertStringNotContainsString('BazaR', $html);
+        } finally {
+            $this->getWiki()->services->get(SearchIndexer::class)->delete((string)$form['tag']);
+            $formManager->delete((string)$id);
+        }
+    }
+
+    public function testTheEntryFacetOffersTheFormsBehindIt(): void
+    {
+        $html = $this->fragment(['q' => '']);
+        if (!str_contains($html, 'id="yw-facet-entry"')) {
+            $this->markTestSkipped('this wiki has no entry to facet on');
+        }
+
+        $this->assertStringContainsString('yw-facet--group', $html, 'the entry facet has no menu');
+        $this->assertStringContainsString('name="form"', $html, 'the menu does not offer forms');
+        $this->assertStringContainsString('yw-search-export', $html, 'no export slot comes with the results');
     }
 
     public function testNoMatchSaysSoRatherThanRenderingAnEmptyList(): void
@@ -190,27 +242,23 @@ class SearchSurfaceTest extends YesWikiTestCase
         );
     }
 
-    /** Three ways to read the same results. */
-    public function testResultsCanBeRenderedAsAListAccordionOrCards(): void
+    /** The same results through the shared presentations a form's screen offers. */
+    public function testResultsAreDrawnByTheSharedPresentations(): void
     {
         $this->savePage(self::PAGE_TAG, 'Le potager', 'un texte sur la ciboulette');
 
         $action = $this->getWiki()->services->get(ActionRunner::class)->action('search');
         $this->assertStringContainsString('yw-display-switch', $action);
+        $this->assertStringContainsString('yw-list-toolbar__sort', $action, 'the toolbar offers a sort');
+        $this->assertStringContainsString('form-screen-display', str_replace('yw-search-form-display', 'form-screen-display', $action), 'the switch is the shared one');
 
         $list = $this->fragment(['q' => 'ciboulette']);
         $this->assertStringNotContainsString('yw-display-switch', $list);
-        $this->assertStringNotContainsString('yw-search-results--', $list, 'list is the unmodified default');
+        $this->assertStringContainsString('yw-items--list', $list, 'list is the default');
 
-        $accordion = $this->fragment(['q' => 'ciboulette', 'display' => 'accordion']);
-        $this->assertStringContainsString('yw-search-results--accordion', $accordion);
-
-        $this->assertStringContainsString('<details', $accordion);
-        $this->assertStringContainsString('yw-accordion__item', $accordion);
-        $this->assertStringContainsString('yw-accordion__summary', $accordion);
-
-        $cards = $this->fragment(['q' => 'ciboulette', 'display' => 'cards']);
-        $this->assertStringContainsString('yw-search-results--cards', $cards);
+        $this->assertStringContainsString('yw-items--card', $this->fragment(['q' => 'ciboulette', 'display' => 'card']));
+        $this->assertStringContainsString('yw-items--timeline', $this->fragment(['q' => 'ciboulette', 'display' => 'timeline']));
+        $this->assertStringContainsString('yw-items--list', $this->fragment(['q' => 'ciboulette', 'display' => 'accordion']), 'an unknown display falls back to the list');
     }
 
     /** A display mode is a visitor-supplied string that reaches a class name. */

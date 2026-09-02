@@ -1,0 +1,14 @@
+{% if exports is not empty %}
+  <div class="yw-dropdown yw-export-menu">
+    <button type="button" class="yw-btn yw-btn--sm" data-yw-dropdown-toggle aria-haspopup="true" id="{{ id }}">
+      {{ icon('download') }}
+      <span>{{ _t('BAZ_EXPORTER') }}</span>
+      <b class="yw-dropdown__caret"></b>
+    </button>
+    <ul class="yw-dropdown__menu yw-dropdown__menu--right" aria-labelledby="{{ id }}">
+      {% for export in exports %}
+        <li><a href="{{ export.href }}" target="_blank" rel="noopener">{% if export.icon %}{{ icon(export.icon) }} {% endif %}{{ export.label }}</a></li>
+      {% endfor %}
+    </ul>
+  </div>
+{% endif %}

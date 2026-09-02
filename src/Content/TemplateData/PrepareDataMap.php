@@ -3,6 +3,9 @@
 namespace YesWiki\Content\TemplateData;
 
 use YesWiki\Content\Attribute\PreparesTemplate;
+use YesWiki\Content\Entity\FieldRole;
+use YesWiki\Content\Service\FieldRoleResolver;
+use YesWiki\Content\Service\FormManager;
 use YesWiki\Search\Service\SearchManager;
 
 /** Leaflet's vocabulary, from the marker settings a webmaster set (was `EntryMapAction::formatArguments()`). */
@@ -82,7 +85,28 @@ class PrepareDataMap extends PrepareData
             'entrydisplay' => $arguments['entrydisplay'] ?? 'sidebar',
             'pagination' => -1,
             'query' => $this->getService(SearchManager::class)->aggregateQueries($arguments, $get->all()),
-            'geolocationfield' => $get->get('geolocationfield') ?? $arguments['geolocationfield'] ?? 'bf_geolocation',
+            'geolocationfield' => $get->get('geolocationfield') ?? $arguments['geolocationfield'] ?? $this->geolocationField($arguments),
         ];
+    }
+
+    /**
+     * The field the listed form marks as its location, since a form migrated from before the geolocation model keeps its old name.
+     *
+     * @param array<string, mixed> $arguments
+     */
+    private function geolocationField(array $arguments): string
+    {
+        $ids = $arguments['id'] ?? [];
+        $ids = is_array($ids) ? $ids : explode(',', (string)$ids);
+        $formManager = $this->getService(FormManager::class);
+        $roles = $this->getService(FieldRoleResolver::class);
+        foreach ($ids as $id) {
+            $name = $roles->propertyName($formManager->getOne(trim((string)$id)), FieldRole::GEOLOCATION);
+            if ($name !== null) {
+                return $name;
+            }
+        }
+
+        return 'bf_geolocation';
     }
 }

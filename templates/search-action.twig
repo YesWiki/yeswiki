@@ -1,63 +1,43 @@
-
-
 {{ include_css('styles/yw-entries.css') }}
 <div class="yw-search" id="yw-search">
-    <form id="yw-search-form" class="yw-search-form" onsubmit="return false;">
+    {% set htmxTarget = {
+        'hx-get': apiUrl,
+        'hx-target': '#yw-search-results',
+        'hx-include': '#yw-search-form',
+        'hx-indicator': '#yw-search-spinner'
+    } %}
+    {% set hidden = [{ name: 'limit', value: limit }] %}
+    {% if tags is defined and tags is not empty %}{% set hidden = hidden|merge([{ name: 'tags', value: tags }]) %}{% endif %}
+    {% if not showFilters %}{% set hidden = hidden|merge([{ name: 'type', value: type }, { name: 'facets', value: '0' }]) %}{% endif %}
 
-        {% set htmxTarget = {
-            'hx-get': apiUrl,
-            'hx-target': '#yw-search-results',
-            'hx-include': '#yw-search-form, #yw-search-facets',
-            'hx-indicator': '#yw-search-spinner'
-        } %}
-        {% include '@core/_searchbox.twig' with {
-            name: 'q',
-            id: 'yw-search-phrase',
-            value: phrase,
-            autofocus: autofocus,
-            spinner_id: 'yw-search-spinner',
-            attrs: htmxTarget|merge({'hx-trigger': 'input changed delay:300ms, search'}),
-            button_attrs: htmxTarget
-        } only %}
-
-        <fieldset class="yw-display-switch" id="yw-search-display">
-            <legend class="sr-only">{{ _t('SEARCH_DISPLAY') }}</legend>
-            {% for mode, modeIcon in {'list': 'layout-list', 'accordion': 'layout-rows', 'cards': 'layout-grid'} %}
-                <input type="radio" name="display" value="{{ mode }}" id="yw-display-{{ mode }}"
-                       {{ display == mode ? 'checked' : '' }}
-                       hx-get="{{ apiUrl }}"
-                       hx-target="#yw-search-results"
-                       hx-include="#yw-search-form, #yw-search-facets"
-                       hx-indicator="#yw-search-spinner"
-                       hx-trigger="change" />
-                <label class="yw-display-switch__option"
-                       for="yw-display-{{ mode }}"
-                       title="{{ _t('SEARCH_DISPLAY_' ~ mode|upper) }}">
-                    {{ icon(modeIcon) }}
-                    <span class="sr-only">{{ _t('SEARCH_DISPLAY_' ~ mode|upper) }}</span>
-                </label>
-            {% endfor %}
-        </fieldset>
-
-        <input type="hidden" name="limit" value="{{ limit }}" />
-        {% if tags is defined and tags is not empty %}
-
-            <input type="hidden" name="tags" value="{{ tags }}" />
-        {% endif %}
-        {% if not showFilters %}
-
-            <input type="hidden" name="type" value="{{ type }}" />
-            <input type="hidden" name="facets" value="0" />
-        {% endif %}
-    </form>
+    {{ include('@core/_list_toolbar.twig', {
+        id: 'yw-search-form',
+        inputId: 'yw-search-phrase',
+        action: url({ tag: 'search' }),
+        formAttrs: { onsubmit: 'return false;' },
+        hidden: hidden,
+        searchName: 'q',
+        keywords: phrase,
+        autofocus: autofocus,
+        spinnerId: 'yw-search-spinner',
+        sort: sort,
+        sortDefaultLabel: _t('SORT_RELEVANCE'),
+        display: display,
+        switcher: switcher,
+        facets: '<div id="yw-search-facets" class="yw-list-toolbar__facets"></div>',
+        exports: '<div id="yw-search-export" class="yw-list-toolbar__export"></div>',
+        inputAttrs: htmxTarget|merge({ 'hx-trigger': 'input changed delay:300ms, search' }),
+        controlAttrs: htmxTarget|merge({ 'hx-trigger': 'change' }),
+        buttonAttrs: htmxTarget,
+    }) }}
 
     <div class="yw-search-body">
-
         <div id="yw-search-results"
              class="yw-search-results-container"
              aria-live="polite"
              hx-get="{{ apiUrl }}"
-             hx-include="#yw-search-form, #yw-search-facets"
+             hx-include="#yw-search-form"
+             hx-vals='{{ { type: type, form: form|default('') }|json_encode|e('html_attr') }}'
              hx-indicator="#yw-search-spinner"
              hx-disinherit="*"
              hx-trigger="load, revealed">
