@@ -43,7 +43,6 @@ class FormManagerContentTest extends YesWikiTestCase
                 'id' => self::FORM_ID,
                 'label' => 'FormManagerContentTest form',
                 'template' => '',
-                'condition' => '',
             ]);
 
             $form = $formManager->getOne(self::FORM_ID);
@@ -71,7 +70,6 @@ class FormManagerContentTest extends YesWikiTestCase
                 'id' => self::FORM_ID,
                 'label' => 'FormManagerContentTest form',
                 'template' => '',
-                'condition' => '',
             ]);
 
             $byId = $formManager->getOne(self::FORM_ID);
@@ -96,13 +94,11 @@ class FormManagerContentTest extends YesWikiTestCase
                 'id' => self::FORM_ID,
                 'label' => 'SameLabel',
                 'template' => '',
-                'condition' => '',
             ]);
             $formManager->create([
                 'id' => self::OTHER_FORM_ID,
                 'label' => 'SameLabel',
                 'template' => '',
-                'condition' => '',
             ]);
 
             $first = $formManager->getOne(self::FORM_ID);
@@ -131,7 +127,6 @@ class FormManagerContentTest extends YesWikiTestCase
                 'id' => self::FORM_ID,
                 'label' => 'FormManagerContentTest acl form',
                 'template' => '',
-                'condition' => '',
             ]);
 
             $form = $formManager->getOne(self::FORM_ID);
@@ -156,7 +151,6 @@ class FormManagerContentTest extends YesWikiTestCase
                 'id' => self::FORM_ID,
                 'label' => 'OriginalTag',
                 'template' => '',
-                'condition' => '',
             ]);
             $formBeforeRename = $formManager->getOne(self::FORM_ID);
             $this->assertNotNull($formBeforeRename);
@@ -200,7 +194,6 @@ class FormManagerContentTest extends YesWikiTestCase
                 'id' => self::FORM_ID,
                 'label' => 'Original label',
                 'template' => '',
-                'condition' => '',
                 'sem_context' => 'https://www.w3.org/ns/activitystreams',
                 'sem_type' => 'Event',
             ]);
@@ -209,7 +202,6 @@ class FormManagerContentTest extends YesWikiTestCase
                 'id' => self::FORM_ID,
                 'label' => 'Updated label',
                 'template' => '',
-                'condition' => '',
             ]);
 
             $form = $formManager->getOne(self::FORM_ID);
@@ -234,7 +226,6 @@ class FormManagerContentTest extends YesWikiTestCase
                 'id' => self::FORM_ID,
                 'label' => 'FormManagerContentTest activitypub form',
                 'template' => '',
-                'condition' => '',
                 'activitypub_enable' => '1',
                 'activitypub_username' => 'someactor',
             ]);
@@ -252,7 +243,6 @@ class FormManagerContentTest extends YesWikiTestCase
                 'id' => self::FORM_ID,
                 'label' => 'FormManagerContentTest activitypub form updated',
                 'template' => '',
-                'condition' => '',
                 'activitypub_enable' => '1',
                 'activitypub_username' => 'someactor',
             ]);
@@ -275,7 +265,6 @@ class FormManagerContentTest extends YesWikiTestCase
                 'id' => self::FORM_ID,
                 'label' => 'FormManagerContentTest activitypub restore form',
                 'template' => '',
-                'condition' => '',
                 'activitypub_enable' => '1',
                 'activitypub_username' => 'preexisting',
             ]);
@@ -311,7 +300,6 @@ class FormManagerContentTest extends YesWikiTestCase
                 'id' => self::FORM_ID,
                 'label' => 'FormManagerContentTest formAndListIds form',
                 'template' => '',
-                'condition' => '',
             ]);
 
             $result = self::getWiki()->services->get(EntryDisplay::class)->formAndListNames();
@@ -335,7 +323,6 @@ class FormManagerContentTest extends YesWikiTestCase
             'id' => self::FORM_ID,
             'label' => 'FormManagerContentTest delete form',
             'template' => '',
-            'condition' => '',
         ]);
         $entryManager->create(self::FORM_ID, [
             'antispam' => 1,

@@ -49,4 +49,12 @@ class LangFunctionsTest extends TestCase
         $body = '{{lang="fr"}}premier{{lang="fr"}}second';
         $this->assertSame('second', self::inLanguage('fr')->sectionFor($body, 'en'));
     }
+
+    public function testPlaceholdersAreFilledInEitherSpelling(): void
+    {
+        $service = self::inLanguage('fr');
+        $service->loadTranslations(['LANG_FUNCTIONS_TEST_KEY' => 'role {role} of %{field}, {role} again']);
+
+        $this->assertSame('role start of bf_date, start again', $service->translate('LANG_FUNCTIONS_TEST_KEY', ['role' => 'start', 'field' => 'bf_date']));
+    }
 }

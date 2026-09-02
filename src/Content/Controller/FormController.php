@@ -21,6 +21,7 @@ use YesWiki\Content\Service\FormPropertiesService;
 use YesWiki\Core\YesWikiController;
 use YesWiki\Federation\Service\ActivityPubService;
 use YesWiki\Federation\Service\WebfingerService;
+use YesWiki\Identity\Service\AclOptions;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\CsrfTokenChecker;
 use YesWiki\Identity\Service\GroupOperationsService;
@@ -30,8 +31,10 @@ use YesWiki\Kernel\Service\LanguageService;
 use YesWiki\Kernel\Service\Redirector;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Entity\Presentation;
+use YesWiki\Render\Service\CustomTemplateService;
 use YesWiki\Render\Service\Performer;
 use YesWiki\Render\Service\PresentationCatalog;
+use YesWiki\Render\Service\ThemeManager;
 
 class FormController extends YesWikiController
 {
@@ -319,6 +322,7 @@ class FormController extends YesWikiController
     private function normalizeFormPropertiesPost(array $data): array
     {
         $data['entry_permit_activate_comments'] = !empty($data['entry_permit_activate_comments']);
+        unset($data['entry_template']);
 
         $metadatas = array_filter(array_map(function ($value) {
             return trim((string)$value);
@@ -365,14 +369,8 @@ class FormController extends YesWikiController
 
             $this->loadDesignerTranslations();
 
-            return $this->render('@core/forms/forms_form.twig', [
-                'form' => $form,
-                'formAndListIds' => $this->getService(EntryDisplay::class)->formAndListNames(),
-                'groupsList' => $this->getGroupsListIfEnabled(),
+            return $this->render('@core/forms/forms_form.twig', $this->designerContext($form) + [
                 'onlyOneEntryOptionAvailable' => $this->formManager->isAvailableOnlyOneEntryOption(),
-                'lockedFields' => ContentTypeSchema::lockedFieldNames($form[ContentTypeSchema::CONTENT_TYPE] ?? null),
-                'entryOnlyPropertiesAvailable' => ContentTypeSchema::acceptsEntryOnlyProperties($form[ContentTypeSchema::CONTENT_TYPE] ?? null),
-                'fieldRoles' => $this->fieldRolesForDesigner($form),
             ]);
         }
 
@@ -395,8 +393,9 @@ class FormController extends YesWikiController
             $post = $this->getRequest()->request;
             if ($post->has('valider')) {
                 $form = $this->formManager->getFromRawData($post->all());
-                if ($this->formIsValid($form)) {
+                if ($this->formIsValid($form) && $this->entryTemplateIsValid((string)$id)) {
                     $this->formManager->update($this->normalizeFormPropertiesPost($post->all()));
+                    $this->saveEntryTemplate((string)$id);
 
                     return $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href('', '', ['view' => 'formulaire', 'msg' => 'BAZ_FORMULAIRE_MODIFIE'], false));
                 }
@@ -404,14 +403,8 @@ class FormController extends YesWikiController
 
             $this->loadDesignerTranslations();
 
-            return $this->render('@core/forms/forms_form.twig', [
-                'form' => $form,
-                'formAndListIds' => $this->getService(EntryDisplay::class)->formAndListNames(),
-                'groupsList' => $this->getGroupsListIfEnabled(),
+            return $this->render('@core/forms/forms_form.twig', $this->designerContext($form) + [
                 'onlyOneEntryOptionAvailable' => $this->formManager->isAvailableOnlyOneEntryOption() && $this->formManager->isAvailableOnlyOneEntryMessage(),
-                'lockedFields' => ContentTypeSchema::lockedFieldNames($form[ContentTypeSchema::CONTENT_TYPE] ?? null),
-                'entryOnlyPropertiesAvailable' => ContentTypeSchema::acceptsEntryOnlyProperties($form[ContentTypeSchema::CONTENT_TYPE] ?? null),
-                'fieldRoles' => $this->fieldRolesForDesigner($form),
             ]);
         }
 
@@ -441,6 +434,156 @@ class FormController extends YesWikiController
         }
 
         return $this->rolesAreValid($form);
+    }
+
+    /**
+     * What the designer template needs beyond the form itself, the same for a new form and an edited one.
+     *
+     * @param array<string, mixed>|null $form
+     *
+     * @return array<string, mixed>
+     */
+    private function designerContext(?array $form): array
+    {
+        $aclOptions = $this->getService(AclOptions::class);
+        $contentType = $form[ContentTypeSchema::CONTENT_TYPE] ?? null;
+
+        return [
+            'form' => $form,
+            'formAndListIds' => $this->getService(EntryDisplay::class)->formAndListNames(),
+            'groupsList' => $this->getGroupsListIfEnabled(),
+            'lockedFields' => ContentTypeSchema::lockedFieldNames($contentType),
+            'entryOnlyPropertiesAvailable' => ContentTypeSchema::acceptsEntryOnlyProperties($contentType),
+            'fieldRoles' => $this->fieldRolesForDesigner($form),
+            'aclOptions' => [
+                AclOptions::READ => $aclOptions->for(AclOptions::READ, true),
+                AclOptions::WRITE => $aclOptions->for(AclOptions::WRITE, true),
+                AclOptions::COMMENT => $aclOptions->for(AclOptions::COMMENT, true),
+            ],
+            'presentation' => $this->presentationChoices($form),
+        ] + $this->entryTemplateContext($form);
+    }
+
+    /**
+     * The themes, squelettes, styles and presets an entry may be shown with, and what this form has picked.
+     *
+     * @param array<string, mixed>|null $form
+     *
+     * @return array<string, mixed>
+     */
+    private function presentationChoices(?array $form): array
+    {
+        $themeManager = $this->getService(ThemeManager::class);
+        $withoutCss = fn (array $files) => array_combine(
+            array_keys($files),
+            array_map(fn (string $file) => preg_replace('/\.css$/', '', $file), array_keys($files))
+        );
+
+        $themes = [];
+        foreach ($themeManager->getTemplates() as $name => $theme) {
+            $themes[$name] = [
+                'squelettes' => $theme['squelette'] ?? [],
+                'styles' => $theme['style'] ?? [],
+                'presets' => $withoutCss($theme['presets'] ?? []),
+            ];
+        }
+        $customPresets = [];
+        foreach (array_keys($themeManager->getCustomCSSPresets()) as $file) {
+            $customPresets[ThemeManager::CUSTOM_CSS_PRESETS_PREFIX . $file] = ThemeManager::CUSTOM_CSS_PRESETS_PREFIX . preg_replace('/\.css$/', '', $file);
+        }
+        $current = is_array($form['entry_metadatas'] ?? null) ? $form['entry_metadatas'] : [];
+
+        return [
+            'themes' => $themes,
+            'customPresets' => $customPresets,
+            'defaults' => [
+                'theme' => $themeManager->getFavoriteTheme(),
+                'skeleton' => $themeManager->getFavoriteSquelette(),
+                'style' => $themeManager->getFavoriteStyle(),
+                'css_preset' => $themeManager->getFavoritePreset(),
+            ],
+            'current' => [
+                'theme' => (string)($current['theme'] ?? ''),
+                'skeleton' => (string)($current['skeleton'] ?? ''),
+                'style' => (string)($current['style'] ?? ''),
+                'css_preset' => (string)($current['css_preset'] ?? ''),
+            ],
+        ];
+    }
+
+    /**
+     * The entry template editor: an admin's, for a form that already has an id to name the file by.
+     *
+     * @param array<string, mixed>|null $form
+     *
+     * @return array<string, mixed>
+     */
+    private function entryTemplateContext(?array $form): array
+    {
+        $id = (string)($form['id'] ?? '');
+        if ($id === '' || !$this->getService(AclService::class)->isAdmin()) {
+            return ['canEditTemplate' => false];
+        }
+        $service = $this->getService(CustomTemplateService::class);
+        $name = $this->entryTemplateName($id);
+        $post = $this->getRequest()->request;
+
+        return [
+            'canEditTemplate' => true,
+            'entryTemplate' => $post->has('entry_template') ? (string)$post->get('entry_template') : $service->read($name),
+            'entryTemplateFile' => CustomTemplateService::DIRECTORY . '/' . $name,
+            'entryTemplateWritable' => $service->isWritable(),
+        ];
+    }
+
+    private function entryTemplateName(string $id): string
+    {
+        return CustomTemplateService::CORE_NAMESPACE . '/fiche-' . $id . '.twig';
+    }
+
+    /** A posted entry template has to compile before anything is saved; a blank one just means "no template". */
+    private function entryTemplateIsValid(string $id): bool
+    {
+        $post = $this->getRequest()->request;
+        if (!$post->has('entry_template') || !$this->getService(AclService::class)->isAdmin()) {
+            return true;
+        }
+        $contents = trim((string)$post->get('entry_template'));
+        if ($contents === '') {
+            return true;
+        }
+
+        try {
+            $this->getService(CustomTemplateService::class)->check($this->entryTemplateName($id), $contents);
+        } catch (\RuntimeException $broken) {
+            Flash::error(_t('FORM_EDIT_ENTRY_TEMPLATE_INVALID', ['error' => $broken->getMessage()]));
+
+            return false;
+        }
+
+        return true;
+    }
+
+    /** Writes `custom/templates/core/fiche-<id>.twig`, or removes it when the editor was emptied. */
+    private function saveEntryTemplate(string $id): void
+    {
+        $post = $this->getRequest()->request;
+        if (!$post->has('entry_template') || !$this->getService(AclService::class)->isAdmin()) {
+            return;
+        }
+        $service = $this->getService(CustomTemplateService::class);
+        $name = $this->entryTemplateName($id);
+        $contents = str_replace(["\r\n", "\r"], "\n", (string)$post->get('entry_template'));
+
+        try {
+            if (trim($contents) === '') {
+                $service->delete($name);
+            } else {
+                $service->write($name, $contents);
+            }
+        } catch (\RuntimeException $failed) {
+            Flash::error($failed->getMessage());
+        }
     }
 
     /**

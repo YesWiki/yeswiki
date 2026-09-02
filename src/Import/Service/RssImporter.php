@@ -44,7 +44,6 @@ class RssImporter extends Importer
                 'id' => null,
                 'label' => 'Imports de flux RSS',
                 'description' => 'Imports de flux RSS',
-                'condition' => '',
                 ContentTypeSchema::CONTENT_TYPE => ContentTypeSchema::TYPE_ENTRY,
 
                 'template' => <<<EOT

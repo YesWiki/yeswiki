@@ -109,7 +109,7 @@ namespace YesWiki\Kernel\Service {
         {
             $result = $this->translations()[$textKey] ?? $textKey;
             foreach ($params as $transKey => $value) {
-                $result = str_replace('%{' . $transKey . '}', $value, $result);
+                $result = str_replace(['%{' . $transKey . '}', '{' . $transKey . '}'], (string)$value, $result);
             }
 
             return $result;

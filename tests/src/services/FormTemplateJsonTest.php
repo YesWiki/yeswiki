@@ -109,7 +109,6 @@ class FormTemplateJsonTest extends YesWikiTestCase
                 'id' => $formId,
                 'label' => 'FormTemplateJsonTest form',
                 'template' => self::LEGACY_TEMPLATE,
-                'condition' => '',
             ]);
 
             $form = $formManager->getOne($formId);

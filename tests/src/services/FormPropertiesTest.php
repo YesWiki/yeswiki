@@ -25,7 +25,6 @@ class FormPropertiesTest extends YesWikiTestCase
             'id' => self::FORM_ID,
             'label' => 'FormPropertiesTest form',
             'template' => '[{"type": "texte", "name": "bf_titre", "label": "Titre", "required": "1"}]',
-            'condition' => '',
         ]);
     }
 
@@ -93,7 +92,6 @@ class FormPropertiesTest extends YesWikiTestCase
                 'label' => 'FormPropertiesTest composite',
                 'template' => '[{"type": "texte", "name": "bf_nom", "label": "Nom", "required": "1"},'
                     . '{"type": "texte", "name": "bf_prenom", "label": "Prénom"}]',
-                'condition' => '',
                 'entry_title_template' => '{{bf_prenom}} {{bf_nom}}',
             ]);
 

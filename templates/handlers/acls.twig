@@ -1,0 +1,39 @@
+<h1>{{ _t('YW_ACLS_LIST') }} {{ pageLink|raw }}</h1>
+
+{% if hibernated %}
+  <div class="yw-alert yw-alert--warning">{{ _t('WIKI_IN_HIBERNATION') }}</div>
+{% endif %}
+
+<form method="post" action="{{ url({handler:'acls'}) }}" class="yw-acls">
+  <input type="hidden" name="csrf-token" value="{{ csrfToken({id:'main',refresh:false})|e('html_attr') }}">
+
+  {% for privilege, label in {read: _t('ACLS_READ'), write: _t('ACLS_WRITE'), comment: _t('YW_ACLS_COMMENT')} %}
+    {% if privilege != 'comment' or not hasParent %}
+      <fieldset class="yw-form-group">
+        <legend class="yw-form-label">{{ label }}</legend>
+        {{ include('@core/_acl-picker.twig', {
+          name: privilege ~ '_acl',
+          value: acls[privilege],
+          options: options[privilege],
+          disabled: hibernated,
+          disabledTitle: _t('WIKI_IN_HIBERNATION'),
+        }) }}
+      </fieldset>
+    {% endif %}
+  {% endfor %}
+
+  <div class="yw-form-group">
+    <label class="yw-form-label" for="acls-newowner">{{ _t('YW_CHANGE_OWNER') }}</label>
+    <select class="yw-input" id="acls-newowner" name="newowner"{% if hibernated %} disabled{% endif %}>
+      <option value="">{{ _t('YW_CHANGE_NOTHING') }}</option>
+      {% for user in users %}
+        <option value="{{ user }}">{{ user }}</option>
+      {% endfor %}
+    </select>
+  </div>
+
+  <div class="yw-form-group">
+    <button type="submit" class="yw-btn yw-btn--primary" accesskey="s"{% if hibernated %} disabled{% endif %}>{{ _t('SAVE') }}</button>
+    <a class="yw-btn yw-btn--sm" href="{{ url({}) }}">{{ _t('YW_CANCEL') }}</a>
+  </div>
+</form>

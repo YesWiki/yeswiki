@@ -1,17 +1,19 @@
 import registry, { paletteEntries } from './registry.js'
-import { parseFields, serializeFields } from './converter.js'
+import { parseFields, resolveWikiType, serializeFields } from './converter.js'
+import { refreshDesignerData } from './fields/commons/attributes.js'
 
-const container = document.getElementById('form-builder-container')
-const textarea = document.getElementById('form-builder-text')
+let container
+let textarea
+let lockedFieldNames = []
 
-const lockedFieldNames = (() => {
+function readLockedFieldNames() {
   try {
     const declared = JSON.parse(container?.dataset.lockedFields || '[]')
     return Array.isArray(declared) ? declared : []
   } catch {
     return []
   }
-})()
+}
 
 function isLocked(field) {
   return lockedFieldNames.includes(field?.data?.name)
@@ -127,8 +129,8 @@ function syncToTextarea() {
 }
 
 const CUSTOM_TITLE = '__custom__'
-const titleSelect = document.getElementById('entry-title-select')
-const titleCustom = document.getElementById('entry-title-custom')
+let titleSelect
+let titleCustom
 
 function updateTitleSelect() {
   if (!titleSelect || !titleCustom) return
@@ -169,7 +171,8 @@ function updateRoleSelects() {
     select.append(auto)
 
     fields.forEach(({ type, data }) => {
-      if (!data.name || (types.length > 0 && !types.includes(type))) return
+      const wikiType = resolveWikiType(type, data)
+      if (!data.name || (types.length > 0 && !types.includes(wikiType))) return
       const option = document.createElement('option')
       option.value = data.name
       option.textContent = data.label
@@ -211,7 +214,15 @@ let railTitleEl
 let railBackEl
 let railWanted = true
 
-function boot() {
+function boot(root) {
+  container = root
+  textarea = document.getElementById('form-builder-text')
+  if (!textarea) return
+  titleSelect = document.getElementById('entry-title-select')
+  titleCustom = document.getElementById('entry-title-custom')
+  lockedFieldNames = readLockedFieldNames()
+  refreshDesignerData(container)
+  document.getElementById('yw-fb-rail')?.remove()
   container.classList.add('yw-fb')
   container.innerHTML = ''
   errorEl = el('<div class="yw-fb__error hide"></div>')
@@ -243,7 +254,108 @@ function boot() {
   initCanvasSort()
   bindTabsAndSubmit()
   bindTitleSelect()
+  updateRoleSelects()
   initRail()
+  initPresentation()
+  initEntryTemplate()
+}
+
+/** The squelette, style and preset selects follow the theme select. */
+function initPresentation() {
+  const block = document.querySelector('[data-yw-presentation]')
+  const themeSelect = block?.querySelector('[data-yw-presentation-theme]')
+  if (!block || !themeSelect) return
+  let themes = {}
+  let customPresets = {}
+  try {
+    themes = JSON.parse(block.dataset.themes || '{}')
+    customPresets = JSON.parse(block.dataset.customPresets || '{}')
+  } catch {
+    return
+  }
+  const wikiTheme =
+    themeSelect.options[0]?.textContent.match(/\(([^)]*)\)/)?.[1]
+  themeSelect.addEventListener('change', () => {
+    const theme = themes[themeSelect.value || wikiTheme] || {}
+    block.querySelectorAll('[data-yw-presentation-part]').forEach((select) => {
+      const part = select.dataset.ywPresentationPart
+      const wanted = select.value
+      const files = {
+        ...(theme[part] || {}),
+        ...(part === 'presets' ? customPresets : {}),
+      }
+      Array.from(select.options)
+        .slice(1)
+        .forEach((option) => option.remove())
+      Object.entries(files).forEach(([file, label]) => {
+        select.append(new Option(label, file, false, file === wanted))
+      })
+    })
+  })
+}
+
+/** The entry template editor: Ace, fetched once the section opens, plus a starter naming every field. */
+function initEntryTemplate() {
+  const source = document.querySelector('[data-yw-twig-editor]')
+  if (!source) return
+  let editor = null
+
+  const setText = (text) => {
+    if (editor) {
+      editor.setValue(text)
+      editor.ace.clearSelection()
+    } else {
+      source.value = text
+    }
+  }
+
+  const mount = async () => {
+    if (editor || source.readOnly) return
+    const { default: AceWrapper } = await import('../ace-wrapper.js')
+    if (editor) return
+    const host = document.createElement('div')
+    host.className = 'yw-templates__ace'
+    source.parentNode.insertBefore(host, source)
+    source.hidden = true
+    editor = new AceWrapper(host, { mode: 'ace/mode/twig', rows: 14 })
+    editor.setValue(source.value)
+    editor.ace.clearSelection()
+    editor.ace.moveCursorTo(0, 0)
+    editor.disableAutocompletion()
+    editor.on('change', () => {
+      source.value = editor.getValue()
+    })
+  }
+
+  const section = source.closest('details')
+  if (!section || section.open) {
+    mount()
+  } else {
+    section.addEventListener('toggle', () => section.open && mount(), {
+      once: true,
+    })
+  }
+  source.form?.addEventListener('submit', () => {
+    if (editor) source.value = editor.getValue()
+  })
+
+  document
+    .querySelector('[data-yw-fb-template-starter]')
+    ?.addEventListener('click', () => {
+      const named = fields.filter(({ data }) => data.name)
+      const lines = [
+        `{# ${_t('FORM_EDIT_ENTRY_TEMPLATE_STARTER_COMMENT')} #}`,
+        '<div class="BAZ_fiche_custom">',
+        ...named.map(({ data }, index) =>
+          index === 0
+            ? `  <h1 class="BAZ_fiche_titre">{{ html.${data.name}|raw }}</h1>`
+            : `  <div class="BAZ_texte yw-field-${data.name}">{{ html.${data.name}|raw }}</div>`,
+        ),
+        '</div>',
+        '',
+      ]
+      setText(lines.join('\n'))
+    })
 }
 
 function showError(message) {
@@ -871,6 +983,4 @@ function bindTabsAndSubmit() {
   })
 }
 
-if (container && textarea) {
-  boot()
-}
+ywInitEach('#form-builder-container', boot)

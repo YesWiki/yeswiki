@@ -332,7 +332,7 @@ class FormPropertiesService
     }
 
     /**
-     * Applies the form's entry_metadatas {theme, skeleton, style, background_image, css_preset} to the saved entry's page metadata (retired metadatas field).
+     * Applies the form's entry_metadatas {theme, skeleton, style, css_preset} to the saved entry's page metadata (retired metadatas field).
      *
      * @param array<string, mixed> $form
      * @param array<string, mixed> $entry
@@ -348,7 +348,6 @@ class FormPropertiesService
             'theme' => empty($config['theme']) ? THEME_PAR_DEFAUT : $config['theme'],
             'style' => empty($config['style']) ? CSS_PAR_DEFAUT : $config['style'],
             'squelette' => empty($config['skeleton']) ? SQUELETTE_PAR_DEFAUT : $config['skeleton'],
-            'bgimg' => $config['background_image'] ?? '',
         ] + (
             empty($config['css_preset']) ? [] : ['favorite_preset' => $config['css_preset']]
         ));

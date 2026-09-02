@@ -629,7 +629,6 @@ class YesWikiToYesWikiImporter extends Importer
             'sem_reverse_template' => $remote['sem_reverse_template'] ?? $remote['bn_sem_reverse_template'] ?? '',
 
             'activitypub_username' => '',
-            'condition' => $remote['condition'] ?? $remote['bn_condition'] ?? '',
             'only_one_entry' => $remote['only_one_entry'] ?? $remote['bn_only_one_entry'] ?? 'N',
             'only_one_entry_message' => $remote['only_one_entry_message'] ?? $remote['bn_only_one_entry_message'] ?? '',
         ];

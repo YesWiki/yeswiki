@@ -52,7 +52,7 @@ export function parseFields(text, registry) {
     })
 }
 
-function resolveWikiType(type, data) {
+export function resolveWikiType(type, data) {
   const original = data._wikiType
   const compatible = (resolution) =>
     resolution.type === type &&

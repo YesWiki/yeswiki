@@ -185,6 +185,20 @@ class UserOperationsService extends YesWikiController
         if ($this->isRunner($user)) {
             throw new DeleteUserException(_t('USER_CANT_DELETE_ONESELF') . '.');
         }
+        $this->purge($user);
+    }
+
+    /**
+     * Removes the account and every trace of it: the groups it was alone in, its memberships, what it owned. No check on who asks -- the console is an operator by definition; the web goes through delete().
+     *
+     * @throws DeleteUserException
+     * @throws \Exception
+     */
+    public function purge(User $user): void
+    {
+        if ($this->hibernationService->isWikiHibernated()) {
+            throw new \Exception(_t('WIKI_IN_HIBERNATION'));
+        }
         $this->deleteGroupsWhereUserIsAlone($user);
         $this->deleteUserFromEveryGroup($user);
         $this->removeOwnership($user);

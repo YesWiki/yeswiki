@@ -2525,7 +2525,7 @@ blockquote > cite {
 }
 
 .yw-designer__sidebar {
-  --yw-rail-top: calc(var(--yw-sticky-toolbar-top) + 64px);
+  --yw-rail-top: calc(var(--yw-docked-top) + 64px);
   position: fixed;
   top: var(--yw-rail-top);
   border-radius: var(--yw-radius-md) 0 0 var(--yw-radius-md);
@@ -4676,4 +4676,21 @@ figcaption *:last-child {
 #audio-player {
   with: 100%;
   display: block;
+}
+
+/* An access list as checkboxes plus one line for the rest (templates/_acl-picker.twig). */
+
+.yw-acl__options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--yw-space-sm-y) var(--yw-space-md-x);
+  margin-bottom: var(--yw-space-sm-y);
+}
+
+.yw-acl__option {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--yw-space-sm-y) var(--yw-space-sm-x);
+  margin: 0;
+  font-weight: normal;
 }

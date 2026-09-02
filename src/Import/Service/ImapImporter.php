@@ -45,7 +45,6 @@ class ImapImporter extends Importer
                 'id' => null,
                 'label' => 'Imports de mails depuis imap',
                 'description' => 'Imports de mails depuis imap',
-                'condition' => '',
                 ContentTypeSchema::CONTENT_TYPE => ContentTypeSchema::TYPE_ENTRY,
 
                 'template' => <<<EOT

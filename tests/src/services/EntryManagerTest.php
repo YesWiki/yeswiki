@@ -27,7 +27,6 @@ class EntryManagerTest extends YesWikiTestCase
             'id' => self::FORM_ID,
             'label' => 'EntryManager regression test form',
             'template' => '',
-            'condition' => '',
         ]);
 
         unset($GLOBALS['wiki']);

@@ -1,0 +1,15 @@
+{# An access list as checkboxes plus a line for the rest: name, value (one rule per line), options from AclOptions, disabled. #}
+{{ include_javascript('javascripts/acl-picker.js') }}
+<div class="yw-acl" data-yw-acl>
+  <textarea class="yw-acl__source" name="{{ name }}" hidden{% if disabled|default(false) %} disabled title="{{ disabledTitle|default('') }}"{% endif %}>{{ value|default('') }}</textarea>
+  <div class="yw-acl__options">
+    {% for option in options %}
+      <label class="yw-acl__option">
+        <input type="checkbox" value="{{ option.value }}" data-yw-acl-option{% if disabled|default(false) %} disabled{% endif %}>
+        <span>{{ option.label }}</span>
+      </label>
+    {% endfor %}
+  </div>
+  <input type="text" class="yw-input yw-acl__extra" data-yw-acl-extra
+    placeholder="{{ _t('ACL_PICKER_OTHER') }}" aria-label="{{ _t('ACL_PICKER_OTHER') }}"{% if disabled|default(false) %} disabled{% endif %}>
+</div>

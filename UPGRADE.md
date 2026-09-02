@@ -77,6 +77,13 @@ upgrading and keep that instead. Do not skip this step: everything below is a on
 
    The `{{update}}` screen runs them too, so if you upgraded that way they have already run.
 
+   `migrate` ends by emptying `cache/container/` and `cache/templates/`. The compiled container
+   is keyed on the config, `services.yaml` and `composer.lock`, not on the source files, so a
+   release that adds a service class inside an existing module would otherwise keep serving the
+   old container. `./yeswicli cache:clear` does the same on its own, whenever you pull code;
+   `./yeswicli cache:clear --all` empties the whole of `cache/`, thumbnails and remote copies
+   included, keeping only the maintenance lock.
+
    > **Read the output.** `migrate` prints one line per migration and **exits 0 even when a
    > migration fails** — `MigrationService` collects per-migration errors into a message list
    > rather than aborting. A failure looks like `AU_ERROR | Migration X (date) failed with

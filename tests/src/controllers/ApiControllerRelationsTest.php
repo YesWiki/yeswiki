@@ -35,13 +35,11 @@ class ApiControllerRelationsTest extends YesWikiTestCase
             'id' => self::ENTITY_FORM_ID,
             'label' => 'ApiControllerRelationsTest entity form',
             'template' => '',
-            'condition' => '',
         ]);
         $formManager->create([
             'id' => self::RELATION_FORM_ID,
             'label' => 'ApiControllerRelationsTest relation form',
             'template' => '',
-            'condition' => '',
         ]);
 
         $originalRelationFormId = $wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['qrcode_config']['relation_form_id'];

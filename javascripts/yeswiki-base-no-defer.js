@@ -14,9 +14,8 @@ function _t(message, replacements = {}) {
     }
   }
   for (const key in replacements) {
-    while (translation.includes(`{${key}}`)) {
-      translation = translation.replace(`{${key}}`, replacements[key])
-    }
+    translation = translation.replaceAll(`%{${key}}`, replacements[key])
+    translation = translation.replaceAll(`{${key}}`, replacements[key])
   }
   return translation
 }

@@ -6,6 +6,7 @@ use Psr\Container\ContainerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use YesWiki\Kernel\Service\CacheClearer;
 use YesWiki\Kernel\Service\MigrationService;
 
 class MigrateCommand extends Command
@@ -36,6 +37,11 @@ class MigrateCommand extends Command
 
         foreach ($messages as $message) {
             $output->writeln("{$message['status']} | {$message['text']}");
+        }
+
+        $clearer = $this->services->has(CacheClearer::class) ? $this->services->get(CacheClearer::class) : new CacheClearer();
+        foreach ($clearer->clear() as $cache => $count) {
+            $output->writeln("{$cache} cleared ({$count} " . ($count === 1 ? 'entry' : 'entries') . ')');
         }
 
         return Command::SUCCESS;

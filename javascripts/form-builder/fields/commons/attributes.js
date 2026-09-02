@@ -1,64 +1,75 @@
 import openRemoteModal from '../../../helpers/remote-modal.js'
 
-const _listAndFormUserValues = {}
-try {
-  const template = JSON.parse(
-    document.getElementById('form-builder-text')?.value ?? '[]',
-  )
-  if (Array.isArray(template)) {
-    template.forEach((field) => {
-      const value = field?.linked_object
-      if (
-        value &&
-        !(value in formAndListIds.forms) &&
-        !(value in formAndListIds.lists)
-      ) {
-        _listAndFormUserValues[value] = value
-      }
-    })
-  }
-} catch {}
-export const listAndFormUserValues = _listAndFormUserValues
-
-export const visibilityOptions = {
+const visibilityOptions = {
   '*': _t('EVERYONE'),
   '+': _t('IDENTIFIED_USERS'),
   '%': _t('BAZ_FORM_EDIT_OWNER_AND_ADMINS'),
   '@admins': _t('MEMBER_OF_GROUP', { groupName: 'admin' }),
 }
 
-const _formattedGroupList = {}
-groupsList.forEach((group) => {
-  _formattedGroupList[`@${group}`] = _t('MEMBER_OF_GROUP', { groupName: group })
-})
-export const formattedGroupList = _formattedGroupList
+let formAndListIds = { forms: {}, lists: {} }
+let listAndFormUserValues = {}
 
-export const aclsOptions = {
-  ...visibilityOptions,
-  ...{
-    user: _t('BAZ_FORM_EDIT_USER'),
-  },
-  ...formattedGroupList,
+function parseJson(text, fallback) {
+  try {
+    const parsed = JSON.parse(text || '')
+    return parsed && typeof parsed === 'object' ? parsed : fallback
+  } catch {
+    return fallback
+  }
 }
 
-export const aclsCommentOptions = {
-  ...{ 'comments-closed': _t('BAZ_FORM_EDIT_COMMENTS_CLOSED') },
-  ...Object.fromEntries(
-    Object.entries(visibilityOptions).filter(([key]) => key !== '*'),
-  ),
-  ...{ user: _t('BAZ_FORM_EDIT_USER') },
-  ...formattedGroupList,
+function replaceEntries(target, source) {
+  Object.keys(target).forEach((key) => delete target[key])
+  Object.assign(target, source)
+}
+
+/** Fills the page-dependent option lists in place at boot, since field configs spread these objects at import time. */
+export function refreshDesignerData(container) {
+  const groups = parseJson(container?.dataset.groups, [])
+  formAndListIds = {
+    forms: {},
+    lists: {},
+    ...parseJson(container?.dataset.formAndListIds, {}),
+  }
+  const groupOptions = {}
+  ;(Array.isArray(groups) ? groups : []).forEach((group) => {
+    groupOptions[`@${group}`] = _t('MEMBER_OF_GROUP', { groupName: group })
+  })
+  listAndFormUserValues = {}
+  const template = parseJson(
+    document.getElementById('form-builder-text')?.value,
+    [],
+  )
+  ;(Array.isArray(template) ? template : []).forEach((field) => {
+    const value = field?.linked_object
+    if (
+      value &&
+      !(value in formAndListIds.forms) &&
+      !(value in formAndListIds.lists)
+    ) {
+      listAndFormUserValues[value] = value
+    }
+  })
+  replaceEntries(readConf.options, { ...visibilityOptions, ...groupOptions })
+  replaceEntries(writeConf.options, { ...visibilityOptions, ...groupOptions })
+  replaceEntries(selectConf.linked_object.options, {
+    '': '',
+    ...formAndListIds.lists,
+    ...formAndListIds.forms,
+    ...listAndFormUserValues,
+  })
 }
 
 export const readConf = {
   label: _t('BAZ_FORM_EDIT_CAN_BE_READ_BY'),
-  options: { ...visibilityOptions, ...formattedGroupList },
+  options: { ...visibilityOptions },
   multiple: true,
 }
 
 export const writeConf = {
   label: _t('BAZ_FORM_EDIT_CAN_BE_WRITTEN_BY'),
-  options: { ...visibilityOptions, ...formattedGroupList },
+  options: { ...visibilityOptions },
   multiple: true,
 }
 
@@ -97,7 +108,7 @@ export function enumEditorSetup(api) {
   const updateOptions = () => {
     const source = api.getValue('subtype2') === 'form' ? 'forms' : 'lists'
     api.setOptions('linked_object', {
-      ...{ '': '' },
+      '': '',
       ...formAndListIds[source],
       ...listAndFormUserValues,
     })
@@ -163,12 +174,7 @@ export const selectConf = {
   },
   linked_object: {
     label: _t('BAZ_FORM_EDIT_SELECT_LIST_FORM_ID'),
-    options: {
-      ...{ '': '' },
-      ...formAndListIds.lists,
-      ...formAndListIds.forms,
-      ...listAndFormUserValues,
-    },
+    options: { '': '' },
   },
   default: {
     label: _t('BAZ_FORM_EDIT_SELECT_DEFAULT'),

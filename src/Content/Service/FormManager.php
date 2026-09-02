@@ -215,7 +215,6 @@ class FormManager
         'bn_sem_reverse_template' => 'sem_reverse_template',
         'bn_only_one_entry' => 'only_one_entry',
         'bn_only_one_entry_message' => 'only_one_entry_message',
-        'bn_condition' => 'condition',
     ];
 
     private function resolveTagFromNumericId(string $id): ?string
@@ -518,7 +517,6 @@ class FormManager
             'sem_reverse_template' => $data['sem_reverse_template'] ?? '',
             'only_one_entry' => (isset($data['only_one_entry']) && $data['only_one_entry'] === 'Y') ? 'Y' : 'N',
             'only_one_entry_message' => empty($data['only_one_entry_message']) ? '' : $data['only_one_entry_message'],
-            'condition' => $data['condition'] ?? '',
         ];
         foreach (FormPropertiesService::OPTIONAL_PROPERTIES as $property) {
             if (isset($data[$property])) {

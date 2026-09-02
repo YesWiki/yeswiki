@@ -63,10 +63,11 @@
 
     <div class="yw-tabs__content">
       <div role="tabpanel" class="yw-tabs__pane active" id="formbuilder">
-        <!-- container where the form builder will be rendered -->
         <div
           id="form-builder-container"
           data-locked-fields="{{ (lockedFields|default([]))|json_encode }}"
+          data-groups="{{ (groupsList|default([]))|json_encode }}"
+          data-form-and-list-ids="{{ (formAndListIds|default({}))|json_encode }}"
         ></div>
       </div>
       <div role="tabpanel" class="yw-tabs__pane" id="code">
@@ -125,18 +126,20 @@
 
     {% embed '@core/_accordion-item.twig' with { summary: _t('FORM_EDIT_PERMISSIONS') } %}
       {% block body %}
-        <div class="yw-form-group">
-          <label class="yw-form-label">{{ _t('BAZ_FORM_EDIT_ACL_READ_LABEL') }}</label>
-          <input class="yw-input" name="entry_read_access" type="text" value="{{ form.entry_read_access }}" placeholder="*" />
-        </div>
-        <div class="yw-form-group">
-          <label class="yw-form-label">{{ _t('BAZ_FORM_EDIT_ACL_WRITE_LABEL') }}</label>
-          <input class="yw-input" name="entry_write_access" type="text" value="{{ form.entry_write_access }}" placeholder="%" />
-        </div>
-        <div class="yw-form-group">
-          <label class="yw-form-label">{{ _t('BAZ_FORM_EDIT_ACL_COMMENT_LABEL') }}</label>
-          <input class="yw-input" name="entry_comment_access" type="text" value="{{ form.entry_comment_access }}" placeholder="comments-closed" />
-        </div>
+        {% for privilege, label in {
+          read: _t('BAZ_FORM_EDIT_ACL_READ_LABEL'),
+          write: _t('BAZ_FORM_EDIT_ACL_WRITE_LABEL'),
+          comment: _t('BAZ_FORM_EDIT_ACL_COMMENT_LABEL'),
+        } %}
+          <fieldset class="yw-form-group">
+            <legend class="yw-form-label">{{ label }}</legend>
+            {{ include('@core/_acl-picker.twig', {
+              name: 'entry_' ~ privilege ~ '_access',
+              value: attribute(form, 'entry_' ~ privilege ~ '_access')|default(''),
+              options: aclOptions[privilege],
+            }) }}
+          </fieldset>
+        {% endfor %}
         <div class="yw-form-group">
           <label>
             <input type="checkbox" name="entry_permit_activate_comments" value="1" {% if form.entry_permit_activate_comments %}checked{% endif %}>
@@ -146,28 +149,68 @@
       {% endblock %}
     {% endembed %}
 
-    {% embed '@core/_accordion-item.twig' with { summary: _t('FORM_EDIT_PRESENTATION') } %}
+    {% embed '@core/_accordion-item.twig' with { summary: _t('FORM_EDIT_PRESENTATION'), attrs: 'id="entry-presentation"' } %}
       {% block body %}
-        <div class="yw-form-group">
-          <label class="yw-form-label">{{ _t('BAZ_FORM_EDIT_METADATA_THEME_LABEL') }}</label>
-          <input class="yw-input" name="entry_metadatas[theme]" type="text" value="{{ form.entry_metadatas.theme ?? '' }}" />
+        <div class="yw-fb__presentation" data-yw-presentation data-themes="{{ presentation.themes|json_encode }}" data-custom-presets="{{ presentation.customPresets|json_encode }}">
+          {% set defaultTheme = presentation.current.theme ?: presentation.defaults.theme %}
+          {% set theme = presentation.themes[defaultTheme] ?? { squelettes: {}, styles: {}, presets: {} } %}
+          <div class="yw-form-group">
+            <label class="yw-form-label" for="entry-theme">{{ _t('BAZ_FORM_EDIT_METADATA_THEME_LABEL') }}</label>
+            <select class="yw-input" id="entry-theme" name="entry_metadatas[theme]" data-yw-presentation-theme>
+              <option value="">{{ _t('FORM_EDIT_PRESENTATION_DEFAULT', { value: presentation.defaults.theme }) }}</option>
+              {% for name in presentation.themes|keys %}
+                <option value="{{ name }}"{% if name == presentation.current.theme %} selected{% endif %}>{{ name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="yw-form-group">
+            <label class="yw-form-label" for="entry-skeleton">{{ _t('BAZ_FORM_EDIT_METADATA_SQUELETON_LABEL') }}</label>
+            <select class="yw-input" id="entry-skeleton" name="entry_metadatas[skeleton]" data-yw-presentation-part="squelettes">
+              <option value="">{{ _t('FORM_EDIT_PRESENTATION_DEFAULT', { value: presentation.defaults.skeleton|replace({'.twig': ''}) }) }}</option>
+              {% for file, label in theme.squelettes %}
+                <option value="{{ file }}"{% if file == presentation.current.skeleton %} selected{% endif %}>{{ label }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="yw-form-group">
+            <label class="yw-form-label" for="entry-style">{{ _t('BAZ_FORM_EDIT_METADATA_STYLE_LABEL') }}</label>
+            <select class="yw-input" id="entry-style" name="entry_metadatas[style]" data-yw-presentation-part="styles">
+              <option value="">{{ _t('FORM_EDIT_PRESENTATION_DEFAULT', { value: presentation.defaults.style|replace({'.css': ''}) }) }}</option>
+              {% for file, label in theme.styles %}
+                <option value="{{ file }}"{% if file == presentation.current.style %} selected{% endif %}>{{ label }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="yw-form-group">
+            <label class="yw-form-label" for="entry-preset">{{ _t('BAZ_FORM_EDIT_METADATA_PRESET_LABEL') }}</label>
+            <select class="yw-input" id="entry-preset" name="entry_metadatas[css_preset]" data-yw-presentation-part="presets">
+              <option value="">{{ presentation.defaults.css_preset ? _t('FORM_EDIT_PRESENTATION_DEFAULT', { value: presentation.defaults.css_preset|replace({'.css': ''}) }) : _t('FORM_EDIT_PRESENTATION_DEFAULT_NONE') }}</option>
+              {% for file, label in theme.presets %}
+                <option value="{{ file }}"{% if file == presentation.current.css_preset %} selected{% endif %}>{{ label }}</option>
+              {% endfor %}
+              {% for file, label in presentation.customPresets %}
+                <option value="{{ file }}"{% if file == presentation.current.css_preset %} selected{% endif %}>{{ label }}</option>
+              {% endfor %}
+            </select>
+          </div>
         </div>
-        <div class="yw-form-group">
-          <label class="yw-form-label">{{ _t('BAZ_FORM_EDIT_METADATA_SQUELETON_LABEL') }}</label>
-          <input class="yw-input" name="entry_metadatas[skeleton]" type="text" value="{{ form.entry_metadatas.skeleton ?? '' }}" />
-        </div>
-        <div class="yw-form-group">
-          <label class="yw-form-label">{{ _t('BAZ_FORM_EDIT_METADATA_STYLE_LABEL') }}</label>
-          <input class="yw-input" name="entry_metadatas[style]" type="text" value="{{ form.entry_metadatas.style ?? '' }}" />
-        </div>
-        <div class="yw-form-group">
-          <label class="yw-form-label">{{ _t('BAZ_FORM_EDIT_METADATA_BACKGROUND_IMAGE_LABEL') }}</label>
-          <input class="yw-input" name="entry_metadatas[background_image]" type="text" value="{{ form.entry_metadatas.background_image ?? '' }}" />
-        </div>
-        <div class="yw-form-group">
-          <label class="yw-form-label">{{ _t('BAZ_FORM_EDIT_METADATA_PRESET_LABEL') }}</label>
-          <input class="yw-input" name="entry_metadatas[css_preset]" type="text" value="{{ form.entry_metadatas.css_preset ?? '' }}" />
-        </div>
+
+        {% if canEditTemplate %}
+          <div class="yw-form-group yw-fb__template">
+            <label class="yw-form-label" for="entry-template">{{ _t('FORM_EDIT_ENTRY_TEMPLATE') }}</label>
+            <p class="yw-text-muted">{{ _t('FORM_EDIT_ENTRY_TEMPLATE_HINT', { file: entryTemplateFile }) }}</p>
+            {% if not entryTemplateWritable %}
+              <div class="yw-alert yw-alert--warning">{{ _t('FORM_EDIT_ENTRY_TEMPLATE_NOT_WRITABLE', { path: entryTemplateFile }) }}</div>
+            {% endif %}
+            <div class="yw-fb__template-actions">
+              <button type="button" class="yw-btn yw-btn--sm" data-yw-fb-template-starter{% if not entryTemplateWritable %} disabled{% endif %}>
+                {{ _t('FORM_EDIT_ENTRY_TEMPLATE_STARTER') }}
+              </button>
+            </div>
+            <textarea id="entry-template" name="entry_template" class="yw-input yw-templates__editor" rows="14"
+              spellcheck="false" autocomplete="off" data-yw-twig-editor{% if not entryTemplateWritable %} readonly{% endif %}>{{ entryTemplate }}</textarea>
+          </div>
+        {% endif %}
       {% endblock %}
     {% endembed %}
 
@@ -272,68 +315,50 @@
       {% endembed %}
     {% endif %}
 
-    {% embed '@core/_accordion-item.twig' with { summary: _t('BAZ_CONDITION'), open: form.condition is not empty } %}
-      {% block body %}
-        <div class="yw-form-group">
-          <textarea
-            class="yw-input"
-            cols="20"
-            rows="3"
-            name="condition"
-          >
-            {{- form.condition -}}
-          </textarea>
-        </div>
-      {% endblock %}
-    {% endembed %}
-
-    {% embed '@core/_accordion-item.twig' with { summary: _t('BAZ_ACTIVITYPUB_ENABLE'), open: form.activitypub_enable } %}
+    {% embed '@core/_accordion-item.twig' with { summary: _t('FORM_EDIT_ACTIVITYPUB'), open: form.activitypub_enable } %}
       {% block body %}
         <div class="yw-form-group">
           <label>
-            <input type="checkbox" name="activitypub_enable" value="1" {% if form.activitypub_enable %}checked{% endif %}>
+            <input type="checkbox" id="activitypub-enable" name="activitypub_enable" value="1" {% if form.activitypub_enable %}checked{% endif %}
+              onchange="document.getElementById('activitypub-config').classList.toggle('hide', !this.checked)">
             {{ _t('BAZ_ACTIVITYPUB_ENABLE') }}
           </label>
         </div>
-        <div class="yw-form-group">
-          <label class="yw-form-label">
-            {{ _t('BAZ_ACTIVITYPUB_USERNAME') }}
-          </label>
-          <input
-            class="yw-input"
-            name="activitypub_username"
-            type="text"
-            value="{{ form.activitypub_username }}"
-          />
-        </div>
-      {% endblock %}
-    {% endembed %}
-
-    {% embed '@core/_accordion-item.twig' with { summary: _t('BAZ_SEM_TEMPLATE'), open: form.sem_template is not empty or form.sem_reverse_template is not empty } %}
-      {% block body %}
-        <div class="yw-form-group">
-          <label class="yw-form-label">{{ _t('BAZ_SEM_TEMPLATE') }}</label>
-          <textarea
-            class="yw-input"
-            cols="20"
-            rows="6"
-            name="sem_template"
-          >
-            {{- form.sem_template -}}
-          </textarea>
-        </div>
-        <div class="yw-form-group">
-          <label class="yw-form-label">
-            {{ _t('BAZ_SEM_REVERSE_TEMPLATE') }}
-          </label>
-          <textarea
-            class="yw-input"
-            cols="20"
-            rows="6"
-            name="sem_reverse_template"
-          >
-            {{- form.sem_reverse_template -}}
-          </textarea>
+        <div id="activitypub-config" class="{{ form.activitypub_enable ? '' : 'hide' }}">
+          <div class="yw-form-group">
+            <label class="yw-form-label" for="activitypub-username">{{ _t('BAZ_ACTIVITYPUB_USERNAME') }}</label>
+            <input
+              class="yw-input"
+              id="activitypub-username"
+              name="activitypub_username"
+              type="text"
+              value="{{ form.activitypub_username }}"
+            />
+          </div>
+          <div class="yw-form-group">
+            <label class="yw-form-label" for="sem-template">{{ _t('BAZ_SEM_TEMPLATE') }}</label>
+            <textarea
+              class="yw-input"
+              id="sem-template"
+              cols="20"
+              rows="6"
+              name="sem_template"
+            >
+              {{- form.sem_template -}}
+            </textarea>
+          </div>
+          <div class="yw-form-group">
+            <label class="yw-form-label" for="sem-reverse-template">{{ _t('BAZ_SEM_REVERSE_TEMPLATE') }}</label>
+            <textarea
+              class="yw-input"
+              id="sem-reverse-template"
+              cols="20"
+              rows="6"
+              name="sem_reverse_template"
+            >
+              {{- form.sem_reverse_template -}}
+            </textarea>
+          </div>
         </div>
       {% endblock %}
     {% endembed %}
@@ -358,8 +383,3 @@
   />
   {% endif %}
 </form>
-
-<script>
-  var groupsList = {{ groupsList|json_encode()|raw }};
-  var formAndListIds = {{ formAndListIds|json_encode()|raw }};
-</script>
