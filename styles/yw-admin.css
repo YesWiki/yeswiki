@@ -14,10 +14,18 @@
     var(--yw-space-md-x);
 }
 
-@media (max-width: 1660px) {
-  .yw-dashboard > .yw-dashboard__canvas {
-    margin-left: calc(var(--yw-dashboard-rail-width) + var(--yw-space-lg-x));
-  }
+.yw-dashboard > .yw-dashboard__canvas {
+  --yw-dashboard-gutter: max(
+    0px,
+    (var(--yw-viewport-width, 100vw) - 1170px) / 2
+  );
+  margin-left: max(
+    0px,
+    calc(
+      var(--yw-dashboard-rail-width) + 2 * var(--yw-space-md-x) +
+        var(--yw-space-lg-x) - var(--yw-dashboard-gutter)
+    )
+  );
 }
 
 .yw-dashboard__section {

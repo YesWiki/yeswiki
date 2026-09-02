@@ -218,7 +218,16 @@ ywInitEach('[data-yw-layout-navbar-position]', (choice) => {
 
 ywInitEach('input[name="layout_header_position"]', (choice) => {
   const apply = () => {
-    if (choice.checked) document.documentElement.dataset.ywHeader = choice.value
+    if (!choice.checked) return
+    document.documentElement.dataset.ywHeader = choice.value
+    const header = document.getElementById('yw-header')
+    const nav = document.getElementById('yw-topnav')
+    if (!header || !nav || header.parentNode !== nav.parentNode) return
+    nav.parentNode.insertBefore(
+      header,
+      choice.value === 'before' ? nav : nav.nextSibling,
+    )
+    window.dispatchEvent(new Event('resize'))
   }
   apply()
   choice.addEventListener('change', apply)

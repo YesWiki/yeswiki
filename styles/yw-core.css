@@ -4081,6 +4081,15 @@ progress.yw-progressbar::-moz-progress-bar {
     top: 100%;
     transform: none;
   }
+
+  #yw-topnav .yw-chrome-edit::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 100%;
+    height: var(--yw-space-sm-y);
+  }
 }
 
 .yw-chrome-editable {
