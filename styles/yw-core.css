@@ -4678,13 +4678,26 @@ figcaption *:last-child {
   display: block;
 }
 
-/* An access list as checkboxes plus one line for the rest (templates/_acl-picker.twig). */
+/* A guided access list: who, then which members (templates/_acl-picker.twig). */
 
-.yw-acl__options {
+.yw-acl__audience,
+.yw-acl__members {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   gap: var(--yw-space-sm-y) var(--yw-space-md-x);
-  margin-bottom: var(--yw-space-sm-y);
+}
+
+.yw-acl__members[hidden],
+.yw-acl__guided[hidden],
+.yw-acl__advanced[hidden] {
+  display: none;
+}
+
+.yw-acl__members {
+  margin: var(--yw-space-sm-y) 0 0 var(--yw-space-md-x);
+  padding-left: var(--yw-space-md-x);
+  border-left: 2px solid var(--yw-border);
 }
 
 .yw-acl__option {
@@ -4693,4 +4706,12 @@ figcaption *:last-child {
   gap: var(--yw-space-sm-y) var(--yw-space-sm-x);
   margin: 0;
   font-weight: normal;
+}
+
+.yw-acl__extra {
+  flex: 1 1 16rem;
+}
+
+.yw-acl__toggle {
+  margin-top: var(--yw-space-sm-y);
 }

@@ -1,15 +1,31 @@
-{# An access list as checkboxes plus a line for the rest: name, value (one rule per line), options from AclOptions, disabled. #}
+{# An access list, guided: who (radios), then under "only some" the members; an advanced toggle shows the raw rules. name, value (one rule per line), options from AclOptions, disabled. #}
 {{ include_javascript('javascripts/acl-picker.js') }}
+{% set off = disabled|default(false) %}
 <div class="yw-acl" data-yw-acl>
-  <textarea class="yw-acl__source" name="{{ name }}" hidden{% if disabled|default(false) %} disabled title="{{ disabledTitle|default('') }}"{% endif %}>{{ value|default('') }}</textarea>
-  <div class="yw-acl__options">
-    {% for option in options %}
-      <label class="yw-acl__option">
-        <input type="checkbox" value="{{ option.value }}" data-yw-acl-option{% if disabled|default(false) %} disabled{% endif %}>
-        <span>{{ option.label }}</span>
-      </label>
-    {% endfor %}
+  <div class="yw-acl__guided">
+    <div class="yw-acl__audience">
+      {% for option in options.audience %}
+        <label class="yw-acl__option">
+          <input type="radio" name="{{ name }}__audience" value="{{ option.value }}" data-yw-acl-audience{% if off %} disabled{% endif %}>
+          <span>{{ option.label }}</span>
+        </label>
+      {% endfor %}
+    </div>
+    <div class="yw-acl__members" data-yw-acl-members hidden>
+      {% for option in options.members %}
+        <label class="yw-acl__option">
+          <input type="checkbox" value="{{ option.value }}" data-yw-acl-member{% if off %} disabled{% endif %}>
+          <span>{{ option.label }}</span>
+        </label>
+      {% endfor %}
+      <input type="text" class="yw-input yw-acl__extra" data-yw-acl-extra
+        placeholder="{{ _t('ACL_PICKER_OTHER') }}" aria-label="{{ _t('ACL_PICKER_OTHER') }}"{% if off %} disabled{% endif %}>
+    </div>
   </div>
-  <input type="text" class="yw-input yw-acl__extra" data-yw-acl-extra
-    placeholder="{{ _t('ACL_PICKER_OTHER') }}" aria-label="{{ _t('ACL_PICKER_OTHER') }}"{% if disabled|default(false) %} disabled{% endif %}>
+  <div class="yw-acl__advanced" hidden>
+    <p class="yw-text-muted">{{ _t('ACL_PICKER_ADVANCED_HINT') }}</p>
+    <textarea class="yw-input yw-acl__source" name="{{ name }}" rows="3"{% if off %} disabled title="{{ disabledTitle|default('') }}"{% endif %}>{{ value|default('') }}</textarea>
+  </div>
+  <button type="button" class="yw-btn yw-btn--sm yw-acl__toggle" data-yw-acl-toggle
+    data-label-advanced="{{ _t('ACLS_MODE_ADVANCED') }}" data-label-simple="{{ _t('ACLS_MODE_SIMPLE') }}">{{ _t('ACLS_MODE_ADVANCED') }}</button>
 </div>
