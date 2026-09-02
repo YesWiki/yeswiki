@@ -198,7 +198,7 @@ class TripleApiController extends YesWikiController
      */
     private function userLikePattern(?string $username): ?string
     {
-        return empty($username) ? null : "%\\\"user\\\":\\\"{$username}\\\"%";
+        return empty($username) ? null : '%"user":"' . $username . '"%';
     }
 
     /**

@@ -160,17 +160,15 @@ class SearchSurfaceTest extends YesWikiTestCase
     public function testAFormResultLinksToTheFormsOwnScreenNotToBazaR(): void
     {
         $formManager = $this->getWiki()->services->get(\YesWiki\Content\Service\FormManager::class);
-        $id = 9770;
-        while ($formManager->getOne((string)$id) !== null) {
-            $id++;
-        }
+        $id = $this->unusedFormId($formManager);
         $this->assertSame(0, $formManager->create([
-            'id' => (string)$id,
+            'id' => $id,
             'label' => 'Herbier des ciboulettes',
             'entry_title_template' => '{{bf_titre}}',
             'template' => [['type' => 'texte', 'name' => 'bf_titre', 'label' => 'Titre']],
         ]));
-        $form = $formManager->getOne((string)$id);
+        $form = $formManager->getOne($id);
+        $this->assertNotNull($form);
         try {
             $this->getWiki()->services->get(SearchIndexer::class)->index((string)$form['tag']);
             $html = $this->fragment(['q' => 'ciboulettes', 'type' => 'form']);
@@ -179,8 +177,18 @@ class SearchSurfaceTest extends YesWikiTestCase
             $this->assertStringNotContainsString('BazaR', $html);
         } finally {
             $this->getWiki()->services->get(SearchIndexer::class)->delete((string)$form['tag']);
-            $formManager->delete((string)$id);
+            $formManager->delete($id);
         }
+    }
+
+    private function unusedFormId(\YesWiki\Content\Service\FormManager $formManager): string
+    {
+        $id = 9770;
+        while ($formManager->getOne((string)$id) !== null) {
+            $id++;
+        }
+
+        return (string)$id;
     }
 
     public function testTheEntryFacetOffersTheFormsBehindIt(): void

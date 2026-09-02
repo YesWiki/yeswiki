@@ -3,6 +3,7 @@
 namespace YesWiki\Test\Identity;
 
 use Symfony\Component\Console\Application;
+use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Tester\CommandTester;
 use YesWiki\Identity\Command\UserAddToGroupCommand;
 use YesWiki\Identity\Command\UserCreateCommand;
@@ -36,10 +37,13 @@ class UserCommandsTest extends YesWikiTestCase
         parent::tearDown();
     }
 
-    private function run_(string $class, array $input): CommandTester
+    /**
+     * @param array<string, mixed> $input
+     */
+    private function run_(Command $command, array $input): CommandTester
     {
         $application = new Application();
-        $application->add(new $class(self::getWiki()->services));
+        $application->add($command);
         $tester = new CommandTester($application->find($input['command']));
         $tester->execute($input, ['interactive' => false]);
 
@@ -51,7 +55,7 @@ class UserCommandsTest extends YesWikiTestCase
         $users = self::getWiki()->services->get(UserManager::class);
         $groups = self::getWiki()->services->get(GroupOperationsService::class);
 
-        $created = $this->run_(UserCreateCommand::class, [
+        $created = $this->run_(new UserCreateCommand(self::getWiki()->services), [
             'command' => 'user:create',
             'name' => self::NAME,
             'email' => 'user-commands@xyz.earth',
@@ -63,23 +67,25 @@ class UserCommandsTest extends YesWikiTestCase
         $this->assertNotNull($user);
         $this->assertContains(self::NAME, $groups->getMembers(self::GROUP), 'the group was created with the account in it');
 
-        $listed = $this->run_(UserListCommand::class, ['command' => 'user:list']);
+        $listed = $this->run_(new UserListCommand(self::getWiki()->services), ['command' => 'user:list']);
         $this->assertStringContainsString(self::NAME, $listed->getDisplay());
         $this->assertStringContainsString(self::GROUP, $listed->getDisplay());
 
-        $updated = $this->run_(UserUpdateCommand::class, [
+        $updated = $this->run_(new UserUpdateCommand(self::getWiki()->services), [
             'command' => 'user:update',
             'name' => self::NAME,
             '--email' => 'user-commands-2@xyz.earth',
             '--motto' => 'from the console',
         ]);
         $this->assertSame(0, $updated->getStatusCode(), $updated->getDisplay());
-        $this->assertSame('user-commands-2@xyz.earth', $users->getOneByName(self::NAME)->getEmail());
+        $user = $users->getOneByName(self::NAME);
+        $this->assertNotNull($user);
+        $this->assertSame('user-commands-2@xyz.earth', $user->getEmail());
 
-        $nothing = $this->run_(UserUpdateCommand::class, ['command' => 'user:update', 'name' => self::NAME]);
+        $nothing = $this->run_(new UserUpdateCommand(self::getWiki()->services), ['command' => 'user:update', 'name' => self::NAME]);
         $this->assertNotSame(0, $nothing->getStatusCode(), 'an update with nothing to change is refused');
 
-        $removed = $this->run_(UserRemoveFromGroupCommand::class, [
+        $removed = $this->run_(new UserRemoveFromGroupCommand(self::getWiki()->services), [
             'command' => 'user:remove-from-group',
             'name' => self::NAME,
             'group' => '@' . self::GROUP,
@@ -87,7 +93,7 @@ class UserCommandsTest extends YesWikiTestCase
         $this->assertSame(0, $removed->getStatusCode(), $removed->getDisplay());
         $this->assertNotContains(self::NAME, $groups->getMembers(self::GROUP));
 
-        $added = $this->run_(UserAddToGroupCommand::class, [
+        $added = $this->run_(new UserAddToGroupCommand(self::getWiki()->services), [
             'command' => 'user:add-to-group',
             'name' => self::NAME,
             'group' => self::GROUP,
@@ -95,12 +101,12 @@ class UserCommandsTest extends YesWikiTestCase
         $this->assertSame(0, $added->getStatusCode(), $added->getDisplay());
         $this->assertContains(self::NAME, $groups->getMembers(self::GROUP));
 
-        $deleted = $this->run_(UserDeleteCommand::class, ['command' => 'user:delete', 'name' => self::NAME]);
+        $deleted = $this->run_(new UserDeleteCommand(self::getWiki()->services), ['command' => 'user:delete', 'name' => self::NAME]);
         $this->assertSame(0, $deleted->getStatusCode(), $deleted->getDisplay());
         $this->assertNull($users->getOneByName(self::NAME));
         $this->assertFalse($groups->groupExists(self::GROUP), 'a group the account was alone in goes with it');
 
-        $missing = $this->run_(UserDeleteCommand::class, ['command' => 'user:delete', 'name' => self::NAME]);
+        $missing = $this->run_(new UserDeleteCommand(self::getWiki()->services), ['command' => 'user:delete', 'name' => self::NAME]);
         $this->assertNotSame(0, $missing->getStatusCode());
     }
 }

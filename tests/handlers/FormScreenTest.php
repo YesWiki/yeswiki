@@ -164,6 +164,7 @@ class FormScreenTest extends YesWikiTestCase
             PageBody::CONTENT => '{{bazar}}',
         ], '', true);
 
+        $this->assertNotNull($this->form);
         $output = $this->runHandlerOrRedirect('show', self::BAZAR_PAGE_TAG, ['view' => 'consulter', 'action' => 'recherche', 'id' => (string)$this->form['id']]);
 
         $this->assertNull($output, 'view=consulter&action=recherche over one form did not redirect to the form\'s own screen');
