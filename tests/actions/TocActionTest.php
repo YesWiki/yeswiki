@@ -46,7 +46,8 @@ class TocActionTest extends YesWikiTestCase
         }
 
         $this->assertStringContainsString('yw-toc', $html);
-        $this->assertStringContainsString('data-yw-collapse-toggle', $html);
+        $this->assertStringContainsString('<details class="yw-accordion__item" open>', $html);
+        $this->assertStringContainsString('<summary class="yw-accordion__summary yw-toc__title">', $html);
         $this->assertStringNotContainsString('data-toggle="collapse"', $html);
         $this->assertStringNotContainsString('class="toc well', $html);
         $this->assertStringNotContainsString('scrollspy', $html);
