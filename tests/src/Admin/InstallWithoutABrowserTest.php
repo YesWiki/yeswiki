@@ -96,8 +96,25 @@ class InstallWithoutABrowserTest extends YesWikiTestCase
             $this->assertSame('sqlite', $written['db_driver']);
             $this->assertSame('cli-installed.test', $written['mail_domain']);
 
+            $this->assertSame('MenuNavigation', $written['layout_navbar'], 'a fresh wiki has a navbar to draw');
+            $this->assertSame('MenuAccesRapide', $written['layout_quick_menu']);
+
             $db = new \PDO('sqlite:' . $dir . '/private/yeswiki.db');
             $this->assertGreaterThan(10, $this->countRows($db, 'SELECT COUNT(*) FROM yeswiki_pages'), 'the default content is seeded');
+            $this->assertSame(
+                2,
+                $this->countRows(
+                    $db,
+                    "SELECT COUNT(*) FROM yeswiki_pages WHERE type = 'menu' AND latest = 'Y'"
+                    . " AND tag IN ('MenuNavigation', 'MenuAccesRapide')"
+                ),
+                'and the rows it names are seeded beside it'
+            );
+            $this->assertSame(
+                0,
+                $this->countRows($db, "SELECT COUNT(*) FROM yeswiki_pages WHERE latest = 'Y' AND body LIKE '%{{nav links=%'"),
+                'no seeded page still carries its navigation inside the call'
+            );
             $this->assertSame(
                 1,
                 $this->countRows($db, "SELECT COUNT(*) FROM yeswiki_pages WHERE tag = 'WikiAdmin' AND type = 'user' AND latest = 'Y'"),

@@ -202,7 +202,7 @@ class DashboardRoutesTest extends YesWikiTestCase
             );
 
             $authentication->logout();
-            $visitor = (string)$wiki->services->get(DashboardController::class)->index()->getContent();
+            $visitor = $this->railOf((string)$wiki->services->get(DashboardController::class)->index()->getContent());
             $this->assertStringContainsString('dashboard/sources', $visitor);
             $this->assertStringNotContainsString(_t('DASHBOARD_SECTION_ADMIN'), $visitor, 'and none of the admin half');
         } finally {
@@ -254,9 +254,7 @@ class DashboardRoutesTest extends YesWikiTestCase
      */
     private function railOrder(string $page, array $routes): array
     {
-        $from = strpos($page, 'yw-dashboard__sidebar');
-        $this->assertNotFalse($from, 'the premise: this screen renders the rail');
-        $rail = substr($page, $from, (int)strpos($page, '</nav>', $from) - $from);
+        $rail = $this->railOf($page);
 
         $positions = [];
         foreach ($routes as $route) {
@@ -267,5 +265,16 @@ class DashboardRoutesTest extends YesWikiTestCase
         asort($positions);
 
         return array_keys($positions);
+    }
+
+    /**
+     * The rail, cut out of the screen it was rendered in.
+     */
+    private function railOf(string $page): string
+    {
+        $from = strpos($page, 'yw-dashboard__sidebar');
+        $this->assertNotFalse($from, 'the premise: this screen renders the rail');
+
+        return substr($page, $from, (int)strpos($page, '</nav>', $from) - $from);
     }
 }
