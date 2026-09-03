@@ -1,0 +1,41 @@
+{#
+  One entry of a menu, wherever a menu is being edited (ticket 64 / ADR-0028).
+
+  `name` is the field prefix the screen posts under, so the same row serves the navbar, the quick
+  access bar and any menu of the wiki's own.
+#}
+<li class="yw-menu-row{{ row.child ? ' yw-menu-row--child' : '' }}" data-yw-menu-row>
+  <input type="hidden" name="{{ name }}[{{ index }}][child]" value="{{ row.child ? 1 : 0 }}" data-yw-menu-child>
+  <input type="hidden" name="{{ name }}[{{ index }}][id]" value="{{ row.id|default('') }}">
+
+  <span class="yw-menu-row__grip" data-yw-menu-grip aria-hidden="true"
+        title="{{ _t('MENU_ENTRY_DRAG') }}">{{ icon('arrows-vertical') }}</span>
+
+  {{ include('@core/menu/icon-field.twig', {
+    name: name ~ '[' ~ index ~ ']',
+    source: row.icon_source|default('sprite'),
+    value: row.icon_value|default('')
+  }) }}
+
+  <input type="text" class="yw-input yw-menu-row__label" name="{{ name }}[{{ index }}][label]"
+         value="{{ row.label }}" autocomplete="off"
+         placeholder="{{ _t('MENU_ENTRY_LABEL') }}" aria-label="{{ _t('MENU_ENTRY_LABEL') }}">
+
+  <input type="text" class="yw-input yw-menu-row__link" name="{{ name }}[{{ index }}][link]"
+         value="{{ row.link }}" autocomplete="off" spellcheck="false"
+         placeholder="{{ _t('MENU_ENTRY_LINK') }}" aria-label="{{ _t('MENU_ENTRY_LINK') }}">
+
+  <div class="yw-menu-row__tools">
+    <button type="button" class="yw-btn yw-btn--sm" data-yw-menu-indent
+            data-yw-menu-title-indent="{{ _t('MENU_ENTRY_INDENT') }}"
+            data-yw-menu-title-outdent="{{ _t('MENU_ENTRY_OUTDENT') }}"
+            title="{{ row.child ? _t('MENU_ENTRY_OUTDENT') : _t('MENU_ENTRY_INDENT') }}"
+            >{{ icon(row.child ? 'arrow-left' : 'arrow-right') }}</button>
+    <button type="button" class="yw-btn yw-btn--sm" data-yw-menu-move="-1"
+            title="{{ _t('MENU_ENTRY_UP') }}">{{ icon('arrow-up') }}</button>
+    <button type="button" class="yw-btn yw-btn--sm" data-yw-menu-move="1"
+            title="{{ _t('MENU_ENTRY_DOWN') }}">{{ icon('arrow-down') }}</button>
+    <button type="button" class="yw-btn yw-btn--sm yw-btn--danger" data-yw-menu-remove
+            title="{{ _t('MENU_ENTRY_REMOVE') }}">{{ icon('trash') }}</button>
+  </div>
+</li>

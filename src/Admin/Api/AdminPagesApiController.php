@@ -14,6 +14,7 @@ use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\CsrfTokenChecker;
 use YesWiki\Kernel\Database\SqlParameters;
 use YesWiki\Kernel\Service\DbService;
+use YesWiki\Search\Service\SearchIndexSchema;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\ThemeManager;
 
@@ -23,7 +24,6 @@ class AdminPagesApiController extends YesWikiController
     private const SORT_COLUMNS = ['tag' => 'p.tag', 'time' => 'p.time', 'owner' => 'p.owner', 'type' => 'page_type'];
     private const ALLOWED_PERPAGES = [50, 100, 150, 200, 500];
     private const ALLOWED_TYPES = ['all', 'pages', 'bazar', 'lists', 'special', 'comments'];
-    private const TAG_PROPERTY = 'http://outils-reseaux.org/_vocabulary/tag';
     private const SPECIAL_PAGES = [
         'BazaR', 'GererSite', 'GererDroits', 'GererThemes', 'GererMisesAJour',
         'GererUtilisateurs', 'GererDroitsActions', 'GererDroitsHandlers', 'TableauDeBord',
@@ -48,12 +48,11 @@ class AdminPagesApiController extends YesWikiController
         $dirSql = $dir === 'desc' ? 'DESC' : 'ASC';
 
         $pT = $dbService->prefixTable('pages');
-        $trT = $dbService->prefixTable('triples');
-        $tagProp = self::TAG_PROPERTY;
+        $keywordsTable = $this->getService(SearchIndexSchema::class)->keywordsTable();
         $typeCol = $dbService->quoteIdentifier('type');
         $entryType = PageType::ENTRY;
         $idTypeAnnonceExpr = $dbService->jsonExtract('p.body', '$.form_id');
-        $tagsAggExpr = $dbService->groupConcat('tg.value');
+        $tagsAggExpr = $dbService->groupConcat('tg.keyword');
 
         $sql = <<<SQL
             SELECT
@@ -71,7 +70,7 @@ class AdminPagesApiController extends YesWikiController
                 END) AS form_id,
                 {$tagsAggExpr} AS page_tags
             FROM {$pT} p
-            LEFT JOIN {$trT} tg ON tg.resource = p.tag AND tg.property = '{$tagProp}'
+            LEFT JOIN {$keywordsTable} tg ON tg.tag = p.tag
             WHERE {$whereClause}
             GROUP BY p.tag, p.time, p.owner, p.parent, p.user, p.metadata, p.{$typeCol}
             {$having}
@@ -391,7 +390,7 @@ class AdminPagesApiController extends YesWikiController
         }
 
         if ($tagFilter !== '') {
-            $having = "HAVING {$db->groupConcat('tg.value')} LIKE ?" . SqlParameters::LIKE_CLAUSE_SUFFIX;
+            $having = "HAVING {$db->groupConcat('tg.keyword')} LIKE ?" . SqlParameters::LIKE_CLAUSE_SUFFIX;
             $havingParams[] = SqlParameters::likeContains($tagFilter);
         }
 

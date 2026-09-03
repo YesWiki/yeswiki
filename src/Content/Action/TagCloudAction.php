@@ -3,18 +3,15 @@
 namespace YesWiki\Content\Action;
 
 use YesWiki\Core\YesWikiAction;
-use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Component\Category;
 use YesWiki\Kernel\Component\Component;
 use YesWiki\Kernel\Component\ProvidesComponents;
 use YesWiki\Kernel\Component\Setting;
-use YesWiki\Kernel\Database\SqlFragment;
-use YesWiki\Kernel\Database\SqlParameters;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\AssetRegistry;
-use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\RuntimeConfig;
 use YesWiki\Kernel\Service\UrlFormatter;
+use YesWiki\Search\Service\TagsManager;
 
 class TagCloudAction extends YesWikiAction implements RegisteredAction, ProvidesComponents
 {
@@ -49,8 +46,6 @@ class TagCloudAction extends YesWikiAction implements RegisteredAction, Provides
         ];
     }
 
-    public const TAG_PROPERTY = 'http://outils-reseaux.org/_vocabulary/tag';
-
     public function formatArguments($args)
     {
         $class = $args['class'] ?? '';
@@ -70,33 +65,21 @@ class TagCloudAction extends YesWikiAction implements RegisteredAction, Provides
     {
         $this->getService(AssetRegistry::class)->addJsFile('javascripts/tag.js');
 
-        $selectiontags = $this->buildSelectionTagsClause($this->arguments['tags']);
-        $tablePrefix = $this->getService(RuntimeConfig::class)['table_prefix'];
+        // One read, through TagsManager, rather than this action's own copy of the keyword SQL and
+        // of the vocabulary URI (ticket 62). The counts are worked out from the pairs it already
+        // has to load, so the sizing no longer costs a second scan.
+        $tab_tous_les_tags = array_map(
+            static fn (array $pair): array => ['value' => $pair['keyword'], 'resource' => $pair['tag']],
+            $this->getService(TagsManager::class)->pairs($this->arguments['tags'])
+        );
 
-        $tagProperty = SqlFragment::of('property = ?', [self::TAG_PROPERTY]);
-        // buildSelectionTagsClause() already carries its own leading AND, so the glue stays a space
-        $readable = $this->getService(AclService::class)->readableResourceFilter()->wrappedIn('AND ', '');
-        $filter = SqlFragment::all(' ', $tagProperty, $selectiontags, $readable);
-
-        $sql = 'SELECT COUNT(value) AS nb FROM ' . $tablePrefix . 'triples WHERE ' . $filter->sql . ' GROUP BY value';
-        $min_max = $this->getService(DbService::class)->loadAll($sql, $filter->params);
-        $min = 100000000;
-        $max = 0;
-        foreach ($min_max as $tab_min_max) {
-            if ($tab_min_max['nb'] > $max) {
-                $max = $tab_min_max['nb'];
-            } elseif ($tab_min_max['nb'] < $min) {
-                $min = $tab_min_max['nb'];
-            }
-        }
+        $counts = array_count_values(array_column($tab_tous_les_tags, 'value'));
+        $max = $counts === [] ? 0 : max($counts);
 
         $mult = $max / $this->arguments['classcount'];
         if ($mult < 1) {
             $mult = 1;
         }
-
-        $sql = 'SELECT value, resource FROM ' . $tablePrefix . 'triples WHERE ' . $filter->sql . ' ORDER BY value ASC, resource ASC';
-        $tab_tous_les_tags = $this->getService(DbService::class)->loadAll($sql, $filter->params);
 
         $output = '';
         if ($tab_tous_les_tags !== []) {
@@ -105,8 +88,8 @@ class TagCloudAction extends YesWikiAction implements RegisteredAction, Provides
             $liste_page = '';
             $tag_precedent = '';
             $tab_tag = [];
-            $tab_tous_les_tags['dummy']['value'] = 'fin';
-            $tab_tous_les_tags['dummy']['resource'] = 'fin';
+            // The sentinel that flushes the last keyword's list on the final pass.
+            $tab_tous_les_tags[] = ['value' => 'fin', 'resource' => 'fin'];
             foreach ($tab_tous_les_tags as $tab_les_tags) {
                 $tagstripped = stripslashes($tab_les_tags['value']);
 
@@ -148,22 +131,5 @@ class TagCloudAction extends YesWikiAction implements RegisteredAction, Provides
         }
 
         return $output;
-    }
-
-    /**
-     * The `AND value IN (...)` clause for the (already trimmed/filtered) tag tokens.
-     *
-     * @param array<int, string> $tags
-     */
-    private function buildSelectionTagsClause(array $tags): SqlFragment
-    {
-        if (empty($tags)) {
-            return SqlFragment::empty();
-        }
-
-        return SqlFragment::of(
-            'AND value IN (' . SqlParameters::placeholders(count($tags)) . ')',
-            array_values($tags)
-        );
     }
 }

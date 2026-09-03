@@ -458,11 +458,6 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
                     } else {
                         $this->getService(PageManager::class)->save($this->getService(PageContext::class)->getTag(), $newBody, !empty($this->getService(PageContext::class)->getPage()['parent']) ? $this->getService(PageContext::class)->getPage()['parent'] : '');
 
-                        $this->getService(TagsManager::class)->reindex(
-                            $this->getService(PageContext::class)->getTag(),
-                            TagsManager::keywordsOf(['body' => $newBody])
-                        );
-
                         if (($this->getService(PageContext::class)->getPage() ?? [])['parent']) {
                             $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href(WikiUrls::iframeSuffixFor(), ($this->getService(PageContext::class)->getPage() ?? [])['parent']) . '#' . $this->getService(PageContext::class)->getTag());
                         } else {

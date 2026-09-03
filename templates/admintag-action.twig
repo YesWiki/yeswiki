@@ -8,19 +8,19 @@
   </thead>
   <tbody>
     {% for tagName, tagsForName in tags %}
-      {% for index,tag in tagsForName %}
+      {% for index,pair in tagsForName %}
         <tr>
           <td{% if index == 0 %} class="taglistitem"{% endif %}>
             {%- if index == 0 %}<span class="tag-label label label-primary">{{ tagName }}</span>{% endif -%}
           </td>
           <td class="pagewithtag">
-            {{ _t('TAGS_PRESENT_IN') }} : <a class="wikipagelink" href="{{ url({tag:tag.resource}) }}">{{ tag.resource }}</a>
+            {{ _t('TAGS_PRESENT_IN') }} : <a class="wikipagelink" href="{{ url({tag:pair.tag}) }}">{{ pair.tag }}</a>
           </td>
           {% if isAdmin %}
           <td class="delete_tag">
             <form method="post" action="{{ url({}) }}" style="display: inline">
               <input type="hidden" name="csrf-token" value="{{ csrfToken({id:'main',refresh:false})|e('html_attr') }}">
-              <input type="hidden" name="delete_tag" value="{{ tag.id }}">
+              <input type="hidden" name="delete_tag" value="{{ (pair.keyword ~ separator ~ pair.tag)|e('html_attr') }}">
               <button type="submit" class="yw-btn yw-btn--sm yw-btn--danger">
                 <i class="icon icon-trash icon-white"></i>
                 {{- ' ' ~ _t('TAGS_DELETE_MINUSCULE') }} {{ _t('TAGS_FROM_THIS_PAGE') -}}
@@ -38,7 +38,7 @@
           <td class="delete_all_tags">
             <form method="post" action="{{ url({}) }}" style="display: inline">
               <input type="hidden" name="csrf-token" value="{{ csrfToken({id:'main',refresh:false})|e('html_attr') }}">
-              <input type="hidden" name="delete_tag" value="{{ tagsForName|map(tag => tag.id)|join(',') }}">
+              <input type="hidden" name="delete_tag" value="{{ tagsForName|map(pair => pair.keyword ~ separator ~ pair.tag)|join("\n")|e('html_attr') }}">
               <button type="submit" class="yw-btn yw-btn--sm yw-btn--danger">
                 <strong>
                   <i class="icon icon-trash icon-white"></i>

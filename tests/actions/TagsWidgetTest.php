@@ -8,8 +8,7 @@ use YesWiki\Content\Service\PageManager;
 use YesWiki\Core\YesWikiRuntime;
 use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Identity\Service\UserManager;
-use YesWiki\Kernel\Service\TripleStore;
-use YesWiki\Search\Service\TagsManager;
+use YesWiki\Search\Service\SearchIndexer;
 use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';
@@ -33,14 +32,19 @@ class TagsWidgetTest extends YesWikiTestCase
     public function testEditWidgetShowsExistingTagsWithoutDumpingWholeVocabulary(YesWikiRuntime $wiki): void
     {
         $pageManager = $wiki->services->get(PageManager::class);
-        $tripleStore = $wiki->services->get(TripleStore::class);
+        $indexer = $wiki->services->get(SearchIndexer::class);
         $authenticationService = $wiki->services->get(AuthenticationService::class);
         $userManager = $wiki->services->get(UserManager::class);
 
-        $pageManager->save(self::PAGE_TAG, [PageBody::CONTENT => 'body content'], '', true);
-        $wiki->services->get(TagsManager::class)->save(self::PAGE_TAG, 'widgettesttag');
-
-        $tripleStore->create('TagsWidgetRegressionOtherPage', TagsManager::TAG_PROPERTY, 'unrelatedtag', '', '');
+        $pageManager->save(self::PAGE_TAG, [
+            PageBody::CONTENT => 'body content',
+            PageBody::KEYWORDS => ['widgettesttag'],
+        ], '', true);
+        $pageManager->save('TagsWidgetRegressionOtherPage', [
+            PageBody::CONTENT => 'another page',
+            PageBody::KEYWORDS => ['unrelatedtag'],
+        ], '', true);
+        $indexer->drain(1000);
 
         $admin = current(array_filter($userManager->getAll(), fn ($u) => $wiki->services->get(\YesWiki\Identity\Service\AclService::class)->isAdmin($u['name'])));
         $this->assertNotFalse($admin, 'need an existing admin user to exercise write access');
@@ -65,9 +69,10 @@ class TagsWidgetTest extends YesWikiTestCase
             $this->assertMatchesRegularExpression('/hx-get="[^"]*api\/tags"/', $output, 'the search input must query GET /api/tags via htmx');
         } finally {
             $runtimeConfig['debug'] = $previousDebug;
-            $tripleStore->delete(self::PAGE_TAG, TagsManager::TAG_PROPERTY, null, '', '');
-            $tripleStore->delete('TagsWidgetRegressionOtherPage', TagsManager::TAG_PROPERTY, null, '', '');
-            $pageManager->deleteOrphaned(self::PAGE_TAG);
+            foreach ([self::PAGE_TAG, 'TagsWidgetRegressionOtherPage'] as $tag) {
+                $pageManager->deleteOrphaned($tag);
+                $indexer->delete($tag);
+            }
             $authenticationService->logout();
         }
     }

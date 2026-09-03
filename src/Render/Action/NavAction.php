@@ -3,18 +3,22 @@
 namespace YesWiki\Render\Action;
 
 use YesWiki\Core\YesWikiAction;
-use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Component\Category;
 use YesWiki\Kernel\Component\Component;
 use YesWiki\Kernel\Component\ProvidesComponents;
 use YesWiki\Kernel\Component\Setting;
 use YesWiki\Kernel\Performable\RegisteredAction;
-use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\PerformableArguments;
-use YesWiki\Kernel\Service\UrlFormatter;
+use YesWiki\Render\Service\MenuRenderer;
 use YesWiki\Render\Service\TemplateHelperService;
 
-/** `{{nav}}` -- converted from the procedural actions/nav.php by ticket 06. */
+/**
+ * `{{nav}}` -- a page asking for one of the wiki's menus (ticket 64 / ADR-0028).
+ *
+ * It used to carry the navigation itself, as parallel comma-separated `links` and `titles` with an
+ * `icons` parameter the palette never offered. Those are gone: a menu is Content, this names one,
+ * and the same renderer draws it here, in the navbar and in the quick access bar.
+ */
 class NavAction extends YesWikiAction implements RegisteredAction, ProvidesComponents
 {
     public static function performableName(): string
@@ -33,14 +37,18 @@ class NavAction extends YesWikiAction implements RegisteredAction, ProvidesCompo
                 ->hint(_t('AB_templates_nav_hint'))
                 ->previewHeight('300px')
                 ->settings(
-                    Setting::navLinks('nav-links')
-                        ->raw('btn-label-add', _t('AB_templates_nav_add_tag'))
-                        ->subSettings(
-                            Setting::page('link')
-                            ->label(_t('AB_templates_nav_link')),
-                            Setting::text('title')
-                            ->label(_t('AB_templates_nav_title')),
-                        ),
+                    Setting::menu('menu')
+                        ->label(_t('AB_templates_nav_menu_label'))
+                        ->hint(_t('AB_templates_nav_menu_hint')),
+                    Setting::checkbox('showicons')
+                        ->label(_t('AB_templates_nav_showicons_label'))
+                        ->default(false),
+                    Setting::checkbox('showlabels')
+                        ->label(_t('AB_templates_nav_showlabels_label'))
+                        ->default(true),
+                    Setting::checkbox('showdropdown')
+                        ->label(_t('AB_templates_nav_showdropdown_label'))
+                        ->default(true),
                     Setting::cssClass('class')
                         ->subSettings(
                             Setting::choice('type', [
@@ -52,103 +60,31 @@ class NavAction extends YesWikiAction implements RegisteredAction, ProvidesCompo
                             ->label(_t('AB_templates_nav_class_label'))
                             ->default('nav nav-tabs'),
                         ),
-                    Setting::checkbox('hideifnoaccess')
-                        ->label(_t('AB_templates_nav_hide_if_no_access_label'))
-                        ->default(false),
                 ),
         ];
     }
 
     public function run(): string
     {
-        ob_start();
-        try {
-            $this->emit();
-        } catch (\Throwable $t) {
-            $this->output .= (string)ob_get_clean();
-
-            throw $t;
+        $arguments = $this->getService(PerformableArguments::class);
+        $menu = trim((string)$arguments->get('menu'));
+        if ($menu === '') {
+            return '';
         }
 
-        return (string)ob_get_clean();
+        return $this->getService(MenuRenderer::class)->render($menu, MenuRenderer::NAV, [
+            'showicons' => $this->flag('showicons', false),
+            'showlabels' => $this->flag('showlabels', true),
+            'showdropdown' => $this->flag('showdropdown', true),
+            'class' => trim((string)$arguments->get('class')),
+            'data' => $this->getService(TemplateHelperService::class)->getDataParameter(),
+        ]);
     }
 
-    private function emit(): void
-    {
-        $class = $this->getService(PerformableArguments::class)->get('class');
-        $class = ((!empty($class)) ? $class : 'yw-nav');
-
-        $data = $this->getService(TemplateHelperService::class)->getDataParameter();
-        $pagetag = $this->getService(PageContext::class)->getTag();
-
-        $links = $this->splitParameter('links');
-        $titles = $this->splitParameter('titles');
-
-        $icons = $this->splitParameter('icons');
-        foreach ($icons as $key => $icon) {
-            $icon = $this->getService(TemplateHelperService::class)->formatIconHtml($icon);
-
-            if ($icon !== '') {
-                $icon = $icon . ' ';
-            }
-            $icons[$key] = $icon;
-        }
-
-        $hideIfNoAccess = $this->getService(PerformableArguments::class)->get('hideifnoaccess');
-        $listlinks = '';
-        foreach ($titles as $key => $title) {
-            $haveAccess = true;
-            if (empty($links[$key])) {
-                $url = '';
-            } else {
-                $linkParts = $this->getService(UrlFormatter::class)->extractLinkParts($links[$key]);
-                [$url, $method, $params] = ['', '', ''];
-                if ($linkParts) {
-                    $method = $linkParts['method'];
-                    $params = $linkParts['params'];
-                    $url = $this->getService(UrlFormatter::class)->href($method, $linkParts['tag'], $params);
-                    if ($hideIfNoAccess == 'true' && isset($linkParts['tag']) && !$this->getService(AclService::class)->hasAccess('read', $linkParts['tag'])) {
-                        $haveAccess = false;
-                    }
-                } else {
-                    $url = $links[$key];
-                }
-            }
-
-            if ($haveAccess) {
-                $method ??= '';
-                $params ??= [];
-                $listclass = ($url == $this->getService(UrlFormatter::class)->href($method, $this->getService(PageContext::class)->getTag(), $params)) ? ' class="active"' : '';
-                $listlinks .= '<li' . $listclass . '><a href="' . $url . '">'
-                    . (isset($icons[$key]) ? $icons[$key] : '')
-                    . $title . '</a></li>' . "\n";
-            }
-        }
-
-        $navID = uniqid('nav_');
-        $dataAttributes = '';
-        foreach ($data as $key => $value) {
-            $dataAttributes .= ' data-' . $key . '="' . $value . '"';
-        }
-
-        if (!empty($listlinks)) {
-            echo ' <!-- start of nav -->
-                <nav><ul class="' . $class . '" id="' . $navID . '" ' . $dataAttributes . '>' . $listlinks . '</ul></nav>' . "\n";
-        }
-    }
-
-    /**
-     * A comma separated `nav` parameter as the list it is meant to be.
-     *
-     * @return list<string>
-     */
-    private function splitParameter(string $name): array
+    private function flag(string $name, bool $default): bool
     {
         $value = $this->getService(PerformableArguments::class)->get($name);
-        if (!is_string($value) || trim($value) === '') {
-            return [];
-        }
 
-        return array_map('trim', explode(',', $value));
+        return $value === null || $value === '' ? $default : filter_var($value, FILTER_VALIDATE_BOOL);
     }
 }

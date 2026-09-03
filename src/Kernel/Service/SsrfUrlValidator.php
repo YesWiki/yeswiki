@@ -2,11 +2,42 @@
 
 namespace YesWiki\Kernel\Service;
 
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+
 /**
  * Validates that a URL is safe to fetch server-side: it must use a scheme the caller allows, and must not resolve to a private, loopback, reserved, or link-local address (SSRF guard).
  */
 class SsrfUrlValidator
 {
+    /**
+     * The wiki's own address, which is not somewhere it can be talked into reaching.
+     *
+     * The guard exists to stop a wiki being used to probe the network it happens to sit in. Its own
+     * public address is not a discovery: whoever asked for the fetch can already make it. Refusing
+     * it means a wiki cannot syndicate a feed it publishes itself, or one on a sibling instance of
+     * the same farm, which is a normal thing to do and is what a wiki installed on `127.0.0.1`
+     * always is.
+     */
+    private ?string $ownOrigin = null;
+
+    public function __construct(?ParameterBagInterface $params = null)
+    {
+        $baseUrl = $params !== null && $params->has('base_url') ? $params->get('base_url') : null;
+        $this->ownOrigin = is_string($baseUrl) ? self::originOf($baseUrl) : null;
+    }
+
+    /** scheme://host:port, or null when there is no url to read one from. */
+    private static function originOf(string $url): ?string
+    {
+        $parts = parse_url($url);
+        if ($parts === false || empty($parts['scheme']) || empty($parts['host'])) {
+            return null;
+        }
+
+        return strtolower($parts['scheme']) . '://' . strtolower(trim($parts['host'], '[]'))
+            . (isset($parts['port']) ? ':' . $parts['port'] : '');
+    }
+
     /** Ranges PHP's own filters let through, but that a server must not be talked into reaching. */
     private const RESERVED_IPV4 = [
         '100.64.0.0/10',
@@ -34,6 +65,7 @@ class SsrfUrlValidator
         }
 
         $host = trim($parts['host'], '[]');
+        $isOwn = $this->ownOrigin !== null && self::originOf($url) === $this->ownOrigin;
 
         if (filter_var($host, FILTER_VALIDATE_IP)) {
             $ips = [$host];
@@ -54,6 +86,9 @@ class SsrfUrlValidator
         }
 
         foreach ($ips as $ip) {
+            if ($isOwn) {
+                continue;
+            }
             if (!filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)
                 || $this->isReservedIPv4($ip)) {
                 throw new \Exception("URL '{$url}' resolves to a private or reserved address");

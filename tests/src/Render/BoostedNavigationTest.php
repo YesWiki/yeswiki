@@ -77,7 +77,9 @@ class BoostedNavigationTest extends YesWikiTestCase
         $themeManager = $this->getWiki()->services->get(ThemeManager::class);
         $identity = $themeManager->layoutIdentity();
 
-        $this->assertCount(9, $identity);
+        // Nine, plus the six flags saying how each placement draws its menu (ticket 64): leaving
+        // one out swaps a page under stale chrome.
+        $this->assertCount(15, $identity);
         $this->assertNotSame('', $this->boosted()->fingerprint());
     }
 

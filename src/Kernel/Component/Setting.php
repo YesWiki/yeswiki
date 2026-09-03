@@ -99,6 +99,12 @@ final class Setting
         return new self($name, 'form-list');
     }
 
+    /** Pick one of this wiki's menus, which is the whole of what `{{nav}}` is told (ticket 64). */
+    public static function menu(string $name): self
+    {
+        return new self($name, 'menu-list');
+    }
+
     /** Pick a field of the form the component is pointed at. */
     public static function formField(string $name): self
     {
@@ -109,16 +115,6 @@ final class Setting
     public static function fieldMapping(string $name): self
     {
         return new self($name, 'field-mapping');
-    }
-
-    public static function iconMapping(string $name): self
-    {
-        return new self($name, 'icon-mapping');
-    }
-
-    public static function colorMapping(string $name): self
-    {
-        return new self($name, 'color-mapping');
     }
 
     public static function facets(string $name): self

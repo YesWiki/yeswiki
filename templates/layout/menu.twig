@@ -1,0 +1,61 @@
+{#
+  Every menu the wiki draws, in every placement (ticket 64 / ADR-0028).
+
+  The wrapper is what a placement differs about, and it is all it differs about: the entries were
+  prepared once, by MenuRenderer, so an icon, a dropdown and an active link work the same in the
+  navbar, in the quick access bar and in a page.
+#}
+{% macro glyph(entry, showIcons, showLabels) %}
+  {%- if showIcons and entry.icon %}{{ entry.icon|raw }}{% endif -%}
+  {%- if showLabels or not entry.icon %}{% if showIcons and entry.icon %} {% endif %}{{ entry.label }}{% endif -%}
+{% endmacro %}
+
+{% import _self as menu %}
+
+{% if placement == 'quick' %}
+  <div class="yw-topnav-fast-access pull-right">
+    {% for entry in entries %}
+      <a class="yw-btn{{ entry.active ? ' active-link' : '' }}" href="{{ entry.href }}"
+         {%- if entry.label %} title="{{ entry.label }}"{% endif %}
+         {%- if entry.missing %} data-missing-tag="true"{% endif %}>
+        {{- menu.glyph(entry, showIcons, showLabels) -}}
+      </a>
+      {% for child in entry.children %}
+        <a class="yw-btn{{ child.active ? ' active-link' : '' }}" href="{{ child.href }}"
+           {%- if child.label %} title="{{ child.label }}"{% endif %}
+           {%- if child.missing %} data-missing-tag="true"{% endif %}>
+          {{- menu.glyph(child, showIcons, showLabels) -}}
+        </a>
+      {% endfor %}
+    {% endfor %}
+    {{ appended|raw }}
+  </div>
+{% else %}
+  {% set wrapperClass = placement == 'navbar' ? 'yw-topnav topnavpage links-container' : 'yw-menu' %}
+  {% set listClass = class ?: 'yw-nav' %}
+  <nav class="{{ wrapperClass }}"{% for key, value in dataAttributes %} data-{{ key }}="{{ value }}"{% endfor %}>
+    <ul class="{{ listClass }}">
+      {% for entry in entries %}
+        {% if entry.children is not empty %}
+          <li class="yw-dropdown">
+            <a{{ entry.active ? ' class="active-link"' : '' }} data-yw-dropdown-toggle
+               {%- if entry.missing %} data-missing-tag="true"{% endif %}
+               href="{{ entry.href ?: '#' }}">{{ menu.glyph(entry, showIcons, showLabels) }}<b class="yw-dropdown__caret"></b></a>
+            <ul class="yw-dropdown__menu">
+              {% for child in entry.children %}
+                <li><a{{ child.active ? ' class="active-link"' : '' }}
+                       {%- if child.missing %} data-missing-tag="true"{% endif %}
+                       href="{{ child.href }}">{{ menu.glyph(child, showIcons, showLabels) }}</a></li>
+              {% endfor %}
+            </ul>
+          </li>
+        {% else %}
+          <li{{ entry.active ? ' class="active"' : '' }}><a{{ entry.active ? ' class="active-link"' : '' }}
+             {%- if entry.missing %} data-missing-tag="true"{% endif %}
+             href="{{ entry.href }}">{{ menu.glyph(entry, showIcons, showLabels) }}</a></li>
+        {% endif %}
+      {% endfor %}
+    </ul>
+    {{ appended|raw }}
+  </nav>
+{% endif %}

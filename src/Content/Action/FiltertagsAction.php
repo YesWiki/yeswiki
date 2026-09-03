@@ -18,6 +18,7 @@ use YesWiki\Kernel\Service\RuntimeConfig;
 use YesWiki\Kernel\Service\StringUtilService;
 use YesWiki\Render\Service\MarkdownFormatterService;
 use YesWiki\Render\Service\TemplateEngine;
+use YesWiki\Search\Service\SearchIndexSchema;
 use YesWiki\Search\Service\TagsManager;
 
 /** `{{filtertags}}` -- converted from the procedural actions/filtertags.php by ticket 06. */
@@ -81,23 +82,23 @@ class FiltertagsAction extends YesWikiAction implements RegisteredAction
         $included = $this->getService(InclusionStack::class)->getAll();
         $notIncluded = $included === []
             ? SqlFragment::empty()
-            : SqlFragment::of('AND tag NOT IN (' . SqlParameters::placeholders(count($included)) . ')', $included);
+            : SqlFragment::of('AND ' . $prefix . 'pages.tag NOT IN (' . SqlParameters::placeholders(count($included)) . ')', $included);
 
         $filter = SqlFragment::all(
             ' ',
             SqlFragment::of(
-                'tags.value IN (' . SqlParameters::placeholders(count($taglist)) . ')'
-                . " AND tags.property = 'http://outils-reseaux.org/_vocabulary/tag'"
-                . ' AND tags.resource = tag',
+                'tags.keyword IN (' . SqlParameters::placeholders(count($taglist)) . ')'
+                . ' AND tags.tag = ' . $prefix . 'pages.tag',
                 $taglist
             ),
             $notIncluded
         );
 
-        $req = "SELECT DISTINCT tag, {$timeCol}, {$userCol}, owner, body"
-            . ' FROM ' . $prefix . 'pages, ' . $prefix . 'triples tags'
+        $keywordsTable = $this->getService(SearchIndexSchema::class)->keywordsTable();
+        $req = "SELECT DISTINCT {$prefix}pages.tag, {$timeCol}, {$userCol}, owner, body"
+            . ' FROM ' . $prefix . 'pages, ' . $keywordsTable . ' tags'
             . " WHERE latest = 'Y' AND parent = '' AND " . $filter->sql
-            . ' ORDER BY tag ASC';
+            . ' ORDER BY ' . $prefix . 'pages.tag ASC';
         $aclService = $this->getService(AclService::class);
         $pages = array_filter(
             $this->getService(DbService::class)->loadAll($req, $filter->params),

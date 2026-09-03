@@ -259,7 +259,13 @@ body.nav-up {
 
 html {
   font-size: var(--yw-font-size-base) !important;
-  scroll-padding-top: calc(max(var(--yw-navbar-height), 4rem) + 1em);
+  /*
+   * Deep enough to clear the floating page actions, not just the bar.
+   * `.yw-page-actions` is fixed under the top bar and one button tall when it is not hovered, so
+   * scrolling a control to the top of the viewport used to park it underneath them -- and a click
+   * aimed at the control reached the floating edit button instead.
+   */
+  scroll-padding-top: calc(max(var(--yw-navbar-height), 4rem) + 4rem);
 }
 
 @media (max-width: 1200px) {
@@ -2530,7 +2536,13 @@ blockquote > cite {
   top: var(--yw-rail-top);
   border-radius: var(--yw-radius-md) 0 0 var(--yw-radius-md);
   right: 0;
-  z-index: 10;
+  /*
+   * Above the page's own floating actions (90) and the chrome pencil (91), below the modals.
+   * The rail is pinned to the same right edge they are, so at 10 they sat on top of its header
+   * and swallowed the clicks meant for its close button -- while the rail is open, it is what
+   * the reader is doing and the page's floating buttons are not.
+   */
+  z-index: 95;
   box-sizing: border-box;
   width: var(--yw-rail-width);
   max-width: 100vw;
@@ -2563,7 +2575,7 @@ blockquote > cite {
 }
 
 .yw-designer__sidebar.yw-rail--over {
-  z-index: 20;
+  z-index: 96;
   background: var(--yw-surface-sunken);
   box-shadow: -4px 0 16px var(--yw-shadow-color);
 }

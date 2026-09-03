@@ -2,6 +2,7 @@
 
 namespace YesWiki\Content\Service;
 
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Content\Field\EnumField;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Service\HibernationService;
@@ -14,7 +15,18 @@ class ListOverview
         private readonly HibernationService $hibernationService,
         private readonly AclService $aclService,
         private readonly FieldFactory $fieldFactory,
+        private readonly ParameterBagInterface $params,
     ) {
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function dataSourcesOf(): array
+    {
+        $sources = $this->params->has('dataSources') ? $this->params->get('dataSources') : [];
+
+        return is_array($sources) ? $sources : [];
     }
 
     /**
@@ -38,9 +50,27 @@ class ListOverview
 
             $field = $this->fieldFactory->create(['liste', $list['id'] ?? '', '', '', '', '', '', '', '', '', '', '', '', '', '', '']);
             $lists[$key]['options'] = $field instanceof EnumField ? $field->getOptions() : [];
+
+            // Where the values came from, and whether this wiki has agreed to let that replace
+            // them: the badge is the feature, following is a separate decision (ticket 64).
+            $origin = $this->listManager->originOf((string)$key);
+            $lists[$key]['origin'] = $origin;
+            $lists[$key]['followed'] = $origin !== '' && $this->isFollowed((string)$key);
         }
 
         return ['lists' => $lists, 'canCreate' => $this->mayCreate()];
+    }
+
+    /** Whether a data source already resyncs this list, which is what Follow creates. */
+    private function isFollowed(string $id): bool
+    {
+        foreach ($this->dataSourcesOf() as $options) {
+            if (is_array($options) && ($options['listId'] ?? null) === $id) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /** Who may change the lists: an admin, or -- for one list -- whoever owns it. */

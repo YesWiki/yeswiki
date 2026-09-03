@@ -1,10 +1,15 @@
+{#
+  What a value looks like: its colour as a pellet, its icon as a glyph (ticket 64).
 
+  Both are read off the list that defines the value, not off the call that drew the entry -- so the
+  same list is coloured once, whether it is shown as cards, as a table or on a map.
+#}
 {% macro pellet(params, entry) %}
-{%- set color = customValueForEntry(params.color|default(''), params.colorfield|default(''), entry, '') -%}
+{%- set color = entryColor(params.colorfield|default(''), entry, '') -%}
 {%- if color is not empty %}<span class="pellet" style="background-color:{{ color }};"></span> {% endif -%}
 {% endmacro %}
 
 {% macro icon(params, entry) %}
-{%- set icon = customValueForEntry(params.icon|default(''), params.iconfield|default(''), entry, '') -%}
-{%- if icon is not empty %}<i class="{{ icon }}"></i> {% endif -%}
+{%- set icon = entryIcon(params.iconfield|default(''), entry, '') -%}
+{%- if icon is not empty %}{{ icon|raw }} {% endif -%}
 {% endmacro %}

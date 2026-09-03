@@ -290,6 +290,15 @@ class TemplateEngine
             return $this->container->get(EntryDisplay::class)->customValueFor($parameter, $field, $entry, $default);
         });
 
+        // Ticket 64: the value knows what colour and icon it is, so a template asks the value
+        // rather than the call that drew it.
+        $this->addTwigHelper('entryColor', function ($field, $entry, $default = '') {
+            return $this->container->get(EntryDisplay::class)->colorForEntry($field, $entry, $default);
+        });
+        $this->addTwigHelper('entryIcon', function ($field, $entry, $default = '') {
+            return $this->container->get(EntryDisplay::class)->iconForEntry($field, $entry, $default);
+        });
+
         $this->addTwigHelper('hasAccess', function ($privilege, $tag = '') {
             return $this->container->get(AclService::class)->hasAccess($privilege, $tag ?: '');
         });
@@ -432,42 +441,23 @@ class TemplateEngine
         }
 
         if ($part === 'navbar') {
-            $entries = [];
-            foreach ($chrome->navbar as $entry) {
-                $children = [];
-                foreach ($entry['children'] as $child) {
-                    $children[] = $child + [
-                        'href' => $this->layoutHref($child['link']),
-                        'active' => $child['link'] === $current,
-                    ];
-                }
-                $entries[] = [
-                    'label' => $entry['label'],
-                    'href' => $entry['link'] === '' ? '' : $this->layoutHref($entry['link']),
-                    'active' => $entry['link'] === $current,
-                    'children' => $children,
-                ];
-            }
-
-            return $this->render('@core/layout/navbar.twig', ['entries' => $entries]);
+            return $this->container->get(MenuRenderer::class)->renderNodes(
+                $chrome->navbar,
+                MenuRenderer::NAVBAR,
+                $chrome->navbarFlags
+            );
         }
 
-        $entries = [];
-        foreach ($chrome->quickMenu as $entry) {
-            $entries[] = [
-                'label' => $entry['label'],
-                'href' => $this->layoutHref($entry['link']),
+        // The account button and the health badge are chrome appended around the render rather
+        // than menu nodes: they are stateful controls, not navigation (ADR-0028).
+        $appended = ($chrome->accountButton ? $this->container->get(Performer::class)->run('login', 'action', []) : '')
+            . $this->renderHealthBadge();
 
-                'glyph' => $this->legacyIconToSprite($entry['icon']),
-            ];
-        }
-
-        return $this->render('@core/layout/quick-menu.twig', [
-            'entries' => $entries,
-
-            'healthBadge' => $this->renderHealthBadge(),
-            'account' => $chrome->accountButton,
-        ]);
+        return $this->container->get(MenuRenderer::class)->renderNodes(
+            $chrome->quickMenu,
+            MenuRenderer::QUICK,
+            $chrome->quickMenuFlags + ['appended' => $appended]
+        );
     }
 
     /**
@@ -523,15 +513,6 @@ class TemplateEngine
         ]);
     }
 
-    /** What someone typed into a layout entry, as an address. */
-    private function layoutHref(string $link): string
-    {
-        if ($link === '' || preg_match('~^([a-z][a-z0-9+.-]*:|//|/|#)~i', $link) === 1) {
-            return $link;
-        }
-
-        return $this->urlFormatter->href('', $link, null, false);
-    }
 
     private function addTwigFilters(): void
     {
@@ -579,6 +560,28 @@ class TemplateEngine
         }
 
         return null;
+    }
+
+    /**
+     * A node's glyph as HTML: one of the shipped sprite's symbols, an emoji, or a file (ticket 64).
+     *
+     * Menu nodes and value-list nodes carry the same `{source, value}`, so they are drawn by the
+     * same three lines rather than by each renderer's own idea of what an icon is.
+     */
+    public function renderNodeIcon(string $source, string $value): ?string
+    {
+        $value = trim($value);
+        if ($value === '') {
+            return null;
+        }
+
+        return match ($source) {
+            'sprite' => $this->legacyIconToSprite($value),
+            'emoji' => '<span class="yw-menu__emoji" aria-hidden="true">' . htmlspecialchars($value, ENT_QUOTES) . '</span>',
+            'file' => '<img class="yw-menu__image" src="'
+                . htmlspecialchars($this->container->get(Storage::class)->url($value), ENT_QUOTES) . '" alt="">',
+            default => null,
+        };
     }
 
     /** Base-absolute URL of the Tabler sprite. */

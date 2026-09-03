@@ -12,6 +12,7 @@ use YesWiki\Core\YesWikiRuntime;
 use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Identity\Service\UserManager;
 use YesWiki\Kernel\Exception\ExitException;
+use YesWiki\Search\Service\SearchIndexer;
 use YesWiki\Search\Service\TagsManager;
 use YesWiki\Test\Core\YesWikiTestCase;
 
@@ -37,6 +38,7 @@ class PageEditFormFieldsTest extends YesWikiTestCase
         $authenticationService = $wiki->services->get(AuthenticationService::class);
         $performer = $wiki->services->get(\YesWiki\Render\Service\Performer::class);
         $currentRequest = $wiki->services->get(\YesWiki\Kernel\Service\CurrentRequest::class);
+        $previousRequest = $currentRequest->get();
         $pageContext = $wiki->services->get(\YesWiki\Kernel\Service\PageContext::class);
 
         $form = $wiki->services->get(FormManager::class)->getByContentType(ContentTypeSchema::TYPE_PAGE);
@@ -104,14 +106,22 @@ class PageEditFormFieldsTest extends YesWikiTestCase
             $this->assertSame('contenu initial', trim(PageBody::content($reloaded['body'])));
             $this->assertSame(['alpha', 'beta'], TagsManager::keywordsOf($reloaded), 'keywords are a list in the body');
 
-            $indexed = array_column($wiki->services->get(TagsManager::class)->getAll(self::PAGE_TAG), 'value');
-            sort($indexed);
-            $this->assertSame(['alpha', 'beta'], $indexed);
+            $wiki->services->get(SearchIndexer::class)->index(self::PAGE_TAG);
+            $indexed = array_column(
+                $wiki->services->get(TagsManager::class)->pairs(['alpha', 'beta']),
+                'keyword',
+                'keyword'
+            );
+            ksort($indexed);
+            $this->assertSame(['alpha' => 'alpha', 'beta' => 'beta'], $indexed);
         } finally {
             $pageManager->deleteOrphaned(self::PAGE_TAG);
-            $wiki->services->get(TagsManager::class)->reindex(self::PAGE_TAG, []);
+            $wiki->services->get(SearchIndexer::class)->delete(self::PAGE_TAG);
             $authenticationService->logout();
+            // Shared with every spec after this one: a leftover `submit` makes the next edit
+            // screen think it is handling a save.
             $_POST = [];
+            $currentRequest->replace($previousRequest);
         }
     }
 
@@ -123,6 +133,7 @@ class PageEditFormFieldsTest extends YesWikiTestCase
         $authenticationService = $wiki->services->get(AuthenticationService::class);
         $performer = $wiki->services->get(\YesWiki\Render\Service\Performer::class);
         $currentRequest = $wiki->services->get(\YesWiki\Kernel\Service\CurrentRequest::class);
+        $previousRequest = $currentRequest->get();
         $pageContext = $wiki->services->get(\YesWiki\Kernel\Service\PageContext::class);
 
         $tag = self::PAGE_TAG . 'ThatDoesNotExistYet';
@@ -175,9 +186,12 @@ class PageEditFormFieldsTest extends YesWikiTestCase
             $this->assertSame(['neuf', 'page'], TagsManager::keywordsOf($created));
         } finally {
             $pageManager->deleteOrphaned($tag);
-            $wiki->services->get(TagsManager::class)->reindex($tag, []);
+            $wiki->services->get(SearchIndexer::class)->delete($tag);
             $authenticationService->logout();
+            // Shared with every spec after this one: a leftover `submit` makes the next edit
+            // screen think it is handling a save.
             $_POST = [];
+            $currentRequest->replace($previousRequest);
         }
     }
 }

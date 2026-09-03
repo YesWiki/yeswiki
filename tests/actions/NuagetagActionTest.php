@@ -3,8 +3,10 @@
 namespace YesWiki\Test\Actions;
 
 use PHPUnit\Framework\Attributes\DataProvider;
+use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\TripleStore;
 use YesWiki\Render\Service\ActionRunner;
+use YesWiki\Search\Service\SearchIndexSchema;
 use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';
@@ -14,7 +16,6 @@ require_once 'tests/YesWikiTestCase.php';
  */
 class NuagetagActionTest extends YesWikiTestCase
 {
-    private const TAG_PROPERTY = 'http://outils-reseaux.org/_vocabulary/tag';
     private const SECRET_PROPERTY = 'http://example.org/_vocabulary/not-a-tag';
     private const LEGIT_TAG_VALUE = 'regressiontesttag';
     private const LEGIT_RESOURCE = 'NuagetagRegressionTestPage';
@@ -23,15 +24,35 @@ class NuagetagActionTest extends YesWikiTestCase
 
     public static function setUpBeforeClass(): void
     {
-        self::tripleStore()->create(self::LEGIT_RESOURCE, '', self::LEGIT_TAG_VALUE, '', self::TAG_PROPERTY);
-
+        // The keyword goes in the index the cloud reads (ticket 62); the secret stays a triple,
+        // which is the point of it -- another table's data must not surface in a keyword cloud.
+        self::indexKeyword(self::LEGIT_RESOURCE, self::LEGIT_TAG_VALUE);
         self::tripleStore()->create(self::SECRET_RESOURCE, '', self::SECRET_VALUE, '', self::SECRET_PROPERTY);
     }
 
     public static function tearDownAfterClass(): void
     {
-        self::tripleStore()->delete(self::LEGIT_RESOURCE, '', self::LEGIT_TAG_VALUE, '', self::TAG_PROPERTY);
+        self::forgetKeyword(self::LEGIT_RESOURCE, self::LEGIT_TAG_VALUE);
         self::tripleStore()->delete(self::SECRET_RESOURCE, '', self::SECRET_VALUE, '', self::SECRET_PROPERTY);
+    }
+
+    /** Write a (Content, keyword) pair straight into the index, which is what the cloud renders. */
+    private static function indexKeyword(string $tag, string $keyword): void
+    {
+        $wiki = self::getWiki();
+        $wiki->services->get(DbService::class)->query(
+            'INSERT INTO ' . $wiki->services->get(SearchIndexSchema::class)->keywordsTable() . ' (tag, keyword) VALUES (?, ?)',
+            [$tag, $keyword]
+        );
+    }
+
+    private static function forgetKeyword(string $tag, string $keyword): void
+    {
+        $wiki = self::getWiki();
+        $wiki->services->get(DbService::class)->query(
+            'DELETE FROM ' . $wiki->services->get(SearchIndexSchema::class)->keywordsTable() . ' WHERE tag = ? AND keyword = ?',
+            [$tag, $keyword]
+        );
     }
 
     #[DataProvider('dataProviderTestInjectionPayloadsDoNotLeakData')]
@@ -79,8 +100,7 @@ class NuagetagActionTest extends YesWikiTestCase
     {
         $xssTagValue = '<script>alert(document.domain)</script>';
         $xssResource = '"><img src=x onerror=alert(document.domain)>';
-        $tripleStore = $this->getWiki()->services->get(TripleStore::class);
-        $tripleStore->create($xssResource, '', $xssTagValue, '', self::TAG_PROPERTY);
+        self::indexKeyword($xssResource, $xssTagValue);
 
         try {
             $html = $this->getWiki()->services->get(ActionRunner::class)->action('tagcloud', ['tags' => $xssTagValue]);
@@ -104,7 +124,7 @@ class NuagetagActionTest extends YesWikiTestCase
                 }
             }
         } finally {
-            $tripleStore->delete($xssResource, '', $xssTagValue, '', self::TAG_PROPERTY);
+            self::forgetKeyword($xssResource, $xssTagValue);
         }
     }
 

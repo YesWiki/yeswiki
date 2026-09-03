@@ -48,7 +48,11 @@ test('an enum field gives the list a facet above it, and the display switches', 
   await expect(page.locator('#form-screen-list .yw-items--card')).toBeVisible()
   await expect(page.locator('.yw-export-menu')).toBeVisible()
 
-  await page.locator('label[for="form-screen-display-table"]').click()
+  // The switch draws two labels for the presentation a category is currently on: the group's own
+  // summary, and the one inside its menu. The menu entry is the one a reader clicks.
+  await page
+    .locator('.yw-display-switch__menu label[for="form-screen-display-table"]')
+    .click()
   await expect(
     page.locator('#form-screen-list .in-tableau-template'),
   ).toBeVisible()

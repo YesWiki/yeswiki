@@ -4,6 +4,7 @@ namespace YesWiki\Search\Service;
 
 use Psr\Container\ContainerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+use YesWiki\Core\YesWikiKernel;
 use YesWiki\Kernel\Entity\Event;
 use YesWiki\Kernel\Service\ConsoleService;
 
@@ -74,10 +75,17 @@ class SearchIndexSubscriber implements EventSubscriberInterface
         }
     }
 
-    /** Drain what this request queued, once it is finished writing. */
+    /**
+     * Drain what this request queued, once it is finished writing.
+     *
+     * A request only. A command has no reason to leave its work to a shutdown function -- it either
+     * drains the queue itself or leaves it to `search:reindex` -- and `migrate` ends by clearing
+     * `cache/container`, so a flush running after that would ask a container whose files have just
+     * been deleted for a service (ticket 54's hazard, in the CLI).
+     */
     private function flushWhenTheRequestIsOver(): void
     {
-        if ($this->flushRegistered) {
+        if ($this->flushRegistered || YesWikiKernel::isCli()) {
             return;
         }
         $this->flushRegistered = true;

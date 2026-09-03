@@ -20,7 +20,7 @@ class LayoutBecomesConfiguration extends YesWikiMigration
         $layout = $this->getService(LayoutService::class);
         $pageManager = $this->getService(PageManager::class);
 
-        if ($layout->navbar() !== [] || $layout->quickMenu() !== [] || $layout->hasOwnTitle()) {
+        if ($layout->navbar() !== '' || $layout->quickMenu() !== '' || $layout->hasOwnTitle()) {
             return;
         }
 
@@ -107,7 +107,11 @@ class LayoutBecomesConfiguration extends YesWikiMigration
     /**
      * `PageMenuHaut`: a markdown list, one level of nesting, and/or a `{{nav}}` call.
      *
-     * @return array{0: list<array{label: string, link: string, children: list<array{label: string, link: string}>}>, 1: list<string>}
+     * Answered as the flat rows a menu is written from -- one entry per row, `child` saying which
+     * ones sit under the last top-level one. Ticket 64 made that the shape a menu is saved from,
+     * and this migration hands its work to the same writer rather than keeping a shape of its own.
+     *
+     * @return array{0: list<array{label: string, link: string, child: bool}>, 1: list<string>}
      */
     private function readNavbar(string $body): array
     {
@@ -126,18 +130,17 @@ class LayoutBecomesConfiguration extends YesWikiMigration
         foreach ($lines as $line) {
             if (preg_match('/^(\s*)[-*]\s+(.+)$/', $line, $found) === 1) {
                 $entry = $this->readLink(trim($found[2]));
-                $parent = array_key_last($entries);
-                if (strlen($found[1]) > (int)$topIndent && $parent !== null) {
-                    $entries[$parent]['children'][] = $entry;
-                } else {
-                    $entries[] = ['label' => $entry['label'], 'link' => $entry['link'], 'children' => []];
-                }
+                $entries[] = [
+                    'label' => $entry['label'],
+                    'link' => $entry['link'],
+                    'child' => $entries !== [] && strlen($found[1]) > (int)$topIndent,
+                ];
                 continue;
             }
 
             if (preg_match('/\{\{\s*nav\b([^}]*)\}\}/i', $line, $found) === 1) {
                 foreach ($this->readNav($found[1]) as $entry) {
-                    $entries[] = ['label' => $entry['label'], 'link' => $entry['link'], 'children' => []];
+                    $entries[] = ['label' => $entry['label'], 'link' => $entry['link'], 'child' => false];
                 }
                 continue;
             }

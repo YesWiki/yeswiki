@@ -1141,28 +1141,6 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
                     'form_id',
                 ])
                 ->raw('only', 'lists'),
-            Setting::colorMapping('colormapping')
-                ->showIf('colorfield')
-                ->onlyFor([
-                    'entrymap',
-                    'bazarmapandtable',
-                    'entrylist',
-                    'bazarcalendar',
-                    'bazartimeline',
-                    'bazartableau',
-                    'bazarcard',
-                ])
-                ->subSettings(
-                    Setting::choice('id', [
-                    ])
-                    ->label(_t('AB_bazar_commons_subproperty_id_label'))
-                    ->extraFields([
-                        'form_id',
-                    ])
-                    ->raw('dataFromFormField', 'colorfield'),
-                    Setting::color('color')
-                    ->label(_t('AB_bazar_commons_colormapping_color_label')),
-                ),
             Setting::formField('iconfield')
                 ->label(_t('AB_bazar_commons_iconfield_label'))
                 ->onlyFor([
@@ -1178,34 +1156,6 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
                     'form_id',
                 ])
                 ->raw('only', 'lists'),
-            Setting::iconMapping('iconmapping')
-                ->showIf('iconfield')
-                ->onlyFor([
-                    'entrymap',
-                    'bazarmapandtable',
-                    'entrylist',
-                    'bazarcalendar',
-                    'bazartableau',
-                    'bazartimeline',
-                    'bazarcard',
-                ])
-                ->raw('iconprefix', [
-                    'advanced' => true,
-                    'type' => 'text',
-                    'label' => _t('AB_bazar_commons_iconfield_iconprefix_label'),
-                    'hint' => _t('AB_bazar_commons_iconfield_iconprefix_hint'),
-                ])
-                ->subSettings(
-                    Setting::choice('id', [
-                    ])
-                    ->label(_t('AB_bazar_commons_subproperty_id_label'))
-                    ->extraFields([
-                        'form_id',
-                    ])
-                    ->raw('dataFromFormField', 'iconfield'),
-                    Setting::icon('icon')
-                    ->label(_t('AB_bazar_commons_iconfield_icon_label')),
-                ),
             Setting::checkbox('minicalendar')
                 ->label(_t('AB_bazar_commons_minical'))
                 ->default('false')

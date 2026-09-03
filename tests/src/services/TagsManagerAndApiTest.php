@@ -5,8 +5,8 @@ namespace YesWiki\Test\Core\Service;
 use Symfony\Component\HttpFoundation\Request;
 use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Service\PageManager;
-use YesWiki\Kernel\Service\TripleStore;
 use YesWiki\Search\Api\TagApiController;
+use YesWiki\Search\Service\SearchIndexer;
 use YesWiki\Search\Service\TagsManager;
 use YesWiki\Test\Core\YesWikiTestCase;
 
@@ -25,20 +25,27 @@ class TagsManagerAndApiTest extends YesWikiTestCase
         $wiki = self::getWiki();
 
         $pageManager = $wiki->services->get(PageManager::class);
-        $tagsManager = $wiki->services->get(TagsManager::class);
-        $pageManager->save(self::TAG_A, [PageBody::CONTENT => 'page a'], '', true);
-        $pageManager->save(self::TAG_B, [PageBody::CONTENT => 'page b'], '', true);
-        $tagsManager->save(self::TAG_A, 'regressionapple,regressionapricot');
-        $tagsManager->save(self::TAG_B, 'regressionbanana');
+        // A keyword is set by saving the page that carries it, and the index follows (ticket 62).
+        $pageManager->save(self::TAG_A, [
+            PageBody::CONTENT => 'page a',
+            PageBody::KEYWORDS => ['regressionapple', 'regressionapricot'],
+        ], '', true);
+        $pageManager->save(self::TAG_B, [
+            PageBody::CONTENT => 'page b',
+            PageBody::KEYWORDS => ['regressionbanana'],
+        ], '', true);
+        $wiki->services->get(SearchIndexer::class)->drain(1000);
     }
 
     public static function tearDownAfterClass(): void
     {
-        self::tripleStore()->delete(self::TAG_A, TagsManager::TAG_PROPERTY, null, '', '');
-        self::tripleStore()->delete(self::TAG_B, TagsManager::TAG_PROPERTY, null, '', '');
-        $pageManager = self::getWiki()->services->get(PageManager::class);
-        $pageManager->deleteOrphaned(self::TAG_A);
-        $pageManager->deleteOrphaned(self::TAG_B);
+        $wiki = self::getWiki();
+        $pageManager = $wiki->services->get(PageManager::class);
+        $indexer = $wiki->services->get(SearchIndexer::class);
+        foreach ([self::TAG_A, self::TAG_B] as $tag) {
+            $pageManager->deleteOrphaned($tag);
+            $indexer->delete($tag);
+        }
     }
 
     public function testGetAllHonorsThePageArgument(): void
@@ -88,10 +95,5 @@ class TagsManagerAndApiTest extends YesWikiTestCase
 
         $this->assertSame(['regressionbanana'], $data['tags']);
         $this->assertSame(1, $data['total']);
-    }
-
-    private static function tripleStore(): TripleStore
-    {
-        return self::getWiki()->services->get(TripleStore::class);
     }
 }

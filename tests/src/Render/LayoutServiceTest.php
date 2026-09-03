@@ -27,6 +27,7 @@ class LayoutServiceTest extends YesWikiTestCase
             new ForcedParameterBag($services->get(ParameterBagInterface::class), $config),
             $services->get(ConfigurationService::class),
             $services->get(PageManager::class),
+            $services->get(\YesWiki\Content\Service\MenuManager::class),
             $services->get(PageContext::class),
             $services->get(\YesWiki\Files\Service\Storage::class),
         );
@@ -43,8 +44,8 @@ class LayoutServiceTest extends YesWikiTestCase
         ]);
 
         $this->assertSame('', $layout->ownTitle());
-        $this->assertSame([], $layout->navbar());
-        $this->assertSame([], $layout->quickMenu());
+        $this->assertSame('', $layout->navbar(), 'no menu is named');
+        $this->assertSame('', $layout->quickMenu());
         $this->assertSame('text', $layout->brandMode());
         $this->assertTrue($layout->hasAccountButton(), 'a wiki still has to let people in');
     }
@@ -77,34 +78,73 @@ class LayoutServiceTest extends YesWikiTestCase
         );
     }
 
-    public function testTheNavbarKeepsOneLevelOfChildrenAndDropsWhatHasNoLabel(): void
+    /**
+     * The rows an editor posts become the two-level tree a menu holds (ticket 64).
+     *
+     * Configuration names a menu now rather than holding one, so what used to be read out of an
+     * array here is read out of the form instead -- and this is where the nesting is decided.
+     */
+    public function testPostedRowsBecomeTheTwoLevelTreeAMenuHolds(): void
     {
-        $navbar = $this->service([LayoutService::NAVBAR => [
-            ['label' => 'Accueil', 'link' => 'PagePrincipale'],
-            ['label' => '  ', 'link' => 'Ignoree'],
-            ['label' => 'Exemples', 'link' => '', 'children' => [
-                ['label' => 'Agenda', 'link' => 'VueActivite'],
-                ['label' => '', 'link' => 'Ignoree'],
-            ]],
-            'not an entry at all',
-        ]])->navbar();
+        $draft = $this->service()->fromForm([], [
+            ['label' => 'Accueil', 'link' => 'PagePrincipale', 'child' => 0],
+            ['label' => 'Exemples', 'link' => '', 'child' => 0],
+            ['label' => 'Agenda', 'link' => 'VueActivite', 'child' => 1],
+            ['label' => '', 'link' => '', 'child' => 1],
+        ], []);
 
-        $this->assertCount(2, $navbar);
-        $this->assertSame(['label' => 'Accueil', 'link' => 'PagePrincipale', 'children' => []], $navbar[0]);
-        $this->assertSame([['label' => 'Agenda', 'link' => 'VueActivite']], $navbar[1]['children']);
+        $this->assertCount(2, $draft->navbar);
+        $this->assertSame('Accueil', $draft->navbar[0]->label);
+        $this->assertSame([], $draft->navbar[0]->children);
+        $this->assertCount(1, $draft->navbar[1]->children, 'a labelless row is not an entry');
+        $this->assertSame('VueActivite', $draft->navbar[1]->children[0]->link);
     }
 
-    public function testAQuickEntryNeedsAnIconOrALabelAndNotBoth(): void
+    /** A child with nothing above it is a top-level entry, which is what un-indenting the first row means. */
+    public function testTheFirstRowIsAlwaysTopLevel(): void
     {
-        $entries = $this->service([LayoutService::QUICK_MENU => [
-            ['icon' => 'search', 'label' => '', 'link' => 'search'],
-            ['icon' => '', 'label' => 'Nous écrire', 'link' => 'Contact'],
-            ['icon' => '', 'label' => '', 'link' => 'Nulle part'],
-        ]])->quickMenu();
+        $draft = $this->service()->fromForm([], [
+            ['label' => 'Seule', 'link' => 'Quelque part', 'child' => 1],
+        ], []);
 
-        $this->assertCount(2, $entries);
-        $this->assertSame('search', $entries[0]['icon']);
-        $this->assertSame('Nous écrire', $entries[1]['label']);
+        $this->assertCount(1, $draft->navbar);
+        $this->assertSame('Seule', $draft->navbar[0]->label);
+    }
+
+    /** An entry needs to say something or lead somewhere; a blank row is not an entry. */
+    public function testARowThatSaysNothingAndLeadsNowhereIsNotAnEntry(): void
+    {
+        $draft = $this->service()->fromForm([], [], [
+            ['icon_source' => 'sprite', 'icon_value' => 'search', 'label' => '', 'link' => 'search', 'child' => 0],
+            ['icon_source' => 'sprite', 'icon_value' => '', 'label' => 'Nous écrire', 'link' => 'Contact', 'child' => 0],
+            ['icon_source' => 'sprite', 'icon_value' => '', 'label' => '', 'link' => '', 'child' => 0],
+        ]);
+
+        $this->assertCount(2, $draft->quickMenu);
+        $this->assertSame('search', $draft->quickMenu[0]->iconValue);
+        $this->assertSame('Nous écrire', $draft->quickMenu[1]->label);
+    }
+
+    /** The flags belong to the placement, and each placement starts as it has always drawn. */
+    public function testEachPlacementDrawsAsItAlwaysHasUntilItIsTold(): void
+    {
+        $layout = $this->service([
+            LayoutService::NAVBAR_ICONS => null,
+            LayoutService::NAVBAR_LABELS => null,
+            LayoutService::QUICK_MENU_ICONS => null,
+            LayoutService::QUICK_MENU_LABELS => null,
+        ]);
+
+        $this->assertSame(
+            ['showicons' => false, 'showlabels' => true, 'showdropdown' => true],
+            $layout->navbarFlags(),
+            'the navbar reads as words'
+        );
+        $this->assertSame(
+            ['showicons' => true, 'showlabels' => false, 'showdropdown' => false],
+            $layout->quickMenuFlags(),
+            'the quick access bar reads as glyphs'
+        );
     }
 
     public function testTheAccountButtonIsOffOnlyWhenItWasTurnedOff(): void
@@ -148,15 +188,16 @@ class LayoutServiceTest extends YesWikiTestCase
 
         $draft = $service->fromForm(
             ['title' => '', 'logo' => '', 'brand' => 'logo', 'account' => true, 'height' => '64'],
-            [['label' => 'Accueil', 'link' => 'PagePrincipale']],
-            [['icon' => 'search', 'label' => '', 'link' => 'search']]
+            [['label' => 'Accueil', 'link' => 'PagePrincipale', 'child' => 0]],
+            [['icon_value' => 'search', 'label' => '', 'link' => 'search', 'child' => 0]]
         );
 
         $this->assertSame('Le wiki du collectif', $draft->title);
 
         $this->assertSame('text', $draft->brandMode);
         $this->assertSame(64, $draft->navbarHeight);
-        $this->assertSame([['label' => 'Accueil', 'link' => 'PagePrincipale', 'children' => []]], $draft->navbar);
+        $this->assertCount(1, $draft->navbar);
+        $this->assertSame('Accueil', $draft->navbar[0]->label);
         $this->assertCount(1, $draft->quickMenu);
         $this->assertTrue($draft->accountButton);
     }

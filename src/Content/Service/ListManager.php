@@ -150,7 +150,7 @@ class ListManager
      *
      * @return string the id the list was saved under
      */
-    public function create($title, $nodes, $id = null)
+    public function create($title, $nodes, $id = null, ?string $origin = null)
     {
         if ($this->hibernationService->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
@@ -161,7 +161,7 @@ class ListManager
         $body = [
             'title' => $title,
             'nodes' => $this->sanitizeHMTL($nodes),
-        ];
+        ] + ($origin === null || $origin === '' ? [] : ['origin' => $origin]);
         $this->pageManager->save($id, $body, '', false, null, PageType::LIST);
         $this->pageManager->cacheType($id, PageType::LIST);
 
@@ -176,21 +176,37 @@ class ListManager
      * @param string                                $title
      * @param array<int, array<string, mixed>>|null $nodes
      */
-    public function update($id, $title, $nodes): void
+    public function update($id, $title, $nodes, ?string $origin = null): void
     {
         if ($this->hibernationService->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
         $nodes = $nodes ?? [];
         $this->trimRecursiveInPlace($nodes);
+        // The origin outlives an edit: an imported list stays an ordinary editable list that
+        // remembers where its values came from (ticket 64).
+        $origin ??= $this->originOf((string)$id);
         $body = [
             'title' => $title,
             'nodes' => $this->sanitizeHMTL($nodes),
-        ];
+        ] + ($origin === '' ? [] : ['origin' => $origin]);
         $this->pageManager->save($id, $body);
 
         $data = $this->loadBody($body, $id);
         $this->cachedLists[$id] = $data;
+    }
+
+    /**
+     * Where a list's values were copied from, empty when they are this wiki's own.
+     *
+     * A badge and nothing more: an imported list is editable like any other, and following it --
+     * which is what makes a sync replace local edits -- is a separate decision (ticket 64).
+     */
+    public function originOf(string $id): string
+    {
+        $origin = $this->getOne($id)['origin'] ?? '';
+
+        return is_string($origin) ? $origin : '';
     }
 
     /** @param string $id */

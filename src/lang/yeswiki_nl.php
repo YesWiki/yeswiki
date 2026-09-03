@@ -916,7 +916,6 @@ return [
     'AB_templates_section_pattern_diag' => 'Diagon',
     'TEMPLATE_DEFAULT_PRESET' => 'Preset default',
     'TEMPLATE_ELEM_GRID_NOT_CLOSED' => 'de actie moet ecirc zijn',
-    'AB_templates_nav_hide_if_no_access_label' => 'Verberg je als de gebruiker geen toegang heeft tot de linker pagina',
     'AB_templates_panel_type_default' => 'Simpele frame',
     'AB_templates_panel_type_collapsed' => 'Gesloten accord',
     'AB_templates_section_textcolor_white' => 'Claire',

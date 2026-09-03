@@ -12,30 +12,39 @@ use YesWiki\Kernel\Database\SqlFragment;
 use YesWiki\Kernel\Database\SqlParameters;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\HibernationService;
-use YesWiki\Kernel\Service\TripleStore;
 
-/** Page keywords. */
+/**
+ * Keywords: every question the wiki asks of them, answered from one index (ticket 62).
+ *
+ * `body.keywords` is the truth (ticket 09) and `{prefix}search_keywords` is its index, maintained
+ * by `SearchIndexer` on every save. It used to be indexed twice, the second time as
+ * `_vocabulary/tag` triples, and the two disagreed about what a keyword may be attached to: the
+ * triples covered ordinary pages and bazar entries, `search_keywords` covers every Content there
+ * is. Two indexes over one fact is the shape that produces a bug nobody can reproduce, and
+ * `triples.value` is unindexed TEXT, so every keyword question used to be a table scan.
+ *
+ * Writing is not here at all. A keyword is changed by saving the page that carries it, and the
+ * index follows -- which is why removing one from `/admin/keywords` edits bodies rather than rows.
+ */
 class TagsManager
 {
-    public const TAG_PROPERTY = 'http://outils-reseaux.org/_vocabulary/tag';
-
     protected DbService $dbService;
     protected HibernationService $hibernationService;
-    protected TripleStore $tripleStore;
     protected ParameterBagInterface $params;
     protected ContainerInterface $container;
+    protected SearchIndexSchema $schema;
 
     public function __construct(
         DbService $dbService,
-        TripleStore $tripleStore,
         ParameterBagInterface $params,
         HibernationService $hibernationService,
+        SearchIndexSchema $schema,
         ContainerInterface $container
     ) {
         $this->dbService = $dbService;
-        $this->tripleStore = $tripleStore;
         $this->params = $params;
         $this->hibernationService = $hibernationService;
+        $this->schema = $schema;
         $this->container = $container;
     }
 
@@ -76,95 +85,16 @@ class TagsManager
         return is_array($keywords) ? array_values(array_filter($keywords, 'is_string')) : [];
     }
 
-    /** Drop every index row for a page, without touching its body. */
-    public function deleteAll(string $page): void
-    {
-        if ($this->hibernationService->isWikiHibernated()) {
-            throw new \Exception(_t('WIKI_IN_HIBERNATION'));
-        }
-
-        $this->tripleStore->delete($page, self::TAG_PROPERTY, null, '', '');
-    }
-
     /**
-     * Replace a page's keywords.
+     * Whether there is an index to ask at all.
      *
-     * @param string $liste_tags comma-separated, as typed in the edit form
+     * A wiki whose search index was never created, or has been dropped, has no keywords to offer
+     * -- where `triples` always had an answer. `/admin/health` says so out loud (ticket 52); every
+     * reader here answers empty rather than throwing at a table that is not there.
      */
-    public function save(string $page, string $liste_tags): void
+    private function indexed(): bool
     {
-        if ($this->hibernationService->isWikiHibernated()) {
-            throw new \Exception(_t('WIKI_IN_HIBERNATION'));
-        }
-
-        $keywords = self::parseList($liste_tags);
-        $pageManager = $this->container->get(PageManager::class);
-        $stored = $pageManager->getOne($page, null, false, true);
-        if ($stored) {
-            $body = $stored['body'] ?? [];
-            if (self::keywordsOf($stored) !== $keywords) {
-                if (empty($keywords)) {
-                    unset($body[PageBody::KEYWORDS]);
-                } else {
-                    $body[PageBody::KEYWORDS] = $keywords;
-                }
-                $pageManager->save($page, $body, '', true);
-            }
-        }
-
-        $this->reindex($page, $keywords);
-    }
-
-    /**
-     * Rewrite one page's entries in the reverse index to match the given keywords.
-     *
-     * @param list<string> $keywords
-     */
-    public function reindex(string $page, array $keywords): void
-    {
-        $this->tripleStore->delete($page, self::TAG_PROPERTY, null, '', '');
-        foreach ($keywords as $keyword) {
-            $this->tripleStore->create($page, self::TAG_PROPERTY, $keyword, '', '');
-        }
-    }
-
-    /**
-     * Rebuild the reverse index for ordinary wiki pages from the current revision of each.
-     *
-     * @return int the number of pages indexed
-     */
-    public function reindexAll(): int
-    {
-        $pages = trim($this->dbService->prefixTable('pages'));
-        $typeCol = $this->dbService->quoteIdentifier('type');
-
-        $rows = $this->dbService->loadAll(
-            "SELECT tag, body FROM {$pages}"
-            . " WHERE latest = 'Y' AND parent = '' AND {$typeCol} = ?",
-            [PageType::PAGE]
-        );
-
-        $triples = trim($this->dbService->prefixTable('triples'));
-        $this->dbService->query(
-            "DELETE FROM {$triples} WHERE property = ?"
-            . " AND resource IN (SELECT tag FROM {$pages}"
-            . " WHERE latest = 'Y' AND {$typeCol} = ?)",
-            [self::TAG_PROPERTY, PageType::PAGE]
-        );
-
-        $indexed = 0;
-        foreach ($rows as $row) {
-            $keywords = self::keywordsOf(['body' => PageBody::decode($row['body'] ?? null)]);
-            if (empty($keywords)) {
-                continue;
-            }
-            foreach ($keywords as $keyword) {
-                $this->tripleStore->create((string)$row['tag'], self::TAG_PROPERTY, $keyword, '', '');
-            }
-            $indexed++;
-        }
-
-        return $indexed;
+        return $this->schema->exists();
     }
 
     /**
@@ -177,9 +107,13 @@ class TagsManager
     public function getAll(string $page = ''): array
     {
         if ($page == '') {
-            $sql = 'SELECT DISTINCT value FROM' . $this->dbService->prefixTable('triples') . 'WHERE property = ?';
+            if (!$this->indexed()) {
+                return [];
+            }
 
-            return $this->dbService->loadAll($sql, [self::TAG_PROPERTY]);
+            return $this->dbService->loadAll(
+                "SELECT DISTINCT keyword AS value FROM {$this->schema->keywordsTable()} ORDER BY keyword ASC"
+            );
         }
 
         $stored = $this->container->get(PageManager::class)->getOne($page, null, true, true);
@@ -194,14 +128,18 @@ class TagsManager
      */
     public function mostUsed(int $limit = 30): array
     {
+        if (!$this->indexed()) {
+            return [];
+        }
+
         $rows = $this->dbService->loadAll(
-            'SELECT value, COUNT(*) AS total FROM' . $this->dbService->prefixTable('triples')
-            . 'WHERE property = ? GROUP BY value ORDER BY total DESC, value ASC LIMIT ?',
-            [self::TAG_PROPERTY, max(1, $limit)]
+            "SELECT keyword, COUNT(*) AS total FROM {$this->schema->keywordsTable()}"
+            . ' GROUP BY keyword ORDER BY total DESC, keyword ASC LIMIT ?',
+            [max(1, $limit)]
         );
 
         return array_map(
-            fn (array $row): array => ['value' => (string)$row['value'], 'total' => (int)$row['total']],
+            fn (array $row): array => ['value' => (string)$row['keyword'], 'total' => (int)$row['total']],
             $rows
         );
     }
@@ -213,69 +151,91 @@ class TagsManager
      */
     public function search(string $search = '', int $limit = 20, int $offset = 0): array
     {
+        if (!$this->indexed()) {
+            return ['tags' => [], 'total' => 0];
+        }
+
         $limit = max(1, min($limit, 100));
         $offset = max(0, $offset);
-        $table = $this->dbService->prefixTable('triples');
-        $where = 'property = ?';
-        $params = [self::TAG_PROPERTY];
+        $where = '';
+        $params = [];
         if ($search !== '') {
-            $where .= ' AND value LIKE ?' . SqlParameters::LIKE_CLAUSE_SUFFIX;
+            $where = ' WHERE keyword LIKE ?' . SqlParameters::LIKE_CLAUSE_SUFFIX;
             $params[] = SqlParameters::likeContains($search);
         }
-        $baseQuery = "SELECT DISTINCT value FROM $table WHERE $where";
+        $baseQuery = "SELECT DISTINCT keyword FROM {$this->schema->keywordsTable()}{$where}";
 
         return [
             'tags' => array_column($this->dbService->loadAll(
-                $baseQuery . ' ORDER BY value ASC LIMIT ? OFFSET ?',
+                $baseQuery . ' ORDER BY keyword ASC LIMIT ? OFFSET ?',
                 [...$params, $limit, $offset]
-            ), 'value'),
+            ), 'keyword'),
             'total' => $this->dbService->countRows($baseQuery, $params),
         ];
     }
 
     /**
-     * Every (id, value, resource) index row, for the admin keyword-management page (AdminTagAction) -- unlike getAll()/search(), this exposes the row id, which is how that page targets individual page/keyword pairs for removeByIds().
+     * Every (keyword, tag) pair the visitor may read, for `/admin/keywords` and `{{tagcloud}}`.
      *
-     * @return list<array<string, mixed>>
+     * The pair *is* the identity -- `search_keywords`' primary key is `(tag, keyword)` -- which is
+     * what the screens address now. They used to address a triple's surrogate id, and giving this
+     * table one would have been adding a column to carry a habit (ticket 62).
+     *
+     * @param list<string> $only restrict to these keywords; every one when empty
+     *
+     * @return list<array{keyword: string, tag: string}>
      */
-    public function getAllTriples(): array
+    public function pairs(array $only = []): array
     {
-        $readable = $this->container->get(AclService::class)->readableResourceFilter();
+        if (!$this->indexed()) {
+            return [];
+        }
 
-        return $this->dbService->loadAll(
-            'SELECT id, value, resource FROM ' . $this->dbService->prefixTable('triples')
-            . " WHERE property='" . self::TAG_PROPERTY . "'"
-            . ($readable->isEmpty() ? '' : ' AND ' . $readable->sql)
-            . ' ORDER BY value ASC, resource ASC',
-            $readable->params
+        $chosen = $only === []
+            ? SqlFragment::empty()
+            : SqlFragment::of('keyword IN (' . SqlParameters::placeholders(count($only)) . ')', $only);
+        $readable = $this->container->get(AclService::class)->readableResourceFilter('tag');
+        $filter = SqlFragment::all(' AND ', $chosen, $readable);
+
+        $rows = $this->dbService->loadAll(
+            "SELECT keyword, tag FROM {$this->schema->keywordsTable()}"
+            . ($filter->isEmpty() ? '' : ' WHERE ' . $filter->sql)
+            . ' ORDER BY keyword ASC, tag ASC',
+            $filter->params
+        );
+
+        return array_map(
+            static fn (array $row): array => ['keyword' => (string)$row['keyword'], 'tag' => (string)$row['tag']],
+            $rows
         );
     }
 
     /**
-     * Remove the page/keyword pairs identified by these index-row ids (AdminTagAction's bulk "delete from all pages").
+     * Take these keywords off these Contents, by editing the bodies that carry them.
      *
-     * @param array<array-key, int|string> $ids
+     * The index is not touched: saving the page re-indexes it, so the cache follows the truth
+     * instead of being edited beside it.
+     *
+     * @param list<array{keyword: string, tag: string}> $pairs
      */
-    public function removeByIds(array $ids): void
+    public function remove(array $pairs): void
     {
-        $ids = array_filter(array_map('intval', $ids));
-        if (empty($ids)) {
-            return;
+        if ($this->hibernationService->isWikiHibernated()) {
+            throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
 
-        $rows = $this->dbService->loadAll(
-            'SELECT resource, value FROM ' . $this->dbService->prefixTable('triples')
-            . " WHERE property='" . self::TAG_PROPERTY . "' AND id IN (" . implode(',', $ids) . ')'
-        );
-
-        $toRemove = [];
-        foreach ($rows as $row) {
-            $toRemove[(string)$row['resource']][] = (string)$row['value'];
+        $byContent = [];
+        foreach ($pairs as $pair) {
+            $tag = trim($pair['tag']);
+            $keyword = trim($pair['keyword']);
+            if ($tag !== '' && $keyword !== '') {
+                $byContent[$tag][] = $keyword;
+            }
         }
 
         $pageManager = $this->container->get(PageManager::class);
-        foreach ($toRemove as $page => $keywords) {
-            $stored = $pageManager->getOne($page, null, false, true);
+        foreach ($byContent as $tag => $keywords) {
+            $stored = $pageManager->getOne((string)$tag, null, false, true);
             if (!$stored) {
                 continue;
             }
@@ -286,8 +246,7 @@ class TagsManager
             } else {
                 $body[PageBody::KEYWORDS] = $remaining;
             }
-            $pageManager->save($page, $body, '', true);
-            $this->reindex($page, $remaining);
+            $pageManager->save((string)$tag, $body, '', true);
         }
     }
 
@@ -304,16 +263,20 @@ class TagsManager
     public function getPagesByTags(string $tags = '', string $type = '', $nb = '', string $sort = ''): array
     {
         if (!empty($tags)) {
-            $req = ' AND EXISTS (select resource FROM ' . $this->dbService->prefixTable('triples') . ' WHERE resource=tag';
+            if (!$this->indexed()) {
+                return [];
+            }
 
-            $tab_tags = explode(',', trim($tags));
-            $nbdetags = count($tab_tags);
-            $req .= ' AND value IN (' . SqlParameters::placeholders($nbdetags) . ') ';
-            $req .= ' AND property = ?';
-            $req .= ' GROUP BY resource ';
-            $req .= ' HAVING COUNT(resource) = ?) ';
+            $keywords = self::parseList($tags);
+            $wanted = count($keywords);
+            $keywordsTable = $this->schema->keywordsTable();
 
-            $params = [...$tab_tags, self::TAG_PROPERTY, $nbdetags];
+            $pages = trim($this->dbService->prefixTable('pages'));
+            $req = " AND EXISTS (SELECT k.tag FROM {$keywordsTable} k WHERE k.tag = {$pages}.tag"
+                . ' AND k.keyword IN (' . SqlParameters::placeholders($wanted) . ')'
+                . ' GROUP BY k.tag HAVING COUNT(k.tag) = ?) ';
+
+            $params = [...$keywords, $wanted];
 
             if ($sort == 'alpha') {
                 $req .= ' ORDER BY tag ASC ';

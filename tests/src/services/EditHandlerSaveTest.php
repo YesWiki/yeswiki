@@ -49,6 +49,7 @@ class EditHandlerSaveTest extends YesWikiTestCase
         $wiki->services->get(PageManager::class)->getOne(self::PAGE_TAG);
 
         $GLOBALS['yeswikiServices'] = $wiki->services;
+        $previousRequest = $wiki->services->get(\YesWiki\Kernel\Service\CurrentRequest::class)->get();
 
         try {
             $_POST = [];
@@ -85,6 +86,10 @@ class EditHandlerSaveTest extends YesWikiTestCase
             $pageManager->deleteOrphaned(self::PAGE_TAG);
             $authenticationService->logout();
             unset($GLOBALS['wiki']);
+            // The request is shared with every spec that runs after this one, and a leftover
+            // `submit` makes the next edit screen think it is handling a save.
+            $_POST = [];
+            $wiki->services->get(\YesWiki\Kernel\Service\CurrentRequest::class)->replace($previousRequest);
         }
     }
 }

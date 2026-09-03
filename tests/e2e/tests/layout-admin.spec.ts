@@ -28,10 +28,10 @@ test('what an admin types into Layout becomes the navbar of every page', async (
   await expect(title).toHaveAttribute('placeholder', /\S/)
   await title.fill('Le wiki du collectif')
 
-  const navbar = page.locator('[data-yw-layout-rows="navbar"]')
-  const before = await navbar.locator('[data-yw-layout-row]').count()
-  await page.locator('[data-yw-layout-add="navbar"]').click()
-  const rows = navbar.locator('[data-yw-layout-row]')
+  const navbar = page.locator('[data-yw-menu-rows="navbar"]')
+  const before = await navbar.locator('[data-yw-menu-row]').count()
+  await page.locator('[data-yw-menu-add="navbar"]').click()
+  const rows = navbar.locator('[data-yw-menu-row]')
   await expect(rows).toHaveCount(before + 1)
 
   const added = rows.last()
@@ -60,9 +60,7 @@ test('a dropdown is an entry with children under it', async ({ page }) => {
   await page.goto('/?admin/layout')
 
   await expect(
-    page
-      .locator('[data-yw-layout-rows="navbar"] .yw-layout__row--child')
-      .first(),
+    page.locator('[data-yw-menu-rows="navbar"] .yw-menu-row--child').first(),
   ).toBeVisible()
 
   await page.goto('/?PagePrincipale')
@@ -394,14 +392,12 @@ test('moving an entry takes its submenu with it', async ({ page }) => {
   await login(page, ADMIN_USERNAME, ADMIN_PASSWORD)
   await page.goto('/?admin/layout')
 
-  const rows = page.locator(
-    '[data-yw-layout-rows="navbar"] [data-yw-layout-row]',
-  )
+  const rows = page.locator('[data-yw-menu-rows="navbar"] [data-yw-menu-row]')
   const labels = () =>
     rows.evaluateAll((list) =>
       list.map((row) => ({
-        label: row.querySelector('.yw-layout__label')?.value,
-        child: row.classList.contains('yw-layout__row--child'),
+        label: row.querySelector('.yw-menu-row__label')?.value,
+        child: row.classList.contains('yw-menu-row--child'),
       })),
     )
 
@@ -419,7 +415,7 @@ test('moving an entry takes its submenu with it', async ({ page }) => {
     .map((row) => row.label)
   expect(children.length).toBeGreaterThan(0)
 
-  await rows.nth(parentIndex).locator('[data-yw-layout-move="-1"]').click()
+  await rows.nth(parentIndex).locator('[data-yw-menu-move="-1"]').click()
 
   const after = await labels()
   const movedTo = after.findIndex(
@@ -447,18 +443,16 @@ test('the indent button turns around, and links suggest pages', async ({
   await login(page, ADMIN_USERNAME, ADMIN_PASSWORD)
   await page.goto('/?admin/layout')
 
-  const rows = page.locator(
-    '[data-yw-layout-rows="navbar"] [data-yw-layout-row]',
-  )
+  const rows = page.locator('[data-yw-menu-rows="navbar"] [data-yw-menu-row]')
   const topLevel = rows.filter({
-    hasNot: page.locator('.yw-layout__row--child'),
+    hasNot: page.locator('.yw-menu-row--child'),
   })
   const second = rows.nth(1)
-  const indent = second.locator('[data-yw-layout-indent]')
+  const indent = second.locator('[data-yw-menu-indent]')
   const arrow = () => indent.locator('use').getAttribute('href')
 
   const wasChild = await second.evaluate((row) =>
-    row.classList.contains('yw-layout__row--child'),
+    row.classList.contains('yw-menu-row--child'),
   )
   expect(await arrow()).toContain(wasChild ? '#arrow-left' : '#arrow-right')
   await indent.click()
@@ -467,7 +461,7 @@ test('the indent button turns around, and links suggest pages', async ({
     'the arrow turns around: it shows the move that is now available',
   ).toContain(wasChild ? '#arrow-right' : '#arrow-left')
 
-  const link = rows.first().locator('.yw-layout__link')
+  const link = rows.first().locator('.yw-menu-row__link')
   await link.click()
   await link.fill('Page')
   const suggestions = rows.first().locator('.yw-suggestions')
@@ -475,7 +469,8 @@ test('the indent button turns around, and links suggest pages', async ({
   await expect(suggestions.locator('button').first()).toContainText(/Page/)
 
   const width = await rows.first().evaluate((row) => ({
-    field: row.querySelector('.yw-layout__link').getBoundingClientRect().width,
+    field: row.querySelector('.yw-menu-row__link').getBoundingClientRect()
+      .width,
     list: row.querySelector('.yw-suggestions').getBoundingClientRect().width,
   }))
   expect(width.list).toBeLessThan(width.field + 20)

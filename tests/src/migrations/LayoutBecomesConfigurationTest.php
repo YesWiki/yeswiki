@@ -51,6 +51,10 @@ class LayoutBecomesConfigurationTest extends YesWikiTestCase
         $this->assertSame(['{{include page="UnBandeau"}}'], $rest);
     }
 
+    /**
+     * The rows, not a tree: ticket 64 made the flat `child`-flagged row the shape a menu is written
+     * from, and this migration hands its work to that writer rather than keeping a shape of its own.
+     */
     public function testTheSeededMenuBecomesOneEntryAndOneDropdown(): void
     {
         [$navbar, $rest] = $this->readNavbar(
@@ -61,18 +65,12 @@ class LayoutBecomesConfigurationTest extends YesWikiTestCase
             . "{#INFO CACHÉE\nVous êtes dans la page qui se nomme PageMenuHaut\n#}"
         );
 
-        $this->assertCount(2, $navbar);
-        $this->assertSame(['label' => 'Bac à sable', 'link' => 'BacASable', 'children' => []], $navbar[0]);
-        $this->assertSame('Menu exemple', $navbar[1]['label']);
-
-        $this->assertSame('', $navbar[1]['link']);
-        $this->assertSame(
-            [
-                ['label' => 'Exemple annuaire', 'link' => 'TrombiAnnuaire'],
-                ['label' => 'Exemple agenda', 'link' => 'VueActivite'],
-            ],
-            $navbar[1]['children']
-        );
+        $this->assertSame([
+            ['label' => 'Bac à sable', 'link' => 'BacASable', 'child' => false],
+            ['label' => 'Menu exemple', 'link' => '', 'child' => false],
+            ['label' => 'Exemple annuaire', 'link' => 'TrombiAnnuaire', 'child' => true],
+            ['label' => 'Exemple agenda', 'link' => 'VueActivite', 'child' => true],
+        ], $navbar);
         $this->assertSame([], $rest);
     }
 
@@ -82,7 +80,8 @@ class LayoutBecomesConfigurationTest extends YesWikiTestCase
         [$navbar] = $this->readNavbar("    - [Un](PageUn)\n    - [Deux](PageDeux)");
 
         $this->assertCount(2, $navbar);
-        $this->assertSame([], $navbar[0]['children']);
+        $this->assertFalse($navbar[0]['child']);
+        $this->assertFalse($navbar[1]['child']);
     }
 
     public function testANavActionBecomesEntries(): void
@@ -91,8 +90,8 @@ class LayoutBecomesConfigurationTest extends YesWikiTestCase
 
         $this->assertSame(
             [
-                ['label' => 'Accueil', 'link' => 'Accueil', 'children' => []],
-                ['label' => 'Bac à sable', 'link' => 'BacASable', 'children' => []],
+                ['label' => 'Accueil', 'link' => 'Accueil', 'child' => false],
+                ['label' => 'Bac à sable', 'link' => 'BacASable', 'child' => false],
             ],
             $navbar
         );

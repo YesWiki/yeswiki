@@ -6,8 +6,8 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Identity\Service\AclService;
-use YesWiki\Kernel\Service\TripleStore;
 use YesWiki\Render\Service\ActionRunner;
+use YesWiki\Search\Service\SearchIndexer;
 use YesWiki\Search\Service\TagsManager;
 use YesWiki\Test\Core\YesWikiTestCase;
 
@@ -23,7 +23,6 @@ class PageListingsAclTest extends YesWikiTestCase
     private \YesWiki\Core\YesWikiRuntime $wiki;
     private PageManager $pageManager;
     private AclService $aclService;
-    private TripleStore $tripleStore;
 
     protected function setUp(): void
     {
@@ -31,14 +30,20 @@ class PageListingsAclTest extends YesWikiTestCase
         $this->wiki = $this->getWiki();
         $this->pageManager = $this->wiki->services->get(PageManager::class);
         $this->aclService = $this->wiki->services->get(AclService::class);
-        $this->tripleStore = $this->wiki->services->get(TripleStore::class);
 
-        $this->pageManager->save(self::PUBLIC_TAG, [PageBody::CONTENT => 'public content'], '', true);
-        $this->pageManager->save(self::RESTRICTED_TAG, [PageBody::CONTENT => 'secret content'], '', true);
+        $this->pageManager->save(self::PUBLIC_TAG, [
+            PageBody::CONTENT => 'public content',
+            PageBody::KEYWORDS => [self::TAG_VALUE],
+        ], '', true);
+        $this->pageManager->save(self::RESTRICTED_TAG, [
+            PageBody::CONTENT => 'secret content',
+            PageBody::KEYWORDS => [self::TAG_VALUE],
+        ], '', true);
         $this->aclService->save(self::RESTRICTED_TAG, 'read', '@admins');
-        foreach ([self::PUBLIC_TAG, self::RESTRICTED_TAG] as $tag) {
-            $this->tripleStore->create($tag, TagsManager::TAG_PROPERTY, self::TAG_VALUE, '', '');
-        }
+        // The restricted page's ACL is written after it is saved, so it is re-indexed here rather
+        // than by the save: the index carries the ACL it is filtered on.
+        $this->wiki->services->get(SearchIndexer::class)->index(self::RESTRICTED_TAG);
+        $this->wiki->services->get(SearchIndexer::class)->drain(1000);
         unset($_SESSION['user']);
     }
 
@@ -49,8 +54,8 @@ class PageListingsAclTest extends YesWikiTestCase
         }
 
         foreach ([self::PUBLIC_TAG, self::RESTRICTED_TAG] as $tag) {
-            $this->tripleStore->delete($tag, TagsManager::TAG_PROPERTY, self::TAG_VALUE, '', '');
             $this->pageManager->deleteOrphaned($tag);
+            $this->wiki->services->get(SearchIndexer::class)->delete($tag);
         }
         $this->aclService->delete(self::RESTRICTED_TAG);
         parent::tearDown();

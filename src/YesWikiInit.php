@@ -199,6 +199,10 @@ class YesWikiInit
             // `./yeswicli core:maintenance` alone. A wiki that is installed and forgotten keeps
             // working because the default is the one that needs nothing set up.
             'maintenance_trigger' => 'request',
+            // Ticket 64: which menu each placement draws, and how. The entries live in the rows
+            // these name; an unnamed placement simply draws nothing.
+            'layout_navbar' => '',
+            'layout_quick_menu' => '',
             'default_write_acl' => '*',
             'default_read_acl' => '*',
             'default_comment_acl' => 'comments-closed',

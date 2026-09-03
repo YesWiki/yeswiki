@@ -867,7 +867,6 @@ return [
     'AB_templates_nav_class_pills' => 'Horitzontal sobre',
     'AB_templates_nav_class_justified' => 'Horitzontal justificat',
     'AB_templates_nav_class_vertical' => 'Vertical',
-    'AB_templates_nav_hide_if_no_access_label' => 'Ocultar si l\'usuari no té accés a la pàgina enllaçada',
     'AB_templates_panel_label' => 'Caixa',
     'AB_templates_panel_title_default' => 'Títol de la meva caixa',
     'AB_templates_panel_wrappedcontentexample' => 'Text de la seva caixa per ser modificat posteriorment',

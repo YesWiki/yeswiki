@@ -3,7 +3,9 @@
 namespace YesWiki\Render\Service;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use YesWiki\Content\Entity\MenuNode;
 use YesWiki\Content\Entity\PageBody;
+use YesWiki\Content\Service\MenuManager;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Files\Service\Storage;
 use YesWiki\Kernel\Service\ConfigurationFileProvider;
@@ -18,8 +20,37 @@ class LayoutService
     public const TITLE = 'layout_title';
     public const LOGO = 'layout_logo';
     public const BRAND = 'layout_brand';
+    /**
+     * Which menu each placement draws, and how it draws it (ticket 64 / ADR-0028).
+     *
+     * These used to hold the entries themselves. A config array has no revisions, no ACL of its
+     * own, and no way for `{{nav}}` to reach it, so the entries are a `menu` row now and these name
+     * one. The flags belong to the placement rather than to the menu, which is what lets one menu
+     * be icons in the bar and labels in a page.
+     */
     public const NAVBAR = 'layout_navbar';
     public const QUICK_MENU = 'layout_quick_menu';
+    public const NAVBAR_ICONS = 'layout_navbar_icons';
+    public const NAVBAR_LABELS = 'layout_navbar_labels';
+    public const NAVBAR_DROPDOWN = 'layout_navbar_dropdown';
+    public const QUICK_MENU_ICONS = 'layout_quick_menu_icons';
+    public const QUICK_MENU_LABELS = 'layout_quick_menu_labels';
+    public const QUICK_MENU_DROPDOWN = 'layout_quick_menu_dropdown';
+
+    /**
+     * What each placement draws when nothing has been said: the navbar reads as words, the quick
+     * access bar as glyphs, and both of them were doing exactly that before they had a choice.
+     *
+     * @var array<string, bool>
+     */
+    public const FLAG_DEFAULTS = [
+        self::NAVBAR_ICONS => false,
+        self::NAVBAR_LABELS => true,
+        self::NAVBAR_DROPDOWN => true,
+        self::QUICK_MENU_ICONS => true,
+        self::QUICK_MENU_LABELS => false,
+        self::QUICK_MENU_DROPDOWN => false,
+    ];
     public const ACCOUNT_BUTTON = 'layout_account_button';
     public const NAVBAR_HEIGHT = 'layout_navbar_height';
     public const NAVBAR_POSITION = 'layout_navbar_position';
@@ -46,6 +77,7 @@ class LayoutService
         protected ParameterBagInterface $params,
         protected ConfigurationService $configurationService,
         protected PageManager $pageManager,
+        protected MenuManager $menuManager,
         protected PageContext $pageContext,
         protected Storage $storage,
     ) {
@@ -108,57 +140,50 @@ class LayoutService
         return ($this->logo() === '' && $mode !== 'text') ? 'text' : $mode;
     }
 
-    /**
-     * The navbar, one level of children deep.
-     *
-     * @return list<array{label: string, link: string, children: list<array{label: string, link: string}>}>
-     */
-    public function navbar(): array
+    /** The tag of the menu the navbar draws, empty when this wiki has none. */
+    public function navbar(): string
     {
-        $entries = [];
-        foreach ($this->arrayOf(self::NAVBAR) as $entry) {
-            if (!is_array($entry)) {
-                continue;
-            }
-            $children = [];
-            foreach (is_array($entry['children'] ?? null) ? $entry['children'] : [] as $child) {
-                if (is_array($child) && $this->label($child) !== '') {
-                    $children[] = ['label' => $this->label($child), 'link' => $this->link($child)];
-                }
-            }
+        return $this->string(self::NAVBAR);
+    }
 
-            if ($this->label($entry) !== '') {
-                $entries[] = [
-                    'label' => $this->label($entry),
-                    'link' => $this->link($entry),
-                    'children' => $children,
-                ];
-            }
-        }
-
-        return $entries;
+    /** The tag of the menu the quick access bar draws. */
+    public function quickMenu(): string
+    {
+        return $this->string(self::QUICK_MENU);
     }
 
     /**
-     * The buttons at the right of the navbar: an icon, a label, a link.
+     * How a placement draws its menu: icons, labels, dropdowns.
      *
-     * @return list<array{icon: string, label: string, link: string}>
+     * @return array{showicons: bool, showlabels: bool, showdropdown: bool}
      */
-    public function quickMenu(): array
+    public function navbarFlags(): array
     {
-        $entries = [];
-        foreach ($this->arrayOf(self::QUICK_MENU) as $entry) {
-            if (!is_array($entry)) {
-                continue;
-            }
-            $icon = is_string($entry['icon'] ?? null) ? trim($entry['icon']) : '';
-            if ($icon === '' && $this->label($entry) === '') {
-                continue;
-            }
-            $entries[] = ['icon' => $icon, 'label' => $this->label($entry), 'link' => $this->link($entry)];
-        }
+        return [
+            'showicons' => $this->flag(self::NAVBAR_ICONS),
+            'showlabels' => $this->flag(self::NAVBAR_LABELS),
+            'showdropdown' => $this->flag(self::NAVBAR_DROPDOWN),
+        ];
+    }
 
-        return $entries;
+    /**
+     * @return array{showicons: bool, showlabels: bool, showdropdown: bool}
+     */
+    public function quickMenuFlags(): array
+    {
+        return [
+            'showicons' => $this->flag(self::QUICK_MENU_ICONS),
+            'showlabels' => $this->flag(self::QUICK_MENU_LABELS),
+            'showdropdown' => $this->flag(self::QUICK_MENU_DROPDOWN),
+        ];
+    }
+
+    /** One display flag, defaulting to what that placement has always drawn. */
+    public function flag(string $key): bool
+    {
+        $value = $this->params->has($key) ? $this->params->get($key) : null;
+
+        return $value === null || $value === '' ? (self::FLAG_DEFAULTS[$key] ?? false) : filter_var($value, FILTER_VALIDATE_BOOL);
     }
 
     /** Whether the account button closes the quick menu -- what `{{login}}` did on the page. */
@@ -225,8 +250,10 @@ class LayoutService
             $this->title(),
             $this->logo(),
             $this->brandMode(),
-            $this->navbar(),
-            $this->quickMenu(),
+            $this->menuNodes($this->navbar()),
+            $this->menuNodes($this->quickMenu()),
+            $this->navbarFlags(),
+            $this->quickMenuFlags(),
             $this->hasAccountButton(),
             $this->navbarHeight()
         );
@@ -235,9 +262,9 @@ class LayoutService
     /**
      * The chrome a posted form describes -- what Save would write, without writing it.
      *
-     * @param array{title?: string, logo?: string, brand?: string, account?: bool, height?: mixed, navbarPosition?: string, headerPosition?: string} $brand
-     * @param list<array{label: string, link: string, children?: list<array{label: string, link: string}>}>                                          $navbar
-     * @param list<array{icon: string, label: string, link: string}>                                                                                 $quickMenu
+     * @param array{title?: string, logo?: string, brand?: string, account?: bool, height?: mixed, navbarPosition?: string, headerPosition?: string, navbarFlags?: array<string, bool>, quickMenuFlags?: array<string, bool>} $brand
+     * @param list<array<string, mixed>>                                                                                                                                                                                     $navbar
+     * @param list<array<string, mixed>>                                                                                                                                                                                     $quickMenu
      */
     public function fromForm(array $brand, array $navbar, array $quickMenu): LayoutChrome
     {
@@ -253,8 +280,10 @@ class LayoutService
             $title !== '' ? $title : $this->string('yeswiki_name'),
             $logo,
             $mode,
-            $this->cleanNavbar($navbar),
-            $this->cleanQuickMenu($quickMenu),
+            MenuManager::nodesFromRows($navbar),
+            MenuManager::nodesFromRows($quickMenu),
+            $this->flagsFrom($brand['navbarFlags'] ?? null, self::NAVBAR_ICONS, self::NAVBAR_LABELS, self::NAVBAR_DROPDOWN),
+            $this->flagsFrom($brand['quickMenuFlags'] ?? null, self::QUICK_MENU_ICONS, self::QUICK_MENU_LABELS, self::QUICK_MENU_DROPDOWN),
             (bool)($brand['account'] ?? false),
             is_numeric($height)
                 ? max(self::NAVBAR_HEIGHT_MIN, min(self::NAVBAR_HEIGHT_MAX, (int)$height))
@@ -263,18 +292,25 @@ class LayoutService
     }
 
     /**
-     * Write the whole of the layout, in one config write.
+     * Write the whole of the layout: the brand and the flags into configuration, the entries into
+     * the two menus configuration names.
      *
-     * @param array{title?: string, logo?: string, brand?: string, account?: bool, height?: mixed, navbarPosition?: string, headerPosition?: string} $brand
-     * @param list<array{label: string, link: string, children?: list<array{label: string, link: string}>}>                                          $navbar
-     * @param list<array{icon: string, label: string, link: string}>                                                                                 $quickMenu
+     * The menus are Content, so this is two kinds of write rather than one, and they are ordered:
+     * the rows are saved first, and configuration is only pointed at a menu that exists.
+     *
+     * @param array{title?: string, logo?: string, brand?: string, account?: bool, height?: mixed, navbarPosition?: string, headerPosition?: string, navbarFlags?: array<string, bool>, quickMenuFlags?: array<string, bool>} $brand
+     * @param list<array<string, mixed>>                                                                                                                                                                                     $navbar
+     * @param list<array<string, mixed>>                                                                                                                                                                                     $quickMenu
      */
     public function save(array $brand, array $navbar, array $quickMenu): void
     {
+        $chrome = $this->fromForm($brand, $navbar, $quickMenu);
+
+        $navbarTag = $this->writeChromeMenu($this->navbar(), _t('LAYOUT_NAVBAR_MENU_TITLE'), $chrome->navbar);
+        $quickTag = $this->writeChromeMenu($this->quickMenu(), _t('LAYOUT_QUICK_MENU_TITLE'), $chrome->quickMenu);
+
         $config = $this->configurationService->getConfiguration(ConfigurationFileProvider::getConfigFileFromEnv());
         $config->load();
-
-        $chrome = $this->fromForm($brand, $navbar, $quickMenu);
 
         $config[self::TITLE] = trim((string)($brand['title'] ?? ''));
         $config[self::LOGO] = $chrome->logo;
@@ -283,10 +319,62 @@ class LayoutService
         $config[self::NAVBAR_HEIGHT] = $chrome->navbarHeight;
         $config[self::NAVBAR_POSITION] = $this->oneOf((string)($brand['navbarPosition'] ?? ''), self::NAVBAR_POSITIONS);
         $config[self::HEADER_POSITION] = $this->oneOf((string)($brand['headerPosition'] ?? ''), self::HEADER_POSITIONS);
-        $config[self::NAVBAR] = $chrome->navbar;
-        $config[self::QUICK_MENU] = $chrome->quickMenu;
+        $config[self::NAVBAR] = $navbarTag;
+        $config[self::QUICK_MENU] = $quickTag;
+        $config[self::NAVBAR_ICONS] = $chrome->navbarFlags['showicons'];
+        $config[self::NAVBAR_LABELS] = $chrome->navbarFlags['showlabels'];
+        $config[self::NAVBAR_DROPDOWN] = $chrome->navbarFlags['showdropdown'];
+        $config[self::QUICK_MENU_ICONS] = $chrome->quickMenuFlags['showicons'];
+        $config[self::QUICK_MENU_LABELS] = $chrome->quickMenuFlags['showlabels'];
+        $config[self::QUICK_MENU_DROPDOWN] = $chrome->quickMenuFlags['showdropdown'];
 
         $config->write();
+    }
+
+    /**
+     * The nodes of the menu a placement names, empty when it names none or the row has gone.
+     *
+     * @return list<MenuNode>
+     */
+    public function menuNodes(string $tag): array
+    {
+        return $this->menuManager->getOne($tag)['nodes'] ?? [];
+    }
+
+    /**
+     * Write one of the two chrome menus, making the row the first time a wiki saves its layout.
+     *
+     * @param list<MenuNode> $nodes
+     *
+     * @return string the tag configuration should name
+     */
+    private function writeChromeMenu(string $tag, string $title, array $nodes): string
+    {
+        if ($tag !== '' && $this->menuManager->isMenu($tag)) {
+            $this->menuManager->update($tag, $title, $nodes);
+
+            return $tag;
+        }
+
+        return $this->menuManager->create($title, $nodes, $tag !== '' ? $tag : null, true);
+    }
+
+    /**
+     * @param array<string, bool>|null $posted
+     *
+     * @return array{showicons: bool, showlabels: bool, showdropdown: bool}
+     */
+    private function flagsFrom(?array $posted, string $iconsKey, string $labelsKey, string $dropdownKey): array
+    {
+        if ($posted === null) {
+            return ['showicons' => $this->flag($iconsKey), 'showlabels' => $this->flag($labelsKey), 'showdropdown' => $this->flag($dropdownKey)];
+        }
+
+        return [
+            'showicons' => (bool)($posted['showicons'] ?? false),
+            'showlabels' => (bool)($posted['showlabels'] ?? false),
+            'showdropdown' => (bool)($posted['showdropdown'] ?? false),
+        ];
     }
 
     /**
@@ -297,64 +385,9 @@ class LayoutService
         return $this->storage->isWritable(ConfigurationFileProvider::getConfigFileFromEnv());
     }
 
-    /**
-     * @param list<array{label: string, link: string, children?: list<array{label: string, link: string}>}> $navbar
-     *
-     * @return list<array{label: string, link: string, children: list<array{label: string, link: string}>}>
-     */
-    private function cleanNavbar(array $navbar): array
-    {
-        $clean = [];
-        foreach ($navbar as $entry) {
-            if ($this->label($entry) === '') {
-                continue;
-            }
-            $children = [];
-            foreach ($entry['children'] ?? [] as $child) {
-                if ($this->label($child) !== '') {
-                    $children[] = ['label' => $this->label($child), 'link' => $this->link($child)];
-                }
-            }
-            $clean[] = ['label' => $this->label($entry), 'link' => $this->link($entry), 'children' => $children];
-        }
 
-        return $clean;
-    }
 
-    /**
-     * @param list<array{icon: string, label: string, link: string}> $quickMenu
-     *
-     * @return list<array{icon: string, label: string, link: string}>
-     */
-    private function cleanQuickMenu(array $quickMenu): array
-    {
-        $clean = [];
-        foreach ($quickMenu as $entry) {
-            $icon = trim($entry['icon']);
-            if ($icon === '' && $this->label($entry) === '') {
-                continue;
-            }
-            $clean[] = ['icon' => $icon, 'label' => $this->label($entry), 'link' => $this->link($entry)];
-        }
 
-        return $clean;
-    }
-
-    /**
-     * @param array<string, mixed> $entry
-     */
-    private function label(array $entry): string
-    {
-        return is_string($entry['label'] ?? null) ? trim($entry['label']) : '';
-    }
-
-    /**
-     * @param array<string, mixed> $entry
-     */
-    private function link(array $entry): string
-    {
-        return is_string($entry['link'] ?? null) ? trim($entry['link']) : '';
-    }
 
     private function assertChromePage(string $tag): void
     {
@@ -381,16 +414,4 @@ class LayoutService
         return is_string($value) ? trim($value) : '';
     }
 
-    /**
-     * @return array<int|string, mixed>
-     */
-    private function arrayOf(string $key): array
-    {
-        if (!$this->params->has($key)) {
-            return [];
-        }
-        $value = $this->params->get($key);
-
-        return is_array($value) ? $value : [];
-    }
 }

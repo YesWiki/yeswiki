@@ -1,0 +1,35 @@
+{% extends "@core/dashboard/layout.twig" %}
+
+{#
+  What vocabulary this wiki has, for anybody who may read it (ticket 64). The same data the
+  administration screen shows, with the buttons gone: ListOverview already filters by read access.
+#}
+{% block dashboard_content %}
+  <h1>{{ _t('DASHBOARD_LISTS') }}</h1>
+  <p class="yw-dashboard__intro">{{ _t('DASHBOARD_LISTS_INTRO') }}</p>
+
+  <section class="yw-dashboard__card">
+    <table class="yw-table" data-yw-datatable>
+      <thead>
+        <tr>
+          <th>{{ _t('BAZ_TITLE') }}</th>
+          <th>{{ _t('BAZ_VALEURS_LISTE') }}</th>
+          <th>{{ _t('BAZ_ID') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for key, list in overview.lists %}
+          <tr>
+            <td><strong>{{ list.title }}</strong>
+              {% if list.origin ?? '' %}<span class="yw-badge">{{ _t('ADMIN_LISTS_ORIGIN_BADGE') }}</span>{% endif %}
+            </td>
+            <td>{{ list.options|join(', ') }}</td>
+            <td>{{ key }}</td>
+          </tr>
+        {% else %}
+          <tr><td colspan="3">{{ _t('BAZ_INTRO_AJOUT_LISTE')|striptags }}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </section>
+{% endblock %}

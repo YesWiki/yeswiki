@@ -15,6 +15,14 @@ final class PageType
     public const FORM = 'form';
     /** A value list, the options behind a `liste`/`checkbox` field. */
     public const LIST = 'list';
+    /**
+     * A menu: navigation, two levels deep, drawn by the navbar, the quick access bar or `{{nav}}`.
+     *
+     * Its own type rather than a kind inside a list body (ADR-0028): `tagsOfType()` answers from
+     * the index, so every picker that offers lists to a field keeps asking for `list` and never
+     * sees a menu, with no new rule for anyone to remember.
+     */
+    public const MENU = 'menu';
     /** A comment: a page row whose `parent` names what it comments on. */
     public const COMMENT = 'comment';
 
@@ -40,7 +48,7 @@ final class PageType
      */
     public static function all(): array
     {
-        return [self::PAGE, self::ENTRY, self::USER, self::FILE, self::FORM, self::LIST, self::COMMENT];
+        return [self::PAGE, self::ENTRY, self::USER, self::FILE, self::FORM, self::LIST, self::MENU, self::COMMENT];
     }
 
     public static function isKnown(?string $type): bool

@@ -81,27 +81,132 @@ class EntryDisplay
      */
     public function customValueFor($parameter, ?string $field, array $entry, mixed $default): mixed
     {
-        if (is_array($parameter) && !empty($field)) {
-            if (isset($entry[$field])) {
-                if (!isset($parameter[$entry[$field]]) && strpos($entry[$field], ',') !== false) {
-                    $tab = explode(',', $entry[$field]);
-                    foreach ($tab as $value) {
-                        if (isset($parameter[$value])) {
-                            return $parameter[$value];
-                        }
-                    }
+        if (empty($field)) {
+            return $default;
+        }
 
-                    return $default;
+        if (is_array($parameter)) {
+            foreach (self::valuesOf($entry, $field) as $value) {
+                if (isset($parameter[$value])) {
+                    return $parameter[$value];
                 }
-
-                return isset($parameter[$entry[$field]]) ?
-                    $parameter[$entry[$field]] : $default;
             }
 
             return $default;
         }
 
         return $default;
+    }
+
+    /**
+     * The colour a value carries, read off the list that defines it (ticket 64).
+     *
+     * A colour used to be mapped to a value inside every action call that drew it, so the same list
+     * shown as cards and as a map was coloured twice and could disagree with itself. The value
+     * knows what colour it is now; the call only says which field to look at.
+     *
+     * @param array<string, mixed> $entry
+     */
+    public function colorForEntry(?string $field, array $entry, mixed $default = ''): mixed
+    {
+        $node = $this->listNodeFor($field, $entry);
+        $color = is_string($node['color'] ?? null) ? trim($node['color']) : '';
+
+        return $color !== '' ? $color : $default;
+    }
+
+    /**
+     * The icon a value carries, as HTML, read off the same list.
+     *
+     * @param array<string, mixed> $entry
+     */
+    public function iconForEntry(?string $field, array $entry, mixed $default = ''): mixed
+    {
+        $node = $this->listNodeFor($field, $entry);
+        $icon = is_array($node['icon'] ?? null) ? $node['icon'] : null;
+        if ($icon === null) {
+            return $default;
+        }
+
+        $rendered = $this->services->get(TemplateEngine::class)->renderNodeIcon(
+            (string)($icon['source'] ?? ''),
+            (string)($icon['value'] ?? '')
+        );
+
+        return $rendered ?? $default;
+    }
+
+    /**
+     * The list node one of an entry's values names, or null when the field is not a list at all.
+     *
+     * @param array<string, mixed> $entry
+     *
+     * @return array<string, mixed>|null
+     */
+    private function listNodeFor(?string $field, array $entry): ?array
+    {
+        if (empty($field)) {
+            return null;
+        }
+
+        $form = $this->services->get(FormManager::class)->getOne($entry['form_id'] ?? null);
+        $prepared = $form['prepared'] ?? [];
+        foreach ($prepared as $candidate) {
+            if (!$candidate instanceof EnumField || $candidate->getPropertyName() !== $field) {
+                continue;
+            }
+            $list = $candidate->getLinkedObjectName();
+            if ($list === '') {
+                return null;
+            }
+            $nodes = $this->services->get(ListManager::class)->getOne($list)['nodes'] ?? [];
+
+            return self::nodeCarrying($nodes, self::valuesOf($entry, $field));
+        }
+
+        return null;
+    }
+
+    /**
+     * @param array<array-key, mixed> $nodes
+     * @param list<string>            $values
+     *
+     * @return array<string, mixed>|null
+     */
+    private static function nodeCarrying(array $nodes, array $values): ?array
+    {
+        foreach ($nodes as $node) {
+            if (!is_array($node)) {
+                continue;
+            }
+            if (in_array((string)($node['id'] ?? ''), $values, true)) {
+                return $node;
+            }
+            $found = self::nodeCarrying(is_array($node['children'] ?? null) ? $node['children'] : [], $values);
+            if ($found !== null) {
+                return $found;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * What an entry holds in one field, as the list of values it is: a checkbox holds several.
+     *
+     * @param array<string, mixed> $entry
+     *
+     * @return list<string>
+     */
+    private static function valuesOf(array $entry, string $field): array
+    {
+        $held = $entry[$field] ?? null;
+        if (is_array($held)) {
+            return array_values(array_map('strval', $held));
+        }
+        $held = (string)$held;
+
+        return $held === '' ? [] : array_map('trim', explode(',', $held));
     }
 
     /**
@@ -158,6 +263,12 @@ class EntryDisplay
         }, $lists);
         $forms = $this->services->get(FormManager::class)->getAllLabels();
 
-        return ['lists' => $lists, 'forms' => $forms];
+        return [
+            'lists' => $lists,
+            'forms' => $forms,
+            // Ticket 64: the palette offers the wiki's menus the way it offers its lists, so
+            // `{{nav}}` is picked from rather than typed.
+            'menus' => $this->services->get(MenuManager::class)->readable(),
+        ];
     }
 }

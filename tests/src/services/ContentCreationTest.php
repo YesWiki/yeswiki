@@ -17,6 +17,7 @@ use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Identity\Service\UserManager;
 use YesWiki\Kernel\Service\CurrentRequest;
 use YesWiki\Kernel\Service\TripleStore;
+use YesWiki\Search\Service\SearchIndexer;
 use YesWiki\Search\Service\TagsManager;
 use YesWiki\Test\Core\YesWikiTestCase;
 
@@ -102,9 +103,14 @@ class ContentCreationTest extends YesWikiTestCase
             'keywords' => 'indexation',
         ]);
 
-        $triples = $this->getWiki()->services->get(TripleStore::class)
-            ->getAll((string)$created['tag'], TagsManager::TAG_PROPERTY, '', '');
-        $this->assertContains('indexation', array_column($triples, 'value'), 'triples hold the derived keyword index');
+        $wiki = $this->getWiki();
+        $wiki->services->get(SearchIndexer::class)->index((string)$created['tag']);
+
+        $this->assertContains(
+            ['keyword' => 'indexation', 'tag' => (string)$created['tag']],
+            $wiki->services->get(TagsManager::class)->pairs(['indexation']),
+            'search_keywords holds the derived keyword index'
+        );
     }
 
     public function testTheUserFormCreatesAnAccountWithEverySignupGuarantee(): void

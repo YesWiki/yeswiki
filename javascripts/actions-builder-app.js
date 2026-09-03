@@ -17,8 +17,6 @@ import InputQuery from './components/InputQuery.js'
 import InputFacets from './components/InputFacets.js'
 import InputSortFields from './components/InputSortFields.js'
 import InputReaction from './components/InputReaction.js'
-import InputIconMapping from './components/InputIconMapping.js'
-import InputColorMapping from './components/InputColorMapping.js'
 import InputColumnsWidth from './components/InputColumnsWidth.js'
 import InputGeo from './components/InputGeo.js'
 import InputClass from './components/InputClass.js'
@@ -44,8 +42,6 @@ const components = {
   InputFacets,
   InputSortFields,
   InputReaction,
-  InputIconMapping,
-  InputColorMapping,
   InputNavLinks,
   InputGeo,
   InputClass,
@@ -533,8 +529,6 @@ export const appConfig = {
         'class',
         'field-mapping',
         'query',
-        'icon-mapping',
-        'color-mapping',
         'columns-width',
         'nav-links',
         'facets',

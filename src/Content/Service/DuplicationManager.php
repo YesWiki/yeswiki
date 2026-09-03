@@ -11,7 +11,7 @@ use YesWiki\Files\Service\LocalFiles;
 use YesWiki\Files\Service\Storage;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Routing\ReservedTags;
-use YesWiki\Kernel\Service\TripleStore;
+use YesWiki\Search\Service\TagsManager;
 
 class DuplicationManager
 {
@@ -282,12 +282,20 @@ class DuplicationManager
 
             default:
             case 'page':
-                $newBody = PageBody::content(($this->container->get(\YesWiki\Kernel\Service\PageContext::class)->getPage() ?? [])['body'] ?? []);
+                $originalBody = ($this->container->get(\YesWiki\Kernel\Service\PageContext::class)->getPage() ?? [])['body'] ?? [];
+                $newBody = PageBody::content($originalBody);
                 $files = $this->duplicateFiles($data['originalTag'], $data['newTag']);
                 foreach ($files as $f) {
                     $newBody = str_replace($f['originalFile'], $f['duplicatedFile'], $newBody);
                 }
-                $this->container->get(PageManager::class)->save($data['newTag'], [PageBody::CONTENT => $newBody]);
+                // The keywords travel in the body, which is where they live (ticket 09). This used
+                // to be a second copy of the keyword triples made by hand beside it; the body is
+                // the truth, and the index follows from the save (ticket 62).
+                $keywords = TagsManager::keywordsOf(['body' => $originalBody]);
+                $this->container->get(PageManager::class)->save($data['newTag'], array_merge(
+                    [PageBody::CONTENT => $newBody],
+                    $keywords === [] ? [] : [PageBody::KEYWORDS => $keywords]
+                ));
                 break;
         }
 
@@ -307,11 +315,6 @@ class DuplicationManager
         $originalMetadata = $this->container->get(PageManager::class)->getMetadata($data['originalTag']);
         if (!empty($originalMetadata)) {
             $this->container->get(PageManager::class)->setMetadata($data['newTag'], $originalMetadata);
-        }
-
-        $values = $this->container->get(TripleStore::class)->getAll($data['originalTag'], 'http://outils-reseaux.org/_vocabulary/tag', '', '');
-        foreach ($values as $val) {
-            $this->container->get(TripleStore::class)->create($data['newTag'], 'http://outils-reseaux.org/_vocabulary/tag', $val['value'], '', '');
         }
     }
 

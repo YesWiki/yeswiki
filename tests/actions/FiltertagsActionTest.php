@@ -3,7 +3,7 @@
 namespace YesWiki\Test\Actions;
 
 use YesWiki\Kernel\Service\DbService;
-use YesWiki\Kernel\Service\TripleStore;
+use YesWiki\Search\Service\SearchIndexSchema;
 use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';
@@ -14,19 +14,20 @@ class FiltertagsActionTest extends YesWikiTestCase
     private const MALICIOUS_TAG = 'x\\';
     private const DECOY_TAG = 'evil';
     private const PAGE_TAG = 'FiltertagsSqliRegressionPage';
-    private const TAG_PROPERTY = 'http://outils-reseaux.org/_vocabulary/tag';
 
     public function testTrailingBackslashInFilterValueIsEscapedBeforeReachingSql(): void
     {
         $wiki = $this->getWiki();
         $dbService = $wiki->services->get(DbService::class);
-        $tripleStore = $wiki->services->get(TripleStore::class);
+        $keywords = $wiki->services->get(SearchIndexSchema::class)->keywordsTable();
 
         $GLOBALS['yeswikiServices'] = $wiki->services;
 
-        $tripleStore->create(self::PAGE_TAG, self::TAG_PROPERTY, self::MALICIOUS_TAG, '', '');
-
-        $tripleStore->create(self::PAGE_TAG, self::TAG_PROPERTY, self::DECOY_TAG, '', '');
+        // The index the action reads since ticket 62, written straight: what this asserts is that a
+        // hostile token reaches SQL as a bound value, not that the wiki can save such a keyword.
+        foreach ([self::MALICIOUS_TAG, self::DECOY_TAG] as $keyword) {
+            $dbService->query("INSERT INTO {$keywords} (tag, keyword) VALUES (?, ?)", [self::PAGE_TAG, $keyword]);
+        }
 
         try {
             $filterArgs = ['filter1' => self::MALICIOUS_TAG . ',' . self::DECOY_TAG];
@@ -43,19 +44,18 @@ class FiltertagsActionTest extends YesWikiTestCase
                 'the tokens must come back as values, not as a pre-quoted SQL string'
             );
 
-            $req = 'SELECT DISTINCT resource FROM ' . $dbService->prefixTable('triples')
-                . ' WHERE property = ? AND value IN ('
+            $req = "SELECT DISTINCT tag FROM {$keywords} WHERE keyword IN ("
                 . \YesWiki\Kernel\Database\SqlParameters::placeholders(count($taglist)) . ')';
-            $rows = $dbService->loadAll($req, [self::TAG_PROPERTY, ...$taglist]);
+            $rows = $dbService->loadAll($req, $taglist);
 
             $this->assertCount(
                 1,
                 $rows,
                 "the query should match exactly one distinct page (both tags belong to the same page): $req"
             );
-            $this->assertSame(self::PAGE_TAG, $rows[0]['resource']);
+            $this->assertSame(self::PAGE_TAG, $rows[0]['tag']);
         } finally {
-            $tripleStore->delete(self::PAGE_TAG, self::TAG_PROPERTY, null, '', '');
+            $dbService->query("DELETE FROM {$keywords} WHERE tag = ?", [self::PAGE_TAG]);
             unset($GLOBALS['wiki']);
         }
     }

@@ -13,11 +13,18 @@ export default {
       this.node.children.push({
         label: this.newNodeLabel,
         id: this.slugify(this.newNodeLabel),
+        color: '',
+        icon: { source: 'sprite', value: '' },
         children: [],
         vueRef: Date.now(),
       })
       this.newNodeLabel = ''
       this.expanded = true
+    },
+    /** A value carries its own colour and icon, so nothing has to map them per action call. */
+    iconOf(node) {
+      node.icon ||= { source: 'sprite', value: '' }
+      return node.icon
     },
     deleteChildNode(nodeToDelete) {
       this.node.children = this.node.children.filter(
@@ -52,6 +59,17 @@ export default {
         <input type="text" v-model="node.id" placeholder="${_t('LIST_KEY')}" 
               class="yw-input input-id" :class="{ error: !node.id }"
               @keydown.enter.prevent />
+        <!-- The colour and the icon this value carries wherever it is drawn (ticket 64) -->
+        <input type="color" v-model="node.color" class="yw-input input-color"
+               :title="'${_t('LIST_VALUE_COLOR')}'" />
+        <select v-model="iconOf(node).source" class="yw-input input-icon-source"
+                :title="'${_t('MENU_ENTRY_ICON_SOURCE')}'">
+          <option value="sprite">${_t('MENU_ENTRY_ICON_SPRITE')}</option>
+          <option value="emoji">${_t('MENU_ENTRY_ICON_EMOJI')}</option>
+          <option value="file">${_t('MENU_ENTRY_ICON_FILE')}</option>
+        </select>
+        <input type="text" v-model="iconOf(node).value" class="yw-input input-icon"
+               :placeholder="'${_t('MENU_ENTRY_ICON')}'" @keydown.enter.prevent />
         <!-- Delete Icon -->
         <button type="button" @click="$emit('delete', node)" 
                 class="btn btn-danger btn-icon input-group-addon">

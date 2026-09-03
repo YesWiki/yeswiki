@@ -1,0 +1,18 @@
+{#
+  How a placement draws its menu (ticket 64 / ADR-0028).
+
+  The flags belong to the placement, not to the menu: the same menu is glyphs in the quick access
+  bar and words in the navbar, which is the whole point of a menu being reusable.
+#}
+<fieldset class="yw-form-group yw-menu-flags">
+  <legend class="yw-form-label">{{ _t('MENU_FLAGS') }}</legend>
+  {# An unchecked box posts nothing, so this is what says the form carried the fieldset at all. #}
+  <input type="hidden" name="{{ placement }}_flags_present" value="1">
+  {% for flag in ['showicons', 'showlabels', 'showdropdown'] %}
+    <label class="yw-menu-flags__flag">
+      <input type="checkbox" name="{{ placement }}_flags[{{ flag }}]" value="1"
+             {{ flags[flag] ? 'checked' : '' }}>
+      {{ _t('MENU_FLAG_' ~ flag|upper) }}
+    </label>
+  {% endfor %}
+</fieldset>

@@ -105,42 +105,18 @@
       <h2>{{ _t('ADMIN_LAYOUT_NAVBAR') }}</h2>
       <p class="yw-layout__hint">{{ _t('ADMIN_LAYOUT_NAVBAR_HINT') }}</p>
 
-      <ul class="yw-layout__rows" data-yw-layout-rows="navbar">
-        {% for row in navbarRows %}
-          {{ include('@core/admin/layout-navbar-row.twig', { row: row, index: loop.index0 }) }}
-        {% endfor %}
-      </ul>
+      {{ include('@core/menu/editor.twig', { name: 'navbar', rows: navbarRows }) }}
 
-      <template data-yw-layout-template="navbar">
-        {{ include('@core/admin/layout-navbar-row.twig', {
-          row: { label: '', link: '', child: false }, index: 0
-        }) }}
-      </template>
-
-      <button type="button" class="yw-btn" data-yw-layout-add="navbar">
-        {{ icon('plus') }} {{ _t('ADMIN_LAYOUT_ADD_ENTRY') }}
-      </button>
+      {{ include('@core/menu/flags.twig', { placement: 'navbar', flags: navbarFlags }) }}
     </section>
 
     <section class="yw-dashboard__card">
       <h2>{{ _t('ADMIN_LAYOUT_QUICK_MENU') }}</h2>
       <p class="yw-layout__hint">{{ _t('ADMIN_LAYOUT_QUICK_MENU_HINT') }}</p>
 
-      <ul class="yw-layout__rows" data-yw-layout-rows="quick">
-        {% for row in quickMenu %}
-          {{ include('@core/admin/layout-quick-row.twig', { row: row, index: loop.index0 }) }}
-        {% endfor %}
-      </ul>
+      {{ include('@core/menu/editor.twig', { name: 'quick', rows: quickMenuRows }) }}
 
-      <template data-yw-layout-template="quick">
-        {{ include('@core/admin/layout-quick-row.twig', {
-          row: { icon: '', label: '', link: '' }, index: 0
-        }) }}
-      </template>
-
-      <button type="button" class="yw-btn" data-yw-layout-add="quick">
-        {{ icon('plus') }} {{ _t('ADMIN_LAYOUT_ADD_ENTRY') }}
-      </button>
+      {{ include('@core/menu/flags.twig', { placement: 'quick', flags: quickMenuFlags }) }}
 
       <label class="yw-layout__checkbox">
         <input type="checkbox" name="layout_account_button" {{ accountButton ? 'checked' : '' }}>
@@ -180,6 +156,8 @@
 
   {{ include_css('styles/yw-admin.css') }}
 
+  {{ include_javascript('javascripts/vendor/sortablejs/sortable.js') }}
   {{ include_javascript('javascripts/inputs/file-picker-field.js', false, true) }}
+  {{ include_javascript('javascripts/menu-editor.js', false, true) }}
   {{ include_javascript('javascripts/admin-layout.js', false, true) }}
 {% endblock %}

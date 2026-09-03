@@ -9,6 +9,7 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Csrf\Exception\TokenNotFoundException;
 use Tamtamchik\SimpleFlash\Flash;
 use YesWiki\Admin\Api\AdminLogsApiController;
+use YesWiki\Content\Service\MenuManager;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Core\DashboardShell;
 use YesWiki\Core\YesWikiController;
@@ -101,13 +102,6 @@ class AdminController extends YesWikiController
             ];
         }
 
-        $navbarRows = [];
-        foreach ($layout->navbar() as $entry) {
-            $navbarRows[] = ['label' => $entry['label'], 'link' => $entry['link'], 'child' => false];
-            foreach ($entry['children'] as $child) {
-                $navbarRows[] = ['label' => $child['label'], 'link' => $child['link'], 'child' => true];
-            }
-        }
 
         return $this->page('@core/admin/layout.twig', 'admin/layout', [
             'title' => $layout->ownTitle(),
@@ -115,8 +109,10 @@ class AdminController extends YesWikiController
             'logo' => $layout->logo(),
             'brandModes' => LayoutService::BRAND_MODES,
             'brandMode' => $layout->brandMode(),
-            'navbarRows' => $navbarRows,
-            'quickMenu' => $layout->quickMenu(),
+            'navbarRows' => MenuManager::rowsOf($layout->menuNodes($layout->navbar())),
+            'navbarFlags' => $layout->navbarFlags(),
+            'quickMenuRows' => MenuManager::rowsOf($layout->menuNodes($layout->quickMenu())),
+            'quickMenuFlags' => $layout->quickMenuFlags(),
             'accountButton' => $layout->hasAccountButton(),
             'navbarHeight' => $layout->navbarHeight(),
             'navbarHeightMin' => LayoutService::NAVBAR_HEIGHT_MIN,
@@ -166,35 +162,14 @@ class AdminController extends YesWikiController
     /**
      * The three structures the Layout form describes, without deciding what to do with them.
      *
-     * @return array{0: array<string, mixed>, 1: list<array{label: string, link: string, children: list<array{label: string, link: string}>}>, 2: list<array{icon: string, label: string, link: string}>}
+     * @return array{0: array<string, mixed>, 1: list<array<string, mixed>>, 2: list<array<string, mixed>>}
      */
     private function readLayoutForm(SymfonyRequest $request): array
     {
-        $navbar = [];
-        foreach ($request->request->all('navbar') as $row) {
-            if (!is_array($row)) {
-                continue;
-            }
-            $label = (string)($row['label'] ?? '');
-            $link = (string)($row['link'] ?? '');
-            $parent = array_key_last($navbar);
-            if (!empty($row['child']) && $parent !== null) {
-                $navbar[$parent]['children'][] = ['label' => $label, 'link' => $link];
-                continue;
-            }
-            $navbar[] = ['label' => $label, 'link' => $link, 'children' => []];
-        }
-
-        $quickMenu = [];
-        foreach ($request->request->all('quick') as $row) {
-            if (is_array($row)) {
-                $quickMenu[] = [
-                    'icon' => (string)($row['icon'] ?? ''),
-                    'label' => (string)($row['label'] ?? ''),
-                    'link' => (string)($row['link'] ?? ''),
-                ];
-            }
-        }
+        // Both placements post the same rows now: one editor, one shape, whichever menu it is
+        // editing (ticket 64). Turning them into a tree is MenuManager's job, not this screen's.
+        $navbar = array_values(array_filter($request->request->all('navbar'), 'is_array'));
+        $quickMenu = array_values(array_filter($request->request->all('quick'), 'is_array'));
 
         $brand = [
             'title' => (string)$request->request->get('layout_title', ''),
@@ -204,9 +179,33 @@ class AdminController extends YesWikiController
             'height' => $request->request->get('layout_navbar_height'),
             'navbarPosition' => (string)$request->request->get('layout_navbar_position', ''),
             'headerPosition' => (string)$request->request->get('layout_header_position', ''),
+            'navbarFlags' => self::flagsPosted($request, 'navbar'),
+            'quickMenuFlags' => self::flagsPosted($request, 'quick'),
         ];
 
         return [$brand, $navbar, $quickMenu];
+    }
+
+    /**
+     * The three display flags one placement posted.
+     *
+     * Read as "what the form said" rather than "what changed": an unchecked box posts nothing, so
+     * only a form that carried the fieldset at all may turn a flag off.
+     *
+     * @return array<string, bool>|null null when this form does not edit that placement's flags
+     */
+    private static function flagsPosted(SymfonyRequest $request, string $placement): ?array
+    {
+        if (!$request->request->has($placement . '_flags') && !$request->request->has($placement . '_flags_present')) {
+            return null;
+        }
+        $posted = $request->request->all($placement . '_flags');
+
+        return [
+            'showicons' => !empty($posted['showicons']),
+            'showlabels' => !empty($posted['showlabels']),
+            'showdropdown' => !empty($posted['showdropdown']),
+        ];
     }
 
     /** Read the whole form back into configuration -- the same reading the preview does. */

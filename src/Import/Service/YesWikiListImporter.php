@@ -123,11 +123,14 @@ class YesWikiListImporter extends Importer
     {
         $listId = $this->config['listId'];
         $title = $this->config['title'] ?? $listId;
+        // Where these values came from, recorded on the list itself, so a webmaster looking at two
+        // lists can tell which one tonight's sync will replace (ticket 64).
+        $origin = (string)($this->config['url'] ?? '');
         if ($this->listManager->isList($listId)) {
-            $this->listManager->update($listId, $title, $data);
+            $this->listManager->update($listId, $title, $data, $origin);
             echo 'La liste "' . $listId . '" a été mise à jour avec ' . count($data) . ' valeur(s).' . "\n";
         } else {
-            $this->listManager->create($title, $data, $listId);
+            $this->listManager->create($title, $data, $listId, $origin);
             echo 'La liste "' . $listId . '" a été créée avec ' . count($data) . ' valeur(s).' . "\n";
         }
     }

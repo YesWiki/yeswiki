@@ -360,6 +360,12 @@ class ThemeManager implements EventSubscriberInterface
             $this->container->get(LayoutService::class)->navbarPosition(),
             $this->container->get(LayoutService::class)->headerPosition(),
             (string)$this->container->get(LayoutService::class)->navbarHeight(),
+            // Ticket 64: how a placement draws its menu is a Layout setting, so leaving it out
+            // would swap a page under stale chrome on a boosted navigation.
+            ...array_map(
+                fn (string $flag): string => $this->container->get(LayoutService::class)->flag($flag) ? '1' : '0',
+                array_keys(LayoutService::FLAG_DEFAULTS)
+            ),
         ];
     }
 

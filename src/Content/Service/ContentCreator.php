@@ -93,7 +93,6 @@ class ContentCreator
             throw new \Exception("Could not save the new page '$tag'.");
         }
 
-        $this->container->get(TagsManager::class)->reindex($tag, TagsManager::keywordsOf(['body' => $body]));
         $this->applyFormProperties($form, $data);
 
         return $this->created($form, $body, $tag);

@@ -1,0 +1,39 @@
+{% extends "@core/dashboard/layout.twig" %}
+
+{% block dashboard_content %}
+  <h1>{{ _t('DASHBOARD_ADMIN_LISTS') }}</h1>
+  <p class="yw-dashboard__intro">{{ _t('ADMIN_LISTS_INTRO') }}</p>
+
+  {% set imported = overview.lists|filter(list => list.origin ?? '') %}
+  {% if imported|length %}
+    <section class="yw-dashboard__card">
+      <h2>{{ _t('ADMIN_LISTS_IMPORTED') }}</h2>
+      <p class="yw-layout__hint">{{ _t('ADMIN_LISTS_IMPORTED_HINT') }}</p>
+      <table class="yw-table">
+        <tbody>
+          {% for key, list in imported %}
+            <tr>
+              <td><strong>{{ list.title }}</strong> <small class="yw-form-hint">{{ key }}</small></td>
+              <td><a href="{{ list.origin }}" rel="noreferrer noopener">{{ list.origin }}</a></td>
+              <td>
+                {% if list.followed %}
+                  <span class="yw-badge">{{ _t('ADMIN_LISTS_FOLLOWED_BADGE') }}</span>
+                {% else %}
+                  <form method="post" action="{{ url({ tag: 'admin/lists' }) }}" hx-boost="false">
+                    <input type="hidden" name="csrf-token" value="{{ csrfToken({id: 'main', refresh: false}) }}">
+                    <input type="hidden" name="follow" value="{{ key }}">
+                    <button type="submit" class="yw-btn yw-btn--sm">{{ _t('ADMIN_LISTS_FOLLOW') }}</button>
+                  </form>
+                {% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </section>
+  {% endif %}
+
+  <section class="yw-dashboard__card">
+    {{ lists|raw }}
+  </section>
+{% endblock %}

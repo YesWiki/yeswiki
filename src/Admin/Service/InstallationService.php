@@ -604,20 +604,12 @@ class InstallationService
             LayoutService::LOGO => '',
             LayoutService::BRAND => 'text',
             LayoutService::ACCOUNT_BUTTON => true,
-            LayoutService::NAVBAR => [
-                ['label' => 'Bac à sable', 'link' => 'BacASable', 'children' => []],
-                ['label' => 'Menu exemple', 'link' => '', 'children' => [
-                    ['label' => 'Exemple annuaire', 'link' => 'TrombiAnnuaire'],
-                    ['label' => 'Exemple agenda', 'link' => 'VueActivite'],
-                    ['label' => 'Exemple ressourcerie', 'link' => 'FacetteRessource'],
-                    ['label' => 'Exemple blog', 'link' => 'VoirBlog'],
-                ]],
-            ],
-            LayoutService::QUICK_MENU => [
-                ['icon' => 'search', 'label' => 'Rechercher', 'link' => 'search'],
-                ['icon' => 'cog', 'label' => 'Tableau de bord', 'link' => 'dashboard'],
-            ],
-        ];
+            // Which menu each placement draws, not what is in one: the entries are `menu` rows
+            // the seed creates, so a fresh wiki's navigation is versioned from its first day
+            // (ticket 64 / ADR-0028).
+            LayoutService::NAVBAR => 'MenuNavigation',
+            LayoutService::QUICK_MENU => 'MenuAccesRapide',
+        ] + LayoutService::FLAG_DEFAULTS;
     }
 
     /**

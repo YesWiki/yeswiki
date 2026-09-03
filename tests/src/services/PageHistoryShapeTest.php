@@ -115,16 +115,20 @@ class PageHistoryShapeTest extends YesWikiTestCase
     {
         $wiki = $this->getWiki();
         $pageManager = $wiki->services->get(PageManager::class);
-        $tagsManager = $wiki->services->get(TagsManager::class);
 
-        $pageManager->save(self::TAG, [PageBody::CONTENT => 'with keywords'], '', true);
-        $tagsManager->save(self::TAG, 'alpha,beta');
+        $pageManager->save(self::TAG, [
+            PageBody::CONTENT => 'with keywords',
+            PageBody::KEYWORDS => ['alpha', 'beta'],
+        ], '', true);
         $withKeywords = $pageManager->getOne(self::TAG);
         $this->assertIsArray($withKeywords);
         $this->assertSame(['alpha', 'beta'], TagsManager::keywordsOf($withKeywords));
 
         sleep(1);
-        $tagsManager->save(self::TAG, 'gamma');
+        $pageManager->save(self::TAG, [
+            PageBody::CONTENT => 'with keywords',
+            PageBody::KEYWORDS => ['gamma'],
+        ], '', true);
         $this->assertSame(['gamma'], TagsManager::keywordsOf($pageManager->getOne(self::TAG)));
 
         $pageManager->revertToRevision(self::TAG, $withKeywords['id']);

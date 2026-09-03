@@ -7,9 +7,8 @@ use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Kernel\Service\CurrentRequest;
-use YesWiki\Kernel\Service\DbService;
-use YesWiki\Kernel\Service\TripleStore;
 use YesWiki\Render\Service\ActionRunner;
+use YesWiki\Search\Service\SearchIndexer;
 use YesWiki\Search\Service\TagsManager;
 use YesWiki\Test\Core\YesWikiTestCase;
 
@@ -27,9 +26,6 @@ class AdmintagActionTest extends YesWikiTestCase
 
     private \YesWiki\Core\YesWikiRuntime $wiki;
     private PageManager $pageManager;
-    private TripleStore $tripleStore;
-    private DbService $dbService;
-    private ?string $tagId = null;
     private ?Request $previousRequest = null;
 
     protected function setUp(): void
@@ -37,13 +33,13 @@ class AdmintagActionTest extends YesWikiTestCase
         parent::setUp();
         $this->wiki = $this->getWiki();
         $this->pageManager = $this->wiki->services->get(PageManager::class);
-        $this->tripleStore = $this->wiki->services->get(TripleStore::class);
-        $this->dbService = $this->wiki->services->get(DbService::class);
         $this->previousRequest = $this->wiki->services->get(CurrentRequest::class)->get();
 
-        $this->pageManager->save(self::PAGE_TAG, [PageBody::CONTENT => 'tagged content'], '', true);
-        $this->tripleStore->create(self::PAGE_TAG, TagsManager::TAG_PROPERTY, self::TAG_VALUE, '', '');
-        $this->tagId = $this->tagIdInDatabase();
+        $this->pageManager->save(self::PAGE_TAG, [
+            PageBody::CONTENT => 'tagged content',
+            PageBody::KEYWORDS => [self::TAG_VALUE],
+        ], '', true);
+        $this->wiki->services->get(SearchIndexer::class)->drain(1000);
 
         if (empty($this->wiki->services->get(AuthenticationService::class)->connectFirstAdmin())) {
             $this->markTestSkipped('no admin account in the test wiki');
@@ -52,8 +48,8 @@ class AdmintagActionTest extends YesWikiTestCase
 
     protected function tearDown(): void
     {
-        $this->tripleStore->delete(self::PAGE_TAG, TagsManager::TAG_PROPERTY, self::TAG_VALUE, '', '');
         $this->pageManager->deleteOrphaned(self::PAGE_TAG);
+        $this->wiki->services->get(SearchIndexer::class)->delete(self::PAGE_TAG);
         $this->wiki->services->get(AuthenticationService::class)->logout();
         if ($this->previousRequest !== null) {
             $this->wiki->services->get(CurrentRequest::class)->replace($this->previousRequest);
@@ -61,15 +57,20 @@ class AdmintagActionTest extends YesWikiTestCase
         parent::tearDown();
     }
 
-    private function tagIdInDatabase(): ?string
+    /** The screen addresses pairs, not surrogate ids, since ticket 62. */
+    private function postedPair(): string
     {
-        $row = $this->dbService->loadSingle(
-            'SELECT id FROM ' . $this->dbService->prefixTable('triples')
-            . ' WHERE property = ? AND resource = ? AND value = ?',
-            [TagsManager::TAG_PROPERTY, self::PAGE_TAG, self::TAG_VALUE]
-        );
+        return self::TAG_VALUE . \YesWiki\Content\Action\AdminTagAction::PAIR_SEPARATOR . self::PAGE_TAG;
+    }
 
-        return isset($row['id']) ? (string)$row['id'] : null;
+    /** Whether the fixture's keyword is still on the page -- the body is the truth it would be deleted from. */
+    private function keywordIsStillThere(): bool
+    {
+        return in_array(
+            self::TAG_VALUE,
+            TagsManager::keywordsOf($this->pageManager->getOne(self::PAGE_TAG, null, false, true)),
+            true
+        );
     }
 
     /**
@@ -87,37 +88,76 @@ class AdmintagActionTest extends YesWikiTestCase
 
     public function testTheKeywordIsThereToBeginWith(): void
     {
-        $this->assertNotNull($this->tagId, 'the fixture keyword was not indexed');
+        $this->assertTrue($this->keywordIsStillThere(), 'the fixture keyword was not saved');
+        $this->assertContains(
+            ['keyword' => self::TAG_VALUE, 'tag' => self::PAGE_TAG],
+            $this->wiki->services->get(TagsManager::class)->pairs(),
+            'the fixture keyword was not indexed'
+        );
     }
 
     public function testAGetRequestDeletesNothing(): void
     {
-        $this->runAdmintag('GET', [], ['delete_tag' => (string)$this->tagId]);
+        $this->runAdmintag('GET', [], ['delete_tag' => $this->postedPair()]);
 
-        $this->assertSame($this->tagId, $this->tagIdInDatabase());
+        $this->assertTrue($this->keywordIsStillThere());
     }
 
     public function testAPostWithoutATokenDeletesNothing(): void
     {
-        $this->runAdmintag('POST', ['delete_tag' => (string)$this->tagId]);
+        $this->runAdmintag('POST', ['delete_tag' => $this->postedPair()]);
 
-        $this->assertSame($this->tagId, $this->tagIdInDatabase());
+        $this->assertTrue($this->keywordIsStillThere());
     }
 
     public function testAPostWithAnInvalidTokenDeletesNothing(): void
     {
-        $this->runAdmintag('POST', ['delete_tag' => (string)$this->tagId, 'csrf-token' => 'not-a-token']);
+        $this->runAdmintag('POST', ['delete_tag' => $this->postedPair(), 'csrf-token' => 'not-a-token']);
 
-        $this->assertSame($this->tagId, $this->tagIdInDatabase());
+        $this->assertTrue($this->keywordIsStillThere());
     }
 
     public function testANonAdminPostDeletesNothing(): void
     {
         $this->wiki->services->get(AuthenticationService::class)->logout();
 
-        $this->runAdmintag('POST', ['delete_tag' => (string)$this->tagId, 'csrf-token' => 'not-a-token']);
+        $this->runAdmintag('POST', ['delete_tag' => $this->postedPair(), 'csrf-token' => 'not-a-token']);
 
-        $this->assertSame($this->tagId, $this->tagIdInDatabase());
+        $this->assertTrue($this->keywordIsStillThere());
+    }
+
+    /** The bulk button posts every pair of one keyword, and removing them edits each body. */
+    public function testTheBulkButtonRemovesTheKeywordFromEveryPage(): void
+    {
+        $second = self::PAGE_TAG . 'Second';
+        $this->pageManager->save($second, [
+            PageBody::CONTENT => 'also tagged',
+            PageBody::KEYWORDS => [self::TAG_VALUE],
+        ], '', true);
+        $this->wiki->services->get(SearchIndexer::class)->drain(1000);
+
+        try {
+            $tagsManager = $this->wiki->services->get(TagsManager::class);
+            $pairs = $tagsManager->pairs([self::TAG_VALUE]);
+            $this->assertCount(2, $pairs, 'both fixture pages carry the keyword');
+
+            $html = $this->runAdmintag();
+            $this->assertStringContainsString('delete_all_tags', $html, 'the bulk button is only drawn for a shared keyword');
+
+            $tagsManager->remove($pairs);
+            foreach ([self::PAGE_TAG, $second] as $tag) {
+                $this->wiki->services->get(SearchIndexer::class)->index($tag);
+                $this->assertSame(
+                    [],
+                    TagsManager::keywordsOf($this->pageManager->getOne($tag, null, false, true)),
+                    "removing in bulk must edit {$tag}'s body"
+                );
+            }
+            $this->assertSame([], $tagsManager->pairs([self::TAG_VALUE]));
+        } finally {
+            $this->pageManager->deleteOrphaned($second);
+            $this->wiki->services->get(SearchIndexer::class)->delete($second);
+        }
     }
 
     public function testTheDeleteButtonIsAPostFormCarryingAToken(): void

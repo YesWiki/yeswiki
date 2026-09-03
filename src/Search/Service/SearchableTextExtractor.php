@@ -7,6 +7,7 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Content\Entity\ContentTypeSchema;
 use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Entity\PageType;
+use YesWiki\Content\Field\TagsField;
 use YesWiki\Content\Field\TextareaField;
 use YesWiki\Content\Service\FormManager;
 use YesWiki\Search\Entity\IndexedContent;
@@ -56,22 +57,44 @@ class SearchableTextExtractor
             owner: (string)($row['owner'] ?? ''),
             updatedAt: (string)($row['time'] ?? date('Y-m-d H:i:s')),
             buckets: $buckets,
-            keywords: $this->keywordsOf($body),
+            keywords: $this->keywordsOf($contentType, $body),
         );
 
         return $content->isEmpty() ? null : $content;
     }
 
     /**
-     * The Content's keywords, for the `tags=` filter (ticket 35).
+     * The Content's keywords, for the `tags=` filter (ticket 35) and for every keyword question
+     * the wiki asks (ticket 62).
+     *
+     * Two places, because a keyword lives in two shapes. A page keeps them in `body.keywords`,
+     * which is the Page form's own tags field. An entry keeps them wherever the webmaster put a
+     * `tags` field, under whatever name they gave it -- and that field is a keyword input, offering
+     * the wiki's keywords and writing to the same index, so leaving it out would be indexing half
+     * of what the wiki calls a keyword.
      *
      * @param array<string, mixed> $body
      *
      * @return list<string>
      */
-    private function keywordsOf(array $body): array
+    private function keywordsOf(string $contentType, array $body): array
     {
-        $keywords = $body[PageBody::KEYWORDS] ?? null;
+        $cleaned = [];
+        foreach ([...$this->listOf($body[PageBody::KEYWORDS] ?? null), ...$this->fromTagsFields($contentType, $body)] as $keyword) {
+            $cleaned[$keyword] = true;
+        }
+
+        return array_keys($cleaned);
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function listOf(mixed $keywords): array
+    {
+        if (is_string($keywords)) {
+            $keywords = explode(',', $keywords);
+        }
         if (!is_array($keywords)) {
             return [];
         }
@@ -80,11 +103,33 @@ class SearchableTextExtractor
         foreach ($keywords as $keyword) {
             $keyword = trim((string)$keyword);
             if ($keyword !== '') {
-                $cleaned[$keyword] = true;
+                $cleaned[] = $keyword;
             }
         }
 
-        return array_keys($cleaned);
+        return $cleaned;
+    }
+
+    /**
+     * @param array<string, mixed> $body
+     *
+     * @return list<string>
+     */
+    private function fromTagsFields(string $contentType, array $body): array
+    {
+        $form = $this->formFor($contentType, $body);
+        if ($form === null) {
+            return [];
+        }
+
+        $keywords = [];
+        foreach ($form['prepared'] ?? [] as $field) {
+            if ($field instanceof TagsField) {
+                $keywords = [...$keywords, ...$this->listOf($body[$field->getPropertyName()] ?? null)];
+            }
+        }
+
+        return $keywords;
     }
 
     /**

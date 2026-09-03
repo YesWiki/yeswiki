@@ -84,7 +84,7 @@ abstract class BazarField implements \JsonSerializable
     }
 
     /**
-     * Whether formatValuesBeforeSave() needs the Content's tag to already exist -- an upload names its file after it, a keyword index is keyed by it.
+     * Whether formatValuesBeforeSave() needs the Content's tag to already exist -- an upload names its file after it.
      *
      * @return bool
      */

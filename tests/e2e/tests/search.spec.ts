@@ -98,6 +98,23 @@ test('the facet row carries counts once a search has results', async ({
   ).toBeVisible()
 })
 
+/**
+ * Pick a presentation from the display switch.
+ *
+ * The switch draws two labels for the presentation a category currently sits on -- the group's own
+ * summary and the entry inside its menu -- so a bare `label[for=...]` is ambiguous.
+ */
+async function chooseDisplay(
+  page: import('@playwright/test').Page,
+  name: string,
+) {
+  await page
+    .locator(
+      `.yw-display-switch__menu label[for="yw-search-form-display-${name}"]`,
+    )
+    .click()
+}
+
 test('choosing a facet narrows results and stays chosen', async ({ page }) => {
   await page.goto('/?search')
 
@@ -110,11 +127,15 @@ test('choosing a facet narrows results and stays chosen', async ({ page }) => {
 
   await page.locator('#yw-search-facets label[for="yw-facet-form"]').click()
 
-  await expect(
-    page.locator('#yw-search-results .yw-item:not(.yw-item--form)'),
-  ).toHaveCount(0)
+  // An item's class says which presentation drew it, not what kind of Content it is, so what
+  // "only forms are left" looks like is every remaining badge saying so.
   await expect(results.first()).toBeVisible()
-  expect(await results.count()).toBeLessThanOrEqual(all)
+  expect(await results.count()).toBeLessThan(all)
+  for (const badge of await page
+    .locator('#yw-search-results .yw-item__badge')
+    .allTextContents()) {
+    expect(badge).toContain('Formulaire')
+  }
 
   await expect(
     page.locator('#yw-search-facets input[value="form"]'),
@@ -125,26 +146,23 @@ test('the display switcher changes the layout and stays chosen', async ({
   page,
 }) => {
   await page.goto('/?search')
-  await expect(page.locator('#yw-search-form #yw-search-display')).toBeVisible()
+  await expect(page.locator('#yw-search-form-display')).toBeVisible()
   await page.locator('#yw-search-phrase').fill('wiki')
   await expect(page.locator('.yw-item').first()).toBeVisible()
 
-  await expect(page.locator('.yw-items--accordion')).toHaveCount(0)
+  await expect(page.locator('.yw-items--card')).toHaveCount(0)
 
-  await page.locator('label[for="yw-display-accordion"]').click()
-  await expect(page.locator('.yw-items--accordion')).toBeVisible()
-  await page.locator('.yw-items--accordion summary').first().click()
-  await expect(
-    page.locator('.yw-items--accordion details[open]').first(),
-  ).toBeVisible()
+  await chooseDisplay(page, 'card')
+  await expect(page.locator('.yw-items--card')).toBeVisible()
 
-  await page.locator('label[for="yw-display-cards"]').click()
-  await expect(page.locator('.yw-items--cards')).toBeVisible()
+  await chooseDisplay(page, 'list')
+  await expect(page.locator('.yw-items--list')).toBeVisible()
 
+  await chooseDisplay(page, 'card')
   await page.locator('#yw-search-phrase').fill('annuaire')
-  await expect(page.locator('.yw-items--cards')).toBeVisible()
+  await expect(page.locator('.yw-items--card')).toBeVisible()
   await expect(
-    page.locator('#yw-search-display input[value="cards"]'),
+    page.locator('#yw-search-form-display input[value="card"]'),
   ).toBeChecked()
 })
 
@@ -157,14 +175,14 @@ test('a search is shareable: the URL carries it, and reloading restores it', asy
 
   await expect(page).toHaveURL(/[?&]q=annuaire/)
 
-  await page.locator('label[for="yw-display-cards"]').click()
-  await expect(page.locator('.yw-items--cards')).toBeVisible()
-  await expect(page).toHaveURL(/display=cards/)
+  await chooseDisplay(page, 'card')
+  await expect(page.locator('.yw-items--card')).toBeVisible()
+  await expect(page).toHaveURL(/display=card/)
 
   const shared = page.url()
   await page.goto(shared)
   await expect(page.locator('#yw-search-phrase')).toHaveValue('annuaire')
-  await expect(page.locator('.yw-items--cards')).toBeVisible()
+  await expect(page.locator('.yw-items--card')).toBeVisible()
 })
 
 test('the search page offers no page actions in its footer', async ({
@@ -215,21 +233,21 @@ test('leaving a result behind leaves the search behind with it', async ({
 
 test('the cards display gets the wiki card layout', async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 900 })
-  await page.goto('/?search&q=a&display=cards')
+  await page.goto('/?search&q=a&display=card')
 
-  const container = page.locator('.bazar-cards-container')
+  const container = page.locator('.yw-items--card')
   await expect(container).toBeVisible({ timeout: 15000 })
 
   const layout = await page.evaluate(() => {
-    const box = document.querySelector('.bazar-cards-container') as HTMLElement
-    const card = document.querySelector('.bazar-card') as HTMLElement
+    const box = document.querySelector('.yw-items--card') as HTMLElement
+    const card = document.querySelector('.yw-item--card') as HTMLElement
 
     return {
       display: getComputedStyle(box).display,
       boxWidth: Math.round(box.getBoundingClientRect().width),
       cardWidth: Math.round(card.getBoundingClientRect().width),
       titleOverflows: Array.from(
-        document.querySelectorAll('.yw-item-title'),
+        document.querySelectorAll('.yw-item__title'),
       ).some((t) => t.scrollWidth > t.clientWidth + 1),
     }
   })

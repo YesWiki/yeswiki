@@ -4,9 +4,8 @@ namespace YesWiki\Content\Field;
 
 use Psr\Container\ContainerInterface;
 use YesWiki\Content\Attribute\Field;
-use YesWiki\Content\Service\EntryTagsCleared;
-use YesWiki\Kernel\Service\TripleStore;
 use YesWiki\Kernel\Service\UrlFormatter;
+use YesWiki\Search\Service\TagsManager;
 
 #[Field(['tags'])]
 class TagsField extends EnumField
@@ -61,32 +60,15 @@ class TagsField extends EnumField
     }
 
     /**
-     * The keyword index is keyed by the Content's tag, so the tag has to exist before this field can write it.
+     * The value is all this writes now.
+     *
+     * It used to keep a second index of its own beside it, as `_vocabulary/tag` triples. The
+     * keywords of every Content are indexed once, by `SearchIndexer`, from the body this returns
+     * (ticket 62).
      */
-    public function requiresTagBeforeFormatting(): bool
-    {
-        return true;
-    }
-
     public function formatValuesBeforeSave($entry)
     {
-        $tripleStore = $this->getService(TripleStore::class);
-
-        $value = $this->getValue($entry);
-
-        if (!empty($entry['tag']) && $this->getService(EntryTagsCleared::class)->needsClearing($entry['tag'])) {
-            $tripleStore->delete($entry['tag'], 'http://outils-reseaux.org/_vocabulary/tag', null, '', '');
-        }
-
-        $tags = explode(',', (string)$value);
-        foreach ($tags as $tag) {
-            $tag = trim($tag);
-            if ($tag != '') {
-                $tripleStore->create($entry['tag'] ?? '', 'http://outils-reseaux.org/_vocabulary/tag', $tag, '', '');
-            }
-        }
-
-        return [$this->propertyName => $value];
+        return [$this->propertyName => $this->getValue($entry)];
     }
 
     protected function renderStatic($entry)
@@ -125,12 +107,7 @@ class TagsField extends EnumField
 
     private function loadOptionsFromTags(): void
     {
-        $tripleStore = $this->getService(TripleStore::class);
-
-        $rawOptions = $tripleStore->getMatching(null, 'http://outils-reseaux.org/_vocabulary/tag');
-        $this->options = array_map(function ($rawOption) {
-            return $rawOption['value'];
-        }, $rawOptions);
-        $this->options = array_combine($this->options, $this->options);
+        $keywords = array_column($this->getService(TagsManager::class)->getAll(), 'value');
+        $this->options = array_combine($keywords, $keywords);
     }
 }

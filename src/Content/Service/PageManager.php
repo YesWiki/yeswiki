@@ -18,7 +18,6 @@ use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Kernel\Service\Journal;
 use YesWiki\Kernel\Service\TripleStore;
 use YesWiki\Search\Service\SearchIndexer;
-use YesWiki\Search\Service\TagsManager;
 
 class PageManager
 {
@@ -28,7 +27,6 @@ class PageManager
     protected EventDispatcher $eventDispatcher;
     protected ParameterBagInterface $params;
     protected HibernationService $hibernationService;
-    protected TagsManager $tagsManager;
     protected TripleStore $tripleStore;
     protected UserManager $userManager;
 
@@ -58,7 +56,6 @@ class PageManager
         EventDispatcher $eventDispatcher,
         ParameterBagInterface $params,
         HibernationService $hibernationService,
-        TagsManager $tagsManager,
         TripleStore $tripleStore,
         UserManager $userManager,
         ContainerInterface $container
@@ -70,7 +67,6 @@ class PageManager
         $this->eventDispatcher = $eventDispatcher;
         $this->params = $params;
         $this->hibernationService = $hibernationService;
-        $this->tagsManager = $tagsManager;
         $this->tripleStore = $tripleStore;
         $this->userManager = $userManager;
 
@@ -548,7 +544,6 @@ class PageManager
 
         $this->dbService->query("DELETE FROM {$this->dbService->prefixTable('pages')} WHERE tag = ? OR parent = ?", [$tag, $tag]);
         $this->tripleStore->deleteAll($tag, '');
-        $this->tagsManager->deleteAll($tag);
 
         // Every deletion, whatever asked for it: this is where the row actually goes, and a
         // deletion leaves no revision behind to be the record of itself.

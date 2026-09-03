@@ -20,6 +20,49 @@ class SsrfUrlValidatorTest extends TestCase
         return new SsrfUrlValidator();
     }
 
+    /** The wiki's own address, as configuration names it. */
+    private function validatorFor(string $baseUrl): SsrfUrlValidator
+    {
+        return new SsrfUrlValidator(new \Symfony\Component\DependencyInjection\ParameterBag\ParameterBag(['base_url' => $baseUrl]));
+    }
+
+    /**
+     * A wiki may fetch its own address, wherever that is.
+     *
+     * The guard stops a wiki being talked into probing the network around it; its own origin is not
+     * a discovery, because whoever asked for the fetch can already make it. Refusing it means a
+     * wiki cannot syndicate a feed it publishes itself -- and a wiki installed on `127.0.0.1`, which
+     * is what every development and CI instance is, could never fetch anything of its own at all.
+     */
+    public function testAWikiMayFetchItsOwnAddress(): void
+    {
+        $validator = $this->validatorFor('http://127.0.0.1:8080/?');
+
+        $this->assertSame(
+            ['127.0.0.1' => '127.0.0.1'],
+            $validator->resolveSafe('http://127.0.0.1:8080/files/feed.xml', self::WEB)
+        );
+    }
+
+    /** Its own origin, and nothing beside it: the same host on another port is somebody else. */
+    public function testOnlyThatExactOriginIsAllowedThrough(): void
+    {
+        $validator = $this->validatorFor('http://127.0.0.1:8080/?');
+
+        foreach ([
+            'another port' => 'http://127.0.0.1:9999/x',
+            'another scheme' => 'https://127.0.0.1:8080/x',
+            'a neighbour on the private network' => 'http://192.168.32.1/x',
+        ] as $why => $url) {
+            try {
+                $validator->resolveSafe($url, self::WEB);
+                $this->fail("{$why} was allowed through");
+            } catch (\Exception $refused) {
+                $this->assertStringContainsString('private or reserved', $refused->getMessage(), $why);
+            }
+        }
+    }
+
     #[DataProvider('refusedProvider')]
     public function testAnAddressBehindTheWikiIsRefused(string $url): void
     {

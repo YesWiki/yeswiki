@@ -1,0 +1,23 @@
+{#
+  A node's glyph: one of the shipped sprite's symbols, an emoji, or a file of this wiki's.
+
+  Three sources rather than a free-text class name, because "what kind of thing is this" is what
+  decides how it is drawn -- and the file picker here is the one `/admin/layout` already uses to
+  choose the logo (ticket 64).
+#}
+<span class="yw-menu-icon" data-yw-menu-icon>
+  <select class="yw-input yw-menu-icon__source" name="{{ name }}[icon_source]"
+          aria-label="{{ _t('MENU_ENTRY_ICON_SOURCE') }}" data-yw-menu-icon-source>
+    <option value="sprite" {{ source == 'sprite' ? 'selected' : '' }}>{{ _t('MENU_ENTRY_ICON_SPRITE') }}</option>
+    <option value="emoji" {{ source == 'emoji' ? 'selected' : '' }}>{{ _t('MENU_ENTRY_ICON_EMOJI') }}</option>
+    <option value="file" {{ source == 'file' ? 'selected' : '' }}>{{ _t('MENU_ENTRY_ICON_FILE') }}</option>
+  </select>
+
+  <input type="text" class="yw-input yw-menu-icon__value" name="{{ name }}[icon_value]"
+         value="{{ value }}" autocomplete="off" spellcheck="false"
+         placeholder="{{ _t('MENU_ENTRY_ICON') }}" aria-label="{{ _t('MENU_ENTRY_ICON') }}"
+         data-yw-menu-icon-value>
+
+  <button type="button" class="yw-btn yw-btn--sm yw-menu-icon__pick" data-yw-menu-icon-pick hidden
+          title="{{ _t('MENU_ENTRY_ICON_CHOOSE') }}">{{ icon('photo') }}</button>
+</span>

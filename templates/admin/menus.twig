@@ -1,0 +1,68 @@
+{% extends "@core/dashboard/layout.twig" %}
+
+{% block dashboard_content %}
+  <h1>{{ _t('DASHBOARD_ADMIN_MENUS') }}</h1>
+
+  <p class="yw-dashboard__intro">{{ _t('ADMIN_MENUS_INTRO') }}</p>
+
+  <section class="yw-dashboard__card">
+    <table class="yw-table">
+      <thead>
+        <tr>
+          <th>{{ _t('ADMIN_MENUS_TITLE') }}</th>
+          <th>{{ _t('ADMIN_MENUS_ENTRIES') }}</th>
+          <th>{{ _t('ADMIN_MENUS_USED_BY') }}</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for menu in menus %}
+          <tr>
+            <td><a href="{{ url({ tag: menu.tag }) }}">{{ menu.title }}</a>
+                <small class="yw-form-hint">{{ menu.tag }}</small></td>
+            <td>{{ menu.entries }}</td>
+            <td>{% if menu.chrome %}<span class="yw-badge">{{ _t('ADMIN_MENUS_CHROME') }}</span>{% endif %}</td>
+            <td>
+              {% if menu.editable %}
+                <a class="yw-btn yw-btn--sm" href="{{ url({ tag: 'admin/menus', params: { menu: menu.tag } }) }}">
+                  {{ icon('pencil') }} {{ _t('EDIT') }}
+                </a>
+              {% endif %}
+            </td>
+          </tr>
+        {% else %}
+          <tr><td colspan="4">{{ _t('ADMIN_MENUS_NONE') }}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </section>
+
+  <section class="yw-dashboard__card">
+    <h2>{{ editing ? editing.title : _t('ADMIN_MENUS_NEW') }}</h2>
+    {% if editing and editing.chrome is defined and editing.chrome %}
+      <p class="yw-layout__hint">{{ _t('ADMIN_MENUS_CHROME_HINT') }}</p>
+    {% endif %}
+
+    <form method="post" action="{{ url({ tag: 'admin/menus' }) }}" hx-boost="false" data-yw-unsaved-guard>
+      <input type="hidden" name="csrf-token" value="{{ csrfToken({id: 'main', refresh: false}) }}">
+      <input type="hidden" name="menu" value="{{ editing ? editing.tag : '' }}">
+
+      <div class="yw-form-group">
+        <label class="yw-form-label" for="yw-menu-title">{{ _t('ADMIN_MENUS_TITLE') }}</label>
+        <input type="text" class="yw-input" id="yw-menu-title" name="title" autocomplete="off"
+               value="{{ editing ? editing.title : '' }}" required>
+      </div>
+
+      {{ include('@core/menu/editor.twig', { name: 'entries', rows: editing ? editing.rows : [] }) }}
+
+      <div class="yw-layout__save">
+        <button type="submit" class="yw-btn yw-btn--primary">{{ _t('SAVE') }}</button>
+      </div>
+    </form>
+  </section>
+
+  {{ include_css('styles/yw-admin.css') }}
+  {{ include_javascript('javascripts/vendor/sortablejs/sortable.js') }}
+  {{ include_javascript('javascripts/inputs/file-picker-field.js', false, true) }}
+  {{ include_javascript('javascripts/menu-editor.js', false, true) }}
+{% endblock %}
