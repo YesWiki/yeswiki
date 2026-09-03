@@ -33,19 +33,17 @@ use Symfony\Component\Routing\RequestContext;
 use Symfony\Component\Routing\RouteCollection;
 use Symfony\Component\Security\Csrf\CsrfTokenManager;
 use YesWiki\Admin\Service\ApiService;
+use YesWiki\Admin\Service\MaintenanceService;
 use YesWiki\Content\Controller\LegacyPageController;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Identity\Action\LoginAction;
-use YesWiki\Identity\Service\AccountActivationService;
 use YesWiki\Identity\Service\AuthenticationService;
-use YesWiki\Identity\Service\UserManager;
 use YesWiki\Kernel\Exception\ExitException;
 use YesWiki\Kernel\Routing\ReservedTags;
 use YesWiki\Kernel\Service\CurrentRequest;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\EventDispatcher;
 use YesWiki\Kernel\Service\ExtensionRegistry;
-use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Kernel\Service\Journal;
 use YesWiki\Kernel\Service\LanguageService;
 use YesWiki\Kernel\Service\PageContext;
@@ -58,7 +56,6 @@ use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Kernel\Service\WikiUrls;
 use YesWiki\Render\Service\TemplateEngine;
 use YesWiki\Render\Service\ThemeManager;
-use YesWiki\Search\Service\SearchIndexer;
 
 // base translations and language detection (also defines YW_CHARSET); runs at load
 // time, before anything (YesWikiInit, the installer, error paths) calls _t()
@@ -68,7 +65,7 @@ LanguageService::getInstance()->initialize();
  * The per-request runtime: bootstraps configuration, extensions, the DI container
  * and languages, then dispatches the request (historic YesWiki\Wiki, ticket 08 --
  * every service responsibility it used to carry now lives in a real service; what
- * remains here is kernel lifecycle, dispatch, and the maintenance sweep).
+ * remains here is kernel lifecycle and dispatch).
  */
 class YesWikiRuntime
 {
@@ -112,6 +109,9 @@ class YesWikiRuntime
 
     /** Whether boot() has run: until it has, $services is not a container and nothing may ask it for one. */
     private bool $booted = false;
+
+    /** Where the compiled container's per-service files are, so a worker can tell when they go. */
+    private ?string $containerDirectory = null;
 
     /**
      * Constructor.
@@ -243,110 +243,18 @@ class YesWikiRuntime
             : ($default != null ? $default : '');
     }
 
-    /**
-     * Make the purge of page versions that are older than the last version older than "pages_purge_time"
-     * This method permits to allways keep a not latest version that is older than that period.
-     *
-     * @return void
-     */
-    public function purgePages()
-    {
-        if (($days = $this->getConfigValue('pages_purge_time')) && !$this->service(HibernationService::class)->isWikiHibernated()) {
-            $wnPages = $this->getConfigValue('table_prefix') . 'pages';
-            $dbService = $this->service(DbService::class);
-            $dateExpr = $dbService->dateSubDays(intval($days));
-            $sql = <<<SQL
-            SELECT DISTINCT a.id FROM $wnPages a,$wnPages b
-                WHERE a.latest = 'N'
-                    AND b.latest = 'N'
-                    AND a.time < $dateExpr
-                    AND a.tag = b.tag
-                    AND a.time < b.time
-                    AND b.time < $dateExpr;
-            SQL;
-            $ids = $this->service(DbService::class)->loadAll($sql);
-
-            if (count($ids)) {
-                $sql = 'DELETE FROM ' . $wnPages . ' WHERE id IN (';
-                foreach ($ids as $key => $line) {
-                    $sql .= ($key ? ', ' : '') . $line['id'];
-                }
-                $sql .= ')';
-
-                $this->service(DbService::class)->query($sql);
-            }
-        }
-    }
-
     // MAINTENANCE
-    protected const MAINTENANCE_INTERVAL = 1800; // run at most once every 30 minutes
-    protected const MAINTENANCE_LOCK_FILE = 'cache/maintenance.lock';
-
-    /** When maintenance last ran, read before this run claimed the lock. */
-    private ?int $previousMaintenanceRun = null;
-
     /**
-     * The wiki's housekeeping, and the one place an extension can hang its own on.
+     * The wiki's housekeeping, kept here as the name an extension has always called (ticket 54).
+     *
+     * The sweep itself is `MaintenanceService`, so `./yeswicli core:maintenance` runs the same
+     * steps with an exit code rather than a second copy of them.
      *
      * @return void
      */
     public function maintenance()
     {
-        $startedAt = time();
-        $began = microtime(true);
-        $context = [
-            'startedAt' => $startedAt,
-            'interval' => self::MAINTENANCE_INTERVAL,
-            'previousRun' => $this->previousMaintenanceRun,
-        ];
-
-        $this->service(EventDispatcher::class)->yesWikiDispatch('maintenance.before', $context);
-
-        $this->purgePages();
-        $this->pruneJournal();
-        $this->service(UserManager::class)->purgeExpiredPasswordRecoveryKeys();
-        $this->service(AccountActivationService::class)->purgeExpiredActivationKeys();
-        $this->drainSearchIndexQueue();
-
-        $this->service(EventDispatcher::class)->yesWikiDispatch(
-            'maintenance.after',
-            $context + ['duration' => microtime(true) - $began]
-        );
-    }
-
-    /** The Journal's retention, beside the one that has always run here (ticket 51). */
-    protected function pruneJournal(): void
-    {
-        try {
-            $this->service(Journal::class)->prune();
-        } catch (\Throwable $failed) {
-        }
-    }
-
-    /** The search index's fallback drain. */
-    protected function drainSearchIndexQueue(): void
-    {
-        try {
-            $this->service(SearchIndexer::class)->drain(200, 5);
-        } catch (\Throwable $failed) {
-        }
-    }
-
-    /**
-     * Poor man's cron: Maintenance() is only run once self::MAINTENANCE_INTERVAL has elapsed.
-     */
-    protected function shouldRunMaintenance(): bool
-    {
-        $locks = new \YesWiki\Files\Service\RuntimeLock();
-
-        $lastRun = $locks->lastTaken(self::MAINTENANCE_LOCK_FILE);
-        if (time() - $lastRun < self::MAINTENANCE_INTERVAL) {
-            return false;
-        }
-        $this->previousMaintenanceRun = $lastRun ?: null;
-        $locks->stamp(self::MAINTENANCE_LOCK_FILE);
-
-        return true;
+        $this->service(MaintenanceService::class)->sweep();
     }
 
     // THE BIG EVIL NASTY ONE!
@@ -379,7 +287,7 @@ class YesWikiRuntime
         $this->service(RequestScope::class)->startNewRequest();
         $this->readThisRequest();
 
-        if ($this->shouldRunMaintenance()) {
+        if ($this->service(MaintenanceService::class)->dueOnRequest()) {
             $this->maintenance();
         }
 
@@ -802,6 +710,7 @@ class YesWikiRuntime
             throw new \RuntimeException('the kernel built a container with no parameter bag');
         }
         $this->services = $container;
+        $this->containerDirectory = $this->directoryOf($container);
 
         $parameterBag = $container->getParameterBag();
         $this->services->set(ParameterBagInterface::class, $parameterBag);
@@ -817,6 +726,37 @@ class YesWikiRuntime
         $this->service(PageContext::class)->setTag($this->initialTag);
         $this->service(PageContext::class)->setMethod((string)$this->initialMethod);
         $this->booted = true;
+    }
+
+    /**
+     * Where the container this process is running on was dumped.
+     *
+     * Read off the class rather than recomputed from the fingerprint: a rebuild under the same
+     * fingerprint writes a *differently named* directory, so "the fingerprint directory exists" is
+     * not the same question as "the files this container requires still exist".
+     */
+    private function directoryOf(Container $container): ?string
+    {
+        $file = (new \ReflectionClass($container))->getFileName();
+
+        return $file === false ? null : \dirname($file);
+    }
+
+    /**
+     * Whether the compiled container this process booted on has been deleted underneath it.
+     *
+     * Under php-fpm nobody can be holding one: the process ends with the request. A worker boots
+     * once and serves hundreds (ADR-0024), and its container resolves services by `require`-ing a
+     * file per service from the directory it was dumped into -- so `./yeswicli cache:clear`, a
+     * `migrate`, or anything else that empties `cache/container` leaves that worker unable to
+     * build another service for the rest of its life. Every page then fails on whichever service
+     * it reaches for first, which reads as the wiki being broken rather than as a cache being
+     * cleared. `worker.php` asks this between requests and stops, so the next request is served by
+     * a worker that built itself a fresh container.
+     */
+    public function containerCacheIsGone(): bool
+    {
+        return $this->containerDirectory !== null && !is_dir($this->containerDirectory);
     }
 
     /**

@@ -144,6 +144,10 @@ jobs:
       - name: Start PHP built-in server
         run: |
           mkdir -p ${{ github.workspace }}/cache ${{ github.workspace }}/private/backups
+          # Ticket 54: this server is browsed by the suite while the suite runs against the same
+          # database, and a page view would otherwise trip the poor man's cron and drain the search
+          # queue underneath a spec that is draining it. Only ./yeswicli core:maintenance sweeps here.
+          echo "MAINTENANCE_TRIGGER=cron" >> ${{ github.workspace }}/private/.env
           # Workers > 1 so a request that triggers a sub-request cannot deadlock the server.
           # tests/ci-router.php denies private/, which .htaccess does for Apache and the
           # built-in server honours nothing. Without it ArchiveService correctly refuses to

@@ -98,7 +98,7 @@ class SearchIndexCascadeTest extends YesWikiTestCase
     {
         [$formId, $entryTag] = $this->makeFormWithAnEntry('sarriette');
         $this->indexer()->drain(1000);
-        $this->assertSame(0, $this->indexer()->pending(), 'the queue starts empty');
+        $this->assertNotContains($entryTag, $this->queuedTags(), 'this entry starts off the queue');
 
         $formManager = $this->getWiki()->services->get(FormManager::class);
         $form = $formManager->getOne($formId);
@@ -108,12 +108,11 @@ class SearchIndexCascadeTest extends YesWikiTestCase
         ];
         $formManager->update($form);
 
-        $this->assertGreaterThan(
-            0,
-            $this->indexer()->pending(),
+        $this->assertContains(
+            $entryTag,
+            $this->queuedTags(),
             'form.updated must queue the form\'s entries -- the queue, not the spawn, is what carries the work'
         );
-        $this->assertContains($entryTag, $this->queuedTags());
     }
 
     public function testEnqueueFormFindsEveryEntryOfTheForm(): void
@@ -127,17 +126,77 @@ class SearchIndexCascadeTest extends YesWikiTestCase
         $this->assertContains($entryTag, $this->queuedTags());
     }
 
-    /** Draining reindexes and empties, and is safe to run when there is nothing to do. */
-    public function testDrainingEmptiesTheQueueAndIsIdempotent(): void
+    /**
+     * Draining reindexes and takes what it did off the queue.
+     *
+     * Asserted on this test's own tag rather than on `pending()`: that counts the whole queue, and
+     * the suite shares its database with whatever else is running -- another spec saving a page, a
+     * browser tab on the dev wiki, the shutdown sweep deleting fixtures. A test cannot own a global
+     * count, and asserting one is what made this fail once in six runs (ticket 54).
+     */
+    public function testDrainingTakesWhatItIndexedOffTheQueue(): void
     {
         [, $entryTag] = $this->makeFormWithAnEntry('livreche');
         $this->indexer()->enqueue([$entryTag]);
 
-        $this->assertGreaterThan(0, $this->indexer()->pending());
-        $this->indexer()->drain(1000);
-        $this->assertSame(0, $this->indexer()->pending());
+        $this->assertContains($entryTag, $this->queuedTags());
 
-        $this->assertSame(0, $this->indexer()->drain(1000), 'draining an empty queue does nothing');
+        $this->indexer()->drain(1000);
+
+        $this->assertNotContains($entryTag, $this->queuedTags());
+    }
+
+    /** Two drains never take the same tag: the first claims its chunk, the second gets the next one. */
+    public function testTwoDrainsNeverClaimTheSameTag(): void
+    {
+        $tags = [];
+        foreach (['livreche', 'ansérine', 'chénopode'] as $word) {
+            [, $tags[]] = $this->makeFormWithAnEntry($word);
+        }
+        $this->indexer()->enqueue($tags);
+
+        $claimed = [];
+        try {
+            $claimed = $first = $this->claim(2);
+            $second = $this->claim(2);
+            $claimed = [...$first, ...$second];
+
+            $this->assertNotEmpty($first);
+            $this->assertSame([], array_intersect($first, $second), 'a claimed row was handed out twice');
+        } finally {
+            $this->release($claimed);
+        }
+    }
+
+    /**
+     * @return list<string> what a drain of this size would take
+     */
+    private function claim(int $chunkSize): array
+    {
+        $claim = new \ReflectionMethod($this->indexer(), 'claim');
+        $claim->setAccessible(true);
+
+        return $claim->invoke($this->indexer(), $chunkSize, bin2hex(random_bytes(8)));
+    }
+
+    /**
+     * Hand the rows back: a claim taken and not drained is honoured until it expires, which would
+     * leave these tags unindexable for an hour of everybody else's runs.
+     *
+     * @param list<string> $tags
+     */
+    private function release(array $tags): void
+    {
+        if ($tags === []) {
+            return;
+        }
+        $wiki = $this->getWiki();
+        $queue = $wiki->services->get(SearchIndexSchema::class)->queueTable();
+        $wiki->services->get(\YesWiki\Kernel\Service\DbService::class)->query(
+            "UPDATE {$queue} SET claimed_at = NULL, claimed_by = NULL WHERE tag IN ("
+            . implode(', ', array_fill(0, count($tags), '?')) . ')',
+            $tags
+        );
     }
 
     /** Queueing the same Content twice leaves one row, not two. */
@@ -150,7 +209,10 @@ class SearchIndexCascadeTest extends YesWikiTestCase
         $this->indexer()->enqueue([$entryTag]);
         $this->indexer()->enqueue([$entryTag]);
 
-        $this->assertSame(1, $this->indexer()->pending());
+        $this->assertSame([$entryTag], array_values(array_filter(
+            $this->queuedTags(),
+            static fn (string $tag): bool => $tag === $entryTag
+        )));
     }
 
     /**
@@ -178,5 +240,13 @@ class SearchIndexCascadeTest extends YesWikiTestCase
             $pageManager->deleteOrphaned((string)$row['tag']);
             $indexer->delete((string)$row['tag']);
         }
+
+        // The queue is not part of delete(): a fixture claimed by testTwoDrainsNeverClaimTheSameTag
+        // and never drained would sit there until its claim expired, and `search:reindex --status`
+        // would count it (ticket 54).
+        $wiki->services->get(\YesWiki\Kernel\Service\DbService::class)->query(
+            'DELETE FROM ' . $wiki->services->get(SearchIndexSchema::class)->queueTable()
+            . " WHERE tag LIKE '" . self::ENTRY_TAG_PREFIX . "%'"
+        );
     }
 }

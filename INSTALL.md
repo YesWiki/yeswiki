@@ -87,6 +87,28 @@ and you place the YesWiki files into `/home/jdoe/www/wiki`, you should go to
 
 Detailed instructions are available [in the official doc](https://yeswiki.net/?doc#/docs/fr/webmaster?id=installation).
 
+## Housekeeping
+
+A wiki purges old page revisions and Journal entries, expires password recovery and account
+activation keys, and reindexes what has changed. By default whoever loads a page once half an hour
+has gone does that work -- the poor man's cron, which needs nothing set up and is why a wiki that
+is installed and forgotten keeps working.
+
+If you have a crontab, hand it the job instead. Add to `yeswiki.config.php`:
+
+```php
+'maintenance_trigger' => 'cron',
+```
+
+and run the sweep from cron, hourly or so:
+
+```
+0 * * * * cd /home/jdoe/www/wiki && ./yeswicli core:maintenance
+```
+
+The command exits non-zero when a step fails, so cron mails you about it. `/admin/health` says so
+too: with `cron` chosen and no sweep in two days, it reports that nothing is running.
+
 ## Installation through Docker
 
 Instructions can be found [here](./docker/README.md)

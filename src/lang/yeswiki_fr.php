@@ -3297,6 +3297,10 @@ qui rend 1 si bf_type == premiere_cle sinon 0).',
     'HEALTH_RETIRED_CHROME_OVERRIDES_SAYS' => 'La barre de titre, le menu haut et le menu rapide sont désormais une configuration commune à tout le wiki, et le menu latéral n\'existe plus. Ces pages portent l\'habillage du wiki ; la bannière et le pied de page restent redéfinissables page par page.',
     'HEALTH_LEFTOVER_TOOLS' => 'Extensions restées dans tools/',
     'HEALTH_LEFTOVER_TOOLS_SAYS' => 'Plus rien ne parcourt tools/ : ces extensions ne font silencieusement plus rien. Déplacez chacune dans custom/extensions/ et vérifiez qu\'elle est compatible Ectoplasme.',
+    'HEALTH_MAINTENANCE' => 'Passage de maintenance',
+    'HEALTH_MAINTENANCE_SAYS' => 'Ce wiki est réglé sur maintenance_trigger : cron, donc seul `./yeswicli core:maintenance` fait le ménage. Vérifiez que la ligne de crontab décrite dans INSTALL.md existe et qu\'elle s\'exécute.',
+    'HEALTH_MAINTENANCE_NEVER' => 'aucun passage de maintenance n\'a jamais eu lieu sur ce wiki',
+    'HEALTH_MAINTENANCE_STALE' => 'le dernier passage de maintenance remonte à %{days} jour(s)',
 
     'EDIT_CONFIG_GROUP_IMPORT' => 'Import de données externes',
 

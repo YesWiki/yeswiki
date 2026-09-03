@@ -60,7 +60,11 @@ class YesWikiTestCase extends TestCase
      */
     private static function pinExperimentalSwitches(YesWikiRuntime $wiki): void
     {
-        $wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['vditor_wiki_editor'] = false;
+        $config = $wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class);
+        $config['vditor_wiki_editor'] = false;
+        // Ticket 54: a page view of the dev wiki, served beside the run, would otherwise trip the
+        // poor man's cron and sweep the search queue underneath a spec that is draining it.
+        $config[\YesWiki\Admin\Service\MaintenanceService::TRIGGER_SETTING] = \YesWiki\Admin\Service\MaintenanceService::TRIGGER_CRON;
     }
 
     /** Deletes the users and groups the run created, at process shutdown. */

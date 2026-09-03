@@ -3202,6 +3202,10 @@ which returns 1 if bf_type == first_loop otherwise 0).',
     'HEALTH_RETIRED_CHROME_OVERRIDES_SAYS' => 'The title bar, top menu and quick menu are wiki-wide configuration now, and the side menu is gone. These pages wear the wiki layout; the banner and the footer can still be overridden per page.',
     'HEALTH_LEFTOVER_TOOLS' => 'Extensions left in tools/',
     'HEALTH_LEFTOVER_TOOLS_SAYS' => 'Nothing scans tools/ any more, so these are silently doing nothing. Move each into custom/extensions/ and check it is Ectoplasme-compatible.',
+    'HEALTH_MAINTENANCE' => 'Housekeeping sweep',
+    'HEALTH_MAINTENANCE_SAYS' => 'This wiki is set to maintenance_trigger: cron, so only `./yeswicli core:maintenance` sweeps. Check the crontab line in INSTALL.md is there and that it runs.',
+    'HEALTH_MAINTENANCE_NEVER' => 'no sweep has ever run on this wiki',
+    'HEALTH_MAINTENANCE_STALE' => 'the last sweep was %{days} day(s) ago',
 
     'EDIT_CONFIG_GROUP_IMPORT' => 'External data import',
 

@@ -178,8 +178,11 @@ class PostgreSqlDialect implements SqlDialect
             "CREATE INDEX IF NOT EXISTS \"{$table}_ft_text\" ON \"{$table}\" USING GIN (\"search_vector\")",
             "CREATE TABLE IF NOT EXISTS \"{$queueTable}\" (
                 \"tag\" VARCHAR(191) PRIMARY KEY,
-                \"queued_at\" TIMESTAMP NOT NULL
+                \"queued_at\" TIMESTAMP NOT NULL,
+                \"claimed_at\" TIMESTAMP NULL,
+                \"claimed_by\" VARCHAR(64) NULL
             )",
+            "CREATE INDEX IF NOT EXISTS \"{$queueTable}_idx_claimed_by\" ON \"{$queueTable}\" (\"claimed_by\")",
 
             "CREATE TABLE IF NOT EXISTS \"{$keywordsTable}\" (
                 \"tag\" VARCHAR(191) NOT NULL,

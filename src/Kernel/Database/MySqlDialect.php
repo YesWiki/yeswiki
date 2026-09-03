@@ -189,7 +189,10 @@ class MySqlDialect implements SqlDialect
             "CREATE TABLE IF NOT EXISTS `{$queueTable}` (
                 `tag` VARCHAR(191) NOT NULL,
                 `queued_at` DATETIME NOT NULL,
-                PRIMARY KEY (`tag`)
+                `claimed_at` DATETIME NULL DEFAULT NULL,
+                `claimed_by` VARCHAR(64) NULL DEFAULT NULL,
+                PRIMARY KEY (`tag`),
+                KEY `idx_claimed_by` (`claimed_by`)
             ) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci ENGINE=InnoDB",
 
             "CREATE TABLE IF NOT EXISTS `{$keywordsTable}` (

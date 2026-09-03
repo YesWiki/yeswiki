@@ -184,8 +184,11 @@ class SqliteDialect implements SqlDialect
             END",
             "CREATE TABLE IF NOT EXISTS \"{$queueTable}\" (
                 \"tag\" TEXT PRIMARY KEY,
-                \"queued_at\" TEXT NOT NULL
+                \"queued_at\" TEXT NOT NULL,
+                \"claimed_at\" TEXT NULL,
+                \"claimed_by\" TEXT NULL
             )",
+            "CREATE INDEX IF NOT EXISTS \"{$queueTable}_idx_claimed_by\" ON \"{$queueTable}\" (\"claimed_by\")",
 
             "CREATE TABLE IF NOT EXISTS \"{$keywordsTable}\" (
                 \"tag\" TEXT NOT NULL,

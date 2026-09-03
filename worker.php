@@ -12,6 +12,10 @@
  * page of that name. The script is described to the wiki as the front controller it would have
  * been under php-fpm, which is what makes the two modes agree (single-binary 07).
  *
+ * A worker also outlives its own compiled container, which lives in `cache/`: the loop below stops
+ * when that has been cleared underneath it, rather than answering every remaining request with a
+ * missing-service error.
+ *
  * The session is the exception `RequestScope` cannot own: it belongs to PHP's session extension
  * rather than to a service, and under php-fpm the process ending is what closed it. A worker
  * outlives the request, so it is closed here or the next request finds one already open and reads
@@ -55,6 +59,13 @@ $handler = static function () use ($wiki): void {
 };
 
 while ($served < $requestsBeforeRestart) {
+    // Someone emptied cache/container while this worker was holding one. It cannot build another
+    // service for the rest of its life, so it stops here and FrankenPHP starts one that can.
+    if ($wiki->containerCacheIsGone()) {
+        fwrite(STDERR, "the compiled container was cleared; restarting this worker\n");
+        break;
+    }
+
     if (!frankenphp_handle_request($handler)) {
         break;
     }

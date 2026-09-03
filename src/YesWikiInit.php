@@ -194,6 +194,11 @@ class YesWikiInit
             // worth a year, a fortnight of diagnostics is all anybody reads.
             'journal_audit_purge_time' => 365,
             'journal_diagnostic_purge_time' => 14,
+            // Ticket 54: 'request' is the poor man's cron -- whoever loads a page once the
+            // interval has elapsed sweeps -- and 'cron' hands the sweep to
+            // `./yeswicli core:maintenance` alone. A wiki that is installed and forgotten keeps
+            // working because the default is the one that needs nothing set up.
+            'maintenance_trigger' => 'request',
             'default_write_acl' => '*',
             'default_read_acl' => '*',
             'default_comment_acl' => 'comments-closed',

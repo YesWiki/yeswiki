@@ -17,12 +17,20 @@ class SearchIndexer
      * How many times a rewrite of the index may be replayed after the engine picks it as a
      * deadlock victim.
      *
-     * Nothing stops two drains overlapping -- a visitor's maintenance sweep, `search:reindex` and
-     * the browser suite all reach for the same queue, and the chunk each takes is chosen before
-     * the transaction opens, so two of them can hold overlapping tag sets. The engine resolves
-     * that by undoing one, and the undone one is what this replays.
+     * Claiming (ticket 54) is what stops two drains holding the same tags, so this is the backstop
+     * it was meant to be rather than the mechanism: the engine has already rolled the victim back,
+     * and the undone one is what this replays.
      */
     private const CONFLICT_ATTEMPTS = 3;
+
+    /**
+     * How long a claim is honoured before another drain may take the rows back.
+     *
+     * A drain that is killed mid-pass -- a page view that timed out, a container that went away --
+     * leaves its chunk stamped with nobody left to work it. Expiring the claim is what keeps that
+     * from being a queue entry nothing ever picks up again.
+     */
+    private const CLAIM_TTL_HOURS = 1;
 
     private DbService $dbService;
     private SearchIndexSchema $schema;
@@ -203,7 +211,6 @@ class SearchIndexer
         }
 
         $startedAt = microtime(true);
-        $queue = $this->schema->queueTable();
         $pages = $this->dbService->prefixTable('pages');
         $timeCol = $this->dbService->quoteIdentifier('time');
         $typeCol = $this->dbService->quoteIdentifier('type');
@@ -211,14 +218,12 @@ class SearchIndexer
         $done = 0;
         while ($done < $limit) {
             $chunkSize = min(self::INSERT_BATCH, $limit - $done);
-            $queued = $this->dbService->loadAll(
-                "SELECT tag FROM {$queue} ORDER BY queued_at ASC, tag ASC LIMIT {$chunkSize}"
-            );
-            if ($queued === []) {
+            $claim = bin2hex(random_bytes(16));
+            $tags = $this->claim($chunkSize, $claim);
+            if ($tags === []) {
                 break;
             }
 
-            $tags = array_map(static fn (array $row): string => (string)$row['tag'], $queued);
             $inList = SqlParameters::placeholders(count($tags));
 
             $rows = $this->dbService->loadAll(
@@ -237,12 +242,12 @@ class SearchIndexer
                 }
             }
 
-            $this->dbService->transactional(function () use ($inList, $tags, $contents): void {
+            $this->dbService->transactional(function () use ($inList, $tags, $contents, $claim): void {
                 $this->dbService->query("DELETE FROM {$this->schema->table()} WHERE tag IN ({$inList})", $tags);
 
                 $this->dbService->query("DELETE FROM {$this->schema->keywordsTable()} WHERE tag IN ({$inList})", $tags);
                 $this->write($contents);
-                $this->dequeue($tags);
+                $this->dequeue($tags, $claim);
             }, self::CONFLICT_ATTEMPTS);
 
             $done += count($tags);
@@ -324,16 +329,56 @@ class SearchIndexer
     /**
      * @param list<string> $tags
      */
-    private function dequeue(array $tags): void
+    private function dequeue(array $tags, ?string $claim = null): void
     {
         if ($tags === []) {
             return;
         }
+        // With a claim, only the rows this drain took are removed: a save that re-queued a tag
+        // while it was being indexed replaces the row and clears the claim, so its work survives
+        // instead of being deleted by the pass that started before it.
+        $held = $claim === null ? '' : ' AND claimed_by = ?';
         foreach (array_chunk($tags, self::INSERT_BATCH) as $chunk) {
             $this->dbService->query(
-                "DELETE FROM {$this->schema->queueTable()} WHERE tag IN (" . SqlParameters::placeholders(count($chunk)) . ')',
-                $chunk
+                "DELETE FROM {$this->schema->queueTable()} WHERE tag IN (" . SqlParameters::placeholders(count($chunk)) . ')' . $held,
+                $claim === null ? $chunk : [...$chunk, $claim]
             );
         }
+    }
+
+    /**
+     * Take the next chunk of the queue for this drain alone, and answer what it got.
+     *
+     * Two drains used to pick their chunk before opening a transaction, so a visitor's maintenance
+     * sweep, `search:reindex` and the browser suite could all hold the same tags and deadlock over
+     * them (ticket 54). Claiming is one UPDATE, which every dialect applies atomically, so the
+     * second drain reads back nothing and moves on to the next chunk instead of the same one.
+     *
+     * @return list<string>
+     */
+    private function claim(int $chunkSize, string $claim): array
+    {
+        $queue = $this->schema->queueTable();
+        $free = '(claimed_at IS NULL OR claimed_at < ' . $this->dbService->dateSubHours(self::CLAIM_TTL_HOURS) . ')';
+
+        return $this->dbService->transactional(function () use ($queue, $free, $chunkSize, $claim): array {
+            $candidates = $this->dbService->loadAll(
+                "SELECT tag FROM {$queue} WHERE {$free} ORDER BY queued_at ASC, tag ASC LIMIT {$chunkSize}"
+            );
+            if ($candidates === []) {
+                return [];
+            }
+
+            $tags = array_map(static fn (array $row): string => (string)$row['tag'], $candidates);
+            $this->dbService->query(
+                "UPDATE {$queue} SET claimed_at = {$this->dbService->now()}, claimed_by = ?"
+                . ' WHERE tag IN (' . SqlParameters::placeholders(count($tags)) . ") AND {$free}",
+                [$claim, ...$tags]
+            );
+
+            $taken = $this->dbService->loadAll("SELECT tag FROM {$queue} WHERE claimed_by = ?", [$claim]);
+
+            return array_map(static fn (array $row): string => (string)$row['tag'], $taken);
+        }, self::CONFLICT_ATTEMPTS);
     }
 }
