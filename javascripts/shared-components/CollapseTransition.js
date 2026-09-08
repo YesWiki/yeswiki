@@ -10,7 +10,7 @@ const BaseTransitionMixin = {
      */
     duration: {
       type: [Number, Object],
-      default: 200
+      default: 200,
     },
     /**
      * Transition delay. Number for specifying the same delay for enter/leave transitions
@@ -18,7 +18,7 @@ const BaseTransitionMixin = {
      */
     delay: {
       type: [Number, Object],
-      default: 0
+      default: 0,
     },
     /**
      * Whether the component should be a `transition-group` component.
@@ -29,7 +29,7 @@ const BaseTransitionMixin = {
      */
     tag: {
       type: String,
-      default: 'span'
+      default: 'span',
     },
     /**
      *  Transform origin property https://tympanus.net/codrops/css_reference/transform-origin/.
@@ -37,7 +37,7 @@ const BaseTransitionMixin = {
      */
     origin: {
       type: String,
-      default: ''
+      default: '',
     },
     /**
      * Element styles that are applied during transition. These styles are applied on @beforeEnter and @beforeLeave hooks
@@ -46,11 +46,17 @@ const BaseTransitionMixin = {
       type: Object,
       default: () => ({
         animationFillMode: 'both',
-        animationTimingFunction: 'ease-out'
-      })
-    }
+        animationTimingFunction: 'ease-out',
+      }),
+    },
   },
-  emits: ['before-enter', 'after-enter', 'before-leave', 'leave', 'after-leave'],
+  emits: [
+    'before-enter',
+    'after-enter',
+    'before-leave',
+    'leave',
+    'after-leave',
+  ],
   computed: {
     componentType() {
       return this.group ? 'transition-group' : 'transition'
@@ -69,13 +75,15 @@ const BaseTransitionMixin = {
         afterLeave: (el) => {
           this.cleanUpStyles(el)
           this.$emit('after-leave', el)
-        }
+        },
       }
-    }
+    },
   },
   methods: {
     beforeEnter(el) {
-      const enterDuration = this.duration.enter ? this.duration.enter : this.duration
+      const enterDuration = this.duration.enter
+        ? this.duration.enter
+        : this.duration
       el.style.animationDuration = `${enterDuration}ms`
 
       const enterDelay = this.delay.enter ? this.delay.enter : this.delay
@@ -95,7 +103,9 @@ const BaseTransitionMixin = {
       el.style.animationDelay = ''
     },
     beforeLeave(el) {
-      const leaveDuration = this.duration.leave ? this.duration.leave : this.duration
+      const leaveDuration = this.duration.leave
+        ? this.duration.leave
+        : this.duration
       el.style.animationDuration = `${leaveDuration}ms`
 
       const leaveDelay = this.delay.leave ? this.delay.leave : this.delay
@@ -128,8 +138,8 @@ const BaseTransitionMixin = {
         el.style.transformOrigin = this.origin
       }
       return this
-    }
-  }
+    },
+  },
 }
 
 export default {
@@ -142,7 +152,9 @@ export default {
       return style
     },
     beforeEnter(el) {
-      const enterDuration = this.duration.enter ? this.duration.enter : this.duration
+      const enterDuration = this.duration.enter
+        ? this.duration.enter
+        : this.duration
       el.style.transition = this.transitionStyle(enterDuration)
       if (!el.dataset) el.dataset = {}
 
@@ -189,7 +201,9 @@ export default {
     },
 
     leave(el) {
-      const leaveDuration = this.duration.leave ? this.duration.leave : this.duration
+      const leaveDuration = this.duration.leave
+        ? this.duration.leave
+        : this.duration
       if (el.scrollHeight !== 0) {
         // for safari: add class after set height, or it will jump to zero height suddenly, weired
         el.style.transition = this.transitionStyle(leaveDuration)
@@ -207,7 +221,7 @@ export default {
       el.style.overflow = el.dataset.oldOverflow
       el.style.paddingTop = el.dataset.oldPaddingTop
       el.style.paddingBottom = el.dataset.oldPaddingBottom
-    }
+    },
   },
   template: `
     <component :is="componentType"
@@ -221,5 +235,5 @@ export default {
             @after-leave="afterLeave"
             move-class="collapse-move">
       <slot></slot>
-    </component>`
+    </component>`,
 }

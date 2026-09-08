@@ -28,7 +28,7 @@ class GroupManager
      */
     public function create(string $group_name, array $members): int
     {
-        $member_str = implode("\n", $members);
+        $member_str = implode("\n", $this->cleanMembers($members));
 
         return $this->tripleStore->create($group_name, WIKINI_VOC_ACLS, $member_str, GROUP_PREFIX);
     }
@@ -68,16 +68,28 @@ class GroupManager
     {
         $members = $this->tripleStore->getOne($group_name, WIKINI_VOC_ACLS, GROUP_PREFIX) ?? '';
 
-        return explode("\n", $members);
+        return $this->cleanMembers(preg_split('/[\r\n]+/', $members));
+    }
+
+    /**
+     * trim members and drop blank or duplicated ones.
+     *
+     * @param string[] $members
+     *
+     * @return string[]
+     */
+    public function cleanMembers(array $members): array
+    {
+        $members = array_map('trim', $members);
+        $members = array_filter($members, fn ($member): bool => $member !== '');
+
+        return array_values(array_unique($members));
     }
 
     public function addMembers(string $group_name, array $members): void
     {
         $old_members = $this->getMembers($group_name);
-        $new_members = array_merge($old_members, $members);
-        $new_members = array_unique($new_members);
-        $new_members = array_filter($new_members);
-        $new_members = implode("\n", $new_members);
+        $new_members = implode("\n", $this->cleanMembers(array_merge($old_members, $members)));
         if ($this->tripleStore->delete($group_name, WIKINI_VOC_ACLS, null, GROUP_PREFIX)) {
             $this->tripleStore->create($group_name, WIKINI_VOC_ACLS, $new_members, GROUP_PREFIX);
         } else {
@@ -88,9 +100,7 @@ class GroupManager
     public function removeMembers(string $group_name, array $members): void
     {
         $old_members = $this->getMembers($group_name);
-        $new_members = array_diff($old_members, $members);
-        $new_members = array_filter($new_members);
-        $new_members = implode("\n", $new_members);
+        $new_members = implode("\n", $this->cleanMembers(array_diff($old_members, $members)));
         if ($this->tripleStore->delete($group_name, WIKINI_VOC_ACLS, null, GROUP_PREFIX)) {
             $this->tripleStore->create($group_name, WIKINI_VOC_ACLS, $new_members, GROUP_PREFIX);
         } else {
@@ -100,7 +110,7 @@ class GroupManager
 
     public function updateMembers(string $group_name, array $members): void
     {
-        $new_members = implode("\n", $members);
+        $new_members = implode("\n", $this->cleanMembers($members));
         if ($this->tripleStore->delete($group_name, WIKINI_VOC_ACLS, null, GROUP_PREFIX)) {
             $this->tripleStore->create($group_name, WIKINI_VOC_ACLS, $new_members, GROUP_PREFIX);
         } else {

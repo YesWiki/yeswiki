@@ -9,7 +9,5 @@ class AddContextToPageLogin extends YesWikiMigration
     {
         // TODO : test if PageLogin exists, and add context="login-page" to {{login}} if exists
         $pageManager = $this->getService(PageManager::class);
-
-        return;
     }
 }

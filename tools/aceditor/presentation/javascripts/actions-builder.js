@@ -4,7 +4,7 @@ const { createApp } = Vue
 
 const ACTIONS_BACKWARD_COMPATIBILITY = {
   calendrier: 'bazarcalendar',
-  map: 'bazarcarto'
+  map: 'bazarcarto',
 }
 
 export default class {
@@ -24,11 +24,14 @@ export default class {
 
   get allAvailableActions() {
     return Object.values(actionsBuilderData.action_groups)
-      .map((e) => Object.keys(e.actions)).flat()
+      .map((e) => Object.keys(e.actions))
+      .flat()
   }
 
   get allAvailableActionsWithBackward() {
-    return this.allAvailableActions.concat(Object.keys(ACTIONS_BACKWARD_COMPATIBILITY))
+    return this.allAvailableActions.concat(
+      Object.keys(ACTIONS_BACKWARD_COMPATIBILITY),
+    )
   }
 
   getActionConfiguration(actionName) {
@@ -44,8 +47,12 @@ export default class {
     // Handle backward compat
     if (options.action) {
       const [actionName] = options.action.split(' ')
-      const newActionName = ACTIONS_BACKWARD_COMPATIBILITY[actionName] || actionName
-      options.action = options.action.replace(new RegExp(`^${actionName}`), newActionName)
+      const newActionName =
+        ACTIONS_BACKWARD_COMPATIBILITY[actionName] || actionName
+      options.action = options.action.replace(
+        new RegExp(`^${actionName}`),
+        newActionName,
+      )
     }
     this.app.open(editor, options)
   }

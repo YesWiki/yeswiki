@@ -2,7 +2,6 @@
 
 namespace YesWiki\Templates\Service;
 
-use URLify;
 use YesWiki\Bazar\Field\TabsField;
 
 class TabsService
@@ -91,14 +90,13 @@ class TabsService
         $this->data[$mode]['tabOpened'] = false;
         $this->data[$mode]['slugs'] = array_map(function ($id) use ($titles, $mode) {
             $title = $titles[$id];
-            $slug = URLify::slug($title);
+            $slug = \URLify::slug($title);
             if (in_array($slug, $this->usedSlugs)) {
                 return "{$slug}_{$this->data[$mode]['prefixCounter']}_" . ($id + 1);
-            } else {
-                $this->usedSlugs[] = $slug;
-
-                return $slug;
             }
+            $this->usedSlugs[] = $slug;
+
+            return $slug;
         }, array_keys($titles));
     }
 
@@ -215,8 +213,8 @@ class TabsService
             $this->nextPrefix = $this->states[$index]['nextPrefix'];
 
             return true;
-        } else {
-            return false;
         }
+
+        return false;
     }
 }

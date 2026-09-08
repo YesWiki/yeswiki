@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Admin all reactions.
  */
@@ -20,11 +21,11 @@ class AdminReactionsAction extends YesWikiAction
             return $this->render('@core/admin-reactions-table.twig', [
                 'reactions' => $allReactions,
             ]);
-        } else {
-            return $this->render('@templates/alert-message.twig', [
-                'type' => 'info',
-                'message' => _t('REACTION_CONNECT_AS_ADMIN'),
-            ]);
         }
+
+        return $this->render('@templates/alert-message.twig', [
+            'type' => 'info',
+            'message' => _t('REACTION_CONNECT_AS_ADMIN'),
+        ]);
     }
 }

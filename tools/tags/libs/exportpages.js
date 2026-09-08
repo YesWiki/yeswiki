@@ -1,10 +1,14 @@
 $(document).ready(() => {
-  $('.export-table-form').on('submit', function() { $(this).append('<input type="hidden" name="antispam" value="1" />') })
+  $('.export-table-form').on('submit', function () {
+    $(this).append('<input type="hidden" name="antispam" value="1" />')
+  })
   $('#ebook-selection-container').sortable()
 
-  $('.btn-erase-filter').on('click', () => { $('#filter').val('').keyup() })
+  $('.btn-erase-filter').on('click', () => {
+    $('#filter').val('').keyup()
+  })
 
-  $('.select-page-item').on('click', function() {
+  $('.select-page-item').on('click', function () {
     $(this).siblings().filter('.remove-page-item').removeClass('hide')
     $(this).siblings().filter('.movable').removeClass('hide')
     $(this).addClass('hide')
@@ -15,7 +19,7 @@ $(document).ready(() => {
     return false
   })
 
-  $('.remove-page-item').on('click', function() {
+  $('.remove-page-item').on('click', function () {
     $(this).siblings().filter('.select-page-item').removeClass('hide')
     $(this).siblings().filter('.movable').addClass('hide')
     $(this).addClass('hide')
@@ -26,14 +30,15 @@ $(document).ready(() => {
     return false
   })
 
-  const listpages = $('#list-pages-to-export .list-group-item'); const filter = $('#filter'); const
-    filtercount = $('#filter-count')
+  const listpages = $('#list-pages-to-export .list-group-item')
+  const filter = $('#filter')
+  const filtercount = $('#filter-count')
   filter.keyup(() => {
     // Retrieve the input field text and reset the count to zero
     let count = 0
 
     // Loop through the comment list
-    listpages.each(function() {
+    listpages.each(function () {
       // If the list item does not contain the text phrase fade it out
       if ($(this).text().search(new RegExp(filter.val(), 'i')) < 0) {
         $(this).hide()
@@ -46,7 +51,6 @@ $(document).ready(() => {
     })
 
     // Update the count
-    const numberItems = count
     filtercount.text(_t('TAGS_NUMBER_OF_PAGES'), { nb: count })
   })
 })

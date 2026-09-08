@@ -32,12 +32,11 @@
             <td>
                 {% if isAdmin and ext.updateAvailable and ext.installed %}
                     {% if not isHibernated %}
-                        <a  href="{{ url({ params: { action: 'upgrade', package: ext.updateLink } }) }}"
-                            class="btn btn-xs btn-primary"
-                            title="{{ _t('AU_UPDATE') }}"
-                        >
-                            {{ _t('AU_UPDATE') }}
-                        </a>
+                        {% include '@autoupdate/action-button.twig' with {
+                            params: { action: 'upgrade', package: ext.updateLink },
+                            buttonClass: 'btn btn-xs btn-primary',
+                            label: _t('AU_UPDATE')
+                        } only %}
                     {% else %}
                         <button disabled
                             class="btn btn-xs btn-primary"
@@ -55,12 +54,11 @@
             <td>
                 {% if isAdmin and not ext.installed %}
                     {% if not isHibernated %}
-                        <a  href="{{ url({ params: { action: 'upgrade', package: ext.updateLink } }) }}"
-                            class="btn btn-xs btn-primary"
-                            title="{{ _t('AU_INSTALL') }}"
-                        >
-                            {{ _t('AU_INSTALL') }}
-                        </a>
+                        {% include '@autoupdate/action-button.twig' with {
+                            params: { action: 'upgrade', package: ext.updateLink },
+                            buttonClass: 'btn btn-xs btn-primary',
+                            label: _t('AU_INSTALL')
+                        } only %}
                     {% else %}
                         <button disabled
                             class="btn btn-xs btn-primary"
@@ -75,12 +73,11 @@
 
                 {% if isAdmin and ext.installed and ext.name != 'autoupdate' %}
                     {% if not isHibernated %}
-                        <a  href="{{ url({params:{ action: 'delete', package: ext.deleteLink|split('delete=')|slice(1,1)|first}}) }}"
-                            class="btn btn-xs btn-danger"
-                            title="{{ _t('AU_DELETE_EXT') }}"
-                        >
-                            {{ _t('AU_DELETE_EXT') }}
-                        </a>
+                        {% include '@autoupdate/action-button.twig' with {
+                            params: { action: 'delete', package: ext.deleteLink|split('delete=')|slice(1,1)|first },
+                            buttonClass: 'btn btn-xs btn-danger',
+                            label: _t('AU_DELETE_EXT')
+                        } only %}
                     {% else %}
                         <button disabled
                             class="btn btn-xs btn-danger"

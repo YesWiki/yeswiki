@@ -5,7 +5,7 @@ export default {
     label: _t('BAZ_FORM_EDIT_TAGS_LABEL'),
     name: 'tags',
     attrs: { type: 'tags' },
-    icon: '<i class="fas fa-tags"></i>'
+    icon: '<i class="fas fa-tags"></i>',
   },
   attributes: {
     hint: { label: _t('BAZ_FORM_EDIT_HELP'), value: '' },
@@ -13,7 +13,7 @@ export default {
     write: writeconf,
   },
   // disabledAttributes: [],
-  renderInput(fieldData) {
+  renderInput(_fieldData) {
     return { field: '<input/>' }
-  }
+  },
 }

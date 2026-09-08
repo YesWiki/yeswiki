@@ -9,7 +9,7 @@
 // valable que pour les utilisateurs connectes
 if ($user = $this->GetUser()) {
     if ($user['email'] != '') {
-        //recuperation des parametres
+        // recuperation des parametres
         $list = $this->GetParameter('list');
         if (!empty($list)) {
             $output = '<div class="note"></div>

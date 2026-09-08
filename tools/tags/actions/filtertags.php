@@ -33,7 +33,10 @@ unset($params['tags']);
 $req = 'SELECT DISTINCT tag, time, user, owner, body 
 FROM ' . $this->config['table_prefix'] . 'pages, ' . $this->config['table_prefix'] . "triples tags
 WHERE latest = 'Y' AND comment_on = '' AND tags.value IN (" . $taglist . ') AND tags.property = "http://outils-reseaux.org/_vocabulary/tag" AND tags.resource = tag AND tag NOT IN ("' . implode('","', $this->GetAllInclusions()) . '") ORDER BY tag ASC';
-$pages = $this->LoadAll($req);
+$aclService = $this->services->get(AclService::class);
+$pages = array_filter($this->LoadAll($req), function ($page) use ($aclService) {
+    return $aclService->hasAccess('read', $page['tag']);
+});
 
 echo '<div class="well well-sm no-dblclick controls">' . "\n" . '<div class="pull-right muted"><span class="nbfilteredelements">' . count($pages) . '</span> ' . _t('TAGS_RESULTS') . '</div>';
 foreach ($params as $param) {
@@ -49,28 +52,25 @@ foreach ($params as $param) {
 }
 echo '</div>';
 
-$aclService = $this->services->get(AclService::class);
 $element = [];
 // affichage des resultats
 foreach ($pages as $page) {
-    if ($aclService->hasAccess('read', $page['tag'])) {
-        $element[$page['tag']]['tagnames'] = '';
-        $element[$page['tag']]['tagbadges'] = '';
-        $element[$page['tag']]['body'] = $page['body'];
-        $element[$page['tag']]['owner'] = $page['owner'];
-        $element[$page['tag']]['user'] = $page['user'];
-        $element[$page['tag']]['time'] = $page['time'];
-        $element[$page['tag']]['title'] = get_title_from_body($page);
-        $element[$page['tag']]['image'] = get_image_from_body($page);
-        $this->RegisterInclusion($page['tag']);
-        $element[$page['tag']]['desc'] = tokenTruncate(strip_tags($this->Format($page['body'], 'wakka', $page['tag'])), $nbcartrunc);
-        $this->UnregisterLastInclusion();
-        $pagetags = $this->GetAllTriplesValues($page['tag'], 'http://outils-reseaux.org/_vocabulary/tag', '', '');
-        foreach ($pagetags as $tag) {
-            $tag['value'] = _convert(stripslashes($tag['value']), 'ISO-8859-1');
-            $element[$page['tag']]['tagnames'] .= sanitizeEntity($tag['value']) . ' ';
-            $element[$page['tag']]['tagbadges'] .= '<span class="tag-label label label-primary">' . $tag['value'] . '</span>&nbsp;';
-        }
+    $element[$page['tag']]['tagnames'] = '';
+    $element[$page['tag']]['tagbadges'] = '';
+    $element[$page['tag']]['body'] = $page['body'];
+    $element[$page['tag']]['owner'] = $page['owner'];
+    $element[$page['tag']]['user'] = $page['user'];
+    $element[$page['tag']]['time'] = $page['time'];
+    $element[$page['tag']]['title'] = get_title_from_body($page);
+    $element[$page['tag']]['image'] = get_image_from_body($page);
+    $this->RegisterInclusion($page['tag']);
+    $element[$page['tag']]['desc'] = tokenTruncate(strip_tags($this->Format($page['body'], 'wakka', $page['tag'])), $nbcartrunc);
+    $this->UnregisterLastInclusion();
+    $pagetags = $this->GetAllTriplesValues($page['tag'], 'http://outils-reseaux.org/_vocabulary/tag', '', '');
+    foreach ($pagetags as $tag) {
+        $tag['value'] = _convert(stripslashes($tag['value']), 'ISO-8859-1');
+        $element[$page['tag']]['tagnames'] .= sanitizeEntity($tag['value']) . ' ';
+        $element[$page['tag']]['tagbadges'] .= '<span class="tag-label label label-primary">' . $tag['value'] . '</span>&nbsp;';
     }
 }
 

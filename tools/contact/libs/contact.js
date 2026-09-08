@@ -1,6 +1,6 @@
 $(document).ready(() => {
   // validation formulaire de contact
-  $('body').on('click', '.mail-submit', function(e) {
+  $('body').on('click', '.mail-submit', function (e) {
     e.stopPropagation()
     const form = $(this).parents('.ajax-mail-form')
     const inputsreq = form.find('input[required], textarea[required]')
@@ -13,35 +13,54 @@ $(document).ready(() => {
 
     // il y a des champs requis, on teste la validite champs par champs
     if (inputsreq.length > 0) {
-      inputsreq.each(function() {
-        if (!($(this).val().length === 0 || $(this).val() === '' || $(this).val() === '0')) {
+      inputsreq.each(function () {
+        if (
+          !(
+            $(this).val().length === 0 ||
+            $(this).val() === '' ||
+            $(this).val() === '0'
+          )
+        ) {
           $(this).parents('.form-group').removeClass('has-error')
         } else {
           atleastonefieldnotvalid = true
           $(this).parents('.form-group').addClass('has-error')
-          $('<span>').addClass('help-block').text(_t('CONTACT_REQUIRED_FIELD'))
+          $('<span>')
+            .addClass('help-block')
+            .text(_t('CONTACT_REQUIRED_FIELD'))
             .appendTo($(this).parents('.form-group'))
         }
       })
     }
 
     // les emails
-    form.find('input[type=email]').each(function() {
+    form.find('input[type=email]').each(function () {
       const reg = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
       const address = $(this).val()
-      if (reg.test(address) === false && !(address === '' && $(this).attr('required') !== 'required')) {
+      if (
+        reg.test(address) === false &&
+        !(address === '' && $(this).attr('required') !== 'required')
+      ) {
         atleastonemailfieldnotvalid = true
         $(this).parents('.form-group').addClass('has-error')
-        $('<span>').addClass('help-block').text(_t('CONTACT_EMAIL_NOT_VALID'))
+        $('<span>')
+          .addClass('help-block')
+          .text(_t('CONTACT_EMAIL_NOT_VALID'))
           .appendTo($(this).parents('.form-group'))
       } else {
         $(this).parents('.form-group').removeClass('has-error')
       }
     })
 
-    if (atleastonefieldnotvalid === true || atleastonemailfieldnotvalid === true) {
+    if (
+      atleastonefieldnotvalid === true ||
+      atleastonemailfieldnotvalid === true
+    ) {
       // on remonte en haut du formulaire
-      $('html, body').animate({ scrollTop: form.find('.has-error:first').offset().top - 80 }, 800)
+      $('html, body').animate(
+        { scrollTop: form.find('.has-error:first').offset().top - 80 },
+        800,
+      )
     } else {
       // on soumet le formulaire
       const str = form.serialize()
@@ -59,7 +78,7 @@ $(document).ready(() => {
           if (form.find('.alert-success').length > 0) {
             form[0].reset()
           }
-        }
+        },
       })
     }
 

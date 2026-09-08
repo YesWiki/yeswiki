@@ -5,7 +5,6 @@ namespace YesWiki\Core\Service;
 require_once 'includes/objects/MD5PasswordHasher.php'; // TODO use autoload
 
 use Symfony\Component\PasswordHasher\Hasher\PasswordHasherFactory as SymfonyPasswordHasherFactory;
-use Throwable;
 use YesWiki\Core\Entity\User;
 use YesWiki\Core\MD5PasswordHasher;
 
@@ -46,7 +45,7 @@ class PasswordHasherFactory extends SymfonyPasswordHasherFactory
             mysqli_free_result($result);
 
             return !empty($row['Type']) && $row['Type'] == 'varchar(256)';
-        } catch (Throwable $th) {
+        } catch (\Throwable $th) {
             return false;
         }
     }

@@ -3,7 +3,6 @@
 namespace YesWiki\Core\Service;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\RouteCollection;
 use YesWiki\Core\Controller\AuthController;
 use YesWiki\Wiki;
@@ -35,10 +34,17 @@ class ApiService
         // acl
         $acl = $this->loadACL($requestParams, $routes);
         $publicMode = in_array('public', $acl);
+        // a route restricted to one or several groups (e.g. "@admins") must always be
+        // checked against the connected user's real membership
+        $requiresGroup = !empty(array_filter($acl, fn ($entry) => is_string($entry) && strpos($entry, '@') === 0));
         // remove public
         $acl = array_diff($acl, ['public']);
         // check ACL if not empty after removing public
         $hasAcl = !empty(implode(' ', $acl)) && $this->aclService->check(implode("\n", $acl));
+
+        if ($requiresGroup) {
+            return $publicMode || $hasAcl;
+        }
 
         return
             $publicMode

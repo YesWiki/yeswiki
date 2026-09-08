@@ -208,8 +208,8 @@ Vue.component('DemoComponent', {
     title() {
       // this.$root will let you access all properties from index-dynamic-templates.js
       if ((this.$root.params.greeting = 'yes'))
-        return `Hello ${this.entry.given_name}`;
-      return this.entry.bf_titre;
+        return `Hello ${this.entry.given_name}`
+      return this.entry.bf_titre
     },
   },
   template: `
@@ -217,7 +217,7 @@ Vue.component('DemoComponent', {
       {{ title }}
     </div>
   `,
-});
+})
 ```
 
 ### Customize any templates from the codebase
@@ -592,15 +592,19 @@ CSRF (Cross-site request forgery) is a method of web attack in one click describ
 
 1.  Get a token and use it into the concerned form or link for any action that may alter data (create/update/delete) and that needs acl validation (like `deletepage`, delete a user, change password)
     - in php code, get a token with this code for example :
+
     ```
     use Symfony\Component\Security\Csrf\CsrfTokenManager;
     ...
     $token = $this->wiki->services->get(CsrfTokenManager::class)->getToken('tokenId');
     ```
+
     - in `twig` template, use `{{ csrfToken('tokenId') }}`. Example for a form (twig):
+
     ```
     <input type="hidden" name="tokenNameInForm" value="{{ csrfToken('tokenId')|e('html_attr') }}">
     ```
+
 2.  when processing a request with the token, check if it is right inspiring of this example :
 
 ```

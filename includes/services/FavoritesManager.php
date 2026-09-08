@@ -2,7 +2,6 @@
 
 namespace YesWiki\Core\Service;
 
-use Exception;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 
 class FavoritesManager
@@ -21,10 +20,10 @@ class FavoritesManager
     public function isUserFavorite(string $userName, string $tag): bool
     {
         if (empty($userName)) {
-            throw new Exception('userName should not be empty !');
+            throw new \Exception('userName should not be empty !');
         }
         if (empty($tag)) {
-            throw new Exception('tag should not be empty !');
+            throw new \Exception('tag should not be empty !');
         }
         $value = "%\\\"user\\\":\\\"{$userName}\\\"%";
         $triples = $this->tripleStore->getMatching(
@@ -42,7 +41,7 @@ class FavoritesManager
     public function getUserFavorites(string $userName): array
     {
         if (empty($userName)) {
-            throw new Exception('userName should not be empty !');
+            throw new \Exception('userName should not be empty !');
         }
         $value = "%\\\"user\\\":\\\"{$userName}\\\"%";
         $triples = $this->tripleStore->getMatching(

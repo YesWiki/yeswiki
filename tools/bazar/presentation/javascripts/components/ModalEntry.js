@@ -11,7 +11,7 @@ export default {
       this.$root.getEntryRender(entry)
       $('.modal:visible').modal('hide') // if other modals
       $(this.$el).modal('show')
-    }
+    },
   },
   template: `
     <div class="modal fade" role="dialog">
@@ -27,5 +27,5 @@ export default {
         </div>
       </div>
     </div>
-  `
+  `,
 }

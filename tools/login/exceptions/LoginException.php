@@ -2,8 +2,6 @@
 
 namespace YesWiki\Login\Exception;
 
-use Exception;
-
-class LoginException extends Exception
+class LoginException extends \Exception
 {
 }

@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Allow signed-in users to react with icon, emojis or pictures on the page.
  */

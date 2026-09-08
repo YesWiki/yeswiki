@@ -7,22 +7,22 @@ export default {
   props: {
     zoom: {
       type: Number,
-      default: 13
+      default: 13,
     },
     center: {
       type: Array,
-      default: () => [0, 0]
+      default: () => [0, 0],
     },
     options: {
       type: Object,
-      default: () => ({})
-    }
+      default: () => ({}),
+    },
   },
   emits: ['ready', 'click', 'update:center', 'update:zoom'],
   data() {
     return {
       mapObject: null,
-      ready: false
+      ready: false,
     }
   },
   mounted() {
@@ -41,18 +41,21 @@ export default {
       handler(newCenter) {
         if (this.mapObject && newCenter) {
           const currentCenter = this.mapObject.getCenter()
-          if (currentCenter.lat !== newCenter[0] || currentCenter.lng !== newCenter[1]) {
+          if (
+            currentCenter.lat !== newCenter[0] ||
+            currentCenter.lng !== newCenter[1]
+          ) {
             this.mapObject.setView(newCenter, this.mapObject.getZoom())
           }
         }
       },
-      deep: true
+      deep: true,
     },
     zoom(newZoom) {
       if (this.mapObject && newZoom !== this.mapObject.getZoom()) {
         this.mapObject.setZoom(newZoom)
       }
-    }
+    },
   },
   methods: {
     initMap() {
@@ -62,7 +65,7 @@ export default {
       const mapOptions = {
         center: this.center,
         zoom: this.zoom,
-        ...this.options
+        ...this.options,
       }
 
       // Create the Leaflet map
@@ -104,11 +107,11 @@ export default {
     },
     getCenter() {
       return this.mapObject ? this.mapObject.getCenter() : this.center
-    }
+    },
   },
   template: `
     <div ref="mapContainer" style="width: 100%; height: 100%;">
       <slot v-if="ready"></slot>
     </div>
-  `
+  `,
 }

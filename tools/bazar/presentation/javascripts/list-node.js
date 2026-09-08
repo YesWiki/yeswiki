@@ -5,7 +5,7 @@ export default {
   data() {
     return {
       expanded: false,
-      newNodeLabel: ''
+      newNodeLabel: '',
     }
   },
   methods: {
@@ -15,21 +15,25 @@ export default {
         label: this.newNodeLabel,
         id: this.slugify(this.newNodeLabel),
         children: [],
-        vueRef: Date.now()
+        vueRef: Date.now(),
       })
       this.newNodeLabel = ''
       this.expanded = true
     },
     deleteChildNode(nodeToDelete) {
-      this.node.children = this.node.children.filter((node) => node !== nodeToDelete)
+      this.node.children = this.node.children.filter(
+        (node) => node !== nodeToDelete,
+      )
     },
     slugify(val) {
-      return val.normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+      return val
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
         .replace(/[^a-z^A-Z^_^0-9^{^}]/g, '_') // "test !" => "test__"
         .replace(/_+/g, '_') // "te__st" => "te_st"
         .replace(/^_+|_+$/g, '') // "___test__" => "test"
         .toLowerCase()
-    }
+    },
   },
   template: `
     <div class="list-node-container" :data-depth="depth" :data-index="index">
@@ -76,5 +80,5 @@ export default {
         
       </div>
     </div>
-  `
+  `,
 }

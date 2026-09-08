@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Action to display a responsive Vimeo video.
  *
@@ -80,57 +81,56 @@ class VideoAction extends YesWikiAction
             'ratio' => $arg['ratio'] ?? '',
             'largeurmax' => $arg['largeurmax'] ?? '',
             'hauteurmax' => $arg['hauteurmax'] ?? '',
-            'class' => str_replace('attached_file', '', ($arg['class'] ?? '')), // to prevent errors
+            'class' => str_replace('attached_file', '', $arg['class'] ?? ''), // to prevent errors
         ];
     }
 
     public function run()
     {
-        if (empty($this->arguments['id']) ||
-            empty($this->arguments['serveur']) ||
-            !in_array(strtolower($this->arguments['serveur']), self::ALLOWED_SERVERS)) {
+        if (empty($this->arguments['id'])
+            || empty($this->arguments['serveur'])
+            || !in_array(strtolower($this->arguments['serveur']), self::ALLOWED_SERVERS)) {
             return $this->render('@templates/alert-message.twig', [
                 'type' => 'danger',
                 'message' => _t('ATTACH_ACTION_VIDEO_PARAM_ERROR'),
             ]);
-        } else {
-            if ($this->arguments['ratio'] == '4par3') {
-                $shape = 'embed-responsive-4by3 ratio ratio-4x3';
-            } else {
-                $shape = 'embed-responsive-16by9 ratio ratio-16x9';
-            }
-
-            $maxWidth = $this->arguments['largeurmax'];
-            $maxHeight = $this->arguments['hauteurmax'];
-            $manageSize = false;
-            if (!empty($maxWidth) && is_numeric($maxWidth)) {
-                $manageSize = true;
-                if (empty($maxHeight) || !(is_numeric($maxHeight))) {
-                    $maxHeight = ($this->arguments['ratio'] == '4par3') ? ($maxWidth * 3 / 4) : ($maxWidth * 9 / 16);
-                } else {
-                    // calculte the minimum between width and height
-                    $newMaxHeight = min(($this->arguments['ratio'] == '4par3') ? ($maxWidth * 3 / 4) : ($maxWidth * 9 / 16), $maxHeight);
-                    $newMaxWidth = min(($this->arguments['ratio'] == '4par3') ? ($maxHeight * 4 / 3) : ($maxHeight * 16 / 9), $maxWidth);
-                    $maxHeight = $newMaxHeight;
-                    $maxWidth = $newMaxWidth;
-                }
-            } elseif (!empty($maxHeight) && is_numeric($maxHeight)) {
-                $manageSize = true;
-                if (empty($maxWidth) || !(is_numeric($maxWidth))) {
-                    $maxWidth = ($this->arguments['ratio'] == '4par3') ? ($maxHeight * 4 / 3) : ($maxHeight * 16 / 9);
-                }
-            }
-
-            return $this->render('@attach/actions/video.twig', [
-                'class' => $this->arguments['class'],
-                'serveur' => $this->arguments['serveur'],
-                'id' => $this->arguments['id'],
-                'peertubeinstance' => $this->arguments['peertubeinstance'],
-                'manageSize' => $manageSize,
-                'maxWidth' => $maxWidth,
-                'maxHeight' => $maxHeight,
-                'shape' => $shape,
-            ]);
         }
+        if ($this->arguments['ratio'] == '4par3') {
+            $shape = 'embed-responsive-4by3 ratio ratio-4x3';
+        } else {
+            $shape = 'embed-responsive-16by9 ratio ratio-16x9';
+        }
+
+        $maxWidth = $this->arguments['largeurmax'];
+        $maxHeight = $this->arguments['hauteurmax'];
+        $manageSize = false;
+        if (!empty($maxWidth) && is_numeric($maxWidth)) {
+            $manageSize = true;
+            if (empty($maxHeight) || !is_numeric($maxHeight)) {
+                $maxHeight = ($this->arguments['ratio'] == '4par3') ? ($maxWidth * 3 / 4) : ($maxWidth * 9 / 16);
+            } else {
+                // calculte the minimum between width and height
+                $newMaxHeight = min(($this->arguments['ratio'] == '4par3') ? ($maxWidth * 3 / 4) : ($maxWidth * 9 / 16), $maxHeight);
+                $newMaxWidth = min(($this->arguments['ratio'] == '4par3') ? ($maxHeight * 4 / 3) : ($maxHeight * 16 / 9), $maxWidth);
+                $maxHeight = $newMaxHeight;
+                $maxWidth = $newMaxWidth;
+            }
+        } elseif (!empty($maxHeight) && is_numeric($maxHeight)) {
+            $manageSize = true;
+            if (empty($maxWidth) || !is_numeric($maxWidth)) {
+                $maxWidth = ($this->arguments['ratio'] == '4par3') ? ($maxHeight * 4 / 3) : ($maxHeight * 16 / 9);
+            }
+        }
+
+        return $this->render('@attach/actions/video.twig', [
+            'class' => $this->arguments['class'],
+            'serveur' => $this->arguments['serveur'],
+            'id' => $this->arguments['id'],
+            'peertubeinstance' => $this->arguments['peertubeinstance'],
+            'manageSize' => $manageSize,
+            'maxWidth' => $maxWidth,
+            'maxHeight' => $maxHeight,
+            'shape' => $shape,
+        ]);
     }
 }

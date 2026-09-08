@@ -37,9 +37,9 @@ class Plugins
             ksort($this->p_list);
 
             return true;
-        } else {
-            return false;
         }
+
+        return false;
     }
 
     public function getPluginsList()
@@ -86,9 +86,9 @@ class Plugins
                     'desc' => $xml['desc'] ?? null,
                     'callbacks' => [],
                 ];
-            } else {
-                return false;
             }
+
+            return false;
         }
 
         return false;

@@ -21,17 +21,19 @@ export default {
           $(this.$refs.input).typeahead('destroy')
           $(this.$refs.input).typeahead({ source: pages, items: 5 })
           $(this.$refs.input).on('blur.bootstrap3Typeahead', () => {
-            setTimeout(() => { this.$emit('input', this.$refs.input.value) }, 200)
+            setTimeout(() => {
+              this.$emit('input', this.$refs.input.value)
+            }, 200)
           })
-        }
+        },
       })
       return []
-    }
+    },
   },
   watch: {
     value(newVal) {
       this.$emit('input', newVal.replace(/\s+/g, '-'))
-    }
+    },
   },
   template: `
     <div class="form-group input-group" :class="config.type" :title="config.hint" >
@@ -45,5 +47,5 @@ export default {
       />
       <input-hint :config="config"></input-hint>
     </div>
-    `
+    `,
 }

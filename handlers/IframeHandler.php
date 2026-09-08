@@ -164,8 +164,8 @@ class IframeHandler extends YesWikiHandler
         if ($this->getRequest()->query->get('iframelinks') == '0') {
             // pas de modification des urls
             return $input;
-        } else {
-            return replaceLinksWithIframe($input);
         }
+
+        return replaceLinksWithIframe($input);
     }
 }

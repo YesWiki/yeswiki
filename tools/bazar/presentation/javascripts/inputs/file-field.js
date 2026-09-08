@@ -3,7 +3,7 @@ function handleFileSelect(evt) {
   const { id } = target
   const { files } = target // FileList object
 
-  for (var i = 0, f; f = files[i]; i++) {
+  for (var i = 0, f; (f = files[i]); i++) {
     const fileMaxSize = document.getElementById(id).dataset.maxSize
     if (f.size > fileMaxSize) {
       alert(_t('FILEFIELD_TOO_LARGE_FILE', { fileMaxSize }))

@@ -37,6 +37,7 @@ return [
     'ATTACH_PARAM_FILE_NOT_FOUND' => '"file" parameter required',
     'ATTACH_PARAM_FILE_MUST_BE_IMAGE' => '"file" parameter must be an image (svg,gif,jpg,jpeg or png)',
     'ATTACH_DEFAULT_MARKER' => 'Default point',
+    'ATTACH_MARKER_NOT_ALLOWED' => 'You do not have sufficient rights to add a marker.',
     'ATTACH_ADD_MARKER' => 'Add a marker',
     'ATTACH_TITLE' => 'Title',
     'ATTACH_DESCRIPTION' => 'Description',

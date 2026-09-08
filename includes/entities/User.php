@@ -3,13 +3,12 @@
 namespace YesWiki\Core\Entity;
 
 use ArrayAccess;
-use Exception;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use YesWiki\Core\Exception\UserNotAuthorizedToSetOffset;
 use YesWiki\Core\Exception\UserNotExistingOffset;
 
-class User implements UserInterface, PasswordAuthenticatedUserInterface, ArrayAccess
+class User implements UserInterface, PasswordAuthenticatedUserInterface, \ArrayAccess
 {
     // Obviously needs a group or ACLS class. In the meantime, use of $this->wiki->GetGroupACL and so on
 
@@ -33,7 +32,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, ArrayAc
     {
         foreach (self::PROPS_LIST as $key) {
             if (!array_key_exists($key, $properties)) {
-                throw new Exception("\$properties[$key] should be set to construct an User!");
+                throw new \Exception("\$properties[$key] should be set to construct an User!");
             }
             $this->properties[$key] = $properties[$key];
         }

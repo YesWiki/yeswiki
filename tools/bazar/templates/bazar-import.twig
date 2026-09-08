@@ -112,6 +112,19 @@
       </div>
     </div>
 
+    <div class="control-group form-group">
+      <div class="controls col-sm-9 col-sm-offset-3">
+        <label>
+          <input type="checkbox" class="form-check-input"
+            id="bazar-import-option-keep-remote-files-as-url" name="bazar-import-option-keep-remote-files-as-url"
+            value="1" {% if optionKeepRemoteFilesAsUrlChecked %}checked{% endif %} />
+          <span>{{ _t('BAZ_IMPORT_KEEP_REMOTE_FILES_AS_URL') }}</span>
+          <img loading="lazy" class="tooltip_aide" title="{{ _t('BAZ_IMPORT_KEEP_REMOTE_FILES_AS_URL_HINT') }}"
+            src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="{{ _t('BAZ_IMPORT_KEEP_REMOTE_FILES_AS_URL_HINT') }}" />
+        </label>
+      </div>
+    </div>
+
     <div class="control-group form-group import-file">
       <div class="controls col-sm-9 col-sm-offset-3">
         <input name="submit_file" type="submit" value="{{ _t('BAZ_IMPORTER_CE_FICHIER') }}" class="btn btn-primary" />

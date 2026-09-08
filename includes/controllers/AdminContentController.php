@@ -110,6 +110,7 @@ class AdminContentController extends YesWikiController
 
         $pages = array_map(function ($r) use ($defaultRead, $defaultWrite, $defaultComment) {
             $metadata = !empty($r['page_metadata']) ? (json_decode($r['page_metadata'], true) ?? []) : [];
+
             return [
                 'tag' => $r['tag'],
                 'time' => $r['time'],

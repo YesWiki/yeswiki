@@ -8,7 +8,7 @@ class UpdateHandler extends YesWikiHandler
     public function run(): string
     {
         if ($this->getService(SecurityController::class)->isWikiHibernated()) {
-            throw new \Exception(_t('WIKI_IN_HIBERNATION'));
+            throw new Exception(_t('WIKI_IN_HIBERNATION'));
         }
 
         $output = '';

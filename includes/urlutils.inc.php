@@ -1,4 +1,5 @@
 <?php
+
 /*
 Some usefull functions to deal with URLs
 */
@@ -139,9 +140,9 @@ function isLocalUrl($pURL)
         return true;
     } elseif ($vParsed['scheme'] . '://' . $vParsed['host'] . ':' . $vParsed['port'] == getRootUrl()) {
         return true;
-    } else {
-        return false;
     }
+
+    return false;
 }
 
 /**

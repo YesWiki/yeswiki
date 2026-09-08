@@ -39,9 +39,8 @@ if (!class_exists('qqUploadedFileXhr')) {
         {
             if (isset($_SERVER['CONTENT_LENGTH'])) {
                 return (int)$_SERVER['CONTENT_LENGTH'];
-            } else {
-                throw new Exception('Getting content length is not supported.');
             }
+            throw new Exception('Getting content length is not supported.');
         }
     }
 }
@@ -161,7 +160,7 @@ if (!class_exists('qqFileUploader')) {
 
             $pathinfo = pathinfo($this->file->getName());
             $filename = $pathinfo['filename'];
-            //$filename = md5(uniqid());
+            // $filename = md5(uniqid());
             $ext = strtolower($pathinfo['extension']);
 
             if ($this->allowedExtensions && !in_array($ext, $this->allowedExtensions)) {
@@ -214,7 +213,7 @@ if (!class_exists('qqFileUploader')) {
 
             if ($this->file->save($fullfilename)) {
                 chmod($fullfilename, 0664); // fix file permissions to be sure to be able to write on exotic servers configurations
-                //TODO : refactor this with attach
+                // TODO : refactor this with attach
                 $purifier = $GLOBALS['wiki']->services->get(HtmlPurifierService::class);
                 $purifier->cleanFile($fullfilename, $ext);
 

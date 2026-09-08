@@ -68,8 +68,8 @@ class ExternalTagsField extends TagsField
             return $this->render('@bazar/fields/tags.twig', [
                 'value' => join(' ', $tags) ?? '',
             ]);
-        } else {
-            return '';
         }
+
+        return '';
     }
 }

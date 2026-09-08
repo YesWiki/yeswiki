@@ -3,7 +3,6 @@
 namespace YesWiki\Core\Service;
 
 use Symfony\Component\EventDispatcher\EventDispatcher as SymfonyEventDispatcher;
-use Throwable;
 use YesWiki\Core\Entity\Event;
 use YesWiki\Wiki;
 
@@ -18,21 +17,18 @@ class EventDispatcher extends SymfonyEventDispatcher
         $this->wiki = $wiki;
     }
 
-    /**
-     * @param array $errors
-     */
     public function yesWikiDispatch(string $eventName, array $data = []): array
     {
         try {
             $this->dispatch(new Event($data), $eventName);
 
             return [];
-        } catch (Throwable $th) {
+        } catch (\Throwable $th) {
             $errors = ($this->wiki->userIsAdmin()) ? ['exception' => [
-                'message' => $this->wiki->hideServerPath ($th->getMessage()),
-                'file' => $this->wiki->hideServerPath ($th->getFile()),
+                'message' => $this->wiki->hideServerPath($th->getMessage()),
+                'file' => $this->wiki->hideServerPath($th->getFile()),
                 'line' => $th->getLine(),
-                'trace' => $this->wiki->hideServerPath ($th->getTraceAsString())
+                'trace' => $this->wiki->hideServerPath($th->getTraceAsString()),
             ]] : [];
 
             return $errors;

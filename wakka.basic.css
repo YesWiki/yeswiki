@@ -1,8 +1,8 @@
 body {
   background-color: #f5f5f5;
   color: black;
-  font-family: 'Lucida Grande', Verdana, Geneva, Lucida, Arial, Helvetica,
-    sans-serif;
+  font-family:
+    'Lucida Grande', Verdana, Geneva, Lucida, Arial, Helvetica, sans-serif;
 }
 
 a {
@@ -16,8 +16,8 @@ li,
 input,
 select,
 textarea {
-  font-family: 'Lucida Grande', Verdana, Geneva, Lucida, Arial, Helvetica,
-    sans-serif;
+  font-family:
+    'Lucida Grande', Verdana, Geneva, Lucida, Arial, Helvetica, sans-serif;
   font-size: 13px;
 }
 h1,

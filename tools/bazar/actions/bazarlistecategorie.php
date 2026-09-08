@@ -19,9 +19,9 @@ if (!function_exists('champCompare')) {
     {
         if ($GLOBALS['ordre'] == 'desc') {
             return strnatcasecmp($b[$GLOBALS['champ']], $a[$GLOBALS['champ']]);
-        } else {
-            return strnatcasecmp($a[$GLOBALS['champ']], $b[$GLOBALS['champ']]);
         }
+
+        return strnatcasecmp($a[$GLOBALS['champ']], $b[$GLOBALS['champ']]);
     }
 }
 
@@ -44,9 +44,8 @@ if (empty($template)) {
 $id = $this->GetParameter('id');
 if (empty($id)) {
     throw new Exception('Error action bazarlistecategorie: parameter "id" missing.');
-} else {
-    $GLOBALS['champ'] = $id;
 }
+$GLOBALS['champ'] = $id;
 
 // NomWiki de la liste
 $list = $this->GetParameter('list');

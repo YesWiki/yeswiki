@@ -8,10 +8,13 @@ use YesWiki\Wiki;
 
 class BazarListService
 {
+    public const EXTERNAL_SCHEMES = ['http', 'https'];
+
     protected $entryManager;
     protected $entryExtraFields;
     protected $externalBazarService;
     protected $formManager;
+    protected $ssrfUrlValidator;
     protected $wiki;
 
     public function __construct(
@@ -20,12 +23,14 @@ class BazarListService
         EntryExtraFieldsService $entryExtrafields,
         ExternalBazarService $externalBazarService,
         FormManager $formManager,
+        SsrfUrlValidator $ssrfUrlValidator,
     ) {
         $this->wiki = $wiki;
         $this->entryManager = $entryManager;
         $this->entryExtraFields = $entryExtrafields;
         $this->externalBazarService = $externalBazarService;
         $this->formManager = $formManager;
+        $this->ssrfUrlValidator = $ssrfUrlValidator;
     }
 
     public function getForms($pOptions = []): array
@@ -51,7 +56,7 @@ class BazarListService
         $formIds = array_keys($forms) ?? [];
 
         foreach ($formIds as $id) {
-            $template = $forms[(int) $id]['template'] ?? [];
+            $template = $forms[(int)$id]['template'] ?? [];
             $image_names = array_map(
                 function ($item) {
                     return $item[1];
@@ -267,9 +272,8 @@ class BazarListService
                                         $filter['nodes'][$value] = $this->createFilterNode($value, $label);
                                     }
                                 }
-                            } else {
-                                // TODO: options?
                             }
+                            // TODO: options?
                         }
                     }
                 }
@@ -468,9 +472,8 @@ class BazarListService
 
             if (isset($vUniqueExternalIDs[$vKey])) {
                 throw new \Exception('The external ID ' . $vExternalID['id'] . ' is requested multiple times for server ' . $vExternalID['url']);
-            } else {
-                $vUniqueExternalIDs[$vKey] = $vExternalID;
             }
+            $vUniqueExternalIDs[$vKey] = $vExternalID;
         }
 
         $vUniqueExternalIDs = array_values($vUniqueExternalIDs);
@@ -503,7 +506,13 @@ class BazarListService
 
     protected function isValidURL($pURL)
     {
-        return true; // keep it for later : URL extracted by getExternalURLsFromIDs should be correct
+        try {
+            $this->ssrfUrlValidator->resolveSafe($pURL, self::EXTERNAL_SCHEMES);
+        } catch (\Throwable $error) {
+            return false;
+        }
+
+        return true;
     }
 
     protected function parseIDs($pIDs)
@@ -512,14 +521,14 @@ class BazarListService
             if (isset($pIDs['locals'])) {
                 // already parsed
                 return $pIDs;
-            } else { // Ensure it is a string
-                $pIDs = implode(',', $pIDs);
-            } // Ensure $pIDs is a string
+            }   // Ensure it is a string
+            $pIDs = implode(',', $pIDs);
+            // Ensure $pIDs is a string
         }
 
         $pIDs = preg_replace('/[^,\s]*\s*\|(?:\s*(?:\([\s,0-9\->]*\))|(?:[0-9\->]*))/', '"\\0"', strip_tags($pIDs));
 
-        $vLines = str_getcsv($pIDs, ',', '"', '\\');
+        $vLines = str_getcsv($pIDs, ',', '"', '');
 
         $vLines = array_filter($vLines, function ($vLine) {
             return !empty($vLine) && trim($vLine) != '';
@@ -602,12 +611,12 @@ class BazarListService
                     $this->sanitizeStringForCompare($val2),
                     $this->sanitizeStringForCompare($val1),
                 );
-            } else {
-                return strnatcmp(
-                    $this->sanitizeStringForCompare($val1),
-                    $this->sanitizeStringForCompare($val2),
-                );
             }
+
+            return strnatcmp(
+                $this->sanitizeStringForCompare($val1),
+                $this->sanitizeStringForCompare($val2),
+            );
         };
     }
 

@@ -70,6 +70,7 @@ class Collection implements \ArrayAccess, \Iterator, \Countable
         if ($this->key() === null) {
             return false;
         }
+
         return isset($this->list[$this->key()]);
     }
 

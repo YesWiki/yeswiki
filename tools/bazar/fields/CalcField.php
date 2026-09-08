@@ -3,7 +3,6 @@
 namespace YesWiki\Bazar\Field;
 
 use Psr\Container\ContainerInterface;
-use Throwable;
 use YesWiki\Bazar\Service\FormManager;
 
 /**
@@ -101,7 +100,7 @@ class CalcField extends BazarField
                 if (!is_finite($value)) {
                     $value = 0;
                 }
-            } catch (Throwable $th) {
+            } catch (\Throwable $th) {
                 $value = 0;
             }
         }
@@ -162,6 +161,7 @@ class CalcField extends BazarField
         if ($this->formulaPos < count($this->formulaTokens)) {
             throw new \RuntimeException('Unexpected token at position ' . $this->formulaPos);
         }
+
         return $result;
     }
 
@@ -191,7 +191,7 @@ class CalcField extends BazarField
                         $j++;
                     }
                 }
-                $tokens[] = ['type' => 'number', 'value' => (float) str_replace(',', '.', substr($formula, $i, $j - $i))];
+                $tokens[] = ['type' => 'number', 'value' => (float)str_replace(',', '.', substr($formula, $i, $j - $i))];
                 $i = $j;
                 continue;
             }
@@ -217,6 +217,7 @@ class CalcField extends BazarField
             }
             throw new \RuntimeException("Unexpected character '$c' in formula");
         }
+
         return $tokens;
     }
 
@@ -232,6 +233,7 @@ class CalcField extends BazarField
             throw new \RuntimeException('Unexpected end of formula');
         }
         $this->formulaPos++;
+
         return $t;
     }
 
@@ -244,6 +246,7 @@ class CalcField extends BazarField
             $right = $this->parseMulDivMod();
             $left = $t['value'] === '+' ? $left + $right : $left - $right;
         }
+
         return $left;
     }
 
@@ -262,6 +265,7 @@ class CalcField extends BazarField
                 $left = $right != 0 ? fmod($left, $right) : 0.0;
             }
         }
+
         return $left;
     }
 
@@ -271,8 +275,10 @@ class CalcField extends BazarField
         $base = $this->parseUnary();
         if (($t = $this->peekToken()) !== null && $t['type'] === 'op' && $t['value'] === '^') {
             $this->consumeToken();
+
             return pow($base, $this->parsePower());
         }
+
         return $base;
     }
 
@@ -282,8 +288,10 @@ class CalcField extends BazarField
         $t = $this->peekToken();
         if ($t !== null && $t['type'] === 'op' && $t['value'] === '-') {
             $this->consumeToken();
+
             return -$this->parseUnary();
         }
+
         return $this->parsePrimary();
     }
 
@@ -292,7 +300,7 @@ class CalcField extends BazarField
     {
         $t = $this->consumeToken();
         if ($t['type'] === 'number') {
-            return (float) $t['value'];
+            return (float)$t['value'];
         }
         if ($t['type'] === 'name') {
             if ($t['value'] === 'pi') {
@@ -305,6 +313,7 @@ class CalcField extends BazarField
                         throw new \RuntimeException("Expected ')' after pi()");
                     }
                 }
+
                 return M_PI;
             }
             $fn = self::ALLOWED_FUNCTIONS[$t['value']] ?? null;
@@ -320,7 +329,8 @@ class CalcField extends BazarField
             if ($close['type'] !== 'op' || $close['value'] !== ')') {
                 throw new \RuntimeException("Expected ')' after function argument");
             }
-            return (float) $fn($arg);
+
+            return (float)$fn($arg);
         }
         if ($t['type'] === 'op' && $t['value'] === '(') {
             $val = $this->parseAddSub();
@@ -328,6 +338,7 @@ class CalcField extends BazarField
             if ($close['type'] !== 'op' || $close['value'] !== ')') {
                 throw new \RuntimeException("Expected ')'");
             }
+
             return $val;
         }
         throw new \RuntimeException("Unexpected token: {$t['type']} '{$t['value']}'");

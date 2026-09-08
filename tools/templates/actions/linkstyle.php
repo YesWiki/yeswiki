@@ -14,7 +14,7 @@ echo $this->LinkCSSFile('styles/yeswiki-base.css');
 
 // presets activated and path ?
 $favoritePreset = $themeManager->getFavoritePreset();
-$presetsActivated = !empty(($themeManager->getTemplates())[$themeManager->getFavoriteTheme()]['presets']) && !empty($favoritePreset);
+$presetsActivated = !empty($themeManager->getTemplates()[$themeManager->getFavoriteTheme()]['presets']) && !empty($favoritePreset);
 if ($presetsActivated) {
     $custom_prefix = ThemeManager::CUSTOM_CSS_PRESETS_PREFIX;
     $presetIsCustom = (substr($favoritePreset, 0, strlen($custom_prefix)) == $custom_prefix);

@@ -2,16 +2,18 @@ export default {
   props: ['value', 'config'],
   emits: ['input'],
   mounted() {
-    $(this.$refs.input).iconpicker(pickerConfig).on('iconpickerSelected', (event) => {
-      // handle this event with jquery cause vue does not support camelCase event
-      this.$emit('input', event.iconpickerValue)
-    })
+    $(this.$refs.input)
+      .iconpicker(pickerConfig)
+      .on('iconpickerSelected', (event) => {
+        // handle this event with jquery cause vue does not support camelCase event
+        this.$emit('input', event.iconpickerValue)
+      })
   },
   watch: {
-    value(newVal) {
+    value(_newVal) {
       $(this.$refs.input).data('iconpicker').setValue(this.value)
       $(this.$refs.input).data('iconpicker').update()
-    }
+    },
   },
   template: `
     <div class="form-group" :class="config.type" :title="config.hint" >
@@ -23,7 +25,7 @@ export default {
       </div>
       <input-hint :config="config"></input-hint>
     </div>
-  `
+  `,
 }
 
 const pickerConfig = {
@@ -49,13 +51,17 @@ const pickerConfig = {
   component: '.input-group-addon,.iconpicker-component', // children component jQuery selector or object, relative to the container element
   // Plugin templates:
   templates: {
-    popover: '<div class="iconpicker-popover popover"><div class="arrow"></div>'
-      + '<div class="popover-title"></div><div class="popover-content"></div></div>',
+    popover:
+      '<div class="iconpicker-popover popover"><div class="arrow"></div>' +
+      '<div class="popover-title"></div><div class="popover-content"></div></div>',
     footer: '<div class="popover-footer"></div>',
-    buttons: '<button class="iconpicker-btn iconpicker-btn-cancel btn btn-default btn-sm">Annuler</button>'
-      + ' <button class="iconpicker-btn iconpicker-btn-accept btn btn-primary btn-sm">Ok</button>',
-    search: '<input type="search" class="form-control iconpicker-search" placeholder="Rechercher" />',
-    iconpicker: '<div class="iconpicker"><div class="iconpicker-items"></div></div>',
-    iconpickerItem: '<a role="button" class="iconpicker-item"><i></i></a>'
-  }
+    buttons:
+      '<button class="iconpicker-btn iconpicker-btn-cancel btn btn-default btn-sm">Annuler</button>' +
+      ' <button class="iconpicker-btn iconpicker-btn-accept btn btn-primary btn-sm">Ok</button>',
+    search:
+      '<input type="search" class="form-control iconpicker-search" placeholder="Rechercher" />',
+    iconpicker:
+      '<div class="iconpicker"><div class="iconpicker-items"></div></div>',
+    iconpickerItem: '<a role="button" class="iconpicker-item"><i></i></a>',
+  },
 }

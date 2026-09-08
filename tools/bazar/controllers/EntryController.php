@@ -2,15 +2,16 @@
 
 namespace YesWiki\Bazar\Controller;
 
-use DateInterval;
 use DateTime;
-use Exception;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Tamtamchik\SimpleFlash\Flash;
-use Throwable;
+use YesWiki\Bazar\Exception\RequiredFieldsException;
+use YesWiki\Bazar\Exception\TagAlreadyUsedException;
 use YesWiki\Bazar\Exception\UserFieldException;
 use YesWiki\Bazar\Field\BazarField;
+use YesWiki\Bazar\Field\ConditionsCheckingField;
 use YesWiki\Bazar\Field\UserField;
+use YesWiki\Bazar\Service\ConditionsChecker;
 use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Bazar\Service\FormManager;
 use YesWiki\Bazar\Service\SearchManager;
@@ -93,7 +94,6 @@ class EntryController extends YesWikiController
      * @param string|null $time                 choose only the entry's revision corresponding to time, null = latest revision
      * @param bool        $showFooter
      * @param string|null $userNameForRendering userName used to render the entry, if empty uses the connected user
-     * @param array       $pForm                form to be used to render the entry
      */
     public function view($entryId, $time = '', $showFooter = true, ?string $userNameForRendering = null, $pLocalForm = '', $pExternalForm = '')
     {
@@ -156,8 +156,12 @@ class EntryController extends YesWikiController
             // if not found, use default template
             if (is_null($renderedEntry)) {
                 if (!empty($pLocalForm)) {
-                    foreach ($pLocalForm['prepared'] as $field) {
+                    $states = $this->getService(ConditionsChecker::class)->states($pLocalForm, $entry);
+                    foreach ($pLocalForm['prepared'] as $index => $field) {
                         if ($field instanceof BazarField) {
+                            if ($field instanceof ConditionsCheckingField || !($states[$index]['visible'] ?? true)) {
+                                continue;
+                            }
                             // TODO handle html_outside_app mode for images
                             if (!in_array($field->getPropertyName(), $this->fieldsToExclude())) {
                                 $renderedEntry .= $field->renderStaticIfPermitted($entry, $userNameForRendering);
@@ -205,7 +209,7 @@ class EntryController extends YesWikiController
             $isUserFavorite = $this->favoritesManager->isUserFavorite($currentuser, $entryId);
         }
 
-        $sourceUrl = $this->tripleStore->getOne($entryId, TripleStore::SOURCE_URL_URI, "", "");
+        $sourceUrl = $this->tripleStore->getOne($entryId, TripleStore::SOURCE_URL_URI, '', '');
 
         return $this->render('@bazar/entries/view.twig', [
             'form' => $pLocalForm,
@@ -232,6 +236,7 @@ class EntryController extends YesWikiController
     private function fieldsToExclude()
     {
         $excludeFields = $this->getRequest()->query->get('excludeFields');
+
         return $excludeFields ? explode(',', $excludeFields) : [];
     }
 
@@ -270,7 +275,9 @@ class EntryController extends YesWikiController
             $post = $this->getRequest()->request;
             try {
                 if ($state && $post->has('bf_titre')) {
-                    $entry = $this->entryManager->create($formId, $post->all());
+                    $postedData = $post->all();
+                    unset($postedData['id_fiche']);
+                    $entry = $this->entryManager->create($formId, $postedData);
                     $errors = $this->eventDispatcher->yesWikiDispatch('entry.created', [
                         'id' => $entry['id_fiche'],
                         'data' => $entry,
@@ -296,7 +303,13 @@ class EntryController extends YesWikiController
                     header('Location: ' . $redirectUrl);
                     $this->wiki->exit();
                 }
-            } catch (UserFieldException $e) {
+            } catch (RequiredFieldsException $e) {
+                $error .= $this->render('@templates/alert-message.twig', [
+                    'type' => 'danger',
+                    'message' => $e->getMessage(),
+                ]);
+                $refusedData = $post->all();
+            } catch (UserFieldException|TagAlreadyUsedException $e) {
                 $error .= $this->render('@templates/alert-message.twig', [
                     'type' => 'warning',
                     'message' => $e->getMessage(),
@@ -306,7 +319,7 @@ class EntryController extends YesWikiController
             $error = $results['error'];
         }
 
-        $renderedInputs = $this->getRenderedInputs($form);
+        $renderedInputs = $this->getRenderedInputs($form, $refusedData ?? null);
 
         return $this->render('@bazar/entries/form.twig', [
             'form' => $form,
@@ -355,6 +368,12 @@ class EntryController extends YesWikiController
                 header('Location: ' . $redirectUrl);
                 $this->wiki->exit();
             }
+        } catch (RequiredFieldsException $e) {
+            $error .= $this->render('@templates/alert-message.twig', [
+                'type' => 'danger',
+                'message' => $e->getMessage(),
+            ]);
+            $entry = array_merge($entry, $post->all());
         } catch (UserFieldException $e) {
             $error .= $this->render('@templates/alert-message.twig', [
                 'type' => 'warning',
@@ -397,18 +416,17 @@ class EntryController extends YesWikiController
 
                     return true;
                 }
-            } catch (Throwable $th) {
+            } catch (\Throwable $th) {
                 if ($redirectAfter) {
                     Flash::error(_t('DELETEPAGE_NOT_DELETED') . " ($entryId) : {$th->getMessage()}");
                     $this->wiki->Redirect($this->wiki->Href('', 'BazaR', ['vue' => 'consulter'], false));
                 }
-                throw new Exception($th->getMessage(), $th->getCode(), $th);
+                throw new \Exception($th->getMessage(), $th->getCode(), $th);
             }
 
             return false;
-        } else {
-            throw new Exception('Not deleted because not entry' . (is_scalar($entryId) ? ' (' . strval($entryId) . ')' : ''));
         }
+        throw new \Exception('Not deleted because not entry' . (is_scalar($entryId) ? ' (' . strval($entryId) . ')' : ''));
     }
 
     protected function triggerDeletedEvent($entryId, $entry)
@@ -518,6 +536,7 @@ class EntryController extends YesWikiController
             $html['semantic'] = $GLOBALS['wiki']->services->get(SemanticTransformer::class)->convertToSemanticData($form, $html, true);
         }
 
+        $values = [];
         $values['html'] = $html;
         $values['fiche'] = $entry;
         $values['form'] = $form;
@@ -573,18 +592,18 @@ class EntryController extends YesWikiController
         $BETWEEN_TEMPLATE = '/^>' . $DATE_TEMPLATE . '&<' . $DATE_TEMPLATE . '$/i';
 
         if (preg_match_all($TODAY_TEMPLATE, $datefilter, $matches)) {
-            $todayMidnight = new DateTime();
+            $todayMidnight = new \DateTime();
             $todayMidnight->setTime(0, 0);
             $entries = array_filter($entries, function ($entry) use ($todayMidnight) {
                 return $this->filterEntriesOnDateTraversing($entry, '=', $todayMidnight);
             });
         } elseif (preg_match_all($FUTURE_TEMPLATE, $datefilter, $matches)) {
-            $now = new DateTime();
+            $now = new \DateTime();
             $entries = array_filter($entries, function ($entry) use ($now) {
                 return $this->filterEntriesOnDateTraversing($entry, '>', $now);
             });
         } elseif (preg_match_all($PAST_TEMPLATE, $datefilter, $matches)) {
-            $now = new DateTime();
+            $now = new \DateTime();
             $entries = array_filter($entries, function ($entry) use ($now) {
                 return $this->filterEntriesOnDateTraversing($entry, '<', $now);
             });
@@ -644,7 +663,7 @@ class EntryController extends YesWikiController
         return $entries;
     }
 
-    private function extractDate(string $pSign, string $nbYears, string $nbMonth, string $nbDays): DateTime
+    private function extractDate(string $pSign, string $nbYears, string $nbMonth, string $nbDays): \DateTime
     {
         /*if ($pSign == "")
         {echo ("$pSign, string $nbYears, string $nbMonth, string $nbDays");
@@ -655,7 +674,7 @@ class EntryController extends YesWikiController
         }
         else*/
 
-        $vDateInterval = new DateInterval(
+        $vDateInterval = new \DateInterval(
             'P'
                     . (!empty($nbYears) ? $nbYears . 'Y' : '')
                     . (!empty($nbMonth) ? $nbMonth . 'M' : '')
@@ -663,30 +682,30 @@ class EntryController extends YesWikiController
         );
         $vDateInterval->invert = ($pSign == '-') ? 1 : 0;
 
-        $vDate = new DateTime();
+        $vDate = new \DateTime();
         $vDate->add($vDateInterval);
 
         return $vDate;
     }
 
-    private function filterEntriesOnDateTraversing(?array $entry, string $mode, DateTime $date): bool
+    private function filterEntriesOnDateTraversing(?array $entry, string $mode, \DateTime $date): bool
     {
         if (empty($entry) || !isset($entry['bf_date_debut_evenement'])) {
             return false;
         }
 
-        $entryStartDate = new DateTime($entry['bf_date_debut_evenement']);
+        $entryStartDate = new \DateTime($entry['bf_date_debut_evenement']);
         if (isset($entry['bf_date_fin_evenement']) && !empty(trim($entry['bf_date_fin_evenement']))) {
-            $entryEndDate = new DateTime($entry['bf_date_fin_evenement']);
+            $entryEndDate = new \DateTime($entry['bf_date_fin_evenement']);
             if ($entryEndDate && strpos($entry['bf_date_fin_evenement'], 'T') === false) {
                 // all day (so = midnigth of next day)
-                $entryEndDate->add(new DateInterval('P1D'));
+                $entryEndDate->add(new \DateInterval('P1D'));
             }
         }
         if (empty($entryEndDate)) {
-            $entryEndDate = (clone $entryStartDate)->setTime(0, 0)->add(new DateInterval('P1D')); // endDate to next day after start day if empty
+            $entryEndDate = (clone $entryStartDate)->setTime(0, 0)->add(new \DateInterval('P1D')); // endDate to next day after start day if empty
         }
-        $nextDay = (clone $date)->add(new DateInterval('P1D'));
+        $nextDay = (clone $date)->add(new \DateInterval('P1D'));
         switch ($mode) {
             case '<':
                 // start before date and whatever finish
@@ -707,7 +726,7 @@ class EntryController extends YesWikiController
         }
     }
 
-    private function dateIsStrictlyBefore(DateTime $dateToCompare, DateTime $referenceDate): bool
+    private function dateIsStrictlyBefore(\DateTime $dateToCompare, \DateTime $referenceDate): bool
     {
         $diff = $referenceDate->diff($dateToCompare);
 
@@ -723,7 +742,7 @@ class EntryController extends YesWikiController
 
     /* END OF PART TO FILTER ON DATE */
 
-    public function renderBazarList($entries, $param = [], $showNumEntries = true)
+    public function renderBazarList($entries, $params = [], $showNumEntries = true)
     {
         $ids = [];
         foreach ($entries as $entry) {

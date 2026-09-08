@@ -4,18 +4,30 @@ export default class {
   onComplete
   extra
 
-  get $modal() { return $('#YesWikiLinkModal') }
-  get $inputUrl() { return this.$modal.find('input[name=url]') }
-  get $inputText() { return this.$modal.find('input[name=text]') }
-  get $inputTitle() { return this.$modal.find('input[name=title]') }
-  get $inputTarget() { return this.$modal.find('select[name=target]') }
+  get $modal() {
+    return $('#YesWikiLinkModal')
+  }
+  get $inputUrl() {
+    return this.$modal.find('input[name=url]')
+  }
+  get $inputText() {
+    return this.$modal.find('input[name=text]')
+  }
+  get $inputTitle() {
+    return this.$modal.find('input[name=title]')
+  }
+  get $inputTarget() {
+    return this.$modal.find('select[name=target]')
+  }
 
   TARGETS = ['newtab', 'modal']
 
   open(options) {
     this.extra = new MarkdownExtra(options.extra || '')
-    const target = (this.extra.classes.filter((c) => this.TARGETS.includes(c)))[0]
-    this.extra.classes = this.extra.classes.filter((c) => !this.TARGETS.includes(c))
+    const target = this.extra.classes.filter((c) => this.TARGETS.includes(c))[0]
+    this.extra.classes = this.extra.classes.filter(
+      (c) => !this.TARGETS.includes(c),
+    )
 
     this.onComplete = options.onComplete
     this.$inputUrl.val(options.link)
@@ -23,9 +35,12 @@ export default class {
     this.$inputTitle.val(options.title)
     this.$inputTarget.val(target)
 
-    this.$modal.find('.btn-insert').off('click').on('click', (e) => {
-      this.onComplete(this.buildYesWikiCode(e))
-    })
+    this.$modal
+      .find('.btn-insert')
+      .off('click')
+      .on('click', (e) => {
+        this.onComplete(this.buildYesWikiCode(e))
+      })
 
     this.$modal.find(`[data-show*=${options.action}]`).show()
     this.$modal.find(`[data-show]:not([data-show*=${options.action}])`).hide()
@@ -75,7 +90,7 @@ export default class {
     const isUrl = /^https?:\/\//.test(link)
     // We do not allow "." on purpose, even if it's part of WN_PAGE_TAG regular expression
     // because we want inputs like "yeswiki.net" to be interpreted as URL and not page names
-    const haveSpecialChars = /[{}|\.\\"'<>~:/?#[\]@!$&()*+,;=%]/.test(link)
+    const haveSpecialChars = /[{}|.\\"'<>~:/?#[\]@!$&()*+,;=%]/.test(link)
     const validLink = link && (isUrl || !haveSpecialChars)
     if (!validLink) {
       event.stopImmediatePropagation()

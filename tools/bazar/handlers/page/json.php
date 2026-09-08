@@ -36,9 +36,9 @@ if (isset($_REQUEST['demand'])) {
 
     if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
         if (isset($_SERVER['HTTP_ACCESS_CONTROL_REQUEST_METHOD']) && (
-            $_SERVER['HTTP_ACCESS_CONTROL_REQUEST_METHOD'] == 'POST' ||
-            $_SERVER['HTTP_ACCESS_CONTROL_REQUEST_METHOD'] == 'DELETE' ||
-            $_SERVER['HTTP_ACCESS_CONTROL_REQUEST_METHOD'] == 'PUT'
+            $_SERVER['HTTP_ACCESS_CONTROL_REQUEST_METHOD'] == 'POST'
+            || $_SERVER['HTTP_ACCESS_CONTROL_REQUEST_METHOD'] == 'DELETE'
+            || $_SERVER['HTTP_ACCESS_CONTROL_REQUEST_METHOD'] == 'PUT'
         )) {
             header('Access-Control-Allow-Credentials: true');
             header('Access-Control-Allow-Headers: X-Requested-With');
@@ -95,8 +95,8 @@ if (isset($_REQUEST['demand'])) {
                     $tableau = formulaire_valeurs_template_champs($tab_nature['bn_template']);
                     for ($i = 0; $i < count($tableau); $i++) {
                         if (
-                            $tableau[$i][0] == 'liste' || $tableau[$i][0] == 'checkbox' ||
-                            $tableau[$i][0] == 'listefiche' || $tableau[$i][0] == 'checkboxfiche'
+                            $tableau[$i][0] == 'liste' || $tableau[$i][0] == 'checkbox'
+                            || $tableau[$i][0] == 'listefiche' || $tableau[$i][0] == 'checkboxfiche'
                         ) {
                             $nom_champ = $tableau[$i][0] . $tableau[$i][1] . $tableau[$i][6];
                         } elseif ($tableau[$i][0] == 'image' || $tableau[$i][0] == 'fichier') {
@@ -130,7 +130,7 @@ if (isset($_REQUEST['demand'])) {
                                 '</div> <!-- /.BAZ_rubrique -->' . "\n" .
                                 '{{/if}}' . "\n\n";
                         } elseif (function_exists($tableau[$i][0])) {
-                            //TODO replace with BazarField
+                            // TODO replace with BazarField
                             $texte = trim(
                                 $tableau[$i][0](
                                     $formtemplate,
@@ -187,9 +187,8 @@ if (isset($_REQUEST['demand'])) {
                 if (!empty($form)) {
                     echo json_encode([0 => $form]);
                     break;
-                } else {
-                    $forms = [];
                 }
+                $forms = [];
             } elseif (count($formsIds) > 1) {
                 $forms = $formManager->getMany($formsIds);
                 $forms = array_filter($forms, function ($form) {
@@ -198,14 +197,14 @@ if (isset($_REQUEST['demand'])) {
             }
 
             if (empty($forms)) {
-                echo json_encode(new \ArrayObject());
+                echo json_encode(new ArrayObject());
             } else {
                 // sort on label
                 usort($forms, function ($a, $b) {
                     if (
-                        !isset($a['bn_label_nature']) ||
-                        !isset($b['bn_label_nature']) ||
-                        $a['bn_label_nature'] == $b['bn_label_nature']
+                        !isset($a['bn_label_nature'])
+                        || !isset($b['bn_label_nature'])
+                        || $a['bn_label_nature'] == $b['bn_label_nature']
                     ) {
                         return 0;
                     }
@@ -222,10 +221,9 @@ if (isset($_REQUEST['demand'])) {
                 if (count($forms) == 1) {
                     header('Location: ' . $this->href('', 'api/forms/' . $forms[0] . '/entries' . ($is_semantic ? '/json-ld' : '')));
                     break;
-                } else {
-                    header('Location: ' . $this->href('', 'api/entries' . ($is_semantic ? '/json-ld' : ''), ['query' => 'id_typeannonce=' . $form], false));
-                    break;
                 }
+                header('Location: ' . $this->href('', 'api/entries' . ($is_semantic ? '/json-ld' : ''), ['query' => 'id_typeannonce=' . $form], false));
+                break;
             }
             header('Location: ' . $this->href('', 'api/entries' . ($is_semantic ? '/json-ld' : '')));
             break;

@@ -11,7 +11,7 @@ ob_start();
           // store lists
           $this->SaveAcl($this->GetPageTag(), 'read', $_POST['read_acl']);
           $this->SaveAcl($this->GetPageTag(), 'write', $_POST['write_acl']);
-          $this->SaveAcl($this->GetPageTag(), 'comment', ($this->page['comment_on'] ? '' : $_POST['comment_acl']));
+          $this->SaveAcl($this->GetPageTag(), 'comment', $this->page['comment_on'] ? '' : $_POST['comment_acl']);
           $message = _t('YW_ACLS_UPDATED');
 
           // change owner?
@@ -38,8 +38,8 @@ ob_start();
         <div class="controls col-sm-9">
           <textarea class="form-control" name="read_acl" rows="3" cols="20"
             <?php if ($this->services->get(SecurityController::class)->isWikiHibernated()) {
-              echo 'disabled data-toggle="tooltip" data-placement="bottom" title="' . _t('WIKI_IN_HIBERNATION') . '"';
-          } ?>><?php echo $readACL['list']; ?></textarea>
+                echo 'disabled data-toggle="tooltip" data-placement="bottom" title="' . _t('WIKI_IN_HIBERNATION') . '"';
+            } ?>><?php echo $readACL['list']; ?></textarea>
         </div>
       </div>
       <div class="form-group">
@@ -47,8 +47,8 @@ ob_start();
         <div class="controls col-sm-9">
           <textarea class="form-control" name="write_acl" rows="3" cols="20"
             <?php if ($this->services->get(SecurityController::class)->isWikiHibernated()) {
-              echo 'disabled data-toggle="tooltip" data-placement="bottom" title="' . _t('WIKI_IN_HIBERNATION') . '"';
-          } ?>><?php echo $writeACL['list']; ?></textarea>
+                echo 'disabled data-toggle="tooltip" data-placement="bottom" title="' . _t('WIKI_IN_HIBERNATION') . '"';
+            } ?>><?php echo $writeACL['list']; ?></textarea>
         </div>
       </div>
 
@@ -61,16 +61,16 @@ ob_start();
         <div class="controls col-sm-9">
           <select class="form-control" name="newowner"
             <?php if ($this->services->get(SecurityController::class)->isWikiHibernated()) {
-              echo 'disabled data-toggle="tooltip" data-placement="bottom" title="' . _t('WIKI_IN_HIBERNATION') . '"';
-          } ?>>
+                echo 'disabled data-toggle="tooltip" data-placement="bottom" title="' . _t('WIKI_IN_HIBERNATION') . '"';
+            } ?>>
             <option value=""><?php echo _t('YW_CHANGE_NOTHING'); ?></option><!-- Don't change-->
             <option value="">&nbsp;</option>
             <?php
-            if ($users = $this->LoadUsers()) {
-                foreach ($users as $user) {
-                    echo '<option value="', htmlspecialchars($user['name'], ENT_COMPAT, YW_CHARSET), '">', $user['name'], "</option>\n";
-                }
-            } ?>
+              if ($users = $this->LoadUsers()) {
+                  foreach ($users as $user) {
+                      echo '<option value="', htmlspecialchars($user['name'], ENT_COMPAT, YW_CHARSET), '">', $user['name'], "</option>\n";
+                  }
+              } ?>
           </select>
         </div>
       </div>
@@ -92,7 +92,7 @@ ob_start();
       echo '<div class="alert alert-danger">' . _t('YW_CANNOT_CHANGE_ACLS') . '</div>';
   }
 
-  ?>
+?>
 </div>
 <?php
 

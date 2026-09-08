@@ -4,7 +4,7 @@ use YesWiki\Core\Service\ThemeManager;
 
 // on enleve l'action template
 $plugin_output_new = preg_replace(
-    '/' . '(\\{\\{template)' . '(.*?)' . '(\\}\\})' . '/is',
+    '/(\\{\\{template)(.*?)(\\}\\})/is',
     '',
     $plugin_output_new
 );
@@ -12,8 +12,8 @@ $plugin_output_new = preg_replace(
 $themeManager = $this->services->get(ThemeManager::class);
 
 // personnalisation graphique que dans le cas ou on est autorise
-if ((!isset($this->config['hide_action_template']) or (isset($this->config['hide_action_template']) && !$this->config['hide_action_template'])) &&
-    ($this->HasAccess('write') && $this->HasAccess('read') && (!SEUL_ADMIN_ET_PROPRIO_CHANGENT_THEME || (SEUL_ADMIN_ET_PROPRIO_CHANGENT_THEME && ($this->UserIsAdmin() || $this->UserIsOwner()))))
+if ((!isset($this->config['hide_action_template']) or (isset($this->config['hide_action_template']) && !$this->config['hide_action_template']))
+    && ($this->HasAccess('write') && $this->HasAccess('read') && (!SEUL_ADMIN_ET_PROPRIO_CHANGENT_THEME || (SEUL_ADMIN_ET_PROPRIO_CHANGENT_THEME && ($this->UserIsAdmin() || $this->UserIsOwner()))))
 ) {
     // graphical options : theme and background image
     $selecteur = '
@@ -25,7 +25,7 @@ if ((!isset($this->config['hide_action_template']) or (isset($this->config['hide
         '        <h3>' . _t('TEMPLATE_CUSTOM_GRAPHICS') . ' ' . $this->GetPageTag() . '</h3>' . "\n" .
         '      </div>' . "\n" .
         '      <div class="modal-body">' . "\n";
-    $selecteur .= $this->services->get(\YesWiki\Templates\Controller\ThemeController::class)->showFormThemeSelector('edit');
+    $selecteur .= $this->services->get(YesWiki\Templates\Controller\ThemeController::class)->showFormThemeSelector('edit');
     $selecteur .= '
       </div>' . "\n" .
         '      <div class="modal-footer">' . "\n" .
@@ -36,7 +36,7 @@ if ((!isset($this->config['hide_action_template']) or (isset($this->config['hide
         '  </div>' . "\n" .
         '</div> <!-- /#graphical_options -->' . "\n";
 
-    //quand le changement des valeurs du template est cache, il faut stocker les valeurs deja entrees pour ne pas retourner au template par defaut
+    // quand le changement des valeurs du template est cache, il faut stocker les valeurs deja entrees pour ne pas retourner au template par defaut
     $selecteur .= '<input id="hiddentheme" type="hidden" name="theme" value="' . $themeManager->getFavoriteTheme() . '" />' . "\n";
     $selecteur .= '<input id="hiddensquelette" type="hidden" name="squelette" value="' . $themeManager->getFavoriteSquelette() . '" />' . "\n";
     $selecteur .= '<input id="hiddenstyle" type="hidden" name="style" value="' . $themeManager->getFavoriteStyle() . '" />' . "\n";

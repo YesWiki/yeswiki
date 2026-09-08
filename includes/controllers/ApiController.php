@@ -488,9 +488,9 @@ class ApiController extends YesWikiController
             $errors = $commentService->delete($tag);
 
             return new ApiResponse(['success' => _t('COMMENT_REMOVED')] + $errors, 200);
-        } else {
-            return new ApiResponse(['error' => _t('NOT_AUTORIZED_TO_REMOVE_COMMENT')], 403);
         }
+
+        return new ApiResponse(['error' => _t('NOT_AUTORIZED_TO_REMOVE_COMMENT')], 403);
     }
 
     /**
@@ -743,24 +743,24 @@ class ApiController extends YesWikiController
                         ],
                         Response::HTTP_OK
                     );
-                } else {
-                    return new ApiResponse(
-                        ['error' => 'reaction not deleted'],
-                        Response::HTTP_INTERNAL_SERVER_ERROR
-                    );
                 }
-            } else {
+
                 return new ApiResponse(
-                    ['error' => 'Seul les admins ou l\'utilisateur concerné peuvent supprimer les réactions.'],
-                    Response::HTTP_UNAUTHORIZED
+                    ['error' => 'reaction not deleted'],
+                    Response::HTTP_INTERNAL_SERVER_ERROR
                 );
             }
-        } else {
+
             return new ApiResponse(
-                ['error' => 'Vous devez être connecté pour supprimer les réactions.'],
+                ['error' => 'Seul les admins ou l\'utilisateur concerné peuvent supprimer les réactions.'],
                 Response::HTTP_UNAUTHORIZED
             );
         }
+
+        return new ApiResponse(
+            ['error' => 'Vous devez être connecté pour supprimer les réactions.'],
+            Response::HTTP_UNAUTHORIZED
+        );
     }
 
     /**
@@ -796,60 +796,59 @@ class ApiController extends YesWikiController
                                         ['error' => 'Seulement ' . $params['maxreaction'] . ' réaction(s) possible(s). Vous pouvez désélectionner une de vos réactions pour changer.'],
                                         Response::HTTP_UNAUTHORIZED
                                     );
-                                } else {
-                                    $reactionValues = [
-                                        'userName' => $user['name'],
-                                        'reactionId' => $reactionid,
-                                        'id' => $reactionIdValue,
-                                        'date' => date('Y-m-d H:i:s'),
-                                    ];
-                                    $this->getService(ReactionManager::class)->addUserReaction(
-                                        $pagetag,
-                                        $reactionValues
-                                    );
-
-                                    // hurra, the reaction is saved!
-                                    return new ApiResponse(
-                                        $reactionValues,
-                                        Response::HTTP_OK
-                                    );
                                 }
-                            } else {
+                                $reactionValues = [
+                                    'userName' => $user['name'],
+                                    'reactionId' => $reactionid,
+                                    'id' => $reactionIdValue,
+                                    'date' => date('Y-m-d H:i:s'),
+                                ];
+                                $this->getService(ReactionManager::class)->addUserReaction(
+                                    $pagetag,
+                                    $reactionValues
+                                );
+
+                                // hurra, the reaction is saved!
                                 return new ApiResponse(
-                                    ['error' => 'Il faut renseigner une valeur de reaction (id).'],
-                                    Response::HTTP_BAD_REQUEST
+                                    $reactionValues,
+                                    Response::HTTP_OK
                                 );
                             }
+
+                            return new ApiResponse(
+                                ['error' => 'Il faut renseigner une valeur de reaction (id).'],
+                                Response::HTTP_BAD_REQUEST
+                            );
                         }
 
                         return new ApiResponse(
                             ['error' => "'" . strval($reactionid) . "' n'est pas une réaction déclarée sur la page '" . strval($pagetag) . "'"],
                             Response::HTTP_INTERNAL_SERVER_ERROR
                         );
-                    } else {
-                        return new ApiResponse(
-                            ['error' => 'Il faut renseigner une page wiki contenant la réaction.'],
-                            Response::HTTP_BAD_REQUEST
-                        );
                     }
-                } else {
+
                     return new ApiResponse(
-                        ['error' => 'Il faut renseigner un id de la réaction.'],
+                        ['error' => 'Il faut renseigner une page wiki contenant la réaction.'],
                         Response::HTTP_BAD_REQUEST
                     );
                 }
-            } else {
+
                 return new ApiResponse(
-                    ['error' => 'Seul les admins ou l\'utilisateur concerné peuvent réagir.'],
-                    Response::HTTP_UNAUTHORIZED
+                    ['error' => 'Il faut renseigner un id de la réaction.'],
+                    Response::HTTP_BAD_REQUEST
                 );
             }
-        } else {
+
             return new ApiResponse(
-                json_encode(['error' => 'Vous devez être connecté pour réagir.']),
+                ['error' => 'Seul les admins ou l\'utilisateur concerné peuvent réagir.'],
                 Response::HTTP_UNAUTHORIZED
             );
         }
+
+        return new ApiResponse(
+            json_encode(['error' => 'Vous devez être connecté pour réagir.']),
+            Response::HTTP_UNAUTHORIZED
+        );
     }
 
     /**
@@ -861,18 +860,18 @@ class ApiController extends YesWikiController
         if (!empty($apiResponse)) {
             return $apiResponse;
         }
-        $value = empty($username) ? null : "%\\\"user\\\":\\\"{$username}\\\"%";
+        $filters = empty($username) ? [] : ['user' => $username];
         $triples = $this->getService(TripleStore::class)->getMatching(
             null,
             $property,
-            $value,
+            $this->userLikePattern($username),
             '=',
             '=',
             'LIKE'
         );
 
         return new ApiResponse(
-            $triples,
+            $this->triplesMatchingAllFilters($triples, $filters),
             Response::HTTP_OK
         );
     }
@@ -886,18 +885,18 @@ class ApiController extends YesWikiController
         if (!empty($apiResponse)) {
             return $apiResponse;
         }
-        $value = empty($username) ? null : "%\\\"user\\\":\\\"{$username}\\\"%";
+        $filters = empty($username) ? [] : ['user' => $username];
         $triples = $this->getService(TripleStore::class)->getMatching(
             $resource,
             $property,
-            $value,
+            $this->userLikePattern($username),
             '=',
             '=',
             'LIKE'
         );
 
         return new ApiResponse(
-            $triples,
+            $this->triplesMatchingAllFilters($triples, $filters),
             Response::HTTP_OK
         );
     }
@@ -977,34 +976,24 @@ class ApiController extends YesWikiController
             $rawFilters['user'] = $username;
         }
 
-        $triples = [];
-        if (!empty($rawFilters)) {
-            foreach ($rawFilters as $key => $rawValue) {
-                $value = empty($rawValue) ? null : "%\\\"{$key}\\\":\\\"{$rawValue}\\\"%";
-                $newTriples = $this->getService(TripleStore::class)->getMatching(
-                    $resource,
-                    $property,
-                    $value,
-                    '=',
-                    '=',
-                    'LIKE'
-                );
-                if (!empty($newTriples)) {
-                    $newTriples = array_filter($newTriples, function ($triple) use ($triples) {
-                        $sameTriples = array_filter($triples, function ($registeredTriple) use ($triple) {
-                            return $registeredTriple['resource'] == $triple['resource']
-                                && $registeredTriple['property'] == $triple['property']
-                                && $registeredTriple['value'] == $triple['value'];
-                        });
-
-                        return empty($sameTriples);
-                    });
-                    foreach ($newTriples as $triple) {
-                        $triples[] = $triple;
-                    }
-                }
-            }
+        if (empty($rawFilters)) {
+            return new ApiResponse(
+                [],
+                Response::HTTP_OK
+            );
         }
+
+        $triples = $this->triplesMatchingAllFilters(
+            $this->getService(TripleStore::class)->getMatching(
+                $resource,
+                $property,
+                $this->userLikePattern($username),
+                '=',
+                '=',
+                'LIKE'
+            ),
+            $rawFilters
+        );
 
         $allOk = true;
         $notDeletedTriples = [];
@@ -1025,18 +1014,58 @@ class ApiController extends YesWikiController
                 $triples,
                 Response::HTTP_OK
             );
-        } else {
-            return new ApiResponse(
-                [
-                    'triples' => $triples,
-                    'notDeletedTriples' => $notDeletedTriples,
-                ],
-                Response::HTTP_INTERNAL_SERVER_ERROR
-            );
         }
+
+        return new ApiResponse(
+            [
+                'triples' => $triples,
+                'notDeletedTriples' => $notDeletedTriples,
+            ],
+            Response::HTTP_INTERNAL_SERVER_ERROR
+        );
     }
 
-    private function extractTriplesParams(string $method, $resource): array
+    /**
+     * A cheap sql pre-filter for the triples of one user; what it returns still has to be checked.
+     *
+     * The name comes from the caller and may hold LIKE wildcards, so this only ever widens the
+     * rows read: triplesMatchingAllFilters() is what decides which of them belong to the user.
+     */
+    private function userLikePattern(?string $username): ?string
+    {
+        return empty($username) ? null : "%\\\"user\\\":\\\"{$username}\\\"%";
+    }
+
+    /**
+     * The triples whose value holds every one of the given keys with exactly the given value.
+     *
+     * @param array<int,array<string,string>> $triples
+     * @param array<string,scalar>            $filters
+     *
+     * @return array<int,array<string,string>>
+     */
+    private function triplesMatchingAllFilters(array $triples, array $filters): array
+    {
+        if (empty($filters)) {
+            return $triples;
+        }
+
+        return array_values(array_filter($triples, function ($triple) use ($filters) {
+            $value = json_decode($triple['value'] ?? '', true);
+            if (!is_array($value)) {
+                return false;
+            }
+            foreach ($filters as $key => $expected) {
+                if (!isset($value[$key]) || !is_scalar($value[$key]) || (string)$value[$key] !== (string)$expected) {
+                    return false;
+                }
+            }
+
+            return true;
+        }));
+    }
+
+    private function extractTriplesParams(int $method, $resource): array
     {
         $property = null;
         $username = null;
@@ -1089,10 +1118,19 @@ class ApiController extends YesWikiController
     public function getArchiveStatus($uid)
     {
         $forceStarted = $this->getRequest()->query->get('forceStarted');
+
         return $this->getService(ArchiveController::class)->getArchiveStatus(
             $uid,
             !empty($forceStarted) && in_array($forceStarted, [1, true, '1', 'true'], true)
         );
+    }
+
+    /**
+     * @Route("/api/archives/restorestatus/", methods={"GET"}, options={"acl":{"@admins"}})
+     */
+    public function getRestoreStatus()
+    {
+        return $this->getService(ArchiveController::class)->getRestoreStatus();
     }
 
     /**
@@ -1128,7 +1166,7 @@ class ApiController extends YesWikiController
         $archiveService = $this->getService(ArchiveService::class);
 
         return new ApiResponse(
-            $archiveService->getArchives(),
+            $archiveService->getArchives(true),
             Response::HTTP_OK
         );
     }
@@ -1147,5 +1185,21 @@ class ApiController extends YesWikiController
     public function archivesAction()
     {
         return $this->getService(ArchiveController::class)->manageArchiveAction();
+    }
+
+    /**
+     * @Route("/api/remotebackup", methods={"GET"}, options={"acl":{"@admins"}})
+     */
+    public function getRemoteBackupStatus()
+    {
+        return $this->getService(RemoteBackupController::class)->getRemoteBackupStatus();
+    }
+
+    /**
+     * @Route("/api/remotebackup", methods={"POST"}, options={"acl":{"@admins"}})
+     */
+    public function remoteBackupAction()
+    {
+        return $this->getService(RemoteBackupController::class)->manageRemoteBackup();
     }
 }

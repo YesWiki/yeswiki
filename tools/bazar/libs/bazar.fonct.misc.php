@@ -6,9 +6,9 @@ function getConfigValue($key, $default = false, $cfg = '')
 {
     if (isset($cfg[$key]) and !empty($cfg[$key])) {
         return $cfg[$key];
-    } else {
-        return $default;
     }
+
+    return $default;
 }
 
 function sanitizeFilename($string = '')
@@ -17,6 +17,7 @@ function sanitizeFilename($string = '')
     $dangerous_characters = [' ', '"', "'", '&', '/', '\\', '?', '#', '(', ')', '+'];
     // every forbidden character is replace by an underscore
     $string = str_replace($dangerous_characters, '-', removeAccents($string));
+
     // Only allow one dash separator at a time (and make string lowercase)
     return mb_strtolower(preg_replace('/--+/u', '-', $string), YW_CHARSET);
 }
@@ -48,9 +49,9 @@ function redimensionner_image($image_src, $image_dest, $largeur, $hauteur, $meth
             }
 
             return $image_dest;
-        } else {
-            return $image_dest;
         }
+
+        return $image_dest;
     }
 }
 
@@ -70,26 +71,26 @@ function copyUrlToLocalFile($url, $localPath)
     } elseif ($ch = curl_init($url)) { // teste l'existance du fichier a distance
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, COPY_URL_CONNECT_TIMEOUT);
+        curl_setopt($ch, CURLOPT_TIMEOUT, COPY_URL_TIMEOUT);
         $imgcontent = curl_exec($ch);
         $error = curl_error($ch);
+        $status = curl_getinfo($ch, CURLINFO_RESPONSE_CODE);
         if (PHP_VERSION_ID < 80500) {
             curl_close($ch);
+        }
+        if ($error || $status >= 400 || $imgcontent === false || $imgcontent === '') {
+            return false;
         }
         $file = fopen($localPath, 'w+');
         fputs($file, $imgcontent);
         fclose($file);
-        if ($error) {
-            echo $error;
 
-            return false;
-        } else {
-            return true;
-        }
-    } else {
-        echo _t('BAZ_IMAGE_FILE_NOT_FOUND') . ' : ' . $url;
-
-        return false;
+        return true;
     }
+
+    return false;
 }
 
 /* ~~~~~~~~~~~~ DEPRECATED ~~~~~~~~~~~~~~ */

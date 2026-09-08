@@ -6,40 +6,45 @@ export default {
     label: _t('BAZ_FORM_EDIT_CALC_LABEL'),
     name: 'calc',
     attrs: { type: 'calc' },
-    icon: '<i class="fas fa-calculator"></i>'
+    icon: '<i class="fas fa-calculator"></i>',
   },
   attributes: {
     displaytext: {
       label: _t('BAZ_FORM_EDIT_DISPLAYTEXT_LABEL'),
       value: '',
-      placeholder: '{value}'
+      placeholder: '{value}',
     },
     formula: {
       label: _t('BAZ_FORM_EDIT_FORMULA_LABEL'),
-      value: ''
+      value: '',
     },
-    read: readConf
+    read: readConf,
     // write: writeconf
   },
-  disabledAttributes: [
-    'required', 'value', 'default'
-  ],
+  disabledAttributes: ['required', 'value', 'default'],
   attributesMapping: {
     ...defaultMapping,
     ...{
       4: 'displaytext',
       5: 'formula',
       8: '',
-      9: ''
-    }
+      9: '',
+    },
   },
   renderInput(field) {
     return {
       field: '',
       onRender() {
-        renderHelper.prependHint(field, _t('BAZ_FORM_CALC_HINT', { br: '<BR>' }))
-        renderHelper.defineLabelHintForGroup(field, 'displaytext', _t('BAZ_FORM_EDIT_DISPLAYTEXT_HELP'))
-      }
+        renderHelper.prependHint(
+          field,
+          _t('BAZ_FORM_CALC_HINT', { br: '<BR>' }),
+        )
+        renderHelper.defineLabelHintForGroup(
+          field,
+          'displaytext',
+          _t('BAZ_FORM_EDIT_DISPLAYTEXT_HELP'),
+        )
+      },
     }
-  }
+  },
 }

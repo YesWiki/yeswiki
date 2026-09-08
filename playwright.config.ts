@@ -15,7 +15,7 @@ export default defineConfig({
   testDir: '.',
   testMatch: [
     /\/tests\/e2e\/.*\.spec.ts/,
-    /\/tools\/.*\/tests\/e2e\/.*\.spec.ts/
+    /\/tools\/.*\/tests\/e2e\/.*\.spec.ts/,
   ],
   /* Run tests in files in parallel */
   fullyParallel: false,
@@ -35,15 +35,15 @@ export default defineConfig({
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',
 
-    video: 'on-first-retry'
+    video: 'on-first-retry',
   },
 
   /* Configure projects for major browsers */
   projects: [
     {
       name: 'chromium',
-      use: { ...devices['Desktop Chrome'] }
-    }
+      use: { ...devices['Desktop Chrome'] },
+    },
 
     // {
     //   name: 'firefox',
@@ -74,7 +74,7 @@ export default defineConfig({
     //   name: 'Google Chrome',
     //   use: { ...devices['Desktop Chrome'], channel: 'chrome' },
     // },
-  ]
+  ],
 
   /* Run your local dev server before starting the tests */
   // webServer: {

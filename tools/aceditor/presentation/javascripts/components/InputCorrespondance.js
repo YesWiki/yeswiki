@@ -17,7 +17,8 @@ export default {
     resetValues() {
       this.mappingValues = {}
       for (const propName in this.config.subproperties) {
-        this.mappingValues[propName] = (this.config.subproperties[propName] || {}).default || ''
+        this.mappingValues[propName] =
+          (this.config.subproperties[propName] || {}).default || ''
       }
     },
     parseNewValues(newValues) {
@@ -36,8 +37,12 @@ export default {
       const result = []
       for (const propName in this.mappingValues) {
         const value = this.mappingValues[propName]
-        if (propName && value != (this.config.subproperties[propName] || {}).default && value != ','
-            && Object.keys(this.config.subproperties).includes(propName)) {
+        if (
+          propName &&
+          value != (this.config.subproperties[propName] || {}).default &&
+          value != ',' &&
+          Object.keys(this.config.subproperties).includes(propName)
+        ) {
           result.push(`${propName}=${value}`)
         }
       }
@@ -48,7 +53,7 @@ export default {
     updateValue(propName, value) {
       this.mappingValues[propName] = value
       this.$emit('input', this.getValues())
-    }
+    },
   },
   template: `
     <div class="multi-input-container">
@@ -60,5 +65,5 @@ export default {
         </component>
       </template>
       <input-hint :config="config"></input-hint>
-    </div>`
+    </div>`,
 }

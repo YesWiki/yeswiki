@@ -7,7 +7,7 @@
  *
  * Much thanks to primary contributer Ponticlaro (http://www.ponticlaro.com)
  */
-(function($) {
+;(function ($) {
   // Globally keep track of all images by their unique hash.  Each item is an image data object.
   const allImages = {}
   let imageCounter = 0
@@ -56,7 +56,7 @@
       if (ownerGallery && ownerGallery != gallery) return false
 
       return gallery.removeImageByIndex(imageData.index)
-    }
+    },
   }
 
   const defaults = {
@@ -89,11 +89,11 @@
     onPageTransitionOut: undefined, // accepts a delegate like such: function(callback) { ... }
     onPageTransitionIn: undefined, // accepts a delegate like such: function() { ... }
     onImageAdded: undefined, // accepts a delegate like such: function(imageData, $li) { ... }
-    onImageRemoved: undefined // accepts a delegate like such: function(imageData, $li) { ... }
+    onImageRemoved: undefined, // accepts a delegate like such: function(imageData, $li) { ... }
   }
 
   // Primary Galleriffic initialization function that should be called on the thumbnail container.
-  $.fn.galleriffic = function(settings) {
+  $.fn.galleriffic = function (settings) {
     //  Extend Gallery Object
     $.extend(this, {
       // Returns the version of the script
@@ -136,7 +136,7 @@
       // @param {Boolean} insert Specifies whether the the image is appended to the end or inserted into the gallery.
       // @param {Integer} position The index within the gallery where the item shouold be added.
       addImage(listItem, thumbExists, insert, position) {
-        const $li = (typeof listItem === 'string') ? $(listItem) : listItem
+        const $li = typeof listItem === 'string' ? $(listItem) : listItem
         const $aThumb = $li.find('a.thumb')
         const slideUrl = $aThumb.attr('href')
         const title = $aThumb.attr('title')
@@ -160,7 +160,7 @@
           caption: $caption,
           hash,
           gallery: this,
-          index: position
+          index: position,
         }
 
         // Add the imageData to this gallery's array of images
@@ -191,10 +191,11 @@
         allImages[`${hash}`] = imageData
 
         // Setup attributes and click handler
-        $aThumb.attr('rel', 'history')
+        $aThumb
+          .attr('rel', 'history')
           .attr('href', `#${hash}`)
           .removeAttr('name')
-          .click(function(e) {
+          .click(function (e) {
             gallery.clickHandler(e, this)
           })
 
@@ -231,7 +232,8 @@
 
         // Remove the image's list item from the DOM
         this.updateThumbs(() => {
-          const $li = gallery.find('ul.thumbs')
+          const $li = gallery
+            .find('ul.thumbs')
             .children(`:eq(${index})`)
             .remove()
 
@@ -258,7 +260,7 @@
         this.data = []
         const gallery = this
 
-        this.find('ul.thumbs > li').each(function(i) {
+        this.find('ul.thumbs > li').each(function (i) {
           gallery.addImage($(this), true, false)
         })
 
@@ -298,10 +300,13 @@
 
         // Now check for preloadAhead count
         let preloadCount = currentIndex - startIndex
-        if (preloadCount < 0) preloadCount = this.data.length - 1 - startIndex + currentIndex
+        if (preloadCount < 0)
+          preloadCount = this.data.length - 1 - startIndex + currentIndex
         if (this.preloadAhead >= 0 && preloadCount > this.preloadAhead) {
           // Do this in order to keep checking for relocated start index
-          setTimeout(() => { gallery.preloadRecursive(startIndex, currentIndex) }, 500)
+          setTimeout(() => {
+            gallery.preloadRecursive(startIndex, currentIndex)
+          }, 500)
           return this
         }
 
@@ -314,7 +319,7 @@
         // Preload the image
         const image = new Image()
 
-        image.onload = function() {
+        image.onload = function () {
           imageData.image = this
           gallery.preloadNext(startIndex, currentIndex)
         }
@@ -335,7 +340,9 @@
         } else {
           // Use setTimeout to free up thread
           const gallery = this
-          setTimeout(() => { gallery.preloadRecursive(startIndex, nextIndex) }, 100)
+          setTimeout(() => {
+            gallery.preloadRecursive(startIndex, nextIndex)
+          }, 100)
         }
 
         return this
@@ -367,7 +374,9 @@
 
         if (this.$controlsContainer) {
           this.$controlsContainer
-            .find('div.ss-controls a').removeClass().addClass('play')
+            .find('div.ss-controls a')
+            .removeClass()
+            .addClass('play')
             .attr('title', this.playLinkText)
             .attr('href', '#play')
             .html(this.playLinkText)
@@ -382,7 +391,9 @@
 
         if (this.$controlsContainer) {
           this.$controlsContainer
-            .find('div.ss-controls a').removeClass().addClass('pause')
+            .find('div.ss-controls a')
+            .removeClass()
+            .addClass('pause')
             .attr('title', this.pauseLinkText)
             .attr('href', '#pause')
             .html(this.pauseLinkText)
@@ -390,7 +401,9 @@
 
         if (!this.slideshowTimeout) {
           const gallery = this
-          this.slideshowTimeout = setTimeout(() => { gallery.ssAdvance() }, this.delay)
+          this.slideshowTimeout = setTimeout(() => {
+            gallery.ssAdvance()
+          }, this.delay)
         }
 
         return this
@@ -417,7 +430,11 @@
       // @param {Boolean} dontPause Specifies whether to pause the slideshow.
       // @param {Boolean} bypassHistory Specifies whether to delegate navigation to the history plugin when history is enabled.
       next(dontPause, bypassHistory) {
-        this.gotoIndex(this.getNextIndex(this.currentImage.index), dontPause, bypassHistory)
+        this.gotoIndex(
+          this.getNextIndex(this.currentImage.index),
+          dontPause,
+          bypassHistory,
+        )
         return this
       },
 
@@ -425,7 +442,11 @@
       // @param {Boolean} dontPause Specifies whether to pause the slideshow.
       // @param {Boolean} bypassHistory Specifies whether to delegate navigation to the history plugin when history is enabled.
       previous(dontPause, bypassHistory) {
-        this.gotoIndex(this.getPrevIndex(this.currentImage.index), dontPause, bypassHistory)
+        this.gotoIndex(
+          this.getPrevIndex(this.currentImage.index),
+          dontPause,
+          bypassHistory,
+        )
         return this
       },
 
@@ -470,7 +491,8 @@
 
         const imageData = this.data[index]
 
-        if (!bypassHistory && this.enableHistory) $.historyLoad(String(imageData.hash)) // At the moment, historyLoad only accepts string arguments
+        if (!bypassHistory && this.enableHistory)
+          $.historyLoad(String(imageData.hash)) // At the moment, historyLoad only accepts string arguments
         else this.gotoImage(imageData)
 
         return this
@@ -481,7 +503,8 @@
       gotoImage(imageData) {
         const { index } = imageData
 
-        if (this.onSlideChange) this.onSlideChange(this.currentImage.index, index)
+        if (this.onSlideChange)
+          this.onSlideChange(this.currentImage.index, index)
 
         this.currentImage = imageData
         this.preloadRelocate(index)
@@ -509,16 +532,24 @@
         // Update Controls
         if (this.$controlsContainer) {
           this.$controlsContainer
-            .find('div.nav-controls a.prev').attr('href', `#${this.data[this.getPrevIndex(index)].hash}`).end()
+            .find('div.nav-controls a.prev')
+            .attr('href', `#${this.data[this.getPrevIndex(index)].hash}`)
+            .end()
             .find('div.nav-controls a.next')
             .attr('href', `#${this.data[this.getNextIndex(index)].hash}`)
         }
 
-        const previousSlide = this.$imageContainer.find('span.current').addClass('previous').removeClass('current')
+        const previousSlide = this.$imageContainer
+          .find('span.current')
+          .addClass('previous')
+          .removeClass('current')
         let previousCaption = 0
 
         if (this.$captionContainer) {
-          previousCaption = this.$captionContainer.find('span.current').addClass('previous').removeClass('current')
+          previousCaption = this.$captionContainer
+            .find('span.current')
+            .addClass('previous')
+            .removeClass('current')
         }
 
         // Perform transitions simultaneously if syncTransitions is true and the next image is already preloaded
@@ -528,7 +559,7 @@
         let isTransitioning = true
         const gallery = this
 
-        const transitionOutCallback = function() {
+        const transitionOutCallback = function () {
           // Flag that the transition has completed
           isTransitioning = false
 
@@ -539,7 +570,10 @@
           if (previousCaption) previousCaption.remove()
 
           if (!isSync) {
-            if (imageData.image && imageData.hash == gallery.data[gallery.currentImage.index].hash) {
+            if (
+              imageData.image &&
+              imageData.hash == gallery.data[gallery.currentImage.index].hash
+            ) {
               gallery.buildImage(imageData, isSync)
             } else {
               // Show loading container
@@ -554,10 +588,23 @@
           // For the first slide, the previous slide will be empty, so we will call the callback immediately
           transitionOutCallback()
         } else if (this.onTransitionOut) {
-          this.onTransitionOut(previousSlide, previousCaption, isSync, transitionOutCallback)
+          this.onTransitionOut(
+            previousSlide,
+            previousCaption,
+            isSync,
+            transitionOutCallback,
+          )
         } else {
-          previousSlide.fadeTo(this.getDefaultTransitionDuration(isSync), 0.0, transitionOutCallback)
-          if (previousCaption) previousCaption.fadeTo(this.getDefaultTransitionDuration(isSync), 0.0)
+          previousSlide.fadeTo(
+            this.getDefaultTransitionDuration(isSync),
+            0.0,
+            transitionOutCallback,
+          )
+          if (previousCaption)
+            previousCaption.fadeTo(
+              this.getDefaultTransitionDuration(isSync),
+              0.0,
+            )
         }
 
         // Go ahead and begin transitioning in of next image
@@ -567,11 +614,14 @@
           const image = new Image()
 
           // Wire up mainImage onload event
-          image.onload = function() {
+          image.onload = function () {
             imageData.image = this
 
             // Only build image if the out transition has completed and we are still on the same image hash
-            if (!isTransitioning && imageData.hash == gallery.data[gallery.currentImage.index].hash) {
+            if (
+              !isTransitioning &&
+              imageData.hash == gallery.data[gallery.currentImage.index].hash
+            ) {
               gallery.buildImage(imageData, isSync)
             }
           }
@@ -597,12 +647,16 @@
 
         // Construct new hidden span for the image
         const newSlide = this.$imageContainer
-          .append(`<span class="image-wrapper current"><a class="advance-link" rel="history" href="#${this.data[nextIndex].hash}" title="${imageData.title}">&nbsp;</a></span>`)
-          .find('span.current').css('opacity', '0')
+          .append(
+            `<span class="image-wrapper current"><a class="advance-link" rel="history" href="#${this.data[nextIndex].hash}" title="${imageData.title}">&nbsp;</a></span>`,
+          )
+          .find('span.current')
+          .css('opacity', '0')
 
-        newSlide.find('a')
+        newSlide
+          .find('a')
           .append(imageData.image)
-          .click(function(e) {
+          .click(function (e) {
             gallery.clickHandler(e, this)
           })
 
@@ -611,7 +665,8 @@
           // Construct new hidden caption for the image
           newCaption = this.$captionContainer
             .append('<span class="image-caption current"></span>')
-            .find('span.current').css('opacity', '0')
+            .find('span.current')
+            .css('opacity', '0')
             .append(imageData.caption)
         }
 
@@ -625,13 +680,16 @@
           this.onTransitionIn(newSlide, newCaption, isSync)
         } else {
           newSlide.fadeTo(this.getDefaultTransitionDuration(isSync), 1.0)
-          if (newCaption) newCaption.fadeTo(this.getDefaultTransitionDuration(isSync), 1.0)
+          if (newCaption)
+            newCaption.fadeTo(this.getDefaultTransitionDuration(isSync), 1.0)
         }
 
         if (this.isSlideshowRunning) {
           if (this.slideshowTimeout) clearTimeout(this.slideshowTimeout)
 
-          this.slideshowTimeout = setTimeout(() => { gallery.ssAdvance() }, this.delay)
+          this.slideshowTimeout = setTimeout(() => {
+            gallery.ssAdvance()
+          }, this.delay)
         }
 
         return this
@@ -662,7 +720,7 @@
       // the thumbnails container has transitioned out and before the thumbnails are rebuilt.
       updateThumbs(postTransitionOutHandler) {
         const gallery = this
-        const transitionOutCallback = function() {
+        const transitionOutCallback = function () {
           // Call the Post-transition Out Handler
           if (postTransitionOutHandler) postTransitionOutHandler()
 
@@ -691,7 +749,10 @@
         // Rebuild top pager
         if (this.enableTopPager) {
           let $topPager = this.find('div.top')
-          if ($topPager.length == 0) $topPager = this.prepend('<div class="top pagination"></div>').find('div.top')
+          if ($topPager.length == 0)
+            $topPager = this.prepend('<div class="top pagination"></div>').find(
+              'div.top',
+            )
           else $topPager.empty()
 
           if (needsPagination) this.buildPager($topPager)
@@ -700,7 +761,10 @@
         // Rebuild bottom pager
         if (this.enableBottomPager) {
           let $bottomPager = this.find('div.bottom')
-          if ($bottomPager.length == 0) $bottomPager = this.append('<div class="bottom pagination"></div>').find('div.bottom')
+          if ($bottomPager.length == 0)
+            $bottomPager = this.append(
+              '<div class="bottom pagination"></div>',
+            ).find('div.bottom')
           else $bottomPager.empty()
 
           if (needsPagination) this.buildPager($bottomPager)
@@ -713,7 +777,7 @@
 
         // Show/Hide thumbs
         const $thumbsUl = this.find('ul.thumbs')
-        $thumbsUl.find('li').each(function(i) {
+        $thumbsUl.find('li').each(function (i) {
           const $li = $(this)
           if (i >= startIndex && i <= stopIndex) {
             $li.show()
@@ -748,7 +812,7 @@
         if (pageNum > 0) {
           const remainingPageCount = numPages - pageNum
           if (remainingPageCount < pagesRemaining) {
-            pageNum -= (pagesRemaining - remainingPageCount)
+            pageNum -= pagesRemaining - remainingPageCount
           }
         }
 
@@ -759,13 +823,16 @@
         // Prev Page Link
         if (page > 0) {
           const prevPage = startIndex - this.numThumbs
-          pager.append(`<a rel="history" href="#${this.data[prevPage].hash}" title="${this.prevPageLinkText}">${this.prevPageLinkText}</a>`)
+          pager.append(
+            `<a rel="history" href="#${this.data[prevPage].hash}" title="${this.prevPageLinkText}">${this.prevPageLinkText}</a>`,
+          )
         }
 
         // Create First Page link if needed
         if (pageNum > 0) {
           this.buildPageLink(pager, 0, numPages)
-          if (pageNum > 1) pager.append('<span class="ellipsis">&hellip;</span>')
+          if (pageNum > 1)
+            pager.append('<span class="ellipsis">&hellip;</span>')
 
           pagesRemaining--
         }
@@ -780,7 +847,8 @@
         // Create Last Page link if needed
         if (pageNum < numPages) {
           const lastPageNum = numPages - 1
-          if (pageNum < lastPageNum) pager.append('<span class="ellipsis">&hellip;</span>')
+          if (pageNum < lastPageNum)
+            pager.append('<span class="ellipsis">&hellip;</span>')
 
           this.buildPageLink(pager, lastPageNum, numPages)
         }
@@ -788,10 +856,12 @@
         // Next Page Link
         const nextPage = startIndex + this.numThumbs
         if (nextPage < this.data.length) {
-          pager.append(`<a rel="history" href="#${this.data[nextPage].hash}" title="${this.nextPageLinkText}">${this.nextPageLinkText}</a>`)
+          pager.append(
+            `<a rel="history" href="#${this.data[nextPage].hash}" title="${this.nextPageLinkText}">${this.nextPageLinkText}</a>`,
+          )
         }
 
-        pager.find('a').click(function(e) {
+        pager.find('a').click(function (e) {
           gallery.clickHandler(e, this)
         })
 
@@ -805,14 +875,17 @@
       buildPageLink(pager, pageNum, numPages) {
         const pageLabel = pageNum + 1
         const currentPage = this.getCurrentPage()
-        if (pageNum == currentPage) pager.append(`<span class="current">${pageLabel}</span>`)
+        if (pageNum == currentPage)
+          pager.append(`<span class="current">${pageLabel}</span>`)
         else if (pageNum < numPages) {
           const imageIndex = pageNum * this.numThumbs
-          pager.append(`<a rel="history" href="#${this.data[imageIndex].hash}" title="${pageLabel}">${pageLabel}</a>`)
+          pager.append(
+            `<a rel="history" href="#${this.data[imageIndex].hash}" title="${pageLabel}">${pageLabel}</a>`,
+          )
         }
 
         return this
-      }
+      },
     })
 
     // Now initialize the gallery
@@ -823,8 +896,10 @@
 
     // Select containers
     if (this.imageContainerSel) this.$imageContainer = $(this.imageContainerSel)
-    if (this.captionContainerSel) this.$captionContainer = $(this.captionContainerSel)
-    if (this.loadingContainerSel) this.$loadingContainer = $(this.loadingContainerSel)
+    if (this.captionContainerSel)
+      this.$captionContainer = $(this.captionContainerSel)
+    if (this.loadingContainerSel)
+      this.$loadingContainer = $(this.loadingContainerSel)
 
     // Initialize the thumbails
     this.initializeThumbs()
@@ -844,26 +919,29 @@
 
       if (this.renderSSControls) {
         if (this.autoStart) {
-          this.$controlsContainer
-            .append(`<div class="ss-controls"><a href="#pause" class="pause" title="${this.pauseLinkText}">${this.pauseLinkText}</a></div>`)
+          this.$controlsContainer.append(
+            `<div class="ss-controls"><a href="#pause" class="pause" title="${this.pauseLinkText}">${this.pauseLinkText}</a></div>`,
+          )
         } else {
-          this.$controlsContainer
-            .append(`<div class="ss-controls"><a href="#play" class="play" title="${this.playLinkText}">${this.playLinkText}</a></div>`)
+          this.$controlsContainer.append(
+            `<div class="ss-controls"><a href="#play" class="play" title="${this.playLinkText}">${this.playLinkText}</a></div>`,
+          )
         }
 
-        this.$controlsContainer.find('div.ss-controls a')
-          .click((e) => {
-            gallery.toggleSlideshow()
-            e.preventDefault()
-            return false
-          })
+        this.$controlsContainer.find('div.ss-controls a').click((e) => {
+          gallery.toggleSlideshow()
+          e.preventDefault()
+          return false
+        })
       }
 
       if (this.renderNavControls) {
         this.$controlsContainer
-          .append(`<div class="nav-controls"><a class="prev" rel="history" title="${this.prevLinkText}">${this.prevLinkText}</a><a class="next" rel="history" title="${this.nextLinkText}">${this.nextLinkText}</a></div>`)
+          .append(
+            `<div class="nav-controls"><a class="prev" rel="history" title="${this.prevLinkText}">${this.prevLinkText}</a><a class="next" rel="history" title="${this.nextLinkText}">${this.nextLinkText}</a></div>`,
+          )
           .find('div.nav-controls a')
-          .click(function(e) {
+          .click(function (e) {
             gallery.clickHandler(e, this)
           })
       }
@@ -920,8 +998,10 @@
     if (this.autoStart) this.play()
 
     // Kickoff Image Preloader after 1 second
-    setTimeout(() => { gallery.preloadInit() }, 1000)
+    setTimeout(() => {
+      gallery.preloadInit()
+    }, 1000)
 
     return this
   }
-}(jQuery))
+})(jQuery)

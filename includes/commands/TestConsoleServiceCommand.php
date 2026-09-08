@@ -60,13 +60,12 @@ class TestConsoleServiceCommand extends Command
         if (empty($childtext)) {
             sleep($wait);
             $this->writeToFile("cache/$file", $text);
-            exit();
-        } else {
-            $consoleService = $this->wiki->services->get(ConsoleService::class);
-            $consoleService->startConsoleAsync('core:testconsoleservice', ['-f', $file, '-t', $childtext, '-w', $wait]);
-            $this->writeToFile("cache/$file", $text);
-            exit();
+            exit;
         }
+        $consoleService = $this->wiki->services->get(ConsoleService::class);
+        $consoleService->startConsoleAsync('core:testconsoleservice', ['-f', $file, '-t', $childtext, '-w', $wait]);
+        $this->writeToFile("cache/$file", $text);
+        exit;
 
         return Command::SUCCESS;
     }

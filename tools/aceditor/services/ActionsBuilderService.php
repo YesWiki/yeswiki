@@ -8,7 +8,7 @@ use YesWiki\Wiki;
 
 class ActionsBuilderService
 {
-    protected $data = null;
+    protected $data;
     protected $renderer;
     protected $wiki;
 
@@ -41,8 +41,7 @@ class ActionsBuilderService
                 // find key from filePath between tools and actions
                 $matches = [];
                 if (preg_match('/tools(?:\\/|\\\)([^\/]*)(?:\\/|\\\)actions(?:\\/|\\\)documentation.yaml/', $filePath, $matches)
-                    ||
-                    preg_match('/(custom)(?:\\/|\\\)actions(?:\\/|\\\)documentation.yaml/', $filePath, $matches)
+                    || preg_match('/(custom)(?:\\/|\\\)actions(?:\\/|\\\)documentation.yaml/', $filePath, $matches)
                 ) {
                     $key = $matches[1];
                 } else {

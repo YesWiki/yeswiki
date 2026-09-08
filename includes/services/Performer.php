@@ -4,7 +4,6 @@ namespace YesWiki\Core\Service;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpKernel\Exception\HttpException;
-use Throwable;
 use YesWiki\Core\Exception\ExitException;
 use YesWiki\Core\Exception\PerformerException;
 use YesWiki\Wiki;
@@ -112,7 +111,7 @@ class Performer
      *
      * @param array $object the object description
      * @param array $vars   the variables defined in the execution context of the object
-     * @param $output the current generated output
+     * @param       $output the current generated output
      *
      * @return mixed the performable instance
      */
@@ -141,20 +140,19 @@ class Performer
             $this->wiki->parameter = &$vars;
 
             return $instance;
-        } else {
-            throw new PerformerException("There were a problem while loading {$className} at " . "{$object['filePath']}. Ensures the class exists");
         }
+        throw new PerformerException("There were a problem while loading {$className} at {$object['filePath']}. Ensures the class exists");
     }
 
     /**
      * Run an handler, formatter or actions and all its callback.
      *
-     * @param $objectName the object name
-     * @param $objectType the type, corresponds to a Performer::TYPES key
-     * @param array $vars the variables defined in the execution context of the object. It's an array containing the
-     *                    value of each parameter given to the performable, where the names of the parameters are the key, corresponding to
-     *                    the given string value. Per example, by execute the action {{include page="PageTag"}}, this array is initialized
-     *                    with the page "parameter". Then, each execution change the execution context variables for the next one.
+     * @param       $objectName the object name
+     * @param       $objectType the type, corresponds to a Performer::TYPES key
+     * @param array $vars       the variables defined in the execution context of the object. It's an array containing the
+     *                          value of each parameter given to the performable, where the names of the parameters are the key, corresponding to
+     *                          the given string value. Per example, by execute the action {{include page="PageTag"}}, this array is initialized
+     *                          with the page "parameter". Then, each execution change the execution context variables for the next one.
      *
      * @return string the generated output
      */
@@ -203,10 +201,10 @@ class Performer
                 }
             } catch (ExitException $t) {
                 throw $t;
-            } catch (Throwable $t) {
+            } catch (\Throwable $t) {
                 // catch all errors and exceptions thrown by the execution of the performable
                 $message = _t('PERFORMABLE_ERROR');
-                $message .= "<br/>" . $this->wiki->dumpThrowable ($t);
+                $message .= '<br/>' . $this->wiki->dumpThrowable($t);
 
                 return $this->renderError($message, $objectType);
             }
@@ -224,10 +222,10 @@ class Performer
         if ($objectType == 'handler') {
             // display it with a header and a footer
             return $this->twig->renderInSquelette('@templates/alert-message-with-back.twig', $data);
-        } else {
-            // display it inline
-            return $this->twig->render('@templates/alert-message.twig', $data);
         }
+
+        // display it inline
+        return $this->twig->render('@templates/alert-message.twig', $data);
     }
 
     /**

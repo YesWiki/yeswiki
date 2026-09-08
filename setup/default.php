@@ -1,4 +1,72 @@
-<form class="form-horizontal form-yeswiki-install" action="<?php echo myLocation(); ?>?PagePrincipale&installAction=install" method="post">
+<?php
+$backups = $availableBackups ?? [];
+$restoreByDefault = !empty($backups);
+$backupTypes = [
+    'full' => _t('INSTALL_RESTORE_TYPE_FULL'),
+    'only_db' => _t('INSTALL_RESTORE_TYPE_ONLY_DB'),
+    'only_files' => _t('INSTALL_RESTORE_TYPE_ONLY_FILES'),
+];
+?>
+<form class="form-horizontal form-yeswiki-install" action="<?php echo myLocation(); ?>?PagePrincipale&installAction=<?php echo $restoreByDefault ? 'restore-backup' : 'install'; ?>" method="post">
+
+  <?php if ($restoreByDefault) { ?>
+    <div class="well" id="setup-mode">
+      <div class="radio">
+        <label>
+          <input type="radio" name="install_mode" value="restore" checked />
+          <span><strong><?php echo _t('INSTALL_MODE_RESTORE'); ?></strong></span>
+        </label>
+      </div>
+
+      <div id="restore-options" style="margin: 0.5em 0 1em 2em;">
+        <div class="form-group">
+          <label class="col-sm-3 control-label"><?php echo _t('INSTALL_RESTORE_BACKUP_FILE'); ?></label>
+          <div class="col-sm-9">
+            <select class="form-control" name="backup_file" required>
+              <?php foreach ($backups as $backup) {
+                  $label = $backup['date']
+                      . (empty($backup['source']) ? '' : ' — ' . $backup['source'])
+                      . ' — ' . $backupTypes[$backup['type']] . ' — ' . $backup['size'];
+                  echo '<option value="' . htmlspecialchars($backup['filename'], ENT_COMPAT, YW_CHARSET) . '" data-type="' . $backup['type'] . '">'
+                      . htmlspecialchars($label, ENT_COMPAT, YW_CHARSET) . "</option>\n";
+              } ?>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <div class="col-sm-offset-3 col-sm-9">
+            <div class="checkbox" data-needs="files">
+              <label>
+                <input type="checkbox" name="restore_files" value="1" checked />
+                <span>&nbsp;<?php echo _t('INSTALL_RESTORE_FILES'); ?></span>
+              </label>
+            </div>
+            <div class="checkbox" data-needs="db">
+              <label>
+                <input type="hidden" name="rewrite_urls" value="0" />
+                <input type="checkbox" name="rewrite_urls" value="1" checked />
+                <span>&nbsp;<?php echo _t('INSTALL_RESTORE_REWRITE_URLS_TO_BASE_URL'); ?></span>
+              </label>
+            </div>
+            <div class="checkbox" data-needs="db">
+              <label>
+                <input type="checkbox" name="drop_existing" value="1" />
+                <span>&nbsp;<?php echo _t('INSTALL_RESTORE_DROP_EXISTING'); ?></span>
+              </label>
+              <p class="help-block"><?php echo _t('INSTALL_RESTORE_DROP_EXISTING_INFOS'); ?></p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="radio">
+        <label>
+          <input type="radio" name="install_mode" value="install" />
+          <span><strong><?php echo _t('INSTALL_MODE_NEW'); ?></strong></span>
+        </label>
+      </div>
+    </div>
+  <?php } ?>
 
   <div class="row">
     <div class="col-md-4">
@@ -46,8 +114,8 @@
             foreach ($GLOBALS['available_languages'] as $value) {
                 echo '<option value="' . $value . '"' . (($value == $GLOBALS['prefered_language'] && (!isset($_GET['lang']) || $_GET['lang'] !== 'auto')) ? ' selected="selected"' : '') . '>' . ucfirst(htmlentities($GLOBALS['languages_list'][$value]['nativeName'], ENT_COMPAT | ENT_HTML401, 'UTF-8')) . "</option>\n";
             }
-            echo '<option value="auto"' . ((isset($_GET['lang']) && $_GET['lang'] === 'auto') ? ' selected="selected"' : '') . '>' . _t('NAVIGATOR_LANGUAGE') . "</option>\n";
-            ?>
+echo '<option value="auto"' . ((isset($_GET['lang']) && $_GET['lang'] === 'auto') ? ' selected="selected"' : '') . '>' . _t('NAVIGATOR_LANGUAGE') . "</option>\n";
+?>
           </select>
         </div>
       </div>
@@ -150,6 +218,7 @@
       </div>
     </div>
     <div class="col-md-4">
+      <fieldset id="admin-account" <?php echo $restoreByDefault ? 'disabled style="display:none;"' : ''; ?>>
       <h3>
         <a class="pull-right btn btn-sm btn-info" data-toggle="collapse" data-parent="#accordion3" href="#collapseThree">
           <?php echo _t('MORE_INFOS'); ?>
@@ -193,7 +262,7 @@
         </div>
       <?php
       }
-      ?>
+?>
 
       <div class="form-group">
         <label class="col-sm-3 control-label"><?php echo _t('ADMIN'); ?></label>
@@ -224,6 +293,7 @@
           <input type="email" required class="form-control" name="admin_email" value="" />
         </div>
       </div>
+      </fieldset>
     </div>
   </div>
   <div class="accordion-heading">
@@ -248,7 +318,7 @@
             <label>
               <input type="hidden" name="config[rewrite_mode]" value="0" />
               <input type="checkbox" name="config[rewrite_mode]" value="1" <?php
-                                                                            echo ($wakkaConfig['rewrite_mode'] ?? true) ? 'checked' : ''; ?> />
+                                                                      echo ($wakkaConfig['rewrite_mode'] ?? true) ? 'checked' : ''; ?> />
               <span>&nbsp;<?php echo _t('ACTIVATE_REDIRECTION_MODE'); ?></span>
             </label>
             <p class="help-block"><?php echo _t('REDIRECTION_SHOULD_BE_ACTIVE_ONLY_IF_USED_IN_YESWIKI'); ?>.</p>
@@ -257,7 +327,7 @@
           <div class="checkbox">
             <label>
               <input type="checkbox" name="config[allow_raw_html]" value="1" <?php
-                                                                              echo ($wakkaConfig['allow_raw_html'] ?? true) ? 'checked' : ''; ?> />
+                                                                        echo ($wakkaConfig['allow_raw_html'] ?? true) ? 'checked' : ''; ?> />
               <span>&nbsp;<?php echo _t('AUTHORIZE_HTML_INSERTION'); ?></span>
             </label>
             <p class="help-block"><?php echo _t('HTML_INSERTION_HELP_TEXT'); ?>.</p>
@@ -266,7 +336,7 @@
           <div class="checkbox">
             <label>
               <input type="checkbox" name="config[allow_robots]" value="1" <?php
-                                                                            echo ($wakkaConfig['allow_robots'] ?? true) ? 'checked' : ''; ?> />
+                                                                      echo ($wakkaConfig['allow_robots'] ?? true) ? 'checked' : ''; ?> />
               <span>&nbsp;<?php echo _t('AUTHORIZE_INDEX_BY_ROBOTS'); ?></span>
             </label>
             <p class="help-block"><?php echo _t('INDEX_HELP_TEXT'); ?>.</p>
@@ -281,9 +351,47 @@
     </div>
   </div>
 
-  </fieldset>
-
 </form>
+
+<?php if ($restoreByDefault) { ?>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    var form = document.querySelector('.form-yeswiki-install')
+    var modes = form.querySelectorAll('input[name="install_mode"]')
+    var options = document.getElementById('restore-options')
+    var admin = document.getElementById('admin-account')
+    var backupFile = form.querySelector('select[name="backup_file"]')
+    var title = document.getElementById('setup-title')
+    var action = <?php echo json_encode(myLocation() . '?PagePrincipale&installAction=', JSON_UNESCAPED_SLASHES); ?>
+
+    function applyBackupType() {
+      var type = backupFile.options[backupFile.selectedIndex].dataset.type
+      options.querySelectorAll('[data-needs]').forEach(function (option) {
+        var missing = (option.dataset.needs === 'db' && type === 'only_files')
+          || (option.dataset.needs === 'files' && type === 'only_db')
+        option.style.display = missing ? 'none' : ''
+      })
+    }
+
+    function applyMode() {
+      var restoring = form.querySelector('input[name="install_mode"]:checked').value === 'restore'
+      form.setAttribute('action', action + (restoring ? 'restore-backup' : 'install'))
+      options.style.display = restoring ? '' : 'none'
+      admin.style.display = restoring ? 'none' : ''
+      admin.disabled = restoring
+      backupFile.required = restoring
+      title.textContent = restoring ? title.dataset.restoreTitle : title.dataset.installTitle
+      applyBackupType()
+    }
+
+    modes.forEach(function (mode) {
+      mode.addEventListener('change', applyMode)
+    })
+    backupFile.addEventListener('change', applyBackupType)
+    applyMode()
+  })
+</script>
+<?php } ?>
 
 <style>
   input:not(:placeholder-shown):invalid,

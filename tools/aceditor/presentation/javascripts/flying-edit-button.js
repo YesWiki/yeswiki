@@ -11,9 +11,10 @@ export default class {
 
   show() {
     this.$flyingButton.addClass('active')
-    const top = this.$aceditor.find('.ace_gutter-active-line').offset().top
-      - this.$aceditor.find('.ace-container').offset().top
-      + this.$aceditor.find('.aceditor-toolbar').height()
+    const top =
+      this.$aceditor.find('.ace_gutter-active-line').offset().top -
+      this.$aceditor.find('.ace-container').offset().top +
+      this.$aceditor.find('.aceditor-toolbar').height()
     this.$flyingButton.css('top', `${top}px`)
     return this
   }

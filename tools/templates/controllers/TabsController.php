@@ -45,7 +45,7 @@ class TabsController extends YesWikiController
     {
         $showFirst = false;
         $selectedtab = 1;
-        if ($data instanceof TabsField && in_array($mode, ['view', 'form'])) {
+        if ($data instanceof Tabsfield && in_array($mode, ['view', 'form'])) {
             if ($mode == 'view') {
                 $titles = $data->getViewTitles();
                 $this->tabsService->setViewTitles($data);

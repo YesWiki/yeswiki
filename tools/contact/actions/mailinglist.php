@@ -7,7 +7,7 @@
  */
 include_once 'includes/email.inc.php';
 
-//recuperation des parametres
+// recuperation des parametres
 $list = $this->GetParameter('list');
 if (empty($list)) {
     echo '<div class="alert alert-danger"><strong>' . _t('CONTACT_ACTION_MAILINGLIST') . '</strong> : ' . _t('CONTACT_PARAMETER_LIST_REQUIRED') . '.</div>';
@@ -17,7 +17,7 @@ if (empty($list)) {
     // les mails formates sont prets a etre envoyes
     if (isset($_POST['mails'])) {
         if (is_array($_POST['mails'])) {
-            //inclusion de la bibliotheque de fonctions pour l'envoi des mails
+            // inclusion de la bibliotheque de fonctions pour l'envoi des mails
             include_once 'includes/email.inc.php';
             include_once 'tools/contact/libs/contact.functions.php';
 
@@ -40,7 +40,7 @@ if (empty($list)) {
     }
     // la liste des mails non formatee est disponible
     elseif (isset($_POST['mailinglist'])) {
-        //extrait les mails
+        // extrait les mails
         $regEx = "/([\s]*)[\._a-zA-Z0-9-]+@[\._a-zA-Z0-9-]+/i";
         preg_match_all($regEx, $_POST['mailinglist'], $emails);
         if (is_array($emails) && count($emails[0]) > 0) {

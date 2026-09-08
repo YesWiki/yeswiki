@@ -11,7 +11,7 @@ export default {
   attributes: {
     today_button: {
       label: _t('BAZ_FORM_EDIT_DATE_TODAY_BUTTON'),
-      options: { ' ': _t('NO'), today: _t('YES') }
+      options: { ' ': _t('NO'), today: _t('YES') },
     },
     hint: { label: _t('BAZ_FORM_EDIT_HELP'), value: '' },
     read: readConf,
@@ -19,6 +19,6 @@ export default {
   },
   advancedAttributes: ['read', 'write', 'today_button'],
   // disabledAttributes: [],
-  attributesMapping: { ...defaultMapping, ...{ 5: 'today_button' } }
+  attributesMapping: { ...defaultMapping, ...{ 5: 'today_button' } },
   // renderInput(fieldData) {},
 }

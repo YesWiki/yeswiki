@@ -7,6 +7,8 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Annotation\Route;
+use YesWiki\Bazar\Exception\RequiredFieldsException;
+use YesWiki\Bazar\Exception\TagAlreadyUsedException;
 use YesWiki\Bazar\Field\TextareaField;
 use YesWiki\Bazar\Service\ActivityPubService;
 use YesWiki\Bazar\Service\BazarListService;
@@ -70,9 +72,8 @@ class ApiController extends YesWikiController
             $actor = $activityPubService->getActor($form);
 
             return new ApiResponse($actor, Response::HTTP_OK, ['Content-Type' => 'application/activity+json']);
-        } else {
-            throw new NotFoundHttpException();
         }
+        throw new NotFoundHttpException();
     }
 
     /**
@@ -88,17 +89,16 @@ class ApiController extends YesWikiController
             $followers = $activityPubService->getFollowers($form);
 
             return new ApiResponse([
-                '@context' => "https://www.w3.org/ns/activitystreams",
+                '@context' => 'https://www.w3.org/ns/activitystreams',
                 'type' => 'Collection',
                 'id' => $activityPubService->getFormCollectionUri($form, 'followers'),
                 'items' => $followers,
             ], Response::HTTP_OK, ['Content-Type' => 'application/activity+json']);
-        } else {
-            throw new NotFoundHttpException();
         }
+        throw new NotFoundHttpException();
     }
 
-        /**
+    /**
      * @Route("/api/forms/{formId}/actor/following", methods={"GET"}, options={"acl":{"public"}})
      */
     public function getFormActorFollowing($formId, Request $request)
@@ -111,14 +111,13 @@ class ApiController extends YesWikiController
             $following = $activityPubService->getFollowing($form);
 
             return new ApiResponse([
-                '@context' => "https://www.w3.org/ns/activitystreams",
+                '@context' => 'https://www.w3.org/ns/activitystreams',
                 'type' => 'Collection',
                 'id' => $activityPubService->getFormCollectionUri($form, 'following'),
                 'items' => $following,
             ], Response::HTTP_OK, ['Content-Type' => 'application/activity+json']);
-        } else {
-            throw new NotFoundHttpException();
         }
+        throw new NotFoundHttpException();
     }
 
     /**
@@ -132,15 +131,23 @@ class ApiController extends YesWikiController
         $form = $this->getService(BazarListService::class)->getForms(['idtypeannonce' => $formId])[$formId];
 
         if ($activityPubService->isEnabled($form)) {
+            try {
+                $verifiedActor = $httpSignatureService->verifySignature($request);
+            } catch (\Exception $e) {
+                return new ApiResponse(['error' => $e->getMessage()], Response::HTTP_UNAUTHORIZED, ['Content-Type' => 'application/activity+json']);
+            }
+
             $activity = json_decode($request->getContent(), true);
 
-            $httpSignatureService->verifySignature($request);
-            $activityPubService->processActivity($activity, $form);
+            try {
+                $activityPubService->processActivity($activity, $form, $verifiedActor);
+            } catch (\Exception $e) {
+                return new ApiResponse(['error' => $e->getMessage()], Response::HTTP_FORBIDDEN, ['Content-Type' => 'application/activity+json']);
+            }
 
             return new ApiResponse(null, Response::HTTP_OK, ['Content-Type' => 'application/activity+json']);
-        } else {
-            throw new NotFoundHttpException();
         }
+        throw new NotFoundHttpException();
     }
 
     /**
@@ -159,11 +166,11 @@ class ApiController extends YesWikiController
                 'ordre' => 'asc',
                 'queries' => '',
                 // TODO Handle pagination
-                // 'nb' => 100 
+                // 'nb' => 100
             ]);
 
             return new ApiResponse([
-                '@context' => "https://www.w3.org/ns/activitystreams",
+                '@context' => 'https://www.w3.org/ns/activitystreams',
                 'type' => 'OrderedCollection',
                 'id' => $activityPubService->getFormCollectionUri($form, 'following'),
                 'totalItems' => count($entries),
@@ -171,6 +178,7 @@ class ApiController extends YesWikiController
                     $object = $this->getService(SemanticTransformer::class)->convertToSemanticData($form, $entry);
                     unset($object['@context']);
                     $published = new \DateTime($entry['date_creation_fiche']);
+
                     return [
                         'type' => 'Create',
                         'actor' => $activityPubService->getFormActorUri($form),
@@ -182,9 +190,8 @@ class ApiController extends YesWikiController
             ], Response::HTTP_OK, ['Content-Type' => 'application/activity+json']);
 
             return new ApiResponse(null, Response::HTTP_OK, ['Content-Type' => 'application/activity+json']);
-        } else {
-            throw new NotFoundHttpException();
         }
+        throw new NotFoundHttpException();
     }
 
     /**
@@ -206,9 +213,8 @@ class ApiController extends YesWikiController
             $actor = $webfingerService->formatLocalActor($handle, $actorUri);
 
             return new ApiResponse($actor, Response::HTTP_OK, ['Content-Type' => 'application/json']);
-        } else {
-            throw new NotFoundHttpException();
         }
+        throw new NotFoundHttpException();
     }
 
     /**
@@ -438,10 +444,14 @@ class ApiController extends YesWikiController
         }
         $postData['antispam'] = 1;
 
-        if (!isset($postData['id_fiche']) || !$this->getService(EntryManager::class)->isEntry($postData['id_fiche'])) {
-            $entry = $this->getService(EntryManager::class)->create($formId, $postData, false, $request->headers->get('source-url'));
-        } else {
-            $entry = $this->getService(EntryManager::class)->update($postData['id_fiche'], $postData, false, true);
+        try {
+            if (!isset($postData['id_fiche']) || !$this->getService(EntryManager::class)->isEntry($postData['id_fiche'])) {
+                $entry = $this->getService(EntryManager::class)->create($formId, $postData, false, $request->headers->get('source-url'));
+            } else {
+                $entry = $this->getService(EntryManager::class)->update($postData['id_fiche'], $postData, false, true);
+            }
+        } catch (RequiredFieldsException|TagAlreadyUsedException $e) {
+            throw new BadRequestHttpException($e->getMessage());
         }
 
         if (!$entry) {
@@ -481,7 +491,7 @@ class ApiController extends YesWikiController
         $vBazarListService = $this->getService(BazarListService::class);
 
         /* ------------------------------------ */
-        /*             Format Params            */
+        /*             Format Params */
         /* ------------------------------------ */
 
         $queryAll = $this->getRequest()->query->all();
@@ -501,7 +511,7 @@ class ApiController extends YesWikiController
         $formattedGet['idtypeannonce'] = $get->get('idtypeannonce') ?? $get->get('id') ?? null;
 
         /* ------------------------------------ */
-        /*               Get Data               */
+        /*               Get Data */
         /* ------------------------------------ */
         // All forms
         $refreshVal = $get->get('refresh');
@@ -514,7 +524,7 @@ class ApiController extends YesWikiController
         $filters = $vBazarListService->getFilters($formattedGet, $entries, $forms);
 
         /* ------------------------------------ */
-        /*            Transform Data            */
+        /*            Transform Data */
         /* ------------------------------------ */
 
         // Associated Forms

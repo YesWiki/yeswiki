@@ -2,7 +2,6 @@
 
 namespace YesWiki\AutoUpdate\Service;
 
-use Exception;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\AutoUpdate\Entity\Messages;
 use YesWiki\Core\Service\DbService;
@@ -38,7 +37,7 @@ class MigrationService
     public function run()
     {
         if ($this->wiki->services->get(SecurityController::class)->isWikiHibernated()) {
-            throw new Exception(_t('WIKI_IN_HIBERNATION'));
+            throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
 
         $messages = new Messages();
@@ -84,7 +83,7 @@ class MigrationService
             $vDate = $vMatches[1] ?? 'unknow date';
             $className = preg_replace('/^[\d_]*/', '', $vFile['file']); // TestMigration
             if (!class_exists($className)) {
-                throw new Exception("Error while loading $filePath. The class inside should be $className");
+                throw new \Exception("Error while loading $filePath. The class inside should be $className");
             }
             // Run Migration
             try {
@@ -95,7 +94,7 @@ class MigrationService
                 $instance->run();
                 $messages->add("Migration $className ($vDate)", 'AU_OK');
                 $tripleStore->create($vFile['file'], TripleStore::TYPE_URI, self::TRIPLES_MIGRATION_ID, '', '');
-            } catch (Exception $e) {
+            } catch (\Exception $e) {
                 $messages->add("Migration $className ($vDate) failed with error {$e->getMessage()}", 'AU_ERROR');
             }
         }

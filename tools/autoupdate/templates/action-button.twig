@@ -1,0 +1,6 @@
+<form method="post" action="{{ url({params: params}) }}" style="display: inline-block; margin: 0">
+    <input type="hidden" name="csrf-token" value="{{ csrfToken({id: 'main', refresh: false})|e('html_attr') }}">
+    <button type="submit" class="{{ buttonClass }}" title="{{ label|e('html_attr') }}">
+        {{ label }}
+    </button>
+</form>

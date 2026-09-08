@@ -1,0 +1,20 @@
+label: _t(AB_checkcontent_label)
+position: 2001
+onlyForAdmins: true
+needFormField: true
+previewHeight: 400px
+actions:
+  checkcontent:
+    label: _t(AB_checkcontent_action_label)
+    description: _t(AB_checkcontent_action_description)
+    properties:
+      textreplace:
+        label: _t(AB_checkcontent_textreplace_label)
+        hint: _t(AB_checkcontent_textreplace_hint)
+        type: text
+        advanced: true
+      forcevalues:
+        label: _t(AB_checkcontent_forcevalues_label)
+        hint: _t(AB_checkcontent_forcevalues_hint)
+        type: text
+        advanced: true

@@ -33,11 +33,10 @@ class EditActionsAclsAction extends YesWikiAction
             $result = $wiki->SetModuleACL($name = $post->get('actionname'), 'action', $post->get('acl'));
             if ($result) {
                 return $res . _t('ERROR_WHILE_SAVING_ACL') . ' ' . ucfirst($name) . ' (' . _t('ERROR_CODE') . ' ' . $result . ')<br />';
-            } else {
-                $wiki->LogAdministrativeAction($wiki->GetUserName(), _t('NEW_ACL_FOR_ACTION') . ' ' . ucfirst($name) . ' : ' . $post->get('acl') . "\n");
-
-                return $res . _t('NEW_ACL_SUCCESSFULLY_SAVED_FOR_ACTION') . ' ' . ucfirst($name) . '.<br />';
             }
+            $wiki->LogAdministrativeAction($wiki->GetUserName(), _t('NEW_ACL_FOR_ACTION') . ' ' . ucfirst($name) . ' : ' . $post->get('acl') . "\n");
+
+            return $res . _t('NEW_ACL_SUCCESSFULLY_SAVED_FOR_ACTION') . ' ' . ucfirst($name) . '.<br />';
         } elseif (!empty($this->getRequest()->query->get('actionname')) && in_array($name = $this->getRequest()->query->get('actionname'), $list)) {
             $res .= $wiki->FormOpen();
             $res .= '<br />' . _t('EDIT_RIGHTS_FOR_ACTION') . ' <strong>' . ucfirst($name) . '</strong>:';

@@ -3,12 +3,12 @@ export default {
     return {
       tokenForImages: null,
       imagesToProcess: [],
-      processingImage: false
+      processingImage: false,
     }
   },
   methods: {
     urlImageResizedOnError(entry, fieldName, width, height, mode, token) {
-      const node = event.target
+      const node = window.event.target
       $(node).removeAttr('onerror')
       if (entry[fieldName]) {
         const fileName = entry[fieldName]
@@ -22,7 +22,7 @@ export default {
             width,
             height,
             mode,
-            node
+            node,
           })
           this.processNextImage()
         } else {
@@ -33,7 +33,7 @@ export default {
           const previousUrl = $(node).prop('src')
           const newUrl = `${baseUrl}/files/${fileName}`
           if (newUrl != previousUrl) {
-            $(`img[src="${previousUrl}"]`).each(function() {
+            $(`img[src="${previousUrl}"]`).each(function () {
               $(this).prop('src', newUrl)
             })
           }
@@ -51,24 +51,25 @@ export default {
       const fileName = entry[fieldName]
       const field = this.fieldInfo(fieldName)
 
-      if (fileName.toLowerCase().endsWith('.svg')) return `${baseUrl}/files/${fileName}`
+      if (fileName.toLowerCase().endsWith('.svg'))
+        return `${baseUrl}/files/${fileName}`
 
       let regExp = new RegExp(
-        `^(${entry.id_fiche}_${field.propertyname}_.*)_(\\d{14})_(\\d{14})\\.([^.]+)$`
+        `^(${entry.id_fiche}_${field.propertyname}_.*)_(\\d{14})_(\\d{14})\\.([^.]+)$`,
       )
 
       if (regExp.test(fileName)) {
         return `${baseUrl}/cache/${fileName.replace(regExp, `$1_${mode == 'fit' ? 'vignette' : 'cropped'}_${width}_${height}_$2_$3.$4`)}`
       }
       regExp = new RegExp(
-        `^(${entry.id_fiche}_${field.propertyname}_.*)\\.([^.]+)$`
+        `^(${entry.id_fiche}_${field.propertyname}_.*)\\.([^.]+)$`,
       )
       if (regExp.test(fileName)) {
         return `${baseUrl}/cache/${fileName.replace(regExp, `$1_${mode == 'fit' ? 'vignette' : 'cropped'}_${width}_${height}.$2`)}`
       }
       // maybe from other entry
       regExp = new RegExp(
-        `^([A-Za-z0-9-_]+_${field.propertyname}_.*)_(\\d{14})_(\\d{14})\\.([^.]+)$`
+        `^([A-Za-z0-9-_]+_${field.propertyname}_.*)_(\\d{14})_(\\d{14})\\.([^.]+)$`,
       )
       if (regExp.test(fileName)) {
         return `${baseUrl}/cache/${fileName.replace(regExp, `$1_${mode == 'fit' ? 'vignette' : 'cropped'}_${width}_${height}_$2_$3.$4`)}`
@@ -87,7 +88,7 @@ export default {
         this.imagesToProcess = this.imagesToProcess.slice(1)
         $.ajax({
           url: wiki.url(
-            `?api/images/${newImageParams.fileName}/cache/${newImageParams.width}/${newImageParams.height}/${newImageParams.mode}`
+            `?api/images/${newImageParams.fileName}/cache/${newImageParams.width}/${newImageParams.height}/${newImageParams.mode}`,
           ),
           method: 'post',
           data: { csrftoken: this.tokenForImages },
@@ -96,7 +97,7 @@ export default {
             const previousUrl = $(newImageParams.node).prop('src')
             const srcFileName = `${wiki.baseUrl.replace(/(\?)?$/, '')}${data.cachefilename}`
 
-            $(`img[src="${previousUrl}"]`).each(function() {
+            $(`img[src="${previousUrl}"]`).each(function () {
               const $img = $(this)
               $img.prop('src', srcFileName)
 
@@ -111,14 +112,14 @@ export default {
             })
           },
           complete: (e) => {
-            if (e.responseJSON != undefined && e.responseJSON.newToken != undefined) {
+            if (e.responseJSON != null && e.responseJSON.newToken != null) {
               this.tokenForImages = e.responseJSON.newToken
             }
             this.processingImage = false
             this.processNextImage()
-          }
+          },
         })
       }
-    }
-  }
+    },
+  },
 }

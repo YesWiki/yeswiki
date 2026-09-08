@@ -19,7 +19,6 @@ class TextField extends BazarField
     private const FIELD_CLASS_TYPE = 'TextField';
     protected const FIELD_PLACEHOLDER = 15;
 
-
     protected const ALLOWED_SUB_TYPES = ['text', 'date', 'email', 'url', 'range', 'password', 'number', 'color'];
 
     public function __construct(array $values, ContainerInterface $services)
@@ -48,9 +47,9 @@ class TextField extends BazarField
     {
         if ($this->type == 'number' || $this->type == 'range') {
             return [$this->propertyName => ['_mode_' => 'single', '_type_' => 'number']];
-        } else {
-            return [$this->propertyName => ['_mode_' => 'single', '_type_' => 'string']];
         }
+
+        return [$this->propertyName => ['_mode_' => 'single', '_type_' => 'string']];
     }
 
     protected function renderInput($entry)
@@ -72,11 +71,11 @@ class TextField extends BazarField
             return $this->render('@bazar/fields/title.twig', [
                 'value' => $value,
             ]);
-        } else {
-            return $this->render('@bazar/fields/text.twig', [
-                'value' => $value,
-            ]);
         }
+
+        return $this->render('@bazar/fields/text.twig', [
+            'value' => $value,
+        ]);
     }
 
     public function formatValuesBeforeSave($entry)

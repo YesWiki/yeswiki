@@ -1,8 +1,8 @@
 <?php
 
 use YesWiki\Bazar\Service\EntryManager;
-use YesWiki\Bazar\Service\SemanticTransformer;
 use YesWiki\Bazar\Service\FormManager;
+use YesWiki\Bazar\Service\SemanticTransformer;
 
 $entryManager = $this->services->get(EntryManager::class);
 

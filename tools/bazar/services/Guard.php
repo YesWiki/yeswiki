@@ -100,7 +100,7 @@ class Guard
                             $valeur[$field] = '';
                             // on vide le champ
                         }
-                        //$valeur = array_map(function($value){
+                        // $valeur = array_map(function($value){
                         //     return mb_convert_encoding($value, 'UTF-8', 'ISO-8859-1');
                         // }, $valeur);
                         $page['body'] = json_encode($valeur);

@@ -12,7 +12,12 @@ export default {
       }
     },
     getValues() {
-      return { color: this.elements.filter((m) => m.id && m.color).map((m) => `${m.color}=${m.id}`).join(',') }
-    }
-  }
+      return {
+        color: this.elements
+          .filter((m) => m.id && m.color)
+          .map((m) => `${m.color}=${m.id}`)
+          .join(','),
+      }
+    },
+  },
 }

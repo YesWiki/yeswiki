@@ -29,12 +29,28 @@ test: ## Launch unit tests
 	./vendor/bin/phpunit --do-not-cache-result --stderr tests
 
 ## —— Linters & Formatters ———————————————
-lint: lint-php lint-js lint-other ## run all linters and formatters
+# `lint-*` reports and writes nothing; `fix-*` applies the fixes. Keeping them apart is what
+# lets you check a branch without a formatter rewriting files nobody asked you to touch: the
+# old `lint` targets ran `eslint --fix .` and `php-cs-fixer fix` across the whole repo, and
+# `lint-other` additionally ran the JS fixer a second time.
+#
+# One tool per question: Prettier decides how every file is *formatted* (JS included, which
+# used to be eslint's under airbnb-base), and eslint only judges whether the code is *right*.
+# `eslint-config-prettier` sits last in eslint.config.mjs to keep it that way.
+lint: lint-php lint-js lint-format ## Check formatting and lint rules (writes nothing)
 
-lint-php: ## Lint php
+lint-php: ## Check PHP formatting
+	PHP_CS_FIXER_IGNORE_ENV=false ./vendor/bin/php-cs-fixer fix --dry-run --diff
+lint-js: ## Check JS lint rules (correctness, not formatting)
+	$(YARN) run lint-js
+lint-format: ## Check JS/CSS/JSON/MD/YAML formatting
+	$(YARN) run lint-format
+
+fix: fix-php fix-js fix-format ## Apply every formatter and auto-fixable lint rule (rewrites files)
+
+fix-php: ## Format PHP
 	PHP_CS_FIXER_IGNORE_ENV=false ./vendor/bin/php-cs-fixer fix
-lint-js: ## Lint JS
-	yarn run lint-js
-lint-other: ## Lint other files
-	yarn run lint-js
-	yarn run lint-other
+fix-js: ## Auto-fix JS lint rules (correctness, not formatting)
+	$(YARN) run fix-js
+fix-format: ## Format JS/CSS/JSON/MD/YAML
+	$(YARN) run fix-format

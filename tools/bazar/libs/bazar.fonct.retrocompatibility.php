@@ -127,9 +127,9 @@ function baz_valeurs_formulaire($idformulaire = [])
         return $formManager->getMany($idformulaire);
     } elseif ($idformulaire != '' and !is_array($idformulaire)) {
         return $formManager->getOne($idformulaire);
-    } else {
-        return $formManager->getAll();
     }
+
+    return $formManager->getAll();
 }
 
 /**
@@ -184,9 +184,9 @@ function baz_valeurs_liste($idliste = '')
     $idliste = trim($idliste);
     if ($idliste != '') {
         return $GLOBALS['wiki']->services->get(ListManager::class)->getOne($idliste);
-    } else {
-        return $GLOBALS['wiki']->services->get(ListManager::class)->getAll();
     }
+
+    return $GLOBALS['wiki']->services->get(ListManager::class)->getAll();
 }
 
 /**
@@ -200,9 +200,9 @@ function baz_gestion_listes()
         return $GLOBALS['wiki']->services->get(ListController::class)->create();
     } elseif ($_GET['action'] == BAZ_ACTION_SUPPRIMER_LISTE) {
         return $GLOBALS['wiki']->services->get(ListController::class)->delete($_GET['idliste']);
-    } else {
-        return $GLOBALS['wiki']->services->get(ListController::class)->displayAll();
     }
+
+    return $GLOBALS['wiki']->services->get(ListController::class)->displayAll();
 }
 
 /**
@@ -218,9 +218,9 @@ function baz_gestion_formulaire()
         return $GLOBALS['wiki']->services->get(FormController::class)->clear($_GET['idformulaire']);
     } elseif ($_GET['action'] === 'delete') {
         return $GLOBALS['wiki']->services->get(FormController::class)->delete($_GET['idformulaire']);
-    } else {
-        return $GLOBALS['wiki']->services->get(FormController::class)->displayAll();
     }
+
+    return $GLOBALS['wiki']->services->get(FormController::class)->displayAll();
 }
 
 /**
@@ -230,9 +230,9 @@ function baz_formulaire_des_formulaires($mode, $form = '')
 {
     if ($form !== '') {
         return $GLOBALS['wiki']->services->get(FormController::class)->update($form['bn_id_nature']);
-    } else {
-        return $GLOBALS['wiki']->services->get(FormController::class)->create();
     }
+
+    return $GLOBALS['wiki']->services->get(FormController::class)->create();
 }
 
 /**
@@ -282,7 +282,7 @@ function baz_voir_fiche($danslappli, $idfiche, $form = '')
         return $GLOBALS['wiki']->services->get(TemplateEngine::class)
             ->render('@templates/alert-message.twig', [
                 'type' => 'danger',
-                'message' => _t('PERFORMABLE_ERROR') . "<br/>" . $GLOBALS['wiki']->dumpThrowable ($t)
+                'message' => _t('PERFORMABLE_ERROR') . '<br/>' . $GLOBALS['wiki']->dumpThrowable($t),
             ]);
     }
 

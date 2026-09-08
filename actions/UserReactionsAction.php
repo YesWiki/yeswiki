@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Show all user's reaction.
  */
@@ -15,11 +16,11 @@ class UserReactionsAction extends YesWikiAction
             return $this->render('@core/user-reactions.twig', [
                 'userReactions' => $userReactions,
             ]);
-        } else {
-            return $this->render('@templates/alert-message.twig', [
-                'type' => 'info',
-                'message' => _t('REACTION_LOGIN_TO_SEE_YOUR_REACTION'),
-            ]);
         }
+
+        return $this->render('@templates/alert-message.twig', [
+            'type' => 'info',
+            'message' => _t('REACTION_LOGIN_TO_SEE_YOUR_REACTION'),
+        ]);
     }
 }

@@ -27,7 +27,7 @@ export default {
         const classes = newValues.class.split(' ')
         const classesGroupedBy2 = []
         classes.forEach((c, idx) => {
-          if ((idx + 1) < classes.length) {
+          if (idx + 1 < classes.length) {
             classesGroupedBy2.push(`${c} ${classes[idx + 1]}`)
           }
         })
@@ -38,14 +38,17 @@ export default {
           if (componentDefinition.type == 'list') {
             optionsList = Object.keys(componentDefinition.options)
             for (const classValue of classesMerged) {
-              if (optionsList.find((o) => o == classValue)) this.classValues[propName] = classValue
+              if (optionsList.find((o) => o == classValue))
+                this.classValues[propName] = classValue
             }
           } else if (componentDefinition.type == 'checkbox') {
             const checkedValue = componentDefinition.checkedvalue || ''
             const unCheckedValue = componentDefinition.uncheckedvalue || ''
             for (const classValue of classesMerged) {
-              if ((classValue == checkedValue && checkedValue != '')
-                || (classValue == unCheckedValue && unCheckedValue != '')) {
+              if (
+                (classValue == checkedValue && checkedValue != '') ||
+                (classValue == unCheckedValue && unCheckedValue != '')
+              ) {
                 this.classValues[propName] = classValue
               }
             }
@@ -61,7 +64,7 @@ export default {
     updateValue(propName, value) {
       this.classValues[propName] = value
       this.$emit('input', this.getValues())
-    }
+    },
   },
   template: `
     <div class="multi-input-container">
@@ -72,5 +75,5 @@ export default {
                    :config="property" :selected-forms="selectedForms">
         </component>
       </template>
-    </div>`
+    </div>`,
 }

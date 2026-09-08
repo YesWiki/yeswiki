@@ -18,10 +18,11 @@
 {% if core.newVersionRequested %}
     {% if isAdmin and not isHibernated %}
         {% if core.PHPVersionEnoughHigh %}
-            <a  href="{{ url({ params: { action: 'upgrade', package: core.updateLink } }) }}"
-                class="btn btn-danger" title="{{ _t('AU_VERSION_UPDATE') }}">
-                {{ _t('AU_VERSION_UPDATE') }}
-            </a>
+            {% include '@autoupdate/action-button.twig' with {
+                params: { action: 'upgrade', package: core.updateLink },
+                buttonClass: 'btn btn-danger',
+                label: _t('AU_VERSION_UPDATE')
+            } only %}
         {% else %}
             <button type="button" class="btn btn-danger" disabled data-toggle="tooltip"
                 data-placement="bottom" title="{{ _self.phpTooLowText(_t('AU_PHP_TOO_LOW_VERSION_UPDATE'),core,phpVersion) }}">
@@ -38,10 +39,11 @@
 {% elseif core.updateAvailable %}
     {% if isAdmin and not isHibernated %}
         {% if core.PHPVersionEnoughHigh %}
-            <a  href="{{ url({ params: { action: 'upgrade', package: core.updateLink } }) }}"
-                class="btn btn-primary" title="{{ _t('AU_UPDATE') }}">
-                {{ _t('AU_UPDATE') }}
-            </a>
+            {% include '@autoupdate/action-button.twig' with {
+                params: { action: 'upgrade', package: core.updateLink },
+                buttonClass: 'btn btn-primary',
+                label: _t('AU_UPDATE')
+            } only %}
         {% else %}
             <button type="button" class="btn btn-primary" disabled data-toggle="tooltip"
                 data-placement="bottom" title="{{ _self.phpTooLowText(_t('AU_PHP_TOO_LOW_UPDATE'),core,phpVersion) }}">
@@ -58,10 +60,11 @@
 {% elseif not core.updateAvailable %}
     {% if isAdmin and not isHibernated %}
         {% if core.PHPVersionEnoughHigh %}
-            <a  href="{{ url({ params: { action: 'upgrade', package: core.updateLink } }) }}"
-                class="btn btn-warning" title="{{ _t('AU_FORCE_UPDATE') }}">
-                {{ _t('AU_FORCE_UPDATE') }}
-            </a>
+            {% include '@autoupdate/action-button.twig' with {
+                params: { action: 'upgrade', package: core.updateLink },
+                buttonClass: 'btn btn-warning',
+                label: _t('AU_FORCE_UPDATE')
+            } only %}
         {% else %}
             <button type="button" class="btn btn-warning" disabled data-toggle="tooltip"
                 data-placement="bottom" title="{{ _self.phpTooLowText(_t('AU_PHP_TOO_LOW_FORCE_UPDATE'),core,phpVersion) }}">

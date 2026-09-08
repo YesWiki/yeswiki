@@ -5,7 +5,9 @@ const { createApp } = Vue
 // Capture dataset before mounting (Vue 3 replaces the mount element)
 const mountElement = document.querySelector('.list-form')
 const elementDataset = mountElement ? { ...mountElement.dataset } : {}
-const initialList = elementDataset.list ? JSON.parse(elementDataset.list) : { title: '', nodes: [] }
+const initialList = elementDataset.list
+  ? JSON.parse(elementDataset.list)
+  : { title: '', nodes: [] }
 
 const app = createApp({
   components: { 'list-node': ListNode },
@@ -14,7 +16,7 @@ const app = createApp({
       title: initialList.title || '',
       rootNode: { id: '@root@', vueRef: '@root@', children: [] },
       allIds: [],
-      nodeCreated: 0
+      nodeCreated: 0,
     }
   },
   mounted() {
@@ -25,9 +27,11 @@ const app = createApp({
   },
   computed: {
     jsonNodes() {
-      const data = this.rootNode.children.map((child) => this.removeVueRefProps({ ...child }))
+      const data = this.rootNode.children.map((child) =>
+        this.removeVueRefProps({ ...child }),
+      )
       return JSON.stringify(data)
-    }
+    },
   },
   methods: {
     onSubmit(event) {
@@ -38,12 +42,14 @@ const app = createApp({
         toastMessage(_t('LIST_ERROR_MISSING_IDS'), 4000, 'alert alert-danger')
         event.preventDefault()
       }
-      const duplicatesIds = this.allIds.filter((item, index) => this.allIds.indexOf(item) !== index)
+      const duplicatesIds = this.allIds.filter(
+        (item, index) => this.allIds.indexOf(item) !== index,
+      )
       if (duplicatesIds.length > 0) {
         toastMessage(
           _t('LIST_ERROR_DUPLICATES_IDS') + duplicatesIds.join(', '),
           8000,
-          'alert alert-danger'
+          'alert alert-danger',
         )
         event.preventDefault()
       }
@@ -59,10 +65,12 @@ const app = createApp({
     },
     removeVueRefProps(node) {
       delete node.vueRef
-      node.children = node.children.map((child) => this.removeVueRefProps({ ...child }))
+      node.children = node.children.map((child) =>
+        this.removeVueRefProps({ ...child }),
+      )
       return node
-    }
-  }
+    },
+  },
 })
 
 if (mountElement) {

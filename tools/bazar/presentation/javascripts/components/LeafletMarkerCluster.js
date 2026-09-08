@@ -6,15 +6,17 @@ export default {
   props: {
     options: {
       type: Object,
-      default() { return {} }
-    }
+      default() {
+        return {}
+      },
+    },
   },
   emits: ['ready'],
   data() {
     return {
       ready: false,
       mapObject: null,
-      parentContainer: null
+      parentContainer: null,
     }
   },
   mounted() {
@@ -28,18 +30,19 @@ export default {
       chunkedLoading: true,
       iconCreateFunction(cluster) {
         const childCount = cluster.getChildCount()
-        const size = childCount < 10 ? 'small' : childCount < 100 ? 'medium' : 'large'
+        const size =
+          childCount < 10 ? 'small' : childCount < 100 ? 'medium' : 'large'
         return new L.DivIcon({
           html: `<div><span>${childCount}</span></div>`,
           className: `marker-cluster ${size}`,
-          iconSize: new L.Point(40, 40)
+          iconSize: new L.Point(40, 40),
         })
       },
       maxClusterRadius: (zoom) => {
         if (zoom > 10) return 60
         if (zoom > 7) return 70
         return 70
-      }
+      },
     })
 
     // Extract event listeners from $attrs (Vue 3 pattern)
@@ -89,11 +92,11 @@ export default {
       if (this.mapObject) {
         this.mapObject.refreshClusters()
       }
-    }
+    },
   },
   template: `
     <div style="display: none;">
       <slot v-if="ready"></slot>
     </div>
-  `
+  `,
 }

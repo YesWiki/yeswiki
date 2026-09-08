@@ -43,8 +43,8 @@ class CleanOldCartoGoogle extends YesWikiMigration
     private function extractOldCarto(array $entry): bool
     {
         if (
-            empty($entry) || empty($entry['id_fiche']) || empty($entry['id_typeannonce']) ||
-            strval($entry['id_typeannonce']) != strval(intval($entry['id_typeannonce']))
+            empty($entry) || empty($entry['id_fiche']) || empty($entry['id_typeannonce'])
+            || strval($entry['id_typeannonce']) != strval(intval($entry['id_typeannonce']))
         ) {
             return false;
         }
@@ -86,7 +86,7 @@ class CleanOldCartoGoogle extends YesWikiMigration
     private function updateEntry($data)
     {
         if ($this->securityController->isWikiHibernated()) {
-            throw new \Exception(_t('WIKI_IN_HIBERNATION'));
+            throw new Exception(_t('WIKI_IN_HIBERNATION'));
         }
 
         $this->entryManager->validate(array_merge($data, ['antispam' => 1]));

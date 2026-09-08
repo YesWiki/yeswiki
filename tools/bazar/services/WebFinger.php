@@ -2,8 +2,6 @@
 
 namespace YesWiki\Bazar\Service;
 
-use Exception;
-
 /**
  * A simple WebFinger container of data.
  */
@@ -25,7 +23,7 @@ class WebFinger
     protected $links = [];
 
     /**
-     * Construct WebFinger instance
+     * Construct WebFinger instance.
      *
      * @param array $data A WebFinger response
      */
@@ -41,33 +39,27 @@ class WebFinger
     }
 
     /**
-     * Set subject property
+     * Set subject property.
      *
      * @param string $subject
      */
     public function setSubject($subject)
     {
         if (!is_string($subject)) {
-            throw new Exception(
-                "WebFinger subject must be a string",
-            );
+            throw new \Exception('WebFinger subject must be a string');
         }
 
         $this->subject = $subject;
     }
 
     /**
-     * Set aliases property
-     *
-     * @param array $aliases
+     * Set aliases property.
      */
     public function setAliases(array $aliases)
     {
         foreach ($aliases as $alias) {
             if (!is_string($alias)) {
-                throw new Exception(
-                    "WebFinger aliases must be an array of strings",
-                );
+                throw new \Exception('WebFinger aliases must be an array of strings');
             }
 
             $this->aliases[] = $alias;
@@ -75,23 +67,17 @@ class WebFinger
     }
 
     /**
-     * Set links property
-     *
-     * @param array $links
+     * Set links property.
      */
     public function setLinks(array $links)
     {
         foreach ($links as $link) {
             if (!is_array($link)) {
-                throw new Exception(
-                    "WebFinger links must be an array of objects",
-                );
+                throw new \Exception('WebFinger links must be an array of objects');
             }
 
             if (!isset($link['rel'])) {
-                throw new Exception(
-                    "WebFinger links object must contain 'rel' property",
-                );
+                throw new \Exception("WebFinger links object must contain 'rel' property");
             }
 
             $tmp = [];
@@ -108,7 +94,7 @@ class WebFinger
     }
 
     /**
-     * Get ActivityPhp profile id URL
+     * Get ActivityPhp profile id URL.
      *
      * @return string
      */
@@ -126,7 +112,7 @@ class WebFinger
     }
 
     /**
-     * Get interaction url
+     * Get interaction url.
      *
      * @return string
      */
@@ -142,7 +128,7 @@ class WebFinger
     }
 
     /**
-     * Get WebFinger response as an array
+     * Get WebFinger response as an array.
      *
      * @return array
      */
@@ -151,12 +137,12 @@ class WebFinger
         return [
             'subject' => $this->subject,
             'aliases' => $this->aliases,
-            'links'   => $this->links,
+            'links' => $this->links,
         ];
     }
 
     /**
-     * Get aliases
+     * Get aliases.
      *
      * @return array
      */
@@ -166,7 +152,7 @@ class WebFinger
     }
 
     /**
-     * Get links
+     * Get links.
      *
      * @return array
      */
@@ -176,9 +162,9 @@ class WebFinger
     }
 
     /**
-     * Get subject fetched from profile
+     * Get subject fetched from profile.
      *
-     * @return null|string Subject
+     * @return string|null Subject
      */
     public function getSubject()
     {
@@ -186,9 +172,9 @@ class WebFinger
     }
 
     /**
-     * Get subject handle fetched from profile
+     * Get subject handle fetched from profile.
      *
-     * @return null|string
+     * @return string|null
      */
     public function getHandle()
     {

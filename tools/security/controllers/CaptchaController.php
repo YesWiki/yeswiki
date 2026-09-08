@@ -2,8 +2,6 @@
 
 namespace YesWiki\Security\Controller;
 
-use Exception;
-use GdImage;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Core\YesWikiController;
 
@@ -133,12 +131,12 @@ class CaptchaController extends YesWikiController
     /**
      * generate and output an image for captcha.
      *
-     * @throws Exception on errors
+     * @throws \Exception on errors
      */
     public function printImage(string $hash)
     {
         /**
-         * @var GdImage|ressource $image manipulated image (ressource for php < 8.0)
+         * @var \GdImage|ressource $image manipulated image (ressource for php < 8.0)
          */
         $image = $this->createImage($this->imageWidth);
 
@@ -217,6 +215,7 @@ class CaptchaController extends YesWikiController
                 }
             }
         }
+
         // back-up
         return $this->selectText();
     }
@@ -236,11 +235,11 @@ class CaptchaController extends YesWikiController
     /**
      * generate a color from a name.
      *
-     * @param GdImage|ressource $image (ressource for php < 8.0)
+     * @param \GdImage|ressource $image (ressource for php < 8.0)
      *
      * @return int representation of colour
      *
-     * @throws Exception on errors
+     * @throws \Exception on errors
      */
     protected function getColorFromName($image, string $name): int
     {
@@ -248,7 +247,7 @@ class CaptchaController extends YesWikiController
             !array_key_exists($name, self::COLOURS)
             && !array_key_exists($name, self::TONES)
         ) {
-            throw new Exception('Not existing color\'s name !');
+            throw new \Exception('Not existing color\'s name !');
         }
         /**
          * @var int[] $colorSet extracted color set
@@ -259,7 +258,7 @@ class CaptchaController extends YesWikiController
          */
         $color = imagecolorallocate($image, $colorSet[0], $colorSet[1], $colorSet[2]);
         if ($color === false || !is_integer($color)) {
-            throw new Exception('Not possible to generate color');
+            throw new \Exception('Not possible to generate color');
         }
 
         return $color;
@@ -268,11 +267,11 @@ class CaptchaController extends YesWikiController
     /**
      * get random color.
      *
-     * @param GdImage|ressource $image (ressource for php < 8.0)
+     * @param \GdImage|ressource $image (ressource for php < 8.0)
      *
      * @return int representation of colour
      *
-     * @throws Exception on errors
+     * @throws \Exception on errors
      */
     protected function getRandomColor($image): int
     {
@@ -287,14 +286,14 @@ class CaptchaController extends YesWikiController
     /**
      * create an image.
      *
-     * @return GdImage|ressource new image (ressource for php < 8.0)
+     * @return \GdImage|ressource new image (ressource for php < 8.0)
      *
-     * @throws Exception on errors
+     * @throws \Exception on errors
      */
     protected function createImage(int $imageWidth)
     {
         /**
-         * @var GdImage|bool|ressource $image
+         * @var \GdImage|bool|ressource $image
          */
         $image = imagecreatetruecolor($imageWidth, self::IMAGE_HEIGHT);
         /**
@@ -307,10 +306,10 @@ class CaptchaController extends YesWikiController
         $phpHigherThan8 = !empty($phpVersion) && (explode('.', $phpVersion)[0] >= 8);
         if (
             $image === false
-            || ($phpHigherThan8 && !($image instanceof GdImage))
+            || ($phpHigherThan8 && !($image instanceof \GdImage))
             || (!$phpHigherThan8 && !is_resource($image))
         ) {
-            throw new Exception('Not possible to generate image');
+            throw new \Exception('Not possible to generate image');
         }
 
         return $image;
@@ -368,9 +367,9 @@ class CaptchaController extends YesWikiController
     /**
      * draw some elipses.
      *
-     * @param GdImage|ressource $image (ressource for php < 8.0)
+     * @param \GdImage|ressource $image (ressource for php < 8.0)
      *
-     * @throws Exception on errors
+     * @throws \Exception on errors
      */
     protected function drawSomeElipses($image, int $imageWidth)
     {
@@ -406,9 +405,9 @@ class CaptchaController extends YesWikiController
     /**
      * draw text.
      *
-     * @param GdImage|ressource $image (ressource for php < 8.0)
+     * @param \GdImage|ressource $image (ressource for php < 8.0)
      *
-     * @throws Exception on errors
+     * @throws \Exception on errors
      */
     protected function drawtext($image, int $imageWidth, string $text)
     {

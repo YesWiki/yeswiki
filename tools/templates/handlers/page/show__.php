@@ -45,4 +45,4 @@ if (!$this->HasAccess('read')) {
 }
 
 // TODO : make it work with big buffers
-//$plugin_output_new = $this->services->get(\YesWiki\Templates\Service\Utils::class)->postFormat($plugin_output_new);
+// $plugin_output_new = $this->services->get(\YesWiki\Templates\Service\Utils::class)->postFormat($plugin_output_new);

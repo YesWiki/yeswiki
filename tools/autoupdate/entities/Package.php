@@ -9,13 +9,13 @@ abstract class Package extends Files
     // URL vers le fichier dans le dépôt.
     protected $address;
     // Chemin vers le dossier temporaire ou est décompressé le paquet
-    protected $extractionPath = null;
+    protected $extractionPath;
     // Chemin vers le paquet temporaire téléchargé localement
-    protected $downloadedFile = null;
+    protected $downloadedFile;
     // md5 du paquet temporaire téléchargé localement
-    protected $md5File = null;
+    protected $md5File;
     // nom du tool
-    public $name = null;
+    public $name;
     // Version du paquet
     public $release;
     public $localRelease;
@@ -31,7 +31,7 @@ abstract class Package extends Files
     abstract public function upgradeInfos();
 
     abstract protected function localRelease();
-    //abstract protected function updateAvailable();
+    // abstract protected function updateAvailable();
 
     protected $localPath;
 
@@ -201,8 +201,6 @@ abstract class Package extends Files
 
     /**
      * check if current PHP version enough high.
-     *
-     * @param string $neededRevision
      *
      * @return bool
      */

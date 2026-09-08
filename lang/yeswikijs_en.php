@@ -44,9 +44,25 @@ return [
     'ADMIN_BACKUPS_NO_ARCHIVE_TO_DELETE' => 'No backup to delete',
     'ADMIN_BACKUPS_DELETE_SELECTED_ARCHIVES' => 'Deleting selected backups',
     'ADMIN_BACKUPS_RESTORE_ARCHIVE' => 'Restore {filename}',
+    'ADMIN_BACKUPS_RESTORE_STEP_IMPORTING' => 'Restoring {filename}: importing the database ({done} statements)',
+    'ADMIN_BACKUPS_RESTORE_STEP_SWAPPING' => 'Restoring {filename}: putting the database in place',
+    'ADMIN_BACKUPS_RESTORE_STEP_FILES' => 'Restoring {filename}: files ({done} of {total})',
+    'ADMIN_BACKUPS_RESTORE_STEP_CONFIG' => 'Restoring {filename}: configuration',
+    'ADMIN_BACKUPS_RESTORE_STEP_SWEEPING' => 'Restoring {filename}: removing files the backup does not have',
     'ADMIN_BACKUPS_RESTORE_ARCHIVE_POSSIBLE_ERROR' => 'An error could occur when restoring {filename}',
     'ADMIN_BACKUPS_RESTORE_ARCHIVE_SUCCESS' => '{filename} successfully restored',
     'ADMIN_BACKUPS_RESTORE_ARCHIVE_ERROR' => 'Not possible to restore {filename}',
+    'ADMIN_BACKUPS_RESTORE_CONFIRM_FULL' => "Restore the full backup {filename} ?\n\n" .
+        "The database and the files are replaced by those of the backup, and files added since are deleted.\n" .
+        "Settings come back from the backup, except the database connection, the address of the site, the mail server and the backups folder.\n\n" .
+        'This cannot be undone.',
+    'ADMIN_BACKUPS_RESTORE_CONFIRM_ONLY_DB' => "Restore the database of {filename} ?\n\n" .
+        "The current database is replaced by the one in the backup. Files are left alone.\n\n" .
+        'This cannot be undone.',
+    'ADMIN_BACKUPS_RESTORE_CONFIRM_ONLY_FILES' => "Restore the files of {filename} ?\n\n" .
+        "Files in the backup overwrite those of the same name; the others are left alone. The database is left alone.\n\n" .
+        'This cannot be undone.',
+    'ADMIN_BACKUPS_RESTORE_REWRITE_URLS_CONFIRM' => "This backup was taken on {from}, and this wiki is at {to}.\n\nOK: rewrite the links it contains to point at {to}.\n" . 'Cancel: restore them unchanged.',
     'ADMIN_BACKUPS_START_BACKUP' => 'Start a backup',
     'ADMIN_BACKUPS_STARTED' => 'Backup started',
     'ADMIN_BACKUPS_START_BACKUP_ERROR' => 'Not possible to start backup',
@@ -58,6 +74,15 @@ return [
     'ADMIN_BACKUPS_UID_STATUS_STOP' => 'Backup aborted',
     'ADMIN_BACKUPS_STOP_BACKUP_ERROR' => 'Error : not possible to stop backup',
     'ADMIN_BACKUPS_STOPPING_ARCHIVE' => 'Backup stopping',
+    'ADMIN_BACKUPS_REMOTE_CONNECTING' => 'Connecting to the remote wiki',
+    'ADMIN_BACKUPS_REMOTE_STEP_ARCHIVING' => 'The remote wiki is making its backup',
+    'ADMIN_BACKUPS_REMOTE_STEP_IDENTIFYING' => 'Looking for the backup it produced',
+    'ADMIN_BACKUPS_REMOTE_STEP_DOWNLOADING' => 'Downloading',
+    'ADMIN_BACKUPS_REMOTE_STEP_CLEANING' => 'Deleting the backup on the remote wiki',
+    'ADMIN_BACKUPS_REMOTE_STEP_DONE' => 'Done',
+    'ADMIN_BACKUPS_REMOTE_STEP_IDLE' => 'No fetch running',
+    'ADMIN_BACKUPS_REMOTE_FINISHED' => 'Remote backup fetched: {filename}',
+    'ADMIN_BACKUPS_REMOTE_CANCELLED' => 'Fetch given up',
     'ADMIN_BACKUPS_UID_STATUS_FINISHED_THEN_UPDATING' => 'Update started (please wait)',
     'REVISIONS_COMMIT_DIFF' => 'Changes done by this revision',
     'REVISIONS_DIFF' => 'Comparison to the current revision',

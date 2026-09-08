@@ -49,6 +49,7 @@ return [
     'ATTACH_PARAM_FILE_NOT_FOUND' => 'paramètre "file" obligatoire',
     'ATTACH_PARAM_FILE_MUST_BE_IMAGE' => 'le paramètre "file" doit être une image (svg,gif,jpg,jpeg,png)',
     'ATTACH_DEFAULT_MARKER' => 'Point par défaut',
+    'ATTACH_MARKER_NOT_ALLOWED' => 'Vous n\'avez pas les droits suffisants pour ajouter un point.',
     'ATTACH_ADD_MARKER' => 'Ajouter un point',
     'ATTACH_TITLE' => 'Titre',
     'ATTACH_DESCRIPTION' => 'Description',

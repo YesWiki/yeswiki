@@ -59,12 +59,12 @@ if (!function_exists('rssdiff')) {
         if ($added) {
             // remove blank lines
             $output .= "<br />\n<b>" . _t('RSS_ADDS') . ":</b><br />\n";
-            $output .= '<div class="additions">' . (implode("\n", $added)) . '</div>';
+            $output .= '<div class="additions">' . implode("\n", $added) . '</div>';
         }
 
         if ($deleted) {
             $output .= "<br />\n<b>" . _t('RSS_DELETIONS') . ":</b><br />\n";
-            $output .= '<div class="deletions">' . (implode("\n", $deleted)) . '</div>';
+            $output .= '<div class="deletions">' . implode("\n", $deleted) . '</div>';
         }
 
         $wiki->UnregisterLastInclusion();
