@@ -192,15 +192,35 @@ const app = createApp({
       }
     },
     async fetch(url, options = {}) {
-      return await fetch(url, options).then(async (pResponse) => {
-        if (!pResponse.ok) {
-          const cJSON = await pResponse.json()
-
-          throw new Error(
-            `${_t('ERROR_CONTACT_ADMIN')} ${pResponse.statusText} (${pResponse.status}) - "${cJSON.error}"`,
-          )
-        } else return pResponse.json()
-      })
+      const response = await fetch(url, options)
+      const text = await response.text()
+      let data = null
+      try {
+        data = JSON.parse(text)
+      } catch {
+        data = null
+      }
+      if (data === null || typeof data !== 'object') {
+        throw new Error(
+          `${_t('ERROR_CONTACT_ADMIN')} ${response.statusText} (${response.status}) - "${this.responseExcerpt(text)}"`,
+        )
+      }
+      if (!response.ok) {
+        throw new Error(
+          `${_t('ERROR_CONTACT_ADMIN')} ${response.statusText} (${response.status}) - "${data.error || data.exceptionMessage || this.responseExcerpt(text)}"`,
+        )
+      }
+      return data
+    },
+    responseExcerpt(text) {
+      const excerpt = String(text)
+        .replace(/<[^>]*>/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim()
+      if (excerpt.length === 0) {
+        return _t('ADMIN_BACKUPS_EMPTY_ANSWER')
+      }
+      return excerpt.length > 300 ? `${excerpt.slice(0, 300)}…` : excerpt
     },
     async fetchPost(url, formObject, options = {}) {
       const internalOptions = { ...options }
@@ -218,10 +238,9 @@ const app = createApp({
       }
       internalOptions.method = 'POST'
       internalOptions.body = new URLSearchParams(formData)
-      internalOptions.headers = new Headers().append(
-        'Content-Type',
-        'application/x-www-form-urlencoded',
-      )
+      internalOptions.headers = {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      }
       return this.fetch(url, internalOptions)
     },
     toggleSelectedArchive(filename) {

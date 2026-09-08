@@ -10,9 +10,20 @@ use YesWiki\Test\Core\YesWikiTestCase;
 require_once 'tests/YesWikiTestCase.php';
 
 #[CoversMethod(RemoteBackupService::class, 'start')]
+#[CoversMethod(RemoteBackupService::class, 'status')]
 class RemoteBackupServiceTest extends YesWikiTestCase
 {
     private const GB = 1024 * 1024 * 1024;
+
+    public function testLoggingInAsksTheRemoteForNothingYet()
+    {
+        $fetcher = $this->fetcher(['canArchive' => true, 'canExec' => true, 'enoughSpace' => true], 6 * self::GB);
+
+        $state = $fetcher->start('https://remote.example', 'admin', 'secret');
+
+        $this->assertSame(RemoteBackupService::STEP_CHECKING, $state['step']);
+        $this->assertSame([], $fetcher->calls);
+    }
 
     public function testARemoteShortOfSpaceIsRefusedBeforeItStartsAnything()
     {
@@ -21,13 +32,11 @@ class RemoteBackupServiceTest extends YesWikiTestCase
             10 * self::GB
         );
 
-        try {
-            $fetcher->start('https://remote.example', 'admin', 'secret');
-            $this->fail('the fetch should have been refused');
-        } catch (\Exception $exception) {
-            $this->assertStringContainsString('remote wiki has not enough free space', $exception->getMessage());
-            $this->assertStringContainsString('5.0 GB needed, 1.0 GB free', $exception->getMessage());
-        }
+        $fetcher->start('https://remote.example', 'admin', 'secret');
+        $state = $fetcher->status();
+
+        $this->assertStringContainsString('remote wiki has not enough free space', $state['error']);
+        $this->assertStringContainsString('5.0 GB needed, 1.0 GB free', $state['error']);
         $this->assertNotContains('startArchive', $fetcher->calls);
     }
 
@@ -38,13 +47,11 @@ class RemoteBackupServiceTest extends YesWikiTestCase
             self::GB
         );
 
-        try {
-            $fetcher->start('https://remote.example', 'admin', 'secret');
-            $this->fail('the fetch should have been refused');
-        } catch (\Exception $exception) {
-            $this->assertStringContainsString('Not enough free space here', $exception->getMessage());
-            $this->assertStringContainsString('5.0 GB needed, 1.0 GB free', $exception->getMessage());
-        }
+        $fetcher->start('https://remote.example', 'admin', 'secret');
+        $state = $fetcher->status();
+
+        $this->assertStringContainsString('Not enough free space here', $state['error']);
+        $this->assertStringContainsString('5.0 GB needed, 1.0 GB free', $state['error']);
         $this->assertNotContains('startArchive', $fetcher->calls);
     }
 
@@ -55,9 +62,10 @@ class RemoteBackupServiceTest extends YesWikiTestCase
             6 * self::GB
         );
 
-        $state = $fetcher->start('https://remote.example', 'admin', 'secret');
+        $fetcher->start('https://remote.example', 'admin', 'secret');
 
-        $this->assertSame(RemoteBackupService::STEP_ARCHIVING, $state['step']);
+        $this->assertSame(RemoteBackupService::STEP_STARTING, $fetcher->status()['step']);
+        $this->assertSame(RemoteBackupService::STEP_ARCHIVING, $fetcher->status()['step']);
         $this->assertContains('startArchive', $fetcher->calls);
     }
 
@@ -65,14 +73,16 @@ class RemoteBackupServiceTest extends YesWikiTestCase
     {
         $fetcher = $this->fetcher(['canArchive' => true, 'canExec' => true, 'enoughSpace' => true], 1);
 
-        $state = $fetcher->start('https://remote.example', 'admin', 'secret');
+        $fetcher->start('https://remote.example', 'admin', 'secret');
+        $fetcher->status();
+        $state = $fetcher->status();
 
         $this->assertSame(RemoteBackupService::STEP_ARCHIVING, $state['step']);
         $this->assertContains('startArchive', $fetcher->calls);
     }
 
     /**
-     * A fetcher whose remote and disk are scripted, and that never touches the job file.
+     * A fetcher whose remote and disk are scripted, and whose job file is a variable.
      */
     private function fetcher(array $remoteStatus, ?int $localFree): RemoteBackupService
     {
@@ -82,6 +92,7 @@ class RemoteBackupServiceTest extends YesWikiTestCase
             public array $calls = [];
             private array $remoteStatus;
             private ?int $localFree;
+            private array $job = [];
 
             public function __construct(ArchiveService $archiveService, array $remoteStatus, ?int $localFree)
             {
@@ -115,11 +126,17 @@ class RemoteBackupServiceTest extends YesWikiTestCase
 
             protected function readJob(): array
             {
-                return [];
+                return $this->job;
             }
 
             protected function writeJob(array $job): void
             {
+                $this->job = $job;
+            }
+
+            protected function deleteJob(): void
+            {
+                $this->job = [];
             }
         };
     }

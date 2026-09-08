@@ -3,6 +3,7 @@
 namespace YesWiki\Core\Service;
 
 use Symfony\Component\HttpClient\HttpClient;
+use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 /**
@@ -15,6 +16,8 @@ class RemoteBackupService
 {
     public const JOB_FILENAME = 'remote-backup.json';
     public const PART_SUFFIX = '.part';
+    public const STEP_CHECKING = 'checking';
+    public const STEP_STARTING = 'starting';
     public const STEP_ARCHIVING = 'archiving';
     public const STEP_IDENTIFYING = 'identifying';
     public const STEP_DOWNLOADING = 'downloading';
@@ -22,6 +25,7 @@ class RemoteBackupService
     public const STEP_DONE = 'done';
     public const STEP_IDLE = 'idle';
     protected const REQUEST_TIMEOUT = 30;
+    protected const REQUEST_MAX_DURATION = 45;
     protected const RESUMABLE_SLICE_SECONDS = 20;
     protected const DOWNLOAD_STALLED_AFTER = 60;
     protected const PROGRESS_EVERY_SECONDS = 1;
@@ -39,7 +43,8 @@ class RemoteBackupService
     }
 
     /**
-     * Log in to the remote wiki and ask it for a full archive.
+     * Log in to the remote wiki, then leave the rest of the opening to the polled steps: asking a
+     * wiki whether it can archive makes it weigh itself, which takes longer than a request may last.
      *
      * @throws \Exception
      */
@@ -53,16 +58,12 @@ class RemoteBackupService
             throw new \Exception('The administrator name and password of the remote wiki are both needed.');
         }
 
-        $cookie = $this->login($baseUrl, $username, $password);
-        $remote = $this->assertRemoteCanArchive($baseUrl, $cookie);
-        $this->assertLocalSpace((int)($remote['estimatedSize'] ?? 0));
-
         $job = [
             'baseUrl' => $baseUrl,
-            'cookie' => $cookie,
-            'knownArchives' => array_column($this->remoteArchives($baseUrl, $cookie), 'filename'),
-            'remoteUid' => $this->startRemoteArchive($baseUrl, $cookie),
-            'step' => self::STEP_ARCHIVING,
+            'cookie' => $this->login($baseUrl, $username, $password),
+            'knownArchives' => [],
+            'remoteUid' => '',
+            'step' => self::STEP_CHECKING,
             'startedAt' => time(),
             'sawRunning' => false,
             'filename' => '',
@@ -89,6 +90,12 @@ class RemoteBackupService
 
         try {
             switch ($job['step']) {
+                case self::STEP_CHECKING:
+                    $job = $this->checkRemote($job);
+                    break;
+                case self::STEP_STARTING:
+                    $job = $this->askRemoteToArchive($job);
+                    break;
                 case self::STEP_ARCHIVING:
                     $job = $this->pollRemoteArchive($job);
                     break;
@@ -147,7 +154,7 @@ class RemoteBackupService
         try {
             if (!empty($job['remoteFilename'])) {
                 $this->deleteRemoteArchive($job);
-            } elseif ($job['step'] === self::STEP_ARCHIVING) {
+            } elseif ($job['step'] === self::STEP_ARCHIVING && !empty($job['remoteUid'])) {
                 $this->call($job['baseUrl'], 'api/archives', $job['cookie'], [
                     'action' => 'stopArchive',
                     'uid' => $job['remoteUid'],
@@ -156,6 +163,35 @@ class RemoteBackupService
         } catch (\Throwable $throwable) {
         }
         $this->deleteJob();
+    }
+
+    /**
+     * @param array<string,mixed> $job
+     *
+     * @return array<string,mixed>
+     */
+    protected function checkRemote(array $job): array
+    {
+        $remote = $this->assertRemoteCanArchive($job['baseUrl'], $job['cookie']);
+        $this->assertLocalSpace((int)($remote['estimatedSize'] ?? 0));
+        $job['step'] = self::STEP_STARTING;
+
+        return $job;
+    }
+
+    /**
+     * @param array<string,mixed> $job
+     *
+     * @return array<string,mixed>
+     */
+    protected function askRemoteToArchive(array $job): array
+    {
+        $job['knownArchives'] = array_column($this->remoteArchives($job['baseUrl'], $job['cookie']), 'filename');
+        $job['remoteUid'] = $this->startRemoteArchive($job['baseUrl'], $job['cookie']);
+        $job['startedAt'] = time();
+        $job['step'] = self::STEP_ARCHIVING;
+
+        return $job;
     }
 
     protected function pollRemoteArchive(array $job): array
@@ -360,11 +396,16 @@ class RemoteBackupService
 
     protected function login(string $baseUrl, string $username, string $password): string
     {
-        $response = $this->client()->request('POST', $this->apiUrl($baseUrl, 'api/login'), [
-            'body' => ['username' => $username, 'password' => $password],
-            'timeout' => self::REQUEST_TIMEOUT,
-        ]);
-        $code = $response->getStatusCode();
+        try {
+            $response = $this->client()->request('POST', $this->apiUrl($baseUrl, 'api/login'), [
+                'body' => ['username' => $username, 'password' => $password],
+                'timeout' => self::REQUEST_TIMEOUT,
+                'max_duration' => self::REQUEST_MAX_DURATION,
+            ]);
+            $code = $response->getStatusCode();
+        } catch (TransportExceptionInterface $exception) {
+            throw new \Exception("The wiki at $baseUrl cannot be reached: " . $exception->getMessage());
+        }
         try {
             $data = $code === 200 ? $response->toArray(false) : [];
         } catch (\Throwable $throwable) {
@@ -492,12 +533,17 @@ class RemoteBackupService
         $options = [
             'headers' => ['Cookie' => $cookie],
             'timeout' => self::REQUEST_TIMEOUT,
+            'max_duration' => self::REQUEST_MAX_DURATION,
         ];
         if (!is_null($post)) {
             $options['body'] = $post;
         }
-        $response = $this->client()->request(is_null($post) ? 'GET' : 'POST', $this->apiUrl($baseUrl, $path), $options);
-        $code = $response->getStatusCode();
+        try {
+            $response = $this->client()->request(is_null($post) ? 'GET' : 'POST', $this->apiUrl($baseUrl, $path), $options);
+            $code = $response->getStatusCode();
+        } catch (TransportExceptionInterface $exception) {
+            throw new \Exception("The remote wiki stopped answering on '$path': " . $exception->getMessage());
+        }
         if ($code === 401 || $code === 403) {
             throw new \Exception('The remote wiki closed the session before the backup was fetched.');
         }
