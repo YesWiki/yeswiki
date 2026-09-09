@@ -109,6 +109,7 @@ const BazarMapComponent = {
             break
           case 'geojson':
             this.layers[label] = L.geoJson.ajax(url, {
+              interactive: false,
               style(feature, _latlng) {
                 if (feature.geometry.type == 'Point') return
                 const props = feature.properties || {}
@@ -133,17 +134,6 @@ const BazarMapComponent = {
               },
               pointToLayer(feature, latlng) {
                 return L.circleMarker(latlng)
-              },
-              onEachFeature(feature, layer) {
-                let str = ''
-                for (const prop in feature.properties) {
-                  const content =
-                    prop.toLowerCase() == 'url'
-                      ? `<a href="${feature.properties[prop]}" target="_blank">${feature.properties[prop]}</a>`
-                      : feature.properties[prop]
-                  str += `${prop}: ${content}<br/>`
-                }
-                layer.bindPopup(str)
               },
             })
             if (visibleByDefault) this.layers[label].addTo(this.map)
