@@ -445,25 +445,20 @@ class ArchiveServiceTest extends YesWikiTestCase
         }
     }
 
+    /**
+     * 'custom' alone, because asking for 'files' too would zip every upload of the wiki
+     * under test just to prove what is missing from the archive.
+     */
     #[Depends('testArchiveServiceExisting')]
     public function testOnlyFoldersKeepsEverythingElseOutOfTheArchive(array $services)
     {
         $output = '';
-        $location = $services['archiveService']->archive(
-            $output,
-            true,
-            false,
-            [],
-            [],
-            null,
-            '',
-            ['custom', 'files']
-        );
+        $location = $services['archiveService']->archive($output, true, false, [], [], null, '', ['custom']);
         $data = $this->getDataFromLocation($location, $services['wiki']);
 
         $this->assertArrayNotHasKey('error', $data);
-        $this->assertContains('files', $data['files']);
-        foreach (['vendor', 'tools', 'includes', 'themes', 'private'] as $folder) {
+        $this->assertContains('custom', $data['files']);
+        foreach (['files', 'vendor', 'tools', 'includes', 'themes', 'private'] as $folder) {
             $this->assertNotContains($folder, $data['files'], "'$folder' should have been left out");
         }
         foreach ($data['files'] as $path) {
@@ -471,7 +466,21 @@ class ArchiveServiceTest extends YesWikiTestCase
                 // the root of a wiki always travels with it, whatever folders were asked for
                 continue;
             }
-            $this->assertMatchesRegularExpression('#^(custom|files)/#', $path, "'$path' should have been left out");
+            $this->assertStringStartsWith('custom/', $path, "'$path' should have been left out");
+        }
+    }
+
+    #[Depends('testArchiveServiceExisting')]
+    public function testAnEmptyOnlyFoldersArchivesTheWholeWikiRatherThanNothing(array $services)
+    {
+        $whitelist = $this->callProtected(
+            $services['archiveService'],
+            'generateListRootFolders',
+            ['white', [], []]
+        );
+
+        foreach (['files', 'custom', 'tools', 'includes'] as $folder) {
+            $this->assertContains($folder, $whitelist, "'$folder' should still be archived");
         }
     }
 

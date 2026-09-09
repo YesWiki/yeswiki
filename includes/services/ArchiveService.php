@@ -2251,9 +2251,13 @@ class ArchiveService
     private function generateListRootFolders(string $type, array $fromParams, ?array $onlyFolders = null): array
     {
         // an archive asked for a few folders takes that list as the whole of it, so neither the
-        // defaults nor wakka.config.php widen it back to the rest of the wiki
-        if ($type == 'white' && !is_null($onlyFolders)) {
-            return $this->sanitizeFileList($onlyFolders);
+        // defaults nor wakka.config.php widen it back to the rest of the wiki. An empty list
+        // is nobody's intention, so it means the same as asking for nothing in particular.
+        if ($type == 'white' && !empty($onlyFolders)) {
+            $only = $this->sanitizeFileList($onlyFolders);
+            if (!empty($only)) {
+                return $only;
+            }
         }
 
         $list = ($type == 'white') ? self::FOLDERS_TO_INCLUDE : self::FOLDERS_TO_EXCLUDE;
