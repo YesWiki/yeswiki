@@ -169,7 +169,7 @@ const BazarMapComponent = {
       try {
         const cGeolocation = this.getGeolocation(entry)
 
-        if (cGeolocation) {
+        if (cGeolocation && cGeolocation.latitude && cGeolocation.longitude) {
           entry.marker = L.marker(
             [cGeolocation.latitude, cGeolocation.longitude],
             { riseOnHover: true },
@@ -422,6 +422,8 @@ const BazarMapComponent = {
           this.$root.getEntryRender(this.selectedEntry)
         } else if (this.params.entrydisplay == 'popup') {
           this.openPopup(this.selectedEntry)
+        } else if (this.isModalDisplay()) {
+          this.$root.openEntryModal(this.selectedEntry)
         }
 
         this.$nextTick(function () {
