@@ -126,13 +126,13 @@ class EntryManager
      *
      * @throws \Exception
      */
-    public function getOne($tag, $semantic = false, $time = null, $cache = true, $bypassAcls = false, ?string $userNameForCheckingACL = null): ?array
+    public function getOne($tag, $semantic = false, $time = null, $cache = true, $bypassAcls = false, ?string $userNameForCheckingACL = null,  $bazar_lang = 'default'): ?array
     {
         if (!$this->isEntry($tag)) {
             return null;
         }
 
-        $page = $this->pageManager->getOne($tag, empty($time) ? null : $time, $cache, $bypassAcls, $userNameForCheckingACL, 'default');
+        $page = $this->pageManager->getOne($tag, empty($time) ? null : $time, $cache, $bypassAcls, $userNameForCheckingACL, $bazar_lang);
         $debug = ($this->wiki->GetConfigValue('debug') == 'yes');
         //  $debug = $this->wiki->isDebugEnabled ();
         $data = $this->getDataFromPage($page, $semantic, $debug);
@@ -462,7 +462,7 @@ class EntryManager
         // replace id_fiche with $tag to prevent errors before getOne
         $data['id_fiche'] = $tag;
         // if there are some restricted fields, load the previous data by bypassing the rights
-        $previousData = $this->getOne($data['id_fiche'], false, null, false, true);
+        $previousData = $this->getOne($data['id_fiche'], false, null, false, true, null, 'all');
         $data['id_typeannonce'] = $previousData['id_typeannonce'];
 
         // We need to check antispam before data are modified
@@ -475,9 +475,14 @@ class EntryManager
         // replace the field values which are restricted at reading and writing
         $data = $this->assignRestrictedFields($data, $previousData, $form);
 
+        if (empty($data['extralang']) and !empty($previousData['extralang'])) {
+            $data['extralang'] = $previousData['extralang'];
+        }
         if (!$replace) {
             // merge the field values which match to the actual form and which are not in $data
             $data = $this->mergeFields($previousData, $data, $form);
+            dump($data);
+            dump($previousData);
         }
 
         if ($semantic) {

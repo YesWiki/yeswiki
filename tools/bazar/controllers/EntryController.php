@@ -340,7 +340,7 @@ class EntryController extends YesWikiController
 
     public function update($entryId)
     {
-        $entry = $this->entryManager->getOne($entryId);
+        $entry = $this->entryManager->getOne($entryId, false, null, true, false, null, 'all');
         $form = $this->formManager->getOne($entry['id_typeannonce']);
 
         list($state, $error) = $this->securityController->checkCaptchaBeforeSave('entry');

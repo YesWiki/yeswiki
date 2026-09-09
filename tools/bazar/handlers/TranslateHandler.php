@@ -34,7 +34,8 @@ class TranslateHandler extends YesWikiHandler
         'lang'
     ];
 
-    private function save($entryManager) : string{
+    private function save($entryManager): string
+    {
         $post = $this->getRequest()->request;
         if ($post->get('entry') != null && $post->get('extralang') != null && $post->get('antispam') != null) {
             $entry = json_decode($post->get('entry'), true);
