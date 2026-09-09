@@ -25,7 +25,12 @@ $(document).ready(() => {
           },
         })
       } else {
-        vData.features.push(pLayer.toGeoJSON())
+        const cGeoJSON = pLayer.toGeoJSON()
+        if (cGeoJSON.type === 'FeatureCollection') {
+          vData.features.push(...cGeoJSON.features)
+        } else {
+          vData.features.push(cGeoJSON)
+        }
       }
     })
 
