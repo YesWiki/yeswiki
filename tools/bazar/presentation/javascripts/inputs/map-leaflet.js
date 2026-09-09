@@ -10,17 +10,17 @@ $(document).ready(() => {
     pDrawnItems.eachLayer((pLayer) => {
       if (pLayer instanceof L.Circle) {
         const cLatLng = pLayer.getLatLng()
+        const cProperties = pLayer.feature?.properties ?? pLayer.options
 
-        // For circles, store center and radius as custom properties
         vData.features.push({
           type: 'Feature',
           properties: {
+            ...cProperties,
             type: 'circle',
             radius: pLayer.getRadius(),
-            ...pLayer.options,
           },
           geometry: {
-            type: 'Point', // GeoJSON still sees it as a point
+            type: 'Point',
             coordinates: [cLatLng.lng, cLatLng.lat],
           },
         })
@@ -193,6 +193,9 @@ $(document).ready(() => {
             vDrawnItems,
             cMapFieldData.geometries.features,
           )
+          if (vDrawnItems.getLayers().length > 0) {
+            cGeometries.val(JSON.stringify(drawnItemsToGeoJSON(vDrawnItems)))
+          }
         }
 
         cMap.addControl(
