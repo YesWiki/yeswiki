@@ -460,17 +460,25 @@ class PageManager
                 }
             }
 
+            // escape all inserted data
+            $tag = $this->dbService->escape($tag);
+            $comment_on = $comment_on ? "comment_on = '{$this->dbService->escape($comment_on)}'," : '';
+            $owner = $this->dbService->escape($owner);
+            $user = $this->dbService->escape($user);
+            $body = $this->dbService->escape(rtrim($body));
+
             // set all other revisions to old
-            $this->dbService->query('UPDATE ' . $this->pageTableName . " SET latest = 'N' WHERE tag = '" . $this->dbService->escape($tag) . "'");
+            $this->dbService->query("UPDATE {$this->pageTableName} SET latest = 'N' WHERE tag = '{$tag}'");
 
             // use forcedDate is present
             $time = 'now()';
             if (!empty($forcedDate)) {
-                $time = '"' . $forcedDate . '"';
+                $time = "\"{$forcedDate}\"";
             }
 
+            $query = "INSERT INTO {$this->pageTableName} SET tag = '{$tag}',{$comment_on}time = {$time},owner = '{$owner}', user = '{$user}', latest = 'Y', body = '{$body}', body_r = ''";
             // add new revision
-            $this->dbService->query('INSERT INTO' . $this->pageTableName . "SET tag = '" . $this->dbService->escape($tag) . "', " . ($comment_on ? "comment_on = '" . $this->dbService->escape($comment_on) . "', " : '') . 'time = ' . $time . ', ' . "owner = '" . $this->dbService->escape($owner) . "', user = '" . $this->dbService->escape($user) . "', latest = 'Y', body = '" . $this->dbService->escape(chop($body)) . "', body_r = ''");
+            $this->dbService->query($query);
 
             unset($this->pageCache[$tag]);
             $this->ownersCache[$tag] = $owner;

@@ -43,11 +43,11 @@ class TranslateHandler extends YesWikiHandler
             $entryManager->update($entry['id_fiche'], $entry);
 
             return $this->wiki->redirect($this->wiki->Href(testUrlInIframe(), '', [
-            'vue' => 'consulter',
-            'action' => 'voir_fiche',
-            'id_fiche' => $entry['id_fiche'],
-            'message' => 'modif_ok',
-            'lang' => $post->get('lang') ?? 'default',
+                'vue' => 'consulter',
+                'action' => 'voir_fiche',
+                'id_fiche' => $entry['id_fiche'],
+                'message' => 'modif_ok',
+                'lang' => $post->get('lang') ?? 'default',
             ], false));
         }
     }
@@ -79,8 +79,8 @@ class TranslateHandler extends YesWikiHandler
                     $type = 'url';
                 }
                 $field_names[] = [
-                'name' => $field['name'],
-                'label' => $field['label'],
+                'name' => $field['name'] ?? '',
+                'label' => $field['label'] ?? '',
                 'type' => $type,
                 ];
                 foreach($extra_langs as $lang) {
@@ -99,7 +99,7 @@ class TranslateHandler extends YesWikiHandler
         return $output;
     }
 
-    public function run() :String
+    public function run(): string
     {
         $output = $this->wiki->Header();
 
