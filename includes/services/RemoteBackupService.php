@@ -46,9 +46,14 @@ class RemoteBackupService
      * Log in to the remote wiki, then leave the rest of the opening to the polled steps: asking a
      * wiki whether it can archive makes it weigh itself, which takes longer than a request may last.
      *
+     * @param array<string,mixed> $archiveParams what to ask the remote for, on top of the full
+     *                                           backup taken by default. 'savedatabase' => '0'
+     *                                           and 'onlyFolders' => ['custom', 'files'] fetch
+     *                                           the content of a wiki without its database.
+     *
      * @throws \Exception
      */
-    public function start(string $url, string $username, string $password): array
+    public function start(string $url, string $username, string $password, array $archiveParams = []): array
     {
         if (!empty($this->readJob())) {
             throw new \Exception('A remote backup is already running. Cancel it before starting another one.');
@@ -61,6 +66,8 @@ class RemoteBackupService
         $job = [
             'baseUrl' => $baseUrl,
             'cookie' => $this->login($baseUrl, $username, $password),
+            'archiveParams' => $archiveParams,
+            'expectedType' => 'full',
             'knownArchives' => [],
             'remoteUid' => '',
             'step' => self::STEP_CHECKING,
@@ -186,12 +193,38 @@ class RemoteBackupService
      */
     protected function askRemoteToArchive(array $job): array
     {
+        $params = array_merge(
+            ['savefiles' => '1', 'savedatabase' => '1'],
+            is_array($job['archiveParams'] ?? null) ? $job['archiveParams'] : []
+        );
         $job['knownArchives'] = array_column($this->remoteArchives($job['baseUrl'], $job['cookie']), 'filename');
-        $job['remoteUid'] = $this->startRemoteArchive($job['baseUrl'], $job['cookie']);
+        $job['expectedType'] = $this->archiveType($params);
+        $job['remoteUid'] = $this->startRemoteArchive($job['baseUrl'], $job['cookie'], $params);
         $job['startedAt'] = time();
         $job['step'] = self::STEP_ARCHIVING;
 
         return $job;
+    }
+
+    /**
+     * How the remote will name what it is about to make, so that the new file can be told apart
+     * from the backups it already had.
+     *
+     * @param array<string,mixed> $params
+     */
+    protected function archiveType(array $params): string
+    {
+        $asked = function ($key) use ($params) {
+            return in_array($params[$key] ?? null, [1, '1', true, 'true'], true);
+        };
+        if (!$asked('savedatabase')) {
+            return 'only_files';
+        }
+        if (!$asked('savefiles')) {
+            return 'only_db';
+        }
+
+        return 'full';
     }
 
     protected function pollRemoteArchive(array $job): array
@@ -232,7 +265,7 @@ class RemoteBackupService
         $job['identifyingSince'] = (int)($job['identifyingSince'] ?? time());
         $candidate = null;
         foreach ($this->remoteArchives($job['baseUrl'], $job['cookie']) as $archive) {
-            if (($archive['type'] ?? '') === 'full' && !in_array($archive['filename'], $job['knownArchives'], true)) {
+            if (($archive['type'] ?? '') === ($job['expectedType'] ?? 'full') && !in_array($archive['filename'], $job['knownArchives'], true)) {
                 $candidate = $archive;
                 break;
             }
@@ -499,11 +532,14 @@ class RemoteBackupService
         return ($unit === 0 ? (string)$bytes : number_format($value, 1)) . ' ' . $units[$unit];
     }
 
-    protected function startRemoteArchive(string $baseUrl, string $cookie): string
+    /**
+     * @param array<string,mixed> $params
+     */
+    protected function startRemoteArchive(string $baseUrl, string $cookie, array $params): string
     {
         $data = $this->call($baseUrl, 'api/archives', $cookie, [
             'action' => 'startArchive',
-            'params' => ['savefiles' => '1', 'savedatabase' => '1'],
+            'params' => $params,
             'callAsync' => '1',
         ]);
         if (empty($data['uid'])) {

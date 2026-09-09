@@ -126,6 +126,9 @@ class ArchiveService
      * archive data in zip file.
      *
      * @param string|OutputInterface &$output
+     * @param array|null             $onlyFolders when given, the only folders the zip holds,
+     *                                            instead of FOLDERS_TO_INCLUDE widened by
+     *                                            $foldersToInclude
      *
      * @throws \Exception
      */
@@ -136,7 +139,8 @@ class ArchiveService
         array $foldersToInclude = [],
         array $foldersToExclude = [],
         ?array $hideConfigValuesParams = null,
-        string $uid = ''
+        string $uid = '',
+        ?array $onlyFolders = null
     ) {
         $vStatus = $this->getArchivingStatus();
 
@@ -253,7 +257,7 @@ class ArchiveService
 
             $this->writeOutput($output, '=== Creating zip archive ===', true, $outputFile);
 
-            if ($this->createZip($location, $foldersToInclude, $blacklistedRootFolders, $output, $sqlContent, $onlyDb, $hideConfigValuesParams, $inputFile, $outputFile)) {
+            if ($this->createZip($location, $foldersToInclude, $blacklistedRootFolders, $output, $sqlContent, $onlyDb, $hideConfigValuesParams, $inputFile, $outputFile, $onlyFolders)) {
                 $this->writeOutput($output, "Archive \"$location\" successfully created !", true, $outputFile);
 
                 // clean oldest files
@@ -502,7 +506,8 @@ class ArchiveService
         bool $savedatabase = true,
         array $foldersToInclude = [],
         array $foldersToExclude = [],
-        bool $callAsync = true
+        bool $callAsync = true,
+        ?array $onlyFolders = null
     ): string {
         $privatePath = $this->getPrivateFolder();
         $uidData = $this->getUID($privatePath);
@@ -522,6 +527,10 @@ class ArchiveService
                 $args[] = '-x';
                 $args[] = implode(',', $foldersToExclude);
             }
+            if (!is_null($onlyFolders)) {
+                $args[] = '-o';
+                $args[] = implode(',', $onlyFolders);
+            }
 
             $args[] = '-u';
             $args[] = $uidData['uid'];
@@ -539,7 +548,7 @@ class ArchiveService
             return '';
         }
         $output = '';
-        $location = $this->archive($output, $savefiles, $savedatabase, $foldersToInclude, $foldersToExclude, null, $uidData['uid']);
+        $location = $this->archive($output, $savefiles, $savedatabase, $foldersToInclude, $foldersToExclude, null, $uidData['uid'], $onlyFolders);
         if (empty($location)) {
             $this->cleanUID($uidData['uid'], $privatePath);
 
@@ -1436,7 +1445,8 @@ class ArchiveService
         bool $onlyDb = false,
         ?array $hideConfigValuesParams = null,
         string $inputFile = '',
-        string $outputFile = ''
+        string $outputFile = '',
+        ?array $onlyFolders = null
     ) {
         if (!file_exists('index.php') || !file_exists(ConfigurationFileProvider::getConfigFileFromEnv()) || !file_exists('composer.json') || !file_exists('composer.lock')) {
             throw new \Exception('Can only be started from main directory');
@@ -1447,7 +1457,7 @@ class ArchiveService
         $dirs = [$pathToArchive];
         $dirnamePathLen = strlen($pathToArchive);
 
-        $whitelistedRootFolders = $this->generateListRootFolders('white', $foldersToInclude);
+        $whitelistedRootFolders = $this->generateListRootFolders('white', $foldersToInclude, $onlyFolders);
 
         // open file
         $zip = new \ZipArchive();
@@ -2238,8 +2248,14 @@ class ArchiveService
      *
      * @param string $type "white"|"black"
      */
-    private function generateListRootFolders(string $type, array $fromParams): array
+    private function generateListRootFolders(string $type, array $fromParams, ?array $onlyFolders = null): array
     {
+        // an archive asked for a few folders takes that list as the whole of it, so neither the
+        // defaults nor wakka.config.php widen it back to the rest of the wiki
+        if ($type == 'white' && !is_null($onlyFolders)) {
+            return $this->sanitizeFileList($onlyFolders);
+        }
+
         $list = ($type == 'white') ? self::FOLDERS_TO_INCLUDE : self::FOLDERS_TO_EXCLUDE;
         foreach ($this->sanitizeFileList($fromParams) as $folderName) {
             if (!in_array($folderName, $list)) {

@@ -445,6 +445,36 @@ class ArchiveServiceTest extends YesWikiTestCase
         }
     }
 
+    #[Depends('testArchiveServiceExisting')]
+    public function testOnlyFoldersKeepsEverythingElseOutOfTheArchive(array $services)
+    {
+        $output = '';
+        $location = $services['archiveService']->archive(
+            $output,
+            true,
+            false,
+            [],
+            [],
+            null,
+            '',
+            ['custom', 'files']
+        );
+        $data = $this->getDataFromLocation($location, $services['wiki']);
+
+        $this->assertArrayNotHasKey('error', $data);
+        $this->assertContains('files', $data['files']);
+        foreach (['vendor', 'tools', 'includes', 'themes', 'private'] as $folder) {
+            $this->assertNotContains($folder, $data['files'], "'$folder' should have been left out");
+        }
+        foreach ($data['files'] as $path) {
+            if (strpos($path, '/') === false) {
+                // the root of a wiki always travels with it, whatever folders were asked for
+                continue;
+            }
+            $this->assertMatchesRegularExpression('#^(custom|files)/#', $path, "'$path' should have been left out");
+        }
+    }
+
     /**
      * retrieve data from location
      * delete the zip file because only for tests.
