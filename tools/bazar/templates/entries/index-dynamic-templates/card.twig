@@ -41,7 +41,7 @@
           data-size="modal-lg" data-header="false" data-iframe="1"
         {% endif %}
         {% if isLink %}
-          :href="`${entry.url + (({{ isModal ? 'true' : 'false' }} || $root.isInIframe()) ? '/iframe' : '')}`"
+          :href="`${$root.orderUrl(entry.url + (({{ isModal ? 'true' : 'false' }} || $root.isInIframe()) ? '/iframe' : ''))}`"
           :title="entry.title"
         {% endif %}
         >
@@ -53,7 +53,7 @@
         <template v-if="entry.visual">
          {% if params.imgstyle == "contain" %}
             <img
-              loading="lazy" 
+              loading="lazy"
               alt=""
               class="area visual-area"
               :style="{'object-fit': 'contain'}"
@@ -61,7 +61,7 @@
               @error="urlImageResizedOnError(entry,'visual',{{ imWidth }},{{ imHeight }},'fit',{{ fitToken|json_encode }})">
           {% else %}
             <img
-              loading="lazy" 
+              loading="lazy"
               alt=""
               class="area visual-area"
               :style="{'object-fit': 'cover'}"

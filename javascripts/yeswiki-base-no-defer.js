@@ -19,6 +19,19 @@ function _t(message, replacements = {}) {
   return translation
 }
 
+function reorderUrl(url) {
+  const arrayUrl = url.split('/?');
+  const parameters = arrayUrl[1].split(/([&/#][^&/#]+)/s);
+  return (
+    arrayUrl[0] +
+    '/?' +
+    parameters[0] +
+    parameters.filter((el) => el.startsWith('/')).join("") +
+    parameters.filter((el) => el.startsWith('&')).join("") +
+    parameters.filter((el) => el.startsWith('#')).join("")
+  )
+}
+
 var wiki = {
   ...(typeof wiki !== 'undefined' ? wiki : null),
   ...{

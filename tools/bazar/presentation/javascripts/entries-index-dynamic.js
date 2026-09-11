@@ -20,6 +20,11 @@ const load = (domElement) => {
     ? JSON.parse(elementDataset.params)
     : {}
 
+  const lang = new URLSearchParams(document.URL).get('lang')
+  if (lang) {
+    initialParams.lang = lang
+  }
+
   const app = createApp({
     mixins: [BazarSearch, ImageMixin],
     components: {
@@ -410,7 +415,7 @@ const load = (domElement) => {
               ? { showmapinlistview: this.params.showmapinlistview }
               : {}),
           })
-          this.setEntryFromUrl(entry, url).then((html) => {
+          this.setEntryFromUrl(entry,this.orderUrl(url)).then((html) => {
             this.loadBazarListDynamicIfNeeded(html)
             initEntryMaps(this.$refs.entriesContainer)
           })
@@ -426,7 +431,7 @@ const load = (domElement) => {
           .catch(() => 'error') // in case of error do nothing
       },
       async getJSON(url, options = {}) {
-        return fetch(url, options)
+        return fetch(this.orderUrl(url), options)
           .then((response) => {
             if (!response.ok) {
               throw `response not ok ; code : ${response.status} (${response.statusText})`
@@ -471,8 +476,20 @@ const load = (domElement) => {
       isInIframe() {
         return window != window.parent
       },
+      orderUrl(url) {
+        const arrayUrl = url.split('/?');
+        const parameters = arrayUrl[1].split(/([&/#][^&/#]+)/s);
+        return (
+          arrayUrl[0] +
+          '/?' +
+          parameters[0] +
+          parameters.filter((el) => el.startsWith('/')).join("") +
+          parameters.filter((el) => el.startsWith('&')).join("") +
+          parameters.filter((el) => el.startsWith('#')).join("")
+        )
+      },
       getExternalEntry(entry) {
-        const url = `${entry.url}/iframe`
+        const url = this.orderUrl(`${entry.url}/iframe`)
         entry.html_render = `<iframe src="${url}" width="500px" height="600px" style="border:none;"></iframe>`
       },
       colorIconValueFor(entry, field, mapping) {
