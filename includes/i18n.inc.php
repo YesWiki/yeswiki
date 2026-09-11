@@ -262,7 +262,7 @@ function initI18n()
         isset($GLOBALS['wiki']->config['charset']) ? $GLOBALS['wiki']->config['charset'] : 'UTF-8'
     );
     // supported languages
-    define('SUPPORTED_LANGS', ['ca', 'en', 'es', 'fr', 'nl', 'pt', 'ro']);
+    define('SUPPORTED_LANGS', ['ca', 'en', 'es', 'fr', 'nl', 'pt', 'ro', 'eu']);
 
     // get the language list
     require_once 'lang/languages_list.php';
