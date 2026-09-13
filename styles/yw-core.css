@@ -787,6 +787,45 @@ body:has(#yw-topnav .yw-chrome-edit) .yw-page-actions {
   border: 0;
 }
 
+.yw-switcher__state {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 0.5em;
+  height: 0.5em;
+  margin-left: 0.35em;
+  border: 1px solid currentcolor;
+  border-radius: var(--yw-radius-full);
+}
+
+.yw-switcher__option--full .yw-switcher__state {
+  background: currentcolor;
+}
+
+.yw-switcher__option--partial .yw-switcher__state {
+  background: linear-gradient(
+    to right,
+    currentcolor 0 50%,
+    transparent 50% 100%
+  );
+}
+
+.yw-switcher__option--source .yw-switcher__state {
+  border: 0;
+  border-radius: 0;
+  background: none;
+}
+
+.yw-switcher__option--source .yw-switcher__state::before {
+  content: '\2605';
+  font-size: 0.7em;
+  line-height: 1;
+}
+
+.yw-switcher__option--empty {
+  opacity: 0.5;
+}
+
 @media (hover: hover) and (min-width: 768px) {
   .yw-topnav-tools__panel {
     position: absolute;

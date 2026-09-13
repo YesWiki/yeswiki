@@ -62,6 +62,7 @@ const app = createApp({
     },
     removeVueRefProps(node) {
       delete node.vueRef
+      delete node.sourceLabel
       node.children = node.children.map((child) =>
         this.removeVueRefProps({ ...child }),
       )

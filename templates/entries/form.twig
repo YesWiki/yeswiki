@@ -7,7 +7,12 @@
 <div class="yw-designer">
 <div class="yw-designer__canvas">
 
-<form action="" method="post" name="formulaire" id="formulaire" enctype="multipart/form-data" hx-boost="false" novalidate>
+{{ include_javascript('javascripts/unsaved-changes.js', false, true) }}
+
+<form action="" method="post" name="formulaire" id="formulaire" enctype="multipart/form-data" hx-boost="false" novalidate data-yw-unsaved-guard>
+  {% if editingTranslation ?? false and renderedInputs|filter(input => input|trim)|length == 0 %}
+    <div class="yw-alert yw-alert--info">{{ _t('TRANSLATE_EDIT_NOTHING') }}</div>
+  {% endif %}
   {% for renderedInput in renderedInputs %}
     {{ renderedInput|raw }}
   {% endfor %}

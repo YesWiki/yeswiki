@@ -6,6 +6,7 @@ use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Entity\PageType;
+use YesWiki\Content\Entity\Translations;
 use YesWiki\Content\Exception\ReservedTagException;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\AuthenticationService;
@@ -92,9 +93,11 @@ class PageManager
             $page = $cachedPage;
         } else {
             $timeQuery = $time ? "{$this->dbService->quoteIdentifier('time')} = ?" : "latest = 'Y'";
+            $revisionOrder = $time ? 'ORDER BY id DESC' : '';
             $page = $this->dbService->loadSingle("
                 SELECT * FROM {$this->dbService->prefixTable('pages')}
                 WHERE tag = ? AND {$timeQuery}
+                {$revisionOrder}
                 LIMIT 1
             ", $time ? [$tag, $time] : [$tag]);
 
@@ -246,6 +249,22 @@ class PageManager
     }
 
     /** What kind of Content this tag holds -- `PageType::PAGE`, `ENTRY`, `USER`, ... */
+    /**
+     * Replace what one Content says in $language, leaving its source wording alone -- the single writer every kind of Content translates through.
+     *
+     * @param array<string, string> $values     path => text, already sanitized
+     * @param bool                  $bypassAcls for the Content whose own screen guards the write, as FormManager::update() does
+     */
+    public function saveTranslations(string $tag, string $language, array $values, bool $bypassAcls = false): int
+    {
+        $page = $this->getOne($tag, null, false, true);
+        if ($page === null) {
+            throw new \Exception("cannot translate '{$tag}': it does not exist");
+        }
+
+        return $this->save($tag, Translations::with($page['body'] ?? [], $language, $values), '', $bypassAcls);
+    }
+
     public function typeOf(string $tag): ?string
     {
         if ($tag === '') {

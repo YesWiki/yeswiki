@@ -9,13 +9,18 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
  */
 class UrlFormatter
 {
+    /** The handler a URL leaves out, because it is the one a bare tag already means. */
+    public const DEFAULT_METHOD = 'show';
+
     protected ParameterBagInterface $params;
     protected PageContext $pageContext;
+    protected CurrentRequest $currentRequest;
 
-    public function __construct(ParameterBagInterface $params, PageContext $pageContext)
+    public function __construct(ParameterBagInterface $params, PageContext $pageContext, CurrentRequest $currentRequest)
     {
         $this->params = $params;
         $this->pageContext = $pageContext;
+        $this->currentRequest = $currentRequest;
     }
 
     /** Every internal link in $body pointed at the iframe handler, unless it opens a new window. */
@@ -62,6 +67,51 @@ class UrlFormatter
         $url = explode('index.php', $this->rawBaseUrl());
 
         return preg_replace(['/\/\?wiki=$/', '/\/\?$/', '/\/$/'], '', $url[0]) ?? '';
+    }
+
+    /**
+     * This same page, with $params set on its query -- the one way to say "here, but with this changed".
+     *
+     * @param array<string, mixed> $params
+     */
+    public function currentWith(array $params): string
+    {
+        $method = $this->pageContext->getRawMethod();
+
+        return $this->href(
+            $method === self::DEFAULT_METHOD ? '' : $method,
+            $this->pageContext->getTag(),
+            http_build_query(array_merge($this->currentQuery(), $params), '', '&', PHP_QUERY_RFC3986),
+            false
+        );
+    }
+
+    /**
+     * The query this request carries, without the `wiki` and `PageName[/method]` pseudo-parameters that are really the page address.
+     *
+     * @return array<string, mixed>
+     */
+    public function currentQuery(): array
+    {
+        if (!$this->currentRequest->has()) {
+            return [];
+        }
+
+        $query = $this->currentRequest->get()->query->all();
+        $tag = $this->pageContext->getTag();
+        $address = [
+            $tag,
+            $tag . '/' . $this->pageContext->getRawMethod(),
+            $tag . '/' . $this->pageContext->getMethod(),
+        ];
+
+        foreach (array_keys($query) as $key) {
+            if ($key === 'wiki' || in_array((string)$key, $address, true)) {
+                unset($query[$key]);
+            }
+        }
+
+        return $query;
     }
 
     /** Just `PageName[/method]`, defaulting to the current page (historic MiniHref()). */

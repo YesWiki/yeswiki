@@ -74,6 +74,9 @@ mkdir -p javascripts/vendor/vditor/dist/css/content-theme &&
 # own -- one per Colour scheme, because a code block is the one part of a written page that
 # brings its own colours and they have to flip with everything else (ADR-0020)
 mkdir -p javascripts/vendor/vditor/dist/js/highlight.js/styles &&
+	copy_js node_modules/vditor/dist/js/highlight.js/highlight.min.js javascripts/vendor/vditor/dist/js/highlight.js/highlight.min.js &&
+	copy_js node_modules/vditor/dist/js/highlight.js/third-languages.js javascripts/vendor/vditor/dist/js/highlight.js/third-languages.js &&
+	cp -f node_modules/vditor/dist/js/highlight.js/LICENSE javascripts/vendor/vditor/dist/js/highlight.js/LICENSE &&
 	copy_css node_modules/vditor/dist/js/highlight.js/styles/github.min.css javascripts/vendor/vditor/dist/js/highlight.js/styles/github.min.css &&
 	copy_css node_modules/vditor/dist/js/highlight.js/styles/github-dark.min.css javascripts/vendor/vditor/dist/js/highlight.js/styles/github-dark.min.css
 

@@ -115,3 +115,35 @@ test('a wiki in one language shows no switcher at all', async ({ page }) => {
   }
   await save(page)
 })
+
+test('the switcher keeps the url clean, and does not pile the page address into it', async ({
+  page,
+}) => {
+  await page.goto('/?PagePrincipale')
+
+  const href = async () =>
+    (await page
+      .locator('.yw-topnav-tools a[hreflang="en"]')
+      .getAttribute('href')) ?? ''
+
+  expect(await href(), 'no /show, and no page address as a parameter').toMatch(
+    /\?PagePrincipale&lang=en$/,
+  )
+
+  await page.goto(await href())
+  expect(await href(), 'and it stays that way after a switch').toMatch(
+    /\?PagePrincipale&lang=en$/,
+  )
+})
+
+test('the switcher keeps a filtered list filtered', async ({ page }) => {
+  await page.goto('/?PagePrincipale&facette=bf_ville%3DLyon')
+
+  const href =
+    (await page
+      .locator('.yw-topnav-tools a[hreflang="en"]')
+      .getAttribute('href')) ?? ''
+
+  expect(href).toContain('facette=bf_ville')
+  expect(href).toContain('lang=en')
+})

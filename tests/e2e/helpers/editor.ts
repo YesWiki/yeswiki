@@ -74,14 +74,19 @@ export const useSourceEditor = async (page: Page) => {
   ])
 }
 
-/** Click "Sauver" and wait for the save to actually land. */
+/**
+ * Save, and wait for it to land.
+ *
+ * Found by what it is rather than by what it says: an edit screen is served in the language it
+ * writes, so the button reads "Save" while a translation is being filled in.
+ */
 export const saveEditor = async (page: Page) => {
   const saved = page.waitForResponse(
     (response) => response.request().method() === 'POST',
     { timeout: 30000 },
   )
   await page
-    .getByRole('button', { name: 'Sauver' })
+    .locator('.aceditor-btn-save, .vditor-toolbar [data-type="yw-save"]')
     .filter({ visible: true })
     .first()
     .click()

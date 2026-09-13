@@ -44,7 +44,6 @@ INSERT INTO [[ q ]]{{prefix}}pages[[ q ]] ([[ q ]]tag[[ q ]], [[ q ]]time[[ q ]]
 ('VoirBlogSimple',  [[ now ]], '{"content":"{{nav menu=\"MenuBlog\"}}\n\n{{entrylist id=\"3\" template=\"blog\" header=\"no\"}}"}', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
 ('VueActivite',  [[ now ]], '{"content":"{{nav menu=\"MenuAgenda\"}}\n\n{{entrylist template=\"agenda\" id=\"2\" order=\"desc\" field=\"bf_date_debut_evenement\" agenda=\"futur\" }}"}', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
 ('VueAgenda',  [[ now ]], '{"content":"{{nav menu=\"MenuAgenda\"}}\n\n{{entrylist id=\"2\" template=\"calendar\" }}"}', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
-('WikiAdmin',  [[ now ]], '{"content":"{{redirect page=\"GererSite\"}}\n"}', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
 ('YesWiki',  [[ now ]], '{"content":"YesWiki"}', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', '');
 [[ cmt ]] end YesWiki pages
 
@@ -176,5 +175,7 @@ INSERT INTO [[ q ]]{{prefix}}triples[[ q ]] ([[ q ]]resource[[ q ]], [[ q ]]prop
 ('20260903120000_TheSearchQueueClaimsItsRows', 'http://outils-reseaux.org/_vocabulary/type', 'migration'),
 ('20260903140000_KeywordsHaveOneIndex', 'http://outils-reseaux.org/_vocabulary/type', 'migration'),
 ('20260904120000_MenusBecomeContent', 'http://outils-reseaux.org/_vocabulary/type', 'migration'),
-('20260904140000_ValueListsCarryTheirIconAndColour', 'http://outils-reseaux.org/_vocabulary/type', 'migration');
+('20260904140000_ValueListsCarryTheirIconAndColour', 'http://outils-reseaux.org/_vocabulary/type', 'migration'),
+('20260909120000_PagesAreTranslatedLikeEntries', 'http://outils-reseaux.org/_vocabulary/type', 'migration'),
+('20260909130000_TheAdminPageStopsShadowingTheAdminAccount', 'http://outils-reseaux.org/_vocabulary/type', 'migration');
 [[ cmt ]] end triples

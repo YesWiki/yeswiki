@@ -8,6 +8,7 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Content\Entity\ContentTypeSchema;
 use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Entity\PageType;
+use YesWiki\Content\Entity\Translations;
 use YesWiki\Content\Exception\EntryValidationException;
 use YesWiki\Content\Exception\ParsingMultipleException;
 use YesWiki\Content\Exception\TagAlreadyUsedException;
@@ -61,6 +62,7 @@ class EntryManager
         HibernationService $hibernationService,
         Journal $journal,
         UrlFormatter $urlFormatter,
+        private readonly TranslatableContent $translatableContent,
     ) {
         $this->urlFormatter = $urlFormatter;
         $this->container = $container;
@@ -161,6 +163,31 @@ class EntryManager
     }
 
     /**
+     * The entry as stored -- source wording plus its translations -- for the write paths, which an overlaid read would have post back this reader's language.
+     *
+     * @param string $tag
+     *
+     * @return array<string, mixed>|null
+     */
+    public function getUntranslated($tag): ?array
+    {
+        $page = $this->pageManager->getOne($tag, null, false, true);
+
+        $isEntry = $page === null ? $this->isEntry($tag) : (($page['type'] ?? null) === PageType::ENTRY);
+        if (!$isEntry) {
+            return null;
+        }
+
+        $data = $this->getDataFromPage($page ?? [], false, false, '', false);
+
+        if ($data !== [] && empty($data['created_at'])) {
+            $data['created_at'] = $this->pageManager->getCreateTime($tag);
+        }
+
+        return $data;
+    }
+
+    /**
      * @param int|string                $pFormID
      * @param array<string, mixed>|null $pData
      *
@@ -194,7 +221,7 @@ class EntryManager
      *
      * @return array<string, mixed> data formated
      */
-    public function getDataFromPage($page, bool $semantic = false, bool $debug = false, string $fieldMapping = ''): array
+    public function getDataFromPage($page, bool $semantic = false, bool $debug = false, string $fieldMapping = '', bool $translated = true): array
     {
         $data = [];
         if (!empty($page['body'])) {
@@ -207,6 +234,10 @@ class EntryManager
             $data = $this->removeUnknownFields($data['form_id'], $data);
 
             $form = $this->container->get(FormManager::class)->getOne($data['form_id']);
+
+            if ($translated) {
+                $data = $this->translatableContent->forReader($data, $this->translatableContent->sourceLanguageOf($form ?? []));
+            }
 
             $vRegisteredData = [...$data];
 
@@ -417,7 +448,7 @@ class EntryManager
 
         $data['tag'] = $tag;
 
-        $previousData = $this->getOne($data['tag'], false, null, false, true);
+        $previousData = $this->getUntranslated($data['tag']);
         if ($previousData === null) {
             throw new \Exception("cannot update entry '{$data['tag']}': it does not exist");
         }
@@ -442,6 +473,8 @@ class EntryManager
         $this->validate($data, self::VALIDATE_FLAG_TITLE | self::VALIDATE_FLAG_FORM_ID);
 
         $sendmail = $this->removeSendmail($data);
+
+        $data = Translations::carriedOver($previousData, $data);
 
         $this->pageManager->save($data['tag'], $data, '');
 
@@ -526,6 +559,23 @@ class EntryManager
         }
 
         return $data;
+    }
+
+    /**
+     * Replace what this entry says in $language, leaving its source wording alone.
+     *
+     * @param array<string, string> $values path => text, already sanitized
+     */
+    public function saveTranslations(string $tag, string $language, array $values): void
+    {
+        if ($this->hibernationService->isWikiHibernated()) {
+            throw new \Exception(_t('WIKI_IN_HIBERNATION'));
+        }
+        if (!$this->aclService->hasAccess('write', $tag)) {
+            throw new \Exception(_t('BAZ_ERROR_EDIT_UNAUTHORIZED'));
+        }
+
+        $this->pageManager->saveTranslations($tag, $language, $values);
     }
 
     /**
@@ -705,6 +755,7 @@ class EntryManager
 
         unset($data['-is-external-']);
         unset($data['external-data']);
+        unset($data[Translations::BODY_KEY]);
 
         if (isset($data['owner'])) {
             unset($data['owner']);
@@ -1004,6 +1055,7 @@ class EntryManager
                         if (isset($entry[$oldName])) {
                             $entry[$newName] = $entry[$oldName];
                             unset($entry[$oldName]);
+                            $entry = Translations::renamedPath($entry, (string)$oldName, (string)$newName);
                             $tag = $entry['tag'] ?? null;
                             if (is_string($tag) && $tag !== '' && !in_array($tag, $entriesIds, true)) {
                                 $entriesIds[] = $tag;
@@ -1013,6 +1065,7 @@ class EntryManager
                 } else {
                     if (isset($entry[$attributeName])) {
                         unset($entry[$attributeName]);
+                        $entry = Translations::withoutPath($entry, (string)$attributeName);
                         $tag = $entry['tag'] ?? null;
                         if (is_string($tag) && $tag !== '' && !in_array($tag, $entriesIds, true)) {
                             $entriesIds[] = $tag;

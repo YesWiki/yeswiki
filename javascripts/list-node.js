@@ -50,8 +50,8 @@ export default {
           <svg class="yw-icon" aria-hidden="true"><use :href="expanded ? 'src/assets/icons.svg#chevron-up' : 'src/assets/icons.svg#chevron-down'"/></svg>
         </button>
         <!-- Label -->
-        <input type="text" v-model="node.label" placeholder="${_t('LIST_TEXT')}" 
-              class="yw-input" @keydown.enter.prevent />
+        <input type="text" v-model="node.label" :placeholder="node.sourceLabel || '${_t('LIST_TEXT')}'"
+              class="yw-input" :class="{ 'yw-translate-from__input': node.sourceLabel }" @keydown.enter.prevent />
         <!-- Id -->
         <div class="input-group-addon" >
           ${_t('LIST_KEY')} :

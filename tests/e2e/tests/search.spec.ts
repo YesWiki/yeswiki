@@ -98,44 +98,49 @@ test('the facet row carries counts once a search has results', async ({
   ).toBeVisible()
 })
 
-/**
- * Pick a presentation from the display switch.
- *
- * The switch draws two labels for the presentation a category currently sits on -- the group's own
- * summary and the entry inside its menu -- so a bare `label[for=...]` is ambiguous.
- */
+/** The next answer the search API gives. */
+function searchResponse(page: import('@playwright/test').Page) {
+  return page.waitForResponse(
+    (response) =>
+      response.url().includes('api/search') && response.status() === 200,
+  )
+}
+
+/** Pick a presentation from the display switch, the way a reader does: hover the category, click the entry. */
 async function chooseDisplay(
   page: import('@playwright/test').Page,
   name: string,
 ) {
-  await page
-    .locator(
-      `.yw-display-switch__menu label[for="yw-search-form-display-${name}"]`,
-    )
-    .click()
+  const entry = `label[for="yw-search-form-display-${name}"]`
+  const group = page.locator('.yw-display-switch__group', {
+    has: page.locator(entry),
+  })
+
+  await group.locator('> .yw-display-switch__option').hover()
+  await group.locator(`.yw-display-switch__menu ${entry}`).click()
 }
 
 test('choosing a facet narrows results and stays chosen', async ({ page }) => {
   await page.goto('/?search')
 
   const results = page.locator('#yw-search-results .yw-item')
+  const badges = page.locator('#yw-search-results .yw-item__badge')
 
-  await page.locator('#yw-search-phrase').fill('annuaire')
   await expect(results.first()).toBeVisible()
+  const searched = searchResponse(page)
+  await page.locator('#yw-search-phrase').fill('annuaire')
+  await searched
   const all = await results.count()
   expect(all).toBeGreaterThan(0)
 
+  const narrowed = searchResponse(page)
   await page.locator('#yw-search-facets label[for="yw-facet-form"]').click()
+  await narrowed
 
   // An item's class says which presentation drew it, not what kind of Content it is, so what
   // "only forms are left" looks like is every remaining badge saying so.
-  await expect(results.first()).toBeVisible()
+  await expect(badges.filter({ hasNotText: 'Formulaire' })).toHaveCount(0)
   expect(await results.count()).toBeLessThan(all)
-  for (const badge of await page
-    .locator('#yw-search-results .yw-item__badge')
-    .allTextContents()) {
-    expect(badge).toContain('Formulaire')
-  }
 
   await expect(
     page.locator('#yw-search-facets input[value="form"]'),

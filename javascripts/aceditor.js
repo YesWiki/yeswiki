@@ -8,6 +8,7 @@ import { registerEditor } from './editor-handles.js'
 import { restoreStashedValue, switchEditorTo } from './editor-switch.js'
 import AceWrapper from './ace-wrapper.js'
 import ActionsBuilder from './actions-builder.js'
+import { fillSourceEditorToolbar } from './editor-markup-syntax.js'
 
 class Aceditor {
   editor
@@ -54,6 +55,7 @@ class Aceditor {
       }
     })
 
+    fillSourceEditorToolbar(this.toolbar)
     setupAceditorKeyBindings(this.aceContainer, this.toolbar)
     this.initToolbar()
     this.initEditionHelpers()

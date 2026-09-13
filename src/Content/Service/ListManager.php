@@ -4,13 +4,15 @@ namespace YesWiki\Content\Service;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Content\Entity\PageType;
+use YesWiki\Content\Entity\Translations;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Kernel\Service\HtmlPurifierService;
+use YesWiki\Kernel\Service\RequestScopedState;
 use YesWiki\Kernel\Service\StringUtilService;
 
-class ListManager
+class ListManager implements RequestScopedState
 {
     protected DbService $dbService;
     protected HtmlPurifierService $htmlPurifierService;
@@ -31,7 +33,8 @@ class ListManager
         ParameterBagInterface $params,
         HibernationService $hibernationService,
         AclService $aclService,
-        WikiNameGenerator $wikiNames
+        WikiNameGenerator $wikiNames,
+        private readonly TranslatableContent $translatableContent,
     ) {
         $this->wikiNames = $wikiNames;
         $this->aclService = $aclService;
@@ -41,6 +44,12 @@ class ListManager
         $this->params = $params;
         $this->hibernationService = $hibernationService;
 
+        $this->cachedLists = [];
+    }
+
+    /** The cached lists are overlaid with this request's language, so the next request starts over. */
+    public function startNewRequest(): void
+    {
         $this->cachedLists = [];
     }
 
@@ -97,12 +106,56 @@ class ListManager
      *
      * @return array<string, mixed>
      */
-    private function loadBody(array $body, string $id): array
+    private function loadBody(array $body, string $id, bool $translated = true): array
     {
         $data = $this->convertDataStructure($body);
+        if ($translated) {
+            $data = $this->translatableContent->forReader($data, $this->translatableContent->wikiLanguage());
+        }
         $data['id'] = $id;
 
         return $data;
+    }
+
+    /**
+     * The list as stored -- source wording plus its translations -- for the write paths, which an overlaid read would have post back this reader's language.
+     *
+     * @param string $id
+     *
+     * @return array<string, mixed>|null
+     */
+    public function getUntranslated($id): ?array
+    {
+        if (!$this->isList($id)) {
+            return null;
+        }
+
+        $page = $this->pageManager->getOne($id);
+        if (empty($page)) {
+            return null;
+        }
+
+        return $this->loadBody($page['body'], $id, false);
+    }
+
+    /**
+     * Replace what this list says in $language, leaving its source wording alone.
+     *
+     * @param array<string, string> $values path => text, already sanitized
+     */
+    public function saveTranslations(string $id, string $language, array $values): void
+    {
+        if ($this->hibernationService->isWikiHibernated()) {
+            throw new \Exception(_t('WIKI_IN_HIBERNATION'));
+        }
+
+        if (!$this->isList($id)) {
+            throw new \Exception("cannot translate list '{$id}': it does not exist");
+        }
+
+        $this->startNewRequest();
+
+        $this->pageManager->saveTranslations($id, $language, $values);
     }
 
     /**
@@ -190,10 +243,13 @@ class ListManager
             'title' => $title,
             'nodes' => $this->sanitizeHMTL($nodes),
         ] + ($origin === '' ? [] : ['origin' => $origin]);
+
+        $stored = $this->pageManager->getOne($id);
+        $body = Translations::pruned(Translations::carriedOver($stored['body'] ?? [], $body));
+
         $this->pageManager->save($id, $body);
 
-        $data = $this->loadBody($body, $id);
-        $this->cachedLists[$id] = $data;
+        unset($this->cachedLists[$id]);
     }
 
     /**

@@ -72,11 +72,16 @@ class TextareaFieldTest extends YesWikiTestCase
 
     public function testUnsupportedLanguageFallsBackToEnglishVditorLocale(): void
     {
+        $served = LanguageService::getInstance()->preferredLanguage();
         LanguageService::getInstance()->serveIn('eu');
 
-        $field = $this->buildTextareaField('html');
-        $output = $this->renderInput($field, ['tag' => 'TextareaFieldTestEntry']);
+        try {
+            $field = $this->buildTextareaField('html');
+            $output = $this->renderInput($field, ['tag' => 'TextareaFieldTestEntry']);
 
-        $this->assertStringContainsString('data-vditor-lang="en_US"', $output);
+            $this->assertStringContainsString('data-vditor-lang="en_US"', $output);
+        } finally {
+            LanguageService::getInstance()->serveIn($served);
+        }
     }
 }

@@ -1,4 +1,3 @@
-
 {% if arguments.saveButton %}
     {% set action = config['preview_before_save'] ? 'preview' : saveValue %}
     <div class="btn-group">
@@ -14,37 +13,14 @@
         {{ _t("ACEDITOR_FORMAT") }}
         <span class="yw-dropdown__caret"></span>
     </a>
-    <ul class="yw-dropdown__menu">
-        <li>{{ _self.button('title1', '') }}</li>
-        <li>{{ _self.button('title2', '') }}</li>
-        <li>{{ _self.button('title3', '') }}</li>
-        <li>{{ _self.button('title4', '') }}</li>
-        <li class="yw-dropdown__divider"></li>
-        <li>{{ _self.button('center', '') }}</li>
-        <li>{{ _self.button('lead', '') }}</li>
-        <li>{{ _self.button('highlight', '') }}</li>
-        <li>{{ _self.button('code', '') }}</li>
-        <li>{{ _self.button('inline_code', '') }}</li>
-        <li>{{ _self.button('comment', '') }}</li>
-        <li class="yw-dropdown__divider"></li>
+    <div class="yw-dropdown__menu yw-format-menu" data-yw-format-menu></div>
+</div>
 
-        <li>{{ _self.calloutButton('info') }}</li>
-        <li>{{ _self.calloutButton('success') }}</li>
-        <li>{{ _self.calloutButton('warning') }}</li>
-        <li>{{ _self.calloutButton('danger') }}</li>
-    </ul>
+<div class="aceditor-inline-tools" data-yw-inline-tools></div>
+
+<div class="btn-group pages">
+    <a title="{{ _t('ACEDITOR_LINK') }}" class="yw-btn aceditor-btn aceditor-btn-link">{{ icon('link') }}</a>
 </div>
-<div class="btn-group format-buttons">
-    {{ _self.button("bold") }}
-    {{ _self.button("italic") }}
-    {{ _self.button("underline") }}
-    {{ _self.button("strike") }}
-</div>
-<div class="btn-group more-styles">
-    {{ _self.button("list") }}
-    {{ _self.button("line") }}
-</div>
-<div class="btn-group pages">{{ _self.button("link") }}</div>
 
 {{ include("@core/file-picker-button.twig") }}
 
@@ -71,173 +47,7 @@
 <div class="btn-group aceditor-switch-editor">
     <button type="button" class="yw-btn aceditor-btn aceditor-btn-switch-editor"
             title="{{ _t("SWITCH_TO_VISUAL_EDITOR") }}">
-        <svg class="yw-icon" aria-hidden="true">
-            <use href="src/assets/icons.svg#arrows-horizontal" />
-        </svg>
+        {{ icon('eye') }}
+        <span>{{ _t("SWITCH_TO_VISUAL_EDITOR_SHORT") }}</span>
     </button>
 </div>
-{% macro button(name, btnClass = 'yw-btn') %}
-    {% set DELIMITERS = {
-        "TITLE1": {
-            "yeswiki": [
-                "# ",
-                ""
-            ],
-            "html": [
-                "<h1>",
-                "</h1>"
-            ]
-        },
-        "TITLE2": {
-            "yeswiki": [
-                "## ",
-                ""
-            ],
-            "html": [
-                "<h2>",
-                "</h2>"
-            ]
-        },
-        "TITLE3": {
-            "yeswiki": [
-                "### ",
-                ""
-            ],
-            "html": [
-                "<h3>",
-                "</h3>"
-            ]
-        },
-        "TITLE4": {
-            "yeswiki": [
-                "#### ",
-                ""
-            ],
-            "html": [
-                "<h4>",
-                "</h4>"
-            ]
-        },
-        "CENTER": {
-            "yeswiki": [
-                "<center>",
-                "</center>"
-            ],
-            "html": [
-                "<center>",
-                "</center>"
-            ]
-        },
-        "LEAD": {
-            "yeswiki": [
-                "<div class=\"lead\">",
-                "</div>"
-            ],
-            "html": [
-                "<div class=\"lead\">",
-                "</div>"
-            ]
-        },
-        "HIGHLIGHT": {
-            "yeswiki": [
-                "{{ section bgcolor=\"var(--yw-primary)\" class=\"\" pattern=\"border-solid\" }}",
-                "{{ end elem=\"section\" }}"
-            ],
-            "html": [
-                "<div class=\"well\">",
-                "</div>"
-            ]
-        },
-        "CODE": {
-            "yeswiki": [
-                "```",
-                "```"
-            ],
-            "html": [
-                "<pre>",
-                "</pre>"
-            ]
-        },
-        "INLINE_CODE": {
-            "yeswiki": [
-                "`",
-                "`"
-            ],
-            "html": [
-                "<code>",
-                "</code>"
-            ]
-        },
-        "COMMENT": {
-            "yeswiki": [
-                ""
-            ]
-        },
-        "BOLD": {
-            "yeswiki": [
-                "**",
-                "**"
-            ],
-            "icon": "bold"
-        },
-        "ITALIC": {
-            "yeswiki": [
-                "*",
-                "*"
-            ],
-            "icon": "italic"
-        },
-        "UNDERLINE": {
-            "yeswiki": [
-                "<u>",
-                "</u>"
-            ],
-            "icon": "underline"
-        },
-        "STRIKE": {
-            "yeswiki": [
-                "~~",
-                "~~"
-            ],
-            "icon": "strikethrough"
-        },
-        "LIST": {
-            "yeswiki": [
-                "- ",
-                ""
-            ],
-            "icon": "list"
-        },
-        "LINE": {
-            "yeswiki": [
-                "\n------\n",
-                ""
-            ],
-            "icon": "minus"
-        },
-        "LINK": {
-            "icon": "link"
-        },
-        "NEWPAGE": {
-            "icon": "square-plus"
-        }
-    } %}
-        {% set syntax = DELIMITERS[name|upper] %}
-        {% set label = _t('ACEDITOR_' ~ name|upper) %}
-        <a title="{{ label }}"
-           class="{{ btnClass }} aceditor-btn aceditor-btn-{{ name }}"
-           data-lft="{{ syntax.yeswiki|first }}"
-           data-rgt="{{ syntax.yeswiki|last }}">
-            {% if syntax.icon %}
-                {{ icon(syntax.icon) }}
-            {% else %}
-                {{ (syntax.html|first ~ label ~ syntax.html|last)|raw }}
-            {% endif %}
-        </a>
-    {% endmacro %}
-
-{% macro calloutButton(type) %}
-    <a href="#" class="yw-btn aceditor-btn aceditor-btn-callout"
-       data-callout="{{ type }}"
-       title="{{ _t('ALERT_' ~ type|upper) }}">{{ _t('ALERT_' ~ type|upper) }}</a>
-{% endmacro %}

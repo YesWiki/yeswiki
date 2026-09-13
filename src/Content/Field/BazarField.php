@@ -242,6 +242,37 @@ abstract class BazarField implements \JsonSerializable
         return self::flattenForIndex($entry[$this->propertyName] ?? null);
     }
 
+    /** What this field says in the language the Content was written in, for a translator to work from. */
+    private ?string $translationSource = null;
+
+    public function showTranslationSource(?string $text): void
+    {
+        $this->translationSource = ($text ?? '') === '' ? null : $text;
+    }
+
+    public function getTranslationSource(): ?string
+    {
+        return $this->translationSource;
+    }
+
+    /**
+     * Whether this field's stored value is prose a translator retypes (ticket: multilingual Content).
+     */
+    public function translatesValue(): bool
+    {
+        return false;
+    }
+
+    /**
+     * The keys of this field's own definition that a translator retypes.
+     *
+     * @return list<string>
+     */
+    public function translatableAttributes(): array
+    {
+        return ['label', 'hint'];
+    }
+
     /** A stored value as one line of indexable text. */
     protected static function flattenForIndex(mixed $value): string
     {

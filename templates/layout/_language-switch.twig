@@ -1,0 +1,25 @@
+{% set stateLabels = {
+  full: _t('TRANSLATE_STATE_FULL'),
+  partial: _t('TRANSLATE_STATE_PARTIAL'),
+  empty: _t('TRANSLATE_STATE_EMPTY')
+} %}
+<div class="yw-switcher {{ class|default("") }}" role="group" aria-label="{{ _t('LANGUAGE_CHOOSE') }}">
+  {% for language in languages %}
+    {% if language.state is not defined %}
+      {% set title = language.label %}
+    {% elseif language.source %}
+      {% set title = _t('TRANSLATE_EDIT_SOURCE') %}
+    {% else %}
+      {% set title = _t('TRANSLATE_EDIT_TARGET', { language: language.label }) ~ ' (' ~ stateLabels[language.state] ~ ')' %}
+    {% endif %}
+    <a class="yw-switcher__option{{ language.current ? ' yw-switcher__option--on' : '' }}{{ language.state is defined ? ' yw-switcher__option--' ~ language.state : '' }}"
+       href="{{ language.href }}" hreflang="{{ language.code }}" lang="{{ language.code }}"
+       title="{{ title }}"{{ language.current ? ' aria-current="true"' : '' }}>
+      <span class="yw-switcher__code">{{ language.code }}</span>
+      <span class="yw-switcher__label">{{ title }}</span>
+      {% if language.state is defined %}
+        <span class="yw-switcher__state" aria-hidden="true"></span>
+      {% endif %}
+    </a>
+  {% endfor %}
+</div>

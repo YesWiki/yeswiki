@@ -6,6 +6,18 @@ let container
 let textarea
 let lockedFieldNames = []
 
+/** What each translated attribute says in the language the form was written in: `<field>.<attribute>` and the form's own properties. Empty unless a translation is being written. */
+let sourceWording = {}
+
+function readSourceWording() {
+  try {
+    const declared = JSON.parse(container?.dataset.sourceWording || '{}')
+    return declared && typeof declared === 'object' ? declared : {}
+  } catch {
+    return {}
+  }
+}
+
 function readLockedFieldNames() {
   try {
     const declared = JSON.parse(container?.dataset.lockedFields || '[]')
@@ -221,6 +233,7 @@ function boot(root) {
   titleSelect = document.getElementById('entry-title-select')
   titleCustom = document.getElementById('entry-title-custom')
   lockedFieldNames = readLockedFieldNames()
+  sourceWording = readSourceWording()
   refreshDesignerData(container)
   document.getElementById('yw-fb-rail')?.remove()
   container.classList.add('yw-fb')
@@ -811,6 +824,13 @@ function renderSettings() {
       <label class="yw-form-label">${esc(def.label ?? name)}</label>
     </div>`)
     row.append(controlFor(name, def, field.data[name] ?? def.value ?? ''))
+    const wrote = sourceWording[`${field.data.name}.${name}`]
+    if (wrote)
+      row.append(
+        el(
+          `<p class="yw-translate-from"><span class="yw-translate-from__label">${esc(_t('TRANSLATE_SOURCE_TEXT'))}</span> <span class="yw-translate-from__text">${esc(wrote)}</span></p>`,
+        ),
+      )
     if (def.description)
       row.append(
         el(`<small class="yw-fb__description">${esc(def.description)}</small>`),

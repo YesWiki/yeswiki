@@ -27,12 +27,12 @@ class LanguageResolutionTest extends YesWikiTestCase
     protected function setUp(): void
     {
         parent::setUp();
-        unset($_GET['lang'], $_COOKIE[LanguageService::COOKIE], $_POST['config']);
+        unset($_GET['lang'], $_GET['editlang'], $_COOKIE[LanguageService::COOKIE], $_POST['config']);
     }
 
     protected function tearDown(): void
     {
-        unset($_GET['lang'], $_COOKIE[LanguageService::COOKIE], $_POST['config']);
+        unset($_GET['lang'], $_GET['editlang'], $_COOKIE[LanguageService::COOKIE], $_POST['config']);
         parent::tearDown();
     }
 
@@ -87,6 +87,43 @@ class LanguageResolutionTest extends YesWikiTestCase
         );
     }
 
+    /** Writing a translation is working in that language, so the screen that writes it is answered in it. */
+    public function testTheLanguageBeingWrittenBeatsTheReadersOwn(): void
+    {
+        $_COOKIE[LanguageService::COOKIE] = 'fr';
+        $_GET['editlang'] = 'en';
+
+        $this->assertSame(
+            'en',
+            $this->service()->detectPreferredLanguage($this->wiki('fr'), self::OFFERED, 'fr-FR'),
+            'the editor is in the language it is filling in, not in the reader\'s'
+        );
+    }
+
+    /** It is a parameter of one screen, not a choice: `rememberChoice` only keeps an explicit `?lang=`. */
+    public function testTheLanguageBeingWrittenIsNotRemembered(): void
+    {
+        $_GET['editlang'] = 'en';
+        $this->service()->detectPreferredLanguage($this->wiki('fr'), self::OFFERED, 'fr-FR');
+
+        $this->assertArrayNotHasKey(
+            LanguageService::COOKIE,
+            $_COOKIE,
+            'leaving the editor comes back to the language the reader was in'
+        );
+    }
+
+    /** An `editlang` the wiki does not offer is refused like any other, so a link cannot force one. */
+    public function testAnUnofferedLanguageBeingWrittenIsRefused(): void
+    {
+        $_GET['editlang'] = 'ro';
+
+        $this->assertSame(
+            'fr',
+            $this->service()->detectPreferredLanguage($this->wiki('fr'), self::OFFERED, 'de-DE')
+        );
+    }
+
     /** A cookie naming something the wiki does not offer is not a choice, it is stale. */
     public function testACookieForALanguageTheWikiDoesNotOfferIsIgnored(): void
     {
@@ -130,6 +167,22 @@ class LanguageResolutionTest extends YesWikiTestCase
             'es',
             $this->service()->detectPreferredLanguage($this->wiki('fr'), self::OFFERED, 'fr-FR'),
             'the page metadata path is below the cookie'
+        );
+    }
+
+    /** A language is offerable when this wiki ships a catalogue for it, and the constant is what says so. */
+    public function testEveryShippedCatalogueIsOfferable(): void
+    {
+        $shipped = array_map(
+            static fn (string $file) => (string)preg_replace('/^yeswiki_(.*)\.php$/', '$1', basename($file)),
+            (array)glob(dirname(__DIR__, 3) . '/src/lang/yeswiki_*.php')
+        );
+        sort($shipped);
+
+        $this->assertSame(
+            $shipped,
+            LanguageService::SUPPORTED_LANGUAGES,
+            'a catalogue nobody can turn on is a translation the wiki hides'
         );
     }
 

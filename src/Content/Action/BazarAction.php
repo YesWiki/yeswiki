@@ -333,9 +333,10 @@ class BazarAction extends YesWikiAction implements RegisteredAction, ProvidesCom
         if ($tag === '' || strcasecmp($tag, $this->getService(PageContext::class)->getTag()) === 0) {
             return null;
         }
-        $params = $req->query->all();
-        unset($params[self::URL_VIEW_PARAM], $params[self::URL_ACTION_PARAM], $params['id'], $params['form_id'], $params['wiki'], $params[$this->getService(PageContext::class)->getTag()]);
+        $urlFormatter = $this->getService(UrlFormatter::class);
+        $params = $urlFormatter->currentQuery();
+        unset($params[self::URL_VIEW_PARAM], $params[self::URL_ACTION_PARAM], $params['id'], $params['form_id']);
 
-        return $this->getService(UrlFormatter::class)->href('', $tag, $params, false);
+        return $urlFormatter->href('', $tag, $params, false);
     }
 }

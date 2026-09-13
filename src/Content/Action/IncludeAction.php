@@ -3,9 +3,11 @@
 namespace YesWiki\Content\Action;
 
 use YesWiki\Content\Entity\PageBody;
+use YesWiki\Content\Entity\Translations;
 use YesWiki\Content\Service\EntryDisplay;
 use YesWiki\Content\Service\EntryManager;
 use YesWiki\Content\Service\PageManager;
+use YesWiki\Content\Service\TranslatableContent;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Component\Category;
@@ -14,7 +16,6 @@ use YesWiki\Kernel\Component\ProvidesComponents;
 use YesWiki\Kernel\Component\Setting;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\InclusionStack;
-use YesWiki\Kernel\Service\LanguageService;
 use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\PerformableArguments;
 use YesWiki\Kernel\Service\RuntimeConfig;
@@ -88,18 +89,16 @@ class IncludeAction extends YesWikiAction implements RegisteredAction, ProvidesC
         $this->getService(PerformableArguments::class)->set('class', empty($class) ? 'include' : 'include ' . $class);
         $this->class = $this->getService(PerformableArguments::class)->get('class');
 
-        $langIncludedPage = $this->getService(PageManager::class)->getOne(trim($this->getService(PerformableArguments::class)->get('page')));
-        if (!empty($langIncludedPage['body'])) {
-            $langBody = PageBody::content($langIncludedPage['body']);
-            $langFilteredBody = $this->getService(LanguageService::class)->sectionFor(
-                $langBody,
-                $this->getService(RuntimeConfig::class)['default_language']
+        $includedTag = trim((string)$this->getService(PerformableArguments::class)->get('page'));
+        $includedPage = $this->getService(PageManager::class)->getOne($includedTag);
+        if (isset($includedPage['body'][Translations::BODY_KEY])) {
+            $translatable = $this->getService(TranslatableContent::class);
+            $includedPage['body'] = $translatable->forReader(
+                $includedPage['body'],
+                $translatable->sourceLanguageOfPage($this->getService(PageManager::class)->getMetadata($includedTag))
             );
-            if ($langFilteredBody !== $langBody) {
-                $langIncludedPage['body'][PageBody::CONTENT] = $langFilteredBody;
 
-                $this->getService(PageManager::class)->cache($langIncludedPage);
-            }
+            $this->getService(PageManager::class)->cache($includedPage);
         }
     }
 

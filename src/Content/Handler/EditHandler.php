@@ -7,11 +7,13 @@ use YesWiki\Content\Controller\FormController;
 use YesWiki\Content\Entity\ContentTypeSchema;
 use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Entity\PageType;
+use YesWiki\Content\Entity\Translations;
 use YesWiki\Content\Field\BazarField;
 use YesWiki\Content\Service\ContentTypeResolver;
 use YesWiki\Content\Service\EntryManager;
 use YesWiki\Content\Service\FormManager;
 use YesWiki\Content\Service\PageManager;
+use YesWiki\Content\Service\TranslatableContent;
 use YesWiki\Core\YesWikiHandler;
 use YesWiki\Identity\Controller\CaptchaController;
 use YesWiki\Identity\Service\AclService;
@@ -31,6 +33,7 @@ use YesWiki\Kernel\Service\RuntimeConfig;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Kernel\Service\WikiUrls;
 use YesWiki\Render\Service\HibernationNotice;
+use YesWiki\Render\Service\LanguageSwitch;
 use YesWiki\Render\Service\LayoutService;
 use YesWiki\Render\Service\MarkdownFormatterService;
 use YesWiki\Render\Service\TemplateEngine;
@@ -192,9 +195,90 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
      *
      * @return array{before: list<BazarField>, after: list<BazarField>, hasContent: bool}
      */
+    /**
+     * The language this edit screen writes, and the language the body itself is written in. A page nobody has written yet has no source to translate, so it is written rather than translated.
+     *
+     * @return array{0: string, 1: string}
+     */
+    private function editingAndSourceLanguages(): array
+    {
+        $translatable = $this->getService(TranslatableContent::class);
+        $source = $translatable->sourceLanguageOfPage(
+            $this->getService(PageManager::class)->getMetadata($this->getService(PageContext::class)->getTag())
+        );
+        if (empty($this->getService(PageContext::class)->getPage())) {
+            return [$source, $source];
+        }
+        $editing = $translatable->editingLanguage(
+            $this->getRequest()->query->get('editlang'),
+            $source
+        );
+
+        return [$editing, $source];
+    }
+
+    /**
+     * What the editor should show for $language: its translation, blank where it has none.
+     *
+     * @param array<string, mixed> $stored
+     *
+     * @return array<string, mixed>
+     */
+    private function bodyForEditing(array $stored, string $language, string $source): array
+    {
+        if ($language === $source) {
+            return $stored;
+        }
+
+        $shown = Translations::strip($stored);
+        foreach ($this->contentFormFields()['translatable'] as $name) {
+            $shown[$name] = '';
+        }
+        $this->showWhatIsBeingTranslated($stored);
+
+        return array_merge($shown, Translations::of($stored, $language));
+    }
+
+    /**
+     * Put the source wording on each field a translator is asked to fill in: the input itself stays
+     * empty, since an empty translation is what makes a reader fall back to the source.
+     *
+     * @param array<string, mixed> $stored
+     */
+    private function showWhatIsBeingTranslated(array $stored): void
+    {
+        $source = Translations::strip($stored);
+        $fields = $this->contentFormFields();
+        foreach ([...$fields['before'], ...$fields['after']] as $field) {
+            if (!$field instanceof BazarField || !$field->translatesValue()) {
+                continue;
+            }
+            $name = (string)$field->getPropertyName();
+            if ($name !== '' && is_scalar($source[$name] ?? null)) {
+                $field->showTranslationSource((string)$source[$name]);
+            }
+        }
+    }
+
+    /**
+     * What this page has to translate, in the shape the language switch counts a translation against.
+     *
+     * @return list<array{path: string}>
+     */
+    private function translatablePaths(): array
+    {
+        return array_map(
+            static fn (string $name) => ['path' => $name],
+            $this->contentFormFields()['translatable']
+        );
+    }
+
+    /**
+     * @return array{before: list<BazarField>, after: list<BazarField>, hasContent: bool, translatable: list<string>}
+     */
     private function contentFormFields(): array
     {
-        $split = ['before' => [], 'after' => [], 'hasContent' => false];
+        $split = ['before' => [], 'after' => [], 'hasContent' => false, 'translatable' => []];
 
         $form = $this->getService(ContentTypeResolver::class)
             ->formForEditing($this->getService(PageContext::class)->getTag());
@@ -204,14 +288,23 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
             return $split;
         }
 
+        [$editing, $source] = $this->editingAndSourceLanguages();
+        $translating = $editing !== $source;
+
         $side = 'before';
         foreach ($form['prepared'] ?? [] as $field) {
             if (!$field instanceof BazarField) {
                 continue;
             }
+            if ($field->translatesValue() && (string)$field->getPropertyName() !== '') {
+                $split['translatable'][] = (string)$field->getPropertyName();
+            }
             if ($field->getPropertyName() === PageBody::CONTENT) {
-                $split['hasContent'] = true;
+                $split['hasContent'] = $field->translatesValue() || !$translating;
                 $side = 'after';
+                continue;
+            }
+            if ($translating && !$field->translatesValue()) {
                 continue;
             }
             if ($field->getPropertyName() === PageBody::KEYWORDS && $this->params->get('hide_keywords')) {
@@ -401,16 +494,29 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
 
             $previous = $request->request->get('previous') ?: (isset($this->getService(PageContext::class)->getPage()['id']) ? $this->getService(PageContext::class)->getPage()['id'] : null);
 
-            $body = (string)($request->request->get('body') ?: (isset($this->getService(PageContext::class)->getPage()['body']) ? PageBody::content($this->getService(PageContext::class)->getPage()['body']) : null));
+            [$editing, $source] = $this->editingAndSourceLanguages();
+            $translating = $editing !== $source;
+            $storedBody = $this->getService(PageContext::class)->getPage()['body'] ?? [];
+            $this->getService(LanguageSwitch::class)->writing(
+                $this->getService(TranslatableContent::class)->editingLanguages(
+                    $source,
+                    $editing,
+                    $storedBody,
+                    $this->translatablePaths()
+                )
+            );
+            $shownBody = $this->bodyForEditing($storedBody, $editing, $source);
+
+            $body = (string)($request->request->get('body') ?: PageBody::content($shownBody));
 
             $cancelUrl = $this->incomingUrl()
                 ?? $this->getService(UrlFormatter::class)->href(WikiUrls::iframeSuffixFor());
 
             $pageFields = $this->contentFormFields();
-            $previousBody = $this->getService(PageContext::class)->getPage()['body'] ?? [];
+            $previousBody = $storedBody;
             $editedBody = $submit === false
-                ? $previousBody
-                : $this->applyPostedPageFields($previousBody);
+                ? $shownBody
+                : $this->applyPostedPageFields($shownBody);
 
             if ($submit == 'preview') {
                 $temp = $this->getService(InclusionStack::class)->replace();
@@ -425,6 +531,9 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
                     'saveValue' => InputFilter::EDIT_PAGE_SUBMIT_VALUE,
                     'deleteUrl' => $this->deleteUrl(),
                     'hasContent' => $pageFields['hasContent'],
+                    'sourceBody' => $translating ? PageBody::content(Translations::strip($storedBody)) : '',
+                    'editLanguage' => $editing,
+                    'editingTranslation' => $translating,
                     'fieldsBeforeContent' => $this->renderContentFields($pageFields['before'], $editedBody),
                     'fieldsAfterContent' => $this->renderContentFields($pageFields['after'], $editedBody),
                 ]);
@@ -441,6 +550,14 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
                     $newBody = $editedBody;
                     if ($pageFields['hasContent']) {
                         $newBody[PageBody::CONTENT] = $body;
+                    }
+
+                    if ($translating) {
+                        $newBody = Translations::with(
+                            $previousBody,
+                            $editing,
+                            array_intersect_key($newBody, array_flip($pageFields['translatable']))
+                        );
                     }
 
                     $unchanged = !empty($previousBody) && PageBody::equals(
@@ -482,6 +599,9 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
                         'deleteUrl' => $this->deleteUrl(),
                         'preview' => false,
                         'hasContent' => $pageFields['hasContent'],
+                        'sourceBody' => $translating ? PageBody::content(Translations::strip($storedBody)) : '',
+                        'editLanguage' => $editing,
+                        'editingTranslation' => $translating,
                         'fieldsBeforeContent' => $this->renderContentFields($pageFields['before'], $editedBody),
                         'fieldsAfterContent' => $this->renderContentFields($pageFields['after'], $editedBody),
                     ]);

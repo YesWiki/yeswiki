@@ -5,7 +5,10 @@
 {{ include_javascript('javascripts/list-form.js', false, true) }}
 {{ include_css('styles/yw-entries.css') }}
 
-<form method="post" @submit="onSubmit" class="list-form" data-list="{{ list|json_encode }}">
+{{ include_javascript('javascripts/unsaved-changes.js', false, true) }}
+
+<form method="post" @submit="onSubmit" class="list-form" data-list="{{ list|json_encode }}"
+      action="{{ url_with({ editlang: editLanguage }) }}" data-yw-unsaved-guard>
 	<div class="yw-form-group">
 		<label class="yw-form-label">
 			<span class="required_symbol">*&nbsp;</span>

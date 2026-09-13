@@ -1,7 +1,6 @@
 <?php
 
 return [
-    'ACTION_BUILDER_COPY' => 'Còpia',
     'ACTION_BUILDER_PREVIEW' => 'Vista prèvia (no es pot fer clic)',
     'ACTION_BUILDER_ONLINEDOC' => 'Documentació en línia',
     'ACTION_BUILDER_OWNER' => 'Propietari del llistat',

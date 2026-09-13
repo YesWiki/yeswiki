@@ -1,7 +1,6 @@
 <?php
 
 return [
-    'ACTION_BUILDER_COPY' => 'Begrepen',
     'ACTION_BUILDER_PREVIEW' => 'Overview (niet klikken)',
     'ACTION_BUILDER_ONLINEDOC' => 'Online documentatie',
     'ACTION_BUILDER_OWNER' => 'Eigenaar van het dossier',

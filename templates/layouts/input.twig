@@ -14,5 +14,11 @@
         {% endblock %}
         {% block submit %}
         {% endblock %}
+        {% if field.translationSource %}
+            <p class="yw-translate-from">
+                <span class="yw-translate-from__label">{{ _t('TRANSLATE_SOURCE_TEXT') }}</span>
+                <span class="yw-translate-from__text">{{ field.translationSource }}</span>
+            </p>
+        {% endif %}
     </div>
 </div>

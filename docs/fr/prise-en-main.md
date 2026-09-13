@@ -657,35 +657,40 @@ de l'utilisateur connecté
 
 ## 10.Gestion des langues dans YesWiki
 
-Le composant lang YesWiki permettant de proposer une version de votre page dans
-une autre langue . Sur une même page vous pouvez avoir :
-
-- un texte en francais, il sera précédé par {{lang="fr"}}
-- un texte en anglais, il sera précédé par {{lang="en"}}
-- un texte en espagnol, il sera précédé par {{lang="es"}} Exemple
+Toute Content de votre wiki -- une page, une fiche, un formulaire, une liste de
+valeurs -- se traduit **depuis son propre éditeur**. En haut de l'écran
+d'édition, une barre indique la langue que vous êtes en train d'écrire :
 
 ```
-{{lang="fr"}}
-=====Bienvenue=====
-
-{{lang="en"}}
-=====Welcome=====
-
-{{lang="es"}}
-=====Bienvenido=====
+Langue éditée :  [ FR ★ ]  [ EN ]  [ ES ]
 ```
 
-Le composant translation permet aux utilisateurs de **choisir leur langue**. En
-l'ajoutant dans votre barre de menu le composant translation, il permettra
-d'ajouter des drapeaux pour identifier les langues de votre choix. Lorsqu'un
-utilisateur clique sur un drapeau anglais alors les contenus précédés de
-lang="en" seront affichés Exemple de code à ajouter dans le menu :
+Cliquez sur une autre langue et le même éditeur se recharge dans cette
+langue-là. Vous écrivez la traduction avec les outils que vous connaissez :
+l'éditeur de texte pour une page, le formulaire habituel pour une fiche, le
+concepteur pour un formulaire.
 
-```
- - {{translation destination="fr"}}
- - {{translation destination="en"}}
- - {{translation destination="es"}}
-```
+Deux choses à savoir :
+
+- **Ce que vous laissez vide reste affiché dans la langue d'origine.** Une
+  traduction partielle ne vide jamais la page. C'est pourquoi les champs
+  apparaissent vides tant que rien n'est traduit : ils vous montrent ce qui
+  reste à faire.
+- **En traduction, seuls les champs de texte sont proposés.** Une date, une
+  adresse électronique, une image ou une géolocalisation sont les mêmes dans
+  toutes les langues, donc l'écran ne les affiche pas.
+
+Les langues proposées sont celles de votre configuration : `default_language`
+pour la langue d'origine du wiki, `other_languages` pour les autres.
+
+Pour laisser vos visiteurs choisir, le sélecteur de langue est déjà dans la
+barre d'outils en haut de chaque page. Vous pouvez aussi le placer dans une page
+ou un menu avec le composant `{{languages}}`.
+
+> Les anciens marqueurs `{{lang="fr"}}` dans le corps des pages et les appels
+> `{{translation destination="fr"}}` ont été remplacés par ce mécanisme. La
+> migration `PagesAreTranslatedLikeEntries` convertit automatiquement les pages
+> existantes.
 
 ## 11. Les Handlers : accéder à certains fonctionalités via l'URL
 

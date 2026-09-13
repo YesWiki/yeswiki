@@ -12,8 +12,11 @@
 <div class="yw-designer">
 <div class="yw-designer__canvas">
 
+{{ include_javascript('javascripts/unsaved-changes.js', false, true) }}
+
 <form id="ACEditor" name="ACEditor" enctype="multipart/form-data" hx-boost="false"
-      action="{{ url({ handler: handler }) }}" method="POST">
+      action="{{ url({ handler: handler, params: { editlang: editLanguage } }) }}" method="POST"
+      data-yw-unsaved-guard>
 
   {% if passwordForEditing %}
     <input type="hidden" name="password_for_editing" value="{{ request.post['password_for_editing'] }}" />
@@ -29,6 +32,12 @@
     {% else %}
 
       {{ renderAction('aceditor', { name: 'body', value: body, saveButton: true })|raw }}
+      {% if sourceBody|default('') %}
+        <details class="yw-translate-from yw-translate-from--body" open>
+          <summary class="yw-translate-from__label">{{ _t('TRANSLATE_SOURCE_TEXT') }}</summary>
+          <pre class="yw-translate-from__text">{{ sourceBody }}</pre>
+        </details>
+      {% endif %}
     {% endif %}
   {% endif %}
 

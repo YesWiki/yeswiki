@@ -7,19 +7,26 @@ const ACTIONS_BACKWARD_COMPATIBILITY = {
   map: 'entrymap',
 }
 
+/**
+ * The rail is one app for the whole session, until a boosted navigation swaps the page it
+ * was mounted on: the element it rendered into is then off the document, and the panel the
+ * new page brought is still raw template. So it is remounted on whichever one is on screen.
+ */
+let rail = null
+
 export default class {
   app
 
   constructor() {
-    if (!document.getElementById('actions-builder-app')) return
-    if (window.actionBuilderApp) {
-      this.app = window.actionBuilderApp
-    } else {
+    const host = document.getElementById('actions-builder-app')
+    if (!host) return
+    if (!rail?.instance.$el?.isConnected) {
+      rail?.vueApp.unmount()
       const vueApp = createApp(appConfig)
       setup(vueApp)
-      this.app = vueApp.mount('#actions-builder-app')
-      window.actionBuilderApp = this.app
+      rail = { vueApp, instance: vueApp.mount(host) }
     }
+    this.app = rail.instance
   }
 
   /** Every `{{tag}}` a declared Component knows about -- what the editors highlight. */

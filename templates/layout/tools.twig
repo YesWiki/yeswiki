@@ -30,17 +30,7 @@
   {% if languages|length > 1 %}
     <div class="yw-topnav-tools__menu">
       <div class="yw-topnav-tools__panel">
-        <div class="yw-switcher" role="group" aria-label="{{ _t('LANGUAGE_CHOOSE') }}">
-          {% for language in languages %}
-
-            <a class="yw-switcher__option{{ language.current ? ' yw-switcher__option--on' : '' }}"
-               href="{{ language.href }}" hreflang="{{ language.code }}" lang="{{ language.code }}"
-               title="{{ language.label }}"{{ language.current ? ' aria-current="true"' : '' }}>
-              <span class="yw-switcher__code">{{ language.code }}</span>
-              <span class="yw-switcher__label">{{ language.label }}</span>
-            </a>
-          {% endfor %}
-        </div>
+        {{ include('@core/layout/_language-switch.twig', { languages: languages }) }}
       </div>
 
       <span class="yw-topnav-tools__current" aria-hidden="true" title="{{ _t('LANGUAGE_CHOOSE') }}">

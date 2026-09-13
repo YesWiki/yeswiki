@@ -18,4 +18,10 @@ class CurrentRequest
     {
         return $this->request;
     }
+
+    /** Whether a request has been set: false during boot, and in a console command. */
+    public function has(): bool
+    {
+        return isset($this->request);
+    }
 }

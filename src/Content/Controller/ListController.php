@@ -3,14 +3,17 @@
 namespace YesWiki\Content\Controller;
 
 use YesWiki\Content\Action\BazarAction;
+use YesWiki\Content\Entity\Translations;
 use YesWiki\Content\Service\ContentNotifier;
 use YesWiki\Content\Service\ListManager;
 use YesWiki\Content\Service\ListOverview;
+use YesWiki\Content\Service\TranslatableContent;
 use YesWiki\Core\YesWikiController;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Service\Redirector;
 use YesWiki\Kernel\Service\RuntimeConfig;
 use YesWiki\Kernel\Service\UrlFormatter;
+use YesWiki\Render\Service\LanguageSwitch;
 
 class ListController extends YesWikiController
 {
@@ -101,11 +104,28 @@ class ListController extends YesWikiController
         if (!$this->listOverview->mayEdit((string)$id)) {
             return $this->refusal();
         }
-        $list = $this->listManager->getOne($id);
+        $stored = $this->listManager->getUntranslated($id);
+        $translatable = $this->getService(TranslatableContent::class);
+        $source = $translatable->wikiLanguage();
+        $editing = $translatable->editingLanguage($this->getRequest()->query->get('editlang'), $source);
+        $translating = $editing !== $source;
+
+        $list = $this->listForEditing($stored ?? [], $editing, $source);
         $post = $this->getRequest()->request;
         if ($post->has('submit')) {
             if ($this->aclService->hasAccess('write', $id)) {
                 $title = (string)$post->get('title', '');
+                if ($translating) {
+                    $this->listManager->saveTranslations((string)$id, $editing, $translatable->sanitize(
+                        $this->postedTranslations($title, json_decode((string)$post->get('nodes', ''), true)),
+                        $translatable->listPaths($stored ?? [])
+                    ));
+
+                    return $this->getService(Redirector::class)->redirect(
+                        $this->getService(UrlFormatter::class)->href('', '', [BazarAction::URL_VIEW_PARAM => BazarAction::VIEW_LISTS], false)
+                    );
+                }
+
                 $this->listManager->update($id, $title, json_decode((string)$post->get('nodes', ''), true));
 
                 if ($this->shouldPostMessageOnSubmit()) {
@@ -122,9 +142,94 @@ class ListController extends YesWikiController
             }
         }
 
+        $this->getService(LanguageSwitch::class)->writing(
+            $translatable->editingLanguages($source, $editing, $stored ?? [], $translatable->listPaths($stored ?? []))
+        );
+
         return $this->render('@core/lists/list_form.twig', [
             'list' => $list,
+            'editLanguage' => $editing,
+            'editingTranslation' => $translating,
         ]);
+    }
+
+    /**
+     * The editor's post, as the paths a value list's translations are addressed by.
+     *
+     * @param array<array-key, mixed>|null $nodes
+     *
+     * @return array<string, string>
+     */
+    private function postedTranslations(string $title, ?array $nodes): array
+    {
+        $values = ['title' => $title];
+        self::collectNodeLabels(is_array($nodes) ? $nodes : [], 'nodes', $values);
+
+        return $values;
+    }
+
+    /**
+     * @param array<array-key, mixed> $nodes
+     * @param array<string, string>   &$values
+     */
+    private static function collectNodeLabels(array $nodes, string $prefix, array &$values): void
+    {
+        foreach ($nodes as $node) {
+            if (!is_array($node) || !isset($node['id'])) {
+                continue;
+            }
+            $path = $prefix . '.' . (string)$node['id'];
+            if (isset($node['label']) && is_scalar($node['label'])) {
+                $values[$path . '.label'] = (string)$node['label'];
+            }
+            if (is_array($node['children'] ?? null)) {
+                self::collectNodeLabels($node['children'], $path . '.children', $values);
+            }
+        }
+    }
+
+    /**
+     * The list as the editor should show it for $language: its translations, blank where it has none.
+     *
+     * @param array<string, mixed> $list
+     *
+     * @return array<string, mixed>
+     */
+    private function listForEditing(array $list, string $language, string $source): array
+    {
+        if ($list === [] || $language === $source) {
+            return $list;
+        }
+
+        $blanked = Translations::strip($list);
+        $blanked['title'] = '';
+        $blanked['nodes'] = self::blankLabels($blanked['nodes'] ?? []);
+
+        return Translations::applied($blanked, Translations::of($list, $language));
+    }
+
+    /**
+     * Blank every label, keeping what it said as `sourceLabel` so the editor can show a
+     * translator what they are translating. The editor never posts that key back.
+     *
+     * @param array<array-key, mixed> $nodes
+     *
+     * @return array<array-key, mixed>
+     */
+    private static function blankLabels(array $nodes): array
+    {
+        foreach ($nodes as $index => $node) {
+            if (!is_array($node)) {
+                continue;
+            }
+            $nodes[$index]['sourceLabel'] = (string)($node['label'] ?? '');
+            $nodes[$index]['label'] = '';
+            if (is_array($node['children'] ?? null)) {
+                $nodes[$index]['children'] = self::blankLabels($node['children']);
+            }
+        }
+
+        return $nodes;
     }
 
     /**

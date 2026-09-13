@@ -123,6 +123,46 @@ test.describe('boosted navigation', () => {
     expect(watcher.errors(), 'the browser reported errors').toEqual([])
   })
 
+  /** And the rail its component button opens, which is one Vue app for the session: a swap leaves it mounted on the page that is gone, so the palette comes up empty on every editor after the first. */
+  test('the components rail mounts on an editor reached by a boosted navigation', async ({
+    page,
+  }, testInfo) => {
+    const watcher = watchConsole(page)
+    const edit = () => page.locator('.yw-page-actions__edit').first()
+    const editorIsUp = () =>
+      expect(page.locator(EDITOR).first()).toBeVisible({ timeout: 15000 })
+
+    await page.goto(`/?${PAGE_WITH_LIST}`)
+    await edit().click()
+    await editorIsUp()
+
+    const away = page
+      .locator('#yw-topnav a[href]:not([data-yw-dropdown-toggle])')
+      .first()
+    await expect(away, 'no navigation bar to leave the editor by').toBeVisible()
+    await away.click()
+    await expect(edit()).toBeVisible({ timeout: 15000 })
+    await edit().click()
+    await editorIsUp()
+
+    await page
+      .locator(
+        '.open-actions-builder-btn, .vditor-toolbar [data-type="yw-component"]',
+      )
+      .first()
+      .click()
+
+    await expect(
+      page
+        .locator('#actions-builder-panel .actions-builder-panel__component')
+        .first(),
+      'the palette came up empty on a second editor in the same session',
+    ).toBeVisible({ timeout: 15000 })
+
+    await attachConsole(watcher, testInfo)
+    expect(watcher.errors(), 'the browser reported errors').toEqual([])
+  })
+
   /** The same fault seen from the other side: the Vue list never mounted on the second visit. */
   test('a dynamic bazar list mounts on a page reached by a boosted navigation', async ({
     page,

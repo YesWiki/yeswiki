@@ -9,10 +9,16 @@ import { restoreStashedValue, switchEditorTo } from './editor-switch.js'
 import { closeRails } from './editor-rails.js'
 import { registerEditor } from './editor-handles.js'
 import ActionsBuilder from './actions-builder.js'
+import openModal from './aceditor-toolbar-remote-modal.js'
+import {
+  groupWysiwygFormatMenu,
+  wysiwygMarkupItems,
+} from './editor-markup-syntax.js'
 import LinkPanel from './link-panel.js'
 import {
   FENCE_LANGUAGES,
   fenceComponents,
+  isComponentLine,
   LINK_EXTRA,
   calloutRegionAt,
   componentBlockElement,
@@ -29,28 +35,6 @@ import {
 import { followScheme, vditorThemeOptions } from './editor-scheme.js'
 
 const VDITOR_CDN = 'javascripts/vendor/vditor'
-
-/** The four callouts, and the icon each is recognised by. */
-const CALLOUTS = [
-  ['info', 'info-circle'],
-  ['success', 'circle-check'],
-  ['warning', 'alert-triangle'],
-  ['danger', 'ban'],
-]
-
-/** Written out, so `php src/build-js-lang-keys.php` can see each key. */
-function calloutLabel(type) {
-  switch (type) {
-    case 'success':
-      return _t('ALERT_SUCCESS')
-    case 'warning':
-      return _t('ALERT_WARNING')
-    case 'danger':
-      return _t('ALERT_DANGER')
-    default:
-      return _t('ALERT_INFO')
-  }
-}
 
 /** The `{{...}}` braces off, which is the form the actions builder reads and writes. */
 const withoutBraces = (tag) =>
@@ -170,11 +154,22 @@ class ComponentEditor {
     return blocks[blocks.length - 1] || this.content.lastElementChild
   }
 
+  /** Where the caret is -- the live selection, or the one Vditor saved when the toolbar took the focus. */
+  range() {
+    const selection = getSelection()
+    if (selection?.rangeCount) {
+      const live = selection.getRangeAt(0)
+      if (this.content.contains(live.startContainer)) return live
+    }
+
+    return this.vditor.vditor.wysiwyg.range || null
+  }
+
   /** The block the caret is in, which is where the palette inserts what it is asked for. */
   blockAtCursor() {
-    const selection = getSelection()
-    if (!selection?.rangeCount) return null
-    let node = selection.getRangeAt(0).startContainer
+    const range = this.range()
+    if (!range) return null
+    let node = range.startContainer
     if (node.nodeType === Node.TEXT_NODE) node = node.parentElement
     if (!this.content.contains(node)) return null
 
@@ -225,65 +220,56 @@ function initVditorWiki(textareaParam) {
             '|',
           ]
         : []),
-      'headings',
-      'bold',
-      'italic',
-      'strike',
+      ...wysiwygMarkupItems({
+        heading: applyHeading,
+        wrap: wrapBlockWith,
+        surround: surroundSelection,
+        callout: applyCallout,
+      }),
       '|',
-      'line',
-      'list',
-      'ordered-list',
-      'check',
-      '|',
-      'quote',
-      'link',
-      'table',
-      '|',
+      {
+        name: 'link',
+        tip: _t('ACEDITOR_LINK'),
+        tipPosition: 'n',
+        icon: legacyIconToSprite('link'),
+      },
       ...(hasFilePicker()
         ? [
             filePickerMenuItem({
               format: 'wiki',
+              labelled: true,
               onComplete: (wikiCode) =>
                 componentEditor.insertAt(
                   componentEditor.blockAtCursor(),
                   wikiCode,
                 ),
             }),
-            '|',
           ]
         : []),
-      ...CALLOUTS.map(([type, icon]) => ({
-        name: `yw-callout-${type}`,
-        tip: calloutLabel(type),
-        tipPosition: 'n',
-        icon: legacyIconToSprite(icon),
-        click() {
-          applyCallout(type)
-        },
-      })),
-      '|',
       {
         name: 'yw-component',
         tip: _t('ADD_COMPONENT'),
         tipPosition: 'n',
-        icon: legacyIconToSprite('stack-2'),
+        icon: `${legacyIconToSprite('stack-2')}<span>${_t('ACEDITOR_ACTIONS')}</span>`,
         click() {
           openBuilderForNewComponent()
         },
       },
       '|',
-      'emoji',
-      '|',
-      'undo',
-      'redo',
-      '|',
-      'code',
-      'inline-code',
+      {
+        name: 'yw-help',
+        tip: _t('ACEDITOR_HELP'),
+        tipPosition: 'n',
+        icon: legacyIconToSprite('help-circle'),
+        click() {
+          openModal(_t('ACEDITOR_HELP'), wiki.url('ReglesDeFormatage'))
+        },
+      },
       {
         name: 'yw-switch-editor',
         tip: _t('SWITCH_TO_SOURCE_EDITOR'),
         tipPosition: 'sw',
-        icon: legacyIconToSprite('arrows-horizontal'),
+        icon: `${legacyIconToSprite('source-code')}<span>${_t('SWITCH_TO_SOURCE_EDITOR_SHORT')}</span>`,
         click() {
           switchEditorTo('aceditor', textarea)
         },
@@ -307,6 +293,11 @@ function initVditorWiki(textareaParam) {
       container
         .querySelector('.vditor-toolbar button[data-type="yw-save"]')
         ?.classList.add('yw-btn--primary')
+      const formatMenu = container
+        .querySelector('.vditor-toolbar button[data-type="yw-format"]')
+        ?.parentElement.querySelector('.vditor-hint')
+      formatMenu?.classList.add('yw-format-menu')
+      groupWysiwygFormatMenu(formatMenu)
       componentEditor.content.addEventListener('click', onContentClick, true)
       componentEditor.content.addEventListener('keydown', onArrowKeyDown, true)
       componentEditor.content.addEventListener('keyup', onArrowKeyUp, true)
@@ -393,10 +384,16 @@ function initVditorWiki(textareaParam) {
       return
     }
 
-    const opening = componentBlockElement(`:::${type}`)
-    const closing = componentBlockElement(':::')
-    block.before(opening)
-    block.after(closing)
+    wrapBlockWith(`:::${type}`, ':::')
+  }
+
+  /** Put an opening and a closing line around the block at the caret, each as the widget it is. */
+  function wrapBlockWith(open, close) {
+    const block = componentEditor.blockAtCursor()
+    if (!block) return
+
+    block.before(blockElementFor(open))
+    block.after(blockElementFor(close))
     componentEditor.content
       .querySelectorAll(".vditor-wysiwyg__preview[data-render='2']")
       .forEach((preview) => {
@@ -405,6 +402,62 @@ function initVditorWiki(textareaParam) {
       })
     sync()
     componentEditor.recordUndo()
+  }
+
+  function blockElementFor(line) {
+    if (isComponentLine(line)) return componentBlockElement(line)
+
+    const holder = document.createElement('div')
+    holder.innerHTML = editor.vditor.lute.Md2VditorDOM(line)
+
+    return holder.firstElementChild
+  }
+
+  /** Write these delimiters around the selection, as markup rather than as the text of it. */
+  function surroundSelection(open, close) {
+    const range = componentEditor.range()
+    if (!range) return
+
+    const holder = document.createElement('template')
+    holder.innerHTML = `${open}<span data-yw-selection></span>${close}`
+    holder.content
+      .querySelector('[data-yw-selection]')
+      .replaceWith(range.extractContents())
+    range.insertNode(holder.content)
+    range.collapse()
+    sync()
+    componentEditor.recordUndo()
+  }
+
+  /** Make the block at the caret a heading of this level, or an ordinary paragraph of it again. */
+  function applyHeading(level) {
+    const block = componentEditor.blockAtCursor()
+    if (!block || block.classList.contains('vditor-wysiwyg__block')) return
+
+    componentEditor.range().insertNode(document.createElement('wbr'))
+    const tagName =
+      block.tagName.toLowerCase() === `h${level}` ? 'p' : `h${level}`
+    const heading = document.createElement(tagName)
+    heading.setAttribute('data-block', '0')
+    heading.innerHTML = block.innerHTML
+    block.replaceWith(heading)
+    putCaretWhereTheWbrIs(heading)
+    sync()
+    componentEditor.recordUndo()
+  }
+
+  /** Vditor marks the caret with a `<wbr>` before rewriting a block; this is the other half. */
+  function putCaretWhereTheWbrIs(element) {
+    const wbr = element.querySelector('wbr')
+    if (!wbr) return
+
+    const range = document.createRange()
+    range.setStartBefore(wbr)
+    range.collapse(true)
+    const selection = getSelection()
+    selection.removeAllRanges()
+    selection.addRange(range)
+    wbr.remove()
   }
 
   /** The palette, for a component the page does not have yet. */

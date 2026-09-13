@@ -8,6 +8,7 @@ use YesWiki\Content\Action\BazarAction;
 use YesWiki\Content\Entity\ContentTypeSchema;
 use YesWiki\Content\Entity\FieldRole;
 use YesWiki\Content\Entity\PageBody;
+use YesWiki\Content\Entity\Translations;
 use YesWiki\Content\Field\BazarField;
 use YesWiki\Content\Field\EnumField;
 use YesWiki\Content\Field\FileContentField;
@@ -18,6 +19,7 @@ use YesWiki\Content\Service\FieldRoleResolver;
 use YesWiki\Content\Service\FormManager;
 use YesWiki\Content\Service\FormOverview;
 use YesWiki\Content\Service\FormPropertiesService;
+use YesWiki\Content\Service\TranslatableContent;
 use YesWiki\Core\YesWikiController;
 use YesWiki\Federation\Service\ActivityPubService;
 use YesWiki\Federation\Service\WebfingerService;
@@ -32,12 +34,19 @@ use YesWiki\Kernel\Service\Redirector;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Entity\Presentation;
 use YesWiki\Render\Service\CustomTemplateService;
+use YesWiki\Render\Service\LanguageSwitch;
 use YesWiki\Render\Service\Performer;
 use YesWiki\Render\Service\PresentationCatalog;
 use YesWiki\Render\Service\ThemeManager;
 
 class FormController extends YesWikiController
 {
+    /** The form-level wording a translator retypes. */
+    private const TRANSLATABLE_PROPERTIES = ['label', 'description', 'only_one_entry_message'];
+
+    /** The per-field wording a translator retypes. */
+    private const TRANSLATABLE_ATTRIBUTES = ['label', 'hint'];
+
     /** What a form's own screen shows of its Content before paging. */
     public const ROWS_PER_PAGE = '50';
 
@@ -389,9 +398,24 @@ class FormController extends YesWikiController
         }
 
         if ($this->getService(Guard::class)->isAllowed('saisie_formulaire')) {
-            $form = $this->formManager->getOne($id);
+            $stored = $this->formManager->getUntranslated($id);
+            $translatable = $this->getService(TranslatableContent::class);
+            $source = $translatable->sourceLanguageOf($stored ?? []);
+            $editing = $translatable->editingLanguage($this->getRequest()->query->get('editlang'), $source);
+            $translating = $editing !== $source;
+
+            $form = $stored;
             $post = $this->getRequest()->request;
             if ($post->has('valider')) {
+                if ($translating) {
+                    $this->formManager->saveTranslations($id, $editing, $translatable->sanitize(
+                        $this->postedTranslations($post->all()),
+                        $translatable->formPaths($stored ?? [])
+                    ));
+
+                    return $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href('', '', ['view' => 'formulaire', 'msg' => 'BAZ_FORMULAIRE_MODIFIE'], false));
+                }
+
                 $form = $this->formManager->getFromRawData($post->all());
                 if ($this->formIsValid($form) && $this->entryTemplateIsValid((string)$id)) {
                     $this->formManager->update($this->normalizeFormPropertiesPost($post->all()));
@@ -402,13 +426,114 @@ class FormController extends YesWikiController
             }
 
             $this->loadDesignerTranslations();
+            $this->getService(LanguageSwitch::class)->writing(
+                $translatable->editingLanguages($source, $editing, $stored ?? [], $translatable->formPaths($stored ?? []))
+            );
 
-            return $this->render('@core/forms/forms_form.twig', $this->designerContext($form) + [
+            return $this->render('@core/forms/forms_form.twig', $this->designerContext($this->formForEditing($form, $editing, $source)) + [
+                'sourceWording' => $translating ? $this->sourceWording($stored ?? []) : [],
                 'onlyOneEntryOptionAvailable' => $this->formManager->isAvailableOnlyOneEntryOption() && $this->formManager->isAvailableOnlyOneEntryMessage(),
+                'editLanguage' => $editing,
+                'editingTranslation' => $translating,
             ]);
         }
 
         return $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href('', '', ['view' => 'formulaire', 'msg' => 'BAZ_NEED_ADMIN_RIGHTS'], false));
+    }
+
+    /**
+     * The designer's post, as the paths a form's translations are addressed by.
+     *
+     * @param array<string, mixed> $posted
+     *
+     * @return array<string, string>
+     */
+    private function postedTranslations(array $posted): array
+    {
+        $values = [];
+        foreach (['label', 'description', 'only_one_entry_message'] as $property) {
+            if (isset($posted[$property]) && is_scalar($posted[$property])) {
+                $values[$property] = (string)$posted[$property];
+            }
+        }
+
+        $template = json_decode((string)($posted['template'] ?? ''), true);
+        foreach (is_array($template) ? $template : [] as $field) {
+            $name = is_array($field) ? (string)($field['name'] ?? '') : '';
+            if ($name === '') {
+                continue;
+            }
+            foreach (['label', 'hint'] as $attribute) {
+                if (isset($field[$attribute]) && is_scalar($field[$attribute])) {
+                    $values['template.' . $name . '.' . $attribute] = (string)$field[$attribute];
+                }
+            }
+        }
+
+        return $values;
+    }
+
+    /**
+     * The form as the designer should show it for $language: its translations, blank where it has none.
+     *
+     * @param array<string, mixed>|null $form
+     *
+     * @return array<string, mixed>|null
+     */
+    /**
+     * What the form says in the language it was written in, keyed the way the designer addresses
+     * it: the properties by name, a field's attributes as `<field name>.<attribute>`. The inputs
+     * themselves stay empty, since an empty translation is what makes a reader fall back.
+     *
+     * @param array<string, mixed> $form
+     *
+     * @return array<string, string>
+     */
+    private function sourceWording(array $form): array
+    {
+        $source = Translations::strip($form);
+        $wording = [];
+        foreach (self::TRANSLATABLE_PROPERTIES as $property) {
+            if (is_scalar($source[$property] ?? null) && (string)$source[$property] !== '') {
+                $wording[$property] = (string)$source[$property];
+            }
+        }
+        foreach ($source['template'] ?? [] as $field) {
+            $name = is_array($field) ? (string)($field['name'] ?? '') : '';
+            if ($name === '') {
+                continue;
+            }
+            foreach (self::TRANSLATABLE_ATTRIBUTES as $attribute) {
+                if (is_scalar($field[$attribute] ?? null) && (string)$field[$attribute] !== '') {
+                    $wording[$name . '.' . $attribute] = (string)$field[$attribute];
+                }
+            }
+        }
+
+        return $wording;
+    }
+
+    private function formForEditing(?array $form, string $language, string $source): ?array
+    {
+        if ($form === null || $language === $source) {
+            return $form;
+        }
+
+        $blanked = Translations::strip($form);
+        foreach (self::TRANSLATABLE_PROPERTIES as $property) {
+            $blanked[$property] = '';
+        }
+        foreach ($blanked['template'] ?? [] as $index => $field) {
+            foreach (self::TRANSLATABLE_ATTRIBUTES as $attribute) {
+                if (isset($field[$attribute])) {
+                    $blanked['template'][$index][$attribute] = '';
+                }
+            }
+        }
+
+        $blanked = Translations::applied($blanked, Translations::of($form, $language));
+
+        return $this->formManager->getFromRawData($blanked);
     }
 
     /**

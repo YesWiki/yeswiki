@@ -3,11 +3,14 @@
 {{ include_javascript('javascripts/form-builder/form-builder.js', false, true) }}
 {{ include_css('styles/yw-admin.css') }}
 
+{{ include_javascript('javascripts/unsaved-changes.js', false, true) }}
+
 <form
-  action=""
+  action="{{ url_with({ editlang: editLanguage }) }}"
   method="post"
   name="formulaire"
   id="formulaire"
+  data-yw-unsaved-guard
 >
   <div class="yw-form-group">
     <label class="yw-form-label">
@@ -21,6 +24,7 @@
       value="{{ form.label }}"
       required
     />
+    {{ include('@core/forms/_translated-from.twig', { text: sourceWording.label|default('') }) }}
   </div>
   <div class="yw-form-group">
     <label class="yw-form-label">
@@ -34,6 +38,7 @@
     >
       {{- form.description -}}
     </textarea>
+    {{ include('@core/forms/_translated-from.twig', { text: sourceWording.description|default('') }) }}
   </div>
 
   <div class="yw-form-group">
@@ -65,6 +70,7 @@
       <div role="tabpanel" class="yw-tabs__pane active" id="formbuilder">
         <div
           id="form-builder-container"
+          data-source-wording="{{ (sourceWording|default({}))|json_encode }}"
           data-locked-fields="{{ (lockedFields|default([]))|json_encode }}"
           data-groups="{{ (groupsList|default([]))|json_encode }}"
           data-form-and-list-ids="{{ (formAndListIds|default({}))|json_encode }}"

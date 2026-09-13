@@ -154,6 +154,9 @@ class TemplateEngine
 
             return $this->urlFormatter->href($iframe, $options['tag'], $options['params'], false);
         });
+        $this->addTwigHelper('url_with', function ($params) {
+            return $this->urlFormatter->currentWith(is_array($params) ? $params : []);
+        });
         $this->addTwigHelper('format', function ($text, $formatter = 'wakka') {
             return $this->container->get(MarkdownFormatterService::class)->format($text, $formatter);
         });
@@ -380,27 +383,9 @@ class TemplateEngine
     /** The viewer's own controls at the end of the bar: Colour scheme, and language. */
     private function renderChromeTools(): string
     {
-        $language = $this->container->get(LanguageService::class);
-        $current = (string)($language->preferredLanguage() ?? '');
-        $available = $language->availableLanguages();
-        $names = $language->languagesList();
-
-        $languages = [];
-        foreach ($available as $code) {
-            $code = (string)$code;
-            $languages[] = [
-                'code' => $code,
-
-                'label' => (string)($names[$code]['nativeName'] ?? $code),
-
-                'href' => $this->urlFormatter->href('', $this->container->get(\YesWiki\Kernel\Service\PageContext::class)->getTag(), ['lang' => $code], false),
-                'current' => $code === $current,
-            ];
-        }
-
         return $this->render('@core/layout/tools.twig', [
-            'languages' => $languages,
-            'language' => $current,
+            'languages' => $this->container->get(LanguageSwitch::class)->options(),
+            'language' => $this->container->get(LanguageService::class)->preferredLanguage(),
         ]);
     }
 
@@ -512,7 +497,6 @@ class TemplateEngine
             'label' => _t('LAYOUT_EDIT_' . strtoupper($part)),
         ]);
     }
-
 
     private function addTwigFilters(): void
     {

@@ -47,6 +47,12 @@ class TextField extends BazarField
         }
     }
 
+    /** Only a plain text input holds prose; a date, an email or a colour is the same in every language. */
+    public function translatesValue(): bool
+    {
+        return $this->type === 'text';
+    }
+
     public function getValueStructure()
     {
         if ($this->type == 'number' || $this->type == 'range') {

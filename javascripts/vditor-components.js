@@ -94,7 +94,7 @@ function closingFor(tag) {
 }
 
 /** A line that is a component on its own, and so travels through Vditor in a fence. */
-const isComponentLine = (line) =>
+export const isComponentLine = (line) =>
   (STANDALONE_TAG.test(line) && line !== '{{}}') ||
   ALERT_OPEN.test(line) ||
   ALERT_CLOSE.test(line)

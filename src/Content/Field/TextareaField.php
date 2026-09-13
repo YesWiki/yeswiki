@@ -16,6 +16,8 @@ use YesWiki\Kernel\Service\StringUtilService;
 #[Field(['textelong'])]
 class TextareaField extends BazarField
 {
+    use TranslatesItsValue;
+
     /** @var int|string rows of the textarea, as the form definition spells it */
     protected $numRows;
 

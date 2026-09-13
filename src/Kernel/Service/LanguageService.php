@@ -4,7 +4,8 @@ namespace YesWiki\Kernel\Service {
     /** Language detection and translation loading. */
     class LanguageService implements RequestScopedState
     {
-        public const SUPPORTED_LANGUAGES = ['ca', 'en', 'es', 'fr', 'nl', 'pt', 'ro'];
+        /** Every language this wiki ships a catalogue for: `src/lang/yeswiki_<code>.php`. A partial one still works, since a key it has no line for falls back to French. */
+        public const SUPPORTED_LANGUAGES = ['ca', 'en', 'eo', 'es', 'eu', 'fr', 'it', 'nl', 'pt', 'ro', 'ru', 'ta'];
 
         /** Where a reader's choice of language is kept. */
         public const COOKIE = 'yw-lang';
@@ -37,32 +38,6 @@ namespace YesWiki\Kernel\Service {
         public function preferredLanguage(): string
         {
             return $this->preferredLanguage;
-        }
-
-        /** The part of $body written for the language this request is being served in. */
-        public function sectionFor(string $body, string $defaultLanguage): string
-        {
-            $chunks = preg_split('/({{lang="[a-zA-Z][a-zA-Z]*"}})/ms', $body, -1, PREG_SPLIT_DELIM_CAPTURE);
-            if ($chunks === false || count($chunks) <= 1) {
-                return $body;
-            }
-
-            foreach ([$this->preferredLanguage, $defaultLanguage] as $wantedLanguage) {
-                $found = null;
-                for ($t = 1; $t < count($chunks); $t = $t + 2) {
-                    if (
-                        preg_match('/{{lang="([a-zA-Z][a-zA-Z])*"}}/', $chunks[$t], $langToDisplay)
-                        && ($langToDisplay[1] ?? '') === $wantedLanguage
-                    ) {
-                        $found = $chunks[$t + 1];
-                    }
-                }
-                if ($found !== null) {
-                    return $found;
-                }
-            }
-
-            return $body;
         }
 
         /** Serve the rest of this request in $language. */
@@ -202,9 +177,13 @@ namespace YesWiki\Kernel\Service {
          * @param array<array-key, string>                   $availableLanguages language-tag-strings (must be lowercase) that are available
          * @param string                                     $httpAcceptLanguage a HTTP_ACCEPT_LANGUAGE string ('auto' reads $_SERVER)
          * @param string                                     $page               name of WikiPage to check for informations on language
+         *
+         * A screen writing a translation is served in the language it writes: `editlang` beats
+         * the reader's own choice, and is never remembered, so leaving the editor comes back
          */
         public function detectPreferredLanguage($wiki, array $availableLanguages, string $httpAcceptLanguage = 'auto', ?string $page = ''): string
         {
+            $editLang = (isset($_GET['editlang']) && in_array($_GET['editlang'], $availableLanguages)) ? $_GET['editlang'] : '';
             $getLang = (isset($_GET['lang']) && in_array($_GET['lang'], $availableLanguages)) ? $_GET['lang'] : '';
             $cookieLang = (isset($_COOKIE[self::COOKIE]) && in_array($_COOKIE[self::COOKIE], $availableLanguages))
                 ? (string)$_COOKIE[self::COOKIE]
@@ -217,6 +196,10 @@ namespace YesWiki\Kernel\Service {
                 if (isset($metadata['lang']) && in_array($metadata['lang'], $availableLanguages)) {
                     $pageMetadataLang = $metadata['lang'];
                 }
+            }
+
+            if (!empty($editLang)) {
+                return $editLang;
             }
 
             if (!empty($getLang)) {

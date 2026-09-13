@@ -6,21 +6,21 @@ use YesWiki\Content\Controller\EntryController;
 use YesWiki\Content\Controller\FormController;
 use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Entity\PageType;
+use YesWiki\Content\Entity\Translations;
 use YesWiki\Content\Service\ContentTypeResolver;
 use YesWiki\Content\Service\EntryManager;
 use YesWiki\Content\Service\FormManager;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Content\Service\PageViewAppendices;
 use YesWiki\Content\Service\SemanticTransformer;
+use YesWiki\Content\Service\TranslatableContent;
 use YesWiki\Core\YesWikiHandler;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Performable\RegisteredHandler;
 use YesWiki\Kernel\Service\AssetRegistry;
 use YesWiki\Kernel\Service\InclusionStack;
-use YesWiki\Kernel\Service\LanguageService;
 use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\Redirector;
-use YesWiki\Kernel\Service\RuntimeConfig;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Kernel\Service\WikiUrls;
 use YesWiki\Render\Service\LinkRenderer;
@@ -85,12 +85,12 @@ class ShowHandler extends YesWikiHandler implements RegisteredHandler
 
         $pageContext = $this->getService(PageContext::class);
         $body = ($pageContext->getPage() ?? [])['body'] ?? [];
-        if (!empty(PageBody::content($body))) {
-            $body[PageBody::CONTENT] = $this->getService(LanguageService::class)->sectionFor(
-                PageBody::content($body),
-                $this->getService(RuntimeConfig::class)['default_language']
-            );
-            $pageContext->setPageField('body', $body);
+        if (isset($body[Translations::BODY_KEY])) {
+            $translatable = $this->getService(TranslatableContent::class);
+            $pageContext->setPageField('body', $translatable->forReader(
+                $body,
+                $translatable->sourceLanguageOfPage($pageContext->getMetadata())
+            ));
         }
     }
 

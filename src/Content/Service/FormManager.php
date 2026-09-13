@@ -8,6 +8,7 @@ use Symfony\Component\String\Slugger\AsciiSlugger;
 use YesWiki\Content\Entity\ContentTypeSchema;
 use YesWiki\Content\Entity\FieldRole;
 use YesWiki\Content\Entity\PageType;
+use YesWiki\Content\Entity\Translations;
 use YesWiki\Content\Field\BazarField;
 use YesWiki\Files\Service\AttachedFilePaths;
 use YesWiki\Files\Service\ImageResizer;
@@ -18,9 +19,10 @@ use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\EventDispatcher;
 use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Kernel\Service\KeyPairGenerator;
+use YesWiki\Kernel\Service\RequestScopedState;
 use YesWiki\Kernel\Service\TripleStore;
 
-class FormManager
+class FormManager implements RequestScopedState
 {
     // A form's tag is renameable; when it's renamed, the old tag is kept resolvable via
     // this triple (resource=old tag, value=new tag) so previously published references to
@@ -65,6 +67,7 @@ class FormManager
         AclService $aclService,
         private readonly Storage $storage,
         private readonly LocalFiles $localFiles,
+        private readonly TranslatableContent $translatableContent,
     ) {
         $this->container = $container;
         $this->dbService = $dbService;
@@ -82,6 +85,14 @@ class FormManager
         $this->hibernationService = $hibernationService;
         $this->paths = $this->container->get(AttachedFilePaths::class);
         $this->resizer = $this->container->get(ImageResizer::class);
+    }
+
+    /** The cached forms are overlaid with this request's language, so the next request starts over. */
+    public function startNewRequest(): void
+    {
+        $this->cachedForms = [];
+        $this->cacheValidatedForAll = false;
+        $this->cachedContentTypeTags = [];
     }
 
     protected function getBasePath(): string
@@ -236,7 +247,7 @@ class FormManager
      *
      * @return array<string, mixed>
      */
-    private function pageToFormArray(array $page): array
+    private function pageToFormArray(array $page, bool $translated = true): array
     {
         $body = $page['body'] ?? [];
         $activitypub = $page['metadatas']['activitypub'] ?? [];
@@ -250,6 +261,10 @@ class FormManager
 
         if (!is_array($body['template'] ?? null)) {
             $body['template'] = json_decode($this->normalizeTemplate($body['template'] ?? ''), true) ?? [];
+        }
+
+        if ($translated) {
+            $body = $this->translatableContent->forReader($body, $this->translatableContent->sourceLanguageOf($body));
         }
 
         $body['template'] = ContentTypeSchema::enforce(
@@ -288,6 +303,28 @@ class FormManager
         }
 
         return $this->loadFormFromTag($tag, $formId);
+    }
+
+    /**
+     * The form as stored -- source wording plus its translations -- for the write paths, which an overlaid read would have post back this reader's language.
+     *
+     * @param int|string $formId numeric id, current tag, or a former tag
+     *
+     * @return array<string, mixed>|null
+     */
+    public function getUntranslated($formId): ?array
+    {
+        $tag = $this->resolveTag((string)$formId);
+        if ($tag === null) {
+            return null;
+        }
+
+        $page = $this->pageManager->getOne($tag, null, true, true);
+        if (!$page) {
+            return null;
+        }
+
+        return $this->getFromRawData($this->pageToFormArray($page, false));
     }
 
     /**
@@ -676,7 +713,7 @@ class FormManager
             }
         }
 
-        $saved = $this->pageManager->save($tag, $body, '', true);
+        $saved = $this->pageManager->save($tag, Translations::pruned($body), '', true);
 
         $this->pageManager->setMetadata($tag, [
             'activitypub' => $this->buildActivitypubMetadata($data, $existingPage['metadatas']['activitypub'] ?? []),
@@ -685,6 +722,30 @@ class FormManager
         $this->dispatchFormEvent('form.updated', (string)$data['id'], $tag);
 
         return $saved;
+    }
+
+    /**
+     * Replace what this form says in $language, leaving its source wording alone.
+     *
+     * @param int|string            $formId
+     * @param array<string, string> $values path => text, already sanitized
+     */
+    public function saveTranslations($formId, string $language, array $values): void
+    {
+        if ($this->hibernationService->isWikiHibernated()) {
+            throw new \Exception(_t('WIKI_IN_HIBERNATION'));
+        }
+
+        $tag = $this->resolveTag((string)$formId);
+        if ($tag === null) {
+            throw new \Exception("Cannot translate form '{$formId}': no such form");
+        }
+
+        $this->startNewRequest();
+
+        $this->pageManager->saveTranslations($tag, $language, $values, true);
+
+        $this->dispatchFormEvent('form.updated', (string)$formId, $tag);
     }
 
     /**

@@ -31,7 +31,7 @@ class AccordionAction extends YesWikiAction implements RegisteredAction, Provide
                 ->addOnly()
                 ->settings(
                     Setting::number('nb')
-                        ->label('Nombre d\'encadrés dans l\'accordéon')
+                        ->label(_t('AB_template_action_accordion_nb_label'))
                         ->suggests(2)
                         ->notWritten(),
                 ),

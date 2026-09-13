@@ -6,6 +6,7 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Tamtamchik\SimpleFlash\Flash;
 use YesWiki\Content\Entity\ContentTypeSchema;
 use YesWiki\Content\Entity\FieldRole;
+use YesWiki\Content\Entity\Translations;
 use YesWiki\Content\Exception\EntryValidationException;
 use YesWiki\Content\Exception\TagAlreadyUsedException;
 use YesWiki\Content\Field\BazarField;
@@ -20,6 +21,7 @@ use YesWiki\Content\Service\FormManager;
 use YesWiki\Content\Service\FormPropertiesService;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Content\Service\SemanticTransformer;
+use YesWiki\Content\Service\TranslatableContent;
 use YesWiki\Core\YesWikiController;
 use YesWiki\Identity\Controller\CaptchaController;
 use YesWiki\Identity\Exception\UserFieldException;
@@ -33,6 +35,7 @@ use YesWiki\Kernel\Service\TripleStore;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Kernel\Service\WikiUrls;
 use YesWiki\Render\Service\ActionRunner;
+use YesWiki\Render\Service\LanguageSwitch;
 use YesWiki\Render\Service\MarkdownFormatterService;
 use YesWiki\Render\Service\TemplateEngine;
 use YesWiki\Search\Service\SearchManager;
@@ -401,7 +404,7 @@ class EntryController extends YesWikiController
      */
     public function update($entryId)
     {
-        $entry = $this->entryManager->getOne($entryId);
+        $entry = $this->entryManager->getUntranslated($entryId);
         if (empty($entry)) {
             return '<div class="alert alert-danger">' . _t('BAZ_PAS_DE_FICHE_AVEC_CET_ID') . ' : ' . $entryId . '</div>';
         }
@@ -410,12 +413,25 @@ class EntryController extends YesWikiController
             return '<div class="alert alert-danger">' . str_replace('{{nb}}', $entry['form_id'], _t('BAZ_PAS_DE_FORM_AVEC_ID_DE_CETTE_FICHE')) . '</div>';
         }
 
+        $translatable = $this->getService(TranslatableContent::class);
+        $source = $translatable->sourceLanguageOf($form);
+        $editing = $translatable->editingLanguage($this->getRequest()->query->get('editlang'), $source);
+        $translating = $editing !== $source;
+
         list($state, $error) = $this->captchaController->checkCaptchaBeforeSave('entry');
         $incomingUrl = $this->getIncomingUrl();
         $post = $this->getRequest()->request;
         try {
             if ($state && $post->has('valider')) {
-                $entry = $this->entryManager->update($entryId, $post->all());
+                if ($translating) {
+                    $this->entryManager->saveTranslations($entryId, $editing, $translatable->sanitize(
+                        $post->all(),
+                        $translatable->entryPaths($form)
+                    ));
+                    $entry = $this->entryManager->getUntranslated($entryId) ?? $entry;
+                } else {
+                    $entry = $this->entryManager->update($entryId, $post->all());
+                }
 
                 $redirectUrl = !empty($incomingUrl)
                     ? $incomingUrl
@@ -437,11 +453,18 @@ class EntryController extends YesWikiController
             $entry = array_merge($entry, $post->all());
         }
 
-        $renderedInputs = $this->getRenderedInputs($form, $entry);
+        $this->getService(LanguageSwitch::class)->writing(
+            $translatable->editingLanguages($source, $editing, $entry, $translatable->entryPaths($form))
+        );
+
+        $shown = $this->entryForEditing($entry, $form, $editing, $source);
+        $renderedInputs = $this->getRenderedInputs($form, $shown, $translating);
 
         return $this->render('@core/entries/form.twig', [
             'form' => $form,
             'entryId' => $entryId,
+            'editLanguage' => $editing,
+            'editingTranslation' => $translating,
             'renderedInputs' => $renderedInputs,
             'passwordForEditing' => isset($this->config['password_for_editing']) && !empty($this->config['password_for_editing']) && $post->has('password_for_editing') ? $post->get('password_for_editing') : '',
             'incomingUrl' => $incomingUrl,
@@ -498,6 +521,12 @@ class EntryController extends YesWikiController
             return null;
         }
 
+        $translatable = $this->getService(TranslatableContent::class);
+        $page['body'] = $translatable->forReader(
+            is_array($page['body'] ?? null) ? $page['body'] : [],
+            $translatable->sourceLanguageOfPage($this->pageManager->getMetadata($tag))
+        );
+
         return $this->getService(ContentTypeResolver::class)->asEntry($page, null, false);
     }
 
@@ -507,13 +536,21 @@ class EntryController extends YesWikiController
      *
      * @return list<string> one rendered input per field, plus the form's own extra inputs
      */
-    private function getRenderedInputs($form, $entry = null)
+    private function getRenderedInputs($form, $entry = null, bool $translatableOnly = false)
     {
         $renderedFields = [];
         foreach ($form['prepared'] as $field) {
-            if ($field instanceof BazarField) {
-                $renderedFields[] = $field->renderInputIfPermitted($entry);
+            if (!$field instanceof BazarField) {
+                continue;
             }
+            if ($translatableOnly && !$field->translatesValue()) {
+                continue;
+            }
+            $renderedFields[] = $field->renderInputIfPermitted($entry);
+        }
+
+        if ($translatableOnly) {
+            return $renderedFields;
         }
 
         $formProperties = $this->getService(FormPropertiesService::class);
@@ -521,6 +558,50 @@ class EntryController extends YesWikiController
         $renderedFields[] = $formProperties->renderCommentsToggle($form, $entry);
 
         return $renderedFields;
+    }
+
+    /**
+     * What the entry editor should show for $language: its translation, blank where it has none.
+     *
+     * @param array<string, mixed> $stored
+     * @param array<string, mixed> $form
+     *
+     * @return array<string, mixed>
+     */
+    private function entryForEditing(array $stored, array $form, string $language, string $source): array
+    {
+        if ($language === $source) {
+            return $stored;
+        }
+
+        $shown = Translations::strip($stored);
+        foreach ($this->getService(TranslatableContent::class)->entryPaths($form) as $path) {
+            $shown[$path['path']] = '';
+        }
+        $this->showWhatIsBeingTranslated($form, $stored);
+
+        return array_merge($shown, Translations::of($stored, $language));
+    }
+
+    /**
+     * Put the source wording on each field a translator is asked to fill in: the input itself stays
+     * empty, since an empty translation is what makes a reader fall back to the source.
+     *
+     * @param array<string, mixed> $form
+     * @param array<string, mixed> $stored
+     */
+    private function showWhatIsBeingTranslated(array $form, array $stored): void
+    {
+        $source = Translations::strip($stored);
+        foreach ($form['prepared'] ?? [] as $field) {
+            if (!$field instanceof BazarField || !$field->translatesValue()) {
+                continue;
+            }
+            $name = (string)$field->getPropertyName();
+            if ($name !== '' && is_scalar($source[$name] ?? null)) {
+                $field->showTranslationSource((string)$source[$name]);
+            }
+        }
     }
 
     /**

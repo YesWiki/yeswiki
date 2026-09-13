@@ -11,11 +11,17 @@ export const hasFilePicker = () =>
 export const filePickerIsOpen = () => Boolean(filePicker?.isOpen)
 
 /** The file button, for either of the two Vditors. */
-export const filePickerMenuItem = ({ format = 'markdown', onComplete }) => ({
+export const filePickerMenuItem = ({
+  format = 'markdown',
+  labelled = false,
+  onComplete,
+}) => ({
   name: 'yw-file',
   tip: _t('UPLOAD_A_FILE'),
   tipPosition: 'n',
-  icon: legacyIconToSprite('upload'),
+  icon: labelled
+    ? `${legacyIconToSprite('upload')}<span>${_t('UPLOAD_A_FILE_SHORT')}</span>`
+    : legacyIconToSprite('upload'),
   click() {
     filePicker ??= new FilePickerPanel()
     filePicker.open({ format, onComplete })

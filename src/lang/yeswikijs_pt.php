@@ -1,7 +1,6 @@
 <?php
 
 return [
-    'ACTION_BUILDER_COPY' => 'Entendido',
     'ACTION_BUILDER_PREVIEW' => 'Visão geral (não clicável)',
     'ACTION_BUILDER_ONLINEDOC' => 'Documentação online',
     'ACTION_BUILDER_OWNER' => 'Proprietário do arquivo',

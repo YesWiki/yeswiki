@@ -285,11 +285,6 @@ form:not(#ACEditor) .ace-container .ace_scroller {
   display: none;
 }
 
-.aceditor-btn-comment {
-  font-style: italic;
-  color: var(--yw-success) !important;
-}
-
 .ace_editor.ace_autocomplete {
   background: var(--yw-surface-raised);
   color: var(--yw-text);
@@ -530,6 +525,137 @@ form:not(#ACEditor) .ace-container .ace_scroller {
 
 .vditor-toolbar__item:has(> button[data-type='yw-switch-editor']) {
   float: right;
+}
+
+.aceditor-inline-tools {
+  display: contents;
+}
+
+.yw-format-menu {
+  padding: var(--yw-space-sm-y) var(--yw-space-sm-x);
+  white-space: nowrap;
+}
+
+.vditor-hint.yw-format-menu {
+  border: var(--yw-border-width) solid var(--yw-border);
+  border-radius: var(--yw-radius-sm);
+  max-width: none;
+}
+
+.yw-format-menu__group {
+  display: inline-block;
+  vertical-align: top;
+  min-width: 11em;
+  padding: 0 var(--yw-space-sm-x);
+}
+
+.yw-format-menu__group + .yw-format-menu__group {
+  border-left: var(--yw-border-width) solid var(--yw-border-subtle);
+}
+
+.yw-format-menu__label {
+  padding: var(--yw-space-sm-y) var(--yw-space-sm-x);
+  color: var(--yw-text-muted);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.yw-format-menu button {
+  display: flex;
+  align-items: center;
+  gap: var(--yw-space-md-x);
+  padding: var(--yw-space-sm-y) var(--yw-space-sm-x);
+  border-radius: var(--yw-radius-sm);
+  color: var(--yw-text-muted);
+  font-size: 11px;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+.yw-format-menu__entry {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: var(--yw-space-sm-x);
+  color: var(--yw-text);
+  font-size: 13px;
+}
+
+.yw-format-menu__entry > .yw-icon {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  color: var(--yw-text-muted);
+}
+
+.yw-format-menu [data-yw-format] > :not(.yw-icon) {
+  margin: 0;
+  font-weight: 600;
+}
+
+.yw-format-menu [data-yw-format] > h1 {
+  font-size: 1.5em;
+}
+
+.yw-format-menu [data-yw-format] > h2 {
+  font-size: 1.3em;
+}
+
+.yw-format-menu [data-yw-format] > h3 {
+  font-size: 1.15em;
+}
+
+.yw-format-menu [data-yw-format] > h4,
+.yw-format-menu [data-yw-format] > h5 {
+  font-size: 1em;
+}
+
+.yw-format-menu [data-yw-format] > .well {
+  display: inline;
+  padding: 0 var(--yw-space-sm-x);
+  font-weight: inherit;
+}
+
+.yw-format-menu [data-yw-format] > .yw-alert {
+  padding: 0 var(--yw-space-sm-x);
+  margin: 0;
+  font-weight: inherit;
+}
+
+.yw-format-menu [data-yw-format='info'] > .yw-icon {
+  color: var(--yw-info);
+}
+
+.yw-format-menu [data-yw-format='success'] > .yw-icon {
+  color: var(--yw-success);
+}
+
+.yw-format-menu [data-yw-format='warning'] > .yw-icon {
+  color: var(--yw-warning);
+}
+
+.yw-format-menu [data-yw-format='danger'] > .yw-icon {
+  color: var(--yw-danger);
+}
+
+.yw-format-menu__quote {
+  padding-left: var(--yw-space-sm-x);
+  border-left: 3px solid var(--yw-border);
+  color: var(--yw-text-muted);
+  font-weight: inherit;
+}
+
+.yw-format-menu [data-yw-format='comment'] {
+  color: var(--yw-success);
+  font-style: italic;
+}
+
+.vditor-toolbar__item > button.yw-btn > .yw-icon + span {
+  margin-left: var(--yw-space-sm-x);
 }
 
 #ACEditor .vditor:not(.vditor--fullscreen) {
@@ -1462,4 +1588,36 @@ input[type='range'] {
 
 #YesWikiFilePickerPanel .file-picker-options {
   border-top-color: var(--yw-border);
+}
+
+.yw-translate-from {
+  margin: var(--yw-space-sm-y) 0 0;
+  padding-left: var(--yw-space-sm-x);
+  border-left: 3px solid var(--yw-border);
+  color: var(--yw-text-muted);
+  font-size: 0.9em;
+}
+
+.yw-translate-from__label {
+  font-weight: 600;
+}
+
+.yw-translate-from__input::placeholder {
+  color: var(--yw-text-muted);
+  font-style: italic;
+  opacity: 1;
+}
+
+.yw-translate-from--body {
+  margin-top: var(--yw-space-md-y);
+}
+
+.yw-translate-from--body .yw-translate-from__text {
+  margin: var(--yw-space-sm-y) 0 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font-family: inherit;
+  white-space: pre-wrap;
 }

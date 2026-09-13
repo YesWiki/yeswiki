@@ -48,9 +48,11 @@ test('an enum field gives the list a facet above it, and the display switches', 
   await expect(page.locator('#form-screen-list .yw-items--card')).toBeVisible()
   await expect(page.locator('.yw-export-menu')).toBeVisible()
 
-  // The switch draws two labels for the presentation a category is currently on: the group's own
-  // summary, and the one inside its menu. The menu entry is the one a reader clicks.
-  await page
+  const table = page.locator('.yw-display-switch__group', {
+    has: page.locator('label[for="form-screen-display-table"]'),
+  })
+  await table.locator('> .yw-display-switch__option').hover()
+  await table
     .locator('.yw-display-switch__menu label[for="form-screen-display-table"]')
     .click()
   await expect(
@@ -96,7 +98,7 @@ test('the add button opens the entry form on the same tag', async ({
   page,
 }) => {
   await page.goto('/?Annuaire')
-  await page.locator('.form-screen__add').click()
+  await page.locator('.form-screen__add').press('Enter')
 
   await expect(page).toHaveURL(/\?Annuaire&view=saisir/)
   await expect(

@@ -120,6 +120,22 @@ class InstallWithoutABrowserTest extends YesWikiTestCase
                 $this->countRows($db, "SELECT COUNT(*) FROM yeswiki_pages WHERE tag = 'WikiAdmin' AND type = 'user' AND latest = 'Y'"),
                 'the first account exists'
             );
+            $this->assertSame(
+                0,
+                $this->countRows(
+                    $db,
+                    'SELECT COUNT(*) FROM (SELECT tag FROM yeswiki_pages WHERE latest = \'Y\''
+                    . ' GROUP BY tag HAVING COUNT(*) > 1) AS collisions'
+                ),
+                'a tag names one Content (ADR-0001), so no tag has two current rows'
+            );
+            $adminRow = $db->query("SELECT type FROM yeswiki_pages WHERE tag = 'WikiAdmin' AND latest = 'Y'");
+            $this->assertNotFalse($adminRow);
+            $this->assertSame(
+                'user',
+                (string)$adminRow->fetchColumn(),
+                'and ?WikiAdmin is the account, not a page shadowing it'
+            );
         } finally {
             $this->removeInstance($dir);
         }

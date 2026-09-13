@@ -175,7 +175,7 @@ test — `AB_bazar<name>_label`, which `EntryListAction` builds from a webmaster
 
 **Markup syntax** — `**bold**`, `> quote`, `{# comment #}`, and the `:::info … :::`
 callouts — belongs to the editor toolbars, not the palette. A Component writes a `{{tag}}`;
-markup syntax does not, and that is the whole of the rule (ADR-0017). Callouts are four
-items in the ACeditor's Format dropdown and four in Vditor's toolbar, each of which wraps
-what is selected, wraps the block at the cursor, or _retypes_ a callout the cursor is
-already inside.
+markup syntax does not, and that is the whole of the rule (ADR-0017). Both editors draw the
+same Format menu from one list (`javascripts/editor-markup-syntax.js`), callouts included:
+four entries that wrap what is selected, wrap the block at the cursor, or _retype_ a callout
+the cursor is already inside.
