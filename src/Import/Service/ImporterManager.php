@@ -18,6 +18,8 @@ class ImporterManager
     protected EntryManager $entryManager;
     protected FormManager $formManager;
     protected ListManager $listManager;
+    /** @var array<string, class-string<Importer>>|null */
+    private ?array $availableImporters = null;
 
     public function __construct(
         ParameterBagInterface $params,
@@ -42,12 +44,15 @@ class ImporterManager
      */
     public function getAvailableImporters(): array
     {
+        if ($this->availableImporters !== null) {
+            return $this->availableImporters;
+        }
         if (!$this->services instanceof Container) {
             return [];
         }
         $importers = [];
         foreach ($this->services->getServiceIds() as $serviceId) {
-            if (!is_subclass_of($serviceId, Importer::class)) {
+            if (!str_ends_with($serviceId, 'Importer') || !is_subclass_of($serviceId, Importer::class)) {
                 continue;
             }
             $parts = explode('\\', $serviceId);
@@ -57,6 +62,7 @@ class ImporterManager
             }
             $importers[$shortName] = $serviceId;
         }
+        $this->availableImporters = $importers;
 
         return $importers;
     }
@@ -291,7 +297,7 @@ class ImporterManager
         $postData = null,
         bool $noSSLCheck = false,
         bool $showHeader = false,
-        int $timeoutInSec = 10
+        int $timeoutInSec = 30
     ) {
         $ch = curl_init($url);
         if ($ch === false) {
@@ -322,13 +328,16 @@ class ImporterManager
 
     /**
      * Download $sourceUrl into the wiki's upload directory and return the local file name to store in an entry's file/image field (empty string on failure).
+     *
+     * @param list<string> $headers request headers, a session cookie above all: a login-protected upload directory answers 403 without one
      */
     public function downloadFile(
         string $sourceUrl,
         bool $noSSLCheck = false,
-        int $timeoutInSec = 10,
+        int $timeoutInSec = 30,
         bool $replaceExisting = false,
-        ?string $destFileName = null
+        ?string $destFileName = null,
+        array $headers = []
     ): string {
         if (empty($sourceUrl)) {
             return '';
@@ -349,7 +358,7 @@ class ImporterManager
         // stream and the destination may be a bucket, so the two cannot be the same thing -- and
         // writing straight to the destination would publish a half-downloaded file under a name
         // the wiki already treats as an attachment.
-        return $this->storage->withTemporaryFile(pathinfo($destFile, PATHINFO_EXTENSION), function (string $tmpPath) use ($sourceUrl, $destPath, $destFile, $timeoutInSec, $noSSLCheck) {
+        return $this->storage->withTemporaryFile(pathinfo($destFile, PATHINFO_EXTENSION), function (string $tmpPath) use ($sourceUrl, $destPath, $destFile, $timeoutInSec, $noSSLCheck, $headers) {
             $fp = $this->localFiles->openForWriting($tmpPath);
             if ($fp === null) {
                 echo 'Impossible d\'écrire dans "' . $this->uploadPath() . '".' . "\n";
@@ -365,6 +374,9 @@ class ImporterManager
             }
             curl_setopt($ch, CURLOPT_FILE, $fp);
             curl_setopt($ch, CURLOPT_HEADER, false);
+            if (!empty($headers)) {
+                curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+            }
             curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $timeoutInSec);
             curl_setopt($ch, CURLOPT_TIMEOUT, $timeoutInSec);
             curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);

@@ -1,5 +1,3 @@
-<h1>{{ _t('IMPORTER_ADMIN_TITLE') }}</h1>
-
 {% if message is not null %}
 <div class="yw-alert yw-alert--success">{{ message }}</div>
 {% endif %}
@@ -52,7 +50,7 @@
       <td colspan="4"><pre>{{ syncOutput }}</pre></td>
     </tr>
     {% endif %}
-    {% if lastSync[id].last is not null %}
+    {% if lastSync[id].last is not null and syncedSourceId != id %}
     <tr class="importer-sync-log-row hide" data-id="{{ id }}">
       <td colspan="4"><pre>{{ lastSync[id].last.output }}</pre></td>
     </tr>
@@ -106,8 +104,8 @@
     <label class="yw-form-label" for="formId">{{ _t('IMPORTER_BAZAR_ID') }}</label>
     <select required class="yw-input" id="formId" name="formId">
       <option value="new">{{ _t('IMPORTER_FORM_NEW') }}</option>
-      {% for formId, form in forms %}
-      <option value="{{ formId }}">{{ form.label|default(formId) }} ({{ formId }})</option>
+      {% for formId, formLabel in forms %}
+      <option value="{{ formId }}">{{ formLabel|default(formId) }} ({{ formId }})</option>
       {% endfor %}
     </select>
   </div>

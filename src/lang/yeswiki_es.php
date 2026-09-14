@@ -2,6 +2,8 @@
 
 return [
     'IMPORTER_FIELD_REMOTEFORMID' => 'Identificador del formulario remoto',
+    'IMPORTER_FIELD_YESWIKILIST_URL' => 'Url de las fichas del formulario remoto (api json)',
+    'IMPORTER_FIELD_YESWIKILIST_URL_HELP' => 'De la forma https://mi-wiki-remoto.fr/?api/forms/12/entries&fields=id_fiche,bf_titre : solo el identificador y el título de las fichas sirven para construir la lista, pedirlos explícitamente con &fields= evita que el wiki remoto devuelva todas las fichas enteras.',
     'IMPORTER_FIELD_YESWIKITOYESWIKI_URL' => 'Url de las fichas del formulario remoto (api json)',
     'IMPORTER_FIELD_YESWIKITOYESWIKI_URL_HELP' => 'De la forma https://mi-wiki-remoto.fr/?api/forms/12/entries/json — de ahí se deduce el identificador del formulario remoto. Los parámetros añadidos a esta url (por ejemplo &query=bf_ville=Marseille) se conservan, para importar solo una parte de las fichas.',
     'IMPORTER_FIELD_YESWIKITOYESWIKI_AUTH_HELP' => 'Opcional. Deje el identificador y la contraseña vacíos para leer de forma anónima un formulario remoto público; rellene ambos para importar desde un formulario que no es legible públicamente.',
@@ -76,6 +78,7 @@ return [
     'IMPORTER_BAZAR_ID' => 'Formulario vinculado',
     'IMPORTER_FORM_NEW' => '— Crear un nuevo formulario —',
     'SOURCE_SUCCESSFULLY_SYNCED' => 'Fuente "%{source}" sincronizada correctamente.',
+    'IMPORTER_SYNC_ALL' => 'Sincronizar todo',
     'IMPORTER_SYNC_RUN' => 'Lanzar la sincronización',
     'IMPORTER_SYNC_NO_CONSOLE' => 'Imposible lanzar la consola: sincronice desde la línea de comandos (./yeswicli importer:sync).',
     'IMPORTER_ELAPSED_TIME' => '(en %{duration})',
@@ -128,9 +131,7 @@ return [
     'DASHBOARD_EXPORT_API' => 'Todas las rutas de la API',
     'DASHBOARD_ADMIN_CONTENT' => 'Contenidos',
     'DASHBOARD_ADMIN_LISTS' => 'Listas',
-    'DASHBOARD_ADMIN_IMPORTS' => 'Importación / exportación',
-    'DASHBOARD_ADMIN_IMPORT' => 'Importar fichas',
-    'DASHBOARD_ADMIN_EXPORT' => 'Exportar fichas',
+    'DASHBOARD_ADMIN_IMPORTS' => 'Importaciones',
     'DASHBOARD_ADMIN_KEYWORDS' => 'Palabras clave',
     'DASHBOARD_ADMIN_USERS' => 'Usuarias y usuarios',
     'DASHBOARD_ADMIN_GROUPS' => 'Grupos',

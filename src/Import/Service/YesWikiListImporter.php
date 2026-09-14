@@ -56,7 +56,12 @@ class YesWikiListImporter extends Importer
     public static function getAdminFields(): array
     {
         return [
-            'url' => ['type' => 'url', 'required' => true],
+            'url' => [
+                'type' => 'url',
+                'required' => true,
+                'label' => 'IMPORTER_FIELD_YESWIKILIST_URL',
+                'help' => 'IMPORTER_FIELD_YESWIKILIST_URL_HELP',
+            ],
             'listId' => ['type' => 'text', 'required' => true],
             'title' => ['type' => 'text', 'required' => false],
             'noSSLCheck' => ['type' => 'checkbox', 'required' => false],

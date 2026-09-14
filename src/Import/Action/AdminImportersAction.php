@@ -111,7 +111,7 @@ class AdminImportersAction extends YesWikiAction implements RegisteredAction
             'importerFields' => $importerFields,
             'importersWithoutForm' => $importersWithoutForm,
             'importersWithFieldMapping' => $importersWithFieldMapping,
-            'forms' => $formManager->getAll(),
+            'forms' => $formManager->getAllLabels(),
             'dataSources' => $editableDataSources,
             'dataSourcesJson' => json_encode($editableDataSources, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP),
             'message' => $message,

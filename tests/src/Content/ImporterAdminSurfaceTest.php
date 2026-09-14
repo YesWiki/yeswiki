@@ -3,6 +3,7 @@
 namespace YesWiki\Test\Content;
 
 use PHPUnit\Framework\Attributes\Depends;
+use YesWiki\Content\Service\FormManager;
 use YesWiki\Core\YesWikiRuntime;
 use YesWiki\Kernel\Performable\ActionRegistry;
 use YesWiki\Render\Service\TemplateEngine;
@@ -37,6 +38,33 @@ class ImporterAdminSurfaceTest extends YesWikiTestCase
 
         $this->assertTrue($twig->hasTemplate('@core/admin-importers.twig'));
         $this->assertTrue($twig->hasTemplate('@core/importer-sync.twig'));
+    }
+
+    #[Depends('testWikiExisting')]
+    public function testTheTargetFormSelectIsBuiltFromFormLabels(YesWikiRuntime $wiki): void
+    {
+        $html = $wiki->services->get(TemplateEngine::class)->render('@core/admin-importers.twig', [
+            'currentUrl' => '/?AdminImporters',
+            'lastSync' => [],
+            'importers' => [],
+            'importerFields' => [],
+            'importersWithoutForm' => [],
+            'importersWithFieldMapping' => [],
+            'forms' => $wiki->services->get(FormManager::class)->getAllLabels(),
+            'dataSources' => [],
+            'dataSourcesJson' => '{}',
+            'message' => null,
+            'syncOutput' => null,
+            'syncedSourceId' => null,
+        ]);
+
+        foreach ($wiki->services->get(FormManager::class)->getAllLabels() as $formId => $label) {
+            $this->assertStringContainsString(
+                '<option value="' . $formId . '">' . htmlspecialchars((string)$label, ENT_QUOTES) . ' (' . $formId . ')</option>',
+                $html,
+                "form {$formId} is not offered as a target form"
+            );
+        }
     }
 
     #[Depends('testWikiExisting')]

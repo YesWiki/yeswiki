@@ -320,6 +320,9 @@ class YesWikiToYesWikiImporter extends Importer
                 $this->fileFieldKeys[] = $localField;
             }
         }
+        echo empty($this->fileFieldKeys)
+            ? 'Aucun champ fichier/image dans la correspondance : les fichiers ne seront pas importés.' . "\n"
+            : 'Champs fichier/image (' . $this->filesMode() . ') : ' . implode(', ', $this->fileFieldKeys) . "\n";
 
         $mappedEntries = [];
         foreach ($remoteEntries as $remoteEntry) {
@@ -549,7 +552,8 @@ class YesWikiToYesWikiImporter extends Importer
                 $this->noSSLCheck(),
                 $this->timeoutInSec(),
                 false,
-                $value
+                $value,
+                empty($this->cookie) ? [] : ['Cookie: ' . $this->cookie]
             );
 
             $mappedEntry[$key] = $localFileName;
