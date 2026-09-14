@@ -24,6 +24,9 @@ class DashboardData
     /** Rows read per row shown, so a list still fills after the unreadable ones are dropped. */
     private const ACL_OVERFETCH = 4;
 
+    /** A wiki sits at the root or a directory or two down; a deeper path in front of a query is an article url carrying tracking parameters, not a site. */
+    private const ORIGIN_PATH_MAX_DEPTH = 2;
+
     public function __construct(
         private readonly DbService $dbService,
         private readonly PageManager $pageManager,
@@ -158,7 +161,7 @@ class DashboardData
 
         $grouped = [];
         foreach ($rows as $row) {
-            $origin = $this->originOf((string)$row['source']);
+            $origin = self::originOf((string)$row['source']);
             $grouped[$origin]['origin'] = $origin;
             $grouped[$origin]['entries'][] = [
                 'tag' => (string)$row['tag'],
@@ -238,8 +241,12 @@ class DashboardData
         return $readable;
     }
 
-    /** Where a source_url points, without the page it points at: `https://host/path`. */
-    private function originOf(string $sourceUrl): string
+    /**
+     * The site a source_url comes from: its host, plus the base path when the imported resource is named in the query string rather than in the path.
+     *
+     * A YesWiki names its pages in the query (`https://lab.example.org/ecto/?PageTag`), so everything before the "?" is the wiki itself and has to stay in the key, or two wikis hosted side by side would be read as one source. A blog names its articles in the path (`https://framablog.org/2026/09/01/titre/`), so keeping the path would file each imported article under a source of its own.
+     */
+    public static function originOf(string $sourceUrl): string
     {
         $parts = parse_url($sourceUrl);
         if (!is_array($parts) || empty($parts['host'])) {
@@ -249,8 +256,16 @@ class DashboardData
         if (!empty($parts['port'])) {
             $origin .= ':' . $parts['port'];
         }
+        $path = rtrim((string)($parts['path'] ?? ''), '/');
+        if (str_ends_with($path, '/index.php')) {
+            $path = substr($path, 0, -strlen('/index.php'));
+        }
+        $depth = count(array_filter(explode('/', $path), static fn (string $segment): bool => $segment !== ''));
+        if (empty($parts['query']) || $depth > self::ORIGIN_PATH_MAX_DEPTH) {
+            return $origin;
+        }
 
-        return $origin . rtrim($parts['path'] ?? '', '/');
+        return $origin . $path;
     }
 
     /** The first line of a comment, short enough to sit on one row. */
