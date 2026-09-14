@@ -332,6 +332,9 @@ class Utils
         }
 
         // on affiche le template
+        if (!$this->wiki->services->get(\YesWiki\Core\Service\TemplateEngine::class)->hasTemplate("@templates/$template")) {
+            $template = 'diaporama_slides.tpl.html';
+        }
         $output = $this->wiki->render("@templates/$template", [
             'pagetag' => $pagetag,
             'slides' => $slides,

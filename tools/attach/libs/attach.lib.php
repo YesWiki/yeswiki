@@ -746,7 +746,7 @@ if (!class_exists('attach')) {
          */
         public function performUpload()
         {
-            $this->file = $_POST['file'];
+            $this->file = basename($_POST['file'] ?? '');
             $pathinfo = pathinfo($this->file);
             $ext = strtolower($pathinfo['extension'] ?? '');
             if ($this->wiki->config['authorized-extensions'] && !in_array($ext, array_keys($this->wiki->config['authorized-extensions']))) {
@@ -763,6 +763,13 @@ if (!class_exists('attach')) {
             switch ($_FILES['upFile']['error']) {
                 case 0:
                     $srcFile = $_FILES['upFile']['tmp_name'];
+                    $uploadBase = realpath($this->attachConfig['upload_path']);
+                    $destDir = realpath(dirname($destFile));
+                    if ($uploadBase === false || $destDir === false
+                        || strncmp($destDir . DIRECTORY_SEPARATOR, $uploadBase . DIRECTORY_SEPARATOR, strlen($uploadBase . DIRECTORY_SEPARATOR)) !== 0) {
+                        echo '<div class="alert alert-error alert-danger">' . _t('ERROR_MOVING_TEMPORARY_FILE') . "</div>\n";
+                        break;
+                    }
                     if (move_uploaded_file($srcFile, $destFile)) {
                         chmod($destFile, 0644);
                         if ($ext === 'svg' || $ext === 'xml') {

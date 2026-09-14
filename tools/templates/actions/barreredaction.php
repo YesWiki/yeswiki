@@ -26,6 +26,9 @@ if ((!empty($user) || $this->HasAccess('write')) && $this->method != 'revisions'
     if (empty($template)) {
         $template = 'barreredaction_basic.twig';
     }
+    if (!$this->services->get(YesWiki\Core\Service\TemplateEngine::class)->hasTemplate("@templates/$template")) {
+        $template = 'barreredaction_basic.twig';
+    }
 
     // on peut ajouter des classes, la classe par défaut est .footer
     $options['class'] = ($this->GetParameter('class') ? 'footer ' . $this->GetParameter('class') : 'footer');

@@ -24,6 +24,9 @@ if (empty($listelements['mail'])) {
     if (empty($template)) {
         $template = 'subscribe-form.twig';
     }
+    if (!$this->services->get(YesWiki\Core\Service\TemplateEngine::class)->hasTemplate("@contact/$template")) {
+        $template = 'subscribe-form.twig';
+    }
 
     $listelements['hiddeninputs'] = '';
     // on indique quel type de liste est utilisé pour formatter les envois de mail de facon adaptee

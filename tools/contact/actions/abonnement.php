@@ -24,6 +24,9 @@ if (empty($listelements['mail'])) {
     if (empty($template)) {
         $template = 'subscribe-form.twig';
     }
+    if (!$this->services->get(YesWiki\Core\Service\TemplateEngine::class)->hasTemplate("@contact/$template")) {
+        $template = 'subscribe-form.twig';
+    }
 
     // on peut ajouter des classes à la classe par défaut
     $listelements['class'] = ($this->GetParameter('class') ? 'form-abonnement ' . $this->GetParameter('class') : 'form-abonnement');
