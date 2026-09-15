@@ -793,7 +793,7 @@ class SearchManager
         $vSelectRequest
         = [
             'p.*',
-            'JSON_UNQUOTE(JSON_EXTRACT(body, \'$.id_typeannonce\')) AS `' . $this->renameJSONPathVariable('id_typeannonce') . '`',
+            'JSON_VALUE(body, \'$.id_typeannonce\') AS \'id_typeannonce\'',
         ];
 
         // - Extract all fields ("single" and "multiple" mode)
@@ -841,7 +841,7 @@ class SearchManager
 
             // else we split it
 
-            $vSplitteds[] = 'SELECT id, champ, elt FROM ' . $this->renameJSONPathVariable($vFieldName) . '_multiple';
+            $vSplitteds[] = "SELECT id, champ, elt FROM {$this->renameJSONPathVariable($vFieldName)}_multiple";
 
             $vSplittedsRequest
                         .= ', ' . $this->renameJSONPathVariable($vFieldName) . '_multiple AS '
