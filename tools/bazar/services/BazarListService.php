@@ -37,7 +37,9 @@ class BazarListService
     {
         $vIDs = $this->getIDs($pOptions['idtypeannonce'] ?? $pOptions['id'] ?? '');
 
-        $vLocalForms = $this->formManager->getMany($vIDs['locals']);
+
+
+        $vLocalForms = $this->formManager->getMany($vIDs['locals'], $pOptions['lang'] ?? 'default');
         $vExternalForms = $this->externalBazarService->getForms($vIDs['externals'], $pOptions['refresh'] ?? null);
 
         $vForms = $vLocalForms + $vExternalForms;

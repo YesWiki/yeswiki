@@ -86,7 +86,7 @@ class Wiki
         $this->method = $init->method;
 
         $this->request = Request::createFromGlobals();
-        $this->lang = $this->request->get('lang') ?? $this->config['default_language'] ?? 'fr';
+        $this->lang = explode('#', $this->request->get('lang', $this->config['default_language'] ?? 'fr'))[0];
         $this->services = $init->initCoreServices($this);
         $this->loadExtensions();
 

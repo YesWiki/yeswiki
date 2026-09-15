@@ -242,9 +242,7 @@ class PageManager
             $lang = $bazar_lang === 'default' ? $this->wiki->lang : $bazar_lang;
         }
 
-        if (!isset($lang) or $lang == 'all') {
-            $columns = '*';
-        } else {
+        if (isset($lang) and $lang != 'all') {
             $columns = "id, tag, time, body_r, owner, user, latest, handler, comment_on ,JSON_MERGE_PATCH(body, COALESCE(JSON_EXTRACT(body, \"\$.extralang.$lang\"), body)) as body";
         }
 

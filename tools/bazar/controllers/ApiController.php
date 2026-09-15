@@ -505,7 +505,7 @@ class ApiController extends YesWikiController
         $searchfields = $searchfields == null ? [] : $searchfields;
 
         $vKeywords = $get->has('keywords') ? urldecode($get->get('keywords')) : '';
-
+        $formattedGet['lang'] = explode('#', $get->get('lang', 'default'))[0];
         $formattedGet['keywords'] = $vKeywords;
         $formattedGet['searchfields'] = $searchfields;
         $formattedGet['idtypeannonce'] = $get->get('idtypeannonce') ?? $get->get('id') ?? null;

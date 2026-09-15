@@ -519,7 +519,7 @@ class SearchManager
      *
      * @return $string
      */
-    public function prepareSearchRequest(&$params = [], bool $filterOnReadACL = false, bool $applyOnAllRevisions = false, $columns = 'f.*'): string
+    public function prepareSearchRequest(&$params = [], bool $filterOnReadACL = false, bool $applyOnAllRevisions = false, $columns = 'f.*', $lang = 'default'): string
     {
         // Merge default parameters with given parameters
 
@@ -584,7 +584,7 @@ class SearchManager
                 },
             );
 
-            $vIDsRequest .= 'JSON_UNQUOTE(JSON_EXTRACT(body, \'$.id_typeannonce\')) IN (' . join(',', array_map(function ($pFormID) {
+            $vIDsRequest .= 'JSON_VALUE(body, \'$.id_typeannonce\') IN (' . join(',', array_map(function ($pFormID) {
                 return '\'' . $pFormID . '\'';
             }, $vFormIDs)) . ')';
         } else {
@@ -803,13 +803,14 @@ class SearchManager
 
             // Check that it was not already extracted
 
+            $lang = $lang == 'default' ? $this->wiki->lang : $lang;
             if (!$vField['isExtracted']) {
                 // Extract it if it is not yet done
 
                 $vSQLNom = mysqli_real_escape_string($this->wiki->dblink, $vFieldName);
                 $vRenamedSQLNom = mysqli_real_escape_string($this->wiki->dblink, $this->renameJSONPathVariable($vFieldName));
 
-                $vSelectRequest[] = 'JSON_UNQUOTE(JSON_EXTRACT(body, \'$.' . $vSQLNom . '\')) AS `' . $vRenamedSQLNom . '`';
+                $vSelectRequest[] = "JSON_UNQUOTE(COALESCE(JSON_EXTRACT(body, '\$.extralang.{$lang}.{$vSQLNom}'), JSON_EXTRACT(body, '\$.{$vSQLNom}'))) AS `{$vRenamedSQLNom}`";
 
                 // rembember it was extracted
 

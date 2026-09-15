@@ -277,10 +277,10 @@ class FormManager
         return $form;
     }
 
-    public function getAll(): array
+    public function getAll($bazar_lang = 'default'): array
     {
         if (!$this->cacheValidatedForAll) {
-            $forms =  $forms = $this->pageManager->getManyFromTriple('form');
+            $forms =  $forms = $this->pageManager->getManyFromTriple('form', '*', $bazar_lang);
             foreach ($forms as $form) {
                 if (!empty($form['id'])) {
                     // save only not empty formId
@@ -319,26 +319,27 @@ class FormManager
         return $forms;
     }
 
-    public function getMany($formsIds): array
+    public function getMany($formsIds, $bazar_lang = 'default'): array
     {
         if (count($formsIds) == 0) {
-            return $this->getAll();
+            return $this->getAll($bazar_lang);
         }
 
         $results = [];
 
         foreach ($formsIds as $formId) {
-            if (empty($this->cachedForms[$formId])) {
-                $form = $this->getOne($formId);
+
+            if (empty($this->cachedForms[$formId.$bazar_lang])) {
+                $form = $this->getOne($formId, $bazar_lang);
                 // don't persist a "form not found" result into the shared cache : a
                 // subsequent getAll() only overwrites cache entries for ids that actually
                 // exist as `nature` rows, so a cached null here would otherwise leak into
                 // every later getAll() call for the rest of the request
                 if ($form !== null) {
-                    $this->cachedForms[$formId] = $form;
+                    $this->cachedForms[$formId.$bazar_lang] = $form;
                 }
             } else {
-                $form = $this->cachedForms[$formId];
+                $form = $this->cachedForms[$formId.$bazar_lang];
             }
             $results[$formId] = $form;
         }
