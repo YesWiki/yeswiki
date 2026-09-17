@@ -16,6 +16,12 @@
                            name="{{ field.propertyName }}"
                            accept=".webp, .svg, .avif, .jpeg, .jpg, .gif, .png">
                 </label>
+                <button type="button"
+                        class="btn btn-sm btn-default yw-image-cancel hide"
+                        data-image-field="{{ field.propertyName }}">
+                    <i class="fa fa-times"></i>
+                    {{ _t("BAZ_ANNULER_IMAGE") }}
+                </button>
                 {% if isAllowedToDeleteFile and not isDefaultImage %}
                     <a class="btn btn-sm btn-danger"
                        href="{{ deleteUrl }}"
@@ -71,6 +77,14 @@
                            accept=".webp, .jpeg, .jpg, .gif, .png"
                            {% if field.required %}required{% endif %}>
                     <output id="img-{{ field.propertyName }}" class="col-xs-9"></output>
+                    <div class="image-actions">
+                        <button type="button"
+                                class="btn btn-sm btn-default yw-image-cancel hide"
+                                data-image-field="{{ field.propertyName }}">
+                            <i class="fa fa-times"></i>
+                            {{ _t("BAZ_ANNULER_IMAGE") }}
+                        </button>
+                    </div>
                 </div>
                 <div role="tabpanel" class="tab-pane" id="{{ field.propertyName }}-url">
                     <input type="url"

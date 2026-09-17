@@ -12,8 +12,20 @@ abstract class CheckboxField extends EnumField
     protected $formName; // form name for drag and drop
     protected $normalDisplayMode;
     protected $dragAndDropDisplayMode;
+    protected $orderBy; // option criterion to sort on ; empty keeps the natural order
+    protected $orderDirection; // asc or desc
+    protected $maxOptions; // number of proposed options ; 0 if no limit
 
     protected const FIELD_DISPLAY_METHOD = 7;
+    protected const FIELD_ORDER_BY = 16;
+    protected const FIELD_ORDER_DIRECTION = 17;
+    protected const FIELD_MAX_OPTIONS = 18;
+
+    protected const ORDER_BY_LABEL = 'label';
+    protected const ORDER_BY_ID = 'id';
+    protected const ORDER_DIRECTION_DESC = 'desc';
+    protected const ORDER_DIRECTION_ASC = 'asc';
+
     protected const CHECKBOX_DISPLAY_MODE_LIST = 'list';
     protected const CHECKBOX_DISPLAY_MODE_DIV = 'div';
     protected const CHECKBOX_TWIG_LIST = [
@@ -32,6 +44,11 @@ abstract class CheckboxField extends EnumField
         $this->formName = $this->name;
         $this->normalDisplayMode = self::CHECKBOX_DISPLAY_MODE_DIV;
         $this->dragAndDropDisplayMode = '';
+        $this->orderBy = trim(strval($values[self::FIELD_ORDER_BY] ?? ''));
+        $this->orderDirection = strtolower(trim(strval($values[self::FIELD_ORDER_DIRECTION] ?? ''))) === self::ORDER_DIRECTION_DESC
+            ? self::ORDER_DIRECTION_DESC
+            : self::ORDER_DIRECTION_ASC;
+        $this->maxOptions = max(0, intval($values[self::FIELD_MAX_OPTIONS] ?? 0));
     }
 
     public function getValueStructure() // See BazarField::getValueStructure
@@ -41,16 +58,19 @@ abstract class CheckboxField extends EnumField
 
     protected function renderInput($entry)
     {
+        $options = $this->getInputOptions($entry);
+
         switch ($this->displayMethod) {
             case 'tags':
                 $htmlReturn = $this->render('@bazar/inputs/checkbox_tags.twig', [
-                    'bazarlistTagsInputsData' => json_encode($this->generateTagsData($entry)),
+                    'bazarlistTagsInputsData' => json_encode($this->generateTagsData($entry, $options)),
                 ]);
 
                 return $htmlReturn;
             case 'dragndrop':
                 return $this->render($this->dragAndDropDisplayMode, [
-                    'options' => $this->getOptions(),
+                    'options' => $options,
+                    'optionsDetails' => $this->getOptionsDetails(array_keys($options)),
                     'selectedOptionsId' => $this->getValues($entry),
                     'formName' => $this->formName ?? $this->getFormName(),
                     'name' => _t('BAZ_DRAG_n_DROP_CHECKBOX_LIST'),
@@ -78,7 +98,7 @@ abstract class CheckboxField extends EnumField
                 }
 
                 return $this->render(self::CHECKBOX_TWIG_LIST[$this->normalDisplayMode], [
-                    'options' => $this->getOptions(),
+                    'options' => $options,
                     'values' => $this->getValues($entry),
                     'displaySelectAllLimit' => $this->displaySelectAllLimit,
                     'displayFilterLimit' => $this->displayFilterLimit,
@@ -92,6 +112,86 @@ abstract class CheckboxField extends EnumField
         $value = $this->getValue($entry);
 
         return $this->sanitizeValues($value, 'array');
+    }
+
+    /**
+     * Options offered by the input : ordered, limited, and always keeping the selected ones.
+     */
+    protected function getInputOptions($entry): array
+    {
+        $options = $this->getOptions();
+        if (!is_array($options)) {
+            return [];
+        }
+
+        $options = $this->orderOptions($options);
+        if ($this->maxOptions <= 0 || count($options) <= $this->maxOptions) {
+            return $options;
+        }
+
+        $limited = array_slice($options, 0, $this->maxOptions, true);
+        foreach ($this->getValues($entry) as $selectedId) {
+            if (!array_key_exists($selectedId, $limited) && array_key_exists($selectedId, $options)) {
+                $limited[$selectedId] = $options[$selectedId];
+            }
+        }
+
+        return $limited;
+    }
+
+    /**
+     * Sort the options on the configured criterion, ascending or descending.
+     */
+    protected function orderOptions(array $options): array
+    {
+        switch ($this->orderBy) {
+            case self::ORDER_BY_ID:
+                uksort($options, function ($a, $b) {
+                    return $this->compareForOrder($a, $b);
+                });
+
+                return $options;
+            case self::ORDER_BY_LABEL:
+                uasort($options, function ($a, $b) {
+                    return $this->compareForOrder($a, $b);
+                });
+
+                return $options;
+            default:
+                return $this->orderDirection === self::ORDER_DIRECTION_DESC
+                    ? array_reverse($options, true)
+                    : $options;
+        }
+    }
+
+    /**
+     * Compare two option criteria, honouring the configured direction.
+     */
+    protected function compareForOrder($first, $second): int
+    {
+        $comparison = strnatcasecmp($this->sortableValue($first), $this->sortableValue($second));
+
+        return $this->orderDirection === self::ORDER_DIRECTION_DESC ? -$comparison : $comparison;
+    }
+
+    /**
+     * Flatten a raw value into a string usable by a natural order comparison.
+     */
+    protected function sortableValue($value): string
+    {
+        if ($value === null) {
+            $value = '';
+        }
+
+        return removeAccents(is_scalar($value) ? strval($value) : json_encode($value));
+    }
+
+    /**
+     * Extra data shown beside each option in the drag and drop input.
+     */
+    protected function getOptionsDetails(array $optionsIds): array
+    {
+        return [];
     }
 
     public function formatValuesBeforeSave($entry)
@@ -148,11 +248,11 @@ abstract class CheckboxField extends EnumField
         return $rawValue;
     }
 
-    private function generateTagsData($entry)
+    private function generateTagsData($entry, array $options)
     {
         // list of choices available from options
         $existingTags = [];
-        foreach ($this->getOptions() as $key => $label) {
+        foreach ($options as $key => $label) {
             $existingTags[$key] = [
                 'id' => $key,
                 'title' => $label,

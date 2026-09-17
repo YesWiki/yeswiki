@@ -25,10 +25,43 @@ export default {
         placeholder:
           'ex. : checkboxfiche6=PageTag ; cf. https://yeswiki.net/?LierFormulairesEntreEux',
       },
+      orderBy: {
+        label: _t('BAZ_FORM_EDIT_OPTIONS_ORDER_BY_LABEL'),
+        value: '',
+        placeholder: _t('BAZ_FORM_EDIT_OPTIONS_ORDER_BY_PLACEHOLDER'),
+      },
+      orderDirection: {
+        label: _t('BAZ_FORM_EDIT_OPTIONS_ORDER_DIRECTION_LABEL'),
+        options: {
+          asc: _t('BAZ_FORM_EDIT_OPTIONS_ORDER_ASC'),
+          desc: _t('BAZ_FORM_EDIT_OPTIONS_ORDER_DESC'),
+        },
+      },
+      maxOptions: {
+        label: _t('BAZ_FORM_EDIT_OPTIONS_MAX_LABEL'),
+        value: '',
+        placeholder: _t('BAZ_FORM_EDIT_OPTIONS_MAX_PLACEHOLDER'),
+      },
     },
   },
-  advancedAttributes: ['read', 'write', 'queries', 'options'],
+  advancedAttributes: [
+    'read',
+    'write',
+    'queries',
+    'options',
+    'orderBy',
+    'orderDirection',
+    'maxOptions',
+  ],
   // disabledAttributes: [],
-  attributesMapping: { ...listsMapping, ...{ 7: 'fillingMode' } },
+  attributesMapping: {
+    ...listsMapping,
+    ...{
+      7: 'fillingMode',
+      16: 'orderBy',
+      17: 'orderDirection',
+      18: 'maxOptions',
+    },
+  },
   // renderInput(fieldData) {},
 }

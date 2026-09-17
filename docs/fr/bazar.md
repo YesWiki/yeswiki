@@ -425,6 +425,24 @@ seule valeur pourra être sélectionnée par l'utilisateurice.
 Les choix possibles seront présentés sous forme de cases à cocher : plusieurs
 valeurs pourront être sélectionnées par l'utilisateurice.
 
+Trois paramètres avancés permettent de maîtriser les choix proposés :
+
+- **Trier les choix par** : `label` pour trier sur le libellé, `id` pour trier
+  sur la clef. Quand les choix viennent d'un formulaire Bazar, on peut aussi
+  saisir le nom d'un champ de la fiche liée, par exemple
+  `bf_date_debut_evenement`. Laissé vide, l'ordre habituel est conservé.
+- **Sens du tri** : croissant ou décroissant.
+- **Nombre de choix proposés** : limite la liste aux N premiers choix une fois
+  le tri appliqué. Les valeurs déjà cochées restent proposées même
+  au-delà de cette limite. Laissé vide, tous les choix sont proposés.
+
+Ainsi, trier sur `bf_date_debut_evenement` en ordre décroissant et limiter à 20
+ne proposera que les vingt événements les plus récents.
+
+Avec le mode de saisie « glisser-déposer », chaque choix affiche aussi la
+vignette et le début de la description de la fiche liée quand le formulaire lié
+comporte un champ image et un champ texte long.
+
 #### 1.2.11.3. Boutons radio
 
 Les choix possibles seront présentés sous forme d'un groupe de boutons radio :
