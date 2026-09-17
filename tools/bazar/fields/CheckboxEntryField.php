@@ -3,6 +3,7 @@
 namespace YesWiki\Bazar\Field;
 
 use Psr\Container\ContainerInterface;
+use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Bazar\Service\FormManager;
 use YesWiki\Core\Service\StringUtilService;
 use YesWiki\Wiki;
@@ -112,6 +113,19 @@ class CheckboxEntryField extends CheckboxField
         });
 
         return $options;
+    }
+
+    protected function labelForMissingOption($optionId): string
+    {
+        if ($this->isDistantJson) {
+            return parent::labelForMissingOption($optionId);
+        }
+
+        $entry = $this->services->get(EntryManager::class)->getOne(strval($optionId));
+
+        return empty($entry['bf_titre'])
+            ? parent::labelForMissingOption($optionId)
+            : $entry['bf_titre'];
     }
 
     protected function getOptionsDetails(array $optionsIds): array

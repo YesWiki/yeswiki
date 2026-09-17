@@ -125,18 +125,33 @@ abstract class CheckboxField extends EnumField
         }
 
         $options = $this->orderOptions($options);
-        if ($this->maxOptions <= 0 || count($options) <= $this->maxOptions) {
-            return $options;
+        $selectedIds = $this->getValues($entry);
+
+        if ($this->maxOptions > 0 && count($options) > $this->maxOptions) {
+            $limited = array_slice($options, 0, $this->maxOptions, true);
+            foreach ($selectedIds as $selectedId) {
+                if (!array_key_exists($selectedId, $limited) && array_key_exists($selectedId, $options)) {
+                    $limited[$selectedId] = $options[$selectedId];
+                }
+            }
+            $options = $limited;
         }
 
-        $limited = array_slice($options, 0, $this->maxOptions, true);
-        foreach ($this->getValues($entry) as $selectedId) {
-            if (!array_key_exists($selectedId, $limited) && array_key_exists($selectedId, $options)) {
-                $limited[$selectedId] = $options[$selectedId];
+        foreach ($selectedIds as $selectedId) {
+            if (!array_key_exists($selectedId, $options)) {
+                $options[$selectedId] = $this->labelForMissingOption($selectedId);
             }
         }
 
-        return $limited;
+        return $options;
+    }
+
+    /**
+     * Label of a recorded value the options do not offer any more.
+     */
+    protected function labelForMissingOption($optionId): string
+    {
+        return strval($optionId);
     }
 
     /**
