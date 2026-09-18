@@ -364,6 +364,8 @@ class TemplateEngine
         );
 
         $this->addTwigHelper('layout_position', fn (string $part) => $this->layoutPosition($part));
+
+        $this->addTwigHelper('layout_tools', fn () => $this->renderViewerTools());
     }
 
     /** The whole top bar: the menu toggle, the brand, the navbar and the quick menu. */
@@ -375,13 +377,12 @@ class TemplateEngine
             'brand' => $this->renderLayout('brand', $chrome),
             'navbar' => $this->renderLayout('navbar', $chrome),
             'quickMenu' => $this->renderLayout('quick-menu', $chrome),
-            'tools' => $this->renderChromeTools(),
             'editChrome' => $this->renderChromeEditLink('navbar'),
         ]);
     }
 
-    /** The viewer's own controls at the end of the bar: Colour scheme, and language. */
-    private function renderChromeTools(): string
+    /** The viewer's own controls, docked in a corner of their own: Colour scheme, and language. */
+    private function renderViewerTools(): string
     {
         return $this->render('@core/layout/tools.twig', [
             'languages' => $this->container->get(LanguageSwitch::class)->options(),

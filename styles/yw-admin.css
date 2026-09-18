@@ -1392,6 +1392,12 @@ span.yw-preset-card__star {
   transform: translateY(0);
 }
 
+/* The bar runs the whole width, so the corner controls climb above it while it is up. */
+
+body:has(.admin-bulk-panel.visible) .yw-corner-tools {
+  bottom: calc(var(--yw-space-md-y) + env(safe-area-inset-bottom) + 3.5rem);
+}
+
 .admin-bulk-panel .bulk-count {
   font-size: 14px;
   font-weight: 600;

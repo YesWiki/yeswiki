@@ -358,7 +358,6 @@ test('the chrome pencils cover no control an admin needs', async ({ page }) => {
       return at && pencil?.contains(at) ? selector : null
     }
     return [
-      hits('.yw-topnav-tools'),
       hits('.yw-topnav-fast-access .yw-avatar'),
       hits('.yw-page-actions'),
     ].filter(Boolean)

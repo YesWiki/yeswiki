@@ -73,15 +73,15 @@ test('turning a language off takes it out of the switcher, and back on puts it b
   await login(page, ADMIN_USERNAME, ADMIN_PASSWORD)
 
   await page.goto('/?PagePrincipale')
-  await expect(page.locator('.yw-topnav-tools a[hreflang]')).toHaveCount(3)
+  await expect(page.locator('.yw-corner-tools a[hreflang]')).toHaveCount(3)
 
   await openConfig(page)
   await page.locator(`${OTHERS}[value="es"]`).uncheck()
   await save(page)
 
   await page.goto('/?PagePrincipale')
-  await expect(page.locator('.yw-topnav-tools a[hreflang]')).toHaveCount(2)
-  await expect(page.locator('.yw-topnav-tools a[hreflang="es"]')).toHaveCount(0)
+  await expect(page.locator('.yw-corner-tools a[hreflang]')).toHaveCount(2)
+  await expect(page.locator('.yw-corner-tools a[hreflang="es"]')).toHaveCount(0)
   await page.goto('/?PagePrincipale&lang=es')
   await expect(page.locator('html')).toHaveAttribute('lang', 'fr')
 
@@ -90,7 +90,7 @@ test('turning a language off takes it out of the switcher, and back on puts it b
   await save(page)
 
   await page.goto('/?PagePrincipale')
-  await expect(page.locator('.yw-topnav-tools a[hreflang]')).toHaveCount(3)
+  await expect(page.locator('.yw-corner-tools a[hreflang]')).toHaveCount(3)
 })
 
 test('a wiki in one language shows no switcher at all', async ({ page }) => {
@@ -103,8 +103,8 @@ test('a wiki in one language shows no switcher at all', async ({ page }) => {
   await save(page)
 
   await page.goto('/?PagePrincipale')
-  await expect(page.locator('.yw-topnav-tools a[hreflang]')).toHaveCount(0)
-  await expect(page.locator('.yw-topnav-tools .yw-switcher__code')).toHaveCount(
+  await expect(page.locator('.yw-corner-tools a[hreflang]')).toHaveCount(0)
+  await expect(page.locator('.yw-corner-tools .yw-switcher__code')).toHaveCount(
     0,
   )
   await expect(page.locator('[data-yw-scheme-set]')).toHaveCount(3)
@@ -123,7 +123,7 @@ test('the switcher keeps the url clean, and does not pile the page address into 
 
   const href = async () =>
     (await page
-      .locator('.yw-topnav-tools a[hreflang="en"]')
+      .locator('.yw-corner-tools a[hreflang="en"]')
       .getAttribute('href')) ?? ''
 
   expect(await href(), 'no /show, and no page address as a parameter').toMatch(
@@ -141,7 +141,7 @@ test('the switcher keeps a filtered list filtered', async ({ page }) => {
 
   const href =
     (await page
-      .locator('.yw-topnav-tools a[hreflang="en"]')
+      .locator('.yw-corner-tools a[hreflang="en"]')
       .getAttribute('href')) ?? ''
 
   expect(href).toContain('facette=bf_ville')

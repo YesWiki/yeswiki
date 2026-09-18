@@ -6,9 +6,23 @@
     }
   }
 
+  /** What a toggle says about its own menu, kept true wherever the menu is opened or closed. */
+  function paintDropdownState(dropdown) {
+    const toggle = dropdown.querySelector(':scope > [data-yw-dropdown-toggle]')
+    if (toggle && toggle.hasAttribute('aria-expanded')) {
+      toggle.setAttribute(
+        'aria-expanded',
+        dropdown.classList.contains('yw-dropdown--open') ? 'true' : 'false',
+      )
+    }
+  }
+
   function closeDropdowns(except) {
     document.querySelectorAll('.yw-dropdown--open').forEach((dropdown) => {
-      if (dropdown !== except) dropdown.classList.remove('yw-dropdown--open')
+      if (dropdown !== except) {
+        dropdown.classList.remove('yw-dropdown--open')
+        paintDropdownState(dropdown)
+      }
     })
     document.querySelectorAll('.open > .dropdown-menu').forEach((menu) => {
       if (menu.parentElement !== except)
@@ -298,6 +312,7 @@
         const willOpen = !dropdown.classList.contains('yw-dropdown--open')
         closeDropdowns()
         dropdown.classList.toggle('yw-dropdown--open', willOpen)
+        paintDropdownState(dropdown)
       } else if (
         toggle.parentElement &&
         toggle.parentElement.querySelector('.dropdown-menu')

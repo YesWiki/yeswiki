@@ -17,9 +17,9 @@ const PAGE = 'PageATraduire'
 
 /** The one language switch, which an edit screen turns into the switch between translations. */
 const switchTo = (page: Page, code: string) =>
-  page.locator(`#yw-topnav .yw-switcher a[hreflang="${code}"]`)
+  page.locator(`.yw-corner-tools .yw-switcher a[hreflang="${code}"]`)
 
-/** It lives in the chrome's hover panel, so it is followed rather than clicked. */
+/** It lives in a menu that has to be opened, so it is followed rather than clicked. */
 const follow = async (page: Page, code: string) => {
   const href = await switchTo(page, code).getAttribute('href')
   await page.goto(href ?? '')
@@ -27,7 +27,10 @@ const follow = async (page: Page, code: string) => {
 
 /** Clicked the way a reader clicks it, which is what the unsaved-changes guard listens for. */
 const clickSwitch = async (page: Page, code: string) => {
-  await page.locator('.yw-topnav-tools__menu').last().hover()
+  await page
+    .locator('.yw-corner-tools [data-yw-dropdown-toggle]')
+    .last()
+    .click()
   await switchTo(page, code).click()
 }
 
@@ -38,7 +41,7 @@ test('the page editor offers the languages, and says when it is translating', as
   await setPageContent(page, PAGE, 'Du contenu en français')
 
   await page.goto(`/?${PAGE}/edit`)
-  await expect(page.locator('#yw-topnav .yw-switcher a')).toHaveCount(3)
+  await expect(page.locator('.yw-corner-tools .yw-switcher a')).toHaveCount(3)
   await expect(
     switchTo(page, 'fr'),
     'the language the page is written in is marked as the source',

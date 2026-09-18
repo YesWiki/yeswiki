@@ -677,62 +677,98 @@ body:has(#yw-topnav .yw-chrome-edit) .yw-page-actions {
   border: none;
 }
 
-#yw-topnav > .container > .yw-topnav-tools {
-  position: relative;
+/**
+ * The viewer's own controls -- Colour scheme and language -- docked in the bottom corner
+ * instead of sitting in the bar: what a page's author arranged is one thing, what its
+ * reader chooses is another. Each opens upward, because downward is off the window.
+ */
+
+.yw-corner-tools {
+  position: fixed;
+  left: var(--yw-space-md-x);
+  bottom: calc(var(--yw-space-md-y) + env(safe-area-inset-bottom));
+  z-index: 92;
   display: flex;
-  flex: 0 0 auto;
-  align-items: center;
-  gap: var(--yw-space-sm-y) var(--yw-space-sm-x);
-  padding-left: var(--yw-space-md-x);
-  margin-left: var(--yw-space-sm-x);
-  border-left: var(--yw-border-width) solid var(--yw-border-subtle);
-}
-
-@media (min-width: 768px) {
-  #yw-topnav > .container > .yw-topnav-tools {
-    margin-right: calc(-1 * var(--yw-space-md-x));
-  }
-}
-
-@media (max-width: 767px) {
-  #yw-topnav > .container > .yw-topnav-tools {
-    margin-left: auto;
-    justify-content: flex-end;
-  }
-}
-
-.yw-topnav-tools__menu {
-  position: relative;
-  display: flex;
-  align-items: center;
-}
-
-.yw-topnav-tools__current {
-  display: inline-flex;
   align-items: center;
   gap: var(--yw-space-sm-y) var(--yw-space-sm-x);
   padding: var(--yw-space-sm-y) var(--yw-space-sm-x);
-  opacity: 0.65;
-  cursor: default;
+  background: var(--yw-surface-raised);
+  border: var(--yw-border-width) solid var(--yw-border);
+  border-radius: var(--yw-radius-md);
+  box-shadow: 0 1px 4px var(--yw-shadow-color);
 }
 
-.yw-topnav-tools__menu:hover .yw-topnav-tools__current,
-.yw-topnav-tools__menu:focus-within .yw-topnav-tools__current {
-  opacity: 1;
-}
-
-@media (max-width: 767px) {
-  .yw-topnav-tools__current {
-    display: none;
-  }
-}
-
-.yw-topnav-tools__panel {
-  display: flex;
-  flex-wrap: nowrap;
+.yw-corner-tools__trigger {
+  display: inline-flex;
   align-items: center;
-  gap: var(--yw-space-md-y) var(--yw-space-md-x);
+  justify-content: center;
+  min-width: 1.9em;
+  padding: var(--yw-space-sm-y) var(--yw-space-sm-x);
+  color: inherit;
+  background: none;
+  border: 0;
+  border-radius: var(--yw-radius-full);
+  cursor: pointer;
+  opacity: 0.65;
+}
+
+.yw-corner-tools__trigger:hover,
+.yw-corner-tools__trigger:focus-visible,
+.yw-corner-tools__trigger[aria-expanded='true'] {
+  opacity: 1;
+  background: var(--yw-surface-hover);
+}
+
+/* Named twice over, and restated below: the generic menu rules are as specific and come later. */
+
+.yw-corner-tools__menu.yw-dropdown__menu {
+  top: auto;
+  bottom: calc(100% + var(--yw-space-sm-y));
+  left: 0;
+  min-width: max-content;
+  margin: 0;
+  padding: var(--yw-space-sm-y);
+}
+
+.yw-corner-tools__menu .yw-switcher {
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--yw-space-sm-y) 0;
+}
+
+.yw-corner-tools__menu .yw-switcher__option {
+  box-sizing: border-box;
+  display: flex;
+  justify-content: flex-start;
+  gap: var(--yw-space-sm-x);
+  width: 100%;
+  padding: var(--yw-space-sm-y) var(--yw-space-md-x);
+  border-radius: var(--yw-radius-sm);
   white-space: nowrap;
+}
+
+.yw-corner-tools__menu .yw-switcher__option:hover,
+.yw-corner-tools__menu .yw-switcher__option:focus-visible {
+  opacity: 1;
+  background: var(--yw-surface-hover);
+}
+
+.yw-corner-tools__menu .yw-switcher__option[aria-pressed='true'],
+.yw-corner-tools__menu .yw-switcher__option--on {
+  opacity: 1;
+  color: var(--yw-on-primary);
+  background: var(--yw-primary);
+}
+
+/* An option names itself here: a menu is read, not recognised by its glyph alone. */
+
+.yw-corner-tools__menu .yw-switcher__label {
+  position: static;
+  width: auto;
+  height: auto;
+  margin: 0;
+  overflow: visible;
+  clip: auto;
 }
 
 .yw-switcher {
@@ -824,64 +860,6 @@ body:has(#yw-topnav .yw-chrome-edit) .yw-page-actions {
 
 .yw-switcher__option--empty {
   opacity: 0.5;
-}
-
-@media (hover: hover) and (min-width: 768px) {
-  .yw-topnav-tools__panel {
-    position: absolute;
-    top: calc(100% + var(--yw-space-sm-y));
-    right: 0;
-    z-index: 2;
-    width: max-content;
-    min-width: 100%;
-    padding: var(--yw-space-md-y) var(--yw-space-sm-x);
-    background: var(--yw-surface-raised);
-    border: var(--yw-border-width) solid var(--yw-border);
-    border-radius: var(--yw-radius-md);
-    box-shadow: 0 2px 8px var(--yw-shadow-color);
-    flex-direction: column;
-    align-items: stretch;
-    gap: var(--yw-space-sm-y) 0;
-    opacity: 0;
-    pointer-events: none;
-    transition:
-      opacity 0.15s ease 0.4s,
-      pointer-events 0s linear 0.4s;
-  }
-
-  .yw-topnav-tools__panel::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 100%;
-    height: calc(var(--yw-space-sm-y) + 2px);
-  }
-
-  .yw-topnav-tools__panel .yw-switcher {
-    flex-direction: column;
-    align-items: stretch;
-    gap: var(--yw-space-sm-y) 0;
-  }
-
-  .yw-topnav-tools__panel .yw-switcher__option {
-    display: flex;
-    padding-left: var(--yw-space-md-x);
-    padding-right: var(--yw-space-md-x);
-  }
-
-  .yw-topnav-tools__menu:hover > .yw-topnav-tools__panel,
-  .yw-topnav-tools__menu:focus-within > .yw-topnav-tools__panel {
-    opacity: 1;
-    pointer-events: auto;
-    transition-delay: 0s;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .yw-topnav-tools__panel {
-    transition: none;
-  }
 }
 
 #yw-topnav.fixable {
@@ -1011,17 +989,6 @@ body:has(#yw-topnav .yw-chrome-edit) .yw-page-actions {
     margin-top: auto;
   }
 
-  :root[data-yw-navbar='left'] #yw-topnav > .container > .yw-topnav-tools,
-  :root[data-yw-navbar='right'] #yw-topnav > .container > .yw-topnav-tools {
-    justify-content: center;
-    padding-left: 0;
-    padding-top: var(--yw-space-md-y);
-    margin-left: 0;
-    margin-right: 0;
-    border-left: 0;
-    border-top: var(--yw-border-width) solid var(--yw-border-subtle);
-  }
-
   :root[data-yw-navbar='left'] #yw-topnav .yw-chrome-edit,
   :root[data-yw-navbar='right'] #yw-topnav .yw-chrome-edit {
     position: static;
@@ -1051,23 +1018,11 @@ body:has(#yw-topnav .yw-chrome-edit) .yw-page-actions {
   }
 }
 
-/**
- * The colour scheme and language panels sit at the foot of a column, so they open upwards --
- * downwards puts them under the bottom of the window, where nobody can read them. The bridge
- * that keeps the hover alive between the trigger and the panel turns over with them.
- */
+/* A menu down one side owns the corner, so the reader's controls step clear of it. */
 
-@media (hover: hover) and (min-width: 768px) {
-  :root[data-yw-navbar='left'] .yw-topnav-tools__panel,
-  :root[data-yw-navbar='right'] .yw-topnav-tools__panel {
-    top: auto;
-    bottom: calc(100% + var(--yw-space-sm-y));
-  }
-
-  :root[data-yw-navbar='left'] .yw-topnav-tools__panel::before,
-  :root[data-yw-navbar='right'] .yw-topnav-tools__panel::before {
-    top: 100%;
-    bottom: auto;
+@media (min-width: 768px) {
+  :root[data-yw-navbar='left'] .yw-corner-tools {
+    left: calc(var(--yw-navbar-width) + var(--yw-space-md-x));
   }
 }
 

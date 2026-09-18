@@ -1,9 +1,17 @@
 
-<div class="yw-topnav-tools">
+<div class="yw-corner-tools">
 
-  <div class="yw-topnav-tools__menu">
-    <div class="yw-topnav-tools__panel">
+  <div class="yw-dropdown">
+    <button type="button" class="yw-corner-tools__trigger" data-yw-dropdown-toggle
+            data-yw-scheme aria-haspopup="true" aria-expanded="false"
+            aria-label="{{ _t('SCHEME_TOGGLE') }}"
+            data-label-system="{{ _t('SCHEME_SYSTEM') }}"
+            data-label-light="{{ _t('SCHEME_LIGHT') }}"
+            data-label-dark="{{ _t('SCHEME_DARK') }}">
+      {{ icon('device-desktop') }}
+    </button>
 
+    <div class="yw-dropdown__menu yw-corner-tools__menu">
       <div class="yw-switcher" role="group" aria-label="{{ _t('SCHEME_TOGGLE') }}">
         {% for scheme, option in {
           'system': { glyph: 'device-desktop', label: _t('SCHEME_SYSTEM') },
@@ -18,24 +26,18 @@
         {% endfor %}
       </div>
     </div>
-
-    <span class="yw-topnav-tools__current" data-yw-scheme aria-hidden="true"
-          data-label-system="{{ _t('SCHEME_SYSTEM') }}"
-          data-label-light="{{ _t('SCHEME_LIGHT') }}"
-          data-label-dark="{{ _t('SCHEME_DARK') }}">
-      {{ icon('device-desktop') }}
-    </span>
   </div>
 
   {% if languages|length > 1 %}
-    <div class="yw-topnav-tools__menu">
-      <div class="yw-topnav-tools__panel">
+    <div class="yw-dropdown">
+      <button type="button" class="yw-corner-tools__trigger" data-yw-dropdown-toggle
+              aria-haspopup="true" aria-expanded="false" title="{{ _t('LANGUAGE_CHOOSE') }}">
+        <span class="yw-switcher__code">{{ language|upper }}</span>
+      </button>
+
+      <div class="yw-dropdown__menu yw-corner-tools__menu">
         {{ include('@core/layout/_language-switch.twig', { languages: languages }) }}
       </div>
-
-      <span class="yw-topnav-tools__current" aria-hidden="true" title="{{ _t('LANGUAGE_CHOOSE') }}">
-        <span class="yw-switcher__code">{{ language|upper }}</span>
-      </span>
     </div>
   {% endif %}
 </div>

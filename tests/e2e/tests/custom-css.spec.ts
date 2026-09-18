@@ -81,7 +81,7 @@ test('the stylesheet editor is dark when the reader is, and survives leaving the
   await login(page, ADMIN_USERNAME, ADMIN_PASSWORD)
 
   await page.goto('/?PagePrincipale')
-  await page.locator('.yw-topnav-tools').hover()
+  await page.locator('.yw-corner-tools [data-yw-scheme]').click()
   await page.locator('[data-yw-scheme-set="dark"]').click()
 
   await page.goto('/?admin/custom-css')

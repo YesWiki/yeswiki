@@ -5,14 +5,14 @@ import { expect, Page, test } from '@playwright/test'
 const PAGE = process.env.YESWIKI_PAGE_WITH_LIST || 'CartoAnnuaire'
 const OTHER = process.env.YESWIKI_PAGE_WITH_EDITOR || 'SaisirAnnuaire'
 
-const TOOLS = '.yw-topnav-tools__menu:has([data-yw-scheme])'
-const LANGUAGES = '.yw-topnav-tools__menu:has(a[hreflang])'
+const TOOLS = '.yw-corner-tools .yw-dropdown:has([data-yw-scheme])'
+const LANGUAGES = '.yw-corner-tools .yw-dropdown:has(a[hreflang])'
 const READOUT = '[data-yw-scheme]'
 const scheme = (state: string) => `[data-yw-scheme-set="${state}"]`
 
-/** Pick a scheme the way a reader does: reach for the cluster, then click a mark. */
+/** Pick a scheme the way a reader does: open the corner menu, then click a mark. */
 async function choose(page: Page, state: string) {
-  await page.locator(TOOLS).hover()
+  await page.locator(`${TOOLS} [data-yw-dropdown-toggle]`).click()
   await page.locator(scheme(state)).click()
 }
 
@@ -59,52 +59,85 @@ test('the three states are offered as three marks, and the one in force is marke
   ).toBeNull()
 })
 
-test('each menu opens on its own, as a column of choices', async ({ page }) => {
+test('the two menus are docked in the bottom-left corner, and stay there', async ({
+  page,
+}) => {
   await page.goto(`/?${PAGE}`)
 
-  const menus = page.locator('.yw-topnav-tools__menu')
+  const dock = page.locator('.yw-corner-tools')
+  await expect(dock).toBeVisible()
+
+  const where = await dock.evaluate((element) => {
+    const box = element.getBoundingClientRect()
+    return {
+      position: getComputedStyle(element).position,
+      left: box.left,
+      fromBottom: window.innerHeight - box.bottom,
+    }
+  })
+
+  expect(where.position).toBe('fixed')
+  expect(where.left, 'it is not against the left edge').toBeLessThan(40)
+  expect(where.fromBottom, 'it is not against the bottom edge').toBeLessThan(40)
+
+  await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight))
+  const afterScrolling = await dock.evaluate(
+    (element) => window.innerHeight - element.getBoundingClientRect().bottom,
+  )
+  expect(afterScrolling, 'it scrolled away with the page').toBeCloseTo(
+    where.fromBottom,
+    0,
+  )
+})
+
+test('each menu opens on a click, on its own, as a column of choices', async ({
+  page,
+}) => {
+  await page.goto(`/?${PAGE}`)
+
+  const menus = page.locator('.yw-corner-tools .yw-dropdown')
   await expect(menus).toHaveCount(2)
 
   const scheme = menus.filter({ has: page.locator('[data-yw-scheme]') })
   const language = menus.filter({ hasNot: page.locator('[data-yw-scheme]') })
-  const opacityOf = (menu: ReturnType<typeof page.locator>) =>
-    menu
-      .locator('.yw-topnav-tools__panel')
-      .evaluate((element) => getComputedStyle(element).opacity)
+  const panelOf = (menu: ReturnType<typeof page.locator>) =>
+    menu.locator('.yw-corner-tools__menu')
+  const open = (menu: ReturnType<typeof page.locator>) =>
+    menu.locator('[data-yw-dropdown-toggle]').click()
 
-  expect(
-    await opacityOf(scheme),
+  await expect(
+    panelOf(scheme),
     'the options are showing before anyone asked',
-  ).toBe('0')
-  expect(await opacityOf(language)).toBe('0')
+  ).toBeHidden()
+  await expect(panelOf(language)).toBeHidden()
 
-  await scheme.hover()
-  await expect.poll(() => opacityOf(scheme)).toBe('1')
-  expect(await opacityOf(language), 'the other menu opened too').toBe('0')
+  await open(scheme)
+  await expect(panelOf(scheme)).toBeVisible()
+  await expect(panelOf(language), 'the other menu opened too').toBeHidden()
 
-  await language.hover()
-  await expect.poll(() => opacityOf(language)).toBe('1')
-  await expect.poll(() => opacityOf(scheme), { timeout: 3000 }).toBe('0')
+  await open(language)
+  await expect(panelOf(language)).toBeVisible()
+  await expect(panelOf(scheme), 'the first menu stayed open').toBeHidden()
 
-  await scheme.hover()
-  await expect.poll(() => opacityOf(scheme)).toBe('1')
-  const shape = await scheme
-    .locator('.yw-topnav-tools__panel')
-    .evaluate((element) => {
-      const options = [...element.querySelectorAll('.yw-switcher__option')].map(
-        (option) => option.getBoundingClientRect(),
-      )
+  await page.keyboard.press('Escape')
+  await expect(panelOf(language), 'Escape left it open').toBeHidden()
 
-      return {
-        options: options.length,
-        switchers: element.querySelectorAll('.yw-switcher').length,
-        rows: new Set(
-          options.map((box) => Math.round(box.top + box.height / 2)),
-        ).size,
-        lefts: new Set(options.map((box) => Math.round(box.left))).size,
-        widths: new Set(options.map((box) => Math.round(box.width))).size,
-      }
-    })
+  await open(scheme)
+  await expect(panelOf(scheme)).toBeVisible()
+  const shape = await panelOf(scheme).evaluate((element) => {
+    const options = [...element.querySelectorAll('.yw-switcher__option')].map(
+      (option) => option.getBoundingClientRect(),
+    )
+
+    return {
+      options: options.length,
+      switchers: element.querySelectorAll('.yw-switcher').length,
+      rows: new Set(options.map((box) => Math.round(box.top + box.height / 2)))
+        .size,
+      lefts: new Set(options.map((box) => Math.round(box.left))).size,
+      widths: new Set(options.map((box) => Math.round(box.width))).size,
+    }
+  })
 
   expect(shape.switchers, 'a menu holds one switcher, not both').toBe(1)
   expect(shape.options, 'system, light and dark').toBe(3)
@@ -118,16 +151,16 @@ test('the wiki can be read in another language, from the same cluster', async ({
 }) => {
   await page.goto(`/?${PAGE}`)
 
-  const languages = page.locator('.yw-topnav-tools a[hreflang]')
+  const languages = page.locator('.yw-corner-tools a[hreflang]')
   const count = await languages.count()
   test.skip(count < 2, 'this wiki has one language installed')
 
   await expect(
-    page.locator('.yw-topnav-tools a[aria-current="true"]'),
+    page.locator('.yw-corner-tools a[aria-current="true"]'),
   ).toHaveCount(1)
 
-  await page.locator(LANGUAGES).hover()
-  const target = page.locator('.yw-topnav-tools a[hreflang="en"]')
+  await page.locator(`${LANGUAGES} [data-yw-dropdown-toggle]`).click()
+  const target = page.locator('.yw-corner-tools a[hreflang="en"]')
   await target.click()
 
   await expect(page.locator('html')).toHaveAttribute('lang', 'en')
