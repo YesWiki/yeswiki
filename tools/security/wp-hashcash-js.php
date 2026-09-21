@@ -19,6 +19,19 @@ require_once realpath(dirname(__FILE__) . '/') . '/secret/wp-hashcash.lib';
 
 $field_id = hashcash_random_string(rand(6, 18));
 $fn_enable_name = hashcash_random_string(rand(6, 18));
+
+$requestPath = strtok((string)($_SERVER['REQUEST_URI'] ?? ''), '?');
+$getKeyUrl = preg_replace('#[^/]*$#', 'wp-hashcash-getkey.php', $requestPath, 1);
+if (!is_string($getKeyUrl) || substr($getKeyUrl, 0, 1) !== '/') {
+    $getKeyUrl = '/tools/security/wp-hashcash-getkey.php';
+}
+
+$formId = isset($_GET['formid']) && is_string($_GET['formid'])
+    ? preg_replace('/[^A-Za-z0-9_-]/', '', $_GET['formid'])
+    : '';
+if ($formId === '') {
+    $formId = HASHCASH_FORM_ID;
+}
 ?>
 
 addLoadEvent(<?php echo $fn_enable_name; ?>);
@@ -30,10 +43,7 @@ function createHiddenField(){
 	inp.setAttribute('name', 'hashcash_value');
 	inp.setAttribute('value', '-1');
 
-	var e = document.getElementById('<?php
-            $formid = filter_input(INPUT_GET, 'formid', FILTER_UNSAFE_RAW);
-$formid = in_array($formid, [false, null], true) ? $formid : htmlspecialchars(strip_tags($formid));
-echo !empty($formid) ? $formid : HASHCASH_FORM_ID; ?>');
+	var e = document.getElementById(<?php echo json_encode($formId, JSON_UNESCAPED_SLASHES); ?>);
 	if (e) {e.appendChild(inp)};
 }
 
@@ -41,8 +51,7 @@ function <?php echo $fn_enable_name; ?>(){
 	var e = document.getElementById('hashcash-text');
 	createHiddenField();
 	if (e) {e.style.display='block'};
-	loadHashCashKey('<?php
-    echo $_GET['siteurl']; ?>tools/security/wp-hashcash-getkey.php', '<?php echo $field_id; ?>');
+	loadHashCashKey(<?php echo json_encode($getKeyUrl, JSON_UNESCAPED_SLASHES); ?>, '<?php echo $field_id; ?>');
 }
 
 function loadHashCashKey(fragment_url, e_id) {

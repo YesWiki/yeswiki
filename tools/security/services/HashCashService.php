@@ -31,6 +31,6 @@ class HashCashService
             }
         }
 
-        return '<script type="text/javascript" src="' . $this->wiki->getBaseUrl() . '/tools/security/wp-hashcash-js.php?formid=' . $formId . '&siteurl=' . urlencode($this->wiki->getBaseUrl() . '/') . '"></script><span id="hashcash-text" style="display:none" class="pull-right">' . _t('HASHCASH_ANTISPAM_ACTIVATED') . '</span>';
+        return '<script type="text/javascript" src="' . $this->wiki->getBaseUrl() . '/tools/security/wp-hashcash-js.php?formid=' . rawurlencode($formId) . '"></script><span id="hashcash-text" style="display:none" class="pull-right">' . _t('HASHCASH_ANTISPAM_ACTIVATED') . '</span>';
     }
 }
