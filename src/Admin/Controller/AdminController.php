@@ -11,12 +11,14 @@ use Tamtamchik\SimpleFlash\Flash;
 use YesWiki\Admin\Api\AdminLogsApiController;
 use YesWiki\Content\Service\MenuManager;
 use YesWiki\Content\Service\PageManager;
+use YesWiki\Content\Service\TranslationCoverage;
 use YesWiki\Core\DashboardShell;
 use YesWiki\Core\YesWikiController;
 use YesWiki\Identity\Service\CsrfTokenChecker;
 use YesWiki\Kernel\Service\CurrentRequest;
 use YesWiki\Kernel\Service\HealthService;
 use YesWiki\Kernel\Service\Journal;
+use YesWiki\Kernel\Service\LanguageService;
 use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\RuntimeConfig;
 use YesWiki\Kernel\Service\UrlFormatter;
@@ -79,6 +81,36 @@ class AdminController extends YesWikiController
         return $this->page('@core/admin/keywords.twig', 'admin/keywords');
     }
 
+    /** How far every Content has been translated, and one link per Content per language to go and do it. */
+    #[Route('/admin/translations', options: ['acl' => self::ADMIN_ACL])]
+    public function translations(): Response
+    {
+        $query = $this->getService(CurrentRequest::class)->get()->query;
+        $coverage = $this->getService(TranslationCoverage::class);
+
+        $report = $coverage->report([
+            'group' => (string)$query->get('group', ''),
+            'language' => (string)$query->get('language', ''),
+            'state' => (string)$query->get('state', ''),
+            'page' => (int)$query->get('page', 1),
+        ]);
+
+        $names = $this->getService(LanguageService::class)->languagesList();
+
+        return $this->page('@core/admin/translations.twig', 'admin/translations', $report + [
+            'languageNames' => array_combine(
+                $report['languages'],
+                array_map(fn (string $code) => (string)($names[$code]['nativeName'] ?? $code), $report['languages'])
+            ),
+            'sourceName' => (string)($names[$report['source']]['nativeName'] ?? $report['source']),
+            'filters' => [
+                'group' => (string)$query->get('group', ''),
+                'language' => (string)$query->get('language', ''),
+                'state' => (string)$query->get('state', ''),
+            ],
+        ]);
+    }
+
     /** The wiki's chrome: its brand and its two menus (ticket 30). */
     #[Route('/admin/layout', methods: ['GET', 'POST'], options: ['acl' => self::ADMIN_ACL])]
     public function layout(): Response
@@ -101,7 +133,6 @@ class AdminController extends YesWikiController
                 'content' => $layout->pageContent($tag),
             ];
         }
-
 
         return $this->page('@core/admin/layout.twig', 'admin/layout', [
             'title' => $layout->ownTitle(),
@@ -166,8 +197,6 @@ class AdminController extends YesWikiController
      */
     private function readLayoutForm(SymfonyRequest $request): array
     {
-        // Both placements post the same rows now: one editor, one shape, whichever menu it is
-        // editing (ticket 64). Turning them into a tree is MenuManager's job, not this screen's.
         $navbar = array_values(array_filter($request->request->all('navbar'), 'is_array'));
         $quickMenu = array_values(array_filter($request->request->all('quick'), 'is_array'));
 

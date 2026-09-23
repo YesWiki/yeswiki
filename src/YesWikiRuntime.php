@@ -329,8 +329,9 @@ class YesWikiRuntime
         }
     }
 
-    // Find and run controller action based on route declaration, instead of using page Tag
     /**
+     * A screen addressed by a route rather than by a page tag, which has no handler: once one matches, the method guessed before routing is dropped.
+     *
      * @return void
      */
     private function runSpecialPages()
@@ -372,6 +373,7 @@ class YesWikiRuntime
         ob_start();
         try {
             $attributes = $matcher->match($context->getPathInfo());
+            $pageContext->setMethod('');
             if ($this->service(ApiService::class)->isAuthorized($attributes, $this->getRoutes())) {
                 $request = $this->service(CurrentRequest::class)->get();
                 $request->attributes->add($attributes);

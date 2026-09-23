@@ -1571,12 +1571,34 @@ section.with-bg-image > * {
   margin: var(--yw-space-md-y) 0;
 }
 
-html[lang='ca'] [lang]:not([lang='ca']):not(.yw-switcher__option),
-html[lang='en'] [lang]:not([lang='en']):not(.yw-switcher__option),
-html[lang='es'] [lang]:not([lang='es']):not(.yw-switcher__option),
-html[lang='fr'] [lang]:not([lang='fr']):not(.yw-switcher__option),
-html[lang='nl'] [lang]:not([lang='nl']):not(.yw-switcher__option),
-html[lang='pt'] [lang]:not([lang='pt']):not(.yw-switcher__option) {
+/* Multilingual content hides the other languages; an element that NAMES one is marked and survives. */
+
+/* One pair per language in LanguageService::SUPPORTED_LANGUAGES, which a test pins. */
+
+html[lang='ca']
+  [lang]:not([lang='ca']):not(.yw-switcher__option):not([data-yw-lang-label]),
+html[lang='en']
+  [lang]:not([lang='en']):not(.yw-switcher__option):not([data-yw-lang-label]),
+html[lang='eo']
+  [lang]:not([lang='eo']):not(.yw-switcher__option):not([data-yw-lang-label]),
+html[lang='es']
+  [lang]:not([lang='es']):not(.yw-switcher__option):not([data-yw-lang-label]),
+html[lang='eu']
+  [lang]:not([lang='eu']):not(.yw-switcher__option):not([data-yw-lang-label]),
+html[lang='fr']
+  [lang]:not([lang='fr']):not(.yw-switcher__option):not([data-yw-lang-label]),
+html[lang='it']
+  [lang]:not([lang='it']):not(.yw-switcher__option):not([data-yw-lang-label]),
+html[lang='nl']
+  [lang]:not([lang='nl']):not(.yw-switcher__option):not([data-yw-lang-label]),
+html[lang='pt']
+  [lang]:not([lang='pt']):not(.yw-switcher__option):not([data-yw-lang-label]),
+html[lang='ro']
+  [lang]:not([lang='ro']):not(.yw-switcher__option):not([data-yw-lang-label]),
+html[lang='ru']
+  [lang]:not([lang='ru']):not(.yw-switcher__option):not([data-yw-lang-label]),
+html[lang='ta']
+  [lang]:not([lang='ta']):not(.yw-switcher__option):not([data-yw-lang-label]) {
   display: none;
 }
 

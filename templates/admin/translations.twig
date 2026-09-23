@@ -1,0 +1,168 @@
+{% extends "@core/dashboard/layout.twig" %}
+
+{% macro meter(full, partial, total) %}
+  {% set done = total > 0 ? (full * 100 / total)|round : 0 %}
+  {% set started = total > 0 ? ((full + partial) * 100 / total)|round : 0 %}
+  <span class="yw-meter" aria-hidden="true">
+    <span class="yw-meter__full" style="width: {{ done }}%"></span>
+    <span class="yw-meter__partial" style="width: {{ started }}%"></span>
+  </span>
+{% endmacro %}
+
+{% block dashboard_content %}
+  {% import _self as bars %}
+
+  <h1>{{ _t('DASHBOARD_ADMIN_TRANSLATIONS') }}</h1>
+
+  {% if languages is empty %}
+    <p class="yw-dashboard__intro">{{ _t('TRANSLATIONS_ONE_LANGUAGE_ONLY', { language: sourceName }) }}</p>
+    <p><a class="yw-btn" href="{{ url({ tag: 'admin/config' }) }}">{{ _t('TRANSLATIONS_ADD_LANGUAGE') }}</a></p>
+  {% else %}
+    <p class="yw-dashboard__intro">
+      {{ _t('TRANSLATIONS_INTRO', { language: sourceName, count: languages|length }) }}
+    </p>
+
+    <section class="yw-dashboard__card yw-dashboard__card--wide">
+      <h2>{{ _t('TRANSLATIONS_OVERVIEW') }}</h2>
+
+      {% if groups is empty %}
+        <p class="yw-form-hint">{{ _t('TRANSLATIONS_NOTHING_TRANSLATABLE') }}</p>
+      {% else %}
+        <table class="yw-table yw-translations">
+          <thead>
+            <tr>
+              <th scope="col">{{ _t('TRANSLATIONS_COLUMN_CONTENT') }}</th>
+              <th scope="col" class="yw-translations__count">{{ _t('TRANSLATIONS_COLUMN_TOTAL') }}</th>
+              {% for code in languages %}
+                <th scope="col" lang="{{ code }}" data-yw-lang-label>{{ languageNames[code] }}</th>
+              {% endfor %}
+            </tr>
+          </thead>
+          <tbody>
+            {% for group in groups %}
+              <tr>
+                <th scope="row">
+                  {{ group.label }}
+                  <small class="yw-form-hint">{{ _t('TRANSLATIONS_TYPE_' ~ group.type|upper) }}</small>
+                </th>
+                <td class="yw-translations__count">{{ group.total }}</td>
+                {% for code in languages %}
+                  {% set cell = group.languages[code] %}
+                  <td>
+                    <a class="yw-translations__bar"
+                       href="{{ url({ tag: 'admin/translations', params: { group: group.key, language: code, state: 'empty' } }) }}"
+                       title="{{ _t('TRANSLATIONS_CELL_TITLE', {
+                         full: cell.full, partial: cell.partial, empty: cell.empty, language: languageNames[code]
+                       }) }}">
+                      {{ bars.meter(cell.full, cell.partial, group.total) }}
+                      <span class="yw-translations__ratio">{{ cell.full }}/{{ group.total }}</span>
+                    </a>
+                  </td>
+                {% endfor %}
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+
+        <p class="yw-form-hint">{{ _t('TRANSLATIONS_LEGEND') }}</p>
+      {% endif %}
+    </section>
+
+    <section class="yw-dashboard__card yw-dashboard__card--wide">
+      <h2>{{ _t('TRANSLATIONS_DETAIL') }}</h2>
+
+      <form method="get" action="{{ url({ tag: 'admin/translations' }) }}" class="yw-translations__filters">
+        <input type="hidden" name="wiki" value="admin/translations">
+
+        <label>
+          <span>{{ _t('TRANSLATIONS_FILTER_GROUP') }}</span>
+          <select class="yw-input" name="group">
+            <option value="">{{ _t('TRANSLATIONS_FILTER_ALL') }}</option>
+            {% for group in groups %}
+              <option value="{{ group.key }}" {{ filters.group == group.key ? 'selected' : '' }}>{{ group.label }}</option>
+            {% endfor %}
+          </select>
+        </label>
+
+        <label>
+          <span>{{ _t('TRANSLATIONS_FILTER_LANGUAGE') }}</span>
+          <select class="yw-input" name="language">
+            <option value="">{{ _t('TRANSLATIONS_FILTER_ANY_LANGUAGE') }}</option>
+            {% for code in languages %}
+              <option value="{{ code }}" {{ filters.language == code ? 'selected' : '' }}>{{ languageNames[code] }}</option>
+            {% endfor %}
+          </select>
+        </label>
+
+        <label>
+          <span>{{ _t('TRANSLATIONS_FILTER_STATE') }}</span>
+          <select class="yw-input" name="state">
+            <option value="">{{ _t('TRANSLATIONS_FILTER_ALL') }}</option>
+            <option value="empty" {{ filters.state == 'empty' ? 'selected' : '' }}>{{ _t('TRANSLATE_STATE_EMPTY') }}</option>
+            <option value="partial" {{ filters.state == 'partial' ? 'selected' : '' }}>{{ _t('TRANSLATE_STATE_PARTIAL') }}</option>
+            <option value="full" {{ filters.state == 'full' ? 'selected' : '' }}>{{ _t('TRANSLATE_STATE_FULL') }}</option>
+          </select>
+        </label>
+
+        <button type="submit" class="yw-btn">{{ _t('TRANSLATIONS_FILTER_APPLY') }}</button>
+      </form>
+
+      {% if rows is empty %}
+        <p class="yw-form-hint">{{ _t('TRANSLATIONS_NO_MATCH') }}</p>
+      {% else %}
+        <p class="yw-form-hint">{{ _t('TRANSLATIONS_MATCHED', { matched: matched, scanned: scanned }) }}</p>
+
+        <div class="table-responsive">
+          <table class="yw-table yw-translations">
+            <thead>
+              <tr>
+                <th scope="col">{{ _t('TRANSLATIONS_COLUMN_CONTENT') }}</th>
+                <th scope="col">{{ _t('TRANSLATIONS_COLUMN_GROUP') }}</th>
+                {% for code in languages %}
+                  <th scope="col" lang="{{ code }}" data-yw-lang-label>{{ languageNames[code] }}</th>
+                {% endfor %}
+              </tr>
+            </thead>
+            <tbody>
+              {% for row in rows %}
+                <tr>
+                  <th scope="row">
+                    <a href="{{ row.sourceHref }}">{{ row.title }}</a>
+                    <small class="yw-form-hint">{{ row.tag }}</small>
+                  </th>
+                  <td>{{ row.groupLabel }}</td>
+                  {% for code in languages %}
+                    {% set cell = row.languages[code] %}
+                    <td>
+                      <a class="yw-translations__state yw-translations__state--{{ cell.state }}"
+                         href="{{ cell.href }}"
+                         title="{{ _t('TRANSLATE_EDIT_TARGET', { language: languageNames[code] }) }} — {{ _t('TRANSLATE_STATE_' ~ cell.state|upper) }}">
+                        <span class="yw-switcher__state" aria-hidden="true"></span>
+                        {{ cell.done }}/{{ cell.wanted }}
+                      </a>
+                    </td>
+                  {% endfor %}
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+        {% set pages = (matched / perPage)|round(0, 'ceil') %}
+        {% if pages > 1 %}
+          <nav class="yw-translations__pages" aria-label="{{ _t('TRANSLATIONS_DETAIL') }}">
+            {% if page > 1 %}
+              <a class="yw-btn yw-btn--sm" href="{{ url({ tag: 'admin/translations', params: filters|filter(value => value != '')|merge({ page: page - 1 }) }) }}">{{ _t('TRANSLATIONS_PREVIOUS') }}</a>
+            {% endif %}
+            <span>{{ _t('TRANSLATIONS_PAGE_OF', { page: page, pages: pages }) }}</span>
+            {% if page < pages %}
+              <a class="yw-btn yw-btn--sm" href="{{ url({ tag: 'admin/translations', params: filters|filter(value => value != '')|merge({ page: page + 1 }) }) }}">{{ _t('TRANSLATIONS_NEXT') }}</a>
+            {% endif %}
+          </nav>
+        {% endif %}
+      {% endif %}
+    </section>
+
+    <p class="yw-form-hint">{{ _t('TRANSLATIONS_UNTRANSLATABLE') }}</p>
+  {% endif %}
+{% endblock %}

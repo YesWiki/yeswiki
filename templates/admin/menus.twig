@@ -24,7 +24,7 @@
             <td>{% if menu.chrome %}<span class="yw-badge">{{ _t('ADMIN_MENUS_CHROME') }}</span>{% endif %}</td>
             <td>
               {% if menu.editable %}
-                <a class="yw-btn yw-btn--sm" href="{{ url({ tag: 'admin/menus', params: { menu: menu.tag } }) }}">
+                <a class="yw-btn yw-btn--sm" href="{{ url({ tag: 'admin/menus', params: { menu: menu.tag, editlang: editLanguage } }) }}">
                   {{ icon('pencil') }} {{ _t('EDIT') }}
                 </a>
               {% endif %}
@@ -38,22 +38,35 @@
   </section>
 
   <section class="yw-dashboard__card">
-    <h2>{{ editing ? editing.title : _t('ADMIN_MENUS_NEW') }}</h2>
+    <h2>{{ editing ? (editing.sourceTitle|default(editing.title)) : _t('ADMIN_MENUS_NEW') }}</h2>
     {% if editing and editing.chrome is defined and editing.chrome %}
       <p class="yw-layout__hint">{{ _t('ADMIN_MENUS_CHROME_HINT') }}</p>
     {% endif %}
+    {% if editingTranslation %}
+      <p class="yw-layout__hint">{{ _t('ADMIN_MENUS_TRANSLATING_HINT') }}</p>
+    {% elseif editing %}
+      <p class="yw-layout__hint">{{ _t('ADMIN_MENUS_TRANSLATE_HINT') }}</p>
+    {% endif %}
 
-    <form method="post" action="{{ url({ tag: 'admin/menus' }) }}" hx-boost="false" data-yw-unsaved-guard>
+    <form method="post" action="{{ url({ tag: 'admin/menus', params: { editlang: editLanguage } }) }}" hx-boost="false" data-yw-unsaved-guard>
       <input type="hidden" name="csrf-token" value="{{ csrfToken({id: 'main', refresh: false}) }}">
       <input type="hidden" name="menu" value="{{ editing ? editing.tag : '' }}">
 
       <div class="yw-form-group">
         <label class="yw-form-label" for="yw-menu-title">{{ _t('ADMIN_MENUS_TITLE') }}</label>
-        <input type="text" class="yw-input" id="yw-menu-title" name="title" autocomplete="off"
-               value="{{ editing ? editing.title : '' }}" required>
+        <input type="text" class="yw-input{{ editingTranslation ? ' yw-translate-from__input' : '' }}"
+               id="yw-menu-title" name="title" autocomplete="off"
+               value="{{ editing ? editing.title : '' }}" {{ editingTranslation ? '' : 'required' }}>
+        {% if editingTranslation %}
+          {{ include('@core/forms/_translated-from.twig', { text: editing.sourceTitle }) }}
+        {% endif %}
       </div>
 
-      {{ include('@core/menu/editor.twig', { name: 'entries', rows: editing ? editing.rows : [] }) }}
+      {{ include('@core/menu/editor.twig', {
+        name: 'entries',
+        rows: editing ? editing.rows : [],
+        translating: editingTranslation|default(false)
+      }) }}
 
       <div class="yw-layout__save">
         <button type="submit" class="yw-btn yw-btn--primary">{{ _t('SAVE') }}</button>

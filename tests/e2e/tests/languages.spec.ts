@@ -116,6 +116,28 @@ test('a wiki in one language shows no switcher at all', async ({ page }) => {
   await save(page)
 })
 
+test('the switcher links back to the screen it is on, routed screens included', async ({
+  page,
+}) => {
+  await login(page, ADMIN_USERNAME, ADMIN_PASSWORD)
+
+  for (const route of ['admin/content', 'admin/menus', 'dashboard/lists']) {
+    await page.goto(`/?${route}`)
+    const href =
+      (await page
+        .locator('.yw-corner-tools a[hreflang="en"]')
+        .getAttribute('href')) ?? ''
+
+    expect(href, `${route} is not what the switcher links to`).toContain(
+      `?${route}&`,
+    )
+    expect(
+      href,
+      'the tag already holds the whole address, so the route guessed before routing is repeated',
+    ).not.toContain(`${route}/`)
+  }
+})
+
 test('the switcher keeps the url clean, and does not pile the page address into it', async ({
   page,
 }) => {

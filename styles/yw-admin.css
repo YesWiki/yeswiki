@@ -580,6 +580,17 @@
   flex: 3 1 200px;
 }
 
+/* Translating a menu: the source wording sits where the link normally is, and reads as a caption. */
+
+.yw-menu-rows--translating .yw-menu-row--child {
+  margin-left: var(--yw-space-lg-x);
+}
+
+.yw-menu-rows--translating span.yw-menu-row__link {
+  color: var(--yw-text-muted);
+  font-size: 0.9em;
+}
+
 .yw-menu-icon {
   display: flex;
   align-items: center;
@@ -2599,4 +2610,122 @@ body > button.primary {
   .yw-dashboard__grid--thirds {
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   }
+}
+
+/* The translations screen: a bar per Content type and language, a cell per Content and language. */
+
+.yw-translations th[scope='row'] {
+  font-weight: 600;
+  text-align: left;
+}
+
+.yw-translations th[scope='row'] small {
+  display: block;
+  font-weight: normal;
+}
+
+.yw-translations__count {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.yw-translations__bar {
+  display: flex;
+  align-items: center;
+  gap: var(--yw-space-sm-x);
+  color: inherit;
+  text-decoration: none;
+}
+
+.yw-translations__ratio {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.yw-meter {
+  position: relative;
+  display: block;
+  flex: 1;
+  min-width: 4rem;
+  height: 0.5rem;
+  overflow: hidden;
+  background: var(--yw-border);
+  border-radius: var(--yw-radius-full);
+}
+
+/* The started segment sits behind the finished one, so the two read as one filling bar. */
+
+.yw-meter__partial,
+.yw-meter__full {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+}
+
+.yw-meter__partial {
+  background: var(--yw-warning);
+  opacity: 0.45;
+}
+
+.yw-meter__full {
+  z-index: 1;
+  background: var(--yw-success);
+}
+
+.yw-translations__filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--yw-space-md-y) var(--yw-space-md-x);
+  margin-bottom: var(--yw-space-md-y);
+}
+
+.yw-translations__filters label {
+  display: flex;
+  flex-direction: column;
+  gap: var(--yw-space-sm-y);
+}
+
+.yw-translations__state {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--yw-space-sm-x);
+  padding: var(--yw-space-sm-y) var(--yw-space-sm-x);
+  border-radius: var(--yw-radius-sm);
+  color: inherit;
+  text-decoration: none;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.yw-translations__state:hover,
+.yw-translations__state:focus-visible {
+  background: var(--yw-surface-hover);
+}
+
+.yw-translations__state--full {
+  color: var(--yw-success-text);
+}
+
+.yw-translations__state--full .yw-switcher__state {
+  background: currentcolor;
+}
+
+.yw-translations__state--partial .yw-switcher__state {
+  background: linear-gradient(
+    to right,
+    currentcolor 0 50%,
+    transparent 50% 100%
+  );
+}
+
+.yw-translations__state--empty {
+  color: var(--yw-text-muted);
+}
+
+.yw-translations__pages {
+  display: flex;
+  align-items: center;
+  gap: var(--yw-space-md-x);
 }

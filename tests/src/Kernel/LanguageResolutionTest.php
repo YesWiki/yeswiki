@@ -186,6 +186,19 @@ class LanguageResolutionTest extends YesWikiTestCase
         );
     }
 
+    /** Reading in a language core has no rule for shows every language's content at once, so the rule names them all. */
+    public function testEveryOfferableLanguageHidesTheOtherLanguagesContent(): void
+    {
+        $css = (string)file_get_contents(dirname(__DIR__, 3) . '/styles/yw-core.css');
+
+        $unruled = array_values(array_filter(
+            LanguageService::SUPPORTED_LANGUAGES,
+            static fn (string $code) => !str_contains($css, "html[lang='{$code}']")
+        ));
+
+        $this->assertSame([], $unruled, 'yw-core.css has no rule for these languages');
+    }
+
     /** What a wiki offers: its own language plus the ones it turned on, and nothing else. */
     public function testOfferedLanguagesAreTheWikisOwnPlusTheOnesItTurnedOn(): void
     {

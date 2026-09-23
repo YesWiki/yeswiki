@@ -3,9 +3,11 @@
 namespace YesWiki\Content\Controller;
 
 use Symfony\Component\HttpFoundation\RedirectResponse;
+use Symfony\Component\HttpFoundation\Request as SymfonyRequest;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Tamtamchik\SimpleFlash\Flash;
+use YesWiki\Content\Action\BazarAction;
 use YesWiki\Content\Service\ListManager;
 use YesWiki\Content\Service\ListOverview;
 use YesWiki\Core\DashboardShell;
@@ -51,10 +53,29 @@ class ListScreensController extends YesWikiController
             return new RedirectResponse($this->getService(UrlFormatter::class)->href('', 'admin/lists'));
         }
 
+        $this->getService(PageContext::class)->setTag('admin/lists');
+
         return $this->page('@core/admin/lists.twig', 'admin/lists', [
-            'lists' => $this->getService(ListController::class)->displayAll(),
+            'lists' => $this->listScreen($request) ?? $this->getService(ListController::class)->displayAll(),
             'overview' => $this->getService(ListOverview::class)->all(),
         ]);
+    }
+
+    /** The screens a single list has, which the retired `BazaR` page used to dispatch and nothing has since. */
+    private function listScreen(SymfonyRequest $request): ?string
+    {
+        if ($request->query->get(BazarAction::URL_VIEW_PARAM) !== BazarAction::VIEW_LISTS) {
+            return null;
+        }
+
+        $controller = $this->getService(ListController::class);
+
+        return match ($request->query->get(BazarAction::URL_ACTION_PARAM)) {
+            BazarAction::ACTION_LIST_CREATE => $controller->create(),
+            BazarAction::ACTION_LIST_EDIT => $controller->update($request->query->get('listid')),
+            BazarAction::ACTION_LIST_DELETE => $controller->delete($request->query->get('listid')),
+            default => null,
+        };
     }
 
     /**

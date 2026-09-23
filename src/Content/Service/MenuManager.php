@@ -4,8 +4,10 @@ namespace YesWiki\Content\Service;
 
 use YesWiki\Content\Entity\MenuNode;
 use YesWiki\Content\Entity\PageType;
+use YesWiki\Content\Entity\Translations;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Service\HibernationService;
+use YesWiki\Kernel\Service\RequestScopedState;
 
 /**
  * Menus: navigation held as Content rather than as configuration (ticket 64 / ADR-0028).
@@ -14,7 +16,7 @@ use YesWiki\Kernel\Service\HibernationService;
  * it is versioned, revertable and carries its own ACL, none of which a config array could be.
  * Configuration says *which* menu the chrome draws; it no longer says what is in one.
  */
-class MenuManager
+class MenuManager implements RequestScopedState
 {
     /** What the two menus configuration names are forced to, so a contributor cannot rewrite the site's navigation. */
     public const CHROME_WRITE_ACL = '@admins';
@@ -27,7 +29,14 @@ class MenuManager
         private readonly AclService $aclService,
         private readonly HibernationService $hibernationService,
         private readonly WikiNameGenerator $wikiNames,
+        private readonly TranslatableContent $translatableContent,
     ) {
+    }
+
+    /** The cache holds wording overlaid for one reader's language, which is not the next reader's. */
+    public function startNewRequest(): void
+    {
+        $this->cache = [];
     }
 
     public function isMenu(string $tag): bool
@@ -46,7 +55,10 @@ class MenuManager
 
         $menu = null;
         if ($tag !== '' && $this->isMenu($tag)) {
-            $body = $this->pageManager->getOne($tag)['body'] ?? [];
+            $body = $this->translatableContent->forReader(
+                $this->pageManager->getOne($tag)['body'] ?? [],
+                $this->translatableContent->wikiLanguage()
+            );
             $menu = [
                 'title' => is_string($body['title'] ?? null) ? $body['title'] : $tag,
                 'nodes' => self::nodesOf($body),
@@ -54,6 +66,41 @@ class MenuManager
         }
 
         return $this->cache[$tag] = $menu;
+    }
+
+    /**
+     * The menu as stored -- source wording plus its translations -- for the write paths, which an overlaid read would have post back this reader's language.
+     *
+     * @return array<string, mixed>|null
+     */
+    public function getUntranslated(string $tag): ?array
+    {
+        if ($tag === '' || !$this->isMenu($tag)) {
+            return null;
+        }
+
+        $body = $this->pageManager->getOne($tag)['body'] ?? [];
+        $body['title'] = is_string($body['title'] ?? null) ? $body['title'] : $tag;
+        $body['nodes'] = is_array($body['nodes'] ?? null) ? $body['nodes'] : [];
+
+        return $body;
+    }
+
+    /**
+     * Replace what this menu says in $language, leaving its source wording alone.
+     *
+     * @param array<string, string> $values path => text, already sanitized
+     */
+    public function saveTranslations(string $tag, string $language, array $values): void
+    {
+        $this->refuseWhenHibernated();
+
+        if (!$this->isMenu($tag)) {
+            throw new \Exception("cannot translate menu '{$tag}': it does not exist");
+        }
+
+        $this->pageManager->saveTranslations($tag, $language, $values);
+        unset($this->cache[$tag]);
     }
 
     /**
@@ -205,7 +252,10 @@ class MenuManager
     {
         $this->refuseWhenHibernated();
 
-        if ($this->pageManager->save($tag, self::bodyOf($title, $nodes), '', false, null, PageType::MENU) !== 0) {
+        $stored = $this->pageManager->getOne($tag)['body'] ?? [];
+        $body = Translations::pruned(Translations::carriedOver($stored, self::bodyOf($title, $nodes)));
+
+        if ($this->pageManager->save($tag, $body, '', false, null, PageType::MENU) !== 0) {
             throw new \Exception(_t('EDIT_NO_WRITE_ACCESS'));
         }
         unset($this->cache[$tag]);

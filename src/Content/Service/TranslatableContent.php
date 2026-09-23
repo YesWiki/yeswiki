@@ -120,18 +120,32 @@ class TranslatableContent
      */
     private function translationState(array $body, string $language, array $paths): string
     {
-        $written = Translations::of($body, $language);
-        if ($written === []) {
-            return 'empty';
-        }
-        if ($paths === []) {
-            return 'full';
-        }
+        return $this->translationProgress($body, $language, $paths)['state'];
+    }
 
+    /**
+     * The same answer with its arithmetic showing, for a screen counting a whole wiki rather than drawing one badge.
+     *
+     * @param array<string, mixed>                     $body
+     * @param list<array{path: string, label: string}> $paths
+     *
+     * @return array{state: string, done: int, wanted: int}
+     */
+    public function translationProgress(array $body, string $language, array $paths): array
+    {
+        $written = Translations::of($body, $language);
         $wanted = array_column($paths, 'path');
         $done = count(array_intersect($wanted, array_keys($written)));
 
-        return $done >= count($wanted) ? 'full' : 'partial';
+        if ($written === []) {
+            $state = 'empty';
+        } elseif ($wanted === []) {
+            $state = 'full';
+        } else {
+            $state = $done >= count($wanted) ? 'full' : 'partial';
+        }
+
+        return ['state' => $state, 'done' => $done, 'wanted' => count($wanted)];
     }
 
     /**
@@ -247,6 +261,26 @@ class TranslatableContent
         ]];
 
         self::collectNodePaths($list['nodes'] ?? [], 'nodes', $paths);
+
+        return $paths;
+    }
+
+    /**
+     * What a translator is asked to retype for a menu: its name, then every entry's label.
+     *
+     * @param array<string, mixed> $menu
+     *
+     * @return list<array{path: string, label: string, multiline: bool}>
+     */
+    public function menuPaths(array $menu): array
+    {
+        $paths = [[
+            'path' => 'title',
+            'label' => _t('TRANSLATE_MENU_TITLE'),
+            'multiline' => false,
+        ]];
+
+        self::collectNodePaths($menu['nodes'] ?? [], 'nodes', $paths);
 
         return $paths;
     }

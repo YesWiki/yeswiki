@@ -2,20 +2,24 @@
   The menu editor: the same rows, the same drag and drop, on every screen that edits a menu
   (ticket 64 / ADR-0028). `name` is the field prefix, `rows` what the menu holds today.
 #}
-<ul class="yw-menu-rows" data-yw-menu-rows="{{ name }}">
+{% set translating = translating|default(false) %}
+<ul class="yw-menu-rows{{ translating ? ' yw-menu-rows--translating' : '' }}"
+    {% if not translating %}data-yw-menu-rows="{{ name }}"{% endif %}>
   {% for row in rows %}
-    {{ include('@core/menu/row.twig', { row: row, index: loop.index0, name: name }) }}
+    {{ include('@core/menu/row.twig', { row: row, index: loop.index0, name: name, translating: translating }) }}
   {% endfor %}
 </ul>
 
-<template data-yw-menu-template="{{ name }}">
-  {{ include('@core/menu/row.twig', {
-    row: { id: '', label: '', link: '', icon_source: 'sprite', icon_value: '', child: false },
-    index: 0,
-    name: name
-  }) }}
-</template>
+{% if not translating %}
+  <template data-yw-menu-template="{{ name }}">
+    {{ include('@core/menu/row.twig', {
+      row: { id: '', label: '', link: '', icon_source: 'sprite', icon_value: '', child: false },
+      index: 0,
+      name: name
+    }) }}
+  </template>
 
-<button type="button" class="yw-btn" data-yw-menu-add="{{ name }}">
-  {{ icon('plus') }} {{ _t('MENU_ADD_ENTRY') }}
-</button>
+  <button type="button" class="yw-btn" data-yw-menu-add="{{ name }}">
+    {{ icon('plus') }} {{ _t('MENU_ADD_ENTRY') }}
+  </button>
+{% endif %}
