@@ -107,6 +107,9 @@ case "$RUNTIME" in
     mapfile -t arguments < <(installer_arguments)
     php "${ROOT}/src/commands/console" core:install "${arguments[@]}"
     "${ROOT}/yeswicli" migrate
+    if [ "${YESWIKI_TEST_ONBOARDED:-1}" = "1" ]; then
+      "${ROOT}/yeswicli" onboarding:apply --all
+    fi
     ;;
 
   binary)
@@ -127,6 +130,9 @@ case "$RUNTIME" in
     mapfile -t arguments < <(installer_arguments)
     "$BINARY" setup "${INSTANCE}" "${arguments[@]}"
     "$BINARY" migrate "${INSTANCE}"
+    if [ "${YESWIKI_TEST_ONBOARDED:-1}" = "1" ]; then
+      "$BINARY" onboarding:apply --all --instance "${INSTANCE}"
+    fi
     ;;
 
   *)

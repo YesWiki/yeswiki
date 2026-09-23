@@ -1,0 +1,26 @@
+<section class="yw-onboarding">
+  {% if is_admin %}
+    <h1>{{ _t('ONBOARDING_TITLE') }}</h1>
+    <p>{{ _t('ONBOARDING_INTRO') }}</p>
+    <form method="post" action="{{ url({ tag: 'admin/onboarding' }) }}">
+      <input type="hidden" name="csrf-token" value="{{ csrfToken({id: 'main', refresh: false}) }}">
+      <div class="yw-onboarding__starters">
+        {% for slug, starter in starters %}
+          <label class="yw-onboarding__starter">
+            <input type="checkbox" name="starters[]" value="{{ slug }}">
+            <span class="yw-onboarding__label">{{ icon(starter.icon) }} {{ starter.label }}</span>
+            <span class="yw-onboarding__description">{{ starter.description }}</span>
+          </label>
+        {% endfor %}
+      </div>
+      <div class="yw-onboarding__actions">
+        <button type="submit" class="yw-btn yw-btn--primary">{{ _t('ONBOARDING_CREATE') }}</button>
+        <button type="submit" name="empty" value="1" class="yw-btn">{{ _t('ONBOARDING_EMPTY') }}</button>
+      </div>
+    </form>
+  {% else %}
+    <h1>{{ _t('ONBOARDING_PENDING_TITLE') }}</h1>
+    <p>{{ _t('ONBOARDING_PENDING_TEXT') }}</p>
+    <p><a class="yw-btn yw-btn--primary" href="{{ url({ tag: 'user' }) }}">{{ _t('ONBOARDING_SIGN_IN') }}</a></p>
+  {% endif %}
+</section>

@@ -1809,7 +1809,6 @@ Url: {{ baseUrl }}
     'DELETEPAGE_NOT_DELETED' => 'பக்கம் நீக்கப்படவில்லை.',
     'EDIT_ALERT_ALREADY_SAVED_BY_ANOTHER_USER' => 'நீங்கள் திருத்திக்கொண்டிருந்தபோது இந்தப் பக்கத்தை வேறொருவர் மாற்றிவிட்டார்.\\nஉங்கள் மாற்றங்களை நகலெடுத்து, இந்தப் பக்கத்தை மீண்டும் திருத்தவும்.',
     'EDIT_PREVIEW' => 'முன்னோட்டம்',
-    'UPDATE_PAGE_NOT_FOUND_IN_DEFAULT_SQL' => '"{{page}}" பக்கம் default-content.sql இல் காணப்படவில்லை',
     'SUCCESS_RESTORE_REVISION' => 'பதிப்பு மீட்டமைக்கப்பட்டுள்ளது',
     'TITLE_PAGE_HISTORY' => 'பக்க வரலாறு',
     'TITLE_ENTRY_HISTORY' => 'பதிவின் வரலாறு',

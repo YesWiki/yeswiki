@@ -12,7 +12,7 @@ test.beforeEach(async ({ page }) => {
 test('a bazar form tag lists its entries with an add button', async ({
   page,
 }) => {
-  await page.goto('/?Annuaire')
+  await page.goto('/?annuaire')
 
   await expect(page.locator('.form-screen__title')).toContainText('Annuaire')
   await expect(page.locator('.form-screen__add')).toHaveAttribute(
@@ -42,7 +42,7 @@ test('the Pages form tag lists pages, as cards and as a table', async ({
 test('an enum field gives the list a facet above it, and the display switches', async ({
   page,
 }) => {
-  await page.goto('/?Ressources')
+  await page.goto('/?ressources')
 
   await expect(page.locator('.yw-facet-select')).toBeVisible()
   await expect(page.locator('#form-screen-list .yw-items--card')).toBeVisible()
@@ -64,7 +64,7 @@ test('an enum field gives the list a facet above it, and the display switches', 
 test('the switcher groups templates by category and only offers what the form can draw', async ({
   page,
 }) => {
-  await page.goto('/?Agenda')
+  await page.goto('/?agenda')
 
   const groups = page.locator('.yw-display-switch__group')
   await expect(groups).toHaveCount(5)
@@ -97,10 +97,10 @@ test('the switcher groups templates by category and only offers what the form ca
 test('the add button opens the entry form on the same tag', async ({
   page,
 }) => {
-  await page.goto('/?Annuaire')
+  await page.goto('/?annuaire')
   await page.locator('.form-screen__add').press('Enter')
 
-  await expect(page).toHaveURL(/\?Annuaire&view=saisir/)
+  await expect(page).toHaveURL(/\?annuaire&view=saisir/)
   await expect(
     page.locator('form#formulaire input[name="bf_nom"]'),
   ).toBeVisible()

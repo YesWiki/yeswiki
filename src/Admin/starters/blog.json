@@ -1,0 +1,100 @@
+{
+  "label": "Blog",
+  "description": "Des actualités avec une image, un résumé et un billet.",
+  "icon": "rss",
+  "form": {
+    "id": "3",
+    "lang": "fr-FR",
+    "label": "Blog-actu",
+    "template": [
+      {
+        "type": "image",
+        "name": "bf_image",
+        "label": "Image",
+        "thumbnail_height": "400",
+        "thumbnail_width": "300",
+        "image_height": "1200",
+        "image_width": "900",
+        "image_class": "right",
+        "required": "1",
+        "read_access": "*",
+        "write_access": "*"
+      },
+      {
+        "type": "texte",
+        "name": "bf_titre",
+        "label": "Titre",
+        "size": "80",
+        "max_chars": "255",
+        "sub_type": "text",
+        "required": "1",
+        "read_access": "*",
+        "write_access": "*"
+      },
+      {
+        "type": "textelong",
+        "name": "bf_chapeau",
+        "label": "Résumé",
+        "size": "40",
+        "num_rows": "3",
+        "syntax": "wiki",
+        "required": "1",
+        "read_access": "*",
+        "write_access": "*"
+      },
+      {
+        "type": "textelong",
+        "name": "bf_description",
+        "label": "Billet",
+        "size": "40",
+        "num_rows": "9",
+        "syntax": "wiki",
+        "required": "1",
+        "read_access": "*",
+        "write_access": "*"
+      }
+    ],
+    "description": "",
+    "sem_context": "",
+    "sem_type": "",
+    "sem_use_template": "1",
+    "sem_template": "",
+    "sem_reverse_template": "",
+    "only_one_entry": "N",
+    "only_one_entry_message": "",
+    "entry_title_template": "{{bf_titre}}"
+  },
+  "lists": [],
+  "pages": {
+    "VoirBlog": "{{nav menu=\"MenuBlog\"}}\n\n{{entrylist id=\"%formId%\" template=\"blog\"}}",
+    "VoirBlogSimple": "{{nav menu=\"MenuBlog\"}}\n\n{{entrylist id=\"%formId%\" template=\"blog\" header=\"no\"}}",
+    "SaisirBlog": "{{nav menu=\"MenuBlog\"}}\n\n{{bazar view=\"saisir\" showmenu=\"0\" id=\"%formId%\"}}"
+  },
+  "menus": [
+    {
+      "tag": "MenuBlog",
+      "title": "Blog",
+      "nodes": [
+        {
+          "id": "n1",
+          "label": "Le blog avec Une",
+          "link": "VoirBlog"
+        },
+        {
+          "id": "n2",
+          "label": "Le blog sans Une",
+          "link": "VoirBlogSimple"
+        },
+        {
+          "id": "n3",
+          "label": "Déposer une actu",
+          "link": "SaisirBlog"
+        }
+      ]
+    }
+  ],
+  "navigation": {
+    "label": "Blog",
+    "link": "VoirBlog"
+  }
+}

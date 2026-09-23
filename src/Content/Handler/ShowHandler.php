@@ -2,6 +2,7 @@
 
 namespace YesWiki\Content\Handler;
 
+use YesWiki\Admin\Service\Onboarding;
 use YesWiki\Content\Controller\EntryController;
 use YesWiki\Content\Controller\FormController;
 use YesWiki\Content\Entity\PageBody;
@@ -206,7 +207,13 @@ class ShowHandler extends YesWikiHandler implements RegisteredHandler
             unset($_SESSION['redirects'][count($trace) - 1]);
         }
 
-        if ($HasAccessRead = $this->getService(AclService::class)->hasAccess('read')) {
+        $onboarding = $this->getService(Onboarding::class);
+        if (!$this->getService(PageContext::class)->getPage() && $this->getService(PageContext::class)->getTag() === $onboarding->rootPage() && $onboarding->isPending()) {
+            echo $this->getService(TemplateEngine::class)->render('@core/onboarding.twig', [
+                'is_admin' => $this->getService(AclService::class)->isAdmin(),
+                'starters' => $onboarding->starters(),
+            ]);
+        } elseif ($HasAccessRead = $this->getService(AclService::class)->hasAccess('read')) {
             if (!$this->getService(PageContext::class)->getPage()) {
                 echo str_replace(
                     ['{beginLink}', '{endLink}'],

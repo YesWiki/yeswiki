@@ -2168,7 +2168,6 @@ Via konto %{userName} devas esti aktivigita klakante la suban ligilon aŭ kopian
     'EDIT_NO_WRITE_ACCESS' => 'Vi ne havas skribrajton sur tiu ĉi paĝo !',
     'EDIT_NO_CHANGE_MSG' => 'Tiu ĉi paĝo ne estis registrita ĉar ĝi spertis neniun modifon.',
     'EDIT_PREVIEW' => 'Antaŭrigardo',
-    'UPDATE_PAGE_NOT_FOUND_IN_DEFAULT_SQL' => 'la paĝo "{{page}}" ne estis trovita en default-content.sql',
     'SUCCESS_RESTORE_REVISION' => 'La versio estis bone restarigita',
     'SUCCESS_RESTORE_REVISION_FULL' => 'La versio estis bone restarigita tute, inkluzive de la alirrajtoj',
     'TITLE_PAGE_HISTORY' => 'Historio de la paĝo',

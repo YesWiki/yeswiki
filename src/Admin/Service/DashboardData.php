@@ -193,17 +193,20 @@ class DashboardData
      */
     public function exportLinks(): array
     {
+        $feeds = [];
+        if ($this->pageManager->tagExists('DerniersChangementsRSS')) {
+            $feeds[] = [
+                'label' => _t('DASHBOARD_EXPORT_FEED_CHANGES'),
+                'url' => $this->urlFormatter->href('', 'DerniersChangementsRSS', null, false),
+            ];
+        }
+        $feeds[] = [
+            'label' => _t('DASHBOARD_EXPORT_FEED_ENTRIES'),
+            'url' => $this->urlFormatter->href('', 'api/entries/rss', null, false),
+        ];
+
         return [
-            'feeds' => [
-                [
-                    'label' => _t('DASHBOARD_EXPORT_FEED_CHANGES'),
-                    'url' => $this->urlFormatter->href('', 'DerniersChangementsRSS', null, false),
-                ],
-                [
-                    'label' => _t('DASHBOARD_EXPORT_FEED_ENTRIES'),
-                    'url' => $this->urlFormatter->href('', 'api/entries/rss', null, false),
-                ],
-            ],
+            'feeds' => $feeds,
             'fileLinks' => [
                 [
                     'icon' => 'paperclip',

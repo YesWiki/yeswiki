@@ -1760,7 +1760,6 @@ Ante la menor duda, abra este formulario en una página dedicada haciendo clic e
     'ACLS_RESERVED_FOR_ADMINS' => 'Esta acción está reservada para los administradores',
     'REACTION_DELETE' => 'Suprimir',
     'USER_INCORRECT_PASSWORD_KEY' => 'La clave de validación de la contraseña es incorrecta',
-    'UPDATE_PAGE_NOT_FOUND_IN_DEFAULT_SQL' => 'la página «{{page}}» no se ha encontrado en default-content.sql',
     'HTML_INSERTION_HELP_TEXT' => 'Aumenta considerablemente la funcionalidad de la wiki, permitiendo añadir vídeos e iframes, por ejemplo, pero es menos seguro',
     'REACTION_DISLIKE' => 'No apruebo',
     'USER_MUST_ACCEPT_COOKIES_TO_GET_CONNECTED' => 'Debe aceptar las cookies para poder conectarse',

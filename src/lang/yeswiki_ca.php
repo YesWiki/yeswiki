@@ -2057,7 +2057,6 @@ Davant del mínim dubte, obriu aquest formulari en una pàgina dedicada fent cli
     'ACLS_RESERVED_FOR_ADMINS' => 'Aquesta acció està reservada als administradors',
     'REACTION_DELETE' => 'Suprimeix',
     'USER_INCORRECT_PASSWORD_KEY' => 'La clau de validació de la contrasenya és incorrecta',
-    'UPDATE_PAGE_NOT_FOUND_IN_DEFAULT_SQL' => 'no s\'ha trobat la pàgina "{{page}}" a default-content.sql',
     'HTML_INSERTION_HELP_TEXT' => 'Augmenta molt la funcionalitat del wiki, permetent l\'addició de vídeos i iframe per exemple, però és menys segur',
     'REACTION_DISLIKE' => 'No ho aprovo',
     'USER_MUST_ACCEPT_COOKIES_TO_GET_CONNECTED' => 'Cal que accepteu les galetes per connectar-vos',

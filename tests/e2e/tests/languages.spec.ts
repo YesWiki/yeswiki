@@ -6,7 +6,7 @@ test.beforeEach(async () => {
   resetEnv()
 })
 
-const CONFIG = '/?GererConfig'
+const CONFIG = '/?admin/config'
 const OTHERS = 'input[name="other_languages[]"]'
 
 /** Open the screen's `core` group. */

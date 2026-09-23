@@ -9,6 +9,7 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Csrf\Exception\TokenNotFoundException;
 use Tamtamchik\SimpleFlash\Flash;
 use YesWiki\Admin\Api\AdminLogsApiController;
+use YesWiki\Admin\Service\Onboarding;
 use YesWiki\Content\Service\MenuManager;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Content\Service\TranslationCoverage;
@@ -493,6 +494,44 @@ class AdminController extends YesWikiController
     public function groups(): Response
     {
         return $this->page('@core/admin/groups.twig', 'admin/groups');
+    }
+
+    /** The onboarding screen's form: the Starters it names, or none for an empty wiki. */
+    #[Route('/admin/onboarding', methods: ['POST'], options: ['acl' => self::ADMIN_ACL])]
+    public function onboarding(): RedirectResponse
+    {
+        $request = $this->getService(CurrentRequest::class)->get();
+        $onboarding = $this->getService(Onboarding::class);
+
+        try {
+            $this->getService(CsrfTokenChecker::class)->checkToken('main', 'POST', 'csrf-token', false);
+            if ($onboarding->isPending()) {
+                $chosen = $request->request->all()['starters'] ?? [];
+                $onboarding->apply($request->request->get('empty') ? [] : array_values(array_filter((array)$chosen, 'is_string')));
+            }
+        } catch (\Throwable $failed) {
+            Flash::error(_t('ONBOARDING_FAILED') . ' ' . $failed->getMessage());
+        }
+
+        return new RedirectResponse($this->getService(UrlFormatter::class)->href('', $onboarding->rootPage()));
+    }
+
+    #[Route('/admin/rights', options: ['acl' => self::ADMIN_ACL])]
+    public function rights(): Response
+    {
+        return $this->page('@core/admin/rights.twig', 'admin/rights', ['action' => 'adminacls']);
+    }
+
+    #[Route('/admin/rights/actions', options: ['acl' => self::ADMIN_ACL])]
+    public function actionRights(): Response
+    {
+        return $this->page('@core/admin/rights.twig', 'admin/rights/actions', ['action' => 'editactionsacls']);
+    }
+
+    #[Route('/admin/rights/handlers', options: ['acl' => self::ADMIN_ACL])]
+    public function handlerRights(): Response
+    {
+        return $this->page('@core/admin/rights.twig', 'admin/rights/handlers', ['action' => 'edithandlersacls']);
     }
 
     #[Route('/admin/reactions', options: ['acl' => self::ADMIN_ACL])]

@@ -7,6 +7,7 @@ import {
   saveEditor,
 } from '../helpers/editor'
 import { setPageContent } from '../helpers/page'
+import { createEntry } from '../helpers/bazar'
 
 /** The screen that says how far the wiki has been translated, and leads to where it is done. */
 
@@ -29,6 +30,12 @@ test('every kind of Content is counted, each on its own line', async ({
   page,
 }) => {
   await login(page, ADMIN_USERNAME, ADMIN_PASSWORD)
+  await createEntry(page, 2, {
+    bf_titre: 'Une sortie',
+    bf_date_debut_evenement: '2024-04-10',
+    bf_date_fin_evenement: '2024-04-12',
+  })
+  await createEntry(page, 4, { bf_titre: 'Une ressource', bf_type: '1' })
   await page.goto(SCREEN)
 
   const summary = page.locator('.yw-translations').first()

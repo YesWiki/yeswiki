@@ -13,6 +13,7 @@ use YesWiki\Kernel\Component\ProvidesComponents;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\HibernationService;
+use YesWiki\Render\Service\LayoutService;
 use YesWiki\Render\Service\TemplateHelperService;
 
 class AdminAclsAction extends YesWikiAction implements RegisteredAction, ProvidesComponents
@@ -170,11 +171,7 @@ class AdminAclsAction extends YesWikiAction implements RegisteredAction, Provide
             if ($filter === 'pages') {
                 $search = " AND {$typeCol} <> '" . PageType::ENTRY . "'";
             } elseif ($filter === 'specialpages') {
-                $search = <<<SQL
-               AND tag IN ('BazaR','GererSite','GererDroits','GererThemes','GererMisesAJour','GererUtilisateurs',
-                'GererDroitsActions','GererDroitsHandlers','TableauDeBord',
-                'PageHeader','PageFooter','MotDePassePerdu','ParametresUtilisateur','GererConfig','ActuYeswiki')
-              SQL;
+                $search = " AND tag IN ('" . implode("', '", LayoutService::PAGES) . "')";
             } elseif ($filter === strval(intval($filter))) {
                 $search = ' AND ' . $this->dbService->jsonExtract('body', '$.form_id') . ' = ?'
                     . " AND {$typeCol} = '" . PageType::ENTRY . "'";

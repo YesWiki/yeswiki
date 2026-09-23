@@ -412,19 +412,6 @@ class YesWikiInit
             'dataSources' => [],
             'sync_secret' => '',
 
-            'admin_pages_to_update' => [
-                'GererSite',
-                'GererDroits',
-                'GererDroitsActions',
-                'GererDroitsHandlers',
-                'GererMisesAJour',
-                'GererThemes',
-                'GererConfig',
-                'GererUtilisateurs',
-                'TableauDeBord',
-                'GererSauvegardes',
-            ],
-
             'baz_menu' => 'formulaire,consulter,saisir,listes,importer,exporter',
 
             'herse_id' => '',

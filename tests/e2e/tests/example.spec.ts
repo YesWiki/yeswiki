@@ -15,16 +15,11 @@ test('has title', async ({ page }) => {
 
 test('can edit main page title', async ({ page }) => {
   await page.goto('/')
-  await expect(page.locator('h1')).toContainText(
-    /Félicitations, votre wiki est installé !/,
-  )
+  await expect(page.locator('h1')).toContainText(/MyTestWiki/)
 
   await page.getByRole('link', { name: 'Éditer la page' }).click()
   await replaceEditorTextCallback(page, (value) =>
-    value.replace(
-      'Félicitations, votre wiki est installé !',
-      'Test de modification de titre',
-    ),
+    value.replace('# MyTestWiki', '# Test de modification de titre'),
   )
   await saveEditor(page)
 

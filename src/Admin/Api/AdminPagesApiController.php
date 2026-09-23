@@ -16,6 +16,7 @@ use YesWiki\Kernel\Database\SqlParameters;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Search\Service\SearchIndexSchema;
 use YesWiki\Kernel\Service\UrlFormatter;
+use YesWiki\Render\Service\LayoutService;
 use YesWiki\Render\Service\ThemeManager;
 
 class AdminPagesApiController extends YesWikiController
@@ -24,12 +25,7 @@ class AdminPagesApiController extends YesWikiController
     private const SORT_COLUMNS = ['tag' => 'p.tag', 'time' => 'p.time', 'owner' => 'p.owner', 'type' => 'page_type'];
     private const ALLOWED_PERPAGES = [50, 100, 150, 200, 500];
     private const ALLOWED_TYPES = ['all', 'pages', 'bazar', 'lists', 'special', 'comments'];
-    private const SPECIAL_PAGES = [
-        'BazaR', 'GererSite', 'GererDroits', 'GererThemes', 'GererMisesAJour',
-        'GererUtilisateurs', 'GererDroitsActions', 'GererDroitsHandlers', 'TableauDeBord',
-        'PageHeader', 'PageFooter', 'MotDePassePerdu',
-        'ParametresUtilisateur', 'GererConfig', 'ActuYeswiki',
-    ];
+    private const SPECIAL_PAGES = LayoutService::PAGES;
 
     #[Route('/api/admin/pages', methods: ['GET'], options: ['acl' => ['@admins']])]
     public function getPages(Request $request): Response

@@ -6,7 +6,6 @@ use Symfony\Component\Security\Csrf\Exception\TokenNotFoundException;
 use Tamtamchik\SimpleFlash\Flash;
 use YesWiki\Admin\Service\ArchiveService;
 use YesWiki\Admin\Service\AutoUpdateService;
-use YesWiki\Admin\Service\UpdateAdminPagesService;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\CsrfTokenChecker;
@@ -28,7 +27,7 @@ class UpdateAction extends YesWikiAction implements RegisteredAction
     }
 
     /** what installs, replaces or removes code, and may only be asked for by this wiki's own pages */
-    public const CONFIRMED_ACTIONS = ['upgrade', 'delete', 'update_admin_pages'];
+    public const CONFIRMED_ACTIONS = ['upgrade', 'delete'];
 
     public function formatArguments($arg)
     {
@@ -57,7 +56,6 @@ class UpdateAction extends YesWikiAction implements RegisteredAction
         $vUpdateService = $this->getService(AutoUpdateService::class);
         $vMigrationService = $this->getService(MigrationService::class);
         $vArchiveService = $this->getService(ArchiveService::class);
-        $vUpdateAdminPagesService = $this->getService(UpdateAdminPagesService::class);
 
         if (!$vUpdateService->initRepository($this->arguments['version'])) {
             return $this->render('@core/norepo.twig', []);
@@ -169,11 +167,6 @@ class UpdateAction extends YesWikiAction implements RegisteredAction
                     $vMigrationMessages = $vMigrationService->run();
 
                     $vMessages->add($vMigrationMessages);
-                    break;
-                case 'update_admin_pages':
-                    $vUpdateAdminPagesMessages = $vUpdateAdminPagesService->updateAll();
-
-                    $vMessages->add($vUpdateAdminPagesMessages);
                     break;
                 case 'delete':
                     $vDeleteMessages = $vUpdateService->delete($vPackageName);

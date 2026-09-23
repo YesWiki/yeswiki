@@ -108,7 +108,7 @@ test.describe('the account routes', () => {
   test('signing in from the navbar comes back to the page you were on', async ({
     page,
   }) => {
-    await page.goto('/?ReglesDeFormatage')
+    await page.goto('/?BacASable')
 
     const accountLink = page.locator('#yw-topnav a.account-link')
     await expect(accountLink).toHaveAttribute('href', /return=/)
@@ -119,7 +119,7 @@ test.describe('the account routes', () => {
     await page.fill(`${SIGN_IN_FORM} input[name="password"]`, ADMIN_PASSWORD)
     await page.click(`${SIGN_IN_FORM} button[type="submit"]`)
 
-    await expect(page).toHaveURL(/ReglesDeFormatage$/)
+    await expect(page).toHaveURL(/BacASable$/)
     await expect(
       page.locator('#yw-topnav a.account-link .yw-avatar'),
     ).toBeVisible()

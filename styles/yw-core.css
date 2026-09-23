@@ -4752,3 +4752,53 @@ figcaption *:last-child {
 .yw-acl__toggle {
   margin-top: var(--yw-space-sm-y);
 }
+
+.yw-onboarding {
+  max-width: 48rem;
+  margin: var(--yw-space-lg-y) auto;
+}
+
+.yw-onboarding__starters {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
+  gap: var(--yw-space-md-y) var(--yw-space-md-x);
+  margin: var(--yw-space-lg-y) 0;
+}
+
+.yw-onboarding__starter {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--yw-space-sm-y) var(--yw-space-sm-x);
+  align-items: center;
+  align-content: start;
+  margin: 0;
+  padding: var(--yw-space-md-y) var(--yw-space-md-x);
+  border: var(--yw-border-width) solid var(--yw-border);
+  border-radius: var(--yw-radius-md);
+  background: var(--yw-surface-raised);
+  font-weight: normal;
+  cursor: pointer;
+}
+
+.yw-onboarding__starter:has(input:checked) {
+  border-color: var(--yw-primary);
+  background: var(--yw-surface-hover);
+}
+
+.yw-onboarding__label {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--yw-space-sm-x);
+  font-weight: bold;
+}
+
+.yw-onboarding__description {
+  grid-column: 2;
+  color: var(--yw-text-muted);
+}
+
+.yw-onboarding__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--yw-space-md-x);
+}

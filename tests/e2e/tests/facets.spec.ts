@@ -5,9 +5,11 @@ import { editorText, openEditorWith } from '../helpers/editor'
 import { components } from '../helpers/wysiwyg'
 import { watchConsole } from '../helpers/console'
 import { login, ADMIN_USERNAME, ADMIN_PASSWORD } from '../helpers/login'
+import { seedResources } from '../helpers/bazar'
 
-test.beforeEach(async () => {
+test.beforeEach(async ({ page }) => {
   resetEnv()
+  await seedResources(page)
 })
 
 /** The facets, over htmx (ticket 37). */

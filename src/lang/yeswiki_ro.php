@@ -1717,7 +1717,6 @@ La cea mai mică îndoială, deschide acest formular într-o pagină dedicată f
     'ACLS_RESERVED_FOR_ADMINS' => 'Această acțiune este rezervată administratorilor',
     'REACTION_DELETE' => 'Șterge',
     'USER_INCORRECT_PASSWORD_KEY' => 'Cheia de validare a parolei este incorectă',
-    'UPDATE_PAGE_NOT_FOUND_IN_DEFAULT_SQL' => 'pagina "{{page}}" nu a fost găsită în default-content.sql',
     'HTML_INSERTION_HELP_TEXT' => 'Crește foarte mult funcționalitățile wiki-ului, permițând adăugarea de videoclipuri și iframe, de exemplu, dar este mai puțin sigur',
     'DESCRIPTION_INFOS' => 'Descrierea site-ului care va fi inserată în codurile HTML (meta date)',
     'MORE_INFOS' => 'Ajutor',

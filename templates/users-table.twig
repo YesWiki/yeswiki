@@ -66,13 +66,13 @@
           <td>{{ user.signuptime }}</td>
           <td>
             {% if userIsTheOneConnected %} 
-              <a href="{{ url({tag:'ParametresUtilisateur'}) }}"
+              <a href="{{ url({tag:'user'}) }}"
                 class="yw-btn yw-btn--sm btn-icon yw-btn--primary" role="button" title="{{ _t('MODIFY') }}">
                 <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#pencil"/></svg>
               </a>
             {% elseif isAdmin %}
 
-              <a href="{{ url({tag:'ParametresUtilisateur',params:{user:user.name,from:tag}}) }}"
+              <a href="{{ url({tag:'user',params:{user:user.name,from:tag}}) }}"
                 class="yw-btn yw-btn--sm btn-icon yw-btn--warning" role="button" title="{{ _t('MODIFY') }}">
                 <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#pencil"/></svg>
               </a>

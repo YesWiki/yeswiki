@@ -114,11 +114,11 @@ class LoginAction extends YesWikiAction implements RegisteredAction, ProvidesCom
         return [
             'context' => $arg['context'] ?? $this->getService(PageContext::class)->getTag(),
             'signupurl' => $noSignupButton ? '0' : (
-                $this->getService(UrlFormatter::class)->generateLink($arg['signupurl'] ?? $this->getService(RuntimeConfig::class)->getValue('signupUrl', 'ParametresUtilisateur'))
+                $this->getService(UrlFormatter::class)->generateLink($arg['signupurl'] ?? $this->getService(RuntimeConfig::class)->getValue('signupUrl', 'user/signup'))
             ),
 
             'profileurl' => empty($arg['profileurl'])
-                ? $this->getService(UrlFormatter::class)->href('', 'ParametresUtilisateur')
+                ? $this->getService(UrlFormatter::class)->href('', 'user')
                 : (
                     $arg['profileurl'] == 'WikiName'
                     ? 'WikiName'
@@ -150,7 +150,7 @@ class LoginAction extends YesWikiAction implements RegisteredAction, ProvidesCom
                 ),
 
             'lostpasswordurl' => !boolval($this->params->get('contact_disable_email_for_password')) ? (!empty($arg['lostpasswordurl']) ? $this->getService(UrlFormatter::class)->generateLink($arg['lostpasswordurl']) :
-            $this->getService(UrlFormatter::class)->href('', 'MotDePassePerdu')) : '',
+            $this->getService(UrlFormatter::class)->href('', 'user/lost-password')) : '',
 
             'class' => !empty($arg['class']) ? $arg['class'] : '',
             'btnclass' => !empty($arg['btnclass']) ? $arg['btnclass'] : '',

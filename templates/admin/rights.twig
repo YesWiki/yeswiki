@@ -1,0 +1,17 @@
+{% extends "@core/dashboard/layout.twig" %}
+
+{% block dashboard_content %}
+  <h1>{{ _t('DASHBOARD_ADMIN_RIGHTS') }}</h1>
+  <ul class="yw-nav">
+    {% for tab in [
+      { route: 'admin/rights',          label: _t('DASHBOARD_ADMIN_RIGHTS_PAGES') },
+      { route: 'admin/rights/actions',  label: _t('DASHBOARD_ADMIN_RIGHTS_ACTIONS') },
+      { route: 'admin/rights/handlers', label: _t('DASHBOARD_ADMIN_RIGHTS_HANDLERS') }
+    ] %}
+      <li{% if tab.route == current %} class="active"{% endif %}>
+        <a href="{{ url({ tag: tab.route }) }}"{% if tab.route == current %} aria-current="page"{% endif %}>{{ tab.label }}</a>
+      </li>
+    {% endfor %}
+  </ul>
+  {{ renderAction(action)|raw }}
+{% endblock %}

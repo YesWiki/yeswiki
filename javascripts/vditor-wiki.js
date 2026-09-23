@@ -262,7 +262,7 @@ function initVditorWiki(textareaParam) {
         tipPosition: 'n',
         icon: legacyIconToSprite('help-circle'),
         click() {
-          openModal(_t('ACEDITOR_HELP'), wiki.url('ReglesDeFormatage'))
+          openModal(_t('ACEDITOR_HELP'), wiki.url('BacASable'))
         },
       },
       {

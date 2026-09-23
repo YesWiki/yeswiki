@@ -11,6 +11,9 @@ import { fileURLToPath } from 'url'
  */
 const RESET = fileURLToPath(new URL('../reset.sh', import.meta.url))
 
-export const resetEnv = () => {
-  execFileSync('bash', [RESET], { stdio: 'inherit' })
+export const resetEnv = ({ onboarded = true } = {}) => {
+  execFileSync('bash', [RESET], {
+    stdio: 'inherit',
+    env: { ...process.env, YESWIKI_TEST_ONBOARDED: onboarded ? '1' : '0' },
+  })
 }

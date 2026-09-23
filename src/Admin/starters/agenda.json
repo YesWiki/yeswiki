@@ -1,0 +1,168 @@
+{
+  "label": "Agenda",
+  "description": "Des événements à venir, en liste ou en calendrier, que chacun peut proposer.",
+  "icon": "calendar",
+  "form": {
+    "id": "2",
+    "lang": "fr-FR",
+    "label": "Agenda",
+    "template": [
+      {
+        "type": "texte",
+        "name": "bf_titre",
+        "label": "Nom de l'événement",
+        "size": "60",
+        "max_chars": "255",
+        "sub_type": "text",
+        "required": "1",
+        "read_access": "*",
+        "write_access": "*"
+      },
+      {
+        "type": "textelong",
+        "name": "bf_description",
+        "label": "Description",
+        "size": "40",
+        "syntax": "wiki",
+        "required": "0",
+        "read_access": "*",
+        "write_access": "*"
+      },
+      {
+        "type": "listedatedeb",
+        "name": "bf_date_debut_evenement",
+        "label": "Début de l'événement",
+        "default": "today",
+        "required": "1",
+        "read_access": "*",
+        "write_access": "*"
+      },
+      {
+        "type": "listedatefin",
+        "name": "bf_date_fin_evenement",
+        "label": "Fin de l'événement",
+        "default": "today",
+        "required": "1",
+        "read_access": "*",
+        "write_access": "*"
+      },
+      {
+        "type": "lien_internet",
+        "name": "bf_site_internet",
+        "label": "Adresse url",
+        "required": "0",
+        "read_access": "*",
+        "write_access": "*"
+      },
+      {
+        "type": "image",
+        "name": "bf_image",
+        "label": "Image (facultatif)",
+        "thumbnail_height": "140",
+        "thumbnail_width": "140",
+        "image_height": "600",
+        "image_width": "600",
+        "image_class": "right",
+        "required": "0",
+        "hint": "Votre image doit être au format .jpg ou .gif ou .png",
+        "read_access": "*",
+        "write_access": "*"
+      },
+      {
+        "type": "fichier",
+        "name": "fichier",
+        "label": "Documents",
+        "size": "20000000",
+        "authorized_exts_label": "file",
+        "required": "0",
+        "read_access": "*",
+        "write_access": "*"
+      },
+      {
+        "type": "texte",
+        "name": "bf_adresse",
+        "label": "Adresse",
+        "size": "50",
+        "max_chars": "50",
+        "sub_type": "text",
+        "required": "0",
+        "read_access": "*",
+        "write_access": "*"
+      },
+      {
+        "type": "texte",
+        "name": "bf_code_postal",
+        "label": "Code postal",
+        "size": "8",
+        "max_chars": "8",
+        "sub_type": "text",
+        "required": "0",
+        "read_access": "*",
+        "write_access": "*"
+      },
+      {
+        "type": "texte",
+        "name": "bf_ville",
+        "label": "Ville",
+        "size": "50",
+        "max_chars": "80",
+        "sub_type": "text",
+        "required": "0",
+        "read_access": "*",
+        "write_access": "*"
+      },
+      {
+        "type": "map",
+        "name": "bf_geolocation",
+        "label": "Géolocalisation de l'adresse",
+        "required": "0"
+      },
+      {
+        "type": "labelhtml",
+        "form_text": "<h3>Il ne vous reste plus qu'à valider ! </h3>"
+      }
+    ],
+    "description": "",
+    "sem_context": "https://www.w3.org/ns/activitystreams",
+    "sem_type": "Event",
+    "sem_use_template": "1",
+    "sem_template": "",
+    "sem_reverse_template": "",
+    "only_one_entry": "N",
+    "only_one_entry_message": "",
+    "entry_title_template": "{{bf_titre}}"
+  },
+  "lists": [],
+  "pages": {
+    "VueActivite": "{{nav menu=\"MenuAgenda\"}}\n\n{{entrylist template=\"agenda\" id=\"%formId%\" order=\"desc\" field=\"bf_date_debut_evenement\" agenda=\"futur\" }}",
+    "VueAgenda": "{{nav menu=\"MenuAgenda\"}}\n\n{{entrylist id=\"%formId%\" template=\"calendar\" }}",
+    "SaisirAgenda": "{{nav menu=\"MenuAgenda\"}}\n\n{{bazar showmenu=\"0\" view=\"saisir\" id=\"%formId%\"}}"
+  },
+  "menus": [
+    {
+      "tag": "MenuAgenda",
+      "title": "Agenda",
+      "nodes": [
+        {
+          "id": "n1",
+          "label": "Voir les prochaines activités",
+          "link": "VueActivite"
+        },
+        {
+          "id": "n2",
+          "label": "Voir l'agenda",
+          "link": "VueAgenda"
+        },
+        {
+          "id": "n3",
+          "label": "Proposer une activité",
+          "link": "SaisirAgenda"
+        }
+      ]
+    }
+  ],
+  "navigation": {
+    "label": "Agenda",
+    "link": "VueActivite"
+  }
+}

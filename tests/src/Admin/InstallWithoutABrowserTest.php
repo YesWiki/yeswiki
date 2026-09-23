@@ -52,12 +52,22 @@ class InstallWithoutABrowserTest extends YesWikiTestCase
      */
     private function install(string $dir, array $options): array
     {
+        return $this->console($dir, 'core:install', ['--no-interaction', ...$options]);
+    }
+
+    /**
+     * @param list<string> $arguments
+     *
+     * @return array{status: int, out: string}
+     */
+    private function console(string $dir, string $name, array $arguments): array
+    {
         $command = 'cd ' . escapeshellarg($dir)
             . ' && YESWIKI_INSTANCE_DIR=' . escapeshellarg($dir)
             . ' YESWIKI_CONFIG_FILE=' . escapeshellarg($dir . '/yeswiki.config.php')
             . ' ' . escapeshellarg(PHP_BINARY)
             . ' ' . escapeshellarg(\YESWIKI_PROGRAM_DIR . '/src/commands/console')
-            . ' core:install --no-interaction ' . implode(' ', array_map('escapeshellarg', $options))
+            . ' ' . $name . ' ' . implode(' ', array_map('escapeshellarg', $arguments))
             . ' 2>&1';
 
         $out = [];
@@ -100,7 +110,12 @@ class InstallWithoutABrowserTest extends YesWikiTestCase
             $this->assertSame('MenuAccesRapide', $written['layout_quick_menu']);
 
             $db = new \PDO('sqlite:' . $dir . '/private/yeswiki.db');
-            $this->assertGreaterThan(10, $this->countRows($db, 'SELECT COUNT(*) FROM yeswiki_pages'), 'the default content is seeded');
+            $this->assertSame(
+                ['BacASable', 'MenuAccesRapide', 'MenuNavigation', 'PageFooter', 'PageHeader', 'WikiAdmin', 'comptes', 'fichiers', 'pages'],
+                $this->tags($db),
+                'the seed holds what a wiki needs to run, and the home page is left for the onboarding to create'
+            );
+            $this->assertSame([], array_values(array_diff(scandir($dir . '/files') ?: [], ['.', '..'])), 'a fresh wiki has no files');
             $this->assertSame(
                 2,
                 $this->countRows(
@@ -136,6 +151,66 @@ class InstallWithoutABrowserTest extends YesWikiTestCase
                 (string)$adminRow->fetchColumn(),
                 'and ?WikiAdmin is the account, not a page shadowing it'
             );
+        } finally {
+            $this->removeInstance($dir);
+        }
+    }
+
+    /** @return list<string> */
+    private function tags(\PDO $db): array
+    {
+        $statement = $db->query("SELECT tag FROM yeswiki_pages WHERE latest = 'Y'");
+        $this->assertNotFalse($statement);
+        $tags = array_map('strval', $statement->fetchAll(\PDO::FETCH_COLUMN));
+        sort($tags);
+
+        return $tags;
+    }
+
+    /** @return array<string, mixed> */
+    private function body(\PDO $db, string $tag): array
+    {
+        $statement = $db->prepare("SELECT body FROM yeswiki_pages WHERE latest = 'Y' AND tag = ?");
+        $statement->execute([$tag]);
+
+        return json_decode((string)$statement->fetchColumn(), true) ?? [];
+    }
+
+    public function testTheOnboardingCreatesTheChosenStartersAndTheHomePage(): void
+    {
+        $dir = $this->instanceDir() . '-onboarding';
+        mkdir($dir, 0o755, true);
+
+        try {
+            $installed = $this->install($dir, [
+                '--driver=sqlite',
+                '--base-url=http://onboarded.test/?',
+                '--root-page=PagePrincipale',
+                '--wiki-name=Onboarded',
+                '--admin-name=WikiAdmin',
+                '--admin-email=admin@example.tld',
+                '--admin-password=InstalledFromTheTerminal',
+            ]);
+            $this->assertSame(0, $installed['status'], $installed['out']);
+
+            $applied = $this->console($dir, 'onboarding:apply', ['annuaire']);
+            $this->assertSame(0, $applied['status'], $applied['out']);
+
+            $db = new \PDO('sqlite:' . $dir . '/private/yeswiki.db');
+            $tags = $this->tags($db);
+            foreach (['PagePrincipale', 'annuaire', 'TrombiAnnuaire', 'SaisirAnnuaire', 'MenuAnnuaire'] as $tag) {
+                $this->assertContains($tag, $tags);
+            }
+            $this->assertNotContains('VueAgenda', $tags, 'a Starter nobody chose is not created');
+
+            $formId = (string)($this->body($db, 'annuaire')['id'] ?? '');
+            $this->assertNotSame('', $formId);
+            $this->assertStringContainsString('id="' . $formId . '"', (string)$this->body($db, 'TrombiAnnuaire')['content'], 'the pages name the form that was just created');
+            $this->assertContains('TrombiAnnuaire', array_column($this->body($db, 'MenuNavigation')['nodes'], 'link'), 'the Starter is reachable from the navbar');
+
+            $again = $this->console($dir, 'onboarding:apply', ['agenda']);
+            $this->assertSame(0, $again['status'], $again['out']);
+            $this->assertNotContains('VueAgenda', $this->tags($db), 'once the home page exists the onboarding is over');
         } finally {
             $this->removeInstance($dir);
         }

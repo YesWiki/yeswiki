@@ -59,6 +59,15 @@ test('a dropdown is an entry with children under it', async ({ page }) => {
   await login(page, ADMIN_USERNAME, ADMIN_PASSWORD)
   await page.goto('/?admin/layout')
 
+  await page
+    .locator('[data-yw-menu-rows="navbar"] [data-yw-menu-row]')
+    .last()
+    .locator('[data-yw-menu-indent]')
+    .click()
+  await page.locator('.yw-layout__save button[type="submit"]').click()
+  await expect(page.locator(FLASH)).toContainText(/enregistr/i)
+
+  await page.goto('/?admin/layout')
   await expect(
     page.locator('[data-yw-menu-rows="navbar"] .yw-menu-row--child').first(),
   ).toBeVisible()
@@ -400,14 +409,13 @@ test('moving an entry takes its submenu with it', async ({ page }) => {
       })),
     )
 
+  await rows.last().locator('[data-yw-menu-indent]').click()
+
   const before = await labels()
   const parentIndex = before.findIndex(
     (row, index) => !row.child && before[index + 1]?.child,
   )
-  expect(
-    parentIndex,
-    'the seeded navbar must have a submenu to move',
-  ).toBeGreaterThan(-1)
+  expect(parentIndex, 'the navbar has a submenu to move').toBeGreaterThan(0)
   const children = before
     .slice(parentIndex + 1)
     .filter((row, index, all) => all.slice(0, index + 1).every((r) => r.child))

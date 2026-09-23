@@ -1,0 +1,188 @@
+{
+  "label": "Annuaire",
+  "description": "Un annuaire des membres ou des structures, en trombinoscope, par ordre alphabétique et sur une carte.",
+  "icon": "users",
+  "form": {
+    "id": "1",
+    "lang": "fr-FR",
+    "label": "Annuaire",
+    "template": [
+      {
+        "type": "texte",
+        "name": "bf_nom",
+        "label": "Nom",
+        "size": "60",
+        "max_chars": "255",
+        "sub_type": "text",
+        "required": "1",
+        "read_access": "*",
+        "write_access": "*"
+      },
+      {
+        "type": "texte",
+        "name": "bf_prenom",
+        "label": "Prénom",
+        "size": "60",
+        "max_chars": "255",
+        "sub_type": "text",
+        "required": "1",
+        "read_access": "*",
+        "write_access": "*"
+      },
+      {
+        "type": "image",
+        "name": "bf_image",
+        "label": "Image de présentation (facultatif mais c'est plus sympa)",
+        "thumbnail_height": "140",
+        "thumbnail_width": "140",
+        "image_height": "600",
+        "image_width": "600",
+        "image_class": "right",
+        "required": "0",
+        "read_access": "*",
+        "write_access": "*"
+      },
+      {
+        "type": "texte",
+        "name": "bf_fonction",
+        "label": "Mon métier, ma fonction",
+        "size": "60",
+        "max_chars": "255",
+        "sub_type": "text",
+        "required": "0",
+        "read_access": "*",
+        "write_access": "*"
+      },
+      {
+        "type": "textelong",
+        "name": "bf_projet",
+        "label": "Ma présentation",
+        "size": "5",
+        "num_rows": "5",
+        "syntax": "html",
+        "required": "0",
+        "read_access": "*",
+        "write_access": "*"
+      },
+      {
+        "type": "champs_mail",
+        "name": "bf_mail",
+        "label": "Email (n'apparaitra pas sur le web)",
+        "show_contact_form": "form",
+        "required": "1",
+        "send_email": "0",
+        "read_access": "*",
+        "write_access": "*"
+      },
+      {
+        "type": "texte",
+        "name": "bf_structure",
+        "label": "Nom de la structure",
+        "size": "60",
+        "max_chars": "255",
+        "sub_type": "text",
+        "required": "0",
+        "read_access": "*",
+        "write_access": "*"
+      },
+      {
+        "type": "lien_internet",
+        "name": "bf_site_internet",
+        "label": "Site Internet",
+        "required": "0",
+        "read_access": "*",
+        "write_access": "*"
+      },
+      {
+        "type": "texte",
+        "name": "bf_adresse",
+        "label": "Adresse",
+        "size": "50",
+        "max_chars": "50",
+        "sub_type": "text",
+        "required": "0",
+        "read_access": "*",
+        "write_access": "*"
+      },
+      {
+        "type": "texte",
+        "name": "bf_code_postal",
+        "label": "Code postal",
+        "size": "8",
+        "max_chars": "8",
+        "sub_type": "text",
+        "required": "0",
+        "read_access": "*",
+        "write_access": "*"
+      },
+      {
+        "type": "texte",
+        "name": "bf_ville",
+        "label": "Ville",
+        "size": "50",
+        "max_chars": "80",
+        "sub_type": "text",
+        "required": "0",
+        "read_access": "*",
+        "write_access": "*"
+      },
+      {
+        "type": "map",
+        "name": "bf_geolocation",
+        "label": "Géolocalisation de l'adresse"
+      },
+      {
+        "type": "labelhtml",
+        "form_text": "<h3>Il ne vous reste plus qu'à valider ! </h3>"
+      }
+    ],
+    "description": "",
+    "sem_context": "",
+    "sem_type": "",
+    "sem_use_template": "1",
+    "sem_template": "",
+    "sem_reverse_template": "",
+    "only_one_entry": "N",
+    "only_one_entry_message": "",
+    "entry_title_template": "{{bf_nom}} {{bf_prenom}}"
+  },
+  "lists": [],
+  "pages": {
+    "TrombiAnnuaire": "{{nav menu=\"MenuAnnuaire\"}}\n\n{{entrylist id=\"%formId%\" template=\"card\"  displayfields=\"visual=imagebf_image,title=bf_titre\" imgstyle=\"contain\" columns=\"3\" style=\"square\" }}",
+    "AnnuaireAlpha": "{{nav menu=\"MenuAnnuaire\"}}\n\n{{entrylist id=\"%formId%\" template=\"annuaire_alphabetique\"}}",
+    "CartoAnnuaire": "{{nav menu=\"MenuAnnuaire\"}}\n\n{{entrylist id=\"%formId%\" template=\"map\" markersize=\"small\" height=\"800px\" zoom=\"6\"}}",
+    "SaisirAnnuaire": "{{nav menu=\"MenuAnnuaire\"}}\n\n{{bazar showmenu=\"0\" view=\"saisir\" id=\"%formId%\"}}"
+  },
+  "menus": [
+    {
+      "tag": "MenuAnnuaire",
+      "title": "Annuaire",
+      "nodes": [
+        {
+          "id": "n1",
+          "label": "Trombinoscope",
+          "link": "TrombiAnnuaire"
+        },
+        {
+          "id": "n2",
+          "label": "Annuaire alphabétique",
+          "link": "AnnuaireAlpha"
+        },
+        {
+          "id": "n3",
+          "label": "Annuaire cartographique",
+          "link": "CartoAnnuaire"
+        },
+        {
+          "id": "n4",
+          "label": "S'inscrire dans l'annuaire",
+          "link": "SaisirAnnuaire"
+        }
+      ]
+    }
+  ],
+  "navigation": {
+    "label": "Annuaire",
+    "link": "TrombiAnnuaire"
+  }
+}

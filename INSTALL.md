@@ -87,6 +87,17 @@ and you place the YesWiki files into `/home/jdoe/www/wiki`, you should go to
 
 Detailed instructions are available [in the official doc](https://yeswiki.net/?doc#/docs/fr/webmaster?id=installation).
 
+## The first page
+
+A new wiki holds only what it needs to run: the sandbox, the header and footer, the two menus and
+the Page, Account and File forms. `files/` is empty. The home page does not exist yet, so the first
+time an administrator opens it they are asked what the wiki is for: tick any of the Annuaire,
+Agenda, Blog and Ressources forms, or start from an empty wiki. Visitors are told the wiki is being
+set up until that choice is made.
+
+From a terminal, `./yeswicli onboarding:apply annuaire agenda` makes the same choice,
+`--all` takes every form, and no argument at all starts empty.
+
 ## Housekeeping
 
 A wiki purges old page revisions and Journal entries, expires password recovery and account

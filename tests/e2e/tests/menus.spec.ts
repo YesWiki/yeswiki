@@ -37,12 +37,12 @@ test('the menus screen lists the wiki menus and edits one', async ({
 
 /** A page draws a menu by name, and the same renderer draws it. */
 test('a nav call names a menu and the page draws it', async ({ page }) => {
-  await page.goto('/?GererSite')
+  await page.goto('/?TrombiAnnuaire')
 
   const nav = page.locator('nav.yw-menu')
   await expect(nav).toBeVisible()
-  await expect(nav).toContainText('Gestion du site')
-  await expect(nav.locator('.active-link')).toContainText('Gestion du site')
+  await expect(nav).toContainText('Trombinoscope')
+  await expect(nav.locator('.active-link')).toContainText('Trombinoscope')
 })
 
 /** Every entry carries its own icon, so a glyph works in a page as well as in the bar. */

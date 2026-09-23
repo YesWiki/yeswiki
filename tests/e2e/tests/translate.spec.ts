@@ -8,6 +8,7 @@ import {
   saveEditor,
 } from '../helpers/editor'
 import { setPageContent } from '../helpers/page'
+import { createEntry } from '../helpers/bazar'
 
 test.beforeEach(async () => {
   resetEnv()
@@ -101,12 +102,19 @@ test('the entry editor shows only the fields worth translating', async ({
   page,
 }) => {
   await login(page, ADMIN_USERNAME, ADMIN_PASSWORD)
+  const tag = await createEntry(page, 2, {
+    bf_titre: 'Super événement à Bordeaux',
+    bf_description: 'Un événement autour du vin',
+    bf_date_debut_evenement: '2024-04-10',
+    bf_date_fin_evenement: '2024-04-12',
+    bf_ville: 'Bordeaux',
+  })
 
-  await page.goto('/?Bordeaux/edit')
+  await page.goto(`/?${tag}/edit`)
   const all = await page.locator('[name^="bf_"]').count()
-  expect(all, 'the seeded entry draws its fields').toBeGreaterThan(0)
+  expect(all, 'the entry draws its fields').toBeGreaterThan(0)
 
-  await page.goto('/?Bordeaux/edit&editlang=en')
+  await page.goto(`/?${tag}/edit&editlang=en`)
   const translatable = await page.locator('[name^="bf_"]').count()
 
   expect(translatable).toBeGreaterThan(0)

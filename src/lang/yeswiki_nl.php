@@ -2073,7 +2073,6 @@ Bij de minste twijfel, open dit formulier in een eigen pagina door op deze link 
     'ACLS_RESERVED_FOR_ADMINS' => 'Deze actie is voorbehouden aan de admins',
     'REACTION_DELETE' => 'Verwijderen',
     'USER_INCORRECT_PASSWORD_KEY' => 'De validatiesleutel van het wachtwoord is onjuist',
-    'UPDATE_PAGE_NOT_FOUND_IN_DEFAULT_SQL' => 'de pagina "{{page}}" is niet gevonden in default-content.sql',
     'HTML_INSERTION_HELP_TEXT' => 'Vergroot de mogelijkheden van de wiki aanzienlijk, doordat bijvoorbeeld video\'s en iframes kunnen worden toegevoegd, maar is minder veilig',
     'REACTION_DISLIKE' => 'Daar ben ik het niet mee eens',
     'USER_MUST_ACCEPT_COOKIES_TO_GET_CONNECTED' => 'U dient cookies te aanvaarden om zich aan te melden',

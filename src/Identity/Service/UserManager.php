@@ -349,7 +349,7 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
 
         $this->tripleStore->create($user['name'], self::KEY_VOCABULARY, $hashedKey . self::KEY_VALUE_SEPARATOR . time(), '', '');
 
-        $link = $this->urlFormatter->href('', 'MotDePassePerdu', [
+        $link = $this->urlFormatter->href('', 'user/lost-password', [
             'a' => 'recover',
             'email' => $hashedKey,
             'u' => base64_encode($user['name']),

@@ -2240,7 +2240,6 @@ Il tuo account %{userName} deve essere attivato cliccando sul link qui sotto o c
     'EDIT_NO_WRITE_ACCESS' => 'Non hai accesso in scrittura a questa pagina!',
     'EDIT_NO_CHANGE_MSG' => 'Questa pagina non è stata salvata perché non ha subito nessuna modifica.',
     'EDIT_PREVIEW' => 'Anteprima',
-    'UPDATE_PAGE_NOT_FOUND_IN_DEFAULT_SQL' => 'la pagina "{{page}}" non è stata trovata in default-content.sql',
     'SUCCESS_RESTORE_REVISION' => 'La versione è stata ripristinata',
     'SUCCESS_RESTORE_REVISION_FULL' => 'La versione è stata ripristinata integralmente, diritti di accesso compresi',
     'TITLE_PAGE_HISTORY' => 'Cronologia della pagina',

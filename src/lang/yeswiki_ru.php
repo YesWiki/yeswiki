@@ -2164,7 +2164,6 @@ Url: {{ baseUrl }}
     'EDIT_NO_WRITE_ACCESS' => 'У вас нет прав на запись этой страницы!',
     'EDIT_NO_CHANGE_MSG' => 'Страница не сохранена, потому что не изменилась.',
     'EDIT_PREVIEW' => 'Предпросмотр',
-    'UPDATE_PAGE_NOT_FOUND_IN_DEFAULT_SQL' => 'страница "{{page}}" не найдена в default-content.sql',
     'SUCCESS_RESTORE_REVISION' => 'Версия успешно восстановлена',
     'SUCCESS_RESTORE_REVISION_FULL' => 'Версия успешно восстановлена целиком, вместе с правами доступа',
     'TITLE_PAGE_HISTORY' => 'История страницы',

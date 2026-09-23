@@ -1,0 +1,151 @@
+{
+  "label": "Ressources",
+  "description": "Une ressourcerie : des liens et des documents classés par type, avec des filtres.",
+  "icon": "folder-open",
+  "form": {
+    "id": "4",
+    "lang": "fr-FR",
+    "label": "Ressources",
+    "template": [
+      {
+        "type": "texte",
+        "name": "bf_titre",
+        "label": "Nom de la ressource",
+        "size": "60",
+        "max_chars": "255",
+        "sub_type": "text",
+        "required": "1",
+        "read_access": "*",
+        "write_access": "*"
+      },
+      {
+        "type": "lien_internet",
+        "name": "bf_url",
+        "label": "Site web",
+        "displayvideo": "40",
+        "max_chars": "255",
+        "class": "url",
+        "required": "0",
+        "read_access": "*",
+        "write_access": "*"
+      },
+      {
+        "type": "checkbox",
+        "linked_object": "ListeType",
+        "label": "Type de ressource",
+        "name": "bf_type",
+        "required": "1",
+        "read_access": "*",
+        "write_access": "*"
+      },
+      {
+        "type": "textelong",
+        "name": "bf_description",
+        "label": "Description",
+        "size": "5",
+        "num_rows": "5",
+        "syntax": "wiki",
+        "required": "0",
+        "read_access": "*",
+        "write_access": "*"
+      },
+      {
+        "type": "texte",
+        "name": "bf_auteur",
+        "label": "Auteur",
+        "size": "60",
+        "max_chars": "255",
+        "sub_type": "text",
+        "required": "0",
+        "read_access": "*",
+        "write_access": "*"
+      },
+      {
+        "type": "image",
+        "name": "bf_image",
+        "label": "Image de présentation (facultatif)",
+        "thumbnail_height": "140",
+        "thumbnail_width": "140",
+        "image_height": "600",
+        "image_width": "600",
+        "image_class": "right",
+        "required": "0",
+        "read_access": "*",
+        "write_access": "*"
+      },
+      {
+        "type": "fichier",
+        "name": "fichier",
+        "label": "Documents",
+        "size": "20000000",
+        "authorized_exts_label": "file",
+        "required": "0",
+        "read_access": "*",
+        "write_access": "*"
+      },
+      {
+        "type": "labelhtml",
+        "form_text": "<h3>Il ne vous reste plus qu'à valider ! </h3>"
+      }
+    ],
+    "description": "Un formulaire pour créer un espace de ressources partagées. ",
+    "sem_context": "",
+    "sem_type": "",
+    "sem_use_template": "1",
+    "sem_template": "",
+    "sem_reverse_template": "",
+    "only_one_entry": "N",
+    "only_one_entry_message": "",
+    "entry_title_template": "{{bf_titre}}"
+  },
+  "lists": [
+    {
+      "tag": "ListeType",
+      "title": "Type",
+      "nodes": [
+        {
+          "id": "1",
+          "label": "Site web ressource"
+        },
+        {
+          "id": "2",
+          "label": "Expérience inspirante"
+        },
+        {
+          "id": "3",
+          "label": "Partenaire ressource"
+        },
+        {
+          "id": "4",
+          "label": "Méthodologie / guide"
+        }
+      ]
+    }
+  ],
+  "pages": {
+    "FacetteRessource": "{{nav menu=\"MenuRessources\"}}\n\n{{entrylist id=\"%formId%\" template=\"liste_accordeon\" fieldmapping=\"soustitre=bf_description\" groups=\"bf_type\" titles=\"Tri par type\" showmenu=\"0\" view=\"recherche\" }}",
+    "SaisirRessource": "{{nav menu=\"MenuRessources\"}}\n\n{{bazar showmenu=\"0\" view=\"saisir\" id=\"%formId%\"}}"
+  },
+  "menus": [
+    {
+      "tag": "MenuRessources",
+      "title": "Ressources",
+      "nodes": [
+        {
+          "id": "n1",
+          "label": "Les ressources",
+          "link": "FacetteRessource"
+        },
+        {
+          "id": "n2",
+          "label": "Déposer une ressource",
+          "link": "SaisirRessource"
+        }
+      ]
+    }
+  ],
+  "navigation": {
+    "label": "Ressources",
+    "link": "FacetteRessource"
+  }
+}

@@ -1696,7 +1696,6 @@ Zalantzarik izanez gero, ireki inprimaki hau orrialde propio batean esteka honet
     'EDIT_NO_WRITE_ACCESS' => 'Ez duzu idazteko sarbiderik orri honetan!',
     'EDIT_NO_CHANGE_MSG' => 'Orri hau ez da gorde, ez baitu aldaketarik izan.',
     'EDIT_PREVIEW' => 'Aurrebista',
-    'UPDATE_PAGE_NOT_FOUND_IN_DEFAULT_SQL' => 'ez da aurkitu "{{page}}" orria hemen: default-content.sql',
     'SUCCESS_RESTORE_REVISION' => 'Bertsioa ongi berrezarri da',
     'TITLE_PAGE_HISTORY' => 'Orrialdearen historia',
     'TITLE_ENTRY_HISTORY' => 'Fitxaren historia',
