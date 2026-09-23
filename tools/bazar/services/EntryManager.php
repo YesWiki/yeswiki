@@ -481,8 +481,6 @@ class EntryManager
         if (!$replace) {
             // merge the field values which match to the actual form and which are not in $data
             $data = $this->mergeFields($previousData, $data, $form);
-            dump($data);
-            dump($previousData);
         }
 
         if ($semantic) {
