@@ -607,7 +607,7 @@ if (!class_exists('attach')) {
         public function showAsPDF($fullFilename)
         {
             // Defines parameters for pdf action
-            $url = $this->wiki->href('download', $this->wiki->GetPageTag(), 'file=' . $this->file, false);
+            $url = $this->wiki->href('download', $this->wiki->GetPageTag(), 'file=' . $this->file . '&inline=1', false);
             $this->wiki->setParameter('url', $url);
             if (empty($this->wiki->GetParameter('hauteurmax')) && empty($this->wiki->GetParameter('largeurmax'))) {
                 $this->wiki->setParameter('hauteurmax', $this->wiki->GetParameter('height'));
@@ -820,7 +820,9 @@ if (!class_exists('attach')) {
             } else {
                 $file = $this->decodeLongFilename($fullFilename);
                 $size = $file['size'];
-                $dlFilename = $file['name'] . '.' . $file['ext'];
+                $dlFilename = isset($file['name'], $file['ext'])
+                    ? $file['name'] . '.' . $file['ext']
+                    : $file['realname'];
             }
             try {
                 header('Expires: Mon, 26 Jul 1997 05:00:00 GMT');
@@ -835,10 +837,13 @@ if (!class_exists('attach')) {
                 header('Content-Transfer-Encoding: none');
                 header('Content-Type: application/octet-stream; name="' . $dlFilename . '"'); // This should work for the rest
                 header('Content-Type: application/octetstream; name="' . $dlFilename . '"'); // This should work for IE & Opera
+                $mimeType = null;
                 if (in_array(preg_replace("/^.*\.([^.]+$)/", '$1', $dlFilename), ['pdf', 'txt', 'md', 'png', 'svg', 'jpeg', 'jpg', 'mp3'])) {
-                    header('Content-Type: ' . mime_content_type($fullFilename) . '; name="' . $dlFilename . '"');
+                    $mimeType = mime_content_type($fullFilename);
+                    header('Content-Type: ' . $mimeType . '; name="' . $dlFilename . '"');
                 }
-                header('Content-Disposition: attachment; filename="' . $dlFilename . '"');
+                $inline = !empty($_GET['inline']) && $mimeType === 'application/pdf';
+                header('Content-Disposition: ' . ($inline ? 'inline' : 'attachment') . '; filename="' . $dlFilename . '"');
                 header('Content-Description: File Transfer');
                 header("Content-length: $size");
                 readfile($fullFilename);
