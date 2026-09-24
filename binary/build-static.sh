@@ -163,21 +163,32 @@ main() {
             --build-arg "NO_PROXY=localhost,127.0.0.1")
     fi
 
-    ( cd "$FRANKENPHP_SRC" && GITHUB_TOKEN="${GITHUB_TOKEN:-}" docker buildx build --load \
-        --file static-builder-musl.Dockerfile \
-        --build-context "golang-base=${golang_base}" \
-        --secret id=github-token,env=GITHUB_TOKEN \
-        --tag "${image}" \
-        --platform "linux/${TARGETARCH}" \
-        ${network[@]+"${network[@]}"} \
-        --build-arg "FRANKENPHP_VERSION=${FRANKENPHP_VERSION}" \
-        --build-arg "PHP_VERSION=${PHP_VERSION}" \
-        --build-arg "PHP_EXTENSIONS=${extensions}" \
-        --build-arg "PHP_EXTENSION_LIBS=${EXTENSION_LIBS}" \
-        --build-arg "XCADDY_ARGS=${CADDY_MODULES[*]}" \
-        --build-arg "COMPRESS=${COMPRESS}" \
-        --build-arg "DEBUG_SYMBOLS=${DEBUG_SYMBOLS}" \
-        . )
+    local attempts="${BUILD_ATTEMPTS:-3}" attempt
+    for attempt in $(seq "$attempts"); do
+        if ( cd "$FRANKENPHP_SRC" && GITHUB_TOKEN="${GITHUB_TOKEN:-}" docker buildx build --load \
+            --file static-builder-musl.Dockerfile \
+            --build-context "golang-base=${golang_base}" \
+            --secret id=github-token,env=GITHUB_TOKEN \
+            --tag "${image}" \
+            --platform "linux/${TARGETARCH}" \
+            ${network[@]+"${network[@]}"} \
+            --build-arg "FRANKENPHP_VERSION=${FRANKENPHP_VERSION}" \
+            --build-arg "PHP_VERSION=${PHP_VERSION}" \
+            --build-arg "PHP_EXTENSIONS=${extensions}" \
+            --build-arg "PHP_EXTENSION_LIBS=${EXTENSION_LIBS}" \
+            --build-arg "XCADDY_ARGS=${CADDY_MODULES[*]}" \
+            --build-arg "COMPRESS=${COMPRESS}" \
+            --build-arg "DEBUG_SYMBOLS=${DEBUG_SYMBOLS}" \
+            . ); then
+            break
+        fi
+        if [ "$attempt" -ge "$attempts" ]; then
+            printf 'the image did not build in %s attempts\n' "$attempts" >&2
+            exit 1
+        fi
+        printf 'build attempt %s of %s failed; retrying from the last step that succeeded\n' "$attempt" "$attempts" >&2
+        sleep 15
+    done
 
     mkdir -p "$OUTPUT"
     local container
