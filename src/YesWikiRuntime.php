@@ -42,11 +42,12 @@ use YesWiki\Kernel\Exception\ExitException;
 use YesWiki\Kernel\Routing\ReservedTags;
 use YesWiki\Kernel\Service\CacheClearer;
 use YesWiki\Kernel\Service\CurrentRequest;
-use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\EventDispatcher;
 use YesWiki\Kernel\Service\ExtensionRegistry;
+use YesWiki\Kernel\Service\HttpCacheHeaders;
 use YesWiki\Kernel\Service\Journal;
 use YesWiki\Kernel\Service\LanguageService;
+use YesWiki\Kernel\Service\LazySessionTokenStorage;
 use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\Redirector;
 use YesWiki\Kernel\Service\RequestScope;
@@ -543,6 +544,7 @@ class YesWikiRuntime
         if (!$this->httpKernel instanceof HttpKernel) {
             $eventDispatcher = $this->service(EventDispatcher::class);
             $eventDispatcher->addListener(KernelEvents::EXCEPTION, [$this, 'onDispatchException']);
+            $eventDispatcher->addListener(KernelEvents::RESPONSE, [$this->service(HttpCacheHeaders::class), 'onResponse']);
 
             $this->httpKernel = new HttpKernel(
                 $eventDispatcher,
@@ -723,7 +725,7 @@ class YesWikiRuntime
 
         $parameterBag = $container->getParameterBag();
         $this->services->set(ParameterBagInterface::class, $parameterBag);
-        $this->services->set(CsrfTokenManager::class, new CsrfTokenManager());
+        $this->services->set(CsrfTokenManager::class, new CsrfTokenManager(null, new LazySessionTokenStorage()));
         $this->services->set(YesWikiRuntime::class, $this);
         $GLOBALS['yeswikiServices'] = $this->services;
 

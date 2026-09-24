@@ -13,6 +13,7 @@ use YesWiki\Core\YesWikiController;
 use YesWiki\Files\Service\ImageResizer;
 use YesWiki\Files\Service\Storage;
 use YesWiki\Identity\Service\CsrfTokenChecker;
+use YesWiki\Kernel\Service\SignedTokens;
 
 class ImageApiController extends YesWikiController
 {
@@ -106,22 +107,23 @@ class ImageApiController extends YesWikiController
         return ['width' => $intWidth, 'height' => $intHeight];
     }
 
-    /** use $_POST['csrftoken']. */
+    /** The signed token the page carries, or for templates that still mint one a session CSRF token; returns the token to send next. */
     private function checkTokenForGetCacheUrlImageViaPost(int $width, int $height, string $mode): string
     {
-        $csrfTokenManager = $this->getService(CsrfTokenManager::class);
-        $csrfTokenChecker = $this->getService(CsrfTokenChecker::class);
-
         $tokenId = str_replace(
             ['{width}', '{height}', '{mode}'],
             [(string)$width, (string)$height, $mode],
             self::POST_CACHE_URLIMAGE_TOKEN_ID
         );
-
-        if (!$csrfTokenChecker->checkToken($tokenId, 'POST', 'csrftoken', false)) {
-            throw new TokenNotFoundException('invalid csrftoken for ' . self::POST_CACHE_URLIMAGE_TOKEN_ID);
+        $signed = $this->getService(SignedTokens::class);
+        if ($signed->verify($tokenId, (string)($_POST['csrftoken'] ?? ''))) {
+            return $signed->sign($tokenId);
         }
 
+        $csrfTokenManager = $this->getService(CsrfTokenManager::class);
+        if (!$this->getService(CsrfTokenChecker::class)->checkToken($tokenId, 'POST', 'csrftoken', false)) {
+            throw new TokenNotFoundException('invalid csrftoken for ' . self::POST_CACHE_URLIMAGE_TOKEN_ID);
+        }
         $csrfTokenManager->removeToken($tokenId);
 
         return $csrfTokenManager->getToken($tokenId)->getValue();

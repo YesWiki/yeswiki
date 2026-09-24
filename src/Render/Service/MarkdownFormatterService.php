@@ -145,7 +145,7 @@ class MarkdownFormatterService
                     'container_class' => 'yw-footnotes',
                 ],
                 'disallowed_raw_html' => [
-                    'disallowed_tags' => $container->get(\YesWiki\Kernel\Service\RuntimeConfig::class)->getValue('disallowed_html_tags', HtmlPurifierService::DISALLOWED_HTML_TAGS),
+                    'disallowed_tags' => array_values((array)$container->get(\YesWiki\Kernel\Service\RuntimeConfig::class)->getValue('disallowed_html_tags', HtmlPurifierService::DISALLOWED_HTML_TAGS)),
                 ],
             ]);
             $environment->addExtension(new CommonMarkCoreExtension());

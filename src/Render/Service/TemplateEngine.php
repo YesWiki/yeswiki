@@ -21,6 +21,7 @@ use YesWiki\Kernel\Service\HealthService;
 use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Kernel\Service\LanguageService;
 use YesWiki\Kernel\Service\RuntimeConfig;
+use YesWiki\Kernel\Service\SignedTokens;
 use YesWiki\Kernel\Service\StringUtilService;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Kernel\Service\WikiUrls;
@@ -194,6 +195,9 @@ class TemplateEngine
                 return $this->csrfTokenManager->getToken($tokenId['id'])->getValue();
             }
             throw new \Exception('`$tokenId` should be a string or an array !');
+        });
+        $this->addTwigHelper('signedToken', function ($tokenId) {
+            return $this->container->get(SignedTokens::class)->sign((string)$tokenId);
         });
         $this->addTwigHelper('image_at', function ($url, $width = 0, $height = null) {
             $url = (string)$url;

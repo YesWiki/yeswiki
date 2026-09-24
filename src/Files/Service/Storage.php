@@ -39,6 +39,7 @@ class Storage
         'private/files/' => self::PROTECTED_TIER,
         'private/backups/' => self::PROTECTED_TIER,
         'private/digests/' => self::PROTECTED_TIER,
+        'private/keys/' => self::PROTECTED_TIER,
 
         'custom/extensions/' => self::RUNTIME_TIER,
         'private/yeswiki.db' => self::RUNTIME_TIER,

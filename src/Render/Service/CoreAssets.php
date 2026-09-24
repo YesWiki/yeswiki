@@ -41,8 +41,6 @@ class CoreAssets implements RequestScopedState
         }
         $this->registered = true;
 
-        $this->csrfTokenManager->getToken('main');
-
         $this->registerColourScheme();
         $this->registerStyles();
         $this->registerScripts();
@@ -220,7 +218,7 @@ class CoreAssets implements RequestScopedState
             'baseUrl' => $this->config['base_url'],
             'pageTag' => $this->pageContext->getTag(),
             'isDebugEnabled' => ($this->config->getValue('debug') ? 'true' : 'false'),
-            'antiCsrfToken' => $this->csrfTokenManager->getToken('main')->getValue(),
+            'antiCsrfToken' => session_status() === PHP_SESSION_ACTIVE ? $this->csrfTokenManager->getToken('main')->getValue() : '',
 
             'imageUpload' => [
                 'format' => (string)($this->config['image-upload-format'] ?? 'image/webp'),

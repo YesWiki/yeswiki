@@ -28,6 +28,7 @@ class EnvironmentConfiguration
         'meta_keywords',
         'meta_description',
         'allow_raw_html',
+        'http_cache_ttl',
         'contact_mail_func',
         'contact_smtp_host',
         'contact_smtp_port',

@@ -30,7 +30,7 @@
 {% block display_entries %}
   {% set imWidth = 150 %}
   {% set imHeight = 100 %}
-  {% set firstTokenCrop = csrfToken("POST api/images/cache/#{imWidth}/#{imHeight}/crop") %}
+  {% set firstTokenCrop = signedToken("POST api/images/cache/#{imWidth}/#{imHeight}/crop") %}
   <Bazar-Table :currentusername="{{ currentUserName|json_encode }}" :params="params" :entries="entriesToDisplay" :ready="ready" :root="$root" isadmin="{{ hasAcl("@admins")|json_encode }}">
     <template #header="{BazarTable}"></template>
     <template #spinnerloader="{BazarTable}">

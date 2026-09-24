@@ -22,8 +22,8 @@
   {% set imWidth = (nbcol == 4) ? 500 : (nbcol == 5 ? 400 : 700 ) %}
   {% set imHeight = params.style == "square" ? imWidth : (params.style == "horizontal" ? imWidth*23//27 : imWidth*2//3 ) %}
 
-  {% set fitToken = csrfToken("POST api/images/cache/#{imWidth}/#{imHeight}/fit") %}
-  {% set cropToken = csrfToken("POST api/images/cache/#{imWidth}/#{imHeight}/crop") %}
+  {% set fitToken = signedToken("POST api/images/cache/#{imWidth}/#{imHeight}/fit") %}
+  {% set cropToken = signedToken("POST api/images/cache/#{imWidth}/#{imHeight}/crop") %}
 
   <div class="bazar-cards-container" v-if="ready"
        :class="[{ready: ready}, `style-${params.style || 'vertical'}`, `nbcol-{{nbcol}}`]"

@@ -214,6 +214,7 @@ class YesWikiInit
 
             'vditor_wiki_editor' => true,
             'allow_raw_html' => true,
+            'http_cache_ttl' => 0,
             'disallowed_html_tags' => HtmlPurifierService::DISALLOWED_HTML_TAGS,
             'allowed_methods_in_iframe' => ['iframe', 'editiframe', 'render'],
             'revisionscount' => 30,
@@ -614,11 +615,23 @@ class YesWikiInit
             }
             session_set_cookie_params($cookiesParam);
             session_name($sessionName);
-            session_start();
+            session_cache_limiter('');
+            if (\PHP_SAPI === 'cli' || self::needsSessionNow($sessionName)) {
+                session_start();
+            } else {
+                $_SESSION = [];
+            }
             $this->seedSessionKeysVendorSingletonsAssume();
         }
 
         return $CookiePath;
+    }
+
+    /** A session is opened up front only for a visitor who already has one or a request that changes something; the rest wait until they write to it. */
+    public static function needsSessionNow(string $sessionName): bool
+    {
+        return !empty($_COOKIE[$sessionName])
+            || !in_array(strtoupper((string)($_SERVER['REQUEST_METHOD'] ?? 'GET')), ['GET', 'HEAD'], true);
     }
 
     /**
@@ -633,10 +646,6 @@ class YesWikiInit
      */
     private function seedSessionKeysVendorSingletonsAssume()
     {
-        if (session_status() !== PHP_SESSION_ACTIVE) {
-            return;
-        }
-
         $_SESSION['flash_messages'] ??= [];
     }
 

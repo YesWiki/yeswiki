@@ -349,7 +349,7 @@ class AuthenticationService extends YesWikiController implements ActorSource
     {
         $sessionName = session_name();
         $sessionId = session_id();
-        if ($sessionName === false || $sessionId === false) {
+        if (session_status() !== PHP_SESSION_ACTIVE || $sessionName === false || $sessionId === false || $sessionId === '') {
             return;
         }
 
