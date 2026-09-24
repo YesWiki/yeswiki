@@ -16,6 +16,7 @@ use League\CommonMark\Node\Inline\Newline;
 use League\CommonMark\Node\StringContainerInterface;
 use League\CommonMark\Parser\MarkdownParser;
 use Psr\Container\ContainerInterface;
+use YesWiki\Kernel\Service\HtmlPurifierService;
 use YesWiki\Render\Formatter\ActionExtension;
 use YesWiki\Render\Formatter\AlertExtension;
 use YesWiki\Render\Formatter\CommentExtension;
@@ -144,9 +145,7 @@ class MarkdownFormatterService
                     'container_class' => 'yw-footnotes',
                 ],
                 'disallowed_raw_html' => [
-                    'disallowed_tags' => $container->get(\YesWiki\Kernel\Service\RuntimeConfig::class)->getValue('disallowed_html_tags', [
-                        'title', 'textarea', 'style', 'xmp', 'noembed', 'noframes', 'script', 'plaintext',
-                    ]),
+                    'disallowed_tags' => $container->get(\YesWiki\Kernel\Service\RuntimeConfig::class)->getValue('disallowed_html_tags', HtmlPurifierService::DISALLOWED_HTML_TAGS),
                 ],
             ]);
             $environment->addExtension(new CommonMarkCoreExtension());

@@ -8,6 +8,7 @@ use YesWiki\Admin\Service\ArchiveService;
 use YesWiki\Kernel\Routing\ReservedTags;
 use YesWiki\Kernel\Service\ConfigurationFileProvider;
 use YesWiki\Kernel\Service\EnvironmentConfiguration;
+use YesWiki\Kernel\Service\HtmlPurifierService;
 use YesWiki\Kernel\Service\WikiUrls;
 
 /** Yeswiki initialization class. */
@@ -213,7 +214,7 @@ class YesWikiInit
 
             'vditor_wiki_editor' => true,
             'allow_raw_html' => true,
-            'disallowed_html_tags' => ['title', 'textarea', 'style', 'xmp', 'noembed', 'noframes', 'script', 'plaintext'],
+            'disallowed_html_tags' => HtmlPurifierService::DISALLOWED_HTML_TAGS,
             'allowed_methods_in_iframe' => ['iframe', 'editiframe', 'render'],
             'revisionscount' => 30,
             'timezone' => 'Europe/Paris',

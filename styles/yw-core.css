@@ -560,6 +560,11 @@ body:has(#yw-topnav .yw-chrome-edit) .yw-page-actions {
   margin: var(--yw-space-md-y) 0;
 }
 
+.img-responsive {
+  max-width: 100%;
+  width: auto;
+}
+
 .img-responsive img {
   display: block;
   max-width: 100%;

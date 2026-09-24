@@ -5,7 +5,9 @@ namespace YesWiki\Test\Core\Field;
 require_once 'tests/YesWikiTestCase.php';
 
 use YesWiki\Content\Field\TextareaField;
+use YesWiki\Kernel\Service\HtmlPurifierService;
 use YesWiki\Kernel\Service\LanguageService;
+use YesWiki\Kernel\Service\RuntimeConfig;
 use YesWiki\Test\Core\YesWikiTestCase;
 
 /**
@@ -83,5 +85,35 @@ class TextareaFieldTest extends YesWikiTestCase
         } finally {
             LanguageService::getInstance()->serveIn($served);
         }
+    }
+
+    /**
+     * @return array<string, array{string}>
+     */
+    public static function syntaxesThatRenderMarkup(): array
+    {
+        return ['wiki' => [TextareaField::SYNTAX_WIKI], 'html' => [TextareaField::SYNTAX_HTML]];
+    }
+
+    /** Entries migrated from Doryphore keep their `<style>` and `<script>`, like pages do, and the rest is still purified. */
+    #[\PHPUnit\Framework\Attributes\DataProvider('syntaxesThatRenderMarkup')]
+    public function testAnEntryKeepsItsStyleAndScriptBlocks(string $syntax): void
+    {
+        $config = $this->getWiki()->services->get(RuntimeConfig::class);
+        $was = $config['disallowed_html_tags'] ?? null;
+        $config['disallowed_html_tags'] = HtmlPurifierService::DISALLOWED_HTML_TAGS;
+
+        $field = $this->buildTextareaField($syntax);
+        $value = "<style>.migrated { color: red; }</style>\n<script>window.migrated = 1 < 2;</script>\n<p onclick=\"steal()\">texte</p>";
+
+        try {
+            $saved = $field->formatValuesBeforeSave(['bf_description' => $value])['bf_description'];
+        } finally {
+            $config['disallowed_html_tags'] = $was;
+        }
+
+        $this->assertStringContainsString('<style>.migrated { color: red; }</style>', $saved);
+        $this->assertStringContainsString('<script>window.migrated = 1 < 2;</script>', $saved);
+        $this->assertStringNotContainsString('onclick', $saved, 'the purifier still runs on everything else');
     }
 }

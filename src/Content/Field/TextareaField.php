@@ -123,13 +123,16 @@ class TextareaField extends BazarField
     {
         $value = $this->getValue($entry);
 
+        $purifier = $this->getService(HtmlPurifierService::class);
         if ($this->syntax === self::SYNTAX_HTML) {
-            $value = strip_tags($value, self::ACCEPTED_TAGS);
-            $value = $this->sanitizeBase64Img($value, $entry ?? []);
-            $value = $this->sanitizeHTML($value);
+            $value = $purifier->keepingEmbeddedBlocks($value, fn (string $rest): string => $this->sanitizeHTML(
+                $this->sanitizeBase64Img(strip_tags($rest, self::ACCEPTED_TAGS), $entry ?? [])
+            ));
         } elseif ($this->syntax === self::SYNTAX_WIKI) {
-            $value = $this->sanitizeAttach($value, $entry ?? []);
-            $value = $this->sanitizeHTMLInWikiCode($value);
+            $value = $purifier->keepingEmbeddedBlocks(
+                $this->sanitizeAttach($value, $entry ?? []),
+                fn (string $rest): string => $this->sanitizeHTMLInWikiCode($rest)
+            );
         } else {
             $value = $this->sanitizeHTML($value);
         }

@@ -12,6 +12,9 @@ class HtmlPurifierService
 {
     public const HTMLPURIFIER_CACHE_FOLDER = 'cache/HTMLpurifier';
 
+    /** Raw HTML a page or an entry may not carry. `style` and `script` stay allowed while wikis move over from Doryphore. */
+    public const DISALLOWED_HTML_TAGS = ['title', 'textarea', 'xmp', 'noembed', 'noframes', 'plaintext'];
+
     protected ParameterBagInterface $params;
     protected ?Sanitizer $sanitizer;
     private ?\HTMLPurifier $purifier;
@@ -20,6 +23,7 @@ class HtmlPurifierService
         ParameterBagInterface $params,
         private readonly Storage $storage,
         private readonly LocalFiles $localFiles,
+        private readonly RuntimeConfig $config,
     ) {
         $this->params = $params;
         $this->purifier = null;
@@ -66,6 +70,42 @@ class HtmlPurifierService
         }
 
         return $this->purifier->purify($dirty_html);
+    }
+
+    /**
+     * Clean HTML with $clean, but put back the `<style>` and `<script>` blocks raw HTML may carry, as pages do.
+     *
+     * @param callable(string): string $clean
+     */
+    public function keepingEmbeddedBlocks(string $dirtyHtml, callable $clean): string
+    {
+        $kept = $this->config->getValue('allow_raw_html', true) ? array_diff(['style', 'script'], $this->disallowedTags()) : [];
+        if ($kept === []) {
+            return $clean($dirtyHtml);
+        }
+
+        $blocks = [];
+        $marker = 'ywkeptblock' . bin2hex(random_bytes(8));
+        $withMarkers = preg_replace_callback(
+            '#<(' . implode('|', $kept) . ')\b[^>]*>.*?</\1\s*>#is',
+            static function (array $block) use (&$blocks, $marker): string {
+                $key = $marker . 'n' . count($blocks) . 'z';
+                $blocks[$key] = $block[0];
+
+                return $key;
+            },
+            $dirtyHtml
+        );
+
+        return strtr($clean($withMarkers ?? $dirtyHtml), $blocks);
+    }
+
+    /** @return list<string> */
+    private function disallowedTags(): array
+    {
+        $tags = $this->config->getValue('disallowed_html_tags', self::DISALLOWED_HTML_TAGS);
+
+        return array_values(array_map('strval', is_array($tags) ? $tags : self::DISALLOWED_HTML_TAGS));
     }
 
     /**
