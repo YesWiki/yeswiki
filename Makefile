@@ -93,21 +93,25 @@ fix-format: ## Format JS/CSS/JSON/MD/YAML
 	$(YARN) run fix-format
 
 ## —— Binary ——————————————————————————————
+BINARY ?= binary/dist/yeswiki-linux-$(shell uname -m)
 
 binary-local: ## Build against the machine's libphp (minutes; serves a real wiki, not shippable)
 	nix-shell binary/dev-shell.nix --run ./binary/build-dynamic.sh
 
-binary: ## Build the shipped static binary (half an hour; needs Docker)
-	./binary/build-static.sh
+binary: ## Build the static binary without UPX (twenty minutes; needs Docker)
+	COMPRESS=$${COMPRESS:-0} ./binary/build-static.sh
+
+binary-release: ## Build the static binary as CI ships it, UPX-packed (half an hour; needs Docker)
+	COMPRESS=1 ./binary/build-static.sh
 
 binary-check: ## Assert a built binary carries every extension composer.json names
-	./binary/check-binary.sh binary/dist/yeswiki-linux-$(shell uname -m)
+	./binary/check-binary.sh $(BINARY)
 
 binary-smoke: ## Setup, serve, fetch, migrate and upgrade a throwaway wiki with the built binary
-	./binary/smoke.sh binary/dist/yeswiki-linux-$(shell uname -m)
+	./binary/smoke.sh $(BINARY)
 
 test-e2e-binary: ## Run the browser suite against the binary in worker mode, not against php-fpm
-	YESWIKI_TEST_RUNTIME=binary bash tests/e2e/reset.sh
-	YESWIKI_TEST_RUNTIME=binary bash tests/e2e/runtime.sh start
+	YESWIKI_TEST_RUNTIME=binary YESWIKI_TEST_BINARY=$(abspath $(BINARY)) bash tests/e2e/reset.sh
+	YESWIKI_TEST_RUNTIME=binary YESWIKI_TEST_BINARY=$(abspath $(BINARY)) bash tests/e2e/runtime.sh start
 	YESWIKI_BASE_URL=http://127.0.0.1:8081 yarn run test-e2e-all; \
 		status=$$?; bash tests/e2e/runtime.sh stop; exit $$status
