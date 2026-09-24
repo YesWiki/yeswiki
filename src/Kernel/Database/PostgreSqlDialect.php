@@ -92,6 +92,11 @@ class PostgreSqlDialect implements SqlDialect
         return "COALESCE(NULLIF(regexp_replace({$expression}, '\\D', '', 'g'), '')::bigint, 0)";
     }
 
+    public function lockRowsClause(): string
+    {
+        return ' FOR UPDATE';
+    }
+
     public function dumpPreamble(): array
     {
         return ['BEGIN'];

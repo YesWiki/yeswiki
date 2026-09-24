@@ -82,6 +82,11 @@ class MySqlDialect implements SqlDialect
         return "CAST({$expression} AS SIGNED)";
     }
 
+    public function lockRowsClause(): string
+    {
+        return ' FOR UPDATE';
+    }
+
     public function dumpPreamble(): array
     {
         return [

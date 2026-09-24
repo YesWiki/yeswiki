@@ -53,17 +53,17 @@ class SearchIndexer
             return;
         }
 
-        $row = $this->dbService->loadSingle(
-            "SELECT tag, body, owner, {$this->dbService->quoteIdentifier('time')}, metadata, parent,"
-            . " {$this->dbService->quoteIdentifier('type')}"
-            . " FROM {$this->dbService->prefixTable('pages')}"
-            . " WHERE tag = ? AND latest = 'Y' LIMIT 1",
-            [$tag]
-        );
+        $this->dbService->transactional(function () use ($tag): void {
+            $row = $this->dbService->loadSingle(
+                "SELECT tag, body, owner, {$this->dbService->quoteIdentifier('time')}, metadata, parent,"
+                . " {$this->dbService->quoteIdentifier('type')}"
+                . " FROM {$this->dbService->prefixTable('pages')}"
+                . " WHERE tag = ? AND latest = 'Y' LIMIT 1"
+                . $this->dbService->dialect()->lockRowsClause(),
+                [$tag]
+            );
+            $content = $row ? $this->extractor->extract($row) : null;
 
-        $content = $row ? $this->extractor->extract($row) : null;
-
-        $this->dbService->transactional(function () use ($tag, $content): void {
             $this->delete($tag);
             if ($content !== null) {
                 $this->write([$content]);
@@ -226,25 +226,25 @@ class SearchIndexer
 
             $inList = SqlParameters::placeholders(count($tags));
 
-            $rows = $this->dbService->loadAll(
-                "SELECT tag, body, owner, {$timeCol} AS {$timeCol}, metadata, parent, {$typeCol}"
-                . " FROM {$pages}"
-                . " WHERE latest = 'Y' AND tag IN ({$inList})",
-                $tags
-            );
+            $this->dbService->transactional(function () use ($pages, $timeCol, $typeCol, $inList, $tags, $claim): void {
+                $rows = $this->dbService->loadAll(
+                    "SELECT tag, body, owner, {$timeCol} AS {$timeCol}, metadata, parent, {$typeCol}"
+                    . " FROM {$pages}"
+                    . " WHERE latest = 'Y' AND tag IN ({$inList})"
+                    . $this->dbService->dialect()->lockRowsClause(),
+                    $tags
+                );
 
-            $contents = [];
-            foreach ($rows as $row) {
-                $row['body'] = PageBody::decode($row['body'] ?? null);
-                $content = $this->extractor->extract($row);
-                if ($content !== null) {
-                    $contents[] = $content;
+                $contents = [];
+                foreach ($rows as $row) {
+                    $row['body'] = PageBody::decode($row['body'] ?? null);
+                    $content = $this->extractor->extract($row);
+                    if ($content !== null) {
+                        $contents[] = $content;
+                    }
                 }
-            }
 
-            $this->dbService->transactional(function () use ($inList, $tags, $contents, $claim): void {
                 $this->dbService->query("DELETE FROM {$this->schema->table()} WHERE tag IN ({$inList})", $tags);
-
                 $this->dbService->query("DELETE FROM {$this->schema->keywordsTable()} WHERE tag IN ({$inList})", $tags);
                 $this->write($contents);
                 $this->dequeue($tags, $claim);

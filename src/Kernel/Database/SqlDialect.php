@@ -56,6 +56,9 @@ interface SqlDialect
     /** SQL reading a text expression as an integer, for ordering by it. */
     public function castToInteger(string $expression): string;
 
+    /** Clause appended to a SELECT inside a transaction so the rows it reads stay locked until commit. */
+    public function lockRowsClause(): string;
+
     /**
      * Statements a dump opens with -- session settings and the transaction, joined by ";\n".
      *

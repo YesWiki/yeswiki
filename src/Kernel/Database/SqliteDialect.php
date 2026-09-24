@@ -89,6 +89,11 @@ class SqliteDialect implements SqlDialect
         return "CAST({$expression} AS INTEGER)";
     }
 
+    public function lockRowsClause(): string
+    {
+        return '';
+    }
+
     public function dumpPreamble(): array
     {
         return ['BEGIN TRANSACTION'];
