@@ -250,7 +250,7 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
         $source = Translations::strip($stored);
         $fields = $this->contentFormFields();
         foreach ([...$fields['before'], ...$fields['after']] as $field) {
-            if (!$field instanceof BazarField || !$field->translatesValue()) {
+            if (!$field->translatesValue()) {
                 continue;
             }
             $name = (string)$field->getPropertyName();
@@ -263,14 +263,13 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
     /**
      * What this page has to translate, in the shape the language switch counts a translation against.
      *
-     * @return list<array{path: string}>
+     * @return list<array{path: string, label: string, multiline: bool}>
      */
     private function translatablePaths(): array
     {
-        return array_map(
-            static fn (string $name) => ['path' => $name],
-            $this->contentFormFields()['translatable']
-        );
+        $form = $this->getService(ContentTypeResolver::class)->formForEditing($this->getService(PageContext::class)->getTag());
+
+        return $form === null ? [] : $this->getService(TranslatableContent::class)->entryPaths($form);
     }
 
     /**

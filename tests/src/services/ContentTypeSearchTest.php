@@ -17,7 +17,6 @@ class ContentTypeSearchTest extends YesWikiTestCase
 {
     private const PAGE_TAG = 'ContentTypeSearchRegressionPage';
 
-    /** @var array<string, string> form id => the tag of its one entry */
     private const FIXTURES = [
         '999910' => 'ContentTypeSearchTestFirstEntry',
         '999911' => 'ContentTypeSearchTestSecondEntry',
@@ -27,6 +26,7 @@ class ContentTypeSearchTest extends YesWikiTestCase
     {
         $services = self::getWiki()->services;
         foreach (self::FIXTURES as $formId => $tag) {
+            $formId = (string)$formId;
             $services->get(FormManager::class)->create(['id' => $formId, 'label' => "ContentTypeSearchTest {$formId}", 'template' => '']);
             $services->get(EntryManager::class)->create($formId, ['antispam' => 1, 'bf_titre' => $tag, 'tag' => $tag]);
         }
@@ -38,7 +38,7 @@ class ContentTypeSearchTest extends YesWikiTestCase
         $services->get(PageManager::class)->deleteOrphaned(self::PAGE_TAG);
         foreach (self::FIXTURES as $formId => $tag) {
             $services->get(EntryManager::class)->delete($tag, true);
-            $services->get(FormManager::class)->delete($formId);
+            $services->get(FormManager::class)->delete((string)$formId);
         }
     }
 

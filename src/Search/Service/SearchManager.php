@@ -676,8 +676,6 @@ class SearchManager
         = [
             'needSplit' => false,
             'hasMultipleStructures' => false,
-            'isExtracted' => false,
-            'isSplitted' => false,
             'descriptors' => [$vHash => array_merge($vFieldDescriptor, ['_ids_' => $vFormIDs])],
         ];
         $vFields[PageBody::TITLE] = $vFields['tag'];
@@ -761,10 +759,6 @@ class SearchManager
             }
 
             $vFields[$vField]['hasMultipleStructures'] = count(array_keys($vFields[$vField]['descriptors'])) > 1;
-
-            $vFields[$vField]['isExtracted'] = false;
-
-            $vFields[$vField]['isSplitted'] = false;
         }
 
         $vSelectRequest
@@ -773,15 +767,8 @@ class SearchManager
             $this->dbService->jsonExtract('body', '$.form_id') . ' AS ' . $this->renameJSONPathVariable('form_id'),
         ];
 
-        foreach ($vFields as $vFieldName => $vField) {
-            if (!$vField['isExtracted']) {
-                $vSQLNom = $vFieldName;
-                $vRenamedSQLNom = $this->renameJSONPathVariable($vFieldName);
-
-                $vSelectRequest[] = $this->dbService->jsonExtract('body', '$.' . $vSQLNom) . ' AS ' . $vRenamedSQLNom;
-
-                $vField['isExtracted'] = true;
-            }
+        foreach (array_keys($vFields) as $vFieldName) {
+            $vSelectRequest[] = $this->dbService->jsonExtract('body', '$.' . $vFieldName) . ' AS ' . $this->renameJSONPathVariable($vFieldName);
         }
 
         $vSelectRequest = implode(', ', $vSelectRequest);
@@ -790,7 +777,7 @@ class SearchManager
         $vSplittedsRequest = '';
 
         foreach ($vFields as $vFieldName => $vField) {
-            if (!$vField['needSplit'] || $vField['isSplitted']) {
+            if (!$vField['needSplit']) {
                 continue;
             }
 
@@ -820,8 +807,6 @@ class SearchManager
                             . 'FROM ' . $this->renameJSONPathVariable($vFieldName) . '_multiple '
                             . 'WHERE rest <> \'\''
                         . ')';
-
-            $vField['isSplitted'] = true;
         }
 
         $vSplittedsCount = count($vSplitteds);

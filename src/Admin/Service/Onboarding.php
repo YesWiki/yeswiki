@@ -95,7 +95,7 @@ class Onboarding
         }
 
         $formId = $starter->form['id'] ?? null;
-        if (!is_scalar($formId) || $formId === '' || $this->formManager->getOne($formId) !== null) {
+        if (!(is_int($formId) || is_string($formId)) || $formId === '' || $this->formManager->getOne($formId) !== null) {
             $formId = $this->formManager->findNewId();
         }
         $this->formManager->create(['id' => $formId] + $starter->form);

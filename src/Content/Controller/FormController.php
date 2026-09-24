@@ -513,6 +513,11 @@ class FormController extends YesWikiController
         return $wording;
     }
 
+    /**
+     * @param array<string, mixed>|null $form
+     *
+     * @return array<string, mixed>|null
+     */
     private function formForEditing(?array $form, string $language, string $source): ?array
     {
         if ($form === null || $language === $source) {

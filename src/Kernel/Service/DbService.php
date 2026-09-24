@@ -675,7 +675,11 @@ class DbService
     public function beginTransaction(): void
     {
         if ($this->transactionDepth === 0) {
-            $this->link->beginTransaction();
+            if ($this->driver === 'sqlite') {
+                $this->link->exec('BEGIN IMMEDIATE');
+            } else {
+                $this->link->beginTransaction();
+            }
             $this->transactionRollbackOnly = false;
         }
         $this->transactionDepth++;
@@ -700,12 +704,12 @@ class DbService
 
         if ($this->transactionRollbackOnly) {
             $this->transactionRollbackOnly = false;
-            $this->link->rollBack();
+            $this->endTransaction('ROLLBACK');
 
             throw new \Exception('Transaction rolled back: an inner scope failed and its error was swallowed.');
         }
 
-        $this->link->commit();
+        $this->endTransaction('COMMIT');
     }
 
     /** Undo a scope. */
@@ -722,7 +726,19 @@ class DbService
             return;
         }
 
-        $this->link->rollBack();
+        $this->endTransaction('ROLLBACK');
+    }
+
+    /** Commit or roll back the outermost scope, the way it was opened. */
+    private function endTransaction(string $verb): void
+    {
+        if ($this->driver === 'sqlite') {
+            $this->link->exec($verb);
+        } elseif ($verb === 'COMMIT') {
+            $this->link->commit();
+        } else {
+            $this->link->rollBack();
+        }
     }
 
     /** Whether any scope is open -- for a caller that must not, say, send mail yet. */

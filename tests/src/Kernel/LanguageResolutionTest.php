@@ -175,7 +175,7 @@ class LanguageResolutionTest extends YesWikiTestCase
     {
         $shipped = array_map(
             static fn (string $file) => (string)preg_replace('/^yeswiki_(.*)\.php$/', '$1', basename($file)),
-            (array)glob(dirname(__DIR__, 3) . '/src/lang/yeswiki_*.php')
+            glob(dirname(__DIR__, 3) . '/src/lang/yeswiki_*.php') ?: []
         );
         sort($shipped);
 
