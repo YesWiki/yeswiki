@@ -1,28 +1,8 @@
 #!/bin/bash
+# Installs a fresh wiki for the next spec, on any driver and either runtime (fpm or the binary).
+# Usage: YESWIKI_TEST_DRIVER=mysql|pgsql|sqlite YESWIKI_TEST_RUNTIME=fpm|binary bash tests/e2e/reset.sh
 
 set -e
-
-# A fresh wiki for the next spec.
-#
-# Driver-aware since PostgreSQL joined the compose stack: ADR-0015 commits the search index
-# to all three dialects, and the only way "supported" and "tested" can mean the same thing is
-# if the browser suite can be pointed at each of them.
-#
-#   bash tests/e2e/reset.sh                            # MySQL under php-fpm, the default
-#   YESWIKI_TEST_DRIVER=pgsql bash tests/e2e/reset.sh
-#
-# Runtime-aware since the binary became the recommended deployment (single-binary 06). The same
-# argument applies one layer up: recommending a deployment CI never runs is the mistake ADR-0015's
-# amendment warns about, with a different subject.
-#
-#   YESWIKI_TEST_RUNTIME=binary bash tests/e2e/reset.sh
-#
-# `fpm` installs into the checkout and nginx serves it, which is what this always did. `binary`
-# installs a *separate Instance* through the shipped executable's own `setup`, because a binary
-# tested against the source tree is not the artefact anybody downloads.
-#
-# Hosts are overridable so the same script runs under docker compose, where the database is
-# `yeswiki-db`, and on a CI runner, where it is a service container on 127.0.0.1.
 
 DRIVER="${YESWIKI_TEST_DRIVER:-mysql}"
 RUNTIME="${YESWIKI_TEST_RUNTIME:-fpm}"
@@ -122,6 +102,13 @@ case "$RUNTIME" in
       exit 1
     fi
 
+    RUNTIME_SCRIPT=(env YESWIKI_TEST_RUNTIME=binary YESWIKI_TEST_INSTANCE="${INSTANCE}" YESWIKI_TEST_BINARY="${BINARY}" bash "$(dirname "${BASH_SOURCE[0]}")/runtime.sh")
+    SERVING=0
+    if "${RUNTIME_SCRIPT[@]}" running; then
+      SERVING=1
+      "${RUNTIME_SCRIPT[@]}" stop
+    fi
+
     export YESWIKI_PROGRAM_ROOT="${YESWIKI_TEST_PROGRAM_ROOT:-${INSTANCE}-program}"
     rm -rf "${INSTANCE}" "${YESWIKI_PROGRAM_ROOT}"
     mkdir -p "${INSTANCE}/private"
@@ -132,6 +119,9 @@ case "$RUNTIME" in
     "$BINARY" migrate "${INSTANCE}"
     if [ "${YESWIKI_TEST_ONBOARDED:-1}" = "1" ]; then
       "$BINARY" onboarding:apply --all --instance "${INSTANCE}"
+    fi
+    if [ "$SERVING" = "1" ]; then
+      "${RUNTIME_SCRIPT[@]}" start
     fi
     ;;
 
