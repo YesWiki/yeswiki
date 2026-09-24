@@ -160,7 +160,7 @@ class AssetPublisher
         return $target === null ? null : self::PUBLISHED_PREFIX . $version . '/' . $relPath;
     }
 
-    /** The stamp appended to the published version: how old the published set is, as a plain mtime. */
+    /** The stamp appended to the published version: `0` for a set no source has changed under, else the mtime of the last source that did. */
     public static function publishedStamp(): string
     {
         $assetsDir = getcwd() . '/' . rtrim(self::PUBLISHED_PREFIX, '/');
@@ -171,7 +171,12 @@ class AssetPublisher
 
         $newest = self::newestPublishedFile($assetsDir);
         if ($newest === 0) {
-            return '';
+            if (!is_dir($assetsDir)) {
+                @mkdir($assetsDir, 0755, true);
+            }
+            @file_put_contents($assetsDir . '/' . self::STAMP_FILE, '0', LOCK_EX);
+
+            return '0';
         }
         self::bumpStamp($assetsDir, $newest);
 
@@ -295,6 +300,7 @@ class AssetPublisher
         if (is_file($target) && filemtime($target) >= filemtime($sourceFile)) {
             return $target;
         }
+        $republishing = is_file($target);
 
         if (!is_dir($assetsDir . '/' . $version)) {
             self::removeStaleVersions($assetsDir, $version);
@@ -315,7 +321,9 @@ class AssetPublisher
             return is_file($target) ? $target : null;
         }
 
-        self::bumpStamp($assetsDir, (int)filemtime($sourceFile));
+        if ($republishing) {
+            self::bumpStamp($assetsDir, (int)filemtime($sourceFile));
+        }
         self::publishReferences($version, $relPath, $sourceFile);
 
         return $target;
@@ -425,6 +433,7 @@ class AssetPublisher
         if (is_file($target) && filemtime($target) >= filemtime($sourceFile)) {
             return false;
         }
+        $republishing = is_file($target);
 
         $targetDir = \dirname($target);
         if (!is_dir($targetDir) && !@mkdir($targetDir, 0755, true) && !is_dir($targetDir)) {
@@ -440,7 +449,9 @@ class AssetPublisher
 
             return false;
         }
-        self::bumpStamp(getcwd() . '/' . rtrim(self::PUBLISHED_PREFIX, '/'), (int)filemtime($sourceFile));
+        if ($republishing) {
+            self::bumpStamp(getcwd() . '/' . rtrim(self::PUBLISHED_PREFIX, '/'), (int)filemtime($sourceFile));
+        }
 
         return true;
     }

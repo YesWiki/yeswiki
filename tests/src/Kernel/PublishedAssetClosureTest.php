@@ -142,7 +142,7 @@ class PublishedAssetClosureTest extends YesWikiTestCase
         file_put_contents($dir . '/moving.css', ".before { color: red }\n");
         touch($dir . '/moving.css', time() - 120);
 
-        $this->assertSame('', AssetPublisher::publishedStamp(), 'nothing has gone stale yet');
+        $this->assertSame('0', AssetPublisher::publishedStamp(), 'nothing has gone stale yet');
         $first = AssetPublisher::publishedUrl('custom/closure/moving.css', '1');
 
         file_put_contents($dir . '/moving.css', ".after { color: blue }\n");
@@ -166,9 +166,7 @@ class PublishedAssetClosureTest extends YesWikiTestCase
     {
         AssetPublisher::publishedUrl('styles/yw-core.css', '1');
         $stampFile = $this->instance . '/' . AssetPublisher::PUBLISHED_PREFIX . '.sources-changed';
-        $this->assertFileExists($stampFile);
-
-        unlink($stampFile);
+        $this->assertFileDoesNotExist($stampFile, 'publishing for the first time records no change of sources');
 
         $stamp = AssetPublisher::publishedStamp();
 

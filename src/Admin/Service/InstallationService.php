@@ -7,7 +7,6 @@ use YesWiki\Core\YesWikiLoader;
 use YesWiki\Kernel\Database\SqlDialectFactory;
 use YesWiki\Kernel\Service\ConfigurationService;
 use YesWiki\Kernel\Service\EnvironmentConfiguration;
-use YesWiki\Kernel\Service\JournalSchema;
 use YesWiki\Render\Service\LayoutService;
 use YesWiki\Search\Service\SearchIndexSchema;
 
@@ -410,11 +409,7 @@ class InstallationService
             throw new \Exception('no database connection');
         }
 
-        $dialect = SqlDialectFactory::forDriver((string)$db->getAttribute(\PDO::ATTR_DRIVER_NAME));
-
-        foreach ($dialect->journalDdl($this->config['table_prefix'] . JournalSchema::TABLE) as $statement) {
-            $db->exec($statement);
-        }
+        SchemaCreator::createJournal($db, $this->config['table_prefix']);
 
         $this->pass(_t('CREATION_OF_JOURNAL'));
     }
@@ -429,13 +424,8 @@ class InstallationService
 
         $dialect = SqlDialectFactory::forDriver((string)$db->getAttribute(\PDO::ATTR_DRIVER_NAME));
         $prefix = $this->config['table_prefix'];
-        $index = $prefix . SearchIndexSchema::TABLE;
         $queue = $prefix . SearchIndexSchema::QUEUE_TABLE;
-        $keywords = $prefix . SearchIndexSchema::KEYWORDS_TABLE;
-
-        foreach ($dialect->searchIndexDdl($index, $queue, $keywords) as $statement) {
-            $db->exec($statement);
-        }
+        SchemaCreator::createSearchIndex($db, $prefix);
 
         $db->exec(
             "INSERT INTO {$queue} (tag, queued_at) SELECT DISTINCT tag, {$dialect->now()}"
