@@ -40,6 +40,7 @@ class RetiredCoreActionsAreRemovedTest extends YesWikiTestCase
             $this->assertSame(['myfavorites' => 1, 'orphanedpages' => 1, 'diaporama' => 2], $removed);
             $this->assertSame([self::TAG], $tags);
             $row = $dbService->loadSingle("SELECT body FROM {$pages} WHERE tag = ?", [self::TAG]);
+            $this->assertNotNull($row, 'fixture: the row must still be there');
             $this->assertSame(
                 "# Mes contenus\n\n\nUn texte  au milieu.\n\n{{learnerdashboard}}\n{{button link=\"Page\" text=\"Aller\"}}\ncontenu\n",
                 PageBody::content(PageBody::decode((string)$row['body'])),
