@@ -28,7 +28,7 @@ class DatabaseCopierTest extends YesWikiTestCase
     public function testTheWikiArrivesWholeOnAnotherEngine(): void
     {
         $db = $this->getWiki()->services->get(DbService::class);
-        $prefix = (string)$this->getWiki()->services->getParameter('table_prefix');
+        $prefix = trim($db->prefixTable(''));
         $copier = new DatabaseCopier($db);
         $target = DatabaseCopier::connect('sqlite', '', '', $this->file, '', '');
 
@@ -51,7 +51,7 @@ class DatabaseCopierTest extends YesWikiTestCase
     public function testASecondCopyOverTheFirstIsRefused(): void
     {
         $db = $this->getWiki()->services->get(DbService::class);
-        $prefix = (string)$this->getWiki()->services->getParameter('table_prefix');
+        $prefix = trim($db->prefixTable(''));
         $target = DatabaseCopier::connect('sqlite', '', '', $this->file, '', '');
         (new DatabaseCopier($db))->copy($target, $prefix);
 
