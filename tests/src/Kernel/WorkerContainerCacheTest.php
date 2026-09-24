@@ -2,6 +2,10 @@
 
 namespace YesWiki\Test\Kernel;
 
+use YesWiki\Core\YesWikiKernel;
+use YesWiki\Files\Service\Storage;
+use YesWiki\Kernel\Service\CacheClearer;
+use YesWiki\Kernel\Service\EnvironmentConfiguration;
 use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';
@@ -55,6 +59,44 @@ class WorkerContainerCacheTest extends YesWikiTestCase
             $this->assertTrue($wiki->containerCacheIsGone());
         } finally {
             $directory->setValue($wiki, $was);
+        }
+    }
+
+    /** A saved configuration builds a new container elsewhere, so the old one is still there and only the fingerprint tells. */
+    public function testAWikiWhoseConfigurationChangedSaysSo(): void
+    {
+        $wiki = $this->getWiki();
+        $booted = new \ReflectionProperty($wiki, 'bootedCacheDir');
+        $was = $booted->getValue($wiki);
+        $booted->setValue($wiki, (new YesWikiKernel($wiki, $wiki->getEnvironment()))->getCacheDir());
+
+        $name = (string)array_key_first(EnvironmentConfiguration::knownEnvNames());
+        $value = getenv($name);
+        try {
+            $this->assertFalse($wiki->configurationChanged(), 'nothing changed since this worker booted');
+            putenv($name . '=changed-under-a-running-worker');
+            $this->assertTrue($wiki->configurationChanged());
+        } finally {
+            putenv($value === false ? $name : $name . '=' . $value);
+            $booted->setValue($wiki, $was);
+        }
+    }
+
+    /** Twig keeps a compiled template's class in memory, so an override saved elsewhere is only seen by a fresh worker. */
+    public function testAWikiWhoseTemplatesWereClearedSaysSo(): void
+    {
+        $wiki = $this->getWiki();
+        $stamp = new \ReflectionProperty($wiki, 'templatesStamp');
+        $was = $stamp->getValue($wiki);
+        $current = @file_get_contents(CacheClearer::TEMPLATES_STAMP);
+        $stamp->setValue($wiki, $current === false ? '' : $current);
+
+        try {
+            $this->assertFalse($wiki->templatesChanged(), 'nothing was cleared since this worker booted');
+            CacheClearer::stampTemplatesCleared(new Storage());
+            $this->assertTrue($wiki->templatesChanged());
+        } finally {
+            $stamp->setValue($wiki, $was);
         }
     }
 }

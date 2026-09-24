@@ -51,6 +51,8 @@ class YesWikiInit
         if (!empty($_SERVER['HTTPS'])) {
             $protocol = 'https://';
         }
+        $this->page = '';
+        $this->method = '';
         $scriptlocation = str_replace('/index.php', '', $_SERVER['SCRIPT_NAME']);
         $requestUri = $_SERVER['REQUEST_URI'] ?? '';
         $uri = is_string($requestUri) ? str_replace($scriptlocation, '', $requestUri) : '';
@@ -59,7 +61,7 @@ class YesWikiInit
         $uri = explode('?', $uri[0]);
         $args = explode('/', rawurldecode($uri[0]));
         if (!empty($args[0]) or !empty($_GET['wiki'])) {
-            if ($args[0] == 'index.php' or !empty($_GET['wiki'])) {
+            if ($args[0] == 'index.php' or $args[0] == 'worker.php' or !empty($_GET['wiki'])) {
                 $wiki = empty($_GET['wiki']) ? '' : preg_replace('/^\//', '', urldecode($_GET['wiki']));
             } else {
                 $a = explode('=', $args[0]);

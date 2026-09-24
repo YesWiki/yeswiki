@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test'
+import { test, expect, Page } from '@playwright/test'
 import { resetEnv } from '../helpers/db'
 import { ADMIN_PASSWORD, ADMIN_USERNAME, login } from '../helpers/login'
 import { editorReady } from '../helpers/editor'
@@ -8,6 +8,18 @@ test.beforeEach(async () => {
 })
 
 const FLASH = '[role="alert"]'
+
+/** Save the Layout form and wait for its answer: a flash left by an earlier save would pass the check too soon. */
+const saveLayout = async (page: Page) => {
+  const saved = page.waitForResponse(
+    (response) =>
+      response.request().method() === 'POST' &&
+      response.url().includes('admin/layout'),
+  )
+  await page.locator('.yw-layout__save button[type="submit"]').click()
+  await saved
+  await page.waitForLoadState()
+}
 
 /** The wiki's chrome, as a screen (ticket 30). */
 test('what an admin types into Layout becomes the navbar of every page', async ({
@@ -42,7 +54,7 @@ test('what an admin types into Layout becomes the navbar of every page', async (
     `navbar[${before}][label]`,
   )
 
-  await page.locator('.yw-layout__save button[type="submit"]').click()
+  await saveLayout(page)
   await expect(page.locator(FLASH)).toContainText(/enregistr/i)
 
   await page.goto('/?PagePrincipale')
@@ -64,7 +76,7 @@ test('a dropdown is an entry with children under it', async ({ page }) => {
     .last()
     .locator('[data-yw-menu-indent]')
     .click()
-  await page.locator('.yw-layout__save button[type="submit"]').click()
+  await saveLayout(page)
   await expect(page.locator(FLASH)).toContainText(/enregistr/i)
 
   await page.goto('/?admin/layout')
@@ -161,7 +173,7 @@ test('the bar height is saved, and beats what a stylesheet says', async ({
 
   await page.locator('[data-yw-layout-height]').fill('88')
   await page.locator('[data-yw-layout-height]').dispatchEvent('change')
-  await page.locator('.yw-layout__save button[type="submit"]').click()
+  await saveLayout(page)
   await expect(page.locator(FLASH)).toContainText(/enregistr/i)
 
   await page.goto('/?PagePrincipale')
@@ -239,7 +251,7 @@ test('saving clears the guard, so leaving afterwards asks nothing', async ({
   })
 
   await page.locator('#yw-layout-title').fill('Titre enregistré')
-  await page.locator('.yw-layout__save button[type="submit"]').click()
+  await saveLayout(page)
   await expect(page.locator(FLASH)).toContainText(/enregistr/i)
 
   await page
@@ -319,7 +331,7 @@ test('the menu can become a side column, and the banner can lead it', async ({
   await page
     .locator('input[name="layout_header_position"][value="before"]')
     .check()
-  await page.locator('.yw-layout__save button[type="submit"]').click()
+  await saveLayout(page)
   await expect(page.locator(FLASH)).toContainText(/enregistr/i)
 
   await page.setViewportSize({ width: 1280, height: 800 })

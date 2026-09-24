@@ -68,13 +68,20 @@ jobs:
             fi
           } >> "$GITHUB_STEP_SUMMARY"
 
-  # Built once and shared, because building it per matrix leg would be three half-hour builds of
-  # the same artefact.
   binary:
     needs: plan
     runs-on: ubuntu-26.04
+    outputs:
+      cached: ${{ steps.cache.outputs.cache-hit == 'true' }}
     steps:
       - uses: actions/checkout@v5
+
+      - id: cache
+        if: github.event_name == 'push' || github.event_name == 'pull_request'
+        uses: actions/cache@v4
+        with:
+          path: binary/dist/yeswiki-linux-x86_64
+          key: e2e-binary-x86_64-${{ hashFiles('binary/**', 'composer.json') }}
 
       - uses: shivammathur/setup-php@v2
         with:
@@ -82,19 +89,23 @@ jobs:
           tools: composer:v2
 
       - run: composer install --no-dev --prefer-dist --no-progress --optimize-autoloader
+        if: steps.cache.outputs.cache-hit != 'true'
 
       - uses: actions/setup-node@v5
+        if: steps.cache.outputs.cache-hit != 'true'
         with:
           node-version: '24'
 
       - run: yarn install --frozen-lockfile
+        if: steps.cache.outputs.cache-hit != 'true'
 
       - uses: docker/setup-buildx-action@v4
+        if: steps.cache.outputs.cache-hit != 'true'
 
       - name: Build the static binary
+        if: steps.cache.outputs.cache-hit != 'true'
         env:
           TARGETARCH: x86_64
-          # Uncompressed: UPX costs minutes and saves disk nobody is short of here.
           COMPRESS: '0'
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: ./binary/build-static.sh
@@ -127,6 +138,7 @@ jobs:
       YESWIKI_TEST_DB_USER: ${{ matrix.driver == 'pgsql' && 'yeswiki' || 'root' }}
       YESWIKI_TEST_DB_PASSWORD: ${{ matrix.driver == 'pgsql' && 'password' || 'root' }}
       YESWIKI_TEST_BINARY: ${{ github.workspace }}/binary/dist/yeswiki-linux-x86_64
+      YESWIKI_TEST_PROGRAM: ${{ needs.binary.outputs.cached == 'true' && format('{0}/binary/program', github.workspace) || '' }}
       YESWIKI_TEST_BASE_URL: ${{ matrix.runtime == 'binary' && 'http://127.0.0.1:8081/?' || 'http://127.0.0.1:8080/?' }}
       YESWIKI_BASE_URL: ${{ matrix.runtime == 'binary' && 'http://127.0.0.1:8081' || 'http://127.0.0.1:8080' }}
 
@@ -217,6 +229,10 @@ jobs:
       - name: Make the binary executable
         if: steps.covered.outputs.run == 'true' && matrix.runtime == 'binary'
         run: chmod +x binary/dist/yeswiki-linux-x86_64
+
+      - name: Assemble this commit's Program for the cached binary
+        if: steps.covered.outputs.run == 'true' && matrix.runtime == 'binary' && needs.binary.outputs.cached == 'true'
+        run: bash binary/build-program.sh
 
       # php-fpm's stand-in is PHP's built-in server, the same one phpunit.yml uses: the SAPI is the
       # matrix PHP by construction, which installing a distro php-fpm cannot promise.

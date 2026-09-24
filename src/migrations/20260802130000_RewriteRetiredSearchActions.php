@@ -5,12 +5,12 @@ use YesWiki\Core\YesWikiMigration;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Search\Service\SearchIndexer;
 
-/** Ticket 26: rewrite `{{newtextsearch}}` and `{{searchform}}` out of stored content. */
+/** Ticket 26: rewrite `{{newtextsearch}}` and `{{searchform}}`, and Doryphore's `{{moteurrecherche}}` that a later rename would turn into it, out of stored content. */
 class RewriteRetiredSearchActions extends YesWikiMigration
 {
     /** What each retired call becomes. */
     private const REWRITES = [
-        '/\{\{\s*searchform\b[^}]*\}\}/i' => '{{button icon="loupe" link="search"}}',
+        '/\{\{\s*(?:searchform|moteurrecherche)\b[^}]*\}\}/i' => '{{button icon="loupe" link="search"}}',
         '/\{\{\s*newtextsearch\b[^}]*\}\}/i' => '{{search}}',
     ];
 
@@ -23,6 +23,7 @@ class RewriteRetiredSearchActions extends YesWikiMigration
         $rows = $db->loadAll(
             "SELECT id, tag, body FROM {$pages}"
             . " WHERE {$bodyAsText} LIKE '%searchform%' OR {$bodyAsText} LIKE '%newtextsearch%'"
+            . " OR {$bodyAsText} LIKE '%moteurrecherche%'"
         );
 
         $rewritten = [];

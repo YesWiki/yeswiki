@@ -130,8 +130,8 @@ class LayoutBecomesConfigurationTest extends YesWikiTestCase
 
         $this->assertSame(
             [
-                ['icon' => 'loupe', 'label' => 'Rechercher', 'link' => 'search'],
-                ['icon' => 'gauge', 'label' => 'Tableau de bord', 'link' => 'dashboard'],
+                ['icon' => 'loupe', 'label' => 'Rechercher', 'link' => 'search', 'child' => false],
+                ['icon' => 'gauge', 'label' => 'Tableau de bord', 'link' => 'dashboard', 'child' => false],
             ],
             $entries
         );
@@ -150,7 +150,7 @@ class LayoutBecomesConfigurationTest extends YesWikiTestCase
     {
         [$entries] = $this->readQuickMenu('{{button text="Nous écrire" link="Contact" icon="mail"}}');
 
-        $this->assertSame([['icon' => 'mail', 'label' => 'Nous écrire', 'link' => 'Contact']], $entries);
+        $this->assertSame([['icon' => 'mail', 'label' => 'Nous écrire', 'link' => 'Contact', 'child' => false]], $entries);
     }
 
     public function testWhatIsNotAButtonIsReportedRatherThanDropped(): void
@@ -159,6 +159,75 @@ class LayoutBecomesConfigurationTest extends YesWikiTestCase
 
         $this->assertCount(1, $entries);
         $this->assertSame(['{{search}}'], $rest, 'an action it cannot turn into a button is named');
+    }
+
+    /** fairetilt.co's PageRapideHaut: three buttons inside a cog dropdown, which must stay a dropdown. */
+    public function testAButtonDropdownStaysAParentWithItsButtonsUnderIt(): void
+    {
+        [$entries, $account, $rest, $dropdown] = $this->readQuickMenu(
+            "{{moteurrecherche template=\"moteurrecherche_button.tpl.html\"}}\n"
+            . "{{buttondropdown icon=\"cog\" caret=\"0\" title=\"Gestion du site\"}}\n"
+            . " - {{button nobtn=\"1\" icon=\"fas fa-user\" text=\"Me connecter\" link=\"Seconnecter\"}}\n"
+            . " - {{button nobtn=\"1\" icon=\"fas fa-user\" text=\"M'inscrire\" link=\"Sinscrire\"}}\n"
+            . "{{end elem=\"buttondropdown\"}}\n"
+            . '{{login template="modal.twig" nobtn="1" signupurl="Sinscrire"}}'
+        );
+
+        $this->assertSame(
+            [
+                ['icon' => 'cog', 'label' => 'Gestion du site', 'link' => '', 'child' => false],
+                ['icon' => 'fas fa-user', 'label' => 'Me connecter', 'link' => 'Seconnecter', 'child' => true],
+                ['icon' => 'fas fa-user', 'label' => "M'inscrire", 'link' => 'Sinscrire', 'child' => true],
+            ],
+            $entries
+        );
+        $this->assertTrue($dropdown, 'the quick menu has to draw its dropdown');
+        $this->assertTrue($account);
+        $this->assertSame(['{{moteurrecherche template="moteurrecherche_button.tpl.html"}}'], $rest);
+    }
+
+    public function testAButtonAfterTheDropdownIsTopLevelAgain(): void
+    {
+        [$entries, , , $dropdown] = $this->readQuickMenu(
+            "{{buttondropdown icon=\"cog\" title=\"Gestion\"}}\n"
+            . "{{button text=\"Un\" link=\"Un\"}}\n"
+            . "{{end elem=\"buttondropdown\"}}\n"
+            . '{{button text="Deux" link="Deux"}}'
+        );
+
+        $this->assertFalse($entries[2]['child']);
+        $this->assertTrue($dropdown);
+    }
+
+    /** fairetilt.co's PageMenuHaut ended on a section-wrapped button, which used to become an entry labelled "}}}". */
+    public function testAnEntryShownOnlyToSomeVisitorsIsReportedRatherThanMangled(): void
+    {
+        $line = ' - {{section class="cover" visibility="!+" }}{{button class="btn-secondary-1 btn-xs" link="Seconnecter" text="Me connecter" }}{{end elem="section"}}';
+
+        [$navbar, $rest] = $this->readNavbar(" - [Accueil](PagePrincipale)\n" . $line);
+
+        $this->assertSame([['label' => 'Accueil', 'link' => 'PagePrincipale', 'child' => false]], $navbar);
+        $this->assertSame([$line], $rest);
+    }
+
+    public function testAButtonInTheNavbarBecomesAnEntry(): void
+    {
+        [$navbar] = $this->readNavbar(' - {{button link="Contact" text="Nous écrire"}}');
+
+        $this->assertSame([['label' => 'Nous écrire', 'link' => 'Contact', 'child' => false]], $navbar);
+    }
+
+    public function testALegacyWikiLinkBecomesAnEntry(): void
+    {
+        [$navbar] = $this->readNavbar(" - [[PagePrincipale Accueil]]\n - [[AutrePage]]");
+
+        $this->assertSame(
+            [
+                ['label' => 'Accueil', 'link' => 'PagePrincipale', 'child' => false],
+                ['label' => 'AutrePage', 'link' => 'AutrePage', 'child' => false],
+            ],
+            $navbar
+        );
     }
 
     /**

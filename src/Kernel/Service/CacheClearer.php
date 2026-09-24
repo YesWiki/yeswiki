@@ -10,6 +10,9 @@ class CacheClearer
     public const CONTAINER = 'cache/container';
     public const TEMPLATES = 'cache/templates';
 
+    /** Rewritten whenever the compiled templates go, so a worker holding them in memory knows to restart. */
+    public const TEMPLATES_STAMP = 'cache/templates.cleared';
+
     /** @var list<string> */
     public const ALL = [self::CONTAINER, self::TEMPLATES];
 
@@ -36,6 +39,9 @@ class CacheClearer
         foreach ($which as $cache) {
             $cleared[$cache] = $this->empty($storage, $cache, []);
         }
+        if (\in_array(self::TEMPLATES, $which, true)) {
+            self::stampTemplatesCleared($storage);
+        }
 
         return $cleared;
     }
@@ -48,6 +54,12 @@ class CacheClearer
     public function clearEverything(?string $root = null): int
     {
         return $this->empty($this->storageFor($root), 'cache', self::KEPT);
+    }
+
+    /** Tell every worker that the templates it compiled are no longer the ones on disk. */
+    public static function stampTemplatesCleared(Storage $storage): void
+    {
+        $storage->write(self::TEMPLATES_STAMP, uniqid('', true));
     }
 
     /**

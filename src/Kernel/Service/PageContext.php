@@ -5,7 +5,7 @@ namespace YesWiki\Kernel\Service;
 /**
  * The page being served: its tag, loaded record, requested method and metadata (historic Wiki::$tag/$page/$method/$metadatas, including element writes like `$wiki->page['body'] = ...`).
  */
-class PageContext
+class PageContext implements RequestScopedState
 {
     protected ?string $tag = null;
 
@@ -25,6 +25,15 @@ class PageContext
      * @var array<mixed>
      */
     protected $metadata = [];
+
+    public function startNewRequest(): void
+    {
+        $this->tag = null;
+        $this->requestedTag = null;
+        $this->page = null;
+        $this->method = '';
+        $this->metadata = [];
+    }
 
     public function getTag(): string
     {

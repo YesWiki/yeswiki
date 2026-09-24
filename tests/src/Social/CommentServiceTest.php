@@ -7,6 +7,7 @@ use YesWiki\Content\Service\PageManager;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Identity\Service\UserManager;
+use YesWiki\Kernel\Service\RequestScope;
 use YesWiki\Kernel\Service\RuntimeConfig;
 use YesWiki\Social\Service\CommentService;
 use YesWiki\Test\Core\YesWikiTestCase;
@@ -157,5 +158,20 @@ class CommentServiceTest extends YesWikiTestCase
 
         $this->assertSame(200, $result['code']);
         $this->assertSame('second thoughts', $this->body(self::COMMENT));
+    }
+
+    /** A worker serves many requests: the page shown again on the next one still carries its comments. */
+    public function testAPageShowsItsCommentsAgainOnTheNextRequest(): void
+    {
+        if (!$this->wiki->services->get(RuntimeConfig::class)['comments_activated']) {
+            $this->markTestSkipped('comments are switched off on this wiki');
+        }
+
+        $first = $this->commentService->renderCommentsForPage(self::OWN);
+        $this->wiki->services->get(RequestScope::class)->startNewRequest();
+        $second = $this->commentService->renderCommentsForPage(self::OWN);
+
+        $this->assertStringContainsString('a comment', $first);
+        $this->assertSame($first, $second, 'the second request lost the comments the first one rendered');
     }
 }

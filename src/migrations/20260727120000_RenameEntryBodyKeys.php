@@ -19,43 +19,45 @@ class RenameEntryBodyKeys extends YesWikiMigration
             . " = '" . $this->dbService->escape(PageType::ENTRY) . "'"
         );
 
-        foreach ($rows as $row) {
-            $body = json_decode($row['body'] ?? '', true);
-            if (!is_array($body)) {
-                continue;
-            }
-
-            $renamed = [];
-            $changed = false;
-            foreach ($body as $key => $value) {
-                if (in_array($key, self::STRIPPED_ARTIFACTS, true)) {
-                    $changed = true;
+        $this->dbService->transactional(function () use ($rows): void {
+            foreach ($rows as $row) {
+                $body = json_decode($row['body'] ?? '', true);
+                if (!is_array($body)) {
                     continue;
                 }
 
-                $newKey = $key === 'bf_titre' ? $key : (EntryManager::LEGACY_ENTRY_KEYS[$key] ?? $key);
-                if ($newKey !== $key) {
+                $renamed = [];
+                $changed = false;
+                foreach ($body as $key => $value) {
+                    if (in_array($key, self::STRIPPED_ARTIFACTS, true)) {
+                        $changed = true;
+                        continue;
+                    }
+
+                    $newKey = $key === 'bf_titre' ? $key : (EntryManager::LEGACY_ENTRY_KEYS[$key] ?? $key);
+                    if ($newKey !== $key) {
+                        $changed = true;
+                    }
+                    if (!array_key_exists($newKey, $renamed)) {
+                        $renamed[$newKey] = $value;
+                    }
+                }
+
+                if (!array_key_exists('title', $renamed)) {
+                    $renamed['title'] = (string)($renamed['bf_titre'] ?? $row['tag']);
                     $changed = true;
                 }
-                if (!array_key_exists($newKey, $renamed)) {
-                    $renamed[$newKey] = $value;
+
+                if (!$changed) {
+                    continue;
                 }
-            }
 
-            if (!array_key_exists('title', $renamed)) {
-                $renamed['title'] = (string)($renamed['bf_titre'] ?? $row['tag']);
-                $changed = true;
+                $this->dbService->query(
+                    'UPDATE ' . $this->dbService->prefixTable('pages')
+                    . " SET body = '" . $this->dbService->escape(json_encode($renamed, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES))
+                    . "' WHERE id = '" . $this->dbService->escape($row['id']) . "'"
+                );
             }
-
-            if (!$changed) {
-                continue;
-            }
-
-            $this->dbService->query(
-                'UPDATE ' . $this->dbService->prefixTable('pages')
-                . " SET body = '" . $this->dbService->escape(json_encode($renamed, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES))
-                . "' WHERE id = '" . $this->dbService->escape($row['id']) . "'"
-            );
-        }
+        });
     }
 }

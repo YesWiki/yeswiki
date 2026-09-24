@@ -42,11 +42,16 @@ class LayoutBecomesConfiguration extends YesWikiMigration
         [$navbar, $navbarRest] = $this->readNavbar($bodies['PageMenuHaut']);
         $leftovers['PageMenuHaut'] = $navbarRest;
 
-        [$quickMenu, $account, $quickRest] = $this->readQuickMenu($bodies['PageRapideHaut']);
+        [$quickMenu, $account, $quickRest, $quickDropdown] = $this->readQuickMenu($bodies['PageRapideHaut']);
         $leftovers['PageRapideHaut'] = $quickRest;
 
+        $brand = ['title' => $title, 'logo' => $logo, 'brand' => $logo === '' ? 'text' : 'logo-text', 'account' => $account];
+        if ($quickDropdown) {
+            $brand['quickMenuFlags'] = ['showdropdown' => true] + $layout->quickMenuFlags();
+        }
+
         $layout->save(
-            ['title' => $title, 'logo' => $logo, 'brand' => $logo === '' ? 'text' : 'logo-text', 'account' => $account],
+            $brand,
             $navbar,
             $quickMenu
         );
@@ -130,6 +135,10 @@ class LayoutBecomesConfiguration extends YesWikiMigration
         foreach ($lines as $line) {
             if (preg_match('/^(\s*)[-*]\s+(.+)$/', $line, $found) === 1) {
                 $entry = $this->readLink(trim($found[2]));
+                if ($entry === null) {
+                    $rest[] = $line;
+                    continue;
+                }
                 $entries[] = [
                     'label' => $entry['label'],
                     'link' => $entry['link'],
@@ -154,12 +163,14 @@ class LayoutBecomesConfiguration extends YesWikiMigration
     /**
      * `PageRapideHaut`: `{{button}}` calls, and whether `{{login}}` closed them.
      *
-     * @return array{0: list<array{icon: string, label: string, link: string}>, 1: bool, 2: list<string>}
+     * @return array{0: list<array{icon: string, label: string, link: string, child: bool}>, 1: bool, 2: list<string>, 3: bool}
      */
     private function readQuickMenu(string $body): array
     {
         $entries = [];
         $rest = [];
+        $inDropdown = false;
+        $hasDropdown = false;
 
         $account = $body === '';
 
@@ -168,19 +179,36 @@ class LayoutBecomesConfiguration extends YesWikiMigration
                 $account = true;
                 continue;
             }
+            if (preg_match('/\{\{\s*buttondropdown\b([^}]*)\}\}/i', $line, $found) === 1) {
+                $attributes = $this->readAttributes($found[1]);
+                $entries[] = [
+                    'icon' => $attributes['icon'] ?? '',
+                    'label' => $attributes['title'] ?? ($attributes['text'] ?? ''),
+                    'link' => '',
+                    'child' => false,
+                ];
+                $inDropdown = true;
+                $hasDropdown = true;
+                continue;
+            }
+            if (preg_match('/\{\{\s*end\s+elem\s*=\s*"buttondropdown"\s*\}\}/i', $line) === 1) {
+                $inDropdown = false;
+                continue;
+            }
             if (preg_match('/\{\{\s*button\b([^}]*)\}\}/i', $line, $found) === 1) {
                 $attributes = $this->readAttributes($found[1]);
                 $entries[] = [
                     'icon' => $attributes['icon'] ?? '',
                     'label' => $attributes['text'] ?? ($attributes['title'] ?? ''),
                     'link' => $attributes['link'] ?? ($attributes['url'] ?? ''),
+                    'child' => $inDropdown,
                 ];
                 continue;
             }
             $rest[] = $line;
         }
 
-        return [$entries, $account, $rest];
+        return [$entries, $account, $rest, $hasDropdown];
     }
 
     /**
@@ -206,17 +234,31 @@ class LayoutBecomesConfiguration extends YesWikiMigration
     }
 
     /**
-     * One list item as a label and a link.
+     * One list item as a label and a link, or null when it holds nothing a menu entry can carry.
      *
-     * @return array{label: string, link: string}
+     * @return array{label: string, link: string}|null
      */
-    private function readLink(string $item): array
+    private function readLink(string $item): ?array
     {
+        if (preg_match('/\{\{[^}]*\bvisibility\s*=/i', $item) === 1) {
+            return null;
+        }
         if (preg_match('/\[([^\]]*)\]\(\s*([^)\s"]+)(?:\s+"[^"]*")?\s*\)/', $item, $found) === 1) {
             return ['label' => trim($found[1]), 'link' => trim($found[2])];
         }
+        if (preg_match('/\[\[\s*(\S+)(?:\s+([^\]]+?))?\s*\]\]/', $item, $found) === 1) {
+            return ['label' => trim($found[2] ?? '') !== '' ? trim($found[2]) : $found[1], 'link' => $found[1]];
+        }
+        if (preg_match('/\{\{\s*button\b([^}]*)\}\}/i', $item, $found) === 1) {
+            $attributes = $this->readAttributes($found[1]);
+            $label = $attributes['text'] ?? ($attributes['title'] ?? '');
 
-        return ['label' => trim((string)preg_replace('/\{[^}]*\}|[*_`]/', '', $item)), 'link' => ''];
+            return $label === '' ? null : ['label' => $label, 'link' => $attributes['link'] ?? ($attributes['url'] ?? '')];
+        }
+
+        $label = trim((string)preg_replace('/\{\{.*?\}\}|\{[^}]*\}|[*_`{}]/', '', $item));
+
+        return $label === '' ? null : ['label' => $label, 'link' => ''];
     }
 
     /**

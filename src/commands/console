@@ -37,7 +37,7 @@ $yeswikiConfig = [];
 if (file_exists($configFile)) {
     include_once $configFile;
     // config files written before the rename define $wakkaConfig instead
-    $yeswikiConfig = (isset($yeswikiConfig) && is_array($yeswikiConfig)) ? $yeswikiConfig : ($wakkaConfig ?? []);
+    $yeswikiConfig = (is_array($yeswikiConfig) && $yeswikiConfig !== []) ? $yeswikiConfig : ($wakkaConfig ?? []);
     // environment overrides (BASE_URL, ROOT_PAGE...) apply to this pre-read like everywhere else
     $yeswikiConfig = EnvironmentConfiguration::apply($yeswikiConfig);
 }

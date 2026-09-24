@@ -75,6 +75,20 @@ installer_arguments() {
   fi
 }
 
+seed_program() {
+  local version dir
+  version="$("$BINARY" version --build | php -r 'echo json_decode(stream_get_contents(STDIN), true)["version"];')"
+  dir="${YESWIKI_PROGRAM_ROOT}/program-${version}"
+  if [ "$(cat "${dir}/.yeswiki-program" 2>/dev/null)" = "$version" ]; then
+    return
+  fi
+  rm -rf "$dir"
+  mkdir -p "$YESWIKI_PROGRAM_ROOT"
+  cp -a "${YESWIKI_TEST_PROGRAM}/." "$dir"
+  printf '%s\n' "$version" > "${dir}/.yeswiki-program"
+  echo "program: ${YESWIKI_TEST_PROGRAM} stands in for the one the binary carries (${version})"
+}
+
 case "$RUNTIME" in
   fpm)
     INSTANCE="$ROOT"
@@ -110,7 +124,12 @@ case "$RUNTIME" in
     fi
 
     export YESWIKI_PROGRAM_ROOT="${YESWIKI_TEST_PROGRAM_ROOT:-${INSTANCE}-program}"
-    rm -rf "${INSTANCE}" "${YESWIKI_PROGRAM_ROOT}"
+    rm -rf "${INSTANCE}"
+    if [ -n "${YESWIKI_TEST_PROGRAM:-}" ]; then
+      seed_program
+    else
+      rm -rf "${YESWIKI_PROGRAM_ROOT}"
+    fi
     mkdir -p "${INSTANCE}/private"
     drop_and_create
 

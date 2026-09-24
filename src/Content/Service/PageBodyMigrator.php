@@ -3,6 +3,7 @@
 namespace YesWiki\Content\Service;
 
 use YesWiki\Content\Entity\PageBody;
+use YesWiki\Content\Entity\PageType;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\TripleStore;
 
@@ -97,10 +98,26 @@ class PageBodyMigrator
         return ['status' => self::STATUS_CONVERTED, 'body' => [PageBody::CONTENT => $stored]];
     }
 
+    /** Whether a `type` column value names Content whose body is a field map rather than markup. */
+    public static function isStructuredType(?string $type): bool
+    {
+        return $type !== null && $type !== '' && $type !== PageType::PAGE && $type !== PageType::COMMENT;
+    }
+
     /**
      * @return array{total: int, converted: int, already_json: int, normalized: int, empty: int, samples: list<array{id: string, tag: string, before: string, after: string}>}
      */
     private function walk(bool $write, int $sampleSize, ?callable $onProgress = null): array
+    {
+        return $write
+            ? $this->dbService->transactional(fn (): array => $this->walkRows(true, $sampleSize, $onProgress))
+            : $this->walkRows(false, $sampleSize, $onProgress);
+    }
+
+    /**
+     * @return array{total: int, converted: int, already_json: int, normalized: int, empty: int, samples: list<array{id: string, tag: string, before: string, after: string}>}
+     */
+    private function walkRows(bool $write, int $sampleSize, ?callable $onProgress): array
     {
         $structured = $this->structuredTags();
         $counts = ['total' => 0, 'converted' => 0, 'already_json' => 0, 'normalized' => 0, 'empty' => 0, 'samples' => []];
@@ -108,7 +125,8 @@ class PageBodyMigrator
         foreach ($this->rows() as $row) {
             $counts['total']++;
             $stored = (string)($row['body'] ?? '');
-            $result = self::classify($stored, isset($structured[$row['tag']]));
+            $isStructured = isset($structured[$row['tag']]) || self::isStructuredType($row['type'] ?? null);
+            $result = self::classify($stored, $isStructured);
             $encoded = PageBody::encode($result['body']);
 
             if ($result['status'] === self::STATUS_ALREADY_JSON) {
@@ -156,7 +174,7 @@ class PageBodyMigrator
     private function rows(): array
     {
         return $this->dbService->loadAll(
-            'SELECT id, tag, body FROM ' . trim($this->dbService->prefixTable('pages')) . ' ORDER BY id ASC'
+            'SELECT id, tag, body, type FROM ' . trim($this->dbService->prefixTable('pages')) . ' ORDER BY id ASC'
         );
     }
 

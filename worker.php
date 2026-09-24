@@ -40,8 +40,8 @@ $handler = static function () use ($wiki): void {
 };
 
 while ($served < $requestsBeforeRestart) {
-    if ($wiki->containerCacheIsGone()) {
-        error_log('the compiled container was cleared; restarting this worker');
+    if ($wiki->containerCacheIsGone() || $wiki->configurationChanged() || $wiki->templatesChanged()) {
+        error_log('the compiled container is out of date; restarting this worker');
         break;
     }
 

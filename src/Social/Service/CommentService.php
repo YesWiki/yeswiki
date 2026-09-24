@@ -17,11 +17,12 @@ use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\EventDispatcher;
 use YesWiki\Kernel\Service\Mailer;
 use YesWiki\Kernel\Service\PageContext;
+use YesWiki\Kernel\Service\RequestScopedState;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\MarkdownFormatterService;
 use YesWiki\Render\Service\TemplateEngine;
 
-class CommentService implements EventSubscriberInterface
+class CommentService implements EventSubscriberInterface, RequestScopedState
 {
     protected ContainerInterface $container;
     protected AclService $aclService;
@@ -67,6 +68,11 @@ class CommentService implements EventSubscriberInterface
         $this->params = $params;
         $this->pagesWhereCommentWereRendered = [];
         $this->commentsActivated = $this->params->get('comments_activated');
+    }
+
+    public function startNewRequest(): void
+    {
+        $this->pagesWhereCommentWereRendered = [];
     }
 
     /**

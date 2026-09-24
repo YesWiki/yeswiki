@@ -5,6 +5,7 @@ namespace YesWiki\Render\Service;
 use YesWiki\Files\Exception\StorageException;
 use YesWiki\Files\Service\ProgramFiles;
 use YesWiki\Files\Service\Storage;
+use YesWiki\Kernel\Service\CacheClearer;
 
 /**
  * Template overrides in `custom/templates/`, as something a webmaster can see and edit (ticket 30).
@@ -238,9 +239,9 @@ class CustomTemplateService
     /** Twig compiles to `cache/templates/`, keyed on the path. */
     private function clearCompiled(): void
     {
-        if (!$this->storage->directoryExists(self::COMPILED_CACHE)) {
-            return;
+        if ($this->storage->directoryExists(self::COMPILED_CACHE)) {
+            $this->storage->deleteDirectory(self::COMPILED_CACHE);
         }
-        $this->storage->deleteDirectory(self::COMPILED_CACHE);
+        CacheClearer::stampTemplatesCleared($this->storage);
     }
 }

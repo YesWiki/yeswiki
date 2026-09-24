@@ -55,6 +55,38 @@ class PageBodyMigratorTest extends TestCase
         $this->assertSame(['bf_titre' => 'Bordeaux', 'form_id' => '2', 'tag' => 'Bordeaux'], $result['body']);
     }
 
+    /** A file row made by MigrateAttachmentsToPages is typed by the column alone, with no triple, and must keep its attributes. */
+    public function testAFileTypedOnlyByTheColumnKeepsItsAttributes(): void
+    {
+        $file = '{"original_filename":"LOGO_Rouge.png","stored_filename":"LOGO_Rouge.png","size":22796}';
+
+        $result = PageBodyMigrator::classify($file, PageBodyMigrator::isStructuredType('file'));
+
+        $this->assertSame(PageBodyMigrator::STATUS_ALREADY_JSON, $result['status']);
+        $this->assertSame('LOGO_Rouge.png', $result['body']['original_filename']);
+        $this->assertArrayNotHasKey('content', $result['body']);
+    }
+
+    #[DataProvider('typeColumnValues')]
+    public function testOnlyMarkupTypesAreWrapped(?string $type, bool $structured): void
+    {
+        $this->assertSame($structured, PageBodyMigrator::isStructuredType($type));
+    }
+
+    /** @return array<string, array{?string, bool}> */
+    public static function typeColumnValues(): array
+    {
+        return [
+            'no column value' => [null, false],
+            'empty' => ['', false],
+            'page' => ['page', false],
+            'comment' => ['comment', false],
+            'file' => ['file', true],
+            'entry' => ['entry', true],
+            'menu' => ['menu', true],
+        ];
+    }
+
     /** A structured body that will not decode is corrupt, not markup. */
     public function testCorruptStructuredContentIsPreservedRatherThanDropped(): void
     {

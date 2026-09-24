@@ -16,8 +16,10 @@ class MigrateUsersToPages extends YesWikiMigration
             "SELECT * FROM {$this->dbService->prefixTable('users')} ORDER BY name ASC"
         );
 
-        foreach ($rows as $row) {
-            $userManager->migrateLegacyUser($row);
-        }
+        $this->dbService->transactional(function () use ($rows, $userManager): void {
+            foreach ($rows as $row) {
+                $userManager->migrateLegacyUser($row);
+            }
+        });
     }
 }

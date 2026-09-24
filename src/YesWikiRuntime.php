@@ -40,6 +40,7 @@ use YesWiki\Identity\Action\LoginAction;
 use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Kernel\Exception\ExitException;
 use YesWiki\Kernel\Routing\ReservedTags;
+use YesWiki\Kernel\Service\CacheClearer;
 use YesWiki\Kernel\Service\CurrentRequest;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\EventDispatcher;
@@ -112,6 +113,10 @@ class YesWikiRuntime
 
     /** Where the compiled container's per-service files are, so a worker can tell when they go. */
     private ?string $containerDirectory = null;
+
+    private ?string $bootedCacheDir = null;
+
+    private string $templatesStamp = '';
 
     /**
      * Constructor.
@@ -707,6 +712,8 @@ class YesWikiRuntime
     {
         $kernel = new YesWikiKernel($this, $this->environment);
         $kernel->boot();
+        $this->bootedCacheDir = $kernel->getCacheDir();
+        $this->templatesStamp = $this->readTemplatesStamp();
         $container = $kernel->getContainer();
         if (!$container instanceof Container) {
             throw new \RuntimeException('the kernel built a container with no parameter bag');
@@ -759,6 +766,26 @@ class YesWikiRuntime
     public function containerCacheIsGone(): bool
     {
         return $this->containerDirectory !== null && !is_dir($this->containerDirectory);
+    }
+
+    /** Whether the compiled templates were cleared since this process booted, by an override saved or `cache:clear`. */
+    public function templatesChanged(): bool
+    {
+        return $this->readTemplatesStamp() !== $this->templatesStamp;
+    }
+
+    private function readTemplatesStamp(): string
+    {
+        $stamp = @file_get_contents(CacheClearer::TEMPLATES_STAMP);
+
+        return $stamp === false ? '' : $stamp;
+    }
+
+    /** Whether what this container was built from -- the configuration, `.env`, the extensions -- has changed since this process booted. */
+    public function configurationChanged(): bool
+    {
+        return $this->bootedCacheDir !== null
+            && (new YesWikiKernel($this, $this->environment))->getCacheDir() !== $this->bootedCacheDir;
     }
 
     /**

@@ -114,6 +114,8 @@ class RepeatedRequestTest extends YesWikiTestCase
     {
         $wiki = self::getWiki();
         $wiki->services->get(RequestScope::class)->startNewRequest();
+        $wiki->services->get(PageContext::class)->setTag(self::PAGE_TAG);
+        $wiki->services->get(PageContext::class)->assignPage($wiki->services->get(PageManager::class)->getOne(self::PAGE_TAG));
 
         return $wiki->services->get(Performer::class)->run('show', 'handler', []);
     }
@@ -252,5 +254,19 @@ class RepeatedRequestTest extends YesWikiTestCase
         preg_match_all('/name="nbactionmail"[^>]*value="(\d+)"/', $html, $matches);
 
         return $matches[1];
+    }
+
+    /** A page that does not exist yet is not served with the record of the page before it. */
+    public function testAMissingPageDoesNotInheritThePageServedBefore(): void
+    {
+        $wiki = self::getWiki();
+        $context = $wiki->services->get(PageContext::class);
+        $this->assertNotNull($context->getPage(), 'the fixture page is the one being served');
+
+        $wiki->services->get(RequestScope::class)->startNewRequest();
+        $context->setTag('RepeatedRequestPageNobodyWrote');
+        $context->assignPage($wiki->services->get(PageManager::class)->getOne('RepeatedRequestPageNobodyWrote'));
+
+        $this->assertNull($context->getPage(), 'the next request still holds the page served before it');
     }
 }
