@@ -111,18 +111,12 @@ main() {
 
     step "upgrade against a repository that offers nothing new"
     startFixtureRepository "$(cat "$WORK/version")"
-    if "$BINARY" upgrade "$INSTANCE" --repository "http://${FIXTURE_ADDRESS}" --channel ectoplasme \
-        > "$WORK/upgrade.log" 2>&1; then
-        grep -qi 'what the repository offers\|is what is running' "$WORK/upgrade.log" \
-            || printf 'note: upgrade said nothing about the offered version\n'
-        printf 'the running version was not offered to itself\n'
-    else
-        # A binary with no compiled-in signing key refuses to install anything, which is correct
-        # and is the state until the project's key exists. Anything else is a failure.
-        grep -qi 'no release signing key' "$WORK/upgrade.log" \
-            || fail "upgrade failed for a reason that is not the missing signing key: $(tail -5 "$WORK/upgrade.log")"
-        printf 'no signing key compiled in, so it refused to install -- which is the right refusal\n'
-    fi
+    "$BINARY" upgrade "$INSTANCE" --repository "http://${FIXTURE_ADDRESS}" --channel ectoplasme \
+        > "$WORK/upgrade.log" 2>&1 \
+        || fail "upgrade against the fixture repository failed: $(tail -5 "$WORK/upgrade.log")"
+    grep -qi 'what the repository offers\|is what is running' "$WORK/upgrade.log" \
+        || printf 'note: upgrade said nothing about the offered version\n'
+    printf 'the running version was not offered to itself\n'
 
     step "the program directory is what the binary says it is"
     local nowProgram

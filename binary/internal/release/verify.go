@@ -11,17 +11,8 @@ import (
 	"strings"
 )
 
-// SigningKey is the public half of the key releases are signed with, base64 of the raw 32 bytes.
-//
-// The private half is held offline and never reaches CI: a binary that rewrites its own executable
-// on the strength of an HTTP response has a much larger blast radius than a theme zip, so this is
-// the one place in YesWiki where transport trust is not enough (ADR-0016's 2026-08-21 amendment).
-//
-// It is empty until the project's key exists. An empty key does not mean "accept anything": it
-// means this binary cannot verify a release and therefore refuses to install one. Generate the
-// pair with `yeswiki sign --generate`, keep the private half offline, and paste the public half
-// here.
-const SigningKey = ""
+// SigningKey is the public half of the offline release key, base64 of the raw 32 bytes (ADR-0016).
+const SigningKey = "U7onFH3MVm9QDahMQyxm2meiq7162JKdkf6gcpjWs2U="
 
 // ErrNoKey is a binary that cannot verify anything, which is a refusal and not a warning.
 var ErrNoKey = errors.New("this binary carries no release signing key, so it cannot verify an update and will not install one")
