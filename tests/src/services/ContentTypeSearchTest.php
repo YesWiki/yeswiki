@@ -17,9 +17,29 @@ class ContentTypeSearchTest extends YesWikiTestCase
 {
     private const PAGE_TAG = 'ContentTypeSearchRegressionPage';
 
+    /** @var array<string, string> form id => the tag of its one entry */
+    private const FIXTURES = [
+        '999910' => 'ContentTypeSearchTestFirstEntry',
+        '999911' => 'ContentTypeSearchTestSecondEntry',
+    ];
+
+    public static function setUpBeforeClass(): void
+    {
+        $services = self::getWiki()->services;
+        foreach (self::FIXTURES as $formId => $tag) {
+            $services->get(FormManager::class)->create(['id' => $formId, 'label' => "ContentTypeSearchTest {$formId}", 'template' => '']);
+            $services->get(EntryManager::class)->create($formId, ['antispam' => 1, 'bf_titre' => $tag, 'tag' => $tag]);
+        }
+    }
+
     public static function tearDownAfterClass(): void
     {
-        self::getWiki()->services->get(PageManager::class)->deleteOrphaned(self::PAGE_TAG);
+        $services = self::getWiki()->services;
+        $services->get(PageManager::class)->deleteOrphaned(self::PAGE_TAG);
+        foreach (self::FIXTURES as $formId => $tag) {
+            $services->get(EntryManager::class)->delete($tag, true);
+            $services->get(FormManager::class)->delete($formId);
+        }
     }
 
     /**
@@ -86,7 +106,7 @@ class ContentTypeSearchTest extends YesWikiTestCase
         $entryManager = $wiki->services->get(EntryManager::class);
 
         $rows = $wiki->services->get(SearchManager::class)->search([]);
-        $this->assertNotEmpty($rows, 'this wiki should have seeded bazar entries');
+        $this->assertNotEmpty($rows, 'the fixture entries should be found');
 
         foreach (array_keys($rows) as $tag) {
             $this->assertTrue($entryManager->isEntry($tag), "$tag came back from an unfiltered search but is not an entry");

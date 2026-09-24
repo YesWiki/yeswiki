@@ -79,6 +79,7 @@ class TheAdminPageStopsShadowingTheAdminAccountTest extends YesWikiTestCase
         foreach ($rows as $row) {
             $counts[(string)$row['type']] = (int)$row['total'];
         }
+        ksort($counts);
 
         return $counts;
     }

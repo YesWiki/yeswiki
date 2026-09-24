@@ -51,15 +51,6 @@ func wikiFor(arguments []string) (string, []string, error) {
 	return instance, rest, nil
 }
 
-// instanceArgument puts a flag cobra has already parsed back where wikiFor looks for it.
-func instanceArgument(stated string) []string {
-	if strings.TrimSpace(stated) == "" {
-		return nil
-	}
-
-	return []string{instanceFlag, stated}
-}
-
 // takeInstanceFlag pulls --instance out of the arguments, so the rest can go to the console untouched.
 func takeInstanceFlag(arguments []string) (string, []string) {
 	rest := make([]string, 0, len(arguments))
@@ -79,8 +70,8 @@ func takeInstanceFlag(arguments []string) (string, []string) {
 }
 
 // forwardToConsole runs a command the binary does not own against the wiki it is standing in.
-func forwardToConsole(command *cobra.Command, stated string, arguments []string) error {
-	instance, rest, err := wikiFor(append(instanceArgument(stated), arguments...))
+func forwardToConsole(command *cobra.Command, arguments []string) error {
+	instance, rest, err := wikiFor(arguments)
 	if err != nil {
 		return err
 	}
@@ -174,10 +165,13 @@ func runInsideAWiki(command *cobra.Command, arguments []string) error {
 		return command.Help()
 	}
 	if alreadyForwarding() {
-		return refuseToForward(arguments)
+		return refuseToForward(commandLine())
 	}
 
-	stated, _ := command.Flags().GetString("instance")
+	return forwardToConsole(command, commandLine())
+}
 
-	return forwardToConsole(command, stated, arguments)
+// commandLine is the invocation as typed: cobra drops the flags it does not know, and those belong to the console.
+var commandLine = func() []string {
+	return os.Args[1:]
 }

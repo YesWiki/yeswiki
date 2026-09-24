@@ -228,6 +228,9 @@ jobs:
       - name: Run migrations
         run: ./yeswicli migrate
 
+      - name: Create every Starter
+        run: ./yeswicli onboarding:apply --all
+
       # `javascripts/vendor/` and `styles/vendor/` are gitignored: they are copied out of
       # node_modules by the `postinstall` hook, so a fresh checkout has neither. Without this
       # step htmx, Ace and Leaflet are simply absent, and the tests that assert a page links

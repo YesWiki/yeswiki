@@ -22,6 +22,7 @@ class SearchSurfaceTest extends YesWikiTestCase
 {
     private const PAGE_TAG = 'SearchSurfaceTestPage';
     private const PRIVATE_TAG = 'SearchSurfaceTestPrivatePage';
+    private const SECOND_TAG = 'SearchSurfaceTestSecondPage';
 
     protected function setUp(): void
     {
@@ -42,7 +43,7 @@ class SearchSurfaceTest extends YesWikiTestCase
     public static function tearDownAfterClass(): void
     {
         $wiki = self::getWiki();
-        foreach ([self::PAGE_TAG, self::PRIVATE_TAG] as $tag) {
+        foreach ([self::PAGE_TAG, self::PRIVATE_TAG, self::SECOND_TAG] as $tag) {
             $wiki->services->get(PageManager::class)->deleteOrphaned($tag);
             $wiki->services->get(SearchIndexer::class)->delete($tag);
         }
@@ -51,7 +52,7 @@ class SearchSurfaceTest extends YesWikiTestCase
     private function removeFixtures(): void
     {
         $wiki = $this->getWiki();
-        foreach ([self::PAGE_TAG, self::PRIVATE_TAG] as $tag) {
+        foreach ([self::PAGE_TAG, self::PRIVATE_TAG, self::SECOND_TAG] as $tag) {
             $wiki->services->get(PageManager::class)->deleteOrphaned($tag);
             $wiki->services->get(SearchIndexer::class)->delete($tag);
         }
@@ -305,10 +306,9 @@ class SearchSurfaceTest extends YesWikiTestCase
         $onePage = $this->fragment(['q' => 'ciboulette', 'limit' => 20]);
         $this->assertStringNotContainsString('yw-search-pagination', $onePage);
 
-        $manyPages = $this->fragment(['q' => 'wiki', 'limit' => 1]);
-        if (!str_contains($manyPages, htmlspecialchars(_t('NO_SEARCH_RESULT'), ENT_QUOTES))) {
-            $this->assertStringContainsString('yw-search-pagination', $manyPages);
-        }
+        $this->savePage(self::SECOND_TAG, 'Le jardin', 'encore de la ciboulette');
+
+        $this->assertStringContainsString('yw-search-pagination', $this->fragment(['q' => 'ciboulette', 'limit' => 1]));
     }
 
     /** The one place ticket 18's key/label decision leaks into what a person sees. */

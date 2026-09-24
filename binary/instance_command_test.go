@@ -3,7 +3,10 @@ package yeswiki
 import (
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
+
+	"github.com/spf13/cobra"
 
 	"github.com/YesWiki/yeswiki/binary/internal/program"
 )
@@ -78,5 +81,18 @@ func TestANestedInvocationRefusesToForward(t *testing.T) {
 	}
 	if err := refuseToForward([]string{"migrate"}); err == nil {
 		t.Error("forwarding from inside a forward is the recursion this guard exists to stop")
+	}
+}
+
+// A flag the binary does not know is the console's, and reaches it.
+func TestAFlagTheBinaryDoesNotKnowIsStillForwarded(t *testing.T) {
+	t.Setenv(forwardingGuard, "1")
+	typed := commandLine
+	t.Cleanup(func() { commandLine = typed })
+	commandLine = func() []string { return []string{"onboarding:apply", "--all", "--instance", "/wikis/mine"} }
+
+	err := runInsideAWiki(&cobra.Command{}, []string{"onboarding:apply"})
+	if err == nil || !strings.Contains(err.Error(), "onboarding:apply --all") {
+		t.Errorf("forwarded %v, want the --all cobra dropped", err)
 	}
 }
