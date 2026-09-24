@@ -135,3 +135,31 @@ func (o Options) executable() (string, error) {
 
 // ErrNotUpgradable is what a caller checks to tell "cannot" from "went wrong".
 var ErrNotUpgradable = errors.New("this deployment does not upgrade itself")
+
+// Check says what the channel offers against what is running, and whether upgrading would change anything; it writes nothing.
+func Check(client release.Client, running string, say func(string)) (bool, error) {
+	address, err := client.IndexURL()
+	if err != nil {
+		return false, err
+	}
+
+	index, _, newer, err := client.Available(running)
+	if err != nil {
+		return false, err
+	}
+
+	released := ""
+	if index.Released != "" {
+		released = ", released " + index.Released
+	}
+	say("running   " + running)
+	say("offered   " + index.Version + released)
+	say("from      " + address)
+	if newer {
+		say("an upgrade is available: run `yeswiki upgrade` to install it and migrate the wiki")
+	} else {
+		say("up to date: the channel offers nothing newer than what is running")
+	}
+
+	return newer, nil
+}

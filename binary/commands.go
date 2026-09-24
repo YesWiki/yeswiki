@@ -121,6 +121,9 @@ refusal names the path -- there, the image or the package owns this binary and
 "yeswiki migrate" is the half that still applies. Use --no-download to skip the
 self-replacement on a machine that upgrades some other way.
 
+Use --check to see what the channel offers against what is running, without
+downloading, installing or migrating anything.
+
 Use --back-to <program directory> to point every wiki at a program it was on before.
 Programs are kept by version, so going back is repointing and reloading rather than
 restoring -- but it cannot undo a migration that has already run.`,
@@ -132,6 +135,7 @@ restoring -- but it cannot undo a migration that has already run.`,
 	upgrade.Flags().Bool("no-download", false, "Do not replace this executable; migrate with the program it already carries")
 	upgrade.Flags().String("repository", "", "Where releases come from (default: the wiki's own repository)")
 	upgrade.Flags().String("channel", releaseChannel, "Which channel of that repository to read")
+	upgrade.Flags().Bool("check", false, "Say whether the channel offers a newer version, and change nothing")
 	upgrade.RunE = caddycmd.WrapCommandFuncForCobra(runUpgrade)
 
 	root.AddCommand(upgrade)
@@ -380,6 +384,15 @@ func runUpgrade(flags caddycmd.Flags) (int, error) {
 
 	if back := flags.String("back-to"); strings.TrimSpace(back) != "" {
 		return runMigrate(flags)
+	}
+
+	if flags.Bool("check") {
+		client := release.Client{Repository: flags.String("repository"), Channel: flags.String("channel")}
+		if _, err := commands.Check(client, Version, func(line string) { fmt.Println(line) }); err != nil {
+			return caddy.ExitCodeFailedStartup, err
+		}
+
+		return caddy.ExitCodeSuccess, nil
 	}
 
 	if !flags.Bool("no-download") {

@@ -303,6 +303,35 @@ func TestTheSameVersionIsNotAnUpgrade(t *testing.T) {
 	}
 }
 
+// A binary names its version the way git describe does, and the index the way the repository does.
+func TestAVersionIsTheSameWithOrWithoutItsLeadingV(t *testing.T) {
+	_, client, _ := aRepository(t, "5.0.0-alpha2", []byte("x"), nothingSpecial)
+
+	if _, _, newer, err := client.Available("v5.0.0-alpha2"); err != nil || newer {
+		t.Fatalf("v5.0.0-alpha2 was offered 5.0.0-alpha2 (newer=%v, err=%v)", newer, err)
+	}
+}
+
+func TestAnOlderVersionIsNeverOffered(t *testing.T) {
+	_, client, _ := aRepository(t, "5.0.0-alpha2", []byte("x"), nothingSpecial)
+
+	for _, running := range []string{"v5.0.0-alpha3", "5.0.0", "v5.1.0-alpha1"} {
+		if _, _, newer, err := client.Available(running); err != nil || newer {
+			t.Errorf("%s was offered the older 5.0.0-alpha2 (newer=%v, err=%v)", running, newer, err)
+		}
+	}
+}
+
+func TestABuildBetweenTwoReleasesIsOfferedTheNextOne(t *testing.T) {
+	_, client, _ := aRepository(t, "5.0.0-alpha2", []byte("x"), nothingSpecial)
+
+	for _, running := range []string{"v5.0.0-alpha1-40-gc56a29d59-dirty", "v5.0.0-alpha1", "dev"} {
+		if _, _, newer, err := client.Available(running); err != nil || !newer {
+			t.Errorf("%s was not offered 5.0.0-alpha2 (newer=%v, err=%v)", running, newer, err)
+		}
+	}
+}
+
 func TestASignatureIsAcceptedRawOrBase64AndWithOrWithoutItsFilename(t *testing.T) {
 	_, private, err := ed25519.GenerateKey(rand.Reader)
 	if err != nil {

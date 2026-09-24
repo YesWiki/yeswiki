@@ -8,6 +8,8 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+
+	"golang.org/x/mod/semver"
 )
 
 // ErrReadOnly is a deployment whose executable is owned by something else.
@@ -68,11 +70,26 @@ func (c Client) Available(running string) (Index, Platform, bool, error) {
 		return index, Platform{}, false, err
 	}
 
-	if strings.TrimSpace(index.Version) == strings.TrimSpace(running) {
-		return index, entry, false, nil
+	return index, entry, IsNewer(index.Version, running), nil
+}
+
+// IsNewer reports whether offered is a later release than running, a leading v or not; a version that is not semver only counts as different.
+func IsNewer(offered, running string) bool {
+	o, r := canonical(offered), canonical(running)
+	if semver.IsValid(o) && semver.IsValid(r) {
+		return semver.Compare(o, r) > 0
 	}
 
-	return index, entry, true, nil
+	return strings.TrimSpace(offered) != strings.TrimSpace(running)
+}
+
+func canonical(version string) string {
+	version = strings.TrimSpace(version)
+	if strings.HasPrefix(version, "v") {
+		return version
+	}
+
+	return "v" + version
 }
 
 // Download puts the new executable beside the current one and verifies it there.

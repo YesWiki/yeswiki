@@ -303,3 +303,40 @@ func TestServingAWikiThatWasMigratedAgainstAnotherProgramIsRefused(t *testing.T)
 		t.Errorf("the refusal does not say what it was migrated against: %v", err)
 	}
 }
+
+// `upgrade --check` reads the channel and says what it found, and nothing else.
+func TestACheckNamesBothVersionsAndDownloadsNothing(t *testing.T) {
+	client := aChannel(t, "4.6.0", []byte("version 4.6.0"))
+	var said []string
+
+	available, err := Check(client, "v4.5.0", func(line string) { said = append(said, line) })
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !available {
+		t.Fatal("4.6.0 is newer than v4.5.0 and was not reported as an upgrade")
+	}
+
+	report := strings.Join(said, "\n")
+	for _, expected := range []string{"v4.5.0", "4.6.0", "/ectoplasme/binary.json", "yeswiki upgrade"} {
+		if !strings.Contains(report, expected) {
+			t.Errorf("the check did not mention %q:\n%s", expected, report)
+		}
+	}
+}
+
+func TestACheckOnTheOfferedVersionSaysItIsCurrent(t *testing.T) {
+	client := aChannel(t, "4.6.0", []byte("version 4.6.0"))
+	var said []string
+
+	available, err := Check(client, "v4.6.0", func(line string) { said = append(said, line) })
+	if err != nil {
+		t.Fatal(err)
+	}
+	if available {
+		t.Fatalf("v4.6.0 was told 4.6.0 is an upgrade:\n%s", strings.Join(said, "\n"))
+	}
+	if !strings.Contains(strings.Join(said, "\n"), "up to date") {
+		t.Errorf("the check did not say the binary is up to date:\n%s", strings.Join(said, "\n"))
+	}
+}
