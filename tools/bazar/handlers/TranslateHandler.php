@@ -2,6 +2,8 @@
 
 namespace YesWiki\Bazar;
 
+use Exception;
+use Vtiful\Kernel\Excel;
 use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Bazar\Service\FormManager;
 use YesWiki\Core\Service\PageManager;
@@ -119,7 +121,17 @@ class TranslateHandler extends YesWikiHandler
 
                 if ($isEntry) {
                     if ($this->getRequest()->getMethod() === 'POST') {
-                        $output .= $this->save($entryManager);
+                        try {
+                                $output .= $this->save($entryManager);
+                            }
+                        catch (Exception $e) {
+                            $this->wiki->redirect($this->wiki->href(testUrlInIframe(), '', [
+                            'vue' => 'consulter',
+                            'action' => 'voir_fiche',
+                            'id_fiche' => $tag,
+                            'message' => $e->getMessage(),
+                            ]));
+                        }
                     } else {
                         $output .= $this->display_form($tag);
                     }

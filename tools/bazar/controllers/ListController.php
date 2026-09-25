@@ -128,6 +128,9 @@ class ListController extends YesWikiController
 
                 $this->listManager->update($id, $list['title'], $list['nodes'], $list['extralang'] ?? []);
 
+                $this->wiki->Redirect(
+                    $this->wiki->Href('', '', [BAZ_VARIABLE_VOIR => BAZ_VOIR_LISTES], false)
+                );
 
             } else {
                 $list = $this->listManager->getOne($id, null,  'all');

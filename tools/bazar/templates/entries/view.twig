@@ -1,17 +1,22 @@
 <div class="BAZ_cadre_fiche id{{ form.bn_id_nature }}">
   {% if message and not entry['external-data'] %}
+  {% if 'ok' in message %}
     <div class="alert alert-success">
+  {% else %}
+    <div class="alert alert-warning">
+  {% endif %}
       {% if message == 'ajout_ok' %}
         {{ _t('BAZ_FICHE_ENREGISTREE') }}
         <a href="{{ url({ params: { vue: 'saisir', id: form.bn_id_nature }}) }}" class="pull-right btn-sm btn btn-primary">
           {{ _t('BAZ_ADD_NEW_ENTRY') }}
         </a>
-      {% endif %}
-      {% if message == 'modif_ok' %}
+      {% elif message == 'modif_ok' %}
         {{ _t('BAZ_FICHE_MODIFIEE') }}
         <a href="{{ url({ tag: entryId, handler: 'edit'}) }}" class="pull-right btn-sm btn btn-primary">
           {{ _t('BAZ_MODIFY_ENTRY_AGAIN') }}
         </a>
+      {% else %}
+       {{ _t('BAZ_MODIFY_ERROR') }} : {{ message }}
       {% endif %}
       <div class="clearfix"></div>
     </div>
