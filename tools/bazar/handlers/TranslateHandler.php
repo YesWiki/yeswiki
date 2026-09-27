@@ -43,15 +43,23 @@ class TranslateHandler extends YesWikiHandler
             $entry = json_decode($post->get('entry'), true);
             $entry['extralang'] = json_decode($post->get('extralang'), true);
             $entry['antispam'] = $post->get('antispam');
-            $entryManager->update($entry['id_fiche'], $entry);
 
-            return $this->wiki->redirect($this->wiki->Href(testUrlInIframe(), '', [
-                'vue' => 'consulter',
-                'action' => 'voir_fiche',
-                'id_fiche' => $entry['id_fiche'],
-                'message' => 'modif_ok',
-                'lang' => $post->get('lang') ?? 'default',
-            ], false));
+            try {
+                $entryManager->update($entry['id_fiche'], $entry);
+                $this->wiki->redirect($this->wiki->Href(testUrlInIframe(), '', [
+                    'vue' => 'consulter',
+                    'action' => 'voir_fiche',
+                    'id_fiche' => $entry['id_fiche'],
+                    'message' => 'modif_ok',
+                ], false));
+            } catch (Exception $e) {
+                $this->wiki->redirect($this->wiki->Href(testUrlInIframe(), '', [
+                    'vue' => 'consulter',
+                    'action' => 'voir_fiche',
+                    'id_fiche' => $entry['id_fiche'],
+                    'message' => $e->getMessage(),
+                ], false));
+            }
         }
     }
 
@@ -67,7 +75,6 @@ class TranslateHandler extends YesWikiHandler
             return $el != $page_lang;
         });
 
-
         $field_names = [];
         $ignorefields = [];
         $form = $formManager->getOne($page['id_typeannonce']);
@@ -76,17 +83,22 @@ class TranslateHandler extends YesWikiHandler
                 $type = $field['type'] ?? 'text';
                 if ($field['type'] == 'textarea') {
                     $type = 'textarea';
-                } else if ($field['type'] == 'text') {
+                } elseif ($field['type'] == 'text') {
                     $type = $field['subtype'] ?? $field['subtype2'] ?? 'text';
-                } else if ($field['type'] === 'link') {
+                } elseif ($field['type'] === 'link') {
                     $type = 'url';
                 }
                 $field_names[] = [
-                'name' => $field['name'] ?? '',
-                'label' => $field['label'] ?? '',
-                'type' => $type,
+                    'name' => $field['name'] ?? '',
+                    'label' => $field['label'] ?? '',
+                    'type' => $type,
                 ];
-                foreach($extra_langs as $lang) {
+                // ensure $page['extralang'] exist and is array;
+                if (empty($page['extralang']) or is_string($page['extralang'])) {
+                    $page['extralang'] = [];
+                }
+                foreach ($extra_langs as $lang) {
+                    $page['extralang'][$lang] ??= [];
                     $page['extralang'][$lang]['name'] ??= '';
                 }
             }
@@ -121,17 +133,7 @@ class TranslateHandler extends YesWikiHandler
 
                 if ($isEntry) {
                     if ($this->getRequest()->getMethod() === 'POST') {
-                        try {
-                                $output .= $this->save($entryManager);
-                            }
-                        catch (Exception $e) {
-                            $this->wiki->redirect($this->wiki->href(testUrlInIframe(), '', [
-                            'vue' => 'consulter',
-                            'action' => 'voir_fiche',
-                            'id_fiche' => $tag,
-                            'message' => $e->getMessage(),
-                            ]));
-                        }
+                        $output .= $this->save($entryManager);
                     } else {
                         $output .= $this->display_form($tag);
                     }

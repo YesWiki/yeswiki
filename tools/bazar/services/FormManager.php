@@ -466,7 +466,7 @@ class FormManager
 
         $form = $this->getFromRawData($data);
         $previous = $this->getOne($tag, 'all');
-        $form['extralang'] = $previous['extralang'] ?? '';
+        $form['extralang'] = $previous['extralang'] ?? [];
 
         return $this->__createOrUpdate($form, $tag);
     }

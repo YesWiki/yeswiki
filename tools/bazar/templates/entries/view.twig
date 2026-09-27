@@ -3,20 +3,25 @@
   {% if 'ok' in message %}
     <div class="alert alert-success">
   {% else %}
-    <div class="alert alert-warning">
+    <div class="alert alert-danger">
   {% endif %}
       {% if message == 'ajout_ok' %}
         {{ _t('BAZ_FICHE_ENREGISTREE') }}
         <a href="{{ url({ params: { vue: 'saisir', id: form.bn_id_nature }}) }}" class="pull-right btn-sm btn btn-primary">
           {{ _t('BAZ_ADD_NEW_ENTRY') }}
         </a>
-      {% elif message == 'modif_ok' %}
+      {% elseif message == 'modif_ok' %}
         {{ _t('BAZ_FICHE_MODIFIEE') }}
         <a href="{{ url({ tag: entryId, handler: 'edit'}) }}" class="pull-right btn-sm btn btn-primary">
           {{ _t('BAZ_MODIFY_ENTRY_AGAIN') }}
         </a>
+      {% elseif message == 'translate_ok' %}
+        {{ _t('BAZ_FICHE_TRANSLATED') }}
+        <a href="{{ url({ tag: entryId, handler: 'translate'}) }}" class="pull-right btn-sm btn btn-primary">
+          {{ _t('BAZ_TRANSLATE_ENTRY_AGAIN') }}
+        </a>
       {% else %}
-       {{ _t('BAZ_MODIFY_ERROR') }} : {{ message }}
+       {{ _t('BAZ_TRANSLATE_MODIFIY_ERROR') }} : <br/> {{ message }}
       {% endif %}
       <div class="clearfix"></div>
     </div>
