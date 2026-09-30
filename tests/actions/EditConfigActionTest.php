@@ -11,6 +11,7 @@ class EditConfigActionTest extends YesWikiTestCase
 {
     private $wiki;
     private $previousLocked;
+    private $configFile;
 
     protected function setUp(): void
     {
@@ -23,6 +24,10 @@ class EditConfigActionTest extends YesWikiTestCase
 
     protected function tearDown(): void
     {
+        if ($this->configFile !== null) {
+            putenv('WAKKA_CONFIG_FILE');
+            unlink($this->configFile);
+        }
         $this->wiki->services->get(AuthController::class)->logout();
         if ($this->previousLocked === null) {
             unset($this->wiki->config['edit_config_locked_params']);
@@ -50,5 +55,20 @@ class EditConfigActionTest extends YesWikiTestCase
 
         $this->assertStringContainsString('name="contact_smtp_host"', $output);
         $this->assertStringContainsString('name="wakka_name"', $output);
+    }
+
+    public function testALockedValueIsNotInThePage()
+    {
+        $base = tempnam(sys_get_temp_dir(), 'wakka');
+        unlink($base);
+        $this->configFile = $base . '.php';
+        file_put_contents($this->configFile, "<?php\n\$wakkaConfig = ['contact_smtp_pass' => 'LockedSecretValue', 'contact_smtp_host' => 'VisibleHostValue'];\n");
+        putenv('WAKKA_CONFIG_FILE=' . $this->configFile);
+        $this->wiki->config['edit_config_locked_params'] = ['contact_smtp_pass'];
+
+        $output = $this->wiki->Action('editconfig');
+
+        $this->assertStringContainsString('VisibleHostValue', $output);
+        $this->assertStringNotContainsString('LockedSecretValue', $output);
     }
 }
