@@ -247,7 +247,7 @@ class SqlScript
     {
         $bare = trim(preg_replace('/^\/\*!\d*\s*|\s*\*\/$/', '', trim($statement)));
 
-        return (bool)preg_match('/^(SET\s+@|SET\s+[^=]*=\s*@OLD_|SET\s+(SESSION\s+)?AUTOCOMMIT\s*=|START\s+TRANSACTION|COMMIT|ROLLBACK)/i', $bare);
+        return (bool)preg_match('/^(SET\s+@|SET\s+[^=]*=\s*@(?!@)|SET\s+(SESSION\s+)?AUTOCOMMIT\s*=|START\s+TRANSACTION|COMMIT|ROLLBACK)/i', $bare);
     }
 
     /**
