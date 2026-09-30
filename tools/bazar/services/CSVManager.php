@@ -171,6 +171,16 @@ class CSVManager
                 }, $headers),
         ));
 
+        // add extralang header if available
+        $extralang = [];
+        if ($this->wiki->config['supported_langs']) {
+            $csv_raw[0][] = 'lang';
+            foreach ($this->wiki->config['supported_langs'] as $lang) {
+                $extralang = array_merge($extralang, array_map(function ($key) use ($lang) { return "extralang.{$lang}.{$key}"; }, array_keys($headers)));
+            }
+            $csv_raw[0] = array_merge($csv_raw[0], $extralang);
+        }
+
         if (!$vFakeMode) {
             $vSearchManager = $this->wiki->services->get(SearchManager::class);
 
@@ -221,6 +231,7 @@ class CSVManager
         $line[] = date_format(date_create_from_format('Y-m-d H:i:s', $entry['date_creation_fiche']), 'd/m/Y H:i:s');
         $line[] = date_format(date_create_from_format('Y-m-d H:i:s', $entry['date_maj_fiche']), 'd/m/Y H:i:s');
 
+
         foreach ($headers as $propertyName => $header) {
             $value = $entry[$propertyName] ?? null;
 
@@ -266,6 +277,21 @@ class CSVManager
             }
 
             $line[] = $value ?? '';
+        }
+
+        // export translations
+        if (!empty($this->wiki->config['supported_langs']) and !empty($entry['extralang'])) {
+            foreach ($this->wiki->config['supported_langs'] as $lang) {
+                if (empty($entry['extralang'][$lang])) {
+                    foreach ($headers as $propertyName => $header) {
+                        $line[] = '';
+                    }
+                } else {
+                    foreach ($headers as $propertyName => $header) {
+                        $line[] = $entry['extralang'][$lang][$propertyName] ?? '';
+                    }
+                }
+            }
         }
 
         return $line;
@@ -1032,4 +1058,10 @@ class CSVManager
             exit;
         }
     }
+
+    private function exportTranslation($fields, $extralang): String
+    {
+
+    }
+
 }

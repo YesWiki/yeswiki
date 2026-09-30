@@ -50,7 +50,7 @@ class EntryChecker
         'id_fiche', 'id_typeannonce', 'date_creation_fiche', 'date_maj_fiche',
         'statut_fiche', 'url', '-is-external-', 'external-data', 'antispam',
         'sendmail', 'user', 'owner', 'html_data', 'semantic',
-        'mot_de_passe_wikini', 'mot_de_passe_repete_wikini',
+        'mot_de_passe_wikini', 'mot_de_passe_repete_wikini','lang',
     ];
 
     public const REMOTE_OPTIONS = 'remote_options';
