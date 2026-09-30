@@ -3,7 +3,7 @@
 use PHPMailer\PHPMailer\Exception;
 use PHPMailer\PHPMailer\PHPMailer;
 
-// sends a mail through the transport set in the contact_* config, in batches of bcc recipients
+// sends a mail through the transport set in the contact_* config, to a lone recipient in To or in batches of bcc recipients
 function send_mail($mail_sender, $name_sender, $mail_receiver, $subject, $message_txt, $message_html = '')
 {
     $batchSize = 10;
@@ -12,6 +12,11 @@ function send_mail($mail_sender, $name_sender, $mail_receiver, $subject, $messag
 
     try {
         $mail->set('CharSet', 'utf-8');
+
+        $wikiHost = parse_url($GLOBALS['wiki']->config['base_url'] ?? '', PHP_URL_HOST);
+        if (!empty($wikiHost)) {
+            $mail->Hostname = $wikiHost;
+        }
 
         if ($GLOBALS['wiki']->config['contact_mail_func'] == 'smtp') {
             $mail->isSMTP();
@@ -86,6 +91,13 @@ function send_mail($mail_sender, $name_sender, $mail_receiver, $subject, $messag
                 $mailReceiver[] = $mail_receiver;
             }
             $mail_receiver = $mailReceiver;
+        }
+
+        if (count($mail_receiver) === 1) {
+            $mail->addAddress(reset($mail_receiver));
+            $mail->send();
+
+            return true;
         }
 
         $recipientBatches = array_chunk($mail_receiver, $batchSize);
