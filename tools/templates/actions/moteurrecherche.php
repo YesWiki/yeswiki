@@ -5,6 +5,9 @@ $template = $this->GetParameter('template');
 if (empty($template)) {
     $template = 'moteurrecherche_basic.tpl.html';
 }
+if (!$this->services->get(YesWiki\Core\Service\TemplateEngine::class)->hasTemplate("@templates/$template")) {
+    $template = 'moteurrecherche_basic.tpl.html';
+}
 
 // on peut ajouter des classes à la classe par défaut .searchform
 $searchelements['class'] = ($this->GetParameter('class') ? 'form-search ' . $this->GetParameter('class') : 'form-search');

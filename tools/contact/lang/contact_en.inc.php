@@ -48,6 +48,7 @@ return [
     'EDIT_CONFIG_HINT_CONTACT_SMTP_PORT' => 'SMTP port (usually 465 or 587)',
     'EDIT_CONFIG_HINT_CONTACT_SMTP_USER' => 'User SMTP (often email)',
     'EDIT_CONFIG_HINT_CONTACT_SMTP_PASS' => 'SMTP password',
+    'EDIT_CONFIG_HINT_CONTACT_SMTP_VERIFY_PEER' => 'Check the SMTP server certificate (false for a local server whose certificate has another name, as on YunoHost)',
     'EDIT_CONFIG_HINT_CONTACT_REPLY_TO' => 'User to whom the email response will be sent',
     'EDIT_CONFIG_HINT_CONTACT_DEBUG' => 'Verbose mode for debugging (put 2 to get information)',
     'CONTACT_LOGIN_IF_CONNECTED' => 'If you have a login, please log in.',

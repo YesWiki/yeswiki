@@ -5,8 +5,7 @@ use YesWiki\Core\Service\PageManager;
 use YesWiki\Core\Service\TripleStore;
 use YesWiki\Core\YesWikiMigration;
 
-// Convert old List { titre_liste: "My List", label: { id1: "first Key", id2: "second id" } }
-// to { title: "My List", values: [{ id: "id1", label: "first id"}, { id: "id2", label: "second id"}]}
+/** Converts every list from { titre_liste, label: {id: label} } to { title, nodes: [{id, label}] }. */
 class RefactorListStruture extends YesWikiMigration
 {
     public function run()
@@ -17,10 +16,15 @@ class RefactorListStruture extends YesWikiMigration
         $lists = $tripleStore->getMatching(null, TripleStore::TYPE_URI, ListManager::TRIPLES_LIST_ID, '', '');
         foreach ($lists as $list) {
             $tag = $list['resource'];
-            $page = $pageManager->getOne($tag);
+            $page = $pageManager->getOne($tag, null, false, true);
+            if (empty($page)) {
+                continue;
+            }
             $oldJson = json_decode($page['body'], true);
             $newJson = $listManager->convertDataStructure($oldJson);
-            $pageManager->save($tag, json_encode($newJson));
+            if ($newJson !== $oldJson) {
+                $pageManager->save($tag, json_encode($newJson), '', true);
+            }
         }
     }
 }

@@ -26,14 +26,48 @@ function getOrientation(file, callback) {
   reader.readAsArrayBuffer(file.slice(0, 64 * 1024))
 }
 
+const storedPreviews = new Map()
+
+function cancelButtonFor(id) {
+  return document.querySelector(`.yw-image-cancel[data-image-field="${id}"]`)
+}
+
+// Remembers the preview shown before any file was picked
+function storePreview(id) {
+  if (!storedPreviews.has(id)) {
+    const outputEl = document.getElementById(`img-${id}`)
+    storedPreviews.set(id, outputEl ? outputEl.innerHTML : '')
+  }
+}
+
+function restorePreview(id) {
+  const input = document.getElementById(id)
+  if (input) {
+    input.value = ''
+  }
+  const outputEl = document.getElementById(`img-${id}`)
+  if (outputEl) {
+    outputEl.innerHTML = storedPreviews.get(id) || ''
+    $(outputEl).trigger('change')
+  }
+  const cancelButton = cancelButtonFor(id)
+  if (cancelButton) {
+    cancelButton.classList.add('hide')
+  }
+}
+
 function handleFileSelect(evt) {
   const target = evt.target || evt.srcElement
   const { id } = target
-  const { files } = target // FileList object
+  const { files } = target
 
-  // Loop through the FileList and render image files as thumbnails.
+  storePreview(id)
+  if (files.length === 0) {
+    restorePreview(id)
+    return
+  }
+
   for (var i = 0, f; (f = files[i]); i++) {
-    // Only process image files.
     if (!f.type.match('image.*')) {
       continue
     }
@@ -42,10 +76,10 @@ function handleFileSelect(evt) {
       alert(_t('IMAGEFIELD_TOO_LARGE_IMAGE', { imageMaxSize }))
       document.getElementById(id).type = ''
       document.getElementById(id).type = 'file'
+      restorePreview(id)
       continue
     }
     const reader = new FileReader()
-    // Closure to capture the file information.
     reader.onload = (function (theFile) {
       return function (e) {
         getOrientation(theFile, (orientation) => {
@@ -61,7 +95,6 @@ function handleFileSelect(evt) {
           }
           // TODO: rotate image
           css = ''
-          // Render thumbnail.
           const span = document.createElement('span')
           span.innerHTML = `<img 
             class="img-responsive"
@@ -71,13 +104,15 @@ function handleFileSelect(evt) {
           />`
           const outputEl = document.getElementById(`img-${id}`)
           outputEl.innerHTML = span.innerHTML
-          // Trigger change event so ConditionsChecking re-evaluates conditions
           $(outputEl).trigger('change')
+          const cancelButton = cancelButtonFor(id)
+          if (cancelButton) {
+            cancelButton.classList.remove('hide')
+          }
         })
       }
     })(f)
 
-    // Read in the image file as a data URL.
     reader.readAsDataURL(f)
   }
 }
@@ -87,7 +122,13 @@ for (let i = 0; i < imageinputs.length; i += 1) {
   imageinputs.item(i).addEventListener('change', handleFileSelect, false)
 }
 
-// Handle image URL preview
+for (const cancelButton of document.getElementsByClassName('yw-image-cancel')) {
+  cancelButton.addEventListener('click', function () {
+    restorePreview(this.dataset.imageField)
+  })
+}
+
+// Previews the image the URL tab points at
 function handleImageUrlInput(evt) {
   const target = evt.target || evt.srcElement
   const url = target.value.trim()
@@ -113,7 +154,7 @@ function handleImageUrlInput(evt) {
   }
 }
 
-// Handle tab switching to clear required on hidden inputs
+// Moves the required constraint onto the visible tab's input
 function handleTabSwitch(evt) {
   const tabPane = document.querySelector(evt.target.getAttribute('href'))
   if (!tabPane) return
@@ -121,7 +162,6 @@ function handleTabSwitch(evt) {
   const tabContent = tabPane.closest('.tab-content')
   if (!tabContent) return
 
-  // Remove required from inputs in other tabs, add to current tab if needed
   const allPanes = tabContent.querySelectorAll('.tab-pane')
   allPanes.forEach((pane) => {
     const inputs = pane.querySelectorAll(
@@ -129,12 +169,10 @@ function handleTabSwitch(evt) {
     )
     inputs.forEach((input) => {
       if (pane === tabPane) {
-        // Restore required if it was originally required
         if (input.dataset.wasRequired === 'true') {
           input.required = true
         }
       } else {
-        // Store and remove required
         if (input.required) {
           input.dataset.wasRequired = 'true'
         }
@@ -150,7 +188,6 @@ for (let i = 0; i < imageUrlInputs.length; i += 1) {
   imageUrlInputs.item(i).addEventListener('change', handleImageUrlInput, false)
 }
 
-// Handle tab switching for file/url inputs
 document
   .querySelectorAll('.file-url-tabs .nav-tabs a[data-toggle="tab"]')
   .forEach((tab) => {

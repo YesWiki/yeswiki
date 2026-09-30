@@ -24,6 +24,7 @@ class BazarAction extends YesWikiAction
     // Entries
     public const MOTEUR_RECHERCHE = 'recherche';
     public const ACTION_ENTRY_VIEW = 'voir_fiche';
+    public const CONSULTER_PAGINATION = 50;
     public const ACTION_ENTRY_CREATE = 'saisir_fiche';
     public const ACTION_ENTRY_EDIT = 'modif_fiche';
     public const ACTION_ENTRY_DELETE = 'supprimer';
@@ -276,7 +277,11 @@ class BazarAction extends YesWikiAction
                     default:
                         $this->arguments['search'] = true;
 
-                        return $this->callAction('bazarliste', array_merge($this->arguments, ['idtypeannonce' => $this->arguments['idtypeannonce']['locals']]));
+                        return $this->callAction('bazarliste', array_merge(
+                            ['pagination' => self::CONSULTER_PAGINATION],
+                            $this->arguments,
+                            ['idtypeannonce' => $this->arguments['idtypeannonce']['locals']],
+                        ));
                 }
         }
     }

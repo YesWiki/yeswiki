@@ -206,11 +206,12 @@ class UserField extends BazarField
 
     protected function renderStatic($entry)
     {
-        $vUserManager = $this->getService(UserManager::class);
-        $userEntry = $vUserManager->getAssociatedEntry($this->getValue($entry));
-        $value = '';
-        if (!empty($userEntry)) {
-            $value = $userEntry['id_fiche'];
+        $userName = $this->getValue($entry);
+        if (!empty($userName) && !empty($entry['id_fiche']) && ($entry[$this->propertyName] ?? null) === $userName) {
+            $value = $entry['id_fiche'];
+        } else {
+            $userEntry = $this->getService(UserManager::class)->getAssociatedEntry($userName);
+            $value = empty($userEntry) ? '' : $userEntry['id_fiche'];
         }
         $authController = $this->getService(AuthController::class);
 

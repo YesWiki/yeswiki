@@ -19,9 +19,16 @@ class ContactAction extends YesWikiAction
             'correspondance' => $arg['correspondance'] ?? null,
             'mail' => $mailList,
             'entete' => $arg['entete'] ?? $this->wiki->config['wakka_name'],
-            'template' => $arg['template'] ?? 'complete-contact-form.twig',
+            'template' => $this->safeTemplate($arg['template'] ?? 'complete-contact-form.twig'),
             'class' => (!empty($arg['class']) ? 'form-contact ' . $arg['class'] : 'form-contact'),
         ];
+    }
+
+    private function safeTemplate($template): string
+    {
+        $template = basename((string)$template);
+
+        return str_ends_with($template, '.twig') ? $template : 'complete-contact-form.twig';
     }
 
     public function run()

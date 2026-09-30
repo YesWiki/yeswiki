@@ -31,6 +31,24 @@ class ArchiveServiceTest extends YesWikiTestCase
     }
 
     #[Depends('testArchiveServiceExisting')]
+    public function testTheArchivingStatusSaysHowBigAnArchiveWillBeAndWhatRoomThereIs(array $services)
+    {
+        $status = $services['archiveService']->getArchivingStatus();
+
+        $this->assertIsInt($status['estimatedSize']);
+        $this->assertGreaterThan(0, $status['estimatedSize']);
+        $this->assertTrue(is_null($status['freeSpace']) || is_int($status['freeSpace']));
+        $this->assertSame(
+            is_null($status['freeSpace']) || $status['freeSpace'] >= $status['estimatedSize'],
+            $status['enoughSpace']
+        );
+        $this->assertLessThanOrEqual(
+            $status['estimatedSize'],
+            $services['archiveService']->estimateArchiveSize(['files', 'custom'])
+        );
+    }
+
+    #[Depends('testArchiveServiceExisting')]
     #[DataProvider('archiveProvider')]
     public function testArchive(
         bool $savefiles,
@@ -424,6 +442,45 @@ class ArchiveServiceTest extends YesWikiTestCase
             }
         } finally {
             @unlink($location);
+        }
+    }
+
+    /**
+     * 'custom' alone, because asking for 'files' too would zip every upload of the wiki
+     * under test just to prove what is missing from the archive.
+     */
+    #[Depends('testArchiveServiceExisting')]
+    public function testOnlyFoldersKeepsEverythingElseOutOfTheArchive(array $services)
+    {
+        $output = '';
+        $location = $services['archiveService']->archive($output, true, false, [], [], null, '', ['custom']);
+        $data = $this->getDataFromLocation($location, $services['wiki']);
+
+        $this->assertArrayNotHasKey('error', $data);
+        $this->assertContains('custom', $data['files']);
+        foreach (['files', 'vendor', 'tools', 'includes', 'themes', 'private'] as $folder) {
+            $this->assertNotContains($folder, $data['files'], "'$folder' should have been left out");
+        }
+        foreach ($data['files'] as $path) {
+            if (strpos($path, '/') === false) {
+                // the root of a wiki always travels with it, whatever folders were asked for
+                continue;
+            }
+            $this->assertStringStartsWith('custom/', $path, "'$path' should have been left out");
+        }
+    }
+
+    #[Depends('testArchiveServiceExisting')]
+    public function testAnEmptyOnlyFoldersArchivesTheWholeWikiRatherThanNothing(array $services)
+    {
+        $whitelist = $this->callProtected(
+            $services['archiveService'],
+            'generateListRootFolders',
+            ['white', [], []]
+        );
+
+        foreach (['files', 'custom', 'tools', 'includes'] as $folder) {
+            $this->assertContains($folder, $whitelist, "'$folder' should still be archived");
         }
     }
 

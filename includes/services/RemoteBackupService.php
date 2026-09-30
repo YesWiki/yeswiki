@@ -3,6 +3,7 @@
 namespace YesWiki\Core\Service;
 
 use Symfony\Component\HttpClient\HttpClient;
+use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 /**
@@ -15,6 +16,8 @@ class RemoteBackupService
 {
     public const JOB_FILENAME = 'remote-backup.json';
     public const PART_SUFFIX = '.part';
+    public const STEP_CHECKING = 'checking';
+    public const STEP_STARTING = 'starting';
     public const STEP_ARCHIVING = 'archiving';
     public const STEP_IDENTIFYING = 'identifying';
     public const STEP_DOWNLOADING = 'downloading';
@@ -22,6 +25,7 @@ class RemoteBackupService
     public const STEP_DONE = 'done';
     public const STEP_IDLE = 'idle';
     protected const REQUEST_TIMEOUT = 30;
+    protected const REQUEST_MAX_DURATION = 45;
     protected const RESUMABLE_SLICE_SECONDS = 20;
     protected const DOWNLOAD_STALLED_AFTER = 60;
     protected const PROGRESS_EVERY_SECONDS = 1;
@@ -39,11 +43,17 @@ class RemoteBackupService
     }
 
     /**
-     * Log in to the remote wiki and ask it for a full archive.
+     * Log in to the remote wiki, then leave the rest of the opening to the polled steps: asking a
+     * wiki whether it can archive makes it weigh itself, which takes longer than a request may last.
+     *
+     * @param array<string,mixed> $archiveParams what to ask the remote for, on top of the full
+     *                                           backup taken by default. 'savedatabase' => '0'
+     *                                           and 'onlyFolders' => ['custom', 'files'] fetch
+     *                                           the content of a wiki without its database.
      *
      * @throws \Exception
      */
-    public function start(string $url, string $username, string $password): array
+    public function start(string $url, string $username, string $password, array $archiveParams = []): array
     {
         if (!empty($this->readJob())) {
             throw new \Exception('A remote backup is already running. Cancel it before starting another one.');
@@ -53,15 +63,14 @@ class RemoteBackupService
             throw new \Exception('The administrator name and password of the remote wiki are both needed.');
         }
 
-        $cookie = $this->login($baseUrl, $username, $password);
-        $this->assertRemoteCanArchive($baseUrl, $cookie);
-
         $job = [
             'baseUrl' => $baseUrl,
-            'cookie' => $cookie,
-            'knownArchives' => array_column($this->remoteArchives($baseUrl, $cookie), 'filename'),
-            'remoteUid' => $this->startRemoteArchive($baseUrl, $cookie),
-            'step' => self::STEP_ARCHIVING,
+            'cookie' => $this->login($baseUrl, $username, $password),
+            'archiveParams' => $archiveParams,
+            'expectedType' => 'full',
+            'knownArchives' => [],
+            'remoteUid' => '',
+            'step' => self::STEP_CHECKING,
             'startedAt' => time(),
             'sawRunning' => false,
             'filename' => '',
@@ -88,6 +97,12 @@ class RemoteBackupService
 
         try {
             switch ($job['step']) {
+                case self::STEP_CHECKING:
+                    $job = $this->checkRemote($job);
+                    break;
+                case self::STEP_STARTING:
+                    $job = $this->askRemoteToArchive($job);
+                    break;
                 case self::STEP_ARCHIVING:
                     $job = $this->pollRemoteArchive($job);
                     break;
@@ -146,7 +161,7 @@ class RemoteBackupService
         try {
             if (!empty($job['remoteFilename'])) {
                 $this->deleteRemoteArchive($job);
-            } elseif ($job['step'] === self::STEP_ARCHIVING) {
+            } elseif ($job['step'] === self::STEP_ARCHIVING && !empty($job['remoteUid'])) {
                 $this->call($job['baseUrl'], 'api/archives', $job['cookie'], [
                     'action' => 'stopArchive',
                     'uid' => $job['remoteUid'],
@@ -155,6 +170,61 @@ class RemoteBackupService
         } catch (\Throwable $throwable) {
         }
         $this->deleteJob();
+    }
+
+    /**
+     * @param array<string,mixed> $job
+     *
+     * @return array<string,mixed>
+     */
+    protected function checkRemote(array $job): array
+    {
+        $remote = $this->assertRemoteCanArchive($job['baseUrl'], $job['cookie']);
+        $this->assertLocalSpace((int)($remote['estimatedSize'] ?? 0));
+        $job['step'] = self::STEP_STARTING;
+
+        return $job;
+    }
+
+    /**
+     * @param array<string,mixed> $job
+     *
+     * @return array<string,mixed>
+     */
+    protected function askRemoteToArchive(array $job): array
+    {
+        $params = array_merge(
+            ['savefiles' => '1', 'savedatabase' => '1'],
+            is_array($job['archiveParams'] ?? null) ? $job['archiveParams'] : []
+        );
+        $job['knownArchives'] = array_column($this->remoteArchives($job['baseUrl'], $job['cookie']), 'filename');
+        $job['expectedType'] = $this->archiveType($params);
+        $job['remoteUid'] = $this->startRemoteArchive($job['baseUrl'], $job['cookie'], $params);
+        $job['startedAt'] = time();
+        $job['step'] = self::STEP_ARCHIVING;
+
+        return $job;
+    }
+
+    /**
+     * How the remote will name what it is about to make, so that the new file can be told apart
+     * from the backups it already had.
+     *
+     * @param array<string,mixed> $params
+     */
+    protected function archiveType(array $params): string
+    {
+        $asked = function ($key) use ($params) {
+            return in_array($params[$key] ?? null, [1, '1', true, 'true'], true);
+        };
+        if (!$asked('savedatabase')) {
+            return 'only_files';
+        }
+        if (!$asked('savefiles')) {
+            return 'only_db';
+        }
+
+        return 'full';
     }
 
     protected function pollRemoteArchive(array $job): array
@@ -195,7 +265,7 @@ class RemoteBackupService
         $job['identifyingSince'] = (int)($job['identifyingSince'] ?? time());
         $candidate = null;
         foreach ($this->remoteArchives($job['baseUrl'], $job['cookie']) as $archive) {
-            if (($archive['type'] ?? '') === 'full' && !in_array($archive['filename'], $job['knownArchives'], true)) {
+            if (($archive['type'] ?? '') === ($job['expectedType'] ?? 'full') && !in_array($archive['filename'], $job['knownArchives'], true)) {
                 $candidate = $archive;
                 break;
             }
@@ -221,10 +291,7 @@ class RemoteBackupService
             return $job;
         }
 
-        $free = @disk_free_space($this->archiveService->getPrivateFolder());
-        if ($free !== false && $free < $size * 1.05) {
-            throw new \Exception("Not enough free space to download this backup ($size bytes needed).");
-        }
+        $this->assertLocalSpace((int)($size * 1.05));
 
         $job['filename'] = $this->freeLocalName($this->nameForSource($candidate['filename'], $job['baseUrl']));
         $job['remoteFilename'] = $candidate['filename'];
@@ -362,11 +429,16 @@ class RemoteBackupService
 
     protected function login(string $baseUrl, string $username, string $password): string
     {
-        $response = $this->client()->request('POST', $this->apiUrl($baseUrl, 'api/login'), [
-            'body' => ['username' => $username, 'password' => $password],
-            'timeout' => self::REQUEST_TIMEOUT,
-        ]);
-        $code = $response->getStatusCode();
+        try {
+            $response = $this->client()->request('POST', $this->apiUrl($baseUrl, 'api/login'), [
+                'body' => ['username' => $username, 'password' => $password],
+                'timeout' => self::REQUEST_TIMEOUT,
+                'max_duration' => self::REQUEST_MAX_DURATION,
+            ]);
+            $code = $response->getStatusCode();
+        } catch (TransportExceptionInterface $exception) {
+            throw new \Exception("The wiki at $baseUrl cannot be reached: " . $exception->getMessage());
+        }
         try {
             $data = $code === 200 ? $response->toArray(false) : [];
         } catch (\Throwable $throwable) {
@@ -393,27 +465,81 @@ class RemoteBackupService
         return implode('; ', $cookies);
     }
 
-    protected function assertRemoteCanArchive(string $baseUrl, string $cookie): void
+    /**
+     * @return array<string,mixed> the remote's archiving status, with the size it expects when it is recent enough to say
+     *
+     * @throws \Exception
+     */
+    protected function assertRemoteCanArchive(string $baseUrl, string $cookie): array
     {
         $status = $this->call($baseUrl, 'api/archives/archivingStatus/', $cookie);
         if (isset($status['canExec']) && !$status['canExec']) {
             throw new \Exception('The remote wiki cannot run a backup in the background, so it cannot be fetched from here.');
         }
         if (!empty($status['canArchive'])) {
-            return;
+            return $status;
         }
         if (!empty($status['archiving'])) {
             throw new \Exception('The remote wiki is already making a backup.');
+        }
+        if (isset($status['enoughSpace']) && !$status['enoughSpace']) {
+            throw new \Exception('The remote wiki has not enough free space to make its backup' . $this->spaceDetail((int)($status['estimatedSize'] ?? 0), $status['freeSpace'] ?? null) . '.');
         }
 
         throw new \Exception('The remote wiki cannot make a backup right now.');
     }
 
-    protected function startRemoteArchive(string $baseUrl, string $cookie): string
+    /**
+     * @throws \Exception when the backups folder cannot hold that many bytes
+     */
+    protected function assertLocalSpace(int $bytes): void
+    {
+        if ($bytes <= 0) {
+            return;
+        }
+        $free = $this->localFreeSpace();
+        if (!is_null($free) && $free < $bytes) {
+            throw new \Exception('Not enough free space here to download the backup' . $this->spaceDetail($bytes, $free) . '.');
+        }
+    }
+
+    protected function localFreeSpace(): ?int
+    {
+        $free = @disk_free_space($this->archiveService->getPrivateFolder());
+
+        return $free === false ? null : (int)$free;
+    }
+
+    protected function spaceDetail(int $needed, $free): string
+    {
+        if ($needed <= 0 || !is_numeric($free)) {
+            return '';
+        }
+
+        return ' (' . $this->humanSize($needed) . ' needed, ' . $this->humanSize((int)$free) . ' free)';
+    }
+
+    protected function humanSize(int $bytes): string
+    {
+        $units = ['B', 'kB', 'MB', 'GB', 'TB'];
+        $value = (float)$bytes;
+        $unit = 0;
+        while ($value >= 1024 && $unit < count($units) - 1) {
+            $value /= 1024;
+            $unit++;
+        }
+
+        return ($unit === 0 ? (string)$bytes : number_format($value, 1)) . ' ' . $units[$unit];
+    }
+
+    /**
+     * @param array<string,mixed> $params
+     */
+    protected function startRemoteArchive(string $baseUrl, string $cookie, array $params): string
     {
         $data = $this->call($baseUrl, 'api/archives', $cookie, [
             'action' => 'startArchive',
-            'params' => ['savefiles' => '1', 'savedatabase' => '1'],
+            'params' => $params,
             'callAsync' => '1',
         ]);
         if (empty($data['uid'])) {
@@ -443,12 +569,17 @@ class RemoteBackupService
         $options = [
             'headers' => ['Cookie' => $cookie],
             'timeout' => self::REQUEST_TIMEOUT,
+            'max_duration' => self::REQUEST_MAX_DURATION,
         ];
         if (!is_null($post)) {
             $options['body'] = $post;
         }
-        $response = $this->client()->request(is_null($post) ? 'GET' : 'POST', $this->apiUrl($baseUrl, $path), $options);
-        $code = $response->getStatusCode();
+        try {
+            $response = $this->client()->request(is_null($post) ? 'GET' : 'POST', $this->apiUrl($baseUrl, $path), $options);
+            $code = $response->getStatusCode();
+        } catch (TransportExceptionInterface $exception) {
+            throw new \Exception("The remote wiki stopped answering on '$path': " . $exception->getMessage());
+        }
         if ($code === 401 || $code === 403) {
             throw new \Exception('The remote wiki closed the session before the backup was fetched.');
         }

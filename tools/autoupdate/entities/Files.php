@@ -38,21 +38,56 @@ class Files
 
     protected function copy($src, $des)
     {
-        if (is_file($des) or is_dir($des) or is_link($des)) {
-            $this->delete($des);
-        }
         if (is_file($src)) {
-            return copy($src, $des);
+            return $this->copyFile($src, $des);
         }
         if (is_dir($src)) {
-            if (!mkdir($des)) {
-                return false;
-            }
-
-            return $this->copyFolder($src, $des);
+            return $this->replaceFolder($src, $des);
         }
 
         return false;
+    }
+
+    /**
+     * Put a folder aside before rebuilding it, and put it back when the copy fails.
+     */
+    private function replaceFolder($srcPath, $desPath)
+    {
+        $desPath = rtrim($desPath, '/');
+        $aside = null;
+
+        if (file_exists($desPath) or is_link($desPath)) {
+            $aside = $this->tmpdir() . '/' . basename($desPath);
+            if (!@rename($desPath, $aside)) {
+                return false;
+            }
+        }
+
+        if (@mkdir($desPath) and $this->copyFolder($srcPath, $desPath) === true) {
+            if ($aside !== null) {
+                $this->delete(dirname($aside));
+            }
+
+            return true;
+        }
+
+        $this->delete($desPath);
+        if ($aside !== null and @rename($aside, $desPath)) {
+            $this->delete(dirname($aside));
+        }
+
+        return false;
+    }
+
+    private function copyFile($src, $des)
+    {
+        if (is_dir($des) or is_link($des)) {
+            if ($this->delete($des) !== true) {
+                return false;
+            }
+        }
+
+        return copy($src, $des);
     }
 
     protected function isWritable($path)
@@ -177,16 +212,28 @@ class Files
 
     private function copyFolder($srcPath, $desPath)
     {
-        $file2ignore = ['.', '..'];
-        if ($res = opendir($srcPath)) {
-            while (($file = readdir($res)) !== false) {
-                if (!in_array($file, $file2ignore)) {
-                    $this->copy(rtrim($srcPath, '/') . '/' . $file, rtrim($desPath, '/') . '/' . $file);
-                }
-            }
-            closedir($res);
+        $res = @opendir($srcPath);
+        if ($res === false) {
+            return false;
         }
 
-        return true;
+        $copied = true;
+        while (($file = readdir($res)) !== false) {
+            if ($file === '.' or $file === '..') {
+                continue;
+            }
+            $from = rtrim($srcPath, '/') . '/' . $file;
+            $to = rtrim($desPath, '/') . '/' . $file;
+            if (is_dir($from)) {
+                if (!@mkdir($to) or $this->copyFolder($from, $to) !== true) {
+                    $copied = false;
+                }
+            } elseif ($this->copyFile($from, $to) !== true) {
+                $copied = false;
+            }
+        }
+        closedir($res);
+
+        return $copied;
     }
 }

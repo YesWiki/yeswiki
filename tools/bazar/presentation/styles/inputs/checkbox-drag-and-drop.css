@@ -1,3 +1,98 @@
+.yeswiki-checkbox .checkbox-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5em;
+  flex-wrap: wrap;
+}
+
+.yeswiki-checkbox .checkbox-panel-title {
+  margin: 0;
+  font-size: 1.1em;
+  line-height: 1.3;
+}
+
+.yeswiki-checkbox .checkbox-panel-count {
+  font-size: 0.85em;
+  color: var(--neutral-dark-color, #666);
+  text-align: right;
+  margin: 0.2em 0 0.4em;
+}
+
+.yeswiki-checkbox .checkbox-filter-group {
+  margin-top: 0.5em;
+}
+
+.yeswiki-checkbox .checkbox-filter-input {
+  background: var(--neutral-light-color);
+}
+
+.yeswiki-checkbox .checkbox-panel-scroll {
+  overflow: auto;
+  border: 1px solid var(--neutral-light-color, #ddd);
+  border-radius: var(--border-radius, 4px);
+}
+
+.yeswiki-checkbox .checkbox-panel-scroll .list-group {
+  margin-bottom: 0;
+}
+
+.yeswiki-checkbox .list-group-item {
+  display: flex;
+  align-items: center;
+  gap: 0.35em;
+  padding: 0.3em 0.5em;
+  margin: 0;
+  border-width: 0 0 1px;
+  border-radius: 0;
+}
+
+.yeswiki-checkbox .checkbox-item-body {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.yeswiki-checkbox .list-item-text {
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+
+.yeswiki-checkbox .checkbox-item-description {
+  font-size: 0.8em;
+  color: var(--neutral-dark-color, #777);
+  line-height: 1.2;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.yeswiki-checkbox .checkbox-item-thumbnail {
+  width: 32px;
+  height: 32px;
+  object-fit: cover;
+  border-radius: var(--border-radius, 4px);
+  flex: 0 0 auto;
+}
+
+.yeswiki-checkbox .checkbox-icon-column-left {
+  display: flex;
+  align-items: center;
+  flex: 0 0 auto;
+}
+
+.yeswiki-checkbox .checkbox-icons-up-down {
+  display: none;
+  flex: 0 0 auto;
+}
+
+.yeswiki-checkbox .list-group-item .select-page-item,
+.yeswiki-checkbox .list-group-item .remove-page-item {
+  flex: 0 0 auto;
+}
+
 .yeswiki-checkbox .btn-success.checkbox-select-all {
   color: var(--success-color);
   background-color: transparent;
@@ -9,49 +104,18 @@
 }
 
 @media (width <= 1200px) {
-  .movable-h {
-    display: none;
+  .yeswiki-checkbox .checkbox-item-description {
+    -webkit-line-clamp: 1;
   }
-}
-
-.checkbox-icon-column-left {
-  display: flex;
-  flex-wrap: wrap-reverse;
-  align-items: center;
-  justify-content: center;
-  flex-grow: 0;
-  flex-shrink: 10;
-}
-
-.checkbox-icons-up-down {
-  flex-grow: 0;
-  flex-shrink: 10;
-  display: none;
 }
 
 @media (width <= 800px) {
-  .checkbox-icons-up-down {
-    display: initial;
+  .yeswiki-checkbox .checkbox-icons-up-down {
+    display: flex;
   }
 
-  .movable {
+  .yeswiki-checkbox .movable,
+  .yeswiki-checkbox .movable-h {
     display: none;
   }
-}
-
-.list-group-item {
-  display: flex;
-  align-items: flex-start;
-}
-
-.list-group-item .select-page-item,
-.list-group-item .remove-page-item {
-  flex-grow: 0;
-  flex-shrink: 0;
-  justify-content: flex-end;
-  display: block;
-}
-
-.list-item-text {
-  flex-grow: 3;
 }

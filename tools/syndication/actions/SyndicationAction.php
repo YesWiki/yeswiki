@@ -25,6 +25,9 @@ class SyndicationAction extends YesWikiAction
         if (empty($arg['template'])) {
             $arg['template'] = 'liste_description.tpl.html';
         }
+        if (!$this->getService(YesWiki\Core\Service\TemplateEngine::class)->hasTemplate('@syndication/' . $arg['template'])) {
+            $arg['template'] = 'liste_description.tpl.html';
+        }
         if (empty($arg['formatdate'])) {
             $arg['formatdate'] = '';
         }

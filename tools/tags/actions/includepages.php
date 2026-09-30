@@ -15,6 +15,9 @@ if (empty($pages)) {
     if (empty($template)) {
         $template = 'pages_list.tpl.html';
     }
+    if (!$this->services->get(YesWiki\Core\Service\TemplateEngine::class)->hasTemplate("@tags/$template")) {
+        $template = 'pages_list.tpl.html';
+    }
 
     $aclService = $this->services->get(AclService::class);
     $element = [];

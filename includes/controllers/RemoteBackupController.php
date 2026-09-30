@@ -10,6 +10,8 @@ use YesWiki\Security\Controller\SecurityController;
 
 class RemoteBackupController extends YesWikiController
 {
+    protected const TIME_LIMIT = 300;
+
     protected $remoteBackupService;
 
     public function __construct(RemoteBackupService $remoteBackupService)
@@ -19,6 +21,7 @@ class RemoteBackupController extends YesWikiController
 
     public function manageRemoteBackup()
     {
+        @set_time_limit(self::TIME_LIMIT);
         $security = $this->getService(SecurityController::class);
         $action = $security->filterInput(INPUT_POST, 'action', FILTER_DEFAULT, true);
         try {
@@ -53,6 +56,7 @@ class RemoteBackupController extends YesWikiController
      */
     public function getRemoteBackupStatus()
     {
+        @set_time_limit(self::TIME_LIMIT);
         if (session_status() === PHP_SESSION_ACTIVE) {
             session_write_close();
         }

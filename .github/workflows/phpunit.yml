@@ -68,6 +68,8 @@ jobs:
 
       - name: Configure and start Nginx + PHP-FPM
         run: |
+          # 24.04 packages php8.3 only, the ondrej PPA has 8.0 to 8.5
+          sudo add-apt-repository --yes ppa:ondrej/php
           sudo apt update
           sudo apt install --no-install-recommends --assume-yes nginx php${{ matrix.php-version }}-fpm
 

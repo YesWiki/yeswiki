@@ -4,6 +4,7 @@
 namespace YesWiki\Core\Commands;
 
 use Symfony\Component\Console\Application;
+use Symfony\Component\Console\Command\Command;
 use YesWiki\Core\YesWikiLoader;
 
 if (!file_exists('wakka.config.php')) {
@@ -49,10 +50,10 @@ foreach ([
                 $className = "";
                 break;
         }
-        $command = new $className($wiki);
-        if ($command) {
-            $application->add($command);
+        if ($className === '' || !class_exists($className) || !is_subclass_of($className, Command::class)) {
+            continue;
         }
+        $application->add(new $className($wiki));
     }
 }
 

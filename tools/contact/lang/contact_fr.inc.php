@@ -100,6 +100,7 @@ return [
     'EDIT_CONFIG_HINT_CONTACT_SMTP_USER' => 'Utilisateur SMTP (souvent le mail)',
     'EDIT_CONFIG_HINT_CONTACT_SMTP_PASS' => 'Mot de passe SMTP',
     'EDIT_CONFIG_HINT_CONTACT_SMTP_SECURE' => 'Sécurisation de la connexion (tls ou ssl)',
+    'EDIT_CONFIG_HINT_CONTACT_SMTP_VERIFY_PEER' => 'Vérifier le certificat du serveur SMTP (false pour un serveur local dont le certificat porte un autre nom, comme sur YunoHost)',
     'EDIT_CONFIG_HINT_CONTACT_FROM' => 'Utilisateur indiqué comme émetteur du mail (pour éviter les spams doit être le même que l\'utilisateur smtp)',
     'EDIT_CONFIG_HINT_CONTACT_REPLY_TO' => 'Utilisateur auquel la réponse mail sera envoyée',
     'EDIT_CONFIG_HINT_CONTACT_DEBUG' => 'Mode verbeux pour débugguer (mettre 2 pour avoir des informations)',
