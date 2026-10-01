@@ -171,15 +171,9 @@ class CSVManager
                 }, $headers),
         ));
 
-        // add extralang header if available
-        $extralang = [];
-        if ($this->wiki->config['supported_langs']) {
-            $csv_raw[0][] = 'lang';
-            foreach ($this->wiki->config['supported_langs'] as $lang) {
-                $extralang = array_merge($extralang, array_map(function ($key) use ($lang) { return "extralang.{$lang}.{$key}"; }, array_keys($headers)));
-            }
-            $csv_raw[0] = array_merge($csv_raw[0], $extralang);
-        }
+
+        $extralang = $this->generateTranslationHeaders($headers);
+        $csv_raw[0] = array_merge($csv_raw[0], $extralang);
 
         if (!$vFakeMode) {
             $vSearchManager = $this->wiki->services->get(SearchManager::class);
@@ -506,6 +500,7 @@ class CSVManager
             $data = $this->detectHeadersOnLabelsWithStar($data);
             $data = $this->detectHeadersOnPropertyName($data);
             $data = $this->detectHeadersModifiedAfterOneDetected($data);
+            $data = $this->detectExtraLangColumns($data, $headers);
             $columnIndexes = $data['columnIndexes'];
         } else {
             $index = 0;
@@ -582,6 +577,23 @@ class CSVManager
         // filter headers
         foreach ($foundPropertyNames as $propertyName) {
             $this->array_splice_from_key($data['headers'], $propertyName);
+        }
+
+        return $data;
+    }
+
+
+    /**
+     * get columns index for extra lang values
+     */
+    private function detectExtraLangColumns(array $data, array $headers): array
+    {
+        $extralang = $this->generateTranslationHeaders(array_keys($headers));
+        foreach ($extralang as $langHeader) {
+            $key = array_search($langHeader, $data['firstLine']);
+            if ($key) {
+                $data['columnIndexes'][$langHeader] = (int)substr($key, strlen('key_'));
+            }
         }
 
         return $data;
@@ -673,11 +685,17 @@ class CSVManager
     {
         $entry = [];
         $skipFields = ['datetime_create', 'datetime_latest'];
+        $extralangIndexes = array_filter($columnIndexesForPropertyNames, function($el) {
+            return str_starts_with($el, 'extralang');
+        }, ARRAY_FILTER_USE_KEY);
+        $columnIndexesForPropertyNames = array_filter($columnIndexesForPropertyNames, function($el) {
+            return !str_starts_with($el, 'extralang');
+        }, ARRAY_FILTER_USE_KEY);
         foreach ($columnIndexesForPropertyNames as $propertyName => $index) {
-            if (!in_array($propertyName, $skipFields)) {
-                $field = $headers[$propertyName]['field'];
-            } else {
+            if (in_array($propertyName, $skipFields)) {
                 $field = ''; // fake entry for skipped fields
+            } else {
+                $field = $headers[$propertyName]['field'];
             }
 
             if (intval($index) == $index) {
@@ -734,6 +752,11 @@ class CSVManager
             if (isset($entry[$field])) {
                 unset($entry[$field]);
             }
+        }
+
+        $extralang = $this->translationFieldsToArray($data, $extralangIndexes, array_keys($headers));
+        if (!empty($extralang)) {
+            $entry['extralang'] = $extralang;
         }
 
         return !empty($entry) ? $entry : null;
@@ -1059,9 +1082,67 @@ class CSVManager
         }
     }
 
-    private function exportTranslation($fields, $extralang): String
-    {
+    /**
+     * genereate headers in form of extralang.LANG.HEADER_NAME.
+     * ex : extralang.fr.bf_titre
+     */
+    private function generateTranslationHeaders (array $headers): array {
 
+        if (empty($langs = $this->wiki->config['supported_langs'])) {
+            return [];
+        }
+
+        $langHeaders = ['lang'];
+        foreach ($langs as $lang) {
+            foreach($headers as $header) {
+                $langHeaders[] = "extralang.{$lang}.{$header}";
+            }
+        }
+        return $langHeaders;
     }
 
+    /**
+     * get i18n fields and convert it to recursive array
+     * from
+     *  …, extralang.fr.bf_titre,extralang.fr.bf_description,…,extralang.en.bf_titre,…
+     * …,fr_titre,fr_description,…,en_titre,…
+     * to
+     * extralang => [
+     *   fr => [
+     *      bf_titre => 'fr_titre',
+     *      bf_description => 'fr_description'
+     *      ],
+     *   en => [
+     *      bf_titre => 'en_titre'
+     *      ]
+     *  ]
+     * @param $fields data indexed with numbers
+     * @param $headersIndexes array with dot notation as key and index as value ex: [ extralang.fr.bf_titre => 10 ]
+     */
+    private function translationFieldsToArray(array $fields, array $headersIndexes, array $headers)
+    {
+        $langs = $this->wiki->config['supported_langs'];
+        if (empty($langs)) {
+            return [];
+        }
+
+        $langExists = false;
+        $extralang = [];
+        foreach ($langs as $lang) {
+            $extralang[$lang] = [];
+            $langExists = false;
+            foreach ($headers as $header) {
+                $key = "extralang.{$lang}.{$header}";
+                if (array_key_exists($key, $headersIndexes) and !empty($fields[$headersIndexes[$key]])) {
+                    $extralang[$lang][$header] = $fields[$headersIndexes[$key]];
+                    $langExists = true;
+                }
+            }
+            if (!$langExists) {
+                unset($extralang[$lang]);
+            }
+        }
+
+        return $extralang;
+    }
 }
