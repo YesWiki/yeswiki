@@ -505,9 +505,7 @@ class RemoteBackupService
 
     protected function localFreeSpace(): ?int
     {
-        $free = @disk_free_space($this->archiveService->getPrivateFolder());
-
-        return $free === false ? null : (int)$free;
+        return $this->archiveService->freeSpaceForArchives();
     }
 
     protected function spaceDetail(int $needed, $free): string

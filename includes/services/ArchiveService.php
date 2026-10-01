@@ -1946,6 +1946,9 @@ class ArchiveService
      */
     public function freeSpaceForArchives(): ?int
     {
+        if (!function_exists('disk_free_space')) {
+            return null;
+        }
         try {
             $folder = $this->getPrivateFolder();
         } catch (\Throwable $th) {
