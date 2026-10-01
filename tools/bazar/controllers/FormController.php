@@ -5,6 +5,7 @@ namespace YesWiki\Bazar\Controller;
 use Symfony\Component\Security\Csrf\Exception\TokenNotFoundException;
 use Tamtamchik\SimpleFlash\Flash;
 use YesWiki\Bazar\Field\MapField;
+use YesWiki\Bazar\Service\ActivityPubInbox;
 use YesWiki\Bazar\Service\ActivityPubService;
 use YesWiki\Bazar\Service\FormManager;
 use YesWiki\Bazar\Service\Guard;
@@ -271,7 +272,7 @@ class FormController extends YesWikiController
         }
 
         $form = $this->formManager->getOne($id);
-        $stats = $this->activityPubService->syncActorPosts($actorUri, $form);
+        $stats = $this->getService(ActivityPubInbox::class)->syncActorPosts($actorUri, $form);
 
         Flash::success(sprintf(
             _t('BAZ_SYNC_COMPLETE'),
