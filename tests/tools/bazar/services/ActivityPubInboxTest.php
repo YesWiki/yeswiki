@@ -3,8 +3,8 @@
 namespace YesWiki\Test\Bazar\Service;
 
 use PHPUnit\Framework\TestCase;
-use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use YesWiki\Bazar\Service\ActivityPubInbox;
 use YesWiki\Bazar\Service\ActivityPubService;
 use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Bazar\Service\HttpSignatureService;
@@ -16,7 +16,7 @@ use YesWiki\Core\Service\TripleStore;
 require_once 'includes/autoload.inc.php';
 require_once 'includes/constants.php';
 
-class ActivityPubServiceTest extends TestCase
+class ActivityPubInboxTest extends TestCase
 {
     private const FORM = ['bn_id_nature' => '1', 'bn_activitypub_enable' => '1'];
     private const THEM = 'https://them.example/actors/1';
@@ -30,7 +30,7 @@ class ActivityPubServiceTest extends TestCase
     private array $deleted = [];
     private array $created = [];
 
-    private function service(): ActivityPubService
+    private function service(): ActivityPubInbox
     {
         $tripleStore = $this->createStub(TripleStore::class);
         $tripleStore->method('getMatching')->willReturnCallback(
@@ -40,12 +40,12 @@ class ActivityPubServiceTest extends TestCase
             ))
         );
         $tripleStore->method('getOne')->willReturnCallback(
-            fn ($resource, $property) => $property === ActivityPubService::REMOTE_ACTOR_URI
+            fn ($resource, $property) => $property === ActivityPubInbox::REMOTE_ACTOR_URI
                 ? ($this->owners[$resource] ?? null)
                 : null
         );
         $tripleStore->method('create')->willReturnCallback(function ($resource, $property, $value) {
-            if ($property === ActivityPubService::REMOTE_ACTOR_URI) {
+            if ($property === ActivityPubInbox::REMOTE_ACTOR_URI) {
                 $this->owners[$resource] = $value;
             }
 
@@ -69,20 +69,25 @@ class ActivityPubServiceTest extends TestCase
             $this->deleted[] = $tag;
         });
 
-        $container = $this->createStub(ContainerInterface::class);
-        $container->method('get')->willReturn($entryManager);
-
         $semanticTransformer = $this->createStub(SemanticTransformer::class);
         $semanticTransformer->method('convertFromSemanticData')->willReturn(['bf_titre' => 'Une fiche']);
 
         $params = $this->createStub(ParameterBagInterface::class);
         $params->method('get')->willReturn('https://us.example/');
 
-        return new ActivityPubService(
-            $params,
-            $this->createStub(WebfingerService::class),
-            $container,
-            new HttpSignatureService($this->createStub(SsrfUrlValidator::class)),
+        $httpSignatureService = new HttpSignatureService($this->createStub(SsrfUrlValidator::class));
+
+        return new ActivityPubInbox(
+            new ActivityPubService(
+                $params,
+                $this->createStub(WebfingerService::class),
+                $httpSignatureService,
+                $semanticTransformer,
+                $tripleStore,
+                $this->createStub(SsrfUrlValidator::class)
+            ),
+            $entryManager,
+            $httpSignatureService,
             $semanticTransformer,
             $tripleStore,
             $this->createStub(SsrfUrlValidator::class)

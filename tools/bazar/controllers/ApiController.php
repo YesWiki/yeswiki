@@ -10,6 +10,7 @@ use Symfony\Component\Routing\Annotation\Route;
 use YesWiki\Bazar\Exception\RequiredFieldsException;
 use YesWiki\Bazar\Exception\TagAlreadyUsedException;
 use YesWiki\Bazar\Field\TextareaField;
+use YesWiki\Bazar\Service\ActivityPubInbox;
 use YesWiki\Bazar\Service\ActivityPubService;
 use YesWiki\Bazar\Service\BazarListService;
 use YesWiki\Bazar\Service\CSVManager;
@@ -140,7 +141,7 @@ class ApiController extends YesWikiController
             $activity = json_decode($request->getContent(), true);
 
             try {
-                $activityPubService->processActivity($activity, $form, $verifiedActor);
+                $this->getService(ActivityPubInbox::class)->processActivity($activity, $form, $verifiedActor);
             } catch (\Exception $e) {
                 return new ApiResponse(['error' => $e->getMessage()], Response::HTTP_FORBIDDEN, ['Content-Type' => 'application/activity+json']);
             }
