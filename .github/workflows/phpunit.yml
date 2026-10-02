@@ -66,6 +66,14 @@ jobs:
       - name: Install dependencies
         run: composer install --prefer-dist --no-progress
 
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'yarn'
+
+      - name: Install JS dependencies
+        run: yarn install --frozen-lockfile
+
       - name: Configure and start Nginx + PHP-FPM
         run: |
           # 24.04 packages php8.3 only, the ondrej PPA has 8.0 to 8.5
