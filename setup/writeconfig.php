@@ -46,6 +46,9 @@ if ($fp) {
     chmod($wakkaConfigLocation, 0600); // only the user can read/write the config
     // write
     fclose($fp);
+    if (function_exists('opcache_invalidate')) {
+        opcache_invalidate($wakkaConfigLocation, true);
+    }
 
     echo "<br />\n<div class=\"alert alert-success\"><strong>" . _t('FINISHED_CONGRATULATIONS') . ' !</strong><br />' . _t('IT_IS_RECOMMANDED_TO_REMOVE_WRITE_ACCESS_TO_CONFIG_FILE') . ' <tt>wakka.config.php</tt> (' . _t('THIS_COULD_BE_UNSECURE') . ').</div>';
     echo "<div class=\"form-actions\">\n<a class=\"btn btn-lg btn-primary\" href=\"", $config['base_url'] . $config['root_page'], '">' . _t('GO_TO_YOUR_NEW_YESWIKI_WEBSITE') . "</a>\n</div>\n";

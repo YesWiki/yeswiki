@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test'
 import { resetEnv } from '../helpers/db'
 import { createPageWithContent } from '../helpers/page'
+import { waitPastBotGuardMinimumAge } from '../helpers/botGuard'
 
 test.beforeEach(async () => {
   resetEnv()
@@ -22,7 +23,7 @@ test('an anonymous visitor sends the contact form twice without reloading', asyn
     await form.locator('input[name="email"]').fill('personne@example.org')
     await form.locator('input[name="subject"]').fill(subject)
     await form.locator('textarea[name="message"]').fill('Bonjour')
-    await page.waitForTimeout(3500)
+    await waitPastBotGuardMinimumAge(page)
     await form.locator('.mail-submit').click()
     await expect(form.locator('.alert')).toBeVisible()
     await expect(form.locator('.alert')).not.toContainText(
