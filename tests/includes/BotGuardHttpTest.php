@@ -158,6 +158,7 @@ class BotGuardHttpTest extends YesWikiTestCase
             }
         }
         foreach ($xpath->query('.//altcha-widget', $form) as $widget) {
+            $this->assertStringContainsString(BotGuard::ALTCHA_SCRIPT, $html, 'a page showing the ALTCHA widget must load its script');
             $challenge = Challenge::fromArray(json_decode($widget->getAttribute('challenge'), true));
             $solution = (new Altcha('unused'))->solveChallenge(new SolveChallengeOptions(algorithm: new Pbkdf2(), challenge: $challenge));
             $fields[$widget->getAttribute('name')] = (new Payload($challenge, $solution))->toBase64();
