@@ -622,7 +622,9 @@ unique, valable 24 heures et refusé s'il est renvoyé en moins de 3 secondes,
 ainsi qu'un champ piège invisible que seuls les robots remplissent. Le
 navigateur résout aussi un petit calcul ALTCHA avant l'envoi, ce qui prend
 moins d'une seconde. Les envois refusés ces 7 derniers jours sont comptés sous
-le réglage `altcha` de la page "Fichier de conf".
+le réglage `altcha` de la page "Fichier de conf". L'action `{{adminbotguard}}`,
+réservée aux admins, détaille ces refus jour par jour et par motif sur les 30
+derniers jours (`{{adminbotguard days="7"}}` pour une période plus courte).
 
 1. A partir du fichier wakka.config.php accessible via FTP, il est possible :
 

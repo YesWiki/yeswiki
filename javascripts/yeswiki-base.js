@@ -951,4 +951,17 @@ $('#yw-a11y-jump-content').click(() => {
   }, 300)
 })
 
+document.addEventListener(
+  'statechange',
+  (event) => {
+    const widget = event.target
+    const fields = widget.closest?.('.yw-bot-guard-fields')
+    if (!fields || widget.tagName !== 'ALTCHA-WIDGET') return
+    const verified = event.detail?.state === 'verified'
+    widget.style.display = verified ? 'none' : ''
+    fields.querySelector('.yw-bot-guard-active').hidden = !verified
+  },
+  true,
+)
+
 window.checkAll = checkAll

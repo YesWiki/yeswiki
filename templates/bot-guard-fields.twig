@@ -7,6 +7,7 @@
     </div>
   {% endif %}
   {% if altchaChallenge %}
-    <altcha-widget name="{{ altchaName }}" challenge="{{ altchaChallenge }}" language="{{ language }}" auto="onfocus"></altcha-widget>
+    <altcha-widget name="{{ altchaName }}" challenge="{{ altchaChallenge }}" language="{{ language }}" auto="onfocus" configuration="{{ {hideFooter: true}|json_encode }}"></altcha-widget>
+    <p class="yw-bot-guard-active text-muted" hidden><i class="fas fa-shield-alt"></i> {{ _t('BOT_GUARD_ACTIVE') }}</p>
   {% endif %}
 </div>

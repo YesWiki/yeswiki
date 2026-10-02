@@ -155,6 +155,17 @@ class BotGuard
      */
     public function insertInto(string $html, ?string $formId = null, bool $strict = false): string
     {
+        return $this->placeFields($html, $this->fields($strict), $formId);
+    }
+
+    /**
+     * Leaves HTML whose template already placed the given fields as it is, else inserts them as insertInto() does.
+     */
+    public function placeFields(string $html, string $fields, ?string $formId = null): string
+    {
+        if ($fields === '' || str_contains($html, $fields)) {
+            return $html;
+        }
         if ($formId !== null) {
             if (!preg_match('/<form\b[^>]*\bid=["\']' . preg_quote($formId, '/') . '["\'][^>]*>/i', $html, $open, PREG_OFFSET_CAPTURE)) {
                 return $html;
@@ -164,11 +175,7 @@ class BotGuard
                 return $html;
             }
 
-            return substr($html, 0, $close) . $this->fields($strict) . substr($html, $close);
-        }
-        $fields = $this->fields($strict);
-        if ($fields === '') {
-            return $html;
+            return substr($html, 0, $close) . $fields . substr($html, $close);
         }
 
         return preg_replace('/<\/form>/i', $fields . '</form>', $html);
@@ -221,20 +228,44 @@ class BotGuard
      */
     public function refusedLastDays(int $days): array
     {
-        $since = self::COUNTER_RESOURCE . $this->day($this->time() - ($days - 1) * 86400);
-        $rows = $this->dbService->loadAll(
-            'SELECT property, value FROM' . $this->dbService->prefixTable('triples')
-            . "WHERE resource >= '" . $this->dbService->escape($since) . "'"
-            . " AND resource LIKE '" . self::COUNTER_RESOURCE . "%'"
-            . " AND property LIKE '" . $this->dbService->escape(self::REFUSED_PROPERTY) . "%'"
-        );
         $totals = [];
-        foreach ($rows as $row) {
-            $reason = substr($row['property'], strlen(self::REFUSED_PROPERTY));
-            $totals[$reason] = ($totals[$reason] ?? 0) + (int)$row['value'];
+        foreach ($this->refusedPerDay($days) as $reasons) {
+            foreach ($reasons as $reason => $count) {
+                $totals[$reason] = ($totals[$reason] ?? 0) + $count;
+            }
         }
 
         return $totals;
+    }
+
+    /**
+     * Refusals per reason for each of the last days, newest first, capped at the days counters are kept.
+     */
+    public function refusedPerDay(int $days): array
+    {
+        $days = max(1, min($days, self::COUNTERS_KEPT_DAYS));
+        $perDay = [];
+        for ($i = 0; $i < $days; $i++) {
+            $perDay[$this->day($this->time() - $i * 86400)] = [];
+        }
+        $rows = $this->dbService->loadAll(
+            'SELECT resource, property, value FROM' . $this->dbService->prefixTable('triples')
+            . "WHERE resource >= '" . $this->dbService->escape(self::COUNTER_RESOURCE . array_key_last($perDay)) . "'"
+            . " AND resource <= '" . $this->dbService->escape(self::COUNTER_RESOURCE . array_key_first($perDay)) . "'"
+            . " AND property LIKE '" . $this->dbService->escape(self::REFUSED_PROPERTY) . "%'"
+        );
+        foreach ($rows as $row) {
+            $day = substr($row['resource'], strlen(self::COUNTER_RESOURCE));
+            if (isset($perDay[$day])) {
+                $reason = substr($row['property'], strlen(self::REFUSED_PROPERTY));
+                $perDay[$day][$reason] = ($perDay[$day][$reason] ?? 0) + (int)$row['value'];
+            }
+        }
+        foreach ($perDay as &$reasons) {
+            ksort($reasons);
+        }
+
+        return $perDay;
     }
 
     /**

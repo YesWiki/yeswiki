@@ -204,6 +204,26 @@ class BotGuardTest extends YesWikiTestCase
         $this->assertSame(1, $totals[BotGuard::REFUSED_TOO_FAST] - ($before[BotGuard::REFUSED_TOO_FAST] ?? 0));
     }
 
+    public function testRefusalsAreListedPerDayNewestFirst()
+    {
+        $this->now += 100 * 86400;
+        $this->submit(['bf_titre' => 'x']);
+        $this->now += 2 * 86400;
+        $this->submit(['bf_titre' => 'x']);
+        $post = $this->validPost();
+        $this->now++;
+        $this->submit($post);
+        $today = date('Y-m-d', $this->now);
+
+        $this->assertSame([
+            $today => [BotGuard::REFUSED_TOKEN_MISSING => 1, BotGuard::REFUSED_TOO_FAST => 1],
+            date('Y-m-d', $this->now - 86400) => [],
+            date('Y-m-d', $this->now - 2 * 86400) => [BotGuard::REFUSED_TOKEN_MISSING => 1],
+        ], $this->guard->refusedPerDay(3));
+        $this->assertSame([$today], array_keys($this->guard->refusedPerDay(1)));
+        $this->assertCount(BotGuard::COUNTERS_KEPT_DAYS, $this->guard->refusedPerDay(1000));
+    }
+
     public function testPurgeDropsExpiredTokensAndOldCounters()
     {
         $post = $this->validPost();
@@ -226,6 +246,15 @@ class BotGuardTest extends YesWikiTestCase
         $this->guard->purge();
 
         $this->assertSame(BotGuard::REFUSED_TOKEN_REUSED, $this->submit($post));
+    }
+
+    public function testPlaceFieldsKeepsFieldsTheTemplatePlacedAndInsertsThemOtherwise()
+    {
+        $fields = $this->guard->fields();
+        $placed = '<form id="a">' . $fields . '<button></button></form>';
+
+        $this->assertSame($placed, $this->guard->placeFields($placed, $fields, 'a'));
+        $this->assertSame('<form id="a"><button></button>' . $fields . '</form>', $this->guard->placeFields('<form id="a"><button></button></form>', $fields, 'a'));
     }
 
     public function testInsertIntoAddsTheFieldsBeforeEveryForm()

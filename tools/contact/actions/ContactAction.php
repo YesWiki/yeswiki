@@ -42,13 +42,16 @@ class ContactAction extends YesWikiAction
         } else {
             $GLOBALS['nbactionmail'] = 1;
         }
+        $botGuard = $this->getService(BotGuard::class);
+        $botGuardFields = $botGuard->fields(true);
         $options = array_merge($this->arguments, [
             'nbactionmail' => $GLOBALS['nbactionmail'],
             'mailerurl' => $this->wiki->href('mail'),
+            'botGuardFields' => $botGuardFields,
         ]);
 
         $this->wiki->addJavascriptFile('tools/contact/libs/contact.js');
 
-        return $this->getService(BotGuard::class)->insertInto($this->render('@contact/' . $this->arguments['template'], $options), null, true);
+        return $botGuard->placeFields($this->render('@contact/' . $this->arguments['template'], $options), $botGuardFields);
     }
 }
