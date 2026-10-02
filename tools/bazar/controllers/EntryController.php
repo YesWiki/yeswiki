@@ -312,7 +312,10 @@ class EntryController extends YesWikiController
 
         $renderedInputs = $this->getRenderedInputs($form, $refusedData ?? null);
 
-        return $this->getService(BotGuard::class)->insertInto($this->render('@bazar/entries/form.twig', [
+        $botGuard = $this->getService(BotGuard::class);
+        $botGuardFields = $botGuard->fields($this->formSendsMail($form));
+
+        return $botGuard->placeFields($this->render('@bazar/entries/form.twig', [
             'form' => $form,
             'renderedInputs' => $renderedInputs,
             'showConditions' => $form['bn_condition'] !== '' && !$post->has('accept_condition'),
@@ -325,7 +328,8 @@ class EntryController extends YesWikiController
             'imageMediumHeight' => $this->config['image-medium-height'],
             'imageBigWidth' => $this->config['image-big-width'],
             'imageBigHeight' => $this->config['image-big-height'],
-        ]), 'formulaire', $this->formSendsMail($form));
+            'botGuardFields' => $botGuardFields,
+        ]), $botGuardFields, 'formulaire');
     }
 
     public function update($entryId)
@@ -379,7 +383,10 @@ class EntryController extends YesWikiController
 
         $renderedInputs = $this->getRenderedInputs($form, $entry);
 
-        return $this->getService(BotGuard::class)->insertInto($this->render('@bazar/entries/form.twig', [
+        $botGuard = $this->getService(BotGuard::class);
+        $botGuardFields = $botGuard->fields($this->formSendsMail($form));
+
+        return $botGuard->placeFields($this->render('@bazar/entries/form.twig', [
             'form' => $form,
             'entryId' => $entryId,
             'renderedInputs' => $renderedInputs,
@@ -393,7 +400,8 @@ class EntryController extends YesWikiController
             'imageMediumHeight' => $this->config['image-medium-height'],
             'imageBigWidth' => $this->config['image-big-width'],
             'imageBigHeight' => $this->config['image-big-height'],
-        ]), 'formulaire', $this->formSendsMail($form));
+            'botGuardFields' => $botGuardFields,
+        ]), $botGuardFields, 'formulaire');
     }
 
     /**

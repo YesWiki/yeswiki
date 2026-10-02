@@ -18,6 +18,11 @@
       {{ renderedInput|raw }}
     {% endfor %}
   {% endif %}
+  {% if botGuardFields %}
+    <div class="form-group">
+      <div class="col-sm-9 col-sm-offset-3">{{ botGuardFields|raw }}</div>
+    </div>
+  {% endif %}
   <div class="form-actions form-group">
     <div class="col-sm-9 col-sm-offset-3">
       <button type="submit" class="btn btn-primary">{{ _t('BAZ_VALIDER') }}</button>
