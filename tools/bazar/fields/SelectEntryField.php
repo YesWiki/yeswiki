@@ -67,9 +67,12 @@ class SelectEntryField extends EnumField
             $entryUrl = $this->services->get(Wiki::class)->Href('', $value);
         }
 
+        $options = $this->getOptions();
+        $label = isset($options[$value]) ? $options[$value] : $value;
+        
         return $this->render('@bazar/fields/select_entry.twig', [
             'value' => $value,
-            'label' => $this->getOptions()[$value],
+            'label' => $label,
             'entryUrl' => $entryUrl,
         ]);
     }
