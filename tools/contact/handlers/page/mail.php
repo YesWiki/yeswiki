@@ -3,9 +3,9 @@
 use YesWiki\Bazar\Controller\EntryController;
 use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Core\Service\AclService;
+use YesWiki\Core\Service\BotGuard;
 use YesWiki\Core\Service\ThemeManager;
 
-// inclusion de la bibliotheque de fonctions pour l'envoi des mails
 include_once 'includes/email.inc.php';
 include_once 'tools/contact/libs/contact.functions.php';
 
@@ -15,17 +15,13 @@ $entryController = $this->services->get(EntryController::class);
 $themeManager = $this->services->get(ThemeManager::class);
 $output = '';
 
-// si le handler est appele en ajax, on traite l'envoi de mail et on repond en ajax
 if ((!empty($_POST['mail']) || !empty($_POST['email'])) && isset($_SERVER['HTTP_X_REQUESTED_WITH'])
     && ($_SERVER['HTTP_X_REQUESTED_WITH'] == 'XMLHttpRequest')
 ) {
-    // entête de mail qd le champ $_GET['field'] est spécifié
     $infomsg = '';
 
-    // initialisation de variables passees en POST
     $mail_sender = (isset($_POST['email'])) ? trim($_POST['email']) : false;
     $hasReadAccess = $aclService->hasAccess('read');
-    // naming the receiver in the request is reserved to logged in users, like the form below
     $canChooseReceiver = !empty($this->GetUser());
     $isAllowed = $hasReadAccess
         && ($canChooseReceiver || empty($_POST['mail']) || !empty($_GET['field']));
@@ -49,7 +45,6 @@ if ((!empty($_POST['mail']) || !empty($_POST['email'])) && isset($_SERVER['HTTP_
     }
     if (!$mail_receiver) {
         if ($isAllowed) {
-            // on prend le squelette du theme qui pourrait contenir des actions avec des mails
             $chemin = 'themes/' . $themeManager->getFavoriteTheme() . '/squelettes/' . $themeManager->getFavoriteSquelette();
             if (file_exists($chemin)) {
                 $file_content = file_get_contents($chemin);
@@ -72,10 +67,8 @@ if ((!empty($_POST['mail']) || !empty($_POST['email'])) && isset($_SERVER['HTTP_
         }
     }
     $name_sender = (isset($_POST['name'])) ? stripslashes($_POST['name']) : false;
-    // when a mail is send from a bazar entry (no POST parameter 'type'), the type is ''
     $type = !empty($_POST['type']) ? $_POST['type'] : '';
 
-    // dans le cas d'une page wiki envoyee, on formate le message en html et en txt
     if ($type == 'mail') {
         if ($isAllowed) {
             $subject = ((isset($_POST['subject'])) ? stripslashes($_POST['subject']) : false);
@@ -91,16 +84,13 @@ if ((!empty($_POST['mail']) || !empty($_POST['email'])) && isset($_SERVER['HTTP_
         $subject = '';
         $message_html = $message_txt = 'Mailinglist : ' . $type;
     } else {
-        // pour un envoi de mail classique, le message en txt
         $subject = ((isset($_POST['entete'])) ? '[' . trim($_POST['entete']) . '] ' : '') .
             ((isset($_POST['subject'])) ? stripslashes(_convert($_POST['subject'], YW_CHARSET)) : false);
         $message = (isset($_POST['message'])) ? stripslashes(_convert(strip_tags($_POST['message']), YW_CHARSET)) : '';
         $message_txt = trim(strip_tags($message));
-        // euro symbol is not replaced by htmlspecialchar
         $message_html = trim(nl2br(str_replace('€', '&euro;', htmlspecialchars($message, ENT_COMPAT, YW_CHARSET))));
     }
 
-    // on verifie si tous les parametres sont bons
     if ($isAllowed) {
         $message = check_parameters_mail(
             $type,
@@ -111,7 +101,6 @@ if ((!empty($_POST['mail']) || !empty($_POST['email'])) && isset($_SERVER['HTTP_
             $message_txt ?? ''
         );
 
-        // adding the infomsg after checking the size of the message
         if ($type != 'abonnement' && $type != 'desabonnement' && !empty($infomsg)) {
             $message_txt = strip_tags($infomsg) . '\n\n' . $message_txt;
             $message_html = $infomsg . $message_html;
@@ -123,15 +112,22 @@ if ((!empty($_POST['mail']) || !empty($_POST['email'])) && isset($_SERVER['HTTP_
         ];
     }
 
-    // si pas d'erreur on envoie
+    $botGuard = $this->services->get(BotGuard::class);
+    $refusal = $message['class'] == 'success' ? $botGuard->check($this->request, true) : null;
+    if ($refusal !== null) {
+        $message = [
+            'class' => 'danger',
+            'message' => $botGuard->message($refusal),
+        ];
+    }
+
     if ($message['class'] == 'success') {
         if (isset($_POST['mailinglist'])) {
-            $mail_receiver = array_pop($mail_receiver); // for the lists, only one mail receiver possible
+            $mail_receiver = array_pop($mail_receiver);
             if ($_POST['mailinglist'] == 'ezmlm') {
                 $mail_receiver = str_replace('@', '-' . str_replace('@', '=', $mail_sender) . '@', $mail_receiver);
             }
 
-            // test de presence de sympa, qui necessite de reformater le mail envoyé
             if (isset($_POST['mailinglist']) and $_POST['mailinglist'] == 'sympa') {
                 $tabmail = explode('@', $mail_receiver);
                 $listname = $tabmail[0];
@@ -164,9 +160,8 @@ if ((!empty($_POST['mail']) || !empty($_POST['email'])) && isset($_SERVER['HTTP_
     echo $this->render('@templates/alert-message.twig', [
         'type' => $message['class'],
         'message' => $message['message'],
-    ]);
+    ]) . $botGuard->fields(true);
 } else {
-    // affichage des formulaire et chargement du js necessaire
     $this->addJavascriptFile('tools/contact/libs/contact.js');
     $field = !empty($_GET['field']) ? htmlentities($_GET['field']) : '';
     if ($aclService->hasAccess('read') && isset($field) and !empty($field)) {
@@ -192,9 +187,6 @@ if ((!empty($_POST['mail']) || !empty($_POST['email'])) && isset($_SERVER['HTTP_
             <input type="hidden" name="mail" value="' . $field . '">
         </form>';
     } elseif ($aclService->hasAccess('read') && $this->GetUser()) {
-        // sinon on affiche le formulaire d'envoi de mail
-        // si on est identifie
-        // on verifie si l'on est bien identifie comme admin, pour eviter le spam
         $output .= '<h1>Envoyer la page par mail</h1>
         <form id="ajax-mail-form-handler" class="ajax-mail-form" action="' . $this->href('mail') . '">
           <div class="form-group">
@@ -221,7 +213,6 @@ if ((!empty($_POST['mail']) || !empty($_POST['email'])) && isset($_SERVER['HTTP_
           <input type="hidden" name="type" value="mail" />
         </form>';
     } else {
-        // on affiche le formulaire d'identification sinon
         $output .= $this->render('@templates/alert-message.twig', [
             'type' => 'danger',
             'message' => ($this->GetUser())
@@ -232,7 +223,7 @@ if ((!empty($_POST['mail']) || !empty($_POST['email'])) && isset($_SERVER['HTTP_
         $output .= $this->Format('{{login}}') . "\n";
     }
 
-    // affichage a l'ecran
+    $output = $this->services->get(BotGuard::class)->insertInto($output, 'ajax-mail-form-handler', true);
     echo $this->Header();
     echo "<div class=\"page\">\n$output\n<hr class=\"hr_clear\" />\n</div>\n";
     echo $this->Footer();

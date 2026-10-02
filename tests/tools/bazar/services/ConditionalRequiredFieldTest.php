@@ -50,7 +50,6 @@ class ConditionalRequiredFieldTest extends YesWikiTestCase
     private function create(string $tag, array $data): array
     {
         $entry = $this->entryManager->create(self::FORM_ID, array_merge([
-            'antispam' => 1,
             'id_fiche' => $tag,
         ], $data));
         $this->tags[] = $entry['id_fiche'];

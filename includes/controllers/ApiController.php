@@ -19,6 +19,7 @@ use YesWiki\Core\Exception\UserNameAlreadyUsedException;
 use YesWiki\Core\Exception\UserNameDoesNotExistException;
 use YesWiki\Core\Service\AclService;
 use YesWiki\Core\Service\ArchiveService;
+use YesWiki\Core\Service\BotGuard;
 use YesWiki\Core\Service\CommentService;
 use YesWiki\Core\Service\DbService;
 use YesWiki\Core\Service\DiffService;
@@ -94,7 +95,6 @@ class ApiController extends YesWikiController
             '<p><code>POST ' . $urlArchives . '</code></p>' .
             '<p><code>POST ' . $urlArchives . '/{id}</code></p>';
 
-        // TODO use annotations to document the API endpoints
         foreach ($this->wiki->extensions as $extension => $pluginBase) {
             $response = null;
             if (file_exists($pluginBase . 'controllers/ApiController.php')) {
@@ -266,8 +266,6 @@ class ApiController extends YesWikiController
 
         $users = $this->getService(UserManager::class)->getAll($userFields);
 
-        // UserManager::getAll gives array of User but user does not have jsonSerialize
-        // so extract only what is needed from each User
         $users = array_map(function ($user) use ($userFields) {
             if (!is_array($user)) {
                 $user = $user->getArrayCopy();
@@ -461,10 +459,7 @@ class ApiController extends YesWikiController
      */
     public function postComment()
     {
-        $commentService = $this->getService(CommentService::class);
-        $result = $commentService->addCommentIfAuthorized($this->getRequest()->request->all());
-
-        return new ApiResponse($result, $result['code']);
+        return $this->guardedComment();
     }
 
     /**
@@ -472,8 +467,20 @@ class ApiController extends YesWikiController
      */
     public function editComment($tag)
     {
-        $commentService = $this->getService(CommentService::class);
-        $result = $commentService->addCommentIfAuthorized($this->getRequest()->request->all(), $tag);
+        return $this->guardedComment($tag);
+    }
+
+    /**
+     * Saves a comment once BotGuard let it through, and hands the form fresh guard fields either way.
+     */
+    private function guardedComment(string $tag = ''): ApiResponse
+    {
+        $botGuard = $this->getService(BotGuard::class);
+        $refusal = $botGuard->check($this->getRequest());
+        $result = $refusal === null
+            ? $this->getService(CommentService::class)->addCommentIfAuthorized($this->getRequest()->request->all(), $tag)
+            : ['code' => 400, 'error' => $botGuard->message($refusal)];
+        $result['botGuard'] = $botGuard->fields();
 
         return new ApiResponse($result, $result['code']);
     }
@@ -498,7 +505,6 @@ class ApiController extends YesWikiController
      */
     public function deleteCommentViaPostMethod($tag)
     {
-        // todo use Anti-Csrf token or Bearer HTTP header
         return $this->deleteComment($tag);
     }
 
@@ -509,7 +515,6 @@ class ApiController extends YesWikiController
     {
         $dbService = $this->getService(DbService::class);
         $aclService = $this->getService(AclService::class);
-        // recuperation des pages wikis
         $sql = <<<SQL
             SELECT * FROM {$dbService->prefixTable('pages')}
             WHERE latest="Y" AND comment_on="" AND tag NOT LIKE "LogDesActionsAdministratives%"
@@ -783,14 +788,11 @@ class ApiController extends YesWikiController
                 $pagetag = $post->get('pagetag');
                 $reactionIdValue = $post->get('id');
                 if ($reactionid) {
-                    if ($pagetag) { // save the reaction
-                        // get reactions from user for this page
+                    if ($pagetag) {
                         $userReactions = $this->getService(ReactionManager::class)->getReactions($pagetag, [$reactionid], $user['name']);
                         $params = $this->getService(ReactionManager::class)->getActionParameters($pagetag);
                         if (!empty($params[$reactionid])) {
-                            // un choix de vote est fait
                             if ($reactionIdValue) {
-                                // test if limits wherer put
                                 if (!empty($params['maxreaction']) && count($userReactions) >= $params['maxreaction']) {
                                     return new ApiResponse(
                                         ['error' => 'Seulement ' . $params['maxreaction'] . ' réaction(s) possible(s). Vous pouvez désélectionner une de vos réactions pour changer.'],
@@ -808,7 +810,6 @@ class ApiController extends YesWikiController
                                     $reactionValues
                                 );
 
-                                // hurra, the reaction is saved!
                                 return new ApiResponse(
                                     $reactionValues,
                                     Response::HTTP_OK

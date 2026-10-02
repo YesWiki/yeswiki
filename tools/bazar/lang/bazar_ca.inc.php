@@ -190,7 +190,6 @@ return [
     'BAZ_ONLY_REGISTERED_USERS_CAN_ACCESS' => 'Sols els usuaris identificats poden accèder a aquesta part',
     'BAZ_CREATOR' => 'Creador',
     'BAZAR_SEMANTIC_TYPE_MISSING' => 'El tipus semàntic d\'aquest formulari no ha estat definit, no pot doncs ser anunciat en JSON-LD',
-    'BAZ_PROTECTION_ANTISPAM' => 'Protecció antispam',
     'BAZ_NOT_CATEGORIZED' => 'No categoritzat',
     'BAZ_DAY' => 'Dia',
     'BAZ_GEOLOCATE' => 'Geolocalitzar des de la meva posició',

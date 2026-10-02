@@ -1,17 +1,9 @@
 <?php
 
 return [
-    'HASHCASH_ERROR_PAGE_UNSAVED' => '<strong>This page could not be saved.</strong><br />You may have clicked two times on the "Save" button, making two saved in a considered interval as too short, or leaved the page opened in edit mode for a too long period.<br />To save this page, please copy your content, refresh your browser, and paste the content before saving again.',
-    'HASHCASH_ANTISPAM_ACTIVATED' => 'Antispam protection activated',
-    'HASHCASH_COMMENT_NOT_SAVED_MAYBE_YOU_ARE_A_ROBOT' => 'Your comment was not saved, maybe you are a robot.',
     'HASHCASH_GENERAL_PASSWORD' => 'Global password for editing',
     'HASHCASH_SEND' => 'Send',
-    'CAPTCHA_ERROR_PAGE_UNSAVED' => 'This page was not saved because you didn\'t enter the verification word.',
-    'CAPTCHA_ERROR_WRONG_WORD' => 'This page was not saved because the verification word was wrong...',
-    'CAPTCHA_VERIFICATION' => 'Vérification for saving page',
-    'CAPTCHA_WRITE' => 'Type the word written in the picture',
-    'EDIT_CONFIG_HINT_USE_CAPTCHA' => 'Activate usage of captcha before save (true or false)',
-    'EDIT_CONFIG_HINT_USE_HASHCASH' => 'Activate wiki antispam hashcash (activated by default)',
+    'EDIT_CONFIG_HINT_ALTCHA' => 'Ask anonymous visitors for an ALTCHA proof of work before every form submission (true or false, on by default)',
     'EDIT_CONFIG_HINT_USE_ALERTE' => 'Warn before leaving a page without saving (true or false)',
     'EDIT_CONFIG_HINT_WIKI_STATUS' => 'Wiki status (running or empty = standard, hibernate = read only)',
     'EDIT_CONFIG_GROUP_SECURITY' => 'Security',

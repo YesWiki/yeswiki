@@ -19,6 +19,18 @@
                 <input type="text" class="form-control" id="{{ key }}" name="{{ key }}" value="{{ value }}"
                   {% if placeholders[key] is not null -%}placeholder="{{ _t('EDIT_CONFIG_CURRENT_VALUE') }}: {{ placeholders[key] }}"{%- endif %}
                   />
+                {% if key == 'altcha' %}
+                  <p class="help-block">
+                    {% if botGuardRefusals is empty %}
+                      {{ _t('BOT_GUARD_NO_REFUSAL') }}
+                    {% else %}
+                      {{ _t('BOT_GUARD_REFUSALS') }}
+                      {% for reason, count in botGuardRefusals %}
+                        {{ _t('BOT_GUARD_REASON_' ~ reason|upper|replace({'-': '_'})) }}&nbsp;: {{ count }}{{ not loop.last ? ',' }}
+                      {% endfor %}
+                    {% endif %}
+                  </p>
+                {% endif %}
               </div>
             {% endfor %}
           </div>
@@ -27,7 +39,6 @@
     {% endfor %}
   </div>
 
-  {# DO NOT REMOVE THE FOLLOWING LINE THAT IS DEFINED FOR POST ACTIONS__.php#}
   <!-- end of #edit-config form -->
   <input type="hidden" name="{{ SAVE_NAME }}" value="1">
   <div class="form-group">

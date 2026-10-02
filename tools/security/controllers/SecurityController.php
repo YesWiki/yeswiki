@@ -9,19 +9,15 @@ use YesWiki\Core\YesWikiController;
 
 class SecurityController extends YesWikiController
 {
-    // this value cannot be changed because use by extensions
     public const EDIT_PAGE_SUBMIT_VALUE = 'Sauver';
 
-    protected $captchaController;
     protected $params;
     protected $templateEngine;
 
     public function __construct(
-        CaptchaController $captchaController,
         TemplateEngine $templateEngine,
         ParameterBagInterface $params
     ) {
-        $this->captchaController = $captchaController;
         $this->templateEngine = $templateEngine;
         $this->params = $params;
     }
@@ -70,7 +66,7 @@ class SecurityController extends YesWikiController
     {
         return $this->params->has('password_for_editing')
             && !empty($this->params->get('password_for_editing'))
-            && !$this->getService(AuthController::class)->getLoggedUser(); // AuthController not loaded in construct to prevent circular references
+            && !$this->getService(AuthController::class)->getLoggedUser();
     }
 
     /**
@@ -99,88 +95,6 @@ class SecurityController extends YesWikiController
                 'handler' => testUrlInIframe() ? 'editiframe' : 'edit',
             ]
         );
-    }
-
-    /**
-     * check captcha before save edit.
-     *
-     * @param string $mode 'page' or 'entry'
-     *
-     * @return array [bool $state,string $error]
-     */
-    public function checkCaptchaBeforeSave(string $mode = 'page'): array
-    {
-        if (!$this->wiki->UserIsAdmin() && $this->params->get('use_captcha')) {
-            $post = $this->wiki->request->request;
-            if (($mode != 'entry' && $post->get('submit') == self::EDIT_PAGE_SUBMIT_VALUE)
-                || ($mode == 'entry' && !empty($post->get('bf_titre')))) {
-                /**
-                 * @var string $error message if error
-                 */
-                $error = '';
-                if (empty($post->get('captcha'))) {
-                    $error = _t('CAPTCHA_ERROR_PAGE_UNSAVED');
-                } elseif (!$this->captchaController->check(
-                    $post->get('captcha', ''),
-                    $post->get('captcha_hash', '')
-                )) {
-                    $error = _t('CAPTCHA_ERROR_WRONG_WORD');
-                }
-                // clean if error
-                if (!empty($error)) {
-                    $_POST['submit'] = '';
-                    if ($mode == 'entry') {
-                        unset($_POST['bf_titre']);
-                    }
-                }
-                unset($_POST['captcha']);
-                unset($_POST['captcha_hash']);
-            }
-        }
-
-        return [empty($error), $error ?? null];
-    }
-
-    /**
-     * render captcha if needed.
-     */
-    public function renderCaptcha(string &$output)
-    {
-        if (!$this->wiki->UserIsAdmin() && $this->params->get('use_captcha')) {
-            $champsCaptcha = $this->renderCaptchaField();
-            $matches = [];
-            if (preg_match_all('/(\<div class="form-actions">.*<button type=\"submit\" name=\"submit\")/Uis', $output, $matches)) {
-                foreach ($matches[0] as $key => $match) {
-                    $output = str_replace(
-                        $match,
-                        $champsCaptcha . $matches[1][$key],
-                        $output
-                    );
-                }
-            }
-        }
-    }
-
-    /**
-     * render captcha field if needed.
-     */
-    public function renderCaptchaField(): string
-    {
-        $champsCaptcha = '';
-        if (!$this->wiki->UserIsAdmin() && $this->params->get('use_captcha')) {
-            // afficher les champs de formulaire et de l'image
-            $hash = $this->captchaController->generateHash();
-            $champsCaptcha = $this->templateEngine->render(
-                '@security/captcha-field.twig',
-                [
-                    'baseUrl' => $this->wiki->getBaseUrl(),
-                    'crypt' => $hash,
-                    'cryptBase64' => base64_encode($hash),
-                ]
-            );
-        }
-
-        return $champsCaptcha;
     }
 
     /**

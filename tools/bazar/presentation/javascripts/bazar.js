@@ -1,8 +1,4 @@
-/**
- *
- * javascript for bazar
- *
- * */
+/** Bazar forms and lists in the browser. */
 
 import { updateHash } from './url.js'
 import { parseCondition } from './search.js'
@@ -12,7 +8,6 @@ let gSavedHash
 $(document).ready(() => {
   gSavedHash = decodeURIComponent(document.location.hash.substring(1))
 
-  // accordeon pour bazarliste
   $('.titre_accordeon').on('click', function () {
     if ($(this).hasClass('current')) {
       $(this).removeClass('current')
@@ -23,20 +18,14 @@ $(document).ready(() => {
     }
   })
 
-  // antispam javascript
-  $('input[name=antispam]').val('1')
-
-  // carto google
   const divcarto = document.getElementById('map')
   if (divcarto) {
     initialize()
   }
 
-  // clic sur le lien d'une fiche, l'ouvre sur la carto
   $('#markers a').on('click', function () {
     const i = $(this).attr('rel')
 
-    // this next line closes all open infowindows before opening the selected one
     for (let x = 0; x < arrInfoWindows.length; x++) {
       arrInfoWindows[x].close()
     }
@@ -55,7 +44,6 @@ $(document).ready(() => {
     $('ul.css-tabs').tabs('fieldset.tab', { onClick() {} })
   })
 
-  // initialise les tooltips pour l'aide et pour les cartes leaflet
   $('img.tooltip_aide[title], .bazar-marker').each(function () {
     $(this).tooltip({
       animation: true,
@@ -64,22 +52,16 @@ $(document).ready(() => {
     })
   })
 
-  // on enleve la fonction doubleclic dans le cas d'une page contenant bazar
   $('.bazar-form, #map, #calendar, .accordion').bind('dblclick', (_e) => false)
 
   function emptyChildren(element) {
     if (typeof ConditionsChecking === 'undefined') {
-      // backward compatibility old system (not clean) TODO remove it when ConditionsChecking is sure to be installed (even in local cahe)
       $(element).find(':input').val('').removeProp('checked')
     } else {
       ConditionsChecking.emptyChildren(element)
     }
   }
 
-  // TODO : when conditionschecking is the only system (ex: for ectoplasme) remove the followings line to manage
-  // conditions by the old way
-
-  // permet de gerer des affichages conditionnels, en fonction de balises div
   function handleConditionnalListChoice() {
     const id = $(this).attr('id')
     $(`div[id^='${id}'], div[id^='${id.replace('liste', '')}']`)
@@ -149,7 +131,6 @@ $(document).ready(() => {
     .each(handleConditionnalCheckboxChoice)
     .change(handleConditionnalCheckboxChoice)
 
-  // choix de l'heure pour une date
   $('.select-allday').change(function () {
     if ($(this).val() === '0') {
       $(this).parent().next('.select-time').removeClass('hide')
@@ -158,10 +139,8 @@ $(document).ready(() => {
     }
   })
 
-  //= ===========longueur maximale d'un champ textarea
   const $textareas = $("textarea[maxlength!='']")
 
-  // si les textarea contiennent déja quelque chose, on calcule les caractères restants
   $textareas.each(function () {
     const $this = $(this)
     const max = $this.attr('maxlength')
@@ -190,7 +169,6 @@ $(document).ready(() => {
       }
     }
 
-    // when a char is typed, we check the max length limit
     if ($this.hasClass('aceditor-textarea')) {
       const aceId = `aceditor-${$this.attr('id')}`
       window[aceId].editor.on('input', () => {
@@ -208,7 +186,6 @@ $(document).ready(() => {
           .text(max - length)
       })
     } else if (!$this.hasClass('ace_text-input')) {
-      // on empeche d'aller au dela de la limite du nombre de caracteres
       $this.on('keyup', function () {
         const $ed = $(this)
         const max = $ed.attr('maxlength')
@@ -225,7 +202,6 @@ $(document).ready(() => {
     }
   })
 
-  // éviter la validation du formulaire en pressant la touche Entrée
   document
     .querySelectorAll(
       'form.bazar-form .control-group.form-group input.form-control[type=text]',
@@ -244,19 +220,13 @@ $(document).ready(() => {
       )
     })
 
-  //= =========== bidouille pour que les widgets en flash restent ===========
-  //= =========== en dessous des éléments en survol ===========
   $('object').append('<param value="opaque" name="wmode">')
   $('embed').attr('wmode', 'opaque')
 
-  //= ===========validation formulaire============================
-  //= ===========gestion des dates================================
-
-  // validation formulaire de saisie
   const requirementHelper = {
     requiredInputs: [],
     textInputsWithPattern: [],
-    error: -1, // error contain the index of the first error (-1 = no error)
+    error: -1,
     errorMessage: '',
     errorPattern: -1,
     errorMessagePattern: '',
@@ -281,7 +251,6 @@ $(document).ready(() => {
         ) {
           return false
         }
-        // check if visible in a tab
         if (
           $(this)
             .parentsUntil(':visible')
@@ -362,7 +331,7 @@ $(document).ready(() => {
     },
     emailChecking(input) {
       const reg =
-        /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/ // regex that works for 99,99%, following RFC 5322
+        /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
       if ($(input).prop('required') && !this.defaultChecking(input)) {
         return false
       }
@@ -447,11 +416,9 @@ $(document).ready(() => {
       return true
     },
     geocodeChecking(input) {
-      // console.log("GEOCODE CHECKING");
       const vLatitude = $(input).find('.yw-latitude-input').val()
       const vLongitude = $(input).find('.yw-longitude-input').val()
       const vGeometries = $(input).find('.yw-geometries-input').val()
-      // console.log(vLatitude, vLongitude, vGeometries);
       if (vLatitude == '' && vLongitude == '' && vGeometries == '') {
         this.updateErrorMessage(_t('BAZ_FORM_EMPTY_GEOLOC'))
         return false
@@ -514,11 +481,8 @@ $(document).ready(() => {
     scrollToFirstinputInError(type = 'error') {
       const error = this[type] ?? -1
       if (error > -1) {
-        // TODO afficher l'onglet en question
-        // on remonte en haut du formulaire
         let input = this.requiredInputs[error]
         if ($(input).filter(':visible').length == 0) {
-          // panel ?
           const panel = $(input).parentsUntil(':visible').last()
           if ($(panel).attr('role') == 'tabpanel') {
             $(`a[href="#${$(panel).attr('id')}"][role=tab]`)
@@ -636,8 +600,6 @@ $(document).ready(() => {
 
     try {
       if (requirementHelper.run(this)) {
-        // formulaire validé, on soumet le formulaire
-        // mais juste avant on change le comportement du bouton pour éviter les validations multiples
         $(this)
           .find('.form-actions button[type=submit]')
           .each(function () {
@@ -646,7 +608,6 @@ $(document).ready(() => {
             $(this).attr('title', _t('BAZ_SAVING'))
             const button = $(this)
             setTimeout(() => {
-              // on réactive le bouton au bout de 10s juste pour permettre de forcer une nouvelle validation si jamais ça a planté
               $(button).removeAttr('disabled')
             }, 10000)
           })
@@ -659,19 +620,10 @@ $(document).ready(() => {
     return false
   })
 
-  // bidouille PEAR form
   $('.bazar-form').removeAttr('onsubmit')
 
-  // selecteur de dates
   const $dateinputs = $('.bazar-date')
 
-  // test pour verifier si le browser gere l'affichage des dates
-  // var input = document.createElement('input');
-  // input.setAttribute('type','date');
-  // var notADateValue = 'not-a-date';
-  // input.setAttribute('value', notADateValue);
-
-  // if ($dateinputs.length > 0 && (input.value == notADateValue)) {
   if ($dateinputs.length > 0) {
     $.fn.datepicker.dates.fr = {
       days: [
@@ -743,7 +695,6 @@ $(document).ready(() => {
       .attr('autocomplete', 'off')
   }
 
-  // interdire dans le datepicker de fin les dates avant la date de début, et inversement
   const $startDate = $('.bazar-form #bf_date_debut_evenement')
   const $endDate = $('.bazar-form #bf_date_fin_evenement')
   if ($startDate.length && $endDate.length) {
@@ -762,7 +713,6 @@ $(document).ready(() => {
       }
     })
 
-    // contrainte horaire : si même jour, l'heure de début doit être avant l'heure de fin
     const $startAllDay = $('select[name="bf_date_debut_evenement_allday"]')
     const $endAllDay = $('select[name="bf_date_fin_evenement_allday"]')
     const $startHour = $('select[name="bf_date_debut_evenement_hour"]')
@@ -790,7 +740,6 @@ $(document).ready(() => {
       return parseInt($endHour.val()) * 60 + parseInt($endMin.val())
     }
 
-    // sélectionne 5 minutes après l'heure de début
     function adjustEndTime() {
       let total = getStartMinutes() + 5
       if (total >= 1440) total = 1435
@@ -800,7 +749,6 @@ $(document).ready(() => {
       $endMin.val(String(m).padStart(2, '0'))
     }
 
-    // sélectionne 5 minutes avant l'heure de fin
     function adjustStartTime() {
       let total = getEndMinutes() - 5
       if (total < 0) total = 0
@@ -825,8 +773,6 @@ $(document).ready(() => {
       .on('change', () => checkTimeConstraint('start'))
   }
 
-  // Onglets
-  // hack pour les fiches avec tabulations : on change les id pour qu'ils soient uniques
   $('.bazar-entry').each(function (i) {
     $(this)
       .find('[data-toggle="tab"]')
@@ -841,7 +787,6 @@ $(document).ready(() => {
       })
   })
 
-  // cocher / decocher tous
   const checkboxselectall = $('.selectall')
   checkboxselectall.click(function (_event) {
     const $this = $(this)
@@ -851,7 +796,6 @@ $(document).ready(() => {
     }
 
     if (this.checked) {
-      // check select status
       target.each(function () {
         $(this).find(':checkbox').prop('checked', true)
         $(this).prop('checked', true)
@@ -864,9 +808,6 @@ $(document).ready(() => {
     }
   })
 
-  // facettes
-
-  // recuperer un parametre donné de l'url
   function getURLParameter(name) {
     return (
       decodeURIComponent(
@@ -877,7 +818,6 @@ $(document).ready(() => {
     )
   }
 
-  // modifier un parametre de l'url pour les modifier dynamiquement
   function changeURLParameter(name, value) {
     if (getURLParameter(name) == null) {
       var s = location.search
@@ -892,7 +832,6 @@ $(document).ready(() => {
 
       history.pushState({ filter: true }, null, urlquery)
 
-      // pour les url dans une iframe
       if (window.frameElement && window.frameElement.nodeName == 'IFRAME') {
         var iframeurlquery = `${window.top.location.search.replace(
           `&${name}=`,
@@ -902,21 +841,16 @@ $(document).ready(() => {
       }
     } else {
       s = location.search
-      // console.log('s', s, s !== '', decodeURIComponent(s));
-      // console.log('value', value);
       if (value !== '') {
         if (s !== '') {
-          // console.log(s);
           urlquery = decodeURIComponent(s).replace(
             new RegExp(`&${name}=` + '([^&;]+?)(&|#|;|$)'),
             `&${name}=${value}`,
           )
-          // console.log('location.search', s, urlquery);
         } else {
           urlquery = `?${name}=${value}`
-        } // console.log('location.search vide', s, urlquery);
+        }
       } else {
-        // console.log(s);
         urlquery = decodeURIComponent(s).replace(
           new RegExp(`[?|&]${name}=` + '([^&;]+?)(&|#|;|$)'),
           '',
@@ -925,7 +859,6 @@ $(document).ready(() => {
 
       history.pushState({ filter: true }, null, urlquery)
 
-      // pour les url dans une iframe
       if (window.frameElement && window.frameElement.nodeName == 'IFRAME') {
         iframeurlquery = decodeURIComponent(window.top.location.search).replace(
           new RegExp(`[?|&]${name}=` + '([^&;]+?)(&|#|;|$)'),
@@ -954,24 +887,20 @@ $(document).ready(() => {
     })
   }
 
-  // activer les filtres des facettes
   function updateFilters(e) {
     const tabfilters = []
     let i = 0
     let newquery = ''
     let select
-    // on filtre les resultat par boite de filtre pour faire l'intersection apres
     e.data.$filterboxes.each(function () {
       select = ''
       let first = true
       const filterschk = $(this).find('.filter-checkbox:checked')
       $.each(filterschk, (index, checkbox) => {
-        // les valeurs sont mis en cache
         const name = $(checkbox).attr('name')
         const val = $(checkbox).attr('value')
         const attr = `data-${name.toLowerCase()}`
         if (first) {
-          // si ce n'est pas le premier appel, on ajoute un | pour separer les query
           if (newquery !== '') {
             newquery += '|'
           }
@@ -982,12 +911,6 @@ $(document).ready(() => {
           select += ','
         }
 
-        // La requete de selection prend pour les champs non multiples :
-        // - exactement la valeur de l'attribut html
-        // Pour les champs multiples :
-        // - soit les attributs commencant par la valeur suivie d'une virgule
-        // - soit les attributs finissant par la valeur avec une virgule avant
-        // - soit les attributs contenant la valeur entouree de virgules
         select += `[${attr}~="${val}"],[${attr}$=",${val}"],[${attr}^="${val},"],[${attr}*=",${val},"]`
       })
       const res = e.data.$entries.filter(select)
@@ -997,16 +920,12 @@ $(document).ready(() => {
       }
     })
 
-    // on applique les changements a l'url
     changeURLParameter('facette', newquery)
 
-    // au moins un filtre à actionner
     let tabres = []
     if (tabfilters.length > 0) {
-      // un premier résultat pour le tableau
       tabres = tabfilters[0].toArray()
 
-      // pour chaque boite de filtre, on fait l'intersection avec la suivante
       $.each(tabfilters, (index, tab) => {
         tabres = tabres.filter((n) => tab.toArray().indexOf(n) != -1)
       })
@@ -1015,7 +934,6 @@ $(document).ready(() => {
       e.data.$entries.parent('.bazar-marker').hide()
       e.data.$entries.filter(tabres).parent('.bazar-marker').show()
 
-      // geometries need the id to be hidden
       const $toHide = e.data.$entries.not(tabres)
       const idsToMatch = new Set()
 
@@ -1033,12 +951,10 @@ $(document).ready(() => {
 
       matchingGeometries.hide()
     } else {
-      // pas de filtres: on affiche tout les résultats
       e.data.$entries.show()
       e.data.$geometries.show()
       e.data.$entries.parent('.bazar-marker').show()
     }
-    // on compte les résultats visibles (points et geometries confondus)
     const visibleIds = new Set()
     e.data.$entries.filter(':visible').each(function () {
       const id = $(this).attr('data-id_fiche')
@@ -1079,7 +995,6 @@ $(document).ready(() => {
     updateHash(gSavedHash, vKeywords, vSortField, vSortOrder, vFilters)
   }
 
-  // process changes on visible entries according to filters
   setTimeout(() => {
     $('.facette-container:not(.dynamic)').each(function () {
       const $container = $(this)
@@ -1100,7 +1015,6 @@ $(document).ready(() => {
     })
   }, 500)
 
-  // gestion de l'historique : on reapplique les filtres
   window.onpopstate = function (e) {
     if (e.state && e.state.filter) {
       $('.facette-container').each(function () {
@@ -1133,8 +1047,6 @@ $(document).ready(() => {
     }
   }
 
-  // Tags
-  // bidouille pour les typeahead des champs tags
   $('.bootstrap-tagsinput input').on('keypress', function () {
     $(this).attr('size', $(this).val().length + 2)
   })
@@ -1150,7 +1062,6 @@ $(document).ready(() => {
 
   $.extend($.fn.typeahead.Constructor.prototype, { val() {} })
 
-  // on envoie la valeur au submit
   $('.bazar-form').on('submit', function () {
     $(this)
       .find('.yeswiki-input-entries, .yeswiki-input-pagetag')
@@ -1199,7 +1110,6 @@ $(document).ready(() => {
     },
   )
 
-  // gestion du bouton de réinitialisation des filtres
   $('.facette-container:not(.dynamic) .filters .reset-filters').on(
     'click',
     () => {
@@ -1223,7 +1133,6 @@ function exportTableToCSV(filename, selector = 'table tr') {
     csv.push(row.join(','))
   }
 
-  // Download CSV file
   downloadCSV(csv.join('\n'), filename)
 }
 
@@ -1231,19 +1140,12 @@ export function downloadCSV(csv, filename) {
   let csvFile
   let downloadLink
 
-  // CSV file
   csvFile = new Blob([csv], { type: 'text/csv' })
-  // Download link
   downloadLink = document.createElement('a')
-  // File name
   downloadLink.download = filename
-  // Create a link to the file
   downloadLink.href = window.URL.createObjectURL(csvFile)
-  // Hide download link
   downloadLink.style.display = 'none'
-  // Add the link to DOM
   document.body.appendChild(downloadLink)
-  // Click download link
   downloadLink.click()
 }
 
@@ -1253,7 +1155,6 @@ export function removeCSVCrochet(str) {
   return res
 }
 
-// range input
 $(document).ready(() => {
   const rangeInputs = document.querySelectorAll(
     '.range-wrap input[type="range"]',

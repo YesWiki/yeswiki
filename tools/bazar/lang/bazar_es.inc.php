@@ -358,7 +358,6 @@ return [
     'EVENT_LIMIT_DATE_UPDATE_FORCED' => 'La fecha de final ha sido forzada para reducir el número de repeticiones a 600 !',
     'EVENTS_REPETITIONS' => 'Repeticiones',
     'BAZ_PAS_DE_FORM_AVEC_ID_DE_CETTE_FICHE' => 'El formulario número {{nb}} indicado en la ficha no existe (puede ser hasido suprimida entre tiempo ?)',
-    'BAZ_PROTECTION_ANTISPAM' => 'Protección antispam',
     'BAZ_COMMENTS_NOT_ACTIVATED' => 'Los comentarios son gestionados por YesWiki pero estos no están habilitados. <br />Ir a la página GererConfig para activar los comentarios (parameter `comments_activated`)',
     'EDIT_CONFIG_HINT_BAZ_MAP_ZOOM' => 'Nivel de zoom predeterminado de mapas (1:world = despierto 15:commune)',
     'EDIT_CONFIG_HINT_BAZARIGNOREACLS' => 'Permitir la creación de archivos incluso si el wiki está cerrado por escrito (verdad o falso)',
