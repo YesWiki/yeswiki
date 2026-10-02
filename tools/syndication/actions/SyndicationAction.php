@@ -71,7 +71,6 @@ class SyndicationAction extends YesWikiAction
             if (empty($this->arguments['mapping']['id'])) {
                 return '<div class="alert alert-danger">' . _t('ERROR') . ' ' . _t('SYNDICATION_MAPPING_ID_REQUIRED') . ', ex: id=1400,title=bf_titre,url=bf_url,description=bf_description,image=imagebf_image,categories=bf_tags.</div>';
             }
-            // we load all entries to check if entry were already created from feed
             $vSearchManager = $this->getService(SearchManager::class);
             $entries = $vSearchManager->search(['formsIds' => [$this->arguments['mapping']['id']]]);
         }
@@ -138,7 +137,6 @@ class SyndicationAction extends YesWikiAction
                             if (!empty($this->arguments['nbchar'])) {
                                 $feedItem['description'] = preg_replace("/\s+/u", ' ', strip_tags($feedItem['description'] ?? ''));
                                 $descLen = strlen($feedItem['description']);
-                                // check if text longer than max chars specified
                                 if ($descLen > 0
                                     && $descLen > $this->arguments['nbchar']) {
                                     $feedItem['description'] = truncate(
@@ -175,7 +173,7 @@ class SyndicationAction extends YesWikiAction
                                     $feedItem['linkToEntry'] = $this->wiki->href('', $entryExists[0]['id_fiche']);
                                 } else {
                                     $entry = [];
-                                    $converter = new HtmlConverter(['strip_tags' => true]); // we will convert html to md, but safe
+                                    $converter = new HtmlConverter(['strip_tags' => true]);
                                     foreach ($this->arguments['mapping'] as $key => $val) {
                                         switch ($key) {
                                             case 'id':
@@ -203,14 +201,12 @@ class SyndicationAction extends YesWikiAction
                                     $feedItem['mappingInput'] = json_encode($entry);
                                 }
                             }
-                            // the key is beginning with the datestamp to order by date desc, and we concat the title for unicity
                             $syndication['pages'][$feedItem['datestamp'] . urlencode($feedItem['title'])] = $feedItem;
                         }
                     }
                 }
                 $nburl = $nburl + 1;
             }
-            // sort all feeds per date
             krsort($syndication['pages']);
             if (empty($this->arguments['title'])) {
                 $title = '';
@@ -284,7 +280,6 @@ class SyndicationAction extends YesWikiAction
         if (!empty($mapping)) {
             $data = json_decode(urldecode($mapping), true);
             if (!empty($data)) {
-                $data['antispam'] = 1;
                 $entryManager = $this->getService(EntryManager::class);
                 $entryManager->create($data['id_typeannonce'], $data, false, $data['bf_url']);
                 Flash::success(_t('SYNDICATION_ENTRY_SAVED', ['title' => $data['bf_titre']]));

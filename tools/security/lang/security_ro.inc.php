@@ -1,15 +1,8 @@
 <?php
 
 return [
-    'HASHCASH_ERROR_PAGE_UNSAVED' => '<strong>Pagina nu poate fi salvată. </strong><br />S-ar putea să fi făcut dublu clic pe butonul "Salvați", cauzând 2 salvări consecutive prea aproape, sau a lăsat pagina deschisă în modul de editare prea mult timp. <br />Pentru a salva modificările, vă rugăm să copiați conținutul, să reîmprospătați pagina și să lipiți din nou pagina modificată.',
-    'HASHCASH_ANTISPAM_ACTIVATED' => 'Protecție activă împotriva spamului',
-    'HASHCASH_COMMENT_NOT_SAVED_MAYBE_YOU_ARE_A_ROBOT' => 'Comentariul tău nu a fost salvat, wiki-ul crede că ești un robot.',
     'HASHCASH_GENERAL_PASSWORD' => 'Răspuns',
     'HASHCASH_SEND' => 'Trimite',
-    'CAPTCHA_ERROR_PAGE_UNSAVED' => 'Pagina nu a fost salvată pentru că nu ați introdus cuvântul de verificare.',
-    'CAPTCHA_ERROR_WRONG_WORD' => 'Pagina nu a fost salvată deoarece parola introdusă este incorectă.',
-    'CAPTCHA_VERIFICATION' => 'Verificaţi pentru a salva pagina',
-    'CAPTCHA_WRITE' => 'Scrie aici cuvântul prezent în imagine',
     'DESPAM_PAGES_SELECTION' => 'Selectarea paginilor',
     'DESPAM_ALL_CHANGES_FROM' => 'Toate schimbările de atunci',
     'DESPAM_FOR_ONE_HOUR' => 'timp de 1 oră',
@@ -24,8 +17,6 @@ return [
     'DESPAM_DELETED_PAGES' => 'Pagini șterse',
     'DESPAM_BACK_TO_PREVIOUS_FORM' => 'Formular de întoarcere la plecare',
     'DESPAM_ONLY_FOR_ADMINS' => 'Acțiune {{despam}} numai pentru administratori.',
-    'EDIT_CONFIG_HINT_USE_CAPTCHA' => 'Activați utilizarea unui captcha înainte de a salva (adevărat sau fals)',
-    'EDIT_CONFIG_HINT_USE_HASHCASH' => 'Activați antispam hashcash wiki (activat în mod implicit)',
     'EDIT_CONFIG_HINT_USE_ALERTE' => 'Avertizați dacă părăsiți pagina fără a salva (true sau false)',
     'EDIT_CONFIG_HINT_WIKI_STATUS' => 'Starea wiki (running sau gol = standard, hibernate = numai citit)',
     'EDIT_CONFIG_GROUP_SECURITY' => 'Securitate',
