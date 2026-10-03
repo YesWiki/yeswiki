@@ -1,5 +1,4 @@
 const DATATABLE_OPTIONS = {
-  // responsive: true,
   paging: false,
   language: {
     sProcessing: _t('DATATABLES_PROCESSING'),
@@ -47,10 +46,6 @@ const DATATABLE_OPTIONS = {
       className: 'btn btn-default',
       text: `<i class="fas fa-print"></i> ${_t('PRINT')}`,
     },
-    // {
-    //   extend: 'colvis',
-    //   text: _t('DATATABLES_COLS_TO_DISPLAY')
-    // },
   ],
 }
 
@@ -77,7 +72,6 @@ function toastMessage(
   }, duration + 300)
   $toast.addClass('visible')
 }
-// polyfill placeholder
 ;(function ($) {
   $('input[type=password]').each(function () {
     const vMe = $(this)
@@ -111,7 +105,6 @@ function toastMessage(
       .insertAfter($(this))
   })
 
-  // gestion des classes actives pour les menus
   $('a.active-link')
     .parent()
     .addClass('active-list')
@@ -133,7 +126,6 @@ function toastMessage(
     return url
   }
 
-  // fenetres modales
   function openModal(e) {
     e.stopPropagation()
     e.preventDefault()
@@ -196,7 +188,6 @@ function toastMessage(
         $('#yw-modal-loading').hide()
       })
     } else {
-      // incomingurl can be usefull (per example for deletepage handler)
       try {
         const url = document.createElement('a')
         url.href = link
@@ -213,13 +204,11 @@ function toastMessage(
       } catch (er) {
         console.error(er)
       }
-      // AJAX Request for javascripts
       const xhttp = new XMLHttpRequest()
       xhttp.onreadystatechange = function () {
         if (this.readyState === 4 && this.status === 200) {
           const xmlString = this.responseText
           const doc = new DOMParser().parseFromString(xmlString, 'text/html')
-          // find scripts
           const res = doc.scripts
           const l = res.length
           let i
@@ -228,7 +217,6 @@ function toastMessage(
             if (src) {
               var selection = document.querySelectorAll(`script[src="${src}"]`)
               if (!selection || selection.length == 0) {
-                // append script and load it only if not present
                 if (res[i].type === 'module') {
                   const newScript = document.createElement('script')
                   newScript.type = 'module'
@@ -241,7 +229,6 @@ function toastMessage(
               }
             } else {
               const script = res[i].innerHTML
-              // select all script of current page without src
               const pageScripts = document.scripts
               const selLenght = pageScripts.length
               var j
@@ -256,7 +243,6 @@ function toastMessage(
               }
             }
           }
-          // find css
           const importedCSS = doc.querySelectorAll('link[rel="stylesheet"]')
           const le = importedCSS.length
           for (i = 0; i < le; i++) {
@@ -266,12 +252,10 @@ function toastMessage(
                 `link[href="${href}"]`,
               )
               if (!existingLink || existingLink.length === 0) {
-                // append link
                 document.body.appendChild(document.importNode(importedCSS[i]))
               }
             }
           }
-          // AJAX Request for content
           $modal.find('.modal-body').load(`${link} .page`, () => {
             $(document).trigger('yw-modal-open')
             return false
@@ -297,7 +281,6 @@ function toastMessage(
     window.open($(this).attr('href'), '_blank')
   })
 
-  // on change l'icone de l'accordeon
   $('.accordion-trigger').on('click', function () {
     if ($(this).next().find('.collapse').hasClass('in')) {
       $(this).find('.arrow').html('&#9658;')
@@ -306,23 +289,18 @@ function toastMessage(
     }
   })
 
-  // on enleve la fonction doubleclic dans des cas ou cela pourrait etre indesirable
   $('.no-dblclick, form, .page a, button, .dropdown-menu').on(
     'dblclick',
     (_e) => false,
   )
 
-  // deplacer les fenetres modales en bas de body pour eviter que des styles s'appliquent
   $('.modal').appendTo(document.body)
 
-  // Remove hidden div by ACL
   $('.remove-this-div-on-page-load').remove()
 
-  /* tooltips */
   $("[data-toggle='tooltip']").tooltip()
   $("[data-tooltip='tooltip']").tooltip()
 
-  // moteur de recherche utilisé dans un template
   $('a[href="#search"]').on('click', function (e) {
     e.preventDefault()
     $(this).siblings('#search').addClass('open')
@@ -339,7 +317,6 @@ function toastMessage(
     }
   })
 
-  // se souvenir des tabs navigués
   $.fn.historyTabs = function () {
     const that = this
     window.addEventListener('popstate', (event) => {
@@ -370,7 +347,6 @@ function toastMessage(
         }
       })
       if (!window.location.hash && $(element).is('.active')) {
-        // Shows the first element if there are no query parameters.
         $(element).tab('show')
       } else if ($(this).attr('href') === window.location.hash) {
         $(element).tab('show')
@@ -379,7 +355,6 @@ function toastMessage(
   }
   $('a[data-toggle="tab"]').historyTabs()
 
-  // double clic
   $('.navbar').on('dblclick', function (e) {
     e.stopPropagation()
     $('body').append(
@@ -436,7 +411,6 @@ function toastMessage(
     return false
   })
 
-  // AUTO RESIZE IFRAME
   const iframes = $('iframe.auto-resize')
   if (iframes.length > 0) {
     $.getScript('javascripts/vendor/iframe-resizer/iframeResizer.min.js')
@@ -451,7 +425,6 @@ function toastMessage(
       })
   }
 
-  // get the html from a yeswiki page
   function getText(url, link) {
     let html
     $.get(url, (data) => {
@@ -466,21 +439,18 @@ function toastMessage(
   })
   $('.modalbox-hover').popover({
     trigger: 'hover',
-    html: true, // permet d'utiliser du html
-    placement: 'right', // position de la popover (top ou bottom ou left ou right)
+    html: true,
+    placement: 'right',
   })
 
-  // ouvrir les liens dans une nouvelle fenetre
   $('.new-window').attr('target', '_blank')
   $(document).on('yw-modal-open', () => {
     $('.new-window:not([target])').attr('target', '_blank')
   })
 
-  // acl switch
   $('#acl-switch-mode')
     .change(function () {
       if ($(this).prop('checked')) {
-        // show advanced
         $('.acl-simple').hide().val(null)
         $('.acl-advanced').slideDown()
       } else {
@@ -493,12 +463,10 @@ function toastMessage(
     })
     .trigger('change')
 
-  // tables
   if (typeof $('.table').DataTable === 'function') {
     $('.table:not(.prevent-auto-init)').DataTable(DATATABLE_OPTIONS)
   }
 
-  /** comments */
   const $comments = $('.yeswiki-page-comments, #post-comment')
 
   function resetCommentForm(form) {
@@ -517,22 +485,33 @@ function toastMessage(
     window['aceditor-body'].editor.setValue('')
   }
 
-  // ajax post comment
-  $comments.on('click', '.btn-post-comment', function (e) {
+  function replaceGuardFields(form, response) {
+    const fresh = $('<div>').html(response?.botGuard || '')
+    if (fresh.find('.yw-bot-guard-fields').length > 0) {
+      form.find('.yw-bot-guard-fields').replaceWith(fresh.children())
+    }
+  }
+
+  $comments.on('click', '.btn-post-comment', async function (e) {
     e.preventDefault()
+    e.stopPropagation()
     const form = $(this).parent('form')
     const urlpost = form.attr('action')
+    const widget = form.find('altcha-widget')[0]
+    if (widget && widget.verify && widget.getState() !== 'verified') {
+      await widget.verify()
+    }
     $.ajax({
       type: 'POST',
       url: urlpost,
       data: form.serialize(),
       dataType: 'json',
       success(e) {
+        replaceGuardFields(form, e)
         form.trigger('reset')
         window['aceditor-body'].editor.setValue('')
         toastMessage(e.success, 3000, 'alert alert-success')
         form.parents('.yw-comment').find('.comment-links').removeClass('hide')
-        // we place the new comment in different places if its an answer, a modification or a new comment
         if (form.hasClass('comment-modify')) {
           form
             .closest('.yw-comment')
@@ -546,13 +525,13 @@ function toastMessage(
         }
       },
       error(e) {
+        replaceGuardFields(form, e.responseJSON)
         toastMessage(e.responseJSON.error, 3000, 'alert alert-danger')
       },
     })
     return false
   })
 
-  // ajax answer comment
   $comments.on('click', '.btn-answer-comment', function (e) {
     e.preventDefault()
     const com = $(this).parent().parent()
@@ -564,12 +543,10 @@ function toastMessage(
       .parents('.yw-comment')
       .find('.comment-links:first')
       .removeClass('hide')
-    // a comment-form is already opened
     if ($('.temporary-form').length > 0) {
       resetCommentForm($('.temporary-form'))
     }
 
-    // clone comment form and change some options
     const formAnswer = com.find('.comment-reponses:first')
     $('#post-comment').appendTo(formAnswer)
     formAnswer
@@ -589,12 +566,10 @@ function toastMessage(
     return false
   })
 
-  // ajax edit comment
   $comments.on('click', '.btn-edit-comment', function (e) {
     e.preventDefault()
     const com = $(this).parent().parent()
 
-    // hide comment and comment links while editor is open
     com.find('.comment-html:first').addClass('hide')
     com.find('.comment-links:first').addClass('hide')
 
@@ -606,12 +581,10 @@ function toastMessage(
       .parents('.yw-comment')
       .find('.comment-links:first')
       .removeClass('hide')
-    // a comment-form is already opened
     if ($('.temporary-form').length > 0) {
       resetCommentForm($('.temporary-form'))
     }
 
-    // clone comment form and change some options
     const formcom = com.find('.form-comment:first')
     $('#post-comment').appendTo(formcom)
     formcom
@@ -638,11 +611,9 @@ function toastMessage(
     return false
   })
 
-  // cancel comment edit
   $comments.on('click', '.btn-cancel-comment', function (e) {
     e.preventDefault()
     const com = $(this).parent().parent().parent()
-    // restore html comment and links
     com.find('.comment-html:first').removeClass('hide')
     com.find('.comment-links:first').removeClass('hide')
     com.parents('.yw-comment').find('.comment-links').removeClass('hide')
@@ -650,7 +621,6 @@ function toastMessage(
     return false
   })
 
-  // ajax delete comment
   $comments.on('click', '.btn-delete-comment', function (e) {
     if (confirm(_t('DELETE_COMMENT_AND_ANSWERS'))) {
       e.preventDefault()
@@ -672,9 +642,7 @@ function toastMessage(
     }
     return false
   })
-  // reaction
 
-  // init user reaction count
   $('.reactions-container').each((i, val) => {
     const userReaction = $(val).find('.user-reaction').length
     const nbReactionLeft = $(val).find('.max-reaction').text()
@@ -683,7 +651,6 @@ function toastMessage(
       .text(nbReactionLeft - userReaction)
   })
 
-  // Reaction Management Helper
   const reactionManagementHelper = {
     renderAjaxError(translation, jqXHR, textStatus, errorThrown) {
       const message = _t(translation, {
@@ -732,7 +699,6 @@ function toastMessage(
     },
   }
 
-  // handler reaction click
   $('.link-reaction').click(function (event) {
     event.preventDefault()
     event.stopPropagation()
@@ -785,7 +751,6 @@ function toastMessage(
     }
     if (url !== '#') {
       if ($(this).hasClass('user-reaction')) {
-        // on supprime la reaction
         if (typeof blockReactionRemove !== 'undefined' && blockReactionRemove) {
           if (blockReactionRemoveMessage) {
             if (typeof toastMessage == 'function') {
@@ -801,12 +766,9 @@ function toastMessage(
           return false
         }
         const link = $(this)
-        deleteUserReaction(url, data, nb, nbInit, link).catch((_e) => {
-          /* do nothing */
-        })
+        deleteUserReaction(url, data, nb, nbInit, link).catch((_e) => {})
         return false
       }
-      // on ajoute la reaction si le max n'est pas dépassé
       const nbReactionLeft = parseFloat(
         $(this).parents('.reactions-container').find('.max-reaction').text(),
       )
@@ -842,9 +804,7 @@ function toastMessage(
               .then(() => {
                 $(this).click()
               })
-              .catch((_e) => {
-                /* do nothing */
-              })
+              .catch((_e) => {})
             return false
           }
         }
@@ -901,13 +861,12 @@ function toastMessage(
   })
 })(jQuery)
 
-// fot comments table
 $('#commentsTableDeleteModal.modal').on('shown.bs.modal', function (event) {
   multiDeleteService.initProgressBar($(this))
   $(this).find('.modal-body .multi-delete-results').html('')
   const deleteButton = $(this).find('button.start-btn-delete-comment')
   $(deleteButton).removeAttr('disabled')
-  const button = $(event.relatedTarget) // Button that triggered the modal
+  const button = $(event.relatedTarget)
   const name = $(button).data('name')
   $(this).find('#commentToDelete').text(name)
   $(deleteButton).data('name', name)
@@ -925,7 +884,7 @@ $('#commentsTableDeleteModal.modal').on('shown.bs.modal', function (event) {
       $.ajax({
         method: 'post',
         url: wiki.url(`api/comments/${name}/delete`),
-        timeout: 30000, // 30 seconds
+        timeout: 30000,
         error(e) {
           multiDeleteService.addErrorMessage(
             $(modal),
@@ -952,7 +911,6 @@ $('#commentsTableDeleteModal.modal').on('shown.bs.modal', function (event) {
   }
 })
 
-// function to check all checkbox in page.
 function checkAll(state) {
   const checkboxes = document.querySelectorAll('input.selectpage')
   const newState = [true, 'true', 1, '1'].includes(state)
@@ -963,8 +921,6 @@ function checkAll(state) {
   })
 }
 
-// tabs
-// hack for next and previous buttons
 $('.tab-content [data-toggle="tab"]').on('click', function () {
   const base = $(this).closest('.tab-content').prev()
   $(base).find('.active').removeClass('active')
@@ -975,7 +931,6 @@ $('.tab-content [data-toggle="tab"]').on('click', function () {
   $(base)
     .find(`a[href="${$(this).attr('href')}"]`)
     .tab('show')
-  // manage iframe case
   if (window.location != parent.parent.location) {
     $('html, body').animate({ scrollTop: $(base).offset().top }, 500)
     try {
@@ -989,12 +944,24 @@ $('.tab-content [data-toggle="tab"]').on('click', function () {
   }
 })
 
-// a11y
 $('#yw-a11y-jump-content').click(() => {
   setTimeout(() => {
     $('#yw-topnav').removeClass('nav-down').addClass('nav-up')
     $('body').removeClass('nav-down').addClass('nav-up')
   }, 300)
 })
+
+document.addEventListener(
+  'statechange',
+  (event) => {
+    const widget = event.target
+    const fields = widget.closest?.('.yw-bot-guard-fields')
+    if (!fields || widget.tagName !== 'ALTCHA-WIDGET') return
+    const verified = event.detail?.state === 'verified'
+    widget.style.display = verified ? 'none' : ''
+    fields.querySelector('.yw-bot-guard-active').hidden = !verified
+  },
+  true,
+)
 
 window.checkAll = checkAll

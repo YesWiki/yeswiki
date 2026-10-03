@@ -1,5 +1,4 @@
 $(document).ready(() => {
-  // validation formulaire de contact
   $('body').on('click', '.mail-submit', function (e) {
     e.stopPropagation()
     const form = $(this).parents('.ajax-mail-form')
@@ -8,10 +7,8 @@ $(document).ready(() => {
     let atleastonefieldnotvalid = false
     let atleastonemailfieldnotvalid = false
 
-    // on efface les anciennes erreurs
     form.find('.help-block').remove()
 
-    // il y a des champs requis, on teste la validite champs par champs
     if (inputsreq.length > 0) {
       inputsreq.each(function () {
         if (
@@ -33,7 +30,6 @@ $(document).ready(() => {
       })
     }
 
-    // les emails
     form.find('input[type=email]').each(function () {
       const reg = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
       const address = $(this).val()
@@ -56,32 +52,38 @@ $(document).ready(() => {
       atleastonefieldnotvalid === true ||
       atleastonemailfieldnotvalid === true
     ) {
-      // on remonte en haut du formulaire
       $('html, body').animate(
         { scrollTop: form.find('.has-error:first').offset().top - 80 },
         800,
       )
     } else {
-      // on soumet le formulaire
-      const str = form.serialize()
-      $.ajax({
-        type: 'POST',
-        url: form.attr('action'),
-        data: str,
-        success(msg) {
-          // si le message a ete envoye, on affiche le message de notification
-          form.find('.alert').remove()
-          form.prepend(msg)
-          msg = ''
-
-          //  on vide le formulaire si succes
-          if (form.find('.alert-success').length > 0) {
-            form[0].reset()
-          }
-        },
-      })
+      submitWhenVerified(form)
     }
 
     return false
   })
 })
+
+async function submitWhenVerified(form) {
+  const widget = form.find('altcha-widget')[0]
+  if (widget && widget.verify && widget.getState() !== 'verified') {
+    await widget.verify()
+  }
+  $.ajax({
+    type: 'POST',
+    url: form.attr('action'),
+    data: form.serialize(),
+    success(msg) {
+      const response = $('<div>').html(msg)
+      const freshGuard = response.find('.yw-bot-guard-fields').detach()
+      form.find('.alert').remove()
+      if (freshGuard.length > 0) {
+        form.find('.yw-bot-guard-fields').replaceWith(freshGuard)
+      }
+      form.prepend(response.children())
+      if (form.find('.alert-success').length > 0) {
+        form[0].reset()
+      }
+    },
+  })
+}

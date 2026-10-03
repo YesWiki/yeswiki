@@ -615,9 +615,20 @@ page ce qui fera apparaître la page de connexion.
 
 #### Utiliser les paramètres de contrôle d'accès via le wakka config ou la page ["Fichier de conf"](/docs/fr/admin?id=droit-d39accès)
 
+Les formulaires envoyés par des visiteurs non connectés (édition de page,
+fiches Bazar, contact, abonnement à une liste, inscription, mot de passe
+perdu) sont protégés d'office. Chaque formulaire porte un jeton signé à usage
+unique, valable 24 heures et refusé s'il est renvoyé en moins de 3 secondes,
+ainsi qu'un champ piège invisible que seuls les robots remplissent. Le
+navigateur résout aussi un petit calcul ALTCHA avant l'envoi, ce qui prend
+moins d'une seconde. Les envois refusés ces 7 derniers jours sont comptés sous
+le réglage `altcha` de la page "Fichier de conf". L'action `{{adminbotguard}}`,
+réservée aux admins, détaille ces refus jour par jour et par motif sur les 30
+derniers jours (`{{adminbotguard days="7"}}` pour une période plus courte).
+
 1. A partir du fichier wakka.config.php accessible via FTP, il est possible :
 
-- d'ajouter un capcha en mode édition
+- de désactiver le calcul ALTCHA (le jeton et le champ piège restent actifs)
 - d'ajouter un champ (mot de passe) en entrée du mode édition (+ un message
   informatif sur ce mot de passe)
 
@@ -625,9 +636,7 @@ Les paramètres ajoutables au wakkaconfig
 
     'password\_for\_editing' => 'votremotdepasse',
     'password\_for\_editing\_message' => 'un message qui apparait au dessus du champ mot de passe',
-    'use\_hashcash' => true, //ne pas toucher pour l'instant
-    'use\_nospam' => true, // ne pas toucher pour l'instant 'use\_alerte' => true,
-    'use\_captcha' => true,
+    'altcha' => false,
 
 2. A partir de la page ["Fichier de conf"](/docs/fr/admin?id=droit-d39accès) Les
    paramètres ci-dessus sont aussi activables de manière simple via la page de
@@ -878,9 +887,8 @@ ci-dessous.
 ### Sécurité
 
 - Prévenir si l'on quitte la page sans sauvegarder (true ou false) - use_alerte
-- Activer l'utilisation d'un captcha avant la sauvegarde (true ou false) -
-  use_captcha
-- Activer l'antispam hashcash du wiki (activé par défaut) - use_hashcash
+- Demander une preuve de travail ALTCHA aux visiteurs non connectés avant
+  chaque envoi de formulaire (true ou false, activé par défaut) - altcha
 - État du wiki (running ou vide = standard, hibernate = lecture seule) -
   wiki_status
 

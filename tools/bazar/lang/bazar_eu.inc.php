@@ -100,7 +100,6 @@ return [
     'BAZ_GIVEN_ID' => 'Esleitutako identifikatzailea',
     'BAZ_EDIT_MY_ENTRY' => 'Nire fitxa editatzen',
     'BAZ_CHANGE_PWD' => 'Aldatu pasahitza',
-    'BAZ_PROTECTION_ANTISPAM' => 'Spamaren aurkako babesa',
     'BAZ_UNKNOWN_USER' => 'Erabiltzaile ezezaguna',
     'BAZ_RADIO_REFRESH' => 'Freskatu zerrendako informazioa',
     'BAZ_NOT_CATEGORIZED' => 'Kategorizatu gabe',

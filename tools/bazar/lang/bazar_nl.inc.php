@@ -197,7 +197,6 @@ return [
     'BAZAR_SEMANTIC_TYPE_MISSING' => 'Het semantische type van dit formulier is niet bepaald, dus het kan niet worden getoond in JSON-LD',
     'BAZ_GIVEN_ID' => 'Identifier toegewezen',
     'BAZ_EDIT_MY_ENTRY' => 'Ondervraag mijn laken',
-    'BAZ_PROTECTION_ANTISPAM' => 'Antispam bescherming',
     'BAZ_GOGO_NEED_GROUPS' => 'Om deze templade te gebruiken, moet je minstens één gezicht activeren',
     'BAZ_UNKNOWN_USER' => 'Onbekende gebruiker',
     'BAZ_RADIO_REFRESH' => 'Verfrissende lijst',

@@ -42,15 +42,11 @@ class EntryManagerTest extends YesWikiTestCase
             'bn_condition' => '',
         ]);
 
-        // proves getOne() no longer needs the production HTTP bootstrap's global
         unset($GLOBALS['wiki']);
 
         $tag = null;
         try {
-            // id_fiche supplied explicitly to avoid the unrelated legacy genere_nom_wiki()
-            // global function (also $GLOBALS['wiki']-dependent, out of scope here)
             $entry = $entryManager->create(self::FORM_ID, [
-                'antispam' => 1,
                 'bf_titre' => 'Test entry',
                 'id_fiche' => self::ENTRY_TAG,
             ]);

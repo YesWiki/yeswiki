@@ -1,0 +1,13 @@
+<div class="yw-bot-guard-fields">
+  {% if tokenName %}
+    <input type="hidden" name="{{ tokenName }}" value="{{ token }}">
+    <div class="yw-bot-guard" aria-hidden="true" style="position:absolute;left:-10000px;top:auto;width:1px;height:1px;overflow:hidden">
+      <label for="{{ honeypotName }}">{{ honeypotLabel }}</label>
+      <input type="text" id="{{ honeypotName }}" name="{{ honeypotName }}" value="" tabindex="-1" autocomplete="off">
+    </div>
+  {% endif %}
+  {% if altchaChallenge %}
+    <altcha-widget name="{{ altchaName }}" challenge="{{ altchaChallenge }}" language="{{ language }}" auto="onfocus" configuration="{{ {hideFooter: true}|json_encode }}"></altcha-widget>
+    <p class="yw-bot-guard-active text-muted" hidden><i class="fas fa-shield-alt"></i> {{ _t('BOT_GUARD_ACTIVE') }}</p>
+  {% endif %}
+</div>

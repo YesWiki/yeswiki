@@ -32,7 +32,7 @@ jobs:
       - name: Install PHP dependencies
         run: composer install --no-dev --prefer-dist --no-progress --optimize-autoloader
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: '24'
 

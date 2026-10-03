@@ -168,3 +168,6 @@ mkdir -p javascripts/vendor/mermaid/chunks/mermaid.esm.min &&
 for f in node_modules/mermaid/dist/chunks/mermaid.esm.min/*; do
 	copy_js "$f" "javascripts/vendor/mermaid/chunks/mermaid.esm.min/$(basename "$f")"
 done
+
+# altcha
+mkdir -p javascripts/vendor/altcha && copy_js node_modules/altcha/dist/main/altcha.i18n.min.js javascripts/vendor/altcha/altcha.i18n.min.js

@@ -25,8 +25,8 @@ yarn-install: yarn.lock ## Install npm vendors according to the current yarn.loc
 ## use the docker/ folder README.md to find commands to launch docker
 
 ## —— Tests ———————————————
-test: ## Launch unit tests
-	./vendor/bin/phpunit --do-not-cache-result --stderr tests
+test: ## Launch unit tests: core, then each tools/*/tests folder (same as composer test)
+	$(COMPOSER) test
 
 ## —— Linters & Formatters ———————————————
 # `lint-*` reports and writes nothing; `fix-*` applies the fixes. Keeping them apart is what

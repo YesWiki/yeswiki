@@ -238,7 +238,6 @@ return [
     'BAZ_GIVEN_ID' => 'Identifiant attribué',
     'BAZ_EDIT_MY_ENTRY' => 'Editer ma fiche',
     'BAZ_CHANGE_PWD' => 'Changer de mot de passe',
-    'BAZ_PROTECTION_ANTISPAM' => 'Protection antispam',
     'BAZ_CONTACT_BY_MAIL' => 'Contacter par mail',
     'BAZ_GOGO_NEED_GROUPS' => 'Pour utiliser ce template vous devez activer au moins une facette',
     'BAZ_UNKNOWN_USER' => 'Utilisateur inconnu',

@@ -2,7 +2,6 @@
 
 namespace YesWiki\Login;
 
-use Exception;
 use Symfony\Component\Security\Csrf\Exception\TokenNotFoundException;
 use Tamtamchik\SimpleFlash\Flash;
 use YesWiki\Core\Controller\AuthController;
@@ -13,9 +12,9 @@ use YesWiki\Core\Exception\BadFormatPasswordException;
 use YesWiki\Core\Exception\ExitException;
 use YesWiki\Core\Exception\UserEmailAlreadyUsedException;
 use YesWiki\Core\Exception\UserNameAlreadyUsedException;
+use YesWiki\Core\Service\BotGuard;
 use YesWiki\Core\Service\UserManager;
 use YesWiki\Core\YesWikiAction;
-use YesWiki\Security\Controller\SecurityController;
 
 class UserSettingsAction extends YesWikiAction
 {
@@ -32,7 +31,6 @@ class UserSettingsAction extends YesWikiAction
 
     private $authController;
     private $csrfTokenController;
-    private $securityController;
     private $userController;
     private $userManager;
 
@@ -55,7 +53,6 @@ class UserSettingsAction extends YesWikiAction
     {
         $this->getServices();
 
-        // init vars
         $request = $this->getRequest();
         $this->setActionFromRequest($request->query->all() + $request->request->all());
         $this->error = '';
@@ -73,7 +70,6 @@ class UserSettingsAction extends YesWikiAction
     {
         $this->authController = $this->getService(AuthController::class);
         $this->csrfTokenController = $this->getService(CsrfTokenController::class);
-        $this->securityController = $this->getService(SecurityController::class);
         $this->userController = $this->getService(UserController::class);
         $this->userManager = $this->getService(UserManager::class);
     }
@@ -98,23 +94,23 @@ class UserSettingsAction extends YesWikiAction
             if (!empty($this->wantedUserName)) {
                 $this->adminIsActing = true;
                 $user = $this->userManager->getOneByName($this->wantedUserName);
-                if (empty($user)) { // Did not find the user in DB
+                if (empty($user)) {
                     $this->wiki->SetMessage(_t('USER_TRYING_TO_MODIFY_AN_INEXISTANT_USER') . ' !');
                 }
                 $this->referrer = filter_var($get['from'] ?? '', FILTER_SANITIZE_URL);
             } elseif (!empty($this->wantedEmail)) {
                 $this->adminIsActing = true;
 
-                $user = $this->userManager->getOneByEmail($this->wantedEmail); // In this case we need to load the right user
+                $user = $this->userManager->getOneByEmail($this->wantedEmail);
 
-                if (empty($user)) { // Did not find the user in DB
+                if (empty($user)) {
                     $this->wiki->SetMessage(_t('USER_TRYING_TO_MODIFY_AN_INEXISTANT_USER') . ' !');
                 }
             }
         } else {
             $userFromSession = $this->authController->getLoggedUser();
             $user = isset($userFromSession['name']) ? $this->userManager->getOneByName($userFromSession['name']) : null;
-            if ($user) { // Trying to instanciate $user from the session cooky)
+            if ($user) {
                 $this->userLoggedIn = true;
             }
         }
@@ -166,27 +162,17 @@ class UserSettingsAction extends YesWikiAction
                 'userLoggedIn' => $this->userLoggedIn,
             ]);
         }
-        $captcha = $this->securityController->renderCaptchaField();
-        $captcha = preg_replace('/(' .
-            preg_quote('<div class="media-body">', '/') .
-            "\s*" .
-            preg_quote('<strong>', '/') .
-            ')[^<]*(' .
-            preg_quote('</strong>', '/') .
-            ')/', '$1' . _t('USERSETTINGS_CAPTCHA_USER_CREATION') . '$2', $captcha);
 
-        return $this->render('@login/user-signup-form.twig', [
+        return $this->getService(BotGuard::class)->insertInto($this->render('@login/user-signup-form.twig', [
             'error' => $this->error,
             'name' => $this->wantedUserName,
             'email' => $this->wantedEmail,
-            'captcha' => $captcha,
             'regexUserName' => UserController::PATTERN_USER_NAME,
-        ]);
+        ]));
     }
 
     private function logout()
     {
-        // User wants to log out
         $this->authController->logout();
         $this->wiki->SetMessage(_t('USER_YOU_ARE_NOW_DISCONNECTED') . ' !');
         $this->wiki->Redirect($this->wiki->href());
@@ -195,7 +181,6 @@ class UserSettingsAction extends YesWikiAction
     private function deleteByAdmin(?User &$user = null)
     {
         if ($this->adminIsActing && !empty($this->wantedUserName)) {
-            // Admin trying to delete user
             try {
                 $this->csrfTokenController->checkToken('main', 'POST', 'csrf-token-delete', false);
                 if (empty($user)) {
@@ -205,7 +190,6 @@ class UserSettingsAction extends YesWikiAction
                 }
                 $this->userController->delete($user);
                 $user = null;
-                // forward
                 $this->wiki->SetMessage(_t('USER_DELETED') . ' !');
                 $this->wiki->Redirect($this->wiki->href('', $this->referrer));
             } catch (TokenNotFoundException $th) {
@@ -232,17 +216,16 @@ class UserSettingsAction extends YesWikiAction
                 $user = $this->userManager->getOneByEmail($sanitizedPost['email']);
 
                 if (!empty($user)) {
-                    if ($this->userLoggedIn) { // In case it's the user trying to update oneself, need to reset the cookies
+                    if ($this->userLoggedIn) {
                         $this->authController->login($user);
                     }
-                    // forward
                     $this->wiki->SetMessage(_t('USER_PARAMETERS_SAVED') . ' !');
-                    if ($this->userLoggedIn) { // In case it's the usther trying to update oneself
+                    if ($this->userLoggedIn) {
                         $this->wiki->Redirect($this->wiki->href());
-                    } else { // That's the admin acting, we need to pass the user on
+                    } else {
                         $this->wiki->Redirect($this->wiki->href('', '', 'user=' . $this->wantedUserName . '&from=' . $this->referrer, false));
                     }
-                } else { // Unable to update
+                } else {
                     throw new \Exception('');
                 }
             } catch (TokenNotFoundException $th) {
@@ -251,7 +234,6 @@ class UserSettingsAction extends YesWikiAction
                 $email = isset($post['email']) && is_string($post['email']) ? htmlspecialchars($post['email']) : '';
                 $this->errorUpdate = _t('USERSETTINGS_EMAIL_NOT_CHANGED') . ' ' . str_replace('{email}', $email, _t('USERSETTINGS_EMAIL_ALREADY_USED'));
             } catch (\Exception $th) {
-                // TODO use a specific exception
                 $this->errorUpdate = _t('USERSETTINGS_EMAIL_NOT_CHANGED') . ' ' . $th->getMessage();
             }
         }
@@ -260,18 +242,15 @@ class UserSettingsAction extends YesWikiAction
     private function changePassword(?User $user, array $post)
     {
         if ($this->userLoggedIn) {
-            // User wants to change password
-            if (!$this->authController->checkPassword($post['oldpass'], $user)) { // check password first
+            if (!$this->authController->checkPassword($post['oldpass'], $user)) {
                 $this->errorPasswordChange = _t('USER_WRONG_PASSWORD') . ' !';
-            } else { // user properly typed his old password in
-                // check token
+            } else {
                 try {
                     $this->csrfTokenController->checkToken('main', 'POST', 'csrf-token-changepass', false);
 
                     $password = $post['password'];
                     $this->authController->setPassword($user, $password);
                     $this->wiki->SetMessage(_t('USER_PASSWORD_CHANGED') . ' !');
-                    // reload $user
                     $user = $this->userManager->getOneByName($user['name']);
                     if (!empty($user)) {
                         $this->authController->login($user);
@@ -280,7 +259,6 @@ class UserSettingsAction extends YesWikiAction
                 } catch (TokenNotFoundException $th) {
                     $this->errorPasswordChange = _t('USERSETTINGS_PASSWORD_NOT_CHANGED') . ' ' . $th->getMessage();
                 } catch (BadFormatPasswordException|\Throwable $ex) {
-                    // Something when wrong when updating the user in DB
                     $this->errorPasswordChange = _t('USERSETTINGS_PASSWORD_NOT_CHANGED') . ' ' . $ex->getMessage();
                 }
             }
@@ -320,11 +298,11 @@ class UserSettingsAction extends YesWikiAction
                     && $post['confpassword'] !== $password
                 ) {
                     $this->error = _t('USER_PASSWORDS_NOT_IDENTICAL') . '.';
-                } else { // Password is correct
-                    $_POST['submit'] = SecurityController::EDIT_PAGE_SUBMIT_VALUE;
-                    list($state, $error) = $this->securityController->checkCaptchaBeforeSave();
-                    if (!$state) {
-                        $this->error = $error;
+                } else {
+                    $botGuard = $this->getService(BotGuard::class);
+                    $refusal = $botGuard->check($this->getRequest());
+                    if ($refusal !== null) {
+                        $this->error = $botGuard->message($refusal);
                     } else {
                         $user = $this->userController->create([
                             'changescount' => 100,
@@ -337,7 +315,7 @@ class UserSettingsAction extends YesWikiAction
                         ]);
                         if (!empty($user)) {
                             $this->authController->login($user);
-                            $this->wiki->Redirect($this->wiki->href()); // forward
+                            $this->wiki->Redirect($this->wiki->href());
                         }
                         $this->error = _t('USER_CREATION_FAILED') . '.';
                     }

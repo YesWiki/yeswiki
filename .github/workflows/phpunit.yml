@@ -2,24 +2,29 @@ name: Tests
 
 on:
   workflow_dispatch:
+  workflow_call:
     inputs:
-      logLevel:
-        description: 'Log level'
+      extension:
+        description: 'Extension name: the calling repository is checked out into tools/<extension> and only its tests run'
+        type: string
         required: true
-        default: 'warning'
-      tags:
-        description: 'Tags'
   push:
     branches: [doryphore, ectoplasme]
     paths:
+      - '**.php'
+      - '**.twig'
       - 'composer.lock'
-      - '*.php'
+      - 'yarn.lock'
+      - 'tests/**'
       - '.github/workflows/*.yml'
   pull_request:
     branches: [doryphore, doryphore-dev, ectoplasme]
     paths:
+      - '**.php'
+      - '**.twig'
       - 'composer.lock'
-      - '*.php'
+      - 'yarn.lock'
+      - 'tests/**'
       - '.github/workflows/*.yml'
 
 env:
@@ -53,6 +58,18 @@ jobs:
 
     steps:
       - uses: actions/checkout@v5
+        if: inputs.extension == ''
+
+      - uses: actions/checkout@v5
+        if: inputs.extension != ''
+        with:
+          repository: YesWiki/yeswiki
+          ref: doryphore
+
+      - uses: actions/checkout@v5
+        if: inputs.extension != ''
+        with:
+          path: tools/${{ inputs.extension }}
 
       - uses: shivammathur/setup-php@v2
         with:
@@ -65,6 +82,20 @@ jobs:
 
       - name: Install dependencies
         run: composer install --prefer-dist --no-progress
+
+      - name: Install extension dependencies
+        if: inputs.extension != '' && hashFiles(format('tools/{0}/composer.json', inputs.extension)) != ''
+        env:
+          EXTENSION: ${{ inputs.extension }}
+        run: composer install --prefer-dist --no-progress --working-dir "tools/$EXTENSION"
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '24'
+          cache: 'yarn'
+
+      - name: Install JS dependencies
+        run: yarn install --frozen-lockfile
 
       - name: Configure and start Nginx + PHP-FPM
         run: |
@@ -138,4 +169,11 @@ jobs:
             "http://localhost/?PagePrincipale&installAction=install"
 
       - name: Run test suite
+        if: inputs.extension == ''
         run: composer test
+
+      - name: Run extension tests
+        if: inputs.extension != ''
+        env:
+          EXTENSION: ${{ inputs.extension }}
+        run: ./vendor/bin/phpunit --do-not-cache-result --stderr "tools/$EXTENSION/tests"
