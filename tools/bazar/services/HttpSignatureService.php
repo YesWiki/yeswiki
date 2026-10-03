@@ -7,13 +7,17 @@ use Symfony\Component\HttpFoundation\Request;
 
 class HttpSignatureService
 {
+    public const MAX_CLOCK_SKEW = 3600;
+
     protected $httpClient;
     protected $ssrfUrlValidator;
+    protected $seenSignaturesDir;
 
-    public function __construct(SsrfUrlValidator $ssrfUrlValidator)
+    public function __construct(SsrfUrlValidator $ssrfUrlValidator, string $seenSignaturesDir = 'cache/activitypub-signatures')
     {
         $this->httpClient = HttpClient::create();
         $this->ssrfUrlValidator = $ssrfUrlValidator;
+        $this->seenSignaturesDir = $seenSignaturesDir;
     }
 
     public function generateKeyPair()
@@ -107,6 +111,8 @@ class HttpSignatureService
             throw new \Exception('Malformed signature');
         }
 
+        $this->assertFresh($request, explode(' ', strtolower($sigConf['headers'])));
+
         $resolve = $this->ssrfUrlValidator->resolveSafe($sigConf['keyId']);
 
         $response = $this->httpClient->request('GET', $sigConf['keyId'], [
@@ -153,7 +159,59 @@ class HttpSignatureService
             throw new \Exception('Digest mismatch');
         }
 
-        return $this->keyOwner($sigConf['keyId'], $actor);
+        $owner = $this->keyOwner($sigConf['keyId'], $actor);
+        $this->assertNotSeen($sigConf['signature']);
+
+        return $owner;
+    }
+
+    /**
+     * Refuse a request whose date and body are not signed, or whose date is too far from now.
+     *
+     * @param string[] $signedHeaders
+     *
+     * @throws \Exception
+     */
+    protected function assertFresh(Request $request, array $signedHeaders): void
+    {
+        foreach (['date', 'digest'] as $required) {
+            if (!in_array($required, $signedHeaders, true)) {
+                throw new \Exception("The signature does not cover the {$required} header");
+            }
+        }
+        $date = strtotime((string)$request->headers->get('Date'));
+        if ($date === false || abs($this->now() - $date) > self::MAX_CLOCK_SKEW) {
+            throw new \Exception('The request is dated too far from now');
+        }
+    }
+
+    /**
+     * Refuse a signature already accepted, remembering each one for as long as its date stays acceptable.
+     *
+     * @throws \Exception
+     */
+    protected function assertNotSeen(string $signature): void
+    {
+        if (!is_dir($this->seenSignaturesDir) && !mkdir($this->seenSignaturesDir, 0700, true) && !is_dir($this->seenSignaturesDir)) {
+            throw new \Exception('Cannot record the signature');
+        }
+        foreach (glob($this->seenSignaturesDir . '/*') ?: [] as $file) {
+            if (filemtime($file) < $this->now() - 2 * self::MAX_CLOCK_SKEW) {
+                @unlink($file);
+            }
+        }
+        $file = $this->seenSignaturesDir . '/' . hash('sha256', $signature);
+        $handle = @fopen($file, 'x');
+        if ($handle === false) {
+            throw new \Exception('This request has already been received');
+        }
+        fclose($handle);
+        touch($file, $this->now());
+    }
+
+    protected function now(): int
+    {
+        return time();
     }
 
     /**
