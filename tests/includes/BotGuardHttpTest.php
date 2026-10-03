@@ -45,6 +45,7 @@ class BotGuardHttpTest extends YesWikiTestCase
     public static function setUpBeforeClass(): void
     {
         $wiki = self::getWiki();
+        self::assertFileExists(BotGuard::ALTCHA_SCRIPT, 'the ALTCHA script is vendored by `yarn install`: run it before the tests');
         $GLOBALS['wiki'] = $wiki;
         $pageManager = $wiki->services->get(PageManager::class);
         $aclService = $wiki->services->get(AclService::class);
@@ -63,7 +64,7 @@ class BotGuardHttpTest extends YesWikiTestCase
         ]);
         self::$maxTripleId = (int)($db->loadSingle('SELECT MAX(id) AS id FROM' . $db->prefixTable('triples'))['id'] ?? 0);
         foreach (self::PAGES as $tag => $body) {
-            $pageManager->save($tag, $body);
+            $pageManager->save($tag, $body, '', true);
             $aclService->save($tag, 'write', '*');
             $aclService->save($tag, 'read', '*');
         }
