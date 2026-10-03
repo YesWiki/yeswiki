@@ -108,6 +108,8 @@ abstract class BazarField implements \JsonSerializable
      *
      * @return string|null $html
      */
+    private static int $staticRenderDepth = 0;
+
     public function renderStaticIfPermitted($entry, ?string $userNameForRendering = null)
     {
         // Safety checks, must be run before every renderStatic
@@ -115,7 +117,13 @@ abstract class BazarField implements \JsonSerializable
             return '';
         }
 
-        return $this->renderStatic($entry);
+        self::$staticRenderDepth++;
+
+        try {
+            return $this->renderStatic($entry);
+        } finally {
+            self::$staticRenderDepth--;
+        }
     }
 
     // Render the edit view of the field. Check ACLS first
@@ -190,8 +198,12 @@ abstract class BazarField implements \JsonSerializable
 
     protected function getValue($entry)
     {
-        // TODO see if it is necessary to look for $_REQUEST
-        return $entry[$this->propertyName] ?? $_REQUEST[$this->propertyName] ?? $this->default;
+        $value = $entry[$this->propertyName] ?? null;
+        if ($value === null && self::$staticRenderDepth === 0) {
+            $value = $_REQUEST[$this->propertyName] ?? null;
+        }
+
+        return $value ?? $this->default;
     }
 
     public function isEmpty($pValue)
