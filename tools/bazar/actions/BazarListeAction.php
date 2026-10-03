@@ -77,7 +77,7 @@ class BazarListeAction extends YesWikiAction
 
         $template = $get->get('template') ?? $arg['template'] ?? null;
         if ($template) {
-            $template = htmlspecialchars($template);
+            $template = htmlspecialchars(basename((string)$template));
         }
         // Dynamic templates
         $dynamic = $this->formatBoolean($arg, false, 'dynamic');
