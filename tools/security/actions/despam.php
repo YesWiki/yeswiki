@@ -50,15 +50,16 @@ if ($this->UserIsAdmin()) {
         // -- (2) Page de resultats et form. de selection des pages a effacer ----
         //
         if (isset($_POST['from']) && isset($_POST['2'])) {
+            $fromHours = (int)$_POST['from'];
             $requete =
         'select *
               from ' . $this->config['table_prefix'] . 'pages
               where
-              time > date_sub(now(), interval ' . $this->services->get(YesWiki\Core\Service\DbService::class)->escape($_POST['from']) . " hour)
+              time > date_sub(now(), interval ' . $fromHours . " hour)
               and latest = 'Y'
               order by `time` desc";
             $title =
-        '<h2>' . str_replace('{x}', $_POST['from'], _t('DESPAM_CLEAN_SPAMMED_PAGES')) . "</h2>\n";
+        '<h2>' . str_replace('{x}', (string)$fromHours, _t('DESPAM_CLEAN_SPAMMED_PAGES')) . "</h2>\n";
         }
         // echo $requete;
         $pagesFromSpammer = $this->LoadAll($requete);
