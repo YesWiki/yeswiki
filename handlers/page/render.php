@@ -4,15 +4,28 @@ $output = '<body class="yeswiki-render">' . "\n"
     . '<div class="container">' . "\n"
     . '<div class="yeswiki-page-widget page-widget page" ' . $this->Format('{{doubleclic iframe="1"}}') . '>' . "\n";
 
-$this->page['body'] = strip_tags($_GET['content']); // fake Page for actions and handlers, all html is striped
+$rawContent = is_string($_GET['content'] ?? null) ? $_GET['content'] : '';
+$actionBlocks = [];
+$protectedContent = preg_replace_callback(
+    '/\{\{\s*\w[^}]*\}\}/s',
+    function ($matches) use (&$actionBlocks) {
+        $actionBlocks[] = $matches[0];
+
+        return "\x02" . (count($actionBlocks) - 1) . "\x03";
+    },
+    $rawContent
+);
+$protectedContent = strip_tags($protectedContent);
+$this->page['body'] = preg_replace_callback(
+    '/\x02(\d+)\x03/',
+    fn ($matches) => $actionBlocks[(int)$matches[1]] ?? '',
+    $protectedContent
+);
 
 $output .= $this->Format($this->page['body']);
 $output .= '</div><!-- end .page-widget -->' . "\n";
-// ajout des en-têtes en pieds de page
 
-// on recupere les entetes html mais pas ce qu'il y a dans le body
 $header = explode('<body', $this->Header());
 $output = $header[0] . $output;
-// on recupere juste les javascripts et la fin des balises body et html
 $output .= preg_replace('/^.+<script/Us', '<script', $this->Footer());
 echo $output;

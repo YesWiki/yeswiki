@@ -16,6 +16,7 @@ class SearchManager
     protected $wiki;
     protected $dbService;
     protected $aclService;
+    private bool $queryParseError = false;
 
     public const MISSING_PROPERTY = '_MISSING_PROPERTY_';
     public const MISSING_FIELD = '_MISSING_FIELD_';
@@ -427,10 +428,17 @@ class SearchManager
 
         $vKeywords = $params['keywords'] ?? '';
 
-        $vQueries = $this->parseQuery($params['queries']);
+        $vQueryString = is_array($params['queries'] ?? null)
+            ? $this->queryToString($params['queries'])
+            : (string)($params['queries'] ?? '');
+        $vQueryAst = $this->parseQueryExpression($vQueryString);
 
-        foreach ($vQueries as $vQuery) {
-            if (!$this->isFieldName($vQuery['name'] ?? null)) {
+        if (($vQueryAst['type'] ?? '') === 'invalid') {
+            return '';
+        }
+
+        foreach ($this->queryAstFieldNames($vQueryAst) as $vQueryName) {
+            if (!$this->isFieldName($vQueryName)) {
                 return '';
             }
         }
@@ -509,9 +517,7 @@ class SearchManager
             $vKeywordsFields = array_unique(array_filter(array_map('trim', $vSearchFields), [$this, 'isFieldName']));
         }
 
-        foreach ($vQueries as $vQuery) {
-            $vQueriesFields[] = $vQuery['name'];
-        }
+        $vQueriesFields = $this->queryAstFieldNames($vQueryAst);
 
         $vNecessaryFields = array_unique(array_merge($vKeywordsFields, $vQueriesFields));
 
@@ -702,11 +708,7 @@ class SearchManager
 
         $vWhereRequest .= $vKeywordsConditions;
 
-        $vQueriesConditions = trim($this->buildQueriesConditions($vQueries, $vFields));
-
-        if (str_contains($vQueriesConditions, '((FALSE))')) {
-            return '';
-        }
+        $vQueriesConditions = trim($this->compileQueryAst($vQueryAst, $vFields));
 
         if ($vQueriesConditions != '') {
             $vWhereRequest .= ($vWhereRequest != '' ? ' AND ' : '') . $vQueriesConditions;
@@ -872,46 +874,7 @@ class SearchManager
 
         return array_filter(
             array_map(
-                function ($pValue) {
-                    preg_match_all("/\s*([^=!<>]*)\s*(==|!=|<=|>=|=|<|>)(.*)/", $pValue, $pMatches);
-                    $vName = isset($pMatches[1][0]) ? trim($pMatches[1][0]) : null;
-
-                    $vOperator = isset($pMatches[2][0]) ? trim($pMatches[2][0]) : null;
-
-                    if ($vOperator == '=') {
-                        $vOperator = '==';
-                    }
-
-                    $vUniqueValues = [];
-                    if (isset($pMatches[3][0])) {
-                        foreach (explode(',', trim($pMatches[3][0])) as $vValue) {
-                            if (preg_match('/^\[(.*)\]$/', $vValue, $matches)) {
-                                switch ($matches[1]) {
-                                    case 'user.name':
-                                        $vValue = $this->wiki->getUserName();
-                                        break;
-                                    case 'user.entry.id_fiche':
-                                        $vUserManager = $this->wiki->services->get(UserManager::class);
-                                        $entry = $vUserManager->getAssociatedEntry();
-                                        if (!empty($entry)) {
-                                            $vValue = $entry['id_fiche'];
-                                        }
-                                        break;
-                                }
-                            }
-                            if (!in_array($vValue, $vUniqueValues, true)) {
-                                $vUniqueValues[] = $vValue;
-                            }
-                        }
-                    }
-
-                    return
-                        [
-                            'name' => $vName,
-                            'operator' => $vOperator,
-                            'values' => $vUniqueValues,
-                        ];
-                },
+                fn ($pValue) => $this->parseCondition($pValue),
                 array_filter(
                     array_unique(explode('|', $vQuery)),
                     function ($pValue) {
@@ -923,6 +886,283 @@ class SearchManager
                 return isset($pValue['name']) && trim($pValue['name']) != '';
             },
         );
+    }
+
+    /**
+     * Parses one `name op value,value…` fragment into a {name, operator, values} condition.
+     */
+    private function parseCondition(string $pValue): array
+    {
+        preg_match_all("/\s*([^=!<>]*)\s*(==|!=|<=|>=|=|<|>)(.*)/", $pValue, $pMatches);
+        $vName = isset($pMatches[1][0]) ? trim($pMatches[1][0]) : null;
+
+        $vOperator = isset($pMatches[2][0]) ? trim($pMatches[2][0]) : null;
+
+        if ($vOperator == '=') {
+            $vOperator = '==';
+        }
+
+        $vUniqueValues = [];
+        if (isset($pMatches[3][0])) {
+            foreach (explode(',', trim($pMatches[3][0])) as $vValue) {
+                if (preg_match('/^\[(.*)\]$/', $vValue, $matches)) {
+                    switch ($matches[1]) {
+                        case 'user.name':
+                            $vValue = $this->wiki->getUserName();
+                            break;
+                        case 'user.entry.id_fiche':
+                            $vUserManager = $this->wiki->services->get(UserManager::class);
+                            $entry = $vUserManager->getAssociatedEntry();
+                            if (!empty($entry)) {
+                                $vValue = $entry['id_fiche'];
+                            }
+                            break;
+                    }
+                }
+                if (!in_array($vValue, $vUniqueValues, true)) {
+                    $vUniqueValues[] = $vValue;
+                }
+            }
+        }
+
+        return [
+            'name' => $vName,
+            'operator' => $vOperator,
+            'values' => $vUniqueValues,
+        ];
+    }
+
+    /**
+     * Turns a query string into a boolean tree: ` OR ` and ` AND ` (uppercase, space-delimited) and
+     * parentheses group conditions, AND binding tighter than OR; legacy `|` reads as AND and `,` keeps
+     * its within-field meaning inside a leaf.
+     *
+     * @return array a node {type:'and'|'or', children:[]} or {type:'leaf', cond:[]}
+     */
+    public function parseQueryExpression(?string $pQuery): array
+    {
+        $vTokens = $this->tokenizeQuery((string)$pQuery);
+        $vPos = 0;
+        $this->queryParseError = false;
+        $vAst = $this->parseOr($vTokens, $vPos);
+        if ($this->queryParseError || $vPos < count($vTokens)) {
+            return ['type' => 'invalid'];
+        }
+
+        return $vAst ?? ['type' => 'and', 'children' => []];
+    }
+
+    /**
+     * @return list<array{kind: string, text?: string}>
+     */
+    private function tokenizeQuery(string $pQuery): array
+    {
+        $vTokens = [];
+        $vLeaf = '';
+        $vBracketDepth = 0;
+        $vLength = strlen($pQuery);
+        $flush = function () use (&$vLeaf, &$vTokens) {
+            if (trim($vLeaf) !== '') {
+                $vTokens[] = ['kind' => 'leaf', 'text' => trim($vLeaf)];
+            }
+            $vLeaf = '';
+        };
+        for ($i = 0; $i < $vLength; $i++) {
+            $vChar = $pQuery[$i];
+            if ($vChar === '[') {
+                $vBracketDepth++;
+            } elseif ($vChar === ']' && $vBracketDepth > 0) {
+                $vBracketDepth--;
+            }
+            if ($vBracketDepth === 0) {
+                if ($vChar === '(' || $vChar === ')') {
+                    $flush();
+                    $vTokens[] = ['kind' => $vChar === '(' ? 'lparen' : 'rparen'];
+                    continue;
+                }
+                if ($vChar === '|') {
+                    $flush();
+                    $vTokens[] = ['kind' => 'and'];
+                    continue;
+                }
+                if ($vChar === ' ' && substr($pQuery, $i, 5) === ' AND ') {
+                    $flush();
+                    $vTokens[] = ['kind' => 'and'];
+                    $i += 4;
+                    continue;
+                }
+                if ($vChar === ' ' && substr($pQuery, $i, 4) === ' OR ') {
+                    $flush();
+                    $vTokens[] = ['kind' => 'or'];
+                    $i += 3;
+                    continue;
+                }
+            }
+            $vLeaf .= $vChar;
+        }
+        $flush();
+
+        return $vTokens;
+    }
+
+    /**
+     * @param list<array{kind: string, text?: string}> $pTokens
+     */
+    private function parseOr(array $pTokens, int &$pPos): ?array
+    {
+        $vChildren = [];
+        $vFirst = $this->parseAnd($pTokens, $pPos);
+        if ($vFirst !== null) {
+            $vChildren[] = $vFirst;
+        }
+        while (isset($pTokens[$pPos]) && $pTokens[$pPos]['kind'] === 'or') {
+            $pPos++;
+            $vNext = $this->parseAnd($pTokens, $pPos);
+            if ($vNext !== null) {
+                $vChildren[] = $vNext;
+            }
+        }
+        if ($vChildren === []) {
+            return null;
+        }
+
+        return count($vChildren) === 1 ? $vChildren[0] : ['type' => 'or', 'children' => $vChildren];
+    }
+
+    /**
+     * @param list<array{kind: string, text?: string}> $pTokens
+     */
+    private function parseAnd(array $pTokens, int &$pPos): ?array
+    {
+        $vChildren = [];
+        $vFirst = $this->parseTerm($pTokens, $pPos);
+        if ($vFirst !== null) {
+            $vChildren[] = $vFirst;
+        }
+        while (isset($pTokens[$pPos]) && $pTokens[$pPos]['kind'] === 'and') {
+            $pPos++;
+            $vNext = $this->parseTerm($pTokens, $pPos);
+            if ($vNext !== null) {
+                $vChildren[] = $vNext;
+            }
+        }
+        if ($vChildren === []) {
+            return null;
+        }
+
+        return count($vChildren) === 1 ? $vChildren[0] : ['type' => 'and', 'children' => $vChildren];
+    }
+
+    /**
+     * @param list<array{kind: string, text?: string}> $pTokens
+     */
+    private function parseTerm(array $pTokens, int &$pPos): ?array
+    {
+        if (!isset($pTokens[$pPos])) {
+            return null;
+        }
+        $vToken = $pTokens[$pPos];
+        if ($vToken['kind'] === 'lparen') {
+            $pPos++;
+            $vInner = $this->parseOr($pTokens, $pPos);
+            if (isset($pTokens[$pPos]) && $pTokens[$pPos]['kind'] === 'rparen') {
+                $pPos++;
+            } else {
+                $this->queryParseError = true;
+            }
+
+            return $vInner;
+        }
+        if ($vToken['kind'] === 'leaf') {
+            $pPos++;
+            $vCondition = $this->parseCondition($vToken['text']);
+            if (!isset($vCondition['name']) || trim((string)$vCondition['name']) === '') {
+                return null;
+            }
+
+            return ['type' => 'leaf', 'cond' => $vCondition];
+        }
+
+        return null;
+    }
+
+    /**
+     * Rewrites a legacy query string into the explicit grammar: `|` becomes ` AND `, and a field's
+     * comma-separated values become a parenthesised ` OR ` group (` AND ` for `!=`, matching the old
+     * meaning). Already-explicit queries and single-value conditions are left untouched.
+     */
+    public function convertLegacyQuery(?string $pQuery): string
+    {
+        $vQuery = trim((string)$pQuery);
+        if ($vQuery === '' || preg_match('/ (AND|OR) /', $vQuery) === 1 || str_contains($vQuery, '(')) {
+            return $vQuery;
+        }
+
+        $vFragments = [];
+        foreach (explode('|', $vQuery) as $vFragment) {
+            if (trim($vFragment) === '') {
+                continue;
+            }
+            if (preg_match('/^(\s*[^=!<>]*?\s*)(==|!=|<=|>=|=|<|>)(.*)$/s', $vFragment, $vMatches) !== 1) {
+                $vFragments[] = trim($vFragment);
+                continue;
+            }
+            $vName = trim($vMatches[1]);
+            $vOperator = $vMatches[2];
+            $vValues = array_map('trim', explode(',', trim($vMatches[3])));
+            if (count($vValues) <= 1) {
+                $vFragments[] = $vName . $vOperator . trim($vMatches[3]);
+                continue;
+            }
+            $vGlue = $vOperator === '!=' ? ' AND ' : ' OR ';
+            $vFragments[] = '(' . implode($vGlue, array_map(fn ($pValue) => $vName . $vOperator . $pValue, $vValues)) . ')';
+        }
+
+        return implode(' AND ', $vFragments);
+    }
+
+    /**
+     * Every field name referenced by the leaves of a query tree.
+     *
+     * @return list<string>
+     */
+    public function queryAstFieldNames(array $pAst): array
+    {
+        if (($pAst['type'] ?? '') === 'leaf') {
+            return [$pAst['cond']['name']];
+        }
+        $vNames = [];
+        foreach ($pAst['children'] ?? [] as $vChild) {
+            $vNames = array_merge($vNames, $this->queryAstFieldNames($vChild));
+        }
+
+        return $vNames;
+    }
+
+    /**
+     * Compiles a query tree to SQL, reusing buildQueriesConditions() for each leaf so the per-field
+     * rules (collation, multiple values, missing fields, identifier quoting) stay in one place.
+     *
+     * @param array<string, mixed> $pFields
+     */
+    public function compileQueryAst(array $pAst, array $pFields): string
+    {
+        if (($pAst['type'] ?? '') === 'leaf') {
+            return $this->buildQueriesConditions([$pAst['cond']], $pFields);
+        }
+        $vParts = [];
+        foreach ($pAst['children'] ?? [] as $vChild) {
+            $vPart = $this->compileQueryAst($vChild, $pFields);
+            if (trim($vPart) !== '') {
+                $vParts[] = $vPart;
+            }
+        }
+        if ($vParts === []) {
+            return '';
+        }
+        $vGlue = ($pAst['type'] ?? 'and') === 'or' ? ' OR ' : ' AND ';
+
+        return '(' . implode($vGlue, $vParts) . ')';
     }
 
     /**
