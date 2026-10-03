@@ -119,6 +119,7 @@ class CommentService implements EventSubscriberInterface
                     'error' => _t('COMMENT_EMPTY_NOT_SAVED'),
                 ];
             }
+            $body = $this->wiki->services->get(HtmlPurifierService::class)->cleanHTML($body);
             // store new comment
             $this->wiki->SavePage($idComment, $body, $content['pagetag']);
             if ($newComment) {
