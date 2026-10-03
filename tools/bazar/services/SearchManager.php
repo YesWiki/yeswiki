@@ -19,6 +19,7 @@ class SearchManager
     public const MISSING_PROPERTY = '_MISSING_PROPERTY_';
     public const MISSING_FIELD = '_MISSING_FIELD_';
     public const ENTRY_METADATA_FIELDS = ['id_fiche', 'id_typeannonce', 'date_creation_fiche', 'date_maj_fiche', 'statut_fiche', 'url'];
+    private const FIELD_NAME_PATTERN = '/^[\p{L}\p{N}_-]+(\.[\p{L}\p{N}_-]+)*$/u';
 
     public function __construct(
         Wiki $wiki,
@@ -189,9 +190,9 @@ class SearchManager
                         switch ($vFieldDescriptor['_mode_']) {
                             case 'single':
                                 if ($vIsRegExp) {
-                                    $vORRequest = $this->renameJSONPathVariable($vFieldName) . ' COLLATE ' . $this->dbService->getCollation() . ' REGEXP \'' . mysqli_real_escape_string($this->wiki->dblink, $this->extractRegExp($vOR)) . '\'';
+                                    $vORRequest = $this->column($vFieldName) . ' COLLATE ' . $this->dbService->getCollation() . ' REGEXP \'' . mysqli_real_escape_string($this->wiki->dblink, $this->extractRegExp($vOR)) . '\'';
                                 } else {
-                                    $vORRequest = $this->renameJSONPathVariable($vFieldName) . ' COLLATE ' . $this->dbService->getCollation() . ' LIKE \'%' . mysqli_real_escape_string($this->wiki->dblink, $vOR) . '%\'';
+                                    $vORRequest = $this->column($vFieldName) . ' COLLATE ' . $this->dbService->getCollation() . ' LIKE \'%' . mysqli_real_escape_string($this->wiki->dblink, $vOR) . '%\'';
                                 }
 
                                 break;
@@ -208,7 +209,7 @@ class SearchManager
 
                         if ($vField['hasMultipleStructures']) {
                             if ($vORRequest != '') {
-                                $vORRequest = '( ' . $this->renameJSONPathVariable('id_typeannonce') . ' IN (' . implode(',', array_map(function ($pFormID) {
+                                $vORRequest = '( ' . $this->column('id_typeannonce') . ' IN (' . implode(',', array_map(function ($pFormID) {
                                     return '\'' . $pFormID . '\'';
                                 }, $vFieldDescriptor['_ids_'])) . ') AND ' . $vORRequest . ')';
                             }
@@ -236,9 +237,9 @@ class SearchManager
                     switch ($vFieldDescriptor['_mode_']) {
                         case 'single':
                             if ($vIsRegExp) {
-                                $vExcludedRequest = mysqli_real_escape_string($this->wiki->dblink, $this->renameJSONPathVariable($vFieldName)) . ' COLLATE ' . $this->dbService->getCollation() . ' NOT REGEXP \'' . mysqli_real_escape_string($this->wiki->dblink, $this->extractRegExp($vExcluded)) . '\'';
+                                $vExcludedRequest = $this->column($vFieldName) . ' COLLATE ' . $this->dbService->getCollation() . ' NOT REGEXP \'' . mysqli_real_escape_string($this->wiki->dblink, $this->extractRegExp($vExcluded)) . '\'';
                             } else {
-                                $vExcludedRequest = mysqli_real_escape_string($this->wiki->dblink, $this->renameJSONPathVariable($vFieldName)) . ' COLLATE ' . $this->dbService->getCollation() . ' NOT LIKE \'%' . mysqli_real_escape_string($this->wiki->dblink, $vExcluded) . '%\'';
+                                $vExcludedRequest = $this->column($vFieldName) . ' COLLATE ' . $this->dbService->getCollation() . ' NOT LIKE \'%' . mysqli_real_escape_string($this->wiki->dblink, $vExcluded) . '%\'';
                             }
 
                             break;
@@ -255,7 +256,7 @@ class SearchManager
 
                     if ($vField['hasMultipleStructures']) {
                         if ($vExcludedRequest != '') {
-                            $vExcludedRequest = '( ' . $this->renameJSONPathVariable('id_typeannonce') . ' IN (' . implode(',', array_map(function ($pFormID) {
+                            $vExcludedRequest = '( ' . $this->column('id_typeannonce') . ' IN (' . implode(',', array_map(function ($pFormID) {
                                 return '\'' . $pFormID . '\'';
                             }, $vFieldDescriptor['_ids_'])) . ') AND ' . $vExcludedRequest . ')';
                         }
@@ -341,20 +342,20 @@ class SearchManager
                     switch ($vDescriptor['_mode_']) {
                         case 'single':
                             if ($vIsRegExp) {
-                                $vValueConditions[] = mysqli_real_escape_string($this->wiki->dblink, $this->renameJSONPathVariable($vFieldName)) . ' COLLATE ' . $this->dbService->getCollation() . ' ' . $vRegExpOperator . ' \'' . mysqli_real_escape_string($this->wiki->dblink, $this->extractRegExp($vValue)) . '\'';
+                                $vValueConditions[] = $this->column($vFieldName) . ' COLLATE ' . $this->dbService->getCollation() . ' ' . $vRegExpOperator . ' \'' . mysqli_real_escape_string($this->wiki->dblink, $this->extractRegExp($vValue)) . '\'';
                             } else {
                                 if ($vDescriptor['_type_'] == 'number') {
                                     if (isset($vValue) && trim($vValue) !== '') {
                                         if (!is_numeric(trim($vValue)) || !is_finite((float)trim($vValue))) {
                                             $vValueConditions[] = 'FALSE';
                                         } else {
-                                            $vValueConditions[] = 'CAST(' . mysqli_real_escape_string($this->wiki->dblink, $this->renameJSONPathVariable($vFieldName)) . ' AS DOUBLE) ' . $vComparisonOperator . ' ' . (float)trim($vValue);
+                                            $vValueConditions[] = 'CAST(' . $this->column($vFieldName) . ' AS DOUBLE) ' . $vComparisonOperator . ' ' . (float)trim($vValue);
                                         }
                                     } else {
-                                        $vValueConditions[] = '(' . mysqli_real_escape_string($this->wiki->dblink, $this->renameJSONPathVariable($vFieldName)) . ' COLLATE ' . $this->dbService->getCollation() . ' ' . $vComparisonOperator . ' \'\' )';
+                                        $vValueConditions[] = '(' . $this->column($vFieldName) . ' COLLATE ' . $this->dbService->getCollation() . ' ' . $vComparisonOperator . ' \'\' )';
                                     }
                                 } else {
-                                    $vValueConditions[] = mysqli_real_escape_string($this->wiki->dblink, $this->renameJSONPathVariable($vFieldName)) . ' COLLATE ' . $this->dbService->getCollation() . ' ' . $vComparisonOperator . ' \'' . mysqli_real_escape_string($this->wiki->dblink, $vValue) . '\'';
+                                    $vValueConditions[] = $this->column($vFieldName) . ' COLLATE ' . $this->dbService->getCollation() . ' ' . $vComparisonOperator . ' \'' . mysqli_real_escape_string($this->wiki->dblink, $vValue) . '\'';
                                 }
                             }
 
@@ -364,7 +365,7 @@ class SearchManager
                             if ($vIsRegExp) {
                                 $vValueConditions[] = '(s.champ = \'' . mysqli_real_escape_string($this->wiki->dblink, $this->renameJSONPathVariable($vFieldName)) . '\' AND s.elt COLLATE ' . $this->dbService->getCollation() . ' ' . $vRegExpOperator . ' \'' . mysqli_real_escape_string($this->wiki->dblink, $this->extractRegExp($vValue)) . '\')';
                             } else {
-                                $vValueConditions[] = $vFindInSetOperator . ' (\'' . mysqli_real_escape_string($this->wiki->dblink, $vValue) . '\' COLLATE ' . $this->dbService->getCollation() . ', ' . mysqli_real_escape_string($this->wiki->dblink, $this->renameJSONPathVariable($vFieldName)) . ' COLLATE ' . $this->dbService->getCollation() . ')';
+                                $vValueConditions[] = $vFindInSetOperator . ' (\'' . mysqli_real_escape_string($this->wiki->dblink, $vValue) . '\' COLLATE ' . $this->dbService->getCollation() . ', ' . $this->column($vFieldName) . ' COLLATE ' . $this->dbService->getCollation() . ')';
                             }
 
                             break;
@@ -384,7 +385,7 @@ class SearchManager
 
                     if ($vField['hasMultipleStructures']) {
                         if ($vDescriptorCondition != '') {
-                            $vDescriptorCondition = $this->renameJSONPathVariable('id_typeannonce') . ' IN (' . implode(',', array_map(function ($pFormID) {
+                            $vDescriptorCondition = $this->column('id_typeannonce') . ' IN (' . implode(',', array_map(function ($pFormID) {
                                 return '\'' . $pFormID . '\'';
                             }, $vDescriptor['_ids_'])) . ') AND (' . $vDescriptorCondition . ')';
                         }
@@ -427,6 +428,12 @@ class SearchManager
         $vKeywords = $params['keywords'] ?? '';
 
         $vQueries = $this->parseQuery($params['queries']);
+
+        foreach ($vQueries as $vQuery) {
+            if (!$this->isFieldName($vQuery['name'] ?? null)) {
+                return '';
+            }
+        }
 
         $vIDsRequest = '';
 
@@ -499,7 +506,7 @@ class SearchManager
 
             $vSearchFields[] = 'bf_titre';
 
-            $vKeywordsFields = array_unique(array_map('trim', $vSearchFields));
+            $vKeywordsFields = array_unique(array_filter(array_map('trim', $vSearchFields), [$this, 'isFieldName']));
         }
 
         foreach ($vQueries as $vQuery) {
@@ -618,15 +625,12 @@ class SearchManager
         $vSelectRequest
         = [
             'p.*',
-            'JSON_UNQUOTE(JSON_EXTRACT(body, \'$.id_typeannonce\')) AS `' . $this->renameJSONPathVariable('id_typeannonce') . '`',
+            'JSON_UNQUOTE(JSON_EXTRACT(body, \'$.id_typeannonce\')) AS ' . $this->column('id_typeannonce'),
         ];
 
         foreach ($vFields as $vFieldName => $vField) {
             if (!$vField['isExtracted']) {
-                $vSQLNom = mysqli_real_escape_string($this->wiki->dblink, $vFieldName);
-                $vRenamedSQLNom = mysqli_real_escape_string($this->wiki->dblink, $this->renameJSONPathVariable($vFieldName));
-
-                $vSelectRequest[] = 'JSON_UNQUOTE(JSON_EXTRACT(body, \'$.' . $vSQLNom . '\')) AS `' . $vRenamedSQLNom . '`';
+                $vSelectRequest[] = 'JSON_UNQUOTE(JSON_EXTRACT(body, \'' . mysqli_real_escape_string($this->wiki->dblink, $this->jsonPath($vFieldName)) . '\')) AS ' . $this->column($vFieldName);
 
                 $vField['isExtracted'] = true;
             }
@@ -642,18 +646,18 @@ class SearchManager
                 continue;
             }
 
-            $vSplitteds[] = 'SELECT id, champ, elt FROM ' . $this->renameJSONPathVariable($vFieldName) . '_multiple';
+            $vSplitteds[] = 'SELECT id, champ, elt FROM ' . $this->column($vFieldName, '_multiple') . '';
 
             $vSplittedsRequest
-                        .= ', ' . $this->renameJSONPathVariable($vFieldName) . '_multiple AS '
+                        .= ', ' . $this->column($vFieldName, '_multiple') . ' AS '
                         . '( '
                             . 'SELECT '
                                 . 'id, '
-                                . '\'' . $this->renameJSONPathVariable($vFieldName) . '\' AS champ, '
-                                . 'TRIM(SUBSTRING_INDEX(' . $vFieldName . ', \',\', 1)) AS elt, '
+                                . '\'' . mysqli_real_escape_string($this->wiki->dblink, $this->renameJSONPathVariable($vFieldName)) . '\' AS champ, '
+                                . 'TRIM(SUBSTRING_INDEX(' . $this->column($vFieldName) . ', \',\', 1)) AS elt, '
                                 . 'CASE '
-                                    . 'WHEN INSTR(' . $this->renameJSONPathVariable($vFieldName) . ', \',\') = 0 THEN \'\' '
-                                    . 'ELSE SUBSTR(' . $this->renameJSONPathVariable($vFieldName) . ', INSTR(' . $this->renameJSONPathVariable($vFieldName) . ', \',\') + 1) '
+                                    . 'WHEN INSTR(' . $this->column($vFieldName) . ', \',\') = 0 THEN \'\' '
+                                    . 'ELSE SUBSTR(' . $this->column($vFieldName) . ', INSTR(' . $this->column($vFieldName) . ', \',\') + 1) '
                                 . 'END AS rest '
                             . 'FROM filteredPages '
                             . 'UNION ALL '
@@ -665,7 +669,7 @@ class SearchManager
                                     . 'WHEN INSTR(rest, \',\') = 0 THEN \'\' '
                                     . 'ELSE SUBSTR(rest, INSTR(rest, \',\') + 1) '
                                 . 'END AS rest '
-                            . 'FROM ' . $this->renameJSONPathVariable($vFieldName) . '_multiple '
+                            . 'FROM ' . $this->column($vFieldName, '_multiple') . ' '
                             . 'WHERE rest <> \'\''
                         . ')';
 
@@ -1295,6 +1299,30 @@ class SearchManager
     private function buildFieldDescriptorHash($pStructure)
     {
         return $pStructure['_mode_'] ?? '#|' . $pStructure['_type_'] ?? '#';
+    }
+
+    /**
+     * Whether a requested name can be a form field or a JSON path into one, and so be used as an SQL identifier.
+     */
+    private function isFieldName(mixed $pName): bool
+    {
+        return is_string($pName) && preg_match(self::FIELD_NAME_PATTERN, $pName) === 1;
+    }
+
+    /**
+     * The column a requested field is extracted into, quoted as an SQL identifier.
+     */
+    private function column(string $pFieldName, string $pSuffix = ''): string
+    {
+        return '`' . str_replace('`', '``', $this->renameJSONPathVariable($pFieldName) . $pSuffix) . '`';
+    }
+
+    /**
+     * The JSON path to a requested field with every key quoted, e.g. $."geolocation"."bf_latitude".
+     */
+    private function jsonPath(string $pFieldName): string
+    {
+        return '$.' . implode('.', array_map(fn ($pKey) => '"' . addcslashes($pKey, '"\\') . '"', explode('.', $pFieldName)));
     }
 
     /**
