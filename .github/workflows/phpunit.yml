@@ -2,24 +2,33 @@ name: Tests
 
 on:
   workflow_dispatch:
+  workflow_call:
     inputs:
-      logLevel:
-        description: 'Log level'
+      extension:
+        description: 'Extension name: the calling repository is checked out into tools/<extension> and only its tests run'
+        type: string
         required: true
-        default: 'warning'
-      tags:
-        description: 'Tags'
+      core-ref:
+        description: 'YesWiki branch the extension is tested against'
+        type: string
+        default: doryphore
   push:
     branches: [doryphore, ectoplasme]
     paths:
+      - '**.php'
+      - '**.twig'
       - 'composer.lock'
-      - '*.php'
+      - 'yarn.lock'
+      - 'tests/**'
       - '.github/workflows/*.yml'
   pull_request:
     branches: [doryphore, doryphore-dev, ectoplasme]
     paths:
+      - '**.php'
+      - '**.twig'
       - 'composer.lock'
-      - '*.php'
+      - 'yarn.lock'
+      - 'tests/**'
       - '.github/workflows/*.yml'
 
 env:
@@ -53,6 +62,18 @@ jobs:
 
     steps:
       - uses: actions/checkout@v5
+        if: inputs.extension == ''
+
+      - uses: actions/checkout@v5
+        if: inputs.extension != ''
+        with:
+          repository: YesWiki/yeswiki
+          ref: ${{ inputs.core-ref }}
+
+      - uses: actions/checkout@v5
+        if: inputs.extension != ''
+        with:
+          path: tools/${{ inputs.extension }}
 
       - uses: shivammathur/setup-php@v2
         with:
@@ -65,6 +86,10 @@ jobs:
 
       - name: Install dependencies
         run: composer install --prefer-dist --no-progress
+
+      - name: Install extension dependencies
+        if: inputs.extension != '' && hashFiles(format('tools/{0}/composer.json', inputs.extension)) != ''
+        run: composer install --prefer-dist --no-progress --working-dir tools/${{ inputs.extension }}
 
       - uses: actions/setup-node@v5
         with:
@@ -146,4 +171,9 @@ jobs:
             "http://localhost/?PagePrincipale&installAction=install"
 
       - name: Run test suite
+        if: inputs.extension == ''
         run: composer test
+
+      - name: Run extension tests
+        if: inputs.extension != ''
+        run: ./vendor/bin/phpunit --do-not-cache-result --stderr tools/${{ inputs.extension }}/tests
