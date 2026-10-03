@@ -8,10 +8,6 @@ on:
         description: 'Extension name: the calling repository is checked out into tools/<extension> and only its tests run'
         type: string
         required: true
-      core-ref:
-        description: 'YesWiki branch the extension is tested against'
-        type: string
-        default: doryphore
   push:
     branches: [doryphore, ectoplasme]
     paths:
@@ -68,7 +64,7 @@ jobs:
         if: inputs.extension != ''
         with:
           repository: YesWiki/yeswiki
-          ref: ${{ inputs.core-ref }}
+          ref: doryphore
 
       - uses: actions/checkout@v5
         if: inputs.extension != ''
@@ -89,7 +85,9 @@ jobs:
 
       - name: Install extension dependencies
         if: inputs.extension != '' && hashFiles(format('tools/{0}/composer.json', inputs.extension)) != ''
-        run: composer install --prefer-dist --no-progress --working-dir tools/${{ inputs.extension }}
+        env:
+          EXTENSION: ${{ inputs.extension }}
+        run: composer install --prefer-dist --no-progress --working-dir "tools/$EXTENSION"
 
       - uses: actions/setup-node@v5
         with:
@@ -176,4 +174,6 @@ jobs:
 
       - name: Run extension tests
         if: inputs.extension != ''
-        run: ./vendor/bin/phpunit --do-not-cache-result --stderr tools/${{ inputs.extension }}/tests
+        env:
+          EXTENSION: ${{ inputs.extension }}
+        run: ./vendor/bin/phpunit --do-not-cache-result --stderr "tools/$EXTENSION/tests"
