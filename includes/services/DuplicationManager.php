@@ -2,12 +2,14 @@
 
 namespace YesWiki\Core\Service;
 
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Bazar\Field\FileField;
 use YesWiki\Bazar\Field\ImageField;
 use YesWiki\Bazar\Field\TextareaField;
 use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Bazar\Service\FormManager;
 use YesWiki\Bazar\Service\ListManager;
+use YesWiki\Bazar\Service\SsrfUrlValidator;
 use YesWiki\Wiki;
 
 class DuplicationManager
@@ -305,7 +307,7 @@ class DuplicationManager
                 throw new \Exception(_t('NOT_FOUND_IN_REQUEST', $key));
             }
         }
-        foreach ($req['files'] as $fileUrl) {
+        foreach ((array)($req['files'] ?? []) as $fileUrl) {
             $this->downloadFile($fileUrl, $req['originalTag'], $tag);
         }
 
@@ -321,24 +323,39 @@ class DuplicationManager
         }
     }
 
+    /**
+     * Copies a file of the source wiki into the upload folder, refusing private addresses and unauthorised extensions.
+     */
     public function downloadFile($sourceUrl, $fromTag, $toTag, $timeoutInSec = 10)
     {
-        $t = explode('/', $sourceUrl);
-        $fileName = array_pop($t);
-        $destPath = 'files/' . str_replace($fromTag, $toTag, $fileName);
+        $fileName = basename(str_replace($fromTag, $toTag, basename((string)parse_url((string)$sourceUrl, PHP_URL_PATH))));
+        $extension = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
+        $authorizedExtensions = array_keys($this->wiki->services->get(ParameterBagInterface::class)->get('authorized-extensions'));
+        if ($fileName === '' || $fileName[0] === '.' || !in_array($extension, $authorizedExtensions, true)) {
+            throw new \Exception(_t('BAZ_NOT_AUTHORIZED_FILE') . ' : ' . $sourceUrl);
+        }
+        $pin = $this->wiki->services->get(SsrfUrlValidator::class)->curlPin($sourceUrl, ['http', 'https']);
+
+        $destPath = $this->uploadPath . '/' . $fileName;
         $fp = fopen($destPath, 'wb');
         $ch = curl_init($sourceUrl);
+        foreach ($pin as $option => $optionValue) {
+            curl_setopt($ch, $option, $optionValue);
+        }
         curl_setopt($ch, CURLOPT_FILE, $fp);
         curl_setopt($ch, CURLOPT_HEADER, 0);
-        // TODO: make options to allow ssl verify
-        curl_setopt($ch, CURLOPT_SSL_VERIFYSTATUS, false);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 0);
+        curl_setopt($ch, CURLOPT_FAILONERROR, true);
         curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $timeoutInSec);
         curl_setopt($ch, CURLOPT_TIMEOUT, $timeoutInSec);
         curl_exec($ch);
+        $error = curl_errno($ch);
         curl_close($ch);
         fclose($fp);
+        if ($error) {
+            unlink($destPath);
+            throw new \Exception("Error getting content from {$sourceUrl} (" . curl_strerror($error) . ')');
+        }
 
         return $destPath;
     }
