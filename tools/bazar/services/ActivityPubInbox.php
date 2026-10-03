@@ -118,6 +118,19 @@ class ActivityPubInbox
     }
 
     /**
+     * Whether an actor may act on a mirrored entry: it recorded the owner, or no owner is recorded and the object is on its host.
+     */
+    protected function isOwnedBy(string $verifiedActor, string $tag, string $objectId): bool
+    {
+        $owner = $this->tripleStore->getOne($tag, self::REMOTE_ACTOR_URI, '', '');
+        if (!empty($owner)) {
+            return $owner === $verifiedActor;
+        }
+
+        return $this->httpSignatureService->sameHost($verifiedActor, $objectId);
+    }
+
+    /**
      * Refuses an actor that does not own the mirrored entry, or is not on its host when no owner was recorded.
      */
     protected function assertOwns(string $verifiedActor, string $tag, string $objectId): void
@@ -163,7 +176,7 @@ class ActivityPubInbox
                 $objectId = is_array($object) ? ($object['id'] ?? null) : $object;
                 if ($objectId) {
                     $existingTriples = $this->tripleStore->getMatching(null, TripleStore::SOURCE_URL_URI, $objectId, '=', '=', '=');
-                    if (!empty($existingTriples)) {
+                    if (!empty($existingTriples) && $this->isOwnedBy($actorUri, $existingTriples[0]['resource'], $objectId)) {
                         $this->entryManager->delete($existingTriples[0]['resource'], true);
                         $stats['deleted']++;
                     }
@@ -181,25 +194,34 @@ class ActivityPubInbox
 
             if ($type === 'Create') {
                 if (empty($existingTriples)) {
+                    if (!$this->httpSignatureService->sameHost($actorUri, $object['id'])) {
+                        continue;
+                    }
                     $entry = $this->semanticTransformer->convertFromSemanticData($form['bn_id_nature'], $object);
                     $entry['read-only'] = 1;
-                    $this->entryManager->create($form['bn_id_nature'], $entry, false, $object['id']);
+                    $created = $this->entryManager->create($form['bn_id_nature'], $entry, false, $object['id']);
+                    $this->rememberOwner($created['id_fiche'] ?? null, $actorUri);
                     $stats['created']++;
                 } else {
                     $tag = $existingTriples[0]['resource'];
+                    if (!$this->isOwnedBy($actorUri, $tag, $object['id'])) {
+                        continue;
+                    }
                     $entry = $this->semanticTransformer->convertFromSemanticData($form['bn_id_nature'], $object);
                     $this->entryManager->update($tag, $entry, false);
                     $stats['updated']++;
                 }
             } elseif ($type === 'Update' && !empty($existingTriples)) {
                 $tag = $existingTriples[0]['resource'];
+                if (!$this->isOwnedBy($actorUri, $tag, $object['id'])) {
+                    continue;
+                }
                 $entry = $this->semanticTransformer->convertFromSemanticData($form['bn_id_nature'], $object);
                 $this->entryManager->update($tag, $entry, false);
                 $stats['updated']++;
             }
         }
 
-        $actorHost = parse_url($actorUri, PHP_URL_HOST);
         $localEntries = $this->entryManager->search(['idtypeannonce' => $form['bn_id_nature']]);
 
         foreach ($localEntries as $entry) {
@@ -208,7 +230,7 @@ class ActivityPubInbox
 
             if (!empty($sourceTriples)) {
                 $sourceUrl = $sourceTriples[0]['value'];
-                if (parse_url($sourceUrl, PHP_URL_HOST) === $actorHost && !in_array($sourceUrl, $remoteObjectIds)) {
+                if (!in_array($sourceUrl, $remoteObjectIds) && $this->isOwnedBy($actorUri, $tag, $sourceUrl)) {
                     $this->entryManager->delete($tag, true);
                     $stats['deleted']++;
                 }
