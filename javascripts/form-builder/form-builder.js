@@ -92,6 +92,10 @@ function attributeDefs(config) {
   return defs
 }
 
+function asFieldName(value) {
+  return value.replace(/[^\p{L}\p{N}_-]/gu, '_')
+}
+
 function uniqueName(base) {
   const names = fields.map((field) => field.data.name)
   if (!names.includes(base)) return base
@@ -954,6 +958,11 @@ function renderSettings() {
       return
     }
     const handler = () => {
+      if (name === 'name') {
+        const typed = readControl(name)
+        const cleaned = asFieldName(typed)
+        if (cleaned !== typed) writeControl(name, cleaned)
+      }
       commit(name, readControl(name))
       ;(changeCallbacks[name] || []).forEach((callback) => callback())
     }

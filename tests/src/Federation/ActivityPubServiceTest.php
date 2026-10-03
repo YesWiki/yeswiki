@@ -5,6 +5,8 @@ namespace YesWiki\Test\Federation;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use Symfony\Component\HttpClient\MockHttpClient;
+use Symfony\Component\HttpClient\Response\MockResponse;
 use YesWiki\Content\Service\EntryManager;
 use YesWiki\Content\Service\SemanticTransformer;
 use YesWiki\Federation\Service\ActivityPubService;
@@ -45,7 +47,8 @@ class ActivityPubServiceTest extends TestCase
         $tripleStore->method('getMatching')->willReturnCallback(
             fn ($resource, $property, $value) => array_values(array_filter(
                 $this->triples,
-                fn ($t) => $t['property'] === $property && $t['value'] === $value
+                fn ($t) => $t['property'] === $property
+                    && (is_null($value) ? $t['resource'] === $resource : $t['value'] === $value)
             ))
         );
         $tripleStore->method('getOne')->willReturnCallback(
@@ -76,7 +79,16 @@ class ActivityPubServiceTest extends TestCase
         });
         $entryManager->method('delete')->willReturnCallback(function ($tag) {
             $this->deleted[] = $tag;
+            $this->triples = array_values(array_filter($this->triples, fn ($t) => $t['resource'] !== $tag));
+            unset($this->owners[$tag]);
         });
+        $entryManager->method('search')->willReturnCallback(fn () => array_map(
+            fn ($resource) => ['tag' => $resource],
+            array_values(array_unique(array_map(
+                fn ($t) => $t['resource'],
+                array_filter($this->triples, fn ($t) => $t['property'] === TripleStore::SOURCE_URL_URI)
+            )))
+        ));
 
         $container = $this->createStub(ContainerInterface::class);
         $container->method('get')->willReturn($entryManager);
@@ -236,5 +248,61 @@ class ActivityPubServiceTest extends TestCase
         $this->service()->processActivity($this->update('https://them.example/entries/2'), self::FORM, self::THEM);
 
         $this->assertSame([], $this->updated);
+    }
+
+    /**
+     * @param list<array<string, mixed>> $outboxItems
+     *
+     * @return array<string, int>
+     */
+    private function sync(array $outboxItems, string $actorUri = self::THEM): array
+    {
+        $service = $this->service();
+        $client = new MockHttpClient(function ($method, $url) use ($actorUri, $outboxItems) {
+            $body = ($url === $actorUri)
+                ? json_encode(['outbox' => $actorUri . '/outbox'])
+                : json_encode(['type' => 'OrderedCollection', 'orderedItems' => $outboxItems]);
+
+            return new MockResponse((string)$body);
+        });
+        (new \ReflectionProperty($service, 'httpClient'))->setValue($service, $client);
+
+        return $service->syncActorPosts($actorUri, self::FORM);
+    }
+
+    public function testSyncCannotDeleteAnEntryThatBelongsToAnotherActor(): void
+    {
+        $this->givenMirroredEntry('FicheUne', 'https://them.example/entries/1', 'https://them.example/actors/2');
+
+        $stats = $this->sync([['type' => 'Delete', 'object' => 'https://them.example/entries/1']]);
+
+        $this->assertSame([], $this->deleted, 'a cross-actor delete in the outbox must be ignored');
+        $this->assertSame(0, $stats['deleted']);
+    }
+
+    public function testSyncDeletesAnEntryTheSyncedActorOwns(): void
+    {
+        $this->givenMirroredEntry('FicheUne', 'https://them.example/entries/1', self::THEM);
+
+        $this->sync([['type' => 'Delete', 'object' => 'https://them.example/entries/1']]);
+
+        $this->assertSame(['FicheUne'], $this->deleted);
+    }
+
+    public function testSyncGarbageCollectionSparesAnotherActorsEntryOnTheSameHost(): void
+    {
+        $this->givenMirroredEntry('Mine', 'https://them.example/entries/1', self::THEM);
+        $this->givenMirroredEntry('Theirs', 'https://them.example/entries/2', 'https://them.example/actors/2');
+
+        $this->sync([]);
+
+        $this->assertSame(['Mine'], $this->deleted, 'only the synced actor\'s own absent entry is swept');
+    }
+
+    public function testSyncDoesNotMirrorAnObjectFromAnotherHost(): void
+    {
+        $this->sync([['type' => 'Create', 'object' => ['id' => 'https://elsewhere.example/entries/9']]]);
+
+        $this->assertSame([], $this->created, 'a Create whose object is on another host is skipped');
     }
 }

@@ -2,10 +2,12 @@
 
 namespace YesWiki\Admin\Action;
 
+use Symfony\Component\Security\Csrf\CsrfTokenManager;
 use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Service\PageOperationsService;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Identity\Service\AclService;
+use YesWiki\Identity\Service\CsrfTokenChecker;
 use YesWiki\Kernel\Component\Category;
 use YesWiki\Kernel\Component\Component;
 use YesWiki\Kernel\Component\ProvidesComponents;
@@ -90,10 +92,11 @@ class DespamAction extends YesWikiAction implements RegisteredAction, ProvidesCo
                     return;
                 }
                 $dbService = $this->getService(DbService::class);
+                $fromHours = intval($_POST['from']);
                 $requete = 'select * from ' . $this->getService(RuntimeConfig::class)['table_prefix'] . 'pages'
-                    . ' where time > ' . $dbService->dateSubHours(intval($_POST['from']))
+                    . ' where time > ' . $dbService->dateSubHours($fromHours)
                     . " and latest = 'Y' order by time desc";
-                $title = '<h2>' . str_replace('{x}', $_POST['from'], _t('DESPAM_CLEAN_SPAMMED_PAGES')) . "</h2>\n";
+                $title = '<h2>' . str_replace('{x}', (string)$fromHours, _t('DESPAM_CLEAN_SPAMMED_PAGES')) . "</h2>\n";
 
                 $pagesFromSpammer = $this->getService(DbService::class)->loadAll($requete);
 
@@ -150,12 +153,14 @@ class DespamAction extends YesWikiAction implements RegisteredAction, ProvidesCo
                 echo "<p>Commentaire&nbsp;: <input class=\"form-control\" name=\"comment\" style=\"width: 80%;\" /></p>\n";
                 echo "<p>\n" .
               '<input type="hidden" name="spammer" value="' . (isset($_POST['spammer']) ? $_POST['spammer'] : '') . "\" />\n" .
+              '<input type="hidden" name="csrf-token" value="' . htmlspecialchars($this->getService(CsrfTokenManager::class)->getToken('main')->getValue(), ENT_QUOTES, YW_CHARSET) . "\" />\n" .
               "<input type=\"hidden\" name=\"clean\" value=\"yes\" />\n" .
               '<button class="btn btn-danger" value="Valider">' . _t('CLEAN') . " >></button>\n" .
               "</p>\n";
                 echo "</form>\n";
                 echo "</div>\n\n";
             } else {
+                $this->getService(CsrfTokenChecker::class)->checkToken('main', 'POST', 'csrf-token', false);
                 if ($this->getService(HibernationService::class)->isWikiHibernated()) {
                     throw new \Exception(_t('WIKI_IN_HIBERNATION'));
                 }

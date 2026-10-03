@@ -2,6 +2,8 @@
 
 namespace YesWiki\Files\Service;
 
+use YesWiki\Kernel\Service\SsrfUrlValidator;
+
 /** Fetching a file from somewhere else, and naming it safely once it is here. */
 class RemoteFile
 {
@@ -25,7 +27,18 @@ class RemoteFile
 
         if ($storage->exists($localPath)) {
             return true;
-        } elseif ($ch = curl_init($url)) {
+        }
+        try {
+            $pin = (new SsrfUrlValidator())->curlPin($url, ['http', 'https']);
+        } catch (\Throwable $error) {
+            echo _t('BAZ_IMAGE_FILE_NOT_FOUND') . ' : ' . $url;
+
+            return false;
+        }
+        if ($ch = curl_init($url)) {
+            foreach ($pin as $option => $optionValue) {
+                curl_setopt($ch, $option, $optionValue);
+            }
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
             curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
             $imgcontent = curl_exec($ch);

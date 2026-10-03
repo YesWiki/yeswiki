@@ -358,6 +358,26 @@ class FormManager implements RequestScopedState
     }
 
     /**
+     * The field names of a form that cannot be used as a property name, so cannot be stored or searched.
+     *
+     * @param array<string, mixed> $form
+     *
+     * @return list<string>
+     */
+    public function invalidPropertyNames(array $form): array
+    {
+        $names = [];
+        foreach ($form['prepared'] ?? [] as $field) {
+            $name = $field->getPropertyName();
+            if (is_string($name) && $name !== '' && preg_match(BazarField::PROPERTY_NAME_PATTERN, $name) !== 1) {
+                $names[] = $name;
+            }
+        }
+
+        return array_values(array_unique($names));
+    }
+
+    /**
      * Builds the full in-memory form from raw data (a pageToFormArray() result, or a POST from the form editor): `template` normalized to the native array of field objects (with image defaults embedded for display), `prepared` built from it.
      *
      * @param array<string, mixed> $form

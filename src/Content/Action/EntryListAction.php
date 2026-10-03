@@ -1312,7 +1312,7 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
 
         $template = $get->get('template') ?? $arg['template'] ?? null;
         if ($template) {
-            $template = htmlspecialchars($template);
+            $template = htmlspecialchars(basename((string)$template));
         }
         $configuredTemplate = $this->params->get('default_bazar_template');
         $template = $template ?: (is_string($configuredTemplate) ? $configuredTemplate : '');
@@ -1372,7 +1372,7 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
 
             'refresh' => $this->formatBoolean($get->all(), false, 'refresh'),
 
-            'queries' => $vSearchManager->parseQuery($vSearchManager->aggregateQueries($arg, $get->all())),
+            'queries' => $vSearchManager->aggregateQueries($arg, $get->all()),
             'keywords' => $vKeywords,
             'dateMin' => $this->formatDateMin($get->get('period') ?? $arg['period'] ?? null),
 

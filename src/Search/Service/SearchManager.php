@@ -6,6 +6,7 @@ use Psr\Container\ContainerInterface;
 use YesWiki\Content\Entity\ContentTypeSchema;
 use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Entity\PageType;
+use YesWiki\Content\Field\BazarField;
 use YesWiki\Content\Field\CheckboxField;
 use YesWiki\Content\Field\EnumField;
 use YesWiki\Content\Service\ContentTypeResolver;
@@ -591,7 +592,17 @@ class SearchManager
 
         $vKeywords = $params['keywords'] ?? '';
 
-        $vQueries = $this->parseQuery($params['queries']);
+        $vQueryAst = $this->parseQueryExpression($params['queries']);
+
+        if (($vQueryAst['type'] ?? '') === 'invalid') {
+            return SqlFragment::empty();
+        }
+
+        foreach ($this->queryAstFieldNames($vQueryAst) as $vQueryFieldName) {
+            if (!$this->isFieldName($vQueryFieldName)) {
+                return SqlFragment::empty();
+            }
+        }
 
         if (!empty($params['formsIds'])) {
             $vFormIDs = $params['formsIds'];
@@ -657,12 +668,10 @@ class SearchManager
             $vSearchFields[] = PageBody::TITLE;
             $vSearchFields[] = 'bf_titre';
 
-            $vKeywordsFields = array_unique(array_map('trim', $vSearchFields));
+            $vKeywordsFields = array_unique(array_filter(array_map('trim', $vSearchFields), [$this, 'isFieldName']));
         }
 
-        foreach ($vQueries as $vQuery) {
-            $vQueriesFields[] = $vQuery['name'];
-        }
+        $vQueriesFields = $this->queryAstFieldNames($vQueryAst);
 
         $vNecessaryFields = array_unique(array_merge($vKeywordsFields, $vQueriesFields));
 
@@ -835,11 +844,7 @@ class SearchManager
             $vMinSearchKeywordLength,
         );
 
-        $vQueriesConditions = $this->buildQueriesConditions($vQueries, $vFields);
-
-        if (str_contains($vQueriesConditions->sql, '((FALSE))')) {
-            return SqlFragment::empty();
-        }
+        $vQueriesConditions = $this->compileQueryAst($vQueryAst, $vFields);
 
         $vAclRequest = (!$this->aclService->isAdmin() && $filterOnReadACL)
             ? $this->aclService->updateRequestWithACL()
@@ -866,12 +871,6 @@ class SearchManager
                 . ($vSplittedsCount > 0 ? 'LEFT JOIN all_multiples s ON s.id = f.id ' : '')),
             $vWhereRequest->wrappedIn('WHERE ', '')
         );
-
-        if (isset($_GET['showreq'])) {
-            echo '<hr><code style="width:100%;height:100px;">'
-                . SqlParameters::interpolateForDisplay($vCompleteRequest->sql, $vCompleteRequest->params)
-                . '</code><hr>';
-        }
 
         return $vCompleteRequest;
     }
@@ -1020,11 +1019,251 @@ class SearchManager
     /**
      * Parse a query string.
      *
-     * @param string|array<string, mixed> $pQuery the query string, or the already parsed array
-     *
      * @return array<int, array<string, mixed>> one entry per query, each
      *                                          ["name" => string, "operator" => string, "values" => list<string>]
      */
+    /** Parses a single `name op value[,value]` condition into ['name','operator','values'], applying the [user.*] substitutions. */
+    private function parseCondition(string $pValue): array
+    {
+        if (preg_match('/^\s*([^=!<>]*?)\s*(==|!=|<=|>=|=|<|>)([\s\S]*)$/', $pValue, $pMatches) !== 1) {
+            return ['name' => null, 'operator' => null, 'values' => []];
+        }
+
+        $vName = trim($pMatches[1]);
+        $vOperator = trim($pMatches[2]);
+
+        if ($vOperator === '=') {
+            $vOperator = '==';
+        }
+
+        $vUniqueValues = [];
+        foreach (explode(',', trim($pMatches[3])) as $vValue) {
+            if (preg_match('/^\[(.*)\]$/', $vValue, $matches)) {
+                switch ($matches[1]) {
+                    case 'user.name':
+                        $vValue = $this->container->get(AuthenticationService::class)->getLoggedUserName();
+                        break;
+                    case 'user.entry.tag':
+                        $entry = $this->container->get(UserManager::class)->getAssociatedEntry();
+                        if (!empty($entry)) {
+                            $vValue = $entry['tag'];
+                        }
+                        break;
+                }
+            }
+            if (!in_array($vValue, $vUniqueValues, true)) {
+                $vUniqueValues[] = $vValue;
+            }
+        }
+
+        return ['name' => $vName, 'operator' => $vOperator, 'values' => $vUniqueValues];
+    }
+
+    /** Splits a query string into tokens: '(' , ')', 'and' (or legacy '|'), 'or', and 'leaf'. Grammar characters inside [...] are left alone. */
+    private function tokenizeQuery(string $pQuery): array
+    {
+        $tokens = [];
+        $buffer = '';
+        $bracketDepth = 0;
+        $length = strlen($pQuery);
+        $flush = function () use (&$tokens, &$buffer) {
+            if (trim($buffer) !== '') {
+                $tokens[] = ['type' => 'leaf', 'value' => trim($buffer)];
+            }
+            $buffer = '';
+        };
+        for ($i = 0; $i < $length; $i++) {
+            $char = $pQuery[$i];
+            if ($char === '[') {
+                $bracketDepth++;
+                $buffer .= $char;
+                continue;
+            }
+            if ($char === ']') {
+                if ($bracketDepth > 0) {
+                    $bracketDepth--;
+                }
+                $buffer .= $char;
+                continue;
+            }
+            if ($bracketDepth === 0) {
+                if ($char === '(') {
+                    $flush();
+                    $tokens[] = ['type' => '('];
+                    continue;
+                }
+                if ($char === ')') {
+                    $flush();
+                    $tokens[] = ['type' => ')'];
+                    continue;
+                }
+                if ($char === '|') {
+                    $flush();
+                    $tokens[] = ['type' => 'and'];
+                    continue;
+                }
+                if (substr($pQuery, $i, 5) === ' AND ') {
+                    $flush();
+                    $tokens[] = ['type' => 'and'];
+                    $i += 4;
+                    continue;
+                }
+                if (substr($pQuery, $i, 4) === ' OR ') {
+                    $flush();
+                    $tokens[] = ['type' => 'or'];
+                    $i += 3;
+                    continue;
+                }
+            }
+            $buffer .= $char;
+        }
+        $flush();
+
+        return $tokens;
+    }
+
+    /** Parses a query string into an AST of 'and'/'or'/'leaf' nodes; returns ['type' => 'invalid'] when the string is malformed. */
+    public function parseQueryExpression($pQuery): array
+    {
+        $vQuery = $this->queryToString($pQuery);
+        if (trim($vQuery) === '') {
+            return ['type' => 'and', 'children' => []];
+        }
+
+        $tokens = $this->tokenizeQuery($vQuery);
+        $pos = 0;
+        $failed = false;
+        $parseTerm = null;
+        $parseAnd = null;
+        $parseOr = null;
+
+        $parseTerm = function () use (&$tokens, &$pos, &$failed, &$parseOr) {
+            $token = $tokens[$pos] ?? null;
+            if ($token === null) {
+                $failed = true;
+
+                return null;
+            }
+            if ($token['type'] === '(') {
+                $pos++;
+                $expr = $parseOr();
+                if (($tokens[$pos]['type'] ?? null) !== ')') {
+                    $failed = true;
+
+                    return null;
+                }
+                $pos++;
+
+                return $expr;
+            }
+            if ($token['type'] === 'leaf') {
+                $pos++;
+                $cond = $this->parseCondition($token['value']);
+                if (!isset($cond['name']) || trim((string)$cond['name']) === '' || $cond['operator'] === null) {
+                    $failed = true;
+
+                    return null;
+                }
+
+                return ['type' => 'leaf', 'cond' => $cond];
+            }
+            $failed = true;
+
+            return null;
+        };
+        $parseAnd = function () use (&$tokens, &$pos, &$failed, &$parseTerm) {
+            $nodes = [$parseTerm()];
+            while (!$failed && (($tokens[$pos]['type'] ?? null) === 'and')) {
+                $pos++;
+                $nodes[] = $parseTerm();
+            }
+
+            return count($nodes) === 1 ? $nodes[0] : ['type' => 'and', 'children' => $nodes];
+        };
+        $parseOr = function () use (&$tokens, &$pos, &$failed, &$parseAnd) {
+            $nodes = [$parseAnd()];
+            while (!$failed && (($tokens[$pos]['type'] ?? null) === 'or')) {
+                $pos++;
+                $nodes[] = $parseAnd();
+            }
+
+            return count($nodes) === 1 ? $nodes[0] : ['type' => 'or', 'children' => $nodes];
+        };
+
+        $ast = $parseOr();
+        if ($failed || $pos !== count($tokens)) {
+            return ['type' => 'invalid'];
+        }
+
+        return $ast;
+    }
+
+    /** Every field name referenced by the leaves of a query AST. */
+    public function queryAstFieldNames(array $pAst): array
+    {
+        if (($pAst['type'] ?? '') === 'leaf') {
+            return [$pAst['cond']['name']];
+        }
+        $vNames = [];
+        foreach ($pAst['children'] ?? [] as $vChild) {
+            $vNames = array_merge($vNames, $this->queryAstFieldNames($vChild));
+        }
+
+        return $vNames;
+    }
+
+    /** Compiles a query AST to SQL, reusing buildQueriesConditions() for each leaf so per-field rules stay in one place. */
+    public function compileQueryAst(array $pAst, array $pFields): SqlFragment
+    {
+        if (($pAst['type'] ?? '') === 'leaf') {
+            return $this->buildQueriesConditions([$pAst['cond']], $pFields);
+        }
+        $vParts = [];
+        foreach ($pAst['children'] ?? [] as $vChild) {
+            $vPart = $this->compileQueryAst($vChild, $pFields);
+            if (!$vPart->isEmpty()) {
+                $vParts[] = $vPart;
+            }
+        }
+        if ($vParts === []) {
+            return SqlFragment::empty();
+        }
+        $vGlue = ($pAst['type'] ?? 'and') === 'or' ? ' OR ' : ' AND ';
+
+        return SqlFragment::all($vGlue, ...$vParts)->wrappedIn('(', ')');
+    }
+
+    /** Rewrites a legacy query (| and ,) into the explicit AND/OR syntax; idempotent, leaves an already-explicit query untouched. */
+    public function convertLegacyQuery(?string $pQuery): string
+    {
+        $vQuery = trim((string)$pQuery);
+        if ($vQuery === '' || preg_match('/ (AND|OR) /', $vQuery) === 1 || str_contains($vQuery, '(')) {
+            return $vQuery;
+        }
+
+        $vFragments = [];
+        foreach (explode('|', $vQuery) as $vFragment) {
+            if (trim($vFragment) === '') {
+                continue;
+            }
+            if (preg_match('/^(\s*[^=!<>]*?\s*)(==|!=|<=|>=|=|<|>)(.*)$/s', $vFragment, $vMatches) !== 1) {
+                $vFragments[] = trim($vFragment);
+                continue;
+            }
+            $vName = trim($vMatches[1]);
+            $vOperator = $vMatches[2];
+            $vValues = array_map('trim', explode(',', trim($vMatches[3])));
+            if (count($vValues) <= 1) {
+                $vFragments[] = $vName . $vOperator . trim($vMatches[3]);
+                continue;
+            }
+            $vGlue = $vOperator === '!=' ? ' AND ' : ' OR ';
+            $vFragments[] = '(' . implode($vGlue, array_map(fn ($pValue) => $vName . $vOperator . $pValue, $vValues)) . ')';
+        }
+
+        return implode(' AND ', $vFragments);
+    }
+
     public function parseQuery($pQuery)
     {
         if (is_array($pQuery)) {
@@ -1461,6 +1700,21 @@ class SearchManager
         return in_array(strtolower($renamed), self::PAGES_COLUMNS, true)
             ? self::FIELD_COLUMN_PREFIX . $renamed
             : $renamed;
+    }
+
+    /** Whether a requested name can be a form field or a JSON path into one. */
+    private function isFieldName(mixed $pName): bool
+    {
+        if (!is_string($pName)) {
+            return false;
+        }
+        foreach (explode('.', $pName) as $vSegment) {
+            if (preg_match(BazarField::PROPERTY_NAME_PATTERN, $vSegment) !== 1) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /** A field name reduced to something that is certainly a SQL identifier. */

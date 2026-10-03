@@ -39,6 +39,7 @@ abstract class BazarField implements \JsonSerializable
     /** @var string|null the entry key this field reads and writes, null for fields that store nothing */
     protected $propertyName;
 
+    public const PROPERTY_NAME_PATTERN = '/^[\p{L}\p{N}_-]+$/u';
     protected const FIELD_TYPE = 0;
     protected const FIELD_NAME = 1;
     protected const FIELD_LABEL = 2;
@@ -101,6 +102,8 @@ abstract class BazarField implements \JsonSerializable
      *
      * @return string $html
      */
+    private static int $staticRenderDepth = 0;
+
     public function renderStaticIfPermitted($entry, ?string $userNameForRendering = null): string
     {
         if (!$this->canRead($entry, $userNameForRendering)) {
@@ -111,11 +114,13 @@ abstract class BazarField implements \JsonSerializable
             return '';
         }
 
+        self::$staticRenderDepth++;
         ob_start();
         try {
             $rendered = (string)$this->renderStatic($entry);
         } finally {
             $printed = (string)ob_get_clean();
+            self::$staticRenderDepth--;
         }
 
         return $printed . $rendered;
@@ -220,7 +225,12 @@ abstract class BazarField implements \JsonSerializable
      */
     protected function getValue($entry)
     {
-        return $entry[$this->propertyName] ?? $_REQUEST[$this->propertyName] ?? $this->default;
+        $value = $entry[$this->propertyName] ?? null;
+        if ($value === null && self::$staticRenderDepth === 0) {
+            $value = $_REQUEST[$this->propertyName] ?? null;
+        }
+
+        return $value ?? $this->default;
     }
 
     public function isEmpty(mixed $pValue): bool

@@ -15,6 +15,7 @@ use YesWiki\Identity\Service\UserManager;
 use YesWiki\Kernel\Entity\Event;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\EventDispatcher;
+use YesWiki\Kernel\Service\HtmlPurifierService;
 use YesWiki\Kernel\Service\Mailer;
 use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\RequestScopedState;
@@ -152,6 +153,7 @@ class CommentService implements EventSubscriberInterface, RequestScopedState
                     'error' => _t('COMMENT_EMPTY_NOT_SAVED'),
                 ];
             }
+            $body = $this->container->get(HtmlPurifierService::class)->cleanHTML($body);
 
             $this->pageManager->save($idComment, [PageBody::CONTENT => $body], $content['pagetag']);
             if ($newComment) {

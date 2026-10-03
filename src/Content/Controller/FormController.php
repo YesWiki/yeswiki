@@ -562,6 +562,12 @@ class FormController extends YesWikiController
 
             return false;
         }
+        $invalidNames = $this->formManager->invalidPropertyNames($form);
+        if (!empty($invalidNames)) {
+            Flash::error(_t('BAZ_FORM_INVALID_FIELD_NAMES', ['names' => htmlspecialchars(implode(', ', $invalidNames))]));
+
+            return false;
+        }
 
         return $this->rolesAreValid($form);
     }
@@ -973,6 +979,12 @@ class FormController extends YesWikiController
     {
         if (!$this->getService(AclService::class)->isAdmin() || $this->hibernationService->isWikiHibernated()) {
             return $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href('', '', ['view' => 'abonnements', 'action' => 'list', 'msg' => 'BAZ_NEED_ADMIN_RIGHTS', 'formid' => $id], false));
+        }
+
+        try {
+            $this->csrfTokenChecker->checkToken('main', 'GET', 'synctoken', false);
+        } catch (TokenNotFoundException $th) {
+            return $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href('', '', ['view' => 'abonnements', 'action' => 'list', 'msg' => $th->getMessage(), 'formid' => $id], false));
         }
 
         $form = $id === null ? null : $this->formManager->getOne($id);

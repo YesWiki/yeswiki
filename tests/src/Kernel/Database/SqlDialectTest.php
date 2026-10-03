@@ -116,15 +116,19 @@ class SqlDialectTest extends TestCase
                 "$driver must not treat the whole path as one key name"
             );
 
-            if ($driver === 'pgsql') {
-                $this->assertStringContainsString("#>> ARRAY['acls', 'read']", $nested);
-            } else {
-                $this->assertStringContainsString('$.acls.read', $nested);
-            }
+            match ($driver) {
+                'pgsql' => $this->assertStringContainsString("#>> ARRAY['acls', 'read']", $nested),
+                'mysql' => $this->assertStringContainsString('$."acls"."read"', $nested),
+                default => $this->assertStringContainsString('$.acls.read', $nested),
+            };
         }
 
         $this->assertStringContainsString(
-            $driver === 'pgsql' ? "ARRAY['form_id']" : '$.form_id',
+            match ($driver) {
+                'pgsql' => "ARRAY['form_id']",
+                'mysql' => '$."form_id"',
+                default => '$.form_id',
+            },
             $d->jsonExtract('body', '$.form_id')
         );
     }
@@ -142,6 +146,32 @@ class SqlDialectTest extends TestCase
             substr_count($expression, "'") % 2,
             "$driver: the quotes in the generated expression must balance"
         );
+    }
+
+    /**
+     * MySQL also escapes with a backslash inside a literal, so a segment ending in one must not turn the closing quote into data.
+     */
+    public function testABackslashInAJsonPathSegmentCannotEndTheMySqlLiteral(): void
+    {
+        foreach (['$.bf_a\\', "$.bf_a\\'b", '$.bf_a"b', '$.bf_dossier-wiki'] as $path) {
+            $expression = (new MySqlDialect())->jsonExtract('body', $path);
+            $start = strpos($expression, "'");
+            $this->assertNotFalse($start);
+            $end = $start + 1;
+            while ($end < strlen($expression)) {
+                if ($expression[$end] === '\\') {
+                    $end += 2;
+                } elseif ($expression[$end] === "'" && ($expression[$end + 1] ?? '') === "'") {
+                    $end += 2;
+                } elseif ($expression[$end] === "'") {
+                    break;
+                } else {
+                    $end++;
+                }
+            }
+
+            $this->assertSame('))', substr($expression, $end + 1), "the literal for $path must close where the expression ends");
+        }
     }
 
     /** ADR-0018. */

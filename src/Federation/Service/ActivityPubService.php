@@ -290,6 +290,19 @@ class ActivityPubService
     }
 
     /**
+     * The same ownership rule as assertOwns(), as a question rather than a refusal, so a sync can skip what an actor may not touch instead of aborting.
+     */
+    protected function isOwnedBy(string $verifiedActor, string $tag, string $objectId): bool
+    {
+        $owner = $this->tripleStore->getOne($tag, self::REMOTE_ACTOR_URI, '', '');
+        if (!empty($owner)) {
+            return $owner === $verifiedActor;
+        }
+
+        return $this->httpSignatureService->sameHost($verifiedActor, $objectId);
+    }
+
+    /**
      * @param array<string, mixed> $form
      *
      * @return list<string>
@@ -395,7 +408,7 @@ class ActivityPubService
                 $objectId = is_array($object) ? ($object['id'] ?? null) : $object;
                 if ($objectId) {
                     $existingTriples = $this->tripleStore->getMatching(null, TripleStore::SOURCE_URL_URI, $objectId, '=', '=', '=');
-                    if (!empty($existingTriples)) {
+                    if (!empty($existingTriples) && $this->isOwnedBy($actorUri, $existingTriples[0]['resource'], $objectId)) {
                         $entryManager->delete($existingTriples[0]['resource'], true);
                         $stats['deleted']++;
                     }
@@ -413,26 +426,35 @@ class ActivityPubService
 
             if ($type === 'Create') {
                 if (empty($existingTriples)) {
+                    if (!$this->httpSignatureService->sameHost($actorUri, $object['id'])) {
+                        continue;
+                    }
                     $entry = $this->semanticTransformer->convertFromSemanticData($form, $object);
                     $entry['read-only'] = 1;
 
-                    $entryManager->create($form['id'], $entry, false, $object['id']);
+                    $created = $entryManager->create($form['id'], $entry, false, $object['id']);
+                    $this->rememberOwner($created['tag'] ?? null, $actorUri);
                     $stats['created']++;
                 } else {
                     $tag = $existingTriples[0]['resource'];
+                    if (!$this->isOwnedBy($actorUri, $tag, $object['id'])) {
+                        continue;
+                    }
                     $entry = $this->semanticTransformer->convertFromSemanticData($form, $object);
                     $entryManager->update($tag, $entry, false);
                     $stats['updated']++;
                 }
             } elseif ($type === 'Update' && !empty($existingTriples)) {
                 $tag = $existingTriples[0]['resource'];
+                if (!$this->isOwnedBy($actorUri, $tag, $object['id'])) {
+                    continue;
+                }
                 $entry = $this->semanticTransformer->convertFromSemanticData($form, $object);
                 $entryManager->update($tag, $entry, false);
                 $stats['updated']++;
             }
         }
 
-        $actorHost = parse_url($actorUri, PHP_URL_HOST);
         $localEntries = $entryManager->search(['id' => $form['id']]);
 
         foreach ($localEntries as $entry) {
@@ -441,7 +463,7 @@ class ActivityPubService
 
             if (!empty($sourceTriples)) {
                 $sourceUrl = $sourceTriples[0]['value'];
-                if (parse_url($sourceUrl, PHP_URL_HOST) === $actorHost && !in_array($sourceUrl, $remoteObjectIds)) {
+                if (!in_array($sourceUrl, $remoteObjectIds) && $this->isOwnedBy($actorUri, $tag, $sourceUrl)) {
                     $entryManager->delete($tag, true);
                     $stats['deleted']++;
                 }

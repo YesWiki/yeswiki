@@ -1938,6 +1938,7 @@ Vous avez la version %{CURRENTPHPVERSION}.
     'BAZ_NOUVEAU_FORMULAIRE_ENREGISTRE' => 'Le nouveau formulaire a bien été enregistré.',
     'BAZ_NOUVELLE_LISTE_ENREGISTREE' => 'La nouvelle liste a bien été enregistrée.',
     'BAZ_FORMULAIRE_MODIFIE' => 'Le formulaire a bien été modifié.',
+    'BAZ_FORM_INVALID_FIELD_NAMES' => 'Ces identifiants de champ ne sont pas valides : %{names}. Un identifiant ne peut contenir que des lettres, des chiffres, « _ » et « - ».',
     'BAZ_FORM_NEED_TITLE' => 'Votre formulaire doit pouvoir nommer ses fiches : son modèle de titre doit faire référence à un champ que le formulaire possède.',
     'BAZ_LISTE_MODIFIEE' => 'La liste a bien été modifiée.',
     'BAZ_CONFIRM_SUPPRIMER_FICHE' => 'Etes vous s&ucirc;r de vouloir supprimer la fiche ?',

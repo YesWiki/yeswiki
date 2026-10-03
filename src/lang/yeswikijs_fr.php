@@ -109,7 +109,6 @@ return [
     'HIDE_PASSWORD' => 'Masquer le mot de passe',
     'ERROR_CONTACT_ADMIN' => 'Une erreur est survenue. Veuillez contacter l\'administrateur du site et lui communiquer le message suivant : ',
 
-
     'ACTION_BUILDER_PREVIEW' => 'Aperçu (non cliquable)',
     'ACTION_BUILDER_ONLINEDOC' => 'Documentation en ligne',
     'ACTION_BUILDER_OWNER' => 'Propriétaire de la fiche',
@@ -117,7 +116,14 @@ return [
     'ACTION_BUILDER_GENERATED_TITLE' => 'Titre généré',
     'ACTION_BUILDER_CREATION_DATE' => 'Date de création',
     'ACTION_BUILDER_FORM_ID' => 'Formulaire',
-
+    'ACTION_BUILDER_QUERY_AND' => 'Valider toutes ces conditions (ET)',
+    'ACTION_BUILDER_QUERY_OR' => 'Valider au moins une de ces conditions (OU)',
+    'ACTION_BUILDER_QUERY_ADD_CONDITION' => 'Ajouter une condition',
+    'ACTION_BUILDER_QUERY_ADD_GROUP' => 'Ajouter un groupe',
+    'ACTION_BUILDER_QUERY_EDIT_VISUAL' => 'Édition visuelle',
+    'ACTION_BUILDER_QUERY_CODE' => 'Code',
+    'ACTION_BUILDER_QUERY_FIELD' => 'Champ',
+    'ACTION_BUILDER_QUERY_VALUE' => 'Valeur',
 
     'CONTACT_REQUIRED_FIELD' => 'La saisie de ce champ est obligatoire.',
     'CONTACT_EMAIL_NOT_VALID' => 'L\'email saisi n\'est pas valide.',

@@ -37,17 +37,22 @@ class MySqlDialect implements SqlDialect
 
     public function jsonExtract(string $column, string $path): string
     {
-        $escaped = str_replace("'", "''", $path);
-
-        return "JSON_UNQUOTE(JSON_EXTRACT($column, '$escaped'))";
+        return "JSON_UNQUOTE(JSON_EXTRACT($column, {$this->pathLiteral($path)}))";
     }
 
     /** Identical SQL, and deliberately not delegated away. */
     public function jsonExtractText(string $column, string $path): string
     {
-        $escaped = str_replace("'", "''", $path);
+        return "JSON_UNQUOTE(JSON_EXTRACT($column, {$this->pathLiteral($path)}))";
+    }
 
-        return "JSON_UNQUOTE(JSON_EXTRACT($column, '$escaped'))";
+    /** `$.acls.read` as the string literal `'$."acls"."read"'`: a key can end neither the path nor the literal, backslash escapes included. */
+    private function pathLiteral(string $path): string
+    {
+        $keys = explode('.', (string)preg_replace('/^\$\.?/', '', $path));
+        $quoted = '$' . implode('', array_map(static fn (string $key): string => '."' . addcslashes($key, '"\\') . '"', $keys));
+
+        return "'" . str_replace(['\\', "'"], ['\\\\', "''"], $quoted) . "'";
     }
 
     public function groupConcat(string $column, ?string $orderBy = null): string

@@ -834,7 +834,11 @@ fiches d'un formulaire.
 > n'afficher qu'une partie de ces fiches avec par exemple, une page par
 > département.
 
-!> Ce qui suit ne peut à ce jour pas être fait avec l'interface graphique.
+Dans l'éditeur du composant « Afficher les données d'un formulaire », sous les
+facettes, une interface permet d'ajouter des conditions (champ, opérateur,
+valeur) et de les combiner avec ET ou OU. Les requêtes plus complexes
+(parenthèses, mélange de ET et de OU) se saisissent dans l'onglet « Code » de
+cette interface, ou directement dans le code de la page, comme ci-dessous.
 
 Ceci se fait dans le code de la page en ajoutant le paramètre `query` à
 l'objet`{{entrylist ...}}`. Ce paramètre sera suivi d'une condition.
@@ -844,35 +848,57 @@ l'objet`{{entrylist ...}}`. Ce paramètre sera suivi d'une condition.
 > valeur du champ "bf_departement" est égal à 29. Afficher uniquement les fiches
 > qui concernent le Finistère (29).
 
-Avant de rentrer dans les exemples, explorons les oppérateurs logiques qui
-permettent de comparer des valeurs ou de réaliser plusieurs actions en même
-temps.
+On relie deux conditions avec `AND` ou `OR` (en majuscules, entourés d'une
+espace de chaque côté) :
 
-Les deux symboles ci-dessous s'emploient entre deux expressions et permettent de
-vérifier si une des deux conditions est vraie (ou), ou si les deux conditions
-sont vraies (et).
+- `AND` : les deux conditions doivent être vraies.
+- `OR` : au moins une des deux conditions doit être vraie.
 
-- Le symbole `|` (et logique) permet de vérifier que plusieurs conditions sont
-  vrais.
-- Le symbole `,` (ou logique) permet de vérifier que au moins une des conditions
-  est vrais.
+`AND` est prioritaire sur `OR`, et des parenthèses permettent de regrouper :
 
-Quelques expressions régulières simples à connaitre.
+- `bf_ville=Nantes OR bf_ville=Rennes` : les fiches de Nantes **ou** de Rennes.
+- `bf_type=asso AND bf_ville=Nantes` : les associations situées à Nantes.
+- `(bf_ville=Nantes OR bf_ville=Rennes) AND bf_type=asso` : les associations de
+  Nantes ou de Rennes. Sans les parenthèses, `AND` étant prioritaire, on
+  obtiendrait « Nantes, ou bien les associations de Rennes ».
 
-- `.*Toto` permettra de renvoyer les chaines de caractères se terminant par
-  "Toto".
-- `Toto.*` permettra de renvoyer les chaines de caractères commençant par
-  "Toto".
-- `.*Toto.*` permettra de renvoyer les chaines de caractères qui contiennent
-  "Toto".
+> **Ancienne syntaxe.** Le `|` (qui vaut `AND`) et la virgule (qui met en `OR`
+> plusieurs valeurs d'un même champ, par exemple `bf_ville=Nantes,Rennes`)
+> fonctionnent toujours. Une migration réécrit les requêtes existantes vers la
+> nouvelle écriture ; rien n'est à changer à la main.
 
-> **Pour aller plus loin :** Il est possible d'utiliser les expressions
-> régulières de "MySQL"
+**Rechercher avec une expression régulière.** Au lieu d'une égalité exacte, la
+valeur d'une condition peut être une expression régulière. Elle est reconnue
+comme telle dans deux cas :
+
+- la valeur est **encadrée par des slashes** : `bf_titre=/^Toto/` (le motif entre
+  `/ /` est utilisé tel quel) ;
+- la valeur **contient `.*`** : `bf_titre=Toto.*` (le motif est alors ancré, comme
+  s'il s'écrivait `^Toto.*$`).
+
+Sans slashes ni `.*`, la valeur est comparée à l'identique.
+
+- `Toto.*` : les valeurs **commençant** par "Toto".
+- `.*Toto` : les valeurs **se terminant** par "Toto".
+- `.*Toto.*` : les valeurs **contenant** "Toto".
+- `/^b/` : les valeurs **commençant par "b"**.
+
+La recherche est **insensible à la casse et aux accents** (`/^b/` trouve aussi
+« B… », `/^ete/` trouve « Été »). Avec l'opérateur `!=`, l'expression régulière
+devient une exclusion.
+
+> **Attention.** Une valeur ne peut pas contenir `(`, `)`, `|`, `<` ni `>` : ce
+> sont les séparateurs de la requête, ils seraient mal interprétés. Une
+> alternance comme `/^(a|b)/` est donc à écrire avec deux conditions reliées par
+> `OR` : `bf_titre=/^a/ OR bf_titre=/^b/`.
+
+> **Pour aller plus loin :** la syntaxe est celle des expressions régulières de
+> "MySQL".
 
 Les oppérateurs logiques suivants s'emploient pour évaluer la relation entre un
 champ et la valeur qu'il contient.
 
-- `=` (ou enciennement `==`) pour une égalité. _ex : `bf_departement=29`, la
+- `=` (ou anciennement `==`) pour une égalité. _ex : `bf_departement=29`, la
   condition est vraie si le champ departement contient le nombre "29"_
 - `<` Strictement inférieur à. _ex : `bf_departement<29`, la condition est vraie
   si le champ departement est inférieur à "29"_
@@ -890,17 +916,31 @@ champ et la valeur qu'il contient.
 - `query="bf_description=.*toto.*tata.*"` : Renverra les fiches dont le champ
   "bf_description" contient "toto" suivi de "tata".
 - `query="bf_description=/Ta+To?/"` : Renverra les fiches dont le champ
-  "bf_description" contient un "T" suivi de au moins un caractère "a" suivi de
-  "T" et éventuellement "o"
+  "bf_description" contient un "T" suivi d'au moins un "a" suivi de "T" et
+  éventuellement "o".
 - `query="bf_age>18"` Renverra les fiches dont le champ "bf_age" est supérieur
   à 18.
-- `query="bf_age >= 20  | bf_age < 40` : Renverra les fiches dont le champ
-  "bf_age" est supérieur ou égal à 20 et strictement inférieur à 40.
-  query="bf_nom=/.*toto/, /.*tata.\*/ | bf_age < 18" : (bf_nom finit par toto OU
-  contient tata) ET bf_age < 18
+- `query="bf_age>=20 AND bf_age<40"` : les fiches dont le champ "bf_age" est
+  supérieur ou égal à 20 et strictement inférieur à 40.
+- `query="(bf_nom=/.*toto/ OR bf_nom=/.*tata.*/) AND bf_age<18"` : les fiches
+  dont le nom finit par "toto" ou contient "tata", et dont l'âge est inférieur
+  à 18.
 
-- `query="listeListeGenre=M|listeListeDep=26"` : On peut aussi filtrer selon
-  plusieurs champs. Ici la fche sera affiché si les deux conditions sont vraies.
+Pour un champ de type liste ou case à cocher, la valeur de la condition est la
+**clé** de l'option, pas son libellé. Par exemple le champ « Type de ressource »
+du formulaire « Ressources » livré avec YesWiki (champ `bf_type`, liste
+`ListeType`) propose : `1` = Site web ressource, `2` = Expérience inspirante,
+`3` = Partenaire ressource, `4` = Méthodologie / guide.
+
+- `query="bf_type=2 OR bf_type=4"` : les fiches dont le type est « Expérience
+  inspirante » **ou** « Méthodologie / guide ».
+- `query="bf_type=2 AND bf_type=4"` : les fiches cochées **à la fois**
+  « Expérience inspirante » **et** « Méthodologie / guide » (c'est une case à
+  cocher, une même fiche peut porter plusieurs valeurs).
+- `query="(bf_type=2 OR bf_type=4) AND bf_titre=/^A/"` : les fiches de type
+  « Expérience inspirante » ou « Méthodologie / guide », **et** dont le titre
+  commence par « A ». Les parenthèses sont indispensables : sans elles, `AND`
+  étant prioritaire, le « OU » ne porterait que sur la première option.
 
 #### 3.2.4. Ordre et champ
 

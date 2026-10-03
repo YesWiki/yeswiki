@@ -40,7 +40,7 @@
 			<td>
 				<a
 					class="btn btn-default btn-xs"
-					href="{{ url({ params: { view: 'abonnements', action: 'sync', actor: actorUri, formid: form.id }}) }}"
+					href="{{ url({ params: { view: 'abonnements', action: 'sync', actor: actorUri, formid: form.id, synctoken: csrfToken({id: 'main', refresh: false}) }}) }}"
 					title="{{ _t('BAZ_SYNC_ACTOR_POSTS') }}"
 				>
 					<svg class="yw-icon icon-white" aria-hidden="true"><use href="src/assets/icons.svg#repeat"/></svg>
