@@ -282,6 +282,12 @@ class FormController extends YesWikiController
             return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'abonnements', 'action' => 'list', 'msg' => 'BAZ_NEED_ADMIN_RIGHTS', 'idformulaire' => $id], false));
         }
 
+        try {
+            $this->csrfTokenController->checkToken('main', 'GET', 'synctoken', false);
+        } catch (TokenNotFoundException $th) {
+            return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'abonnements', 'action' => 'list', 'msg' => $th->getMessage(), 'idformulaire' => $id], false));
+        }
+
         $form = $this->formManager->getOne($id);
         $stats = $this->getService(ActivityPubInbox::class)->syncActorPosts($actorUri, $form);
 
