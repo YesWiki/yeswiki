@@ -1,5 +1,7 @@
 <?php
 
+use Symfony\Component\Security\Csrf\CsrfTokenManager;
+use YesWiki\Core\Controller\CsrfTokenController;
 use YesWiki\Core\Controller\PageController;
 use YesWiki\Security\Controller\SecurityController;
 
@@ -117,12 +119,14 @@ if ($this->UserIsAdmin()) {
         echo "<p>Commentaire&nbsp;: <input class=\"form-control\" name=\"comment\" style=\"width: 80%;\" /></p>\n";
         echo "<p>\n" .
       '<input type="hidden" name="spammer" value="' . (isset($_POST['spammer']) ? $_POST['spammer'] : '') . "\" />\n" .
+      '<input type="hidden" name="csrf-token" value="' . htmlspecialchars($this->services->get(CsrfTokenManager::class)->getToken('main')->getValue(), ENT_QUOTES, YW_CHARSET) . "\" />\n" .
       "<input type=\"hidden\" name=\"clean\" value=\"yes\" />\n" .
       '<button class="btn btn-danger" value="Valider">' . _t('CLEAN') . " >></button>\n" .
       "</p>\n";
         echo "</form>\n";
         echo "</div>\n\n";
     } elseif (isset($_POST['clean'])) {
+        $this->services->get(CsrfTokenController::class)->checkToken('main', 'POST', 'csrf-token', false);
         if ($this->services->get(SecurityController::class)->isWikiHibernated()) {
             throw new Exception(_t('WIKI_IN_HIBERNATION'));
         }
