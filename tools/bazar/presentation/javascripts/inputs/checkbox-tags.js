@@ -15,10 +15,10 @@ $(document).ready(() => {
         const limit = bazarlistTagsInputsData[propertyName].limit ?? 0
         const { selectedOptions } = bazarlistTagsInputsData[propertyName]
 
-        const anchor = $(`#formulaire .yeswiki-input-entries${propertyName}`)
+        const anchor = $(`.bazar-form .yeswiki-input-entries${propertyName}`)
         if (anchor.length == 0) {
           console.log(
-            `#formulaire .yeswiki-input-entries${propertyName} NOT FOUND in bazar-tagsinput.js !`,
+            `.bazar-form .yeswiki-input-entries${propertyName} NOT FOUND in bazar-tagsinput.js !`,
           )
         } else {
           let options = {

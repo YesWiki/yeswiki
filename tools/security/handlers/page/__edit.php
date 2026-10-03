@@ -39,7 +39,7 @@ if ($this->HasAccess('write') && $this->HasAccess('read')) {
         });
 
         // on annule la popup si l\'on sauve la page
-        $(\'#ACEditor, #formulaire\').on(\'submit\', function() {
+        $(\'#ACEditor, .bazar-form\').on(\'submit\', function() {
           showPopup = 0;
         });
 

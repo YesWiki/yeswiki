@@ -65,7 +65,7 @@ $(document).ready(() => {
   })
 
   // on enleve la fonction doubleclic dans le cas d'une page contenant bazar
-  $('#formulaire, #map, #calendar, .accordion').bind('dblclick', (_e) => false)
+  $('.bazar-form, #map, #calendar, .accordion').bind('dblclick', (_e) => false)
 
   function emptyChildren(element) {
     if (typeof ConditionsChecking === 'undefined') {
@@ -228,7 +228,7 @@ $(document).ready(() => {
   // éviter la validation du formulaire en pressant la touche Entrée
   document
     .querySelectorAll(
-      'form#formulaire .control-group.form-group input.form-control[type=text]',
+      'form.bazar-form .control-group.form-group input.form-control[type=text]',
     )
     .forEach((item) => {
       item.addEventListener(
@@ -613,7 +613,7 @@ $(document).ready(() => {
       })
     },
     initListeners() {
-      this.initRequiredInputs($('#formulaire'))
+      this.initRequiredInputs($('.bazar-form'))
       for (let index = 0; index < this.requiredInputs.length; index++) {
         const input = this.requiredInputs[index]
         const inputType = this.getInputType(input)
@@ -631,7 +631,7 @@ $(document).ready(() => {
   }
 
   requirementHelper.initListeners()
-  $('#formulaire').submit(function (e) {
+  $('.bazar-form').submit(function (e) {
     $(this).addClass('submitted')
 
     try {
@@ -660,7 +660,7 @@ $(document).ready(() => {
   })
 
   // bidouille PEAR form
-  $('#formulaire').removeAttr('onsubmit')
+  $('.bazar-form').removeAttr('onsubmit')
 
   // selecteur de dates
   const $dateinputs = $('.bazar-date')
@@ -744,8 +744,8 @@ $(document).ready(() => {
   }
 
   // interdire dans le datepicker de fin les dates avant la date de début, et inversement
-  const $startDate = $('#formulaire #bf_date_debut_evenement')
-  const $endDate = $('#formulaire #bf_date_fin_evenement')
+  const $startDate = $('.bazar-form #bf_date_debut_evenement')
+  const $endDate = $('.bazar-form #bf_date_fin_evenement')
   if ($startDate.length && $endDate.length) {
     const startPicker = $startDate.data('datepicker')
     const endPicker = $endDate.data('datepicker')
@@ -1135,7 +1135,7 @@ $(document).ready(() => {
   $.extend($.fn.typeahead.Constructor.prototype, { val() {} })
 
   // on envoie la valeur au submit
-  $('#formulaire').on('submit', function () {
+  $('.bazar-form').on('submit', function () {
     $(this)
       .find('.yeswiki-input-entries, .yeswiki-input-pagetag')
       .each(function () {
