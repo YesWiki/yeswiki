@@ -479,6 +479,22 @@ class FormManager
         return $template;
     }
 
+    /**
+     * The field names of a form that cannot be used as a property name, so cannot be stored or searched.
+     */
+    public function invalidPropertyNames(array $form): array
+    {
+        $names = [];
+        foreach ($form['prepared'] ?? [] as $field) {
+            $name = $field->getPropertyName();
+            if (is_string($name) && $name !== '' && preg_match(BazarField::PROPERTY_NAME_PATTERN, $name) !== 1) {
+                $names[] = $name;
+            }
+        }
+
+        return array_values(array_unique($names));
+    }
+
     public function prepareData($form)
     {
         $i = 0;

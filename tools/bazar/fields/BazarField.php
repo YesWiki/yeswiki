@@ -28,6 +28,7 @@ abstract class BazarField implements \JsonSerializable
     protected $propertyName;
 
     // Default values
+    public const PROPERTY_NAME_PATTERN = '/^[\p{L}\p{N}_-]+$/u';
     protected const FIELD_TYPE = 0;
     protected const FIELD_NAME = 1;
     protected const FIELD_LABEL = 2;

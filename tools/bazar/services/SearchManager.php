@@ -2,6 +2,7 @@
 
 namespace YesWiki\Bazar\Service;
 
+use YesWiki\Bazar\Field\BazarField;
 use YesWiki\Bazar\Field\CheckboxField;
 use YesWiki\Bazar\Field\EnumField;
 use YesWiki\Core\Service\AclService;
@@ -19,7 +20,6 @@ class SearchManager
     public const MISSING_PROPERTY = '_MISSING_PROPERTY_';
     public const MISSING_FIELD = '_MISSING_FIELD_';
     public const ENTRY_METADATA_FIELDS = ['id_fiche', 'id_typeannonce', 'date_creation_fiche', 'date_maj_fiche', 'statut_fiche', 'url'];
-    private const FIELD_NAME_PATTERN = '/^[\p{L}\p{N}_-]+(\.[\p{L}\p{N}_-]+)*$/u';
 
     public function __construct(
         Wiki $wiki,
@@ -572,11 +572,9 @@ class SearchManager
 
                         foreach ($vJSONPath as $vJSONPathSegment) {
                             if (is_array($vCurrentArray) && array_key_exists($vJSONPathSegment, $vCurrentArray)) {
-                                if (is_array($vCurrentArray) && array_key_exists($vJSONPathSegment, $vCurrentArray)) {
-                                    $vCurrentArray = $vCurrentArray[$vJSONPathSegment];
-                                } else {
-                                    $vFieldFound = false;
-                                }
+                                $vCurrentArray = $vCurrentArray[$vJSONPathSegment];
+                            } else {
+                                $vFieldFound = false;
                             }
                         }
 
@@ -646,7 +644,7 @@ class SearchManager
                 continue;
             }
 
-            $vSplitteds[] = 'SELECT id, champ, elt FROM ' . $this->column($vFieldName, '_multiple') . '';
+            $vSplitteds[] = 'SELECT id, champ, elt FROM ' . $this->column($vFieldName, '_multiple');
 
             $vSplittedsRequest
                         .= ', ' . $this->column($vFieldName, '_multiple') . ' AS '
@@ -1306,7 +1304,16 @@ class SearchManager
      */
     private function isFieldName(mixed $pName): bool
     {
-        return is_string($pName) && preg_match(self::FIELD_NAME_PATTERN, $pName) === 1;
+        if (!is_string($pName)) {
+            return false;
+        }
+        foreach (explode('.', $pName) as $vSegment) {
+            if (preg_match(BazarField::PROPERTY_NAME_PATTERN, $vSegment) !== 1) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**

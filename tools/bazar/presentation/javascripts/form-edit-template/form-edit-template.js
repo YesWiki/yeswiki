@@ -231,7 +231,7 @@ function initializeFormbuilder() {
     $('.fld-name').each(function () {
       const newValue = $(this)
         .val()
-        .replace(/[^a-z^A-Z^_^0-9^{^}]/g, '_')
+        .replace(/[^\p{L}\p{N}_-]/gu, '_')
       $(this).val(newValue)
     })
 

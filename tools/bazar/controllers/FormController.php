@@ -43,6 +43,11 @@ class FormController extends YesWikiController
             }
             foreach ($post->all('imported-form') as $id => $value) {
                 $value = json_decode($value, true);
+                $invalidNames = $this->formManager->invalidPropertyNames($this->formManager->getFromRawData($value));
+                if (!empty($invalidNames)) {
+                    Flash::error(htmlspecialchars($value['bn_label_nature'] ?? '') . ' : ' . _t('BAZ_FORM_INVALID_FIELD_NAMES', ['names' => htmlspecialchars(implode(', ', $invalidNames))]));
+                    continue;
+                }
                 $existingForms = multiArraySearch($forms, 'bn_label_nature', $value['bn_label_nature']);
                 // If a form with the same name exist, replace it
                 if (count($existingForms) > 0) {
@@ -144,6 +149,12 @@ class FormController extends YesWikiController
         });
         if (count($titleFields) == 0) {
             Flash::error(_t('BAZ_FORM_NEED_TITLE'));
+
+            return false;
+        }
+        $invalidNames = $this->formManager->invalidPropertyNames($form);
+        if (!empty($invalidNames)) {
+            Flash::error(_t('BAZ_FORM_INVALID_FIELD_NAMES', ['names' => htmlspecialchars(implode(', ', $invalidNames))]));
 
             return false;
         }
