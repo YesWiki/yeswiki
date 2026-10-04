@@ -26,7 +26,6 @@ require_once 'tests/YesWikiTestCase.php';
  */
 class EntryManagerTest extends YesWikiTestCase
 {
-    private const FORM_ID = '999903';
     private const ENTRY_TAG = 'EntryManagerRegressionTestEntry';
 
     public function testCreateThenGetOneWorksWithinTheSameRequest()
@@ -35,8 +34,7 @@ class EntryManagerTest extends YesWikiTestCase
         $formManager = $wiki->services->get(FormManager::class);
         $entryManager = $wiki->services->get(EntryManager::class);
 
-        $formManager->create([
-            'bn_id_nature' => self::FORM_ID,
+        $formId = $formManager->create([
             'bn_label_nature' => 'EntryManager regression test form',
             'bn_template' => '',
             'bn_condition' => '',
@@ -46,7 +44,7 @@ class EntryManagerTest extends YesWikiTestCase
 
         $tag = null;
         try {
-            $entry = $entryManager->create(self::FORM_ID, [
+            $entry = $entryManager->create($formId, [
                 'bf_titre' => 'Test entry',
                 'id_fiche' => self::ENTRY_TAG,
             ]);
@@ -62,7 +60,7 @@ class EntryManagerTest extends YesWikiTestCase
             if ($tag !== null) {
                 $entryManager->delete($tag, true);
             }
-            $formManager->delete(self::FORM_ID);
+            $formManager->delete($formId);
         }
     }
 }

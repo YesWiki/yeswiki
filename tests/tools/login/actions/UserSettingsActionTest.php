@@ -172,7 +172,8 @@ class UserSettingsActionTest extends YesWikiTestCase
         } while (!empty($userManager->getOneByEmail($email)));
         do {
             $name = $this->randomString(1, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ')
-                . $this->randomString(25, 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 -_');
+                . $this->randomString(24, 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 -_')
+                . $this->randomString(1, 'abcdefghijklmnopqrstuvwxyz');
         } while (!empty($userManager->getOneByName($name)));
 
         $password = $this->randomString(25, 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 -_');

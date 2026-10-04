@@ -12,7 +12,7 @@ require_once 'tests/YesWikiTestCase.php';
 /** The query language: AND/OR (uppercase, space-delimited) and parentheses combine fields, AND binding tighter than OR, with the legacy | and , still meaning what they did. */
 class SearchManagerBooleanQueryTest extends YesWikiTestCase
 {
-    private const FORM_ID = '999961';
+    private static string $formId;
 
     /** @var list<string> */
     private static array $tags = [];
@@ -23,11 +23,7 @@ class SearchManagerBooleanQueryTest extends YesWikiTestCase
         $GLOBALS['wiki'] = $wiki;
         $formManager = $wiki->services->get(FormManager::class);
         $entryManager = $wiki->services->get(EntryManager::class);
-        if ($formManager->getOne(self::FORM_ID) !== null) {
-            $formManager->delete(self::FORM_ID);
-        }
-        $formManager->create([
-            'bn_id_nature' => self::FORM_ID,
+        self::$formId = $formManager->create([
             'bn_label_nature' => 'Boolean query test',
             'bn_template' => "texte***bf_titre***Titre***60***255*** *** ***text***1*** *** *** * *** * *** *** *** ***\n"
                 . "texte***bf_a***A***60***255*** *** ***text***0*** *** *** * *** * *** *** *** ***\n"
@@ -35,7 +31,7 @@ class SearchManagerBooleanQueryTest extends YesWikiTestCase
             'bn_condition' => '',
         ]);
         foreach ([['E1', 'toto', 'x'], ['E2', 'x', 'tata'], ['E3', 'toto', 'tata'], ['E4', 'x', 'x']] as [$title, $a, $b]) {
-            self::$tags[] = $entryManager->create(self::FORM_ID, ['antispam' => 1, 'bf_titre' => $title, 'bf_a' => $a, 'bf_b' => $b])['id_fiche'];
+            self::$tags[] = $entryManager->create(self::$formId, ['bf_titre' => $title, 'bf_a' => $a, 'bf_b' => $b])['id_fiche'];
         }
     }
 
@@ -47,14 +43,14 @@ class SearchManagerBooleanQueryTest extends YesWikiTestCase
             $entryManager->delete($tag, true);
         }
         self::$tags = [];
-        $wiki->services->get(FormManager::class)->delete(self::FORM_ID);
+        $wiki->services->get(FormManager::class)->delete(self::$formId);
     }
 
     /** @return list<string> */
     private function titles(string $query): array
     {
         $titles = array_column($this->getWiki()->services->get(EntryManager::class)->search([
-            'formsIds' => [self::FORM_ID],
+            'formsIds' => [self::$formId],
             'queries' => $query,
         ]), 'bf_titre');
         sort($titles);

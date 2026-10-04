@@ -17,7 +17,7 @@ require_once 'tests/YesWikiTestCase.php';
 class CSVManagerTest extends YesWikiTestCase
 {
     private const LIST_ID = 'ListeCsvManagerTest';
-    private const FORM_ID = '999905';
+    private string $formId;
     private const ENTRY_TAG = 'CsvManagerTestFiche';
 
     private const OPTIONS = [
@@ -49,8 +49,7 @@ class CSVManagerTest extends YesWikiTestCase
             self::LIST_ID,
         );
 
-        $this->formManager->create([
-            'bn_id_nature' => self::FORM_ID,
+        $this->formId = $this->formManager->create([
             'bn_label_nature' => 'CSVManager test form',
             'bn_template' => implode("\n", [
                 'texte***bf_titre***Titre***60***255*** *** ***text***1*** *** *** * *** * *** *** *** ***',
@@ -68,7 +67,7 @@ class CSVManagerTest extends YesWikiTestCase
             $this->entryManager->delete($tag, true);
             $this->wiki->services->get(AclService::class)->delete($tag);
         }
-        $this->formManager->delete(self::FORM_ID);
+        $this->formManager->delete($this->formId);
         $this->wiki->services->get(PageManager::class)->deleteOrphaned(self::LIST_ID);
         $this->wiki->services->get(TripleStore::class)->delete(self::LIST_ID, TripleStore::TYPE_URI, null, '', '');
         unset($GLOBALS['wiki']);
@@ -128,7 +127,7 @@ class CSVManagerTest extends YesWikiTestCase
     public function testEmptyTemplateIsReimportedWithItsMultipleValues()
     {
         $csv = $this->csvManager->arrayToCSV(
-            $this->csvManager->getCSVfromFormId(self::FORM_ID, [], ['fakeMode' => true]),
+            $this->csvManager->getCSVfromFormId($this->formId, [], ['fakeMode' => true]),
         );
 
         $imported = $this->reimport($csv);
@@ -157,7 +156,7 @@ class CSVManagerTest extends YesWikiTestCase
 
     private function createEntry(array $values): void
     {
-        $entry = $this->entryManager->create(self::FORM_ID, array_merge(
+        $entry = $this->entryManager->create($this->formId, array_merge(
             ['id_fiche' => self::ENTRY_TAG],
             $values,
         ));
@@ -167,7 +166,7 @@ class CSVManagerTest extends YesWikiTestCase
 
     private function export(): string
     {
-        return $this->csvManager->arrayToCSV($this->csvManager->getCSVfromFormId(self::FORM_ID, []));
+        return $this->csvManager->arrayToCSV($this->csvManager->getCSVfromFormId($this->formId, []));
     }
 
     private function reimport(string $csv): array
@@ -177,10 +176,10 @@ class CSVManagerTest extends YesWikiTestCase
 
         try {
             return $this->csvManager->extractCSVfromCSVFile(
-                self::FORM_ID,
+                $this->formId,
                 ['name' => basename($path), 'tmp_name' => $path, 'error' => 0],
                 true,
-                $this->formManager->getOne(self::FORM_ID),
+                $this->formManager->getOne($this->formId),
             ) ?? [];
         } finally {
             unlink($path);

@@ -21,7 +21,6 @@ class NewtextsearchActionTest extends YesWikiTestCase
     private const SECRET_PAGE_TAG = 'NewtextsearchSqliSecretPage';
     private const CONTROL_PAGE_TAG = 'NewtextsearchSqliControlPage';
     private const LIST_ID = 'NewtextsearchRegressionTestList';
-    private const FORM_ID = '999901';
     private const FIELD_NAME = 'bf_regressiontestenum';
 
     public function testMaliciousListOptionIdCannotLeakDataAndLegitimateSearchStillWorks()
@@ -47,8 +46,7 @@ class NewtextsearchActionTest extends YesWikiTestCase
         $templateRow[0] = 'liste';
         $templateRow[1] = self::LIST_ID;
         $templateRow[6] = self::FIELD_NAME;
-        $formManager->create([
-            'bn_id_nature' => self::FORM_ID,
+        $formId = $formManager->create([
             'bn_label_nature' => 'Newtextsearch regression test form',
             'bn_template' => implode('***', $templateRow),
             'bn_condition' => '',
@@ -70,7 +68,7 @@ class NewtextsearchActionTest extends YesWikiTestCase
             $aclService->delete(self::CONTROL_PAGE_TAG);
             $pageManager->deleteOrphaned(self::LIST_ID);
             $wiki->services->get(TripleStore::class)->delete(self::LIST_ID, TripleStore::TYPE_URI, null, '', '');
-            $formManager->delete(self::FORM_ID);
+            $formManager->delete($formId);
             unset($GLOBALS['wiki']);
         }
     }

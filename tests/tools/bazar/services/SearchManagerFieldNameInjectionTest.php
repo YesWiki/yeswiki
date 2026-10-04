@@ -15,8 +15,6 @@ require_once 'tests/YesWikiTestCase.php';
 class SearchManagerFieldNameInjectionTest extends YesWikiTestCase
 {
     private const PAYLOAD = 'x`,(SELECT SLEEP(5)) as `d';
-    private const HYPHEN_FORM_ID = '999911';
-    private const MAP_FORM_ID = '999914';
 
     private function request(array $params): string
     {
@@ -57,8 +55,7 @@ class SearchManagerFieldNameInjectionTest extends YesWikiTestCase
         $GLOBALS['wiki'] = $wiki;
         $formManager = $wiki->services->get(FormManager::class);
         $entryManager = $wiki->services->get(EntryManager::class);
-        $formManager->create([
-            'bn_id_nature' => self::HYPHEN_FORM_ID,
+        $formId = $formManager->create([
             'bn_label_nature' => 'Hyphenated field names',
             'bn_template' => "texte***bf_titre***Titre***60***255*** *** ***text***1*** *** *** * *** * *** *** *** ***\n"
                 . "texte***bf_dossier-wiki***Dossier***60***255*** *** ***text***0*** *** *** * *** * *** *** *** ***\n"
@@ -67,10 +64,10 @@ class SearchManagerFieldNameInjectionTest extends YesWikiTestCase
         ]);
         $entries = [];
         try {
-            $entries[] = $entryManager->create(self::HYPHEN_FORM_ID, ['antispam' => 1, 'bf_titre' => 'Hyphen one', 'bf_dossier-wiki' => 'louise', 'bf_mes-types' => '1,2']);
-            $entries[] = $entryManager->create(self::HYPHEN_FORM_ID, ['antispam' => 1, 'bf_titre' => 'Hyphen two', 'bf_dossier-wiki' => 'marcel', 'bf_mes-types' => '3']);
+            $entries[] = $entryManager->create($formId, ['bf_titre' => 'Hyphen one', 'bf_dossier-wiki' => 'louise', 'bf_mes-types' => '1,2']);
+            $entries[] = $entryManager->create($formId, ['bf_titre' => 'Hyphen two', 'bf_dossier-wiki' => 'marcel', 'bf_mes-types' => '3']);
             $search = fn (string $query) => array_column($entryManager->search([
-                'formsIds' => [self::HYPHEN_FORM_ID],
+                'formsIds' => [$formId],
                 'queries' => $wiki->services->get(SearchManager::class)->parseQuery($query),
             ]), 'bf_titre');
 
@@ -81,7 +78,7 @@ class SearchManagerFieldNameInjectionTest extends YesWikiTestCase
             foreach ($entries as $entry) {
                 $entryManager->delete($entry['id_fiche'], true);
             }
-            $formManager->delete(self::HYPHEN_FORM_ID);
+            $formManager->delete($formId);
         }
     }
 
@@ -91,8 +88,7 @@ class SearchManagerFieldNameInjectionTest extends YesWikiTestCase
         $GLOBALS['wiki'] = $wiki;
         $formManager = $wiki->services->get(FormManager::class);
         $entryManager = $wiki->services->get(EntryManager::class);
-        $formManager->create([
-            'bn_id_nature' => self::MAP_FORM_ID,
+        $formId = $formManager->create([
             'bn_label_nature' => 'Structured field',
             'bn_template' => "texte***bf_titre***Titre***60***255*** *** ***text***1*** *** *** * *** * *** *** *** ***\n"
                 . 'map***bf_latitude***bf_longitude*** *** *** *** *** ***0*** *** *** * *** * *** *** *** ***',
@@ -100,9 +96,9 @@ class SearchManagerFieldNameInjectionTest extends YesWikiTestCase
         ]);
         $entries = [];
         try {
-            $entries[] = $entryManager->create(self::MAP_FORM_ID, ['antispam' => 1, 'bf_titre' => 'A placed entry', 'bf_latitude' => '1.5', 'bf_longitude' => '2.5']);
+            $entries[] = $entryManager->create($formId, ['bf_titre' => 'A placed entry', 'bf_latitude' => '1.5', 'bf_longitude' => '2.5']);
             $search = fn (string $query) => array_column($entryManager->search([
-                'formsIds' => [self::MAP_FORM_ID],
+                'formsIds' => [$formId],
                 'queries' => $wiki->services->get(SearchManager::class)->parseQuery($query),
             ]), 'bf_titre');
 
@@ -112,7 +108,7 @@ class SearchManagerFieldNameInjectionTest extends YesWikiTestCase
             foreach ($entries as $entry) {
                 $entryManager->delete($entry['id_fiche'], true);
             }
-            $formManager->delete(self::MAP_FORM_ID);
+            $formManager->delete($formId);
         }
     }
 

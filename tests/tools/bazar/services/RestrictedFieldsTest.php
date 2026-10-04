@@ -16,7 +16,7 @@ require_once 'tests/YesWikiTestCase.php';
  */
 class RestrictedFieldsTest extends YesWikiTestCase
 {
-    private const FORM_ID = '999907';
+    private string $formId;
     private const STORED_GEO = ['latitude' => '45.1', 'longitude' => '5.7', 'geometries' => ''];
 
     private $wiki;
@@ -35,8 +35,7 @@ class RestrictedFieldsTest extends YesWikiTestCase
         $this->pageManager = $this->wiki->services->get(PageManager::class);
         $this->aclService = $this->wiki->services->get(AclService::class);
 
-        $this->formManager->create([
-            'bn_id_nature' => self::FORM_ID,
+        $this->formId = $this->formManager->create([
             'bn_label_nature' => 'Restricted fields test form',
             'bn_template' => implode("\n", [
                 self::fieldLine('texte', 'bf_titre'),
@@ -62,7 +61,7 @@ class RestrictedFieldsTest extends YesWikiTestCase
             $this->aclService->delete($tag);
         }
         $this->createdTags = [];
-        $this->formManager->delete(self::FORM_ID);
+        $this->formManager->delete($this->formId);
     }
 
     private static function fieldLine(string $type, string $name, string $default = '', string $read = '', string $write = ''): string
@@ -80,7 +79,7 @@ class RestrictedFieldsTest extends YesWikiTestCase
 
     private function createEntry(string $title, array $data = []): string
     {
-        $entry = $this->entryManager->create(self::FORM_ID, array_merge(['antispam' => 1, 'bf_titre' => $title], $data));
+        $entry = $this->entryManager->create($this->formId, array_merge(['bf_titre' => $title], $data));
         $this->createdTags[] = $entry['id_fiche'];
         $this->aclService->save($entry['id_fiche'], 'write', '*');
 
@@ -125,7 +124,7 @@ class RestrictedFieldsTest extends YesWikiTestCase
         $tag = $this->createEntry('Restricted posted on update');
         $this->storeRaw($tag, ['bf_admin_only' => 'original']);
 
-        $this->entryManager->update($tag, ['antispam' => 1, 'bf_titre' => 'Restricted posted on update', 'bf_admin_only' => 'injected']);
+        $this->entryManager->update($tag, ['bf_titre' => 'Restricted posted on update', 'bf_admin_only' => 'injected']);
 
         $this->assertSame('original', $this->stored($tag)['bf_admin_only']);
     }
@@ -134,7 +133,7 @@ class RestrictedFieldsTest extends YesWikiTestCase
     {
         $tag = $this->createEntry('Restricted empty on update');
 
-        $this->entryManager->update($tag, ['antispam' => 1, 'bf_titre' => 'Restricted empty on update', 'bf_admin_only' => 'injected']);
+        $this->entryManager->update($tag, ['bf_titre' => 'Restricted empty on update', 'bf_admin_only' => 'injected']);
 
         $this->assertSame('', $this->stored($tag)['bf_admin_only'] ?? '');
     }
@@ -144,7 +143,7 @@ class RestrictedFieldsTest extends YesWikiTestCase
         $tag = $this->createEntry('Write only field');
         $this->storeRaw($tag, ['bf_write_only' => 'secret note']);
 
-        $this->entryManager->update($tag, ['antispam' => 1, 'bf_titre' => 'Write only field', 'bf_write_only' => '']);
+        $this->entryManager->update($tag, ['bf_titre' => 'Write only field', 'bf_write_only' => '']);
 
         $this->assertSame('secret note', $this->stored($tag)['bf_write_only']);
     }
@@ -152,7 +151,7 @@ class RestrictedFieldsTest extends YesWikiTestCase
     public function testAFieldTheUserCannotReadHasNoInputWhenEditing()
     {
         $tag = $this->createEntry('Write only input');
-        $form = $this->formManager->getOne(self::FORM_ID);
+        $form = $this->formManager->getOne($this->formId);
         $field = current(array_filter($form['prepared'], function ($field) {
             return $field->getPropertyName() === 'bf_write_only';
         }));
@@ -166,7 +165,7 @@ class RestrictedFieldsTest extends YesWikiTestCase
         $tag = $this->createEntry('Restricted map');
         $this->storeRaw($tag, ['bf_geolocation' => self::STORED_GEO]);
 
-        $this->entryManager->update($tag, ['antispam' => 1, 'bf_titre' => 'Restricted map', 'bf_geolocation' => ['latitude' => '1', 'longitude' => '2']]);
+        $this->entryManager->update($tag, ['bf_titre' => 'Restricted map', 'bf_geolocation' => ['latitude' => '1', 'longitude' => '2']]);
 
         $this->assertSame(self::STORED_GEO, $this->stored($tag)['bf_geolocation']);
     }

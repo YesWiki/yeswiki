@@ -23,22 +23,22 @@ require_once 'tests/YesWikiTestCase.php';
 class BotGuardHttpTest extends YesWikiTestCase
 {
     private const PORT = 8771;
-    private const FORM_ID = '999907';
-    private const MAIL_FORM_ID = '999909';
     private const PAGES = [
         'BotGuardTestEdit' => 'Texte de départ',
-        'BotGuardTestBazar' => '{{bazar vue="saisir" id="999907" voirmenu="0"}}',
+        'BotGuardTestBazar' => '{{bazar vue="saisir" id="{form}" voirmenu="0"}}',
         'BotGuardTestContact' => '{{contact mail="nobody@example.org"}}',
         'BotGuardTestSubscribe' => '{{abonnement mail="list@example.org"}}',
         'BotGuardTestSignup' => '{{usersettings}}',
         'BotGuardTestLostPassword' => '{{lostpassword}}',
         'BotGuardTestComments' => 'Une page à commenter',
-        'BotGuardTestMailForm' => '{{bazar vue="saisir" id="999909" voirmenu="0"}}',
+        'BotGuardTestMailForm' => '{{bazar vue="saisir" id="{mailForm}" voirmenu="0"}}',
     ];
     private const MEMBER = 'BotGuardTestMember';
     private const MEMBER_PASSWORD = 'Un mot de passe 1!';
 
     private static $server;
+    private static string $formId;
+    private static string $mailFormId;
     private static int $maxTripleId;
     private string $cookieJar;
 
@@ -50,21 +50,19 @@ class BotGuardHttpTest extends YesWikiTestCase
         $pageManager = $wiki->services->get(PageManager::class);
         $aclService = $wiki->services->get(AclService::class);
         $db = $wiki->services->get(DbService::class);
-        $wiki->services->get(FormManager::class)->create([
-            'bn_id_nature' => self::FORM_ID,
+        self::$formId = $wiki->services->get(FormManager::class)->create([
             'bn_label_nature' => 'BotGuard test form',
             'bn_template' => 'texte***bf_titre***Titre***60***255*** *** ***text***1*** *** *** * *** * *** *** *** ***',
             'bn_condition' => '',
         ]);
-        $wiki->services->get(FormManager::class)->create([
-            'bn_id_nature' => self::MAIL_FORM_ID,
+        self::$mailFormId = $wiki->services->get(FormManager::class)->create([
             'bn_label_nature' => 'BotGuard mail form',
             'bn_template' => "texte***bf_titre***Titre***60***255*** *** ***text***1*** *** *** * *** * *** *** *** ***\nchamps_mail***bf_mail***Email*** *** *** *** *** *** ***1*** *** *** * *** * *** *** *** ***",
             'bn_condition' => '',
         ]);
         self::$maxTripleId = (int)($db->loadSingle('SELECT MAX(id) AS id FROM' . $db->prefixTable('triples'))['id'] ?? 0);
         foreach (self::PAGES as $tag => $body) {
-            $pageManager->save($tag, $body, '', true);
+            $pageManager->save($tag, strtr($body, ['{form}' => self::$formId, '{mailForm}' => self::$mailFormId]), '', true);
             $aclService->save($tag, 'write', '*');
             $aclService->save($tag, 'read', '*');
         }
@@ -90,11 +88,11 @@ class BotGuardHttpTest extends YesWikiTestCase
             $wiki->services->get(PageManager::class)->deleteOrphaned($tag);
         }
         $entryManager = $wiki->services->get(EntryManager::class);
-        foreach ($entryManager->search(['formsIds' => [self::FORM_ID]]) as $entry) {
+        foreach ($entryManager->search(['formsIds' => [self::$formId]]) as $entry) {
             $entryManager->delete($entry['id_fiche'], true);
         }
-        $wiki->services->get(FormManager::class)->delete(self::FORM_ID);
-        $wiki->services->get(FormManager::class)->delete(self::MAIL_FORM_ID);
+        $wiki->services->get(FormManager::class)->delete(self::$formId);
+        $wiki->services->get(FormManager::class)->delete(self::$mailFormId);
         $db->query('DELETE FROM' . $db->prefixTable('pages') . "WHERE comment_on = 'BotGuardTestComments'");
         $db->query('DELETE FROM' . $db->prefixTable('users') . "WHERE name LIKE 'BotGuardTest%'");
         $db->query('DELETE FROM' . $db->prefixTable('triples') . 'WHERE id > ' . self::$maxTripleId . " AND resource LIKE 'botGuard:%'");
@@ -230,7 +228,7 @@ class BotGuardHttpTest extends YesWikiTestCase
     {
         [, $html] = $this->request('BotGuardTestBazar');
         $this->assertSame(1, substr_count($html, 'class="yw-bot-guard-fields"'), 'only the entry form carries the guard');
-        $fields = $this->formFields($html, '//form[@id="formulaire"]');
+        $fields = $this->formFields($html, '//form[@id="bazar-form-' . self::$formId . '"]');
         $titleField = array_key_exists('bf_titre', $fields) ? 'bf_titre' : array_key_first($fields);
 
         [, $refused] = $this->request('BotGuardTestBazar', [$titleField => 'BotGuard test robot'] + $this->withoutGuard($fields));
@@ -300,7 +298,7 @@ class BotGuardHttpTest extends YesWikiTestCase
     public function testApiPutAndPatchRefuseAnonymousWrites()
     {
         $entryManager = self::getWiki()->services->get(EntryManager::class);
-        $entry = $entryManager->create(self::FORM_ID, ['bf_titre' => 'BotGuard test api']);
+        $entry = $entryManager->create(self::$formId, ['bf_titre' => 'BotGuard test api']);
 
         foreach (['api_put', 'api_patch'] as $handler) {
             [$status] = $this->request($entry['id_fiche'] . '/' . $handler, ['bf_titre' => 'BotGuard test robot']);

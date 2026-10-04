@@ -329,7 +329,7 @@ class EntryController extends YesWikiController
             'imageBigWidth' => $this->config['image-big-width'],
             'imageBigHeight' => $this->config['image-big-height'],
             'botGuardFields' => $botGuardFields,
-        ]), $botGuardFields, 'formulaire');
+        ]), $botGuardFields, 'bazar-form-' . $form['bn_id_nature']);
     }
 
     public function update($entryId)
@@ -401,7 +401,7 @@ class EntryController extends YesWikiController
             'imageBigWidth' => $this->config['image-big-width'],
             'imageBigHeight' => $this->config['image-big-height'],
             'botGuardFields' => $botGuardFields,
-        ]), $botGuardFields, 'formulaire');
+        ]), $botGuardFields, 'bazar-form-' . $form['bn_id_nature']);
     }
 
     /**

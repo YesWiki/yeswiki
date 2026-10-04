@@ -181,7 +181,6 @@ class FormManager
             $forms = $this->dbService->loadAll("SELECT * FROM {$this->dbService->prefixTable('nature')} ORDER BY bn_label_nature ASC");
             foreach ($forms as $form) {
                 if (!empty($form['bn_id_nature'])) {
-                    // save only not empty formId
                     $formId = $form['bn_id_nature'];
                     $this->cachedForms[$formId] = $this->getFromRawData($form);
                 }
@@ -191,8 +190,6 @@ class FormManager
 
         return array_filter(
             $this->cachedForms,
-            // require a valid numeric-id key *and* an actual form array : consumers (e.g.
-            // SearchManager::searchWithLists()) expect every entry to be a real form
             function ($pForm, $pKey) {
                 return is_array($pForm) && intval($pKey) . '' === $pKey . '';
             },
@@ -222,10 +219,6 @@ class FormManager
         foreach ($formsIds as $formId) {
             if (empty($this->cachedForms[$formId])) {
                 $form = $this->getOne($formId);
-                // don't persist a "form not found" result into the shared cache : a
-                // subsequent getAll() only overwrites cache entries for ids that actually
-                // exist as `nature` rows, so a cached null here would otherwise leak into
-                // every later getAll() call for the rest of the request
                 if ($form !== null) {
                     $this->cachedForms[$formId] = $form;
                 }
@@ -238,13 +231,14 @@ class FormManager
         return $results;
     }
 
-    // TODO Pass a Form object instead of a raw array
+    /**
+     * Creates a form and returns its id, which differs from the requested one when that id is taken.
+     */
     public function create($data)
     {
         if ($this->securityController->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
-        // If ID is not set or if it is already used, find a new ID
         if (empty($data['bn_id_nature']) || $this->getOne($data['bn_id_nature'])) {
             $data['bn_id_nature'] = $this->findNewId();
         }
@@ -257,7 +251,6 @@ class FormManager
             $publicKey = $keyPair[1];
         }
 
-        // reset cache
         $this->cacheValidatedForAll = false;
 
         $query = 'INSERT INTO ' . $this->dbService->prefixTable('nature')
@@ -279,7 +272,10 @@ class FormManager
                     . ($this->isAvailableOnlyOneEntryMessage() ? (empty($data['bn_only_one_entry_message']) ? '' : $this->dbService->escape(_convert($data['bn_only_one_entry_message'], YW_CHARSET, true))) . '", "' : '", "')
             . $this->dbService->escape(_convert($data['bn_condition'], YW_CHARSET, true)) . '")';
 
-        return $this->dbService->query($query);
+        $saved = $this->dbService->query($query);
+        unset($this->cachedForms[$data['bn_id_nature']]);
+
+        return $saved ? (string)intval($data['bn_id_nature']) : false;
     }
 
     public function update($data)
@@ -290,8 +286,8 @@ class FormManager
 
         $template = $this->convertWithSpecialParameters($data['bn_template'], $data['bn_id_nature']);
 
-        // reset cache
         $this->cacheValidatedForAll = false;
+        unset($this->cachedForms[$data['bn_id_nature']]);
 
         $activitypubEnabled = (int)$this->activityPubService->isEnabled($data);
 
@@ -327,7 +323,6 @@ class FormManager
             return $this->create($data);
         }
 
-        // raise error?
         return false;
     }
 
@@ -337,15 +332,14 @@ class FormManager
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
 
-        // tests of if $formId is int
         if (strval(intval($id)) != strval($id)) {
             return null;
         }
 
         $this->clear($id);
 
-        // reset cache
         $this->cacheValidatedForAll = false;
+        unset($this->cachedForms[$id]);
 
         return $this->dbService->query('DELETE FROM ' . $this->dbService->prefixTable('nature') . 'WHERE bn_id_nature=' . $this->dbService->escape($id));
     }
@@ -362,14 +356,12 @@ class FormManager
                 . 'WHERE property="http://outils-reseaux.org/_vocabulary/type" AND value="fiche_bazar") AND body LIKE \'%"id_typeannonce":"' . $this->dbService->escape($id) . '"%\' );',
         );
 
-        // TODO use PageManager
         $this->dbService->query(
             'DELETE FROM' . $this->dbService->prefixTable('pages')
                 . 'WHERE tag IN (SELECT resource FROM ' . $this->dbService->prefixTable('triples')
                 . 'WHERE property="http://outils-reseaux.org/_vocabulary/type" AND value="fiche_bazar") AND body LIKE \'%"id_typeannonce":"' . $this->dbService->escape($id) . '"%\';',
         );
 
-        // TODO use TripleStore
         $this->dbService->query(
             'DELETE FROM' . $this->dbService->prefixTable('triples')
                 . 'WHERE resource NOT IN (SELECT tag FROM ' . $this->dbService->prefixTable('pages')
@@ -400,7 +392,7 @@ class FormManager
         $vCandidate = max($vMaxCachedFormId, $vMaxDBFormIdLowerThan1000) + 1;
 
         if ($vCandidate < 999) {
-            return $vCandidate;
+            return $this->firstFreeIdFrom($vCandidate);
         }
 
         $vResult = $this->dbService->loadSingle('SELECT MAX(bn_id_nature) AS maxi FROM' . $this->dbService->prefixTable('nature') . ' where bn_id_nature > 10000');
@@ -413,7 +405,19 @@ class FormManager
 
         $vCandidate = max($vMaxCachedFormId, $vMaxDBFormIdHigherThan10000) + 1;
 
-        return $vCandidate;
+        return $this->firstFreeIdFrom($vCandidate);
+    }
+
+    /**
+     * The first form id from the candidate on that no form uses.
+     */
+    private function firstFreeIdFrom(int $candidate): int
+    {
+        while (!empty($this->getOne((string)$candidate))) {
+            $candidate++;
+        }
+
+        return $candidate;
     }
 
     /**
@@ -425,20 +429,15 @@ class FormManager
      */
     public function parseTemplate($raw)
     {
-        // Parcours du template, pour mettre les champs du formulaire avec leurs valeurs specifiques
         $tableau_template = [];
         $nblignes = 0;
 
-        // on traite le template ligne par ligne
         $chaine = explode("\n", $raw);
         foreach ($chaine as $ligne) {
             $ligne = trim($ligne);
-            // on ignore les lignes vides ou commencant par # (commentaire)
             if (!empty($ligne) && !(strrpos($ligne, '#', -strlen($ligne)) !== false)) {
-                // on decoupe chaque ligne par le separateur *** (c'est historique)
                 $tablignechampsformulaire = array_map('trim', explode('***', $ligne));
 
-                // TODO find another way to check that the field is valid
                 if (true /* function_exists($tablignechampsformulaire[self::FIELD_TYPE]) */) {
                     if (count($tablignechampsformulaire) > 3) {
                         $tableau_template[$nblignes] = $tablignechampsformulaire;
@@ -536,7 +535,6 @@ class FormManager
      */
     public function findFieldFromNameOrPropertyName(?string $name, ?string $formId): ?BazarField
     {
-        // check params
         if (empty($name) || empty($formId) || strval(intval($formId)) != strval($formId)) {
             return null;
         }
