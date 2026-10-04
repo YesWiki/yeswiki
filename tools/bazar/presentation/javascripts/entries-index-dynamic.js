@@ -8,6 +8,7 @@ import BazarMap from './components/BazarMap.js'
 import { initEntryMaps } from './fields/map-field-map-entry.js'
 import { recursivelyCalculateRelations, deepGet } from './utils.js'
 import { updateHash, parseSearchParams } from './url.js'
+import { parseCondition } from './search.js'
 import ImageMixin from './entries-index-dynamic/image-mixin.js'
 import BazarSearch from './entries-index-dynamic/search-mixin.js'
 
@@ -57,6 +58,7 @@ const load = (domElement) => {
         // form id is defined for the bazar list action)
         searchFormId: '',
         searchTimer: null, // use ot debounce user input
+        sortedInBrowser: false,
       }
     },
     computed: {
@@ -125,6 +127,7 @@ const load = (domElement) => {
         this.calculateFiltersCount()
       },
       currentSort() {
+        if (this.ready) this.sortedInBrowser = true
         this.sortEntries()
         this.updateHash()
       },
@@ -188,10 +191,11 @@ const load = (domElement) => {
           })
         })
         this.filteredEntries = result
-        this.paginateEntries()
+        if (this.sortedInBrowser) this.sortEntries()
+        else this.paginateEntries()
       },
       sortEntries() {
-        if (!this.currentSort.field) return
+        if (!this.currentSort.field) return this.paginateEntries()
 
         const { field, order } = this.currentSort
         const collator = new Intl.Collator()
@@ -203,8 +207,6 @@ const load = (domElement) => {
           if (typeof valueA === 'number' && typeof valueB === 'number') {
             return order == 'asc' ? valueA - valueB : valueB - valueA
           }
-
-          // Case and accent insensitive sort
 
           return order == 'asc'
             ? collator.compare(
@@ -293,10 +295,40 @@ const load = (domElement) => {
         if (this.sortOptions.length > 0) this.currentSort = this.sortOptions[0]
         this.updateHash()
       },
+      /** Facet conditions a shared URL carries: `#query=`, a bare `#field=values`, or the legacy `?facette=`. */
+      conditionsFromUrl(pParams) {
+        const vConditions = [...(pParams.query || [])]
+        Object.entries(pParams).forEach(([pKey, pValue]) => {
+          if (this.filters.some((pF) => pF.propName === pKey))
+            vConditions.push(parseCondition(`${pKey}=${pValue}`))
+        })
+        const vFacette = new URLSearchParams(document.location.search).get(
+          'facette',
+        )
+        if (vFacette)
+          vConditions.push(...vFacette.split('|').map(parseCondition))
+        return vConditions.filter(Boolean)
+      },
+      /** Drops `?facette=` and bare `#field=` keys once read, so a facet unchecked later does not come back on reload. */
+      forgetConsumedFacets() {
+        const vSaved = new URLSearchParams(this.savedHash)
+        const vBare = this.filters.filter((pF) => vSaved.has(pF.propName))
+        if (vBare.length > 0) {
+          vBare.forEach((pF) => vSaved.delete(pF.propName))
+          this.savedHash = vSaved.toString()
+        }
+        const { pathname, search, hash } = document.location
+        const vSearch = search.replace(
+          /([?&])facette=[^&]*(&|$)/,
+          (_pMatch, pBefore, pAfter) => (pAfter ? pBefore : ''),
+        )
+        if (vSearch !== search)
+          history.replaceState(history.state, '', pathname + vSearch + hash)
+      },
       initFromHash(pHash) {
         const vThis = this
 
-        const vParams = parseSearchParams(pHash) // Return hash as a structured object
+        const vParams = parseSearchParams(pHash)
         let vChamp
         let vOrdre
 
@@ -317,64 +349,50 @@ const load = (domElement) => {
         }
 
         if (vParams.ordre !== undefined && vParams.ordre.trim() !== '') {
-          vChamp = vParams.ordre
+          vOrdre = vParams.ordre
         }
 
-        if (vParams.query !== undefined) {
-          const vQueryEntries = Object.entries(vParams.query)
+        this.conditionsFromUrl(vParams).forEach((pCondition) => {
+          const cFilter = vThis.filters.find(
+            (pF) => pF.propName == pCondition.name,
+          )
 
-          if (vQueryEntries.length > 0) {
-            vQueryEntries.forEach(([_pKey, pCondition]) => {
-              const cFilter = vThis.filters.find(
-                (pF) => pF.propName == pCondition.name,
+          if (cFilter) {
+            cFilter.flattenNodes.forEach((pNode) => {
+              const cFilterValues = pCondition.values.map((pString) =>
+                pString
+                  .normalize('NFD')
+                  .replace(/[\u0300-\u036f]/g, '')
+                  .toLowerCase()
+                  .replace(/&/g, '&amp;')
+                  .replace(/</g, '&lt;')
+                  .replace(/>/g, '&gt;')
+                  .replace(/"/g, '&quot;')
+                  .replace(/'/g, '&#039;'),
               )
 
-              if (cFilter) {
-                cFilter.flattenNodes.forEach((pNode) => {
-                  // Handle values with special chars
-                  // like ' in "Figuier goutte d'or" since PHP BazarListService.php store it by calling htmlspecialchars first
-                  // ie : Figuier goutte d&#039;or
-
-                  const cFilterValues = pCondition.values.map((pString) =>
-                    pString
-                      .normalize('NFD')
-                      .replace(/[\u0300-\u036f]/g, '')
-                      .toLowerCase()
-                      .replace(/&/g, '&amp;')
-                      .replace(/</g, '&lt;')
-                      .replace(/>/g, '&gt;')
-                      .replace(/"/g, '&quot;')
-                      .replace(/'/g, '&#039;'),
-                  )
-
-                  if (
-                    cFilterValues.includes(
-                      pNode.value
-                        .normalize('NFD')
-                        .replace(/[\u0300-\u036f]/g, '')
-                        .toLowerCase(),
-                    )
-                  )
-                    pNode.checked = true
-                })
-              }
+              if (
+                cFilterValues.includes(
+                  pNode.value
+                    .normalize('NFD')
+                    .replace(/[\u0300-\u036f]/g, '')
+                    .toLowerCase(),
+                )
+              )
+                pNode.checked = true
             })
           }
-        }
+        })
+        this.forgetConsumedFacets()
 
+        const vField = vChamp ?? this.currentSort.field
+        const vOrder = vOrdre ?? this.currentSort.order ?? 'asc'
         const cSort = this.sortOptions.find(
-          (s) =>
-            s.field ==
-              ((vChamp ?? typeof vThis.currentSort != 'undefined')
-                ? vThis.currentSort.field
-                : '') &&
-            s.order ==
-              ((vOrdre ?? typeof vThis.currentSort != 'undefined')
-                ? vThis.currentSort.order
-                : ''),
+          (s) => s.field === vField && s.order === vOrder,
         )
         if (cSort) {
           this.currentSort = cSort
+          if (vChamp || vOrdre) this.sortedInBrowser = true
         }
       },
       updateHash() {
