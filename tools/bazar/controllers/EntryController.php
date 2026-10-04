@@ -323,6 +323,7 @@ class EntryController extends YesWikiController
 
         return $this->render('@bazar/entries/form.twig', [
             'form' => $form,
+            'formAction' => $this->getRequest()->getRequestUri(),
             'renderedInputs' => $renderedInputs,
             'showConditions' => $form['bn_condition'] !== '' && !$post->has('accept_condition'),
             'passwordForEditing' => isset($this->config['password_for_editing']) && !empty($this->config['password_for_editing']) && $post->has('password_for_editing') ? $post->get('password_for_editing') : '',
@@ -385,6 +386,7 @@ class EntryController extends YesWikiController
 
         return $this->render('@bazar/entries/form.twig', [
             'form' => $form,
+            'formAction' => $this->getRequest()->getRequestUri(),
             'entryId' => $entryId,
             'renderedInputs' => $renderedInputs,
             'showConditions' => false,

@@ -23,8 +23,9 @@ $(document).ready(() => {
     }
   })
 
-  // antispam javascript
-  $('input[name=antispam]').val('1')
+  $(document).on('submit', 'form', function () {
+    $(this).find('input[name=antispam]').val('1')
+  })
 
   // carto google
   const divcarto = document.getElementById('map')
