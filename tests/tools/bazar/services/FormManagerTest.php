@@ -24,18 +24,16 @@ require_once 'tests/YesWikiTestCase.php';
  */
 class FormManagerTest extends YesWikiTestCase
 {
-    private const NONEXISTENT_FORM_ID = '999904';
-
     public function testGetManyWithNonExistentIdDoesNotPoisonGetAll()
     {
         $wiki = $this->getWiki();
         $formManager = $wiki->services->get(FormManager::class);
+        $missingId = (string)$formManager->findNewId();
 
-        // sanity : this id genuinely doesn't exist
-        $this->assertNull($formManager->getOne(self::NONEXISTENT_FORM_ID));
+        $this->assertNull($formManager->getOne($missingId));
 
-        $results = $formManager->getMany([self::NONEXISTENT_FORM_ID]);
-        $this->assertNull($results[self::NONEXISTENT_FORM_ID]);
+        $results = $formManager->getMany([$missingId]);
+        $this->assertNull($results[$missingId]);
 
         foreach ($formManager->getAll() as $id => $form) {
             $this->assertIsArray($form, "getAll() returned a non-array entry for id $id");

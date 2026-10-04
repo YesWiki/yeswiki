@@ -14,6 +14,19 @@ class GroupManagerTest extends YesWikiTestCase
 {
     public const CHARS_FOR_GROUP = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
 
+    private static array $groupNames = [];
+
+    public static function tearDownAfterClass(): void
+    {
+        $groupManager = static::getWiki()->services->get(GroupManager::class);
+        foreach (self::$groupNames as $group) {
+            if ($groupManager->groupExists($group)) {
+                $groupManager->delete($group);
+            }
+        }
+        self::$groupNames = [];
+    }
+
     public function testGroupManagerExisting(): GroupManager
     {
         $wiki = $this->getWiki();
@@ -25,7 +38,8 @@ class GroupManagerTest extends YesWikiTestCase
     #[Depends('testGroupManagerExisting')]
     public function testCreate(GroupManager $groupManager)
     {
-        $group_name = $wiki = $this->getWiki()->generateRandomString(10, self::CHARS_FOR_GROUP);
+        $group_name = $this->getWiki()->generateRandomString(10, self::CHARS_FOR_GROUP);
+        self::$groupNames[] = $group_name;
         $groupManager->create($group_name, []);
         $this->assertTrue($groupManager->groupExists($group_name));
 
@@ -58,7 +72,8 @@ class GroupManagerTest extends YesWikiTestCase
     #[Depends('testGroupManagerExisting')]
     public function testUpdateMember(GroupManager $groupManager)
     {
-        $group_name = $wiki = $this->getWiki()->generateRandomString(10, self::CHARS_FOR_GROUP);
+        $group_name = $this->getWiki()->generateRandomString(10, self::CHARS_FOR_GROUP);
+        self::$groupNames[] = $group_name;
         $users = [];
         for ($i = 0; $i < 5; $i++) {
             array_push($users, $this->getWiki()->generateRandomString(10));

@@ -14,7 +14,7 @@ require_once 'tests/YesWikiTestCase.php';
  */
 class ConditionalRequiredFieldTest extends YesWikiTestCase
 {
-    private const FORM_ID = '999906';
+    private string $formId;
 
     private $entryManager;
     private $formManager;
@@ -25,8 +25,7 @@ class ConditionalRequiredFieldTest extends YesWikiTestCase
         $wiki = $this->getWiki();
         $this->formManager = $wiki->services->get(FormManager::class);
         $this->entryManager = $wiki->services->get(EntryManager::class);
-        $this->formManager->create([
-            'bn_id_nature' => self::FORM_ID,
+        $this->formId = $this->formManager->create([
             'bn_label_nature' => 'Conditional required field test form',
             'bn_template' => implode("\n", [
                 'texte***bf_titre***Titre*** *** *** *** ***text***1*** *** *** * *** * *** *** *** ***',
@@ -44,12 +43,12 @@ class ConditionalRequiredFieldTest extends YesWikiTestCase
         foreach ($this->tags as $tag) {
             $this->entryManager->delete($tag, true);
         }
-        $this->formManager->delete(self::FORM_ID);
+        $this->formManager->delete($this->formId);
     }
 
     private function create(string $tag, array $data): array
     {
-        $entry = $this->entryManager->create(self::FORM_ID, array_merge([
+        $entry = $this->entryManager->create($this->formId, array_merge([
             'antispam' => 1,
             'id_fiche' => $tag,
         ], $data));

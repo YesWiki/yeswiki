@@ -4,6 +4,7 @@ namespace YesWiki\Test\Bazar\Service;
 
 use PHPUnit\Framework\Attributes\DataProvider;
 use YesWiki\Bazar\Service\BazarListService;
+use YesWiki\Bazar\Service\FormManager;
 use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';
@@ -15,12 +16,14 @@ require_once 'tests/YesWikiTestCase.php';
 class BazarListExternalUrlTest extends YesWikiTestCase
 {
     private $bazarListService;
+    private $formManager;
 
     protected function setUp(): void
     {
         $wiki = $this->getWiki();
         $GLOBALS['wiki'] = $wiki;
         $this->bazarListService = $wiki->services->get(BazarListService::class);
+        $this->formManager = $wiki->services->get(FormManager::class);
     }
 
     #[DataProvider('refusedUrlProvider')]
@@ -49,6 +52,18 @@ class BazarListExternalUrlTest extends YesWikiTestCase
 
     public function testALocalFormIsStillRead()
     {
-        $this->assertIsArray($this->bazarListService->getForms(['idtypeannonce' => '1']));
+        $formId = $this->formManager->create([
+            'bn_label_nature' => 'External url test form',
+            'bn_template' => 'texte***bf_titre***Titre***60***255*** *** ***text***1*** *** *** * *** * *** *** *** ***',
+            'bn_condition' => '',
+        ]);
+
+        try {
+            $forms = $this->bazarListService->getForms(['idtypeannonce' => $formId]);
+
+            $this->assertSame('External url test form', $forms[$formId]['bn_label_nature'] ?? null);
+        } finally {
+            $this->formManager->delete($formId);
+        }
     }
 }

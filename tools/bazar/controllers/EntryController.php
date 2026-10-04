@@ -10,6 +10,7 @@ use YesWiki\Bazar\Exception\TagAlreadyUsedException;
 use YesWiki\Bazar\Exception\UserFieldException;
 use YesWiki\Bazar\Field\BazarField;
 use YesWiki\Bazar\Field\ConditionsCheckingField;
+use YesWiki\Bazar\Field\LinkedEntryField;
 use YesWiki\Bazar\Field\UserField;
 use YesWiki\Bazar\Service\ConditionsChecker;
 use YesWiki\Bazar\Service\EntryManager;
@@ -513,10 +514,11 @@ class EntryController extends YesWikiController
         $html = [];
         foreach ($form['prepared'] as $field) {
             if ($field instanceof BazarField) {
-                $id = $field->getPropertyName();
+                $id = $field instanceof LinkedEntryField
+                    ? $field->getType() . $field->getName()
+                    : $field->getPropertyName();
                 if (!empty($id) && !in_array($id, $this->fieldsToExclude())) {
                     $html[$id] = $field->renderStaticIfPermitted($entry, $userNameForRendering);
-                    // reset $matches before preg_match
                     $matches = [];
                     if ($id == 'bf_titre') {
                         preg_match('/<h1 class="BAZ_fiche_titre">\s*(.*)\s*<\/h1>.*$/is', $html[$id], $matches);
@@ -540,8 +542,6 @@ class EntryController extends YesWikiController
         $values['fiche'] = $entry;
         $values['form'] = $form;
 
-        // Transform some data so it's easier to use
-        // Rename some variable (we keep old one for backward compatibility)
         $values['entry'] = $entry;
         $values['renderedFields'] = $html;
         $values['formFields'] = [];
