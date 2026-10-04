@@ -848,11 +848,11 @@ $(document).ready(() => {
     const $this = $(this)
     let target = $this.parents('.controls').find('.yeswiki-checkbox')
     if ($this.data('target')) {
-      target = $($this.data('target'))
+      const $form = $this.closest('form')
+      target = ($form.length ? $form : $(document)).find($this.data('target'))
     }
 
     if (this.checked) {
-      // check select status
       target.each(function () {
         $(this).find(':checkbox').prop('checked', true)
         $(this).prop('checked', true)
