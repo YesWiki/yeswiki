@@ -609,5 +609,5 @@ INSERT INTO `{{prefix}}triples` (`resource`, `property`, `value`) VALUES
 ('20240425172243_CleanOldCartoGoogle', 'http://outils-reseaux.org/_vocabulary/type', 'migration'),
 ('20240502083251_RefactorListStruture', 'http://outils-reseaux.org/_vocabulary/type', 'migration'),
 ('20240621202127_RefactorEnumFieldPropertyName', 'http://outils-reseaux.org/_vocabulary/type', 'migration'),
-('20250730162434_AddContextToPageLogin', 'http://outils-reseaux.org/_vocabulary/type', 'migration');
+('20261004120000_AddLoginContextToPageLogin', 'http://outils-reseaux.org/_vocabulary/type', 'migration');
 # end triples
