@@ -7,6 +7,7 @@ use YesWiki\Bazar\Service\CSVManager;
 use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Bazar\Service\FormManager;
 use YesWiki\Bazar\Service\ListManager;
+use YesWiki\Core\Service\AclService;
 use YesWiki\Core\Service\PageManager;
 use YesWiki\Core\Service\TripleStore;
 use YesWiki\Test\Core\YesWikiTestCase;
@@ -65,6 +66,7 @@ class CSVManagerTest extends YesWikiTestCase
     {
         foreach ($this->tags as $tag) {
             $this->entryManager->delete($tag, true);
+            $this->wiki->services->get(AclService::class)->delete($tag);
         }
         $this->formManager->delete(self::FORM_ID);
         $this->wiki->services->get(PageManager::class)->deleteOrphaned(self::LIST_ID);
@@ -160,6 +162,7 @@ class CSVManagerTest extends YesWikiTestCase
             $values,
         ));
         $this->tags[] = $entry['id_fiche'];
+        $this->wiki->services->get(AclService::class)->save($entry['id_fiche'], 'read', '*');
     }
 
     private function export(): string

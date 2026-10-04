@@ -28,6 +28,7 @@ class RecentchangesrssplusActionTest extends YesWikiTestCase
 
         $pageManager->save(self::PUBLIC_TAG, self::PUBLIC_MARKER, '', true);
         $pageManager->save(self::RESTRICTED_TAG, self::RESTRICTED_SECRET, '', true);
+        $aclService->save(self::PUBLIC_TAG, 'read', '*');
         $aclService->save(self::RESTRICTED_TAG, 'read', '@admins');
 
         $wiki->method = 'xml';
@@ -52,6 +53,7 @@ class RecentchangesrssplusActionTest extends YesWikiTestCase
             }
             $pageManager->deleteOrphaned(self::PUBLIC_TAG);
             $pageManager->deleteOrphaned(self::RESTRICTED_TAG);
+            $aclService->delete(self::PUBLIC_TAG);
             $aclService->delete(self::RESTRICTED_TAG);
         }
     }
