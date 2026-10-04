@@ -321,25 +321,32 @@ handler name was already English.
 migration cannot rewrite a link somebody has already shared or bookmarked. If you have published
 such links, republish them with the new spelling.
 
-### 2. Extensions in `tools/` are not loaded
+### 2. `custom/` and `tools/` are set aside, to port one at a time
 
 Extensions now live in `extensions/` (shared, in the source tree) and `custom/extensions/`
-(per-instance). **`tools/` is not scanned at all**, so anything still there is silently ignored —
-no error, the features just stop existing.
+(per-instance). **`tools/` is not scanned at all.** And a Doryphore `custom/` usually holds PHP
+written against classes that are gone (`custom/fields/*.php` extending
+`YesWiki\Bazar\Field\BazarField`, for one), which stops the wiki from booting at all.
 
-```bash
-mv tools/* custom/extensions/     # per-instance, the usual case for a single wiki
+So the first boot of a wiki whose configuration still names an older `yeswiki_version` moves both
+out of the way, before anything is loaded:
+
+```
+private/doryphore/custom/      the whole of custom/
+private/doryphore/tools/       the whole of tools/
+private/doryphore/README.md    what moved, and which tools were extensions rather than core
 ```
 
-Check each extension is Ectoplasme-compatible before trusting it: extensions were explicitly out
-of scope for the core rename work, so one written for Doryphore will refer to French action names,
-dropped tables and the deleted `Wiki` class.
+`migrate` prints the list. `private/` is never served, so none of that PHP can be reached from the
+web. The wiki comes up stock, and you bring back what is still needed, one piece at a time, once it
+works on Ectoplasme:
 
-It does warn, and it keeps warning: `/admin/health` lists whatever is still in `tools/`, and stops
-listing it once the directory is empty.
+```bash
+mv private/doryphore/tools/myextension custom/extensions/myextension   # after porting it
+```
 
-> **Automatable.** Moving directories is something a migration can do; it is not done because
-> silently relocating third-party code is a worse default than telling you to.
+**Keep `private/doryphore/` while it exists**, even empty: it is what tells YesWiki the move was
+done, so a `custom/` you build afterwards is never moved again.
 
 One rename you will hit immediately if your extension declares a **custom field type**: the
 attribute that registers a field's keywords is namespaced now. `#[\Field([...])]` no longer
@@ -671,7 +678,8 @@ proportion to how long the wiki has been running.
   written, not that the command is missing.
 - **A page renders an error where an action used to be** — an un-renamed action name. See
   [section 1](#1-action-names-and-parameters-in-your-page-bodies--the-big-one).
-- **An extension's features vanished silently** — it is probably still in `tools/`. See
-  [section 2](#2-extensions-in-tools-are-not-loaded).
+- **An extension's features vanished** — it was set aside in `private/doryphore/tools/`, and
+  `private/doryphore/README.md` says so. See
+  [section 2](#2-custom-and-tools-are-set-aside-to-port-one-at-a-time).
 - **Search returns nothing** — `./yeswicli search:reindex`.
 - **You need to go back** — restore the backup. There are no down migrations.

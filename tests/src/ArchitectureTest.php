@@ -74,6 +74,7 @@ class ArchitectureTest extends TestCase
         'autoload.inc.php',
         'Kernel/Service/ConfigurationFileProvider.php',
         'Kernel/Entity/ConfigurationFile.php',
+        'Kernel/Service/DoryphoreLeftovers.php',
 
         // A singleton with a `getInstance()`, initialised before the container so that `_t()`
         // works while the container is still being built. Its catalogues are `require`d PHP in the

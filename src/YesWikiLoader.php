@@ -15,6 +15,8 @@
 namespace YesWiki\Core;
 
 use Symfony\Component\Dotenv\Dotenv;
+use YesWiki\Kernel\Service\ConfigurationFileProvider;
+use YesWiki\Kernel\Service\DoryphoreLeftovers;
 
 class YesWikiLoader
 {
@@ -86,6 +88,7 @@ class YesWikiLoader
             }
 
             self::loadEnv();
+            self::setDoryphoreLeftoversAside();
 
             $loadedRuntime = require_once __DIR__ . '/YesWikiRuntime.php';
             if ($loadedRuntime !== true || is_null(self::$runtime)) {
@@ -100,6 +103,15 @@ class YesWikiLoader
         }
 
         return self::$runtime;
+    }
+
+    /** Moves a Doryphore wiki's custom/ and tools/ aside before they can break the boot, and says so on the console. */
+    private static function setDoryphoreLeftoversAside(): void
+    {
+        $moved = DoryphoreLeftovers::setAside(YESWIKI_INSTANCE_DIR, ConfigurationFileProvider::getConfigFileFromEnv());
+        if ($moved !== [] && PHP_SAPI === 'cli') {
+            fwrite(STDERR, 'note | Doryphore leftovers set aside in ' . DoryphoreLeftovers::ASIDE . ":\n  " . implode("\n  ", $moved) . "\n");
+        }
     }
 
     /** The generated autoloader knows every namespace `composer.json` declares. */
