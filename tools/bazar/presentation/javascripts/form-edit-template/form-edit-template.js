@@ -372,3 +372,18 @@ $('a[href="#formbuilder"]').on('click', (event) => {
     return false
   }
 })
+
+$(document).on('submit', '#bazar-form-editor', (event) => {
+  if (event.isDefaultPrevented()) return
+  $('#form-builder-container')
+    .find('input, select, textarea, button')
+    .filter(':enabled')
+    .attr('data-disabled-on-submit', '1')
+    .prop('disabled', true)
+})
+
+window.addEventListener('pageshow', () => {
+  $('[data-disabled-on-submit]')
+    .prop('disabled', false)
+    .removeAttr('data-disabled-on-submit')
+})
