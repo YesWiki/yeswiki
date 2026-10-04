@@ -109,6 +109,7 @@ const BazarMapComponent = {
             break
           case 'geojson':
             this.layers[label] = L.geoJson.ajax(url, {
+              interactive: false,
               style(feature) {
                 if (feature.geometry.type === 'Point') return
                 const props = feature.properties || {}
@@ -131,17 +132,6 @@ const BazarMapComponent = {
               },
               pointToLayer(feature, latlng) {
                 return L.circleMarker(latlng)
-              },
-              onEachFeature(feature, layer) {
-                let str = ''
-                for (const prop in feature.properties) {
-                  const content =
-                    prop.toLowerCase() === 'url'
-                      ? `<a href="${feature.properties[prop]}" target="_blank">${feature.properties[prop]}</a>`
-                      : feature.properties[prop]
-                  str += `${prop}: ${content}<br/>`
-                }
-                layer.bindPopup(str)
               },
             })
             if (visibleByDefault) this.layers[label].addTo(this.map)
@@ -176,7 +166,7 @@ const BazarMapComponent = {
       try {
         const cGeolocation = this.getGeolocation(entry)
 
-        if (cGeolocation) {
+        if (cGeolocation && cGeolocation.latitude && cGeolocation.longitude) {
           entry.marker = L.marker(
             [cGeolocation.latitude, cGeolocation.longitude],
             { riseOnHover: true },
@@ -416,6 +406,8 @@ const BazarMapComponent = {
           this.$root.getEntryRender(this.selectedEntry)
         } else if (this.params.entrydisplay === 'popup') {
           this.openPopup(this.selectedEntry)
+        } else if (this.isModalDisplay()) {
+          this.$root.openEntryModal(this.selectedEntry)
         }
 
         this.$nextTick(function () {

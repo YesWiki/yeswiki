@@ -8,8 +8,9 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Content\Service\EntryManager;
 use YesWiki\Content\Service\FormManager;
 use YesWiki\Content\Service\ListManager;
-use YesWiki\Files\Service\LocalFiles;
 use YesWiki\Files\Service\Storage;
+use YesWiki\Kernel\Service\PinnedFetcher;
+use YesWiki\Kernel\Service\SsrfUrlValidator;
 
 class ImporterManager
 {
@@ -28,7 +29,8 @@ class ImporterManager
         FormManager $formManager,
         ListManager $listManager,
         private readonly Storage $storage,
-        private readonly LocalFiles $localFiles,
+        private readonly PinnedFetcher $fetcher,
+        private readonly SsrfUrlValidator $ssrfUrlValidator,
     ) {
         $this->params = $params;
         $this->services = $services;
@@ -285,10 +287,12 @@ class ImporterManager
     }
 
     /**
+     * A request to a source wiki pinned to the checked address: reads go through PinnedFetcher, a login is one pinned request that follows no redirect.
+     *
      * @param list<string>             $headers
      * @param string|array<mixed>|null $postData
      *
-     * @return string|false the response body, or false when curl could not run the request
+     * @return string|false the response body, or false when the request could not be made
      */
     public function curl(
         string $url,
@@ -299,24 +303,47 @@ class ImporterManager
         bool $showHeader = false,
         int $timeoutInSec = 30
     ) {
+        if (!$isPost && !$showHeader) {
+            try {
+                return $this->fetcher->fetch($url, [
+                    'connectTimeout' => $timeoutInSec,
+                    'timeout' => $timeoutInSec,
+                    'headers' => $headers,
+                    'verifyPeer' => !$noSSLCheck,
+                ]);
+            } catch (\Throwable $error) {
+                echo 'Erreur de connexion à "' . $url . '" : ' . $error->getMessage() . "\n";
+
+                return false;
+            }
+        }
+
+        try {
+            $pin = $this->ssrfUrlValidator->curlPin($url, ['http', 'https']);
+        } catch (\Throwable $error) {
+            echo 'Erreur de connexion à "' . $url . '" : ' . $error->getMessage() . "\n";
+
+            return false;
+        }
         $ch = curl_init($url);
         if ($ch === false) {
             return false;
         }
-        if ($showHeader) {
-            curl_setopt($ch, CURLOPT_HEADER, true);
-        }
-        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $timeoutInSec);
-        curl_setopt($ch, CURLOPT_TIMEOUT, $timeoutInSec);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-        curl_setopt($ch, CURLOPT_POST, $isPost);
+        curl_setopt_array($ch, $pin + [
+            CURLOPT_FOLLOWLOCATION => false,
+            CURLOPT_HEADER => $showHeader,
+            CURLOPT_CONNECTTIMEOUT => $timeoutInSec,
+            CURLOPT_TIMEOUT => $timeoutInSec,
+            CURLOPT_HTTPHEADER => $headers,
+            CURLOPT_POST => $isPost,
+            CURLOPT_RETURNTRANSFER => true,
+        ]);
         if ($postData) {
             curl_setopt($ch, CURLOPT_POSTFIELDS, $postData);
         }
         if ($noSSLCheck) {
             curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
         }
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         $response = curl_exec($ch);
         $errors = curl_error($ch);
         if (!empty($errors)) {
@@ -354,53 +381,26 @@ class ImporterManager
             return $destFile;
         }
 
-        // Downloaded to a scratch file first and only then handed to Storage. curl writes into a
-        // stream and the destination may be a bucket, so the two cannot be the same thing -- and
-        // writing straight to the destination would publish a half-downloaded file under a name
-        // the wiki already treats as an attachment.
-        return $this->storage->withTemporaryFile(pathinfo($destFile, PATHINFO_EXTENSION), function (string $tmpPath) use ($sourceUrl, $destPath, $destFile, $timeoutInSec, $noSSLCheck, $headers) {
-            $fp = $this->localFiles->openForWriting($tmpPath);
-            if ($fp === null) {
-                echo 'Impossible d\'écrire dans "' . $this->uploadPath() . '".' . "\n";
+        try {
+            $body = $this->fetcher->stream($sourceUrl, [
+                'connectTimeout' => $timeoutInSec,
+                'timeout' => $timeoutInSec,
+                'headers' => $headers,
+                'verifyPeer' => !$noSSLCheck,
+            ]);
+        } catch (\Throwable $error) {
+            echo 'Téléchargement de "' . $sourceUrl . '" échoué : ' . $error->getMessage() . "\n";
 
-                return '';
-            }
+            return '';
+        }
 
-            $ch = curl_init($sourceUrl);
-            if ($ch === false) {
-                fclose($fp);
+        try {
+            $this->storage->writeStream($destPath, $body);
+        } finally {
+            fclose($body);
+        }
 
-                return '';
-            }
-            curl_setopt($ch, CURLOPT_FILE, $fp);
-            curl_setopt($ch, CURLOPT_HEADER, false);
-            if (!empty($headers)) {
-                curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-            }
-            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $timeoutInSec);
-            curl_setopt($ch, CURLOPT_TIMEOUT, $timeoutInSec);
-            curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
-            if ($noSSLCheck) {
-                curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-            }
-            curl_exec($ch);
-            $errors = curl_error($ch);
-            $httpCode = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
-            curl_close($ch);
-            fclose($fp);
-
-            clearstatcache(true, $tmpPath);
-            if (!empty($errors) || ($httpCode >= 400) || $this->storage->readForeign($tmpPath) === '') {
-                echo 'Téléchargement de "' . $sourceUrl . '" échoué'
-                    . (!empty($errors) ? ' : ' . $errors : ($httpCode ? ' (code http ' . $httpCode . ')' : '')) . '.' . "\n";
-
-                return '';
-            }
-
-            $this->storage->writeFrom($destPath, $tmpPath);
-
-            return $destFile;
-        });
+        return $destFile;
     }
 
     private function uploadPath(): string

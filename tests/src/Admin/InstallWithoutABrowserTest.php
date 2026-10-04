@@ -257,6 +257,62 @@ class InstallWithoutABrowserTest extends YesWikiTestCase
         }
     }
 
+    /** A wiki moved with its backup: the archive is restored at install, under the new prefix and address, with its files and settings. */
+    public function testAWikiInstallsFromABackupArchive(): void
+    {
+        $source = $this->instanceDir() . '-source';
+        $copy = $this->instanceDir() . '-copy';
+        mkdir($source, 0o755, true);
+        mkdir($copy . '/private/backups', 0o755, true);
+
+        try {
+            $installed = $this->install($source, [
+                '--driver=sqlite',
+                '--table-prefix=yeswiki_',
+                '--base-url=http://source.test/?',
+                '--root-page=PagePrincipale',
+                '--wiki-name=The Source Wiki',
+                '--language=en',
+                '--admin-name=SourceAdmin',
+                '--admin-email=admin@example.tld',
+                '--admin-password=InstalledFromTheTerminal',
+            ]);
+            $this->assertSame(0, $installed['status'], $installed['out']);
+            @mkdir($source . '/custom', 0o755, true);
+            file_put_contents($source . '/custom/source.css', 'body {}');
+            file_put_contents($source . '/index.php', '<?php');
+            $archived = $this->console($source, 'core:archive', []);
+            $archives = glob($source . '/private/backups/*_source-test_archive.zip') ?: [];
+            $this->assertCount(1, $archives, $archived['out']);
+            copy($archives[0], $copy . '/private/backups/' . basename($archives[0]));
+
+            $restored = $this->install($copy, [
+                '--driver=sqlite',
+                '--table-prefix=copy_',
+                '--base-url=http://copy.test/?',
+                '--root-page=PagePrincipale',
+                '--wiki-name=Not the source',
+                '--language=en',
+                '--from-archive=' . basename($archives[0]),
+            ]);
+
+            $this->assertSame(0, $restored['status'], $restored['out']);
+            $this->assertFileExists($copy . '/custom/source.css', 'the files of the backup come along');
+            $written = (new ConfigurationService())->getConfiguration($copy . '/yeswiki.config.php');
+            $written->load();
+            $this->assertSame('http://copy.test/?', $written['base_url']);
+            $this->assertSame('copy_', $written['table_prefix']);
+            $this->assertSame('The Source Wiki', $written['yeswiki_name'], 'the settings of the backup come along');
+
+            $db = new \PDO('sqlite:' . $copy . '/private/yeswiki.db');
+            $this->assertSame(1, $this->countRows($db, "SELECT COUNT(*) FROM copy_pages WHERE tag = 'SourceAdmin' AND type = 'user' AND latest = 'Y'"), 'the accounts are the backup\'s');
+            $this->assertSame(0, $this->countRows($db, "SELECT COUNT(*) FROM sqlite_master WHERE name LIKE 'yeswiki\\_%' ESCAPE '\\'"), 'nothing is left under the source prefix');
+            $this->assertSame(0, $this->countRows($db, "SELECT COUNT(*) FROM copy_pages WHERE body LIKE '%source.test%'"), 'the links point at the new address');
+        } finally {
+            exec('rm -rf ' . escapeshellarg($source) . ' ' . escapeshellarg($copy));
+        }
+    }
+
     /** The ticket's second Done-when, stated as an assertion: the controller handles the request and nothing else. */
     public function testTheControllerHoldsNoInstallLogic(): void
     {

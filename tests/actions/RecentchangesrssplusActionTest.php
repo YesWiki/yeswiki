@@ -10,9 +10,7 @@ use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';
 
-/**
- * Regression test for anonymous disclosure via the legacy {{recentchangesrssplus}} action (actions/recentchangesrssplus.php, formerly tools/rss): it queried every latest, non-comment page and wrote a 500-char body excerpt into the public RSS feed with no per-page read-ACL check, unlike its modern sibling RecentChangesRssAction.php.
- */
+/** The public {{recentchangesrssplus}} feed lists only the pages the requester can read. */
 class RecentchangesrssplusActionTest extends YesWikiTestCase
 {
     private const PUBLIC_TAG = 'RecentchangesrssplusPublicPage';
@@ -20,7 +18,7 @@ class RecentchangesrssplusActionTest extends YesWikiTestCase
     private const PUBLIC_MARKER = 'RECENTCHANGESRSSPLUS_PUBLIC_MARKER';
     private const RESTRICTED_SECRET = 'RECENTCHANGESRSSPLUS_RESTRICTED_SECRET_MARKER';
 
-    public function testFeedListsAllPagesButRedactsUnreadableOnes(): void
+    public function testFeedHidesPagesTheRequesterCannotRead(): void
     {
         $wiki = $this->getWiki();
         $pageManager = $wiki->services->get(PageManager::class);
@@ -44,16 +42,9 @@ class RecentchangesrssplusActionTest extends YesWikiTestCase
             } catch (ExitException $e) {
             }
 
-            $redactedTag = substr(self::RESTRICTED_TAG, 0, 3) . '___';
-            $this->assertStringContainsString(
-                $redactedTag,
-                $output,
-                'the restricted page should still be listed (redacted) in the feed'
-            );
-
             $this->assertStringNotContainsString(self::RESTRICTED_TAG, $output);
             $this->assertStringNotContainsString(self::RESTRICTED_SECRET, $output);
-            $this->assertStringContainsString(_t('RSS_HIDDEN_CONTENT'), $output);
+            $this->assertStringNotContainsString(substr(self::RESTRICTED_TAG, 0, 3) . '___', $output);
 
             $this->assertStringContainsString(self::PUBLIC_TAG, $output);
             $this->assertStringContainsString(self::PUBLIC_MARKER, $output);

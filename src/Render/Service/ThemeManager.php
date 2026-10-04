@@ -14,6 +14,7 @@ use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Kernel\Entity\Event;
 use YesWiki\Kernel\Service\AssetRegistry;
+use YesWiki\Kernel\Service\CurrentRequest;
 use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Kernel\Service\LanguageService;
 use YesWiki\Kernel\Service\StringUtilService;
@@ -118,10 +119,10 @@ class ThemeManager implements EventSubscriberInterface
         } else {
             $requested = [];
             $keysToVerify = ['theme', 'squelette', 'style', 'preset'];
-            $request = $this->container->get(\YesWiki\Kernel\Service\CurrentRequest::class)->get();
+            $request = $this->container->get(CurrentRequest::class)->get();
             foreach ($keysToVerify as $val) {
                 $requested[$val] = null;
-                $requestVal = $request->get($val);
+                $requestVal = CurrentRequest::input($request, $val);
                 if (!empty($requestVal)) {
                     $path = str_replace('custom/', '', $requestVal);
                     if (preg_match('/\//', $path, $matches)) {
@@ -189,7 +190,7 @@ class ThemeManager implements EventSubscriberInterface
                     $this->setFavorite('preset', $requested['preset']);
                 }
 
-                $bgimg = $request->get('bgimg');
+                $bgimg = CurrentRequest::input($request, 'bgimg');
                 if (!empty($bgimg) && $this->storage->fileExists('files/backgrounds/' . $bgimg)) {
                     $this->setFavorite('background_image', $bgimg);
                 } else {
@@ -862,7 +863,7 @@ class ThemeManager implements EventSubscriberInterface
     public function saveMetadataIfNeeded(Event $event): void
     {
         $data = $event->getData();
-        $request = $this->container->get(\YesWiki\Kernel\Service\CurrentRequest::class)->get();
+        $request = $this->container->get(CurrentRequest::class)->get();
         $post = $request->request;
         $query = $request->query;
         if (!empty($data['data']['tag'])

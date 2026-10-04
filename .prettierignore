@@ -6,3 +6,13 @@ themes/yeswiki/styles/
 # `node src/build-icon-sprite.mjs` and is not ours to decide anyway (eslint ignores it too)
 javascripts/yw-icon-map.js
 javascripts/ext-searchbox.js
+
+# the FrankenPHP checkout the binary build clones (gitignored in binary/.gitignore)
+binary/.frankenphp/
+binary/dist/
+
+# copied unchanged from yeswiki-build-repo: the Go test relies on it being the real output
+binary/internal/release/testdata/binary.json
+
+# minified font list the preset editor fetches as is
+src/assets/google-fonts.json

@@ -89,7 +89,7 @@ class ImportService
     {
         // each hop is followed here rather than by curl, so that every address is checked in turn
         $outputUrl = $inputUrl;
-        for ($hop = 0; $hop < self::MAX_REDIRECTS; ++$hop) {
+        for ($hop = 0; $hop < self::MAX_REDIRECTS; $hop++) {
             try {
                 $headers = $this->getHeaders($outputUrl);
             } catch (CurlTimeoutException $th) {

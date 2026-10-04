@@ -39,7 +39,6 @@
 
                 {% else %}
                   <input type="text" class="yw-input" id="{{ key }}" name="{{ key }}" value="{{ value }}"
-                    {{ help[key] ? 'aria-describedby="' ~ key ~ 'Help"' }}
                     {% if placeholders[key] is not null -%}placeholder="{{ _t('EDIT_CONFIG_CURRENT_VALUE') }}: {{ placeholders[key] }}"{%- endif %}
                     />
                 {% endif %}
@@ -50,7 +49,6 @@
     {% endfor %}
   </div>
 
-  <!-- end of #edit-config form -->
   <input type="hidden" name="{{ SAVE_NAME }}" value="1">
   <div class="yw-form-group">
     <div class="col-sm-9 col-sm-offset-3">

@@ -7,6 +7,7 @@ use YesWiki\Content\Entity\ContentTypeSchema;
 use YesWiki\Content\Service\EntryManager;
 use YesWiki\Content\Service\FormManager;
 use YesWiki\Content\Service\FormPropertiesService;
+use YesWiki\Content\Service\ImportContext;
 use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';
@@ -83,6 +84,19 @@ class ContentTypeFormPropertiesTest extends YesWikiTestCase
                 ->computeTitle($form, ['form_id' => $form['id'], $key => 'un titre calculé']),
             "{$expected} must resolve against a {$contentType}'s own body"
         );
+    }
+
+    /** An imported entry still takes its title from its own fields. */
+    public function testAnImportedEntryGetsItsTitleFromItsFields(): void
+    {
+        $services = $this->getWiki()->services;
+        $form = ['id' => '0', 'entry_title_template' => '{{bf_titre}} ({{bf_ville}})'];
+
+        $title = $services->get(ImportContext::class)->during(
+            fn () => $services->get(FormPropertiesService::class)->computeTitle($form, ['bf_titre' => 'Fête', 'bf_ville' => 'Lyon'])
+        );
+
+        $this->assertSame('Fête (Lyon)', $title);
     }
 
     /** An ordinary bazar form keeps the historical convention as its default. */

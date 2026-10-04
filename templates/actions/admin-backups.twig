@@ -2,9 +2,12 @@
 {{ include_javascript('javascripts/actions/admin-backups.js', false, true) }}
 {{ include_css('styles/yw-admin.css') }}
 
-<div class="admin-backups admin-backups-container">
+<div class="admin-backups admin-backups-container no-dblclick" data-csrf-token="{{ csrfToken({id:'main',refresh:false})|e('html_attr') }}">
   <h1>{{ _t('ADMIN_BACKUPS_TITLE') }}</h1>
   <div class="well">
+    {% if not canArchive %}
+    <div class="alert alert-warning">{{ cannotArchiveMessage|raw }}</div>
+    {% else %}
     <fieldset>
       <legend>{{ _t('ADMIN_BACKUPS_CREATE') }}</legend>
       <div class="checkbox">
@@ -60,6 +63,39 @@
         :checked="canForceDelete">
       <span>{{ _t('ADMIN_BACKUPS_CONFIRM_DELETE_FILES') }}</span>
     </div>
+    {% endif %}
+  </div>
+  <div class="well">
+    <fieldset>
+      <legend>{{ _t('ADMIN_BACKUPS_REMOTE_TITLE') }}</legend>
+      <p class="help-block">{{ _t('ADMIN_BACKUPS_REMOTE_HELP') }}</p>
+      <div class="yw-form-group">
+        <label class="yw-form-label" for="remoteBackupUrl">{{ _t('ADMIN_BACKUPS_REMOTE_URL') }}</label>
+        <input type="url" class="yw-input" id="remoteBackupUrl" v-model="remoteUrl"
+          placeholder="https://…" :disabled="remoteRunning" @keyup.enter="startRemoteBackup">
+      </div>
+      <div class="yw-form-group">
+        <label class="yw-form-label" for="remoteBackupUsername">{{ _t('ADMIN_BACKUPS_REMOTE_USERNAME') }}</label>
+        <input type="text" class="yw-input" id="remoteBackupUsername" v-model="remoteUsername"
+          autocomplete="off" :disabled="remoteRunning" @keyup.enter="startRemoteBackup">
+      </div>
+      <div class="yw-form-group">
+        <label class="yw-form-label" for="remoteBackupPassword">{{ _t('ADMIN_BACKUPS_REMOTE_PASSWORD') }}</label>
+        <input type="password" class="yw-input" id="remoteBackupPassword" v-model="remotePassword"
+          autocomplete="new-password" :disabled="remoteRunning" @keyup.enter="startRemoteBackup">
+      </div>
+      <div class="archive-buttons">
+        <button v-if="!remoteRunning" @click="startRemoteBackup" class="btn btn-primary"
+            :disabled="updating || archiving || remoteUrl.length == 0 || remoteUsername.length == 0 || remotePassword.length == 0">
+          <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#download"/></svg> {{ _t('ADMIN_BACKUPS_REMOTE_START') }}
+        </button>
+        <button v-else @click="cancelRemoteBackup" class="btn btn-danger" :disabled="remoteCancelling">
+          <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#player-stop"/></svg> {{ _t('ADMIN_BACKUPS_REMOTE_CANCEL') }}
+        </button>
+      </div>
+    </fieldset>
+    <div v-if="remoteMessage.length > 0" v-html="remoteMessage" :class="remoteMessageClass"></div>
+    <progress v-if="remoteRunning && remoteTotal > 0" class="yw-progressbar" :value="remoteBytes" :max="remoteTotal"></progress>
   </div>
   <div v-if="ready && Object.keys(archives).length == 0" class="alert alert-info">{{ _t('ADMIN_NO_BACKUP_FOUND') }}.</div>
   <div v-if="message.length > 0" v-html="message" :class="messageClass"></div>

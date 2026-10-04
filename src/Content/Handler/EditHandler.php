@@ -572,10 +572,11 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
                         $this->getService(FlashMessageService::class)->setMessage(_t('EDIT_NO_CHANGE_MSG'));
                         $this->getService(Redirector::class)->redirect($after);
                     } else {
-                        $this->getService(PageManager::class)->save($this->getService(PageContext::class)->getTag(), $newBody, !empty($this->getService(PageContext::class)->getPage()['parent']) ? $this->getService(PageContext::class)->getPage()['parent'] : '');
+                        $parent = (string)($this->getService(PageContext::class)->getPage()['parent'] ?? '');
+                        $this->getService(PageManager::class)->save($this->getService(PageContext::class)->getTag(), $newBody, $parent);
 
-                        if (($this->getService(PageContext::class)->getPage() ?? [])['parent']) {
-                            $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href(WikiUrls::iframeSuffixFor(), ($this->getService(PageContext::class)->getPage() ?? [])['parent']) . '#' . $this->getService(PageContext::class)->getTag());
+                        if ($parent !== '') {
+                            $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href(WikiUrls::iframeSuffixFor(), $parent) . '#' . $this->getService(PageContext::class)->getTag());
                         } else {
                             $this->getService(Redirector::class)->redirect($after);
                         }

@@ -56,9 +56,6 @@ abstract class PackageExt extends Package
             return false;
         }
 
-        $this->deletePackage();
-        $this->makeDirectory($desPath);
-
         if ($this->extractionPath === null) {
             throw new \Exception(_t('AU_PACKAGE_NOT_UNZIPPED'), 1);
         }
@@ -70,12 +67,7 @@ abstract class PackageExt extends Package
         }
         $extractionPath = reset($dirs) . '/';
 
-        $this->copy(
-            $extractionPath,
-            $desPath
-        );
-
-        return true;
+        return $this->copy($extractionPath, $desPath);
     }
 
     /** @return bool */

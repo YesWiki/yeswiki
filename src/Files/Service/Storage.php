@@ -595,7 +595,10 @@ class Storage
      */
     public function runtimeFreeSpace(): ?float
     {
-        $free = disk_free_space($this->root);
+        if (!function_exists('disk_free_space')) {
+            return null;
+        }
+        $free = @disk_free_space($this->root);
 
         return $free === false ? null : $free;
     }

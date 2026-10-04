@@ -55,7 +55,7 @@ class EditConfigAction extends YesWikiAction implements RegisteredAction, Provid
     private const CONTACT_KEYS = [
         'contact_use_long_wiki_urls_in_emails', 'contact_mail_func', 'contact_smtp_host',
         'contact_smtp_port', 'contact_smtp_user', 'contact_smtp_pass', 'contact_smtp_secure',
-        'contact_debug', 'contact_disable_email_for_password',
+        'contact_smtp_verify_peer', 'contact_debug', 'contact_disable_email_for_password',
     ];
 
     private const BAZAR_KEYS = [
@@ -267,7 +267,7 @@ class EditConfigAction extends YesWikiAction implements RegisteredAction, Provid
                 }
             }
 
-            $scannedKeysNames = [];
+            $scannedKeysNames = $this->lockedParams();
             $scannedKeys = [];
             foreach ($keys as $key) {
                 if (is_array($key)) {
@@ -290,6 +290,24 @@ class EditConfigAction extends YesWikiAction implements RegisteredAction, Provid
         }
 
         return [$this->keys, $this->associatedExtensions];
+    }
+
+    /**
+     * The params named in edit_config_locked_params, which the form neither shows nor saves.
+     *
+     * @return list<string>
+     */
+    private function lockedParams(): array
+    {
+        if (!$this->params->has('edit_config_locked_params')) {
+            return [];
+        }
+        $locked = $this->params->get('edit_config_locked_params');
+        if (is_string($locked)) {
+            $locked = explode(',', $locked);
+        }
+
+        return is_array($locked) ? array_values(array_filter(array_map(fn ($name) => is_scalar($name) ? trim((string)$name) : '', $locked))) : [];
     }
 
     /**
@@ -442,8 +460,6 @@ class EditConfigAction extends YesWikiAction implements RegisteredAction, Provid
 
         $written = $config->write();
         if ($written) {
-            // The act, not the values: a configuration file holds database credentials and mail
-            // passwords, so what is recorded is that it was written and by whom (ADR-0025).
             $this->getService(Journal::class)->audit('config.write', basename(ConfigurationFileProvider::getConfigFileFromEnv()));
         }
 

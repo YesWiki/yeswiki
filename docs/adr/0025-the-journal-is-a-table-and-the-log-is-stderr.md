@@ -21,7 +21,7 @@ event.
   `(resource, property, value)` with indexes on the first two and `value` unindexed `TEXT`; an
   audit query filters by actor, action, target and date range, so every one of those is a `LIKE`
   scan or a self-join, and with no time column retention becomes string comparison. Ticket 27 took
-  the Content *type* out of triples for these reasons in its own words — "a row's own type is
+  the Content _type_ out of triples for these reasons in its own words — "a row's own type is
   stored in a different table from the row, so every query that needs it carries a join … a type
   filter that cannot use an index is the wrong shape". `TripleStore` also memoises in
   `cacheByResource` and `matchingCache`, built for a small set of facts read many times, which is
@@ -110,7 +110,7 @@ had already settled this for the search index — one `journalDdl()` per dialect
 
 **Diagnostics are pruned on `last_at`, audit on `at` (2026-08-26, ticket 51).** Retention was
 stated once, for both halves, over the same column. But a diagnostic row is not a fact about the
-past: `at` is when a fault was *first* seen, and a fault first seen thirteen months ago and still
+past: `at` is when a fault was _first_ seen, and a fault first seen thirteen months ago and still
 firing this morning is the one an operator most wants on the screen. Pruning it on `at` would
 delete exactly that, and the next occurrence would recreate it with a fresh `at` — losing the only
 thing the pair of timestamps exists to say. Audit entries, which are facts about the past and never
@@ -122,8 +122,8 @@ inside the JSON is what lets a legacy import carry a French sentence verbatim un
 exception's text uses, with no column that is empty for every audit row.
 
 **The per-day ceiling counts fingerprints, not writes (2026-08-26, ticket 51).** Counting writes
-would have made a storm of *one* fault trip its own ceiling and stop incrementing its own counter —
+would have made a storm of _one_ fault trip its own ceiling and stop incrementing its own counter —
 turning the acceptance criterion ("5,000 throws produce one row with `repeat = 5000`") into a row
-stuck at 500. A fingerprint already stored today always goes through; only a *new* one counts
+stuck at 500. A fingerprint already stored today always goes through; only a _new_ one counts
 against the ceiling, which is what "dedup bounds repeats, not distinct fingerprints" actually
 requires.

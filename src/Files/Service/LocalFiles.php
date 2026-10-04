@@ -40,6 +40,17 @@ class LocalFiles
         return is_dir($path);
     }
 
+    public function isLink(string $path): bool
+    {
+        return is_link($path);
+    }
+
+    /** Remove a directory if it is empty, and say whether it is gone. */
+    public function removeEmptyDirectory(string $path): bool
+    {
+        return !is_dir($path) || @rmdir($path);
+    }
+
     public function isWritable(string $path): bool
     {
         return is_writable($path);
@@ -87,10 +98,26 @@ class LocalFiles
         return rename($from, $to);
     }
 
+    /** @return resource|null a read handle, for the readers that go through a file piece by piece */
+    public function openForReading(string $path)
+    {
+        $handle = @fopen($path, 'rb');
+
+        return $handle === false ? null : $handle;
+    }
+
     /** @return resource|null a write handle, for the libraries that fill one */
     public function openForWriting(string $path)
     {
         $handle = fopen($path, 'wb');
+
+        return $handle === false ? null : $handle;
+    }
+
+    /** @return resource|null a handle that writes after what the file already holds */
+    public function openForAppending(string $path)
+    {
+        $handle = fopen($path, 'ab');
 
         return $handle === false ? null : $handle;
     }
@@ -100,9 +127,15 @@ class LocalFiles
         return realpath($path);
     }
 
-    public function freeSpace(string $directory): float|false
+    /** Free bytes on the disk holding $directory, null when the host will not say. */
+    public function freeSpace(string $directory): ?float
     {
-        return disk_free_space($directory);
+        if (!function_exists('disk_free_space')) {
+            return null;
+        }
+        $free = @disk_free_space($directory);
+
+        return $free === false ? null : $free;
     }
 
     /**

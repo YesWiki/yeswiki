@@ -1,36 +1,6 @@
-import { drawGeometries } from '../leaflet-draw.helper.js'
+import { drawGeometries, drawnItemsToGeoJSON } from '../leaflet-draw.helper.js'
 
 ywInit((root) => {
-  function drawnItemsToGeoJSON(pDrawnItems) {
-    const vData = {
-      type: 'FeatureCollection',
-      features: [],
-    }
-
-    pDrawnItems.eachLayer((pLayer) => {
-      if (pLayer instanceof L.Circle) {
-        const cLatLng = pLayer.getLatLng()
-
-        vData.features.push({
-          type: 'Feature',
-          properties: {
-            type: 'circle',
-            radius: pLayer.getRadius(),
-            ...pLayer.options,
-          },
-          geometry: {
-            type: 'Point',
-            coordinates: [cLatLng.lng, cLatLng.lat],
-          },
-        })
-      } else {
-        vData.features.push(pLayer.toGeoJSON())
-      }
-    })
-
-    return vData
-  }
-
   function parseJsonAttribute(element, attribute) {
     const raw = element.getAttribute(attribute)
     if (!raw) return null
@@ -208,6 +178,9 @@ ywInit((root) => {
             vDrawnItems,
             cMapFieldData.geometries.features,
           )
+          if (cGeometries && vDrawnItems.getLayers().length > 0) {
+            cGeometries.value = JSON.stringify(drawnItemsToGeoJSON(vDrawnItems))
+          }
         }
 
         cMap.addControl(

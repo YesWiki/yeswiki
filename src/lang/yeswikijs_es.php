@@ -88,14 +88,12 @@ Confirme su eliminación marcando la casilla siguiente.
     'FORM_ID_NOT_AVAILABLE' => 'El formulario con el identificador {id} ya no está disponible en la url indicada. Debe cambiar el identificador.',
     'FORM_ID_IS_COMPATIBLE' => 'Existe un formulario con el mismo identificador ({id}) en la url indicada y parece tener al menos los mismos campos obligatorios. Se utilizará para la duplicación.',
 
-
     'ACTION_BUILDER_PREVIEW' => 'Vista previa (no se puede hacer clic)',
     'ACTION_BUILDER_ONLINEDOC' => 'Documentación en línea',
     'ACTION_BUILDER_OWNER' => 'El propietario del archivo',
     'ACTION_BUILDER_MODIFICATION_DATE' => 'Fecha de modificación',
     'ACTION_BUILDER_CREATION_DATE' => 'Fecha de creación',
     'ACTION_BUILDER_FORM_ID' => 'Formulario',
-
 
     'CONTACT_REQUIRED_FIELD' => 'Este campo es obligatorio.',
     'CONTACT_EMAIL_NOT_VALID' => 'El correo electrónico introducido no es válido.',

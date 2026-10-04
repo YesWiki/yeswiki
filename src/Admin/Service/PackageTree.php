@@ -132,6 +132,8 @@ class PackageTree
     }
 
     /**
+     * Copy a file or a whole folder over $des, leaving the old folder in place when the copy fails.
+     *
      * @param string $src
      * @param string $des
      *
@@ -139,21 +141,52 @@ class PackageTree
      */
     protected function copy($src, $des)
     {
-        if (is_file($des) or is_dir($des) or is_link($des)) {
-            $this->delete($des);
-        }
         if (is_file($src)) {
-            return copy($src, $des);
+            return $this->copyFile($src, $des);
         }
         if (is_dir($src)) {
-            if (!mkdir($des)) {
-                return false;
-            }
-
-            return $this->copyFolder($src, $des);
+            return $this->replaceFolder($src, $des);
         }
 
         return false;
+    }
+
+    /** Put a folder aside, beside itself so the rename stays on one disk, and put it back when the copy fails. */
+    private function replaceFolder(string $srcPath, string $desPath): bool
+    {
+        $desPath = rtrim($desPath, '/');
+        $aside = null;
+
+        if (file_exists($desPath) || is_link($desPath)) {
+            $aside = \dirname($desPath) . '/.' . basename($desPath) . '.replaced-' . bin2hex(random_bytes(4));
+            if (!@rename($desPath, $aside)) {
+                return false;
+            }
+        }
+
+        if (@mkdir($desPath, 0o755, true) && $this->copyFolder($srcPath, $desPath)) {
+            if ($aside !== null) {
+                $this->delete($aside);
+            }
+
+            return true;
+        }
+
+        $this->delete($desPath);
+        if ($aside !== null) {
+            @rename($aside, $desPath);
+        }
+
+        return false;
+    }
+
+    private function copyFile(string $src, string $des): bool
+    {
+        if ((is_dir($des) || is_link($des)) && $this->delete($des) !== true) {
+            return false;
+        }
+
+        return @copy($src, $des);
     }
 
     /**
@@ -298,24 +331,31 @@ class PackageTree
         return $vNotDeleteds;
     }
 
-    /**
-     * @param string $srcPath
-     * @param string $desPath
-     *
-     * @return bool
-     */
-    private function copyFolder($srcPath, $desPath)
+    /** Copy what is inside $srcPath into the existing folder $desPath, saying whether all of it made it. */
+    private function copyFolder(string $srcPath, string $desPath): bool
     {
-        $file2ignore = ['.', '..'];
-        if ($res = opendir($srcPath)) {
-            while (($file = readdir($res)) !== false) {
-                if (!in_array($file, $file2ignore)) {
-                    $this->copy(rtrim($srcPath, '/') . '/' . $file, rtrim($desPath, '/') . '/' . $file);
-                }
-            }
-            closedir($res);
+        $res = @opendir($srcPath);
+        if ($res === false) {
+            return false;
         }
 
-        return true;
+        $copied = true;
+        while (($file = readdir($res)) !== false) {
+            if ($file === '.' || $file === '..') {
+                continue;
+            }
+            $from = rtrim($srcPath, '/') . '/' . $file;
+            $to = rtrim($desPath, '/') . '/' . $file;
+            if (is_dir($from)) {
+                if (!@mkdir($to) || !$this->copyFolder($from, $to)) {
+                    $copied = false;
+                }
+            } elseif (!$this->copyFile($from, $to)) {
+                $copied = false;
+            }
+        }
+        closedir($res);
+
+        return $copied;
     }
 }

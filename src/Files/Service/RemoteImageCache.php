@@ -3,7 +3,9 @@
 namespace YesWiki\Files\Service;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use YesWiki\Kernel\Service\PinnedFetcher;
 use YesWiki\Kernel\Service\RuntimeConfig;
+use YesWiki\Kernel\Service\SsrfUrlValidator;
 use YesWiki\Kernel\Service\UrlFormatter;
 
 /** A picture from somewhere else, fetched once and served from here. */
@@ -29,19 +31,22 @@ class RemoteImageCache
     private UrlFormatter $urlFormatter;
     private ImageResizer $resizer;
     private Storage $storage;
+    private PinnedFetcher $fetcher;
 
     public function __construct(
         ParameterBagInterface $params,
         RuntimeConfig $config,
         UrlFormatter $urlFormatter,
         ImageResizer $resizer,
-        Storage $storage
+        Storage $storage,
+        ?PinnedFetcher $fetcher = null
     ) {
         $this->params = $params;
         $this->config = $config;
         $this->urlFormatter = $urlFormatter;
         $this->resizer = $resizer;
         $this->storage = $storage;
+        $this->fetcher = $fetcher ?? new PinnedFetcher(new SsrfUrlValidator($params));
     }
 
     /** This picture, served from this wiki -- or the address it came from, if it cannot be. */
@@ -143,32 +148,18 @@ class RemoteImageCache
         return $resized === $destination ? $destination : null;
     }
 
-    /** GET, with a ceiling on both time and size. */
+    /** GET, with a ceiling on both time and size, from a public address checked again on every redirect. */
     protected function fetch(string $url): ?string
     {
-        $handle = curl_init($url);
-        if ($handle === false) {
+        try {
+            return $this->fetcher->fetch($url, [
+                'connectTimeout' => 5,
+                'timeout' => 10,
+                'maxBytes' => self::MAX_BYTES,
+                'userAgent' => self::USER_AGENT,
+            ]);
+        } catch (\Throwable $error) {
             return null;
         }
-        curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($handle, CURLOPT_FOLLOWLOCATION, true);
-        curl_setopt($handle, CURLOPT_MAXREDIRS, 3);
-        curl_setopt($handle, CURLOPT_CONNECTTIMEOUT, 5);
-        curl_setopt($handle, CURLOPT_TIMEOUT, 10);
-        curl_setopt($handle, CURLOPT_USERAGENT, self::USER_AGENT);
-
-        curl_setopt($handle, CURLOPT_MAXFILESIZE, self::MAX_BYTES);
-
-        curl_setopt($handle, CURLOPT_NOPROGRESS, false);
-        curl_setopt($handle, CURLOPT_PROGRESSFUNCTION, static function ($resource, $expected, $received): int {
-            return $received > self::MAX_BYTES ? 1 : 0;
-        });
-
-        $body = curl_exec($handle);
-        $status = (int)curl_getinfo($handle, CURLINFO_RESPONSE_CODE);
-        $failed = curl_errno($handle);
-        curl_close($handle);
-
-        return (!$failed && $status < 400 && is_string($body) && $body !== '') ? $body : null;
     }
 }

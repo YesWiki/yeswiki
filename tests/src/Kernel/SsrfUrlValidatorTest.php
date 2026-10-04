@@ -6,7 +6,6 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use YesWiki\Kernel\Service\SsrfUrlValidator;
 
-
 /**
  * The one place that decides which addresses the wiki may fetch on somebody else's behalf.
  */

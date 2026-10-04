@@ -27,7 +27,7 @@ class DocumentationApiController extends YesWikiController
         $order = 0;
         foreach ($this->getService(RouteProvider::class)->get() as $route) {
             $path = $route->getPath();
-            ++$order;
+            $order++;
             if ($path !== '/api' && !str_starts_with($path, '/api/')) {
                 continue;
             }

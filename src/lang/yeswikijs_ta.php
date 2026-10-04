@@ -75,14 +75,12 @@ return [
     'DOC_EDIT_THIS_PAGE_ON_GITHUB' => 'இந்த பக்கத்தை கிதுபில் மாற்றவும்',
     'LINK_TO_CHANGE_PASSWORD' => 'கடவுச்சொல்லை மாற்றுவதற்கான இணைப்பு',
 
-
     'ACTION_BUILDER_PREVIEW' => 'கண்ணோட்டம் (சொடுக்க முடியாதது)',
     'ACTION_BUILDER_ONLINEDOC' => 'நிகழ்நிலை ஆவணங்கள்',
     'ACTION_BUILDER_OWNER' => 'கோப்பின் உரிமையாளர்',
     'ACTION_BUILDER_MODIFICATION_DATE' => 'மாற்றியமைத்த தேதி',
     'ACTION_BUILDER_CREATION_DATE' => 'உருவாக்கிய தேதி',
     'ACTION_BUILDER_FORM_ID' => 'வடிவம்',
-
 
     'CONTACT_REQUIRED_FIELD' => 'இந்தப் புலத்தின் நுழைவு கட்டாயமாகும்.',
     'CONTACT_EMAIL_NOT_VALID' => 'உள்ளிட்ட மின்னஞ்சல் செல்லுபடியாகாது.',

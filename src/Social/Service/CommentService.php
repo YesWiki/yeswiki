@@ -346,7 +346,7 @@ class CommentService implements EventSubscriberInterface, RequestScopedState
     }
 
     /**
-     * The latest comments of every page, newest first (historic Wiki::LoadRecentComments()).
+     * The latest comments on pages the current user may read, newest first (historic Wiki::LoadRecentComments()).
      *
      * @param int $limit 0 means all of them
      *
@@ -355,15 +355,19 @@ class CommentService implements EventSubscriberInterface, RequestScopedState
     public function getRecentComments(int $limit = 0): array
     {
         $lim = $limit > 0 ? ' limit ' . $limit : '';
+        $readable = $this->aclService->readableTagFilter('parent');
 
         return $this->dbService->loadAll(
             'select * from ' . $this->dbService->prefixTable('pages')
-            . " where parent != '' and latest = 'Y' " . 'order by time desc ' . $lim
+            . " where parent != '' and latest = 'Y' "
+            . ($readable->isEmpty() ? '' : 'and ' . $readable->sql . ' ')
+            . 'order by time desc ' . $lim,
+            $readable->params
         );
     }
 
     /**
-     * The most recently commented pages, each carrying comment_user/comment_time/comment_tag of its latest first-revision comment (historic Wiki::LoadRecentlyCommented()).
+     * The most recently commented pages the current user may read, each carrying comment_user/comment_time/comment_tag of its latest first-revision comment (historic Wiki::LoadRecentlyCommented()).
      *
      * @return array<mixed>
      */
@@ -371,11 +375,17 @@ class CommentService implements EventSubscriberInterface, RequestScopedState
     {
         $pages = [];
 
-        if ($ids = $this->dbService->loadAll('select min(id) as id from ' . $this->dbService->prefixTable('pages') . " where parent != '' group by tag order by id desc")) {
+        $readable = $this->aclService->readableTagFilter('parent');
+        if ($ids = $this->dbService->loadAll(
+            'select min(id) as id from ' . $this->dbService->prefixTable('pages') . " where parent != '' "
+            . ($readable->isEmpty() ? '' : 'and ' . $readable->sql . ' ')
+            . 'group by tag order by id desc',
+            $readable->params
+        )) {
             $num = 0;
             $comments = [];
             foreach ($ids as $id) {
-                $comment = $this->dbService->loadSingle('select * from ' . $this->dbService->prefixTable('pages') . " where id = '" . $id['id'] . "' limit 1");
+                $comment = $this->dbService->loadSingle('select * from ' . $this->dbService->prefixTable('pages') . ' where id = ? limit 1', [$id['id']]);
                 if (empty($comment)) {
                     continue;
                 }

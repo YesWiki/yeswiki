@@ -3,6 +3,7 @@
 namespace YesWiki\Content\Action;
 
 use YesWiki\Core\YesWikiAction;
+use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Kernel\Component\Category;
 use YesWiki\Kernel\Component\Component;
@@ -62,14 +63,16 @@ class MychangesAction extends YesWikiAction implements RegisteredAction, Provide
             $last_tag = '';
             $dbService = $this->getService(DbService::class);
             $userCol = $dbService->quoteIdentifier('user');
+            $readable = $this->getService(AclService::class)->readableTagFilter('tag');
+            $aclSql = $readable->isEmpty() ? '' : ' AND ' . $readable->sql;
 
             if ($bydate = $this->getService(PerformableArguments::class)->get('bydate')) {
                 echo '<b>' . _t('YOUR_MODIFIED_PAGES_ORDERED_BY_MODIFICATION_DATE') . ".</b><br /><br />\n";
 
                 if ($pages = $this->getService(DbService::class)->loadAll(
                     'SELECT tag, time FROM ' . $this->getService(RuntimeConfig::class)['table_prefix']
-                    . "pages WHERE $userCol = ? AND tag NOT LIKE 'Comment%' ORDER BY time ASC, tag ASC",
-                    [$this->getService(AuthenticationService::class)->getLoggedUserName()]
+                    . "pages WHERE $userCol = ? AND tag NOT LIKE 'Comment%'" . $aclSql . ' ORDER BY time ASC, tag ASC',
+                    [$this->getService(AuthenticationService::class)->getLoggedUserName(), ...$readable->params]
                 )) {
                     foreach ($pages as $page) {
                         $edited_pages[$page['tag']] = $page['time'];
@@ -97,8 +100,8 @@ class MychangesAction extends YesWikiAction implements RegisteredAction, Provide
 
                 if ($pages = $this->getService(DbService::class)->loadAll(
                     'SELECT tag, time FROM ' . $this->getService(RuntimeConfig::class)['table_prefix']
-                    . "pages WHERE $userCol = ? AND tag NOT LIKE 'Comment%' ORDER BY tag ASC, time DESC",
-                    [$this->getService(AuthenticationService::class)->getLoggedUserName()]
+                    . "pages WHERE $userCol = ? AND tag NOT LIKE 'Comment%'" . $aclSql . ' ORDER BY tag ASC, time DESC',
+                    [$this->getService(AuthenticationService::class)->getLoggedUserName(), ...$readable->params]
                 )) {
                     foreach ($pages as $page) {
                         if ($last_tag != $page['tag']) {

@@ -13,10 +13,10 @@ use YesWiki\Content\Entity\MenuNode;
 final class LayoutChrome
 {
     /**
-     * @param list<MenuNode>                                                    $navbar
-     * @param list<MenuNode>                                                    $quickMenu
-     * @param array{showicons: bool, showlabels: bool, showdropdown: bool}      $navbarFlags
-     * @param array{showicons: bool, showlabels: bool, showdropdown: bool}      $quickMenuFlags
+     * @param list<MenuNode>                                               $navbar
+     * @param list<MenuNode>                                               $quickMenu
+     * @param array{showicons: bool, showlabels: bool, showdropdown: bool} $navbarFlags
+     * @param array{showicons: bool, showlabels: bool, showdropdown: bool} $quickMenuFlags
      */
     public function __construct(
         public readonly string $title,

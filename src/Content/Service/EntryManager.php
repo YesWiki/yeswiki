@@ -18,6 +18,7 @@ use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Identity\Service\Guard;
 use YesWiki\Identity\Service\UserManager;
+use YesWiki\Kernel\Service\CurrentRequest;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\EventDispatcher;
 use YesWiki\Kernel\Service\HibernationService;
@@ -63,6 +64,7 @@ class EntryManager
         Journal $journal,
         UrlFormatter $urlFormatter,
         private readonly TranslatableContent $translatableContent,
+        private readonly ConditionsChecker $conditionsChecker,
     ) {
         $this->urlFormatter = $urlFormatter;
         $this->container = $container;
@@ -653,7 +655,7 @@ class EntryManager
      */
     public function formatDataBeforeSave($data): array
     {
-        $data['form_id'] = isset($data['form_id']) ? $data['form_id'] : $this->container->get(\YesWiki\Kernel\Service\CurrentRequest::class)->get()->get('form_id');
+        $data['form_id'] = isset($data['form_id']) ? $data['form_id'] : CurrentRequest::input($this->container->get(CurrentRequest::class)->get(), 'form_id');
 
         $form = $this->container->get(FormManager::class)->getOne($data['form_id']);
         if (empty($form)) {
@@ -677,6 +679,8 @@ class EntryManager
                 $data = array_merge($data, $tab);
             }
         }
+
+        $data = $this->conditionsChecker->clearHiddenValues($form, $data);
 
         $formProperties = $this->container->get(FormPropertiesService::class);
 
@@ -769,14 +773,24 @@ class EntryManager
 
         $data = $this->removeUnknownFields($data['form_id'], $data);
 
+        $data = $this->conditionsChecker->clearHiddenValues($form, $data);
+        $hidden = $this->conditionsChecker->hiddenPropertyNames($form, $data);
+        $missing = [];
         foreach ($form['prepared'] as $vBazarField) {
             if ($vBazarField instanceof BazarField) {
                 $vPropertyName = $vBazarField->getPropertyName();
 
-                if (!empty($vPropertyName) && $vBazarField->isRequired() && $vBazarField->isEmpty($data[$vPropertyName] ?? null)) {
-                    throw new EntryValidationException(_t('BAZ_CHAMPS_REQUIS') . ' : ' . ($vBazarField->getLabel() ?: $vPropertyName));
+                if (!empty($vPropertyName)
+                    && $vBazarField->isRequired()
+                    && !in_array($vPropertyName, $hidden, true)
+                    && $vBazarField->isEmpty($data[$vPropertyName] ?? null)
+                ) {
+                    $missing[$vPropertyName] = $vBazarField->getLabel() ?: $vPropertyName;
                 }
             }
+        }
+        if (!empty($missing)) {
+            throw new EntryValidationException(_t('BAZ_CHAMPS_REQUIS') . ' : ' . implode(', ', $missing));
         }
 
         return $data;

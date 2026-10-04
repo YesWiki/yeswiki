@@ -88,14 +88,12 @@ Mesedez, berretsi ezabatzea, beheko laukia markatuz.
     'FORM_ID_NOT_AVAILABLE' => '{id} identifikatzailea duen formularioa ez dago erabilgarri adierazitako URLan; identifikatzailea aldatu behar da.',
     'FORM_ID_IS_COMPATIBLE' => 'Identifikatzaile bereko ({id}) formulario bat dago adierazitako URLan, eta badirudi gutxienez antzeko nahitaezko eremuak dituela. Bikoizketa egiteko erabiliko da.',
 
-
     'ACTION_BUILDER_PREVIEW' => 'Aurrebista (ezin da klikatu)',
     'ACTION_BUILDER_ONLINEDOC' => 'On line dokumentazioa',
     'ACTION_BUILDER_OWNER' => 'Fitxaren jabea',
     'ACTION_BUILDER_MODIFICATION_DATE' => 'Aldaketa-data',
     'ACTION_BUILDER_CREATION_DATE' => 'Sorrera-data',
     'ACTION_BUILDER_FORM_ID' => 'Inprimakia',
-
 
     'CONTACT_REQUIRED_FIELD' => 'Eremu hau nahitaez idatzi behar da.',
     'CONTACT_EMAIL_NOT_VALID' => 'Sartutako helbide elektronikoa ez da baliozkoa.',

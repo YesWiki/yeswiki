@@ -35,6 +35,7 @@ class EnvironmentConfiguration
         'contact_smtp_user',
         'contact_smtp_pass',
         'contact_smtp_secure',
+        'contact_smtp_verify_peer',
         'contact_reply_to',
         'contact_debug',
     ];

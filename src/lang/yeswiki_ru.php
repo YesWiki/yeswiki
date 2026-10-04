@@ -529,7 +529,6 @@ return [
     'EDIT_CONFIG_HINT_HERSE_PASSWORD' => 'Пароль для решётки',
     'RSS_CHANGE_OF' => 'Изменение',
     'RSS_HISTORY' => 'история',
-    'RSS_HIDDEN_CONTENT' => 'Скрытое содержимое',
     'RSS_ON_DATE' => 'от',
     'RSS_COMPARISON_OF' => 'Сравнение',
     'RSS_TO' => 'с',

@@ -4,8 +4,8 @@ namespace YesWiki\Test\Content;
 
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
-use YesWiki\Kernel\Service\SsrfUrlValidator;
 use YesWiki\Content\Service\SafeFile;
+use YesWiki\Kernel\Service\SsrfUrlValidator;
 
 require_once 'tests/YesWikiTestCase.php';
 

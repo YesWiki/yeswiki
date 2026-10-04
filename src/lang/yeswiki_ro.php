@@ -3040,14 +3040,12 @@ care dă 1 dacă bf_type == premiere_cle, altfel 0).',
 
     'RSS_CHANGE_OF' => 'Modificare a',
     'RSS_HISTORY' => 'istoric',
-    'RSS_HIDDEN_CONTENT' => 'Conținut ascuns',
     'RSS_ON_DATE' => 'pe',
     'RSS_COMPARISON_OF' => 'Comparație a',
     'RSS_TO' => 'la',
     'RSS_ADDS' => 'Adăugiri',
     'RSS_DELETIONS' => 'Eliminări',
     'RSS_NO_DIFF' => 'Nicio diferență',
-
 
     'FORM_BUILDER_ADD_FIELDS' => 'Adaugă un câmp',
     'FORM_BUILDER_ADVANCED' => 'Setări avansate',

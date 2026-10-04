@@ -20,6 +20,7 @@ use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Identity\Service\CsrfTokenChecker;
 use YesWiki\Identity\Service\GroupOperationsService;
+use YesWiki\Kernel\Service\CurrentRequest;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Render\Service\MarkdownFormatterService;
 
@@ -62,7 +63,7 @@ class PageApiController extends YesWikiController
         $diffService = $this->getService(DiffService::class);
         $entryManager = $this->getService(EntryManager::class);
         $entryController = $this->getService(EntryController::class);
-        $page = $pageManager->getOne($tag, $request->get('time'));
+        $page = $pageManager->getOne($tag, CurrentRequest::input($request, 'time'));
         if (!$page) {
             return new ApiResponse(null, Response::HTTP_NOT_FOUND);
         }
@@ -75,7 +76,7 @@ class PageApiController extends YesWikiController
             $page['html'] = $this->getService(MarkdownFormatterService::class)->format($page['code']);
         }
 
-        if ($request->get('includeDiff')) {
+        if (CurrentRequest::input($request, 'includeDiff')) {
             $prevVersion = $pageManager->getPreviousRevision($page);
             if (!$prevVersion) {
                 $prevVersion = ['tag' => $tag, 'body' => [], 'time' => null];

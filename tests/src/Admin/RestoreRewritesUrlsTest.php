@@ -146,8 +146,15 @@ class CapturingArchiveService extends ArchiveService
 {
     public string $replayed = '';
 
-    protected function restoreDatabase(string $sqlContent): void
+    protected function restoreDatabase(callable $open, ?callable $rewrite = null): void
     {
-        $this->replayed = $sqlContent;
+        $handle = $open();
+        try {
+            foreach (\YesWiki\Kernel\Database\SqlStatementSplitter::fromStream($handle) as $statement) {
+                $this->replayed .= ($rewrite === null ? $statement : $rewrite($statement)) . ";\n";
+            }
+        } finally {
+            fclose($handle);
+        }
     }
 }

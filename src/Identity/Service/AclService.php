@@ -506,6 +506,22 @@ class AclService
         );
     }
 
+    /** The read filter over a column naming pages, dropping rows whose page is missing or unreadable. */
+    public function readableTagFilter(string $column = 'tag'): SqlFragment
+    {
+        $readable = $this->readableFilter();
+        if ($readable->isEmpty()) {
+            return SqlFragment::empty();
+        }
+
+        $pages = $this->dbService->prefixTable('pages');
+
+        return SqlFragment::of(
+            "{$column} IN (SELECT tag FROM {$pages} WHERE latest = 'Y' AND " . $readable->sql . ')',
+            $readable->params
+        );
+    }
+
     /**
      * create request for ACL.
      *

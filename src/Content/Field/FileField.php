@@ -17,6 +17,7 @@ use YesWiki\Identity\Service\InputFilter;
 use YesWiki\Kernel\Service\AssetRegistry;
 use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Kernel\Service\HtmlPurifierService;
+use YesWiki\Kernel\Service\StringUtilService;
 use YesWiki\Kernel\Service\UrlFormatter;
 
 #[Field(['fichier'])]
@@ -46,7 +47,7 @@ class FileField extends BazarField
             return false;
         }
 
-        return filter_var($value, FILTER_VALIDATE_URL) !== false;
+        return StringUtilService::isWebAddress($value);
     }
 
     /**

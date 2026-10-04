@@ -112,6 +112,40 @@ class ArchiveServiceTest extends YesWikiTestCase
         ];
     }
 
+    /** @param array{wiki: YesWikiRuntime, archiveService: ArchiveService} $services */
+    #[Depends('testArchiveServiceExisting')]
+    public function testOnlyFoldersKeepsEverythingElseOutOfTheArchive(array $services): void
+    {
+        $output = '';
+        $location = $services['archiveService']->archive($output, true, false, [], [], null, '', ['custom']);
+        $data = $this->getDataFromLocation($location, $services['wiki']);
+
+        $this->assertArrayNotHasKey('error', $data);
+        $this->assertContains('custom', $data['files']);
+        foreach (['files', 'vendor', 'src', 'themes', 'private'] as $folder) {
+            $this->assertNotContains($folder, $data['files'], "'$folder' should have been left out");
+        }
+        foreach ($data['files'] as $path) {
+            if (!str_contains($path, '/')) {
+                continue;
+            }
+            $this->assertStringStartsWith('custom/', $path, "'$path' should have been left out");
+        }
+    }
+
+    /** @param array{wiki: YesWikiRuntime, archiveService: ArchiveService} $services */
+    #[Depends('testArchiveServiceExisting')]
+    public function testAnEmptyOnlyFoldersArchivesTheWholeWikiRatherThanNothing(array $services): void
+    {
+        $method = new \ReflectionMethod(ArchiveService::class, 'generateListRootFolders');
+        $whitelist = $method->invoke($services['archiveService'], 'white', [], []);
+
+        foreach (['files', 'custom', 'src', 'themes'] as $folder) {
+            $this->assertContains($folder, $whitelist, "'$folder' should still be archived");
+        }
+        $this->assertSame(['custom'], $method->invoke($services['archiveService'], 'white', [], ['custom/', '../etc', '']));
+    }
+
     /**
      * retrieve data from location delete the zip file because only for tests.
      *

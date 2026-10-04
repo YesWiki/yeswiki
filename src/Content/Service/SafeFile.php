@@ -18,7 +18,6 @@ class SafeFile extends File
 
     /**
      * @param array<string, string>|null $headers
-     * @param string|null                $useragent
      * @param array<int, mixed>          $curl_options
      */
     public function __construct(string $url, int $timeout = 10, int $redirects = 5, ?array $headers = null, ?string $useragent = null, bool $force_fsockopen = false, array $curl_options = [])

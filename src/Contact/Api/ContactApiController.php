@@ -189,7 +189,7 @@ class ContactApiController extends YesWikiController
 
         $aclService = $this->getService(AclService::class);
         $hasReadAccess = $aclService->hasAccess('read', $pageTag);
-        $isLoggedIn = !empty($this->getService(\YesWiki\Identity\Service\AuthenticationService::class)->getLoggedUser());
+        $isLoggedIn = !empty($this->getService(AuthenticationService::class)->getLoggedUser());
 
         if ($hasReadAccess && ($isLoggedIn || $request->query->get('field', '') !== '')) {
             $this->getService(\YesWiki\Kernel\Service\AssetRegistry::class)->addJsFile('javascripts/contact.js');

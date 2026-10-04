@@ -459,7 +459,6 @@ Puoi avvisare gli amministratori per aiutarli a mantenere questo sito dando loro
     'EDIT_CONFIG_HINT_HERSE_PASSWORD' => 'Password per la saracinesca',
     'RSS_CHANGE_OF' => 'Modifica di',
     'RSS_HISTORY' => 'cronologia',
-    'RSS_HIDDEN_CONTENT' => 'Contenuto nascosto',
     'RSS_ON_DATE' => 'il',
     'RSS_COMPARISON_OF' => 'Confronto da',
     'RSS_TO' => 'a',

@@ -40,7 +40,8 @@ class BazarConvertQueriesToExplicitSyntax extends YesWikiMigration
         $pages = $db->prefixTable('pages');
         $rows = $db->loadAll(
             "SELECT id, tag, body FROM {$pages} WHERE latest = 'Y' AND "
-            . $db->quoteIdentifier('type') . " = '" . $db->escape(PageType::FORM) . "'"
+            . $db->quoteIdentifier('type') . ' = ?',
+            [PageType::FORM]
         );
 
         $changedTags = [];

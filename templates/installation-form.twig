@@ -1,20 +1,62 @@
 <form class="form-yeswiki-install" action="{{ baseUrl }}?PagePrincipale&installAction=install" method="post">
 
-  {% if backupFound %}
-    <div class="well">
-      <h2>{{ _t('BACKUP_DB_FOUND') }}</h2>
+  {% if backupFound or archives %}
+    <div class="well install-content-choice">
+      <h2>{{ archives ? _t('INSTALL_RESTORE_FROM_BACKUP') : _t('BACKUP_DB_FOUND') }}</h2>
+      {% set typeLabels = {
+        full: _t('INSTALL_RESTORE_TYPE_FULL'),
+        only_db: _t('INSTALL_RESTORE_TYPE_ONLY_DB'),
+        only_files: _t('INSTALL_RESTORE_TYPE_ONLY_FILES')
+      } %}
+      {% for archive in archives %}
+        <div class="radio">
+          <label>
+            <input type="radio" name="contentSQL" value="{{ archive.choice }}" data-type="{{ archive.type }}" {% if contentSQL == archive.choice %}checked{% endif %}>
+            <span>{{ archive.date }}{% if archive.source %} — {{ archive.source }}{% endif %} — {{ attribute(typeLabels, archive.type) }} — {% if archive.size >= 1048576 %}{{ (archive.size / 1048576)|round(1) }} MB{% else %}{{ (archive.size / 1024)|round }} kB{% endif %}</span>
+          </label>
+        </div>
+      {% endfor %}
+      {% if backupFound %}
+        <div class="radio">
+          <label>
+            <input type="radio" name="contentSQL" value="{{ backupSqlFile }}" data-type="only_db" {% if contentSQL == backupSqlFile %}checked{% endif %}>
+            <span>{{ _t('USE_BACKUP_DB') }} <tt>{{ backupSqlFile }}</tt></span>
+          </label>
+        </div>
+      {% endif %}
       <div class="radio">
         <label>
-          <input type="radio" name="contentSQL" value="{{ backupSqlFile }}" {% if contentSQL == backupSqlFile %}checked{% endif %}>
-          <span>{{ _t('USE_BACKUP_DB') }}</span>
-        </label>
-      </div>
-      <div class="radio">
-        <label>
-          <input type="radio" name="contentSQL" value="default" {% if contentSQL != backupSqlFile %}checked{% endif %}>
+          <input type="radio" name="contentSQL" value="default" {% if contentSQL == 'default' %}checked{% endif %}>
           <span>{{ _t('USE_DEFAULT_DB') }}</span>
         </label>
       </div>
+
+      {% if archives %}
+        <div class="restore-options">
+          <div class="checkbox" data-needs="files">
+            <label>
+              <input type="hidden" name="restore_files" value="0" />
+              <input type="checkbox" name="restore_files" value="1" {% if restoreFiles %}checked{% endif %} />
+              <span>&nbsp;{{ _t('INSTALL_RESTORE_FILES_OPTION') }}</span>
+            </label>
+          </div>
+          <div class="checkbox" data-needs="db">
+            <label>
+              <input type="hidden" name="rewrite_urls" value="0" />
+              <input type="checkbox" name="rewrite_urls" value="1" {% if rewriteUrls %}checked{% endif %} />
+              <span>&nbsp;{{ _t('INSTALL_RESTORE_REWRITE_URLS_TO_BASE_URL') }}</span>
+            </label>
+          </div>
+          <div class="checkbox" data-needs="db">
+            <label>
+              <input type="hidden" name="replace_existing" value="0" />
+              <input type="checkbox" name="replace_existing" value="1" {% if replaceExisting %}checked{% endif %} />
+              <span>&nbsp;{{ _t('INSTALL_RESTORE_REPLACE_EXISTING') }}</span>
+            </label>
+            <p class="help-block">{{ _t('INSTALL_RESTORE_REPLACE_EXISTING_INFOS') }}</p>
+          </div>
+        </div>
+      {% endif %}
     </div>
   {% else %}
     <input type="hidden" name="contentSQL" value="default" />
@@ -213,10 +255,10 @@
         </div>
       </details>
 
-      {% if backupFound %}
-        <div class="admin-message alert alert-info{% if contentSQL != backupSqlFile %} hide{% endif %}" style="margin-top:2em;">{{ _t('ADMIN_INFO_WHEN_BACKUP') }}.</div>
+      {% if backupFound or archives %}
+        <div class="admin-message alert alert-info{% if not adminFromBackup %} hide{% endif %}" style="margin-top:2em;">{{ _t('ADMIN_INFO_WHEN_BACKUP') }}.</div>
       {% endif %}
-      <div class="admin-form{% if backupFound and contentSQL == backupSqlFile %} hide{% endif %}">
+      <div class="admin-form{% if adminFromBackup %} hide{% endif %}">
 
         <div class="yw-form-group">
           <label class="yw-form-label">{{ _t('ADMIN') }}</label>

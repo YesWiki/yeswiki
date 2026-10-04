@@ -62,6 +62,26 @@ Follow <a href="{helpBaseUrl}?#/docs/en/admin?id=fixing-backup-problems" title="
     'ADMIN_BACKUPS_UID_STATUS_STOP' => 'Backup aborted',
     'ADMIN_BACKUPS_STOP_BACKUP_ERROR' => 'Error : not possible to stop backup',
     'ADMIN_BACKUPS_STOPPING_ARCHIVE' => 'Backup stopping',
+    'ADMIN_BACKUPS_EMPTY_ANSWER' => 'the server answered nothing at all',
+    'ADMIN_BACKUPS_REMOTE_CONNECTING' => 'Signing in to the remote wiki',
+    'ADMIN_BACKUPS_REMOTE_STEP_CHECKING' => 'Asking the remote wiki whether it can make a backup',
+    'ADMIN_BACKUPS_REMOTE_STEP_STARTING' => 'Asking the remote wiki for a backup',
+    'ADMIN_BACKUPS_REMOTE_STEP_ARCHIVING' => 'The remote wiki is making its backup',
+    'ADMIN_BACKUPS_REMOTE_STEP_IDENTIFYING' => 'Waiting for the backup it made to be complete',
+    'ADMIN_BACKUPS_REMOTE_STEP_DOWNLOADING' => 'Downloading',
+    'ADMIN_BACKUPS_REMOTE_STEP_CLEANING' => 'Deleting the backup on the remote wiki',
+    'ADMIN_BACKUPS_REMOTE_FINISHED' => 'Remote backup fetched: {filename}',
+    'ADMIN_BACKUPS_REMOTE_CANCELLED' => 'Fetch given up',
+    'ADMIN_BACKUPS_RESTORE_CONFIRM_FULL' => "Restore the full backup {filename}?\n\n" .
+        "The database and the files are replaced by those of the backup, and files added since are deleted.\n" .
+        "Settings come back from the backup, except the database connection, the address of the site, the mail server and the backup settings.\n\n" .
+        'This cannot be undone.',
+    'ADMIN_BACKUPS_RESTORE_CONFIRM_ONLY_DB' => "Restore the database of {filename}?\n\n" .
+        "The current database is replaced by the one in the backup. Files are left alone.\n\n" .
+        'This cannot be undone.',
+    'ADMIN_BACKUPS_RESTORE_CONFIRM_ONLY_FILES' => "Restore the files of {filename}?\n\n" .
+        "Files in the backup overwrite those of the same name; the others are left alone. Settings come back from the backup, as for a full one. The database is left alone.\n\n" .
+        'This cannot be undone.',
     'ADMIN_BACKUPS_UID_STATUS_FINISHED_THEN_UPDATING' => 'Update started (please wait)',
     'REVISIONS_COMMIT_DIFF' => 'Changes done by this revision',
     'REVISIONS_DIFF' => 'Comparison to the current revision',

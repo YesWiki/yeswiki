@@ -2,10 +2,13 @@
 
 namespace YesWiki\Admin\Service;
 
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 use Symfony\Component\PasswordHasher\Hasher\PasswordHasherFactory;
 use YesWiki\Core\YesWikiLoader;
+use YesWiki\Kernel\Database\DumpRewriter;
 use YesWiki\Kernel\Database\SqlDialectFactory;
 use YesWiki\Kernel\Service\ConfigurationService;
+use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\EnvironmentConfiguration;
 use YesWiki\Render\Service\LayoutService;
 use YesWiki\Search\Service\SearchIndexSchema;
@@ -28,6 +31,9 @@ class InstallationService
     /** A database backup at this location (instance-relative) can be restored instead of the default content. */
     public const BACKUP_SQL_FILE = 'private/backups/content.sql';
 
+    /** Where a wiki keeps its backup archives, instance-relative. */
+    public const ARCHIVES_FOLDER = 'private/backups';
+
     /** SQLite databases always live at this instance-relative path. */
     private const SQLITE_DATABASE_PATH = 'private/yeswiki.db';
 
@@ -38,8 +44,11 @@ class InstallationService
     protected string $adminEmail = '';
     protected string $adminPassword = '';
     protected string $adminPasswordConf = '';
-    /** @var string either self::BACKUP_SQL_FILE or 'default' */
+    /** @var string self::BACKUP_SQL_FILE, an archive under self::ARCHIVES_FOLDER, or 'default' */
     protected string $contentSQL = 'default';
+    protected bool $restoreFiles = true;
+    protected bool $rewriteUrls = true;
+    protected bool $replaceExisting = false;
 
     /** @var \PDO|null */
     protected $dbLink;
@@ -81,6 +90,61 @@ class InstallationService
         return $this;
     }
 
+    /** How to restore an archive: with its files or not, pointing its links here or not, over the tables already under this prefix or not. */
+    public function withRestoreOptions(bool $restoreFiles, bool $rewriteUrls, bool $replaceExisting): self
+    {
+        $this->restoreFiles = $restoreFiles;
+        $this->rewriteUrls = $rewriteUrls;
+        $this->replaceExisting = $replaceExisting;
+
+        return $this;
+    }
+
+    /** The content choice that names this archive. */
+    public static function archiveChoice(string $filename): string
+    {
+        return self::ARCHIVES_FOLDER . '/' . basename($filename);
+    }
+
+    /** Whether this archive is among the instance's backups. */
+    public static function hasArchive(string $filename): bool
+    {
+        return is_file(YESWIKI_INSTANCE_DIR . '/' . self::archiveChoice($filename));
+    }
+
+    /**
+     * The backup archives that can be restored here, most recent first.
+     *
+     * @return list<array{filename: string, choice: string, date: string, type: string, source: string, size: int}>
+     */
+    public static function availableArchives(): array
+    {
+        $folder = YESWIKI_INSTANCE_DIR . '/' . self::ARCHIVES_FOLDER;
+        if (!is_dir($folder)) {
+            return [];
+        }
+
+        $archives = [];
+        foreach (scandir($folder) ?: [] as $filename) {
+            $parts = ArchiveFilename::parse($filename);
+            if ($parts === []) {
+                continue;
+            }
+            [$hours, $minutes] = explode('-', $parts['time']);
+            $archives[] = [
+                'filename' => $filename,
+                'choice' => self::archiveChoice($filename),
+                'date' => "{$parts['date']} $hours:$minutes",
+                'type' => $parts['type'],
+                'source' => $parts['source'],
+                'size' => (int)filesize("$folder/$filename"),
+            ];
+        }
+        usort($archives, static fn (array $a, array $b): int => strcmp($b['filename'], $a['filename']));
+
+        return $archives;
+    }
+
     /**
      * The seven steps, in order, stopping at the first failure.
      *
@@ -89,8 +153,23 @@ class InstallationService
     public function install(): void
     {
         $this->connectDatabase();
-        $this->checkTablePrefix();
-        if ($this->useBackup()) {
+        $archive = $this->archivePath();
+        $restoresDatabase = $archive !== '' && ArchiveService::archiveType(basename($archive)) !== 'only_files';
+        if (!($restoresDatabase && $this->replaceExisting)) {
+            $this->checkTablePrefix();
+        }
+        if ($archive !== '') {
+            if ($restoresDatabase) {
+                $this->importArchiveDatabase($archive);
+            } else {
+                $this->validateAdminAccount();
+                $this->validateRootPage();
+                $this->installDatabaseContent();
+            }
+            if ($this->restoreFiles && ArchiveService::archiveType(basename($archive)) !== 'only_db') {
+                $this->importArchiveFiles($archive);
+            }
+        } elseif ($this->useBackup()) {
             $this->importBackup();
         } else {
             $this->validateAdminAccount();
@@ -175,6 +254,22 @@ class InstallationService
         }
 
         return $this->dbLink;
+    }
+
+    /** The archive this install restores, absolute, or '' when it restores none. */
+    protected function archivePath(): string
+    {
+        if (!str_starts_with($this->contentSQL, self::ARCHIVES_FOLDER . '/') || !str_ends_with($this->contentSQL, '.zip')) {
+            return '';
+        }
+
+        return self::hasArchive($this->contentSQL) ? YESWIKI_INSTANCE_DIR . '/' . self::archiveChoice($this->contentSQL) : '';
+    }
+
+    /** Whether the archive the install restores holds a database, so the admin account comes from it. */
+    public static function archiveHoldsDatabase(string $contentSQL): bool
+    {
+        return str_ends_with($contentSQL, '.zip') && ArchiveService::archiveType(basename($contentSQL)) !== 'only_files';
     }
 
     protected function useBackup(): bool
@@ -468,6 +563,103 @@ class InstallationService
             throw new \Exception(_t('IMPORT_DB_BACKUP') . ' :<br />' . _t('NOT_POSSIBLE_TO_IMPORT_BACKUP_SQL') . '<br />' . _t('ERROR') . ' "' . $th->getMessage() . '"');
         }
         $this->pass(_t('IMPORT_DB_BACKUP'));
+    }
+
+    /**
+     * Replay an archive's dump under this install's prefix, staged beside any tables already there and swapped in once complete.
+     *
+     * @throws \Exception naming what failed
+     */
+    protected function importArchiveDatabase(string $archive): void
+    {
+        $zip = new \ZipArchive();
+        if ($zip->open($archive) !== true) {
+            throw new \Exception(_t('INSTALL_RESTORE_FROM_ARCHIVE') . ' :<br />' . _t('INSTALL_RESTORE_ZIP_CANNOT_OPEN'));
+        }
+
+        try {
+            $sqlName = ArchiveService::PRIVATE_FOLDER_NAME_IN_ZIP . '/' . ArchiveService::SQL_FILENAME_IN_PRIVATE_FOLDER_IN_ZIP;
+            if ($zip->locateName($sqlName) === false) {
+                throw new \Exception(_t('INSTALL_RESTORE_FROM_ARCHIVE') . ' :<br />' . _t('INSTALL_RESTORE_SQL_NOT_FOUND'));
+            }
+            $open = static function () use ($zip, $sqlName) {
+                $stream = $zip->getStream($sqlName);
+                if ($stream === false) {
+                    throw new \Exception(_t('INSTALL_RESTORE_SQL_NOT_FOUND'));
+                }
+
+                return $stream;
+            };
+
+            $rewrite = null;
+            if ($this->rewriteUrls) {
+                $info = json_decode((string)$zip->getFromName(ArchiveService::PRIVATE_FOLDER_NAME_IN_ZIP . '/' . ArchiveService::INFO_FILENAME_IN_PRIVATE_FOLDER_IN_ZIP), true);
+                $substitutions = DumpRewriter::substitutions(is_array($info) ? (string)($info['base_url'] ?? '') : '', (string)$this->config['base_url']);
+                if ($substitutions !== []) {
+                    $rewrite = static fn (string $statement): string => DumpRewriter::rewriteUrls($statement, $substitutions);
+                    $this->pass(_t('INSTALL_RESTORE_REWRITE_URLS') . ' ' . htmlspecialchars((string)array_key_first($substitutions)) . ' &rarr; ' . htmlspecialchars((string)reset($substitutions)));
+                }
+            }
+
+            try {
+                (new DbService(new ParameterBag($this->config + ['debug' => false])))->restoreStagedFromStream($open, $rewrite);
+            } catch (\Throwable $th) {
+                throw new \Exception(_t('INSTALL_RESTORE_FROM_ARCHIVE') . ' :<br />' . htmlspecialchars($th->getMessage()));
+            }
+        } finally {
+            $zip->close();
+        }
+        $this->pass(_t('INSTALL_RESTORE_FROM_ARCHIVE') . ' <tt>' . htmlspecialchars(basename($archive)) . '</tt>');
+    }
+
+    /**
+     * Extract an archive's files into the instance and take its settings, except those that say where this install is.
+     *
+     * @throws \Exception naming what failed
+     */
+    protected function importArchiveFiles(string $archive): void
+    {
+        $zip = new \ZipArchive();
+        if ($zip->open($archive) !== true) {
+            throw new \Exception(_t('INSTALL_RESTORE_FILES') . ' :<br />' . _t('INSTALL_RESTORE_ZIP_CANNOT_OPEN'));
+        }
+
+        $failed = [];
+        try {
+            $stated = $zip->getFromName(basename($this->configFile));
+            try {
+                $archived = $stated === false ? [] : ArchiveService::archivedSettings($stated);
+            } catch (\Exception $refused) {
+                throw new \Exception(_t('INSTALL_RESTORE_FILES') . ' :<br />' . htmlspecialchars($refused->getMessage()), 0, $refused);
+            }
+            $skipPrefix = ArchiveService::PRIVATE_FOLDER_NAME_IN_ZIP . '/';
+            $database = [self::SQLITE_DATABASE_PATH, self::SQLITE_DATABASE_PATH . '-wal', self::SQLITE_DATABASE_PATH . '-shm'];
+            for ($i = 0; $i < $zip->numFiles; $i++) {
+                $name = (string)$zip->getNameIndex($i);
+                if ($name === '' || str_starts_with($name, $skipPrefix) || ArchiveService::isLocalOnly($name) || in_array($name, $database, true) || str_contains($name, '..')) {
+                    continue;
+                }
+                if (str_ends_with($name, '/')) {
+                    $directory = YESWIKI_INSTANCE_DIR . '/' . $name;
+                    if (!is_dir($directory) && !@mkdir($directory, 0o755, true) && !is_dir($directory)) {
+                        $failed[] = $name;
+                    }
+                    continue;
+                }
+                if (!$zip->extractTo(YESWIKI_INSTANCE_DIR, $name)) {
+                    $failed[] = $name;
+                }
+            }
+
+            $this->config = ArchiveService::mergedSettings($this->config, $archived);
+        } finally {
+            $zip->close();
+        }
+
+        if ($failed !== []) {
+            throw new \Exception(_t('INSTALL_RESTORE_FILES') . ' :<br />' . htmlspecialchars(implode(', ', array_slice($failed, 0, 5))));
+        }
+        $this->pass(_t('INSTALL_RESTORE_FILES'));
     }
 
     /** After a failed content insertion, drop the tables left empty so the installation can be retried from a clean state. */

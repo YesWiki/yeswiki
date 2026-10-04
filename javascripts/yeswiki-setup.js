@@ -32,14 +32,33 @@ ywInitEach('body', () => {
         field.required = !useBackup && !field.disabled
       })
     }
-    contentChoices.forEach((choice) => {
-      choice.addEventListener('change', () =>
-        updateAdminForm(choice.value !== 'default'),
+    const restoreOptions = document.querySelector('.restore-options')
+    const updateRestoreOptions = (choice) => {
+      if (!restoreOptions) return
+      const type = choice ? choice.dataset.type || '' : ''
+      const isArchive = choice !== null && choice.value.endsWith('.zip')
+      restoreOptions.style.display = isArchive ? '' : 'none'
+      restoreOptions.querySelectorAll('[data-needs]').forEach((option) => {
+        const missing =
+          (option.dataset.needs === 'db' && type === 'only_files') ||
+          (option.dataset.needs === 'files' && type === 'only_db')
+        option.style.display = missing ? 'none' : ''
+      })
+    }
+    const update = () => {
+      const checked = document.querySelector(
+        'input[type="radio"][name="contentSQL"]:checked',
       )
+      updateAdminForm(
+        checked !== null &&
+          checked.value !== 'default' &&
+          checked.dataset.type !== 'only_files',
+      )
+      updateRestoreOptions(checked)
+    }
+    contentChoices.forEach((choice) => {
+      choice.addEventListener('change', update)
     })
-    const checked = document.querySelector(
-      'input[type="radio"][name="contentSQL"]:checked',
-    )
-    updateAdminForm(checked !== null && checked.value !== 'default')
+    update()
   }
 })

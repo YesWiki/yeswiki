@@ -4,6 +4,8 @@ namespace YesWiki\Test\Kernel;
 
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
+use YesWiki\Kernel\Database\SqlDumper;
+use YesWiki\Kernel\Database\SqlStatementSplitter;
 use YesWiki\Kernel\Service\DbService;
 
 /**
@@ -36,7 +38,7 @@ class DatabaseRestoreTest extends TestCase
     /** A table with the kind of content that breaks a naive dump: quotes, semicolons, NULL. */
     private function seed(): void
     {
-        $this->db->query('CREATE TABLE probe_pages (tag VARCHAR(190), body TEXT, note TEXT)');
+        $this->db->query('CREATE TABLE "probe_pages" (tag VARCHAR(190), body TEXT, note TEXT)');
         $this->db->query(
             "INSERT INTO probe_pages (tag, body, note) VALUES ('Home', '"
             . $this->db->escape('a; b \'quoted\' and "double" — {{action}}')
@@ -44,7 +46,7 @@ class DatabaseRestoreTest extends TestCase
         );
         $this->db->query("INSERT INTO probe_pages (tag, body, note) VALUES ('Other', 'plain', 'kept')");
 
-        $this->db->query('CREATE TABLE other_wiki (id INTEGER)');
+        $this->db->query('CREATE TABLE "other_wiki" (id INTEGER)');
         $this->db->query('INSERT INTO other_wiki (id) VALUES (42)');
     }
 
@@ -151,5 +153,114 @@ class DatabaseRestoreTest extends TestCase
         }
 
         $this->assertContains('probe_pages', $this->db->schema()->getTables());
+    }
+
+    /** A second wiki whose prefix starts with this one's: `probe_ecto__` beside `probe_`. */
+    private function seedCoHostedWiki(): void
+    {
+        $this->db->query('CREATE TABLE "probe_ecto__pages" (tag VARCHAR(190), body TEXT)');
+        $this->db->query('CREATE TABLE "probe_ecto__triples" (id INTEGER)');
+        $this->db->query("INSERT INTO probe_ecto__pages (tag, body) VALUES ('Theirs', 'not yours')");
+    }
+
+    public function testTheDumpLeavesOutAWikiWhosePrefixStartsTheSame(): void
+    {
+        $this->seed();
+        $this->seedCoHostedWiki();
+
+        $sql = $this->db->dumper()->dump()['sql'];
+
+        $this->assertStringContainsString('probe_pages', $sql);
+        $this->assertStringNotContainsString('probe_ecto__', $sql);
+    }
+
+    public function testAStagedRestoreLeavesAWikiWhosePrefixStartsTheSameAlone(): void
+    {
+        $this->seed();
+        $this->seedCoHostedWiki();
+        $backup = $this->db->dumper()->dump();
+
+        $this->db->restoreStagedFromDump($backup['sql']);
+
+        $this->assertSame('not yours', $this->db->loadAll('SELECT body FROM probe_ecto__pages')[0]['body']);
+        $this->assertContains('probe_ecto__triples', $this->db->schema()->getTables());
+        $this->assertCount(2, $this->db->loadAll('SELECT tag FROM probe_pages'));
+    }
+
+    /** A backup taken before the dump knew better carries the other wiki's tables: they are not replayed. */
+    public function testAnOldDumpCarryingTheOtherWikisTablesDoesNotTouchThem(): void
+    {
+        $this->seed();
+        $this->seedCoHostedWiki();
+        $old = "-- YesWiki-Dialect: sqlite\n"
+            . "CREATE TABLE \"probe_pages\" (tag VARCHAR(190), body TEXT, note TEXT);\n"
+            . "INSERT INTO \"probe_pages\" (tag, body, note) VALUES ('Restored', 'b', NULL);\n"
+            . "CREATE TABLE \"probe_triples\" (id INTEGER);\n"
+            . "CREATE TABLE \"probe_ecto__pages\" (tag VARCHAR(190), body TEXT);\n"
+            . "INSERT INTO \"probe_ecto__pages\" (tag, body) VALUES ('Stale', 'from the backup');\n"
+            . "CREATE TABLE \"probe_ecto__triples\" (id INTEGER);\n";
+
+        $this->db->restoreStagedFromDump($old);
+
+        $this->assertSame(['Restored'], array_column($this->db->loadAll('SELECT tag FROM probe_pages'), 'tag'));
+        $this->assertSame(['Theirs'], array_column($this->db->loadAll('SELECT tag FROM probe_ecto__pages'), 'tag'));
+    }
+
+    /** One INSERT per table outgrows max_allowed_packet on a big wiki, so rows go in bounded batches. */
+    public function testRowsAreDumpedInBoundedBatches(): void
+    {
+        $this->db->query('CREATE TABLE "probe_pages" (tag VARCHAR(190), body TEXT)');
+        $this->db->query('CREATE TABLE "probe_triples" (id INTEGER)');
+        $rows = SqlDumper::MAX_INSERT_ROWS * 2 + 7;
+        $this->db->transactional(function () use ($rows): void {
+            for ($i = 0; $i < $rows; $i++) {
+                $this->db->query("INSERT INTO probe_pages (tag, body) VALUES ('Page$i', 'x')");
+            }
+        });
+        $this->db->query("INSERT INTO probe_pages (tag, body) VALUES ('Big', '" . str_repeat('y', SqlDumper::MAX_INSERT_BYTES) . "')");
+
+        $sql = $this->db->dumper()->dump()['sql'];
+
+        $this->assertSame(4, substr_count($sql, 'INSERT INTO "probe_pages"'));
+        foreach (SqlStatementSplitter::split($sql) as $statement) {
+            $this->assertLessThanOrEqual(SqlDumper::MAX_INSERT_BYTES * 2, \strlen($statement));
+        }
+
+        $this->db->restoreStagedFromDump($sql);
+        $this->assertSame($rows + 1, $this->db->countRows('SELECT tag FROM probe_pages'));
+    }
+
+    public function testADumpCanBeStreamedToAFileAndRestoredFromIt(): void
+    {
+        $this->seed();
+        $this->db->query('CREATE TABLE "probe_triples" (id INTEGER)');
+        $file = tempnam(sys_get_temp_dir(), 'yw-dump-');
+        $handle = fopen($file, 'wb');
+        if ($handle === false) {
+            $this->fail('cannot write the dump file');
+        }
+        $this->db->dumper()->dumpTo($handle);
+        fclose($handle);
+        $this->db->query("DELETE FROM probe_pages WHERE tag = 'Home'");
+
+        try {
+            $this->db->restoreStagedFromStream(
+                function () use ($file) {
+                    $read = fopen($file, 'rb');
+                    if ($read === false) {
+                        $this->fail('cannot read the dump file back');
+                    }
+
+                    return $read;
+                },
+                fn (string $statement): string => str_replace("'kept'", "'rewritten'", $statement)
+            );
+        } finally {
+            unlink($file);
+        }
+
+        $rows = $this->db->loadAll('SELECT tag, note FROM probe_pages ORDER BY tag');
+        $this->assertSame(['Home', 'Other'], array_column($rows, 'tag'));
+        $this->assertSame('rewritten', $rows[1]['note']);
     }
 }

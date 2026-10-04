@@ -10,6 +10,7 @@ use YesWiki\Kernel\Component\Category;
 use YesWiki\Kernel\Component\Component;
 use YesWiki\Kernel\Component\ProvidesComponents;
 use YesWiki\Kernel\Performable\RegisteredAction;
+use YesWiki\Kernel\Service\CurrentRequest;
 use YesWiki\Kernel\Service\PageContext;
 
 class MailPeriodAction extends YesWikiAction implements RegisteredAction, ProvidesComponents
@@ -54,7 +55,7 @@ class MailPeriodAction extends YesWikiAction implements RegisteredAction, Provid
         if ($user && !empty($userName)) {
             $request = $this->getRequest();
             if ($request->query->has('subscribe') || $request->request->has('subscribe')) {
-                $period = $request->get('subscribe');
+                $period = CurrentRequest::input($request, 'subscribe');
                 $group = $periods[$period]['group'];
                 $this->unsubscribUserFromAllGroups($userName, $periods);
                 $this->subscribeUserToGroup($userName, $group);

@@ -198,52 +198,133 @@ class DbService
      */
     public function restoreStagedFromDump(string $sqlContent): void
     {
+        $this->restoreStagedFromStream(static function () use ($sqlContent) {
+            $handle = fopen('php://temp', 'w+b');
+            if ($handle === false) {
+                throw new \Exception('Cannot open a buffer for the dump');
+            }
+            fwrite($handle, $sqlContent);
+            rewind($handle);
+
+            return $handle;
+        });
+    }
+
+    /**
+     * The same, reading the dump from a stream twice: once to learn its tables, once to replay it.
+     *
+     * @param callable(): resource            $open    a fresh stream on the dump, at its start, each time it is called
+     * @param (callable(string): string)|null $rewrite applied to each statement before it is replayed
+     *
+     * @throws \Exception when the dump cannot be read, or fails before the swap
+     */
+    public function restoreStagedFromStream(callable $open, ?callable $rewrite = null): void
+    {
         $livePrefix = trim($this->prefixTable(''));
         if ($livePrefix === '') {
             throw new \Exception('Table prefix is empty — refusing to restore');
         }
 
-        $this->assertDumpMatchesDriver($sqlContent);
+        $handle = $open();
+        try {
+            $this->assertDumpMatchesDriver((string)fread($handle, 8192));
+        } finally {
+            fclose($handle);
+        }
 
-        $statements = SqlStatementSplitter::split($sqlContent);
-        if ($statements === []) {
+        $tables = [];
+        $objects = [];
+        $count = 0;
+        $handle = $open();
+        try {
+            foreach (SqlStatementSplitter::fromStream($handle) as $statement) {
+                $count++;
+                $statement = $this->normalizeDumpStatement($statement);
+                foreach (DumpRewriter::tables($statement) as $table) {
+                    $tables[$table] = true;
+                }
+                foreach (DumpRewriter::objects($statement) as $object) {
+                    $objects[$object] = true;
+                }
+                if ($this->driver === 'pgsql') {
+                    foreach (DumpRewriter::constraints($statement) as $object) {
+                        $objects[$object] = true;
+                    }
+                }
+            }
+        } finally {
+            fclose($handle);
+        }
+        if ($count === 0) {
             throw new \Exception('SQL restore failed: the dump contains no statements');
         }
 
-        $tables = DumpRewriter::tables($sqlContent);
+        $tables = array_keys($tables);
         $sourcePrefix = DumpRewriter::prefixOf($tables);
         if ($sourcePrefix === '') {
             throw new \Exception('SQL restore failed: no table in the dump names a prefix, so it is not a wiki backup');
         }
+        $own = DumpRewriter::ownTables($tables, $sourcePrefix);
+        $foreign = array_fill_keys(array_diff($tables, $own), true);
 
         $staging = $this->isolatedPrefix($livePrefix, 'staging');
         $replaced = $this->isolatedPrefix($livePrefix, 'replaced');
-        $renames = DumpRewriter::renames($tables, $sourcePrefix, $staging);
+        $renames = DumpRewriter::renames($own, $sourcePrefix, $staging);
         if ($renames === []) {
             throw new \Exception("SQL restore failed: no table in the dump starts with '$sourcePrefix'");
         }
+        $others = DumpRewriter::otherWikiPrefixes($tables, $sourcePrefix);
+        $ownObjects = array_filter(array_keys($objects), static function (string $object) use ($others): bool {
+            foreach ($others as $other) {
+                if (str_starts_with($object, $other)) {
+                    return false;
+                }
+            }
+
+            return true;
+        });
+        $renames += DumpRewriter::renames(array_values($ownObjects), $sourcePrefix, $staging);
 
         $this->dropTablesWithPrefix($staging);
         $this->dropTablesWithPrefix($replaced);
+        $this->renameStagedObjects($staging, $livePrefix);
 
+        $session = $this->sessionSettings();
         $disable = $this->dialect->foreignKeyChecks(false);
         if ($disable !== null) {
             $this->query($disable);
         }
 
         try {
-            foreach ($statements as $index => $statement) {
-                try {
-                    $this->query(DumpRewriter::rewrite($statement, $renames));
-                } catch (\Throwable $th) {
-                    $excerpt = substr((string)preg_replace('/\s+/', ' ', $statement), 0, 200);
+            $handle = $open();
+            try {
+                $index = 0;
+                foreach (SqlStatementSplitter::fromStream($handle) as $statement) {
+                    $index++;
+                    $statement = $this->normalizeDumpStatement($statement);
+                    if (DumpRewriter::concerns($statement, $foreign)) {
+                        continue;
+                    }
+                    if ($rewrite !== null) {
+                        $statement = $rewrite($statement);
+                    }
+                    try {
+                        $this->query(DumpRewriter::rewrite($statement, $renames));
+                    } catch (\Throwable $th) {
+                        $excerpt = substr((string)preg_replace('/\s+/', ' ', $statement), 0, 200);
 
-                    throw new \Exception('SQL restore failed on statement ' . ($index + 1) . ' of ' . \count($statements) . ' (' . $excerpt . '): ' . $th->getMessage(), 0, $th);
+                        throw new \Exception('SQL restore failed on statement ' . $index . ' of ' . $count . ' (' . $excerpt . '): ' . $th->getMessage(), 0, $th);
+                    }
                 }
+            } finally {
+                fclose($handle);
             }
 
             $this->swapTables($livePrefix, $staging, $replaced);
         } catch (\Throwable $th) {
+            if ($this->driver === 'pgsql' && $this->transactionDepth === 0) {
+                $this->link->exec('ROLLBACK');
+            }
             $this->dropTablesWithPrefix($staging);
 
             throw $th;
@@ -252,9 +333,117 @@ class DbService
             if ($enable !== null) {
                 $this->query($enable);
             }
+            $this->restoreSessionSettings($session);
         }
 
         $this->dropTablesWithPrefix($replaced);
+        $this->renameStagedObjects($staging, $livePrefix);
+    }
+
+    /**
+     * The MySQL session settings a dump's preamble changes, to put back once it is replayed.
+     *
+     * @return array<string, mixed>|null
+     */
+    private function sessionSettings(): ?array
+    {
+        if ($this->driver !== 'mysql') {
+            return null;
+        }
+
+        return $this->loadSingle('SELECT @@SESSION.sql_mode AS sql_mode, @@SESSION.time_zone AS time_zone, @@SESSION.autocommit AS autocommit');
+    }
+
+    /** @param array<string, mixed>|null $session */
+    private function restoreSessionSettings(?array $session): void
+    {
+        if ($session === null) {
+            return;
+        }
+        $this->query('SET SESSION sql_mode = ' . $this->link->quote((string)$session['sql_mode'])
+            . ', time_zone = ' . $this->link->quote((string)$session['time_zone'])
+            . ', autocommit = ' . ((int)$session['autocommit'] === 0 ? '0' : '1'));
+    }
+
+    /** A dump statement as the restore reads it: index names quoted, so that they can be renamed like the tables. */
+    private function normalizeDumpStatement(string $statement): string
+    {
+        return $this->driver === 'mysql' ? $statement : DumpRewriter::quoteIndexNames($statement);
+    }
+
+    /** Give the objects whose names the whole database shares the live prefix, once no staged table holds them. */
+    private function renameStagedObjects(string $staging, string $livePrefix): void
+    {
+        if ($this->driver === 'sqlite') {
+            $this->renameSqliteObjects($staging, $livePrefix);
+        } elseif ($this->driver === 'pgsql') {
+            $this->renamePostgreSqlObjects($staging, $livePrefix);
+        }
+    }
+
+    /** The same on PostgreSQL: key constraints with the indexes behind them, the other indexes, and the sequences behind identity columns. */
+    private function renamePostgreSqlObjects(string $staging, string $livePrefix): void
+    {
+        $live = static fn (string $name): string => $livePrefix . substr($name, \strlen($staging));
+        $q = fn (string $name): string => $this->dialect->quoteIdentifier($name);
+        $schema = ' JOIN pg_namespace n ON n.oid = c.relnamespace WHERE n.nspname = current_schema()';
+
+        foreach ($this->loadAll(
+            'SELECT k.conname, c.relname FROM pg_constraint k JOIN pg_class c ON c.oid = k.conrelid' . $schema . ' AND left(k.conname, ?) = ?',
+            [\strlen($staging), $staging]
+        ) as $row) {
+            $this->query('ALTER TABLE ' . $q((string)$row['relname']) . ' RENAME CONSTRAINT ' . $q((string)$row['conname']) . ' TO ' . $q($live((string)$row['conname'])));
+        }
+        foreach ($this->loadAll(
+            'SELECT c.relname, c.relkind::text AS kind FROM pg_class c' . $schema . " AND c.relkind IN ('i', 'S') AND left(c.relname, ?) = ?",
+            [\strlen($staging), $staging]
+        ) as $row) {
+            $this->query('ALTER ' . ((string)$row['kind'] === 'S' ? 'SEQUENCE ' : 'INDEX ') . $q((string)$row['relname']) . ' RENAME TO ' . $q($live((string)$row['relname'])));
+        }
+    }
+
+    /** Give the indexes and triggers a SQLite restore created under the staging prefix the live one, once the replaced tables have taken theirs away. */
+    private function renameSqliteObjects(string $staging, string $livePrefix): void
+    {
+        if ($this->driver !== 'sqlite') {
+            return;
+        }
+        foreach ($this->loadAll("SELECT type, name, sql FROM sqlite_master WHERE type IN ('index', 'trigger') AND sql IS NOT NULL") as $object) {
+            $name = (string)$object['name'];
+            if (!str_starts_with($name, $staging)) {
+                continue;
+            }
+            $this->query('DROP ' . strtoupper((string)$object['type']) . ' IF EXISTS ' . $this->dialect->quoteIdentifier($name));
+            $this->query(DumpRewriter::rewrite((string)$object['sql'], [$name => $livePrefix . substr($name, \strlen($staging))]));
+        }
+    }
+
+    /**
+     * The tables SQLite keeps behind a full-text table, which go wherever that table goes and are never named on their own.
+     *
+     * @param list<string> $tables
+     *
+     * @return list<string> $tables without them
+     */
+    private function withoutShadowTables(array $tables): array
+    {
+        if ($this->driver !== 'sqlite') {
+            return $tables;
+        }
+        $virtual = array_map(
+            static fn (array $row): string => (string)$row['name'],
+            $this->loadAll("SELECT name FROM sqlite_master WHERE type = 'table' AND sql LIKE 'CREATE VIRTUAL TABLE%'")
+        );
+
+        return array_values(array_filter($tables, static function (string $table) use ($virtual): bool {
+            foreach ($virtual as $name) {
+                if (str_starts_with($table, $name . '_')) {
+                    return false;
+                }
+            }
+
+            return true;
+        }));
     }
 
     /**
@@ -264,13 +453,13 @@ class DbService
      */
     private function swapTables(string $livePrefix, string $staging, string $replaced): void
     {
-        $staged = $this->tablesWithPrefix($staging);
+        $staged = $this->withoutShadowTables($this->tablesWithPrefix($staging));
         if ($staged === []) {
             throw new \Exception('The backup created no table.');
         }
 
         $renames = [];
-        foreach ($this->tablesWithPrefix($livePrefix) as $table) {
+        foreach ($this->withoutShadowTables($this->tablesWithPrefix($livePrefix)) as $table) {
             $renames[$table] = $replaced . substr($table, \strlen($livePrefix));
         }
         foreach ($staged as $table) {
@@ -304,21 +493,21 @@ class DbService
         return $prefix;
     }
 
-    /** @return list<string> */
+    /**
+     * This wiki's tables under a prefix, leaving out those of another wiki whose prefix starts the same.
+     *
+     * @return list<string>
+     */
     private function tablesWithPrefix(string $prefix): array
     {
-        $found = [];
-        foreach ($this->schema()->getTables() as $table) {
-            if (str_starts_with($table, $prefix)) {
-                $found[] = $table;
-            }
-        }
-
-        return $found;
+        return DumpRewriter::ownTables($this->schema()->getTables(), $prefix);
     }
 
     private function dropTablesWithPrefix(string $prefix): void
     {
+        foreach ($this->withoutShadowTables($this->tablesWithPrefix($prefix)) as $table) {
+            $this->query('DROP TABLE IF EXISTS ' . $this->dialect->quoteIdentifier($table));
+        }
         foreach ($this->tablesWithPrefix($prefix) as $table) {
             $this->query('DROP TABLE IF EXISTS ' . $this->dialect->quoteIdentifier($table));
         }
@@ -343,19 +532,24 @@ class DbService
             throw new \Exception('SQL restore failed: the dump contains no statements');
         }
 
+        $tables = DumpRewriter::tables($sqlContent);
+        $foreign = array_fill_keys(array_diff($tables, DumpRewriter::ownTables($tables, DumpRewriter::prefixOf($tables))), true);
+
+        $session = $this->sessionSettings();
         $disable = $this->dialect->foreignKeyChecks(false);
         if ($disable !== null) {
             $this->query($disable);
         }
 
         try {
-            foreach ($this->schema()->getTables() as $tableName) {
-                if (str_starts_with($tableName, $tablesPrefix)) {
-                    $this->query('DROP TABLE IF EXISTS ' . $this->dialect->quoteIdentifier($tableName));
-                }
+            foreach ($this->tablesWithPrefix($tablesPrefix) as $tableName) {
+                $this->query('DROP TABLE IF EXISTS ' . $this->dialect->quoteIdentifier($tableName));
             }
 
             foreach ($statements as $index => $statement) {
+                if (DumpRewriter::concerns($statement, $foreign)) {
+                    continue;
+                }
                 try {
                     $this->query($statement);
                 } catch (\Throwable $th) {
@@ -369,6 +563,7 @@ class DbService
             if ($enable !== null) {
                 $this->query($enable);
             }
+            $this->restoreSessionSettings($session);
         }
     }
 

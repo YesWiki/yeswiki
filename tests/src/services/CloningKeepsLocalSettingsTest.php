@@ -84,6 +84,25 @@ class CloningKeepsLocalSettingsTest extends TestCase
         $this->assertSame('wiki_new', $merged['db_database']);
     }
 
+    /** A backup blanks the mail server and the API keys it was told to hide, and a restore must not copy the blanks over this wiki's. */
+    public function testWhatTheBackupHidIsKept(): void
+    {
+        $merged = ArchiveService::mergedSettings(
+            ['contact_smtp_pass' => 'local-mail-secret', 'my_token' => 'local-token', 'archive' => ['max_nb_files' => 4]],
+            [
+                'contact_smtp_pass' => '',
+                'my_token' => '',
+                'archive' => ['hideConfigValues' => ['my_token' => '']],
+                'favorite_theme' => 'margot',
+            ]
+        );
+
+        $this->assertSame('local-mail-secret', $merged['contact_smtp_pass']);
+        $this->assertSame('local-token', $merged['my_token']);
+        $this->assertSame(['max_nb_files' => 4], $merged['archive'], 'how this wiki backs itself up stays its own');
+        $this->assertSame('margot', $merged['favorite_theme']);
+    }
+
     public function testTheWikiIsFoundWhateverPartOfItsAddressWasPasted(): void
     {
         foreach ([
@@ -94,6 +113,8 @@ class CloningKeepsLocalSettingsTest extends TestCase
             'https://example.org/mywiki/' => 'https://example.org/mywiki',
             'https://example.org/mywiki/?PagePrincipale' => 'https://example.org/mywiki',
             'http://localhost:8080/?' => 'http://localhost:8080',
+            'https://example.org/mywiki/index.php?wiki=PagePrincipale' => 'https://example.org/mywiki',
+            'HTTPS://Example.org/' => 'https://Example.org',
             '' => '',
         ] as $pasted => $expected) {
             $this->assertSame($expected, RemoteWikiArchive::baseUrlOf($pasted), "'$pasted'");

@@ -3039,14 +3039,12 @@ Administratzaileei jakinaraz diezaiekezu, gune hau mantentzen laguntzeko, inform
 
     'RSS_CHANGE_OF' => 'Honen aldaketa',
     'RSS_HISTORY' => 'historikoa',
-    'RSS_HIDDEN_CONTENT' => 'Ezkutuko edukia',
     'RSS_ON_DATE' => '(e)an',
     'RSS_COMPARISON_OF' => 'Konparazioa',
     'RSS_TO' => 'eta',
     'RSS_ADDS' => 'Eransketak',
     'RSS_DELETIONS' => 'Ezabapenak',
     'RSS_NO_DIFF' => 'Desberdintasunik ez',
-
 
     'FORM_BUILDER_ADD_FIELDS' => 'Gehitu eremu bat',
     'FORM_BUILDER_ADVANCED' => 'Ezarpen aurreratuak',

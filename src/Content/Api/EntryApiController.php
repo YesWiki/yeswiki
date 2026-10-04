@@ -8,12 +8,13 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Attribute\Route;
 use YesWiki\Content\Controller\EntryController;
 use YesWiki\Content\Entity\PageBody;
+use YesWiki\Content\Exception\EntryValidationException;
+use YesWiki\Content\Exception\TagAlreadyUsedException;
 use YesWiki\Content\Field\TextareaField;
 use YesWiki\Content\Service\BazarListService;
 use YesWiki\Content\Service\CSVManager;
 use YesWiki\Content\Service\EntryExtraFieldsService;
 use YesWiki\Content\Service\EntryFastAccessService;
-use YesWiki\Content\Exception\TagAlreadyUsedException;
 use YesWiki\Content\Service\EntryManager;
 use YesWiki\Content\Service\FormManager;
 use YesWiki\Content\Service\GeoJSONFormatter;
@@ -250,7 +251,7 @@ class EntryApiController extends YesWikiController
             } else {
                 $entry = $this->getService(EntryManager::class)->update($postData['tag'], $postData, false, true);
             }
-        } catch (TagAlreadyUsedException $e) {
+        } catch (EntryValidationException|TagAlreadyUsedException $e) {
             throw new BadRequestHttpException($e->getMessage());
         }
 

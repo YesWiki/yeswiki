@@ -62,4 +62,28 @@ class SyndicationFunctionsTest extends YesWikiTestCase
         $this->assertSame('bf_chapeau', $result['mapping']['summary']);
         $this->assertSame('liste_description.twig', $result['template']);
     }
+
+    /** A feed item's image is fetched from a public address or not at all, and nothing lands in files/ otherwise. */
+    public function testAFeedImageInsideTheNetworkIsNotDownloaded(): void
+    {
+        $wiki = $this->getWiki();
+        $action = new class extends \YesWiki\Content\Action\SyndicationAction {
+            public function download(string $url): string
+            {
+                return $this->downloadFile($url);
+            }
+        };
+        $action->setServices($wiki->services);
+        $action->setParams($wiki->services->get(\Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface::class));
+        $before = glob('files/*');
+
+        foreach ([
+            'http://localhost:1/photo.png',
+            'http://169.254.169.254/latest/meta-data/photo.png',
+            'file:///etc/passwd',
+        ] as $url) {
+            $this->assertSame('', $action->download($url), $url);
+        }
+        $this->assertSame($before, glob('files/*'));
+    }
 }

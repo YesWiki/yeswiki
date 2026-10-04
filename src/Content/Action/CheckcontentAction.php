@@ -11,6 +11,7 @@ use YesWiki\Kernel\Component\Component;
 use YesWiki\Kernel\Component\ProvidesComponents;
 use YesWiki\Kernel\Component\Setting;
 use YesWiki\Kernel\Performable\RegisteredAction;
+use YesWiki\Kernel\Service\CurrentRequest;
 
 class CheckcontentAction extends YesWikiAction implements RegisteredAction, ProvidesComponents
 {
@@ -50,7 +51,7 @@ class CheckcontentAction extends YesWikiAction implements RegisteredAction, Prov
         $picked = $post['checkcontent-value'] ?? [];
 
         return [
-            'id' => $request->get('form_id') ?? $arg['id'] ?? $arg['idtypeannonce'] ?? '',
+            'id' => CurrentRequest::input($request, 'form_id') ?? $arg['id'] ?? $arg['idtypeannonce'] ?? '',
             'repair' => is_array($selected) ? array_values(array_filter($selected, 'is_string')) : [],
             'pickedValues' => is_array($picked) ? $picked : [],
             'textreplace' => is_scalar($arg['textreplace'] ?? null)
@@ -65,11 +66,9 @@ class CheckcontentAction extends YesWikiAction implements RegisteredAction, Prov
     /**
      * Read `name=value` pairs, a name repeated across pairs holding several values.
      *
-     * @param mixed $param
-     *
      * @return array<string, string>
      */
-    private function forcedValues($param): array
+    private function forcedValues(mixed $param): array
     {
         $forced = [];
         foreach ($this->formatArray($param) as $pair) {

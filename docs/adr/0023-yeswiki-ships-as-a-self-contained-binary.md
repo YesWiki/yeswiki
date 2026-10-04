@@ -30,7 +30,7 @@ as `program-<version>/`. `YESWIKI_SOURCE_DIR` is renamed `YESWIKI_PROGRAM_DIR` t
 - **Pinning `EmbeddedAppPath` at build time** with `-ldflags`, the only override FrankenPHP
   offers, is rejected because it is baked in: one path for every user of that binary. A person
   running a wiki in their home directory cannot write to `/var/lib/yeswiki`, which is the audience.
-  Naming the *root* at run time (`--program-root`, `YESWIKI_PROGRAM_ROOT`) covers the laptop and
+  Naming the _root_ at run time (`--program-root`, `YESWIKI_PROGRAM_ROOT`) covers the laptop and
   the image build with one rule, and it also answers the systemd service running as a user with no
   `HOME`.
 - **Waiting for the upstream fix** is rejected as a plan, though the patch is still worth sending.
@@ -51,7 +51,7 @@ as `program-<version>/`. `YESWIKI_SOURCE_DIR` is renamed `YESWIKI_PROGRAM_DIR` t
 - **Distributing the binary through GitHub releases** is rejected, though that is where CI builds
   it. ADR-0016 made `repository.yeswiki.net` the only distributor eight months ago; adding GitHub
   would give a wiki two trust roots and break the `yeswiki_repository` override that private and
-  air-gapped mirrors depend on. Releases are published *into* that host instead.
+  air-gapped mirrors depend on. Releases are published _into_ that host instead.
 - **Trusting TLS alone for updates** is rejected: it puts every wiki running the binary inside the
   blast radius of one server. Binaries are signed with an ed25519 key whose public half is
   compiled in, so verification is offline and needs no PKI.

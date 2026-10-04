@@ -6,7 +6,9 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Files\Service\ImageResizer;
 use YesWiki\Files\Service\RemoteImageCache;
 use YesWiki\Files\Service\Storage;
+use YesWiki\Kernel\Service\PinnedFetcher;
 use YesWiki\Kernel\Service\RuntimeConfig;
+use YesWiki\Kernel\Service\SsrfUrlValidator;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Test\Core\YesWikiTestCase;
 
@@ -218,5 +220,48 @@ class RemoteImageCacheTest extends YesWikiTestCase
         }
 
         $this->assertSame([], $cache->fetched, 'and none of them reached the network');
+    }
+
+    /** A name that resolves inside the network is refused when fetched, not only an address written as one. */
+    public function testANameThatResolvesToLoopbackIsNotFetched(): void
+    {
+        $root = sys_get_temp_dir() . '/yeswiki-remote-image-' . bin2hex(random_bytes(4));
+        mkdir($root);
+        file_put_contents($root . '/photo.png', $this->png(100, 100));
+        $socket = stream_socket_server('tcp://127.0.0.1:0');
+        if ($socket === false) {
+            $this->fail('no free port to serve the picture on');
+        }
+        $port = (int)substr((string)stream_socket_get_name($socket, false), strlen('127.0.0.1:'));
+        fclose($socket);
+        $server = proc_open([PHP_BINARY, '-S', '127.0.0.1:' . $port, '-t', $root], [['pipe', 'r'], ['file', '/dev/null', 'w'], ['file', '/dev/null', 'w']], $pipes);
+        if ($server === false) {
+            $this->fail('the picture server did not start');
+        }
+
+        try {
+            for ($try = 0; $try < 50 && ($probe = @fsockopen('127.0.0.1', $port)) === false; $try++) {
+                usleep(100000);
+            }
+            $this->assertNotFalse(@file_get_contents('http://127.0.0.1:' . $port . '/photo.png'), 'the picture is there to be had');
+            $services = $this->getWiki()->services;
+            $cache = new RemoteImageCache(
+                $services->get(ParameterBagInterface::class),
+                $services->get(RuntimeConfig::class),
+                $services->get(UrlFormatter::class),
+                $services->get(ImageResizer::class),
+                $services->get(Storage::class),
+                new PinnedFetcher(new SsrfUrlValidator())
+            );
+            $url = 'http://localhost:' . $port . '/photo.png';
+
+            $this->assertSame($url, $cache->localUrl($url));
+            $this->assertSame([], glob('cache/remote/*.webp') ?: []);
+        } finally {
+            proc_terminate($server);
+            proc_close($server);
+            @unlink($root . '/photo.png');
+            @rmdir($root);
+        }
     }
 }

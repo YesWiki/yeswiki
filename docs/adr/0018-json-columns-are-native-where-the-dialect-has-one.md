@@ -49,7 +49,7 @@ The dialect ends up with three methods where it had one, because "this column is
 
 Getting the first two the wrong way round is a type error on PostgreSQL rather than a wrong answer, which is the right way round for a mistake to fail.
 
-**The migrations are where this bites, and it hides.** A migration that narrows its sweep with `WHERE body LIKE '%needle%'` raises `operator does not exist: jsonb ~~ text` and takes the whole run with it — the same for the regexp operator. Twelve of them did, and it survived because a *fresh* install marks every migration run without executing one: only upgrading an existing PostgreSQL wiki reaches the code, and no CI leg does that. Ask `jsonAsText()` for `body` and `metadata` before applying any string operator to them, in migrations above all.
+**The migrations are where this bites, and it hides.** A migration that narrows its sweep with `WHERE body LIKE '%needle%'` raises `operator does not exist: jsonb ~~ text` and takes the whole run with it — the same for the regexp operator. Twelve of them did, and it survived because a _fresh_ install marks every migration run without executing one: only upgrading an existing PostgreSQL wiki reaches the code, and no CI leg does that. Ask `jsonAsText()` for `body` and `metadata` before applying any string operator to them, in migrations above all.
 
 ## What this commits us to
 

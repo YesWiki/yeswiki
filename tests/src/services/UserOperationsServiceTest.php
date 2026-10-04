@@ -11,6 +11,7 @@ use YesWiki\Identity\Exception\DeleteUserException;
 use YesWiki\Identity\Exception\UserEmailAlreadyUsedException;
 use YesWiki\Identity\Exception\UserNameAlreadyUsedException;
 use YesWiki\Identity\Service\AuthenticationService;
+use YesWiki\Identity\Service\GroupManager;
 use YesWiki\Identity\Service\GroupOperationsService;
 use YesWiki\Identity\Service\UserManager;
 use YesWiki\Identity\Service\UserOperationsService;
@@ -22,7 +23,7 @@ require_once 'tests/YesWikiTestCase.php';
 #[CoversMethod(UserOperationsService::class, '__construct')]
 #[CoversMethod(UserOperationsService::class, 'getFirstAdmin')]
 #[CoversMethod(UserOperationsService::class, 'delete')]
-#[CoversMethod(UserOperationsService::class, 'deleteGroupsWhereUserIsAlone')]
+#[CoversMethod(UserOperationsService::class, 'removeFromGroups')]
 #[CoversMethod(UserOperationsService::class, 'create')]
 #[CoversMethod(UserOperationsService::class, 'sanitizeName')]
 class UserOperationsServiceTest extends YesWikiTestCase
@@ -314,6 +315,97 @@ class UserOperationsServiceTest extends YesWikiTestCase
         }
 
         $this->assertTrue($exceptionThrown, 'delete() should throw when user cannot be safely deleted');
+    }
+
+    /** Deleting a user drops its name and its `!` exclusion from a group, leaves no blank member, and the group still saves. */
+    #[Depends('testUserOperationsServiceExisting')]
+    #[Depends('testGetFirstAdmin')]
+    public function testDeleteUserLeavesNoTraceInGroup(YesWikiRuntime $wiki, string $firstAdmin): void
+    {
+        $authenticationService = $wiki->services->get(AuthenticationService::class);
+        $groupOperationsService = $wiki->services->get(GroupOperationsService::class);
+        $userOperationsService = $wiki->services->get(UserOperationsService::class);
+        $userManager = $wiki->services->get(UserManager::class);
+
+        $names = [];
+        foreach ([0, 1] as $i) {
+            $name = $this->freeRandomUserName($userManager);
+            $userManager->create($name, $this->freeEmail($userManager), StringUtilService::generateRandomString(25, self::CHARS_FOR_PASSWORD));
+            $names[] = $name;
+        }
+        [$keptName, $deletedName] = $names;
+        $groupName = $this->freeGroupName($groupOperationsService);
+        $excludingGroup = $this->freeGroupName($groupOperationsService);
+        $groupOperationsService->create($groupName, [$keptName, $deletedName]);
+        $groupOperationsService->create($excludingGroup, [$keptName, '!' . $deletedName]);
+
+        $authenticationService->login(self::requireUser($userManager->getOneByName($firstAdmin)));
+        $saveMessage = '';
+        try {
+            $userOperationsService->delete(self::requireUser($userManager->getOneByName($deletedName)));
+            $members = $groupOperationsService->getMembers($groupName);
+            $excludingMembers = $groupOperationsService->getMembers($excludingGroup);
+            try {
+                $groupOperationsService->update($groupName, $members);
+            } catch (\Throwable $th) {
+                $saveMessage = $th->getMessage();
+            }
+        } finally {
+            $authenticationService->logout();
+            foreach ($names as $name) {
+                $leftOver = $userManager->getOneByName($name);
+                if (!empty($leftOver)) {
+                    $userManager->delete($leftOver);
+                }
+            }
+            foreach ([$groupName, $excludingGroup] as $group) {
+                if ($groupOperationsService->groupExists($group)) {
+                    $groupOperationsService->delete($group);
+                }
+            }
+        }
+
+        $this->assertSame([$keptName], $members);
+        $this->assertSame([$keptName], $excludingMembers);
+        $this->assertSame('', $saveMessage, 'the group should still be saveable after a member is deleted');
+    }
+
+    /** When the admins check refuses a deletion, no other group has been touched yet. */
+    #[Depends('testUserOperationsServiceExisting')]
+    public function testRefusedDeletionLeavesOtherGroupsAlone(YesWikiRuntime $wiki): void
+    {
+        $groupManager = $wiki->services->get(GroupManager::class);
+        $groupOperationsService = $wiki->services->get(GroupOperationsService::class);
+        $userOperationsService = $wiki->services->get(UserOperationsService::class);
+        $userManager = $wiki->services->get(UserManager::class);
+
+        $name = $this->freeRandomUserName($userManager);
+        $userManager->create($name, $this->freeEmail($userManager), StringUtilService::generateRandomString(25, self::CHARS_FOR_PASSWORD));
+        $groupName = $this->freeGroupName($groupOperationsService);
+        $groupOperationsService->create($groupName, [$name]);
+        $admins = $groupManager->getMembers(ADMIN_GROUP);
+
+        $exceptionThrown = false;
+        try {
+            $groupManager->updateMembers(ADMIN_GROUP, [$name]);
+            $userOperationsService->purge(self::requireUser($userManager->getOneByName($name)));
+        } catch (DeleteUserException $ex) {
+            $exceptionThrown = true;
+        } finally {
+            $groupManager->updateMembers(ADMIN_GROUP, $admins);
+            $groupStillThere = $groupOperationsService->groupExists($groupName);
+            if ($groupStillThere) {
+                $groupOperationsService->delete($groupName);
+            }
+            $leftOver = $userManager->getOneByName($name);
+            if (!empty($leftOver)) {
+                $userManager->delete($leftOver);
+            }
+        }
+
+        $this->assertTrue($exceptionThrown);
+        $this->assertTrue($groupStillThere, 'the group the user was alone in must survive a refused deletion');
+        $this->assertSame($admins, $groupManager->getMembers(ADMIN_GROUP));
     }
 
     /**

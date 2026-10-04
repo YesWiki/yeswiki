@@ -173,7 +173,7 @@ class AdminImportersAction extends YesWikiAction implements RegisteredAction
         $suffix = 2;
         while (isset($dataSources[$id])) {
             $id = $baseId . '_' . $suffix;
-            ++$suffix;
+            $suffix++;
         }
 
         return $id;

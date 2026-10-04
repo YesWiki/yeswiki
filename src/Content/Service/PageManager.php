@@ -457,6 +457,8 @@ class PageManager
     }
 
     /**
+     * Latest revisions the current user may read, newest first.
+     *
      * @param int    $limit
      * @param string $minDate
      *
@@ -465,19 +467,22 @@ class PageManager
     public function getRecentlyChanged($limit = 50, $minDate = ''): ?array
     {
         $userCol = $this->dbService->quoteIdentifier('user');
+        $readable = $this->aclService->readableFilter();
+        $sql = "select id, tag, time, $userCol AS user, owner from" . $this->dbService->prefixTable('pages')
+            . "where latest = 'Y' and parent = ''"
+            . ($readable->isEmpty() ? '' : ' and ' . $readable->sql);
+        $params = $readable->params;
+
         if (!empty($minDate)) {
-            if ($pages = $this->dbService->loadAll("select id, tag, time, $userCol AS user, owner from" . $this->dbService->prefixTable('pages') . "where latest = 'Y' and parent = '' and time >= '$minDate' order by time desc")) {
-                return $pages;
-            }
+            $sql .= ' and time >= ? order by time desc';
+            $params[] = $minDate;
         } else {
             $limit = (int)$limit;
             $limit = ($limit < 1) ? 50 : $limit;
-            if ($pages = $this->dbService->loadAll("select id, tag, time, $userCol AS user, owner from" . $this->dbService->prefixTable('pages') . "where latest = 'Y' and parent = '' order by time desc limit $limit")) {
-                return $pages;
-            }
+            $sql .= " order by time desc limit $limit";
         }
 
-        return null;
+        return $this->dbService->loadAll($sql, $params) ?: null;
     }
 
     /**

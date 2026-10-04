@@ -8,12 +8,70 @@ final class SqlStatementSplitter
     /** Keywords that open a compound statement inside a trigger body, and the one that closes it. */
     private const BLOCK_KEYWORDS = ['BEGIN' => 1, 'CASE' => 1, 'END' => -1];
 
+    public const CHUNK_SIZE = 1048576;
+
     /**
      * @return list<string> non-empty statements, in order, without their trailing semicolon
      */
     public static function split(string $sql): array
     {
+        [$statements, $rest] = self::cut($sql);
+        $statements[] = substr($sql, $rest);
+
+        return self::cleaned($statements);
+    }
+
+    /**
+     * The same, read from a stream as it goes, so a dump of any size costs the memory of one statement.
+     *
+     * @param resource $handle
+     *
+     * @return \Generator<int, string>
+     */
+    public static function fromStream($handle, int $chunkSize = self::CHUNK_SIZE): \Generator
+    {
+        $buffer = '';
+        $want = $chunkSize;
+        while (!feof($handle)) {
+            $chunk = fread($handle, max(1, $want));
+            if ($chunk === false) {
+                throw new \RuntimeException('Cannot read the SQL dump');
+            }
+            if ($chunk === '') {
+                continue;
+            }
+            $buffer .= $chunk;
+            [$statements, $rest] = self::cut($buffer);
+            $buffer = substr($buffer, $rest);
+            $want = $statements === [] ? max($chunkSize, \strlen($buffer)) : $chunkSize;
+            yield from self::cleaned($statements);
+        }
+
+        yield from self::cleaned([$buffer]);
+    }
+
+    /**
+     * @param list<string> $statements
+     *
+     * @return list<string>
+     */
+    private static function cleaned(array $statements): array
+    {
+        return array_values(array_filter(
+            array_map([self::class, 'stripLeadingComments'], $statements),
+            fn (string $statement) => $statement !== ''
+        ));
+    }
+
+    /**
+     * The statements $sql completes, and where the one it leaves unfinished starts.
+     *
+     * @return array{0: list<string>, 1: int}
+     */
+    private static function cut(string $sql): array
+    {
         $statements = [];
+        $start = 0;
         $current = '';
         $length = strlen($sql);
         $i = 0;
@@ -62,6 +120,7 @@ final class SqlStatementSplitter
                 $statements[] = $current;
                 $current = '';
                 $i++;
+                $start = $i;
 
                 continue;
             }
@@ -70,12 +129,7 @@ final class SqlStatementSplitter
             $i++;
         }
 
-        $statements[] = $current;
-
-        return array_values(array_filter(
-            array_map([self::class, 'stripLeadingComments'], $statements),
-            fn (string $statement) => $statement !== ''
-        ));
+        return [$statements, $start];
     }
 
     /** Drop the commentary a dump puts above each statement, so a statement starts with SQL. */

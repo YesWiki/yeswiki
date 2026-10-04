@@ -14,6 +14,9 @@ abstract class EnumField extends BazarField
     /** @var array<int|string, mixed>|null the raw list nodes, when the list is hierarchical */
     protected $optionsTree;
 
+    /** @var array<int|string, array<string, mixed>> the linked entries the options were built from, keyed by tag */
+    protected $optionsEntries = [];
+
     /** @var string name of the list, or id of the form, the options come from */
     protected $linkedObjectName;
 
@@ -99,8 +102,10 @@ abstract class EnumField extends BazarField
         );
 
         $this->options = [];
+        $this->optionsEntries = [];
         foreach ($linkedEntries as $linkedEntry) {
             $this->options[$linkedEntry['tag']] = $linkedEntry['title'] ?? $linkedEntry['bf_titre'] ?? $linkedEntry['tag'];
+            $this->optionsEntries[$linkedEntry['tag']] = $linkedEntry;
         }
         asort($this->options);
     }

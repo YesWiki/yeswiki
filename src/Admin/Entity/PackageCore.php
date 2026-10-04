@@ -90,17 +90,15 @@ class PackageCore extends Package
             return false;
         }
 
+        $copied = true;
         foreach ($this->entriesIn($this->extractionPath) as $file) {
-            if (!in_array($file, self::IGNORED_FILES)) {
-                $this->copy(
-                    $this->extractionPath . '/' . $file,
-                    $desPath . '/' . $file
-                );
+            if (!in_array($file, self::IGNORED_FILES) && !$this->copy($this->extractionPath . '/' . $file, $desPath . '/' . $file)) {
+                $copied = false;
             }
         }
         foreach (self::FILES_TO_ADD_TO_IGNORED_FOLDERS as $file) {
-            if ($this->exists($this->extractionPath . '/' . $file)) {
-                $this->copy($this->extractionPath . '/' . $file, $desPath . '/' . $file);
+            if ($this->exists($this->extractionPath . '/' . $file) && !$this->copy($this->extractionPath . '/' . $file, $desPath . '/' . $file)) {
+                $copied = false;
             }
         }
 
@@ -110,29 +108,35 @@ class PackageCore extends Package
             }
         }
 
-        return true;
+        return $copied;
     }
 
     public function upgradeDefaultTheme(): bool
     {
         $src = $this->extractionPath . '/themes/' . THEME_PAR_DEFAUT;
         $desPath = $this->localPath . '/themes/' . THEME_PAR_DEFAUT;
+        $copied = true;
         foreach ($this->entriesIn($src) as $file) {
-            $this->copy($src . '/' . $file, $desPath . '/' . $file);
+            if (!$this->copy($src . '/' . $file, $desPath . '/' . $file)) {
+                $copied = false;
+            }
         }
 
-        return true;
+        return $copied;
     }
 
     public function upgradeTools(): bool
     {
         $src = $this->extractionPath . '/extensions';
         $desPath = $this->localPath . '/extensions';
+        $copied = true;
         foreach ($this->entriesIn($src) as $file) {
-            $this->copy($src . '/' . $file, $desPath . '/' . $file);
+            if (!$this->copy($src . '/' . $file, $desPath . '/' . $file)) {
+                $copied = false;
+            }
         }
 
-        return true;
+        return $copied;
     }
 
     public function upgradeInfos(): bool

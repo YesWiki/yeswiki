@@ -2,6 +2,7 @@
 
 namespace YesWiki\Admin\Service;
 
+use YesWiki\Kernel\Database\DumpRewriter;
 use YesWiki\Kernel\Service\DbService;
 
 /** Copies one wiki's tables into an empty database on any supported engine, schema from the installer, rows verified by count. */
@@ -59,8 +60,8 @@ class DatabaseCopier
             SchemaCreator::create($target, $prefix);
             $tables = self::tables($target, $prefix);
             $sourceTables = array_values(array_filter(
-                $this->source->schema()->getTables(),
-                fn (string $table): bool => str_starts_with($table, $prefix) && preg_match(self::ENGINE_OWNED, $table) !== 1
+                DumpRewriter::ownTables($this->source->schema()->getTables(), $prefix),
+                fn (string $table): bool => preg_match(self::ENGINE_OWNED, $table) !== 1
             ));
             foreach (array_diff($sourceTables, $tables) as $left) {
                 $this->notes[] = "{$left} is not part of the YesWiki schema and was not copied";
@@ -168,7 +169,7 @@ class DatabaseCopier
     }
 
     /**
-     * The prefixed tables present on a connection.
+     * The tables of the wiki under this prefix on a connection, leaving out another wiki's whose prefix starts the same.
      *
      * @return list<string>
      */
@@ -180,10 +181,10 @@ class DatabaseCopier
             default => 'SHOW TABLES',
         };
         $statement = $db->query($sql);
-        $names = $statement === false ? [] : array_map('strval', $statement->fetchAll(\PDO::FETCH_COLUMN));
+        $names = $statement === false ? [] : array_values(array_map('strval', $statement->fetchAll(\PDO::FETCH_COLUMN)));
         $names = array_values(array_filter(
-            $names,
-            fn (string $name): bool => str_starts_with($name, $prefix) && preg_match(self::ENGINE_OWNED, $name) !== 1
+            DumpRewriter::ownTables($names, $prefix),
+            fn (string $name): bool => preg_match(self::ENGINE_OWNED, $name) !== 1
         ));
         sort($names);
 

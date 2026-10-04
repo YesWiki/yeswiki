@@ -14,6 +14,8 @@ use YesWiki\Files\Service\AttachedFilePaths;
 use YesWiki\Files\Service\RemoteFile;
 use YesWiki\Files\Service\Storage;
 use YesWiki\Identity\Service\AclService;
+use YesWiki\Kernel\Service\CurrentRequest;
+use YesWiki\Kernel\Service\StringUtilService;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Search\Service\SearchManager;
 
@@ -173,9 +175,9 @@ class CSVManager
         if (!$vFakeMode) {
             $vSearchManager = $this->container->get(SearchManager::class);
 
-            $request = $this->container->get(\YesWiki\Kernel\Service\CurrentRequest::class)->get();
+            $request = $this->container->get(CurrentRequest::class)->get();
             $vQuery = $vSearchManager->aggregateQueries($pParams['query'] ?? null, $request->query->all());
-            $vKeywords = $vSearchManager->aggregateKeywords($pParams['keywords'] ?? null, $request->get('q'), $request->get('keywords'));
+            $vKeywords = $vSearchManager->aggregateKeywords($pParams['keywords'] ?? null, CurrentRequest::input($request, 'q'), CurrentRequest::input($request, 'keywords'));
 
             $vEntries = $vBazarListService->getEntries(array_merge($pParams, [
                 'id' => $pFormID,
@@ -347,7 +349,7 @@ class CSVManager
     /**
      * importEntry.
      *
-     * @param list<string> $importedEntries each a base64-encoded serialized entry
+     * @param list<string> $importedEntries each a JSON-encoded entry, or a base64-encoded serialized one from an older form
      *
      * @return list<array<string, mixed>>|null $createdEntries, null when an import already ran
      */
@@ -360,8 +362,10 @@ class CSVManager
         $createdEntries = $this->container->get(ImportContext::class)->during(function () use ($importedEntries, $formId): array {
             $created = [];
             foreach ($importedEntries as $entry) {
-                $entry = unserialize(base64_decode($entry), ['allowed_classes' => false]);
-                $entry = array_map('strval', $entry);
+                $entry = $this->decodeImportedEntry((string)$entry);
+                if ($entry === null) {
+                    continue;
+                }
 
                 $entry['antispam'] = 1;
                 if (isset($entry['tag'])) {
@@ -382,6 +386,23 @@ class CSVManager
     }
 
     /**
+     * @return array<string, mixed>|null
+     */
+    private function decodeImportedEntry(string $posted): ?array
+    {
+        $entry = json_decode($posted, true);
+        if (!is_array($entry)) {
+            $decoded = base64_decode($posted, true);
+            $entry = $decoded === false ? false : @unserialize($decoded, ['allowed_classes' => false]);
+        }
+        if (!is_array($entry)) {
+            return null;
+        }
+
+        return array_map(fn ($value) => is_array($value) ? $value : (string)$value, $entry);
+    }
+
+    /**
      * extract CSV from csv file.
      *
      * @param mixed                     $pFormId   a form id, or the shape getTheID() reads
@@ -390,7 +411,7 @@ class CSVManager
      *
      * @return list<array{entry: array<string, mixed>, errormsg: list<string>}>|null
      */
-    public function extractCSVfromCSVFile($pFormId, $filesData, bool $detectColumnsOnHeaders = true, $pForm = null)
+    public function extractCSVfromCSVFile($pFormId, $filesData, bool $detectColumnsOnHeaders = true, $pForm = null, bool $keepRemoteFilesAsUrl = false)
     {
         $vBazarListService = $this->container->get(BazarListService::class);
 
@@ -411,7 +432,7 @@ class CSVManager
                             $extracted = [];
                             while (($data = fgetcsv($handle, 0, ',', '"', '')) !== false) {
                                 $this->errormsg = [];
-                                $extractedData = $this->getEntryFromCSVLine($data, $headers, $columnIndexesForPropertyNames, $vID['id']);
+                                $extractedData = $this->getEntryFromCSVLine($data, $headers, $columnIndexesForPropertyNames, $vID['id'], $keepRemoteFilesAsUrl);
                                 $extracted[] = [
                                     'entry' => $extractedData,
                                     'errormsg' => $this->errormsg,
@@ -631,7 +652,7 @@ class CSVManager
      *
      * @return array<string, mixed> entry
      */
-    private function getEntryFromCSVLine(array $data, array $headers, array $columnIndexesForPropertyNames, string $formId): array
+    private function getEntryFromCSVLine(array $data, array $headers, array $columnIndexesForPropertyNames, string $formId, bool $keepRemoteFilesAsUrl = false): array
     {
         $entry = [];
         $skipFields = ['datetime_create', 'datetime_latest'];
@@ -650,10 +671,16 @@ class CSVManager
                             && !($field instanceof TagsField)
                     ) {
                         $value = $this->extractValueFromEnumFieldData($value, $field);
+                    } elseif ($field instanceof MapField) {
+                        $value = $this->extractValueFromMapFieldData((string)$value, $field);
                     } elseif ($field instanceof ImageField) {
-                        $value = $this->extractValueFromImageFieldData($value, $field);
+                        if (!($keepRemoteFilesAsUrl && StringUtilService::isWebAddress(trim($value)))) {
+                            $value = $this->extractValueFromImageFieldData($value, $field);
+                        }
                     } elseif ($field instanceof FileField) {
-                        $value = $this->extractValueFromFileFieldData($value, $field);
+                        if (!($keepRemoteFilesAsUrl && StringUtilService::isWebAddress(trim($value)))) {
+                            $value = $this->extractValueFromFileFieldData($value, $field);
+                        }
                     } elseif (in_array($propertyName, ['datetime_latest', 'datetime_create'])) {
                         $datetime = \DateTime::createFromFormat(
                             'd/m/Y H:i:s',
@@ -765,6 +792,29 @@ class CSVManager
         }
 
         return implode(',', $indexes);
+    }
+
+    /**
+     * The latitude/longitude/geometries structure back from the JSON cell the export writes.
+     *
+     * @return array{latitude: string, longitude: string, geometries: string}|string the raw cell when it cannot be read
+     */
+    private function extractValueFromMapFieldData(string $value, MapField $field): array|string
+    {
+        $decoded = json_decode(trim($value), true);
+        if (!is_array($decoded)) {
+            $this->errormsg[] = _t('BAZ_UNREADABLE_MAP_VALUE') . ' : ' . $field->getPropertyName();
+
+            return $value;
+        }
+
+        $geometries = $decoded['geometries'] ?? '';
+
+        return [
+            'latitude' => (string)($decoded['latitude'] ?? $decoded['bf_latitude'] ?? ''),
+            'longitude' => (string)($decoded['longitude'] ?? $decoded['bf_longitude'] ?? ''),
+            'geometries' => is_string($geometries) ? $geometries : (string)json_encode($geometries),
+        ];
     }
 
     /**

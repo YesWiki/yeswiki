@@ -16,7 +16,6 @@ use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Identity\Service\UserManager;
 use YesWiki\Kernel\Service\CurrentRequest;
-use YesWiki\Kernel\Service\TripleStore;
 use YesWiki\Search\Service\SearchIndexer;
 use YesWiki\Search\Service\TagsManager;
 use YesWiki\Test\Core\YesWikiTestCase;

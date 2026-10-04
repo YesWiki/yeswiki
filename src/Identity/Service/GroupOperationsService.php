@@ -115,7 +115,8 @@ class GroupOperationsService extends YesWikiController
             throw new GroupNameAlreadyUsedException(_t('GROUP_NAME_ALREADY_USED'));
         }
         if ($this->isNameValid($name)) {
-            foreach ($members ?? [] as $member) {
+            $members = $this->groupManager->cleanMembers($members ?? []);
+            foreach ($members as $member) {
                 switch ($this->checkMemberValidity($name, $member)) {
                     case 0:
                         break;
@@ -127,7 +128,7 @@ class GroupOperationsService extends YesWikiController
                         throw new InvalidInputException(_t('ERROR_RECURSIVE_GROUP'));
                 }
             }
-            $group_created = $this->groupManager->create($name, $members ?? []);
+            $group_created = $this->groupManager->create($name, $members);
         } else {
             throw new InvalidGroupNameException(_t('INVALID_GROUP_NAME'));
         }
@@ -280,6 +281,7 @@ class GroupOperationsService extends YesWikiController
         if (!$this->groupManager->groupExists($groupName)) {
             throw new GroupNameDoesNotExistException(_t('GROUP_NAME_DOES_NOT_EXIST'));
         }
+        $members = $this->groupManager->cleanMembers($members);
         foreach ($members as $member) {
             switch ($this->checkMemberValidity($groupName, $member)) {
                 case 0:

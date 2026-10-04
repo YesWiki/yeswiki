@@ -3,6 +3,7 @@
 namespace YesWiki\Admin\Controller;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -49,17 +50,21 @@ class ArchiveController extends YesWikiController
                 ob_start();
             }
 
-            $storage = $this->storage;
-            $response = new StreamedResponse(function () use ($storage, $filePath) {
-                $bytes = $storage->readStream($filePath);
-                fpassthru($bytes);
-                fclose($bytes);
-            });
+            if ($this->storage->isRemote($filePath)) {
+                $storage = $this->storage;
+                $response = new StreamedResponse(function () use ($storage, $filePath) {
+                    $bytes = $storage->readStream($filePath);
+                    fpassthru($bytes);
+                    fclose($bytes);
+                });
+                $response->headers->set('Content-Length', (string)$this->storage->fileSize($filePath));
+            } else {
+                $response = new BinaryFileResponse($this->storage->absolutePath($filePath));
+            }
             $response->headers->set(
                 'Content-Disposition',
                 $response->headers->makeDisposition(ResponseHeaderBag::DISPOSITION_ATTACHMENT, $id)
             );
-            $response->headers->set('Content-Length', (string)$this->storage->fileSize($filePath));
             $response->headers->set('Content-Type', 'application/zip');
             $response->headers->set('Access-Control-Allow-Origin', '*');
             $response->headers->set('Access-Control-Allow-Credentials', 'true');
@@ -67,6 +72,7 @@ class ArchiveController extends YesWikiController
             $response->headers->set('Access-Control-Expose-Headers', 'Location, Slug, Accept, Content-Type');
             $response->headers->set('Access-Control-Allow-Methods', 'POST, GET, OPTIONS, DELETE, PUT, PATCH');
             $response->headers->set('Access-Control-Max-Age', '86400');
+            $response->prepare($this->getRequest());
 
             return $response;
         } catch (\Throwable $pThrowable) {
@@ -117,7 +123,7 @@ class ArchiveController extends YesWikiController
                         $uid = $this->startArchive($params, $callAsync);
                         if (empty($uid)) {
                             return new ApiResponse(
-                                ['error' => 'no process created when starting archive action'],
+                                ['error' => $callAsync ? _t('AU_NO_BACKGROUND_PROCESS') : _t('AU_BACKUP_PRODUCED_NO_FILE')],
                                 Response::HTTP_INTERNAL_SERVER_ERROR
                             );
                         }
@@ -159,8 +165,6 @@ class ArchiveController extends YesWikiController
                         $restoreFiles = !$post->has('restoreFiles') || in_array($post->get('restoreFiles'), [1, true, 'true', '1'], true);
                         $restoreDatabase = !$post->has('restoreDatabase') || in_array($post->get('restoreDatabase'), [1, true, 'true', '1'], true);
                         $rewriteUrls = !$post->has('rewriteUrls') || in_array($post->get('rewriteUrls'), [1, true, 'true', '1'], true);
-                        // detached like an archive, and followed the same way: the caller polls
-                        // api/archives/uidstatus/{uid} and may stop it through 'stopArchive'
                         $callAsync = !$post->has('callAsync') || in_array($post->get('callAsync'), [1, true, 'true', '1'], true);
                         $uid = $this->archiveService->startRestore($id, $restoreFiles, $restoreDatabase, $rewriteUrls, $callAsync);
                         if (empty($uid)) {
@@ -239,9 +243,31 @@ class ArchiveController extends YesWikiController
         return $this->archiveService->startArchive(
             $savefiles,
             $savedatabase,
-            [],
-            [],
-            $startAsync
+            $this->folderList($params['foldersToInclude'] ?? null) ?? [],
+            $this->folderList($params['foldersToExclude'] ?? null) ?? [],
+            $startAsync,
+            $this->folderList($params['onlyFolders'] ?? null)
         );
+    }
+
+    /**
+     * A folder list as the API may send it, an array or a comma separated string; null when it names none.
+     *
+     * @return list<string>|null
+     */
+    private function folderList(mixed $raw): ?array
+    {
+        if (is_string($raw)) {
+            $raw = explode(',', $raw);
+        }
+        if (!is_array($raw)) {
+            return null;
+        }
+        $folders = array_values(array_filter(array_map(
+            static fn (mixed $folder): string => is_string($folder) ? trim($folder) : '',
+            $raw
+        )));
+
+        return $folders === [] ? null : $folders;
     }
 }

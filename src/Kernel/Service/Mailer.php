@@ -7,14 +7,7 @@ use PHPMailer\PHPMailer\PHPMailer;
 use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 
-/**
- * Sending an email, and nothing about what is in it.
- *
- * Composing a notification -- rendering an entry, looking a user up, picking a template -- moved
- * to `Content\Service\ContentNotifier`, which is where every caller of it already was. What was
- * left here is the transport: PHPMailer, the configured relay, the sender, and batching. That is
- * the whole reason a Kernel service can now be one (ADR-0013).
- */
+/** Sends an email through the configured transport, and nothing about what is in it (ADR-0013). */
 class Mailer
 {
     /** How many recipients one message carries before the next batch. */
@@ -53,7 +46,7 @@ class Mailer
     }
 
     /**
-     * Generic send, the single seam every mail-sending caller in core goes through (ticket 18).
+     * Sends to a lone recipient in To, or to several in batches of BCC.
      *
      * @param string          $mailSender
      * @param string          $nameSender
@@ -61,11 +54,15 @@ class Mailer
      */
     public function send($mailSender, $nameSender, $mailReceiver, string $subject, string $messageTxt, string $messageHtml = ''): bool
     {
-        $mail = new PHPMailer(true);
+        $mail = $this->newMessage();
 
         try {
             $this->lastError = '';
             $mail->set('CharSet', 'utf-8');
+            $host = parse_url($this->getBaseUrl(), PHP_URL_HOST);
+            if (is_string($host) && $host !== '') {
+                $mail->Hostname = $host;
+            }
             $this->configureTransport($mail);
             $this->configureSender($mail, $mailSender, $nameSender);
 
@@ -85,6 +82,13 @@ class Mailer
                 $mailReceiver = filter_var($mailReceiver, FILTER_VALIDATE_EMAIL) ? [$mailReceiver] : [];
             }
 
+            if (count($mailReceiver) === 1) {
+                $mail->addAddress((string)reset($mailReceiver));
+                $mail->send();
+
+                return true;
+            }
+
             foreach (array_chunk($mailReceiver, self::BATCH_SIZE) as $batch) {
                 $mail->clearBCCs();
                 foreach ($batch as $bccEmail) {
@@ -96,14 +100,16 @@ class Mailer
 
             return true;
         } catch (PHPMailerException $e) {
-            // Recorded rather than echoed. It used to ask AclService whether the visitor was an
-            // admin and print the error into the page, which put an Identity lookup and a
-            // rendering decision inside the transport. A caller with somewhere to show it asks
-            // lastError(); one with nowhere gets false, which is what it could act on anyway.
             $this->lastError = $e->errorMessage();
 
             return false;
         }
+    }
+
+    /** A fresh message that throws on failure. */
+    protected function newMessage(): PHPMailer
+    {
+        return new PHPMailer(true);
     }
 
     /** SMTP, sendmail or PHP's own mail(), as the wiki is configured. */
@@ -125,6 +131,15 @@ class Mailer
         $mail->Debugoutput = 'html';
         $mail->Host = $this->config()['contact_smtp_host'];
         $mail->Port = $this->config()['contact_smtp_port'];
+        if (!filter_var($this->config()['contact_smtp_verify_peer'] ?? true, FILTER_VALIDATE_BOOLEAN)) {
+            $mail->SMTPOptions = [
+                'ssl' => [
+                    'verify_peer' => false,
+                    'verify_peer_name' => false,
+                    'allow_self_signed' => true,
+                ],
+            ];
+        }
 
         if (empty($this->config()['contact_smtp_user'])) {
             $mail->SMTPAuth = false;
@@ -190,11 +205,7 @@ class Mailer
         return is_scalar($value) ? (string)$value : '';
     }
 
-    /**
-     * add $_GET['wiki'] in url if smtp use a relay that put a new parameter as the beginning of url's query.
-     *
-     * @return string $text
-     */
+    /** Adds wiki= to links when the smtp relay prepends its own query parameter. */
     private function sanitizeLinksIfNeeded(string $text): string
     {
         if ($this->params->get('contact_mail_func') === 'smtp'

@@ -3039,14 +3039,12 @@ Podeu avisar els administradors per ajudar-los a mantenir aquest lloc donant-los
 
     'RSS_CHANGE_OF' => 'Modificació de',
     'RSS_HISTORY' => 'històric',
-    'RSS_HIDDEN_CONTENT' => 'Contingut amagat',
     'RSS_ON_DATE' => 'el',
     'RSS_COMPARISON_OF' => 'Comparació de',
     'RSS_TO' => 'a',
     'RSS_ADDS' => 'Afegits',
     'RSS_DELETIONS' => 'Supressions',
     'RSS_NO_DIFF' => 'Sense diferències',
-
 
     'FORM_BUILDER_ADD_FIELDS' => 'Afegeix un camp',
     'FORM_BUILDER_ADVANCED' => 'Paràmetres avançats',

@@ -3,9 +3,9 @@
 namespace YesWiki\Test\Admin;
 
 use PHPUnit\Framework\Attributes\Depends;
+use YesWiki\Admin\Action\DashboardAction;
 use YesWiki\Admin\Api\DocumentationApiController;
 use YesWiki\Admin\Controller\AdminController;
-use YesWiki\Admin\Action\DashboardAction;
 use YesWiki\Admin\Controller\DashboardController;
 use YesWiki\Core\YesWikiRuntime;
 use YesWiki\Identity\Service\AclService;

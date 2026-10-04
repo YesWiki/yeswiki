@@ -45,12 +45,13 @@ class ApiServiceTest extends TestCase
         $aclService = $this->createStub(AclService::class);
         $aclService->method('check')->willReturn($aclCheckReturns);
 
-        $userManager = $this->createMock(UserManager::class);
         if (!empty($bearerUserName)) {
+            $userManager = $this->createMock(UserManager::class);
             $user = $this->createStub(User::class);
-            $userManager->method('getOneByName')->with($bearerUserName)->willReturn($user);
+            $userManager->expects($this->once())->method('getOneByName')->with($bearerUserName)->willReturn($user);
             $authenticationService->expects($this->once())->method('login')->with($user);
         } else {
+            $userManager = $this->createStub(UserManager::class);
             $authenticationService->expects($this->never())->method('login');
         }
 

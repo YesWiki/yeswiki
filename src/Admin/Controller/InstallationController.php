@@ -25,8 +25,13 @@ class InstallationController
     protected string $adminEmail;
     protected string $adminPassword;
     protected string $adminPasswordConf;
-    /** @var string either InstallationService::BACKUP_SQL_FILE or 'default' */
+    /** @var string InstallationService::BACKUP_SQL_FILE, an archive choice, or 'default' */
     protected string $contentSQL;
+    /** @var list<array{filename: string, choice: string, date: string, type: string, source: string, size: int}> */
+    protected array $archives;
+    protected bool $restoreFiles;
+    protected bool $rewriteUrls;
+    protected bool $replaceExisting;
 
     /**
      * @param array<string, mixed> $config     configuration from YesWikiInit::getConfig() (defaults + environment overrides)
@@ -51,10 +56,12 @@ class InstallationController
         $this->adminEmail = $this->postedOrEnv('admin_email', 'ADMIN_EMAIL');
         $this->adminPassword = $this->postedOrEnv('admin_password', 'ADMIN_PASSWORD');
         $this->adminPasswordConf = $this->postedOrEnv('admin_password_conf', 'ADMIN_PASSWORD');
+        $this->archives = InstallationService::availableArchives();
         $postedContentSQL = $_POST['contentSQL'] ?? null;
-        $this->contentSQL = is_string($postedContentSQL)
-            ? $postedContentSQL
-            : ($this->storage()->exists(InstallationService::backupFile()) ? InstallationService::BACKUP_SQL_FILE : 'default');
+        $this->contentSQL = is_string($postedContentSQL) ? $postedContentSQL : $this->defaultContent();
+        $this->restoreFiles = $this->postedFlag('restore_files', true);
+        $this->rewriteUrls = $this->postedFlag('rewrite_urls', true);
+        $this->replaceExisting = $this->postedFlag('replace_existing', false);
 
         $this->step = trim($_REQUEST['installAction'] ?? '') ?: 'default';
         $this->baseUrl = WikiUrls::baseUrl(true);
@@ -76,7 +83,8 @@ class InstallationController
     {
         $service = (new InstallationService($this->config, $this->configFile))
             ->withAdminAccount($this->adminName, $this->adminEmail, $this->adminPassword, $this->adminPasswordConf)
-            ->withContentFrom($this->contentSQL);
+            ->withContentFrom($this->contentSQL)
+            ->withRestoreOptions($this->restoreFiles, $this->rewriteUrls, $this->replaceExisting);
 
         try {
             $service->install();
@@ -113,6 +121,11 @@ class InstallationController
             'backupFound' => $this->storage()->exists(InstallationService::backupFile()),
             'backupSqlFile' => InstallationService::BACKUP_SQL_FILE,
             'contentSQL' => $this->contentSQL,
+            'archives' => $this->archives,
+            'restoreFiles' => $this->restoreFiles,
+            'rewriteUrls' => $this->rewriteUrls,
+            'replaceExisting' => $this->replaceExisting,
+            'adminFromBackup' => $this->contentSQL === InstallationService::BACKUP_SQL_FILE || InstallationService::archiveHoldsDatabase($this->contentSQL),
             'adminName' => $this->adminName ?: 'WikiAdmin',
             'adminEmail' => $this->adminEmail,
             'adminPassword' => $this->adminPassword,
@@ -125,6 +138,24 @@ class InstallationController
         ], $extraOptions);
 
         return $this->twig->render('installation.twig', $options);
+    }
+
+    /** A backup is restored by default: the newest archive, else the bare database dump, else nothing. */
+    private function defaultContent(): string
+    {
+        if ($this->archives !== []) {
+            return $this->archives[0]['choice'];
+        }
+
+        return $this->storage()->exists(InstallationService::backupFile()) ? InstallationService::BACKUP_SQL_FILE : 'default';
+    }
+
+    /** A checkbox this request posted, or its default when the form was not posted. */
+    private function postedFlag(string $postKey, bool $default): bool
+    {
+        $posted = $_POST[$postKey] ?? null;
+
+        return is_string($posted) ? in_array($posted, ['1', 'true', 'on'], true) : $default;
     }
 
     /** The value this request posted under $postKey, or -- when it posted none, or something that is not a string -- what the environment says, or ''. */

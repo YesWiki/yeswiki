@@ -263,8 +263,8 @@ class LayoutService
      * The chrome a posted form describes -- what Save would write, without writing it.
      *
      * @param array{title?: string, logo?: string, brand?: string, account?: bool, height?: mixed, navbarPosition?: string, headerPosition?: string, navbarFlags?: array<string, bool>, quickMenuFlags?: array<string, bool>} $brand
-     * @param list<array<string, mixed>>                                                                                                                                                                                     $navbar
-     * @param list<array<string, mixed>>                                                                                                                                                                                     $quickMenu
+     * @param list<array<string, mixed>>                                                                                                                                                                                      $navbar
+     * @param list<array<string, mixed>>                                                                                                                                                                                      $quickMenu
      */
     public function fromForm(array $brand, array $navbar, array $quickMenu): LayoutChrome
     {
@@ -299,8 +299,8 @@ class LayoutService
      * the rows are saved first, and configuration is only pointed at a menu that exists.
      *
      * @param array{title?: string, logo?: string, brand?: string, account?: bool, height?: mixed, navbarPosition?: string, headerPosition?: string, navbarFlags?: array<string, bool>, quickMenuFlags?: array<string, bool>} $brand
-     * @param list<array<string, mixed>>                                                                                                                                                                                     $navbar
-     * @param list<array<string, mixed>>                                                                                                                                                                                     $quickMenu
+     * @param list<array<string, mixed>>                                                                                                                                                                                      $navbar
+     * @param list<array<string, mixed>>                                                                                                                                                                                      $quickMenu
      */
     public function save(array $brand, array $navbar, array $quickMenu): void
     {
@@ -385,10 +385,6 @@ class LayoutService
         return $this->storage->isWritable(ConfigurationFileProvider::getConfigFileFromEnv());
     }
 
-
-
-
-
     private function assertChromePage(string $tag): void
     {
         if (!in_array($tag, self::PAGES, true)) {
@@ -413,5 +409,4 @@ class LayoutService
 
         return is_string($value) ? trim($value) : '';
     }
-
 }

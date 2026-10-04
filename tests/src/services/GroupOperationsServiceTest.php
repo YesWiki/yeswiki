@@ -105,6 +105,18 @@ class GroupOperationsServiceTest extends YesWikiTestCase
         return $wiki->services->get(GroupOperationsService::class);
     }
 
+    /** Blank and padded members, as a textarea sends them, are cleaned before they are checked. */
+    #[Depends('testGroupOperationsServiceExisting')]
+    public function testCreateCleansMembersBeforeCheckingThem(GroupOperationsService $groups): void
+    {
+        $user = self::createUser(self::groupName());
+        $group = self::groupName();
+
+        $created = $groups->create($group, ['', "  {$user}  ", '', $user]);
+
+        $this->assertSame([$user], $created['members'] ?? null);
+    }
+
     /**
      * @return array<string, array{string, int, list<string>}>
      */

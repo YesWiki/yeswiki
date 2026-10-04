@@ -3042,14 +3042,12 @@ Je kunt de beheerders verwittigen om hen te helpen deze site te onderhouden door
 
     'RSS_CHANGE_OF' => 'Wijziging van',
     'RSS_HISTORY' => 'geschiedenis',
-    'RSS_HIDDEN_CONTENT' => 'Verborgen inhoud',
     'RSS_ON_DATE' => 'op',
     'RSS_COMPARISON_OF' => 'Vergelijking van',
     'RSS_TO' => 'met',
     'RSS_ADDS' => 'Toevoegingen',
     'RSS_DELETIONS' => 'Verwijderingen',
     'RSS_NO_DIFF' => 'Geen verschillen',
-
 
     'FORM_BUILDER_ADD_FIELDS' => 'Veld toevoegen',
     'FORM_BUILDER_ADVANCED' => 'Geavanceerde instellingen',

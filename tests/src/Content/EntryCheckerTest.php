@@ -109,8 +109,8 @@ class EntryCheckerTest extends YesWikiTestCase
     }
 
     /**
-     * @param array<int, mixed>                        $fields
-     * @param array<string, array<string, mixed>>      $entries
+     * @param array<int, mixed>                   $fields
+     * @param array<string, array<string, mixed>> $entries
      */
     private function givenForm(array $fields, array $entries): void
     {
@@ -183,7 +183,7 @@ class EntryCheckerTest extends YesWikiTestCase
         $saved = new SavedEntry();
         $this->pageManager->method('save')->willReturnCallback(function ($tag, $newBody) use ($saved) {
             $saved->body = $newBody;
-            ++$saved->calls;
+            $saved->calls++;
 
             return 0;
         });
@@ -361,7 +361,7 @@ class EntryCheckerTest extends YesWikiTestCase
     public function testAnOverlongListIsNotOfferedAsAPicker(): void
     {
         $nodes = [];
-        for ($i = 0; $i <= 200; ++$i) {
+        for ($i = 0; $i <= 200; $i++) {
             $nodes[] = ['id' => "opt$i", 'label' => "Option $i", 'children' => []];
         }
         $this->useList($nodes);
@@ -680,6 +680,42 @@ class EntryCheckerTest extends YesWikiTestCase
         $this->assertSame(['unset' => true], $rows[0]['fix']);
     }
 
+    public function testDataUnderTheFullEnumNameIsMovedToTheFieldsShortName(): void
+    {
+        $body = ['tag' => 'FicheUne', 'form_id' => '1', 'checkboxListeCouleursbf_couleur' => 'rouge'];
+        $this->givenForm(
+            [new CheckboxListField($this->values([1 => 'ListeCouleurs', 6 => 'bf_couleur']), $this->services)],
+            ['FicheUne' => $body]
+        );
+        $saved = $this->captureSave($body);
+
+        $problems = $this->checker()->check('1')['problems'];
+        $this->assertArrayNotHasKey(EntryChecker::ORPHAN_FIELD, $problems);
+        $rows = $problems[EntryChecker::OLD_FIELD_NAME];
+        $this->assertCount(1, $rows);
+        $this->assertSame(['rename' => 'bf_couleur'], $rows[0]['fix']);
+
+        $result = $this->checker()->repair('1', [$rows[0]['key']]);
+
+        $this->assertSame(1, $result['repaired']);
+        $this->assertSame('rouge', $saved->body['bf_couleur']);
+        $this->assertArrayNotHasKey('checkboxListeCouleursbf_couleur', $saved->body);
+    }
+
+    public function testDataUnderTheShortEnumNameIsSpottedButNotMovedOverAValue(): void
+    {
+        $this->givenForm(
+            [new CheckboxListField($this->values([1 => 'ListeCouleurs', 6 => 'checkboxListeCouleursbf_couleur']), $this->services)],
+            ['FicheUne' => ['tag' => 'FicheUne', 'bf_couleur' => 'rouge', 'checkboxListeCouleursbf_couleur' => 'vert']]
+        );
+
+        $rows = $this->checker()->check('1')['problems'][EntryChecker::OLD_FIELD_NAME];
+
+        $this->assertCount(1, $rows);
+        $this->assertSame('bf_couleur', $rows[0]['propertyName']);
+        $this->assertNull($rows[0]['fix']);
+    }
+
     public function testRepairWritesOnlyTheSelectedProblems(): void
     {
         $body = [
@@ -796,7 +832,7 @@ class EntryCheckerTest extends YesWikiTestCase
         );
         $saves = 0;
         $this->pageManager->method('save')->willReturnCallback(function () use (&$saves) {
-            ++$saves;
+            $saves++;
 
             return 0;
         });

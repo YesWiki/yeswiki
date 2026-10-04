@@ -8,12 +8,11 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
+use YesWiki\Admin\Service\ArchiveFilename;
 use YesWiki\Admin\Service\ArchiveService;
 use YesWiki\Admin\Service\RemoteWikiArchive;
 use YesWiki\Files\Service\LocalFiles;
 use YesWiki\Files\Service\Storage;
-use YesWiki\Kernel\Service\ConfigurationFileProvider;
-use YesWiki\Kernel\Service\ConfigurationService;
 
 /** Fill this wiki with the contents of a remote one (first-class-binary 06). */
 class CloneCommand extends Command
@@ -23,7 +22,7 @@ class CloneCommand extends Command
         parent::__construct();
     }
 
-    /** Resolved rather than injected: `src/commands/console` builds commands with the container alone. */
+    /** LocalFiles from the container, which is all `src/commands/console` hands a command. */
     private function localFiles(): LocalFiles
     {
         return $this->services->get(LocalFiles::class);
@@ -78,13 +77,15 @@ class CloneCommand extends Command
         }
 
         $storage = $this->services->get(Storage::class);
-        $name = 'cloned-' . date('Y-m-d\TH-i-s') . '.zip';
+        $archives = $this->services->get(ArchiveService::class);
+        $name = ArchiveFilename::forNow('full', RemoteWikiArchive::baseUrlOf($url));
         $downloaded = rtrim(sys_get_temp_dir(), '/') . '/yeswiki-' . $name;
         $remote = new RemoteWikiArchive(static fn (string $message) => $io->text($message));
 
         try {
             $remote->fetchInto($url, $admin, $password, $downloaded);
-            $storage->writeFrom('private/backups/' . $name, $downloaded);
+            $this->assertRoomInBackups($storage, $this->localFiles()->size($downloaded));
+            $storage->writeFrom($archives->getPrivateFolder() . '/' . $name, $downloaded);
         } catch (\Throwable $th) {
             $io->error('Nothing was changed here: ' . $th->getMessage());
 
@@ -94,118 +95,35 @@ class CloneCommand extends Command
         }
 
         try {
-            $this->services->get(ArchiveService::class)->restoreArchive($name, true, true);
+            $archives->restoreArchive($name, true, true);
         } catch (\Throwable $th) {
             $io->error('The restore failed and this wiki was left as it was: ' . $th->getMessage());
 
             return Command::FAILURE;
         }
 
-        try {
-            $took = $this->takeRemoteSettings($storage, $name);
-            $io->text('Took ' . $took . ' setting(s) from the remote wiki, keeping this one\'s own address, database and prefix.');
-        } catch (\Throwable $th) {
-            $io->warning('The contents were restored, but the remote wiki\'s settings could not be read: ' . $th->getMessage());
-        }
-
         if (!$input->getOption('keep-archive')) {
-            $storage->delete('private/backups/' . $name);
+            $storage->delete($archives->getPrivateFolder() . '/' . $name);
         }
 
         $io->success('Cloned ' . RemoteWikiArchive::baseUrlOf($url) . ' into this wiki.');
-        $io->text('It keeps its own address, database and storage: ' . implode(', ', ArchiveService::localOnlyFiles()) . ' were not restored.');
+        $io->text('It keeps its own address, database and storage: ' . implode(', ', ArchiveService::localOnlyFiles()) . ' were not restored, and the settings ' . implode(', ', ArchiveService::localOnlyKeys()) . ' stayed as they were.');
 
         return Command::SUCCESS;
     }
 
     /**
-     * Copy the remote wiki's configuration over this one's, except what says where this wiki is.
-     *
-     * @return int how many settings came across
-     *
-     * @throws \Exception when the archive's configuration cannot be read
+     * @throws \Exception when the backups folder cannot take a copy of the download
      */
-    private function takeRemoteSettings(Storage $storage, string $name): int
+    private function assertRoomInBackups(Storage $storage, int $bytes): void
     {
-        $remote = [];
-        $storage->withLocalCopy('private/backups/' . $name, function (string $local) use (&$remote): void {
-            $zip = new \ZipArchive();
-            if ($zip->open($local) !== true) {
-                throw new \Exception('the archive could not be opened');
-            }
-
-            try {
-                $stated = $zip->getFromName(basename(ConfigurationFileProvider::getConfigFileFromEnv()));
-                if ($stated === false) {
-                    throw new \Exception('it holds no configuration file');
-                }
-                $remote = self::readConfig($stated);
-            } finally {
-                $zip->close();
-            }
-        });
-
-        $service = new ConfigurationService();
-        $configuration = $service->getConfiguration(ConfigurationFileProvider::getConfigFileFromEnv());
-        $configuration->load();
-
-        $before = \count($configuration);
-        if ($before === 0) {
-            throw new \Exception('this wiki\'s own configuration could not be read, so it was left alone');
+        $archives = $this->services->get(ArchiveService::class);
+        if ($storage->isRemote($archives->getPrivateFolder())) {
+            return;
         }
-
-        $local = [];
-        foreach ($configuration as $key => $value) {
-            if (is_string($key)) {
-                $local[$key] = $value;
-            }
-        }
-
-        $merged = ArchiveService::mergedSettings($local, $remote);
-        foreach ($merged as $key => $value) {
-            $configuration[$key] = $value;
-        }
-
-        if (\count($configuration) < $before) {
-            throw new \Exception('the merged configuration came out smaller than this wiki\'s own, so it was left alone');
-        }
-
-        if (!$service->write($configuration)) {
-            throw new \Exception('this wiki\'s configuration file could not be written');
-        }
-
-        return \count(array_diff_key($remote, array_flip(ArchiveService::localOnlyKeys())));
-    }
-
-    /**
-     * The configuration an archive holds, read the same way the wiki reads its own.
-     *
-     * @return array<string, mixed>
-     *
-     * @throws \Exception when it cannot be put somewhere to be read
-     */
-    private static function readConfig(string $stated): array
-    {
-        // Static, so LocalFiles is built here: it holds nothing and this reads a remote wiki's
-        // configuration before there is a wiki to ask about it.
-        $localFiles = new LocalFiles();
-        $file = $localFiles->temporaryFile('yeswiki-remote-config');
-
-        try {
-            $localFiles->write($file, $stated);
-            $configuration = (new ConfigurationService())->getConfiguration($file);
-            $configuration->load();
-
-            $read = [];
-            foreach ($configuration as $key => $value) {
-                if (is_string($key)) {
-                    $read[$key] = $value;
-                }
-            }
-
-            return $read;
-        } finally {
-            $localFiles->remove($file);
+        $free = $archives->freeSpaceForArchives();
+        if ($free !== null && $free < $bytes) {
+            throw new \Exception('Not enough free space in ' . $archives->getPrivateFolder() . ' for the downloaded backup' . ArchiveService::spaceDetail($bytes, $free) . '.');
         }
     }
 

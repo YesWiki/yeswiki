@@ -50,7 +50,7 @@ class ConditionsChecker
                 'cleared' => $this->isCleared($stack),
             ];
             if ($field instanceof ConditionsCheckingField) {
-                ++$depth;
+                $depth++;
                 $stack[] = [
                     'depth' => $depth,
                     'holds' => $field->evaluate($entry, $fieldsByPropertyName),
@@ -97,7 +97,7 @@ class ConditionsChecker
     public function clearHiddenValues(array $form, array $entry): array
     {
         $prepared = $this->preparedFields($form);
-        for ($pass = 0; $pass < self::MAX_CASCADE_PASSES; ++$pass) {
+        for ($pass = 0; $pass < self::MAX_CASCADE_PASSES; $pass++) {
             $changed = false;
             foreach ($this->states($form, $entry) as $index => $state) {
                 $field = $prepared[$index] ?? null;

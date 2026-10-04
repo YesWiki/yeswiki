@@ -350,7 +350,7 @@ class YesWikiToYesWikiImporter extends Importer
     {
         if ($this->localFormExists) {
             if ($this->config['syncMode'] === 'source_of_truth') {
-                $this->formManager->update($this->buildLocalFormData());
+                $this->formManager->update($this->checkedLocalFormData());
                 echo 'Le formulaire local a été synchronisé (miroir) avec le formulaire distant.' . "\n";
             } else {
                 echo 'Le formulaire local existe déjà, aucune modification (mode allow_local).' . "\n";
@@ -358,7 +358,7 @@ class YesWikiToYesWikiImporter extends Importer
 
             return;
         }
-        $this->formManager->create($this->buildLocalFormData());
+        $this->formManager->create($this->checkedLocalFormData());
         echo 'Le formulaire local a été créé à partir du formulaire distant.' . "\n";
     }
 
@@ -615,6 +615,22 @@ class YesWikiToYesWikiImporter extends Importer
     }
 
     /**
+     * The local copy of the remote form, refused when a field name would not pass the form editor (GHSA-hgxv-w4r8-8877).
+     *
+     * @return array<string, mixed>
+     */
+    private function checkedLocalFormData(): array
+    {
+        $formData = $this->buildLocalFormData();
+        $invalidNames = $this->formManager->invalidPropertyNames($this->formManager->getFromRawData($formData));
+        if (!empty($invalidNames)) {
+            throw new \Exception(_t('BAZ_FORM_INVALID_FIELD_NAMES', ['names' => htmlspecialchars(implode(', ', $invalidNames))]));
+        }
+
+        return $formData;
+    }
+
+    /**
      * The remote form, in the shape FormManager::create()/update() take.
      *
      * @return array<string, mixed>
@@ -679,9 +695,6 @@ class YesWikiToYesWikiImporter extends Importer
 
     /**
      * The fields writing $newValues would actually change in the local entry (empty: nothing to do).
-     *
-     * @param array<string, mixed>|null $localEntry
-     * @param array<string, mixed>      $newValues
      *
      * @return list<string>
      */

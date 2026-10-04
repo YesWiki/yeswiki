@@ -28,9 +28,46 @@ class DumpRewriter
      */
     public static function tables(string $sql): array
     {
-        preg_match_all('/CREATE\s+TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?[`"]([^`"]+)[`"]/i', $sql, $matches);
+        preg_match_all('/CREATE\s+(?:VIRTUAL\s+)?TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?[`"]([^`"]+)[`"]/i', $sql, $matches);
 
         return array_values(array_unique($matches[1]));
+    }
+
+    /**
+     * Every index and trigger the dump creates under a name of its own, which SQLite holds for the whole file.
+     *
+     * @return list<string>
+     */
+    public static function objects(string $sql): array
+    {
+        preg_match_all('/CREATE\s+(?:UNIQUE\s+)?(?:INDEX|TRIGGER)\s+(?:IF\s+NOT\s+EXISTS\s+)?[`"]([^`"]+)[`"]/i', $sql, $matches);
+
+        return array_values(array_unique($matches[1]));
+    }
+
+    /**
+     * Every constraint the dump names, whose name PostgreSQL also gives the index behind a key, schema-wide.
+     *
+     * @return list<string>
+     */
+    public static function constraints(string $sql): array
+    {
+        preg_match_all('/\bCONSTRAINT\s+"([^"]+)"/i', $sql, $matches);
+
+        return array_values(array_unique($matches[1]));
+    }
+
+    /** A CREATE INDEX with its index and table names quoted and the schema dropped, as PostgreSQL's `indexdef` does not write them. */
+    public static function quoteIndexNames(string $statement): string
+    {
+        $identifier = '(?:"(?:[^"]|"")+"|[A-Za-z_][A-Za-z0-9_$]*)';
+        $quote = static fn (string $name): string => $name[0] === '"' ? $name : '"' . $name . '"';
+
+        return (string)preg_replace_callback(
+            '/^(\s*CREATE\s+(?:UNIQUE\s+)?INDEX\s+(?:IF\s+NOT\s+EXISTS\s+)?)(' . $identifier . ')(\s+ON\s+(?:ONLY\s+)?)(?:' . $identifier . '\.)?(' . $identifier . ')(?=[\s(])/i',
+            static fn (array $found): string => $found[1] . $quote($found[2]) . $found[3] . $quote($found[4]),
+            $statement
+        );
     }
 
     public static function detectPrefix(string $sql): string
@@ -68,6 +105,86 @@ class DumpRewriter
         }
 
         return '';
+    }
+
+    /**
+     * The prefixes of other wikis in the same database under a longer prefix: several core tables under a name of their own.
+     *
+     * @param list<string> $tables
+     *
+     * @return list<string>
+     */
+    public static function otherWikiPrefixes(array $tables, string $prefix): array
+    {
+        $counts = [];
+        foreach ($tables as $table) {
+            if ($prefix !== '' && !str_starts_with($table, $prefix)) {
+                continue;
+            }
+            foreach (self::CORE_TABLES as $core) {
+                if (\strlen($table) > \strlen($prefix) + \strlen($core) && str_ends_with($table, $core)) {
+                    $candidate = substr($table, 0, -\strlen($core));
+                    $counts[$candidate] = ($counts[$candidate] ?? 0) + 1;
+                }
+            }
+        }
+
+        $others = [];
+        foreach ($counts as $candidate => $count) {
+            if ($candidate !== $prefix && $count >= self::TABLES_THAT_MAKE_A_WIKI) {
+                $others[] = (string)$candidate;
+            }
+        }
+
+        return $others;
+    }
+
+    /**
+     * The tables of this wiki alone, among those of the database or of a dump.
+     *
+     * @param list<string> $tables
+     *
+     * @return list<string>
+     */
+    public static function ownTables(array $tables, string $prefix): array
+    {
+        $others = self::otherWikiPrefixes($tables, $prefix);
+        $own = [];
+        foreach ($tables as $table) {
+            if ($prefix !== '' && !str_starts_with($table, $prefix)) {
+                continue;
+            }
+            foreach ($others as $other) {
+                if (str_starts_with($table, $other)) {
+                    continue 2;
+                }
+            }
+            $own[] = $table;
+        }
+
+        return $own;
+    }
+
+    /**
+     * Whether a statement is about one of these tables, judged on the identifiers it names before any string literal.
+     *
+     * @param array<string, true> $tables
+     */
+    public static function concerns(string $statement, array $tables): bool
+    {
+        if ($tables === []) {
+            return false;
+        }
+        $quote = strpos($statement, "'");
+        $head = $quote === false ? $statement : substr($statement, 0, $quote);
+        preg_match_all('/[`"]([^`"]+)[`"]/', $head, $matches);
+        foreach ($matches[1] as $identifier) {
+            if (isset($tables[$identifier])) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**

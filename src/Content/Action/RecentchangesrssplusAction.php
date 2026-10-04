@@ -58,7 +58,13 @@ class RecentchangesrssplusAction extends YesWikiAction implements RegisteredActi
         $dbService = $this->getService(DbService::class);
         $userCol = $dbService->quoteIdentifier('user');
 
-        if ($pages = $this->getService(DbService::class)->loadAll("select tag, time, $userCol, owner, body from " . $this->getService(RuntimeConfig::class)['table_prefix'] . "pages where latest = 'Y' and parent = '' order by time desc limit " . $max)) {
+        $readable = $this->getService(AclService::class)->readableFilter();
+        if ($pages = $dbService->loadAll(
+            "select tag, time, $userCol, owner, body from " . $this->getService(RuntimeConfig::class)['table_prefix'] . "pages where latest = 'Y' and parent = ''"
+            . ($readable->isEmpty() ? '' : ' and ' . $readable->sql)
+            . ' order by time desc limit ' . $max,
+            $readable->params
+        )) {
             if (!($link = $this->getService(PerformableArguments::class)->get('link'))) {
                 $link = $this->getService(RuntimeConfig::class)['root_page'];
             }
@@ -73,17 +79,14 @@ class RecentchangesrssplusAction extends YesWikiAction implements RegisteredActi
 
             $items = '';
             foreach ($pages as $i => $page) {
-                $readAcl = $this->getService(AclService::class)->hasAccess('read', $page['tag']);
-                $tag = $readAcl ? $page['tag'] : substr($page['tag'], 0, 3) . '___';
+                $tag = $page['tag'];
 
                 list($day, $time) = explode(' ', $page['time']);
                 $day = preg_replace('/-/', ' ', $day);
                 list($hh, $mm, $ss) = explode(':', $time);
 
                 $markup = mb_substr(PageBody::content(PageBody::decode($page['body'])), 0, 500);
-                $body = $readAcl
-                    ? htmlspecialchars($this->getService(MarkdownFormatterService::class)->format($markup), ENT_COMPAT, YW_CHARSET)
-                    : '<br><div><i>' . _t('RSS_HIDDEN_CONTENT') . '</i></div>';
+                $body = htmlspecialchars($this->getService(MarkdownFormatterService::class)->format($markup), ENT_COMPAT, YW_CHARSET);
 
                 $items .= "<item>\n";
                 $items .= '<title>' . $tag . ' --- ' . _t('BY') . ' ' . $page['user'] . ' le ' . $day . ' - ' . $hh . ':' . $mm . "</title>\n";

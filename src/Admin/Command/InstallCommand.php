@@ -69,7 +69,9 @@ class InstallCommand extends Command implements RunsOutsideAnInstance
                 "being asked anything, which is what a provisioning script wants.\n\n" .
                 "  ./yeswicli core:install --driver=sqlite --admin-password=… --no-interaction\n\n" .
                 "With --from-backup it restores private/backups/content.sql instead of creating\n" .
-                "the default pages, so a wiki can be moved without a browser.\n"
+                "the default pages, so a wiki can be moved without a browser.\n" .
+                "With --from-archive it restores an archive of private/backups instead, its files\n" .
+                "and settings with it unless --without-files is given.\n"
             );
 
         foreach (self::CONFIG_OPTIONS as $option => $key) {
@@ -86,6 +88,10 @@ class InstallCommand extends Command implements RunsOutsideAnInstance
             ->addOption('admin-email', null, InputOption::VALUE_REQUIRED, 'Email of the first account')
             ->addOption('admin-password', null, InputOption::VALUE_REQUIRED, 'Password of the first account')
             ->addOption('from-backup', null, InputOption::VALUE_NONE, 'Restore ' . InstallationService::BACKUP_SQL_FILE . ' instead of installing the default content')
+            ->addOption('from-archive', null, InputOption::VALUE_REQUIRED, 'Restore this archive of ' . InstallationService::ARCHIVES_FOLDER . ' instead of installing the default content')
+            ->addOption('without-files', null, InputOption::VALUE_NONE, 'With --from-archive, restore the database alone')
+            ->addOption('keep-urls', null, InputOption::VALUE_NONE, 'With --from-archive, leave the links it stores pointing at the wiki it was taken from')
+            ->addOption('replace-existing', null, InputOption::VALUE_NONE, 'With --from-archive, replace the tables already under this prefix')
             ->addOption('allow-robots', null, InputOption::VALUE_NONE, 'Let search engines index this wiki')
             ->addOption('allow-raw-html', null, InputOption::VALUE_NONE, 'Allow raw HTML in page content')
             ->addOption('db-admin-user', null, InputOption::VALUE_REQUIRED, 'Create this wiki\'s database and account as this administrator (or DB_ADMIN_USER)')
@@ -291,6 +297,17 @@ class InstallCommand extends Command implements RunsOutsideAnInstance
                 return Command::FAILURE;
             }
             $service->withContentFrom(InstallationService::BACKUP_SQL_FILE);
+        }
+
+        $archive = $input->getOption('from-archive');
+        if (is_string($archive) && $archive !== '') {
+            if (!InstallationService::hasArchive($archive)) {
+                $io->error('No archive at ' . YESWIKI_INSTANCE_DIR . '/' . InstallationService::archiveChoice($archive) . '.');
+
+                return Command::FAILURE;
+            }
+            $service->withContentFrom(InstallationService::archiveChoice($archive))
+                ->withRestoreOptions(!$input->getOption('without-files'), !$input->getOption('keep-urls'), (bool)$input->getOption('replace-existing'));
         }
 
         try {

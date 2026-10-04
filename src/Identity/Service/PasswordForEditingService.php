@@ -4,6 +4,7 @@ namespace YesWiki\Identity\Service;
 
 use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use YesWiki\Kernel\Service\CurrentRequest;
 use YesWiki\Kernel\Service\WikiUrls;
 use YesWiki\Render\Service\TemplateEngine;
 
@@ -46,7 +47,7 @@ class PasswordForEditingService
     /** check if password for editing is correct. */
     private function hasRightPasswordForExisting(): bool
     {
-        $val = $this->container->get(\YesWiki\Kernel\Service\CurrentRequest::class)->get()->request->get('password_for_editing');
+        $val = $this->container->get(CurrentRequest::class)->get()->request->get('password_for_editing');
 
         return isset($val) && $val == $this->params->get('password_for_editing');
     }
@@ -57,11 +58,11 @@ class PasswordForEditingService
         return $this->templateEngine->render(
             '@core/wrong-password-for-editing.twig',
             [
-                'wrongPassword' => $this->container->get(\YesWiki\Kernel\Service\CurrentRequest::class)->get()->request->has('password_for_editing'),
+                'wrongPassword' => $this->container->get(CurrentRequest::class)->get()->request->has('password_for_editing'),
                 'passwordForEditingMessage' => ($this->params->has('password_for_editing_message')
                     && !empty($this->params->get('password_for_editing_message')))
                     ? $this->params->get('password_for_editing_message') : null,
-                'time' => $this->container->get(\YesWiki\Kernel\Service\CurrentRequest::class)->get()->get('time'),
+                'time' => CurrentRequest::input($this->container->get(CurrentRequest::class)->get(), 'time'),
                 'handler' => WikiUrls::iframeSuffixFor() ? 'editiframe' : 'edit',
             ]
         );

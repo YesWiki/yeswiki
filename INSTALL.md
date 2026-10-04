@@ -39,19 +39,19 @@ zip
 **A database driver** — at least one, matching the database you are pointing the wiki at. The
 installer only offers a driver whose extension is loaded:
 
-| extension | database |
-| --- | --- |
-| `pdo_mysql` | MySQL / MariaDB |
-| `pdo_pgsql` | PostgreSQL |
+| extension    | database                                            |
+| ------------ | --------------------------------------------------- |
+| `pdo_mysql`  | MySQL / MariaDB                                     |
+| `pdo_pgsql`  | PostgreSQL                                          |
 | `pdo_sqlite` | SQLite — no server to set up, good for a small wiki |
 
 **Optional** — core checks for each at run time and does without, at a cost:
 
-| extension | what it buys you |
-| --- | --- |
-| `imap` | the IMAP importer can read a mailbox (with `php-imap/php-imap`) |
-| `intl` | search folds accents across more scripts; without it, an `iconv` transliteration covers fewer |
-| `zend-opcache` | saving a setting takes effect at once instead of when the opcode cache next revalidates |
+| extension      | what it buys you                                                                              |
+| -------------- | --------------------------------------------------------------------------------------------- |
+| `imap`         | the IMAP importer can read a mailbox (with `php-imap/php-imap`)                               |
+| `intl`         | search folds accents across more scripts; without it, an `iconv` transliteration covers fewer |
+| `zend-opcache` | saving a setting takes effect at once instead of when the opcode cache next revalidates       |
 
 Most of the required list is compiled into any distribution's PHP. The ones a shared host
 sometimes leaves out are `gd`, `zip` and `intl`. To check a server before installing:

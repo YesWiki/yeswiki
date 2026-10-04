@@ -27,6 +27,7 @@ class EntryChecker
     public const INVALID_DATE = 'invalid_date';
     public const INVALID_URL = 'invalid_url';
     public const ORPHAN_FIELD = 'orphan_field';
+    public const OLD_FIELD_NAME = 'old_field_name';
 
     public const PROBLEMS = [
         self::REQUIRED_EMPTY,
@@ -38,6 +39,7 @@ class EntryChecker
         self::INVALID_EMAIL,
         self::INVALID_DATE,
         self::INVALID_URL,
+        self::OLD_FIELD_NAME,
         self::ORPHAN_FIELD,
     ];
 
@@ -116,6 +118,7 @@ class EntryChecker
         foreach ($fields as $field) {
             $knownProperties[$field->getPropertyName()] = true;
         }
+        $renamedProperties = $this->renamedEnumProperties($fields, $knownProperties);
 
         $entries = $this->entryManager->search(['formsIds' => [$formId]]);
         $this->probedUrls = $this->urlReachability->probe($this->remoteFileValues($fields, $entries));
@@ -133,7 +136,7 @@ class EntryChecker
                     $problems[$problem['code']][] = $problem;
                 }
             }
-            foreach ($this->checkOrphans($entry, $knownProperties) as $problem) {
+            foreach ($this->checkOrphans($entry, $knownProperties, $renamedProperties) as $problem) {
                 $problems[$problem['code']][] = $problem;
             }
         }
@@ -199,11 +202,10 @@ class EntryChecker
 
     /**
      * @param array<string, mixed> $row
-     * @param mixed                $picked
      *
      * @return array<string, mixed>|null
      */
-    private function pickedFix(array $row, $picked): ?array
+    private function pickedFix(array $row, mixed $picked): ?array
     {
         if (!empty($row['freeText'])) {
             $text = is_scalar($picked) ? trim(strval($picked)) : '';
@@ -243,7 +245,12 @@ class EntryChecker
         }
 
         foreach ($rows as $row) {
-            if (array_key_exists('unset', $row['fix'])) {
+            if (array_key_exists('rename', $row['fix'])) {
+                if (array_key_exists($row['propertyName'], $data)) {
+                    $data[$row['fix']['rename']] = $data[$row['propertyName']];
+                    unset($data[$row['propertyName']]);
+                }
+            } elseif (array_key_exists('unset', $row['fix'])) {
                 unset($data[$row['propertyName']]);
             } else {
                 $data[$row['propertyName']] = $row['fix']['set'];
@@ -311,11 +318,9 @@ class EntryChecker
     }
 
     /**
-     * @param mixed $source
-     *
      * @return array<string, string>
      */
-    private function uncheckedField(EnumField $field, $source): array
+    private function uncheckedField(EnumField $field, mixed $source): array
     {
         return [
             'propertyName' => (string)$field->getPropertyName(),
@@ -398,11 +403,10 @@ class EntryChecker
 
     /**
      * @param array<string, mixed> $entry
-     * @param mixed                $value
      *
      * @return list<array<string, mixed>>
      */
-    private function checkEmail(EmailField $field, array $entry, $value): array
+    private function checkEmail(EmailField $field, array $entry, mixed $value): array
     {
         if (!is_string($value) || $this->isEmailAddress($value)) {
             return [];
@@ -421,11 +425,10 @@ class EntryChecker
 
     /**
      * @param array<string, mixed> $entry
-     * @param mixed                $value
      *
      * @return list<array<string, mixed>>
      */
-    private function checkDate(DateField $field, array $entry, $value): array
+    private function checkDate(DateField $field, array $entry, mixed $value): array
     {
         if (!is_string($value) || strtotime($value) !== false) {
             return [];
@@ -436,11 +439,10 @@ class EntryChecker
 
     /**
      * @param array<string, mixed> $entry
-     * @param mixed                $value
      *
      * @return list<array<string, mixed>>
      */
-    private function checkUrl(LinkField $field, array $entry, $value): array
+    private function checkUrl(LinkField $field, array $entry, mixed $value): array
     {
         if (!is_string($value) || StringUtilService::isWebAddress($value)) {
             return [];
@@ -471,7 +473,7 @@ class EntryChecker
     }
 
     /**
-     * @param array<int|string, BazarField>    $fields
+     * @param array<int|string, BazarField>           $fields
      * @param array<int|string, array<string, mixed>> $entries
      *
      * @return list<string>
@@ -500,11 +502,10 @@ class EntryChecker
 
     /**
      * @param array<string, mixed> $entry
-     * @param mixed                $value
      *
      * @return list<array<string, mixed>>
      */
-    private function checkFile(FileField $field, array $entry, $value): array
+    private function checkFile(FileField $field, array $entry, mixed $value): array
     {
         if (!is_string($value)) {
             return [];
@@ -571,11 +572,10 @@ class EntryChecker
 
     /**
      * @param array<string, mixed> $entry
-     * @param mixed                $value
      *
      * @return list<array<string, mixed>>
      */
-    private function checkOptions(EnumField $field, array $entry, $value): array
+    private function checkOptions(EnumField $field, array $entry, mixed $value): array
     {
         if (!$this->hasCheckableOptions($field)) {
             return [];
@@ -603,11 +603,10 @@ class EntryChecker
 
     /**
      * @param array<string, mixed> $entry
-     * @param mixed                $value
      *
      * @return list<array<string, mixed>>
      */
-    private function checkEntryReferences(EnumField $field, array $entry, $value): array
+    private function checkEntryReferences(EnumField $field, array $entry, mixed $value): array
     {
         if (!is_string($value)) {
             return [];
@@ -632,12 +631,42 @@ class EntryChecker
     }
 
     /**
-     * @param array<string, mixed> $entry
-     * @param array<string, bool>  $knownProperties
+     * Maps the other name an enum field's data may sit under -- the short name (bf_type) when the field now carries the full one (checkboxListeTypebf_type), or the full one when it carries the short one -- to the field's current name.
+     *
+     * @param array<int|string, BazarField> $fields
+     * @param array<string, bool>           $knownProperties
+     *
+     * @return array<string, string>
+     */
+    private function renamedEnumProperties(array $fields, array $knownProperties): array
+    {
+        $renamed = [];
+        foreach ($fields as $field) {
+            if (!$field instanceof EnumField) {
+                continue;
+            }
+            $current = (string)$field->getPropertyName();
+            $prefix = $field->getType() . $field->getLinkedObjectName();
+            if ($prefix === '' || $current === '') {
+                continue;
+            }
+            $former = str_starts_with($current, $prefix) ? substr($current, strlen($prefix)) : $prefix . $current;
+            if ($former !== '' && !isset($knownProperties[$former])) {
+                $renamed[$former] = $current;
+            }
+        }
+
+        return $renamed;
+    }
+
+    /**
+     * @param array<string, mixed>  $entry
+     * @param array<string, bool>   $knownProperties
+     * @param array<string, string> $renamedProperties
      *
      * @return list<array<string, mixed>>
      */
-    private function checkOrphans(array $entry, array $knownProperties): array
+    private function checkOrphans(array $entry, array $knownProperties, array $renamedProperties = []): array
     {
         $problems = [];
         foreach ($entry as $key => $value) {
@@ -645,6 +674,27 @@ class EntryChecker
             if (isset($knownProperties[$key])
                 || in_array($key, self::RESERVED_KEYS, true)
                 || $this->isDerivedKey($key, $knownProperties)) {
+                continue;
+            }
+            if (isset($renamedProperties[$key])) {
+                $currentName = $renamedProperties[$key];
+                $problems[] = [
+                    'code' => self::OLD_FIELD_NAME,
+                    'key' => self::OLD_FIELD_NAME . '::' . ($entry['tag'] ?? '') . '::' . $key,
+                    'entryId' => $entry['tag'] ?? '',
+                    'entryTitle' => $entry['title'] ?? ($entry['tag'] ?? ''),
+                    'propertyName' => $key,
+                    'fieldLabel' => $currentName,
+                    'detail' => $this->stringify($value),
+                    'fix' => in_array($entry[$currentName] ?? null, [null, ''], true) ? ['rename' => $currentName] : null,
+                    'fixLabel' => 'BAZ_CHECKCONTENT_FIX_MANUAL',
+                    'options' => [],
+                    'multiple' => false,
+                    'freeText' => '',
+                    'suggested' => '',
+                    'forced' => false,
+                ];
+
                 continue;
             }
             $problems[] = [
@@ -705,13 +755,12 @@ class EntryChecker
     }
 
     /**
-     * @param array<string, mixed> $entry
-     * @param mixed                $detail
+     * @param array<string, mixed>      $entry
      * @param array<string, mixed>|null $fix
      *
      * @return array<string, mixed>
      */
-    private function problem(string $code, array $entry, BazarField $field, $detail, ?array $fix): array
+    private function problem(string $code, array $entry, BazarField $field, mixed $detail, ?array $fix): array
     {
         $entryId = $entry['tag'] ?? '';
 
@@ -743,8 +792,7 @@ class EntryChecker
         return $this->entryTags;
     }
 
-    /** @param mixed $value */
-    private function stringify($value): string
+    private function stringify(mixed $value): string
     {
         if (is_string($value)) {
             return $value;

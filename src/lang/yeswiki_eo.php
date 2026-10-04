@@ -553,7 +553,6 @@ Vi povas averti la administrantojn por helpi ilin prizorgi tiun ĉi retejon dona
     'EDIT_CONFIG_HINT_HERSE_PASSWORD' => 'Pasvorto por la krado',
     'RSS_CHANGE_OF' => 'Modifo de',
     'RSS_HISTORY' => 'historio',
-    'RSS_HIDDEN_CONTENT' => 'Kaŝita enhavo',
     'RSS_ON_DATE' => 'la',
     'RSS_COMPARISON_OF' => 'Komparo de',
     'RSS_TO' => 'al',

@@ -3042,14 +3042,12 @@ Url: {{ baseUrl }}
 
     'RSS_CHANGE_OF' => 'இதன் மாற்றம்',
     'RSS_HISTORY' => 'வரலாறு',
-    'RSS_HIDDEN_CONTENT' => 'மறைக்கப்பட்ட உள்ளடக்கம்',
     'RSS_ON_DATE' => 'அன்று',
     'RSS_COMPARISON_OF' => 'இதன் ஒப்பீடு',
     'RSS_TO' => 'வரை',
     'RSS_ADDS' => 'சேர்க்கைகள்',
     'RSS_DELETIONS' => 'நீக்கங்கள்',
     'RSS_NO_DIFF' => 'வேறுபாடுகள் இல்லை',
-
 
     'FORM_BUILDER_ADD_FIELDS' => 'ஒரு புலத்தைச் சேர்க்கவும்',
     'FORM_BUILDER_ADVANCED' => 'மேம்பட்ட அமைப்புகள்',

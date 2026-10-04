@@ -103,6 +103,20 @@
       </div>
     </div>
 
+    <div class="yw-form-group">
+      <div class="controls">
+        <label>
+          <input type="checkbox" class="form-check-input"
+            id="bazar-import-option-keep-remote-files-as-url" name="bazar-import-option-keep-remote-files-as-url"
+            value="1" {% if optionKeepRemoteFilesAsUrlChecked %}checked{% endif %} />
+          <span>{{ _t('BAZ_IMPORT_KEEP_REMOTE_FILES_AS_URL') }}</span>
+          <span class="tooltip_aide" tabindex="0" role="img"
+            aria-label="{{ _t('BAZ_IMPORT_KEEP_REMOTE_FILES_AS_URL_HINT') }}"
+            data-yw-tooltip="{{ _t('BAZ_IMPORT_KEEP_REMOTE_FILES_AS_URL_HINT') }}">{{ icon('help-circle') }}</span>
+        </label>
+      </div>
+    </div>
+
     <div class="yw-form-group import-file">
       <div class="controls">
         <input name="submit_file" type="submit" value="{{ _t('BAZ_IMPORTER_CE_FICHIER') }}" class="yw-btn yw-btn--primary" />

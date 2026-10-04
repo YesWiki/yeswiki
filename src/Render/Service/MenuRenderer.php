@@ -52,7 +52,7 @@ class MenuRenderer
      * The Layout screen previews chrome that has not been saved yet, so there is no row to read it
      * back from -- the entries being typed are what it has (ticket 30's preview, ticket 64's menus).
      *
-     * @param list<MenuNode>                                                                                                                         $nodes
+     * @param list<MenuNode>                                                                                                                   $nodes
      * @param array{showicons?: bool, showlabels?: bool, showdropdown?: bool, class?: string, data?: array<string, string>, appended?: string} $options
      */
     public function renderNodes(array $nodes, string $placement = self::NAV, array $options = []): string

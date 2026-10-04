@@ -11,7 +11,7 @@ use YesWiki\Content\Exception\EntryValidationException;
 use YesWiki\Content\Exception\TagAlreadyUsedException;
 use YesWiki\Content\Field\BazarField;
 use YesWiki\Content\Field\ConditionsCheckingField;
-use YesWiki\Content\Field\LabelField;
+use YesWiki\Content\Service\ConditionsChecker;
 use YesWiki\Content\Service\ContentCreator;
 use YesWiki\Content\Service\ContentTypeResolver;
 use YesWiki\Content\Service\EntryManager;
@@ -188,26 +188,10 @@ class EntryController extends YesWikiController
 
             if (is_null($renderedEntry)) {
                 if (!empty($pLocalForm)) {
-                    $fieldsByPropertyName = [];
-                    foreach ($pLocalForm['prepared'] as $field) {
-                        if ($field instanceof BazarField && !empty($field->getPropertyName())) {
-                            $fieldsByPropertyName[$field->getPropertyName()] = $field;
-                        }
-                    }
-                    $conditionsStack = [];
-                    foreach ($pLocalForm['prepared'] as $field) {
+                    $states = $this->getService(ConditionsChecker::class)->states($pLocalForm, $entry);
+                    foreach (array_values($pLocalForm['prepared']) as $index => $field) {
                         if ($field instanceof BazarField) {
-                            if ($field instanceof ConditionsCheckingField) {
-                                $conditionsStack[] = $field->evaluate($entry, $fieldsByPropertyName);
-
-                                continue;
-                            }
-                            if ($field instanceof LabelField && !empty($conditionsStack) && $field->isConditionsCheckingClosingTag()) {
-                                array_pop($conditionsStack);
-
-                                continue;
-                            }
-                            if (in_array(false, $conditionsStack, true)) {
+                            if ($field instanceof ConditionsCheckingField || !($states[$index]['visible'] ?? true)) {
                                 continue;
                             }
 
@@ -348,12 +332,13 @@ class EntryController extends YesWikiController
                     'type' => 'warning',
                     'message' => $e->getMessage(),
                 ]);
+                $refusedData = $post->all();
             }
         } else {
             $error = $results['error'];
         }
 
-        $renderedInputs = $this->getRenderedInputs($form);
+        $renderedInputs = $this->getRenderedInputs($form, $refusedData ?? null);
 
         return $this->render('@core/entries/form.twig', [
             'form' => $form,

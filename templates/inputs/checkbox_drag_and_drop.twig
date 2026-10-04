@@ -24,7 +24,7 @@
 		<ul class="list-entries-to-export list-group group-{{ field.propertyName }}" data-group="{{ field.propertyName }}">
 		{% block list_options %}
 			{% for item_id, item in options %}
-				{% if item not in selectedOptionsId %}
+				{% if item_id not in selectedOptionsId %}
 					{% set selected = false %}
 					{% block li_item %}
 					<li class="list-group-item">						
@@ -39,7 +39,9 @@
 							{%~ endblock ~%}
 						</div>
 						<input type="checkbox" id="{{ field.propertyName }}_{{ item_id }}" value="1" name="{{ field.propertyName  }}[{{ item_id }}]" class="element_checkbox hide"{{ selected ? ' checked' }}><span style="display:none;"></span>
-						<span class="list-item-text">{{ item|striptags }}</span>
+						{% set details = optionsDetails[item_id] ?? null %}
+						{% if details and details.image %}<img class="list-item-thumbnail" src="{{ details.image }}" alt="" loading="lazy" width="32" height="32">{% endif %}
+						<span class="list-item-text">{{ item|striptags }}{% if details and details.description %}<small class="list-item-excerpt">{{ details.description }}</small>{% endif %}</span>
 						<a class="btn btn-xs btn-success select-page-item{{ selected ? ' hide ' }}" title="{{ _t('BAZ_DRAG_n_DROP_CHECKBOX_SELECT_ITEM') ~ " " ~ item|e ~ " " ~ _t('BAZ_DRAG_n_DROP_CHECKBOX_FOR_THE_LIST') }}" href="#">
 							<svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#plus"/></svg>
 						</a>

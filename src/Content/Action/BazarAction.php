@@ -15,6 +15,7 @@ use YesWiki\Kernel\Component\ProvidesComponents;
 use YesWiki\Kernel\Component\Setting;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\AssetRegistry;
+use YesWiki\Kernel\Service\CurrentRequest;
 use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\Redirector;
 use YesWiki\Kernel\Service\UrlFormatter;
@@ -60,6 +61,7 @@ class BazarAction extends YesWikiAction implements RegisteredAction, ProvidesCom
 
     public const ACTION_SEARCH = 'recherche';
     public const ACTION_ENTRY_VIEW = 'voir_fiche';
+    public const SEARCH_PAGINATION = 50;
     public const ACTION_ENTRY_CREATE = 'saisir_fiche';
     public const ACTION_ENTRY_EDIT = 'modif_fiche';
     public const ACTION_ENTRY_DELETE = 'supprimer';
@@ -102,8 +104,8 @@ class BazarAction extends YesWikiAction implements RegisteredAction, ProvidesCom
         }
 
         $req = $this->getRequest();
-        $reqIdTypeAnnonce = $req->get('form_id');
-        $reqId = $req->get('id');
+        $reqIdTypeAnnonce = CurrentRequest::input($req, 'form_id');
+        $reqId = CurrentRequest::input($req, 'id');
         $vIDs = (isset($reqIdTypeAnnonce) && trim($reqIdTypeAnnonce) != ''
                 ? $reqIdTypeAnnonce
                 : (isset($reqId) && trim($reqId) != ''
@@ -179,15 +181,15 @@ class BazarAction extends YesWikiAction implements RegisteredAction, ProvidesCom
                 }
                 switch ($action) {
                     case self::ACTION_ENTRY_CREATE:
-                        return $entryController->create($req->get('form_id') ?? $req->get('id') ?? $this->arguments['id']['locals'][0], $this->arguments['redirecturl']);
+                        return $entryController->create(CurrentRequest::input($req, 'form_id') ?? CurrentRequest::input($req, 'id') ?? $this->arguments['id']['locals'][0], $this->arguments['redirecturl']);
                     case self::ACTION_ENTRY_EDIT:
-                        return $entryController->update($req->get('tag'));
+                        return $entryController->update(CurrentRequest::input($req, 'tag'));
                     case self::ACTION_ENTRY_DELETE:
-                        return (string)$entryController->delete($req->get('tag'), true);
+                        return (string)$entryController->delete(CurrentRequest::input($req, 'tag'), true);
                     case self::ACTION_PUBLIER:
-                        return $entryController->publish($req->get('tag'), true);
+                        return $entryController->publish(CurrentRequest::input($req, 'tag'), true);
                     case self::ACTION_PAS_PUBLIER:
-                        return $entryController->publish($req->get('tag'), false);
+                        return $entryController->publish(CurrentRequest::input($req, 'tag'), false);
                     case self::ACTION_CHOOSE_FORM:
                         return $entryController->selectForm();
                     default:
@@ -307,7 +309,7 @@ class BazarAction extends YesWikiAction implements RegisteredAction, ProvidesCom
             default:
                 switch ($action) {
                     case self::ACTION_ENTRY_VIEW:
-                        return $entryController->view($req->get('tag'), $req->get('time', ''));
+                        return $entryController->view(CurrentRequest::input($req, 'tag'), CurrentRequest::input($req, 'time', ''));
                     case self::ACTION_SEARCH:
                     default:
                         $formScreen = $this->formScreenFor($view, $action, $req);
@@ -316,7 +318,11 @@ class BazarAction extends YesWikiAction implements RegisteredAction, ProvidesCom
                         }
                         $this->arguments['search'] = true;
 
-                        return $this->callAction('entrylist', array_merge($this->arguments, ['id' => $this->arguments['id']['locals']]));
+                        return $this->callAction('entrylist', array_merge(
+                            ['pagination' => self::SEARCH_PAGINATION],
+                            $this->arguments,
+                            ['id' => $this->arguments['id']['locals']],
+                        ));
                 }
         }
     }

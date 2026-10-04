@@ -9,6 +9,7 @@ use YesWiki\Content\Service\FormManager;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Identity\Service\CsrfTokenChecker;
 use YesWiki\Kernel\Performable\RegisteredAction;
+use YesWiki\Kernel\Service\CurrentRequest;
 use YesWiki\Kernel\Service\RuntimeConfig;
 
 class EntryImportAction extends YesWikiAction implements RegisteredAction
@@ -22,11 +23,11 @@ class EntryImportAction extends YesWikiAction implements RegisteredAction
     public function formatArguments($arg)
     {
         $request = $this->getRequest();
-        $vIDs = $request->get('form_id') ?? $request->get('id') ?? $arg['id'] ?? $arg['id'] ?? '';
+        $vIDs = CurrentRequest::input($request, 'form_id') ?? CurrentRequest::input($request, 'id') ?? $arg['id'] ?? $arg['id'] ?? '';
 
         $vIDs = $this->getService(BazarListService::class)->getIDs($vIDs);
 
-        $vServer = $request->get('server') ?? $arg['server'] ?? null;
+        $vServer = CurrentRequest::input($request, 'server') ?? $arg['server'] ?? null;
 
         $post = $request->request;
 
@@ -38,6 +39,7 @@ class EntryImportAction extends YesWikiAction implements RegisteredAction
             'importentries' => $post->get('importentries'),
             'filesData' => $_FILES['fileimport'] ?? null,
             'bazar-import-option-detect-columns-on-headers' => !$this->formatBoolean($request->query->all() + $request->request->all(), false, 'bazar-import-option-not-detect-columns-on-headers'),
+            'bazar-import-option-keep-remote-files-as-url' => $this->formatBoolean($request->query->all() + $request->request->all(), false, 'bazar-import-option-keep-remote-files-as-url'),
             'params' => array_merge(
                 [BazarAction::URL_VIEW_PARAM => BazarAction::VIEW_IMPORT],
                 $request->query->has('debug') ? ['debug' => 'yes'] : []
@@ -80,7 +82,8 @@ class EntryImportAction extends YesWikiAction implements RegisteredAction
                     $this->arguments['id'],
                     $this->arguments['filesData'],
                     $this->arguments['bazar-import-option-detect-columns-on-headers'],
-                    $vForm
+                    $vForm,
+                    $this->arguments['bazar-import-option-keep-remote-files-as-url']
                 )) {
                     $extracted = array_map(function ($extract) use ($vForm, $entryController) {
                         $extract['displayData'] = $entryController->view($extract['entry'], '', false, null, $vForm);
@@ -131,6 +134,7 @@ class EntryImportAction extends YesWikiAction implements RegisteredAction
             'extracted' => $extracted ?? null,
             'mode' => $this->arguments['mode'],
             'optionNotDetectColumnsOnHeadersChecked' => !$this->arguments['bazar-import-option-detect-columns-on-headers'],
+            'optionKeepRemoteFilesAsUrlChecked' => $this->arguments['bazar-import-option-keep-remote-files-as-url'],
             'debug' => $this->arguments['debug'],
         ]);
     }

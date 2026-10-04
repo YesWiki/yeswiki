@@ -3042,14 +3042,12 @@ Puede avisar a los administradores para ayudarles a mantener este sitio dándole
 
     'RSS_CHANGE_OF' => 'Modificación de',
     'RSS_HISTORY' => 'historial',
-    'RSS_HIDDEN_CONTENT' => 'Contenido oculto',
     'RSS_ON_DATE' => 'el',
     'RSS_COMPARISON_OF' => 'Comparación de',
     'RSS_TO' => 'a',
     'RSS_ADDS' => 'Añadidos',
     'RSS_DELETIONS' => 'Supresiones',
     'RSS_NO_DIFF' => 'Ninguna diferencia',
-
 
     'FORM_BUILDER_ADD_FIELDS' => 'Añadir un campo',
     'FORM_BUILDER_ADVANCED' => 'Parámetros avanzados',

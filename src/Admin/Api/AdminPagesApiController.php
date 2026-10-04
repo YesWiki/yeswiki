@@ -14,10 +14,10 @@ use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\CsrfTokenChecker;
 use YesWiki\Kernel\Database\SqlParameters;
 use YesWiki\Kernel\Service\DbService;
-use YesWiki\Search\Service\SearchIndexSchema;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\LayoutService;
 use YesWiki\Render\Service\ThemeManager;
+use YesWiki\Search\Service\SearchIndexSchema;
 
 class AdminPagesApiController extends YesWikiController
 {

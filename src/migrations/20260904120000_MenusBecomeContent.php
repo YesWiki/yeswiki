@@ -4,7 +4,6 @@ use YesWiki\Content\Entity\MenuNode;
 use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Service\MenuManager;
 use YesWiki\Content\Service\PageManager;
-use YesWiki\Content\Service\WikiNameGenerator;
 use YesWiki\Core\YesWikiMigration;
 use YesWiki\Kernel\Service\ConfigurationFileProvider;
 use YesWiki\Kernel\Service\ConfigurationService;
@@ -174,8 +173,10 @@ class MenusBecomeContent extends YesWikiMigration
     /**
      * One menu per distinct set of entries, made the first time that set is seen.
      *
-     * @param array<string, string>                                  $created signature => the tag its menu took
+     * @param array<string, string> $created signature => the tag its menu took
+     *
      * @param-out array<string, string>                              $created
+     *
      * @param list<array{label: string, link: string, icon: string}> $entries
      */
     private static function menuFor(MenuManager $menus, array $entries, array &$created): string

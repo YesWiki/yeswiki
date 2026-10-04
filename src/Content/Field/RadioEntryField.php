@@ -30,7 +30,7 @@ class RadioEntryField extends RadioField
 
         return $this->render('@core/fields/select_entry.twig', [
             'value' => $value,
-            'label' => $this->getOptions()[$value],
+            'label' => $this->getOptions()[$value] ?? $value,
             'entryUrl' => $entryUrl,
         ]);
     }

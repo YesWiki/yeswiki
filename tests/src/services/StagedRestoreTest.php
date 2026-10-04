@@ -7,6 +7,8 @@ use PHPUnit\Framework\TestCase;
 use YesWiki\Kernel\Database\DumpRewriter;
 
 #[CoversMethod(DumpRewriter::class, 'renames')]
+#[CoversMethod(DumpRewriter::class, 'quoteIndexNames')]
+#[CoversMethod(DumpRewriter::class, 'constraints')]
 class StagedRestoreTest extends TestCase
 {
     private const DUMP = <<<'SQL'
@@ -83,5 +85,54 @@ class StagedRestoreTest extends TestCase
         }
 
         return $prefix;
+    }
+
+    public function testAnotherWikiUnderALongerPrefixIsNotThisOnes(): void
+    {
+        $tables = ['yeswiki_pages', 'yeswiki_triples', 'yeswiki_journal', 'yeswiki_ecto__pages', 'yeswiki_ecto__triples', 'yeswiki_ecto__journal', 'unrelated'];
+
+        $this->assertSame(['yeswiki_ecto__'], DumpRewriter::otherWikiPrefixes($tables, 'yeswiki_'));
+        $this->assertSame(['yeswiki_pages', 'yeswiki_triples', 'yeswiki_journal'], DumpRewriter::ownTables($tables, 'yeswiki_'));
+        $this->assertSame(['yeswiki_ecto__pages', 'yeswiki_ecto__triples', 'yeswiki_ecto__journal'], DumpRewriter::ownTables($tables, 'yeswiki_ecto__'));
+    }
+
+    /** One stray table ending like a core one is not a wiki: it stays with the prefix it starts with. */
+    public function testASingleLookalikeTableIsNotAWiki(): void
+    {
+        $tables = ['yeswiki_pages', 'yeswiki_triples', 'yeswiki_old_pages'];
+
+        $this->assertSame([], DumpRewriter::otherWikiPrefixes($tables, 'yeswiki_'));
+        $this->assertSame($tables, DumpRewriter::ownTables($tables, 'yeswiki_'));
+    }
+
+    public function testAStatementIsJudgedOnTheTablesItNamesNotOnItsData(): void
+    {
+        $foreign = ['yeswiki_ecto__pages' => true];
+
+        $this->assertTrue(DumpRewriter::concerns('INSERT INTO `yeswiki_ecto__pages` VALUES (1)', $foreign));
+        $this->assertTrue(DumpRewriter::concerns('CREATE TABLE "yeswiki_ecto__pages" (id int)', $foreign));
+        $this->assertFalse(DumpRewriter::concerns('INSERT INTO `yeswiki_pages` VALUES (\'{"t":"yeswiki_ecto__pages"}\')', $foreign));
+        $this->assertFalse(DumpRewriter::concerns('INSERT INTO `yeswiki_ecto__pages` VALUES (1)', []));
+    }
+
+    public function testAPostgreSqlIndexDefinitionGetsQuotedNamesThatARenameCanFind(): void
+    {
+        $this->assertSame(
+            'CREATE UNIQUE INDEX "other_pages_idx_tag" ON "other_pages" USING btree (tag)',
+            DumpRewriter::quoteIndexNames('CREATE UNIQUE INDEX other_pages_idx_tag ON public.other_pages USING btree (tag)')
+        );
+        $this->assertSame(
+            'CREATE INDEX "Mixed" ON "other_pages"(tag)',
+            DumpRewriter::quoteIndexNames('CREATE INDEX "Mixed" ON other_pages(tag)')
+        );
+        $this->assertSame("INSERT INTO \"other_pages\" VALUES ('CREATE INDEX x ON y (z)')", DumpRewriter::quoteIndexNames("INSERT INTO \"other_pages\" VALUES ('CREATE INDEX x ON y (z)')"));
+    }
+
+    public function testConstraintNamesAreFoundForTheRestoreToRename(): void
+    {
+        $this->assertSame(
+            ['other_pages_pkey', 'other_pages_latest_check'],
+            DumpRewriter::constraints('CREATE TABLE "other_pages" ("id" integer, CONSTRAINT "other_pages_pkey" PRIMARY KEY (id), CONSTRAINT "other_pages_latest_check" CHECK (latest IN (\'Y\')))')
+        );
     }
 }

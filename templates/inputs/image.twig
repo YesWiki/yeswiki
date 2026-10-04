@@ -15,6 +15,13 @@
                     {{ _t("BAZ_MODIFIER_IMAGE") }}
                 </button>
                 <input type="url" name="{{ field.propertyName }}_url" id="{{ field.propertyName }}_url" hidden />
+                <button type="button"
+                        class="yw-btn yw-btn--sm yw-image-cancel"
+                        data-yw-image-cancel="{{ field.propertyName }}_url"
+                        hidden>
+                    <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#x"/></svg>
+                    {{ _t("BAZ_ANNULER_IMAGE") }}
+                </button>
                 {% if isAllowedToDeleteFile and not isDefaultImage %}
                     <a class="yw-btn yw-btn--sm yw-btn--danger"
                        href="{{ deleteUrl }}"
@@ -50,6 +57,13 @@
                 {{ _t("ATTACH_FILE_PICKER_CHOOSE_OR_UPLOAD") }}
             </button>
             <strong data-yw-file-picker-chosen="{{ field.propertyName }}_url" hidden></strong>
+            <button type="button"
+                    class="yw-btn yw-btn--sm yw-image-cancel"
+                    data-yw-image-cancel="{{ field.propertyName }}_url"
+                    hidden>
+                <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#x"/></svg>
+                {{ _t("BAZ_ANNULER_IMAGE") }}
+            </button>
             <label class="yw-form-label" for="{{ field.propertyName }}_url">{{ _t("BAZ_OR_URL") }}</label>
             <input type="url"
                    id="{{ field.propertyName }}_url"

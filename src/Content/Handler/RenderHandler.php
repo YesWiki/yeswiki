@@ -38,7 +38,8 @@ class RenderHandler extends YesWikiHandler implements RegisteredHandler
             . '<div class="container">' . "\n"
             . '<div class="yeswiki-page-widget page-widget page" ' . $this->getService(MarkdownFormatterService::class)->format('{{doubleclick iframe="1"}}') . '>' . "\n";
 
-        $this->getService(PageContext::class)->setPageField('body', [PageBody::CONTENT => strip_tags($_GET['content'])]);
+        $content = $this->getRequest()->query->get('content');
+        $this->getService(PageContext::class)->setPageField('body', [PageBody::CONTENT => self::stripTagsOutsideActions(is_string($content) ? $content : '')]);
 
         $output .= $this->getService(MarkdownFormatterService::class)->format(PageBody::content(($this->getService(PageContext::class)->getPage() ?? [])['body']));
         $output .= '</div><!-- end .page-widget -->' . "\n";
@@ -48,5 +49,26 @@ class RenderHandler extends YesWikiHandler implements RegisteredHandler
 
             . '<script>' . $this->getService(CoreAssets::class)->pageStateScript() . '</script>' . "\n"
             . $output . "\n</body>\n</html>";
+    }
+
+    /** Strips HTML from previewed content, leaving {{action}} calls whole so a query like `a<3` survives. */
+    public static function stripTagsOutsideActions(string $content): string
+    {
+        $actionBlocks = [];
+        $protected = (string)preg_replace_callback(
+            '/\{\{\s*\w[^}]*\}\}/s',
+            function (array $matches) use (&$actionBlocks): string {
+                $actionBlocks[] = $matches[0];
+
+                return "\x02" . (count($actionBlocks) - 1) . "\x03";
+            },
+            str_replace(["\x02", "\x03"], '', $content)
+        );
+
+        return (string)preg_replace_callback(
+            '/\x02(\d+)\x03/',
+            fn (array $matches): string => $actionBlocks[(int)$matches[1]] ?? '',
+            strip_tags($protected)
+        );
     }
 }

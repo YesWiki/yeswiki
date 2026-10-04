@@ -34,6 +34,7 @@ use YesWiki\Kernel\Exception\TemplateNotFound;
 use YesWiki\Kernel\Performable\AliasesPerformable;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\AssetRegistry;
+use YesWiki\Kernel\Service\CurrentRequest;
 use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\Paginator;
 use YesWiki\Kernel\Service\RuntimeConfig;
@@ -1362,7 +1363,7 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
 
         $vSearchManager = $this->getService(SearchManager::class);
 
-        $vKeywords = $vSearchManager->aggregateKeywords($arg['keywords'] ?? null, $this->getRequest()->get('q'), $this->getRequest()->get('keywords'));
+        $vKeywords = $vSearchManager->aggregateKeywords($arg['keywords'] ?? null, CurrentRequest::input($this->getRequest(), 'q'), CurrentRequest::input($this->getRequest(), 'keywords'));
 
         $formatted = [
             'user' => $arg['user'] ?? ((isset($arg['filteruserasowner']) && $arg['filteruserasowner'] == 'true') ?
@@ -2039,18 +2040,6 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
 						{
               interactive: false,
 							' . $styleJs . '
-							onEachFeature: function (feature, layer) {
-								//layer.bindPopup(feature.properties.NOM + feature.properties.NOM_QP);
-								var str = "" ;
-								for( var prop in feature.properties){
-									if( prop.toLowerCase() == "url" ) {
-										str+= prop +": <a href=\""+ feature.properties[prop] + "\" target=\"_blank\" >" + feature.properties[prop] +"<br/>";
-									} else {
-										str+= prop +": "+ feature.properties[prop] +"<br/>";
-									}
-								}
-								//layer.bindPopup( str );
-							}
 						} );';
                             if ($isVisibleByDefault) {
                                 $js .= 'layers["' . $layerLabel . '"].addTo(map' . $params['listindex'] . ');';
@@ -2068,10 +2057,19 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
 
     var drawnFeatures = new L.FeatureGroup()
     map' . $params['listindex'] . ".addLayer(drawnFeatures)\n";
+            $jsonFlags = JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_INVALID_UTF8_SUBSTITUTE;
             foreach ($vAllGeometries as $id => $g) {
-                $geometriesModuleJs .= "const geo{$id} = " . $g . "\n";
-                $geometriesModuleJs .= 'var popup = \'' . preg_replace("(\r\n|\n|\r|)", '', addslashes($this->getService(EntryDisplay::class)->renderEntry($params['managementbar'], $id))) . '\'' . "\n";
-                $geometriesModuleJs .= "drawnFeatures = drawGeometries(drawnFeatures, geo{$id}.features, popup, '{$id}')\n";
+                $jsId = (string)json_encode((string)$id, $jsonFlags);
+                $geometries = json_decode((string)$g);
+                if (!is_object($geometries)) {
+                    $geometriesModuleJs .= "console.error(\"Unreadable geometry for \" + {$jsId})\n";
+                    continue;
+                }
+                $geometriesModuleJs .= "try {\n";
+                $geometriesModuleJs .= 'const geo = ' . json_encode($geometries, $jsonFlags) . "\n";
+                $geometriesModuleJs .= 'const popup = ' . json_encode($this->getService(EntryDisplay::class)->renderEntry($params['managementbar'], $id), $jsonFlags) . "\n";
+                $geometriesModuleJs .= "drawnFeatures = drawGeometries(drawnFeatures, geo.features, popup, {$jsId})\n";
+                $geometriesModuleJs .= "} catch (e) { console.error(\"Error drawing geometry for \" + {$jsId}, e) }\n";
             }
             if (!empty($geometriesWithoutMarker)) {
                 $js .= 'L.Control.geometriesPanel = L.Control.extend({

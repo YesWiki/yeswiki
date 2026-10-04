@@ -27,13 +27,13 @@ whenever they are asked — run by the migration at migrate time and re-runnable
 - **Hand-writing the requirements list** — rejected. `composer.json` already is it, and
   `make binary-check` already reads it for exactly this ("assert a built binary carries every
   extension composer.json names"). Its `suggest` entries even carry each optional extension's
-  consequence — *"Accent-insensitive search: without it SearchManager falls back to iconv
-  transliteration, which folds fewer scripts"* — which is the sentence the screen wants. A third
+  consequence — _"Accent-insensitive search: without it SearchManager falls back to iconv
+  transliteration, which folds fewer scripts"_ — which is the sentence the screen wants. A third
   copy would rot within a release. `MINIMUM_PHP_VERSION_FOR_CORE` was a second copy that had
   already drifted (`8.2.0` against `php ^8.3`) and is deleted; `Package` reads `require.php` from
   the Program's own `composer.json` instead, through the parse it already had for packages.
-- **Pass/fail** — rejected. Missing `ext-gd` is *broken*; missing `ext-intl` is *degraded, and
-  here is what you lose*. Only broken raises a badge.
+- **Pass/fail** — rejected. Missing `ext-gd` is _broken_; missing `ext-intl` is _degraded, and
+  here is what you lose_. Only broken raises a badge.
 - **Reporting every available update** — rejected. ADR-0007 exists because core, themes and
   extensions are shared in a farm and only the designated instance may update them, and its
   amendment extends the same logic to a binary on a read-only image. A badge a webmaster cannot
@@ -47,8 +47,8 @@ whenever they are asked — run by the migration at migrate time and re-runnable
   list with the ratchet at zero, and on object storage there is nothing to ask it about. By
   ADR-0022's own tiering the answer is tier-shaped: Runtime is local by necessity and is what
   fills first (SQLite, the search index, the container cache, an archive being built), so free
-  space is a real number there; Public and Protected answer *reachable* instead, a state the ADR's
-  amendment already made distinct from *broken*.
+  space is a real number there; Public and Protected answer _reachable_ instead, a state the ADR's
+  amendment already made distinct from _broken_.
 - **The badge is core-rendered, not attached to a configured entry.** `quick-menu.twig`'s
   `.yw-topnav-fast-access` entries come from `LayoutService::quickMenu()`, a Layout setting
   migrated out of the old `PageRapideHaut` page — a webmaster can delete their dashboard cog and
@@ -74,7 +74,7 @@ and by nothing else, which is what makes "checks run on render" affordable.
 The plan's table had one "optional extensions" row reading `composer.json`'s `suggest`. That would
 have been one provider knowing about every module's dependencies — the shape this ADR rejected for
 the checks themselves. Instead Search declares `intl`, Import declares `imap` and Kernel declares
-OPcache, each naming only *which* extension it is about and reading the consequence out of
+OPcache, each naming only _which_ extension it is about and reading the consequence out of
 `suggest`. No requirement is written down twice, and the module that loses something is the one
 that says so.
 

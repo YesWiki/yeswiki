@@ -229,7 +229,7 @@ French sentence kept verbatim — and the tags they held come back to the namesp
 
 Two things to know about it. **It keeps a year of acts and a fortnight of errors**
 (`journal_audit_purge_time` and `journal_diagnostic_purge_time`): if you want more of your old
-trail than a year, raise the first setting *before* you migrate, because the next housekeeping pass
+trail than a year, raise the first setting _before_ you migrate, because the next housekeeping pass
 applies it. And **every event also goes to stderr as a JSON line**, which is where to look when the
 database is the thing that is broken — `journalctl`, `docker logs`, or whatever collects your
 process's output.
@@ -242,7 +242,7 @@ password somebody passed to a function.
 
 **A wiki can tell you it is unwell.** `/admin/health` runs a set of checks fresh every time you
 open it — PHP version, the extensions `composer.json` says are needed, room on the disk, whether
-the bucket answers, whether an update *you are allowed to apply* is waiting. Nothing is recorded
+the bucket answers, whether an update _you are allowed to apply_ is waiting. Nothing is recorded
 and nothing needs acknowledging: fix something and it stops being listed. A red badge appears in
 the top bar only when something is genuinely broken and you can do something about it.
 
@@ -457,7 +457,7 @@ side effect is worth having on its own: no page content, private or otherwise, i
 browser storage.
 
 **Theme JavaScript: key an initialiser on the element, not on `body`.** A boosted navigation
-swaps the *contents* of `<body>`, and the `<body>` element itself survives. So
+swaps the _contents_ of `<body>`, and the `<body>` element itself survives. So
 `ywInitEach('body', ...)` runs once per session, and every page after the first is left
 uninitialised: a widget that never mounts, with nothing in the console. Key it on the thing being
 set up (`.aceditor-container`, `.tag-label`) and it runs once per navigation instead. The same
@@ -543,6 +543,7 @@ Check whether any page or template of yours depends on these, because nothing re
   pages that used them as it runs: `list` named the page holding the list's values,
   which a facet reads from the field itself, and `template` named the template each group was drawn
   with, which is the accordion now.
+
 - **GoGoCarto** integration — removed.
 - **Referrers** — the `referrers` table and everything reading it. There is no referrer report.
 - **Backlinks / `links`** — the link graph table is gone.
@@ -617,10 +618,10 @@ Check whether any page or template of yours depends on these, because nothing re
 same paths, and no configuration key is needed to keep them there — `YESWIKI_STORAGE` defaults to
 `local`.
 
-What is new is that a wiki *can* now keep its Public and Protected files in an S3-compatible
+What is new is that a wiki _can_ now keep its Public and Protected files in an S3-compatible
 bucket, which is what makes an instance with no writable data volume possible. It is opt-in,
 per instance, in `private/.env`, and configuring it moves nothing until you run
-`./yeswicli storage:sync` — see *Stocker les fichiers dans un bucket S3* in `docs/fr/admin.md`
+`./yeswicli storage:sync` — see _Stocker les fichiers dans un bucket S3_ in `docs/fr/admin.md`
 for the keys, the bucket policy and the CORS requirement.
 
 Two things stay local whatever you configure, and asking otherwise is refused at boot with the

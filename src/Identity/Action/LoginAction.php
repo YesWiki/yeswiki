@@ -15,6 +15,7 @@ use YesWiki\Kernel\Component\Component;
 use YesWiki\Kernel\Component\ProvidesComponents;
 use YesWiki\Kernel\Component\Setting;
 use YesWiki\Kernel\Performable\RegisteredAction;
+use YesWiki\Kernel\Service\CurrentRequest;
 use YesWiki\Kernel\Service\FlashMessageService;
 use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\Redirector;
@@ -144,7 +145,7 @@ class LoginAction extends YesWikiAction implements RegisteredAction, ProvidesCom
                     : $this->getService(UrlFormatter::class)->generateLink($arg['userpage'])
                 )
                 : (
-                    ($this->getRequest()->get('action') == 'logout')
+                    (CurrentRequest::input($this->getRequest(), 'action') == 'logout')
                     ? preg_replace('/(&|\\\?)$/m', '', (string)preg_replace('/(&|\\\?)action=logout(&)?/', '$1', (string)$incomingurl))
                     : $incomingurl
                 ),
@@ -171,8 +172,8 @@ class LoginAction extends YesWikiAction implements RegisteredAction, ProvidesCom
         $this->inputFilter = $this->getService(InputFilter::class);
         $this->userManager = $this->getService(UserManager::class);
 
-        $action = $this->getRequest()->get('action', '');
-        $vContext = $this->getRequest()->get('context', $this->getService(PageContext::class)->getTag());
+        $action = CurrentRequest::input($this->getRequest(), 'action', '');
+        $vContext = CurrentRequest::input($this->getRequest(), 'context', $this->getService(PageContext::class)->getTag());
         if ($vContext !== $this->arguments['context']) {
             $action = '';
         }

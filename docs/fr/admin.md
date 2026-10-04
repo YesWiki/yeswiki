@@ -1223,16 +1223,18 @@ seule** :
 ```json
 {
   "Version": "2012-10-17",
-  "Statement": [{
-    "Effect": "Allow",
-    "Principal": "*",
-    "Action": "s3:GetObject",
-    "Resource": [
-      "arn:aws:s3:::mon-wiki/custom/*",
-      "arn:aws:s3:::mon-wiki/files/*",
-      "arn:aws:s3:::mon-wiki/cache/*"
-    ]
-  }]
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": "*",
+      "Action": "s3:GetObject",
+      "Resource": [
+        "arn:aws:s3:::mon-wiki/custom/*",
+        "arn:aws:s3:::mon-wiki/files/*",
+        "arn:aws:s3:::mon-wiki/cache/*"
+      ]
+    }
+  ]
 }
 ```
 
@@ -1285,12 +1287,14 @@ navigateur refuse la police **sans rien dire** et la page retombe sur une police
 système. Il faut donc autoriser au moins `GET` depuis l'adresse du wiki :
 
 ```json
-[{
-  "AllowedOrigins": ["https://mon-wiki.example"],
-  "AllowedMethods": ["GET"],
-  "AllowedHeaders": ["*"],
-  "MaxAgeSeconds": 3600
-}]
+[
+  {
+    "AllowedOrigins": ["https://mon-wiki.example"],
+    "AllowedMethods": ["GET"],
+    "AllowedHeaders": ["*"],
+    "MaxAgeSeconds": 3600
+  }
+]
 ```
 
 ### Déplacer un wiki existant

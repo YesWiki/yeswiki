@@ -24,4 +24,20 @@ class CurrentRequest
     {
         return isset($this->request);
     }
+
+    /** A parameter from the route attributes, then the query string, then the posted body: what Request::get() did before Symfony deprecated it. */
+    public static function input(Request $request, string $key, mixed $default = null): mixed
+    {
+        if ($request->attributes->has($key)) {
+            return $request->attributes->get($key);
+        }
+        if ($request->query->has($key)) {
+            return $request->query->all()[$key];
+        }
+        if ($request->request->has($key)) {
+            return $request->request->all()[$key];
+        }
+
+        return $default;
+    }
 }

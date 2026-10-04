@@ -48,6 +48,26 @@ return [
     'ADMIN_BACKUPS_UID_STATUS_STOP' => 'Sauvegarde arrêtée',
     'ADMIN_BACKUPS_STOP_BACKUP_ERROR' => "Erreur : impossible d'arrêter la sauvegarde",
     'ADMIN_BACKUPS_STOPPING_ARCHIVE' => 'Arrêt en cours de la sauvegarde',
+    'ADMIN_BACKUPS_EMPTY_ANSWER' => 'le serveur a répondu sans rien dire',
+    'ADMIN_BACKUPS_REMOTE_CONNECTING' => 'Connexion au wiki distant',
+    'ADMIN_BACKUPS_REMOTE_STEP_CHECKING' => 'Le wiki distant peut-il faire une sauvegarde ?',
+    'ADMIN_BACKUPS_REMOTE_STEP_STARTING' => 'Demande d\'une sauvegarde au wiki distant',
+    'ADMIN_BACKUPS_REMOTE_STEP_ARCHIVING' => 'Le wiki distant fait sa sauvegarde',
+    'ADMIN_BACKUPS_REMOTE_STEP_IDENTIFYING' => 'Attente de la fin de l\'écriture de la sauvegarde',
+    'ADMIN_BACKUPS_REMOTE_STEP_DOWNLOADING' => 'Téléchargement',
+    'ADMIN_BACKUPS_REMOTE_STEP_CLEANING' => 'Suppression de la sauvegarde sur le wiki distant',
+    'ADMIN_BACKUPS_REMOTE_FINISHED' => 'Sauvegarde distante récupérée : {filename}',
+    'ADMIN_BACKUPS_REMOTE_CANCELLED' => 'Récupération abandonnée',
+    'ADMIN_BACKUPS_RESTORE_CONFIRM_FULL' => "Restaurer la sauvegarde complète {filename} ?\n\n" .
+        "La base de données et les fichiers sont remplacés par ceux de la sauvegarde, et les fichiers ajoutés depuis sont supprimés.\n" .
+        "Les réglages reviennent de la sauvegarde, sauf la connexion à la base, l'adresse du site, le serveur de mail et les réglages de sauvegarde.\n\n" .
+        'Cette action est irréversible.',
+    'ADMIN_BACKUPS_RESTORE_CONFIRM_ONLY_DB' => "Restaurer la base de données de {filename} ?\n\n" .
+        "La base actuelle est remplacée par celle de la sauvegarde. Les fichiers ne sont pas touchés.\n\n" .
+        'Cette action est irréversible.',
+    'ADMIN_BACKUPS_RESTORE_CONFIRM_ONLY_FILES' => "Restaurer les fichiers de {filename} ?\n\n" .
+        "Les fichiers de la sauvegarde remplacent ceux du même nom, les autres restent. Les réglages reviennent de la sauvegarde, comme pour une complète. La base de données n'est pas touchée.\n\n" .
+        'Cette action est irréversible.',
     'ADMIN_BACKUPS_CONFIRMATION_TO_DELETE' => "Les fichiers suivants seront supprimés par la sauvegarde.\nVeuillez confirmer leur suppression en cochant la case ci-dessous.\n<pre>{files}</pre>",
     'ADMIN_BACKUPS_START_BACKUP_ERROR_ARCHIVING' => "Lancement de la sauvegarde impossible car une sauvegarde semble être déjà en cours.\n" .
         'Suivez <a href="{helpBaseUrl}#/docs/fr/admin?id=résoudre-les-problèmes-de-sauvegarde" title="Aide pour relancer une sauvegarde" target="blank">cette aide</a> pour corriger ceci.',

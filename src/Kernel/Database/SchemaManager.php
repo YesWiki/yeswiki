@@ -266,7 +266,7 @@ class SchemaManager
     }
 
     /**
-     * Statements a dump must replay *after* all the data: triggers, and FTS index rebuilds.
+     * Statements a dump must replay *after* all the data: the triggers on the dumped tables, and FTS index rebuilds.
      *
      * @param list<string> $prefixedTables the tables being dumped, real names
      *
@@ -279,10 +279,13 @@ class SchemaManager
         }
 
         $statements = [];
+        $dumped = array_fill_keys($prefixedTables, true);
         foreach ($this->dbService->loadAll(
-            "SELECT sql FROM sqlite_master WHERE type = 'trigger' AND sql IS NOT NULL ORDER BY name"
+            "SELECT tbl_name, sql FROM sqlite_master WHERE type = 'trigger' AND sql IS NOT NULL ORDER BY name"
         ) as $trigger) {
-            $statements[] = (string)$trigger['sql'];
+            if (isset($dumped[(string)$trigger['tbl_name']])) {
+                $statements[] = (string)$trigger['sql'];
+            }
         }
 
         foreach ($prefixedTables as $tableName) {
@@ -415,7 +418,7 @@ class SchemaManager
             [$tableName]
         );
         foreach ($indexes as $index) {
-            $statements[] = (string)$index['indexdef'];
+            $statements[] = DumpRewriter::quoteIndexNames((string)$index['indexdef']);
         }
 
         return implode(";\n", $statements);

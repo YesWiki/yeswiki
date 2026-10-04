@@ -94,6 +94,8 @@ abstract class BazarField implements \JsonSerializable
         return false;
     }
 
+    private static int $staticRenderDepth = 0;
+
     /**
      * Render the edit view of the field.
      *
@@ -102,8 +104,6 @@ abstract class BazarField implements \JsonSerializable
      *
      * @return string $html
      */
-    private static int $staticRenderDepth = 0;
-
     public function renderStaticIfPermitted($entry, ?string $userNameForRendering = null): string
     {
         if (!$this->canRead($entry, $userNameForRendering)) {

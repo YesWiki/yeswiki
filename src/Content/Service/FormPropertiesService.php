@@ -94,53 +94,52 @@ class FormPropertiesService
         $value = $this->getService(HtmlPurifierService::class)->cleanHTML($template);
         $formManager = $this->getService(FormManager::class);
 
-        if (!$this->getService(ImportContext::class)->isImporting()) {
-            $formId = $entry['form_id'] ?? null;
-            foreach ($this->referencedFieldNames($value) as $fieldName) {
-                $field = $formManager->findFieldFromNameOrPropertyName($fieldName, $formId);
-                if ($field instanceof EnumField || $field instanceof FileField) {
-                    $fieldValue = $entry[(string)$field->getPropertyName()] ?? null;
-                    if (is_array($fieldValue)) {
-                        $fieldValue = implode(',', array_filter($fieldValue, 'is_string'));
-                    }
-                    if ($field instanceof CheckboxField) {
-                        $formattedValue = $field->formatValuesBeforeSave($entry)[$field->getPropertyName()];
-                        $fieldValues = $field->getValues([$field->getPropertyName() => $formattedValue]);
-                        $replacement = $field->getOptions()[$fieldValues[0] ?? null] ?? '';
-                    } elseif ($field instanceof TagsField) {
-                        $fieldValues = explode(',', (string)$fieldValue);
-                        $replacement = trim($fieldValues[0]);
-                    } elseif ($field instanceof EnumField) {
-                        $replacement = $field->getOptions()[$fieldValue] ?? '';
-                    } elseif ($field instanceof ImageField) {
-                        $filenameKey = 'filename-' . $field->getPropertyName();
-                        $request = $this->container->get(\YesWiki\Kernel\Service\CurrentRequest::class)->get();
-                        if (!empty($request->request->get($filenameKey))) {
-                            $replacement = StringUtilService::asFilename($request->request->get($filenameKey));
-                            if (empty($replacement)) {
-                                $replacement = 'image';
-                            }
-                        } elseif (!empty($fieldValue)) {
-                            $replacement = $fieldValue;
-                        } else {
+        $importing = $this->getService(ImportContext::class)->isImporting();
+        $formId = $entry['form_id'] ?? null;
+        foreach ($this->referencedFieldNames($value) as $fieldName) {
+            $field = $importing ? null : $formManager->findFieldFromNameOrPropertyName($fieldName, $formId);
+            if ($field instanceof EnumField || $field instanceof FileField) {
+                $fieldValue = $entry[(string)$field->getPropertyName()] ?? null;
+                if (is_array($fieldValue)) {
+                    $fieldValue = implode(',', array_filter($fieldValue, 'is_string'));
+                }
+                if ($field instanceof CheckboxField) {
+                    $formattedValue = $field->formatValuesBeforeSave($entry)[$field->getPropertyName()];
+                    $fieldValues = $field->getValues([$field->getPropertyName() => $formattedValue]);
+                    $replacement = $field->getOptions()[$fieldValues[0] ?? null] ?? '';
+                } elseif ($field instanceof TagsField) {
+                    $fieldValues = explode(',', (string)$fieldValue);
+                    $replacement = trim($fieldValues[0]);
+                } elseif ($field instanceof EnumField) {
+                    $replacement = $field->getOptions()[$fieldValue] ?? '';
+                } elseif ($field instanceof ImageField) {
+                    $filenameKey = 'filename-' . $field->getPropertyName();
+                    $request = $this->container->get(\YesWiki\Kernel\Service\CurrentRequest::class)->get();
+                    if (!empty($request->request->get($filenameKey))) {
+                        $replacement = StringUtilService::asFilename($request->request->get($filenameKey));
+                        if (empty($replacement)) {
                             $replacement = 'image';
                         }
+                    } elseif (!empty($fieldValue)) {
+                        $replacement = $fieldValue;
                     } else {
-                        if (!empty($_FILES[$field->getPropertyName()]['name'])) {
-                            $replacement = StringUtilService::asFilename($_FILES[$field->getPropertyName()]['name']);
-                            if (empty($replacement)) {
-                                $replacement = 'file';
-                            }
-                        } elseif (!empty($fieldValue)) {
-                            $replacement = $fieldValue;
-                        } else {
+                        $replacement = 'image';
+                    }
+                } else {
+                    if (!empty($_FILES[$field->getPropertyName()]['name'])) {
+                        $replacement = StringUtilService::asFilename($_FILES[$field->getPropertyName()]['name']);
+                        if (empty($replacement)) {
                             $replacement = 'file';
                         }
+                    } elseif (!empty($fieldValue)) {
+                        $replacement = $fieldValue;
+                    } else {
+                        $replacement = 'file';
                     }
-                    $value = str_replace('{{' . $fieldName . '}}', (string)$replacement, $value);
-                } elseif (isset($entry[$fieldName])) {
-                    $value = str_replace('{{' . $fieldName . '}}', $entry[$fieldName], $value);
                 }
+                $value = str_replace('{{' . $fieldName . '}}', (string)$replacement, $value);
+            } elseif (isset($entry[$fieldName])) {
+                $value = str_replace('{{' . $fieldName . '}}', $entry[$fieldName], $value);
             }
         }
 

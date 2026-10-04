@@ -3,14 +3,15 @@
 namespace YesWiki\Content\Service;
 
 use Psr\Container\ContainerInterface;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Field\FileField;
 use YesWiki\Content\Field\ImageField;
 use YesWiki\Content\Field\TextareaField;
-use YesWiki\Files\Service\LocalFiles;
 use YesWiki\Files\Service\Storage;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Routing\ReservedTags;
+use YesWiki\Kernel\Service\PinnedFetcher;
 use YesWiki\Search\Service\TagsManager;
 
 class DuplicationManager
@@ -24,7 +25,7 @@ class DuplicationManager
      *
      * @param ContainerInterface $container service container
      */
-    public function __construct(ContainerInterface $container, private readonly Storage $storage, private readonly LocalFiles $localFiles)
+    public function __construct(ContainerInterface $container, private readonly Storage $storage)
     {
         $this->container = $container;
         $this->uploadPath = $this->getLocalFileUploadPath();
@@ -332,7 +333,7 @@ class DuplicationManager
                 throw new \Exception(_t('NOT_FOUND_IN_REQUEST', ['key' => $key]));
             }
         }
-        foreach ($req['files'] as $fileUrl) {
+        foreach ((array)($req['files'] ?? []) as $fileUrl) {
             $this->downloadFile($fileUrl, $req['originalTag'], $tag);
         }
 
@@ -350,6 +351,8 @@ class DuplicationManager
     }
 
     /**
+     * Copies a file of the source wiki into the upload folder, refusing private addresses and unauthorised extensions.
+     *
      * @param string $sourceUrl
      * @param string $fromTag
      * @param string $toTag
@@ -359,35 +362,24 @@ class DuplicationManager
      */
     public function downloadFile($sourceUrl, $fromTag, $toTag, $timeoutInSec = 10)
     {
-        $t = explode('/', $sourceUrl);
-        $fileName = array_pop($t);
-        $destPath = 'files/' . str_replace($fromTag, $toTag, $fileName);
+        $sourceUrl = (string)$sourceUrl;
+        $fileName = basename(str_replace((string)$fromTag, (string)$toTag, basename((string)parse_url($sourceUrl, PHP_URL_PATH))));
+        $extension = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
+        $authorizedExtensions = $this->container->get(ParameterBagInterface::class)->get('authorized-extensions');
+        if ($fileName === '' || $fileName[0] === '.' || !is_array($authorizedExtensions) || !array_key_exists($extension, $authorizedExtensions)) {
+            throw new \Exception(_t('BAZ_NOT_AUTHORIZED_FILE') . ' : ' . $sourceUrl);
+        }
+        $destPath = $this->uploadPath . '/' . $fileName;
+        $fetcher = $this->container->get(PinnedFetcher::class);
 
-        // Downloaded to a scratch file and then handed to Storage: curl fills a stream, the
-        // destination may be a bucket, and a failed download must not leave a half-written
-        // attachment under a name the wiki already treats as one.
-        return $this->storage->withTemporaryFile(pathinfo($destPath, PATHINFO_EXTENSION), function (string $tmpPath) use ($sourceUrl, $destPath, $timeoutInSec) {
-            $fp = $this->localFiles->openForWriting($tmpPath);
-            if ($fp === null) {
-                throw new \RuntimeException("could not open $tmpPath for writing");
-            }
-            $ch = curl_init($sourceUrl);
-            curl_setopt($ch, CURLOPT_FILE, $fp);
-            curl_setopt($ch, CURLOPT_HEADER, false);
+        $body = $fetcher->stream($sourceUrl, ['connectTimeout' => $timeoutInSec, 'timeout' => $timeoutInSec, 'maxRedirects' => 0]);
+        try {
+            $this->storage->writeStream($destPath, $body);
+        } finally {
+            fclose($body);
+        }
 
-            curl_setopt($ch, CURLOPT_SSL_VERIFYSTATUS, false);
-            curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
-            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $timeoutInSec);
-            curl_setopt($ch, CURLOPT_TIMEOUT, $timeoutInSec);
-            curl_exec($ch);
-            curl_close($ch);
-            fclose($fp);
-
-            $this->storage->writeFrom($destPath, $tmpPath);
-
-            return $destPath;
-        });
+        return $destPath;
     }
 
     /**

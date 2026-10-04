@@ -24,6 +24,9 @@
   <form id="form-actions" action="{{ baseUrl }}?PagePrincipale&installAction=install" method="POST">
     <input type="hidden" name="config" value="{{ configPosted }}">
     <input type="hidden" name="contentSQL" value="{{ contentSQL }}">
+    <input type="hidden" name="restore_files" value="{{ restoreFiles ? 1 : 0 }}">
+    <input type="hidden" name="rewrite_urls" value="{{ rewriteUrls ? 1 : 0 }}">
+    <input type="hidden" name="replace_existing" value="{{ replaceExisting ? 1 : 0 }}">
     <input type="hidden" name="admin_name" value="{{ adminName }}">
     <input type="hidden" name="admin_email" value="{{ adminEmail }}">
     <input type="hidden" name="admin_password" value="{{ adminPassword }}">

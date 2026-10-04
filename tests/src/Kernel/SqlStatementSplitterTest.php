@@ -177,4 +177,25 @@ class SqlStatementSplitterTest extends TestCase
         $this->assertStringContainsString("'{\"content\":\"a; b\"}'", $statements[2]);
         $this->assertStringContainsString("it''s got; semicolons", $statements[2]);
     }
+
+    /** Read in pieces, a dump splits exactly as it does whole, wherever the pieces happen to end. */
+    public function testReadingFromAStreamGivesTheSameStatementsWhateverTheChunkSize(): void
+    {
+        $dump = "-- YesWiki-Dialect: sqlite\n/* a; comment */\nCREATE TABLE \"p_pages\" (\"tag\" TEXT);\n"
+            . "INSERT INTO \"p_pages\" VALUES ('it''s; here'), ('back\\'slash;'), ('-- not a comment;');\n"
+            . "CREATE TRIGGER t AFTER INSERT ON p_pages BEGIN SELECT CASE WHEN 1 THEN 2 END; END;\n"
+            . "-- trailing; comment\nSELECT 'last'";
+        $expected = SqlStatementSplitter::split($dump);
+
+        foreach ([1, 2, 3, 7, 64, 1 << 20] as $chunkSize) {
+            $handle = fopen('php://memory', 'w+b');
+            if ($handle === false) {
+                $this->fail('no memory stream');
+            }
+            fwrite($handle, $dump);
+            rewind($handle);
+            $this->assertSame($expected, iterator_to_array(SqlStatementSplitter::fromStream($handle, $chunkSize), false), "chunks of $chunkSize");
+            fclose($handle);
+        }
+    }
 }

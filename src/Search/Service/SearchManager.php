@@ -39,6 +39,9 @@ class SearchManager
     /** Given to a field whose name collides with one of those. */
     private const FIELD_COLUMN_PREFIX = 'yw_field__';
 
+    /** Entry properties every form shares, queryable without being a form field. */
+    public const ENTRY_METADATA_FIELDS = ['form_id', 'created_at', 'updated_at', 'status', 'owner'];
+
     public function __construct(
         ContainerInterface $container,
         DbService $dbService,
@@ -513,6 +516,21 @@ class SearchManager
         return SqlFragment::all(' AND ', ...$vQueriesConditions);
     }
 
+    /** The SQL reading a field for the search CTE, falling back for the metadata older entries never stored. */
+    private function fieldColumnExpression(string $pFieldName): string
+    {
+        $vStored = $this->dbService->jsonExtract('body', '$.' . $pFieldName);
+        $vTime = $this->dbService->quoteIdentifier('time');
+
+        return match ($pFieldName) {
+            'owner' => 'p.owner',
+            'updated_at' => "COALESCE(NULLIF({$vStored}, ''), CAST(p.{$vTime} AS CHAR(19)))",
+            'created_at' => "COALESCE(NULLIF({$vStored}, ''), CAST((SELECT MIN(rev0.{$vTime}) FROM "
+                . $this->dbService->prefixTable('pages') . " rev0 WHERE rev0.tag = p.tag AND rev0.parent = '') AS CHAR(19)))",
+            default => $vStored,
+        };
+    }
+
     /** A predicate matching the rows of a given PageType. */
     private function typedAs(string $type): SqlFragment
     {
@@ -688,6 +706,11 @@ class SearchManager
             'descriptors' => [$vHash => array_merge($vFieldDescriptor, ['_ids_' => $vFormIDs])],
         ];
         $vFields[PageBody::TITLE] = $vFields['tag'];
+        foreach (self::ENTRY_METADATA_FIELDS as $vMetadataField) {
+            if (in_array($vMetadataField, $vNecessaryFields, true)) {
+                $vFields[$vMetadataField] = $vFields['tag'];
+            }
+        }
 
         $vFormManager = $this->container->get(FormManager::class);
 
@@ -777,7 +800,10 @@ class SearchManager
         ];
 
         foreach (array_keys($vFields) as $vFieldName) {
-            $vSelectRequest[] = $this->dbService->jsonExtract('body', '$.' . $vFieldName) . ' AS ' . $this->renameJSONPathVariable($vFieldName);
+            if ($vFieldName === 'form_id') {
+                continue;
+            }
+            $vSelectRequest[] = $this->fieldColumnExpression((string)$vFieldName) . ' AS ' . $this->renameJSONPathVariable($vFieldName);
         }
 
         $vSelectRequest = implode(', ', $vSelectRequest);
@@ -1017,12 +1043,10 @@ class SearchManager
     }
 
     /**
-     * Parse a query string.
+     * Parses a single `name op value[,value]` condition, applying the [user.*] substitutions.
      *
-     * @return array<int, array<string, mixed>> one entry per query, each
-     *                                          ["name" => string, "operator" => string, "values" => list<string>]
+     * @return array{name: ?string, operator: ?string, values: list<mixed>}
      */
-    /** Parses a single `name op value[,value]` condition into ['name','operator','values'], applying the [user.*] substitutions. */
     private function parseCondition(string $pValue): array
     {
         if (preg_match('/^\s*([^=!<>]*?)\s*(==|!=|<=|>=|=|<|>)([\s\S]*)$/', $pValue, $pMatches) !== 1) {
@@ -1059,7 +1083,11 @@ class SearchManager
         return ['name' => $vName, 'operator' => $vOperator, 'values' => $vUniqueValues];
     }
 
-    /** Splits a query string into tokens: '(' , ')', 'and' (or legacy '|'), 'or', and 'leaf'. Grammar characters inside [...] are left alone. */
+    /**
+     * Splits a query string into tokens: '(' , ')', 'and' (or legacy '|'), 'or', and 'leaf'. Grammar characters inside [...] are left alone.
+     *
+     * @return list<array{type: string, value?: string}>
+     */
     private function tokenizeQuery(string $pQuery): array
     {
         $tokens = [];
@@ -1122,7 +1150,13 @@ class SearchManager
         return $tokens;
     }
 
-    /** Parses a query string into an AST of 'and'/'or'/'leaf' nodes; returns ['type' => 'invalid'] when the string is malformed. */
+    /**
+     * Parses a query string into an AST of 'and'/'or'/'leaf' nodes; returns ['type' => 'invalid'] when the string is malformed.
+     *
+     * @param array<array-key, mixed>|string|null $pQuery
+     *
+     * @return array<string, mixed>
+     */
     public function parseQueryExpression($pQuery): array
     {
         $vQuery = $this->queryToString($pQuery);
@@ -1132,73 +1166,87 @@ class SearchManager
 
         $tokens = $this->tokenizeQuery($vQuery);
         $pos = 0;
-        $failed = false;
-        $parseTerm = null;
-        $parseAnd = null;
-        $parseOr = null;
-
-        $parseTerm = function () use (&$tokens, &$pos, &$failed, &$parseOr) {
-            $token = $tokens[$pos] ?? null;
-            if ($token === null) {
-                $failed = true;
-
-                return null;
-            }
-            if ($token['type'] === '(') {
-                $pos++;
-                $expr = $parseOr();
-                if (($tokens[$pos]['type'] ?? null) !== ')') {
-                    $failed = true;
-
-                    return null;
-                }
-                $pos++;
-
-                return $expr;
-            }
-            if ($token['type'] === 'leaf') {
-                $pos++;
-                $cond = $this->parseCondition($token['value']);
-                if (!isset($cond['name']) || trim((string)$cond['name']) === '' || $cond['operator'] === null) {
-                    $failed = true;
-
-                    return null;
-                }
-
-                return ['type' => 'leaf', 'cond' => $cond];
-            }
-            $failed = true;
-
-            return null;
-        };
-        $parseAnd = function () use (&$tokens, &$pos, &$failed, &$parseTerm) {
-            $nodes = [$parseTerm()];
-            while (!$failed && (($tokens[$pos]['type'] ?? null) === 'and')) {
-                $pos++;
-                $nodes[] = $parseTerm();
-            }
-
-            return count($nodes) === 1 ? $nodes[0] : ['type' => 'and', 'children' => $nodes];
-        };
-        $parseOr = function () use (&$tokens, &$pos, &$failed, &$parseAnd) {
-            $nodes = [$parseAnd()];
-            while (!$failed && (($tokens[$pos]['type'] ?? null) === 'or')) {
-                $pos++;
-                $nodes[] = $parseAnd();
-            }
-
-            return count($nodes) === 1 ? $nodes[0] : ['type' => 'or', 'children' => $nodes];
-        };
-
-        $ast = $parseOr();
-        if ($failed || $pos !== count($tokens)) {
+        try {
+            $ast = $this->parseOrExpression($tokens, $pos);
+        } catch (\UnexpectedValueException) {
             return ['type' => 'invalid'];
         }
 
-        return $ast;
+        return $pos === count($tokens) ? $ast : ['type' => 'invalid'];
     }
 
-    /** Every field name referenced by the leaves of a query AST. */
+    /**
+     * @param list<array{type: string, value?: string}> $tokens
+     *
+     * @return array<string, mixed>
+     */
+    private function parseOrExpression(array $tokens, int &$pos): array
+    {
+        $nodes = [$this->parseAndExpression($tokens, $pos)];
+        while (($tokens[$pos]['type'] ?? null) === 'or') {
+            $pos++;
+            $nodes[] = $this->parseAndExpression($tokens, $pos);
+        }
+
+        return count($nodes) === 1 ? $nodes[0] : ['type' => 'or', 'children' => $nodes];
+    }
+
+    /**
+     * @param list<array{type: string, value?: string}> $tokens
+     *
+     * @return array<string, mixed>
+     */
+    private function parseAndExpression(array $tokens, int &$pos): array
+    {
+        $nodes = [$this->parseTerm($tokens, $pos)];
+        while (($tokens[$pos]['type'] ?? null) === 'and') {
+            $pos++;
+            $nodes[] = $this->parseTerm($tokens, $pos);
+        }
+
+        return count($nodes) === 1 ? $nodes[0] : ['type' => 'and', 'children' => $nodes];
+    }
+
+    /**
+     * A parenthesised expression or a single condition; throws when the tokens hold neither.
+     *
+     * @param list<array{type: string, value?: string}> $tokens
+     *
+     * @return array<string, mixed>
+     */
+    private function parseTerm(array $tokens, int &$pos): array
+    {
+        $token = $tokens[$pos] ?? null;
+        if ($token !== null && $token['type'] === '(') {
+            $pos++;
+            $expr = $this->parseOrExpression($tokens, $pos);
+            if (($tokens[$pos]['type'] ?? null) !== ')') {
+                throw new \UnexpectedValueException('Unclosed parenthesis');
+            }
+            $pos++;
+
+            return $expr;
+        }
+        if ($token !== null && $token['type'] === 'leaf') {
+            $pos++;
+            $cond = $this->parseCondition($token['value'] ?? '');
+            if ($cond['name'] === null || trim($cond['name']) === '' || $cond['operator'] === null) {
+                throw new \UnexpectedValueException('Not a condition');
+            }
+
+            return ['type' => 'leaf', 'cond' => $cond];
+        }
+
+        throw new \UnexpectedValueException('Unexpected token');
+    }
+
+    /**
+     * Every field name referenced by the leaves of a query AST.
+     *
+     * @param array<string, mixed> $pAst
+     *
+     * @return list<mixed>
+     */
     public function queryAstFieldNames(array $pAst): array
     {
         if (($pAst['type'] ?? '') === 'leaf') {
@@ -1212,7 +1260,12 @@ class SearchManager
         return $vNames;
     }
 
-    /** Compiles a query AST to SQL, reusing buildQueriesConditions() for each leaf so per-field rules stay in one place. */
+    /**
+     * Compiles a query AST to SQL, reusing buildQueriesConditions() for each leaf so per-field rules stay in one place.
+     *
+     * @param array<string, mixed>                                                                                $pAst
+     * @param array<string, array{descriptors: array<string, array<string, mixed>>, hasMultipleStructures: bool}> $pFields
+     */
     public function compileQueryAst(array $pAst, array $pFields): SqlFragment
     {
         if (($pAst['type'] ?? '') === 'leaf') {
@@ -1264,13 +1317,16 @@ class SearchManager
         return implode(' AND ', $vFragments);
     }
 
-    public function parseQuery($pQuery)
+    /**
+     * Parses a legacy query string into one condition per `|`-separated fragment.
+     *
+     * @param array<array-key, mixed>|string|null $pQuery
+     *
+     * @return array<int, array<string, mixed>> one entry per query, each ["name" => string, "operator" => string, "values" => list<string>]
+     */
+    public function parseQuery($pQuery): array
     {
-        if (is_array($pQuery)) {
-            $vQuery = $this->queryToString($pQuery);
-        } else {
-            $vQuery = $pQuery;
-        }
+        $vQuery = $this->queryToString($pQuery);
 
         if (trim($vQuery) == '') {
             return [];

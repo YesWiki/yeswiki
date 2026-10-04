@@ -9,7 +9,6 @@ use YesWiki\Content\Entity\SuppliesItems;
 use YesWiki\Content\Service\EntryManager;
 use YesWiki\Content\Service\FeedLoader;
 use YesWiki\Core\YesWikiAction;
-use YesWiki\Files\Service\LocalFiles;
 use YesWiki\Files\Service\RemoteImageCache;
 use YesWiki\Files\Service\Storage;
 use YesWiki\Identity\Service\AclService;
@@ -18,6 +17,7 @@ use YesWiki\Kernel\Component\Component;
 use YesWiki\Kernel\Component\ProvidesComponents;
 use YesWiki\Kernel\Component\Setting;
 use YesWiki\Kernel\Performable\RegisteredAction;
+use YesWiki\Kernel\Service\PinnedFetcher;
 use YesWiki\Kernel\Service\Redirector;
 use YesWiki\Kernel\Service\StringUtilService;
 use YesWiki\Kernel\Service\UrlFormatter;
@@ -26,6 +26,12 @@ use YesWiki\Search\Service\SearchManager;
 
 class SyndicationAction extends YesWikiAction implements RegisteredAction, ProvidesComponents, SuppliesItems
 {
+    private const IMAGE_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+
+    private const IMAGE_TYPES = [IMAGETYPE_JPEG, IMAGETYPE_PNG, IMAGETYPE_GIF, IMAGETYPE_WEBP];
+
+    private const MAX_IMAGE_BYTES = 10 * 1024 * 1024;
+
     /** `{{syndication}}` in page content -- stated, not inferred from the filename. */
     public static function performableName(): string
     {
@@ -444,41 +450,38 @@ class SyndicationAction extends YesWikiAction implements RegisteredAction, Provi
         . _t('SYNDICATION_PARAM_URL_REQUIRED') . '.</div>' . "\n";
     }
 
-    /** @return string the name of the downloaded file inside files/, or '' when nothing was downloaded */
-    protected function downloadFile(string $sourceUrl, bool $noSSLCheck = false, int $timeoutInSec = 10, bool $replaceExisting = false)
+    /** @return string the name of the downloaded image inside files/, or '' when nothing was downloaded */
+    protected function downloadFile(string $sourceUrl, int $timeoutInSec = 10, bool $replaceExisting = false)
     {
-        if (empty($sourceUrl)) {
+        if ($sourceUrl === '') {
             return '';
         }
-        $t = explode('/', $sourceUrl);
-        $fileName = array_pop($t);
-        $destFile = sha1($sourceUrl) . '_' . $fileName;
-        $destPath = 'files/' . $destFile;
-        if (!$this->getService(Storage::class)->exists($destPath) || $replaceExisting) {
-            $fp = $this->getService(LocalFiles::class)->openForWriting($destPath);
-            $ch = curl_init($sourceUrl);
-            if ($fp === null || $ch === false) {
-                return '';
+        $fileName = trim((string)preg_replace('/[^A-Za-z0-9._-]/', '_', basename((string)parse_url($sourceUrl, PHP_URL_PATH))), '.');
+        $extension = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
+        $storage = $this->getService(Storage::class);
+        $destFile = null;
+        if (in_array($extension, self::IMAGE_EXTENSIONS, true)) {
+            $destFile = sha1($sourceUrl) . '_' . $fileName;
+            if ($storage->exists('files/' . $destFile) && !$replaceExisting) {
+                return $destFile;
             }
-            curl_setopt($ch, CURLOPT_FILE, $fp);
-            curl_setopt($ch, CURLOPT_HEADER, false);
-            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $timeoutInSec);
-            curl_setopt($ch, CURLOPT_TIMEOUT, $timeoutInSec);
-            curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
-            if ($noSSLCheck) {
-                curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-            }
-            curl_exec($ch);
-            $errors = curl_error($ch);
-            if (!empty($errors)) {
-                curl_close($ch);
-                fclose($fp);
-
-                return '';
-            }
-            curl_close($ch);
-            fclose($fp);
         }
+
+        try {
+            $bytes = $this->getService(PinnedFetcher::class)->fetch($sourceUrl, [
+                'connectTimeout' => $timeoutInSec,
+                'timeout' => $timeoutInSec,
+                'maxBytes' => self::MAX_IMAGE_BYTES,
+            ]);
+        } catch (\Throwable $error) {
+            return '';
+        }
+        $size = @getimagesizefromstring($bytes);
+        if ($size === false || !in_array($size[2], self::IMAGE_TYPES, true)) {
+            return '';
+        }
+        $destFile ??= sha1($sourceUrl) . '_' . pathinfo($fileName, PATHINFO_FILENAME) . image_type_to_extension($size[2]);
+        $storage->write('files/' . $destFile, $bytes);
 
         return $destFile;
     }

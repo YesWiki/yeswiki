@@ -2,10 +2,10 @@
 
 namespace YesWiki\Content\Action;
 
+use Symfony\Component\Security\Csrf\CsrfTokenManager;
 use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Service\FileManager;
 use YesWiki\Content\Service\PageManager;
-use Symfony\Component\Security\Csrf\CsrfTokenManager;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\CsrfTokenChecker;

@@ -8,8 +8,11 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use Symfony\Component\Process\ExecutableFinder;
 use YesWiki\Files\Service\LocalFiles;
+use YesWiki\Kernel\Database\DumpRewriter;
 use YesWiki\Kernel\Service\ConsoleService;
+use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\ThrowableFormatter;
 
 class DbCommand extends Command
@@ -65,20 +68,11 @@ class DbCommand extends Command
     }
 
     /**
-     * get params to connect to dB.
+     * The parameters mysqldump connects with.
      *
-     * @return array [
-     *               'hostArg' => array,
-     *               'databasename' => string
-     *               'tablePrefix' => string
-     *               'username' => string
-     *               'password' => string
-     *               ]
+     * @return array{hostArg: list<string>, databasename: string, tablePrefix: string, username: string, password: string}
      *
      * @throws \Exception
-     */
-    /**
-     * @return array{hostArg: list<string>, databasename: mixed, tablePrefix: mixed, username: mixed, password: mixed}
      */
     private function getDbParams(): array
     {
@@ -127,8 +121,13 @@ class DbCommand extends Command
             'password' => $password,
         ] = $this->getDbParams();
         try {
-            $results = $this->consoleService->findAndStartExecutableSync(
-                'mysqldump',
+            $tables = $this->ownTables($tablePrefix);
+            if ($tables === []) {
+                $output->writeln("No table of this wiki starts with '$tablePrefix'.");
+
+                return Command::FAILURE;
+            }
+            $result = $this->runDumpTool(
                 array_merge(
                     $hostArg,
                     [
@@ -136,31 +135,32 @@ class DbCommand extends Command
                         "--password=$password",
                         "--result-file=$realFilePath",
                         $databasename,
-                        "{$tablePrefix}pages",
-                        "{$tablePrefix}triples", // tables
-                        "{$tablePrefix}links", // tables
-                    ]
-                ), // args
-                '', // subfolder
-                $this->getExtaDirs(), // extraDirsWhereSearch
-                120 // timeoutInSec (2 minutes)
+                    ],
+                    $tables
+                ),
+                120
             );
-            $err = $this->getErr($results);
-            try {
-                $fileContent = $this->localFiles()->read($realFilePath);
-            } catch (\Throwable $th) {
-                $fileContent = '';
-            }
-            if (!empty($fileContent)) {
+            if ($result['exit'] === 0 && self::isDump($this->headOf($realFilePath))) {
                 return Command::SUCCESS;
-            } elseif (!empty($err)) {
-                $output->writeln($err);
             }
+            $output->writeln($result['stderr'] !== '' ? $result['stderr'] : 'The dump tool wrote no dump.');
         } catch (\Throwable $ex) {
-            $output->writeln("System error when testing mysqldump : {$ex->getMessage()}");
+            $output->writeln("System error when running mysqldump : {$ex->getMessage()}");
         }
 
         return Command::FAILURE;
+    }
+
+    /**
+     * This wiki's tables, and none of another wiki whose prefix starts like this one's.
+     *
+     * @return list<string>
+     */
+    private function ownTables(string $tablePrefix): array
+    {
+        $dbService = $this->services->get(DbService::class);
+
+        return DumpRewriter::ownTables($dbService->schema()->getTables(), trim($tablePrefix));
     }
 
     /**
@@ -180,19 +180,9 @@ class DbCommand extends Command
             'password' => $password,
         ] = $this->getDbParams();
         try {
-            $results = $this->consoleService->findAndStartExecutableSync(
-                'mysqldump',
-                [
-                    '-V',
-                ],
-                '',
-                $this->getExtaDirs(),
-                10
-            );
-            $outputResult = $this->getOutput($results);
-            if (preg_match("/^mysqldump(?:\.exe)?\s*Ver\s*\d+\.?\d*.*/i", $outputResult)) {
-                $results = $this->consoleService->findAndStartExecutableSync(
-                    'mysqldump',
+            $version = $this->runDumpTool(['-V'], 10);
+            if ($version['exit'] === 0 && self::isDumpToolVersion($version['stdout'])) {
+                $result = $this->runDumpTool(
                     array_merge(
                         $hostArg,
                         [
@@ -203,13 +193,10 @@ class DbCommand extends Command
                             $databasename,
                         ]
                     ),
-                    '',
-                    $this->getExtaDirs(),
                     10
                 );
-                $outputResult = $this->getOutput($results);
-                if (empty($outputResult)) {
-                    throw new \Exception('output should not be empty during test to connect to database via mysql');
+                if ($result['exit'] !== 0 || !self::isDump($result['stdout'])) {
+                    throw new \Exception('the dump tool could not reach the database: ' . trim($result['stderr']));
                 }
                 $output->writeln('OK');
 
@@ -223,20 +210,62 @@ class DbCommand extends Command
         return Command::FAILURE;
     }
 
-    /**
-     * @param array{array{stdout: string, stderr: string}}|null $results
-     */
-    private function getOutput(?array $results): string
+    /** Whether a tool's `-V` line is that of mysqldump or mariadb-dump, from MySQL or MariaDB. */
+    public static function isDumpToolVersion(string $version): bool
     {
-        return $results === null ? '' : $results[0]['stdout'];
+        return preg_match('/(?:^|[\\\\\/])(?:mariadb-dump|mysqldump)(?:\.exe)?\s+(?:Ver|from)\s+\d/im', $version) === 1;
+    }
+
+    /** Whether text starts the way a mysqldump or mariadb-dump dump does. */
+    public static function isDump(string $text): bool
+    {
+        return preg_match('/^-- (?:MySQL|MariaDB) dump\b/m', $text) === 1;
+    }
+
+    /** The first bytes of a file, empty when there is none. */
+    private function headOf(string $path): string
+    {
+        $handle = $this->localFiles()->isFile($path) ? $this->localFiles()->openForReading($path) : null;
+        if ($handle === null) {
+            return '';
+        }
+        try {
+            return (string)fread($handle, 4096);
+        } finally {
+            fclose($handle);
+        }
+    }
+
+    /** mariadb-dump when it is there, since MariaDB 11 calls its mysqldump deprecated, mysqldump otherwise. */
+    private function dumpTool(): string
+    {
+        $finder = new ExecutableFinder();
+        foreach (['mariadb-dump', 'mysqldump'] as $tool) {
+            if ($finder->find($tool, null, $this->getExtaDirs()) !== null) {
+                return $tool;
+            }
+        }
+
+        throw new \Exception('neither mariadb-dump nor mysqldump is installed');
     }
 
     /**
-     * @param array{array{stdout: string, stderr: string}}|null $results
+     * Run the dump tool and wait for it.
+     *
+     * @param list<string> $args
+     *
+     * @return array{exit: int|null, stdout: string, stderr: string}
      */
-    private function getErr(?array $results): string
+    private function runDumpTool(array $args, int $timeoutInSec): array
     {
-        return $results === null ? '' : $results[0]['stderr'];
+        $process = $this->consoleService->findAndStartExecutableAsync($this->dumpTool(), $args, '', $this->getExtaDirs(), false, $timeoutInSec);
+        if ($process === null) {
+            throw new \Exception('the dump tool could not be started');
+        }
+        $process->wait();
+        $out = $this->consoleService->getProcessOut($process)[0];
+
+        return ['exit' => $process->getExitCode()] + $out;
     }
 
     /**

@@ -407,6 +407,7 @@ class YesWikiInit
             'contact_smtp_user' => '',
             'contact_smtp_pass' => '',
             'contact_smtp_secure' => '',
+            'contact_smtp_verify_peer' => true,
             'contact_use_long_wiki_urls_in_emails' => false,
             'contact_reply_to' => '',
             'contact_debug' => 0,

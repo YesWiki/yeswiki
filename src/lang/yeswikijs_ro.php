@@ -88,14 +88,12 @@ return [
 Vă rugăm să confirmaţi eliminarea acestora bifând caseta de mai jos.
 <pre>{files}</pre>',
 
-
     'ACTION_BUILDER_PREVIEW' => 'Previzualizare (nu se poate face clic)',
     'ACTION_BUILDER_ONLINEDOC' => 'Documentație online',
     'ACTION_BUILDER_OWNER' => 'Proprietarul înregistrării',
     'ACTION_BUILDER_MODIFICATION_DATE' => 'Data Schimbării',
     'ACTION_BUILDER_CREATION_DATE' => 'Data creării',
     'ACTION_BUILDER_FORM_ID' => 'Formular',
-
 
     'CONTACT_REQUIRED_FIELD' => 'Acest câmp este obligatoriu.',
     'CONTACT_EMAIL_NOT_VALID' => 'E-mailul introdus nu este valid.',

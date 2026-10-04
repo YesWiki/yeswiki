@@ -3036,14 +3036,12 @@ Texto da sua secção a substituir mais tarde',
 
     'RSS_CHANGE_OF' => 'Modificação de',
     'RSS_HISTORY' => 'histórico',
-    'RSS_HIDDEN_CONTENT' => 'Conteúdo oculto',
     'RSS_ON_DATE' => 'em',
     'RSS_COMPARISON_OF' => 'Comparação de',
     'RSS_TO' => 'a',
     'RSS_ADDS' => 'Adições',
     'RSS_DELETIONS' => 'Eliminações',
     'RSS_NO_DIFF' => 'Sem diferenças',
-
 
     'FORM_BUILDER_ADD_FIELDS' => 'Adicionar um campo',
     'FORM_BUILDER_ADVANCED' => 'Configurações avançadas',

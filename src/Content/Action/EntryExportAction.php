@@ -7,6 +7,7 @@ use YesWiki\Content\Service\CSVManager;
 use YesWiki\Content\Service\FormManager;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Performable\RegisteredAction;
+use YesWiki\Kernel\Service\CurrentRequest;
 use YesWiki\Search\Service\SearchManager;
 
 class EntryExportAction extends YesWikiAction implements RegisteredAction
@@ -21,7 +22,7 @@ class EntryExportAction extends YesWikiAction implements RegisteredAction
     {
         $request = $this->getRequest();
         $get = $request->query;
-        $vIDs = $request->get('form_id') ?? $request->get('id') ?? $arg['id'] ?? $arg['id'] ?? '';
+        $vIDs = CurrentRequest::input($request, 'form_id') ?? CurrentRequest::input($request, 'id') ?? $arg['id'] ?? $arg['id'] ?? '';
 
         $vIDs = $this->getService(BazarListService::class)->getIDs($vIDs);
 

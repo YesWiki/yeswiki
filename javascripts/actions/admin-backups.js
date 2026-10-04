@@ -35,6 +35,18 @@ const app = createApp({
       showReturn: true,
       warnIfNotStarted: true,
       callAsync: true,
+      remoteUrl: '',
+      remoteUsername: '',
+      remotePassword: '',
+      remoteRunning: false,
+      remoteCancelling: false,
+      remoteBytes: 0,
+      remoteTotal: 0,
+      remoteMessage: '',
+      remoteMessageClass: {
+        alert: true,
+        'alert-info': true,
+      },
     }
   },
   methods: {
@@ -172,15 +184,35 @@ const app = createApp({
       }
     },
     async fetch(url, options = {}) {
-      return await fetch(url, options).then(async (pResponse) => {
-        if (!pResponse.ok) {
-          const cJSON = await pResponse.json()
-
-          throw new Error(
-            `${_t('ERROR_CONTACT_ADMIN')} ${pResponse.statusText} (${pResponse.status}) - "${cJSON.error}"`,
-          )
-        } else return pResponse.json()
-      })
+      const response = await fetch(url, options)
+      const text = await response.text()
+      let data = null
+      try {
+        data = JSON.parse(text)
+      } catch {
+        data = null
+      }
+      if (data === null || typeof data !== 'object') {
+        throw new Error(
+          `${_t('ERROR_CONTACT_ADMIN')} ${response.statusText} (${response.status}) - "${this.responseExcerpt(text)}"`,
+        )
+      }
+      if (!response.ok) {
+        throw new Error(
+          `${_t('ERROR_CONTACT_ADMIN')} ${response.statusText} (${response.status}) - "${data.error || data.exceptionMessage || this.responseExcerpt(text)}"`,
+        )
+      }
+      return data
+    },
+    responseExcerpt(text) {
+      const excerpt = String(text)
+        .replace(/<[^>]*>/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim()
+      if (excerpt.length === 0) {
+        return _t('ADMIN_BACKUPS_EMPTY_ANSWER')
+      }
+      return excerpt.length > 300 ? `${excerpt.slice(0, 300)}…` : excerpt
     },
     async fetchPost(url, formObject, options = {}) {
       const internalOptions = { ...options }
@@ -198,10 +230,9 @@ const app = createApp({
       }
       internalOptions.method = 'POST'
       internalOptions.body = new URLSearchParams(formData)
-      internalOptions.headers = new Headers().append(
-        'Content-Type',
-        'application/x-www-form-urlencoded',
-      )
+      internalOptions.headers = {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      }
       return this.fetch(url, internalOptions)
     },
     toggleSelectedArchive(filename) {
@@ -213,12 +244,18 @@ const app = createApp({
         this.selectedArchivesToDelete.push(filename)
       }
     },
+    restoreConfirmation(archive) {
+      const params = { filename: archive.filename }
+      if (archive.type === 'only_db') {
+        return _t('ADMIN_BACKUPS_RESTORE_CONFIRM_ONLY_DB', params)
+      }
+      if (archive.type === 'only_files') {
+        return _t('ADMIN_BACKUPS_RESTORE_CONFIRM_ONLY_FILES', params)
+      }
+      return _t('ADMIN_BACKUPS_RESTORE_CONFIRM_FULL', params)
+    },
     async restoreArchive(archive) {
-      if (
-        !confirm(
-          _t('ADMIN_BACKUPS_RESTORE_CONFIRM', { filename: archive.filename }),
-        )
-      ) {
+      if (!confirm(this.restoreConfirmation(archive))) {
         return
       }
       this.updating = true
@@ -226,8 +263,6 @@ const app = createApp({
         filename: archive.filename,
       })
       this.messageClass = { alert: true, 'alert-info': true }
-      // the restore runs in a process of its own, so what comes back is a uid to follow, not
-      // a finished restore
       return await this.fetchPost(
         wiki.url(`?api/archives/${archive.filename}`),
         { action: 'restore' },
@@ -757,21 +792,143 @@ const app = createApp({
       this.showReturn = false
       return await this.forceUpdate()
     },
+    escapeHtml(text) {
+      return String(text)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+    },
+    remoteStepMessage(step) {
+      const messages = {
+        checking: _t('ADMIN_BACKUPS_REMOTE_STEP_CHECKING'),
+        starting: _t('ADMIN_BACKUPS_REMOTE_STEP_STARTING'),
+        archiving: _t('ADMIN_BACKUPS_REMOTE_STEP_ARCHIVING'),
+        identifying: _t('ADMIN_BACKUPS_REMOTE_STEP_IDENTIFYING'),
+        downloading: _t('ADMIN_BACKUPS_REMOTE_STEP_DOWNLOADING'),
+        cleaning: _t('ADMIN_BACKUPS_REMOTE_STEP_CLEANING'),
+      }
+      return messages[step] || this.escapeHtml(step)
+    },
+    postRemoteBackup(formObject) {
+      return this.fetchPost(wiki.url('?api/remotebackup'), {
+        ...formObject,
+        'csrf-token': this.csrfToken,
+      })
+    },
+    async resumeRemoteBackup() {
+      return await this.fetch(wiki.url('?api/remotebackup')).then(
+        (data) => {
+          if (!data.running) {
+            return
+          }
+          this.remoteRunning = true
+          this.showRemoteState(data)
+          setTimeout(this.advanceRemoteBackup, 1000)
+        },
+        () => {},
+      )
+    },
+    async startRemoteBackup() {
+      if (this.remoteRunning) {
+        return
+      }
+      this.remoteRunning = true
+      this.remoteBytes = 0
+      this.remoteTotal = 0
+      this.setRemoteMessage(_t('ADMIN_BACKUPS_REMOTE_CONNECTING'), 'info')
+      return await this.postRemoteBackup({
+        action: 'start',
+        url: this.remoteUrl,
+        username: this.remoteUsername,
+        password: this.remotePassword,
+      }).then(
+        (data) => {
+          this.remotePassword = ''
+          this.showRemoteState(data)
+          setTimeout(this.advanceRemoteBackup, 500)
+        },
+        (pError) => {
+          this.endRemoteBackup(this.escapeHtml(pError.message), 'danger')
+        },
+      )
+    },
+    async advanceRemoteBackup() {
+      if (!this.remoteRunning || this.remoteCancelling) {
+        return
+      }
+      return await this.postRemoteBackup({ action: 'advance' }).then(
+        (data) => {
+          if (data.error) {
+            return this.endRemoteBackup(this.escapeHtml(data.error), 'danger')
+          }
+          if (!data.running) {
+            const done = _t('ADMIN_BACKUPS_REMOTE_FINISHED', {
+              filename: this.escapeHtml(data.filename || ''),
+            })
+            this.endRemoteBackup(done, 'success')
+            toastMessage(done, 3000, 'alert alert-success')
+            return this.loadArchives()
+          }
+          this.showRemoteState(data)
+          setTimeout(
+            this.advanceRemoteBackup,
+            data.step === 'downloading' ? 500 : 2000,
+          )
+        },
+        (pError) => {
+          this.endRemoteBackup(this.escapeHtml(pError.message), 'danger')
+        },
+      )
+    },
+    showRemoteState(data) {
+      this.remoteBytes = data.bytes || 0
+      this.remoteTotal = data.total || 0
+      let message = this.remoteStepMessage(data.step)
+      if (data.step === 'downloading' && this.remoteTotal > 0) {
+        message += ` ${this.formatFileSize(this.remoteBytes)} / ${this.formatFileSize(this.remoteTotal)}`
+      }
+      if (data.warning) {
+        message += `<br>${this.escapeHtml(data.warning)}`
+      }
+      if (data.output) {
+        message += `<pre>${this.escapeHtml(data.output).split('\n').slice(-5).join('<br>')}</pre>`
+      }
+      this.setRemoteMessage(message, 'secondary-2')
+    },
+    setRemoteMessage(message, className) {
+      this.remoteMessage = message
+      this.remoteMessageClass = { alert: true, [`alert-${className}`]: true }
+    },
+    endRemoteBackup(message, className) {
+      this.remoteRunning = false
+      this.remoteCancelling = false
+      this.setRemoteMessage(message, className)
+    },
+    async cancelRemoteBackup() {
+      this.remoteCancelling = true
+      return await this.postRemoteBackup({ action: 'cancel' }).then(
+        () => {
+          this.endRemoteBackup(_t('ADMIN_BACKUPS_REMOTE_CANCELLED'), 'warning')
+        },
+        (pError) => {
+          this.endRemoteBackup(this.escapeHtml(pError.message), 'danger')
+        },
+      )
+    },
   },
   mounted() {
     const container = this.$el.parentElement || this.$el
     this.isPreupdate = container.classList.contains(
       'preupdate-backups-container',
     )
+    this.csrfToken = container.dataset.csrfToken || wiki.antiCsrfToken || ''
     if (this.isPreupdate) {
       this.packageName = container.dataset.package || ''
-      this.csrfToken = container.dataset.csrfToken || ''
-    }
-    container.addEventListener('dblclick', () => false)
-    if (this.isPreupdate) {
       this.startArchive()
     } else {
       this.loadArchives()
+      this.resumeRemoteBackup()
     }
   },
 })

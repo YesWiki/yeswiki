@@ -9,6 +9,7 @@ export default defineConfig([
     'javascripts/ext-searchbox.js',
     'javascripts/yw-icon-map.js',
     '**/custom/',
+    'binary/.frankenphp/',
   ]),
   {
     extends: [js.configs.recommended, prettier],

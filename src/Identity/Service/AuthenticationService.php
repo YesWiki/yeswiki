@@ -142,8 +142,8 @@ class AuthenticationService extends YesWikiController implements ActorSource
         try {
             try {
                 $data = $this->connectUserFromSession();
-                if ($this->getExpirationTimeStamp($data['lastConnectionDate'], $data['remember']) < time()) {
-                    throw new BadUserConnectException('Not connected via session');
+                if ($this->getExpirationTimeStamp($data['lastConnectionDate'], false) < time()) {
+                    throw new BadUserConnectException('Session older than an hour, checking the cookies again');
                 }
             } catch (BadUserConnectException $th) {
                 $data = $this->connectUserFromCookies();
@@ -266,6 +266,7 @@ class AuthenticationService extends YesWikiController implements ActorSource
             : [
                 'name' => $user['name'],
                 'lastConnection' => $currentDateTime->getTimestamp(),
+                'remember' => $remember,
             ];
 
         if (!empty($user['name']) && $user['name'] !== $previousUserName && !$this->isCli()) {
@@ -459,7 +460,7 @@ class AuthenticationService extends YesWikiController implements ActorSource
 
         return [
             'user' => $user,
-            'remember' => false,
+            'remember' => !empty($_SESSION['user']['remember']),
             'lastConnectionDate' => $lastConnectionDate,
         ];
     }
