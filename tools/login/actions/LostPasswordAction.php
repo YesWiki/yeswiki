@@ -157,7 +157,7 @@ class LostPasswordAction extends YesWikiAction
                     if (!empty($user)) {
                         try {
                             $key = $this->securityController->filterInput(INPUT_POST, 'key', FILTER_DEFAULT, true);
-                            $pw0 = $this->securityController->filterInput(INPUT_POST, 'pw0', FILTER_DEFAULT, true);
+                            $pw0 = $post->get('pw0');
                             $this->resetPassword(
                                 $user['name'],
                                 $key,

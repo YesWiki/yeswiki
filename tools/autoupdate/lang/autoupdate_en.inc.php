@@ -21,6 +21,7 @@ return [
     'AU_UNKNOW' => 'Unknown',
     'AU_ABSENT' => 'Not installed',
     'AU_DELETE_EXT' => 'Delete',
+    'AU_DELETE_EXT_CONFIRM' => 'Delete "{name}"? Its files will be removed from the wiki.',
     'AU_DELETE' => 'Deleting files',
     'AU_NO_DESCRIPTION' => 'Description not available.',
     'AU_DOCUMENTATION_LINK' => 'documentation',

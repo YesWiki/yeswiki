@@ -229,6 +229,9 @@ foreach (['allow_raw_html', 'rewrite_mode'] as $name) {
         $config[$name] = (in_array($config[$name], ['1', true, 'true'])) ? true : false;
     }
 }
+if (isset($config['base_url'], $config['rewrite_mode'])) {
+    $config['base_url'] = baseUrlForRewriteMode(trim($config['base_url']), $config['rewrite_mode']);
+}
 
 ?>
 <br />

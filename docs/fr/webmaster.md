@@ -267,6 +267,79 @@ paramètre `rewrite_mode` à `1` sans faire de re-écriture d'url, ni enlever le
 `?` de `base_url`, pourrait entrainer un dysfonctionnement de YesWiki, il suffit
 de remettre `rewrite_mode` à `0` pour corriger le problème.
 
+##### Configuration nginx
+
+Exemple de configuration pour un wiki installé dans un sous-dossier, ici
+`/test-yeswiki/`, avec les fichiers dans `/var/www/yeswiki/`. Adaptez le chemin,
+l'`alias` et le socket de PHP-FPM (`php8.4-fpm.sock`) à votre serveur. Les deux
+protègent aussi le dossier `private`.
+
+Avec une `base_url` de la forme `https://www.example.net/test-yeswiki/?`
+(`rewrite_mode` à `0`) :
+
+```nginx
+location /test-yeswiki/ {
+    alias /var/www/yeswiki/;
+    try_files $uri $uri/ index.php;
+
+    location ~* /(.*/)?private/ {
+        deny all;
+        return 403;
+    }
+
+    location ~ ^(.+\.php)(.*)$ {
+        fastcgi_split_path_info ^(.+\.php)(.+)$;
+        fastcgi_pass unix:/run/php/php8.4-fpm.sock;
+        fastcgi_index index.php;
+        include fastcgi_params;
+        fastcgi_param SCRIPT_FILENAME $request_filename;
+        fastcgi_param PATH_INFO $fastcgi_path_info;
+        fastcgi_buffer_size 16k;
+        fastcgi_buffers 4 16k;
+    }
+}
+```
+
+Avec une `base_url` de la forme `https://www.example.net/test-yeswiki/`
+(`rewrite_mode` à `1`) :
+
+```nginx
+location /test-yeswiki/ {
+    alias /var/www/yeswiki/;
+    try_files $uri $uri/ index.php;
+
+    location ~* /(.*/)?private/ {
+        deny all;
+        return 403;
+    }
+
+    location ~ ^/test-yeswiki/(?!(actions/|cache/|custom/|docs/|files/|formatters/|handlers/|javascripts/|styles/|themes/|tools/|vendor/|index.php)) {
+        rewrite ^/(.*) /test-yeswiki/index.php?$1;
+    }
+
+    location ~ ^(.+\.php)(.*)$ {
+        fastcgi_split_path_info ^(.+\.php)(.+)$;
+        fastcgi_pass unix:/run/php/php8.4-fpm.sock;
+        fastcgi_index index.php;
+        include fastcgi_params;
+        fastcgi_param SCRIPT_FILENAME $request_filename;
+        fastcgi_param PATH_INFO $fastcgi_path_info;
+        fastcgi_buffer_size 16k;
+        fastcgi_buffers 4 16k;
+    }
+}
+```
+
+Dans cette seconde configuration, toute adresse qui ne commence pas par l'un des
+dossiers listés (`actions/`, `cache/`, `files/`, `tools/`…) ou par `index.php`
+est réécrite vers `index.php?<adresse>`. Une page ne peut donc pas porter le nom
+d'un de ces dossiers, `vendor` ou `actions` par exemple.
+
+Pour un wiki installé à la racine du domaine, la configuration utilisée par
+l'image Docker de YesWiki,
+[`docker/nginx.conf`](https://github.com/YesWiki/yeswiki/blob/doryphore-dev/docker/nginx.conf),
+fonctionne avec ou sans `?` dans la `base_url`, sans lister les dossiers.
+
 ##### Envoyer un mail aux @admins à chaque nouvel ajout de fiche
 
     'BAZ_ENVOI_MAIL_ADMIN' => true
@@ -416,6 +489,41 @@ Il est parfois nécessaire de contacter l'organisation qui vous fournit l'accès
 mail pour demander comment remplir cette configuration. Sinon, aller voir du
 coté de la base d'erreur de la librairie utilisée :
 [la doc de phpMailer](https://github.com/PHPMailer/PHPMailer/wiki/Troubleshooting).
+
+#### Signer les mails avec DKIM
+
+Certaines messageries, Gmail en tête, refusent ou classent en spam les mails
+sans signature DKIM. YesWiki peut signer ses mails, quel que soit le mode
+d'envoi (`mail`, `sendmail` ou `smtp`).
+
+1. Générez une paire de clés dans le dossier `private` du wiki, qui n'est pas
+   accessible depuis le web (voir [Protéger le dossier
+   private](#protéger-le-dossier-private)) :
+
+   ```bash
+   openssl genrsa -out private/dkim.private 2048
+   openssl rsa -in private/dkim.private -pubout -out private/dkim.public
+   ```
+
+2. Publiez la clé publique dans le DNS du domaine de l'adresse d'envoi, avec un
+   enregistrement TXT nommé `<sélecteur>._domainkey`, par exemple
+   `yeswiki._domainkey.mondomaine.ext`. Sa valeur est
+   `v=DKIM1; k=rsa; p=` suivi du contenu de `private/dkim.public` sans les
+   lignes `-----BEGIN…` et `-----END…`, ni retours à la ligne.
+
+3. Dans `wakka.config.php`, ou depuis la page de configuration du wiki :
+
+   ```php
+   'contact_from' => 'wiki@mondomaine.ext',
+   'contact_dkim_domain' => 'mondomaine.ext',
+   'contact_dkim_selector' => 'yeswiki',
+   'contact_dkim_private_key' => 'private/dkim.private',
+   ```
+
+Le domaine DKIM doit être celui de l'adresse d'envoi (`contact_from`). Les
+mails ne sont signés que si les trois paramètres `contact_dkim_*` sont remplis
+et que le fichier de clé est lisible ; sinon ils partent sans signature, comme
+avant.
 
 ### Migrer son wiki
 

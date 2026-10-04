@@ -219,7 +219,18 @@ class EntryController extends YesWikiController
             'renderedEntry' => $renderedEntry,
             'sourceUrl' => $sourceUrl,
             'incomingUrl' => $this->getRequest()->query->get('incomingurl', getAbsoluteUrl()),
+            'editContextUrl' => $this->getEditContextUrl($entryId),
         ]);
+    }
+
+    /** Shows the saved-entry message on the next page, with a link to carry on. */
+    private function flashSavedEntry(string $message, string $link, string $linkLabel): void
+    {
+        Flash::success($this->render('@bazar/entries/saved-message.twig', [
+            'message' => $message,
+            'link' => $link,
+            'linkLabel' => $linkLabel,
+        ]));
     }
 
     private function fieldsToExclude()
@@ -275,22 +286,17 @@ class EntryController extends YesWikiController
                         'id' => $entry['id_fiche'],
                         'data' => $entry,
                     ]);
+                    $this->flashSavedEntry(
+                        _t('BAZ_FICHE_ENREGISTREE'),
+                        $this->wiki->Href(testUrlInIframe(), '', ['vue' => 'saisir', 'id' => $formId], false),
+                        _t('BAZ_ADD_NEW_ENTRY'),
+                    );
                     $redirectUrl = !empty($incomingUrl)
                         ? $incomingUrl
                         : (
                             !empty($redirectUrl)
                             ? $redirectUrl
-                            : $this->wiki->Href(
-                                testUrlInIframe(),
-                                '',
-                                [
-                                    'vue' => 'consulter',
-                                    'action' => 'voir_fiche',
-                                    'id_fiche' => $entry['id_fiche'],
-                                    'message' => 'ajout_ok',
-                                ],
-                                false,
-                            )
+                            : $this->wiki->Href(testUrlInIframe(), $entry['id_fiche'], [], false)
                         );
                     header('Location: ' . $redirectUrl);
                     $this->wiki->exit();
@@ -323,6 +329,7 @@ class EntryController extends YesWikiController
             'showConditions' => $form['bn_condition'] !== '' && !$post->has('accept_condition'),
             'passwordForEditing' => isset($this->config['password_for_editing']) && !empty($this->config['password_for_editing']) && $post->has('password_for_editing') ? $post->get('password_for_editing') : '',
             'incomingUrl' => $incomingUrl,
+            'cancelUrl' => $this->getCancelUrl($incomingUrl),
             'error' => $error,
             'imageSmallWidth' => $this->config['image-small-width'],
             'imageSmallHeight' => $this->config['image-small-height'],
@@ -355,17 +362,17 @@ class EntryController extends YesWikiController
                     'id' => $entry['id_fiche'],
                     'data' => $entry,
                 ]);
+                $this->flashSavedEntry(
+                    _t('BAZ_FICHE_MODIFIEE'),
+                    $this->wiki->Href(testUrlInIframe() ? 'editiframe' : 'edit', $entry['id_fiche'], [], false),
+                    _t('BAZ_MODIFY_ENTRY_AGAIN'),
+                );
                 $redirectUrl = !empty($incomingUrl)
                     ? $incomingUrl
                     : (
                         !empty($redirectUrl)
                         ? $redirectUrl
-                        : $this->wiki->Href(testUrlInIframe(), '', [
-                            'vue' => 'consulter',
-                            'action' => 'voir_fiche',
-                            'id_fiche' => $entry['id_fiche'],
-                            'message' => 'modif_ok',
-                        ], false)
+                        : $this->wiki->Href(testUrlInIframe(), $entry['id_fiche'], [], false)
                     );
                 header('Location: ' . $redirectUrl);
                 $this->wiki->exit();
@@ -396,6 +403,7 @@ class EntryController extends YesWikiController
             'showConditions' => false,
             'passwordForEditing' => isset($this->config['password_for_editing']) && !empty($this->config['password_for_editing']) && $post->has('password_for_editing') ? $post->get('password_for_editing') : '',
             'incomingUrl' => $incomingUrl,
+            'cancelUrl' => $this->getCancelUrl($incomingUrl, $entryId),
             'error' => $error,
             'imageSmallWidth' => $this->config['image-small-width'],
             'imageSmallHeight' => $this->config['image-small-height'],
@@ -837,6 +845,38 @@ class EntryController extends YesWikiController
             $incomingUrl = filter_var($incomingUrl, FILTER_VALIDATE_URL);
         }
 
-        return empty($incomingUrl) ? '' : $incomingUrl;
+        return empty($incomingUrl) || !$this->isWikiUrl($incomingUrl) ? '' : $incomingUrl;
+    }
+
+    /** The page to come back to after editing $entryTag: the current page, unless it is an API call or the entry's own plain page. */
+    public function getEditContextUrl(string $entryTag): string
+    {
+        if ($this->wiki->GetPageTag() === 'api' || !in_array($this->wiki->GetMethod(), ['show', 'iframe'], true)) {
+            return '';
+        }
+        $currentUrl = getAbsoluteUrl();
+        $plainUrls = [$this->wiki->Href('', $entryTag, null, false), $this->wiki->Href('iframe', $entryTag, null, false)];
+
+        return in_array($currentUrl, $plainUrls, true) || !$this->isWikiUrl($currentUrl) ? '' : $currentUrl;
+    }
+
+    /** Where the form's cancel button leads: where the edit started, else the page the visitor came from, else the entry or the page holding the form. */
+    private function getCancelUrl(string $incomingUrl, ?string $entryId = null): string
+    {
+        if (!empty($incomingUrl)) {
+            return $incomingUrl;
+        }
+        $referer = (string)$this->getRequest()->headers->get('referer', '');
+        $currentUrl = getAbsoluteUrl();
+        if ($referer !== '' && $this->isWikiUrl($referer) && strtok($referer, '#') !== strtok($currentUrl, '#')) {
+            return $referer;
+        }
+
+        return $this->wiki->Href(testUrlInIframe(), $entryId ?? '', null, false);
+    }
+
+    private function isWikiUrl(string $url): bool
+    {
+        return parse_url($url, PHP_URL_HOST) === parse_url($this->wiki->config['base_url'], PHP_URL_HOST);
     }
 }

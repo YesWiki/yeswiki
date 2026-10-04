@@ -280,7 +280,7 @@ class ApiController extends YesWikiController
                 return $this->getAllSemanticEntries($formId, $entries);
             } elseif ($output == 'html') {
                 foreach ($entries as $id => $entry) {
-                    $entries[$id]['html_output'] = $this->getService(EntryController::class)->view($entry, '', 0);
+                    $entries[$id]['html_output'] = $this->renderWithItsStyles(fn () => $this->getService(EntryController::class)->view($entry, '', 0));
                 }
             } elseif ($output == 'geojson') {
                 $entries = $this->getService(GeoJSONFormatter::class)->formatToGeoJSON($entries);
@@ -319,7 +319,7 @@ class ApiController extends YesWikiController
         if ($this->isEntryViewFastAccess($output, $selectedEntries, $get->all())) {
             $entryId = explode(',', $selectedEntries)[0];
             if ($this->getService(AclService::class)->hasAccess('read', $entryId)) {
-                $html = $this->getService(EntryController::class)->view($entryId, '', 1);
+                $html = $this->renderWithItsStyles(fn () => $this->getService(EntryController::class)->view($entryId, '', 1));
                 $isInIframe = $get->get('isInIframe');
                 if ($isInIframe && $isInIframe == 'iframe') {
                     $html = replaceLinksWithIframe($html);
@@ -335,6 +335,17 @@ class ApiController extends YesWikiController
         }
 
         return $this->getAllFormEntries([], $output, $selectedEntries);
+    }
+
+    /** Renders an entry and puts in front of its html the stylesheets the rendering asked for, which an API response has no page head to carry. */
+    private function renderWithItsStyles(callable $render): string
+    {
+        $stylesBefore = $GLOBALS['css'] ?? '';
+        $html = (string)$render();
+        $stylesAfter = $GLOBALS['css'] ?? '';
+        $addedStyles = str_starts_with($stylesAfter, $stylesBefore) ? substr($stylesAfter, strlen($stylesBefore)) : '';
+
+        return empty($html) ? $html : trim($addedStyles) . $html;
     }
 
     /**

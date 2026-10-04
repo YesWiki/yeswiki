@@ -49,6 +49,14 @@ const DATATABLE_OPTIONS = {
   ],
 }
 
+/** Distance from the top of the window for a toast: just under a horizontal navbar still on screen, otherwise 20px. */
+function toastTopOffset() {
+  const navbar = document.getElementById('yw-topnav')
+  if (!navbar) return 20
+  const { width, height, bottom } = navbar.getBoundingClientRect()
+  return height >= width ? 20 : Math.max(bottom, 0) + 20
+}
+
 function toastMessage(
   message,
   duration = 3000,
@@ -62,7 +70,7 @@ function toastMessage(
   toastEl.appendChild(innerEl)
   const $toast = $(toastEl)
   $('body').after($toast)
-  $toast.css('top', `${$('#yw-topnav').outerHeight(true) + 20}px`)
+  $toast.css('top', `${toastTopOffset()}px`)
   $toast.css('opacity', 1)
   setTimeout(() => {
     $toast.css('opacity', 0)
@@ -275,6 +283,10 @@ function toastMessage(
     return false
   }
   $(document).on('click', 'a.modalbox, a.modal, .modalbox a', openModal)
+
+  $(document).on('shown.bs.collapse', () => {
+    window.dispatchEvent(new Event('resize'))
+  })
 
   $(document).on('click', 'a.newtab', function (e) {
     e.preventDefault()
