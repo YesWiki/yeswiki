@@ -79,7 +79,7 @@ class RestrictedFieldsTest extends YesWikiTestCase
 
     private function createEntry(string $title, array $data = []): string
     {
-        $entry = $this->entryManager->create($this->formId, array_merge(['bf_titre' => $title], $data));
+        $entry = $this->entryManager->create($this->formId, array_merge(['antispam' => 1, 'bf_titre' => $title], $data));
         $this->createdTags[] = $entry['id_fiche'];
         $this->aclService->save($entry['id_fiche'], 'write', '*');
 

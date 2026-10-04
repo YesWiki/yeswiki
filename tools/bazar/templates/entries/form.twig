@@ -1,7 +1,7 @@
 {{ include_javascript('tools/bazar/presentation/javascripts/bazar.js', true, true) }}
 {{ error|raw }}
 <h3 class="titre_type_fiche">{{ _t('BAZ_TITRE_SAISIE_FICHE') }}&nbsp;{{ form.bn_label_nature }}</h3>
-<form action="" method="post" name="bazar-form-{{ form.bn_id_nature }}" id="bazar-form-{{ form.bn_id_nature }}" enctype="multipart/form-data" class="bazar-form form-horizontal" {% if not showConditions %}novalidate{% endif %}>
+<form action="{{ formAction }}" method="post" name="bazar-form-{{ form.bn_id_nature }}" id="bazar-form-{{ form.bn_id_nature }}" enctype="multipart/form-data" class="bazar-form form-horizontal" {% if not showConditions %}novalidate{% endif %}>
   {% if showConditions %}
     {{ form.bn_condition|raw }}
     <div class="checkbox">

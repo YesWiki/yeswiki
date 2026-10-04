@@ -18,6 +18,11 @@ $(document).ready(() => {
     }
   })
 
+  $(document).on('submit', 'form', function () {
+    $(this).find('input[name=antispam]').val('1')
+  })
+
+  // carto google
   const divcarto = document.getElementById('map')
   if (divcarto) {
     initialize()
@@ -792,7 +797,8 @@ $(document).ready(() => {
     const $this = $(this)
     let target = $this.parents('.controls').find('.yeswiki-checkbox')
     if ($this.data('target')) {
-      target = $($this.data('target'))
+      const $form = $this.closest('form')
+      target = ($form.length ? $form : $(document)).find($this.data('target'))
     }
 
     if (this.checked) {

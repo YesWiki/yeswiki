@@ -64,8 +64,8 @@ class SearchManagerFieldNameInjectionTest extends YesWikiTestCase
         ]);
         $entries = [];
         try {
-            $entries[] = $entryManager->create($formId, ['bf_titre' => 'Hyphen one', 'bf_dossier-wiki' => 'louise', 'bf_mes-types' => '1,2']);
-            $entries[] = $entryManager->create($formId, ['bf_titre' => 'Hyphen two', 'bf_dossier-wiki' => 'marcel', 'bf_mes-types' => '3']);
+            $entries[] = $entryManager->create($formId, ['antispam' => 1, 'bf_titre' => 'Hyphen one', 'bf_dossier-wiki' => 'louise', 'bf_mes-types' => '1,2']);
+            $entries[] = $entryManager->create($formId, ['antispam' => 1, 'bf_titre' => 'Hyphen two', 'bf_dossier-wiki' => 'marcel', 'bf_mes-types' => '3']);
             $search = fn (string $query) => array_column($entryManager->search([
                 'formsIds' => [$formId],
                 'queries' => $wiki->services->get(SearchManager::class)->parseQuery($query),
@@ -96,7 +96,7 @@ class SearchManagerFieldNameInjectionTest extends YesWikiTestCase
         ]);
         $entries = [];
         try {
-            $entries[] = $entryManager->create($formId, ['bf_titre' => 'A placed entry', 'bf_latitude' => '1.5', 'bf_longitude' => '2.5']);
+            $entries[] = $entryManager->create($formId, ['antispam' => 1, 'bf_titre' => 'A placed entry', 'bf_latitude' => '1.5', 'bf_longitude' => '2.5']);
             $search = fn (string $query) => array_column($entryManager->search([
                 'formsIds' => [$formId],
                 'queries' => $wiki->services->get(SearchManager::class)->parseQuery($query),

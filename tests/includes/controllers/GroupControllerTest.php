@@ -12,6 +12,8 @@ use YesWiki\Core\Exception\GroupNameDoesNotExistException;
 use YesWiki\Core\Exception\InvalidGroupNameException;
 use YesWiki\Core\Exception\InvalidInputException;
 use YesWiki\Core\Exception\UserNameDoesNotExistException;
+use YesWiki\Core\Service\GroupManager;
+use YesWiki\Core\Service\UserManager;
 use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';
@@ -27,6 +29,29 @@ class GroupControllerTest extends YesWikiTestCase
 {
     public const INVALID_CHAR = '+-_*=.:,?';
     public const CHARS_FOR_GROUP = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+
+    private static array $userNames = [];
+    private static array $groupNames = [];
+
+    public static function tearDownAfterClass(): void
+    {
+        $wiki = static::getWiki();
+        $groupManager = $wiki->services->get(GroupManager::class);
+        $userManager = $wiki->services->get(UserManager::class);
+        $groups = array_merge(self::$groupNames, array_map(fn ($name) => $name . 'group', self::$userNames));
+        foreach ($groups as $group) {
+            if ($groupManager->groupExists($group)) {
+                $groupManager->delete($group);
+            }
+        }
+        foreach (self::$userNames as $name) {
+            $user = $userManager->getOneByName($name);
+            if ($user !== null) {
+                $userManager->delete($user);
+            }
+        }
+        self::$userNames = self::$groupNames = [];
+    }
 
     public function testGroupControllerExisting(): GroupController
     {
@@ -46,8 +71,9 @@ class GroupControllerTest extends YesWikiTestCase
         $userController = $wiki->services->get(UserController::class);
         $user_name = $wiki->generateRandomString(10, self::CHARS_FOR_GROUP);
         $userController->create(['name' => $user_name, 'email' => $valid_group_name . '@example.com', 'password' => $user_name]);
+        self::$userNames[] = $user_name;
+        array_push(self::$groupNames, $valid_group_name, $new_valid_group);
 
-        // groupname, error type, members
         return [
             'correct group' => [$valid_group_name,  0, [$user_name]],
             'Invalid group name' => [$invalid_group_name, 1, [$user_name]],
@@ -145,8 +171,9 @@ class GroupControllerTest extends YesWikiTestCase
         $groupController->create($new_valid_group, [$user_name_1]);
         $groupController->create($third_valid_group, [$user_name_1, '@' . $valid_group_name]);
         $groupController->create($fourth_valid_group, [$user_name_1, '@' . $third_valid_group]);
+        array_push(self::$userNames, $user_name, $user_name_1);
+        array_push(self::$groupNames, $valid_group_name, $new_valid_group, $third_valid_group, $fourth_valid_group, $not_existing_group);
 
-        // groupname, error type, members
         return [
             'valid scenario' => [$valid_group_name,  0, [$user_name]],
             'valid group add' => [$valid_group_name, 0, ['@' . $new_valid_group]],
@@ -196,8 +223,9 @@ class GroupControllerTest extends YesWikiTestCase
         $groupController = $wiki->services->get(GroupController::class);
         $groupController->create($new_valid_group, [$user_name_1, $user_name]);
         $groupController->create($valid_group_name, [$user_name_1, $user_name, '@' . $new_valid_group]);
+        array_push(self::$userNames, $user_name, $user_name_1);
+        array_push(self::$groupNames, $valid_group_name, $new_valid_group, $not_existing_group);
 
-        // groupname, error type, members
         return [
             'remove one user' => [$new_valid_group,  0, [$user_name]],
             'remove one user and one group' => [$valid_group_name, 0, ['@' . $new_valid_group, $user_name_1]],

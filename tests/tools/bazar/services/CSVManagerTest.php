@@ -157,7 +157,7 @@ class CSVManagerTest extends YesWikiTestCase
     private function createEntry(array $values): void
     {
         $entry = $this->entryManager->create($this->formId, array_merge(
-            ['id_fiche' => self::ENTRY_TAG],
+            ['antispam' => 1, 'id_fiche' => self::ENTRY_TAG],
             $values,
         ));
         $this->tags[] = $entry['id_fiche'];

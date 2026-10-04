@@ -45,6 +45,7 @@ class EntryManagerTest extends YesWikiTestCase
         $tag = null;
         try {
             $entry = $entryManager->create($formId, [
+                'antispam' => 1,
                 'bf_titre' => 'Test entry',
                 'id_fiche' => self::ENTRY_TAG,
             ]);

@@ -11,6 +11,7 @@ use YesWiki\Bazar\Field\BazarField;
 use YesWiki\Bazar\Field\ConditionsCheckingField;
 use YesWiki\Bazar\Field\EmailField;
 use YesWiki\Bazar\Field\SubscribeField;
+use YesWiki\Bazar\Field\LinkedEntryField;
 use YesWiki\Bazar\Field\UserField;
 use YesWiki\Bazar\Service\ConditionsChecker;
 use YesWiki\Bazar\Service\EntryManager;
@@ -317,6 +318,7 @@ class EntryController extends YesWikiController
 
         return $botGuard->placeFields($this->render('@bazar/entries/form.twig', [
             'form' => $form,
+            'formAction' => $this->getRequest()->getRequestUri(),
             'renderedInputs' => $renderedInputs,
             'showConditions' => $form['bn_condition'] !== '' && !$post->has('accept_condition'),
             'passwordForEditing' => isset($this->config['password_for_editing']) && !empty($this->config['password_for_editing']) && $post->has('password_for_editing') ? $post->get('password_for_editing') : '',
@@ -388,6 +390,7 @@ class EntryController extends YesWikiController
 
         return $botGuard->placeFields($this->render('@bazar/entries/form.twig', [
             'form' => $form,
+            'formAction' => $this->getRequest()->getRequestUri(),
             'entryId' => $entryId,
             'renderedInputs' => $renderedInputs,
             'showConditions' => false,
@@ -542,7 +545,9 @@ class EntryController extends YesWikiController
         $html = [];
         foreach ($form['prepared'] as $field) {
             if ($field instanceof BazarField) {
-                $id = $field->getPropertyName();
+                $id = $field instanceof LinkedEntryField
+                    ? $field->getType() . $field->getName()
+                    : $field->getPropertyName();
                 if (!empty($id) && !in_array($id, $this->fieldsToExclude())) {
                     $html[$id] = $field->renderStaticIfPermitted($entry, $userNameForRendering);
                     $matches = [];

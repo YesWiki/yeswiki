@@ -69,6 +69,7 @@ class EntryCreationOverwriteTest extends YesWikiTestCase
     {
         try {
             $this->entryManager->create($this->formId, [
+                'antispam' => 1,
                 'bf_titre' => 'whatever',
                 'id_fiche' => self::TARGET_TAG,
             ]);
@@ -83,6 +84,7 @@ class EntryCreationOverwriteTest extends YesWikiTestCase
     public function testATitleThatMapsOntoAnExistingPageGetsAnotherTag()
     {
         $entry = $this->entryManager->create($this->formId, [
+            'antispam' => 1,
             'bf_titre' => 'Bazar Overwrite Target Page',
         ]);
         $this->createdTags[] = $entry['id_fiche'];
@@ -94,6 +96,7 @@ class EntryCreationOverwriteTest extends YesWikiTestCase
     public function testAnAnonymousVisitorStillCreatesAnEntry()
     {
         $entry = $this->entryManager->create($this->formId, [
+            'antispam' => 1,
             'bf_titre' => 'Bazar Overwrite Brand New Entry',
         ]);
         $this->createdTags[] = $entry['id_fiche'];

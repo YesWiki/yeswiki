@@ -31,7 +31,7 @@ class SearchManagerBooleanQueryTest extends YesWikiTestCase
             'bn_condition' => '',
         ]);
         foreach ([['E1', 'toto', 'x'], ['E2', 'x', 'tata'], ['E3', 'toto', 'tata'], ['E4', 'x', 'x']] as [$title, $a, $b]) {
-            self::$tags[] = $entryManager->create(self::$formId, ['bf_titre' => $title, 'bf_a' => $a, 'bf_b' => $b])['id_fiche'];
+            self::$tags[] = $entryManager->create(self::$formId, ['antispam' => 1, 'bf_titre' => $title, 'bf_a' => $a, 'bf_b' => $b])['id_fiche'];
         }
     }
 
