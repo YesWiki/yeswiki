@@ -3,6 +3,7 @@
 namespace YesWiki\Test\Admin;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Admin\Service\DatabaseCopier;
 use YesWiki\Admin\Service\SchemaCreator;
 use YesWiki\Kernel\Database\DumpRewriter;
@@ -78,6 +79,51 @@ class DatabaseCopierTest extends YesWikiTestCase
             $this->assertSame('AlreadyThere', $kept->fetchColumn(), 'the wiki already on the target is left alone');
         } finally {
             unset($source, $sourcePdo);
+            @unlink($sourceFile);
+        }
+    }
+
+    /** PostgreSQL folds an unquoted name to lower case, so a prefix with capitals must be quoted everywhere a table is named. */
+    public function testAPrefixWithCapitalsArrivesWholeOnPostgreSql(): void
+    {
+        $params = $this->getWiki()->services->get(ParameterBagInterface::class);
+        if ($params->get('db_driver') !== 'pgsql') {
+            $this->markTestSkipped('needs the suite to run on PostgreSQL');
+        }
+        $text = static function (string $key) use ($params): string {
+            $value = $params->has($key) ? $params->get($key) : '';
+
+            return is_scalar($value) ? (string)$value : '';
+        };
+        $connection = [
+            'db_driver' => 'pgsql',
+            'db_host' => $text('db_host'),
+            'db_port' => $text('db_port'),
+            'db_database' => $text('db_database'),
+            'db_user' => $text('db_user'),
+            'db_password' => $text('db_password'),
+        ];
+        $prefix = 'ywCopy_NA__';
+        $sourceFile = sys_get_temp_dir() . '/yeswiki-db-copy-source-' . bin2hex(random_bytes(4)) . '.sqlite';
+        $target = DatabaseCopier::connect('pgsql', $connection['db_host'], $connection['db_port'], $connection['db_database'], $connection['db_user'], $connection['db_password']);
+        try {
+            $sourcePdo = DatabaseCopier::connect('sqlite', '', '', $sourceFile, '', '');
+            SchemaCreator::create($sourcePdo, $prefix);
+            $sourcePdo->exec("INSERT INTO {$prefix}triples (resource, property, value) VALUES ('Mine', 'p', 'v')");
+            $source = new DbService(new ParameterBag(['db_driver' => 'sqlite', 'db_database' => $sourceFile, 'table_prefix' => $prefix, 'base_url' => '', 'debug' => false]));
+
+            $counts = (new DatabaseCopier($source))->copy($target, $prefix);
+
+            $this->assertSame([1, 1], $counts[$prefix . 'triples']);
+            $copy = new DbService(new ParameterBag($connection + ['table_prefix' => $prefix, 'base_url' => '', 'debug' => false]));
+            $this->assertContains('resource', $copy->schema()->dumpableColumns($prefix . 'triples'));
+            $this->assertStringContainsString('"' . $prefix . 'triples"', (string)$copy->schema()->getTableSchema($prefix . 'triples'));
+        } finally {
+            $created = $target->query("SELECT tablename FROM pg_tables WHERE schemaname = current_schema() AND starts_with(tablename, '{$prefix}')");
+            foreach ($created === false ? [] : $created->fetchAll(\PDO::FETCH_COLUMN) as $table) {
+                $target->exec('DROP TABLE IF EXISTS "' . $table . '" CASCADE');
+            }
+            unset($source, $sourcePdo, $copy);
             @unlink($sourceFile);
         }
     }

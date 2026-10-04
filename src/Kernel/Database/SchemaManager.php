@@ -345,7 +345,7 @@ class SchemaManager
             case 'pgsql':
                 $rows = $this->dbService->loadAll(
                     'SELECT a.attname AS name FROM pg_attribute a'
-                    . ' WHERE a.attrelid = to_regclass(?) AND a.attnum > 0 AND NOT a.attisdropped'
+                    . ' WHERE a.attrelid = to_regclass(quote_ident(?)) AND a.attnum > 0 AND NOT a.attisdropped'
                     . " AND a.attgenerated::text = ''"
                     . ' ORDER BY a.attnum',
                     [$tableName]
@@ -379,7 +379,7 @@ class SchemaManager
             . ' a.attgenerated::text AS generated'
             . ' FROM pg_attribute a'
             . ' LEFT JOIN pg_attrdef d ON d.adrelid = a.attrelid AND d.adnum = a.attnum'
-            . ' WHERE a.attrelid = to_regclass(?) AND a.attnum > 0 AND NOT a.attisdropped'
+            . ' WHERE a.attrelid = to_regclass(quote_ident(?)) AND a.attnum > 0 AND NOT a.attisdropped'
             . ' ORDER BY a.attnum',
             [$tableName]
         );
@@ -394,7 +394,7 @@ class SchemaManager
 
         $constraints = $this->dbService->loadAll(
             'SELECT conname, pg_get_constraintdef(oid) AS def FROM pg_constraint'
-            . " WHERE conrelid = to_regclass(?) AND contype IN ('p', 'u', 'c')"
+            . " WHERE conrelid = to_regclass(quote_ident(?)) AND contype IN ('p', 'u', 'c')"
             . " ORDER BY CASE contype WHEN 'p' THEN 1 WHEN 'u' THEN 2 ELSE 3 END, conname",
             [$tableName]
         );
@@ -413,7 +413,7 @@ class SchemaManager
             . ' WHERE i.schemaname = current_schema() AND i.tablename = ?'
             . ' AND NOT EXISTS ('
             . '   SELECT 1 FROM pg_constraint c'
-            . '   WHERE c.conrelid = to_regclass(i.tablename) AND c.conname = i.indexname'
+            . '   WHERE c.conrelid = to_regclass(quote_ident(i.tablename)) AND c.conname = i.indexname'
             . ' ) ORDER BY i.indexname',
             [$tableName]
         );

@@ -150,7 +150,7 @@ class DatabaseCopier
 
             if ($targetDriver === 'pgsql' && $keyed) {
                 $target->exec(
-                    "SELECT setval(pg_get_serial_sequence('" . str_replace("'", "''", $table) . "', 'id'),"
+                    "SELECT setval(pg_get_serial_sequence('" . str_replace("'", "''", self::quote($targetDriver, $table)) . "', 'id'),"
                     . ' COALESCE((SELECT MAX(id) FROM ' . self::quote($targetDriver, $table) . '), 1),'
                     . ' (SELECT MAX(id) FROM ' . self::quote($targetDriver, $table) . ') IS NOT NULL)'
                 );
