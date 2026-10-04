@@ -523,35 +523,20 @@ class EntryManager
      */
     protected function assignRestrictedFields(array $data, array $previousData, array $form)
     {
-        // check if there are some restricted fields at writing
-        $restrictedFields = [];
-
-        $vDefaults = [];
-
         foreach ($form['prepared'] as $field) {
-            if ($field instanceof BazarField) {
-                $propName = $field->getPropertyName();
-                // be carefull : BazarField's objects, that do not save data (as ACL, Label, Hidden), do not have propertyName
-                // see BazarField->formatValuesBeforeSave() for details
-                // so do not save the previous data even if existing
-                if (!empty($propName) && !$field->canEdit($data)) {
-                    $restrictedFields[] = $propName;
-
-                    $vDefaults[$propName] = $field->getDefault();
-                }
+            if (!($field instanceof BazarField)) {
+                continue;
             }
-        }
-
-        if (!empty($restrictedFields)) {
-            // get the value of the restricted fields in the previous data
-            foreach ($restrictedFields as $propName) {
-                if (isset($previousData[$propName])) {
-                    $data[$propName] = $previousData[$propName];
-                }
-
-                if (trim($data[$propName] ?? '') == '' && trim($vDefaults[$propName]) != '') {
-                    $data[$propName] = $vDefaults[$propName];
-                }
+            $propName = $field->getPropertyName();
+            if (empty($propName) || $field->canEdit($data)) {
+                continue;
+            }
+            if (array_key_exists($propName, $previousData)) {
+                $data[$propName] = $previousData[$propName];
+            } elseif (!$field->isEmpty($field->getDefault())) {
+                $data[$propName] = $field->getDefault();
+            } else {
+                unset($data[$propName]);
             }
         }
 
