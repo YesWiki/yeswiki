@@ -938,6 +938,22 @@ $(document).ready(() => {
     }
   }
 
+  // entries of a facet container, without entries nested inside another entry
+  function topLevelEntries($container) {
+    return $('.bazar-entry', $container).filter(function () {
+      return (
+        $(this).parent().closest('.bazar-entry', $container[0]).length === 0
+      )
+    })
+  }
+
+  // filter boxes of this facet container, not of a nested one
+  function ownFilterBoxes($container) {
+    return $('.filter-box', $container).filter(function () {
+      return $(this).closest('.facette-container').is($container)
+    })
+  }
+
   // activer les filtres des facettes
   function updateFilters(e) {
     const tabfilters = []
@@ -1070,8 +1086,8 @@ $(document).ready(() => {
       const $filters = $('.filter-checkbox', $container)
       const data = {
         $nbresults: $('.nb-results', $container),
-        $filterboxes: $('.filter-box', $container),
-        $entries: $('.bazar-entry', $container),
+        $filterboxes: ownFilterBoxes($container),
+        $entries: topLevelEntries($container),
         $geometries: $('.bazar-entry-geometry', $container),
         $resultlabel: $('.result-label', $container),
         $resultslabel: $('.results-label', $container),
@@ -1105,8 +1121,8 @@ $(document).ready(() => {
         const $container = $(this)
         const data = {
           $nbresults: $('.nb-results', $container),
-          $filterboxes: $('.filter-box', $container),
-          $entries: $('.bazar-entry', $container),
+          $filterboxes: ownFilterBoxes($container),
+          $entries: topLevelEntries($container),
           $geometries: $('.bazar-entry-geometry', $container),
           $resultlabel: $('.result-label', $container),
           $resultslabel: $('.results-label', $container),
@@ -1152,17 +1168,18 @@ $(document).ready(() => {
       if (searchstring) {
         searchstring = searchstring.toLowerCase()
       }
+      const $entries = topLevelEntries($(`#${target}`))
       if (bazarList[target] === undefined) {
         bazarList[target] = []
-        $(`#${target} .bazar-entry`).each(function () {
+        $entries.each(function () {
           bazarList[target][$(this).data('id_fiche')] = $(this)
             .find(':visible')
             .text()
             .toLowerCase()
         })
       }
-      $(`#${target} .bazar-entry`).hide()
-      $(`#${target} .bazar-entry`)
+      $entries.hide()
+      $entries
         .filter(function (_i) {
           return (
             bazarList[target][$(this).data('id_fiche')].indexOf(searchstring) >
@@ -1170,7 +1187,7 @@ $(document).ready(() => {
           )
         })
         .show()
-      const nbresults = $(`#${target} .bazar-entry:visible`).length
+      const nbresults = $entries.filter(':visible').length
       $(this).parents('.facette-container').find('.nb-results').html(nbresults)
       if (nbresults > 1) {
         $(this).parents('.facette-container').find('.result-label').hide()
