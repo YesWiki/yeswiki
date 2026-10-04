@@ -114,9 +114,6 @@ class SecurityController extends YesWikiController
             $post = $this->wiki->request->request;
             if (($mode != 'entry' && $post->get('submit') == self::EDIT_PAGE_SUBMIT_VALUE)
                 || ($mode == 'entry' && !empty($post->get('bf_titre')))) {
-                /**
-                 * @var string $error message if error
-                 */
                 $error = '';
                 if (empty($post->get('captcha'))) {
                     $error = _t('CAPTCHA_ERROR_PAGE_UNSAVED');
@@ -126,15 +123,17 @@ class SecurityController extends YesWikiController
                 )) {
                     $error = _t('CAPTCHA_ERROR_WRONG_WORD');
                 }
-                // clean if error
                 if (!empty($error)) {
                     $_POST['submit'] = '';
+                    $post->set('submit', '');
                     if ($mode == 'entry') {
                         unset($_POST['bf_titre']);
+                        $post->remove('bf_titre');
                     }
                 }
-                unset($_POST['captcha']);
-                unset($_POST['captcha_hash']);
+                unset($_POST['captcha'], $_POST['captcha_hash']);
+                $post->remove('captcha');
+                $post->remove('captcha_hash');
             }
         }
 
