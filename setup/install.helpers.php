@@ -163,3 +163,16 @@ function querySqlFile($dblink, $sqlFile, $replacements = [])
     }
     exit(_t('SQL_FILE_NOT_FOUND') . ' "' . $sqlFile . '".');
 }
+
+/** Makes a base url ending in "/?" or "/" agree with the rewrite mode chosen at install; any other ending is left as typed. */
+function baseUrlForRewriteMode(string $baseUrl, bool $rewriteMode): string
+{
+    if ($rewriteMode && str_ends_with($baseUrl, '/?')) {
+        return substr($baseUrl, 0, -1);
+    }
+    if (!$rewriteMode && str_ends_with($baseUrl, '/')) {
+        return $baseUrl . '?';
+    }
+
+    return $baseUrl;
+}

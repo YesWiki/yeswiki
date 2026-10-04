@@ -2,6 +2,7 @@
 
 namespace YesWiki\Test\Setup;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 require_once 'includes/services/ArchiveFilename.php';
@@ -100,5 +101,22 @@ class InstallHelpersTest extends TestCase
         $this->assertSame('private/backups', backupsFolder([]));
         $this->assertSame('private/backups', backupsFolder(['archive' => ['privatePath' => '%TMP']]));
         $this->assertSame('/somewhere/backups', backupsFolder(['archive' => ['privatePath' => '/somewhere/backups/']]));
+    }
+
+    public static function baseUrls(): array
+    {
+        return [
+            'rewrite drops the question mark' => ['https://example.org/wiki/?', true, 'https://example.org/wiki/'],
+            'rewrite keeps an url without it' => ['https://example.org/wiki/', true, 'https://example.org/wiki/'],
+            'no rewrite adds the question mark' => ['https://example.org/wiki/', false, 'https://example.org/wiki/?'],
+            'no rewrite keeps an url with it' => ['https://example.org/wiki/?', false, 'https://example.org/wiki/?'],
+            'a script url is left as typed' => ['https://example.org/wiki/index.php?', true, 'https://example.org/wiki/index.php?'],
+        ];
+    }
+
+    #[DataProvider('baseUrls')]
+    public function testTheBaseUrlFollowsTheRewriteMode(string $baseUrl, bool $rewriteMode, string $expected)
+    {
+        $this->assertSame($expected, baseUrlForRewriteMode($baseUrl, $rewriteMode));
     }
 }
