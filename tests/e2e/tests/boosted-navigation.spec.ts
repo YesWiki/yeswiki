@@ -141,6 +141,10 @@ test.describe('boosted navigation', () => {
       .first()
     await expect(away, 'no navigation bar to leave the editor by').toBeVisible()
     await away.click()
+    await expect(
+      page.locator(EDITOR),
+      'the editor page carries its own edit button, so wait for it to be swapped out',
+    ).toHaveCount(0, { timeout: 15000 })
     await expect(edit()).toBeVisible({ timeout: 15000 })
     await edit().click()
     await editorIsUp()
