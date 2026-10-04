@@ -333,6 +333,7 @@ class EntryController extends YesWikiController
             'showConditions' => $form['bn_condition'] !== '' && !$post->has('accept_condition'),
             'passwordForEditing' => isset($this->config['password_for_editing']) && !empty($this->config['password_for_editing']) && $post->has('password_for_editing') ? $post->get('password_for_editing') : '',
             'incomingUrl' => $incomingUrl,
+            'cancelUrl' => $this->getCancelUrl($incomingUrl),
             'error' => $error,
             'captchaField' => $this->securityController->renderCaptchaField(),
             'imageSmallWidth' => $this->config['image-small-width'],
@@ -397,6 +398,7 @@ class EntryController extends YesWikiController
             'showConditions' => false,
             'passwordForEditing' => isset($this->config['password_for_editing']) && !empty($this->config['password_for_editing']) && $post->has('password_for_editing') ? $post->get('password_for_editing') : '',
             'incomingUrl' => $incomingUrl,
+            'cancelUrl' => $this->getCancelUrl($incomingUrl, $entryId),
             'error' => $error,
             'captchaField' => $this->securityController->renderCaptchaField(),
             'imageSmallWidth' => $this->config['image-small-width'],
@@ -845,6 +847,21 @@ class EntryController extends YesWikiController
         $plainUrls = [$this->wiki->Href('', $entryTag, null, false), $this->wiki->Href('iframe', $entryTag, null, false)];
 
         return in_array($currentUrl, $plainUrls, true) || !$this->isWikiUrl($currentUrl) ? '' : $currentUrl;
+    }
+
+    /** Where the form's cancel button leads: where the edit started, else the page the visitor came from, else the entry or the page holding the form. */
+    private function getCancelUrl(string $incomingUrl, ?string $entryId = null): string
+    {
+        if (!empty($incomingUrl)) {
+            return $incomingUrl;
+        }
+        $referer = (string)$this->getRequest()->headers->get('referer', '');
+        $currentUrl = getAbsoluteUrl();
+        if ($referer !== '' && $this->isWikiUrl($referer) && strtok($referer, '#') !== strtok($currentUrl, '#')) {
+            return $referer;
+        }
+
+        return $this->wiki->Href(testUrlInIframe(), $entryId ?? '', null, false);
     }
 
     private function isWikiUrl(string $url): bool
