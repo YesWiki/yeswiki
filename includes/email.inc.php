@@ -71,6 +71,7 @@ function send_mail($mail_sender, $name_sender, $mail_receiver, $subject, $messag
             $name_sender = $mail_sender;
         }
         $mail->setFrom($mail_sender, $name_sender);
+        signWithDkim($mail, $GLOBALS['wiki']->config);
 
         $mail->Subject = $subject;
 
@@ -122,6 +123,23 @@ function send_mail($mail_sender, $name_sender, $mail_receiver, $subject, $messag
 
         return false;
     }
+}
+
+/** Signs $mail with DKIM when the domain, the selector and a readable private key file are configured; returns whether it will be signed. */
+function signWithDkim(PHPMailer $mail, $config): bool
+{
+    $domain = trim((string)($config['contact_dkim_domain'] ?? ''));
+    $selector = trim((string)($config['contact_dkim_selector'] ?? ''));
+    $keyFile = trim((string)($config['contact_dkim_private_key'] ?? ''));
+    if ($domain === '' || $selector === '' || $keyFile === '' || !is_readable($keyFile)) {
+        return false;
+    }
+    $mail->DKIM_domain = $domain;
+    $mail->DKIM_selector = $selector;
+    $mail->DKIM_private = $keyFile;
+    $mail->DKIM_identity = $mail->From;
+
+    return true;
 }
 
 // returns the last two labels of a host name, without www

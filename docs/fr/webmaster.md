@@ -490,6 +490,41 @@ mail pour demander comment remplir cette configuration. Sinon, aller voir du
 coté de la base d'erreur de la librairie utilisée :
 [la doc de phpMailer](https://github.com/PHPMailer/PHPMailer/wiki/Troubleshooting).
 
+#### Signer les mails avec DKIM
+
+Certaines messageries, Gmail en tête, refusent ou classent en spam les mails
+sans signature DKIM. YesWiki peut signer ses mails, quel que soit le mode
+d'envoi (`mail`, `sendmail` ou `smtp`).
+
+1. Générez une paire de clés dans le dossier `private` du wiki, qui n'est pas
+   accessible depuis le web (voir [Protéger le dossier
+   private](#protéger-le-dossier-private)) :
+
+   ```bash
+   openssl genrsa -out private/dkim.private 2048
+   openssl rsa -in private/dkim.private -pubout -out private/dkim.public
+   ```
+
+2. Publiez la clé publique dans le DNS du domaine de l'adresse d'envoi, avec un
+   enregistrement TXT nommé `<sélecteur>._domainkey`, par exemple
+   `yeswiki._domainkey.mondomaine.ext`. Sa valeur est
+   `v=DKIM1; k=rsa; p=` suivi du contenu de `private/dkim.public` sans les
+   lignes `-----BEGIN…` et `-----END…`, ni retours à la ligne.
+
+3. Dans `wakka.config.php`, ou depuis la page de configuration du wiki :
+
+   ```php
+   'contact_from' => 'wiki@mondomaine.ext',
+   'contact_dkim_domain' => 'mondomaine.ext',
+   'contact_dkim_selector' => 'yeswiki',
+   'contact_dkim_private_key' => 'private/dkim.private',
+   ```
+
+Le domaine DKIM doit être celui de l'adresse d'envoi (`contact_from`). Les
+mails ne sont signés que si les trois paramètres `contact_dkim_*` sont remplis
+et que le fichier de clé est lisible ; sinon ils partent sans signature, comme
+avant.
+
 ### Migrer son wiki
 
 Il est possible de déplacer son wiki d'un serveur à un autre. Pour cela, il vous
