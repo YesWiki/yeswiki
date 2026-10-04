@@ -13,6 +13,7 @@ class Aceditor {
 
   constructor($container) {
     this.$container = $container
+    this.$toolbar = $container.find('.aceditor-toolbar')
     this.initialize()
   }
 
@@ -26,10 +27,6 @@ class Aceditor {
 
   get $aceBody() {
     return this.$container.find('.ace-body')
-  }
-
-  get $toolbar() {
-    return this.$container.find('.aceditor-toolbar')
   }
 
   initialize() {
