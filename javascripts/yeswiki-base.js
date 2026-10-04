@@ -300,6 +300,10 @@ function toastMessage(
   }
   $(document).on('click', 'a.modalbox, a.modal, .modalbox a', openModal)
 
+  $(document).on('shown.bs.collapse', () => {
+    window.dispatchEvent(new Event('resize'))
+  })
+
   $(document).on('click', 'a.newtab', function (e) {
     e.preventDefault()
     window.open($(this).attr('href'), '_blank')
