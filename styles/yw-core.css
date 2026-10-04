@@ -3501,6 +3501,19 @@ a.label:focus {
   filter: brightness(1.15);
 }
 
+.task-list-item {
+  list-style: none;
+}
+
+.task-list-item input[type='checkbox'] {
+  margin: 0 0.35em 0 -1.4em;
+  vertical-align: middle;
+}
+
+.contains-task-list > li > p {
+  margin: 0;
+}
+
 .yw-nav,
 ul.nav,
 ul.nav-tabs {

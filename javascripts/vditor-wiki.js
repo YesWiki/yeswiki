@@ -214,6 +214,7 @@ function initVditorWiki(textareaParam) {
               tipPosition: 'se',
               icon: `${legacyIconToSprite('device-floppy')}<span>${saveButton.textContent.trim()}</span>`,
               click() {
+                flush()
                 saveButton.form.requestSubmit(saveButton)
               },
             },
@@ -271,6 +272,7 @@ function initVditorWiki(textareaParam) {
         tipPosition: 'sw',
         icon: `${legacyIconToSprite('source-code')}<span>${_t('SWITCH_TO_SOURCE_EDITOR_SHORT')}</span>`,
         click() {
+          flush()
           switchEditorTo('aceditor', textarea)
         },
       },
@@ -321,6 +323,14 @@ function initVditorWiki(textareaParam) {
   })
 
   followScheme(editor, VDITOR_CDN)
+
+  textarea.form?.addEventListener('submit', flush, true)
+
+  /** Write what the editor holds into the textarea now, without waiting for the debounced input. */
+  function flush() {
+    if (!componentEditor) return
+    textarea.value = unfenceComponents(editor.getValue())
+  }
 
   /** The textarea stays the thing that gets posted: the editor writes into it and says so, so validation, unsaved-changes and live conditions keep working off the field they always watched. */
   function sync() {

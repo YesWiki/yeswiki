@@ -176,8 +176,10 @@ test('a card list can be filtered, limited and sorted', async ({
 
   const query = page.locator(`${PANEL} .query`)
   await expect(query).toBeVisible()
-  await query.locator('.btn-add-element').click()
-  const condition = query.locator('.inline-form').first()
+  await query
+    .locator('.query-group--root > .query-group__actions .btn-info')
+    .click()
+  const condition = query.locator('.query-builder__condition').first()
   await condition.locator('select').first().selectOption('bf_titre')
   await condition.locator('input[type="text"]').first().fill('Bordeaux')
   await expect
@@ -200,43 +202,57 @@ test('the filter rows line up, with one remove button per row', async ({
   await components(page).first().click()
   await expect(page.locator(SETTINGS)).toBeVisible()
 
-  const rows = page.locator(`${PANEL} .query .inline-form`)
+  const rows = page.locator(`${PANEL} .query .query-builder__condition`)
   await expect(rows, 'one row per condition').toHaveCount(2)
+  await expect(
+    page.locator(`${PANEL} .query .query-group__connector`),
+    'two conditions are joined by a connector',
+  ).toHaveValue('AND')
 
   const geometry = await rows.evaluateAll((elements) =>
     elements.map((row) => {
       const box = (el: Element) => el.getBoundingClientRect()
-      const controls = [...row.children].filter(
-        (child) => !child.classList.contains('btn-close-container'),
-      )
-      const remove = row.querySelector('.btn-close-container')!
+      const middle = (el: Element) => {
+        const rect = box(el)
+        return rect.top + rect.height / 2
+      }
+      const field = row.querySelector('.query-builder__field')!
+      const operator = row.querySelector('.query-builder__operator')!
+      const values = row.querySelector('.query-builder__value')!
+      const remove = row.querySelector('.query-builder__remove')!
 
       return {
-        field: box(controls[0]),
-        operator: box(controls[1]),
-        values: box(controls[2]),
-        remove: box(remove),
+        field: { ...box(field).toJSON(), middle: middle(field) },
+        operator: { ...box(operator).toJSON(), middle: middle(operator) },
+        values: { ...box(values).toJSON(), middle: middle(values) },
+        remove: { ...box(remove).toJSON(), middle: middle(remove) },
+        removeButtons: row.querySelectorAll('.query-builder__remove').length,
       }
     }),
   )
 
   for (const row of geometry) {
-    expect(
-      Math.round(row.field.top),
-      'a field and the one beside it start on the same line',
-    ).toBe(Math.round(row.operator.top))
-    expect(Math.round(row.field.width), 'and are the same width').toBe(
-      Math.round(row.operator.width),
+    expect(row.removeButtons, 'one remove button per row').toBe(1)
+    for (const control of [row.operator, row.values, row.remove]) {
+      expect(
+        Math.abs(control.middle - row.field.middle),
+        'the whole condition sits on one line',
+      ).toBeLessThan(4)
+    }
+    expect(row.operator.left, 'the operator follows the field').toBeGreaterThan(
+      row.field.left,
+    )
+    expect(row.values.left, 'the value follows the operator').toBeGreaterThan(
+      row.operator.left,
     )
     expect(
-      row.values.top,
-      'the value is on the line under them',
-    ).toBeGreaterThan(row.field.bottom)
-    expect(
       row.remove.left,
-      'and the button is beside the row, not under it',
-    ).toBeGreaterThan(row.operator.left)
-    expect(row.remove.top).toBeLessThan(row.values.top)
+      'and the button closes the row',
+    ).toBeGreaterThanOrEqual(row.values.right)
+    expect(
+      row.operator.width,
+      'the operator is narrower than the field',
+    ).toBeLessThan(row.field.width)
   }
 
   expect(Math.round(geometry[0].field.width)).toBe(

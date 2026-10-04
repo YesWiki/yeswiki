@@ -21,6 +21,7 @@ use YesWiki\Render\Formatter\ActionExtension;
 use YesWiki\Render\Formatter\AlertExtension;
 use YesWiki\Render\Formatter\CommentExtension;
 use YesWiki\Render\Formatter\ProgressExtension;
+use YesWiki\Render\Formatter\TaskListClassExtension;
 
 /** Renders page content: standard CommonMark/GFM Markdown, plus Twig-like comments ({# ... */
 class MarkdownFormatterService
@@ -156,6 +157,7 @@ class MarkdownFormatterService
             $environment->addExtension(new AttributesExtension());
             $environment->addExtension(new CommentExtension());
             $environment->addExtension(new ProgressExtension());
+            $environment->addExtension(new TaskListClassExtension());
 
             $environment->addExtension(new FootnoteExtension());
 
