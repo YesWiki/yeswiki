@@ -1,6 +1,8 @@
 <?php
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use YesWiki\Bazar\Controller\EntryController;
+use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Core\Controller\AuthController;
 use YesWiki\Core\Service\AclService;
 use YesWiki\Core\Service\FavoritesManager;
@@ -36,7 +38,10 @@ if ((!empty($user) || $this->HasAccess('write')) && $this->method != 'revisions'
     if ($this->HasAccess('write')) {
         // on ajoute le lien d'édition si l'action est autorisée
         if ($this->HasAccess('write', $page) && !$this->services->get(SecurityController::class)->isWikiHibernated()) {
-            $options['linkedit'] = $this->href('edit', $page);
+            $editContextUrl = $this->services->get(EntryManager::class)->isEntry($page)
+                ? $this->services->get(EntryController::class)->getEditContextUrl($page)
+                : '';
+            $options['linkedit'] = $this->href('edit', $page, empty($editContextUrl) ? null : ['incomingurl' => $editContextUrl], false);
         }
 
         if ($time) {
