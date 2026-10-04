@@ -74,42 +74,34 @@ class RecentChangesRssAction extends YesWikiAction implements RegisteredAction
             YW_CHARSET
         );
         $items = [];
-        for ($i = 0; $i < sizeof($pages); $i++) {
+        $count = count($pages);
+        for ($i = 0; $i < $count; $i = $next) {
             $page = $pages[$i];
             $firstpage = $page;
-            $lastpage = $page;
-            $break_on_tag = $page['tag'];
-            $break_on_user = $page['user'];
-
-            while (($page['tag'] == $break_on_tag)
-                and ($page['user'] == $break_on_user)
-                and ($i < sizeof($pages))
+            $next = $i + 1;
+            while ($next < $count
+                && $pages[$next]['tag'] == $page['tag']
+                && $pages[$next]['user'] == $page['user']
             ) {
-                $i++;
-                $lastpage = $page;
-                if ($i < sizeof($pages)) {
-                    $page = $pages[$i];
-                }
+                $next++;
             }
+            $lastpage = $pages[$next - 1];
 
-            if ($i < sizeof($pages)) {
-                $page = $firstpage;
-                $tag = htmlspecialchars($page['tag'], ENT_COMPAT, YW_CHARSET);
-                $user = htmlspecialchars($page['user'], ENT_COMPAT, YW_CHARSET);
-                $formatedDate = gmdate('D, d M Y H:i:s \G\M\T', strtotime($page['time']));
-                $rawTime = htmlspecialchars(
-                    rawurlencode($page['time']),
-                    ENT_COMPAT,
-                    YW_CHARSET
-                );
-                $itemurl = $this->getService(UrlFormatter::class)->href(false, $tag, ['time' => $rawTime] + $langParam);
-                $description = htmlspecialchars(
-                    _t('RSS_CHANGE_OF') . ' ' . $this->getService(LinkRenderer::class)->linkToPage($page['tag'])
-                    . ' (' . $this->getService(LinkRenderer::class)->linkToPage($page['tag'], 'revisions', _t('RSS_HISTORY')) . ')'
-                    . ' --- ' . _t('BY') . " $user" . $this->revisionDiff($page['tag'], $firstpage['id'], $lastpage['id'])
-                );
-                $items[] = compact(['tag', 'user', 'formatedDate', 'description', 'itemurl']);
-            }
+            $tag = htmlspecialchars($page['tag'], ENT_COMPAT, YW_CHARSET);
+            $user = htmlspecialchars($page['user'], ENT_COMPAT, YW_CHARSET);
+            $formatedDate = gmdate('D, d M Y H:i:s \G\M\T', strtotime($page['time']));
+            $rawTime = htmlspecialchars(
+                rawurlencode($page['time']),
+                ENT_COMPAT,
+                YW_CHARSET
+            );
+            $itemurl = $this->getService(UrlFormatter::class)->href(false, $tag, ['time' => $rawTime] + $langParam);
+            $description = htmlspecialchars(
+                _t('RSS_CHANGE_OF') . ' ' . $this->getService(LinkRenderer::class)->linkToPage($page['tag'])
+                . ' (' . $this->getService(LinkRenderer::class)->linkToPage($page['tag'], 'revisions', _t('RSS_HISTORY')) . ')'
+                . ' --- ' . _t('BY') . " $user" . $this->revisionDiff($page['tag'], $firstpage['id'], $lastpage['id'])
+            );
+            $items[] = compact(['tag', 'user', 'formatedDate', 'description', 'itemurl']);
         }
 
         $version = $this->params->get('yeswiki_version');
