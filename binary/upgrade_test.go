@@ -9,7 +9,7 @@ import (
 
 // A wiki whose door is closed answers 503 without a reload.
 func TestAClosedDoorNeedsNoReload(t *testing.T) {
-	file := FarmCaddyfile(threeWikis, Workers{}, "")
+	file := FarmCaddyfile(threeWikis, Workers{}, "", "")
 
 	if got := strings.Count(file, "@upgrading file "+program.DoorMarker); got != 3 {
 		t.Fatalf("every wiki should check its own marker, found %d:\n%s", got, file)
@@ -26,7 +26,7 @@ func TestAWikiThatHasNotCrossedIsNotServed(t *testing.T) {
 		{Directory: "/srv/wikis/beta", Host: "beta.example.org", Address: "beta.example.org", Closed: true, Why: "This wiki has not been upgraded yet."},
 	}
 
-	file := FarmCaddyfile(behind, Workers{}, "")
+	file := FarmCaddyfile(behind, Workers{}, "", "")
 
 	if !strings.Contains(file, "This wiki has not been upgraded yet.") {
 		t.Fatalf("the wiki left behind should be answered, not served:\n%s", file)

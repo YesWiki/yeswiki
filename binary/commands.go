@@ -354,6 +354,7 @@ func runServe(flags caddycmd.Flags) (int, error) {
 	if flags.Bool("farm") {
 		farm := caddyFarm{
 			workers: workers,
+			listen:  address,
 			admin:   flags.String("admin"),
 			options: func(directory string) commands.Options { return options(flags, directory) },
 		}

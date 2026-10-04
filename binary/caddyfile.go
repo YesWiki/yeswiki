@@ -2,6 +2,7 @@ package yeswiki
 
 import (
 	"fmt"
+	"net"
 	"os"
 	"path/filepath"
 	"strings"
@@ -108,8 +109,10 @@ func Caddyfile(instance string, listen Listen, workers Workers, admin Admin) str
 		"\n" + site(listen.site(), instance, workers.FrontController())
 }
 
-// FarmCaddyfile serves every wiki in a farm from one process, each on its own name.
-func FarmCaddyfile(wikis []program.Wiki, workers Workers, admin Admin) string {
+// FarmCaddyfile serves every wiki in a farm from one process, each on its own name, over plain HTTP at listen when one is given.
+func FarmCaddyfile(wikis []program.Wiki, workers Workers, admin Admin, listen string) string {
+	wikis, bind := behindARelay(wikis, listen)
+
 	instances := make([]string, 0, len(wikis))
 	for _, wiki := range wikis {
 		if !wiki.Closed {
@@ -117,17 +120,52 @@ func FarmCaddyfile(wikis []program.Wiki, workers Workers, admin Admin) string {
 		}
 	}
 
-	file := globals(admin, redirects(wikis), workers.block(instances))
+	automaticHTTPS := redirects(wikis)
+	if strings.TrimSpace(listen) != "" {
+		automaticHTTPS = "\tauto_https off\n"
+	}
+
+	file := globals(admin, automaticHTTPS, workers.block(instances))
 	for _, wiki := range wikis {
 		if wiki.Closed {
-			file += "\n" + closedSite(wiki.Address, wiki.Why)
+			file += "\n" + bound(closedSite(wiki.Address, wiki.Why), bind)
 
 			continue
 		}
-		file += "\n" + site(wiki.Address, wiki.Directory, workers.FrontController())
+		file += "\n" + bound(site(wiki.Address, wiki.Directory, workers.FrontController()), bind)
 	}
 
 	return file
+}
+
+// behindARelay moves every wiki to http on listen's port, and returns the address to bind if listen names one.
+func behindARelay(wikis []program.Wiki, listen string) ([]program.Wiki, string) {
+	listen = strings.TrimSpace(listen)
+	if listen == "" {
+		return wikis, ""
+	}
+
+	host, port, err := net.SplitHostPort(strings.TrimPrefix(listen, "http://"))
+	if err != nil {
+		host, port = "", strings.TrimPrefix(listen, ":")
+	}
+
+	moved := make([]program.Wiki, len(wikis))
+	for i, wiki := range wikis {
+		wiki.Address = "http://" + wiki.Host + ":" + port
+		moved[i] = wiki
+	}
+
+	return moved, host
+}
+
+// bound adds a bind to a site block, so the farm answers only on the address it was given.
+func bound(block, bind string) string {
+	if bind == "" {
+		return block
+	}
+
+	return strings.Replace(block, " {\n", " {\n\tbind "+bind+"\n", 1)
 }
 
 // redirects turns off the port 80 redirect server when no wiki is served on 443.

@@ -21,6 +21,7 @@ import (
 // caddyFarm serves every wiki in a directory from this one process.
 type caddyFarm struct {
 	workers Workers
+	listen  string
 	admin   string
 	options func(directory string) commands.Options
 }
@@ -36,7 +37,9 @@ func (c caddyFarm) ServeFarm(farm string, wikis []program.Wiki, programDir strin
 		}
 	}
 
-	sayWhichNamesWillNotGetACertificate(wikis)
+	if strings.TrimSpace(c.listen) == "" {
+		sayWhichNamesWillNotGetACertificate(wikis)
+	}
 
 	if err := c.load(wikis, programDir); err != nil {
 		return err
@@ -105,7 +108,7 @@ func (c caddyFarm) load(wikis []program.Wiki, programDir string) error {
 	workers := c.workers
 	workers.Program = programDir
 
-	config, warnings, err := adapter.Adapt([]byte(FarmCaddyfile(wikis, workers, Admin(c.admin))), nil)
+	config, warnings, err := adapter.Adapt([]byte(FarmCaddyfile(wikis, workers, Admin(c.admin), c.listen)), nil)
 	if err != nil {
 		return err
 	}

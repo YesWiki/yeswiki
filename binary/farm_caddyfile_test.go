@@ -18,7 +18,7 @@ func TestAWikiIsServedAtTheAddressItsConfigurationStates(t *testing.T) {
 	file := FarmCaddyfile([]program.Wiki{
 		{Directory: "/srv/wikis/plain", Host: "plain.example.org", Address: "http://plain.example.org:8080"},
 		{Directory: "/srv/wikis/high", Host: "high.example.org", Address: "high.example.org:8443"},
-	}, Workers{}, "")
+	}, Workers{}, "", "")
 
 	if !strings.Contains(file, "http://plain.example.org:8080 {") {
 		t.Errorf("an http base_url should be served without a certificate:\n%s", file)
@@ -29,7 +29,7 @@ func TestAWikiIsServedAtTheAddressItsConfigurationStates(t *testing.T) {
 }
 
 func TestEveryWikiGetsItsOwnSiteAndItsOwnRoot(t *testing.T) {
-	file := FarmCaddyfile(threeWikis, Workers{}, "")
+	file := FarmCaddyfile(threeWikis, Workers{}, "", "")
 
 	for _, wiki := range threeWikis {
 		if !strings.Contains(file, wiki.Host+" {") {
@@ -43,7 +43,7 @@ func TestEveryWikiGetsItsOwnSiteAndItsOwnRoot(t *testing.T) {
 
 // FrankenPHP picks a worker by resolved script path, so a farm needs one worker per Instance.
 func TestEveryWikiGetsItsOwnWorker(t *testing.T) {
-	file := FarmCaddyfile(threeWikis, Workers{}, "")
+	file := FarmCaddyfile(threeWikis, Workers{}, "", "")
 
 	for _, wiki := range threeWikis {
 		if !strings.Contains(file, "file "+wiki.Directory+"/worker.php") {
@@ -56,7 +56,7 @@ func TestEveryWikiGetsItsOwnWorker(t *testing.T) {
 }
 
 func TestAFarmKeepsCertificatesOn(t *testing.T) {
-	file := FarmCaddyfile(threeWikis, Workers{}, "")
+	file := FarmCaddyfile(threeWikis, Workers{}, "", "")
 
 	if strings.Contains(file, "auto_https off") {
 		t.Fatal("a farm is served on real names, which is the whole reason to obtain certificates")
@@ -65,18 +65,18 @@ func TestAFarmKeepsCertificatesOn(t *testing.T) {
 
 // The admin endpoint is reachable by PHP running in any wiki, because that PHP is threads inside this process.
 func TestAFarmHasNoAdminEndpointUnlessAsked(t *testing.T) {
-	if !strings.Contains(FarmCaddyfile(threeWikis, Workers{}, ""), "admin off") {
+	if !strings.Contains(FarmCaddyfile(threeWikis, Workers{}, "", ""), "admin off") {
 		t.Fatal("the generated configuration must turn the admin API off")
 	}
 
-	asked := FarmCaddyfile(threeWikis, Workers{}, "localhost:2019")
+	asked := FarmCaddyfile(threeWikis, Workers{}, "localhost:2019", "")
 	if !strings.Contains(asked, "admin localhost:2019") || strings.Contains(asked, "admin off") {
 		t.Fatalf("--admin should be the only way to get one:\n%s", asked)
 	}
 }
 
 func TestClassicModeServesAFarmWithoutWorkers(t *testing.T) {
-	file := FarmCaddyfile(threeWikis, Workers{Classic: true}, "")
+	file := FarmCaddyfile(threeWikis, Workers{Classic: true}, "", "")
 
 	if strings.Contains(file, "worker {") {
 		t.Fatal("classic mode runs no workers")
@@ -87,7 +87,7 @@ func TestClassicModeServesAFarmWithoutWorkers(t *testing.T) {
 }
 
 func TestTheRulesEveryWikiNeedsAreInEverySiteBlock(t *testing.T) {
-	file := FarmCaddyfile(threeWikis, Workers{}, "")
+	file := FarmCaddyfile(threeWikis, Workers{}, "", "")
 
 	for what, expected := range map[string]int{
 		"private denied by the server": 3,
@@ -106,7 +106,7 @@ func TestTheRulesEveryWikiNeedsAreInEverySiteBlock(t *testing.T) {
 }
 
 func TestAnEmptyFarmIsStillAValidConfiguration(t *testing.T) {
-	file := FarmCaddyfile(nil, Workers{}, "")
+	file := FarmCaddyfile(nil, Workers{}, "", "")
 
 	if !strings.Contains(file, "admin off") {
 		t.Fatalf("an empty farm should still be a configuration Caddy can load:\n%s", file)
@@ -120,13 +120,46 @@ func TestAnEmptyFarmIsStillAValidConfiguration(t *testing.T) {
 func TestAFarmOnItsOwnPortDoesNotNeedPortEighty(t *testing.T) {
 	onAnotherPort := FarmCaddyfile([]program.Wiki{
 		{Directory: "/srv/wikis/high", Host: "high.example.org", Address: "high.example.org:8443"},
-	}, Workers{}, "")
+	}, Workers{}, "", "")
 
 	if !strings.Contains(onAnotherPort, "auto_https disable_redirects") {
 		t.Errorf("nothing is served on 443, so nothing should bind 80:\n%s", onAnotherPort)
 	}
 
-	if strings.Contains(FarmCaddyfile(threeWikis, Workers{}, ""), "disable_redirects") {
+	if strings.Contains(FarmCaddyfile(threeWikis, Workers{}, "", ""), "disable_redirects") {
 		t.Error("a farm on 443 should keep redirecting http to https")
+	}
+}
+
+// A farm behind a relay answers plain HTTP on one address, each wiki still matched on its own name.
+func TestAFarmGivenAnAddressServesPlainHTTPThere(t *testing.T) {
+	file := FarmCaddyfile(threeWikis, Workers{}, "", "42.42.43.123:8130")
+
+	for _, wiki := range threeWikis {
+		if !strings.Contains(file, "http://"+wiki.Host+":8130 {\n\tbind 42.42.43.123\n") {
+			t.Errorf("%s should be served over http on 8130, bound to the address given:\n%s", wiki.Host, file)
+		}
+	}
+	if !strings.Contains(file, "auto_https off") {
+		t.Errorf("behind a relay the farm should ask no certificate authority for anything:\n%s", file)
+	}
+}
+
+// Only a port leaves the farm listening on every address.
+func TestAFarmGivenOnlyAPortBindsEveryAddress(t *testing.T) {
+	file := FarmCaddyfile(threeWikis, Workers{}, "", ":8130")
+
+	if !strings.Contains(file, "http://alpha.example.org:8130 {\n\troot") {
+		t.Errorf("a bare port should not add a bind:\n%s", file)
+	}
+}
+
+// A closed wiki behind a relay answers on the same address as the open ones.
+func TestAClosedWikiBehindARelayAnswersOnTheRelayAddress(t *testing.T) {
+	closed := []program.Wiki{{Directory: "/srv/wikis/shut", Host: "shut.example.org", Address: "shut.example.org", Closed: true}}
+	file := FarmCaddyfile(closed, Workers{}, "", ":8130")
+
+	if !strings.Contains(file, "http://shut.example.org:8130 {") {
+		t.Errorf("a closed wiki should answer its 503 on the relay's port:\n%s", file)
 	}
 }
