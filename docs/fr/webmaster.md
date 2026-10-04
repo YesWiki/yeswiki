@@ -267,6 +267,79 @@ paramètre `rewrite_mode` à `1` sans faire de re-écriture d'url, ni enlever le
 `?` de `base_url`, pourrait entrainer un dysfonctionnement de YesWiki, il suffit
 de remettre `rewrite_mode` à `0` pour corriger le problème.
 
+##### Configuration nginx
+
+Exemple de configuration pour un wiki installé dans un sous-dossier, ici
+`/test-yeswiki/`, avec les fichiers dans `/var/www/yeswiki/`. Adaptez le chemin,
+l'`alias` et le socket de PHP-FPM (`php8.4-fpm.sock`) à votre serveur. Les deux
+protègent aussi le dossier `private`.
+
+Avec une `base_url` de la forme `https://www.example.net/test-yeswiki/?`
+(`rewrite_mode` à `0`) :
+
+```nginx
+location /test-yeswiki/ {
+    alias /var/www/yeswiki/;
+    try_files $uri $uri/ index.php;
+
+    location ~* /(.*/)?private/ {
+        deny all;
+        return 403;
+    }
+
+    location ~ ^(.+\.php)(.*)$ {
+        fastcgi_split_path_info ^(.+\.php)(.+)$;
+        fastcgi_pass unix:/run/php/php8.4-fpm.sock;
+        fastcgi_index index.php;
+        include fastcgi_params;
+        fastcgi_param SCRIPT_FILENAME $request_filename;
+        fastcgi_param PATH_INFO $fastcgi_path_info;
+        fastcgi_buffer_size 16k;
+        fastcgi_buffers 4 16k;
+    }
+}
+```
+
+Avec une `base_url` de la forme `https://www.example.net/test-yeswiki/`
+(`rewrite_mode` à `1`) :
+
+```nginx
+location /test-yeswiki/ {
+    alias /var/www/yeswiki/;
+    try_files $uri $uri/ index.php;
+
+    location ~* /(.*/)?private/ {
+        deny all;
+        return 403;
+    }
+
+    location ~ ^/test-yeswiki/(?!(actions/|cache/|custom/|docs/|files/|formatters/|handlers/|javascripts/|styles/|themes/|tools/|vendor/|index.php)) {
+        rewrite ^/(.*) /test-yeswiki/index.php?$1;
+    }
+
+    location ~ ^(.+\.php)(.*)$ {
+        fastcgi_split_path_info ^(.+\.php)(.+)$;
+        fastcgi_pass unix:/run/php/php8.4-fpm.sock;
+        fastcgi_index index.php;
+        include fastcgi_params;
+        fastcgi_param SCRIPT_FILENAME $request_filename;
+        fastcgi_param PATH_INFO $fastcgi_path_info;
+        fastcgi_buffer_size 16k;
+        fastcgi_buffers 4 16k;
+    }
+}
+```
+
+Dans cette seconde configuration, toute adresse qui ne commence pas par l'un des
+dossiers listés (`actions/`, `cache/`, `files/`, `tools/`…) ou par `index.php`
+est réécrite vers `index.php?<adresse>`. Une page ne peut donc pas porter le nom
+d'un de ces dossiers, `vendor` ou `actions` par exemple.
+
+Pour un wiki installé à la racine du domaine, la configuration utilisée par
+l'image Docker de YesWiki,
+[`docker/nginx.conf`](https://github.com/YesWiki/yeswiki/blob/doryphore-dev/docker/nginx.conf),
+fonctionne avec ou sans `?` dans la `base_url`, sans lister les dossiers.
+
 ##### Envoyer un mail aux @admins à chaque nouvel ajout de fiche
 
     'BAZ_ENVOI_MAIL_ADMIN' => true
