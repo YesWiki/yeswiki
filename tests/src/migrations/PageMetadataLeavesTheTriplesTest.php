@@ -66,7 +66,7 @@ class PageMetadataLeavesTheTriplesTest extends YesWikiTestCase
 
         $this->assertSame([$home, $themed], $report['carried']);
         $this->assertSame(['PageFooter' => 'KeptFooter', 'PageHeader' => $header], $this->metadataOf($home));
-        $this->assertSame(['theme' => 'yeswiki', 'squelette' => '1col.twig', 'style' => 'yeswiki.css'], $this->metadataOf($themed));
+        $this->assertSame(['squelette' => '1col.twig', 'style' => 'yeswiki.css', 'theme' => 'yeswiki'], $this->metadataOf($themed));
         $this->assertContains("{$home}.theme", $report['dropped']);
         $this->assertContains("{$home}.bgimg", $report['dropped']);
         $this->assertContains("{$themed}.PageFooter", $report['dropped']);
@@ -101,6 +101,7 @@ class PageMetadataLeavesTheTriplesTest extends YesWikiTestCase
 
         $metadata = $pageManager->getMetadata($tag) ?? [];
         unset($metadata['acls']);
+        ksort($metadata);
 
         return $metadata;
     }

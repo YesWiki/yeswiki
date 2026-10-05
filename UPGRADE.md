@@ -542,8 +542,17 @@ both.
 1920x1920 before sending it, so what the wiki stores is a few hundred kilobytes rather than a
 phone's twelve megapixels. That is the same bound images are _served_ at, so a stored picture
 needs no resized copy made of it -- raise `image-upload-max-width`/`-height` if your wiki is
-also where the full-resolution originals are meant to live. GIFs, SVGs and anything already smaller than the cap are left alone,
-and so is every image already uploaded — nothing is rewritten in place.
+also where the full-resolution originals are meant to live. GIFs, SVGs and anything already smaller than the cap are left alone.
+
+**Pictures uploaded before the upgrade get the same treatment once.** `UploadedPicturesBecomeWebp`
+rewrites every JPEG and PNG as WebP at `image-upload-quality`, small ones included, and fits any
+wider or taller than `image-upload-max-width`/`-height` inside those bounds; GIFs keep their
+animation and SVGs their vectors.
+An attached file keeps its tag, so every page naming it still finds it; a Bazar field's picture
+left in `files/` is renamed to `.webp` and the new name written into every revision that said the
+old one. The original is deleted, which is the point: take the backup first. A picture that cannot
+be converted is kept as it is and named in the migration's output, and `image-upload-format: ''`
+skips the whole pass.
 
 **A syndicated feed's images are downloaded and served from here.** `{{syndication}}` used to
 put the publisher's own image URL into every card, so a page showing three feeds sent each
