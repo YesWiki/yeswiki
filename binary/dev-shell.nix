@@ -1,4 +1,4 @@
-{ pkgs ? import <nixpkgs> { } }:
+{ pkgs ? import <nixpkgs> { }, checkExtensions ? true }:
 
 let
   manifest = builtins.fromJSON (builtins.readFile ../composer.json);
@@ -17,12 +17,14 @@ let
     (n: !(builtins.elem n alwaysCompiledIn) && !(builtins.elem n unavailable))
     (named manifest.require ++ named (manifest.suggest or { })));
 
+  checked = e: if checkExtensions || !(e ? override) then e else e.override { doCheck = false; };
+
   php = (pkgs.php.override {
     embedSupport = true;
     ztsSupport = true;
     zendSignalsSupport = false;
   }).withExtensions ({ enabled, all }:
-    enabled ++ map (n: all.${n}) (builtins.filter (n: all ? ${n}) wanted));
+    map checked (enabled ++ map (n: all.${n}) (builtins.filter (n: all ? ${n}) wanted)));
 in
 pkgs.mkShell {
   inputsFrom = [ php.unwrapped ];
