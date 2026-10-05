@@ -48,20 +48,6 @@ class PackageCore extends Package
         $this->updateAvailable = $this->updateAvailable();
     }
 
-    /**
-     * The wiki root : the working directory YesWiki runs from, under the web as on
-     * the command line, where SCRIPT_FILENAME points at the console instead.
-     */
-    private function wikiRootPath()
-    {
-        $cwd = realpath(getcwd());
-        if ($cwd !== false and is_file($cwd . '/wakka.config.php')) {
-            return $cwd;
-        }
-
-        return dirname(dirname(dirname(__DIR__)));
-    }
-
     public function upgrade()
     {
         $desPath = $this->localPath;
