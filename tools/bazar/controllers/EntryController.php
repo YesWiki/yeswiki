@@ -279,7 +279,7 @@ class EntryController extends YesWikiController
             }
             try {
                 if ($state && $post->has('bf_titre')) {
-                    $postedData = $post->all();
+                    $postedData = $this->getService(BotGuard::class)->withoutFields($post->all());
                     unset($postedData['id_fiche']);
                     $entry = $this->entryManager->create($formId, $postedData);
                     $errors = $this->eventDispatcher->yesWikiDispatch('entry.created', [
@@ -357,7 +357,7 @@ class EntryController extends YesWikiController
         }
         try {
             if ($state && $post->has('bf_titre')) {
-                $entry = $this->entryManager->update($entryId, $post->all());
+                $entry = $this->entryManager->update($entryId, $this->getService(BotGuard::class)->withoutFields($post->all()));
                 $errors = $this->eventDispatcher->yesWikiDispatch('entry.updated', [
                     'id' => $entry['id_fiche'],
                     'data' => $entry,

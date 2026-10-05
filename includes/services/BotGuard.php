@@ -189,13 +189,29 @@ class BotGuard
         if ($this->mode($strict) === self::MODE_NONE) {
             return null;
         }
-        if (isset($this->checked[$request])) {
+        $post = $request->request->all();
+        if (isset($this->checked[$request]) && $this->checked[$request]['post'] === $post) {
             return $this->checked[$request]['reason'];
         }
         $reason = $this->checkOnce($request, $strict);
-        $this->checked[$request] = ['reason' => $reason];
+        $this->checked[$request] = ['post' => $post, 'reason' => $reason];
 
         return $reason;
+    }
+
+    /**
+     * The posted data without the guard's own fields, so they are never saved.
+     */
+    public function withoutFields(array $post): array
+    {
+        $time = $this->time();
+        $names = [self::LOGGED_IN_ALTCHA_FIELD];
+        foreach ([$this->day($time), $this->day($time - 86400)] as $day) {
+            $dayNames = $this->namesFor($day);
+            array_push($names, $dayNames['token'], $dayNames['honeypot'], $dayNames['altcha']);
+        }
+
+        return array_diff_key($post, array_flip($names));
     }
 
     protected function checkOnce(Request $request, bool $strict): ?string

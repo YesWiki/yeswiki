@@ -59,11 +59,13 @@ class EntryControllerSavedMessageTest extends YesWikiTestCase
 
     private function submit(string $title, string $tag): void
     {
-        $this->wiki->request->request->replace(['antispam' => 1, 'bf_titre' => $title]);
+        $this->wiki->request->request->replace(['bf_titre' => $title] + self::validBotGuardFields($this->wiki));
         $this->createdTags[] = $tag;
         try {
             $this->wiki->services->get(EntryController::class)->create($this->formId);
         } catch (ExitException $e) {
+        } finally {
+            self::restoreBotGuard($this->wiki);
         }
     }
 
