@@ -190,13 +190,7 @@ class FileField extends BazarField
                     if ($_FILES[$this->propertyName]['size'] > $this->maxSize) {
                         throw new \Exception(_t('BAZ_FILEFIELD_TOO_LARGE_FILE', ['fileMaxSize' => $this->maxSize]));
                     }
-                    move_uploaded_file($_FILES[$this->propertyName]['tmp_name'], $filePath);
-                    chmod($filePath, 0755);
-
-                    if (in_array($extension, ['svg', 'html', 'htm'])) {
-                        $purifier = $this->getService(HtmlPurifierService::class);
-                        $purifier->cleanFile($filePath, $extension);
-                    }
+                    $this->storeUploadedFile($filePath);
                 } else {
                     echo _t('BAZ_FILE_ALREADY_EXISTING') . '<br />';
                 }
@@ -385,6 +379,22 @@ class FileField extends BazarField
         }
 
         return $uploadPath . '/' . ($entry['id_fiche'] ?? '') . '/';
+    }
+
+    /**
+     * Moves this field's upload to $filePath and strips active content from svg and html files.
+     */
+    protected function storeUploadedFile(string $filePath): void
+    {
+        $this->moveUploadedFile($_FILES[$this->propertyName]['tmp_name'], $filePath);
+        chmod($filePath, 0755);
+        $extension = preg_replace('/_$/', '', strtolower(pathinfo($filePath, PATHINFO_EXTENSION)));
+        $this->getService(HtmlPurifierService::class)->cleanFile($filePath, $extension);
+    }
+
+    protected function moveUploadedFile(string $source, string $destination): bool
+    {
+        return move_uploaded_file($source, $destination);
     }
 
     protected function getBasePath(): string

@@ -205,8 +205,7 @@ class ImageField extends FileField
                         throw new \Exception(_t('BAZ_FILEFIELD_TOO_LARGE_FILE', ['fileMaxSize' => $this->maxSize]));
                     }
 
-                    move_uploaded_file($_FILES[$this->propertyName]['tmp_name'], $filePath);
-                    chmod($filePath, 0755);
+                    $this->storeUploadedFile($filePath);
 
                     if (isset($entry['oldimage_' . $this->propertyName]) && $entry['oldimage_' . $this->propertyName] != '' && !$this->isUrl($entry['oldimage_' . $this->propertyName])) {
                         // delete previous files only if authorized (owner) and not a URL
