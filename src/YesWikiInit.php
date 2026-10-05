@@ -48,10 +48,6 @@ class YesWikiInit
      */
     public function getRoute()
     {
-        $protocol = 'http://';
-        if (!empty($_SERVER['HTTPS'])) {
-            $protocol = 'https://';
-        }
         $this->page = '';
         $this->method = '';
         $scriptlocation = str_replace('/index.php', '', $_SERVER['SCRIPT_NAME']);
