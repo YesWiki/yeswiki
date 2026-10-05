@@ -1,0 +1,25 @@
+# An extension has no manifest of its own: the tag and the branch say what it is
+
+Doryphore extensions described themselves in a `desc.xml` (a name, a free-form version, an `active` flag, a label in one language), and the installer wrote an `infos.json` beside them to remember which release it had unpacked. Neither said what an extension was compatible with, the version in `desc.xml` was compared to nothing, and the `active` flag was read but never written by core. Porting the extensions the beta-test wikis use to Ectoplasme was the moment to settle what an extension states about itself, and where everything else lives.
+
+We decided that **compatibility and version are not declared by the extension at all**: the **Release line** it is published on says which YesWiki it is for, and the tag it was published from is its version. A stable line serves tags whose first number is YesWiki's major version — extensions `5.x.y` are for Ectoplasme, `4.x.y` for Doryphore — and the development line `ectoplasme-dev` serves the latest commit of each repository's `ectoplasme` branch, which is the branch that guarantees the extension works with Ectoplasme. Core follows the same rule: its number moves out of `src/constants.php` and the binary's `VERSION` file into its own `composer.json`, injected from the tag at build time, with `extra.yeswiki.release-line` naming the line.
+
+What an extension does describe, it describes in a **standard `composer.json`**: its Composer `name` (`yeswiki/extension-<folder>`), an English `description`, labels and descriptions per language under `extra.yeswiki` (shown on `/admin/updates` before the extension is installed, so they cannot come from its `lang/` files), what it requires of PHP and its extensions under `require`, and the other YesWiki extensions it needs under `extra.yeswiki.requires-extensions`. The source repository writes **no `version`**, as Composer itself recommends for a tagged repository; the repository build injects it from the tag into the published archive, which is where core reads the installed version. A checkout with no injected version has none, and shows as `dev`.
+
+An extension's identity is **its folder name**. Any folder under the Program's `extensions/` or an Instance's `custom/extensions/` is an extension; `desc.xml` and `infos.json` are gone. Whether it runs is the **Instance's** decision, listed in that Instance's configuration as `active_extensions`, and an extension not listed there is **inactive**: in a farm, one folder under the shared `extensions/` is seen by every Instance, and dropping it there must switch nothing on anywhere. The `{{update}}` screen installs, updates and removes extensions and switches each one on or off for its Instance; switching rewrites the configuration, which already invalidates the compiled container, so core no longer watches a per-extension file.
+
+## Considered Options
+
+- **Keep `desc.xml`, add a compatibility field** — rejected. A version range stated inside the extension is a second statement of what the Release line already says, and the two can disagree; the branch is the thing that is actually tested against Ectoplasme.
+- **A YesWiki-specific manifest (JSON or YAML)** — rejected for `composer.json`: authors already know it, three of the ported extensions already have one for their own PHP dependencies, and it carries PHP and extension requirements in a vocabulary tools understand.
+- **Write the installed version and labels into the Instance's database or configuration** — rejected. In a farm, an extension under the shared `extensions/` is one set of files run by many Instances: its installed version is a property of the files, and recording it in the one Instance that ran the install leaves every other Instance wrong. The published `composer.json` sits with the files, so it is right for a shared extension and for an Instance's own alike, and no extra file is created beside them.
+- **`"yeswiki/yeswiki": "^5"` in an extension's `require`** — rejected: it restates the Release line and could contradict it.
+- **Active by default, opt-out per Instance** — rejected: a farm operator installing an extension for one Instance would switch it on for all of them.
+
+## Consequences
+
+This is not a return to Composer as an install route: ADR-0016 stands. `composer require` does not install an extension, nothing reads `"type": "yeswiki-extension"` to place files, and `repository.yeswiki.net` remains the only channel. The `composer.json` is a description that happens to use Composer's format.
+
+A wiki upgraded with no `active_extensions` key keeps the extensions that were running before the key existed — a migration lists them once — and from then on an extension is off until named. A Doryphore wiki's extensions are set aside in `private/doryphore/tools/` (UPGRADE.md §2) and come back one at a time as their `5.x` releases appear.
+
+The repository build owns three things it did not before: injecting the version from the tag, copying the per-language labels into the catalogue, and serving the `ectoplasme-dev` line from branch commits.

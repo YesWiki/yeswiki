@@ -38,6 +38,7 @@ use YesWiki\Content\Controller\LegacyPageController;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Identity\Action\LoginAction;
 use YesWiki\Identity\Service\AuthenticationService;
+use YesWiki\Kernel\Entity\ExtensionFolders;
 use YesWiki\Kernel\Exception\ExitException;
 use YesWiki\Kernel\Routing\ReservedTags;
 use YesWiki\Kernel\Service\CacheClearer;
@@ -603,36 +604,13 @@ class YesWikiRuntime
         return new Response(YesWikiKernel::isCli() ? '' : $th->getMessage());
     }
 
-    /**
-     * Load extensions from a directory.
-     *
-     * @param string $pPluginsRoot
-     *
-     * @return void
-     */
-    private function loadExtensionsFromDir($pPluginsRoot)
+    /** Load the extensions this Instance switched on in `active_extensions`; any other folder stays inert (ADR-0029). */
+    private function loadExtensions(): void
     {
-        include_once __DIR__ . '/YesWikiPlugins.php';
-        $objPlugins = new YesWikiPlugins($pPluginsRoot);
-        $objPlugins->getPlugins(true);
-        $vExtensions = $objPlugins->getPluginsList();
-
-        foreach ($vExtensions as $pluginName => $pluginInfo) {
-            $vExtensions[$pluginName] = $pPluginsRoot . $pluginName . '/';
-        }
-
-        $this->extensions = array_merge($this->extensions, $vExtensions);
-    }
-
-    /**
-     * Load extensions.
-     *
-     * @return void
-     */
-    private function loadExtensions() // make it private since once services are compiled, they cannot be modified - @YvesGufflet : contact@yvesgufflet.fr
-    {
-        $this->loadExtensionsFromDir(YESWIKI_PROGRAM_DIR . '/extensions/');
-        $this->loadExtensionsFromDir(YESWIKI_INSTANCE_DIR . '/custom/extensions/');
+        $this->extensions = array_merge(
+            $this->extensions,
+            ExtensionFolders::active(ExtensionFolders::visible(YESWIKI_PROGRAM_DIR, YESWIKI_INSTANCE_DIR), $this->config['active_extensions'] ?? [])
+        );
         $this->extensions['custom'] = YESWIKI_INSTANCE_DIR . '/custom/';
 
         $this->includeExtensionsBootstrapFiles();

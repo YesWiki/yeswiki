@@ -1,13 +1,19 @@
 <?php
 
-namespace YesWiki\Helloworld;
+namespace YesWiki\Helloworld\Action;
 
 use YesWiki\Core\YesWikiAction;
 use YesWiki\HelloWorld\Service\GreetingService;
+use YesWiki\Kernel\Performable\RegisteredAction;
 
-class GreetingAction extends YesWikiAction
+/** `{{greeting}}`: greets whoever reads the page, the way an extension's action is written (ADR-0029). */
+class GreetingAction extends YesWikiAction implements RegisteredAction
 {
-    /** method to prepare args, optionnal see example in __GreetingAction. */
+    public static function performableName(): string
+    {
+        return 'greeting';
+    }
+
     public function formatArguments($arg)
     {
         return [];
@@ -15,8 +21,7 @@ class GreetingAction extends YesWikiAction
 
     public function run(): string
     {
-        $greeting = $this->getService(GreetingService::class);
-        $userName = $greeting->getUserName();
+        $userName = $this->getService(GreetingService::class)->getUserName();
 
         return $this->render('@helloworld/greeting.twig', ['userName' => $userName]);
     }

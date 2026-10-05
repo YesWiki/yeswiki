@@ -8,6 +8,7 @@ use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\PerformableArguments;
+use YesWiki\Kernel\Service\ProgramVersion;
 use YesWiki\Kernel\Service\RuntimeConfig;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\LinkRenderer;
@@ -66,7 +67,7 @@ class RecentcommentsrssAction extends YesWikiAction implements RegisteredAction
             <link>$rssLink</link>
             <description>$rssDescription</description>
             <language>fr</language>
-            <generator>YesWiki " . YESWIKI_VERSION . '</generator>
+            <generator>YesWiki " . $this->getService(ProgramVersion::class)->releaseLine() . '</generator>
         ';
 
         if ($comments = $this->getService(CommentService::class)->getRecentComments($max)) {

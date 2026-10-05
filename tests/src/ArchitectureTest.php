@@ -62,14 +62,15 @@ class ArchitectureTest extends TestCase
         // Boot: these run before there is a container to ask for `Storage`, and two of them run
         // before `vendor/autoload.php` has been required at all. `YesWikiLoader` decides whether
         // the autoloader is current, `autoload.inc.php` is the autoloader, `YesWikiKernel` and
-        // `YesWikiRuntime` build the container and compile the routes, `YesWikiPlugins` and
-        // `YesWikiInit` are what the wiki reads to know it is a wiki, and
+        // `YesWikiRuntime` build the container and compile the routes, `ExtensionFolders`,
+        // `ExtensionManifest` and `YesWikiInit` are what the wiki reads to know it is a wiki, and
         // `ConfigurationFileProvider` decides which file that is. Storage cannot be the answer to
         // a question asked to work out whether Storage can be constructed.
         'YesWikiLoader.php',
         'YesWikiRuntime.php',
         'YesWikiKernel.php',
-        'YesWikiPlugins.php',
+        'Kernel/Entity/ExtensionFolders.php',
+        'Kernel/Entity/ExtensionManifest.php',
         'YesWikiInit.php',
         'autoload.inc.php',
         'Kernel/Service/ConfigurationFileProvider.php',

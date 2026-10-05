@@ -110,6 +110,11 @@
       "YesWiki\\Social\\": "src/Social/"
     }
   },
+  "extra": {
+    "yeswiki": {
+      "release-line": "ectoplasme"
+    }
+  },
   "suggest": {
     "ext-imap": "Required by the IMAP importer to read a mailbox (with php-imap/php-imap)",
     "ext-intl": "Accent-insensitive search: without it SearchManager falls back to iconv transliteration, which folds fewer scripts",

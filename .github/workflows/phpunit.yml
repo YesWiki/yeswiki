@@ -228,6 +228,9 @@ jobs:
       - name: Run migrations
         run: ./yeswicli migrate
 
+      - name: Switch on the helloworld sample the suite exercises
+        run: ./yeswicli extension:enable helloworld
+
       - name: Create every Starter
         run: ./yeswicli onboarding:apply --all
 

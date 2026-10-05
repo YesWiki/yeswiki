@@ -408,12 +408,12 @@ class ArchiveService
         }
 
         try {
-            $results = $this->consoleService->startConsoleSync('helloworld:hello', []);
+            $results = $this->consoleService->startConsoleSync('list', ['--raw']);
             if (!empty($results)) {
                 $result = $results[array_key_first($results)];
                 if (
                     empty($result['stderr']) && !empty($result['stdout'])
-                    && preg_match("/Hello !(?:\r|\n)+/", $result['stdout'])
+                    && preg_match('/^core:archive\s/m', $result['stdout'])
                 ) {
                     $canExec = true;
                 }

@@ -1,0 +1,22 @@
+{
+  "name": "yeswiki/extension-helloworld",
+  "type": "yeswiki-extension",
+  "description": "Sample extension showing how an extension is written",
+  "license": "AGPL-3.0-or-later",
+  "require": {
+    "php": ">=8.3"
+  },
+  "extra": {
+    "yeswiki": {
+      "label": {
+        "fr": "Bonjour le monde",
+        "en": "Hello World"
+      },
+      "description": {
+        "fr": "Extension d'exemple qui montre comment écrire une extension",
+        "en": "Sample extension showing how an extension is written"
+      },
+      "requires-extensions": []
+    }
+  }
+}

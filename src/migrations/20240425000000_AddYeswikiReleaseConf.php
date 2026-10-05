@@ -3,6 +3,7 @@
 use YesWiki\Core\YesWikiMigration;
 use YesWiki\Kernel\Service\ConfigurationFileProvider;
 use YesWiki\Kernel\Service\ConfigurationService;
+use YesWiki\Kernel\Service\ProgramVersion;
 
 class AddYeswikiReleaseConf extends YesWikiMigration
 {
@@ -13,7 +14,7 @@ class AddYeswikiReleaseConf extends YesWikiMigration
         if ($releaseInConfig == _t('AU_UNKNOW') || !preg_match("/^\d{1,4}[.-].*/", $releaseInConfig)) {
             $config = $this->getService(ConfigurationService::class)->getConfiguration(ConfigurationFileProvider::getConfigFileFromEnv());
             $config->load();
-            $config['yeswiki_release'] = YESWIKI_RELEASE;
+            $config['yeswiki_release'] = $this->getService(ProgramVersion::class)->version();
             $config->write();
         }
     }

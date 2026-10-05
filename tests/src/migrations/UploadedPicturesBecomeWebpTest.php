@@ -136,6 +136,23 @@ class UploadedPicturesBecomeWebpTest extends YesWikiTestCase
         $this->assertSame("![affiche](files/{$new})", PageBody::content($body));
     }
 
+    public function testAPictureGdCannotReadIsKeptAndTheNextOneIsStillConverted(): void
+    {
+        $broken = 'files/UploadedPicturesBecomeWebpTestEntry_imagebf_image_broken_20260101000000_20260101000000.jpg';
+        $this->storage->write($broken, "\xFF\xD8\xFF\xC0\x00\x11\x08\x00\x40\x00\x40\x03\x01\x22\x00\x02\x11\x01\x03\x11\x01" . str_repeat("\x00", 64));
+        $this->paths[] = $broken;
+        $this->paths[] = 'files/' . pathinfo($broken, PATHINFO_FILENAME) . '.webp';
+        $this->storage->write(self::UPLOAD, $this->png(400, 300));
+        $this->paths[] = self::UPLOAD;
+        $this->paths[] = 'files/' . pathinfo(self::UPLOAD, PATHINFO_FILENAME) . '.webp';
+
+        [$done] = @$this->migration->shrinkUploads([$broken, self::UPLOAD], 1920, 1920, 82);
+
+        $this->assertSame(1, $done);
+        $this->assertTrue($this->storage->exists($broken), 'the unreadable picture stays as it was');
+        $this->assertFalse($this->storage->exists(self::UPLOAD));
+    }
+
     /**
      * @param int<1, max> $width
      * @param int<1, max> $height

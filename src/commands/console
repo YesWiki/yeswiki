@@ -1,6 +1,8 @@
 #!/usr/bin/env php
 <?php
 
+/** The YesWiki console: every command inside a wiki, only those needing no wiki in a bare Program tree. */
+
 namespace YesWiki\Core\Commands;
 
 use Symfony\Component\Console\Application;
@@ -8,55 +10,30 @@ use YesWiki\Core\YesWikiLoader;
 use YesWiki\Kernel\Command\RunsOutsideAnInstance;
 use YesWiki\Kernel\Service\ConfigurationFileProvider;
 use YesWiki\Kernel\Service\EnvironmentConfiguration;
+use YesWiki\Kernel\Service\ExtensionRegistry;
 
-// boot paths, autoloaders and private/.env before touching the config file, so a
-// WAKKA_CONFIG_FILE set in the instance environment is honored by the pre-read below
-// (this script lives in the Program tree: <program>/src/commands/console)
 require_once dirname(__DIR__) . '/bootstrap_paths.php';
 require_once dirname(__DIR__) . '/autoload.inc.php';
 require_once YESWIKI_PROGRAM_DIR . '/vendor/autoload.php';
 require_once dirname(__DIR__) . '/YesWikiLoader.php';
 YesWikiLoader::loadEnv();
 
-/**
- * Two worlds, and the console runs in both.
- *
- * **In a wiki** -- a folder with a `yeswiki.config.php` -- everything is available: the
- * config is read, the wiki is booted, and every command gets its container.
- *
- * **In a bare Program tree**, there is no config because the folder is nobody's wiki. That
- * is the normal state of a YesWiki shared by every instance on a server, and this used to
- * be a hard stop ("Configuration file not found ... should be launched from your YesWiki
- * root directory") -- refusing to run in the one place where the only thing you want to do
- * is make a wiki. So the console boots without a wiki and offers the commands that do not
- * need one (YesWiki\Kernel\Command\RunsOutsideAnInstance); the rest are not registered,
- * because a command listed but unable to run is worse than one that is honestly absent.
- */
 $configFile = ConfigurationFileProvider::getConfigFileFromEnv();
 $yeswikiConfig = [];
 if (file_exists($configFile)) {
     include_once $configFile;
-    // config files written before the rename define $wakkaConfig instead
     $yeswikiConfig = (is_array($yeswikiConfig) && $yeswikiConfig !== []) ? $yeswikiConfig : ($wakkaConfig ?? []);
-    // environment overrides (BASE_URL, ROOT_PAGE...) apply to this pre-read like everywhere else
     $yeswikiConfig = EnvironmentConfiguration::apply($yeswikiConfig);
 }
 
-// Whether the file EXISTS is not the question -- whether it configures a wiki is. A
-// `yeswiki.config.php` that is a placeholder, half-written, or left behind by an install
-// that never finished has no `base_url`, and booting on it gets as far as connecting to a
-// database with no credentials: "Access denied for user ''@'localhost'", four warnings
-// deep, from a command that was only asked to list itself.
 $configuredWiki = !empty($yeswikiConfig['base_url']);
 $insideAnInstance = $configuredWiki;
 $services = null;
 
 if ($insideAnInstance) {
-    // fake $_SERVER vars
     $_SERVER['REQUEST_URI'] = $yeswikiConfig['base_url'] . ($yeswikiConfig['root_page'] ?? '');
     $_SERVER['HTTP_HOST'] = parse_url($yeswikiConfig['base_url'], PHP_URL_HOST);
     $_SERVER['REQUEST_METHOD'] = 'GET';
-    // fake wiki page
     $_GET['wiki'] = $yeswikiConfig['root_page'] ?? '';
 
     try {
@@ -69,18 +46,12 @@ if ($insideAnInstance) {
     $services = $wiki->services;
 }
 
-// create Application
 $application = new Application(
     'YesWiki',
     ($insideAnInstance ? 'in ' : 'no wiki in ') . YESWIKI_INSTANCE_DIR
 );
 
-// ... register commands
-// Both the glob and the namespace below are strings, so neither is reachable by a
-// class-name or FQCN rewrite. Wave-two ticket 05 moved commands into module directories
-// (src/Admin/Command/) and this loop kept globbing only src/commands/ -- the commands
-// simply stopped existing, with "Command core:archive is not defined" as the only symptom.
-// Keep each glob and its namespace in step; same trap as FieldFactory's field scan.
+$activeExtensions = $services?->get(ExtensionRegistry::class)->all() ?? [];
 foreach ([
     'core' => YESWIKI_PROGRAM_DIR . '/src/commands/*.php',
     'module' => YESWIKI_PROGRAM_DIR . '/src/*/Command/*.php',
@@ -96,7 +67,6 @@ foreach ([
                 $className = "\\YesWiki\\Core\\Commands\\$filename";
                 break;
             case 'module':
-                // src/<Module>/Command/<Class>.php -> \YesWiki\<Module>\Command\<Class>
                 $moduleName = basename(dirname(dirname($filePath)));
                 $className = "\\YesWiki\\{$moduleName}\\Command\\$filename";
                 break;
@@ -105,6 +75,11 @@ foreach ([
                 break;
             case 'extensions':
             case 'custom-extensions':
+                $extensionDir = dirname(dirname($filePath));
+                $registered = $activeExtensions[basename($extensionDir)] ?? null;
+                if ($registered === null || realpath($registered) !== realpath($extensionDir)) {
+                    continue 2;
+                }
                 $toolName = ucfirst(strtolower(basename(dirname(dirname($filePath)))));
                 $className = "\\YesWiki\\$toolName\\Commands\\$filename";
                 break;
@@ -115,8 +90,6 @@ foreach ([
         if (!class_exists($className)) {
             continue;
         }
-        // outside a wiki there is no container to hand over, so only the commands that
-        // said they can do without one are offered
         if (!$insideAnInstance && !is_subclass_of($className, RunsOutsideAnInstance::class)) {
             continue;
         }
@@ -124,18 +97,10 @@ foreach ([
     }
 }
 
-// Said once, where someone who ran the bare command will see it: the list they are looking
-// at is short because of where they are standing, not because the tool is broken.
-// `$argv[1]` rather than Application::getCommandName(): that one is protected. `list` and
-// `help` count as asking for no command -- someone reading the list is exactly who needs
-// to be told why it is short.
 $asked = isset($_SERVER['argv'][1]) && !str_starts_with((string)$_SERVER['argv'][1], '-')
     ? (string)$_SERVER['argv'][1]
     : '';
 if (!$insideAnInstance && ($asked === '' || $asked === 'list' || $asked === 'help')) {
-    // Two folders have no config, and they are not the same problem: the shared Program,
-    // where the answer is "make a wiki", and a wiki folder nobody has installed yet, where
-    // the answer is "install it".
     $inTheProgramTree = realpath(YESWIKI_INSTANCE_DIR) === realpath(YESWIKI_PROGRAM_DIR);
     $halfWritten = file_exists($configFile) && !$configuredWiki;
     if ($halfWritten) {
@@ -145,8 +110,6 @@ if (!$insideAnInstance && ($asked === '' || $asked === 'list' || $asked === 'hel
     } elseif ($inTheProgramTree) {
         $reason = "\e[33mNo yeswiki.config.php here: this is a YesWiki program tree, not a wiki.\e[0m\n"
             . "Only the commands that need no wiki are listed. Run this from a wiki folder for the rest,\n"
-            // `yeswicli`, not $argv[0]: that is this script deep in src/commands/, and the
-            // wrapper is what a person types
             . "or make one here: \e[32m./yeswicli core:create-instance <path>\e[0m\n\n";
     } else {
         $reason = "\e[33mNo yeswiki.config.php in " . YESWIKI_INSTANCE_DIR . ": this wiki is not installed yet.\e[0m\n"

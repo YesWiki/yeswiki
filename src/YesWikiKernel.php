@@ -27,6 +27,17 @@ class YesWikiKernel extends Kernel
     /** Computed once per process: the kernel asks for the cache directory many times. */
     private ?string $fingerprint = null;
 
+    /** What a service implementing each interface is tagged with, for core and for any extension declaring `autoconfigure: true`. */
+    private const AUTOCONFIGURED = [
+        \YesWiki\Kernel\Performable\RegisteredAction::class => 'yeswiki.action',
+        \YesWiki\Kernel\Performable\RegisteredHandler::class => 'yeswiki.handler',
+        \YesWiki\Kernel\Component\ProvidesComponents::class => 'yeswiki.component_provider',
+        \YesWiki\Content\Entity\SuppliesItems::class => 'yeswiki.item_source',
+        \YesWiki\Content\Entity\ContributesEntryFields::class => 'yeswiki.entry_fields',
+        \YesWiki\Content\Entity\AppendsToPageView::class => 'yeswiki.page_view_appendix',
+        \YesWiki\Kernel\Health\ProvidesHealthChecks::class => 'yeswiki.health_check_provider',
+    ];
+
     public function __construct(YesWikiRuntime $runtime, string $environment)
     {
         $this->runtime = $runtime;
@@ -96,9 +107,9 @@ class YesWikiKernel extends Kernel
     {
         $found = [];
         foreach ([
-            $projectDir . '/extensions/*/desc.xml',
+            $projectDir . '/extensions/*/composer.json',
             $projectDir . '/extensions/*/config.yaml',
-            YESWIKI_INSTANCE_DIR . '/custom/extensions/*/desc.xml',
+            YESWIKI_INSTANCE_DIR . '/custom/extensions/*/composer.json',
             YESWIKI_INSTANCE_DIR . '/custom/extensions/*/config.yaml',
         ] as $pattern) {
             foreach (glob($pattern) ?: [] as $file) {
@@ -166,6 +177,10 @@ class YesWikiKernel extends Kernel
         $container->addCompilerPass(new YesWikiPerformableCompilerPass());
         $container->addCompilerPass(new YesWikiRequestScopeCompilerPass());
 
+        foreach (self::AUTOCONFIGURED as $interface => $tag) {
+            $container->registerForAutoconfiguration($interface)->addTag($tag);
+        }
+
         $loader = new YamlFileLoader($container, new FileLocator(__DIR__));
         $loader->load('services.yaml');
 
@@ -197,7 +212,7 @@ class YesWikiKernel extends Kernel
     }
 
     /**
-     * Invalidate the compiled container cache when: an admin setting is saved (yeswiki.config.php is rewritten), an extension is installed/removed (extensions/ or custom/ itself gains or loses an entry), or one is enabled/disabled/reconfigured (its desc.xml/config.yaml is rewritten).
+     * Invalidate the compiled container cache when: an admin setting is saved (yeswiki.config.php is rewritten), an extension is installed/removed (extensions/ or custom/ itself gains or loses an entry), switched on or off (active_extensions, in that configuration), or reconfigured (its composer.json/config.yaml is rewritten).
      */
     private function addInvalidationResources(ContainerBuilder $container): void
     {
@@ -231,9 +246,9 @@ class YesWikiKernel extends Kernel
             }
         }
 
-        foreach ([$projectDir . '/extensions/*/desc.xml', YESWIKI_INSTANCE_DIR . '/custom/extensions/*/desc.xml'] as $pattern) {
-            foreach (glob($pattern) ?: [] as $descFile) {
-                $resources[] = new FileResource($descFile);
+        foreach ([$projectDir . '/extensions/*/composer.json', YESWIKI_INSTANCE_DIR . '/custom/extensions/*/composer.json'] as $pattern) {
+            foreach (glob($pattern) ?: [] as $manifest) {
+                $resources[] = new FileResource($manifest);
             }
         }
 

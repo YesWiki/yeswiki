@@ -8,6 +8,7 @@
         <th>{{ _t('AU_AVAILABLE_REVISION') }}</th>
         <th></th>
         <th></th>
+        {% if showSwitch|default(false) %}<th>{{ _t('AU_ACTIVE') }}</th>{% endif %}
     </tr>
   </thead>
   <tbody>
@@ -91,6 +92,18 @@
                     {% endif %}
                 {% endif %}
             </td>
+            {% if showSwitch|default(false) %}
+                <td>
+                    {% if isAdmin and ext.installed %}
+                        {% set on = ext.name in activeExtensions %}
+                        {% include '@core/update-action-button.twig' with {
+                            params: {action: on ? 'deactivate' : 'activate', package: ext.name},
+                            buttonClass: 'yw-btn yw-btn--sm ' ~ (on ? 'yw-btn--success' : ''),
+                            label: on ? _t('AU_DEACTIVATE') : _t('AU_ACTIVATE')
+                        } only %}
+                    {% endif %}
+                </td>
+            {% endif %}
         </tr>
     {% endfor %}
     </tbody>

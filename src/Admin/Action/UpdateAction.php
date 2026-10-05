@@ -4,8 +4,10 @@ namespace YesWiki\Admin\Action;
 
 use Symfony\Component\Security\Csrf\Exception\TokenNotFoundException;
 use Tamtamchik\SimpleFlash\Flash;
+use YesWiki\Admin\Entity\PackageTool;
 use YesWiki\Admin\Service\ArchiveService;
 use YesWiki\Admin\Service\AutoUpdateService;
+use YesWiki\Admin\Service\ExtensionActivation;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\CsrfTokenChecker;
@@ -27,7 +29,7 @@ class UpdateAction extends YesWikiAction implements RegisteredAction
     }
 
     /** what installs, replaces or removes code, and may only be asked for by this wiki's own pages */
-    public const CONFIRMED_ACTIONS = ['upgrade', 'delete'];
+    public const CONFIRMED_ACTIONS = ['upgrade', 'delete', 'activate', 'deactivate'];
 
     public function formatArguments($arg)
     {
@@ -97,6 +99,7 @@ class UpdateAction extends YesWikiAction implements RegisteredAction
                 'core' => $vUpdateService->repository->getCorePackage(),
                 'themes' => $vUpdateService->repository->getThemesPackages(),
                 'tools' => $vUpdateService->repository->getToolsPackages(),
+                'activeExtensions' => $this->getService(ExtensionActivation::class)->active(),
                 'phpVersion' => PHP_VERSION,
             ]);
         }
@@ -148,14 +151,19 @@ class UpdateAction extends YesWikiAction implements RegisteredAction
                     }
 
                     if ($vCanUpgrade) {
+                        $vPackage = $vUpdateService->repository->getPackage((string)$vPackageName);
+                        $vNewExtension = $vPackage instanceof PackageTool && !$vPackage->installed;
                         $vUpgradeMessages = $vUpdateService->upgrade($vPackageName);
 
                         $vMessages->add($vUpgradeMessages);
+                        if ($vNewExtension) {
+                            $this->switchExtension($vMessages, (string)$vPackageName, true);
+                        }
 
                         $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href('', '', [
                             'action' => 'post_install',
                             'messages' => json_encode($vMessages->toArray()),
-                            'previous_version' => YESWIKI_VERSION,
+                            'previous_version' => $this->getService(\YesWiki\Kernel\Service\ProgramVersion::class)->releaseLine(),
                         ], false));
                     }
                     break;
@@ -172,6 +180,13 @@ class UpdateAction extends YesWikiAction implements RegisteredAction
                     $vDeleteMessages = $vUpdateService->delete($vPackageName);
 
                     $vMessages->add($vDeleteMessages);
+                    if ($this->isExtension($vUpdateService, (string)$vPackageName)) {
+                        $this->getService(ExtensionActivation::class)->deactivate((string)$vPackageName, true);
+                    }
+                    break;
+                case 'activate':
+                case 'deactivate':
+                    $this->switchExtension($vMessages, (string)$vPackageName, $vAction === 'activate');
                     break;
             }
         } catch (TokenNotFoundException $pTokenNotFound) {
@@ -184,5 +199,25 @@ class UpdateAction extends YesWikiAction implements RegisteredAction
             'messages' => $vMessages->toArray(),
             'action' => $vAction,
         ]);
+    }
+
+    private function isExtension(AutoUpdateService $updateService, string $packageName): bool
+    {
+        return $updateService->repository->getPackage($packageName) instanceof PackageTool;
+    }
+
+    /** Switch an extension on or off for this Instance, saying what happened. */
+    private function switchExtension(Messages $messages, string $name, bool $on): void
+    {
+        $activation = $this->getService(ExtensionActivation::class);
+        $problems = $on ? $activation->activate($name) : $activation->deactivate($name);
+        if ($problems === []) {
+            $messages->add(_t($on ? 'AU_EXTENSION_ACTIVATED' : 'AU_EXTENSION_DEACTIVATED', ['name' => $name]), 'AU_OK');
+
+            return;
+        }
+        foreach ($problems as $problem) {
+            $messages->add($problem, 'AU_ERROR');
+        }
     }
 }

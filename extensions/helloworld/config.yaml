@@ -5,17 +5,21 @@ parameters:
 services:
   _defaults:
     autowire: true
+    autoconfigure: true
     public: true
 
   YesWiki\HelloWorld\Service\:
     resource: 'services/*'
 
-  # subscribes to action.greeting.before/.after -- replaces the old __GreetingAction.php
-  # and GreetingAction__.php filename hooks (ticket 06)
   YesWiki\HelloWorld\Service\GreetingHooksSubscriber:
     tags:
       - { name: yeswiki.event_subscriber }
 
-  # Allows to use controllers as services
   YesWiki\HelloWorld\Controller\:
     resource: 'controllers/*'
+
+  YesWiki\Helloworld\Action\:
+    resource: 'actions/*'
+
+  YesWiki\Helloworld\Handler\:
+    resource: 'handlers/*'

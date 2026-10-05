@@ -6,27 +6,35 @@ import (
 	"strings"
 )
 
-// Version is the Program's version, written into the Program tree by build-program.sh.
+// Version is the Program's version, injected into its composer.json by build-program.sh.
 var Version = versionFromProgram()
 
 func versionFromProgram() string {
-	content, err := fs.ReadFile(Program(), "VERSION")
+	content, err := fs.ReadFile(Program(), "composer.json")
 	if err != nil {
 		return "dev"
 	}
 
-	if stated := strings.TrimSpace(string(content)); stated != "" {
+	return versionFromManifest(content)
+}
+
+// versionFromManifest answers a composer.json's "version", or "dev" when it states none.
+func versionFromManifest(content []byte) string {
+	var manifest struct {
+		Version string `json:"version"`
+	}
+	if err := json.Unmarshal(content, &manifest); err != nil {
+		return "dev"
+	}
+
+	if stated := strings.TrimSpace(manifest.Version); stated != "" {
 		return stated
 	}
 
 	return "dev"
 }
 
-// Build is what a binary was built from: every input that decides what came out.
-//
-// `spc` resolves its dependency sources at build time with no lockfile, so two builds of one tag
-// are not bit-identical and this is what can be stated instead. build-static.sh writes it into the
-// Program, so a binary in the field can be asked rather than guessed at.
+// Build is what a binary was built from, written into the Program by build-static.sh.
 type Build struct {
 	Version       string   `json:"version"`
 	Commit        string   `json:"commit"`
@@ -42,8 +50,7 @@ type Build struct {
 	Bytes         int64    `json:"bytes,omitempty"`
 }
 
-// BuildInfo reads the manifest out of the embedded Program. A locally built or dynamically linked
-// binary has none, and says so rather than inventing one.
+// BuildInfo reads the manifest out of the embedded Program, and says when there is none.
 func BuildInfo() (Build, bool) {
 	content, err := fs.ReadFile(Program(), "BUILD.json")
 	if err != nil {

@@ -6,6 +6,7 @@ use YesWiki\Admin\Service\InstallationService;
 use YesWiki\Files\Service\Storage;
 use YesWiki\Kernel\Service\EnvironmentConfiguration;
 use YesWiki\Kernel\Service\LanguageService;
+use YesWiki\Kernel\Service\ProgramVersion;
 use YesWiki\Kernel\Service\WikiUrls;
 
 /** Web installer, run by YesWikiInit::doInstall() when the configuration file does not exist yet. */
@@ -106,6 +107,7 @@ class InstallationController
     /** @param array<string, mixed> $extraOptions */
     protected function render(string $template, array $extraOptions = []): string
     {
+        $program = new ProgramVersion();
         $options = array_merge([
             'template' => $template,
             'baseUrl' => $this->baseUrl,
@@ -116,7 +118,7 @@ class InstallationController
             'installedLanguages' => LanguageService::getInstance()->installedLanguages(),
             'languagesList' => LanguageService::getInstance()->languagesList(),
             'availableDrivers' => InstallationService::availableDrivers(),
-            'yeswikiVersion' => ucfirst(YESWIKI_VERSION) . ' ' . YESWIKI_RELEASE,
+            'yeswikiVersion' => ucfirst($program->releaseLine()) . ' ' . $program->version(),
             'pattern' => WN_CAMEL_CASE_EVOLVED,
             'backupFound' => $this->storage()->exists(InstallationService::backupFile()),
             'backupSqlFile' => InstallationService::BACKUP_SQL_FILE,

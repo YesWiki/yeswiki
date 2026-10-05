@@ -2,19 +2,17 @@
 
 namespace YesWiki\Admin\Entity;
 
+use YesWiki\Kernel\Entity\ExtensionManifest;
+
 abstract class PackageExt extends Package
 {
-    /** Whether this package installs into the Instance's own `custom/` rather than the Program. */
     /** Whether a package installs into the Instance's own `custom/` rather than the shared Program. */
     protected static function installsIntoInstance(): bool
     {
         return YESWIKI_INSTANCE_DIR !== YESWIKI_PROGRAM_DIR;
     }
 
-    public const INFOS_FILENAME = 'infos.json';
-
-    /** @var array<string, mixed>|null what infos.json holds, null until getInfos() has read it */
-    protected $infos;
+    public const LEGACY_INFOS_FILENAME = 'infos.json';
 
     /** @var string */
     public $deleteLink;
@@ -70,15 +68,9 @@ abstract class PackageExt extends Package
         return $this->copy($extractionPath, $desPath);
     }
 
-    /** @return bool */
+    /** @return bool true: the release travels in the package's own composer.json (ADR-0029), so nothing is written beside it */
     public function upgradeInfos()
     {
-        $infos = [
-            'name' => $this->name,
-            'release' => (string)$this->release,
-        ];
-        $this->write($this->infosFilePath(), (string)json_encode($infos));
-
         return true;
     }
 
@@ -100,32 +92,17 @@ abstract class PackageExt extends Package
         return true;
     }
 
-    /** @return array<string, mixed> what infos.json holds, empty when the package has none or it is unreadable */
-    protected function getInfos()
-    {
-        if ($this->infos !== null) {
-            return $this->infos;
-        }
-
-        $this->infos = [];
-        if ($this->isFile($this->infosFilePath())) {
-            $json = $this->read($this->infosFilePath());
-            $decoded = json_decode($json, true);
-            if (is_array($decoded)) {
-                $this->infos = $decoded;
-            }
-        }
-
-        return $this->infos;
-    }
-
-    /** @return Release|string */
+    /** @return Release|string the version its composer.json was published with, or what a pre-ADR-0029 infos.json recorded */
     protected function localRelease()
     {
-        if ($this->installed()) {
-            $infos = $this->getInfos();
-            if (isset($infos['release'])) {
-                return $infos['release'];
+        if (!$this->installed()) {
+            return new Release(Release::UNKNOW_RELEASE);
+        }
+        foreach ([ExtensionManifest::FILENAME => 'version', self::LEGACY_INFOS_FILENAME => 'release'] as $file => $key) {
+            $path = $this->localPath() . $file;
+            $decoded = $this->isFile($path) ? json_decode($this->read($path), true) : null;
+            if (is_array($decoded) && is_string($decoded[$key] ?? null) && $decoded[$key] !== '') {
+                return $decoded[$key];
             }
         }
 
@@ -139,10 +116,5 @@ abstract class PackageExt extends Package
         }
 
         return false;
-    }
-
-    private function infosFilePath(): string
-    {
-        return $this->localPath() . $this::INFOS_FILENAME;
     }
 }

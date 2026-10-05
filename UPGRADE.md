@@ -405,6 +405,33 @@ example.
 > use. So the symptom is a field type that has stopped existing rather than an error naming it.
 > Check your form still renders that field after upgrading.
 
+**What a ported extension declares, and what it no longer does** (ADR-0029):
+
+- **No `desc.xml`.** Every folder under `extensions/` or `custom/extensions/` is an extension, named by the
+  folder. A leftover `desc.xml` is ignored.
+- **A `composer.json` describes it**: `name` (`yeswiki/extension-<folder>`), an English `description`, labels and
+  descriptions per language under `extra.yeswiki.label` / `extra.yeswiki.description`, what it needs of PHP under
+  `require` (`php`, `ext-*`), and the extensions it needs under `extra.yeswiki.requires-extensions`. Write **no
+  `version`**: the repository injects it from the tag. Extensions `5.x.y` are for Ectoplasme, `4.x.y` for Doryphore,
+  and the `ectoplasme` branch is what the `ectoplasme-dev` Release line serves.
+- **It runs only once switched on.** Each wiki lists the extensions it runs in `active_extensions` in its
+  configuration; one not listed is inert, even when its folder is there. `/admin/updates` switches an installed
+  extension on or off, and installing one there switches it on. From a shell:
+
+  ```bash
+  ./yeswicli extension:list
+  ./yeswicli extension:enable myextension
+  ./yeswicli extension:disable myextension
+  ```
+
+  A wiki upgraded before `active_extensions` existed keeps the extensions its `desc.xml` files switched on; the
+  `helloworld` sample is not one of them.
+- **Actions and handlers are services.** Put `autoconfigure: true` in the `_defaults` of the extension's
+  `config.yaml`, register `actions/*` and `handlers/*` under `YesWiki\MyExtension\Action\` and
+  `YesWiki\MyExtension\Handler\`, and implement `RegisteredAction` / `RegisteredHandler` with a
+  `performableName()`. A palette entry is a `ProvidesComponents` implementation, not a `documentation.yaml`.
+  `extensions/helloworld/` is the worked example.
+
 ### 3. Custom `.tpl.html` templates must be ported to Twig
 
 The `tpl.html` engine is gone. Stored _names_ alias to `.twig` (above), which means your
@@ -654,6 +681,13 @@ Check whether any page or template of yours depends on these, because nothing re
 - **The login modal** — the navbar links to `/user` instead. A bare `{{login}}` now renders the
   **account button**, not the sign-in form; ask for `login-form.twig` by name if you want the
   fields. There is deliberately no template called `default`.
+- **The `YESWIKI_VERSION` and `YESWIKI_RELEASE` constants.** Core's version now lives only in the
+  published `composer.json`, where the release build writes it from the tag, and the Release line
+  sits under `extra.yeswiki.release-line`. PHP code that read the constants asks the
+  `ProgramVersion` service instead: `releaseLine()` answers `ectoplasme`, `version()` answers
+  `5.2.0`, or `dev` in a git checkout. The configuration keys `yeswiki_version` and
+  `yeswiki_release` stay, and record the version this wiki's data was installed at or last
+  migrated to.
 
 ---
 

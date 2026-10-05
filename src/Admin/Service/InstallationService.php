@@ -10,6 +10,7 @@ use YesWiki\Kernel\Database\SqlDialectFactory;
 use YesWiki\Kernel\Service\ConfigurationService;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\EnvironmentConfiguration;
+use YesWiki\Kernel\Service\ProgramVersion;
 use YesWiki\Render\Service\LayoutService;
 use YesWiki\Search\Service\SearchIndexSchema;
 
@@ -745,8 +746,9 @@ class InstallationService
 
     protected function writeConfigFile(): void
     {
-        $this->config['yeswiki_version'] = YESWIKI_VERSION;
-        $this->config['yeswiki_release'] = YESWIKI_RELEASE;
+        $program = new ProgramVersion();
+        $this->config['yeswiki_version'] = $program->releaseLine();
+        $this->config['yeswiki_release'] = $program->version();
         if ($this->dbDriver() === 'mysql') {
             $this->config['db_charset'] = 'utf8mb4';
         }

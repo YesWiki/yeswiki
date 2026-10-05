@@ -21,7 +21,7 @@ class ImageShrinker
         return is_array($size) && in_array($size[2], self::CONVERTIBLE, true);
     }
 
-    /** Writes $source as WebP at $destination, fitted inside the bounds and never enlarged; true when the file is there. */
+    /** Writes $source as WebP at $destination, fitted inside the bounds and never enlarged; true when the file is there, false when GD cannot read it. */
     public function shrink(string $source, string $destination, int $maxWidth, int $maxHeight, int $quality): bool
     {
         $written = $this->storage->withLocalCopy(
@@ -39,7 +39,9 @@ class ImageShrinker
                     $previous = error_reporting();
                     error_reporting($previous & ~E_DEPRECATED);
                     try {
-                        return (bool)$image->resize($maxWidth, $maxHeight, ZEBRA_IMAGE_NOT_BOXED, -1);
+                        return (bool)@$image->resize($maxWidth, $maxHeight, ZEBRA_IMAGE_NOT_BOXED, -1);
+                    } catch (\Throwable) {
+                        return false;
                     } finally {
                         error_reporting($previous);
                     }

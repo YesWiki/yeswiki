@@ -75,6 +75,7 @@ jobs:
             --exclude='.twig-cs-fixer.cache' \
             --exclude='.DS_Store' \
             . /tmp/release/yeswiki/
+          ./binary/stamp-program-version.sh /tmp/release/yeswiki/composer.json "$TAG"
           cd /tmp/release
           zip -r "$GITHUB_WORKSPACE/$ARCHIVE_NAME" yeswiki/
           echo "ARCHIVE_NAME=$ARCHIVE_NAME" >> $GITHUB_ENV

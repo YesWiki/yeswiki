@@ -40,6 +40,8 @@ spl_autoload_register(function ($className) {
     }
 
     $directories = [
+        'Action' => 'actions',
+        'Handler' => 'handlers',
         'Service' => 'services',
         'Controller' => 'controllers',
         'Field' => 'fields',

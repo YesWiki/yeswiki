@@ -1,6 +1,7 @@
 services:
   _defaults:
     autowire: true
+    autoconfigure: true
     public: true
 
   # Manually set inside the initCoreService method
@@ -15,35 +16,6 @@ services:
   # Manually set at boot (see YesWikiRuntime::boot())
   YesWiki\Core\YesWikiRuntime:
     synthetic: true
-
-  # Ticket 06: actions and handlers that have become real services tag themselves by
-  # implementing RegisteredPerformable; YesWikiPerformableCompilerPass turns the tags into
-  # ActionRegistry's name => service-id map.
-  _instanceof:
-    YesWiki\Kernel\Performable\RegisteredAction:
-      tags: ['yeswiki.action']
-    YesWiki\Kernel\Performable\RegisteredHandler:
-      tags: ['yeswiki.handler']
-    # Ticket 36: whatever declares what the editor's palette can insert. Tagged the same
-    # way an action is, so a provider enrols by implementing the interface and nothing else
-    # -- there is no list of providers anywhere, which is the point.
-    YesWiki\Kernel\Component\ProvidesComponents:
-      tags: ['yeswiki.component_provider']
-    # Ticket 37: an action that supplies Items for a Presentation to render. Tagged the same
-    # way, so adding a Source is a change to that action and nothing else.
-    YesWiki\Content\Entity\SuppliesItems:
-      tags: ['yeswiki.item_source']
-    # Ticket 39: what another module can say about an entry, and what it can add to the bottom
-    # of a page. Both are the view asking each module for its part, rather than Content
-    # reaching into the features layered over it (ADR-0019).
-    YesWiki\Content\Entity\ContributesEntryFields:
-      tags: ['yeswiki.entry_fields']
-    YesWiki\Content\Entity\AppendsToPageView:
-      tags: ['yeswiki.page_view_appendix']
-    # Ticket 52: what a module knows how to check about itself. Tagged the same way, so a module
-    # can add a check without any core file changing (ADR-0026).
-    YesWiki\Kernel\Health\ProvidesHealthChecks:
-      tags: ['yeswiki.health_check_provider']
 
   YesWiki\Kernel\Performable\ActionRegistry:
     arguments:
