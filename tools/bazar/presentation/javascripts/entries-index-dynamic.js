@@ -508,7 +508,11 @@ const load = (domElement) => {
     },
     mounted() {
       $(this.$el).on('dblclick', (_e) => false)
-      this.savedHash = decodeURIComponent(document.location.hash.substring(1)) // Save the hash for later updating
+      this.savedHash = decodeURIComponent(
+        window.splitHash
+          ? window.splitHash().rest
+          : document.location.hash.substring(1),
+      )
       // params already set from elementDataset in data()
 
       this.pagination = parseInt(this.params.pagination, 10)

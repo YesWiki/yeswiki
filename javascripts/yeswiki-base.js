@@ -57,6 +57,23 @@ function toastTopOffset() {
   return height >= width ? 20 : Math.max(bottom, 0) + 20
 }
 
+/** Splits the URL anchor into the tab it names and the rest, which is a bazar list's parameters. */
+function splitHash(hash = window.location.hash) {
+  const isParameter = (part) => {
+    try {
+      return decodeURIComponent(part).includes('=')
+    } catch (_e) {
+      return true
+    }
+  }
+  const parts = hash.replace(/^#/, '').split('&').filter(Boolean)
+  return {
+    anchor: parts.find((part) => !isParameter(part)) || '',
+    rest: parts.filter(isParameter).join('&'),
+  }
+}
+window.splitHash = splitHash
+
 function toastMessage(
   message,
   duration = 3000,
@@ -338,29 +355,25 @@ function toastMessage(
     })
     return this.each(function (index, element) {
       $(element).on('show.bs.tab', function () {
-        const stateObject = { url: $(this).attr('href') }
+        const href = $(this).attr('href')
+        const stateObject = { url: href }
+        const { anchor, rest } = splitHash()
+        const url =
+          window.location.pathname +
+          window.location.search +
+          href +
+          (rest ? `&${rest}` : '')
 
-        if (window.location.hash && stateObject.url !== window.location.hash) {
-          window.history.pushState(
-            stateObject,
-            document.title,
-            window.location.pathname +
-              window.location.search +
-              $(this).attr('href'),
-          )
+        if (anchor && href !== `#${anchor}`) {
+          window.history.pushState(stateObject, document.title, url)
         } else {
-          window.history.replaceState(
-            stateObject,
-            document.title,
-            window.location.pathname +
-              window.location.search +
-              $(this).attr('href'),
-          )
+          window.history.replaceState(stateObject, document.title, url)
         }
       })
-      if (!window.location.hash && $(element).is('.active')) {
+      const { anchor } = splitHash()
+      if (!anchor && $(element).is('.active')) {
         $(element).tab('show')
-      } else if ($(this).attr('href') === window.location.hash) {
+      } else if ($(this).attr('href') === `#${anchor}`) {
         $(element).tab('show')
       }
     })
