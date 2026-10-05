@@ -42,23 +42,36 @@ class DatabaseCopier
         ]);
     }
 
+    /** The prefix the copy is under on a target: PostgreSQL folds unquoted names, so there it is lower case. */
+    public static function targetPrefix(\PDO $target, string $prefix): string
+    {
+        return $target->getAttribute(\PDO::ATTR_DRIVER_NAME) === 'pgsql' ? strtolower($prefix) : $prefix;
+    }
+
     /**
-     * Creates the schema under `$prefix` on `$target`, copies every table of it from this wiki and compares row counts.
+     * Creates the schema on `$target` under targetPrefix(), copies every table of `$prefix` from this wiki and compares row counts.
      *
-     * @return array<string, array{0: int, 1: int}> source and target row count per table
+     * @return array<string, array{0: int, 1: int}> source and target row count per source table
      */
     public function copy(\PDO $target, string $prefix, ?callable $progress = null): array
     {
         $this->notes = [];
         $targetDriver = (string)$target->getAttribute(\PDO::ATTR_DRIVER_NAME);
-        $existing = self::tables($target, $prefix);
+        $targetPrefix = self::targetPrefix($target, $prefix);
+        if ($targetPrefix !== $prefix) {
+            $this->notes[] = "the tables are under {$targetPrefix} on PostgreSQL, which folds unquoted names to lower case";
+        }
+        $existing = self::tables($target, $targetPrefix);
         if ($existing !== []) {
             throw new \RuntimeException('the target already holds tables under this prefix: ' . implode(', ', $existing));
         }
 
         try {
-            SchemaCreator::create($target, $prefix);
-            $tables = self::tables($target, $prefix);
+            SchemaCreator::create($target, $targetPrefix);
+            $tables = array_map(
+                static fn (string $table): string => $prefix . substr($table, strlen($targetPrefix)),
+                self::tables($target, $targetPrefix)
+            );
             $sourceTables = array_values(array_filter(
                 DumpRewriter::ownTables($this->source->schema()->getTables(), $prefix),
                 fn (string $table): bool => preg_match(self::ENGINE_OWNED, $table) !== 1
@@ -73,8 +86,9 @@ class DatabaseCopier
                     $counts[$table] = [0, 0];
                     continue;
                 }
-                $copied = $this->copyTable($target, $targetDriver, $table);
-                $targetCount = $target->query('SELECT COUNT(*) FROM ' . self::quote($targetDriver, $table));
+                $targetTable = $targetPrefix . substr($table, strlen($prefix));
+                $copied = $this->copyTable($target, $targetDriver, $table, $targetTable);
+                $targetCount = $target->query('SELECT COUNT(*) FROM ' . self::quote($targetDriver, $targetTable));
                 $counts[$table] = [
                     (int)$this->source->scalar('SELECT COUNT(*) FROM ' . $this->source->quoteIdentifier($table), 0),
                     $targetCount === false ? -1 : (int)$targetCount->fetchColumn(),
@@ -84,7 +98,7 @@ class DatabaseCopier
                 }
             }
         } catch (\Throwable $failure) {
-            foreach (self::tables($target, $prefix) as $created) {
+            foreach (self::tables($target, $targetPrefix) as $created) {
                 $target->exec('DROP TABLE IF EXISTS ' . self::quote($targetDriver, $created) . ($targetDriver === 'pgsql' ? ' CASCADE' : ''));
             }
 
@@ -105,12 +119,12 @@ class DatabaseCopier
     }
 
     /** Copies one table in batches, keyed on `id` when it has one, inside a single target transaction. */
-    private function copyTable(\PDO $target, string $targetDriver, string $table): int
+    private function copyTable(\PDO $target, string $targetDriver, string $table, string $targetTable): int
     {
-        $columns = array_values(array_intersect(self::columns($target, $targetDriver, $table), $this->source->schema()->dumpableColumns($table)));
+        $columns = array_values(array_intersect(self::columns($target, $targetDriver, $targetTable), $this->source->schema()->dumpableColumns($table)));
         $sourceList = implode(', ', array_map(fn (string $c): string => $this->source->quoteIdentifier($c), $columns));
         $insert = $target->prepare(
-            'INSERT INTO ' . self::quote($targetDriver, $table)
+            'INSERT INTO ' . self::quote($targetDriver, $targetTable)
             . ' (' . implode(', ', array_map(fn (string $c): string => self::quote($targetDriver, $c), $columns)) . ')'
             . ' VALUES (' . implode(', ', array_fill(0, count($columns), '?')) . ')'
         );
@@ -121,7 +135,7 @@ class DatabaseCopier
         $cleaned = 0;
         $target->beginTransaction();
         try {
-            $target->exec('DELETE FROM ' . self::quote($targetDriver, $table));
+            $target->exec('DELETE FROM ' . self::quote($targetDriver, $targetTable));
             $last = null;
             do {
                 $rows = $keyed
@@ -150,9 +164,9 @@ class DatabaseCopier
 
             if ($targetDriver === 'pgsql' && $keyed) {
                 $target->exec(
-                    "SELECT setval(pg_get_serial_sequence('" . str_replace("'", "''", self::quote($targetDriver, $table)) . "', 'id'),"
-                    . ' COALESCE((SELECT MAX(id) FROM ' . self::quote($targetDriver, $table) . '), 1),'
-                    . ' (SELECT MAX(id) FROM ' . self::quote($targetDriver, $table) . ') IS NOT NULL)'
+                    "SELECT setval(pg_get_serial_sequence('" . str_replace("'", "''", self::quote($targetDriver, $targetTable)) . "', 'id'),"
+                    . ' COALESCE((SELECT MAX(id) FROM ' . self::quote($targetDriver, $targetTable) . '), 1),'
+                    . ' (SELECT MAX(id) FROM ' . self::quote($targetDriver, $targetTable) . ') IS NOT NULL)'
                 );
             }
             $target->commit();

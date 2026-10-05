@@ -82,7 +82,7 @@ class DbCopyCommand extends Command
         $output->writeln('copied and verified: ' . array_sum(array_column($counts, 0)) . ' row(s) in ' . count($counts) . ' table(s)');
 
         if ($input->getOption('write-config')) {
-            $this->pointConfigAt($driver, $host, $port, $database, $user, $password, $prefix);
+            $this->pointConfigAt($driver, $host, $port, $database, $user, $password, DatabaseCopier::targetPrefix($target, $prefix));
             $output->writeln('yeswiki.config.php now points at the copy; run ./yeswicli cache:clear if a worker serves this wiki');
         }
 

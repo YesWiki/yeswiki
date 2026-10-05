@@ -83,7 +83,7 @@ class DatabaseCopierTest extends YesWikiTestCase
         }
     }
 
-    /** PostgreSQL folds an unquoted name to lower case, so a prefix with capitals must be quoted everywhere a table is named. */
+    /** PostgreSQL folds unquoted names to lower case, so a prefix with capitals arrives lower case and every query finds it. */
     public function testAPrefixWithCapitalsArrivesWholeOnPostgreSql(): void
     {
         $params = $this->getWiki()->services->get(ParameterBagInterface::class);
@@ -115,11 +115,12 @@ class DatabaseCopierTest extends YesWikiTestCase
             $counts = (new DatabaseCopier($source))->copy($target, $prefix);
 
             $this->assertSame([1, 1], $counts[$prefix . 'triples']);
-            $copy = new DbService(new ParameterBag($connection + ['table_prefix' => $prefix, 'base_url' => '', 'debug' => false]));
-            $this->assertContains('resource', $copy->schema()->dumpableColumns($prefix . 'triples'));
-            $this->assertStringContainsString('"' . $prefix . 'triples"', (string)$copy->schema()->getTableSchema($prefix . 'triples'));
+            $this->assertSame('ywcopy_na__', DatabaseCopier::targetPrefix($target, $prefix));
+            $copy = new DbService(new ParameterBag($connection + ['table_prefix' => 'ywcopy_na__', 'base_url' => '', 'debug' => false]));
+            $this->assertSame('Mine', $copy->scalar('SELECT resource FROM ' . $copy->prefixTable('triples'), ''), 'an unquoted query finds the copy');
+            $this->assertContains('resource', $copy->schema()->dumpableColumns('ywcopy_na__triples'));
         } finally {
-            $created = $target->query("SELECT tablename FROM pg_tables WHERE schemaname = current_schema() AND starts_with(tablename, '{$prefix}')");
+            $created = $target->query("SELECT tablename FROM pg_tables WHERE schemaname = current_schema() AND starts_with(tablename, 'ywcopy_na__')");
             foreach ($created === false ? [] : $created->fetchAll(\PDO::FETCH_COLUMN) as $table) {
                 $target->exec('DROP TABLE IF EXISTS "' . $table . '" CASCADE');
             }
