@@ -53,8 +53,14 @@ interface SqlDialect
     /** SQL testing whether $needle appears in the comma-separated list $haystack. */
     public function findInSet(string $needle, string $haystack, bool $not = false): string;
 
+    /** SQL for the 1-based position of $needle in $haystack, 0 when it is absent. */
+    public function strpos(string $haystack, string $needle): string;
+
     /** SQL reading a text expression as an integer, for ordering by it. */
     public function castToInteger(string $expression): string;
+
+    /** SQL reading a text expression as a decimal number, for comparing it. */
+    public function castToNumber(string $expression): string;
 
     /** Clause appended to a SELECT inside a transaction so the rows it reads stay locked until commit. */
     public function lockRowsClause(): string;

@@ -14,6 +14,7 @@
         {{ slot.title(item) }}
         {{ slot.meta(item) }}
         {% if item.description %}<div class="yw-item__description">{{ item.description|raw }}</div>{% endif %}
+        {{ slot.footer(item) }}
       </div>
     </article>
   {% else %}

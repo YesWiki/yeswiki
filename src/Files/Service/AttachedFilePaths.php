@@ -3,6 +3,7 @@
 namespace YesWiki\Files\Service;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use YesWiki\Kernel\Service\InclusionStack;
 use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\RuntimeConfig;
 
@@ -29,6 +30,7 @@ class AttachedFilePaths
         RuntimeConfig $runtimeConfig,
         PageContext $pageContext,
         private readonly Storage $storage,
+        private readonly InclusionStack $inclusionStack,
     ) {
         $this->params = $params;
         $this->runtimeConfig = $runtimeConfig;
@@ -96,8 +98,6 @@ class AttachedFilePaths
             return false;
         }
 
-        // Storage creates the parents on the way, so the recursion this method is named for is
-        // gone; the name stays because callers all over the wiki use it.
         return $this->storage->directoryExists($dir) || $this->storage->makeDirectory($dir);
     }
 
@@ -137,6 +137,14 @@ class AttachedFilePaths
         $extension = preg_quote($parts['ext'], '`');
 
         $isActionBuilderPreview = $this->pageContext->getTag() === 'root';
+        $included = (string)($this->inclusionStack->getAll()[0] ?? '');
+        if (!$isActionBuilderPreview && $parts['page'] === '' && $included !== '' && strcasecmp($included, (string)$this->pageContext->getTag()) !== 0) {
+            $inIncludedPage = $this->searchOwnedBy($included, $name, $extension);
+            if ($inIncludedPage !== '') {
+                return $inIncludedPage;
+            }
+        }
+
         if ($isActionBuilderPreview) {
             $searchPattern = '`' . $name . '_\d{14}_\d{14}\.' . $extension . '$`';
         } elseif ($this->safeMode) {
@@ -146,7 +154,36 @@ class AttachedFilePaths
         }
 
         $files = $this->searchFiles($searchPattern, $path);
+        if ($isActionBuilderPreview && count($files) > 0) {
+            return $path . '/' . $files[0]['realname'];
+        }
 
+        return $this->newestOf($files, $path);
+    }
+
+    /** The newest upload of a name attached to $owner, matched case-insensitively since the inclusion stack keeps tags lowercased. */
+    private function searchOwnedBy(string $owner, string $quotedName, string $quotedExtension): string
+    {
+        $base = rtrim((string)$this->attachConfig['upload_path'], '/');
+        if ($this->safeMode) {
+            $pattern = '`^(?i:' . preg_quote($owner, '`') . ')_' . $quotedName . '_\d{14}_\d{14}\.' . $quotedExtension . '$`';
+
+            return $this->newestOf($this->searchFiles($pattern, $base), $base);
+        }
+        foreach ($this->storage->directories($base) as $directory) {
+            if (strcasecmp(basename($directory), $owner) === 0) {
+                $pattern = '`^' . $quotedName . '_\d{14}_\d{14}\.' . $quotedExtension . '$`';
+
+                return $this->newestOf($this->searchFiles($pattern, $directory), $directory);
+            }
+        }
+
+        return '';
+    }
+
+    /** @param list<array<string, mixed>> $files */
+    private function newestOf(array $files, string $directory): string
+    {
         $theFile = null;
         $latest = 0;
         foreach ($files as $candidate) {
@@ -155,11 +192,8 @@ class AttachedFilePaths
                 $latest = $candidate['dateupload'];
             }
         }
-        if ($isActionBuilderPreview && count($files) > 0) {
-            $theFile = $files[0];
-        }
 
-        return is_array($theFile) ? $path . '/' . $theFile['realname'] : '';
+        return is_array($theFile) ? $directory . '/' . $theFile['realname'] : '';
     }
 
     /**

@@ -1,155 +1,60 @@
 <?php
 
-use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Service\FileManager;
-use YesWiki\Content\Service\PageManager;
+use YesWiki\Content\Service\LegacyAttachments;
 use YesWiki\Core\YesWikiMigration;
-use YesWiki\Files\Service\Storage;
 
 /**
  * Ticket 17: uploaded files become their own Content type (a `pages` row per file, own ACL, see FileManager).
  */
 class MigrateAttachmentsToPages extends YesWikiMigration
 {
-    private const LEGACY_NAME_PATTERN = '`^(.*)_(\d{14})_(\d{14})\.([^._]+)_?$`';
+    private const LISTED = 20;
 
     public function run()
     {
-        $storage = $this->getService(Storage::class);
-        $uploadPath = rtrim($this->getUploadPath(), '/');
-        if (!$storage->directoryExists($uploadPath)) {
-            return;
-        }
-
-        $fileManager = $this->getService(FileManager::class);
-        $pageManager = $this->getService(PageManager::class);
-
-        $renameMapByOwnerPage = $this->migrateFiles($uploadPath, $fileManager, $pageManager);
-        if (!empty($renameMapByOwnerPage)) {
-            $this->rewritePageBodies($renameMapByOwnerPage, $pageManager);
-        }
+        $legacy = $this->getService(LegacyAttachments::class);
+        $report = $legacy->migrateUploads($this->uploadPath());
+        $rewrite = $report['created'] === [] ? ['rewritten' => [], 'unresolved' => []] : $legacy->rewriteReferences();
+        $this->sayWhatHappened($report, $rewrite);
     }
 
-    private function getUploadPath(): string
+    private function uploadPath(): string
     {
         $attachConfig = $this->params->get('attach_config');
         $uploadPath = is_array($attachConfig) ? ($attachConfig['upload_path'] ?? '') : '';
 
-        return is_string($uploadPath) && $uploadPath !== '' ? $uploadPath : 'files';
+        return is_string($uploadPath) && $uploadPath !== '' ? rtrim($uploadPath, '/') : 'files';
     }
 
     /**
-     * @return array<string,array<string,string>> ownerPageTag => [originalFilename => newTag]
+     * @param array{created: array<string, string>, superseded: list<string>, orphans: list<string>, namedVerbatim: list<string>, alreadyMigrated: list<string>} $report
+     * @param array{rewritten: list<string>, unresolved: list<string>}                                                                                           $rewrite
      */
-    private function migrateFiles(string $uploadPath, FileManager $fileManager, PageManager $pageManager): array
+    private function sayWhatHappened(array $report, array $rewrite): void
     {
-        $renameMapByOwnerPage = [];
-
-        $storage = $this->getService(Storage::class);
-
-        foreach ($storage->directories($uploadPath) as $entryPath) {
-            $entry = basename($entryPath);
-            if (!$pageManager->tagExists($entry)) {
-                continue;
-            }
-            foreach ($storage->files($entryPath) as $subPath) {
-                $this->migrateOneFile($subPath, basename($subPath), $entry, $fileManager, $renameMapByOwnerPage);
+        if ($report['created'] !== []) {
+            $this->say(count($report['created']) . ' attached file(s) became File Content in ' . FileManager::STORAGE_DIR
+                . '/, and the file="…" references of ' . count($rewrite['rewritten']) . ' page(s) now name them by tag.');
+        }
+        $lists = [
+            'superseded' => 'older upload(s) of a name a newer upload replaced were left in place in files/, unmigrated',
+            'namedVerbatim' => 'file(s) stayed in files/ because some Content names them in full (a Bazar field, a direct link)',
+            'orphans' => 'file(s) stayed in files/ because the page they were attached to no longer exists',
+        ];
+        foreach ($lists as $key => $sentence) {
+            if ($report[$key] !== []) {
+                $this->say(count($report[$key]) . " {$sentence}: " . self::listed($report[$key]));
             }
         }
-
-        foreach ($storage->files($uploadPath) as $entryPath) {
-            $entry = basename($entryPath);
-            $ownerPageTag = $fileManager->guessOwnerPageTagFromLegacyFilename($entry);
-            if (is_null($ownerPageTag)) {
-                continue;
-            }
-            $this->migrateOneFile($entryPath, $entry, $ownerPageTag, $fileManager, $renameMapByOwnerPage, $ownerPageTag);
+        if ($rewrite['unresolved'] !== []) {
+            $this->say(count($rewrite['unresolved']) . ' file="…" reference(s) match no File Content of their page and were left as written: ' . self::listed($rewrite['unresolved']));
         }
-
-        return $renameMapByOwnerPage;
     }
 
-    /**
-     * @param array<string, array<string, string>> $renameMapByOwnerPage ownerPageTag => [originalFilename => newTag]
-     */
-    private function migrateOneFile(
-        string $physicalPath,
-        string $rawFilename,
-        string $ownerPageTag,
-        FileManager $fileManager,
-        array &$renameMapByOwnerPage,
-        ?string $stripPrefix = null
-    ): void {
-        $originalFilename = self::recoverOriginalFilename($rawFilename, $stripPrefix);
-        if (is_null($originalFilename)) {
-            return;
-        }
-
-        $storage = $this->getService(Storage::class);
-
-        $size = $storage->fileSize($physicalPath);
-        $mimeType = $storage->withLocalCopy($physicalPath, static fn (string $local) => mime_content_type($local) ?: 'application/octet-stream');
-
-        $storedFilename = $fileManager->suggestFreeFilename($fileManager->sanitizeFilename($originalFilename));
-        try {
-            $storage->copy($physicalPath, FileManager::STORAGE_DIR . '/' . $storedFilename);
-        } catch (Throwable) {
-            return;
-        }
-
-        $entry = $fileManager->create($originalFilename, $storedFilename, $ownerPageTag, (int)$size, $mimeType);
-        $storage->delete($physicalPath);
-
-        $renameMapByOwnerPage[$ownerPageTag][$originalFilename] = (string)$entry['tag'];
-    }
-
-    /**
-     * Strip the trailing `_{pageDate}_{uploadDate}.{ext}[_]` suffix (and, for the flat safe_mode case, the leading `{pageTag}_` prefix) to recover the name the user originally uploaded.
-     */
-    public static function recoverOriginalFilename(string $rawFilename, ?string $stripPrefix): ?string
+    /** @param list<string> $items */
+    private static function listed(array $items): string
     {
-        $matches = [];
-        if (!preg_match(self::LEGACY_NAME_PATTERN, $rawFilename, $matches)) {
-            return null;
-        }
-        $namePart = $matches[1];
-        $ext = $matches[4];
-
-        if (!is_null($stripPrefix) && strpos($namePart, $stripPrefix . '_') === 0) {
-            $namePart = substr($namePart, strlen($stripPrefix) + 1);
-        }
-        if ($namePart === '') {
-            return null;
-        }
-
-        return $namePart . '.' . $ext;
-    }
-
-    /**
-     * @param array<string,array<string,string>> $renameMapByOwnerPage ownerPageTag => [originalFilename => newTag]
-     */
-    private function rewritePageBodies(array $renameMapByOwnerPage, PageManager $pageManager): void
-    {
-        foreach ($renameMapByOwnerPage as $ownerPageTag => $renameMap) {
-            $page = $pageManager->getOne($ownerPageTag, null, true, true);
-            $markup = empty($page) ? '' : PageBody::content($page['body']);
-            if ($markup === '' || strpos($markup, 'file="') === false) {
-                continue;
-            }
-
-            uksort($renameMap, function ($a, $b) {
-                return strlen($b) <=> strlen($a);
-            });
-
-            $newMarkup = $markup;
-            foreach ($renameMap as $originalFilename => $newTag) {
-                $newMarkup = str_replace('file="' . $originalFilename . '"', 'file="' . $newTag . '"', $newMarkup);
-            }
-            if ($newMarkup !== $markup) {
-                $newBody = $page['body'];
-                $newBody[PageBody::CONTENT] = $newMarkup;
-                $pageManager->save($ownerPageTag, $newBody, '', true);
-            }
-        }
+        return implode(', ', array_slice($items, 0, self::LISTED)) . (count($items) > self::LISTED ? ', …' : '');
     }
 }

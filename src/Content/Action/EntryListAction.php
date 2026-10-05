@@ -2,12 +2,14 @@
 
 namespace YesWiki\Content\Action;
 
+use Carbon\Carbon;
 use YesWiki\Content\Entity\Item;
 use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Entity\SuppliesItems;
 use YesWiki\Content\Exception\ParsingMultipleException;
 use YesWiki\Content\Field\BazarField;
 use YesWiki\Content\Field\CheckboxField;
+use YesWiki\Content\Field\DateField;
 use YesWiki\Content\Field\EmailField;
 use YesWiki\Content\Field\EnumField;
 use YesWiki\Content\Field\ImageField;
@@ -22,6 +24,7 @@ use YesWiki\Content\Service\ListIndex;
 use YesWiki\Content\Service\TemplateDataFactory;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Files\Service\AttachedFilePaths;
+use YesWiki\Files\Service\ImageResizer;
 use YesWiki\Files\Service\Storage;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\AuthenticationService;
@@ -35,6 +38,7 @@ use YesWiki\Kernel\Performable\AliasesPerformable;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\AssetRegistry;
 use YesWiki\Kernel\Service\CurrentRequest;
+use YesWiki\Kernel\Service\LanguageService;
 use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\Paginator;
 use YesWiki\Kernel\Service\RuntimeConfig;
@@ -108,6 +112,9 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
                         ->label(_t('AB_bazarliste_displayfields_floating_label'))
                         ->default('')
                         ->extraFields(['owner']),
+                    Setting::formField('footer')
+                        ->label(_t('AB_bazarliste_displayfields_footer_label'))
+                        ->default(''),
                     Setting::choice('cta', [
                         '' => _t('AB_bazarliste_cta_none'),
                         'entry' => _t('AB_bazarliste_cta_entry'),
@@ -280,55 +287,130 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
     private function itemsFrom(array $entries): array
     {
         $slots = $this->arguments['displayfields'] ?? [];
-        $field = static function (array $entry, $name) {
-            if (empty($name) || !isset($entry[$name])) {
-                return null;
-            }
-            $value = $entry[$name];
-
-            return is_scalar($value) && (string)$value !== '' ? (string)$value : null;
-        };
+        $slots['description'] ??= $slots['text'] ?? null;
+        $imageSize = $this->imageSize();
 
         $items = [];
         foreach ($entries as $entry) {
-            $image = $field($entry, $slots['visual'] ?? null);
             $tag = (string)($entry['tag'] ?? '');
+            $badgeName = $slots['floating'] ?? null;
+            $badgeDate = $this->isDateSlot($entry, $badgeName) ? self::asDate($entry[$badgeName] ?? null) : null;
             $items[] = new Item(
                 id: (string)($entry['id_fiche'] ?? $entry['tag'] ?? ''),
-                title: $field($entry, $slots['title'] ?? null) ?? (string)($entry['title'] ?? $entry['tag'] ?? ''),
-                subtitle: $field($entry, $slots['subtitle'] ?? null),
-                description: $field($entry, $slots['description'] ?? null),
-                image: $this->imageUrl($image),
+                title: $this->slotText($entry, $slots['title'] ?? null) ?? (string)($entry['title'] ?? $entry['tag'] ?? ''),
+                subtitle: $this->slotText($entry, $slots['subtitle'] ?? null),
+                description: $this->slotText($entry, $slots['description'] ?? null),
+                image: $this->imageUrl($entry, $slots['visual'] ?? null, ...$imageSize),
                 url: $this->getService(UrlFormatter::class)->href('', $tag),
-                date: self::asDate($field($entry, $slots['date'] ?? null)),
-                badge: $field($entry, $slots['floating'] ?? null),
+                date: self::asDate($entry[$slots['date'] ?? ''] ?? null),
+                badge: $badgeDate === null ? $this->slotText($entry, $badgeName) : null,
                 ctaUrl: $this->ctaUrl((string)($slots['cta'] ?? ''), $tag),
                 ctaLabel: self::ctaLabel((string)($slots['cta'] ?? '')),
+                footer: $this->slotText($entry, $slots['footer'] ?? null),
+                badgeDate: $badgeDate,
             );
         }
 
         return $items;
     }
 
-    /** An entry's picture, as something an `<img>` can point at. */
-    private function imageUrl(?string $value): ?string
+    /** @param array<string, mixed> $entry */
+    private function fieldOf(array $entry, ?string $name): ?BazarField
     {
-        if ($value === null || $value === '') {
+        if (empty($name) || (!isset($entry['id_typeannonce']) && !isset($entry['form_id']))) {
+            return null;
+        }
+
+        return $this->getService(FormManager::class)
+            ->findFieldFromNameOrPropertyName($name, (string)($entry['form_id'] ?? $entry['id_typeannonce']));
+    }
+
+    /** @param array<string, mixed> $entry */
+    private function isDateSlot(array $entry, ?string $name): bool
+    {
+        return in_array($name, ['created_at', 'updated_at'], true) || $this->fieldOf($entry, $name) instanceof DateField;
+    }
+
+    /** @param array<string, mixed> $entry */
+    private function slotText(array $entry, ?string $name): ?string
+    {
+        if (empty($name) || !isset($entry[$name])) {
+            return null;
+        }
+        $value = $entry[$name];
+        $field = $this->fieldOf($entry, $name);
+
+        if ($field instanceof EmailField) {
+            return null;
+        }
+        if ($field instanceof EnumField) {
+            $options = $field->getOptions();
+            $keys = is_array($value) ? $value : explode(',', (string)$value);
+            $labels = array_map(
+                static fn ($key) => is_scalar($options[trim((string)$key)] ?? null) ? (string)$options[trim((string)$key)] : trim((string)$key),
+                array_filter($keys, static fn ($key) => is_scalar($key) && trim((string)$key) !== '')
+            );
+            $value = implode(', ', $labels);
+        } elseif ($this->isDateSlot($entry, $name)) {
+            $value = $this->humanDate($value);
+        }
+
+        return is_scalar($value) && (string)$value !== '' ? (string)$value : null;
+    }
+
+    /** A stored date as a reader of this page writes it, with the time when it has one. */
+    private function humanDate(mixed $stored): ?string
+    {
+        if (!is_string($stored) || trim($stored) === '') {
+            return null;
+        }
+        try {
+            $moment = Carbon::parse($stored);
+        } catch (\Throwable) {
+            return null;
+        }
+        $moment->locale($this->getService(LanguageService::class)->preferredLanguage());
+        $hasTime = preg_match('/[T ]\d{2}:\d{2}/', $stored) === 1;
+
+        return $moment->isoFormat($hasTime ? 'LL LT' : 'LL');
+    }
+
+    /** @return array{int, int, string} the width, height and mode a card's picture is cut to */
+    private function imageSize(): array
+    {
+        $columns = max(1, (int)($this->arguments['columns'] ?? 0) ?: 3);
+        $width = (int)ceil(1170 / $columns) * 2;
+        $style = (string)($this->arguments['style'] ?? '');
+        $height = $style === 'square' ? $width : intdiv($width * 2, 3);
+        $fit = (string)($this->arguments['imgstyle'] ?? $this->arguments['imagefit'] ?? '') === 'contain' ? 'fit' : 'crop';
+
+        return [$width, $height, $fit];
+    }
+
+    /** @param array<string, mixed> $entry */
+    private function imageUrl(array $entry, ?string $name, int $width, int $height, string $mode): ?string
+    {
+        $value = empty($name) ? null : ($entry[$name] ?? null);
+        if (!is_string($value) || $value === '') {
             return null;
         }
         if (preg_match('#^(https?:)?//#i', $value) === 1) {
-            return $value;
+            return preg_match('#api/files/[^/?&]+/download#', $value) === 1 && $mode === 'crop'
+                ? $value . (str_contains($value, '?') ? '&' : '?') . 'mode=crop'
+                : $value;
         }
 
-        $paths = $this->getService(AttachedFilePaths::class);
-        $inUploads = rtrim($paths->uploadPath(), '/') . '/' . $value;
-        if ($this->getService(Storage::class)->exists($inUploads)) {
-            return $inUploads;
+        $storage = $this->getService(Storage::class);
+        $uploads = rtrim($this->getService(AttachedFilePaths::class)->uploadPath(), '/');
+        foreach (["$uploads/$value", $uploads . '/' . ($entry['tag'] ?? '') . "/$value"] as $path) {
+            if ($storage->exists($path)) {
+                $resized = $this->getService(ImageResizer::class)->cached($path, (string)$width, (string)$height, $mode);
+
+                return $storage->url($resized !== '' ? $resized : $path);
+            }
         }
 
-        $attached = $paths->fullFilename($value);
-
-        return $attached === '' ? null : $attached;
+        return null;
     }
 
     /** Where an item's button goes, if the list asked for one. */
@@ -350,7 +432,7 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
         };
     }
 
-    /** An entry's stored date, as the ISO-8601 string an Item carries -- or nothing at all. */
+    /** An entry's stored date, as the ISO-8601 string an Item carries, or nothing at all. */
     private static function asDate(mixed $stored): ?string
     {
         if (!is_string($stored) || $stored === '') {

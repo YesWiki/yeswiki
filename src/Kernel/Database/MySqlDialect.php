@@ -82,9 +82,19 @@ class MySqlDialect implements SqlDialect
         return ($not ? 'NOT ' : '') . "FIND_IN_SET($needle, $haystack)";
     }
 
+    public function strpos(string $haystack, string $needle): string
+    {
+        return "INSTR($haystack, $needle)";
+    }
+
     public function castToInteger(string $expression): string
     {
         return "CAST({$expression} AS SIGNED)";
+    }
+
+    public function castToNumber(string $expression): string
+    {
+        return "CAST({$expression} AS DOUBLE)";
     }
 
     public function lockRowsClause(): string

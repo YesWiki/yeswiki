@@ -87,9 +87,19 @@ class PostgreSqlDialect implements SqlDialect
             : "($needle = ANY(string_to_array($haystack, ',')))";
     }
 
+    public function strpos(string $haystack, string $needle): string
+    {
+        return "STRPOS($haystack, $needle)";
+    }
+
     public function castToInteger(string $expression): string
     {
         return "COALESCE(NULLIF(regexp_replace({$expression}, '\\D', '', 'g'), '')::bigint, 0)";
+    }
+
+    public function castToNumber(string $expression): string
+    {
+        return "(CASE WHEN TRIM({$expression}) ~ '^[-+]?([0-9]+([.][0-9]*)?|[.][0-9]+)([eE][-+]?[0-9]+)?$' THEN CAST(TRIM({$expression}) AS DOUBLE PRECISION) END)";
     }
 
     public function lockRowsClause(): string

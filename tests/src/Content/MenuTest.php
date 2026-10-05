@@ -134,6 +134,31 @@ class MenuTest extends YesWikiTestCase
         }
     }
 
+    /** A link to an /admin screen is drawn for administrators only, since nobody else may open it. */
+    public function testAnAdminScreenIsShownToAdminsOnly(): void
+    {
+        $wiki = $this->getWiki();
+        $menus = $wiki->services->get(MenuManager::class);
+        $authentication = $wiki->services->get(\YesWiki\Identity\Service\AuthenticationService::class);
+        $tag = 'MenuRendererTestAdminScreens';
+        $menus->create('Screens', [
+            new MenuNode(id: 'a1', label: 'Mises a jour', link: 'admin/updates'),
+            new MenuNode(id: 'a2', label: 'Tableau de bord', link: 'dashboard'),
+        ], $tag);
+
+        try {
+            $visitor = $wiki->services->get(MenuRenderer::class)->render($tag, MenuRenderer::NAV);
+            $this->assertStringNotContainsString('Mises a jour', $visitor);
+            $this->assertStringContainsString('Tableau de bord', $visitor);
+
+            $authentication->connectFirstAdmin();
+            $this->assertStringContainsString('Mises a jour', $wiki->services->get(MenuRenderer::class)->render($tag, MenuRenderer::NAV));
+        } finally {
+            $authentication->logout();
+            $menus->delete($tag);
+        }
+    }
+
     /** The same renderer, over a wiki whose default write ACL is `@admins`. */
     private function rendererWhereOnlyAdminsWrite(): MenuRenderer
     {

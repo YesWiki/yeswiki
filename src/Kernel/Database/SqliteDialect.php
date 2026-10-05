@@ -84,9 +84,19 @@ class SqliteDialect implements SqlDialect
                "($haystack = $needle))";
     }
 
+    public function strpos(string $haystack, string $needle): string
+    {
+        return "INSTR($haystack, $needle)";
+    }
+
     public function castToInteger(string $expression): string
     {
         return "CAST({$expression} AS INTEGER)";
+    }
+
+    public function castToNumber(string $expression): string
+    {
+        return "CAST({$expression} AS REAL)";
     }
 
     public function lockRowsClause(): string

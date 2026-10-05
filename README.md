@@ -17,7 +17,7 @@
 
 ## Installation
 
-YesWiki can be installed in about ten minutes on a server which supports **PHP >= 8.3** and a **MySQL/MariaDB, PostgreSQL or SQLite** database. Once installed, the YesWiki site is working immediately, and can be managed online from a web browser.
+YesWiki can be installed in about ten minutes on a server which supports **PHP >= 8.3** and a **MySQL/MariaDB, PostgreSQL (12 or newer) or SQLite** database. Once installed, the YesWiki site is working immediately, and can be managed online from a web browser.
 
 [More detailed install instructions in the INSTALL.md file](INSTALL.md).
 

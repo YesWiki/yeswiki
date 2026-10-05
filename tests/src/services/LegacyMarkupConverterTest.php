@@ -2,6 +2,7 @@
 
 namespace YesWiki\Test\Content\Service;
 
+use League\CommonMark\GithubFlavoredMarkdownConverter;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use YesWiki\Content\Service\LegacyMarkupConverter;
@@ -61,6 +62,24 @@ class LegacyMarkupConverterTest extends TestCase
                 "- *un*\n- *deux*",
             ],
             'lines of actions get no break' => ["{{grid}}\n{{col size=\"6\"}}", "{{grid}}\n{{col size=\"6\"}}"],
+            'a rule as a list item stays an item, the dropdown divider' => [
+                "{{buttondropdown icon=\"cog\"}}\n - {{button text=\"a\" link=\"A\"}}\n - ------\n - {{button text=\"b\" link=\"B\"}}\n{{end elem=\"buttondropdown\"}}",
+                "{{buttondropdown icon=\"cog\"}}\n- {{button text=\"a\" link=\"A\"}}\n- ***\n- {{button text=\"b\" link=\"B\"}}\n{{end elem=\"buttondropdown\"}}",
+            ],
+            'a nested divider keeps its level' => [" - un\n  - ----\n  - deux\n - trois", "- un\n  - ***\n  - deux\n- trois"],
+            'a divider item next to bold' => [" - ----\n - **gras**", "- ***\n- **gras**"],
+            'a style block keeps its lines' => [
+                "\"\"<style>\n  .a {\n    color: red;\n  }\n</style>\"\"",
+                "<style>\n  .a {\n    color: red;\n  }\n</style>",
+            ],
+            'a comment over several lines is left alone' => [
+                "{# //x//\n - ------\n======T====== #}",
+                "{# //x//\n - ------\n======T====== #}",
+            ],
+            'a bare stylesheet is not markup' => [
+                "/* thème */\n.navbar {\n  background: red;\n  color: #fff\n}\n@media (max-width: 600px) {\n  .a,\n  .b:hover {\n    content: \"\";\n  }\n}\nh1 { font-size: 2em; }",
+                "/* thème */\n.navbar {\n  background: red;\n  color: #fff\n}\n@media (max-width: 600px) {\n  .a,\n  .b:hover {\n    content: \"\";\n  }\n}\nh1 { font-size: 2em; }",
+            ],
         ];
     }
 
@@ -83,6 +102,39 @@ class LegacyMarkupConverterTest extends TestCase
 
         $this->assertSame($markdown, $once);
         $this->assertSame($once, $converter->convert($once));
+    }
+
+    /** The divider must reach CommonMark as an item holding a rule, the shape postFormat() turns into a dropdown divider. */
+    public function testTheDividerRendersAsAnItemHoldingARule(): void
+    {
+        $markdown = (new LegacyMarkupConverter())->convert(" - un\n - ------\n - deux");
+        $html = (string)(new GithubFlavoredMarkdownConverter())->convert($markdown);
+
+        $this->assertMatchesRegularExpression('/<ul>\s*<li>un<\/li>\s*<li>\s*<hr \/>\s*<\/li>\s*<li>deux<\/li>\s*<\/ul>/', $html);
+    }
+
+    #[DataProvider('prose')]
+    public function testProseIsNeverTakenForAStylesheet(string $text): void
+    {
+        $this->assertFalse((new LegacyMarkupConverter())->isStylesheet($text));
+    }
+
+    /** @return array<string, array{string}> */
+    public static function prose(): array
+    {
+        return [
+            'lines with colons' => ["Bonjour\nNote: voir ci-dessous;\nfin"],
+            'braces in a sentence' => ['Salut {toi}'],
+            'css shown in a code block' => ["Le CSS :\n%%(css)\n.a {\n color: red;\n}\n%%"],
+            'css in a raw style block' => ["\"\"<style>\n.a {\n color: red;\n}\n</style>\"\""],
+            'a sentence ahead of rules' => ["Voici le style de la page, à copier\n.a {\n color: red;\n}"],
+            'empty' => [''],
+        ];
+    }
+
+    public function testRawHtmlKeepsWhatLooksLikeMarkup(): void
+    {
+        $this->assertSame('<b>//x// ---- y</b>', (new LegacyMarkupConverter())->convert('""<b>//x// ---- y</b>""'));
     }
 
     public function testAScriptKeepsItsLinesExactly(): void

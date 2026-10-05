@@ -1,111 +1,24 @@
 <?php
 
 use YesWiki\Core\YesWikiMigration;
-use YesWiki\Files\Service\Storage;
-use YesWiki\Render\Service\PresetService;
+use YesWiki\Render\Service\DoryphoreLookRestorer;
+use YesWiki\Render\Service\PresetUpgrader;
 
-/** ADR-0020: a Preset's nine variables become `--yw-*` Design tokens. */
+/** ADR-0020: a Preset's nine variables become `--yw-*` Design tokens, written out as a complete Preset. */
 class PresetsBecomeTokenSets extends YesWikiMigration
 {
-    /** The nine variables, and the token each one's value means now. */
-    private const MAPPING = [
-        'primary-color' => 'yw-primary',
-        'secondary-color-1' => 'yw-secondary',
-        'secondary-color-2' => 'yw-tertiary',
-        'neutral-color' => 'yw-text',
-        'neutral-soft-color' => 'yw-text-muted',
-        'neutral-light-color' => 'yw-surface-sunken',
-        'main-text-fontsize' => 'yw-font-size-base',
-        'main-text-fontfamily' => 'yw-font-body',
-        'main-title-fontfamily' => 'yw-font-heading',
-    ];
-
     public function run()
     {
-        $presets = $this->getService(PresetService::class);
+        $style = $this->params->has('favorite_style') ? $this->params->get('favorite_style') : '';
+        $upgraded = $this->getService(DoryphoreLookRestorer::class)
+            ->upgradeAll(PresetUpgrader::hadColouredNavbar($style));
 
-        $migrated = [];
-        foreach ($this->files() as $path) {
-            $css = $this->getService(Storage::class)->read($path);
-            if ($css === '') {
-                throw new RuntimeException("preset $path could not be read");
-            }
-            if (!$this->needsMigration($css)) {
-                continue;
-            }
-            $rewritten = $this->rewrite($css);
-            try {
-                $this->getService(Storage::class)->write($path, $rewritten);
-            } catch (Throwable) {
-                throw new RuntimeException("preset $path could not be written: check the permissions on " . dirname($path));
-            }
-            $missing = count($presets->missingIn($presets->valuesOf($rewritten)));
-            $migrated[] = basename($path) . " ($missing tokens left to fill in)";
-        }
-
-        if ($migrated !== []) {
+        if ($upgraded !== []) {
             $this->say(
-                'presets carried over to the --yw-* design tokens (ADR-0020): ' . implode(', ', $migrated)
-                . '. Each is INCOMPLETE until the missing tokens are set -- the wiki renders'
-                . ' with core\'s own values for those. Finish them on /admin/preset.'
+                'presets carried over to the --yw-* design tokens (ADR-0020, ADR-0021): '
+                . DoryphoreLookRestorer::summary($upgraded)
+                . '. What they did not say was filled in from core; adjust it on /admin/preset.'
             );
         }
-    }
-
-    /**
-     * @return list<string>
-     */
-    private function files(): array
-    {
-        $paths = [];
-        foreach (['custom/css-presets/*.css', 'custom/themes/*/presets/*.css'] as $pattern) {
-            foreach ($this->getService(Storage::class)->glob($pattern) as $path) {
-                $paths[] = $path;
-            }
-        }
-
-        return $paths;
-    }
-
-    /** A file to rewrite is one that speaks the old vocabulary and not the new one. */
-    private function needsMigration(string $css): bool
-    {
-        if (preg_match('/--yw-[a-z0-9-]+\s*:/i', $css)) {
-            return false;
-        }
-        foreach (array_keys(self::MAPPING) as $variable) {
-            if (str_contains($css, '--' . $variable)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /** Rename the nine declarations in place, and say in the file itself what is missing. */
-    private function rewrite(string $css): string
-    {
-        foreach (self::MAPPING as $variable => $token) {
-            $css = (string)preg_replace(
-                '/--' . preg_quote($variable, '/') . '(?![a-z0-9-])/i',
-                '--' . $token,
-                $css
-            );
-        }
-
-        $notice = <<<'CSS'
-            /* Carried over from the nine `--primary-color`-style variables, which YesWiki
-               retired in favour of `--yw-*` Design tokens (ADR-0020).
-
-               THIS PRESET IS INCOMPLETE. Nine of its tokens are known -- the nine that had a
-               variable before -- and the rest are not; they were not invented for you,
-               because a colour guessed from somebody else's brand is wrong in a way nobody
-               notices. Until they are filled in, pages use core's own values for them.
-
-               Personnalisation (/admin/preset) lists what is missing and edits it. */
-
-            CSS;
-
-        return $notice . ltrim($css);
     }
 }

@@ -4,6 +4,7 @@ namespace YesWiki\Content\Controller;
 
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use YesWiki\Content\Entity\RetiredPages;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Core\YesWikiController;
 use YesWiki\Kernel\Exception\ExitException;
@@ -33,9 +34,9 @@ class LegacyPageController extends YesWikiController
             return $boosted->fullLoadResponse();
         }
 
-        $bazar = $this->retiredBazarPage((string)$tag, $request);
-        if ($bazar !== null) {
-            return $bazar;
+        $retired = $this->retiredPage((string)$tag, (string)$method, $request);
+        if ($retired !== null) {
+            return $retired;
         }
 
         $this->getService(CoreAssets::class)->register();
@@ -76,22 +77,21 @@ class LegacyPageController extends YesWikiController
         return new Response($content);
     }
 
-    /**
-     * `BazaR` is no page any more: bare, it goes to the dashboard; with a bazar view in the query, the links the wiki still carries (an entry form in an iframe, a search) are still answered.
-     */
-    private function retiredBazarPage(string $tag, Request $request): ?Response
+    /** A page Doryphore ran the wiki from goes to the screen doing its job; `BazaR` with a bazar view in the query is still answered. */
+    private function retiredPage(string $tag, string $method, Request $request): ?Response
     {
-        if (strcasecmp($tag, 'BazaR') !== 0 || $this->getService(PageManager::class)->getOne($tag) !== null) {
+        $screen = RetiredPages::screenFor($tag);
+        if ($screen === null || !in_array($method, ['', 'show'], true) || $this->getService(PageManager::class)->getOne($tag) !== null) {
             return null;
         }
         $query = $request->query;
-        if ($query->has('view') || $query->has('action') || $query->has('id') || $query->has('form_id')) {
+        if (strcasecmp($tag, 'BazaR') === 0 && ($query->has('view') || $query->has('action') || $query->has('id') || $query->has('form_id'))) {
             $this->getService(CoreAssets::class)->register();
             $content = $this->getService(ActionRunner::class)->action('bazar', ['showmenu' => '0']);
 
             return $this->toResponse($this->getService(ThemeManager::class)->renderPage((string)$content), $this->getService(BoostedNavigation::class));
         }
 
-        return new Response('', Response::HTTP_FOUND, ['Location' => $this->getService(UrlFormatter::class)->href('', 'dashboard', ['view' => 'formulaire'], false)]);
+        return new Response('', Response::HTTP_FOUND, ['Location' => $this->getService(UrlFormatter::class)->href('', $screen[0], $screen[1], false)]);
     }
 }

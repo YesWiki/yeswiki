@@ -298,9 +298,7 @@ class TemplateHelperService
         return [];
     }
 
-    /**
-     * wrap a trimmed icon parameter (from `button`, `buttondropdown`, `nav`) into its <i> markup ; a space in the value means it is a raw class list, not a bare bootstrap/fontawesome icon name.
-     */
+    /** An icon parameter (`button`, `buttondropdown`, `nav`) as a sprite glyph, a neutral dot for an unmapped icon name or Font Awesome class, an <i> for any other class list. */
     public function formatIconHtml(string $icon): string
     {
         $icon = trim($icon);
@@ -308,12 +306,16 @@ class TemplateHelperService
             return '';
         }
 
-        $sprite = $this->container->get(TemplateEngine::class)->legacyIconToSprite($icon);
+        $templateEngine = $this->container->get(TemplateEngine::class);
+        $sprite = $templateEngine->legacyIconToSprite($icon);
         if ($sprite !== null) {
             return $sprite;
         }
+        if (!preg_match('/\s/', $icon) || preg_match('/(^|\s)(fa[srlbd]?|fa-[\w-]+|glyphicon[\w-]*)(\s|$)/', $icon)) {
+            return (string)$templateEngine->legacyIconToSprite('circle-dot');
+        }
 
-        return '<i class="' . $icon . '"></i>';
+        return '<i class="' . htmlspecialchars($icon, ENT_QUOTES) . '"></i>';
     }
 
     /**

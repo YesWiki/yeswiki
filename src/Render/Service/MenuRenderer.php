@@ -10,15 +10,7 @@ use YesWiki\Kernel\Routing\ReservedTags;
 use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\UrlFormatter;
 
-/**
- * The one thing that draws a menu, wherever it is drawn (ticket 64 / ADR-0028).
- *
- * There used to be three: the navbar template drew two levels and no icons, the quick access bar
- * drew icons and one level, and `{{nav}}` concatenated strings and decided "active" by comparing
- * built URLs while the navbar compared bare tags. An icon worked in one placement, a dropdown in
- * another, and a link written as `Tag/edit` never lit up. Everything a placement may still differ
- * about is a flag it passes in.
- */
+/** The one thing that draws a menu, wherever it is drawn (ticket 64 / ADR-0028); a placement only passes flags. */
 class MenuRenderer
 {
     /** Where a menu is being drawn: the wrapper differs, nothing else does. */
@@ -102,7 +94,6 @@ class MenuRenderer
             $entry['children'] = $children;
             $entry['active'] = $entry['active'] || $children !== [] && array_filter(array_column($children, 'active')) !== [];
 
-            // A parent that leads nowhere and has nothing left under it says nothing at all.
             if ($entry['href'] === '' && $children === []) {
                 continue;
             }
@@ -124,12 +115,10 @@ class MenuRenderer
             $tag = (string)($parts['tag'] ?? '');
             $method = (string)($parts['method'] ?? '');
 
-            // Two rules, everywhere, with no setting: what you may not read you are not shown, and
-            // what does not exist yet is an invitation for whoever may create it (ADR-0028).
-            //
-            // A reserved name is neither: `search` and `dashboard` belong to the router, so there
-            // is no row to find and nothing to invite anybody to write (ticket 20).
             $routed = ReservedTags::isReserved($tag);
+            if ($routed && ReservedTags::canonical($tag) === 'admin' && !$this->aclService->check('@admins')) {
+                return null;
+            }
             if (!$routed && !$this->aclService->hasAccess('read', $tag)) {
                 return null;
             }

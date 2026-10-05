@@ -32,7 +32,7 @@ class ColAction extends YesWikiAction implements RegisteredAction
         }
 
         return '<!-- start of col -->' . "\n"
-            . '<div class="yw-col' . (!empty($class) ? ' ' . $class : '') . '" style="width:' . $percent . '%;">';
+            . '<div class="yw-col' . (!empty($class) ? ' ' . $class : '') . '" style="--yw-col-width:' . $percent . '%;">';
     }
 
     public function end(): string

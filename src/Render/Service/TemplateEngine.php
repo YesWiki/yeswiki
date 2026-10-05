@@ -536,7 +536,8 @@ class TemplateEngine
             $map = json_decode((string)file_get_contents(YESWIKI_PROGRAM_DIR . '/src/icon-map.json'), true) ?: [];
             unset($map['__comment']);
 
-            $spriteNames = array_fill_keys($map, true) + ['star-filled' => true, 'cursor-text' => true];
+            preg_match_all('/<symbol id="([^"]+)"/', (string)file_get_contents(YESWIKI_PROGRAM_DIR . '/src/assets/icons.svg'), $symbols);
+            $spriteNames = array_fill_keys($symbols[1], true);
         }
         foreach (explode(' ', (string)$classString) as $part) {
             $key = str_starts_with($part, 'fa-') ? substr($part, 3) : $part;

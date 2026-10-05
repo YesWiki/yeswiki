@@ -11,6 +11,8 @@ use YesWiki\Search\Service\SearchIndexer;
 /** Doryphore's wakka markup becomes the CommonMark Ectoplasme renders, in every page and comment revision written before the upgrade. */
 class LegacyMarkupBecomesMarkdown extends YesWikiMigration
 {
+    public const STYLESHEET = 'PageCss';
+
     public function run()
     {
         $upgradedAt = $this->upgradedAt();
@@ -29,15 +31,15 @@ class LegacyMarkupBecomesMarkdown extends YesWikiMigration
     }
 
     /**
-     * Converts the page and comment revisions older than `$before`, or only those of `$tag` when one is given.
+     * Converts the page and comment revisions older than `$before`, or only those of `$tag` when one is given; PageCss holds CSS, not markup.
      *
      * @return array{0: list<string>, 1: int} the tags touched and the number of revisions rewritten
      */
     public function rewrite(DbService $db, ?string $before, ?string $tag = null): array
     {
         $pages = $db->prefixTable('pages');
-        $sql = "SELECT id, tag, body FROM {$pages} WHERE (type IS NULL OR type IN ('', ?, ?))";
-        $params = [PageType::PAGE, PageType::COMMENT];
+        $sql = "SELECT id, tag, body FROM {$pages} WHERE (type IS NULL OR type IN ('', ?, ?)) AND tag <> ?";
+        $params = [PageType::PAGE, PageType::COMMENT, self::STYLESHEET];
         if ($before !== null) {
             $sql .= ' AND ' . $db->quoteIdentifier('time') . ' < ?';
             $params[] = $before;

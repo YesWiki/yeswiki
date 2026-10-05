@@ -1118,6 +1118,11 @@ class PresetService
                 $i = $end + 1;
                 continue;
             }
+            if ($character === ';') {
+                $selector = '';
+                $i++;
+                continue;
+            }
             if ($character === '}') {
                 if ($darkMediaDepth !== null && $depth === $darkMediaDepth) {
                     $darkMediaDepth = null;

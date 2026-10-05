@@ -368,6 +368,15 @@ a[data-missing-tag]::after {
   word-break: break-word;
 }
 
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  overflow-wrap: break-word;
+}
+
 .page {
   position: relative;
   margin: 0;
@@ -1832,6 +1841,18 @@ td.users-table-break-word {
   background: var(--yw-success);
   border-color: var(--yw-success);
   color: var(--yw-on-success);
+}
+
+.btn-secondary-1 {
+  background: var(--yw-secondary);
+  border-color: var(--yw-secondary);
+  color: var(--yw-on-secondary);
+}
+
+.btn-secondary-2 {
+  background: var(--yw-tertiary);
+  border-color: var(--yw-tertiary);
+  color: var(--yw-on-tertiary);
 }
 
 .yw-searchbox {
@@ -3330,6 +3351,7 @@ table.yw-table--sortable th[data-yw-sort='desc']::after {
 .yw-panel__heading,
 .panel-heading {
   display: block;
+  box-sizing: border-box;
   width: 100%;
   padding: var(--yw-space-md-y) var(--yw-space-md-x);
   text-align: left;
@@ -3362,6 +3384,21 @@ table.yw-table--sortable th[data-yw-sort='desc']::after {
     var(--yw-primary) 15%,
     var(--yw-surface-raised)
   );
+}
+
+.yw-panel.panel-primary {
+  border-color: var(--yw-primary);
+}
+
+.yw-panel.panel-primary > .yw-panel__heading,
+.yw-panel.panel-primary > details > .yw-panel__heading {
+  color: var(--yw-on-primary);
+  background: var(--yw-primary);
+  border-color: var(--yw-primary);
+}
+
+.yw-panel.panel-primary .yw-panel__title {
+  color: inherit;
 }
 
 .yw-panel--success {
@@ -3399,6 +3436,14 @@ table.yw-table--sortable th[data-yw-sort='desc']::after {
 .yw-panel__body,
 .panel-body {
   padding: var(--yw-space-md-y) var(--yw-space-md-x);
+}
+
+.yw-panel__body > :first-child {
+  margin-top: 0;
+}
+
+.yw-panel__body > :last-child {
+  margin-bottom: 0;
 }
 
 .yw-list-group,
@@ -3446,7 +3491,18 @@ table.yw-table--sortable th[data-yw-sort='desc']::after {
 .yw-col,
 .row > [class*='col-'] {
   box-sizing: border-box;
+  min-width: 0;
   padding: 0 var(--yw-space-md-x);
+}
+
+.yw-col {
+  width: 100%;
+}
+
+@media (min-width: 768px) {
+  .yw-col {
+    width: var(--yw-col-width, 100%);
+  }
 }
 
 .yw-label,

@@ -717,6 +717,18 @@ class DbService
         return $this->dialect->findInSet($needle, $haystack, $not);
     }
 
+    /** SQL for the 1-based position of $needle in $haystack, 0 when it is absent. */
+    public function strpos(string $haystack, string $needle): string
+    {
+        return $this->dialect->strpos($haystack, $needle);
+    }
+
+    /** SQL reading a text expression as a decimal number, for comparing it. */
+    public function castToNumber(string $expression): string
+    {
+        return $this->dialect->castToNumber($expression);
+    }
+
     /**
      * @return list<array{query: string, time: float}>
      */

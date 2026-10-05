@@ -342,19 +342,9 @@ class FileField extends BazarField
             return self::FILE_REMOTE;
         }
 
-        return $this->storage()->exists($this->uploadDirectory($entry) . $value)
+        return $this->storage()->exists($this->getBasePath() . $value)
             ? self::FILE_PRESENT
             : self::FILE_MISSING;
-    }
-
-    /** @param array<string, mixed> $entry */
-    private function uploadDirectory(array $entry): string
-    {
-        $basePath = $this->getBasePath();
-
-        return $this->paths()->isSafeMode()
-            ? $basePath . ($entry['tag'] ?? '') . '/'
-            : $basePath;
     }
 
     protected function getBasePath(): string

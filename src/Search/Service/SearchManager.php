@@ -447,7 +447,7 @@ class SearchManager
                                 if ($vDescriptor['_type_'] == 'number') {
                                     if (isset($vValue) && trim($vValue) !== '') {
                                         $vValueConditions[] = SqlFragment::of(
-                                            'CAST(' . $this->renameJSONPathVariable($vFieldName) . " AS DOUBLE) {$vComparisonOperator} ?",
+                                            $this->dbService->castToNumber($this->renameJSONPathVariable($vFieldName)) . " {$vComparisonOperator} ?",
                                             [(string)$vValue]
                                         );
                                     } else {
@@ -472,10 +472,10 @@ class SearchManager
                                     [$this->renameJSONPathVariable($vFieldName), $this->extractRegExp($vValue)]
                                 );
                             } else {
-                                $haystack = $this->renameJSONPathVariable($vFieldName);
+                                $vFindInSet = $this->dbService->findInSet('?', $this->renameJSONPathVariable($vFieldName), $vFindInSetNot);
                                 $vValueConditions[] = SqlFragment::of(
-                                    $this->dbService->findInSet('?', $haystack, $vFindInSetNot),
-                                    [$vValue]
+                                    $vFindInSet,
+                                    array_fill(0, substr_count($vFindInSet, '?'), $vValue)
                                 );
                             }
 
@@ -529,6 +529,15 @@ class SearchManager
                 . $this->dbService->prefixTable('pages') . " rev0 WHERE rev0.tag = p.tag AND rev0.parent = '') AS CHAR(19)))",
             default => $vStored,
         };
+    }
+
+    /** The `elt` and `rest` columns cutting the first comma-separated value off $pList. */
+    private function splitFirstElement(string $pList): string
+    {
+        $vComma = $this->dbService->strpos($pList, "','");
+
+        return "TRIM(CASE WHEN {$vComma} = 0 THEN {$pList} ELSE SUBSTR({$pList}, 1, {$vComma} - 1) END) AS elt, "
+            . "CASE WHEN {$vComma} = 0 THEN '' ELSE SUBSTR({$pList}, {$vComma} + 1) END AS rest";
     }
 
     /** A predicate matching the rows of a given PageType. */
@@ -816,30 +825,18 @@ class SearchManager
                 continue;
             }
 
-            $vSplitteds[] = 'SELECT id, champ, elt FROM ' . $this->renameJSONPathVariable($vFieldName) . '_multiple';
+            $vColumn = $this->renameJSONPathVariable($vFieldName);
+
+            $vSplitteds[] = 'SELECT id, champ, elt FROM ' . $vColumn . '_multiple';
 
             $vSplittedsRequest
-                        .= ', ' . $this->renameJSONPathVariable($vFieldName) . '_multiple AS '
+                        .= ', ' . $vColumn . '_multiple AS '
                         . '( '
-                            . 'SELECT '
-                                . 'id, '
-                                . '\'' . $this->renameJSONPathVariable($vFieldName) . '\' AS champ, '
-                                . 'TRIM(SUBSTRING_INDEX(' . $this->renameJSONPathVariable($vFieldName) . ', \',\', 1)) AS elt, '
-                                . 'CASE '
-                                    . 'WHEN INSTR(' . $this->renameJSONPathVariable($vFieldName) . ', \',\') = 0 THEN \'\' '
-                                    . 'ELSE SUBSTR(' . $this->renameJSONPathVariable($vFieldName) . ', INSTR(' . $this->renameJSONPathVariable($vFieldName) . ', \',\') + 1) '
-                                . 'END AS rest '
+                            . 'SELECT id, \'' . $vColumn . '\' AS champ, ' . $this->splitFirstElement($vColumn) . ' '
                             . 'FROM filteredPages '
                             . 'UNION ALL '
-                            . 'SELECT '
-                                . 'id, '
-                                . 'champ, '
-                                . 'TRIM(SUBSTRING_INDEX(rest, \',\', 1)) AS elt, '
-                                . 'CASE '
-                                    . 'WHEN INSTR(rest, \',\') = 0 THEN \'\' '
-                                    . 'ELSE SUBSTR(rest, INSTR(rest, \',\') + 1) '
-                                . 'END AS rest '
-                            . 'FROM ' . $this->renameJSONPathVariable($vFieldName) . '_multiple '
+                            . 'SELECT id, champ, ' . $this->splitFirstElement('rest') . ' '
+                            . 'FROM ' . $vColumn . '_multiple '
                             . 'WHERE rest <> \'\''
                         . ')';
         }

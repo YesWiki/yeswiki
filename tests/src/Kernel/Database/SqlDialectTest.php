@@ -81,6 +81,15 @@ class SqlDialectTest extends TestCase
         $this->assertStringContainsString("tags != 'b'", $negated);
     }
 
+    public function testANumberCastNamesATypePostgreSqlKnows(): void
+    {
+        $this->assertSame('CAST(v AS DOUBLE)', (new MySqlDialect())->castToNumber('v'));
+        $this->assertSame('CAST(v AS REAL)', (new SqliteDialect())->castToNumber('v'));
+        $pgsql = (new PostgreSqlDialect())->castToNumber('v');
+        $this->assertStringContainsString('AS DOUBLE PRECISION', $pgsql);
+        $this->assertStringContainsString('CASE WHEN TRIM(v) ~', $pgsql);
+    }
+
     public function testPostgreSqlFragments(): void
     {
         $d = new PostgreSqlDialect();

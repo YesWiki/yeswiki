@@ -20,6 +20,9 @@ class LegacyMarkupConverter
     /** The Markdown equivalent of one page's legacy markup. */
     public function convert(string $markup): string
     {
+        if ($this->isStylesheet($markup)) {
+            return $markup;
+        }
         $this->slots = [];
         $text = str_replace(["\r\n", "\r", self::SLOT, self::BLANK], ["\n", "\n", '', ''], $markup);
         $text = $this->protect($text);
@@ -29,6 +32,22 @@ class LegacyMarkupConverter
         $text = $this->settleBlankLines($text);
 
         return trim($this->restore($text), "\n");
+    }
+
+    /** Whether a page holds nothing but CSS, which a wiki keeps as a page and never renders as markup. */
+    public function isStylesheet(string $content): bool
+    {
+        $css = (string)preg_replace('/\/\*.*?\*\//s', '', str_replace("\r", '', $content));
+        if (preg_match('/\{\{|\[\[/', $css) === 1 || substr_count($css, '{') !== substr_count($css, '}')) {
+            return false;
+        }
+        $lines = array_values(array_filter(array_map('trim', explode("\n", $css)), fn (string $line): bool => $line !== ''));
+        $declaration = '-{0,2}[a-z][a-z0-9-]*\s*:[^{};]*';
+        $rule = "[^{};]+\\{\\s*(?:{$declaration};?\\s*)+\\}";
+        $opens = preg_grep("/^(?:[^{};]+\\{|{$rule})$/i", $lines) ?: [];
+        $shaped = preg_grep("/^(?:[^{};]+\\{|{$rule}|\\}|{$declaration};?|[^{};]+,|@import\\b[^{}]*;)$/i", $lines) ?: [];
+
+        return $opens !== [] && count($shaped) >= 0.9 * count($lines);
     }
 
     /** Sets aside what must not be touched, converting the legacy delimiters on the way. */
@@ -105,9 +124,14 @@ class LegacyMarkupConverter
         return (string)preg_replace_callback('/(?<!=)(={2,6})([^=\n][^=]*?[^=\s])\1(?!=)/u', $heading, $text);
     }
 
-    /** The inline markers whose meaning differs, and wakka's two uses of dashes. */
+    /** The inline markers whose meaning differs, and wakka's uses of dashes; an item made of a rule is a divider, spelt `***` since `- ----` is itself a rule. */
     private function convertInline(string $text): string
     {
+        $text = (string)preg_replace_callback(
+            '/^([ \t]*[-*][ \t]+)(?:-{4,}|\*{3,})[ \t]*$/m',
+            fn (array $m): string => $m[1] . $this->slot('***'),
+            $text
+        );
         $pairs = [
             '\/\/' => ['*', '*'],
             '\*\*' => ['**', '**'],

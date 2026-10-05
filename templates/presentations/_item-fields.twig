@@ -1,6 +1,15 @@
 
 {% macro badge(item) %}
-  {% if item.badge %}<span class="yw-item__badge">{{ item.badge }}</span>{% endif %}
+  {% if item.badgeDate %}
+    <time class="yw-item__badge yw-item__badge--date" datetime="{{ item.badgeDate }}" title="{{ item.badgeDate|moment('LL') }}">
+      <span class="yw-item__badge-day">{{ item.badgeDate|moment('D') }}</span>
+      <span class="yw-item__badge-month">{{ item.badgeDate|moment('MMM')|trim('.', 'right') }}</span>
+    </time>
+  {% elseif item.badge %}<span class="yw-item__badge">{{ item.badge }}</span>{% endif %}
+{% endmacro %}
+
+{% macro footer(item) %}
+  {% if item.footer %}<div class="yw-item__footer">{{ item.footer }}</div>{% endif %}
 {% endmacro %}
 
 {% macro image(item, alt, width) %}

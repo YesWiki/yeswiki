@@ -6,20 +6,26 @@
 {{ include_css('styles/yw-entries.css') }}
 
 {% set columns = params.columns|default(3) %}
-
-{% set imagefit = params.imagefit|default('cover') %}
+{% set imagefit = params.imagefit|default(params.imgstyle|default('cover')) %}
+{% set square = params.style|default('') == 'square' %}
 {% set cardWidth = (1170 / columns)|round(0, 'ceil') * 2 %}
-<div class="yw-items yw-items--card" style="--yw-item-columns: {{ columns }}; --yw-item-image-fit: {{ imagefit == 'contain' ? 'contain' : 'cover' }}">
+<div class="yw-items yw-items--card{{ square ? ' yw-items--square' : '' }}" style="--yw-item-columns: {{ columns }}; --yw-item-image-fit: {{ imagefit == 'contain' ? 'contain' : 'cover' }}">
   {% for item in items %}
-    <article class="yw-item yw-item--card{{ item.image ? ' has-image' : '' }}">
-      {{ slot.image(item, item.title, cardWidth) }}
+    <article class="yw-item yw-item--card{{ item.image ? ' has-image' : '' }}{{ item.footer ? ' has-footer' : '' }}">
+      {% if item.image %}
+        <div class="yw-item__visual">
+          {{ slot.image(item, item.title, cardWidth) }}
+          {{ slot.badge(item) }}
+        </div>
+      {% endif %}
       <div class="yw-item__body">
-        {{ slot.badge(item) }}
+        {% if not item.image %}{{ slot.badge(item) }}{% endif %}
         {{ slot.title(item) }}
         {{ slot.meta(item) }}
         {% if item.description %}<div class="yw-item__description">{{ item.description|raw }}</div>{% endif %}
         {{ slot.cta(item) }}
       </div>
+      {{ slot.footer(item) }}
     </article>
   {% else %}
     <p class="yw-items__empty">{{ _t('BAZ_NO_RESULT') }}</p>

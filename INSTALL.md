@@ -6,6 +6,10 @@ A web-based installer will walk you through the rest.
 
 **Requirements**: PHP >= 8.3, and a MySQL/MariaDB, PostgreSQL or SQLite database.
 
+PostgreSQL must be **12 or newer**: the search index is a generated column
+(`GENERATED ALWAYS AS (...) STORED`), which PostgreSQL 11 and older reject at install. CI tests
+PostgreSQL 16.
+
 ### PHP extensions
 
 `composer.json` is the authority and `ExtensionManifestTest` keeps it honest: every extension core

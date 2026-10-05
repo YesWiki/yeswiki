@@ -176,10 +176,27 @@ only thing that gives it a URL back. Its triples follow it.
 incomplete, `./yeswicli search:reindex` rebuilds it.
 
 **Layout pages become configuration.** `PageTitre`, `PageMenuHaut` and `PageRapideHaut` become
-`layout_*` config keys; `PageCss` becomes `custom/styles/custom.css`; `LookWiki` is retired and
-its links point at `admin/preset`.
+`layout_*` config keys; `LookWiki` is retired and its links point at `admin/preset`. `PageCss`
+becomes `custom/styles/custom.css`: its CSS is written there, or added to the end if the file
+already exists and does not hold it yet, and the page is then deleted with all its revisions.
+A wiki upgraded before this rule kept the page, and the Markdown conversion later put a `\` at
+the end of its lines; a later migration takes those off, folds what is missing into
+`custom.css` and deletes the page.
 
-**Your presets are rewritten, and get shorter.** A Preset used to declare 49 values; it now
+**Your presets are rewritten, and get shorter.** This covers `custom/css-presets/*.css` and
+`custom/themes/*/presets/*.css`, whether they still use Doryphore's nine variables
+(`--primary-color`, `--main-text-fontfamily`, ...) or an earlier Ectoplasme vocabulary. A
+Doryphore preset comes out complete in one step: its colours become `--yw-primary`,
+`--yw-secondary` and `--yw-tertiary`, its text colour becomes `--yw-ink-on-light`, its two font
+variables become `--yw-font-body` and `--yw-font-heading`, and the six heading colours point at
+the brand colours the way margot coloured them (h1 and h2 primary, h3 secondary, h4 to h6 the
+second secondary). Its `@font-face` rules are kept and still point at the files in
+`custom/fonts/`. A Google Fonts `@import` is replaced by the same fonts downloaded into
+`custom/fonts/`; if the download fails (no network, no proxy), the `@import` is kept at the top
+of the file and `migrate` says so, so the font still loads from Google rather than silently
+falling back.
+
+A Preset used to declare 49 values; it now
 declares the 31 that are _decisions_, and core computes the rest — every hover colour, the
 muted text, the border shades, the focus ring, the panel and ink behind each status colour,
 the shadow colours and the corner radii. The eleven spacing steps become three, and the
@@ -193,7 +210,8 @@ browser's business and not a Preset's — so they start from core's ramp.
 now (`--yw-navbar-bg`, `--yw-navbar-text`). If you were using it, the migration gives your
 presets its coloured bar and puts your `favorite_style` back to the theme's default — so the
 bar looks the same, and it is now a colour picker on `admin/preset` rather than a stylesheet
-in a different screen.
+in a different screen. margot's default style, `margot.css`, also drew the bar in the primary
+colour, so a wiki on it gets the same coloured bar.
 
 Spacing is also **two numbers per step now** — vertical and horizontal — because text is wider
 than it is tall. Your converted preset gets its old value on the vertical axis and core's ratio
@@ -336,6 +354,17 @@ private/doryphore/custom/      the whole of custom/
 private/doryphore/tools/       the whole of tools/
 private/doryphore/README.md    what moved, and which tools were extensions rather than core
 ```
+
+The look of the wiki holds no code, so it is copied straight back into `custom/`:
+`css-presets/`, `themes/*/presets/` (CSS only), `fonts/`, `images/` and `styles/` (CSS only).
+The migrations then rewrite those presets for Ectoplasme, and the wiki keeps its colours and
+fonts. The originals stay in `private/doryphore/custom/`.
+
+A wiki upgraded before this rule had its presets and fonts moved aside with everything else, so
+it came up with core's colours and Inter. A later migration copies `css-presets/`,
+`themes/*/presets/`, `fonts/` and `images/` back from `private/doryphore/custom/` (only what
+`custom/` lacks, through the storage layer, so a bucket works too), rewrites the presets, and
+says whether the `favorite_preset` in your configuration is found again.
 
 `migrate` prints the list. `private/` is never served, so none of that PHP can be reached from the
 web. The wiki comes up stock, and you bring back what is still needed, one piece at a time, once it
