@@ -23,6 +23,7 @@ class RecentchangesrssplusActionTest extends YesWikiTestCase
     public function testFeedHidesPagesTheRequesterCannotRead()
     {
         $wiki = $this->getWiki();
+        $GLOBALS['wiki'] = $wiki;
         $pageManager = $wiki->services->get(PageManager::class);
         $aclService = $wiki->services->get(AclService::class);
 

@@ -24,6 +24,7 @@ class ApiEntryStylesTest extends YesWikiTestCase
     private string $templateFile;
     private string $styleFile;
     private array $createdTags = [];
+    private array $createdFolders = [];
 
     protected function setUp(): void
     {
@@ -43,12 +44,9 @@ class ApiEntryStylesTest extends YesWikiTestCase
         $this->templateFile = 'custom/templates/bazar/fiche-' . $this->formId . '.twig';
         $this->assertFileDoesNotExist($this->styleFile);
         $this->assertFileDoesNotExist($this->templateFile);
-        if (!is_dir(dirname($this->templateFile))) {
-            mkdir(dirname($this->templateFile), 0777, true);
-        }
+        $this->createdFolders = self::prepareCustomTemplates($this->wiki, 'bazar');
         file_put_contents($this->styleFile, '.api-entry-styles { color: red; }');
         file_put_contents($this->templateFile, "{{ include_css('" . $this->styleFile . "') }}<div class=\"api-entry-styles\">{{ html.bf_titre|raw }}</div>");
-        self::forgetTemplateLookups($this->wiki);
     }
 
     protected function tearDown(): void
@@ -66,6 +64,9 @@ class ApiEntryStylesTest extends YesWikiTestCase
             if (is_file($file)) {
                 unlink($file);
             }
+        }
+        foreach ($this->createdFolders as $folder) {
+            @rmdir($folder);
         }
         $this->wiki->request->query->remove('fields');
     }

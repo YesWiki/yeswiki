@@ -2,6 +2,7 @@
 
 namespace YesWiki\Templates\Controller;
 
+use stefangabos\Zebra_Image\Zebra_Image;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Core\Service\ThemeManager;
 use YesWiki\Core\YesWikiController;
@@ -150,10 +151,9 @@ class ThemeController extends YesWikiController
         $dir = (is_dir($backgroundsdir) ? opendir($backgroundsdir) : false);
         while ($dir && ($file = readdir($dir)) !== false) {
             $imgextension = strtolower(substr($file, -4, 4));
-            // les jpg sont les fonds d'ecrans, ils doivent etre mis en miniature
             if ($imgextension == '.jpg') {
                 if (!is_file($backgroundsdir . '/thumbs/' . $file)) {
-                    $imgTrans = new \Zebra_Image();
+                    $imgTrans = new Zebra_Image();
                     $imgTrans->auto_handle_exif_orientation = true;
                     $imgTrans->preserve_aspect_ratio = true;
                     $imgTrans->enlarge_smaller_images = true;
@@ -161,14 +161,13 @@ class ThemeController extends YesWikiController
                     $imgTrans->handle_exif_orientation_tag = true;
                     $imgTrans->source_path = $backgroundsdir . '/' . $file;
                     $imgTrans->target_path = $backgroundsdir . '/thumbs/' . $file;
-                    if ($imgTrans->resize(intval(100), intval(75), ZEBRA_IMAGE_NOT_BOXED, '#FFFFFF')) {
+                    if (@$imgTrans->resize(intval(100), intval(75), ZEBRA_IMAGE_NOT_BOXED, '#FFFFFF')) {
                         $backgrounds[] = $imgTrans->target_path;
                     }
                 } else {
                     $backgrounds[] = $backgroundsdir . '/thumbs/' . $file;
                 }
             } elseif ($imgextension == '.png') {
-                // les png sont les images a repeter en mosaique
                 $backgrounds[] = $backgroundsdir . '/' . $file;
             }
         }

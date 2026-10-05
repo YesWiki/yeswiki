@@ -21,14 +21,26 @@ class YesWikiTestCase extends TestCase
     }
 
     /**
-     * Makes Twig look for templates again, since it remembers one it found missing, even after a test writes it.
+     * Gives a test custom/templates/<namespace>/ for its templates, seen by Twig even if created after boot; returns the folders it created.
      */
-    protected static function forgetTemplateLookups(Wiki $wiki): void
+    protected static function prepareCustomTemplates(Wiki $wiki, string $namespace): array
     {
+        $created = [];
+        foreach (['custom/templates', "custom/templates/$namespace"] as $folder) {
+            if (!is_dir($folder)) {
+                mkdir($folder, 0777, true);
+                $created[] = $folder;
+            }
+        }
         $loader = (new \ReflectionProperty(TemplateEngine::class, 'twigLoader'))->getValue($wiki->services->get(TemplateEngine::class));
+        if (!in_array("custom/templates/$namespace", array_map(fn ($path) => rtrim($path, '/'), $loader->getPaths($namespace)), true)) {
+            $loader->prependPath("custom/templates/$namespace", $namespace);
+        }
         foreach (['cache', 'errorCache'] as $property) {
             (new \ReflectionProperty(FilesystemLoader::class, $property))->setValue($loader, []);
         }
+
+        return array_reverse($created);
     }
 
     /**

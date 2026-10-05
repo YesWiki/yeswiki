@@ -8,7 +8,7 @@ status=0
 for suite in tests tools/*/tests; do
     [ -d "$suite" ] || continue
     echo "== $suite"
-    ./vendor/bin/phpunit --do-not-cache-result --display-warnings --stderr "$suite" "$@" || status=1
+    ./vendor/bin/phpunit --do-not-cache-result --display-warnings --display-deprecations --stderr "$suite" "$@" || status=1
 done
 
 exit $status
