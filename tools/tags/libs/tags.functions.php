@@ -79,7 +79,7 @@ function get_filtertags_parameters_recursive($nb = 1, $tab = [])
     if (count($explodelabel) > 2) {
         return '<div class="alert alert-danger"><strong>' . _t('TAGS_ACTION_FILTERTAGS') . '</strong> : ' . _t('TAGS_ONLY_ONE_DOUBLEPOINT') . '</div>' . "\n";
     } elseif (count($explodelabel) == 2) {
-        $tab[$nb]['title'] = '<strong>' . $explodelabel[0] . ' : </strong>' . "\n";
+        $tab[$nb]['title'] = '<strong>' . htmlspecialchars($explodelabel[0], ENT_QUOTES, YW_CHARSET) . ' : </strong>' . "\n";
         $tab[$nb]['arraytags'] = explode(',', $explodelabel[1]);
     } else {
         $tab[$nb]['title'] = '';

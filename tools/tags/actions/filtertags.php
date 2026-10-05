@@ -40,12 +40,12 @@ $pages = array_filter($this->LoadAll($req), function ($page) use ($aclService) {
 
 echo '<div class="well well-sm no-dblclick controls">' . "\n" . '<div class="pull-right muted"><span class="nbfilteredelements">' . count($pages) . '</span> ' . _t('TAGS_RESULTS') . '</div>';
 foreach ($params as $param) {
-    echo '<div class="filter-group ' . $param['class'] . '" data-type="' . $param['toggle'] . '">' . "\n" . $param['title'] . "\n" . '<div class="btn-group filter-tags">' . "\n";
+    echo '<div class="filter-group ' . htmlspecialchars($param['class'], ENT_QUOTES, YW_CHARSET) . '" data-type="' . $param['toggle'] . '">' . "\n" . $param['title'] . "\n" . '<div class="btn-group filter-tags">' . "\n";
     foreach ($param['arraytags'] as $tagname) {
         if ($tagname == 'alaligne') {
             echo '<br />' . "\n";
         } else {
-            echo '<button type="button" class="btn btn-default filter" data-filter="' . sanitizeEntity(_convert($tagname, YW_CHARSET, true)) . '">' . $tagname . '</button>' . "\n";
+            echo '<button type="button" class="btn btn-default filter" data-filter="' . sanitizeEntity(_convert($tagname, YW_CHARSET, true)) . '">' . htmlspecialchars($tagname, ENT_QUOTES, YW_CHARSET) . '</button>' . "\n";
         }
     }
     echo '</div>' . "\n" . '</div>' . "\n";
@@ -70,7 +70,7 @@ foreach ($pages as $page) {
     foreach ($pagetags as $tag) {
         $tag['value'] = _convert(stripslashes($tag['value']), 'ISO-8859-1');
         $element[$page['tag']]['tagnames'] .= sanitizeEntity($tag['value']) . ' ';
-        $element[$page['tag']]['tagbadges'] .= '<span class="tag-label label label-primary">' . $tag['value'] . '</span>&nbsp;';
+        $element[$page['tag']]['tagbadges'] .= '<span class="tag-label label label-primary">' . htmlspecialchars($tag['value'], ENT_QUOTES, YW_CHARSET) . '</span>&nbsp;';
     }
 }
 

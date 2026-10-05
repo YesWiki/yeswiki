@@ -68,7 +68,7 @@ if ($resultat) {
             $pagetags = $this->GetAllTriplesValues($page['tag'], 'http://outils-reseaux.org/_vocabulary/tag', '', '');
             foreach ($pagetags as $tag) {
                 $element[$page['tag']]['tagnames'] .= sanitizeEntity($tag['value']) . ' ';
-                $element[$page['tag']]['tagbadges'] .= '<span class="tag-label label label-primary">' . $tag['value'] . '</span>&nbsp;';
+                $element[$page['tag']]['tagbadges'] .= '<span class="tag-label label label-primary">' . htmlspecialchars($tag['value'], ENT_QUOTES, YW_CHARSET) . '</span>&nbsp;';
             }
         }
     }
