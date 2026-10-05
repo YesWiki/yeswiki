@@ -15,18 +15,28 @@
 {% if placement == 'quick' %}
   <div class="yw-topnav-fast-access pull-right">
     {% for entry in entries %}
-      <a class="yw-btn{{ entry.active ? ' active-link' : '' }}" href="{{ entry.href }}"
-         {%- if entry.label %} title="{{ entry.label }}"{% endif %}
-         {%- if entry.missing %} data-missing-tag="true"{% endif %}>
-        {{- menu.glyph(entry, showIcons, showLabels) -}}
-      </a>
-      {% for child in entry.children %}
-        <a class="yw-btn{{ child.active ? ' active-link' : '' }}" href="{{ child.href }}"
-           {%- if child.label %} title="{{ child.label }}"{% endif %}
-           {%- if child.missing %} data-missing-tag="true"{% endif %}>
-          {{- menu.glyph(child, showIcons, showLabels) -}}
+      {% if entry.children is not empty %}
+        <div class="yw-dropdown">
+          <a class="yw-btn{{ entry.active ? ' active-link' : '' }}" data-yw-dropdown-toggle href="{{ entry.href ?: '#' }}"
+             {%- if entry.label %} title="{{ entry.label }}"{% endif %}
+             {%- if entry.missing %} data-missing-tag="true"{% endif %}>
+            {{- menu.glyph(entry, showIcons, showLabels) -}}
+          </a>
+          <ul class="yw-dropdown__menu yw-dropdown__menu--right">
+            {% for child in entry.children %}
+              <li><a{{ child.active ? ' class="active-link"' : '' }}
+                     {%- if child.missing %} data-missing-tag="true"{% endif %}
+                     href="{{ child.href }}">{{ menu.glyph(child, showIcons, true) }}</a></li>
+            {% endfor %}
+          </ul>
+        </div>
+      {% else %}
+        <a class="yw-btn{{ entry.active ? ' active-link' : '' }}" href="{{ entry.href }}"
+           {%- if entry.label %} title="{{ entry.label }}"{% endif %}
+           {%- if entry.missing %} data-missing-tag="true"{% endif %}>
+          {{- menu.glyph(entry, showIcons, showLabels) -}}
         </a>
-      {% endfor %}
+      {% endif %}
     {% endfor %}
     {{ appended|raw }}
   </div>

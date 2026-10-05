@@ -176,6 +176,15 @@ class MenuTest extends YesWikiTestCase
         $this->assertStringContainsString('yw-menu', $nav);
     }
 
+    /** The quick access bar draws a parent's children as its dropdown, not as buttons beside it. */
+    public function testTheQuickMenuDrawsChildrenAsADropdown(): void
+    {
+        $quick = $this->render(MenuRenderer::QUICK, ['showdropdown' => true]);
+
+        $this->assertStringContainsString('data-yw-dropdown-toggle', $quick);
+        $this->assertMatchesRegularExpression('~<ul class="yw-dropdown__menu[^"]*">.*Child.*</ul>~s', $quick);
+    }
+
     /** With dropdowns off, only the top level draws -- and a parent that led nowhere goes with them. */
     public function testDropdownsOffLeavesTheTopLevelOnly(): void
     {
