@@ -146,6 +146,26 @@ class ListManager
         return $id;
     }
 
+    /**
+     * Saves a list from another wiki under its own id, or a new one when that id is taken by a page or unusable.
+     */
+    public function import(string $id, $title, $nodes): ?string
+    {
+        if ($this->isList($id)) {
+            if (!$this->wiki->HasAccess('write', $id)) {
+                return null;
+            }
+            $this->update($id, $title, $nodes);
+
+            return $id;
+        }
+        if (preg_match('/^\p{L}[\p{L}0-9_-]*$/u', $id) && empty($this->pageManager->getOne($id))) {
+            return $this->create($title, $nodes, $id);
+        }
+
+        return $this->create($title, $nodes);
+    }
+
     public function update($id, $title, $nodes)
     {
         if ($this->securityController->isWikiHibernated()) {
