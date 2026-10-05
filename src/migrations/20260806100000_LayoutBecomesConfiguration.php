@@ -2,6 +2,7 @@
 
 use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Service\FileManager;
+use YesWiki\Content\Service\LegacyAttachments;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Core\YesWikiMigration;
 use YesWiki\Files\Service\Storage;
@@ -56,8 +57,11 @@ class LayoutBecomesConfiguration extends YesWikiMigration
         [$quickMenu, $account, $quickRest, $quickDropdown] = $this->readQuickMenu($bodies['PageRapideHaut']);
         $leftovers['PageRapideHaut'] = $quickRest;
 
-        $logoHeight = $this->logoHeight($logo);
-        $logo = $this->publicLogo($logo);
+        $fileTag = $this->fileTagOf($logo);
+        $logoHeight = $this->logoHeight($logo, $fileTag);
+        if ($fileTag !== null) {
+            $logo = $this->getService(UrlFormatter::class)->href('', 'api/files/' . rawurlencode($fileTag) . '/download');
+        }
         $brand = ['title' => $title, 'logo' => $logo, 'brand' => $logo === '' ? 'text' : ($title === '' ? 'logo' : 'logo-text'), 'account' => $account];
         if ($logoHeight !== null) {
             $brand['height'] = self::navbarHeightFor($logoHeight);
@@ -151,13 +155,16 @@ class LayoutBecomesConfiguration extends YesWikiMigration
     }
 
     /** The logo image's natural height in pixels, when it is a file this wiki holds and an image PHP can measure. */
-    private function logoHeight(string $logo): ?int
+    private function logoHeight(string $logo, ?string $fileTag): ?int
     {
-        if (!str_starts_with($logo, 'files/')) {
+        $entry = $fileTag === null ? null : $this->getService(FileManager::class)->getOne($fileTag);
+        if ($entry !== null) {
+            $path = FileManager::STORAGE_DIR . '/' . $entry['stored_filename'];
+        } elseif (str_starts_with($logo, 'files/')) {
+            $path = $logo;
+        } else {
             return null;
         }
-        $entry = $this->getService(FileManager::class)->getOne(substr($logo, strlen('files/')));
-        $path = $entry === null ? $logo : FileManager::STORAGE_DIR . '/' . $entry['stored_filename'];
         $storage = $this->getService(Storage::class);
         if (!$storage->exists($path)) {
             return null;
@@ -167,18 +174,19 @@ class LayoutBecomesConfiguration extends YesWikiMigration
         return is_array($size) && $size[1] > 0 ? (int)$size[1] : null;
     }
 
-    /** A logo the attachments migration turned into a file page is served from that page, as the file picker does it. */
-    private function publicLogo(string $logo): string
+    /** The File Content a `files/…` logo is: already a file tag, or the name PageTitre attached it under before the attachments became Content. */
+    private function fileTagOf(string $logo): ?string
     {
         if (!str_starts_with($logo, 'files/')) {
-            return $logo;
+            return null;
         }
-        $tag = substr($logo, strlen('files/'));
-        if ($this->getService(FileManager::class)->getOne($tag) === null) {
-            return $logo;
+        $name = substr($logo, strlen('files/'));
+        if ($this->getService(FileManager::class)->getOne($name) !== null) {
+            return $name;
         }
+        $legacy = $this->getService(LegacyAttachments::class);
 
-        return $this->getService(UrlFormatter::class)->href('', 'api/files/' . rawurlencode($tag) . '/download');
+        return LegacyAttachments::lookup($legacy->fileIndex(), 'PageTitre', $name);
     }
 
     /**
