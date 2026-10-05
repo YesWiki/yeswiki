@@ -3,6 +3,7 @@
 namespace YesWiki\Content\Action;
 
 use Carbon\Carbon;
+use YesWiki\Content\Api\ImageApiController;
 use YesWiki\Content\Entity\Item;
 use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Entity\SuppliesItems;
@@ -42,6 +43,7 @@ use YesWiki\Kernel\Service\LanguageService;
 use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\Paginator;
 use YesWiki\Kernel\Service\RuntimeConfig;
+use YesWiki\Kernel\Service\SignedTokens;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Kernel\Service\WikiUrls;
 use YesWiki\Render\Service\PresentationCatalog;
@@ -295,12 +297,13 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
             $tag = (string)($entry['tag'] ?? '');
             $badgeName = $slots['floating'] ?? null;
             $badgeDate = $this->isDateSlot($entry, $badgeName) ? self::asDate($entry[$badgeName] ?? null) : null;
+            [$image, $imageResize] = $this->image($entry, $slots['visual'] ?? null, ...$imageSize);
             $items[] = new Item(
                 id: (string)($entry['id_fiche'] ?? $entry['tag'] ?? ''),
                 title: $this->slotText($entry, $slots['title'] ?? null) ?? (string)($entry['title'] ?? $entry['tag'] ?? ''),
                 subtitle: $this->slotText($entry, $slots['subtitle'] ?? null),
                 description: $this->slotText($entry, $slots['description'] ?? null),
-                image: $this->imageUrl($entry, $slots['visual'] ?? null, ...$imageSize),
+                image: $image,
                 url: $this->getService(UrlFormatter::class)->href('', $tag),
                 date: self::asDate($entry[$slots['date'] ?? ''] ?? null),
                 badge: $badgeDate === null ? $this->slotText($entry, $badgeName) : null,
@@ -308,6 +311,7 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
                 ctaLabel: self::ctaLabel((string)($slots['cta'] ?? '')),
                 footer: $this->slotText($entry, $slots['footer'] ?? null),
                 badgeDate: $badgeDate,
+                imageResize: $imageResize,
             );
         }
 
@@ -387,30 +391,57 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
         return [$width, $height, $fit];
     }
 
-    /** @param array<string, mixed> $entry */
-    private function imageUrl(array $entry, ?string $name, int $width, int $height, string $mode): ?string
+    /**
+     * An entry's picture as an `<img>` can point at it, with what the page needs to ask for its thumbnail when none is cached yet.
+     *
+     * @param array<string, mixed> $entry
+     *
+     * @return array{0: ?string, 1: ?array{filename: string, width: int, height: int, mode: string, token: string}}
+     */
+    private function image(array $entry, ?string $name, int $width, int $height, string $mode): array
     {
         $value = empty($name) ? null : ($entry[$name] ?? null);
         if (!is_string($value) || $value === '') {
-            return null;
+            return [null, null];
         }
         if (preg_match('#^(https?:)?//#i', $value) === 1) {
-            return preg_match('#api/files/[^/?&]+/download#', $value) === 1 && $mode === 'crop'
-                ? $value . (str_contains($value, '?') ? '&' : '?') . 'mode=crop'
-                : $value;
+            return [
+                preg_match('#api/files/[^/?&]+/download#', $value) === 1 && $mode === 'crop'
+                    ? $value . (str_contains($value, '?') ? '&' : '?') . 'mode=crop'
+                    : $value,
+                null,
+            ];
         }
 
         $storage = $this->getService(Storage::class);
+        $resizer = $this->getService(ImageResizer::class);
         $uploads = rtrim($this->getService(AttachedFilePaths::class)->uploadPath(), '/');
         foreach (["$uploads/$value", $uploads . '/' . ($entry['tag'] ?? '') . "/$value"] as $path) {
-            if ($storage->exists($path)) {
-                $resized = $this->getService(ImageResizer::class)->cached($path, (string)$width, (string)$height, $mode);
-
-                return $storage->url($resized !== '' ? $resized : $path);
+            if (!$storage->exists($path)) {
+                continue;
             }
+            $thumbnail = $resizer->resizedFilename($path, (string)$width, (string)$height, $mode);
+            if ($storage->exists($thumbnail)) {
+                return [$storage->url($thumbnail), null];
+            }
+            $relative = substr($path, strlen($uploads) + 1);
+            if (str_contains($relative, '/')) {
+                $resized = $resizer->cached($path, (string)$width, (string)$height, $mode);
+
+                return [$storage->url($resized !== '' ? $resized : $path), null];
+            }
+            $tokenId = str_replace(['{width}', '{height}', '{mode}'], [(string)$width, (string)$height, $mode], ImageApiController::POST_CACHE_URLIMAGE_TOKEN_ID);
+
+            return [$storage->url($path), [
+                'filename' => $relative,
+                'width' => $width,
+                'height' => $height,
+                'mode' => $mode,
+                'token' => $this->getService(SignedTokens::class)->sign($tokenId),
+            ]];
         }
 
-        return null;
+        return [null, null];
     }
 
     /** Where an item's button goes, if the list asked for one. */

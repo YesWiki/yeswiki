@@ -13,7 +13,14 @@
 {% endmacro %}
 
 {% macro image(item, alt, width) %}
-  {% if item.image %}
+  {% if item.imageResize %}
+    {{ include_javascript('javascripts/yw-item-thumbnails.js', false, true) }}
+    <img class="yw-item__image"
+         src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw=="
+         data-yw-thumbnail="{{ item.imageResize|json_encode }}" data-yw-original="{{ item.image }}"
+         alt="{{ alt|default('') }}" />
+    <noscript><img class="yw-item__image" src="{{ item.image }}" alt="{{ alt|default('') }}" loading="lazy" /></noscript>
+  {% elseif item.image %}
     {% set w = width|default(0) %}
     <img class="yw-item__image"
          src="{{ image_at(item.image, w, w > 0 ? (w * 2 / 3)|round : 0) }}"

@@ -5,7 +5,10 @@ namespace YesWiki\Content\Entity;
 /** One thing in a list, in the shape a Presentation renders. */
 final class Item
 {
-    /** @param list<string> $categories */
+    /**
+     * @param list<string>                                                                       $categories
+     * @param array{filename: string, width: int, height: int, mode: string, token: string}|null $imageResize
+     */
     public function __construct(
         public readonly string $id,
         public readonly string $title,
@@ -20,6 +23,7 @@ final class Item
         public readonly ?string $ctaLabel = null,
         public readonly ?string $footer = null,
         public readonly ?string $badgeDate = null,
+        public readonly ?array $imageResize = null,
     ) {
     }
 
@@ -40,6 +44,7 @@ final class Item
             'ctaLabel' => $this->ctaLabel,
             'footer' => $this->footer,
             'badgeDate' => $this->badgeDate,
+            'imageResize' => $this->imageResize,
         ];
     }
 }

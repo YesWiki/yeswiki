@@ -6,6 +6,7 @@ use YesWiki\Content\Service\EntryManager;
 use YesWiki\Content\Service\FormManager;
 use YesWiki\Content\Service\ListManager;
 use YesWiki\Content\Service\PageManager;
+use YesWiki\Files\Service\ImageResizer;
 use YesWiki\Files\Service\Storage;
 use YesWiki\Kernel\Service\LanguageService;
 use YesWiki\Kernel\Service\UrlFormatter;
@@ -151,12 +152,14 @@ class EntryListCardTest extends YesWikiTestCase
         $this->assertMatchesRegularExpression('#yw-item__badge-month">\s*oct\s*<#', $html);
         $this->assertDoesNotMatchRegularExpression('/\d{4}-\d{2}-\d{2}/', $text, 'a visitor never reads an ISO date');
 
-        $src = $this->imageSource($html);
+        if (preg_match('#data-yw-original="([^"]+)"#', $html, $original) !== 1) {
+            $this->fail("no original picture in:\n" . $html);
+        }
         $base = $this->getWiki()->services->get(UrlFormatter::class)->getBaseUrl() . '/';
-        $this->assertStringStartsWith($base, $src);
-        $path = substr($src, strlen($base));
-        $this->assertTrue($this->getWiki()->services->get(Storage::class)->exists($path), "the <img> points at a file that is there: $path");
-        $this->assertStringContainsString('_cropped_', $path, 'a cover card cuts its picture to the frame');
+        $this->assertStringStartsWith($base, $original[1]);
+        $path = substr($original[1], strlen($base));
+        $this->assertTrue($this->getWiki()->services->get(Storage::class)->exists($path), "the <img> falls back on a file that is there: $path");
+        $this->assertSame('crop', $this->thumbnailRequest($html)['mode'], 'a cover card cuts its picture to the frame');
     }
 
     public function testADateInAnotherSlotIsWrittenOutInTheReadersLanguage(): void
@@ -176,6 +179,41 @@ class EntryListCardTest extends YesWikiTestCase
         $html = $this->render('visual=imagebf_image,title=bf_titre', ['imgstyle' => 'contain']);
 
         $this->assertStringContainsString('--yw-item-image-fit: contain', $html);
-        $this->assertStringContainsString('_vignette_', $this->imageSource($html), 'contain fits the picture instead of cropping it');
+        $this->assertSame('fit', $this->thumbnailRequest($html)['mode'], 'contain fits the picture instead of cropping it');
+    }
+
+    /** A thumbnail not cached yet is asked for by the page, not made while it renders: four large pictures outran the time limit. */
+    public function testAMissingThumbnailIsLeftToThePage(): void
+    {
+        $this->serveIn('fr');
+        $html = $this->render('visual=imagebf_image,title=bf_titre');
+
+        $request = $this->thumbnailRequest($html);
+        $this->assertSame(self::IMAGE, $request['filename']);
+        $this->assertNotSame('', $request['token']);
+        $this->assertStringContainsString('<noscript>', $html, 'without JavaScript the picture itself shows');
+        $this->assertSame([], $this->getWiki()->services->get(Storage::class)->glob('cache/' . pathinfo(self::IMAGE, PATHINFO_FILENAME) . '*'));
+    }
+
+    public function testACachedThumbnailIsServedAsItIs(): void
+    {
+        $this->serveIn('fr');
+        $services = $this->getWiki()->services;
+        $services->get(ImageResizer::class)->cached('files/' . self::IMAGE, '586', '390', 'crop');
+
+        $html = $this->render('visual=imagebf_image,title=bf_titre');
+
+        $this->assertStringContainsString('_cropped_', $this->imageSource($html));
+        $this->assertStringNotContainsString('data-yw-thumbnail', $html);
+    }
+
+    /** @return array{filename: string, width: int, height: int, mode: string, token: string} */
+    private function thumbnailRequest(string $html): array
+    {
+        if (preg_match('#data-yw-thumbnail="([^"]+)"#', $html, $match) !== 1) {
+            $this->fail("no thumbnail request in:\n" . $html);
+        }
+
+        return json_decode(html_entity_decode($match[1]), true);
     }
 }
