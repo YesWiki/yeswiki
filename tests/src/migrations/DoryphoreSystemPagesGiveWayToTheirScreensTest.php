@@ -69,11 +69,11 @@ class DoryphoreSystemPagesGiveWayToTheirScreensTest extends YesWikiTestCase
             $this->assertSame([self::PAGE, self::ADMIN_ONLY, self::QUICK], $changed);
             $this->assertSame([self::ADMIN_ONLY => true], $retiredOnly);
 
-            $quick = PageBody::decode((string)$db->loadSingle("SELECT body FROM {$pages} WHERE tag = ? AND latest = 'Y'", [self::QUICK])['body']);
+            $quick = PageBody::decode($this->latestBody($db, $pages, self::QUICK));
             $this->assertSame('search', $quick['nodes'][0]['link']);
             $this->assertSame('admin', $quick['nodes'][1]['children'][0]['link']);
             $this->assertSame('dashboard?view=formulaire', $quick['nodes'][1]['children'][1]['link']);
-            $this->assertStringContainsString('link=\"dashboard\"', (string)$db->loadSingle("SELECT body FROM {$pages} WHERE tag = ? AND latest = 'Y'", [self::PAGE])['body']);
+            $this->assertStringContainsString('link=\"dashboard\"', $this->latestBody($db, $pages, self::PAGE));
 
             $this->assertSame([self::RETIRED], $migration->deleteRetiredPages($db, $pages, [self::RETIRED]));
             $this->assertNull($pageManager->getOne(self::RETIRED, null, true, true));
@@ -84,5 +84,13 @@ class DoryphoreSystemPagesGiveWayToTheirScreensTest extends YesWikiTestCase
                 $db->query("DELETE FROM {$pages} WHERE tag = ?", [$tag]);
             }
         }
+    }
+
+    private function latestBody(DbService $db, string $pages, string $tag): string
+    {
+        $row = $db->loadSingle("SELECT body FROM {$pages} WHERE tag = ? AND latest = 'Y'", [$tag]);
+        $this->assertNotNull($row, "{$tag} still has a latest revision");
+
+        return (string)$row['body'];
     }
 }

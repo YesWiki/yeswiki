@@ -41,9 +41,14 @@ class DoryphoreSystemPagesGiveWayToTheirScreens extends YesWikiMigration
      */
     public function repointLinks(DbService $db, string $pages, ?array $onlyTags = null): array
     {
+        $tags = RetiredPages::tags();
         $text = 'LOWER(' . $db->jsonAsText('body') . ')';
-        $where = implode(' OR ', array_map(fn (string $tag): string => "{$text} LIKE '%" . $db->escape($tag) . "%'", RetiredPages::tags()));
-        $rows = $db->loadAll("SELECT id, tag, type, latest, body FROM {$pages} WHERE ({$where})" . $this->restrict($db, $onlyTags));
+        $where = implode(' OR ', array_fill(0, count($tags), "{$text} LIKE ?"));
+        [$only, $onlyParams] = $this->restrict($onlyTags);
+        $rows = $db->loadAll(
+            "SELECT id, tag, type, latest, body FROM {$pages} WHERE ({$where}){$only}",
+            [...array_map(fn (string $tag): string => '%' . $tag . '%', $tags), ...$onlyParams]
+        );
 
         $changed = [];
         $retiredOnlyMenus = [];
@@ -119,10 +124,11 @@ class DoryphoreSystemPagesGiveWayToTheirScreens extends YesWikiMigration
      */
     public function deleteRetiredPages(DbService $db, string $pages, ?array $onlyTags = null): array
     {
-        $in = implode(', ', array_map(fn (string $tag): string => "'" . $db->escape($tag) . "'", RetiredPages::tags()));
+        $tags = RetiredPages::tags();
+        [$only, $onlyParams] = $this->restrict($onlyTags);
         $rows = $db->loadAll(
-            "SELECT DISTINCT tag FROM {$pages} WHERE LOWER(tag) IN ({$in}) AND type = ?" . $this->restrict($db, $onlyTags),
-            [PageType::PAGE]
+            "SELECT DISTINCT tag FROM {$pages} WHERE LOWER(tag) IN (" . implode(', ', array_fill(0, count($tags), '?')) . ") AND type = ?{$only}",
+            [...$tags, PageType::PAGE, ...$onlyParams]
         );
 
         $deleted = [];
@@ -167,13 +173,18 @@ class DoryphoreSystemPagesGiveWayToTheirScreens extends YesWikiMigration
         return $deleted;
     }
 
-    /** @param list<string>|null $onlyTags */
-    private function restrict(DbService $db, ?array $onlyTags): string
+    /**
+     * @param list<string>|null $onlyTags
+     *
+     * @return array{0: string, 1: list<string>} the clause narrowing a sweep to those tags, and its values
+     */
+    private function restrict(?array $onlyTags): array
     {
         if ($onlyTags === null) {
-            return '';
+            return ['', []];
         }
+        $onlyTags = $onlyTags ?: [''];
 
-        return ' AND tag IN (' . implode(', ', array_map(fn (string $tag): string => "'" . $db->escape($tag) . "'", $onlyTags ?: [''])) . ')';
+        return [' AND tag IN (' . implode(', ', array_fill(0, count($onlyTags), '?')) . ')', $onlyTags];
     }
 }

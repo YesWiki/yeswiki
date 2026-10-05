@@ -55,7 +55,7 @@ class DoryphoreLookRestorer
             }
             $result = $this->upgrader->upgrade($css, $path, $colouredNavbar);
             $this->storage->write($path, $result['css']);
-            $upgraded[] = ['path' => $path] + array_diff_key($result, ['css' => true]);
+            $upgraded[] = ['path' => $path, 'missing' => $result['missing'], 'localised' => $result['localised'], 'imports' => $result['imports']];
         }
 
         return $upgraded;

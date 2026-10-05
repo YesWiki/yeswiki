@@ -169,8 +169,10 @@ class PresetUpgrader
         };
 
         $values = ['light' => [], 'dark' => []];
-        $values['light']['yw-ink-on-dark'] = $old['light']['yw-ink-on-dark'] ?? $old['light']['yw-text-on-dark'] ?? $defaults['light']['yw-ink-on-dark'] ?? '#ffffff';
-        $values['light']['yw-ink-on-light'] = $old['light']['yw-ink-on-light'] ?? $old['light']['yw-text'] ?? $defaults['light']['yw-ink-on-light'] ?? '#14171a';
+        $inkOnDark = $old['light']['yw-ink-on-dark'] ?? $old['light']['yw-text-on-dark'] ?? $defaults['light']['yw-ink-on-dark'] ?? '#ffffff';
+        $inkOnLight = $old['light']['yw-ink-on-light'] ?? $old['light']['yw-text'] ?? $defaults['light']['yw-ink-on-light'] ?? '#14171a';
+        $values['light']['yw-ink-on-dark'] = $inkOnDark;
+        $values['light']['yw-ink-on-light'] = $inkOnLight;
 
         foreach (PresetService::SCHEMES as $scheme) {
             foreach (array_keys(PresetService::TOKENS) as $token) {
@@ -181,28 +183,28 @@ class PresetUpgrader
             if ($colouredNavbar) {
                 $values[$scheme]['yw-navbar-bg'] = $primary;
                 $values[$scheme]['yw-navbar-text'] = $old[$scheme]['yw-on-primary'] ?? $old['light']['yw-on-primary']
-                    ?? $this->presets->inkOn($primary, $values['light']['yw-ink-on-light'], $values['light']['yw-ink-on-dark']);
+                    ?? $this->presets->inkOn($primary, $inkOnLight, $inkOnDark);
             } else {
                 $values[$scheme]['yw-navbar-bg'] = $have($scheme, 'yw-surface-raised');
-                $values[$scheme]['yw-navbar-text'] = $values['light']['yw-ink-on-light'];
+                $values[$scheme]['yw-navbar-text'] = $inkOnLight;
             }
             $values[$scheme]['yw-footer-bg'] = $have($scheme, 'yw-surface');
-            $values[$scheme]['yw-footer-text'] = $values['light']['yw-ink-on-light'];
+            $values[$scheme]['yw-footer-text'] = $inkOnLight;
 
             foreach (self::HEADING_COLOUR as $level => $colour) {
                 $values[$scheme]['yw-heading-' . $level] = 'var(--' . $colour . ')';
             }
         }
 
-        if (!$colouredNavbar && $values['light']['yw-navbar-bg'] === $values['light']['yw-surface']) {
-            $values['dark']['yw-navbar-bg'] = $values['dark']['yw-surface'];
+        if (!$colouredNavbar && $values['light']['yw-navbar-bg'] === $have('light', 'yw-surface')) {
+            $values['dark']['yw-navbar-bg'] = $have('dark', 'yw-surface');
         }
-        $values['dark']['yw-navbar-text'] = $colouredNavbar ? $values['dark']['yw-navbar-text'] : $values['light']['yw-ink-on-dark'];
-        $values['dark']['yw-footer-text'] = $values['light']['yw-ink-on-dark'];
+        $values['dark']['yw-navbar-text'] = $colouredNavbar ? $values['dark']['yw-navbar-text'] : $inkOnDark;
+        $values['dark']['yw-footer-text'] = $inkOnDark;
         foreach (self::HEADING_COLOUR as $level => $colour) {
-            $ratio = $this->presets->contrastRatio($have('dark', $colour), $values['dark']['yw-surface']);
+            $ratio = $this->presets->contrastRatio($have('dark', $colour), $have('dark', 'yw-surface'));
             if ($ratio !== null && $ratio < 3) {
-                $values['dark']['yw-heading-' . $level] = $defaults['dark']['yw-heading-' . $level] ?? $values['light']['yw-ink-on-dark'];
+                $values['dark']['yw-heading-' . $level] = $defaults['dark']['yw-heading-' . $level] ?? $inkOnDark;
             }
         }
 

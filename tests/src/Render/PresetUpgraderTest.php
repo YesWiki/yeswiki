@@ -125,34 +125,14 @@ CSS;
         return $this->getWiki()->services->get(PresetService::class);
     }
 
-    /** A ThemeManager whose font downloads are whatever the test says they are. */
-    private function fonts(bool $downloads, array $installed = []): ThemeManager
+    /**
+     * A ThemeManager whose font downloads are whatever the test says they are.
+     *
+     * @param array<string, string> $installed
+     */
+    private function fonts(bool $downloads, array $installed = []): RecordingFonts
     {
-        return new class($downloads, $installed) extends ThemeManager {
-            public array $asked = [];
-
-            public function __construct(private bool $downloads, private array $installed)
-            {
-            }
-
-            public function fontFaces(string $family): string
-            {
-                return $this->installed[$family] ?? '';
-            }
-
-            public function installFont(string $family): bool
-            {
-                $this->asked[] = $family;
-                if (!$this->downloads) {
-                    return false;
-                }
-                $folder = strtolower(str_replace(' ', '-', $family));
-                $this->installed[$family] = ThemeManager::fontFaceRule($family, 'normal', '400', '', '../../custom/fonts/' . $folder . '/' . $folder . '-normal-400-latin.woff2')
-                    . ThemeManager::fontFaceRule($family, 'normal', '700', '', '../../custom/fonts/' . $folder . '/' . $folder . '-normal-700-latin.woff2');
-
-                return true;
-            }
-        };
+        return new RecordingFonts($downloads, $installed);
     }
 
     private function r10(): string
@@ -302,5 +282,35 @@ CSS;
 
         $this->assertSame(['restored' => [], 'upgraded' => []], $restorer->restore($this->instance, false));
         $this->assertSame($restored, $storage->read('custom/css-presets/R10.css'));
+    }
+}
+
+/** Font downloads that succeed or fail on demand, remembering which families were asked for. */
+class RecordingFonts extends ThemeManager
+{
+    /** @var list<string> */
+    public array $asked = [];
+
+    /** @param array<string, string> $installed */
+    public function __construct(private bool $downloads, private array $installed)
+    {
+    }
+
+    public function fontFaces(string $family): string
+    {
+        return $this->installed[$family] ?? '';
+    }
+
+    public function installFont(string $family): bool
+    {
+        $this->asked[] = $family;
+        if (!$this->downloads) {
+            return false;
+        }
+        $folder = strtolower(str_replace(' ', '-', $family));
+        $this->installed[$family] = ThemeManager::fontFaceRule($family, 'normal', '400', '', '../../custom/fonts/' . $folder . '/' . $folder . '-normal-400-latin.woff2')
+            . ThemeManager::fontFaceRule($family, 'normal', '700', '', '../../custom/fonts/' . $folder . '/' . $folder . '-normal-700-latin.woff2');
+
+        return true;
     }
 }
