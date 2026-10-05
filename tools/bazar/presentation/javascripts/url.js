@@ -209,15 +209,15 @@ export function updateHash(
     overrideQuery: true,
   })
 
-  // Encode the hash to avoid confusion between &-separated hash parameters and &-separated search parameters
+  const { anchor } = window.splitHash ? window.splitHash() : { anchor: '' }
+  let newUrl = location.pathname + location.search
+  if (vMergedParams) {
+    newUrl = `#${anchor ? `${anchor}&` : ''}${encodeURIComponent(vMergedParams)}`
+  } else if (anchor) {
+    newUrl = `#${anchor}`
+  }
 
-  history.pushState(
-    {},
-    '',
-    vMergedParams
-      ? `#${encodeURIComponent(vMergedParams)}`
-      : location.pathname + location.search,
-  )
+  history.pushState(history.state ?? {}, '', newUrl)
 
   updateExportLinks(vMergedParams) // Export
 }

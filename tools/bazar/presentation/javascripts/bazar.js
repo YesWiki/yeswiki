@@ -10,7 +10,11 @@ import { parseCondition } from './search.js'
 let gSavedHash
 
 $(document).ready(() => {
-  gSavedHash = decodeURIComponent(document.location.hash.substring(1))
+  gSavedHash = decodeURIComponent(
+    window.splitHash
+      ? window.splitHash().rest
+      : document.location.hash.substring(1),
+  )
 
   // accordeon pour bazarliste
   $('.titre_accordeon').on('click', function () {
