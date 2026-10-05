@@ -68,6 +68,17 @@ class LayoutBecomesConfigurationTest extends YesWikiTestCase
         $this->assertSame('files/logo-faire-tilt-5', $logo);
     }
 
+    /** margot drew the logo at most 2.9rem high, and Ectoplasme draws it 12px shorter than the navbar. */
+    public function testTheNavbarIsAsHighAsTheLogoWasDrawn(): void
+    {
+        $height = static fn (int $natural): int => (new \ReflectionMethod(\LayoutBecomesConfiguration::class, 'navbarHeightFor'))->invoke(null, $natural);
+
+        $this->assertSame(58, $height(544), 'a big logo was capped at 46px');
+        $this->assertSame(58, $height(46));
+        $this->assertSame(52, $height(40), 'a smaller one was drawn at its own height');
+        $this->assertSame(48, $height(20), 'never lower than the default navbar');
+    }
+
     public function testAnythingElseInTheTitlePageIsReportedRatherThanDropped(): void
     {
         [$title, , $rest] = $this->readTitle("Mon wiki\n{{include page=\"UnBandeau\"}}");

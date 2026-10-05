@@ -4,6 +4,7 @@ use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Service\FileManager;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Core\YesWikiMigration;
+use YesWiki\Files\Service\Storage;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\LayoutService;
 
@@ -16,6 +17,8 @@ class LayoutBecomesConfiguration extends YesWikiMigration
         'PageMenuHaut' => 'the navbar',
         'PageRapideHaut' => 'the quick-access buttons',
     ];
+
+    private const DORYPHORE_LOGO_MAX_HEIGHT = 46;
 
     private const IMAGES = [
         '/!\[[^\]]*\]\(([^)\s]+)[^)]*\)/' => 'markdown',
@@ -53,8 +56,12 @@ class LayoutBecomesConfiguration extends YesWikiMigration
         [$quickMenu, $account, $quickRest, $quickDropdown] = $this->readQuickMenu($bodies['PageRapideHaut']);
         $leftovers['PageRapideHaut'] = $quickRest;
 
+        $logoHeight = $this->logoHeight($logo);
         $logo = $this->publicLogo($logo);
         $brand = ['title' => $title, 'logo' => $logo, 'brand' => $logo === '' ? 'text' : ($title === '' ? 'logo' : 'logo-text'), 'account' => $account];
+        if ($logoHeight !== null) {
+            $brand['height'] = self::navbarHeightFor($logoHeight);
+        }
         if ($quickDropdown) {
             $brand['quickMenuFlags'] = ['showdropdown' => true] + $layout->quickMenuFlags();
         }
@@ -71,6 +78,7 @@ class LayoutBecomesConfiguration extends YesWikiMigration
             . count($navbar) . ' navbar entries and ' . count($quickMenu) . ' quick-access buttons'
             . ($title === '' ? ', the wiki name as the title' : ", the title '{$title}'")
             . ($logo === '' ? '' : ", the logo '{$logo}'")
+            . (isset($brand['height']) ? ", a {$brand['height']}px navbar so the logo keeps the height it had" : '')
             . '. The three pages were left in place, untouched.'
         );
 
@@ -132,6 +140,31 @@ class LayoutBecomesConfiguration extends YesWikiMigration
         $line = trim($line, "# \t");
 
         return trim((string)preg_replace('/\s+/', ' ', $line));
+    }
+
+    /** The height a Doryphore logo of this natural height was drawn at, margot capping it at 2.9rem, plus the 12px Ectoplasme leaves around it. */
+    private static function navbarHeightFor(int $naturalHeight): int
+    {
+        $drawn = min($naturalHeight, self::DORYPHORE_LOGO_MAX_HEIGHT);
+
+        return max(LayoutService::NAVBAR_HEIGHT_DEFAULT, min(LayoutService::NAVBAR_HEIGHT_MAX, $drawn + 12));
+    }
+
+    /** The logo image's natural height in pixels, when it is a file this wiki holds and an image PHP can measure. */
+    private function logoHeight(string $logo): ?int
+    {
+        if (!str_starts_with($logo, 'files/')) {
+            return null;
+        }
+        $entry = $this->getService(FileManager::class)->getOne(substr($logo, strlen('files/')));
+        $path = $entry === null ? $logo : FileManager::STORAGE_DIR . '/' . $entry['stored_filename'];
+        $storage = $this->getService(Storage::class);
+        if (!$storage->exists($path)) {
+            return null;
+        }
+        $size = $storage->imageSize($path);
+
+        return is_array($size) && $size[1] > 0 ? (int)$size[1] : null;
     }
 
     /** A logo the attachments migration turned into a file page is served from that page, as the file picker does it. */
