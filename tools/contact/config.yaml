@@ -30,3 +30,11 @@ parameters:
     - 'contact_dkim_private_key'
     - 'contact_debug'
     - 'contact_disable_email_for_password'
+
+services:
+  _defaults:
+    autowire: true
+    public: true
+
+  YesWiki\Contact\Service\:
+    resource: 'services/*'
