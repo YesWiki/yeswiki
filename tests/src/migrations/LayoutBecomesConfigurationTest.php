@@ -43,6 +43,31 @@ class LayoutBecomesConfigurationTest extends YesWikiTestCase
         $this->assertSame('files/logo.png', $this->readTitle('{{attach file="logo.png" size="small"}}')[1]);
     }
 
+    /** yeswiki.pro and co-lab-cnfpt.fr wrote the name beside the logo, on the same line. */
+    public function testTheTextBesideTheLogoIsTheTitle(): void
+    {
+        [$title, $logo, $rest] = $this->readTitle(
+            "\"\"<center>\"\"\n{{attach file=\"logoaietech\" size=\"original\" }}\"\"YesWiki\"\" Pro\n\"\"</center>\"\""
+        );
+        $this->assertSame('YesWiki Pro', $title);
+        $this->assertSame('files/logoaietech', $logo);
+        $this->assertSame([], $rest, 'the centring markup around them is not a leftover');
+
+        $this->assertSame(
+            'WIKI-PROG Nouvelle-Aquitaine',
+            $this->readTitle('{{attach class="left" file="logoCNFPTmono" size="small" }}WIKI-PROG""<br />""Nouvelle-Aquitaine')[0]
+        );
+    }
+
+    /** A title page holding only the logo has no title of its own: the image was the whole brand. */
+    public function testALogoAloneLeavesTheTitleEmpty(): void
+    {
+        [$title, $logo] = $this->readTitle('{{attach desc="Logo Faire tilt" file="logo-faire-tilt-5" nofullimagelink="1" size="big" }}');
+
+        $this->assertSame('', $title);
+        $this->assertSame('files/logo-faire-tilt-5', $logo);
+    }
+
     public function testAnythingElseInTheTitlePageIsReportedRatherThanDropped(): void
     {
         [$title, , $rest] = $this->readTitle("Mon wiki\n{{include page=\"UnBandeau\"}}");
@@ -184,6 +209,30 @@ class LayoutBecomesConfigurationTest extends YesWikiTestCase
         $this->assertTrue($dropdown, 'the quick menu has to draw its dropdown');
         $this->assertTrue($account);
         $this->assertSame(['{{moteurrecherche template="moteurrecherche_button.tpl.html"}}'], $rest);
+    }
+
+    /** yeswiki.pro's cog has no title: it stays the parent, its links and buttons under it, its rules dropped. */
+    public function testAnUntitledDropdownKeepsEverythingUnderIt(): void
+    {
+        [$entries, $account, $rest] = $this->readQuickMenu(
+            "{{buttondropdown icon=\"cog\" caret=\"0\"}}\n"
+            . " - {{login template=\"modal.twig\" nobtn=\"1\"}}\n"
+            . " - ------\n"
+            . " - {{button nobtn=\"1\" icon=\"fa fa-question\" text=\"Aide\" link=\"DocuMentation\"}}\n"
+            . " - [recherche](RechercheTexte) \n"
+            . '{{end elem="buttondropdown"}}'
+        );
+
+        $this->assertSame(
+            [
+                ['icon' => 'cog', 'label' => 'Menu', 'link' => '', 'child' => false],
+                ['icon' => 'fa fa-question', 'label' => 'Aide', 'link' => 'DocuMentation', 'child' => true],
+                ['icon' => '', 'label' => 'recherche', 'link' => 'RechercheTexte', 'child' => true],
+            ],
+            $entries
+        );
+        $this->assertTrue($account);
+        $this->assertSame([], $rest);
     }
 
     public function testAButtonAfterTheDropdownIsTopLevelAgain(): void

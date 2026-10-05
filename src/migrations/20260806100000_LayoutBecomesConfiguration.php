@@ -1,8 +1,10 @@
 <?php
 
 use YesWiki\Content\Entity\PageBody;
+use YesWiki\Content\Service\FileManager;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Core\YesWikiMigration;
+use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\LayoutService;
 
 /** Ticket 30: `PageTitre`, `PageMenuHaut` and `PageRapideHaut` become `layout_*` config. */
@@ -13,6 +15,12 @@ class LayoutBecomesConfiguration extends YesWikiMigration
         'PageTitre' => 'the title and logo',
         'PageMenuHaut' => 'the navbar',
         'PageRapideHaut' => 'the quick-access buttons',
+    ];
+
+    private const IMAGES = [
+        '/!\[[^\]]*\]\(([^)\s]+)[^)]*\)/' => 'markdown',
+        '/<img[^>]+src=["\']([^"\']+)["\'][^>]*>/i' => 'html',
+        '/\{\{\s*attach\b[^}]*\bfile="([^"]+)"[^}]*\}\}/i' => 'attach',
     ];
 
     public function run()
@@ -45,7 +53,8 @@ class LayoutBecomesConfiguration extends YesWikiMigration
         [$quickMenu, $account, $quickRest, $quickDropdown] = $this->readQuickMenu($bodies['PageRapideHaut']);
         $leftovers['PageRapideHaut'] = $quickRest;
 
-        $brand = ['title' => $title, 'logo' => $logo, 'brand' => $logo === '' ? 'text' : 'logo-text', 'account' => $account];
+        $logo = $this->publicLogo($logo);
+        $brand = ['title' => $title, 'logo' => $logo, 'brand' => $logo === '' ? 'text' : ($title === '' ? 'logo' : 'logo-text'), 'account' => $account];
         if ($quickDropdown) {
             $brand['quickMenuFlags'] = ['showdropdown' => true] + $layout->quickMenuFlags();
         }
@@ -72,7 +81,7 @@ class LayoutBecomesConfiguration extends YesWikiMigration
     }
 
     /**
-     * `PageTitre`: a title, and possibly a logo.
+     * `PageTitre`: a title, and possibly a logo, the text beside the image being the title.
      *
      * @return array{0: string, 1: string, 2: list<string>} title, logo, unparsed lines
      */
@@ -83,30 +92,60 @@ class LayoutBecomesConfiguration extends YesWikiMigration
         $title = '';
 
         foreach ($this->meaningfulLines($body) as $line) {
-            if ($logo === '' && preg_match('/!\[[^\]]*\]\(([^)\s]+)/', $line, $found) === 1) {
-                $logo = $found[1];
-                continue;
-            }
-            if ($logo === '' && preg_match('/<img[^>]+src=["\']([^"\']+)/i', $line, $found) === 1) {
-                $logo = $found[1];
-                continue;
-            }
-            if ($logo === '' && preg_match('/\{\{\s*attach\b[^}]*\bfile="([^"]+)"/i', $line, $found) === 1) {
-                $logo = 'files/' . $found[1];
-                continue;
-            }
-
             if (preg_match('/\{\{\s*configuration\b[^}]*\byeswiki_name\b/i', $line) === 1) {
                 continue;
             }
-            if ($title === '' && !str_contains($line, '{{') && !str_contains($line, '<')) {
-                $title = trim($line, "# \t");
+
+            $image = false;
+            foreach (self::IMAGES as $pattern => $source) {
+                if (preg_match($pattern, $line, $found) === 1) {
+                    $image = true;
+                    if ($logo === '') {
+                        $logo = $source === 'attach' ? 'files/' . $found[1] : $found[1];
+                    }
+                    $line = (string)preg_replace($pattern, '', $line);
+                }
+            }
+
+            $text = $this->plainText($line);
+            if ($text !== '' && !str_contains($line, '{{')) {
+                if ($title === '') {
+                    $title = $text;
+                    continue;
+                }
+            }
+            if ($image || $text === '' && !str_contains($line, '{{')) {
                 continue;
             }
             $rest[] = $line;
         }
 
         return [$title, $logo, $rest];
+    }
+
+    /** The words a line shows once its markup is gone: `""YesWiki"" Pro` and `WIKI-PROG""<br />""NA` read as text. */
+    private function plainText(string $line): string
+    {
+        $line = str_replace('""', '', $line);
+        $line = (string)preg_replace('~<br\s*/?>~i', ' ', $line);
+        $line = strip_tags($line);
+        $line = trim($line, "# \t");
+
+        return trim((string)preg_replace('/\s+/', ' ', $line));
+    }
+
+    /** A logo the attachments migration turned into a file page is served from that page, as the file picker does it. */
+    private function publicLogo(string $logo): string
+    {
+        if (!str_starts_with($logo, 'files/')) {
+            return $logo;
+        }
+        $tag = substr($logo, strlen('files/'));
+        if ($this->getService(FileManager::class)->getOne($tag) === null) {
+            return $logo;
+        }
+
+        return $this->getService(UrlFormatter::class)->href('', 'api/files/' . rawurlencode($tag) . '/download');
     }
 
     /**
@@ -183,7 +222,7 @@ class LayoutBecomesConfiguration extends YesWikiMigration
                 $attributes = $this->readAttributes($found[1]);
                 $entries[] = [
                     'icon' => $attributes['icon'] ?? '',
-                    'label' => $attributes['title'] ?? ($attributes['text'] ?? ''),
+                    'label' => ($attributes['title'] ?? '') ?: (($attributes['text'] ?? '') ?: 'Menu'),
                     'link' => '',
                     'child' => false,
                 ];
@@ -204,6 +243,16 @@ class LayoutBecomesConfiguration extends YesWikiMigration
                     'child' => $inDropdown,
                 ];
                 continue;
+            }
+            if ($inDropdown && preg_match('/^\s*[-*]\s+(.+)$/', $line, $found) === 1) {
+                if (preg_match('/^-{3,}$/', trim($found[1])) === 1) {
+                    continue;
+                }
+                $link = $this->readLink(trim($found[1]));
+                if ($link !== null && $link['link'] !== '') {
+                    $entries[] = ['icon' => '', 'label' => $link['label'], 'link' => $link['link'], 'child' => true];
+                    continue;
+                }
             }
             $rest[] = $line;
         }
