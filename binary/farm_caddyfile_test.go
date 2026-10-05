@@ -1,6 +1,7 @@
 package yeswiki
 
 import (
+	"errors"
 	"strings"
 	"testing"
 
@@ -161,5 +162,24 @@ func TestAClosedWikiBehindARelayAnswersOnTheRelayAddress(t *testing.T) {
 
 	if !strings.Contains(file, "http://shut.example.org:8130 {") {
 		t.Errorf("a closed wiki should answer its 503 on the relay's port:\n%s", file)
+	}
+}
+
+// A worker that cannot start is named by FrankenPHP, and that one wiki is the one closed.
+func TestTheWikiWhoseWorkerFailsIsTheOneClosed(t *testing.T) {
+	failure := errors.New("loading new config: frankenphp app module: start: failed to initialize workers: too many consecutive failures: worker /srv/wikis/beta/worker.php has not reached frankenphp_handle_request()")
+
+	broken, found := brokenWorker(failure, threeWikis)
+	if !found || threeWikis[broken].Host != "beta.example.org" {
+		t.Fatalf("expected beta to be named, got %d %v", broken, found)
+	}
+
+	closed := append([]program.Wiki(nil), threeWikis...)
+	closed[1].Closed = true
+	if _, found := brokenWorker(failure, closed); found {
+		t.Error("a wiki already closed has no worker left to blame")
+	}
+	if _, found := brokenWorker(errors.New("listen tcp :8130: bind: address already in use"), threeWikis); found {
+		t.Error("a failure that names no worker closes nothing")
 	}
 }

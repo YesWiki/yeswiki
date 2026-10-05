@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"syscall"
 	"time"
@@ -98,8 +99,26 @@ func internalName(host string) bool {
 	return host == "localhost" || strings.HasSuffix(host, ".localhost") || strings.HasSuffix(host, ".internal")
 }
 
-// load adapts the generated Caddyfile and swaps it in.
+// load swaps the farm's configuration in, closing each wiki whose worker cannot start rather than leaving the whole farm on the old one.
 func (c caddyFarm) load(wikis []program.Wiki, programDir string) error {
+	wikis = append([]program.Wiki(nil), wikis...)
+	for {
+		err := c.loadOnce(wikis, programDir)
+		if err == nil {
+			return nil
+		}
+		broken, found := brokenWorker(err, wikis)
+		if !found {
+			return err
+		}
+		fmt.Fprintf(os.Stderr, "%s cannot start and is closed: %s\n", wikis[broken].Host, err)
+		wikis[broken].Closed = true
+		wikis[broken].Why = "This wiki could not start, and is closed until it can."
+	}
+}
+
+// loadOnce adapts the generated Caddyfile and swaps it in.
+func (c caddyFarm) loadOnce(wikis []program.Wiki, programDir string) error {
 	adapter := caddyconfig.GetAdapter("caddyfile")
 	if adapter == nil {
 		return fmt.Errorf("this build has no caddyfile adapter")
@@ -117,4 +136,21 @@ func (c caddyFarm) load(wikis []program.Wiki, programDir string) error {
 	}
 
 	return caddy.Load(config, false)
+}
+
+var failedWorker = regexp.MustCompile(`worker (\S+) has not reached`)
+
+// brokenWorker is the open wiki whose worker FrankenPHP names in a failed load.
+func brokenWorker(err error, wikis []program.Wiki) (int, bool) {
+	match := failedWorker.FindStringSubmatch(err.Error())
+	if match == nil {
+		return 0, false
+	}
+	for i, wiki := range wikis {
+		if !wiki.Closed && filepath.Dir(match[1]) == wiki.Directory {
+			return i, true
+		}
+	}
+
+	return 0, false
 }
