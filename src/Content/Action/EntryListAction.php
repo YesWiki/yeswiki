@@ -1654,11 +1654,11 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
     private function renderEntries(array $entries, array $filters = [], array $pForms = []): string
     {
         $showNumEntries = count($entries) === 0 || $this->arguments['shownumentries'];
-        $templateName = $this->arguments['template'];
+        $templateName = (string)preg_replace('/\.tpl\.html$/', '', $this->arguments['template']);
         if (strpos($templateName, '.html') === false && strpos($templateName, '.twig') === false) {
             $templateName = $templateName . '.twig';
-            $this->arguments['template'] = $templateName;
         }
+        $this->arguments['template'] = $templateName;
         $data = [];
         $data['entries'] = $entries;
         $data['resultsInfo'] = $showNumEntries ? '<div class="alert alert-info">' . _t('BAZ_IL_Y_A') . ' ' . count($data['entries']) . ' ' . (count($data['entries']) <= 1 ? _t('BAZ_FICHE') : _t('BAZ_FICHES')) . '</div>' : '';

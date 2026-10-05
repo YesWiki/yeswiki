@@ -140,7 +140,7 @@ class ConfigurationFile implements \ArrayAccess, \Iterator, \Countable
     #[\ReturnTypeWillChange]
     public function valid()
     {
-        return isset($this->_parameters[$this->key()]);
+        return $this->key() !== null;
     }
 
     #[\ReturnTypeWillChange]

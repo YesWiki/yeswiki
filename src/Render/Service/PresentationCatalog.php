@@ -6,6 +6,7 @@ use YesWiki\Content\Entity\FieldRole;
 use YesWiki\Content\Service\FieldRoleResolver;
 use YesWiki\Files\Service\ProgramFiles;
 use YesWiki\Files\Service\Storage;
+use YesWiki\Kernel\Service\ExtensionRegistry;
 use YesWiki\Render\Entity\Presentation;
 
 /** Every list template the wiki can draw, each read from the `{# presentation … #}` header of its own file (docs/en/dev.md). */
@@ -29,6 +30,7 @@ class PresentationCatalog
         private readonly ProgramFiles $programFiles,
         private readonly Storage $storage,
         private readonly FieldRoleResolver $roles,
+        private readonly ExtensionRegistry $extensions,
     ) {
     }
 
@@ -139,6 +141,11 @@ class PresentationCatalog
                 $found[$name] = $this->describe($name, $contents, false, $custom);
             }
         }
+        foreach ($this->extensionFiles() as $name => $contents) {
+            if (!isset($found[$name])) {
+                $found[$name] = $this->describe($name, $contents, false, false);
+            }
+        }
 
         return $this->presentations = $found;
     }
@@ -158,6 +165,33 @@ class PresentationCatalog
             $name = self::nameOf($path);
             if ($name !== null) {
                 $files[$name] = [$this->storage->read($path), true];
+            }
+        }
+        ksort($files);
+
+        return $files;
+    }
+
+    /** @return array<string, string> name => contents of the dynamic templates the active extensions add under their `templates/core/` */
+    private function extensionFiles(): array
+    {
+        $relative = 'templates/core/' . substr(self::DYNAMIC_DIR, \strlen('templates/'));
+        $files = [];
+        foreach (array_keys($this->extensions->all()) as $extension) {
+            if ($extension === 'custom') {
+                continue;
+            }
+            foreach ($this->programFiles->files("extensions/{$extension}/{$relative}") as $path) {
+                $name = self::nameOf($path);
+                if ($name !== null) {
+                    $files[$name] = $this->programFiles->read($path);
+                }
+            }
+            foreach ($this->storage->files("custom/extensions/{$extension}/{$relative}") as $path) {
+                $name = self::nameOf($path);
+                if ($name !== null) {
+                    $files[$name] = $this->storage->read($path);
+                }
             }
         }
         ksort($files);

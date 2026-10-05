@@ -1469,46 +1469,46 @@ body {
 section.pattern-border {
   border-width: 4px;
   border-style: solid;
-  padding: var(--yw-space-lg-y) var(--yw-space-lg-x);
+  padding: calc(var(--yw-space-lg-y) * 2) var(--yw-space-lg-x);
 }
 
 section.shape-rounded {
   border-radius: var(--yw-radius-md);
-  padding: var(--yw-space-lg-y) var(--yw-space-lg-x);
+  padding: calc(var(--yw-space-lg-y) * 2) var(--yw-space-lg-x);
 }
 
 section.shape-circle {
   border-radius: 50%;
-  padding: var(--yw-space-lg-y) var(--yw-space-lg-x);
+  padding: calc(var(--yw-space-lg-y) * 2) var(--yw-space-lg-x);
 }
 
 section.shape-blob1 {
   border-radius: 50% 50% 59% 41% / 35% 50% 50% 65%;
-  padding: var(--yw-space-lg-y) var(--yw-space-lg-x);
+  padding: calc(var(--yw-space-lg-y) * 2) var(--yw-space-lg-x);
 }
 
 section.shape-blob2 {
   border-radius: 33% 67% 50% 50% / 25% 19% 81% 75%;
-  padding: var(--yw-space-lg-y) var(--yw-space-lg-x);
+  padding: calc(var(--yw-space-lg-y) * 2) var(--yw-space-lg-x);
 }
 
 section.shape-blob3 {
   border-radius: 33% 67% 50% 50% / 65% 73% 27% 35%;
-  padding: var(--yw-space-lg-y) var(--yw-space-lg-x);
+  padding: calc(var(--yw-space-lg-y) * 2) var(--yw-space-lg-x);
 }
 
 section.shape-blob4 {
   border-radius: 23% 77% 27% 73% / 41% 31% 69% 59%;
-  padding: var(--yw-space-lg-y) var(--yw-space-lg-x);
+  padding: calc(var(--yw-space-lg-y) * 2) var(--yw-space-lg-x);
 }
 
 section.shape-blob5 {
   border-radius: 75% 25% 76% 24% / 50% 50% 50% 50%;
-  padding: var(--yw-space-lg-y) var(--yw-space-lg-x);
+  padding: calc(var(--yw-space-lg-y) * 2) var(--yw-space-lg-x);
 }
 
-section.full-width:not(.with-bg-pattern) {
-  padding: var(--yw-space-lg-y) 0;
+section.full-width {
+  padding: calc(var(--yw-space-lg-y) * 2) 0;
 }
 
 section > div {

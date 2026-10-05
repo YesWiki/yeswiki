@@ -42,6 +42,7 @@ use YesWiki\Kernel\Entity\ExtensionFolders;
 use YesWiki\Kernel\Exception\ExitException;
 use YesWiki\Kernel\Routing\ReservedTags;
 use YesWiki\Kernel\Service\CacheClearer;
+use YesWiki\Kernel\Service\ConfigurationFileProvider;
 use YesWiki\Kernel\Service\CurrentRequest;
 use YesWiki\Kernel\Service\EventDispatcher;
 use YesWiki\Kernel\Service\ExtensionRegistry;
@@ -484,8 +485,8 @@ class YesWikiRuntime
     }
 
     /**
-     * @return array{0: RouteCollection, 1: FileResource[]} the collection plus the freshness
-     *                                                      resources to guard its cache with
+     * @return array{0: RouteCollection, 1: array<FileResource|ConfigFileHashResource>} the collection plus the freshness
+     *                                                                                  resources to guard its cache with
      *
      * The freshness resources are built by hand instead of taking $routes->getResources(): the
      * attribute loaders register ReflectionClassResources, whose isFresh() answer depends on the
@@ -495,11 +496,13 @@ class YesWikiRuntime
      * second, one cache's answer poisons the other's and a stale route cache is served as fresh.
      * Plain FileResources are fully determined by (path, timestamp), immune to that: one per
      * controller file catches edits, one per controllers directory catches added/removed files.
+     * The configuration file's hash is one too, because it names the extensions switched on.
      */
     private function buildRouteCollection(): array
     {
         $routes = new RouteCollection();
         $resources = YesWikiKernel::extensionSetResources(\dirname(__DIR__));
+        $resources[] = new ConfigFileHashResource(ConfigurationFileProvider::getConfigFileFromEnv());
 
         $loader = new AttributeDirectoryLoader(
             new FileLocator(__DIR__ . '/../'),

@@ -9,6 +9,8 @@ use YesWiki\Files\Service\AttachedFilePaths;
 use YesWiki\Files\Service\ImageShrinker;
 use YesWiki\Files\Service\Storage;
 use YesWiki\Kernel\Database\SqlParameters;
+use YesWiki\Kernel\Service\ConfigurationFileProvider;
+use YesWiki\Kernel\Service\ConfigurationService;
 use YesWiki\Search\Service\SearchIndexer;
 
 /** Every JPEG and PNG uploaded before Ectoplasme, as File Content or as a Bazar field's file, rewritten as WebP and fitted to the upload bounds. */
@@ -110,7 +112,7 @@ class UploadedPicturesBecomeWebp extends YesWikiMigration
     }
 
     /**
-     * The pictures still in files/ that Bazar fields name in full, renamed to .webp and named so in every revision of every Content that said the old name.
+     * The pictures still in files/ that Bazar fields name in full, renamed to .webp and named so in every revision of every Content, and in the configuration, that said the old name.
      *
      * @param list<string> $paths
      *
@@ -123,6 +125,7 @@ class UploadedPicturesBecomeWebp extends YesWikiMigration
 
         $done = 0;
         $touched = [];
+        $renamed = [];
         foreach ($paths as $path) {
             if (!$shrinker->isConvertible($path)) {
                 continue;
@@ -138,14 +141,54 @@ class UploadedPicturesBecomeWebp extends YesWikiMigration
             $this->before += $storage->fileSize($path);
             $this->after += $storage->fileSize($newPath);
             $touched = [...$touched, ...$this->rename($oldName, $newName)];
+            $renamed[$oldName] = $newName;
             $storage->delete($path);
             foreach ($storage->glob('cache/' . pathinfo($oldName, PATHINFO_FILENAME) . '*') as $thumbnail) {
                 $storage->delete($thumbnail);
             }
             $done++;
         }
+        $this->renameInConfiguration($renamed);
 
         return [$done, array_values(array_unique($touched))];
+    }
+
+    /**
+     * The configuration's values that named a renamed picture, such as the logo the layout carried over from PageTitre.
+     *
+     * @param array<string, string> $renamed old name => new name
+     */
+    private function renameInConfiguration(array $renamed): void
+    {
+        if ($renamed === []) {
+            return;
+        }
+        $config = $this->getService(ConfigurationService::class)->getConfiguration(ConfigurationFileProvider::getConfigFileFromEnv());
+        $config->load();
+
+        $changes = [];
+        foreach ($config as $key => $value) {
+            $new = $value;
+            if (is_string($new)) {
+                $new = strtr($new, $renamed);
+            } elseif (is_array($new)) {
+                array_walk_recursive($new, static function (&$item) use ($renamed): void {
+                    if (is_string($item)) {
+                        $item = strtr($item, $renamed);
+                    }
+                });
+            }
+            if ($new !== $value) {
+                $changes[$key] = $new;
+            }
+        }
+        if ($changes === []) {
+            return;
+        }
+        foreach ($changes as $key => $value) {
+            $config[$key] = $value;
+        }
+        $config->write();
     }
 
     /**

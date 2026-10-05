@@ -40,13 +40,26 @@ class PresentationCatalogTest extends YesWikiTestCase
         parent::tearDown();
     }
 
-    private function catalog(): PresentationCatalog
+    /** @param array<string, string> $extensions the active extensions the catalog sees, none by default so only core's own shapes are counted */
+    private function catalog(array $extensions = []): PresentationCatalog
     {
+        $registry = new \YesWiki\Kernel\Service\ExtensionRegistry();
+        $registry->bind($extensions);
+
         return new PresentationCatalog(
             $this->getWiki()->services->get(\YesWiki\Files\Service\ProgramFiles::class),
             $this->getWiki()->services->get(\YesWiki\Files\Service\Storage::class),
             $this->getWiki()->services->get(\YesWiki\Content\Service\FieldRoleResolver::class),
+            $registry,
         );
+    }
+
+    public function testAnActiveExtensionsDynamicTemplateIsOfferedAndAnInactiveOnesIsNot(): void
+    {
+        $names = fn (PresentationCatalog $catalog): array => array_map(fn ($p) => $p->name, $catalog->all());
+
+        $this->assertNotContains('dynamic-links-example', $names($this->catalog()));
+        $this->assertContains('dynamic-links-example', $names($this->catalog(['helloworld' => YESWIKI_PROGRAM_DIR . '/extensions/helloworld/'])));
     }
 
     public function testTheShippedTemplatesAreListedAsTheirHeadersSay(): void

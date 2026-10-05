@@ -5,6 +5,8 @@ namespace YesWiki\Test\Core\Migrations;
 use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Service\FileManager;
 use YesWiki\Files\Service\Storage;
+use YesWiki\Kernel\Service\ConfigurationFileProvider;
+use YesWiki\Kernel\Service\ConfigurationService;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Test\Core\YesWikiTestCase;
 
@@ -136,6 +138,31 @@ class UploadedPicturesBecomeWebpTest extends YesWikiTestCase
         $this->assertSame("![affiche](files/{$new})", PageBody::content($body));
     }
 
+    public function testTheLogoTheConfigurationNamesFollowsItsPicture(): void
+    {
+        $this->storage->write(self::UPLOAD, $this->png(400, 300));
+        $this->paths[] = self::UPLOAD;
+        $webp = 'files/' . pathinfo(self::UPLOAD, PATHINFO_FILENAME) . '.webp';
+        $this->paths[] = $webp;
+        $config = $this->configuration();
+        $before = $config['layout_logo'] ?? null;
+        $config['layout_logo'] = self::UPLOAD;
+        $config->write();
+
+        try {
+            $this->migration->shrinkUploads([self::UPLOAD], 1920, 1920, 82);
+            $this->assertSame($webp, $this->configuration()['layout_logo']);
+        } finally {
+            $config = $this->configuration();
+            if ($before === null) {
+                unset($config['layout_logo']);
+            } else {
+                $config['layout_logo'] = $before;
+            }
+            $config->write();
+        }
+    }
+
     public function testAPictureGdCannotReadIsKeptAndTheNextOneIsStillConverted(): void
     {
         $broken = 'files/UploadedPicturesBecomeWebpTestEntry_imagebf_image_broken_20260101000000_20260101000000.jpg';
@@ -151,6 +178,14 @@ class UploadedPicturesBecomeWebpTest extends YesWikiTestCase
         $this->assertSame(1, $done);
         $this->assertTrue($this->storage->exists($broken), 'the unreadable picture stays as it was');
         $this->assertFalse($this->storage->exists(self::UPLOAD));
+    }
+
+    private function configuration(): \YesWiki\Kernel\Entity\ConfigurationFile
+    {
+        $config = $this->getWiki()->services->get(ConfigurationService::class)->getConfiguration(ConfigurationFileProvider::getConfigFileFromEnv());
+        $config->load();
+
+        return $config;
     }
 
     /**
