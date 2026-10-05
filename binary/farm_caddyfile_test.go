@@ -183,3 +183,23 @@ func TestTheWikiWhoseWorkerFailsIsTheOneClosed(t *testing.T) {
 		t.Error("a failure that names no worker closes nothing")
 	}
 }
+
+// Behind a relay the request arrives as plain HTTP, so PHP is told the https its base_url states.
+func TestAWikiBehindARelayKnowsItIsServedOverHTTPS(t *testing.T) {
+	file := FarmCaddyfile([]program.Wiki{
+		{Directory: "/srv/wikis/secure", Host: "secure.example.org", Address: "secure.example.org"},
+		{Directory: "/srv/wikis/plain", Host: "plain.example.org", Address: "http://plain.example.org"},
+	}, Workers{}, "", ":8130")
+
+	secure := file[strings.Index(file, "http://secure.example.org:8130 {"):strings.Index(file, "http://plain.example.org:8130 {")]
+	plain := file[strings.Index(file, "http://plain.example.org:8130 {"):]
+	if strings.Count(secure, "env HTTPS on") != 2 {
+		t.Errorf("both PHP handlers of an https wiki should say so:\n%s", secure)
+	}
+	if strings.Contains(plain, "env HTTPS on") {
+		t.Errorf("an http wiki is not served over https:\n%s", plain)
+	}
+	if strings.Contains(FarmCaddyfile(threeWikis, Workers{}, "", ""), "env HTTPS on") {
+		t.Error("a farm that terminates TLS itself needs no override")
+	}
+}

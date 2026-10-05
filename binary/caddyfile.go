@@ -109,9 +109,14 @@ func Caddyfile(instance string, listen Listen, workers Workers, admin Admin) str
 		"\n" + site(listen.site(), instance, workers.FrontController())
 }
 
-// FarmCaddyfile serves every wiki in a farm from one process, each on its own name, over plain HTTP at listen when one is given.
+// FarmCaddyfile serves every wiki in a farm from one process, each on its own name, over plain HTTP at listen when one is given, telling PHP the relay's https.
 func FarmCaddyfile(wikis []program.Wiki, workers Workers, admin Admin, listen string) string {
+	secure := map[string]bool{}
+	for _, wiki := range wikis {
+		secure[wiki.Directory] = !strings.HasPrefix(wiki.Address, "http://")
+	}
 	wikis, bind := behindARelay(wikis, listen)
+	relayed := strings.TrimSpace(listen) != ""
 
 	instances := make([]string, 0, len(wikis))
 	for _, wiki := range wikis {
@@ -132,7 +137,11 @@ func FarmCaddyfile(wikis []program.Wiki, workers Workers, admin Admin, listen st
 
 			continue
 		}
-		file += "\n" + bound(site(wiki.Address, wiki.Directory, workers.FrontController()), bind)
+		block := bound(site(wiki.Address, wiki.Directory, workers.FrontController()), bind)
+		if relayed && secure[wiki.Directory] {
+			block = strings.ReplaceAll(block, "php_server {\n", "php_server {\n\t\t\tenv HTTPS on\n")
+		}
+		file += "\n" + block
 	}
 
 	return file
