@@ -48,6 +48,7 @@ class ApiEntryStylesTest extends YesWikiTestCase
         }
         file_put_contents($this->styleFile, '.api-entry-styles { color: red; }');
         file_put_contents($this->templateFile, "{{ include_css('" . $this->styleFile . "') }}<div class=\"api-entry-styles\">{{ html.bf_titre|raw }}</div>");
+        self::forgetTemplateLookups($this->wiki);
     }
 
     protected function tearDown(): void

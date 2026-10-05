@@ -3,8 +3,10 @@
 namespace YesWiki\Test\Core;
 
 use PHPUnit\Framework\TestCase;
+use Twig\Loader\FilesystemLoader;
 use YesWiki\Core\Service\BotGuard;
 use YesWiki\Core\Service\ConfigurationFileProvider;
+use YesWiki\Core\Service\TemplateEngine;
 use YesWiki\Core\YesWikiLoader;
 use YesWiki\Wiki;
 
@@ -16,6 +18,17 @@ class YesWikiTestCase extends TestCase
         $wiki = YesWikiLoader::getWiki(true);
 
         return $wiki;
+    }
+
+    /**
+     * Makes Twig look for templates again, since it remembers one it found missing, even after a test writes it.
+     */
+    protected static function forgetTemplateLookups(Wiki $wiki): void
+    {
+        $loader = (new \ReflectionProperty(TemplateEngine::class, 'twigLoader'))->getValue($wiki->services->get(TemplateEngine::class));
+        foreach (['cache', 'errorCache'] as $property) {
+            (new \ReflectionProperty(FilesystemLoader::class, $property))->setValue($loader, []);
+        }
     }
 
     /**

@@ -43,10 +43,8 @@ class SsrfUrlValidator
             throw new \Exception("URL '{$url}' must use " . implode(' or ', array_map('strtoupper', $schemes)));
         }
 
-        // Strip IPv6 brackets (e.g. [::1] → ::1)
         $host = trim($parts['host'], '[]');
 
-        // Collect all IPs the host resolves to so every address family is checked.
         if (filter_var($host, FILTER_VALIDATE_IP)) {
             $ips = [$host];
         } else {
@@ -55,7 +53,7 @@ class SsrfUrlValidator
             if ($ipv4 !== $host) {
                 $ips[] = $ipv4;
             }
-            foreach (dns_get_record($host, DNS_AAAA) ?: [] as $record) {
+            foreach (@dns_get_record($host, DNS_AAAA) ?: [] as $record) {
                 if (!empty($record['ipv6'])) {
                     $ips[] = $record['ipv6'];
                 }
@@ -66,17 +64,13 @@ class SsrfUrlValidator
         }
 
         foreach ($ips as $ip) {
-            // Rejects 127.x, 10.x, 172.16-31.x, 192.168.x, 169.254.x, 0.x, 240.x, ::1, fc00::/7
             if (!filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)
                 || $this->isReservedIPv4($ip)) {
                 throw new \Exception("URL '{$url}' resolves to a private or reserved address");
             }
-            // fe80::/10 (IPv6 link-local) is not blocked by FILTER_FLAG_NO_RES_RANGE in all PHP versions
             if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6) && stripos($ip, 'fe80') === 0) {
                 throw new \Exception("URL '{$url}' resolves to a private or reserved address");
             }
-            // IPv6 transition forms (6to4, NAT64, IPv4-compatible) embed an IPv4 address that
-            // filter_var() classifies as an ordinary global IPv6 address; unwrap and re-check it.
             $embeddedIPv4 = $this->extractEmbeddedIPv4($ip);
             if ($embeddedIPv4 !== null
                 && (!filter_var($embeddedIPv4, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)
