@@ -79,6 +79,31 @@ class LayoutBecomesConfigurationTest extends YesWikiTestCase
         $this->assertSame(48, $height(20), 'never lower than the default navbar');
     }
 
+    /** yeswiki.pro's logo stayed in files/ because another page names its file in full: the newest upload of that name is the logo. */
+    public function testALogoLeftInFilesIsFoundUnderItsDoryphoreName(): void
+    {
+        $storage = $this->getWiki()->services->get(\YesWiki\Files\Service\Storage::class);
+        $older = 'files/PageTitre_layouttestlogo_20220101000000_20220101000000.png';
+        $newer = 'files/PageTitre_layouttestlogo_20230101000000_20230101000000.png';
+        $other = 'files/PageTitre_layouttestlogoother_20240101000000_20240101000000.png';
+        foreach ([$older, $newer, $other] as $path) {
+            $storage->write($path, 'png');
+        }
+
+        try {
+            $migration = new \LayoutBecomesConfiguration();
+            $migration->setServices($this->getWiki()->services);
+            $found = (new \ReflectionClass($migration))->getMethod('legacyUpload')->invoke($migration, 'files/layouttestlogo.png');
+
+            $this->assertSame($newer, $found);
+            $this->assertNull((new \ReflectionClass($migration))->getMethod('legacyUpload')->invoke($migration, 'files/absent.png'));
+        } finally {
+            foreach ([$older, $newer, $other] as $path) {
+                $storage->delete($path);
+            }
+        }
+    }
+
     public function testAnythingElseInTheTitlePageIsReportedRatherThanDropped(): void
     {
         [$title, , $rest] = $this->readTitle("Mon wiki\n{{include page=\"UnBandeau\"}}");

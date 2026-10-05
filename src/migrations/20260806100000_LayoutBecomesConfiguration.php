@@ -58,6 +58,9 @@ class LayoutBecomesConfiguration extends YesWikiMigration
         $leftovers['PageRapideHaut'] = $quickRest;
 
         $fileTag = $this->fileTagOf($logo);
+        if ($fileTag === null) {
+            $logo = $this->legacyUpload($logo) ?? $logo;
+        }
         $logoHeight = $this->logoHeight($logo, $fileTag);
         if ($fileTag !== null) {
             $logo = $this->getService(UrlFormatter::class)->href('', 'api/files/' . rawurlencode($fileTag) . '/download');
@@ -172,6 +175,31 @@ class LayoutBecomesConfiguration extends YesWikiMigration
         $size = $storage->imageSize($path);
 
         return is_array($size) && $size[1] > 0 ? (int)$size[1] : null;
+    }
+
+    /** The Doryphore upload a `files/name.ext` logo meant when it stayed in files/, because some page names it in full: PageTitre's newest, flat or in its own folder. */
+    private function legacyUpload(string $logo): ?string
+    {
+        if (!str_starts_with($logo, 'files/')) {
+            return null;
+        }
+        $name = substr($logo, strlen('files/'));
+        $storage = $this->getService(Storage::class);
+        $base = pathinfo($name, PATHINFO_FILENAME);
+        $candidates = [];
+        foreach (["files/PageTitre_{$base}_*", "files/PageTitre/{$base}_*"] as $pattern) {
+            foreach ($storage->glob($pattern) as $path) {
+                if (LegacyAttachments::recoverOriginalFilename(basename($path), 'PageTitre') === $name) {
+                    $candidates[] = $path;
+                }
+            }
+        }
+        if ($candidates === []) {
+            return null;
+        }
+        usort($candidates, static fn (string $a, string $b): int => strcmp(basename($a), basename($b)));
+
+        return end($candidates);
     }
 
     /** The File Content a `files/…` logo is: already a file tag, or the name PageTitre attached it under before the attachments became Content. */
