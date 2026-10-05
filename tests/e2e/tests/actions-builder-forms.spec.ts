@@ -294,8 +294,8 @@ test('the card settings are laid out in pairs, with nothing hidden', async ({
     'Ce qui est listé | Choisissez un formulaire',
     'Zone de titre | Zone de sous titre',
     'Zone visuelle | Zone de texte',
-    "Zone flottante | Bouton d'action",
-    'Zone de date',
+    'Zone flottante | Zone de pied de bloc',
+    "Bouton d'action | Zone de date",
     "Colonnes | Cadrage de l'image",
     'Nombre de fiches par page | Limitation',
     'Trier sur le champ | Ordre',
@@ -306,7 +306,7 @@ test('the card settings are laid out in pairs, with nothing hidden', async ({
   expect(watcher.errors(), 'the browser reported errors').toEqual([])
 })
 
-/** The sixth zone of a card: a button, which is off unless the list asks for one. */
+/** The seventh zone of a card: a button, which is off unless the list asks for one. */
 test('a card can carry a button to the entry', async ({ page }, testInfo) => {
   const watcher = watchConsole(page)
   await login(page, ADMIN_USERNAME, ADMIN_PASSWORD)
