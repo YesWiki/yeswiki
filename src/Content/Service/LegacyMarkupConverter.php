@@ -2,6 +2,8 @@
 
 namespace YesWiki\Content\Service;
 
+use League\CommonMark\CommonMarkConverter;
+
 /** Rewrites Doryphore's wakka markup as the CommonMark Ectoplasme renders, keeping what each page showed. */
 class LegacyMarkupConverter
 {
@@ -25,13 +27,100 @@ class LegacyMarkupConverter
         }
         $this->slots = [];
         $text = str_replace(["\r\n", "\r", self::SLOT, self::BLANK], ["\n", "\n", '', ''], $markup);
+        $text = $this->keepBoldInsideItsBlock($text);
         $text = $this->protect($text);
+        $text = $this->convertTables($text);
         $text = $this->convertHeadings($text);
         $text = $this->convertInline($text);
         $text = $this->convertLines($text);
         $text = $this->settleBlankLines($text);
 
         return trim($this->restore($text), "\n");
+    }
+
+    /** Wakka let `**` open at a line's end or close after raw closing tags; Markdown needs both ends in the same block. */
+    private function keepBoldInsideItsBlock(string $text): string
+    {
+        $text = (string)preg_replace('/""(\s*(?:<\/[a-z][a-z0-9]*\s*>\s*)+)""\*\*/i', '**""$1""', $text);
+
+        return (string)preg_replace('/(^|"")([ \t]*)\*\*[ \t]*\n/m', "$1$2\n**", $text);
+    }
+
+    /** Doryphore's `[| … |]` tables: a Markdown table whose first row is the header, or an HTML one when rows or cells carried attributes. */
+    private function convertTables(string $text): string
+    {
+        return (string)preg_replace_callback('/^\[\|([^\n]*)\n(.*?)^\|\][ \t]*$/msu', function (array $table): string {
+            preg_match_all('/^((?:![^|\n]*!)?\|.*\|)[ \t]*$/Ums', $table[2], $found);
+            $rows = [];
+            $attributes = false;
+            foreach ($found[1] as $row) {
+                $row = trim(str_replace("\n", '<br>', $row));
+                $rowAttributes = '';
+                if (preg_match('/^!([^|]*)!/', $row, $m) === 1) {
+                    $rowAttributes = trim($m[1]);
+                    $row = substr($row, strlen($m[0]));
+                    $attributes = true;
+                }
+                $cells = [];
+                foreach (explode('|', substr($row, 1, -1)) as $cell) {
+                    $cellAttributes = '';
+                    if (preg_match('/^!(.*?)!/', $cell, $m) === 1) {
+                        $cellAttributes = trim($m[1]);
+                        $cell = substr($cell, strlen($m[0]));
+                        $attributes = true;
+                    }
+                    $cells[] = ['text' => trim($cell), 'attributes' => $cellAttributes];
+                }
+                $rows[] = ['cells' => $cells, 'attributes' => $rowAttributes];
+            }
+            if ($rows === []) {
+                return $table[0];
+            }
+
+            return self::BLANK . ($attributes ? $this->slot($this->htmlTable($rows, trim($table[1]))) : $this->markdownTable($rows)) . self::BLANK;
+        }, $text);
+    }
+
+    /** @param list<array{cells: list<array{text: string, attributes: string}>, attributes: string}> $rows */
+    private function markdownTable(array $rows): string
+    {
+        $width = max([1, ...array_map(fn (array $row): int => count($row['cells']), $rows)]);
+        $line = function (array $cells) use ($width): string {
+            $texts = array_map(fn (array $cell): string => $cell['text'], $cells);
+
+            return '| ' . implode(' | ', array_pad($texts, $width, '')) . ' |';
+        };
+        $header = array_map(fn (array $cell): array => ['text' => (string)preg_replace('/^\*\*(.*)\*\*$/s', '$1', $cell['text']), 'attributes' => ''], $rows[0]['cells']);
+        $lines = [$line($header), $this->slot('|' . str_repeat(' --- |', $width))];
+        foreach (array_slice($rows, 1) as $row) {
+            $lines[] = $line($row['cells']);
+        }
+
+        return implode("\n", $lines);
+    }
+
+    /** @param list<array{cells: list<array{text: string, attributes: string}>, attributes: string}> $rows */
+    private function htmlTable(array $rows, string $class): string
+    {
+        $html = '<table' . ($class === '' ? '' : ' class="' . htmlspecialchars($class, ENT_QUOTES) . '"') . '>';
+        foreach ($rows as $row) {
+            $html .= "\n<tr" . ($row['attributes'] === '' ? '' : ' ' . $row['attributes']) . '>';
+            foreach ($row['cells'] as $cell) {
+                $html .= '<td' . ($cell['attributes'] === '' ? '' : ' ' . $cell['attributes']) . '>' . $this->cellHtml($cell['text']) . '</td>';
+            }
+            $html .= '</tr>';
+        }
+
+        return $html . "\n</table>";
+    }
+
+    /** A cell's wakka as inline HTML, since Markdown inside an HTML table is never read. */
+    private function cellHtml(string $wakka): string
+    {
+        $markdown = $this->restore(str_replace(self::BLANK, ' ', $this->convertInline($wakka)));
+        $html = (string)(new CommonMarkConverter())->convert($markdown);
+
+        return trim((string)preg_replace('#^\s*<p>(.*)</p>\s*$#s', '$1', $html));
     }
 
     /** Whether a page holds nothing but CSS, which a wiki keeps as a page and never renders as markup. */
@@ -63,7 +152,8 @@ class LegacyMarkupConverter
             . '|!?\[[^\]\n]*\]\([^)\n]*\)(?:\{[^}\n]*\})?'
             . '|`[^`\n]+`'
             . '|\b[a-z][a-z0-9+.-]*:\/\/[^\s<>"\'\]\)\\\\]+'
-            . '|<(script|style|pre|textarea)\b[^>]*>.*?<\/\5>'
+            . '|<(script|style|pre|textarea|table)\b[^>]*>.*?<\/\5>'
+            . '|(?:^|(?<=\n))\|(?:[ \t]*:?-{3,}:?[ \t]*\|)+(?=\n|$)'
             . '|<!--.*?-->'
             . '|<[a-z!\/][^>\n]*>/isu',
             function (array $match): string {

@@ -12,6 +12,9 @@ use YesWiki\Kernel\Service\RuntimeConfig;
  */
 class AttachedFilePaths
 {
+    /** The extensions the WebP migration rewrote, whose pages may still name the old one. */
+    private const CONVERTED_TO_WEBP = ['jpg', 'jpeg', 'png'];
+
     /** Where uploads live, relative to the instance: `files/`. */
     public const UPLOAD_DIR = 'files/';
 
@@ -133,12 +136,23 @@ class AttachedFilePaths
                 : $path . '/' . $fullFileName;
         }
 
-        $name = preg_quote($parts['name'], '`');
-        $extension = preg_quote($parts['ext'], '`');
+        $found = $this->findUpload($parts['name'], $parts['ext'], $parts['page'], $pageTag, $path);
+        if ($found === '' && in_array(strtolower($parts['ext']), self::CONVERTED_TO_WEBP, true)) {
+            $found = $this->findUpload($parts['name'], 'webp', $parts['page'], $pageTag, $path);
+        }
+
+        return $found;
+    }
+
+    /** The newest upload of $name with $ext, looked for the way Doryphore did: in the included page first, then the page that names it. */
+    private function findUpload(string $rawName, string $ext, string $pagePart, string $pageTag, string $path): string
+    {
+        $name = preg_quote($rawName, '`');
+        $extension = preg_quote($ext, '`');
 
         $isActionBuilderPreview = $this->pageContext->getTag() === 'root';
         $included = (string)($this->inclusionStack->getAll()[0] ?? '');
-        if (!$isActionBuilderPreview && $parts['page'] === '' && $included !== '' && strcasecmp($included, (string)$this->pageContext->getTag()) !== 0) {
+        if (!$isActionBuilderPreview && $pagePart === '' && $included !== '' && strcasecmp($included, (string)$this->pageContext->getTag()) !== 0) {
             $inIncludedPage = $this->searchOwnedBy($included, $name, $extension);
             if ($inIncludedPage !== '') {
                 return $inIncludedPage;

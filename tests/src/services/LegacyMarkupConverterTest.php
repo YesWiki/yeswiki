@@ -23,6 +23,10 @@ class LegacyMarkupConverterTest extends TestCase
     {
         return [
             'six equals is the top heading' => ['======Titre======', '# Titre'],
+            'a table becomes a Markdown table headed by its first row' => ["[|\n|**Service**|**Solo**|\n|Backup|oui|\n|]", "| Service | Solo |\n| --- | --- |\n| Backup | oui |"],
+            'a table with cell attributes stays an HTML table' => ["[|table-bordered\n|!class=\"total\"!**Total**|42|\n|]", "<table class=\"table-bordered\">\n<tr><td class=\"total\"><strong>Total</strong></td><td>42</td></tr>\n</table>"],
+            'bold opened at a line end keeps its text' => ["\"\"<div>\"\"**\nPermettre aux collectifs.**\"\"</div>\"\"", "<div>\n\n**Permettre aux collectifs.**\n\n</div>"],
+            'bold closed after raw closing tags closes before them' => ['""<div class="lead">""**Prenez contact"" </div>""**', "<div class=\"lead\">\n\n**Prenez contact**\n\n</div>"],
             'two equals is the smallest' => ['==Petit==', '##### Petit'],
             'a heading glued to text gets its own line' => ['avant ====Milieu==== après', "avant\n\n### Milieu\n\naprès"],
             'italic' => ['un //mot// penché', 'un *mot* penché'],

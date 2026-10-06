@@ -41,7 +41,7 @@ class EntryWikiTextBecomesMarkdown extends YesWikiMigration
     /**
      * Converts the named fields of the entry revisions older than `$before`, or only those of `$tag` when one is given.
      *
-     * @param array<string, list<string>> $fields form id => property names of its wiki text fields
+     * @param array<int|string, list<string>> $fields form id => property names of its wiki text fields
      *
      * @return array{0: list<string>, 1: int} the tags touched and the number of revisions rewritten
      */
@@ -64,7 +64,7 @@ class EntryWikiTextBecomesMarkdown extends YesWikiMigration
 
     /**
      * @param array<int, array<string, mixed>> $rows
-     * @param array<string, list<string>>      $fields
+     * @param array<int|string, list<string>>  $fields
      *
      * @return array{0: list<string>, 1: int}
      */
@@ -101,7 +101,7 @@ class EntryWikiTextBecomesMarkdown extends YesWikiMigration
         return [array_keys($touched), $revisions];
     }
 
-    /** @return array<string, list<string>> form id => property names of its long text fields in wiki syntax */
+    /** @return array<int|string, list<string>> form id => property names of its long text fields in wiki syntax */
     private function wikiTextFields(): array
     {
         $fields = [];
