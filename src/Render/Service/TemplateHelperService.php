@@ -158,13 +158,19 @@ class TemplateHelperService
      */
     public function checkGraphicalElements($element, $pagetag, $pagecontent): bool
     {
-        if ($pagecontent == null) {
-            $pagecontent = '';
-        }
+        $pagecontent = self::withoutCode((string)$pagecontent);
         preg_match_all('/{{\b' . $element . '\b.*}}/Ui', $pagecontent, $matchesaction);
         preg_match_all('/{{end.*elem="' . $element . '".*}}/Ui', $pagecontent, $matchesendaction);
 
         return count($matchesaction[0]) == count($matchesendaction[0]);
+    }
+
+    /** The markup without its code blocks and code spans, where a `{{tag}}` is shown rather than run. */
+    private static function withoutCode(string $markup): string
+    {
+        $markup = (string)preg_replace('/^[ \t]{0,3}(`{3,}|~{3,}).*?(?:^[ \t]{0,3}\1[`~]*[ \t]*$|\z)/ms', '', $markup);
+
+        return (string)preg_replace('/(?<!`)(`+)(?!`).+?(?<!`)\1(?!`)/s', '', $markup);
     }
 
     /**

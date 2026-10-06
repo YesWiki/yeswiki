@@ -29,4 +29,18 @@ class TemplateHelperServiceTest extends YesWikiTestCase
         $wrongElement = '{{panel}}some text{{end elem="col"}}';
         $this->assertFalse($service->checkGraphicalElements('panel', 'SomePage', $wrongElement));
     }
+
+    /** A `{{tag}}` quoted in code is shown, not run, so it opens nothing that needs closing. */
+    public function testCodeDoesNotCountAsAnElement(): void
+    {
+        $service = $this->getWiki()->services->get(TemplateHelperService::class);
+
+        $quotedInline = "### Section `{{section}}`\n\n{{section bgcolor=\"#eee\"}}\nTexte\n{{end elem=\"section\"}}";
+        $this->assertTrue($service->checkGraphicalElements('section', 'SomePage', $quotedInline));
+
+        $quotedBlock = "```\n{{grid}}\n```\n\n{{grid}}\n{{end elem=\"grid\"}}\n\n~~~\n{{end elem=\"grid\"}}\n~~~";
+        $this->assertTrue($service->checkGraphicalElements('grid', 'SomePage', $quotedBlock));
+
+        $this->assertFalse($service->checkGraphicalElements('panel', 'SomePage', '`{{end elem="panel"}}` {{panel}}'));
+    }
 }

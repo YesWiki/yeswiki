@@ -1320,6 +1320,8 @@ return [
     'TEMPLATE_DEFAULT_THEME_USED' => 'Le thème par défaut est donc utilisé',
     'TEMPLATE_ACTION_END' => 'Action {{end …}}',
     'TEMPLATE_ELEM_PARAMETER_REQUIRED' => 'paramètre "elem" obligatoire',
+    'TEMPLATE_ACTION_NAMED' => 'Action {{{name} …}}',
+    'TEMPLATE_ELEM_NOT_CLOSED' => 'il manque le {{end elem="{name}"}} qui la ferme',
     'TEMPLATE_ACTION_COL' => 'Action {{col …}}',
     'TEMPLATE_SIZE_PARAMETER_REQUIRED' => 'paramètre "size" obligatoire',
     'TEMPLATE_CONFIRM_DELETE_PAGE' => 'Etes vous sûr(e) de vouloir supprimer définitivement cette page ?',

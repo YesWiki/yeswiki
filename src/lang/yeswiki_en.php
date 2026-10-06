@@ -1478,6 +1478,8 @@ Tab "{tabName}" content
     'TEMPLATE_FOR_MEMBERS_OF_GROUP' => 'For group members',
     'TEMPLATE_ACTION_END' => 'Action {{end …}}',
     'TEMPLATE_ELEM_PARAMETER_REQUIRED' => 'parameter "elem" mandatory',
+    'TEMPLATE_ACTION_NAMED' => 'Action {{{name} …}}',
+    'TEMPLATE_ELEM_NOT_CLOSED' => 'the {{end elem="{name}"}} closing it is missing',
     'TEMPLATE_ACTION_COL' => 'Action {{col …}}',
     'TEMPLATE_SIZE_PARAMETER_REQUIRED' => 'parameter "size" mandatory',
     'TEMPLATE_CONFIRM_DELETE_PAGE' => 'Are you sure you want to delete this page permanently ?',

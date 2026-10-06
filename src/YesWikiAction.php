@@ -62,11 +62,11 @@ abstract class YesWikiAction extends YesWikiPerformable
 
     protected function generate_error_msg(string $action_name): string
     {
-        $action_name = strtoupper($action_name);
+        $name = ['name' => strtolower($action_name)];
 
         return '<div class="yw-alert yw-alert--danger"><strong>'
-            . _t("TEMPLATE_ACTION_$action_name") . '</strong> : '
-            . _t("TEMPLATE_ELEM_{$action_name}_NOT_CLOSED") . '.</div>' . "\n";
+            . htmlspecialchars(_t('TEMPLATE_ACTION_NAMED', $name)) . '</strong> : '
+            . htmlspecialchars(_t('TEMPLATE_ELEM_NOT_CLOSED', $name)) . '.</div>' . "\n";
     }
 
     public function end(): string
