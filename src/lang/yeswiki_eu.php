@@ -918,6 +918,7 @@ Zalantzarik izanez gero, ireki inprimaki hau orrialde propio batean esteka honet
     'COMPONENT_CATEGORY_NAVIGATION' => 'Nabigazioa',
     'COMPONENT_CATEGORY_FORMS' => 'Inprimakiak',
     'COMPONENT_CATEGORY_ADMIN' => 'Administrazioa',
+    'COMPONENT_CATEGORY_LMS' => 'LMS',
     'COMPONENT_CATEGORY_OTHER' => 'Bestelakoak',
     'COMPONENT_SETTINGS' => 'Osagaiaren ezarpenak',
     'COMPONENT_SOURCE' => 'Erakutsi wiki kodea',

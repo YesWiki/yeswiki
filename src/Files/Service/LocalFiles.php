@@ -93,6 +93,12 @@ class LocalFiles
         return !file_exists($path) || @unlink($path);
     }
 
+    /** Marks the file as just used, for the caches that are pruned oldest first. */
+    public function touch(string $path): bool
+    {
+        return @touch($path);
+    }
+
     public function rename(string $from, string $to): bool
     {
         return rename($from, $to);

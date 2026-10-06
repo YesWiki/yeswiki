@@ -928,6 +928,7 @@ La cea mai mică îndoială, deschide acest formular într-o pagină dedicată f
     'COMPONENT_CATEGORY_NAVIGATION' => 'Navigare',
     'COMPONENT_CATEGORY_FORMS' => 'Formulare',
     'COMPONENT_CATEGORY_ADMIN' => 'Administrare',
+    'COMPONENT_CATEGORY_LMS' => 'LMS',
     'COMPONENT_CATEGORY_OTHER' => 'Altele',
     'COMPONENT_SETTINGS' => 'Reglajele componentei',
     'COMPONENT_SOURCE' => 'Afișează codul wiki',

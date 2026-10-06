@@ -940,6 +940,7 @@ Ante la menor duda, abra este formulario en una página dedicada haciendo clic e
     'COMPONENT_CATEGORY_NAVIGATION' => 'Navegación',
     'COMPONENT_CATEGORY_FORMS' => 'Formularios',
     'COMPONENT_CATEGORY_ADMIN' => 'Administración',
+    'COMPONENT_CATEGORY_LMS' => 'LMS',
     'COMPONENT_CATEGORY_OTHER' => 'Otros',
     'COMPONENT_SETTINGS' => 'Ajustes del componente',
     'COMPONENT_SOURCE' => 'Mostrar el código wiki',

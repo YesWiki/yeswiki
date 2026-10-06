@@ -2572,6 +2572,7 @@ Via konto %{userName} devas esti aktivigita klakante la suban ligilon aŭ kopian
     'COMPONENT_CATEGORY_NAVIGATION' => 'Navigado',
     'COMPONENT_CATEGORY_FORMS' => 'Formularoj',
     'COMPONENT_CATEGORY_ADMIN' => 'Administrado',
+    'COMPONENT_CATEGORY_LMS' => 'LMS',
     'COMPONENT_CATEGORY_OTHER' => 'Aliaj',
     'ANSWER' => 'Respondi',
     'BY' => 'de',

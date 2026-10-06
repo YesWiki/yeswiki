@@ -26,7 +26,7 @@ class ButtonAction extends YesWikiAction implements RegisteredAction, ProvidesCo
     {
         return [
             Component::for('button')
-                ->category(Category::Navigation)
+                ->category(Category::Writing)
                 ->label(_t('AB_buttons_action_button_label'))
                 ->icon('external-link')
                 ->description(_t('AB_buttons_action_button_description'))

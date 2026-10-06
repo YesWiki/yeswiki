@@ -1268,6 +1268,7 @@ Bij de minste twijfel, open dit formulier in een eigen pagina door op deze link 
     'COMPONENT_CATEGORY_NAVIGATION' => 'Navigatie',
     'COMPONENT_CATEGORY_FORMS' => 'Formulieren',
     'COMPONENT_CATEGORY_ADMIN' => 'Beheer',
+    'COMPONENT_CATEGORY_LMS' => 'LMS',
     'COMPONENT_CATEGORY_OTHER' => 'Overige',
     'COMPONENT_SETTINGS' => 'Instellingen van het component',
     'COMPONENT_SOURCE' => 'De wikicode tonen',

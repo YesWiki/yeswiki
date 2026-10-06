@@ -35,6 +35,7 @@ class QrcodeAction extends YesWikiAction implements RegisteredAction, ProvidesCo
                     Setting::text('text')
                         ->label(_t('AB_qrcode_text_label'))
                         ->hint(_t('AB_qrcode_text_hint'))
+                        ->suggests('YesWiki')
                         ->required()
                         ->full(),
                 ),

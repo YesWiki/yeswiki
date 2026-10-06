@@ -25,7 +25,7 @@ class PageindexAction extends YesWikiAction implements RegisteredAction, Provide
     {
         return [
             Component::for('pageindex')
-                ->category(Category::Navigation)
+                ->category(Category::Admin)
                 ->label(_t('AB_advanced_action_pageindex_label'))
                 ->icon('list-details')
                 ->previewHeight('200px'),

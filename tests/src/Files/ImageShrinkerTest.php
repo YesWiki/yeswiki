@@ -37,7 +37,7 @@ class ImageShrinkerTest extends YesWikiTestCase
 
         $source = 'files/shrinker-cache.png';
         $storage->write($source, self::png());
-        $cached = $storage->withLocalCopy($source, static fn (string $local) => ImageShrinker::cachedPath($local, 200, 200, 80));
+        $cached = $storage->withLocalCopy($source, static fn (string $local) => $shrinker->cachedPath($local, 200, 200, 80));
         $this->assertIsString($cached);
 
         $this->assertTrue($shrinker->shrink($source, 'files/shrinker-cache-1.webp', 200, 200, 80));
@@ -62,7 +62,7 @@ class ImageShrinkerTest extends YesWikiTestCase
         $local = tempnam(sys_get_temp_dir(), 'shrinker');
         file_put_contents($local, self::png());
 
-        $this->assertNull(ImageShrinker::cachedPath($local, 200, 200, 80));
+        $this->assertNull(self::getWiki()->services->get(ImageShrinker::class)->cachedPath($local, 200, 200, 80));
         unlink($local);
     }
 

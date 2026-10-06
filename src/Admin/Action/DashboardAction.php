@@ -30,6 +30,7 @@ class DashboardAction extends YesWikiAction implements RegisteredAction, Provide
         return [
             Component::for('dashboard')
                 ->category(Category::Admin)
+                ->notOffered()
                 ->label(_t('AB_advanced_action_dashboard_label'))
                 ->icon('layout-rows')
                 ->previewHeight('400px')

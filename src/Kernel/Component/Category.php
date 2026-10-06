@@ -17,6 +17,8 @@ enum Category: string
 
     case Admin = 'admin';
 
+    case Lms = 'lms';
+
     case Other = 'other';
 
     public function label(): string
@@ -28,6 +30,7 @@ enum Category: string
             self::Navigation => _t('COMPONENT_CATEGORY_NAVIGATION'),
             self::Forms => _t('COMPONENT_CATEGORY_FORMS'),
             self::Admin => _t('COMPONENT_CATEGORY_ADMIN'),
+            self::Lms => _t('COMPONENT_CATEGORY_LMS'),
             self::Other => _t('COMPONENT_CATEGORY_OTHER'),
         };
     }

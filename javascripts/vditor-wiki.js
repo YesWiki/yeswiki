@@ -82,12 +82,22 @@ class ComponentEditor {
     this.recordUndo()
   }
 
-  /** Put what the rail just wrote on Vditor's undo stack. */
+  /** Put what the rail just wrote on Vditor's undo stack, and give the focus back to the rail's field if Vditor took it. */
   recordUndo() {
     const vditor = this.vditor.vditor
+    const field = document.activeElement
+    const outside =
+      field && field !== document.body && !this.content.contains(field)
+    const caret =
+      outside && 'selectionStart' in field
+        ? [field.selectionStart, field.selectionEnd]
+        : null
     try {
       vditor.undo.addToUndoStack(vditor)
     } catch {}
+    if (!outside || document.activeElement === field) return
+    field.focus({ preventScroll: true })
+    if (caret?.[0] != null) field.setSelectionRange(...caret)
   }
 
   /** Show what the settings rail currently says, on the widget, without writing it into the document. */

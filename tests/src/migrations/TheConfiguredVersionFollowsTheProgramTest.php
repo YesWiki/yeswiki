@@ -16,6 +16,7 @@ class TheConfiguredVersionFollowsTheProgramTest extends YesWikiTestCase
         require_once 'src/migrations/20261006100000_TheConfiguredVersionFollowsTheProgram.php';
     }
 
+    /** @return array<string, array{string, string, ?string}> */
     public static function versions(): array
     {
         return [

@@ -27,6 +27,7 @@ class ConfigurationAction extends YesWikiAction implements RegisteredAction, Pro
         return [
             Component::for('configuration')
                 ->category(Category::Admin)
+                ->notOffered()
                 ->label(_t('AB_advanced_action_configuration_label'))
                 ->icon('settings')
                 ->previewHeight('200px')

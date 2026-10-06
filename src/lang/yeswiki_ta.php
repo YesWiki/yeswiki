@@ -1002,6 +1002,7 @@ Url: {{ baseUrl }}
     'COMPONENT_CATEGORY_NAVIGATION' => 'வழிசெலுத்தல்',
     'COMPONENT_CATEGORY_FORMS' => 'படிவங்கள்',
     'COMPONENT_CATEGORY_ADMIN' => 'நிர்வாகம்',
+    'COMPONENT_CATEGORY_LMS' => 'LMS',
     'COMPONENT_CATEGORY_OTHER' => 'மற்றவை',
     'COMPONENT_SETTINGS' => 'கூறின் அமைப்புகள்',
     'COMPONENT_SOURCE' => 'wiki குறியீட்டைக் காட்டு',

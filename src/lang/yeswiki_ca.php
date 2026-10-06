@@ -1219,6 +1219,7 @@ Davant del mínim dubte, obriu aquest formulari en una pàgina dedicada fent cli
     'COMPONENT_CATEGORY_NAVIGATION' => 'Navegació',
     'COMPONENT_CATEGORY_FORMS' => 'Formularis',
     'COMPONENT_CATEGORY_ADMIN' => 'Administració',
+    'COMPONENT_CATEGORY_LMS' => 'LMS',
     'COMPONENT_CATEGORY_OTHER' => 'Altres',
     'COMPONENT_SETTINGS' => 'Ajustos del component',
     'COMPONENT_SOURCE' => 'Mostrar el codi wiki',

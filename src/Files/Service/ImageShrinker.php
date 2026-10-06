@@ -11,8 +11,10 @@ class ImageShrinker
 
     public const CACHE_ENV = 'YESWIKI_WEBP_CACHE';
 
-    public function __construct(private readonly Storage $storage)
-    {
+    public function __construct(
+        private readonly Storage $storage,
+        private readonly LocalFiles $localFiles,
+    ) {
     }
 
     /** Whether the picture at $path is a JPEG or PNG, the formats rewritten as WebP; GIF keeps its animation, SVG its vectors. */
@@ -30,10 +32,10 @@ class ImageShrinker
             $source,
             fn (string $local) => $this->storage->withLocalTarget(
                 $destination,
-                static function (string $target) use ($local, $maxWidth, $maxHeight, $quality): bool {
-                    $cached = self::cachedPath($local, $maxWidth, $maxHeight, $quality);
-                    if ($cached !== null && is_file($cached) && @copy($cached, $target)) {
-                        @touch($cached);
+                function (string $target) use ($local, $maxWidth, $maxHeight, $quality): bool {
+                    $cached = $this->cachedPath($local, $maxWidth, $maxHeight, $quality);
+                    if ($cached !== null && $this->localFiles->isFile($cached) && $this->localFiles->write($target, $this->localFiles->read($cached))) {
+                        $this->localFiles->touch($cached);
 
                         return true;
                     }
@@ -41,7 +43,7 @@ class ImageShrinker
                         return false;
                     }
                     if ($cached !== null) {
-                        self::keep($target, $cached);
+                        $this->keep($target, $cached);
                     }
 
                     return true;
@@ -53,13 +55,13 @@ class ImageShrinker
     }
 
     /** Where the conversion of $local under these bounds is kept between runs, or null when YESWIKI_WEBP_CACHE names no directory. */
-    public static function cachedPath(string $local, int $maxWidth, int $maxHeight, int $quality): ?string
+    public function cachedPath(string $local, int $maxWidth, int $maxHeight, int $quality): ?string
     {
         $directory = rtrim((string)getenv(self::CACHE_ENV), '/');
-        $hash = $directory === '' ? false : hash_file('sha256', $local);
-        if ($hash === false) {
+        if ($directory === '' || !$this->localFiles->isFile($local)) {
             return null;
         }
+        $hash = hash('sha256', $this->localFiles->read($local));
 
         return "{$directory}/" . substr($hash, 0, 2) . "/{$hash}-{$maxWidth}x{$maxHeight}-q{$quality}.webp";
     }
@@ -84,15 +86,14 @@ class ImageShrinker
         }
     }
 
-    private static function keep(string $target, string $cached): void
+    private function keep(string $target, string $cached): void
     {
-        $directory = \dirname($cached);
-        if (!is_dir($directory) && !@mkdir($directory, 0o755, true) && !is_dir($directory)) {
+        if (!$this->localFiles->makeDirectory(\dirname($cached))) {
             return;
         }
         $partial = $cached . '.' . getmypid() . '.partial';
-        if (@copy($target, $partial)) {
-            @rename($partial, $cached);
+        if ($this->localFiles->write($partial, $this->localFiles->read($target))) {
+            $this->localFiles->rename($partial, $cached);
         }
     }
 }

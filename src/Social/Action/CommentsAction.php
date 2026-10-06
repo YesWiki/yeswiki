@@ -24,6 +24,7 @@ class CommentsAction extends YesWikiAction implements RegisteredAction, Provides
         return [
             Component::for('comments')
                 ->category(Category::Forms)
+                ->notOffered()
                 ->label(_t('AB_comments_label'))
                 ->icon('message-circle')
                 ->description(_t('AB_comments_description'))

@@ -26,7 +26,7 @@ class PageonlyindexAction extends YesWikiAction implements RegisteredAction, Pro
     {
         return [
             Component::for('pageonlyindex')
-                ->category(Category::Navigation)
+                ->category(Category::Admin)
                 ->label(_t('AB_advanced_action_pageonlyindex_label'))
                 ->icon('list-details')
                 ->previewHeight('200px'),

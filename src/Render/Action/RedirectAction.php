@@ -27,6 +27,7 @@ class RedirectAction extends YesWikiAction implements RegisteredAction, Provides
         return [
             Component::for('redirect')
                 ->category(Category::Navigation)
+                ->notOffered()
                 ->label(_t('AB_advanced_action_redirect_label'))
                 ->icon('arrow-forward-up')
                 ->previewHeight('200px')

@@ -21,7 +21,7 @@ class ComponentRegistry
 
     /**
      * @param iterable<ProvidesComponents> $providers tagged services, in no particular
-     *                                                order -- Category decides the order
+     *                                                order -- Category and PaletteOrder decide it
      */
     public function __construct(
         private readonly iterable $providers,
@@ -52,7 +52,8 @@ class ComponentRegistry
             }
 
             foreach ($provider->components() as $component) {
-                $components[] = $component;
+                $placed = PaletteOrder::categoryOf($component->id());
+                $components[] = $placed === null ? $component : $component->category($placed);
             }
         }
 
@@ -64,7 +65,8 @@ class ComponentRegistry
 
         usort(
             $components,
-            static fn (Component $a, Component $b) => $a->categoryOf()->position() <=> $b->categoryOf()->position(),
+            static fn (Component $a, Component $b) => [$a->categoryOf()->position(), PaletteOrder::rankOf($a->id())]
+                <=> [$b->categoryOf()->position(), PaletteOrder::rankOf($b->id())],
         );
 
         return $this->components = $components;

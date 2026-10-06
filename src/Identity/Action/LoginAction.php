@@ -37,6 +37,7 @@ class LoginAction extends YesWikiAction implements RegisteredAction, ProvidesCom
         return [
             Component::for('login')
                 ->category(Category::Forms)
+                ->notOffered()
                 ->label(_t('AB_advanced_action_login_label'))
                 ->icon('login')
                 ->previewHeight('200px')

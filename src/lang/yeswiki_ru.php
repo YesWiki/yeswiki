@@ -2608,6 +2608,7 @@ Url: {{ baseUrl }}
     'COMPONENT_CATEGORY_NAVIGATION' => 'Навигация',
     'COMPONENT_CATEGORY_FORMS' => 'Формы',
     'COMPONENT_CATEGORY_ADMIN' => 'Администрирование',
+    'COMPONENT_CATEGORY_LMS' => 'LMS',
     'COMPONENT_CATEGORY_OTHER' => 'Прочее',
     'ANSWER' => 'Ответить',
     'BY' => 'автор',

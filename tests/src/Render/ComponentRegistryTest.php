@@ -6,6 +6,7 @@ use YesWiki\Kernel\Component\Category;
 use YesWiki\Kernel\Component\Component;
 use YesWiki\Kernel\Component\Setting;
 use YesWiki\Render\Component\ComponentRegistry;
+use YesWiki\Render\Component\PaletteOrder;
 use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';
@@ -92,6 +93,27 @@ class ComponentRegistryTest extends YesWikiTestCase
         $sorted = $positions;
         sort($sorted);
         $this->assertSame($sorted, $positions, 'the palette comes out in category order');
+    }
+
+    /** Within a category, the components PaletteOrder names come first and in its order, in the category it gives them. */
+    public function testPaletteOrderRanksAndPlacesComponents(): void
+    {
+        $writing = array_column(
+            array_values(array_filter(self::registry()->palette(), static fn (array $group) => $group['id'] === 'writing'))[0]['components'],
+            'id'
+        );
+
+        $this->assertSame(['section', 'button', 'grid'], array_slice($writing, 0, 3));
+        $this->assertSame(Category::Lms, PaletteOrder::categoryOf('learnerdashboard'));
+        $this->assertSame(PHP_INT_MAX, PaletteOrder::rankOf('not-in-the-order'));
+    }
+
+    /** Every component the order names is one category's only, so its place is never ambiguous. */
+    public function testPaletteOrderNamesEachComponentOnce(): void
+    {
+        $ids = array_merge(...array_values(PaletteOrder::ORDER));
+
+        $this->assertSame(array_unique($ids), $ids);
     }
 
     /** Most pins wins; an unpinned Component for the same tag is the fallback. */

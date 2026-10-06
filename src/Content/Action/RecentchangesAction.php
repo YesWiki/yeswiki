@@ -25,7 +25,7 @@ class RecentchangesAction extends YesWikiAction implements RegisteredAction, Pro
     {
         return [
             Component::for('recentchanges')
-                ->category(Category::Lists)
+                ->category(Category::Admin)
                 ->label(_t('AB_advanced_action_recentchanges_label'))
                 ->icon('history')
                 ->previewHeight('200px')

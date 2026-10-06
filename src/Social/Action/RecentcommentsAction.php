@@ -25,7 +25,7 @@ class RecentcommentsAction extends YesWikiAction implements RegisteredAction, Pr
     {
         return [
             Component::for('recentcomments')
-                ->category(Category::Lists)
+                ->category(Category::Admin)
                 ->label(_t('AB_advanced_action_recentcomments_label'))
                 ->icon('messages')
                 ->previewHeight('200px')

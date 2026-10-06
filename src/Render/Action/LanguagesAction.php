@@ -25,6 +25,7 @@ class LanguagesAction extends YesWikiAction implements RegisteredAction, Provide
         return [
             Component::for('languages')
                 ->category(Category::Navigation)
+                ->notOffered()
                 ->label(_t('AB_languages_action_label'))
                 ->icon('world')
                 ->previewHeight('80px')

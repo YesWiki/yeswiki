@@ -2558,6 +2558,7 @@ Il tuo account %{userName} deve essere attivato cliccando sul link qui sotto o c
     'COMPONENT_CATEGORY_NAVIGATION' => 'Navigazione',
     'COMPONENT_CATEGORY_FORMS' => 'Moduli',
     'COMPONENT_CATEGORY_ADMIN' => 'Amministrazione',
+    'COMPONENT_CATEGORY_LMS' => 'LMS',
     'COMPONENT_CATEGORY_OTHER' => 'Altro',
     'ANSWER' => 'Rispondi',
     'BY' => 'di',
