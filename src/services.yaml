@@ -49,6 +49,8 @@ services:
       # a value object constructed with `new` -- its constructor takes the items to
       # paginate, so autowiring it fails
       - 'Kernel/Service/Paginator.php'
+      # built by the console before there is a container, from the wiki's own paths
+      - 'Kernel/Service/CliOwnership.php'
 
   YesWiki\Search\Service\:
     resource: 'Search/Service/*'

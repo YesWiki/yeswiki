@@ -3540,7 +3540,7 @@ table.yw-table--sortable th[data-yw-sort='desc']::after {
 
 .yw-label--info,
 .label-info {
-  background: var(--yw-tertiary);
+  background: var(--yw-info);
 }
 
 a.yw-label,

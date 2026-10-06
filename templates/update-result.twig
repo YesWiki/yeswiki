@@ -7,10 +7,7 @@
 
 <ul class="list-group span4">
 {% for message in messages %}
-    {% set label = "danger" %}
-    {% if message.status == "ok" %}
-        {% set label = "success" %}
-    {% endif %}
+    {% set label = {(_t('AU_OK')): 'success', (_t('AU_NOTE')): 'info'}[message.status] ?? 'danger' %}
     <li class="list-group-item">
         <span class="pull-right label label-{{ label }}">{{ message.status }}</span>
         {{ message.text | replace({'\\n': "\n"}) | nl2br }}

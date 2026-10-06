@@ -121,6 +121,7 @@
     "ext-pdo_mysql": "Required to run YesWiki on MySQL/MariaDB",
     "ext-pdo_pgsql": "Required to run YesWiki on PostgreSQL",
     "ext-pdo_sqlite": "Required to run YesWiki on SQLite",
+    "ext-posix": "Lets yeswicli check it runs as the user owning the wiki, and core:fix-ownership give files back to that user",
     "ext-zend-opcache": "Lets a configuration write invalidate the cached file instead of waiting for revalidation",
     "php-imap/php-imap": "Required by the IMAP importer to read a mailbox (also needs ext-imap)"
   }

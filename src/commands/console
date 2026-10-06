@@ -7,6 +7,8 @@ namespace YesWiki\Core\Commands;
 
 use Symfony\Component\Console\Application;
 use YesWiki\Core\YesWikiLoader;
+use YesWiki\Files\Service\LocalFiles;
+use YesWiki\Kernel\Service\CliOwnership;
 use YesWiki\Kernel\Command\RunsOutsideAnInstance;
 use YesWiki\Kernel\Service\ConfigurationFileProvider;
 use YesWiki\Kernel\Service\EnvironmentConfiguration;
@@ -19,6 +21,21 @@ require_once dirname(__DIR__) . '/YesWikiLoader.php';
 YesWikiLoader::loadEnv();
 
 $configFile = ConfigurationFileProvider::getConfigFileFromEnv();
+
+if (file_exists($configFile) && getenv(CliOwnership::ANY_USER) !== '1' && function_exists('posix_geteuid')) {
+    $ownership = new CliOwnership(new LocalFiles(), YESWIKI_INSTANCE_DIR, $configFile);
+    $userName = static fn (int $id): string => (posix_getpwuid($id) ?: [])['name'] ?? (string)$id;
+    $refusal = $ownership->refusal(posix_geteuid(), array_values(array_map('strval', $_SERVER['argv'] ?? [])), $userName);
+    if ($refusal !== null) {
+        fwrite(STDERR, "\e[31m" . $refusal . "\e[0m(" . CliOwnership::ANY_USER . "=1 runs it anyway.)\n");
+        exit(1);
+    }
+    $warning = ($_SERVER['argv'][1] ?? '') === CliOwnership::FIX_COMMAND ? null : $ownership->warning($userName);
+    if ($warning !== null) {
+        fwrite(STDERR, "\e[33m" . $warning . "\e[0m\n");
+    }
+}
+
 $yeswikiConfig = [];
 if (file_exists($configFile)) {
     include_once $configFile;
@@ -27,7 +44,9 @@ if (file_exists($configFile)) {
 }
 
 $configuredWiki = !empty($yeswikiConfig['base_url']);
-$insideAnInstance = $configuredWiki;
+$fixingOwnership = ($_SERVER['argv'][1] ?? '') === CliOwnership::FIX_COMMAND;
+$insideAnInstance = $configuredWiki && !$fixingOwnership;
+
 $services = null;
 
 if ($insideAnInstance) {

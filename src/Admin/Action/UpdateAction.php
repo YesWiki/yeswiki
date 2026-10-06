@@ -71,6 +71,8 @@ class UpdateAction extends YesWikiAction implements RegisteredAction
                 $text = $vMessage['text'] . ' : ' . $vMessage['status'];
                 if ($vMessage['status'] == _t('AU_OK')) {
                     Flash::success($text);
+                } elseif ($vMessage['status'] == _t('AU_NOTE')) {
+                    Flash::info($text);
                 } else {
                     Flash::error($text);
                 }

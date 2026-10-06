@@ -77,6 +77,12 @@ upgrading and keep that instead. Do not skip this step: everything below is a on
 
    The `{{update}}` screen runs them too, so if you upgraded that way they have already run.
 
+   Run `yeswicli` as the user the web server writes the wiki with, the owner of
+   `yeswiki.config.php`. Run as root, it would leave root-owned files the web server can no
+   longer write, so it refuses and prints the `sudo -u <owner> …` command to use instead. If
+   root already left files behind, `./yeswicli core:fix-ownership`, run as root, gives them back.
+   `YESWIKI_CLI_ANY_USER=1` skips the check, for a container that maps users its own way.
+
    `migrate` ends by emptying `cache/container/` and `cache/templates/`. The compiled container
    is keyed on the config, `services.yaml` and `composer.lock`, not on the source files, so a
    release that adds a service class inside an existing module would otherwise keep serving the

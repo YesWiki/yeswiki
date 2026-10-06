@@ -56,6 +56,28 @@ class LocalFiles
         return is_writable($path);
     }
 
+    /** The user id owning $path itself, a link not followed, or null when it is not there. */
+    public function ownerOf(string $path): ?int
+    {
+        $stat = @lstat($path);
+
+        return $stat === false ? null : (int)$stat['uid'];
+    }
+
+    /** The group id owning $path itself, a link not followed, or null when it is not there. */
+    public function groupOf(string $path): ?int
+    {
+        $stat = @lstat($path);
+
+        return $stat === false ? null : (int)$stat['gid'];
+    }
+
+    /** Give $path to this user and group, which only root may do for someone else's file. */
+    public function changeOwner(string $path, int $user, int $group): bool
+    {
+        return @lchown($path, $user) && @lchgrp($path, $group);
+    }
+
     public function size(string $path): int
     {
         return is_file($path) ? (int)filesize($path) : 0;
