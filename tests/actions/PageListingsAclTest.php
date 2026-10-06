@@ -69,7 +69,6 @@ class PageListingsAclTest extends YesWikiTestCase
             'pageonlyindex' => ['pageonlyindex', []],
             'tagcloud' => ['tagcloud', ['tags' => self::TAG_VALUE]],
             'admintag' => ['admintag', []],
-            'listpagestag' => ['listpagestag', ['tags' => self::TAG_VALUE]],
             'includepages' => ['includepages', ['pages' => self::PUBLIC_TAG . ',' . self::RESTRICTED_TAG]],
             'filtertags' => ['filtertags', ['filter1' => self::TAG_VALUE]],
         ];

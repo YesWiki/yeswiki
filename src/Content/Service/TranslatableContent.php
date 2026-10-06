@@ -12,7 +12,7 @@ use YesWiki\Kernel\Service\RuntimeConfig;
 class TranslatableContent
 {
     /** The form-body keys a translator retypes, beyond the field definitions inside `template`. */
-    private const FORM_PROPERTIES = ['label', 'description', 'only_one_entry_message'];
+    private const FORM_PROPERTIES = ['label', 'description', 'only_one_entry_message', 'max_entries_message', 'max_entries_count_message'];
 
     public function __construct(
         private readonly LanguageService $languageService,

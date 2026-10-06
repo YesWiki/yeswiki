@@ -51,7 +51,7 @@ class ContentTypeSchema
     ];
 
     /** Form properties (ADR-0010) that only mean anything on an ordinary bazar form. */
-    private const ENTRY_ONLY_PROPERTIES = ['entry_creates_user', 'entry_bookmarklet'];
+    private const ENTRY_ONLY_PROPERTIES = ['entry_creates_user', 'entry_bookmarklet', 'max_entries', 'max_entries_message', 'max_entries_count_message'];
 
     /** Whether this is one of core's own Content types rather than an ordinary bazar form. */
     public static function isBuiltIn(?string $contentType): bool

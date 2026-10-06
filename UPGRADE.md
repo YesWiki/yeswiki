@@ -616,6 +616,16 @@ Check whether any page or template of yours depends on these, because nothing re
   which a facet reads from the field itself, and `template` named the template each group was drawn
   with, which is the accordion now.
 
+- **`{{rss}}`, `{{trail}}` and `{{listpagestag}}`** — removed. A migration takes their calls out
+  of every page revision and names the pages it touched. The keyword feed is still at
+  `?api/tags/rss`, and the tag cloud links each keyword to the search.
+
+- **contrib's `{{limitentries}}`** is now a setting of the form, "Limit the number of entries" on
+  its edit screen, and holds wherever the entry form is shown. A migration copies each call's
+  limit and messages onto its form (the smallest limit wins when several calls name the same form)
+  and replaces the call with that form's entry form. `%{limit}` and `%{nb}` in the messages become
+  `{limit}` and `{nb}`.
+
 - **GoGoCarto** integration — removed.
 - **Referrers** — the `referrers` table and everything reading it. There is no referrer report.
 - **Backlinks / `links`** — the link graph table is gone.

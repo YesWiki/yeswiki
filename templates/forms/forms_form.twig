@@ -254,6 +254,28 @@
     {% endif %}
 
     {% if entryOnlyPropertiesAvailable %}
+      {% embed '@core/_accordion-item.twig' with { summary: _t('FORM_MAX_ENTRIES'), open: form.max_entries is not empty } %}
+        {% block body %}
+          <div class="yw-form-group">
+            <label class="yw-form-label" for="max_entries">{{ _t('FORM_MAX_ENTRIES_LIMIT') }}</label>
+            <input id="max_entries" class="yw-input" name="max_entries" type="number" min="1" step="1"
+              value="{{ form.max_entries }}" />
+            <p class="yw-form-hint">{{ _t('FORM_MAX_ENTRIES_LIMIT_HINT') }}</p>
+          </div>
+          <div class="yw-form-group">
+            <label class="yw-form-label" for="max_entries_message">{{ _t('FORM_MAX_ENTRIES_MESSAGE') }}</label>
+            <input id="max_entries_message" class="yw-input" name="max_entries_message" type="text"
+              value="{{ form.max_entries_message }}" placeholder="{{ _t('FORM_MAX_ENTRIES_DEFAULT_MESSAGE') }}" />
+          </div>
+          <div class="yw-form-group">
+            <label class="yw-form-label" for="max_entries_count_message">{{ _t('FORM_MAX_ENTRIES_COUNT_MESSAGE') }}</label>
+            <input id="max_entries_count_message" class="yw-input" name="max_entries_count_message" type="text"
+              value="{{ form.max_entries_count_message }}" placeholder="{{ _t('FORM_MAX_ENTRIES_DEFAULT_COUNT_MESSAGE') }}" />
+            <p class="yw-form-hint">{{ _t('FORM_MAX_ENTRIES_PLACEHOLDERS_HINT') }}</p>
+          </div>
+        {% endblock %}
+      {% endembed %}
+
       {% embed '@core/_accordion-item.twig' with { summary: _t('FORM_EDIT_CREATES_USER'), open: form.entry_creates_user is not empty } %}
         {% block body %}
           <div class="yw-form-group">

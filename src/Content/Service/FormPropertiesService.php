@@ -41,7 +41,7 @@ class FormPropertiesService
     public const OPTIONAL_PROPERTIES = [
         'entry_read_access', 'entry_write_access', 'entry_comment_access',
         'entry_permit_activate_comments', 'entry_metadatas', 'entry_creates_user',
-        'entry_bookmarklet',
+        'entry_bookmarklet', 'max_entries', 'max_entries_message', 'max_entries_count_message',
     ];
 
     protected ContainerInterface $container;

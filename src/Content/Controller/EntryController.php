@@ -14,6 +14,7 @@ use YesWiki\Content\Field\ConditionsCheckingField;
 use YesWiki\Content\Service\ConditionsChecker;
 use YesWiki\Content\Service\ContentCreator;
 use YesWiki\Content\Service\ContentTypeResolver;
+use YesWiki\Content\Service\EntryLimit;
 use YesWiki\Content\Service\EntryManager;
 use YesWiki\Content\Service\FavoritesManager;
 use YesWiki\Content\Service\FieldRoleResolver;
@@ -305,6 +306,11 @@ class EntryController extends YesWikiController
 
         $results = $this->checkIfOnlyOneEntry($form);
         $incomingUrl = $this->getIncomingUrl();
+        $entryLimit = $this->getService(EntryLimit::class);
+        $refusal = $entryLimit->refusal($form);
+        if ($refusal !== null && empty($results['output'])) {
+            return $this->render('@core/alert-message.twig', ['type' => 'warning', 'message' => htmlspecialchars($refusal)]);
+        }
 
         $post = $this->getRequest()->request;
         if (!empty($results['output'])) {
@@ -339,8 +345,10 @@ class EntryController extends YesWikiController
         }
 
         $renderedInputs = $this->getRenderedInputs($form, $refusedData ?? null);
+        $counter = $entryLimit->counter($form);
+        $counterAlert = $counter === null ? '' : $this->render('@core/alert-message.twig', ['type' => 'info', 'message' => htmlspecialchars($counter)]);
 
-        return $this->render('@core/entries/form.twig', [
+        return $counterAlert . $this->render('@core/entries/form.twig', [
             'form' => $form,
             'renderedInputs' => $renderedInputs,
             'passwordForEditing' => isset($this->config['password_for_editing']) && !empty($this->config['password_for_editing']) && $post->has('password_for_editing') ? $post->get('password_for_editing') : '',

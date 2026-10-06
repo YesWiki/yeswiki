@@ -42,7 +42,7 @@ use YesWiki\Render\Service\ThemeManager;
 class FormController extends YesWikiController
 {
     /** The form-level wording a translator retypes. */
-    private const TRANSLATABLE_PROPERTIES = ['label', 'description', 'only_one_entry_message'];
+    private const TRANSLATABLE_PROPERTIES = ['label', 'description', 'only_one_entry_message', 'max_entries_message', 'max_entries_count_message'];
 
     /** The per-field wording a translator retypes. */
     private const TRANSLATABLE_ATTRIBUTES = ['label', 'hint'];
@@ -342,6 +342,11 @@ class FormController extends YesWikiController
 
         $data[FieldRole::FORM_PROPERTY] = FieldRole::normalizeMap($data[FieldRole::FORM_PROPERTY] ?? null);
 
+        if (array_key_exists('max_entries', $data)) {
+            $limit = (int)$data['max_entries'];
+            $data['max_entries'] = $limit > 0 ? (string)$limit : null;
+        }
+
         foreach (['entry_creates_user', 'entry_bookmarklet'] as $property) {
             if (empty($data[$property . '_enable'])) {
                 $data[$property] = null;
@@ -451,7 +456,7 @@ class FormController extends YesWikiController
     private function postedTranslations(array $posted): array
     {
         $values = [];
-        foreach (['label', 'description', 'only_one_entry_message'] as $property) {
+        foreach (self::TRANSLATABLE_PROPERTIES as $property) {
             if (isset($posted[$property]) && is_scalar($posted[$property])) {
                 $values[$property] = (string)$posted[$property];
             }

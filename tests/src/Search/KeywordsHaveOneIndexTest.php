@@ -115,7 +115,7 @@ class KeywordsHaveOneIndexTest extends YesWikiTestCase
         );
     }
 
-    /** Autocomplete, the tag cloud and `{{listpagestag}}` all read the one index. */
+    /** Autocomplete, the tag cloud and the pages-by-keyword lookup all read the one index. */
     public function testAPageKeywordIsFoundEveryWayItIsAskedFor(): void
     {
         $this->assertContains(self::PAGE_KEYWORD, $this->tagsManager()->search(self::PAGE_KEYWORD)['tags']);
