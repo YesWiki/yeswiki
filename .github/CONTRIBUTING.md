@@ -30,7 +30,7 @@ for the french speaking, [check the YesWiki page about development](https://yesw
 
 ### Prerequisites
 
-First, make sure that you have a web server (nginx, apache, ..), PHP >= 5.5 (with mysql, curl, gd extensions activated) and Mysql server
+First, make sure that you have a web server (nginx, apache, ..), PHP >= 8.3 (with mysqli, curl, gd extensions activated) and a MariaDB > 10.2 or MySQL >= 8.0 server
 
 Then clone the sources:
 
