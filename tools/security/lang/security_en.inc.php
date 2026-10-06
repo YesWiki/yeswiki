@@ -3,7 +3,7 @@
 return [
     'HASHCASH_GENERAL_PASSWORD' => 'Global password for editing',
     'HASHCASH_SEND' => 'Send',
-    'EDIT_CONFIG_HINT_ALTCHA' => 'Ask anonymous visitors for an ALTCHA proof of work before every form submission (true or false, on by default)',
+    'EDIT_CONFIG_HINT_ALTCHA' => 'Ask everyone but admins for an ALTCHA proof of work before every form submission (true or false, on by default)',
     'EDIT_CONFIG_HINT_USE_ALERTE' => 'Warn before leaving a page without saving (true or false)',
     'EDIT_CONFIG_HINT_WIKI_STATUS' => 'Wiki status (running or empty = standard, hibernate = read only)',
     'EDIT_CONFIG_GROUP_SECURITY' => 'Security',

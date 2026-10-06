@@ -65,21 +65,15 @@ $(document).ready(() => {
 })
 
 async function submitWhenVerified(form) {
-  const widget = form.find('altcha-widget')[0]
-  if (widget && widget.verify && widget.getState() !== 'verified') {
-    await widget.verify()
-  }
+  await verifyBotGuard(form)
   $.ajax({
     type: 'POST',
     url: form.attr('action'),
     data: form.serialize(),
     success(msg) {
       const response = $('<div>').html(msg)
-      const freshGuard = response.find('.yw-bot-guard-fields').detach()
       form.find('.alert').remove()
-      if (freshGuard.length > 0) {
-        form.find('.yw-bot-guard-fields').replaceWith(freshGuard)
-      }
+      refreshBotGuardFields(form, response)
       form.prepend(response.children())
       if (form.find('.alert-success').length > 0) {
         form[0].reset()

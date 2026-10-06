@@ -40,7 +40,7 @@ if (empty($listelements['mail'])) {
     $listelements['demand'] = 'abonnement';
     $listelements['placeholder'] = _t('CONTACT_SUBSCRIBE');
 
-    echo $this->services->get(BotGuard::class)->insertInto($this->render("@contact/$template", $listelements), null, true);
+    echo $this->services->get(BotGuard::class)->insertInto($this->render("@contact/$template", $listelements));
 
     $this->addJavascriptFile('tools/contact/libs/contact.js');
 }

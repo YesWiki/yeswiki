@@ -364,61 +364,28 @@ class BotGuardTest extends YesWikiTestCase
         $_SESSION['user'] = ['name' => $name];
     }
 
-    private function loggedInPost(): array
-    {
-        return [BotGuard::LOGGED_IN_ALTCHA_FIELD => $this->solvedAltcha($this->guard->fields())];
-    }
-
-    public function testALoggedInUserOnlyGetsAltcha()
+    public function testALoggedInMemberGetsTheFullGuard()
     {
         $this->guard->useAltcha(true);
         $this->logIn('BotGuardTestMember');
         $fields = $this->guard->fields();
 
-        $this->assertSame(BotGuard::MODE_ALTCHA, $this->guard->mode());
-        $this->assertStringContainsString('<altcha-widget name="' . BotGuard::LOGGED_IN_ALTCHA_FIELD . '"', $fields);
-        $this->assertStringNotContainsString('type="hidden"', $fields);
-        $this->assertStringNotContainsString('yw-bot-guard"', $fields);
+        $this->assertSame(BotGuard::MODE_FULL, $this->guard->mode());
+        $this->assertStringContainsString('name="' . $this->names()['token'] . '"', $fields);
+        $this->assertStringContainsString('name="' . $this->names()['honeypot'] . '"', $fields);
+        $this->assertStringContainsString('<altcha-widget name="' . $this->names()['altcha'] . '"', $fields);
+        $this->assertSame(BotGuard::REFUSED_TOKEN_MISSING, $this->submit([]));
     }
 
-    public function testALoggedInUserPassesWithASolvedChallengeOnce()
+    public function testALoggedInMemberStillNeedsATokenWhenAltchaIsOff()
     {
-        $this->guard->useAltcha(true);
         $this->logIn('BotGuardTestMember');
-        $post = $this->loggedInPost();
+        $post = $this->validPost();
 
-        $this->assertSame(BotGuard::REFUSED_ALTCHA, $this->submit([]));
+        $this->assertSame(BotGuard::REFUSED_TOKEN_MISSING, $this->submit([]));
+        $this->assertSame(BotGuard::REFUSED_TOO_FAST, $this->submit($post));
+        $this->now += 10;
         $this->assertNull($this->submit($post));
-        $this->assertSame(BotGuard::REFUSED_ALTCHA_REUSED, $this->submit($post));
-    }
-
-    public function testALoggedInUserCannotUseAChallengeSolvedForAnotherAccount()
-    {
-        $this->guard->useAltcha(true);
-        $this->logIn('BotGuardTestOther');
-        $post = $this->loggedInPost();
-        $this->logIn('BotGuardTestMember');
-
-        $this->assertSame(BotGuard::REFUSED_ALTCHA, $this->submit($post));
-    }
-
-    public function testALoggedInUserIsNotLimitedToADay()
-    {
-        $this->guard->useAltcha(true);
-        $this->logIn('BotGuardTestMember');
-        $post = $this->loggedInPost();
-        $this->now += 3 * 86400;
-
-        $this->assertNull($this->submit($post));
-    }
-
-    public function testALoggedInUserGoesThroughWhenAltchaIsOff()
-    {
-        $this->logIn('BotGuardTestMember');
-
-        $this->assertSame(BotGuard::MODE_NONE, $this->guard->mode());
-        $this->assertSame('', $this->guard->fields());
-        $this->assertNull($this->submit([]));
     }
 
     public function testAnAdminGoesThrough()
@@ -430,24 +397,5 @@ class BotGuardTest extends YesWikiTestCase
         $this->assertSame(BotGuard::MODE_NONE, $this->guard->mode());
         $this->assertSame('', $this->guard->fields());
         $this->assertNull($this->submit([]));
-    }
-
-    public function testAStrictFormAsksALoggedInUserForEverything()
-    {
-        $this->guard->useAltcha(true);
-        $this->logIn('BotGuardTestMember');
-
-        $this->assertSame(BotGuard::MODE_FULL, $this->guard->mode(true));
-        $this->assertStringContainsString('name="' . $this->names()['token'] . '"', $this->guard->fields(true));
-        $this->assertSame(BotGuard::REFUSED_TOKEN_MISSING, $this->guard->check(new Request([], $this->loggedInPost()), true));
-    }
-
-    public function testAStrictFormStillLetsAnAdminThrough()
-    {
-        $admins = $this->getWiki()->services->get(GroupManager::class)->getMembers('admins');
-        $_SESSION['user'] = ['name' => $admins[0]];
-
-        $this->assertSame(BotGuard::MODE_NONE, $this->guard->mode(true));
-        $this->assertNull($this->guard->check(new Request([], []), true));
     }
 }

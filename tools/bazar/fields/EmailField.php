@@ -34,14 +34,6 @@ class EmailField extends BazarField
         $this->maxChars = '';
     }
 
-    /**
-     * Whether saving an entry sends a copy to the address typed in this field.
-     */
-    public function sendsMail(): bool
-    {
-        return $this->sendMail;
-    }
-
     public function formatValuesBeforeSave($entry)
     {
         if ($this->sendMail) {

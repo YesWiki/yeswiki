@@ -17,7 +17,7 @@ return [
     'DESPAM_DELETED_PAGES' => 'Pages supprimées',
     'DESPAM_BACK_TO_PREVIOUS_FORM' => 'Retour au formulaire de départ',
     'DESPAM_ONLY_FOR_ADMINS' => 'Action {{despam}} réservée aux administrateurs.',
-    'EDIT_CONFIG_HINT_ALTCHA' => 'Demander une preuve de travail ALTCHA aux visiteurs non connectés avant chaque envoi de formulaire (true ou false, activé par défaut)',
+    'EDIT_CONFIG_HINT_ALTCHA' => 'Demander une preuve de travail ALTCHA à tous sauf les admins avant chaque envoi de formulaire (true ou false, activé par défaut)',
     'EDIT_CONFIG_HINT_USE_ALERTE' => 'Prévenir si l\'on quitte la page sans sauvegarder (true ou false)',
     'EDIT_CONFIG_HINT_WIKI_STATUS' => 'État du wiki (running ou vide = standard, hibernate = lecture seule)',
     'EDIT_CONFIG_GROUP_SECURITY' => 'Sécurité',

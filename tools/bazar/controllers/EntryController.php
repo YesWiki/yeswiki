@@ -9,8 +9,6 @@ use YesWiki\Bazar\Exception\TagAlreadyUsedException;
 use YesWiki\Bazar\Exception\UserFieldException;
 use YesWiki\Bazar\Field\BazarField;
 use YesWiki\Bazar\Field\ConditionsCheckingField;
-use YesWiki\Bazar\Field\EmailField;
-use YesWiki\Bazar\Field\SubscribeField;
 use YesWiki\Bazar\Field\LinkedEntryField;
 use YesWiki\Bazar\Field\UserField;
 use YesWiki\Bazar\Service\ConditionsChecker;
@@ -272,7 +270,7 @@ class EntryController extends YesWikiController
             $state = true;
             $error = '';
             $post = $this->getRequest()->request;
-            if ($post->has('bf_titre') && ($refusal = $this->botGuardRefusal($this->formSendsMail($form))) !== null) {
+            if ($post->has('bf_titre') && ($refusal = $this->botGuardRefusal()) !== null) {
                 $state = false;
                 $error .= $refusal;
                 $refusedData = $post->all();
@@ -320,7 +318,7 @@ class EntryController extends YesWikiController
         $renderedInputs = $this->getRenderedInputs($form, $refusedData ?? null);
 
         $botGuard = $this->getService(BotGuard::class);
-        $botGuardFields = $botGuard->fields($this->formSendsMail($form));
+        $botGuardFields = $botGuard->fields();
 
         return $botGuard->placeFields($this->render('@bazar/entries/form.twig', [
             'form' => $form,
@@ -350,7 +348,7 @@ class EntryController extends YesWikiController
         $error = '';
         $incomingUrl = $this->getIncomingUrl();
         $post = $this->getRequest()->request;
-        if ($post->has('bf_titre') && ($refusal = $this->botGuardRefusal($this->formSendsMail($form))) !== null) {
+        if ($post->has('bf_titre') && ($refusal = $this->botGuardRefusal()) !== null) {
             $state = false;
             $error .= $refusal;
             $entry = array_merge($entry, $post->all());
@@ -393,7 +391,7 @@ class EntryController extends YesWikiController
         $renderedInputs = $this->getRenderedInputs($form, $entry);
 
         $botGuard = $this->getService(BotGuard::class);
-        $botGuardFields = $botGuard->fields($this->formSendsMail($form));
+        $botGuardFields = $botGuard->fields();
 
         return $botGuard->placeFields($this->render('@bazar/entries/form.twig', [
             'form' => $form,
@@ -416,26 +414,12 @@ class EntryController extends YesWikiController
     }
 
     /**
-     * Whether saving an entry of this form sends mail, which asks every non-admin for the full guard.
-     */
-    private function formSendsMail(array $form): bool
-    {
-        foreach ($form['prepared'] ?? [] as $field) {
-            if ($field instanceof SubscribeField || ($field instanceof EmailField && $field->sendsMail())) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
      * The alert to show when BotGuard refuses the submission, null when it passes.
      */
-    private function botGuardRefusal(bool $strict): ?string
+    private function botGuardRefusal(): ?string
     {
         $botGuard = $this->getService(BotGuard::class);
-        $reason = $botGuard->check($this->getRequest(), $strict);
+        $reason = $botGuard->check($this->getRequest());
 
         return $reason === null ? null : $this->render('@templates/alert-message.twig', [
             'type' => 'danger',

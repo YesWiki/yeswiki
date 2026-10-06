@@ -113,7 +113,7 @@ if ((!empty($_POST['mail']) || !empty($_POST['email'])) && isset($_SERVER['HTTP_
     }
 
     $botGuard = $this->services->get(BotGuard::class);
-    $refusal = $message['class'] == 'success' ? $botGuard->check($this->request, true) : null;
+    $refusal = $message['class'] == 'success' ? $botGuard->check($this->request) : null;
     if ($refusal !== null) {
         $message = [
             'class' => 'danger',
@@ -160,7 +160,7 @@ if ((!empty($_POST['mail']) || !empty($_POST['email'])) && isset($_SERVER['HTTP_
     echo $this->render('@templates/alert-message.twig', [
         'type' => $message['class'],
         'message' => $message['message'],
-    ]) . $botGuard->fields(true);
+    ]) . $botGuard->fields();
 } else {
     $this->addJavascriptFile('tools/contact/libs/contact.js');
     $field = !empty($_GET['field']) ? htmlentities($_GET['field']) : '';
@@ -223,7 +223,7 @@ if ((!empty($_POST['mail']) || !empty($_POST['email'])) && isset($_SERVER['HTTP_
         $output .= $this->Format('{{login}}') . "\n";
     }
 
-    $output = $this->services->get(BotGuard::class)->insertInto($output, 'ajax-mail-form-handler', true);
+    $output = $this->services->get(BotGuard::class)->insertInto($output, 'ajax-mail-form-handler');
     echo $this->Header();
     echo "<div class=\"page\">\n$output\n<hr class=\"hr_clear\" />\n</div>\n";
     echo $this->Footer();

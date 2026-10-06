@@ -307,7 +307,7 @@ class BotGuardHttpTest extends YesWikiTestCase
         $this->assertSame($entry['bf_titre'], $entryManager->getOne($entry['id_fiche'], false, null, false, true)['bf_titre']);
     }
 
-    public function testALoggedInMemberCommentsWithAltchaOnly()
+    public function testALoggedInMemberCommentsOnlyWithTheFullGuard()
     {
         [$status] = $this->request('api/login', ['username' => self::MEMBER, 'password' => self::MEMBER_PASSWORD]);
         $this->assertSame(200, $status);
@@ -315,20 +315,18 @@ class BotGuardHttpTest extends YesWikiTestCase
         [, $html] = $this->request('BotGuardTestComments');
         $this->assertSame(1, substr_count($html, 'class="yw-bot-guard-fields"'));
         $fields = $this->formFields($html, '//form[@id="post-comment"]');
-        $this->assertArrayHasKey(BotGuard::LOGGED_IN_ALTCHA_FIELD, $fields, 'the comment form carries an ALTCHA challenge');
-        $this->assertSame([], array_filter(array_keys($fields), fn ($name) => preg_match('/^yw[0-9a-f]{10}$/', $name)), 'no token for a logged-in member');
+        $this->assertNotSame($fields, $this->withoutGuard($fields), 'a token for a logged-in member too');
 
-        $without = $fields;
-        unset($without[BotGuard::LOGGED_IN_ALTCHA_FIELD]);
-        [$status, $refused] = $this->request('api/comments', ['body' => 'Commentaire de robot'] + $without);
+        [$status, $refused] = $this->request('api/comments', ['body' => 'Commentaire de robot'] + $this->withoutGuard($fields));
         $this->assertSame(400, $status);
         $this->assertRefused(json_decode($refused, true)['error'] ?? '');
-        $this->assertStringContainsString('altcha-widget', json_decode($refused, true)['botGuard'] ?? '', 'a fresh challenge comes back');
+        $this->assertStringContainsString('yw-bot-guard-fields', json_decode($refused, true)['botGuard'] ?? '', 'fresh fields come back');
 
+        sleep(BotGuard::MIN_AGE + 1);
         [$status, $saved] = $this->request('api/comments', ['body' => 'Commentaire humain'] + $fields);
         $this->assertSame(200, $status, $saved);
 
-        [$status] = $this->request('api/comments', ['body' => 'Le même défi rejoué'] + $fields);
+        [$status] = $this->request('api/comments', ['body' => 'Le même jeton rejoué'] + $fields);
         $this->assertSame(400, $status);
     }
 
@@ -349,15 +347,49 @@ class BotGuardHttpTest extends YesWikiTestCase
         $this->assertNotRefused($answer);
     }
 
-    public function testAnEntryFormThatSendsMailAsksALoggedInMemberForEverything()
+    public function testALoggedInMemberAsksForAPasswordOnlyWithTheFullGuard()
     {
+        $this->request('api/login', ['username' => self::MEMBER, 'password' => self::MEMBER_PASSWORD]);
+
+        [, $html] = $this->request('BotGuardTestLostPassword');
+        $fields = ['email' => 'nobody@example.org'] + $this->formFields($html, '//form[.//input[@name="subStep"]]');
+
+        [, $refused] = $this->request('BotGuardTestLostPassword', $this->withoutGuard($fields));
+        $this->assertRefused($refused);
+
+        sleep(BotGuard::MIN_AGE + 1);
+        [, $answer] = $this->request('BotGuardTestLostPassword', $fields);
+        $this->assertNotRefused($answer);
+    }
+
+    public function testALoggedInMemberSavesAnEntryOnlyWithTheFullGuard()
+    {
+        $entryManager = self::getWiki()->services->get(EntryManager::class);
+        $entry = $entryManager->create(self::$mailFormId, ['bf_titre' => 'BotGuard test member entry']);
+        self::getWiki()->services->get(AclService::class)->save($entry['id_fiche'], 'write', '+');
         $this->request('api/login', ['username' => self::MEMBER, 'password' => self::MEMBER_PASSWORD]);
 
         [, $mailForm] = $this->request('BotGuardTestMailForm');
         [, $plainForm] = $this->request('BotGuardTestBazar');
+        $fields = ['submit' => 'Sauver'] + $this->formFields($mailForm, '//form[@id="bazar-form-' . self::$mailFormId . '"]');
+        $plainFields = $this->formFields($plainForm, '//form[@id="bazar-form-' . self::$formId . '"]');
+        $title = fn () => json_decode($this->pageBody($entry['id_fiche']), true)['bf_titre'] ?? null;
 
-        $this->assertMatchesRegularExpression('/name="yw[0-9a-f]{10}" value="\d+\./', $mailForm, 'a token where saving sends mail');
-        $this->assertDoesNotMatchRegularExpression('/name="yw[0-9a-f]{10}" value="\d+\./', $plainForm, 'ALTCHA alone elsewhere');
-        $this->assertStringContainsString('name="' . BotGuard::LOGGED_IN_ALTCHA_FIELD . '"', $plainForm);
+        $this->request($entry['id_fiche'] . '/edit', ['bf_titre' => 'BotGuard test robot'] + $this->withoutGuard($fields) + $this->withoutGuard($plainFields));
+        $this->assertSame('BotGuard test member entry', $title(), 'what the guard of another form leaves once its token is gone is not enough');
+
+        sleep(BotGuard::MIN_AGE + 1);
+        $this->request($entry['id_fiche'] . '/edit', ['bf_titre' => 'BotGuard test member edit'] + $fields);
+        $this->assertSame('BotGuard test member edit', $title());
+    }
+
+    public function testEveryEntryFormAsksALoggedInMemberForEverything()
+    {
+        $this->request('api/login', ['username' => self::MEMBER, 'password' => self::MEMBER_PASSWORD]);
+
+        foreach (['BotGuardTestMailForm', 'BotGuardTestBazar'] as $tag) {
+            [, $html] = $this->request($tag);
+            $this->assertMatchesRegularExpression('/name="yw[0-9a-f]{10}" value="\d+\./', $html, $tag);
+        }
     }
 }

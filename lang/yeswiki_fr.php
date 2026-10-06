@@ -249,7 +249,6 @@ return [
     'BOT_GUARD_REASON_TOKEN_EXPIRED' => 'jeton expiré',
     'BOT_GUARD_REASON_TOKEN_REUSED' => 'jeton réutilisé',
     'BOT_GUARD_REASON_ALTCHA' => 'ALTCHA non résolu',
-    'BOT_GUARD_REASON_ALTCHA_REUSED' => 'ALTCHA réutilisé',
     'BOT_GUARD_REASON_NO_SECRET' => 'clé secrète absente',
     'BOT_GUARD_STATS_TITLE' => 'Envois bloqués par la protection anti-robots',
     'BOT_GUARD_STATS_INTRO' => '%{total} envoi(s) refusé(s) ces %{days} derniers jours, tous formulaires confondus : modification de page, fiche, commentaire, contact, inscription.',

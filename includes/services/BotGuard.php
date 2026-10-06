@@ -12,7 +12,7 @@ use Symfony\Component\HttpFoundation\Request;
 use YesWiki\Core\Controller\AuthController;
 
 /**
- * Keeps robots out of forms: anonymous visitors get a signed single-use token, a honeypot and ALTCHA; logged-in users get ALTCHA alone; admins get nothing.
+ * Keeps robots out of forms: everyone but admins gets a signed single-use token, a honeypot and ALTCHA; admins get nothing.
  */
 class BotGuard
 {
@@ -20,10 +20,7 @@ class BotGuard
     public const MIN_AGE = 3;
     public const MAX_AGE = 86400;
     public const COUNTERS_KEPT_DAYS = 30;
-    public const LOGGED_IN_MAX_AGE = 7 * 86400;
-    public const LOGGED_IN_ALTCHA_FIELD = 'yw_altcha';
     public const MODE_NONE = 'none';
-    public const MODE_ALTCHA = 'altcha';
     public const MODE_FULL = 'full';
     public const ALTCHA_COST = 1000;
     public const ALTCHA_MIN_COUNTER = 500;
@@ -41,7 +38,6 @@ class BotGuard
     public const REFUSED_TOKEN_EXPIRED = 'token-expired';
     public const REFUSED_TOKEN_REUSED = 'token-reused';
     public const REFUSED_ALTCHA = 'altcha';
-    public const REFUSED_ALTCHA_REUSED = 'altcha-reused';
 
     public const HONEYPOTS = [
         'referral_code' => 'BOT_GUARD_HONEYPOT_REFERRAL_CODE',
@@ -96,43 +92,29 @@ class BotGuard
     }
 
     /**
-     * What the current visitor goes through: everything when anonymous or for a strict form, ALTCHA alone when logged in, nothing for an admin.
+     * What the current visitor goes through: nothing for an admin, everything for anyone else.
      */
-    public function mode(bool $strict = false): string
+    public function mode(): string
     {
         $user = $this->authController->getLoggedUser();
-        if (empty($user)) {
-            return self::MODE_FULL;
-        }
-        if ($this->userManager->isInGroup(ADMIN_GROUP, $user['name'], false)) {
+        if (!empty($user) && $this->userManager->isInGroup(ADMIN_GROUP, $user['name'], false)) {
             return self::MODE_NONE;
         }
-        if ($strict) {
-            return self::MODE_FULL;
-        }
 
-        return $this->altchaEnabled() ? self::MODE_ALTCHA : self::MODE_NONE;
+        return self::MODE_FULL;
     }
 
     /**
-     * The HTML of the guard's fields for the current visitor; strict forms, those that send mail, ask logged-in users for everything.
+     * The HTML of the guard's fields for the current visitor.
      */
-    public function fields(bool $strict = false): string
+    public function fields(): string
     {
-        $mode = $this->mode($strict);
-        if ($mode === self::MODE_NONE) {
+        if ($this->mode() === self::MODE_NONE) {
             return '';
         }
         $secret = $this->secret();
         if ($secret === null) {
             return '';
-        }
-        if ($mode === self::MODE_ALTCHA) {
-            return $this->templateEngine->render('@core/bot-guard-fields.twig', [
-                'altchaName' => self::LOGGED_IN_ALTCHA_FIELD,
-                'altchaChallenge' => $this->challenge($secret, ['user' => $this->authController->getLoggedUser()['name']], $this->time() + self::LOGGED_IN_MAX_AGE),
-                'language' => $GLOBALS['prefered_language'] ?? 'fr',
-            ]);
         }
         $names = $this->namesFor($this->day($this->time()));
         $issuedAt = $this->time();
@@ -153,9 +135,9 @@ class BotGuard
     /**
      * Inserts the guard's fields before every </form> of the given HTML, or only into the form with the given id.
      */
-    public function insertInto(string $html, ?string $formId = null, bool $strict = false): string
+    public function insertInto(string $html, ?string $formId = null): string
     {
-        return $this->placeFields($html, $this->fields($strict), $formId);
+        return $this->placeFields($html, $this->fields(), $formId);
     }
 
     /**
@@ -184,16 +166,16 @@ class BotGuard
     /**
      * Checks a submission and consumes its token: null when it passes, else the reason it was refused.
      */
-    public function check(Request $request, bool $strict = false): ?string
+    public function check(Request $request): ?string
     {
-        if ($this->mode($strict) === self::MODE_NONE) {
+        if ($this->mode() === self::MODE_NONE) {
             return null;
         }
         $post = $request->request->all();
         if (isset($this->checked[$request]) && $this->checked[$request]['post'] === $post) {
             return $this->checked[$request]['reason'];
         }
-        $reason = $this->checkOnce($request, $strict);
+        $reason = $this->checkOnce($request);
         $this->checked[$request] = ['post' => $post, 'reason' => $reason];
 
         return $reason;
@@ -205,7 +187,7 @@ class BotGuard
     public function withoutFields(array $post): array
     {
         $time = $this->time();
-        $names = [self::LOGGED_IN_ALTCHA_FIELD];
+        $names = [];
         foreach ([$this->day($time), $this->day($time - 86400)] as $day) {
             $dayNames = $this->namesFor($day);
             array_push($names, $dayNames['token'], $dayNames['honeypot'], $dayNames['altcha']);
@@ -214,16 +196,13 @@ class BotGuard
         return array_diff_key($post, array_flip($names));
     }
 
-    protected function checkOnce(Request $request, bool $strict): ?string
+    protected function checkOnce(Request $request): ?string
     {
         $secret = $this->secret();
         if ($secret === null) {
             return self::REFUSED_NO_SECRET;
         }
-        $post = $request->request->all();
-        $reason = $this->mode($strict) === self::MODE_ALTCHA
-            ? $this->loggedInRefusal($post, $secret)
-            : $this->refusal($post, $secret);
+        $reason = $this->refusal($request->request->all(), $secret);
         if ($reason !== null) {
             $this->count($reason);
         }
@@ -340,20 +319,6 @@ class BotGuard
         }
         if (!$this->claim('botGuard:token:' . $id, (int)$issuedAt + self::MAX_AGE)) {
             return self::REFUSED_TOKEN_REUSED;
-        }
-
-        return null;
-    }
-
-    protected function loggedInRefusal(array $post, string $secret): ?string
-    {
-        $payload = $this->solvedChallenge($post[self::LOGGED_IN_ALTCHA_FIELD] ?? null, $secret, ['user' => $this->authController->getLoggedUser()['name']]);
-        if ($payload === null) {
-            return self::REFUSED_ALTCHA;
-        }
-        $parameters = $payload->challenge->parameters;
-        if (!$this->claim('botGuard:altcha:' . $parameters->nonce, (int)$parameters->expiresAt)) {
-            return self::REFUSED_ALTCHA_REUSED;
         }
 
         return null;

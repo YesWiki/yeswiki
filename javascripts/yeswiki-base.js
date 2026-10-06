@@ -74,6 +74,24 @@ function splitHash(hash = window.location.hash) {
 }
 window.splitHash = splitHash
 
+/** Solves the form's ALTCHA challenge if it has one and it is not solved yet. */
+async function verifyBotGuard(form) {
+  const widget = $(form).find('altcha-widget')[0]
+  if (widget && widget.verify && widget.getState() !== 'verified') {
+    await widget.verify()
+  }
+}
+window.verifyBotGuard = verifyBotGuard
+
+/** Moves the fresh bot guard fields out of a server response into the form, in place of the spent ones. */
+function refreshBotGuardFields(form, $response) {
+  const fresh = $response.find('.yw-bot-guard-fields').detach()
+  if (fresh.length > 0) {
+    $(form).find('.yw-bot-guard-fields').replaceWith(fresh)
+  }
+}
+window.refreshBotGuardFields = refreshBotGuardFields
+
 function toastMessage(
   message,
   duration = 3000,
@@ -113,7 +131,7 @@ function toastMessage(
         fontSize: '1em',
       })
       .on('click', function () {
-        if (vMe.attr('type') == 'password') {
+        if (vMe.attr('type') === 'password') {
           vMe.attr('type', 'text')
           $(this)
             .removeClass('fa-eye')
@@ -241,7 +259,7 @@ function toastMessage(
             const src = res[i].getAttribute('src')
             if (src) {
               var selection = document.querySelectorAll(`script[src="${src}"]`)
-              if (!selection || selection.length == 0) {
+              if (!selection || selection.length === 0) {
                 if (res[i].type === 'module') {
                   const newScript = document.createElement('script')
                   newScript.type = 'module'
@@ -260,7 +278,7 @@ function toastMessage(
               for (j = 0; j < selLenght; j++) {
                 if (
                   !pageScripts[j].hasAttribute('src') &&
-                  script != pageScripts[j].innerHTML
+                  script !== pageScripts[j].innerHTML
                 ) {
                   const newScript = document.importNode(res[i])
                   document.body.appendChild(newScript)
@@ -338,9 +356,9 @@ function toastMessage(
 
   $('#search, #search button.close-search').on('click keyup', function (e) {
     if (
-      e.target == this ||
+      e.target === this ||
       $(e.target).hasClass('close-search') ||
-      e.keyCode == 27
+      e.keyCode === 27
     ) {
       $(this).removeClass('open')
     }
@@ -511,10 +529,7 @@ function toastMessage(
   }
 
   function replaceGuardFields(form, response) {
-    const fresh = $('<div>').html(response?.botGuard || '')
-    if (fresh.find('.yw-bot-guard-fields').length > 0) {
-      form.find('.yw-bot-guard-fields').replaceWith(fresh.children())
-    }
+    refreshBotGuardFields(form, $('<div>').html(response?.botGuard || ''))
   }
 
   $comments.on('click', '.btn-post-comment', async function (e) {
@@ -522,10 +537,7 @@ function toastMessage(
     e.stopPropagation()
     const form = $(this).parent('form')
     const urlpost = form.attr('action')
-    const widget = form.find('altcha-widget')[0]
-    if (widget && widget.verify && widget.getState() !== 'verified') {
-      await widget.verify()
-    }
+    await verifyBotGuard(form)
     $.ajax({
       type: 'POST',
       url: urlpost,
@@ -697,7 +709,7 @@ function toastMessage(
         url,
         success() {
           const table = $(elem).closest('table')
-          if (table.length != 0) {
+          if (table.length !== 0) {
             console.log(table.DataTable())
             table.DataTable().row($(elem).closest('tr')).remove().draw()
           }
@@ -714,7 +726,7 @@ function toastMessage(
     },
     deleteTags(headElem) {
       const table = $(headElem).closest('table')
-      if (table.length != 0) {
+      if (table.length !== 0) {
         $(table)
           .find('.btn-delete-reaction:not(.btn-delete-all)')
           .each(function () {
@@ -799,7 +811,7 @@ function toastMessage(
       )
       if (
         url !== '#' &&
-        nbReactionLeft == 0 &&
+        nbReactionLeft === 0 &&
         typeof blockReactionRemove !== 'undefined' &&
         blockReactionRemove === true
       ) {
@@ -940,7 +952,7 @@ function checkAll(state) {
   const checkboxes = document.querySelectorAll('input.selectpage')
   const newState = [true, 'true', 1, '1'].includes(state)
   checkboxes.forEach((checkbox) => {
-    if (checkbox.type == 'checkbox') {
+    if (checkbox.type === 'checkbox') {
       checkbox.checked = newState
     }
   })
@@ -956,7 +968,7 @@ $('.tab-content [data-toggle="tab"]').on('click', function () {
   $(base)
     .find(`a[href="${$(this).attr('href')}"]`)
     .tab('show')
-  if (window.location != parent.parent.location) {
+  if (window.location !== parent.parent.location) {
     $('html, body').animate({ scrollTop: $(base).offset().top }, 500)
     try {
       $(base).get(0).scrollIntoView()

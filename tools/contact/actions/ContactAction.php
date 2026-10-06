@@ -43,7 +43,7 @@ class ContactAction extends YesWikiAction
             $GLOBALS['nbactionmail'] = 1;
         }
         $botGuard = $this->getService(BotGuard::class);
-        $botGuardFields = $botGuard->fields(true);
+        $botGuardFields = $botGuard->fields();
         $options = array_merge($this->arguments, [
             'nbactionmail' => $GLOBALS['nbactionmail'],
             'mailerurl' => $this->wiki->href('mail'),
