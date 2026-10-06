@@ -228,6 +228,12 @@ class SyndicationAction extends YesWikiAction implements RegisteredAction, Provi
                 $feedItem['image'] = $item->data['child']['http://www.itunes.com/dtds/podcast-1.0.dtd']['image'][0]['attribs']['']['href'];
             }
         }
+        if (empty($feedItem['image'])) {
+            $feedItem['image'] = self::firstImageIn((string)($feedItem['description'] ?? ''));
+        }
+        if (!empty($feedItem['image'])) {
+            $feedItem['description'] = self::withoutImage((string)($feedItem['description'] ?? ''), (string)$feedItem['image']);
+        }
         if (!empty($this->arguments['maxchars'])) {
             $feedItem['description'] = (string)preg_replace("/\s+/u", ' ', strip_tags($feedItem['description'] ?? ''));
             $descLen = strlen($feedItem['description']);
@@ -265,6 +271,35 @@ class SyndicationAction extends YesWikiAction implements RegisteredAction, Provi
         }
 
         return $feedItem;
+    }
+
+    /** The address of the first picture an entry's HTML shows, for a feed that attaches none. */
+    public static function firstImageIn(string $html): ?string
+    {
+        if (preg_match('/<img\b[^>]*?\ssrc\s*=\s*(["\'])(https?:\/\/[^"\']+)\1/i', $html, $match) !== 1) {
+            return null;
+        }
+
+        return html_entity_decode($match[2], ENT_QUOTES | ENT_HTML5);
+    }
+
+    /** The entry's HTML without the picture already shown as its image, nor the tags that only held it. */
+    public static function withoutImage(string $html, string $src): string
+    {
+        $stripped = (string)preg_replace_callback(
+            '/<img\b[^>]*?\ssrc\s*=\s*(["\'])([^"\']*)\1[^>]*>/i',
+            static fn (array $img): string => html_entity_decode($img[2], ENT_QUOTES | ENT_HTML5) === $src ? '' : $img[0],
+            $html
+        );
+        if ($stripped === $html) {
+            return $html;
+        }
+        do {
+            $before = $stripped;
+            $stripped = (string)preg_replace('/<(a|p|figure|picture|div)\b[^>]*>\s*<\/\1>/i', '', $stripped);
+        } while ($stripped !== $before);
+
+        return $stripped;
     }
 
     public function formatArguments($arg): array

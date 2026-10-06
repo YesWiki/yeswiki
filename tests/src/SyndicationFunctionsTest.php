@@ -42,6 +42,28 @@ class SyndicationFunctionsTest extends YesWikiTestCase
         $this->assertSame('Second', $result[0]['bf_titre']);
     }
 
+    /** A feed that attaches no picture still gives its entry the first one its HTML shows. */
+    public function testTheFirstPictureOfAnEntrysHtmlIsItsImage(): void
+    {
+        $html = '<p>Intro</p><img decoding="async" class="aligncenter" src="https://framablog.org/a.png?x=1&amp;y=2" alt=""><img src="https://framablog.org/b.png">';
+
+        $this->assertSame('https://framablog.org/a.png?x=1&y=2', \YesWiki\Content\Action\SyndicationAction::firstImageIn($html));
+        $this->assertNull(\YesWiki\Content\Action\SyndicationAction::firstImageIn('<p>No picture</p><img data-src="https://x.org/a.png">'));
+        $this->assertNull(\YesWiki\Content\Action\SyndicationAction::firstImageIn('<img src="data:image/gif;base64,R0lGOD">'));
+    }
+
+    /** The picture shown as the entry's image is not shown a second time in its description. */
+    public function testTheImageLeavesTheDescription(): void
+    {
+        $html = '<p><a href="https://x.org/a"><img class="c" src="https://x.org/a.png?x=1&amp;y=2" alt="" /></a></p><p>Text <img src="https://x.org/b.png"></p>';
+
+        $this->assertSame(
+            '<p>Text <img src="https://x.org/b.png"></p>',
+            \YesWiki\Content\Action\SyndicationAction::withoutImage($html, 'https://x.org/a.png?x=1&y=2')
+        );
+        $this->assertSame($html, \YesWiki\Content\Action\SyndicationAction::withoutImage($html, 'https://x.org/other.png'));
+    }
+
     public function testSyndicationActionFormatArgumentsParsesMapping(): void
     {
         $wiki = $this->getWiki();

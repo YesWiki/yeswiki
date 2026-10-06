@@ -144,8 +144,7 @@ form:not(#ACEditor) .ace-container .ace_scroller {
   padding-left: var(--yw-space-md-x);
   padding-top: var(--yw-space-sm-y);
   color: var(--yw-text-muted);
-  padding-right: var(--yw-space-md-x);
-  margin-right: var(--yw-space-md-x);
+  padding-right: calc(var(--yw-space-md-x) * 2);
 }
 
 .ace-tm .ace_gutter-active-line {
@@ -154,7 +153,6 @@ form:not(#ACEditor) .ace-container .ace_scroller {
 
 .ace-tm .ace_gutter {
   font-size: 12px;
-  padding-right: var(--yw-space-md-x);
   background: none;
 }
 
