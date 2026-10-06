@@ -35,4 +35,16 @@ class Messages extends Collection
 
         return $this;
     }
+
+    /** Whether any message says something failed. */
+    public function hasError(): bool
+    {
+        foreach ($this->list as $message) {
+            if (($message['status'] ?? '') === _t('AU_ERROR')) {
+                return true;
+            }
+        }
+
+        return false;
+    }
 }

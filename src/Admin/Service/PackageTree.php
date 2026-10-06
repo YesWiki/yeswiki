@@ -20,6 +20,23 @@ namespace YesWiki\Admin\Service;
  */
 class PackageTree
 {
+    /** @var array{step: string, path: string, reason: string}|null the first step of a copy that failed */
+    private ?array $copyFailure = null;
+
+    /** @return array{step: string, path: string, reason: string}|null the first step of the last failed copy, with PHP's reason */
+    public function copyFailure(): ?array
+    {
+        return $this->copyFailure;
+    }
+
+    /** Remembers the first step of a copy that failed, with PHP's reason, and answers false. */
+    private function failed(string $step, string $path): bool
+    {
+        $this->copyFailure ??= ['step' => $step, 'path' => $path, 'reason' => error_get_last()['message'] ?? ''];
+
+        return false;
+    }
+
     public function exists(string $path): bool
     {
         return file_exists($path);
@@ -160,11 +177,13 @@ class PackageTree
         if (file_exists($desPath) || is_link($desPath)) {
             $aside = \dirname($desPath) . '/.' . basename($desPath) . '.replaced-' . bin2hex(random_bytes(4));
             if (!@rename($desPath, $aside)) {
-                return false;
+                return $this->failed('MOVE_ASIDE', $desPath);
             }
         }
 
-        if (@mkdir($desPath, 0o755, true) && $this->copyFolder($srcPath, $desPath)) {
+        if (!@mkdir($desPath, 0o755, true)) {
+            $this->failed('CREATE', $desPath);
+        } elseif ($this->copyFolder($srcPath, $desPath)) {
             if ($aside !== null) {
                 $this->delete($aside);
             }
@@ -183,10 +202,10 @@ class PackageTree
     private function copyFile(string $src, string $des): bool
     {
         if ((is_dir($des) || is_link($des)) && $this->delete($des) !== true) {
-            return false;
+            return $this->failed('REPLACE', $des);
         }
 
-        return @copy($src, $des);
+        return @copy($src, $des) || $this->failed('COPY', $des);
     }
 
     /**
@@ -336,7 +355,7 @@ class PackageTree
     {
         $res = @opendir($srcPath);
         if ($res === false) {
-            return false;
+            return $this->failed('READ', $srcPath);
         }
 
         $copied = true;
@@ -347,7 +366,9 @@ class PackageTree
             $from = rtrim($srcPath, '/') . '/' . $file;
             $to = rtrim($desPath, '/') . '/' . $file;
             if (is_dir($from)) {
-                if (!@mkdir($to) || !$this->copyFolder($from, $to)) {
+                if (!@mkdir($to)) {
+                    $copied = $this->failed('CREATE', $to);
+                } elseif (!$this->copyFolder($from, $to)) {
                     $copied = false;
                 }
             } elseif (!$this->copyFile($from, $to)) {
@@ -357,5 +378,20 @@ class PackageTree
         closedir($res);
 
         return $copied;
+    }
+
+    /** The closest existing folder above a destination not created yet, when it cannot be written to: a package installed there would have nowhere to go. */
+    protected function unwritableParentOf(string $path): ?string
+    {
+        $path = rtrim($path, '/');
+        if ($path === '' || file_exists($path)) {
+            return null;
+        }
+        $parent = \dirname($path);
+        while (!file_exists($parent) && \dirname($parent) !== $parent) {
+            $parent = \dirname($parent);
+        }
+
+        return is_dir($parent) && is_writable($parent) ? null : $parent;
     }
 }

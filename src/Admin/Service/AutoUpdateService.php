@@ -157,8 +157,11 @@ class AutoUpdateService
         $messages->add('AU_ACL', 'AU_OK');
 
         if (!$package->upgrade()) {
+            $failure = $package->copyFailure();
+            $why = $failure === null ? '' : ' : ' . _t('AU_COPY_FAILED_' . $failure['step'], ['path' => $failure['path']])
+                . ($failure['reason'] === '' ? '' : ' (' . $failure['reason'] . ')');
             $messages->add(
-                _t('AU_UPDATE_PACKAGE') . $packageName,
+                _t('AU_UPDATE_PACKAGE') . $packageName . $why,
                 'AU_ERROR'
             );
             $package->cleanTempFiles();

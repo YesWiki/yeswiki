@@ -156,7 +156,7 @@ class UpdateAction extends YesWikiAction implements RegisteredAction
                         $vUpgradeMessages = $vUpdateService->upgrade($vPackageName);
 
                         $vMessages->add($vUpgradeMessages);
-                        if ($vNewExtension) {
+                        if ($vNewExtension && !$vUpgradeMessages->hasError()) {
                             $this->switchExtension($vMessages, (string)$vPackageName, true);
                         }
 

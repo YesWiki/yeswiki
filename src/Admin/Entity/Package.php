@@ -113,6 +113,11 @@ abstract class Package extends PackageTree
             'vendor',
         ];
 
+        $blocked = $this->unwritableParentOf((string)$this->localPath);
+        if ($blocked !== null) {
+            return [$blocked];
+        }
+
         $vNotGoods = [];
 
         foreach ($file2check as $f) {
