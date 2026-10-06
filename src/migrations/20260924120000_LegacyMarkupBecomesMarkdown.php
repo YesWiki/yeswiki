@@ -85,7 +85,7 @@ class LegacyMarkupBecomesMarkdown extends YesWikiMigration
     }
 
     /** When this wiki first ran an Ectoplasme migration: revisions after it were written in Markdown already. */
-    private function upgradedAt(): ?string
+    public function upgradedAt(): ?string
     {
         $schema = $this->getService(JournalSchema::class);
         if (!$schema->exists()) {

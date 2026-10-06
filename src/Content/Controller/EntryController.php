@@ -646,6 +646,30 @@ class EntryController extends YesWikiController
         return null;
     }
 
+    /** What the first element carrying $class holds, as HTML, or null when the fragment has no such element. */
+    private static function innerHtmlOfClass(string $html, string $class): ?string
+    {
+        $dom = new \DOMDocument();
+        $previous = libxml_use_internal_errors(true);
+        $loaded = $dom->loadHTML('<?xml encoding="UTF-8"><div>' . $html . '</div>', LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
+        libxml_clear_errors();
+        libxml_use_internal_errors($previous);
+        if (!$loaded) {
+            return null;
+        }
+        $nodes = (new \DOMXPath($dom))->query('//*[contains(concat(" ", normalize-space(@class), " "), " ' . $class . ' ")]');
+        $node = $nodes === false ? null : $nodes->item(0);
+        if (!$node instanceof \DOMElement) {
+            return null;
+        }
+        $inner = '';
+        foreach ($node->childNodes as $child) {
+            $inner .= $dom->saveHTML($child);
+        }
+
+        return trim($inner);
+    }
+
     /**
      * @param array<string, mixed>      $entry
      * @param array<string, mixed>|null $form
@@ -665,16 +689,11 @@ class EntryController extends YesWikiController
             if ($field instanceof BazarField) {
                 $id = $field->getPropertyName();
                 if (!empty($id) && !in_array($id, $this->fieldsToExclude())) {
-                    $html[$id] = $field->renderStaticIfPermitted($entry, $userNameForRendering);
-
-                    $matches = [];
-                    if ($titleFieldName !== null && $field->getName() === $titleFieldName) {
-                        preg_match('/<h1 class="BAZ_fiche_titre">\s*(.*)\s*<\/h1>.*$/is', $html[$id], $matches);
-                    } elseif (!empty($html[$id])) {
-                        preg_match('/<(?:span|div) class="BAZ_texte">\s*(.*)\s*<\/(?:span|div)>.*$/is', $html[$id], $matches);
-                    }
-                    if (isset($matches[1]) && $matches[1] != '') {
-                        $html[$id] = $matches[1];
+                    $html[$id] = (string)$field->renderStaticIfPermitted($entry, $userNameForRendering);
+                    $isTitle = $titleFieldName !== null && $field->getName() === $titleFieldName;
+                    $inner = $html[$id] === '' ? null : self::innerHtmlOfClass($html[$id], $isTitle ? 'BAZ_fiche_titre' : 'BAZ_texte');
+                    if ($inner !== null && $inner !== '') {
+                        $html[$id] = $inner;
                     }
                 }
             }

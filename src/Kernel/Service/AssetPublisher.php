@@ -270,16 +270,43 @@ class AssetPublisher
         }
         foreach ($roots as $root) {
             $candidate = $root . '/' . $relPath;
-            if (is_file($candidate)) {
-                $real = realpath($candidate);
-                $realRoot = realpath($root);
-                if ($real !== false && $realRoot !== false && str_starts_with($real, $realRoot . DIRECTORY_SEPARATOR)) {
+            if (!is_file($candidate)) {
+                continue;
+            }
+            $real = realpath($candidate);
+            if ($real === false) {
+                continue;
+            }
+            foreach (self::containersOf($root, $relPath) as $container) {
+                if (str_starts_with($real, $container . DIRECTORY_SEPARATOR)) {
                     return $real;
                 }
             }
         }
 
         return null;
+    }
+
+    /**
+     * Where a file found under $root may really live: the root itself, or, for an extension's file, wherever that extension's folder points (a symlinked checkout).
+     *
+     * @return list<string>
+     */
+    private static function containersOf(string $root, string $relPath): array
+    {
+        $containers = [];
+        $realRoot = realpath($root);
+        if ($realRoot !== false) {
+            $containers[] = $realRoot;
+        }
+        if (preg_match('#^((?:custom/)?extensions/[A-Za-z0-9][A-Za-z0-9_-]*)/#', $relPath, $m) === 1) {
+            $extension = realpath($root . '/' . $m[1]);
+            if ($extension !== false) {
+                $containers[] = $extension;
+            }
+        }
+
+        return $containers;
     }
 
     /**

@@ -10,7 +10,7 @@ class LegacyMarkupConverter
     private const SLOT_RE = '\x1A(\d+)\x1A';
     private const BLANK_RE = '\x01';
 
-    private const BLOCK_TAGS = 'address|article|aside|blockquote|center|details|dialog|dir|div|dl|dt|dd|fieldset|figcaption|figure|footer|form|h[1-6]|header|hr|li|main|nav|ol|p|section|table|tbody|td|tfoot|th|thead|tr|ul|left|right';
+    private const BLOCK_TAGS = 'address|article|aside|blockquote|center|details|dialog|dir|div|dl|dt|dd|fieldset|figcaption|figure|footer|form|h[1-6]|header|hr|iframe|li|main|nav|ol|p|section|table|tbody|td|tfoot|th|thead|tr|ul|video|audio|left|right';
 
     private const HEADING_LEVELS = [6 => 1, 5 => 2, 4 => 3, 3 => 4, 2 => 5];
 
@@ -87,10 +87,11 @@ class LegacyMarkupConverter
         );
     }
 
-    /** The inside of `""…""`: kept as is, on its own paragraph when it opens or closes a block. */
+    /** The inside of `""…""`: kept as is, on its own paragraph when it opens or closes a block, or is a whole `<style>` or `<script>`. */
     private function rawHtml(string $html): string
     {
-        $isBlock = preg_match('/^\s*(?:<\/?(?:' . self::BLOCK_TAGS . ')\b[^>]*>\s*)+$/i', $html) === 1;
+        $isBlock = preg_match('/^\s*(?:<\/?(?:' . self::BLOCK_TAGS . ')\b[^>]*>\s*)+$/i', $html) === 1
+            || preg_match('/^\s*<(style|script)\b[^>]*>.*<\/\1>\s*$/is', $html) === 1;
 
         return $isBlock
             ? self::BLANK . $this->slot(trim($html)) . self::BLANK

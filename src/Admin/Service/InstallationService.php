@@ -389,24 +389,26 @@ class InstallationService
         }
     }
 
+    /** Refuses a prefix whose tables already exist, telling another wiki's longer prefix apart from this one's own tables. */
     protected function checkTablePrefix(): void
     {
         $driver = $this->dbDriver();
-        $prefix = $this->config['table_prefix'];
+        $prefix = (string)$this->config['table_prefix'];
         if ($driver === 'sqlite') {
-            $query = "SELECT name FROM sqlite_master WHERE type='table' AND name LIKE '{$prefix}%'";
+            $query = "SELECT name FROM sqlite_master WHERE type='table'";
         } elseif ($driver === 'pgsql') {
-            $query = "SELECT tablename FROM pg_tables WHERE schemaname = 'public' AND tablename LIKE '{$prefix}%'";
+            $query = "SELECT tablename FROM pg_tables WHERE schemaname = 'public'";
         } else {
-            $query = "SHOW TABLES LIKE '{$prefix}%'";
+            $query = 'SHOW TABLES';
         }
 
         try {
             $stmt = $this->db()->query($query);
-            $existingTables = ($stmt === false) ? [] : $stmt->fetchAll(\PDO::FETCH_COLUMN);
+            $tables = ($stmt === false) ? [] : array_values(array_map('strval', $stmt->fetchAll(\PDO::FETCH_COLUMN)));
         } catch (\PDOException $th) {
-            $existingTables = [];
+            $tables = [];
         }
+        $existingTables = DumpRewriter::ownTables($tables, $prefix);
 
         if (!empty($existingTables)) {
             throw new \Exception(_t('CHECK_EXISTING_TABLE_PREFIX') . ' ("' . $prefix . '") :<br />' . _t('TABLE_PREFIX_ALREADY_USED'));

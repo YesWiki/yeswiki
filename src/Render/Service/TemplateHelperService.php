@@ -4,9 +4,13 @@ namespace YesWiki\Render\Service;
 
 use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use YesWiki\Content\Entity\FieldRole;
 use YesWiki\Content\Entity\PageBody;
+use YesWiki\Content\Field\TextareaField;
 use YesWiki\Content\Service\EntryDisplay;
 use YesWiki\Content\Service\EntryManager;
+use YesWiki\Content\Service\FieldRoleResolver;
+use YesWiki\Content\Service\FormManager;
 use YesWiki\Files\Service\AttachedFilePaths;
 use YesWiki\Files\Service\ImageResizer;
 use YesWiki\Files\Service\ProgramFiles;
@@ -432,14 +436,12 @@ class TemplateHelperService
 
         if ($entryManager->isEntry($page['tag'])) {
             $entry = $entryManager->getOne($page['tag']);
-            foreach (['description', 'bf_description', 'content', 'bf_content', 'soustitre'] as $prop) {
-                if (isset($entry[$prop])) {
-                    $desc = $entry[$prop];
-                }
-            }
-            if ($desc == '') {
-                $desc = $this->container->get(EntryDisplay::class)->renderEntryOrNothing($entry);
-            }
+            $form = is_array($entry) ? $this->container->get(FormManager::class)->getOne((string)($entry['form_id'] ?? '')) : null;
+            $field = $this->container->get(FieldRoleResolver::class)->field(is_array($form) ? $form : null, FieldRole::DESCRIPTION);
+            $value = $field === null ? null : ($entry[$field->getPropertyName()] ?? null);
+            $desc = is_string($value) && $value !== ''
+                ? TextareaField::stripMarkupForIndex($value)
+                : (is_array($entry) ? $this->container->get(EntryDisplay::class)->renderEntryOrNothing($entry) : '');
         }
 
         $desc = (string)preg_replace('~<\s*\bscript\b[^>]*>(.*?)<\s*\/\s*script\s*>~Uis', '', $desc);

@@ -985,7 +985,7 @@ Il est possible d'afficher les données issues d'un YesWiki distant.
 1. Définir l'action `{{entrylist id="1" template="map" ...}}` en utilisant le
    bouton **composants** "Afficher les données d'un formulaire" lors de la
    modification d'une page
-2. Identifier l'adresse des ""YesWiki"" distants et les formulaires recherchés.
+2. Identifier l'adresse des YesWiki distants et les formulaires recherchés.
    Ex: sur le formulaire 4 sur wiki <https://example.com> et le formulaire 5 sur
    le wiki <https://example.com/trombi2/>
 3. remplacer l'identifiant du formulaire dans l'action entrylist id par
@@ -1036,8 +1036,8 @@ formulaire distant 1
 
 //x étant le numéro du formulaire local concerné//
 
-1. dupliquer le formulaire distant sur le ""YesWiki"" local en utilisant la
-   fonctionnalité d'importation disponible en bas de la page ""BazaR""
+1. dupliquer le formulaire distant sur le YesWiki local en utilisant la
+   fonctionnalité d'importation disponible en bas de la page BazaR
 2. copier le fichier //fiche-x.tpl.html// dans le dossier local
    //custom/templates/bazar/// avec le nom //fiche-y.tpl.html// où y est le
    numéro du formulaire dupliqué en local

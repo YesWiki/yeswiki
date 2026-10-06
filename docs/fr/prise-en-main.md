@@ -87,12 +87,15 @@ liste à puce pour garder la coloration syntaxique...
 
 #### 1.3.3 Écrire du code HTML
 
-Si vous déposez du HTML dans la page wiki, il faut l'entourer de doubles
-guillemets `""` pour qu'il soit interprété
+Le HTML se colle tel quel dans la page wiki :
 
 ```yeswiki
-""<b>Ceci est du HTML</b>""
+<b>Ceci est du HTML</b>
 ```
+
+Une balise de bloc (`<div>`, `<iframe>`, `<table>`…) se met seule sur sa ligne,
+avec une ligne vide avant et après : sinon Markdown la range dans le paragraphe
+qui l'entoure.
 
 #### 1.3.4 Créer une ancre
 
@@ -101,13 +104,14 @@ Une ancre est un lien qui au clic renvoi à une autre partie d'une même page.
 Le texte encadré de cette manière :
 
 ```yeswiki
-""<a href="#ancre1">Texte du lien pour aller vers le paragraphe cible</a>""
+<a href="#ancre1">Texte du lien pour aller vers le paragraphe cible</a>
 ```
 
 Renverra au clic vers cette autre partie de votre page :
 
 ```yeswiki
-""<div id="ancre1"></div>""
+<div id="ancre1"></div>
+
 Paragraphe vers lequel on arrivera en cliquant sur le lien
 ```
 
@@ -116,7 +120,7 @@ Paragraphe vers lequel on arrivera en cliquant sur le lien
 Il est possible de colorer du texte de la manière suivante :
 
 ```yeswiki
-""<span style="color:#votrecodecouleur;">votre texte à colorer</span>""
+<span style="color:#votrecodecouleur;">votre texte à colorer</span>
 ```
 
 Le `#votrecodecouleur` devra être remplacé par le code html de la couleur
@@ -135,7 +139,7 @@ Les icones du site de
 accessibles. Il vous suffit de mettre le code donné sur le site, par exemple
 
 ```yeswiki
-""<i class="fas fa-yin-yang"></i>""
+<i class="fas fa-yin-yang"></i>
 ```
 
 #### 1.3.7 Barre de progression
@@ -182,9 +186,8 @@ caractères spéciaux. Pour les rendre lisible, le mieux est d'utiliser des tire
 `nom-de-ma-page`, ou des majuscules `NomDeLaPage` (c'est ce qu'on appelle un
 `ChatMot`)
 
-?> **Astuce 2** YesWiki va interpréter tout ChatMot comme une nouvelle page. Si
-on veut écrire un ChatMot sans créer de nouvelle page (par exemple pour écrire
-YesWiki sans créer de lien), on l'encadre de double guillemets: `""YesWiki""`
+?> **Astuce 2** Un ChatMot écrit dans le texte reste du texte : pour en faire un
+lien vers la page, on l'écrit `[texte du lien](NomDeLaPage)`.
 
 ## 4. Revenir à la version précédente d'une page
 
@@ -261,10 +264,11 @@ Il ressemble à quelque chose comme ça:
 
 ### 6.2 Collez ce code dans la page wiki
 
-Il faudra juste penser à ajouter avant **et** après deux guillemets `""`.
+Le code se colle tel quel, seul sur sa ligne, avec une ligne vide avant et
+après :
 
 ```
-""<iframe src="https://unsite.com/iframe" ...></iframe>""
+<iframe src="https://unsite.com/iframe" ...></iframe>
 ```
 
 ### 6.3 Bricoler le code

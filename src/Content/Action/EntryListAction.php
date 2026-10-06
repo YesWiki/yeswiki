@@ -15,6 +15,7 @@ use YesWiki\Content\Field\EmailField;
 use YesWiki\Content\Field\EnumField;
 use YesWiki\Content\Field\ImageField;
 use YesWiki\Content\Field\MapField;
+use YesWiki\Content\Field\TextareaField;
 use YesWiki\Content\Service\BazarListService;
 use YesWiki\Content\Service\EntryDisplay;
 use YesWiki\Content\Service\EntryManager;
@@ -302,7 +303,7 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
                 id: (string)($entry['id_fiche'] ?? $entry['tag'] ?? ''),
                 title: $this->slotText($entry, $slots['title'] ?? null) ?? (string)($entry['title'] ?? $entry['tag'] ?? ''),
                 subtitle: $this->slotText($entry, $slots['subtitle'] ?? null),
-                description: $this->slotText($entry, $slots['description'] ?? null),
+                description: $this->slotHtml($entry, $slots['description'] ?? null),
                 image: $image,
                 url: $this->getService(UrlFormatter::class)->href('', $tag),
                 date: self::asDate($entry[$slots['date'] ?? ''] ?? null),
@@ -333,6 +334,28 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
     private function isDateSlot(array $entry, ?string $name): bool
     {
         return in_array($name, ['created_at', 'updated_at'], true) || $this->fieldOf($entry, $name) instanceof DateField;
+    }
+
+    /** @param array<string, mixed> $entry */
+    /**
+     * A slot the presentation prints as HTML: a textarea in its own syntax, anything else as escaped text.
+     *
+     * @param array<string, mixed> $entry
+     */
+    private function slotHtml(array $entry, ?string $name): ?string
+    {
+        if (empty($name) || !isset($entry[$name])) {
+            return null;
+        }
+        $field = $this->fieldOf($entry, $name);
+        if ($field instanceof TextareaField) {
+            $html = $field->formattedValue($entry);
+
+            return $html === '' ? null : $html;
+        }
+        $text = $this->slotText($entry, $name);
+
+        return $text === null ? null : nl2br(htmlspecialchars($text, ENT_QUOTES, 'UTF-8', false));
     }
 
     /** @param array<string, mixed> $entry */

@@ -142,8 +142,25 @@ class TextareaField extends BazarField
 
     protected function renderStatic($entry)
     {
+        $value = $this->formattedValue($entry ?? []);
+        if ($value === '') {
+            return '';
+        }
+
+        return $this->render('@core/fields/textarea.twig', [
+            'value' => $value,
+        ]);
+    }
+
+    /**
+     * The entry's text as HTML, in the syntax this field was given: Markdown rendered, HTML kept, plain text escaped.
+     *
+     * @param array<string, mixed> $entry
+     */
+    public function formattedValue(array $entry): string
+    {
         $value = $this->getValue($entry);
-        if (!$value) {
+        if (!is_string($value) || $value === '') {
             return '';
         }
 
@@ -160,19 +177,14 @@ class TextareaField extends BazarField
 
                 $pageContext->setTag($oldPage);
                 $pageContext->setPage($oldPageArray);
-                break;
+
+                return $value;
 
             case self::SYNTAX_PLAIN:
-                $value = nl2br(htmlentities($value, ENT_QUOTES, YW_CHARSET));
-                break;
-
-            case self::SYNTAX_HTML:
-                break;
+                return nl2br(htmlentities($value, ENT_QUOTES, YW_CHARSET));
         }
 
-        return $this->render('@core/fields/textarea.twig', [
-            'value' => $value,
-        ]);
+        return $value;
     }
 
     /**
