@@ -30,24 +30,28 @@ export default {
   },
   methods: {
     resetValues() {
-      this.map.panTo(new L.LatLng(this.defaultLatitude, this.defaultLongitude))
-      this.map.setZoom(this.defaultZoom)
+      this.map.setView(
+        new L.LatLng(this.defaultLatitude, this.defaultLongitude),
+        this.defaultZoom,
+        { animate: false },
+      )
     },
     parseNewValues(newValues) {
-      this.map.panTo(
+      this.map.setView(
         new L.LatLng(
           newValues.lat || this.defaultLatitude,
           newValues.lon || this.defaultLongitude,
         ),
+        newValues.zoom || this.defaultZoom,
+        { animate: false },
       )
-      this.map.setZoom(newValues.zoom || this.defaultZoom)
     },
     getValues() {
       const result = {}
-      const lat = this.map.getCenter().lat.toFixed(5)
-      const lon = this.map.getCenter().lng.toFixed(5)
-      if (Number(lat) !== Number(this.defaultLatitude)) result.lat = lat
-      if (Number(lon) !== Number(this.defaultLongitude)) result.lon = lon
+      const lat = Number(this.map.getCenter().lat.toFixed(5))
+      const lon = Number(this.map.getCenter().lng.toFixed(5))
+      if (lat !== Number(this.defaultLatitude)) result.lat = lat
+      if (lon !== Number(this.defaultLongitude)) result.lon = lon
       if (Number(this.map.getZoom()) !== Number(this.defaultZoom))
         result.zoom = this.map.getZoom()
       return result

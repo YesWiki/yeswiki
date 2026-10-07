@@ -123,7 +123,7 @@ class ThemeManager implements EventSubscriberInterface
             foreach ($keysToVerify as $val) {
                 $requested[$val] = null;
                 $requestVal = CurrentRequest::input($request, $val);
-                if (!empty($requestVal)) {
+                if (is_string($requestVal) && $requestVal !== '') {
                     $path = str_replace('custom/', '', $requestVal);
                     if (preg_match('/\//', $path, $matches)) {
                         exit('ERROR: Suspicious path traversal attempt.');

@@ -13,6 +13,7 @@ use YesWiki\Kernel\Component\ProvidesComponents;
 use YesWiki\Kernel\Component\Setting;
 use YesWiki\Kernel\Component\SettingGroup;
 use YesWiki\Kernel\Performable\RegisteredAction;
+use YesWiki\Kernel\Service\HtmlPurifierService;
 use YesWiki\Kernel\Service\PerformableArguments;
 use YesWiki\Kernel\Service\RuntimeConfig;
 use YesWiki\Kernel\Service\UrlFormatter;
@@ -347,7 +348,7 @@ class AttachAction extends YesWikiAction implements RegisteredAction, ProvidesCo
             ? $this->sizedFileUrl($request, $this->fileUrl($request, $fullFilename))
             : $this->getService(Storage::class)->url($imgName);
         $img = '<img loading="lazy" class="img-responsive" src="' . $imgSrc . '" '
-            . 'alt="' . $request->desc . ($request->link ? "\nLien vers: $request->link" : '') . '"'
+            . 'alt="' . $request->desc . ($request->link ? "\nLien vers: " . htmlspecialchars($request->link, ENT_QUOTES) : '') . '"'
             . (!empty($width) ? ' width="' . $width . '"' : '')
             . (!empty($height) ? ' height="' . $height . '"' : '') . ' />';
 
@@ -365,8 +366,8 @@ class AttachAction extends YesWikiAction implements RegisteredAction, ProvidesCo
             $link = '<a href="' . $this->fileUrl($request, $fullFilename, true) . '"' . $classDataForLinks . '>';
         }
 
-        $caption = !empty($request->caption) ? '<figcaption>' . $request->caption . '</figcaption>' : '';
-        $legend = !empty($request->legend) ? '<div class="legend">' . $request->legend . '</div>' : '';
+        $caption = !empty($request->caption) ? '<figcaption>' . $this->getService(HtmlPurifierService::class)->cleanHTML($request->caption) . '</figcaption>' : '';
+        $legend = !empty($request->legend) ? '<div class="legend">' . $this->getService(HtmlPurifierService::class)->cleanHTML($request->legend) . '</div>' : '';
         $data = '';
         if (is_array($request->data)) {
             foreach ($request->data as $key => $value) {
@@ -380,14 +381,14 @@ class AttachAction extends YesWikiAction implements RegisteredAction, ProvidesCo
 
         return ($notAligned ? '<div>' : '')
             . ($link ?? '')
-            . "<figure class=\"$request->classes\" $data>$img$caption$legend</figure>"
+            . '<figure class="' . htmlspecialchars($request->classes, ENT_QUOTES) . "\" $data>$img$caption$legend</figure>"
             . ($link !== null ? '</a>' : '')
             . ($notAligned ? '</div>' : '');
     }
 
     private function asLink(AttachRequest $request, string $fullFilename): string
     {
-        return '<a href="' . $this->fileUrl($request, $fullFilename, true) . '">' . ($request->desc ?: $request->file) . '</a>';
+        return '<a href="' . $this->fileUrl($request, $fullFilename, true) . '">' . ($request->desc ?: htmlspecialchars($request->file, ENT_QUOTES)) . '</a>';
     }
 
     private function asVideo(AttachRequest $request, string $fullFilename): string

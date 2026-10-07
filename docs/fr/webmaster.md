@@ -18,21 +18,23 @@ membre des [chatons](https://chatons.org).
 - Vous avez téléchargé la dernière version de YesWiki sur le site
   [yeswiki.net](https://yeswiki.net/?PageCreer)
 - Vous disposez d'un espace d'hébergement :
-  - avec une version de `PHP` supérieure à 8.2 (8.5 recommandée)
-  - une base de données SQL `MariaDB` > 10.2 ou `MYSQL` >= 8.0 (⚠️ il faut une
-    version qui supporte JSON)
-  - des droits d'accès à l'hébergement (codes FTP et MYSQL)
+  - avec `PHP` 8.3 ou plus récent
+  - une base de données `MariaDB` > 10.2 ou `MySQL` >= 8.0 (⚠️ il faut une
+    version qui supporte JSON), `PostgreSQL` 12 ou plus récent, ou `SQLite`
+    (un simple fichier, rien à installer)
+  - des droits d'accès à l'hébergement (codes FTP et base de données)
   - un logiciel sur votre ordinateur pour faire du FTP (le client FTP libre
     [FileZilla](https://filezilla-project.org/) par exemple)
 
 **Suppléments d'information :**
 
 - [Voir les instructions spécifiques pour l'installation sur les hébergements Free.fr](https://yeswiki.net/?DocumentationInstallationFree)
-- En cas de bug pour les mises à jour sur certains systèmes très légers,
-  vérifiez la présence des librairies `php-curl`, `php-filter`, `php-gd`,
-  `php-iconv`, `php-json`, `php-mbstring`, `php-mysqli`, `php-pcre` et `php-zip`
-  ; la liste à jour des extensions est décrite dans
-  [le fichier composer.json](https://github.com/YesWiki/yeswiki/blob/doryphore/composer.json).
+- Vérifiez la présence des extensions PHP demandées. Celles qui manquent le plus
+  souvent sur un hébergement mutualisé sont `gd` et `zip` (et `intl`, qui est
+  facultative mais améliore la recherche). Il faut aussi
+  l'extension de votre base de données : `pdo_mysql`, `pdo_pgsql` ou
+  `pdo_sqlite`. La liste complète est dans le fichier `INSTALL.md`, et la liste
+  de référence dans `composer.json`.
 - Les extensions peuvent nécessiter des librairies supplémentaires. Vérifiez le
   contenu du fichier README.md de chacune (ex.:
   [ferme](https://github.com/YesWiki/yeswiki-extension-ferme/blob/doryphore/README.md),
@@ -264,6 +266,54 @@ le paramètre `rewrite_mode` à `1` sans faire de re-écriture d'url, ni enlever
 `?` de `base_url`, pourrait entrainer un dysfonctionnement de YesWiki, il suffit
 de remettre `rewrite_mode` à `0` pour corriger le problème.
 
+##### Configuration nginx
+
+Pour un wiki installé à la racine du domaine, partez de la configuration de
+l'image Docker de YesWiki, `docker/nginx.conf`.
+
+Pour un wiki dans un sous-dossier, ici `/test-yeswiki/`, avec les fichiers dans
+`/var/www/html/test-yeswiki/` :
+
+```nginx
+server {
+    listen 80;
+    server_name www.example.net;
+    root /var/www/html;
+    index index.php;
+
+    location /test-yeswiki/ {
+        try_files $uri $uri/ /test-yeswiki/index.php$is_args$args;
+    }
+
+    location ~* /(.*/)?private/ {
+        deny all;
+        return 403;
+    }
+
+    location ~ [^/]\.php(/|$) {
+        fastcgi_split_path_info ^(.+?\.php)(/.*)$;
+        include fastcgi_params;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        fastcgi_param PATH_INFO $fastcgi_path_info;
+        fastcgi_pass unix:/run/php/php8.4-fpm.sock;
+    }
+}
+```
+
+Adaptez le nom du sous-dossier et le socket de PHP-FPM à votre serveur. Le nom
+du dossier sur le disque doit être celui de l'adresse : si les fichiers sont
+ailleurs, faites un lien symbolique `/var/www/html/test-yeswiki` vers eux.
+
+La même configuration sert avec ou sans `?` dans la `base_url` :
+`https://www.example.net/test-yeswiki/?` avec `rewrite_mode` à `0`, ou
+`https://www.example.net/test-yeswiki/` avec `rewrite_mode` à `1`. Toute
+adresse qui ne correspond pas à un fichier part vers `index.php`, qui lit la page
+demandée dans l'adresse d'origine. Il n'y a donc pas de liste de dossiers à
+tenir à jour. Sans `?`, seule une page qui porte le nom exact d'un fichier ou
+d'un dossier du wiki (`files`, `cache`…) reste inaccessible. Les fichiers CSS et
+JavaScript que le wiki publie dans `cache/assets/` passent par le même chemin
+la première fois, avant d'exister sur le disque.
+
 ##### Envoyer un mail aux @admins à chaque nouvel ajout de fiche
 
     'BAZ_ENVOI_MAIL_ADMIN' => true
@@ -413,6 +463,53 @@ Il est parfois nécessaire de contacter l'organisation qui vous fournit l'accès
 mail pour demander comment remplir cette configuration. Sinon, aller voir du
 coté de la base d'erreur de la librairie utilisée :
 [la doc de phpMailer](https://github.com/PHPMailer/PHPMailer/wiki/Troubleshooting).
+
+#### Signer les mails avec DKIM
+
+Certaines messageries, Gmail en tête, refusent ou classent en spam les mails
+sans signature DKIM. YesWiki peut signer ses mails, quel que soit le mode
+d'envoi (`mail`, `sendmail` ou `smtp`).
+
+1. Générez une paire de clés dans le dossier `private` du wiki, que le serveur
+   web ne doit pas servir (voir
+   [Protéger le dossier private](#protéger-le-dossier-private)) :
+
+   ```bash
+   mkdir -p private/keys
+   openssl genrsa -out private/keys/dkim.private 2048
+   openssl rsa -in private/keys/dkim.private -pubout -out private/keys/dkim.public
+   ```
+
+2. Publiez la clé publique dans le DNS du domaine de l'adresse d'envoi, avec un
+   enregistrement TXT nommé `<sélecteur>._domainkey`, par exemple
+   `yeswiki._domainkey.mondomaine.ext`. Sa valeur est `v=DKIM1; k=rsa; p=`
+   suivi du contenu de `private/keys/dkim.public`, sans les lignes
+   `-----BEGIN…` et `-----END…` ni les retours à la ligne.
+
+3. Dans `yeswiki.config.php`, ou depuis la page de configuration du wiki
+   (groupe « Envoi des e-mails ») :
+
+   ```php
+   'contact_from' => 'wiki@mondomaine.ext',
+   'contact_dkim_domain' => 'mondomaine.ext',
+   'contact_dkim_selector' => 'yeswiki',
+   'contact_dkim_private_key' => 'private/keys/dkim.private',
+   ```
+
+   Les variables d'environnement `CONTACT_DKIM_DOMAIN`, `CONTACT_DKIM_SELECTOR`
+   et `CONTACT_DKIM_PRIVATE_KEY` font la même chose.
+
+Un chemin de clé relatif part du dossier du wiki et doit rester sous
+`private/keys/`. Un chemin absolu sert pour une clé gardée hors du wiki. Le
+domaine DKIM doit être celui de l'adresse d'envoi (`contact_from`). YesWiki ne
+signe que si les trois paramètres `contact_dkim_*` sont remplis et que le
+fichier de clé est lisible. Sinon les mails partent sans signature, comme avant.
+
+Les demandes d'inscription et de désinscription à une liste de diffusion
+partent de l'adresse de la personne qui les fait, et non de `contact_from`,
+puisque c'est elle que la liste doit inscrire. Elles restent signées pour le
+domaine du wiki, sans identité DKIM (`i=`), ce qui ne suffit pas toujours à
+passer le contrôle DMARC du domaine de cette personne.
 
 ### Migrer son wiki
 

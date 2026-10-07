@@ -9,6 +9,7 @@ use YesWiki\Content\Service\EntryManager;
 use YesWiki\Content\Service\FormManager;
 use YesWiki\Content\Service\ListManager;
 use YesWiki\Files\Service\Storage;
+use YesWiki\Kernel\Service\HtmlPurifierService;
 use YesWiki\Kernel\Service\PinnedFetcher;
 use YesWiki\Kernel\Service\SsrfUrlValidator;
 
@@ -398,6 +399,11 @@ class ImporterManager
             $this->storage->writeStream($destPath, $body);
         } finally {
             fclose($body);
+        }
+        if (!$this->services->get(HtmlPurifierService::class)->cleanStoredFile($destPath)) {
+            echo 'Fichier "' . $sourceUrl . '" non conservé : ' . _t('ERROR_UNSAFE_FILE') . "\n";
+
+            return '';
         }
 
         return $destFile;

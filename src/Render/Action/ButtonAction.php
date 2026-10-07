@@ -155,8 +155,8 @@ class ButtonAction extends YesWikiAction implements RegisteredAction, ProvidesCo
             echo '<div class="yw-alert yw-alert--danger"><strong>' . _t('TEMPLATE_ACTION_BUTTON') . '</strong> : ' . _t('TEMPLATE_LINK_PARAMETER_REQUIRED') . '.</div>' . "\n";
         } else {
             $btn = '<a'
-                . ' href="' . $link . '"'
-                . (!empty($class) ? ' class="' . $class . '"' : '')
+                . ' href="' . htmlspecialchars($link, ENT_QUOTES) . '"'
+                . (!empty($class) ? ' class="' . htmlspecialchars($class, ENT_QUOTES) . '"' : '')
                 . (!empty($datasize) ? ' data-size="' . $datasize . '"' : '')
                 . ((!empty($datasize) && empty($linkParts)) ? ' data-iframe="1"' : '')
                 . (!empty($title) ? ' title="' . htmlentities($title, ENT_COMPAT, YW_CHARSET) . '"' : '');

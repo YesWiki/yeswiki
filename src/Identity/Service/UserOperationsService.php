@@ -10,6 +10,7 @@ use YesWiki\Identity\Exception\BadFormatPasswordException;
 use YesWiki\Identity\Exception\DeleteUserException;
 use YesWiki\Identity\Exception\UserEmailAlreadyUsedException;
 use YesWiki\Kernel\Service\DbService;
+use YesWiki\Kernel\Service\EventDispatcher;
 use YesWiki\Kernel\Service\HibernationService;
 
 class UserOperationsService extends YesWikiController
@@ -201,6 +202,7 @@ class UserOperationsService extends YesWikiController
         $this->removeFromGroups($user);
         $this->removeOwnership($user);
         $this->userManager->delete($user);
+        $this->getService(EventDispatcher::class)->yesWikiDispatch('user.deleted', ['name' => (string)$user['name']]);
     }
 
     /**

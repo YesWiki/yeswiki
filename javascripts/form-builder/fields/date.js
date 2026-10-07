@@ -13,9 +13,17 @@ export default {
       label: _t('BAZ_FORM_EDIT_DATE_TODAY_BUTTON'),
       options: { ' ': _t('NO'), today: _t('YES') },
     },
+    entry_mode: {
+      label: _t('BAZ_FORM_EDIT_DATE_ENTRY_MODE'),
+      options: {
+        '': _t('BAZ_FORM_EDIT_DATE_ENTRY_MODE_AUTO'),
+        time: _t('BAZ_FORM_EDIT_DATE_ENTRY_MODE_TIME'),
+        allday: _t('BAZ_FORM_EDIT_DATE_ENTRY_MODE_ALL_DAY'),
+      },
+    },
     hint: { label: _t('BAZ_FORM_EDIT_HELP'), value: '' },
     read_access: readConf,
     write_access: writeConf,
   },
-  advancedAttributes: ['read_access', 'write_access', 'default'],
+  advancedAttributes: ['read_access', 'write_access', 'default', 'entry_mode'],
 }

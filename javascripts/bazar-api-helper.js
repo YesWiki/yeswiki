@@ -114,7 +114,6 @@ ywInitEach('.page', (pageElement) => {
           if (action === 'add' && val.length > 0) {
             try {
               const entry = await loadEntry(entryId)
-              entry.antispam = 1
 
               const currentFieldValue = entry[fieldId] || ''
               entry[fieldId] = addCommaSeparatedString(currentFieldValue, val)

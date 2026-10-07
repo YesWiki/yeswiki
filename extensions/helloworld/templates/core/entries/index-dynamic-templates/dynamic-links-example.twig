@@ -13,9 +13,10 @@
       {{ _t('BAZ_NO_RESULT') }}
     </div>
 
-    <a v-for="entry in entriesToDisplay" :key="entry.id_fiche" 
-        class="bazar-entry" 
-        @click="openEntry(entry)" 
+    <a v-for="entry in entriesToDisplay" :key="entry.tag"
+        class="bazar-entry"
+        :href="entry.url"
+        @click.prevent="openEntry(entry)"
         >
 
       <entry-field :entry="entry" prop="bf_titre"></entry-field>

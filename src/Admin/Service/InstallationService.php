@@ -746,6 +746,19 @@ class InstallationService
         return $file;
     }
 
+    /** Adapts the base url ending to the rewrite mode. */
+    public static function baseUrlForRewriteMode(string $baseUrl, bool $rewriteMode): string
+    {
+        if ($rewriteMode && str_ends_with($baseUrl, '/?')) {
+            return substr($baseUrl, 0, -1);
+        }
+        if (!$rewriteMode && str_ends_with($baseUrl, '/')) {
+            return $baseUrl . '?';
+        }
+
+        return $baseUrl;
+    }
+
     protected function writeConfigFile(): void
     {
         $program = new ProgramVersion();
@@ -758,6 +771,9 @@ class InstallationService
             if (isset($this->config[$name])) {
                 $this->config[$name] = in_array($this->config[$name], ['1', true, 'true'], true);
             }
+        }
+        if (isset($this->config['base_url'], $this->config['rewrite_mode']) && is_string($this->config['base_url'])) {
+            $this->config['base_url'] = self::baseUrlForRewriteMode(trim($this->config['base_url']), (bool)$this->config['rewrite_mode']);
         }
 
         $this->config += $this->defaultLayout();

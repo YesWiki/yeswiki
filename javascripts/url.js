@@ -240,13 +240,15 @@ export function updateHash(
     overrideQuery: true,
   })
 
-  history.pushState(
-    {},
-    '',
-    vMergedParams
-      ? `#${encodeURIComponent(vMergedParams)}`
-      : location.pathname + location.search,
-  )
+  const { anchor } = window.ywSplitHash ? window.ywSplitHash() : { anchor: '' }
+  let vNewUrl = location.pathname + location.search
+  if (vMergedParams) {
+    vNewUrl = `#${anchor ? `${anchor}&` : ''}${encodeURIComponent(vMergedParams)}`
+  } else if (anchor) {
+    vNewUrl = `#${anchor}`
+  }
+
+  history.pushState(history.state ?? {}, '', vNewUrl)
 
   updateExportLinks(vMergedParams)
 }

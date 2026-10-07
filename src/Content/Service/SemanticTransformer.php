@@ -62,7 +62,6 @@ class SemanticTransformer
         }
 
         return array_merge([
-            'antispam' => 1,
             'form_id' => $data['form_id'] ?? '',
         ], $fields);
     }

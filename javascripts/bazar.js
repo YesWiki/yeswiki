@@ -19,12 +19,7 @@ ywInitEach('body', () => {
     })
   })
 
-  ywInitEach('input[name=antispam]', (inputParam) => {
-    const input = inputParam
-    input.value = '1'
-  })
-
-  ywInitEach('#formulaire, #map, #calendar, .accordion', (el) => {
+  ywInitEach('.bazar-form, #map, #calendar, .accordion', (el) => {
     el.addEventListener('dblclick', (e) => {
       e.preventDefault()
       e.stopPropagation()
@@ -84,20 +79,22 @@ ywInitEach('body', () => {
     }
   })
 
-  const enterTrapSelector =
-    'form#formulaire .yw-form-group' + ' input.yw-input[type=text]'
-  document.querySelectorAll(enterTrapSelector).forEach((item) => {
-    item.addEventListener(
-      'keydown',
-      (event) => {
-        if (event.key === 'Enter') {
-          event.preventDefault()
-          event.stopPropagation()
-        }
-      },
-      true,
-    )
-  })
+  document.addEventListener(
+    'keydown',
+    (event) => {
+      if (
+        event.key === 'Enter' &&
+        event.target.matches &&
+        event.target.matches(
+          'form.bazar-form .yw-form-group input.yw-input[type=text]',
+        )
+      ) {
+        event.preventDefault()
+        event.stopPropagation()
+      }
+    },
+    true,
+  )
 
   const requirementHelper = {
     requiredInputs: [],
@@ -194,9 +191,7 @@ ywInitEach('body', () => {
       return true
     },
     emailChecking(input) {
-      /* eslint-disable no-useless-escape -- a block, not `-next-line`: the formatter is
-         free to move this regex onto a line of its own, and a next-line directive then
-         lands on the assignment instead of on the pattern it was written for. */
+      /* eslint-disable no-useless-escape */
       const reg =
         /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
       /* eslint-enable no-useless-escape */
@@ -442,9 +437,7 @@ ywInitEach('body', () => {
         })
       })
     },
-    initListeners() {
-      const form = document.getElementById('formulaire')
-      if (!form) return
+    initListeners(form) {
       this.initRequiredInputs(form)
       this.requiredInputs.forEach((input) => {
         const inputType = this.getInputType(input)
@@ -459,15 +452,19 @@ ywInitEach('body', () => {
     },
   }
 
-  requirementHelper.initListeners()
-  const formulaire = document.getElementById('formulaire')
-  if (formulaire) {
-    formulaire.addEventListener('submit', (e) => {
-      formulaire.classList.add('submitted')
+  document.addEventListener(
+    'submit',
+    (e) => {
+      const form = e.target
+      if (!(form instanceof HTMLFormElement) || !form.matches('.bazar-form')) {
+        return
+      }
+      if (window.ywBotGuard?.isPending(form)) return
+      form.classList.add('submitted')
       try {
-        if (requirementHelper.run(formulaire)) {
+        if (requirementHelper.run(form)) {
           setTimeout(() => {
-            formulaire
+            form
               .querySelectorAll('.form-actions button[type=submit]')
               .forEach((button) => {
                 button.setAttribute('disabled', 'disabled')
@@ -484,32 +481,30 @@ ywInitEach('body', () => {
         console.warn(error.message)
       }
       e.preventDefault()
-    })
-
-    formulaire.removeAttribute('onsubmit')
-  }
-
-  const startDate = document.querySelector(
-    '#formulaire #bf_date_debut_evenement',
+    },
+    true,
   )
-  const endDate = document.querySelector('#formulaire #bf_date_fin_evenement')
-  if (startDate && endDate) {
-    const startAllDay = document.querySelector(
+
+  function initEventDates(form) {
+    const startDate = form.querySelector('#bf_date_debut_evenement')
+    const endDate = form.querySelector('#bf_date_fin_evenement')
+    if (!startDate || !endDate) return
+    const startAllDay = form.querySelector(
       'select[name="bf_date_debut_evenement_allday"]',
     )
-    const endAllDay = document.querySelector(
+    const endAllDay = form.querySelector(
       'select[name="bf_date_fin_evenement_allday"]',
     )
-    const startHour = document.querySelector(
+    const startHour = form.querySelector(
       'select[name="bf_date_debut_evenement_hour"]',
     )
-    const startMin = document.querySelector(
+    const startMin = form.querySelector(
       'select[name="bf_date_debut_evenement_minutes"]',
     )
-    const endHour = document.querySelector(
+    const endHour = form.querySelector(
       'select[name="bf_date_fin_evenement_hour"]',
     )
-    const endMin = document.querySelector(
+    const endMin = form.querySelector(
       'select[name="bf_date_fin_evenement_minutes"]',
     )
 
@@ -578,6 +573,20 @@ ywInitEach('body', () => {
     })
   }
 
+  const initialisedForms = new WeakSet()
+  function initBazarForm(form) {
+    if (initialisedForms.has(form)) return
+    initialisedForms.add(form)
+    requirementHelper.initListeners(form)
+    form.removeAttribute('onsubmit')
+    initEventDates(form)
+  }
+
+  ywInitEach('form.bazar-form', initBazarForm)
+  document.addEventListener('yw-modal-open', () => {
+    document.querySelectorAll('form.bazar-form').forEach(initBazarForm)
+  })
+
   document.querySelectorAll('.bazar-entry').forEach((entry, i) => {
     entry.querySelectorAll('[data-toggle="tab"]').forEach((link) => {
       link.setAttribute('href', `${link.getAttribute('href')}-${i}`)
@@ -592,7 +601,11 @@ ywInitEach('body', () => {
     selectAll.addEventListener('click', () => {
       let targets
       if (selectAll.dataset.target) {
-        targets = document.querySelectorAll(selectAll.dataset.target)
+        const form = selectAll.closest('form')
+        targets = form ? form.querySelectorAll(selectAll.dataset.target) : []
+        if (targets.length === 0) {
+          targets = document.querySelectorAll(selectAll.dataset.target)
+        }
       } else {
         const controls = selectAll.closest('.controls')
         targets = controls ? controls.querySelectorAll('.yeswiki-checkbox') : []
@@ -619,6 +632,15 @@ ywInitEach('body', () => {
     el.style.display = 'none'
   }
 
+  function topLevelEntries(container) {
+    return Array.from(container.querySelectorAll('.bazar-entry')).filter(
+      (entry) => {
+        const parentEntry = entry.parentElement.closest('.bazar-entry')
+        return !parentEntry || !container.contains(parentEntry)
+      },
+    )
+  }
+
   const bazarList = []
   ywInitEach('.facette-container:not(.dynamic) .filter-bazar', (filter) => {
     filter.addEventListener('keyup', () => {
@@ -629,14 +651,15 @@ ywInitEach('body', () => {
       }
       const containerEl = document.getElementById(target)
       if (!containerEl) return
+      const entries = topLevelEntries(containerEl)
       if (bazarList[target] === undefined) {
         bazarList[target] = []
-        containerEl.querySelectorAll('.bazar-entry').forEach((entry) => {
+        entries.forEach((entry) => {
           bazarList[target][entry.dataset.tag] = entry.textContent.toLowerCase()
         })
       }
       let nbresults = 0
-      containerEl.querySelectorAll('.bazar-entry').forEach((entry) => {
+      entries.forEach((entry) => {
         const text = bazarList[target][entry.dataset.tag] || ''
         const matches = text.indexOf(searchstring) > -1
         if (matches) {

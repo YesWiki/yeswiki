@@ -65,6 +65,8 @@
     {% endfor %}
   {% endif %}
 
+  {{ botGuardFields|default('')|raw }}
+
   <nav class="yw-page-actions yw-page-actions--editing" aria-label="{{ _t('TEMPLATE_SAVE') }}">
     {{ _self.saveButton(saveValue, true) }}
     <div class="yw-page-actions__more">

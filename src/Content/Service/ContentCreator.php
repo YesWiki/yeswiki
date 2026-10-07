@@ -56,7 +56,6 @@ class ContentCreator
 
         $entryManager = $this->container->get(EntryManager::class);
         $data['form_id'] = $formId;
-        $entryManager->validate($data, EntryManager::VALIDATE_FLAG_ANTISPAM);
 
         switch ($contentType) {
             case ContentTypeSchema::TYPE_PAGE:

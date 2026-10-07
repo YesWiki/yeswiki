@@ -47,7 +47,7 @@ class CacheClearer
     }
 
     /**
-     * Empties `cache/` itself: thumbnails, remote copies, the purifier, the hashcash secret, and the two above. Everything there is rebuilt on demand.
+     * Empties `cache/`.
      *
      * @return int how many top-level entries went
      */

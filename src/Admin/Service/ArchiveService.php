@@ -1420,7 +1420,7 @@ class ArchiveService
         }
 
         return count(array_filter($whitelistedRootFolders, function ($folder) use ($relativeFolderName) {
-            return strpos($relativeFolderName, $folder) === 0;
+            return $relativeFolderName === $folder || str_starts_with($relativeFolderName, $folder . '/');
         })) > 0;
     }
 

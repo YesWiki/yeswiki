@@ -32,7 +32,7 @@
           {{- csv|raw -}}
         </pre>
 
-        <a href="#" id="btnCSV" 
+        <a href="#" id="btnCSV" data-filename="{% block downloadFileName %}{{ filename }}{% endblock %}"
             class="yw-btn btn-neutral link-csv-file">
           <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#download"/></svg>
             {% block appendToFormButtonLabel %}{{- _t('BAZ_TELECHARGER_FICHIER_EXPORT_CSV') -}}{% endblock %}
@@ -42,20 +42,4 @@
   {% endblock %}
 </form>
 
-<script type="module">
-	import { downloadCSV, removeCSVCrochet } from '/javascripts/bazar.js'
-
-	window.addEventListener ("load", function ()
-	{
-		const cCSVBtn = document.getElementById('btnCSV');
-
-		if (cCSVBtn !== null)
-		{
-			cCSVBtn.addEventListener('click', function ()
-			{
-				downloadCSV(removeCSVCrochet(document.querySelector('.precsv').innerHTML), '{% block downloadFileName %}{{filename}}{% endblock %}');return false;
-			});		
-		}
-	});	  
-</script>
-
+{{ include_javascript('javascripts/bazar-csv-download.js', false, true) }}

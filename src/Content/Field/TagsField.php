@@ -79,12 +79,13 @@ class TagsField extends EnumField
 
         if (!empty($tags[0])) {
             sort($tags);
-            $tags = array_map(function ($tag) {
-                return '<a class="tag-label label label-info" href="' . $this->getService(UrlFormatter::class)->href('', 'search', ['tags' => trim($tag)]) . '" title="' . _t('TAGS_SEE_ALL_PAGES_WITH_THIS_TAGS') . '">' . $tag . '</a>';
-            }, $tags);
+            $tags = array_map(fn ($tag) => [
+                'label' => $tag,
+                'url' => $this->getService(UrlFormatter::class)->href('', 'search', ['tags' => trim($tag)]),
+            ], $tags);
 
             return $this->render('@core/fields/tags.twig', [
-                'value' => join(' ', $tags),
+                'tags' => $tags,
             ]);
         }
 

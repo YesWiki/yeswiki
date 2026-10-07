@@ -1,0 +1,13 @@
+{{ include_javascript('javascripts/bot-guard.js') }}
+<div class="yw-bot-guard-fields">
+  <input type="hidden" name="{{ tokenName }}" value="{{ token }}">
+  <div class="yw-bot-guard" aria-hidden="true">
+    <label for="{{ honeypotName }}">{{ honeypotLabel }}</label>
+    <input type="text" id="{{ honeypotName }}" name="{{ honeypotName }}" value="" tabindex="-1" autocomplete="off">
+  </div>
+  {% if altchaChallenge %}
+    {{ include_javascript('javascripts/vendor/altcha/altcha.i18n.min.js', false, true) }}
+    <altcha-widget name="{{ altchaName }}" challenge="{{ altchaChallenge }}" language="{{ language }}" auto="onfocus" configuration="{{ {hideFooter: true}|json_encode }}"></altcha-widget>
+    <p class="yw-bot-guard-active" hidden>{{ icon('shield') }} {{ _t('BOT_GUARD_ACTIVE') }}</p>
+  {% endif %}
+</div>

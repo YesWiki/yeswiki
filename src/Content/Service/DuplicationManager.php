@@ -277,7 +277,6 @@ class DuplicationManager
                 if ($titleField !== null) {
                     $entry[$titleField] = $data['newTitle'];
                 }
-                $entry['antispam'] = 1;
                 $this->container->get(EntryManager::class)->create($entry['form_id'], $entry);
                 break;
 
@@ -345,7 +344,6 @@ class DuplicationManager
         } elseif ($req['type'] === 'entry') {
             $entry = json_decode($newBody, true);
             $entry['tag'] = $tag;
-            $entry['antispam'] = 1;
             $this->container->get(EntryManager::class)->create($entry['form_id'], $entry, false, $req['sourceUrl']);
         }
     }

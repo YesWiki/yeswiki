@@ -23,6 +23,9 @@ use YesWiki\Content\Service\SemanticTransformer;
 use YesWiki\Core\ApiResponse;
 use YesWiki\Core\YesWikiController;
 use YesWiki\Identity\Service\AclService;
+use YesWiki\Kernel\Asset\AssetEntry;
+use YesWiki\Kernel\Asset\AssetSet;
+use YesWiki\Kernel\Service\AssetRegistry;
 use YesWiki\Kernel\Service\TripleStore;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\MarkdownFormatterService;
@@ -106,7 +109,7 @@ class EntryApiController extends YesWikiController
                 return $this->getAllSemanticEntries($formId, $entries);
             } elseif ($output == 'html') {
                 foreach ($entries as $id => $entry) {
-                    $entries[$id]['html_output'] = $this->getService(EntryController::class)->view($entry, '', false);
+                    $entries[$id]['html_output'] = $this->renderWithItsStyles(fn () => $this->getService(EntryController::class)->view($entry, '', false));
                 }
             } elseif ($output == 'geojson') {
                 $entries = $this->getService(GeoJSONFormatter::class)->formatToGeoJSON($entries);
@@ -151,7 +154,7 @@ class EntryApiController extends YesWikiController
             && $this->getService(EntryFastAccessService::class)->isFastAccess($output, $selectedEntries, $get->all())) {
             $entryId = explode(',', $selectedEntries)[0];
             if ($this->getService(AclService::class)->hasAccess('read', $entryId)) {
-                $html = $this->getService(EntryController::class)->view($entryId, '', true);
+                $html = $this->renderWithItsStyles(fn () => $this->getService(EntryController::class)->view($entryId, '', true));
                 $isInIframe = $get->get('isInIframe');
                 if ($isInIframe && $isInIframe == 'iframe') {
                     $html = $this->getService(UrlFormatter::class)->throughIframeHandler($html);
@@ -167,6 +170,18 @@ class EntryApiController extends YesWikiController
         }
 
         return $this->getAllFormEntries([], $output, $selectedEntries);
+    }
+
+    /** Renders an entry with its template's stylesheets. */
+    private function renderWithItsStyles(callable $render): string
+    {
+        $html = '';
+        $assets = $this->getService(AssetRegistry::class)->capture(function () use ($render, &$html): void {
+            $html = (string)$render();
+        });
+        $styles = new AssetSet(array_filter($assets->entries(), fn (AssetEntry $entry): bool => $entry->isCss()));
+
+        return $html === '' ? '' : $styles->toHtml() . $html;
     }
 
     /**
@@ -243,7 +258,6 @@ class EntryApiController extends YesWikiController
                 $postData = $jsonData;
             }
         }
-        $postData['antispam'] = 1;
 
         try {
             if (!isset($postData['tag']) || !$this->getService(EntryManager::class)->isEntry($postData['tag'])) {
@@ -272,7 +286,6 @@ class EntryApiController extends YesWikiController
     public function createSemanticEntry($formId): Response
     {
         $postData = $this->getRequest()->request->all();
-        $postData['antispam'] = 1;
         $entry = $this->getService(EntryManager::class)->create($formId, $postData, true, $this->getRequest()->headers->get('source-url'));
 
         if (!$entry) {

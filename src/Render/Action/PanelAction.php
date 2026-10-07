@@ -8,6 +8,7 @@ use YesWiki\Kernel\Component\Component;
 use YesWiki\Kernel\Component\ProvidesComponents;
 use YesWiki\Kernel\Component\Setting;
 use YesWiki\Kernel\Performable\RegisteredAction;
+use YesWiki\Kernel\Service\HtmlPurifierService;
 use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Render\Service\GraphicalElementState;
 
@@ -61,9 +62,9 @@ class PanelAction extends YesWikiAction implements RegisteredAction, ProvidesCom
      */
     public function run()
     {
-        $title = $this->arguments['title'] ?? '';
+        $title = $this->getService(HtmlPurifierService::class)->cleanHTML((string)($this->arguments['title'] ?? ''));
 
-        $class = $this->arguments['class'] ?? '';
+        $class = htmlspecialchars((string)($this->arguments['class'] ?? ''), ENT_QUOTES);
 
         $type = $this->arguments['type'] ?? '';
         $pagetag = $this->getService(PageContext::class)->getTag();

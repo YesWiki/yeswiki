@@ -54,17 +54,22 @@ const FilterNode = {
   template: `
     <div class="filter-node-container" v-show="displayNode">
       <label :class="['filter-node', nodeClasses]">
-        <input type="checkbox" v-model="node.checked" @change="onChecked">
+        <input type="checkbox" class="filter-checkbox" v-model="node.checked" @change="onChecked">
 
         <!-- Those two spans are needed, the first one contains both the 
               label + the checkbox drawn with css with :after and :before pseudo element. 
               We want the behaviour to differ depending on where the user clicks 
             (checkbox itself or label) -->
         <span>
-          <span class="filter-node-label-wrapper" @click="labelClicked"> 
+          <span class="filter-node-label-wrapper" @click="labelClicked"
+                :tabindex="node.children.length > 0 ? 0 : null"
+                :role="node.children.length > 0 ? 'button' : null"
+                :aria-expanded="node.children.length > 0 ? String(expanded) : null"
+                @keydown.enter.prevent="labelClicked"
+                @keydown.space.prevent="labelClicked">
             <span class="filter-node-label">
               <span v-html="node.label" :title="nodeTitle"></span>
-              <i v-if="node.children.length > 0" class="chevron-icon fa fa-caret-down"></i>
+              <i v-if="node.children.length > 0" class="chevron-icon fa fa-caret-down" aria-hidden="true"></i>
             </span>
             <span class="count" v-if="node.count"><span>{{ node.count }}</span></span>
           </span>

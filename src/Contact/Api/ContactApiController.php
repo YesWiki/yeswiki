@@ -16,6 +16,7 @@ use YesWiki\Core\YesWikiController;
 use YesWiki\Files\Service\ProgramFiles;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\AuthenticationService;
+use YesWiki\Identity\Service\BotGuard;
 use YesWiki\Kernel\Service\Mailer;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\MarkdownFormatterService;
@@ -41,7 +42,6 @@ class ContactApiController extends YesWikiController
         $field = (string)$request->request->get('field', '');
         $infomsg = '';
         $hasReadAccess = $aclService->hasAccess('read', $pageTag);
-        // naming the receiver in the request is reserved to logged in users, like the form below
         $canChooseReceiver = !empty($this->getService(AuthenticationService::class)->getLoggedUser());
         $postedMail = trim((string)$request->request->get('mail', ''));
         $isAllowed = $hasReadAccess
@@ -74,8 +74,6 @@ class ContactApiController extends YesWikiController
                 $themeManager = $this->getService(ThemeManager::class);
                 $chemin = 'themes/' . $themeManager->getFavoriteTheme() . '/squelettes/' . $themeManager->getFavoriteSquelette();
 
-                // A squelette is a shipped template unless the wiki has its own under `custom/`,
-                // which is exactly what ProgramFiles::find() is: Instance first, Program after.
                 $pageContent = PageBody::content($page['body'] ?? []);
                 $fileContent = $this->getService(ProgramFiles::class)->find('custom/' . $chemin, $chemin);
                 $body = preg_replace('/\{\{\s*page_content[^}]*\}\}/', $pageContent, $fileContent, 1, $replaced);
@@ -133,6 +131,11 @@ class ContactApiController extends YesWikiController
             ];
         }
 
+        $botGuard = $this->getService(BotGuard::class);
+        if ($message['class'] == 'success' && ($refusal = $botGuard->check($request)) !== null) {
+            $message = ['class' => 'danger', 'message' => $botGuard->message($refusal)];
+        }
+
         if ($message['class'] == 'success') {
             $mailingList = (string)$request->request->get('mailinglist', '');
             if (!empty($mailingList)) {
@@ -155,7 +158,7 @@ class ContactApiController extends YesWikiController
                 }
             }
             $mailer = $this->getService(Mailer::class);
-            if ($mailer->send($mailSender, $nameSender, $mailReceiver, $subject, $messageTxt, $messageHtml)) {
+            if ($mailer->send($mailSender, $nameSender, $mailReceiver, $subject, $messageTxt, $messageHtml, in_array($type, ['subscribe', 'unsubscribe'], true))) {
                 if (empty($type) || $type == 'contact' || $type == 'mail') {
                     $message['message'] = _t('CONTACT_MESSAGE_SUCCESSFULLY_SENT');
                 } elseif ($type == 'subscribe') {
@@ -166,16 +169,13 @@ class ContactApiController extends YesWikiController
             } else {
                 $message['class'] = 'danger';
                 $message['message'] = _t('CONTACT_MESSAGE_NOT_SENT');
-                // Mailer used to print the relay's complaint into the page when an admin was
-                // looking, which put an Identity lookup inside the transport. The decision belongs
-                // here, where there is a response to put it in and someone who can act on it.
                 if ($this->getService(AclService::class)->isAdmin() && $mailer->lastError() !== '') {
                     $message['message'] .= ' — ' . $mailer->lastError();
                 }
             }
         }
 
-        return new ApiResponse(['type' => $message['class'], 'message' => $message['message']], Response::HTTP_OK);
+        return new ApiResponse(['type' => $message['class'], 'message' => $message['message'], 'botGuard' => $botGuard->fields()], Response::HTTP_OK);
     }
 
     /** The contact form, as an HTML fragment (ticket 35, was `/PageName/mail`). */
@@ -195,16 +195,17 @@ class ContactApiController extends YesWikiController
             $this->getService(\YesWiki\Kernel\Service\AssetRegistry::class)->addJsFile('javascripts/contact.js');
         }
 
-        $html = $this->getService(\YesWiki\Render\Service\TemplateEngine::class)->renderSafely(
+        $assets = $this->getService(\YesWiki\Kernel\Service\AssetRegistry::class)->capture(fn () => $this->getService(\YesWiki\Render\Service\TemplateEngine::class)->renderSafely(
             '@core/contact/mail-form.twig',
             [
                 'pageTag' => $pageTag,
                 'field' => (string)$request->query->get('field', ''),
                 'hasReadAccess' => $hasReadAccess,
                 'isLoggedIn' => $isLoggedIn,
+                'botGuardFields' => $this->getService(BotGuard::class)->fields(),
             ]
-        );
+        ), $html);
 
-        return new Response($html, Response::HTTP_OK, ['Content-Type' => 'text/html; charset=UTF-8']);
+        return new Response($html . $assets->toHtml(), Response::HTTP_OK, ['Content-Type' => 'text/html; charset=UTF-8']);
     }
 }

@@ -2,10 +2,12 @@
 {% extends "@core/login-form.twig" %}
 
 {% block connected %}
-    <button data-toggle="dropdown" class="btn btn-default dropdown-toggle {{ btnclass }}"><svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#user"/></svg> {{ user }} <span class="caret"></span></button>
-    <ul class="dropdown-menu">
-        {{ block('loginActions') }}
-    </ul>
+    <div class="yw-dropdown">
+        <button type="button" class="yw-btn {{ btnclass }}" data-yw-dropdown-toggle aria-haspopup="true" aria-expanded="false">{{ icon('user') }} {{ user }} <span class="yw-dropdown__caret"></span></button>
+        <ul class="yw-dropdown__menu">
+            {{ block('loginActions') }}
+        </ul>
+    </div>
 {% endblock %}
 
 {% block formClass %}login-form-dropdown{% endblock %}
@@ -23,8 +25,10 @@
 {% endblock %}
 
 {% block notConnected %}
-    <button data-toggle="dropdown" class="btn btn-default dropdown-toggle {{ btnclass }}"><svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#user"/></svg> {{ _t('LOGIN_LOGIN') }} <span class="caret"></span></button>
-    <div class="dropdown-menu">
-        {{ block('form') }}
+    <div class="yw-dropdown">
+        <button type="button" class="yw-btn {{ btnclass }}" data-yw-dropdown-toggle aria-haspopup="true" aria-expanded="false">{{ icon('user') }} {{ _t('LOGIN_LOGIN') }} <span class="yw-dropdown__caret"></span></button>
+        <div class="yw-dropdown__menu">
+            {{ block('form') }}
+        </div>
     </div>
 {% endblock %}

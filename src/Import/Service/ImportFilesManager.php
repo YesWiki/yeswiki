@@ -10,6 +10,7 @@ use YesWiki\Content\Service\PageManager;
 use YesWiki\Files\Service\AttachedFilePaths;
 use YesWiki\Files\Service\LocalFiles;
 use YesWiki\Files\Service\Storage;
+use YesWiki\Kernel\Service\HtmlPurifierService;
 use YesWiki\Kernel\Service\UrlFormatter;
 
 class ImportFilesManager
@@ -75,9 +76,6 @@ class ImportFilesManager
             }
         }
 
-        // A scratch file, then Storage: curl needs a stream and the destination may be a bucket.
-        // It also means a download that fails leaves nothing behind rather than a corrupted
-        // attachment somebody has to notice and delete.
         return $this->storage->withTemporaryFile(pathinfo($to, PATHINFO_EXTENSION), function (string $tmpPath) use ($from, $to, $output) {
             $fp = $this->localFiles->openForWriting($tmpPath);
             if ($fp === null) {
@@ -97,6 +95,9 @@ class ImportFilesManager
             }
 
             $this->storage->writeFrom($to, $tmpPath);
+            if (!$this->container->get(HtmlPurifierService::class)->cleanStoredFile($to)) {
+                throw new \Exception($output . _t('ERROR_UNSAFE_FILE') . ' ' . $from);
+            }
 
             return $output;
         });

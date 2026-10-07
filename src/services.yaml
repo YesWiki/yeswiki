@@ -224,6 +224,9 @@ services:
   YesWiki\Contact\Service\ContactDigestScheduler:
     tags:
       - { name: yeswiki.event_subscriber }
+  YesWiki\Contact\Service\MailSubscriptions:
+    tags:
+      - { name: yeswiki.event_subscriber }
 
   # An importer is constructed per data source, with that source's config key -- a scalar no
   # container can autowire. These definitions exist so ImporterManager can *find* them by

@@ -459,7 +459,7 @@ class SectionAction extends YesWikiAction implements RegisteredAction, ProvidesC
             $role = strval($this->arguments['visibility'] ?? '');
             $role = empty($role) ? $role : str_replace('\\n', "\n", $role);
             $visible = !$role || $this->getService(AclService::class)->check($role, null, false);
-            $class = ($backgroundimg ? 'background-image' : '')
+            $class = ($backgroundimg || $patternborder ? 'background-image' : '')
                 . ($patternId && !$patternborder ? ' with-bg-pattern' : '')
                 . ($patternborder ? ' pattern-border' : '')
                 . ($visible ? '' : ' remove-this-div-on-page-load ')
@@ -500,9 +500,9 @@ class SectionAction extends YesWikiAction implements RegisteredAction, ProvidesC
                 : $this->getService(PresetService::class)->inkForBackground((string)$bgcolor);
 
             echo '<!-- start of section -->
-    <section' . (!empty($id) ? ' id="' . $id . '"' : '') . ' class="' . $class
-                . ($imageUrl !== null ? ' with-bg-image' : '') . '" data-file="' . $file . '" style="'
-                . (!empty($bgcolor) ? 'background-color:' . $bgcolor . '; ' : '')
+    <section' . (!empty($id) ? ' id="' . htmlspecialchars($id, ENT_QUOTES) . '"' : '') . ' class="' . htmlspecialchars($class, ENT_QUOTES)
+                . ($imageUrl !== null ? ' with-bg-image' : '') . '" data-file="' . htmlspecialchars((string)$file, ENT_QUOTES) . '" style="'
+                . (!empty($bgcolor) ? 'background-color:' . htmlspecialchars((string)$bgcolor, ENT_QUOTES) . '; ' : '')
 
                 . ($sectionInk !== '' ? 'color:' . $sectionInk . '; ' : '')
                 . (!empty($height) ? 'height:' . $height . 'px; ' : '')

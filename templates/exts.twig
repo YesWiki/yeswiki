@@ -78,7 +78,8 @@
                         {% include '@core/update-action-button.twig' with {
                             params: {action: 'delete', package: ext.deleteLink|split('delete=')|slice(1,1)|first},
                             buttonClass: 'yw-btn yw-btn--sm yw-btn--danger',
-                            label: _t('AU_DELETE_EXT')
+                            label: _t('AU_DELETE_EXT'),
+                            confirmMessage: _t('AU_DELETE_EXT_CONFIRM')|replace({'{name}': ext.name})
                         } only %}
                     {% else %}
                         <button disabled

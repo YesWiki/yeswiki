@@ -552,27 +552,34 @@ a.yw-item__title:focus-visible {
 
 .entry-list-dynamic-container .pagination > li {
   margin: 0 var(--yw-space-sm-x);
+}
+
+.entry-list-dynamic-container .pagination > li > button {
   padding: 0 var(--yw-space-md-x);
-  cursor: pointer;
+  border: 0;
   border-radius: var(--yw-radius-sm);
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
 }
 
-.entry-list-dynamic-container .pagination > li:hover {
+.entry-list-dynamic-container .pagination > li > button:hover {
   font-weight: bold;
 }
 
-.entry-list-dynamic-container .pagination > li.active {
+.entry-list-dynamic-container .pagination > li.active > button {
   background-color: var(--yw-primary);
-  color: var(--yw-text-muted);
+  color: var(--yw-on-primary);
   font-weight: bold;
-}
-
-.entry-list-dynamic-container .pagination > li i {
-  color: var(--yw-primary);
 }
 
 .entry-list-dynamic-container .pagination > li.disabled {
   opacity: 0.6;
+}
+
+.entry-list-dynamic-container .pagination > li.disabled > button {
+  cursor: default;
 }
 
 .entry-container.modal-body {
@@ -971,6 +978,14 @@ a.ical-export-button {
 
   .fc .fc-toolbar-title {
     font-size: 1.2em;
+  }
+}
+
+@media (width <= 600px) {
+  .fc .fc-daygrid-week-number {
+    font-size: 0.6em;
+    background: none;
+    color: var(--yw-text-muted);
   }
 }
 
@@ -2507,7 +2522,7 @@ label input.filter-checkbox:focus ~ span {
   flex-shrink: 0;
 }
 
-#formulaire .form-actions button[type='submit'].submit-disabled {
+.bazar-form .form-actions button[type='submit'].submit-disabled {
   cursor: progress;
 }
 
@@ -2763,7 +2778,8 @@ label input.filter-checkbox:focus ~ span {
 }
 
 .bazar-map-container .bazar-marker.xl.selected .entry-name,
-.bazar-map-container .bazar-marker.xl:hover .entry-name {
+.bazar-map-container .bazar-marker.xl:hover .entry-name,
+.bazar-map-container .bazar-marker.xl:focus-visible .entry-name {
   display: block;
 }
 

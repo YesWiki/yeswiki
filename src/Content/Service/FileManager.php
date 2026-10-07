@@ -197,9 +197,8 @@ class FileManager
         $storedFilename = $this->suggestFreeFilename($this->sanitizeFilename($originalFilename));
         $stored = self::STORAGE_DIR . '/' . $storedFilename;
         $this->storage->writeFrom($stored, $uploadedFile->getPathname());
-        if (in_array($ext, ['svg', 'xml'], true)) {
-            $purifier = $this->container->get(HtmlPurifierService::class);
-            $this->storage->withLocalTarget($stored, fn (string $local) => $purifier->cleanFile($local, $ext));
+        if (!$this->container->get(HtmlPurifierService::class)->cleanStoredFile($stored)) {
+            throw new \InvalidArgumentException(_t('ERROR_UNSAFE_FILE'));
         }
 
         return [

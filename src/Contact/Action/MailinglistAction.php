@@ -53,7 +53,7 @@ class MailinglistAction extends YesWikiAction implements RegisteredAction
                     echo '<div class="well" style="width:600px; height:150px; overflow:auto; ">';
                     foreach ($_POST['mails'] as $email) {
                         echo _t('CONTACT_SENT_TO_THE_LIST') . ' : ' . $listaction . ' ' . _t('CONTACT_THE_EMAIL') . ' : ' . $email;
-                        echo $mailer->send($email, $email, $listaction, $_POST['action_mails'], $_POST['action_mails']) ? ' <span class="text-success">' . _t('CONTACT_OK') . '</span>' : '';
+                        echo $mailer->send($email, $email, $listaction, $_POST['action_mails'], $_POST['action_mails'], '', true) ? ' <span class="text-success">' . _t('CONTACT_OK') . '</span>' : '';
                         echo '<br />';
                     }
                     echo '</div>

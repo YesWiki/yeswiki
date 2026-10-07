@@ -37,12 +37,14 @@ class ListController extends YesWikiController
         $refusal = '';
         if ($post->has('imported-list')) {
             if ($this->listOverview->mayCreate()) {
-                foreach ($post->all('imported-list') as $listRaw) {
+                $origin = $this->importedOrigin($post->get('imported-origin'));
+                foreach ($post->all('imported-list') as $id => $listRaw) {
                     $list = is_string($listRaw) ? json_decode($listRaw, true) : null;
                     if (!is_array($list) || !isset($list['title'])) {
                         continue;
                     }
-                    $this->listManager->create($list['title'], $list['nodes'] ?? null);
+                    $nodes = is_array($list['nodes'] ?? null) ? $list['nodes'] : null;
+                    $this->listManager->import((string)$id, (string)$list['title'], $nodes, $origin);
                 }
                 echo '<div class="alert alert-success">' . _t('BAZ_LIST_IMPORT_SUCCESSFULL') . '.</div>';
             } else {
@@ -51,6 +53,16 @@ class ListController extends YesWikiController
         }
 
         return $refusal . $this->render('@core/lists/list_table.twig', $this->listOverview->all());
+    }
+
+    /** The source wiki url posted with an import, or null. */
+    private function importedOrigin(mixed $posted): ?string
+    {
+        if (!is_string($posted) || filter_var($posted, FILTER_VALIDATE_URL) === false || !preg_match('#^https?://#i', $posted)) {
+            return null;
+        }
+
+        return $posted;
     }
 
     /**

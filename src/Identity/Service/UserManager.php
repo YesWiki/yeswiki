@@ -498,7 +498,10 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
         $prefix_len = strlen(GROUP_PREFIX);
         $list = [];
         foreach ($group_list as $group) {
-            $list[] = substr($group['resource'], $prefix_len);
+            $members = array_map('trim', preg_split('/[\r\n]+/', (string)$group['value']) ?: []);
+            if (in_array($user['name'], $members, true)) {
+                $list[] = substr($group['resource'], $prefix_len);
+            }
         }
 
         return $list;

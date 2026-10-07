@@ -12,7 +12,7 @@
 
   {% set nbcol = params.columns|default(3) %}
   {% set isModal = (params.entrydisplay == 'modal' or params.entrydisplay is empty or params.entrydisplay not in ['modal','direct','newtab']) %}
-  {% set isLink = isModal or (params.entrydisplay == 'direct') %}
+  {% set isNewTab = params.entrydisplay == 'newtab' %}
 
   {% if nbcol > 2 and params.displayfields.visual and params.style == "horizontal" %}
     {% set nbcol =  2 %}
@@ -36,17 +36,18 @@
     {% endblock %}
 
     {% block iter_start %}
-    {% if isLink %}<a{% else %}<div{% endif %} v-for="entry in entriesToDisplay" :key="entry.tag"
+    <a v-for="entry in entriesToDisplay" :key="entry.tag"
         class="bazar-entry bazar-card{{ isModal ? ' modalbox' : ''}}"
-        {% if not isLink %}@click="openEntry(entry)"{% endif %}
         :class="{'with-image': Object.keys(entry).includes('visual')}"
         {% if isModal %}
           data-size="modal-lg" data-header="false" data-iframe="1"
         {% endif %}
-        {% if isLink %}
+        {% if isNewTab %}
+          :href="entry.url" target="_blank" rel="noopener"
+        {% else %}
           :href="`${entry.url + (({{ isModal ? 'true' : 'false' }} || $root.isInIframe()) ? '/iframe' : '')}`"
-          :title="entry.title"
         {% endif %}
+        :title="entry.title"
         >
     {% endblock %}
 
@@ -104,7 +105,7 @@
       </div>
 
     {% block iter_end %}
-    {% if isLink %}</a>{% else %}</div>{% endif %}
+    </a>
     {% endblock %}
 
     <spinner-loader v-if="isLoading" class="overlay"></spinner-loader>

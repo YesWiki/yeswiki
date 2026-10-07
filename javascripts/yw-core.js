@@ -186,10 +186,32 @@
     }
   }
 
+  /** Splits the URL anchor into a tab id and list parameters. */
+  function splitHash(hash = window.location.hash) {
+    const isParameter = (part) => {
+      try {
+        return decodeURIComponent(part).includes('=')
+      } catch {
+        return true
+      }
+    }
+    const parts = hash.replace(/^#/, '').split('&').filter(Boolean)
+    return {
+      anchor: parts.find((part) => !isParameter(part)) || '',
+      rest: parts.filter(isParameter).join('&'),
+    }
+  }
+  window.ywSplitHash = splitHash
+
   function recordTabInHistory(href) {
     const state = { url: href }
-    const url = window.location.pathname + window.location.search + href
-    if (window.location.hash && href !== window.location.hash) {
+    const { anchor, rest } = splitHash()
+    const url =
+      window.location.pathname +
+      window.location.search +
+      href +
+      (rest ? `&${rest}` : '')
+    if (anchor && href !== `#${anchor}`) {
       window.history.pushState(state, document.title, url)
     } else {
       window.history.replaceState(state, document.title, url)
@@ -210,8 +232,9 @@
   })
 
   ywInitEach('body', () => {
-    if (window.location.hash) {
-      const link = tabLinkFor(window.location.hash)
+    const { anchor } = splitHash()
+    if (anchor) {
+      const link = tabLinkFor(`#${anchor}`)
       if (link) activateTab(link)
     }
   })
@@ -373,6 +396,7 @@
           willOpen ? 'true' : 'false',
         )
         collapseToggle.classList.toggle('collapsed', !willOpen)
+        if (willOpen) announceReveal()
         return
       }
       if (target && target.classList.contains('yw-collapse')) {
@@ -404,9 +428,12 @@
           willOpen ? 'true' : 'false',
         )
         collapseToggle.classList.toggle('collapsed', !willOpen)
+        if (willOpen) announceReveal()
       }
       return
     }
+
+    if (e.target.closest('.yw-dropdown__menu form')) return
 
     if (e.target.closest('.yw-dropdown__menu')) {
       closeDropdowns()
@@ -463,6 +490,20 @@
   }
 
   publishHeaderBottom()
+
+  /** Fires a resize when a details element opens. */
+  function announceReveal() {
+    window.dispatchEvent(new Event('resize'))
+  }
+
+  document.addEventListener(
+    'toggle',
+    (e) => {
+      if (e.target instanceof HTMLDetailsElement && e.target.open)
+        announceReveal()
+    },
+    true,
+  )
   window.addEventListener('scroll', publishHeaderBottom, { passive: true })
   window.addEventListener('resize', publishHeaderBottom)
   document.addEventListener('htmx:afterSettle', publishHeaderBottom)

@@ -12,7 +12,8 @@ class HtmlPurifierService
 {
     public const HTMLPURIFIER_CACHE_FOLDER = 'cache/HTMLpurifier';
 
-    /** Raw HTML a page or an entry may not carry. `style` and `script` stay allowed while wikis move over from Doryphore. */
+    public const ACTIVE_CONTENT_EXTENSIONS = ['svg', 'svgz', 'html', 'htm', 'xhtml'];
+
     public const DISALLOWED_HTML_TAGS = ['title', 'textarea', 'xmp', 'noembed', 'noframes', 'plaintext'];
 
     protected ParameterBagInterface $params;
@@ -122,33 +123,22 @@ class HtmlPurifierService
         return $this->sanitizer->sanitize($content);
     }
 
-    /**
-     * @param string $filename  path to file
-     * @param string $extension file extension
-     *
-     * @return mixed false if problem or int of filesize
-     */
-    public function cleanFile(string $filename, string $extension)
+    /** Sanitizes a stored svg or html file; false when it was deleted. */
+    public function cleanStoredFile(string $path): bool
     {
-        // $filename is a leased local path: every caller comes through
-        // `Storage::withLocalTarget()`, because HTMLPurifier::cleanFile wants a filename rather
-        // than a stream (ADR-0022 names it among the four libraries that do).
-        if (!$this->localFiles->isFile($filename)) {
-            return false;
-        }
-        if (!in_array($extension, ['svg', 'html', 'htm'])) {
+        $extension = preg_replace('/_$/', '', strtolower(pathinfo($path, PATHINFO_EXTENSION)));
+        if (!in_array($extension, self::ACTIVE_CONTENT_EXTENSIONS, true) || !$this->storage->exists($path)) {
             return true;
         }
-        $content = $this->localFiles->read($filename);
-        if ($content === '') {
-            return false;
-        }
-
+        $content = $this->storage->read($path);
         $cleaned = $extension === 'svg' ? $this->sanitizeSVG($content) : $this->cleanHTML($content);
-        if ($cleaned === false) {
+        if ($cleaned === false || ($cleaned === '' && $content !== '')) {
+            $this->storage->delete($path);
+
             return false;
         }
+        $this->storage->write($path, $cleaned);
 
-        return $this->localFiles->write($filename, $cleaned) ? \strlen($cleaned) : false;
+        return true;
     }
 }

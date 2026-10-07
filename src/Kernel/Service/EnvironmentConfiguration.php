@@ -37,6 +37,9 @@ class EnvironmentConfiguration
         'contact_smtp_secure',
         'contact_smtp_verify_peer',
         'contact_reply_to',
+        'contact_dkim_domain',
+        'contact_dkim_selector',
+        'contact_dkim_private_key',
         'contact_debug',
     ];
 

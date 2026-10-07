@@ -42,6 +42,18 @@
                     {% if placeholders[key] is not null -%}placeholder="{{ _t('EDIT_CONFIG_CURRENT_VALUE') }}: {{ placeholders[key] }}"{%- endif %}
                     />
                 {% endif %}
+                {% if key == 'altcha' %}
+                  <p class="yw-form-help">
+                    {% if botGuardRefusals is empty %}
+                      {{ _t('BOT_GUARD_NO_REFUSAL') }}
+                    {% else %}
+                      {{ _t('BOT_GUARD_REFUSALS') }}
+                      {% for reason, count in botGuardRefusals %}
+                        {{ _t('BOT_GUARD_REASON_' ~ reason|upper|replace({'-': '_'})) }}&nbsp;: {{ count }}{{ not loop.last ? ',' }}
+                      {% endfor %}
+                    {% endif %}
+                  </p>
+                {% endif %}
               </div>
             {% endfor %}
         </div>

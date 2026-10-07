@@ -6,6 +6,7 @@ use YesWiki\Core\YesWikiAction;
 use YesWiki\Identity\Entity\User;
 use YesWiki\Identity\Exception\BadFormatPasswordException;
 use YesWiki\Identity\Service\AuthenticationService;
+use YesWiki\Identity\Service\BotGuard;
 use YesWiki\Identity\Service\InputFilter;
 use YesWiki\Identity\Service\UserManager;
 use YesWiki\Kernel\Performable\RegisteredAction;
@@ -120,9 +121,13 @@ class LostPasswordAction extends YesWikiAction implements RegisteredAction
                 ]);
             case 'emailForm':
             default:
-                return $this->render('@core/lost-password-email-form.twig', [
+                $botGuard = $this->getService(BotGuard::class);
+                $botGuardFields = $botGuard->fields();
+
+                return $botGuard->placeFields($this->render('@core/lost-password-email-form.twig', [
                     'errorType' => $this->errorType,
-                ]);
+                    'botGuardFields' => $botGuardFields,
+                ]), $botGuardFields);
         }
     }
 
@@ -138,8 +143,13 @@ class LostPasswordAction extends YesWikiAction implements RegisteredAction
         switch ($subStep) {
             case 1:
                 $email = $this->inputFilter->filterInput(INPUT_POST, 'email', FILTER_DEFAULT, true);
+                $botGuard = $this->getService(BotGuard::class);
+                $refusal = empty($email) ? null : $botGuard->check($this->getRequest());
                 if (empty($email)) {
                     $this->errorType = 'emptyEmail';
+                    $this->typeOfRendering = 'emailForm';
+                } elseif ($refusal !== null) {
+                    $this->errorType = $botGuard->message($refusal);
                     $this->typeOfRendering = 'emailForm';
                 } else {
                     $startedAt = microtime(true);

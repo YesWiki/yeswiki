@@ -109,12 +109,12 @@ class FiltertagsAction extends YesWikiAction implements RegisteredAction
 
         echo '<div class="well well-sm no-dblclick controls">' . "\n" . '<div class="pull-right muted"><span class="nbfilteredelements">' . count($pages) . '</span> ' . _t('TAGS_RESULTS') . '</div>';
         foreach ($params as $param) {
-            echo '<div class="filter-group ' . $param['class'] . '" data-type="' . $param['toggle'] . '">' . "\n" . $param['title'] . "\n" . '<div class="btn-group filter-tags">' . "\n";
+            echo '<div class="filter-group ' . htmlspecialchars($param['class'], ENT_QUOTES) . '" data-type="' . $param['toggle'] . '">' . "\n" . $param['title'] . "\n" . '<div class="btn-group filter-tags">' . "\n";
             foreach ($param['arraytags'] as $tagname) {
                 if ($tagname == 'alaligne') {
                     echo '<br />' . "\n";
                 } else {
-                    echo '<button type="button" class="btn btn-default filter" data-filter="' . StringUtilService::withoutAccents($tagname) . '">' . $tagname . '</button>' . "\n";
+                    echo '<button type="button" class="btn btn-default filter" data-filter="' . StringUtilService::withoutAccents($tagname) . '">' . htmlspecialchars($tagname, ENT_QUOTES) . '</button>' . "\n";
                 }
             }
             echo '</div>' . "\n" . '</div>' . "\n";
@@ -176,7 +176,7 @@ class FiltertagsAction extends YesWikiAction implements RegisteredAction
         if (count($explodelabel) > 2) {
             return '<div class="alert alert-danger"><strong>' . _t('TAGS_ACTION_FILTERTAGS') . '</strong> : ' . _t('TAGS_ONLY_ONE_DOUBLEPOINT') . '</div>' . "\n";
         } elseif (count($explodelabel) == 2) {
-            $tab[$nb]['title'] = '<strong>' . $explodelabel[0] . ' : </strong>' . "\n";
+            $tab[$nb]['title'] = '<strong>' . htmlspecialchars($explodelabel[0], ENT_QUOTES) . ' : </strong>' . "\n";
             $tab[$nb]['arraytags'] = explode(',', $explodelabel[1]);
         } else {
             $tab[$nb]['title'] = '';

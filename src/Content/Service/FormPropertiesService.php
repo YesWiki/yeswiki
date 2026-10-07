@@ -480,7 +480,7 @@ class FormPropertiesService
                         || !in_array($request->request->get(self::USER_PROPERTY_NAME . self::CONFIRM_NAME_SUFFIX), [true, 1, '1'], true)
                     )
                 ) {
-                    throw new UserFieldException($this->getService(TemplateEngine::class)->render('@core/inputs/user-confirm.twig', ['confirmName' => self::USER_PROPERTY_NAME . self::CONFIRM_NAME_SUFFIX, 'wikiName' => $currentWikiName, 'newWikiName' => $wikiName]));
+                    throw new UserFieldException($this->getService(TemplateEngine::class)->render('@core/inputs/user-confirm.twig', ['confirmName' => self::USER_PROPERTY_NAME . self::CONFIRM_NAME_SUFFIX, 'formId' => $form['id'] ?? '', 'wikiName' => $currentWikiName, 'newWikiName' => $wikiName]));
                 }
             }
             if (!isset($entry[$emailField])) {

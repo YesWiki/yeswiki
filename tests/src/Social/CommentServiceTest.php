@@ -2,11 +2,13 @@
 
 namespace YesWiki\Test\Social;
 
+use Symfony\Component\HttpFoundation\Request;
 use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Identity\Service\UserManager;
+use YesWiki\Kernel\Service\CurrentRequest;
 use YesWiki\Kernel\Service\RequestScope;
 use YesWiki\Kernel\Service\RuntimeConfig;
 use YesWiki\Social\Service\CommentService;
@@ -28,7 +30,7 @@ class CommentServiceTest extends YesWikiTestCase
     private AclService $aclService;
     private CommentService $commentService;
     private UserManager $userManager;
-    private mixed $hashcashWas = null;
+    private ?Request $requestWas = null;
 
     protected function setUp(): void
     {
@@ -39,11 +41,9 @@ class CommentServiceTest extends YesWikiTestCase
         $this->commentService = $this->wiki->services->get(CommentService::class);
         $this->userManager = $this->wiki->services->get(UserManager::class);
 
-        // the puzzle answer lives in a file this test has no way to read, and none of what it
-        // checks is about hashcash
-        $config = $this->wiki->services->get(RuntimeConfig::class);
-        $this->hashcashWas = $config['use_hashcash'];
-        $config['use_hashcash'] = false;
+        $currentRequest = $this->wiki->services->get(CurrentRequest::class);
+        $this->requestWas = $currentRequest->get();
+        $currentRequest->replace(new Request([], self::validBotGuardFields($this->wiki)));
 
         $this->user(self::AUTHOR);
         $this->user(self::STRANGER);
@@ -71,7 +71,10 @@ class CommentServiceTest extends YesWikiTestCase
             }
         }
         $this->wiki->services->get(AuthenticationService::class)->logout();
-        $this->wiki->services->get(RuntimeConfig::class)['use_hashcash'] = $this->hashcashWas;
+        if ($this->requestWas !== null) {
+            $this->wiki->services->get(CurrentRequest::class)->replace($this->requestWas);
+        }
+        self::restoreBotGuard($this->wiki);
         parent::tearDown();
     }
 
@@ -172,6 +175,7 @@ class CommentServiceTest extends YesWikiTestCase
         $second = $this->commentService->renderCommentsForPage(self::OWN);
 
         $this->assertStringContainsString('a comment', $first);
-        $this->assertSame($first, $second, 'the second request lost the comments the first one rendered');
+        $withoutGuard = fn (string $html): string => (string)preg_replace(['/value="\d+\.[0-9a-f]{32}\.[0-9a-f]{64}"/', '/challenge="[^"]*"/'], '', $html);
+        $this->assertSame($withoutGuard($first), $withoutGuard($second), 'the second request lost the comments the first one rendered');
     }
 }

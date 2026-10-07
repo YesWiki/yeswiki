@@ -201,7 +201,9 @@ class ContentNotifier
             $email,
             $mailingList,
             'inscription a la liste de discussion',
-            'inscription'
+            'inscription',
+            '',
+            true
         );
     }
 

@@ -27,7 +27,7 @@ class CacheClearCommand extends Command
             ->setDescription('Empty the compiled container and template caches')
             ->addOption('container', null, InputOption::VALUE_NONE, 'Only ' . CacheClearer::CONTAINER)
             ->addOption('templates', null, InputOption::VALUE_NONE, 'Only ' . CacheClearer::TEMPLATES)
-            ->addOption('all', null, InputOption::VALUE_NONE, 'Everything under cache/: thumbnails, remote copies, the HTML purifier, the hashcash secret too');
+            ->addOption('all', null, InputOption::VALUE_NONE, 'Everything under cache/: thumbnails, remote copies, the HTML purifier too');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int

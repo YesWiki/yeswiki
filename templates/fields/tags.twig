@@ -1,3 +1,3 @@
 {% extends "@core/layouts/field.twig" %}
 
-{% block value %}{{ value|raw }}{% endblock %}
+{% block value %}{% for tag in tags %}<a class="tag-label label label-info" href="{{ tag.url }}" title="{{ _t('TAGS_SEE_ALL_PAGES_WITH_THIS_TAGS') }}">{{ tag.label }}</a>{{ loop.last ? '' : ' ' }}{% endfor %}{% endblock %}

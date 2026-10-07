@@ -15,10 +15,9 @@ use YesWiki\Content\Service\FormManager;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Content\Service\TranslatableContent;
 use YesWiki\Core\YesWikiHandler;
-use YesWiki\Identity\Controller\CaptchaController;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\AuthenticationService;
-use YesWiki\Identity\Service\HashCashService;
+use YesWiki\Identity\Service\BotGuard;
 use YesWiki\Identity\Service\InputFilter;
 use YesWiki\Identity\Service\PasswordForEditingService;
 use YesWiki\Kernel\Performable\RegisteredHandler;
@@ -74,49 +73,21 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
                 $this->getService(Redirector::class)->terminate();
             }
 
-            if (
-                $this->getService(RuntimeConfig::class)['use_hashcash']
-                && isset($_POST['submit']) && $_POST['submit'] == InputFilter::EDIT_PAGE_SUBMIT_VALUE
-                && !$this->getService(HashCashService::class)->checkHashcash()
-            ) {
-                $error = '<div class="alert alert-danger"><a href="#" data-dismiss="alert" class="close">&times;</a>' . _t('HASHCASH_ERROR_PAGE_UNSAVED') . '</div>';
-                $_POST['submit'] = '';
-            }
-
-            list($state, $error) = $this->getService(CaptchaController::class)->checkCaptchaBeforeSave();
-
-            if ($state) {
-                unset($error);
-            }
-
             if ($this->getService(RuntimeConfig::class)['use_alerte']) {
-                $js = "// par défaut, pas de popup d'alerte pour quitter la page
-                var showPopup = false;
+                $js = "var showPopup = false;
 
-                // Delegated on document, NOT bound to the elements directly: this script is
-                // an declared asset and so runs well before the form it guards exists in the
-                // DOM (script ~line 121, <form id=\"ACEditor\"> ~line 353). getElementById()
-                // returned null, the listener was silently never attached, and saving a page
-                // therefore always raised the \"leave without saving?\" dialog it was meant to
-                // suppress. Delegation also survives an htmx body swap, the way ticket 16
-                // had to relearn for every other initialiser.
-
-                // on demande a faire apparaitre la popup si la page a été modifiée
-                // (the ACeditor sets showPopup itself; this covers a plain textarea)
                 document.addEventListener('input', function(e) {
                     if (e.target && e.target.id === 'body') {
                         showPopup = true;
                     }
                 });
 
-                // on annule la popup si l'on sauve la page
                 document.addEventListener('submit', function(e) {
-                    if (e.target && (e.target.id === 'ACEditor' || e.target.id === 'formulaire')) {
+                    if (e.target && (e.target.id === 'ACEditor' || e.target.classList.contains('bazar-form'))) {
                         showPopup = false;
                     }
                 }, true);
 
-                // si l'on quitte la page, on affiche la popup si besoin
                 window.addEventListener('beforeunload', function(e) {
                     if (showPopup) {
                         e.preventDefault();
@@ -124,10 +95,6 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
                     }
                 });
 
-                // Ticket 16: internal links load through htmx, and an htmx navigation never
-                // fires beforeunload -- so without this a click while editing would discard
-                // the edit silently. htmx:confirm is fired before every request and can be
-                // cancelled, which is what makes this the same guard rather than a second one.
                 document.addEventListener('htmx:confirm', function(e) {
                     if (!showPopup) return;
                     e.preventDefault();
@@ -387,22 +354,6 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
     {
         ob_start();
 
-        if ($this->getService(AclService::class)->hasAccess('write') && $this->getService(AclService::class)->hasAccess('read')) {
-            if (!isset($_POST['submit']) || $_POST['submit'] != InputFilter::EDIT_PAGE_SUBMIT_VALUE) {
-                if ($this->getService(RuntimeConfig::class)['use_hashcash']) {
-                    $hashCash = $this->getService(HashCashService::class);
-                    $hashCashCode = $hashCash->getJavascriptCode();
-                    $plugin_output_new = preg_replace(
-                        '/\<hr class=\"hr_clear\" \/\>/',
-                        $hashCashCode . '<hr class="hr_clear" />',
-                        $plugin_output_new
-                    );
-                }
-                $plugin_output_new = (string)$plugin_output_new;
-                $this->getService(CaptchaController::class)->renderCaptcha($plugin_output_new);
-            }
-        }
-
         $plugin_output_new = preg_replace(
             '/(\\{\\{template)(.*?)(\\}\\})/is',
             '',
@@ -527,6 +478,7 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
                     'body' => empty($body) ? '' : htmlspecialchars($body, ENT_COMPAT, YW_CHARSET),
                     'preview' => true,
                     'bodyPreview' => $this->getService(MarkdownFormatterService::class)->format($body),
+                    'botGuardFields' => $this->getService(BotGuard::class)->fields(),
                     'saveValue' => InputFilter::EDIT_PAGE_SUBMIT_VALUE,
                     'deleteUrl' => $this->deleteUrl(),
                     'hasContent' => $pageFields['hasContent'],
@@ -540,6 +492,11 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
             } else {
                 if ($submit == InputFilter::EDIT_PAGE_SUBMIT_VALUE && $this->getService(PageContext::class)->getPage() && $this->getService(PageContext::class)->getPage()['id'] != $request->request->get('previous')) {
                     $error = _t('EDIT_ALERT_ALREADY_SAVED_BY_ANOTHER_USER');
+                    $submit = false;
+                }
+
+                if ($submit == InputFilter::EDIT_PAGE_SUBMIT_VALUE && ($refusal = $this->getService(BotGuard::class)->check($request)) !== null) {
+                    $error = $this->getService(BotGuard::class)->message($refusal);
                     $submit = false;
                 }
 
@@ -590,6 +547,7 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
 
                     $output .= $this->getService(TemplateEngine::class)->renderSafely('@core/handlers/edit.twig', [
                         'error' => $error ?? null,
+                        'botGuardFields' => $this->getService(BotGuard::class)->fields(),
                         'previous' => $previous,
                         'handler' => WikiUrls::iframeSuffixFor() ? 'editiframe' : 'edit',
                         'passwordForEditing' => $passwordForEditing,

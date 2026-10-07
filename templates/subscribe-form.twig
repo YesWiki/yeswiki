@@ -1,8 +1,8 @@
 <form id="ajax-contact-form{{ nbactionmail }}" class="ajax-mail-form form-inline {{ class }}" data-page-tag="{{ pageTag }}">
   <div class="yw-form-group">
     <div class="input-group">
-      <span class="input-group-addon"><svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#mail"/></svg></span>
-      <input required class="yw-input" type="email" name="email" placeholder="{{ _t('CONTACT_YOUR_MAIL') }}">
+      <span class="input-group-addon" aria-hidden="true"><svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#mail"/></svg></span>
+      <input required class="yw-input" type="email" name="email" autocomplete="email" placeholder="{{ _t('CONTACT_YOUR_MAIL') }}" aria-label="{{ _t('CONTACT_YOUR_MAIL') }}">
       <span class="input-group-btn">
         <button class="btn btn-primary mail-submit" type="submit" name="submit">{{ placeholder }}</button>
       </span>
@@ -12,4 +12,5 @@
 	<input type="hidden" name="nbactionmail" value="{{ nbactionmail }}" />
 	<input type="hidden" name="subjectprefix" value="{{ placeholder }}" />
 	<input type="hidden" name="type" value="{{ demand }}" />
+  {{ botGuardFields|default('')|raw }}
 </form>

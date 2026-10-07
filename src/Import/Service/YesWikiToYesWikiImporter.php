@@ -395,7 +395,6 @@ class YesWikiToYesWikiImporter extends Importer
             unset($mappedEntry['_remote_url'], $mappedEntry['_remote_created_at'], $mappedEntry['_remote_updated_at']);
             $title = $mappedEntry['title'] ?? $mappedEntry['bf_titre'] ?? $remoteUrl;
 
-            $mappedEntry['antispam'] = 1;
 
             try {
                 $localId = $this->findLocalEntryByRemoteUrl($remoteUrl);

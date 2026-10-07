@@ -1,24 +1,24 @@
 <form id="ajax-contact-form{{ nbactionmail }}" class="ajax-mail-form {{class}}" data-page-tag="{{ pageTag }}">
   <div class="yw-form-group">
     <div class="input-group">
-      <span class="input-group-addon"><svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#user"/></svg></span>
-      <input required class="yw-input" type="text" name="name" placeholder="{{ _t('CONTACT_YOUR_NAME') }}" />
+      <span class="input-group-addon" aria-hidden="true"><svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#user"/></svg></span>
+      <input required class="yw-input" type="text" name="name" autocomplete="name" placeholder="{{ _t('CONTACT_YOUR_NAME') }}" aria-label="{{ _t('CONTACT_YOUR_NAME') }}" />
     </div>
   </div>
 
   <div class="yw-form-group">
     <div class="input-group">
-      <span class="input-group-addon"><svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#mail"/></svg></span>
-      <input required class="yw-input" type="email" name="email" placeholder="{{ _t('CONTACT_YOUR_MAIL') }}" />
+      <span class="input-group-addon" aria-hidden="true"><svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#mail"/></svg></span>
+      <input required class="yw-input" type="email" name="email" autocomplete="email" placeholder="{{ _t('CONTACT_YOUR_MAIL') }}" aria-label="{{ _t('CONTACT_YOUR_MAIL') }}" />
     </div>
   </div>
 
   <div class="yw-form-group">
-      <input required class="yw-input contact-subject" type="text" name="subject" placeholder="{{ _t('CONTACT_SUBJECT') }}" />
+      <input required class="yw-input contact-subject" type="text" name="subject" placeholder="{{ _t('CONTACT_SUBJECT') }}" aria-label="{{ _t('CONTACT_SUBJECT') }}" />
   </div>
 
   <div class="yw-form-group">
-    <textarea required rows="8" class="yw-input contact-message" name="message" placeholder="{{ _t('CONTACT_YOUR_MESSAGE') }}"></textarea>
+    <textarea required rows="8" class="yw-input contact-message" name="message" placeholder="{{ _t('CONTACT_YOUR_MESSAGE') }}" aria-label="{{ _t('CONTACT_YOUR_MESSAGE') }}"></textarea>
   </div>
 
   <div class="yw-form-group">
@@ -27,4 +27,5 @@
   <input type="hidden" name="nbactionmail" value="{{ nbactionmail }}" />
   <input type="hidden" name="subjectprefix" value="{{ subjectprefix }}" />
   <input type="hidden" name="type" value="contact" />
+  {{ botGuardFields|default('')|raw }}
 </form>

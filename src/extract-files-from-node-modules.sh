@@ -178,6 +178,9 @@ mkdir -p styles/vendor/animate && copy_css node_modules/animate.css/animate.min.
 # htmx
 mkdir -p javascripts/vendor/htmx && copy_js node_modules/htmx.org/dist/htmx.min.js javascripts/vendor/htmx/htmx.min.js
 
+# Altcha
+mkdir -p javascripts/vendor/altcha && copy_js node_modules/altcha/dist/main/altcha.i18n.min.js javascripts/vendor/altcha/altcha.i18n.min.js
+
 # p5 (1.x: 2.x drops global mode)
 copy_js node_modules/p5/lib/p5.min.js javascripts/vendor/p5.min.js
 

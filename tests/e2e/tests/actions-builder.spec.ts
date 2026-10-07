@@ -393,5 +393,5 @@ test('a bazar entry form gets the same rail', async ({ page }) => {
 
   await expect(page.locator('.yw-designer__canvas')).toHaveCount(1)
   await expect(page.locator(PANEL)).toHaveCount(1)
-  await expect(page.locator(`form#formulaire ${PANEL}`)).toHaveCount(0)
+  await expect(page.locator(`form.bazar-form ${PANEL}`)).toHaveCount(0)
 })

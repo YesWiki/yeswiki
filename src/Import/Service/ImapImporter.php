@@ -187,7 +187,6 @@ EOT,
         foreach ($data as $entry) {
             $res = StringUtilService::searchNested($existingEntries, 'message_id', $entry['message_id']);
             if (!$res) {
-                $entry['antispam'] = 1;
                 $this->entryManager->create($this->config['formId'], $entry, false, $entry['message_id']);
                 echo 'L\'email "' . ($entry['bf_titre'] ?? $entry['message_id']) . '" a été créé.' . "\n";
             } else {

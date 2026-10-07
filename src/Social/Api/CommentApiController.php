@@ -6,6 +6,7 @@ use Symfony\Component\Routing\Attribute\Route;
 use YesWiki\Core\ApiResponse;
 use YesWiki\Core\YesWikiController;
 use YesWiki\Identity\Service\AclService;
+use YesWiki\Identity\Service\BotGuard;
 use YesWiki\Kernel\Service\FlashMessageService;
 use YesWiki\Kernel\Service\Redirector;
 use YesWiki\Kernel\Service\UrlFormatter;
@@ -29,7 +30,7 @@ class CommentApiController extends YesWikiController
     }
 
     /**
-     * JSON for the page's own script, a redirect back to the page for anyone else.
+     * JSON with fresh guard fields for the script, a redirect for anyone else.
      *
      * @param array<string, mixed> $result as returned by CommentService::addCommentIfAuthorized()
      */
@@ -38,7 +39,7 @@ class CommentApiController extends YesWikiController
         $code = is_int($result['code'] ?? null) ? $result['code'] : 200;
 
         if ($this->getRequest()->isXmlHttpRequest()) {
-            return new ApiResponse($result, $code);
+            return new ApiResponse($result + ['botGuard' => $this->getService(BotGuard::class)->fields()], $code);
         }
 
         $message = (string)($result['error'] ?? $result['success'] ?? '');

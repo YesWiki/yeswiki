@@ -93,8 +93,6 @@ parameters:
             - ../tests/e2e
             - ../extensions/*/node_modules
 
-    # src/vendor/ is gone entirely (the captcha font moved to src/assets/fonts/).
-
     bootstrapFiles:
         - bootstrap.php
 

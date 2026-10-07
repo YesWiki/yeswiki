@@ -3286,8 +3286,7 @@ table.yw-table--sortable th[data-yw-sort='desc']::after {
   list-style: none;
 }
 
-.yw-dropdown__menu a,
-.yw-dropdown__menu button,
+.yw-dropdown__menu :is(a, button):not(:where(.yw-btn)),
 .dropdown-menu > li > a,
 .dropdown-menu > a {
   display: block;
@@ -3303,8 +3302,7 @@ table.yw-table--sortable th[data-yw-sort='desc']::after {
   white-space: nowrap;
 }
 
-.yw-dropdown__menu a:hover,
-.yw-dropdown__menu button:hover,
+.yw-dropdown__menu :is(a, button):not(:where(.yw-btn)):hover,
 .dropdown-menu > li > a:hover,
 .dropdown-menu > a:hover {
   background: var(--yw-surface-hover);
@@ -3768,6 +3766,12 @@ progress.yw-progressbar::-moz-progress-bar {
   position: sticky;
   top: calc(var(--yw-sticky-toolbar-top) + 2px);
   z-index: 5;
+}
+
+@media (max-width: 767px) {
+  .yw-toc {
+    position: static;
+  }
 }
 
 .yw-toc__menu {
@@ -4875,4 +4879,32 @@ figcaption *:last-child {
   display: flex;
   flex-wrap: wrap;
   gap: var(--yw-space-md-x);
+}
+
+.yw-bot-guard {
+  position: absolute;
+  left: -10000px;
+  top: auto;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+.yw-bot-guard-fields altcha-widget {
+  --altcha-color-base: var(--yw-surface);
+  --altcha-color-text: var(--yw-text);
+  --altcha-border-radius: var(--yw-radius-md);
+  margin-block: var(--yw-space-sm-y);
+}
+
+.yw-bot-guard-active {
+  color: var(--yw-text-muted);
+  font-size: 0.875em;
+}
+
+.mail-period__choices {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: var(--yw-space-sm-y);
+  margin-inline-start: 1rem;
 }

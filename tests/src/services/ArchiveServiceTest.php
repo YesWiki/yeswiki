@@ -135,6 +135,20 @@ class ArchiveServiceTest extends YesWikiTestCase
 
     /** @param array{wiki: YesWikiRuntime, archiveService: ArchiveService} $services */
     #[Depends('testArchiveServiceExisting')]
+    public function testAFolderSharingAPrefixWithAWhitelistedOneIsLeftOut(array $services): void
+    {
+        $method = new \ReflectionMethod(ArchiveService::class, 'shouldIncludeFolder');
+        $include = fn (string $folder): bool => $method->invoke($services['archiveService'], $folder, ['custom'], []);
+
+        $this->assertTrue($include('custom'));
+        $this->assertTrue($include('custom/lang'));
+        $this->assertFalse($include('custom-jdn'));
+        $this->assertFalse($include('custom-jdn/lang'));
+        $this->assertFalse($include('customs'));
+    }
+
+    /** @param array{wiki: YesWikiRuntime, archiveService: ArchiveService} $services */
+    #[Depends('testArchiveServiceExisting')]
     public function testAnEmptyOnlyFoldersArchivesTheWholeWikiRatherThanNothing(array $services): void
     {
         $method = new \ReflectionMethod(ArchiveService::class, 'generateListRootFolders');

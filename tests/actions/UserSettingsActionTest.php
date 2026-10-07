@@ -4,7 +4,6 @@ namespace YesWiki\Test\Core\Service;
 
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Depends;
-use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpFoundation\Request;
 use YesWiki\Core\YesWikiRuntime;
 use YesWiki\Identity\Entity\User;
@@ -175,84 +174,85 @@ class UserSettingsActionTest extends YesWikiTestCase
     {
         $userManager = $wiki->services->get(UserManager::class);
         $authenticationService = $wiki->services->get(AuthenticationService::class);
-        $params = $wiki->services->get(ParameterBagInterface::class);
-        if ($params->get('use_captcha')) {
-            $this->assertTrue($params->get('use_captcha'));
+        do {
+            $email = strtolower($this->randomString(10)) . '@example.com';
+        } while (!empty($userManager->getOneByEmail($email)));
+        do {
+            $name = trim($this->randomString(1, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ')
+                . $this->randomString(25, 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 -_'));
+        } while (!empty($userManager->getOneByName($name)));
+
+        $password = $this->randomString(25, 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 -_');
+
+        $_POST['email'] = $email;
+        $_POST['name'] = $name;
+        $_POST['password'] = $password;
+        $_POST['confpassword'] = $password . $suffix;
+
+        $_POST['usersettings_action'] = 'signup';
+        $guardFields = self::validBotGuardFields($wiki);
+        $_POST += $guardFields;
+        $this->refreshRequest($wiki);
+
+        $this->ensureCacheFolderIsWritable();
+
+        $exitExceptionCaught = false;
+        try {
+            $output = $wiki->services->get(\YesWiki\Render\Service\MarkdownFormatterService::class)->format('{{usersettings}}');
+        } catch (ExitException $e) {
+            $exitExceptionCaught = true;
+        }
+
+        unset($_POST['email']);
+        unset($_POST['name']);
+        unset($_POST['password']);
+        unset($_POST['confpassword']);
+        unset($_POST['usersettings_action']);
+        foreach (array_keys($guardFields) as $guardField) {
+            unset($_POST[$guardField]);
+        }
+        self::restoreBotGuard($wiki);
+
+        $user = $userManager->getOneByName((string)$name);
+        $connectedUser = $authenticationService->getLoggedUser();
+
+        if ($user !== null) {
+            $userManager->delete($user);
+        }
+
+        if ($expectedResult) {
+            $this->assertTrue($exitExceptionCaught);
+            $this->assertInstanceOf(User::class, $user);
+            $this->assertIsArray($connectedUser);
+            $this->assertNotEmpty($connectedUser['name']);
+            $this->assertEquals($connectedUser['name'], $user['name']);
         } else {
-            do {
-                $email = strtolower($this->randomString(10)) . '@example.com';
-            } while (!empty($userManager->getOneByEmail($email)));
-            do {
-                $name = trim($this->randomString(1, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ')
-                    . $this->randomString(25, 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 -_'));
-            } while (!empty($userManager->getOneByName($name)));
+            $this->assertFalse($exitExceptionCaught);
+            $this->assertNull($user);
 
-            $password = $this->randomString(25, 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 -_');
+            $rexExpStr = '/.*' . implode(
+                '\s*',
+                explode(
+                    ' ',
+                    preg_quote('<input class="', '/') . '.*' . preg_quote('" name="name" ', '/') . '(size\=".*" )?' . preg_quote('value="' . htmlentities($name) . '"', '/')
+                )
+            ) . '.*/';
+            $this->assertMatchesRegularExpression($rexExpStr, $output, '`name` input badly set in user-signup-form.twig !');
 
-            $_POST['email'] = $email;
-            $_POST['name'] = $name;
-            $_POST['password'] = $password;
-            $_POST['confpassword'] = $password . $suffix;
+            $rexExpStr = '/.*' . implode(
+                '\s*',
+                explode(
+                    ' ',
+                    preg_quote('<input class="', '/') . '.*' . preg_quote('" name="email" ', '/') . '(size\=".*" )?' . preg_quote('value="' . htmlentities($email) . '"', '/')
+                )
+            ) . '.*/';
+            $this->assertMatchesRegularExpression($rexExpStr, $output, '`email` input badly set in user-signup-form.twig !');
 
-            $_POST['usersettings_action'] = 'signup';
-            $this->refreshRequest($wiki);
+            $rexExpStr = '/.*' . implode('\s*', explode(' ', preg_quote('<input class="', '/') . '.*' . preg_quote('" type="password" name="password"', '/'))) . '.*/';
+            $this->assertMatchesRegularExpression($rexExpStr, $output, '`password` input badly set in user-signup-form.twig !');
 
-            $this->ensureCacheFolderIsWritable();
-
-            $exitExceptionCaught = false;
-            try {
-                $output = $wiki->services->get(\YesWiki\Render\Service\MarkdownFormatterService::class)->format('{{usersettings}}');
-            } catch (ExitException $e) {
-                $exitExceptionCaught = true;
-            }
-
-            unset($_POST['email']);
-            unset($_POST['name']);
-            unset($_POST['password']);
-            unset($_POST['confpassword']);
-            unset($_POST['usersettings_action']);
-
-            $user = $userManager->getOneByName((string)$name);
-            $connectedUser = $authenticationService->getLoggedUser();
-
-            if ($user !== null) {
-                $userManager->delete($user);
-            }
-
-            if ($expectedResult) {
-                $this->assertTrue($exitExceptionCaught);
-                $this->assertInstanceOf(User::class, $user);
-                $this->assertIsArray($connectedUser);
-                $this->assertNotEmpty($connectedUser['name']);
-                $this->assertEquals($connectedUser['name'], $user['name']);
-            } else {
-                $this->assertFalse($exitExceptionCaught);
-                $this->assertNull($user);
-
-                $rexExpStr = '/.*' . implode(
-                    '\s*',
-                    explode(
-                        ' ',
-                        preg_quote('<input class="', '/') . '.*' . preg_quote('" name="name" ', '/') . '(size\=".*" )?' . preg_quote('value="' . htmlentities($name) . '"', '/')
-                    )
-                ) . '.*/';
-                $this->assertMatchesRegularExpression($rexExpStr, $output, '`name` input badly set in user-signup-form.twig !');
-
-                $rexExpStr = '/.*' . implode(
-                    '\s*',
-                    explode(
-                        ' ',
-                        preg_quote('<input class="', '/') . '.*' . preg_quote('" name="email" ', '/') . '(size\=".*" )?' . preg_quote('value="' . htmlentities($email) . '"', '/')
-                    )
-                ) . '.*/';
-                $this->assertMatchesRegularExpression($rexExpStr, $output, '`email` input badly set in user-signup-form.twig !');
-
-                $rexExpStr = '/.*' . implode('\s*', explode(' ', preg_quote('<input class="', '/') . '.*' . preg_quote('" type="password" name="password"', '/'))) . '.*/';
-                $this->assertMatchesRegularExpression($rexExpStr, $output, '`password` input badly set in user-signup-form.twig !');
-
-                $rexExpStr = '/.*' . implode('\s*', explode(' ', preg_quote('<input class="', '/') . '.*' . preg_quote('" type="password" name="confpassword"', '/'))) . '.*/';
-                $this->assertMatchesRegularExpression($rexExpStr, $output, '`confpassword` input badly set in user-signup-form.twig !');
-            }
+            $rexExpStr = '/.*' . implode('\s*', explode(' ', preg_quote('<input class="', '/') . '.*' . preg_quote('" type="password" name="confpassword"', '/'))) . '.*/';
+            $this->assertMatchesRegularExpression($rexExpStr, $output, '`confpassword` input badly set in user-signup-form.twig !');
         }
     }
 

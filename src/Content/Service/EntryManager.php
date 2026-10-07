@@ -42,10 +42,9 @@ class EntryManager
     protected ParameterBagInterface $params;
     protected SearchManager $searchManager;
 
-    public const VALIDATE_FLAG_ANTISPAM = 1 << 0;
     public const VALIDATE_FLAG_TITLE = 1 << 1;
     public const VALIDATE_FLAG_FORM_ID = 1 << 2;
-    public const VALIDATE_FLAG_ALL = self::VALIDATE_FLAG_ANTISPAM | self::VALIDATE_FLAG_TITLE | self::VALIDATE_FLAG_FORM_ID;
+    public const VALIDATE_FLAG_ALL = self::VALIDATE_FLAG_TITLE | self::VALIDATE_FLAG_FORM_ID;
 
     protected UrlFormatter $urlFormatter;
 
@@ -288,12 +287,6 @@ class EntryManager
      */
     public function validate($data, $pFlags = self::VALIDATE_FLAG_ALL): void
     {
-        if ($pFlags & self::VALIDATE_FLAG_ANTISPAM) {
-            if (!isset($data['antispam']) || !$data['antispam'] == 1) {
-                throw new \Exception(_t('BAZ_PROTECTION_ANTISPAM'));
-            }
-        }
-
         if ($pFlags & self::VALIDATE_FLAG_TITLE) {
             if (empty($data['title'] ?? null) && empty($data['bf_titre'] ?? null)) {
                 throw new EntryValidationException(_t('BAZ_FICHE_NON_SAUVEE_PAS_DE_TITRE'));
@@ -335,8 +328,6 @@ class EntryManager
         }
 
         $this->refuseTagOfAnExistingPage($data['tag'] ?? null);
-
-        $this->validate($data, self::VALIDATE_FLAG_ANTISPAM);
 
         $form = $this->container->get(FormManager::class)->getOne($data['form_id']);
 
@@ -456,8 +447,6 @@ class EntryManager
         }
         $data['form_id'] = $previousData['form_id'];
 
-        $this->validate($data, self::VALIDATE_FLAG_ANTISPAM);
-
         $form = $this->container->get(FormManager::class)->getOne($data['form_id']);
 
         $data = $this->assignRestrictedFields($data, $previousData, $form);
@@ -507,31 +496,20 @@ class EntryManager
      */
     protected function assignRestrictedFields(array $data, array $previousData, array $form)
     {
-        $restrictedFields = [];
-
-        $vDefaults = [];
-
         foreach ($form['prepared'] as $field) {
-            if ($field instanceof BazarField) {
-                $propName = $field->getPropertyName();
-
-                if (!empty($propName) && !$field->canEdit($data)) {
-                    $restrictedFields[] = $propName;
-
-                    $vDefaults[$propName] = $field->getDefault();
-                }
+            if (!$field instanceof BazarField) {
+                continue;
             }
-        }
-
-        if (!empty($restrictedFields)) {
-            foreach ($restrictedFields as $propName) {
-                if (isset($previousData[$propName])) {
-                    $data[$propName] = $previousData[$propName];
-                }
-
-                if (trim($data[$propName] ?? '') == '' && trim($vDefaults[$propName]) != '') {
-                    $data[$propName] = $vDefaults[$propName];
-                }
+            $propName = $field->getPropertyName();
+            if (empty($propName) || $field->canEdit($data)) {
+                continue;
+            }
+            if (array_key_exists($propName, $previousData)) {
+                $data[$propName] = $previousData[$propName];
+            } elseif (!$field->isEmpty($field->getDefault())) {
+                $data[$propName] = $field->getDefault();
+            } else {
+                unset($data[$propName]);
             }
         }
 

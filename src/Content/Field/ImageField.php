@@ -208,10 +208,7 @@ class ImageField extends FileField
                         throw new \Exception(_t('BAZ_FILEFIELD_TOO_LARGE_FILE', ['fileMaxSize' => $this->maxSize]));
                     }
 
-                    if (!is_uploaded_file($_FILES[$this->propertyName]['tmp_name'])) {
-                        throw new \Exception(_t('ERROR_NO_FILE_UPLOADED'));
-                    }
-                    $this->storage()->writeFrom($filePath, $_FILES[$this->propertyName]['tmp_name']);
+                    $this->storeUploadedFile($filePath);
 
                     if (isset($entry['oldimage_' . $this->propertyName]) && $entry['oldimage_' . $this->propertyName] != '' && !$this->isUrl($entry['oldimage_' . $this->propertyName])) {
                         $previousFileName = $entry['oldimage_' . $this->propertyName];

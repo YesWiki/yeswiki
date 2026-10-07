@@ -167,7 +167,7 @@ abstract class BazarField implements \JsonSerializable
             return $this->formatValuesBeforeSave($entry);
         }
 
-        return [$this->propertyName => $this->getValue($entry) ?? $this->default];
+        return [$this->propertyName => $entry[$this->propertyName] ?? $this->default];
     }
 
     /**
@@ -306,20 +306,35 @@ abstract class BazarField implements \JsonSerializable
      */
     public function canRead($entry, ?string $userNameForRendering = null)
     {
-        $readAcl = empty($this->readAccess) ? '' : $this->readAccess;
-        $isCreation = !isset($entry['tag']);
-
-        return empty($readAcl) || $this->getService(AclService::class)->check($readAcl, $userNameForRendering, true, $isCreation ? '' : $entry['tag']);
+        return $this->readAclAllows($entry, $userNameForRendering);
     }
 
     /**
+     * Whether the field's read ACL allows the user.
+     *
+     * @param array<string, mixed>|null $entry
+     */
+    private function readAclAllows($entry, ?string $userName = null): bool
+    {
+        $readAcl = empty($this->readAccess) ? '' : $this->readAccess;
+        $isCreation = !isset($entry['tag']);
+
+        return empty($readAcl) || $this->getService(AclService::class)->check($readAcl, $userName, true, $isCreation ? '' : $entry['tag']);
+    }
+
+    /**
+     * Whether the user may edit the field.
+     *
      * @param array<string, mixed>|null $entry
      */
     public function canEdit($entry): bool
     {
         $writeAcl = empty($this->writeAccess) ? '' : $this->writeAccess;
-
         $isCreation = !isset($entry['tag']);
+
+        if (!$isCreation && !$this->readAclAllows($entry)) {
+            return false;
+        }
 
         return empty($writeAcl) || $this->getService(AclService::class)->check($writeAcl, null, true, $isCreation ? '' : $entry['tag'], $isCreation ? 'creation' : 'edit');
     }

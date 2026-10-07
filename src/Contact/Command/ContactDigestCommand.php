@@ -7,12 +7,12 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use YesWiki\Contact\Service\MailingListDigest;
+use YesWiki\Contact\Service\MailSubscriptions;
 
 /** `./yeswicli contact:send-digest --period=week` -- the periodic mailing-list digest. */
 class ContactDigestCommand extends Command
 {
-    public const PERIODS = ['day', 'week', 'month'];
+    public const PERIODS = MailSubscriptions::PERIODS;
 
     private ContainerInterface $services;
 
@@ -29,9 +29,9 @@ class ContactDigestCommand extends Command
     {
         $this
             ->setName('contact:send-digest')
-            ->setDescription('Send the periodic digest to mailing-list subscribers.')
+            ->setDescription('Mail the pages users subscribed to with {{mailperiod}}.')
             ->setHelp(
-                "Sends the digest for one period to the groups subscribed to it.\n"
+                "Mails each page to the users subscribed to it at that period.\n"
                 . "Meant for cron:  0 6 * * *  cd /path/to/wiki && ./yeswicli contact:send-digest -p day\n"
                 . "A wiki with no cron sends them from its own maintenance pass instead; see\n"
                 . "ContactDigestScheduler.\n"
@@ -62,13 +62,13 @@ class ContactDigestCommand extends Command
 
         $output->writeln("Sending the '{$period}' digest");
         try {
-            $this->services->get(MailingListDigest::class)->sendForPeriod($period, (string)$input->getOption('subject'));
+            $sent = $this->services->get(MailSubscriptions::class)->send($period, (string)$input->getOption('subject'));
         } catch (\Throwable $th) {
             $output->writeln('<error>' . $th->getMessage() . '</error>');
 
             return Command::FAILURE;
         }
-        $output->writeln('Done');
+        $output->writeln("Done, {$sent} mail(s) sent");
 
         return Command::SUCCESS;
     }

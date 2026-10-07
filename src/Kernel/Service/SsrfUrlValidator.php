@@ -75,7 +75,7 @@ class SsrfUrlValidator
             if ($ipv4 !== $host) {
                 $ips[] = $ipv4;
             }
-            foreach (dns_get_record($host, DNS_AAAA) ?: [] as $record) {
+            foreach (@dns_get_record($host, DNS_AAAA) ?: [] as $record) {
                 if (!empty($record['ipv6'])) {
                     $ips[] = $record['ipv6'];
                 }

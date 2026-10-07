@@ -101,18 +101,10 @@ class ContactDigestScheduler implements EventSubscriberInterface
         }
 
         try {
-            $groups = $this->services->get(\YesWiki\Identity\Service\GroupOperationsService::class)->getAll();
+            return $this->services->get(MailSubscriptions::class)->hasAny();
         } catch (\Throwable $unavailable) {
             return false;
         }
-
-        foreach ($groups as $group) {
-            if (str_starts_with((string)$group, 'mail')) {
-                return true;
-            }
-        }
-
-        return false;
     }
 
     private function spawn(string $period): bool
@@ -125,9 +117,7 @@ class ContactDigestScheduler implements EventSubscriberInterface
         }
     }
 
-    /**
-     * @param list<string> $periods
-     */
+    /** @param list<string> $periods sent once the reader has their page */
     private function sendAfterResponse(array $periods): void
     {
         @ignore_user_abort(true);
@@ -137,7 +127,7 @@ class ContactDigestScheduler implements EventSubscriberInterface
         @set_time_limit(0);
         foreach ($periods as $period) {
             try {
-                $this->services->get(MailingListDigest::class)->sendForPeriod($period, '');
+                $this->services->get(MailSubscriptions::class)->send($period);
             } catch (\Throwable $ignored) {
             }
         }

@@ -7,6 +7,7 @@ use YesWiki\Content\Service\PageManager;
 use YesWiki\Core\YesWikiLoader;
 use YesWiki\Core\YesWikiRuntime;
 use YesWiki\Identity\Entity\User;
+use YesWiki\Identity\Service\BotGuard;
 use YesWiki\Identity\Service\GroupManager;
 use YesWiki\Identity\Service\UserManager;
 use YesWiki\Kernel\Database\SqlParameters;
@@ -218,6 +219,27 @@ class YesWikiTestCase extends TestCase
             ob_end_clean();
         }
         parent::tearDown();
+    }
+
+    /**
+     * Guard fields that pass BotGuard, with ALTCHA off until restoreBotGuard().
+     *
+     * @return array<string, string>
+     */
+    protected static function validBotGuardFields(YesWikiRuntime $wiki): array
+    {
+        $botGuard = $wiki->services->get(BotGuard::class);
+        $botGuard->useForTests(null, fn () => time() - 10, false);
+        preg_match_all('/<input type="(?:hidden|text)"[^>]*name="([^"]+)" value="([^"]*)"/', $botGuard->fields(), $inputs, PREG_SET_ORDER);
+        $botGuard->useForTests(null, null, false);
+
+        return array_column($inputs, 2, 1);
+    }
+
+    /** Undoes validBotGuardFields(). */
+    protected static function restoreBotGuard(YesWikiRuntime $wiki): void
+    {
+        $wiki->services->get(BotGuard::class)->useForTests();
     }
 
     protected static function requireUser(?User $user): User

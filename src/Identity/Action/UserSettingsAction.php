@@ -9,7 +9,6 @@ use YesWiki\Content\Field\BazarField;
 use YesWiki\Content\Service\FormManager;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Core\YesWikiAction;
-use YesWiki\Identity\Controller\CaptchaController;
 use YesWiki\Identity\Entity\User;
 use YesWiki\Identity\Exception\BadFormatPasswordException;
 use YesWiki\Identity\Exception\UserEmailAlreadyUsedException;
@@ -17,8 +16,8 @@ use YesWiki\Identity\Exception\UserNameAlreadyUsedException;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Identity\Service\AvatarService;
+use YesWiki\Identity\Service\BotGuard;
 use YesWiki\Identity\Service\CsrfTokenChecker;
-use YesWiki\Identity\Service\InputFilter;
 use YesWiki\Identity\Service\UserManager;
 use YesWiki\Identity\Service\UserOperationsService;
 use YesWiki\Kernel\Exception\ExitException;
@@ -50,7 +49,6 @@ class UserSettingsAction extends YesWikiAction implements RegisteredAction
     ];
 
     private AuthenticationService $authenticationService;
-    private CaptchaController $captchaController;
     private CsrfTokenChecker $csrfTokenChecker;
     private UserOperationsService $userOperationsService;
     private UserManager $userManager;
@@ -92,7 +90,6 @@ class UserSettingsAction extends YesWikiAction implements RegisteredAction
     {
         $this->authenticationService = $this->getService(AuthenticationService::class);
         $this->csrfTokenChecker = $this->getService(CsrfTokenChecker::class);
-        $this->captchaController = $this->getService(CaptchaController::class);
         $this->userOperationsService = $this->getService(UserOperationsService::class);
         $this->userManager = $this->getService(UserManager::class);
     }
@@ -197,22 +194,16 @@ class UserSettingsAction extends YesWikiAction implements RegisteredAction
                 'profileFields' => $user === null ? [] : $this->renderProfileFields($user),
             ]);
         }
-        $captcha = $this->captchaController->renderCaptchaField();
-        $captcha = preg_replace('/(' .
-            preg_quote('<div class="media-body">', '/') .
-            "\s*" .
-            preg_quote('<strong>', '/') .
-            ')[^<]*(' .
-            preg_quote('</strong>', '/') .
-            ')/', '$1' . _t('USERSETTINGS_CAPTCHA_USER_CREATION') . '$2', $captcha);
+        $botGuard = $this->getService(BotGuard::class);
+        $botGuardFields = $botGuard->fields();
 
-        return $this->render('@core/user-signup-form.twig', [
+        return $botGuard->placeFields($this->render('@core/user-signup-form.twig', [
             'error' => $this->error,
             'name' => $this->wantedUserName,
             'email' => $this->wantedEmail,
-            'captcha' => $captcha,
+            'botGuardFields' => $botGuardFields,
             'regexUserName' => UserOperationsService::PATTERN_USER_NAME,
-        ]);
+        ]), $botGuardFields);
     }
 
     /**
@@ -477,10 +468,10 @@ class UserSettingsAction extends YesWikiAction implements RegisteredAction
                 ) {
                     $this->error = _t('USER_PASSWORDS_NOT_IDENTICAL') . '.';
                 } else {
-                    $_POST['submit'] = InputFilter::EDIT_PAGE_SUBMIT_VALUE;
-                    list($state, $error) = $this->captchaController->checkCaptchaBeforeSave();
-                    if (!$state) {
-                        $this->error = $error ?? '';
+                    $botGuard = $this->getService(BotGuard::class);
+                    $refusal = $botGuard->check($this->getRequest());
+                    if ($refusal !== null) {
+                        $this->error = $botGuard->message($refusal);
                     } else {
                         $user = $this->userOperationsService->create([
                             'changescount' => 100,

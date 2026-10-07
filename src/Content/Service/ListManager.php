@@ -6,6 +6,7 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Content\Entity\PageType;
 use YesWiki\Content\Entity\Translations;
 use YesWiki\Identity\Service\AclService;
+use YesWiki\Kernel\Routing\ReservedTags;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Kernel\Service\HtmlPurifierService;
@@ -222,6 +223,28 @@ class ListManager implements RequestScopedState
         $this->cachedLists[$id] = $data;
 
         return $id;
+    }
+
+    /**
+     * Saves an imported list, keeping its id when possible.
+     *
+     * @param array<int, array<string, mixed>>|null $nodes
+     */
+    public function import(string $id, string $title, ?array $nodes, ?string $origin = null): ?string
+    {
+        if ($this->isList($id)) {
+            if (!$this->aclService->hasAccess('write', $id)) {
+                return null;
+            }
+            $this->update($id, $title, $nodes, $origin);
+
+            return $id;
+        }
+        if (preg_match('/^\p{L}[\p{L}0-9_-]*$/u', $id) && !ReservedTags::isReserved($id) && empty($this->pageManager->getOne($id))) {
+            return $this->create($title, $nodes, $id, $origin);
+        }
+
+        return $this->create($title, $nodes, null, $origin);
     }
 
     /**

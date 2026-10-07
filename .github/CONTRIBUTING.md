@@ -30,7 +30,7 @@ for the french speaking, [check the YesWiki page about development](https://yesw
 
 ### Prerequisites
 
-First, make sure that you have a web server (nginx, apache, ..), PHP >= 5.5 (with mysql, curl, gd extensions activated) and Mysql server
+First, make sure that you have a web server (nginx, apache, ...), PHP >= 8.3 with the extensions listed in [INSTALL.md](../INSTALL.md), and a database: MySQL/MariaDB (`pdo_mysql`), PostgreSQL 12 or newer (`pdo_pgsql`) or SQLite (`pdo_sqlite`, nothing to set up).
 
 Then clone the sources:
 

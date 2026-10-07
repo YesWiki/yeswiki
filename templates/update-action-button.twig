@@ -1,4 +1,4 @@
-<form method="post" action="{{ url({params: params}) }}" style="display: inline-block; margin: 0">
+<form method="post" action="{{ url({params: params}) }}" style="display: inline-block; margin: 0"{% if confirmMessage|default('') %} hx-boost="false" onsubmit="return confirm({{ confirmMessage|json_encode|e('html_attr') }})"{% endif %}>
     <input type="hidden" name="csrf-token" value="{{ csrfToken({id: 'main', refresh: false})|e('html_attr') }}">
     <button type="submit" class="{{ buttonClass }}" title="{{ label|e('html_attr') }}">
         {{ label }}

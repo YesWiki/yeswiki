@@ -19,18 +19,19 @@
     <div v-for="(entry, index) in entriesToDisplay" class="timeline-element">
         <Timeline-Year :entry="entry" :entries="entriesToDisplay" :indexentry="index">
         </Timeline-Year>
-        {% if isLink %}<a{% else %}<div{% endif %} :key="entry.tag"
+        <a :key="entry.tag"
             class="bazar-entry timeline-container bazar-card{{ isModal ? ' modalbox' : ''}}"
-            {% if not isLink %}@click="openEntry(entry)"{% endif %}
             :class="{'with-image': Object.keys(entry).includes('visual')}"
             :style="[entry.color ? {'--entry-color': entry.color}: {'--entry-color': 'var(--yw-text)'}]"
             {% if isModal %}
             data-size="modal-lg" data-header="false" data-iframe="1"
             {% endif %}
-            {% if isLink %}
+            {% if isNewTab %}
+            :href="entry.url" target="_blank" rel="noopener"
+            {% else %}
             :href="`${entry.url + (({{ isModal ? 'true' : 'false' }} || $root.isInIframe()) ? '/iframe' : '')}`"
+            {% endif %}
             :title="entry.title"
-        {% endif %}
         >
 
         <div class="timeline-content" :style="{'border-color': entry.color}">
@@ -38,7 +39,7 @@
 
 {% block iter_end %}
         </div>
-    {% if isLink %}</a>{% else %}</div>{% endif %}
+    </a>
    </div>
 </div>
 {% endblock %}

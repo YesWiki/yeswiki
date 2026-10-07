@@ -51,7 +51,6 @@ class Storage
         'cache/assets/' => self::RUNTIME_TIER,
         'cache/importer/' => self::RUNTIME_TIER,
         'cache/HTMLpurifier/' => self::RUNTIME_TIER,
-        'cache/hashcash.key' => self::RUNTIME_TIER,
         'cache/*.lock' => self::RUNTIME_TIER,
         'yeswiki.config.php' => self::RUNTIME_TIER,
     ];

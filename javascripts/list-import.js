@@ -22,6 +22,8 @@ ywInitEach('#btn-import-lists', () => {
 
     if (rgHttpUrl.test(url)) {
       const taburl = url.split('wakka.php')
+      const origin = document.getElementById('imported-origin')
+      if (origin) origin.value = taburl[0].replace(/\/+$/g, '')
       url = `${taburl[0].replace(/\/+$/g, '')}/?wiki=BazaR/json&demand=lists`
       resultimportlist.innerHTML = `<div class="yw-alert yw-alert--info">
         <span class="throbber">${listtranslations.loading}...</span>

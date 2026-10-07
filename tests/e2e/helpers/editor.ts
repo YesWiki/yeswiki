@@ -1,4 +1,5 @@
 import { Page, expect } from '@playwright/test'
+import { waitPastBotGuardMinimumAge } from './botGuard'
 
 /** The editor these helpers talk to is whichever one the wiki draws. */
 
@@ -81,6 +82,7 @@ export const useSourceEditor = async (page: Page) => {
  * writes, so the button reads "Save" while a translation is being filled in.
  */
 export const saveEditor = async (page: Page) => {
+  await waitPastBotGuardMinimumAge(page)
   const saved = page.waitForResponse(
     (response) => response.request().method() === 'POST',
     { timeout: 30000 },

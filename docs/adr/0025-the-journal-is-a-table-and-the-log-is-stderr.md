@@ -127,3 +127,17 @@ turning the acceptance criterion ("5,000 throws produce one row with `repeat = 5
 stuck at 500. A fingerprint already stored today always goes through; only a _new_ one counts
 against the ceiling, which is what "dedup bounds repeats, not distinct fingerprints" actually
 requires.
+
+**Small stores go in `triples` unless they prove too slow (2026-10-07).** Rejecting triples still
+holds for the Journal itself, an append-only log filtered by actor, action, target and date range,
+none of which the indexes on `resource` and `property` can serve. That reasoning does not extend to every small store, and the project rule
+is now the opposite default: single-use tokens, counters, subscriptions and anti-replay signatures
+live in `triples`, and a store gets its own table only once it has shown a serious performance
+problem. The ActivityPub seen signatures moved there from `activitypub_seen_signatures`, and the
+BotGuard used tokens, BotGuard refusal counters and mail subscriptions landed there from the start.
+Two constraints come with the rule. Each store queries `triples` on the indexed `resource` and
+`property` columns through `DbService` and never through `TripleStore`, whose memo caches would
+outlive the request in worker mode (ADR-0024). And since `triples` has no unique key on
+`(resource, property)`, a claim that must be race-safe cannot count on a failed insert: every
+claimer inserts its own row with a random nonce in the value, reads back the oldest row for that
+resource and property, and wins only if that row is its own.

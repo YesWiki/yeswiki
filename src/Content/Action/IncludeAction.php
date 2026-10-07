@@ -117,7 +117,7 @@ class IncludeAction extends YesWikiAction implements RegisteredAction, ProvidesC
 
         $entryManager = $this->getService(EntryManager::class);
         if ($entryManager->isEntry($incPageName)) {
-            $plugin_output_new = '<div class="' . $class . '">' . "\n" . $this->getService(EntryDisplay::class)->renderEntry(0, $incPageName) . "\n" . '</div>' . "\n";
+            $plugin_output_new = '<div class="' . htmlspecialchars((string)$class, ENT_QUOTES) . '">' . "\n" . $this->getService(EntryDisplay::class)->renderEntry(0, $incPageName) . "\n" . '</div>' . "\n";
         } else {
             $type = '';
         }
@@ -265,12 +265,12 @@ class IncludeAction extends YesWikiAction implements RegisteredAction, ProvidesC
             for ($i = 0; $inclusions[$i] != $pg; $i++) {
                 $err = '[[' . $inclusions[$i] . ']] > ' . $err;
             }
-            echo '<div class="alert alert-danger"><strong>' . _t('ERROR') . ' ' . _t('ACTION') . ' Include</strong> : ' . _t('IMPOSSIBLE_FOR_THIS_PAGE') . ' ' . $incPageName . ' ' . _t('TO_INCLUDE_ITSELF')
+            echo '<div class="alert alert-danger"><strong>' . _t('ERROR') . ' ' . _t('ACTION') . ' Include</strong> : ' . _t('IMPOSSIBLE_FOR_THIS_PAGE') . ' ' . htmlspecialchars($incPageName, ENT_QUOTES) . ' ' . _t('TO_INCLUDE_ITSELF')
                  . ($i ? ':<br /><strong>' . _t('INCLUSIONS_CHAIN') . '</strong> : ' . $pg . ' > ' . $err : '') . '</div>' . "\n";
         } elseif (!$this->getService(AclService::class)->hasAccess('read', $incPageName) && $this->getService(PerformableArguments::class)->get('auth') != 'noError') {
-            echo '<div class="alert alert-danger"><strong>' . _t('ERROR') . ' ' . _t('ACTION') . ' Include</strong> :  ' . _t('READING_OF_INCLUDED_PAGE') . ' ' . $incPageName . ' ' . _t('NOT_ALLOWED') . '.</div>' . "\n";
+            echo '<div class="alert alert-danger"><strong>' . _t('ERROR') . ' ' . _t('ACTION') . ' Include</strong> :  ' . _t('READING_OF_INCLUDED_PAGE') . ' ' . htmlspecialchars($incPageName, ENT_QUOTES) . ' ' . _t('NOT_ALLOWED') . '.</div>' . "\n";
         } elseif (!$incPage = $this->getService(PageManager::class)->getOne($incPageName)) {
-            echo '<div class="alert alert-danger"><strong>' . _t('ERROR') . ' ' . _t('ACTION') . ' Include</strong> : ' . _t('INCLUDED_PAGE') . ' ' . $incPageName . ' ' . _t('DOESNT_EXIST') . '...</div>' . "\n";
+            echo '<div class="alert alert-danger"><strong>' . _t('ERROR') . ' ' . _t('ACTION') . ' Include</strong> : ' . _t('INCLUDED_PAGE') . ' ' . htmlspecialchars($incPageName, ENT_QUOTES) . ' ' . _t('DOESNT_EXIST') . '...</div>' . "\n";
         } elseif ($this->getService(AclService::class)->hasAccess('read', $incPageName)) {
             $this->getService(InclusionStack::class)->register($incPageName);
             $output = $this->getService(MarkdownFormatterService::class)->format(PageBody::content($incPage['body']));
@@ -281,7 +281,7 @@ class IncludeAction extends YesWikiAction implements RegisteredAction, ProvidesC
                     $editLink = '';
                 }
 
-                echo '<div class="include ' . $classes . "\">\n" . $editLink . $output . "</div>\n";
+                echo '<div class="include ' . htmlspecialchars($classes, ENT_QUOTES) . "\">\n" . $editLink . $output . "</div>\n";
             } else {
                 echo $output;
             }

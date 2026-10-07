@@ -41,7 +41,7 @@
     <input class="yw-input" type="password" name="confpassword" size="40" />
   </div>
 </div>
-{{ captcha|raw }}
+{{ botGuardFields|default('')|raw }}
 <div class="yw-form-group">
   <div class="controls">
     <input class="yw-btn yw-btn--block yw-btn--primary" type="submit" value="{{ _t('USER_NEW_ACCOUNT')|e('html_attr') }}" size="40" />

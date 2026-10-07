@@ -194,11 +194,21 @@ const BazarMapComponent = {
 		            </span>
 		          </div>
 		          <${tagName} class="bazar-entry ${this.isModalDisplay() ? 'modalbox' : ''}" ` +
-                `${isLink ? `href="${url}"` : ''} style="color: ${entry.color}" ${modalData}>
+                `${isLink ? `href="${url}" tabindex="-1"` : ''} style="color: ${entry.color}" ${modalData}>
 		            ${legacyIconToSprite(entry.icon) || (entry.icon ? `<i class="${entry.icon}"></i>` : legacyIconToSprite('bullseye'))}
 		          </${tagName}>`,
             }),
           )
+          entry.marker.on('add', () => {
+            entry.marker
+              .getElement()
+              ?.setAttribute('aria-label', entry.title || entry.bf_titre || '')
+          })
+          entry.marker.on('keypress', (ev) => {
+            if (!['Enter', ' '].includes(ev.originalEvent.key)) return
+            ev.originalEvent.preventDefault()
+            entry.marker.getElement()?.querySelector('.bazar-entry')?.click()
+          })
           if (this.isDirectLinkDisplay()) {
             entry.marker.on('click', (ev) => {
               ev.originalEvent?.preventDefault()

@@ -189,7 +189,6 @@ EOT,
         foreach ($data as $entry) {
             $res = StringUtilService::searchNested($existingEntries, 'bf_url', $entry['bf_url']);
             if (!$res) {
-                $entry['antispam'] = 1;
                 $this->entryManager->create($this->config['formId'], $entry, false, $entry['bf_url']);
                 echo 'L\'article "' . ($entry['bf_titre'] ?? $entry['bf_url']) . '" créé.' . "\n";
             } else {

@@ -37,6 +37,7 @@
     "ext-xml": "*",
     "ext-xmlreader": "*",
     "ext-zip": "^1.0",
+    "altcha-org/altcha": "^2.2",
     "caxy/php-htmldiff": "^0.1.13",
     "endroid/qr-code": "^6.0",
     "enshrined/svg-sanitize": "^0.22.0",

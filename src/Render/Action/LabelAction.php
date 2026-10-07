@@ -58,7 +58,7 @@ class LabelAction extends YesWikiAction implements RegisteredAction, ProvidesCom
         }
 
         return '<!-- start of label -->' . "\n"
-            . '<span' . (!empty($id) ? ' id="' . $id . '"' : '') . ' class="yw-label ' . $class . '">';
+            . '<span' . (!empty($id) ? ' id="' . htmlspecialchars($id, ENT_QUOTES) . '"' : '') . ' class="yw-label ' . htmlspecialchars($class, ENT_QUOTES) . '">';
     }
 
     public function end(): string

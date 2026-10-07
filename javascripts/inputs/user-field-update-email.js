@@ -8,7 +8,7 @@ function updateEmailForUser() {
       userEmail &&
       userEmail.length > 0
     ) {
-      const form = nomwikiInput.closest('form#formulaire')
+      const form = nomwikiInput.closest('form.bazar-form')
       const emailInput = form ? form.querySelector(`input#${emailField}`) : null
       if (
         emailInput &&

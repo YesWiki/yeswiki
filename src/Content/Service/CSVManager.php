@@ -15,6 +15,7 @@ use YesWiki\Files\Service\RemoteFile;
 use YesWiki\Files\Service\Storage;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Service\CurrentRequest;
+use YesWiki\Kernel\Service\HtmlPurifierService;
 use YesWiki\Kernel\Service\StringUtilService;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Search\Service\SearchManager;
@@ -367,7 +368,6 @@ class CSVManager
                     continue;
                 }
 
-                $entry['antispam'] = 1;
                 if (isset($entry['tag'])) {
                     unset($entry['tag']);
                 }
@@ -836,13 +836,11 @@ class CSVManager
             return $value;
         }
 
-        // test si c'est url vers l'image
-        $fileCopied = RemoteFile::download($imageorig, AttachedFilePaths::UPLOAD_DIR . $nomimage);
+        $fileCopied = $this->downloadSafely($imageorig, AttachedFilePaths::UPLOAD_DIR . $nomimage);
         if ($fileCopied) {
             $value = $nomimage;
         } elseif ($this->storage->exists(AttachedFilePaths::UPLOAD_DIR . $imageorig)) {
             if (preg_match('/(gif|jpeg|png|jpg)$/i', $nomimage)) {
-                // on enleve les accents sur les noms de fichiers, et les espaces
                 $nomimage = preg_replace(
                     '/&([a-z])[a-z]+;/i',
                     '$1',
@@ -852,7 +850,6 @@ class CSVManager
                 $value = $nomimage;
                 $chemin_destination = AttachedFilePaths::UPLOAD_DIR . $nomimage;
 
-                // verification de la presence de ce fichier
                 if (!$this->storage->exists($chemin_destination)) {
                     $this->storage->move(AttachedFilePaths::UPLOAD_DIR . $imageorig, $chemin_destination);
                 }
@@ -866,6 +863,17 @@ class CSVManager
         }
 
         return $value;
+    }
+
+    /** Downloads a remote file into the upload folder. */
+    private function downloadSafely(string $url, string $localPath): bool
+    {
+        if ($this->storage->exists($localPath)) {
+            return true;
+        }
+
+        return RemoteFile::download($url, $localPath)
+            && $this->container->get(HtmlPurifierService::class)->cleanStoredFile($localPath);
     }
 
     /**
@@ -888,7 +896,7 @@ class CSVManager
             return $value;
         }
 
-        $fileCopied = RemoteFile::download($fileUrl, AttachedFilePaths::UPLOAD_DIR . $file);
+        $fileCopied = $this->downloadSafely($fileUrl, AttachedFilePaths::UPLOAD_DIR . $file);
         if ($fileCopied) {
             $value = $file;
         } elseif ($this->storage->exists(AttachedFilePaths::UPLOAD_DIR . $fileUrl)) {

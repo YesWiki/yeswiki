@@ -2,6 +2,7 @@
 
 namespace YesWiki\Render\Handler;
 
+use Tamtamchik\SimpleFlash\Flash;
 use YesWiki\Content\Controller\EntryController;
 use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Service\EntryManager;
@@ -52,7 +53,8 @@ class IframeHandler extends YesWikiHandler implements RegisteredHandler
             $output .= '<body class="yeswiki-iframe-body">' . "\n"
                 . '<div class="container">' . "\n"
                 . '<div class="yeswiki-page-widget page-widget page" ' . $this->getService(MarkdownFormatterService::class)->format('{{doubleclick iframe="1"}}')
-                . '>' . "\n";
+                . '>' . "\n"
+                . Flash::display();
 
             if ($entryManager->isEntry($this->getService(PageContext::class)->getTag())) {
                 $output .= $this->renderBazarEntry();

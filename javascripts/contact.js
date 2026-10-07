@@ -64,15 +64,21 @@ ywInitEach('body', (body) => {
       return
     }
 
-    const formData = new FormData(form)
-    formData.set('pageTag', form.dataset.pageTag || wiki.pageTag)
-    if (form.dataset.field) {
-      formData.set('field', form.dataset.field)
-    }
-
-    fetch(wiki.url('api/contact/mail'), { method: 'POST', body: formData })
+    Promise.resolve(window.ywBotGuard?.verify(form))
+      .then(() => {
+        const formData = new FormData(form)
+        formData.set('pageTag', form.dataset.pageTag || wiki.pageTag)
+        if (form.dataset.field) {
+          formData.set('field', form.dataset.field)
+        }
+        return fetch(wiki.url('api/contact/mail'), {
+          method: 'POST',
+          body: formData,
+        })
+      })
       .then((response) => response.json())
       .then((result) => {
+        window.ywBotGuard?.refresh(form, result.botGuard)
         form.querySelectorAll('.yw-alert').forEach((el) => el.remove())
         const alert = document.createElement('div')
         alert.className = `yw-alert yw-alert--${result.type}`

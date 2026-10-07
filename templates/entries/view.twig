@@ -1,23 +1,6 @@
 
 {{ include_css('styles/yw-entries.css') }}
 <div class="BAZ_cadre_fiche id{{ form.id }}">
-  {% if message and not entry['external-data'] %}
-    <div class="yw-alert yw-alert--success">
-      {% if message == 'ajout_ok' %}
-        {{ _t('BAZ_FICHE_ENREGISTREE') }}
-        <a href="{{ url({ params: { view: 'saisir', id: form.id }}) }}" class="pull-right yw-btn yw-btn--sm yw-btn--primary">
-          {{ _t('BAZ_ADD_NEW_ENTRY') }}
-        </a>
-      {% endif %}
-      {% if message == 'modif_ok' %}
-        {{ _t('BAZ_FICHE_MODIFIEE') }}
-        <a href="{{ url({ tag: entryId, handler: 'edit'}) }}" class="pull-right yw-btn yw-btn--sm yw-btn--primary">
-          {{ _t('BAZ_MODIFY_ENTRY_AGAIN') }}
-        </a>
-      {% endif %}
-      <div class="clearfix"></div>
-    </div>
-  {% endif %}
   {{ renderedEntry|raw }}
 
   {% if showFooter and canShow %}
@@ -67,7 +50,7 @@
         {% endif %}
         {% if not entry['external-data'] %}
           {% if canEdit %}
-            <a class="yw-btn yw-btn--sm btn-entry-action" href="{{ url({ tag: entryId, handler: 'edit' }) }}">
+            <a class="yw-btn yw-btn--sm btn-entry-action" href="{{ url({ tag: entryId, handler: 'edit', params: editContextUrl ? { incomingurl: editContextUrl } : {} }) }}">
               <svg class="yw-icon icon-pencil" aria-hidden="true"><use href="src/assets/icons.svg#pencil"/></svg>
               <span>{{ _t('BAZ_MODIFIER') }}</span>
             </a>

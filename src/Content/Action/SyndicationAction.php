@@ -527,7 +527,6 @@ class SyndicationAction extends YesWikiAction implements RegisteredAction, Provi
         if (!empty($mapping)) {
             $data = json_decode(urldecode($mapping), true);
             if (!empty($data)) {
-                $data['antispam'] = 1;
                 $entryManager = $this->getService(EntryManager::class);
                 $entryManager->create($data['form_id'], $data, false, $data['bf_url']);
                 Flash::success(_t('SYNDICATION_ENTRY_SAVED', ['title' => $data['bf_titre']]));

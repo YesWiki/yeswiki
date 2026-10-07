@@ -5,6 +5,7 @@ namespace YesWiki\Admin\Action;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Files\Service\Storage;
 use YesWiki\Identity\Service\AclService;
+use YesWiki\Identity\Service\BotGuard;
 use YesWiki\Kernel\Component\Category;
 use YesWiki\Kernel\Component\Component;
 use YesWiki\Kernel\Component\ProvidesComponents;
@@ -55,7 +56,8 @@ class EditConfigAction extends YesWikiAction implements RegisteredAction, Provid
     private const CONTACT_KEYS = [
         'contact_use_long_wiki_urls_in_emails', 'contact_mail_func', 'contact_smtp_host',
         'contact_smtp_port', 'contact_smtp_user', 'contact_smtp_pass', 'contact_smtp_secure',
-        'contact_smtp_verify_peer', 'contact_debug', 'contact_disable_email_for_password',
+        'contact_smtp_verify_peer', 'contact_dkim_domain', 'contact_dkim_selector', 'contact_dkim_private_key',
+        'contact_debug', 'contact_disable_email_for_password',
     ];
 
     private const BAZAR_KEYS = [
@@ -95,8 +97,7 @@ class EditConfigAction extends YesWikiAction implements RegisteredAction, Provid
         'signup_email_activation' => 'security',
         'user_activation_key_length' => 'security',
         'use_alerte' => 'security',
-        'use_captcha' => 'security',
-        'use_hashcash' => 'security',
+        'altcha' => 'security',
         'wiki_status' => 'security',
 
         'contact_from' => 'contact',
@@ -179,6 +180,7 @@ class EditConfigAction extends YesWikiAction implements RegisteredAction, Provid
 
             'defaultLanguage' => is_scalar($defaultLanguage) ? (string)$defaultLanguage : '',
             'otherLanguages' => $this->params->has('other_languages') ? (array)$this->params->get('other_languages') : [],
+            'botGuardRefusals' => $this->getService(BotGuard::class)->refusedLastDays(7),
         ]);
     }
 

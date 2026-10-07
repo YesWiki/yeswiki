@@ -435,32 +435,28 @@ class SearchManager
 
                 foreach ($vQuery['values'] as $vValue) {
                     $vIsRegExp = $this->isRegExp($vValue) !== 0;
+                    $vIsEmpty = trim((string)$vValue) === '';
+                    $vColumn = $this->renameJSONPathVariable($vFieldName);
+                    $vColumnOrEmpty = ($vComparisonOperator === '!=' || $vIsEmpty) ? "COALESCE({$vColumn}, '')" : $vColumn;
 
                     switch ($vDescriptor['_mode_']) {
                         case 'single':
                             if ($vIsRegExp) {
                                 $vValueConditions[] = SqlFragment::of(
-                                    $this->renameJSONPathVariable($vFieldName) . ' ' . $this->dbService->collateClause() . " {$vRegExpOperator} ?",
+                                    $vColumnOrEmpty . ' ' . $this->dbService->collateClause() . " {$vRegExpOperator} ?",
                                     [$this->extractRegExp($vValue)]
                                 );
+                            } elseif ($vDescriptor['_type_'] == 'number' && !$vIsEmpty) {
+                                $vNumberCondition = $this->dbService->castToNumber($vColumn) . " {$vComparisonOperator} ?";
+                                $vValueConditions[] = SqlFragment::of(
+                                    $vComparisonOperator === '!=' ? "COALESCE({$vNumberCondition}, TRUE)" : $vNumberCondition,
+                                    [(string)$vValue]
+                                );
                             } else {
-                                if ($vDescriptor['_type_'] == 'number') {
-                                    if (isset($vValue) && trim($vValue) !== '') {
-                                        $vValueConditions[] = SqlFragment::of(
-                                            $this->dbService->castToNumber($this->renameJSONPathVariable($vFieldName)) . " {$vComparisonOperator} ?",
-                                            [(string)$vValue]
-                                        );
-                                    } else {
-                                        $vValueConditions[] = SqlFragment::of(
-                                            '(' . $this->renameJSONPathVariable($vFieldName) . ' ' . $this->dbService->collateClause() . " {$vComparisonOperator} '' )"
-                                        );
-                                    }
-                                } else {
-                                    $vValueConditions[] = SqlFragment::of(
-                                        $this->renameJSONPathVariable($vFieldName) . ' ' . $this->dbService->collateClause() . " {$vComparisonOperator} ?",
-                                        [$vValue]
-                                    );
-                                }
+                                $vValueConditions[] = SqlFragment::of(
+                                    $vColumnOrEmpty . ' ' . $this->dbService->collateClause() . " {$vComparisonOperator} ?",
+                                    [$vIsEmpty ? '' : $vValue]
+                                );
                             }
 
                             break;
@@ -469,10 +465,12 @@ class SearchManager
                             if ($vIsRegExp) {
                                 $vValueConditions[] = SqlFragment::of(
                                     '(s.champ = ? AND s.elt ' . $this->dbService->collateClause() . " {$vRegExpOperator} ?)",
-                                    [$this->renameJSONPathVariable($vFieldName), $this->extractRegExp($vValue)]
+                                    [$vColumn, $this->extractRegExp($vValue)]
                                 );
+                            } elseif ($vIsEmpty) {
+                                $vValueConditions[] = SqlFragment::of("{$vColumnOrEmpty} {$vComparisonOperator} ''");
                             } else {
-                                $vFindInSet = $this->dbService->findInSet('?', $this->renameJSONPathVariable($vFieldName), $vFindInSetNot);
+                                $vFindInSet = $this->dbService->findInSet('?', $vColumnOrEmpty, $vFindInSetNot);
                                 $vValueConditions[] = SqlFragment::of(
                                     $vFindInSet,
                                     array_fill(0, substr_count($vFindInSet, '?'), $vValue)

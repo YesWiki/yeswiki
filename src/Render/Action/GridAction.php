@@ -55,7 +55,7 @@ class GridAction extends YesWikiAction implements RegisteredAction, ProvidesComp
         }
 
         return '<!-- start of grid -->' . "\n"
-            . '<div class="' . $class . '">';
+            . '<div class="' . htmlspecialchars($class, ENT_QUOTES) . '">';
     }
 
     public function end(): string

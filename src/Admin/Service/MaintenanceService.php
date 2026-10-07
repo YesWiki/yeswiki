@@ -4,6 +4,7 @@ namespace YesWiki\Admin\Service;
 
 use YesWiki\Files\Service\RuntimeLock;
 use YesWiki\Identity\Service\AccountActivationService;
+use YesWiki\Identity\Service\BotGuard;
 use YesWiki\Identity\Service\UserManager;
 use YesWiki\Kernel\Entity\MaintenanceReport;
 use YesWiki\Kernel\Service\DbService;
@@ -48,6 +49,7 @@ class MaintenanceService
     private AccountActivationService $activation;
     private SearchIndexer $indexer;
     private RuntimeLock $locks;
+    private BotGuard $botGuard;
 
     public function __construct(
         RuntimeConfig $config,
@@ -59,6 +61,7 @@ class MaintenanceService
         AccountActivationService $activation,
         SearchIndexer $indexer,
         RuntimeLock $locks,
+        BotGuard $botGuard,
     ) {
         $this->config = $config;
         $this->dbService = $dbService;
@@ -69,6 +72,7 @@ class MaintenanceService
         $this->activation = $activation;
         $this->indexer = $indexer;
         $this->locks = $locks;
+        $this->botGuard = $botGuard;
     }
 
     /** Which mechanism this wiki has chosen, defaulting to the poor man's cron. */
@@ -159,6 +163,12 @@ class MaintenanceService
             $this->activation->purgeExpiredActivationKeys();
 
             return 'expired account activation keys purged';
+        });
+
+        $this->step($report, 'bot-guard', function (): string {
+            $this->botGuard->purge();
+
+            return 'expired anti-bot tokens and old refusal counters purged';
         });
 
         $this->step($report, 'search-queue', function (): string {

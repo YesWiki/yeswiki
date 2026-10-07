@@ -4,10 +4,11 @@ namespace YesWiki\Federation\Service;
 
 use YesWiki\Kernel\Service\DbService;
 
-/** The signatures already accepted from other servers, keyed by their hash, so that a replay is refused even when both copies arrive at once. */
+/** ActivityPub signatures already seen, stored as triples. */
 class SeenSignatures
 {
-    public const TABLE = 'activitypub_seen_signatures';
+    public const PROPERTY = 'http://yeswiki.net/_vocabulary/activitypub/seenSignature';
+    public const RESOURCE_PREFIX = 'activitypub:seenSignature:';
 
     private DbService $dbService;
 
@@ -16,62 +17,71 @@ class SeenSignatures
         $this->dbService = $dbService;
     }
 
-    /** Trimmed, unlike DbService::prefixTable(), which pads the name for concatenation. */
-    public function table(): string
-    {
-        return trim($this->dbService->prefixTable(self::TABLE));
-    }
-
-    public function create(): void
-    {
-        $table = $this->dbService->quoteIdentifier($this->table());
-        $hash = $this->dbService->quoteIdentifier('hash');
-        $seenAt = $this->dbService->quoteIdentifier('seen_at');
-        $this->dbService->query(
-            "CREATE TABLE IF NOT EXISTS {$table} ({$hash} CHAR(64) NOT NULL PRIMARY KEY, {$seenAt} BIGINT NOT NULL)"
-        );
-    }
-
-    public function exists(): bool
-    {
-        return in_array($this->table(), $this->dbService->schema()->getTables(), true);
-    }
-
-    /** Records the signature and says whether it is new: false when another request already recorded it, however close in time. */
+    /** Records a signature; false when it was already seen. */
     public function remember(string $signature, int $now, int $forgetBefore): bool
     {
-        $table = $this->dbService->quoteIdentifier($this->table());
-        $hash = $this->dbService->quoteIdentifier('hash');
-        $seenAt = $this->dbService->quoteIdentifier('seen_at');
-        $insert = "INSERT INTO {$table} ({$hash}, {$seenAt}) VALUES (?, ?)";
-        $values = [hash('sha256', $signature), $now];
+        $this->dbService->query(
+            'DELETE FROM ' . $this->triples() . ' WHERE property = ? AND value < ?',
+            [self::PROPERTY, $this->stamp($forgetBefore)]
+        );
 
-        try {
-            $this->dbService->query("DELETE FROM {$table} WHERE {$seenAt} < ?", [$forgetBefore]);
-        } catch (\Exception $missingTable) {
-            $this->create();
-        }
-
-        try {
-            $this->dbService->query($insert, $values);
-        } catch (\Exception $failed) {
-            if ($this->isDuplicateKey($failed)) {
-                return false;
-            }
-            throw $failed;
-        }
-
-        return true;
+        return $this->claim(hash('sha256', $signature), $now);
     }
 
-    private function isDuplicateKey(\Exception $failed): bool
+    /** Imports a signature hash seen at a given time. */
+    public function import(string $hash, int $seenAt): void
     {
-        $pdoException = $failed instanceof \PDOException ? $failed : $failed->getPrevious();
-        if (!$pdoException instanceof \PDOException) {
+        if ($this->first(self::RESOURCE_PREFIX . $hash) === null) {
+            $this->insert(self::RESOURCE_PREFIX . $hash, $seenAt);
+        }
+    }
+
+    /** Inserts a claim; true when it is the oldest one. */
+    private function claim(string $hash, int $now): bool
+    {
+        $resource = self::RESOURCE_PREFIX . $hash;
+        if ($this->first($resource) !== null) {
             return false;
         }
-        $sqlState = (string)($pdoException->errorInfo[0] ?? $pdoException->getCode());
+        $value = $this->insert($resource, $now);
 
-        return str_starts_with($sqlState, '23');
+        return $this->first($resource) === $value;
+    }
+
+    private function insert(string $resource, int $seenAt): string
+    {
+        $value = $this->stamp($seenAt) . '|' . bin2hex(random_bytes(8));
+        $this->dbService->query(
+            'INSERT INTO ' . $this->triples() . ' (resource, property, value) VALUES (?, ?, ?)',
+            [$resource, self::PROPERTY, $value]
+        );
+
+        return $value;
+    }
+
+    /**
+     * The value of the oldest row for the resource.
+     *
+     * @phpstan-impure
+     */
+    private function first(string $resource): ?string
+    {
+        $row = $this->dbService->loadSingle(
+            'SELECT value FROM ' . $this->triples() . ' WHERE resource = ? AND property = ? ORDER BY id ASC LIMIT 1',
+            [$resource, self::PROPERTY]
+        );
+
+        return $row === null ? null : (string)$row['value'];
+    }
+
+    /** Zero-padded timestamp. */
+    private function stamp(int $time): string
+    {
+        return sprintf('%020d', $time);
+    }
+
+    private function triples(): string
+    {
+        return trim($this->dbService->prefixTable('triples'));
     }
 }

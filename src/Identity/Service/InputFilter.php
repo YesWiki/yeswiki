@@ -5,11 +5,10 @@ namespace YesWiki\Identity\Service;
 use YesWiki\Core\YesWikiController;
 
 /**
- * What remains here after ticket 15's split (hibernation -> HibernationService, password-for-editing -> PasswordForEditingService, captcha -> CaptchaController): a generic, dependency-free input-sanitization utility that doesn't belong to any single security sub-concern, plus the edit-page submit-value constant referenced across the whole codebase.
+ * Input sanitization helpers.
  */
 class InputFilter extends YesWikiController
 {
-    // this value cannot be changed because use by extensions
     public const EDIT_PAGE_SUBMIT_VALUE = 'Sauver';
 
     /**

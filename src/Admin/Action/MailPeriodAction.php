@@ -2,15 +2,15 @@
 
 namespace YesWiki\Admin\Action;
 
+use Symfony\Component\Security\Csrf\Exception\TokenNotFoundException;
+use YesWiki\Contact\Service\MailSubscriptions;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Identity\Service\AuthenticationService;
-use YesWiki\Identity\Service\GroupOperationsService;
-use YesWiki\Identity\Service\UserManager;
+use YesWiki\Identity\Service\CsrfTokenChecker;
 use YesWiki\Kernel\Component\Category;
 use YesWiki\Kernel\Component\Component;
 use YesWiki\Kernel\Component\ProvidesComponents;
 use YesWiki\Kernel\Performable\RegisteredAction;
-use YesWiki\Kernel\Service\CurrentRequest;
 use YesWiki\Kernel\Service\PageContext;
 
 class MailPeriodAction extends YesWikiAction implements RegisteredAction, ProvidesComponents
@@ -35,102 +35,54 @@ class MailPeriodAction extends YesWikiAction implements RegisteredAction, Provid
         ];
     }
 
-    protected AuthenticationService $authenticationService;
-    protected UserManager $userManager;
-
     public function run(): string
     {
-        $this->authenticationService = $this->getService(AuthenticationService::class);
-        $this->userManager = $this->getService(UserManager::class);
-        $user = $this->authenticationService->getLoggedUser();
-        $userName = $this->authenticationService->getLoggedUserName();
-        $periods = [
-            'day' => ['label' => _t('CONTACT_DAILY')],
-            'week' => ['label' => _t('CONTACT_WEEKLY')],
-            'month' => ['label' => _t('CONTACT_MONTHLY')],
-        ];
-        $periods = $this->updatePeriods($periods, $userName);
+        $subscriptions = $this->getService(MailSubscriptions::class);
+        if ($subscriptions->isSending()) {
+            return '';
+        }
+        $userName = $this->getService(AuthenticationService::class)->getLoggedUserName();
+        $pageTag = (string)$this->getService(PageContext::class)->getTag();
+        $request = $this->getRequest();
         $messages = [];
 
-        if ($user && !empty($userName)) {
-            $request = $this->getRequest();
-            if ($request->query->has('subscribe') || $request->request->has('subscribe')) {
-                $period = CurrentRequest::input($request, 'subscribe');
-                $group = $periods[$period]['group'];
-                $this->unsubscribUserFromAllGroups($userName, $periods);
-                $this->subscribeUserToGroup($userName, $group);
-                $messages['success'] = _t('CONTACT_SUCCESS_SUBSCRIBE') . $periods[$period]['label'];
-            } elseif ($request->query->has('unsubscribe') || $request->request->has('unsubscribe')) {
-                $this->unsubscribUserFromAllGroups($userName, $periods);
-                $messages['info'] = _t('CONTACT_SUCCESS_UNSUBSCRIBE');
+        if ($userName !== '' && $request->isMethod('POST') && ($request->request->has('subscribe') || $request->request->has('unsubscribe'))) {
+            $period = (string)$request->request->get('subscribe', '');
+            try {
+                $this->getService(CsrfTokenChecker::class)->checkToken('main', 'POST', 'csrf-token', false);
+                if ($request->request->has('unsubscribe')) {
+                    $subscriptions->unsubscribe($pageTag, $userName);
+                    $messages['info'] = _t('CONTACT_SUCCESS_UNSUBSCRIBE');
+                } elseif (in_array($period, MailSubscriptions::PERIODS, true)) {
+                    $subscriptions->subscribe($pageTag, $userName, $period);
+                    $messages['success'] = _t('CONTACT_SUCCESS_SUBSCRIBE') . $this->labels()[$period];
+                }
+            } catch (TokenNotFoundException $e) {
+                $messages['danger'] = $e->getMessage();
             }
-
-            $periods = $this->updatePeriods($periods, $userName);
         }
 
+        $subscribedPeriod = $userName === '' ? null : $subscriptions->periodOf($pageTag, $userName);
+
         return $this->render('@core/mailperiod.twig', [
-            'user' => $user,
+            'user' => $userName !== '',
             'messages' => $messages,
-            'periods' => $periods,
+            'periods' => array_map(fn (string $period, string $label) => [
+                'period' => $period,
+                'label' => $label,
+                'subscribed' => $period === $subscribedPeriod,
+            ], array_keys($this->labels()), $this->labels()),
+            'subscribed' => $subscribedPeriod !== null,
         ]);
     }
 
-    /**
-     * @param array<string, array<string, mixed>> $periods
-     * @param string                              $userName
-     *
-     * @return array<string, array<string, mixed>>
-     */
-    private function updatePeriods($periods, $userName)
+    /** @return array<string, string> each period's label */
+    private function labels(): array
     {
-        foreach ($periods as $period => $config) {
-            $group = $this->groupName($period);
-            $periods[$period]['subscribed'] = $this->userManager->isInGroup($group, $userName, false);
-            $periods[$period]['group'] = $this->groupName($period);
-        }
-
-        return $periods;
-    }
-
-    /** @param string $period */
-    private function groupName($period): string
-    {
-        return "Mail{$this->getService(PageContext::class)->getTag()}" . ucfirst($period);
-    }
-
-    /**
-     * @param string $userName
-     * @param string $group
-     */
-    private function subscribeUserToGroup($userName, $group): void
-    {
-        $this->getService(GroupOperationsService::class)->setMembersFromAclText($group, $this->getService(GroupOperationsService::class)->getMembersText($group) . "\n" . $userName);
-    }
-
-    /**
-     * @param string $userName
-     * @param string $group
-     */
-    private function unsubscribeUserFromGroup($userName, $group): void
-    {
-        $newgroup = str_replace($userName, '', $this->getService(GroupOperationsService::class)->getMembersText($group));
-        $newgroup = explode("\n", $newgroup);
-        $newgroup = array_map('trim', $newgroup);
-        $newgroup = array_filter($newgroup);
-        $newgroup = implode("\n", $newgroup);
-        $this->getService(GroupOperationsService::class)->setMembersFromAclText($group, $newgroup);
-    }
-
-    /**
-     * @param string                              $userName
-     * @param array<string, array<string, mixed>> $periods
-     */
-    private function unsubscribUserFromAllGroups($userName, $periods): void
-    {
-        foreach ($periods as $period => $config) {
-            if ($config['subscribed']) {
-                $this->unsubscribeUserFromGroup($userName, $config['group']);
-            }
-        }
+        return [
+            'day' => _t('CONTACT_DAILY'),
+            'week' => _t('CONTACT_WEEKLY'),
+            'month' => _t('CONTACT_MONTHLY'),
+        ];
     }
 }

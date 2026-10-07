@@ -5,6 +5,7 @@ namespace YesWiki\Contact\Action;
 use YesWiki\Contact\Service\MailForm;
 use YesWiki\Contact\Service\MailFormCounter;
 use YesWiki\Core\YesWikiAction;
+use YesWiki\Identity\Service\BotGuard;
 use YesWiki\Kernel\Component\Category;
 use YesWiki\Kernel\Component\Component;
 use YesWiki\Kernel\Component\ProvidesComponents;
@@ -69,13 +70,16 @@ class ContactAction extends YesWikiAction implements RegisteredAction, ProvidesC
             return '<div class="yw-alert yw-alert--danger"><strong>' . _t('CONTACT_ACTION_CONTACT') . ' :</strong>&nbsp;' . _t('CONTACT_MAIL_REQUIRED') . '</div>';
         }
 
+        $botGuard = $this->getService(BotGuard::class);
+        $botGuardFields = $botGuard->fields();
         $options = array_merge($this->arguments, [
             'nbactionmail' => $this->getService(MailFormCounter::class)->next(),
             'pageTag' => $this->getService(PageContext::class)->getTag(),
+            'botGuardFields' => $botGuardFields,
         ]);
 
         $this->getService(AssetRegistry::class)->addJsFile('javascripts/contact.js');
 
-        return $this->render('@core/' . $this->arguments['template'], $options);
+        return $botGuard->placeFields($this->render('@core/' . $this->arguments['template'], $options), $botGuardFields);
     }
 }

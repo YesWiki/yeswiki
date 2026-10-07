@@ -636,6 +636,17 @@ function renderCanvas() {
   if (missing.length > 0) schedulePreviews(missing)
 }
 
+/** Card title for a field stored without a label. */
+function defaultCardTitle(field, config) {
+  if (
+    field.type === 'labelhtml' &&
+    /^\s*<\/div>\s*<!--[^>]*-->\s*$/.test(field.data.form_text || '')
+  ) {
+    return _t('BAZ_FORM_EDIT_CONDITIONS_CHECKING_END')
+  }
+  return (config.field || config.set || {}).label || field.type
+}
+
 function renderCard(field) {
   const config = configFor(field.type)
   const icon = (config.field || config.set || {}).icon || ''
@@ -646,7 +657,7 @@ function renderCard(field) {
     <div class="yw-fb__card-header">
       <span class="yw-fb__card-drag" title="⇕">⠿</span>
       <span class="yw-fb__card-icon">${icon}</span>
-      <span class="yw-fb__card-title">${showLabel ? esc(field.data.label || '') : esc((config.field || config.set || {}).label || field.type)}</span>
+      <span class="yw-fb__card-title">${esc((showLabel && field.data.label) || defaultCardTitle(field, config))}</span>
       ${field.data.name ? `<code class="yw-fb__card-name">${esc(field.data.name)}</code>` : ''}
       ${field.data.required === '1' ? '<span class="yw-fb__card-required">*</span>' : ''}
       ${locked ? `<span class="yw-fb__card-locked" title="${esc(_t('FORM_BUILDER_LOCKED_HINT'))}"><svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#lock"/></svg>${esc(_t('FORM_BUILDER_LOCKED'))}</span>` : ''}

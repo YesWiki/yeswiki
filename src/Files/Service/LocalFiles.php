@@ -2,27 +2,7 @@
 
 namespace YesWiki\Files\Service;
 
-/**
- * The local filesystem, addressed by absolute path, for the cases that cannot go through Storage.
- *
- * There are exactly two of them, and both are named in ADR-0022 rather than invented here.
- *
- * **A library that demands a real path.** `ZipArchive` ignores stream wrappers, and
- * `Zebra_Image`, `HTMLPurifier::cleanFile` and `getimagesize` want a filename rather than a
- * stream. That is why the ADR rejected a `yeswiki://` wrapper and chose `withLocalCopy()` and
- * `withLocalTarget()` instead: the download and the upload are explicit, and in between the
- * library gets a path it can open. This is the other half of that bargain -- the reading and
- * walking those libraries' callers do around the path they were handed.
- *
- * **A moment with no Instance to be rooted at.** Archiving a wiki walks its Program tree as well
- * as its own directory; cloning one reads a remote wiki's bytes before this wiki owns them;
- * destroying one writes the archive somewhere that will still exist afterwards. `Storage` is
- * rooted at one Instance by construction, so none of those can be asked of it.
- *
- * What this is **not** is a way around the rule. A path under `files/`, `custom/`, `cache/` or
- * `private/` belongs to a wiki and goes through `Storage`, which may put it in a bucket. If you
- * reach for this to read one of those, the answer is wrong on the deployment nobody can debug.
- */
+/** Local filesystem access by absolute path, for libraries that need a real path. */
 class LocalFiles
 {
     public function exists(string $path): bool

@@ -57,7 +57,7 @@ class SubscribeField extends BazarField
 
         if ($this->getService(ImportContext::class)->isImporting()) {
             if ($value === $subscribeEmail) {
-                $this->getService(Mailer::class)->send($entry[$this->emailField] ?? '', $entry['title'] ?? $entry['bf_titre'] ?? '', $subscribeEmail, 'subscribe', 'subscribe', 'subscribe');
+                $this->getService(Mailer::class)->send($entry[$this->emailField] ?? '', $entry['title'] ?? $entry['bf_titre'] ?? '', $subscribeEmail, 'subscribe', 'subscribe', 'subscribe', true);
 
                 return [$this->propertyName => $value];
             } elseif ($value === $unsubscribeEmail) {
@@ -67,11 +67,11 @@ class SubscribeField extends BazarField
             return [];
         }
         if (isset($value)) {
-            $this->getService(Mailer::class)->send($entry[$this->emailField] ?? '', $entry['title'] ?? $entry['bf_titre'] ?? '', $subscribeEmail, 'subscribe', 'subscribe', 'subscribe');
+            $this->getService(Mailer::class)->send($entry[$this->emailField] ?? '', $entry['title'] ?? $entry['bf_titre'] ?? '', $subscribeEmail, 'subscribe', 'subscribe', 'subscribe', true);
 
             return [$this->propertyName => $subscribeEmail];
         }
-        $this->getService(Mailer::class)->send($entry[$this->emailField] ?? '', $entry['title'] ?? $entry['bf_titre'] ?? '', $unsubscribeEmail, 'unsubscribe', 'unsubscribe', 'unsubscribe');
+        $this->getService(Mailer::class)->send($entry[$this->emailField] ?? '', $entry['title'] ?? $entry['bf_titre'] ?? '', $unsubscribeEmail, 'unsubscribe', 'unsubscribe', 'unsubscribe', true);
 
         return [$this->propertyName => $unsubscribeEmail];
     }

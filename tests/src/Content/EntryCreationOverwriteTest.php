@@ -125,19 +125,18 @@ class EntryCreationOverwriteTest extends YesWikiTestCase
         $currentRequest = $this->wiki->services->get(CurrentRequest::class);
         $before = $currentRequest->get();
         $currentRequest->replace(Request::create('/', 'POST', [
-            'antispam' => 1,
             'valider' => 1,
             'bf_titre' => 'Bazar Overwrite Posted Tag',
             'tag' => self::TARGET_TAG,
-        ]));
+        ] + self::validBotGuardFields($this->wiki)));
         $this->createdTags[] = 'bazar-overwrite-posted-tag';
 
         try {
             $this->wiki->services->get(EntryController::class)->create(self::FORM_ID);
         } catch (\Throwable $thrown) {
-            // create() ends the request with a redirect once the entry is written
         } finally {
             $currentRequest->replace($before);
+            self::restoreBotGuard($this->wiki);
         }
 
         $this->assertSame(self::TARGET_BODY, $this->targetBody());

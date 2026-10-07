@@ -161,15 +161,7 @@ class FileField extends BazarField
                     if ($_FILES[$this->propertyName]['size'] > $this->maxSize) {
                         throw new \Exception(_t('BAZ_FILEFIELD_TOO_LARGE_FILE', ['fileMaxSize' => $this->maxSize]));
                     }
-                    if (!is_uploaded_file($_FILES[$this->propertyName]['tmp_name'])) {
-                        throw new \Exception(_t('ERROR_NO_FILE_UPLOADED'));
-                    }
-                    $this->storage()->writeFrom($filePath, $_FILES[$this->propertyName]['tmp_name']);
-
-                    if (in_array($extension, ['svg', 'html', 'htm'])) {
-                        $purifier = $this->getService(HtmlPurifierService::class);
-                        $this->storage()->withLocalTarget($filePath, fn (string $local) => $purifier->cleanFile($local, $extension));
-                    }
+                    $this->storeUploadedFile($filePath);
                 } else {
                     echo _t('BAZ_FILE_ALREADY_EXISTING') . '<br />';
                 }
@@ -347,6 +339,24 @@ class FileField extends BazarField
             : self::FILE_MISSING;
     }
 
+    /** Stores an upload, sanitizing svg and html. */
+    protected function storeUploadedFile(string $filePath): void
+    {
+        $source = $_FILES[$this->propertyName]['tmp_name'] ?? '';
+        if (!$this->isUploadedFile($source)) {
+            throw new \Exception(_t('ERROR_NO_FILE_UPLOADED'));
+        }
+        $this->storage()->writeFrom($filePath, $source);
+        if (!$this->getService(HtmlPurifierService::class)->cleanStoredFile($filePath)) {
+            throw new \Exception(_t('ERROR_UNSAFE_FILE'));
+        }
+    }
+
+    protected function isUploadedFile(string $source): bool
+    {
+        return is_uploaded_file($source);
+    }
+
     protected function getBasePath(): string
     {
         $basePath = $this->paths()->uploadPath();
@@ -390,7 +400,6 @@ class FileField extends BazarField
                 unset($entryFromDb['bf_date_fin_evenement_data']);
             }
 
-            $entryFromDb['antispam'] = 1;
             $entryFromDb['updated_at'] = date('Y-m-d H:i:s', time());
             $newEntry = $entryManager->update($entryFromDb['tag'], $entryFromDb, false, true);
 

@@ -22,6 +22,7 @@
   "dependencies": {
     "@tabler/icons": "^3.46.0",
     "ace-builds": "^1",
+    "altcha": "^3.2.4",
     "animate.css": "^4.1.1",
     "compressorjs": "^1.3.0",
     "docsify": "5.0.0-rc.4",

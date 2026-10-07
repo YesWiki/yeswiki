@@ -1633,7 +1633,7 @@ body:has(#yw-fb-rail:not([hidden])) .yw-fb__rail-open {
 /* the rail is fixed over the page, so the form it belongs to steps aside for it */
 
 @media (min-width: 1000px) {
-  body:has(#yw-fb-rail:not([hidden])) #formulaire {
+  body:has(#yw-fb-rail:not([hidden])) .bazar-form {
     padding-right: calc(var(--yw-rail-width) + var(--yw-space-lg-x));
   }
 }

@@ -101,7 +101,7 @@ class MaintenanceServiceTest extends YesWikiTestCase
         }
 
         $this->assertSame(
-            ['revisions', 'journal', 'recovery-keys', 'activation-keys', 'search-queue'],
+            ['revisions', 'journal', 'recovery-keys', 'activation-keys', 'bot-guard', 'search-queue'],
             array_keys($report->steps())
         );
         $this->assertSame([], $report->failures());

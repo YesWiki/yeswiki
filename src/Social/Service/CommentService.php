@@ -10,9 +10,10 @@ use YesWiki\Content\Service\PageManager;
 use YesWiki\Identity\Entity\User;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\AuthenticationService;
-use YesWiki\Identity\Service\HashCashService;
+use YesWiki\Identity\Service\BotGuard;
 use YesWiki\Identity\Service\UserManager;
 use YesWiki\Kernel\Entity\Event;
+use YesWiki\Kernel\Service\CurrentRequest;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\EventDispatcher;
 use YesWiki\Kernel\Service\HtmlPurifierService;
@@ -123,10 +124,12 @@ class CommentService implements EventSubscriberInterface, RequestScopedState
             $content['pagetag'] = $edited['parent'];
         }
         if ($this->aclService->hasAccess('comment', $content['pagetag']) && $this->pageManager->getOne($content['pagetag'])) {
-            if (!$this->container->get(HashCashService::class)->checkHashcash()) {
+            $botGuard = $this->container->get(BotGuard::class);
+            $refusal = $botGuard->check($this->container->get(CurrentRequest::class)->get());
+            if ($refusal !== null) {
                 return [
                     'code' => 400,
-                    'error' => _t('HASHCASH_COMMENT_NOT_SAVED_MAYBE_YOU_ARE_A_ROBOT'),
+                    'error' => $botGuard->message($refusal),
                 ];
             }
             if (empty($idComment)) {
@@ -437,18 +440,13 @@ class CommentService implements EventSubscriberInterface, RequestScopedState
             ];
         } else {
             if ($this->aclService->hasAccess('comment', $tag)) {
-                $hashCashCode = '';
-                if ($this->container->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['use_hashcash']) {
-                    $hashCash = $this->container->get(HashCashService::class);
-                    $hashCashCode = $hashCash->getJavascriptCode('post-comment');
-                }
                 $page = $this->pageManager->getOne($tag);
                 $commentOn = !empty($page['parent']) ? $page['parent'] : ($page['tag'] ?? $tag);
                 $tempTag = ($this->container->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['temp_tag_for_entry_creation'] ?? null) . '_' . bin2hex(random_bytes(10));
                 $options = [
                     'pagetag' => $commentOn,
                     'formlink' => $this->urlFormatter->href('comments', 'api'),
-                    'hashcash' => $hashCashCode,
+                    'botGuardFields' => $this->container->get(BotGuard::class)->fields(),
                     'tempTag' => $tempTag,
                 ];
             } else {

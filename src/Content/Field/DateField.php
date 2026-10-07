@@ -2,6 +2,7 @@
 
 namespace YesWiki\Content\Field;
 
+use Psr\Container\ContainerInterface;
 use YesWiki\Content\Attribute\Field;
 use YesWiki\Content\Service\EntryDateService;
 use YesWiki\Kernel\Service\DateService as CoreDateService;
@@ -10,6 +11,32 @@ use YesWiki\Kernel\Service\DateService as CoreDateService;
 class DateField extends BazarField
 {
     use ContributesNoSearchableText;
+
+    protected const FIELD_ENTRY_MODE = 6;
+    public const ENTRY_MODE_TIME = 'time';
+    public const ENTRY_MODE_ALL_DAY = 'allday';
+    protected const EVENT_DATE_NAMES = ['bf_date_debut_evenement', 'bf_date_fin_evenement'];
+
+    protected string $entryMode;
+
+    /**
+     * @param array<int|string, mixed> $values
+     */
+    public function __construct(array $values, ContainerInterface $services)
+    {
+        parent::__construct($values, $services);
+        $this->entryMode = trim((string)($values[self::FIELD_ENTRY_MODE] ?? ''));
+    }
+
+    /** Whether a new entry starts with hours. */
+    public function entersTimeByDefault(): bool
+    {
+        if (in_array($this->entryMode, [self::ENTRY_MODE_TIME, self::ENTRY_MODE_ALL_DAY], true)) {
+            return $this->entryMode === self::ENTRY_MODE_TIME;
+        }
+
+        return in_array($this->propertyName, self::EVENT_DATE_NAMES, true);
+    }
 
     public function requiresTagBeforeFormatting()
     {
@@ -24,7 +51,12 @@ class DateField extends BazarField
         $hasTime = false;
         $value = $this->getValue($entry);
 
-        if (!empty($value)) {
+        if (!empty($value) && isset($entry[$this->propertyName . '_allday'])) {
+            $day = substr($value, 0, 10);
+            $hasTime = $entry[$this->propertyName . '_allday'] == 0;
+            $hour = (int)($entry[$this->propertyName . '_hour'] ?? 0);
+            $minute = (int)($entry[$this->propertyName . '_minutes'] ?? 0);
+        } elseif (!empty($value)) {
             $day = $this->getService(CoreDateService::class)->getDateTimeWithRightTimeZone($value)->format('Y-m-d H:i');
             $hasTime = (strlen($value) > 10);
             if ($hasTime) {
@@ -34,11 +66,16 @@ class DateField extends BazarField
             } else {
                 $day = substr($day, 0, 10);
             }
-        } elseif (!empty($this->default)) {
-            if (in_array($this->default, ['today', '1'])) {
-                $day = date('Y-m-d');
-            } else {
-                $day = date('Y-m-d', strtotime($this->default));
+        } else {
+            if (!empty($this->default)) {
+                $day = in_array($this->default, ['today', '1']) ? date('Y-m-d') : date('Y-m-d', strtotime($this->default));
+            }
+            $hasTime = $this->entersTimeByDefault();
+            if ($hasTime) {
+                $hour = min(23, (int)date('G') + 1);
+                if ($this->propertyName === 'bf_date_fin_evenement') {
+                    [$hour, $minute] = $hour < 23 ? [$hour + 1, 0] : [23, 55];
+                }
             }
         }
 

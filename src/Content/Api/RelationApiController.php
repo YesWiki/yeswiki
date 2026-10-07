@@ -47,7 +47,6 @@ class RelationApiController extends YesWikiController
     #[Route('/api/relations', methods: ['POST'], options: ['acl' => ['public']])]
     public function createRelation(): ApiResponse
     {
-        $_POST['antispam'] = 1;
         $entry = $this->getService(EntryManager::class)->create(
             $this->getService(\YesWiki\Kernel\Service\RuntimeConfig::class)['qrcode_config']['relation_form_id'],
             $_POST,

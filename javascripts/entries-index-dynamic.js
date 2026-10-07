@@ -8,6 +8,7 @@ import BazarMap from './components/BazarMap.js'
 import { initEntryMaps } from './fields/map-field-map-entry.js'
 import { recursivelyCalculateRelations, deepGet } from './utils.js'
 import { updateHash, parseSearchParams, serializeSearchParams } from './url.js'
+import { parseCondition } from './search.js'
 import ImageMixin from './entries-index-dynamic/image-mixin.js'
 import BazarSearch from './entries-index-dynamic/search-mixin.js'
 
@@ -54,6 +55,7 @@ const load = (domElement) => {
 
         searchFormId: '',
         searchTimer: null,
+        sortedInBrowser: false,
       }
     },
     computed: {
@@ -71,13 +73,16 @@ const load = (domElement) => {
       filteredEntriesCount() {
         return this.filteredEntries.length
       },
-      pages() {
-        if (this.pagination <= 0) return []
-        const pagesCount = Math.ceil(
+      pagesCount() {
+        if (this.pagination <= 0) return 0
+        return Math.ceil(
           this.filteredEntries.length / parseInt(this.pagination, 10),
         )
+      },
+      pages() {
+        if (this.pagination <= 0) return []
         const start = 0
-        const end = pagesCount - 1
+        const end = this.pagesCount - 1
         let pages = [
           this.currentPage - 2,
           this.currentPage - 1,
@@ -122,6 +127,7 @@ const load = (domElement) => {
         this.calculateFiltersCount()
       },
       currentSort() {
+        if (this.ready) this.sortedInBrowser = true
         this.sortEntries()
         this.updateHash()
       },
@@ -184,10 +190,11 @@ const load = (domElement) => {
           })
         })
         this.filteredEntries = result
-        this.paginateEntries()
+        if (this.sortedInBrowser) this.sortEntries()
+        else this.paginateEntries()
       },
       sortEntries() {
-        if (!this.currentSort.field) return
+        if (!this.currentSort.field) return this.paginateEntries()
 
         const { field, order } = this.currentSort
         const collator = new Intl.Collator()
@@ -286,6 +293,36 @@ const load = (domElement) => {
         if (this.sortOptions.length > 0) this.currentSort = this.sortOptions[0]
         this.updateHash()
       },
+      /** Facet conditions read from the URL. */
+      conditionsFromUrl(pParams) {
+        const vConditions = [...(pParams.query || [])]
+        Object.entries(pParams).forEach(([pKey, pValue]) => {
+          if (this.filters.some((pF) => pF.propName === pKey))
+            vConditions.push(parseCondition(`${pKey}=${pValue}`))
+        })
+        const vFacette = new URLSearchParams(document.location.search).get(
+          'facette',
+        )
+        if (vFacette)
+          vConditions.push(...vFacette.split('|').map(parseCondition))
+        return vConditions.filter(Boolean)
+      },
+      /** Removes the facet keys already read from the URL. */
+      forgetConsumedFacets() {
+        const vSaved = new URLSearchParams(this.savedHash)
+        const vBare = this.filters.filter((pF) => vSaved.has(pF.propName))
+        if (vBare.length > 0) {
+          vBare.forEach((pF) => vSaved.delete(pF.propName))
+          this.savedHash = vSaved.toString()
+        }
+        const { pathname, search, hash } = document.location
+        const vSearch = search.replace(
+          /([?&])facette=[^&]*(&|$)/,
+          (_pMatch, pBefore, pAfter) => (pAfter ? pBefore : ''),
+        )
+        if (vSearch !== search)
+          history.replaceState(history.state, '', pathname + vSearch + hash)
+      },
       initFromHash(pHash) {
         const vThis = this
 
@@ -310,60 +347,50 @@ const load = (domElement) => {
         }
 
         if (vParams.order !== undefined && vParams.order.trim() !== '') {
-          vChamp = vParams.order
+          vOrdre = vParams.order
         }
 
-        if (vParams.query !== undefined) {
-          const vQueryEntries = Object.entries(vParams.query)
+        this.conditionsFromUrl(vParams).forEach((pCondition) => {
+          const cFilter = vThis.filters.find(
+            (pF) => pF.propName === pCondition.name,
+          )
 
-          if (vQueryEntries.length > 0) {
-            vQueryEntries.forEach(([, pCondition]) => {
-              const cFilter = vThis.filters.find(
-                (pF) => pF.propName === pCondition.name,
+          if (cFilter) {
+            cFilter.flattenNodes.forEach((pNode) => {
+              const cFilterValues = pCondition.values.map((pString) =>
+                pString
+                  .normalize('NFD')
+                  .replace(/[\u0300-\u036f]/g, '')
+                  .toLowerCase()
+                  .replace(/&/g, '&amp;')
+                  .replace(/</g, '&lt;')
+                  .replace(/>/g, '&gt;')
+                  .replace(/"/g, '&quot;')
+                  .replace(/'/g, '&#039;'),
               )
 
-              if (cFilter) {
-                cFilter.flattenNodes.forEach((pNode) => {
-                  const cFilterValues = pCondition.values.map((pString) =>
-                    pString
-                      .normalize('NFD')
-                      .replace(/[\u0300-\u036f]/g, '')
-                      .toLowerCase()
-                      .replace(/&/g, '&amp;')
-                      .replace(/</g, '&lt;')
-                      .replace(/>/g, '&gt;')
-                      .replace(/"/g, '&quot;')
-                      .replace(/'/g, '&#039;'),
-                  )
-
-                  if (
-                    cFilterValues.includes(
-                      pNode.value
-                        .normalize('NFD')
-                        .replace(/[\u0300-\u036f]/g, '')
-                        .toLowerCase(),
-                    )
-                  )
-                    pNode.checked = true
-                })
-              }
+              if (
+                cFilterValues.includes(
+                  pNode.value
+                    .normalize('NFD')
+                    .replace(/[\u0300-\u036f]/g, '')
+                    .toLowerCase(),
+                )
+              )
+                pNode.checked = true
             })
           }
-        }
+        })
+        this.forgetConsumedFacets()
 
+        const vField = vChamp ?? this.currentSort.field
+        const vOrder = vOrdre ?? this.currentSort.order ?? 'asc'
         const cSort = this.sortOptions.find(
-          (s) =>
-            s.field ===
-              ((vChamp ?? typeof vThis.currentSort != 'undefined')
-                ? vThis.currentSort.field
-                : '') &&
-            s.order ===
-              ((vOrdre ?? typeof vThis.currentSort != 'undefined')
-                ? vThis.currentSort.order
-                : ''),
+          (s) => s.field === vField && s.order === vOrder,
         )
         if (cSort) {
           this.currentSort = cSort
+          if (vChamp || vOrdre) this.sortedInBrowser = true
         }
       },
       updateHash() {
@@ -476,7 +503,11 @@ const load = (domElement) => {
         e.preventDefault()
         e.stopPropagation()
       })
-      this.savedHash = decodeURIComponent(document.location.hash.substring(1))
+      this.savedHash = decodeURIComponent(
+        window.ywSplitHash
+          ? window.ywSplitHash().rest
+          : document.location.hash.substring(1),
+      )
 
       this.pagination = parseInt(this.params.pagination, 10)
       this.mounted = true

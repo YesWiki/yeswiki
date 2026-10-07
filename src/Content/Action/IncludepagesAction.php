@@ -81,7 +81,7 @@ class IncludepagesAction extends YesWikiAction implements RegisteredAction
         if (empty($class)) {
             echo $output . "\n";
         } else {
-            echo '<div class="' . $class . '">' . "\n" . $output . "\n" . '</div>' . "\n";
+            echo '<div class="' . htmlspecialchars($class, ENT_QUOTES) . '">' . "\n" . $output . "\n" . '</div>' . "\n";
         }
     }
 }

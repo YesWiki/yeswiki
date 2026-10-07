@@ -54,7 +54,7 @@ class AccordionAction extends YesWikiAction implements RegisteredAction, Provide
         $this->getService(GraphicalElementState::class)->openAccordion($pagetag, $accordionID);
 
         return '<!-- start of accordion -->' . "\n"
-            . '<div class="yw-accordion ' . $class . '" id="' . $accordionID . '">';
+            . '<div class="yw-accordion ' . htmlspecialchars($class, ENT_QUOTES) . '" id="' . $accordionID . '">';
     }
 
     public function end(): string

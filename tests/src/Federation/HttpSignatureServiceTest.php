@@ -36,15 +36,23 @@ class HttpSignatureServiceTest extends TestCase
         }
     }
 
-    /** A store on its own connection, as a separate PHP process handling another request would have. */
-    private function store(): SeenSignatures
+    private function connection(): DbService
     {
-        return new SeenSignatures(new DbService(new ParameterBag([
+        $dbService = new DbService(new ParameterBag([
             'db_driver' => 'sqlite',
             'db_database' => $this->database,
             'table_prefix' => 'ywsig_',
             'debug' => false,
-        ])));
+        ]));
+        $dbService->query('CREATE TABLE IF NOT EXISTS ywsig_triples (id INTEGER PRIMARY KEY AUTOINCREMENT, resource TEXT NOT NULL, property TEXT NOT NULL, value TEXT NOT NULL)');
+
+        return $dbService;
+    }
+
+    /** A store on its own database connection. */
+    private function store(): SeenSignatures
+    {
+        return new SeenSignatures($this->connection());
     }
 
     /** @return array{0: string, 1: string} the private and the public key, in PEM */
@@ -128,20 +136,41 @@ class HttpSignatureServiceTest extends TestCase
         $now = time();
         $first = $this->store();
         $second = $this->store();
-        $first->create();
 
         $this->assertTrue($first->remember('sig', $now, $now - 7200));
         $this->assertFalse($second->remember('sig', $now, $now - 7200));
         $this->assertTrue($second->remember('another sig', $now, $now - 7200));
     }
 
-    public function testTheTableIsCreatedOnFirstUseWhenTheMigrationHasNotRunYet(): void
+    public function testWhenTwoRequestsRaceTheOldestRowWins(): void
     {
-        $store = $this->store();
+        $now = time();
+        $dbService = $this->connection();
+        $resource = SeenSignatures::RESOURCE_PREFIX . hash('sha256', 'sig');
+        $dbService->query(
+            'INSERT INTO ywsig_triples (resource, property, value) VALUES (?, ?, ?)',
+            [$resource, SeenSignatures::PROPERTY, sprintf('%020d', $now) . '|someone-else']
+        );
 
-        $this->assertFalse($store->exists());
-        $this->assertTrue($store->remember('sig', time(), 0));
-        $this->assertTrue($store->exists());
+        $this->assertFalse($this->store()->remember('sig', $now, $now - 7200));
+        $this->assertSame(1, $dbService->countRows('SELECT id FROM ywsig_triples WHERE resource = ?', [$resource]));
+    }
+
+    public function testOldSignaturesArePurgedAndOtherTriplesStay(): void
+    {
+        $now = time();
+        $dbService = $this->connection();
+        $dbService->query(
+            'INSERT INTO ywsig_triples (resource, property, value) VALUES (?, ?, ?)',
+            ['SomePage', 'http://outils-reseaux.org/_vocabulary/type', '0']
+        );
+        $store = $this->store();
+        $store->remember('old', $now - 9000, $now - 16200);
+
+        $this->assertTrue($store->remember('new', $now, $now - 7200));
+        $this->assertTrue($store->remember('old', $now, $now - 7200));
+        $this->assertSame(2, $dbService->countRows('SELECT id FROM ywsig_triples WHERE property = ?', [SeenSignatures::PROPERTY]));
+        $this->assertSame(1, $dbService->countRows('SELECT id FROM ywsig_triples WHERE resource = ?', ['SomePage']));
     }
 
     public function testASignatureIsForgottenOnceTwiceTheClockSkewHasPassed(): void

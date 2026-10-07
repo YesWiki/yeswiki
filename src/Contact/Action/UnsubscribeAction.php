@@ -4,6 +4,7 @@ namespace YesWiki\Contact\Action;
 
 use YesWiki\Contact\Service\MailFormCounter;
 use YesWiki\Core\YesWikiAction;
+use YesWiki\Identity\Service\BotGuard;
 use YesWiki\Kernel\Component\Category;
 use YesWiki\Kernel\Component\Component;
 use YesWiki\Kernel\Component\ProvidesComponents;
@@ -89,7 +90,9 @@ class UnsubscribeAction extends YesWikiAction implements RegisteredAction, Provi
             $templateVars['demand'] = 'unsubscribe';
             $templateVars['placeholder'] = _t('CONTACT_UNSUBSCRIBE');
 
-            echo $this->getService(TemplateEngine::class)->renderSafely("@core/$template", $templateVars);
+            $botGuard = $this->getService(BotGuard::class);
+            $templateVars['botGuardFields'] = $botGuard->fields();
+            echo $botGuard->placeFields($this->getService(TemplateEngine::class)->renderSafely("@core/$template", $templateVars), $templateVars['botGuardFields']);
 
             $this->getService(AssetRegistry::class)->addJsFile('javascripts/contact.js');
         }

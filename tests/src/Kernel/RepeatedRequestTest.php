@@ -103,9 +103,10 @@ class RepeatedRequestTest extends YesWikiTestCase
                 '/"antiCsrfToken":"[^"]*"/',
                 '/value="[^"]*\.[\w-]{20,}[^"]*"/',
                 '/\b(heading|collapse|accordion_|nav_)[0-9a-f.]+/',
+                '/\bchallenge="[^"]*"/',
                 '/\n[ \t]+\n/',
             ],
-            ['"antiCsrfToken":"…"', 'value="…"', '$1…', "\n\n"],
+            ['"antiCsrfToken":"…"', 'value="…"', '$1…', 'challenge="…"', "\n\n"],
             $html
         );
     }

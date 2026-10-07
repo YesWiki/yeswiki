@@ -11,6 +11,7 @@ use YesWiki\Content\Exception\EntryValidationException;
 use YesWiki\Content\Exception\TagAlreadyUsedException;
 use YesWiki\Content\Field\BazarField;
 use YesWiki\Content\Field\ConditionsCheckingField;
+use YesWiki\Content\Field\LinkedEntryField;
 use YesWiki\Content\Service\ConditionsChecker;
 use YesWiki\Content\Service\ContentCreator;
 use YesWiki\Content\Service\ContentTypeResolver;
@@ -24,10 +25,10 @@ use YesWiki\Content\Service\PageManager;
 use YesWiki\Content\Service\SemanticTransformer;
 use YesWiki\Content\Service\TranslatableContent;
 use YesWiki\Core\YesWikiController;
-use YesWiki\Identity\Controller\CaptchaController;
 use YesWiki\Identity\Exception\UserFieldException;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\AuthenticationService;
+use YesWiki\Identity\Service\BotGuard;
 use YesWiki\Kernel\Service\EventDispatcher;
 use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Kernel\Service\PageContext;
@@ -45,7 +46,6 @@ class EntryController extends YesWikiController
 {
     protected AclService $aclService;
     protected AuthenticationService $authenticationService;
-    protected CaptchaController $captchaController;
 
     /** @var array<string, mixed> every configuration parameter, as ParameterBagInterface::all() gives them */
     protected $config;
@@ -65,7 +65,6 @@ class EntryController extends YesWikiController
     public function __construct(
         AclService $aclService,
         AuthenticationService $authenticationService,
-        CaptchaController $captchaController,
         EntryManager $entryManager,
         EventDispatcher $eventDispatcher,
         FavoritesManager $favoritesManager,
@@ -78,7 +77,6 @@ class EntryController extends YesWikiController
     ) {
         $this->aclService = $aclService;
         $this->authenticationService = $authenticationService;
-        $this->captchaController = $captchaController;
         $this->config = $config->all();
         $this->entryManager = $entryManager;
         $this->eventDispatcher = $eventDispatcher;
@@ -155,9 +153,6 @@ class EntryController extends YesWikiController
         $oldPageTag = $this->getService(PageContext::class)->getTag();
         $this->getService(PageContext::class)->setTag($entryId);
         $renderedEntry = null;
-        $message = $this->getRequest()->query->get('message', '');
-
-        unset($_GET['message']);
 
         $isUpdatingEntry = ($this->getRequest()->query->get('view') === 'consulter');
         if ($isUpdatingEntry) {
@@ -173,7 +168,6 @@ class EntryController extends YesWikiController
             $customTemplatePath = $this->getCustomTemplatePath($entry);
             $customTemplateValues = null;
 
-            // template its @context/@type maps to (baz_semantic_types_mapping), even with no
             if ($customTemplatePath === null && !empty($pLocalForm['sem_type']) && !empty($pLocalForm['sem_template'])) {
                 $customTemplateValues = $this->getValuesForCustomTemplate($entry, $pLocalForm, $userNameForRendering);
                 $semanticTemplatePath = $this->getCustomSemanticTemplatePath($customTemplateValues['html']['semantic'] ?? null);
@@ -226,9 +220,6 @@ class EntryController extends YesWikiController
             $owner = $this->getService(MarkdownFormatterService::class)->format('[[' . $this->getService(PageManager::class)->getOwner($entryId) . ' ' . $this->getService(PageManager::class)->getOwner($entryId) . ']]');
         }
 
-        if (!empty($message)) {
-            $_GET['message'] = $message;
-        }
         if ($isUpdatingEntry) {
             $_GET['view'] = 'consulter';
         }
@@ -247,7 +238,6 @@ class EntryController extends YesWikiController
             'entry' => $entry,
             'entryId' => $entryId,
             'owner' => $owner,
-            'message' => $message,
             'showFooter' => $showFooter,
             'currentuser' => $currentuser ?? null,
             'isUserFavorite' => $isUserFavorite ?? false,
@@ -259,7 +249,18 @@ class EntryController extends YesWikiController
             'renderedEntry' => $renderedEntry,
             'sourceUrl' => $sourceUrl,
             'incomingUrl' => $this->getRequest()->query->get('incomingurl', WikiUrls::absoluteUrl()),
+            'editContextUrl' => $this->getEditContextUrl($entryId),
         ]);
+    }
+
+    /** Shows the saved-entry message on the next page, with a link to carry on. */
+    private function flashSavedEntry(string $message, string $link, string $linkLabel): void
+    {
+        Flash::success($this->render('@core/entries/saved-message.twig', [
+            'message' => $message,
+            'link' => $link,
+            'linkLabel' => $linkLabel,
+        ]));
     }
 
     /**
@@ -316,13 +317,23 @@ class EntryController extends YesWikiController
         if (!empty($results['output'])) {
             return $results['output'];
         } elseif (empty($results['error'])) {
-            list($state, $error) = $this->captchaController->checkCaptchaBeforeSave('entry');
+            $error = $post->has('valider') ? $this->botGuardRefusal() : null;
+            if ($error !== null) {
+                $refusedData = $this->getService(BotGuard::class)->withoutFields($post->all());
+            }
             try {
-                if ($state && $post->has('valider')) {
-                    $postedData = $post->all();
+                if ($error === null && $post->has('valider')) {
+                    $postedData = $this->getService(BotGuard::class)->withoutFields($post->all());
                     unset($postedData['tag']);
                     $entry = $this->getService(ContentCreator::class)->create($formId, $postedData);
 
+                    if (!ContentTypeSchema::isBuiltIn($form[ContentTypeSchema::CONTENT_TYPE] ?? null)) {
+                        $this->flashSavedEntry(
+                            _t('BAZ_FICHE_ENREGISTREE'),
+                            $this->getService(UrlFormatter::class)->href(WikiUrls::iframeSuffixFor(), '', ['view' => 'saisir', 'id' => $formId], false),
+                            _t('BAZ_ADD_NEW_ENTRY'),
+                        );
+                    }
                     $redirectUrl = !empty($incomingUrl)
                         ? $incomingUrl
                         : (
@@ -350,17 +361,31 @@ class EntryController extends YesWikiController
 
         return $counterAlert . $this->render('@core/entries/form.twig', [
             'form' => $form,
+            'formAction' => $this->getRequest()->getRequestUri(),
             'renderedInputs' => $renderedInputs,
             'passwordForEditing' => isset($this->config['password_for_editing']) && !empty($this->config['password_for_editing']) && $post->has('password_for_editing') ? $post->get('password_for_editing') : '',
             'incomingUrl' => $incomingUrl,
+            'cancelUrl' => $this->getCancelUrl($incomingUrl),
             'error' => $error,
-            'captchaField' => $this->captchaController->renderCaptchaField(),
+            'botGuardFields' => $this->getService(BotGuard::class)->fields(),
             'imageSmallWidth' => $this->config['image-small-width'],
             'imageSmallHeight' => $this->config['image-small-height'],
             'imageMediumWidth' => $this->config['image-medium-width'],
             'imageMediumHeight' => $this->config['image-medium-height'],
             'imageBigWidth' => $this->config['image-big-width'],
             'imageBigHeight' => $this->config['image-big-height'],
+        ]);
+    }
+
+    /** The alert when BotGuard refuses the submission, else null. */
+    private function botGuardRefusal(): ?string
+    {
+        $botGuard = $this->getService(BotGuard::class);
+        $reason = $botGuard->check($this->getRequest());
+
+        return $reason === null ? null : $this->render('@core/alert-message.twig', [
+            'type' => 'danger',
+            'message' => $botGuard->message($reason),
         ]);
     }
 
@@ -371,23 +396,9 @@ class EntryController extends YesWikiController
      */
     private function createdContentUrl(array $form, string $tag): string
     {
-        $urlFormatter = $this->getService(UrlFormatter::class);
+        $method = ContentTypeSchema::isBuiltIn($form[ContentTypeSchema::CONTENT_TYPE] ?? null) ? '' : WikiUrls::iframeSuffixFor();
 
-        if (ContentTypeSchema::isBuiltIn($form[ContentTypeSchema::CONTENT_TYPE] ?? null)) {
-            return $urlFormatter->href('', $tag, [], false);
-        }
-
-        return $urlFormatter->href(
-            WikiUrls::iframeSuffixFor(),
-            '',
-            [
-                'view' => 'consulter',
-                'action' => 'voir_fiche',
-                'tag' => $tag,
-                'message' => 'ajout_ok',
-            ],
-            false,
-        );
+        return $this->getService(UrlFormatter::class)->href($method, $tag, [], false);
     }
 
     /**
@@ -411,29 +422,34 @@ class EntryController extends YesWikiController
         $editing = $translatable->editingLanguage($this->getRequest()->query->get('editlang'), $source);
         $translating = $editing !== $source;
 
-        list($state, $error) = $this->captchaController->checkCaptchaBeforeSave('entry');
         $incomingUrl = $this->getIncomingUrl();
         $post = $this->getRequest()->request;
+        $posted = $this->getService(BotGuard::class)->withoutFields($post->all());
+        $error = $post->has('valider') ? $this->botGuardRefusal() : null;
+        if ($error !== null) {
+            $entry = array_merge($entry, $posted);
+        }
         try {
-            if ($state && $post->has('valider')) {
+            if ($error === null && $post->has('valider')) {
                 if ($translating) {
                     $this->entryManager->saveTranslations($entryId, $editing, $translatable->sanitize(
-                        $post->all(),
+                        $posted,
                         $translatable->entryPaths($form)
                     ));
                     $entry = $this->entryManager->getUntranslated($entryId) ?? $entry;
                 } else {
-                    $entry = $this->entryManager->update($entryId, $post->all());
+                    $entry = $this->entryManager->update($entryId, $posted);
                 }
 
+                $urlFormatter = $this->getService(UrlFormatter::class);
+                $this->flashSavedEntry(
+                    _t('BAZ_FICHE_MODIFIEE'),
+                    $urlFormatter->href(WikiUrls::iframeSuffixFor() === 'iframe' ? 'editiframe' : 'edit', $entry['tag'], $translating ? ['editlang' => $editing] : [], false),
+                    _t('BAZ_MODIFY_ENTRY_AGAIN'),
+                );
                 $redirectUrl = !empty($incomingUrl)
                     ? $incomingUrl
-                    : $this->getService(UrlFormatter::class)->href(WikiUrls::iframeSuffixFor(), '', [
-                        'view' => 'consulter',
-                        'action' => 'voir_fiche',
-                        'tag' => $entry['tag'],
-                        'message' => 'modif_ok',
-                    ], false);
+                    : $urlFormatter->href(WikiUrls::iframeSuffixFor(), $entry['tag'], [], false);
                 header('Location: ' . $redirectUrl);
                 $this->getService(Redirector::class)->terminate();
             }
@@ -443,7 +459,7 @@ class EntryController extends YesWikiController
                 'message' => $e->getMessage(),
             ]);
 
-            $entry = array_merge($entry, $post->all());
+            $entry = array_merge($entry, $posted);
         }
 
         $this->getService(LanguageSwitch::class)->writing(
@@ -455,14 +471,16 @@ class EntryController extends YesWikiController
 
         return $this->render('@core/entries/form.twig', [
             'form' => $form,
+            'formAction' => $this->getRequest()->getRequestUri(),
             'entryId' => $entryId,
             'editLanguage' => $editing,
             'editingTranslation' => $translating,
             'renderedInputs' => $renderedInputs,
             'passwordForEditing' => isset($this->config['password_for_editing']) && !empty($this->config['password_for_editing']) && $post->has('password_for_editing') ? $post->get('password_for_editing') : '',
             'incomingUrl' => $incomingUrl,
+            'cancelUrl' => $this->getCancelUrl($incomingUrl, $entryId),
             'error' => $error,
-            'captchaField' => $this->captchaController->renderCaptchaField(),
+            'botGuardFields' => $this->getService(BotGuard::class)->fields(),
             'imageSmallWidth' => $this->config['image-small-width'],
             'imageSmallHeight' => $this->config['image-small-height'],
             'imageMediumWidth' => $this->config['image-medium-width'],
@@ -695,7 +713,9 @@ class EntryController extends YesWikiController
         $titleFieldName = $this->getService(FormPropertiesService::class)->titleFieldName($form);
         foreach ($form['prepared'] as $field) {
             if ($field instanceof BazarField) {
-                $id = $field->getPropertyName();
+                $id = $field instanceof LinkedEntryField
+                    ? $field->getType() . $field->getName()
+                    : $field->getPropertyName();
                 if (!empty($id) && !in_array($id, $this->fieldsToExclude())) {
                     $html[$id] = (string)$field->renderStaticIfPermitted($entry, $userNameForRendering);
                     $isTitle = $titleFieldName !== null && $field->getName() === $titleFieldName;
@@ -996,7 +1016,42 @@ class EntryController extends YesWikiController
             $incomingUrl = filter_var($incomingUrl, FILTER_VALIDATE_URL);
         }
 
-        return empty($incomingUrl) ? '' : $incomingUrl;
+        return empty($incomingUrl) || !$this->isWikiUrl($incomingUrl) ? '' : $incomingUrl;
+    }
+
+    /** The page to come back to after editing $entryTag. */
+    public function getEditContextUrl(string $entryTag): string
+    {
+        $pageContext = $this->getService(PageContext::class);
+        if ($pageContext->getTag() === 'api' || !in_array($pageContext->getMethod(), ['show', 'iframe'], true)) {
+            return '';
+        }
+        $urlFormatter = $this->getService(UrlFormatter::class);
+        $currentUrl = WikiUrls::absoluteUrl();
+        $plainUrls = [$urlFormatter->href('', $entryTag, null, false), $urlFormatter->href('iframe', $entryTag, null, false)];
+
+        return in_array($currentUrl, $plainUrls, true) || !$this->isWikiUrl($currentUrl) ? '' : $currentUrl;
+    }
+
+    /** Where the form's cancel button leads. */
+    private function getCancelUrl(string $incomingUrl, ?string $entryId = null): string
+    {
+        if ($incomingUrl !== '') {
+            return $incomingUrl;
+        }
+        $referer = (string)$this->getRequest()->headers->get('referer', '');
+        if ($referer !== '' && $this->isWikiUrl($referer) && strtok($referer, '#') !== strtok(WikiUrls::absoluteUrl(), '#')) {
+            return $referer;
+        }
+
+        return $this->getService(UrlFormatter::class)->href(WikiUrls::iframeSuffixFor(), $entryId ?? '', null, false);
+    }
+
+    private function isWikiUrl(string $url): bool
+    {
+        $host = parse_url($url, PHP_URL_HOST);
+
+        return is_string($host) && $host === parse_url($this->getService(UrlFormatter::class)->getBaseUrl(), PHP_URL_HOST);
     }
 
     /**

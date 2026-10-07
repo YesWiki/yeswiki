@@ -1,3 +1,11 @@
+/** Top offset of a toast. */
+function toastTopOffset() {
+  const navbar = document.getElementById('yw-topnav')
+  if (!navbar) return 20
+  const { width, height, bottom } = navbar.getBoundingClientRect()
+  return height >= width ? 20 : Math.max(bottom, 0) + 20
+}
+
 function toastMessage(
   message,
   duration = 3000,
@@ -10,15 +18,7 @@ function toastMessage(
   toastEl.className = 'toast-message'
   toastEl.appendChild(innerEl)
   document.body.insertAdjacentElement('afterend', toastEl)
-  const topnav = document.getElementById('yw-topnav')
-  if (topnav) {
-    const styles = window.getComputedStyle(topnav)
-    const outerHeight =
-      topnav.offsetHeight +
-      parseFloat(styles.marginTop) +
-      parseFloat(styles.marginBottom)
-    toastEl.style.top = `${outerHeight + 20}px`
-  }
+  toastEl.style.top = `${toastTopOffset()}px`
   toastEl.style.opacity = 1
   setTimeout(() => {
     toastEl.style.opacity = 0
@@ -335,8 +335,10 @@ function checkAll(state) {
     e.preventDefault()
     const form = button.closest('form')
     if (!form) return
-    postForm(form.getAttribute('action'), form)
+    Promise.resolve(window.ywBotGuard?.verify(form))
+      .then(() => postForm(form.getAttribute('action'), form))
       .then((payload) => {
+        window.ywBotGuard?.refresh(form, payload.botGuard)
         form.reset()
         commentEditor()?.setValue('')
         toastMessage(payload.success, 3000, 'alert alert-success')
@@ -361,6 +363,7 @@ function checkAll(state) {
         }
       })
       .catch((payload) => {
+        window.ywBotGuard?.refresh(form, payload?.botGuard)
         toastMessage(requestFailureMessage(payload), 3000, 'alert alert-danger')
       })
   })

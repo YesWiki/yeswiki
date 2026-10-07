@@ -1,7 +1,7 @@
 <div class="filter-container" data-element-width="{{ elementwidth }}" data-element-offset="{{ elementoffset }}">
 	<ul class="filter-results">
 	{% for tag, element in elements %}
-		<li class="filtered-element gradient-grid-box {{ element.tagnames }}" data-filter-class='["{{ element.tagnames|replace({' ': '", "'})|raw }}", "art"]' style="width:{{ elementwidth }}px;margin:0 {{ elementoffset }}px {{ elementoffset }}px 0">
+		<li class="filtered-element gradient-grid-box {{ element.tagnames }}" data-filter-class="{{ (element.tagnames|split(' ')|filter(t => t != '')|merge(['art']))|json_encode }}" style="width:{{ elementwidth }}px;margin:0 {{ elementoffset }}px {{ elementoffset }}px 0">
 			<a href="{{ url({tag: tag}) }}" target="_blank" rel="noopener noreferrer">
 				<h3 class="filtered-title">{{ element.title|raw }}</h3>
 	    		<div class="filtered-image-container">{{ element.image|raw }}</div>

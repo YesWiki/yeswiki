@@ -6,6 +6,8 @@ use PHPMailer\PHPMailer\Exception as PHPMailerException;
 use PHPMailer\PHPMailer\PHPMailer;
 use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use YesWiki\Files\Exception\StorageException;
+use YesWiki\Files\Service\Storage;
 
 /** Sends an email through the configured transport, and nothing about what is in it (ADR-0013). */
 class Mailer
@@ -46,13 +48,13 @@ class Mailer
     }
 
     /**
-     * Sends to a lone recipient in To, or to several in batches of BCC.
+     * Sends a mail to one or several recipients.
      *
      * @param string          $mailSender
      * @param string          $nameSender
      * @param string|string[] $mailReceiver
      */
-    public function send($mailSender, $nameSender, $mailReceiver, string $subject, string $messageTxt, string $messageHtml = ''): bool
+    public function send($mailSender, $nameSender, $mailReceiver, string $subject, string $messageTxt, string $messageHtml = '', bool $keepSender = false): bool
     {
         $mail = $this->newMessage();
 
@@ -64,7 +66,7 @@ class Mailer
                 $mail->Hostname = $host;
             }
             $this->configureTransport($mail);
-            $this->configureSender($mail, $mailSender, $nameSender);
+            $this->configureSender($mail, $mailSender, $nameSender, $keepSender);
 
             $mail->Subject = $subject;
             if (empty($messageHtml)) {
@@ -162,7 +164,7 @@ class Mailer
         }
     }
 
-    private function configureSender(PHPMailer $mail, string $mailSender, string $nameSender): void
+    private function configureSender(PHPMailer $mail, string $mailSender, string $nameSender, bool $keepSender): void
     {
         if (!empty($this->config()['contact_reply_to'])) {
             $mail->addReplyTo($this->config()['contact_reply_to']);
@@ -170,11 +172,47 @@ class Mailer
             $mail->addReplyTo($mailSender, $nameSender);
         }
 
-        if (!empty($this->config()['contact_from'])) {
+        if (!$keepSender && !empty($this->config()['contact_from'])) {
             $mailSender = $this->config()['contact_from'];
         }
 
         $mail->setFrom($mailSender, empty($nameSender) ? $mailSender : $nameSender);
+        $this->signWithDkim($mail);
+    }
+
+    /** Signs with DKIM when configured. */
+    private function signWithDkim(PHPMailer $mail): void
+    {
+        $domain = trim((string)($this->config()['contact_dkim_domain'] ?? ''));
+        $selector = trim((string)($this->config()['contact_dkim_selector'] ?? ''));
+        $key = $this->dkimPrivateKey(trim((string)($this->config()['contact_dkim_private_key'] ?? '')));
+        if ($domain === '' || $selector === '' || $key === '') {
+            return;
+        }
+
+        $mail->DKIM_domain = $domain;
+        $mail->DKIM_selector = $selector;
+        $mail->DKIM_private_string = $key;
+        $mail->DKIM_identity = str_ends_with(strtolower($mail->From), '@' . strtolower($domain)) ? $mail->From : '';
+    }
+
+    /** Reads the DKIM private key, or null. */
+    private function dkimPrivateKey(string $path): string
+    {
+        if ($path === '') {
+            return '';
+        }
+        $storage = $this->container->get(Storage::class);
+
+        try {
+            if (str_starts_with($path, '/')) {
+                return $storage->readForeign($path);
+            }
+
+            return $storage->fileExists($path) ? $storage->read($path) : '';
+        } catch (StorageException) {
+            return '';
+        }
     }
 
     /** The encryption the well-known submission ports imply, when nothing is configured. */

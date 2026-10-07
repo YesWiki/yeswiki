@@ -20,8 +20,7 @@ export default {
       queries: {
         label: _t('BAZ_FORM_EDIT_QUERIES_LABEL'),
         value: '',
-        placeholder:
-          'ex. : checkboxfiche6=PageTag ; cf. https://yeswiki.net/?LierFormulairesEntreEux',
+        placeholder: `ex. : checkboxfiche6=PageTag ; cf. ${wiki.url('doc')}#/docs/fr/bazar?id=_323-afficher-une-partie-des-donn%C3%A9es-query`,
       },
     },
   },

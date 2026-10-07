@@ -268,13 +268,38 @@ class LegacyMarkupConverter
     {
         $out = [];
         $isItem = [];
+        $widths = [];
+        $indents = [];
+        $markers = [];
         foreach (explode("\n", $text) as $line) {
-            if (preg_match('/^(\t+| +)(-|\*|\d+\)|[a-zA-Z]\)|[ivxIVX]+\))\s+(.*)$/u', $line, $m) === 1) {
+            if (preg_match('/^([\t ]+)(-|\*|\d+\)|[a-zA-Z]\)|[ivxIVX]+\))\s+(.*)$/u', $line, $m) === 1) {
                 $marker = ($m[2] === '-' || $m[2] === '*') ? '-' : '1.';
-                $out[] = str_repeat('  ', max(0, strlen($m[1]) - 1)) . $marker . ' ' . $m[3];
+                $width = strlen(str_replace("\t", '    ', $m[1]));
+                while (count($widths) > 1 && $widths[count($widths) - 1] > $width) {
+                    array_pop($widths);
+                    array_pop($indents);
+                    array_pop($markers);
+                }
+                $last = count($widths) - 1;
+                if ($last < 0) {
+                    $widths = [$width];
+                    $indents = [0];
+                    $markers = [$marker];
+                } elseif ($width > $widths[$last]) {
+                    $widths[] = $width;
+                    $indents[] = $indents[$last] + strlen($markers[$last]) + 1;
+                    $markers[] = $marker;
+                } else {
+                    $markers[$last] = $marker;
+                }
+                $out[] = str_repeat(' ', $indents[count($indents) - 1]) . $marker . ' ' . $m[3];
                 $isItem[] = true;
                 continue;
             }
+            $top = preg_match('/^(-|\d+\.)\s/', $line, $topMarker) === 1;
+            $widths = $top ? [0] : [];
+            $indents = $top ? [0] : [];
+            $markers = $top ? [$topMarker[1] === '-' ? '-' : '1.'] : [];
             $out[] = ltrim($line, " \t");
             $isItem[] = preg_match('/^(-|\d+\.)\s/', ltrim($line)) === 1;
         }

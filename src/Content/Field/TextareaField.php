@@ -275,16 +275,8 @@ class TextareaField extends BazarField
                 $fileName = preg_match('/data-filename="([^"]*)"/', $textToReplace, $nameMatch)
                     ? $nameMatch[1]
                     : '';
-                if (empty(trim($fileName))) {
-                    $fileName = bin2hex(random_bytes(10)) . '.' . $imageType;
-                }
-                if (preg_match('/^(.*)(\.[A-Za-z0-9]+)$/m', $fileName, $matchesForFile)) {
-                    $fileNameWithoutExtension = $matchesForFile[1];
-                    $fileExtension = $matchesForFile[2];
-                    $fileName = $this->sanitizeFileName($fileNameWithoutExtension) . $fileExtension;
-                } else {
-                    $fileName = $this->sanitizeFileName($fileName);
-                }
+                $stem = trim(pathinfo($fileName, PATHINFO_FILENAME));
+                $fileName = ($stem === '' ? bin2hex(random_bytes(10)) : $this->sanitizeFileName($stem)) . '.' . $imageType;
 
                 $paths = $this->getService(AttachedFilePaths::class);
 
@@ -300,6 +292,10 @@ class TextareaField extends BazarField
 
                 if (!empty($newFilePath)) {
                     $this->getService(Storage::class)->write($newFilePath, $imageContent);
+                    if (!$this->getService(HtmlPurifierService::class)->cleanStoredFile($newFilePath)) {
+                        $text = str_replace($textToReplace, '', $text);
+                        continue;
+                    }
 
                     $newText = $matches[1][$index];
                     $newText .= "src=\"$newFilePath\">";

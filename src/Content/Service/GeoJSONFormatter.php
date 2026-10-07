@@ -19,51 +19,55 @@ class GeoJSONFormatter extends YesWikiController
     }
 
     /**
-     * get data grom entries in GeoJSON format.
+     * Turns entries into a GeoJSON FeatureCollection.
      *
      * @param array<int|string, array<string, mixed>> $entries
      *
-     * @return array<string, mixed> data
+     * @return array{type: string, features: list<array<string, mixed>>}
      */
     public function formatToGeoJSON(array $entries): array
     {
         /** @var array<int, string|null> $cache */
         $cache = [];
-        $entriesWithGeo = array_filter(array_map(function ($entry) use (&$cache) {
-            $geo = $this->getGeoData($entry, $cache);
-            if (empty($geo)) {
-                return [];
+        $features = [];
+        foreach ($entries as $entry) {
+            $propertyName = $this->geolocationPropertyNameOfEntry($entry, $cache);
+            $properties = $entry;
+            if ($propertyName !== null && is_array($properties[$propertyName] ?? null)) {
+                unset($properties[$propertyName]['geometries']);
             }
+            $id = $entry['tag'] ?? null;
+            $title = $entry['title'] ?? $entry['bf_titre'] ?? '';
 
-            return [
-                'entry' => $entry,
-                'geo' => $geo,
-            ];
-        }, $entries), function ($entry) {
-            return !empty($entry);
-        });
-
-        $data = [];
-        if (!empty($entriesWithGeo)) {
-            $data['type'] = 'FeatureCollection';
-            $data['features'] = [];
-            foreach ($entriesWithGeo as $id => $extendedEntry) {
-                $entry = $extendedEntry['entry'];
-                $data['features'][] = [
+            $geo = $this->getGeoData($entry, $cache);
+            if (!empty($geo)) {
+                $features[] = [
                     'type' => 'Feature',
                     'geometry' => [
                         'type' => 'Point',
-                        'coordinates' => [$extendedEntry['geo']['longitude'], $extendedEntry['geo']['latitude']],
+                        'coordinates' => [floatval($geo['longitude']), floatval($geo['latitude'])],
                     ],
-                    'id' => $entry['tag'],
+                    'id' => $id,
+                    'title' => $title,
+                    'properties' => $properties,
+                ];
+            }
 
-                    'title' => $entry['title'] ?? $entry['bf_titre'] ?? '',
-                    'properties' => $entry,
+            foreach ($this->getDrawnFeatures($entry, $propertyName) as $index => $drawn) {
+                $features[] = [
+                    'type' => 'Feature',
+                    'geometry' => $drawn['geometry'],
+                    'id' => $id === null ? null : $id . '-' . ($index + 1),
+                    'title' => $title,
+                    'properties' => array_merge($properties, is_array($drawn['properties'] ?? null) ? $drawn['properties'] : []),
                 ];
             }
         }
 
-        return $data;
+        return [
+            'type' => 'FeatureCollection',
+            'features' => $features,
+        ];
     }
 
     /**
@@ -76,10 +80,7 @@ class GeoJSONFormatter extends YesWikiController
      */
     public function getGeoData(array $entry, array &$cache): array
     {
-        $propertyName = '';
-        if (!empty($entry['form_id']) && $entry['form_id'] == intval($entry['form_id'])) {
-            $propertyName = (string)$this->geolocationPropertyName((int)$entry['form_id'], $cache);
-        }
+        $propertyName = (string)$this->geolocationPropertyNameOfEntry($entry, $cache);
         if (!empty($entry[$propertyName]['latitude']) && !empty($entry[$propertyName]['longitude'])) {
             $latitude = $entry[$propertyName]['latitude'];
             $longitude = $entry[$propertyName]['longitude'];
@@ -103,6 +104,45 @@ class GeoJSONFormatter extends YesWikiController
             'latitude' => $latitude,
             'longitude' => $longitude,
         ];
+    }
+
+    /**
+     * The shapes drawn on the entry's map field.
+     *
+     * @param array<string, mixed> $entry
+     *
+     * @return list<array<string, mixed>>
+     */
+    private function getDrawnFeatures(array $entry, ?string $propertyName): array
+    {
+        $geometries = $propertyName === null ? null : ($entry[$propertyName]['geometries'] ?? null);
+        if (is_string($geometries)) {
+            $geometries = json_decode($geometries, true);
+        }
+        if (!is_array($geometries)) {
+            return [];
+        }
+        $features = ($geometries['type'] ?? null) === 'FeatureCollection' ? ($geometries['features'] ?? []) : [$geometries];
+
+        return array_values(array_filter(
+            is_array($features) ? $features : [],
+            fn ($feature) => is_array($feature) && !empty($feature['geometry']['type'])
+        ));
+    }
+
+    /**
+     * The geolocation field of the entry's form, or null.
+     *
+     * @param array<string, mixed>    $entry
+     * @param array<int, string|null> &$cache per-form-id memo
+     */
+    private function geolocationPropertyNameOfEntry(array $entry, array &$cache): ?string
+    {
+        if (empty($entry['form_id']) || $entry['form_id'] != intval($entry['form_id'])) {
+            return null;
+        }
+
+        return $this->geolocationPropertyName((int)$entry['form_id'], $cache);
     }
 
     /**

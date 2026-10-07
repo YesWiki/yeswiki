@@ -191,10 +191,4 @@ ywInitEach('#template-edit, .template-edit-form, body', () => {
       }
     })
   })
-
-  const hashcash = document.getElementById('hashcash-text')
-  const formActions = document.querySelector('#ACEditor .form-actions')
-  if (hashcash && formActions) {
-    formActions.appendChild(hashcash)
-  }
 })

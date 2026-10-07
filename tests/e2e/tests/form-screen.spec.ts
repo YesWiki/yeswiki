@@ -102,7 +102,7 @@ test('the add button opens the entry form on the same tag', async ({
 
   await expect(page).toHaveURL(/\?annuaire&view=saisir/)
   await expect(
-    page.locator('form#formulaire input[name="bf_nom"]'),
+    page.locator('form.bazar-form input[name="bf_nom"]'),
   ).toBeVisible()
   await expect(
     page.locator('.form-screen__actions a', { hasText: 'Retour' }),
