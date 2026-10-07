@@ -282,6 +282,9 @@ Check the box to confirm that it has been replaced by "{proposedName}", or chang
     'BAZ_CORRESPONDANCE_ERROR2' => 'baazarlist action: the match parameter is poorly filled. 
 It must be the matching form="identifiant_1=identifiant_2" or correspondence="identifiant_1=identifiant_2, identifier_3=identifiant_4"',
     'BAZ_NO_RESULT' => 'No result',
+    'BAZ_PAGINATION' => 'Pagination',
+    'BAZ_PREVIOUS_PAGE' => 'Previous page',
+    'BAZ_NEXT_PAGE' => 'Next page',
     'BAZ_USER_FIELD_ALREADY_CONNECTED' => "You're already connected with the \"{wikiname}\" identifier and the \"{email}\" email. 
 The created folder will be automatically linked to your account. Please log in to create a new account!",
     'EVENT_EVERY_X_MONTHS' => 'Every X months',

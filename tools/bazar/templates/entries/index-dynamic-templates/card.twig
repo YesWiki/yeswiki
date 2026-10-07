@@ -7,9 +7,8 @@
 {% block display_entries %}
   {% set nbcol = params.nbcol %}
   {% set isModal = (params.entrydisplay == 'modal' or params.entrydisplay is empty or params.entrydisplay not in ['modal','direct','newtab']) %}
-  {% set isLink = isModal or (params.entrydisplay == 'direct') %}
+  {% set isNewTab = params.entrydisplay == 'newtab' %}
 
-  {# Restrict number of columns for horizontal card #}
   {% if nbcol > 2 and params.displayfields.visual and params.style == "horizontal" %}
     {% set nbcol =  2 %}
     {{ include('@templates/alert-message.twig',{type:'info',message:_t('BAZ_CARD_NBCOL_TOO_HIGH')}) }}
@@ -17,7 +16,6 @@
 
   {% set imWidth = (nbcol == 4) ? 500 : (nbcol == 5 ? 400 : 700 ) %}
   {% set imHeight = params.style == "square" ? imWidth : (params.style == "horizontal" ? imWidth*23//27 : imWidth*2//3 ) %}
-  {# Generate appropriate CSRF tokens for both image processing modes #}
   {% set fitToken = csrfToken("POST api/images/cache/#{imWidth}/#{imHeight}/fit") %}
   {% set cropToken = csrfToken("POST api/images/cache/#{imWidth}/#{imHeight}/crop") %}
 
@@ -33,21 +31,21 @@
     {% endblock %}
 
     {% block iter_start %}
-    {% if isLink %}<a{% else %}<div{% endif %} v-for="entry in entriesToDisplay" :key="entry.id_fiche"
+    <a v-for="entry in entriesToDisplay" :key="entry.id_fiche"
         class="bazar-entry bazar-card{{ isModal ? ' modalbox' : ''}}"
-        {% if not isLink %}@click="openEntry(entry)"{% endif %}
         :class="{'with-image': Object.keys(entry).includes('visual')}"
         {% if isModal %}
           data-size="modal-lg" data-header="false" data-iframe="1"
         {% endif %}
-        {% if isLink %}
+        {% if isNewTab %}
+          :href="entry.url" target="_blank" rel="noopener"
+        {% else %}
           :href="`${entry.url + (({{ isModal ? 'true' : 'false' }} || $root.isInIframe()) ? '/iframe' : '')}`"
-          :title="entry.title"
         {% endif %}
+        :title="entry.title"
         >
     {% endblock %}
 
-      {# VISUAL AREA #}
       {% block area_visual %}
       <template v-if="Object.keys(entry).includes('visual')">
         <template v-if="entry.visual">
@@ -75,7 +73,6 @@
       {% endblock %}
 
       <div class="content">
-        {# TITLE AREA #}
         {% block area_title %}
         <h4  class="area title-area" v-if="entry.title">
           <span v-show="entry.color" class="pellet" :style="{'background-color': entry.color}"></span>
@@ -84,29 +81,25 @@
         </h4>
         {% endblock %}
 
-        {# SUBTITLE AREA #}
         {% block area_subtitle %}
           <entry-field :entry="entry" prop="subtitle" class="area subtitle-area line-clamp" :style="{'webkit-line-clamp': params.nblines}"></entry-field>
         {% endblock %}
 
-        {# TEXT AREA #}
         {% block area_text %}
           <entry-field :entry="entry" prop="text" class="area text-area"></entry-field>
         {% endblock %}
 
-        {# FOOTER AREA #}
         {% block area_footer %}
           <entry-field :entry="entry" prop="footer" class="area footer-area"></entry-field>
         {% endblock %}
 
-        {# FLOATING AREA #}
         {% block area_floating %}
           <entry-field :entry="entry" prop="floating" class="area floating-area"></entry-field>
         {% endblock %}
       </div>
 
     {% block iter_end %}
-    {% if isLink %}</a>{% else %}</div>{% endif %}
+    </a>
     {% endblock %}
 
     <spinner-loader v-if="isLoading" class="overlay"></spinner-loader>
