@@ -1,9 +1,9 @@
 <div class="yw-bot-guard-fields">
   {% if tokenName %}
     <input type="hidden" name="{{ tokenName }}" value="{{ token }}">
-    <div class="yw-bot-guard" aria-hidden="true" style="position:absolute;left:-10000px;top:auto;width:1px;height:1px;overflow:hidden">
+    <div class="yw-bot-guard" aria-hidden="true" style="display:none">
       <label for="{{ honeypotName }}">{{ honeypotLabel }}</label>
-      <input type="text" id="{{ honeypotName }}" name="{{ honeypotName }}" value="" tabindex="-1" autocomplete="off">
+      <input type="text" id="{{ honeypotName }}" name="{{ honeypotName }}" value="" tabindex="-1" autocomplete="off" data-1p-ignore data-lpignore="true" data-bwignore data-form-type="other">
     </div>
   {% endif %}
   {% if altchaChallenge %}
