@@ -4882,12 +4882,7 @@ figcaption *:last-child {
 }
 
 .yw-bot-guard {
-  position: absolute;
-  left: -10000px;
-  top: auto;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
+  display: none;
 }
 
 .yw-bot-guard-fields altcha-widget {

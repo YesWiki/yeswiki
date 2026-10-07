@@ -47,5 +47,5 @@ test('the honeypot stays empty and out of reach', async ({ page }) => {
     'aria-hidden',
     'true',
   )
-  await expect(honeypot).not.toBeInViewport()
+  await expect(honeypot).toBeHidden()
 })
