@@ -988,6 +988,84 @@ $('#yw-a11y-jump-content').click(() => {
   }, 300)
 })
 
+const botGuardPending = new WeakMap()
+const botGuardSubmitter = new WeakMap()
+
+/** Whether the form has no ALTCHA left to solve. */
+function botGuardSolved(form) {
+  const widget = form?.querySelector('altcha-widget')
+  return (
+    !widget ||
+    typeof widget.verify !== 'function' ||
+    widget.getState?.() === 'verified'
+  )
+}
+
+/** Sends a form held back for its ALTCHA once it is solved. */
+function resumeBotGuardSubmit(form) {
+  if (!form || !botGuardPending.has(form) || !botGuardSolved(form)) return
+  const submitter = botGuardPending.get(form)
+  botGuardPending.delete(form)
+  form.requestSubmit(submitter || undefined)
+}
+
+/** Holds the form back and solves its ALTCHA, then sends it. */
+function holdUntilBotGuardSolved(form, submitter) {
+  const widget = form.querySelector('altcha-widget')
+  botGuardPending.set(form, submitter)
+  if (form.dataset.botGuardSolving) return
+  form.dataset.botGuardSolving = '1'
+  const solving =
+    widget.getState?.() === 'verifying' ? Promise.resolve() : widget.verify()
+  solving
+    .catch(() => {})
+    .finally(() => {
+      delete form.dataset.botGuardSolving
+      resumeBotGuardSubmit(form)
+    })
+}
+
+const nativeRequestSubmit = HTMLFormElement.prototype.requestSubmit
+HTMLFormElement.prototype.requestSubmit = function requestSubmit(submitter) {
+  botGuardSubmitter.set(this, submitter)
+  return nativeRequestSubmit.call(this, submitter)
+}
+
+document.addEventListener(
+  'click',
+  (event) => {
+    const button = event.target.closest?.(
+      'button[type="submit"], button:not([type]), input[type="submit"]',
+    )
+    if (button?.form) botGuardSubmitter.set(button.form, button)
+  },
+  true,
+)
+
+document.addEventListener(
+  'invalid',
+  (event) => {
+    const widget = event.target.closest?.('altcha-widget')
+    const form = widget?.closest('form')
+    if (!form || botGuardSolved(form)) return
+    event.preventDefault()
+    holdUntilBotGuardSolved(form, botGuardSubmitter.get(form))
+  },
+  true,
+)
+
+document.addEventListener(
+  'submit',
+  (event) => {
+    const form = event.target
+    if (!(form instanceof HTMLFormElement) || botGuardSolved(form)) return
+    event.preventDefault()
+    event.stopImmediatePropagation()
+    holdUntilBotGuardSolved(form, event.submitter)
+  },
+  true,
+)
+
 document.addEventListener(
   'statechange',
   (event) => {
@@ -997,6 +1075,7 @@ document.addEventListener(
     const verified = event.detail?.state === 'verified'
     widget.style.display = verified ? 'none' : ''
     fields.querySelector('.yw-bot-guard-active').hidden = !verified
+    if (verified) resumeBotGuardSubmit(widget.closest('form'))
   },
   true,
 )
