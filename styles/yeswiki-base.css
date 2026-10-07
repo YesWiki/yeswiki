@@ -1076,6 +1076,8 @@ td.users-table-break-word {
 }
 
 .login-connected-name {
+  display: inline-block;
+  vertical-align: bottom;
   max-width: 100px;
   overflow: hidden;
   text-overflow: ellipsis;
