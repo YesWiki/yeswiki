@@ -339,11 +339,14 @@ class SearchManager
 
                 foreach ($vQuery['values'] as $vValue) {
                     $vIsRegExp = $this->isRegExp($vValue);
+                    $vColumn = ($vComparisonOperator === '!=' || trim((string)$vValue) === '')
+                        ? 'COALESCE(' . $this->column($vFieldName) . ', \'\')'
+                        : $this->column($vFieldName);
 
                     switch ($vDescriptor['_mode_']) {
                         case 'single':
                             if ($vIsRegExp) {
-                                $vValueConditions[] = $this->column($vFieldName) . ' COLLATE ' . $this->dbService->getCollation() . ' ' . $vRegExpOperator . ' \'' . mysqli_real_escape_string($this->wiki->dblink, $this->extractRegExp($vValue)) . '\'';
+                                $vValueConditions[] = $vColumn . ' COLLATE ' . $this->dbService->getCollation() . ' ' . $vRegExpOperator . ' \'' . mysqli_real_escape_string($this->wiki->dblink, $this->extractRegExp($vValue)) . '\'';
                             } else {
                                 if ($vDescriptor['_type_'] == 'number') {
                                     if (isset($vValue) && trim($vValue) !== '') {
@@ -353,12 +356,10 @@ class SearchManager
                                             $vValueConditions[] = 'CAST(' . $this->column($vFieldName) . ' AS DOUBLE) ' . $vComparisonOperator . ' ' . (float)trim($vValue);
                                         }
                                     } else {
-                                        $vValueConditions[] = '(COALESCE(' . $this->column($vFieldName) . ', \'\') COLLATE ' . $this->dbService->getCollation() . ' ' . $vComparisonOperator . ' \'\' )';
+                                        $vValueConditions[] = '(' . $vColumn . ' COLLATE ' . $this->dbService->getCollation() . ' ' . $vComparisonOperator . ' \'\' )';
                                     }
-                                } elseif ($vValue === '') {
-                                    $vValueConditions[] = 'COALESCE(' . $this->column($vFieldName) . ', \'\') COLLATE ' . $this->dbService->getCollation() . ' ' . $vComparisonOperator . ' \'\'';
                                 } else {
-                                    $vValueConditions[] = $this->column($vFieldName) . ' COLLATE ' . $this->dbService->getCollation() . ' ' . $vComparisonOperator . ' \'' . mysqli_real_escape_string($this->wiki->dblink, $vValue) . '\'';
+                                    $vValueConditions[] = $vColumn . ' COLLATE ' . $this->dbService->getCollation() . ' ' . $vComparisonOperator . ' \'' . mysqli_real_escape_string($this->wiki->dblink, $vValue) . '\'';
                                 }
                             }
 
@@ -368,7 +369,7 @@ class SearchManager
                             if ($vIsRegExp) {
                                 $vValueConditions[] = '(s.champ = \'' . mysqli_real_escape_string($this->wiki->dblink, $this->renameJSONPathVariable($vFieldName)) . '\' AND s.elt COLLATE ' . $this->dbService->getCollation() . ' ' . $vRegExpOperator . ' \'' . mysqli_real_escape_string($this->wiki->dblink, $this->extractRegExp($vValue)) . '\')';
                             } else {
-                                $vValueConditions[] = $vFindInSetOperator . ' (\'' . mysqli_real_escape_string($this->wiki->dblink, $vValue) . '\' COLLATE ' . $this->dbService->getCollation() . ', ' . $this->column($vFieldName) . ' COLLATE ' . $this->dbService->getCollation() . ')';
+                                $vValueConditions[] = $vFindInSetOperator . ' (\'' . mysqli_real_escape_string($this->wiki->dblink, $vValue) . '\' COLLATE ' . $this->dbService->getCollation() . ', ' . $vColumn . ' COLLATE ' . $this->dbService->getCollation() . ')';
                             }
 
                             break;
