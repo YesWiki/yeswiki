@@ -303,7 +303,18 @@ class AssetRegistry implements RequestScopedState
             }
         }
 
-        return $file;
+        return $this->instanceExtensionPath($file);
+    }
+
+    /** An extension's file asked for by its shared path, moved to the Instance's own copy when the Instance installed it in custom/extensions/ (ADR-0029). */
+    private function instanceExtensionPath(string $file): string
+    {
+        if (preg_match('#^extensions/([A-Za-z0-9][A-Za-z0-9_-]*)/#', $file, $m) !== 1) {
+            return $file;
+        }
+        $instanceDir = defined('YESWIKI_INSTANCE_DIR') ? YESWIKI_INSTANCE_DIR : (string)getcwd();
+
+        return is_dir($instanceDir . '/custom/extensions/' . $m[1]) ? 'custom/' . $file : $file;
     }
 
     public function startNewRequest(): void

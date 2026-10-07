@@ -130,6 +130,23 @@ class AssetRegistryTest extends YesWikiTestCase
         $this->assertTrue($registry->drain()->isEmpty());
     }
 
+    public function testAnExtensionInstalledInCustomServesItsAssetsUnderItsSharedPath(): void
+    {
+        $folder = YESWIKI_INSTANCE_DIR . '/custom/extensions/assetregistrytest';
+        mkdir($folder . '/styles', 0755, true);
+        file_put_contents($folder . '/styles/screen.css', '.a {}');
+        try {
+            $registry = $this->registry();
+            $registry->addCssFile('extensions/assetregistrytest/styles/screen.css');
+
+            $this->assertStringContainsString('custom/extensions/assetregistrytest/styles/screen.css', $registry->drain()->toHtml());
+        } finally {
+            unlink($folder . '/styles/screen.css');
+            rmdir($folder . '/styles');
+            rmdir($folder);
+        }
+    }
+
     public function testDrainTakesOnlyWhatTheFilterMatches(): void
     {
         $registry = $this->registry();
