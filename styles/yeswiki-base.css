@@ -1069,6 +1069,19 @@ td.users-table-break-word {
   display: inline;
 }
 
+.login-connected {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.login-connected-name {
+  max-width: 100px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .panel button.panel-heading {
   width: 100%;
   text-align: left;

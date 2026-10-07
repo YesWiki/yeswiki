@@ -3,8 +3,8 @@
 {% block logoutLinkClass %}btn btn-default{% endblock %}
 
 {% block connected %}
-    <a href="#LoginModal" role="button" class="btn-icon navbar-btn {{ not nobtn ? 'btn ' ~ (btnclass ?: 'btn-default') : '' }}" data-toggle="modal" data-tooltip="tooltip" data-placement="bottom" aria-label="{{ _t('LOGIN_MY_OPTIONS')}}" title="{{ _t('LOGIN_MY_OPTIONS')}}">
-        <i class="fa fa-user"></i> {{ user }}
+    <a href="#LoginModal" role="button" class="login-connected navbar-btn {{ not nobtn ? 'btn ' ~ (btnclass ?: 'btn-default') : '' }}" data-toggle="modal" data-tooltip="tooltip" data-placement="bottom" aria-label="{{ _t('LOGIN_CONNECTED_AS') }} {{ user }}" title="{{ _t('LOGIN_CONNECTED_AS') }} {{ user }}">
+        <i class="fa fa-user"></i> <span class="login-connected-name">{{ user }}</span>
     </a>
     <div class="modal fade" id="LoginModal" tabindex="-1" role="dialog" aria-labelledby="LoginModalLabel">
         <div class="modal-dialog">
