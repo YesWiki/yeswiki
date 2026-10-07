@@ -2,7 +2,6 @@
 
 namespace YesWiki\Bazar\Controller;
 
-use DateTime;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Tamtamchik\SimpleFlash\Flash;
 use YesWiki\Bazar\Exception\RequiredFieldsException;
@@ -19,6 +18,7 @@ use YesWiki\Bazar\Service\SearchManager;
 use YesWiki\Bazar\Service\SemanticTransformer;
 use YesWiki\Core\Controller\AuthController;
 use YesWiki\Core\Service\AclService;
+use YesWiki\Core\Service\BotGuard;
 use YesWiki\Core\Service\EventDispatcher;
 use YesWiki\Core\Service\FavoritesManager;
 use YesWiki\Core\Service\PageManager;
@@ -99,7 +99,6 @@ class EntryController extends YesWikiController
     public function view($entryId, $time = '', $showFooter = true, ?string $userNameForRendering = null, $pLocalForm = '', $pExternalForm = '')
     {
         if (is_array($entryId) && !empty($entryId) && isset($entryId['id_fiche'])) {
-            // If entry ID is the full entry with all the values
             $entry = $entryId;
             $entryId = $entry['id_fiche'];
         } elseif ($entryId) {
@@ -121,40 +120,33 @@ class EntryController extends YesWikiController
             $pExternalForm = $this->formManager->getOne($entry['external-data']['formIDKey']);
         }
 
-        // fake ->tag for the attached images
         $oldPageTag = $this->wiki->GetPageTag();
         $this->wiki->tag = $entryId;
         $renderedEntry = null;
         $message = $this->getRequest()->query->get('message', '');
-        // unset $_GET['message'] to prevent infinite loop when rendering entry with textarea and {{bazarliste}}
         unset($_GET['message']);
-        // to synchronize with const in BazarAction (but do not include it here otherwise include shunts Performer job)
         $isUpdatingEntry = ($this->getRequest()->query->get('vue') === 'consulter');
         if ($isUpdatingEntry) {
             unset($_GET['vue']);
         }
-        // unshift stack to check if this entry is included into a bazarliste into a Field
         array_unshift($this->parentsEntries, $entryId);
         if (
             count(array_filter($this->parentsEntries, function ($value) use ($entryId) {
                 return $value === $entryId;
-            })) < 3 // max 3 levels
+            })) < 3
         ) {
-            // use a custom template if exists (fiche-FORM_ID.tpl.html or fiche-FORM_ID.twig)
             $customTemplatePath = $this->getCustomTemplatePath($entry);
             if ($customTemplatePath) {
                 $customTemplateValues = $this->getValuesForCustomTemplate($entry, $pLocalForm, $userNameForRendering);
                 $renderedEntry = $this->render($customTemplatePath, $customTemplateValues);
             }
 
-            // use a custom semantic template if exists
             if (is_null($renderedEntry) && !empty($customTemplateValues['html']['semantic'])) {
                 $customTemplatePath = $this->getCustomSemanticTemplatePath($customTemplateValues['html']['semantic']);
                 if ($customTemplatePath) {
                     $renderedEntry = $this->render("@bazar/$customTemplatePath", $customTemplateValues);
                 }
             }
-            // if not found, use default template
             if (is_null($renderedEntry)) {
                 if (!empty($pLocalForm)) {
                     $states = $this->getService(ConditionsChecker::class)->states($pLocalForm, $entry);
@@ -163,7 +155,6 @@ class EntryController extends YesWikiController
                             if ($field instanceof ConditionsCheckingField || !($states[$index]['visible'] ?? true)) {
                                 continue;
                             }
-                            // TODO handle html_outside_app mode for images
                             if (!in_array($field->getPropertyName(), $this->fieldsToExclude())) {
                                 $renderedEntry .= $field->renderStaticIfPermitted($entry, $userNameForRendering);
                             }
@@ -181,12 +172,9 @@ class EntryController extends YesWikiController
             }
         }
 
-        // fake ->tag for the attached images
         $this->wiki->tag = $oldPageTag;
-        // shift stack
         array_shift($this->parentsEntries);
 
-        // Format owner
         $owner = $this->wiki->GetPageOwner($entryId) ?? $this->wiki->GetUserName();
         $isOwnerIpAddress = preg_replace('/([0-9]|\.)/', '', $owner) == '';
         if ($isOwnerIpAddress || !$owner) {
@@ -196,7 +184,6 @@ class EntryController extends YesWikiController
             $owner = $this->wiki->Format('[[' . $this->wiki->GetPageOwner($entryId) . ' ' . $this->wiki->GetPageOwner($entryId) . ']]');
         }
 
-        // remake $_GET['message'] for BazarAction__ like in webhooks extension
         if (!empty($message)) {
             $_GET['message'] = $message;
         }
@@ -222,7 +209,7 @@ class EntryController extends YesWikiController
             'showFooter' => $showFooter,
             'currentuser' => $currentuser ?? null,
             'isUserFavorite' => $isUserFavorite ?? false,
-            'canShow' => $this->wiki->GetPageTag() != $entry['id_fiche'], // hide if we are already in the show page
+            'canShow' => $this->wiki->GetPageTag() != $entry['id_fiche'],
             'canEdit' => !$this->securityController->isWikiHibernated() && $this->aclService->hasAccess('write', $entryId) && !isset($entry['read-only']),
             'canDelete' => !$this->securityController->isWikiHibernated() && ($this->wiki->UserIsAdmin($userNameForRendering) || $this->wiki->UserIsOwner($entryId)) && !isset($entry['read-only']),
             'canDuplicate' => $this->wiki->UserIsAdmin($userNameForRendering) && !isset($entry['read-only']),
@@ -269,8 +256,6 @@ class EntryController extends YesWikiController
         if (empty($formId)) {
             return '<div class="alert alert-danger">' . _t('BAZ_PAS_D_ID_DE_FORM_INDIQUE') . '</div>';
         }
-        // we need to store this globally so we can have the form id in the fields
-        // TODO: there must be a better way
         $_SESSION['current_form_id'] = $formId;
         $form = $this->formManager->getOne($formId);
         if (!$form) {
@@ -282,11 +267,17 @@ class EntryController extends YesWikiController
         if (!empty($results['output'])) {
             return $results['output'];
         } elseif (empty($results['error'])) {
-            list($state, $error) = $this->securityController->checkCaptchaBeforeSave('entry');
+            $state = true;
+            $error = '';
             $post = $this->getRequest()->request;
+            if ($post->has('bf_titre') && ($refusal = $this->botGuardRefusal()) !== null) {
+                $state = false;
+                $error .= $refusal;
+                $refusedData = $post->all();
+            }
             try {
                 if ($state && $post->has('bf_titre')) {
-                    $postedData = $post->all();
+                    $postedData = $this->getService(BotGuard::class)->withoutFields($post->all());
                     unset($postedData['id_fiche']);
                     $entry = $this->entryManager->create($formId, $postedData);
                     $errors = $this->eventDispatcher->yesWikiDispatch('entry.created', [
@@ -326,7 +317,10 @@ class EntryController extends YesWikiController
 
         $renderedInputs = $this->getRenderedInputs($form, $refusedData ?? null);
 
-        return $this->render('@bazar/entries/form.twig', [
+        $botGuard = $this->getService(BotGuard::class);
+        $botGuardFields = $botGuard->fields();
+
+        return $botGuard->placeFields($this->render('@bazar/entries/form.twig', [
             'form' => $form,
             'formAction' => $this->getRequest()->getRequestUri(),
             'renderedInputs' => $renderedInputs,
@@ -335,14 +329,14 @@ class EntryController extends YesWikiController
             'incomingUrl' => $incomingUrl,
             'cancelUrl' => $this->getCancelUrl($incomingUrl),
             'error' => $error,
-            'captchaField' => $this->securityController->renderCaptchaField(),
             'imageSmallWidth' => $this->config['image-small-width'],
             'imageSmallHeight' => $this->config['image-small-height'],
             'imageMediumWidth' => $this->config['image-medium-width'],
             'imageMediumHeight' => $this->config['image-medium-height'],
             'imageBigWidth' => $this->config['image-big-width'],
             'imageBigHeight' => $this->config['image-big-height'],
-        ]);
+            'botGuardFields' => $botGuardFields,
+        ]), $botGuardFields, 'bazar-form-' . $form['bn_id_nature']);
     }
 
     public function update($entryId)
@@ -350,12 +344,18 @@ class EntryController extends YesWikiController
         $entry = $this->entryManager->getOne($entryId);
         $form = $this->formManager->getOne($entry['id_typeannonce']);
 
-        list($state, $error) = $this->securityController->checkCaptchaBeforeSave('entry');
+        $state = true;
+        $error = '';
         $incomingUrl = $this->getIncomingUrl();
         $post = $this->getRequest()->request;
+        if ($post->has('bf_titre') && ($refusal = $this->botGuardRefusal()) !== null) {
+            $state = false;
+            $error .= $refusal;
+            $entry = array_merge($entry, $post->all());
+        }
         try {
             if ($state && $post->has('bf_titre')) {
-                $entry = $this->entryManager->update($entryId, $post->all());
+                $entry = $this->entryManager->update($entryId, $this->getService(BotGuard::class)->withoutFields($post->all()));
                 $errors = $this->eventDispatcher->yesWikiDispatch('entry.updated', [
                     'id' => $entry['id_fiche'],
                     'data' => $entry,
@@ -390,7 +390,10 @@ class EntryController extends YesWikiController
 
         $renderedInputs = $this->getRenderedInputs($form, $entry);
 
-        return $this->render('@bazar/entries/form.twig', [
+        $botGuard = $this->getService(BotGuard::class);
+        $botGuardFields = $botGuard->fields();
+
+        return $botGuard->placeFields($this->render('@bazar/entries/form.twig', [
             'form' => $form,
             'formAction' => $this->getRequest()->getRequestUri(),
             'entryId' => $entryId,
@@ -400,13 +403,27 @@ class EntryController extends YesWikiController
             'incomingUrl' => $incomingUrl,
             'cancelUrl' => $this->getCancelUrl($incomingUrl, $entryId),
             'error' => $error,
-            'captchaField' => $this->securityController->renderCaptchaField(),
             'imageSmallWidth' => $this->config['image-small-width'],
             'imageSmallHeight' => $this->config['image-small-height'],
             'imageMediumWidth' => $this->config['image-medium-width'],
             'imageMediumHeight' => $this->config['image-medium-height'],
             'imageBigWidth' => $this->config['image-big-width'],
             'imageBigHeight' => $this->config['image-big-height'],
+            'botGuardFields' => $botGuardFields,
+        ]), $botGuardFields, 'bazar-form-' . $form['bn_id_nature']);
+    }
+
+    /**
+     * The alert to show when BotGuard refuses the submission, null when it passes.
+     */
+    private function botGuardRefusal(): ?string
+    {
+        $botGuard = $this->getService(BotGuard::class);
+        $reason = $botGuard->check($this->getRequest());
+
+        return $reason === null ? null : $this->render('@templates/alert-message.twig', [
+            'type' => 'danger',
+            'message' => $botGuard->message($reason),
         ]);
     }
 
@@ -479,7 +496,6 @@ class EntryController extends YesWikiController
             return null;
         }
 
-        // Trouve le contexte principal
         if (is_array($semanticData['@context'])) {
             foreach ($semanticData['@context'] as $context) {
                 if (is_string($context)) {
@@ -490,9 +506,7 @@ class EntryController extends YesWikiController
             $context = $semanticData['@context'];
         }
 
-        // Si on a trouvé un contexte et qu'un mapping existe pour ce contexte
         if (isset($context) && $dir_name = $this->config['baz_semantic_types_mapping'][$context]) {
-            // Trouve le type principal
             if (is_array($semanticData['@type'])) {
                 foreach ($semanticData['@type'] as $type) {
                     if (is_string($type)) {
@@ -578,8 +592,6 @@ class EntryController extends YesWikiController
         return $vSearchManager->parseQuery($vSearchManager->aggregateQueries($arg, $get));
     }
 
-    /* PART TO FILTER ON DATE */
-
     /**
      * filter entries on date.
      *
@@ -658,7 +670,6 @@ class EntryController extends YesWikiController
             $nbDaysLower = $matches[14][0];
             $dateMax = $this->extractDate($signLower, $nbYearsLower, $nbMonthLower, $nbDaysLower);
             if ($dateMin->diff($dateMax)->invert == 0) {
-                // $dateMax higher than $dateMin
                 $entries = array_filter($entries, function ($entry) use ($dateMin) {
                     return $this->filterEntriesOnDateTraversing($entry, '>', $dateMin);
                 });
@@ -673,15 +684,6 @@ class EntryController extends YesWikiController
 
     private function extractDate(string $pSign, string $nbYears, string $nbMonth, string $nbDays): \DateTime
     {
-        /*if ($pSign == "")
-        {echo ("$pSign, string $nbYears, string $nbMonth, string $nbDays");
-            $vDate = new DateTime(
-                      (!empty($nbYears) ? $nbYears . 'Y' : '')
-                    . (!empty($nbMonth) ? $nbMonth . 'M' : '')
-                    . (!empty($nbDays) ? $nbDays . 'D' : (empty($nbYears) && empty($nbMonth) && empty($nbDays) ? '0D' : '')));
-        }
-        else*/
-
         $vDateInterval = new \DateInterval(
             'P'
                     . (!empty($nbYears) ? $nbYears . 'Y' : '')
@@ -706,28 +708,24 @@ class EntryController extends YesWikiController
         if (isset($entry['bf_date_fin_evenement']) && !empty(trim($entry['bf_date_fin_evenement']))) {
             $entryEndDate = new \DateTime($entry['bf_date_fin_evenement']);
             if ($entryEndDate && strpos($entry['bf_date_fin_evenement'], 'T') === false) {
-                // all day (so = midnigth of next day)
                 $entryEndDate->add(new \DateInterval('P1D'));
             }
         }
         if (empty($entryEndDate)) {
-            $entryEndDate = (clone $entryStartDate)->setTime(0, 0)->add(new \DateInterval('P1D')); // endDate to next day after start day if empty
+            $entryEndDate = (clone $entryStartDate)->setTime(0, 0)->add(new \DateInterval('P1D'));
         }
         $nextDay = (clone $date)->add(new \DateInterval('P1D'));
         switch ($mode) {
             case '<':
-                // start before date and whatever finish
                 return $date->diff($entryStartDate)->invert == 1;
                 break;
             case '>':
-                // start after date or (before date but and end should be after date, end is needed)
                 return
                     $date->diff($entryStartDate)->invert == 0
                     || !$this->dateIsStrictlyBefore($entryEndDate, $date);
                 break;
             case '=':
             default:
-                // start before next day midnight and should end after date midnigth
                 return
                     $nextDay->diff($entryStartDate)->invert == 1
                     && !$this->dateIsStrictlyBefore($entryEndDate, $date);
@@ -747,8 +745,6 @@ class EntryController extends YesWikiController
             && $diff->f == 0
         );
     }
-
-    /* END OF PART TO FILTER ON DATE */
 
     public function renderBazarList($entries, $params = [], $showNumEntries = true)
     {
@@ -791,7 +787,6 @@ class EntryController extends YesWikiController
             }));
             $loggerUser = $this->authController->getLoggedUser();
             if (!$formHasUserField && empty($loggerUser)) {
-                // forbidden : ask to connect
                 $results['output'] = $this->render('@templates/alert-message.twig', [
                     'type' => 'warning',
                     'message' => _t('BAZ_USER_SHOULD_BE_CONNECTED_TO_ACCES_THIS_FORM'),

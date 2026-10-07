@@ -49,7 +49,6 @@ return [
     'USERSETTINGS_EMAIL_NOT_CHANGED' => 'Helbide elektronikoa ez da aldatu.',
     'USERSETTINGS_PASSWORD_NOT_CHANGED' => 'Aldatu gabeko pasahitza.',
     'USERSETTINGS_USER_NOT_DELETED' => 'Erabiltzailea ez da ezabatu.',
-    'USERSETTINGS_CAPTCHA_USER_CREATION' => 'Erabiltzaile bat sortzeko egiaztapena',
     'USERSETTINGS_SIGNUP_MISSING_INPUT' => '\'{parameters}\' parametroak ezin dira hutsik egon!',
     'USERSETTINGS_NAME_ALREADY_USED' => '"{currentName}" identifikatzailea dagoeneko existitzen da!',
     'USERSETTINGS_EMAIL_ALREADY_USED' => '"{email}" helbide elektronikoa beste kontu batek erabiltzen du!',

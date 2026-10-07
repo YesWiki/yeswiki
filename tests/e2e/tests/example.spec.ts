@@ -2,6 +2,7 @@ import { test, expect } from '@playwright/test'
 import { resetEnv } from '../helpers/db'
 import { errorShouldBe } from '../helpers/alert'
 import { replaceEditorTextCallback } from '../helpers/editor'
+import { waitPastBotGuardMinimumAge } from '../helpers/botGuard'
 
 test.beforeEach(async () => {
   resetEnv()
@@ -27,6 +28,7 @@ test('can edit main page title', async ({ page }) => {
       'Test de modification de titre',
     ),
   )
+  await waitPastBotGuardMinimumAge(page)
   await page.getByRole('button', { name: 'Sauver' }).first().click()
 
   await expect(page.locator('h1')).toContainText(
@@ -38,6 +40,7 @@ test('have an error message when editing with no change', async ({ page }) => {
   await page.goto('/')
   await page.getByRole('link', { name: 'Éditer la page' }).click()
   await page.waitForLoadState()
+  await waitPastBotGuardMinimumAge(page)
 
   await page.getByRole('button', { name: 'Sauver' }).first().click()
 

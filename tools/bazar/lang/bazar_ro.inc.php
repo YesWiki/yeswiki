@@ -185,7 +185,6 @@ return [
     'BAZ_GIVEN_ID' => 'ID atribuit',
     'BAZ_EDIT_MY_ENTRY' => 'Editează formularul meu',
     'BAZ_CHANGE_PWD' => 'Schimbați parola',
-    'BAZ_PROTECTION_ANTISPAM' => 'Protecție împotriva spamului',
     'BAZ_CONTACT_BY_MAIL' => 'Contact prin email',
     'BAZ_UNKNOWN_USER' => 'Utilizator necunoscut',
     'BAZ_RADIO_REFRESH' => 'Actualizați informațiile listei',

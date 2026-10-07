@@ -18,14 +18,17 @@
       {{ renderedInput|raw }}
     {% endfor %}
   {% endif %}
-  {{ captchaField|raw }}
+  {% if botGuardFields %}
+    <div class="form-group">
+      <div class="col-sm-9 col-sm-offset-3">{{ botGuardFields|raw }}</div>
+    </div>
+  {% endif %}
   <div class="form-actions form-group">
     <div class="col-sm-9 col-sm-offset-3">
       <button type="submit" class="btn btn-primary">{{ _t('BAZ_VALIDER') }}</button>
       <a class="btn btn-xs btn-default" href="{{ cancelUrl }}">{{ _t('BAZ_ANNULER') }}</a>
     </div>
   </div>
-  <input name="antispam" value="0" type="hidden">
   <input name="id_typeannonce" value="{{ form.bn_id_nature }}" type="hidden">
   {% if entryId %}
     <input name="id_fiche" value="{{ entryId }}" type="hidden">
@@ -38,5 +41,4 @@
   {% endif %}
 </form>
 
-{# Include modals for aceditors #}
 {{ include('@aceditor/aceditor-modals.twig') }}

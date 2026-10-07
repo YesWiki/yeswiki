@@ -166,8 +166,6 @@ class ApiController extends YesWikiController
                 'idtypeannonce' => $formId,
                 'ordre' => 'asc',
                 'queries' => '',
-                // TODO Handle pagination
-                // 'nb' => 100
             ]);
 
             return new ApiResponse([
@@ -203,7 +201,7 @@ class ApiController extends YesWikiController
         $webfingerService = $this->getService(WebfingerService::class);
         $activityPubService = $this->getService(ActivityPubService::class);
 
-        $handle = substr($request->query->get('resource'), 5); // Remove 'acct:' prefix
+        $handle = substr($request->query->get('resource'), 5);
 
         $matches = $webfingerService->splitHandle($handle);
 
@@ -248,7 +246,7 @@ class ApiController extends YesWikiController
         $vNb = intval($get->get('nbitem') ?? $get->get('nb') ?? null);
         $vMinDate = urldecode($get->get('dateMin') ?? $get->get('minDate') ?? $get->get('period') ?? '');
 
-        if ($output == 'csv') { // Search is done in the CSV Manager
+        if ($output == 'csv') {
             $csvManager = $this->getService(CSVManager::class);
             $csvManager->sendCsvOrZip($vFormID, [
                 'queries' => $vQuery,
@@ -280,8 +278,7 @@ class ApiController extends YesWikiController
             $acceptHeader = $this->getRequest()->headers->get('accept', '');
             if ($output == 'json-ld' || strpos($acceptHeader, 'application/ld+json') !== false) {
                 return $this->getAllSemanticEntries($formId, $entries);
-            } // add entries in html format if asked
-            elseif ($output == 'html') {
+            } elseif ($output == 'html') {
                 foreach ($entries as $id => $entry) {
                     $entries[$id]['html_output'] = $this->renderWithItsStyles(fn () => $this->getService(EntryController::class)->view($entry, '', 0));
                 }
@@ -318,7 +315,6 @@ class ApiController extends YesWikiController
      */
     public function getAllEntries($output = null, $selectedEntries = null)
     {
-        // fast access for one entry
         $get = $this->getRequest()->query;
         if ($this->isEntryViewFastAccess($output, $selectedEntries, $get->all())) {
             $entryId = explode(',', $selectedEntries)[0];
@@ -389,7 +385,6 @@ class ApiController extends YesWikiController
 
     public function getAllSemanticEntries($formId, $entries)
     {
-        // Put data inside LDP container
         $form = $this->getService(FormManager::class)->getOne($formId);
 
         $resources = array_map(function ($entry) use ($form) {
@@ -454,7 +449,6 @@ class ApiController extends YesWikiController
                 $postData = $jsonData;
             }
         }
-        $postData['antispam'] = 1;
 
         try {
             if (!isset($postData['id_fiche']) || !$this->getService(EntryManager::class)->isEntry($postData['id_fiche'])) {
@@ -482,7 +476,6 @@ class ApiController extends YesWikiController
     public function createSemanticEntry($formId)
     {
         $postData = $this->getRequest()->request->all();
-        $postData['antispam'] = 1;
         $entry = $this->getService(EntryManager::class)->create($formId, $postData, true, $this->getRequest()->headers->get('source-url'));
 
         if (!$entry) {
@@ -502,10 +495,6 @@ class ApiController extends YesWikiController
     {
         $vBazarListService = $this->getService(BazarListService::class);
 
-        /* ------------------------------------ */
-        /*             Format Params */
-        /* ------------------------------------ */
-
         $queryAll = $this->getRequest()->query->all();
         $formattedGet = array_map(function ($value) {
             return ($value === 'true') ? true : (($value === 'false') ? false : $value);
@@ -522,24 +511,13 @@ class ApiController extends YesWikiController
         $formattedGet['searchfields'] = $searchfields;
         $formattedGet['idtypeannonce'] = $get->get('idtypeannonce') ?? $get->get('id') ?? null;
 
-        /* ------------------------------------ */
-        /*               Get Data */
-        /* ------------------------------------ */
-        // All forms
         $refreshVal = $get->get('refresh');
         $forms = $vBazarListService->getForms($formattedGet + ['refresh' => isset($refreshVal) ? in_array($refreshVal, [1, true, '1', 'true'], true) : false]);
 
-        // Entries
         $entries = $vBazarListService->getEntries($formattedGet, $forms);
 
-        // Filters
         $filters = $vBazarListService->getFilters($formattedGet, $entries, $forms);
 
-        /* ------------------------------------ */
-        /*            Transform Data */
-        /* ------------------------------------ */
-
-        // Associated Forms
         $formIds = array_unique(array_map(function ($entry) {
             return $entry['id_typeannonce'];
         }, $entries));
@@ -550,48 +528,35 @@ class ApiController extends YesWikiController
             return $f['prepared'];
         }, $usedForms);
 
-        // Basic fields
         $fieldList = ['id_fiche', 'bf_titre', 'url', '-is-external-', 'external-data'];
-        // If no id, we need idtypeannonce (== formId) to filter
         if (!$get->has('id')) {
             $fieldList[] = 'id_typeannonce';
         }
-        // fields for color / icon
         $colorfield = $get->get('colorfield');
         $fieldList = array_merge($fieldList, $colorfield ? [$colorfield] : []);
         $iconfield = $get->get('iconfield');
         $fieldList = array_merge($fieldList, $iconfield ? [$iconfield] : []);
-        // Fields used to search
         $fieldList = array_merge($fieldList, $searchfields);
-        // Fields used to sort
         $fieldList = array_merge($fieldList, $get->has('sortfields') ? $get->all('sortfields') : []);
-        // Fields used by template
         $fieldList = array_merge($fieldList, $get->has('displayfields') ? $get->all('displayfields') : []);
-        // extra fields required by template
         $fieldList = array_merge($fieldList, $get->has('necessary_fields') ? $get->all('necessary_fields') : []);
         $fieldList = array_merge($fieldList, $get->has('necessaryfields') ? $get->all('necessaryfields') : []);
-        // Fields for filters
         foreach ($filters as $filter) {
             $fieldList[] = $filter['propName'];
         }
 
-        // filter blank values, remove duplicates, array_values to have incremental keys
         $fieldList = array_values(array_unique(array_filter($fieldList)));
 
-        // Reduce the size of the data sent by transforming entries object into array
-        // we use the $fieldMapping to transform back the data when receiving data in the front end
         $entryFieldsService = $this->getService(EntryExtraFieldsService::class);
 
         $entries = array_map(function ($entry) use ($fieldList, $entryFieldsService) {
             $entryFieldsService->setEntryId($entry['id_fiche']);
             $result = [];
             foreach ($fieldList as $fieldName) {
-                // when the field is a TextareaField with the SYNTAX_WIKI syntax, transform the field value into HTML
                 $field = $this->getService(FormManager::class)->findFieldFromNameOrPropertyName($fieldName, $entry['id_typeannonce']);
                 if ($field && $field->getType() == 'textelong' && $field->getSyntax() == TextareaField::SYNTAX_WIKI) {
                     $entry[$fieldName] = $this->wiki->Format($entry[$fieldName]);
                 }
-                // handle specific fields like comments, reactions
                 if (!isset($entry[$fieldName]) || (is_string($entry[$fieldName]) && trim($entry[$fieldName]) == '')) {
                     $entry[$fieldName] = $entryFieldsService->get($fieldName);
                 }

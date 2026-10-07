@@ -483,7 +483,7 @@ class SearchManager
                 },
             );
 
-            $vIDsRequest .= 'JSON_UNQUOTE(JSON_EXTRACT(body, \'$.id_typeannonce\')) IN (' . join(',', array_map(function ($pFormID) {
+            $vIDsRequest .= $this->bodyValue('$.id_typeannonce') . ' IN (' . join(',', array_map(function ($pFormID) {
                 return '\'' . $pFormID . '\'';
             }, $vFormIDs)) . ')';
         } else {
@@ -629,12 +629,12 @@ class SearchManager
         $vSelectRequest
         = [
             'p.*',
-            'JSON_UNQUOTE(JSON_EXTRACT(body, \'$.id_typeannonce\')) AS ' . $this->column('id_typeannonce'),
+            $this->bodyValue('$.id_typeannonce') . ' AS ' . $this->column('id_typeannonce'),
         ];
 
         foreach ($vFields as $vFieldName => $vField) {
             if (!$vField['isExtracted']) {
-                $vSelectRequest[] = 'JSON_UNQUOTE(JSON_EXTRACT(body, \'' . mysqli_real_escape_string($this->wiki->dblink, $this->jsonPath($vFieldName)) . '\')) AS ' . $this->column($vFieldName);
+                $vSelectRequest[] = $this->bodyValue($this->jsonPath($vFieldName)) . ' AS ' . $this->column($vFieldName);
 
                 $vField['isExtracted'] = true;
             }
@@ -1550,6 +1550,14 @@ class SearchManager
         }
 
         return true;
+    }
+
+    /**
+     * The SQL value at $path in a page body, NULL for a body that is not JSON whatever order the database evaluates conditions in.
+     */
+    private function bodyValue(string $path): string
+    {
+        return 'JSON_UNQUOTE(JSON_EXTRACT(CASE WHEN JSON_VALID(body) THEN body END, \'' . mysqli_real_escape_string($this->wiki->dblink, $path) . '\'))';
     }
 
     /**

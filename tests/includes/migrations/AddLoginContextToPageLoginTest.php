@@ -4,6 +4,7 @@ namespace YesWiki\Test\Core\Migration;
 
 use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use YesWiki\Core\Service\AclService;
 use YesWiki\Core\Service\DbService;
 use YesWiki\Core\Service\PageManager;
 use YesWiki\Test\Core\YesWikiTestCase;
@@ -15,10 +16,18 @@ require_once 'tests/YesWikiTestCase.php';
  */
 class AddLoginContextToPageLoginTest extends YesWikiTestCase
 {
+    private const TAG = 'AddLoginContextTestPage';
+
     protected function setUp(): void
     {
         $GLOBALS['wiki'] = $this->getWiki();
         require_once 'includes/migrations/20261004120000_AddLoginContextToPageLogin.php';
+    }
+
+    protected function tearDown(): void
+    {
+        $GLOBALS['wiki']->services->get(PageManager::class)->deleteOrphaned(self::TAG);
+        $GLOBALS['wiki']->services->get(AclService::class)->delete(self::TAG);
     }
 
     public static function bodies(): array
@@ -43,24 +52,28 @@ class AddLoginContextToPageLoginTest extends YesWikiTestCase
         $this->assertSame($expected, \AddLoginContextToPageLogin::addContext($body));
     }
 
-    public function testAContextualisedPageLoginIsNotRewritten()
+    private function migration(): \AddLoginContextToPageLogin
     {
         $wiki = $GLOBALS['wiki'];
-        $pageManager = $wiki->services->get(PageManager::class);
-        $page = $pageManager->getOne('PageLogin', null, false, true);
-        if (empty($page)) {
-            $this->assertNull($page);
-
-            return;
-        }
-        $this->assertSame($page['body'], \AddLoginContextToPageLogin::addContext($page['body']), 'PageLogin is expected to already carry its context here');
-
         $migration = new \AddLoginContextToPageLogin();
         $migration->setWiki($wiki);
         $migration->setDbService($wiki->services->get(DbService::class));
         $migration->setParams($wiki->services->get(ParameterBagInterface::class));
-        $migration->run();
 
-        $this->assertSame($page['time'], $pageManager->getOne('PageLogin', null, false, true)['time']);
+        return $migration;
+    }
+
+    public function testALoginWithoutContextIsContextualisedOnce()
+    {
+        $pageManager = $GLOBALS['wiki']->services->get(PageManager::class);
+        $pageManager->save(self::TAG, "Bienvenue\n{{login}}", '', true);
+
+        $this->migration()->contextualise(self::TAG);
+        $page = $pageManager->getOne(self::TAG, null, false, true);
+        $this->assertSame("Bienvenue\n{{login context=\"login-page\"}}", $page['body']);
+
+        $this->migration()->contextualise(self::TAG);
+        $this->assertSame($page['time'], $pageManager->getOne(self::TAG, null, false, true)['time']);
+        $this->assertSame(2, count($pageManager->getRevisions(self::TAG)));
     }
 }

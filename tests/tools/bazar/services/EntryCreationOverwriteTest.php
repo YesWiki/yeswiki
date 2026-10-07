@@ -108,10 +108,9 @@ class EntryCreationOverwriteTest extends YesWikiTestCase
     public function testTheEntryFormIgnoresAPostedTag()
     {
         $this->wiki->request->request->replace([
-            'antispam' => 1,
             'bf_titre' => 'Bazar Overwrite Posted Tag',
             'id_fiche' => self::TARGET_TAG,
-        ]);
+        ] + self::validBotGuardFields($this->wiki));
         $this->createdTags[] = 'BazarOverwritePostedTag';
 
         try {
@@ -119,6 +118,7 @@ class EntryCreationOverwriteTest extends YesWikiTestCase
         } catch (ExitException $e) {
         } finally {
             $this->wiki->request->request->replace([]);
+            self::restoreBotGuard($this->wiki);
         }
 
         $this->assertSame(self::TARGET_BODY, $this->pageManager->getOne(self::TARGET_TAG, null, false, true)['body']);

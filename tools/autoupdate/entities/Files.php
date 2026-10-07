@@ -57,26 +57,45 @@ class Files
         $aside = null;
 
         if (file_exists($desPath) or is_link($desPath)) {
-            $aside = $this->tmpdir() . '/' . basename($desPath);
-            if (!@rename($desPath, $aside)) {
+            $aside = $this->putAside($desPath);
+            if ($aside === null) {
                 return false;
             }
         }
 
         if (@mkdir($desPath) and $this->copyFolder($srcPath, $desPath) === true) {
             if ($aside !== null) {
-                $this->delete(dirname($aside));
+                $this->delete($aside);
             }
 
             return true;
         }
 
         $this->delete($desPath);
-        if ($aside !== null and @rename($aside, $desPath)) {
-            $this->delete(dirname($aside));
+        if ($aside !== null) {
+            @rename($aside, $desPath);
         }
 
         return false;
+    }
+
+    /**
+     * Move a folder into cache/, or beside itself when cache/ is on another disk, and say where it went.
+     */
+    private function putAside($path): ?string
+    {
+        $id = uniqid();
+        $candidates = [dirname($path) . '/.' . basename($path) . '-' . $id];
+        if (is_dir('cache')) {
+            array_unshift($candidates, realpath('cache') . '/yeswiki_' . $id);
+        }
+        foreach ($candidates as $aside) {
+            if (@rename($path, $aside)) {
+                return $aside;
+            }
+        }
+
+        return null;
     }
 
     private function copyFile($src, $des)
@@ -93,8 +112,6 @@ class Files
     protected function isWritable($path)
     {
         try {
-            // la destination n'existe pas et droits d'écriture sur le repertoire
-            // de destination
             if (!@file_exists($path) and @is_writable(dirname($path))) {
                 return true;
             }
@@ -111,7 +128,6 @@ class Files
                 return $this->isWritableFolder($path);
             }
 
-            // TODO Gérer les liens
             return [$path];
         } catch (\Throwable $pThrowable) {
             return [$path];

@@ -12,15 +12,21 @@ class AddLoginContextToPageLogin extends YesWikiMigration
 
     public function run(): void
     {
+        $this->contextualise('PageLogin');
+    }
+
+    /** Saves the page $tag with its {{login}} actions contextualised, when one of them still lacks a context. */
+    public function contextualise(string $tag): void
+    {
         $pageManager = $this->getService(PageManager::class);
-        $page = $pageManager->getOne('PageLogin', null, false, true);
+        $page = $pageManager->getOne($tag, null, false, true);
         if (empty($page)) {
             return;
         }
 
         $body = self::addContext($page['body']);
         if ($body !== $page['body']) {
-            $pageManager->save('PageLogin', $body, '', true);
+            $pageManager->save($tag, $body, '', true);
         }
     }
 

@@ -85,6 +85,8 @@ return [
     'AB_management_gererthemes_label' => "Manage pages' theme",
     'AB_management_setwikidefaulttheme_label' => "Set page's default theme",
     'AB_management_adminbackups_label' => 'Backups management',
+    'AB_management_adminbotguard_label' => 'Submissions blocked by the anti-bot guard',
+    'AB_management_adminbotguard_days_label' => 'Number of days shown (30 at most)',
     'AB_management_commentstable_label' => 'Comments table',
     'AB_management_usercomments_label' => 'My comments',
     'AB_REACTION_GROUP_LABEL' => 'Reactions / Votes',

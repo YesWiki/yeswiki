@@ -2,6 +2,7 @@
 
 namespace YesWiki\Contact;
 
+use YesWiki\Core\Service\BotGuard;
 use YesWiki\Core\YesWikiAction;
 
 include_once 'tools/contact/libs/contact.functions.php';
@@ -36,19 +37,21 @@ class ContactAction extends YesWikiAction
         if (empty($this->arguments['mail'])) {
             return '<div class="alert alert-danger"><strong>' . _t('CONTACT_ACTION_CONTACT') . ' :</strong>&nbsp;' . _t('CONTACT_MAIL_REQUIRED') . '</div>';
         }
-        // this global is for identifying different contact forms on the same page
         if (isset($GLOBALS['nbactionmail'])) {
             $GLOBALS['nbactionmail']++;
         } else {
             $GLOBALS['nbactionmail'] = 1;
         }
+        $botGuard = $this->getService(BotGuard::class);
+        $botGuardFields = $botGuard->fields();
         $options = array_merge($this->arguments, [
             'nbactionmail' => $GLOBALS['nbactionmail'],
             'mailerurl' => $this->wiki->href('mail'),
+            'botGuardFields' => $botGuardFields,
         ]);
 
         $this->wiki->addJavascriptFile('tools/contact/libs/contact.js');
 
-        return $this->render('@contact/' . $this->arguments['template'], $options);
+        return $botGuard->placeFields($this->render('@contact/' . $this->arguments['template'], $options), $botGuardFields);
     }
 }

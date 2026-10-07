@@ -64,7 +64,6 @@ class FileField extends BazarField
             ? $this->getWiki()->parse_size($values[self::FIELD_MAX_SIZE])
             : 0;
 
-        // take the min size limit, excluding 0 values that mean no limit
         $this->maxSize = min(array_filter(
             [
                 $maxFieldSize,
@@ -90,7 +89,6 @@ class FileField extends BazarField
                             $attach->fmDelete($rawFileName);
                         }
                     } else {
-                        // do not delete file if not same entry name (only remove from this entry)
                         $deletedFile = true;
                         $this->updateEntryAfterFileDelete($entry);
                     }
@@ -100,14 +98,11 @@ class FileField extends BazarField
             }
         }
 
-        // Handle URL value
         if ($isUrl) {
-            // Handle URL deletion
             if (!empty($entry) && isset($_GET['delete_file']) && $_GET['delete_file'] === $value) {
                 if ($this->isAllowedToDeleteFile($entry, $value)) {
                     $this->updateEntryAfterFileDelete($entry);
 
-                    // Return empty input after deletion
                     return $this->render('@bazar/inputs/file.twig', [
                         'maxSize' => $this->maxSize,
                         'isUrl' => false,
@@ -146,10 +141,6 @@ class FileField extends BazarField
         );
     }
 
-    /*
-    *	indicates if id_fiche must be set before to format the value
-    */
-
     public function requireIDFiche()
     {
         return true;
@@ -159,7 +150,6 @@ class FileField extends BazarField
     {
         $value = $this->getValue($entry);
 
-        // Check if a URL was submitted
         $urlPropertyName = $this->propertyName . '_url';
         $urlValue = $entry[$urlPropertyName] ?? null;
         if (!empty($urlValue) && $this->isUrl($urlValue)) {
@@ -169,7 +159,6 @@ class FileField extends BazarField
             ];
         }
 
-        // Check if the current value is a URL (keep it if no new file uploaded)
         if ($this->isUrl($value) && empty($_FILES[$this->propertyName]['name'])) {
             return [$this->propertyName => $value];
         }
@@ -212,7 +201,6 @@ class FileField extends BazarField
     {
         $value = $this->getValue($entry);
 
-        // Handle URL value
         if ($this->isUrl($value)) {
             return $this->render('@bazar/fields/file.twig', [
                 'value' => $value,
@@ -294,7 +282,6 @@ class FileField extends BazarField
         return $this->authorizedExts;
     }
 
-    // change return of this method to keep compatible with php 7.3 (mixed is not managed)
     #[\ReturnTypeWillChange]
     public function jsonSerialize()
     {
@@ -311,13 +298,10 @@ class FileField extends BazarField
     {
         $wiki = $this->getWiki();
         $attach = $this->getAttach();
-        // adjust $params
         $attach->file = $fileName;
 
-        // current page
         $previousTag = $wiki->tag;
         $previousPage = $wiki->page;
-        // fake page
         $wiki->tag = $tag;
         $wiki->page = [
             'tag' => $wiki->tag,
@@ -328,7 +312,6 @@ class FileField extends BazarField
         ];
         $fullFileName = $attach->GetFullFilename($newName);
 
-        // reset params
         unset($attach);
         $wiki->tag = $previousTag;
         $wiki->page = $previousPage;
@@ -344,7 +327,6 @@ class FileField extends BazarField
     protected function sanitizeFilename(string $filename): string
     {
         $attach = $this->getAttach();
-        // Remove accents and spaces
         $sanitizedFilename = $attach->sanitizeFilename($filename);
 
         return $sanitizedFilename;
@@ -424,7 +406,6 @@ class FileField extends BazarField
     {
         $entryManager = $this->services->get(EntryManager::class);
 
-        // unset value in entry from db without modifier from GET
         $entryFromDb = $entryManager->getOne($entry['id_fiche']);
         if (!empty($entryFromDb)) {
             $previousGet = $_GET;
@@ -434,23 +415,18 @@ class FileField extends BazarField
             $previousRequest = $_REQUEST;
             $_REQUEST = [];
 
-            // remove current field
             unset($entryFromDb[$this->propertyName]);
 
-            // be careful to recurrence
             if (isset($entryFromDb['bf_date_fin_evenement_data']) && is_string($entryFromDb['bf_date_fin_evenement_data'])) {
-                unset($entryFromDb['bf_date_fin_evenement_data']); // remove links to parent
+                unset($entryFromDb['bf_date_fin_evenement_data']);
             }
 
-            $entryFromDb['antispam'] = 1;
             $entryFromDb['date_maj_fiche'] = date('Y-m-d H:i:s', time());
             $newEntry = $entryManager->update($entryFromDb['id_fiche'], $entryFromDb, false, true);
 
             $_GET = $previousGet;
             $_POST = $previousPost;
             $_REQUEST = $previousRequest;
-
-            // be careful to recurrence
 
             if (!empty($newEntry['id_fiche'])
                 && is_string($newEntry['id_fiche'])

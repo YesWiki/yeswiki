@@ -21,6 +21,8 @@
     <textarea required rows="8" class="form-control contact-message" name="message" placeholder="{{ _t('CONTACT_YOUR_MESSAGE') }}"></textarea>
   </div>
 
+  {{ botGuardFields|raw }}
+
   <div class="form-group">
     <button class="btn btn-primary btn-block mail-submit" type="submit" name="submit"><i class="icon-envelope icon-white"></i>&nbsp;{{ _t('CONTACT_SEND_MESSAGE') }}</button>
   </div>

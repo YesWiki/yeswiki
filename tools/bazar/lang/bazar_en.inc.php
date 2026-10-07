@@ -325,7 +325,6 @@ The created folder will be automatically linked to your account. Please log in t
     'BAZAR_URL_ERROR' => 'the url couldn\'t be charged',
     'BAZ_GIVEN_ID' => 'Identifier assigned',
     'BAZ_EDIT_MY_ENTRY' => 'Edit my entry',
-    'BAZ_PROTECTION_ANTISPAM' => 'Antispam protection',
     'BAZ_GOGO_NEED_GROUPS' => 'To use this template you need to activate at least one facet',
     'BAZ_RADIO_REFRESH' => 'Refresh list information',
     'BAZ_NOT_CATEGORIZED' => 'Not categorized',

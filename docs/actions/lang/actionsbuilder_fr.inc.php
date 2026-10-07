@@ -271,6 +271,8 @@ return [
         . ' par des spams. ATTENTION : la suppression des pages choisies sera DÉFINITITVE.',
     'AB_management_editconfig_label' => 'Modifier des paramètres du fichier de configuration',
     'AB_management_adminbackups_label' => 'Gestion des sauvegardes',
+    'AB_management_adminbotguard_label' => 'Envois bloqués par l\'anti-robots',
+    'AB_management_adminbotguard_days_label' => 'Nombre de jours affichés (30 au plus)',
     'AB_management_commentstable_label' => 'Table des commentaires',
     'AB_management_usercomments_label' => 'Mes commentaires',
     'AB_advanced_actions_label' => 'Actions avancées',

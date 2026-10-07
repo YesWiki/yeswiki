@@ -27,6 +27,8 @@ export default defineConfig([
         _t: 'readable',
         ace: 'writable',
         toastMessage: 'readable',
+        verifyBotGuard: 'readable',
+        refreshBotGuardFields: 'readable',
         multiDeleteService: 'readable',
         usersTableService: 'readable',
         // Leaflet global (javascripts/vendor/leaflet)

@@ -1,5 +1,6 @@
 <?php
 
+use YesWiki\Core\Service\BotGuard;
 use YesWiki\Core\Service\ConfigurationFileProvider;
 use YesWiki\Core\Service\ConfigurationService;
 use YesWiki\Core\YesWikiAction;
@@ -97,10 +98,10 @@ class EditConfigAction extends YesWikiAction
             'keysList' => $keysList,
             'placeholders' => $placeholders,
             'help' => $this->getHelp(),
+            'botGuardRefusals' => $this->getService(BotGuard::class)->refusedLastDays(7),
         ]);
     }
 
-    // returns the editable keys, without the locked ones, and the extension each one belongs to
     private function getAuthorizedKeys(): array
     {
         if (is_null($this->keys)) {
@@ -153,7 +154,6 @@ class EditConfigAction extends YesWikiAction
         return [$this->keys, $this->associatedExtensions];
     }
 
-    // flattens nested keys into their names, recursively
     private function prepareKeyNames($keys, bool $firstLevel = false): array
     {
         if (is_string($keys)) {
@@ -174,7 +174,6 @@ class EditConfigAction extends YesWikiAction
         return [];
     }
 
-    // tells whether an array is a list, like array_is_list since php 8.1
     private function arrayIsList(array $array): bool
     {
         $keys = array_keys($array);
@@ -187,7 +186,6 @@ class EditConfigAction extends YesWikiAction
         return true;
     }
 
-    // saves the posted values of the editable keys to wakka.config.php
     private function save(): bool
     {
         $config = $this->configurationService->getConfiguration(ConfigurationFileProvider::getConfigFileFromEnv());
@@ -290,7 +288,6 @@ class EditConfigAction extends YesWikiAction
         return $config->write();
     }
 
-    // reads the current values, placeholders and extensions of the editable keys
     private function getDataFromConfigFile(): array
     {
         $config = $this->configurationService->getConfiguration(ConfigurationFileProvider::getConfigFileFromEnv());
@@ -360,7 +357,6 @@ class EditConfigAction extends YesWikiAction
         return [$data, $placeholders, $associatedExtensions];
     }
 
-    // converts the keys to arrays of path segments
     private function convertKeysAsArray(array $keys): array
     {
         $convertedKeys = [];
@@ -385,7 +381,6 @@ class EditConfigAction extends YesWikiAction
         return $convertedKeys;
     }
 
-    // converts an array to its string form for the form
     private function array2Str($value): string
     {
         if (is_array($value)) {
@@ -419,7 +414,6 @@ class EditConfigAction extends YesWikiAction
         return $value;
     }
 
-    // converts a posted string back to an array when needed
     private function strtoarray(string $value)
     {
         $val = trim($value);
@@ -461,7 +455,6 @@ class EditConfigAction extends YesWikiAction
         return $value;
     }
 
-    // gets the help of each key from the translations
     private function getHelp(): array
     {
         $help = [];

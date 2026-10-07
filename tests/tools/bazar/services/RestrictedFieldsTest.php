@@ -124,7 +124,7 @@ class RestrictedFieldsTest extends YesWikiTestCase
         $tag = $this->createEntry('Restricted posted on update');
         $this->storeRaw($tag, ['bf_admin_only' => 'original']);
 
-        $this->entryManager->update($tag, ['antispam' => 1, 'bf_titre' => 'Restricted posted on update', 'bf_admin_only' => 'injected']);
+        $this->entryManager->update($tag, ['bf_titre' => 'Restricted posted on update', 'bf_admin_only' => 'injected']);
 
         $this->assertSame('original', $this->stored($tag)['bf_admin_only']);
     }
@@ -133,7 +133,7 @@ class RestrictedFieldsTest extends YesWikiTestCase
     {
         $tag = $this->createEntry('Restricted empty on update');
 
-        $this->entryManager->update($tag, ['antispam' => 1, 'bf_titre' => 'Restricted empty on update', 'bf_admin_only' => 'injected']);
+        $this->entryManager->update($tag, ['bf_titre' => 'Restricted empty on update', 'bf_admin_only' => 'injected']);
 
         $this->assertSame('', $this->stored($tag)['bf_admin_only'] ?? '');
     }
@@ -143,7 +143,7 @@ class RestrictedFieldsTest extends YesWikiTestCase
         $tag = $this->createEntry('Write only field');
         $this->storeRaw($tag, ['bf_write_only' => 'secret note']);
 
-        $this->entryManager->update($tag, ['antispam' => 1, 'bf_titre' => 'Write only field', 'bf_write_only' => '']);
+        $this->entryManager->update($tag, ['bf_titre' => 'Write only field', 'bf_write_only' => '']);
 
         $this->assertSame('secret note', $this->stored($tag)['bf_write_only']);
     }
@@ -165,7 +165,7 @@ class RestrictedFieldsTest extends YesWikiTestCase
         $tag = $this->createEntry('Restricted map');
         $this->storeRaw($tag, ['bf_geolocation' => self::STORED_GEO]);
 
-        $this->entryManager->update($tag, ['antispam' => 1, 'bf_titre' => 'Restricted map', 'bf_geolocation' => ['latitude' => '1', 'longitude' => '2']]);
+        $this->entryManager->update($tag, ['bf_titre' => 'Restricted map', 'bf_geolocation' => ['latitude' => '1', 'longitude' => '2']]);
 
         $this->assertSame(self::STORED_GEO, $this->stored($tag)['bf_geolocation']);
     }
