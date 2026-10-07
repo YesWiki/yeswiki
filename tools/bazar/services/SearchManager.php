@@ -353,8 +353,10 @@ class SearchManager
                                             $vValueConditions[] = 'CAST(' . $this->column($vFieldName) . ' AS DOUBLE) ' . $vComparisonOperator . ' ' . (float)trim($vValue);
                                         }
                                     } else {
-                                        $vValueConditions[] = '(' . $this->column($vFieldName) . ' COLLATE ' . $this->dbService->getCollation() . ' ' . $vComparisonOperator . ' \'\' )';
+                                        $vValueConditions[] = '(COALESCE(' . $this->column($vFieldName) . ', \'\') COLLATE ' . $this->dbService->getCollation() . ' ' . $vComparisonOperator . ' \'\' )';
                                     }
+                                } elseif ($vValue === '') {
+                                    $vValueConditions[] = 'COALESCE(' . $this->column($vFieldName) . ', \'\') COLLATE ' . $this->dbService->getCollation() . ' ' . $vComparisonOperator . ' \'\'';
                                 } else {
                                     $vValueConditions[] = $this->column($vFieldName) . ' COLLATE ' . $this->dbService->getCollation() . ' ' . $vComparisonOperator . ' \'' . mysqli_real_escape_string($this->wiki->dblink, $vValue) . '\'';
                                 }
