@@ -47,6 +47,7 @@ return [
     'LOGIN_NO_CONNECTED_USER' => 'No logged in user.',
     'LOGIN_PLEASE_REGISTER' => 'please log in',
     'LOGIN_MY_CONTENTS' => 'My contents',
+    'LOGIN_CLOSE' => 'Close',
     'LOGIN_MY_OPTIONS' => 'My options',
     'LOGIN_NO_SIGNUP_IN_THIS_PERIOD' => 'There is no registration for this period.',
     'LOGIN_WRONG_PASSWORD' => 'Identification not possible: wrong password.',

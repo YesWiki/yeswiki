@@ -6,11 +6,11 @@
     <a href="#LoginModal" role="button" class="btn-icon navbar-btn {{ not nobtn ? 'btn ' ~ (btnclass ?: 'btn-default') : '' }}" data-toggle="modal" data-tooltip="tooltip" data-placement="bottom" aria-label="{{ _t('LOGIN_MY_OPTIONS')}}" title="{{ _t('LOGIN_MY_OPTIONS')}}">
         <i class="fa fa-user"></i> {{ user }}
     </a>
-    <div class="modal fade" id="LoginModal" tabindex="-1" role="dialog" aria-labelledby="LoginModalLabel" aria-hidden="true">
+    <div class="modal fade" id="LoginModal" tabindex="-1" role="dialog" aria-labelledby="LoginModalLabel">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="{{ _t('LOGIN_CLOSE') }}"><span aria-hidden="true">&times;</span></button>
                     <h3 id="LoginModalLabel">{{ _t('LOGIN_CONNECTED_AS') }} {{ user }}</h3>
                 </div>
                 <div class="modal-body">
@@ -33,11 +33,11 @@
     <a href="#LoginModal" role="button" class="btn-icon navbar-btn {{ not nobtn ? 'btn ' ~ (btnclass ?: 'btn-default') : '' }}" data-toggle="modal" data-placement="bottom" title="{{ _t('LOGIN_LOGIN') }}" data-tooltip="tooltip" aria-label="{{ _t('LOGIN_LOGIN')}}">
         <i class="fa fa-user"></i><span class="login-text"> {{ _t('LOGIN_LOGIN') }}</span>
     </a>
-    <div class="modal fade" id="LoginModal" tabindex="-1" role="dialog" aria-labelledby="LoginModalLabel" aria-hidden="true">
+    <div class="modal fade" id="LoginModal" tabindex="-1" role="dialog" aria-labelledby="LoginModalLabel">
         <div class="modal-dialog modal-sm">
             <div class="modal-content">
                 <div class="modal-header">
-                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="{{ _t('LOGIN_CLOSE') }}"><span aria-hidden="true">&times;</span></button>
                     <h3 id="LoginModalLabel">{{ _t('LOGIN_LOGIN') }}</h3>
                 </div>
                 <div class="modal-body">
