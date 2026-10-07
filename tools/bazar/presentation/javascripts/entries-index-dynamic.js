@@ -76,13 +76,16 @@ const load = (domElement) => {
       filteredEntriesCount() {
         return this.filteredEntries.length
       },
-      pages() {
-        if (this.pagination <= 0) return []
-        const pagesCount = Math.ceil(
+      pagesCount() {
+        if (this.pagination <= 0) return 0
+        return Math.ceil(
           this.filteredEntries.length / parseInt(this.pagination, 10),
         )
+      },
+      pages() {
+        if (this.pagination <= 0) return []
         const start = 0
-        const end = pagesCount - 1
+        const end = this.pagesCount - 1
         let pages = [
           this.currentPage - 2,
           this.currentPage - 1,
