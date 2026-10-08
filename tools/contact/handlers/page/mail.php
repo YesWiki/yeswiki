@@ -122,7 +122,7 @@ if ((!empty($_POST['mail']) || !empty($_POST['email'])) && isset($_SERVER['HTTP_
     }
     $writtenByARobot = $message['class'] == 'success'
         && !in_array($type, ['mail', 'abonnement', 'desabonnement'], true)
-        && $botGuard->checkMessage((string)$mail_sender, [$name_sender, $_POST['subject'] ?? '', $_POST['message'] ?? '']) !== null;
+        && $botGuard->checkMessage((string)$mail_sender, (string)$name_sender, (string)($_POST['subject'] ?? ''), (string)($_POST['message'] ?? '')) !== null;
 
     if ($message['class'] == 'success') {
         if (isset($_POST['mailinglist'])) {

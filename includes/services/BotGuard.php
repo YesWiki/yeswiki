@@ -40,6 +40,9 @@ class BotGuard
     public const REFUSED_ALTCHA = 'altcha';
     public const REFUSED_GIBBERISH = 'gibberish';
     public const REFUSED_DOTTED_GMAIL = 'dotted-gmail';
+    public const REFUSED_INJECTION = 'injection';
+    public const REFUSED_LINK_IN_NAME = 'link-in-name';
+    public const REFUSED_REPEATED = 'repeated';
 
     public const GIBBERISH_MIN_LENGTH = 10;
     public const GMAIL_MAX_DOTS = 3;
@@ -189,13 +192,17 @@ class BotGuard
     /**
      * Checks what a visitor wrote in a message: null when it passes, else the reason it looks written by a robot.
      */
-    public function checkMessage(string $email, array $texts): ?string
+    public function checkMessage(string $email, string $name, string $subject, string $message): ?string
     {
         if ($this->mode() === self::MODE_NONE) {
             return null;
         }
+        $texts = array_map('trim', [$name, $subject, $message]);
         $reason = match (true) {
-            array_filter($texts, fn ($text) => $this->isGibberish((string)$text)) !== [] => self::REFUSED_GIBBERISH,
+            array_filter($texts, fn ($text) => $this->isInjection($text)) !== [] => self::REFUSED_INJECTION,
+            $this->isLink($texts[0]) => self::REFUSED_LINK_IN_NAME,
+            $this->isRepeated($texts) => self::REFUSED_REPEATED,
+            array_filter($texts, fn ($text) => $this->isGibberish($text)) !== [], $this->isShortRandom($texts) => self::REFUSED_GIBBERISH,
             $this->isDottedGmail($email) => self::REFUSED_DOTTED_GMAIL,
             default => null,
         };
@@ -207,11 +214,39 @@ class BotGuard
     }
 
     /**
+     * Whether a text carries markup or the quote-and-bracket runs that scanners probe forms with.
+     */
+    protected function isInjection(string $text): bool
+    {
+        if (preg_match('/<\s*\/?\s*(script|svg|img|iframe|object|embed)\b|javascript:|\bon(load|error|click|focus|mouseover)\s*=/i', $text)) {
+            return true;
+        }
+        preg_match_all('/[\'"()<>,.]{5,}/', $text, $runs);
+
+        return array_filter($runs[0], fn ($run) => preg_match('/[\'"]/', $run) && preg_match('/[()<>]/', $run)) !== [];
+    }
+
+    /**
+     * Whether a text holds a link, which no one types as their name.
+     */
+    protected function isLink(string $text): bool
+    {
+        return (bool)preg_match('/https?:\/\/|www\.|->|№|[a-z0-9-]+\.[a-z]{2,}\/\S/i', $text);
+    }
+
+    /**
+     * Whether the name, subject and message are the same word, as in Test, Test, Test.
+     */
+    protected function isRepeated(array $texts): bool
+    {
+        return $texts[2] !== '' && count(array_unique(array_map('mb_strtolower', $texts))) === 1;
+    }
+
+    /**
      * Whether a text is one long run of letters with capitals scattered through it, as robots fill forms with.
      */
-    public function isGibberish(string $text): bool
+    protected function isGibberish(string $text): bool
     {
-        $text = trim($text);
         if (strlen($text) < self::GIBBERISH_MIN_LENGTH || !preg_match('/^[a-zA-Z]+$/', $text)) {
             return false;
         }
@@ -221,9 +256,23 @@ class BotGuard
     }
 
     /**
+     * Whether every field is a different short run of letters with lower and upper case mixed past the first one.
+     */
+    protected function isShortRandom(array $texts): bool
+    {
+        foreach ($texts as $text) {
+            if (!preg_match('/^[a-zA-Z]{3,8}$/', $text) || !preg_match('/[a-z]/', $text) || !preg_match('/[A-Z]/', substr($text, 1))) {
+                return false;
+            }
+        }
+
+        return count(array_unique($texts)) === count($texts);
+    }
+
+    /**
      * Whether an address is a Gmail one whose name is cut up by more dots than people use.
      */
-    public function isDottedGmail(string $email): bool
+    protected function isDottedGmail(string $email): bool
     {
         $parts = explode('@', strtolower(trim($email)));
 
