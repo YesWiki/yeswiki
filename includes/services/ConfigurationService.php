@@ -16,7 +16,7 @@ class ConfigurationService
     }
 
     /**
-     * write config.
+     * Write the config whole or not at all: a full disk or quota leaves the previous file in place.
      *
      * @return bool
      */
@@ -25,13 +25,47 @@ class ConfigurationService
         if (is_null($file)) {
             $file = $config->_file;
         }
-        $content = $this->getContentToWrite($config, $arrayName);
-        $written = file_put_contents($file, $content) !== false;
+        $written = $this->writeAtomically($file, $this->getContentToWrite($config, $arrayName));
         if ($written && function_exists('opcache_invalidate')) {
             opcache_invalidate($file, true);
         }
 
         return $written;
+    }
+
+    /**
+     * Write next to the target and rename over it, so the target is never seen truncated.
+     */
+    public function writeAtomically(string $file, string $content): bool
+    {
+        $target = is_link($file) ? (string)realpath($file) : $file;
+        if ($target === '') {
+            return false;
+        }
+        if (!is_writable(dirname($target))) {
+            return @file_put_contents($target, $content) === strlen($content);
+        }
+        $temporary = dirname($target) . DIRECTORY_SEPARATOR . '.' . pathinfo($target, PATHINFO_FILENAME) . '.' . bin2hex(random_bytes(6)) . '.php';
+        $handle = @fopen($temporary, 'x');
+        if ($handle === false) {
+            return false;
+        }
+        $bytes = @fwrite($handle, $content);
+        $flushed = @fflush($handle);
+        $closed = fclose($handle);
+        if ($bytes !== strlen($content) || !$flushed || !$closed) {
+            @unlink($temporary);
+
+            return false;
+        }
+        @chmod($temporary, file_exists($target) ? (fileperms($target) & 0777) : 0644);
+        if (!@rename($temporary, $target)) {
+            @unlink($temporary);
+
+            return false;
+        }
+
+        return true;
     }
 
     /**
