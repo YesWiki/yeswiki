@@ -189,6 +189,41 @@ class BotGuardTest extends YesWikiTestCase
         $this->assertSame(BotGuard::REFUSED_TOKEN_REUSED, $this->submit($post));
     }
 
+    public function testRandomLettersAreGibberish()
+    {
+        foreach (['fVrYazAYnCkkMpoLANatX', 'JmVcOKXcLjfVzwwSHEsHdup', 'RksTnXCbuIVhINwvtvIS'] as $text) {
+            $this->assertTrue($this->guard->isGibberish($text), $text);
+        }
+    }
+
+    public function testWordsPeopleWriteAreNotGibberish()
+    {
+        foreach (['Bonjour', 'Renseignements', 'JeanBaptisteDupont', 'BONJOURATOUS', 'anticonstitutionnellement', 'Bonjour, une question sur la mangeoire'] as $text) {
+            $this->assertFalse($this->guard->isGibberish($text), $text);
+        }
+    }
+
+    public function testAGmailAddressCutUpByDotsIsRefused()
+    {
+        $this->assertTrue($this->guard->isDottedGmail('mad.is.oncvha.td.1.f.ost.er@gmail.com'));
+        $this->assertTrue($this->guard->isDottedGmail('a.b.c.d.e@googlemail.com'));
+        $this->assertFalse($this->guard->isDottedGmail('marie.claire.de.villiers@gmail.com'));
+        $this->assertFalse($this->guard->isDottedGmail('a.b.c.d.e@example.org'));
+    }
+
+    public function testARobotMessageIsCountedPerReason()
+    {
+        $before = $this->guard->refusedLastDays(7);
+
+        $this->assertSame(BotGuard::REFUSED_GIBBERISH, $this->guard->checkMessage('someone@example.org', ['RksTnXCbuIVhINwvtvIS', 'Une question']));
+        $this->assertSame(BotGuard::REFUSED_DOTTED_GMAIL, $this->guard->checkMessage('mad.is.oncvha.td.1.f.ost.er@gmail.com', ['Bonjour']));
+        $this->assertNull($this->guard->checkMessage('marie.dupont@gmail.com', ['Marie', 'Une question', 'Bonjour, à quelle heure ?']));
+
+        $totals = $this->guard->refusedLastDays(7);
+        $this->assertSame(1, $totals[BotGuard::REFUSED_GIBBERISH] - ($before[BotGuard::REFUSED_GIBBERISH] ?? 0));
+        $this->assertSame(1, $totals[BotGuard::REFUSED_DOTTED_GMAIL] - ($before[BotGuard::REFUSED_DOTTED_GMAIL] ?? 0));
+    }
+
     public function testRefusalsAreCountedPerReason()
     {
         $before = $this->guard->refusedLastDays(7);

@@ -265,6 +265,32 @@ class BotGuardHttpTest extends YesWikiTestCase
         }
     }
 
+    public function testARobotMessageLooksSentButIsDropped()
+    {
+        $ajax = ['X-Requested-With: XMLHttpRequest'];
+        $before = $this->gibberishCount();
+
+        [, $html] = $this->request('BotGuardTestContact');
+        $fields = ['name' => 'RksTnXCbuIVhINwvtvIS', 'subject' => 'fVrYazAYnCkkMpoLANatX', 'message' => 'JmVcOKXcLjfVzwwSHEsHdup']
+            + $this->formFields($html, '//form[contains(@class,"ajax-mail-form")]');
+        sleep(BotGuard::MIN_AGE + 1);
+        [, $answer] = $this->request('BotGuardTestContact/mail', $fields, $ajax);
+
+        $this->assertStringContainsString(_t('CONTACT_MESSAGE_SUCCESSFULLY_SENT'), html_entity_decode($answer, ENT_QUOTES));
+        $this->assertSame($before + 1, $this->gibberishCount());
+    }
+
+    private function gibberishCount(): int
+    {
+        $db = self::getWiki()->services->get(DbService::class);
+        $row = mysqli_fetch_assoc($db->query(
+            'SELECT value FROM' . $db->prefixTable('triples')
+            . "WHERE resource = '" . BotGuard::COUNTER_RESOURCE . date('Y-m-d') . "' AND property = '" . BotGuard::REFUSED_PROPERTY . BotGuard::REFUSED_GIBBERISH . "'"
+        ));
+
+        return (int)($row['value'] ?? 0);
+    }
+
     public function testSignup()
     {
         [, $html] = $this->request('BotGuardTestSignup');

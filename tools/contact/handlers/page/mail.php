@@ -120,6 +120,9 @@ if ((!empty($_POST['mail']) || !empty($_POST['email'])) && isset($_SERVER['HTTP_
             'message' => $botGuard->message($refusal),
         ];
     }
+    $writtenByARobot = $message['class'] == 'success'
+        && !in_array($type, ['mail', 'abonnement', 'desabonnement'], true)
+        && $botGuard->checkMessage((string)$mail_sender, [$name_sender, $_POST['subject'] ?? '', $_POST['message'] ?? '']) !== null;
 
     if ($message['class'] == 'success') {
         if (isset($_POST['mailinglist'])) {
@@ -144,7 +147,7 @@ if ((!empty($_POST['mail']) || !empty($_POST['email'])) && isset($_SERVER['HTTP_
                 $message_txt = $message_html = 'dummy message';
             }
         }
-        if (send_mail($mail_sender, $name_sender, $mail_receiver, $subject, $message_txt, $message_html, in_array($type, ['abonnement', 'desabonnement'], true))) {
+        if ($writtenByARobot || send_mail($mail_sender, $name_sender, $mail_receiver, $subject, $message_txt, $message_html, in_array($type, ['abonnement', 'desabonnement'], true))) {
             if (empty($type) || $type == 'contact' || $type == 'mail') {
                 $message['message'] = _t('CONTACT_MESSAGE_SUCCESSFULLY_SENT');
             } elseif ($type == 'abonnement') {

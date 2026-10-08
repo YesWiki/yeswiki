@@ -599,6 +599,8 @@ return [
     'BOT_GUARD_REASON_TOKEN_REUSED' => 'token reused',
     'BOT_GUARD_REASON_ALTCHA' => 'ALTCHA not solved',
     'BOT_GUARD_REASON_NO_SECRET' => 'secret key missing',
+    'BOT_GUARD_REASON_GIBBERISH' => 'random text',
+    'BOT_GUARD_REASON_DOTTED_GMAIL' => 'Gmail address full of dots',
     'BOT_GUARD_STATS_TITLE' => 'Submissions blocked by the anti-bot guard',
     'BOT_GUARD_STATS_INTRO' => '%{total} submission(s) refused in the last %{days} days, across every form: page edit, entry, comment, contact, sign-up.',
     'BOT_GUARD_STATS_DAY' => 'Day',

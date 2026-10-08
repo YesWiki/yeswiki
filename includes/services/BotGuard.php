@@ -38,6 +38,11 @@ class BotGuard
     public const REFUSED_TOKEN_EXPIRED = 'token-expired';
     public const REFUSED_TOKEN_REUSED = 'token-reused';
     public const REFUSED_ALTCHA = 'altcha';
+    public const REFUSED_GIBBERISH = 'gibberish';
+    public const REFUSED_DOTTED_GMAIL = 'dotted-gmail';
+
+    public const GIBBERISH_MIN_LENGTH = 10;
+    public const GMAIL_MAX_DOTS = 3;
 
     public const HONEYPOTS = [
         'referral_code' => 'BOT_GUARD_HONEYPOT_REFERRAL_CODE',
@@ -179,6 +184,52 @@ class BotGuard
         $this->checked[$request] = ['post' => $post, 'reason' => $reason];
 
         return $reason;
+    }
+
+    /**
+     * Checks what a visitor wrote in a message: null when it passes, else the reason it looks written by a robot.
+     */
+    public function checkMessage(string $email, array $texts): ?string
+    {
+        if ($this->mode() === self::MODE_NONE) {
+            return null;
+        }
+        $reason = match (true) {
+            array_filter($texts, fn ($text) => $this->isGibberish((string)$text)) !== [] => self::REFUSED_GIBBERISH,
+            $this->isDottedGmail($email) => self::REFUSED_DOTTED_GMAIL,
+            default => null,
+        };
+        if ($reason !== null) {
+            $this->count($reason);
+        }
+
+        return $reason;
+    }
+
+    /**
+     * Whether a text is one long run of letters with capitals scattered through it, as robots fill forms with.
+     */
+    public function isGibberish(string $text): bool
+    {
+        $text = trim($text);
+        if (strlen($text) < self::GIBBERISH_MIN_LENGTH || !preg_match('/^[a-zA-Z]+$/', $text)) {
+            return false;
+        }
+        $upperShare = preg_match_all('/[A-Z]/', substr($text, 1)) / (strlen($text) - 1);
+
+        return $upperShare >= 0.25 && $upperShare <= 0.75;
+    }
+
+    /**
+     * Whether an address is a Gmail one whose name is cut up by more dots than people use.
+     */
+    public function isDottedGmail(string $email): bool
+    {
+        $parts = explode('@', strtolower(trim($email)));
+
+        return count($parts) === 2
+            && in_array($parts[1], ['gmail.com', 'googlemail.com'], true)
+            && substr_count($parts[0], '.') > self::GMAIL_MAX_DOTS;
     }
 
     /**
