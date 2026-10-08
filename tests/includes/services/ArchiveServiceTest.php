@@ -11,6 +11,7 @@ use YesWiki\Core\Service\ArchiveService;
 use YesWiki\Core\Service\ConfigurationService;
 use YesWiki\Core\Service\ConsoleService;
 use YesWiki\Core\Service\DbService;
+use YesWiki\Core\Service\DiskSpace;
 use YesWiki\Core\Service\DumpRewriter;
 use YesWiki\Test\Core\YesWikiTestCase;
 use YesWiki\Wiki;
@@ -330,6 +331,8 @@ class ArchiveServiceTest extends YesWikiTestCase
             'table_prefix' => 'theirs_',
             'archive' => ['privatePath' => '/there/private/backups'],
             'default_language' => 'en',
+            'bot_guard_secret' => 'the secret of the backed up wiki',
+            'contact_smtp_host' => 'smtp.theirs.example',
         ], true) . ";\n");
         $zip->close();
 
@@ -348,7 +351,100 @@ class ArchiveServiceTest extends YesWikiTestCase
             $this->assertSame('https://mine.example/?', $restored['base_url'], 'the address of this installation is kept');
             $this->assertSame('mine_', $restored['table_prefix']);
             $this->assertSame(['privatePath' => '/here/private/backups'], $restored['archive'], 'the backups folder of this installation is kept');
+            $this->assertArrayNotHasKey('bot_guard_secret', $restored, 'a secret never comes from another installation, even when this one has none yet');
+            $this->assertArrayNotHasKey('contact_smtp_host', $restored, 'nor its mail server');
         } finally {
+            $this->removeTemporaryTree($root);
+        }
+    }
+
+    #[Depends('testArchiveServiceExisting')]
+    public function testARestoreCountsOnlyWhatItAddsToTheDisk(array $services)
+    {
+        $root = $this->makeTemporaryTree(['files/replaced.jpg' => str_repeat('o', 400)]);
+        $zipPath = "$root/backup.zip";
+        $zip = new \ZipArchive();
+        $zip->open($zipPath, \ZipArchive::CREATE);
+        $zip->addFromString('files/replaced.jpg', str_repeat('n', 1000));
+        $zip->addFromString('files/new.jpg', str_repeat('n', 300));
+        $zip->addFromString('wakka.config.php', str_repeat('c', 5000));
+        $zip->addFromString(ArchiveService::PRIVATE_FOLDER_NAME_IN_ZIP . '/' . ArchiveService::SQL_FILENAME_IN_PRIVATE_FOLDER_IN_ZIP, str_repeat('s', 50));
+        $zip->close();
+        $previousDir = getcwd();
+
+        try {
+            chdir($root);
+            $zip->open($zipPath);
+            $this->assertSame(600 + 300 + 50, $services['archiveService']->bytesToRestore($zip, true, true));
+            $this->assertSame(600 + 300, $services['archiveService']->bytesToRestore($zip, true, false));
+            $this->assertSame(50, $services['archiveService']->bytesToRestore($zip, false, true));
+            $zip->close();
+        } finally {
+            chdir($previousDir);
+            $this->removeTemporaryTree($root);
+        }
+    }
+
+    #[Depends('testArchiveServiceExisting')]
+    public function testARestoreThatDoesNotFitIsRefusedBeforeItStarts(array $services)
+    {
+        $archiveService = clone $services['archiveService'];
+        (new \ReflectionProperty(ArchiveService::class, 'diskSpace'))->setValue($archiveService, new class extends DiskSpace {
+            public function free(string $path): ?int
+            {
+                return 1024;
+            }
+        });
+        $filename = '2026-10-08T17-44-08_quota-test' . ArchiveService::ARCHIVE_ONLY_FILES_SUFFIX . '.zip';
+        $location = $archiveService->getPrivateFolder() . "/$filename";
+        $zip = new \ZipArchive();
+        $zip->open($location, \ZipArchive::CREATE);
+        $zip->addFromString('files/' . bin2hex(random_bytes(6)) . '.jpg', random_bytes(64 * 1024));
+        $zip->close();
+
+        try {
+            $archiveService->startRestore($filename);
+            $this->fail('a restore needing 64 kB with 1 kB free should be refused');
+        } catch (\Exception $exception) {
+            $this->assertStringContainsString('Not enough free space to restore this backup', $exception->getMessage());
+            $this->assertStringContainsString('1.0 kB free', $exception->getMessage());
+            $this->assertSame(['step' => ArchiveService::RESTORE_IDLE, 'running' => false], $archiveService->advanceRestore(), 'no restore was left waiting');
+        } finally {
+            @unlink($location);
+        }
+    }
+
+    #[Depends('testArchiveServiceExisting')]
+    public function testAFileThatCannotBeExtractedStopsTheRestoreBeforeTheDatabaseIsReplaced(array $services)
+    {
+        $root = $this->makeTemporaryTree(['files/blocked.jpg/occupied' => 'a folder where the backup has a file']);
+        $zipPath = "$root/backup.zip";
+        $zip = new \ZipArchive();
+        $zip->open($zipPath, \ZipArchive::CREATE);
+        $zip->addFromString('files/fine.jpg', 'extracted');
+        $zip->addFromString('files/blocked.jpg', 'cannot land');
+        $zip->close();
+        $previousDir = getcwd();
+        $job = ['step' => ArchiveService::RESTORE_FILES, 'entriesDone' => 0, 'restoreDatabase' => true, 'restoreFiles' => true];
+
+        try {
+            chdir($root);
+            $zip->open($zipPath);
+            try {
+                $this->callProtected($services['archiveService'], 'filesSlice', [$zip, $job, microtime(true) + 30]);
+                $this->fail('a file that cannot be written must stop the restore');
+            } catch (\Exception $exception) {
+                $this->assertStringContainsString('Cannot extract files/blocked.jpg', $exception->getMessage());
+            }
+
+            $zip->deleteName('files/blocked.jpg');
+            $zip->close();
+            $zip->open($zipPath);
+            $next = $this->callProtected($services['archiveService'], 'filesSlice', [$zip, $job, microtime(true) + 30]);
+            $zip->close();
+            $this->assertSame(ArchiveService::RESTORE_SWAPPING, $next['step'], 'the database is swapped in only once every file is in place');
+        } finally {
+            chdir($previousDir);
             $this->removeTemporaryTree($root);
         }
     }

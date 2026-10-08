@@ -4,7 +4,6 @@ namespace YesWiki\Core\Service;
 
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-use Symfony\Component\Process\Process;
 use YesWiki\Core\Exception\StopArchiveException;
 use YesWiki\Security\Controller\SecurityController;
 use YesWiki\Wiki;
@@ -87,6 +86,7 @@ class ArchiveService
         'contact_smtp_pass',
         'api_allowed_keys',
         'archive',
+        BotGuard::SECRET_KEY,
     ];
     public const SQL_FILENAME_IN_PRIVATE_FOLDER_IN_ZIP = 'content.sql';
     public const INFO_FILENAME_IN_PRIVATE_FOLDER_IN_ZIP = DumpRewriter::INFO_FILENAME;
@@ -99,6 +99,7 @@ class ArchiveService
     protected $configurationService;
     protected $consoleService;
     protected $dbService;
+    protected $diskSpace;
     protected $params;
     protected $securityController;
     protected $wiki;
@@ -107,6 +108,7 @@ class ArchiveService
         ConfigurationService $configurationService,
         ConsoleService $consoleService,
         DbService $dbService,
+        DiskSpace $diskSpace,
         ParameterBagInterface $params,
         SecurityController $securityController,
         Wiki $wiki
@@ -114,6 +116,7 @@ class ArchiveService
         $this->configurationService = $configurationService;
         $this->consoleService = $consoleService;
         $this->dbService = $dbService;
+        $this->diskSpace = $diskSpace;
         $this->params = $params;
         $this->securityController = $securityController;
         $this->wiki = $wiki;
@@ -649,10 +652,14 @@ class ArchiveService
             throw new \Exception("Cannot open archive: $filename");
         }
         $entries = $zip->numFiles;
-        $zip->close();
 
         $onlyFiles = str_ends_with($filename, self::ARCHIVE_ONLY_FILES_SUFFIX . '.zip');
         $onlyDb = str_ends_with($filename, self::ARCHIVE_ONLY_DATABASE_SUFFIX . '.zip');
+        try {
+            $this->assertRoomToRestore($zip, $restoreFiles && !$onlyDb, $restoreDatabase && !$onlyFiles);
+        } finally {
+            $zip->close();
+        }
 
         $job = [
             'filename' => $filename,
@@ -711,7 +718,13 @@ class ArchiveService
         if ($job['step'] === self::RESTORE_DONE) {
             $this->finishRestore($job);
         } else {
-            $this->writeRestoreJob($job);
+            try {
+                $this->writeRestoreJob($job);
+            } catch (\Throwable $throwable) {
+                $this->giveUpRestore($job);
+
+                return ['step' => self::RESTORE_IDLE, 'running' => false, 'error' => $throwable->getMessage()];
+            }
         }
 
         return $this->restoreState($job);
@@ -744,7 +757,7 @@ class ArchiveService
                 return $this->importSlice($zip, $job, $deadline);
             case self::RESTORE_SWAPPING:
                 $this->swapTables($job['livePrefix'], $job['stagingPrefix'], $job['replacedPrefix']);
-                $job['step'] = $job['restoreFiles'] ? self::RESTORE_FILES : self::RESTORE_DONE;
+                $job['step'] = $job['restoreFiles'] ? self::RESTORE_CONFIG : self::RESTORE_DONE;
 
                 return $job;
             case self::RESTORE_FILES:
@@ -810,7 +823,7 @@ class ArchiveService
             fclose($handle);
             mysqli_close($conn);
         }
-        $job['step'] = self::RESTORE_SWAPPING;
+        $job['step'] = $job['restoreFiles'] ? self::RESTORE_FILES : self::RESTORE_SWAPPING;
 
         return $job;
     }
@@ -892,12 +905,17 @@ class ArchiveService
                 }
                 continue;
             }
-            $zip->extractTo($wikiRoot, $name);
+            error_clear_last();
+            if (!@$zip->extractTo($wikiRoot, $name)) {
+                $reason = error_get_last()['message'] ?? $zip->getStatusString();
+
+                throw new \Exception("Cannot extract $name: $reason");
+            }
             if (microtime(true) > $deadline) {
                 return $job;
             }
         }
-        $job['step'] = self::RESTORE_CONFIG;
+        $job['step'] = $job['restoreDatabase'] ? self::RESTORE_SWAPPING : self::RESTORE_CONFIG;
 
         return $job;
     }
@@ -1011,7 +1029,9 @@ class ArchiveService
      */
     protected function writeRestoreJob(array $job): void
     {
-        file_put_contents($this->restoreJobPath(), json_encode($job));
+        if (!$this->configurationService->writeAtomically($this->restoreJobPath(), json_encode($job))) {
+            throw new \Exception('Cannot write the restore progress into the backups folder, the disk or the quota may be full');
+        }
     }
 
     /**
@@ -1173,7 +1193,8 @@ class ArchiveService
         foreach (array_keys($currentParameters) as $key) {
             unset($config[$key]);
         }
-        foreach (array_merge($archivedParameters, $kept) as $key => $value) {
+        $restored = array_diff_key($archivedParameters, array_flip(self::CONFIG_KEYS_KEPT_ON_RESTORE));
+        foreach (array_merge($restored, $kept) as $key => $value) {
             $config[$key] = $value;
         }
         if (!$config->write()) {
@@ -1800,7 +1821,9 @@ class ArchiveService
         $config = $this->configurationService->getConfiguration(ConfigurationFileProvider::getConfigFileFromEnv());
         $config->load();
         $config['wiki_status'] = 'archiving';
-        $this->configurationService->write($config);
+        if (!$this->configurationService->write($config)) {
+            throw new \Exception('Cannot write the configuration file, the disk or the quota may be full');
+        }
     }
 
     protected function unsetWikiStatus()
@@ -1920,17 +1943,53 @@ class ArchiveService
      */
     public function freeSpaceForArchives(): ?int
     {
-        if (!function_exists('disk_free_space')) {
-            return null;
-        }
         try {
             $folder = $this->getPrivateFolder();
         } catch (\Throwable $th) {
             $folder = (string)realpath(getcwd());
         }
-        $free = @disk_free_space($folder);
 
-        return $free === false ? null : (int)$free;
+        return $this->diskSpace->free($folder);
+    }
+
+    /**
+     * Bytes a restore adds to the disk: the dump it copies out, and each file beyond the one it replaces.
+     */
+    public function bytesToRestore(\ZipArchive $zip, bool $restoreFiles, bool $restoreDatabase): int
+    {
+        $wikiRoot = realpath(getcwd());
+        $configFile = ConfigurationFileProvider::getConfigFileFromEnv();
+        $dumpName = self::PRIVATE_FOLDER_NAME_IN_ZIP . '/' . self::SQL_FILENAME_IN_PRIVATE_FOLDER_IN_ZIP;
+        $bytes = 0;
+        for ($i = 0; $i < $zip->numFiles; $i++) {
+            $stat = $zip->statIndex($i);
+            if ($stat === false || str_ends_with($stat['name'], '/')) {
+                continue;
+            }
+            if ($stat['name'] === $dumpName) {
+                $bytes += $restoreDatabase ? $stat['size'] : 0;
+                continue;
+            }
+            if (!$restoreFiles || strpos($stat['name'], self::PRIVATE_FOLDER_NAME_IN_ZIP . '/') === 0 || $stat['name'] === $configFile) {
+                continue;
+            }
+            $existing = $wikiRoot . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $stat['name']);
+            $bytes += max(0, $stat['size'] - (is_file($existing) ? (int)filesize($existing) : 0));
+        }
+
+        return $bytes;
+    }
+
+    /**
+     * @throws \Exception when what the restore will write does not fit in the room left
+     */
+    protected function assertRoomToRestore(\ZipArchive $zip, bool $restoreFiles, bool $restoreDatabase): void
+    {
+        $needed = $this->bytesToRestore($zip, $restoreFiles, $restoreDatabase);
+        $free = $this->freeSpaceForArchives();
+        if (!is_null($free) && $free < $needed) {
+            throw new \Exception('Not enough free space to restore this backup (' . DiskSpace::human($needed) . ' needed, ' . DiskSpace::human($free) . ' free)');
+        }
     }
 
     /**
