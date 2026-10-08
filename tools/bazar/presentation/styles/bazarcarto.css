@@ -145,7 +145,8 @@
 }
 
 .bazar-map-container .bazar-marker.xl.selected .entry-name,
-.bazar-map-container .bazar-marker.xl:hover .entry-name {
+.bazar-map-container .bazar-marker.xl:hover .entry-name,
+.bazar-map-container .bazar-marker.xl:focus-visible .entry-name {
   display: block;
 }
 

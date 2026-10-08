@@ -4,7 +4,7 @@ use PHPMailer\PHPMailer\Exception;
 use PHPMailer\PHPMailer\PHPMailer;
 
 // sends a mail through the transport set in the contact_* config, to a lone recipient in To or in batches of bcc recipients
-function send_mail($mail_sender, $name_sender, $mail_receiver, $subject, $message_txt, $message_html = '')
+function send_mail($mail_sender, $name_sender, $mail_receiver, $subject, $message_txt, $message_html = '', bool $keepSender = false)
 {
     $batchSize = 10;
 
@@ -64,13 +64,12 @@ function send_mail($mail_sender, $name_sender, $mail_receiver, $subject, $messag
         } else {
             $mail->addReplyTo($mail_sender, $name_sender);
         }
-        if (!empty($GLOBALS['wiki']->config['contact_from'])) {
-            $mail_sender = $GLOBALS['wiki']->config['contact_from'];
-        }
+        $mail_sender = mailSenderAddress($mail_sender, $GLOBALS['wiki']->config, $keepSender);
         if (empty($name_sender)) {
             $name_sender = $mail_sender;
         }
         $mail->setFrom($mail_sender, $name_sender);
+        signWithDkim($mail, $GLOBALS['wiki']->config);
 
         $mail->Subject = $subject;
 
@@ -122,6 +121,29 @@ function send_mail($mail_sender, $name_sender, $mail_receiver, $subject, $messag
 
         return false;
     }
+}
+
+/** The address a mail goes out from: the wiki's contact_from when set, unless the recipient acts on the sender's own address, as a mailing list subscribing it does. */
+function mailSenderAddress(string $mailSender, $config, bool $keepSender = false): string
+{
+    return !$keepSender && !empty($config['contact_from']) ? $config['contact_from'] : $mailSender;
+}
+
+/** Signs $mail with DKIM when the domain, the selector and a readable private key file are configured; returns whether it will be signed. */
+function signWithDkim(PHPMailer $mail, $config): bool
+{
+    $domain = trim((string)($config['contact_dkim_domain'] ?? ''));
+    $selector = trim((string)($config['contact_dkim_selector'] ?? ''));
+    $keyFile = trim((string)($config['contact_dkim_private_key'] ?? ''));
+    if ($domain === '' || $selector === '' || $keyFile === '' || !is_readable($keyFile)) {
+        return false;
+    }
+    $mail->DKIM_domain = $domain;
+    $mail->DKIM_selector = $selector;
+    $mail->DKIM_private = $keyFile;
+    $mail->DKIM_identity = str_ends_with(strtolower($mail->From), '@' . strtolower($domain)) ? $mail->From : '';
+
+    return true;
 }
 
 // returns the last two labels of a host name, without www

@@ -22,6 +22,7 @@ return [
     'AU_UNKNOW' => 'Inconnue',
     'AU_ABSENT' => 'Non installé',
     'AU_DELETE_EXT' => 'Supprimer',
+    'AU_DELETE_EXT_CONFIRM' => 'Supprimer « {name} » ? Ses fichiers seront effacés du wiki.',
     'AU_DELETE' => 'Suppression des fichiers',
     'AU_NO_DESCRIPTION' => 'Description non disponible.',
     'AU_DOCUMENTATION_LINK' => 'documentation',

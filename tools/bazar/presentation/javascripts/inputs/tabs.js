@@ -1,5 +1,5 @@
 $(document).ready(() => {
-  const buttons = $('#formulaire .form-actions.form-group')
+  const buttons = $('.bazar-form .form-actions.form-group')
   const target = $('.anchor-for-for-actions').last()
   if (
     typeof buttons !== 'undefined' &&

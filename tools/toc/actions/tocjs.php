@@ -114,9 +114,9 @@ echo '<style>
         top : ' . $offset . 'px
     }
     
-    @media (max-width:768px){
-        #tocjs-' . $tag . '.affix {
-            right: 5px;
+    @media (max-width: 767px) {
+        #tocjs-' . $tag . '.affix, #tocjs-' . $tag . '.affix-bottom {
+            position: static;
         }
     }
 

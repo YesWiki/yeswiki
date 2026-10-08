@@ -41,7 +41,8 @@ export default {
   },
   template: `
     <div class="panel" :class="[panelClass, {collapsed: internalCollapsed}]">
-      <button class="panel-heading" :class="{collapsed: internalCollapsed}"
+      <button type="button" class="panel-heading" :class="{collapsed: internalCollapsed}"
+           :aria-expanded="collapsable ? String(!internalCollapsed) : null"
            :data-toggle="collapsable ? 'collapse' : ''"
            @click="headerClicked()">
         <slot name="header"></slot>

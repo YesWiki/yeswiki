@@ -3,6 +3,7 @@
 namespace YesWiki\Core\Controller;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use YesWiki\Contact\Service\MailSubscriptions;
 use YesWiki\Core\Entity\User;
 use YesWiki\Core\Exception\BadFormatPasswordException;
 use YesWiki\Core\Exception\DeleteUserException;
@@ -197,6 +198,9 @@ class UserController extends YesWikiController
         }
         $this->removeFromGroups($user);
         $this->removeOwnership($user);
+        if ($this->wiki->services->has(MailSubscriptions::class)) {
+            $this->wiki->services->get(MailSubscriptions::class)->forgetUser($user['name']);
+        }
         $this->userManager->delete($user);
     }
 

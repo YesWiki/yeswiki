@@ -36,9 +36,9 @@ class ListController extends YesWikiController
     {
         $post = $this->getRequest()->request;
         if ($post->has('imported-list')) {
-            foreach ($post->all('imported-list') as $listRaw) {
+            foreach ($post->all('imported-list') as $id => $listRaw) {
                 $list = json_decode($listRaw, true);
-                $this->listManager->create($list['title'], $list['nodes']);
+                $this->listManager->import((string)$id, $list['title'], $list['nodes']);
             }
             echo '<div class="alert alert-success">' . _t('BAZ_LIST_IMPORT_SUCCESSFULL') . '.</div>';
             echo '<div class="alert alert-success">' . _t('BAZ_LIST_IMPORT_SUCCESSFULL') . '.</div>';

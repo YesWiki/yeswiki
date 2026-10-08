@@ -1,5 +1,6 @@
 <?php
 
+use YesWiki\Bazar\Service\SsrfUrlValidator;
 use YesWiki\Security\Controller\SecurityController;
 
 function getConfigValue($key, $default = false, $cfg = '')
@@ -68,10 +69,19 @@ function copyUrlToLocalFile($url, $localPath)
 {
     if (file_exists($localPath)) {
         return true;
-    } elseif ($ch = curl_init($url)) { // teste l'existance du fichier a distance
+    }
+    try {
+        $pin = $GLOBALS['wiki']->services->get(SsrfUrlValidator::class)->curlPin($url, ['http', 'https']);
+    } catch (Throwable $error) {
+        return false;
+    }
+    if ($ch = curl_init($url)) { // teste l'existance du fichier a distance
+        foreach ($pin as $option => $optionValue) {
+            curl_setopt($ch, $option, $optionValue);
+        }
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, false);
         curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, COPY_URL_CONNECT_TIMEOUT);
         curl_setopt($ch, CURLOPT_TIMEOUT, COPY_URL_TIMEOUT);
         $imgcontent = curl_exec($ch);

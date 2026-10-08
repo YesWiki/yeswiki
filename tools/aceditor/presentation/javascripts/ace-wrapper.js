@@ -21,11 +21,11 @@ export default class {
   constructor(domElement, options = {}) {
     this.$container = $(domElement)
 
-    // Where to find the 'mode-XXXX' files
     ace.config.set(
       'basePath',
       `${wiki.baseUrl.replace(/\?+$/, '')}tools/aceditor/presentation/javascripts`,
     )
+    ace.config.setModuleUrl('ace/mode/yeswiki', import.meta.resolve('./mode-yeswiki.js'))
 
     this.ace = ace.edit(domElement, {
       printMargin: false,

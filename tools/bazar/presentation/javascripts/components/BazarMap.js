@@ -197,11 +197,19 @@ const BazarMapComponent = {
 		            </span>
 		          </div>
 		          <${tagName} class="bazar-entry ${this.isModalDisplay() ? 'modalbox' : ''}" ` +
-                `${isLink ? `href="${url}"` : ''} style="color: ${entry.color}" ${modalData}>
+                `${isLink ? `href="${url}" tabindex="-1"` : ''} style="color: ${entry.color}" ${modalData}>
 		            <i class="${entry.icon || 'fa fa-bullseye'}"></i>
 		          </${tagName}>`,
             }),
           )
+          entry.marker.on('add', () => {
+            entry.marker.getElement().setAttribute('aria-label', entry.bf_titre)
+          })
+          entry.marker.on('keypress', (ev) => {
+            if (!['Enter', ' '].includes(ev.originalEvent.key)) return
+            ev.originalEvent.preventDefault()
+            entry.marker.getElement().querySelector('.bazar-entry').click()
+          })
           if (this.isDirectLinkDisplay()) {
             entry.marker.on('click', () => {
               window.event.preventDefault()

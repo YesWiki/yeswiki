@@ -26,8 +26,12 @@ class ConfigurationService
             $file = $config->_file;
         }
         $content = $this->getContentToWrite($config, $arrayName);
+        $written = file_put_contents($file, $content) !== false;
+        if ($written && function_exists('opcache_invalidate')) {
+            opcache_invalidate($file, true);
+        }
 
-        return file_put_contents($file, $content) !== false;
+        return $written;
     }
 
     /**

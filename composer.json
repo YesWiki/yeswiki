@@ -29,6 +29,7 @@
     "ext-mysqli": "*",
     "ext-pcre": "*",
     "ext-zip": "^1.0",
+    "altcha-org/altcha": "^2.2",
     "caxy/php-htmldiff": "^0.1.13",
     "doctrine/annotations": "^1.11",
     "doctrine/cache": "^1.10",

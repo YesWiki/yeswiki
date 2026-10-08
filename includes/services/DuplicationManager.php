@@ -2,12 +2,14 @@
 
 namespace YesWiki\Core\Service;
 
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Bazar\Field\FileField;
 use YesWiki\Bazar\Field\ImageField;
 use YesWiki\Bazar\Field\TextareaField;
 use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Bazar\Service\FormManager;
 use YesWiki\Bazar\Service\ListManager;
+use YesWiki\Bazar\Service\SsrfUrlValidator;
 use YesWiki\Wiki;
 
 class DuplicationManager
@@ -59,10 +61,9 @@ class DuplicationManager
     {
         $fields = [];
         $entry = $this->wiki->services->get(EntryManager::class)->getOne($id);
-        if (!empty($entry['id_fiche'])) { // bazar entry
+        if (!empty($entry['id_fiche'])) {
             $formManager = $this->wiki->services->get(FormManager::class);
             $form = $formManager->getOne($entry['id_typeannonce']);
-            // find fields that are textareas
             foreach ($form['prepared'] as $field) {
                 if ($field instanceof TextareaField || $field instanceof ImageField || $field instanceof FileField) {
                     $fields[] = $field;
@@ -118,7 +119,7 @@ class DuplicationManager
                         $size = filesize($filePath);
                         $humanSize = $this->humanFilesize($size);
                         if (in_array($filename, array_keys($filesMatched)) && $matches[1] < $filesMatched[$filename]['modified']) {
-                            continue; // we only take the latest modified version of file
+                            continue;
                         }
                         $filesMatched[$filename] = ['path' => $filePath, 'size' => $size, 'humanSize' => $humanSize, 'modified' => $matches[1]];
                     }
@@ -157,7 +158,6 @@ class DuplicationManager
             $tag = $this->wiki->GetPageTag();
         }
         if ($this->wiki->services->get(EntryManager::class)->isEntry($tag)) {
-            // bazar
             $fields = $this->getUploadFieldsFromEntry($tag);
             $entry = $this->wiki->services->get(EntryManager::class)->getOne($tag);
             foreach ($fields as $f) {
@@ -171,7 +171,7 @@ class DuplicationManager
                     }
                 }
             }
-        } elseif (!$this->wiki->services->get(ListManager::class)->isList($tag)) { // page
+        } elseif (!$this->wiki->services->get(ListManager::class)->isList($tag)) {
             $wikiText = $this->wiki->services->get(PageManager::class)->getOne($tag)['body'];
             if ($fi = $this->findFilesInWikiText($tag, $wikiText)) {
                 $files = array_merge($files, $fi);
@@ -191,7 +191,6 @@ class DuplicationManager
                 $this->uploadPath . '/' . $toTag . '_',
                 $f['path']
             );
-            // if the file name has not changed, we add newPageTag_ as filename prefix
             if ($f['path'] == $newPath) {
                 $newPath = str_replace($this->uploadPath . '/', $this->uploadPath . '/' . $toTag . '_', $newPath);
             }
@@ -252,7 +251,6 @@ class DuplicationManager
                 }
                 $entry['id_fiche'] = $data['newTag'];
                 $entry['bf_titre'] = $data['newTitle'];
-                $entry['antispam'] = 1;
                 $this->wiki->services->get(EntryManager::class)->create($entry['id_typeannonce'], $entry);
                 break;
 
@@ -267,7 +265,6 @@ class DuplicationManager
                 break;
         }
 
-        // duplicate acls
         foreach (['read', 'write', 'comment'] as $privilege) {
             $values = $this->wiki->services->get(AclService::class)->load(
                 $this->wiki->getPageTag(),
@@ -281,7 +278,6 @@ class DuplicationManager
             );
         }
 
-        // duplicate metadatas and tags (TODO: is there more duplicable triples?)
         $properties = [
             'http://outils-reseaux.org/_vocabulary/metadata',
             'http://outils-reseaux.org/_vocabulary/tag',
@@ -305,7 +301,7 @@ class DuplicationManager
                 throw new \Exception(_t('NOT_FOUND_IN_REQUEST', $key));
             }
         }
-        foreach ($req['files'] as $fileUrl) {
+        foreach ((array)($req['files'] ?? []) as $fileUrl) {
             $this->downloadFile($fileUrl, $req['originalTag'], $tag);
         }
 
@@ -316,29 +312,43 @@ class DuplicationManager
         } elseif ($req['type'] === 'entry') {
             $entry = json_decode($newBody, true);
             $entry['id_fiche'] = $tag;
-            $entry['antispam'] = 1;
             $this->wiki->services->get(EntryManager::class)->create($entry['id_typeannonce'], $entry, false, $req['sourceUrl']);
         }
     }
 
+    /**
+     * Copies a file of the source wiki into the upload folder, refusing private addresses and unauthorised extensions.
+     */
     public function downloadFile($sourceUrl, $fromTag, $toTag, $timeoutInSec = 10)
     {
-        $t = explode('/', $sourceUrl);
-        $fileName = array_pop($t);
-        $destPath = 'files/' . str_replace($fromTag, $toTag, $fileName);
+        $fileName = basename(str_replace($fromTag, $toTag, basename((string)parse_url((string)$sourceUrl, PHP_URL_PATH))));
+        $extension = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
+        $authorizedExtensions = array_keys($this->wiki->services->get(ParameterBagInterface::class)->get('authorized-extensions'));
+        if ($fileName === '' || $fileName[0] === '.' || !in_array($extension, $authorizedExtensions, true)) {
+            throw new \Exception(_t('BAZ_NOT_AUTHORIZED_FILE') . ' : ' . $sourceUrl);
+        }
+        $pin = $this->wiki->services->get(SsrfUrlValidator::class)->curlPin($sourceUrl, ['http', 'https']);
+
+        $destPath = $this->uploadPath . '/' . $fileName;
         $fp = fopen($destPath, 'wb');
         $ch = curl_init($sourceUrl);
+        foreach ($pin as $option => $optionValue) {
+            curl_setopt($ch, $option, $optionValue);
+        }
         curl_setopt($ch, CURLOPT_FILE, $fp);
         curl_setopt($ch, CURLOPT_HEADER, 0);
-        // TODO: make options to allow ssl verify
-        curl_setopt($ch, CURLOPT_SSL_VERIFYSTATUS, false);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 0);
+        curl_setopt($ch, CURLOPT_FAILONERROR, true);
         curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $timeoutInSec);
         curl_setopt($ch, CURLOPT_TIMEOUT, $timeoutInSec);
         curl_exec($ch);
+        $error = curl_errno($ch);
         curl_close($ch);
         fclose($fp);
+        if ($error) {
+            unlink($destPath);
+            throw new \Exception("Error getting content from {$sourceUrl} (" . curl_strerror($error) . ')');
+        }
 
         return $destPath;
     }

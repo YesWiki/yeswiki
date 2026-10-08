@@ -375,9 +375,9 @@ class PageManager
             // set all other revisions to old
             $this->dbService->query('UPDATE' . $this->dbService->prefixTable('pages') . "SET latest = 'N' WHERE tag = '" . $this->dbService->escape($tag) . "'");
 
-            // use forcedDate is present
+            // use forcedDate when present, but only in the exact shape every caller produces, so no request value reaches the SQL
             $time = 'now()';
-            if (!empty($forcedDate)) {
+            if (!empty($forcedDate) && preg_match('/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/', (string)$forcedDate) === 1) {
                 $time = '"' . $forcedDate . '"';
             }
 

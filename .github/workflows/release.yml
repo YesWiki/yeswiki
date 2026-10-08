@@ -32,12 +32,21 @@ jobs:
       - name: Install PHP dependencies
         run: composer install --no-dev --prefer-dist --no-progress --optimize-autoloader
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: '24'
 
       - name: Install JS dependencies
         run: yarn install
+
+      - name: Set the release number
+        env:
+          TAG: ${{ github.event.inputs.tag || github.event.release.tag_name }}
+        run: |
+          RELEASE="${TAG#v}"
+          echo "$RELEASE" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$'
+          sed -i "s/define('YESWIKI_RELEASE', '[^']*');/define('YESWIKI_RELEASE', '$RELEASE');/" includes/constants.php
+          grep -q "define('YESWIKI_RELEASE', '$RELEASE');" includes/constants.php
 
       - name: Create release archive
         run: |

@@ -36,7 +36,8 @@ class ActivityPubInboxTest extends TestCase
         $tripleStore->method('getMatching')->willReturnCallback(
             fn ($resource, $property, $value) => array_values(array_filter(
                 $this->triples,
-                fn ($t) => $t['property'] === $property && $t['value'] === $value
+                fn ($t) => $t['property'] === $property
+                    && (is_null($value) ? $t['resource'] === $resource : $t['value'] === $value)
             ))
         );
         $tripleStore->method('getOne')->willReturnCallback(
@@ -67,7 +68,16 @@ class ActivityPubInboxTest extends TestCase
         });
         $entryManager->method('delete')->willReturnCallback(function ($tag) {
             $this->deleted[] = $tag;
+            $this->triples = array_values(array_filter($this->triples, fn ($t) => $t['resource'] !== $tag));
+            unset($this->owners[$tag]);
         });
+        $entryManager->method('search')->willReturnCallback(fn () => array_map(
+            fn ($resource) => ['id_fiche' => $resource],
+            array_values(array_unique(array_map(
+                fn ($t) => $t['resource'],
+                array_filter($this->triples, fn ($t) => $t['property'] === TripleStore::SOURCE_URL_URI)
+            )))
+        ));
 
         $semanticTransformer = $this->createStub(SemanticTransformer::class);
         $semanticTransformer->method('convertFromSemanticData')->willReturn(['bf_titre' => 'Une fiche']);
@@ -231,4 +241,73 @@ class ActivityPubInboxTest extends TestCase
 
         $this->assertSame([], $this->updated);
     }
+
+    private function sync(array $outboxItems, string $actorUri = self::THEM): array
+    {
+        $service = $this->service();
+        $client = new class ($actorUri, $outboxItems) {
+            public function __construct(private string $actorUri, private array $items)
+            {
+            }
+
+            public function request($method, $url, $options = [])
+            {
+                $body = ($url === $this->actorUri)
+                    ? json_encode(['outbox' => $this->actorUri . '/outbox'])
+                    : json_encode(['type' => 'OrderedCollection', 'orderedItems' => $this->items]);
+
+                return new class ($body) {
+                    public function __construct(private string $body)
+                    {
+                    }
+
+                    public function getContent()
+                    {
+                        return $this->body;
+                    }
+                };
+            }
+        };
+        $property = new \ReflectionProperty($service, 'httpClient');
+        $property->setValue($service, $client);
+
+        return $service->syncActorPosts($actorUri, self::FORM);
+    }
+
+    public function testSyncCannotDeleteAnEntryThatBelongsToAnotherActor()
+    {
+        $this->givenMirroredEntry('FicheUne', 'https://them.example/entries/1', 'https://them.example/actors/2');
+
+        $stats = $this->sync([['type' => 'Delete', 'object' => 'https://them.example/entries/1']]);
+
+        $this->assertSame([], $this->deleted, 'a cross-actor delete in the outbox must be ignored');
+        $this->assertSame(0, $stats['deleted']);
+    }
+
+    public function testSyncDeletesAnEntryTheSyncedActorOwns()
+    {
+        $this->givenMirroredEntry('FicheUne', 'https://them.example/entries/1', self::THEM);
+
+        $this->sync([['type' => 'Delete', 'object' => 'https://them.example/entries/1']]);
+
+        $this->assertSame(['FicheUne'], $this->deleted);
+    }
+
+    public function testSyncGarbageCollectionSparesAnotherActorsEntryOnTheSameHost()
+    {
+        $this->givenMirroredEntry('Mine', 'https://them.example/entries/1', self::THEM);
+        $this->givenMirroredEntry('Theirs', 'https://them.example/entries/2', 'https://them.example/actors/2');
+
+        $this->sync([]);
+
+        $this->assertSame(['Mine'], $this->deleted, 'only the synced actor\'s own absent entry is swept');
+    }
+
+    public function testSyncDoesNotMirrorAnObjectFromAnotherHost()
+    {
+        $this->sync([['type' => 'Create', 'object' => ['id' => 'https://elsewhere.example/entries/9']]]);
+
+        $this->assertSame([], $this->created, 'a Create whose object is on another host is skipped');
+    }
 }
+

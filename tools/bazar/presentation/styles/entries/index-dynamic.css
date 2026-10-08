@@ -23,16 +23,23 @@
 
 .bazar-list-dynamic-container .pagination > li {
   margin: 0 0.2rem;
-  padding: 0 0.5rem;
-  cursor: pointer;
-  border-radius: 3px;
 }
 
-.bazar-list-dynamic-container .pagination > li:hover {
+.bazar-list-dynamic-container .pagination > li > button {
+  padding: 0 0.5rem;
+  border: 0;
+  border-radius: 3px;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.bazar-list-dynamic-container .pagination > li > button:hover {
   font-weight: bold;
 }
 
-.bazar-list-dynamic-container .pagination > li.active {
+.bazar-list-dynamic-container .pagination > li.active > button {
   background-color: var(--primary-color);
   color: var(--neutral-light-color);
   font-weight: bold;
@@ -44,6 +51,10 @@
 
 .bazar-list-dynamic-container .pagination > li.disabled {
   opacity: 0.6;
+}
+
+.bazar-list-dynamic-container .pagination > li.disabled > button {
+  cursor: default;
 }
 
 /* ------------- */

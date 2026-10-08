@@ -18,7 +18,7 @@ require_once 'tests/YesWikiTestCase.php';
  */
 class EntryCreationOverwriteTest extends YesWikiTestCase
 {
-    private const FORM_ID = '999905';
+    private string $formId;
     private const TARGET_TAG = 'BazarOverwriteTargetPage';
     private const TARGET_BODY = 'untouched';
 
@@ -38,8 +38,7 @@ class EntryCreationOverwriteTest extends YesWikiTestCase
         $this->pageManager = $this->wiki->services->get(PageManager::class);
         $this->aclService = $this->wiki->services->get(AclService::class);
 
-        $this->formManager->create([
-            'bn_id_nature' => self::FORM_ID,
+        $this->formId = $this->formManager->create([
             'bn_label_nature' => 'Entry creation test form',
             'bn_template' => '',
             'bn_condition' => '',
@@ -63,13 +62,13 @@ class EntryCreationOverwriteTest extends YesWikiTestCase
         $this->createdTags = [];
         $this->pageManager->deleteOrphaned(self::TARGET_TAG);
         $this->aclService->delete(self::TARGET_TAG);
-        $this->formManager->delete(self::FORM_ID);
+        $this->formManager->delete($this->formId);
     }
 
     public function testAnEntryCannotBeCreatedOverAnExistingPage()
     {
         try {
-            $this->entryManager->create(self::FORM_ID, [
+            $this->entryManager->create($this->formId, [
                 'antispam' => 1,
                 'bf_titre' => 'whatever',
                 'id_fiche' => self::TARGET_TAG,
@@ -84,7 +83,7 @@ class EntryCreationOverwriteTest extends YesWikiTestCase
 
     public function testATitleThatMapsOntoAnExistingPageGetsAnotherTag()
     {
-        $entry = $this->entryManager->create(self::FORM_ID, [
+        $entry = $this->entryManager->create($this->formId, [
             'antispam' => 1,
             'bf_titre' => 'Bazar Overwrite Target Page',
         ]);
@@ -96,7 +95,7 @@ class EntryCreationOverwriteTest extends YesWikiTestCase
 
     public function testAnAnonymousVisitorStillCreatesAnEntry()
     {
-        $entry = $this->entryManager->create(self::FORM_ID, [
+        $entry = $this->entryManager->create($this->formId, [
             'antispam' => 1,
             'bf_titre' => 'Bazar Overwrite Brand New Entry',
         ]);
@@ -109,17 +108,17 @@ class EntryCreationOverwriteTest extends YesWikiTestCase
     public function testTheEntryFormIgnoresAPostedTag()
     {
         $this->wiki->request->request->replace([
-            'antispam' => 1,
             'bf_titre' => 'Bazar Overwrite Posted Tag',
             'id_fiche' => self::TARGET_TAG,
-        ]);
+        ] + self::validBotGuardFields($this->wiki));
         $this->createdTags[] = 'BazarOverwritePostedTag';
 
         try {
-            $this->wiki->services->get(EntryController::class)->create(self::FORM_ID);
+            $this->wiki->services->get(EntryController::class)->create($this->formId);
         } catch (ExitException $e) {
         } finally {
             $this->wiki->request->request->replace([]);
+            self::restoreBotGuard($this->wiki);
         }
 
         $this->assertSame(self::TARGET_BODY, $this->pageManager->getOne(self::TARGET_TAG, null, false, true)['body']);

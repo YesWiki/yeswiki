@@ -534,7 +534,11 @@ Il est possible de copier des icônes dans des sites sources puis de les coller 
 {{end elem=\"col\"}}
 {{end elem=\"grid\"}}
 {{end elem=\"panel\"}}
-{{end elem=\"accordion\" }}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
+{{end elem=\"accordion\" }}
+
+{{section class=\"full-width text-left\" visibility=\"@admins\" }}
+{{adminbotguard}}
+{{end elem=\"section\"}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
 ('TrombiAnnuaire',  now(), '{{nav links=\"TrombiAnnuaire, AnnuaireAlpha, CartoAnnuaire, SaisirAnnuaire\" titles=\"Trombinoscope, Annuaire alphabétique, Annuaire cartographique, S\'inscrire dans l\'annuaire\"}}
 
 {{bazarliste id=\"1\" template=\"card\"  displayfields=\"visual=imagebf_image,title=bf_titre\" imgstyle=\"contain\" nbcol=\"3\" style=\"square\" }}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
@@ -609,5 +613,5 @@ INSERT INTO `{{prefix}}triples` (`resource`, `property`, `value`) VALUES
 ('20240425172243_CleanOldCartoGoogle', 'http://outils-reseaux.org/_vocabulary/type', 'migration'),
 ('20240502083251_RefactorListStruture', 'http://outils-reseaux.org/_vocabulary/type', 'migration'),
 ('20240621202127_RefactorEnumFieldPropertyName', 'http://outils-reseaux.org/_vocabulary/type', 'migration'),
-('20250730162434_AddContextToPageLogin', 'http://outils-reseaux.org/_vocabulary/type', 'migration');
+('20261004120000_AddLoginContextToPageLogin', 'http://outils-reseaux.org/_vocabulary/type', 'migration');
 # end triples

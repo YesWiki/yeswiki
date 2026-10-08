@@ -231,7 +231,7 @@ function initializeFormbuilder() {
     $('.fld-name').each(function () {
       const newValue = $(this)
         .val()
-        .replace(/[^a-z^A-Z^_^0-9^{^}]/g, '_')
+        .replace(/[^\p{L}\p{N}_-]/gu, '_')
       $(this).val(newValue)
     })
 
@@ -371,4 +371,19 @@ $('a[href="#formbuilder"]').on('click', (event) => {
     event.preventDefault()
     return false
   }
+})
+
+$(document).on('submit', '#bazar-form-editor', (event) => {
+  if (event.isDefaultPrevented()) return
+  $('#form-builder-container')
+    .find('input, select, textarea, button')
+    .filter(':enabled')
+    .attr('data-disabled-on-submit', '1')
+    .prop('disabled', true)
+})
+
+window.addEventListener('pageshow', () => {
+  $('[data-disabled-on-submit]')
+    .prop('disabled', false)
+    .removeAttr('data-disabled-on-submit')
 })

@@ -2,6 +2,7 @@
 
 namespace YesWiki\Bazar\Service;
 
+use YesWiki\Bazar\Field\BazarField;
 use YesWiki\Bazar\Field\CheckboxField;
 use YesWiki\Bazar\Field\EnumField;
 use YesWiki\Core\Service\AclService;
@@ -15,6 +16,7 @@ class SearchManager
     protected $wiki;
     protected $dbService;
     protected $aclService;
+    private bool $queryParseError = false;
 
     public const MISSING_PROPERTY = '_MISSING_PROPERTY_';
     public const MISSING_FIELD = '_MISSING_FIELD_';
@@ -189,9 +191,9 @@ class SearchManager
                         switch ($vFieldDescriptor['_mode_']) {
                             case 'single':
                                 if ($vIsRegExp) {
-                                    $vORRequest = $this->renameJSONPathVariable($vFieldName) . ' COLLATE ' . $this->dbService->getCollation() . ' REGEXP \'' . mysqli_real_escape_string($this->wiki->dblink, $this->extractRegExp($vOR)) . '\'';
+                                    $vORRequest = $this->column($vFieldName) . ' COLLATE ' . $this->dbService->getCollation() . ' REGEXP \'' . mysqli_real_escape_string($this->wiki->dblink, $this->extractRegExp($vOR)) . '\'';
                                 } else {
-                                    $vORRequest = $this->renameJSONPathVariable($vFieldName) . ' COLLATE ' . $this->dbService->getCollation() . ' LIKE \'%' . mysqli_real_escape_string($this->wiki->dblink, $vOR) . '%\'';
+                                    $vORRequest = $this->column($vFieldName) . ' COLLATE ' . $this->dbService->getCollation() . ' LIKE \'%' . mysqli_real_escape_string($this->wiki->dblink, $vOR) . '%\'';
                                 }
 
                                 break;
@@ -208,7 +210,7 @@ class SearchManager
 
                         if ($vField['hasMultipleStructures']) {
                             if ($vORRequest != '') {
-                                $vORRequest = '( ' . $this->renameJSONPathVariable('id_typeannonce') . ' IN (' . implode(',', array_map(function ($pFormID) {
+                                $vORRequest = '( ' . $this->column('id_typeannonce') . ' IN (' . implode(',', array_map(function ($pFormID) {
                                     return '\'' . $pFormID . '\'';
                                 }, $vFieldDescriptor['_ids_'])) . ') AND ' . $vORRequest . ')';
                             }
@@ -236,9 +238,9 @@ class SearchManager
                     switch ($vFieldDescriptor['_mode_']) {
                         case 'single':
                             if ($vIsRegExp) {
-                                $vExcludedRequest = mysqli_real_escape_string($this->wiki->dblink, $this->renameJSONPathVariable($vFieldName)) . ' COLLATE ' . $this->dbService->getCollation() . ' NOT REGEXP \'' . mysqli_real_escape_string($this->wiki->dblink, $this->extractRegExp($vExcluded)) . '\'';
+                                $vExcludedRequest = $this->column($vFieldName) . ' COLLATE ' . $this->dbService->getCollation() . ' NOT REGEXP \'' . mysqli_real_escape_string($this->wiki->dblink, $this->extractRegExp($vExcluded)) . '\'';
                             } else {
-                                $vExcludedRequest = mysqli_real_escape_string($this->wiki->dblink, $this->renameJSONPathVariable($vFieldName)) . ' COLLATE ' . $this->dbService->getCollation() . ' NOT LIKE \'%' . mysqli_real_escape_string($this->wiki->dblink, $vExcluded) . '%\'';
+                                $vExcludedRequest = $this->column($vFieldName) . ' COLLATE ' . $this->dbService->getCollation() . ' NOT LIKE \'%' . mysqli_real_escape_string($this->wiki->dblink, $vExcluded) . '%\'';
                             }
 
                             break;
@@ -255,7 +257,7 @@ class SearchManager
 
                     if ($vField['hasMultipleStructures']) {
                         if ($vExcludedRequest != '') {
-                            $vExcludedRequest = '( ' . $this->renameJSONPathVariable('id_typeannonce') . ' IN (' . implode(',', array_map(function ($pFormID) {
+                            $vExcludedRequest = '( ' . $this->column('id_typeannonce') . ' IN (' . implode(',', array_map(function ($pFormID) {
                                 return '\'' . $pFormID . '\'';
                             }, $vFieldDescriptor['_ids_'])) . ') AND ' . $vExcludedRequest . ')';
                         }
@@ -337,24 +339,27 @@ class SearchManager
 
                 foreach ($vQuery['values'] as $vValue) {
                     $vIsRegExp = $this->isRegExp($vValue);
+                    $vColumn = ($vComparisonOperator === '!=' || trim((string)$vValue) === '')
+                        ? 'COALESCE(' . $this->column($vFieldName) . ', \'\')'
+                        : $this->column($vFieldName);
 
                     switch ($vDescriptor['_mode_']) {
                         case 'single':
                             if ($vIsRegExp) {
-                                $vValueConditions[] = mysqli_real_escape_string($this->wiki->dblink, $this->renameJSONPathVariable($vFieldName)) . ' COLLATE ' . $this->dbService->getCollation() . ' ' . $vRegExpOperator . ' \'' . mysqli_real_escape_string($this->wiki->dblink, $this->extractRegExp($vValue)) . '\'';
+                                $vValueConditions[] = $vColumn . ' COLLATE ' . $this->dbService->getCollation() . ' ' . $vRegExpOperator . ' \'' . mysqli_real_escape_string($this->wiki->dblink, $this->extractRegExp($vValue)) . '\'';
                             } else {
                                 if ($vDescriptor['_type_'] == 'number') {
                                     if (isset($vValue) && trim($vValue) !== '') {
                                         if (!is_numeric(trim($vValue)) || !is_finite((float)trim($vValue))) {
                                             $vValueConditions[] = 'FALSE';
                                         } else {
-                                            $vValueConditions[] = 'CAST(' . mysqli_real_escape_string($this->wiki->dblink, $this->renameJSONPathVariable($vFieldName)) . ' AS DOUBLE) ' . $vComparisonOperator . ' ' . (float)trim($vValue);
+                                            $vValueConditions[] = 'CAST(' . $this->column($vFieldName) . ' AS DOUBLE) ' . $vComparisonOperator . ' ' . (float)trim($vValue);
                                         }
                                     } else {
-                                        $vValueConditions[] = '(' . mysqli_real_escape_string($this->wiki->dblink, $this->renameJSONPathVariable($vFieldName)) . ' COLLATE ' . $this->dbService->getCollation() . ' ' . $vComparisonOperator . ' \'\' )';
+                                        $vValueConditions[] = '(' . $vColumn . ' COLLATE ' . $this->dbService->getCollation() . ' ' . $vComparisonOperator . ' \'\' )';
                                     }
                                 } else {
-                                    $vValueConditions[] = mysqli_real_escape_string($this->wiki->dblink, $this->renameJSONPathVariable($vFieldName)) . ' COLLATE ' . $this->dbService->getCollation() . ' ' . $vComparisonOperator . ' \'' . mysqli_real_escape_string($this->wiki->dblink, $vValue) . '\'';
+                                    $vValueConditions[] = $vColumn . ' COLLATE ' . $this->dbService->getCollation() . ' ' . $vComparisonOperator . ' \'' . mysqli_real_escape_string($this->wiki->dblink, $vValue) . '\'';
                                 }
                             }
 
@@ -364,7 +369,7 @@ class SearchManager
                             if ($vIsRegExp) {
                                 $vValueConditions[] = '(s.champ = \'' . mysqli_real_escape_string($this->wiki->dblink, $this->renameJSONPathVariable($vFieldName)) . '\' AND s.elt COLLATE ' . $this->dbService->getCollation() . ' ' . $vRegExpOperator . ' \'' . mysqli_real_escape_string($this->wiki->dblink, $this->extractRegExp($vValue)) . '\')';
                             } else {
-                                $vValueConditions[] = $vFindInSetOperator . ' (\'' . mysqli_real_escape_string($this->wiki->dblink, $vValue) . '\' COLLATE ' . $this->dbService->getCollation() . ', ' . mysqli_real_escape_string($this->wiki->dblink, $this->renameJSONPathVariable($vFieldName)) . ' COLLATE ' . $this->dbService->getCollation() . ')';
+                                $vValueConditions[] = $vFindInSetOperator . ' (\'' . mysqli_real_escape_string($this->wiki->dblink, $vValue) . '\' COLLATE ' . $this->dbService->getCollation() . ', ' . $vColumn . ' COLLATE ' . $this->dbService->getCollation() . ')';
                             }
 
                             break;
@@ -384,7 +389,7 @@ class SearchManager
 
                     if ($vField['hasMultipleStructures']) {
                         if ($vDescriptorCondition != '') {
-                            $vDescriptorCondition = $this->renameJSONPathVariable('id_typeannonce') . ' IN (' . implode(',', array_map(function ($pFormID) {
+                            $vDescriptorCondition = $this->column('id_typeannonce') . ' IN (' . implode(',', array_map(function ($pFormID) {
                                 return '\'' . $pFormID . '\'';
                             }, $vDescriptor['_ids_'])) . ') AND (' . $vDescriptorCondition . ')';
                         }
@@ -426,7 +431,20 @@ class SearchManager
 
         $vKeywords = $params['keywords'] ?? '';
 
-        $vQueries = $this->parseQuery($params['queries']);
+        $vQueryString = is_array($params['queries'] ?? null)
+            ? $this->queryToString($params['queries'])
+            : (string)($params['queries'] ?? '');
+        $vQueryAst = $this->parseQueryExpression($vQueryString);
+
+        if (($vQueryAst['type'] ?? '') === 'invalid') {
+            return '';
+        }
+
+        foreach ($this->queryAstFieldNames($vQueryAst) as $vQueryName) {
+            if (!$this->isFieldName($vQueryName)) {
+                return '';
+            }
+        }
 
         $vIDsRequest = '';
 
@@ -468,7 +486,7 @@ class SearchManager
                 },
             );
 
-            $vIDsRequest .= 'JSON_UNQUOTE(JSON_EXTRACT(body, \'$.id_typeannonce\')) IN (' . join(',', array_map(function ($pFormID) {
+            $vIDsRequest .= $this->bodyValue('$.id_typeannonce') . ' IN (' . join(',', array_map(function ($pFormID) {
                 return '\'' . $pFormID . '\'';
             }, $vFormIDs)) . ')';
         } else {
@@ -499,12 +517,10 @@ class SearchManager
 
             $vSearchFields[] = 'bf_titre';
 
-            $vKeywordsFields = array_unique(array_map('trim', $vSearchFields));
+            $vKeywordsFields = array_unique(array_filter(array_map('trim', $vSearchFields), [$this, 'isFieldName']));
         }
 
-        foreach ($vQueries as $vQuery) {
-            $vQueriesFields[] = $vQuery['name'];
-        }
+        $vQueriesFields = $this->queryAstFieldNames($vQueryAst);
 
         $vNecessaryFields = array_unique(array_merge($vKeywordsFields, $vQueriesFields));
 
@@ -565,11 +581,9 @@ class SearchManager
 
                         foreach ($vJSONPath as $vJSONPathSegment) {
                             if (is_array($vCurrentArray) && array_key_exists($vJSONPathSegment, $vCurrentArray)) {
-                                if (is_array($vCurrentArray) && array_key_exists($vJSONPathSegment, $vCurrentArray)) {
-                                    $vCurrentArray = $vCurrentArray[$vJSONPathSegment];
-                                } else {
-                                    $vFieldFound = false;
-                                }
+                                $vCurrentArray = $vCurrentArray[$vJSONPathSegment];
+                            } else {
+                                $vFieldFound = false;
                             }
                         }
 
@@ -618,15 +632,12 @@ class SearchManager
         $vSelectRequest
         = [
             'p.*',
-            'JSON_UNQUOTE(JSON_EXTRACT(body, \'$.id_typeannonce\')) AS `' . $this->renameJSONPathVariable('id_typeannonce') . '`',
+            $this->bodyValue('$.id_typeannonce') . ' AS ' . $this->column('id_typeannonce'),
         ];
 
         foreach ($vFields as $vFieldName => $vField) {
             if (!$vField['isExtracted']) {
-                $vSQLNom = mysqli_real_escape_string($this->wiki->dblink, $vFieldName);
-                $vRenamedSQLNom = mysqli_real_escape_string($this->wiki->dblink, $this->renameJSONPathVariable($vFieldName));
-
-                $vSelectRequest[] = 'JSON_UNQUOTE(JSON_EXTRACT(body, \'$.' . $vSQLNom . '\')) AS `' . $vRenamedSQLNom . '`';
+                $vSelectRequest[] = $this->bodyValue($this->jsonPath($vFieldName)) . ' AS ' . $this->column($vFieldName);
 
                 $vField['isExtracted'] = true;
             }
@@ -642,18 +653,18 @@ class SearchManager
                 continue;
             }
 
-            $vSplitteds[] = 'SELECT id, champ, elt FROM ' . $this->renameJSONPathVariable($vFieldName) . '_multiple';
+            $vSplitteds[] = 'SELECT id, champ, elt FROM ' . $this->column($vFieldName, '_multiple');
 
             $vSplittedsRequest
-                        .= ', ' . $this->renameJSONPathVariable($vFieldName) . '_multiple AS '
+                        .= ', ' . $this->column($vFieldName, '_multiple') . ' AS '
                         . '( '
                             . 'SELECT '
                                 . 'id, '
-                                . '\'' . $this->renameJSONPathVariable($vFieldName) . '\' AS champ, '
-                                . 'TRIM(SUBSTRING_INDEX(' . $vFieldName . ', \',\', 1)) AS elt, '
+                                . '\'' . mysqli_real_escape_string($this->wiki->dblink, $this->renameJSONPathVariable($vFieldName)) . '\' AS champ, '
+                                . 'TRIM(SUBSTRING_INDEX(' . $this->column($vFieldName) . ', \',\', 1)) AS elt, '
                                 . 'CASE '
-                                    . 'WHEN INSTR(' . $this->renameJSONPathVariable($vFieldName) . ', \',\') = 0 THEN \'\' '
-                                    . 'ELSE SUBSTR(' . $this->renameJSONPathVariable($vFieldName) . ', INSTR(' . $this->renameJSONPathVariable($vFieldName) . ', \',\') + 1) '
+                                    . 'WHEN INSTR(' . $this->column($vFieldName) . ', \',\') = 0 THEN \'\' '
+                                    . 'ELSE SUBSTR(' . $this->column($vFieldName) . ', INSTR(' . $this->column($vFieldName) . ', \',\') + 1) '
                                 . 'END AS rest '
                             . 'FROM filteredPages '
                             . 'UNION ALL '
@@ -665,7 +676,7 @@ class SearchManager
                                     . 'WHEN INSTR(rest, \',\') = 0 THEN \'\' '
                                     . 'ELSE SUBSTR(rest, INSTR(rest, \',\') + 1) '
                                 . 'END AS rest '
-                            . 'FROM ' . $this->renameJSONPathVariable($vFieldName) . '_multiple '
+                            . 'FROM ' . $this->column($vFieldName, '_multiple') . ' '
                             . 'WHERE rest <> \'\''
                         . ')';
 
@@ -700,11 +711,7 @@ class SearchManager
 
         $vWhereRequest .= $vKeywordsConditions;
 
-        $vQueriesConditions = trim($this->buildQueriesConditions($vQueries, $vFields));
-
-        if (str_contains($vQueriesConditions, '((FALSE))')) {
-            return '';
-        }
+        $vQueriesConditions = trim($this->compileQueryAst($vQueryAst, $vFields));
 
         if ($vQueriesConditions != '') {
             $vWhereRequest .= ($vWhereRequest != '' ? ' AND ' : '') . $vQueriesConditions;
@@ -736,10 +743,6 @@ class SearchManager
                                 . 'FROM filteredPages f '
                                 . ($vSplittedsCount > 0 ? 'LEFT JOIN all_multiples s ON s.id = f.id ' : '')
                                 . ($vWhereRequest != '' ? 'WHERE ' . $vWhereRequest : '');
-
-        if (isset($_GET['showreq'])) {
-            echo '<hr><code style="width:100%;height:100px;">' . $vCompleteRequest . '</code><hr>';
-        }
 
         return $vCompleteRequest;
     }
@@ -870,46 +873,7 @@ class SearchManager
 
         return array_filter(
             array_map(
-                function ($pValue) {
-                    preg_match_all("/\s*([^=!<>]*)\s*(==|!=|<=|>=|=|<|>)(.*)/", $pValue, $pMatches);
-                    $vName = isset($pMatches[1][0]) ? trim($pMatches[1][0]) : null;
-
-                    $vOperator = isset($pMatches[2][0]) ? trim($pMatches[2][0]) : null;
-
-                    if ($vOperator == '=') {
-                        $vOperator = '==';
-                    }
-
-                    $vUniqueValues = [];
-                    if (isset($pMatches[3][0])) {
-                        foreach (explode(',', trim($pMatches[3][0])) as $vValue) {
-                            if (preg_match('/^\[(.*)\]$/', $vValue, $matches)) {
-                                switch ($matches[1]) {
-                                    case 'user.name':
-                                        $vValue = $this->wiki->getUserName();
-                                        break;
-                                    case 'user.entry.id_fiche':
-                                        $vUserManager = $this->wiki->services->get(UserManager::class);
-                                        $entry = $vUserManager->getAssociatedEntry();
-                                        if (!empty($entry)) {
-                                            $vValue = $entry['id_fiche'];
-                                        }
-                                        break;
-                                }
-                            }
-                            if (!in_array($vValue, $vUniqueValues, true)) {
-                                $vUniqueValues[] = $vValue;
-                            }
-                        }
-                    }
-
-                    return
-                        [
-                            'name' => $vName,
-                            'operator' => $vOperator,
-                            'values' => $vUniqueValues,
-                        ];
-                },
+                fn ($pValue) => $this->parseCondition($pValue),
                 array_filter(
                     array_unique(explode('|', $vQuery)),
                     function ($pValue) {
@@ -921,6 +885,283 @@ class SearchManager
                 return isset($pValue['name']) && trim($pValue['name']) != '';
             },
         );
+    }
+
+    /**
+     * Parses one `name op value,value…` fragment into a {name, operator, values} condition.
+     */
+    private function parseCondition(string $pValue): array
+    {
+        preg_match_all("/\s*([^=!<>]*)\s*(==|!=|<=|>=|=|<|>)(.*)/", $pValue, $pMatches);
+        $vName = isset($pMatches[1][0]) ? trim($pMatches[1][0]) : null;
+
+        $vOperator = isset($pMatches[2][0]) ? trim($pMatches[2][0]) : null;
+
+        if ($vOperator == '=') {
+            $vOperator = '==';
+        }
+
+        $vUniqueValues = [];
+        if (isset($pMatches[3][0])) {
+            foreach (explode(',', trim($pMatches[3][0])) as $vValue) {
+                if (preg_match('/^\[(.*)\]$/', $vValue, $matches)) {
+                    switch ($matches[1]) {
+                        case 'user.name':
+                            $vValue = $this->wiki->getUserName();
+                            break;
+                        case 'user.entry.id_fiche':
+                            $vUserManager = $this->wiki->services->get(UserManager::class);
+                            $entry = $vUserManager->getAssociatedEntry();
+                            if (!empty($entry)) {
+                                $vValue = $entry['id_fiche'];
+                            }
+                            break;
+                    }
+                }
+                if (!in_array($vValue, $vUniqueValues, true)) {
+                    $vUniqueValues[] = $vValue;
+                }
+            }
+        }
+
+        return [
+            'name' => $vName,
+            'operator' => $vOperator,
+            'values' => $vUniqueValues,
+        ];
+    }
+
+    /**
+     * Turns a query string into a boolean tree: ` OR ` and ` AND ` (uppercase, space-delimited) and
+     * parentheses group conditions, AND binding tighter than OR; legacy `|` reads as AND and `,` keeps
+     * its within-field meaning inside a leaf.
+     *
+     * @return array a node {type:'and'|'or', children:[]} or {type:'leaf', cond:[]}
+     */
+    public function parseQueryExpression(?string $pQuery): array
+    {
+        $vTokens = $this->tokenizeQuery((string)$pQuery);
+        $vPos = 0;
+        $this->queryParseError = false;
+        $vAst = $this->parseOr($vTokens, $vPos);
+        if ($this->queryParseError || $vPos < count($vTokens)) {
+            return ['type' => 'invalid'];
+        }
+
+        return $vAst ?? ['type' => 'and', 'children' => []];
+    }
+
+    /**
+     * @return list<array{kind: string, text?: string}>
+     */
+    private function tokenizeQuery(string $pQuery): array
+    {
+        $vTokens = [];
+        $vLeaf = '';
+        $vBracketDepth = 0;
+        $vLength = strlen($pQuery);
+        $flush = function () use (&$vLeaf, &$vTokens) {
+            if (trim($vLeaf) !== '') {
+                $vTokens[] = ['kind' => 'leaf', 'text' => trim($vLeaf)];
+            }
+            $vLeaf = '';
+        };
+        for ($i = 0; $i < $vLength; $i++) {
+            $vChar = $pQuery[$i];
+            if ($vChar === '[') {
+                $vBracketDepth++;
+            } elseif ($vChar === ']' && $vBracketDepth > 0) {
+                $vBracketDepth--;
+            }
+            if ($vBracketDepth === 0) {
+                if ($vChar === '(' || $vChar === ')') {
+                    $flush();
+                    $vTokens[] = ['kind' => $vChar === '(' ? 'lparen' : 'rparen'];
+                    continue;
+                }
+                if ($vChar === '|') {
+                    $flush();
+                    $vTokens[] = ['kind' => 'and'];
+                    continue;
+                }
+                if ($vChar === ' ' && substr($pQuery, $i, 5) === ' AND ') {
+                    $flush();
+                    $vTokens[] = ['kind' => 'and'];
+                    $i += 4;
+                    continue;
+                }
+                if ($vChar === ' ' && substr($pQuery, $i, 4) === ' OR ') {
+                    $flush();
+                    $vTokens[] = ['kind' => 'or'];
+                    $i += 3;
+                    continue;
+                }
+            }
+            $vLeaf .= $vChar;
+        }
+        $flush();
+
+        return $vTokens;
+    }
+
+    /**
+     * @param list<array{kind: string, text?: string}> $pTokens
+     */
+    private function parseOr(array $pTokens, int &$pPos): ?array
+    {
+        $vChildren = [];
+        $vFirst = $this->parseAnd($pTokens, $pPos);
+        if ($vFirst !== null) {
+            $vChildren[] = $vFirst;
+        }
+        while (isset($pTokens[$pPos]) && $pTokens[$pPos]['kind'] === 'or') {
+            $pPos++;
+            $vNext = $this->parseAnd($pTokens, $pPos);
+            if ($vNext !== null) {
+                $vChildren[] = $vNext;
+            }
+        }
+        if ($vChildren === []) {
+            return null;
+        }
+
+        return count($vChildren) === 1 ? $vChildren[0] : ['type' => 'or', 'children' => $vChildren];
+    }
+
+    /**
+     * @param list<array{kind: string, text?: string}> $pTokens
+     */
+    private function parseAnd(array $pTokens, int &$pPos): ?array
+    {
+        $vChildren = [];
+        $vFirst = $this->parseTerm($pTokens, $pPos);
+        if ($vFirst !== null) {
+            $vChildren[] = $vFirst;
+        }
+        while (isset($pTokens[$pPos]) && $pTokens[$pPos]['kind'] === 'and') {
+            $pPos++;
+            $vNext = $this->parseTerm($pTokens, $pPos);
+            if ($vNext !== null) {
+                $vChildren[] = $vNext;
+            }
+        }
+        if ($vChildren === []) {
+            return null;
+        }
+
+        return count($vChildren) === 1 ? $vChildren[0] : ['type' => 'and', 'children' => $vChildren];
+    }
+
+    /**
+     * @param list<array{kind: string, text?: string}> $pTokens
+     */
+    private function parseTerm(array $pTokens, int &$pPos): ?array
+    {
+        if (!isset($pTokens[$pPos])) {
+            return null;
+        }
+        $vToken = $pTokens[$pPos];
+        if ($vToken['kind'] === 'lparen') {
+            $pPos++;
+            $vInner = $this->parseOr($pTokens, $pPos);
+            if (isset($pTokens[$pPos]) && $pTokens[$pPos]['kind'] === 'rparen') {
+                $pPos++;
+            } else {
+                $this->queryParseError = true;
+            }
+
+            return $vInner;
+        }
+        if ($vToken['kind'] === 'leaf') {
+            $pPos++;
+            $vCondition = $this->parseCondition($vToken['text']);
+            if (!isset($vCondition['name']) || trim((string)$vCondition['name']) === '') {
+                return null;
+            }
+
+            return ['type' => 'leaf', 'cond' => $vCondition];
+        }
+
+        return null;
+    }
+
+    /**
+     * Rewrites a legacy query string into the explicit grammar: `|` becomes ` AND `, and a field's
+     * comma-separated values become a parenthesised ` OR ` group (` AND ` for `!=`, matching the old
+     * meaning). Already-explicit queries and single-value conditions are left untouched.
+     */
+    public function convertLegacyQuery(?string $pQuery): string
+    {
+        $vQuery = trim((string)$pQuery);
+        if ($vQuery === '' || preg_match('/ (AND|OR) /', $vQuery) === 1 || str_contains($vQuery, '(')) {
+            return $vQuery;
+        }
+
+        $vFragments = [];
+        foreach (explode('|', $vQuery) as $vFragment) {
+            if (trim($vFragment) === '') {
+                continue;
+            }
+            if (preg_match('/^(\s*[^=!<>]*?\s*)(==|!=|<=|>=|=|<|>)(.*)$/s', $vFragment, $vMatches) !== 1) {
+                $vFragments[] = trim($vFragment);
+                continue;
+            }
+            $vName = trim($vMatches[1]);
+            $vOperator = $vMatches[2];
+            $vValues = array_map('trim', explode(',', trim($vMatches[3])));
+            if (count($vValues) <= 1) {
+                $vFragments[] = $vName . $vOperator . trim($vMatches[3]);
+                continue;
+            }
+            $vGlue = $vOperator === '!=' ? ' AND ' : ' OR ';
+            $vFragments[] = '(' . implode($vGlue, array_map(fn ($pValue) => $vName . $vOperator . $pValue, $vValues)) . ')';
+        }
+
+        return implode(' AND ', $vFragments);
+    }
+
+    /**
+     * Every field name referenced by the leaves of a query tree.
+     *
+     * @return list<string>
+     */
+    public function queryAstFieldNames(array $pAst): array
+    {
+        if (($pAst['type'] ?? '') === 'leaf') {
+            return [$pAst['cond']['name']];
+        }
+        $vNames = [];
+        foreach ($pAst['children'] ?? [] as $vChild) {
+            $vNames = array_merge($vNames, $this->queryAstFieldNames($vChild));
+        }
+
+        return $vNames;
+    }
+
+    /**
+     * Compiles a query tree to SQL, reusing buildQueriesConditions() for each leaf so the per-field
+     * rules (collation, multiple values, missing fields, identifier quoting) stay in one place.
+     *
+     * @param array<string, mixed> $pFields
+     */
+    public function compileQueryAst(array $pAst, array $pFields): string
+    {
+        if (($pAst['type'] ?? '') === 'leaf') {
+            return $this->buildQueriesConditions([$pAst['cond']], $pFields);
+        }
+        $vParts = [];
+        foreach ($pAst['children'] ?? [] as $vChild) {
+            $vPart = $this->compileQueryAst($vChild, $pFields);
+            if (trim($vPart) !== '') {
+                $vParts[] = $vPart;
+            }
+        }
+        if ($vParts === []) {
+            return '';
+        }
+        $vGlue = ($pAst['type'] ?? 'and') === 'or' ? ' OR ' : ' AND ';
+
+        return '(' . implode($vGlue, $vParts) . ')';
     }
 
     /**
@@ -1295,6 +1536,47 @@ class SearchManager
     private function buildFieldDescriptorHash($pStructure)
     {
         return $pStructure['_mode_'] ?? '#|' . $pStructure['_type_'] ?? '#';
+    }
+
+    /**
+     * Whether a requested name can be a form field or a JSON path into one, and so be used as an SQL identifier.
+     */
+    private function isFieldName(mixed $pName): bool
+    {
+        if (!is_string($pName)) {
+            return false;
+        }
+        foreach (explode('.', $pName) as $vSegment) {
+            if (preg_match(BazarField::PROPERTY_NAME_PATTERN, $vSegment) !== 1) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * The SQL value at $path in a page body, NULL for a body that is not JSON whatever order the database evaluates conditions in.
+     */
+    private function bodyValue(string $path): string
+    {
+        return 'JSON_UNQUOTE(JSON_EXTRACT(CASE WHEN JSON_VALID(body) THEN body END, \'' . mysqli_real_escape_string($this->wiki->dblink, $path) . '\'))';
+    }
+
+    /**
+     * The column a requested field is extracted into, quoted as an SQL identifier.
+     */
+    private function column(string $pFieldName, string $pSuffix = ''): string
+    {
+        return '`' . str_replace('`', '``', $this->renameJSONPathVariable($pFieldName) . $pSuffix) . '`';
+    }
+
+    /**
+     * The JSON path to a requested field with every key quoted, e.g. $."geolocation"."bf_latitude".
+     */
+    private function jsonPath(string $pFieldName): string
+    {
+        return '$.' . implode('.', array_map(fn ($pKey) => '"' . addcslashes($pKey, '"\\') . '"', explode('.', $pFieldName)));
     }
 
     /**

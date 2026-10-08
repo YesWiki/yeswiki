@@ -253,7 +253,6 @@ class ArchiveServiceTest extends YesWikiTestCase
         try {
             self::createNeighbours($db, $neighbours);
 
-            // an archive as older versions took them: the neighbours' tables swept in
             $zip = new \ZipArchive();
             $this->assertTrue($zip->open($location) === true);
             $entry = ArchiveService::PRIVATE_FOLDER_NAME_IN_ZIP . '/' . ArchiveService::SQL_FILENAME_IN_PRIVATE_FOLDER_IN_ZIP;
@@ -463,11 +462,26 @@ class ArchiveServiceTest extends YesWikiTestCase
         }
         foreach ($data['files'] as $path) {
             if (strpos($path, '/') === false) {
-                // the root of a wiki always travels with it, whatever folders were asked for
                 continue;
             }
             $this->assertStringStartsWith('custom/', $path, "'$path' should have been left out");
         }
+    }
+
+    #[Depends('testArchiveServiceExisting')]
+    public function testAFolderSharingAPrefixWithAWhitelistedOneIsLeftOut(array $services)
+    {
+        $include = fn (string $folder) => $this->callProtected(
+            $services['archiveService'],
+            'shouldIncludeFolder',
+            [$folder, ['custom'], []]
+        );
+
+        $this->assertTrue($include('custom'));
+        $this->assertTrue($include('custom/lang'));
+        $this->assertFalse($include('custom-jdn'));
+        $this->assertFalse($include('custom-jdn/lang'));
+        $this->assertFalse($include('customs'));
     }
 
     #[Depends('testArchiveServiceExisting')]
@@ -501,7 +515,6 @@ class ArchiveServiceTest extends YesWikiTestCase
                 if ($zip->open($location) !== true) {
                     $data['error'] = "\"\$location\" (\"$location\") is not openable !";
                 } else {
-                    // create tmp folder in cache
                     do {
                         $tmpFolderName = 'tmp_folder_to_delete_' . md5(time());
                     } while (file_exists("cache/$tmpFolderName"));
@@ -537,7 +550,6 @@ class ArchiveServiceTest extends YesWikiTestCase
                         }, $files);
                         $data['files'] = $files;
 
-                        // wakka content
                         if (file_exists("cache/$tmpFolderName/wakka.config.php") && is_file("cache/$tmpFolderName/wakka.config.php")) {
                             $configurationService = $wiki->services->get(ConfigurationService::class);
                             $config = $configurationService->getConfiguration("cache/$tmpFolderName/wakka.config.php");

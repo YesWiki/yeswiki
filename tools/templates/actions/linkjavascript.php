@@ -1,6 +1,7 @@
 <?php
 
 use Symfony\Component\Security\Csrf\CsrfTokenManager;
+use YesWiki\Core\Service\AssetsManager;
 use YesWiki\Core\Service\ThemeManager;
 
 $themeManager = $this->services->get(ThemeManager::class);
@@ -108,7 +109,7 @@ echo "<script>
     };
 </script>';
 
-// on affiche
+echo $this->services->get(AssetsManager::class)->importMap();
 echo $yeswiki_javascripts;
 
 // This GLOBALS is populated from AddCSS and AddCSSFile, but already flush in <HEAD> by actions/linkstyle__.php

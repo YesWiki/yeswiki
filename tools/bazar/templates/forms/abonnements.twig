@@ -40,7 +40,7 @@
 			<td>
 				<a
 					class="btn btn-default btn-xs"
-					href="{{ url({ params: { vue: 'abonnements', action: 'sync', actor: actorUri, idformulaire: form.bn_id_nature }}) }}"
+					href="{{ url({ params: { vue: 'abonnements', action: 'sync', actor: actorUri, idformulaire: form.bn_id_nature, synctoken: csrfToken({id: 'main', refresh: false}) }}) }}"
 					title="{{ _t('BAZ_SYNC_ACTOR_POSTS') }}"
 				>
 					<i class="fa fa-retweet icon-white"></i>

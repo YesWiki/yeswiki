@@ -13,12 +13,20 @@ export default {
       label: _t('BAZ_FORM_EDIT_DATE_TODAY_BUTTON'),
       options: { ' ': _t('NO'), today: _t('YES') },
     },
+    entry_mode: {
+      label: _t('BAZ_FORM_EDIT_DATE_ENTRY_MODE'),
+      options: {
+        ' ': _t('BAZ_FORM_EDIT_DATE_ENTRY_MODE_AUTO'),
+        time: _t('BAZ_FORM_EDIT_DATE_ENTRY_MODE_TIME'),
+        allday: _t('BAZ_FORM_EDIT_DATE_ENTRY_MODE_ALL_DAY'),
+      },
+    },
     hint: { label: _t('BAZ_FORM_EDIT_HELP'), value: '' },
     read: readConf,
     write: writeconf,
   },
   advancedAttributes: ['read', 'write', 'today_button'],
   // disabledAttributes: [],
-  attributesMapping: { ...defaultMapping, ...{ 5: 'today_button' } },
+  attributesMapping: { ...defaultMapping, ...{ 5: 'today_button', 6: 'entry_mode' } },
   // renderInput(fieldData) {},
 }

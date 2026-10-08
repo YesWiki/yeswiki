@@ -59,7 +59,7 @@
         {% endif %}
         {% if not entry['external-data'] %}
           {% if canEdit %}
-            <a class="btn btn-entry-action btn-sm btn-default" href="{{ url({ tag: entryId, handler: 'edit' }) }}">
+            <a class="btn btn-entry-action btn-sm btn-default" href="{{ url({ tag: entryId, handler: 'edit', params: editContextUrl ? { incomingurl: editContextUrl } : {} }) }}">
               <i class="fa fa-pencil-alt icon-pencil"></i>
               <span>{{ _t('BAZ_MODIFIER') }}</span>
             </a>

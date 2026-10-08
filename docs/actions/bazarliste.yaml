@@ -212,6 +212,10 @@ actions:
         type: range
         min: 1
         max: 12
+      query:
+        intro: _t(AB_bazar_query_intro)
+        type: query
+        btn-label-add: _t(AB_bazar_query_btn-label-add)
       filteruserasowner:
         label: _t(AB_bazar_commons2_filter_user_as_owner)
         type: checkbox

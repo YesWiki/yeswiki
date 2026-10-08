@@ -23,7 +23,7 @@ export default {
         label: _t('BAZ_FORM_EDIT_QUERIES_LABEL'),
         value: '',
         placeholder:
-          'ex. : checkboxfiche6=PageTag ; cf. https://yeswiki.net/?LierFormulairesEntreEux',
+          'ex. : checkboxfiche6=PageTag ; cf. https://yeswiki.net/?doc#/docs/fr/bazar?id=_323-afficher-une-partie-des-donn%C3%A9es-query',
       },
       orderBy: {
         label: _t('BAZ_FORM_EDIT_OPTIONS_ORDER_BY_LABEL'),

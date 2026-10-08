@@ -15,6 +15,9 @@ use YesWiki\Core\Service\ApiService;
 use YesWiki\Core\Service\UserManager;
 use YesWiki\Wiki;
 
+require_once 'includes/autoload.inc.php';
+require_once 'includes/constants.php';
+require_once 'includes/YesWiki.php';
 require_once 'tests/YesWikiTestCase.php';
 
 /**
@@ -44,12 +47,13 @@ class ApiServiceTest extends TestCase
         $aclService = $this->createStub(AclService::class);
         $aclService->method('check')->willReturn($aclCheckReturns);
 
-        $userManager = $this->createMock(UserManager::class);
         if (!empty($bearerUserName)) {
             $user = $this->createStub(User::class);
-            $userManager->method('getOneByName')->with($bearerUserName)->willReturn($user);
+            $userManager = $this->createMock(UserManager::class);
+            $userManager->expects($this->once())->method('getOneByName')->with($bearerUserName)->willReturn($user);
             $authController->expects($this->once())->method('login')->with($user);
         } else {
+            $userManager = $this->createStub(UserManager::class);
             $authController->expects($this->never())->method('login');
         }
 
@@ -63,9 +67,6 @@ class ApiServiceTest extends TestCase
             fn ($key) => $key === 'api_allowed_keys' ? $apiAllowedKeys : null
         );
 
-        // Wiki declares a legacy Method() function, which collides case-insensitively with
-        // PHPUnit's own mock-builder method() and makes it undoublable ; build a real,
-        // constructor-free instance instead and set only the property ApiService reads.
         $wiki = (new \ReflectionClass(Wiki::class))->newInstanceWithoutConstructor();
         $wiki->request = empty($bearerToken)
             ? Request::create('/')
@@ -76,32 +77,24 @@ class ApiServiceTest extends TestCase
 
     public function testGroupRestrictedRouteIsNotBypassedByPublicApiMode()
     {
-        // GHSA: 'api_allowed_keys' => ['public' => true] must not grant access to a
-        // route restricted to a group (e.g. options={"acl":{"@admins"}}) for an
-        // anonymous caller with no token at all.
         $service = $this->buildService(true, false);
         $this->assertFalse($service->isAuthorized(self::REQUEST_PARAMS, $this->routesFor(['@admins'])));
     }
 
     public function testGroupRestrictedRouteIsGrantedWhenAclActuallySatisfied()
     {
-        // a genuinely connected admin (aclService->check() true) must still be granted access
         $service = $this->buildService(true, true);
         $this->assertTrue($service->isAuthorized(self::REQUEST_PARAMS, $this->routesFor(['@admins'])));
     }
 
     public function testGroupRestrictedRouteIsNotGrantedToNonAdminBearerToken()
     {
-        // a *valid* api_allowed_keys bearer token for a non-admin user must not, on its
-        // own, satisfy a group-restricted route (aclService->check() correctly returns false)
         $service = $this->buildService(false, false, 'sometoken', 'someuser');
         $this->assertFalse($service->isAuthorized(self::REQUEST_PARAMS, $this->routesFor(['@admins'])));
     }
 
     public function testNonGroupRouteIsStillOpenedByPublicApiMode()
     {
-        // ordinary content routes (acl "+", "public", or none) must keep working as
-        // documented in docs/en/dev.md "Public API scenario"
         $service = $this->buildService(true, false);
         $this->assertTrue($service->isAuthorized(self::REQUEST_PARAMS, $this->routesFor(['+'])));
     }

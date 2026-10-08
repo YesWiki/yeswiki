@@ -36,6 +36,7 @@ class PageListingsAclTest extends YesWikiTestCase
 
         $this->pageManager->save(self::PUBLIC_TAG, 'public content', '', true);
         $this->pageManager->save(self::RESTRICTED_TAG, 'secret content', '', true);
+        $this->aclService->save(self::PUBLIC_TAG, 'read', '*');
         $this->aclService->save(self::RESTRICTED_TAG, 'read', '@admins');
         foreach ([self::PUBLIC_TAG, self::RESTRICTED_TAG] as $tag) {
             $this->tripleStore->create($tag, self::TAG_PROPERTY, self::TAG_VALUE, '', '');
@@ -52,8 +53,8 @@ class PageListingsAclTest extends YesWikiTestCase
         foreach ([self::PUBLIC_TAG, self::RESTRICTED_TAG] as $tag) {
             $this->tripleStore->delete($tag, self::TAG_PROPERTY, self::TAG_VALUE, '', '');
             $this->pageManager->deleteOrphaned($tag);
+            $this->aclService->delete($tag);
         }
-        $this->aclService->delete(self::RESTRICTED_TAG);
     }
 
     public static function actionProvider(): array

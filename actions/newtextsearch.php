@@ -160,16 +160,8 @@ if ($phrase) {
     $requestfull = "SELECT body, tag FROM {$dbService->prefixTable('pages')} WHERE latest = \"Y\" " . (!empty($aclRequest) ? ' AND ' . $aclRequest : '') .
         "AND (body LIKE \"%{$phraseFormatted}%\"{$requeteSQLForList}) ORDER BY tag LIMIT 100";
 
-    // exécution de la requete
     if ($resultat = $dbService->loadAll($requestfull)) {
-        if ($GLOBALS['js']) {
-            $js = $GLOBALS['js'];
-        } else {
-            $js = '';
-        }
-        // affichage des resultats
-
-        // affichage des résultats en liste
+        $js = $GLOBALS['js'] ?? '';
         if (empty($separator)) {
             echo $this->Format('---- --- **' . _t('SEARCH_RESULTS') . ' [""' . $phrase . '""] :---**');
             echo '<ol>';
@@ -181,7 +173,7 @@ if ($phrase) {
                     $extract = '';
                     if ($counter < $maxDisplayedPages) {
                         if ($entryManager->isEntry($page['tag'])) {
-                            $renderedEntry = $entryController->view($page['tag'], '', false); // without footer
+                            $renderedEntry = $entryController->view($page['tag'], '', false);
                             $extract = displayNewSearchResult($renderedEntry, $phrase, $needles);
                         }
                         if (empty($extract)) {
@@ -193,8 +185,6 @@ if ($phrase) {
                 }
             }
             echo '</ol>';
-
-        // affichage des résultats en ligne
         } else {
             $separator = htmlspecialchars($separator, ENT_COMPAT, YW_CHARSET);
             echo '<p>' . _t('SEARCH_RESULT_OF') . ' "', htmlspecialchars($phrase, ENT_COMPAT, YW_CHARSET), '"&nbsp;: ';

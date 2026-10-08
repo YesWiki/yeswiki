@@ -25,6 +25,7 @@ class PageManagerGetRecentlyChangedTest extends YesWikiTestCase
 
         $pageManager->save(self::PUBLIC_TAG, 'public content', '', true);
         $pageManager->save(self::RESTRICTED_TAG, 'secret content', '', true);
+        $aclService->save(self::PUBLIC_TAG, 'read', '*');
         $aclService->save(self::RESTRICTED_TAG, 'read', '@admins');
         unset($_SESSION['user']);
 
@@ -36,6 +37,7 @@ class PageManagerGetRecentlyChangedTest extends YesWikiTestCase
         } finally {
             $pageManager->deleteOrphaned(self::PUBLIC_TAG);
             $pageManager->deleteOrphaned(self::RESTRICTED_TAG);
+            $aclService->delete(self::PUBLIC_TAG);
             $aclService->delete(self::RESTRICTED_TAG);
         }
     }

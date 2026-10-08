@@ -13,7 +13,6 @@ class SectionAction extends YesWikiAction
         $patterncolor = $patternreverse ? $bgcolor : 'var(--main-bg-color)';
         $patternborder = false;
 
-        // image's background color
         switch ($patternId) {
             case 'border-solid':
             case 'border-dashed':
@@ -72,7 +71,6 @@ class SectionAction extends YesWikiAction
         }
 
         ob_start();
-        // image's filename
         $file = $this->arguments['file'] ?? '';
         $backgroundimg = true;
         if (empty($file) && empty($bgcolor)) {
@@ -86,21 +84,18 @@ class SectionAction extends YesWikiAction
             }
             $att = new attach($this->wiki);
 
-            // test of image extension
             if (!$att->isPicture($file)) {
                 echo '<div class="alert alert-danger"><strong>' . _t('ATTACH_ACTION_BACKGROUNDIMAGE') . '</strong> : '
                     . _t('ATTACH_PARAM_FILE_MUST_BE_IMAGE') . '.</div>' . "\n";
 
                 return;
             }
-            // image size
             $height = $this->arguments['height'] ?? '';
             $width = $this->arguments['width'] ?? '';
             if (empty($width)) {
                 $width = 1920;
             }
 
-            // recuperation des parametres necessaires
             $att->file = $file;
             $att->desc = 'background image ' . $file;
             $att->height = $height;
@@ -108,23 +103,19 @@ class SectionAction extends YesWikiAction
             $fullFilename = $att->GetFullFilename();
         }
 
-        // container class
         $class = $this->arguments['class'] ?? '';
 
-        // container id
         $id = $this->arguments['id'] ?? '';
 
-        // container data attributes
         $data = $this->getService(YesWiki\Templates\Service\Utils::class)->getDataParameter();
 
         $pagetag = $this->wiki->GetPageTag();
 
         if ($this->check_end_elem('section')) {
-            // specify the role to be checked ( *, +, %, @admins)
             $role = $this->arguments['visibility'] ?? '';
             $role = empty($role) ? $role : str_replace('\\n', "\n", $role);
             $visible = !$role || $GLOBALS['wiki']->CheckACL($role, null, false);
-            $class = ($backgroundimg ? 'background-image' : '')
+            $class = ($backgroundimg || $patternborder ? 'background-image' : '')
                 . ($patternId && !$patternborder ? ' with-bg-pattern' : '')
                 . ($patternborder ? ' pattern-border' : '')
                 . ($visible ? '' : ' remove-this-div-on-page-load ')
@@ -151,10 +142,8 @@ class SectionAction extends YesWikiAction
             } else {
                 echo '<div>';
             }
-            // test d'existance du fichier
             if (isset($fullFilename) and (!file_exists($fullFilename) or $fullFilename == '')) {
                 $att->showFileNotExits();
-                // return;
             }
         } else {
             echo $this->generate_error_msg('section');

@@ -16,8 +16,6 @@ use YesWiki\Core\Service\TemplateEngine;
  */
 function baz_insertion_fiche($data)
 {
-    $data['antispam'] = 1;
-
     return $GLOBALS['wiki']->services->get(EntryManager::class)->create($data['id_fiche'], $data);
 }
 
@@ -66,13 +64,12 @@ function baz_requete_recherche_fiches(
 
     $fiches = $GLOBALS['wiki']->services->get(SearchManager::class)->search([
         'queries' => $tableau_criteres,
-        'formsIds' => $id, // Types de fiches (par ID de formulaire)
-        'user' => $personne, // N'affiche que les fiches d'un utilisateur
-        'keywords' => $q, // Mots-clés pour la recherche fulltext
-        'searchOperator' => $facettesearch, // Opérateur à appliquer aux mots-clés
+        'formsIds' => $id,
+        'user' => $personne,
+        'keywords' => $q,
+        'searchOperator' => $facettesearch,
     ]);
 
-    // Re-encode fiche as Wiki page
     return array_map(function ($fiche) {
         return ['body' => json_encode($fiche)];
     }, $fiches);
@@ -161,7 +158,7 @@ function baz_nextId()
  */
 function testACLsiSaisir($mode, $tableau_template, $valeurs_fiche)
 {
-    $acl = empty($tableau_template[12]) ? '' : $tableau_template[12]; // acl pour l'écriture
+    $acl = empty($tableau_template[12]) ? '' : $tableau_template[12];
 
     if (isset($valeurs_fiche['id_fiche'])) {
         $tag = $valeurs_fiche['id_fiche'];
