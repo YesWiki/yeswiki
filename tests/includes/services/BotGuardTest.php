@@ -202,6 +202,7 @@ class BotGuardTest extends YesWikiTestCase
             'link in the name' => ['link-in-name', 'x@uberip.com', '🔈 Transfer № R8378 from Coinbase. GET -> graph.org/Bitcoin', 'fzrr0e', 'hello'],
             'url in the name' => ['link-in-name', 'x@example.org', 'https://spam.example', 'Hello', 'Hello there'],
             'same word everywhere' => ['repeated', 'TALKTOTONYA@GMAIL.COM', 'Test', 'Test', 'test'],
+            'name and subject repeated in the message' => ['repeated', 'test@example.org', 'test', 'Test', 'Ceci est un message de TEST.'],
             'script tag' => ['injection', 'x@example.org', 'n', "'>\"></script><svg/onload=confirm('x')>", 'm'],
             'quote and bracket run' => ['injection', 'x@example.org', 'EmZZ', 'abBH', 'yrxU\'",,,.()))'],
         ];
@@ -227,6 +228,8 @@ class BotGuardTest extends YesWikiTestCase
             'a camel case name' => ['jb@example.org', 'JeanBaptisteDupont', 'Inscription', 'Je voudrais venir samedi.'],
             'shouting' => ['x@example.org', 'PAUL', 'URGENT', 'BONJOURATOUS'],
             'short words' => ['x@example.org', 'Paul', 'RDV', 'Merci'],
+            'the name in the message only' => ['paul@example.org', 'Paul', 'Question', 'Bonjour, ici Paul.'],
+            'name and subject inside a longer word' => ['x@example.org', 'test', 'test', 'Les tests du formulaire ont marché.'],
             'a site in the message' => ['x@example.org', 'Paul', 'Lien', 'Voir https://exemple.org/page, merci !'],
             'an email in the name' => ['paul@example.org', 'paul@example.org', 'Question', 'Bonjour'],
         ];

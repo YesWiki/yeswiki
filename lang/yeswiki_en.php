@@ -603,7 +603,7 @@ return [
     'BOT_GUARD_REASON_DOTTED_GMAIL' => 'Gmail address full of dots',
     'BOT_GUARD_REASON_INJECTION' => 'injected code',
     'BOT_GUARD_REASON_LINK_IN_NAME' => 'link in the name',
-    'BOT_GUARD_REASON_REPEATED' => 'same text everywhere',
+    'BOT_GUARD_REASON_REPEATED' => 'same word as name, subject and message',
     'BOT_GUARD_STATS_TITLE' => 'Submissions blocked by the anti-bot guard',
     'BOT_GUARD_STATS_INTRO' => '%{total} submission(s) refused in the last %{days} days, across every form: page edit, entry, comment, contact, sign-up.',
     'BOT_GUARD_STATS_DAY' => 'Day',

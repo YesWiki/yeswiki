@@ -254,7 +254,7 @@ return [
     'BOT_GUARD_REASON_DOTTED_GMAIL' => 'adresse Gmail truffée de points',
     'BOT_GUARD_REASON_INJECTION' => 'code injecté',
     'BOT_GUARD_REASON_LINK_IN_NAME' => 'lien dans le nom',
-    'BOT_GUARD_REASON_REPEATED' => 'même texte partout',
+    'BOT_GUARD_REASON_REPEATED' => 'même mot en nom, sujet et message',
     'BOT_GUARD_STATS_TITLE' => 'Envois bloqués par la protection anti-robots',
     'BOT_GUARD_STATS_INTRO' => '%{total} envoi(s) refusé(s) ces %{days} derniers jours, tous formulaires confondus : modification de page, fiche, commentaire, contact, inscription.',
     'BOT_GUARD_STATS_DAY' => 'Jour',

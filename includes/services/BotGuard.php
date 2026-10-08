@@ -235,11 +235,14 @@ class BotGuard
     }
 
     /**
-     * Whether the name, subject and message are the same word, as in Test, Test, Test.
+     * Whether the name and subject are the same word and the message repeats it, as in Test, Test, "un test".
      */
     protected function isRepeated(array $texts): bool
     {
-        return $texts[2] !== '' && count(array_unique(array_map('mb_strtolower', $texts))) === 1;
+        [$name, $subject, $message] = array_map('mb_strtolower', $texts);
+
+        return $name !== '' && $name === $subject
+            && preg_match('/(?<![\\p{L}\\p{N}])' . preg_quote($name, '/') . '(?![\\p{L}\\p{N}])/u', $message) === 1;
     }
 
     /**
