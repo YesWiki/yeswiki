@@ -110,7 +110,7 @@ $(document).ready(() => {
       }
     }
     if (m) {
-      if ($(this).prop('checked') == true) {
+      if ($(this).prop('checked') === true) {
         $(
           `div[id='${m[1]}_${m[2]}']:not(.conditional_inversed_checkbox)`,
         ).show()
@@ -243,7 +243,7 @@ $(document).ready(() => {
       this[key] = this[key].filter(function () {
         let inputVisible = $(this).filter(':visible')
         if (
-          ($(this).prop('tagName') == 'TEXTAREA' &&
+          ($(this).prop('tagName') === 'TEXTAREA' &&
             ($(this).hasClass('aceditor-textarea') ||
               $(this).hasClass('summernote'))) ||
           $(this).siblings('.bootstrap-tagsinput').length > 0
@@ -256,7 +256,7 @@ $(document).ready(() => {
         const notVisibleParents = $(this).parentsUntil(':visible')
         if (
           typeof notVisibleParents === 'undefined' ||
-          notVisibleParents.length == 0
+          notVisibleParents.length === 0
         ) {
           return false
         }
@@ -265,10 +265,10 @@ $(document).ready(() => {
             .parentsUntil(':visible')
             .filter(function () {
               return (
-                $(this).css('display') == 'none' &&
-                $(this).attr('role') != 'tabpanel'
+                $(this).css('display') === 'none' &&
+                $(this).attr('role') !== 'tabpanel'
               )
-            }).length == 0
+            }).length === 0
         ) {
           return true
         }
@@ -291,19 +291,19 @@ $(document).ready(() => {
       if ($(input).siblings('.bootstrap-tagsinput').length > 0) {
         return 'tags'
       }
-      if ($(input).attr('type') == 'email') {
+      if ($(input).attr('type') === 'email') {
         return 'email'
       }
-      if ($(input).attr('type') == 'url') {
+      if ($(input).attr('type') === 'url') {
         return 'url'
       }
-      if ($(input).attr('type') == 'range') {
+      if ($(input).attr('type') === 'range') {
         return 'range'
       }
-      if ($(input).prop('tagName') == 'SELECT') {
+      if ($(input).prop('tagName') === 'SELECT') {
         return 'select'
       }
-      if ($(input).prop('tagName') == 'TEXTAREA') {
+      if ($(input).prop('tagName') === 'TEXTAREA') {
         if ($(input).hasClass('aceditor-textarea')) {
           return 'wikitextarea'
         }
@@ -315,12 +315,12 @@ $(document).ready(() => {
       return 'default'
     },
     updateError(index) {
-      if (this.error == -1) {
+      if (this.error === -1) {
         this.error = index
       }
     },
     updateErrorMessage(message) {
-      if (this.error == -1) {
+      if (this.error === -1) {
         this.errorMessage = message
       }
     },
@@ -344,7 +344,7 @@ $(document).ready(() => {
       if ($(input).prop('required') && !this.defaultChecking(input)) {
         return false
       }
-      if ($(input).val() != '' && reg.test($(input).val()) === false) {
+      if ($(input).val() !== '' && reg.test($(input).val()) === false) {
         this.updateErrorMessage(_t('BAZ_FORM_INVALID_EMAIL'))
         return false
       }
@@ -356,7 +356,7 @@ $(document).ready(() => {
       if ($(input).prop('required') && !this.defaultChecking(input)) {
         return false
       }
-      if ($(input).val() != '' && reg.test($(input).val()) === false) {
+      if ($(input).val() !== '' && reg.test($(input).val()) === false) {
         this.updateErrorMessage(_t('BAZ_FORM_INVALID_URL'))
         return false
       }
@@ -428,7 +428,7 @@ $(document).ready(() => {
       const vLatitude = $(input).find('.yw-latitude-input').val()
       const vLongitude = $(input).find('.yw-longitude-input').val()
       const vGeometries = $(input).find('.yw-geometries-input').val()
-      if (vLatitude == '' && vLongitude == '' && vGeometries == '') {
+      if (vLatitude === '' && vLongitude === '' && vGeometries === '') {
         this.updateErrorMessage(_t('BAZ_FORM_EMPTY_GEOLOC'))
         return false
       }
@@ -466,7 +466,7 @@ $(document).ready(() => {
         const element = $(input)[0]
         if (val.length > 0) {
           if (!element.checkValidity()) {
-            if (this.errorPattern == -1) {
+            if (this.errorPattern === -1) {
               this.errorMessagePattern = _t('BAZ_FORM_INVALID_TEXT')
               this.errorPattern = index
             }
@@ -491,14 +491,14 @@ $(document).ready(() => {
       const error = this[type] ?? -1
       if (error > -1) {
         let input = this.requiredInputs[error]
-        if ($(input).filter(':visible').length == 0) {
+        if ($(input).filter(':visible').length === 0) {
           const panel = $(input).parentsUntil(':visible').last()
-          if ($(panel).attr('role') == 'tabpanel') {
+          if ($(panel).attr('role') === 'tabpanel') {
             $(`a[href="#${$(panel).attr('id')}"][role=tab]`)
               .first()
               .click()
           }
-          if ($(input).filter(':visible').length == 0) {
+          if ($(input).filter(':visible').length === 0) {
             input = $(input).closest(':visible')
           }
         }
@@ -612,13 +612,10 @@ $(document).ready(() => {
         $(this)
           .find('.form-actions button[type=submit]')
           .each(function () {
+            $(this).data('label', $(this).html())
             $(this).attr('disabled', true)
             $(this).addClass('submit-disabled')
-            $(this).attr('title', _t('BAZ_SAVING'))
-            const button = $(this)
-            setTimeout(() => {
-              $(button).removeAttr('disabled')
-            }, 10000)
+            $(this).text(`${_t('BAZ_SAVING')}…`)
           })
         return true
       }
@@ -630,6 +627,16 @@ $(document).ready(() => {
   })
 
   $('.bazar-form').removeAttr('onsubmit')
+
+  window.addEventListener('pageshow', (event) => {
+    if (!event.persisted) return
+    $('.bazar-form .form-actions button[type=submit]').each(function () {
+      if ($(this).data('label') !== undefined) {
+        $(this).html($(this).data('label'))
+      }
+      $(this).removeAttr('disabled').removeClass('submit-disabled')
+    })
+  })
 
   const $dateinputs = $('.bazar-date')
 
@@ -842,7 +849,7 @@ $(document).ready(() => {
 
       history.pushState({ filter: true }, null, urlquery)
 
-      if (window.frameElement && window.frameElement.nodeName == 'IFRAME') {
+      if (window.frameElement && window.frameElement.nodeName === 'IFRAME') {
         var iframeurlquery = `${window.top.location.search.replace(
           `&${name}=`,
           '',
@@ -869,7 +876,7 @@ $(document).ready(() => {
 
       history.pushState({ filter: true }, null, urlquery)
 
-      if (window.frameElement && window.frameElement.nodeName == 'IFRAME') {
+      if (window.frameElement && window.frameElement.nodeName === 'IFRAME') {
         iframeurlquery = decodeURIComponent(window.top.location.search).replace(
           new RegExp(`[?|&]${name}=` + '([^&;]+?)(&|#|;|$)'),
           `&${name}=${value}`,
@@ -937,7 +944,7 @@ $(document).ready(() => {
       tabres = tabfilters[0].toArray()
 
       $.each(tabfilters, (index, tab) => {
-        tabres = tabres.filter((n) => tab.toArray().indexOf(n) != -1)
+        tabres = tabres.filter((n) => tab.toArray().indexOf(n) !== -1)
       })
       $('body').trigger('updatefilters', [tabres])
       e.data.$entries.hide().filter(tabres).show()
