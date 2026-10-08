@@ -51,5 +51,33 @@ class TocActionTest extends YesWikiTestCase
         $this->assertStringNotContainsString('data-toggle="collapse"', $html);
         $this->assertStringNotContainsString('class="toc well', $html);
         $this->assertStringNotContainsString('scrollspy', $html);
+        $this->assertStringNotContainsString('data-yw-toc-rail', $html);
+    }
+
+    public function testRailDisplaysRenderANavWithoutTheFoldingBox(): void
+    {
+        $wiki = $this->getWiki();
+        $pageManager = $wiki->services->get(PageManager::class);
+
+        foreach (['rail' => false, 'graduated-rail' => true] as $display => $graduated) {
+            $body = "{{toc display=\"$display\" title=\"Sur cette page\"}}\n\n## First heading\n\nSome text.\n\n### Sub heading\n\nMore.\n";
+            $pageManager->save(self::PAGE_TAG, [PageBody::CONTENT => $body], '', true);
+            $page = $pageManager->getOne(self::PAGE_TAG);
+            $wiki->services->get(\YesWiki\Kernel\Service\PageContext::class)->assignPage($page);
+
+            $html = $wiki->services->get(\YesWiki\Render\Service\MarkdownFormatterService::class)->format($body);
+
+            $this->assertMatchesRegularExpression('/<nav [^>]*class="yw-toc yw-toc--rail[^"]*"[^>]*aria-label="Sur cette page"[^>]*data-yw-toc-rail/', $html);
+            $this->assertSame($graduated, str_contains($html, 'yw-toc--graduated'), $display);
+            $this->assertStringContainsString('<li class="toc3">', $html);
+            $this->assertStringNotContainsString('<details', $html);
+            $this->assertStringContainsString('<div class="yw-toc__heading">Sur cette page</div>', $html);
+        }
+
+        $body = "{{toc display=\"rail\"}}\n\n## First heading\n\nSome text.\n";
+        $pageManager->save(self::PAGE_TAG, [PageBody::CONTENT => $body], '', true);
+        $wiki->services->get(\YesWiki\Kernel\Service\PageContext::class)->assignPage($pageManager->getOne(self::PAGE_TAG));
+        $html = $wiki->services->get(\YesWiki\Render\Service\MarkdownFormatterService::class)->format($body);
+        $this->assertStringNotContainsString('yw-toc__heading', $html, 'without a title the rail shows no heading');
     }
 }
