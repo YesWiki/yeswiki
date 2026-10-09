@@ -1,12 +1,3 @@
-/**
- * Every palette popover on the page, so one pair of document listeners serves them all.
- *
- * A popover that only closes by its own button is one people leave open over the field they were
- * trying to look at, so a click elsewhere and Escape both shut it. These sit on `document` and are
- * registered once for the page: htmx swaps the rail in and out, and a listener added per swap
- * would pile up, each one holding a box that is no longer in the document. `isConnected` retires
- * those instead.
- */
 const palettes = []
 
 const livePalettes = () => palettes.filter(({ box }) => box.isConnected)
@@ -36,7 +27,6 @@ ywInitEach('#yw-preset-rail', (rail) => {
 
   const wikiPreset = document.getElementById('wikipreset')
 
-  /** The one link this screen adds; there is only ever one preset being tried on. */
   let tryLink = null
 
   /** Wear a preset on this page alone. */
@@ -92,24 +82,50 @@ ywInitEach('#yw-preset-rail', (rail) => {
     return !rail.querySelector(`[data-yw-preset-field="dark.${token}"]`)
   }
 
+  const gallery = document.querySelector('.yw-preset-preview')
+  const pageFontSize = parseFloat(
+    getComputedStyle(document.documentElement).getPropertyValue(
+      '--yw-font-size-base',
+    ),
+  )
+
+  /** Text size and spacing stay on the gallery, so the rail keeps its own measures. */
+  function galleryOnly(token) {
+    return Boolean(gallery) && /^yw-(font-size-base|space-)/.test(token)
+  }
+
+  /** Where a token is painted, and the style property that carries it there. */
+  function placeOf(token) {
+    if (!galleryOnly(token)) return [document.documentElement, `--${token}`]
+    return token === 'yw-font-size-base'
+      ? [gallery, 'zoom']
+      : [gallery, `--${token}`]
+  }
+
+  /** Text size as a zoom on the gallery: the page's rem, and with it the rail, stays put. */
+  function styleValueOf(token, value) {
+    if (token !== 'yw-font-size-base' || !galleryOnly(token)) return value
+    const size = parseFloat(value)
+    return size > 0 && pageFontSize > 0 ? String(size / pageFontSize) : ''
+  }
+
   /** Paint one token onto the document, so the gallery below repaints with it. */
   function preview(name, value) {
     const [scheme, token] = partsOf(name)
     if (scheme !== currentScheme() && !isSchemeIndependent(token)) return
+    const [element, property] = placeOf(token)
     if (!beforePreview.has(token)) {
-      beforePreview.set(
-        token,
-        document.documentElement.style.getPropertyValue(`--${token}`),
-      )
+      beforePreview.set(token, element.style.getPropertyValue(property))
     }
-    document.documentElement.style.setProperty(`--${token}`, value)
+    element.style.setProperty(property, styleValueOf(token, value))
   }
 
   function undoPreview() {
     undoInks()
     beforePreview.forEach((value, token) => {
-      if (value) document.documentElement.style.setProperty(`--${token}`, value)
-      else document.documentElement.style.removeProperty(`--${token}`)
+      const [element, property] = placeOf(token)
+      if (value) element.style.setProperty(property, value)
+      else element.style.removeProperty(property)
     })
     beforePreview.clear()
   }
@@ -202,7 +218,6 @@ ywInitEach('#yw-preset-rail', (rail) => {
 
   const badges = [...rail.querySelectorAll('[data-yw-preset-contrast]')]
 
-  /** A colour as [r, g, b], whatever notation it was written in. */
   const probe = document.createElement('span')
   probe.setAttribute('aria-hidden', 'true')
   probe.style.display = 'none'
@@ -236,7 +251,7 @@ ywInitEach('#yw-preset-rail', (rail) => {
     return (light + 0.05) / (dark + 0.05)
   }
 
-  /** The grade a ratio earns, by WCAG 2.1: AAA 7 -- body text, the. */
+  /** The WCAG 2.1 grade a contrast ratio earns. */
   function gradeOf(ratio) {
     if (ratio >= 7) return 'AAA'
     if (ratio >= 4.5) return 'AA'
@@ -259,7 +274,6 @@ ywInitEach('#yw-preset-rail', (rail) => {
 
   const inkFor = JSON.parse(rail.dataset.ywPresetInkFor || '{}')
 
-  /** what showInks() has painted, so closing the rail takes it off like every other. */
   const inkPainted = new Set()
 
   function showInks() {
@@ -339,7 +353,6 @@ ywInitEach('#yw-preset-rail', (rail) => {
     return cataloguePromise
   }
 
-  /** Draw each suggested family in its own face. */
   const previewed = new Set()
 
   /** Ask Google for these families, once each, so this document can draw them. */
@@ -368,14 +381,6 @@ ywInitEach('#yw-preset-rail', (rail) => {
 
   if (fontPicker) {
     const search = fontPicker.querySelector('[data-yw-tag-input-search]')
-    // `focus` and not `input`: the list has to be there before the first keystroke is
-    // filtered against it, or the first thing typed suggests nothing.
-    //
-    // ...which focus alone does NOT guarantee, because the fetch takes as long as it takes:
-    // type "Lob" quickly enough and all three keystrokes are filtered against an empty
-    // catalogue, leaving a box with text in it and no suggestions under it -- indistinguishable
-    // from a family Google does not have. So the arrival of the list re-runs the filter
-    // against whatever has been typed by then.
     search?.addEventListener(
       'focus',
       () =>
@@ -391,16 +396,6 @@ ywInitEach('#yw-preset-rail', (rail) => {
     })
   }
 
-  // ---- downloading a webfont, without losing the preset being edited -------------------
-  //
-  // This was a form POST: it installed the font, redirected back to /admin/preset, and the
-  // rail came back on the LIST screen with every unsaved edit gone. Adding a font is a
-  // thought you have in the middle of designing a preset -- "the one I want is not in this
-  // list" -- so the one moment you reach for it is the moment losing the screen costs most.
-  //
-  // The endpoint does the same work and answers with what happened, so the screen stays
-  // exactly as it was and grows two options in the selects. Falls back to the page POST when
-  // the fetch cannot be made at all, which is still better than nothing having happened.
   const fontForm = rail.querySelector('[data-yw-preset-font-form]')
 
   /** Say what landed, where it was asked for. */
@@ -411,13 +406,7 @@ ywInitEach('#yw-preset-rail', (rail) => {
     node.hidden = false
   }
 
-  /**
-   * Re-fetch the installed-faces stylesheet, so a font just downloaded can be drawn.
-   *
-   * A new href, not `link.href = link.href`: an identical URL is a cache hit and the browser
-   * does not go back to the server, which is precisely the case here -- the file did not
-   * change, its *contents* did.
-   */
+  /** Re-fetch the installed-faces stylesheet, so a font just downloaded can be drawn. */
   function refreshFontFaces() {
     const link = document.querySelector('[data-yw-preset-faces]')
     if (!link) return
@@ -426,15 +415,7 @@ ywInitEach('#yw-preset-rail', (rail) => {
     link.href = url.toString()
   }
 
-  /**
-   * Put the families the wiki now has into every font select.
-   *
-   * The webfont group is rebuilt from the server's own answer rather than by appending what
-   * was typed: what a family is *called* and what stack it becomes are the service's to say,
-   * and a guess here would put a slightly different string in the select from the one a
-   * reload produces. Each select keeps its own value, because this is not a change to the
-   * preset -- it is a change to what may be chosen.
-   */
+  /** Put the families the wiki now has into every font select. */
   function rebuildWebfonts(webfonts) {
     for (const select of rail.querySelectorAll('.yw-preset-rail__font')) {
       const groups = select.querySelectorAll('optgroup')
@@ -449,8 +430,6 @@ ywInitEach('#yw-preset-rail', (rail) => {
         option.style.fontFamily = stack
         group.appendChild(option)
       }
-      // the value survives the rebuild, or is put back as an option of its own if the
-      // preset names something no longer offered -- same contract as on first render
       select.value = chosen
       ensureOption(select, chosen)
       select.value = chosen
@@ -458,30 +437,10 @@ ywInitEach('#yw-preset-rail', (rail) => {
     }
   }
 
-  /**
-   * A webfont the wiki offers but has not downloaded yet, previewed from Google.
-   *
-   * The curated list names sixteen families; a wiki has downloaded however many of them it
-   * has actually used. Choosing one of the others changed `--yw-font-body` and nothing else
-   * moved -- correct, since the file arrives when the preset is SAVED, and indistinguishable
-   * from the choice not registering.
-   *
-   * So the admin's browser asks Google for it, exactly as the picker does when drawing its
-   * suggestions: a webmaster deliberately looking at typefaces, on an admin screen. Nothing
-   * on a public page changes, and no reader is ever handed to Google -- the saved preset is
-   * served from this wiki.
-   *
-   * Installed families are already declared by the faces stylesheet, so `check()` answers for
-   * them and nothing is asked. On an instance that cannot reach Google the request fails
-   * soundlessly and the preview is what it was before: the fallback.
-   */
+  /** A webfont the wiki offers but has not downloaded yet, previewed from Google. */
   function previewChosenWebfont(stack) {
     const family = (stack.match(/^\s*'([^']+)'/) || [])[1]
     if (!family) return
-    // The REGISTRY, not `document.fonts.check()`. With no `@font-face` for a family, `check`
-    // resolves it to a system font and answers *true* -- which is precisely the case this
-    // exists for, so guarding on it means never asking. A face is in the registry only
-    // because a rule declared it, which is the actual question.
     const declared = [...document.fonts].some(
       (face) => face.family.replace(/['"]/g, '') === family,
     )
@@ -521,8 +480,6 @@ ywInitEach('#yw-preset-rail', (rail) => {
             .join(' — '),
           failed.length,
         )
-        // the chips go, because they have been acted on: leaving them would make a second
-        // press re-download what is already here
         if (installed.length) clearFontPicker()
       })
       .catch(() => fontForm.submit())
@@ -541,27 +498,11 @@ ywInitEach('#yw-preset-rail', (rail) => {
     }
   }
 
-  // ---- the palette -------------------------------------------------------------------
-  //
-  // Pointing one colour AT another instead of giving it a value: the field takes
-  // `var(--yw-primary)` and the two stay in step afterwards. One popover for all forty-four
-  // colour fields, because its fourteen chips are painted from the live values every time it
-  // opens -- a palette per field would be forty-four copies to keep in sync as you drag.
-  //
-  // What makes this work at all is that a custom property may refer to another: measured, a
-  // reference resolves, the derived tier resolves *through* it, and it follows a later
-  // redefinition, so `var(--yw-primary)` written in the dark block picks the dark primary by
-  // itself. What it does NOT do is complain about a loop -- every colour in one silently
-  // computes to black -- which is why PresetService refuses to save one.
-
   const paletteBox = rail.querySelector('#yw-preset-palette')
-  /** Which field the palette was opened for, as `light.yw-heading-1`. */
   let paletteTarget = null
 
   function openPalette(name, trigger) {
     paletteTarget = name
-    // the chips show what each colour IS right now, in the scheme being edited -- the same
-    // resolution the picker swatches use, so the popover and the fields agree
     const [scheme] = partsOf(name)
     for (const chip of paletteBox.querySelectorAll(
       '[data-yw-preset-palette-chip]',
@@ -570,7 +511,6 @@ ywInitEach('#yw-preset-rail', (rail) => {
         fieldValue(`${scheme}.${chip.dataset.ywPresetPaletteChip}`),
       )
     }
-    // a colour cannot point at itself, so it is not offered to itself
     const own = partsOf(name)[1]
     for (const pick of paletteBox.querySelectorAll(
       '[data-yw-preset-palette-pick]',
@@ -579,7 +519,6 @@ ywInitEach('#yw-preset-rail', (rail) => {
     }
 
     paletteBox.hidden = false
-    // under the button that opened it, inside the rail's own scroll
     const box = trigger.getBoundingClientRect()
     const railBox = rail.getBoundingClientRect()
     paletteBox.style.top = `${box.bottom - railBox.top + rail.scrollTop + 4}px`
@@ -598,8 +537,6 @@ ywInitEach('#yw-preset-rail', (rail) => {
     )
     if (!field) return closePalette()
 
-    // "a colour of its own" resolves the reference to what it currently looks like, so
-    // un-pointing keeps the colour on screen and only drops the relationship
     field.value = token ? `var(--${token})` : asHex(field.value)
     field.dispatchEvent(new Event('input', { bubbles: true }))
     closePalette()
@@ -626,8 +563,6 @@ ywInitEach('#yw-preset-rail', (rail) => {
     paletteBox
       .querySelector('[data-yw-preset-palette-close]')
       ?.addEventListener('click', closePalette)
-    // anywhere else, and Escape: a popover that only closes by its own button is one people
-    // leave open over the field they were trying to look at
     palettes.push({ box: paletteBox, close: closePalette })
   }
 
@@ -638,7 +573,6 @@ ywInitEach('#yw-preset-rail', (rail) => {
 
     for (const field of fields) {
       const name = field.dataset.ywPresetField
-      // before the assignment: a select drops a value it has no option for, silently
       ensureOption(field, valueOf(values, name))
       field.value = valueOf(values, name)
       showChosenFont(field)
@@ -647,22 +581,15 @@ ywInitEach('#yw-preset-rail', (rail) => {
       const slider = sliderFor(name)
       if (slider) {
         slider.value = asSliderValue(slider, field.value)
-        // the field is hidden and the slider may have snapped: what posts has to be what is
-        // on screen, or saving would write back the unreachable value the rail opened on
         field.value = measureOf(slider)
         showMeasure(name, slider)
       }
       preview(name, field.value)
     }
-    // after the loop, not inside it: a field pointed at another colour can only be resolved
-    // once that other colour has been painted onto the document too
     showInks()
     showPickers()
     showContrast()
 
-    // Which preset the save rewrites. Empty for a new one -- that is the only case here
-    // that creates a file; editing always replaces the one it was opened on, even when the
-    // name in the box changes, in which case the file is renamed.
     idField.value = isNew ? '' : button.dataset.presetId || ''
     nameField.value = isNew ? '' : button.dataset.presetName || ''
 
@@ -678,14 +605,7 @@ ywInitEach('#yw-preset-rail', (rail) => {
     return rail.querySelector(`[data-yw-preset-screen="${name}"]`)
   }
 
-  /**
-   * Show the half of the preset that matches the page's Colour scheme, and say which it is.
-   *
-   * Both halves stay in the DOM and both post -- a Preset is two complete sets of colours and
-   * a save writes both. Only one is on screen, because only one can be PREVIEWED: the document
-   * is in one scheme at a time, so a field for the other is a control with no visible effect,
-   * which is exactly what the second column used to be.
-   */
+  /** Show the half of the preset that matches the page's Colour scheme, and say which it is. */
   function showScheme() {
     const scheme = currentScheme()
     for (const block of schemeBlocks) {
@@ -704,38 +624,26 @@ ywInitEach('#yw-preset-rail', (rail) => {
     undoPreview()
     for (const field of fields)
       preview(field.dataset.ywPresetField, field.value)
-    // the fills flip with the scheme, so the ink each one earns is a different answer now
     showInks()
     showPickers()
     showContrast()
   }
 
-  /** Which face of the drawer is showing. The other is `hidden`, and that is the whole state. */
+  /** Which face of the drawer is showing. */
   function showScreen(name) {
     for (const screen of screens) {
       screen.hidden = screen.dataset.ywPresetScreen !== name
     }
   }
 
-  /**
-   * Leave the editor for the list.
-   *
-   * The live preview goes with it, because the editor is what was producing it: staying on
-   * the list wearing the half-finished colours of a preset you backed out of would be a wiki
-   * showing you something that is not saved anywhere and cannot be got back to.
-   */
+  /** Leave the editor for the list. */
   function back() {
     undoPreview()
     closePalette()
     showScreen('list')
   }
 
-  /**
-   * Shut the drawer entirely -- the gallery is what you want to look at.
-   *
-   * Returns to the list on the way out, so reopening lands where the drawer is *for*: the
-   * editor is a place you go from the list, never a place you find the drawer already in.
-   */
+  /** Shut the drawer entirely -- the gallery is what you want to look at. */
   function close() {
     back()
     rail.hidden = true
@@ -764,9 +672,6 @@ ywInitEach('#yw-preset-rail', (rail) => {
     field.addEventListener('input', () => {
       showChosenFont(field)
       preview(name, field.value)
-      // every swatch and every badge, not just this field's: a colour can be pointed at
-      // another one and is scored against another one, so changing a surface repaints and
-      // re-grades everything that refers to it
       showInks()
       showPickers()
       showContrast()
@@ -778,8 +683,6 @@ ywInitEach('#yw-preset-rail', (rail) => {
       showPickers()
       showContrast()
     })
-    // A measure is the slider and nothing else now: it produces the only values the token
-    // can hold, which is what let the text box beside it go.
     slider?.addEventListener('input', () => {
       field.value = measureOf(slider)
       showMeasure(name, slider)
@@ -787,17 +690,6 @@ ywInitEach('#yw-preset-rail', (rail) => {
     })
   }
 
-  // A scheme that changes under an open drawer means the other half of the fields is now the
-  // half to show and to paint from. It changes two ways and BOTH have to be watched:
-  //
-  //  - the wiki's own toggle, which sets `data-theme` on <html> -- an attribute, so nothing
-  //    fires an event; a MutationObserver is the only way to hear it;
-  //  - the OS flipping at dusk, for a viewer who has not chosen -- `prefers-color-scheme`.
-  //
-  // Only the second was watched, and the first is the one people actually use, so the toggle
-  // appeared to do nothing on this screen whenever the editor was open: `preview()` writes the
-  // tokens INLINE on <html>, which beats the scheme blocks in the stylesheet, so every
-  // previewed colour stayed at its light value and the page stayed white.
   new MutationObserver(schemeChanged).observe(document.documentElement, {
     attributes: true,
     attributeFilter: ['data-theme'],
@@ -806,14 +698,10 @@ ywInitEach('#yw-preset-rail', (rail) => {
     .matchMedia('(prefers-color-scheme: dark)')
     .addEventListener('change', schemeChanged)
 
-  // and the right half is on screen before anything is opened
   showScheme()
 
-  // Saving is a normal submit, and the page it lands on is the one wearing the preset --
-  // so the inline preview must not be what puts it back on screen afterwards.
   form?.addEventListener('submit', () => beforePreview.clear())
 
-  // Deleting a preset removes a file; every other button here is reversible.
   document
     .querySelectorAll('[data-yw-preset-delete-form]')
     .forEach((deleteForm) => {
