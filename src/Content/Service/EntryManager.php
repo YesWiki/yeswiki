@@ -459,7 +459,7 @@ class EntryManager
             $data = $this->semanticTransformer->convertFromSemanticData($form, $data);
         }
 
-        $data = $this->formatDataBeforeSave($data);
+        $data = $this->formatDataBeforeSave($data, $previousData);
 
         $this->validate($data, self::VALIDATE_FLAG_TITLE | self::VALIDATE_FLAG_FORM_ID);
 
@@ -625,13 +625,14 @@ class EntryManager
     /**
      * prepare la requete d'insertion ou de MAJ de la fiche en supprimant de la valeur POST les valeurs inadequates et en formattant les champs.
      *
-     * @param array<string, mixed> $data current raw entry values
+     * @param array<string, mixed> $data         current raw entry values
+     * @param array<string, mixed> $previousData the stored entry, whose already empty required fields are tolerated
      *
      * @return array<string, mixed> with extra calculated fields like tag, and time, and handled fields with acls
      *
      * @throws \Exception
      */
-    public function formatDataBeforeSave($data): array
+    public function formatDataBeforeSave($data, array $previousData = []): array
     {
         $data['form_id'] = isset($data['form_id']) ? $data['form_id'] : CurrentRequest::input($this->container->get(CurrentRequest::class)->get(), 'form_id');
 
@@ -762,6 +763,7 @@ class EntryManager
                     && $vBazarField->isRequired()
                     && !in_array($vPropertyName, $hidden, true)
                     && $vBazarField->isEmpty($data[$vPropertyName] ?? null)
+                    && !($previousData && $vBazarField->isEmpty($previousData[$vPropertyName] ?? null))
                 ) {
                     $missing[$vPropertyName] = $vBazarField->getLabel() ?: $vPropertyName;
                 }
