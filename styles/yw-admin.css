@@ -467,7 +467,7 @@
 }
 
 .yw-account-guest__card .checkbox .yw-input,
-.yw-account-guest__card input[type='checkbox'] {
+.yw-account-guest__card input[type='checkbox']:not(.altcha input) {
   width: auto;
   display: inline-block;
 }

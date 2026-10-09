@@ -4,14 +4,7 @@ namespace YesWiki\Kernel\Service;
 
 use YesWiki\Files\Service\ProgramFiles;
 
-/**
- * What the Program says it needs, read from the one file that already says it (ADR-0026).
- *
- * `composer.json` is the source of truth: `make binary-check` reads it to assert a built binary
- * carries every extension it names, and `Package::phpVersionFromComposer()` reads it for the PHP
- * version. A hand-written third copy would rot within a release -- `MINIMUM_PHP_VERSION_FOR_CORE`
- * was a second copy and had already drifted to `8.2.0` against `php ^8.3`.
- */
+/** What the Program says it needs, read from composer.json and composer.lock (ADR-0026). */
 class ComposerManifest
 {
     private ProgramFiles $programFiles;
@@ -46,21 +39,13 @@ class ComposerManifest
         return $matches[2] . '.' . $minor . '.' . $patch;
     }
 
-    /**
-     * The extensions a wiki cannot run without.
-     *
-     * @return list<string> bare names: `gd`, not `ext-gd`
-     */
+    /** @return list<string> the extensions a wiki cannot run without, as bare names: `gd`, not `ext-gd` */
     public function requiredExtensions(): array
     {
-        return $this->extensionsIn($this->section('require'));
+        return $this->extensionsIn('require');
     }
 
-    /**
-     * The optional extensions and what each one buys, which is the sentence the Health screen wants.
-     *
-     * @return array<string, string> bare name => its consequence, as composer.json states it
-     */
+    /** @return array<string, string> each optional extension's bare name => what it buys, as composer.json states it */
     public function suggestedExtensions(): array
     {
         $suggested = [];
@@ -73,15 +58,54 @@ class ComposerManifest
         return $suggested;
     }
 
-    /**
-     * @param array<string, mixed> $section
-     *
-     * @return list<string>
-     */
-    private function extensionsIn(array $section): array
+    /** @return array<string, string|null> each package composer.lock pins that vendor/ lacks => the version installed, null when missing */
+    public function packagesOutOfStep(): array
+    {
+        return self::outOfStep(
+            $this->programFiles->read('composer.lock'),
+            $this->programFiles->read('vendor/composer/installed.json')
+        );
+    }
+
+    /** @return array<string, string|null> what packagesOutOfStep() finds between a composer.lock and an installed.json */
+    public static function outOfStep(string $lockJson, string $installedJson): array
+    {
+        $lock = json_decode($lockJson, true);
+        $installed = json_decode($installedJson, true);
+        if (!is_array($lock) || !is_array($installed)) {
+            return [];
+        }
+
+        $present = self::packageList($installed['packages'] ?? $installed);
+        $outOfStep = [];
+        foreach (self::packageList($lock['packages'] ?? []) as $name => $version) {
+            if (($present[$name] ?? null) !== $version) {
+                $outOfStep[$name] = $present[$name] ?? null;
+            }
+        }
+        ksort($outOfStep);
+
+        return $outOfStep;
+    }
+
+    /** @return array<string, string> name => version of each well-formed entry in a Composer package list */
+    private static function packageList(mixed $packages): array
+    {
+        $list = [];
+        foreach (is_array($packages) ? $packages : [] as $package) {
+            if (is_array($package) && is_string($package['name'] ?? null) && is_string($package['version'] ?? null)) {
+                $list[$package['name']] = $package['version'];
+            }
+        }
+
+        return $list;
+    }
+
+    /** @return list<string> */
+    private function extensionsIn(string $sectionName): array
     {
         $extensions = [];
-        foreach (array_keys($section) as $package) {
+        foreach (array_keys($this->section($sectionName)) as $package) {
             if (str_starts_with((string)$package, 'ext-')) {
                 $extensions[] = substr((string)$package, 4);
             }
@@ -90,9 +114,7 @@ class ComposerManifest
         return $extensions;
     }
 
-    /**
-     * @return array<string, mixed>
-     */
+    /** @return array<string, mixed> */
     private function section(string $name): array
     {
         $this->manifest ??= $this->read();
@@ -101,9 +123,7 @@ class ComposerManifest
         return is_array($section) ? $section : [];
     }
 
-    /**
-     * @return array<string, mixed>
-     */
+    /** @return array<string, mixed> */
     private function read(): array
     {
         $decoded = json_decode($this->programFiles->read('composer.json'), true);

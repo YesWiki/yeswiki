@@ -5,12 +5,7 @@ namespace YesWiki\Kernel\Service;
 use YesWiki\Kernel\Health\HealthCheck;
 use YesWiki\Kernel\Health\ProvidesHealthChecks;
 
-/**
- * What the wiki needs of the PHP it is running on (ticket 52).
- *
- * The three `ext-pdo_*` are `suggest` entries because only one of them matters per wiki -- which
- * one is what the configured driver says, and for that wiki it is not optional at all.
- */
+/** What the wiki needs of the PHP it is running on and of its vendor/ folder (ticket 52). */
 class RuntimeHealthChecks implements ProvidesHealthChecks
 {
     private ComposerManifest $manifest;
@@ -35,6 +30,20 @@ class RuntimeHealthChecks implements ProvidesHealthChecks
                     return extension_loaded($extension)
                         ? null
                         : _t('HEALTH_EXTENSION_MISSING', ['extension' => $extension]);
+                }),
+
+            HealthCheck::named('vendor-in-step')
+                ->label(_t('HEALTH_VENDOR_IN_STEP'))
+                ->says(_t('HEALTH_VENDOR_IN_STEP_SAYS'))
+                ->runs(function (): ?string {
+                    $packages = [];
+                    foreach ($this->manifest->packagesOutOfStep() as $name => $installed) {
+                        $packages[] = $installed === null
+                            ? _t('HEALTH_VENDOR_PACKAGE_MISSING', ['package' => $name])
+                            : _t('HEALTH_VENDOR_PACKAGE_STALE', ['package' => $name, 'version' => $installed]);
+                    }
+
+                    return $packages === [] ? null : implode(', ', $packages);
                 }),
 
             HealthCheck::named('opcache')
