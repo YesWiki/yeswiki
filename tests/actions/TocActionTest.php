@@ -3,7 +3,9 @@
 namespace YesWiki\Test\Actions;
 
 use YesWiki\Content\Entity\PageBody;
+use YesWiki\Content\Entity\Translations;
 use YesWiki\Content\Service\PageManager;
+use YesWiki\Kernel\Service\LanguageService;
 use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';
@@ -79,5 +81,30 @@ class TocActionTest extends YesWikiTestCase
         $wiki->services->get(\YesWiki\Kernel\Service\PageContext::class)->assignPage($pageManager->getOne(self::PAGE_TAG));
         $html = $wiki->services->get(\YesWiki\Render\Service\MarkdownFormatterService::class)->format($body);
         $this->assertStringNotContainsString('yw-toc__heading', $html, 'without a title the rail shows no heading');
+    }
+
+    public function testTheTocListsTheHeadingsOfTheTranslationBeingRead(): void
+    {
+        $wiki = $this->getWiki();
+        $pageManager = $wiki->services->get(PageManager::class);
+        $languages = $wiki->services->get(LanguageService::class);
+
+        $translated = "{{toc display=\"rail\"}}\n\n## English heading\n\nSome text.\n";
+        $pageManager->save(self::PAGE_TAG, [
+            PageBody::CONTENT => "Pas de titre ici.\n",
+            Translations::BODY_KEY => ['en' => [PageBody::CONTENT => $translated]],
+        ], '', true);
+        $wiki->services->get(\YesWiki\Kernel\Service\PageContext::class)->assignPage($pageManager->getOne(self::PAGE_TAG));
+
+        $previous = $languages->preferredLanguage();
+        $languages->serveIn('en');
+        try {
+            $html = $wiki->services->get(\YesWiki\Render\Service\MarkdownFormatterService::class)->format($translated);
+        } finally {
+            $languages->serveIn($previous);
+        }
+
+        $this->assertStringContainsString('data-yw-toc-rail', $html);
+        $this->assertStringContainsString('>English heading</a>', $html);
     }
 }

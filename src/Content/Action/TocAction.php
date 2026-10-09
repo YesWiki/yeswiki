@@ -4,6 +4,7 @@ namespace YesWiki\Content\Action;
 
 use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Service\PageManager;
+use YesWiki\Content\Service\TranslatableContent;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Component\Category;
 use YesWiki\Kernel\Component\Component;
@@ -79,8 +80,13 @@ class TocAction extends YesWikiAction implements RegisteredAction, ProvidesCompo
     private function emit(): void
     {
         $tag = $this->getService(PageContext::class)->getTag();
-        $page = $this->getService(PageManager::class)->getOne($tag);
-        $toc_body = PageBody::content($page['body'] ?? []);
+        $pageManager = $this->getService(PageManager::class);
+        $page = $pageManager->getOne($tag);
+        $translatable = $this->getService(TranslatableContent::class);
+        $toc_body = PageBody::content($translatable->forReader(
+            is_array($page['body'] ?? null) ? $page['body'] : [],
+            $translatable->sourceLanguageOfPage($pageManager->getMetadata($tag))
+        ));
         $arguments = $this->getService(PerformableArguments::class);
         $class = $arguments->get('class');
         $chosenTitle = (string)$arguments->get('title');
