@@ -40,6 +40,7 @@ class AssetPublisher
         'ttf' => 'font/ttf',
         'otf' => 'font/otf',
         'eot' => 'application/vnd.ms-fontobject',
+        'md' => 'text/markdown; charset=UTF-8',
     ];
 
     /** Root of the shared YesWiki sources. */
@@ -247,6 +248,9 @@ class AssetPublisher
         }
         $extension = strtolower(pathinfo($relPath, PATHINFO_EXTENSION));
         if (!isset(self::MIME_TYPES[$extension])) {
+            return false;
+        }
+        if ($extension === 'md' && !preg_match('#^(?:docs|(?:custom/)?extensions/[^/]+/docs)/#', $relPath)) {
             return false;
         }
         foreach (self::ALLOWED_PREFIXES as $prefix) {

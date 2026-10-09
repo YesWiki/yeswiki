@@ -43,6 +43,19 @@ class AssetsUnderAUrlPrefixTest extends YesWikiTestCase
         });
     }
 
+    /** The documentation's markdown pages are fetched by docsify from the instance, outside the docs folders they stay private. */
+    public function testDocumentationPagesAreServedAndOtherMarkdownIsNot(): void
+    {
+        $this->underAPrefix(function (): void {
+            $doc = $this->fetch('/ecto/docs/fr/README.md');
+            $this->assertStringContainsString('200', $doc['status'], $this->diag('docs/fr/README.md', $doc));
+            $this->assertStringContainsString('text/markdown', $doc['type'], $this->diag('docs/fr/README.md', $doc));
+
+            $readme = $this->fetch('/ecto/' . AssetPublisher::PUBLISHED_PREFIX . 'dev/README.md');
+            $this->assertStringContainsString('404', $readme['status'], $this->diag('README.md', $readme));
+        });
+    }
+
     /** ...and when it cannot be served, it is a 404 and not a page. */
     public function testAPublishedAssetThatCannotBeServedIsNotAnsweredWithAPage(): void
     {
