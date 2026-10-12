@@ -2,7 +2,7 @@ export default {
   props: ['value', 'config'],
   emits: ['input'],
   mounted() {
-    fetch(wiki.url('?api/pages'))
+    fetch(wiki.url('?api/pages&fields=tag'))
       .then((response) =>
         response.ok ? response.json() : Promise.reject(response),
       )

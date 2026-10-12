@@ -20,8 +20,9 @@ $wiki = YesWikiLoader::getWiki();
 
 $requestsBeforeRestart = (int)(getenv('YESWIKI_WORKER_REQUESTS') ?: 500);
 $served = 0;
+$timeLimit = (int)ini_get('max_execution_time');
 
-$handler = static function () use ($wiki): void {
+$handler = static function () use ($wiki, $timeLimit): void {
     foreach (['SCRIPT_NAME', 'SCRIPT_FILENAME', 'PHP_SELF'] as $describesTheScript) {
         if (isset($_SERVER[$describesTheScript]) && is_string($_SERVER[$describesTheScript])) {
             $_SERVER[$describesTheScript] = str_replace('worker.php', 'index.php', $_SERVER[$describesTheScript]);
@@ -35,6 +36,9 @@ $handler = static function () use ($wiki): void {
     } finally {
         if (session_status() === PHP_SESSION_ACTIVE) {
             session_write_close();
+        }
+        if (function_exists('set_time_limit')) {
+            @set_time_limit($timeLimit);
         }
     }
 };

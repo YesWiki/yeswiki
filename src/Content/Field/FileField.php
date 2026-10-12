@@ -156,7 +156,7 @@ class FileField extends BazarField
 
             $extension = strtolower($pathinfo['extension'] ?? '');
             $extension = preg_replace('/_$/', '', $extension);
-            if ($extension != '' && in_array($extension, array_keys($params->get('authorized-extensions')))) {
+            if ($extension != '' && in_array($extension, array_keys($params->get('authorized-extensions'))) && !FileManager::hasExecutableExtension($rawFileName)) {
                 if (!$this->storage()->exists($filePath)) {
                     if ($_FILES[$this->propertyName]['size'] > $this->maxSize) {
                         throw new \Exception(_t('BAZ_FILEFIELD_TOO_LARGE_FILE', ['fileMaxSize' => $this->maxSize]));

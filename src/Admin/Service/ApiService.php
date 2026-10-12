@@ -56,6 +56,30 @@ class ApiService
         return $publicMode || $hasAcl || $bearerIsConnected || $anyKeyIsPublic;
     }
 
+    /** Whether a browser sent this state-changing request from another origin; bearer-token and server-to-server calls pass. */
+    public function isCrossOriginWrite(): bool
+    {
+        $request = $this->currentRequest->get();
+        if ($request->isMethodSafe() || $this->getBearerToken() !== null) {
+            return false;
+        }
+        $site = $request->headers->get('Sec-Fetch-Site');
+        if ($site !== null) {
+            return !in_array($site, ['same-origin', 'none'], true);
+        }
+        $origin = $request->headers->get('Origin');
+        if ($origin === null) {
+            return false;
+        }
+        $parts = parse_url($origin);
+        $originHost = strtolower(($parts['host'] ?? '') . (isset($parts['port']) ? ':' . $parts['port'] : ''));
+        $configured = $this->params->has('base_url') ? $this->params->get('base_url') : null;
+        $baseUrl = parse_url(is_string($configured) ? $configured : '');
+        $baseHost = strtolower(($baseUrl['host'] ?? '') . (isset($baseUrl['port']) ? ':' . $baseUrl['port'] : ''));
+
+        return $originHost === '' || ($originHost !== strtolower($request->getHttpHost()) && $originHost !== $baseHost);
+    }
+
     /** Get header Authorization. */
     private function getAuthorizationHeader(): ?string
     {

@@ -11,7 +11,7 @@ use YesWiki\Content\Service\EntryManager;
 use YesWiki\Content\Service\SemanticTransformer;
 use YesWiki\Federation\Service\ActivityPubService;
 use YesWiki\Federation\Service\HttpSignatureService;
-use YesWiki\Federation\Service\WebfingerService;
+use YesWiki\Federation\Service\WebFingerService;
 use YesWiki\Kernel\Service\SsrfUrlValidator;
 use YesWiki\Kernel\Service\TripleStore;
 
@@ -101,7 +101,7 @@ class ActivityPubServiceTest extends TestCase
 
         return new ActivityPubService(
             $params,
-            $this->createStub(WebfingerService::class),
+            $this->createStub(WebFingerService::class),
             $container,
             new HttpSignatureService($this->createStub(SsrfUrlValidator::class)),
             $semanticTransformer,

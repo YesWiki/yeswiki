@@ -10,7 +10,7 @@ function rowsOf(list) {
 /** The wiki's page names, fetched once and shared by every link field on the screen. */
 let pageNames = null
 function pages() {
-  pageNames ??= fetch(wiki.url('?api/pages'))
+  pageNames ??= fetch(wiki.url('?api/pages&fields=tag'))
     .then((response) =>
       response.ok ? response.json() : Promise.reject(response),
     )

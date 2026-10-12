@@ -83,6 +83,7 @@ class RemoteBackupServiceTest extends YesWikiTestCase
         $folder = $this->getWiki()->services->get(ArchiveService::class)->getPrivateFolder();
         $this->assertStringNotContainsString('secret', $storage->read("$folder/" . RemoteBackupService::JOB_FILENAME), 'the password is not kept');
 
+        $timeLimit = ini_get('max_execution_time');
         for ($i = 0; $i < 20 && $state['running']; $i++) {
             $job = json_decode($storage->read("$folder/" . RemoteBackupService::JOB_FILENAME), true);
             if (isset($job['candidateSince'])) {
@@ -93,6 +94,7 @@ class RemoteBackupServiceTest extends YesWikiTestCase
         }
 
         $this->assertFalse($state['running'], json_encode($state) ?: '');
+        $this->assertSame($timeLimit, ini_get('max_execution_time'), 'a slice gives the time limit back when it ends');
         $this->stored = $state['filename'];
         $this->assertSame('2026-08-20T13-29-28_remote-org_archive.zip', $this->stored);
         $this->assertSame($this->zipBytes, $storage->read("$folder/{$this->stored}"));

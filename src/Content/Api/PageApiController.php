@@ -29,23 +29,26 @@ class PageApiController extends YesWikiController
     /** The comment ACL that means "nobody", as ClaimHandler wrote it before ticket 35. */
     private const COMMENTS_CLOSED = 'comments-closed';
 
+    /** The most pages one call returns when the caller asks for a page of them. */
+    private const MAX_PAGE_SIZE = 1000;
+
+    /** Pages the visitor may read, keyed by tag; `limit`/`offset` page through them, `fields=tag` leaves the bodies out. */
     #[Route('/api/pages', options: ['acl' => ['public']])]
-    public function getAllPages(): ApiResponse
+    public function getAllPages(Request $request): ApiResponse
     {
         $dbService = $this->getService(DbService::class);
-        $aclService = $this->getService(AclService::class);
-        $pageType = PageType::PAGE;
+        $readable = $this->getService(AclService::class)->readableFilter();
+        $columns = $request->query->get('fields') === 'tag' ? 'tag' : '*';
+        $limit = min($request->query->getInt('limit'), self::MAX_PAGE_SIZE);
+        $offset = max(0, $request->query->getInt('offset'));
 
-        $sql = <<<SQL
-            SELECT * FROM {$dbService->prefixTable('pages')}
-            WHERE latest='Y' AND parent=''
-            AND {$dbService->quoteIdentifier('type')} = '{$pageType}'
-            ORDER BY tag ASC
-        SQL;
-        $pages = $dbService->loadAll($sql);
-        $pages = array_filter($pages, function ($page) use ($aclService) {
-            return $aclService->hasAccess('read', $page['tag']);
-        });
+        $sql = "SELECT {$columns} FROM {$dbService->prefixTable('pages')}"
+            . " WHERE latest = 'Y' AND parent = '' AND {$dbService->quoteIdentifier('type')} = ?"
+            . ($readable->isEmpty() ? '' : ' AND ' . $readable->sql)
+            . ' ORDER BY tag ASC'
+            . ($limit > 0 ? " LIMIT {$limit} OFFSET {$offset}" : '');
+        $pages = $dbService->loadAll($sql, [PageType::PAGE, ...$readable->params]);
+
         $pagesWithTag = [];
         foreach ($pages as $page) {
             $pagesWithTag[$page['tag']] = $page;

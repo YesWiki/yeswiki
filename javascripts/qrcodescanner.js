@@ -36,16 +36,27 @@ function successHandler(data) {
       .then((response) => response.text())
       .then((response) => {
         const cardData = JSON.parse(response)
-        console.log(cardData)
-        const song = `${url.href}files/${cardData.fichierbf_file}`
-        console.log(song)
+        const song = new URL(`files/${cardData.fichierbf_file}`, url.href).href
         const player = document.getElementById('multimedia-player')
-        const caption = `<figcaption><strong>En écoute : ${cardData.title}</strong></figcaption>`
-        const audio = `<audio id="audio-player" controls autoplay src="${song}"></audio>`
-        const download =
-          `<a style="display:block" download href="${song}">` +
-          '<svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#download"/></svg> Télécharger</a>'
-        player.innerHTML = `<figure>${caption}${audio}${download}</figure>`
+        const figure = document.createElement('figure')
+        const caption = document.createElement('figcaption')
+        const title = document.createElement('strong')
+        title.textContent = `En écoute : ${cardData.title}`
+        caption.append(title)
+        const audio = document.createElement('audio')
+        audio.id = 'audio-player'
+        audio.controls = true
+        audio.autoplay = true
+        audio.src = song
+        const download = document.createElement('a')
+        download.style.display = 'block'
+        download.download = ''
+        download.href = song
+        download.innerHTML =
+          '<svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#download"/></svg>'
+        download.append(' Télécharger')
+        figure.append(caption, audio, download)
+        player.replaceChildren(figure)
       })
   }
 }

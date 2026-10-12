@@ -170,7 +170,7 @@ class ContactApiController extends YesWikiController
                 $message['class'] = 'danger';
                 $message['message'] = _t('CONTACT_MESSAGE_NOT_SENT');
                 if ($this->getService(AclService::class)->isAdmin() && $mailer->lastError() !== '') {
-                    $message['message'] .= ' — ' . $mailer->lastError();
+                    $message['message'] .= ' — ' . htmlspecialchars($mailer->lastError(), ENT_QUOTES);
                 }
             }
         }

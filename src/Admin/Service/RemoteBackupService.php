@@ -73,6 +73,7 @@ class RemoteBackupService
         if ($job === []) {
             return ['step' => self::STEP_IDLE, 'running' => false];
         }
+        $previousLimit = null;
         if ($job['step'] === RemoteWikiArchive::STEP_DOWNLOADING) {
             if (time() - (int)($job['busySince'] ?? 0) < self::BUSY_FOR) {
                 return $this->state($job);
@@ -80,6 +81,7 @@ class RemoteBackupService
             $job['busySince'] = time();
             $this->writeJob($job);
             if (function_exists('set_time_limit')) {
+                $previousLimit = (int)ini_get('max_execution_time');
                 @set_time_limit(self::SLICE_SECONDS + RemoteWikiArchive::REQUEST_MAX_DURATION + 60);
             }
         }
@@ -95,6 +97,10 @@ class RemoteBackupService
             $this->abandon($job);
 
             return ['step' => self::STEP_IDLE, 'running' => false, 'error' => $th->getMessage()];
+        } finally {
+            if ($previousLimit !== null) {
+                @set_time_limit($previousLimit);
+            }
         }
 
         if ($job['step'] === RemoteWikiArchive::STEP_DONE) {

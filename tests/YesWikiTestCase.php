@@ -218,6 +218,9 @@ class YesWikiTestCase extends TestCase
         while ($this->obLevelAtSetUp !== null && ob_get_level() > $this->obLevelAtSetUp) {
             ob_end_clean();
         }
+        if (function_exists('set_time_limit')) {
+            @set_time_limit(0);
+        }
         parent::tearDown();
     }
 

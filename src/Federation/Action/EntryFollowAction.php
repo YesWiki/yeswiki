@@ -5,7 +5,7 @@ namespace YesWiki\Federation\Action;
 use YesWiki\Content\Service\FormManager;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Federation\Service\ActivityPubService;
-use YesWiki\Federation\Service\WebfingerService;
+use YesWiki\Federation\Service\WebFingerService;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\Redirector;
 
@@ -20,7 +20,7 @@ class EntryFollowAction extends YesWikiAction implements RegisteredAction
     public function run(): string
     {
         $activityPubService = $this->getService(ActivityPubService::class);
-        $webfingerService = $this->getService(WebfingerService::class);
+        $webfingerService = $this->getService(WebFingerService::class);
 
         $formId = $this->arguments['id'];
         $form = $this->getService(FormManager::class)->getOne($formId);

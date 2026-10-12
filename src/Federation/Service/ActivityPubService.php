@@ -18,14 +18,14 @@ class ActivityPubService
 
     protected ParameterBagInterface $params;
     protected HttpClientInterface $httpClient;
-    protected WebfingerService $webfingerService;
+    protected WebFingerService $webfingerService;
     protected ContainerInterface $container;
     protected HttpSignatureService $httpSignatureService;
     protected SemanticTransformer $semanticTransformer;
     protected TripleStore $tripleStore;
     protected SsrfUrlValidator $ssrfUrlValidator;
 
-    public function __construct(ParameterBagInterface $params, WebfingerService $webfingerService, ContainerInterface $container, HttpSignatureService $httpSignatureService, SemanticTransformer $semanticTransformer, TripleStore $tripleStore, SsrfUrlValidator $ssrfUrlValidator)
+    public function __construct(ParameterBagInterface $params, WebFingerService $webfingerService, ContainerInterface $container, HttpSignatureService $httpSignatureService, SemanticTransformer $semanticTransformer, TripleStore $tripleStore, SsrfUrlValidator $ssrfUrlValidator)
     {
         $this->params = $params;
         $this->httpClient = HttpClient::create();

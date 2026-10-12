@@ -6,6 +6,7 @@ use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Tamtamchik\SimpleFlash\Flash;
 use YesWiki\Content\Attribute\Field;
+use YesWiki\Content\Service\FileManager;
 use YesWiki\Files\Service\FileBrowser;
 use YesWiki\Files\Service\ImageResizer;
 use YesWiki\Kernel\Service\AssetRegistry;
@@ -202,7 +203,7 @@ class ImageField extends FileField
             $fileName = "{$this->getPropertyName()}_$sanitizedFilename";
             $filePath = $this->getFullFileName($fileName, $entry['tag'], true);
 
-            if ($this->isImage($rawFileName) && !$this->getService(HibernationService::class)->isWikiHibernated()) {
+            if ($this->isImage($rawFileName) && !FileManager::hasExecutableExtension($rawFileName) && !$this->getService(HibernationService::class)->isWikiHibernated()) {
                 if (!$this->storage()->exists($filePath)) {
                     if ($_FILES[$this->propertyName]['size'] > $this->maxSize) {
                         throw new \Exception(_t('BAZ_FILEFIELD_TOO_LARGE_FILE', ['fileMaxSize' => $this->maxSize]));

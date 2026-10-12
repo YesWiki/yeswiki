@@ -4,9 +4,10 @@ namespace YesWiki\Federation\Service;
 
 use Symfony\Component\HttpClient\HttpClient;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
+use YesWiki\Federation\Entity\WebFinger;
 use YesWiki\Kernel\Service\SsrfUrlValidator;
 
-class WebfingerService
+class WebFingerService
 {
     protected HttpClientInterface $httpClient;
     protected SsrfUrlValidator $ssrfUrlValidator;

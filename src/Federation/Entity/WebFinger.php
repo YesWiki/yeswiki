@@ -1,6 +1,6 @@
 <?php
 
-namespace YesWiki\Federation\Service;
+namespace YesWiki\Federation\Entity;
 
 /**
  * A simple WebFinger container of data.

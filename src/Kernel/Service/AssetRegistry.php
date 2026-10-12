@@ -312,6 +312,7 @@ class AssetRegistry implements RequestScopedState
         if (preg_match('#^extensions/([A-Za-z0-9][A-Za-z0-9_-]*)/#', $file, $m) !== 1) {
             return $file;
         }
+
         return $this->container->get(Storage::class)->directoryExists('custom/extensions/' . $m[1]) ? 'custom/' . $file : $file;
     }
 

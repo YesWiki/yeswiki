@@ -34,6 +34,16 @@ class FileManager
 
     public const STORAGE_DIR = 'private/files';
 
+    /** Extensions a web server may run as code, refused whatever authorized-extensions says. */
+    public const EXECUTABLE_EXTENSIONS = [
+        'php', 'php3', 'php4', 'php5', 'php7', 'php8', 'phtml', 'pht', 'phps', 'phar', 'cgi',
+        'pl', 'py', 'rb', 'sh', 'bash', 'asp', 'aspx', 'jsp', 'shtml',
+        'exe', 'dll', 'bat', 'cmd', 'htaccess', 'htpasswd',
+    ];
+
+    /** Handlers Apache applies to any part of a name, so "x.php.jpg" runs as PHP there. */
+    private const HANDLER_EXTENSIONS = ['php', 'php3', 'php4', 'php5', 'php7', 'php8', 'phtml', 'pht', 'phar', 'cgi'];
+
     protected ContainerInterface $container;
     protected TripleStore $tripleStore;
     protected PageManager $pageManager;
@@ -180,6 +190,9 @@ class FileManager
 
         $originalFilename = $uploadedFile->getClientOriginalName();
         $ext = strtolower($uploadedFile->getClientOriginalExtension());
+        if (self::hasExecutableExtension($originalFilename)) {
+            throw new \InvalidArgumentException(_t('ERROR_NOT_AUTHORIZED_EXTENSION'));
+        }
         $authorizedExtensions = $this->container->get(RuntimeConfig::class)['authorized-extensions'] ?? [];
         if (!empty($authorizedExtensions) && !array_key_exists($ext, $authorizedExtensions)) {
             throw new \InvalidArgumentException(_t('ERROR_NOT_AUTHORIZED_EXTENSION'));
@@ -269,13 +282,26 @@ class FileManager
         throw new \Exception("Could not find a free filename for '$sanitizedFilename'.");
     }
 
-    /** Ported from tools/attach/libs/attach.lib.php's Attach::sanitizeFilename(). */
+    /** Whether any dot-separated part after the first names a type a web server could execute. */
+    public static function hasExecutableExtension(string $filename): bool
+    {
+        $name = strtolower(trim(basename($filename)));
+        $parts = array_map(static fn (string $part) => rtrim($part, ' _'), explode('.', $name));
+        array_shift($parts);
+        $last = array_pop($parts);
+
+        return in_array($last, self::EXECUTABLE_EXTENSIONS, true)
+            || array_intersect($parts, self::HANDLER_EXTENSIONS) !== []
+            || $name === '.user.ini' || $name === 'user.ini';
+    }
+
+    /** An ASCII filename: letters transliterated, whitespace turned to underscores, anything else dropped. */
     public function sanitizeFilename(string $filename): string
     {
-        $search = ['@[éèêëÊË]@i', '@[àâäÂÄ]@i', '@[îïÎÏ]@i', '@[ûùüÛÜ]@i', '@[ôöÔÖ]@i', '@[ç]@i', '@[ ]@i', '@[^a-zA-Z0-9_\.\-]@'];
-        $replace = ['e', 'a', 'i', 'u', 'o', 'c', '_', ''];
+        $ascii = (string)preg_replace('/\s+/', '_', trim(\URLify::downcode($filename)));
+        $ascii = (string)preg_replace(['/[^a-zA-Z0-9_.\-]/', '/_+/', '/_+\./', '/^_+/'], ['', '_', '.', ''], $ascii);
 
-        return (string)preg_replace($search, $replace, mb_convert_encoding($filename, 'ISO-8859-1', 'UTF-8'));
+        return $ascii === '' || str_starts_with($ascii, '.') ? 'file' . $ascii : $ascii;
     }
 
     public function delete(string $tag): void

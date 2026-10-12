@@ -22,7 +22,7 @@ use YesWiki\Content\Service\FormPropertiesService;
 use YesWiki\Content\Service\TranslatableContent;
 use YesWiki\Core\YesWikiController;
 use YesWiki\Federation\Service\ActivityPubService;
-use YesWiki\Federation\Service\WebfingerService;
+use YesWiki\Federation\Service\WebFingerService;
 use YesWiki\Identity\Service\AclOptions;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\CsrfTokenChecker;
@@ -68,9 +68,9 @@ class FormController extends YesWikiController
     protected FormManager $formManager;
     protected HibernationService $hibernationService;
     protected ActivityPubService $activityPubService;
-    protected WebfingerService $webfingerService;
+    protected WebFingerService $webfingerService;
 
-    public function __construct(FormManager $formManager, HibernationService $hibernationService, CsrfTokenChecker $csrfTokenChecker, ActivityPubService $activityPubService, WebfingerService $webfingerService)
+    public function __construct(FormManager $formManager, HibernationService $hibernationService, CsrfTokenChecker $csrfTokenChecker, ActivityPubService $activityPubService, WebFingerService $webfingerService)
     {
         $this->csrfTokenChecker = $csrfTokenChecker;
         $this->formManager = $formManager;

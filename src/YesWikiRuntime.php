@@ -382,7 +382,9 @@ class YesWikiRuntime
         try {
             $attributes = $matcher->match($context->getPathInfo());
             $pageContext->setMethod('');
-            if ($this->service(ApiService::class)->isAuthorized($attributes, $this->getRoutes())) {
+            if ($this->service(ApiService::class)->isCrossOriginWrite()) {
+                $response = new Response('', Response::HTTP_FORBIDDEN);
+            } elseif ($this->service(ApiService::class)->isAuthorized($attributes, $this->getRoutes())) {
                 $request = $this->service(CurrentRequest::class)->get();
                 $request->attributes->add($attributes);
                 $response = $this->handleWithHttpKernel($request);

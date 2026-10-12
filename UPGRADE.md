@@ -432,6 +432,7 @@ example.
 
   A wiki upgraded before `active_extensions` existed keeps the extensions its `desc.xml` files switched on; the
   `helloworld` sample is not one of them.
+
 - **Actions and handlers are services.** Put `autoconfigure: true` in the `_defaults` of the extension's
   `config.yaml`, register `actions/*` and `handlers/*` under `YesWiki\MyExtension\Action\` and
   `YesWiki\MyExtension\Handler\`, and implement `RegisteredAction` / `RegisteredHandler` with a

@@ -62,6 +62,21 @@ class PasswordHasherFactoryTest extends YesWikiTestCase
         $this->assertTrue($hasher->verify($hashed, 'correct horse battery staple'));
     }
 
+    #[DataProvider('hasherProvider')]
+    public function testTheSuiteHashesAtTheLowestCost(string $hasherName): void
+    {
+        $hasher = $this->getWiki()->services->get(PasswordHasherFactory::class)->getPasswordHasher($hasherName);
+
+        $this->assertStringStartsWith('$2y$04$', $hasher->hash('a password'));
+    }
+
+    public function testOutsideTheSuiteTheCostIsLeftToTheAlgorithm(): void
+    {
+        $hashed = (new PasswordHasherFactory('prod'))->getPasswordHasher(User::class)->hash('a password');
+
+        $this->assertStringNotContainsString('$04$', $hashed);
+    }
+
     /** There is no md5 hasher left to configure, and nothing may reintroduce one. */
     public function testTheMd5HasherClassIsGone(): void
     {
