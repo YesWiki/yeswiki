@@ -9,7 +9,6 @@ use Symfony\Component\Config\Resource\FileResource;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Loader\PhpFileLoader;
-use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 use Symfony\Component\HttpKernel\Kernel;
 use YesWiki\Content\Service\FileManager;
 use YesWiki\Kernel\Performable\ActionRegistry;
@@ -128,9 +127,9 @@ class YesWikiKernel extends Kernel
         $found = [];
         foreach ([
             $projectDir . '/extensions/*/composer.json',
-            $projectDir . '/extensions/*/config.yaml',
+            $projectDir . '/extensions/*/config.php',
             YESWIKI_INSTANCE_DIR . '/custom/extensions/*/composer.json',
-            YESWIKI_INSTANCE_DIR . '/custom/extensions/*/config.yaml',
+            YESWIKI_INSTANCE_DIR . '/custom/extensions/*/config.php',
         ] as $pattern) {
             foreach (glob($pattern) ?: [] as $file) {
                 $found[] = $file;
@@ -249,9 +248,10 @@ class YesWikiKernel extends Kernel
         $container->setParameter('cookie_path', $this->runtime->CookiePath);
 
         foreach ($this->runtime->extensions as $pluginBase) {
-            if (file_exists($pluginBase . 'config.yaml')) {
-                $extensionLoader = new YamlFileLoader($container, new FileLocator($pluginBase));
-                $extensionLoader->load('config.yaml');
+            if (file_exists($pluginBase . 'config.php')) {
+                foreach (require $pluginBase . 'config.php' as $name => $value) {
+                    $container->setParameter($name, $value);
+                }
             }
         }
 
@@ -269,7 +269,7 @@ class YesWikiKernel extends Kernel
     }
 
     /**
-     * Invalidate the compiled container cache when: an admin setting is saved (yeswiki.config.php is rewritten), an extension is installed/removed (extensions/ or custom/ itself gains or loses an entry), switched on or off (active_extensions, in that configuration), or reconfigured (its composer.json/config.yaml is rewritten).
+     * Invalidate the compiled container cache when: an admin setting is saved (yeswiki.config.php is rewritten), an extension is installed/removed (extensions/ or custom/ itself gains or loses an entry), switched on or off (active_extensions, in that configuration), or reconfigured (its composer.json/config.php is rewritten).
      */
     private function addInvalidationResources(ContainerBuilder $container): void
     {

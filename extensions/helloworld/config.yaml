@@ -1,3 +1,0 @@
-parameters:
-  hello_world:
-    my_param: 'this is a test param defined in extensions/helloworld/config.yaml. It can be ovewritten in yeswiki.config.php'

@@ -435,7 +435,8 @@ example.
 
 - **Actions and handlers are services.** Every class in an extension's `actions/`, `handlers/`,
   `services/` and `controllers/` is registered, autowired and autoconfigured, so the `services:`
-  section of its `config.yaml` can go; `config.yaml` stays for `parameters:`. Implement
+  section of its `config.yaml` can go. The `parameters:` move to a `config.php` at the extension's root
+  that returns them as an array; `config.yaml` is no longer read. Implement
   `RegisteredAction` / `RegisteredHandler` with a `performableName()`, and implement
   `EventSubscriberInterface` for a subscriber instead of tagging it `yeswiki.event_subscriber`. A palette entry is a `ProvidesComponents` implementation, not a `documentation.yaml`.
   `extensions/helloworld/` is the worked example.

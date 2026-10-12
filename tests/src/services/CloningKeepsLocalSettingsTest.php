@@ -29,7 +29,7 @@ class CloningKeepsLocalSettingsTest extends TestCase
             'files/photo.jpg',
             'custom/theme.css',
             'private/files/document.pdf',
-            'custom/extensions/bazar/config.yaml',
+            'custom/extensions/bazar/config.php',
         ] as $content) {
             $this->assertFalse(ArchiveService::isLocalOnly($content), "$content is the wiki's content and should be restored");
         }
