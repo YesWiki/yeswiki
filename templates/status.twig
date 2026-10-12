@@ -40,7 +40,7 @@
 	{% set nbMaj = 0 %}
 	{% set exts = tools %}
 	{% for ext in exts %}
-		{% if ext.updateAvailable and ext.installed %}
+		{% if ext.updateAvailable and ext.installed and ext.name not in forbiddenExtensions %}
 			{% set nbMaj = nbMaj + 1 %}
 		{% endif %}
 	{% endfor %}
@@ -65,7 +65,7 @@
 		</summary>
 		<div class="yw-accordion__body" id="collapseTools">
 			{% set exts = tools %}
-			{% include '@core/exts.twig' with {showSwitch: true} %}
+			{% include '@core/exts.twig' with {showSwitch: true, forbidden: forbiddenExtensions} %}
 		</div>
 		</details>
 	</div>

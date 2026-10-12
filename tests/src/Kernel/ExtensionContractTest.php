@@ -41,6 +41,8 @@ class ExtensionContractTest extends TestCase
 
         $this->assertSame([], ExtensionFolders::active($visible, null), 'no list, nothing runs');
         $this->assertSame(['qrcards'], array_keys(ExtensionFolders::active($visible, ['qrcards', 'gone'])));
+        $this->assertSame(['lms'], array_keys(ExtensionFolders::active($visible, ['lms', 'qrcards'], ['qrcards'])), 'forbidden wins over a hand-edited active list');
+        $this->assertSame(['qrcards'], ExtensionFolders::forbidden(['qrcards', 'yeswiki', 'qrcards']), 'core is never forbidden');
     }
 
     public function testTheManifestGivesLabelsPerLanguageAndNoVersionUntilOneIsInjected(): void

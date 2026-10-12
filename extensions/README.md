@@ -11,6 +11,8 @@ installed via the update system stay untracked.
 
 A folder here is an extension, but it runs on a wiki only once that wiki names it in
 `active_extensions` (`./yeswicli extension:enable <name>`, or the switch on `/admin/updates`).
+A name listed in `forbidden_extensions` never runs on that wiki, whatever `active_extensions` says:
+it cannot be switched on, installed or upgraded there, and `/admin/updates` does not offer it.
 An extension describes itself in a `composer.json` and states no version of its own: the tag
 it is published from is its version (ADR-0029). `helloworld` shows the whole shape.
 

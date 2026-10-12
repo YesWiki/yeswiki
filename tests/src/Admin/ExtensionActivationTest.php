@@ -2,6 +2,9 @@
 
 namespace YesWiki\Test\Admin;
 
+use YesWiki\Admin\Entity\Release;
+use YesWiki\Admin\Entity\Repository;
+use YesWiki\Admin\Service\AutoUpdateService;
 use YesWiki\Admin\Service\ExtensionActivation;
 use YesWiki\Test\Core\YesWikiTestCase;
 
@@ -47,6 +50,33 @@ class ExtensionActivationTest extends YesWikiTestCase
 
         $this->assertSame([], $activation->deactivate('helloworld'));
         $this->assertSame([], $activation->active());
+    }
+
+    public function testAForbiddenExtensionIsNeverSwitchedOnAndCoreCannotBeForbidden(): void
+    {
+        file_put_contents($this->config, "<?php\n\n\$yeswikiConfig = ['wakka_name' => 'test', 'forbidden_extensions' => ['helloworld', 'yeswiki']];\n");
+        $activation = $this->getWiki()->services->get(ExtensionActivation::class);
+
+        $this->assertSame(['helloworld'], $activation->forbidden());
+        $this->assertTrue($activation->isForbidden('helloworld'));
+        $this->assertFalse($activation->isForbidden('yeswiki'));
+        $this->assertSame([_t('AU_EXTENSION_FORBIDDEN', ['name' => 'helloworld'])], $activation->activate('helloworld'));
+        $this->assertSame([], $activation->active());
+    }
+
+    public function testAForbiddenExtensionIsNeitherInstalledNorUpgraded(): void
+    {
+        file_put_contents($this->config, "<?php\n\n\$yeswikiConfig = ['wakka_name' => 'test', 'forbidden_extensions' => ['ferme']];\n");
+        $service = $this->getWiki()->services->get(AutoUpdateService::class);
+        $service->repository = new Repository('http://127.0.0.1:9');
+        $service->repository->add(new Release('2026-01-01-1'), 'http://127.0.0.1:9/', 'extension-ferme-2026-01-01-1.zip', 'farm', 'doc');
+
+        $this->assertTrue($service->isForbiddenExtension('ferme'));
+        $this->assertSame(
+            [['text' => _t('AU_EXTENSION_FORBIDDEN', ['name' => 'ferme']), 'status' => _t('AU_ERROR')]],
+            $service->upgrade('ferme')->toArray(),
+            'refused before anything is downloaded'
+        );
     }
 
     public function testOnlyWhatTheOldDescriptorSwitchedOnKeepsRunning(): void

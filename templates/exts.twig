@@ -13,6 +13,7 @@
   </thead>
   <tbody>
       {% for ext in exts %}
+        {% set isForbidden = ext.name in forbidden|default([]) %}
         <tr>
             <td>
                 <strong>{{ ext.name }}</strong>
@@ -33,7 +34,7 @@
                 {{ ext.release }}
             </td>
             <td>
-                {% if isAdmin and ext.updateAvailable and ext.installed %}
+                {% if isAdmin and ext.updateAvailable and ext.installed and not isForbidden %}
                     {% if canTriggerExtensionUpdate %}
                         {% include '@core/update-action-button.twig' with {
                             params: {action: 'upgrade', package: ext.updateLink},
@@ -54,7 +55,7 @@
 
             </td>
             <td>
-                {% if isAdmin and not ext.installed %}
+                {% if isAdmin and not ext.installed and not isForbidden %}
                     {% if canTriggerExtensionUpdate %}
                         {% include '@core/update-action-button.twig' with {
                             params: {action: 'upgrade', package: ext.updateLink},
@@ -95,8 +96,10 @@
             </td>
             {% if showSwitch|default(false) %}
                 <td>
-                    {% if isAdmin and ext.installed %}
-                        {% set on = ext.name in activeExtensions %}
+                    {% set on = ext.name in activeExtensions %}
+                    {% if isAdmin and ext.installed and isForbidden and not on %}
+                        <small>{{ _t('AU_EXTENSION_FORBIDDEN', {name: ext.name}) }}</small>
+                    {% elseif isAdmin and ext.installed %}
                         {% include '@core/update-action-button.twig' with {
                             params: {action: on ? 'deactivate' : 'activate', package: ext.name},
                             buttonClass: 'yw-btn yw-btn--sm ' ~ (on ? 'yw-btn--success' : ''),

@@ -57,7 +57,7 @@ class UpdateHealthChecks implements ProvidesHealthChecks
 
                     $outdated = [];
                     foreach ([...$repository->getThemesPackages(), ...$repository->getToolsPackages()] as $package) {
-                        if ($package->installed && $package->updateAvailable && $this->updateService->mayUpgrade($package->name)) {
+                        if ($package->installed && $package->updateAvailable && $this->updateService->mayUpgrade($package->name) && !$this->updateService->isForbiddenExtension($package->name)) {
                             $outdated[] = $package->name;
                         }
                     }

@@ -86,6 +86,12 @@ class UpdateAction extends YesWikiAction implements RegisteredAction
             $vIsAdmin = $this->getService(AclService::class)->isAdmin();
             $vIsDesignatedUpdateInstance = $vUpdateService->isDesignatedUpdateInstance();
 
+            $vForbidden = $this->getService(ExtensionActivation::class)->forbidden();
+            $vTools = array_values(array_filter(
+                iterator_to_array($vUpdateService->repository->getToolsPackages()),
+                fn ($tool): bool => $tool->installed || !in_array($tool->name, $vForbidden, true)
+            ));
+
             $vCanTriggerCoreUpdate = $vIsAdmin && !$vIsReadOnly && $vIsDesignatedUpdateInstance;
             $vCanTriggerExtensionUpdate = $vIsAdmin && !$vIsReadOnly;
 
@@ -100,8 +106,9 @@ class UpdateAction extends YesWikiAction implements RegisteredAction
                 'extensionBlockedReason' => $this->blockedReason($vIsReadOnly, true),
                 'core' => $vUpdateService->repository->getCorePackage(),
                 'themes' => $vUpdateService->repository->getThemesPackages(),
-                'tools' => $vUpdateService->repository->getToolsPackages(),
+                'tools' => $vTools,
                 'activeExtensions' => $this->getService(ExtensionActivation::class)->active(),
+                'forbiddenExtensions' => $vForbidden,
                 'phpVersion' => PHP_VERSION,
             ]);
         }

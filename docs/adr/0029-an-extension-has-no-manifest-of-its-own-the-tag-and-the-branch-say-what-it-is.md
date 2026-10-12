@@ -23,3 +23,14 @@ This is not a return to Composer as an install route: ADR-0016 stands. `composer
 A wiki upgraded with no `active_extensions` key keeps the extensions that were running before the key existed — a migration lists them once — and from then on an extension is off until named. A Doryphore wiki's extensions are set aside in `private/doryphore/tools/` (UPGRADE.md §2) and come back one at a time as their `5.x` releases appear.
 
 The repository build owns three things it did not before: injecting the version from the tag, copying the per-language labels into the catalogue, and serving the `ectoplasme-dev` line from branch commits.
+
+## Amendments
+
+**An Instance can forbid an extension (2026-10-12).** `forbidden_extensions` in an Instance's
+configuration lists folder names that Instance never runs. A host uses it to keep an extension off a
+class of wiki, the `ferme` extension off a single wiki for example, where the wiki's own admin could
+otherwise switch it on from `/admin/updates`. A forbidden extension is not loaded even when
+`active_extensions` names it (the configuration can be edited by hand), `activate()` refuses it,
+the update system refuses to install or upgrade it, and `/admin/updates` stops offering it when it
+is absent. Removing it and switching it off stay possible, so a wiki that already has it can be
+cleaned up. Core is a package, not an extension, and `yeswiki` in the list is ignored.

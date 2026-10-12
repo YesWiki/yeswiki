@@ -5,6 +5,7 @@ namespace YesWiki\Admin\Service;
 use Psr\Container\ContainerInterface;
 use YesWiki\Admin\Entity\PackageCore;
 use YesWiki\Admin\Entity\PackageExt;
+use YesWiki\Admin\Entity\PackageTool;
 use YesWiki\Admin\Entity\Repository;
 use YesWiki\Files\Service\LocalFiles;
 use YesWiki\Kernel\Entity\Messages;
@@ -41,6 +42,12 @@ class AutoUpdateService
         }
 
         return $this->isDesignatedUpdateInstance($instanceDir, $programDir);
+    }
+
+    /** Whether this Instance's `forbidden_extensions` keeps the extension $packageName off it. */
+    public function isForbiddenExtension(string $packageName): bool
+    {
+        return $this->container->get(ExtensionActivation::class)->isForbidden($packageName);
     }
 
     /** @return bool false when the repository index could not be read */
@@ -116,6 +123,12 @@ class AutoUpdateService
     {
         $messages = new Messages();
         $package = $this->repository->getPackage($packageName);
+
+        if ($package instanceof PackageTool && $this->isForbiddenExtension($packageName)) {
+            $messages->add(_t('AU_EXTENSION_FORBIDDEN', ['name' => $packageName]), 'AU_ERROR');
+
+            return $messages;
+        }
 
         $file = $package ? $package->getFile() : false;
         if ($package === null || false === $file) {

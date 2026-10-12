@@ -39,6 +39,12 @@ class UpgradeCommand extends Command
             return Command::FAILURE;
         }
 
+        if ($updateService->isForbiddenExtension($package)) {
+            $output->writeln('<error>' . _t('AU_EXTENSION_FORBIDDEN', ['name' => $package]) . '</error>');
+
+            return Command::FAILURE;
+        }
+
         $output->writeln("Starting Upgrading $package");
 
         $updateService->initRepository();

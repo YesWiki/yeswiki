@@ -1836,6 +1836,7 @@ Text of the column to be changed later
     'AU_DEACTIVATE' => 'Switch off',
     'AU_EXTENSION_ACTIVATED' => 'Extension {name} switched on for this wiki',
     'AU_EXTENSION_DEACTIVATED' => 'Extension {name} switched off for this wiki',
+    'AU_EXTENSION_FORBIDDEN' => 'Extension {name} is not allowed on this wiki (forbidden_extensions)',
     'AU_DELETE' => 'Deleting files',
     'AU_NO_DESCRIPTION' => 'Description not available.',
     'AU_DOCUMENTATION_LINK' => 'documentation',

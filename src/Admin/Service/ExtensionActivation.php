@@ -11,6 +11,7 @@ use YesWiki\Kernel\Service\ConfigurationService;
 class ExtensionActivation
 {
     public const CONFIG_KEY = 'active_extensions';
+    public const FORBIDDEN_KEY = 'forbidden_extensions';
 
     public function __construct(private readonly ConfigurationService $configurationService)
     {
@@ -42,13 +43,30 @@ class ExtensionActivation
         return in_array($name, $this->active(), true);
     }
 
+    /** @return list<string> what `forbidden_extensions` keeps off this Instance, core never among them */
+    public function forbidden(): array
+    {
+        $configuration = $this->configurationService->getConfiguration(ConfigurationFileProvider::getConfigFileFromEnv());
+        $configuration->load();
+
+        return ExtensionFolders::forbidden($configuration[self::FORBIDDEN_KEY] ?? []);
+    }
+
+    public function isForbidden(string $name): bool
+    {
+        return in_array($name, $this->forbidden(), true);
+    }
+
     /**
-     * Switch $name on, once nothing it needs is missing.
+     * Switch $name on, unless this Instance forbids it or something it needs is missing.
      *
      * @return list<string> why it was not, empty when it was
      */
     public function activate(string $name): array
     {
+        if ($this->isForbidden($name)) {
+            return [_t('AU_EXTENSION_FORBIDDEN', ['name' => $name])];
+        }
         $manifest = $this->visible()[$name] ?? null;
         if ($manifest === null) {
             return ["no extension named {$name} here"];

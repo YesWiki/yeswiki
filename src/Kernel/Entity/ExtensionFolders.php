@@ -38,17 +38,33 @@ final class ExtensionFolders
     }
 
     /**
-     * Which of $folders the configuration switched on, in the order they were found.
+     * Which of $folders the configuration switched on and does not forbid, in the order they were found.
      *
      * @param array<string, string> $folders
      *
      * @return array<string, string>
      */
-    public static function active(array $folders, mixed $activeExtensions): array
+    public static function active(array $folders, mixed $activeExtensions, mixed $forbiddenExtensions = []): array
     {
-        $names = array_map('strval', is_array($activeExtensions) ? array_values($activeExtensions) : []);
+        $names = array_diff(self::names($activeExtensions), self::forbidden($forbiddenExtensions));
 
         return array_filter($folders, fn (string $name): bool => in_array($name, $names, true), ARRAY_FILTER_USE_KEY);
+    }
+
+    /**
+     * The extensions `forbidden_extensions` keeps off an Instance; core itself can never be one of them.
+     *
+     * @return list<string>
+     */
+    public static function forbidden(mixed $forbiddenExtensions): array
+    {
+        return array_values(array_diff(self::names($forbiddenExtensions), ['yeswiki']));
+    }
+
+    /** @return list<string> */
+    private static function names(mixed $listed): array
+    {
+        return array_values(array_unique(array_map('strval', is_array($listed) ? array_values($listed) : [])));
     }
 
     /**

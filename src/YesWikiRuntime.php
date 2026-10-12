@@ -607,12 +607,12 @@ class YesWikiRuntime
         return new Response(YesWikiKernel::isCli() ? '' : $th->getMessage());
     }
 
-    /** Load the extensions this Instance switched on in `active_extensions`; any other folder stays inert (ADR-0029). */
+    /** Load the extensions this Instance switched on in `active_extensions` and does not list in `forbidden_extensions`; any other folder stays inert (ADR-0029). */
     private function loadExtensions(): void
     {
         $this->extensions = array_merge(
             $this->extensions,
-            ExtensionFolders::active(ExtensionFolders::visible(YESWIKI_PROGRAM_DIR, YESWIKI_INSTANCE_DIR), $this->config['active_extensions'] ?? [])
+            ExtensionFolders::active(ExtensionFolders::visible(YESWIKI_PROGRAM_DIR, YESWIKI_INSTANCE_DIR), $this->config['active_extensions'] ?? [], $this->config['forbidden_extensions'] ?? [])
         );
         $this->extensions['custom'] = YESWIKI_INSTANCE_DIR . '/custom/';
 
