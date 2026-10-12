@@ -84,7 +84,7 @@ upgrading and keep that instead. Do not skip this step: everything below is a on
    `YESWIKI_CLI_ANY_USER=1` skips the check, for a container that maps users its own way.
 
    `migrate` ends by emptying `cache/container/` and `cache/templates/`. The compiled container
-   is keyed on the config, `services.yaml` and `composer.lock`, not on the source files, so a
+   is keyed on the config, the kernel and `composer.lock`, not on the source files, so a
    release that adds a service class inside an existing module would otherwise keep serving the
    old container. `./yeswicli cache:clear` does the same on its own, whenever you pull code;
    `./yeswicli cache:clear --all` empties the whole of `cache/`, thumbnails and remote copies
@@ -433,10 +433,11 @@ example.
   A wiki upgraded before `active_extensions` existed keeps the extensions its `desc.xml` files switched on; the
   `helloworld` sample is not one of them.
 
-- **Actions and handlers are services.** Put `autoconfigure: true` in the `_defaults` of the extension's
-  `config.yaml`, register `actions/*` and `handlers/*` under `YesWiki\MyExtension\Action\` and
-  `YesWiki\MyExtension\Handler\`, and implement `RegisteredAction` / `RegisteredHandler` with a
-  `performableName()`. A palette entry is a `ProvidesComponents` implementation, not a `documentation.yaml`.
+- **Actions and handlers are services.** Every class in an extension's `actions/`, `handlers/`,
+  `services/` and `controllers/` is registered, autowired and autoconfigured, so the `services:`
+  section of its `config.yaml` can go; `config.yaml` stays for `parameters:`. Implement
+  `RegisteredAction` / `RegisteredHandler` with a `performableName()`, and implement
+  `EventSubscriberInterface` for a subscriber instead of tagging it `yeswiki.event_subscriber`. A palette entry is a `ProvidesComponents` implementation, not a `documentation.yaml`.
   `extensions/helloworld/` is the worked example.
 
 ### 3. Custom `.tpl.html` templates must be ported to Twig

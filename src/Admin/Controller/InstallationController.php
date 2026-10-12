@@ -2,6 +2,7 @@
 
 namespace YesWiki\Admin\Controller;
 
+use Symfony\Component\DependencyInjection\Attribute\Exclude;
 use YesWiki\Admin\Service\InstallationService;
 use YesWiki\Files\Service\Storage;
 use YesWiki\Kernel\Service\EnvironmentConfiguration;
@@ -10,6 +11,7 @@ use YesWiki\Kernel\Service\ProgramVersion;
 use YesWiki\Kernel\Service\WikiUrls;
 
 /** Web installer, run by YesWikiInit::doInstall() when the configuration file does not exist yet. */
+#[Exclude]
 class InstallationController
 {
     /** @var array<string, mixed> */

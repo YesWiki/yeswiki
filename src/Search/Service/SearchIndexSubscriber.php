@@ -20,6 +20,9 @@ class SearchIndexSubscriber implements EventSubscriberInterface
     private ContainerInterface $container;
     private bool $flushRegistered = false;
 
+    /** Ahead of the other listeners, since one throwing stops the rest and the index is local and cheap. */
+    private const PRIORITY = 100;
+
     public function __construct(ContainerInterface $container)
     {
         $this->container = $container;
@@ -28,17 +31,17 @@ class SearchIndexSubscriber implements EventSubscriberInterface
     public static function getSubscribedEvents(): array
     {
         return [
-            'page.created' => ['onContentChanged'],
-            'page.updated' => ['onContentChanged'],
-            'page.deleted' => ['onContentDeleted'],
-            'entry.created' => ['onContentChanged'],
-            'entry.updated' => ['onContentChanged'],
-            'entry.deleted' => ['onContentDeleted'],
-            'comment.created' => ['onContentChanged'],
-            'comment.updated' => ['onContentChanged'],
-            'comment.deleted' => ['onContentDeleted'],
-            'form.updated' => ['onFormChanged'],
-            'form.deleted' => ['onFormChanged'],
+            'page.created' => ['onContentChanged', self::PRIORITY],
+            'page.updated' => ['onContentChanged', self::PRIORITY],
+            'page.deleted' => ['onContentDeleted', self::PRIORITY],
+            'entry.created' => ['onContentChanged', self::PRIORITY],
+            'entry.updated' => ['onContentChanged', self::PRIORITY],
+            'entry.deleted' => ['onContentDeleted', self::PRIORITY],
+            'comment.created' => ['onContentChanged', self::PRIORITY],
+            'comment.updated' => ['onContentChanged', self::PRIORITY],
+            'comment.deleted' => ['onContentDeleted', self::PRIORITY],
+            'form.updated' => ['onFormChanged', self::PRIORITY],
+            'form.deleted' => ['onFormChanged', self::PRIORITY],
         ];
     }
 

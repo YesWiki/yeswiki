@@ -2,9 +2,12 @@
 
 namespace YesWiki\Kernel\Component;
 
+use Symfony\Component\DependencyInjection\Attribute\Exclude;
+
 /**
  * One editable parameter of a Component: what the settings rail draws an input for, and what ends up as `param="value"` in the tag.
  */
+#[Exclude]
 final class Setting
 {
     /**

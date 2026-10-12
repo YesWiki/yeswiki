@@ -65,7 +65,7 @@ class SourceRegistryTest extends YesWikiTestCase
             $declared,
             $registered,
             'an action implementing SuppliesItems is a Source; if it is missing here the '
-            . '`yeswiki.item_source` tag in services.yaml stopped matching'
+            . '`yeswiki.item_source` tag in YesWikiKernel::AUTOCONFIGURED stopped matching'
         );
     }
 

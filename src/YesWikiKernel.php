@@ -2,15 +2,20 @@
 
 namespace YesWiki\Core;
 
+use Psr\Container\ContainerInterface;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\Config\Loader\LoaderInterface;
 use Symfony\Component\Config\Resource\FileResource;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\DependencyInjection\Definition;
+use Symfony\Component\DependencyInjection\Loader\PhpFileLoader;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 use Symfony\Component\HttpKernel\Kernel;
 use YesWiki\Content\Service\FileManager;
+use YesWiki\Kernel\Performable\ActionRegistry;
 use YesWiki\Kernel\Service\ConfigurationFileProvider;
 use YesWiki\Kernel\Service\EnvironmentConfiguration;
+use YesWiki\Kernel\Service\LanguageService;
 use YesWiki\Kernel\Service\StringUtilService;
 
 /** Owns the DI container build/compile/cache lifecycle for a Wiki instance. */
@@ -36,6 +41,21 @@ class YesWikiKernel extends Kernel
         \YesWiki\Content\Entity\ContributesEntryFields::class => 'yeswiki.entry_fields',
         \YesWiki\Content\Entity\AppendsToPageView::class => 'yeswiki.page_view_appendix',
         \YesWiki\Kernel\Health\ProvidesHealthChecks::class => 'yeswiki.health_check_provider',
+        \Symfony\Component\EventDispatcher\EventSubscriberInterface::class => 'yeswiki.event_subscriber',
+        \YesWiki\Kernel\Service\RequestScopedState::class => 'yeswiki.request_scoped',
+    ];
+
+    /** The folders of a module whose classes are services: every class in them is registered, autowired and autoconfigured. */
+    private const SERVICE_LAYERS = ['Service', 'Action', 'Handler', 'Controller', 'Api', 'Component'];
+
+    /** The same layers in an extension, named after the folders src/autoload.inc.php maps them to. */
+    private const EXTENSION_SERVICE_FOLDERS = ['actions', 'handlers', 'services', 'controllers'];
+
+    /** Services set from outside the container once it exists, see YesWikiRuntime::boot(). */
+    private const SYNTHETIC = [
+        \Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface::class,
+        \Symfony\Component\Security\Csrf\CsrfTokenManager::class,
+        YesWikiRuntime::class,
     ];
 
     public function __construct(YesWikiRuntime $runtime, string $environment)
@@ -75,7 +95,7 @@ class YesWikiKernel extends Kernel
             self::VERSION,
             $this->hashOf(ConfigurationFileProvider::getConfigFileFromEnv()),
             $this->hashOf(YESWIKI_INSTANCE_DIR . '/private/.env'),
-            $this->hashOf(__DIR__ . '/services.yaml'),
+            $this->hashOf(__FILE__),
             $this->hashOf($this->getProjectDir() . '/composer.lock'),
         ];
 
@@ -119,6 +139,44 @@ class YesWikiKernel extends Kernel
         sort($found);
 
         return $found;
+    }
+
+    /** Register core and extension services by where their classes live, and the few the kernel wires itself. */
+    private function registerServices(ContainerBuilder $container): void
+    {
+        foreach (self::SYNTHETIC as $id) {
+            $container->register($id)->setSynthetic(true)->setPublic(true);
+        }
+        $container->setAlias(ContainerInterface::class, 'service_container')->setPublic(true);
+        $container->register(ActionRegistry::class)->setAutowired(true)->setPublic(true);
+
+        $loader = new PhpFileLoader($container, new FileLocator(__DIR__));
+        $prototype = (new Definition())->setAutowired(true)->setAutoconfigured(true)->setPublic(true)->setChanges([]);
+        $loader->registerClasses($prototype, 'YesWiki\\', '*/{' . implode(',', self::SERVICE_LAYERS) . '}/*');
+
+        foreach ($this->runtime->extensions as $pluginBase) {
+            foreach (self::EXTENSION_SERVICE_FOLDERS as $folder) {
+                $namespace = self::namespaceOf($pluginBase . $folder);
+                if ($namespace !== null) {
+                    $loader->registerClasses($prototype, $namespace . '\\', $pluginBase . $folder . '/*');
+                }
+            }
+        }
+
+        $loader->registerAliasesForSinglyImplementedInterfaces();
+        $container->getDefinition(LanguageService::class)->setFactory([LanguageService::class, 'getInstance']);
+    }
+
+    /** The namespace the PHP files of $directory declare, or null when it has none. */
+    private static function namespaceOf(string $directory): ?string
+    {
+        foreach (glob($directory . '/*.php') ?: [] as $file) {
+            if (preg_match('/^namespace\s+([^;\s{]+)/m', (string)file_get_contents($file), $matches)) {
+                return $matches[1];
+            }
+        }
+
+        return null;
     }
 
     /** Remove containers built from configurations this wiki is no longer in, keeping one spare. */
@@ -181,8 +239,7 @@ class YesWikiKernel extends Kernel
             $container->registerForAutoconfiguration($interface)->addTag($tag);
         }
 
-        $loader = new YamlFileLoader($container, new FileLocator(__DIR__));
-        $loader->load('services.yaml');
+        $this->registerServices($container);
 
         $fullDomain = parse_url($this->runtime->config['base_url'] ?? '');
         $container->setParameter('host', $fullDomain['host'] ?? '');

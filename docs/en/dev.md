@@ -362,38 +362,18 @@ class DateField extends CoreDateField
 5. update the declaration of the associated field name in the header `@Field({"possiblename1", "possiblename2", "possiblename3"})`
 6. Once the code is ready, it is then possible to define a custom field in the graphical form builder.
 
-### Custom Service
+### Custom Service and Controller
 
-Puts your custom fields in `custom/services`
-use `namespace YesWiki\Custom\Service;`
-and create the file`custom/config.yaml` with
+Put the class in `custom/services` with `namespace YesWiki\Custom\Service;`, or in
+`custom/controllers` with `namespace YesWiki\Custom\Controller;`. Nothing needs declaring:
+every class in `actions/`, `handlers/`, `services/` and `controllers/` of `custom/` or of an
+extension is registered as an autowired, autoconfigured service. Run `./yeswicli cache:clear`
+after adding one.
 
-```yaml
-services:
-  _defaults:
-    autowire: true
-    public: true
-
-  YesWiki\Custom\Service\:
-    resource: 'services/*'
-```
-
-### Custom Controller
-
-Puts your custom fields in `custom/controller`
-use `namespace YesWiki\Custom\Controller;`
-and create the file`custom/config.yaml` with
-
-```yaml
-services:
-  _defaults:
-    autowire: true
-    public: true
-
-  # Allows to use controllers as services
-  YesWiki\Custom\Controller\:
-    resource: 'controllers/*'
-```
+A class that needs something autowiring cannot guess says so with an attribute:
+`#[Exclude]` to keep it out of the container, `#[AutowireIterator('a.tag')]` on a
+constructor argument, `#[Autoconfigure(autowire: false)]`, `#[AsAlias(SomeInterface::class)]`.
+An event subscriber only has to implement `EventSubscriberInterface`.
 
 ### Custom api route
 
@@ -429,7 +409,7 @@ class ApiController extends YesWikiController
 }
 ```
 
-2.  be careful to register the `controllers` folder in `config.yaml` like described above.
+2.  run `./yeswicli cache:clear` so the new controller is registered.
 
 ### Custom Command
 

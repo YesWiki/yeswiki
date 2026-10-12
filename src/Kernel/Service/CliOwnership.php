@@ -4,8 +4,10 @@
 
 namespace YesWiki\Kernel\Service;
 
+use Symfony\Component\DependencyInjection\Attribute\Exclude;
 use YesWiki\Files\Service\LocalFiles;
 
+#[Exclude]
 final class CliOwnership
 {
     public const ANY_USER = 'YESWIKI_CLI_ANY_USER';

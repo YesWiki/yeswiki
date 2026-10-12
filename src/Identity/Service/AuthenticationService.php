@@ -4,6 +4,7 @@ namespace YesWiki\Identity\Service;
 
 use Psr\Container\ContainerInterface;
 use Psr\Log\LogLevel;
+use Symfony\Component\DependencyInjection\Attribute\AsAlias;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Tamtamchik\SimpleFlash\Flash;
 use YesWiki\Core\YesWikiController;
@@ -17,6 +18,7 @@ use YesWiki\Kernel\Service\ActorSource;
 use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Kernel\Service\Journal;
 
+#[AsAlias(ActorSource::class, public: true)]
 class AuthenticationService extends YesWikiController implements ActorSource
 {
     use LimitationsTrait;

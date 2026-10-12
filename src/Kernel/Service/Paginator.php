@@ -2,7 +2,10 @@
 
 namespace YesWiki\Kernel\Service;
 
+use Symfony\Component\DependencyInjection\Attribute\Exclude;
+
 /** Minimal pagination helper. */
+#[Exclude]
 class Paginator
 {
     /**

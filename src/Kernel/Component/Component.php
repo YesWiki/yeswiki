@@ -2,7 +2,10 @@
 
 namespace YesWiki\Kernel\Component;
 
+use Symfony\Component\DependencyInjection\Attribute\Exclude;
+
 /** Something a webmaster can insert into page content: the palette's unit. */
+#[Exclude]
 final class Component
 {
     /**

@@ -82,7 +82,6 @@ class YesWikiRuntime
     /** @var Request */
     public $request;
 
-    // what YesWikiInit derived from the URL, seeded into PageContext at boot()
     /** @var string */
     private $initialTag;
 
@@ -95,7 +94,6 @@ class YesWikiRuntime
     /** @var array<string, string> extension name => the folder it was loaded from */
     public $extensions = [];
 
-    // lazily populated RouteCollection - always read it through getRoutes()
     /** @var RouteCollection|array<mixed> */
     public $routes = [];
     /**
@@ -153,7 +151,6 @@ class YesWikiRuntime
      */
     private function installExceptionHandler(): void
     {
-        // Not under the suite, which installs its own and reports a run that replaced it as risky.
         if (defined('PHPUNIT_COMPOSER_INSTALL')) {
             return;
         }
@@ -251,7 +248,6 @@ class YesWikiRuntime
             : ($default != null ? $default : '');
     }
 
-    // MAINTENANCE
     /**
      * The wiki's housekeeping, kept here as the name an extension has always called (ticket 54).
      *
@@ -265,7 +261,6 @@ class YesWikiRuntime
         $this->service(MaintenanceService::class)->sweep();
     }
 
-    // THE BIG EVIL NASTY ONE!
     /**
      * @param string $tag
      * @param string $method
@@ -689,7 +684,7 @@ class YesWikiRuntime
 
     /**
      * Build (or reuse the compiled/cached) DI container via YesWikiKernel, then wire in the
-     * synthetic services it can't dump (see src/services.yaml).
+     * synthetic services it can't dump (see YesWikiKernel::SYNTHETIC).
      *
      * @return void
      */

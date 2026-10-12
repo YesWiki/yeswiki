@@ -1,25 +1,3 @@
 parameters:
   hello_world:
     my_param: 'this is a test param defined in extensions/helloworld/config.yaml. It can be ovewritten in yeswiki.config.php'
-
-services:
-  _defaults:
-    autowire: true
-    autoconfigure: true
-    public: true
-
-  YesWiki\HelloWorld\Service\:
-    resource: 'services/*'
-
-  YesWiki\HelloWorld\Service\GreetingHooksSubscriber:
-    tags:
-      - { name: yeswiki.event_subscriber }
-
-  YesWiki\HelloWorld\Controller\:
-    resource: 'controllers/*'
-
-  YesWiki\Helloworld\Action\:
-    resource: 'actions/*'
-
-  YesWiki\Helloworld\Handler\:
-    resource: 'handlers/*'

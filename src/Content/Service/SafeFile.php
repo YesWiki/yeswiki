@@ -3,6 +3,7 @@
 namespace YesWiki\Content\Service;
 
 use SimplePie\File;
+use Symfony\Component\DependencyInjection\Attribute\Exclude;
 use YesWiki\Kernel\Service\SsrfUrlValidator;
 
 /**
@@ -10,6 +11,7 @@ use YesWiki\Kernel\Service\SsrfUrlValidator;
  *
  * SimplePie follows a redirect by calling __construct() again on the same object, so every hop lands here and is checked in turn; the address that was checked is then pinned for curl, which would otherwise resolve the name a second time.
  */
+#[Exclude]
 class SafeFile extends File
 {
     public const SCHEMES = ['http', 'https'];

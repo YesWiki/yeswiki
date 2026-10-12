@@ -3,6 +3,7 @@
 namespace YesWiki\Import\Service;
 
 use Psr\Container\ContainerInterface;
+use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Content\Entity\ContentTypeSchema;
 use YesWiki\Content\Field\BazarField;
@@ -16,6 +17,7 @@ use YesWiki\Identity\Service\UserManager;
 use YesWiki\Kernel\Service\TripleStore;
 
 /** Imports Bazar entries from a remote YesWiki's form into a local form. */
+#[Autoconfigure(autowire: false)]
 class YesWikiToYesWikiImporter extends Importer
 {
     protected string $source;
@@ -337,7 +339,6 @@ class YesWikiToYesWikiImporter extends Importer
             }
             $mappedEntry['_remote_url'] = $remoteEntry['url'];
 
-            // a source running 4.x still answers with the old names, so both are read
             $mappedEntry['_remote_created_at'] = $remoteEntry['created_at'] ?? $remoteEntry['date_creation_fiche'] ?? null;
             $mappedEntry['_remote_updated_at'] = $remoteEntry['updated_at'] ?? $remoteEntry['date_maj_fiche'] ?? null;
             $mappedEntries[] = $mappedEntry;

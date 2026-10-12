@@ -3,11 +3,13 @@
 namespace YesWiki\Import\Service;
 
 use Psr\Container\ContainerInterface;
+use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Content\Service\EntryManager;
 use YesWiki\Content\Service\FormManager;
 use YesWiki\Content\Service\ListManager;
 
+#[Autoconfigure(autowire: false)]
 class YesWikiListImporter extends Importer
 {
     protected string $source;
@@ -128,8 +130,6 @@ class YesWikiListImporter extends Importer
     {
         $listId = $this->config['listId'];
         $title = $this->config['title'] ?? $listId;
-        // Where these values came from, recorded on the list itself, so a webmaster looking at two
-        // lists can tell which one tonight's sync will replace (ticket 64).
         $origin = (string)($this->config['url'] ?? '');
         if ($this->listManager->isList($listId)) {
             $this->listManager->update($listId, $title, $data, $origin);

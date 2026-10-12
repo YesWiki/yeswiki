@@ -2,7 +2,10 @@
 
 namespace YesWiki\Kernel\Component;
 
+use Symfony\Component\DependencyInjection\Attribute\Exclude;
+
 /** A titled block of settings shown as its own panel in the rail, and shared by several Components. */
+#[Exclude]
 final class SettingGroup
 {
     /**

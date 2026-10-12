@@ -4,6 +4,7 @@ namespace YesWiki\Import\Service;
 
 use League\HTMLToMarkdown\HtmlConverter;
 use Psr\Container\ContainerInterface;
+use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Content\Entity\ContentTypeSchema;
 use YesWiki\Content\Service\EntryManager;
@@ -12,6 +13,7 @@ use YesWiki\Content\Service\ListManager;
 use YesWiki\Files\Service\Storage;
 use YesWiki\Kernel\Service\StringUtilService;
 
+#[Autoconfigure(autowire: false)]
 class ImapImporter extends Importer
 {
     protected string $source;

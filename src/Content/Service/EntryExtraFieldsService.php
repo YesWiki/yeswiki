@@ -3,6 +3,7 @@
 namespace YesWiki\Content\Service;
 
 use Psr\Container\ContainerInterface;
+use Symfony\Component\DependencyInjection\Attribute\AutowireIterator;
 use YesWiki\Content\Entity\ContributesEntryFields;
 use YesWiki\Kernel\Service\TripleStore;
 
@@ -22,7 +23,7 @@ class EntryExtraFieldsService
     /**
      * @param iterable<ContributesEntryFields> $contributors
      */
-    public function __construct(ContainerInterface $container, iterable $contributors = [])
+    public function __construct(ContainerInterface $container, #[AutowireIterator('yeswiki.entry_fields')] iterable $contributors = [])
     {
         $this->container = $container;
         $this->contributors = $contributors;

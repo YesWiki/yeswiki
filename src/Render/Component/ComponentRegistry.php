@@ -3,6 +3,7 @@
 namespace YesWiki\Render\Component;
 
 use Psr\Container\ContainerInterface;
+use Symfony\Component\DependencyInjection\Attribute\AutowireIterator;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Core\YesWikiPerformable;
 use YesWiki\Identity\Service\AclService;
@@ -24,6 +25,7 @@ class ComponentRegistry
      *                                                order -- Category and PaletteOrder decide it
      */
     public function __construct(
+        #[AutowireIterator('yeswiki.component_provider')]
         private readonly iterable $providers,
         private readonly ContainerInterface $container,
         private readonly ParameterBagInterface $params,

@@ -6,6 +6,7 @@ use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
 use Psr\Log\LoggerTrait;
 use Psr\Log\LogLevel;
+use Symfony\Component\DependencyInjection\Attribute\AsAlias;
 use YesWiki\Kernel\Entity\JournalChannel;
 
 /**
@@ -15,6 +16,7 @@ use YesWiki\Kernel\Entity\JournalChannel;
  * path of the database, so an insert that may fail silently is the second sink, never the only
  * one.
  */
+#[AsAlias(LoggerInterface::class, public: true)]
 class Journal implements LoggerInterface
 {
     use LoggerTrait;
@@ -110,9 +112,6 @@ class Journal implements LoggerInterface
             $context['frames'] = $this->container->get(ThrowableFormatter::class)->frames($throwable);
         }
 
-        // Not the message: messages carry variable data ("User 42 not found", "User 43 not
-        // found"), so fingerprinting on them defeats the dedup at the exact moment a storm makes
-        // it matter.
         $fingerprint = substr(hash('sha256', implode('|', [
             JournalChannel::Diagnostic->value, (string)$level, $throwable !== null ? $throwable::class : $action, $file, (string)$line,
         ])), 0, 32);
@@ -252,9 +251,6 @@ class Journal implements LoggerInterface
         $table = $this->container->get(JournalSchema::class)->table();
         $now = $db->now();
 
-        // One statement for both channels, because an audit entry carries no fingerprint and a
-        // unique index over a NULL never collides on any of the three drivers -- three deletions
-        // stay three rows without a second code path saying so.
         $sql = $db->dialect()->upsert(
             $table,
             [

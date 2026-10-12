@@ -2,6 +2,7 @@
 
 namespace YesWiki\Kernel\Service;
 
+use Symfony\Component\DependencyInjection\Attribute\AutowireIterator;
 use YesWiki\Kernel\Health\Finding;
 use YesWiki\Kernel\Health\HealthCheck;
 use YesWiki\Kernel\Health\ProvidesHealthChecks;
@@ -29,7 +30,7 @@ class HealthService implements RequestScopedState
     /**
      * @param iterable<ProvidesHealthChecks> $providers tagged services, in no particular order
      */
-    public function __construct(iterable $providers)
+    public function __construct(#[AutowireIterator('yeswiki.health_check_provider')] iterable $providers)
     {
         $this->providers = $providers;
     }
@@ -60,8 +61,6 @@ class HealthService implements RequestScopedState
                 continue;
             }
 
-            // Never nag about what cannot be fixed from here: a permanent badge teaches people to
-            // ignore every badge, including the one that matters (ADR-0007, ADR-0026).
             if (!$check->isActionable()) {
                 continue;
             }

@@ -2,7 +2,10 @@
 
 namespace YesWiki\Kernel\Component;
 
+use Symfony\Component\DependencyInjection\Attribute\Exclude;
+
 /** The palette's sections, in the order a webmaster meets them. */
+#[Exclude]
 enum Category: string
 {
     case Writing = 'writing';

@@ -2,6 +2,7 @@
 
 namespace YesWiki\Admin\Service;
 
+use Symfony\Component\DependencyInjection\Attribute\Exclude;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 use Symfony\Component\PasswordHasher\Hasher\PasswordHasherFactory;
 use YesWiki\Core\YesWikiLoader;
@@ -15,6 +16,7 @@ use YesWiki\Render\Service\LayoutService;
 use YesWiki\Search\Service\SearchIndexSchema;
 
 /** Installing a wiki, with no HTTP in it. */
+#[Exclude]
 class InstallationService
 {
     /** Legacy POST/config keys still accepted, mapped to their current names. */
@@ -806,9 +808,6 @@ class InstallationService
             LayoutService::LOGO => '',
             LayoutService::BRAND => 'text',
             LayoutService::ACCOUNT_BUTTON => true,
-            // Which menu each placement draws, not what is in one: the entries are `menu` rows
-            // the seed creates, so a fresh wiki's navigation is versioned from its first day
-            // (ticket 64 / ADR-0028).
             LayoutService::NAVBAR => 'MenuNavigation',
             LayoutService::QUICK_MENU => 'MenuAccesRapide',
         ] + LayoutService::FLAG_DEFAULTS;

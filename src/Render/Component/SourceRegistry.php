@@ -2,6 +2,7 @@
 
 namespace YesWiki\Render\Component;
 
+use Symfony\Component\DependencyInjection\Attribute\AutowireIterator;
 use YesWiki\Content\Entity\SuppliesItems;
 use YesWiki\Kernel\Performable\RegisteredPerformable;
 
@@ -16,7 +17,7 @@ class SourceRegistry
     /**
      * @param iterable<object> $sourceServices services tagged `yeswiki.item_source`
      */
-    public function __construct(private readonly iterable $sourceServices)
+    public function __construct(#[AutowireIterator('yeswiki.item_source')] private readonly iterable $sourceServices)
     {
     }
 
