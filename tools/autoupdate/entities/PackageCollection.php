@@ -45,6 +45,19 @@ class PackageCollection extends Collection
         return $this->filterPackages($this::TOOL_CLASS);
     }
 
+    /** The same packages, without the ones named in $names that are not installed. */
+    public function withoutForbidden(array $names): PackageCollection
+    {
+        $kept = new PackageCollection();
+        foreach ($this->list as $package) {
+            if ($package->installed || !in_array($package->name, $names, true)) {
+                $kept[] = $package;
+            }
+        }
+
+        return $kept;
+    }
+
     private function filterPackages($class)
     {
         $filteredPackages = new PackageCollection();

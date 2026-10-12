@@ -4,13 +4,14 @@ namespace YesWiki\AutoUpdate\Service;
 
 use YesWiki\AutoUpdate\Entity\Messages;
 use YesWiki\AutoUpdate\Entity\PackageCollection;
+use YesWiki\AutoUpdate\Entity\PackageTool;
 use YesWiki\AutoUpdate\Entity\Repository;
 use YesWiki\Wiki;
 
 class AutoUpdateService
 {
     public const DEFAULT_REPO = 'https://repository.yeswiki.net/';
-    public const DEFAULT_VERS = 'Cercopitheque'; // Pour gérer les vielles version de YesWiki
+    public const DEFAULT_VERS = 'Cercopitheque';
     public $repository;
 
     private $wiki;
@@ -21,10 +22,7 @@ class AutoUpdateService
         $this->wiki = $wiki;
     }
 
-    /*	Parameter $requestedVersion contains the name of the YesWiki version
-        requested by version parameter of {{update}} action
-        if empty, no specifc version is requested
-    */
+    /** Loads the repository of the requested YesWiki version, or of this wiki's version when none is requested. */
     public function initRepository($requestedVersion = '')
     {
         $this->repository = new Repository($this->repositoryAddress($requestedVersion));
@@ -80,12 +78,24 @@ class AutoUpdateService
         return $messages;
     }
 
+    /** Extensions this wiki's configuration forbids installing or upgrading, from `forbidden_extensions`. */
+    public function forbiddenExtensions(): array
+    {
+        $listed = $this->wiki->config['forbidden_extensions'] ?? [];
+
+        return is_array($listed) ? array_values(array_diff(array_map('strval', $listed), ['yeswiki'])) : [];
+    }
+
     public function upgrade($packageName)
     {
         $messages = new Messages();
         $package = $this->repository->getPackage($packageName);
+        if ($package instanceof PackageTool && in_array($package->name, $this->forbiddenExtensions(), true)) {
+            $messages[] = ['text' => _t('AU_FORBIDDEN_EXTENSION', ['name' => $package->name]), 'status' => _t('AU_ERROR')];
 
-        // Téléchargement de l'archive
+            return $messages;
+        }
+
         $file = $package ? $package->getFile() : false;
         if (false === $file) {
             $messages->add('AU_DOWNLOAD', 'AU_ERROR');
@@ -94,7 +104,6 @@ class AutoUpdateService
         }
         $messages->add('AU_DOWNLOAD', 'AU_OK');
 
-        // Vérification MD5
         if (!$package->checkIntegrity($file)) {
             $messages->add('AU_INTEGRITY', 'AU_ERROR');
             $package->cleanTempFiles();
@@ -103,7 +112,6 @@ class AutoUpdateService
         }
         $messages->add('AU_INTEGRITY', 'AU_OK');
 
-        // Extraction de l'archive
         $path = $package->extract();
         if (false === $path) {
             $messages->add('AU_EXTRACT', 'AU_ERROR');
@@ -112,8 +120,6 @@ class AutoUpdateService
             return $messages;
         }
         $messages->add('AU_EXTRACT', 'AU_OK');
-
-        // Vérification des droits sur le fichiers
 
         $vNotGoods = $package->checkACL();
 
@@ -129,7 +135,6 @@ class AutoUpdateService
         }
         $messages->add('AU_ACL', 'AU_OK');
 
-        // Mise à jour du paquet
         if (!$package->upgrade()) {
             $messages->add(
                 _t('AU_UPDATE_PACKAGE') . $packageName,
@@ -150,7 +155,6 @@ class AutoUpdateService
             }
             $messages->add('AU_UPDATE_THEME', 'AU_OK');
 
-            // Mise à jour des tools.
             if (!$package->upgradeTools()) {
                 $messages->add('AU_UPDATE_TOOL', 'AU_ERROR');
                 $package->cleanTempFiles();
@@ -160,7 +164,6 @@ class AutoUpdateService
             $messages->add('AU_UPDATE_TOOL', 'AU_OK');
         }
 
-        // Mise à jour de la configuration de YesWiki
         if (!$package->upgradeInfos()) {
             $messages->add('AU_UPDATE_INFOS', 'AU_ERROR');
             $package->cleanTempFiles();
