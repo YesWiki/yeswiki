@@ -35,8 +35,6 @@ class PresentationCatalogTest extends YesWikiTestCase
     {
         @unlink(self::WITH_HEADER);
         @unlink(self::BARE);
-        @rmdir(self::CUSTOM_DIR);
-        @rmdir(\dirname(self::CUSTOM_DIR));
         parent::tearDown();
     }
 
@@ -100,7 +98,7 @@ class PresentationCatalogTest extends YesWikiTestCase
 
     public function testACustomTemplateIsListedWithWhatItsHeaderDeclares(): void
     {
-        @mkdir(self::CUSTOM_DIR, 0o775, true);
+        $this->makeDirectory(self::CUSTOM_DIR);
         file_put_contents(self::WITH_HEADER, "{# presentation\n   label: Galerie photo\n   category: card\n   icon: photo\n   requires: image, description\n#}\n{% extends '@core/entries/index-dynamic.twig' %}\n");
         file_put_contents(self::BARE, "{% extends '@core/entries/index-dynamic.twig' %}\n");
 

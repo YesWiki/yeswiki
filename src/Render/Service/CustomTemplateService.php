@@ -121,6 +121,11 @@ class CustomTemplateService
             throw new \RuntimeException(sprintf('Cannot write %s', $path), 0, $exception);
         }
 
+        [$namespace] = $this->splitOverride($relative);
+        $this->templateEngine->addOverrideDirectory(
+            $namespace === 'custom' ? self::DIRECTORY : self::DIRECTORY . '/' . $namespace,
+            $namespace
+        );
         $this->clearCompiled();
     }
 

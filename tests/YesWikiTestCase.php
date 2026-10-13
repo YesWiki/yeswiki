@@ -207,6 +207,9 @@ class YesWikiTestCase extends TestCase
      */
     private $obLevelAtSetUp;
 
+    /** @var list<string> directories makeDirectory() created, deepest first */
+    private array $createdDirectories = [];
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -221,7 +224,24 @@ class YesWikiTestCase extends TestCase
         if (function_exists('set_time_limit')) {
             @set_time_limit(0);
         }
+        foreach ($this->createdDirectories as $directory) {
+            @rmdir($directory);
+        }
+        $this->createdDirectories = [];
         parent::tearDown();
+    }
+
+    /** Creates a directory and its missing parents, which tearDown() removes again once emptied. */
+    protected function makeDirectory(string $path): void
+    {
+        $missing = [];
+        for ($directory = rtrim($path, '/'); $directory !== '' && $directory !== '.' && !is_dir($directory); $directory = \dirname($directory)) {
+            $missing[] = $directory;
+        }
+        if ($missing !== [] && !mkdir($path, 0o775, true) && !is_dir($path)) {
+            throw new \RuntimeException("cannot create {$path}");
+        }
+        $this->createdDirectories = [...$missing, ...$this->createdDirectories];
     }
 
     /**

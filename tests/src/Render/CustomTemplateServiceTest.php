@@ -15,12 +15,27 @@ class CustomTemplateServiceTest extends YesWikiTestCase
 
     private const PROBE = 'core/__probe__/probe.twig';
 
+    /** @var list<string> */
+    private array $missingDirectories = [];
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->missingDirectories = array_values(array_filter(
+            [CustomTemplateService::DIRECTORY . '/core', CustomTemplateService::DIRECTORY],
+            static fn (string $directory) => !is_dir($directory)
+        ));
+    }
+
     protected function tearDown(): void
     {
         foreach (glob(self::PROBE_DIR . '/*') ?: [] as $leftover) {
             @unlink($leftover);
         }
         @rmdir(self::PROBE_DIR);
+        foreach ($this->missingDirectories as $directory) {
+            @rmdir($directory);
+        }
         parent::tearDown();
     }
 

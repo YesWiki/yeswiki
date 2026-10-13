@@ -716,6 +716,15 @@ class TemplateEngine
         return preg_replace('/\.tpl\.html$/i', '.twig', $templatePath) ?? $templatePath;
     }
 
+    /** Puts an override directory created after boot in front of its namespace. */
+    public function addOverrideDirectory(string $directory, string $namespace): void
+    {
+        if (!$this->searchPath->exists($directory) || in_array(rtrim($directory, '/'), $this->twigLoader->getPaths($namespace), true)) {
+            return;
+        }
+        $this->twigLoader->prependPath($directory, $namespace);
+    }
+
     /**
      * @param string $templatePath
      */

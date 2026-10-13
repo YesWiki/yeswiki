@@ -378,7 +378,7 @@ class PresetServiceTest extends YesWikiTestCase
     public function testEveryInstalledFamilyIsDeclaredWhateverNamesIt(): void
     {
         $directory = ThemeManager::CUSTOM_FONT_PATH . '/zz-test-face';
-        @mkdir($directory, 0777, true);
+        $this->makeDirectory($directory);
         file_put_contents($directory . '/' . ThemeManager::FONT_FACES_FILE, <<<'CSS'
             @font-face {
               font-family: 'Zz Test Face';
@@ -403,7 +403,6 @@ class PresetServiceTest extends YesWikiTestCase
             $this->assertStringNotContainsString('../../', $css);
         } finally {
             @unlink($directory . '/' . ThemeManager::FONT_FACES_FILE);
-            @rmdir($directory);
         }
     }
 
@@ -411,7 +410,7 @@ class PresetServiceTest extends YesWikiTestCase
     public function testAFamilyWithNoStoredRulesIsDescribedFromItsFiles(): void
     {
         $directory = ThemeManager::CUSTOM_FONT_PATH . '/zz-test-old';
-        @mkdir($directory, 0777, true);
+        $this->makeDirectory($directory);
         file_put_contents($directory . '/zz-test-old-italic-700-latin.woff2', 'not really a font');
 
         try {
@@ -426,7 +425,6 @@ class PresetServiceTest extends YesWikiTestCase
             );
         } finally {
             @unlink($directory . '/zz-test-old-italic-700-latin.woff2');
-            @rmdir($directory);
         }
     }
 
