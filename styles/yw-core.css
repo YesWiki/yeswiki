@@ -1512,6 +1512,7 @@ section.full-width {
 }
 
 section > div {
+  box-sizing: border-box;
   width: 100%;
   padding: var(--yw-space-md-y) var(--yw-space-md-x);
 }
@@ -4043,6 +4044,14 @@ progress.yw-progressbar::-moz-progress-bar {
   color: var(--yw-text-muted);
 }
 
+.text-left {
+  text-align: left;
+}
+
+.text-right {
+  text-align: right;
+}
+
 .text-center {
   text-align: center;
 }
@@ -4612,6 +4621,7 @@ figcaption *:last-child {
   background-repeat: no-repeat;
   display: flex;
   align-items: center;
+  box-sizing: border-box;
   width: 100%;
   min-height: 15px;
   height: auto;
