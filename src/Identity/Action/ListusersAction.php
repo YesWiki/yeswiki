@@ -85,7 +85,7 @@ class ListusersAction extends YesWikiAction implements RegisteredAction, Provide
                         $output .= '<strong>' . $this->formatDay($day) . '&nbsp;:</strong><br>' . "\n";
                         $curday = $day;
                     }
-                    $output .= '<small>' . $time . '</small> ' . $user['name'] . "<br>\n";
+                    $output .= '<small>' . $time . '</small> ' . htmlspecialchars($user['name']) . "<br>\n";
                 }
             } else {
                 $output .= _t('LOGIN_NO_SIGNUP_IN_THIS_PERIOD');
@@ -95,7 +95,7 @@ class ListusersAction extends YesWikiAction implements RegisteredAction, Provide
                 $output .= '<ol class="list-users">';
                 foreach ($users as $user) {
                     list($day, $time) = explode(' ', $user['signuptime']);
-                    $output .= '<li>' . $user['name'] . ' - <small>' . $this->formatDay($day) . ' ' . $time . '</small> ' . "</li>\n";
+                    $output .= '<li>' . htmlspecialchars($user['name']) . ' - <small>' . $this->formatDay($day) . ' ' . $time . '</small> ' . "</li>\n";
                 }
                 $output .= '</ol>';
             } else {

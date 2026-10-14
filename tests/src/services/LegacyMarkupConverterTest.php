@@ -86,7 +86,7 @@ class LegacyMarkupConverterTest extends TestCase
                 "{{section class=\"cover\"}}\nx\n{{end elem=\"section\"}}",
             ],
             'block actions side by side each get a line' => [
-                "{{end elem=\"col\"}}{{col size=\"8\"}}",
+                '{{end elem="col"}}{{col size="8"}}',
                 "{{end elem=\"col\"}}\n{{col size=\"8\"}}",
             ],
             'blank lines in a row and trailing spaces are tidied' => ["un \n\n\n\ndeux", "un\n\ndeux"],
@@ -98,7 +98,7 @@ class LegacyMarkupConverterTest extends TestCase
                 ' - {{section class="cover"}}{{button text="a" link="A"}}{{end elem="section"}}',
                 '- {{section class="cover"}}{{button text="a" link="A"}}{{end elem="section"}}',
             ],
-            'lines of actions get no break' =>["{{grid}}\n{{col size=\"6\"}}", "{{grid}}\n{{col size=\"6\"}}"],
+            'lines of actions get no break' => ["{{grid}}\n{{col size=\"6\"}}", "{{grid}}\n{{col size=\"6\"}}"],
             'a rule as a list item stays an item, the dropdown divider' => [
                 "{{buttondropdown icon=\"cog\"}}\n - {{button text=\"a\" link=\"A\"}}\n - ------\n - {{button text=\"b\" link=\"B\"}}\n{{end elem=\"buttondropdown\"}}",
                 "{{buttondropdown icon=\"cog\"}}\n- {{button text=\"a\" link=\"A\"}}\n- ***\n- {{button text=\"b\" link=\"B\"}}\n{{end elem=\"buttondropdown\"}}",

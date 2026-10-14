@@ -547,6 +547,12 @@ class PageManager
         return null;
     }
 
+    /** Whether a tag names a group's triples rather than a page, in any letter case. */
+    public static function isGroupTag(string $tag): bool
+    {
+        return stripos($tag, GROUP_PREFIX) === 0;
+    }
+
     /**
      * @param string $tag
      */
@@ -567,7 +573,9 @@ class PageManager
         $this->aclService->forget($tag);
 
         $this->dbService->query("DELETE FROM {$this->dbService->prefixTable('pages')} WHERE tag = ? OR parent = ?", [$tag, $tag]);
-        $this->tripleStore->deleteAll($tag, '');
+        if (!self::isGroupTag((string)$tag)) {
+            $this->tripleStore->deleteAll($tag, '');
+        }
 
         // Every deletion, whatever asked for it: this is where the row actually goes, and a
         // deletion leaves no revision behind to be the record of itself.
@@ -603,7 +611,7 @@ class PageManager
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
 
-        if (ReservedTags::isReserved((string)$tag)) {
+        if (ReservedTags::isReserved((string)$tag) || self::isGroupTag((string)$tag)) {
             throw new ReservedTagException(_t('RESERVED_TAG_CANNOT_BE_USED', ['tag' => $tag]));
         }
         $user = $this->authenticationService->getLoggedUserName();

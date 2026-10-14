@@ -98,6 +98,7 @@ class ThemeManager implements EventSubscriberInterface
 
     /**
      * @param array<string, mixed>|null $metadata
+     *
      * @return array<string, array<string, mixed>>|null
      */
     public function loadTemplates($metadata = []): ?array
@@ -435,13 +436,15 @@ class ThemeManager implements EventSubscriberInterface
         return $this->favorites['background_image'];
     }
 
-    /** @param mixed $newVal */
-    protected function setFavorite(string $key, $newVal): void
+    protected function setFavorite(string $key, mixed $newVal): void
     {
         if ($key === 'squelette' && is_string($newVal)) {
             $newVal = self::normalizeSqueletteName($newVal);
         }
-        $this->favorites[$key] = (empty($newVal) || !is_string($newVal))
+        $name = ($key === 'preset' && is_string($newVal) && str_starts_with($newVal, self::CUSTOM_CSS_PRESETS_PREFIX))
+            ? substr($newVal, strlen(self::CUSTOM_CSS_PRESETS_PREFIX))
+            : $newVal;
+        $this->favorites[$key] = (empty($newVal) || !is_string($newVal) || !is_string($name) || preg_match('`[/\\\\]|^\.\.?$|\x00`', $name))
             ? ''
             : $newVal;
     }
@@ -514,6 +517,7 @@ class ThemeManager implements EventSubscriberInterface
 
     /**
      * @param list<string> $fontFamilies
+     *
      * @return array{status: bool, message: string, errorCode: int|null}
      */
     public function writeCustomCSSPreset(string $filename, string $css, array $fontFamilies = []): array

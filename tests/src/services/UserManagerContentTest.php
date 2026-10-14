@@ -25,6 +25,7 @@ class UserManagerContentTest extends YesWikiTestCase
         if ($user) {
             $userManager->delete($user);
         }
+        $this->getWiki()->services->get(PageManager::class)->deleteOrphaned($name);
     }
 
     public function testCreateStoresUserAsAPageTypedByItsColumnNotAUsersRow(): void

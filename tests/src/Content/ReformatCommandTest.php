@@ -37,7 +37,10 @@ class ReformatCommandTest extends YesWikiTestCase
 
     private function content(): string
     {
-        return PageBody::content(self::getWiki()->services->get(PageManager::class)->getOne(self::TAG, null, false, true)['body']);
+        $page = self::getWiki()->services->get(PageManager::class)->getOne(self::TAG, null, false, true);
+        $this->assertNotNull($page, 'the page under test exists');
+
+        return PageBody::content($page['body']);
     }
 
     public function testAPageIsReformattedAsANewRevision(): void

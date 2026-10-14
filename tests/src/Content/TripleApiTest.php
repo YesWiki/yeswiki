@@ -4,6 +4,8 @@ namespace YesWiki\Test\Content;
 
 use Symfony\Component\HttpFoundation\Request;
 use YesWiki\Content\Api\TripleApiController;
+use YesWiki\Content\Exception\ReservedTagException;
+use YesWiki\Content\Service\PageManager;
 use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Identity\Service\UserManager;
 use YesWiki\Kernel\Service\CurrentRequest;
@@ -164,5 +166,39 @@ class TripleApiTest extends YesWikiTestCase
         $this->assertCount(1, $read);
         $this->assertCount(1, $deleted);
         $this->assertSame([], $this->ownerTriples());
+    }
+
+    public function testAUserCannotWriteATripleOnAGroup(): void
+    {
+        $resource = GROUP_PREFIX . ADMIN_GROUP . 'TriplesApi';
+        $this->logIn(self::OTHER);
+        $this->request(['property' => WIKINI_VOC_PREFIX . WIKINI_VOC_ACLS, 'value' => 'x']);
+
+        $this->controller->setTriple($resource);
+        $this->controller->setTriple(strtolower($resource));
+
+        $this->assertSame(
+            [self::GROUP_MEMBER],
+            array_column($this->tripleStore->getMatching($resource, WIKINI_VOC_PREFIX . WIKINI_VOC_ACLS, null, '=', '=', '='), 'value')
+        );
+        $this->assertSame([], $this->tripleStore->getMatching(GROUP_PREFIX . '%', null, '%' . self::OTHER . '%', 'LIKE', '=', 'LIKE'));
+    }
+
+    public function testAPageNamedAfterAGroupIsNeitherSavedNorAbleToWipeTheGroup(): void
+    {
+        $resource = GROUP_PREFIX . ADMIN_GROUP . 'TriplesApi';
+        $pageManager = $this->wiki->services->get(PageManager::class);
+
+        foreach ([$resource, strtolower($resource)] as $tag) {
+            try {
+                $pageManager->save($tag, ['body' => 'body'], '', true);
+                $this->fail("a page named $tag was saved");
+            } catch (ReservedTagException $e) {
+            }
+            $pageManager->deleteOrphaned($tag);
+        }
+
+        $this->assertNull($pageManager->getOne($resource));
+        $this->assertSame(self::GROUP_MEMBER, $this->tripleStore->getOne($resource, WIKINI_VOC_PREFIX . WIKINI_VOC_ACLS, '', ''));
     }
 }

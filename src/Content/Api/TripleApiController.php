@@ -4,6 +4,7 @@ namespace YesWiki\Content\Api;
 
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use YesWiki\Content\Service\PageManager;
 use YesWiki\Core\ApiResponse;
 use YesWiki\Core\YesWikiController;
 use YesWiki\Identity\Service\AclService;
@@ -244,6 +245,11 @@ class TripleApiController extends YesWikiController
             $apiResponse = new ApiResponse(
                 ['error' => 'Resource should not be empty !'],
                 Response::HTTP_BAD_REQUEST
+            );
+        } elseif (PageManager::isGroupTag($resource) && !$this->getService(AclService::class)->isAdmin()) {
+            $apiResponse = new ApiResponse(
+                ['error' => 'Not authorized to access the triples of a group if not admin !'],
+                Response::HTTP_FORBIDDEN
             );
         } else {
             $bag = ($method === INPUT_POST) ? $this->getRequest()->request : $this->getRequest()->query;

@@ -14,7 +14,7 @@ class ThemeManagerTest extends YesWikiTestCase
     protected function tearDown(): void
     {
         $request = $this->getWiki()->services->get(CurrentRequest::class)->get();
-        foreach (['theme', 'squelette', 'style', 'preset'] as $key) {
+        foreach (['theme', 'squelette', 'style', 'preset', 'bgimg'] as $key) {
             $request->request->remove($key);
         }
         parent::tearDown();
@@ -61,5 +61,19 @@ class ThemeManagerTest extends YesWikiTestCase
 
         $this->assertStringContainsString('notatheme', $page);
         $this->assertSame($page, $themeManager->renderHead());
+    }
+
+    public function testPageMetadataCannotPointTheThemeOutsideItsFolder(): void
+    {
+        $themeManager = clone $this->getWiki()->services->get(ThemeManager::class);
+        $themeManager->loadTemplates([
+            'theme' => THEME_PAR_DEFAUT,
+            'style' => CSS_PAR_DEFAUT,
+            'squelette' => '../../../yeswiki.config.php',
+            'bgimg' => '../../yeswiki.config.php',
+        ]);
+
+        $this->assertStringNotContainsString('..', $themeManager->getFavoriteSquelette());
+        $this->assertStringNotContainsString('..', $themeManager->getFavoriteBackgroundImage());
     }
 }

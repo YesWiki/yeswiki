@@ -68,7 +68,6 @@ class YesWikiRuntime
     /** @var array<string, mixed> */
     public $config;
 
-    /** @var YesWikiInit */
     private YesWikiInit $init;
 
     /** @var Request */
@@ -190,7 +189,9 @@ class YesWikiRuntime
 
     /**
      * @template T of object
+     *
      * @param class-string<T> $class
+     *
      * @return T
      */
     private function service(string $class): object
@@ -203,10 +204,8 @@ class YesWikiRuntime
 
     /**
      * @param string $name
-     * @param mixed $default
-     * @return mixed
      */
-    private function getConfigValue($name, $default = null)
+    private function getConfigValue($name, mixed $default = null): mixed
     {
         return isset($this->config[$name])
             ? is_array($this->config[$name]) ? $this->config[$name] : trim($this->config[$name])
@@ -222,6 +221,7 @@ class YesWikiRuntime
     /**
      * @param string $tag
      * @param string $method
+     *
      * @return void
      */
     public function run($tag = '', $method = '')
@@ -239,6 +239,7 @@ class YesWikiRuntime
     /**
      * @param string $tag
      * @param string $method
+     *
      * @return void
      */
     private function doRun($tag, $method)
