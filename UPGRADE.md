@@ -77,6 +77,16 @@ upgrading and keep that instead. Do not skip this step: everything below is a on
 
    The `{{update}}` screen runs them too, so if you upgraded that way they have already run.
 
+   Coming from Doryphore's own `{{update}}` screen, the wiki finishes the job itself. That
+   updater skips `themes/` and never runs a migration, so the requests after it reinstall the
+   core through Ectoplasme's updater to bring the default theme, then run `migrate` and show
+   what it did. This happens for whoever asks first, signed in or not: before the migrations,
+   Ectoplasme cannot tell an admin from anyone else. It only happens while
+   `private/doryphore/.move-pending` exists, and a lock keeps a second request out (it gets a
+   503 and a `Retry-After`). If a migration fails, the mark stays and the next request tries
+   again. On a farm instance the shared program is not touched, and the page says to run the
+   update from the source install.
+
    Run `yeswicli` as the user the web server writes the wiki with, the owner of
    `yeswiki.config.php`. Run as root, it would leave root-owned files the web server can no
    longer write, so it refuses and prints the `sudo -u <owner> …` command to use instead. If
@@ -352,14 +362,22 @@ Extensions now live in `extensions/` (shared, in the source tree) and `custom/ex
 written against classes that are gone (`custom/fields/*.php` extending
 `YesWiki\Bazar\Field\BazarField`, for one), which stops the wiki from booting at all.
 
-So the first boot of a wiki whose configuration still names an older `yeswiki_version` moves both
-out of the way, before anything is loaded:
+So the first boot of a Doryphore wiki moves both out of the way, before anything is loaded. A
+wiki counts as Doryphore when its configuration names an older `yeswiki_version`, or when
+`tools/autoupdate/` or `wakka.php` is still on disk: Doryphore's update screen writes
+`ectoplasme` into the configuration before Ectoplasme has ever run, so the version alone misses
+it.
 
 ```
 private/doryphore/custom/      the whole of custom/
 private/doryphore/tools/       the whole of tools/
+private/doryphore/root/        Doryphore's own program files: includes/, setup/, wakka.php...
 private/doryphore/README.md    what moved, and which tools were extensions rather than core
 ```
+
+The same boot renames `wakka.config.php` to `yeswiki.config.php`, empties the compiled caches,
+resets the opcode cache and answers with a redirect, so the next request runs on the new files
+and nothing compiled while Doryphore's were still cached.
 
 The look of the wiki holds no code, so it is copied straight back into `custom/`:
 `css-presets/`, `themes/*/presets/` (CSS only), `fonts/`, `images/` and `styles/` (CSS only).

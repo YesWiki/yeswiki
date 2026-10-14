@@ -4,8 +4,6 @@ namespace YesWiki\Core;
 
 require_once __DIR__ . '/bootstrap_paths.php';
 require_once __DIR__ . '/constants.php';
-// defines LanguageService and the global _t() translation function; loaded
-// explicitly because the autoloader may not be registered yet at this point
 require_once __DIR__ . '/Kernel/Service/LanguageService.php';
 require_once __DIR__ . '/YesWikiInit.php';
 require_once __DIR__ . '/YesWikiKernel.php';
@@ -33,6 +31,7 @@ use Symfony\Component\Routing\RequestContext;
 use Symfony\Component\Routing\RouteCollection;
 use Symfony\Component\Security\Csrf\CsrfTokenManager;
 use YesWiki\Admin\Service\ApiService;
+use YesWiki\Admin\Service\DoryphoreArrival;
 use YesWiki\Admin\Service\MaintenanceService;
 use YesWiki\Content\Controller\LegacyPageController;
 use YesWiki\Content\Service\PageManager;
@@ -61,22 +60,15 @@ use YesWiki\Kernel\Service\WikiUrls;
 use YesWiki\Render\Service\TemplateEngine;
 use YesWiki\Render\Service\ThemeManager;
 
-// base translations and language detection (also defines YW_CHARSET); runs at load
-// time, before anything (YesWikiInit, the installer, error paths) calls _t()
 LanguageService::getInstance()->initialize();
 
-/**
- * The per-request runtime: bootstraps configuration, extensions, the DI container
- * and languages, then dispatches the request (historic YesWiki\Wiki, ticket 08 --
- * every service responsibility it used to carry now lives in a real service; what
- * remains here is kernel lifecycle and dispatch).
- */
+/** The per-request runtime: bootstraps configuration, extensions, the DI container and languages, then dispatches the request (historic YesWiki\Wiki, ticket 08 -- every service responsibility it used to carry now lives in a real service; what remains here is kernel lifecycle and dispatch). */
 class YesWikiRuntime
 {
     /** @var array<string, mixed> */
     public $config;
 
-    /** @var YesWikiInit the boot-time reader of configuration, kept so a request can start its own session */
+    /** @var YesWikiInit */
     private YesWikiInit $init;
 
     /** @var Request */
@@ -91,39 +83,29 @@ class YesWikiRuntime
     /** @var string */
     public $CookiePath = '/';
 
-    /** @var array<string, string> extension name => the folder it was loaded from */
+    /** @var array<string, string> */
     public $extensions = [];
 
     /** @var RouteCollection|array<mixed> */
     public $routes = [];
-    /**
-     * The service container, assigned from the kernel in boot().
-     *
-     * @var ContainerInterface
-     */
+    /** @var ContainerInterface */
     public $services;
 
     /** @var string */
     private $environment;
 
-    /** @var HttpKernel|null built on the first routed request, then reused */
+    /** @var HttpKernel|null */
     private $httpKernel;
 
-    /** Whether boot() has run: until it has, $services is not a container and nothing may ask it for one. */
     private bool $booted = false;
 
-    /** Where the compiled container's per-service files are, so a worker can tell when they go. */
     private ?string $containerDirectory = null;
 
     private ?string $bootedCacheDir = null;
 
     private string $templatesStamp = '';
 
-    /**
-     * Constructor.
-     *
-     * @param array<string, mixed> $config
-     */
+    /** @param array<string, mixed> $config */
     public function __construct($config = [])
     {
         $this->init = new YesWikiInit($config);
@@ -142,13 +124,7 @@ class YesWikiRuntime
         $this->loadExtensions();
     }
 
-    /**
-     * Nothing had one: an uncaught exception on a production wiki went wherever the host happened to point PHP, and the webmaster saw a blank page (ADR-0025).
-     *
-     * Installed before the container is built, so the exceptions thrown while building it are
-     * covered too -- which is why it degrades to the static stderr sink rather than asking for a
-     * service that may be what failed.
-     */
+    /** Nothing had one: an uncaught exception on a production wiki went wherever the host happened to point PHP, and the webmaster saw a blank page (ADR-0025). */
     private function installExceptionHandler(): void
     {
         if (defined('PHPUNIT_COMPOSER_INSTALL')) {
@@ -173,9 +149,7 @@ class YesWikiRuntime
         });
     }
 
-    /**
-     * What a visitor sees instead of a blank page. The detail is debug-only: the trail a webmaster needs is on stderr and in the Journal, and a production wiki does not put it on the screen.
-     */
+    /** What a visitor sees instead of a blank page. The detail is debug-only: the trail a webmaster needs is on stderr and in the Journal, and a production wiki does not put it on the screen. */
     private function failurePage(\Throwable $throwable): string
     {
         $page = '<h1>' . htmlspecialchars(_t('ERROR')) . '</h1>';
@@ -187,11 +161,7 @@ class YesWikiRuntime
         return $page;
     }
 
-    /**
-     * One diagnostic in the Journal and on stderr, however little of the wiki is standing.
-     *
-     * @return void
-     */
+    /** @return void */
     public function report(\Throwable $throwable)
     {
         if ($this->containerIsBuilt()) {
@@ -219,12 +189,8 @@ class YesWikiRuntime
     }
 
     /**
-     * Typed service lookup for the delegation shims: Symfony's ContainerInterface::get() is declared `?object`, so chaining a call on it fails static analysis even though every service asked for here is a compiled, always-present one.
-     *
      * @template T of object
-     *
      * @param class-string<T> $class
-     *
      * @return T
      */
     private function service(string $class): object
@@ -237,9 +203,8 @@ class YesWikiRuntime
 
     /**
      * @param string $name
-     * @param mixed  $default answered when the key is missing or holds null
-     *
-     * @return mixed the configured value, trimmed when it is a string; '' when there is neither a value nor a default
+     * @param mixed $default
+     * @return mixed
      */
     private function getConfigValue($name, $default = null)
     {
@@ -248,14 +213,7 @@ class YesWikiRuntime
             : ($default != null ? $default : '');
     }
 
-    /**
-     * The wiki's housekeeping, kept here as the name an extension has always called (ticket 54).
-     *
-     * The sweep itself is `MaintenanceService`, so `./yeswicli core:maintenance` runs the same
-     * steps with an exit code rather than a second copy of them.
-     *
-     * @return void
-     */
+    /** @return void */
     public function maintenance()
     {
         $this->service(MaintenanceService::class)->sweep();
@@ -264,7 +222,6 @@ class YesWikiRuntime
     /**
      * @param string $tag
      * @param string $method
-     *
      * @return void
      */
     public function run($tag = '', $method = '')
@@ -282,12 +239,14 @@ class YesWikiRuntime
     /**
      * @param string $tag
      * @param string $method
-     *
      * @return void
      */
     private function doRun($tag, $method)
     {
         $this->service(RequestScope::class)->startNewRequest();
+        if (!YesWikiKernel::isCli() && $this->service(DoryphoreArrival::class)->isPending() && $this->finishDoryphoreArrival()) {
+            return;
+        }
         $this->readThisRequest();
 
         if ($this->service(MaintenanceService::class)->dueOnRequest()) {
@@ -332,11 +291,42 @@ class YesWikiRuntime
         }
     }
 
-    /**
-     * A screen addressed by a route rather than by a page tag, which has no handler: once one matches, the method guessed before routing is dropped.
-     *
-     * @return void
-     */
+    /** Finishes a Doryphore wiki's move before anything reads a database it has not migrated yet, and answers whether it said something. */
+    private function finishDoryphoreArrival(): bool
+    {
+        [$state, $messages] = $this->service(DoryphoreArrival::class)->finish();
+        if ($state === DoryphoreArrival::IDLE) {
+            return false;
+        }
+        if ($state === DoryphoreArrival::BUSY) {
+            (new Response(htmlspecialchars(_t('AU_DORYPHORE_BUSY')), Response::HTTP_SERVICE_UNAVAILABLE, ['Retry-After' => '10']))->send();
+
+            return true;
+        }
+        if ($state === DoryphoreArrival::AGAIN) {
+            (new CacheClearer())->clear(CacheClearer::ALL, YESWIKI_INSTANCE_DIR);
+            if (function_exists('opcache_reset')) {
+                opcache_reset();
+            }
+            (new Response('', Response::HTTP_FOUND, ['Location' => $_SERVER['REQUEST_URI'] ?? '/']))->send();
+
+            return true;
+        }
+        $title = htmlspecialchars(_t('AU_DORYPHORE_ARRIVAL'));
+        $items = '';
+        foreach ($messages->toArray() as $message) {
+            $items .= '<li>' . nl2br(htmlspecialchars(str_replace('\\n', "\n", (string)($message['text'] ?? '')))) . ' : <strong>' . htmlspecialchars((string)($message['status'] ?? '')) . '</strong></li>';
+        }
+        $home = htmlspecialchars($this->service(UrlFormatter::class)->href('', (string)$this->config['root_page']));
+        (new Response(
+            "<!doctype html><html><head><meta charset=\"utf-8\"><title>{$title}</title></head><body><h1>{$title}</h1><ul>{$items}</ul><p><a href=\"{$home}\">" . htmlspecialchars(_t('AU_DORYPHORE_CONTINUE')) . '</a></p></body></html>',
+            $messages->hasError() ? Response::HTTP_INTERNAL_SERVER_ERROR : Response::HTTP_OK
+        ))->send();
+
+        return true;
+    }
+
+    /** @return void */
     private function runSpecialPages()
     {
         if ($_SERVER['REQUEST_METHOD'] == 'POST' || $_SERVER['REQUEST_METHOD'] == 'PUT' || $_SERVER['REQUEST_METHOD'] == 'PATCH') {
@@ -399,17 +389,7 @@ class YesWikiRuntime
         $response->send();
     }
 
-    /**
-     * A routed screen refusing whoever asked for it.
-     *
-     * `/admin/*` answered a signed-out visitor with the words "Not enough access rights" on a blank
-     * page: no chrome, no way in, and no clue that signing in was the answer. A visitor with no
-     * session is sent to the sign-in screen carrying where they were going, so signing in takes
-     * them there. Somebody already signed in is told they may not, because offering them a sign-in
-     * form for an account they are already using explains nothing.
-     *
-     * `/api/*` keeps the bare 401. A client asking for JSON wants a status code, not a page.
-     */
+    /** A routed screen refusing whoever asked for it. */
     private function accessRefused(string $path): Response
     {
         $route = ltrim($path, '/');
@@ -457,9 +437,7 @@ class YesWikiRuntime
         $response->setContent(($previousContent === false ? '' : $previousContent) . $rawOutput);
     }
 
-    /**
-     * The attribute routes of every controller (core + extensions), loaded lazily: only api/doc requests ever match against them (see RunSpecialPages()), so ordinary page views no longer pay for reflecting over every controller class on every request.
-     */
+    /** The attribute routes of every controller (core + extensions), loaded lazily: only api/doc requests ever match against them (see RunSpecialPages()), so ordinary page views no longer pay for reflecting over every controller class on every request. */
     public function getRoutes(): RouteCollection
     {
         if ($this->routes instanceof RouteCollection) {
@@ -481,20 +459,7 @@ class YesWikiRuntime
         return $this->routes = $routes;
     }
 
-    /**
-     * @return array{0: RouteCollection, 1: array<FileResource|ConfigFileHashResource>} the collection plus the freshness
-     *                                                                                  resources to guard its cache with
-     *
-     * The freshness resources are built by hand instead of taking $routes->getResources(): the
-     * attribute loaders register ReflectionClassResources, whose isFresh() answer depends on the
-     * content hash stored in each cache's meta file. SelfCheckingResourceChecker memoizes answers
-     * process-wide keyed only on "resource:timestamp", so when two caches (compiled container +
-     * this one) hold different stored hashes for the same class and happen to share an mtime
-     * second, one cache's answer poisons the other's and a stale route cache is served as fresh.
-     * Plain FileResources are fully determined by (path, timestamp), immune to that: one per
-     * controller file catches edits, one per controllers directory catches added/removed files.
-     * The configuration file's hash is one too, because it names the extensions switched on.
-     */
+    /** @return array{0: RouteCollection, 1: array<FileResource|ConfigFileHashResource>} */
     private function buildRouteCollection(): array
     {
         $routes = new RouteCollection();
@@ -537,9 +502,7 @@ class YesWikiRuntime
         return [$routes, $resources];
     }
 
-    /**
-     * Resolve/invoke $request's _controller through a real Symfony\Component\HttpKernel\HttpKernel, so every request (api/doc's attribute-routed controllers via RunSpecialPages(), and ordinary wiki tag/method pages via LegacyPageController) goes through the standard kernel.controller/kernel.view/kernel.response/kernel.exception event flow instead of a hand-rolled controller-resolution + try/catch.
-     */
+    /** Resolve/invoke $request's _controller through a real Symfony\Component\HttpKernel\HttpKernel, so every request (api/doc's attribute-routed controllers via RunSpecialPages(), and ordinary wiki tag/method pages via LegacyPageController) goes through the standard kernel.controller/kernel.view/kernel.response/kernel.exception event flow instead of a hand-rolled controller-resolution + try/catch. */
     private function handleWithHttpKernel(Request $request): Response
     {
         if (!$this->httpKernel instanceof HttpKernel) {
@@ -558,9 +521,7 @@ class YesWikiRuntime
         return $this->httpKernel->handle($request);
     }
 
-    /**
-     * kernel.exception listener for handleWithHttpKernel(): maps a controller-thrown exception to a Response the same way RunSpecialPages()'s try/catch used to for api/doc.
-     */
+    /** kernel.exception listener for handleWithHttpKernel(): maps a controller-thrown exception to a Response the same way RunSpecialPages()'s try/catch used to for api/doc. */
     public function onDispatchException(ExceptionEvent $event): void
     {
         $th = $event->getThrowable();
@@ -620,9 +581,7 @@ class YesWikiRuntime
         $this->loadTemplates();
     }
 
-    /**
-     * Site-wide HTTP Basic Auth gate (ticket 21, formerly the herse extension's wiki.php bootstrap snippet): when herse_id/herse_password are configured, every web request must present them as Basic Auth credentials.
-     */
+    /** Site-wide HTTP Basic Auth gate (ticket 21, formerly the herse extension's wiki.php bootstrap snippet): when herse_id/herse_password are configured, every web request must present them as Basic Auth credentials. */
     private function enforceHerseGate(): void
     {
         if (php_sapi_name() === 'cli') {
@@ -638,11 +597,8 @@ class YesWikiRuntime
     }
 
     /**
-     * The herse gate's pure decision: allowed when the gate is unconfigured, or
-     * when the request carries the exact configured Basic Auth credentials.
-     *
      * @param array<string, mixed> $config
-     * @param array<string, mixed> $server the request's $_SERVER
+     * @param array<string, mixed> $server
      */
     public static function herseGateAllows(array $config, array $server): bool
     {
@@ -656,11 +612,7 @@ class YesWikiRuntime
             && $server['PHP_AUTH_PW'] == $config['herse_password'];
     }
 
-    /**
-     * Include each extension's wiki.php/vendor/autoload.php/libs/{key}.api.php.
-     *
-     * @return void
-     */
+    /** @return void */
     private function includeExtensionsBootstrapFiles()
     {
         $wiki = $this;
@@ -682,12 +634,7 @@ class YesWikiRuntime
         }
     }
 
-    /**
-     * Build (or reuse the compiled/cached) DI container via YesWikiKernel, then wire in the
-     * synthetic services it can't dump (see YesWikiKernel::SYNTHETIC).
-     *
-     * @return void
-     */
+    /** @return void */
     private function boot()
     {
         $kernel = new YesWikiKernel($this, $this->environment);
@@ -717,13 +664,7 @@ class YesWikiRuntime
         $this->booted = true;
     }
 
-    /**
-     * Where the container this process is running on was dumped.
-     *
-     * Read off the class rather than recomputed from the fingerprint: a rebuild under the same
-     * fingerprint writes a *differently named* directory, so "the fingerprint directory exists" is
-     * not the same question as "the files this container requires still exist".
-     */
+    /** Where the container this process is running on was dumped. */
     private function directoryOf(Container $container): ?string
     {
         $file = (new \ReflectionClass($container))->getFileName();
@@ -731,18 +672,7 @@ class YesWikiRuntime
         return $file === false ? null : \dirname($file);
     }
 
-    /**
-     * Whether the compiled container this process booted on has been deleted underneath it.
-     *
-     * Under php-fpm nobody can be holding one: the process ends with the request. A worker boots
-     * once and serves hundreds (ADR-0024), and its container resolves services by `require`-ing a
-     * file per service from the directory it was dumped into -- so `./yeswicli cache:clear`, a
-     * `migrate`, or anything else that empties `cache/container` leaves that worker unable to
-     * build another service for the rest of its life. Every page then fails on whichever service
-     * it reaches for first, which reads as the wiki being broken rather than as a cache being
-     * cleared. `worker.php` asks this between requests and stops, so the next request is served by
-     * a worker that built itself a fresh container.
-     */
+    /** Whether the compiled container this process booted on has been deleted underneath it. */
     public function containerCacheIsGone(): bool
     {
         return $this->containerDirectory !== null && !is_dir($this->containerDirectory);
@@ -768,15 +698,7 @@ class YesWikiRuntime
             && (new YesWikiKernel($this, $this->environment))->getCacheDir() !== $this->bootedCacheDir;
     }
 
-    /**
-     * Re-read everything derived from the request rather than from the configuration.
-     *
-     * A worker boots once and serves many requests, so a value read in the constructor belongs to
-     * whoever arrived first: the page asked for, the request object and the session were all being
-     * settled at boot and reused for every visitor afterwards (ADR-0024, single-binary 07).
-     *
-     * @return void
-     */
+    /** @return void */
     private function readThisRequest()
     {
         $this->request = Request::createFromGlobals();
@@ -791,11 +713,7 @@ class YesWikiRuntime
         $this->CookiePath = $this->init->initCookies();
     }
 
-    /**
-     * Load the half of the catalogue that is the same for every reader.
-     *
-     * @return void
-     */
+    /** @return void */
     private function loadLanguages()
     {
         $languageService = $this->service(LanguageService::class);
@@ -809,11 +727,7 @@ class YesWikiRuntime
         $this->applyPreferredLanguage();
     }
 
-    /**
-     * Lay the reader's own language over the baseline, once per request.
-     *
-     * @return void
-     */
+    /** @return void */
     private function applyPreferredLanguage()
     {
         $languageService = $this->service(LanguageService::class);
@@ -830,11 +744,7 @@ class YesWikiRuntime
         }
     }
 
-    /**
-     * Load templates.
-     *
-     * @return void
-     */
+    /** @return void */
     private function loadTemplates()
     {
         $metadata = $this->service(PageManager::class)->getMetadata($this->service(PageContext::class)->getTag());

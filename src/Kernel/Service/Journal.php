@@ -9,45 +9,32 @@ use Psr\Log\LogLevel;
 use Symfony\Component\DependencyInjection\Attribute\AsAlias;
 use YesWiki\Kernel\Entity\JournalChannel;
 
-/**
- * The wiki's log, in two sinks and one call site (ADR-0025): every event reaches stderr as a JSON line, unconditionally and first, and then the Journal table, best-effort.
- *
- * The order is the whole design. The errors this records include the ones thrown from the write
- * path of the database, so an insert that may fail silently is the second sink, never the only
- * one.
- */
+/** The wiki's log, in two sinks and one call site (ADR-0025): every event reaches stderr as a JSON line, unconditionally and first, and then the Journal table, best-effort. */
 #[AsAlias(LoggerInterface::class, public: true)]
 class Journal implements LoggerInterface
 {
     use LoggerTrait;
 
-    /** How many distinct diagnostic fingerprints one wiki may store in a day; past it, stderr only. */
     public const DIAGNOSTIC_CEILING_PER_DAY = 500;
 
     public const AUDIT_PURGE_SETTING = 'journal_audit_purge_time';
     public const DIAGNOSTIC_PURGE_SETTING = 'journal_diagnostic_purge_time';
 
-    /** What a migration writes once it has run, whatever it did. */
     public const MIGRATION_APPLIED = 'migration.applied';
 
-    /** What the legacy log pages were imported as. */
     public const LEGACY = 'legacy';
 
     private ContainerInterface $container;
 
-    /** Set while an entry is being stored, so a throw from inside the write cannot re-enter. */
     private bool $writing = false;
 
-    /** Whether a failed write has already been reported: a wiki whose Journal table is missing would otherwise say so on every save. */
     private bool $reportedWriteFailure = false;
 
-    /** The day $storedToday and $seenToday are about. */
     private string $countedDay = '';
 
-    /** How many diagnostic rows this wiki already holds for $countedDay. */
     private ?int $storedToday = null;
 
-    /** @var array<string, true> fingerprints already stored today, which cost nothing to update */
+    /** @var array<string, true> */
     private array $seenToday = [];
 
     /** @var resource|null */
@@ -58,44 +45,19 @@ class Journal implements LoggerInterface
         $this->container = $container;
     }
 
-    /**
-     * Where the log goes.
-     *
-     * A seam rather than a switch: the stream is written to unconditionally, and what a test does
-     * is point it somewhere it can read back. Nothing turns it off.
-     *
-     * @param resource $stream
-     */
+    /** @param resource $stream */
     public function writeTo($stream): void
     {
         $this->stderr = $stream;
     }
 
-    /**
-     * An act somebody performed: a deletion, an ACL change, an account created, a migration applied.
-     *
-     * @param string               $action  a dotted code -- `content.delete`, `acl.change`. Never a
-     *                                      rendered sentence: `/admin/logs` builds the phrase from a
-     *                                      translation key at read time, so a wiki that changes
-     *                                      language does not end up with a bilingual trail
-     * @param array<string, mixed> $context
-     * @param string|null          $actor   the acting user, when it is not whoever is signed in
-     * @param string               $level   PSR-3, and independent of the channel: "refused
-     *                                      permission to delete X" is an act at `warning`, and
-     *                                      filing it under errors instead would lose the actor
-     */
+    /** @param array<string, mixed> $context */
     public function audit(string $action, string $target = '', array $context = [], ?string $actor = null, string $level = LogLevel::INFO): void
     {
         $this->store(JournalChannel::Audit, $level, $action, $target, $context, $actor, null, null);
     }
 
-    /**
-     * Something that went wrong (PSR-3).
-     *
-     * A `Throwable` under the conventional `exception` key names the entry and fingerprints it.
-     *
-     * @param array<string, mixed> $context
-     */
+    /** @param array<string, mixed> $context */
     public function log($level, string|\Stringable $message, array $context = []): void
     {
         $throwable = ($context['exception'] ?? null) instanceof \Throwable ? $context['exception'] : null;
@@ -119,15 +81,7 @@ class Journal implements LoggerInterface
         $this->store(JournalChannel::Diagnostic, (string)$level, $action, $target, $context, null, $fingerprint, date('Y-m-d'));
     }
 
-    /**
-     * Delete what has outlived its retention: a year of audit, a fortnight of diagnostics.
-     *
-     * Diagnostics go by `last_at` rather than `at`, so a fault that is still firing is still on
-     * the screen -- pruning it on first sighting would delete the one thing worth keeping about
-     * it, which is that it started a long time ago and has not stopped.
-     *
-     * @return int rows removed
-     */
+    /** Delete what has outlived its retention: a year of audit, a fortnight of diagnostics. */
     public function prune(): int
     {
         $table = $this->container->get(JournalSchema::class)->table();
@@ -154,11 +108,7 @@ class Journal implements LoggerInterface
         return $removed;
     }
 
-    /**
-     * One line on stderr for something with no wiki around it yet -- a database that will not connect, an exception thrown before the container was built.
-     *
-     * @param array<string, mixed> $payload
-     */
+    /** @param array<string, mixed> $payload */
     public static function toStderr(string $baseUrl, array $payload): void
     {
         $line = json_encode(
@@ -166,24 +116,29 @@ class Journal implements LoggerInterface
             JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES
         );
 
+        self::toServerLog((string)$line);
+    }
+
+    /** One line to stderr, and under PHP-FPM to its SAPI logger too, since a pool drops a worker's stderr unless catch_workers_output is on. */
+    private static function toServerLog(string $line): void
+    {
         $handle = fopen('php://stderr', 'wb');
         if ($handle !== false) {
             fwrite($handle, $line . "\n");
             fclose($handle);
         }
+        if (PHP_SAPI === 'fpm-fcgi') {
+            error_log($line, 4);
+        }
     }
 
-    /**
-     * What names this wiki in a stream carrying several of them: the base URL with its scheme stripped, which keeps `example.org/wiki1` and `example.org/wiki2` apart and is config rather than path (ADR-0022).
-     */
+    /** What names this wiki in a stream carrying several of them: the base URL with its scheme stripped, which keeps `example.org/wiki1` and `example.org/wiki2` apart and is config rather than path (ADR-0022). */
     public static function wikiIdentifier(string $baseUrl): string
     {
         return rtrim((string)preg_replace('~^[a-z][a-z0-9+.-]*://~i', '', trim($baseUrl)), '/');
     }
 
-    /**
-     * @param array<string, mixed> $context
-     */
+    /** @param array<string, mixed> $context */
     private function store(JournalChannel $channel, string $level, string $action, string $target, array $context, ?string $actor, ?string $fingerprint, ?string $day): void
     {
         $actor ??= $this->currentActor();
@@ -212,9 +167,7 @@ class Journal implements LoggerInterface
         }
     }
 
-    /**
-     * @param array<string, mixed> $context
-     */
+    /** @param array<string, mixed> $context */
     private function writeToStderr(JournalChannel $channel, string $level, string $action, string $target, string $actor, array $context): void
     {
         $line = json_encode([
@@ -228,19 +181,15 @@ class Journal implements LoggerInterface
         ] + $context, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
 
         if (!is_resource($this->stderr)) {
-            $handle = fopen('php://stderr', 'wb');
-            if ($handle === false) {
-                return;
-            }
-            $this->stderr = $handle;
+            self::toServerLog((string)$line);
+
+            return;
         }
 
         fwrite($this->stderr, $line . "\n");
     }
 
-    /**
-     * @param array<string, mixed> $context
-     */
+    /** @param array<string, mixed> $context */
     private function writeToJournal(JournalChannel $channel, string $level, string $action, string $target, string $actor, array $context, ?string $fingerprint, ?string $day): void
     {
         if ($fingerprint !== null && $day !== null && !$this->underCeiling($day, $fingerprint)) {
@@ -288,14 +237,7 @@ class Journal implements LoggerInterface
         ]);
     }
 
-    /**
-     * Whether one more distinct fingerprint may be stored today.
-     *
-     * Dedup bounds repeats, not distinct fingerprints, and a closure or an `eval` can vary them
-     * without bound -- so the ceiling counts fingerprints, and one already stored always goes
-     * through. A storm of the same fault keeps counting; a storm of different ones stops at the
-     * ceiling and carries on to stderr.
-     */
+    /** Whether one more distinct fingerprint may be stored today. */
     private function underCeiling(string $day, string $fingerprint): bool
     {
         if ($this->countedDay !== $day) {
@@ -328,11 +270,7 @@ class Journal implements LoggerInterface
         return true;
     }
 
-    /**
-     * Where a diagnostic came from: the throwable's own position, or the call site's.
-     *
-     * @return array{0: string, 1: int}
-     */
+    /** @return array{0: string, 1: int} */
     private function originOf(?\Throwable $throwable): array
     {
         $formatter = $this->container->get(ThrowableFormatter::class);

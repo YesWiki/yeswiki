@@ -1,26 +1,16 @@
 <?php
 
-/**
- * Yeswiki is a great wiki
- * This file loads the autoload file only once and loads the wiki as singleton
- * Created to allow tests without running YesWiki but in the same state as production.
- *
- * @category Wiki
- *
- * @license  AGPL version 3
- *
- * @see     https://yeswiki.net
- */
+// Loads the autoloader once and the wiki as a singleton, so tests run in the same state as production.
 
 namespace YesWiki\Core;
 
 use Symfony\Component\Dotenv\Dotenv;
+use YesWiki\Kernel\Service\CacheClearer;
 use YesWiki\Kernel\Service\ConfigurationFileProvider;
 use YesWiki\Kernel\Service\DoryphoreLeftovers;
 
 class YesWikiLoader
 {
-    // singleton
     /** @var YesWikiRuntime|null */
     private static $runtime;
 
@@ -28,14 +18,11 @@ class YesWikiLoader
     {
     }
 
-    // prevent public usage
     protected function __clone()
     {
-    } // prevent public usage
+    }
 
-    /**
-     * Load per-instance environment variables from private/.env, read from private/ because the YesWiki root is the web root: a top-level .env would be downloadable (private/ is deny-all, see bootstrap_paths.php).
-     */
+    /** Loads the instance's private/.env, kept in private/ because the wiki root is the web root. */
     public static function loadEnv(): void
     {
         static $loaded = false;
@@ -50,11 +37,7 @@ class YesWikiLoader
         }
     }
 
-    /**
-     * The raw entries parsed from an instance's private/.env, unfiltered by the real environment.
-     *
-     * @return array<string, string>
-     */
+    /** @return array<string, string> the raw entries of an instance's private/.env, unfiltered by the real environment */
     public static function envFileValues(?string $instanceDir = null): array
     {
         static $byInstance = [];
@@ -105,13 +88,27 @@ class YesWikiLoader
         return self::$runtime;
     }
 
-    /** Moves a Doryphore wiki's custom/ and tools/ aside before they can break the boot, and says so on the console. */
+    /** Moves a Doryphore wiki's leftovers aside, then starts over on fresh files: its updater may have swapped them under a warm opcode cache. */
     private static function setDoryphoreLeftoversAside(): void
     {
-        $moved = DoryphoreLeftovers::setAside(YESWIKI_INSTANCE_DIR, ConfigurationFileProvider::getConfigFileFromEnv());
-        if ($moved !== [] && PHP_SAPI === 'cli') {
-            fwrite(STDERR, 'note | Doryphore leftovers set aside in ' . DoryphoreLeftovers::ASIDE . ":\n  " . implode("\n  ", $moved) . "\n");
+        if (getenv('YESWIKI_CONFIG_FILE') === false) {
+            DoryphoreLeftovers::renameConfiguration(YESWIKI_INSTANCE_DIR);
         }
+        $moved = DoryphoreLeftovers::setAside(YESWIKI_INSTANCE_DIR, ConfigurationFileProvider::getConfigFileFromEnv());
+        if ($moved === []) {
+            return;
+        }
+        (new CacheClearer())->clear(CacheClearer::ALL, YESWIKI_INSTANCE_DIR);
+        if (function_exists('opcache_reset')) {
+            opcache_reset();
+        }
+        if (PHP_SAPI === 'cli') {
+            fwrite(STDERR, 'note | Doryphore leftovers set aside in ' . DoryphoreLeftovers::ASIDE . ":\n  " . implode("\n  ", $moved) . "\n");
+
+            return;
+        }
+        header('Location: ' . ($_SERVER['REQUEST_URI'] ?? '/'), true, 302);
+        exit;
     }
 
     /** The generated autoloader knows every namespace `composer.json` declares. */
@@ -129,8 +126,10 @@ class YesWikiLoader
             return;
         }
 
-        /** @var array<string, mixed> $mapped */
         $mapped = require $generated;
+        if (!is_array($mapped)) {
+            return;
+        }
         $missing = array_values(array_diff(array_keys($declared), array_keys($mapped)));
         if ($missing === []) {
             return;

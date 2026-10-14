@@ -4,17 +4,23 @@ namespace YesWiki\Kernel\Service;
 
 use YesWiki\Kernel\Entity\ConfigurationFile;
 
-/** Doryphore's custom/ and tools/ hold PHP Ectoplasme cannot boot with, so they wait in private/doryphore to be ported one by one. */
+/** Doryphore's custom/, tools/ and program files hold PHP Ectoplasme cannot boot with, so they wait in private/doryphore to be ported one by one. */
 final class DoryphoreLeftovers
 {
     public const ASIDE = 'private/doryphore';
+
+    public const PENDING = self::ASIDE . '/.move-pending';
 
     public const CORE_TOOLS = [
         'aceditor', 'attach', 'autoupdate', 'bazar', 'contact', 'helloworld', 'lang', 'login',
         'progressBar', 'rss', 'security', 'syndication', 'tableau', 'tags', 'templates', 'toc',
     ];
 
-    /** What in a Doryphore custom/ is a look rather than code: path pattern under custom/ => the extensions it may hold. */
+    public const PROGRAM = [
+        'actions', 'formatters', 'handlers', 'includes', 'lang', 'setup',
+        'interwiki.conf', 'wakka.basic.css', 'wakka.css', 'wakka.php',
+    ];
+
     public const LOOK = [
         'css-presets' => ['css'],
         'themes/*/presets' => ['css'],
@@ -23,21 +29,26 @@ final class DoryphoreLeftovers
         'styles' => ['css'],
     ];
 
-    /**
-     * Moves a Doryphore instance's custom/ and tools/ aside, once, puts its look back, and names what moved.
-     *
-     * @return list<string>
-     */
+    /** Renames a Doryphore wakka.config.php to yeswiki.config.php, unless the instance already has one. */
+    public static function renameConfiguration(string $instanceDir): bool
+    {
+        $doryphore = $instanceDir . '/wakka.config.php';
+        $ectoplasme = $instanceDir . '/yeswiki.config.php';
+        if (!is_file($doryphore) || file_exists($ectoplasme)) {
+            return false;
+        }
+
+        return @rename($doryphore, $ectoplasme);
+    }
+
+    /** @return list<string> what a Doryphore instance had moved aside, once, after its look was put back */
     public static function setAside(string $instanceDir, string $configFile): array
     {
         $aside = $instanceDir . '/' . self::ASIDE;
         if (is_dir($aside)) {
             return [];
         }
-        if (!is_dir($instanceDir . '/custom') && !is_dir($instanceDir . '/tools')) {
-            return [];
-        }
-        if (!self::isOlderThanEctoplasme($configFile)) {
+        if (!self::isDoryphore($instanceDir, $configFile)) {
             return [];
         }
         if (!@mkdir($aside, 0755, true) && !is_dir($aside)) {
@@ -59,17 +70,26 @@ final class DoryphoreLeftovers
                     : "tools/{$name}/ (extension, to port)";
             }
         }
+        foreach (self::PROGRAM as $name) {
+            $path = $instanceDir . '/' . $name;
+            if (!file_exists($path)) {
+                continue;
+            }
+            if (!is_dir($aside . '/root') && !@mkdir($aside . '/root', 0755, true) && !is_dir($aside . '/root')) {
+                continue;
+            }
+            if (@rename($path, $aside . '/root/' . $name)) {
+                $moved[] = $name . (is_dir($aside . '/root/' . $name) ? '/' : '') . ' (Doryphore program, nothing to port)';
+            }
+        }
 
         file_put_contents($aside . '/README.md', self::readme($moved));
+        touch($instanceDir . '/' . self::PENDING);
 
         return $moved;
     }
 
-    /**
-     * The look files a set-aside custom/ holds, relative to custom/, each with its file on disk.
-     *
-     * @return array<string, string>
-     */
+    /** @return array<string, string> the look files a set-aside custom/ holds, relative to custom/, each with its file on disk */
     public static function lookIn(string $customDir): array
     {
         $files = [];
@@ -94,11 +114,7 @@ final class DoryphoreLeftovers
         return $files;
     }
 
-    /**
-     * Copy the look files back into a fresh custom/, and name the folders they came from.
-     *
-     * @return list<string>
-     */
+    /** @return list<string> the folders whose look files were copied back into a fresh custom/ */
     private static function keepLook(string $from, string $to): array
     {
         $folders = [];
@@ -124,9 +140,15 @@ final class DoryphoreLeftovers
         return $parts[0] === 'themes' ? implode('/', array_slice($parts, 0, 3)) : $parts[0];
     }
 
-    /** Whether the configuration names a version before Ectoplasme. */
-    private static function isOlderThanEctoplasme(string $configFile): bool
+    /** Whether the configuration names a version before Ectoplasme, or Doryphore's updater and front controller are still on disk. */
+    private static function isDoryphore(string $instanceDir, string $configFile): bool
     {
+        if (is_dir($instanceDir . '/tools/autoupdate') || is_file($instanceDir . '/wakka.php')) {
+            return true;
+        }
+        if (!is_dir($instanceDir . '/custom') && !is_dir($instanceDir . '/tools')) {
+            return false;
+        }
         $config = new ConfigurationFile($configFile);
         $config->load();
         $version = strtolower((string)$config['yeswiki_version']);
@@ -138,7 +160,7 @@ final class DoryphoreLeftovers
     private static function readme(array $moved): string
     {
         return "# Set aside from Doryphore\n\n"
-            . 'On ' . date('Y-m-d H:i') . ", the upgrade to Ectoplasme moved this wiki's custom code here, where it is not loaded.\n"
+            . 'On ' . date('Y-m-d H:i') . ", the upgrade to Ectoplasme moved this wiki's custom code and Doryphore's own program files here, where nothing loads them.\n"
             . "Its presets, fonts, images and stylesheets were copied back into custom/, since they hold no code;\n"
             . "the copies here are the originals, and the migrations rewrite the presets in custom/ for Ectoplasme.\n"
             . "Port what is still needed into custom/ or custom/extensions/, then delete it from here.\n"

@@ -25,24 +25,20 @@ class ThemeManager implements EventSubscriberInterface
     public const CUSTOM_CSS_PRESETS_PREFIX = 'custom/';
     public const CUSTOM_FONT_PATH = 'custom/fonts';
 
-    /** What a downloaded family's `@font-face` rules are kept in, beside its files. */
     public const FONT_FACES_FILE = 'faces.css';
 
-    /** What a page may say about its own chrome, beside the theme it wears. */
     public const SPECIAL_METADATA = [
         'PageFooter',
         'PageHeader',
         'favorite_preset',
     ];
-    /** What Google is told we are, so it answers with woff2. */
     public const BROWSER_USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
 
     protected string $errorMessage;
 
-    /** @var array<string, string> theme, squelette, style, preset and background_image */
+    /** @var array<string, string> */
     protected array $favorites;
 
-    /** @var string|null the squelette's source, once loadTheme() has read it */
     protected ?string $fileContent;
     protected bool $fileLoaded;
     protected PageManager $pageManager;
@@ -50,7 +46,7 @@ class ThemeManager implements EventSubscriberInterface
     protected HibernationService $hibernationService;
     protected ?string $squelette;
 
-    /** @var array<string, array<string, mixed>> the themes found, by name */
+    /** @var array<string, array<string, mixed>> */
     protected array $templates;
     protected ?string $theme;
     protected TemplateEngine $twig;
@@ -101,12 +97,8 @@ class ThemeManager implements EventSubscriberInterface
     }
 
     /**
-     * function imported from tools/templates/libs/templates.functions.php
-     * to load templates and generate an error if needed.
-     *
-     * @param array<string, mixed>|null $metadata metadata for the current Page
-     *
-     * @return array<string, array<string, mixed>>|null the templates found, by theme name
+     * @param array<string, mixed>|null $metadata
+     * @return array<string, array<string, mixed>>|null
      */
     public function loadTemplates($metadata = []): ?array
     {
@@ -321,8 +313,6 @@ class ThemeManager implements EventSubscriberInterface
         }
         $fromInstance = !$this->useFallbackTheme && $this->storage->exists('custom/' . $filePath);
 
-        // Two trees, two services, and the path stays relative to whichever one answers: a wiki's
-        // own copy is Instance data and may be in a bucket, the shipped one is code and is not.
         $fileContent = $fromInstance ? $this->storage->read('custom/' . $filePath) : $this->programFiles->read($filePath);
         $filePath = $fromInstance ? 'custom/' . $filePath : $this->programFiles->path($filePath);
         if ($fileContent === '') {
@@ -344,11 +334,7 @@ class ThemeManager implements EventSubscriberInterface
         return $this->errorMessage;
     }
 
-    /**
-     * Everything outside the `body` block that a page's metadata can change (ticket 16).
-     *
-     * @return list<string>
-     */
+    /** @return list<string> */
     public function layoutIdentity(): array
     {
         return [
@@ -361,8 +347,6 @@ class ThemeManager implements EventSubscriberInterface
             $this->container->get(LayoutService::class)->navbarPosition(),
             $this->container->get(LayoutService::class)->headerPosition(),
             (string)$this->container->get(LayoutService::class)->navbarHeight(),
-            // Ticket 64: how a placement draws its menu is a Layout setting, so leaving it out
-            // would swap a page under stale chrome on a boosted navigation.
             ...array_map(
                 fn (string $flag): string => $this->container->get(LayoutService::class)->flag($flag) ? '1' : '0',
                 array_keys(LayoutService::FLAG_DEFAULTS)
@@ -374,7 +358,7 @@ class ThemeManager implements EventSubscriberInterface
     public function renderPage(string $pageContent): string
     {
         if (!$this->fileLoaded && !$this->loadTheme()) {
-            return '';
+            return $this->errorMessage;
         }
         $this->container->get(CoreAssets::class)->register();
 
@@ -409,22 +393,18 @@ class ThemeManager implements EventSubscriberInterface
         return trim($runner->action('configuration param="wakka_name"') . ' : ' . $runner->action('pagetitle'));
     }
 
-    /**
-     * The document head alone, for surfaces that supply their own body -- the iframe handlers, which want the wiki's `<head>` without any of the theme's chrome.
-     */
+    /** The document head alone, for surfaces that supply their own body -- the iframe handlers, which want the wiki's `<head>` without any of the theme's chrome. */
     public function renderHead(): string
     {
         if (!$this->fileLoaded && !$this->loadTheme()) {
-            return '';
+            return $this->errorMessage;
         }
         $this->container->get(CoreAssets::class)->register();
 
         return $this->twig->createSquelette((string)$this->fileContent)->renderBlock('head');
     }
 
-    /**
-     * @return array<string, array<string, mixed>>
-     */
+    /** @return array<string, array<string, mixed>> */
     public function getTemplates(): array
     {
         return $this->templates;
@@ -455,9 +435,7 @@ class ThemeManager implements EventSubscriberInterface
         return $this->favorites['background_image'];
     }
 
-    /**
-     * @param mixed $newVal what the caller asked for; anything but a non-empty string stores ''
-     */
+    /** @param mixed $newVal */
     protected function setFavorite(string $key, $newVal): void
     {
         if ($key === 'squelette' && is_string($newVal)) {
@@ -468,19 +446,13 @@ class ThemeManager implements EventSubscriberInterface
             : $newVal;
     }
 
-    /**
-     * Squelettes are Twig since the tpl.html engine died; historical `.tpl.html`
-     * names survive in page metadata, wakka.config.php and old theme-switcher URLs.
-     */
+    /** Squelettes are Twig since the tpl.html engine died; historical `.tpl.html` names survive in page metadata, wakka.config.php and old theme-switcher URLs. */
     public static function normalizeSqueletteName(string $name): string
     {
         return preg_replace('/\.tpl\.html$/i', '.twig', $name) ?? $name;
     }
 
-    /**
-     * Canonical stored form of a squelette name: legacy suffix normalized, `.twig`
-     * appended when the name has no suffix (theme-picker selects send bare names).
-     */
+    /** Canonical stored form of a squelette name: legacy suffix normalized, `.twig` appended when the name has no suffix (theme-picker selects send bare names). */
     public static function squeletteFileName(string $name): string
     {
         $name = self::normalizeSqueletteName($name);
@@ -501,11 +473,7 @@ class ThemeManager implements EventSubscriberInterface
             : $default;
     }
 
-    /**
-     * get custom css-presets.
-     *
-     * @return array<string, string> $template = [$filename=>$css]
-     */
+    /** @return array<string, string> */
     public function getCustomCSSPresets(): array
     {
         $path = self::CUSTOM_CSS_PRESETS_PATH;
@@ -521,11 +489,7 @@ class ThemeManager implements EventSubscriberInterface
         return $tab;
     }
 
-    /**
-     * delete a css custom preset.
-     *
-     * @return array{status: bool, message: string}
-     */
+    /** @return array{status: bool, message: string} */
     public function deleteCustomCSSPreset(string $filename): array
     {
         if ($this->hibernationService->isWikiHibernated()) {
@@ -549,10 +513,7 @@ class ThemeManager implements EventSubscriberInterface
     }
 
     /**
-     * Write an instance preset, verbatim, and install any webfont its type asks for.
-     *
-     * @param list<string> $fontFamilies the families to install, usually body and headings
-     *
+     * @param list<string> $fontFamilies
      * @return array{status: bool, message: string, errorCode: int|null}
      */
     public function writeCustomCSSPreset(string $filename, string $css, array $fontFamilies = []): array
@@ -587,11 +548,7 @@ class ThemeManager implements EventSubscriberInterface
         return ['status' => true, 'message' => $filename . ' created/updated', 'errorCode' => null];
     }
 
-    /**
-     * get presets data.
-     *
-     * @return array{themePresets: array<string, string>, selectedPresetName: string|null, customCSSPresets: array<string, string>, selectedCustomPresetName: string|null}
-     */
+    /** @return array{themePresets: array<string, string>, selectedPresetName: string|null, customCSSPresets: array<string, string>, selectedCustomPresetName: string|null} */
     public function getPresetsData(): ?array
     {
         $themePresets = $this->getTemplates()[$this->getFavoriteTheme()]['presets'] ?? [];
@@ -619,11 +576,7 @@ class ThemeManager implements EventSubscriberInterface
         ];
     }
 
-    /**
-     * install font and get css.
-     *
-     * @return string $css
-     */
+    /** install font and get css. */
     private function installAndGetCSSForFont(string $fontFamily): string
     {
         if (PresetService::isSystemStack($fontFamily)) {
@@ -649,7 +602,6 @@ class ThemeManager implements EventSubscriberInterface
         return "\n$newCss";
     }
 
-    /** Fetch a webfont's files into `custom/fonts/`, from Google or from another YesWiki. */
     /** Fetch a webfont from Google so a Preset can name it. */
     public function installFont(string $family): bool
     {
@@ -680,11 +632,7 @@ class ThemeManager implements EventSubscriberInterface
         return $this->storage->fileExists($file) ? $this->storage->read($file) : '';
     }
 
-    /**
-     * Copy one file another wiki described, keeping the name it is known by there.
-     *
-     * @param array{family?: mixed, style?: mixed, weight?: mixed, subset?: mixed, unicodeRange?: mixed, url?: mixed} $font
-     */
+    /** @param array{family?: mixed, style?: mixed, weight?: mixed, subset?: mixed, unicodeRange?: mixed, url?: mixed} $font */
     public function importRemoteFontFile(array $font): ?string
     {
         $url = (string)($font['url'] ?? '');
@@ -757,11 +705,7 @@ class ThemeManager implements EventSubscriberInterface
         return (!$failed && $status < 400 && is_string($body) && $body !== '') ? $body : null;
     }
 
-    /**
-     * Fetch a webfont's woff2 files and return the `@font-face` rules that point at them.
-     *
-     * @return string the rules, with `src` pointing at the copies now under custom/fonts/
-     */
+    /** Fetch a webfont's woff2 files and return the `@font-face` rules that point at them. */
     protected function getFontFiles(string $fontFamily): string
     {
         $family = $this->convertFamilyToUrl($fontFamily);
@@ -857,9 +801,7 @@ class ThemeManager implements EventSubscriberInterface
         return '../../' . self::CUSTOM_FONT_PATH . '/' . $folder . '/' . $name;
     }
 
-    /**
-     * save metadata for new page if needed.
-     */
+    /** save metadata for new page if needed. */
     public function saveMetadataIfNeeded(Event $event): void
     {
         $data = $event->getData();

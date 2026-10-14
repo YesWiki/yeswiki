@@ -47,4 +47,19 @@ class ThemeManagerTest extends YesWikiTestCase
             $themeManager->getFavoritePreset(),
         ]);
     }
+
+    public function testAThemeThatCannotLoadSaysSoInsteadOfABlankPage(): void
+    {
+        $themeManager = clone $this->getWiki()->services->get(ThemeManager::class);
+        $themeManager->loadTemplates([]);
+        $favorites = new \ReflectionProperty(ThemeManager::class, 'favorites');
+        $favorites->setValue($themeManager, ['theme' => 'notatheme'] + $favorites->getValue($themeManager));
+        (new \ReflectionProperty(ThemeManager::class, 'fileLoaded'))->setValue($themeManager, false);
+        (new \ReflectionProperty(ThemeManager::class, 'useFallbackTheme'))->setValue($themeManager, false);
+
+        $page = $themeManager->renderPage('<p>content</p>');
+
+        $this->assertStringContainsString('notatheme', $page);
+        $this->assertSame($page, $themeManager->renderHead());
+    }
 }

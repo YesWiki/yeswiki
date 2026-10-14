@@ -92,6 +92,66 @@ class DoryphoreLeftoversTest extends TestCase
         $this->assertDirectoryDoesNotExist($this->instance . '/private/doryphore');
     }
 
+    public function testADoryphoreWikiIsSetAsideEvenWhenItsUpdaterAlreadyWroteEctoplasme(): void
+    {
+        mkdir($this->instance . '/tools/autoupdate', 0755, true);
+
+        $moved = DoryphoreLeftovers::setAside($this->instance, $this->configure('ectoplasme'));
+
+        $this->assertContains('tools/autoupdate/ (Doryphore core, nothing to port)', $moved);
+        $this->assertDirectoryDoesNotExist($this->instance . '/tools');
+    }
+
+    public function testDoryphoreFilesAtTheRootAreSetAsideToo(): void
+    {
+        mkdir($this->instance . '/includes', 0755, true);
+        mkdir($this->instance . '/setup', 0755, true);
+        file_put_contents($this->instance . '/wakka.php', '<?php');
+        file_put_contents($this->instance . '/index.php', '<?php');
+
+        $moved = DoryphoreLeftovers::setAside($this->instance, $this->configure('ectoplasme'));
+
+        $this->assertContains('includes/ (Doryphore program, nothing to port)', $moved);
+        $this->assertContains('wakka.php (Doryphore program, nothing to port)', $moved);
+        $this->assertFileExists($this->instance . '/private/doryphore/root/wakka.php');
+        $this->assertDirectoryExists($this->instance . '/private/doryphore/root/setup');
+        $this->assertDirectoryDoesNotExist($this->instance . '/includes');
+        $this->assertFileExists($this->instance . '/index.php');
+    }
+
+    public function testTheDoryphoreConfigurationTakesItsEctoplasmeName(): void
+    {
+        $this->configure('doryphore');
+
+        $this->assertTrue(DoryphoreLeftovers::renameConfiguration($this->instance));
+        $this->assertFileDoesNotExist($this->instance . '/wakka.config.php');
+        $this->assertFileExists($this->instance . '/yeswiki.config.php');
+    }
+
+    public function testAnExistingEctoplasmeConfigurationIsNeverOverwritten(): void
+    {
+        $this->configure('doryphore');
+        file_put_contents($this->instance . '/yeswiki.config.php', '<?php $yeswikiConfig = [];');
+
+        $this->assertFalse(DoryphoreLeftovers::renameConfiguration($this->instance));
+        $this->assertFileExists($this->instance . '/wakka.config.php');
+        $this->assertSame('<?php $yeswikiConfig = [];', file_get_contents($this->instance . '/yeswiki.config.php'));
+    }
+
+    public function testSettingADoryphoreWikiAsideLeavesItsMovePending(): void
+    {
+        DoryphoreLeftovers::setAside($this->instance, $this->configure('doryphore'));
+
+        $this->assertFileExists($this->instance . '/' . DoryphoreLeftovers::PENDING);
+    }
+
+    public function testAnEctoplasmeWikiHasNoMovePending(): void
+    {
+        DoryphoreLeftovers::setAside($this->instance, $this->configure('ectoplasme', 'yeswikiConfig'));
+
+        $this->assertFileDoesNotExist($this->instance . '/' . DoryphoreLeftovers::PENDING);
+    }
+
     public function testTheMoveHappensOnceEvenIfCustomComesBack(): void
     {
         $config = $this->configure('doryphore');
