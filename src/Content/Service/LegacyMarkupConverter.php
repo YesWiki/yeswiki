@@ -35,7 +35,7 @@ class LegacyMarkupConverter
         $text = $this->convertLines($text);
         $text = $this->settleBlankLines($text);
 
-        return trim($this->restore($text), "\n");
+        return (new MarkdownReformatter())->reformat(trim($this->restore($text), "\n"));
     }
 
     /** Wakka let `**` open at a line's end or close after raw closing tags; Markdown needs both ends in the same block. */

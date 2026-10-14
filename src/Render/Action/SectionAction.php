@@ -495,7 +495,7 @@ class SectionAction extends YesWikiAction implements RegisteredAction, ProvidesC
                     . ($opacity !== '' ? '--yw-section-image-opacity:' . (float)$opacity . '; ' : '');
             }
 
-            $sectionInk = (str_contains($class, 'white') || str_contains($class, 'black'))
+            $sectionInk = ($patternborder || str_contains($class, 'white') || str_contains($class, 'black'))
                 ? ''
                 : $this->getService(PresetService::class)->inkForBackground((string)$bgcolor);
 

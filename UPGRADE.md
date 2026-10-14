@@ -191,6 +191,12 @@ only thing that gives it a URL back. Its triples follow it.
 **The search index is created and every Content queued for it.** If it ever looks stale or
 incomplete, `./yeswicli search:reindex` rebuilds it.
 
+**Page markup becomes Markdown**, with the tags of block actions (`{{section}}`, `{{grid}}`,
+`{{col}}`, `{{panel}}`…) each on a line of its own, the only shape the editor shows as a
+component. A wiki converted before that last rule can catch up with
+`./yeswicli content:reformat`: it saves a new revision of each page it changes, and
+`--dry-run` lists them first.
+
 **Layout pages become configuration.** `PageTitre`, `PageMenuHaut` and `PageRapideHaut` become
 `layout_*` config keys; `LookWiki` is retired and its links point at `admin/preset`. `PageCss`
 becomes `custom/styles/custom.css`: its CSS is written there, or added to the end if the file

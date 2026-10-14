@@ -73,7 +73,32 @@ class LegacyMarkupConverterTest extends TestCase
                 "//- un\n- deux//",
                 "- *un*\n- *deux*",
             ],
-            'lines of actions get no break' => ["{{grid}}\n{{col size=\"6\"}}", "{{grid}}\n{{col size=\"6\"}}"],
+            'text after a block action moves to the next line' => [
+                "{{section bgcolor=\"#2b6d4f\" class=\"cover\"}}**C'est :**\n - un\n{{end elem=\"section\"}}",
+                "{{section bgcolor=\"#2b6d4f\" class=\"cover\"}}\n**C'est :**\n- un\n{{end elem=\"section\"}}",
+            ],
+            'text before a closing block action moves to the line above' => [
+                "{{panel title=\"T\"}}\ncorps{{end elem=\"panel\"}}",
+                "{{panel title=\"T\"}}\ncorps\n{{end elem=\"panel\"}}",
+            ],
+            'a block action on one line opens onto three' => [
+                '{{section class="cover"}}x{{end elem="section"}}',
+                "{{section class=\"cover\"}}\nx\n{{end elem=\"section\"}}",
+            ],
+            'block actions side by side each get a line' => [
+                "{{end elem=\"col\"}}{{col size=\"8\"}}",
+                "{{end elem=\"col\"}}\n{{col size=\"8\"}}",
+            ],
+            'blank lines in a row and trailing spaces are tidied' => ["un \n\n\n\ndeux", "un\n\ndeux"],
+            'a label stays inline' => [
+                '{{label}}texte{{end elem="label"}}',
+                '{{label}}texte{{end elem="label"}}',
+            ],
+            'a block action inside a list item stays in the item' => [
+                ' - {{section class="cover"}}{{button text="a" link="A"}}{{end elem="section"}}',
+                '- {{section class="cover"}}{{button text="a" link="A"}}{{end elem="section"}}',
+            ],
+            'lines of actions get no break' =>["{{grid}}\n{{col size=\"6\"}}", "{{grid}}\n{{col size=\"6\"}}"],
             'a rule as a list item stays an item, the dropdown divider' => [
                 "{{buttondropdown icon=\"cog\"}}\n - {{button text=\"a\" link=\"A\"}}\n - ------\n - {{button text=\"b\" link=\"B\"}}\n{{end elem=\"buttondropdown\"}}",
                 "{{buttondropdown icon=\"cog\"}}\n- {{button text=\"a\" link=\"A\"}}\n- ***\n- {{button text=\"b\" link=\"B\"}}\n{{end elem=\"buttondropdown\"}}",
