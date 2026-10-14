@@ -295,7 +295,9 @@ class PageManager
         $this->dbService->query("DELETE FROM {$this->dbService->prefixTable('pages')} WHERE tag='{$this->dbService->escape($tag)}' OR comment_on='{$this->dbService->escape($tag)}'");
         $this->dbService->query("DELETE FROM {$this->dbService->prefixTable('links')} WHERE from_tag='{$this->dbService->escape($tag)}' ");
         $this->dbService->query("DELETE FROM {$this->dbService->prefixTable('acls')} WHERE page_tag='{$this->dbService->escape($tag)}' ");
-        $this->tripleStore->deleteAll($tag, '');
+        if (!str_starts_with((string)$tag, GROUP_PREFIX)) {
+            $this->tripleStore->deleteAll($tag, '');
+        }
         $this->dbService->query("DELETE FROM {$this->dbService->prefixTable('referrers')} WHERE page_tag='{$this->dbService->escape($tag)}' ");
         $this->tagsManager->deleteAll($tag);
 
@@ -325,6 +327,9 @@ class PageManager
     {
         if ($this->securityController->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
+        }
+        if (str_starts_with((string)$tag, GROUP_PREFIX)) {
+            return 1;
         }
         $user = $this->authController->getLoggedUserName();
 

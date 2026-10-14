@@ -46,8 +46,10 @@ if (isset($metadatas['ebook-title']) && isset($metadatas['ebook-description']) &
 
     $book->addCSSFile('styles.css', 'css1', $cssData);
 
-    // This test requires you have an image, change "demo/cover-image.jpg" to match your location.
-    $book->setCoverImage('Cover.jpg', file_get_contents($metadatas['ebook-cover-image']), 'image/jpeg');
+    $coverImage = read_ebook_cover_image($metadatas['ebook-cover-image']);
+    if (!empty($coverImage)) {
+        $book->setCoverImage('Cover.jpg', $coverImage['content'], $coverImage['mime']);
+    }
 
     // Titre et courte description de l'ouvrage
     $cover = $content_start . '<h1>' . $metadatas['ebook-title'] . '</h1>' . "\n" . '<h2>' . _t('TAGS_BY') . ': ' . $metadatas['ebook-author'] . '</h2>' . "\n" . $metadatas['ebook-description'] . $bookEnd;

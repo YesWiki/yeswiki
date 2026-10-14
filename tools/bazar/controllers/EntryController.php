@@ -256,11 +256,11 @@ class EntryController extends YesWikiController
         if (empty($formId)) {
             return '<div class="alert alert-danger">' . _t('BAZ_PAS_D_ID_DE_FORM_INDIQUE') . '</div>';
         }
-        $_SESSION['current_form_id'] = $formId;
         $form = $this->formManager->getOne($formId);
         if (!$form) {
-            return '<div class="alert alert-danger">' . _t('BAZ_PAS_DE_FORM_AVEC_CET_ID') . ' : \'' . $formId . '\'</div>';
+            return '<div class="alert alert-danger">' . _t('BAZ_PAS_DE_FORM_AVEC_CET_ID') . ' : \'' . htmlspecialchars((string)$formId) . '\'</div>';
         }
+        $_SESSION['current_form_id'] = $form['bn_id_nature'];
 
         $results = $this->checkIfOnlyOneEntry($form);
         $incomingUrl = $this->getIncomingUrl();

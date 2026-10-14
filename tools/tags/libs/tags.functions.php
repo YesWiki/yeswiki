@@ -273,3 +273,44 @@ function filter_by_value($array, $index, $value)
 
     return $newarray;
 }
+
+/** Reads an ebook cover from a public http(s) URL or a file under files/, and returns it only if it is an image. */
+function read_ebook_cover_image($source): array
+{
+    if (!is_string($source) || $source === '') {
+        return [];
+    }
+    if (preg_match('`^https?://`i', $source)) {
+        try {
+            $pin = $GLOBALS['wiki']->services->get(YesWiki\Bazar\Service\SsrfUrlValidator::class)->curlPin($source, ['http', 'https']);
+        } catch (Throwable $error) {
+            return [];
+        }
+        $curl = curl_init($source);
+        foreach ($pin as $option => $optionValue) {
+            curl_setopt($curl, $option, $optionValue);
+        }
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($curl, CURLOPT_FOLLOWLOCATION, false);
+        curl_setopt($curl, CURLOPT_CONNECTTIMEOUT, 10);
+        curl_setopt($curl, CURLOPT_TIMEOUT, 20);
+        $content = curl_exec($curl);
+        $status = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+        if ($content === false || $status < 200 || $status >= 300) {
+            return [];
+        }
+    } else {
+        $filesDir = realpath('files');
+        $path = realpath($source);
+        if ($filesDir === false || $path === false || !is_file($path) || !str_starts_with($path, $filesDir . DIRECTORY_SEPARATOR)) {
+            return [];
+        }
+        $content = file_get_contents($path);
+    }
+    $image = is_string($content) ? @getimagesizefromstring($content) : false;
+    if ($image === false || !in_array($image['mime'] ?? '', ['image/jpeg', 'image/png', 'image/gif', 'image/webp'], true)) {
+        return [];
+    }
+
+    return ['content' => $content, 'mime' => $image['mime']];
+}

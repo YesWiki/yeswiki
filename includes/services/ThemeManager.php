@@ -569,7 +569,7 @@ class ThemeManager implements EventSubscriberInterface
     private function checkPOSTToAddCustomCSSPreset(array $post): bool
     {
         foreach (self::POST_DATA_KEYS as $key) {
-            if (empty($post[$key])) {
+            if (empty($post[$key]) || !is_string($post[$key]) || !preg_match('/^[A-Za-z0-9 #.,%()\'"_-]{1,200}$/D', $post[$key])) {
                 return false;
             }
         }

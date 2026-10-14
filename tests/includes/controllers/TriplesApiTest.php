@@ -5,6 +5,7 @@ namespace YesWiki\Test\Core\Controller;
 use Symfony\Component\HttpFoundation\Request;
 use YesWiki\Core\Controller\ApiController;
 use YesWiki\Core\Controller\AuthController;
+use YesWiki\Core\Service\PageManager;
 use YesWiki\Core\Service\TripleStore;
 use YesWiki\Core\Service\UserManager;
 use YesWiki\Test\Core\YesWikiTestCase;
@@ -153,5 +154,31 @@ class TriplesApiTest extends YesWikiTestCase
 
         $this->assertSame(200, $response->getStatusCode(), 'the property was not read from the posted body');
         $this->tripleStore->delete('TriplesApiTestOtherPage', self::PROPERTY, null, '', '');
+    }
+
+    public function testAUserCannotWriteATripleOnAGroup()
+    {
+        $resource = GROUP_PREFIX . ADMIN_GROUP . 'TriplesApi';
+        $this->logIn(self::OTHER);
+        $this->request(['property' => WIKINI_VOC_PREFIX . WIKINI_VOC_ACLS, 'value' => 'x']);
+
+        $this->controller->setTriple($resource);
+
+        $this->assertSame(
+            [self::GROUP_MEMBER],
+            array_column($this->tripleStore->getMatching($resource, WIKINI_VOC_PREFIX . WIKINI_VOC_ACLS, null, '=', '=', '='), 'value')
+        );
+    }
+
+    public function testAPageNamedAfterAGroupIsNeitherSavedNorAbleToWipeTheGroup()
+    {
+        $resource = GROUP_PREFIX . ADMIN_GROUP . 'TriplesApi';
+        $pageManager = $this->wiki->services->get(PageManager::class);
+
+        $this->assertSame(1, $pageManager->save($resource, 'body', '', true));
+        $pageManager->deleteOrphaned($resource);
+
+        $this->assertNull($pageManager->getOne($resource));
+        $this->assertSame(self::GROUP_MEMBER, $this->tripleStore->getOne($resource, WIKINI_VOC_PREFIX . WIKINI_VOC_ACLS, '', ''));
     }
 }
