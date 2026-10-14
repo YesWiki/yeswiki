@@ -336,15 +336,14 @@ class TemplateEngine
 
         $realTemplatePath = $this->twigLoader->getSourceContext($templatePath)->getPath();
 
-        // extract variables for the template
         if (!empty($data)) {
-            extract($data);
+            extract($data, EXTR_SKIP);
         }
 
-        ob_start(); // buffer
+        ob_start();
         include $realTemplatePath;
-        $content = ob_get_contents(); // get buffer's content
-        ob_end_clean(); // destroy buffer
+        $content = ob_get_contents();
+        ob_end_clean();
 
         return $content;
     }

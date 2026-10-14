@@ -769,23 +769,12 @@ class Wiki
     }
 
     /**
-     * Executes a file in a buffer, so we can work on the output variable $plugin_out_new before display.
-     *
-     * This method is used by Performer Service
-     * We need to run this method in YesWiki class, so the variable $this will be referencing YesWiki
-     * in the included file
-     *
-     * @param ___file the file to execute (___ because as we use the extract function, we have to choose a name which
-     * will be not used by users for an performable argument)
-     * @param array vars the variables used as an execution context. 'plugin_output_new' represents the current output
-     * (strange variable name, but it's used in everywhere, so let's keep it... !)
-     *
-     * @return array the execution context variables updated by the execution (with 'plugin_output_new for the current output)
+     * Includes a performable file with its parameters as local variables and returns them updated.
      */
     public function runFileInBuffer($___file, array $vars)
     {
         $this->parameter = &$vars;
-        extract($this->parameter, EXTR_REFS);
+        extract($this->parameter, EXTR_REFS | EXTR_SKIP);
         unset($vars);
 
         assert(isset($plugin_output_new));
