@@ -163,11 +163,13 @@ class TriplesApiTest extends YesWikiTestCase
         $this->request(['property' => WIKINI_VOC_PREFIX . WIKINI_VOC_ACLS, 'value' => 'x']);
 
         $this->controller->setTriple($resource);
+        $this->controller->setTriple(strtolower($resource));
 
         $this->assertSame(
             [self::GROUP_MEMBER],
             array_column($this->tripleStore->getMatching($resource, WIKINI_VOC_PREFIX . WIKINI_VOC_ACLS, null, '=', '=', '='), 'value')
         );
+        $this->assertSame([], $this->tripleStore->getMatching(GROUP_PREFIX . '%', null, '%' . self::OTHER . '%', 'LIKE', '=', 'LIKE'));
     }
 
     public function testAPageNamedAfterAGroupIsNeitherSavedNorAbleToWipeTheGroup()
@@ -175,8 +177,10 @@ class TriplesApiTest extends YesWikiTestCase
         $resource = GROUP_PREFIX . ADMIN_GROUP . 'TriplesApi';
         $pageManager = $this->wiki->services->get(PageManager::class);
 
-        $this->assertSame(1, $pageManager->save($resource, 'body', '', true));
-        $pageManager->deleteOrphaned($resource);
+        foreach ([$resource, strtolower($resource)] as $tag) {
+            $this->assertSame(1, $pageManager->save($tag, 'body', '', true));
+            $pageManager->deleteOrphaned($tag);
+        }
 
         $this->assertNull($pageManager->getOne($resource));
         $this->assertSame(self::GROUP_MEMBER, $this->tripleStore->getOne($resource, WIKINI_VOC_PREFIX . WIKINI_VOC_ACLS, '', ''));

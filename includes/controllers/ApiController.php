@@ -1076,7 +1076,7 @@ class ApiController extends YesWikiController
                 ['error' => 'Resource should not be empty !'],
                 Response::HTTP_BAD_REQUEST
             );
-        } elseif (is_string($resource) && str_starts_with($resource, GROUP_PREFIX) && !$this->wiki->UserIsAdmin()) {
+        } elseif (is_string($resource) && stripos($resource, GROUP_PREFIX) === 0 && !$this->wiki->UserIsAdmin()) {
             $apiResponse = new ApiResponse(
                 ['error' => 'Not authorized to access the triples of a group if not admin !'],
                 Response::HTTP_FORBIDDEN

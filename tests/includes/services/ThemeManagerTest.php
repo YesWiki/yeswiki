@@ -131,4 +131,28 @@ class ThemeManagerTest extends YesWikiTestCase
             $themeManager->getFavoritePreset(),
         ]);
     }
+
+    public function testPageMetadataCannotPointTheThemeOutsideItsFolder()
+    {
+        $themeManager = $this->offlineThemeManager();
+        $themeManager->loadTemplates([
+            'theme' => 'margot',
+            'style' => 'light.css',
+            'squelette' => '../../../wakka.config.php',
+            'bgimg' => '../../wakka.config.php',
+        ]);
+
+        $this->assertStringNotContainsString('..', $themeManager->getFavoriteSquelette());
+        $this->assertStringNotContainsString('..', $themeManager->getFavoriteBackgroundImage());
+    }
+
+    public function testARequestedBackgroundImageStaysInItsFolder()
+    {
+        $this->wiki->request->query->replace(['theme' => 'margot', 'style' => 'light.css', 'squelette' => '1col.tpl.html', 'bgimg' => '../../wakka.config.php']);
+        $themeManager = $this->offlineThemeManager();
+        $themeManager->loadTemplates([]);
+        $this->wiki->request->query->replace([]);
+
+        $this->assertStringNotContainsString('..', $themeManager->getFavoriteBackgroundImage());
+    }
 }
