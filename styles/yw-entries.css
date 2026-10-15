@@ -2994,6 +2994,10 @@ img.popup-visual {
   border-radius: var(--yw-radius-sm);
 }
 
+.yw-geolocation-map {
+  isolation: isolate;
+}
+
 .yw-entry-form .form-actions > div {
   display: flex;
   gap: var(--yw-space-sm-x);

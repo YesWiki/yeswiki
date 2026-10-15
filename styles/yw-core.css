@@ -712,6 +712,15 @@ body:has(#yw-topnav .yw-chrome-edit) .yw-page-actions {
   box-shadow: 0 1px 4px var(--yw-shadow-color);
 }
 
+@media (max-width: 767px) {
+  .yw-corner-tools {
+    position: static;
+    width: max-content;
+    margin: 0 auto var(--yw-space-md-y);
+    box-shadow: none;
+  }
+}
+
 .yw-corner-tools__trigger {
   display: inline-flex;
   align-items: center;
@@ -2928,6 +2937,7 @@ blockquote > cite {
 .form-card__id {
   color: var(--yw-text-muted);
   font-weight: normal;
+  white-space: nowrap;
 }
 
 .form-card__description {
