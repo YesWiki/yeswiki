@@ -1419,7 +1419,6 @@ Texte de la colonne à changer par la suite
     'LIST_VALUE_COLOR' => 'Couleur de cette valeur',
     'DASHBOARD_LISTS' => 'Listes de valeurs',
     'DASHBOARD_LISTS_INTRO' => 'Les vocabulaires dans lesquels les formulaires de ce wiki puisent.',
-    'ADMIN_LISTS_INTRO' => 'Une liste de valeurs est le vocabulaire des formulaires : les choix qu\'un champ propose, et la couleur et l\'icône que chaque valeur porte partout où elle est affichée.',
     'ADMIN_LISTS_IMPORTED' => 'Listes copiées d\'un autre wiki',
     'ADMIN_LISTS_IMPORTED_HINT' => 'Ce sont des listes ordinaires, que vous pouvez modifier. Suivre la source autorise le wiki d\'origine à remplacer vos modifications à la prochaine synchronisation.',
     'ADMIN_LISTS_ORIGIN_BADGE' => 'Importée',

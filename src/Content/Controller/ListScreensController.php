@@ -12,6 +12,7 @@ use YesWiki\Content\Service\ListManager;
 use YesWiki\Content\Service\ListOverview;
 use YesWiki\Core\DashboardShell;
 use YesWiki\Core\YesWikiController;
+use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\CsrfTokenChecker;
 use YesWiki\Kernel\Service\ConfigurationFileProvider;
 use YesWiki\Kernel\Service\ConfigurationService;
@@ -20,45 +21,43 @@ use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\TemplateEngine;
 
-/**
- * The screens a value list has (ticket 64).
- *
- * It had none that anybody could reach: the only links to `view=listes` were inside the list screen
- * itself, and the `BazaR` page that used to host it was retired. There are two now, because there
- * are two audiences: everybody may see what vocabulary the wiki has, and whoever may write one
- * edits it beside the rest of the Content administration.
- */
+/** The one screen for value lists (ticket 64): everybody reads them, and each button shows only to whoever may use it. */
 class ListScreensController extends YesWikiController
 {
     use DashboardShell;
 
-    /** Every list the visitor may read, with no controls. */
-    #[Route('/dashboard/lists', options: ['acl' => ['public']])]
-    public function publicLists(): Response
-    {
-        return $this->page('@core/dashboard/lists.twig', 'dashboard/lists', [
-            'overview' => $this->getService(ListOverview::class)->all(),
-        ]);
-    }
-
-    /** The same lists, with the buttons, beside the rest of the Content administration. */
-    #[Route('/admin/lists', methods: ['GET', 'POST'], options: ['acl' => ['@admins']])]
-    public function adminLists(): Response
+    /** Every list the visitor may read, with the buttons their rights on each list allow. */
+    #[Route('/dashboard/lists', methods: ['GET', 'POST'], options: ['acl' => ['public']])]
+    public function lists(): Response
     {
         $request = $this->getService(CurrentRequest::class)->get();
 
         if ($request->isMethod('POST') && $request->request->has('follow')) {
-            $this->follow($request->request->getString('follow'));
+            if ($this->getService(AclService::class)->isAdmin()) {
+                $this->follow($request->request->getString('follow'));
+            }
 
-            return new RedirectResponse($this->getService(UrlFormatter::class)->href('', 'admin/lists'));
+            return new RedirectResponse($this->getService(UrlFormatter::class)->href('', 'dashboard/lists'));
         }
 
-        $this->getService(PageContext::class)->setTag('admin/lists');
+        $this->getService(PageContext::class)->setTag('dashboard/lists');
 
-        return $this->page('@core/admin/lists.twig', 'admin/lists', [
+        return $this->page('@core/dashboard/lists.twig', 'dashboard/lists', [
             'lists' => $this->listScreen($request) ?? $this->getService(ListController::class)->displayAll(),
             'overview' => $this->getService(ListOverview::class)->all(),
         ]);
+    }
+
+    /** The administration's former list screen, kept so its links still lead somewhere. */
+    #[Route('/admin/lists', options: ['acl' => ['@admins']])]
+    public function adminLists(): Response
+    {
+        return new RedirectResponse($this->getService(UrlFormatter::class)->href(
+            '',
+            'dashboard/lists',
+            array_diff_key($this->getService(CurrentRequest::class)->get()->query->all(), ['wiki' => 1, 'admin/lists' => 1]),
+            false
+        ));
     }
 
     /** The screens a single list has, which the retired `BazaR` page used to dispatch and nothing has since. */

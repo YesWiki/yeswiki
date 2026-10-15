@@ -112,23 +112,43 @@ class MenuScreensTest extends YesWikiTestCase
         $this->assertStringContainsString('MenuNavigation', $html, 'the chrome menus are listed');
     }
 
-    /** Administration > Value lists: the same lists, with the buttons. */
-    public function testTheListsAdminScreenRenders(): void
+    /** An admin gets the lists with the buttons to edit and delete them. */
+    public function testTheListsScreenGivesAnAdminTheButtons(): void
     {
         $this->asAdmin();
+        $this->request([]);
 
-        $html = (string)$this->getWiki()->services->get(ListScreensController::class)->adminLists()->getContent();
+        $html = (string)$this->getWiki()->services->get(ListScreensController::class)->lists()->getContent();
 
         $this->assertStringContainsString('existing-lists-table', $html);
+        $this->assertStringContainsString('action=modif_liste', $html);
+        $this->assertStringContainsString('action=supprimer_liste', $html);
     }
 
-    /** And the public one, which is the same data with the controls gone. */
-    public function testThePublicListsScreenRendersForAnybody(): void
+    /** A reader sees the same table with no button to change it. */
+    public function testTheListsScreenGivesAReaderNoButtons(): void
     {
-        $html = (string)$this->getWiki()->services->get(ListScreensController::class)->publicLists()->getContent();
+        $this->request([]);
+
+        $html = (string)$this->getWiki()->services->get(ListScreensController::class)->lists()->getContent();
 
         $this->assertStringContainsString('yw-dashboard', $html);
-        $this->assertStringNotContainsString('data-yw-menu-rows', $html, 'a reader is offered no editor');
+        $this->assertStringNotContainsString('action=modif_liste', $html);
+        $this->assertStringNotContainsString('action=supprimer_liste', $html);
+        $this->assertStringNotContainsString('action=saisir_liste', $html);
+    }
+
+    /** The administration's old address leads to the one screen, with the list it asked for. */
+    public function testTheOldAdminAddressRedirectsToTheListsScreen(): void
+    {
+        $this->request(['view' => 'listes', 'action' => 'modif_liste', 'listid' => 'ListeOuiNon']);
+
+        $response = $this->getWiki()->services->get(ListScreensController::class)->adminLists();
+
+        $this->assertSame(302, $response->getStatusCode());
+        $location = (string)$response->headers->get('Location');
+        $this->assertStringContainsString('dashboard/lists', $location);
+        $this->assertStringContainsString('listid=ListeOuiNon', $location);
     }
 
     /** A menu open in the editor hands its languages to the one switch, the way every other editor does. */

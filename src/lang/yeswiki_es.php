@@ -612,7 +612,6 @@ return [
     'LIST_VALUE_COLOR' => 'Color de este valor',
     'DASHBOARD_LISTS' => 'Listas de valores',
     'DASHBOARD_LISTS_INTRO' => 'Los vocabularios de los que beben los formularios de este wiki.',
-    'ADMIN_LISTS_INTRO' => 'Una lista de valores es el vocabulario de los formularios: las opciones que propone un campo, y el color y el icono que lleva cada valor allí donde se muestre.',
     'ADMIN_LISTS_IMPORTED' => 'Listas copiadas de otro wiki',
     'ADMIN_LISTS_IMPORTED_HINT' => 'Son listas corrientes, que usted puede modificar. Seguir la fuente autoriza al wiki de origen a reemplazar sus modificaciones en la próxima sincronización.',
     'ADMIN_LISTS_ORIGIN_BADGE' => 'Importada',

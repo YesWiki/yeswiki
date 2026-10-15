@@ -596,7 +596,6 @@ return [
     'LIST_VALUE_COLOR' => 'Culoarea acestei valori',
     'DASHBOARD_LISTS' => 'Liste de valori',
     'DASHBOARD_LISTS_INTRO' => 'Vocabularele din care se inspiră formularele acestui wiki.',
-    'ADMIN_LISTS_INTRO' => 'O listă de valori este vocabularul formularelor: alegerile pe care le propune un câmp, plus culoarea și pictograma pe care fiecare valoare le poartă oriunde este afișată.',
     'ADMIN_LISTS_IMPORTED' => 'Liste copiate de la un alt wiki',
     'ADMIN_LISTS_IMPORTED_HINT' => 'Sunt liste obișnuite, pe care le poți modifica. Urmărirea sursei autorizează wiki-ul de origine să îți înlocuiască modificările la următoarea sincronizare.',
     'ADMIN_LISTS_ORIGIN_BADGE' => 'Importată',

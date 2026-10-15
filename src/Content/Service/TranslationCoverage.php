@@ -302,7 +302,7 @@ class TranslationCoverage implements RequestScopedState
     private function editHref(string $tag, string $contentType, string $language): string
     {
         if ($contentType === PageType::LIST) {
-            return $this->urlFormatter->href('', 'admin/lists', [
+            return $this->urlFormatter->href('', 'dashboard/lists', [
                 'view' => 'listes',
                 'action' => 'modif_liste',
                 'listid' => $tag,

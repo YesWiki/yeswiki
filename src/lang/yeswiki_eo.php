@@ -1647,7 +1647,6 @@ Teksto de la kolumno, ŝanĝota poste
     'LIST_VALUE_COLOR' => 'Koloro de tiu valoro',
     'DASHBOARD_LISTS' => 'Listoj de valoroj',
     'DASHBOARD_LISTS_INTRO' => 'La vortprovizoj el kiuj la formularoj de tiu ĉi vikio ĉerpas.',
-    'ADMIN_LISTS_INTRO' => 'Listo de valoroj estas la vortprovizo de la formularoj : la elektoj kiujn kampo proponas, kaj la koloro kaj piktogramo kiujn ĉiu valoro portas ĉie kie ĝi aperas.',
     'ADMIN_LISTS_IMPORTED' => 'Listoj kopiitaj el alia vikio',
     'ADMIN_LISTS_IMPORTED_HINT' => 'Tiuj estas ordinaraj listoj, kiujn vi povas modifi. Sekvi la fonton permesas al la origina vikio anstataŭigi viajn modifojn ĉe la sekva sinkronigo.',
     'ADMIN_LISTS_ORIGIN_BADGE' => 'Importita',

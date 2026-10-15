@@ -1755,7 +1755,6 @@ Testo della colonna da cambiare in seguito
     'LIST_VALUE_COLOR' => 'Colore di questo valore',
     'DASHBOARD_LISTS' => 'Elenchi di valori',
     'DASHBOARD_LISTS_INTRO' => 'I vocabolari a cui attingono i moduli di questo wiki.',
-    'ADMIN_LISTS_INTRO' => 'Un elenco di valori è il vocabolario dei moduli: le scelte che un campo propone, e il colore e l\'icona che ogni valore porta ovunque venga mostrato.',
     'ADMIN_LISTS_IMPORTED' => 'Elenchi copiati da un altro wiki',
     'ADMIN_LISTS_IMPORTED_HINT' => 'Sono elenchi ordinari, che puoi modificare. Seguire la sorgente autorizza il wiki di origine a sostituire le tue modifiche alla prossima sincronizzazione.',
     'ADMIN_LISTS_ORIGIN_BADGE' => 'Importato',

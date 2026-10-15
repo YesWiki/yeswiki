@@ -136,7 +136,7 @@ class TranslationCoverageTest extends YesWikiTestCase
         $this->assertNotFalse($row, 'a half-translated list is a list with work left on it');
         $this->assertSame(1, $row['languages']['en']['done']);
         $this->assertSame(2, $row['languages']['en']['wanted'], 'the list title and its one value');
-        $this->assertStringContainsString('admin/lists', $row['languages']['en']['href']);
+        $this->assertStringContainsString('dashboard/lists', $row['languages']['en']['href']);
         $this->assertStringContainsString('listid=' . self::LIST_ID, $row['languages']['en']['href']);
         $this->assertStringContainsString('editlang=en', $row['languages']['en']['href']);
     }

@@ -1600,7 +1600,6 @@ Text of the column to be changed later
     'LIST_VALUE_COLOR' => 'Colour of this value',
     'DASHBOARD_LISTS' => 'Value lists',
     'DASHBOARD_LISTS_INTRO' => 'The vocabularies this wiki\'s forms choose from.',
-    'ADMIN_LISTS_INTRO' => 'A value list is form vocabulary: the options a choice field offers, and the colour and icon each value carries wherever it is drawn.',
     'ADMIN_LISTS_IMPORTED' => 'Lists copied from another wiki',
     'ADMIN_LISTS_IMPORTED_HINT' => 'These are ordinary lists you may edit. Following one lets the wiki it came from replace your edits on the next sync.',
     'ADMIN_LISTS_ORIGIN_BADGE' => 'Imported',

@@ -890,7 +890,6 @@ U hebt versie %{CURRENTPHPVERSION}.
     'LIST_VALUE_COLOR' => 'Kleur van deze waarde',
     'DASHBOARD_LISTS' => 'Waardelijsten',
     'DASHBOARD_LISTS_INTRO' => 'De woordenschat waaruit de formulieren van deze wiki putten.',
-    'ADMIN_LISTS_INTRO' => 'Een waardelijst is de woordenschat van de formulieren: de keuzes die een veld aanbiedt, en de kleur en het pictogram die elke waarde overal draagt waar ze wordt getoond.',
     'ADMIN_LISTS_IMPORTED' => 'Lijsten gekopieerd van een andere wiki',
     'ADMIN_LISTS_IMPORTED_HINT' => 'Dit zijn gewone lijsten, die u kunt wijzigen. Door de bron te volgen laat u toe dat de oorspronkelijke wiki uw wijzigingen bij de volgende synchronisatie overschrijft.',
     'ADMIN_LISTS_ORIGIN_BADGE' => 'Geïmporteerd',

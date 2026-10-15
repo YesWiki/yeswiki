@@ -712,8 +712,19 @@ a.yw-item__title:focus-visible {
 }
 
 .list-form .list-node .btn-expand {
+  color: var(--yw-text);
   width: 2.5rem;
   justify-content: center;
+}
+
+.list-form .list-node .btn-danger {
+  color: var(--yw-danger);
+}
+
+.list-form .list-node .btn-danger:hover,
+.list-form .list-node .btn-danger:focus-visible {
+  background: var(--yw-danger);
+  color: var(--yw-on-danger);
 }
 
 .list-form .list-node-children:not(.root) {

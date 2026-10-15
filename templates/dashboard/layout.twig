@@ -40,7 +40,6 @@
     admin: true,
     items: [
       { route: 'admin/content',       icon: 'file',        label: _t('DASHBOARD_ADMIN_CONTENT') },
-      { route: 'admin/lists',         icon: 'list',        label: _t('DASHBOARD_ADMIN_LISTS') },
       { route: 'admin/files',         icon: 'paperclip',   label: _t('DASHBOARD_ADMIN_FILES') },
       { route: 'admin/users',         icon: 'user',        label: _t('DASHBOARD_ADMIN_USERS') },
       { route: 'admin/groups',        icon: 'users',       label: _t('DASHBOARD_ADMIN_GROUPS') },
@@ -66,6 +65,15 @@
   }
 ] %}
 
+{% set current_route = '' %}
+{% for section in sections %}
+  {% for item in section.items %}
+    {% if (item.route == current or current starts with item.route ~ '/') and item.route|length > current_route|length %}
+      {% set current_route = item.route %}
+    {% endif %}
+  {% endfor %}
+{% endfor %}
+
 <div class="yw-dashboard">
   <nav class="yw-dashboard__sidebar" aria-label="{{ _t('DASHBOARD_TITLE') }}">
     {% for section in sections %}
@@ -73,7 +81,7 @@
         <h2 class="yw-dashboard__section">{{ section.label }}</h2>
         <ul class="yw-dashboard__nav">
           {% for item in section.items %}
-            {% set here = item.route == current or current starts with item.route ~ '/' %}
+            {% set here = item.route == current_route %}
             <li>
               <a class="yw-dashboard__link{{ here ? ' yw-dashboard__link--current' : '' }}"
                  href="{{ url({ tag: item.route }) }}"

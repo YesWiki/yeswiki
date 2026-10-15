@@ -498,7 +498,6 @@ return [
     'LIST_VALUE_COLOR' => 'Cor deste valor',
     'DASHBOARD_LISTS' => 'Listas de valores',
     'DASHBOARD_LISTS_INTRO' => 'Os vocabulários nos quais os formulários deste wiki vão buscar os seus valores.',
-    'ADMIN_LISTS_INTRO' => 'Uma lista de valores é o vocabulário dos formulários: as escolhas que um campo propõe, e a cor e o ícone que cada valor leva consigo onde quer que seja apresentado.',
     'ADMIN_LISTS_IMPORTED' => 'Listas copiadas de outro wiki',
     'ADMIN_LISTS_IMPORTED_HINT' => 'São listas comuns, que pode alterar. Seguir a fonte autoriza o wiki de origem a substituir as suas alterações na próxima sincronização.',
     'ADMIN_LISTS_ORIGIN_BADGE' => 'Importada',

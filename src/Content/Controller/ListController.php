@@ -66,7 +66,7 @@ class ListController extends YesWikiController
     }
 
     /**
-     * Every way into this controller says who it is for, because the *screen* no longer does: it used to sit behind `/admin/lists` and the route's `@admins` was the only check anywhere -- creating, importing and deleting a list asked nothing at all.
+     * Every way into this controller says who it is for, because the *screen* no longer does: it used to sit behind an `@admins` route that was the only check anywhere -- creating, importing and deleting a list asked nothing at all.
      */
     private function refusal(): string
     {
