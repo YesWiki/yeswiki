@@ -44,7 +44,11 @@ class RawHandler extends YesWikiHandler implements RegisteredHandler
         }
     }
 
-    /** The wiki markup of a page, or the whole body as JSON for Content types without prose (entries). */
+    /**
+     * A page's wiki markup, or an entry's whole body as JSON.
+     *
+     * @param array<string, mixed> $body
+     */
     public static function text(array $body): string
     {
         return array_key_exists(PageBody::CONTENT, $body) ? PageBody::content($body) : PageBody::encode($body);
