@@ -3000,6 +3000,7 @@ img.popup-visual {
 
 .yw-entry-form .form-actions > div {
   display: flex;
+  align-items: baseline;
   gap: var(--yw-space-sm-x);
 }
 

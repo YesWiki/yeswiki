@@ -1787,6 +1787,7 @@ td.users-table-break-word {
 }
 
 .yw-btn--quiet {
+  vertical-align: baseline;
   color: var(--yw-text-muted);
   font-weight: normal;
   background: none;
