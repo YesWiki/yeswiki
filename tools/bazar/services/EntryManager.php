@@ -270,6 +270,7 @@ class EntryManager
         $this->refuseTagOfAnExistingPage($data['id_fiche'] ?? null);
 
         $form = $this->wiki->services->get(FormManager::class)->getOne($data['id_typeannonce']);
+        $this->refuseExternalForm($form);
 
         $data = $this->assignRestrictedFields($data, [], $form);
 
@@ -356,6 +357,16 @@ class EntryManager
     }
 
     /**
+     * A form fetched from another wiki is for display only: its fields are not ours to trust.
+     */
+    private function refuseExternalForm(?array $form): void
+    {
+        if (!empty($form['_isExternal_'])) {
+            throw new \Exception(_t('BAZ_EXTERNAL_FORM_READ_ONLY'));
+        }
+    }
+
+    /**
      * Update an entry with the provided data.
      *
      * @param false $semantic
@@ -379,6 +390,7 @@ class EntryManager
         $data['id_typeannonce'] = $previousData['id_typeannonce'];
 
         $form = $this->wiki->services->get(FormManager::class)->getOne($data['id_typeannonce']);
+        $this->refuseExternalForm($form);
 
         $data = $this->assignRestrictedFields($data, $previousData, $form);
 

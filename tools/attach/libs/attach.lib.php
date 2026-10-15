@@ -5,6 +5,7 @@
 use stefangabos\Zebra_Image\Zebra_Image;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Core\Controller\CsrfTokenController;
+use YesWiki\Core\Service\ExecutableFilename;
 use YesWiki\Core\Service\HtmlPurifierService;
 use YesWiki\Core\Service\LinkTracker;
 use YesWiki\Security\Controller\SecurityController;
@@ -189,7 +190,7 @@ if (!class_exists('attach')) {
             // decompose le nom du fichier en nom+extension ou en page/nom+extension
             if (preg_match('`^((.+)/)?(.*)\.(.*)$`', str_replace(' ', '_', $this->file), $match)) {
                 list(, , $file['page'], $file['name'], $file['ext']) = $match;
-                if (!$this->isPicture() && !$this->isAudio() && !$this->isVideo() && !$this->isFreeMindMindMap() && !$this->isWma() && !$this->isFlashvideo()) {
+                if (ExecutableFilename::matches('x.' . $file['ext']) || (!$this->isPicture() && !$this->isAudio() && !$this->isVideo() && !$this->isFreeMindMindMap() && !$this->isWma() && !$this->isFlashvideo())) {
                     $file['ext'] .= '_';
                 }
             } else {

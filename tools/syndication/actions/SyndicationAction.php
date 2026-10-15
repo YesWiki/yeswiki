@@ -4,6 +4,7 @@ use League\HTMLToMarkdown\HtmlConverter;
 use Tamtamchik\SimpleFlash\Flash;
 use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Bazar\Service\SearchManager;
+use YesWiki\Core\Service\ExecutableFilename;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Syndication\Service\SafeFile;
 
@@ -242,8 +243,12 @@ class SyndicationAction extends YesWikiAction
         } catch (Throwable $error) {
             return '';
         }
-        $t = explode('/', $sourceUrl);
-        $fileName = array_pop($t);
+        $fileName = basename((string)parse_url($sourceUrl, PHP_URL_PATH));
+        $fileName = preg_replace('/[^A-Za-z0-9._-]/', '_', $fileName);
+        $imageExtensions = $this->params->get('attach_config')['ext_images'] ?? '';
+        if (ExecutableFilename::matches($fileName) || !preg_match("/\\.($imageExtensions)\$/i", $fileName)) {
+            return '';
+        }
         $destFile = sha1($sourceUrl) . '_' . $fileName;
         $destPath = 'files/' . $destFile;
         if (!file_exists($destPath) || (file_exists($destPath) && $replaceExisting)) {

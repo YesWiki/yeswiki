@@ -9,6 +9,7 @@ use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Bazar\Service\Guard;
 use YesWiki\Core\Service\AssetsManager;
 use YesWiki\Core\Service\EventDispatcher;
+use YesWiki\Core\Service\ExecutableFilename;
 use YesWiki\Core\Service\HtmlPurifierService;
 use YesWiki\Core\Service\StringUtilService;
 use YesWiki\Security\Controller\SecurityController;
@@ -174,7 +175,7 @@ class FileField extends BazarField
             $pathinfo = pathinfo($filePath);
             $extension = strtolower($pathinfo['extension']);
             $extension = preg_replace('/_$/', '', $extension);
-            if ($extension != '' && in_array($extension, array_keys($params->get('authorized-extensions')))) {
+            if ($extension != '' && !ExecutableFilename::matches("x.$extension") && in_array($extension, array_keys($params->get('authorized-extensions')))) {
                 if (!file_exists($filePath)) {
                     if ($_FILES[$this->propertyName]['size'] > $this->maxSize) {
                         throw new \Exception(_t('BAZ_FILEFIELD_TOO_LARGE_FILE', ['fileMaxSize' => $this->maxSize]));

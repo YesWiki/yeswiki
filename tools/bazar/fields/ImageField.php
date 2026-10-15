@@ -6,6 +6,7 @@ use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Tamtamchik\SimpleFlash\Flash;
 use YesWiki\Core\Service\AssetsManager;
+use YesWiki\Core\Service\ExecutableFilename;
 use YesWiki\Security\Controller\SecurityController;
 
 /**
@@ -285,6 +286,9 @@ class ImageField extends FileField
 
     protected function isImage($fileName)
     {
+        if (ExecutableFilename::matches($fileName)) {
+            return false;
+        }
         $imageExtPreg = $this->getService(ParameterBagInterface::class)->get('attach_config')['ext_images'];
 
         return preg_match("/($imageExtPreg)\$/i", $fileName);
