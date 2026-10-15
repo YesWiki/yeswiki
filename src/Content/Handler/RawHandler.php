@@ -38,9 +38,15 @@ class RawHandler extends YesWikiHandler implements RegisteredHandler
             }
             header('Content-type: text/plain; charset=' . YW_CHARSET);
 
-            echo PageBody::content($this->getService(PageContext::class)->getPage()['body']);
+            echo self::text($this->getService(PageContext::class)->getPage()['body']);
         } else {
             return;
         }
+    }
+
+    /** The wiki markup of a page, or the whole body as JSON for Content types without prose (entries). */
+    public static function text(array $body): string
+    {
+        return array_key_exists(PageBody::CONTENT, $body) ? PageBody::content($body) : PageBody::encode($body);
     }
 }
