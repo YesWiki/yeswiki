@@ -95,11 +95,11 @@ function openListEditorModal(title, url, expectedMsg, onDone) {
   window.addEventListener('message', onMessage)
 }
 
-function listActionButton(iconClass, onClick) {
+function listActionButton(icon, label, onClick) {
   const button = document.createElement('button')
   button.type = 'button'
   button.className = 'yw-btn yw-btn--sm yw-btn--primary'
-  button.innerHTML = `<i class="fa ${iconClass}"></i>`
+  button.innerHTML = `<svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#${icon}"/></svg> ${label}`
   button.addEventListener('click', onClick)
   return button
 }
@@ -118,7 +118,7 @@ export function enumEditorSetup(api) {
   const row = api.getRow('linked_object')
   if (!row) return
 
-  const editButton = listActionButton('fa-pen', () => {
+  const editButton = listActionButton('pencil', _t('LIST_UPDATE_TITLE'), () => {
     const listId = api.getValue('linked_object')
     openListEditorModal(
       _t('LIST_UPDATE_TITLE'),
@@ -133,7 +133,7 @@ export function enumEditorSetup(api) {
     )
   })
 
-  const createButton = listActionButton('fa-plus', () => {
+  const createButton = listActionButton('plus', _t('LIST_CREATE_TITLE'), () => {
     openListEditorModal(
       _t('LIST_CREATE_TITLE'),
       wiki.url(

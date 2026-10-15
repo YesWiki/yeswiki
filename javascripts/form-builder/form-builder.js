@@ -435,7 +435,10 @@ function initRail() {
     .querySelector('[data-fb-close-rail]')
     .addEventListener('click', () => showRail(false))
   document.querySelectorAll('[data-yw-fb-open]').forEach((button) => {
-    button.addEventListener('click', () => showRail(true))
+    button.addEventListener('click', () => {
+      closeSettings()
+      showRail(true)
+    })
   })
 }
 

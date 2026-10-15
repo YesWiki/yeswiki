@@ -104,6 +104,8 @@ class ArchitectureTest extends TestCase
         // rooted at. `core:create-instance` makes the directory, its data folders and its entry
         // points; everything it writes is the thing Storage would need to already exist.
         'Kernel/Command/CreateInstanceCommand.php',
+        'Kernel/Command/ConvertToInstanceCommand.php',
+        'Kernel/Service/InstanceEntryPoints.php',
     ];
 
     /**

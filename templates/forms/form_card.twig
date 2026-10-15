@@ -8,6 +8,7 @@
         }[form.contentType]|default('briefcase')) }}</span>
       {% endif %}
       <a href="{{ url({ tag: form.tag }) }}">{{ form.title }}</a>
+      <span class="form-card__id">({{ key }})</span>
     </h3>
     {% if form.description %}<p class="form-card__description">{{ form.description }}</p>{% endif %}
 

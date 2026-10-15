@@ -7,6 +7,7 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use YesWiki\Kernel\Service\InstanceEntryPoints;
 
 /**
  * Provision a new farm Instance folder: an index.php pointing at this YesWiki Program tree, plus the instance data folders.
@@ -69,32 +70,12 @@ class CreateInstanceCommand extends Command implements RunsOutsideAnInstance
 
         $path = realpath($path) ?: $path;
 
-        $programDir = var_export(YESWIKI_PROGRAM_DIR, true);
-        $indexContent = <<<PHP
-            <?php
-
-            define('YESWIKI_PROGRAM_DIR', $programDir);
-            putenv('YESWIKI_CONFIG_FILE=' . __DIR__ . '/yeswiki.config.php');
-            require YESWIKI_PROGRAM_DIR . '/index.php';
-
-            PHP;
-
-        if (file_put_contents($path . '/index.php', $indexContent) === false) {
-            $output->writeln("<error>Could not write $path/index.php</error>");
+        $error = InstanceEntryPoints::write($path, YESWIKI_PROGRAM_DIR);
+        if ($error !== null) {
+            $output->writeln("<error>$error</error>");
 
             return Command::FAILURE;
         }
-
-        foreach (['cache', 'custom', 'files', 'private'] as $dataFolder) {
-            if (!is_dir($path . '/' . $dataFolder)) {
-                @mkdir($path . '/' . $dataFolder, 0755, true);
-            }
-        }
-        if (!is_file($path . '/private/.htaccess') && is_file(YESWIKI_PROGRAM_DIR . '/private/.htaccess')) {
-            @copy(YESWIKI_PROGRAM_DIR . '/private/.htaccess', $path . '/private/.htaccess');
-        }
-
-        $this->writeConsoleWrapper($path);
 
         $output->writeln("<info>Instance created in $path</info>");
         $output->writeln('Next steps:');
@@ -105,23 +86,5 @@ class CreateInstanceCommand extends Command implements RunsOutsideAnInstance
         $output->writeln(" - run this wiki's own commands with <info>$path/yeswicli</info>");
 
         return Command::SUCCESS;
-    }
-
-    /** A `yeswicli` of its own in the new folder. */
-    private function writeConsoleWrapper(string $path): void
-    {
-        $console = YESWIKI_PROGRAM_DIR . '/src/commands/console';
-        $wrapper = <<<SH
-            #!/usr/bin/env bash
-            cd "\$(dirname "\${BASH_SOURCE[0]}")" || exit 1
-            export YESWIKI_INSTANCE_DIR="\$PWD"
-            export YESWIKI_CONFIG_FILE="\$PWD/yeswiki.config.php"
-            php {$console} "\$@"
-
-            SH;
-
-        if (file_put_contents($path . '/yeswicli', $wrapper) !== false) {
-            @chmod($path . '/yeswicli', 0755);
-        }
     }
 }

@@ -2917,6 +2917,11 @@ blockquote > cite {
   text-decoration: underline;
 }
 
+.form-card__id {
+  color: var(--yw-text-muted);
+  font-weight: normal;
+}
+
 .form-card__description {
   margin: var(--yw-space-sm-y) 0 0;
   color: var(--yw-text);
