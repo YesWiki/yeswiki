@@ -10,8 +10,8 @@ help: ## Outputs this help screen
 ## —— Project —————————————
 install: composer-install yarn-install version ## Install vendors
 
-version: ## Write .yeswiki-version from git describe, the version a checkout runs
-	@$(GIT) describe --tags > .yeswiki-version 2>/dev/null || rm -f .yeswiki-version
+version: ## Write .yeswiki-version, the version this checkout runs, named as yeswiki-build-repo names a build
+	@./binary/checkout-version.sh > .yeswiki-version 2>/dev/null || rm -f .yeswiki-version
 
 ## —— Composer ————————————
 composer-install: composer.lock ## Install Composer vendors according to the current composer.lock file

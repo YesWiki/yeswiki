@@ -1,7 +1,7 @@
 <?php
 
 /* Which YesWiki this Program is, read from its own composer.json (ADR-0029): the build injects "version" from the tag, */
-/* and a git checkout states it in .yeswiki-version, which `make install` writes from `git describe --tags`. */
+/* and a git checkout states it in .yeswiki-version, which `make install` writes the way yeswiki-build-repo names a build. */
 
 namespace YesWiki\Kernel\Service;
 
@@ -52,11 +52,11 @@ class ProgramVersion
         return self::$programManifest ??= (string)@file_get_contents((\defined('YESWIKI_PROGRAM_DIR') ? YESWIKI_PROGRAM_DIR : \dirname(__DIR__, 3)) . '/composer.json');
     }
 
-    /** What `make install` read from `git describe --tags` in a checkout, without its leading `v`, or null. */
+    /** What `make install` wrote for a checkout (binary/checkout-version.sh), or null. */
     private static function checkoutVersion(): ?string
     {
         $described = trim((string)@file_get_contents((\defined('YESWIKI_PROGRAM_DIR') ? YESWIKI_PROGRAM_DIR : \dirname(__DIR__, 3)) . '/' . self::CHECKOUT_VERSION_FILE));
 
-        return $described === '' ? null : ltrim($described, 'v');
+        return $described === '' ? null : $described;
     }
 }

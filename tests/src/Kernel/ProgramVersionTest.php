@@ -81,7 +81,7 @@ class ProgramVersionTest extends YesWikiTestCase
     {
         $described = trim((string)@file_get_contents(dirname(__DIR__, 3) . '/' . ProgramVersion::CHECKOUT_VERSION_FILE));
 
-        return $described === '' ? ProgramVersion::DEV : ltrim($described, 'v');
+        return $described === '' ? ProgramVersion::DEV : $described;
     }
 
     /** @param array<string, mixed> $manifest */
