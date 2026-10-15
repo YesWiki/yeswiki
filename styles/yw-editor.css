@@ -784,7 +784,7 @@ form:not(#ACEditor) .ace-container .ace_scroller {
   padding: var(--yw-space-md-y) var(--yw-space-md-x) !important;
 }
 
-.vditor-toolbar--pin {
+.vditor .vditor-toolbar--pin {
   top: var(--yw-sticky-toolbar-top);
   z-index: 9;
 }
