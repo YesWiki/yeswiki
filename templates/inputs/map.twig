@@ -18,16 +18,16 @@
     <label class="col-sm-3"></label>
     <div class="controls">
         {% if field.geolocate %}
-            <a class="yw-btn yw-btn--primary btn-geolocate">
+            <a class="yw-btn btn-geolocate">
                 {{ _t('BAZ_GEOLOCATE') }}
             </a>
         {% endif %}
         {% if 'marker' in mapFieldData.chosenGeometries %}
-        <a class="yw-btn yw-btn--primary btn-geolocate-address">
+        <a class="yw-btn btn-geolocate-address">
             {{ _t('BAZ_VERIFIER_MON_ADRESSE') }}
         </a>
         {% endif %}
-        <a class="yw-btn yw-btn--primary btn-move-to-address">
+        <a class="yw-btn btn-move-to-address">
             {{ _t('BAZ_MOVE_TO_ADDRESS') }}
         </a>
         <input type="hidden" id="{{field.name}}_latitude" value="{{ latitude }}" class="yw-latitude-input" name="{{field.name}}[latitude]" />

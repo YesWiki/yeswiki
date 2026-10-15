@@ -2533,10 +2533,6 @@ label input.filter-checkbox:focus ~ span {
   border-bottom-right-radius: 0;
 }
 
-.file-or-url .image-url-input {
-  max-width: 15em;
-}
-
 .url-indicator {
   color: var(--yw-primary);
   margin-right: var(--yw-space-md-x);
@@ -2952,4 +2948,65 @@ img.popup-visual {
 .list-item-excerpt {
   display: block;
   color: var(--neutral-color);
+}
+
+.yw-entry-form {
+  max-width: 48rem;
+}
+
+.yw-entry-form .yw-form-group {
+  margin: 0 0 var(--yw-space-md-y);
+}
+
+.yw-entry-form .yw-form-group > .yw-form-label {
+  margin-bottom: var(--yw-space-sm-y);
+}
+
+.yw-entry-form .yw-input {
+  max-width: none;
+  padding: 0.45rem 0.65rem;
+  font-size: 0.95rem;
+}
+
+.yw-entry-form .yw-form-group.input-listedatedeb .controls > .input-group,
+.yw-entry-form .yw-form-group.input-listedatefin .controls > .input-group,
+.yw-entry-form .yw-form-group.input-jour .controls > .input-group {
+  width: auto;
+}
+
+.yw-entry-form .bazar-date.yw-input {
+  width: 10rem;
+}
+
+.yw-entry-form .select-allday.yw-input {
+  width: auto;
+}
+
+.yw-entry-form .geocode-input .controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--yw-space-sm-y) var(--yw-space-sm-x);
+}
+
+.yw-entry-form .geocode-input .yw-geolocation-map {
+  flex-basis: 100%;
+  max-width: 100%;
+  border-radius: var(--yw-radius-sm);
+}
+
+.yw-entry-form .form-actions > div {
+  display: flex;
+  gap: var(--yw-space-sm-x);
+}
+
+.yw-entry-form input[type='url'].yw-input {
+  padding-left: 2rem;
+}
+
+.yw-entry-form .file-or-url-input > .file-or-url {
+  flex: 1 1 auto;
+}
+
+.image-url-preview:empty {
+  display: none;
 }

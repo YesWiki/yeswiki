@@ -59,13 +59,13 @@ export default {
     <div class="yw-form-group input-group image" :title="config.hint">
       <addon-icon :config="config" v-if="config.icon"></addon-icon>
       <label v-if="config.label" class="yw-form-label">{{ config.label }}</label>
-      <div class="input-image">
+      <div class="yw-image-input">
         <button type="button" class="yw-btn yw-btn--sm" @click="choose"
                 v-if="!value && hasPicker">${wiki.lang.CHOOSE_AN_IMAGE}</button>
         <template v-if="value">
-          <img class="input-image__thumb" v-if="url" :src="url" :alt="value" :title="value" />
-          <span class="input-image__name" v-else v-text="value"></span>
-          <button type="button" class="yw-btn yw-btn--sm input-image__remove" @click="clear"
+          <img class="yw-image-input__thumb" v-if="url" :src="url" :alt="value" :title="value" />
+          <span class="yw-image-input__name" v-else v-text="value"></span>
+          <button type="button" class="yw-btn yw-btn--sm yw-image-input__remove" @click="clear"
                   title="${wiki.lang.REMOVE_IMAGE}">&times;</button>
         </template>
       </div>

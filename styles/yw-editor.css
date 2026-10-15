@@ -1121,7 +1121,7 @@ input[type='range'] {
   .config-cell
   input:not([type='checkbox']):not([type='radio']),
 #actions-builder-app .config-cell select,
-#actions-builder-app .config-cell .input-image {
+#actions-builder-app .config-cell .yw-image-input {
   width: 100%;
   max-width: 100%;
   min-width: 0;
@@ -1145,7 +1145,7 @@ input[type='range'] {
   opacity: 0.85;
 }
 
-.input-image {
+.yw-image-input {
   position: relative;
   display: flex;
   align-items: center;
@@ -1153,7 +1153,7 @@ input[type='range'] {
   width: 100%;
 }
 
-.input-image__thumb {
+.yw-image-input__thumb {
   display: block;
   width: 100%;
   max-height: 90px;
@@ -1162,7 +1162,7 @@ input[type='range'] {
   border-radius: var(--yw-radius-sm);
 }
 
-.input-image__name {
+.yw-image-input__name {
   flex: 1 1 auto;
   min-width: 0;
   overflow: hidden;
@@ -1172,7 +1172,7 @@ input[type='range'] {
   opacity: 0.8;
 }
 
-.input-image__remove {
+.yw-image-input__remove {
   position: absolute;
   top: 4px;
   right: 4px;

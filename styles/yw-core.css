@@ -1056,13 +1056,16 @@ input[type='url'] {
 }
 
 .file-or-url .yw-input {
-  flex: 1 1 16rem;
+  flex: 1 1 100%;
   min-width: 0;
 }
 
 .file-or-url .yw-form-label {
-  margin: 0;
-  white-space: nowrap;
+  flex-basis: 100%;
+  margin: 0 0 calc(-1 * var(--yw-space-sm-y));
+  font-size: 0.9em;
+  font-weight: normal;
+  color: var(--yw-text-muted);
 }
 
 .file-or-url [data-yw-file-picker-chosen] {
@@ -1772,6 +1775,11 @@ td.users-table-break-word {
   background: var(--yw-surface-raised);
   color: var(--yw-text);
   text-decoration: none;
+}
+
+.yw-btn[hidden],
+.btn[hidden] {
+  display: none;
 }
 
 .yw-btn:hover,
