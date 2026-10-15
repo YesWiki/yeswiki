@@ -8,7 +8,10 @@ help: ## Outputs this help screen
 	@grep -E '(^[a-zA-Z0-9_-]+:.*?##.*$$)|(^##)' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}{printf "\033[32m%-30s\033[0m %s\n", $$1, $$2}' | sed -e 's/\[32m##/[33m/'
 
 ## —— Project —————————————
-install: composer-install yarn-install ## Install vendors
+install: composer-install yarn-install version ## Install vendors
+
+version: ## Write .yeswiki-version from git describe, the version a checkout runs
+	@$(GIT) describe --tags > .yeswiki-version 2>/dev/null || rm -f .yeswiki-version
 
 ## —— Composer ————————————
 composer-install: composer.lock ## Install Composer vendors according to the current composer.lock file

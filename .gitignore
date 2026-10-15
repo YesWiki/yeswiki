@@ -38,6 +38,7 @@ robots.txt
 
 # YesWiki stuff
 .env
+.yeswiki-version
 .php-version
 *.config.php
 info.php

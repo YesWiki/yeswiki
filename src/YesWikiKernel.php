@@ -15,6 +15,7 @@ use YesWiki\Kernel\Performable\ActionRegistry;
 use YesWiki\Kernel\Service\ConfigurationFileProvider;
 use YesWiki\Kernel\Service\EnvironmentConfiguration;
 use YesWiki\Kernel\Service\LanguageService;
+use YesWiki\Kernel\Service\ProgramVersion;
 use YesWiki\Kernel\Service\StringUtilService;
 
 /** Owns the DI container build/compile/cache lifecycle for a Wiki instance. */
@@ -97,6 +98,7 @@ class YesWikiKernel extends Kernel
             $this->hashOf(__FILE__),
             $this->hashOf($this->getProjectDir() . '/composer.lock'),
             $this->hashOf($this->getProjectDir() . '/composer.json'),
+            $this->hashOf($this->getProjectDir() . '/' . ProgramVersion::CHECKOUT_VERSION_FILE),
         ];
 
         foreach (array_merge(['YESWIKI_CONFIG_FILE'], array_keys(EnvironmentConfiguration::knownEnvNames())) as $name) {

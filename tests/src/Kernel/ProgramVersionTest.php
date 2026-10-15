@@ -65,7 +65,7 @@ class ProgramVersionTest extends YesWikiTestCase
         $program = new ProgramVersion();
 
         $this->assertSame('ectoplasme', $program->releaseLine());
-        $this->assertSame('dev', $program->version());
+        $this->assertSame($this->checkoutVersion(), $program->version());
     }
 
     public function testTheServiceTheContainerHandsOutReadsTheProgram(): void
@@ -73,7 +73,15 @@ class ProgramVersionTest extends YesWikiTestCase
         $program = self::getWiki()->services->get(ProgramVersion::class);
 
         $this->assertSame('ectoplasme', $program->releaseLine());
-        $this->assertSame('dev', $program->version());
+        $this->assertSame($this->checkoutVersion(), $program->version());
+    }
+
+    /** What `make install` wrote for this checkout, or `dev` when it has not run. */
+    private function checkoutVersion(): string
+    {
+        $described = trim((string)@file_get_contents(dirname(__DIR__, 3) . '/' . ProgramVersion::CHECKOUT_VERSION_FILE));
+
+        return $described === '' ? ProgramVersion::DEV : ltrim($described, 'v');
     }
 
     /** @param array<string, mixed> $manifest */

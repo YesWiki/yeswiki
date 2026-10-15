@@ -1,12 +1,15 @@
 <?php
 
-/* Which YesWiki this Program is, read from its own composer.json (ADR-0029): the build injects "version" from the tag. */
+/* Which YesWiki this Program is, read from its own composer.json (ADR-0029): the build injects "version" from the tag, */
+/* and a git checkout states it in .yeswiki-version, which `make install` writes from `git describe --tags`. */
 
 namespace YesWiki\Kernel\Service;
 
 class ProgramVersion
 {
     public const DEV = 'dev';
+
+    public const CHECKOUT_VERSION_FILE = '.yeswiki-version';
 
     private static ?string $programManifest = null;
 
@@ -22,7 +25,7 @@ class ProgramVersion
         $line = $decoded['extra']['yeswiki']['release-line'] ?? null;
         $this->releaseLine = is_string($line) ? trim($line) : '';
 
-        $version = $decoded['version'] ?? null;
+        $version = $decoded['version'] ?? ($manifest === null ? self::checkoutVersion() : null);
         $this->version = is_string($version) && trim($version) !== '' ? trim($version) : self::DEV;
     }
 
@@ -47,5 +50,13 @@ class ProgramVersion
     private static function programManifest(): string
     {
         return self::$programManifest ??= (string)@file_get_contents((\defined('YESWIKI_PROGRAM_DIR') ? YESWIKI_PROGRAM_DIR : \dirname(__DIR__, 3)) . '/composer.json');
+    }
+
+    /** What `make install` read from `git describe --tags` in a checkout, without its leading `v`, or null. */
+    private static function checkoutVersion(): ?string
+    {
+        $described = trim((string)@file_get_contents((\defined('YESWIKI_PROGRAM_DIR') ? YESWIKI_PROGRAM_DIR : \dirname(__DIR__, 3)) . '/' . self::CHECKOUT_VERSION_FILE));
+
+        return $described === '' ? null : ltrim($described, 'v');
     }
 }
