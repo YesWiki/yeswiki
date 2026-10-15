@@ -6,6 +6,18 @@ export default {
     return {
       expanded: false,
       newNodeLabel: '',
+      labels: {
+        LIST_ADD_CHILD_NODE: _t('LIST_ADD_CHILD_NODE'),
+        LIST_ADD_NODE: _t('LIST_ADD_NODE'),
+        LIST_KEY: _t('LIST_KEY'),
+        LIST_TEXT: _t('LIST_TEXT'),
+        LIST_VALUE_COLOR: _t('LIST_VALUE_COLOR'),
+        MENU_ENTRY_ICON: _t('MENU_ENTRY_ICON'),
+        MENU_ENTRY_ICON_EMOJI: _t('MENU_ENTRY_ICON_EMOJI'),
+        MENU_ENTRY_ICON_FILE: _t('MENU_ENTRY_ICON_FILE'),
+        MENU_ENTRY_ICON_SOURCE: _t('MENU_ENTRY_ICON_SOURCE'),
+        MENU_ENTRY_ICON_SPRITE: _t('MENU_ENTRY_ICON_SPRITE'),
+      },
     }
   },
   methods: {
@@ -50,26 +62,26 @@ export default {
           <svg class="yw-icon" aria-hidden="true"><use :href="expanded ? 'src/assets/icons.svg#chevron-up' : 'src/assets/icons.svg#chevron-down'"/></svg>
         </button>
         <!-- Label -->
-        <input type="text" v-model="node.label" :placeholder="node.sourceLabel || '${_t('LIST_TEXT')}'"
+        <input type="text" v-model="node.label" :placeholder="node.sourceLabel || labels.LIST_TEXT"
               class="yw-input" :class="{ 'yw-translate-from__input': node.sourceLabel }" @keydown.enter.prevent />
         <!-- Id -->
         <div class="input-group-addon" >
-          ${_t('LIST_KEY')} :
+          {{ labels.LIST_KEY }} :
         </div>
-        <input type="text" v-model="node.id" placeholder="${_t('LIST_KEY')}" 
+        <input type="text" v-model="node.id" :placeholder="labels.LIST_KEY" 
               class="yw-input input-id" :class="{ error: !node.id }"
               @keydown.enter.prevent />
         <!-- The colour and the icon this value carries wherever it is drawn (ticket 64) -->
         <input type="color" v-model="node.color" class="yw-input input-color"
-               :title="'${_t('LIST_VALUE_COLOR')}'" />
+               :title="labels.LIST_VALUE_COLOR" />
         <select v-model="iconOf(node).source" class="yw-input input-icon-source"
-                :title="'${_t('MENU_ENTRY_ICON_SOURCE')}'">
-          <option value="sprite">${_t('MENU_ENTRY_ICON_SPRITE')}</option>
-          <option value="emoji">${_t('MENU_ENTRY_ICON_EMOJI')}</option>
-          <option value="file">${_t('MENU_ENTRY_ICON_FILE')}</option>
+                :title="labels.MENU_ENTRY_ICON_SOURCE">
+          <option value="sprite">{{ labels.MENU_ENTRY_ICON_SPRITE }}</option>
+          <option value="emoji">{{ labels.MENU_ENTRY_ICON_EMOJI }}</option>
+          <option value="file">{{ labels.MENU_ENTRY_ICON_FILE }}</option>
         </select>
         <input type="text" v-model="iconOf(node).value" class="yw-input input-icon"
-               :placeholder="'${_t('MENU_ENTRY_ICON')}'" @keydown.enter.prevent />
+               :placeholder="labels.MENU_ENTRY_ICON" @keydown.enter.prevent />
         <!-- Delete Icon -->
         <button type="button" @click="$emit('delete', node)" 
                 class="btn btn-danger btn-icon input-group-addon">
@@ -90,7 +102,7 @@ export default {
             <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#plus"/></svg>
           </button>
           <input type="text" v-model="newNodeLabel" 
-                 :placeholder="depth > 0 ? '${_t('LIST_ADD_CHILD_NODE')}' : '${_t('LIST_ADD_NODE')}'" 
+                 :placeholder="depth > 0 ? labels.LIST_ADD_CHILD_NODE : labels.LIST_ADD_NODE" 
                  class="yw-input" @keydown.enter.prevent="addChildNode" />
           
         </div>

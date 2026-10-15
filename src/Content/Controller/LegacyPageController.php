@@ -81,15 +81,18 @@ class LegacyPageController extends YesWikiController
     private function retiredPage(string $tag, string $method, Request $request): ?Response
     {
         $screen = RetiredPages::screenFor($tag);
-        if ($screen === null || !in_array($method, ['', 'show'], true) || $this->getService(PageManager::class)->getOne($tag) !== null) {
+        if ($screen === null || !in_array($method, ['', 'show', 'iframe'], true) || $this->getService(PageManager::class)->getOne($tag) !== null) {
             return null;
         }
         $query = $request->query;
         if (strcasecmp($tag, 'BazaR') === 0 && ($query->has('view') || $query->has('action') || $query->has('id') || $query->has('form_id'))) {
             $this->getService(CoreAssets::class)->register();
-            $content = $this->getService(ActionRunner::class)->action('bazar', ['showmenu' => '0']);
+            $content = (string)$this->getService(ActionRunner::class)->action('bazar', ['showmenu' => '0']);
+            $themeManager = $this->getService(ThemeManager::class);
 
-            return $this->toResponse($this->getService(ThemeManager::class)->renderPage((string)$content), $this->getService(BoostedNavigation::class));
+            return $method === 'iframe'
+                ? new Response($themeManager->renderIframe($content))
+                : $this->toResponse($themeManager->renderPage($content), $this->getService(BoostedNavigation::class));
         }
 
         return new Response('', Response::HTTP_FOUND, ['Location' => $this->getService(UrlFormatter::class)->href('', $screen[0], $screen[1], false)]);

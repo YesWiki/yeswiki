@@ -16,7 +16,7 @@ use YesWiki\Kernel\Service\AssetRegistry;
 use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\MarkdownFormatterService;
-use YesWiki\Render\Service\TemplateEngine;
+use YesWiki\Render\Service\ThemeManager;
 
 class IframeHandler extends YesWikiHandler implements RegisteredHandler
 {
@@ -41,6 +41,7 @@ class IframeHandler extends YesWikiHandler implements RegisteredHandler
         $this->entryController = $this->getService(EntryController::class);
         $this->favoritesManager = $this->getService(FavoritesManager::class);
         $output = '';
+        $bodyClass = 'yeswiki-iframe-body';
         if (!$this->getService(PageContext::class)->getPage()) {
             echo str_replace(
                 ['{beginLink}', '{endLink}'],
@@ -50,9 +51,7 @@ class IframeHandler extends YesWikiHandler implements RegisteredHandler
         } elseif ($this->getService(AclService::class)->hasAccess('read')) {
             $entryManager = $this->getService(EntryManager::class);
 
-            $output .= '<body class="yeswiki-iframe-body">' . "\n"
-                . '<div class="container">' . "\n"
-                . '<div class="yeswiki-page-widget page-widget page" ' . $this->getService(MarkdownFormatterService::class)->format('{{doubleclick iframe="1"}}')
+            $output .= '<div class="yeswiki-page-widget page-widget page" ' . $this->getService(MarkdownFormatterService::class)->format('{{doubleclick iframe="1"}}')
                 . '>' . "\n"
                 . Flash::display();
 
@@ -62,9 +61,8 @@ class IframeHandler extends YesWikiHandler implements RegisteredHandler
                 $output .= $this->renderWikiPage();
             }
         } else {
-            $output .= '<body class="yeswiki-iframe-body login-body">' . "\n"
-                . '<div class="container">' . "\n"
-                . '<div class="yeswiki-page-widget page-widget page" ' . $this->getService(MarkdownFormatterService::class)->format('{{doubleclick iframe="1"}}')
+            $bodyClass .= ' login-body';
+            $output .= '<div class="yeswiki-page-widget page-widget page" ' . $this->getService(MarkdownFormatterService::class)->format('{{doubleclick iframe="1"}}')
                 . '>' . "\n";
 
             if ($contenu = $this->getService(PageManager::class)->getOne('PageLogin')) {
@@ -84,11 +82,9 @@ class IframeHandler extends YesWikiHandler implements RegisteredHandler
         if ($this->getRequest()->query->get('edit') == '1') {
             $output .= $this->getService(MarkdownFormatterService::class)->format('{{editbar}}');
         }
-        $output .= '</div><!-- end .container -->' . "\n";
         $this->getService(AssetRegistry::class)->addJsFile('javascripts/vendor/iframe-resizer/iframeResizer.contentWindow.min.js');
 
-        return $this->getService(TemplateEngine::class)->renderHead()
-            . "<body>\n" . $output . "\n</body>\n</html>";
+        return $this->getService(ThemeManager::class)->renderIframe($output, $bodyClass);
     }
 
     /**

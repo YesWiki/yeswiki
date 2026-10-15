@@ -283,7 +283,7 @@ class YesWikiRuntime
             $request = $this->service(CurrentRequest::class)->get();
             $request->attributes->set('_controller', LegacyPageController::class);
             $request->attributes->set('_tag', $pageContext->getTag());
-            $request->attributes->set('_method', $pageContext->getMethod());
+            $request->attributes->set('_method', $pageContext->getRawMethod());
 
             $this->handleWithHttpKernel($request)->send();
 

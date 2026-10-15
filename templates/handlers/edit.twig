@@ -14,7 +14,7 @@
 
 {{ include_javascript('javascripts/unsaved-changes.js', false, true) }}
 
-<form id="ACEditor" name="ACEditor" enctype="multipart/form-data" hx-boost="false"
+<form id="ACEditor" class="yw-page-form" name="ACEditor" enctype="multipart/form-data" hx-boost="false"
       action="{{ url({ handler: handler, params: { editlang: editLanguage } }) }}" method="POST"
       data-yw-unsaved-guard>
 

@@ -406,6 +406,16 @@ class ThemeManager implements EventSubscriberInterface
         return $this->twig->createSquelette((string)$this->fileContent)->renderBlock('head');
     }
 
+    /** $content in a bare document with the wiki's head and none of the theme's chrome, for pages shown in an iframe. */
+    public function renderIframe(string $content, string $bodyClass = 'yeswiki-iframe-body'): string
+    {
+        $body = '<body class="' . $bodyClass . '">' . "\n"
+            . '<script>' . $this->container->get(CoreAssets::class)->pageStateScript() . '</script>' . "\n"
+            . '<div class="container">' . "\n" . Flash::display() . $content . "\n</div>\n</body>\n</html>";
+
+        return $this->renderHead() . $body;
+    }
+
     /** @return array<string, array<string, mixed>> */
     public function getTemplates(): array
     {

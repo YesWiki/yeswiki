@@ -15,7 +15,7 @@ use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\MarkdownFormatterService;
 use YesWiki\Render\Service\Performer;
-use YesWiki\Render\Service\TemplateEngine;
+use YesWiki\Render\Service\ThemeManager;
 
 class EditIframeHandler extends YesWikiHandler implements RegisteredHandler
 {
@@ -31,6 +31,7 @@ class EditIframeHandler extends YesWikiHandler implements RegisteredHandler
     public function run()
     {
         $output = '';
+        $bodyClass = 'yeswiki-iframe-body';
 
         if ($this->getService(AclService::class)->hasAccess('write') && $this->getService(AclService::class)->hasAccess('read')) {
             $passwordForEditingService = $this->getService(PasswordForEditingService::class);
@@ -56,15 +57,12 @@ class EditIframeHandler extends YesWikiHandler implements RegisteredHandler
             }
 
             $this->getService(AssetRegistry::class)->addJsFile('javascripts/bazar.js', true, true);
-            $output .= '<body class="yeswiki-iframe-body">' . "\n"
-                . '<div class="container">' . "\n"
-                . '<div class="yeswiki-page-widget page-widget page">' . "\n";
+            $output .= '<div class="yeswiki-page-widget page-widget page">' . "\n";
 
             $output .= $this->getService(UrlFormatter::class)->throughIframeHandler($buffer);
         } else {
-            $output = '<body class="yeswiki-iframe-body login-body">' . "\n"
-                . '<div class="container">' . "\n"
-                . '<div class="yeswiki-page-widget page-widget page" ' . $this->getService(MarkdownFormatterService::class)->format('{{doubleclick iframe="1"}}')
+            $bodyClass .= ' login-body';
+            $output = '<div class="yeswiki-page-widget page-widget page" ' . $this->getService(MarkdownFormatterService::class)->format('{{doubleclick iframe="1"}}')
                 . '>' . "\n";
 
             if ($contenu = $this->getService(PageManager::class)->getOne('PageLogin')) {
@@ -84,10 +82,8 @@ class EditIframeHandler extends YesWikiHandler implements RegisteredHandler
         if (isset($_GET['edit']) && $_GET['edit'] == '1') {
             $output .= $this->getService(MarkdownFormatterService::class)->format('{{editbar}}');
         }
-        $output .= '</div><!-- end .container -->' . "\n";
         $this->getService(AssetRegistry::class)->addJsFile('javascripts/vendor/iframe-resizer/iframeResizer.contentWindow.min.js');
 
-        return $this->getService(TemplateEngine::class)->renderHead()
-            . "<body>\n" . $output . "\n</body>\n</html>";
+        return $this->getService(ThemeManager::class)->renderIframe($output, $bodyClass);
     }
 }

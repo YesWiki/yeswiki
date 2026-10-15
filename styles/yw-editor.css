@@ -1811,3 +1811,13 @@ input[type='range'] {
   width: 0.9rem;
   height: 0.9rem;
 }
+
+.yw-page-form > .yw-form-group {
+  max-width: 48rem;
+}
+
+.yw-page-form > .yw-form-group .yw-input {
+  max-width: none;
+  padding: 0.45rem 0.65rem;
+  font-size: 0.95rem;
+}
