@@ -2927,7 +2927,7 @@ blockquote > cite {
 
 .form-card__title {
   display: flex;
-  align-items: center;
+  align-items: baseline;
   gap: var(--yw-space-sm-x);
   margin: 0;
   font-size: 1.05rem !important;
@@ -2953,6 +2953,8 @@ blockquote > cite {
   color: var(--yw-text-muted);
   font-weight: normal;
   white-space: nowrap;
+  font-size: 0.75em;
+  font-weight: bold;
 }
 
 .form-card__description {
