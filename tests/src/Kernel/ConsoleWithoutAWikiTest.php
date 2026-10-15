@@ -181,31 +181,33 @@ class ConsoleWithoutAWikiTest extends YesWikiTestCase
         $this->assertFileExists($backup . '/extensions/helloworld', 'a shipped extension goes to the backup');
     }
 
-    /** From the shared program, --wiki names the wiki; a dry run and a run without --yes change nothing. */
-    public function testItConvertsAFullInstallFromTheProgram(): void
+    /** Run in the wiki, named after the shared program; a dry run and a run without --yes change nothing. */
+    public function testItConvertsTheWikiItRunsIn(): void
     {
         $folder = sys_get_temp_dir() . '/yeswiki-convert-test-' . getmypid();
         $wiki = $folder . '/wiki';
         $backup = $folder . '/backup';
+        $program = escapeshellarg(\YESWIKI_PROGRAM_DIR);
         try {
             $this->fullInstall($wiki);
 
-            [$dryRun, $dryStatus] = $this->console($folder, 'core:convert-to-instance --wiki=wiki --dry-run --backup=' . escapeshellarg($backup));
+            [$dryRun, $dryStatus] = $this->console($wiki, "core:convert-to-instance $program --dry-run --backup=" . escapeshellarg($backup));
             $this->assertSame(0, $dryStatus, $dryRun);
+            $this->assertStringContainsString('Wiki to convert: ' . realpath($wiki), $dryRun);
             $this->assertStringContainsString('will move', $dryRun);
             $this->assertDirectoryExists($wiki . '/src', 'a dry run changes nothing');
             $this->assertDirectoryDoesNotExist($backup);
 
-            [$unconfirmed, $unconfirmedStatus] = $this->console($folder, 'core:convert-to-instance --wiki=wiki --backup=' . escapeshellarg($backup));
+            [$unconfirmed, $unconfirmedStatus] = $this->console($wiki, "core:convert-to-instance $program --backup=" . escapeshellarg($backup));
             $this->assertSame(1, $unconfirmedStatus, $unconfirmed);
             $this->assertStringContainsString('--yes', $unconfirmed);
             $this->assertDirectoryExists($wiki . '/src', 'nothing changes without a confirmation');
 
-            [$output, $status] = $this->console($folder, 'core:convert-to-instance --wiki=wiki --yes --backup=' . escapeshellarg($backup));
+            [$output, $status] = $this->console($wiki, "core:convert-to-instance $program --yes --backup=" . escapeshellarg($backup));
             $this->assertSame(0, $status, $output);
             $this->assertConverted($wiki, $backup);
 
-            [$again, $againStatus] = $this->console($folder, 'core:convert-to-instance --wiki=wiki --yes');
+            [$again, $againStatus] = $this->console($wiki, "core:convert-to-instance $program --yes");
             $this->assertSame(1, $againStatus, $again);
             $this->assertStringContainsString('already an instance', $again);
         } finally {
@@ -213,19 +215,19 @@ class ConsoleWithoutAWikiTest extends YesWikiTestCase
         }
     }
 
-    /** From the wiki itself, the argument names the shared program. */
-    public function testItConvertsAFullInstallFromTheWiki(): void
+    /** The backup stays inside the wiki, under private/, with the wiki's own rights. */
+    public function testTheBackupGoesUnderPrivateByDefault(): void
     {
         $folder = sys_get_temp_dir() . '/yeswiki-convert-test-' . getmypid();
         $wiki = $folder . '/wiki';
-        $backup = $folder . '/backup';
         try {
             $this->fullInstall($wiki);
 
-            [$output, $status] = $this->console($wiki, 'core:convert-to-instance ' . escapeshellarg(\YESWIKI_PROGRAM_DIR) . ' --yes --backup=' . escapeshellarg($backup));
+            [$output, $status] = $this->console($wiki, 'core:convert-to-instance ' . escapeshellarg(\YESWIKI_PROGRAM_DIR) . ' --yes');
             $this->assertSame(0, $status, $output);
-            $this->assertStringContainsString('Wiki to convert: ' . $wiki, $output);
-            $this->assertConverted($wiki, $backup);
+            $backups = glob($wiki . '/private/full-install-*') ?: [];
+            $this->assertCount(1, $backups, $output);
+            $this->assertConverted($wiki, $backups[0]);
         } finally {
             exec('rm -rf ' . escapeshellarg($folder));
         }
@@ -240,7 +242,7 @@ class ConsoleWithoutAWikiTest extends YesWikiTestCase
 
             [$output, $status] = $this->console($folder . '/wiki', 'core:convert-to-instance ../elsewhere --yes');
             $this->assertSame(1, $status, $output);
-            $this->assertStringContainsString('not a YesWiki program folder', $output);
+            $this->assertStringContainsString('not a YesWiki program this user can read', $output);
             $this->assertDirectoryExists($folder . '/wiki/src');
         } finally {
             exec('rm -rf ' . escapeshellarg($folder));
