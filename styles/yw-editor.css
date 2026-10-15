@@ -17,6 +17,11 @@
   border-radius: var(--yw-radius-sm) var(--yw-radius-sm) 0 0;
 }
 
+.aceditor-container .btn-toolbar .yw-btn {
+  padding: var(--yw-space-sm-y) 0.6rem;
+  font-size: 14px;
+}
+
 .ace-container {
   padding: var(--yw-space-md-y) var(--yw-space-md-x) var(--yw-space-md-y) 0;
 }
@@ -796,7 +801,7 @@ form:not(#ACEditor) .ace-container .ace_scroller {
 .vditor-toolbar__item > button.yw-btn {
   width: auto;
   height: auto;
-  padding: var(--yw-space-sm-y) var(--yw-space-md-x);
+  padding: var(--yw-space-sm-y) 0.6rem;
   border: var(--yw-border-width) solid var(--yw-border);
   background-color: var(--yw-surface-raised);
   color: var(--yw-text);

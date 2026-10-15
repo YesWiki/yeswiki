@@ -147,47 +147,101 @@ class ConsoleWithoutAWikiTest extends YesWikiTestCase
         }
     }
 
-    /** A wiki installed with its own copy of YesWiki becomes an instance of this program, its data and own extensions kept. */
-    public function testItConvertsAFullInstallIntoAnInstance(): void
+    /** A fake full install: its own copy of the program, data, an extension and a theme of its own, dotfiles and build tooling. */
+    private function fullInstall(string $wiki): void
+    {
+        foreach (['src/Kernel', 'vendor', 'extensions/helloworld', 'extensions/mine', 'themes/yeswiki', 'themes/montheme', 'files', 'custom', 'cache/container', '.git', 'node_modules', 'tests'] as $dir) {
+            mkdir($wiki . '/' . $dir, 0755, true);
+        }
+        copy(\YESWIKI_PROGRAM_DIR . '/composer.json', $wiki . '/composer.json');
+        file_put_contents($wiki . '/index.php', '<?php require "src/YesWikiInit.php";');
+        file_put_contents($wiki . '/yeswiki.config.php', '<?php $wakkaConfig = [];');
+        file_put_contents($wiki . '/files/photo.jpg', 'jpg');
+        file_put_contents($wiki . '/google123.html', 'verification');
+        file_put_contents($wiki . '/.htaccess', 'RewriteEngine on');
+        file_put_contents($wiki . '/.editorconfig', 'root = true');
+        file_put_contents($wiki . '/Makefile', 'test:');
+        file_put_contents($wiki . '/cache/container/compiled.php', '<?php');
+    }
+
+    private function assertConverted(string $wiki, string $backup): void
+    {
+        $this->assertStringContainsString(\YESWIKI_PROGRAM_DIR, (string)file_get_contents($wiki . '/index.php'));
+        $this->assertFileExists($wiki . '/yeswicli');
+        foreach (['yeswiki.config.php', 'files/photo.jpg', 'google123.html', '.htaccess'] as $kept) {
+            $this->assertFileExists($wiki . '/' . $kept, "$kept stays with the wiki");
+        }
+        $this->assertDirectoryExists($wiki . '/custom/extensions/mine', 'an extension the program lacks stays with the wiki');
+        $this->assertDirectoryExists($wiki . '/custom/themes/montheme', 'so does a theme');
+        $this->assertDirectoryDoesNotExist($wiki . '/cache/container');
+        foreach (['src', 'vendor', 'extensions', 'themes', 'composer.json', '.git', '.editorconfig', 'node_modules', 'tests', 'Makefile'] as $replaced) {
+            $this->assertFileDoesNotExist($wiki . '/' . $replaced, "$replaced leaves the wiki");
+            $this->assertFileExists($backup . '/' . $replaced, "$replaced goes to the backup");
+        }
+        $this->assertFileExists($backup . '/extensions/helloworld', 'a shipped extension goes to the backup');
+    }
+
+    /** From the shared program, --wiki names the wiki; a dry run and a run without --yes change nothing. */
+    public function testItConvertsAFullInstallFromTheProgram(): void
     {
         $folder = sys_get_temp_dir() . '/yeswiki-convert-test-' . getmypid();
         $wiki = $folder . '/wiki';
         $backup = $folder . '/backup';
         try {
-            foreach (['src/Kernel', 'vendor', 'extensions/helloworld', 'extensions/mine', 'themes/yeswiki', 'themes/montheme', 'files', 'custom', 'cache/container'] as $dir) {
-                mkdir($wiki . '/' . $dir, 0755, true);
-            }
-            copy(\YESWIKI_PROGRAM_DIR . '/composer.json', $wiki . '/composer.json');
-            file_put_contents($wiki . '/index.php', '<?php require "src/YesWikiInit.php";');
-            file_put_contents($wiki . '/yeswiki.config.php', '<?php $wakkaConfig = [];');
-            file_put_contents($wiki . '/files/photo.jpg', 'jpg');
-            file_put_contents($wiki . '/google123.html', 'verification');
-            file_put_contents($wiki . '/cache/container/compiled.php', '<?php');
+            $this->fullInstall($wiki);
 
-            [$dryRun, $dryStatus] = $this->console($folder, 'core:convert-to-instance wiki --dry-run --backup=' . escapeshellarg($backup));
+            [$dryRun, $dryStatus] = $this->console($folder, 'core:convert-to-instance --wiki=wiki --dry-run --backup=' . escapeshellarg($backup));
             $this->assertSame(0, $dryStatus, $dryRun);
+            $this->assertStringContainsString('will move', $dryRun);
             $this->assertDirectoryExists($wiki . '/src', 'a dry run changes nothing');
             $this->assertDirectoryDoesNotExist($backup);
 
-            [$output, $status] = $this->console($folder, 'core:convert-to-instance wiki --backup=' . escapeshellarg($backup));
-            $this->assertSame(0, $status, $output);
-            $this->assertStringContainsString(\YESWIKI_PROGRAM_DIR, (string)file_get_contents($wiki . '/index.php'));
-            $this->assertFileExists($wiki . '/yeswicli');
-            $this->assertFileExists($wiki . '/yeswiki.config.php');
-            $this->assertFileExists($wiki . '/files/photo.jpg');
-            $this->assertFileExists($wiki . '/google123.html');
-            $this->assertDirectoryExists($wiki . '/custom/extensions/mine', 'an extension the program lacks stays with the wiki');
-            $this->assertDirectoryExists($wiki . '/custom/themes/montheme', 'so does a theme');
-            $this->assertDirectoryDoesNotExist($wiki . '/cache/container');
-            foreach (['src', 'vendor', 'extensions', 'themes', 'composer.json'] as $replaced) {
-                $this->assertFileDoesNotExist($wiki . '/' . $replaced);
-                $this->assertFileExists($backup . '/' . $replaced);
-            }
-            $this->assertFileExists($backup . '/extensions/helloworld', 'a shipped extension goes to the backup');
+            [$unconfirmed, $unconfirmedStatus] = $this->console($folder, 'core:convert-to-instance --wiki=wiki --backup=' . escapeshellarg($backup));
+            $this->assertSame(1, $unconfirmedStatus, $unconfirmed);
+            $this->assertStringContainsString('--yes', $unconfirmed);
+            $this->assertDirectoryExists($wiki . '/src', 'nothing changes without a confirmation');
 
-            [$again, $againStatus] = $this->console($folder, 'core:convert-to-instance wiki');
+            [$output, $status] = $this->console($folder, 'core:convert-to-instance --wiki=wiki --yes --backup=' . escapeshellarg($backup));
+            $this->assertSame(0, $status, $output);
+            $this->assertConverted($wiki, $backup);
+
+            [$again, $againStatus] = $this->console($folder, 'core:convert-to-instance --wiki=wiki --yes');
             $this->assertSame(1, $againStatus, $again);
             $this->assertStringContainsString('already an instance', $again);
+        } finally {
+            exec('rm -rf ' . escapeshellarg($folder));
+        }
+    }
+
+    /** From the wiki itself, the argument names the shared program. */
+    public function testItConvertsAFullInstallFromTheWiki(): void
+    {
+        $folder = sys_get_temp_dir() . '/yeswiki-convert-test-' . getmypid();
+        $wiki = $folder . '/wiki';
+        $backup = $folder . '/backup';
+        try {
+            $this->fullInstall($wiki);
+
+            [$output, $status] = $this->console($wiki, 'core:convert-to-instance ' . escapeshellarg(\YESWIKI_PROGRAM_DIR) . ' --yes --backup=' . escapeshellarg($backup));
+            $this->assertSame(0, $status, $output);
+            $this->assertStringContainsString('Wiki to convert: ' . $wiki, $output);
+            $this->assertConverted($wiki, $backup);
+        } finally {
+            exec('rm -rf ' . escapeshellarg($folder));
+        }
+    }
+
+    public function testItRefusesAProgramPathThatIsNotAProgram(): void
+    {
+        $folder = sys_get_temp_dir() . '/yeswiki-convert-test-' . getmypid();
+        try {
+            $this->fullInstall($folder . '/wiki');
+            mkdir($folder . '/elsewhere', 0755, true);
+
+            [$output, $status] = $this->console($folder . '/wiki', 'core:convert-to-instance ../elsewhere --yes');
+            $this->assertSame(1, $status, $output);
+            $this->assertStringContainsString('not a YesWiki program folder', $output);
+            $this->assertDirectoryExists($folder . '/wiki/src');
         } finally {
             exec('rm -rf ' . escapeshellarg($folder));
         }

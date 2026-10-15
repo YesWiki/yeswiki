@@ -19,8 +19,10 @@
   {{ botGuardFields|default('')|raw }}
   <div class="form-actions yw-form-group">
     <div class="col-sm-9 col-sm-offset-3">
-      <button type="submit" name="valider" value="1" class="yw-btn yw-btn--primary">{{ _t('BAZ_VALIDER') }}</button>
-      <a class="yw-btn" href="{{ cancelUrl }}">{{ _t('BAZ_ANNULER') }}</a>
+      <button type="submit" name="valider" value="1" class="yw-btn yw-btn--primary">{{ _t('BAZ_SAVE') }}</button>
+      {% if entryId %}
+        <a class="yw-btn yw-btn--sm yw-btn--quiet" href="{{ cancelUrl }}">{{ _t('BAZ_ANNULER') }}</a>
+      {% endif %}
     </div>
   </div>
   <input name="form_id" value="{{ form.id }}" type="hidden">

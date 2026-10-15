@@ -1786,6 +1786,20 @@ td.users-table-break-word {
   text-decoration: none;
 }
 
+.yw-btn--quiet {
+  color: var(--yw-text-muted);
+  font-weight: normal;
+  background: none;
+  border-color: transparent;
+}
+
+.yw-btn--quiet:hover,
+.yw-btn--quiet:focus-visible {
+  color: var(--yw-text);
+  text-decoration: underline;
+  filter: none;
+}
+
 .yw-btn[hidden],
 .btn[hidden] {
   display: none;
