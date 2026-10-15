@@ -352,6 +352,7 @@ class ThemeManager implements EventSubscriberInterface
                 fn (string $flag): string => $this->container->get(LayoutService::class)->flag($flag) ? '1' : '0',
                 array_keys(LayoutService::FLAG_DEFAULTS)
             ),
+            $this->container->get(AssetRegistry::class)->revision(),
         ];
     }
 

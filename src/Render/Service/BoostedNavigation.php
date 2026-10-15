@@ -4,6 +4,7 @@ namespace YesWiki\Render\Service;
 
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Event\ResponseEvent;
 use YesWiki\Kernel\Service\CurrentRequest;
 use YesWiki\Kernel\Service\RequestScopedState;
 use YesWiki\Kernel\Service\RuntimeConfig;
@@ -77,6 +78,21 @@ class BoostedNavigation implements RequestScopedState
         $url ??= $this->request()?->getRequestUri() ?? '/';
 
         return new Response('', Response::HTTP_NO_CONTENT, ['HX-Redirect' => $url]);
+    }
+
+    /** A redirect htmx would otherwise follow inside the swap, keeping the page's JavaScript. */
+    public function redirectResponse(string $url): Response
+    {
+        return $this->isBoosted() ? $this->fullLoadResponse($url) : new Response('', Response::HTTP_FOUND, ['Location' => $url]);
+    }
+
+    /** kernel.response: a GET page rendered for another skeleton than the client's is loaded for real. */
+    public function onResponse(ResponseEvent $event): void
+    {
+        if ($event->isMainRequest() && $this->renderedAPage && $event->getRequest()->isMethod('GET')
+            && $this->isBoosted() && !$this->fingerprintMatches()) {
+            $event->setResponse($this->fullLoadResponse());
+        }
     }
 
     private function request(): ?Request

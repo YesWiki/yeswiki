@@ -57,6 +57,7 @@ use YesWiki\Kernel\Service\RuntimeConfig;
 use YesWiki\Kernel\Service\ThrowableFormatter;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Kernel\Service\WikiUrls;
+use YesWiki\Render\Service\BoostedNavigation;
 use YesWiki\Render\Service\TemplateEngine;
 use YesWiki\Render\Service\ThemeManager;
 
@@ -510,6 +511,7 @@ class YesWikiRuntime
             $eventDispatcher = $this->service(EventDispatcher::class);
             $eventDispatcher->addListener(KernelEvents::EXCEPTION, [$this, 'onDispatchException']);
             $eventDispatcher->addListener(KernelEvents::RESPONSE, [$this->service(HttpCacheHeaders::class), 'onResponse']);
+            $eventDispatcher->addListener(KernelEvents::RESPONSE, [$this->service(BoostedNavigation::class), 'onResponse']);
 
             $this->httpKernel = new HttpKernel(
                 $eventDispatcher,
@@ -557,9 +559,9 @@ class YesWikiRuntime
     {
         foreach (headers_list() as $header) {
             if (stripos($header, 'Location:') === 0) {
-                return new Response('', Response::HTTP_FOUND, [
-                    'Location' => trim(substr($header, strlen('Location:'))),
-                ]);
+                header_remove('Location');
+
+                return $this->service(BoostedNavigation::class)->redirectResponse(trim(substr($header, strlen('Location:'))));
             }
         }
 

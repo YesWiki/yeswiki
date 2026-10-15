@@ -154,7 +154,7 @@ class ConsoleWithoutAWikiTest extends YesWikiTestCase
         $wiki = $folder . '/wiki';
         $backup = $folder . '/backup';
         try {
-            foreach (['src/Kernel', 'vendor', 'extensions/lms', 'extensions/mine', 'themes/yeswiki', 'themes/montheme', 'files', 'custom', 'cache/container'] as $dir) {
+            foreach (['src/Kernel', 'vendor', 'extensions/helloworld', 'extensions/mine', 'themes/yeswiki', 'themes/montheme', 'files', 'custom', 'cache/container'] as $dir) {
                 mkdir($wiki . '/' . $dir, 0755, true);
             }
             copy(\YESWIKI_PROGRAM_DIR . '/composer.json', $wiki . '/composer.json');
@@ -183,7 +183,7 @@ class ConsoleWithoutAWikiTest extends YesWikiTestCase
                 $this->assertFileDoesNotExist($wiki . '/' . $replaced);
                 $this->assertFileExists($backup . '/' . $replaced);
             }
-            $this->assertFileExists($backup . '/extensions/lms', 'a shipped extension goes to the backup');
+            $this->assertFileExists($backup . '/extensions/helloworld', 'a shipped extension goes to the backup');
 
             [$again, $againStatus] = $this->console($folder, 'core:convert-to-instance wiki');
             $this->assertSame(1, $againStatus, $again);

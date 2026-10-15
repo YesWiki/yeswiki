@@ -243,6 +243,14 @@ class AssetRegistry implements RequestScopedState
         return $storage->exists($file) ? $storage->url($file) : '';
     }
 
+    /** What the asset URLs are keyed on: a page holding another one runs other JavaScript. */
+    public function revision(): string
+    {
+        return $this->publishToCache()
+            ? $this->assetsVersion()
+            : (string)$this->container->get(RuntimeConfig::class)->getValue('yeswiki_release', '');
+    }
+
     /** The release the instance is on, so a browser stops serving the last one's copy of a file. */
     private function busted(string $url, string $file): string
     {

@@ -3,7 +3,11 @@
 namespace YesWiki\Test\Render;
 
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Event\ResponseEvent;
+use Symfony\Component\HttpKernel\HttpKernelInterface;
 use YesWiki\Kernel\Service\CurrentRequest;
+use YesWiki\Kernel\Service\RuntimeConfig;
 use YesWiki\Render\Service\BoostedNavigation;
 use YesWiki\Render\Service\ThemeManager;
 use YesWiki\Test\Core\YesWikiTestCase;
@@ -77,9 +81,7 @@ class BoostedNavigationTest extends YesWikiTestCase
         $themeManager = $this->getWiki()->services->get(ThemeManager::class);
         $identity = $themeManager->layoutIdentity();
 
-        // Nine, plus the six flags saying how each placement draws its menu (ticket 64): leaving
-        // one out swaps a page under stale chrome.
-        $this->assertCount(15, $identity);
+        $this->assertCount(16, $identity);
         $this->assertNotSame('', $this->boosted()->fingerprint());
     }
 
@@ -178,5 +180,69 @@ class BoostedNavigationTest extends YesWikiTestCase
         $this->getWiki()->services->get(\YesWiki\Render\Service\TemplateEngine::class)->renderPage('<p>hi</p>');
 
         $this->assertTrue($this->boosted()->hasRenderedAPage());
+    }
+
+    /** A page loaded before an upgrade runs the old JavaScript, so its skeleton no longer matches. */
+    public function testAnUpgradeChangesTheFingerprint(): void
+    {
+        $config = $this->getWiki()->services->get(RuntimeConfig::class);
+        $release = $config->getValue('yeswiki_release');
+        $before = $this->boosted()->fingerprint();
+        try {
+            $config['yeswiki_release'] = 'a-release-nobody-has-' . uniqid();
+            $this->assertNotSame($before, $this->boosted()->fingerprint());
+        } finally {
+            $config['yeswiki_release'] = $release;
+        }
+    }
+
+    public function testABoostedRedirectBecomesAFullLoad(): void
+    {
+        $this->withRequest($this->boostHeaders());
+        $response = $this->boosted()->redirectResponse('/admin/updates?action=post_install');
+
+        $this->assertSame('/admin/updates?action=post_install', $response->headers->get('HX-Redirect'));
+        $this->assertNull($response->headers->get('Location'), 'htmx would follow a 302 inside the swap');
+    }
+
+    public function testAnOrdinaryRedirectStaysARedirect(): void
+    {
+        $this->withRequest([]);
+        $response = $this->boosted()->redirectResponse('/SomewhereElse');
+
+        $this->assertSame(302, $response->getStatusCode());
+        $this->assertSame('/SomewhereElse', $response->headers->get('Location'));
+    }
+
+    /** Any route, not only wiki pages: a page rendered for a stale skeleton is replaced by a full load. */
+    public function testAPageRenderedForAStaleSkeletonIsReplacedByAFullLoad(): void
+    {
+        $this->withRequest($this->boostHeaders('a-skeleton-from-before-the-upgrade'));
+        $this->boosted()->markPageRendered();
+        $event = $this->responseEvent(new Response('<body>new</body>'));
+
+        $this->boosted()->onResponse($event);
+
+        $this->assertSame(204, $event->getResponse()->getStatusCode());
+        $this->assertNotNull($event->getResponse()->headers->get('HX-Redirect'));
+    }
+
+    public function testAPageRenderedForTheSameSkeletonIsSwapped(): void
+    {
+        $this->withRequest($this->boostHeaders());
+        $this->boosted()->markPageRendered();
+        $event = $this->responseEvent(new Response('<body>new</body>'));
+
+        $this->boosted()->onResponse($event);
+
+        $this->assertSame('<body>new</body>', $event->getResponse()->getContent());
+    }
+
+    private function responseEvent(Response $response): ResponseEvent
+    {
+        $kernel = $this->createStub(HttpKernelInterface::class);
+        $request = $this->getWiki()->services->get(CurrentRequest::class)->get();
+
+        return new ResponseEvent($kernel, $request, HttpKernelInterface::MAIN_REQUEST, $response);
     }
 }
