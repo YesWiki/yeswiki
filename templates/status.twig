@@ -1,72 +1,29 @@
 {% include '@core/core.twig' %}
 
-<p>&nbsp;</p>
+{% set sections = [
+	{ label: 'Thèmes', exts: themes, one: 'AU_ONE_THEME_UPDATE', several: 'AU_SEVERAL_THEMES_UPDATE', options: {} },
+	{ label: 'Tools (extensions)', exts: tools, one: 'AU_ONE_TOOL_UPDATE', several: 'AU_SEVERAL_TOOLS_UPDATE', options: { showSwitch: true, forbidden: forbiddenExtensions } }
+] %}
 
-<div class="yw-accordion" id="accordion_update">
-
-	{% set nbMaj = 0 %}
-	{% set exts = themes %}
-	{% for ext in exts %}
-		{% if ext.updateAvailable and ext.installed %}
-			{% set nbMaj = nbMaj + 1 %}
-		{% endif %}
-	{% endfor %}
-	{% if nbMaj > 0 %}
-		<div class="yw-panel yw-panel--warning">
-	{% else %}
-		<div class="yw-panel">
-	{% endif %}
+<div class="yw-accordion yw-updates">
+	{% for section in sections %}
+		{% set nbMaj = 0 %}
+		{% for ext in section.exts %}
+			{% if ext.updateAvailable and ext.installed and ext.name not in forbiddenExtensions %}
+				{% set nbMaj = nbMaj + 1 %}
+			{% endif %}
+		{% endfor %}
 		<details class="yw-accordion__item" name="updates">
-		<summary class="yw-accordion__summary" id="headingThemes">
-			<h2 class="yw-panel__title">Thèmes
+			<summary class="yw-accordion__summary">
+				<span>{{ section.label }}</span>
 				{% if nbMaj > 0 %}
-					{% set alert = '' %}
-					{% if nbMaj > 1 %}
-						{% set alert = _t('AU_SEVERAL_THEMES_UPDATE')|replace({'{nbMaj}':nbMaj}) %}
-					{% else %}
-						{% set alert = _t('AU_ONE_THEME_UPDATE') %}
-					{% endif %}
-					<span class="alert-msg" style="float: right;">{{alert}}</span>
+					<span class="badge yw-updates__count">{{ nbMaj > 1 ? _t(section.several)|replace({'{nbMaj}': nbMaj}) : _t(section.one) }}</span>
 				{% endif %}
-			</h2>
-		</summary>
-		<div class="yw-accordion__body" id="collapseThemes">
-			{% set exts = themes %}
-			{% include '@core/exts.twig' %}
-		</div>
+			</summary>
+			<div class="yw-accordion__body">
+				{% set exts = section.exts %}
+				{% include '@core/exts.twig' with section.options %}
+			</div>
 		</details>
-	</div>
-
-	{% set nbMaj = 0 %}
-	{% set exts = tools %}
-	{% for ext in exts %}
-		{% if ext.updateAvailable and ext.installed and ext.name not in forbiddenExtensions %}
-			{% set nbMaj = nbMaj + 1 %}
-		{% endif %}
 	{% endfor %}
-	{% if nbMaj > 0 %}
-		<div class="yw-panel yw-panel--warning">
-	{% else %}
-		<div class="yw-panel">
-	{% endif %}
-		<details class="yw-accordion__item" name="updates">
-		<summary class="yw-accordion__summary" id="headingTools">
-			<h2 class="yw-panel__title">Tools (extensions)
-				{% if nbMaj > 0 %}
-					{% set alert = '' %}
-					{% if nbMaj > 1 %}
-						{% set alert = _t('AU_SEVERAL_TOOLS_UPDATE')|replace({'{nbMaj}':nbMaj}) %}
-					{% else %}
-						{% set alert = _t('AU_ONE_TOOL_UPDATE') %}
-					{% endif %}
-					<span style="float: right;">{{alert}}</span>
-				{% endif %}
-			</h2>
-		</summary>
-		<div class="yw-accordion__body" id="collapseTools">
-			{% set exts = tools %}
-			{% include '@core/exts.twig' with {showSwitch: true, forbidden: forbiddenExtensions} %}
-		</div>
-		</details>
-	</div>
 </div>

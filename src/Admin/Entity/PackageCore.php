@@ -6,6 +6,7 @@ use YesWiki\Admin\Service\AutoUpdateService;
 use YesWiki\Kernel\Entity\ConfigurationFile;
 use YesWiki\Kernel\Service\ConfigurationFileProvider;
 use YesWiki\Kernel\Service\ConfigurationService;
+use YesWiki\Kernel\Service\ProgramVersion;
 
 class PackageCore extends Package
 {
@@ -200,13 +201,7 @@ class PackageCore extends Package
         $configuration = new ConfigurationFile(ConfigurationFileProvider::getConfigFileFromEnv(), $this->configurationService);
         $configuration->load();
 
-        $release = Release::UNKNOW_RELEASE;
-        if (isset($configuration['yeswiki_release'])) {
-            $release = $configuration['yeswiki_release'];
-        }
-        $release = new Release($release);
-
-        return $release;
+        return new Release((new ProgramVersion())->release((string)($configuration['yeswiki_release'] ?? Release::UNKNOW_RELEASE)));
     }
 
     protected function updateAvailable(): bool

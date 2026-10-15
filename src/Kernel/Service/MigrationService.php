@@ -6,8 +6,7 @@ use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Kernel\Entity\Messages;
 
-// This is a simple mecanism to perform migrations
-// See src/migrations/README.md for how to create a new migration
+/** Runs the migrations a wiki has not run yet (see src/migrations/README.md), then records the Program's release in its configuration. */
 class MigrationService
 {
     public const TRIPLES_MIGRATION_ID = 'migration';
@@ -49,8 +48,6 @@ class MigrationService
         foreach ($folders as $folder) {
             $folder = $folder . 'migrations/';
 
-            // Through the scanner, like every other code directory: `src/migrations/` and an
-            // extension's own hold PHP that gets `require_once`d, not a wiki's data (ticket 49).
             $vFiles = [];
 
             foreach ($this->container->get(ClassDirectoryScanner::class)->filesIn($folder) as $file) {
@@ -96,8 +93,6 @@ class MigrationService
                     foreach ($instance->notes() as $note) {
                         $messages->add($note, 'AU_NOTE');
                     }
-                    // The act, and the whole of it. What a migration did in detail is what it just
-                    // said to the operator; the Journal records that it ran (ticket 53).
                     $this->container->get(Journal::class)->audit(Journal::MIGRATION_APPLIED, $vFile, [], 'migration');
                     $tripleStore->create($vFile, TripleStore::TYPE_URI, self::TRIPLES_MIGRATION_ID, '', '');
                 } catch (\Exception $e) {
@@ -106,6 +101,29 @@ class MigrationService
             }
         }
 
+        $this->recordProgramRelease($messages);
+
         return $messages;
+    }
+
+    /** Writes the Program's composer.json version as `yeswiki_release`, which a shared Program's upgrade leaves stale in every other instance. */
+    private function recordProgramRelease(Messages $messages): void
+    {
+        $configurationService = $this->container->get(ConfigurationService::class);
+        $configuration = $configurationService->getConfiguration(ConfigurationFileProvider::getConfigFileFromEnv());
+        $configuration->load();
+
+        $previous = (string)($configuration['yeswiki_release'] ?? '');
+        $release = $this->container->get(ProgramVersion::class)->release($previous);
+        if ($release === $previous) {
+            return;
+        }
+
+        $configuration['yeswiki_release'] = $release;
+        if ($configurationService->write($configuration)) {
+            $messages->add("yeswiki_release goes from '{$previous}' to '{$release}'", 'AU_OK');
+        } else {
+            $messages->add("yeswiki_release could not be written as '{$release}'", 'AU_ERROR');
+        }
     }
 }

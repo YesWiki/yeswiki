@@ -2729,3 +2729,13 @@ body > button.primary {
   align-items: center;
   gap: var(--yw-space-md-x);
 }
+
+.yw-updates {
+  margin-top: var(--yw-space-lg-y);
+}
+
+.yw-updates .yw-updates__count {
+  align-self: center;
+  color: var(--yw-on-warning);
+  background: var(--yw-warning);
+}

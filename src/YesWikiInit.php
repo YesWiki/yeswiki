@@ -9,6 +9,7 @@ use YesWiki\Kernel\Routing\ReservedTags;
 use YesWiki\Kernel\Service\ConfigurationFileProvider;
 use YesWiki\Kernel\Service\EnvironmentConfiguration;
 use YesWiki\Kernel\Service\HtmlPurifierService;
+use YesWiki\Kernel\Service\ProgramVersion;
 use YesWiki\Kernel\Service\WikiUrls;
 
 /** Yeswiki initialization class. */
@@ -520,6 +521,8 @@ class YesWikiInit
         $yeswikiConfig['debug'] = filter_var($yeswikiConfig['debug'], FILTER_VALIDATE_BOOLEAN);
 
         $yeswikiConfig = EnvironmentConfiguration::apply($yeswikiConfig);
+
+        $yeswikiConfig['yeswiki_release'] = (new ProgramVersion())->release((string)$yeswikiConfig['yeswiki_release']);
 
         if (!empty($yeswikiConfig['timezone'])) {
             date_default_timezone_set($yeswikiConfig['timezone']);

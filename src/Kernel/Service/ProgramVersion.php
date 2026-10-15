@@ -38,6 +38,12 @@ class ProgramVersion
         return $this->version;
     }
 
+    /** The release a wiki on this Program runs: the Program's own version, or $configured for a checkout, which has none. */
+    public function release(string $configured): string
+    {
+        return $this->version === self::DEV ? $configured : $this->version;
+    }
+
     private static function programManifest(): string
     {
         return self::$programManifest ??= (string)@file_get_contents((\defined('YESWIKI_PROGRAM_DIR') ? YESWIKI_PROGRAM_DIR : \dirname(__DIR__, 3)) . '/composer.json');

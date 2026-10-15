@@ -96,6 +96,7 @@ class YesWikiKernel extends Kernel
             $this->hashOf(YESWIKI_INSTANCE_DIR . '/private/.env'),
             $this->hashOf(__FILE__),
             $this->hashOf($this->getProjectDir() . '/composer.lock'),
+            $this->hashOf($this->getProjectDir() . '/composer.json'),
         ];
 
         foreach (array_merge(['YESWIKI_CONFIG_FILE'], array_keys(EnvironmentConfiguration::knownEnvNames())) as $name) {

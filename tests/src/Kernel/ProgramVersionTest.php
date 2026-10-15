@@ -49,6 +49,17 @@ class ProgramVersionTest extends YesWikiTestCase
         $this->assertSame('', (new ProgramVersion('not json'))->releaseLine());
     }
 
+    /** An instance whose config still names the release it was set up on runs the one the shared Program was upgraded to. */
+    public function testTheProgramsVersionWinsOverTheConfiguredRelease(): void
+    {
+        $this->assertSame('5.3.0', $this->programWith(['version' => '5.3.0'])->release('5.2.0'));
+    }
+
+    public function testACheckoutKeepsTheConfiguredRelease(): void
+    {
+        $this->assertSame('5.2.0', $this->programWith([])->release('5.2.0'));
+    }
+
     public function testThisRepositoryIsAnEctoplasmeCheckout(): void
     {
         $program = new ProgramVersion();
