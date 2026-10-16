@@ -701,7 +701,12 @@ a.yw-item__title:focus-visible {
 .list-form
   .list-node-container:not([data-depth='1'][data-index='0'])
   > .list-node
-  > input {
+  > .yw-input,
+.list-form
+  .list-node-container:not([data-depth='1'][data-index='0'])
+  > .list-node
+  > .input-color-field
+  > .yw-input {
   border-top: 0;
 }
 
@@ -709,6 +714,85 @@ a.yw-item__title:focus-visible {
   width: 9rem;
   min-width: 9rem;
   max-width: 9rem;
+}
+
+.list-form .list-node .input-group-addon {
+  white-space: nowrap;
+}
+
+.list-form .list-node .input-color-field {
+  position: relative;
+  display: flex;
+  flex: 0 0 2.75rem;
+}
+
+.list-form .list-node .input-color {
+  flex: 1;
+  width: 2.75rem;
+  height: auto;
+  padding: 0.35rem;
+  cursor: pointer;
+}
+
+.list-form .list-node .input-color::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+
+.list-form .list-node .input-color::-webkit-color-swatch {
+  border: 0;
+  border-radius: var(--yw-radius-sm);
+}
+
+.list-form .list-node .input-color::-moz-color-swatch {
+  border: 0;
+  border-radius: var(--yw-radius-sm);
+}
+
+.list-form .list-node .input-color--empty::-webkit-color-swatch {
+  background: repeating-linear-gradient(
+    -45deg,
+    var(--yw-surface-sunken) 0 4px,
+    var(--yw-surface-raised) 4px 8px
+  ) !important;
+}
+
+.list-form .list-node .input-color--empty::-moz-color-swatch {
+  background: repeating-linear-gradient(
+    -45deg,
+    var(--yw-surface-sunken) 0 4px,
+    var(--yw-surface-raised) 4px 8px
+  ) !important;
+}
+
+.list-form .list-node .input-color-clear {
+  position: absolute;
+  top: 1px;
+  right: 1px;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 0.95rem;
+  height: 0.95rem;
+  padding: 0;
+  border: var(--yw-border-width) solid var(--yw-border);
+  border-radius: 50%;
+  background: var(--yw-surface-raised);
+  color: var(--yw-text-muted);
+  font-size: 0.6rem;
+  cursor: pointer;
+}
+
+.list-form .list-node .input-color-clear:hover,
+.list-form .list-node .input-color-clear:focus-visible {
+  background: var(--yw-danger);
+  border-color: var(--yw-danger);
+  color: var(--yw-on-danger);
+}
+
+.list-form .list-node .input-icon {
+  flex: 0 0 2.75rem;
+  height: auto;
 }
 
 .list-form .list-node .btn-expand {
@@ -2183,7 +2267,7 @@ input.yw-input.error {
   margin: var(--yw-space-md-y) 0;
 }
 
-.list-bazar-entries {
+.list-bazar-entries--scroll {
   max-height: 200px;
   overflow: auto;
 }

@@ -39,12 +39,14 @@ class ReactionsAction extends YesWikiAction implements RegisteredAction, Provide
                         ->default(1)
                         ->suggests(1),
                     Setting::reaction('choices')
+                        ->full()
                         ->raw('btn-label-add', _t('AB_REACTION_ADD_REACTION'))
                         ->subSettings(
                             Setting::text('label')
                             ->label(_t('AB_REACTION_NAME')),
                             Setting::icon('image')
-                            ->label(_t('AB_REACTION_ICON')),
+                            ->label(_t('AB_REACTION_ICON'))
+                            ->iconSources('sprite', 'emoji', 'reaction', 'file'),
                         ),
                 ),
         ];

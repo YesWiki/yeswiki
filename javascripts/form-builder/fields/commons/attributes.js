@@ -65,12 +65,14 @@ export const readConf = {
   label: _t('BAZ_FORM_EDIT_CAN_BE_READ_BY'),
   options: { ...visibilityOptions },
   multiple: true,
+  exclusive: ['*', '+'],
 }
 
 export const writeConf = {
   label: _t('BAZ_FORM_EDIT_CAN_BE_WRITTEN_BY'),
   options: { ...visibilityOptions },
   multiple: true,
+  exclusive: ['*', '+'],
 }
 
 export const searchableConf = {
@@ -114,6 +116,7 @@ export function enumEditorSetup(api) {
     })
   }
   api.onChange('subtype2', updateOptions)
+  updateOptions()
 
   const row = api.getRow('linked_object')
   if (!row) return

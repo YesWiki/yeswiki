@@ -1,6 +1,6 @@
 import './unsaved-changes.js'
 import './yw-autocomplete.js'
-import './inputs/file-picker-field.js'
+import './inputs/icon-field.js'
 
 /** The rows of one menu, in document order. */
 function rowsOf(list) {
@@ -128,32 +128,9 @@ function moveRow(list, row, step) {
   group.forEach((member) => list.insertBefore(member, anchor))
 }
 
-/** The file picker writes into a field it is told the id of, so each row's needs one of its own. */
-let pickerSeq = 0
-
-/**
- * Which control an icon needs depends on where its glyph comes from: a sprite symbol and an emoji
- * are typed, a file is chosen from what the wiki already holds -- through the same picker
- * `/admin/layout` opens for the logo, which needs no wiring beyond naming the field it fills.
- */
-function showIconControls(row) {
-  const icon = row.querySelector('[data-yw-menu-icon]')
-  if (!icon) return
-  const value = icon.querySelector('[data-yw-menu-icon-value]')
-  const pick = icon.querySelector('[data-yw-menu-icon-pick]')
-  if (!value || !pick) return
-
-  if (!value.id) value.id = `yw-menu-icon-${++pickerSeq}`
-  pick.dataset.ywFilePickerField = value.id
-  pick.dataset.ywFilePickerOnly = 'image'
-  pick.hidden =
-    icon.querySelector('[data-yw-menu-icon-source]')?.value !== 'file'
-}
-
 function refresh(list) {
   normalizeIndents(list)
   renumber(list)
-  rowsOf(list).forEach(showIconControls)
 }
 
 /** Dragging says where a row goes; it never says what level it is at -- that is the indent button. */
@@ -203,12 +180,6 @@ document.querySelectorAll('[data-yw-menu-rows]').forEach((list) => {
     if (event.target.closest('[data-yw-menu-indent]')) {
       setChild(row, !isChild(row))
       refresh(list)
-    }
-  })
-
-  list.addEventListener('change', (event) => {
-    if (event.target.closest('[data-yw-menu-icon-source]')) {
-      showIconControls(event.target.closest('[data-yw-menu-row]'))
     }
   })
 

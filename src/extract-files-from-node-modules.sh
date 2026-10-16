@@ -201,3 +201,17 @@ for f in node_modules/mermaid/dist/chunks/mermaid.esm.min/*; do
 	esac
 	copy_js "$f" "javascripts/vendor/mermaid/chunks/mermaid.esm.min/$(basename "$f")"
 done
+
+# emoji-picker-element: the emoji tab of javascripts/icon-picker.js, with its data served from here
+mkdir -p javascripts/vendor/emoji-picker-element/i18n javascripts/vendor/emoji-picker-element/data &&
+	for f in index picker database; do
+		copy_js "node_modules/emoji-picker-element/$f.js" "javascripts/vendor/emoji-picker-element/$f.js"
+	done &&
+	cp -f node_modules/emoji-picker-element/LICENSE javascripts/vendor/emoji-picker-element/LICENSE
+for pair in en:en es:es fr:fr it:it nl:nl pt:pt_PT ru:ru_RU; do
+	lang="${pair%%:*}"
+	copy_js "node_modules/emoji-picker-element/i18n/${pair##*:}.js" "javascripts/vendor/emoji-picker-element/i18n/$lang.js"
+	flavour=cldr
+	[ "$lang" = en ] && flavour=emojibase
+	cp -f "node_modules/emoji-picker-element-data/$lang/$flavour/data.json" "javascripts/vendor/emoji-picker-element/data/$lang.json"
+done

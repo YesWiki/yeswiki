@@ -34,10 +34,14 @@ abstract class CheckboxField extends EnumField
     /** @var int number of offered options, 0 for no limit */
     protected $maxOptions;
 
+    /** @var int|null options shown before the filter, select-all and scrolling kick in; null follows the wiki's setting, 0 never */
+    protected ?int $filterLimit;
+
     protected const FIELD_DISPLAY_METHOD = 7;
     protected const FIELD_ORDER_BY = 16;
     protected const FIELD_ORDER_DIRECTION = 17;
     protected const FIELD_MAX_OPTIONS = 18;
+    protected const FIELD_FILTER_LIMIT = 19;
 
     protected const ORDER_BY_LABEL = 'label';
     protected const ORDER_BY_ID = 'id';
@@ -70,6 +74,8 @@ abstract class CheckboxField extends EnumField
             ? self::ORDER_DIRECTION_DESC
             : self::ORDER_DIRECTION_ASC;
         $this->maxOptions = max(0, (int)($values[self::FIELD_MAX_OPTIONS] ?? 0));
+        $filterLimit = trim((string)($values[self::FIELD_FILTER_LIMIT] ?? ''));
+        $this->filterLimit = is_numeric($filterLimit) ? max(0, (int)$filterLimit) : null;
     }
 
     public function getValueStructure()
@@ -99,24 +105,27 @@ abstract class CheckboxField extends EnumField
                     'oldValue' => $this->sanitizeValues($this->getValue($entry), 'string'),
                 ]);
             default:
+                $displayFilterLimit = $this->filterLimit === null ? $this->displayFilterLimit : ($this->filterLimit ?: false);
+                $displaySelectAllLimit = $this->filterLimit === null ? $this->displaySelectAllLimit : ($this->filterLimit ?: false);
+
                 if ($this->optionsTree) {
                     return $this->render('@core/inputs/checkbox-tree.twig', [
                         'data' => $this->optionsTree,
                         'values' => $this->getValues($entry),
-                        'displaySelectAllLimit' => $this->displaySelectAllLimit,
+                        'displaySelectAllLimit' => $displaySelectAllLimit,
                         'oldValue' => $this->sanitizeValues($this->getValue($entry), 'string'),
                     ]);
                 }
 
-                if ($this->displayFilterLimit) {
+                if ($displayFilterLimit) {
                     $this->getService(\YesWiki\Kernel\Service\AssetRegistry::class)->addJsFile('javascripts/inputs/filter-entries.js');
                 }
 
                 return $this->render(self::CHECKBOX_TWIG_LIST[$this->normalDisplayMode] ?? self::CHECKBOX_TWIG_LIST[self::CHECKBOX_DISPLAY_MODE_DIV], [
                     'options' => $options,
                     'values' => $this->getValues($entry),
-                    'displaySelectAllLimit' => $this->displaySelectAllLimit,
-                    'displayFilterLimit' => $this->displayFilterLimit,
+                    'displaySelectAllLimit' => $displaySelectAllLimit,
+                    'displayFilterLimit' => $displayFilterLimit,
                     'oldValue' => $this->sanitizeValues($this->getValue($entry), 'string'),
                 ]);
         }

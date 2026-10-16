@@ -1,25 +1,33 @@
-import { legacyIconMap, legacyIconToSprite } from '../yw-icon-map.js'
+import { openIconPicker, iconHtml, iconFromString } from '../icon-picker.js'
 
 export default {
   props: ['value', 'config'],
   emits: ['input'],
   computed: {
+    sources() {
+      return this.config.sources || ['sprite']
+    },
     previewHtml() {
-      const value = (this.value || '').trim()
-      if (Object.values(legacyIconMap).includes(value)) {
-        return `<svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#${value}"/></svg>`
-      }
-      return legacyIconToSprite(value) || legacyIconToSprite('icons')
+      return iconHtml(iconFromString(this.value))
+    },
+  },
+  methods: {
+    pick(event) {
+      openIconPicker({
+        anchor: event.currentTarget,
+        value: iconFromString(this.value),
+        sources: this.sources,
+        onPick: (icon) => this.$emit('input', icon.value),
+      })
     },
   },
   template: `
     <div class="yw-form-group" :class="config.type" :title="config.hint" >
-      <label v-if="config.label" class="yw-form-label">{{ config.label || 'Icone' }}</label>
-      <div class="input-group">
-        <input type="text" :value="value" v-on:input="$emit('input', $event.target.value)"
-               class="yw-input" ref="input" placeholder="heart"/>
-        <span class="input-group-addon" v-html="previewHtml"></span>
-      </div>
+      <label v-if="config.label" class="yw-form-label">{{ config.label }}</label>
+      <button type="button" class="yw-input yw-icon-field__button" @click="pick"
+              :aria-label="config.label">
+        <span class="yw-icon-field__preview" v-html="previewHtml"></span>
+      </button>
       <input-hint :config="config"></input-hint>
     </div>
   `,

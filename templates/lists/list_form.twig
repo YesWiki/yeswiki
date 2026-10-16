@@ -6,6 +6,7 @@
 {{ include_css('styles/yw-entries.css') }}
 
 {{ include_javascript('javascripts/unsaved-changes.js', false, true) }}
+{{ include('@core/file-picker-panel.twig') }}
 
 <form method="post" @submit="onSubmit" class="list-form" data-list="{{ list|json_encode }}"
       action="{{ url_with({ editlang: editLanguage }) }}" data-yw-unsaved-guard>

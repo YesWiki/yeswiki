@@ -9,6 +9,7 @@ use Symfony\Component\Security\Csrf\CsrfTokenManager;
 use YesWiki\Content\Service\EntryDisplay;
 use YesWiki\Content\Service\FormManager;
 use YesWiki\Content\Service\ListManager;
+use YesWiki\Files\Exception\StorageException;
 use YesWiki\Files\Service\AttachedFilePaths;
 use YesWiki\Files\Service\ImageResizer;
 use YesWiki\Files\Service\RemoteImageCache;
@@ -270,6 +271,9 @@ class TemplateEngine
             return $this->legacyIconToSprite(is_string($classString) ? $classString : null, $extraClass);
         }, ['is_safe' => ['html']]));
 
+        $this->twig->addFunction(new \Twig\TwigFunction('nodeIcon', function ($source, $value) {
+            return $this->renderNodeIcon((string)$source, (string)$value) ?? '';
+        }, ['is_safe' => ['html']]));
         $this->twig->addFunction(new \Twig\TwigFunction('icon', function ($name, $extraClass = '') {
             $class = trim('yw-icon ' . $extraClass);
 
@@ -552,12 +556,7 @@ class TemplateEngine
         return null;
     }
 
-    /**
-     * A node's glyph as HTML: one of the shipped sprite's symbols, an emoji, or a file (ticket 64).
-     *
-     * Menu nodes and value-list nodes carry the same `{source, value}`, so they are drawn by the
-     * same three lines rather than by each renderer's own idea of what an icon is.
-     */
+    /** A node's `{source, value}` icon as HTML: a sprite symbol, an emoji, or an image of the wiki's files. */
     public function renderNodeIcon(string $source, string $value): ?string
     {
         $value = trim($value);
@@ -565,13 +564,34 @@ class TemplateEngine
             return null;
         }
 
+        if ($source === 'file') {
+            $url = $this->nodeIconFileUrl($value);
+
+            return $url === null ? null : '<img class="yw-icon-image" src="' . htmlspecialchars($url, ENT_QUOTES) . '" alt="">';
+        }
+
         return match ($source) {
             'sprite' => $this->legacyIconToSprite($value),
-            'emoji' => '<span class="yw-menu__emoji" aria-hidden="true">' . htmlspecialchars($value, ENT_QUOTES) . '</span>',
-            'file' => '<img class="yw-menu__image" src="'
-                . htmlspecialchars($this->container->get(Storage::class)->url($value), ENT_QUOTES) . '" alt="">',
+            'emoji' => '<span class="yw-icon-emoji" aria-hidden="true">' . htmlspecialchars($value, ENT_QUOTES) . '</span>',
             default => null,
         };
+    }
+
+    /** Where a file icon is shown from: a URL as written, a public storage path, or an uploaded file's tag. */
+    private function nodeIconFileUrl(string $value): ?string
+    {
+        if (preg_match('#^(https?:)?//|api/files/#i', $value) === 1) {
+            return $value;
+        }
+        if (str_contains($value, '/')) {
+            try {
+                return $this->container->get(Storage::class)->url($value);
+            } catch (StorageException) {
+                return null;
+            }
+        }
+
+        return $this->urlFormatter->href('', 'api/files/' . rawurlencode($value) . '/download', ['width' => 64, 'height' => 64], false);
     }
 
     /** Base-absolute URL of the Tabler sprite. */

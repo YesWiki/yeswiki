@@ -62,7 +62,8 @@ field.
 
 Modifiers: `label` `hint` `default` `suggests` `required` `multiple` `min` `max`
 `withIcon` `showIf` `onlyFor` `exceptFor` `checkedValues` `extraFields` `subSettings`
-`notWritten` `decidesTag` `documentedAt` `third` `half` `full` `writesTo` `title`.
+`notWritten` `decidesTag` `documentedAt` `third` `half` `full` `writesTo` `title`
+`iconSources`.
 
 Three are worth knowing:
 

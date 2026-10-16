@@ -586,22 +586,6 @@
   font-size: 0.9em;
 }
 
-.yw-menu-icon {
-  display: flex;
-  align-items: center;
-  gap: var(--yw-space-sm-x);
-  flex: 0 1 220px;
-}
-
-.yw-menu-icon__source {
-  flex: 0 1 110px;
-}
-
-.yw-menu-icon__value {
-  flex: 1 1 90px;
-  min-width: 0;
-}
-
 .yw-menu-flags {
   display: flex;
   flex-wrap: wrap;
@@ -1739,6 +1723,58 @@ body:has(#yw-fb-rail:not([hidden])) .yw-fb__rail-open {
   display: flex;
   gap: var(--yw-space-sm-y) var(--yw-space-sm-x);
   margin-top: var(--yw-space-sm-y);
+}
+
+.yw-fb__reactions-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--yw-space-sm-y);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.yw-fb__reaction {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--yw-space-sm-x);
+}
+
+.yw-fb__reaction-drag {
+  align-self: center;
+  color: var(--yw-text-muted);
+  cursor: grab;
+}
+
+.yw-fb__reaction .yw-icon-field__button {
+  flex: 0 0 2.75rem;
+  width: 2.75rem;
+  height: 2.25rem;
+}
+
+.yw-fb__reaction .yw-icon-field__preview .yw-icon-image {
+  width: 1.4rem;
+  height: 1.4rem;
+}
+
+.yw-fb__reaction-texts {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.yw-fb__reaction-id {
+  font-family: var(--yw-font-mono);
+  font-size: 0.85em;
+}
+
+.yw-fb__reactions-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--yw-space-sm-y) var(--yw-space-sm-x);
+  margin: var(--yw-space-sm-y) 0;
 }
 
 .yw-fb__file-preview {

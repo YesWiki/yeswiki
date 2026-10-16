@@ -253,6 +253,12 @@ final class Setting
         return $this->with('max', $max);
     }
 
+    /** Where an `icon()` setting may take its icon from: `sprite`, `emoji`, `file` (a sprite symbol when unsaid). */
+    public function iconSources(string ...$sources): self
+    {
+        return $this->with('sources', $sources);
+    }
+
     /** The sprite icon drawn beside the input. */
     public function withIcon(string $icon): self
     {

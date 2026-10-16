@@ -76,6 +76,6 @@
 
   {{ include_css('styles/yw-admin.css') }}
   {{ include_javascript('javascripts/vendor/sortablejs/sortable.js') }}
-  {{ include_javascript('javascripts/inputs/file-picker-field.js', false, true) }}
+  {{ include('@core/file-picker-panel.twig') }}
   {{ include_javascript('javascripts/menu-editor.js', false, true) }}
 {% endblock %}

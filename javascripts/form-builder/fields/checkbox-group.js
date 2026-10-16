@@ -42,6 +42,13 @@ export default {
         value: '',
         placeholder: _t('BAZ_FORM_EDIT_OPTIONS_MAX_PLACEHOLDER'),
       },
+      filter_limit: {
+        label: _t('BAZ_FORM_EDIT_OPTIONS_FILTER_LIMIT_LABEL'),
+        type: 'number',
+        value: '',
+        placeholder: _t('BAZ_FORM_EDIT_OPTIONS_FILTER_LIMIT_PLACEHOLDER'),
+        description: _t('BAZ_FORM_EDIT_OPTIONS_FILTER_LIMIT_HINT'),
+      },
     },
   },
   advancedAttributes: [
@@ -51,6 +58,7 @@ export default {
     'order_by',
     'order_direction',
     'max_options',
+    'filter_limit',
   ],
   editorSetup: enumEditorSetup,
 }

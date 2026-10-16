@@ -1,3 +1,5 @@
+import { openIconPicker, iconHtml } from './icon-picker.js'
+
 export default {
   name: 'list-node',
   props: ['node', 'depth', 'index'],
@@ -12,11 +14,8 @@ export default {
         LIST_KEY: _t('LIST_KEY'),
         LIST_TEXT: _t('LIST_TEXT'),
         LIST_VALUE_COLOR: _t('LIST_VALUE_COLOR'),
-        MENU_ENTRY_ICON: _t('MENU_ENTRY_ICON'),
-        MENU_ENTRY_ICON_EMOJI: _t('MENU_ENTRY_ICON_EMOJI'),
-        MENU_ENTRY_ICON_FILE: _t('MENU_ENTRY_ICON_FILE'),
-        MENU_ENTRY_ICON_SOURCE: _t('MENU_ENTRY_ICON_SOURCE'),
-        MENU_ENTRY_ICON_SPRITE: _t('MENU_ENTRY_ICON_SPRITE'),
+        LIST_VALUE_COLOR_CLEAR: _t('LIST_VALUE_COLOR_CLEAR'),
+        ICON_PICKER_TITLE: _t('ICON_PICKER_TITLE'),
       },
     }
   },
@@ -37,6 +36,18 @@ export default {
     iconOf(node) {
       node.icon ||= { source: 'sprite', value: '' }
       return node.icon
+    },
+    iconPreview(node) {
+      return iconHtml(this.iconOf(node))
+    },
+    pickIcon(node, event) {
+      openIconPicker({
+        anchor: event.currentTarget,
+        value: { ...this.iconOf(node) },
+        onPick: (icon) => {
+          node.icon = icon
+        },
+      })
     },
     deleteChildNode(nodeToDelete) {
       this.node.children = this.node.children.filter(
@@ -68,16 +79,20 @@ export default {
         <input type="text" v-model="node.id" :placeholder="labels.LIST_KEY" 
               class="yw-input input-id" :class="{ error: !node.id }"
               @keydown.enter.prevent />
-        <input type="color" v-model="node.color" class="yw-input input-color"
-               :title="labels.LIST_VALUE_COLOR" />
-        <select v-model="iconOf(node).source" class="yw-input input-icon-source"
-                :title="labels.MENU_ENTRY_ICON_SOURCE">
-          <option value="sprite">{{ labels.MENU_ENTRY_ICON_SPRITE }}</option>
-          <option value="emoji">{{ labels.MENU_ENTRY_ICON_EMOJI }}</option>
-          <option value="file">{{ labels.MENU_ENTRY_ICON_FILE }}</option>
-        </select>
-        <input type="text" v-model="iconOf(node).value" class="yw-input input-icon"
-               :placeholder="labels.MENU_ENTRY_ICON" @keydown.enter.prevent />
+        <span class="input-color-field">
+          <input type="color" v-model="node.color" class="yw-input input-color"
+                 :class="{ 'input-color--empty': !node.color }"
+                 :title="labels.LIST_VALUE_COLOR" />
+          <button v-if="node.color" type="button" class="input-color-clear" @click="node.color = ''"
+                  :title="labels.LIST_VALUE_COLOR_CLEAR" :aria-label="labels.LIST_VALUE_COLOR_CLEAR">
+            <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#x"/></svg>
+          </button>
+        </span>
+        <button type="button" class="yw-input input-icon yw-icon-field__button"
+                :title="labels.ICON_PICKER_TITLE" :aria-label="labels.ICON_PICKER_TITLE"
+                @click="pickIcon(node, $event)">
+          <span class="yw-icon-field__preview" v-html="iconPreview(node)"></span>
+        </button>
         <button type="button" @click="$emit('delete', node)" 
                 class="btn btn-danger btn-icon input-group-addon">
           <svg class="yw-icon icon-trash" aria-hidden="true"><use href="src/assets/icons.svg#trash"/></svg>

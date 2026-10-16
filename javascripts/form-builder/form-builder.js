@@ -749,6 +749,16 @@ function controlFor(name, def, value) {
       )
       group.append(checkbox)
     })
+    if (def.exclusive) {
+      group.addEventListener('change', (event) => {
+        if (!event.target.checked) return
+        const alone = def.exclusive.includes(event.target.value)
+        group.querySelectorAll('input:checked').forEach((box) => {
+          if (box === event.target) return
+          if (alone || def.exclusive.includes(box.value)) box.checked = false
+        })
+      })
+    }
     return group
   }
   if (def.options) {

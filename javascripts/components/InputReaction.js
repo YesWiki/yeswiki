@@ -11,21 +11,18 @@ export default {
         for (let i = 0; i < labels.length; i++) {
           this.elements.push({
             label: labels[i],
-            image: images.length >= i ? images[i] : '',
+            image: images[i] ?? '',
           })
         }
       }
     },
     getValues() {
+      const kept = this.elements.filter((element) => element.label !== '')
       return {
-        labels: this.elements
-          .map((g) => g.label)
-          .filter((e) => e !== '')
-          .join(','),
-        images: this.elements
-          .map((g) => g.image)
-          .filter((e) => e !== '')
-          .join(','),
+        labels: kept.map((element) => element.label).join(','),
+        images: kept.some((element) => element.image)
+          ? kept.map((element) => element.image).join(',')
+          : '',
       }
     },
   },

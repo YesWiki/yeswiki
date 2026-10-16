@@ -2,6 +2,7 @@
 
 namespace YesWiki\Social\Service;
 
+use YesWiki\Content\Service\FileManager;
 use YesWiki\Core\YesWikiController;
 use YesWiki\Files\Service\ProgramFiles;
 use YesWiki\Files\Service\Storage;
@@ -18,6 +19,7 @@ class ReactionsFormatter extends YesWikiController
         UrlFormatter $urlFormatter,
         private readonly Storage $storage,
         private readonly ProgramFiles $programFiles,
+        private readonly FileManager $fileManager,
     ) {
         $this->urlFormatter = $urlFormatter;
         $this->reactionManager = $reactionManager;
@@ -56,66 +58,58 @@ class ReactionsFormatter extends YesWikiController
     }
 
     /**
-     * format Reactions Labels.
+     * The image URL, emoji or sprite name each reaction is drawn with.
      *
-     * @param array<array-key, string> $ids           the reaction ids to find an image for
-     * @param array<array-key, string> $defaultImages image path to fall back to, per reaction id
+     * @param array<array-key, string> $ids
+     * @param array<array-key, string> $defaultImages
      *
-     * @return array<array-key, string> image URL per reaction id
+     * @return array<array-key, string>
      */
     public function formatImages(array $ids, string $imagesComaSeparated, array $defaultImages = []): array
     {
         $rawImages = empty($imagesComaSeparated) ? [] : array_map('trim', explode(',', $imagesComaSeparated));
         $images = [];
         foreach ($ids as $k => $id) {
-            $sanitizedImageFilename = empty($rawImages[$k]) ? '' : basename($rawImages[$k]);
-            $baseUrl = $this->urlFormatter->getBaseUrl();
             $images[$k] = empty($rawImages[$k])
-                ? (
-                    (array_key_exists($id, $defaultImages))
-                    ? (
-                        $this->programFiles->exists($defaultImages[$id])
-                        ? "$baseUrl/{$defaultImages[$id]}"
-                        : $defaultImages[$id]
-                    )
-                    : (
-                        (array_key_exists($k, $defaultImages))
-                        ? (
-                            $this->programFiles->exists($defaultImages[$k])
-                            ? "$baseUrl/{$defaultImages[$k]}"
-                            : $defaultImages[$k]
-                        )
-                        : ''
-                    )
-                )
-                : (
-                    basename($rawImages[$k]) !== $rawImages[$k]
-                    ? ''
-                    : (
-                        (preg_match('/\\.(gif|jpeg|png|jpg|svg|webp)$/i', $rawImages[$k]))
-                        ? (
-                            $this->storage->exists("custom/images/{$rawImages[$k]}")
-                            ? "$baseUrl/custom/images/{$rawImages[$k]}"
-                            : (
-                                $this->storage->exists("files/{$rawImages[$k]}")
-                                ? "$baseUrl/files/{$rawImages[$k]}"
-                                : (
-                                    file_exists(YESWIKI_PROGRAM_DIR . "/styles/images/{$rawImages[$k]}")
-                                    ? "$baseUrl/styles/images/{$rawImages[$k]}"
-                                    : ''
-                                )
-                            )
-                        )
-                        : (
-                            file_exists(YESWIKI_PROGRAM_DIR . "/styles/images/mikone-{$rawImages[$k]}.svg")
-                            ? "$baseUrl/styles/mikone-{$rawImages[$k]}.svg"
-                            : $rawImages[$k]
-                        )
-                    )
-                );
+                ? $this->defaultImage($defaultImages[$id] ?? $defaultImages[$k] ?? '')
+                : $this->resolveImage($rawImages[$k]);
         }
 
         return $images;
+    }
+
+    private function defaultImage(string $image): string
+    {
+        if ($image === '') {
+            return '';
+        }
+
+        return $this->programFiles->exists($image) ? $this->urlFormatter->getBaseUrl() . '/' . $image : $image;
+    }
+
+    private function resolveImage(string $raw): string
+    {
+        if (basename($raw) !== $raw) {
+            return '';
+        }
+        $baseUrl = $this->urlFormatter->getBaseUrl();
+        if (preg_match('/\\.(gif|jpeg|png|jpg|svg|webp)$/i', $raw)) {
+            foreach (['custom/images', 'files'] as $dir) {
+                if ($this->storage->exists("$dir/$raw")) {
+                    return "$baseUrl/$dir/$raw";
+                }
+            }
+
+            return file_exists(YESWIKI_PROGRAM_DIR . "/styles/images/$raw") ? "$baseUrl/styles/images/$raw" : '';
+        }
+        if (file_exists(YESWIKI_PROGRAM_DIR . "/styles/images/mikone-$raw.svg")) {
+            return "$baseUrl/styles/images/mikone-$raw.svg";
+        }
+        if ($this->fileManager->getOne($raw) !== null) {
+            return $this->urlFormatter->href('', 'api/files/' . rawurlencode($raw) . '/download', ['width' => 128, 'height' => 128], false);
+        }
+
+        return $raw;
     }
 
     /**
