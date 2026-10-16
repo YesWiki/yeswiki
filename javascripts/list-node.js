@@ -56,22 +56,18 @@ export default {
   template: `
     <div class="list-node-container" :data-depth="depth" :data-index="index">
       <div v-if="depth > 0" class="list-node input-prepend input-append input-group">
-        <!-- Chevron to expand children -->
         <button type="button" @click="expanded = !expanded" 
                 class="btn btn-icon btn-primary input-group-addon btn-expand" >
           <svg class="yw-icon" aria-hidden="true"><use :href="expanded ? 'src/assets/icons.svg#chevron-up' : 'src/assets/icons.svg#chevron-down'"/></svg>
         </button>
-        <!-- Label -->
         <input type="text" v-model="node.label" :placeholder="node.sourceLabel || labels.LIST_TEXT"
               class="yw-input" :class="{ 'yw-translate-from__input': node.sourceLabel }" @keydown.enter.prevent />
-        <!-- Id -->
         <div class="input-group-addon" >
           {{ labels.LIST_KEY }} :
         </div>
         <input type="text" v-model="node.id" :placeholder="labels.LIST_KEY" 
               class="yw-input input-id" :class="{ error: !node.id }"
               @keydown.enter.prevent />
-        <!-- The colour and the icon this value carries wherever it is drawn (ticket 64) -->
         <input type="color" v-model="node.color" class="yw-input input-color"
                :title="labels.LIST_VALUE_COLOR" />
         <select v-model="iconOf(node).source" class="yw-input input-icon-source"
@@ -82,7 +78,6 @@ export default {
         </select>
         <input type="text" v-model="iconOf(node).value" class="yw-input input-icon"
                :placeholder="labels.MENU_ENTRY_ICON" @keydown.enter.prevent />
-        <!-- Delete Icon -->
         <button type="button" @click="$emit('delete', node)" 
                 class="btn btn-danger btn-icon input-group-addon">
           <svg class="yw-icon icon-trash" aria-hidden="true"><use href="src/assets/icons.svg#trash"/></svg>
@@ -90,7 +85,8 @@ export default {
       </div>
       <div v-show="depth == 0 || expanded" class="list-node-children" 
            :class="{root: depth == 0, first: depth == 0 && node.children.length == 0}">
-        <draggable v-model="node.children" group="nodes" item-key="vueRef">
+        <draggable v-model="node.children" group="nodes" item-key="vueRef"
+                   filter="input, select" :prevent-on-filter="false">
           <template #item="{ element: childNode, index }">
             <list-node :node="childNode" :key="childNode.vueRef" @delete="deleteChildNode"
                        :depth="depth + 1" :index="index"></list-node>

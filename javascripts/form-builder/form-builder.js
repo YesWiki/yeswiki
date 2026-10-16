@@ -442,12 +442,7 @@ function initRail() {
   })
 }
 
-/**
- * Open or shut the rail, remembering which the author asked for.
- *
- * The code tab hides the rail without going through here: a JSON textarea has no field to
- * add to, but the author never asked for the drawer to be gone, so switching back reopens it.
- */
+/** Open or shut the rail, remembering which the author asked for. */
 function showRail(open) {
   railWanted = open
   railEl.hidden = !open
@@ -489,9 +484,15 @@ function neutralizePreview(holder, fieldId) {
   holder
     .querySelectorAll('input, select, textarea, button')
     .forEach((control) => {
-      control.disabled = true
       control.removeAttribute('name')
       control.removeAttribute('required')
+      if (control.tagName !== 'SELECT') {
+        control.disabled = true
+        return
+      }
+      ;['click', 'input', 'change'].forEach((type) =>
+        control.addEventListener(type, (event) => event.stopPropagation()),
+      )
     })
 
   const prefix = `${fieldId}__`
@@ -522,14 +523,6 @@ function paintPreview(holder, field) {
     holder.innerHTML = `<em class="yw-fb__card-nopreview">${esc(_t('FORM_BUILDER_NO_PREVIEW'))}</em>`
   }
   holder.classList.remove('yw-fb__card-preview--pending')
-  // Painting writes markup nobody announced, and an unannounced node is an uninitialised
-  // one: every initialiser hangs off `htmx:load` (yw-init.js). The first preview on a page
-  // got away with it because loading leaflet fires `yw:assets-ready`, which re-runs every
-  // initialiser over the whole document. The second one does not: its assets are already
-  // there, so nothing fires, and the canvas re-render that added it had just replaced the
-  // first map's mounted DOM with a fresh copy of the same string. Both maps ended up as
-  // markup. `process` wires the hx attributes a preview carries (the tag input has one),
-  // `trigger` is how this file says "these nodes are new" in the vocabulary yw-init reads.
   htmx.process(holder)
   htmx.trigger(holder, 'htmx:load')
 }
@@ -710,14 +703,7 @@ function refreshCard(field) {
   paintCached(field)
 }
 
-/**
- * Paint a card's cached preview, once the card is in the document.
- *
- * Order matters and is the whole reason this is its own function: painting announces the
- * nodes it wrote by firing `htmx:load`, that event bubbles to the listener on `document`,
- * and a card that has not been appended yet bubbles to nobody. Painting inside `renderCard`
- * meant every re-rendered preview was left as inert markup.
- */
+/** Paint a card's cached preview, once the card is in the document. */
 function paintCached(field) {
   if (previewHtml[field.id] === undefined) return
   const holder = previewHolder(field)

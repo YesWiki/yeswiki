@@ -1,3 +1,5 @@
+{{ include_css('styles/yw-entries.css') }}
+{{ include_javascript('javascripts/bazar.js', true, true) }}
 {% if adminIsActing %} <a href="{{ url({tag: 'admin/users'}) }}" class="btn btn-primary pull-right"><svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#arrow-left"/></svg> {{ _t('USER_GOTOADMIN') }}</a>{% endif %}
 <h2>{{ _t('USER_SETTINGS') }}{% if adminIsActing %} — {{ user.name }}{% endif %}</h2>
 
@@ -14,7 +16,7 @@
   method="post"
   enctype="multipart/form-data"
   hx-boost="false"
-  class="">
+  class="bazar-form yw-entry-form">
   <input type="hidden" name="usersettings_action" value="update{{ adminIsActing ? 'ByAdmin' : '' }}" />
   {% if avatar %}
     <div class="yw-account-face">
@@ -31,7 +33,7 @@
 
   {{ profileFields|raw }}
 
-  <div class="yw-form-group">
+  <div class="form-actions yw-form-group">
         <div class="controls">
       <input type="hidden" name="csrf-token-update" value="{{ csrfToken({id: 'main', refresh: false}) }}">
             <input class="btn btn-primary" type="submit" value="{{ _t('USER_UPDATE')|e('html_attr') }}" />
@@ -62,7 +64,7 @@
 {% endif %}
 
 {% if userLoggedIn %}
-  <form action="{{ url({tag: ''}) }}" method="post" class="">
+  <form action="{{ url({tag: ''}) }}" method="post" class="yw-entry-form">
       <hr>
       <input type="hidden" name="usersettings_action" value="changepass" />
       <h2>{{ _t('USER_CHANGE_THE_PASSWORD') }}</h2>
@@ -89,7 +91,7 @@
         <input class="yw-input" type="password" name="password" size="40" />
       </div>
     </div>
-    <div class="yw-form-group">
+    <div class="form-actions yw-form-group">
       <div class="controls">
         <input type="hidden" name="csrf-token-changepass" value="{{ csrfToken({id: 'main', refresh: false})|e('html_attr') }}">
         <input class="btn btn-primary" type="submit" value="{{ _t('USER_CHANGE')|e('html_attr') }}" size="40" />

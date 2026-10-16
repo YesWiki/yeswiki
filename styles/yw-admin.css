@@ -269,8 +269,6 @@
   margin-top: var(--yw-space-lg-y);
 }
 
-/* a class that sets `display` outranks the attribute, so say it again */
-
 .yw-files__pager[hidden],
 .yw-files__toolbar[hidden] {
   display: none;
@@ -531,7 +529,6 @@
   margin: 0;
 }
 
-/* The menu editor, on every screen that edits a menu (ticket 64). */
 .yw-menu-rows {
   list-style: none;
   margin: 0 0 var(--yw-space-md-y);
@@ -579,8 +576,6 @@
 .yw-menu-row__link {
   flex: 3 1 200px;
 }
-
-/* Translating a menu: the source wording sits where the link normally is, and reads as a caption. */
 
 .yw-menu-rows--translating .yw-menu-row--child {
   margin-left: var(--yw-space-lg-x);
@@ -900,8 +895,6 @@ body:has(#yw-groups-rail:not([hidden])) .yw-groups__open {
 .yw-preset-card__tools form {
   margin: 0;
 }
-
-/* the card's one form carries every button, and steps out of the way of the card's flex row */
 
 .yw-rail-card__form {
   display: contents;
@@ -1403,8 +1396,6 @@ span.yw-preset-card__star {
   transform: translateY(0);
 }
 
-/* The bar runs the whole width, so the corner controls climb above it while it is up. */
-
 body:has(.admin-bulk-panel.visible) .yw-corner-tools {
   bottom: calc(var(--yw-space-md-y) + env(safe-area-inset-bottom) + 3.5rem);
 }
@@ -1629,8 +1620,6 @@ body:has(.admin-bulk-panel.visible) .yw-corner-tools {
 body:has(#yw-fb-rail:not([hidden])) .yw-fb__rail-open {
   display: none;
 }
-
-/* the rail is fixed over the page, so the form it belongs to steps aside for it */
 
 @media (min-width: 1000px) {
   body:has(#yw-fb-rail:not([hidden])) .bazar-form {
@@ -1878,6 +1867,11 @@ body:has(#yw-fb-rail:not([hidden])) .yw-fb__rail-open {
 
 .yw-fb__card-preview .yw-form-group {
   margin: 0;
+}
+
+.yw-fb__card-preview select {
+  pointer-events: auto;
+  cursor: pointer;
 }
 
 .yw-fb__card-preview :disabled {
@@ -2360,8 +2354,6 @@ body > button.primary {
   }
 }
 
-/* ---- The Journal (ticket 51) and Health (ticket 52) ---- */
-
 .yw-dashboard__count {
   margin-left: auto;
   min-width: 1.5em;
@@ -2452,9 +2444,6 @@ body > button.primary {
 .yw-logs__range {
   color: var(--yw-text-muted);
 }
-
-/* Six columns of variable-length text: the table scrolls inside its own box rather than
-   pushing the whole dashboard sideways. */
 
 .yw-logs__scroll {
   overflow-x: auto;
@@ -2612,8 +2601,6 @@ body > button.primary {
   }
 }
 
-/* The translations screen: a bar per Content type and language, a cell per Content and language. */
-
 .yw-translations th[scope='row'] {
   font-weight: 600;
   text-align: left;
@@ -2652,8 +2639,6 @@ body > button.primary {
   background: var(--yw-border);
   border-radius: var(--yw-radius-full);
 }
-
-/* The started segment sits behind the finished one, so the two read as one filling bar. */
 
 .yw-meter__partial,
 .yw-meter__full {
