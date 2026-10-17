@@ -76,10 +76,6 @@ class Performer
      */
     private function findObjectInPath(string $dir, string $objectType): void
     {
-        // Through the scanner rather than opendir: these are code directories -- a module's own
-        // `Action/`, or an extension's -- which ADR-0022 keeps outside Storage's tiers because
-        // they hold PHP that gets included rather than a wiki's data. One place reads them
-        // (ticket 49), and this was the last one that did not.
         foreach ($this->container->get(ClassDirectoryScanner::class)->filesIn($dir) as $file) {
             if (!preg_match("/^([a-zA-Z0-9_-]+)(\.class)?\.php$/", $file, $matches)) {
                 continue;
@@ -127,6 +123,14 @@ class Performer
             return $instance;
         }
         throw new PerformerException("There were a problem while loading {$className} at {$object['filePath']}. Ensures the class exists");
+    }
+
+    /** Whether $objectName names an action or handler of type $objectType, aliases included. */
+    public function exists(string $objectName, string $objectType): bool
+    {
+        [$objectName] = $this->registry->resolve($objectType, strtolower($objectName));
+
+        return $this->registry->has($objectType, $objectName) || isset($this->objectList[$objectType][$objectName]);
     }
 
     /**
@@ -177,12 +181,6 @@ class Performer
         } catch (HttpException $exception) {
             return $this->renderError($exception->getMessage(), $objectType);
         } catch (\Throwable $t) {
-            // A redirect is not an error, and by the time it gets here it is usually not an
-            // ExitException either: an action that redirects runs inside a Twig render, and Twig
-            // re-throws whatever a template threw as a RuntimeError. Catching the wrapper as a
-            // failure re-rendered the whole page as an error page -- running every action in the
-            // chrome a second time, so a failed sign-in was recorded twice and its password
-            // checked twice.
             if (ExitException::in($t) !== null) {
                 throw $t;
             }

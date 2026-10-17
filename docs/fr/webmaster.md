@@ -179,6 +179,11 @@ Cette interface d'administration permet :
 - de mettre à jour des extensions si une nouvelle version est disponible
 - de désinstaller des extensions
 
+### Appeler des actions depuis un gabarit
+
+Un squelette ou un gabarit Twig accepte la syntaxe des actions des pages, comme
+`{{button text="Ok"}}`. Voir [Les actions dans les gabarits](/docs/fr/actions-dans-les-gabarits.md).
+
 ### Le fichier de configuration
 
 Une fois le YesWiki créé / installé, on peut aller éditer le fichier

@@ -1725,6 +1725,24 @@ body:has(#yw-fb-rail:not([hidden])) .yw-fb__rail-open {
   margin-top: var(--yw-space-sm-y);
 }
 
+.yw-list-values {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 0.15rem var(--yw-space-sm-x);
+  margin: 0;
+  font-size: 0.875rem;
+}
+
+.yw-list-values dt {
+  font-family: var(--yw-font-mono);
+  font-weight: normal;
+  color: var(--yw-text-muted);
+}
+
+.yw-list-values dd {
+  margin: 0;
+}
+
 .yw-fb__reactions-list {
   display: flex;
   flex-direction: column;

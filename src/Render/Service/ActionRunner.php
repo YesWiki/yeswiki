@@ -43,12 +43,34 @@ class ActionRunner
             }
         }
 
+        return $this->run($action, $vars);
+    }
+
+    /**
+     * Runs the action $name with parameters already parsed, keeping it in the log.
+     *
+     * @param array<mixed> $vars
+     */
+    public function run(string $name, array $vars = []): string
+    {
         $this->actionsLog[] = [
-            'action' => $action,
+            'action' => $name,
             'vars' => $vars,
         ];
 
-        return $this->performer->run($action, 'action', $vars);
+        return $this->performer->run($name, 'action', $vars);
+    }
+
+    /** Runs $name when it is an action, and renders nothing otherwise. */
+    public function runIfExists(string $name): string
+    {
+        return $this->performer->exists($name, 'action') ? $this->run($name) : '';
+    }
+
+    /** Closes the element $name opened, without asking the page whether it is balanced. */
+    public function close(string $name): string
+    {
+        return $this->performer->run($name, 'action', [], true);
     }
 
     /**

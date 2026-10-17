@@ -27,6 +27,8 @@ use YesWiki\Kernel\Service\StringUtilService;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Kernel\Service\WikiUrls;
 use YesWiki\Render\Entity\LayoutChrome;
+use YesWiki\Render\Twig\WikiActionLoader;
+use YesWiki\Render\Twig\WikiActionSyntax;
 
 class TemplateEngine
 {
@@ -106,7 +108,7 @@ class TemplateEngine
 
         $this->twigLoader->addPath(YESWIKI_PROGRAM_DIR . '/templates/', 'shipped');
 
-        $this->twig = new \Twig\Environment($this->twigLoader, [
+        $this->twig = new \Twig\Environment(new WikiActionLoader($this->twigLoader), [
             'cache' => 'cache/templates/',
             'auto_reload' => true,
         ]);
@@ -260,7 +262,13 @@ class TemplateEngine
             return $this->container->get(AclService::class)->check($acl, null, $adminCheck, $tag);
         });
         $this->addTwigHelper('renderAction', function ($name, $params = []) {
-            return $this->container->get(Performer::class)->run($name, 'action', $params);
+            return $this->container->get(ActionRunner::class)->run($name, $params);
+        });
+        $this->addTwigHelper('optionalAction', function ($name) {
+            return $this->container->get(ActionRunner::class)->runIfExists($name);
+        });
+        $this->addTwigHelper('closeAction', function ($name) {
+            return $this->container->get(ActionRunner::class)->close($name);
         });
 
         $this->addTwigHelper('action', function ($actionString) {
@@ -301,8 +309,6 @@ class TemplateEngine
             return $this->container->get(EntryDisplay::class)->customValueFor($parameter, $field, $entry, $default);
         });
 
-        // Ticket 64: the value knows what colour and icon it is, so a template asks the value
-        // rather than the call that drew it.
         $this->addTwigHelper('entryColor', function ($field, $entry, $default = '') {
             return $this->container->get(EntryDisplay::class)->colorForEntry($field, $entry, $default);
         });
@@ -442,8 +448,6 @@ class TemplateEngine
             );
         }
 
-        // The account button and the health badge are chrome appended around the render rather
-        // than menu nodes: they are stateful controls, not navigation (ADR-0028).
         $appended = ($chrome->accountButton ? $this->container->get(Performer::class)->run('login', 'action', []) : '')
             . $this->renderHealthBadge();
 
@@ -626,7 +630,7 @@ class TemplateEngine
      */
     public function renderFromString(string $templateString, array $data = []): string
     {
-        return $this->twig->createTemplate($templateString)->render($data);
+        return $this->twig->createTemplate(WikiActionSyntax::rewrite($templateString))->render($data);
     }
 
     /**
@@ -634,7 +638,7 @@ class TemplateEngine
      */
     public function createSquelette(string $source): \Twig\TemplateWrapper
     {
-        return $this->twig->createTemplate($source);
+        return $this->twig->createTemplate(WikiActionSyntax::rewrite($source));
     }
 
     /**
@@ -642,7 +646,7 @@ class TemplateEngine
      */
     public function renderFromStringNoEscape(string $templateString, array $data = []): string
     {
-        $wrapped = '{% autoescape false %}' . $templateString . '{% endautoescape %}';
+        $wrapped = '{% autoescape false %}' . WikiActionSyntax::rewrite($templateString) . '{% endautoescape %}';
 
         return $this->twig->createTemplate($wrapped)->render($data);
     }
@@ -760,7 +764,7 @@ class TemplateEngine
      */
     public function parseTemplateSource(string $name, string $source): void
     {
-        $this->twig->parse($this->twig->tokenize(new \Twig\Source($source, $name)));
+        $this->twig->parse($this->twig->tokenize(new \Twig\Source(WikiActionSyntax::rewrite($source), $name)));
     }
 
     /**
