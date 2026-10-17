@@ -105,11 +105,7 @@ const appParams = {
     },
   },
   methods: {
-    /**
-     * calculate available except
-     * @param {int} nbStep will be set to defaultNbMax if not furnished
-     * @returns {String[]} available Except
-     */
+    /** The occurrence dates that can be excluded, up to nbStep of them. */
     calculateAvailableExcept(nbStep = defaultNbMax) {
       const date = this.getCurrentInputDate('startDateInput')
       if (date === null) {
@@ -136,11 +132,7 @@ const appParams = {
       )
       return occurrences.slice(1).map((occurrence) => occurrence.start)
     },
-    /**
-     * convert a Date object to a string YYYY-MM-DD
-     * @param {Date} date
-     * @returns {string}
-     */
+    /** A Date as a YYYY-MM-DD string. */
     convertDateToString(date) {
       return new Date(
         Date.UTC(
@@ -155,22 +147,19 @@ const appParams = {
         .toISOString()
         .slice(0, 10)
     },
-    /** @return {int} nbMax estimated from limitDate if there is no limit date return defaultNbMax. */
+    /** The number of occurrences the limit date allows, or defaultNbMax without one. */
     estimateNBMaxFromLimitDate() {
       if (this.endDateLimitTime <= 0) {
         return defaultNbMax
       }
-      /** @var {Date} startDate. */
       const startDate = this.getCurrentInputDate('startDateInput')
       if (startDate === null) {
         return defaultNbMax
       }
-      /** @var {int} duration between start date end limit date. */
       const duration = this.endDateLimitTime - startDate.getTime()
       if (duration < 0) {
         return 0
       }
-      /** @var {int} step step in days (very approximatively). */
       let step = 1
       switch (this.repetition) {
         case 'y':
@@ -189,18 +178,12 @@ const appParams = {
       }
       return Math.ceil(duration / 1000 / 3600 / 24 / step) + 20
     },
-    /**
-     * get current date from input
-     * @param {String} keyname
-     * @returns {Date} date , null if not available
-     */
+    /** The date the input named keyname holds, or null when it is empty, missing or invalid. */
     getCurrentInputDate(keyname) {
-      /** @var {String} dateStr current value of input. */
       const dateStr = this?.[keyname]?.value ?? ''
       if (dateStr === '') {
         return null
       }
-      /** @var {Date} date current Date object from value. */
       const date = new Date(dateStr)
       if (date.toString() === 'Invalid Date') {
         return null
@@ -233,7 +216,7 @@ const appParams = {
       }
     },
     registerChangeOnStartDateInput() {
-      this.startDateInput.addEventListener('blur', () => {
+      this.startDateInput?.addEventListener('blur', () => {
         setTimeout(() => {
           this.setCurrentDayIfWeek()
         }, 200)
@@ -268,9 +251,7 @@ const appParams = {
       }
     },
     updateAvailableExceptUpdatingNbMax() {
-      /** @var {int} nbmax calculated nbmax after update of limit date. */
       const nbmax = this.estimateNBMaxFromLimitDate()
-      /** @var {String[]} availableExcept to update the real value of nbMax. */
       const availableExcept = this.calculateAvailableExcept(
         Math.min(nbmax, defaultNbMax),
       )
@@ -280,17 +261,11 @@ const appParams = {
         this.updateEndDateLimitInputIfNotEmpty(availableExcept)
       }
     },
-    /**
-     * update the limit date if maximum number is reached
-     * @param {array} availableExcept
-     */
+    /** Brings the limit date back to the last occurrence when the maximum number is reached. */
     updateEndDateLimitInputIfNotEmpty(availableExcept) {
-      /** @var {Date|null} endDateLimit. */
       const endDateLimit = this.getCurrentInputDate('datePickerForLimit')
       if (endDateLimit !== null && availableExcept.length > 0) {
-        /** @var {string} endDateLimitStr. */
         const endDateLimitStr = this.convertDateToString(endDateLimit)
-        /** @var {string} lastAvailableExcept. */
         const lastAvailableExcept = availableExcept[availableExcept.length - 1]
         if (lastAvailableExcept < endDateLimitStr) {
           this.datePickerForLimit.value = lastAvailableExcept
@@ -314,15 +289,19 @@ const appParams = {
   mounted() {
     const data = JSON.parse(this.dataset)
     const limitdate = data?.limitdate ?? ''
-    this.datePickerForLimit.addEventListener('change', () => {
+    this.datePickerForLimit?.addEventListener('change', () => {
       this.updateEndDateLimitTime(this.datePickerForLimit.value || '')
     })
-    this.datePickerForLimit.addEventListener('input', () => {
+    this.datePickerForLimit?.addEventListener('input', () => {
       if (!this.datePickerForLimit.value) {
         this.updateEndDateLimitTime('')
       }
     })
-    if (limitdate && 'value' in this.datePickerForLimit) {
+    if (
+      limitdate &&
+      this.datePickerForLimit &&
+      'value' in this.datePickerForLimit
+    ) {
       this.datePickerForLimit.value = limitdate
       this.updateEndDateLimitTime()
     } else {
