@@ -13,28 +13,94 @@ futur.
 
 ## Activer ActivityPub sur un formulaire Bazar
 
-- Editer le formulaire et cliquez sur le bouton "Configuration avancée" tout en
-  bas.
-- Cochez la case "Activer ActivityPub pour ce formulaire"
-- Entrez un nom pour d'utilisateur ActivityPub (par exemple "agenda" ou "blog")
-- Entrez une template sémantique (utilisée pour convertir les données YesWiki en
-  données ActivityPub - voir ci-dessous)
-- Entrez une template sémantique inverse (utilisée pour convertir les données
-  ActivityPub en YesWiki - voir ci-dessous)
+- Éditez le formulaire et ouvrez la section "ActivityPub" tout en bas.
+- Cochez la case "Activer ActivityPub pour ce formulaire".
+- Entrez une template sémantique, qui convertit les données YesWiki en données
+  ActivityPub (voir les exemples plus bas).
+- Entrez une template sémantique inverse, qui convertit les données ActivityPub
+  en données YesWiki.
 
-Après avoir validé la modification, il devrait y avoir deux nouveaux éléments
-dans la liste des formulaires:
+Une fois le formulaire enregistré, la liste des formulaires montre deux
+nouveaux éléments :
 
-- Dans la colonne "Format de données", un bouton "AP" qui renvoie vers l'acteur
-  ActivityPub du formulaire
-- Dans les actions, un bouton "Gestion des abonnements"
+- dans les formats de données, un bouton "ActivityPub" qui mène à l'acteur du
+  formulaire ;
+- dans les actions, un bouton "ActivityPub : profil et abonnements", visible
+  des administrateurs seulement.
 
-Depuis la page "Gestion des abonnements", plusieurs choses sont possibles:
+Ce bouton ouvre une page en trois onglets : profil, abonnements et abonnés. Le
+compte n'existe pour les autres serveurs qu'une fois un nom d'utilisateur
+choisi et le profil enregistré.
 
-- S'abonner à un nouvel acteur en entrant son identifiant
-- Suivre en retour un acteur qui nous suit déjà
-- Synchroniser toutes les données d'un acteur auquel on est abonné
-- Effacer un abonnement ou un abonné
+## Profil du compte
+
+L'onglet "Profil" règle ce que voient les personnes qui consultent ou suivent le
+compte depuis Mastodon, GoToSocial ou un autre serveur :
+
+- le nom d'utilisateur, par exemple "agenda", qui donne l'identifiant
+  `@agenda@monwiki.org` ;
+- la présentation. Laissée vide, c'est la description du formulaire qui sert.
+  Les adresses web deviennent des liens ;
+- l'image de profil et la bannière. On donne une adresse complète, ou on
+  choisit une image dans les fichiers du wiki ;
+- jusqu'à six informations, avec un libellé et une valeur. Mastodon en affiche
+  quatre, GoToSocial six ;
+- la case "Valider les abonnés à la main" (voir plus bas).
+
+Le profil est enregistré avec le formulaire, dans les métadonnées de sa page.
+
+Les serveurs distants gardent le profil en cache, donc un changement peut
+mettre quelques heures à apparaître chez eux. Changer le nom d'utilisateur ne
+fait pas perdre les abonnés, car l'adresse de l'acteur reste celle du
+formulaire (`/actors/<identifiant du formulaire>`). L'ancien identifiant, lui,
+ne mène plus au compte.
+
+## Abonnements et abonnés
+
+L'onglet "Abonnements" liste les comptes que le formulaire suit. On peut y :
+
+- s'abonner à un nouveau compte en entrant son identifiant ;
+- synchroniser toutes les fiches d'un compte suivi ;
+- se désabonner.
+
+Un abonnement reste marqué "en attente d'acceptation" jusqu'à ce que le compte
+distant l'accepte.
+
+L'onglet "Abonnés" liste les comptes qui suivent le formulaire. On peut y
+suivre un abonné en retour ou le retirer.
+
+Par défaut, YesWiki accepte tout de suite une demande d'abonnement. Si la case
+"Valider les abonnés à la main" est cochée, chaque demande attend dans l'onglet
+"Abonnés", avec un bouton pour l'accepter et un pour la refuser. Une demande
+dont l'acceptation automatique n'a pas pu partir vers le serveur distant reste
+aussi affichée là, et le bouton "Accepter" la renvoie.
+
+## Clés de signature
+
+Chaque compte signe ses échanges avec une clé RSA. YesWiki la crée au premier
+besoin dans `private/keys/activitypub/<identifiant du formulaire>.pem`, avec
+les autres clés du wiki. Elle n'est ni dans la base de données ni dans l'API.
+Si le wiki range ses données protégées dans un stockage S3, la clé y va aussi.
+
+Gardez ce fichier dans vos sauvegardes. Sans lui, YesWiki génère une nouvelle
+clé. Mastodon recharge alors le profil de lui-même, mais GoToSocial refuse un
+compte dont la clé a changé ("pubkey has changed" dans ses journaux) : il garde
+l'ancien profil et ignore les messages du compte. Il faut alors qu'un
+administrateur de chaque instance GoToSocial concernée fasse expirer les clés
+du domaine du wiki, depuis les actions d'administration de GoToSocial.
+
+Les wikis qui gardaient la clé dans les métadonnées du formulaire la voient
+déplacée dans ce fichier par la mise à jour, sans changement de clé.
+
+## Compatibilité GoToSocial
+
+GoToSocial refuse toute requête non signée, y compris la simple lecture d'un
+profil. YesWiki signe donc avec la clé du formulaire toutes ses requêtes vers
+les autres serveurs : lecture des profils, des clés et des boîtes d'envoi.
+
+Le serveur web doit faire suivre les adresses `/actors/…` et
+`/.well-known/webfinger` à YesWiki. Le binaire et la configuration nginx
+fournie le font déjà.
 
 ## Exemples de templates
 
@@ -153,19 +219,21 @@ peu de travail)
 
 ### `entryfollow`
 
-Si vous avez activés ActivityPub pour un formulaire Bazar, vous pouvez utiliser
-cette action pour permettre à n'importe qui de suivre l'acteur avec un compte
-ActivityPub (par exemple Mastodon).
+Si ActivityPub est activé pour un formulaire et que son profil a un nom
+d'utilisateur, cette action permet à n'importe qui de suivre l'acteur depuis
+son propre compte (Mastodon par exemple).
 
-Elle prend comme unique paramètre l'ID du formulaire:
+Elle prend comme unique paramètre l'identifiant du formulaire :
 
 ```text
 {{entryfollow id="3"}}
 ```
 
-Cela affiche un champ comme ça:
+Cela affiche un champ comme celui-ci :
 
 ![interface de follow](images/follow-actor.png)
 
-Lorsque l'utilisateur entre son identifiant ActivityPub, cela le redirige vers
-la page de l'acteur formulaire sur sa propre instance.
+La personne entre son identifiant. Si son serveur propose l'abonnement à
+distance, comme Mastodon, elle arrive sur la page de l'acteur dans son propre
+compte. Sinon, l'action affiche l'identifiant du formulaire, à chercher depuis
+son compte avant de s'abonner.

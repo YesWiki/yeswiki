@@ -83,6 +83,7 @@ class BazarAction extends YesWikiAction implements RegisteredAction, ProvidesCom
     public const ACTION_SUBSCRIPTION_ADD = 'add';
     public const ACTION_SUBSCRIPTION_REMOVE = 'remove';
     public const ACTION_ABONNEMENT_SYNC = 'sync';
+    public const ACTION_SUBSCRIPTION_ACCEPT = 'accept';
 
     public const ACTION_PUBLIER = 'publier';
     public const ACTION_PAS_PUBLIER = 'pas_publier';
@@ -270,6 +271,8 @@ class BazarAction extends YesWikiAction implements RegisteredAction, ProvidesCom
 
                     case self::ACTION_ABONNEMENT_SYNC:
                         return $formController->syncActorPosts($req->query->get('formid'), $req->query->get('actor'));
+                    case self::ACTION_SUBSCRIPTION_ACCEPT:
+                        return $formController->acceptFollower($req->query->get('formid'), $req->request->getString('actor'));
                     default:
                         return $formController->displayAll($req->query->get('msg'));
                 }

@@ -22,6 +22,13 @@ export default {
         value: '',
         placeholder: `ex. : checkboxfiche6=PageTag ; cf. ${wiki.url('doc')}#/docs/fr/bazar?id=_323-afficher-une-partie-des-donn%C3%A9es-query`,
       },
+      filter_limit: {
+        label: _t('BAZ_FORM_EDIT_OPTIONS_FILTER_LIMIT_LABEL'),
+        type: 'number',
+        value: '',
+        placeholder: _t('BAZ_FORM_EDIT_OPTIONS_FILTER_LIMIT_PLACEHOLDER'),
+        description: _t('BAZ_FORM_EDIT_RADIO_FILTER_LIMIT_HINT'),
+      },
     },
   },
   defaultIdentifier: 'bf_choice',
@@ -30,6 +37,7 @@ export default {
     'write_access',
     'queries',
     'display_method',
+    'filter_limit',
   ],
   editorSetup: enumEditorSetup,
 }

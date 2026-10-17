@@ -354,16 +354,12 @@
           </label>
         </div>
         <div id="activitypub-config" class="{{ form.activitypub_enable ? '' : 'hide' }}">
-          <div class="yw-form-group">
-            <label class="yw-form-label" for="activitypub-username">{{ _t('BAZ_ACTIVITYPUB_USERNAME') }}</label>
-            <input
-              class="yw-input"
-              id="activitypub-username"
-              name="activitypub_username"
-              type="text"
-              value="{{ form.activitypub_username }}"
-            />
-          </div>
+          <p class="yw-form-hint">
+            {{ _t('BAZ_ACTIVITYPUB_PROFILE_ELSEWHERE') }}
+            {% if form.id is not empty %}
+              <a href="{{ url({ params: { view: 'abonnements', action: 'list', formid: form.id, tab: 'profile' }}) }}">{{ _t('BAZ_GESTION_ABONNEMENTS') }}</a>
+            {% endif %}
+          </p>
           <div class="yw-form-group">
             <label class="yw-form-label" for="sem-template">{{ _t('BAZ_SEM_TEMPLATE') }}</label>
             <textarea

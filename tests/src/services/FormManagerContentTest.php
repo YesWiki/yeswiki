@@ -214,7 +214,7 @@ class FormManagerContentTest extends YesWikiTestCase
         }
     }
 
-    public function testActivityPubCredentialsSurviveTheRoundTripAndActorUriUsesTheStableId(): void
+    public function testTheActivityPubSettingsSurviveTheRoundTripWithoutAnyKeyAndTheActorUriUsesTheStableId(): void
     {
         $wiki = $this->getWiki();
         $formManager = $wiki->services->get(FormManager::class);
@@ -232,11 +232,10 @@ class FormManagerContentTest extends YesWikiTestCase
 
             $form = $formManager->getOne(self::FORM_ID);
             $this->assertNotNull($form);
-            $this->assertTrue($activityPubService->isEnabled($form));
-            $this->assertSame('someactor', $form['activitypub_username']);
-            $this->assertNotEmpty($form['activitypub_private_key']);
-            $this->assertNotEmpty($form['activitypub_public_key']);
-
+            $this->assertTrue($activityPubService->hasActor($form));
+            $this->assertSame('someactor', $activityPubService->username($form));
+            $this->assertArrayNotHasKey('private_key', $form['activitypub']);
+            $this->assertArrayNotHasKey('activitypub_private_key', $form);
             $this->assertStringEndsWith('/actors/' . self::FORM_ID, $activityPubService->getFormActorUri($form));
 
             $formManager->update([
@@ -244,44 +243,44 @@ class FormManagerContentTest extends YesWikiTestCase
                 'label' => 'FormManagerContentTest activitypub form updated',
                 'template' => '',
                 'activitypub_enable' => '1',
-                'activitypub_username' => 'someactor',
             ]);
             $updatedForm = $formManager->getOne(self::FORM_ID);
             $this->assertNotNull($updatedForm);
-            $this->assertSame($form['activitypub_private_key'], $updatedForm['activitypub_private_key']);
+            $this->assertSame('someactor', $activityPubService->username($updatedForm));
         } finally {
             $this->cleanupForm($formManager, $entryManager, self::FORM_ID);
         }
     }
 
-    public function testSetActivitypubKeypairRestoresAPreviouslyPublishedKeyAfterCreate(): void
+    public function testASavedProfileOutlivesAnEditOfTheForm(): void
     {
         $wiki = $this->getWiki();
         $formManager = $wiki->services->get(FormManager::class);
+        $activityPubService = $wiki->services->get(ActivityPubService::class);
         $entryManager = $wiki->services->get(EntryManager::class);
 
         try {
             $formManager->create([
                 'id' => self::FORM_ID,
-                'label' => 'FormManagerContentTest activitypub restore form',
+                'label' => 'FormManagerContentTest activitypub profile form',
                 'template' => '',
                 'activitypub_enable' => '1',
-                'activitypub_username' => 'preexisting',
             ]);
-            $regeneratedForm = $formManager->getOne(self::FORM_ID);
-            $this->assertNotNull($regeneratedForm);
-            $freshlyGeneratedKey = $regeneratedForm['activitypub_private_key'];
-            $this->assertNotSame('PREVIOUSLY-PUBLISHED-PRIVATE-KEY', $freshlyGeneratedKey);
+            $formManager->saveActivitypubProfile(self::FORM_ID, ['username' => 'agenda', 'summary' => 'Les rencontres', 'approve_followers' => true]);
 
-            $formManager->setActivitypubKeypair(self::FORM_ID, 'PREVIOUSLY-PUBLISHED-PRIVATE-KEY', 'PREVIOUSLY-PUBLISHED-PUBLIC-KEY');
+            $formManager->update([
+                'id' => self::FORM_ID,
+                'label' => 'FormManagerContentTest activitypub profile form renamed',
+                'template' => '',
+            ]);
 
             $form = $formManager->getOne(self::FORM_ID);
             $this->assertNotNull($form);
-            $this->assertSame('PREVIOUSLY-PUBLISHED-PRIVATE-KEY', $form['activitypub_private_key']);
-            $this->assertSame('PREVIOUSLY-PUBLISHED-PUBLIC-KEY', $form['activitypub_public_key']);
-
-            $this->assertSame('1', $form['activitypub_enable']);
-            $this->assertSame('preexisting', $form['activitypub_username']);
+            $this->assertFalse($activityPubService->isEnabled($form));
+            $profile = $activityPubService->profile($form);
+            $this->assertSame('agenda', $profile['username']);
+            $this->assertSame('Les rencontres', $profile['summary']);
+            $this->assertTrue($profile['approve_followers']);
         } finally {
             $this->cleanupForm($formManager, $entryManager, self::FORM_ID);
         }

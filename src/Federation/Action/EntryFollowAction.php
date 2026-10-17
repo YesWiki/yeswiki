@@ -20,29 +20,36 @@ class EntryFollowAction extends YesWikiAction implements RegisteredAction
     public function run(): string
     {
         $activityPubService = $this->getService(ActivityPubService::class);
-        $webfingerService = $this->getService(WebFingerService::class);
 
         $formId = $this->arguments['id'];
         $form = $this->getService(FormManager::class)->getOne($formId);
-        if (empty($form)) {
+        if (empty($form) || !$activityPubService->hasActor($form)) {
             return '';
         }
+
+        $formHandle = $activityPubService->handle($form);
+        $error = null;
 
         $post = $this->getRequest()->request;
         if ($post->has('actor_handle') && $post->get('form_id') == $formId) {
-            $formActorUri = $activityPubService->getFormActorUri($form);
-
-            $interactionUrl = $webfingerService->getInteractionUrl((string)$post->get('actor_handle', ''), $formActorUri);
-
-            return $this->getService(Redirector::class)->redirect($interactionUrl);
-        }
-
-        if (!$activityPubService->isEnabled($form)) {
-            return '';
+            try {
+                $interactionUrl = $this->getService(WebFingerService::class)->getInteractionUrl(
+                    trim((string)$post->get('actor_handle', '')),
+                    $activityPubService->getFormActorUri($form)
+                );
+            } catch (\Exception $e) {
+                $interactionUrl = null;
+            }
+            if (!empty($interactionUrl)) {
+                return $this->getService(Redirector::class)->redirect($interactionUrl);
+            }
+            $error = _t('BAZ_FOLLOW_SEARCH_HANDLE', ['handle' => $formHandle]);
         }
 
         return $this->render('@core/follow.twig', [
             'form' => $form,
+            'formHandle' => $formHandle,
+            'error' => $error,
         ]);
     }
 }

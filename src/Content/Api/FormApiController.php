@@ -15,25 +15,10 @@ use YesWiki\Kernel\Service\AssetRegistry;
 
 class FormApiController extends YesWikiController
 {
-    /**
-     * The form arrays carry the ActivityPub keypair (merged from page metadata for internal use); the private key must never leave through the public API.
-     *
-     * @param array<string, mixed> $form
-     *
-     * @return array<string, mixed>
-     */
-    private function stripFormSecrets(array $form): array
-    {
-        unset($form['activitypub_private_key']);
-
-        return $form;
-    }
-
     #[Route('/api/forms', methods: ['GET'], options: ['acl' => ['public']])]
     public function getAllForms(): ApiResponse
     {
         $forms = $this->getService(FormManager::class)->getAll();
-        $forms = array_map([$this, 'stripFormSecrets'], $forms);
 
         return new ApiResponse(empty($forms) ? null : $forms);
     }
@@ -110,6 +95,6 @@ class FormApiController extends YesWikiController
             throw new NotFoundHttpException();
         }
 
-        return new ApiResponse($this->stripFormSecrets($vForm));
+        return new ApiResponse($vForm);
     }
 }

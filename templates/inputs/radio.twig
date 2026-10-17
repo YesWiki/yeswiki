@@ -7,8 +7,7 @@
           value='' placeholder="{{ _t('BAZAR_FILTER') }}">
     <div class="clearfix"></div>
   {% endif %}
-  <div class="bazar-radio-rows bazar-radio{{ field.required ? ' radio_required' : ''}}"
-    {% if displayFilter %}style="overflow:auto;max-height:{{ displayFilterLimit * 30 }}px;"{% endif %}>
+  <div class="bazar-radio-rows bazar-radio{{ field.required ? ' radio_required' : ''}}{{ displayFilter ? ' list-bazar-entries--scroll' : '' }}">
     {% for key, option in options %}
         {% block radioInput %}
           <div class="radio">

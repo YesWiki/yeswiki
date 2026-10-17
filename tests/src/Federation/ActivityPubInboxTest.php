@@ -1,0 +1,330 @@
+<?php
+
+namespace YesWiki\Test\Federation;
+
+use PHPUnit\Framework\TestCase;
+use Psr\Container\ContainerInterface;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use Symfony\Component\HttpClient\MockHttpClient;
+use Symfony\Component\HttpClient\Response\MockResponse;
+use YesWiki\Content\Service\EntryManager;
+use YesWiki\Content\Service\SemanticTransformer;
+use YesWiki\Federation\Service\ActivityPubInbox;
+use YesWiki\Federation\Service\ActivityPubKeyStore;
+use YesWiki\Federation\Service\ActivityPubProfiles;
+use YesWiki\Federation\Service\ActivityPubService;
+use YesWiki\Federation\Service\HttpSignatureService;
+use YesWiki\Files\Service\Storage;
+use YesWiki\Kernel\Service\KeyPairGenerator;
+use YesWiki\Kernel\Service\SsrfUrlValidator;
+use YesWiki\Kernel\Service\TripleStore;
+
+require_once 'tests/YesWikiTestCase.php';
+require_once 'src/constants.php';
+
+/**
+ * An activity acts on behalf of the actor the request was signed by, and on nothing that actor does not own (GHSA-rm6r-grfg-4v78).
+ *
+ * A valid signature only answers "was this signed"; who it was signed by is what decides which entries the activity may touch.
+ */
+class ActivityPubInboxTest extends TestCase
+{
+    /** @var array<string, mixed> */
+    private const FORM = ['id' => '1', 'activitypub_enable' => '1', 'activitypub' => ['username' => 'agenda']];
+    private const THEM = 'https://them.example/actors/1';
+
+    /** @var list<array<string, string>> */
+    private array $triples = [];
+    /** @var array<string, string> */
+    private array $owners = [];
+    /** @var list<string> */
+    private array $updated = [];
+    /** @var list<string> */
+    private array $deleted = [];
+    /** @var list<array<string, string>> */
+    private array $created = [];
+    /** @var list<array<string, mixed>> */
+    private array $outbox = [];
+
+    private string $root;
+
+    protected function setUp(): void
+    {
+        $this->root = sys_get_temp_dir() . '/yeswiki-activitypub-inbox-' . bin2hex(random_bytes(4));
+    }
+
+    protected function tearDown(): void
+    {
+        Storage::rootedAt($this->root)->deleteDirectory(ActivityPubKeyStore::DIRECTORY);
+        foreach (['/private/keys', '/private', ''] as $directory) {
+            @rmdir($this->root . $directory);
+        }
+    }
+
+    private function service(): ActivityPubInbox
+    {
+        $tripleStore = $this->createStub(TripleStore::class);
+        $tripleStore->method('getMatching')->willReturnCallback(
+            fn ($resource, $property, $value) => array_values(array_filter(
+                $this->triples,
+                fn ($t) => $t['property'] === $property
+                    && (is_null($value) ? $t['resource'] === $resource : $t['value'] === $value)
+            ))
+        );
+        $tripleStore->method('getOne')->willReturnCallback(
+            fn ($resource, $property) => $property === ActivityPubInbox::REMOTE_ACTOR_URI
+                ? ($this->owners[$resource] ?? null)
+                : null
+        );
+        $tripleStore->method('create')->willReturnCallback(function ($resource, $property, $value) {
+            if ($property === ActivityPubInbox::REMOTE_ACTOR_URI) {
+                $this->owners[$resource] = $value;
+            }
+
+            return 0;
+        });
+
+        $entryManager = $this->createStub(EntryManager::class);
+        $entryManager->method('create')->willReturnCallback(function ($formId, $data, $semantic, $sourceUrl) {
+            $tag = 'Fiche' . (count($this->created) + 1);
+            $this->created[] = ['tag' => $tag, 'sourceUrl' => $sourceUrl];
+            $this->triples[] = ['resource' => $tag, 'property' => TripleStore::SOURCE_URL_URI, 'value' => $sourceUrl];
+
+            return ['tag' => $tag] + $data;
+        });
+        $entryManager->method('update')->willReturnCallback(function ($tag) {
+            $this->updated[] = $tag;
+
+            return [];
+        });
+        $entryManager->method('delete')->willReturnCallback(function ($tag) {
+            $this->deleted[] = $tag;
+            $this->triples = array_values(array_filter($this->triples, fn ($t) => $t['resource'] !== $tag));
+            unset($this->owners[$tag]);
+        });
+        $entryManager->method('search')->willReturnCallback(fn () => array_map(
+            fn ($resource) => ['tag' => $resource],
+            array_values(array_unique(array_map(
+                fn ($t) => $t['resource'],
+                array_filter($this->triples, fn ($t) => $t['property'] === TripleStore::SOURCE_URL_URI)
+            )))
+        ));
+
+        $container = $this->createStub(ContainerInterface::class);
+        $container->method('get')->willReturn($entryManager);
+
+        $semanticTransformer = $this->createStub(SemanticTransformer::class);
+        $semanticTransformer->method('convertFromSemanticData')->willReturn(['bf_titre' => 'Une fiche']);
+
+        $params = $this->createStub(ParameterBagInterface::class);
+        $params->method('get')->willReturn('https://us.example/');
+
+        $httpSignatureService = new HttpSignatureService($this->createStub(SsrfUrlValidator::class));
+        $client = new MockHttpClient(fn ($method, $url) => new MockResponse((string)json_encode(
+            str_ends_with($url, '/outbox')
+                ? ['type' => 'OrderedCollection', 'orderedItems' => $this->outbox]
+                : ['id' => $url, 'outbox' => $url . '/outbox', 'inbox' => $url . '/inbox']
+        )));
+        (new \ReflectionProperty($httpSignatureService, 'httpClient'))->setValue($httpSignatureService, $client);
+
+        $activityPub = new ActivityPubService(
+            $params,
+            $httpSignatureService,
+            $semanticTransformer,
+            $tripleStore,
+            $this->createStub(SsrfUrlValidator::class),
+            new ActivityPubKeyStore(Storage::rootedAt($this->root), new KeyPairGenerator()),
+            new ActivityPubProfiles($container),
+        );
+
+        return new ActivityPubInbox($activityPub, $container, $httpSignatureService, $semanticTransformer, $tripleStore);
+    }
+
+    private function givenMirroredEntry(string $tag, string $objectId, ?string $owner = null): void
+    {
+        $this->triples[] = ['resource' => $tag, 'property' => TripleStore::SOURCE_URL_URI, 'value' => $objectId];
+        if (!is_null($owner)) {
+            $this->owners[$tag] = $owner;
+        }
+    }
+
+    /** @return array<string, mixed> */
+    private function update(string $objectId): array
+    {
+        return ['type' => 'Update', 'actor' => self::THEM, 'object' => ['id' => $objectId]];
+    }
+
+    /** @return array<string, mixed> */
+    private function delete(string $objectId): array
+    {
+        return ['type' => 'Delete', 'actor' => self::THEM, 'object' => ['id' => $objectId]];
+    }
+
+    public function testAnActivityCannotClaimAnActorTheRequestWasNotSignedFor(): void
+    {
+        $this->givenMirroredEntry('FicheUne', 'https://them.example/entries/1', self::THEM);
+
+        $this->expectException(\Exception::class);
+        $this->expectExceptionMessage('claims an actor');
+
+        $this->service()->processActivity($this->update('https://them.example/entries/1'), self::FORM, 'https://attacker.example/actors/1');
+    }
+
+    public function testAnActorCannotUpdateAnEntryThatBelongsToAnother(): void
+    {
+        $this->givenMirroredEntry('FicheUne', 'https://them.example/entries/1', 'https://them.example/actors/2');
+
+        try {
+            $this->service()->processActivity($this->update('https://them.example/entries/1'), self::FORM, self::THEM);
+            $this->fail('the update should have been refused');
+        } catch (\Exception $e) {
+            $this->assertStringContainsString('belongs to another actor', $e->getMessage());
+        }
+        $this->assertSame([], $this->updated);
+    }
+
+    public function testAnActorCannotDeleteAnEntryThatBelongsToAnother(): void
+    {
+        $this->givenMirroredEntry('FicheUne', 'https://them.example/entries/1', 'https://them.example/actors/2');
+
+        try {
+            $this->service()->processActivity($this->delete('https://them.example/entries/1'), self::FORM, self::THEM);
+            $this->fail('the delete should have been refused');
+        } catch (\Exception $e) {
+            $this->assertStringContainsString('belongs to another actor', $e->getMessage());
+        }
+        $this->assertSame([], $this->deleted);
+    }
+
+    public function testTheActorAnEntryCameFromCanUpdateAndDeleteIt(): void
+    {
+        $this->givenMirroredEntry('FicheUne', 'https://them.example/entries/1', self::THEM);
+        $service = $this->service();
+
+        $service->processActivity($this->update('https://them.example/entries/1'), self::FORM, self::THEM);
+        $service->processActivity($this->delete('https://them.example/entries/1'), self::FORM, self::THEM);
+
+        $this->assertSame(['FicheUne'], $this->updated);
+        $this->assertSame(['FicheUne'], $this->deleted);
+    }
+
+    /** Entries mirrored before the owner was recorded fall back to the host their source address is on. */
+    public function testAnEntryMirroredBeforeOwnersWereRecordedAnswersToItsOwnHost(): void
+    {
+        $this->givenMirroredEntry('FicheUne', 'https://them.example/entries/1');
+
+        $this->service()->processActivity($this->update('https://them.example/entries/1'), self::FORM, self::THEM);
+
+        $this->assertSame(['FicheUne'], $this->updated);
+    }
+
+    public function testAnotherHostCannotTouchAnEntryMirroredBeforeOwnersWereRecorded(): void
+    {
+        $this->givenMirroredEntry('FicheUne', 'https://them.example/entries/1');
+        $activity = ['type' => 'Delete', 'actor' => 'https://attacker.example/actors/1', 'object' => ['id' => 'https://them.example/entries/1']];
+
+        try {
+            $this->service()->processActivity($activity, self::FORM, 'https://attacker.example/actors/1');
+            $this->fail('the delete should have been refused');
+        } catch (\Exception $e) {
+            $this->assertStringContainsString('another host', $e->getMessage());
+        }
+        $this->assertSame([], $this->deleted);
+    }
+
+    public function testCreatingAnEntryWritesDownWhoItAnswersTo(): void
+    {
+        $activity = [
+            'type' => 'Create',
+            'actor' => self::THEM,
+            'object' => ['id' => 'https://them.example/entries/7', 'type' => 'Note'],
+        ];
+
+        $this->service()->processActivity($activity, self::FORM, self::THEM);
+
+        $this->assertSame([['tag' => 'Fiche1', 'sourceUrl' => 'https://them.example/entries/7']], $this->created);
+        $this->assertSame([self::THEM], array_values($this->owners));
+    }
+
+    public function testAnActorCannotBringAnObjectFromAnotherHost(): void
+    {
+        $activity = [
+            'type' => 'Create',
+            'actor' => self::THEM,
+            'object' => ['id' => 'https://us.example/entries/7', 'type' => 'Note'],
+        ];
+
+        try {
+            $this->service()->processActivity($activity, self::FORM, self::THEM);
+            $this->fail('the creation should have been refused');
+        } catch (\Exception $e) {
+            $this->assertStringContainsString('its own host', $e->getMessage());
+        }
+        $this->assertSame([], $this->created);
+    }
+
+    public function testAMalformedActivityIsRefused(): void
+    {
+        $this->expectException(\Exception::class);
+        $this->expectExceptionMessage('Malformed activity');
+
+        $this->service()->processActivity([], self::FORM, self::THEM);
+    }
+
+    public function testUnknownObjectsAreLeftAlone(): void
+    {
+        $this->givenMirroredEntry('FicheUne', 'https://them.example/entries/1', self::THEM);
+
+        $this->service()->processActivity($this->update('https://them.example/entries/2'), self::FORM, self::THEM);
+
+        $this->assertSame([], $this->updated);
+    }
+
+    /**
+     * @param list<array<string, mixed>> $outboxItems
+     *
+     * @return array<string, int>
+     */
+    private function sync(array $outboxItems, string $actorUri = self::THEM): array
+    {
+        $this->outbox = $outboxItems;
+
+        return $this->service()->syncActorPosts($actorUri, self::FORM);
+    }
+
+    public function testSyncCannotDeleteAnEntryThatBelongsToAnotherActor(): void
+    {
+        $this->givenMirroredEntry('FicheUne', 'https://them.example/entries/1', 'https://them.example/actors/2');
+
+        $stats = $this->sync([['type' => 'Delete', 'object' => 'https://them.example/entries/1']]);
+
+        $this->assertSame([], $this->deleted, 'a cross-actor delete in the outbox must be ignored');
+        $this->assertSame(0, $stats['deleted']);
+    }
+
+    public function testSyncDeletesAnEntryTheSyncedActorOwns(): void
+    {
+        $this->givenMirroredEntry('FicheUne', 'https://them.example/entries/1', self::THEM);
+
+        $this->sync([['type' => 'Delete', 'object' => 'https://them.example/entries/1']]);
+
+        $this->assertSame(['FicheUne'], $this->deleted);
+    }
+
+    public function testSyncGarbageCollectionSparesAnotherActorsEntryOnTheSameHost(): void
+    {
+        $this->givenMirroredEntry('Mine', 'https://them.example/entries/1', self::THEM);
+        $this->givenMirroredEntry('Theirs', 'https://them.example/entries/2', 'https://them.example/actors/2');
+
+        $this->sync([]);
+
+        $this->assertSame(['Mine'], $this->deleted, 'only the synced actor\'s own absent entry is swept');
+    }
+
+    public function testSyncDoesNotMirrorAnObjectFromAnotherHost(): void
+    {
+        $this->sync([['type' => 'Create', 'object' => ['id' => 'https://elsewhere.example/entries/9']]]);
+
+        $this->assertSame([], $this->created, 'a Create whose object is on another host is skipped');
+    }
+}

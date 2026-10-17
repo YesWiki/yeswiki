@@ -3,13 +3,14 @@
 namespace YesWiki\Test\Content;
 
 use YesWiki\Content\Field\CheckboxEntryField;
+use YesWiki\Content\Field\RadioEntryField;
 use YesWiki\Content\Service\FormManager;
 use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';
 
-/** A checkbox field may set its own threshold for the filter, select-all and scrolling. */
-class CheckboxFilterLimitTest extends YesWikiTestCase
+/** A checkbox or radio field may set its own threshold for the filter, select-all and scrolling. */
+class OptionsFilterLimitTest extends YesWikiTestCase
 {
     private function render(string $filterLimit): string
     {
@@ -57,5 +58,24 @@ class CheckboxFilterLimitTest extends YesWikiTestCase
 
         $this->assertStringNotContainsString('filter-entries', $html);
         $this->assertStringNotContainsString('list-bazar-entries--scroll', $html);
+    }
+
+    private function renderRadio(string $filterLimit): string
+    {
+        $prepared = $this->getWiki()->services->get(FormManager::class)->prepareData(['template' => [
+            ['type' => 'radiofiche', 'linked_object' => '5', 'name' => 'bf_page', 'label' => 'Page', 'filter_limit' => $filterLimit],
+        ]]);
+        $field = reset($prepared);
+        $this->assertInstanceOf(RadioEntryField::class, $field);
+
+        return (string)$field->renderInputIfPermitted([]);
+    }
+
+    public function testARadioFollowsItsOwnLimit(): void
+    {
+        $this->assertStringContainsString('list-bazar-entries--scroll', $this->renderRadio('1'));
+        $this->assertStringContainsString('filter-entries', $this->renderRadio('1'));
+        $this->assertStringNotContainsString('filter-entries', $this->renderRadio('500'));
+        $this->assertStringNotContainsString('filter-entries', $this->renderRadio('0'));
     }
 }

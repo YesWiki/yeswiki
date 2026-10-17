@@ -38,19 +38,27 @@ class WebFingerService
     /**
      * @return array<string, mixed> the WebFinger response body for a local actor
      */
-    public function formatLocalActor(string $handle, string $actorUri): array
+    public function formatLocalActor(string $handle, string $actorUri, ?string $profileUrl = null): array
     {
         $webfinger = new WebFinger();
 
-        $webfinger->setSubject($handle);
+        $webfinger->setSubject('acct:' . ltrim($handle, '@'));
         $webfinger->setAliases([$actorUri]);
-        $webfinger->setLinks([
+        $links = [
             [
                 'rel' => 'self',
                 'type' => 'application/activity+json',
                 'href' => $actorUri,
             ],
-        ]);
+        ];
+        if (!empty($profileUrl)) {
+            $links[] = [
+                'rel' => 'http://webfinger.net/rel/profile-page',
+                'type' => 'text/html',
+                'href' => $profileUrl,
+            ];
+        }
+        $webfinger->setLinks($links);
 
         return $webfinger->toArray();
     }
@@ -93,13 +101,12 @@ class WebFingerService
         return $webfinger->getProfileId();
     }
 
-    public function getInteractionUrl(string $handle, string $actorToFollow): string
+    /** Where the person behind a handle can follow an actor, or null when their server offers no remote follow. */
+    public function getInteractionUrl(string $handle, string $actorToFollow): ?string
     {
-        $webfinger = $this->getWebfingerObject($handle);
-
-        $interactionUrl = $webfinger->getInteractionUrl();
-        if ($interactionUrl === null) {
-            throw new \Exception("the remote actor '$handle' publishes no subscribe template");
+        $interactionUrl = $this->getWebfingerObject($handle)->getInteractionUrl();
+        if (empty($interactionUrl)) {
+            return null;
         }
 
         return str_replace('{uri}', urlencode($actorToFollow), $interactionUrl);

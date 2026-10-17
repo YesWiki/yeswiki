@@ -1,4 +1,8 @@
 <strong>{{ _t('BAZ_FOLLOW_FORM_ACTOR')|replace({'{actorName}':form['label']}) }}</strong>
+<p class="yw-text-muted"><code>{{ formHandle }}</code></p>
+{% if error %}
+<div class="yw-alert yw-alert--info">{{ error }}</div>
+{% endif %}
 <form action="" method="post" class="">
   <input name="form_id" type="hidden" value="{{ form['id'] }}" />
 	<div class="input-prepend input-append input-group">

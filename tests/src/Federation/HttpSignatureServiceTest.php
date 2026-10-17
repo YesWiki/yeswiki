@@ -85,9 +85,10 @@ class HttpSignatureServiceTest extends TestCase
         return $service;
     }
 
-    private function signedRequest(int $date, string $signedHeaders = '(request-target) date digest'): Request
+    private function signedRequest(int $date, string $signedHeaders = '(request-target) date digest', string $algorithm = 'rsa-sha256', ?string $target = null): Request
     {
         $headers = [
+            'host' => 'wiki.example',
             'date' => gmdate('D, d M Y H:i:s \\G\\M\\T', $date),
             'digest' => 'SHA-256=' . base64_encode(hash('sha256', self::BODY, true)),
         ];
@@ -98,18 +99,66 @@ class HttpSignatureServiceTest extends TestCase
         $lines = [];
         foreach (explode(' ', $signedHeaders) as $header) {
             $lines[] = $header === '(request-target)'
-                ? "(request-target): post {$request->getScriptName()}"
+                ? '(request-target): post ' . ($target ?? $request->getScriptName())
                 : "{$header}: {$headers[$header]}";
         }
         openssl_sign(implode("\n", $lines), $signature, $this->keyPair()[0], OPENSSL_ALGO_SHA256);
         $request->headers->set('Signature', sprintf(
-            'keyId="%s#main-key",algorithm="rsa-sha256",headers="%s",signature="%s"',
+            'keyId="%s#main-key",algorithm="%s",headers="%s",signature="%s"',
             self::ACTOR,
+            $algorithm,
             $signedHeaders,
             base64_encode((string)$signature)
         ));
 
         return $request;
+    }
+
+    public function testTheSignatureIsCheckedAgainstThePublishedInboxPathNotTheRewrittenOne(): void
+    {
+        $now = time();
+        $request = $this->signedRequest($now, '(request-target) date digest', 'rsa-sha256', '/actors/1/inbox');
+
+        $this->assertSame(self::ACTOR, $this->verifier($now)->verifySignature($request, null, '/actors/1/inbox'));
+    }
+
+    public function testAGoToSocialHs2019SignatureIsAccepted(): void
+    {
+        $now = time();
+
+        $this->assertSame(self::ACTOR, $this->verifier($now)->verifySignature($this->signedRequest($now, '(request-target) host date digest', 'hs2019')));
+    }
+
+    public function testAnUnknownAlgorithmIsRefused(): void
+    {
+        $now = time();
+
+        $this->expectException(\Exception::class);
+        $this->expectExceptionMessage('Unsupported signature algorithm');
+
+        $this->verifier($now)->verifySignature($this->signedRequest($now, '(request-target) date digest', 'hmac-sha256'));
+    }
+
+    public function testTheKeyIsFetchedWithASignedRequestWhenTheFormCanSign(): void
+    {
+        $now = time();
+        $sent = [];
+        $verifier = $this->verifier($now);
+        $actor = (string)json_encode([
+            'id' => self::ACTOR,
+            'publicKey' => ['id' => self::ACTOR . '#main-key', 'owner' => self::ACTOR, 'publicKeyPem' => $this->keyPair()[1]],
+        ]);
+        $verifier->useClient(new MockHttpClient(function ($method, $url, $options) use (&$sent, $actor) {
+            $sent = $options['normalized_headers'];
+
+            return new MockResponse($actor);
+        }));
+
+        $verifier->verifySignature($this->signedRequest($now), ['keyId' => 'https://us.example/actors/1#main-key', 'privateKey' => $this->keyPair()[0]]);
+
+        $this->assertStringContainsString('keyId="https://us.example/actors/1#main-key"', $sent['signature'][0]);
+        $this->assertStringContainsString('headers="(request-target) host date"', $sent['signature'][0]);
+        $this->assertStringContainsString('application/activity+json', $sent['accept'][0]);
     }
 
     public function testAFreshSignedRequestIsAccepted(): void

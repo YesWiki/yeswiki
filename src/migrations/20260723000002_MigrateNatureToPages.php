@@ -2,6 +2,7 @@
 
 use YesWiki\Content\Service\FormManager;
 use YesWiki\Core\YesWikiMigration;
+use YesWiki\Federation\Service\ActivityPubKeyStore;
 
 class MigrateNatureToPages extends YesWikiMigration
 {
@@ -22,7 +23,6 @@ class MigrateNatureToPages extends YesWikiMigration
             }
 
             $existingPrivateKey = $row['bn_activitypub_private_key'] ?? null;
-            $existingPublicKey = $row['bn_activitypub_public_key'] ?? null;
 
             $row['bn_activitypub_enable'] = (string)($row['bn_activitypub_enable'] ?? '0');
 
@@ -37,8 +37,8 @@ class MigrateNatureToPages extends YesWikiMigration
 
             $formManager->create($row);
 
-            if (!empty($existingPrivateKey) && !empty($existingPublicKey)) {
-                $formManager->setActivitypubKeypair($row['id'], $existingPrivateKey, $existingPublicKey);
+            if (!empty($existingPrivateKey)) {
+                $this->getService(ActivityPubKeyStore::class)->import((string)$row['id'], $existingPrivateKey);
             }
         }
     }

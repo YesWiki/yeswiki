@@ -2907,6 +2907,58 @@ blockquote > cite {
   gap: var(--yw-space-md-y) var(--yw-space-md-x);
 }
 
+.yw-activitypub {
+  padding-top: var(--yw-space-lg-y);
+}
+
+.yw-activitypub__profile {
+  max-width: 48rem;
+}
+
+.yw-activitypub__icon,
+.yw-activitypub__image {
+  display: block;
+  max-width: 100%;
+  margin-bottom: var(--yw-space-sm-y);
+  border-radius: var(--yw-radius-md);
+}
+
+.yw-activitypub__icon {
+  max-height: 6rem;
+}
+
+.yw-activitypub__image {
+  max-height: 10rem;
+}
+
+.yw-activitypub__profile fieldset {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.yw-activitypub__field {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+  gap: var(--yw-space-sm-x);
+  margin-bottom: var(--yw-space-sm-y);
+}
+
+.yw-activitypub th {
+  text-align: start;
+}
+
+.yw-activitypub__actions {
+  width: 9rem;
+}
+
+.yw-activitypub__requests {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--yw-space-sm-x);
+}
+
 .form-card {
   display: flex;
   flex-direction: column;

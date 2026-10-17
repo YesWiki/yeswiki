@@ -21,6 +21,8 @@ use YesWiki\Content\Service\FormOverview;
 use YesWiki\Content\Service\FormPropertiesService;
 use YesWiki\Content\Service\TranslatableContent;
 use YesWiki\Core\YesWikiController;
+use YesWiki\Federation\Service\ActivityPubInbox;
+use YesWiki\Federation\Service\ActivityPubProfiles;
 use YesWiki\Federation\Service\ActivityPubService;
 use YesWiki\Federation\Service\WebFingerService;
 use YesWiki\Identity\Service\AclOptions;
@@ -878,43 +880,157 @@ class FormController extends YesWikiController
     }
 
     /**
+     * The ActivityPub screen of a form: its profile, the accounts it follows and the accounts following it.
+     *
      * @param int|string|null $id from the query string, so possibly absent
      *
      * @return string
      */
     public function manageAbonnements($id)
     {
+        if (!$this->getService(AclService::class)->isAdmin()) {
+            return $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href('', '', ['view' => 'formulaire', 'msg' => 'BAZ_NEED_ADMIN_RIGHTS'], false));
+        }
         $form = $id === null ? null : $this->formManager->getOne($id);
         if ($form === null) {
-            return $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href('', '', ['view' => 'abonnements', 'action' => 'list', 'msg' => 'NOT_FOUND', 'formid' => $id], false));
+            return $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href('', '', ['view' => 'formulaire'], false));
         }
 
         $post = $this->getRequest()->request;
-        if ($post->has('actor_handle')) {
-            if (!$this->getService(AclService::class)->isAdmin() || $this->hibernationService->isWikiHibernated()) {
-                return $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href('', '', ['view' => 'abonnements', 'action' => 'list', 'msg' => 'BAZ_NEED_ADMIN_RIGHTS', 'formid' => $id], false));
+        if ($post->has('actor_handle') || $post->has('activitypub_username')) {
+            $tab = $post->has('activitypub_username') ? 'profile' : 'following';
+            if (!$this->refusesActivityPubChanges()) {
+                try {
+                    $this->csrfTokenChecker->checkToken('main', 'POST', 'csrf-token', false);
+                    if ($tab === 'profile') {
+                        $this->saveActivityPubProfile($form);
+                        Flash::success(_t('BAZ_ACTIVITYPUB_PROFILE_SAVED'));
+                    } else {
+                        $this->followHandle($form, trim((string)$post->get('actor_handle')));
+                        Flash::success(_t('BAZ_FOLLOWING_ADDED'));
+                    }
+                } catch (\Exception $e) {
+                    Flash::error(htmlspecialchars($e->getMessage()));
+                }
             }
 
-            $actorHandle = (string)$post->get('actor_handle');
-            $recipientUri = str_starts_with($actorHandle, 'http') ? $actorHandle : $this->webfingerService->getRemoteActor($actorHandle);
-
-            $this->activityPubService->postActivity(['type' => 'Follow', 'object' => $recipientUri, 'to' => $recipientUri], $form);
-
-            return $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href('', '', ['view' => 'abonnements', 'action' => 'list', 'msg' => 'BAZ_FOLLOWING_ADDED', 'formid' => $id], false));
+            $this->redirectToActivityPub($id, $tab);
         }
 
-        $followers = $this->activityPubService->getFollowers($form);
-        $following = $this->activityPubService->getFollowing($form);
+        $profile = $this->activityPubService->profile($form);
+        $followRequests = $this->activityPubService->getFollowRequests($form);
+        $tab = $this->getRequest()->query->get('tab');
+        if (!in_array($tab, ['profile', 'following', 'followers'], true)) {
+            $tab = $profile['username'] === '' ? 'profile' : (empty($followRequests) ? 'following' : 'followers');
+        }
+        $label = is_string($form['label'] ?? null) ? $form['label'] : '';
 
-        $domain = parse_url($this->getService(UrlFormatter::class)->getBaseUrl(), PHP_URL_HOST);
-
-        return $this->render('@core/forms/abonnements.twig', [
+        return $this->render('@core/forms/activitypub.twig', [
             'message' => $this->getRequest()->query->get('msg'),
             'form' => $form,
-            'domain' => $domain,
-            'followers' => $followers,
-            'following' => $following,
+            'tab' => $tab,
+            'profile' => $profile,
+            'suggestedUsername' => mb_substr(trim((string)preg_replace('/[^a-z0-9]+/', '_', strtolower((string)iconv('UTF-8', 'ASCII//TRANSLIT', $label))), '_'), 0, 30),
+            'domain' => parse_url($this->getService(UrlFormatter::class)->getBaseUrl(), PHP_URL_HOST),
+            'actorUri' => $this->activityPubService->getFormActorUri($form),
+            'isEnabled' => $this->activityPubService->isEnabled($form),
+            'followers' => $this->activityPubService->getFollowers($form),
+            'followRequests' => $followRequests,
+            'following' => $this->activityPubService->getFollowing($form),
+            'pendingFollowing' => $this->activityPubService->getPendingFollowing($form),
+            'maxFields' => ActivityPubProfiles::MAX_FIELDS,
         ]);
+    }
+
+    /**
+     * Saves the profile posted from the ActivityPub screen.
+     *
+     * @param array<string, mixed> $form
+     */
+    private function saveActivityPubProfile(array $form): void
+    {
+        $post = $this->getRequest()->request;
+        $profile = [
+            'username' => $post->get('activitypub_username'),
+            'summary' => $post->get('activitypub_summary'),
+            'icon' => $post->get('activitypub_icon'),
+            'image' => $post->get('activitypub_image'),
+            'approve_followers' => $post->has('activitypub_approve_followers'),
+            'fields' => [],
+        ];
+        $values = $post->all('activitypub_field_value');
+        foreach ($post->all('activitypub_field_name') as $index => $name) {
+            $profile['fields'][(string)$name] = (string)($values[$index] ?? '');
+        }
+        $this->getService(ActivityPubProfiles::class)->save($form, $profile);
+    }
+
+    /** @param array<string, mixed> $form */
+    private function followHandle(array $form, string $actorHandle): void
+    {
+        $recipientUri = str_starts_with($actorHandle, 'http') ? $actorHandle : $this->webfingerService->getRemoteActor($actorHandle);
+        if (empty($recipientUri)) {
+            throw new \Exception(_t('BAZ_ACTIVITYPUB_ACTOR_NOT_FOUND', ['handle' => $actorHandle]));
+        }
+        $this->activityPubService->follow($form, $recipientUri);
+    }
+
+    /** @param int|string|null $id */
+    private function redirectToActivityPub($id, string $tab, ?string $message = null): never
+    {
+        $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href('', '', array_filter([
+            'view' => 'abonnements',
+            'action' => 'list',
+            'formid' => $id,
+            'tab' => $tab,
+            'msg' => $message,
+        ]), false));
+    }
+
+    /** Whether the current user may not change the form's ActivityPub account, with the reason flashed. */
+    private function refusesActivityPubChanges(): bool
+    {
+        if (!$this->getService(AclService::class)->isAdmin()) {
+            Flash::error(_t('BAZ_NEED_ADMIN_RIGHTS'));
+
+            return true;
+        }
+        if ($this->hibernationService->isWikiHibernated()) {
+            Flash::error(_t('WIKI_IN_HIBERNATION'));
+
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Runs an ActivityPub change on a form for an admin, flashing what goes wrong, then goes back to the screen.
+     *
+     * @param int|string|null                      $id
+     * @param callable(array<string, mixed>): void $change
+     */
+    private function changeActivityPub($id, ?string $actorUri, string $tab, callable $change, ?string $done = null, bool $postedToken = false): never
+    {
+        if ($this->refusesActivityPubChanges()) {
+            $this->redirectToActivityPub($id, $tab);
+        }
+        $form = $id === null ? null : $this->formManager->getOne($id);
+        if ($form === null || empty($actorUri)) {
+            $this->redirectToActivityPub($id, $tab, 'NOT_FOUND');
+        }
+        try {
+            if ($postedToken) {
+                $this->csrfTokenChecker->checkToken('main', 'POST', 'csrf-token', false);
+            }
+            $change($form);
+        } catch (\Exception $e) {
+            Flash::error(htmlspecialchars($e->getMessage()));
+
+            $this->redirectToActivityPub($id, $tab);
+        }
+
+        $this->redirectToActivityPub($id, $tab, $done);
     }
 
     /**
@@ -925,18 +1041,7 @@ class FormController extends YesWikiController
      */
     public function addFollowing($id, $actorUri)
     {
-        if (!$this->getService(AclService::class)->isAdmin() || $this->hibernationService->isWikiHibernated()) {
-            return $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href('', '', ['view' => 'abonnements', 'action' => 'list', 'msg' => 'BAZ_NEED_ADMIN_RIGHTS', 'formid' => $id], false));
-        }
-
-        $form = $id === null ? null : $this->formManager->getOne($id);
-        if ($form === null || $actorUri === null) {
-            return $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href('', '', ['view' => 'abonnements', 'action' => 'list', 'msg' => 'NOT_FOUND', 'formid' => $id], false));
-        }
-
-        $this->activityPubService->postActivity(['type' => 'Follow', 'object' => $actorUri, 'to' => $actorUri], $form);
-
-        return $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href('', '', ['view' => 'abonnements', 'action' => 'list', 'msg' => 'BAZ_FOLLOWING_ADDED', 'formid' => $id], false));
+        return $this->changeActivityPub($id, $actorUri, 'following', fn (array $form) => $this->activityPubService->follow($form, (string)$actorUri), 'BAZ_FOLLOWING_ADDED');
     }
 
     /**
@@ -947,31 +1052,7 @@ class FormController extends YesWikiController
      */
     public function removeFollowing($id, $actorUri)
     {
-        if (!$this->getService(AclService::class)->isAdmin() || $this->hibernationService->isWikiHibernated()) {
-            return $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href('', '', ['view' => 'abonnements', 'action' => 'list', 'msg' => 'BAZ_NEED_ADMIN_RIGHTS', 'formid' => $id], false));
-        }
-
-        $form = $id === null ? null : $this->formManager->getOne($id);
-        if ($form === null || $actorUri === null) {
-            return $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href('', '', ['view' => 'abonnements', 'action' => 'list', 'msg' => 'NOT_FOUND', 'formid' => $id], false));
-        }
-
-        $formActorUri = $this->activityPubService->getFormActorUri($form);
-
-        $this->activityPubService->removeFollowing($form, $actorUri);
-
-        $this->activityPubService->postActivity([
-            'type' => 'Undo',
-            'object' => [
-                'type' => 'Follow',
-                'actor' => $formActorUri,
-                'object' => $actorUri,
-                'to' => $actorUri,
-            ],
-            'to' => $actorUri,
-        ], $form);
-
-        return $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href('', '', ['view' => 'abonnements', 'action' => 'list', 'msg' => 'BAZ_FOLLOWING_REMOVED', 'formid' => $id], false));
+        return $this->changeActivityPub($id, $actorUri, 'following', fn (array $form) => $this->activityPubService->unfollow($form, (string)$actorUri), 'BAZ_FOLLOWING_REMOVED');
     }
 
     /**
@@ -982,34 +1063,42 @@ class FormController extends YesWikiController
      */
     public function syncActorPosts($id, $actorUri)
     {
-        if (!$this->getService(AclService::class)->isAdmin() || $this->hibernationService->isWikiHibernated()) {
-            return $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href('', '', ['view' => 'abonnements', 'action' => 'list', 'msg' => 'BAZ_NEED_ADMIN_RIGHTS', 'formid' => $id], false));
+        if ($this->refusesActivityPubChanges()) {
+            $this->redirectToActivityPub($id, 'following');
         }
-
         try {
             $this->csrfTokenChecker->checkToken('main', 'GET', 'synctoken', false);
         } catch (TokenNotFoundException $th) {
-            return $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href('', '', ['view' => 'abonnements', 'action' => 'list', 'msg' => $th->getMessage(), 'formid' => $id], false));
+            Flash::error(htmlspecialchars($th->getMessage()));
+
+            $this->redirectToActivityPub($id, 'following');
         }
 
-        $form = $id === null ? null : $this->formManager->getOne($id);
-        if ($form === null || $actorUri === null) {
-            return $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href('', '', ['view' => 'abonnements', 'action' => 'list', 'msg' => 'NOT_FOUND', 'formid' => $id], false));
-        }
-
-        $stats = $this->activityPubService->syncActorPosts($actorUri, $form);
-
-        Flash::success(sprintf(
-            _t('BAZ_SYNC_COMPLETE'),
-            $stats['created'],
-            $stats['updated'],
-            $stats['deleted'],
-        ));
-
-        return $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href('', '', ['view' => 'abonnements', 'action' => 'list', 'formid' => $id], false));
+        return $this->changeActivityPub($id, $actorUri, 'following', function (array $form) use ($actorUri): void {
+            $stats = $this->getService(ActivityPubInbox::class)->syncActorPosts((string)$actorUri, $form);
+            Flash::success(sprintf(_t('BAZ_SYNC_COMPLETE'), $stats['created'], $stats['updated'], $stats['deleted']));
+        });
     }
 
     /**
+     * Accepts a pending follow request, posted from the followers tab.
+     *
+     * @param int|string|null $id       from the query string, so possibly absent
+     * @param string|null     $actorUri
+     *
+     * @return string
+     */
+    public function acceptFollower($id, $actorUri)
+    {
+        return $this->changeActivityPub($id, $actorUri, 'followers', function (array $form) use ($actorUri): void {
+            $this->activityPubService->acceptFollower($form, (string)$actorUri);
+            Flash::success(_t('BAZ_ACTIVITYPUB_FOLLOWER_ACCEPTED'));
+        }, null, true);
+    }
+
+    /**
+     * Refuses a pending follow request or removes a follower, telling the remote actor.
+     *
      * @param int|string|null $id       from the query string, so possibly absent
      * @param string|null     $actorUri
      *
@@ -1017,36 +1106,7 @@ class FormController extends YesWikiController
      */
     public function removeFollower($id, $actorUri)
     {
-        if (!$this->getService(AclService::class)->isAdmin() || $this->hibernationService->isWikiHibernated()) {
-            return $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href('', '', ['view' => 'abonnements', 'action' => 'list', 'msg' => 'BAZ_NEED_ADMIN_RIGHTS', 'formid' => $id], false));
-        }
-
-        $form = $id === null ? null : $this->formManager->getOne($id);
-        if ($form === null || $actorUri === null) {
-            return $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href('', '', ['view' => 'abonnements', 'action' => 'list', 'msg' => 'NOT_FOUND', 'formid' => $id], false));
-        }
-
-        $formActorUri = $this->activityPubService->getFormActorUri($form);
-
-        $this->activityPubService->removeFollower($form, $actorUri);
-
-        $this->activityPubService->postActivity([
-            'type' => 'Undo',
-            'object' => [
-                'type' => 'Accept',
-                'actor' => $formActorUri,
-                'object' => [
-                    'type' => 'Follow',
-                    'actor' => $formActorUri,
-                    'object' => $actorUri,
-                    'to' => $actorUri,
-                ],
-                'to' => $actorUri,
-            ],
-            'to' => $actorUri,
-        ], $form);
-
-        return $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href('', '', ['view' => 'abonnements', 'action' => 'list', 'msg' => 'BAZ_FOLLOWER_REMOVED', 'formid' => $id], false));
+        return $this->changeActivityPub($id, $actorUri, 'followers', fn (array $form) => $this->activityPubService->rejectFollower($form, (string)$actorUri), 'BAZ_FOLLOWER_REMOVED');
     }
 
     /**

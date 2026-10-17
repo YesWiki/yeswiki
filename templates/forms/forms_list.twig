@@ -7,10 +7,10 @@
 </div>
 {% endif %}
 
-{% macro formsCards(forms, tooltipMessage) %}
+{% macro formsCards(forms, tooltipMessage, userIsAdmin) %}
   <div class="forms-cards">
     {% for key, form in forms %}
-      {{ include('@core/forms/form_card.twig', { key: key, form: form, tooltipMessage: tooltipMessage }) }}
+      {{ include('@core/forms/form_card.twig', { key: key, form: form, tooltipMessage: tooltipMessage, userIsAdmin: userIsAdmin }) }}
     {% endfor %}
   </div>
 {% endmacro %}
@@ -19,7 +19,7 @@
   <section class="forms-list__section">
     <h2 class="forms-list__heading">{{ _t('BAZ_SYSTEM_FORMS') }}</h2>
     <p class="forms-list__hint">{{ _t('BAZ_SYSTEM_FORMS_HINT') }}</p>
-    {{ _self.formsCards(systemForms, tooltipMessage) }}
+    {{ _self.formsCards(systemForms, tooltipMessage, userIsAdmin) }}
   </section>
 {% endif %}
 
@@ -50,7 +50,7 @@
   </div>
 
   {% if forms|length > 0 %}
-    {{ _self.formsCards(forms, tooltipMessage) }}
+    {{ _self.formsCards(forms, tooltipMessage, userIsAdmin) }}
     <p class="forms-list__empty" data-yw-card-filter-empty hidden>{{ _t('BAZ_FORMS_FILTER_NO_RESULT') }}</p>
   {% else %}
     <div class="yw-alert yw-alert--info">

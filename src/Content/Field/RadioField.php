@@ -14,6 +14,7 @@ abstract class RadioField extends EnumField
     protected $displayFilterLimit;
 
     protected const FIELD_DISPLAY_METHOD = 7;
+    protected const FIELD_FILTER_LIMIT = 19;
 
     /**
      * @param array<int|string, mixed> $values
@@ -24,6 +25,10 @@ abstract class RadioField extends EnumField
         $this->displayMethod = $values[self::FIELD_DISPLAY_METHOD];
         $params = $this->services->get(ParameterBagInterface::class);
         $this->displayFilterLimit = $params->has('BAZ_MAX_RADIO_WITHOUT_FILTER') ? $params->get('BAZ_MAX_RADIO_WITHOUT_FILTER') : false;
+        $filterLimit = trim((string)($values[self::FIELD_FILTER_LIMIT] ?? ''));
+        if (is_numeric($filterLimit)) {
+            $this->displayFilterLimit = max(0, (int)$filterLimit) ?: false;
+        }
     }
 
     protected function renderInput($entry)

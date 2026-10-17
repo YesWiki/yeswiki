@@ -70,9 +70,9 @@
           </button>
         {% endif %}
       {% endif %}
-      {% if form.isActivityPubEnabled %}
+      {% if form.isActivityPubEnabled and userIsAdmin %}
         <a class="yw-btn yw-btn--sm" title="{{ _t('BAZ_GESTION_ABONNEMENTS') }}" href="{{ url({ params: { view: 'abonnements', action: 'list', formid: key }}) }}" data-toggle="tooltip" data-placement="bottom">
-          <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#user-plus"/></svg>
+          <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#rss"/></svg>
         </a>
       {% endif %}
       {% if form.bookmarklet %}

@@ -18,7 +18,6 @@ use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\EventDispatcher;
 use YesWiki\Kernel\Service\HibernationService;
-use YesWiki\Kernel\Service\KeyPairGenerator;
 use YesWiki\Kernel\Service\RequestScopedState;
 use YesWiki\Kernel\Service\TripleStore;
 
@@ -36,7 +35,6 @@ class FormManager implements RequestScopedState
     private const MAX_ALIAS_HOPS = 10;
 
     protected DbService $dbService;
-    protected KeyPairGenerator $keyPairGenerator;
     protected EntryManager $entryManager;
     protected HibernationService $hibernationService;
     protected FieldFactory $fieldFactory;
@@ -61,7 +59,6 @@ class FormManager implements RequestScopedState
         FieldFactory $fieldFactory,
         ParameterBagInterface $params,
         HibernationService $hibernationService,
-        KeyPairGenerator $keyPairGenerator,
         PageManager $pageManager,
         TripleStore $tripleStore,
         AclService $aclService,
@@ -71,7 +68,6 @@ class FormManager implements RequestScopedState
     ) {
         $this->container = $container;
         $this->dbService = $dbService;
-        $this->keyPairGenerator = $keyPairGenerator;
         $this->entryManager = $entryManager;
         $this->fieldFactory = $fieldFactory;
         $this->params = $params;
@@ -278,9 +274,7 @@ class FormManager implements RequestScopedState
         );
 
         $body['activitypub_enable'] = (string)($activitypub['enabled'] ?? '0');
-        $body['activitypub_username'] = $activitypub['username'] ?? '';
-        $body['activitypub_private_key'] = $activitypub['private_key'] ?? null;
-        $body['activitypub_public_key'] = $activitypub['public_key'] ?? null;
+        $body['activitypub'] = array_diff_key($activitypub, ['enabled' => 0, 'private_key' => 0, 'public_key' => 0]);
         $body['tag'] = $page['tag'];
 
         return $body;
@@ -593,11 +587,8 @@ class FormManager implements RequestScopedState
     }
 
     /**
-     * Builds the `metadata.activitypub` array, generating a fresh keypair the first time a
-     * form is enabled for ActivityPub and preserving the existing one afterwards (the admin
-     * edit form has no input for the keys themselves, only for enable/username).
-     */
-    /**
+     * The `metadata.activitypub` array: the enable switch from the posted form, the profile kept as the ActivityPub screen saved it.
+     *
      * @param array<string, mixed> $data
      * @param array<string, mixed> $existingActivitypub
      *
@@ -605,17 +596,10 @@ class FormManager implements RequestScopedState
      */
     private function buildActivitypubMetadata(array $data, array $existingActivitypub): array
     {
-        $enabled = (int)(($data['activitypub_enable'] ?? null) === '1');
-        $activitypub = [
-            'enabled' => (string)$enabled,
-            'username' => $data['activitypub_username'] ?? ($existingActivitypub['username'] ?? ''),
-            'private_key' => $existingActivitypub['private_key'] ?? null,
-            'public_key' => $existingActivitypub['public_key'] ?? null,
-        ];
-        if ($enabled && empty($activitypub['private_key'])) {
-            [$privateKey, $publicKey] = $this->keyPairGenerator->generate();
-            $activitypub['private_key'] = $privateKey;
-            $activitypub['public_key'] = $publicKey;
+        $activitypub = $existingActivitypub;
+        $activitypub['enabled'] = (string)(int)(($data['activitypub_enable'] ?? null) === '1');
+        if (is_string($data['activitypub_username'] ?? null) && $data['activitypub_username'] !== '') {
+            $activitypub['username'] = $data['activitypub_username'];
         }
 
         return $activitypub;
@@ -675,20 +659,22 @@ class FormManager implements RequestScopedState
         return $saved;
     }
 
-    /** Overwrites a form's stored ActivityPub keypair, keeping `enabled`/`username` as already set. */
-    /** @param int|string $formId */
-    public function setActivitypubKeypair($formId, string $privateKey, string $publicKey): void
+    /**
+     * Stores a form's ActivityPub profile with it, keeping the enable switch as it is.
+     *
+     * @param int|string           $formId
+     * @param array<string, mixed> $profile
+     */
+    public function saveActivitypubProfile($formId, array $profile): void
     {
         $tag = $this->resolveTag((string)$formId);
         if ($tag === null) {
-            throw new \Exception("Cannot set ActivityPub keypair on form '$formId': no such form");
+            throw new \Exception("Cannot save the ActivityPub profile of form '$formId': no such form");
         }
 
-        $page = $this->pageManager->getOne($tag, null, true, true);
-        $activitypub = $page['metadatas']['activitypub'] ?? [];
-        $activitypub['private_key'] = $privateKey;
-        $activitypub['public_key'] = $publicKey;
-        $this->pageManager->setMetadata($tag, ['activitypub' => $activitypub]);
+        $page = $this->pageManager->getOne($tag, null, true, true) ?? [];
+        $existing = is_array($page['metadatas']['activitypub'] ?? null) ? $page['metadatas']['activitypub'] : [];
+        $this->pageManager->setMetadata($tag, ['activitypub' => ['enabled' => (string)($existing['enabled'] ?? '0')] + $profile]);
 
         unset($this->cachedForms[$formId], $this->cachedForms[$tag]);
     }
@@ -1294,22 +1280,5 @@ class FormManager implements RequestScopedState
         }
 
         return $res;
-    }
-
-    /**
-     * @param string $username
-     *
-     * @return array<string, mixed>|null
-     */
-    public function findByActivityPubUsername($username)
-    {
-        $forms = $this->getAll();
-        foreach ($forms as $form) {
-            if ($form['activitypub_username'] === $username) {
-                return $form;
-            }
-        }
-
-        return null;
     }
 }

@@ -1,0 +1,213 @@
+{% if message %}
+<div class="yw-alert yw-alert--success">
+  <a data-yw-dismiss="alert" class="yw-close" type="button">&times;</a>
+  {{ _t(message) }}
+</div>
+{% endif %}
+
+<h2>{{ form.label }} <small>ActivityPub</small></h2>
+
+{% if not isEnabled %}
+<div class="yw-alert yw-alert--warning">{{ _t('BAZ_ACTIVITYPUB_DISABLED') }}</div>
+{% elseif profile.username is empty %}
+<div class="yw-alert yw-alert--warning">{{ _t('BAZ_ACTIVITYPUB_NO_USERNAME') }}</div>
+{% else %}
+<div class="yw-alert yw-alert--info">
+  <strong>{{ _t('BAZ_FORM_ACTOR_ID') }}</strong> : @{{ profile.username }}@{{ domain }}
+</div>
+{% endif %}
+
+<ul class="yw-nav" role="tablist">
+  {% for name, label in {
+    profile: _t('BAZ_ACTIVITYPUB_PROFILE'),
+    following: _t('BAZ_ABONNEMENTS') ~ ' (' ~ following|length ~ ')',
+    followers: _t('BAZ_ABONNES') ~ ' (' ~ followers|length ~ ')',
+  } %}
+  <li role="presentation"{% if tab == name %} class="active"{% endif %}>
+    <a href="{{ url({ params: { view: 'abonnements', action: 'list', formid: form.id, tab: name }}) }}"{% if tab == name %} aria-current="page"{% endif %}>
+      {{ label }}
+      {% if name == 'followers' and followRequests is not empty %}<span class="badge">{{ followRequests|length }}</span>{% endif %}
+    </a>
+  </li>
+  {% endfor %}
+</ul>
+
+<div class="yw-activitypub">
+{% if tab == 'profile' %}
+<form action="{{ url({ params: { view: 'abonnements', action: 'list', formid: form.id }}) }}" method="post" class="yw-activitypub__profile">
+  <input type="hidden" name="csrf-token" value="{{ csrfToken({id: 'main', refresh: false})|e('html_attr') }}">
+
+  <div class="yw-form-group">
+    <label class="yw-form-label" for="activitypub_username">{{ _t('BAZ_ACTIVITYPUB_USERNAME') }}</label>
+    <div class="input-group">
+      <span class="input-group-addon">@</span>
+      <input class="yw-input" id="activitypub_username" name="activitypub_username" type="text" required pattern="[a-zA-Z0-9_]{1,30}" maxlength="30" value="{{ profile.username ?: suggestedUsername }}">
+      <span class="input-group-addon">@{{ domain }}</span>
+    </div>
+    <p class="yw-form-hint">{{ _t('BAZ_ACTIVITYPUB_USERNAME_HELP') }}</p>
+  </div>
+
+  <div class="yw-form-group">
+    <label class="yw-form-label" for="activitypub_summary">{{ _t('BAZ_ACTIVITYPUB_SUMMARY') }}</label>
+    <textarea class="yw-input" id="activitypub_summary" name="activitypub_summary" rows="4" maxlength="5000" placeholder="{{ form.description|default('')|striptags|e('html_attr') }}">{{ profile.summary }}</textarea>
+    <p class="yw-form-hint">{{ _t('BAZ_ACTIVITYPUB_SUMMARY_HELP') }}</p>
+  </div>
+
+  {% for role in ['icon', 'image'] %}
+  <div class="yw-form-group">
+    <label class="yw-form-label" for="activitypub_{{ role }}">{{ _t(role == 'icon' ? 'BAZ_ACTIVITYPUB_ICON' : 'BAZ_ACTIVITYPUB_IMAGE') }}</label>
+    {% if profile[role] is not empty %}
+    <img class="yw-activitypub__{{ role }}" src="{{ profile[role] }}" alt="">
+    {% endif %}
+    <div class="input-group">
+      <input class="yw-input" id="activitypub_{{ role }}" name="activitypub_{{ role }}" type="text" value="{{ profile[role] }}" placeholder="https://…">
+      <button type="button" class="yw-btn" data-yw-file-picker-field="activitypub_{{ role }}" data-yw-file-picker-only="image">
+        <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#photo"/></svg>
+        {{ _t('BAZ_ACTIVITYPUB_CHOOSE_IMAGE') }}
+      </button>
+    </div>
+    <p class="yw-form-hint">{{ _t(role == 'icon' ? 'BAZ_ACTIVITYPUB_ICON_HELP' : 'BAZ_ACTIVITYPUB_IMAGE_HELP') }}</p>
+  </div>
+  {% endfor %}
+
+  <fieldset class="yw-form-group">
+    <legend class="yw-form-label">{{ _t('BAZ_ACTIVITYPUB_FIELDS') }}</legend>
+    {% set fieldNames = profile.fields|keys %}
+    {% for index in 0..(maxFields - 1) %}
+    <div class="yw-activitypub__field">
+      <input class="yw-input" name="activitypub_field_name[]" type="text" maxlength="255" placeholder="{{ _t('BAZ_ACTIVITYPUB_FIELD_NAME') }}" aria-label="{{ _t('BAZ_ACTIVITYPUB_FIELD_NAME') }}" value="{{ fieldNames[index] ?? '' }}">
+      <input class="yw-input" name="activitypub_field_value[]" type="text" maxlength="2048" placeholder="{{ _t('BAZ_ACTIVITYPUB_FIELD_VALUE') }}" aria-label="{{ _t('BAZ_ACTIVITYPUB_FIELD_VALUE') }}" value="{{ fieldNames[index] is defined ? profile.fields[fieldNames[index]] : '' }}">
+    </div>
+    {% endfor %}
+    <p class="yw-form-hint">{{ _t('BAZ_ACTIVITYPUB_FIELDS_HELP') }}</p>
+  </fieldset>
+
+  <div class="yw-form-group">
+    <label>
+      <input type="checkbox" name="activitypub_approve_followers" value="1"{% if profile.approve_followers %} checked{% endif %}>
+      {{ _t('BAZ_ACTIVITYPUB_APPROVE_FOLLOWERS') }}
+    </label>
+    <p class="yw-form-hint">{{ _t('BAZ_ACTIVITYPUB_APPROVE_FOLLOWERS_HELP') }}</p>
+  </div>
+
+  <div class="form-actions">
+    <button class="yw-btn yw-btn--primary" type="submit">{{ _t('BAZ_SAVE') }}</button>
+    {% if profile.username is not empty and isEnabled %}
+    <a class="yw-btn" href="{{ actorUri }}" target="_blank" rel="noopener">{{ _t('BAZ_ACTIVITYPUB_VIEW_ACTOR') }}</a>
+    {% endif %}
+  </div>
+</form>
+{{ include('@core/file-picker-panel.twig') }}
+{{ include_javascript('javascripts/inputs/file-picker-field.js', false, true) }}
+
+{% elseif tab == 'following' %}
+{% if profile.username is not empty %}
+<form action="{{ url({ params: { view: 'abonnements', action: 'list', formid: form.id }}) }}" method="post">
+  <input type="hidden" name="csrf-token" value="{{ csrfToken({id: 'main', refresh: false})|e('html_attr') }}">
+  <label class="yw-form-label" for="actor_handle">{{ _t('BAZ_FOLLOW_ACTOR') }}</label>
+  <div class="input-group">
+    <span class="input-group-addon">
+      <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#world"/></svg>
+    </span>
+    <input id="actor_handle" name="actor_handle" class="yw-input" required placeholder="{{ _t('BAZ_FOLLOW_ACTOR_INFO') }}">
+    <button class="yw-btn yw-btn--primary" type="submit">{{ _t('BAZ_GO') }}</button>
+  </div>
+</form>
+{% endif %}
+
+<table class="table table-condensed table-striped">
+  <thead>
+    <tr>
+      <th>{{ _t('BAZ_ABONNEMENTS') }}</th>
+      <th class="yw-activitypub__actions">{{ _t('BAZ_ACTIONS') }}</th>
+    </tr>
+  </thead>
+  <tbody>
+  {% for actorUri in following %}
+    <tr>
+      <td><a href="{{ actorUri }}" target="_blank" rel="noopener">{{ actorUri }}</a></td>
+      <td>
+        <a class="yw-btn yw-btn--sm" title="{{ _t('BAZ_SYNC_ACTOR_POSTS') }}" aria-label="{{ _t('BAZ_SYNC_ACTOR_POSTS') }}"
+           href="{{ url({ params: { view: 'abonnements', action: 'sync', actor: actorUri, formid: form.id, synctoken: csrfToken({id: 'main', refresh: false}) }}) }}">
+          <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#repeat"/></svg>
+        </a>
+        <a class="yw-btn yw-btn--sm yw-btn--danger" title="{{ _t('BAZ_CONFIRM_SUPPRIMER_ABONNEMENT') }}" aria-label="{{ _t('BAZ_CONFIRM_SUPPRIMER_ABONNEMENT') }}"
+           href="{{ url({ params: { view: 'abonnements', action: 'remove', actor: actorUri, type: 'following', formid: form.id }}) }}"
+           onclick="return confirm('{{ _t('BAZ_CONFIRM_SUPPRIMER_ABONNEMENT')|e('js') }} ?');">
+          <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#trash"/></svg>
+        </a>
+      </td>
+    </tr>
+  {% endfor %}
+  {% for actorUri in pendingFollowing %}
+    <tr>
+      <td>
+        <a href="{{ actorUri }}" target="_blank" rel="noopener">{{ actorUri }}</a>
+        <span class="badge">{{ _t('BAZ_FOLLOWING_PENDING') }}</span>
+      </td>
+      <td>
+        <a class="yw-btn yw-btn--sm yw-btn--danger" title="{{ _t('BAZ_CONFIRM_SUPPRIMER_ABONNEMENT') }}" aria-label="{{ _t('BAZ_CONFIRM_SUPPRIMER_ABONNEMENT') }}"
+           href="{{ url({ params: { view: 'abonnements', action: 'remove', actor: actorUri, type: 'following', formid: form.id }}) }}"
+           onclick="return confirm('{{ _t('BAZ_CONFIRM_SUPPRIMER_ABONNEMENT')|e('js') }} ?');">
+          <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#trash"/></svg>
+        </a>
+      </td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+
+{% else %}
+{% if followRequests is not empty %}
+<h3>{{ _t('BAZ_ACTIVITYPUB_FOLLOW_REQUESTS') }}</h3>
+<table class="table table-condensed table-striped">
+  <tbody>
+  {% for actorUri in followRequests %}
+    <tr>
+      <td><a href="{{ actorUri }}" target="_blank" rel="noopener">{{ actorUri }}</a></td>
+      <td class="yw-activitypub__requests">
+        <form action="{{ url({ params: { view: 'abonnements', action: 'accept', formid: form.id }}) }}" method="post">
+          <input type="hidden" name="csrf-token" value="{{ csrfToken({id: 'main', refresh: false})|e('html_attr') }}">
+          <input type="hidden" name="actor" value="{{ actorUri }}">
+          <button class="yw-btn yw-btn--sm yw-btn--primary" type="submit">{{ _t('BAZ_ACTIVITYPUB_ACCEPT') }}</button>
+        </form>
+        <a class="yw-btn yw-btn--sm yw-btn--danger"
+           href="{{ url({ params: { view: 'abonnements', action: 'remove', actor: actorUri, type: 'followers', formid: form.id }}) }}"
+           onclick="return confirm('{{ _t('BAZ_ACTIVITYPUB_CONFIRM_REFUSE')|e('js') }}');">{{ _t('BAZ_ACTIVITYPUB_REFUSE') }}</a>
+      </td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endif %}
+
+<table class="table table-condensed table-striped">
+  <thead>
+    <tr>
+      <th>{{ _t('BAZ_ABONNES') }}</th>
+      <th class="yw-activitypub__actions">{{ _t('BAZ_ACTIONS') }}</th>
+    </tr>
+  </thead>
+  <tbody>
+  {% for actorUri in followers %}
+    <tr>
+      <td><a href="{{ actorUri }}" target="_blank" rel="noopener">{{ actorUri }}</a></td>
+      <td>
+        {% if actorUri not in following and actorUri not in pendingFollowing %}
+        <a class="yw-btn yw-btn--sm" title="{{ _t('BAZ_FOLLOW_BACK') }}" aria-label="{{ _t('BAZ_FOLLOW_BACK') }}"
+           href="{{ url({ params: { view: 'abonnements', action: 'add', actor: actorUri, type: 'following', formid: form.id }}) }}">
+          <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#user-plus"/></svg>
+        </a>
+        {% endif %}
+        <a class="yw-btn yw-btn--sm yw-btn--danger" title="{{ _t('BAZ_CONFIRM_SUPPRIMER_ABONNE') }}" aria-label="{{ _t('BAZ_CONFIRM_SUPPRIMER_ABONNE') }}"
+           href="{{ url({ params: { view: 'abonnements', action: 'remove', actor: actorUri, type: 'followers', formid: form.id }}) }}"
+           onclick="return confirm('{{ _t('BAZ_CONFIRM_SUPPRIMER_ABONNE')|e('js') }} ?');">
+          <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#trash"/></svg>
+        </a>
+      </td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endif %}
+</div>

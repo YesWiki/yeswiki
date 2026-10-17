@@ -37,7 +37,7 @@ class FederatesEntryChanges implements EventSubscriberInterface
         $data = $event->getData();
         $form = $data['form'] ?? [];
 
-        if (!is_array($form) || ($data['imported'] ?? false) || !$this->activityPub->isEnabled($form)) {
+        if (!is_array($form) || ($data['imported'] ?? false) || !$this->activityPub->hasActor($form)) {
             return;
         }
 
