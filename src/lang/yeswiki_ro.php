@@ -2407,6 +2407,7 @@ Conținutul filei "{tabName}"
     'BAZ_IMPORTER_CE_FICHIER' => 'Importă acest fișier',
     'BAZ_VALIDER_IMPORT_FICHIER' => 'Validați importul',
     'BAZ_NOMBRE_FICHE_IMPORTE' => 'Numărul de fișe importate: ',
+    'BAZ_IMPORT_CSV_FORM' => 'Importă fișe dintr-un fișier CSV',
     'BAZ_IMPORTER' => 'Importă',
     'BAZ_EXPORTER' => 'Exportă',
     'BAZ_EXPORT_KEYS_INSTEAD_OF_VALUES' => 'Exportă cheile în loc de valori (mai stabil pentru importuri, dar mai puțin lizibil)',

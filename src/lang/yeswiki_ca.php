@@ -2647,6 +2647,7 @@ Davant del mínim dubte, obriu aquest formulari en una pàgina dedicada fent cli
     'BAZ_IMPORTER_CE_FICHIER' => 'Importa aquest fitxer',
     'BAZ_VALIDER_IMPORT_FICHIER' => 'Valida la importació',
     'BAZ_NOMBRE_FICHE_IMPORTE' => 'Nombre de fitxes importades: ',
+    'BAZ_IMPORT_CSV_FORM' => 'Importa fitxes des d\'un fitxer CSV',
     'BAZ_IMPORTER' => 'Importa',
     'BAZ_EXPORTER' => 'Exporta',
     'BAZ_NON' => 'No',

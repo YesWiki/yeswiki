@@ -2636,6 +2636,7 @@ Zutabearen testua, gero aldatzeko
     'BAZ_IMPORTER_CE_FICHIER' => 'Inportatu fitxategi hau',
     'BAZ_VALIDER_IMPORT_FICHIER' => 'Baliozkotu inportazioa',
     'BAZ_NOMBRE_FICHE_IMPORTE' => 'Inportatutako fitxa-kopurua: ',
+    'BAZ_IMPORT_CSV_FORM' => 'Inportatu fitxak CSV fitxategi batetik',
     'BAZ_IMPORTER' => 'Inportatu',
     'BAZ_RSS' => 'RSS jarioak',
     'EDIT_CONFIG_HINT_BAZ_ADRESSE_MAIL_ADMIN' => 'Bazar-fitxen aldaketen bidaltzailearen helbide elektronikoa',

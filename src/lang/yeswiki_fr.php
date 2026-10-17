@@ -2051,6 +2051,7 @@ Vous avez la version %{CURRENTPHPVERSION}.
     'BAZ_IMPORTER_CE_FICHIER' => 'Importer ce fichier',
     'BAZ_VALIDER_IMPORT_FICHIER' => 'Valider importation',
     'BAZ_NOMBRE_FICHE_IMPORTE' => 'Nombre de fiche(s) importée(s) : ',
+    'BAZ_IMPORT_CSV_FORM' => 'Importer des fiches depuis un fichier CSV',
     'BAZ_IMPORTER' => 'Importer',
     'BAZ_EXPORTER' => 'Exporter',
     'BAZ_EXPORT_KEYS_INSTEAD_OF_VALUES' => 'Exporter les clés plutôt que les valeurs (plus stable pour les imports mais moins lisible)',

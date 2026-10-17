@@ -86,6 +86,11 @@
     {% if not form.isSystem %}
 
       <div class="yw-table__actions form-card__destructive">
+        {% if userIsAdmin %}
+          <a class="yw-btn yw-btn--sm" title="{{ _t('BAZ_IMPORT_CSV_FORM') }}" href="{{ url({ params: { view: 'importer', id: key }}) }}" data-toggle="tooltip" data-placement="bottom">
+            <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#upload"/></svg>
+          </a>
+        {% endif %}
         {% if form.canDelete %}
           <a class="yw-btn yw-btn--sm yw-btn--danger modalbox" title="{{ _t('BAZ_VIDER_FORMULAIRE') }}" href="{{ url({ params: { view: 'formulaire', action: 'confirm_empty', formid: key, showmenu: 0 }}) }}" data-toggle="tooltip" data-placement="bottom">
             <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#eraser"/></svg>

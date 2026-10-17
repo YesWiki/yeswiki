@@ -2471,6 +2471,7 @@ Url: {{ baseUrl }}
     'BAZ_IMPORTER_CE_FICHIER' => 'இந்தக் கோப்பை இறக்குமதி செய்',
     'BAZ_VALIDER_IMPORT_FICHIER' => 'இறக்குமதியை உறுதிசெய்',
     'BAZ_NOMBRE_FICHE_IMPORTE' => 'இறக்குமதி செய்யப்பட்ட பதிவுகளின் எண்ணிக்கை: ',
+    'BAZ_IMPORT_CSV_FORM' => 'CSV கோப்பிலிருந்து பதிவுகளை இறக்குமதி செய்',
     'BAZ_IMPORTER' => 'இறக்குமதி செய்',
     'BAZ_EXPORTER' => 'ஏற்றுமதி செய்',
     'BAZ_EXPORT_KEYS_INSTEAD_OF_VALUES' => 'மதிப்புகளுக்குப் பதிலாக விசைகளை ஏற்றுமதி செய் (இறக்குமதிக்கு நிலையானது, ஆனால் படிக்க எளிதல்ல)',

@@ -1062,6 +1062,7 @@ return [
     'BAZ_IMPORTER_CE_FICHIER' => 'Импортировать этот файл',
     'BAZ_VALIDER_IMPORT_FICHIER' => 'Подтвердить импорт',
     'BAZ_NOMBRE_FICHE_IMPORTE' => 'Импортировано записей: ',
+    'BAZ_IMPORT_CSV_FORM' => 'Импортировать записи из файла CSV',
     'BAZ_IMPORTER' => 'Импортировать',
     'BAZ_EXPORTER' => 'Экспортировать',
     'BAZ_EXPORT_KEYS_INSTEAD_OF_VALUES' => 'Экспортировать ключи вместо значений (надёжнее для импорта, но хуже читается)',

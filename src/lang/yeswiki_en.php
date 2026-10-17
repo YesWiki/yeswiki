@@ -1970,6 +1970,7 @@ Text of the column to be changed later
     'BAZ_IMPORTER_CE_FICHIER' => 'Import this file',
     'BAZ_VALIDER_IMPORT_FICHIER' => 'Validate importation',
     'BAZ_NOMBRE_FICHE_IMPORTE' => 'Number of imported entries : ',
+    'BAZ_IMPORT_CSV_FORM' => 'Import entries from a CSV file',
     'BAZ_IMPORTER' => 'Import',
     'BAZ_EXPORTER' => 'Export',
     'BAZ_EXPORT_KEYS_INSTEAD_OF_VALUES' => 'Export keys instead of values (more stable for imports but less readable)',
