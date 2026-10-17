@@ -51,6 +51,7 @@ class ActivityPubProfilesTest extends TestCase
             'icon' => 'files/Logo.png',
             'image' => 'https://cdn.example/banner.jpg',
             'fields' => ['Site' => 'https://us.example/'],
+            'approve_followers' => false,
         ], $profiles->get('1'));
         $this->assertSame('blog', $profiles->username(2));
         $this->assertSame('1', $profiles->formIdForUsername('AGENDA'));

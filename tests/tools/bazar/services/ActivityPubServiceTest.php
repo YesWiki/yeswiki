@@ -248,4 +248,71 @@ class ActivityPubServiceTest extends TestCase
         $this->assertSame(self::US, $activity['object']['attributedTo']);
         $this->assertArrayNotHasKey('@context', $activity['object']);
     }
+
+    public function testAFollowIsAcceptedAtOnceWithItsOwnId()
+    {
+        $service = $this->service();
+
+        $service->receiveFollow($this->form(), ['type' => 'Follow', 'id' => self::THEM . '#follows/1', 'actor' => self::THEM, 'object' => self::US]);
+
+        $this->assertSame('Accept', $this->posted[0]['body']['type']);
+        $this->assertSame(self::THEM . '#follows/1', $this->posted[0]['body']['object']['id']);
+        $this->assertSame(self::US, $this->posted[0]['body']['object']['object']);
+        $this->assertSame([self::THEM], $service->getFollowers($this->form()));
+        $this->assertSame([], $service->getFollowRequests($this->form()));
+    }
+
+    public function testAFollowWhoseAcceptCannotBeDeliveredStaysARequest()
+    {
+        $this->unreachable[] = self::THEM;
+        $service = $this->service();
+
+        $service->receiveFollow($this->form(), ['type' => 'Follow', 'id' => self::THEM . '#follows/1', 'actor' => self::THEM, 'object' => self::US]);
+
+        $this->assertSame([], $service->getFollowers($this->form()));
+        $this->assertSame([self::THEM], $service->getFollowRequests($this->form()));
+    }
+
+    public function testAFollowWaitsWhenTheProfileApprovesFollowersByHand()
+    {
+        $this->profiles['1']['approve_followers'] = true;
+        $service = $this->service();
+
+        $service->receiveFollow($this->form(), ['type' => 'Follow', 'id' => self::THEM . '#follows/1', 'actor' => self::THEM, 'object' => self::US]);
+
+        $this->assertSame([], $this->posted);
+        $this->assertTrue($service->getActor($this->form())['manuallyApprovesFollowers']);
+        $this->assertSame([self::THEM], $service->getFollowRequests($this->form()));
+
+        $service->acceptFollower($this->form(), self::THEM);
+
+        $this->assertSame(self::THEM . '#follows/1', $this->posted[0]['body']['object']['id']);
+        $this->assertSame([self::THEM], $service->getFollowers($this->form()));
+        $this->assertSame([], $service->getFollowRequests($this->form()));
+    }
+
+    public function testARefusedRequestIsRejectedWithItsOwnId()
+    {
+        $this->profiles['1']['approve_followers'] = true;
+        $service = $this->service();
+        $service->receiveFollow($this->form(), ['type' => 'Follow', 'id' => self::THEM . '#follows/1', 'actor' => self::THEM, 'object' => self::US]);
+
+        $service->rejectFollower($this->form(), self::THEM);
+
+        $this->assertSame('Reject', $this->posted[0]['body']['type']);
+        $this->assertSame(self::THEM . '#follows/1', $this->posted[0]['body']['object']['id']);
+        $this->assertSame([], $service->getFollowRequests($this->form()));
+    }
+
+    public function testAnUndoneFollowLeavesNoRequestBehind()
+    {
+        $this->profiles['1']['approve_followers'] = true;
+        $service = $this->service();
+        $service->receiveFollow($this->form(), ['type' => 'Follow', 'id' => self::THEM . '#follows/1', 'actor' => self::THEM, 'object' => self::US]);
+
+        $service->undoFollow($this->form(), self::THEM);
+
+        $this->assertSame([], $service->getFollowRequests($this->form()));
+        $this->assertSame([], $service->getFollowers($this->form()));
+    }
 }

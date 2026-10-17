@@ -55,19 +55,13 @@ class ActivityPubInbox
                 if ($this->objectId($activity['object'] ?? null) !== $this->activityPubService->getFormActorUri($form)) {
                     throw new \Exception('This Follow is not addressed to this actor');
                 }
-                $this->activityPubService->addFollower($form, $activity['actor']);
-
-                $this->activityPubService->postActivity([
-                    'type' => 'Accept',
-                    'object' => $activity,
-                    'to' => $activity['actor'],
-                ], $form);
+                $this->activityPubService->receiveFollow($form, $activity);
 
                 break;
 
             case 'Undo':
                 if (($activity['object']['type'] ?? null) === 'Follow') {
-                    $this->activityPubService->removeFollower($form, $activity['actor']);
+                    $this->activityPubService->undoFollow($form, $activity['actor']);
                 }
 
                 break;

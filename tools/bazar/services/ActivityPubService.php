@@ -130,7 +130,7 @@ class ActivityPubService
             'preferredUsername' => $profile['username'],
             'summary' => $this->toHtml($profile['summary']) ?: $this->toHtml($form['bn_description'] ?? ''),
             'url' => $this->wikiRootUrl(),
-            'manuallyApprovesFollowers' => false,
+            'manuallyApprovesFollowers' => $profile['approve_followers'],
             'discoverable' => true,
             'indexable' => true,
             'inbox' => $actorUrl . '/inbox',
@@ -420,6 +420,125 @@ class ActivityPubService
     {
         $requests = [];
         $triples = $this->tripleStore->getMatching($this->getFormCollectionUri($form, 'following'), self::$AS_PREFIX . 'Follow', null, '', '');
+        foreach ($triples as $triple) {
+            $request = json_decode($triple['value'], true);
+            if (isset($request['actor'], $request['id'])) {
+                $requests[$triple['value']] = $request;
+            }
+        }
+
+        return $requests;
+    }
+
+    /**
+     * Takes in a Follow sent to the form: accepted right away unless the profile asks to approve followers, and kept as a request while it is not.
+     */
+    public function receiveFollow($form, array $follow): void
+    {
+        $actorUri = (string)($follow['actor'] ?? '');
+        $followId = is_string($follow['id'] ?? null) ? $follow['id'] : null;
+        if ($actorUri === '' || $followId === null) {
+            throw new \Exception('A Follow needs an actor and an id');
+        }
+        $this->forgetIncomingRequest($form, $actorUri);
+        $this->tripleStore->create(
+            $this->getFormCollectionUri($form, 'followers'),
+            self::$AS_PREFIX . 'Follow',
+            json_encode(['actor' => $actorUri, 'id' => $followId], JSON_UNESCAPED_SLASHES),
+            '',
+            ''
+        );
+
+        if (!$this->profile($form)['approve_followers'] || in_array($actorUri, $this->getFollowers($form), true)) {
+            try {
+                $this->acceptFollower($form, $actorUri);
+            } catch (\Exception $e) {
+                error_log('ActivityPub: ' . $e->getMessage());
+            }
+        }
+    }
+
+    /**
+     * Accepts a pending Follow request; it stays pending when the Accept cannot be delivered.
+     */
+    public function acceptFollower($form, string $actorUri): void
+    {
+        $followId = $this->incomingRequestId($form, $actorUri);
+        if ($followId === null) {
+            throw new \Exception("No pending follow request from {$actorUri}");
+        }
+        $this->postActivity(['type' => 'Accept', 'object' => $this->incomingFollow($form, $actorUri, $followId), 'to' => $actorUri], $form);
+        if (!in_array($actorUri, $this->getFollowers($form), true)) {
+            $this->addFollower($form, $actorUri);
+        }
+        $this->forgetIncomingRequest($form, $actorUri);
+    }
+
+    /**
+     * Refuses a pending Follow request, or removes a follower, and tells the remote actor.
+     */
+    public function rejectFollower($form, string $actorUri): void
+    {
+        $followId = $this->incomingRequestId($form, $actorUri) ?? $actorUri . '#follow';
+        $this->forgetIncomingRequest($form, $actorUri);
+        $this->removeFollower($form, $actorUri);
+        $this->postActivity(['type' => 'Reject', 'object' => $this->incomingFollow($form, $actorUri, $followId), 'to' => $actorUri], $form);
+    }
+
+    /**
+     * Forgets everything an actor asked: its pending request and its place among the followers.
+     */
+    public function undoFollow($form, string $actorUri): void
+    {
+        $this->forgetIncomingRequest($form, $actorUri);
+        $this->removeFollower($form, $actorUri);
+    }
+
+    /**
+     * The actors waiting for the form to accept their Follow.
+     */
+    public function getFollowRequests($form): array
+    {
+        return array_values(array_diff(
+            array_map(fn ($request) => $request['actor'], $this->incomingRequests($form)),
+            $this->getFollowers($form)
+        ));
+    }
+
+    protected function incomingFollow($form, string $actorUri, string $followId): array
+    {
+        return ['id' => $followId, 'type' => 'Follow', 'actor' => $actorUri, 'object' => $this->getFormActorUri($form)];
+    }
+
+    protected function incomingRequestId($form, string $actorUri): ?string
+    {
+        foreach ($this->incomingRequests($form) as $request) {
+            if ($request['actor'] === $actorUri) {
+                return $request['id'];
+            }
+        }
+
+        return null;
+    }
+
+    protected function forgetIncomingRequest($form, string $actorUri): void
+    {
+        foreach ($this->incomingRequests($form) as $raw => $request) {
+            if ($request['actor'] === $actorUri) {
+                $this->tripleStore->delete($this->getFormCollectionUri($form, 'followers'), self::$AS_PREFIX . 'Follow', $raw, '', '');
+            }
+        }
+    }
+
+    /**
+     * The Follow activities received by the form, keyed by their stored value.
+     *
+     * @return array<string,array{actor:string,id:string}>
+     */
+    protected function incomingRequests($form): array
+    {
+        $requests = [];
+        $triples = $this->tripleStore->getMatching($this->getFormCollectionUri($form, 'followers'), self::$AS_PREFIX . 'Follow', null, '', '');
         foreach ($triples as $triple) {
             $request = json_decode($triple['value'], true);
             if (isset($request['actor'], $request['id'])) {

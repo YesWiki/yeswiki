@@ -122,7 +122,7 @@ class HttpSignatureService
      *
      * @throws \Exception when anything about the signature does not hold
      */
-    public function verifySignature(Request $request, ?array $signer = null): string
+    public function verifySignature(Request $request, ?array $signer = null, ?string $target = null): string
     {
         if (!$request->headers->has('Signature')) {
             throw new \Exception('No signature');
@@ -154,7 +154,7 @@ class HttpSignatureService
             throw new \Exception('Malformed public key');
         }
 
-        $requestUri = $request->getScriptName();
+        $requestUri = $target ?? $request->getScriptName();
 
         $sigParts = [];
         foreach (explode(' ', $sigConf['headers']) as $headerKey) {

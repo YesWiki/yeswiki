@@ -70,14 +70,22 @@ quelques heures à apparaître chez eux. Changer le nom d'utilisateur ne fait pa
 perdre les abonnés, car l'adresse de l'acteur reste celle du formulaire, mais
 l'ancien identifiant ne mène plus au compte.
 
-## Abonnements
+## Abonnements et abonnés
 
-Depuis l'onglet des abonnements, plusieurs choses sont possibles:
+L'onglet "Abonnements" liste les comptes que le formulaire suit. On peut y :
 
-- S'abonner à un nouvel acteur en entrant son identifiant
-- Suivre en retour un acteur qui nous suit déjà
-- Synchroniser toutes les données d'un acteur auquel on est abonné
-- Effacer un abonnement ou un abonné
+- s'abonner à un nouveau compte en entrant son identifiant ;
+- synchroniser toutes les fiches d'un compte suivi ;
+- se désabonner.
+
+L'onglet "Abonnés" liste les comptes qui suivent le formulaire. On peut y suivre
+un abonné en retour ou le retirer.
+
+Par défaut, une demande d'abonnement est acceptée tout de suite. En cochant
+"Valider les abonnés à la main" dans le profil, chaque demande attend dans
+l'onglet "Abonnés", avec un bouton pour l'accepter ou la refuser. Si l'acceptation
+automatique n'a pas pu être envoyée au serveur distant, la demande reste
+affichée de la même façon, et le bouton "Accepter" la renvoie.
 
 ## Clés de signature
 
@@ -86,8 +94,11 @@ besoin dans `private/activitypub/<identifiant du formulaire>.pem`, lisible
 seulement par le serveur web. Elle n'est ni en base de données ni dans l'API.
 
 Gardez ce fichier dans vos sauvegardes : sans lui, YesWiki génère une nouvelle
-clé et les serveurs distants doivent recharger le profil avant d'accepter de
-nouveau les messages du compte.
+clé. Mastodon recharge alors le profil de lui-même. GoToSocial, lui, refuse un
+compte dont la clé a changé ("pubkey has changed" dans ses journaux) : il garde
+l'ancien profil et ignore les messages du compte. Un administrateur de chaque
+instance GoToSocial concernée doit alors faire expirer les clés du domaine du
+wiki, depuis les actions d'administration de GoToSocial.
 
 ## Compatibilité GoToSocial
 

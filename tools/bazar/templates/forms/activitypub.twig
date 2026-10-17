@@ -18,12 +18,18 @@
 {% endif %}
 
 <ul class="nav nav-tabs">
-  <li{% if tab == 'profile' %} class="active"{% endif %}>
-    <a href="{{ url({ params: { vue: 'abonnements', action: 'list', idformulaire: form.bn_id_nature, tab: 'profile' }}) }}">{{ _t('BAZ_ACTIVITYPUB_PROFILE') }}</a>
+  {% for name, label in {
+    profile: _t('BAZ_ACTIVITYPUB_PROFILE'),
+    following: _t('BAZ_ABONNEMENTS') ~ ' (' ~ following|length ~ ')',
+    followers: _t('BAZ_ABONNES') ~ ' (' ~ followers|length ~ ')',
+  } %}
+  <li{% if tab == name %} class="active"{% endif %}>
+    <a href="{{ url({ params: { vue: 'abonnements', action: 'list', idformulaire: form.bn_id_nature, tab: name }}) }}">
+      {{ label }}
+      {% if name == 'followers' and followRequests is not empty %}<span class="badge">{{ followRequests|length }}</span>{% endif %}
+    </a>
   </li>
-  <li{% if tab == 'follows' %} class="active"{% endif %}>
-    <a href="{{ url({ params: { vue: 'abonnements', action: 'list', idformulaire: form.bn_id_nature, tab: 'follows' }}) }}">{{ _t('BAZ_ABONNEMENTS') }} ({{ following|length }}) / {{ _t('BAZ_ABONNES') }} ({{ followers|length }})</a>
-  </li>
+  {% endfor %}
 </ul>
 
 <div class="activitypub-tab" style="padding-top: 1.5em;">
@@ -85,6 +91,18 @@
 
   <div class="form-group">
     <div class="col-sm-offset-3 col-sm-9">
+      <div class="checkbox">
+        <label>
+          <input type="checkbox" name="activitypub_approve_followers" value="1"{% if profile.approve_followers %} checked{% endif %}>
+          {{ _t('BAZ_ACTIVITYPUB_APPROVE_FOLLOWERS') }}
+        </label>
+      </div>
+      <p class="help-block">{{ _t('BAZ_ACTIVITYPUB_APPROVE_FOLLOWERS_HELP') }}</p>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <div class="col-sm-offset-3 col-sm-9">
       <button class="btn btn-primary" type="submit">{{ _t('BAZ_SAVE') }}</button>
       {% if profile.username is not empty %}
       <a class="btn btn-default" href="{{ actorUri }}" target="_blank" rel="noopener">{{ _t('BAZ_ACTIVITYPUB_VIEW_ACTOR') }}</a>
@@ -92,7 +110,7 @@
     </div>
   </div>
 </form>
-{% else %}
+{% elseif tab == 'following' %}
 {% if profile.username is not empty %}
 <strong>{{ _t('BAZ_FOLLOW_ACTOR') }}</strong>
 <form action="{{ url({ params: { vue: 'abonnements', action: 'list', idformulaire: form.bn_id_nature }}) }}" method="post" class="form-horizontal">
@@ -161,6 +179,34 @@
   {% endfor %}
   </tbody>
 </table>
+
+{% else %}
+{% if followRequests is not empty %}
+<h3>{{ _t('BAZ_ACTIVITYPUB_FOLLOW_REQUESTS') }}</h3>
+<table class="table table-condensed table-striped">
+  <tbody>
+  {% for actorUri in followRequests %}
+    <tr>
+      <td>
+        <a href="{{ actorUri }}" target="_blank">{{ actorUri }}</a>
+      </td>
+      <td style="width:220px;">
+        <form action="{{ url({ params: { vue: 'abonnements', action: 'accept', idformulaire: form.bn_id_nature }}) }}" method="post" style="display:inline;">
+          <input type="hidden" name="csrf-token" value="{{ csrfToken({id: 'main', refresh: false})|e('html_attr') }}">
+          <input type="hidden" name="actor" value="{{ actorUri }}">
+          <button class="btn btn-success btn-xs" type="submit">{{ _t('BAZ_ACTIVITYPUB_ACCEPT') }}</button>
+        </form>
+        <a
+          class="btn btn-danger btn-xs"
+          href="{{ url({ params: { vue: 'abonnements', action: 'remove', actor: actorUri, type: 'followers', idformulaire: form.bn_id_nature }}) }}"
+          onclick="javascript:return confirm('{{ _t('BAZ_ACTIVITYPUB_CONFIRM_REFUSE') }}');"
+        >{{ _t('BAZ_ACTIVITYPUB_REFUSE') }}</a>
+      </td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endif %}
 
 <table class="table table-condensed table-striped">
   <thead>

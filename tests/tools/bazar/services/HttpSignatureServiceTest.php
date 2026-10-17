@@ -68,7 +68,7 @@ class HttpSignatureServiceTest extends TestCase
         return $service;
     }
 
-    private function signedRequest(int $date, string $signedHeaders = '(request-target) date digest', string $algorithm = 'rsa-sha256'): Request
+    private function signedRequest(int $date, string $signedHeaders = '(request-target) date digest', string $algorithm = 'rsa-sha256', ?string $target = null): Request
     {
         $headers = [
             'host' => 'wiki.example',
@@ -82,7 +82,7 @@ class HttpSignatureServiceTest extends TestCase
         $lines = [];
         foreach (explode(' ', $signedHeaders) as $header) {
             $lines[] = $header === '(request-target)'
-                ? "(request-target): post {$request->getScriptName()}"
+                ? '(request-target): post ' . ($target ?? $request->getScriptName())
                 : "{$header}: {$headers[$header]}";
         }
         openssl_sign(implode("\n", $lines), $signature, $this->keyPair()[0], OPENSSL_ALGO_SHA256);
@@ -95,6 +95,14 @@ class HttpSignatureServiceTest extends TestCase
         ));
 
         return $request;
+    }
+
+    public function testTheSignatureIsCheckedAgainstThePublishedInboxPathNotTheRewrittenOne()
+    {
+        $now = time();
+        $request = $this->signedRequest($now, '(request-target) date digest', 'rsa-sha256', '/actors/1/inbox');
+
+        $this->assertSame(self::ACTOR, $this->verifier($now)->verifySignature($request, null, '/actors/1/inbox'));
     }
 
     public function testAFreshSignedRequestIsAccepted()

@@ -32,7 +32,7 @@ class ActivityPubProfiles
     /**
      * The profile of a form, with every key present.
      *
-     * @return array{username:string,summary:string,icon:string,image:string,fields:array<string,string>}
+     * @return array{username:string,summary:string,icon:string,image:string,fields:array<string,string>,approve_followers:bool}
      */
     public function get($formId): array
     {
@@ -44,6 +44,7 @@ class ActivityPubProfiles
             'icon' => (string)($profile['icon'] ?? ''),
             'image' => (string)($profile['image'] ?? ''),
             'fields' => is_array($profile['fields'] ?? null) ? array_map('strval', $profile['fields']) : [],
+            'approve_followers' => !empty($profile['approve_followers']),
         ];
     }
 
@@ -141,6 +142,7 @@ class ActivityPubProfiles
             'icon' => $images['icon'],
             'image' => $images['image'],
             'fields' => $fields,
+            'approve_followers' => !empty($profile['approve_followers']),
         ];
     }
 

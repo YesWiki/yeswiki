@@ -49,6 +49,7 @@ class BazarAction extends YesWikiAction
     public const ACTION_ABONNEMENT_ADD = 'add';
     public const ACTION_ABONNEMENT_REMOVE = 'remove';
     public const ACTION_ABONNEMENT_SYNC = 'sync';
+    public const ACTION_ABONNEMENT_ACCEPT = 'accept';
 
     public const ACTION_PUBLIER = 'publier'; // Valider la fiche
     public const ACTION_PAS_PUBLIER = 'pas_publier'; // Invalider la fiche
@@ -235,6 +236,8 @@ class BazarAction extends YesWikiAction
 
                     case self::ACTION_ABONNEMENT_SYNC:
                         return $formController->syncActorPosts($req->query->get('idformulaire'), $req->query->get('actor'));
+                    case self::ACTION_ABONNEMENT_ACCEPT:
+                        return $formController->acceptFollower($req->query->get('idformulaire'), $req->request->get('actor'));
                     default:
                         return $formController->displayAll($req->query->get('msg'));
                 }

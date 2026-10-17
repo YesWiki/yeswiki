@@ -136,7 +136,11 @@ class ApiController extends YesWikiController
 
         if ($activityPubService->hasActor($form)) {
             try {
-                $verifiedActor = $httpSignatureService->verifySignature($request, $activityPubService->signer($form));
+                $verifiedActor = $httpSignatureService->verifySignature(
+                    $request,
+                    $activityPubService->signer($form),
+                    parse_url($activityPubService->getFormActorUri($form) . '/inbox', PHP_URL_PATH)
+                );
             } catch (\Exception $e) {
                 return new ApiResponse(['error' => $e->getMessage()], Response::HTTP_UNAUTHORIZED, ['Content-Type' => 'application/activity+json']);
             }
