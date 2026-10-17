@@ -51,6 +51,7 @@ abstract class BazarField implements \JsonSerializable
     protected const FIELD_HINT = 10;
     protected const FIELD_READ_ACCESS = 11;
     protected const FIELD_WRITE_ACCESS = 12;
+    protected const FIELD_HANDLE = 40;
 
     /**
      * @param array<int|string, mixed> $values one field's line of the form definition, by positional index

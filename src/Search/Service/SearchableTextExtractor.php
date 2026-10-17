@@ -7,9 +7,11 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Content\Entity\ContentTypeSchema;
 use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Entity\PageType;
+use YesWiki\Content\Entity\Translations;
 use YesWiki\Content\Field\TagsField;
 use YesWiki\Content\Field\TextareaField;
 use YesWiki\Content\Service\FormManager;
+use YesWiki\Content\Service\FormPropertiesService;
 use YesWiki\Search\Entity\IndexedContent;
 
 /** Turns a `pages` row into the rows the search index holds (ticket 18 / ADR-0015). */
@@ -28,50 +30,73 @@ class SearchableTextExtractor
     }
 
     /**
-     * @param array<string, mixed> $row a raw `pages` row: tag, type, body, owner, time,
-     *                                  metadata, parent. Since ticket 27 the row states its
-     *                                  own type, so nothing is looked up or translated here.
+     * The index rows of a `pages` row: its source wording, then one per language it is translated into.
      *
-     * @return IndexedContent|null null when the row contributes nothing at all
+     * @param array<string, mixed> $row a raw `pages` row: tag, type, body, owner, time, metadata, parent
+     *
+     * @return list<IndexedContent>
      */
-    public function extract(array $row): ?IndexedContent
+    public function extractAll(array $row): array
     {
         $tag = (string)($row['tag'] ?? '');
         if ($tag === '') {
-            return null;
+            return [];
         }
 
         $body = is_array($row['body'] ?? null) ? $row['body'] : PageBody::decode($row['body'] ?? null);
         $contentType = (string)($row['type'] ?? PageType::DEFAULT);
+        $source = Translations::strip($body);
 
-        $buckets = $this->bucketsFor($contentType, $body);
+        $contents = [$this->content($row, $tag, $contentType, $source, $this->titleOf($contentType, $source, $tag), $this->keywordsOf($contentType, $source), '')];
+        foreach (Translations::languages($body) as $language) {
+            $translated = Translations::apply($body, $language);
+            $contents[] = $this->content($row, $tag, $contentType, $translated, $this->translatedTitleOf($contentType, $body, $language, $tag), [], $language);
+        }
 
-        $content = new IndexedContent(
+        return array_values(array_filter($contents, static fn (IndexedContent $content): bool => !$content->isEmpty()));
+    }
+
+    /**
+     * @param array<string, mixed> $row
+     * @param array<string, mixed> $body
+     * @param list<string>         $keywords
+     */
+    private function content(array $row, string $tag, string $contentType, array $body, string $title, array $keywords, string $language): IndexedContent
+    {
+        return new IndexedContent(
             tag: $tag,
             contentType: $contentType,
             formId: $contentType === self::TYPE_FORM
                 ? (string)($body['id'] ?? '')
                 : (string)($body['form_id'] ?? ''),
-            title: $this->titleOf($contentType, $body, $tag),
+            title: $title,
             pageReadAcl: $this->readAclOf($row),
             owner: (string)($row['owner'] ?? ''),
             updatedAt: (string)($row['time'] ?? date('Y-m-d H:i:s')),
-            buckets: $buckets,
-            keywords: $this->keywordsOf($contentType, $body),
+            buckets: $this->bucketsFor($contentType, $body),
+            keywords: $keywords,
+            lang: $language,
         );
-
-        return $content->isEmpty() ? null : $content;
     }
 
     /**
-     * The Content's keywords, for the `tags=` filter (ticket 35) and for every keyword question
-     * the wiki asks (ticket 62).
+     * What a translated Content goes by in a result list, stored rather than recomputed at read time.
      *
-     * Two places, because a keyword lives in two shapes. A page keeps them in `body.keywords`,
-     * which is the Page form's own tags field. An entry keeps them wherever the webmaster put a
-     * `tags` field, under whatever name they gave it -- and that field is a keyword input, offering
-     * the wiki's keywords and writing to the same index, so leaving it out would be indexing half
-     * of what the wiki calls a keyword.
+     * @param array<string, mixed> $body the stored body, translations included
+     */
+    private function translatedTitleOf(string $contentType, array $body, string $language, string $tag): string
+    {
+        $form = $contentType === self::TYPE_FORM ? null : $this->formFor($contentType, $body);
+        if ($form === null) {
+            return $this->titleOf($contentType, Translations::apply($body, $language), $tag);
+        }
+        $title = trim($this->container->get(FormPropertiesService::class)->translatedTitleOf($form, $body, $language));
+
+        return $title === '' ? $tag : $title;
+    }
+
+    /**
+     * The Content's keywords, from `body.keywords` on a page and from every tags field on an entry.
      *
      * @param array<string, mixed> $body
      *
@@ -232,7 +257,7 @@ class SearchableTextExtractor
     }
 
     /**
-     * The row's **effective** read ACL, defaults already resolved.
+     * The row's effective read ACL, defaults already resolved.
      *
      * @param array<string, mixed> $row
      */

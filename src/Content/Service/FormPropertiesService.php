@@ -5,6 +5,8 @@ namespace YesWiki\Content\Service;
 use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\String\Slugger\AsciiSlugger;
+use YesWiki\Content\Entity\PageBody;
+use YesWiki\Content\Entity\Translations;
 use YesWiki\Content\Field\CheckboxField;
 use YesWiki\Content\Field\EnumField;
 use YesWiki\Content\Field\FileField;
@@ -162,6 +164,26 @@ class FormPropertiesService
         }
 
         return $form === null ? trim((string)($entry['tag'] ?? '')) : $this->computeTitle($form, $entry);
+    }
+
+    /**
+     * The title of $entry in $language: its translated title if a translator wrote one, else the title template filled with the translated fields.
+     *
+     * @param array<string, mixed>|null $form
+     * @param array<string, mixed>      $entry the stored entry, translations included
+     */
+    public function translatedTitleOf(?array $form, array $entry, string $language): string
+    {
+        $written = trim(Translations::of($entry, $language)[PageBody::TITLE] ?? '');
+        if ($written !== '') {
+            return $written;
+        }
+        $translated = Translations::apply($entry, $language);
+        if ($form === null || Translations::of($entry, $language) === []) {
+            return $this->titleOf($form, $translated);
+        }
+
+        return $this->computeTitle($form, $translated);
     }
 
     /**

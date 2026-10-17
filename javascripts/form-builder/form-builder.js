@@ -69,6 +69,14 @@ function newId() {
   return `fbf${uid}`
 }
 
+function newHandle() {
+  const bytes = new Uint8Array(4)
+  crypto.getRandomValues(bytes)
+  return Array.from(bytes, (byte) => byte.toString(16).padStart(2, '0')).join(
+    '',
+  )
+}
+
 function selectedField() {
   return fields.find((field) => field.id === selectedId) || null
 }
@@ -128,6 +136,7 @@ function makeField(type, extraData = {}) {
       config.defaultIdentifier || `bf_${type.replace(/[^a-z0-9]/gi, '')}`,
     )
   }
+  data.handle = newHandle()
   return { id: newId(), type, data }
 }
 
@@ -683,7 +692,11 @@ function renderCard(field) {
     }
     if (action === 'duplicate') {
       const index = fields.findIndex((other) => other.id === field.id)
-      const copy = { id: newId(), type: field.type, data: { ...field.data } }
+      const copy = {
+        id: newId(),
+        type: field.type,
+        data: { ...field.data, handle: newHandle() },
+      }
       if (copy.data.name) copy.data.name = uniqueName(copy.data.name)
       fields.splice(index + 1, 0, copy)
       syncToTextarea()

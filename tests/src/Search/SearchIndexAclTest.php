@@ -101,6 +101,7 @@ class SearchIndexAclTest extends YesWikiTestCase
             $wiki->services->get(AclService::class),
             $wiki->services->get(SearchIndexSchema::class),
             $wiki->services->get(\YesWiki\Search\Service\FormOptionTranslator::class),
+            $wiki->services->get(\YesWiki\Content\Service\TranslatableContent::class),
         ))->search($phrase, null, 50);
     }
 

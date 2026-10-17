@@ -8,6 +8,11 @@ use Symfony\Component\Routing\Attribute\Route;
 use YesWiki\Content\Controller\EntryController;
 use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Service\BazarListService;
+use YesWiki\Content\Service\EntryManager;
+use YesWiki\Content\Service\FeedLanguages;
+use YesWiki\Content\Service\FormManager;
+use YesWiki\Content\Service\FormPropertiesService;
+use YesWiki\Content\Service\TranslatableContent;
 use YesWiki\Core\YesWikiController;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Service\PageContext;
@@ -72,6 +77,8 @@ class FeedApiController extends YesWikiController
             );
 
             $vCount = count($vRSSEntries);
+            $feedLanguages = $this->getService(FeedLanguages::class);
+            $requested = $feedLanguages->requested($request);
 
             setlocale(LC_TIME, 'C');
 
@@ -92,7 +99,9 @@ class FeedApiController extends YesWikiController
             $this->addTag($doc, $channel, 'count', (string)$vCount);
             $this->addTag($doc, $channel, 'description', $this->sanitize($config['BAZ_RSS_DESCRIPTIONSITE']));
             $this->addTag($doc, $channel, 'link', $this->sanitize($config['BAZ_RSS_ADRESSESITE']));
-            $this->addTag($doc, $channel, 'language', 'fr-FR');
+            if ($requested !== null) {
+                $this->addTag($doc, $channel, 'language', $requested);
+            }
             $this->addTag($doc, $channel, 'copyright', 'Copyright (c) ' . date('Y') . ' ' . StringUtilService::withoutDiacritics($config['BAZ_RSS_NOMSITE']));
             $this->addTag($doc, $channel, 'docs', 'http://www.stervinou.com/projets/rss/');
             $this->addTag($doc, $channel, 'category', $config['BAZ_RSS_CATEGORIE']);
@@ -109,25 +118,18 @@ class FeedApiController extends YesWikiController
             $self->setAttribute('type', 'application/rss+xml');
 
             if ($vCount > 0) {
+                $titles = $this->getService(FormPropertiesService::class);
                 foreach ($vRSSEntries as $vRSSEntry) {
-                    $url = (string)($vRSSEntry['url'] ?? '');
-                    $published = strtotime((string)($vRSSEntry['created_at'] ?? $vRSSEntry['updated_at'] ?? ''));
-
-                    $item = $channel->appendChild($doc->createElement('item'));
-                    $this->addTag($doc, $item, 'title', $this->sanitize($vRSSEntry['title'] ?? $vRSSEntry['bf_titre'] ?? ''));
-                    $this->addTag($doc, $item, 'link', $url, true);
-                    $this->addTag($doc, $item, 'guid', $url, true);
-                    $creator = $item->appendChild($doc->createElementNS(self::NS_DC, 'dc:creator'));
-                    $creator->appendChild($doc->createTextNode((string)($vRSSEntry['owner'] ?? '')));
-                    $this->addTag($doc, $item, 'description', preg_replace(
-                        '/data-id=".*"/Ui',
-                        '',
-                        $this->sanitize($this->updateRelativeLinks(
-                            $this->getService(EntryController::class)->view($vRSSEntry),
-                            $this->getService(UrlFormatter::class)->href('', (string)($vRSSEntry['tag'] ?? ''))
-                        ))
-                    ), true);
-                    $this->addTag($doc, $item, 'pubDate', $published === false ? null : date('r', $published));
+                    $stored = $this->getService(EntryManager::class)->getUntranslated((string)($vRSSEntry['tag'] ?? '')) ?? $vRSSEntry;
+                    $form = $this->getService(FormManager::class)->getOne((string)($stored['form_id'] ?? ''));
+                    $source = $this->getService(TranslatableContent::class)->sourceLanguageOf($form ?? []);
+                    foreach ($feedLanguages->versions($stored, $source, $requested) as $language => $version) {
+                        $entry = array_merge($vRSSEntry, $version);
+                        $entry['title'] = $language === $source
+                            ? (string)($version['title'] ?? $vRSSEntry['title'] ?? $vRSSEntry['bf_titre'] ?? '')
+                            : $titles->translatedTitleOf($form, $stored, $language);
+                        $this->addEntryItem($doc, $channel, $entry, $feedLanguages->urlIn((string)($vRSSEntry['url'] ?? ''), $language, $source), $language);
+                    }
                 }
             } else {
                 $item = $channel->appendChild($doc->createElement('item'));
@@ -146,6 +148,33 @@ class FeedApiController extends YesWikiController
                 ['Content-Type' => 'text/plain; charset=UTF-8']
             );
         }
+    }
+
+    /**
+     * One entry of the bazar feed, in $language.
+     *
+     * @param array<string, mixed> $entry
+     */
+    private function addEntryItem(\DOMDocument $doc, \DOMNode $channel, array $entry, string $url, string $language): void
+    {
+        $published = strtotime((string)($entry['created_at'] ?? $entry['updated_at'] ?? ''));
+
+        $item = $channel->appendChild($doc->createElement('item'));
+        $this->addTag($doc, $item, 'title', $this->sanitize((string)$entry['title']));
+        $this->addTag($doc, $item, 'link', $url, true);
+        $this->addTag($doc, $item, 'guid', $url, true);
+        $creator = $item->appendChild($doc->createElementNS(self::NS_DC, 'dc:creator'));
+        $creator->appendChild($doc->createTextNode((string)($entry['owner'] ?? '')));
+        $item->appendChild($doc->createElementNS(self::NS_DC, 'dc:language', $language));
+        $this->addTag($doc, $item, 'description', preg_replace(
+            '/data-id=".*"/Ui',
+            '',
+            $this->sanitize($this->updateRelativeLinks(
+                $this->getService(EntryController::class)->view($entry),
+                $this->getService(UrlFormatter::class)->href('', (string)($entry['tag'] ?? ''))
+            ))
+        ), true);
+        $this->addTag($doc, $item, 'pubDate', $published === false ? null : date('r', $published));
     }
 
     /** The RSS 2.0 feed of the pages carrying one or more keywords. */
@@ -190,43 +219,59 @@ class FeedApiController extends YesWikiController
 
         $aclService = $this->getService(AclService::class);
         $urlFormatter = $this->getService(UrlFormatter::class);
-        $formatter = $this->getService(MarkdownFormatterService::class);
-        $pageContext = $this->getService(PageContext::class);
+
+        $feedLanguages = $this->getService(FeedLanguages::class);
+        $requested = $feedLanguages->requested($request);
+        $translatable = $this->getService(TranslatableContent::class);
 
         foreach ($pages as $page) {
             $tag = (string)($page['tag'] ?? '');
-            $body = PageBody::decode($page['body'] ?? null);
+            $stored = PageBody::decode($page['body'] ?? null);
+            $metadata = json_decode((string)($page['metadata'] ?? ''), true);
+            $source = $translatable->sourceLanguageOfPage(is_array($metadata) ? $metadata : null);
+            $readable = $aclService->hasAccess('read', $tag);
 
-            if ($aclService->hasAccess('read', $tag)) {
-                $previousTag = $pageContext->getTag();
-                $previousPage = $pageContext->getPage();
-                $pageContext->setTag($tag);
-                $pageContext->setPage($page + ['body' => $body]);
-                try {
-                    $content = (string)preg_replace('/\{\{recentchangesrss(.*?)\}\}/s', '', PageBody::content($body));
-                    $content = (string)preg_replace('/\{\{rss(.*?)\}\}/s', '', $content);
-                    $description = $formatter->format($content);
-                } finally {
-                    $pageContext->setTag($previousTag);
-                    $pageContext->setPage(is_array($previousPage) ? $previousPage : []);
-                }
-            } else {
-                $description = '<i>' . _t('TAGS_HIDDEN_CONTENT') . '</i>';
+            foreach ($feedLanguages->versions($stored, $source, $requested) as $language => $body) {
+                $description = $readable ? $this->pageDescription($page, $tag, $body) : '<i>' . _t('TAGS_HIDDEN_CONTENT') . '</i>';
+                $url = $feedLanguages->urlIn($urlFormatter->href('', $tag), $language, $source);
+                $item = $channel->appendChild($doc->createElement('item'));
+                $this->addTag($doc, $item, 'title', $this->sanitize($tag));
+                $this->addTag($doc, $item, 'link', $url, true);
+                $this->addTag($doc, $item, 'guid', $url, true);
+                $this->addTag($doc, $item, 'description', $this->sanitize($description), true);
+                $creator = $item->appendChild($doc->createElementNS(self::NS_DC, 'dc:creator'));
+                $creator->appendChild($doc->createTextNode((string)($page['user'] ?? '')));
+                $item->appendChild($doc->createElementNS(self::NS_DC, 'dc:language', $language));
+                $published = strtotime((string)($page['time'] ?? ''));
+                $this->addTag($doc, $item, 'pubDate', $published === false ? null : date('r', $published));
             }
-
-            $url = $urlFormatter->href('', $tag);
-            $item = $channel->appendChild($doc->createElement('item'));
-            $this->addTag($doc, $item, 'title', $this->sanitize($tag));
-            $this->addTag($doc, $item, 'link', $url, true);
-            $this->addTag($doc, $item, 'guid', $url, true);
-            $this->addTag($doc, $item, 'description', $this->sanitize($description), true);
-            $creator = $item->appendChild($doc->createElementNS(self::NS_DC, 'dc:creator'));
-            $creator->appendChild($doc->createTextNode((string)($page['user'] ?? '')));
-            $published = strtotime((string)($page['time'] ?? ''));
-            $this->addTag($doc, $item, 'pubDate', $published === false ? null : date('r', $published));
         }
 
         return new Response((string)$doc->saveXML(), Response::HTTP_OK, self::XML_HEADERS);
+    }
+
+    /**
+     * A page's body rendered for the feed, with the page set as current while its actions run.
+     *
+     * @param array<string, mixed> $page
+     * @param array<string, mixed> $body
+     */
+    private function pageDescription(array $page, string $tag, array $body): string
+    {
+        $pageContext = $this->getService(PageContext::class);
+        $previousTag = $pageContext->getTag();
+        $previousPage = $pageContext->getPage();
+        $pageContext->setTag($tag);
+        $pageContext->setPage(['body' => $body] + $page);
+        try {
+            $content = (string)preg_replace('/\{\{recentchangesrss(.*?)\}\}/s', '', PageBody::content($body));
+            $content = (string)preg_replace('/\{\{rss(.*?)\}\}/s', '', $content);
+
+            return $this->getService(MarkdownFormatterService::class)->format($content);
+        } finally {
+            $pageContext->setTag($previousTag);
+            $pageContext->setPage(is_array($previousPage) ? $previousPage : []);
+        }
     }
 
     /** One element of the feed. */

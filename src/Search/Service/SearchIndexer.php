@@ -13,23 +13,10 @@ class SearchIndexer
     /** How many tags one statement handles. */
     private const INSERT_BATCH = 100;
 
-    /**
-     * How many times a rewrite of the index may be replayed after the engine picks it as a
-     * deadlock victim.
-     *
-     * Claiming (ticket 54) is what stops two drains holding the same tags, so this is the backstop
-     * it was meant to be rather than the mechanism: the engine has already rolled the victim back,
-     * and the undone one is what this replays.
-     */
+    /** How many times a rewrite of the index is replayed after the engine picks it as a deadlock victim. */
     private const CONFLICT_ATTEMPTS = 3;
 
-    /**
-     * How long a claim is honoured before another drain may take the rows back.
-     *
-     * A drain that is killed mid-pass -- a page view that timed out, a container that went away --
-     * leaves its chunk stamped with nobody left to work it. Expiring the claim is what keeps that
-     * from being a queue entry nothing ever picks up again.
-     */
+    /** How long a claim is honoured before another drain may take back the rows of a drain that died. */
     private const CLAIM_TTL_HOURS = 1;
 
     private DbService $dbService;
@@ -62,12 +49,8 @@ class SearchIndexer
                 . $this->dbService->dialect()->lockRowsClause(),
                 [$tag]
             );
-            $content = $row ? $this->extractor->extract($row) : null;
-
             $this->delete($tag);
-            if ($content !== null) {
-                $this->write([$content]);
-            }
+            $this->write($row ? $this->extractor->extractAll($row) : []);
             $this->dequeue([$tag]);
         }, self::CONFLICT_ATTEMPTS);
     }
@@ -196,11 +179,7 @@ class SearchIndexer
     }
 
     /**
-     * Reindex up to $limit queued Contents, in one pass.
-     *
-     * @param int      $limit         how many Contents to take off the queue
-     * @param int|null $timeBudgetSec stop early once this much wall clock has gone, so the
-     *                                maintenance hook cannot stall an ordinary page view
+     * Reindexes up to $limit queued Contents in one pass, stopping early once $timeBudgetSec has gone.
      *
      * @return int how many were reindexed
      */
@@ -238,10 +217,7 @@ class SearchIndexer
                 $contents = [];
                 foreach ($rows as $row) {
                     $row['body'] = PageBody::decode($row['body'] ?? null);
-                    $content = $this->extractor->extract($row);
-                    if ($content !== null) {
-                        $contents[] = $content;
-                    }
+                    $contents = [...$contents, ...$this->extractor->extractAll($row)];
                 }
 
                 $this->dbService->query("DELETE FROM {$this->schema->table()} WHERE tag IN ({$inList})", $tags);
@@ -271,6 +247,7 @@ class SearchIndexer
             foreach ($buckets as $acl => $text) {
                 $rows[] = [
                     $content->tag,
+                    $content->lang,
                     (string)$acl,
                     md5((string)$acl),
                     $content->pageReadAcl,
@@ -290,8 +267,8 @@ class SearchIndexer
 
         $insert = $this->dbService->prepare(
             "INSERT INTO {$this->schema->table()}"
-            . ' (tag, acl, acl_hash, page_read_acl, owner, content_type, form_id, title, text, updated_at)'
-            . ' VALUES (' . SqlParameters::placeholders(10) . ')'
+            . ' (tag, lang, acl, acl_hash, page_read_acl, owner, content_type, form_id, title, text, updated_at)'
+            . ' VALUES (' . SqlParameters::placeholders(11) . ')'
         );
         foreach ($rows as $row) {
             $insert->execute($row);
@@ -334,9 +311,6 @@ class SearchIndexer
         if ($tags === []) {
             return;
         }
-        // With a claim, only the rows this drain took are removed: a save that re-queued a tag
-        // while it was being indexed replaces the row and clears the claim, so its work survives
-        // instead of being deleted by the pass that started before it.
         $held = $claim === null ? '' : ' AND claimed_by = ?';
         foreach (array_chunk($tags, self::INSERT_BATCH) as $chunk) {
             $this->dbService->query(
@@ -347,12 +321,7 @@ class SearchIndexer
     }
 
     /**
-     * Take the next chunk of the queue for this drain alone, and answer what it got.
-     *
-     * Two drains used to pick their chunk before opening a transaction, so a visitor's maintenance
-     * sweep, `search:reindex` and the browser suite could all hold the same tags and deadlock over
-     * them (ticket 54). Claiming is one UPDATE, which every dialect applies atomically, so the
-     * second drain reads back nothing and moves on to the next chunk instead of the same one.
+     * Takes the next chunk of the queue for this drain alone, in one atomic UPDATE, and answers what it got.
      *
      * @return list<string>
      */

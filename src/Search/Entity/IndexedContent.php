@@ -15,6 +15,7 @@ final class IndexedContent
      * @param string                $updatedAt   'Y-m-d H:i:s'
      * @param array<string, string> $buckets     ACL expression => searchable text
      * @param list<string>          $keywords    the Content's keywords, for the `tags=` filter
+     * @param string                $lang        the translation this row holds, '' for the source wording
      */
     public function __construct(
         public readonly string $tag,
@@ -26,6 +27,7 @@ final class IndexedContent
         public readonly string $updatedAt,
         public readonly array $buckets,
         public readonly array $keywords = [],
+        public readonly string $lang = '',
     ) {
     }
 

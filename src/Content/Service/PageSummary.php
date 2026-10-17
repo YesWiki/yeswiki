@@ -4,6 +4,7 @@ namespace YesWiki\Content\Service;
 
 use Psr\Container\ContainerInterface;
 use YesWiki\Content\Entity\PageBody;
+use YesWiki\Content\Entity\Translations;
 use YesWiki\Files\Service\AttachedFilePaths;
 use YesWiki\Files\Service\ImageResizer;
 use YesWiki\Files\Service\Storage;
@@ -23,7 +24,7 @@ class PageSummary
      */
     public function title(array $page): string
     {
-        $body = $page['body'] ?? [];
+        $body = $this->bodyForReader($page);
         $content = PageBody::content($body);
 
         $entryTitle = (string)($body[PageBody::TITLE] ?? $body['bf_titre'] ?? '');
@@ -53,7 +54,7 @@ class PageSummary
      */
     public function image(array $page): string
     {
-        $body = $page['body'] ?? [];
+        $body = $this->bodyForReader($page);
         $content = PageBody::content($body);
         preg_match_all("/\{\{attach.*file=\".*\.(?i)(jpg|png|gif|bmp).*\}\}/U", $content, $images);
         if (isset($images[0][0]) && $images[0][0] != '') {
@@ -84,6 +85,35 @@ class PageSummary
         }
 
         return $image;
+    }
+
+    /**
+     * The page's body in the reader's language, its translations applied.
+     *
+     * @param array<string, mixed> $page
+     *
+     * @return array<string, mixed>
+     */
+    private function bodyForReader(array $page): array
+    {
+        $body = is_array($page['body'] ?? null) ? $page['body'] : [];
+        if (!isset($body[Translations::BODY_KEY])) {
+            return $body;
+        }
+        $translatable = $this->services->get(TranslatableContent::class);
+        if (empty($body['form_id'])) {
+            return $translatable->forReader($body, $translatable->sourceLanguageOfPage(is_array($page['metadatas'] ?? null) ? $page['metadatas'] : null));
+        }
+
+        $form = $this->services->get(FormManager::class)->getOne((string)$body['form_id']);
+        $language = $translatable->readerLanguage();
+        if ($language === $translatable->sourceLanguageOf($form ?? [])) {
+            return Translations::strip($body);
+        }
+        $translated = Translations::apply($body, $language);
+        $translated[PageBody::TITLE] = $this->services->get(FormPropertiesService::class)->translatedTitleOf($form, $body, $language);
+
+        return $translated;
     }
 
     /** A resized `<img>` for a file already on disk, or '' when it cannot be produced. */

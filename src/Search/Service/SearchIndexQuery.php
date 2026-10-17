@@ -2,6 +2,7 @@
 
 namespace YesWiki\Search\Service;
 
+use YesWiki\Content\Service\TranslatableContent;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Database\SqlFragment;
 use YesWiki\Kernel\Database\SqlParameters;
@@ -44,6 +45,7 @@ class SearchIndexQuery
         AclService $aclService,
         SearchIndexSchema $schema,
         FormOptionTranslator $translator,
+        private readonly TranslatableContent $translatable,
     ) {
         $this->dbService = $dbService;
         $this->aclService = $aclService;
@@ -60,7 +62,6 @@ class SearchIndexQuery
      * @param string       $sort        a key of SORTS, or '' for relevance then latest change
      *
      * @return array{results: list<array{tag: string, title: string, content_type: string, form_id: string, updated_at: string}>, total: int, capped: bool}
-     *                                                                                                                                                      `total` is exact up to COUNT_CAP; `capped` says when it stopped there
      */
     public function search(string $query, ?string $contentType = null, int $limit = self::DEFAULT_LIMIT, int $offset = 0, array $tags = [], string $sort = '', string $formId = ''): array
     {
@@ -306,8 +307,9 @@ class SearchIndexQuery
         $rows = $this->dbService->loadAll(
             "SELECT text FROM {$this->schema->table()}"
             . ' WHERE tag = ?'
-            . ' AND ' . $bucket->sql,
-            [$tag, ...$bucket->params]
+            . ' AND ' . $bucket->sql
+            . ' AND ' . $this->languagePredicate()->sql,
+            [$tag, ...$bucket->params, ...$this->languagePredicate()->params]
         );
 
         return trim(implode(' ', array_map(static fn (array $row): string => (string)$row['text'], $rows)));
@@ -344,6 +346,8 @@ class SearchIndexQuery
         $clauses = [
             $this->fieldAclPredicate(),
 
+            $this->languagePredicate(),
+
             $this->aclService->aclColumnPredicate("{$table}.page_read_acl", "{$table}.owner"),
         ];
 
@@ -374,6 +378,19 @@ class SearchIndexQuery
             static fn (SqlFragment $c): SqlFragment => $c->wrappedIn('(', ')'),
             $clauses
         ));
+    }
+
+    /** The rows in the reader's language, and the source row of a Content not translated into it. */
+    private function languagePredicate(): SqlFragment
+    {
+        $table = $this->schema->table();
+        $language = $this->translatable->readerLanguage();
+
+        return SqlFragment::of(
+            "({$table}.lang = ? OR ({$table}.lang = '' AND NOT EXISTS ("
+            . "SELECT 1 FROM {$table} yw_translated WHERE yw_translated.tag = {$table}.tag AND yw_translated.lang = ?)))",
+            [$language, $language]
+        );
     }
 
     /** `acl_hash IN (...)` over the field ACLs this user passes. */

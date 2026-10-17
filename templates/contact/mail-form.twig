@@ -57,5 +57,5 @@
     type: 'danger',
     message: _t('CONTACT_HANDLER_MAIL_FOR_CONNECTED') ~ '<br />' ~ _t('CONTACT_LOGIN_IF_CONNECTED')
   }) }}
-  {{ renderAction('login template="login-form.twig"')|raw }}
+  {{login template="login-form.twig"}}
 {% endif %}

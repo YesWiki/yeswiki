@@ -84,25 +84,51 @@ class WikiActionsInTemplatesTest extends YesWikiTestCase
         $this->assertStringContainsString(_t('TEMPLATE_ELEM_PARAMETER_REQUIRED'), $this->engine()->renderFromString('{{end /}}'));
     }
 
-    public function testShippedTemplatesHoldNoWikiCallAndNoBareActionName(): void
+    /** @return list<string> every shipped Twig template, SQL templates left out */
+    private function shippedTemplates(): array
     {
-        $performer = $this->getWiki()->services->get(Performer::class);
-        $found = [];
+        $paths = [];
         foreach (['templates', 'themes', 'src'] as $root) {
             $files = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($root, \FilesystemIterator::SKIP_DOTS));
             foreach ($files as $file) {
                 $path = $file->getPathname();
-                if (!str_ends_with($path, '.twig') || str_ends_with($path, '.sql.twig')) {
-                    continue;
+                if (str_ends_with($path, '.twig') && !str_ends_with($path, '.sql.twig') && !preg_match('~/(binary|vendor|node_modules|cache|custom)/~', $path)) {
+                    $paths[] = $path;
                 }
-                foreach (WikiActionSyntax::calls((string)file_get_contents($path)) as $call) {
-                    if (!$call['bare'] || $performer->exists($call['name'], 'action')) {
-                        $found[] = "$path:{$call['line']} {$call['name']}";
-                    }
+            }
+        }
+        sort($paths);
+
+        return $paths;
+    }
+
+    public function testNoShippedTemplateWritesABareActionName(): void
+    {
+        $performer = $this->getWiki()->services->get(Performer::class);
+        $found = [];
+        foreach ($this->shippedTemplates() as $path) {
+            foreach (WikiActionSyntax::calls((string)file_get_contents($path)) as $call) {
+                if ($call['bare'] && $performer->exists($call['name'], 'action')) {
+                    $found[] = "$path:{$call['line']} {$call['name']}";
                 }
             }
         }
 
         $this->assertSame([], $found);
+    }
+
+    public function testEveryShippedTemplateCompiles(): void
+    {
+        $engine = $this->engine();
+        $failures = [];
+        foreach ($this->shippedTemplates() as $path) {
+            try {
+                $engine->parseTemplateSource($path, (string)file_get_contents($path));
+            } catch (\Twig\Error\Error $error) {
+                $failures[] = "$path: {$error->getRawMessage()} (line {$error->getTemplateLine()})";
+            }
+        }
+
+        $this->assertSame([], $failures);
     }
 }

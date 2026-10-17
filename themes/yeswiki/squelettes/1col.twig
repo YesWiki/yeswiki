@@ -8,23 +8,23 @@
 <head>
   <!-- HTML Metas -->
   <meta charset="{{ action('configuration param="charset"') }}">
-  {{ action('metarobots')|raw }}
+  {{metarobots /}}
   <meta name="keywords" content="{{ action('configuration param="meta_keywords"') }}" />
   <meta name="description" content="{{ action('configuration param="meta_description"') }}" />
   <meta name="viewport" content="width=device-width" />
 
   <!-- Title of the page -->
-  <title>{{ action('configuration param="wakka_name"') }} : {{ action('pagetitle')|raw }}</title>
+  <title>{{ action('configuration param="wakka_name"') }} : {{pagetitle /}}</title>
 
-  {{ action('favicon')|raw }}
-  {{ action('linkrss')|raw }}
+  {{favicon /}}
+  {{linkrss /}}
 
   {{ declared_assets()|raw }}
 </head>
 {% endblock %}
 
 {% block body %}
-<body {{ action('parambody')|raw }}{% if htmx_navigation %} hx-boost="true" hx-indicator=".yw-progress" hx-headers='{"{{ layout_fingerprint_header }}": "{{ layout_fingerprint }}"}'{% endif %}>
+<body {{parambody /}}{% if htmx_navigation %} hx-boost="true" hx-indicator=".yw-progress" hx-headers='{"{{ layout_fingerprint_header }}": "{{ layout_fingerprint }}"}'{% endif %}>
   {{ page_state()|raw }}
 
   <div class="yw-progress htmx-indicator" aria-hidden="true"></div>
@@ -53,10 +53,10 @@
 
     {% if layout_position('header') != 'before' %}{{ headerHtml|raw }}{% endif %}
 
-    <div id="yw-main" class="page" role="main" tabindex="-1" {{ action('doubleclick')|raw }}>
+    <div id="yw-main" class="page" role="main" tabindex="-1" {{doubleclick /}}>
       {{ page_content|raw }}
 
-      {{ action('editbar')|raw }}
+      {{editbar /}}
     </div>
 
     <footer id="yw-footer" class="yw-chrome-editable">

@@ -165,6 +165,7 @@ class SqliteDialect implements SqlDialect
             "CREATE TABLE IF NOT EXISTS \"{$table}\" (
                 \"id\" INTEGER PRIMARY KEY AUTOINCREMENT,
                 \"tag\" TEXT NOT NULL,
+                \"lang\" TEXT NOT NULL DEFAULT '',
                 \"acl\" TEXT NOT NULL,
                 \"acl_hash\" TEXT NOT NULL,
                 \"page_read_acl\" TEXT NOT NULL,
@@ -176,6 +177,7 @@ class SqliteDialect implements SqlDialect
                 \"updated_at\" TEXT NOT NULL
             )",
             "CREATE INDEX IF NOT EXISTS \"{$table}_idx_tag\" ON \"{$table}\" (\"tag\")",
+            "CREATE INDEX IF NOT EXISTS \"{$table}_idx_tag_lang\" ON \"{$table}\" (\"tag\", \"lang\")",
             "CREATE INDEX IF NOT EXISTS \"{$table}_idx_acl_hash\" ON \"{$table}\" (\"acl_hash\")",
             "CREATE INDEX IF NOT EXISTS \"{$table}_idx_content_type\" ON \"{$table}\" (\"content_type\")",
             "CREATE INDEX IF NOT EXISTS \"{$table}_idx_form_id\" ON \"{$table}\" (\"form_id\")",

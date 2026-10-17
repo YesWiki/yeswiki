@@ -719,7 +719,7 @@ class FormManager implements RequestScopedState
             }
         }
 
-        $saved = $this->pageManager->save($tag, Translations::pruned($body), '', true);
+        $saved = $this->pageManager->save($tag, Translations::pruned($this->followRenamedFields($existingBody, $body)), '', true);
 
         $this->pageManager->setMetadata($tag, [
             'activitypub' => $this->buildActivitypubMetadata($data, $existingPage['metadatas']['activitypub'] ?? []),
@@ -1057,6 +1057,16 @@ class FormManager implements RequestScopedState
         return $fieldObject;
     }
 
+    /**
+     * Whether $field is a positional array, whose indices may skip ahead to the handle's, rather than a field object with named keys.
+     *
+     * @param array<array-key, mixed> $field
+     */
+    private static function isPositional(array $field): bool
+    {
+        return !array_key_exists('type', $field) && array_key_exists(0, $field);
+    }
+
     /** Re-encodes any template input (designer JSON or legacy `***` syntax, e.g. */
     /** @param mixed $template stored template: JSON, legacy `***` syntax, or an already-decoded array */
     public function normalizeTemplate($template): string
@@ -1074,7 +1084,7 @@ class FormManager implements RequestScopedState
     {
         $list = [];
         foreach ($template as $fieldObject) {
-            $positional = is_array($fieldObject) && !array_is_list($fieldObject)
+            $positional = is_array($fieldObject) && !self::isPositional($fieldObject)
                 ? $this->namedToPositional($fieldObject)
                 : (is_array($fieldObject) ? $fieldObject : null);
             if ($positional !== null) {
@@ -1096,7 +1106,7 @@ class FormManager implements RequestScopedState
     {
         $template = [];
         foreach ($list as $positional) {
-            $fieldObject = is_array($positional) && array_is_list($positional)
+            $fieldObject = is_array($positional) && self::isPositional($positional)
                 ? $this->positionalToNamed($positional)
                 : (is_array($positional) ? $positional : null);
             if ($fieldObject !== null) {
@@ -1121,7 +1131,86 @@ class FormManager implements RequestScopedState
 
         $stored = json_decode($this->normalizeTemplate($template), true) ?? [];
 
-        return ContentTypeSchema::enforce($stored, $contentType);
+        return $this->withHandles(ContentTypeSchema::enforce($stored, $contentType));
+    }
+
+    /**
+     * $template with a stable handle on every field that has none or shares one, so a rename can be told from a replacement.
+     *
+     * @param array<array-key, mixed> $template
+     *
+     * @return array<array-key, mixed>
+     */
+    public function withHandles(array $template): array
+    {
+        $taken = [];
+        foreach ($template as $field) {
+            if (is_array($field) && is_string($field['handle'] ?? null) && $field['handle'] !== '') {
+                $taken[$field['handle']] = true;
+            }
+        }
+
+        $seen = [];
+        foreach ($template as $index => $field) {
+            if (!is_array($field)) {
+                continue;
+            }
+            $handle = is_string($field['handle'] ?? null) ? $field['handle'] : '';
+            if ($handle === '' || isset($seen[$handle])) {
+                do {
+                    $handle = bin2hex(random_bytes(4));
+                } while (isset($taken[$handle]));
+                $taken[$handle] = true;
+                $template[$index]['handle'] = $handle;
+            }
+            $seen[$handle] = true;
+        }
+
+        return $template;
+    }
+
+    /**
+     * $body with the translations of every field renamed since $before moved to the field's new name.
+     *
+     * @param array<string, mixed> $before
+     * @param array<string, mixed> $body
+     *
+     * @return array<string, mixed>
+     */
+    private function followRenamedFields(array $before, array $body): array
+    {
+        $previousNames = $this->namesByHandle($before['template'] ?? []);
+        $renames = [];
+        foreach ($this->namesByHandle($body['template'] ?? []) as $handle => $name) {
+            $previous = $previousNames[$handle] ?? '';
+            if ($previous !== '' && $name !== '' && $previous !== $name) {
+                $renames[$previous] = $name;
+            }
+        }
+
+        $parked = [];
+        foreach (array_keys($renames) as $position => $from) {
+            $body = Translations::renamedPath($body, "template.$from", "template.\0renamed$position");
+            $parked["\0renamed$position"] = $renames[$from];
+        }
+        foreach ($parked as $from => $to) {
+            $body = Translations::renamedPath($body, "template.$from", "template.$to");
+        }
+
+        return $body;
+    }
+
+    /** @return array<string, string> handle => field name */
+    private function namesByHandle(mixed $template): array
+    {
+        $names = [];
+        foreach (is_array($template) ? $template : [] as $field) {
+            if (is_array($field) && is_string($field['handle'] ?? null) && $field['handle'] !== '') {
+                $names[$field['handle']] = (string)($field['name'] ?? '');
+            }
+        }
+
+        return $names;
     }
 
     /**

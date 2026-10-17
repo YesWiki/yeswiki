@@ -684,6 +684,26 @@ Deux choses à savoir :
   adresse électronique, une image ou une géolocalisation sont les mêmes dans
   toutes les langues, donc l'écran ne les affiche pas.
 
+### Ce qui suit la langue du lecteur
+
+- **La recherche.** Un visiteur qui lit en anglais cherche dans le wiki
+  anglais. Il trouve les contenus traduits par leurs mots anglais, et ceux qui
+  ne sont pas traduits par leurs mots d'origine. Chercher « atelier » en
+  lisant en anglais ne trouve pas une page traduite en « workshop » : il faut
+  passer en français.
+- **Les titres dans les listes.** Les résultats de recherche, `{{filtertags}}`,
+  `{{includepages}}` et les favoris affichent le titre traduit. Le titre d'une
+  fiche traduite se recalcule à partir de ses champs traduits.
+- **Les flux RSS.** Sans paramètre, un flux est multilingue : chaque contenu
+  y figure une fois par langue, avec un lien qui l'ouvre dans cette langue.
+  Avec `&lang=en`, le flux ne donne que l'anglais, et la langue d'origine pour
+  ce qui n'est pas traduit.
+
+Renommer un champ dans le concepteur de formulaire garde ses traductions.
+Chaque champ porte un identifiant stable, `handle`, que le concepteur conserve
+et que l'API des formulaires renvoie. Supprimer un champ puis en créer un
+autre, en revanche, perd les traductions du premier.
+
 Les langues proposées sont celles de votre configuration : `default_language`
 pour la langue d'origine du wiki, `other_languages` pour les autres.
 

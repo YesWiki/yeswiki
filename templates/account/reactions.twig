@@ -5,11 +5,11 @@
 
   <section class="yw-account__section">
     <h2>{{ _t('ACCOUNT_REACTIONS_VOTES') }}</h2>
-    {{ renderAction('userreactions')|raw }}
+    {{userreactions /}}
   </section>
 
   <section class="yw-account__section">
     <h2>{{ _t('ACCOUNT_REACTIONS_COMMENTS') }}</h2>
-    {{ renderAction('usercomments')|raw }}
+    {{usercomments /}}
   </section>
 {% endblock %}

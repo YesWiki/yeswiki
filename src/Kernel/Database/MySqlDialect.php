@@ -190,6 +190,7 @@ class MySqlDialect implements SqlDialect
             "CREATE TABLE IF NOT EXISTS `{$table}` (
                 `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
                 `tag` VARCHAR(191) NOT NULL,
+                `lang` VARCHAR(16) NOT NULL DEFAULT '',
                 `acl` TEXT NOT NULL,
                 `acl_hash` CHAR(32) NOT NULL,
                 `page_read_acl` TEXT NOT NULL,
@@ -201,6 +202,7 @@ class MySqlDialect implements SqlDialect
                 `updated_at` DATETIME NOT NULL,
                 PRIMARY KEY (`id`),
                 KEY `idx_tag` (`tag`),
+                KEY `idx_tag_lang` (`tag`, `lang`),
                 KEY `idx_acl_hash` (`acl_hash`),
                 KEY `idx_content_type` (`content_type`),
                 KEY `idx_form_id` (`form_id`),

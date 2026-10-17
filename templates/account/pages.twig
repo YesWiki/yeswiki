@@ -5,11 +5,11 @@
 
   <section class="yw-account__section">
     <h2>{{ _t('ACCOUNT_PAGES_OWNED') }}</h2>
-    {{ renderAction('mypages')|raw }}
+    {{mypages /}}
   </section>
 
   <section class="yw-account__section">
     <h2>{{ _t('ACCOUNT_PAGES_CHANGES') }}</h2>
-    {{ renderAction('mychanges')|raw }}
+    {{mychanges /}}
   </section>
 {% endblock %}
