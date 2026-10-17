@@ -339,7 +339,7 @@ class EntryManager
             $this->mailer->notifyAdmins($data, true);
         }
 
-        if ($this->activityPubService->isEnabled($form) && !$sourceUrl) {
+        if ($this->activityPubService->hasActor($form) && !$sourceUrl) {
             $this->activityPubService->notifyFollowers($form, $data, 'Create');
         }
 
@@ -416,7 +416,7 @@ class EntryManager
         }
 
         $isExternalEntry = !empty($this->tripleStore->getMatching($data['id_fiche'], TripleStore::SOURCE_URL_URI, null, '=', '=', ''));
-        if ($this->activityPubService->isEnabled($form) && !$isExternalEntry) {
+        if ($this->activityPubService->hasActor($form) && !$isExternalEntry) {
             $this->activityPubService->notifyFollowers($form, $data, 'Update');
         }
 
@@ -526,7 +526,7 @@ class EntryManager
             $this->authController->getLoggedUserName(),
             'Suppression de la page ->""' . $tag . '""'
         );
-        if ($this->activityPubService->isEnabled($form) && !$isExternalEntry) {
+        if ($this->activityPubService->hasActor($form) && !$isExternalEntry) {
             $this->activityPubService->notifyFollowers($form, $fiche, 'Delete');
         }
 

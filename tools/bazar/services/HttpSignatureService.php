@@ -8,6 +8,8 @@ use Symfony\Component\HttpFoundation\Request;
 class HttpSignatureService
 {
     public const MAX_CLOCK_SKEW = 3600;
+    public const CONTENT_TYPE = 'application/activity+json';
+    public const ACCEPT = 'application/activity+json, application/ld+json; profile="https://www.w3.org/ns/activitystreams"';
 
     protected $httpClient;
     protected $ssrfUrlValidator;
@@ -40,25 +42,29 @@ class HttpSignatureService
         return 'SHA-256=' . base64_encode(hash('sha256', $message, true));
     }
 
-    public function generateSignature($activity, $url, $form)
+    /**
+     * Headers signing a request with an actor's key, covering the body when there is one.
+     *
+     * @param array{keyId:string,privateKey:string} $signer
+     *
+     * @return array<string,string>
+     */
+    public function signHeaders(string $method, string $url, array $signer, ?string $body = null): array
     {
-        $privateKey = $form['bn_activitypub_private_key'];
-
-        $message = json_encode($activity, JSON_UNESCAPED_SLASHES);
-        $digest = $this->getDigest($message);
-
-        $date = gmdate("D, d M Y H:i:s \G\M\T");
-        $contentType = 'application/activity+json'; // TODO allow to pass custom headers. This only works for POST requests.
-
         $urlParts = parse_url($url);
+        $target = ($urlParts['path'] ?? '/') . (isset($urlParts['query']) ? '?' . $urlParts['query'] : '');
+        $date = gmdate('D, d M Y H:i:s \G\M\T');
 
+        $headers = ['Date' => $date];
         $sigParts = [
-            '(request-target)' => 'post ' . $urlParts['path'],
-            'host' => $urlParts['host'],
+            '(request-target)' => strtolower($method) . ' ' . $target,
+            'host' => $urlParts['host'] . (isset($urlParts['port']) ? ':' . $urlParts['port'] : ''),
             'date' => $date,
-            'digest' => $digest,
-            'content-type' => $contentType,
         ];
+        if ($body !== null) {
+            $headers['Digest'] = $sigParts['digest'] = $this->getDigest($body);
+            $headers['Content-Type'] = $sigParts['content-type'] = self::CONTENT_TYPE;
+        }
 
         $sigSrc = join("\n", array_map(
             fn ($k, $v) => "{$k}: {$v}",
@@ -66,25 +72,44 @@ class HttpSignatureService
             array_values($sigParts)
         ));
 
-        openssl_sign($sigSrc, $signature, $privateKey, OPENSSL_ALGO_SHA256);
+        if (!openssl_sign($sigSrc, $signature, $signer['privateKey'], OPENSSL_ALGO_SHA256)) {
+            throw new \Exception('Cannot sign the request');
+        }
 
-        $sigHeaderParts = [
-            'keyId' => $activity['actor'] . '#main-key',
-            'algorithm' => 'rsa-sha256',
-            'headers' => join(' ', array_keys($sigParts)),
-            'signature' => base64_encode($signature),
-        ];
+        $headers['Signature'] = sprintf(
+            'keyId="%s",algorithm="rsa-sha256",headers="%s",signature="%s"',
+            $signer['keyId'],
+            join(' ', array_keys($sigParts)),
+            base64_encode($signature)
+        );
 
-        return [
-            'Date' => $date,
-            'Content-Type' => $contentType,
-            'Digest' => $digest,
-            'Signature' => join(',', array_map(
-                fn ($k, $v) => "{$k}=\"{$v}\"",
-                array_keys($sigHeaderParts),
-                array_values($sigHeaderParts)
-            )),
-        ];
+        return $headers;
+    }
+
+    /**
+     * Fetches an ActivityPub document, signing the request when a signer is given.
+     *
+     * @param array{keyId:string,privateKey:string}|null $signer
+     */
+    public function fetch(string $url, ?array $signer = null): array
+    {
+        $headers = ['Accept' => self::ACCEPT];
+        if ($signer !== null) {
+            $headers += $this->signHeaders('GET', $url, $signer);
+        }
+
+        $response = $this->httpClient->request('GET', $url, [
+            'headers' => $headers,
+            'max_redirects' => 0,
+            'resolve' => $this->ssrfUrlValidator->resolveSafe($url),
+        ]);
+
+        $document = json_decode($response->getContent(), true);
+        if (!is_array($document)) {
+            throw new \Exception("{$url} did not return an ActivityPub document");
+        }
+
+        return $document;
     }
 
     /**
@@ -97,7 +122,7 @@ class HttpSignatureService
      *
      * @throws \Exception when anything about the signature does not hold
      */
-    public function verifySignature(Request $request): string
+    public function verifySignature(Request $request, ?array $signer = null): string
     {
         if (!$request->headers->has('Signature')) {
             throw new \Exception('No signature');
@@ -113,15 +138,8 @@ class HttpSignatureService
 
         $this->assertFresh($request, explode(' ', strtolower($sigConf['headers'])));
 
-        $resolve = $this->ssrfUrlValidator->resolveSafe($sigConf['keyId']);
-
-        $response = $this->httpClient->request('GET', $sigConf['keyId'], [
-            'headers' => ['Accept' => 'application/ld+json'],
-            'max_redirects' => 0,
-            'resolve' => $resolve,
-        ]);
-
-        $actor = json_decode($response->getContent(), true);
+        $algorithm = $this->opensslAlgorithm($sigConf['algorithm']);
+        $actor = $this->fetch($sigConf['keyId'], $signer);
 
         if (!isset($actor['publicKey'],$actor['publicKey']['id'],$actor['publicKey']['publicKeyPem'])) {
             throw new \Exception('Missing public key');
@@ -136,7 +154,6 @@ class HttpSignatureService
             throw new \Exception('Malformed public key');
         }
 
-        // We cannot use getRequestUri() because it returns the real URI, eg. /?api/forms/2/actor
         $requestUri = $request->getScriptName();
 
         $sigParts = [];
@@ -151,7 +168,7 @@ class HttpSignatureService
             }
         }
 
-        if (openssl_verify(join("\n", $sigParts), base64_decode($sigConf['signature']), $actorPublicKey, strtoupper($sigConf['algorithm'])) !== 1) {
+        if (openssl_verify(join("\n", $sigParts), base64_decode($sigConf['signature']), $actorPublicKey, $algorithm) !== 1) {
             throw new \Exception('Signature verification failed');
         }
 
@@ -163,6 +180,18 @@ class HttpSignatureService
         $this->assertNotSeen($sigConf['signature']);
 
         return $owner;
+    }
+
+    /**
+     * The OpenSSL digest for a signature algorithm, hs2019 being RSA with SHA-256 for every server seen so far.
+     */
+    protected function opensslAlgorithm(string $algorithm): int
+    {
+        return match (strtolower($algorithm)) {
+            'rsa-sha256', 'hs2019' => OPENSSL_ALGO_SHA256,
+            'rsa-sha512' => OPENSSL_ALGO_SHA512,
+            default => throw new \Exception('Unsupported signature algorithm'),
+        };
     }
 
     /**

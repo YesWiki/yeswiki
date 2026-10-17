@@ -5,6 +5,8 @@ namespace YesWiki\Test\Bazar\Service;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Bazar\Service\ActivityPubInbox;
+use YesWiki\Bazar\Service\ActivityPubKeyStore;
+use YesWiki\Bazar\Service\ActivityPubProfiles;
 use YesWiki\Bazar\Service\ActivityPubService;
 use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Bazar\Service\HttpSignatureService;
@@ -29,6 +31,7 @@ class ActivityPubInboxTest extends TestCase
     private array $updated = [];
     private array $deleted = [];
     private array $created = [];
+    private ?HttpSignatureService $httpSignatureService = null;
 
     private function service(): ActivityPubInbox
     {
@@ -48,9 +51,19 @@ class ActivityPubInboxTest extends TestCase
         $tripleStore->method('create')->willReturnCallback(function ($resource, $property, $value) {
             if ($property === ActivityPubInbox::REMOTE_ACTOR_URI) {
                 $this->owners[$resource] = $value;
+            } else {
+                $this->triples[] = ['resource' => $resource, 'property' => $property, 'value' => $value];
             }
 
             return 0;
+        });
+        $tripleStore->method('delete')->willReturnCallback(function ($resource, $property, $value) {
+            $this->triples = array_values(array_filter(
+                $this->triples,
+                fn ($t) => !($t['resource'] === $resource && $t['property'] === $property && ($value === null || $t['value'] === $value))
+            ));
+
+            return true;
         });
 
         $entryManager = $this->createStub(EntryManager::class);
@@ -85,7 +98,7 @@ class ActivityPubInboxTest extends TestCase
         $params = $this->createStub(ParameterBagInterface::class);
         $params->method('get')->willReturn('https://us.example/');
 
-        $httpSignatureService = new HttpSignatureService($this->createStub(SsrfUrlValidator::class));
+        $httpSignatureService = $this->httpSignatureService = new HttpSignatureService($this->createStub(SsrfUrlValidator::class));
 
         return new ActivityPubInbox(
             new ActivityPubService(
@@ -94,13 +107,14 @@ class ActivityPubInboxTest extends TestCase
                 $httpSignatureService,
                 $semanticTransformer,
                 $tripleStore,
-                $this->createStub(SsrfUrlValidator::class)
+                $this->createStub(SsrfUrlValidator::class),
+                $this->createStub(ActivityPubKeyStore::class),
+                $this->createStub(ActivityPubProfiles::class)
             ),
             $entryManager,
             $httpSignatureService,
             $semanticTransformer,
-            $tripleStore,
-            $this->createStub(SsrfUrlValidator::class)
+            $tripleStore
         );
     }
 
@@ -245,7 +259,7 @@ class ActivityPubInboxTest extends TestCase
     private function sync(array $outboxItems, string $actorUri = self::THEM): array
     {
         $service = $this->service();
-        $client = new class ($actorUri, $outboxItems) {
+        $client = new class($actorUri, $outboxItems) {
             public function __construct(private string $actorUri, private array $items)
             {
             }
@@ -256,7 +270,7 @@ class ActivityPubInboxTest extends TestCase
                     ? json_encode(['outbox' => $this->actorUri . '/outbox'])
                     : json_encode(['type' => 'OrderedCollection', 'orderedItems' => $this->items]);
 
-                return new class ($body) {
+                return new class($body) {
                     public function __construct(private string $body)
                     {
                     }
@@ -268,8 +282,8 @@ class ActivityPubInboxTest extends TestCase
                 };
             }
         };
-        $property = new \ReflectionProperty($service, 'httpClient');
-        $property->setValue($service, $client);
+        $property = new \ReflectionProperty($this->httpSignatureService, 'httpClient');
+        $property->setValue($this->httpSignatureService, $client);
 
         return $service->syncActorPosts($actorUri, self::FORM);
     }
@@ -309,5 +323,64 @@ class ActivityPubInboxTest extends TestCase
 
         $this->assertSame([], $this->created, 'a Create whose object is on another host is skipped');
     }
-}
 
+    private function givenFollowRequest(string $actorUri, string $followId): void
+    {
+        $this->triples[] = [
+            'resource' => self::US . '/following',
+            'property' => ActivityPubService::$AS_PREFIX . 'Follow',
+            'value' => json_encode(['actor' => $actorUri, 'id' => $followId]),
+        ];
+    }
+
+    private function following(): array
+    {
+        return array_values(array_map(fn ($t) => $t['value'], array_filter(
+            $this->triples,
+            fn ($t) => $t['resource'] === self::US . '/following' && $t['property'] === ActivityPubService::$AS_PREFIX . 'items'
+        )));
+    }
+
+    public function testAnAcceptForAFollowNeverSentIsIgnored()
+    {
+        $this->service()->processActivity(['type' => 'Accept', 'actor' => self::THEM, 'object' => ['type' => 'Follow', 'id' => self::US . '/activities/1']], self::FORM, self::THEM);
+
+        $this->assertSame([], $this->following());
+    }
+
+    public function testAnAcceptNamingTheFollowByItsIdRecordsTheFollowing()
+    {
+        $this->givenFollowRequest(self::THEM, self::US . '/activities/1');
+
+        $this->service()->processActivity(['type' => 'Accept', 'actor' => self::THEM, 'object' => self::US . '/activities/1'], self::FORM, self::THEM);
+
+        $this->assertSame([self::THEM], $this->following());
+    }
+
+    public function testAnAcceptForAnotherFollowIsIgnored()
+    {
+        $this->givenFollowRequest(self::THEM, self::US . '/activities/1');
+
+        $this->service()->processActivity(['type' => 'Accept', 'actor' => self::THEM, 'object' => ['type' => 'Follow', 'id' => self::US . '/activities/2']], self::FORM, self::THEM);
+
+        $this->assertSame([], $this->following());
+    }
+
+    public function testARejectForgetsTheFollowRequest()
+    {
+        $this->givenFollowRequest(self::THEM, self::US . '/activities/1');
+
+        $this->service()->processActivity(['type' => 'Reject', 'actor' => self::THEM, 'object' => self::US . '/activities/1'], self::FORM, self::THEM);
+        $this->service()->processActivity(['type' => 'Accept', 'actor' => self::THEM, 'object' => self::US . '/activities/1'], self::FORM, self::THEM);
+
+        $this->assertSame([], $this->following());
+    }
+
+    public function testAFollowAddressedToAnotherActorIsRefused()
+    {
+        $this->expectException(\Exception::class);
+        $this->expectExceptionMessage('not addressed to this actor');
+
+        $this->service()->processActivity(['type' => 'Follow', 'actor' => self::THEM, 'object' => 'https://us.example/actors/2'], self::FORM, self::THEM);
+    }
+}

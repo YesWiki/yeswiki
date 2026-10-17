@@ -11,6 +11,7 @@ use YesWiki\Bazar\Exception\RequiredFieldsException;
 use YesWiki\Bazar\Exception\TagAlreadyUsedException;
 use YesWiki\Bazar\Field\TextareaField;
 use YesWiki\Bazar\Service\ActivityPubInbox;
+use YesWiki\Bazar\Service\ActivityPubProfiles;
 use YesWiki\Bazar\Service\ActivityPubService;
 use YesWiki\Bazar\Service\BazarListService;
 use YesWiki\Bazar\Service\CSVManager;
@@ -69,7 +70,7 @@ class ApiController extends YesWikiController
 
         $form = $this->getService(BazarListService::class)->getForms(['idtypeannonce' => $formId])[$formId];
 
-        if ($activityPubService->isEnabled($form)) {
+        if ($activityPubService->hasActor($form)) {
             $actor = $activityPubService->getActor($form);
 
             return new ApiResponse($actor, Response::HTTP_OK, ['Content-Type' => 'application/activity+json']);
@@ -86,13 +87,14 @@ class ApiController extends YesWikiController
 
         $form = $this->getService(BazarListService::class)->getForms(['idtypeannonce' => $formId])[$formId];
 
-        if ($activityPubService->isEnabled($form)) {
+        if ($activityPubService->hasActor($form)) {
             $followers = $activityPubService->getFollowers($form);
 
             return new ApiResponse([
                 '@context' => 'https://www.w3.org/ns/activitystreams',
                 'type' => 'Collection',
                 'id' => $activityPubService->getFormCollectionUri($form, 'followers'),
+                'totalItems' => count($followers),
                 'items' => $followers,
             ], Response::HTTP_OK, ['Content-Type' => 'application/activity+json']);
         }
@@ -108,13 +110,14 @@ class ApiController extends YesWikiController
 
         $form = $this->getService(BazarListService::class)->getForms(['idtypeannonce' => $formId])[$formId];
 
-        if ($activityPubService->isEnabled($form)) {
+        if ($activityPubService->hasActor($form)) {
             $following = $activityPubService->getFollowing($form);
 
             return new ApiResponse([
                 '@context' => 'https://www.w3.org/ns/activitystreams',
                 'type' => 'Collection',
                 'id' => $activityPubService->getFormCollectionUri($form, 'following'),
+                'totalItems' => count($following),
                 'items' => $following,
             ], Response::HTTP_OK, ['Content-Type' => 'application/activity+json']);
         }
@@ -131,9 +134,9 @@ class ApiController extends YesWikiController
 
         $form = $this->getService(BazarListService::class)->getForms(['idtypeannonce' => $formId])[$formId];
 
-        if ($activityPubService->isEnabled($form)) {
+        if ($activityPubService->hasActor($form)) {
             try {
-                $verifiedActor = $httpSignatureService->verifySignature($request);
+                $verifiedActor = $httpSignatureService->verifySignature($request, $activityPubService->signer($form));
             } catch (\Exception $e) {
                 return new ApiResponse(['error' => $e->getMessage()], Response::HTTP_UNAUTHORIZED, ['Content-Type' => 'application/activity+json']);
             }
@@ -161,7 +164,7 @@ class ApiController extends YesWikiController
 
         $form = $this->getService(BazarListService::class)->getForms(['idtypeannonce' => $formId])[$formId];
 
-        if ($activityPubService->isEnabled($form)) {
+        if ($activityPubService->hasActor($form)) {
             $entries = $bazarListService->getEntries([
                 'idtypeannonce' => $formId,
                 'ordre' => 'asc',
@@ -171,24 +174,29 @@ class ApiController extends YesWikiController
             return new ApiResponse([
                 '@context' => 'https://www.w3.org/ns/activitystreams',
                 'type' => 'OrderedCollection',
-                'id' => $activityPubService->getFormCollectionUri($form, 'following'),
+                'id' => $activityPubService->getFormCollectionUri($form, 'outbox'),
                 'totalItems' => count($entries),
                 'orderedItems' => array_map(function ($entry) use ($form, $activityPubService) {
+                    $actorUri = $activityPubService->getFormActorUri($form);
+                    $followersUri = $activityPubService->getFormCollectionUri($form, 'followers');
                     $object = $this->getService(SemanticTransformer::class)->convertToSemanticData($form, $entry);
                     unset($object['@context']);
+                    $object['attributedTo'] ??= $actorUri;
+                    $object['to'] ??= [ActivityPubService::PUBLIC];
+                    $object['cc'] ??= [$followersUri];
                     $published = new \DateTime($entry['date_creation_fiche']);
 
                     return [
+                        'id' => $object['id'] . '#create',
                         'type' => 'Create',
-                        'actor' => $activityPubService->getFormActorUri($form),
-                        'published' => $published->format(\DateTime::ISO8601),
+                        'actor' => $actorUri,
+                        'published' => $published->format(\DateTime::ATOM),
                         'object' => $object,
-                        'to' => [$activityPubService->getFormCollectionUri($form, 'followers'), 'https://www.w3.org/ns/activitystreams#Public'],
+                        'to' => [ActivityPubService::PUBLIC],
+                        'cc' => [$followersUri],
                     ];
                 }, array_values($entries)),
             ], Response::HTTP_OK, ['Content-Type' => 'application/activity+json']);
-
-            return new ApiResponse(null, Response::HTTP_OK, ['Content-Type' => 'application/activity+json']);
         }
         throw new NotFoundHttpException();
     }
@@ -205,11 +213,12 @@ class ApiController extends YesWikiController
 
         $matches = $webfingerService->splitHandle($handle);
 
-        $form = $this->getService(FormManager::class)->findByActivityPubUsername($matches['user']);
+        $formId = $this->getService(ActivityPubProfiles::class)->formIdForUsername((string)($matches['user'] ?? ''));
+        $form = $formId === null ? null : $this->getService(FormManager::class)->getOne($formId);
 
-        if ($form) {
+        if ($form && $activityPubService->hasActor($form)) {
             $actorUri = $activityPubService->getFormActorUri($form);
-            $actor = $webfingerService->formatLocalActor($handle, $actorUri);
+            $actor = $webfingerService->formatLocalActor($handle, $actorUri, $activityPubService->getActor($form)['url']);
 
             return new ApiResponse($actor, Response::HTTP_OK, ['Content-Type' => 'application/json']);
         }

@@ -2,7 +2,6 @@
 
 namespace YesWiki\Bazar\Service;
 
-use Symfony\Component\HttpClient\HttpClient;
 use YesWiki\Core\Service\TripleStore;
 
 /**
@@ -12,23 +11,19 @@ class ActivityPubInbox
 {
     public const REMOTE_ACTOR_URI = 'http://outils-reseaux.org/_vocabulary/remoteActor';
 
-    protected $httpClient;
     protected $activityPubService;
     protected $entryManager;
     protected $httpSignatureService;
     protected $semanticTransformer;
     protected $tripleStore;
-    protected $ssrfUrlValidator;
 
-    public function __construct(ActivityPubService $activityPubService, EntryManager $entryManager, HttpSignatureService $httpSignatureService, SemanticTransformer $semanticTransformer, TripleStore $tripleStore, SsrfUrlValidator $ssrfUrlValidator)
+    public function __construct(ActivityPubService $activityPubService, EntryManager $entryManager, HttpSignatureService $httpSignatureService, SemanticTransformer $semanticTransformer, TripleStore $tripleStore)
     {
-        $this->httpClient = HttpClient::create();
         $this->activityPubService = $activityPubService;
         $this->entryManager = $entryManager;
         $this->httpSignatureService = $httpSignatureService;
         $this->semanticTransformer = $semanticTransformer;
         $this->tripleStore = $tripleStore;
-        $this->ssrfUrlValidator = $ssrfUrlValidator;
     }
 
     /**
@@ -45,12 +40,21 @@ class ActivityPubInbox
 
         switch ($activity['type']) {
             case 'Accept':
-                if ($activity['object']['type'] === 'Follow') {
-                    $this->activityPubService->addFollowing($form, $activity['actor']);
+                if ($this->isFollow($activity['object'] ?? null)) {
+                    $this->activityPubService->acceptFollow($form, $activity['actor'], $this->objectId($activity['object']));
+                }
+                break;
+
+            case 'Reject':
+                if ($this->isFollow($activity['object'] ?? null)) {
+                    $this->activityPubService->rejectFollow($form, $activity['actor']);
                 }
                 break;
 
             case 'Follow':
+                if ($this->objectId($activity['object'] ?? null) !== $this->activityPubService->getFormActorUri($form)) {
+                    throw new \Exception('This Follow is not addressed to this actor');
+                }
                 $this->activityPubService->addFollower($form, $activity['actor']);
 
                 $this->activityPubService->postActivity([
@@ -62,7 +66,7 @@ class ActivityPubInbox
                 break;
 
             case 'Undo':
-                if ($activity['object']['type'] === 'Follow') {
+                if (($activity['object']['type'] ?? null) === 'Follow') {
                     $this->activityPubService->removeFollower($form, $activity['actor']);
                 }
 
@@ -104,6 +108,23 @@ class ActivityPubInbox
                 }
                 break;
         }
+    }
+
+    /**
+     * Whether an Accept or Reject is about a Follow: an embedded Follow, or a bare id when the sender does not embed it.
+     */
+    protected function isFollow($object): bool
+    {
+        return is_string($object) || (is_array($object) && ($object['type'] ?? null) === 'Follow');
+    }
+
+    protected function objectId($object): ?string
+    {
+        if (is_array($object)) {
+            $object = $object['id'] ?? null;
+        }
+
+        return is_string($object) ? $object : null;
     }
 
     /**
@@ -152,19 +173,13 @@ class ActivityPubInbox
     {
         $stats = ['created' => 0, 'updated' => 0, 'deleted' => 0];
 
-        $resolve = $this->ssrfUrlValidator->resolveSafe($actorUri);
-        $response = $this->httpClient->request('GET', $actorUri, [
-            'headers' => ['Accept' => 'application/activity+json'],
-            'max_redirects' => 0,
-            'resolve' => $resolve,
-        ]);
-        $actor = json_decode($response->getContent(), true);
+        $actor = $this->activityPubService->fetch($actorUri, $form);
 
         if (empty($actor['outbox'])) {
             return $stats;
         }
 
-        $remoteItems = $this->fetchAllOutboxItems($actor['outbox']);
+        $remoteItems = $this->fetchAllOutboxItems($actor['outbox'], $form);
 
         $remoteObjectIds = [];
 
@@ -240,20 +255,14 @@ class ActivityPubInbox
         return $stats;
     }
 
-    private function fetchAllOutboxItems(string $outboxUrl): array
+    private function fetchAllOutboxItems(string $outboxUrl, array $form): array
     {
         $items = [];
         $url = $outboxUrl;
         $maxPages = 20;
 
         for ($page = 0; $url && $page < $maxPages; $page++) {
-            $resolve = $this->ssrfUrlValidator->resolveSafe($url);
-            $response = $this->httpClient->request('GET', $url, [
-                'headers' => ['Accept' => 'application/activity+json'],
-                'max_redirects' => 0,
-                'resolve' => $resolve,
-            ]);
-            $data = json_decode($response->getContent(), true);
+            $data = $this->activityPubService->fetch($url, $form);
             $type = $data['type'] ?? null;
 
             if ($type === 'OrderedCollection' && isset($data['first']) && !isset($data['orderedItems'])) {

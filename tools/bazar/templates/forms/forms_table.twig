@@ -98,9 +98,9 @@
                 <i class="fa fa-pencil-alt"></i>
               </button>
             {% endif %}
-            {% if form.isActivityPubEnabled %}
+            {% if form.isActivityPubEnabled and userIsAdmin %}
               <a class="btn btn-default btn-mini btn-xs" title="{{ _t('BAZ_GESTION_ABONNEMENTS') }}" href="{{ url({ params: { vue: 'abonnements', action: 'list', idformulaire: key }}) }}" data-toggle="tooltip" data-placement="bottom" >
-                <i class="fa fa-user-plus"></i>
+                <i class="fas fa-rss"></i>
               </a>
             {% endif %}
             </div>

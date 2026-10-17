@@ -16,7 +16,6 @@ futur.
 - Editer le formulaire et cliquez sur le bouton "Configuration avancée" tout en
   bas.
 - Cochez la case "Activer ActivityPub pour ce formulaire"
-- Entrez un nom pour d'utilisateur ActivityPub (par exemple "agenda" ou "blog")
 - Entrez une template sémantique (utilisée pour convertir les données YesWiki en
   données ActivityPub - voir ci-dessous)
 - Entrez une template sémantique inverse (utilisée pour convertir les données
@@ -27,14 +26,82 @@ dans la liste des formulaires:
 
 - Dans la colonne "Format de données", un bouton "AP" qui renvoie vers l'acteur
   ActivityPub du formulaire
-- Dans les actions, un bouton "Gestion des abonnements"
+- Dans les actions, un bouton "ActivityPub", visible des administrateurs
 
-Depuis la page "Gestion des abonnements", plusieurs choses sont possibles:
+Ce bouton mène à une page en deux onglets. Le compte n'existe pour les autres
+serveurs qu'une fois un nom d'utilisateur choisi et le profil enregistré.
+
+## Profil du compte
+
+L'onglet "Profil" règle ce que voient les personnes qui consultent ou suivent le
+compte depuis Mastodon, GoToSocial, etc. :
+
+- le nom d'utilisateur (par exemple "agenda" ou "blog"), qui donne
+  l'identifiant `@agenda@monwiki.org` ;
+- la présentation. Laissée vide, c'est la description du formulaire qui sert.
+  Les adresses web deviennent des liens ;
+- l'image de profil et la bannière : une adresse complète, le chemin d'une
+  image du wiki, ou un fichier envoyé (PNG, JPEG, GIF ou WebP, 5 Mo au plus),
+  rangé dans `files/` ;
+- jusqu'à six informations, libellé et valeur. Mastodon en affiche quatre,
+  GoToSocial six.
+
+La page enregistre le tout dans `wakka.config.php`, sous la clé
+`activitypub_profiles`, rangé par identifiant de formulaire. Le serveur web doit
+donc pouvoir écrire ce fichier. On peut aussi l'éditer à la main :
+
+```php
+'activitypub_profiles' => [
+    2 => [
+        'username' => 'agenda',
+        'summary' => "Les rencontres et ateliers du collectif.",
+        'icon' => 'files/Logo_agenda.png',
+        'image' => 'https://monwiki.org/files/Banniere.jpg',
+        'fields' => [
+            'Site' => 'https://monwiki.org/',
+            'Contact' => 'contact@monwiki.org',
+        ],
+    ],
+],
+```
+
+Les serveurs distants gardent le profil en cache : un changement peut mettre
+quelques heures à apparaître chez eux. Changer le nom d'utilisateur ne fait pas
+perdre les abonnés, car l'adresse de l'acteur reste celle du formulaire, mais
+l'ancien identifiant ne mène plus au compte.
+
+## Abonnements
+
+Depuis l'onglet des abonnements, plusieurs choses sont possibles:
 
 - S'abonner à un nouvel acteur en entrant son identifiant
 - Suivre en retour un acteur qui nous suit déjà
 - Synchroniser toutes les données d'un acteur auquel on est abonné
 - Effacer un abonnement ou un abonné
+
+## Clés de signature
+
+Chaque compte signe ses échanges avec une clé RSA. YesWiki la crée au premier
+besoin dans `private/activitypub/<identifiant du formulaire>.pem`, lisible
+seulement par le serveur web. Elle n'est ni en base de données ni dans l'API.
+
+Gardez ce fichier dans vos sauvegardes : sans lui, YesWiki génère une nouvelle
+clé et les serveurs distants doivent recharger le profil avant d'accepter de
+nouveau les messages du compte.
+
+## Compatibilité GoToSocial
+
+GoToSocial refuse toute requête non signée, y compris la simple lecture d'un
+profil. YesWiki signe donc avec la clé du formulaire toutes ses requêtes vers
+les autres serveurs : lecture des profils, des clés et des boîtes d'envoi.
+
+Le bouton de l'action `bazarfollow` redirige vers le serveur de la personne
+quand celui-ci propose l'abonnement à distance (Mastodon le fait). Sinon,
+l'action affiche l'identifiant du compte, à chercher depuis son propre compte
+avant de s'abonner.
+
+Un abonnement demandé depuis l'onglet des abonnements reste marqué "en
+attente d'acceptation" jusqu'à ce que le compte distant l'accepte.
 
 ## Exemples de templates
 

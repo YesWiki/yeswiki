@@ -2,10 +2,12 @@
 
 namespace YesWiki\Bazar\Controller;
 
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Security\Csrf\Exception\TokenNotFoundException;
 use Tamtamchik\SimpleFlash\Flash;
 use YesWiki\Bazar\Field\MapField;
 use YesWiki\Bazar\Service\ActivityPubInbox;
+use YesWiki\Bazar\Service\ActivityPubProfiles;
 use YesWiki\Bazar\Service\ActivityPubService;
 use YesWiki\Bazar\Service\FormManager;
 use YesWiki\Bazar\Service\Guard;
@@ -208,34 +210,98 @@ class FormController extends YesWikiController
 
     public function manageAbonnements($id)
     {
+        $listUrl = fn (array $query = []) => $this->wiki->href('', '', ['vue' => 'abonnements', 'action' => 'list', 'idformulaire' => $id] + $query, false);
+        if (!$this->wiki->UserIsAdmin()) {
+            return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'formulaire', 'msg' => 'BAZ_NEED_ADMIN_RIGHTS'], false));
+        }
         $form = $this->formManager->getOne($id);
-
-        $post = $this->getRequest()->request;
-        if ($post->has('actor_handle')) {
-            if (!$this->wiki->UserIsAdmin() || $this->securityController->isWikiHibernated()) {
-                return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'abonnements', 'action' => 'list', 'msg' => 'BAZ_NEED_ADMIN_RIGHTS', 'idformulaire' => $id], false));
-            }
-
-            $actorHandle = $post->get('actor_handle');
-            $recipientUri = str_starts_with($actorHandle, 'http') ? $actorHandle : $this->webfingerService->getRemoteActor($actorHandle);
-
-            $this->activityPubService->postActivity(['type' => 'Follow', 'object' => $recipientUri, 'to' => $recipientUri], $form);
-
-            return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'abonnements', 'action' => 'list', 'msg' => 'BAZ_FOLLOWING_ADDED', 'idformulaire' => $id], false));
+        if (empty($form)) {
+            return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'formulaire'], false));
         }
 
-        $followers = $this->activityPubService->getFollowers($form);
-        $following = $this->activityPubService->getFollowing($form);
+        $post = $this->getRequest()->request;
+        if ($post->has('actor_handle') || $post->has('activitypub_username')) {
+            $tab = $post->has('activitypub_username') ? 'profile' : 'follows';
+            if ($this->securityController->isWikiHibernated()) {
+                Flash::error(_t('WIKI_IN_HIBERNATION'));
 
-        $domain = parse_url($this->wiki->GetBaseURL(), PHP_URL_HOST);
+                return $this->wiki->redirect($listUrl(['tab' => $tab]));
+            }
+            try {
+                $this->csrfTokenController->checkToken('main', 'POST', 'csrf-token', false);
+                if ($tab === 'profile') {
+                    $this->saveActivityPubProfile($form);
+                    Flash::success(_t('BAZ_ACTIVITYPUB_PROFILE_SAVED'));
+                } else {
+                    $this->followHandle($form, trim((string)$post->get('actor_handle')));
+                    Flash::success(_t('BAZ_FOLLOWING_ADDED'));
+                }
+            } catch (TokenNotFoundException $e) {
+                Flash::error(htmlspecialchars($e->getMessage()));
+            } catch (\Exception $e) {
+                Flash::error(htmlspecialchars($e->getMessage()));
+            }
 
-        return $this->render('@bazar/forms/abonnements.twig', [
+            return $this->wiki->redirect($listUrl(['tab' => $tab]));
+        }
+
+        $profile = $this->getService(ActivityPubProfiles::class)->get($id);
+        $tab = $this->getRequest()->query->get('tab');
+        if (!in_array($tab, ['profile', 'follows'], true)) {
+            $tab = $profile['username'] === '' ? 'profile' : 'follows';
+        }
+
+        return $this->render('@bazar/forms/activitypub.twig', [
             'message' => $this->getRequest()->query->get('msg'),
             'form' => $form,
-            'domain' => $domain,
-            'followers' => $followers,
-            'following' => $following,
+            'tab' => $tab,
+            'profile' => $profile,
+            'suggestedUsername' => trim(preg_replace('/[^a-z0-9]+/', '_', strtolower(removeAccents((string)$form['bn_label_nature']))), '_'),
+            'domain' => parse_url($this->wiki->GetBaseURL(), PHP_URL_HOST),
+            'actorUri' => $this->activityPubService->getFormActorUri($form),
+            'isEnabled' => $this->activityPubService->isEnabled($form),
+            'followers' => $this->activityPubService->getFollowers($form),
+            'following' => $this->activityPubService->getFollowing($form),
+            'pendingFollowing' => $this->activityPubService->getPendingFollowing($form),
+            'maxFields' => ActivityPubProfiles::MAX_FIELDS,
         ]);
+    }
+
+    /**
+     * Saves the profile posted from the ActivityPub page, storing any uploaded avatar or banner first.
+     */
+    private function saveActivityPubProfile($form): void
+    {
+        $profiles = $this->getService(ActivityPubProfiles::class);
+        $post = $this->getRequest()->request;
+        $profile = [
+            'username' => $post->get('activitypub_username'),
+            'summary' => $post->get('activitypub_summary'),
+            'icon' => $post->get('activitypub_icon'),
+            'image' => $post->get('activitypub_image'),
+            'fields' => [],
+        ];
+        $names = $post->all('activitypub_field_name');
+        $values = $post->all('activitypub_field_value');
+        foreach ($names as $index => $name) {
+            $profile['fields'][(string)$name] = (string)($values[$index] ?? '');
+        }
+        foreach (['icon', 'image'] as $role) {
+            $upload = $this->getRequest()->files->get('activitypub_' . $role . '_file');
+            if ($upload instanceof UploadedFile && $upload->getError() !== UPLOAD_ERR_NO_FILE) {
+                $profile[$role] = $profiles->storeImage($form['bn_id_nature'], $role, $upload);
+            }
+        }
+        $profiles->save($form['bn_id_nature'], $profile);
+    }
+
+    private function followHandle($form, string $actorHandle): void
+    {
+        $recipientUri = str_starts_with($actorHandle, 'http') ? $actorHandle : $this->webfingerService->getRemoteActor($actorHandle);
+        if (empty($recipientUri)) {
+            throw new \Exception(_t('BAZ_ACTIVITYPUB_ACTOR_NOT_FOUND', ['handle' => $actorHandle]));
+        }
+        $this->activityPubService->follow($form, $recipientUri);
     }
 
     public function addFollowing($id, $actorUri)
@@ -246,7 +312,13 @@ class FormController extends YesWikiController
 
         $form = $this->formManager->getOne($id);
 
-        $this->activityPubService->postActivity(['type' => 'Follow', 'object' => $actorUri, 'to' => $actorUri], $form);
+        try {
+            $this->activityPubService->follow($form, $actorUri);
+        } catch (\Exception $e) {
+            Flash::error(htmlspecialchars($e->getMessage()));
+
+            return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'abonnements', 'action' => 'list', 'idformulaire' => $id], false));
+        }
 
         return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'abonnements', 'action' => 'list', 'msg' => 'BAZ_FOLLOWING_ADDED', 'idformulaire' => $id], false));
     }
@@ -258,20 +330,12 @@ class FormController extends YesWikiController
         }
 
         $form = $this->formManager->getOne($id);
-        $formActorUri = $this->activityPubService->getFormActorUri($form);
 
-        $this->activityPubService->removeFollowing($form, $actorUri);
-
-        $this->activityPubService->postActivity([
-            'type' => 'Undo',
-            'object' => [
-                'type' => 'Follow',
-                'actor' => $formActorUri,
-                'object' => $actorUri,
-                'to' => $actorUri,
-            ],
-            'to' => $actorUri,
-        ], $form);
+        try {
+            $this->activityPubService->unfollow($form, $actorUri);
+        } catch (\Exception $e) {
+            Flash::error(htmlspecialchars($e->getMessage()));
+        }
 
         return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'abonnements', 'action' => 'list', 'msg' => 'BAZ_FOLLOWING_REMOVED', 'idformulaire' => $id], false));
     }
@@ -312,21 +376,19 @@ class FormController extends YesWikiController
 
         $this->activityPubService->removeFollower($form, $actorUri);
 
-        $this->activityPubService->postActivity([
-            'type' => 'Undo',
-            'object' => [
-                'type' => 'Accept',
-                'actor' => $formActorUri,
+        try {
+            $this->activityPubService->postActivity([
+                'type' => 'Reject',
                 'object' => [
                     'type' => 'Follow',
-                    'actor' => $formActorUri,
-                    'object' => $actorUri,
-                    'to' => $actorUri,
+                    'actor' => $actorUri,
+                    'object' => $formActorUri,
                 ],
                 'to' => $actorUri,
-            ],
-            'to' => $actorUri,
-        ], $form);
+            ], $form);
+        } catch (\Exception $e) {
+            Flash::error(htmlspecialchars($e->getMessage()));
+        }
 
         return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'abonnements', 'action' => 'list', 'msg' => 'BAZ_FOLLOWER_REMOVED', 'idformulaire' => $id], false));
     }

@@ -29,19 +29,27 @@ class WebfingerService
         return $matches;
     }
 
-    public function formatLocalActor($handle, $actorUri)
+    public function formatLocalActor($handle, $actorUri, ?string $profileUrl = null)
     {
         $webfinger = new WebFinger();
 
-        $webfinger->setSubject($handle);
+        $webfinger->setSubject('acct:' . ltrim($handle, '@'));
         $webfinger->setAliases([$actorUri]);
-        $webfinger->setLinks([
+        $links = [
             [
                 'rel' => 'self',
                 'type' => 'application/activity+json',
                 'href' => $actorUri,
             ],
-        ]);
+        ];
+        if (!empty($profileUrl)) {
+            $links[] = [
+                'rel' => 'http://webfinger.net/rel/profile-page',
+                'type' => 'text/html',
+                'href' => $profileUrl,
+            ];
+        }
+        $webfinger->setLinks($links);
 
         return $webfinger->toArray();
     }
@@ -90,6 +98,9 @@ class WebfingerService
         $webfinger = $this->getWebfingerObject($handle);
 
         $interactionUrl = $webfinger->getInteractionUrl();
+        if (empty($interactionUrl)) {
+            return null;
+        }
 
         return str_replace('{uri}', urlencode($actorToFollow), $interactionUrl);
     }

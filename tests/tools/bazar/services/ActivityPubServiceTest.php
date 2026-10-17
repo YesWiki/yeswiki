@@ -1,0 +1,251 @@
+<?php
+
+namespace YesWiki\Test\Bazar\Service;
+
+use PHPUnit\Framework\TestCase;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use Symfony\Component\HttpClient\MockHttpClient;
+use Symfony\Component\HttpClient\Response\MockResponse;
+use YesWiki\Bazar\Service\ActivityPubKeyStore;
+use YesWiki\Bazar\Service\ActivityPubProfiles;
+use YesWiki\Bazar\Service\ActivityPubService;
+use YesWiki\Bazar\Service\HttpSignatureService;
+use YesWiki\Bazar\Service\SemanticTransformer;
+use YesWiki\Bazar\Service\SsrfUrlValidator;
+use YesWiki\Bazar\Service\WebfingerService;
+use YesWiki\Core\Service\ConfigurationService;
+use YesWiki\Core\Service\TripleStore;
+
+require_once 'includes/autoload.inc.php';
+require_once 'includes/constants.php';
+
+class ActivityPubServiceTest extends TestCase
+{
+    private const US = 'https://us.example/actors/1';
+    private const THEM = 'https://them.example/users/them';
+
+    private string $keyDir;
+
+    private array $triples = [];
+    /** @var array<int,array{url:string,body:array}> */
+    private array $posted = [];
+    private array $unreachable = [];
+    private array $profiles = ['1' => ['username' => 'agenda']];
+
+    protected function setUp(): void
+    {
+        $this->keyDir = sys_get_temp_dir() . '/yeswiki-activitypub-keys-' . bin2hex(random_bytes(4));
+    }
+
+    protected function tearDown(): void
+    {
+        array_map('unlink', glob($this->keyDir . '/*') ?: []);
+        @rmdir($this->keyDir);
+    }
+
+    private function form(array $overrides = []): array
+    {
+        return $overrides + [
+            'bn_id_nature' => '1',
+            'bn_label_nature' => 'Agenda',
+            'bn_description' => "Les événements du collectif.\nVoir https://us.example/",
+            'bn_activitypub_enable' => '1',
+        ];
+    }
+
+    private function service(): ActivityPubService
+    {
+        $tripleStore = $this->createStub(TripleStore::class);
+        $tripleStore->method('getMatching')->willReturnCallback(
+            fn ($resource, $property) => array_values(array_filter(
+                $this->triples,
+                fn ($t) => $t['resource'] === $resource && $t['property'] === $property
+            ))
+        );
+        $tripleStore->method('create')->willReturnCallback(function ($resource, $property, $value) {
+            $this->triples[] = ['resource' => $resource, 'property' => $property, 'value' => $value];
+
+            return 0;
+        });
+        $tripleStore->method('delete')->willReturnCallback(function ($resource, $property, $value) {
+            $this->triples = array_values(array_filter(
+                $this->triples,
+                fn ($t) => !($t['resource'] === $resource && $t['property'] === $property && ($value === null || $t['value'] === $value))
+            ));
+
+            return true;
+        });
+
+        $params = $this->createStub(ParameterBagInterface::class);
+        $params->method('has')->willReturn(true);
+        $params->method('get')->willReturnCallback(fn ($name) => $name === 'activitypub_profiles' ? $this->profiles : 'https://us.example/?');
+
+        $semanticTransformer = $this->createStub(SemanticTransformer::class);
+        $semanticTransformer->method('convertToSemanticData')->willReturn(['@context' => 'x', 'id' => 'https://us.example/?Fiche', 'type' => 'Note']);
+
+        $client = new MockHttpClient(function ($method, $url, $options) {
+            if ($method === 'GET') {
+                if (in_array($url, $this->unreachable, true)) {
+                    return new MockResponse('', ['http_code' => 500]);
+                }
+
+                return new MockResponse(json_encode(['id' => $url, 'inbox' => $url . '/inbox']));
+            }
+            $this->posted[] = ['url' => $url, 'body' => json_decode($options['body'], true), 'headers' => $options['normalized_headers']];
+
+            return new MockResponse('', ['http_code' => 202]);
+        });
+
+        $httpSignatureService = new HttpSignatureService($this->createStub(SsrfUrlValidator::class));
+        (new \ReflectionProperty($httpSignatureService, 'httpClient'))->setValue($httpSignatureService, $client);
+
+        $keyStore = new ActivityPubKeyStore($httpSignatureService, $this->keyDir);
+        $profiles = new ActivityPubProfiles($params, new ConfigurationService(), $this->keyDir . '/wakka.config.php');
+        $service = new ActivityPubService($params, $this->createStub(WebfingerService::class), $httpSignatureService, $semanticTransformer, $tripleStore, $this->createStub(SsrfUrlValidator::class), $keyStore, $profiles);
+        (new \ReflectionProperty($service, 'httpClient'))->setValue($service, $client);
+
+        return $service;
+    }
+
+    public function testTheActorDeclaresTheSecurityContextItsKeyNeeds()
+    {
+        $actor = $this->service()->getActor($this->form());
+
+        $this->assertContains('https://w3id.org/security/v1', $actor['@context']);
+        $this->assertSame(self::US . '#main-key', $actor['publicKey']['id']);
+    }
+
+    public function testTheKeyIsGeneratedOnceInAPrivateFileAndMatchesTheActor()
+    {
+        $service = $this->service();
+
+        $actor = $service->getActor($this->form());
+        $signer = $service->signer($this->form());
+
+        $this->assertSame(['1.pem'], array_map('basename', glob($this->keyDir . '/*')));
+        $this->assertSame('0600', substr(sprintf('%o', fileperms($this->keyDir . '/1.pem')), -4));
+        $this->assertSame(
+            openssl_pkey_get_details(openssl_pkey_get_private($signer['privateKey']))['key'],
+            $actor['publicKey']['publicKeyPem']
+        );
+        $this->assertSame($actor['publicKey']['publicKeyPem'], $this->service()->getActor($this->form())['publicKey']['publicKeyPem']);
+    }
+
+    public function testAFormIdCannotReachOutsideTheKeyDirectory()
+    {
+        $this->profiles['../wakka'] = ['username' => 'wakka'];
+
+        $this->expectException(\Exception::class);
+        $this->expectExceptionMessage('Invalid ActivityPub account');
+
+        $this->service()->signer($this->form(['bn_id_nature' => '../wakka']));
+    }
+
+    public function testAFormWithoutUsernameHasNoActor()
+    {
+        $this->profiles = [];
+
+        $this->assertFalse($this->service()->hasActor($this->form()));
+        $this->assertNull($this->service()->signer($this->form()));
+    }
+
+    public function testChangingTheUsernameKeepsTheKey()
+    {
+        $before = $this->service()->getActor($this->form());
+        $this->profiles['1']['username'] = 'evenements';
+        $after = $this->service()->getActor($this->form());
+
+        $this->assertSame('evenements', $after['preferredUsername']);
+        $this->assertSame($before['publicKey']['publicKeyPem'], $after['publicKey']['publicKeyPem']);
+    }
+
+    public function testTheActorShowsItsProfile()
+    {
+        $this->profiles = [
+            '1' => [
+                'username' => 'agenda',
+                'icon' => 'files/Logo.png',
+                'image' => 'https://cdn.example/banner.jpg',
+                'fields' => ['Site' => 'https://us.example/', 'Empty' => '', 'Contact' => 'agenda@us.example'],
+            ],
+            '2' => ['username' => 'blog', 'icon' => 'https://cdn.example/blog.png'],
+        ];
+
+        $actor = $this->service()->getActor($this->form());
+
+        $this->assertSame(['type' => 'Image', 'url' => 'https://us.example/files/Logo.png', 'mediaType' => 'image/png'], $actor['icon']);
+        $this->assertSame('https://cdn.example/banner.jpg', $actor['image']['url']);
+        $this->assertSame(['Site', 'Contact'], array_column($actor['attachment'], 'name'));
+        $this->assertStringContainsString('<a href="https://us.example/"', $actor['attachment'][0]['value']);
+        $this->assertSame('https://us.example/', $actor['url']);
+    }
+
+    public function testTheConfiguredSummaryReplacesTheDescription()
+    {
+        $this->profiles = ['1' => ['username' => 'agenda', 'summary' => 'Agenda des rencontres']];
+
+        $this->assertSame('<p>Agenda des rencontres</p>', $this->service()->getActor($this->form())['summary']);
+    }
+
+    public function testTheSummaryFallsBackToTheFormDescription()
+    {
+        $actor = $this->service()->getActor($this->form());
+
+        $this->assertStringStartsWith('<p>Les événements du collectif.<br>', $actor['summary']);
+        $this->assertArrayNotHasKey('icon', $actor);
+        $this->assertArrayNotHasKey('attachment', $actor);
+    }
+
+    public function testEachFollowHasItsOwnIdAndOnlyItsAcceptCounts()
+    {
+        $service = $this->service();
+
+        $service->follow($this->form(), self::THEM);
+        $first = $this->posted[0]['body']['id'];
+        $service->follow($this->form(), self::THEM);
+        $second = $this->posted[1]['body']['id'];
+
+        $this->assertNotSame($first, $second);
+        $this->assertSame([self::THEM], $service->getPendingFollowing($this->form()));
+        $this->assertFalse($service->acceptFollow($this->form(), self::THEM, $first));
+        $this->assertTrue($service->acceptFollow($this->form(), self::THEM, $second));
+        $this->assertSame([self::THEM], $service->getFollowing($this->form()));
+        $this->assertSame([], $service->getPendingFollowing($this->form()));
+    }
+
+    public function testUnfollowUndoesTheFollowThatWasSent()
+    {
+        $service = $this->service();
+        $service->follow($this->form(), self::THEM);
+        $followId = $this->posted[0]['body']['id'];
+
+        $service->unfollow($this->form(), self::THEM);
+
+        $this->assertSame('Undo', $this->posted[1]['body']['type']);
+        $this->assertSame($followId, $this->posted[1]['body']['object']['id']);
+    }
+
+    public function testDeliveriesAreSignedOverTheirBody()
+    {
+        $this->service()->follow($this->form(), self::THEM);
+
+        $headers = $this->posted[0]['headers'];
+        $this->assertStringContainsString('headers="(request-target) host date digest content-type"', $headers['signature'][0]);
+        $this->assertSame('Content-Type: application/activity+json', $headers['content-type'][0]);
+    }
+
+    public function testFollowersAreNotifiedPubliclyAndOneUnreachableFollowerDoesNotStopTheOthers()
+    {
+        $this->triples[] = ['resource' => self::US . '/followers', 'property' => ActivityPubService::$AS_PREFIX . 'items', 'value' => 'https://down.example/users/a'];
+        $this->triples[] = ['resource' => self::US . '/followers', 'property' => ActivityPubService::$AS_PREFIX . 'items', 'value' => self::THEM];
+        $this->unreachable[] = 'https://down.example/users/a';
+
+        $this->service()->notifyFollowers($this->form(), ['id_fiche' => 'Fiche'], 'Create');
+
+        $this->assertCount(1, $this->posted);
+        $activity = $this->posted[0]['body'];
+        $this->assertSame([ActivityPubService::PUBLIC], $activity['to']);
+        $this->assertSame(self::US, $activity['object']['attributedTo']);
+        $this->assertArrayNotHasKey('@context', $activity['object']);
+    }
+}
