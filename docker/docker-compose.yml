@@ -11,7 +11,7 @@ services:
           dockerfile: ./docker/dockerfile
           args:
             UID: "${UID:-1000}"
-            GID: "${UIS:-1000}"
+            GID: "${GID:-1000}"
         container_name: yeswiki
         volumes:
           - ..:/var/www/html
@@ -19,7 +19,7 @@ services:
           - yeswiki-db
           - yeswiki-pg
         env_file: ./yeswiki.secrets
-        user: "${UID:-1000}:${UID:-1000}"
+        user: "${UID:-1000}:${GID:-1000}"
         command: /var/www/html/docker/entrypoint.sh
 
     yeswiki-db:
