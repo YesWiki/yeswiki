@@ -25,6 +25,7 @@ use YesWiki\Content\Service\FormPropertiesService;
 use YesWiki\Content\Service\ListIndex;
 use YesWiki\Content\Service\TemplateDataFactory;
 use YesWiki\Core\YesWikiAction;
+use YesWiki\Federation\Service\EntryOrigin;
 use YesWiki\Files\Service\AttachedFilePaths;
 use YesWiki\Files\Service\ImageResizer;
 use YesWiki\Files\Service\Storage;
@@ -851,11 +852,11 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
                         ->checkedValues('true', 'false'),
                     Setting::checkbox('show_author')
                         ->label(_t('AB_bazarblog_show_author_label'))
-                        ->default('0')
+                        ->default('1')
                         ->checkedValues('1', '0'),
                     Setting::checkbox('show_date')
                         ->label(_t('AB_bazarblog_show_date_label'))
-                        ->default('0')
+                        ->default('1')
                         ->checkedValues('1', '0'),
                     Setting::fieldMapping('fieldmapping')
                         ->subSettings(
@@ -1388,10 +1389,6 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
         return SettingGroup::named(_t('AB_bazar_commons2_title'), ...$settings)->width('33%');
     }
 
-    // `gogomap` and `gogocarto` are retired names kept here on purpose: the GoGoCartoJs
-    // library is gone, but page bodies still ask for them, and they have to keep reaching
-    // the map action -- which answers them with `map` -- rather than falling through to a
-    // plain list and looking for a template that no longer exists.
     protected bool $debug = false;
 
     public function formatArguments($arg)
@@ -1494,8 +1491,9 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
                 )
             );
 
-        $order = $get->get('order') ?? $arg['order'] ?? ((empty($arg['field']) && $agendaMode) ? 'desc' : 'asc');
-        $sortField = $get->get('field') ?? $arg['field'] ?? ($agendaMode ? 'bf_date_debut_evenement' : PageBody::TITLE);
+        $blogMode = $bareTemplate === 'blog';
+        $order = $get->get('order') ?? $arg['order'] ?? ((empty($arg['field']) && ($agendaMode || $blogMode)) ? 'desc' : 'asc');
+        $sortField = $get->get('field') ?? $arg['field'] ?? ($agendaMode ? 'bf_date_debut_evenement' : ($blogMode ? 'created_at' : PageBody::TITLE));
 
         $vSearchManager = $this->getService(SearchManager::class);
 
@@ -1606,17 +1604,11 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
             ]);
         }
         $entries = $bazarListService->getEntries($this->arguments, $vForms);
-        // the counts and the checked boxes are computed over everything the list holds, so
-        // that a second value of a box a reader has already used is still offered; what is
-        // *drawn* is only what the checked facets leave
         $filters = $bazarListService->getFilters($this->arguments, $entries, $vForms, true);
         $entries = $bazarListService->filterEntriesOnFacets($entries);
 
-        // Two lists on a page need two sets of DOM ids, so each takes the next number.
         $listIndex = $this->getService(ListIndex::class)->next();
         $this->arguments['listindex'] = $listIndex;
-
-        // TODO put in all bazar templates
 
         $this->getService(AssetRegistry::class)->addJsFile('javascripts/bazar.js', true, true);
 
@@ -1628,15 +1620,11 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
             'numEntries' => count($entries),
             'param' => $this->arguments,
             'params' => $this->arguments,
-            // Search form parameters
             'keywords' => $this->arguments['keywords'],
             'pageTag' => $this->getService(PageContext::class)->getTag(),
             'forms' => $vForms,
-            // 'formId' => $this->arguments['id'][0] ?? null,
             'selectedID' => $this->arguments['selectedID'] ?? null,
             'facet' => $this->getRequest()->query->all()['facet'] ?? null,
-            // where checking a box goes: this same page, minus whatever facet was already
-            // checked (htmx appends the form's values to it) and back to page one
             'facetForm' => $this->facetForm(),
         ]);
     }
@@ -1712,6 +1700,8 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
                 : '<div class="bazar_numero yw-text-center"><ul class="yw-pagination">' . $links . '</ul></div>';
         }
 
+        $data['entries'] = $this->getService(EntryOrigin::class)->describeAll($data['entries']);
+
         try {
             $templateBaseName = preg_replace('/\.(twig|tpl\.html)$/', '', $templateName);
             $warning = $this->missingRoleWarning((string)$templateBaseName, $pForms);
@@ -1761,8 +1751,7 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
     }
 
     /**
-     * Data preparation for tableau.twig -- historically done in PHP inside
-     * templates/tableau.tpl.html; moved here when tpl.html templates died.
+     * Data preparation for tableau.twig.
      *
      * @param array<string,mixed> $data the uniform bazar template data (entries, params, resultsInfo, ...)
      */
@@ -1950,8 +1939,7 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
     }
 
     /**
-     * JS builder for the static (non-dynamic) leaflet map -- historically done in PHP
-     * inside templates/map.tpl.html; moved here when tpl.html templates died.
+     * JS builder for the static (non-dynamic) leaflet map.
      *
      * @param array<string,mixed> $data the uniform bazar template data (entries, params, resultsInfo, ...)
      */
@@ -2125,14 +2113,11 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
                                 $layerOptions = str_replace(';', ',', $layerOptions);
                                 $styleJs .= '
 							style: function (feature, latlng) {
-								// pour les lignes et polygones
 								if( feature.geometry.type=="Point" )
 									return ;
 								return {' . $layerOptions . '};
 							},
 							pointToLayer: function (feature, latlng) {
-								// pour les points
-								// parsing de layerOptions pour distinguer les options de marker et celles pour construire un icon pour le marker.
 								var layerOptions = "' . $layerOptions . '".split(",");
 								var markerOptions = {} , iconClass=null, color=null ;
 								for( opt in layerOptions )
@@ -2141,23 +2126,18 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
 									switch(opt[0].trim()) {
 										case "opacity":
 										case "clickable":
-											// les options pour le marker http://leafletjs.com/reference.html#marker
 											markerOptions[opt[0].trim()] = opt[1].trim();
 											break;
 										case "icon":
-											// pour le html du L.divIcon http://leafletjs.com/reference.html#divicon
-											// supprimer les éventuels apostrhophes
 											iconClass = opt[1].trim().replace(/\'/g, "");
 											break;
 										case "color":
-											// pour le html du L.divIcon
 											color = opt[1].trim();
 											break;
 									}
 								}
 
 								if( iconClass!=null || color!=null ) {
-									// Construit un L.divIcon pour le marker, sinon ce sera par défaut la goutte bleu.
 									markerOptions["icon"] = L.divIcon({
 											iconSize: ' . $params['iconSize'] . ',
 											iconAnchor: ' . $params['iconAnchor'] . ',
@@ -2215,7 +2195,6 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
         div.style.background = \'transparent\';
         div.style.padding = \'0\';
 
-        // Prevent clicks from reaching the map
         L.DomEvent.disableClickPropagation(div);
 
         return div;
@@ -2230,13 +2209,8 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
 import { drawGeometries } from "./javascripts/leaflet-draw.helper.js"
 
 var map' . $params['listindex'] . ';
-// ticket 16: ywInitEach, not DOMContentLoaded. Internal links load through htmx, and
-// DOMContentLoaded fires once per document -- so a map on any page reached by a navigation
-// was never built. Keyed on the map container, which also replaces the getElementById guard
-// this used to need.
 ywInitEach(\'#osmmap' . $params['listindex'] . '\', function() {
 		' . $js . '
-		// N\'ajoute pas un doublon de layer, mais active la sélection du layer.
 		map' . $params['listindex'] . '.addLayer(provider);
 		map' . $params['listindex'] . '.setView(new L.LatLng(' . $params['latitude'] . ', ' . $params['longitude'] . '), ' . $params['zoom'] . ');
 		var i = 0;

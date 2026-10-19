@@ -11,6 +11,8 @@ use YesWiki\Kernel\Service\TripleStore;
 class ActivityPubInbox
 {
     public const REMOTE_ACTOR_URI = 'http://outils-reseaux.org/_vocabulary/remoteActor';
+    private const GENERATED_TITLE_LENGTH = 80;
+    private const GENERATED_TITLE_MARKER = '__generated_title';
 
     public function __construct(
         private readonly ActivityPubService $activityPubService,
@@ -67,10 +69,11 @@ class ActivityPubInbox
                 if (!$this->httpSignatureService->sameHost($verifiedActor, is_string($object['id'] ?? null) ? $object['id'] : '')) {
                     throw new \Exception('An actor can only bring objects from its own host');
                 }
-                $entry = $this->semanticTransformer->convertFromSemanticData($form, $object);
+                $entry = $this->entryFromObject($form, $object);
                 $entry['read-only'] = 1;
-                $created = $this->entryManager()->create($form['id'], $entry, false, $object['id']);
+                $created = $this->entryManager()->create($form['id'], $this->withoutMarker($entry), false, $object['id']);
                 $this->rememberOwner($created['tag'] ?? null, $verifiedActor);
+                $this->rememberGeneratedTitle($created['tag'] ?? null, $entry);
                 break;
 
             case 'Update':
@@ -79,7 +82,9 @@ class ActivityPubInbox
                 $tag = $objectId === null ? null : $this->mirrorOf($objectId);
                 if ($tag !== null) {
                     $this->assertOwns($verifiedActor, $tag, (string)$objectId);
-                    $this->entryManager()->update($tag, $this->semanticTransformer->convertFromSemanticData($form, $object), false);
+                    $entry = $this->entryFromObject($form, $object);
+                    $this->entryManager()->update($tag, $this->withoutMarker($entry), false);
+                    $this->rememberGeneratedTitle($tag, $entry);
                 }
                 break;
 
@@ -99,11 +104,11 @@ class ActivityPubInbox
      *
      * @param array<string, mixed> $form
      *
-     * @return array{created: int, updated: int, deleted: int}
+     * @return array{created: int, updated: int, deleted: int, failed: int}
      */
     public function syncActorPosts(string $actorUri, array $form): array
     {
-        $stats = ['created' => 0, 'updated' => 0, 'deleted' => 0];
+        $stats = ['created' => 0, 'updated' => 0, 'deleted' => 0, 'failed' => 0];
         $entryManager = $this->entryManager();
 
         $actor = $this->activityPubService->fetch($actorUri, $form);
@@ -135,23 +140,11 @@ class ActivityPubInbox
             }
 
             $remoteObjectIds[] = $object['id'];
-            $tag = $this->mirrorOf($object['id']);
 
-            if ($type === 'Create' && $tag === null) {
-                if (!$this->httpSignatureService->sameHost($actorUri, $object['id'])) {
-                    continue;
-                }
-                $entry = $this->semanticTransformer->convertFromSemanticData($form, $object);
-                $entry['read-only'] = 1;
-                $created = $entryManager->create($form['id'], $entry, false, $object['id']);
-                $this->rememberOwner($created['tag'] ?? null, $actorUri);
-                $stats['created']++;
-            } elseif (in_array($type, ['Create', 'Update'], true) && $tag !== null) {
-                if (!$this->isOwnedBy($actorUri, $tag, $object['id'])) {
-                    continue;
-                }
-                $entryManager->update($tag, $this->semanticTransformer->convertFromSemanticData($form, $object), false);
-                $stats['updated']++;
+            try {
+                $this->syncItem(is_string($type) ? $type : null, $object, $actorUri, $form, $stats);
+            } catch (\Exception $e) {
+                $stats['failed']++;
             }
         }
 
@@ -169,6 +162,128 @@ class ActivityPubInbox
         }
 
         return $stats;
+    }
+
+    /**
+     * Creates or updates the entry mirroring one outbox item, counting what it did in $stats.
+     *
+     * @param array<string, mixed>                                         $object
+     * @param array<string, mixed>                                         $form
+     * @param array{created: int, updated: int, deleted: int, failed: int} $stats
+     */
+    private function syncItem(?string $type, array $object, string $actorUri, array $form, array &$stats): void
+    {
+        $tag = $this->mirrorOf($object['id']);
+        if ($type === 'Create' && $tag === null) {
+            if (!$this->httpSignatureService->sameHost($actorUri, $object['id'])) {
+                return;
+            }
+            $entry = $this->entryFromObject($form, $object);
+            $entry['read-only'] = 1;
+            $created = $this->entryManager()->create($form['id'], $this->withoutMarker($entry), false, $object['id']);
+            $this->rememberOwner($created['tag'] ?? null, $actorUri);
+            $this->rememberGeneratedTitle($created['tag'] ?? null, $entry);
+            $stats['created']++;
+
+            return;
+        }
+        if (!in_array($type, ['Create', 'Update'], true) || $tag === null || !$this->isOwnedBy($actorUri, $tag, $object['id'])) {
+            return;
+        }
+        $entry = $this->entryFromObject($form, $object);
+        $this->entryManager()->update($tag, $this->withoutMarker($entry), false);
+        $this->rememberGeneratedTitle($tag, $entry);
+        $stats['updated']++;
+    }
+
+    /**
+     * Turns a remote object into entry fields, titling it from its summary or text when it has no name, as Mastodon notes do.
+     *
+     * @param array<string, mixed> $form
+     * @param array<string, mixed> $object
+     *
+     * @return array<string, mixed>
+     */
+    private function entryFromObject(array $form, array $object): array
+    {
+        $entry = $this->semanticTransformer->convertFromSemanticData($form, $object);
+        if ($this->plainText($entry['bf_titre'] ?? '') === '') {
+            $entry['bf_titre'] = $this->titleFromObject($object);
+            $entry[self::GENERATED_TITLE_MARKER] = true;
+        }
+
+        return $entry;
+    }
+
+    /**
+     * @param array<string, mixed> $entry
+     *
+     * @return array<string, mixed>
+     */
+    private function withoutMarker(array $entry): array
+    {
+        unset($entry[self::GENERATED_TITLE_MARKER]);
+
+        return $entry;
+    }
+
+    /**
+     * Records whether a mirrored entry's title was made up from its text, so lists can show the text instead.
+     *
+     * @param array<string, mixed> $entry
+     */
+    private function rememberGeneratedTitle(?string $tag, array $entry): void
+    {
+        if (empty($tag)) {
+            return;
+        }
+        $this->tripleStore->delete($tag, EntryOrigin::GENERATED_TITLE_URI, null, '', '');
+        if (!empty($entry[self::GENERATED_TITLE_MARKER])) {
+            $this->tripleStore->create($tag, EntryOrigin::GENERATED_TITLE_URI, '1', '', '');
+        }
+    }
+
+    /**
+     * A short title from the object's content warning or the start of its text, or else its publication date.
+     *
+     * @param array<string, mixed> $object
+     */
+    private function titleFromObject(array $object): string
+    {
+        foreach (['summary', 'content'] as $key) {
+            $text = $this->plainText($object[$key] ?? '');
+            if ($text !== '') {
+                return $this->shorten($text, self::GENERATED_TITLE_LENGTH);
+            }
+        }
+        $published = strtotime(is_string($object['published'] ?? null) ? $object['published'] : '') ?: time();
+
+        return sprintf(_t('BAZ_ACTIVITYPUB_UNTITLED_NOTE'), date('Y-m-d H:i', $published));
+    }
+
+    private function plainText(mixed $html): string
+    {
+        if (!is_string($html)) {
+            return '';
+        }
+        $text = (string)preg_replace('#<br\s*/?>|</p>|</li>#i', ' ', $html);
+        $text = html_entity_decode(strip_tags($text), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+
+        return trim((string)preg_replace('/\s+/u', ' ', $text));
+    }
+
+    private function shorten(string $text, int $length): string
+    {
+        if (mb_strlen($text) <= $length) {
+            return $text;
+        }
+        $cut = mb_substr($text, 0, $length);
+        $lastSpace = mb_strrpos($cut, ' ');
+        if ($lastSpace !== false && $lastSpace > $length / 2) {
+            $cut = mb_substr($cut, 0, $lastSpace);
+        }
+
+        return rtrim($cut, ' ,;:.-') . '…';
     }
 
     /** Whether an Accept or Reject is about a Follow: an embedded Follow, or a bare id when the sender does not embed it. */

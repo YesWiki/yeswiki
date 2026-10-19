@@ -25,6 +25,7 @@ use YesWiki\Content\Service\PageManager;
 use YesWiki\Content\Service\SemanticTransformer;
 use YesWiki\Content\Service\TranslatableContent;
 use YesWiki\Core\YesWikiController;
+use YesWiki\Federation\Service\EntryOrigin;
 use YesWiki\Identity\Exception\UserFieldException;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\AuthenticationService;
@@ -33,7 +34,6 @@ use YesWiki\Kernel\Service\EventDispatcher;
 use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\Redirector;
-use YesWiki\Kernel\Service\TripleStore;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Kernel\Service\WikiUrls;
 use YesWiki\Render\Service\ActionRunner;
@@ -57,7 +57,6 @@ class EntryController extends YesWikiController
     protected HibernationService $hibernationService;
     protected PageManager $pageManager;
     protected SemanticTransformer $semanticTransformer;
-    protected TripleStore $tripleStore;
 
     /** @var list<string> the entries view() is inside of, innermost first -- guards against an entry embedding itself */
     private $parentsEntries;
@@ -73,7 +72,6 @@ class EntryController extends YesWikiController
         PageManager $pageManager,
         ParameterBagInterface $config,
         SemanticTransformer $semanticTransformer,
-        TripleStore $tripleStore,
     ) {
         $this->aclService = $aclService;
         $this->authenticationService = $authenticationService;
@@ -86,7 +84,6 @@ class EntryController extends YesWikiController
         $this->pageManager = $pageManager;
         $this->parentsEntries = [];
         $this->semanticTransformer = $semanticTransformer;
-        $this->tripleStore = $tripleStore;
     }
 
     /**
@@ -230,7 +227,7 @@ class EntryController extends YesWikiController
             $isUserFavorite = $this->favoritesManager->isUserFavorite($currentuser, $entryId);
         }
 
-        $sourceUrl = $this->tripleStore->getOne($entryId, TripleStore::SOURCE_URL_URI, '', '');
+        $origin = $this->getService(EntryOrigin::class)->describe($entry);
 
         return $this->render('@core/entries/view.twig', [
             'form' => $pLocalForm,
@@ -247,7 +244,7 @@ class EntryController extends YesWikiController
             'canDuplicate' => $this->getService(AclService::class)->isAdmin($userNameForRendering) && !isset($entry['read-only']),
             'isAdmin' => $this->getService(AclService::class)->isAdmin($userNameForRendering),
             'renderedEntry' => $renderedEntry,
-            'sourceUrl' => $sourceUrl,
+            'origin' => $origin,
             'incomingUrl' => $this->getRequest()->query->get('incomingurl', WikiUrls::absoluteUrl()),
             'editContextUrl' => $this->getEditContextUrl($entryId),
         ]);
@@ -595,8 +592,7 @@ class EntryController extends YesWikiController
     }
 
     /**
-     * Put the source wording on each field a translator is asked to fill in: the input itself stays
-     * empty, since an empty translation is what makes a reader fall back to the source.
+     * Put the source wording on each field a translator is asked to fill in.
      *
      * @param array<string, mixed> $form
      * @param array<string, mixed> $stored

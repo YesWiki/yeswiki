@@ -124,10 +124,14 @@ class PresentationCatalogTest extends YesWikiTestCase
     {
         $catalog = $this->catalog();
 
-        $plain = array_map(static fn (Presentation $p) => $p->name, $catalog->fitting($this->plainForm()));
+        $shipped = static fn (array $presentations) => array_values(array_map(
+            static fn (Presentation $p) => $p->name,
+            array_filter($presentations, static fn (Presentation $p) => !$p->custom)
+        ));
+        $plain = $shipped($catalog->fitting($this->plainForm()));
         $this->assertSame(['card', 'list', 'table'], $plain, 'a form with only a text field is offered a date or a map display');
 
-        $rich = array_map(static fn (Presentation $p) => $p->name, $catalog->fitting($this->richForm()));
+        $rich = $shipped($catalog->fitting($this->richForm()));
         foreach (['card', 'list', 'table', 'timeline', 'calendar', 'map', 'map-and-table'] as $name) {
             $this->assertContains($name, $rich, "{$name} is not offered to a form with a date and a location");
         }

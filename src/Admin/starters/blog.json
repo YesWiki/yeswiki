@@ -16,7 +16,7 @@
         "image_height": "1200",
         "image_width": "900",
         "image_class": "right",
-        "required": "1",
+        "required": "0",
         "read_access": "*",
         "write_access": "*"
       },
@@ -38,7 +38,7 @@
         "size": "40",
         "num_rows": "3",
         "syntax": "wiki",
-        "required": "1",
+        "required": "0",
         "read_access": "*",
         "write_access": "*"
       },
@@ -58,8 +58,8 @@
     "sem_context": "",
     "sem_type": "",
     "sem_use_template": "1",
-    "sem_template": "",
-    "sem_reverse_template": "",
+    "sem_template": "{% set lead = \"<p><strong>\" ~ (bf_titre | e) ~ \"</strong></p>\" ~ (bf_chapeau ? \"<p><em>\" ~ (bf_chapeau | e) ~ \"</em></p>\" : \"\") %}\n{\n  \"@context\": \"https://www.w3.org/ns/activitystreams\",\n  \"type\": \"Note\",\n  \"name\": {{ bf_titre | json_encode }},\n  \"preview\": {{ bf_chapeau | default(\"\") | json_encode }},\n  \"content\": {{ (lead ~ format(bf_description | default(\"\"))) | json_encode }},\n  \"published\": {{ created_at | replace({\" \": \"T\"}) | json_encode }},\n  \"updated\": {{ updated_at | replace({\" \": \"T\"}) | json_encode }},\n  \"attachment\": [\n    {% if imagebf_image %}\n    {\n      \"type\": \"Image\",\n      \"url\": {{ fileUrl(imagebf_image) | json_encode }}\n    }\n    {% endif %}\n  ]\n}",
+    "sem_reverse_template": "{% set lead = \"<p><strong>\" ~ (name | e) ~ \"</strong></p>\" ~ (preview ? \"<p><em>\" ~ (preview | e) ~ \"</em></p>\" : \"\") %}\n{\n  \"bf_titre\": {{ name | json_encode }},\n  \"bf_chapeau\": {{ preview | default(\"\") | json_encode }},\n  \"bf_description\": {{ markdown(content | default(\"\") | replace({(lead): \"\"})) | json_encode }},\n  \"imagebf_image\": {{ (attachment | first).url | default(\"\") | json_encode }}\n}",
     "only_one_entry": "N",
     "only_one_entry_message": "",
     "entry_title_template": "{{bf_titre}}"

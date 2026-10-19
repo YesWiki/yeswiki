@@ -166,6 +166,14 @@ class RemoteImageCacheTest extends YesWikiTestCase
         }
     }
 
+    public function testAProtocolRelativeLinkIsFetchedOverHttps(): void
+    {
+        $cache = $this->cache($this->png(300, 200));
+
+        $this->assertNotSame('//news.example/photo.png', $cache->localUrl('//news.example/photo.png'));
+        $this->assertSame([self::REMOTE], $cache->fetched);
+    }
+
     /** A picture that cannot be had leaves the page exactly as it was. */
     public function testAFailedFetchFallsBackToTheRemoteUrlAndIsNotRetried(): void
     {

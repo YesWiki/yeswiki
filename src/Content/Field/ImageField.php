@@ -9,6 +9,7 @@ use YesWiki\Content\Attribute\Field;
 use YesWiki\Content\Service\FileManager;
 use YesWiki\Files\Service\FileBrowser;
 use YesWiki\Files\Service\ImageResizer;
+use YesWiki\Files\Service\RemoteImageCache;
 use YesWiki\Kernel\Service\AssetRegistry;
 use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Kernel\Service\UrlFormatter;
@@ -264,7 +265,7 @@ class ImageField extends FileField
         }
 
         if ($this->isUrl($value)) {
-            $sized = $this->ownFileAtFieldSize($value);
+            $sized = $this->urlAtFieldSize($value);
 
             return '<img src="' . htmlspecialchars($sized) . '" class="' . htmlspecialchars($this->imageClass ?? '') . '" alt="" loading="lazy" />';
         }
@@ -286,17 +287,16 @@ class ImageField extends FileField
         return '';
     }
 
-    /** A file of this wiki's own, asked for at this field's configured size. */
-    private function ownFileAtFieldSize(string $url): string
+    /** The linked picture at this field's configured size, a copy kept here when it lives on another site. */
+    private function urlAtFieldSize(string $url): string
     {
-        $width = $this->imageWidth ?: $this->thumbnailWidth;
-        $height = $this->imageHeight ?: $this->thumbnailHeight;
-        if (empty($width) || empty($height)) {
-            return $url;
-        }
-
+        $width = (int)($this->imageWidth ?: $this->thumbnailWidth);
+        $height = (int)($this->imageHeight ?: $this->thumbnailHeight);
         $base = $this->getService(UrlFormatter::class)->getBaseUrl();
-        if (!str_starts_with($url, $base) || !preg_match('#api/files/[^/?&]+/download#', $url)) {
+        if (!str_starts_with($url, $base)) {
+            return $this->getService(RemoteImageCache::class)->localUrl($url, $width ?: null, $height ?: null);
+        }
+        if (empty($width) || empty($height) || !preg_match('#api/files/[^/?&]+/download#', $url)) {
             return $url;
         }
 

@@ -126,8 +126,8 @@ devrait être réglé dans une future version.
   "startTime": {{ bf_date_debut_evenement | json_encode }},
   "endTime": {{ bf_date_fin_evenement | default("") | json_encode }},
   "url": {{ bf_site_internet | json_encode }},
-  "published": {{ date_creation_fiche | replace({" ": "T"}) | json_encode }},
-  "updated": {{ date_maj_fiche | replace({" ": "T"}) | json_encode }},
+  "published": {{ created_at | replace({" ": "T"}) | json_encode }},
+  "updated": {{ updated_at | replace({" ": "T"}) | json_encode }},
   {% if bf_adresse and bf_ville and bf_code_postal %}
   "location": {
     "type": "Place",
@@ -175,24 +175,33 @@ devrait être réglé dans une future version.
 
 ### Blog
 
-Note: Nous n'utilisons pas la propriété `summary` car Mastodon l'interprête
-comme s'il fallait cacher le contenu du texte. Le titre n'est pas afficher par
-Mastodon. Il serait possible d'améliorer ça en agrégeant le titre, le chapeau et
-le contenu dans la propriété `content`, mais il faudrait prévoir de les séparer
-dans la template inverse (ce qui est possible avec Twig, mais peut demander un
-peu de travail)
+Mastodon n'affiche pas la propriété `name` d'une `Note`, et traite `summary`
+comme un avertissement de contenu qui cache le texte. La template met donc le
+titre et le chapeau en tête de `content`, et la template inverse les retire
+avant de convertir le reste en Markdown.
+
+Deux fonctions servent ici, en plus de `fileUrl` :
+
+- `format(texte)` rend un texte du wiki en HTML ;
+- `markdown(html)` convertit le HTML reçu en Markdown, en neutralisant tout ce
+  qui pourrait devenir une action ou une mise en forme du wiki.
+
+Une note sans `name` (le cas de presque toutes les notes Mastodon) reçoit un
+titre tiré de son avertissement de contenu ou du début de son texte. Le
+template de liste `blog` affiche alors le texte de la note plutôt que ce titre.
 
 #### Template du blog
 
-```json
+```twig
+{% set lead = "<p><strong>" ~ (bf_titre | e) ~ "</strong></p>" ~ (bf_chapeau ? "<p><em>" ~ (bf_chapeau | e) ~ "</em></p>" : "") %}
 {
   "@context": "https://www.w3.org/ns/activitystreams",
   "type": "Note",
   "name": {{ bf_titre | json_encode }},
   "preview": {{ bf_chapeau | default("") | json_encode }},
-  "content": {{ bf_description | default("") | json_encode }},
-  "published": {{ date_creation_fiche | replace({" ": "T"}) | json_encode }},
-  "updated": {{ date_maj_fiche | replace({" ": "T"}) | json_encode }},
+  "content": {{ (lead ~ format(bf_description | default(""))) | json_encode }},
+  "published": {{ created_at | replace({" ": "T"}) | json_encode }},
+  "updated": {{ updated_at | replace({" ": "T"}) | json_encode }},
   "attachment": [
     {% if imagebf_image %}
     {
@@ -204,13 +213,14 @@ peu de travail)
 }
 ```
 
-### Template inverse du blog
+#### Template inverse du blog
 
-```json
+```twig
+{% set lead = "<p><strong>" ~ (name | e) ~ "</strong></p>" ~ (preview ? "<p><em>" ~ (preview | e) ~ "</em></p>" : "") %}
 {
   "bf_titre": {{ name | json_encode }},
   "bf_chapeau": {{ preview | default("") | json_encode }},
-  "bf_description": {{ content | default("") | json_encode }},
+  "bf_description": {{ markdown(content | default("") | replace({(lead): ""})) | json_encode }},
   "imagebf_image": {{ (attachment | first).url | default("") | json_encode }}
 }
 ```

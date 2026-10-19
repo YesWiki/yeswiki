@@ -1,12 +1,18 @@
+const requestedRemoteImages = new Set()
+
 export default {
   data() {
     return {
       tokenForImages: null,
       imagesToProcess: [],
       processingImage: false,
+      remoteImages: {},
     }
   },
   methods: {
+    isAbsoluteImageUrl(value) {
+      return /^(https?:)?\/\//i.test(value)
+    },
     urlImageResizedOnError(
       entry,
       fieldName,
@@ -18,18 +24,19 @@ export default {
     ) {
       const node = event.target
       node.removeAttribute('onerror')
-      if (entry[fieldName]) {
+      if (entry[fieldName] && !this.isAbsoluteImageUrl(entry[fieldName])) {
         const fileName = entry[fieldName]
         if (!this.isExternalUrl(entry)) {
           if (this.tokenForImages === null) {
             this.tokenForImages = token
           }
           this.imagesToProcess.push({
-            fileName,
-            width,
-            height,
-            mode,
-            node,
+            apiPath: `${fileName}/cache/${width}/${height}/${mode}`,
+            onSuccess: (data) =>
+              this.replaceImageSource(
+                node,
+                `${wiki.baseUrl.replace(/(\?)?$/, '')}${data.cachefilename}`,
+              ),
           })
           this.processNextImage()
         } else {
@@ -50,9 +57,40 @@ export default {
         }
       }
     },
-    urlImage(entry, fieldName, width, height, mode) {
+    remoteImageUrl(entry, fieldName, width, height, mode, token) {
+      const url = entry[fieldName]
+      if (!token || this.isExternalUrl(entry)) {
+        return url
+      }
+      const key = [entry.tag, fieldName, width, height, mode, url].join('|')
+      if (key in this.remoteImages) {
+        return this.remoteImages[key]
+      }
+      if (!requestedRemoteImages.has(key)) {
+        requestedRemoteImages.add(key)
+        if (this.tokenForImages === null) {
+          this.tokenForImages = token
+        }
+        const propertyName = this.fieldInfo(fieldName).propertyname || fieldName
+        this.imagesToProcess.push({
+          apiPath: `entry/${encodeURIComponent(entry.tag)}/${encodeURIComponent(propertyName)}/cache/${width}/${height}/${mode}`,
+          onSuccess: (data) => {
+            this.remoteImages[key] = data.url || url
+          },
+          onFailure: () => {
+            this.remoteImages[key] = url
+          },
+        })
+        setTimeout(() => this.processNextImage())
+      }
+      return null
+    },
+    urlImage(entry, fieldName, width, height, mode, token = null) {
       if (!entry[fieldName]) {
         return null
+      }
+      if (this.isAbsoluteImageUrl(entry[fieldName])) {
+        return this.remoteImageUrl(entry, fieldName, width, height, mode, token)
       }
       let baseUrl = this.isExternalUrl(entry)
         ? entry.url.slice(0, -entry.tag.length)
@@ -87,16 +125,30 @@ export default {
       }
       return `${baseUrl}/files/${fileName}`
     },
+    replaceImageSource(node, srcFileName) {
+      const previousUrl = node.src
+      document
+        .querySelectorAll(`img[src="${previousUrl}"]`)
+        .forEach((imgParam) => {
+          const img = imgParam
+          img.src = srcFileName
+
+          const next = img.nextElementSibling
+          if (next && next.matches('div.area.visual-area[style]')) {
+            const { backgroundImage } = next.style
+            if (backgroundImage && backgroundImage.length) {
+              next.style.backgroundImage = ''
+              next.style.backgroundImage = `url("${srcFileName}")`
+            }
+          }
+        })
+    },
     processNextImage() {
       if (!this.processingImage && this.imagesToProcess.length > 0) {
         this.processingImage = true
-        const newImageParams = this.imagesToProcess[0]
+        const image = this.imagesToProcess[0]
         this.imagesToProcess = this.imagesToProcess.slice(1)
-        const { fileName, width, height } = newImageParams
-        const cacheUrl = wiki.url(
-          `?api/images/${fileName}/cache/${width}/${height}/${newImageParams.mode}`,
-        )
-        fetch(cacheUrl, {
+        fetch(wiki.url(`?api/images/${image.apiPath}`), {
           method: 'POST',
           body: new URLSearchParams({ csrftoken: this.tokenForImages }),
         })
@@ -107,27 +159,13 @@ export default {
             if (data != null && data.newToken != null) {
               this.tokenForImages = data.newToken
             }
-            if (!ok) return
-            const previousUrl = newImageParams.node.src
-            const srcFileName = `${wiki.baseUrl.replace(/(\?)?$/, '')}${data.cachefilename}`
-
-            document
-              .querySelectorAll(`img[src="${previousUrl}"]`)
-              .forEach((imgParam) => {
-                const img = imgParam
-                img.src = srcFileName
-
-                const next = img.nextElementSibling
-                if (next && next.matches('div.area.visual-area[style]')) {
-                  const { backgroundImage } = next.style
-                  if (backgroundImage && backgroundImage.length) {
-                    next.style.backgroundImage = ''
-                    next.style.backgroundImage = `url("${srcFileName}")`
-                  }
-                }
-              })
+            if (ok) {
+              image.onSuccess(data)
+            } else {
+              image.onFailure?.()
+            }
           })
-          .catch(() => {})
+          .catch(() => image.onFailure?.())
           .finally(() => {
             this.processingImage = false
             this.processNextImage()

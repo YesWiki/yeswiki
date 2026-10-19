@@ -9,9 +9,13 @@
       {% if isAdmin %}
         <span class="BAZ_main_fiche_info">
           {{ _t('BAZ_ECRITE') }}
-          {{ owner|raw }}
+          {% if origin.author.url %}
+            <a class="entry-author" href="{{ origin.author.url }}" title="{{ origin.author.handle }}" rel="nofollow noopener">{{ origin.author.name }}</a>
+          {% else %}
+            {{ owner|raw }}
+          {% endif %}
           <span class="category"> ({{form.label ~ (externalForm is not empty ? ' <- ' ~ externalForm.external_url ~ externalForm.label:'') }})
-          {% if sourceUrl %}- <a href="{{ sourceUrl }}" target="_blank">Source</a>{% endif %}</span>
+          {% if origin.sourceUrl %}- <a href="{{ origin.sourceUrl }}" target="_blank" rel="noopener">{{ _t('BAZ_ORIGINAL_POST') }}</a>{% endif %}</span>
           <br />
 
           {% if entry.created_at is not empty %}

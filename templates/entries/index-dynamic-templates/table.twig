@@ -132,7 +132,7 @@
           loading="lazy"
           height="{{ imHeight }}"
           width="{{ imWidth }}"
-          :src="urlImage({tag:entryId,url:wiki.url(entryId),[fieldName]:anchorData},fieldName,{{ imWidth }},{{ imHeight }},'crop')"
+          :src="urlImage({tag:entryId,url:wiki.url(entryId),[fieldName]:anchorData},fieldName,{{ imWidth }},{{ imHeight }},'crop',{{ firstTokenCrop|json_encode }})"
           :onError="`urlImageResizedOnError({tag:'${entryId}',url:'${wiki.url(entryId)}',['${fieldName}']:'${anchorData}'},'${fieldName}',{{ imWidth }},{{ imHeight }},'crop','{{ firstTokenCrop|e('html') }}',event)`"/>
       </template>
       <template v-else-if="fieldtype === 'urlmodal' && anchorData.length > 0">

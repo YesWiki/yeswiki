@@ -7,22 +7,21 @@ use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Csrf\CsrfTokenManager;
 use Symfony\Component\Security\Csrf\Exception\TokenNotFoundException;
+use YesWiki\Content\Service\EntryManager;
 use YesWiki\Content\Service\FileManager;
 use YesWiki\Core\ApiResponse;
 use YesWiki\Core\YesWikiController;
 use YesWiki\Files\Service\ImageResizer;
+use YesWiki\Files\Service\RemoteImageCache;
 use YesWiki\Files\Service\Storage;
 use YesWiki\Identity\Service\CsrfTokenChecker;
 use YesWiki\Kernel\Service\SignedTokens;
 
 class ImageApiController extends YesWikiController
 {
-    /**
-     * The CSRF token id the image-cache POST is signed with, shared with the templates that mint it (`csrfToken("POST api/images/cache/#{w}/#{h}/#{mode}")` in the entry list templates).
-     */
     public const POST_CACHE_URLIMAGE_TOKEN_ID = 'POST api/images/cache/{width}/{height}/{mode}';
 
-    /** Generate/serve a resized cached copy of an image (ticket 17, relocated from tools/attach). */
+    /** Serve a resized copy of an uploaded image from the cache. */
     #[Route('/api/images/{filename}/cache/{width}/{height}/{mode}', methods: ['POST'], options: ['acl' => ['public']])]
     public function getCacheUrlImageViaPost(string $filename, string $width, string $height, string $mode): ApiResponse
     {
@@ -76,9 +75,40 @@ class ImageApiController extends YesWikiController
         }
     }
 
+    /** Serve a resized copy of the picture an entry's image field links to on another site. */
+    #[Route('/api/images/entry/{entryId}/{field}/cache/{width}/{height}/{mode}', methods: ['POST'], options: ['acl' => ['public']])]
+    public function getCacheUrlRemoteImageViaPost(string $entryId, string $field, string $width, string $height, string $mode): ApiResponse
+    {
+        try {
+            ['width' => $width, 'height' => $height] = $this->checkParamsGetCacheUrlImageViaPost($field, $width, $height, $mode);
+            $newToken = $this->checkTokenForGetCacheUrlImageViaPost($width, $height, $mode);
+            $this->denyAccessUnlessGranted('read', $entryId);
+            $entry = $this->getService(EntryManager::class)->getOne($entryId);
+            $url = $entry[$field] ?? null;
+            if (!RemoteImageCache::isRemote($url)) {
+                return new ApiResponse([
+                    'error' => _t('ATTACH_GET_CACHE_URLIMAGE_NO_FILE'),
+                    'newToken' => $newToken,
+                ], Response::HTTP_BAD_REQUEST);
+            }
+
+            return new ApiResponse([
+                'url' => $this->getService(RemoteImageCache::class)->localUrl($url, $width, $height),
+                'width' => $width,
+                'height' => $height,
+                'mode' => $mode,
+                'newToken' => $newToken,
+            ], Response::HTTP_OK);
+        } catch (TokenNotFoundException $th) {
+            return new ApiResponse(['error' => $th->getMessage()], Response::HTTP_UNAUTHORIZED);
+        } catch (AccessDeniedHttpException $denied) {
+            return new ApiResponse(['error' => _t('ATTACH_GET_CACHE_URLIMAGE_NO_FILE')], Response::HTTP_FORBIDDEN);
+        } catch (\Exception $e) {
+            return new ApiResponse(['error' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
+        }
+    }
+
     /**
-     * The width and height arrive from the URL as strings and every later step wants them as integers.
-     *
      * @return array{width: int, height: int}
      */
     private function checkParamsGetCacheUrlImageViaPost(string $filename, string $width, string $height, string $mode): array
@@ -107,7 +137,7 @@ class ImageApiController extends YesWikiController
         return ['width' => $intWidth, 'height' => $intHeight];
     }
 
-    /** The signed token the page carries, or for templates that still mint one a session CSRF token; returns the token to send next. */
+    /** Check the signed or session token sent with the request and return the next one. */
     private function checkTokenForGetCacheUrlImageViaPost(int $width, int $height, string $mode): string
     {
         $tokenId = str_replace(

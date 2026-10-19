@@ -2,6 +2,7 @@
 
 namespace YesWiki\Test\Federation;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
@@ -13,6 +14,7 @@ use YesWiki\Federation\Service\ActivityPubInbox;
 use YesWiki\Federation\Service\ActivityPubKeyStore;
 use YesWiki\Federation\Service\ActivityPubProfiles;
 use YesWiki\Federation\Service\ActivityPubService;
+use YesWiki\Federation\Service\EntryOrigin;
 use YesWiki\Federation\Service\HttpSignatureService;
 use YesWiki\Files\Service\Storage;
 use YesWiki\Kernel\Service\KeyPairGenerator;
@@ -22,11 +24,7 @@ use YesWiki\Kernel\Service\TripleStore;
 require_once 'tests/YesWikiTestCase.php';
 require_once 'src/constants.php';
 
-/**
- * An activity acts on behalf of the actor the request was signed by, and on nothing that actor does not own (GHSA-rm6r-grfg-4v78).
- *
- * A valid signature only answers "was this signed"; who it was signed by is what decides which entries the activity may touch.
- */
+/** An activity acts on behalf of the actor the request was signed by, and on nothing that actor does not own (GHSA-rm6r-grfg-4v78). */
 class ActivityPubInboxTest extends TestCase
 {
     /** @var array<string, mixed> */
@@ -45,6 +43,11 @@ class ActivityPubInboxTest extends TestCase
     private array $created = [];
     /** @var list<array<string, mixed>> */
     private array $outbox = [];
+    /** @var list<array<string, mixed>> */
+    private array $createdData = [];
+    private ?string $convertedTitle = 'Une fiche';
+    /** @var list<string> */
+    private array $refusedObjects = [];
 
     private string $root;
 
@@ -79,15 +82,29 @@ class ActivityPubInboxTest extends TestCase
         $tripleStore->method('create')->willReturnCallback(function ($resource, $property, $value) {
             if ($property === ActivityPubInbox::REMOTE_ACTOR_URI) {
                 $this->owners[$resource] = $value;
+            } else {
+                $this->triples[] = ['resource' => $resource, 'property' => $property, 'value' => $value];
             }
 
             return 0;
         });
+        $tripleStore->method('delete')->willReturnCallback(function ($resource, $property) {
+            $this->triples = array_values(array_filter(
+                $this->triples,
+                fn ($t) => !($t['resource'] === $resource && $t['property'] === $property)
+            ));
+
+            return true;
+        });
 
         $entryManager = $this->createStub(EntryManager::class);
         $entryManager->method('create')->willReturnCallback(function ($formId, $data, $semantic, $sourceUrl) {
+            if (in_array($sourceUrl, $this->refusedObjects, true)) {
+                throw new \Exception('champs requis : Image');
+            }
             $tag = 'Fiche' . (count($this->created) + 1);
             $this->created[] = ['tag' => $tag, 'sourceUrl' => $sourceUrl];
+            $this->createdData[] = $data;
             $this->triples[] = ['resource' => $tag, 'property' => TripleStore::SOURCE_URL_URI, 'value' => $sourceUrl];
 
             return ['tag' => $tag] + $data;
@@ -114,7 +131,7 @@ class ActivityPubInboxTest extends TestCase
         $container->method('get')->willReturn($entryManager);
 
         $semanticTransformer = $this->createStub(SemanticTransformer::class);
-        $semanticTransformer->method('convertFromSemanticData')->willReturn(['bf_titre' => 'Une fiche']);
+        $semanticTransformer->method('convertFromSemanticData')->willReturnCallback(fn () => ['bf_titre' => $this->convertedTitle]);
 
         $params = $this->createStub(ParameterBagInterface::class);
         $params->method('get')->willReturn('https://us.example/');
@@ -326,5 +343,93 @@ class ActivityPubInboxTest extends TestCase
         $this->sync([['type' => 'Create', 'object' => ['id' => 'https://elsewhere.example/entries/9']]]);
 
         $this->assertSame([], $this->created, 'a Create whose object is on another host is skipped');
+    }
+
+    /** @return array<string, array{array<string, string>, string}> */
+    public static function untitledNotes(): array
+    {
+        return [
+            'text of a Mastodon note' => [
+                ['content' => '<p>Stop Omarchy <a href="https://stopomarchy.org/">https://stopomarchy.org/</a></p>'],
+                'Stop Omarchy https://stopomarchy.org/',
+            ],
+            'content warning first' => [
+                ['summary' => 'Politique &amp; société', 'content' => '<p>Le texte</p>'],
+                'Politique & société',
+            ],
+            'long text cut on a word' => [
+                ['content' => '<p>' . str_repeat('mot ', 40) . '</p>'],
+                rtrim(str_repeat('mot ', 20)) . '…',
+            ],
+        ];
+    }
+
+    /** @param array<string, string> $note */
+    #[DataProvider('untitledNotes')]
+    public function testANoteWithoutANameIsTitledFromItsText(array $note, string $title): void
+    {
+        $this->convertedTitle = null;
+
+        $this->sync([['type' => 'Create', 'object' => ['id' => 'https://them.example/notes/1'] + $note]]);
+
+        $this->assertSame([$title], array_column($this->createdData, 'bf_titre'));
+    }
+
+    public function testANameIsKeptAsTheTitle(): void
+    {
+        $this->sync([['type' => 'Create', 'object' => ['id' => 'https://them.example/notes/1', 'name' => 'Une fiche', 'content' => 'Autre chose']]]);
+
+        $this->assertSame(['Une fiche'], array_column($this->createdData, 'bf_titre'));
+    }
+
+    public function testAPostThatCannotBeSavedIsCountedAndTheSyncGoesOn(): void
+    {
+        $this->refusedObjects = ['https://them.example/notes/1'];
+
+        $stats = $this->sync([
+            ['type' => 'Create', 'object' => ['id' => 'https://them.example/notes/1']],
+            ['type' => 'Create', 'object' => ['id' => 'https://them.example/notes/2']],
+        ]);
+
+        $this->assertSame(1, $stats['failed']);
+        $this->assertSame(1, $stats['created']);
+        $this->assertSame(['https://them.example/notes/2'], array_column($this->created, 'sourceUrl'));
+    }
+
+    /** @return list<string> */
+    private function generatedTitleTags(): array
+    {
+        return array_values(array_map(fn ($t) => $t['resource'], array_filter(
+            $this->triples,
+            fn ($t) => $t['property'] === EntryOrigin::GENERATED_TITLE_URI
+        )));
+    }
+
+    public function testAGeneratedTitleIsRecordedButNeverSavedAsAField(): void
+    {
+        $this->convertedTitle = null;
+
+        $this->sync([['type' => 'Create', 'object' => ['id' => 'https://them.example/notes/1', 'content' => '<p>Un pouet</p>']]]);
+
+        $this->assertSame(['Fiche1'], $this->generatedTitleTags());
+        $this->assertArrayNotHasKey('__generated_title', $this->createdData[0]);
+    }
+
+    public function testANamedObjectHasNoGeneratedTitle(): void
+    {
+        $this->sync([['type' => 'Create', 'object' => ['id' => 'https://them.example/notes/1', 'name' => 'Une fiche']]]);
+
+        $this->assertSame([], $this->generatedTitleTags());
+    }
+
+    public function testAnUpdateThatBringsANameDropsTheGeneratedTitleMark(): void
+    {
+        $this->givenMirroredEntry('FicheUne', 'https://them.example/notes/1', self::THEM);
+        $this->triples[] = ['resource' => 'FicheUne', 'property' => EntryOrigin::GENERATED_TITLE_URI, 'value' => '1'];
+
+        $this->sync([['type' => 'Update', 'object' => ['id' => 'https://them.example/notes/1', 'name' => 'Un vrai titre']]]);
+
+        $this->assertSame(['FicheUne'], $this->updated);
+        $this->assertSame([], $this->generatedTitleTags());
     }
 }

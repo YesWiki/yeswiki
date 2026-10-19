@@ -11,19 +11,10 @@ use YesWiki\Kernel\Service\UrlFormatter;
 /** A picture from somewhere else, fetched once and served from here. */
 class RemoteImageCache
 {
-    /** The largest download this will accept, before resizing. */
     private const MAX_BYTES = 10 * 1024 * 1024;
-
-    /** How long a failed fetch is remembered, in seconds. */
     private const MISS_TTL = 3600;
-
-    /** Who is asking, said plainly. */
     private const USER_AGENT = 'YesWiki/1.0 (+https://yeswiki.net)';
-
-    /** Types worth caching. */
     private const TYPES = [IMAGETYPE_JPEG, IMAGETYPE_PNG, IMAGETYPE_WEBP];
-
-    /** The extension every cached copy is written under, whatever the publisher sent. */
     private const EXTENSION = 'webp';
 
     private ParameterBagInterface $params;
@@ -49,10 +40,19 @@ class RemoteImageCache
         $this->fetcher = $fetcher ?? new PinnedFetcher(new SsrfUrlValidator($params));
     }
 
+    /** Whether a field value links to another address rather than naming an uploaded file. */
+    public static function isRemote($value): bool
+    {
+        return is_string($value) && preg_match('#^(https?:)?//#i', trim($value)) === 1;
+    }
+
     /** This picture, served from this wiki -- or the address it came from, if it cannot be. */
     public function localUrl(string $url, ?int $width = null, ?int $height = null): string
     {
         $url = trim($url);
+        if (str_starts_with($url, '//')) {
+            $url = 'https:' . $url;
+        }
         if (!$this->isFetchable($url)) {
             return $url;
         }

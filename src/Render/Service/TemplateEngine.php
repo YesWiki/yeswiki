@@ -239,6 +239,13 @@ class TemplateEngine
                 throw new \Exception('`urlImage` should be called with `height` key in params!');
             }
             $options = array_merge(['mode' => 'fit', 'refresh' => false], $options);
+            if (RemoteImageCache::isRemote($options['fileName'])) {
+                return $this->container->get(RemoteImageCache::class)->localUrl(
+                    $options['fileName'],
+                    (int)$options['width'] ?: null,
+                    (int)$options['height'] ?: null
+                );
+            }
 
             $basePath = $this->urlFormatter->getBaseUrl() . '/';
             $resizer = $this->container->get(ImageResizer::class);
@@ -334,6 +341,10 @@ class TemplateEngine
         });
 
         $this->addTwigHelper('resizedImage', function ($image, $width, $height, $mode = 'crop', $separator = 'x') {
+            if (RemoteImageCache::isRemote($image)) {
+                return $this->container->get(RemoteImageCache::class)->localUrl($image, (int)$width ?: null, (int)$height ?: null);
+            }
+
             return $this->container->get(ImageResizer::class)->cached('files/' . $image, $width, $height, $mode);
         });
 
@@ -363,6 +374,10 @@ class TemplateEngine
             return $this->container->get(ListManager::class)->getOne($listId, $parent);
         });
         $this->addTwigHelper('fileUrl', function ($fileName) {
+            if (RemoteImageCache::isRemote($fileName)) {
+                return $fileName;
+            }
+
             return $this->container->get(Storage::class)->url(AttachedFilePaths::UPLOAD_DIR . $fileName);
         });
 
@@ -458,14 +473,7 @@ class TemplateEngine
         );
     }
 
-    /**
-     * What is broken, when there is something and the viewer can do something about it (ticket 52).
-     *
-     * Beside the pencil rather than attached to a configured quick-menu entry: those come from a
-     * Layout setting a webmaster may delete, and a wiki that cannot tell its webmaster it is
-     * broken is the thing this exists to fix. Silent when healthy, and never raised by something
-     * merely degraded (ADR-0026).
-     */
+    /** What is broken, when there is something and the viewer can do something about it (ticket 52). */
     private function renderHealthBadge(): string
     {
         if (!$this->container->get(AclService::class)->isAdmin()) {
@@ -534,9 +542,7 @@ class TemplateEngine
         }));
     }
 
-    /**
-     * Render an icon name through the Tabler sprite: accepts a sprite symbol name directly ("gauge") or a historic FontAwesome class string ("fas fa-heart", mapped via src/icon-map.json).
-     */
+    /** Render an icon name through the Tabler sprite: accepts a sprite symbol name directly ("gauge") or a historic FontAwesome class string ("fas fa-heart", mapped via src/icon-map.json). */
     public function legacyIconToSprite(?string $classString, string $extraClass = ''): ?string
     {
         static $map = null, $spriteNames = null;
@@ -633,9 +639,7 @@ class TemplateEngine
         return $this->twig->createTemplate(WikiActionSyntax::rewrite($templateString))->render($data);
     }
 
-    /**
-     * A squelette compiled as a Twig template, so its `head` and `body` blocks can be rendered independently -- and therefore out of order (ticket 15, ADR-0014).
-     */
+    /** A squelette compiled as a Twig template, so its `head` and `body` blocks can be rendered independently -- and therefore out of order (ticket 15, ADR-0014). */
     public function createSquelette(string $source): \Twig\TemplateWrapper
     {
         return $this->twig->createTemplate(WikiActionSyntax::rewrite($source));
@@ -673,14 +677,24 @@ class TemplateEngine
             ],
             [],
             [],
-            ['date', 'fileUrl', 'max', 'min', 'random', 'range']
+            ['date', 'fileUrl', 'format', 'markdown', 'max', 'min', 'random', 'range']
         );
         $twig->addExtension(new \Twig\Extension\SandboxExtension($policy, true));
 
         $baseUrl = $this->urlFormatter->getBaseUrl();
         $uploadPath = AttachedFilePaths::UPLOAD_DIR;
         $twig->addFunction(new \Twig\TwigFunction('fileUrl', function (string $fileName) use ($baseUrl, $uploadPath): string {
+            if (RemoteImageCache::isRemote($fileName)) {
+                return $fileName;
+            }
+
             return $baseUrl . '/' . $uploadPath . $fileName;
+        }));
+        $twig->addFunction(new \Twig\TwigFunction('format', function ($text): string {
+            return $this->container->get(MarkdownFormatterService::class)->format((string)$text);
+        }));
+        $twig->addFunction(new \Twig\TwigFunction('markdown', function ($html): string {
+            return $this->container->get(HtmlToMarkdown::class)->convert(is_string($html) ? $html : '');
         }));
 
         return $twig->render('__sem__', $data);
@@ -720,9 +734,7 @@ class TemplateEngine
         return "</form>\n";
     }
 
-    /**
-     * render() with errors swallowed into an inline alert (historic Wiki::render()) -- for legacy fragments where a template failure must not take the page down.
-     */
+    /** render() with errors swallowed into an inline alert (historic Wiki::render()) -- for legacy fragments where a template failure must not take the page down. */
     public function renderSafely(mixed $templatePath, mixed $data): string
     {
         try {
@@ -732,9 +744,7 @@ class TemplateEngine
         }
     }
 
-    /**
-     * Template names are stored data ({{entrylist template="X.tpl.html"}} in page bodies, per-page metadata): historical .tpl.html names resolve to their Twig successors since the tpl.html engine died (ticket 07).
-     */
+    /** Template names are stored data ({{entrylist template="X.tpl.html"}} in page bodies, per-page metadata): historical .tpl.html names resolve to their Twig successors since the tpl.html engine died (ticket 07). */
     public static function resolveLegacyTemplateName(string $templatePath): string
     {
         return preg_replace('/\.tpl\.html$/i', '.twig', $templatePath) ?? $templatePath;

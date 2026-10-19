@@ -96,8 +96,6 @@ class FormController extends YesWikiController
     /**
      * A form's own screen, at its tag: what it holds, a way to add to it, and the bazar views over it (ticket 63).
      *
-     * The bare tag lists the form's Content; `view`/`action` in the query name any other bazar view, rooted here instead of at the BazaR page.
-     *
      * @param array<string, mixed> $form
      */
     public function show(array $form): string
@@ -292,11 +290,7 @@ class FormController extends YesWikiController
         return array_filter($slots, static fn (?string $name): bool => $name !== null && $name !== '');
     }
 
-    /**
-     * The form designer (javascripts/form-builder/) is pure JS and reads its labels
-     * from wiki.lang; its keys live in the main PHP catalogs, so push them into the
-     * javascript catalog when rendering the designer page.
-     */
+    /** Pushes the form designer's label keys into the JavaScript catalog. */
     private function loadDesignerTranslations(): void
     {
         $prefixes = ['BAZ_FORM_', 'FORM_BUILDER_', 'FORM_EDIT_', 'BAZ_REACTIONS_', 'BAZAR_VIDEO_'];
@@ -488,9 +482,7 @@ class FormController extends YesWikiController
      * @return array<string, mixed>|null
      */
     /**
-     * What the form says in the language it was written in, keyed the way the designer addresses
-     * it: the properties by name, a field's attributes as `<field name>.<attribute>`. The inputs
-     * themselves stay empty, since an empty translation is what makes a reader fall back.
+     * What the form says in the language it was written in, keyed the way the designer addresses it.
      *
      * @param array<string, mixed> $form
      *
@@ -730,8 +722,7 @@ class FormController extends YesWikiController
     }
 
     /**
-     * The role selects the designer offers: every known role, the field types that can
-     * play it, and whatever this form has explicitly mapped (ticket 11).
+     * The role selects the designer offers: every known role, the field types that can play it, and this form's own mappings.
      *
      * @param array<string, mixed>|null $form
      *
@@ -1077,6 +1068,9 @@ class FormController extends YesWikiController
         return $this->changeActivityPub($id, $actorUri, 'following', function (array $form) use ($actorUri): void {
             $stats = $this->getService(ActivityPubInbox::class)->syncActorPosts((string)$actorUri, $form);
             Flash::success(sprintf(_t('BAZ_SYNC_COMPLETE'), $stats['created'], $stats['updated'], $stats['deleted']));
+            if ($stats['failed'] > 0) {
+                Flash::warning(sprintf(_t('BAZ_SYNC_FAILED'), $stats['failed']));
+            }
         });
     }
 
