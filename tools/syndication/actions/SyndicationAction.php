@@ -78,6 +78,7 @@ class SyndicationAction extends YesWikiAction
         if (!empty($this->arguments['url'])) {
             $nburl = 0;
             $syndication = ['pages' => []];
+            $errors = [];
             foreach ($this->arguments['url'] as $cle => $url) {
                 if ($url != '') {
                     $feed = new SimplePie\SimplePie();
@@ -87,11 +88,16 @@ class SyndicationAction extends YesWikiAction
                     try {
                         $feed->init();
                     } catch (Throwable $error) {
-                        return '<div class="alert alert-danger">' . _t('ERROR') . ' ' . htmlspecialchars($error->getMessage()) . '</div>' . "\n";
+                        // one unreachable feed must not hide the others
+                        $errors[] = htmlspecialchars($error->getMessage());
+                        $nburl++;
+                        continue;
                     }
                     $feed->handle_content_type();
                     if ($feed->error()) {
-                        return '<div class="alert alert-danger">' . _t('ERROR') . ' ' . $feed->error() . '</div>' . "\n";
+                        $errors[] = htmlspecialchars(implode(' ', (array)$feed->error()));
+                        $nburl++;
+                        continue;
                     }
 
                     if ($feed) {
@@ -217,7 +223,15 @@ class SyndicationAction extends YesWikiAction
                 $title = $this->arguments['title'];
             }
 
-            return '<div class="feed_syndication' . ($this->arguments['class'] ? ' ' . $this->arguments['class'] : '') . '">' . "\n" .
+            $errorsHtml = '';
+            foreach ($errors as $error) {
+                $errorsHtml .= '<div class="alert alert-danger">' . _t('ERROR') . ' ' . $error . '</div>' . "\n";
+            }
+            if (empty($syndication['pages']) && !empty($errors)) {
+                return $errorsHtml;
+            }
+
+            return $errorsHtml . '<div class="feed_syndication' . ($this->arguments['class'] ? ' ' . $this->arguments['class'] : '') . '">' . "\n" .
                 $this->render('@syndication/' . $this->arguments['template'], [
                     'syndication' => $syndication,
                     'title' => $title,
