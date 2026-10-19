@@ -9,6 +9,7 @@ use YesWiki\Content\Field\EnumField;
 use YesWiki\Files\Service\AttachedFilePaths;
 use YesWiki\Files\Service\Storage;
 use YesWiki\Kernel\Service\StringUtilService;
+use YesWiki\Kernel\Service\TripleStore;
 use YesWiki\Search\Service\SearchManager;
 
 class BazarListService
@@ -137,6 +138,8 @@ class BazarListService
             true
         );
 
+        $vEntries = $this->filterOnOrigin($vEntries, $pOptions['origin'] ?? null);
+
         if (!empty($pOptions['datefilter'])) {
             $vEntries = $this->container->get(EntryController::class)->filterEntriesOnDate($vEntries, $pOptions['datefilter']);
         }
@@ -167,6 +170,31 @@ class BazarListService
         }
 
         return $vEntries;
+    }
+
+    /**
+     * Keep the entries created here ('local'), those imported from a URL ('remote'), or all of them.
+     *
+     * @param array<array-key, array<string, mixed>> $entries
+     *
+     * @return array<array-key, array<string, mixed>>
+     */
+    private function filterOnOrigin(array $entries, mixed $origin): array
+    {
+        $origin = is_string($origin) ? strtolower(trim($origin)) : '';
+        if (!in_array($origin, ['local', 'remote'], true)) {
+            return $entries;
+        }
+        $remoteTags = [];
+        foreach ($this->container->get(TripleStore::class)->getMatching(null, TripleStore::SOURCE_URL_URI, null, '=', '=', '=') as $triple) {
+            $remoteTags[$triple['resource']] = true;
+        }
+        $wantRemote = $origin === 'remote';
+
+        return array_values(array_filter(
+            $entries,
+            fn (array $entry) => isset($remoteTags[$entry['tag'] ?? '']) === $wantRemote
+        ));
     }
 
     /**

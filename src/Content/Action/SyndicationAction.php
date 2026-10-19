@@ -156,9 +156,7 @@ class SyndicationAction extends YesWikiAction implements RegisteredAction, Provi
     }
 
     /**
-     * @param array<array-key, array<string, mixed>> $pages the feed items already built --
-     *                                                      keyed by date in run(), a plain
-     *                                                      list in items()
+     * @param array<array-key, array<string, mixed>> $pages the feed items already built
      *
      * @return list<Item>
      */
@@ -366,6 +364,7 @@ class SyndicationAction extends YesWikiAction implements RegisteredAction, Provi
         if (!empty($this->arguments['url'])) {
             $nburl = 0;
             $syndication = ['pages' => []];
+            $errors = [];
 
             $feedTitle = '';
             $feedLink = '';
@@ -384,7 +383,7 @@ class SyndicationAction extends YesWikiAction implements RegisteredAction, Provi
                         if (!empty($feedError)) {
                             $feedError = is_array($feedError) ? implode(' ', $feedError) : $feedError;
 
-                            return '<div class="yw-alert yw-alert--danger">' . _t('ERROR') . ' ' . $feedError . '</div>' . "\n";
+                            return '<div class="yw-alert yw-alert--danger">' . _t('ERROR') . ' ' . htmlspecialchars($feedError) . '</div>' . "\n";
                         }
                         $feedTitle = (string)$feed->get_title();
                         $feedLink = (string)$feed->get_link();
@@ -434,7 +433,7 @@ class SyndicationAction extends YesWikiAction implements RegisteredAction, Provi
                 );
 
                 if ($failure !== null) {
-                    return $failure;
+                    $errors[] = $failure;
                 }
                 $nburl = $nburl + 1;
             }
@@ -448,7 +447,12 @@ class SyndicationAction extends YesWikiAction implements RegisteredAction, Provi
                 $title = $this->arguments['title'];
             }
 
-            $wrapper = '<div class="feed_syndication' . ($this->arguments['class'] ? ' ' . $this->arguments['class'] : '') . '">' . "\n";
+            $errorsHtml = implode('', $errors);
+            if (empty($syndication['pages']) && $errors !== []) {
+                return $errorsHtml;
+            }
+
+            $wrapper = $errorsHtml . '<div class="feed_syndication' . ($this->arguments['class'] ? ' ' . $this->arguments['class'] : '') . '">' . "\n";
 
             if (PresentationRenderer::knows((string)$this->arguments['template'])) {
                 return $wrapper

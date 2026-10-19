@@ -1327,6 +1327,13 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
             Setting::checkbox('filteruserasowner')
                 ->label(_t('AB_bazar_commons2_filter_user_as_owner'))
                 ->default('false'),
+            Setting::choice('origin', [
+                'all' => _t('AB_bazar_commons2_origin_all'),
+                'local' => _t('AB_bazar_commons2_origin_local'),
+                'remote' => _t('AB_bazar_commons2_origin_remote'),
+            ])
+                ->label(_t('AB_bazar_commons2_origin_label'))
+                ->default('all'),
             Setting::choice('datefilter', [
                 'futur' => _t('AB_bazar_commons2_filter_on_date_future'),
                 'past' => _t('AB_bazar_commons2_filter_on_date_past'),

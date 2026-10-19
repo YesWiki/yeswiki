@@ -978,7 +978,19 @@ Permet d'afficher une sélection aléatoire de fiches `random="1"` en général 
 l'utilise avec le paramètre **nb** `nb="5"` pour afficher 5 ressources au hasard
 à mettre en valeur.
 
-#### 3.2.6. Données issues d'un autre yeswiki
+#### 3.2.6. Fiches locales ou importées (origin)
+
+Le paramètre `origin` trie les fiches selon leur provenance :
+
+- `origin="local"` : seulement les fiches créées sur ce wiki ;
+- `origin="remote"` : seulement les fiches importées depuis une adresse web
+  (abonnement ActivityPub, import depuis un autre YesWiki) ;
+- `origin="all"`, ou pas de paramètre : toutes les fiches.
+
+> Par exemple, `{{entrylist id="2" template="blog" origin="local"}}` affiche
+> les billets écrits sur le wiki sans les publications reçues de Mastodon.
+
+#### 3.2.7. Données issues d'un autre yeswiki
 
 Il est possible d'afficher les données issues d'un YesWiki distant.
 
