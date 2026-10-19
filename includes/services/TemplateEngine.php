@@ -267,9 +267,7 @@ class TemplateEngine
         $twig = new \Twig\Environment($loader, ['autoescape' => false]);
 
         $policy = new \Twig\Sandbox\SecurityPolicy(
-            // allowed control-flow tags only
             ['if', 'for', 'set'],
-            // safe data-manipulation and formatting filters
             [
                 'abs', 'batch', 'capitalize', 'date', 'default',
                 'e', 'escape', 'filter', 'first', 'format',
@@ -278,11 +276,9 @@ class TemplateEngine
                 'reduce', 'replace', 'reverse', 'round', 'slice',
                 'sort', 'split', 'striptags', 'title', 'trim', 'upper',
             ],
-            // no method calls on objects
             [],
-            // no property access on objects
             [],
-            ['date', 'fileUrl', 'max', 'min', 'random', 'range']
+            ['date', 'fileUrl', 'format', 'markdown', 'max', 'min', 'random', 'range']
         );
         $twig->addExtension(new \Twig\Extension\SandboxExtension($policy, true));
 
@@ -290,6 +286,12 @@ class TemplateEngine
         $uploadPath = BAZ_CHEMIN_UPLOAD;
         $twig->addFunction(new \Twig\TwigFunction('fileUrl', function (string $fileName) use ($baseUrl, $uploadPath): string {
             return $baseUrl . '/' . $uploadPath . $fileName;
+        }));
+        $twig->addFunction(new \Twig\TwigFunction('format', function ($text): string {
+            return $this->wiki->Format((string)$text, 'wakka');
+        }));
+        $twig->addFunction(new \Twig\TwigFunction('markdown', function ($html): string {
+            return $this->wiki->services->get(HtmlToMarkdown::class)->convert(is_string($html) ? $html : '');
         }));
 
         return $twig->render('__sem__', $data);
