@@ -216,6 +216,14 @@ actions:
         intro: _t(AB_bazar_query_intro)
         type: query
         btn-label-add: _t(AB_bazar_query_btn-label-add)
+      origin:
+        label: _t(AB_bazar_commons2_origin_label)
+        type: list
+        default: all
+        options:
+          all: _t(AB_bazar_commons2_origin_all)
+          local: _t(AB_bazar_commons2_origin_local)
+          remote: _t(AB_bazar_commons2_origin_remote)
       filteruserasowner:
         label: _t(AB_bazar_commons2_filter_user_as_owner)
         type: checkbox

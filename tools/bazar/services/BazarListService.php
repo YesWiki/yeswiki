@@ -4,6 +4,7 @@ namespace YesWiki\Bazar\Service;
 
 use YesWiki\Bazar\Controller\EntryController;
 use YesWiki\Bazar\Field\EnumField;
+use YesWiki\Core\Service\TripleStore;
 use YesWiki\Wiki;
 
 class BazarListService
@@ -135,7 +136,7 @@ class BazarListService
             $vExternalEntries = [];
         }
 
-        $vEntries = array_merge($vLocalEntries, $vExternalEntries);
+        $vEntries = $this->filterOnOrigin(array_merge($vLocalEntries, $vExternalEntries), $pOptions['origin'] ?? null);
 
         // filter entries on datefilter parameter
         if (!empty($pOptions['datefilter'])) {
@@ -171,6 +172,27 @@ class BazarListService
         }
 
         return $vEntries;
+    }
+
+    /**
+     * Keeps only the entries written on this wiki ('local'), only those brought from a remote URL ('remote'), or both.
+     */
+    private function filterOnOrigin(array $entries, $origin): array
+    {
+        $origin = is_string($origin) ? strtolower(trim($origin)) : '';
+        if (!in_array($origin, ['local', 'remote'], true)) {
+            return $entries;
+        }
+        $remoteTags = [];
+        foreach ($this->wiki->services->get(TripleStore::class)->getMatching(null, TripleStore::SOURCE_URL_URI, null, '=', '=', '=') as $triple) {
+            $remoteTags[$triple['resource']] = true;
+        }
+        $wantRemote = $origin === 'remote';
+
+        return array_values(array_filter(
+            $entries,
+            fn ($entry) => (!empty($entry['external-data']) || isset($remoteTags[$entry['id_fiche'] ?? ''])) === $wantRemote
+        ));
     }
 
     // Use bazarlist options like groups, titles, groupicons, groupsexpanded
