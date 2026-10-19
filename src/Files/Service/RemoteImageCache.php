@@ -41,7 +41,7 @@ class RemoteImageCache
     }
 
     /** Whether a field value links to another address rather than naming an uploaded file. */
-    public static function isRemote($value): bool
+    public static function isRemote(mixed $value): bool
     {
         return is_string($value) && preg_match('#^(https?:)?//#i', trim($value)) === 1;
     }
