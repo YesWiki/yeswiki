@@ -55,7 +55,10 @@ class SearchIndexLanguagesTest extends YesWikiTestCase
         $services->get(LanguageService::class)->serveIn($language);
         $results = $services->get(SearchIndexQuery::class)->search($query, null, 50)['results'];
 
-        return array_column($results, 'title', 'tag');
+        $found = array_column($results, 'title', 'tag');
+        ksort($found);
+
+        return $found;
     }
 
     public function testAFrenchReaderSearchesTheFrenchWiki(): void
