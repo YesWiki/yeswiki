@@ -240,6 +240,7 @@ return [
     'LATITUDE' => 'Lat',
     'LONGITUDE' => 'Lon',
     'BAZ_ECRITE' => 'Écrite par',
+    'BAZ_ORIGINAL_POST' => "Publication d'origine",
     'BAZ_CREATOR' => 'Créateur',
     'BAZ_CHOISIR' => 'Choisir..',
     'BAZ_CHOISIR_OBLIGATOIRE' => 'Il faut choisir un élément dans la liste déroulante',

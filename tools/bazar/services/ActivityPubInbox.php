@@ -11,6 +11,7 @@ class ActivityPubInbox
 {
     public const REMOTE_ACTOR_URI = 'http://outils-reseaux.org/_vocabulary/remoteActor';
     private const GENERATED_TITLE_LENGTH = 80;
+    private const GENERATED_TITLE_MARKER = '__generated_title';
 
     protected $activityPubService;
     protected $entryManager;
@@ -74,8 +75,9 @@ class ActivityPubInbox
                 if (!$this->httpSignatureService->sameHost($verifiedActor, $object['id'] ?? '')) {
                     throw new \Exception('An actor can only bring objects from its own host');
                 }
-                $created = $this->entryManager->create($form['bn_id_nature'], $entry, false, $object['id']);
+                $created = $this->entryManager->create($form['bn_id_nature'], $this->withoutMarker($entry), false, $object['id']);
                 $this->rememberOwner($created['id_fiche'] ?? null, $verifiedActor);
+                $this->rememberGeneratedTitle($created['id_fiche'] ?? null, $entry);
                 break;
 
             case 'Update':
@@ -86,7 +88,8 @@ class ActivityPubInbox
                         $tag = $triples[0]['resource'];
                         $this->assertOwns($verifiedActor, $tag, $object['id']);
                         $entry = $this->entryFromObject($form, $object);
-                        $this->entryManager->update($tag, $entry, false);
+                        $this->entryManager->update($tag, $this->withoutMarker($entry), false);
+                        $this->rememberGeneratedTitle($tag, $entry);
                     }
                 }
                 break;
@@ -238,8 +241,9 @@ class ActivityPubInbox
             }
             $entry = $this->entryFromObject($form, $object);
             $entry['read-only'] = 1;
-            $created = $this->entryManager->create($form['bn_id_nature'], $entry, false, $object['id']);
+            $created = $this->entryManager->create($form['bn_id_nature'], $this->withoutMarker($entry), false, $object['id']);
             $this->rememberOwner($created['id_fiche'] ?? null, $actorUri);
+            $this->rememberGeneratedTitle($created['id_fiche'] ?? null, $entry);
             $stats['created']++;
 
             return;
@@ -251,7 +255,9 @@ class ActivityPubInbox
         if (!$this->isOwnedBy($actorUri, $tag, $object['id'])) {
             return;
         }
-        $this->entryManager->update($tag, $this->entryFromObject($form, $object), false);
+        $entry = $this->entryFromObject($form, $object);
+        $this->entryManager->update($tag, $this->withoutMarker($entry), false);
+        $this->rememberGeneratedTitle($tag, $entry);
         $stats['updated']++;
     }
 
@@ -263,9 +269,31 @@ class ActivityPubInbox
         $entry = $this->semanticTransformer->convertFromSemanticData($form['bn_id_nature'], $object);
         if ($this->plainText($entry['bf_titre'] ?? '') === '') {
             $entry['bf_titre'] = $this->titleFromObject($object);
+            $entry[self::GENERATED_TITLE_MARKER] = true;
         }
 
         return $entry;
+    }
+
+    private function withoutMarker(array $entry): array
+    {
+        unset($entry[self::GENERATED_TITLE_MARKER]);
+
+        return $entry;
+    }
+
+    /**
+     * Records whether a mirrored entry's title was made up from its text, so lists can show the text instead.
+     */
+    protected function rememberGeneratedTitle(?string $tag, array $entry): void
+    {
+        if (empty($tag)) {
+            return;
+        }
+        $this->tripleStore->delete($tag, EntryOrigin::GENERATED_TITLE_URI, null, '', '');
+        if (!empty($entry[self::GENERATED_TITLE_MARKER])) {
+            $this->tripleStore->create($tag, EntryOrigin::GENERATED_TITLE_URI, '1', '', '');
+        }
     }
 
     /**

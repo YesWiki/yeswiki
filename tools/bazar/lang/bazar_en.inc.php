@@ -122,6 +122,7 @@ return [
     'LATITUDE' => 'Lat',
     'LONGITUDE' => 'Lon',
     'BAZ_ECRITE' => 'written by',
+    'BAZ_ORIGINAL_POST' => 'Original post',
     'BAZ_CHOISIR' => 'Choose..',
     'BAZ_CHOISIR_OBLIGATOIRE' => 'You must choose an element in the list',
     'BAZ_INDIFFERENT' => 'Indifferent',

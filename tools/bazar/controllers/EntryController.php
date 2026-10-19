@@ -13,6 +13,7 @@ use YesWiki\Bazar\Field\LinkedEntryField;
 use YesWiki\Bazar\Field\UserField;
 use YesWiki\Bazar\Service\ConditionsChecker;
 use YesWiki\Bazar\Service\EntryManager;
+use YesWiki\Bazar\Service\EntryOrigin;
 use YesWiki\Bazar\Service\FormManager;
 use YesWiki\Bazar\Service\SearchManager;
 use YesWiki\Bazar\Service\SemanticTransformer;
@@ -197,7 +198,7 @@ class EntryController extends YesWikiController
             $isUserFavorite = $this->favoritesManager->isUserFavorite($currentuser, $entryId);
         }
 
-        $sourceUrl = $this->tripleStore->getOne($entryId, TripleStore::SOURCE_URL_URI, '', '');
+        $origin = $this->getService(EntryOrigin::class)->describe($entry);
 
         return $this->render('@bazar/entries/view.twig', [
             'form' => $pLocalForm,
@@ -215,7 +216,7 @@ class EntryController extends YesWikiController
             'canDuplicate' => $this->wiki->UserIsAdmin($userNameForRendering) && !isset($entry['read-only']),
             'isAdmin' => $this->wiki->UserIsAdmin($userNameForRendering),
             'renderedEntry' => $renderedEntry,
-            'sourceUrl' => $sourceUrl,
+            'origin' => $origin,
             'incomingUrl' => $this->getRequest()->query->get('incomingurl', getAbsoluteUrl()),
             'editContextUrl' => $this->getEditContextUrl($entryId),
         ]);

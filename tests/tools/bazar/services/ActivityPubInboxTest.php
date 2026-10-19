@@ -10,6 +10,7 @@ use YesWiki\Bazar\Service\ActivityPubKeyStore;
 use YesWiki\Bazar\Service\ActivityPubProfiles;
 use YesWiki\Bazar\Service\ActivityPubService;
 use YesWiki\Bazar\Service\EntryManager;
+use YesWiki\Bazar\Service\EntryOrigin;
 use YesWiki\Bazar\Service\HttpSignatureService;
 use YesWiki\Bazar\Service\SemanticTransformer;
 use YesWiki\Bazar\Service\SsrfUrlValidator;
@@ -33,6 +34,7 @@ class ActivityPubInboxTest extends TestCase
     private array $deleted = [];
     private array $created = [];
     private array $createdTitles = [];
+    private array $createdData = [];
     private ?string $convertedTitle = 'Une fiche';
     /** @var string[] */
     private array $refusedObjects = [];
@@ -79,6 +81,7 @@ class ActivityPubInboxTest extends TestCase
             $tag = 'Fiche' . (count($this->created) + 1);
             $this->created[] = ['tag' => $tag, 'sourceUrl' => $sourceUrl];
             $this->createdTitles[] = $data['bf_titre'] ?? null;
+            $this->createdData[] = $data;
             $this->triples[] = ['resource' => $tag, 'property' => TripleStore::SOURCE_URL_URI, 'value' => $sourceUrl];
 
             return ['id_fiche' => $tag] + $data;
@@ -359,6 +362,42 @@ class ActivityPubInboxTest extends TestCase
         $this->sync([['type' => 'Create', 'object' => ['id' => 'https://them.example/notes/1'] + $note]]);
 
         $this->assertSame([$title], $this->createdTitles);
+    }
+
+    private function generatedTitleTags(): array
+    {
+        return array_values(array_map(fn ($t) => $t['resource'], array_filter(
+            $this->triples,
+            fn ($t) => $t['property'] === EntryOrigin::GENERATED_TITLE_URI
+        )));
+    }
+
+    public function testAGeneratedTitleIsRecordedButNeverSavedAsAField()
+    {
+        $this->convertedTitle = null;
+
+        $this->sync([['type' => 'Create', 'object' => ['id' => 'https://them.example/notes/1', 'content' => '<p>Un pouet</p>']]]);
+
+        $this->assertSame(['Fiche1'], $this->generatedTitleTags());
+        $this->assertArrayNotHasKey('__generated_title', $this->createdData[0]);
+    }
+
+    public function testANamedObjectHasNoGeneratedTitle()
+    {
+        $this->sync([['type' => 'Create', 'object' => ['id' => 'https://them.example/notes/1', 'name' => 'Une fiche']]]);
+
+        $this->assertSame([], $this->generatedTitleTags());
+    }
+
+    public function testAnUpdateThatBringsANameDropsTheGeneratedTitleMark()
+    {
+        $this->givenMirroredEntry('FicheUne', 'https://them.example/notes/1', self::THEM);
+        $this->triples[] = ['resource' => 'FicheUne', 'property' => EntryOrigin::GENERATED_TITLE_URI, 'value' => '1'];
+
+        $this->sync([['type' => 'Update', 'object' => ['id' => 'https://them.example/notes/1', 'name' => 'Un vrai titre']]]);
+
+        $this->assertSame(['FicheUne'], $this->updated);
+        $this->assertSame([], $this->generatedTitleTags());
     }
 
     public function testANameIsKeptAsTheTitle()
