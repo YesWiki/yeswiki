@@ -7,6 +7,7 @@ use YesWiki\Content\Entity\Translations;
 use YesWiki\Content\Service\FeedLanguages;
 use YesWiki\Content\Service\FormManager;
 use YesWiki\Content\Service\FormPropertiesService;
+use YesWiki\Kernel\Service\LanguageService;
 use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';
@@ -131,12 +132,18 @@ class FieldRenameKeepsTranslationsTest extends YesWikiTestCase
 
     public function testAFeedShowsEveryLanguageUnlessOneIsAsked(): void
     {
-        $feed = $this->getWiki()->services->get(FeedLanguages::class);
+        $feed = new FeedLanguages(new class extends LanguageService {
+            public function availableLanguages(): array
+            {
+                return ['fr', 'en'];
+            }
+        });
         $body = ['bf_titre' => 'Atelier', Translations::BODY_KEY => ['en' => ['bf_titre' => 'Workshop']]];
 
         $this->assertSame(['fr' => ['bf_titre' => 'Atelier'], 'en' => ['bf_titre' => 'Workshop']], $feed->versions($body, 'fr', $feed->requested(Request::create('/feed'))));
         $this->assertSame(['en' => ['bf_titre' => 'Workshop']], $feed->versions($body, 'fr', $feed->requested(Request::create('/feed', 'GET', ['lang' => 'en']))));
         $this->assertSame(['fr' => ['bf_titre' => 'Atelier']], $feed->versions($body, 'fr', 'fr'));
+        $this->assertNull($feed->requested(Request::create('/feed', 'GET', ['lang' => 'eo'])));
         $this->assertSame('https://x/?Page&lang=en', $feed->urlIn('https://x/?Page', 'en', 'fr'));
     }
 
