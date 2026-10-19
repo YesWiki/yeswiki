@@ -10,6 +10,7 @@ use YesWiki\Core\Service\TripleStore;
 class ActivityPubInbox
 {
     public const REMOTE_ACTOR_URI = 'http://outils-reseaux.org/_vocabulary/remoteActor';
+    private const GENERATED_TITLE_LENGTH = 80;
 
     protected $activityPubService;
     protected $entryManager;
@@ -68,7 +69,7 @@ class ActivityPubInbox
 
             case 'Create':
                 $object = $activity['object'];
-                $entry = $this->semanticTransformer->convertFromSemanticData($form['bn_id_nature'], $object);
+                $entry = $this->entryFromObject($form, $object);
                 $entry['read-only'] = 1;
                 if (!$this->httpSignatureService->sameHost($verifiedActor, $object['id'] ?? '')) {
                     throw new \Exception('An actor can only bring objects from its own host');
@@ -84,7 +85,7 @@ class ActivityPubInbox
                     if (!empty($triples)) {
                         $tag = $triples[0]['resource'];
                         $this->assertOwns($verifiedActor, $tag, $object['id']);
-                        $entry = $this->semanticTransformer->convertFromSemanticData($form['bn_id_nature'], $object);
+                        $entry = $this->entryFromObject($form, $object);
                         $this->entryManager->update($tag, $entry, false);
                     }
                 }
@@ -165,7 +166,7 @@ class ActivityPubInbox
 
     public function syncActorPosts(string $actorUri, array $form): array
     {
-        $stats = ['created' => 0, 'updated' => 0, 'deleted' => 0];
+        $stats = ['created' => 0, 'updated' => 0, 'deleted' => 0, 'failed' => 0];
 
         $actor = $this->activityPubService->fetch($actorUri, $form);
 
@@ -201,33 +202,10 @@ class ActivityPubInbox
 
             $existingTriples = $this->tripleStore->getMatching(null, TripleStore::SOURCE_URL_URI, $object['id'], '=', '=', '=');
 
-            if ($type === 'Create') {
-                if (empty($existingTriples)) {
-                    if (!$this->httpSignatureService->sameHost($actorUri, $object['id'])) {
-                        continue;
-                    }
-                    $entry = $this->semanticTransformer->convertFromSemanticData($form['bn_id_nature'], $object);
-                    $entry['read-only'] = 1;
-                    $created = $this->entryManager->create($form['bn_id_nature'], $entry, false, $object['id']);
-                    $this->rememberOwner($created['id_fiche'] ?? null, $actorUri);
-                    $stats['created']++;
-                } else {
-                    $tag = $existingTriples[0]['resource'];
-                    if (!$this->isOwnedBy($actorUri, $tag, $object['id'])) {
-                        continue;
-                    }
-                    $entry = $this->semanticTransformer->convertFromSemanticData($form['bn_id_nature'], $object);
-                    $this->entryManager->update($tag, $entry, false);
-                    $stats['updated']++;
-                }
-            } elseif ($type === 'Update' && !empty($existingTriples)) {
-                $tag = $existingTriples[0]['resource'];
-                if (!$this->isOwnedBy($actorUri, $tag, $object['id'])) {
-                    continue;
-                }
-                $entry = $this->semanticTransformer->convertFromSemanticData($form['bn_id_nature'], $object);
-                $this->entryManager->update($tag, $entry, false);
-                $stats['updated']++;
+            try {
+                $this->syncItem($type, $object, $existingTriples, $actorUri, $form, $stats);
+            } catch (\Exception $e) {
+                $stats['failed']++;
             }
         }
 
@@ -247,6 +225,88 @@ class ActivityPubInbox
         }
 
         return $stats;
+    }
+
+    /**
+     * Creates or updates the entry mirroring one outbox item, counting what it did in $stats.
+     */
+    private function syncItem(?string $type, array $object, array $existingTriples, string $actorUri, array $form, array &$stats): void
+    {
+        if ($type === 'Create' && empty($existingTriples)) {
+            if (!$this->httpSignatureService->sameHost($actorUri, $object['id'])) {
+                return;
+            }
+            $entry = $this->entryFromObject($form, $object);
+            $entry['read-only'] = 1;
+            $created = $this->entryManager->create($form['bn_id_nature'], $entry, false, $object['id']);
+            $this->rememberOwner($created['id_fiche'] ?? null, $actorUri);
+            $stats['created']++;
+
+            return;
+        }
+        if (!in_array($type, ['Create', 'Update'], true) || empty($existingTriples)) {
+            return;
+        }
+        $tag = $existingTriples[0]['resource'];
+        if (!$this->isOwnedBy($actorUri, $tag, $object['id'])) {
+            return;
+        }
+        $this->entryManager->update($tag, $this->entryFromObject($form, $object), false);
+        $stats['updated']++;
+    }
+
+    /**
+     * Turns a remote object into entry fields, titling it from its summary or text when it has no name, as Mastodon notes do.
+     */
+    protected function entryFromObject(array $form, array $object): array
+    {
+        $entry = $this->semanticTransformer->convertFromSemanticData($form['bn_id_nature'], $object);
+        if ($this->plainText($entry['bf_titre'] ?? '') === '') {
+            $entry['bf_titre'] = $this->titleFromObject($object);
+        }
+
+        return $entry;
+    }
+
+    /**
+     * A short title from the object's content warning or the start of its text, or else its publication date.
+     */
+    protected function titleFromObject(array $object): string
+    {
+        foreach (['summary', 'content'] as $key) {
+            $text = $this->plainText($object[$key] ?? '');
+            if ($text !== '') {
+                return $this->shorten($text, self::GENERATED_TITLE_LENGTH);
+            }
+        }
+        $published = strtotime((string)($object['published'] ?? '')) ?: time();
+
+        return sprintf(_t('BAZ_ACTIVITYPUB_UNTITLED_NOTE'), date('Y-m-d H:i', $published));
+    }
+
+    private function plainText($html): string
+    {
+        if (!is_string($html)) {
+            return '';
+        }
+        $text = preg_replace('#<br\s*/?>|</p>|</li>#i', ' ', $html);
+        $text = html_entity_decode(strip_tags($text), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+
+        return trim(preg_replace('/\s+/u', ' ', $text));
+    }
+
+    private function shorten(string $text, int $length): string
+    {
+        if (mb_strlen($text) <= $length) {
+            return $text;
+        }
+        $cut = mb_substr($text, 0, $length);
+        $lastSpace = mb_strrpos($cut, ' ');
+        if ($lastSpace !== false && $lastSpace > $length / 2) {
+            $cut = mb_substr($cut, 0, $lastSpace);
+        }
+
+        return rtrim($cut, ' ,;:.-') . '…';
     }
 
     private function fetchAllOutboxItems(string $outboxUrl, array $form): array

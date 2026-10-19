@@ -178,6 +178,8 @@ return [
     'BAZ_FOLLOWER_REMOVED' => 'L\'abonné a bien été supprimé et averti de la suppression',
     'BAZ_FOLLOWING_REMOVED' => 'L\'abonnement a bien été supprimé et l\'acteur a été averti de la suppression',
     'BAZ_SYNC_ACTOR_POSTS' => 'Synchroniser les fiches',
+    'BAZ_SYNC_FAILED' => "%d publication(s) n'ont pas pu être importée(s).",
+    'BAZ_ACTIVITYPUB_UNTITLED_NOTE' => 'Note du %s',
     'BAZ_SYNC_COMPLETE' => 'Synchronisation terminée : %d fiche(s) créée(s), %d mise(s) à jour, %d supprimée(s).',
     'BAZ_DUPLICATE' => 'copie',
     'BAZ_MODIFIER_LA_FICHE' => 'Modifier la fiche',

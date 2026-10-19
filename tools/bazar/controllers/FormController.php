@@ -377,6 +377,9 @@ class FormController extends YesWikiController
 
         $stats = $this->getService(ActivityPubInbox::class)->syncActorPosts($actorUri, $this->formManager->getOne($id));
         Flash::success(sprintf(_t('BAZ_SYNC_COMPLETE'), $stats['created'], $stats['updated'], $stats['deleted']));
+        if ($stats['failed'] > 0) {
+            Flash::warning(sprintf(_t('BAZ_SYNC_FAILED'), $stats['failed']));
+        }
 
         return $this->redirectToActivityPub($id, 'following');
     }

@@ -2,6 +2,7 @@
 
 namespace YesWiki\Test\Bazar\Service;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Bazar\Service\ActivityPubInbox;
@@ -31,6 +32,10 @@ class ActivityPubInboxTest extends TestCase
     private array $updated = [];
     private array $deleted = [];
     private array $created = [];
+    private array $createdTitles = [];
+    private ?string $convertedTitle = 'Une fiche';
+    /** @var string[] */
+    private array $refusedObjects = [];
     private ?HttpSignatureService $httpSignatureService = null;
 
     private function service(): ActivityPubInbox
@@ -68,8 +73,12 @@ class ActivityPubInboxTest extends TestCase
 
         $entryManager = $this->createStub(EntryManager::class);
         $entryManager->method('create')->willReturnCallback(function ($formId, $data, $semantic, $sourceUrl) {
+            if (in_array($sourceUrl, $this->refusedObjects, true)) {
+                throw new \Exception('champs requis : Image');
+            }
             $tag = 'Fiche' . (count($this->created) + 1);
             $this->created[] = ['tag' => $tag, 'sourceUrl' => $sourceUrl];
+            $this->createdTitles[] = $data['bf_titre'] ?? null;
             $this->triples[] = ['resource' => $tag, 'property' => TripleStore::SOURCE_URL_URI, 'value' => $sourceUrl];
 
             return ['id_fiche' => $tag] + $data;
@@ -93,7 +102,7 @@ class ActivityPubInboxTest extends TestCase
         ));
 
         $semanticTransformer = $this->createStub(SemanticTransformer::class);
-        $semanticTransformer->method('convertFromSemanticData')->willReturn(['bf_titre' => 'Une fiche']);
+        $semanticTransformer->method('convertFromSemanticData')->willReturnCallback(fn () => ['bf_titre' => $this->convertedTitle]);
 
         $params = $this->createStub(ParameterBagInterface::class);
         $params->method('get')->willReturn('https://us.example/');
@@ -322,6 +331,55 @@ class ActivityPubInboxTest extends TestCase
         $this->sync([['type' => 'Create', 'object' => ['id' => 'https://elsewhere.example/entries/9']]]);
 
         $this->assertSame([], $this->created, 'a Create whose object is on another host is skipped');
+    }
+
+    public static function untitledNotes(): array
+    {
+        return [
+            'text of a Mastodon note' => [
+                ['content' => '<p>Stop Omarchy <a href="https://stopomarchy.org/">https://stopomarchy.org/</a></p>'],
+                'Stop Omarchy https://stopomarchy.org/',
+            ],
+            'content warning first' => [
+                ['summary' => 'Politique &amp; société', 'content' => '<p>Le texte</p>'],
+                'Politique & société',
+            ],
+            'long text cut on a word' => [
+                ['content' => '<p>' . str_repeat('mot ', 40) . '</p>'],
+                rtrim(str_repeat('mot ', 20)) . '…',
+            ],
+        ];
+    }
+
+    #[DataProvider('untitledNotes')]
+    public function testANoteWithoutANameIsTitledFromItsText(array $note, string $title)
+    {
+        $this->convertedTitle = null;
+
+        $this->sync([['type' => 'Create', 'object' => ['id' => 'https://them.example/notes/1'] + $note]]);
+
+        $this->assertSame([$title], $this->createdTitles);
+    }
+
+    public function testANameIsKeptAsTheTitle()
+    {
+        $this->sync([['type' => 'Create', 'object' => ['id' => 'https://them.example/notes/1', 'name' => 'Une fiche', 'content' => 'Autre chose']]]);
+
+        $this->assertSame(['Une fiche'], $this->createdTitles);
+    }
+
+    public function testAPostThatCannotBeSavedIsCountedAndTheSyncGoesOn()
+    {
+        $this->refusedObjects = ['https://them.example/notes/1'];
+
+        $stats = $this->sync([
+            ['type' => 'Create', 'object' => ['id' => 'https://them.example/notes/1']],
+            ['type' => 'Create', 'object' => ['id' => 'https://them.example/notes/2']],
+        ]);
+
+        $this->assertSame(1, $stats['failed']);
+        $this->assertSame(1, $stats['created']);
+        $this->assertSame(['https://them.example/notes/2'], array_column($this->created, 'sourceUrl'));
     }
 
     private function givenFollowRequest(string $actorUri, string $followId): void
