@@ -1,12 +1,11 @@
 import '../../../../javascripts/vendor/ace/ace.js'
-// Loads html rules cause it's used inside yeswiki mode
 import '../../../../javascripts/vendor/ace/mode-html.js'
 import '../../../../javascripts/vendor/ace/ext-language_tools.js'
 
 export default class {
   ace = null
   $container
-  cursor = {} // ace cursor with more infos
+  cursor = {}
   cursorChangeCallbacks = []
   langTools
   classesToIgnoreForData = [
@@ -25,7 +24,10 @@ export default class {
       'basePath',
       `${wiki.baseUrl.replace(/\?+$/, '')}tools/aceditor/presentation/javascripts`,
     )
-    ace.config.setModuleUrl('ace/mode/yeswiki', import.meta.resolve('./mode-yeswiki.js'))
+    ace.config.setModuleUrl(
+      'ace/mode/yeswiki',
+      import.meta.resolve('./mode-yeswiki.js'),
+    )
 
     this.ace = ace.edit(domElement, {
       printMargin: false,
@@ -45,19 +47,35 @@ export default class {
     })
 
     this.ace.selection.on('changeCursor', () => {
-      // Timeout for the DOM to be rendered
       setTimeout(() => this.updateCursor(), 100)
     })
 
-    // For autocompletion
     this.langTools = ace.require('ace/ext/language_tools')
     this.ace.setOptions({
       enableBasicAutocompletion: true,
       enableLiveAutocompletion: true,
     })
+
+    this.enableMiddleClickPaste()
   }
 
-  // Wrappers methods
+  /** Puts ACE's hidden textarea under the pointer on a middle click, so the primary selection pastes into it. */
+  enableMiddleClickPaste() {
+    const { container, textInput } = this.ace
+    container.addEventListener(
+      'mousedown',
+      (e) => {
+        if (e.button !== 1) return
+        textInput.moveToMouse(e, true)
+        this.ace.focus()
+      },
+      true,
+    )
+    container.addEventListener('mouseup', (e) => {
+      if (e.button === 1) textInput.onContextMenuClose()
+    })
+  }
+
   getValue() {
     return this.ace.session.getValue()
   }
@@ -109,20 +127,14 @@ export default class {
     return allLineNodes
   }
 
-  // Based on current cursor, detect if we are inside a specific group (like action or link),
-  // and where we are in this group (are we on the action name, or in the link url?)
-  // This is using the text highlightings rules. So if you want to detect a group, you need to use
-  // "markup.open.GROUP_NAME" and "markup.close.GROUP_NAME" inside mode-yeswiki.js
-  // Please refer to "yw-action" as an example
+  /** Finds the group (action, link...) around the cursor from the markup.open/close.GROUP tokens of mode-yeswiki.js. */
   updateCursor() {
-    // Copy ace cursor
     this.cursor = { ...this.ace.selection.getCursor() }
     this.cursor.column ||= 0
 
     if (this.currentLineNodes) {
       let [currColumn, nextColumn] = [0, 0]
       this.currentLineNodes.forEach((node) => {
-        // iterate until we find a full group, or reach the end of line
         if (this.cursor.groupEnd == null) {
           const $node = $(node)
           const nodeClasses = ($node.attr('class') || '')
@@ -131,7 +143,6 @@ export default class {
 
           nextColumn += $node.text().length
 
-          // Openning group markup, before finding the selectedNode
           if (!this.cursor.$node && nodeClasses.includes('open')) {
             this.cursor.groupStart = currColumn
             this.cursor.groupData = {}
@@ -140,14 +151,12 @@ export default class {
               cl.startsWith('yw-'),
             )
           }
-          // Collect data for each node
           if (this.cursor.groupStart !== undefined) {
             const type = nodeClasses.find(
               (cl) => !this.classesToIgnoreForData.includes(cl),
             )
             if (type) this.cursor.groupData[type] = $node.text()
           }
-          // Detect SelectedNode
           if (
             !this.cursor.$node &&
             $node.text() &&
@@ -160,7 +169,6 @@ export default class {
             this.cursor.nodeText = $node.text()
             this.cursor.nodeType = nodeClasses
           }
-          // Closing group markup, after finding selectedNode
           if (
             this.cursor.$node &&
             this.cursor.groupStart !== undefined &&
@@ -177,7 +185,6 @@ export default class {
         }
       })
     }
-    // Trigger callbacks
     this.cursorChangeCallbacks.forEach((callback) => {
       callback(this.cursor)
     })
@@ -210,7 +217,7 @@ export default class {
       .trim()
   }
 
-  // Espace characters to be used in reg expr
+  /** Escapes a string for use inside a regular expression. */
   escapeRegExp(string) {
     return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
   }

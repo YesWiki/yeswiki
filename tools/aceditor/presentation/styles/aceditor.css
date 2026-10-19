@@ -11,6 +11,30 @@ textarea.aceditor-textarea {
   display: none;
 }
 
+.aceditor-container.plain-text textarea.aceditor-textarea {
+  display: block;
+  width: 100%;
+  margin-bottom: 1rem;
+  padding: 0.5em 0.7em;
+  font-family: monospace;
+  font-size: 1rem;
+  line-height: 1.5;
+  color: var(--main-text-color);
+  background: transparent;
+  border: 1px solid color-mix(in srgb, var(--neutral-color) 30%, transparent);
+  border-radius: 3px;
+  resize: vertical;
+}
+
+#ACEditor .aceditor-container.plain-text textarea.aceditor-textarea {
+  min-height: 500px;
+}
+
+.aceditor-container.plain-text .ace-container,
+.aceditor-container.plain-text .flying-edit-button {
+  display: none;
+}
+
 .ace-body {
   height: 65px;
   border: none;
@@ -27,7 +51,6 @@ textarea.aceditor-textarea {
 }
 
 .ace-body .ace_marker-layer .ace_active-line {
-  /* background: rgba(0, 0, 0, 0.03); */
   background: transparent;
   margin: 0 4px;
   border-radius: 3px;
@@ -86,7 +109,6 @@ textarea.aceditor-textarea {
   background-color: #c33ba30f;
 }
 
-/* Page Edit */
 #ACEditor {
   position: relative;
   height: auto;
@@ -114,9 +136,7 @@ textarea.aceditor-textarea {
   min-height: 500px;
 }
 
-/* Show line numbers only on page edit */
 form:not(#ACEditor) .ace-container .ace_gutter {
-  /* Keep it visible because it's just to get the active line height */
   width: 0 !important;
   overflow: hidden;
   padding: 0;
@@ -196,11 +216,6 @@ form:not(#ACEditor) .ace-container .ace_scroller {
   background-color: var(--neutral-light-color);
 }
 
-/* ================= */
-
-/* FLYING ACTION BAR */
-
-/* ================= */
 .flying-edit-button {
   opacity: 0;
   transition: opacity 0.3s;
@@ -220,7 +235,6 @@ form:not(#ACEditor) .ace-container .ace_scroller {
   border-radius: 5px 0 0 5px;
 }
 
-/* In iframe, button is inside the textarea */
 .yeswiki-iframe-body .flying-edit-button .btn {
   border-radius: 0 3px 3px 0;
   padding: 0.25rem 0;
@@ -228,7 +242,6 @@ form:not(#ACEditor) .ace-container .ace_scroller {
   transform: translateX(0);
 }
 
-/* in small screen, make button smaller and overlapping textarea */
 @media (width <=1200px) {
   body:not(.yeswiki-iframe-body) .flying-edit-button .btn {
     border-radius: 4px;
@@ -238,7 +251,6 @@ form:not(#ACEditor) .ace-container .ace_scroller {
   }
 
   body:not(.yeswiki-iframe-body) form#ACEditor .flying-edit-button .btn {
-    /* overlap more to cover gutter */
     border-radius: 4px;
     padding: 0.4rem 0;
     width: 2.2rem;

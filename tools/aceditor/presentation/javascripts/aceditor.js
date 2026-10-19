@@ -6,6 +6,28 @@ import AceWrapper from './ace-wrapper.js'
 import ActionsBuilder from './actions-builder.js'
 import FlyingEditButton from './flying-edit-button.js'
 
+const PLAIN_TEXT_STORAGE_KEY = 'yeswiki-aceditor-plain-text'
+
+/** Whether this browser last left the editor in plain-text mode. */
+function readPlainTextPreference() {
+  try {
+    return localStorage.getItem(PLAIN_TEXT_STORAGE_KEY) === '1'
+  } catch {
+    return false
+  }
+}
+
+/** Remembers the plain-text mode for this browser; false when storage is unavailable. */
+function storePlainTextPreference(enabled) {
+  try {
+    if (enabled) localStorage.setItem(PLAIN_TEXT_STORAGE_KEY, '1')
+    else localStorage.removeItem(PLAIN_TEXT_STORAGE_KEY)
+    return true
+  } catch {
+    return false
+  }
+}
+
 class Aceditor {
   editor
   linkModal
@@ -29,8 +51,11 @@ class Aceditor {
     return this.$container.find('.ace-body')
   }
 
+  get isPlainText() {
+    return this.$container.hasClass('plain-text')
+  }
+
   initialize() {
-    // Init Components
     this.editor = new AceWrapper(this.$aceBody[0], {
       rows: this.$textarea.attr('rows'),
     })
@@ -39,11 +64,11 @@ class Aceditor {
     this.actionsBuilder = new ActionsBuilder()
     this.flyingButton = new FlyingEditButton(this.$container)
 
-    // Sync textarea and editor
     this.editor.setValue(this.$textarea.val())
     this.editor.on('change', () => {
-      this.$textarea.val(this.editor.getValue())
-      // Enable alert popup when leaving the page
+      if (this.$textarea.val() !== this.editor.getValue()) {
+        this.$textarea.val(this.editor.getValue())
+      }
       if (typeof showPopup !== 'undefined') {
         showPopup = 1
       }
@@ -58,6 +83,77 @@ class Aceditor {
     this.editor.on('blur', () => {
       this.flyingButton.hide()
     })
+    this.initPlainTextToggle()
+  }
+
+  initPlainTextToggle() {
+    this.$plainTextButton = this.$toolbar.find('.aceditor-btn-plain-text')
+    this.$plainTextButton.on('click', () => {
+      this.setPlainText(!this.isPlainText, true)
+      storePlainTextPreference(this.isPlainText)
+    })
+    this.$toolbar[0].addEventListener(
+      'mousedown',
+      (event) => {
+        if (
+          this.isPlainText &&
+          !event.target.closest('.aceditor-btn-plain-text')
+        ) {
+          this.syncEditorFromTextarea()
+        }
+      },
+      true,
+    )
+    this.editor.on('change', () => {
+      if (this.isPlainText) this.syncTextareaSelectionFromEditor()
+    })
+    if (readPlainTextPreference()) this.setPlainText(true, false)
+  }
+
+  /** Swaps ACE for the bare textarea, where the browser's spell-checker and middle-click paste work. */
+  setPlainText(enabled, focus) {
+    if (enabled) {
+      this.$container.addClass('plain-text')
+      if (focus) this.$textarea.trigger('focus')
+    } else {
+      this.syncEditorFromTextarea()
+      this.$container.removeClass('plain-text')
+      this.editor.ace.resize(true)
+      if (focus) this.editor.ace.focus()
+    }
+    this.$plainTextButton
+      .toggleClass('active', enabled)
+      .attr('aria-pressed', String(enabled))
+  }
+
+  /** Copies the textarea's text and selection into ACE, so toolbar commands act on what the user selected. */
+  syncEditorFromTextarea() {
+    const textarea = this.$textarea[0]
+    const { selectionStart, selectionEnd } = textarea
+    if (this.editor.getValue() !== textarea.value) {
+      this.editor.setValue(textarea.value)
+    }
+    const { doc } = this.editor.ace.session
+    const start = doc.indexToPosition(selectionStart)
+    const end = doc.indexToPosition(selectionEnd)
+    this.editor.ace.selection.setRange(
+      new ace.Range(start.row, start.column, end.row, end.column),
+    )
+  }
+
+  /** Gives the textarea back the focus and ACE's selection once a toolbar command has edited the text. */
+  syncTextareaSelectionFromEditor() {
+    clearTimeout(this.selectionSyncTimeout)
+    this.selectionSyncTimeout = setTimeout(() => {
+      const { doc } = this.editor.ace.session
+      const range = this.editor.ace.getSelectionRange()
+      const textarea = this.$textarea[0]
+      textarea.focus()
+      textarea.setSelectionRange(
+        doc.positionToIndex(range.start),
+        doc.positionToIndex(range.end),
+      )
+    })
   }
 
   initToolbar() {
@@ -71,11 +167,9 @@ class Aceditor {
       const $btn = $(e.currentTarget)
 
       if ($btn.data('remote')) {
-        // Remote Modal Button
         e.preventDefault()
         openModal($btn.attr('title'), $btn.attr('href'))
       } else if ($btn.hasClass('aceditor-btn-link')) {
-        // Link Button
         this.linkModal.open({
           action: 'newlink',
           text: this.editor.getSelectedText(),
@@ -84,7 +178,6 @@ class Aceditor {
           },
         })
       } else if ($btn.hasClass('aceditor-btn-newpage')) {
-        // New Page Button
         this.linkModal.open({
           action: 'newpage',
           onComplete: (result) => {
@@ -92,7 +185,6 @@ class Aceditor {
           },
         })
       } else {
-        // Other Buttons
         this.editor.surroundSelectionWith($btn.data('lft'), $btn.data('rgt'))
       }
     })
@@ -110,12 +202,10 @@ class Aceditor {
 
   initEditionHelpers() {
     this.editor.onCursorChange((cursor) => {
-      // Reset
       this.$toolbar.find('.component-action-list').removeClass('only-edit')
       this.flyingButton.hide()
       this.editor.disableAutocompletion()
 
-      // wait for the full group to be written
       if (!cursor.groupType) return
 
       switch (cursor.groupType) {
@@ -180,7 +270,6 @@ jQuery(() => {
     window[`aceditor-${name}`] = new Aceditor($(this))
   })
 
-  // hack to put toolbar over label
   $('.wiki-textarea .scroll-container-toolbar').each(function () {
     $(this).prependTo($(this).parents('.wiki-textarea'))
   })
