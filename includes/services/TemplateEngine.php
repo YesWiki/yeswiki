@@ -4,6 +4,7 @@ namespace YesWiki\Core\Service;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Security\Csrf\CsrfTokenManager;
+use YesWiki\Attach\Service\RemoteImageCache;
 use YesWiki\Bazar\Service\FormManager;
 use YesWiki\Bazar\Service\ListManager;
 use YesWiki\Core\Exception\TemplateNotFound;
@@ -176,6 +177,12 @@ class TemplateEngine
                 throw new \Exception('`urlImage` should be called with `height` key in params!');
             }
             $options = array_merge(['mode' => 'fit', 'refresh' => false], $options);
+            if (RemoteImageCache::isRemote($options['fileName'])) {
+                $resized = $this->wiki->services->get(RemoteImageCache::class)
+                    ->resized($options['fileName'], intval($options['width']), intval($options['height']), $options['mode']);
+
+                return $resized === null ? $options['fileName'] : $this->wiki->getBaseUrl() . '/' . $resized;
+            }
 
             if (!class_exists('attach')) {
                 include 'tools/attach/libs/attach.lib.php';
@@ -190,7 +197,6 @@ class TemplateEngine
             if (!file_exists($image_dest) || $safeRefresh) {
                 $result = $attach->redimensionner_image($options['fileName'], $image_dest, $options['width'], $options['height'], $options['mode']);
                 if ($result != $image_dest) {
-                    // do nothing : error
                     return $basePath . $options['fileName'];
                 }
 

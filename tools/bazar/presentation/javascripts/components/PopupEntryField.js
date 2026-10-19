@@ -86,7 +86,7 @@ export default {
     <img
       v-else-if="type == 'image' && value" class="popup-visual" 
       v-bind="$attrs"
-      :src="$root.urlImage(entry,prop,imagewidth,imageheight,imagemethod)"
+      :src="$root.urlImage(entry,prop,imagewidth,imageheight,imagemethod,imagetoken)"
       @error="$root.urlImageResizedOnError(entry,prop,imagewidth,imageheight,imagemethod,imagetoken)">
     </img>
     <div v-else-if="displayLabel && displayOnOneLine && value" v-bind="$attrs">

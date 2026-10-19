@@ -55,7 +55,7 @@
               alt=""
               class="area visual-area"
               :style="{'object-fit': 'contain'}"
-              :src="urlImage(entry,'visual',{{ imWidth }},{{ imHeight }},'fit')"
+              :src="urlImage(entry,'visual',{{ imWidth }},{{ imHeight }},'fit',{{ fitToken|json_encode }})"
               @error="urlImageResizedOnError(entry,'visual',{{ imWidth }},{{ imHeight }},'fit',{{ fitToken|json_encode }})">
           {% else %}
             <img
@@ -63,7 +63,7 @@
               alt=""
               class="area visual-area"
               :style="{'object-fit': 'cover'}"
-              :src="urlImage(entry,'visual',{{ imWidth }},{{ imHeight }},'crop')"
+              :src="urlImage(entry,'visual',{{ imWidth }},{{ imHeight }},'crop',{{ cropToken|json_encode }})"
               @error="urlImageResizedOnError(entry,'visual',{{ imWidth }},{{ imHeight }},'crop',{{ cropToken|json_encode }})">
           {% endif %}
 

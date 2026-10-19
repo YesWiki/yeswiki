@@ -150,3 +150,6 @@ services:
   # Allows to use controllers as services
   YesWiki\Attach\Controller\:
     resource: 'controllers/*'
+
+  YesWiki\Attach\Service\:
+    resource: 'services/*'

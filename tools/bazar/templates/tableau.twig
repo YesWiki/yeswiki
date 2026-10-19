@@ -87,7 +87,7 @@ pour différencier les différents tableaux table_1 table_2 #}
                 {% set size = 100 %}
                 {% set width = size*3//2 %}
                 <div class="tableau-thumbnail" style="width:{{ width }}px;height:{{ size }}px">
-                  <img loading="lazy" src="{{ urlImage({fileName:"files/#{val}",width:width,height:size,mode:"fit"})}}"/>
+                  <img loading="lazy" src="{{ urlImage({fileName:val matches '#^(https?:)?//#i' ? val : "files/#{val}",width:width,height:size,mode:"fit"})}}"/>
                 </div>
               {% else %}
                 {{ val|nl2br }}
