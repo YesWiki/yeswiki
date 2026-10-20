@@ -152,7 +152,7 @@
         </a>
         <a
           class="btn btn-danger btn-xs"
-          href="{{ url({ params: { vue: 'abonnements', action: 'remove', actor: actorUri, type: 'following', idformulaire: form.bn_id_nature }}) }}"
+          href="{{ signedUrl(url({ params: { vue: 'abonnements', action: 'remove', actor: actorUri, type: 'following', idformulaire: form.bn_id_nature }})) }}"
           onclick="javascript:return confirm('{{ _t('BAZ_CONFIRM_SUPPRIMER_ABONNEMENT') }} ?');"
         >
           <i class="fa fa-trash icon-white"></i>
@@ -169,7 +169,7 @@
       <td>
         <a
           class="btn btn-danger btn-xs"
-          href="{{ url({ params: { vue: 'abonnements', action: 'remove', actor: actorUri, type: 'following', idformulaire: form.bn_id_nature }}) }}"
+          href="{{ signedUrl(url({ params: { vue: 'abonnements', action: 'remove', actor: actorUri, type: 'following', idformulaire: form.bn_id_nature }})) }}"
           onclick="javascript:return confirm('{{ _t('BAZ_CONFIRM_SUPPRIMER_ABONNEMENT') }} ?');"
         >
           <i class="fa fa-trash icon-white"></i>
@@ -198,7 +198,7 @@
         </form>
         <a
           class="btn btn-danger btn-xs"
-          href="{{ url({ params: { vue: 'abonnements', action: 'remove', actor: actorUri, type: 'followers', idformulaire: form.bn_id_nature }}) }}"
+          href="{{ signedUrl(url({ params: { vue: 'abonnements', action: 'remove', actor: actorUri, type: 'followers', idformulaire: form.bn_id_nature }})) }}"
           onclick="javascript:return confirm('{{ _t('BAZ_ACTIVITYPUB_CONFIRM_REFUSE') }}');"
         >{{ _t('BAZ_ACTIVITYPUB_REFUSE') }}</a>
       </td>
@@ -225,7 +225,7 @@
         {% if actorUri not in following %}
         <a
           class="btn btn-default btn-mini btn-xs"
-          href="{{ url({ params: { vue: 'abonnements', action: 'add', actor: actorUri, type: 'following', idformulaire: form.bn_id_nature }}) }}"
+          href="{{ signedUrl(url({ params: { vue: 'abonnements', action: 'add', actor: actorUri, type: 'following', idformulaire: form.bn_id_nature }})) }}"
           title="{{ _t('BAZ_FOLLOW_BACK') }}"
         >
           <i class="fa fa-user-plus icon-white"></i>
@@ -233,7 +233,7 @@
         {% endif %}
         <a
           class="btn btn-danger btn-xs"
-          href="{{ url({ params: { vue: 'abonnements', action: 'remove', actor: actorUri, type: 'followers', idformulaire: form.bn_id_nature }}) }}"
+          href="{{ signedUrl(url({ params: { vue: 'abonnements', action: 'remove', actor: actorUri, type: 'followers', idformulaire: form.bn_id_nature }})) }}"
           onclick="javascript:return confirm('{{ _t('BAZ_CONFIRM_SUPPRIMER_ABONNE') }} ?');"
         >
           <i class="fa fa-trash icon-white"></i>

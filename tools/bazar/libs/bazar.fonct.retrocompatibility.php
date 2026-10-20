@@ -9,6 +9,7 @@ use YesWiki\Bazar\Service\FormManager;
 use YesWiki\Bazar\Service\Guard;
 use YesWiki\Bazar\Service\ListManager;
 use YesWiki\Bazar\Service\SearchManager;
+use YesWiki\Core\Service\RequestGuard;
 use YesWiki\Core\Service\TemplateEngine;
 
 /**
@@ -196,6 +197,10 @@ function baz_gestion_listes()
     } elseif ($_GET['action'] == BAZ_ACTION_NOUVELLE_LISTE) {
         return $GLOBALS['wiki']->services->get(ListController::class)->create();
     } elseif ($_GET['action'] == BAZ_ACTION_SUPPRIMER_LISTE) {
+        if (!$GLOBALS['wiki']->services->get(RequestGuard::class)->linkIsSigned($GLOBALS['wiki']->request)) {
+            return '<div class="alert alert-danger">' . _t('CSRF_TOKEN_FAIL_ERROR') . '</div>';
+        }
+
         return $GLOBALS['wiki']->services->get(ListController::class)->delete($_GET['idliste']);
     }
 

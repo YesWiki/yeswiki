@@ -312,9 +312,9 @@ class AuthController extends YesWikiController
         setcookie($name, '', [
             'path' => $this->wiki->CookiePath,
             'domain' => '',
-            'secure' => $this->getRequest()->isSecure(),
+            'secure' => $this->getRequest()->isSecure() || session_get_cookie_params()['secure'],
             'httponly' => true,
-            'samesite' => 'Lax',
+            'samesite' => session_get_cookie_params()['samesite'] ?: 'Lax',
             'expires' => time() - 3600,
         ]);
         if ($this->getRequest()->cookies->has($name)) {

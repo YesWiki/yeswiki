@@ -13,6 +13,7 @@ use YesWiki\Bazar\Service\FormManager;
 use YesWiki\Bazar\Service\Guard;
 use YesWiki\Bazar\Service\WebfingerService;
 use YesWiki\Core\Controller\CsrfTokenController;
+use YesWiki\Core\Service\RequestGuard;
 use YesWiki\Core\YesWikiController;
 use YesWiki\Security\Controller\SecurityController;
 
@@ -200,6 +201,9 @@ class FormController extends YesWikiController
     public function clone($id)
     {
         if ($this->getService(Guard::class)->isAllowed('saisie_formulaire')) {
+            if (!$this->linkIsSigned()) {
+                return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'formulaire'], false));
+            }
             $this->formManager->clone($id);
 
             return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'formulaire', 'msg' => 'BAZ_FORM_CLONED'], false));
@@ -334,7 +338,7 @@ class FormController extends YesWikiController
 
     public function addFollowing($id, $actorUri)
     {
-        if ($this->refusesChanges()) {
+        if ($this->refusesChanges() || !$this->linkIsSigned()) {
             return $this->redirectToActivityPub($id, 'following');
         }
         try {
@@ -350,7 +354,7 @@ class FormController extends YesWikiController
 
     public function removeFollowing($id, $actorUri)
     {
-        if ($this->refusesChanges()) {
+        if ($this->refusesChanges() || !$this->linkIsSigned()) {
             return $this->redirectToActivityPub($id, 'following');
         }
         try {
@@ -408,7 +412,7 @@ class FormController extends YesWikiController
      */
     public function removeFollower($id, $actorUri)
     {
-        if ($this->refusesChanges()) {
+        if ($this->refusesChanges() || !$this->linkIsSigned()) {
             return $this->redirectToActivityPub($id, 'followers');
         }
         try {
@@ -418,6 +422,19 @@ class FormController extends YesWikiController
         }
 
         return $this->redirectToActivityPub($id, 'followers', 'BAZ_FOLLOWER_REMOVED');
+    }
+
+    /**
+     * Whether the link that triggered a change carries the session's token, flashing the refusal when it does not.
+     */
+    private function linkIsSigned(): bool
+    {
+        if ($this->getService(RequestGuard::class)->linkIsSigned($this->getRequest())) {
+            return true;
+        }
+        Flash::error(_t('CSRF_TOKEN_FAIL_ERROR'));
+
+        return false;
     }
 
     private function getGroupsListIfEnabled(): ?array

@@ -580,6 +580,7 @@ return [
     'INCORRECT_ROOT_PAGE_NAME' => 'The name of the home page must only contain unaccented letters, numbers, \'_\', \'-\' or \'.\'',
     'EDIT_CONFIG_HINT_DEFAULT_COMMENT_AVATAR' => 'Default avatar image for comments (URL to image)',
     'CSRF_TOKEN_FAIL_ERROR' => 'This page may have been opened a second time. Please repeat the request from this window (the internal security token was not good).',
+    'CROSS_SITE_REQUEST_REFUSED' => 'This request came from another site and was refused to protect your account. Please do it again from a page of this wiki.',
     'BOT_GUARD_ACTIVE' => 'Anti-bot protection active',
     'BOT_GUARD_REFUSED' => 'The submission could not be verified, please try again.',
     'BOT_GUARD_NO_SECRET' => 'Anonymous forms are refused: wakka.config.php is not writable and the wiki cannot store its bot_guard_secret key there. Make it writable or add the key by hand.',

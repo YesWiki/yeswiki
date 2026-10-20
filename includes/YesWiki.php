@@ -40,6 +40,7 @@ use YesWiki\Core\Service\DbService;
 use YesWiki\Core\Service\LinkTracker;
 use YesWiki\Core\Service\PageManager;
 use YesWiki\Core\Service\Performer;
+use YesWiki\Core\Service\RequestGuard;
 use YesWiki\Core\Service\TemplateEngine;
 use YesWiki\Core\Service\ThemeManager;
 use YesWiki\Core\Service\TripleStore;
@@ -1151,6 +1152,9 @@ class Wiki
         }
 
         $this->services->get(AuthController::class)->connectUser();
+        if ($this->refuseForgedRequest($tag)) {
+            return;
+        }
 
         if (in_array($tag, ['api', 'doc'])) {
             $this->RunSpecialPages();
@@ -1159,7 +1163,7 @@ class Wiki
             $this->LogReferrer();
 
             try {
-                echo $this->Method($this->method);
+                echo $this->services->get(RequestGuard::class)->arm($this->Method($this->method), $this->request);
             } catch (ExitException $th) {
                 if (!$this->isCli()) {
                     if (!empty($_SESSION['redirects'])) {
@@ -1173,6 +1177,23 @@ class Wiki
                 unset($_SESSION['redirects']);
             }
         }
+    }
+
+    /**
+     * Answers 403 and returns true when another site sent a request that would change something.
+     */
+    private function refuseForgedRequest(string $tag): bool
+    {
+        $refusal = $this->services->get(RequestGuard::class)->refusal($this->request);
+        if ($refusal === null) {
+            return false;
+        }
+        $response = in_array($tag, ['api', 'doc'])
+            ? new ApiResponse(['error' => $refusal], Response::HTTP_FORBIDDEN)
+            : new Response(htmlspecialchars($refusal), Response::HTTP_FORBIDDEN);
+        $response->send();
+
+        return true;
     }
 
     private function RunSpecialPages()

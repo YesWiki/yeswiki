@@ -231,6 +231,7 @@ return [
     'NO_PAGE_TO_CREATE' => 'Aucune page à créer',
     'NO_CSRF_TOKEN_ERROR' => 'Erreur de conception du site : Le formulaire de soumission ne contenait pas le jeton d\'identification unique nécessaire aux mécanismes internes de sécurité.',
     'CSRF_TOKEN_FAIL_ERROR' => 'Cette page a peut-être été ouverte une seconde fois. Veuillez renouveler la demande depuis cette fenêtre (le jeton interne de sécurité n\'était pas bon).',
+    'CROSS_SITE_REQUEST_REFUSED' => 'Cette demande vient d\'un autre site : elle a été refusée pour protéger votre compte. Refaites-la depuis une page de ce wiki.',
     'BOT_GUARD_ACTIVE' => 'Protection anti-robot active',
     'BOT_GUARD_REFUSED' => 'L\'envoi n\'a pas pu être vérifié, merci de réessayer.',
     'BOT_GUARD_NO_SECRET' => 'Les formulaires anonymes sont refusés : le fichier wakka.config.php n\'est pas inscriptible et le wiki ne peut pas y enregistrer sa clé bot_guard_secret. Rendez-le inscriptible ou ajoutez la clé à la main.',

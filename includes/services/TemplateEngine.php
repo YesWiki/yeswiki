@@ -166,6 +166,11 @@ class TemplateEngine
             }
             throw new \Exception('`$tokenId` should be a string or an array !');
         });
+        $this->addTwigHelper('signedUrl', function (string $url) {
+            $glue = str_contains($url, '?') ? '&' : '?';
+
+            return $url . $glue . RequestGuard::FIELD . '=' . rawurlencode($this->csrfTokenManager->getToken(RequestGuard::TOKEN_ID)->getValue());
+        });
         $this->addTwigHelper('urlImage', function ($options) {
             if (!isset($options['fileName'])) {
                 throw new \Exception('`urlImage` should be called with `fileName` key in params!');

@@ -5,6 +5,7 @@ use Tamtamchik\SimpleFlash\Flash;
 use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Bazar\Service\SearchManager;
 use YesWiki\Core\Service\ExecutableFilename;
+use YesWiki\Core\Service\RequestGuard;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Syndication\Service\SafeFile;
 
@@ -66,9 +67,10 @@ class SyndicationAction extends YesWikiAction
 
     public function run(): ?string
     {
+        $refusal = '';
         $mappingToBazar = !empty($this->arguments['mapping']) && $this->wiki->userIsAdmin();
         if ($mappingToBazar) {
-            $this->addToBazar();
+            $refusal = $this->addToBazar();
             if (empty($this->arguments['mapping']['id'])) {
                 return '<div class="alert alert-danger">' . _t('ERROR') . ' ' . _t('SYNDICATION_MAPPING_ID_REQUIRED') . ', ex: id=1400,title=bf_titre,url=bf_url,description=bf_description,image=imagebf_image,categories=bf_tags.</div>';
             }
@@ -88,7 +90,6 @@ class SyndicationAction extends YesWikiAction
                     try {
                         $feed->init();
                     } catch (Throwable $error) {
-                        // one unreachable feed must not hide the others
                         $errors[] = htmlspecialchars($error->getMessage());
                         $nburl++;
                         continue;
@@ -223,7 +224,7 @@ class SyndicationAction extends YesWikiAction
                 $title = $this->arguments['title'];
             }
 
-            $errorsHtml = '';
+            $errorsHtml = $refusal;
             foreach ($errors as $error) {
                 $errorsHtml .= '<div class="alert alert-danger">' . _t('ERROR') . ' ' . $error . '</div>' . "\n";
             }
@@ -243,7 +244,7 @@ class SyndicationAction extends YesWikiAction
             '</div>' . "\n";
         }
 
-        return '<div class="alert alert-danger"><strong>' . _t('SYNDICATION_ACTION_SYNDICATION') . '</strong> : '
+        return $refusal . '<div class="alert alert-danger"><strong>' . _t('SYNDICATION_ACTION_SYNDICATION') . '</strong> : '
         . _t('SYNDICATION_PARAM_URL_REQUIRED') . '.</div>' . "\n";
     }
 
@@ -293,10 +294,16 @@ class SyndicationAction extends YesWikiAction
         return $destFile;
     }
 
-    protected function addToBazar(): void
+    /**
+     * Copies the feed item given in the URL into a bazar entry, or returns the error that stopped it.
+     */
+    protected function addToBazar(): string
     {
         $mapping = $this->getRequest()->query->get('mapping');
         if (!empty($mapping)) {
+            if (!$this->getService(RequestGuard::class)->linkIsSigned($this->getRequest())) {
+                return '<div class="alert alert-danger">' . _t('ERROR') . ' ' . _t('CSRF_TOKEN_FAIL_ERROR') . '</div>' . "\n";
+            }
             $data = json_decode(urldecode($mapping), true);
             if (!empty($data)) {
                 $entryManager = $this->getService(EntryManager::class);
@@ -305,5 +312,7 @@ class SyndicationAction extends YesWikiAction
                 $this->wiki->redirect($this->wiki->href());
             }
         }
+
+        return '';
     }
 }

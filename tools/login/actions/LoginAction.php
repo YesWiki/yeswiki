@@ -4,7 +4,9 @@ namespace YesWiki\Login;
 
 use Tamtamchik\SimpleFlash\Flash;
 use YesWiki\Core\Controller\AuthController;
+use YesWiki\Core\Exception\ExitException;
 use YesWiki\Core\Service\PageManager;
+use YesWiki\Core\Service\RequestGuard;
 use YesWiki\Core\Service\TemplateEngine;
 use YesWiki\Core\Service\UserManager;
 use YesWiki\Core\YesWikiAction;
@@ -28,8 +30,6 @@ class LoginAction extends YesWikiAction
         $this->templateEngine = $this->getService(TemplateEngine::class);
 
         return [
-            // as there can be multiple login actions in one page, we can add a context so that the good action is used
-            // we also add a default value with the pageTag if no context provided, assuming there will never be 2 times the login action in the same page.
             'context' => $arg['context'] ?? $this->wiki->tag,
             'signupurl' => $noSignupButton ? '0' : (
                 $this->wiki->generateLink($arg['signupurl'] ?? $this->wiki->GetConfigValue('signupUrl', 'ParametresUtilisateur'))
@@ -66,7 +66,6 @@ class LoginAction extends YesWikiAction
                 ),
 
             'lostpasswordurl' => !boolval($this->params->get('contact_disable_email_for_password')) ? (!empty($arg['lostpasswordurl']) ? $this->wiki->generateLink($arg['lostpasswordurl']) :
-            // TODO : check page name for other languages
             $this->wiki->Href('', 'MotDePassePerdu')) : '',
 
             'class' => !empty($arg['class']) ? $arg['class'] : '',
@@ -82,7 +81,6 @@ class LoginAction extends YesWikiAction
 
     public function run()
     {
-        // get services
         $this->authController = $this->getService(AuthController::class);
         $this->pageManager = $this->getService(PageManager::class);
         $this->securityController = $this->getService(SecurityController::class);
@@ -91,7 +89,6 @@ class LoginAction extends YesWikiAction
         $action = $this->getRequest()->get('action', '');
         $vContext = $this->getRequest()->get('context', $this->wiki->tag);
         if ($vContext !== $this->arguments['context']) {
-            // no action if not in the good context
             $action = '';
         }
         switch ($action) {
@@ -99,8 +96,12 @@ class LoginAction extends YesWikiAction
                 $this->logout();
                 break;
             case 'login':
-                $this->login();
-                break;
+                if ($this->getRequest()->isMethod('POST')) {
+                    $this->login();
+                    break;
+                }
+
+                return $this->renderForm('');
 
             case 'checklogged':
             default:
@@ -136,7 +137,7 @@ class LoginAction extends YesWikiAction
             parse_str($urlParts['query'], $queryParams);
         }
 
-        unset($queryParams['context']);
+        unset($queryParams['context'], $queryParams[RequestGuard::FIELD]);
 
         $newQuery = http_build_query($queryParams);
         $clean = ($urlParts['path'] ?? '') . ($newQuery !== '' ? '?' . $newQuery : '');
@@ -192,25 +193,17 @@ class LoginAction extends YesWikiAction
         try {
             $post = $this->getRequest()->request;
             $emailFallback = $post->get('email', '');
-            // First, try to find a user by name
             if (!empty($post->get('name'))) {
-                // No need to filter the name, it will be escaped in the request to the database.
-                // It can be possible to filter the name with the regex PATTERN_USER_NAME in UserManager, but if this regex changes,
-                // existing users will be unable to login. So just let the database check if the user is here.
                 $name = $post->get('name');
 
                 $user = $this->userManager->getOneByName($name);
 
-                // TODO Strange, but the code allow an email to be pass in $_POST['name'] instead of $_POST['email']
-                // So if we don't find the user by name, it can be because it is an email instead of a username
                 if (empty($user) && empty($emailFallback)) {
                     $emailFallback = $post->get('name');
                 }
             }
 
-            // Then, try to find a user by email
             if (empty($user) && !empty($emailFallback)) {
-                // No need to filter the email, it will be escaped in the request to the database.
                 $email = $emailFallback;
 
                 if (filter_var($email, FILTER_VALIDATE_EMAIL)) {
@@ -218,7 +211,6 @@ class LoginAction extends YesWikiAction
                 }
             }
 
-            // Stop here if we don't have a user
             if (empty($user)) {
                 throw new LoginException(_t('LOGIN_WRONG_USER'));
             }
@@ -230,18 +222,17 @@ class LoginAction extends YesWikiAction
             $remember = $this->securityController->filterInput(INPUT_POST, 'remember', FILTER_VALIDATE_BOOL, false, 'bool');
             $this->authController->login($user, $remember);
 
-            // si l'on veut utiliser la page d'accueil correspondant au nom d'utilisateur
             if ((($post->get('userpage') == 'user') || $this->arguments['userpage'] == 'user') && $this->pageManager->getOne($user['name'])) {
                 $this->wiki->Redirect($this->wiki->Href('', $user['name']));
             } else {
                 $this->wiki->Redirect($this->arguments['loggedinurl']);
             }
         } catch (LoginException $ex) {
-            // on affiche une erreur sur le NomWiki sinon
             $this->wiki->SetMessage($ex->getMessage());
             $this->wiki->Redirect($incomingurl);
-        } catch (Exception $ex) {
-            // error error
+        } catch (ExitException $exit) {
+            throw $exit;
+        } catch (\Exception $ex) {
             Flash::error($ex->getMessage());
             $this->wiki->Redirect($incomingurl);
         }
@@ -249,8 +240,12 @@ class LoginAction extends YesWikiAction
 
     private function logout()
     {
-        $this->authController->logout();
-        $this->wiki->SetMessage(_t('LOGIN_YOU_ARE_NOW_DISCONNECTED'));
+        if ($this->getService(RequestGuard::class)->linkIsSigned($this->getRequest())) {
+            $this->authController->logout();
+            $this->wiki->SetMessage(_t('LOGIN_YOU_ARE_NOW_DISCONNECTED'));
+        } else {
+            $this->wiki->SetMessage(_t('CSRF_TOKEN_FAIL_ERROR'));
+        }
         $this->wiki->Redirect(preg_replace('/(&|\\\?)$/m', '', preg_replace('/(&|\\\?)action=logout(&)?/', '$1', $this->arguments['loggedouturl'])));
         $this->wiki->exit();
     }
