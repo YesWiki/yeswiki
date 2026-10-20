@@ -16,9 +16,9 @@
   "bf_code_postal": {{ address.postalCode | default("") | json_encode }},
   "bf_ville": {{ address.addressLocality | default("") | json_encode }},
   "imagebf_image": {{ (banner ? banner.url | default(banner.href | default("")) : "") | json_encode }},
-  "geolocation": {
-    "bf_latitude": {{ place.latitude | default("") | json_encode }},
-    "bf_longitude": {{ place.longitude | default("") | json_encode }}
+  "bf_latitude": {
+    "latitude": {{ (place.latitude | default("") ~ "") | json_encode }},
+    "longitude": {{ (place.longitude | default("") ~ "") | json_encode }}
   },
   "date_creation_fiche": {{ (published ? published | date("Y-m-d H:i:s") : null) | json_encode }},
   "date_maj_fiche": {{ ((updated ?: published) ? (updated ?: published) | date("Y-m-d H:i:s") : null) | json_encode }}

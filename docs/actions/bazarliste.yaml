@@ -218,6 +218,7 @@ actions:
         btn-label-add: _t(AB_bazar_query_btn-label-add)
       origin:
         label: _t(AB_bazar_commons2_origin_label)
+        hint: _t(AB_bazar_commons2_origin_hint)
         type: list
         default: all
         options:

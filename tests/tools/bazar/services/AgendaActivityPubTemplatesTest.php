@@ -48,8 +48,7 @@ class AgendaActivityPubTemplatesTest extends YesWikiTestCase
             'bf_adresse' => '1 place de la Bourse',
             'bf_code_postal' => '33000',
             'bf_ville' => 'Bordeaux',
-            'bf_latitude' => '44.841225',
-            'bf_longitude' => '-0.5800364',
+            'bf_latitude' => ['latitude' => '44.841225', 'longitude' => '-0.5800364', 'geometries' => ''],
             'imagebf_image' => 'Bordeaux_affiche.png',
             'date_creation_fiche' => '2024-03-01 10:00:00',
             'date_maj_fiche' => '2024-03-02 11:00:00',
@@ -100,6 +99,21 @@ class AgendaActivityPubTemplatesTest extends YesWikiTestCase
         $this->assertSame(44.841225, $location['latitude']);
         $this->assertSame(-0.5800364, $location['longitude']);
         $this->assertSame('33000', $location['address']['postalCode']);
+    }
+
+    public function testCoordinatesStoredAsTwoFieldsAreStillSent()
+    {
+        $location = $this->event(['bf_latitude' => '44.841225', 'bf_longitude' => '-0.5800364'])['location'];
+
+        $this->assertSame(44.841225, $location['latitude']);
+        $this->assertSame(-0.5800364, $location['longitude']);
+    }
+
+    public function testAPlaceWithoutCoordinatesSendsNone()
+    {
+        $location = $this->event(['bf_latitude' => ['latitude' => '', 'longitude' => '', 'geometries' => '']])['location'];
+
+        $this->assertArrayNotHasKey('latitude', $location);
     }
 
     public function testAnEventWithNeitherPlaceNorImageNorWebsiteIsStillValid()
@@ -156,7 +170,7 @@ class AgendaActivityPubTemplatesTest extends YesWikiTestCase
         $this->assertSame('12 rue des Roues', $entry['bf_adresse']);
         $this->assertSame('75011', $entry['bf_code_postal']);
         $this->assertSame('Paris', $entry['bf_ville']);
-        $this->assertSame(48.8566, $entry['geolocation']['bf_latitude']);
+        $this->assertSame(['latitude' => '48.8566', 'longitude' => '2.3522'], $entry['bf_latitude']);
         $this->assertSame('2026-10-01 10:00:00', $entry['date_creation_fiche']);
         $this->assertStringContainsString('**vélo**', $entry['bf_description']);
     }

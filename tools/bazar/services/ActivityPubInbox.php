@@ -115,7 +115,7 @@ class ActivityPubInbox
             if (!$this->httpSignatureService->sameHost($verifiedActor, $object['id'])) {
                 throw new \Exception('An actor can only bring objects from its own host');
             }
-            $refusal = $this->authorRefusal($form, $verifiedActor) ?? $this->objectRefusal($form, $object);
+            $refusal = $this->authorRefusal($form, $verifiedActor, $object) ?? $this->objectRefusal($form, $object);
             if ($refusal !== null) {
                 return $refusal;
             }
@@ -143,15 +143,37 @@ class ActivityPubInbox
     }
 
     /**
-     * Why the form will not publish what this actor sends: by default only the accounts it follows are published.
+     * Why the form will not publish what this actor sends: by default only what a followed account signs, or attributes to a followed account on its own host, as a Mobilizon organizer does for its group.
      */
-    protected function authorRefusal(array $form, string $actorUri): ?string
+    protected function authorRefusal(array $form, string $actorUri, array $object): ?string
     {
-        if ($this->activityPubService->profile($form)['accept_unfollowed'] || in_array($actorUri, $this->activityPubService->getFollowing($form), true)) {
+        if ($this->activityPubService->profile($form)['accept_unfollowed']) {
             return null;
+        }
+        $following = $this->activityPubService->getFollowing($form);
+        if (in_array($actorUri, $following, true)) {
+            return null;
+        }
+        foreach ($this->attributedTo($object) as $author) {
+            if (in_array($author, $following, true) && $this->httpSignatureService->sameHost($actorUri, $author)) {
+                return null;
+            }
         }
 
         return 'This form does not follow ' . $actorUri;
+    }
+
+    /**
+     * The actor ids an object is attributed to, whether given as a string, an object or a list of either.
+     *
+     * @return string[]
+     */
+    private function attributedTo(array $object): array
+    {
+        $authors = $object['attributedTo'] ?? [];
+        $authors = is_array($authors) && !array_is_list($authors) ? [$authors] : (array)$authors;
+
+        return array_values(array_filter(array_map(fn ($author) => is_array($author) ? ($author['id'] ?? null) : $author, $authors), 'is_string'));
     }
 
     /**

@@ -321,6 +321,29 @@ class ActivityPubInboxTest extends TestCase
         $this->assertCount(2, $this->created);
     }
 
+    public function testAnEventAttributedToAFollowedGroupIsPublishedWhenItsOrganizerSignsIt()
+    {
+        $this->profile = self::STRICT;
+        $group = 'https://them.example/@collectif';
+        $this->follow($group);
+
+        $this->assertNull($this->create(['attributedTo' => $group] + self::PUBLIC_NOTE));
+        $this->assertNull($this->create(['id' => 'https://them.example/notes/2', 'attributedTo' => [['type' => 'Group', 'id' => $group]]] + self::PUBLIC_NOTE));
+
+        $this->assertCount(2, $this->created);
+    }
+
+    public function testAnotherHostCannotPublishInTheNameOfAFollowedGroup()
+    {
+        $this->profile = self::STRICT;
+        $this->follow('https://them.example/@collectif');
+
+        $leftOut = $this->create(['id' => 'https://attacker.example/notes/1', 'attributedTo' => 'https://them.example/@collectif', 'to' => [ActivityPubService::PUBLIC]], 'https://attacker.example/actors/1');
+
+        $this->assertSame([], $this->created);
+        $this->assertStringContainsString('does not follow', $leftOut);
+    }
+
     public static function leftOutByDefault(): array
     {
         return [
