@@ -116,6 +116,24 @@ class PresentationRendererTest extends YesWikiTestCase
     /**
      * The same presentation is written `card` in page content and `card.twig` in a config, and `tableau.tpl.html` in bodies old enough to predate the Twig move.
      */
+    /** The title and the button open the entry where the list was told to: here, in a pop-up, or in a new tab. */
+    public function testTheEntryOpensWhereTheListSays(): void
+    {
+        $item = [new Item(id: 'x', title: 'Une fiche', url: 'https://example.test/?UneFiche', ctaUrl: 'https://example.test/?UneFiche', ctaLabel: 'Voir la fiche')];
+
+        $direct = self::renderer()->render('card', $item);
+        $this->assertStringNotContainsString('modalbox', $direct);
+        $this->assertStringNotContainsString('target=', $direct);
+
+        $modal = self::renderer()->render('card', $item, ['entrydisplay' => 'modal']);
+        $this->assertSame(2, substr_count($modal, 'modalbox'), 'both the title and the button open the pop-up');
+        $this->assertStringContainsString('title="Une fiche"', $modal);
+
+        $newTab = self::renderer()->render('list', $item, ['entrydisplay' => 'newtab']);
+        $this->assertStringContainsString('target="_blank" rel="noopener"', $newTab);
+        $this->assertStringNotContainsString('modalbox', $newTab);
+    }
+
     public function testATemplateIsKnownWhateverItIsWrittenAs(): void
     {
         $this->assertTrue(PresentationRenderer::knows('card'));

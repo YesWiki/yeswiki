@@ -290,12 +290,13 @@ test('the card settings are laid out in pairs, with nothing hidden', async ({
       .map((top) => byTop[top].join(' | '))
   })
 
-  expect(rows.slice(0, 9)).toEqual([
+  expect(rows.slice(0, 10)).toEqual([
     'Ce qui est listé | Choisissez un formulaire',
     'Zone de titre | Zone de sous titre',
     'Zone visuelle | Zone de texte',
     'Zone flottante | Zone de pied de bloc',
     "Bouton d'action | Zone de date",
+    'Lors du clic, afficher la fiche',
     "Colonnes | Cadrage de l'image",
     'Nombre de fiches par page | Limitation',
     'Trier sur le champ | Ordre',
@@ -326,6 +327,39 @@ test('a card can carry a button to the entry', async ({ page }, testInfo) => {
       message: 'the choice rides in displayfields',
     })
     .toContain('cta=edit')
+
+  await attachConsole(watcher, testInfo)
+  expect(watcher.errors(), 'the browser reported errors').toEqual([])
+})
+
+/** Where a list opens its entries belongs to the `entrylist` source, so a feed does not offer it. */
+test('a list of cards can be told to open its entries in a pop-up', async ({
+  page,
+}, testInfo) => {
+  const watcher = watchConsole(page)
+  await login(page, ADMIN_USERNAME, ADMIN_PASSWORD)
+  await openEditorWith(page, '{{entrylist id="2" template="card"}}')
+  await components(page).first().click()
+  await expect(page.locator(SETTINGS)).toBeVisible()
+
+  const opening = page
+    .locator(`${PANEL} .yw-form-group`, {
+      hasText: 'Lors du clic, afficher la fiche',
+    })
+    .locator('select')
+  await expect(opening).toBeVisible()
+  await opening.selectOption('modal')
+  await expect
+    .poll(() => editorText(page), {
+      message: 'the choice is written into the tag',
+    })
+    .toContain('entrydisplay="modal"')
+
+  await page
+    .locator(`${PANEL} .yw-form-group.list select`)
+    .first()
+    .selectOption('syndication')
+  await expect(opening).toBeHidden()
 
   await attachConsole(watcher, testInfo)
   expect(watcher.errors(), 'the browser reported errors').toEqual([])

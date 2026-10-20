@@ -11,7 +11,7 @@
       {{ slot.image(item, item.title, 192) }}
       <div class="yw-item__body">
         {{ slot.badge(item) }}
-        {{ slot.title(item) }}
+        {{ slot.title(item, params) }}
         {{ slot.meta(item) }}
         {% if item.description %}<div class="yw-item__description">{{ item.description|raw }}</div>{% endif %}
         {{ slot.footer(item) }}

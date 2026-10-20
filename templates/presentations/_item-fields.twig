@@ -28,17 +28,21 @@
   {% endif %}
 {% endmacro %}
 
-{% macro title(item) %}
+{% macro opening(params, title) %}
+  {%- if params.entrydisplay|default('') == 'modal' %} data-size="modal-lg" title="{{ title }}"{% elseif params.entrydisplay|default('') == 'newtab' %} target="_blank" rel="noopener"{% endif -%}
+{% endmacro %}
+
+{% macro title(item, params) %}
   {% if item.url %}
-    <a class="yw-item__title" href="{{ item.url }}">{{ item.title }}</a>
+    <a class="yw-item__title{{ params.entrydisplay|default('') == 'modal' ? ' modalbox' : '' }}" href="{{ item.url }}"{{ _self.opening(params, item.title) }}>{{ item.title }}</a>
   {% else %}
     <span class="yw-item__title">{{ item.title }}</span>
   {% endif %}
 {% endmacro %}
 
-{% macro cta(item) %}
+{% macro cta(item, params) %}
   {% if item.ctaUrl %}
-    <a class="yw-item__cta yw-btn yw-btn--sm yw-btn--primary" href="{{ item.ctaUrl }}">{{ item.ctaLabel }}</a>
+    <a class="yw-item__cta yw-btn yw-btn--sm yw-btn--primary{{ params.entrydisplay|default('') == 'modal' ? ' modalbox' : '' }}" href="{{ item.ctaUrl }}"{{ _self.opening(params, item.title) }}>{{ item.ctaLabel }}</a>
   {% endif %}
 {% endmacro %}
 

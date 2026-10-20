@@ -20,10 +20,10 @@
       {% endif %}
       <div class="yw-item__body">
         {% if not item.image %}{{ slot.badge(item) }}{% endif %}
-        {{ slot.title(item) }}
+        {{ slot.title(item, params) }}
         {{ slot.meta(item) }}
         {% if item.description %}<div class="yw-item__description">{{ item.description|raw }}</div>{% endif %}
-        {{ slot.cta(item) }}
+        {{ slot.cta(item, params) }}
       </div>
       {{ slot.footer(item) }}
     </article>

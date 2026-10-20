@@ -9,6 +9,10 @@
   document.addEventListener('htmx:confirm', (event) => {
     const link = event.detail.elt
     if (!link || link.tagName !== 'A') return
+    if (link.matches('a.modalbox, a.modal, .modalbox a')) {
+      event.preventDefault()
+      return
+    }
     const href = link.getAttribute('href') || ''
     if (NON_PAGE.test(href) || FILE_PATH.test(href)) {
       event.preventDefault()

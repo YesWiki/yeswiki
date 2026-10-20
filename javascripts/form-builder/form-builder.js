@@ -503,6 +503,11 @@ function neutralizePreview(holder, fieldId) {
         control.addEventListener(type, (event) => event.stopPropagation()),
       )
     })
+  holder
+    .querySelectorAll('.chk_required, .radio_required, .geocode-input.required')
+    .forEach((group) =>
+      group.classList.remove('chk_required', 'radio_required', 'required'),
+    )
 
   const prefix = `${fieldId}__`
   holder.querySelectorAll('[id]').forEach((node) => {

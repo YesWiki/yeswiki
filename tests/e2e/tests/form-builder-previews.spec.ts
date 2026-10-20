@@ -166,3 +166,29 @@ test('a field with nothing to show says so instead of spinning', async ({
   await attachConsole(watcher, testInfo)
   expect(watcher.errors()).toEqual([])
 })
+
+/** A required field's preview is not a field of the form being designed, so it cannot hold up saving it. */
+test('a form with required checkbox, radio and map fields saves', async ({
+  page,
+}) => {
+  const alerts: string[] = []
+  page.on('dialog', async (dialog) => {
+    alerts.push(dialog.message())
+    await dialog.dismiss()
+  })
+  await openDesigner(page)
+  await page.locator('#bazar-form-editor input[name="label"]').fill('Requis')
+
+  for (const type of ['checkbox-group', 'radio-group', 'map']) {
+    await addField(page, type)
+    await page
+      .locator('[data-fb-attribute="required"] select')
+      .selectOption('1')
+  }
+  await previewsSettled(page)
+
+  await page.locator('#bazar-form-editor button[name="valider"]').click()
+
+  await expect(page.locator('#bazar-form-editor')).toHaveCount(0)
+  expect(alerts).toEqual([])
+})

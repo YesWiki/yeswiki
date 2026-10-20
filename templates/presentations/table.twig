@@ -17,7 +17,7 @@
     <tbody>
       {% for item in items %}
         <tr>
-          <td>{{ slot.badge(item) }}{{ slot.title(item) }}</td>
+          <td>{{ slot.badge(item) }}{{ slot.title(item, params) }}</td>
           {% if items|filter(i => i.subtitle)|length %}<td>{{ item.subtitle }}</td>{% endif %}
           {% if items|filter(i => i.date)|length %}
             <td>{% if item.date %}<time datetime="{{ item.date }}">{{ item.date|moment }}</time>{% endif %}</td>

@@ -371,8 +371,18 @@ a.yw-item__title:focus-visible {
 }
 
 .yw-item--card .yw-item__body {
+  display: flex;
+  flex-direction: column;
   flex-grow: 1;
   padding: var(--yw-space-md-y) var(--yw-space-md-x);
+}
+
+.yw-item--card .yw-item__cta {
+  margin-top: auto;
+}
+
+.yw-item--card .yw-item__body > :has(+ .yw-item__cta) {
+  margin-bottom: var(--yw-space-md-y);
 }
 
 .yw-item--card .yw-item__visual {

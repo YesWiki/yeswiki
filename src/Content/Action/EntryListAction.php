@@ -132,6 +132,14 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
                         ->ofTypes(['jour', 'listedatedeb', 'listedatefin'])
                         ->extraFields(['created_at', 'updated_at']),
                 ),
+            Setting::choice('entrydisplay', [
+                'direct' => _t('AB_bazarcarto_entrydisplay_option_direct'),
+                'modal' => _t('AB_bazarcarto_entrydisplay_option_modal'),
+                'newtab' => _t('AB_bazarcarto_entrydisplay_option_newtab'),
+            ])
+                ->label(_t('AB_bazarcarto_entrydisplay_label'))
+                ->default('direct')
+                ->full(),
         ];
     }
 

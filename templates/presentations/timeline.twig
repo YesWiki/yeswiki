@@ -14,7 +14,7 @@
       <div class="yw-item__body">
         {% if item.date %}<time class="yw-item__date" datetime="{{ item.date }}">{{ item.date|moment }}</time>{% endif %}
         {{ slot.badge(item) }}
-        {{ slot.title(item) }}
+        {{ slot.title(item, params) }}
         {% if item.subtitle %}<div class="yw-item__subtitle">{{ item.subtitle }}</div>{% endif %}
         {% if item.description %}<div class="yw-item__description">{{ item.description|raw }}</div>{% endif %}
         {{ slot.footer(item) }}
