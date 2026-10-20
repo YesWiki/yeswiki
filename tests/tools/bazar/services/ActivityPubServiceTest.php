@@ -280,6 +280,34 @@ class ActivityPubServiceTest extends TestCase
         $this->assertArrayNotHasKey('@context', $activity['object']);
     }
 
+    public function testFollowersAreToldWhenTheProfileChanges()
+    {
+        $this->triples[] = ['resource' => self::US . '/followers', 'property' => ActivityPubService::$AS_PREFIX . 'items', 'value' => self::THEM];
+        $this->profiles['1']['icon'] = 'https://us.example/files/avatar.png';
+        $service = $this->service();
+
+        $service->announceProfile($this->form());
+
+        $activity = $this->posted[0]['body'];
+        $actor = $service->getActor($this->form());
+        $this->assertSame('Update', $activity['type']);
+        $this->assertSame($actor['@context'], $activity['@context']);
+        $this->assertSame(self::US, $activity['object']['id']);
+        $this->assertSame('https://us.example/files/avatar.png', $activity['object']['icon']['url']);
+        $this->assertArrayNotHasKey('@context', $activity['object']);
+        $this->assertSame([ActivityPubService::PUBLIC], $activity['to']);
+    }
+
+    public function testAFormWithoutActorAnnouncesNothing()
+    {
+        $this->triples[] = ['resource' => self::US . '/followers', 'property' => ActivityPubService::$AS_PREFIX . 'items', 'value' => self::THEM];
+        $this->profiles = [];
+
+        $this->service()->announceProfile($this->form());
+
+        $this->assertSame([], $this->posted);
+    }
+
     public function testAFollowIsAcceptedAtOnceWithItsOwnId()
     {
         $service = $this->service();

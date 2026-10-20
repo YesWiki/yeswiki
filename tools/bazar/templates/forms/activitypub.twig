@@ -102,6 +102,21 @@
   </div>
 
   <div class="form-group">
+    <label class="control-label col-sm-3">{{ _t('BAZ_ACTIVITYPUB_INCOMING') }}</label>
+    <div class="col-sm-9">
+      {% for setting in ['accept_unfollowed', 'accept_non_public', 'accept_replies'] %}
+      <div class="checkbox">
+        <label>
+          <input type="checkbox" name="activitypub_{{ setting }}" value="1"{% if profile[setting] %} checked{% endif %}>
+          {{ _t('BAZ_ACTIVITYPUB_' ~ setting|upper) }}
+        </label>
+      </div>
+      {% endfor %}
+      <p class="help-block">{{ _t('BAZ_ACTIVITYPUB_INCOMING_HELP') }}</p>
+    </div>
+  </div>
+
+  <div class="form-group">
     <div class="col-sm-offset-3 col-sm-9">
       <button class="btn btn-primary" type="submit">{{ _t('BAZ_SAVE') }}</button>
       {% if profile.username is not empty %}

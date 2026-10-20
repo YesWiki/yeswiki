@@ -43,9 +43,11 @@
 
 {% import _self as blog %}
 {% if fiches|length > 0 %}
+  {% set leadFiche = withLead ? (fiches|filter(fiche => fiche.imagebf_image is not empty)|first ?: fiches|first) : null %}
+  {% set ordered = leadFiche ? [leadFiche]|merge(fiches|filter(fiche => fiche.id_fiche != leadFiche.id_fiche)) : fiches %}
   <div class="blog-entries">
-    {% for fiche in fiches %}
-      {% set isLead = withLead and loop.first %}
+    {% for fiche in ordered %}
+      {% set isLead = leadFiche and loop.first %}
       {% set summary = fiche.bf_chapeau ?? fiche.soustitre ?? '' %}
       {% set warning = fiche.bf_avertissement ?? '' %}
       <article class="blog-entry bazar-entry{{ isLead ? ' blog-entry--lead' }}{{ fiche.imagebf_image is empty ? ' blog-entry--no-media' }}{{ warning is not empty ? ' blog-entry--warned' }}" {{ fiche.html_data|raw }}>

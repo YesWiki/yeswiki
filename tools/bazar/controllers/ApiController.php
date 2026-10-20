@@ -155,7 +155,7 @@ class ApiController extends YesWikiController
             $activity = json_decode($request->getContent(), true);
 
             try {
-                $this->getService(ActivityPubInbox::class)->processActivity($activity, $form, $verifiedActor);
+                $leftOut = $this->getService(ActivityPubInbox::class)->processActivity($activity, $form, $verifiedActor);
             } catch (\Exception $e) {
                 $log->received($formId, $request, Response::HTTP_FORBIDDEN, $verifiedActor, $e->getMessage());
 
@@ -164,6 +164,11 @@ class ApiController extends YesWikiController
                 $log->received($formId, $request, Response::HTTP_INTERNAL_SERVER_ERROR, $verifiedActor, get_class($e) . ': ' . $e->getMessage());
 
                 throw $e;
+            }
+            if ($leftOut !== null) {
+                $log->received($formId, $request, Response::HTTP_ACCEPTED, $verifiedActor, $leftOut);
+
+                return new ApiResponse(null, Response::HTTP_ACCEPTED, ['Content-Type' => 'application/activity+json']);
             }
             $log->received($formId, $request, Response::HTTP_OK, $verifiedActor);
 

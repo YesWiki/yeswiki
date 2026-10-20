@@ -32,7 +32,7 @@ class ActivityPubProfiles
     /**
      * The profile of a form, with every key present.
      *
-     * @return array{username:string,summary:string,icon:string,image:string,fields:array<string,string>,approve_followers:bool}
+     * @return array{username:string,summary:string,icon:string,image:string,fields:array<string,string>,approve_followers:bool,accept_unfollowed:bool,accept_non_public:bool,accept_replies:bool}
      */
     public function get($formId): array
     {
@@ -45,6 +45,9 @@ class ActivityPubProfiles
             'image' => (string)($profile['image'] ?? ''),
             'fields' => is_array($profile['fields'] ?? null) ? array_map('strval', $profile['fields']) : [],
             'approve_followers' => !empty($profile['approve_followers']),
+            'accept_unfollowed' => !empty($profile['accept_unfollowed']),
+            'accept_non_public' => !empty($profile['accept_non_public']),
+            'accept_replies' => !empty($profile['accept_replies']),
         ];
     }
 
@@ -143,6 +146,9 @@ class ActivityPubProfiles
             'image' => $images['image'],
             'fields' => $fields,
             'approve_followers' => !empty($profile['approve_followers']),
+            'accept_unfollowed' => !empty($profile['accept_unfollowed']),
+            'accept_non_public' => !empty($profile['accept_non_public']),
+            'accept_replies' => !empty($profile['accept_replies']),
         ];
     }
 

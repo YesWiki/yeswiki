@@ -281,6 +281,9 @@ class FormController extends YesWikiController
             'icon' => $post->get('activitypub_icon'),
             'image' => $post->get('activitypub_image'),
             'approve_followers' => $post->has('activitypub_approve_followers'),
+            'accept_unfollowed' => $post->has('activitypub_accept_unfollowed'),
+            'accept_non_public' => $post->has('activitypub_accept_non_public'),
+            'accept_replies' => $post->has('activitypub_accept_replies'),
             'fields' => [],
         ];
         $names = $post->all('activitypub_field_name');
@@ -295,6 +298,7 @@ class FormController extends YesWikiController
             }
         }
         $profiles->save($form['bn_id_nature'], $profile);
+        $this->activityPubService->announceProfile($form);
     }
 
     private function followHandle($form, string $actorHandle): void

@@ -282,7 +282,7 @@ class ActivityPubService
      */
     public function postActivity($activity, $form)
     {
-        $activity = ['@context' => 'https://www.w3.org/ns/activitystreams'] + $activity;
+        $activity = ['@context' => $activity['@context'] ?? 'https://www.w3.org/ns/activitystreams'] + $activity;
         $activity['actor'] = $this->getFormActorUri($form);
         $activity['id'] ??= $this->newActivityId($form);
 
@@ -603,6 +603,31 @@ class ActivityPubService
         $object['cc'] ??= [$this->getFormCollectionUri($form, 'followers')];
 
         return $object;
+    }
+
+    /**
+     * Sends the followers the actor as it now is, so remote servers refresh their cached profile; a follower that cannot be reached is logged, not fatal.
+     */
+    public function announceProfile($form): void
+    {
+        if (!$this->hasActor($form)) {
+            return;
+        }
+        $actor = $this->getActor($form);
+        $context = $actor['@context'];
+        unset($actor['@context']);
+
+        try {
+            $this->postActivity([
+                '@context' => $context,
+                'type' => 'Update',
+                'object' => $actor,
+                'to' => [self::PUBLIC],
+                'cc' => [$this->getFormCollectionUri($form, 'followers')],
+            ], $form);
+        } catch (\Exception $e) {
+            error_log('ActivityPub: ' . $e->getMessage());
+        }
     }
 
     /**

@@ -32,6 +32,8 @@ class ActivityPubInboxTest extends TestCase
     /** @var array<string,string> */
     private array $owners = [];
     private array $updated = [];
+    private array $updatedData = [];
+    public array $fetched = [];
     private array $deleted = [];
     private array $created = [];
     private array $createdTitles = [];
@@ -42,6 +44,8 @@ class ActivityPubInboxTest extends TestCase
     /** @var string[] */
     private array $turnedDownTypes = [];
     private ?HttpSignatureService $httpSignatureService = null;
+    private array $profile = ['accept_unfollowed' => true, 'accept_non_public' => true, 'accept_replies' => true];
+    private const STRICT = ['accept_unfollowed' => false, 'accept_non_public' => false, 'accept_replies' => false];
 
     private function service(): ActivityPubInbox
     {
@@ -54,9 +58,11 @@ class ActivityPubInboxTest extends TestCase
             ))
         );
         $tripleStore->method('getOne')->willReturnCallback(
-            fn ($resource, $property) => $property === ActivityPubInbox::REMOTE_ACTOR_URI
-                ? ($this->owners[$resource] ?? null)
-                : null
+            fn ($resource, $property) => match ($property) {
+                ActivityPubInbox::REMOTE_ACTOR_URI => $this->owners[$resource] ?? null,
+                ActivityPubInbox::REMOTE_ACTOR_PROFILE_URI => $this->actorProfile($resource),
+                default => null,
+            }
         );
         $tripleStore->method('create')->willReturnCallback(function ($resource, $property, $value) {
             if ($property === ActivityPubInbox::REMOTE_ACTOR_URI) {
@@ -89,8 +95,9 @@ class ActivityPubInboxTest extends TestCase
 
             return ['id_fiche' => $tag] + $data;
         });
-        $entryManager->method('update')->willReturnCallback(function ($tag) {
+        $entryManager->method('update')->willReturnCallback(function ($tag, $data) {
             $this->updated[] = $tag;
+            $this->updatedData[] = $data;
 
             return [];
         });
@@ -116,6 +123,9 @@ class ActivityPubInboxTest extends TestCase
         $params->method('get')->willReturn('https://us.example/');
 
         $httpSignatureService = $this->httpSignatureService = new HttpSignatureService($this->createStub(SsrfUrlValidator::class));
+        (new \ReflectionProperty($httpSignatureService, 'httpClient'))->setValue($httpSignatureService, $this->actorServer());
+        $profiles = $this->createStub(ActivityPubProfiles::class);
+        $profiles->method('get')->willReturnCallback(fn () => $this->profile);
 
         return new ActivityPubInbox(
             new ActivityPubService(
@@ -126,7 +136,7 @@ class ActivityPubInboxTest extends TestCase
                 $tripleStore,
                 $this->createStub(SsrfUrlValidator::class),
                 $this->createStub(ActivityPubKeyStore::class),
-                $this->createStub(ActivityPubProfiles::class),
+                $profiles,
                 $this->createStub(ActivityPubLog::class)
             ),
             $entryManager,
@@ -135,6 +145,43 @@ class ActivityPubInboxTest extends TestCase
             $tripleStore,
             $this->createStub(ActivityPubLog::class)
         );
+    }
+
+    private function actorProfile(string $actorUri): ?string
+    {
+        foreach ($this->triples as $triple) {
+            if ($triple['resource'] === $actorUri && $triple['property'] === ActivityPubInbox::REMOTE_ACTOR_PROFILE_URI) {
+                return $triple['value'];
+            }
+        }
+
+        return null;
+    }
+
+    private function actorServer(): object
+    {
+        return new class($this) {
+            public function __construct(private ActivityPubInboxTest $test)
+            {
+            }
+
+            public function request($method, $url, $options = [])
+            {
+                $this->test->fetched[] = $url;
+                $body = json_encode(['id' => $url, 'type' => 'Person', 'name' => 'Ada <b>L.</b>', 'preferredUsername' => 'ada', 'url' => 'https://them.example/@ada']);
+
+                return new class($body) {
+                    public function __construct(private string $body)
+                    {
+                    }
+
+                    public function getContent()
+                    {
+                        return $this->body;
+                    }
+                };
+            }
+        };
     }
 
     private function givenMirroredEntry(string $tag, string $objectId, ?string $owner = null): void
@@ -239,6 +286,116 @@ class ActivityPubInboxTest extends TestCase
 
         $this->assertSame([['tag' => 'Fiche1', 'sourceUrl' => 'https://them.example/entries/7']], $this->created);
         $this->assertSame([self::THEM], array_values($this->owners));
+    }
+
+    private function follow(string $actorUri): void
+    {
+        $this->triples[] = ['resource' => self::US . '/following', 'property' => ActivityPubService::$AS_PREFIX . 'items', 'value' => $actorUri];
+    }
+
+    private function create(array $object, string $actorUri = self::THEM): ?string
+    {
+        return $this->service()->processActivity(['type' => 'Create', 'actor' => $actorUri, 'object' => $object + ['type' => 'Note']], self::FORM, $actorUri);
+    }
+
+    private const PUBLIC_NOTE = ['id' => 'https://them.example/notes/1', 'to' => [ActivityPubService::PUBLIC]];
+
+    public function testByDefaultAnAccountTheFormDoesNotFollowCannotPublish()
+    {
+        $this->profile = self::STRICT;
+
+        $leftOut = $this->create(self::PUBLIC_NOTE);
+
+        $this->assertSame([], $this->created);
+        $this->assertStringContainsString('does not follow', $leftOut);
+    }
+
+    public function testByDefaultAFollowedAccountPublishesItsPublicAndUnlistedPosts()
+    {
+        $this->profile = self::STRICT;
+        $this->follow(self::THEM);
+
+        $this->assertNull($this->create(self::PUBLIC_NOTE));
+        $this->assertNull($this->create(['id' => 'https://them.example/notes/2', 'to' => [self::THEM . '/followers'], 'cc' => 'as:Public']));
+
+        $this->assertCount(2, $this->created);
+    }
+
+    public static function leftOutByDefault(): array
+    {
+        return [
+            'a private message' => [['id' => 'https://them.example/notes/1', 'to' => [self::US]], 'public'],
+            'a followers-only post' => [['id' => 'https://them.example/notes/1', 'to' => [self::THEM . '/followers']], 'public'],
+            'a reply' => [self::PUBLIC_NOTE + ['inReplyTo' => 'https://elsewhere.example/notes/9'], 'Replies'],
+        ];
+    }
+
+    #[DataProvider('leftOutByDefault')]
+    public function testByDefaultPrivatePostsAndRepliesAreLeftOut(array $object, string $reason)
+    {
+        $this->profile = self::STRICT;
+        $this->follow(self::THEM);
+
+        $leftOut = $this->create($object);
+
+        $this->assertSame([], $this->created);
+        $this->assertStringContainsString($reason, $leftOut);
+    }
+
+    public function testEachRuleCanBeTurnedOffInTheProfile()
+    {
+        $this->profile = ['accept_unfollowed' => true, 'accept_non_public' => true, 'accept_replies' => true];
+
+        $this->assertNull($this->create(['id' => 'https://them.example/notes/1', 'to' => [self::US], 'inReplyTo' => 'https://elsewhere.example/notes/9']));
+
+        $this->assertCount(1, $this->created);
+    }
+
+    public function testASyncSkipsPrivatePostsAndRepliesAndSweepsOnesMirroredBefore()
+    {
+        $this->profile = self::STRICT;
+        $this->givenMirroredEntry('OldReply', 'https://them.example/notes/3', self::THEM);
+
+        $this->sync([
+            ['type' => 'Create', 'object' => self::PUBLIC_NOTE],
+            ['type' => 'Create', 'object' => ['id' => 'https://them.example/notes/2', 'to' => [self::THEM . '/followers']]],
+            ['type' => 'Create', 'object' => ['id' => 'https://them.example/notes/3', 'to' => [ActivityPubService::PUBLIC], 'inReplyTo' => 'https://elsewhere.example/notes/9']],
+        ]);
+
+        $this->assertSame([['tag' => 'Fiche1', 'sourceUrl' => 'https://them.example/notes/1']], $this->created);
+        $this->assertSame(['OldReply'], $this->deleted);
+    }
+
+    public function testAMirroredEntryStaysReadOnlyAfterItsAuthorEditsIt()
+    {
+        $this->follow(self::THEM);
+        $this->create(self::PUBLIC_NOTE);
+
+        $this->service()->processActivity(['type' => 'Update', 'actor' => self::THEM, 'object' => self::PUBLIC_NOTE + ['type' => 'Note']], self::FORM, self::THEM);
+        $this->sync([['type' => 'Create', 'object' => self::PUBLIC_NOTE]]);
+
+        $this->assertSame(1, $this->createdData[0]['read-only']);
+        $this->assertSame([1, 1], array_column($this->updatedData, 'read-only'));
+    }
+
+    public function testTheAuthorsProfileIsKeptOnceForTheirFirstEntry()
+    {
+        $this->follow(self::THEM);
+
+        $this->create(self::PUBLIC_NOTE);
+        $this->create(['id' => 'https://them.example/notes/2'] + self::PUBLIC_NOTE);
+
+        $this->assertSame([self::THEM], $this->fetched);
+        $this->assertSame(['name' => 'Ada L.', 'username' => 'ada', 'url' => 'https://them.example/@ada'], json_decode($this->actorProfile(self::THEM), true));
+    }
+
+    public function testAnUpdateOfTheActorRefreshesTheirProfileWithoutTouchingEntries()
+    {
+        $leftOut = $this->service()->processActivity(['type' => 'Update', 'actor' => self::THEM, 'object' => ['id' => self::THEM, 'type' => 'Person', 'name' => 'Ada Lovelace', 'preferredUsername' => 'ada']], self::FORM, self::THEM);
+
+        $this->assertNull($leftOut);
+        $this->assertSame('Ada Lovelace', json_decode($this->actorProfile(self::THEM), true)['name']);
+        $this->assertSame([], $this->updated);
     }
 
     public function testAnActorCannotBringAnObjectFromAnotherHost()
