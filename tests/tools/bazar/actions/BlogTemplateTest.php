@@ -44,6 +44,7 @@ class BlogTemplateTest extends YesWikiTestCase
             'bn_template' => implode("\n", [
                 'texte***bf_titre***Titre***60***255*** *** ***text***1*** *** *** * *** * *** *** *** ***',
                 'textelong***bf_chapeau***Résumé*** *** *** *** ***wiki*** *** *** *** * *** * *** *** *** ***',
+                'texte***bf_avertissement***Avertissement de contenu***80***255*** *** ***text*** *** *** *** * *** * *** *** *** ***',
                 'image***bf_image***Image***400***300***1200***900***right*** *** *** *** * *** * *** *** *** ***',
                 'textelong***bf_description***Billet*** *** *** *** ***wiki*** *** *** *** * *** * *** *** *** ***',
             ]),
@@ -82,13 +83,14 @@ class BlogTemplateTest extends YesWikiTestCase
         $this->formManager->delete($this->formId);
     }
 
-    private function create(string $title, string $date, string $summary = '', string $description = ''): string
+    private function create(string $title, string $date, string $summary = '', string $description = '', string $warning = ''): string
     {
         $entry = $this->entryManager->create($this->formId, [
             'antispam' => 1,
             'bf_titre' => $title,
             'bf_chapeau' => $summary,
             'bf_description' => $description,
+            'bf_avertissement' => $warning,
             'date_creation_fiche' => $date,
         ]);
 
@@ -119,6 +121,19 @@ class BlogTemplateTest extends YesWikiTestCase
         $this->assertSame(1, substr_count($html, 'blog-entry--lead'));
         $this->assertStringContainsString('blog-entry--lead', $this->article($html, $this->tags['remote']));
         $this->assertStringContainsString('Le résumé de la une', $this->article($html, $this->tags['remote']));
+    }
+
+    public function testAWarnedEntryHidesItsTitleBehindTheWarning()
+    {
+        $this->tags['warned'] = $this->create('Titre sensible', '2025-12-01 10:00:00', '', '', 'Spoilers & saison 2');
+        $this->wiki->services->get(AclService::class)->save($this->tags['warned'], 'read', '*');
+
+        $html = $this->render();
+        $warned = $this->article($html, $this->tags['warned']);
+
+        $this->assertStringContainsString('blog-entry--warned', $warned);
+        $this->assertMatchesRegularExpression('#<details class="blog-entry__warning">\\s*<summary[^>]*>\\s*<span class="blog-entry__warning-text">Spoilers &amp; saison 2</span>.*?</summary>.*?Titre sensible.*?</details>#s', $warned);
+        $this->assertStringNotContainsString('<details', $this->article($html, $this->tags['old']));
     }
 
     public function testAMirroredEntryCreditsTheRemoteAccount()

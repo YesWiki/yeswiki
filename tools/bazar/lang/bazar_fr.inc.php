@@ -180,6 +180,8 @@ return [
     'BAZ_SYNC_ACTOR_POSTS' => 'Synchroniser les fiches',
     'BAZ_SYNC_FAILED' => "%d publication(s) n'ont pas pu être importée(s).",
     'BAZ_ACTIVITYPUB_UNTITLED_NOTE' => 'Note du %s',
+    'BAZ_BLOG_SHOW_WARNED' => 'Afficher',
+    'BAZ_BLOG_HIDE_WARNED' => 'Masquer',
     'BAZ_SEMANTIC_OBJECT_REFUSED' => 'Le gabarit sémantique inverse de ce formulaire refuse cet objet.',
     'BAZ_SYNC_COMPLETE' => 'Synchronisation terminée : %d fiche(s) créée(s), %d mise(s) à jour, %d supprimée(s).',
     'BAZ_DUPLICATE' => 'copie',
