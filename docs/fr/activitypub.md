@@ -114,6 +114,38 @@ avant de s'abonner.
 Un abonnement demandé depuis l'onglet des abonnements reste marqué "en
 attente d'acceptation" jusqu'à ce que le compte distant l'accepte.
 
+## Journal des échanges
+
+Pour comprendre pourquoi un abonnement ou une publication ne passe pas, activez
+le journal dans `wakka.config.php` :
+
+```php
+'activitypub_log' => true,
+```
+
+YesWiki écrit alors une ligne JSON par échange dans
+`private/activitypub/log/<date>.jsonl`, et efface les fichiers de plus de 14
+jours. Le champ `direction` dit de quel échange il s'agit :
+
+- `in` : une activité reçue dans la boîte de réception, avec la clé qui l'a
+  signée (`request.keyId`), le logiciel distant (`request.userAgent`), la
+  réponse de YesWiki (`status`) et la raison d'un refus (`error`) ;
+- `out` : une activité envoyée à un abonné ou à un compte suivi, avec la
+  boîte de réception visée et la réponse du serveur distant ;
+- `get` : un serveur distant qui lit le profil, une collection, la boîte
+  d'envoi, une fiche ou la réponse WebFinger. Mobilizon relit une fiche
+  supprimée et doit obtenir 404 ;
+- `sync` : une publication que la synchronisation n'a pas pu importer.
+
+Pour suivre les échanges en direct :
+
+```bash
+tail -f private/activitypub/log/$(date +%F).jsonl | jq -c '{time, direction, type, peer, status, error}'
+```
+
+Le journal contient le texte des publications reçues et envoyées, et
+l'adresse IP des serveurs distants. Désactivez-le une fois les essais finis.
+
 ## Exemples de templates
 
 Voilà ci-dessous deux exemples de template. A noter que, si l'on veut que
@@ -122,68 +154,81 @@ important que tous les champs soient inclus, sinon des données seront perdues.
 
 ### Agenda
 
-Note: Avec la template ci-dessous, Mastodon affiche le nom de l'événement,
-l'image et un lien vers la page. La compatibilité Mobilizon n'est pas encore
-possible car Mobilizon attend deux activités (`Announce` et `Create`) - cela
-devrait être réglé dans une future version.
+Le formulaire Agenda installé par défaut publie chaque fiche comme un événement
+(`Event`) que Mobilizon, Mastodon et un autre YesWiki savent lire. Ses deux
+templates se trouvent dans `tools/bazar/templates/activitypub/` :
+`agenda-event.json.twig` et `agenda-event.reverse.json.twig`. Copiez-les dans
+la configuration avancée d'un autre formulaire d'agenda pour lui donner le même
+comportement.
 
-#### Template de l'agenda
+Ce que le template fait pour Mobilizon :
 
-```json
-{
-  "@context": "https://www.w3.org/ns/activitystreams",
-  "type": "Event",
-  "name": {{ bf_titre | json_encode }},
-  "content": {{ bf_description | default("") | json_encode }},
-  "startTime": {{ bf_date_debut_evenement | json_encode }},
-  "endTime": {{ bf_date_fin_evenement | default("") | json_encode }},
-  "url": {{ bf_site_internet | json_encode }},
-  "published": {{ date_creation_fiche | replace({" ": "T"}) | json_encode }},
-  "updated": {{ date_maj_fiche | replace({" ": "T"}) | json_encode }},
-  {% if bf_adresse and bf_ville and bf_code_postal %}
-  "location": {
-    "type": "Place",
-    "name": {{ [bf_adresse, bf_ville] | join(", ") | trim(", ") | json_encode }},
-    "latitude": {{ geolocation.bf_latitude | json_encode }},
-    "longitude": {{ geolocation.bf_longitude | json_encode }},
-    "address": {
-      "type": "PostalAddress",
-      "streetAddress": {{ bf_adresse | default("") | json_encode }},
-      "postalCode": {{ bf_code_postal | default("") | json_encode }},
-      "addressLocality": {{ bf_ville | default("") | json_encode }}
-    }
-  },
-  {% endif %}
-  "attachment": [
-    {% if imagebf_image %}
-    {
-      "type": "Image",
-      "url": {{ fileUrl(imagebf_image) | json_encode }}
-    }
-    {% endif %}
-  ]
-}
+- une date sans heure (événement sur la journée) part à minuit, et une date de
+  fin sans heure à 23:59:59. Toutes les dates portent leur décalage horaire,
+  sans quoi Mobilizon refuse l'événement ;
+- `timezone` reprend le fuseau du wiki (`timezone` dans `wakka.config.php`).
+  Mobilizon ne le garde que si l'événement a un lieu ;
+- l'image devient la bannière : un `Document` nommé `Banner` ;
+- le site internet devient un lien nommé `Website`, que Mobilizon affiche
+  comme l'adresse de l'événement ;
+- la latitude et la longitude partent en nombres décimaux. Envoyées en texte,
+  Mobilizon les ignore ;
+- la description est mise en forme (HTML), comme pour le blog.
+
+Le template inverse accepte les événements Mobilizon : bannière, lien
+`Website` (sinon la page de l'événement sur Mobilizon), lieu donné en texte ou
+en adresse complète, et dates ramenées au fuseau du wiki. La description HTML
+est convertie en Markdown.
+
+#### Refuser un objet
+
+Un template inverse peut renvoyer `null` : l'objet est alors ignoré, sans
+compter comme un échec de synchronisation. Celui de l'agenda ignore tout ce qui
+n'est pas un `Event`. C'est utile avec Mobilizon, dont les groupes publient
+aussi les commentaires de leurs événements :
+
+```twig
+{% if type == "Event" %}
+{ "bf_titre": {{ name | json_encode }} }
+{% else %}
+null
+{% endif %}
 ```
 
-#### Template inverse de l'agenda
+#### Recevoir les événements d'un groupe Mobilizon
 
-```json
-{
-  "bf_titre": {{ name | json_encode }},
-  "bf_description": {{ content | default("") | json_encode }},
-  "bf_date_debut_evenement": {{ startTime | json_encode }},
-  "bf_date_fin_evenement": {{ endTime | default("") | json_encode }},
-  "bf_adresse": {{ location.address.streetAddress | default("") | json_encode }},
-  "bf_code_postal": {{ location.address.postalCode | default("") | json_encode }},
-  "bf_ville": {{ location.address.addressLocality | default("") | json_encode }},
-  "bf_site_internet": {{ url | default("") | json_encode }},
-  "imagebf_image": {{ (attachment | first).url | default("") | json_encode }},
-  "geolocation": {
-    "bf_latitude": {{ location.latitude | default("") | json_encode }},
-    "bf_longitude": {{ location.longitude | default("") | json_encode }}
-  }
-}
-```
+Dans l'onglet "Abonnements" du formulaire, abonnez-vous au groupe
+(`@legroupe@mobilizon.fr`). Mobilizon accepte tout de suite, sauf si le groupe
+valide ses abonnés à la main. Chaque nouvel événement public du groupe arrive
+ensuite dans l'agenda. Il est signé par la personne qui l'a créé, et c'est
+elle seule qui peut ensuite le modifier ou le supprimer dans le wiki. Le bouton
+"Synchroniser" importe les événements déjà publiés.
+
+Les événements en brouillon ou non listés ne sont jamais envoyés par
+Mobilizon.
+
+#### Envoyer l'agenda vers une instance Mobilizon
+
+Une personne de Mobilizon ne peut suivre qu'un groupe, pas un compte d'un autre
+logiciel. C'est donc l'administration de l'instance qui s'abonne à l'agenda :
+dans la partie Fédération de son administration, elle ajoute l'identifiant
+du formulaire (`@agenda@monwiki.org`). Mobilizon ne propose pas d'abonnement par
+simple nom de domaine pour YesWiki. L'interface peut afficher une erreur
+alors que l'abonnement est bien parti : vérifiez l'onglet "Abonnés" du
+formulaire.
+
+Une fois l'abonnement accepté, Mobilizon lit la boîte d'envoi du formulaire
+pour importer les événements existants, puis reçoit les nouveaux au fil de
+l'eau.
+
+Mobilizon relit chaque événement à son adresse, celle de la fiche, avec
+l'en-tête `Accept: application/activity+json`. YesWiki y répond par l'objet
+ActivityPub de la fiche. Une fiche supprimée répond 404 : sans cela, Mobilizon
+ne supprime pas l'événement. La fiche doit donc rester lisible par tout le
+monde.
+
+Une instance Mobilizon refuse un événement dont le titre fait moins de trois
+caractères.
 
 ### Blog
 

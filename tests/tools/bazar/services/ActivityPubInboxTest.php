@@ -7,6 +7,7 @@ use PHPUnit\Framework\TestCase;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Bazar\Service\ActivityPubInbox;
 use YesWiki\Bazar\Service\ActivityPubKeyStore;
+use YesWiki\Bazar\Service\ActivityPubLog;
 use YesWiki\Bazar\Service\ActivityPubProfiles;
 use YesWiki\Bazar\Service\ActivityPubService;
 use YesWiki\Bazar\Service\EntryManager;
@@ -38,6 +39,8 @@ class ActivityPubInboxTest extends TestCase
     private ?string $convertedTitle = 'Une fiche';
     /** @var string[] */
     private array $refusedObjects = [];
+    /** @var string[] */
+    private array $turnedDownTypes = [];
     private ?HttpSignatureService $httpSignatureService = null;
 
     private function service(): ActivityPubInbox
@@ -105,7 +108,9 @@ class ActivityPubInboxTest extends TestCase
         ));
 
         $semanticTransformer = $this->createStub(SemanticTransformer::class);
-        $semanticTransformer->method('convertFromSemanticData')->willReturnCallback(fn () => ['bf_titre' => $this->convertedTitle]);
+        $semanticTransformer->method('convertFromSemanticData')->willReturnCallback(
+            fn ($formId, $object) => in_array($object['type'] ?? null, $this->turnedDownTypes, true) ? null : ['bf_titre' => $this->convertedTitle]
+        );
 
         $params = $this->createStub(ParameterBagInterface::class);
         $params->method('get')->willReturn('https://us.example/');
@@ -121,12 +126,14 @@ class ActivityPubInboxTest extends TestCase
                 $tripleStore,
                 $this->createStub(SsrfUrlValidator::class),
                 $this->createStub(ActivityPubKeyStore::class),
-                $this->createStub(ActivityPubProfiles::class)
+                $this->createStub(ActivityPubProfiles::class),
+                $this->createStub(ActivityPubLog::class)
             ),
             $entryManager,
             $httpSignatureService,
             $semanticTransformer,
-            $tripleStore
+            $tripleStore,
+            $this->createStub(ActivityPubLog::class)
         );
     }
 
@@ -249,6 +256,55 @@ class ActivityPubInboxTest extends TestCase
             $this->assertStringContainsString('its own host', $e->getMessage());
         }
         $this->assertSame([], $this->created);
+    }
+
+    public function testACreateForAnObjectAlreadyMirroredUpdatesItInsteadOfDuplicatingIt()
+    {
+        $this->givenMirroredEntry('FicheUne', 'https://them.example/events/1', self::THEM);
+
+        $this->service()->processActivity(['type' => 'Create', 'actor' => self::THEM, 'object' => ['id' => 'https://them.example/events/1', 'type' => 'Event']], self::FORM, self::THEM);
+
+        $this->assertSame([], $this->created);
+        $this->assertSame(['FicheUne'], $this->updated);
+    }
+
+    public function testACreateForAnotherActorsMirroredObjectIsRefused()
+    {
+        $this->givenMirroredEntry('FicheUne', 'https://them.example/events/1', 'https://them.example/actors/2');
+
+        try {
+            $this->service()->processActivity(['type' => 'Create', 'actor' => self::THEM, 'object' => ['id' => 'https://them.example/events/1', 'type' => 'Event']], self::FORM, self::THEM);
+            $this->fail('the create should have been refused');
+        } catch (\Exception $e) {
+            $this->assertStringContainsString('belongs to another actor', $e->getMessage());
+        }
+        $this->assertSame([], $this->updated);
+    }
+
+    public function testAnObjectTheReverseTemplateTurnsDownIsNotMirrored()
+    {
+        $this->turnedDownTypes = ['Note'];
+        $this->givenMirroredEntry('FicheUne', 'https://them.example/events/1', self::THEM);
+        $service = $this->service();
+
+        $service->processActivity(['type' => 'Create', 'actor' => self::THEM, 'object' => ['id' => 'https://them.example/comments/1', 'type' => 'Note']], self::FORM, self::THEM);
+        $service->processActivity(['type' => 'Update', 'actor' => self::THEM, 'object' => ['id' => 'https://them.example/events/1', 'type' => 'Note']], self::FORM, self::THEM);
+
+        $this->assertSame([], $this->created);
+        $this->assertSame([], $this->updated);
+    }
+
+    public function testASyncSkipsWhatTheReverseTemplateTurnsDownWithoutCountingItAsAFailure()
+    {
+        $this->turnedDownTypes = ['Note'];
+
+        $stats = $this->sync([
+            ['type' => 'Create', 'object' => ['id' => 'https://them.example/comments/1', 'type' => 'Note']],
+            ['type' => 'Create', 'object' => ['id' => 'https://them.example/events/2', 'type' => 'Event']],
+        ]);
+
+        $this->assertSame(0, $stats['failed']);
+        $this->assertSame(['https://them.example/events/2'], array_column($this->created, 'sourceUrl'));
     }
 
     public function testAMalformedActivityIsRefused()

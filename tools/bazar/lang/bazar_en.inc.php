@@ -328,6 +328,7 @@ The created folder will be automatically linked to your account. Please log in t
     'BAZ_ACTIVITYPUB_CONFIRM_REFUSE' => 'Refuse this follow request?',
     'BAZ_SYNC_FAILED' => '%d post(s) could not be imported.',
     'BAZ_ACTIVITYPUB_UNTITLED_NOTE' => 'Note of %s',
+    'BAZ_SEMANTIC_OBJECT_REFUSED' => "This form's reverse semantic template turns this object down.",
     'BAZ_ACTIVITYPUB_FOLLOWER_ACCEPTED' => 'The request was accepted and the account told.',
     'BAZ_IMPORT_NOT_DETECT_COLUMNS_ON_HEADER_HINT' => 'Allows to use the historical algorithm that takes the columns in the order of the CSV file',
     'BAZ_UNREADABLE_MAP_VALUE' => 'Unreadable geolocation, ignored on import',

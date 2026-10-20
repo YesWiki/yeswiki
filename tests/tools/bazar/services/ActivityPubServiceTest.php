@@ -3,10 +3,12 @@
 namespace YesWiki\Test\Bazar\Service;
 
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpClient\MockHttpClient;
 use Symfony\Component\HttpClient\Response\MockResponse;
 use YesWiki\Bazar\Service\ActivityPubKeyStore;
+use YesWiki\Bazar\Service\ActivityPubLog;
 use YesWiki\Bazar\Service\ActivityPubProfiles;
 use YesWiki\Bazar\Service\ActivityPubService;
 use YesWiki\Bazar\Service\HttpSignatureService;
@@ -39,6 +41,8 @@ class ActivityPubServiceTest extends TestCase
 
     protected function tearDown(): void
     {
+        array_map('unlink', glob($this->keyDir . '/log/*') ?: []);
+        @rmdir($this->keyDir . '/log');
         array_map('unlink', glob($this->keyDir . '/*') ?: []);
         @rmdir($this->keyDir);
     }
@@ -101,7 +105,7 @@ class ActivityPubServiceTest extends TestCase
 
         $keyStore = new ActivityPubKeyStore($httpSignatureService, $this->keyDir);
         $profiles = new ActivityPubProfiles($params, new ConfigurationService(), $this->keyDir . '/wakka.config.php');
-        $service = new ActivityPubService($params, $this->createStub(WebfingerService::class), $httpSignatureService, $semanticTransformer, $tripleStore, $this->createStub(SsrfUrlValidator::class), $keyStore, $profiles);
+        $service = new ActivityPubService($params, $this->createStub(WebfingerService::class), $httpSignatureService, $semanticTransformer, $tripleStore, $this->createStub(SsrfUrlValidator::class), $keyStore, $profiles, new ActivityPubLog(new ParameterBag(['activitypub_log' => true]), $this->keyDir . '/log'));
         (new \ReflectionProperty($service, 'httpClient'))->setValue($service, $client);
 
         return $service;
@@ -232,6 +236,33 @@ class ActivityPubServiceTest extends TestCase
         $headers = $this->posted[0]['headers'];
         $this->assertStringContainsString('headers="(request-target) host date digest content-type"', $headers['signature'][0]);
         $this->assertSame('Content-Type: application/activity+json', $headers['content-type'][0]);
+    }
+
+    public function testEveryDeliveryIsLoggedWithTheAnswerItGot()
+    {
+        $this->triples[] = ['resource' => self::US . '/followers', 'property' => ActivityPubService::$AS_PREFIX . 'items', 'value' => 'https://down.example/users/a'];
+        $this->triples[] = ['resource' => self::US . '/followers', 'property' => ActivityPubService::$AS_PREFIX . 'items', 'value' => self::THEM];
+        $this->unreachable[] = 'https://down.example/users/a';
+
+        $this->service()->notifyFollowers($this->form(), ['id_fiche' => 'Fiche'], 'Create');
+
+        $records = array_map(fn ($line) => json_decode($line, true), file(glob($this->keyDir . '/log/*.jsonl')[0], FILE_IGNORE_NEW_LINES));
+        $this->assertSame(['out', 'out'], array_column($records, 'direction'));
+        $byPeer = array_column($records, null, 'peer');
+        $this->assertNull($byPeer[self::THEM]['error']);
+        $this->assertSame(202, $byPeer[self::THEM]['status']);
+        $this->assertSame('Create', $byPeer[self::THEM]['activity']['type']);
+        $this->assertStringContainsString('500', $byPeer['https://down.example/users/a']['error']);
+    }
+
+    public function testADeletionIsSentAsATombstoneSoTheReceiverChecksTheObjectIsGone()
+    {
+        $this->triples[] = ['resource' => self::US . '/followers', 'property' => ActivityPubService::$AS_PREFIX . 'items', 'value' => self::THEM];
+
+        $this->service()->notifyFollowers($this->form(), ['id_fiche' => 'Fiche'], 'Delete');
+
+        $this->assertSame('Delete', $this->posted[0]['body']['type']);
+        $this->assertSame(['id' => 'https://us.example/?Fiche', 'type' => 'Tombstone', 'formerType' => 'Note'], $this->posted[0]['body']['object']);
     }
 
     public function testFollowersAreNotifiedPubliclyAndOneUnreachableFollowerDoesNotStopTheOthers()

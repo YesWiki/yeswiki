@@ -21,9 +21,11 @@ class ActivityPubService
     protected $ssrfUrlValidator;
     protected $keyStore;
     protected $profiles;
+    protected $log;
 
-    public function __construct(ParameterBagInterface $params, WebfingerService $webfingerService, HttpSignatureService $httpSignatureService, SemanticTransformer $semanticTransformer, TripleStore $tripleStore, SsrfUrlValidator $ssrfUrlValidator, ActivityPubKeyStore $keyStore, ActivityPubProfiles $profiles)
+    public function __construct(ParameterBagInterface $params, WebfingerService $webfingerService, HttpSignatureService $httpSignatureService, SemanticTransformer $semanticTransformer, TripleStore $tripleStore, SsrfUrlValidator $ssrfUrlValidator, ActivityPubKeyStore $keyStore, ActivityPubProfiles $profiles, ActivityPubLog $log)
     {
+        $this->log = $log;
         $this->keyStore = $keyStore;
         $this->profiles = $profiles;
         $this->params = $params;
@@ -125,7 +127,7 @@ class ActivityPubService
                 ],
             ],
             'id' => $actorUrl,
-            'type' => 'Service',
+            'type' => 'Application',
             'name' => $form['bn_label_nature'],
             'preferredUsername' => $profile['username'],
             'summary' => $this->toHtml($profile['summary']) ?: $this->toHtml($form['bn_description'] ?? ''),
@@ -292,6 +294,9 @@ class ActivityPubService
         $failures = [];
 
         foreach ($this->getRecipients($form, $activity) as $recipientUri) {
+            $inboxUri = null;
+            $statusCode = null;
+            $responseBody = null;
             try {
                 $inboxUri = $this->getActorInbox($recipientUri, $form);
 
@@ -303,11 +308,14 @@ class ActivityPubService
                 ]);
 
                 $statusCode = $response->getStatusCode();
+                $responseBody = $response->getContent(false);
                 if ($statusCode < 200 || $statusCode >= 300) {
-                    throw new \Exception("HTTP $statusCode: " . $response->getContent(false));
+                    throw new \Exception("HTTP $statusCode: " . $responseBody);
                 }
+                $this->log->delivered($form['bn_id_nature'] ?? '', $recipientUri, $inboxUri, $activity, $statusCode, null, $responseBody);
             } catch (\Throwable $e) {
                 $failures[] = "$recipientUri: " . $e->getMessage();
+                $this->log->delivered($form['bn_id_nature'] ?? '', $recipientUri, $inboxUri, $activity, $statusCode, $e->getMessage(), $responseBody);
             }
         }
 
@@ -584,25 +592,35 @@ class ActivityPubService
     }
 
     /**
+     * The ActivityPub object an entry is published as, addressed to the public and the form's followers.
+     */
+    public function objectFor($form, $entry): array
+    {
+        $object = $this->semanticTransformer->convertToSemanticData($form, $entry);
+        unset($object['@context']);
+        $object['attributedTo'] ??= $this->getFormActorUri($form);
+        $object['to'] ??= [self::PUBLIC];
+        $object['cc'] ??= [$this->getFormCollectionUri($form, 'followers')];
+
+        return $object;
+    }
+
+    /**
      * Tells the followers an entry was created, updated or deleted; a follower that cannot be reached is logged, not fatal.
      */
     public function notifyFollowers($form, $entry, $activityType)
     {
-        $actorUri = $this->getFormActorUri($form);
-        $followersUri = $this->getFormCollectionUri($form, 'followers');
-
-        $object = $this->semanticTransformer->convertToSemanticData($form, $entry);
-        unset($object['@context']);
-        $object['attributedTo'] ??= $actorUri;
-        $object['to'] ??= [self::PUBLIC];
-        $object['cc'] ??= [$followersUri];
+        $object = $this->objectFor($form, $entry);
+        if ($activityType === 'Delete') {
+            $object = ['id' => $object['id'], 'type' => 'Tombstone', 'formerType' => $object['type'] ?? 'Object'];
+        }
 
         try {
             $this->postActivity([
                 'type' => $activityType,
                 'object' => $object,
                 'to' => [self::PUBLIC],
-                'cc' => [$followersUri],
+                'cc' => [$this->getFormCollectionUri($form, 'followers')],
             ], $form);
         } catch (\Exception $e) {
             error_log('ActivityPub: ' . $e->getMessage());

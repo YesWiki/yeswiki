@@ -18,9 +18,11 @@ class ActivityPubInbox
     protected $httpSignatureService;
     protected $semanticTransformer;
     protected $tripleStore;
+    protected $log;
 
-    public function __construct(ActivityPubService $activityPubService, EntryManager $entryManager, HttpSignatureService $httpSignatureService, SemanticTransformer $semanticTransformer, TripleStore $tripleStore)
+    public function __construct(ActivityPubService $activityPubService, EntryManager $entryManager, HttpSignatureService $httpSignatureService, SemanticTransformer $semanticTransformer, TripleStore $tripleStore, ActivityPubLog $log)
     {
+        $this->log = $log;
         $this->activityPubService = $activityPubService;
         $this->entryManager = $entryManager;
         $this->httpSignatureService = $httpSignatureService;
@@ -69,29 +71,12 @@ class ActivityPubInbox
                 break;
 
             case 'Create':
-                $object = $activity['object'];
-                $entry = $this->entryFromObject($form, $object);
-                $entry['read-only'] = 1;
-                if (!$this->httpSignatureService->sameHost($verifiedActor, $object['id'] ?? '')) {
-                    throw new \Exception('An actor can only bring objects from its own host');
-                }
-                $created = $this->entryManager->create($form['bn_id_nature'], $this->withoutMarker($entry), false, $object['id']);
-                $this->rememberOwner($created['id_fiche'] ?? null, $verifiedActor);
-                $this->rememberGeneratedTitle($created['id_fiche'] ?? null, $entry);
-                break;
-
             case 'Update':
-                $object = $activity['object'];
-                if ($object['id']) {
-                    $triples = $this->tripleStore->getMatching(null, TripleStore::SOURCE_URL_URI, $object['id'], '=', '=', '=');
-                    if (!empty($triples)) {
-                        $tag = $triples[0]['resource'];
-                        $this->assertOwns($verifiedActor, $tag, $object['id']);
-                        $entry = $this->entryFromObject($form, $object);
-                        $this->entryManager->update($tag, $this->withoutMarker($entry), false);
-                        $this->rememberGeneratedTitle($tag, $entry);
-                    }
+                $object = $activity['object'] ?? null;
+                if (!is_array($object) || empty($object['id']) || !is_string($object['id'])) {
+                    throw new \Exception('A ' . $activity['type'] . ' needs an object with an id');
                 }
+                $this->mirror($form, $object, $verifiedActor, $activity['type'] === 'Create');
                 break;
 
             case 'Delete':
@@ -106,6 +91,40 @@ class ActivityPubInbox
                 }
                 break;
         }
+    }
+
+    /**
+     * Creates or updates the entry mirroring an object sent to the inbox; a Create of an object already mirrored updates it.
+     */
+    protected function mirror(array $form, array $object, string $verifiedActor, bool $mayCreate): void
+    {
+        $triples = $this->tripleStore->getMatching(null, TripleStore::SOURCE_URL_URI, $object['id'], '=', '=', '=');
+        if (empty($triples)) {
+            if (!$mayCreate) {
+                return;
+            }
+            if (!$this->httpSignatureService->sameHost($verifiedActor, $object['id'])) {
+                throw new \Exception('An actor can only bring objects from its own host');
+            }
+            $entry = $this->entryFromObject($form, $object);
+            if ($entry === null) {
+                return;
+            }
+            $entry['read-only'] = 1;
+            $created = $this->entryManager->create($form['bn_id_nature'], $this->withoutMarker($entry), false, $object['id']);
+            $this->rememberOwner($created['id_fiche'] ?? null, $verifiedActor);
+            $this->rememberGeneratedTitle($created['id_fiche'] ?? null, $entry);
+
+            return;
+        }
+        $tag = $triples[0]['resource'];
+        $this->assertOwns($verifiedActor, $tag, $object['id']);
+        $entry = $this->entryFromObject($form, $object);
+        if ($entry === null) {
+            return;
+        }
+        $this->entryManager->update($tag, $this->withoutMarker($entry), false);
+        $this->rememberGeneratedTitle($tag, $entry);
     }
 
     /**
@@ -209,6 +228,7 @@ class ActivityPubInbox
                 $this->syncItem($type, $object, $existingTriples, $actorUri, $form, $stats);
             } catch (\Exception $e) {
                 $stats['failed']++;
+                $this->log->syncFailed($form['bn_id_nature'] ?? '', $actorUri, $object, $e->getMessage());
             }
         }
 
@@ -240,6 +260,9 @@ class ActivityPubInbox
                 return;
             }
             $entry = $this->entryFromObject($form, $object);
+            if ($entry === null) {
+                return;
+            }
             $entry['read-only'] = 1;
             $created = $this->entryManager->create($form['bn_id_nature'], $this->withoutMarker($entry), false, $object['id']);
             $this->rememberOwner($created['id_fiche'] ?? null, $actorUri);
@@ -256,17 +279,23 @@ class ActivityPubInbox
             return;
         }
         $entry = $this->entryFromObject($form, $object);
+        if ($entry === null) {
+            return;
+        }
         $this->entryManager->update($tag, $this->withoutMarker($entry), false);
         $this->rememberGeneratedTitle($tag, $entry);
         $stats['updated']++;
     }
 
     /**
-     * Turns a remote object into entry fields, titling it from its summary or text when it has no name, as Mastodon notes do.
+     * Turns a remote object into entry fields, titling it from its summary or text when it has no name, as Mastodon notes do; null when the form's reverse template turns it down.
      */
-    protected function entryFromObject(array $form, array $object): array
+    protected function entryFromObject(array $form, array $object): ?array
     {
         $entry = $this->semanticTransformer->convertFromSemanticData($form['bn_id_nature'], $object);
+        if ($entry === null) {
+            return null;
+        }
         if ($this->plainText($entry['bf_titre'] ?? '') === '') {
             $entry['bf_titre'] = $this->titleFromObject($object);
             $entry[self::GENERATED_TITLE_MARKER] = true;
