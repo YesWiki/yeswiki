@@ -636,7 +636,7 @@ const ConditionsChecking = {
             break
         }
       }
-      let display = false
+      let display
       try {
         // eslint-disable-next-line no-eval
         display = errorFound ? false : eval(stringToEval)

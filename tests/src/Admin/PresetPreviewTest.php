@@ -299,9 +299,9 @@ class PresetPreviewTest extends YesWikiTestCase
 
             if ($definition['contrast'] !== PresetService::CONTRAST_AUTO_INK) {
                 $against = $definition['contrast'];
-                $qualified = str_contains($against, '.');
-                if ($qualified) {
-                    [$onScheme, $against] = explode('.', $against, 2);
+                $parts = explode('.', $against, 2);
+                if (count($parts) === 2) {
+                    [$onScheme, $against] = $parts;
                     $this->assertContains($onScheme, PresetService::SCHEMES, $token);
                 }
                 $this->assertArrayHasKey(

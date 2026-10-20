@@ -610,8 +610,8 @@ const componentParams = {
               `^(${row.tag}_${fieldName}_)(.*)_(\\d{14})_(\\d{14})\\.([^.]+)$`,
             )
             if (regExp.test(formattedData)) {
-              let anchorImageDate1 = ''
-              let anchorImageDate2 = ''
+              let anchorImageDate1
+              let anchorImageDate2
               ;[
                 ,
                 ,
@@ -635,8 +635,8 @@ const componentParams = {
                   `^([A-Za-z0-9-_]+)(_${fieldName}_)(.*)_(\\d{14})_(\\d{14})\\.([^.]+)$`,
                 )
                 if (regExp.test(formattedData)) {
-                  let anchorImageDate1 = ''
-                  let anchorImageDate2 = ''
+                  let anchorImageDate1
+                  let anchorImageDate2
                   ;[
                     ,
                     anchorOtherEntryId,

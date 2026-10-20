@@ -34,7 +34,7 @@ export default {
           }
         })
         const classesMerged = [...classes, ...classesGroupedBy2]
-        let optionsList = []
+        let optionsList
         for (const propName in this.config.subproperties) {
           const componentDefinition = this.config.subproperties[propName] || {}
           if (componentDefinition.type === 'list') {

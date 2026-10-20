@@ -189,13 +189,13 @@ function draw() {
   noStroke()
   fill(255)
   textAlign(LEFT)
-  let txtuser = ''
+  let txtuser
   if (nbUsers > 1) {
     txtuser = `${nbUsers} utilisateur·ices`
   } else {
     txtuser = `${nbUsers} utilisateur·ice`
   }
-  let txtlinks = ''
+  let txtlinks
   if (nbRelations > 1) {
     txtlinks = `${nbRelations} liens`
   } else {

@@ -38,7 +38,11 @@ class TransactionsTest extends YesWikiTestCase
         );
     }
 
-    /** How many `latest = 'Y'` rows a tag has -- must always be exactly one for a live page. */
+    /**
+     * How many `latest = 'Y'` rows a tag has -- must always be exactly one for a live page.
+     *
+     * @phpstan-impure
+     */
     private function latestCount(string $tag): int
     {
         $db = self::db();

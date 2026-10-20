@@ -166,9 +166,9 @@
   <symbol id="brand-gitlab" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none" />
   <path d="M21 14l-9 7l-9 -7l3 -11l3 7h6l3 -7l3 11" /></symbol>
   <symbol id="brand-instagram" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none" />
-  <path d="M4 8a4 4 0 0 1 4 -4h8a4 4 0 0 1 4 4v8a4 4 0 0 1 -4 4h-8a4 4 0 0 1 -4 -4l0 -8" />
-  <path d="M9 12a3 3 0 1 0 6 0a3 3 0 0 0 -6 0" />
-  <path d="M16.5 7.5v.01" /></symbol>
+  <path d="M3 7a4 4 0 0 1 4 -4h10a4 4 0 0 1 4 4v10a4 4 0 0 1 -4 4h-10a4 4 0 0 1 -4 -4l0 -10" />
+  <path d="M8.5 12a3.5 3.5 0 1 0 7 0a3.5 3.5 0 0 0 -7 0" />
+  <path d="M17 7v.01" /></symbol>
   <symbol id="brand-linkedin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none" />
   <path d="M8 11v5" />
   <path d="M8 8v.01" />

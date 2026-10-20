@@ -186,7 +186,7 @@ const app = createApp({
     async fetch(url, options = {}) {
       const response = await fetch(url, options)
       const text = await response.text()
-      let data = null
+      let data
       try {
         data = JSON.parse(text)
       } catch {

@@ -24,7 +24,7 @@ class WikiNameGenerator
     {
         if ($occurrence <= 1) {
             $name = u($name)->ascii();
-            $temp = StringUtilService::withoutDiacritics(mb_substr(preg_replace('/[[:punct:]]/', ' ', $name), 0, 47, YW_CHARSET));
+            $temp = StringUtilService::withoutDiacritics(mb_substr((string)preg_replace('/[[:punct:]]/', ' ', $name), 0, 47, YW_CHARSET));
             $temp = explode(' ', ucwords(strtolower($temp)));
             $name = '';
             foreach ($temp as $mot) {

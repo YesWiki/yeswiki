@@ -46,7 +46,11 @@ class RemoteImageCache
         return is_string($value) && preg_match('#^(https?:)?//#i', trim($value)) === 1;
     }
 
-    /** This picture, served from this wiki -- or the address it came from, if it cannot be. */
+    /**
+     * This picture, served from this wiki -- or the address it came from, if it cannot be.
+     *
+     * @phpstan-impure
+     */
     public function localUrl(string $url, ?int $width = null, ?int $height = null): string
     {
         $url = trim($url);

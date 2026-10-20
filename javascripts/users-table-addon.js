@@ -20,9 +20,9 @@ const usersTableServiceAddOn = {
     return result
   },
   renderButton(name, activatedStatus, isAdmin) {
-    let btnType = ''
-    let btnText = ''
-    let action = ''
+    let btnType
+    let btnText
+    let action
     if (activatedStatus) {
       action = 'inactivate'
       if (isAdmin) {
@@ -94,7 +94,7 @@ const usersTableServiceAddOn = {
       alert(`user '${String(name)}' is not existing !`)
       return
     }
-    let url = ''
+    let url
     switch (action) {
       case 'activate':
         if (this.users[name].activatedStatus) {

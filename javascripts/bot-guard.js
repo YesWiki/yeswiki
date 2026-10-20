@@ -23,7 +23,7 @@
   /** Replaces the form's spent guard fields with those in `source`. */
   function refresh(form, source) {
     if (!form || !source) return
-    let fresh = null
+    let fresh
     if (typeof source === 'string') {
       const holder = document.createElement('div')
       holder.innerHTML = source

@@ -99,7 +99,7 @@ const app = createApp({
   },
   methods: {
     timelineItemStyle(revision, includeTransform = true) {
-      let result = {}
+      let result
       if (revision.placeInTimeLine < 50) {
         result = {
           left: `${revision.placeInTimeLine}%`,

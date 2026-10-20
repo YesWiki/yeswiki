@@ -304,7 +304,7 @@ const BazarCalendar = {
   },
   computed: {
     calendarOptions() {
-      let extendedList = ''
+      let extendedList
       switch (this.params.showlist) {
         case 'week':
           extendedList = ',listWeek'

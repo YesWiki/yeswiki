@@ -455,7 +455,7 @@ class ThemeManager implements EventSubscriberInterface
         $name = ($key === 'preset' && is_string($newVal) && str_starts_with($newVal, self::CUSTOM_CSS_PRESETS_PREFIX))
             ? substr($newVal, strlen(self::CUSTOM_CSS_PRESETS_PREFIX))
             : $newVal;
-        $this->favorites[$key] = (empty($newVal) || !is_string($newVal) || !is_string($name) || preg_match('`[/\\\\]|^\.\.?$|\x00`', $name))
+        $this->favorites[$key] = (empty($newVal) || !is_string($newVal) || preg_match('`[/\\\\]|^\.\.?$|\x00`', $name))
             ? ''
             : $newVal;
     }

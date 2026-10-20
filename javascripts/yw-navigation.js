@@ -43,7 +43,7 @@
   function scrollToHashOrTop() {
     const { hash } = window.location
     if (!hash || hash === '#') return
-    let anchor = null
+    let anchor
     try {
       anchor = document.querySelector(hash)
     } catch {

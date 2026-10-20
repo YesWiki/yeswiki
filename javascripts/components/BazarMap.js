@@ -256,7 +256,7 @@ const BazarMapComponent = {
       const slots = this.$slots
       if (slots.popupentrywithhtmlrender != null) {
         if (entry.html_render == null) {
-          let url = ''
+          let url
           let excludeFields = ''
           if (
             this.params.popupselectedfields &&

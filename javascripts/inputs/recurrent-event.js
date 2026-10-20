@@ -160,7 +160,7 @@ const appParams = {
       if (duration < 0) {
         return 0
       }
-      let step = 1
+      let step
       switch (this.repetition) {
         case 'y':
           step = 365

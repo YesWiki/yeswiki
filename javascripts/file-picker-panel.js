@@ -241,7 +241,7 @@ export default class {
   async loadFiles() {
     this.loadToken += 1
     const token = this.loadToken
-    let entries = []
+    let entries
     try {
       const response = await fetch(wiki.url('api/files'))
       entries = response.ok ? await response.json() : []

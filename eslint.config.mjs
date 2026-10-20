@@ -10,6 +10,7 @@ export default defineConfig([
     'javascripts/yw-icon-map.js',
     '**/custom/',
     'binary/.frankenphp/',
+    'cache/',
   ]),
   {
     extends: [js.configs.recommended, prettier],
