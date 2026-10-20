@@ -320,7 +320,25 @@ class ActivityPubInbox
                 continue;
             }
 
-            if (!$object || !isset($object['id']) || $this->objectRefusal($form, $object) !== null) {
+            if (is_string($object) && in_array($type, ['Create', 'Update'], true)) {
+                if (!$this->httpSignatureService->sameHost($actorUri, $object)) {
+                    continue;
+                }
+                $objectId = $object;
+                try {
+                    $object = $this->activityPubService->fetch($objectId, $form);
+                } catch (\Throwable $e) {
+                    $remoteObjectIds[] = $objectId;
+                    $stats['failed']++;
+                    $this->log->syncFailed($form['bn_id_nature'] ?? '', $actorUri, $objectId, $e->getMessage());
+                    continue;
+                }
+                if (($object['id'] ?? null) !== $objectId) {
+                    continue;
+                }
+            }
+
+            if (!is_array($object) || !isset($object['id']) || $this->objectRefusal($form, $object) !== null) {
                 continue;
             }
 

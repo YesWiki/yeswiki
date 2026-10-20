@@ -504,19 +504,24 @@ class ActivityPubInboxTest extends TestCase
         $this->assertSame([], $this->updated);
     }
 
-    private function sync(array $outboxItems, string $actorUri = self::THEM): array
+    private function sync(array $outboxItems, string $actorUri = self::THEM, array $documents = []): array
     {
         $service = $this->service();
-        $client = new class($actorUri, $outboxItems) {
-            public function __construct(private string $actorUri, private array $items)
+        $client = new class($actorUri, $outboxItems, $documents) {
+            public function __construct(private string $actorUri, private array $items, private array $documents)
             {
             }
 
             public function request($method, $url, $options = [])
             {
-                $body = ($url === $this->actorUri)
-                    ? json_encode(['outbox' => $this->actorUri . '/outbox'])
-                    : json_encode(['type' => 'OrderedCollection', 'orderedItems' => $this->items]);
+                if (array_key_exists($url, $this->documents) && $this->documents[$url] === null) {
+                    throw new \Exception('HTTP 503');
+                }
+                $body = match (true) {
+                    $url === $this->actorUri => json_encode(['outbox' => $this->actorUri . '/outbox']),
+                    isset($this->documents[$url]) => json_encode($this->documents[$url]),
+                    default => json_encode(['type' => 'OrderedCollection', 'orderedItems' => $this->items]),
+                };
 
                 return new class($body) {
                     public function __construct(private string $body)
@@ -563,6 +568,30 @@ class ActivityPubInboxTest extends TestCase
         $this->sync([]);
 
         $this->assertSame(['Mine'], $this->deleted, 'only the synced actor\'s own absent entry is swept');
+    }
+
+    public function testASyncFetchesObjectsTheOutboxOnlyLinksTo()
+    {
+        $note = 'https://them.example/statuses/1';
+        $stats = $this->sync(
+            [['type' => 'Create', 'object' => $note], ['type' => 'Announce', 'object' => 'https://them.example/statuses/2'], ['type' => 'Create', 'object' => 'https://elsewhere.example/statuses/3']],
+            self::THEM,
+            [$note => ['id' => $note, 'type' => 'Note', 'to' => [ActivityPubService::PUBLIC]]]
+        );
+
+        $this->assertSame([['tag' => 'Fiche1', 'sourceUrl' => $note]], $this->created);
+        $this->assertSame(1, $stats['created']);
+    }
+
+    public function testAnObjectThatCannotBeFetchedIsNotSweptAway()
+    {
+        $note = 'https://them.example/statuses/1';
+        $this->givenMirroredEntry('Mirrored', $note, self::THEM);
+
+        $stats = $this->sync([['type' => 'Create', 'object' => $note]], self::THEM, [$note => null]);
+
+        $this->assertSame([], $this->deleted);
+        $this->assertSame(1, $stats['failed']);
     }
 
     public function testSyncDoesNotMirrorAnObjectFromAnotherHost()
