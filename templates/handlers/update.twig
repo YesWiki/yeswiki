@@ -1,1 +1,5 @@
+{% if confirmUrl is defined %}
+<div class="alert alert-warning">{{ _t('CSRF_TOKEN_FAIL_ERROR') }}</div>
+<a class="btn btn-primary" href="{{ confirmUrl }}">{{ _t('CONTINUE') }}</a>
+{% endif %}
 {{output|raw}}

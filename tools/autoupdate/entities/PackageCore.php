@@ -18,6 +18,11 @@ class PackageCore extends Package
         'robots.txt',
         'wakka.config.php',
         'private',
+        '.htaccess',
+    ];
+
+    public const FILES_TO_ADD_WHEN_MISSING = [
+        '.htaccess',
     ];
 
     public const FILES_TO_ADD_TO_IGNORED_FOLDERS = [
@@ -91,6 +96,13 @@ class PackageCore extends Package
             closedir($res);
             foreach (array_merge(self::FILES_TO_ADD_TO_IGNORED_FOLDERS, self::FILES_TO_UPDATE_TO_IGNORED_FOLDERS) as $file) {
                 if (is_file($this->extractionPath . '/' . $file) or is_dir($this->extractionPath . '/' . $file)) {
+                    if (!$this->copy($this->extractionPath . '/' . $file, $desPath . '/' . $file)) {
+                        $copied = false;
+                    }
+                }
+            }
+            foreach (self::FILES_TO_ADD_WHEN_MISSING as $file) {
+                if (is_file($this->extractionPath . '/' . $file) && !file_exists($desPath . '/' . $file)) {
                     if (!$this->copy($this->extractionPath . '/' . $file, $desPath . '/' . $file)) {
                         $copied = false;
                     }

@@ -1,0 +1,22 @@
+{% set html = {"&": "&amp;", "<": "&lt;", ">": "&gt;"} %}
+{% set lead = "<p><strong>" ~ (bf_titre | replace(html)) ~ "</strong></p>" ~ (bf_chapeau | default("") ? "<p><em>" ~ (bf_chapeau | replace(html)) ~ "</em></p>" : "") %}
+{
+  "@context": "https://www.w3.org/ns/activitystreams",
+  "type": "Note",
+  {% if bf_avertissement | default("") %}
+  "summary": {{ bf_avertissement | json_encode }},
+  "sensitive": true,
+  {% endif %}
+  "preview": {{ bf_chapeau | default("") | json_encode }},
+  "content": {{ (lead ~ format(bf_description | default(""))) | json_encode }},
+  "published": {{ date_creation_fiche | date("c") | json_encode }},
+  "updated": {{ date_maj_fiche | default(date_creation_fiche) | date("c") | json_encode }},
+  "attachment": [
+    {% if imagebf_image %}
+    {
+      "type": "Image",
+      "url": {{ fileUrl(imagebf_image) | json_encode }}
+    }
+    {% endif %}
+  ]
+}

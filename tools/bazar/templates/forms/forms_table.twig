@@ -81,7 +81,7 @@
           <td>
             <div class="create-actions">
             {% if form.canEdit %}
-            <a class="btn btn-default btn-mini btn-xs" title="{{ _t('BAZ_CLONE_FORM') }}" href="{{ url({ params: { vue: 'formulaire', action: 'clone', idformulaire: key }}) }}" data-toggle="tooltip" data-placement="bottom" >
+            <a class="btn btn-default btn-mini btn-xs" title="{{ _t('BAZ_CLONE_FORM') }}" href="{{ signedUrl(url({ params: { vue: 'formulaire', action: 'clone', idformulaire: key }})) }}" data-toggle="tooltip" data-placement="bottom" >
               <i class="far fa-clone"></i>
             </a>
             {% else %}

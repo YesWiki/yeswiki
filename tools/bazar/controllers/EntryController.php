@@ -833,16 +833,26 @@ class EntryController extends YesWikiController
         return empty($incomingUrl) || !$this->isWikiUrl($incomingUrl) ? '' : $incomingUrl;
     }
 
-    /** The page to come back to after editing $entryTag: the current page, unless it is an API call or the entry's own plain page. */
+    /** The page to come back to after editing $entryTag: the current page and its query without incomingurl or wiki, unless it is an API call or the entry's own plain page. */
     public function getEditContextUrl(string $entryTag): string
     {
-        if ($this->wiki->GetPageTag() === 'api' || !in_array($this->wiki->GetMethod(), ['show', 'iframe'], true)) {
+        $tag = $this->wiki->GetPageTag();
+        if ($tag === 'api' || !in_array($this->wiki->method, ['show', 'iframe'], true)) {
             return '';
         }
-        $currentUrl = getAbsoluteUrl();
+        $params = [];
+        foreach (explode('&', (string)($_SERVER['QUERY_STRING'] ?? '')) as $position => $pair) {
+            $key = strtolower(urldecode(explode('=', $pair, 2)[0]));
+            if ($pair === '' || in_array($key, ['incomingurl', 'wiki'], true) || ($position === 0 && !str_contains($pair, '='))) {
+                continue;
+            }
+            $params[] = $pair;
+        }
+        $handler = $this->wiki->method === 'iframe' ? 'iframe' : '';
+        $currentUrl = $this->wiki->Href($handler, $tag, implode('&', $params), false);
         $plainUrls = [$this->wiki->Href('', $entryTag, null, false), $this->wiki->Href('iframe', $entryTag, null, false)];
 
-        return in_array($currentUrl, $plainUrls, true) || !$this->isWikiUrl($currentUrl) ? '' : $currentUrl;
+        return in_array($currentUrl, $plainUrls, true) ? '' : $currentUrl;
     }
 
     /** Where the form's cancel button leads: where the edit started, else the page the visitor came from, else the entry or the page holding the form. */

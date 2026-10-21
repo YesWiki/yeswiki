@@ -51,7 +51,7 @@
           {% if list.canDelete %}
           <a
             class="btn btn-danger btn-xs"
-            href="{{ url({ params: { vue: 'listes', action: 'supprimer_liste', idliste: key }}) }}"
+            href="{{ signedUrl(url({ params: { vue: 'listes', action: 'supprimer_liste', idliste: key }})) }}"
             onclick="javascript:return confirm('{{ _t('BAZ_CONFIRM_SUPPRIMER_LISTE') }} ?');"
           >
             <i class="fa fa-trash icon-white"></i>

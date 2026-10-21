@@ -264,7 +264,7 @@ class EntryManager
         $data['id_typeannonce'] = "$formId";
 
         if ($semantic) {
-            $data = $this->semanticTransformer->convertFromSemanticData($formId, $data);
+            $data = $this->semanticTransformer->convertFromSemanticData($formId, $data) ?? throw new \Exception(_t('BAZ_SEMANTIC_OBJECT_REFUSED'));
         }
 
         $this->refuseTagOfAnExistingPage($data['id_fiche'] ?? null);
@@ -399,7 +399,7 @@ class EntryManager
         }
 
         if ($semantic) {
-            $data = $this->semanticTransformer->convertFromSemanticData($data['id_typeannonce'], $data);
+            $data = $this->semanticTransformer->convertFromSemanticData($data['id_typeannonce'], $data) ?? throw new \Exception(_t('BAZ_SEMANTIC_OBJECT_REFUSED'));
         }
 
         $data = $this->formatDataBeforeSave($data);

@@ -44,6 +44,7 @@ class BlogTemplateTest extends YesWikiTestCase
             'bn_template' => implode("\n", [
                 'texte***bf_titre***Titre***60***255*** *** ***text***1*** *** *** * *** * *** *** *** ***',
                 'textelong***bf_chapeau***Résumé*** *** *** *** ***wiki*** *** *** *** * *** * *** *** *** ***',
+                'texte***bf_avertissement***Avertissement de contenu***80***255*** *** ***text*** *** *** *** * *** * *** *** *** ***',
                 'image***bf_image***Image***400***300***1200***900***right*** *** *** *** * *** * *** *** *** ***',
                 'textelong***bf_description***Billet*** *** *** *** ***wiki*** *** *** *** * *** * *** *** *** ***',
             ]),
@@ -82,17 +83,30 @@ class BlogTemplateTest extends YesWikiTestCase
         $this->formManager->delete($this->formId);
     }
 
-    private function create(string $title, string $date, string $summary = '', string $description = ''): string
+    private function create(string $title, string $date, string $summary = '', string $description = '', string $warning = ''): string
     {
         $entry = $this->entryManager->create($this->formId, [
             'antispam' => 1,
             'bf_titre' => $title,
             'bf_chapeau' => $summary,
             'bf_description' => $description,
+            'bf_avertissement' => $warning,
             'date_creation_fiche' => $date,
         ]);
 
         return $entry['id_fiche'];
+    }
+
+    private function addPicturedEntry(): void
+    {
+        $entry = $this->entryManager->create($this->formId, [
+            'antispam' => 1,
+            'bf_titre' => 'Billet illustré',
+            'imagebf_image' => 'https://images.example/photo.jpg',
+            'date_creation_fiche' => '2026-02-15 10:00:00',
+        ]);
+        $this->tags['pictured'] = $entry['id_fiche'];
+        $this->wiki->services->get(AclService::class)->save($this->tags['pictured'], 'read', '*');
     }
 
     private function render(string $params = ''): string
@@ -121,6 +135,48 @@ class BlogTemplateTest extends YesWikiTestCase
         $this->assertStringContainsString('Le résumé de la une', $this->article($html, $this->tags['remote']));
     }
 
+    public function testTheLeadIsTheNewestEntryWithAnImageAndNewerOnesFollowIt()
+    {
+        $this->addPicturedEntry();
+
+        $html = $this->render();
+
+        $this->assertStringContainsString('blog-entry--lead', $this->article($html, $this->tags['pictured']));
+        $this->assertSame(1, substr_count($html, 'blog-entry--lead'));
+        $pictured = strpos($html, 'Billet illustré');
+        $remote = strpos($html, 'Pouet récent');
+        $owned = strpos($html, 'Billet du milieu');
+        $this->assertTrue($pictured < $remote && $remote < $owned, 'the lead first, then the others newest first');
+    }
+
+    public function testWithoutAnyImageTheNewestEntryIsTheLead()
+    {
+        $this->assertStringContainsString('blog-entry--lead', $this->article($this->render(), $this->tags['remote']));
+    }
+
+    public function testWithoutTheLeadTheOrderIsKept()
+    {
+        $this->addPicturedEntry();
+
+        $html = $this->render(' header="false"');
+
+        $this->assertStringNotContainsString('blog-entry--lead', $html);
+        $this->assertTrue(strpos($html, 'Pouet récent') < strpos($html, 'Billet illustré'));
+    }
+
+    public function testAWarnedEntryHidesItsTitleBehindTheWarning()
+    {
+        $this->tags['warned'] = $this->create('Titre sensible', '2025-12-01 10:00:00', '', '', 'Spoilers & saison 2');
+        $this->wiki->services->get(AclService::class)->save($this->tags['warned'], 'read', '*');
+
+        $html = $this->render();
+        $warned = $this->article($html, $this->tags['warned']);
+
+        $this->assertStringContainsString('blog-entry--warned', $warned);
+        $this->assertMatchesRegularExpression('#<details class="blog-entry__warning">\\s*<summary[^>]*>\\s*<span class="blog-entry__warning-text">Spoilers &amp; saison 2</span>.*?</summary>.*?Titre sensible.*?</details>#s', $warned);
+        $this->assertStringNotContainsString('<details', $this->article($html, $this->tags['old']));
+    }
+
     public function testAMirroredEntryCreditsTheRemoteAccount()
     {
         $article = $this->article($this->render(), $this->tags['remote']);
@@ -128,6 +184,25 @@ class BlogTemplateTest extends YesWikiTestCase
         $this->assertStringContainsString('href="' . self::ACTOR . '"', $article);
         $this->assertStringContainsString('title="@Khrys@mamot.fr"', $article);
         $this->assertStringContainsString('>Khrys</a>', $article);
+    }
+
+    public function testAnAuthorIsNamedFromTheirProfileWhenTheirAddressIsANumber()
+    {
+        $actor = 'https://masto.example/ap/users/117474142124196539';
+        $tripleStore = $this->wiki->services->get(TripleStore::class);
+        $tripleStore->delete($this->tags['remote'], ActivityPubInbox::REMOTE_ACTOR_URI, null, '', '');
+        $tripleStore->create($this->tags['remote'], ActivityPubInbox::REMOTE_ACTOR_URI, $actor, '', '');
+        $tripleStore->create($actor, ActivityPubInbox::REMOTE_ACTOR_PROFILE_URI, json_encode(['name' => 'Florian', 'username' => 'mrflos', 'url' => 'https://masto.example/@mrflos']), '', '');
+
+        try {
+            $article = $this->article($this->render(), $this->tags['remote']);
+        } finally {
+            $tripleStore->deleteAll($actor, '');
+        }
+
+        $this->assertStringContainsString('href="https://masto.example/@mrflos"', $article);
+        $this->assertStringContainsString('title="@mrflos@masto.example"', $article);
+        $this->assertStringContainsString('>Florian</a>', $article);
     }
 
     public function testALocalEntryCreditsItsWikiOwner()

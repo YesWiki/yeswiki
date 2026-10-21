@@ -13,6 +13,7 @@ use YesWiki\Bazar\Service\FormManager;
 use YesWiki\Bazar\Service\Guard;
 use YesWiki\Bazar\Service\WebfingerService;
 use YesWiki\Core\Controller\CsrfTokenController;
+use YesWiki\Core\Service\RequestGuard;
 use YesWiki\Core\YesWikiController;
 use YesWiki\Security\Controller\SecurityController;
 
@@ -200,6 +201,9 @@ class FormController extends YesWikiController
     public function clone($id)
     {
         if ($this->getService(Guard::class)->isAllowed('saisie_formulaire')) {
+            if (!$this->linkIsSigned()) {
+                return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'formulaire'], false));
+            }
             $this->formManager->clone($id);
 
             return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'formulaire', 'msg' => 'BAZ_FORM_CLONED'], false));
@@ -256,6 +260,7 @@ class FormController extends YesWikiController
             'domain' => parse_url($this->wiki->GetBaseURL(), PHP_URL_HOST),
             'actorUri' => $this->activityPubService->getFormActorUri($form),
             'isEnabled' => $this->activityPubService->isEnabled($form),
+            'routes' => $this->activityPubService->routesToCheck($form),
             'followers' => $this->activityPubService->getFollowers($form),
             'followRequests' => $followRequests,
             'following' => $this->activityPubService->getFollowing($form),
@@ -277,6 +282,9 @@ class FormController extends YesWikiController
             'icon' => $post->get('activitypub_icon'),
             'image' => $post->get('activitypub_image'),
             'approve_followers' => $post->has('activitypub_approve_followers'),
+            'accept_unfollowed' => $post->has('activitypub_accept_unfollowed'),
+            'accept_non_public' => $post->has('activitypub_accept_non_public'),
+            'accept_replies' => $post->has('activitypub_accept_replies'),
             'fields' => [],
         ];
         $names = $post->all('activitypub_field_name');
@@ -291,6 +299,7 @@ class FormController extends YesWikiController
             }
         }
         $profiles->save($form['bn_id_nature'], $profile);
+        $this->activityPubService->announceProfile($form);
     }
 
     private function followHandle($form, string $actorHandle): void
@@ -334,7 +343,7 @@ class FormController extends YesWikiController
 
     public function addFollowing($id, $actorUri)
     {
-        if ($this->refusesChanges()) {
+        if ($this->refusesChanges() || !$this->linkIsSigned()) {
             return $this->redirectToActivityPub($id, 'following');
         }
         try {
@@ -350,7 +359,7 @@ class FormController extends YesWikiController
 
     public function removeFollowing($id, $actorUri)
     {
-        if ($this->refusesChanges()) {
+        if ($this->refusesChanges() || !$this->linkIsSigned()) {
             return $this->redirectToActivityPub($id, 'following');
         }
         try {
@@ -408,7 +417,7 @@ class FormController extends YesWikiController
      */
     public function removeFollower($id, $actorUri)
     {
-        if ($this->refusesChanges()) {
+        if ($this->refusesChanges() || !$this->linkIsSigned()) {
             return $this->redirectToActivityPub($id, 'followers');
         }
         try {
@@ -418,6 +427,19 @@ class FormController extends YesWikiController
         }
 
         return $this->redirectToActivityPub($id, 'followers', 'BAZ_FOLLOWER_REMOVED');
+    }
+
+    /**
+     * Whether the link that triggered a change carries the session's token, flashing the refusal when it does not.
+     */
+    private function linkIsSigned(): bool
+    {
+        if ($this->getService(RequestGuard::class)->linkIsSigned($this->getRequest())) {
+            return true;
+        }
+        Flash::error(_t('CSRF_TOKEN_FAIL_ERROR'));
+
+        return false;
     }
 
     private function getGroupsListIfEnabled(): ?array

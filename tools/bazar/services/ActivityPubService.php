@@ -4,6 +4,7 @@ namespace YesWiki\Bazar\Service;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpClient\HttpClient;
+use YesWiki\Core\Service\AfterResponse;
 use YesWiki\Core\Service\TripleStore;
 
 class ActivityPubService
@@ -21,9 +22,13 @@ class ActivityPubService
     protected $ssrfUrlValidator;
     protected $keyStore;
     protected $profiles;
+    protected $log;
+    protected $afterResponse;
 
-    public function __construct(ParameterBagInterface $params, WebfingerService $webfingerService, HttpSignatureService $httpSignatureService, SemanticTransformer $semanticTransformer, TripleStore $tripleStore, SsrfUrlValidator $ssrfUrlValidator, ActivityPubKeyStore $keyStore, ActivityPubProfiles $profiles)
+    public function __construct(ParameterBagInterface $params, WebfingerService $webfingerService, HttpSignatureService $httpSignatureService, SemanticTransformer $semanticTransformer, TripleStore $tripleStore, SsrfUrlValidator $ssrfUrlValidator, ActivityPubKeyStore $keyStore, ActivityPubProfiles $profiles, ActivityPubLog $log, ?AfterResponse $afterResponse = null)
     {
+        $this->afterResponse = $afterResponse ?? new AfterResponse();
+        $this->log = $log;
         $this->keyStore = $keyStore;
         $this->profiles = $profiles;
         $this->params = $params;
@@ -66,6 +71,22 @@ class ActivityPubService
         $parsed = parse_url($this->params->get('base_url'));
 
         return $parsed['scheme'] . '://' . $parsed['host'] . '/actors/' . $form['bn_id_nature'];
+    }
+
+    /**
+     * What an admin's browser fetches to check that the web server passes WebFinger and the actor on to the wiki.
+     *
+     * @return array{atDomainRoot:bool,webfinger:string,actor:string}
+     */
+    public function routesToCheck($form): array
+    {
+        $parsed = parse_url($this->params->get('base_url'));
+
+        return [
+            'atDomainRoot' => isDomainRootUrl($this->params->get('base_url')),
+            'webfinger' => $parsed['scheme'] . '://' . $parsed['host'] . '/.well-known/webfinger?resource=' . rawurlencode('acct:' . $this->username($form) . '@' . $parsed['host']),
+            'actor' => $this->getFormActorUri($form),
+        ];
     }
 
     public function getFormCollectionUri($form, $collectionType)
@@ -125,7 +146,7 @@ class ActivityPubService
                 ],
             ],
             'id' => $actorUrl,
-            'type' => 'Service',
+            'type' => 'Application',
             'name' => $form['bn_label_nature'],
             'preferredUsername' => $profile['username'],
             'summary' => $this->toHtml($profile['summary']) ?: $this->toHtml($form['bn_description'] ?? ''),
@@ -280,7 +301,7 @@ class ActivityPubService
      */
     public function postActivity($activity, $form)
     {
-        $activity = ['@context' => 'https://www.w3.org/ns/activitystreams'] + $activity;
+        $activity = ['@context' => $activity['@context'] ?? 'https://www.w3.org/ns/activitystreams'] + $activity;
         $activity['actor'] = $this->getFormActorUri($form);
         $activity['id'] ??= $this->newActivityId($form);
 
@@ -292,6 +313,9 @@ class ActivityPubService
         $failures = [];
 
         foreach ($this->getRecipients($form, $activity) as $recipientUri) {
+            $inboxUri = null;
+            $statusCode = null;
+            $responseBody = null;
             try {
                 $inboxUri = $this->getActorInbox($recipientUri, $form);
 
@@ -299,15 +323,20 @@ class ActivityPubService
                     'body' => $body,
                     'headers' => $this->httpSignatureService->signHeaders('POST', $inboxUri, $signer, $body),
                     'max_redirects' => 0,
+                    'timeout' => HttpSignatureService::TIMEOUT,
+                    'max_duration' => HttpSignatureService::MAX_DURATION,
                     'resolve' => $this->ssrfUrlValidator->resolveSafe($inboxUri),
                 ]);
 
                 $statusCode = $response->getStatusCode();
+                $responseBody = $response->getContent(false);
                 if ($statusCode < 200 || $statusCode >= 300) {
-                    throw new \Exception("HTTP $statusCode: " . $response->getContent(false));
+                    throw new \Exception("HTTP $statusCode: " . $responseBody);
                 }
+                $this->log->delivered($form['bn_id_nature'] ?? '', $recipientUri, $inboxUri, $activity, $statusCode, null, $responseBody);
             } catch (\Throwable $e) {
                 $failures[] = "$recipientUri: " . $e->getMessage();
+                $this->log->delivered($form['bn_id_nature'] ?? '', $recipientUri, $inboxUri, $activity, $statusCode, $e->getMessage(), $responseBody);
             }
         }
 
@@ -584,28 +613,69 @@ class ActivityPubService
     }
 
     /**
+     * The ActivityPub object an entry is published as, addressed to the public and the form's followers.
+     */
+    public function objectFor($form, $entry): array
+    {
+        $object = $this->semanticTransformer->convertToSemanticData($form, $entry);
+        unset($object['@context']);
+        $object['attributedTo'] ??= $this->getFormActorUri($form);
+        $object['to'] ??= [self::PUBLIC];
+        $object['cc'] ??= [$this->getFormCollectionUri($form, 'followers')];
+
+        return $object;
+    }
+
+    /**
+     * Sends the followers the actor as it now is, so remote servers refresh their cached profile; a follower that cannot be reached is logged, not fatal.
+     */
+    public function announceProfile($form): void
+    {
+        if (!$this->hasActor($form)) {
+            return;
+        }
+        $actor = $this->getActor($form);
+        $context = $actor['@context'];
+        unset($actor['@context']);
+
+        $this->deliverToFollowers([
+            '@context' => $context,
+            'type' => 'Update',
+            'object' => $actor,
+            'to' => [self::PUBLIC],
+            'cc' => [$this->getFormCollectionUri($form, 'followers')],
+        ], $form);
+    }
+
+    /**
      * Tells the followers an entry was created, updated or deleted; a follower that cannot be reached is logged, not fatal.
      */
     public function notifyFollowers($form, $entry, $activityType)
     {
-        $actorUri = $this->getFormActorUri($form);
-        $followersUri = $this->getFormCollectionUri($form, 'followers');
-
-        $object = $this->semanticTransformer->convertToSemanticData($form, $entry);
-        unset($object['@context']);
-        $object['attributedTo'] ??= $actorUri;
-        $object['to'] ??= [self::PUBLIC];
-        $object['cc'] ??= [$followersUri];
-
-        try {
-            $this->postActivity([
-                'type' => $activityType,
-                'object' => $object,
-                'to' => [self::PUBLIC],
-                'cc' => [$followersUri],
-            ], $form);
-        } catch (\Exception $e) {
-            error_log('ActivityPub: ' . $e->getMessage());
+        $object = $this->objectFor($form, $entry);
+        if ($activityType === 'Delete') {
+            $object = ['id' => $object['id'], 'type' => 'Tombstone', 'formerType' => $object['type'] ?? 'Object'];
         }
+
+        $this->deliverToFollowers([
+            'type' => $activityType,
+            'object' => $object,
+            'to' => [self::PUBLIC],
+            'cc' => [$this->getFormCollectionUri($form, 'followers')],
+        ], $form);
+    }
+
+    /**
+     * Sends an activity to the followers once the response has gone, so a slow follower never holds up the person saving.
+     */
+    protected function deliverToFollowers(array $activity, $form): void
+    {
+        $this->afterResponse->defer(function () use ($activity, $form) {
+            try {
+                $this->postActivity($activity, $form);
+            } catch (\Exception $e) {
+                error_log('ActivityPub: ' . $e->getMessage());
+            }
+        });
     }
 }

@@ -43,23 +43,39 @@
 
 {% import _self as blog %}
 {% if fiches|length > 0 %}
+  {% set leadFiche = withLead ? (fiches|filter(fiche => fiche.imagebf_image is not empty)|first ?: fiches|first) : null %}
+  {% set ordered = leadFiche ? [leadFiche]|merge(fiches|filter(fiche => fiche.id_fiche != leadFiche.id_fiche)) : fiches %}
   <div class="blog-entries">
-    {% for fiche in fiches %}
-      {% set isLead = withLead and loop.first %}
+    {% for fiche in ordered %}
+      {% set isLead = leadFiche and loop.first %}
       {% set summary = fiche.bf_chapeau ?? fiche.soustitre ?? '' %}
-      <article class="blog-entry bazar-entry{{ isLead ? ' blog-entry--lead' }}{{ fiche.imagebf_image is empty ? ' blog-entry--no-media' }}" {{ fiche.html_data|raw }}>
+      {% set warning = fiche.bf_avertissement ?? '' %}
+      <article class="blog-entry bazar-entry{{ isLead ? ' blog-entry--lead' }}{{ fiche.imagebf_image is empty ? ' blog-entry--no-media' }}{{ warning is not empty ? ' blog-entry--warned' }}" {{ fiche.html_data|raw }}>
         {% if fiche.imagebf_image is not empty %}
           {{ blog.image(fiche, isLead ? 650 : 340, isLead ? 416 : 212) }}
         {% endif %}
         <div class="blog-entry__body">
-          {% if fiche.origin.generatedTitle ?? false %}
-            <div class="blog-entry__text">{{ format(summary is not empty ? summary : (fiche.bf_description ?? ''))|raw }}</div>
+          {% set content %}
+            {% if fiche.origin.generatedTitle ?? false %}
+              <div class="blog-entry__text">{{ format(summary is not empty ? summary : (fiche.bf_description ?? ''))|raw }}</div>
+            {% else %}
+              <h3 class="blog-entry__title"><a href="{{ fiche.url }}">{{ fiche.bf_titre }}</a></h3>
+            {% endif %}
+            {% if isLead and summary is not empty and not (fiche.origin.generatedTitle ?? false) %}
+              {% set text = format(summary)|striptags|trim %}
+              <p class="blog-entry__summary">{{ (text|length > 280 ? text|slice(0, 280)|split(' ')|slice(0, -1)|join(' ') ~ '…' : text)|raw }}</p>
+            {% endif %}
+          {% endset %}
+          {% if warning is not empty %}
+            <details class="blog-entry__warning">
+              <summary class="blog-entry__warning-label">
+                <span class="blog-entry__warning-text">{{ warning|striptags|raw }}</span>
+                <span class="blog-entry__warning-toggle" data-show="{{ _t('BAZ_BLOG_SHOW_WARNED') }}" data-hide="{{ _t('BAZ_BLOG_HIDE_WARNED') }}"></span>
+              </summary>
+              {{ content }}
+            </details>
           {% else %}
-            <h3 class="blog-entry__title"><a href="{{ fiche.url }}">{{ fiche.bf_titre }}</a></h3>
-          {% endif %}
-          {% if isLead and summary is not empty and not (fiche.origin.generatedTitle ?? false) %}
-            {% set text = format(summary)|striptags|trim %}
-            <p class="blog-entry__summary">{{ (text|length > 280 ? text|slice(0, 280)|split(' ')|slice(0, -1)|join(' ') ~ '…' : text)|raw }}</p>
+            {{ content }}
           {% endif %}
           {{ blog.meta(fiche, showDate, showAuthor) }}
         </div>

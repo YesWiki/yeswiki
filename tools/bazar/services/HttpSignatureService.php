@@ -10,6 +10,8 @@ class HttpSignatureService
     public const MAX_CLOCK_SKEW = 3600;
     public const CONTENT_TYPE = 'application/activity+json';
     public const ACCEPT = 'application/activity+json, application/ld+json; profile="https://www.w3.org/ns/activitystreams"';
+    public const TIMEOUT = 5;
+    public const MAX_DURATION = 15;
 
     protected $httpClient;
     protected $ssrfUrlValidator;
@@ -101,6 +103,8 @@ class HttpSignatureService
         $response = $this->httpClient->request('GET', $url, [
             'headers' => $headers,
             'max_redirects' => 0,
+            'timeout' => self::TIMEOUT,
+            'max_duration' => self::MAX_DURATION,
             'resolve' => $this->ssrfUrlValidator->resolveSafe($url),
         ]);
 
@@ -128,11 +132,14 @@ class HttpSignatureService
             throw new \Exception('No signature');
         }
 
-        $sigConf = parse_ini_string(
-            strtr($request->headers->get('Signature'), [',' => "\n"])
-        );
+        if ($request->headers->has('Signature-Input')) {
+            throw new \Exception('RFC 9421 signatures are not supported');
+        }
 
-        if (!isset($sigConf['keyId'],$sigConf['algorithm'],$sigConf['headers'],$sigConf['signature'])) {
+        $sigConf = $this->parseSignatureHeader((string)$request->headers->get('Signature'));
+        $sigConf['algorithm'] ??= 'hs2019';
+
+        if (!isset($sigConf['keyId'],$sigConf['headers'],$sigConf['signature'])) {
             throw new \Exception('Malformed signature');
         }
 
@@ -180,6 +187,24 @@ class HttpSignatureService
         $this->assertNotSeen($sigConf['signature']);
 
         return $owner;
+    }
+
+    /**
+     * The parameters of a draft-cavage Signature header, or an empty array when it is not one.
+     *
+     * @return array<string,string>
+     */
+    protected function parseSignatureHeader(string $header): array
+    {
+        $parameters = [];
+        foreach (preg_split('/,(?=\s*[A-Za-z]+\s*=\s*")/', trim($header)) as $parameter) {
+            if (!preg_match('/^\s*([A-Za-z]+)\s*=\s*"([^"]*)"\s*$/', $parameter, $matches)) {
+                return [];
+            }
+            $parameters[$matches[1]] = $matches[2];
+        }
+
+        return $parameters;
     }
 
     /**

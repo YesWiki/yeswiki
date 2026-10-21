@@ -359,9 +359,10 @@ class BotGuardHttpTest extends YesWikiTestCase
     public function testALoggedInMemberSendsMailOnlyWithTheFullGuard()
     {
         $this->request('api/login', ['username' => self::MEMBER, 'password' => self::MEMBER_PASSWORD]);
-        $ajax = ['X-Requested-With: XMLHttpRequest'];
 
         [, $html] = $this->request('BotGuardTestContact');
+        $this->assertSame(1, preg_match('/"antiCsrfToken":"([^"]+)"/', $html, $token), 'the page hands its token to the scripts');
+        $ajax = ['X-Requested-With: XMLHttpRequest', 'X-CSRF-Token: ' . json_decode('"' . $token[1] . '"')];
         $fields = ['message' => 'Un message assez long pour passer.'] + $this->formFields($html, '//form[contains(@class,"ajax-mail-form")]');
         $this->assertNotEmpty(array_filter(array_keys($fields), fn ($name) => preg_match('/^yw[0-9a-f]{10}$/', $name)), 'a token for a logged-in member too');
 

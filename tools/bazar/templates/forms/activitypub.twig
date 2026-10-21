@@ -15,6 +15,7 @@
 <div class="alert alert-info">
   <strong>{{ _t('BAZ_FORM_ACTOR_ID') }}</strong> : @{{ profile.username }}@{{ domain }}
 </div>
+{{ include('@bazar/activitypub-routes-check.twig') }}
 {% endif %}
 
 <ul class="nav nav-tabs">
@@ -102,6 +103,21 @@
   </div>
 
   <div class="form-group">
+    <label class="control-label col-sm-3">{{ _t('BAZ_ACTIVITYPUB_INCOMING') }}</label>
+    <div class="col-sm-9">
+      {% for setting in ['accept_unfollowed', 'accept_non_public', 'accept_replies'] %}
+      <div class="checkbox">
+        <label>
+          <input type="checkbox" name="activitypub_{{ setting }}" value="1"{% if profile[setting] %} checked{% endif %}>
+          {{ _t('BAZ_ACTIVITYPUB_' ~ setting|upper) }}
+        </label>
+      </div>
+      {% endfor %}
+      <p class="help-block">{{ _t('BAZ_ACTIVITYPUB_INCOMING_HELP') }}</p>
+    </div>
+  </div>
+
+  <div class="form-group">
     <div class="col-sm-offset-3 col-sm-9">
       <button class="btn btn-primary" type="submit">{{ _t('BAZ_SAVE') }}</button>
       {% if profile.username is not empty %}
@@ -152,7 +168,7 @@
         </a>
         <a
           class="btn btn-danger btn-xs"
-          href="{{ url({ params: { vue: 'abonnements', action: 'remove', actor: actorUri, type: 'following', idformulaire: form.bn_id_nature }}) }}"
+          href="{{ signedUrl(url({ params: { vue: 'abonnements', action: 'remove', actor: actorUri, type: 'following', idformulaire: form.bn_id_nature }})) }}"
           onclick="javascript:return confirm('{{ _t('BAZ_CONFIRM_SUPPRIMER_ABONNEMENT') }} ?');"
         >
           <i class="fa fa-trash icon-white"></i>
@@ -169,7 +185,7 @@
       <td>
         <a
           class="btn btn-danger btn-xs"
-          href="{{ url({ params: { vue: 'abonnements', action: 'remove', actor: actorUri, type: 'following', idformulaire: form.bn_id_nature }}) }}"
+          href="{{ signedUrl(url({ params: { vue: 'abonnements', action: 'remove', actor: actorUri, type: 'following', idformulaire: form.bn_id_nature }})) }}"
           onclick="javascript:return confirm('{{ _t('BAZ_CONFIRM_SUPPRIMER_ABONNEMENT') }} ?');"
         >
           <i class="fa fa-trash icon-white"></i>
@@ -198,7 +214,7 @@
         </form>
         <a
           class="btn btn-danger btn-xs"
-          href="{{ url({ params: { vue: 'abonnements', action: 'remove', actor: actorUri, type: 'followers', idformulaire: form.bn_id_nature }}) }}"
+          href="{{ signedUrl(url({ params: { vue: 'abonnements', action: 'remove', actor: actorUri, type: 'followers', idformulaire: form.bn_id_nature }})) }}"
           onclick="javascript:return confirm('{{ _t('BAZ_ACTIVITYPUB_CONFIRM_REFUSE') }}');"
         >{{ _t('BAZ_ACTIVITYPUB_REFUSE') }}</a>
       </td>
@@ -225,7 +241,7 @@
         {% if actorUri not in following %}
         <a
           class="btn btn-default btn-mini btn-xs"
-          href="{{ url({ params: { vue: 'abonnements', action: 'add', actor: actorUri, type: 'following', idformulaire: form.bn_id_nature }}) }}"
+          href="{{ signedUrl(url({ params: { vue: 'abonnements', action: 'add', actor: actorUri, type: 'following', idformulaire: form.bn_id_nature }})) }}"
           title="{{ _t('BAZ_FOLLOW_BACK') }}"
         >
           <i class="fa fa-user-plus icon-white"></i>
@@ -233,7 +249,7 @@
         {% endif %}
         <a
           class="btn btn-danger btn-xs"
-          href="{{ url({ params: { vue: 'abonnements', action: 'remove', actor: actorUri, type: 'followers', idformulaire: form.bn_id_nature }}) }}"
+          href="{{ signedUrl(url({ params: { vue: 'abonnements', action: 'remove', actor: actorUri, type: 'followers', idformulaire: form.bn_id_nature }})) }}"
           onclick="javascript:return confirm('{{ _t('BAZ_CONFIRM_SUPPRIMER_ABONNE') }} ?');"
         >
           <i class="fa fa-trash icon-white"></i>

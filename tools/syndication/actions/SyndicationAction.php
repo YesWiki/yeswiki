@@ -5,6 +5,7 @@ use Tamtamchik\SimpleFlash\Flash;
 use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Bazar\Service\SearchManager;
 use YesWiki\Core\Service\ExecutableFilename;
+use YesWiki\Core\Service\RequestGuard;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Syndication\Service\SafeFile;
 
@@ -66,9 +67,10 @@ class SyndicationAction extends YesWikiAction
 
     public function run(): ?string
     {
+        $refusal = '';
         $mappingToBazar = !empty($this->arguments['mapping']) && $this->wiki->userIsAdmin();
         if ($mappingToBazar) {
-            $this->addToBazar();
+            $refusal = $this->addToBazar();
             if (empty($this->arguments['mapping']['id'])) {
                 return '<div class="alert alert-danger">' . _t('ERROR') . ' ' . _t('SYNDICATION_MAPPING_ID_REQUIRED') . ', ex: id=1400,title=bf_titre,url=bf_url,description=bf_description,image=imagebf_image,categories=bf_tags.</div>';
             }
@@ -78,6 +80,7 @@ class SyndicationAction extends YesWikiAction
         if (!empty($this->arguments['url'])) {
             $nburl = 0;
             $syndication = ['pages' => []];
+            $errors = [];
             foreach ($this->arguments['url'] as $cle => $url) {
                 if ($url != '') {
                     $feed = new SimplePie\SimplePie();
@@ -87,11 +90,15 @@ class SyndicationAction extends YesWikiAction
                     try {
                         $feed->init();
                     } catch (Throwable $error) {
-                        return '<div class="alert alert-danger">' . _t('ERROR') . ' ' . htmlspecialchars($error->getMessage()) . '</div>' . "\n";
+                        $errors[] = htmlspecialchars($error->getMessage());
+                        $nburl++;
+                        continue;
                     }
                     $feed->handle_content_type();
                     if ($feed->error()) {
-                        return '<div class="alert alert-danger">' . _t('ERROR') . ' ' . $feed->error() . '</div>' . "\n";
+                        $errors[] = htmlspecialchars(implode(' ', (array)$feed->error()));
+                        $nburl++;
+                        continue;
                     }
 
                     if ($feed) {
@@ -217,7 +224,15 @@ class SyndicationAction extends YesWikiAction
                 $title = $this->arguments['title'];
             }
 
-            return '<div class="feed_syndication' . ($this->arguments['class'] ? ' ' . $this->arguments['class'] : '') . '">' . "\n" .
+            $errorsHtml = $refusal;
+            foreach ($errors as $error) {
+                $errorsHtml .= '<div class="alert alert-danger">' . _t('ERROR') . ' ' . $error . '</div>' . "\n";
+            }
+            if (empty($syndication['pages']) && !empty($errors)) {
+                return $errorsHtml;
+            }
+
+            return $errorsHtml . '<div class="feed_syndication' . ($this->arguments['class'] ? ' ' . $this->arguments['class'] : '') . '">' . "\n" .
                 $this->render('@syndication/' . $this->arguments['template'], [
                     'syndication' => $syndication,
                     'title' => $title,
@@ -229,7 +244,7 @@ class SyndicationAction extends YesWikiAction
             '</div>' . "\n";
         }
 
-        return '<div class="alert alert-danger"><strong>' . _t('SYNDICATION_ACTION_SYNDICATION') . '</strong> : '
+        return $refusal . '<div class="alert alert-danger"><strong>' . _t('SYNDICATION_ACTION_SYNDICATION') . '</strong> : '
         . _t('SYNDICATION_PARAM_URL_REQUIRED') . '.</div>' . "\n";
     }
 
@@ -279,10 +294,16 @@ class SyndicationAction extends YesWikiAction
         return $destFile;
     }
 
-    protected function addToBazar(): void
+    /**
+     * Copies the feed item given in the URL into a bazar entry, or returns the error that stopped it.
+     */
+    protected function addToBazar(): string
     {
         $mapping = $this->getRequest()->query->get('mapping');
         if (!empty($mapping)) {
+            if (!$this->getService(RequestGuard::class)->linkIsSigned($this->getRequest())) {
+                return '<div class="alert alert-danger">' . _t('ERROR') . ' ' . _t('CSRF_TOKEN_FAIL_ERROR') . '</div>' . "\n";
+            }
             $data = json_decode(urldecode($mapping), true);
             if (!empty($data)) {
                 $entryManager = $this->getService(EntryManager::class);
@@ -291,5 +312,7 @@ class SyndicationAction extends YesWikiAction
                 $this->wiki->redirect($this->wiki->href());
             }
         }
+
+        return '';
     }
 }

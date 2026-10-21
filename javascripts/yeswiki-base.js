@@ -707,6 +707,7 @@ function toastMessage(
       $.ajax({
         method: 'GET',
         url,
+        headers: { 'X-CSRF-Token': wiki.antiCsrfToken },
         success() {
           const table = $(elem).closest('table')
           if (table.length !== 0) {
@@ -758,6 +759,7 @@ function toastMessage(
         $.ajax({
           method: 'GET',
           url: `${url}/${currentReactionId}/${data.id}/${data.pagetag}/${data.username}/delete`,
+          headers: { 'X-CSRF-Token': wiki.antiCsrfToken },
           success() {
             nb.text(nbInit - 1)
             $(link).removeClass('user-reaction')

@@ -39,6 +39,7 @@ class BazarFollowAction extends YesWikiAction
             'form' => $form,
             'formHandle' => $formHandle,
             'error' => $error,
+            'routes' => $this->wiki->UserIsAdmin() ? $activityPubService->routesToCheck($form) : null,
         ]);
     }
 }

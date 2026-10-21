@@ -1,0 +1,45 @@
+{% set end = bf_date_fin_evenement | default(bf_date_debut_evenement) %}
+{% set end = end | length == 10 ? end ~ " 23:59:59" : end %}
+{% set geo = bf_latitude is iterable ? bf_latitude : {"latitude": bf_latitude | default(""), "longitude": bf_longitude | default("")} %}
+{% set place = [bf_adresse | default(""), bf_code_postal | default(""), bf_ville | default("")] | filter(part => part) %}
+{% set extension = imagebf_image | default("") | split(".") | last | lower %}
+{% set mediaTypes = {"jpg": "image/jpeg", "jpeg": "image/jpeg", "png": "image/png", "gif": "image/gif", "webp": "image/webp", "avif": "image/avif"} %}
+{% set attachment = [] %}
+{% if imagebf_image %}
+  {% set attachment = attachment | merge([{"type": "Document", "name": "Banner", "mediaType": mediaTypes[extension] ?? "image/jpeg", "url": fileUrl(imagebf_image)}]) %}
+{% endif %}
+{% if bf_site_internet %}
+  {% set attachment = attachment | merge([{"type": "Link", "name": "Website", "mediaType": "text/html", "href": bf_site_internet}]) %}
+{% endif %}
+{
+  "@context": "https://www.w3.org/ns/activitystreams",
+  "type": "Event",
+  "name": {{ bf_titre | json_encode }},
+  "content": {{ format(bf_description | default("")) | json_encode }},
+  "mediaType": "text/html",
+  "startTime": {{ bf_date_debut_evenement | date("c") | json_encode }},
+  "endTime": {{ end | date("c") | json_encode }},
+  "timezone": {{ "now" | date("e") | json_encode }},
+  {% if bf_site_internet %}
+  "url": {{ bf_site_internet | json_encode }},
+  {% endif %}
+  {% if place %}
+  "location": {
+    "type": "Place",
+    "name": {{ place | join(", ") | json_encode }},
+    {% if geo.latitude | default("") and geo.longitude | default("") %}
+    "latitude": {{ (geo.latitude * 1.0) | json_encode }},
+    "longitude": {{ (geo.longitude * 1.0) | json_encode }},
+    {% endif %}
+    "address": {
+      "type": "PostalAddress",
+      "streetAddress": {{ bf_adresse | default("") | json_encode }},
+      "postalCode": {{ bf_code_postal | default("") | json_encode }},
+      "addressLocality": {{ bf_ville | default("") | json_encode }}
+    }
+  },
+  {% endif %}
+  "published": {{ date_creation_fiche | date("c") | json_encode }},
+  "updated": {{ date_maj_fiche | default(date_creation_fiche) | date("c") | json_encode }},
+  "attachment": {{ attachment | json_encode }}
+}

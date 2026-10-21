@@ -52,10 +52,25 @@ class ActivityPubProfilesTest extends TestCase
             'image' => 'https://cdn.example/banner.jpg',
             'fields' => ['Site' => 'https://us.example/'],
             'approve_followers' => false,
+            'accept_unfollowed' => false,
+            'accept_non_public' => false,
+            'accept_replies' => false,
         ], $profiles->get('1'));
         $this->assertSame('blog', $profiles->username(2));
         $this->assertSame('1', $profiles->formIdForUsername('AGENDA'));
         $this->assertStringContainsString("'wakka_name' => 'Test'", file_get_contents($this->configFile));
+    }
+
+    public function testIncomingPostsAreStrictUntilAnAdminRelaxesThem()
+    {
+        $this->assertSame([false, false, false], array_values(array_intersect_key($this->profiles()->get('2'), array_flip(['accept_unfollowed', 'accept_non_public', 'accept_replies']))));
+
+        $this->profiles()->save('2', ['username' => 'blog', 'accept_unfollowed' => true, 'accept_replies' => '1']);
+
+        $profile = $this->profiles()->get('2');
+        $this->assertTrue($profile['accept_unfollowed']);
+        $this->assertFalse($profile['accept_non_public']);
+        $this->assertTrue($profile['accept_replies']);
     }
 
     public function testAUsernameBelongsToOneFormOnly()

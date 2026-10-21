@@ -341,6 +341,16 @@ echo '<option value="auto"' . ((isset($_GET['lang']) && $_GET['lang'] === 'auto'
             </label>
             <p class="help-block"><?php echo _t('INDEX_HELP_TEXT'); ?>.</p>
           </div>
+
+          <div class="checkbox">
+            <label>
+              <input type="hidden" name="config[activitypub]" value="0" />
+              <input type="checkbox" name="config[activitypub]" value="1" <?php
+                                                                      echo isDomainRootUrl($wakkaConfig['base_url']) ? 'checked' : ''; ?> />
+              <span>&nbsp;<?php echo _t('ACTIVATE_ACTIVITYPUB'); ?></span>
+            </label>
+            <p class="help-block"><?php echo _t('ACTIVITYPUB_HELP_TEXT'); ?></p>
+          </div>
         </div>
       </div>
     </div>
