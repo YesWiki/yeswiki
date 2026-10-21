@@ -22,6 +22,31 @@ export const login = async (page: Page, username: string, password: string) => {
   await loginRequest(page.request, username, password)
 }
 
+/** The anti-CSRF token of the session the request context is signed in with. */
+export const csrfToken = async (
+  request: APIRequestContext,
+): Promise<string> => {
+  const html = await (await request.get('/?PagePrincipale')).text()
+  const token = html.match(/"antiCsrfToken":"([^"]+)"/)?.[1]
+  expect(token, 'a signed-in page carries the session token').toBeTruthy()
+
+  return token!
+}
+
+/** POST as the signed-in user, with the token the wiki's own scripts would send. */
+export const signedPost = async (
+  page: Page,
+  url: string,
+  options: Parameters<APIRequestContext['post']>[1] = {},
+) =>
+  page.request.post(url, {
+    ...options,
+    headers: {
+      ...options.headers,
+      'X-CSRF-Token': await csrfToken(page.request),
+    },
+  })
+
 export const logout = async (page: Page) => {
   await page.context().clearCookies()
 }

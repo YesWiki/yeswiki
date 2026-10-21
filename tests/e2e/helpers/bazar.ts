@@ -1,5 +1,11 @@
 import { expect, Locator, Page } from '@playwright/test'
-import { ADMIN_PASSWORD, ADMIN_USERNAME, login, logout } from './login'
+import {
+  ADMIN_PASSWORD,
+  ADMIN_USERNAME,
+  login,
+  logout,
+  signedPost,
+} from './login'
 
 export const checkCheckbox = async (parent: Locator, label: string) => {
   await parent
@@ -16,7 +22,7 @@ export const createEntry = async (
   formId: number,
   fields: Record<string, string>,
 ): Promise<string> => {
-  const response = await page.request.post(`/?api/entries/${formId}`, {
+  const response = await signedPost(page, `/?api/entries/${formId}`, {
     data: fields,
   })
   expect(response.status()).toBe(201)

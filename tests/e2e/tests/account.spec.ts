@@ -75,7 +75,7 @@ test.describe('the account routes', () => {
     ).toHaveCount(0)
     await expect(page.locator('.yw-dashboard__link--current')).toBeVisible()
 
-    await page.goto('/?user/logout')
+    await page.click('.yw-dashboard__sidebar a[href*="user/logout"]')
     await expect(
       page.locator(SIGN_IN_FORM),
       'signing out must bring the form back',

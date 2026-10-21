@@ -1,6 +1,11 @@
 import { test, expect } from '@playwright/test'
 import { resetEnv } from '../helpers/db'
-import { ADMIN_PASSWORD, ADMIN_USERNAME, login } from '../helpers/login'
+import {
+  ADMIN_PASSWORD,
+  ADMIN_USERNAME,
+  login,
+  signedPost,
+} from '../helpers/login'
 
 test.beforeEach(async () => {
   resetEnv()
@@ -15,7 +20,7 @@ test('a page with a Mermaid block shows the diagram', async ({ page }) => {
   page.on('pageerror', (error) => errors.push(error.message))
 
   await login(page, ADMIN_USERNAME, ADMIN_PASSWORD)
-  const saved = await page.request.post('/?api/pages/DiagrammeMermaid', {
+  const saved = await signedPost(page, '/?api/pages/DiagrammeMermaid', {
     form: { body: DIAGRAM },
   })
   expect(saved.ok()).toBeTruthy()

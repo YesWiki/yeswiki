@@ -1,7 +1,12 @@
 import { test, expect, Page } from '@playwright/test'
 import { resetEnv } from '../helpers/db'
 import { seedResources } from '../helpers/bazar'
-import { ADMIN_PASSWORD, ADMIN_USERNAME, login } from '../helpers/login'
+import {
+  ADMIN_PASSWORD,
+  ADMIN_USERNAME,
+  login,
+  signedPost,
+} from '../helpers/login'
 
 test.beforeEach(async () => {
   resetEnv()
@@ -12,7 +17,7 @@ test.beforeEach(async () => {
 const showCards = async (page: Page, tag: string, action: string) => {
   await seedResources(page)
   await login(page, ADMIN_USERNAME, ADMIN_PASSWORD)
-  const saved = await page.request.post(`/?api/pages/${tag}`, {
+  const saved = await signedPost(page, `/?api/pages/${tag}`, {
     form: { body: action },
   })
   expect(saved.ok()).toBeTruthy()
