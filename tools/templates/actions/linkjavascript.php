@@ -77,6 +77,8 @@ while ($customJsDir && ($file = readdir($customJsDir)) !== false) {
     }
 }
 
+$this->addJavascriptFile('javascripts/csrf-guard.js', true);
+
 // si quelque chose est passée dans la variable globale pour le javascript, on l'intègre
 $yeswiki_javascripts .= isset($GLOBALS['js']) ? $GLOBALS['js'] : '';
 

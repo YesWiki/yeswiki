@@ -19,6 +19,7 @@ return [
     'AU_UPDATE_INFOS' => 'Mise à jour des informations de version',
     'AU_OK' => 'ok',
     'AU_ERROR' => 'Erreur',
+    'AU_FORBIDDEN_EXTENSION' => "L'extension %{name} est interdite sur ce wiki (forbidden_extensions dans wakka.config.php)",
     'AU_UNKNOW' => 'Inconnue',
     'AU_ABSENT' => 'Non installé',
     'AU_DELETE_EXT' => 'Supprimer',

@@ -34,7 +34,10 @@ class SemanticTransformer
         return $semanticData;
     }
 
-    public function convertFromSemanticData($formId, $data): array
+    /**
+     * Entry fields from semantic data, or null when the reverse template outputs null to turn the object down.
+     */
+    public function convertFromSemanticData($formId, $data): ?array
     {
         $form = baz_valeurs_formulaire($formId);
 
@@ -47,6 +50,9 @@ class SemanticTransformer
 
         if (json_last_error() !== JSON_ERROR_NONE) {
             throw new \Exception('Reverse semantic template produced invalid JSON: ' . json_last_error_msg());
+        }
+        if ($fields === null) {
+            return null;
         }
 
         return array_merge([

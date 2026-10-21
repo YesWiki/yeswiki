@@ -265,6 +265,9 @@ class RemoteBackupService
         $job['identifyingSince'] = (int)($job['identifyingSince'] ?? time());
         $candidate = null;
         foreach ($this->remoteArchives($job['baseUrl'], $job['cookie']) as $archive) {
+            if (!is_string($archive['filename'] ?? null) || empty(ArchiveFilename::parse($archive['filename']))) {
+                continue;
+            }
             if (($archive['type'] ?? '') === ($job['expectedType'] ?? 'full') && !in_array($archive['filename'], $job['knownArchives'], true)) {
                 $candidate = $archive;
                 break;
@@ -632,6 +635,10 @@ class RemoteBackupService
 
     protected function localPath(string $filename): string
     {
+        if ($filename === '' || basename($filename) !== $filename || str_starts_with($filename, '.')) {
+            throw new \Exception('Refused backup file name: ' . $filename);
+        }
+
         return $this->archiveService->getPrivateFolder() . DIRECTORY_SEPARATOR . $filename;
     }
 

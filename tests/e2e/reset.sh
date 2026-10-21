@@ -15,6 +15,7 @@ curl --silent --fail --show-error \
           -F "config[mysql_password]=root" \
           -F "config[table_prefix]=yeswiki_" \
           -F "config[allow_raw_html]=1" \
+          -F "config[ci_api]=1" \
           -F "config[archive][privatePath]=./private/archives" \
           -F "admin_name=WikiAdmin" \
           -F "admin_password=WikiAdminPassword" \

@@ -11,6 +11,7 @@ require_once 'tests/YesWikiTestCase.php';
 
 #[CoversMethod(RemoteBackupService::class, 'start')]
 #[CoversMethod(RemoteBackupService::class, 'status')]
+#[CoversMethod(RemoteBackupService::class, 'identifyArchive')]
 class RemoteBackupServiceTest extends YesWikiTestCase
 {
     private const GB = 1024 * 1024 * 1024;
@@ -84,21 +85,93 @@ class RemoteBackupServiceTest extends YesWikiTestCase
     /**
      * A fetcher whose remote and disk are scripted, and whose job file is a variable.
      */
-    private function fetcher(array $remoteStatus, ?int $localFree): RemoteBackupService
+    public function testAnArchiveNameThatIsNotABackupIsNeverDownloaded()
+    {
+        $fetcher = $this->fetcher(['canArchive' => true], 6 * self::GB, [
+            ['filename' => '../../files/shell.php', 'type' => 'full', 'size' => 1024],
+        ]);
+        $fetcher->seedJob([
+            'baseUrl' => 'https://remote.example/',
+            'cookie' => 'PHPSESSID=test',
+            'step' => RemoteBackupService::STEP_IDENTIFYING,
+            'expectedType' => 'full',
+            'knownArchives' => [],
+            'identifyingSince' => time(),
+            'candidate' => '../../files/shell.php',
+            'candidateSize' => 1024,
+            'candidateSince' => 0,
+            'filename' => '',
+            'startedAt' => time(),
+            'total' => 0,
+            'bytes' => 0,
+            'resumable' => true,
+            'output' => '',
+        ]);
+
+        $state = $fetcher->status();
+
+        $this->assertSame(RemoteBackupService::STEP_IDENTIFYING, $state['step']);
+        $this->assertSame('', $fetcher->job()['filename']);
+        $this->assertArrayNotHasKey('remoteFilename', $fetcher->job());
+    }
+
+    public function testAWellNamedArchiveIsStillPickedUp()
+    {
+        $name = '2026-10-15T10-00-00_remote-example_archive.zip';
+        $fetcher = $this->fetcher(['canArchive' => true], 6 * self::GB, [
+            ['filename' => $name, 'type' => 'full', 'size' => 1024],
+        ]);
+        $fetcher->seedJob([
+            'baseUrl' => 'https://remote.example/',
+            'cookie' => 'PHPSESSID=test',
+            'step' => RemoteBackupService::STEP_IDENTIFYING,
+            'expectedType' => 'full',
+            'knownArchives' => [],
+            'identifyingSince' => time(),
+            'candidate' => $name,
+            'candidateSize' => 1024,
+            'candidateSince' => 0,
+            'filename' => '',
+            'startedAt' => time(),
+            'total' => 0,
+            'bytes' => 0,
+            'resumable' => true,
+            'output' => '',
+        ]);
+
+        $state = $fetcher->status();
+
+        $this->assertSame(RemoteBackupService::STEP_DOWNLOADING, $state['step']);
+        $this->assertSame($name, $fetcher->job()['remoteFilename']);
+    }
+
+    private function fetcher(array $remoteStatus, ?int $localFree, array $remoteArchives = []): RemoteBackupService
     {
         $archiveService = $this->getWiki()->services->get(ArchiveService::class);
 
-        return new class($archiveService, $remoteStatus, $localFree) extends RemoteBackupService {
+        return new class($archiveService, $remoteStatus, $localFree, $remoteArchives) extends RemoteBackupService {
             public array $calls = [];
             private array $remoteStatus;
             private ?int $localFree;
+            private array $remoteArchives;
             private array $job = [];
 
-            public function __construct(ArchiveService $archiveService, array $remoteStatus, ?int $localFree)
+            public function __construct(ArchiveService $archiveService, array $remoteStatus, ?int $localFree, array $remoteArchives)
             {
                 parent::__construct($archiveService);
                 $this->remoteStatus = $remoteStatus;
                 $this->localFree = $localFree;
+                $this->remoteArchives = $remoteArchives;
+            }
+
+            public function seedJob(array $job): void
+            {
+                $this->job = $job;
+            }
+
+            public function job(): array
+            {
+                return $this->job;
             }
 
             protected function login(string $baseUrl, string $username, string $password): string
@@ -111,6 +184,9 @@ class RemoteBackupServiceTest extends YesWikiTestCase
                 $this->calls[] = $post['action'] ?? $path;
                 if ($path === 'api/archives/archivingStatus/') {
                     return $this->remoteStatus;
+                }
+                if ($path === 'api/archives' && $post === null) {
+                    return $this->remoteArchives;
                 }
                 if (($post['action'] ?? '') === 'startArchive') {
                     return ['uid' => 'uid-test'];

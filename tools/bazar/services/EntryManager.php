@@ -264,12 +264,13 @@ class EntryManager
         $data['id_typeannonce'] = "$formId";
 
         if ($semantic) {
-            $data = $this->semanticTransformer->convertFromSemanticData($formId, $data);
+            $data = $this->semanticTransformer->convertFromSemanticData($formId, $data) ?? throw new \Exception(_t('BAZ_SEMANTIC_OBJECT_REFUSED'));
         }
 
         $this->refuseTagOfAnExistingPage($data['id_fiche'] ?? null);
 
         $form = $this->wiki->services->get(FormManager::class)->getOne($data['id_typeannonce']);
+        $this->refuseExternalForm($form);
 
         $data = $this->assignRestrictedFields($data, [], $form);
 
@@ -338,7 +339,7 @@ class EntryManager
             $this->mailer->notifyAdmins($data, true);
         }
 
-        if ($this->activityPubService->isEnabled($form) && !$sourceUrl) {
+        if ($this->activityPubService->hasActor($form) && !$sourceUrl) {
             $this->activityPubService->notifyFollowers($form, $data, 'Create');
         }
 
@@ -352,6 +353,16 @@ class EntryManager
     {
         if (!empty($tag) && $this->pageManager->getOne($tag, null, true, true)) {
             throw new TagAlreadyUsedException(_t('BAZ_ENTRY_TAG_ALREADY_USED', ['tag' => $tag]));
+        }
+    }
+
+    /**
+     * A form fetched from another wiki is for display only: its fields are not ours to trust.
+     */
+    private function refuseExternalForm(?array $form): void
+    {
+        if (!empty($form['_isExternal_'])) {
+            throw new \Exception(_t('BAZ_EXTERNAL_FORM_READ_ONLY'));
         }
     }
 
@@ -379,6 +390,7 @@ class EntryManager
         $data['id_typeannonce'] = $previousData['id_typeannonce'];
 
         $form = $this->wiki->services->get(FormManager::class)->getOne($data['id_typeannonce']);
+        $this->refuseExternalForm($form);
 
         $data = $this->assignRestrictedFields($data, $previousData, $form);
 
@@ -387,7 +399,7 @@ class EntryManager
         }
 
         if ($semantic) {
-            $data = $this->semanticTransformer->convertFromSemanticData($data['id_typeannonce'], $data);
+            $data = $this->semanticTransformer->convertFromSemanticData($data['id_typeannonce'], $data) ?? throw new \Exception(_t('BAZ_SEMANTIC_OBJECT_REFUSED'));
         }
 
         $data = $this->formatDataBeforeSave($data);
@@ -404,7 +416,7 @@ class EntryManager
         }
 
         $isExternalEntry = !empty($this->tripleStore->getMatching($data['id_fiche'], TripleStore::SOURCE_URL_URI, null, '=', '=', ''));
-        if ($this->activityPubService->isEnabled($form) && !$isExternalEntry) {
+        if ($this->activityPubService->hasActor($form) && !$isExternalEntry) {
             $this->activityPubService->notifyFollowers($form, $data, 'Update');
         }
 
@@ -514,7 +526,7 @@ class EntryManager
             $this->authController->getLoggedUserName(),
             'Suppression de la page ->""' . $tag . '""'
         );
-        if ($this->activityPubService->isEnabled($form) && !$isExternalEntry) {
+        if ($this->activityPubService->hasActor($form) && !$isExternalEntry) {
             $this->activityPubService->notifyFollowers($form, $fiche, 'Delete');
         }
 

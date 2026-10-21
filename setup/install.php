@@ -160,6 +160,18 @@ test(
 );
 mysqli_autocommit($dblink, true);
 
+if (($config['activitypub'] ?? '0') === '1') {
+    $formIds = implode(', ', array_keys(DEFAULT_ACTIVITYPUB_PROFILES));
+    test(
+        _t('ACTIVATING_ACTIVITYPUB') . ' ...',
+        @mysqli_query($dblink, "UPDATE `{$config['table_prefix']}nature` SET `bn_activitypub_enable` = 1 WHERE `bn_id_nature` IN ($formIds);"),
+        '',
+        0
+    );
+    $config['activitypub_profiles'] = DEFAULT_ACTIVITYPUB_PROFILES;
+}
+unset($config['activitypub']);
+
 // Config indexation by robots
 if (!isset($config['allow_robots']) || $config['allow_robots'] != '1') {
     // update robots.txt file

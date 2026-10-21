@@ -1,28 +1,31 @@
+const requestedRemoteImages = new Set()
+
 export default {
   data() {
     return {
       tokenForImages: null,
       imagesToProcess: [],
       processingImage: false,
+      remoteImages: {},
     }
   },
   methods: {
+    isAbsoluteImageUrl(value) {
+      return /^(https?:)?\/\//i.test(value)
+    },
     urlImageResizedOnError(entry, fieldName, width, height, mode, token) {
       const node = window.event.target
       $(node).removeAttr('onerror')
-      if (entry[fieldName]) {
+      if (entry[fieldName] && !this.isAbsoluteImageUrl(entry[fieldName])) {
         const fileName = entry[fieldName]
         if (!this.isExternalUrl(entry)) {
-          // currently not supporting api for external images (anti-csrf token not generated)
           if (this.tokenForImages === null) {
             this.tokenForImages = token
           }
           this.imagesToProcess.push({
-            fileName,
-            width,
-            height,
-            mode,
-            node,
+            apiPath: `${fileName}/cache/${width}/${height}/${mode}`,
+            onSuccess: (cachefilename) =>
+              this.replaceImageSource(node, cachefilename),
           })
           this.processNextImage()
         } else {
@@ -40,9 +43,42 @@ export default {
         }
       }
     },
-    urlImage(entry, fieldName, width, height, mode) {
+    remoteImageUrl(entry, fieldName, width, height, mode, token) {
+      const url = entry[fieldName]
+      if (!token || this.isExternalUrl(entry)) {
+        return url
+      }
+      const key = [entry.id_fiche, fieldName, width, height, mode, url].join(
+        '|',
+      )
+      if (key in this.remoteImages) {
+        return this.remoteImages[key]
+      }
+      if (!requestedRemoteImages.has(key)) {
+        requestedRemoteImages.add(key)
+        if (this.tokenForImages === null) {
+          this.tokenForImages = token
+        }
+        const propertyName = this.fieldInfo(fieldName).propertyname || fieldName
+        this.imagesToProcess.push({
+          apiPath: `entry/${encodeURIComponent(entry.id_fiche)}/${encodeURIComponent(propertyName)}/cache/${width}/${height}/${mode}`,
+          onSuccess: (cachefilename) => {
+            this.remoteImages[key] = this.cachedImageUrl(cachefilename)
+          },
+          onFailure: () => {
+            this.remoteImages[key] = url
+          },
+        })
+        setTimeout(() => this.processNextImage())
+      }
+      return null
+    },
+    urlImage(entry, fieldName, width, height, mode, token = null) {
       if (!entry[fieldName]) {
         return null
+      }
+      if (this.isAbsoluteImageUrl(entry[fieldName])) {
+        return this.remoteImageUrl(entry, fieldName, width, height, mode, token)
       }
       let baseUrl = this.isExternalUrl(entry)
         ? entry.url.slice(0, -entry.id_fiche.length)
@@ -81,35 +117,46 @@ export default {
       }
       return `${baseUrl}/files/${fileName}`
     },
+    cachedImageUrl(cachefilename) {
+      return `${wiki.baseUrl.replace(/(\?)?$/, '')}${cachefilename}`
+    },
+    replaceImageSource(node, cachefilename) {
+      const previousUrl = $(node).prop('src')
+      const srcFileName = this.cachedImageUrl(cachefilename)
+
+      $(`img[src="${previousUrl}"]`).each(function () {
+        const $img = $(this)
+        $img.prop('src', srcFileName)
+
+        const $next = $img.next('div.area.visual-area[style]')
+        if ($next.length) {
+          const backgroundImage = $next.css('background-image')
+          if (backgroundImage && backgroundImage.length) {
+            $next.css({ 'background-image': '' })
+            $next.css({ 'background-image': `url("${srcFileName}")` })
+          }
+        }
+      })
+    },
     processNextImage() {
       if (!this.processingImage && this.imagesToProcess.length > 0) {
         this.processingImage = true
-        const newImageParams = this.imagesToProcess[0]
+        const image = this.imagesToProcess[0]
         this.imagesToProcess = this.imagesToProcess.slice(1)
         $.ajax({
-          url: wiki.url(
-            `?api/images/${newImageParams.fileName}/cache/${newImageParams.width}/${newImageParams.height}/${newImageParams.mode}`,
-          ),
+          url: wiki.url(`?api/images/${image.apiPath}`),
           method: 'post',
           data: { csrftoken: this.tokenForImages },
           cache: false,
           success: (data) => {
-            const previousUrl = $(newImageParams.node).prop('src')
-            const srcFileName = `${wiki.baseUrl.replace(/(\?)?$/, '')}${data.cachefilename}`
-
-            $(`img[src="${previousUrl}"]`).each(function () {
-              const $img = $(this)
-              $img.prop('src', srcFileName)
-
-              const $next = $img.next('div.area.visual-area[style]')
-              if ($next.length) {
-                const backgroundImage = $next.css('background-image')
-                if (backgroundImage && backgroundImage.length) {
-                  $next.css({ 'background-image': '' }) // reset to force update
-                  $next.css({ 'background-image': `url("${srcFileName}")` })
-                }
-              }
-            })
+            if (data?.cachefilename) {
+              image.onSuccess(data.cachefilename)
+            } else {
+              image.onFailure?.()
+            }
+          },
+          error: () => {
+            image.onFailure?.()
           },
           complete: (e) => {
             if (e.responseJSON != null && e.responseJSON.newToken != null) {

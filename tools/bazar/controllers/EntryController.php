@@ -13,6 +13,7 @@ use YesWiki\Bazar\Field\LinkedEntryField;
 use YesWiki\Bazar\Field\UserField;
 use YesWiki\Bazar\Service\ConditionsChecker;
 use YesWiki\Bazar\Service\EntryManager;
+use YesWiki\Bazar\Service\EntryOrigin;
 use YesWiki\Bazar\Service\FormManager;
 use YesWiki\Bazar\Service\SearchManager;
 use YesWiki\Bazar\Service\SemanticTransformer;
@@ -197,7 +198,7 @@ class EntryController extends YesWikiController
             $isUserFavorite = $this->favoritesManager->isUserFavorite($currentuser, $entryId);
         }
 
-        $sourceUrl = $this->tripleStore->getOne($entryId, TripleStore::SOURCE_URL_URI, '', '');
+        $origin = $this->getService(EntryOrigin::class)->describe($entry);
 
         return $this->render('@bazar/entries/view.twig', [
             'form' => $pLocalForm,
@@ -215,7 +216,7 @@ class EntryController extends YesWikiController
             'canDuplicate' => $this->wiki->UserIsAdmin($userNameForRendering) && !isset($entry['read-only']),
             'isAdmin' => $this->wiki->UserIsAdmin($userNameForRendering),
             'renderedEntry' => $renderedEntry,
-            'sourceUrl' => $sourceUrl,
+            'origin' => $origin,
             'incomingUrl' => $this->getRequest()->query->get('incomingurl', getAbsoluteUrl()),
             'editContextUrl' => $this->getEditContextUrl($entryId),
         ]);
@@ -256,11 +257,11 @@ class EntryController extends YesWikiController
         if (empty($formId)) {
             return '<div class="alert alert-danger">' . _t('BAZ_PAS_D_ID_DE_FORM_INDIQUE') . '</div>';
         }
-        $_SESSION['current_form_id'] = $formId;
         $form = $this->formManager->getOne($formId);
         if (!$form) {
-            return '<div class="alert alert-danger">' . _t('BAZ_PAS_DE_FORM_AVEC_CET_ID') . ' : \'' . $formId . '\'</div>';
+            return '<div class="alert alert-danger">' . _t('BAZ_PAS_DE_FORM_AVEC_CET_ID') . ' : \'' . htmlspecialchars((string)$formId) . '\'</div>';
         }
+        $_SESSION['current_form_id'] = $form['bn_id_nature'];
 
         $results = $this->checkIfOnlyOneEntry($form);
         $incomingUrl = $this->getIncomingUrl();
@@ -832,16 +833,26 @@ class EntryController extends YesWikiController
         return empty($incomingUrl) || !$this->isWikiUrl($incomingUrl) ? '' : $incomingUrl;
     }
 
-    /** The page to come back to after editing $entryTag: the current page, unless it is an API call or the entry's own plain page. */
+    /** The page to come back to after editing $entryTag: the current page and its query without incomingurl or wiki, unless it is an API call or the entry's own plain page. */
     public function getEditContextUrl(string $entryTag): string
     {
-        if ($this->wiki->GetPageTag() === 'api' || !in_array($this->wiki->GetMethod(), ['show', 'iframe'], true)) {
+        $tag = $this->wiki->GetPageTag();
+        if ($tag === 'api' || !in_array($this->wiki->method, ['show', 'iframe'], true)) {
             return '';
         }
-        $currentUrl = getAbsoluteUrl();
+        $params = [];
+        foreach (explode('&', (string)($_SERVER['QUERY_STRING'] ?? '')) as $position => $pair) {
+            $key = strtolower(urldecode(explode('=', $pair, 2)[0]));
+            if ($pair === '' || in_array($key, ['incomingurl', 'wiki'], true) || ($position === 0 && !str_contains($pair, '='))) {
+                continue;
+            }
+            $params[] = $pair;
+        }
+        $handler = $this->wiki->method === 'iframe' ? 'iframe' : '';
+        $currentUrl = $this->wiki->Href($handler, $tag, implode('&', $params), false);
         $plainUrls = [$this->wiki->Href('', $entryTag, null, false), $this->wiki->Href('iframe', $entryTag, null, false)];
 
-        return in_array($currentUrl, $plainUrls, true) || !$this->isWikiUrl($currentUrl) ? '' : $currentUrl;
+        return in_array($currentUrl, $plainUrls, true) ? '' : $currentUrl;
     }
 
     /** Where the form's cancel button leads: where the edit started, else the page the visitor came from, else the entry or the page holding the form. */

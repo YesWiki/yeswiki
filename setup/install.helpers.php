@@ -4,6 +4,7 @@ use YesWiki\Core\Service\ArchiveFilename;
 use YesWiki\Core\Service\DumpRewriter;
 
 const RAW_DUMP_FILENAME = 'content.sql';
+const DEFAULT_ACTIVITYPUB_PROFILES = [2 => ['username' => 'agenda'], 3 => ['username' => 'blog']];
 
 /**
  * Communique le resultat d'un test :

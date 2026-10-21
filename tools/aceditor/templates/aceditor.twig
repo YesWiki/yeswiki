@@ -16,14 +16,13 @@
   </div>
 
   <textarea id="{{ arguments.name }}" name="{{ arguments.name }}" maxlength="{{ arguments.maxChars }}" rows="{{ arguments.rows }}" placeholder="{{ arguments.placeholder }}" {% if arguments.required is not empty %}required{% endif %}
-            class="aceditor-textarea">
+            spellcheck="true" class="aceditor-textarea">
     {{- arguments.value|raw -}}
   </textarea>
 
 </div>
 
 <script>
-  // Send data to javascript
   var actionsBuilderData = {{ actionsBuilderData|json_encode|raw }};
   var pageTags = {{ pageTags|json_encode|raw }}
 </script>

@@ -40,6 +40,7 @@ use YesWiki\Core\Service\DbService;
 use YesWiki\Core\Service\LinkTracker;
 use YesWiki\Core\Service\PageManager;
 use YesWiki\Core\Service\Performer;
+use YesWiki\Core\Service\RequestGuard;
 use YesWiki\Core\Service\TemplateEngine;
 use YesWiki\Core\Service\ThemeManager;
 use YesWiki\Core\Service\TripleStore;
@@ -769,23 +770,12 @@ class Wiki
     }
 
     /**
-     * Executes a file in a buffer, so we can work on the output variable $plugin_out_new before display.
-     *
-     * This method is used by Performer Service
-     * We need to run this method in YesWiki class, so the variable $this will be referencing YesWiki
-     * in the included file
-     *
-     * @param ___file the file to execute (___ because as we use the extract function, we have to choose a name which
-     * will be not used by users for an performable argument)
-     * @param array vars the variables used as an execution context. 'plugin_output_new' represents the current output
-     * (strange variable name, but it's used in everywhere, so let's keep it... !)
-     *
-     * @return array the execution context variables updated by the execution (with 'plugin_output_new for the current output)
+     * Includes a performable file with its parameters as local variables and returns them updated.
      */
     public function runFileInBuffer($___file, array $vars)
     {
         $this->parameter = &$vars;
-        extract($this->parameter, EXTR_REFS);
+        extract($this->parameter, EXTR_REFS | EXTR_SKIP);
         unset($vars);
 
         assert(isset($plugin_output_new));
@@ -1162,6 +1152,9 @@ class Wiki
         }
 
         $this->services->get(AuthController::class)->connectUser();
+        if ($this->refuseForgedRequest($tag)) {
+            return;
+        }
 
         if (in_array($tag, ['api', 'doc'])) {
             $this->RunSpecialPages();
@@ -1170,7 +1163,7 @@ class Wiki
             $this->LogReferrer();
 
             try {
-                echo $this->Method($this->method);
+                echo $this->services->get(RequestGuard::class)->arm($this->Method($this->method), $this->request);
             } catch (ExitException $th) {
                 if (!$this->isCli()) {
                     if (!empty($_SESSION['redirects'])) {
@@ -1184,6 +1177,23 @@ class Wiki
                 unset($_SESSION['redirects']);
             }
         }
+    }
+
+    /**
+     * Answers 403 and returns true when another site sent a request that would change something.
+     */
+    private function refuseForgedRequest(string $tag): bool
+    {
+        $refusal = $this->services->get(RequestGuard::class)->refusal($this->request);
+        if ($refusal === null) {
+            return false;
+        }
+        $response = in_array($tag, ['api', 'doc'])
+            ? new ApiResponse(['error' => $refusal], Response::HTTP_FORBIDDEN)
+            : new Response(htmlspecialchars($refusal), Response::HTTP_FORBIDDEN);
+        $response->send();
+
+        return true;
     }
 
     private function RunSpecialPages()

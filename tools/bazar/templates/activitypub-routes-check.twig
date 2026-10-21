@@ -1,0 +1,17 @@
+{% set docUrl = url({ tag: 'doc' }) ~ '#/docs/fr/activitypub?id=configurer-le-serveur-web' %}
+{% if not routes.atDomainRoot %}
+<div class="alert alert-danger">
+  {{ _t('BAZ_ACTIVITYPUB_NOT_AT_DOMAIN_ROOT') }}
+  <a href="{{ docUrl }}" target="_blank">{{ _t('BAZ_ACTIVITYPUB_ROUTES_DOC') }}</a>
+</div>
+{% else %}
+<div class="alert alert-danger activitypub-routes-check" data-webfinger="{{ routes.webfinger }}" data-actor="{{ routes.actor }}" hidden>
+  {{ _t('BAZ_ACTIVITYPUB_ROUTES_MISSING') }}
+  <ul>
+    <li data-route="webfinger" hidden><code>/.well-known/webfinger</code></li>
+    <li data-route="actor" hidden><code>/actors/{{ form.bn_id_nature }}</code></li>
+  </ul>
+  <a href="{{ docUrl }}" target="_blank">{{ _t('BAZ_ACTIVITYPUB_ROUTES_DOC') }}</a>
+</div>
+{{ include_javascript('tools/bazar/presentation/javascripts/activitypub-routes-check.js', false, true) }}
+{% endif %}

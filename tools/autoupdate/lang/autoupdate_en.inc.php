@@ -18,6 +18,7 @@ return [
     'AU_UPDATE_INFOS' => 'Updating version information',
     'AU_OK' => 'ok',
     'AU_ERROR' => 'Error',
+    'AU_FORBIDDEN_EXTENSION' => 'The %{name} extension is forbidden on this wiki (forbidden_extensions in wakka.config.php)',
     'AU_UNKNOW' => 'Unknown',
     'AU_ABSENT' => 'Not installed',
     'AU_DELETE_EXT' => 'Delete',

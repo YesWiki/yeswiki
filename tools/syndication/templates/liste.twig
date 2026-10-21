@@ -24,7 +24,7 @@
           <a class="bazar-actions text-danger" href="{{ page.linkToEntry ~ '/deletepage' }}" title="{{ _t('BAZ_SUPPRIMER_LA_FICHE') }}"><i class="fa fa-trash"></i></a>
       {% endif %}
       {% if page.mappingInput is not empty %}
-          <a class="bazar-actions" href="{{ url({ params: { mapping: page.mappingInput|e('url') }}) }}" title="{{ _t('SYNDICATION_COPY_IN_WIKI') }}"><i class="fa fa-plus"></i></a>
+          <a class="bazar-actions" href="{{ signedUrl(url({ params: { mapping: page.mappingInput|e('url') }})) }}" title="{{ _t('SYNDICATION_COPY_IN_WIKI') }}"><i class="fa fa-plus"></i></a>
       {% endif %}
     </li>
   {% endfor %}

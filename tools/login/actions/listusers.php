@@ -1,6 +1,5 @@
 <?php
 
-// si une date est indiquée
 if (isset($_GET['period']) && in_array($_GET['period'], ['day', 'week', 'month'])) {
     switch ($_GET['period']) {
         case 'day':
@@ -18,6 +17,9 @@ if (isset($_GET['period']) && in_array($_GET['period'], ['day', 'week', 'month']
     }
 } else {
     $dateMin = $this->GetParameter('period');
+    if (!is_string($dateMin) || !preg_match('/^\d{4}-\d{2}-\d{2}( \d{2}:\d{2}(:\d{2})?)?$/D', $dateMin)) {
+        $dateMin = '';
+    }
 }
 
 if ($last = $this->GetParameter('last')) {
@@ -36,7 +38,6 @@ if ($last = $this->GetParameter('last')) {
         $sql .= ' ORDER BY signuptime DESC LIMIT ' . $last;
         $last_users = $this->LoadAll($sql);
         foreach ($last_users as $user) {
-            // day header
             list($day, $time) = explode(' ', $user['signuptime']);
             if ($day != $curday) {
                 if ($curday) {
@@ -45,8 +46,7 @@ if ($last = $this->GetParameter('last')) {
                 echo '<strong>' . date('d.m.Y', strtotime($day)) . '&nbsp;:</strong><br>' . "\n";
                 $curday = $day;
             }
-            // echo entry
-            echo '<small>' . $time . '</small> ' . $user['name'] . "<br>\n";
+            echo '<small>' . $time . '</small> ' . htmlspecialchars($user['name']) . "<br>\n";
         }
     } else {
         echo _t('LOGIN_NO_SIGNUP_IN_THIS_PERIOD');
@@ -63,7 +63,7 @@ if ($last = $this->GetParameter('last')) {
         echo '<ol class="list-users">';
         foreach ($last_users as $user) {
             list($day, $time) = explode(' ', $user['signuptime']);
-            echo '<li>' . $user['name'] . ' - <small>' . date('d.m.Y', strtotime($day)) . ' ' . $time . '</small> ' . "</li>\n";
+            echo '<li>' . htmlspecialchars($user['name']) . ' - <small>' . date('d.m.Y', strtotime($day)) . ' ' . $time . '</small> ' . "</li>\n";
         }
         echo '</ol>';
     } else {

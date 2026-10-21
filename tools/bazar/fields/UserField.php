@@ -125,6 +125,9 @@ class UserField extends BazarField
         }
 
         if ($value && $this->isUserByName($value)) {
+            if (!$this->mayActAs($value)) {
+                throw new UserFieldException(_t('BAZ_USER_FIELD_NOT_YOUR_ACCOUNT'));
+            }
             $wikiName = $value;
             // add in groups
             $this->addUserToGroups($wikiName, $entry);
@@ -270,6 +273,19 @@ class UserField extends BazarField
         );
     }
 
+    /**
+     * Only the account itself, or an admin, may link an entry to an existing account.
+     */
+    private function mayActAs(string $userName): bool
+    {
+        if ($this->getWiki()->UserIsAdmin()) {
+            return true;
+        }
+        $loggedUser = $this->getService(AuthController::class)->getLoggedUser();
+
+        return !empty($loggedUser['name']) && $loggedUser['name'] === $userName;
+    }
+
     private function isUserByName(string $userName): bool
     {
         $userManager = $this->getService(UserManager::class);
@@ -364,7 +380,10 @@ class UserField extends BazarField
         UserManager $userManager,
         array $existingsGroups
     ) {
-        if (!preg_match('/^[A-Za-z0-9]+$/m', $groupName)) {
+        if (!preg_match('/^[A-Za-z0-9]+$/', $groupName)) {
+            return false;
+        }
+        if (strtolower($groupName) === ADMIN_GROUP && !$this->getWiki()->UserIsAdmin()) {
             return false;
         }
 

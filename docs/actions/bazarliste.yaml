@@ -216,6 +216,15 @@ actions:
         intro: _t(AB_bazar_query_intro)
         type: query
         btn-label-add: _t(AB_bazar_query_btn-label-add)
+      origin:
+        label: _t(AB_bazar_commons2_origin_label)
+        hint: _t(AB_bazar_commons2_origin_hint)
+        type: list
+        default: all
+        options:
+          all: _t(AB_bazar_commons2_origin_all)
+          local: _t(AB_bazar_commons2_origin_local)
+          remote: _t(AB_bazar_commons2_origin_remote)
       filteruserasowner:
         label: _t(AB_bazar_commons2_filter_user_as_owner)
         type: checkbox
@@ -751,14 +760,14 @@ actions:
         label: _t(AB_bazarblog_show_author_label)
         advanced: true
         type: checkbox
-        default: '0'
+        default: '1'
         checkedvalue: '1'
         uncheckedvalue: '0'
       show_date:
         label: _t(AB_bazarblog_show_date_label)
         advanced: true
         type: checkbox
-        default: '0'
+        default: '1'
         checkedvalue: '1'
         uncheckedvalue: '0'
       correspondance:

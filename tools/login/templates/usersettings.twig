@@ -20,28 +20,21 @@
             <input class="form-control" name="email" value="{{ user.email }}" size="40" />
         </div>
     </div>
-  {# <div class="control-group form-group">
-    <label class="control-label col-sm-3">{{ _t('USER_MAX_NUMBER_OF_VERSIONS') }}</label>
-    <div class="controls col-sm-9">
-      <input class="form-control" name="revisioncount" value="{{ user.revisioncount|e('html_attr') }}" size="40" />
-    </div>
-  </div> #}
   <div class="control-group form-group">
         <div class="controls col-sm-9 col-sm-offset-3">
       <input type="hidden" name="csrf-token-update" value="{{ csrfToken({id: 'main', refresh: false}) }}">
             <input class="btn btn-primary" type="submit" value="{{ _t('USER_UPDATE')|e('html_attr') }}" />
-      {% if userLoggedIn %}{# // The one who runs the session is acting #}
+      {% if userLoggedIn %}
         <input
           class="btn btn-warning"
           type="button"
           value="{{ _t('USER_DISCONNECT')|e('html_attr') }}"
-          onclick="document.location='{{ url({params: {usersettings_action: 'logout'}})|e('html_attr') }}'" />
+          onclick="document.location='{{ signedUrl(url({params: {usersettings_action: 'logout'}}))|e('html_attr') }}'" />
       {% endif %}
         </div>
     </div>
 </form>
 
-{# FORM DELETE #}
 {% if adminIsActing %}
   <form action="{{ url({params: {user: user.name, from: referrer}}) }}" method="post" class="form-horizontal">
     <input type="hidden" name="csrf-token-delete" value="{{ csrfToken({id: 'main', refresh: false})|e('html_attr') }}">
@@ -55,7 +48,6 @@
   </form>
 {% endif %}
 
-{# FORM CHANGE PASSWORD #}
 {% if userLoggedIn %}
   <form action="{{ url({tag: ''}) }}" method="post" class="form-horizontal">
       <hr>

@@ -1,12 +1,13 @@
 <?php
 
 use YesWiki\Core\Service\AclService;
+use YesWiki\Core\Service\RequestGuard;
 
 $tag = $this->getPageTag();
-// only do it on existing pages
-if ($this->page) {
+if ($this->page && !$this->services->get(RequestGuard::class)->linkIsSigned($this->request)) {
+    $this->SetMessage(_t('CSRF_TOKEN_FAIL_ERROR'));
+} elseif ($this->page) {
     $availableActions = ['opencomments', 'closecomments'];
-    // check if actions are requested
     if (
         !empty($_GET['action'])
         && in_array($_GET['action'], $availableActions)
@@ -38,7 +39,6 @@ if ($this->page) {
         }
     }
 
-    // only claim ownership if this page has no owner, and if user is logged in.
     if (!$this->GetPageOwner() && $this->GetUser()) {
         $this->SetPageOwner($tag, $this->GetUserName());
         $this->SetMessage(_t('YW_YOU_ARE_NOW_OWNER_OF_PAGE'));

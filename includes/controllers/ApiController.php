@@ -26,6 +26,7 @@ use YesWiki\Core\Service\DiffService;
 use YesWiki\Core\Service\DuplicationManager;
 use YesWiki\Core\Service\PageManager;
 use YesWiki\Core\Service\ReactionManager;
+use YesWiki\Core\Service\RequestGuard;
 use YesWiki\Core\Service\TripleStore;
 use YesWiki\Core\Service\UserManager;
 use YesWiki\Core\YesWikiController;
@@ -773,6 +774,10 @@ class ApiController extends YesWikiController
      */
     public function deleteReactionByGetMethod($idreaction, $id, $page, $username)
     {
+        if (!$this->getService(RequestGuard::class)->linkIsSigned($this->getRequest())) {
+            return new ApiResponse(['error' => _t('CSRF_TOKEN_FAIL_ERROR')], Response::HTTP_FORBIDDEN);
+        }
+
         return $this->deleteReaction($idreaction, $id, $page, $username);
     }
 
@@ -1075,6 +1080,11 @@ class ApiController extends YesWikiController
             $apiResponse = new ApiResponse(
                 ['error' => 'Resource should not be empty !'],
                 Response::HTTP_BAD_REQUEST
+            );
+        } elseif (is_string($resource) && stripos($resource, GROUP_PREFIX) === 0 && !$this->wiki->UserIsAdmin()) {
+            $apiResponse = new ApiResponse(
+                ['error' => 'Not authorized to access the triples of a group if not admin !'],
+                Response::HTTP_FORBIDDEN
             );
         } else {
             $bag = ($method === INPUT_POST) ? $this->getRequest()->request : $this->getRequest()->query;

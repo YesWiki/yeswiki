@@ -53,6 +53,8 @@ input[type='range'] {
   > .input-group:not(.iconpicker-container)
   .form-control {
   width: auto;
+  min-width: 0;
+  max-width: 100%;
   flex-grow: 1;
 }
 

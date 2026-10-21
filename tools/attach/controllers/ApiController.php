@@ -7,6 +7,8 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Csrf\CsrfToken;
 use Symfony\Component\Security\Csrf\CsrfTokenManager;
 use Symfony\Component\Security\Csrf\Exception\TokenNotFoundException;
+use YesWiki\Attach\Service\RemoteImageCache;
+use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Core\ApiResponse;
 use YesWiki\Core\Controller\CsrfTokenController;
 use YesWiki\Core\YesWikiController;
@@ -23,7 +25,6 @@ class ApiController extends YesWikiController
         try {
             $this->checkParamsgetCacheUrlImageViaPost($filename, $width, $height, $mode);
             $newToken = $this->checkTokenForgetCacheUrlImageViaPost($width, $height, $mode);
-            // check file
             if (!file_exists("files/$filename")) {
                 return new ApiResponse([
                     'error' => _t('ATTACH_GET_CACHE_URLIMAGE_NO_FILE'),
@@ -34,7 +35,6 @@ class ApiController extends YesWikiController
                     'newToken' => $newToken,
                 ], Response::HTTP_BAD_REQUEST);
             }
-            // process new file
             try {
                 $cachefilename = $this->getCacheFileName($filename, $width, $height, $mode);
             } catch (\Exception $e) {
@@ -62,6 +62,50 @@ class ApiController extends YesWikiController
 
             return new ApiResponse([
                 'error' => $errorMessage,
+            ], Response::HTTP_UNAUTHORIZED);
+        } catch (\Exception $e) {
+            return new ApiResponse([
+                'error' => $e->getMessage(),
+            ], Response::HTTP_BAD_REQUEST);
+        }
+    }
+
+    /**
+     * Resizes the remote image linked in an entry's field, read with the visitor's rights.
+     *
+     * @Route("/api/images/entry/{entryId}/{field}/cache/{width}/{height}/{mode}", methods={"POST"}, options={"acl":{"public"}})
+     */
+    public function getCacheUrlRemoteImageViaPost($entryId, $field, $width, $height, $mode)
+    {
+        try {
+            $this->checkParamsgetCacheUrlImageViaPost($field, $width, $height, $mode);
+            $newToken = $this->checkTokenForgetCacheUrlImageViaPost($width, $height, $mode);
+            $entry = $this->getService(EntryManager::class)->getOne($entryId);
+            $url = $entry[$field] ?? null;
+            if (!RemoteImageCache::isRemote($url)) {
+                return new ApiResponse([
+                    'error' => _t('ATTACH_GET_CACHE_URLIMAGE_NO_FILE'),
+                    'newToken' => $newToken,
+                ], Response::HTTP_BAD_REQUEST);
+            }
+            $cachefilename = $this->getService(RemoteImageCache::class)->resized($url, $width, $height, $mode);
+            if ($cachefilename === null) {
+                return new ApiResponse([
+                    'error' => _t('ATTACH_GET_CACHE_URLIMAGE_NO_FILE'),
+                    'newToken' => $newToken,
+                ], Response::HTTP_NOT_FOUND);
+            }
+
+            return new ApiResponse([
+                'cachefilename' => $cachefilename,
+                'width' => $width,
+                'height' => $height,
+                'mode' => $mode,
+                'newToken' => $newToken,
+            ], Response::HTTP_OK);
+        } catch (TokenNotFoundException $th) {
+            return new ApiResponse([
+                'error' => $th->getMessage(),
             ], Response::HTTP_UNAUTHORIZED);
         } catch (\Exception $e) {
             return new ApiResponse([
@@ -128,10 +172,7 @@ class ApiController extends YesWikiController
         if (file_exists($newFileName)) {
             return $newFileName;
         }
-        $returnedFileName = $attach->redimensionner_image("files/$filename", $newFileName, $width, $height, $mode);
-        if ($returnedFileName != $newFileName) {
-            // TODO see what to do with error
-        }
+        $attach->redimensionner_image("files/$filename", $newFileName, $width, $height, $mode);
 
         return $newFileName;
     }

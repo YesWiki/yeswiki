@@ -2,13 +2,20 @@
 
 use YesWiki\Core\Service\ConfigurationFileProvider;
 use YesWiki\Core\Service\ConfigurationService;
+use YesWiki\Core\Service\RequestGuard;
 use YesWiki\Security\Controller\SecurityController;
 
 if (isset($this)) {
     if ($this->services->get(SecurityController::class)->isWikiHibernated()) {
         throw new Exception(_t('WIKI_IN_HIBERNATION'));
     }
-    if ($this->userIsAdmin()) {
+    $requestGuard = $this->services->get(RequestGuard::class);
+    if ($this->userIsAdmin() && !$requestGuard->linkIsSigned($this->request)) {
+        echo $this->header()
+        . '<div class="alert alert-warning">' . _t('CSRF_TOKEN_FAIL_ERROR') . '</div>'
+        . '<a class="btn btn-primary" href="' . htmlspecialchars($requestGuard->sign($this->href('dbutf8', '', null, false))) . '">' . _t('CONTINUE') . '</a>'
+        . $this->footer();
+    } elseif ($this->userIsAdmin()) {
         include_once 'includes/Encoding.php';
         $output = '';
         $result = $this->LoadAll(
@@ -41,16 +48,13 @@ if (isset($this)) {
             $output .= '<hr>' . $queryConvert . '<br>';
             $this->query($queryConvert);
 
-            // Change Field
             if ($table == $this->config['table_prefix'] . 'pages') {
                 $cols = $this->LoadAll('SHOW COLUMNS FROM ' . $table);
                 $dataQuery = 'SELECT * FROM ' . $table;
                 $data = $this->LoadAll($dataQuery);
                 foreach ($cols as $row) {
                     if ($row['Type'] == 'mediumtext' or $row['Type'] == 'text' or $row['Type'] == 'longtext' or $row['Type'] == 'blob') {
-                        // Printing results in HTML
                         foreach ($data as $line) {
-                            // Convert TO String
                             $transform = $line[$row['Field']];
                             if (@iconv('utf-8', 'utf-8//IGNORE', $transform) != $transform) {
                                 $transform = ForceUTF8\Encoding::toUTF8($transform);
@@ -70,9 +74,7 @@ if (isset($this)) {
                 $data = $this->LoadAll($dataQuery);
                 foreach ($cols as $row) {
                     if (strstr($row['Type'], 'varchar') or $row['Type'] == 'mediumtext' or $row['Type'] == 'text' or $row['Type'] == 'longtext' or $row['Type'] == 'blob') {
-                        // Printing results in HTML
                         foreach ($data as $line) {
-                            // Convert TO String
                             $transform = $line[$row['Field']];
                             if (@iconv('utf-8', 'utf-8//IGNORE', $transform) != $transform) {
                                 $transform = ForceUTF8\Encoding::toUTF8($transform);
@@ -92,13 +94,11 @@ if (isset($this)) {
 
         $output .= '<h3>Complete ALL</h3>';
 
-        // ajout du charset utf8mb4 dans wakka.config.php
         $config = $this->services->get(ConfigurationService::class)->getConfiguration(ConfigurationFileProvider::getConfigFileFromEnv());
         $config->load();
         $config->db_charset = 'utf8mb4';
         $config->write();
 
-        // affichage a l'ecran
         echo $this->header()
         . '<div class="alert alert-success">'
         . _t('handler dbutf8 : toutes les tables de la base de données ont été transformées en utf8.')
@@ -129,10 +129,8 @@ if (php_sapi_name() === 'cli') {
 
     if ($GLOBALS['dblink']) {
         if (isset($wakkaConfig['db_charset']) and $wakkaConfig['db_charset'] === 'utf8mb4') {
-            // necessaire pour les versions de mysql qui ont un autre encodage par defaut
             mysqli_set_charset($GLOBALS['dblink'], 'utf8mb4');
 
-            // dans certains cas (ovh), set_charset ne passe pas, il faut faire une requete sql
             $charset = mysqli_character_set_name($GLOBALS['dblink']);
             if ($charset != 'utf8mb4') {
                 mysqli_query($GLOBALS['dblink'], 'SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci');
@@ -193,16 +191,13 @@ if (php_sapi_name() === 'cli') {
         echo '<hr>' . $queryConvert . '<br>';
         sqlQuery($queryConvert);
 
-        // Change Field
         if ($table == $wakkaConfig['table_prefix'] . 'pages') {
             $cols = loadAll('SHOW COLUMNS FROM ' . $table);
             $dataQuery = 'SELECT * FROM ' . $table;
             $data = loadAll($dataQuery);
             foreach ($cols as $row) {
                 if ($row['Type'] == 'mediumtext' or $row['Type'] == 'text' or $row['Type'] == 'longtext' or $row['Type'] == 'blob') {
-                    // Printing results in HTML
                     foreach ($data as $line) {
-                        // Convert TO String
                         $transform = $line[$row['Field']];
                         if (@iconv('utf-8', 'utf-8//IGNORE', $transform) != $transform) {
                             $transform = ForceUTF8\Encoding::toUTF8($transform);
@@ -222,9 +217,7 @@ if (php_sapi_name() === 'cli') {
             $data = loadAll($dataQuery);
             foreach ($cols as $row) {
                 if (strstr($row['Type'], 'varchar') or $row['Type'] == 'mediumtext' or $row['Type'] == 'text' or $row['Type'] == 'longtext' or $row['Type'] == 'blob') {
-                    // Printing results in HTML
                     foreach ($data as $line) {
-                        // Convert TO String
                         $transform = $line[$row['Field']];
                         if (@iconv('utf-8', 'utf-8//IGNORE', $transform) != $transform) {
                             $transform = ForceUTF8\Encoding::toUTF8($transform);
@@ -242,7 +235,6 @@ if (php_sapi_name() === 'cli') {
         echo 'Complete Table: <b>' . $table . '</b><br>';
     }
 
-    // ajout du charset utf8mb4 dans wakka.config.php
     $config = $this->services->get(ConfigurationService::class)->getConfiguration($cwd . '/wakka.config.php');
     $config->load();
     $config->db_charset = 'utf8mb4';

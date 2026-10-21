@@ -13,6 +13,7 @@ use YesWiki\Core\Exception\ExitException;
 use YesWiki\Core\Exception\UserEmailAlreadyUsedException;
 use YesWiki\Core\Exception\UserNameAlreadyUsedException;
 use YesWiki\Core\Service\BotGuard;
+use YesWiki\Core\Service\RequestGuard;
 use YesWiki\Core\Service\UserManager;
 use YesWiki\Core\YesWikiAction;
 
@@ -142,7 +143,8 @@ class UserSettingsAction extends YesWikiAction
                 break;
             case 'signup':
                 $this->signup($post);
-                // no break
+                $this->retrieveUsernameAndEmailFromPost($post);
+                break;
             default:
                 $this->retrieveUsernameAndEmailFromPost($post);
                 break;
@@ -173,8 +175,12 @@ class UserSettingsAction extends YesWikiAction
 
     private function logout()
     {
-        $this->authController->logout();
-        $this->wiki->SetMessage(_t('USER_YOU_ARE_NOW_DISCONNECTED') . ' !');
+        if ($this->getService(RequestGuard::class)->linkIsSigned($this->getRequest())) {
+            $this->authController->logout();
+            $this->wiki->SetMessage(_t('USER_YOU_ARE_NOW_DISCONNECTED') . ' !');
+        } else {
+            $this->wiki->SetMessage(_t('CSRF_TOKEN_FAIL_ERROR'));
+        }
         $this->wiki->Redirect($this->wiki->href());
     }
 

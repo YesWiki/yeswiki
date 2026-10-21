@@ -1,0 +1,6 @@
+# Routes the ActivityPub actors and WebFinger of a YesWiki served from the root of its domain.
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteRule ^actors/([0-9]+)(/(?:outbox|inbox|followers|following))?$ index.php?wiki=api/forms/$1/actor$2 [QSA,L]
+  RewriteRule ^\.well-known/webfinger$ index.php?wiki=api/webfinger [QSA,L]
+</IfModule>
