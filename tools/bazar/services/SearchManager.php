@@ -916,6 +916,9 @@ class SearchManager
                                 $vValue = $entry['id_fiche'];
                             }
                             break;
+                        default:
+                            $vValue = $this->resolveDateToken($matches[1]) ?? $vValue;
+                            break;
                     }
                 }
                 if (!in_array($vValue, $vUniqueValues, true)) {
@@ -929,6 +932,25 @@ class SearchManager
             'operator' => $vOperator,
             'values' => $vUniqueValues,
         ];
+    }
+
+    // Resolves `now` or `today` with offsets such as `+3w` or `-2m-1d`, or returns null.
+    private function resolveDateToken(string $pToken): ?string
+    {
+        if (!preg_match('/^(now|today)((?:[+-]\d+[a-z]+)*)$/', $pToken, $vMatches)) {
+            return null;
+        }
+        $vUnits = ['d' => 'day', 'j' => 'day', 'w' => 'week', 's' => 'week', 'm' => 'month', 'y' => 'year', 'a' => 'year', 'h' => 'hour'];
+        $vDate = new \DateTimeImmutable($vMatches[1] === 'today' ? 'today' : 'now');
+        preg_match_all('/([+-]\d+)([a-z]+)/', $vMatches[2], $vOffsets, PREG_SET_ORDER);
+        foreach ($vOffsets as [, $vAmount, $vUnit]) {
+            if (!isset($vUnits[$vUnit])) {
+                return null;
+            }
+            $vDate = $vDate->modify("$vAmount {$vUnits[$vUnit]}");
+        }
+
+        return $vDate->format($vMatches[1] === 'today' ? 'Y-m-d' : 'c');
     }
 
     /**
