@@ -4,6 +4,7 @@ namespace YesWiki\Content\Field;
 
 use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use YesWiki\Content\Api\FileApiController;
 use YesWiki\Content\Attribute\Field;
 use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Service\EntryDateService;
@@ -18,6 +19,8 @@ use YesWiki\Identity\Service\RequestGuard;
 use YesWiki\Kernel\Service\AssetRegistry;
 use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Kernel\Service\HtmlPurifierService;
+use YesWiki\Kernel\Service\PageContext;
+use YesWiki\Kernel\Service\SignedTokens;
 use YesWiki\Kernel\Service\StringUtilService;
 use YesWiki\Kernel\Service\UrlFormatter;
 
@@ -123,6 +126,20 @@ class FileField extends BazarField
                 'isAllowedToDeleteFile' => empty($entry) ? false : $this->isAllowedToDeleteFile($entry, $value),
             ]
         );
+    }
+
+    /** Inputs also carry the page and token that let a visitor upload from this form. */
+    protected function render($templatePath, $data = [])
+    {
+        if (str_starts_with((string)$templatePath, '@core/inputs/')) {
+            $pageTag = $this->getService(PageContext::class)->getTag();
+            $data += [
+                'uploadPageTag' => $pageTag,
+                'uploadToken' => $this->getService(SignedTokens::class)->sign(FileApiController::uploadTokenId($pageTag)),
+            ];
+        }
+
+        return parent::render($templatePath, $data);
     }
 
     /** Whether the edit link asking to delete a file carries the session's token. */
@@ -310,11 +327,11 @@ class FileField extends BazarField
 
     protected function getFullFileName(string $fileName, string $tag, bool $newName = false): string
     {
-        $previousTag = $this->getService(\YesWiki\Kernel\Service\PageContext::class)->getTag();
-        $previousPage = $this->getService(\YesWiki\Kernel\Service\PageContext::class)->getPage();
+        $previousTag = $this->getService(PageContext::class)->getTag();
+        $previousPage = $this->getService(PageContext::class)->getPage();
 
-        $this->getService(\YesWiki\Kernel\Service\PageContext::class)->setTag($tag);
-        $this->getService(\YesWiki\Kernel\Service\PageContext::class)->setPage([
+        $this->getService(PageContext::class)->setTag($tag);
+        $this->getService(PageContext::class)->setPage([
             'tag' => $tag,
             'body' => [PageBody::CONTENT => '{##}'],
             'time' => date('YmdHis'),
@@ -323,8 +340,8 @@ class FileField extends BazarField
         ]);
         $fullFileName = $this->paths()->fullFilename($fileName, $newName);
 
-        $this->getService(\YesWiki\Kernel\Service\PageContext::class)->setTag($previousTag);
-        $this->getService(\YesWiki\Kernel\Service\PageContext::class)->setPage($previousPage);
+        $this->getService(PageContext::class)->setTag($previousTag);
+        $this->getService(PageContext::class)->setPage($previousPage);
 
         return $fullFileName;
     }

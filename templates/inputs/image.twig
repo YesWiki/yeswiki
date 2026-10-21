@@ -10,7 +10,9 @@
                 <button type="button"
                         class="yw-btn yw-btn--sm yw-file-picker-field__button"
                         data-yw-file-picker-field="{{ field.propertyName }}_url"
-                    data-yw-file-picker-only="image">
+                        data-yw-file-picker-page-tag="{{ uploadPageTag }}"
+                        data-yw-file-picker-upload-token="{{ uploadToken }}"
+                        data-yw-file-picker-only="image">
                     <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#pencil"/></svg>
                     {{ _t("BAZ_MODIFIER_IMAGE") }}
                 </button>
@@ -52,6 +54,8 @@
             <button type="button"
                     class="yw-btn yw-file-picker-field__button"
                     data-yw-file-picker-field="{{ field.propertyName }}_url"
+                    data-yw-file-picker-page-tag="{{ uploadPageTag }}"
+                    data-yw-file-picker-upload-token="{{ uploadToken }}"
                     data-yw-file-picker-only="image">
                 <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#photo"/></svg>
                 {{ _t("ATTACH_FILE_PICKER_CHOOSE_OR_UPLOAD") }}

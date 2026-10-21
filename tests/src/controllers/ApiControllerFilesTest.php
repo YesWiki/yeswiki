@@ -14,6 +14,7 @@ use YesWiki\Core\YesWikiRuntime;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Identity\Service\UserManager;
+use YesWiki\Kernel\Service\SignedTokens;
 use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';
@@ -28,11 +29,13 @@ class ApiControllerFilesTest extends YesWikiTestCase
 {
     private const PRIVATE_PAGE_TAG = 'ApiControllerFilesTestPrivatePage';
 
+    private const PUBLIC_FORM_PAGE_TAG = 'ApiControllerFilesTestPublicFormPage';
+
     /** The fixtures go when the tests do. */
     public static function tearDownAfterClass(): void
     {
         $pageManager = self::getWiki()->services->get(PageManager::class);
-        foreach ([self::PRIVATE_PAGE_TAG] as $tag) {
+        foreach ([self::PRIVATE_PAGE_TAG, self::PUBLIC_FORM_PAGE_TAG] as $tag) {
             $pageManager->deleteOrphaned($tag);
         }
     }
@@ -45,6 +48,9 @@ class ApiControllerFilesTest extends YesWikiTestCase
         $pageManager = $wiki->services->get(PageManager::class);
         $pageManager->save(self::PRIVATE_PAGE_TAG, [PageBody::CONTENT => 'content'], '', true);
         $wiki->services->get(AclService::class)->save(self::PRIVATE_PAGE_TAG, 'read', '@admins');
+        $pageManager->save(self::PUBLIC_FORM_PAGE_TAG, [PageBody::CONTENT => '{{bazar view="saisir" id="1"}}'], '', true);
+        $wiki->services->get(AclService::class)->save(self::PUBLIC_FORM_PAGE_TAG, 'read', '*');
+        $wiki->services->get(AclService::class)->save(self::PUBLIC_FORM_PAGE_TAG, 'write', '@admins');
 
         return $wiki;
     }
@@ -83,6 +89,50 @@ class ApiControllerFilesTest extends YesWikiTestCase
             $controller->downloadFile(Request::create("/api/files/$tag/download"), $tag);
         } finally {
             $authenticationService->logout();
+            if ($tag !== null) {
+                $fileManager->delete($tag);
+            }
+            if (file_exists($tmpPath)) {
+                unlink($tmpPath);
+            }
+        }
+    }
+
+    #[\PHPUnit\Framework\Attributes\Depends('testWikiExisting')]
+    public function testAnonymousVisitorUploadsFromAPublicFormWithItsToken(YesWikiRuntime $wiki): void
+    {
+        $controller = $wiki->services->get(FileApiController::class);
+        $wiki->services->get(AuthenticationService::class)->logout();
+        $signedTokens = $wiki->services->get(SignedTokens::class);
+        $fileManager = $wiki->services->get(FileManager::class);
+        $tmpPath = sys_get_temp_dir() . '/ApiControllerFilesTest-' . uniqid() . '.txt';
+        $tag = null;
+
+        try {
+            $refused = 0;
+            foreach (['', $signedTokens->sign(FileApiController::uploadTokenId(self::PRIVATE_PAGE_TAG))] as $wrongToken) {
+                file_put_contents($tmpPath, 'from a visitor');
+                $request = Request::create('/api/files', 'POST', ['pageTag' => self::PUBLIC_FORM_PAGE_TAG, 'uploadToken' => $wrongToken]);
+                $request->files->set('upFile', new UploadedFile($tmpPath, 'visitor.txt', 'text/plain', null, true));
+                try {
+                    $controller->uploadFile($request);
+                } catch (\Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException) {
+                    $refused++;
+                }
+            }
+            $this->assertSame(2, $refused, 'without the token of this very page, a visitor who cannot write it is refused');
+
+            file_put_contents($tmpPath, 'from a visitor');
+            $request = Request::create('/api/files', 'POST', [
+                'pageTag' => self::PUBLIC_FORM_PAGE_TAG,
+                'uploadToken' => $signedTokens->sign(FileApiController::uploadTokenId(self::PUBLIC_FORM_PAGE_TAG)),
+            ]);
+            $request->files->set('upFile', new UploadedFile($tmpPath, 'visitor.txt', 'text/plain', null, true));
+            $response = $controller->uploadFile($request);
+            $tag = json_decode($this->jsonBody($response), true)['tag'];
+
+            $this->assertSame(201, $response->getStatusCode());
+        } finally {
             if ($tag !== null) {
                 $fileManager->delete($tag);
             }

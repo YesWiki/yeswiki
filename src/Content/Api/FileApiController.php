@@ -5,6 +5,7 @@ namespace YesWiki\Content\Api;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\Routing\Attribute\Route;
 use YesWiki\Content\Service\FileManager;
 use YesWiki\Core\ApiResponse;
@@ -12,6 +13,7 @@ use YesWiki\Core\YesWikiController;
 use YesWiki\Files\Service\ImageResizer;
 use YesWiki\Files\Service\Storage;
 use YesWiki\Identity\Service\AclService;
+use YesWiki\Kernel\Service\SignedTokens;
 
 class FileApiController extends YesWikiController
 {
@@ -31,7 +33,9 @@ class FileApiController extends YesWikiController
         if (empty($pageTag)) {
             return new ApiResponse(['error' => "'pageTag' should not be empty"], Response::HTTP_BAD_REQUEST);
         }
-        $this->denyAccessUnlessGranted('write', $pageTag);
+        if (!$this->mayUploadFrom($pageTag, (string)$request->request->get('uploadToken', ''))) {
+            throw new AccessDeniedHttpException();
+        }
 
         $uploadedFile = $request->files->get('upFile');
         if (empty($uploadedFile)) {
@@ -54,6 +58,24 @@ class FileApiController extends YesWikiController
         );
 
         return new ApiResponse($this->withDerivedAttributes($entry), Response::HTTP_CREATED);
+    }
+
+    /** The id a page's file and image fields sign so that visitors who may not write it can still upload from its form. */
+    public static function uploadTokenId(string $pageTag): string
+    {
+        return "POST api/files $pageTag";
+    }
+
+    /** Whether the requester may write the page, or reads it and holds the token its form was rendered with. */
+    private function mayUploadFrom(string $pageTag, string $uploadToken): bool
+    {
+        $aclService = $this->getService(AclService::class);
+        if ($aclService->hasAccess('write', $pageTag)) {
+            return true;
+        }
+
+        return $aclService->hasAccess('read', $pageTag)
+            && $this->getService(SignedTokens::class)->verify(self::uploadTokenId($pageTag), $uploadToken);
     }
 
     /**

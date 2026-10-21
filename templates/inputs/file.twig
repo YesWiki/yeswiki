@@ -12,7 +12,9 @@
             {{ include_javascript('javascripts/inputs/file-picker-field.js', false, true) }}
             <button type="button"
                     class="yw-btn yw-btn--sm yw-file-picker-field__button"
-                    data-yw-file-picker-field="{{ field.propertyName }}_url">
+                    data-yw-file-picker-field="{{ field.propertyName }}_url"
+                    data-yw-file-picker-page-tag="{{ uploadPageTag }}"
+                    data-yw-file-picker-upload-token="{{ uploadToken }}">
                 <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#pencil"/></svg>
                 {{ _t('BAZ_MODIFIER_FICHIER') }}
             </button>
@@ -41,7 +43,9 @@
             <div class="file-or-url">
                 <button type="button"
                         class="yw-btn yw-file-picker-field__button"
-                        data-yw-file-picker-field="{{ field.propertyName }}_url">
+                        data-yw-file-picker-field="{{ field.propertyName }}_url"
+                        data-yw-file-picker-page-tag="{{ uploadPageTag }}"
+                        data-yw-file-picker-upload-token="{{ uploadToken }}">
                     <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#upload"/></svg>
                     {{ _t('ATTACH_FILE_PICKER_CHOOSE_OR_UPLOAD') }}
                 </button>

@@ -10,6 +10,8 @@ const openPicker = (button) => {
   picker ??= new FilePickerPanel()
   picker.open({
     only: button.dataset.ywFilePickerOnly || '',
+    pageTag: button.dataset.ywFilePickerPageTag,
+    uploadToken: button.dataset.ywFilePickerUploadToken,
     onPick: ({ url, entry }) => {
       target.value = url
       const chosen = document.querySelector(

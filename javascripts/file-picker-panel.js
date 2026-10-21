@@ -48,6 +48,8 @@ export default class {
   onComplete
   onPick
   only = ''
+  pageTag = ''
+  uploadToken = ''
   selectedTag
   selectedEntry
   insertHandler
@@ -158,6 +160,8 @@ export default class {
     this.searchInput.value = ''
     this.extensionSelect.value = ''
     this.only = options.only ?? ''
+    this.pageTag = options.pageTag || wiki.pageTag
+    this.uploadToken = options.uploadToken ?? ''
     this.family = this.only
     this.uploadInput.accept = FAMILY_MIME_PREFIX[this.only]
       ? `${FAMILY_MIME_PREFIX[this.only]}*`
@@ -437,7 +441,8 @@ export default class {
 
     const formData = new FormData()
     formData.append('upFile', toUpload)
-    formData.append('pageTag', wiki.pageTag)
+    formData.append('pageTag', this.pageTag)
+    if (this.uploadToken) formData.append('uploadToken', this.uploadToken)
 
     let response
     let body
