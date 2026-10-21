@@ -17,3 +17,6 @@
 		</span>
 	</div>
 </form>
+{% if routes %}
+{{ include('@bazar/activitypub-routes-check.twig') }}
+{% endif %}

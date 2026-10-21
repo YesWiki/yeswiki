@@ -20,6 +20,7 @@ use YesWiki\Core\Service\TripleStore;
 
 require_once 'includes/autoload.inc.php';
 require_once 'includes/constants.php';
+require_once 'includes/urlutils.inc.php';
 
 class ActivityPubServiceTest extends TestCase
 {
@@ -33,6 +34,7 @@ class ActivityPubServiceTest extends TestCase
     private array $posted = [];
     private array $unreachable = [];
     private array $profiles = ['1' => ['username' => 'agenda']];
+    private string $baseUrl = 'https://us.example/?';
 
     protected function setUp(): void
     {
@@ -82,7 +84,7 @@ class ActivityPubServiceTest extends TestCase
 
         $params = $this->createStub(ParameterBagInterface::class);
         $params->method('has')->willReturn(true);
-        $params->method('get')->willReturnCallback(fn ($name) => $name === 'activitypub_profiles' ? $this->profiles : 'https://us.example/?');
+        $params->method('get')->willReturnCallback(fn ($name) => $name === 'activitypub_profiles' ? $this->profiles : $this->baseUrl);
 
         $semanticTransformer = $this->createStub(SemanticTransformer::class);
         $semanticTransformer->method('convertToSemanticData')->willReturn(['@context' => 'x', 'id' => 'https://us.example/?Fiche', 'type' => 'Note']);
@@ -143,6 +145,22 @@ class ActivityPubServiceTest extends TestCase
         $this->expectExceptionMessage('Invalid ActivityPub account');
 
         $this->service()->signer($this->form(['bn_id_nature' => '../wakka']));
+    }
+
+    public function testTheRoutesToCheckAreTheOnesOtherServersAsk()
+    {
+        $this->assertSame([
+            'atDomainRoot' => true,
+            'webfinger' => 'https://us.example/.well-known/webfinger?resource=acct%3Aagenda%40us.example',
+            'actor' => self::US,
+        ], $this->service()->routesToCheck($this->form()));
+    }
+
+    public function testAWikiInASubfolderIsNotAtTheDomainRoot()
+    {
+        $this->baseUrl = 'https://us.example/wiki/?';
+
+        $this->assertFalse($this->service()->routesToCheck($this->form())['atDomainRoot']);
     }
 
     public function testAFormWithoutUsernameHasNoActor()

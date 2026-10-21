@@ -497,7 +497,7 @@ Il est possible de copier des icônes dans des sites sources puis de les coller 
 ('SaisirAnnuaire',  now(), '{{nav links=\"TrombiAnnuaire, AnnuaireAlpha, CartoAnnuaire, SaisirAnnuaire\" titles=\"Trombinoscope, Annuaire alphabétique, Annuaire cartographique, S\'inscrire dans l\'annuaire\"}}
 
 {{bazar voirmenu=\"0\" vue=\"saisir\" id=\"1\"}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
-('SaisirBlog',  now(), '{{nav links=\"VoirBlog, VoirBlogSimple, SaisirBlog\" titles=\"Le blog avec Une, Le blog sans Une, Déposer une actu\"}}
+('SaisirBlog',  now(), '{{nav links=\"VoirBlog, VoirBlogSimple, VoirBlogSuivis, SaisirBlog\" titles=\"Le blog avec Une, Le blog sans Une, Comptes suivis, Déposer une actu\"}}
 
 {{bazar vue=\"saisir\" voirmenu=\"0\" id=\"3\"}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
 ('SaisirRessource',  now(), '{{nav links=\"FacetteRessource, SaisirRessource\" titles=\"Les ressources, Déposer une ressource\"}}
@@ -542,15 +542,34 @@ Il est possible de copier des icônes dans des sites sources puis de les coller 
 ('TrombiAnnuaire',  now(), '{{nav links=\"TrombiAnnuaire, AnnuaireAlpha, CartoAnnuaire, SaisirAnnuaire\" titles=\"Trombinoscope, Annuaire alphabétique, Annuaire cartographique, S\'inscrire dans l\'annuaire\"}}
 
 {{bazarliste id=\"1\" template=\"card\"  displayfields=\"visual=imagebf_image,title=bf_titre\" imgstyle=\"contain\" nbcol=\"3\" style=\"square\" }}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
-('VoirBlog',  now(), '{{nav links=\"VoirBlog, VoirBlogSimple, SaisirBlog\" titles=\"Le blog avec Une, Le blog sans Une, Déposer une actu\"}}
+('VoirBlog',  now(), '{{nav links=\"VoirBlog, VoirBlogSimple, VoirBlogSuivis, SaisirBlog\" titles=\"Le blog avec Une, Le blog sans Une, Comptes suivis, Déposer une actu\"}}
 
-{{bazarliste id=\"3\" template=\"blog\"}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
-('VoirBlogSimple',  now(), '{{nav links=\"VoirBlog, VoirBlogSimple, SaisirBlog\" titles=\"Le blog avec Une, Le blog sans Une, Déposer une actu\"}}
+{{bazarfollow id=\"3\"}}
 
-{{bazarliste id=\"3\" template=\"blog\" header=\"no\"}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
+{{bazarliste id=\"3\" template=\"blog\" origin=\"local\" pagination=\"12\"}}
+
+{{section class=\"full-width text-left\" visibility=\"@admins\" }}
+[Profil ActivityPub, abonné·es et comptes suivis](BazaR?vue=abonnements&action=list&idformulaire=3) (administration)
+{{end elem=\"section\"}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
+('VoirBlogSimple',  now(), '{{nav links=\"VoirBlog, VoirBlogSimple, VoirBlogSuivis, SaisirBlog\" titles=\"Le blog avec Une, Le blog sans Une, Comptes suivis, Déposer une actu\"}}
+
+{{bazarliste id=\"3\" template=\"blog\" header=\"no\" origin=\"local\" pagination=\"12\"}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
+('VoirBlogSuivis',  now(), '{{nav links=\"VoirBlog, VoirBlogSimple, VoirBlogSuivis, SaisirBlog\" titles=\"Le blog avec Une, Le blog sans Une, Comptes suivis, Déposer une actu\"}}
+
+{{bazarliste id=\"3\" template=\"blog\" origin=\"remote\" pagination=\"12\"}}
+
+{{section class=\"full-width text-left\" visibility=\"@admins\" }}
+[Profil ActivityPub, abonné·es et comptes suivis](BazaR?vue=abonnements&action=list&idformulaire=3) (administration)
+{{end elem=\"section\"}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
 ('VueActivite',  now(), '{{nav links=\"VueActivite, VueAgenda, SaisirAgenda\" titles=\"Voir les prochaines activités, Voir l\'agenda, Proposer une activité\"}}
 
-{{bazarliste template=\"agenda\" id=\"2\" ordre=\"desc\" champ=\"bf_date_debut_evenement\" agenda=\"futur\" }}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
+{{bazarfollow id=\"2\"}}
+
+{{bazarliste template=\"agenda\" id=\"2\" ordre=\"desc\" champ=\"bf_date_debut_evenement\" agenda=\"futur\" }}
+
+{{section class=\"full-width text-left\" visibility=\"@admins\" }}
+[Profil ActivityPub, abonné·es et comptes suivis](BazaR?vue=abonnements&action=list&idformulaire=2) (administration)
+{{end elem=\"section\"}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
 ('VueAgenda',  now(), '{{nav links=\"VueActivite, VueAgenda, SaisirAgenda\" titles=\"Voir les prochaines activités, Voir l\'agenda, Proposer une activité\"}}
 
 {{bazarliste id=\"2\" template=\"calendar\" }}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),

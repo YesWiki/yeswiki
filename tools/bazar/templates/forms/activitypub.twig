@@ -15,6 +15,7 @@
 <div class="alert alert-info">
   <strong>{{ _t('BAZ_FORM_ACTOR_ID') }}</strong> : @{{ profile.username }}@{{ domain }}
 </div>
+{{ include('@bazar/activitypub-routes-check.twig') }}
 {% endif %}
 
 <ul class="nav nav-tabs">

@@ -70,6 +70,22 @@ class ActivityPubService
         return $parsed['scheme'] . '://' . $parsed['host'] . '/actors/' . $form['bn_id_nature'];
     }
 
+    /**
+     * What an admin's browser fetches to check that the web server passes WebFinger and the actor on to the wiki.
+     *
+     * @return array{atDomainRoot:bool,webfinger:string,actor:string}
+     */
+    public function routesToCheck($form): array
+    {
+        $parsed = parse_url($this->params->get('base_url'));
+
+        return [
+            'atDomainRoot' => isDomainRootUrl($this->params->get('base_url')),
+            'webfinger' => $parsed['scheme'] . '://' . $parsed['host'] . '/.well-known/webfinger?resource=' . rawurlencode('acct:' . $this->username($form) . '@' . $parsed['host']),
+            'actor' => $this->getFormActorUri($form),
+        ];
+    }
+
     public function getFormCollectionUri($form, $collectionType)
     {
         $parsed = parse_url($this->params->get('base_url'));

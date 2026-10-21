@@ -260,6 +260,7 @@ class FormController extends YesWikiController
             'domain' => parse_url($this->wiki->GetBaseURL(), PHP_URL_HOST),
             'actorUri' => $this->activityPubService->getFormActorUri($form),
             'isEnabled' => $this->activityPubService->isEnabled($form),
+            'routes' => $this->activityPubService->routesToCheck($form),
             'followers' => $this->activityPubService->getFollowers($form),
             'followRequests' => $followRequests,
             'following' => $this->activityPubService->getFollowing($form),

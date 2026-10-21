@@ -31,6 +31,57 @@ dans la liste des formulaires:
 Ce bouton mène à une page en deux onglets. Le compte n'existe pour les autres
 serveurs qu'une fois un nom d'utilisateur choisi et le profil enregistré.
 
+Sur une installation neuve, la case "Publier le blog et l'agenda sur le
+Fédivers" de la configuration avancée fait tout cela pour les formulaires
+Agenda et Blog-actu, avec les noms d'utilisateur `agenda` et `blog`. Elle est
+cochée d'office quand le wiki est à la racine de son domaine.
+
+## Configurer le serveur web
+
+Les autres serveurs du fédivers cherchent un compte à deux adresses, toujours à
+la racine du domaine :
+
+- `/.well-known/webfinger?resource=acct:blog@monwiki.org`, qui transforme
+  l'identifiant `@blog@monwiki.org` en adresse du compte ;
+- `/actors/<identifiant du formulaire>`, le compte lui-même, avec ses boîtes
+  `/inbox` et `/outbox` et ses collections `/followers` et `/following`.
+
+Le wiki doit donc être servi à la racine de son domaine (`https://monwiki.org/`
+et non `https://exemple.org/monwiki/`), et le serveur web doit transmettre ces
+deux adresses au wiki. Sinon, la page ActivityPub du formulaire et l'action
+`bazarfollow` affichent un avertissement aux administrateurs, qui dit laquelle
+des deux adresses ne répond pas.
+
+### Apache
+
+YesWiki est livré avec un fichier `.htaccess` qui contient ces règles. Il faut
+que le module `mod_rewrite` soit actif et que la configuration d'Apache autorise
+les fichiers `.htaccess` à s'en servir (`AllowOverride FileInfo` ou
+`AllowOverride All`).
+
+La mise à jour automatique n'écrase jamais un `.htaccess` existant : elle ne
+l'ajoute que s'il manque. Si vous avez déjà votre propre fichier, ajoutez-y ces
+lignes :
+
+```apache
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteRule ^actors/([0-9]+)(/(?:outbox|inbox|followers|following))?$ index.php?wiki=api/forms/$1/actor$2 [QSA,L]
+  RewriteRule ^\.well-known/webfinger$ index.php?wiki=api/webfinger [QSA,L]
+</IfModule>
+```
+
+### nginx
+
+Ajoutez ces deux lignes dans le bloc `server` du wiki :
+
+```nginx
+rewrite ^/actors/(\d+)(/(?:outbox|inbox|followers|following))?$ /index.php?wiki=api/forms/$1/actor$2 last;
+rewrite ^/\.well-known/webfinger$ /index.php?wiki=api/webfinger last;
+```
+
+Le paquet YunoHost de YesWiki contient déjà ces règles.
+
 ## Profil du compte
 
 L'onglet "Profil" règle ce que voient les personnes qui consultent ou suivent le
