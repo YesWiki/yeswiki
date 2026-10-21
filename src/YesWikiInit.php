@@ -609,7 +609,10 @@ class YesWikiInit
             $sessionName = 'YesWiki-' . str_replace('/', '-', substr($CookiePath, 1, -1));
         }
 
-        if (session_status() !== PHP_SESSION_ACTIVE) {
+        if (session_status() !== PHP_SESSION_ACTIVE && !self::sessionCanStart()) {
+            $_SESSION = [];
+            $this->seedSessionKeysVendorSingletonsAssume();
+        } elseif (session_status() !== PHP_SESSION_ACTIVE) {
             $cookiesParam = session_get_cookie_params();
             $cookiesParam['path'] = $CookiePath;
             $cookiesParam['httponly'] = true;
@@ -631,6 +634,12 @@ class YesWikiInit
         }
 
         return $CookiePath;
+    }
+
+    /** False under the binary's php-cli, whose embed SAPI reports the headers as sent before the script runs. */
+    public static function sessionCanStart(): bool
+    {
+        return \PHP_SAPI !== 'cli' || !headers_sent();
     }
 
     /** A session is opened up front only for a visitor who already has one or a request that changes something; the rest wait until they write to it. */
