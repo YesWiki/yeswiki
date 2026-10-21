@@ -15,6 +15,7 @@ use YesWiki\Bazar\Service\HttpSignatureService;
 use YesWiki\Bazar\Service\SemanticTransformer;
 use YesWiki\Bazar\Service\SsrfUrlValidator;
 use YesWiki\Bazar\Service\WebfingerService;
+use YesWiki\Core\Service\AfterResponse;
 use YesWiki\Core\Service\ConfigurationService;
 use YesWiki\Core\Service\TripleStore;
 
@@ -35,6 +36,7 @@ class ActivityPubServiceTest extends TestCase
     private array $unreachable = [];
     private array $profiles = ['1' => ['username' => 'agenda']];
     private string $baseUrl = 'https://us.example/?';
+    private ?AfterResponse $afterResponse = null;
 
     protected function setUp(): void
     {
@@ -97,7 +99,7 @@ class ActivityPubServiceTest extends TestCase
 
                 return new MockResponse(json_encode(['id' => $url, 'inbox' => $url . '/inbox']));
             }
-            $this->posted[] = ['url' => $url, 'body' => json_decode($options['body'], true), 'headers' => $options['normalized_headers']];
+            $this->posted[] = ['url' => $url, 'body' => json_decode($options['body'], true), 'headers' => $options['normalized_headers'], 'timeout' => $options['timeout'], 'max_duration' => $options['max_duration']];
 
             return new MockResponse('', ['http_code' => 202]);
         });
@@ -107,7 +109,7 @@ class ActivityPubServiceTest extends TestCase
 
         $keyStore = new ActivityPubKeyStore($httpSignatureService, $this->keyDir);
         $profiles = new ActivityPubProfiles($params, new ConfigurationService(), $this->keyDir . '/wakka.config.php');
-        $service = new ActivityPubService($params, $this->createStub(WebfingerService::class), $httpSignatureService, $semanticTransformer, $tripleStore, $this->createStub(SsrfUrlValidator::class), $keyStore, $profiles, new ActivityPubLog(new ParameterBag(['activitypub_log' => true]), $this->keyDir . '/log'));
+        $service = new ActivityPubService($params, $this->createStub(WebfingerService::class), $httpSignatureService, $semanticTransformer, $tripleStore, $this->createStub(SsrfUrlValidator::class), $keyStore, $profiles, new ActivityPubLog(new ParameterBag(['activitypub_log' => true]), $this->keyDir . '/log'), $this->afterResponse);
         (new \ReflectionProperty($service, 'httpClient'))->setValue($service, $client);
 
         return $service;
@@ -296,6 +298,35 @@ class ActivityPubServiceTest extends TestCase
         $this->assertSame([ActivityPubService::PUBLIC], $activity['to']);
         $this->assertSame(self::US, $activity['object']['attributedTo']);
         $this->assertArrayNotHasKey('@context', $activity['object']);
+    }
+
+    public function testFollowersAreNotifiedOnlyOnceTheResponseHasGone()
+    {
+        $this->triples[] = ['resource' => self::US . '/followers', 'property' => ActivityPubService::$AS_PREFIX . 'items', 'value' => self::THEM];
+        $this->afterResponse = new class extends AfterResponse {
+            public function defer(callable $task): void
+            {
+                $this->tasks[] = $task;
+            }
+        };
+        $service = $this->service();
+
+        $service->notifyFollowers($this->form(), ['id_fiche' => 'Fiche'], 'Create');
+        $service->announceProfile($this->form());
+        $this->assertSame([], $this->posted);
+
+        $this->afterResponse->run();
+        $this->assertSame(['Create', 'Update'], array_map(fn ($post) => $post['body']['type'], $this->posted));
+    }
+
+    public function testADeliveryGivesUpOnAFollowerThatDoesNotAnswer()
+    {
+        $this->triples[] = ['resource' => self::US . '/followers', 'property' => ActivityPubService::$AS_PREFIX . 'items', 'value' => self::THEM];
+
+        $this->service()->notifyFollowers($this->form(), ['id_fiche' => 'Fiche'], 'Create');
+
+        $this->assertSame(HttpSignatureService::TIMEOUT, (int)$this->posted[0]['timeout']);
+        $this->assertSame(HttpSignatureService::MAX_DURATION, (int)$this->posted[0]['max_duration']);
     }
 
     public function testFollowersAreToldWhenTheProfileChanges()

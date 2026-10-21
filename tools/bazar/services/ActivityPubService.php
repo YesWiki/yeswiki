@@ -4,6 +4,7 @@ namespace YesWiki\Bazar\Service;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpClient\HttpClient;
+use YesWiki\Core\Service\AfterResponse;
 use YesWiki\Core\Service\TripleStore;
 
 class ActivityPubService
@@ -22,9 +23,11 @@ class ActivityPubService
     protected $keyStore;
     protected $profiles;
     protected $log;
+    protected $afterResponse;
 
-    public function __construct(ParameterBagInterface $params, WebfingerService $webfingerService, HttpSignatureService $httpSignatureService, SemanticTransformer $semanticTransformer, TripleStore $tripleStore, SsrfUrlValidator $ssrfUrlValidator, ActivityPubKeyStore $keyStore, ActivityPubProfiles $profiles, ActivityPubLog $log)
+    public function __construct(ParameterBagInterface $params, WebfingerService $webfingerService, HttpSignatureService $httpSignatureService, SemanticTransformer $semanticTransformer, TripleStore $tripleStore, SsrfUrlValidator $ssrfUrlValidator, ActivityPubKeyStore $keyStore, ActivityPubProfiles $profiles, ActivityPubLog $log, ?AfterResponse $afterResponse = null)
     {
+        $this->afterResponse = $afterResponse ?? new AfterResponse();
         $this->log = $log;
         $this->keyStore = $keyStore;
         $this->profiles = $profiles;
@@ -320,6 +323,8 @@ class ActivityPubService
                     'body' => $body,
                     'headers' => $this->httpSignatureService->signHeaders('POST', $inboxUri, $signer, $body),
                     'max_redirects' => 0,
+                    'timeout' => HttpSignatureService::TIMEOUT,
+                    'max_duration' => HttpSignatureService::MAX_DURATION,
                     'resolve' => $this->ssrfUrlValidator->resolveSafe($inboxUri),
                 ]);
 
@@ -633,17 +638,13 @@ class ActivityPubService
         $context = $actor['@context'];
         unset($actor['@context']);
 
-        try {
-            $this->postActivity([
-                '@context' => $context,
-                'type' => 'Update',
-                'object' => $actor,
-                'to' => [self::PUBLIC],
-                'cc' => [$this->getFormCollectionUri($form, 'followers')],
-            ], $form);
-        } catch (\Exception $e) {
-            error_log('ActivityPub: ' . $e->getMessage());
-        }
+        $this->deliverToFollowers([
+            '@context' => $context,
+            'type' => 'Update',
+            'object' => $actor,
+            'to' => [self::PUBLIC],
+            'cc' => [$this->getFormCollectionUri($form, 'followers')],
+        ], $form);
     }
 
     /**
@@ -656,15 +657,25 @@ class ActivityPubService
             $object = ['id' => $object['id'], 'type' => 'Tombstone', 'formerType' => $object['type'] ?? 'Object'];
         }
 
-        try {
-            $this->postActivity([
-                'type' => $activityType,
-                'object' => $object,
-                'to' => [self::PUBLIC],
-                'cc' => [$this->getFormCollectionUri($form, 'followers')],
-            ], $form);
-        } catch (\Exception $e) {
-            error_log('ActivityPub: ' . $e->getMessage());
-        }
+        $this->deliverToFollowers([
+            'type' => $activityType,
+            'object' => $object,
+            'to' => [self::PUBLIC],
+            'cc' => [$this->getFormCollectionUri($form, 'followers')],
+        ], $form);
+    }
+
+    /**
+     * Sends an activity to the followers once the response has gone, so a slow follower never holds up the person saving.
+     */
+    protected function deliverToFollowers(array $activity, $form): void
+    {
+        $this->afterResponse->defer(function () use ($activity, $form) {
+            try {
+                $this->postActivity($activity, $form);
+            } catch (\Exception $e) {
+                error_log('ActivityPub: ' . $e->getMessage());
+            }
+        });
     }
 }
