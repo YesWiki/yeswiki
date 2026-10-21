@@ -289,6 +289,21 @@ class BotGuardHttpTest extends YesWikiTestCase
         }
     }
 
+    public function testARobotMessageLooksSentButIsDropped(): void
+    {
+        $guard = self::getWiki()->services->get(BotGuard::class);
+        $before = $guard->refusedLastDays(1)[BotGuard::REFUSED_GIBBERISH] ?? 0;
+
+        [, $html] = $this->request('BotGuardHttpContact');
+        [$fields] = $this->form($html, '//form[contains(@class,"ajax-mail-form")]');
+        $fields = ['pageTag' => 'BotGuardHttpContact', 'name' => 'RksTnXCbuIVhINwvtvIS', 'email' => 'personne@example.org', 'subject' => 'fVrYazAYnCkkMpoLANatX', 'message' => 'JmVcOKXcLjfVzwwSHEsHdup'] + $fields;
+        $this->waitPastTheMinimumAge();
+        [, $sent] = $this->request('api/contact/mail', $fields);
+
+        $this->assertSame(_t('CONTACT_MESSAGE_SUCCESSFULLY_SENT'), json_decode($sent, true)['message'] ?? null);
+        $this->assertSame($before + 1, $guard->refusedLastDays(1)[BotGuard::REFUSED_GIBBERISH] ?? 0);
+    }
+
     public function testSignup(): void
     {
         [, $html] = $this->request('user/signup');

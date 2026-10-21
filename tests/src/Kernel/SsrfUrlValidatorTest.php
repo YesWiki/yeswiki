@@ -146,4 +146,45 @@ class SsrfUrlValidatorTest extends TestCase
 
         $this->validator()->curlPin('http://127.0.0.1/x', self::WEB);
     }
+
+    public function testAHostOnTheSameMachineIsPinnedToItsPublicAddress(): void
+    {
+        $resolved = $this->resolvingTo(['127.0.0.1', '::1', '2a01:4f8::2'])
+            ->resolveSafe('https://social.example/users/me/main-key');
+
+        $this->assertSame(['social.example' => '2a01:4f8::2'], $resolved);
+    }
+
+    public function testAHostWithOnlyPrivateAddressesIsRefused(): void
+    {
+        $this->expectException(\Exception::class);
+        $this->expectExceptionMessage('private or reserved');
+
+        $this->resolvingTo(['127.0.0.1', '::1', '10.0.0.4'])->resolveSafe('https://social.example/x');
+    }
+
+    public function testAHostThatDoesNotResolveIsRefused(): void
+    {
+        $this->expectException(\Exception::class);
+        $this->expectExceptionMessage('Cannot resolve');
+
+        $this->resolvingTo([])->resolveSafe('https://social.example/x');
+    }
+
+    /** @param list<string> $ips */
+    private function resolvingTo(array $ips): SsrfUrlValidator
+    {
+        return new class($ips) extends SsrfUrlValidator {
+            /** @param list<string> $ips */
+            public function __construct(private array $ips)
+            {
+                parent::__construct();
+            }
+
+            protected function lookup(string $host): array
+            {
+                return $this->ips;
+            }
+        };
+    }
 }

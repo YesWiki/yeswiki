@@ -32,7 +32,7 @@ class ExtractFormPropertiesFromTemplateTest extends YesWikiTestCase
         $body = (new \ExtractFormPropertiesFromTemplate())->extract($this->convertedBody(
             "titre***{{bf_nom}} {{bf_prenom}}***Titre Automatique***\r\n"
             . "texte***bf_nom***Nom***60***255*** *** ***text***1*** *** *** * *** * *** *** *** ***\r\n"
-            . "texte***bf_prenom***Prénom***60***255*** *** ***text***1*** *** *** * *** * *** *** *** ***"
+            . 'texte***bf_prenom***Prénom***60***255*** *** ***text***1*** *** *** * *** * *** *** *** ***'
         ));
 
         $this->assertNotNull($body);

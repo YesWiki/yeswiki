@@ -42,7 +42,7 @@
           class="btn btn-warning"
           type="button"
           value="{{ _t('USER_DISCONNECT')|e('html_attr') }}"
-          onclick="document.location='{{ url({params: {usersettings_action: 'logout'}})|e('html_attr') }}'" />
+          onclick="document.location='{{ signedUrl(url({params: {usersettings_action: 'logout'}}))|e('html_attr') }}'" />
       {% endif %}
         </div>
     </div>

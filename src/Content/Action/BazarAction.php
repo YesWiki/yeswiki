@@ -9,6 +9,7 @@ use YesWiki\Content\Controller\ListController;
 use YesWiki\Content\Service\BazarListService;
 use YesWiki\Content\Service\FormManager;
 use YesWiki\Core\YesWikiAction;
+use YesWiki\Identity\Service\RequestGuard;
 use YesWiki\Kernel\Component\Category;
 use YesWiki\Kernel\Component\Component;
 use YesWiki\Kernel\Component\ProvidesComponents;
@@ -186,6 +187,10 @@ class BazarAction extends YesWikiAction implements RegisteredAction, ProvidesCom
                     case self::ACTION_ENTRY_EDIT:
                         return $entryController->update(CurrentRequest::input($req, 'tag'));
                     case self::ACTION_ENTRY_DELETE:
+                        if (!$this->getService(RequestGuard::class)->linkIsSigned($req)) {
+                            return $this->render('@core/alert-message.twig', ['type' => 'danger', 'message' => _t('CSRF_TOKEN_FAIL_ERROR')]);
+                        }
+
                         return (string)$entryController->delete(CurrentRequest::input($req, 'tag'), true);
                     case self::ACTION_PUBLIER:
                         return $entryController->publish(CurrentRequest::input($req, 'tag'), true);

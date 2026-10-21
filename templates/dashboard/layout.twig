@@ -8,7 +8,7 @@
       { route: 'user/pages',     icon: 'file',          label: _t('ACCOUNT_PAGES') },
       { route: 'user/entries',   icon: 'list-details',  label: _t('ACCOUNT_ENTRIES') },
       { route: 'user/reactions', icon: 'thumb-up',      label: _t('ACCOUNT_REACTIONS') },
-      { route: 'user/logout',    icon: 'logout',        label: _t('LOGIN_LOGOUT') }
+      { route: 'user/logout',    icon: 'logout',        label: _t('LOGIN_LOGOUT'), signed: true }
     ]
   },
   {
@@ -84,7 +84,7 @@
             {% set here = item.route == current_route %}
             <li>
               <a class="yw-dashboard__link{{ here ? ' yw-dashboard__link--current' : '' }}"
-                 href="{{ url({ tag: item.route }) }}"
+                 href="{{ item.signed is defined ? signedUrl(url({ tag: item.route })) : url({ tag: item.route }) }}"
                  {{ here ? 'aria-current="page"' : '' }}>
                 {{ icon(item.icon) }}
                 <span>{{ item.label }}</span>

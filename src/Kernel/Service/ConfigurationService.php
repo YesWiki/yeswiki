@@ -22,7 +22,7 @@ class ConfigurationService
     }
 
     /**
-     * write config.
+     * Write the config whole or not at all: a full disk or quota leaves the previous file in place.
      *
      * @return bool
      */
@@ -33,7 +33,7 @@ class ConfigurationService
         }
         $content = $this->getContentToWrite($config, $arrayName);
 
-        if (!$this->localFiles->write($file, $content)) {
+        if (!$this->localFiles->writeAtomically($file, $content)) {
             return false;
         }
 

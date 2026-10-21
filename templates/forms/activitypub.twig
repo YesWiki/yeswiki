@@ -90,6 +90,17 @@
     <p class="yw-form-hint">{{ _t('BAZ_ACTIVITYPUB_APPROVE_FOLLOWERS_HELP') }}</p>
   </div>
 
+  <fieldset class="yw-form-group">
+    <legend class="yw-form-label">{{ _t('BAZ_ACTIVITYPUB_INCOMING') }}</legend>
+    {% for setting in ['accept_unfollowed', 'accept_non_public', 'accept_replies'] %}
+    <label>
+      <input type="checkbox" name="activitypub_{{ setting }}" value="1"{% if profile[setting] %} checked{% endif %}>
+      {{ _t('BAZ_ACTIVITYPUB_' ~ setting|upper) }}
+    </label>
+    {% endfor %}
+    <p class="yw-form-hint">{{ _t('BAZ_ACTIVITYPUB_INCOMING_HELP') }}</p>
+  </fieldset>
+
   <div class="form-actions">
     <button class="yw-btn yw-btn--primary" type="submit">{{ _t('BAZ_SAVE') }}</button>
     {% if profile.username is not empty and isEnabled %}
@@ -128,11 +139,11 @@
       <td><a href="{{ actorUri }}" target="_blank" rel="noopener">{{ actorUri }}</a></td>
       <td>
         <a class="yw-btn yw-btn--sm" title="{{ _t('BAZ_SYNC_ACTOR_POSTS') }}" aria-label="{{ _t('BAZ_SYNC_ACTOR_POSTS') }}"
-           href="{{ url({ params: { view: 'abonnements', action: 'sync', actor: actorUri, formid: form.id, synctoken: csrfToken({id: 'main', refresh: false}) }}) }}">
+           href="{{ signedUrl(url({ params: { view: 'abonnements', action: 'sync', actor: actorUri, formid: form.id }})) }}">
           <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#repeat"/></svg>
         </a>
         <a class="yw-btn yw-btn--sm yw-btn--danger" title="{{ _t('BAZ_CONFIRM_SUPPRIMER_ABONNEMENT') }}" aria-label="{{ _t('BAZ_CONFIRM_SUPPRIMER_ABONNEMENT') }}"
-           href="{{ url({ params: { view: 'abonnements', action: 'remove', actor: actorUri, type: 'following', formid: form.id }}) }}"
+           href="{{ signedUrl(url({ params: { view: 'abonnements', action: 'remove', actor: actorUri, type: 'following', formid: form.id }})) }}"
            onclick="return confirm('{{ _t('BAZ_CONFIRM_SUPPRIMER_ABONNEMENT')|e('js') }} ?');">
           <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#trash"/></svg>
         </a>
@@ -147,7 +158,7 @@
       </td>
       <td>
         <a class="yw-btn yw-btn--sm yw-btn--danger" title="{{ _t('BAZ_CONFIRM_SUPPRIMER_ABONNEMENT') }}" aria-label="{{ _t('BAZ_CONFIRM_SUPPRIMER_ABONNEMENT') }}"
-           href="{{ url({ params: { view: 'abonnements', action: 'remove', actor: actorUri, type: 'following', formid: form.id }}) }}"
+           href="{{ signedUrl(url({ params: { view: 'abonnements', action: 'remove', actor: actorUri, type: 'following', formid: form.id }})) }}"
            onclick="return confirm('{{ _t('BAZ_CONFIRM_SUPPRIMER_ABONNEMENT')|e('js') }} ?');">
           <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#trash"/></svg>
         </a>
@@ -172,7 +183,7 @@
           <button class="yw-btn yw-btn--sm yw-btn--primary" type="submit">{{ _t('BAZ_ACTIVITYPUB_ACCEPT') }}</button>
         </form>
         <a class="yw-btn yw-btn--sm yw-btn--danger"
-           href="{{ url({ params: { view: 'abonnements', action: 'remove', actor: actorUri, type: 'followers', formid: form.id }}) }}"
+           href="{{ signedUrl(url({ params: { view: 'abonnements', action: 'remove', actor: actorUri, type: 'followers', formid: form.id }})) }}"
            onclick="return confirm('{{ _t('BAZ_ACTIVITYPUB_CONFIRM_REFUSE')|e('js') }}');">{{ _t('BAZ_ACTIVITYPUB_REFUSE') }}</a>
       </td>
     </tr>
@@ -195,12 +206,12 @@
       <td>
         {% if actorUri not in following and actorUri not in pendingFollowing %}
         <a class="yw-btn yw-btn--sm" title="{{ _t('BAZ_FOLLOW_BACK') }}" aria-label="{{ _t('BAZ_FOLLOW_BACK') }}"
-           href="{{ url({ params: { view: 'abonnements', action: 'add', actor: actorUri, type: 'following', formid: form.id }}) }}">
+           href="{{ signedUrl(url({ params: { view: 'abonnements', action: 'add', actor: actorUri, type: 'following', formid: form.id }})) }}">
           <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#user-plus"/></svg>
         </a>
         {% endif %}
         <a class="yw-btn yw-btn--sm yw-btn--danger" title="{{ _t('BAZ_CONFIRM_SUPPRIMER_ABONNE') }}" aria-label="{{ _t('BAZ_CONFIRM_SUPPRIMER_ABONNE') }}"
-           href="{{ url({ params: { view: 'abonnements', action: 'remove', actor: actorUri, type: 'followers', formid: form.id }}) }}"
+           href="{{ signedUrl(url({ params: { view: 'abonnements', action: 'remove', actor: actorUri, type: 'followers', formid: form.id }})) }}"
            onclick="return confirm('{{ _t('BAZ_CONFIRM_SUPPRIMER_ABONNE')|e('js') }} ?');">
           <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#trash"/></svg>
         </a>

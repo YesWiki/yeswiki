@@ -25,6 +25,7 @@ class ActivityPubService
         protected SsrfUrlValidator $ssrfUrlValidator,
         protected ActivityPubKeyStore $keyStore,
         protected ActivityPubProfiles $profiles,
+        protected ActivityPubLog $log,
     ) {
         $this->httpClient = HttpClient::create();
     }
@@ -64,7 +65,7 @@ class ActivityPubService
     /**
      * @param array<string, mixed> $form
      *
-     * @return array{username: string, summary: string, icon: string, image: string, fields: array<string, string>, approve_followers: bool}
+     * @return array{username: string, summary: string, icon: string, image: string, fields: array<string, string>, approve_followers: bool, accept_unfollowed: bool, accept_non_public: bool, accept_replies: bool}
      */
     public function profile(array $form): array
     {
@@ -144,7 +145,7 @@ class ActivityPubService
                 ],
             ],
             'id' => $actorUrl,
-            'type' => 'Service',
+            'type' => 'Application',
             'name' => $form['label'] ?? '',
             'preferredUsername' => $profile['username'],
             'summary' => $this->toHtml($profile['summary']) ?: $this->toHtml(is_string($form['description'] ?? null) ? $form['description'] : ''),
@@ -312,7 +313,7 @@ class ActivityPubService
      */
     public function postActivity(array $activity, array $form): array
     {
-        $activity = ['@context' => 'https://www.w3.org/ns/activitystreams'] + $activity;
+        $activity = ['@context' => $activity['@context'] ?? 'https://www.w3.org/ns/activitystreams'] + $activity;
         $activity['actor'] = $this->getFormActorUri($form);
         $activity['id'] ??= $this->newActivityId($form);
 
@@ -324,6 +325,9 @@ class ActivityPubService
         $failures = [];
 
         foreach ($this->getRecipients($form, $activity) as $recipientUri) {
+            $inboxUri = null;
+            $statusCode = null;
+            $responseBody = null;
             try {
                 $inboxUri = $this->getActorInbox($recipientUri, $form);
 
@@ -335,11 +339,14 @@ class ActivityPubService
                 ]);
 
                 $statusCode = $response->getStatusCode();
+                $responseBody = $response->getContent(false);
                 if ($statusCode < 200 || $statusCode >= 300) {
-                    throw new \Exception("HTTP $statusCode: " . $response->getContent(false));
+                    throw new \Exception("HTTP $statusCode: " . $responseBody);
                 }
+                $this->log->delivered((string)$form['id'], $recipientUri, $inboxUri, $activity, $statusCode, null, $responseBody);
             } catch (\Throwable $e) {
                 $failures[] = "$recipientUri: " . $e->getMessage();
+                $this->log->delivered((string)$form['id'], $recipientUri, $inboxUri, $activity, $statusCode, $e->getMessage(), $responseBody);
             }
         }
 
@@ -647,7 +654,34 @@ class ActivityPubService
     }
 
     /**
-     * Tells the followers an entry was created, updated or deleted; a follower that cannot be reached is logged, not fatal.
+     * Sends the followers the actor as it now is, so remote servers refresh their cached profile; a follower that cannot be reached is logged, not fatal.
+     *
+     * @param array<string, mixed> $form
+     */
+    public function announceProfile(array $form): void
+    {
+        if (!$this->hasActor($form)) {
+            return;
+        }
+        $actor = $this->getActor($form);
+        $context = $actor['@context'];
+        unset($actor['@context']);
+
+        try {
+            $this->postActivity([
+                '@context' => $context,
+                'type' => 'Update',
+                'object' => $actor,
+                'to' => [self::PUBLIC],
+                'cc' => [$this->getFormCollectionUri($form, 'followers')],
+            ], $form);
+        } catch (\Exception $e) {
+            error_log('ActivityPub: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Tells the followers an entry was created, updated or deleted, a deleted one as a Tombstone; a follower that cannot be reached is logged, not fatal.
      *
      * @param array<string, mixed> $form
      * @param array<string, mixed> $entry
@@ -655,9 +689,13 @@ class ActivityPubService
     public function notifyFollowers(array $form, array $entry, string $activityType): void
     {
         try {
+            $object = $this->entryObject($form, $entry);
+            if ($activityType === 'Delete') {
+                $object = ['id' => $object['id'], 'type' => 'Tombstone', 'formerType' => $object['type'] ?? 'Object'];
+            }
             $this->postActivity([
                 'type' => $activityType,
-                'object' => $this->entryObject($form, $entry),
+                'object' => $object,
                 'to' => [self::PUBLIC],
                 'cc' => [$this->getFormCollectionUri($form, 'followers')],
             ], $form);

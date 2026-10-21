@@ -484,6 +484,9 @@ class FormPropertiesService
         }
 
         if ($value && $this->isUserByName($value)) {
+            if (!$isImport && !$this->mayActAs($value)) {
+                throw new UserFieldException(_t('BAZ_USER_FIELD_NOT_YOUR_ACCOUNT'));
+            }
             $wikiName = $value;
             $this->addUserToGroups($wikiName, $entry, $addToGroup);
             $this->updateEmailIfNeeded($wikiName, $entry[$emailField] ?? null, $autoUpdateMail);
@@ -550,6 +553,17 @@ class FormPropertiesService
                 self::USER_PROPERTY_NAME . self::FORCE_LABEL,
             ],
         ];
+    }
+
+    /** Only the account itself, or an admin, may link an entry to an existing account. */
+    private function mayActAs(string $userName): bool
+    {
+        if ($this->aclService->isAdmin()) {
+            return true;
+        }
+        $loggedUser = $this->getService(AuthenticationService::class)->getLoggedUser();
+
+        return !empty($loggedUser['name']) && $loggedUser['name'] === $userName;
     }
 
     private function isUserByName(string $userName): bool
@@ -639,7 +653,10 @@ class FormPropertiesService
         UserManager $userManager,
         array $existingsGroups
     ): bool {
-        if (!preg_match('/^[A-Za-z0-9]+$/m', $groupName)) {
+        if (!preg_match('/^[A-Za-z0-9]+$/', $groupName)) {
+            return false;
+        }
+        if (strtolower($groupName) === ADMIN_GROUP && !$this->aclService->isAdmin()) {
             return false;
         }
 

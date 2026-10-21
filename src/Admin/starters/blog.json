@@ -43,6 +43,18 @@
         "write_access": "*"
       },
       {
+        "type": "texte",
+        "name": "bf_avertissement",
+        "label": "Avertissement de contenu",
+        "size": "80",
+        "max_chars": "255",
+        "sub_type": "text",
+        "required": "0",
+        "hint": "Si rempli, Mastodon et GoToSocial masquent le billet derrière ce texte",
+        "read_access": "*",
+        "write_access": "*"
+      },
+      {
         "type": "textelong",
         "name": "bf_description",
         "label": "Billet",
@@ -58,15 +70,15 @@
     "sem_context": "",
     "sem_type": "",
     "sem_use_template": "1",
-    "sem_template": "{% set lead = \"<p><strong>\" ~ (bf_titre | e) ~ \"</strong></p>\" ~ (bf_chapeau ? \"<p><em>\" ~ (bf_chapeau | e) ~ \"</em></p>\" : \"\") %}\n{\n  \"@context\": \"https://www.w3.org/ns/activitystreams\",\n  \"type\": \"Note\",\n  \"name\": {{ bf_titre | json_encode }},\n  \"preview\": {{ bf_chapeau | default(\"\") | json_encode }},\n  \"content\": {{ (lead ~ format(bf_description | default(\"\"))) | json_encode }},\n  \"published\": {{ created_at | replace({\" \": \"T\"}) | json_encode }},\n  \"updated\": {{ updated_at | replace({\" \": \"T\"}) | json_encode }},\n  \"attachment\": [\n    {% if imagebf_image %}\n    {\n      \"type\": \"Image\",\n      \"url\": {{ fileUrl(imagebf_image) | json_encode }}\n    }\n    {% endif %}\n  ]\n}",
-    "sem_reverse_template": "{% set lead = \"<p><strong>\" ~ (name | e) ~ \"</strong></p>\" ~ (preview ? \"<p><em>\" ~ (preview | e) ~ \"</em></p>\" : \"\") %}\n{\n  \"bf_titre\": {{ name | json_encode }},\n  \"bf_chapeau\": {{ preview | default(\"\") | json_encode }},\n  \"bf_description\": {{ markdown(content | default(\"\") | replace({(lead): \"\"})) | json_encode }},\n  \"imagebf_image\": {{ (attachment | first).url | default(\"\") | json_encode }}\n}",
+    "sem_template": "{% set html = {\"&\": \"&amp;\", \"<\": \"&lt;\", \">\": \"&gt;\"} %}\n{% set lead = \"<p><strong>\" ~ (bf_titre | replace(html)) ~ \"</strong></p>\" ~ (bf_chapeau | default(\"\") ? \"<p><em>\" ~ (bf_chapeau | replace(html)) ~ \"</em></p>\" : \"\") %}\n{\n  \"@context\": \"https://www.w3.org/ns/activitystreams\",\n  \"type\": \"Note\",\n  {% if bf_avertissement | default(\"\") %}\n  \"summary\": {{ bf_avertissement | json_encode }},\n  \"sensitive\": true,\n  {% endif %}\n  \"preview\": {{ bf_chapeau | default(\"\") | json_encode }},\n  \"content\": {{ (lead ~ format(bf_description | default(\"\"))) | json_encode }},\n  \"published\": {{ created_at | date(\"c\") | json_encode }},\n  \"updated\": {{ updated_at | default(created_at) | date(\"c\") | json_encode }},\n  \"attachment\": [\n    {% if imagebf_image | default(\"\") %}\n    {\n      \"type\": \"Image\",\n      \"url\": {{ fileUrl(imagebf_image) | json_encode }}\n    }\n    {% endif %}\n  ]\n}",
+    "sem_reverse_template": "{% set html = {\"&\": \"&amp;\", \"<\": \"&lt;\", \">\": \"&gt;\"} %}\n{% set text = {\"&amp;\": \"&\", \"&lt;\": \"<\", \"&gt;\": \">\"} %}\n{% set head = content | default(\"\") | split(\"</strong></p>\", 2) %}\n{% set leadTitle = head | length == 2 and head | first starts with \"<p><strong>\" ? head | first | slice(11) | replace(text) : \"\" %}\n{% set title = name | default(\"\") ?: leadTitle %}\n{% set lead = \"<p><strong>\" ~ (title | replace(html)) ~ \"</strong></p>\" ~ (preview | default(\"\") ? \"<p><em>\" ~ (preview | replace(html)) ~ \"</em></p>\" : \"\") %}\n{\n  \"bf_titre\": {{ title | json_encode }},\n  \"bf_chapeau\": {{ preview | default(\"\") | json_encode }},\n  \"bf_avertissement\": {{ summary | default(\"\") | json_encode }},\n  \"bf_description\": {{ markdown(content | default(\"\") | replace({(lead): \"\"})) | json_encode }},\n  \"imagebf_image\": {{ (attachment | default([]) | first).url | default(\"\") | json_encode }},\n  \"created_at\": {{ (published | default(\"\") ? published | date(\"Y-m-d H:i:s\") : null) | json_encode }},\n  \"updated_at\": {{ ((updated | default(\"\") ?: published | default(\"\")) ? (updated | default(\"\") ?: published) | date(\"Y-m-d H:i:s\") : null) | json_encode }}\n}",
     "only_one_entry": "N",
     "only_one_entry_message": "",
     "entry_title_template": "{{bf_titre}}"
   },
   "lists": [],
   "pages": {
-    "VoirBlog": "{{nav menu=\"MenuBlog\"}}\n\n{{entrylist id=\"%formId%\" template=\"blog\"}}",
+    "VoirBlog": "{{nav menu=\"MenuBlog\"}}\n\n{{entryfollow id=\"%formId%\"}}\n\n[Écrire un article](SaisirBlog) - [Profil, abonnements et abonnés](SaisirBlog?view=abonnements&action=list&formid=%formId%) (administration)\n\n### Nos articles\n\n{{entrylist id=\"%formId%\" template=\"blog\" origin=\"local\" pagination=\"12\"}}\n\n### Les comptes suivis\n\n{{entrylist id=\"%formId%\" template=\"blog\" header=\"no\" origin=\"remote\" pagination=\"12\"}}",
     "VoirBlogSimple": "{{nav menu=\"MenuBlog\"}}\n\n{{entrylist id=\"%formId%\" template=\"blog\" header=\"no\"}}",
     "SaisirBlog": "{{nav menu=\"MenuBlog\"}}\n\n{{bazar view=\"saisir\" showmenu=\"0\" id=\"%formId%\"}}"
   },

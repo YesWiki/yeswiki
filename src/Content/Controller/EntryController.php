@@ -1015,18 +1015,28 @@ class EntryController extends YesWikiController
         return empty($incomingUrl) || !$this->isWikiUrl($incomingUrl) ? '' : $incomingUrl;
     }
 
-    /** The page to come back to after editing $entryTag. */
+    /** The page to come back to after editing $entryTag: the current page and its query without any earlier incomingurl, unless it is an API call or the entry's own plain page. */
     public function getEditContextUrl(string $entryTag): string
     {
         $pageContext = $this->getService(PageContext::class);
-        if ($pageContext->getTag() === 'api' || !in_array($pageContext->getMethod(), ['show', 'iframe'], true)) {
+        $tag = $pageContext->getTag();
+        $method = $pageContext->getRawMethod();
+        if ($tag === 'api' || !in_array($method, ['show', 'iframe'], true)) {
             return '';
         }
         $urlFormatter = $this->getService(UrlFormatter::class);
-        $currentUrl = WikiUrls::absoluteUrl();
+        $query = [];
+        $position = 0;
+        foreach ($urlFormatter->currentQuery() as $key => $value) {
+            if (strtolower((string)$key) !== 'incomingurl' && !($position === 0 && $value === '' && str_contains((string)$key, '/'))) {
+                $query[$key] = $value;
+            }
+            $position++;
+        }
+        $currentUrl = $urlFormatter->href($method === 'iframe' ? 'iframe' : '', $tag, http_build_query($query, '', '&', PHP_QUERY_RFC3986), false);
         $plainUrls = [$urlFormatter->href('', $entryTag, null, false), $urlFormatter->href('iframe', $entryTag, null, false)];
 
-        return in_array($currentUrl, $plainUrls, true) || !$this->isWikiUrl($currentUrl) ? '' : $currentUrl;
+        return in_array($currentUrl, $plainUrls, true) ? '' : $currentUrl;
     }
 
     /** Where the form's cancel button leads. */

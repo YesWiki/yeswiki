@@ -11,9 +11,11 @@ use Twig\Error\RuntimeError;
 use YesWiki\Core\YesWikiRuntime;
 use YesWiki\Identity\Controller\AccountController;
 use YesWiki\Identity\Service\AuthenticationService;
+use YesWiki\Identity\Service\RequestGuard;
 use YesWiki\Identity\Service\UserManager;
 use YesWiki\Kernel\Exception\ExitException;
 use YesWiki\Kernel\Routing\ReservedTags;
+use YesWiki\Kernel\Service\CurrentRequest;
 use YesWiki\Kernel\Service\RouteProvider;
 use YesWiki\Test\Core\YesWikiTestCase;
 
@@ -116,7 +118,13 @@ class AccountRoutesTest extends YesWikiTestCase
             $this->assertInstanceOf(RedirectResponse::class, $account->signup());
             $this->assertInstanceOf(RedirectResponse::class, $account->lostPassword());
 
+            $account->logout();
+            $this->assertNotEmpty($authentication->getLoggedUser(), 'an unsigned logout link is refused');
+
+            $query = $wiki->services->get(CurrentRequest::class)->get()->query;
+            $query->set(RequestGuard::FIELD, $wiki->services->get(RequestGuard::class)->token());
             $logout = $account->logout();
+            $query->remove(RequestGuard::FIELD);
             $this->assertInstanceOf(RedirectResponse::class, $logout);
             $this->assertSame(302, $logout->getStatusCode());
             $this->assertEmpty($authentication->getLoggedUser(), 'logging out must end the session');

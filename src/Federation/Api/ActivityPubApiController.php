@@ -11,6 +11,7 @@ use YesWiki\Content\Service\FormManager;
 use YesWiki\Core\ApiResponse;
 use YesWiki\Core\YesWikiController;
 use YesWiki\Federation\Service\ActivityPubInbox;
+use YesWiki\Federation\Service\ActivityPubLog;
 use YesWiki\Federation\Service\ActivityPubProfiles;
 use YesWiki\Federation\Service\ActivityPubService;
 use YesWiki\Federation\Service\HttpSignatureService;
@@ -22,23 +23,28 @@ class ActivityPubApiController extends YesWikiController
     private const HEADERS = ['Content-Type' => HttpSignatureService::CONTENT_TYPE];
 
     #[Route('/api/forms/{formId}/actor', methods: ['GET'], options: ['acl' => ['public']])]
-    public function actor(string $formId): ApiResponse
+    public function actor(string $formId, Request $request): ApiResponse
     {
-        return new ApiResponse($this->activityPub()->getActor($this->actorForm($formId)), Response::HTTP_OK, self::HEADERS);
+        $actor = $this->activityPub()->getActor($this->actorForm($formId));
+        $this->log()->served($formId, $request, Response::HTTP_OK);
+
+        return new ApiResponse($actor, Response::HTTP_OK, self::HEADERS);
     }
 
     #[Route('/api/forms/{formId}/actor/followers', methods: ['GET'], options: ['acl' => ['public']])]
-    public function followers(string $formId): ApiResponse
+    public function followers(string $formId, Request $request): ApiResponse
     {
         $form = $this->actorForm($formId);
+        $this->log()->served($formId, $request, Response::HTTP_OK);
 
         return $this->collection($this->activityPub()->getFormCollectionUri($form, 'followers'), $this->activityPub()->getFollowers($form));
     }
 
     #[Route('/api/forms/{formId}/actor/following', methods: ['GET'], options: ['acl' => ['public']])]
-    public function following(string $formId): ApiResponse
+    public function following(string $formId, Request $request): ApiResponse
     {
         $form = $this->actorForm($formId);
+        $this->log()->served($formId, $request, Response::HTTP_OK);
 
         return $this->collection($this->activityPub()->getFormCollectionUri($form, 'following'), $this->activityPub()->getFollowing($form));
     }
@@ -56,27 +62,39 @@ class ActivityPubApiController extends YesWikiController
                 (string)parse_url($activityPub->getFormActorUri($form) . '/inbox', PHP_URL_PATH)
             );
         } catch (\Exception $e) {
+            $this->log()->received($formId, $request, Response::HTTP_UNAUTHORIZED, null, $e->getMessage());
+
             return new ApiResponse(['error' => $e->getMessage()], Response::HTTP_UNAUTHORIZED, self::HEADERS);
         }
 
         $activity = json_decode($request->getContent(), true);
         if (!is_array($activity)) {
+            $this->log()->received($formId, $request, Response::HTTP_BAD_REQUEST, $verifiedActor, 'Malformed activity');
+
             return new ApiResponse(['error' => 'Malformed activity'], Response::HTTP_BAD_REQUEST, self::HEADERS);
         }
 
         try {
-            $this->getService(ActivityPubInbox::class)->processActivity($activity, $form, $verifiedActor);
+            $leftOut = $this->getService(ActivityPubInbox::class)->processActivity($activity, $form, $verifiedActor);
         } catch (\Exception $e) {
+            $this->log()->received($formId, $request, Response::HTTP_FORBIDDEN, $verifiedActor, $e->getMessage());
+
             return new ApiResponse(['error' => $e->getMessage()], Response::HTTP_FORBIDDEN, self::HEADERS);
+        } catch (\Throwable $e) {
+            $this->log()->received($formId, $request, Response::HTTP_INTERNAL_SERVER_ERROR, $verifiedActor, $e::class . ': ' . $e->getMessage());
+
+            throw $e;
         }
+        $this->log()->received($formId, $request, Response::HTTP_ACCEPTED, $verifiedActor, $leftOut);
 
         return new ApiResponse(null, Response::HTTP_ACCEPTED, self::HEADERS);
     }
 
     #[Route('/api/forms/{formId}/actor/outbox', methods: ['GET'], options: ['acl' => ['public']])]
-    public function outbox(string $formId): ApiResponse
+    public function outbox(string $formId, Request $request): ApiResponse
     {
         $form = $this->actorForm($formId);
+        $this->log()->served($formId, $request, Response::HTTP_OK);
         $activityPub = $this->activityPub();
         $actorUri = $activityPub->getFormActorUri($form);
         $entries = array_values($this->getService(EntryManager::class)->search(['id' => $form['id']], true));
@@ -123,8 +141,11 @@ class ActivityPubApiController extends YesWikiController
         $form = $formId === null ? null : $this->getService(FormManager::class)->getOne($formId);
         $activityPub = $this->activityPub();
         if (!is_array($form) || !$activityPub->hasActor($form)) {
+            $this->log()->served($formId, $request, Response::HTTP_NOT_FOUND);
+
             throw new NotFoundHttpException();
         }
+        $this->log()->served($formId, $request, Response::HTTP_OK);
 
         return new ApiResponse(
             $this->getService(WebFingerService::class)->formatLocalActor((string)$handle, $activityPub->getFormActorUri($form), $activityPub->getActor($form)['url']),
@@ -165,5 +186,10 @@ class ActivityPubApiController extends YesWikiController
     private function activityPub(): ActivityPubService
     {
         return $this->getService(ActivityPubService::class);
+    }
+
+    private function log(): ActivityPubLog
+    {
+        return $this->getService(ActivityPubLog::class);
     }
 }

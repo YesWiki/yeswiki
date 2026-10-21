@@ -29,10 +29,13 @@
 
 {% import _self as blog %}
 {% if entries|length > 0 %}
+  {% set leadEntry = withLead ? (entries|filter(entry => entry.imagebf_image is not empty)|first ?: entries|first) : null %}
+  {% set ordered = leadEntry ? [leadEntry]|merge(entries|filter(entry => entry.tag != leadEntry.tag)) : entries %}
   <div class="blog-entries">
-    {% for entry in entries %}
-      {% set isLead = withLead and loop.first %}
+    {% for entry in ordered %}
+      {% set isLead = leadEntry and loop.first %}
       {% set summary = entry.bf_chapeau ?? entry.soustitre ?? '' %}
+      {% set warning = entry.bf_avertissement ?? '' %}
       {% set generatedTitle = entry.origin.generatedTitle ?? false %}
       {% set width = isLead ? 650 : 340 %}
       {% set height = isLead ? 416 : 212 %}
@@ -46,21 +49,34 @@
       {% elseif fileExists('files/' ~ file) %}
         {% set src = resizedImage(file, width, height, 'crop') %}
       {% endif %}
-      <article class="blog-entry bazar-entry{{ isLead ? ' blog-entry--lead' }}{{ src is empty ? ' blog-entry--no-media' }}" {{ entry.html_data|raw }}>
+      <article class="blog-entry bazar-entry{{ isLead ? ' blog-entry--lead' }}{{ src is empty ? ' blog-entry--no-media' }}{{ warning is not empty ? ' blog-entry--warned' }}" {{ entry.html_data|raw }}>
         {% if src is not empty %}
           <a class="blog-entry__media" href="{{ entry.url }}" tabindex="-1" aria-hidden="true">
             <img loading="lazy" alt="" src="{{ src }}" width="{{ width }}" height="{{ height }}">
           </a>
         {% endif %}
         <div class="blog-entry__body">
-          {% if generatedTitle %}
-            <div class="blog-entry__text">{{ format(summary is not empty ? summary : (entry.bf_description ?? ''))|raw }}</div>
+          {% set content %}
+            {% if generatedTitle %}
+              <div class="blog-entry__text">{{ format(summary is not empty ? summary : (entry.bf_description ?? ''))|raw }}</div>
+            {% else %}
+              <h3 class="blog-entry__title"><a href="{{ entry.url }}">{{ entry.title }}</a></h3>
+            {% endif %}
+            {% if isLead and summary is not empty and not generatedTitle %}
+              {% set text = format(summary)|striptags|trim %}
+              <p class="blog-entry__summary">{{ (text|length > 280 ? text|slice(0, 280)|split(' ')|slice(0, -1)|join(' ') ~ '…' : text)|raw }}</p>
+            {% endif %}
+          {% endset %}
+          {% if warning is not empty %}
+            <details class="blog-entry__warning">
+              <summary class="blog-entry__warning-label">
+                <span class="blog-entry__warning-text">{{ warning|striptags|raw }}</span>
+                <span class="blog-entry__warning-toggle" data-show="{{ _t('BAZ_BLOG_SHOW_WARNED') }}" data-hide="{{ _t('BAZ_BLOG_HIDE_WARNED') }}"></span>
+              </summary>
+              {{ content }}
+            </details>
           {% else %}
-            <h3 class="blog-entry__title"><a href="{{ entry.url }}">{{ entry.title }}</a></h3>
-          {% endif %}
-          {% if isLead and summary is not empty and not generatedTitle %}
-            {% set text = format(summary)|striptags|trim %}
-            <p class="blog-entry__summary">{{ (text|length > 280 ? text|slice(0, 280)|split(' ')|slice(0, -1)|join(' ') ~ '…' : text)|raw }}</p>
+            {{ content }}
           {% endif %}
           {{ blog.meta(entry, showDate, showAuthor) }}
         </div>

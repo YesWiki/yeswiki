@@ -14,6 +14,7 @@ use YesWiki\Files\Service\FileBrowser;
 use YesWiki\Files\Service\Storage;
 use YesWiki\Identity\Service\Guard;
 use YesWiki\Identity\Service\InputFilter;
+use YesWiki\Identity\Service\RequestGuard;
 use YesWiki\Kernel\Service\AssetRegistry;
 use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Kernel\Service\HtmlPurifierService;
@@ -87,7 +88,9 @@ class FileField extends BazarField
 
         if (!empty($value) && !$isUrl) {
             if (!empty($entry) && isset($_GET['delete_file']) && $_GET['delete_file'] === $value) {
-                if ($this->isAllowedToDeleteFile($entry, $value)) {
+                if (!$this->deletionLinkIsSigned()) {
+                    $alertMessage = $this->unsignedDeletionAlert();
+                } elseif ($this->isAllowedToDeleteFile($entry, $value)) {
                     if (substr($value, 0, strlen($this->defineFilePrefix($entry))) == $this->defineFilePrefix($entry)) {
                         $rawFileName = $this->getService(InputFilter::class)->filterInput(INPUT_GET, 'delete_file', FILTER_SANITIZE_FULL_SPECIAL_CHARS, false, 'string');
                         if (!empty($rawFileName)) {
@@ -116,10 +119,28 @@ class FileField extends BazarField
                 'isUrl' => false,
                 'shortFileName' => $this->getShortFileName($value),
                 'fileUrl' => $this->getBasePath() . $value,
-                'deleteUrl' => empty($entry) ? '' : $this->getService(UrlFormatter::class)->href('edit', $entry['tag'], ['delete_file' => $value], false),
+                'deleteUrl' => empty($entry) ? '' : $this->signedDeletionUrl($this->getService(UrlFormatter::class)->href('edit', $entry['tag'], ['delete_file' => $value], false)),
                 'isAllowedToDeleteFile' => empty($entry) ? false : $this->isAllowedToDeleteFile($entry, $value),
             ]
         );
+    }
+
+    /** Whether the edit link asking to delete a file carries the session's token. */
+    protected function deletionLinkIsSigned(): bool
+    {
+        return $this->getService(RequestGuard::class)->linkIsSigned($this->getRequest());
+    }
+
+    /** The given file deletion link with the session's token added. */
+    protected function signedDeletionUrl(string $url): string
+    {
+        return $this->getService(RequestGuard::class)->sign($url);
+    }
+
+    /** The alert shown instead of deleting a file when the link lacks the session's token. */
+    protected function unsignedDeletionAlert(): string
+    {
+        return '<div class="alert alert-danger">' . _t('CSRF_TOKEN_FAIL_ERROR') . '</div>' . "\n";
     }
 
     public function requiresTagBeforeFormatting()

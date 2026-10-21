@@ -36,8 +36,8 @@ class FileManager
 
     /** Extensions a web server may run as code, refused whatever authorized-extensions says. */
     public const EXECUTABLE_EXTENSIONS = [
-        'php', 'php3', 'php4', 'php5', 'php7', 'php8', 'phtml', 'pht', 'phps', 'phar', 'cgi',
-        'pl', 'py', 'rb', 'sh', 'bash', 'asp', 'aspx', 'jsp', 'shtml',
+        'php', 'php3', 'php4', 'php5', 'php6', 'php7', 'php8', 'phtml', 'pht', 'phps', 'phar', 'pgif', 'inc', 'cgi', 'fcgi',
+        'pl', 'py', 'rb', 'sh', 'bash', 'asp', 'aspx', 'jsp', 'shtml', 'shtm',
         'exe', 'dll', 'bat', 'cmd', 'htaccess', 'htpasswd',
     ];
 

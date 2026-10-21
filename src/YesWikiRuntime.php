@@ -37,6 +37,7 @@ use YesWiki\Content\Controller\LegacyPageController;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Identity\Action\LoginAction;
 use YesWiki\Identity\Service\AuthenticationService;
+use YesWiki\Identity\Service\RequestGuard;
 use YesWiki\Kernel\Entity\ExtensionFolders;
 use YesWiki\Kernel\Exception\ExitException;
 use YesWiki\Kernel\Routing\ReservedTags;
@@ -276,6 +277,9 @@ class YesWikiRuntime
         $this->applyPreferredLanguage();
 
         $this->service(AuthenticationService::class)->connectUser();
+        if ($this->refuseForgedRequest(ReservedTags::isReserved($tag))) {
+            return;
+        }
 
         if (ReservedTags::isReserved($tag)) {
             $this->runSpecialPages();
@@ -291,6 +295,21 @@ class YesWikiRuntime
                 unset($_SESSION['redirects']);
             }
         }
+    }
+
+    /** Answers 403 and returns true when another site, or a page without the session's token, sent a request that would change something. */
+    private function refuseForgedRequest(bool $routed): bool
+    {
+        $refusal = $this->service(RequestGuard::class)->refusal($this->service(CurrentRequest::class)->get());
+        if ($refusal === null) {
+            return false;
+        }
+        $response = $routed
+            ? new ApiResponse(['error' => $refusal], Response::HTTP_FORBIDDEN)
+            : new Response(htmlspecialchars($refusal), Response::HTTP_FORBIDDEN);
+        $response->send();
+
+        return true;
     }
 
     /** Finishes a Doryphore wiki's move before anything reads a database it has not migrated yet, and answers whether it said something. */
@@ -510,6 +529,7 @@ class YesWikiRuntime
         if (!$this->httpKernel instanceof HttpKernel) {
             $eventDispatcher = $this->service(EventDispatcher::class);
             $eventDispatcher->addListener(KernelEvents::EXCEPTION, [$this, 'onDispatchException']);
+            $eventDispatcher->addListener(KernelEvents::RESPONSE, [$this->service(RequestGuard::class), 'onResponse'], 10);
             $eventDispatcher->addListener(KernelEvents::RESPONSE, [$this->service(HttpCacheHeaders::class), 'onResponse']);
             $eventDispatcher->addListener(KernelEvents::RESPONSE, [$this->service(BoostedNavigation::class), 'onResponse']);
 

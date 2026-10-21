@@ -46,9 +46,9 @@ class SemanticTransformer
      *                                   (ticket 04's cycle, reintroduced and caught by the
      *                                   container in ticket 50)
      *
-     * @return array<string, mixed>
+     * @return array<string, mixed>|null null when the reverse template outputs null to turn the object down
      */
-    public function convertFromSemanticData(array $form, mixed $data): array
+    public function convertFromSemanticData(array $form, mixed $data): ?array
     {
         if (empty($form['sem_reverse_template'])) {
             throw new \Exception('No reverse semantic template defined for form ' . ($form['id'] ?? '?'));
@@ -59,6 +59,9 @@ class SemanticTransformer
 
         if (json_last_error() !== JSON_ERROR_NONE) {
             throw new \Exception('Reverse semantic template produced invalid JSON: ' . json_last_error_msg());
+        }
+        if ($fields === null) {
+            return null;
         }
 
         return array_merge([

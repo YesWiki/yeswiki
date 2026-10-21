@@ -41,6 +41,7 @@ class BlogTemplateTest extends YesWikiTestCase
             'template' => json_encode([
                 ['type' => 'texte', 'name' => 'bf_titre', 'label' => 'Titre'],
                 ['type' => 'textelong', 'name' => 'bf_chapeau', 'label' => 'Résumé', 'syntax' => 'wiki'],
+                ['type' => 'texte', 'name' => 'bf_avertissement', 'label' => 'Avertissement de contenu'],
                 ['type' => 'image', 'name' => 'bf_image', 'label' => 'Image'],
                 ['type' => 'textelong', 'name' => 'bf_description', 'label' => 'Billet', 'syntax' => 'wiki'],
             ]),
@@ -71,7 +72,8 @@ class BlogTemplateTest extends YesWikiTestCase
         parent::tearDown();
     }
 
-    private function create(string $title, string $date, string $summary = '', string $description = ''): string
+    /** @param array<string, string> $more */
+    private function create(string $title, string $date, string $summary = '', string $description = '', array $more = []): string
     {
         $entry = $this->getWiki()->services->get(EntryManager::class)->create(self::FORM_ID, [
             'antispam' => 1,
@@ -79,7 +81,7 @@ class BlogTemplateTest extends YesWikiTestCase
             'bf_chapeau' => $summary,
             'bf_description' => $description,
             'created_at' => $date,
-        ]);
+        ] + $more);
 
         return (string)$entry['tag'];
     }
@@ -193,5 +195,72 @@ class BlogTemplateTest extends YesWikiTestCase
 
         $this->assertStringNotContainsString('blog-entry--lead', $html);
         $this->assertStringNotContainsString('blog-entry__author', $html);
+    }
+
+    /** @param array<string, string> $more */
+    private function createAsAdmin(string $key, string $title, string $date, array $more): void
+    {
+        $authentication = $this->getWiki()->services->get(AuthenticationService::class);
+        $authentication->connectFirstAdmin();
+        try {
+            $this->tags[$key] = $this->create($title, $date, '', '', $more);
+        } finally {
+            $authentication->logout();
+        }
+    }
+
+    public function testTheLeadIsTheNewestEntryWithAnImageAndNewerOnesFollowIt(): void
+    {
+        $this->createAsAdmin('pictured', 'Billet illustré', '2026-02-15 10:00:00', ['imagebf_image' => 'https://images.example/photo.jpg']);
+
+        $html = $this->render();
+
+        $this->assertStringContainsString('blog-entry--lead', $this->article($html, $this->tags['pictured']));
+        $this->assertSame(1, substr_count($html, 'blog-entry--lead'));
+        $pictured = strpos($html, 'Billet illustré');
+        $remote = strpos($html, 'Pouet récent');
+        $owned = strpos($html, 'Billet du milieu');
+        $this->assertTrue($pictured < $remote && $remote < $owned, 'the lead first, then the others newest first');
+    }
+
+    public function testWithoutTheLeadTheOrderIsKept(): void
+    {
+        $this->createAsAdmin('pictured', 'Billet illustré', '2026-02-15 10:00:00', ['imagebf_image' => 'https://images.example/photo.jpg']);
+
+        $html = $this->render(['header' => 'false']);
+
+        $this->assertStringNotContainsString('blog-entry--lead', $html);
+        $this->assertTrue(strpos($html, 'Pouet récent') < strpos($html, 'Billet illustré'));
+    }
+
+    public function testAWarnedEntryHidesItsTitleBehindTheWarning(): void
+    {
+        $this->createAsAdmin('warned', 'Titre sensible', '2025-12-01 10:00:00', ['bf_avertissement' => 'Spoilers & saison 2']);
+
+        $html = $this->render();
+        $warned = $this->article($html, $this->tags['warned']);
+
+        $this->assertStringContainsString('blog-entry--warned', $warned);
+        $this->assertMatchesRegularExpression('#<details class="blog-entry__warning">\\s*<summary[^>]*>\\s*<span class="blog-entry__warning-text">Spoilers &amp; saison 2</span>.*?</summary>.*?Titre sensible.*?</details>#s', $warned);
+        $this->assertStringNotContainsString('<details', $this->article($html, $this->tags['old']));
+    }
+
+    public function testAnAuthorIsNamedFromTheirProfileWhenTheirAddressIsANumber(): void
+    {
+        $actor = 'https://masto.example/ap/users/117474142124196539';
+        $tripleStore = $this->getWiki()->services->get(TripleStore::class);
+        $tripleStore->delete($this->tags['remote'], ActivityPubInbox::REMOTE_ACTOR_URI, null, '', '');
+        $tripleStore->create($this->tags['remote'], ActivityPubInbox::REMOTE_ACTOR_URI, $actor, '', '');
+        $tripleStore->create($actor, ActivityPubInbox::REMOTE_ACTOR_PROFILE_URI, (string)json_encode(['name' => 'Florian', 'username' => 'mrflos', 'url' => 'https://masto.example/@mrflos']), '', '');
+
+        try {
+            $article = $this->article($this->render(), $this->tags['remote']);
+        } finally {
+            $tripleStore->deleteAll($actor, '');
+        }
+
+        $this->assertStringContainsString('href="https://masto.example/@mrflos"', $article);
+        $this->assertStringContainsString('title="@mrflos@masto.example"', $article);
+        $this->assertStringContainsString('>Florian</a>', $article);
     }
 }

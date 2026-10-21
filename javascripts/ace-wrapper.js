@@ -57,6 +57,25 @@ export default class {
       enableBasicAutocompletion: true,
       enableLiveAutocompletion: true,
     })
+
+    this.enableMiddleClickPaste()
+  }
+
+  /** Puts ACE's hidden textarea under the pointer on a middle click, so the primary selection pastes into it. */
+  enableMiddleClickPaste() {
+    const { container, textInput } = this.ace
+    container.addEventListener(
+      'mousedown',
+      (e) => {
+        if (e.button !== 1) return
+        textInput.moveToMouse(e, true)
+        this.ace.focus()
+      },
+      true,
+    )
+    container.addEventListener('mouseup', (e) => {
+      if (e.button === 1) textInput.onContextMenuClose()
+    })
   }
 
   getValue() {

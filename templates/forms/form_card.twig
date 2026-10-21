@@ -61,7 +61,7 @@
       {% endif %}
       {% if not form.isSystem %}
         {% if form.canEdit %}
-          <a class="yw-btn yw-btn--sm" title="{{ _t('BAZ_CLONE_FORM') }}" href="{{ url({ params: { view: 'formulaire', action: 'clone', formid: key }}) }}" data-toggle="tooltip" data-placement="bottom">
+          <a class="yw-btn yw-btn--sm" title="{{ _t('BAZ_CLONE_FORM') }}" href="{{ signedUrl(url({ params: { view: 'formulaire', action: 'clone', formid: key }})) }}" data-toggle="tooltip" data-placement="bottom">
             <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#copy"/></svg>
           </a>
         {% else %}

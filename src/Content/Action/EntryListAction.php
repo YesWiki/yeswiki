@@ -1341,6 +1341,7 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
                 'remote' => _t('AB_bazar_commons2_origin_remote'),
             ])
                 ->label(_t('AB_bazar_commons2_origin_label'))
+                ->hint(_t('AB_bazar_commons2_origin_hint'))
                 ->default('all'),
             Setting::choice('datefilter', [
                 'futur' => _t('AB_bazar_commons2_filter_on_date_future'),

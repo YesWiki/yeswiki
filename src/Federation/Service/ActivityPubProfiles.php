@@ -19,7 +19,7 @@ class ActivityPubProfiles
      *
      * @param array<string, mixed> $form
      *
-     * @return array{username: string, summary: string, icon: string, image: string, fields: array<string, string>, approve_followers: bool}
+     * @return array{username: string, summary: string, icon: string, image: string, fields: array<string, string>, approve_followers: bool, accept_unfollowed: bool, accept_non_public: bool, accept_replies: bool}
      */
     public function get(array $form): array
     {
@@ -36,6 +36,9 @@ class ActivityPubProfiles
             'image' => is_string($profile['image'] ?? null) ? $profile['image'] : '',
             'fields' => $fields,
             'approve_followers' => !empty($profile['approve_followers']),
+            'accept_unfollowed' => !empty($profile['accept_unfollowed']),
+            'accept_non_public' => !empty($profile['accept_non_public']),
+            'accept_replies' => !empty($profile['accept_replies']),
         ];
     }
 
@@ -73,7 +76,7 @@ class ActivityPubProfiles
     /**
      * @param array<string, mixed> $profile
      *
-     * @return array{username: string, summary: string, icon: string, image: string, fields: array<string, string>, approve_followers: bool}
+     * @return array{username: string, summary: string, icon: string, image: string, fields: array<string, string>, approve_followers: bool, accept_unfollowed: bool, accept_non_public: bool, accept_replies: bool}
      */
     private function validate(string $formId, array $profile): array
     {
@@ -110,6 +113,9 @@ class ActivityPubProfiles
             'image' => $images['image'],
             'fields' => $fields,
             'approve_followers' => !empty($profile['approve_followers']),
+            'accept_unfollowed' => !empty($profile['accept_unfollowed']),
+            'accept_non_public' => !empty($profile['accept_non_public']),
+            'accept_replies' => !empty($profile['accept_replies']),
         ];
     }
 

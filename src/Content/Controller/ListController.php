@@ -10,6 +10,7 @@ use YesWiki\Content\Service\ListOverview;
 use YesWiki\Content\Service\TranslatableContent;
 use YesWiki\Core\YesWikiController;
 use YesWiki\Identity\Service\AclService;
+use YesWiki\Identity\Service\RequestGuard;
 use YesWiki\Kernel\Service\Redirector;
 use YesWiki\Kernel\Service\RuntimeConfig;
 use YesWiki\Kernel\Service\UrlFormatter;
@@ -251,6 +252,9 @@ class ListController extends YesWikiController
     {
         if (!$this->listOverview->mayDelete((string)$id)) {
             return $this->refusal();
+        }
+        if (!$this->getService(RequestGuard::class)->linkIsSigned($this->getRequest())) {
+            return '<div class="alert alert-danger">' . _t('CSRF_TOKEN_FAIL_ERROR') . '</div>';
         }
         $this->listManager->delete($id);
 

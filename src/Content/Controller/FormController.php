@@ -30,6 +30,7 @@ use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\CsrfTokenChecker;
 use YesWiki\Identity\Service\GroupOperationsService;
 use YesWiki\Identity\Service\Guard;
+use YesWiki\Identity\Service\RequestGuard;
 use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Kernel\Service\LanguageService;
 use YesWiki\Kernel\Service\Redirector;
@@ -862,6 +863,11 @@ class FormController extends YesWikiController
         }
 
         if ($this->getService(Guard::class)->isAllowed('saisie_formulaire')) {
+            if (!$this->getService(RequestGuard::class)->linkIsSigned($this->getRequest())) {
+                Flash::error(_t('CSRF_TOKEN_FAIL_ERROR'));
+
+                return $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href('', '', ['view' => 'formulaire'], false));
+            }
             $this->formManager->clone($id);
 
             return $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href('', '', ['view' => 'formulaire', 'msg' => 'BAZ_FORM_CLONED'], false));
@@ -947,6 +953,9 @@ class FormController extends YesWikiController
             'icon' => $post->get('activitypub_icon'),
             'image' => $post->get('activitypub_image'),
             'approve_followers' => $post->has('activitypub_approve_followers'),
+            'accept_unfollowed' => $post->has('activitypub_accept_unfollowed'),
+            'accept_non_public' => $post->has('activitypub_accept_non_public'),
+            'accept_replies' => $post->has('activitypub_accept_replies'),
             'fields' => [],
         ];
         $values = $post->all('activitypub_field_value');
@@ -954,6 +963,8 @@ class FormController extends YesWikiController
             $profile['fields'][(string)$name] = (string)($values[$index] ?? '');
         }
         $this->getService(ActivityPubProfiles::class)->save($form, $profile);
+        $saved = $this->getService(FormManager::class)->getOne($form['id']);
+        $this->activityPubService->announceProfile(is_array($saved) ? $saved : $form);
     }
 
     /** @param array<string, mixed> $form */
@@ -1013,6 +1024,8 @@ class FormController extends YesWikiController
         try {
             if ($postedToken) {
                 $this->csrfTokenChecker->checkToken('main', 'POST', 'csrf-token', false);
+            } elseif (!$this->getService(RequestGuard::class)->linkIsSigned($this->getRequest())) {
+                throw new \Exception(_t('CSRF_TOKEN_FAIL_ERROR'));
             }
             $change($form);
         } catch (\Exception $e) {
@@ -1054,17 +1067,6 @@ class FormController extends YesWikiController
      */
     public function syncActorPosts($id, $actorUri)
     {
-        if ($this->refusesActivityPubChanges()) {
-            $this->redirectToActivityPub($id, 'following');
-        }
-        try {
-            $this->csrfTokenChecker->checkToken('main', 'GET', 'synctoken', false);
-        } catch (TokenNotFoundException $th) {
-            Flash::error(htmlspecialchars($th->getMessage()));
-
-            $this->redirectToActivityPub($id, 'following');
-        }
-
         return $this->changeActivityPub($id, $actorUri, 'following', function (array $form) use ($actorUri): void {
             $stats = $this->getService(ActivityPubInbox::class)->syncActorPosts((string)$actorUri, $form);
             Flash::success(sprintf(_t('BAZ_SYNC_COMPLETE'), $stats['created'], $stats['updated'], $stats['deleted']));

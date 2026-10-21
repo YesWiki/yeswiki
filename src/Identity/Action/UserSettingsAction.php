@@ -18,6 +18,7 @@ use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Identity\Service\AvatarService;
 use YesWiki\Identity\Service\BotGuard;
 use YesWiki\Identity\Service\CsrfTokenChecker;
+use YesWiki\Identity\Service\RequestGuard;
 use YesWiki\Identity\Service\UserManager;
 use YesWiki\Identity\Service\UserOperationsService;
 use YesWiki\Kernel\Exception\ExitException;
@@ -309,8 +310,12 @@ class UserSettingsAction extends YesWikiAction implements RegisteredAction
 
     private function logout(): void
     {
-        $this->authenticationService->logout();
-        $this->getService(FlashMessageService::class)->setMessage(_t('USER_YOU_ARE_NOW_DISCONNECTED') . ' !');
+        if ($this->getService(RequestGuard::class)->linkIsSigned($this->getRequest())) {
+            $this->authenticationService->logout();
+            $this->getService(FlashMessageService::class)->setMessage(_t('USER_YOU_ARE_NOW_DISCONNECTED') . ' !');
+        } else {
+            $this->getService(FlashMessageService::class)->setMessage(_t('CSRF_TOKEN_FAIL_ERROR'));
+        }
         $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href());
     }
 

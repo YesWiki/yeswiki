@@ -12,6 +12,7 @@ use YesWiki\Core\YesWikiAction;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\CsrfTokenChecker;
 use YesWiki\Identity\Service\InputFilter;
+use YesWiki\Identity\Service\RequestGuard;
 use YesWiki\Kernel\Entity\Messages;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\MigrationService;
@@ -169,14 +170,28 @@ class UpdateAction extends YesWikiAction implements RegisteredAction
                             $this->switchExtension($vMessages, (string)$vPackageName, true);
                         }
 
-                        $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href('', '', [
+                        $this->getService(Redirector::class)->redirect($this->getService(RequestGuard::class)->sign($this->getService(UrlFormatter::class)->href('', '', [
                             'action' => 'post_install',
                             'messages' => json_encode($vMessages->toArray()),
                             'previous_version' => $this->getService(\YesWiki\Kernel\Service\ProgramVersion::class)->releaseLine(),
-                        ], false));
+                        ], false)));
                     }
                     break;
                 case 'post_install':
+                    $vRequestGuard = $this->getService(RequestGuard::class);
+                    if (!$vRequestGuard->linkIsSigned($this->getRequest())) {
+                        $vMessages->add('CSRF_TOKEN_FAIL_ERROR', 'AU_ERROR');
+
+                        return $this->getService(TemplateEngine::class)->renderSafely('@core/update-result.twig', [
+                            'messages' => $vMessages->toArray(),
+                            'action' => $vAction,
+                            'confirmUrl' => $vRequestGuard->sign($this->getService(UrlFormatter::class)->href('', '', [
+                                'action' => 'post_install',
+                                'messages' => $this->getRequest()->query->get('messages', ''),
+                                'previous_version' => $this->getRequest()->query->get('previous_version', ''),
+                            ], false)),
+                        ]);
+                    }
                     $vRawMessages = $vSecurityController->filterInput(INPUT_GET, 'messages', FILTER_UNSAFE_RAW, false, 'string');
 
                     $vMessages->add(empty($vRawMessages) ? [] : (json_decode($vRawMessages, true) ?? []));

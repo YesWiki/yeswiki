@@ -214,6 +214,7 @@ class YesWikiInit
             'http_cache_ttl' => 0,
             'disallowed_html_tags' => HtmlPurifierService::DISALLOWED_HTML_TAGS,
             'allowed_methods_in_iframe' => ['iframe', 'editiframe', 'render'],
+            'cookies_samesite' => 'None',
             'revisionscount' => 30,
             'timezone' => 'Europe/Paris',
             'root_page' => 'PagePrincipale',
@@ -444,6 +445,7 @@ class YesWikiInit
             ],
             'global_query' => 'true',
             'bazarIgnoreAcls' => true,
+            'activitypub_log' => false,
             'BAZ_RSS_NOMSITE' => '%yeswiki_name%',
             'BAZ_RSS_ADRESSESITE' => '%base_url%',
             'BAZ_RSS_DESCRIPTIONSITE' => '%meta_description%',
@@ -611,10 +613,12 @@ class YesWikiInit
             $cookiesParam = session_get_cookie_params();
             $cookiesParam['path'] = $CookiePath;
             $cookiesParam['httponly'] = true;
-            $cookiesParam['samesite'] = 'Lax';
-            if (preg_match('`^https://`', $this->config['base_url'], $matches)) {
+            $secure = preg_match('`^https://`', $this->config['base_url']) === 1;
+            if ($secure) {
                 $cookiesParam['secure'] = true;
             }
+            $sameSite = strtolower((string)($this->config['cookies_samesite'] ?? 'None'));
+            $cookiesParam['samesite'] = $sameSite === 'strict' ? 'Strict' : (($sameSite === 'none' && $secure) ? 'None' : 'Lax');
             session_set_cookie_params($cookiesParam);
             session_name($sessionName);
             session_cache_limiter('');

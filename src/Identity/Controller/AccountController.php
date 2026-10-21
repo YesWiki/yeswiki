@@ -8,6 +8,7 @@ use Symfony\Component\Routing\Attribute\Route;
 use YesWiki\Core\DashboardShell;
 use YesWiki\Core\YesWikiController;
 use YesWiki\Identity\Service\AuthenticationService;
+use YesWiki\Identity\Service\RequestGuard;
 use YesWiki\Kernel\Service\FlashMessageService;
 use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\UrlFormatter;
@@ -69,6 +70,12 @@ class AccountController extends YesWikiController
     {
         $urlFormatter = $this->getService(UrlFormatter::class);
         if (!$this->isConnected()) {
+            return new RedirectResponse($urlFormatter->href('', 'user'));
+        }
+
+        if (!$this->getService(RequestGuard::class)->linkIsSigned($this->getRequest())) {
+            $this->getService(FlashMessageService::class)->setMessage(_t('CSRF_TOKEN_FAIL_ERROR'));
+
             return new RedirectResponse($urlFormatter->href('', 'user'));
         }
 

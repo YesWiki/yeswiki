@@ -62,6 +62,7 @@ installer_arguments() {
     "--language=fr" \
     "--other-languages=en,es" \
     "--allow-raw-html" \
+    "--ci-api" \
     "--admin-name=WikiAdmin" \
     "--admin-email=test@example.com" \
     "--admin-password=WikiAdminPassword"

@@ -10,6 +10,28 @@ import AceWrapper from './ace-wrapper.js'
 import ActionsBuilder from './actions-builder.js'
 import { fillSourceEditorToolbar } from './editor-markup-syntax.js'
 
+const PLAIN_TEXT_STORAGE_KEY = 'yeswiki-aceditor-plain-text'
+
+/** Whether this browser last left the editor in plain-text mode. */
+function readPlainTextPreference() {
+  try {
+    return localStorage.getItem(PLAIN_TEXT_STORAGE_KEY) === '1'
+  } catch {
+    return false
+  }
+}
+
+/** Remembers the plain-text mode for this browser; false when storage is unavailable. */
+function storePlainTextPreference(enabled) {
+  try {
+    if (enabled) localStorage.setItem(PLAIN_TEXT_STORAGE_KEY, '1')
+    else localStorage.removeItem(PLAIN_TEXT_STORAGE_KEY)
+    return true
+  } catch {
+    return false
+  }
+}
+
 class Aceditor {
   editor
   linkPanel
@@ -37,6 +59,10 @@ class Aceditor {
     return this.container.querySelector('.aceditor-toolbar')
   }
 
+  get isPlainText() {
+    return this.container.classList.contains('plain-text')
+  }
+
   initialize() {
     restoreStashedValue(this.textarea)
 
@@ -49,7 +75,9 @@ class Aceditor {
 
     this.editor.setValue(this.textarea.value)
     this.editor.on('change', () => {
-      this.textarea.value = this.editor.getValue()
+      if (this.textarea.value !== this.editor.getValue()) {
+        this.textarea.value = this.editor.getValue()
+      }
       if (typeof showPopup !== 'undefined') {
         showPopup = 1
       }
@@ -61,6 +89,82 @@ class Aceditor {
     this.initEditionHelpers()
     this.editor.ace.setOptions({
       placeholder: this.textarea.getAttribute('placeholder'),
+    })
+    this.initPlainTextToggle()
+  }
+
+  initPlainTextToggle() {
+    this.plainTextButton = this.toolbar.querySelector(
+      '.aceditor-btn-plain-text',
+    )
+    if (!this.plainTextButton) return
+    this.plainTextButton.addEventListener('click', () => {
+      this.setPlainText(!this.isPlainText, true)
+      storePlainTextPreference(this.isPlainText)
+    })
+    this.toolbar.addEventListener(
+      'mousedown',
+      (event) => {
+        if (
+          this.isPlainText &&
+          !event.target.closest('.aceditor-btn-plain-text')
+        ) {
+          this.syncEditorFromTextarea()
+        }
+      },
+      true,
+    )
+    this.textarea.addEventListener('input', () => {
+      if (this.isPlainText && typeof showPopup !== 'undefined') {
+        showPopup = 1
+      }
+    })
+    this.editor.on('change', () => {
+      if (this.isPlainText) this.syncTextareaSelectionFromEditor()
+    })
+    if (readPlainTextPreference()) this.setPlainText(true, false)
+  }
+
+  /** Swaps ACE for the bare textarea, where the browser's spell-checker and middle-click paste work. */
+  setPlainText(enabled, focus) {
+    if (enabled) {
+      this.container.classList.add('plain-text')
+      if (focus) this.textarea.focus()
+    } else {
+      this.syncEditorFromTextarea()
+      this.container.classList.remove('plain-text')
+      this.editor.ace.resize(true)
+      if (focus) this.editor.ace.focus()
+    }
+    this.plainTextButton.classList.toggle('active', enabled)
+    this.plainTextButton.setAttribute('aria-pressed', String(enabled))
+  }
+
+  /** Copies the textarea's text and selection into ACE, so toolbar commands act on what the user selected. */
+  syncEditorFromTextarea() {
+    const { selectionStart, selectionEnd, value } = this.textarea
+    if (this.editor.getValue() !== value) {
+      this.editor.setValue(value)
+    }
+    const { doc } = this.editor.ace.session
+    const start = doc.indexToPosition(selectionStart)
+    const end = doc.indexToPosition(selectionEnd)
+    this.editor.ace.selection.setRange(
+      new ace.Range(start.row, start.column, end.row, end.column),
+    )
+  }
+
+  /** Gives the textarea back the focus and ACE's selection once a toolbar command has edited the text. */
+  syncTextareaSelectionFromEditor() {
+    clearTimeout(this.selectionSyncTimeout)
+    this.selectionSyncTimeout = setTimeout(() => {
+      const { doc } = this.editor.ace.session
+      const range = this.editor.ace.getSelectionRange()
+      this.textarea.focus()
+      this.textarea.setSelectionRange(
+        doc.positionToIndex(range.start),
+        doc.positionToIndex(range.end),
+      )
     })
   }
 
@@ -107,6 +211,7 @@ class Aceditor {
       .querySelectorAll('.aceditor-btn-switch-editor')
       .forEach((btn) => {
         btn.addEventListener('click', () => {
+          if (this.isPlainText) this.syncEditorFromTextarea()
           this.textarea.value = this.editor.getValue()
           switchEditorTo('vditor', this.textarea)
         })
@@ -272,7 +377,10 @@ ywInitEach('.aceditor-container', (container) => {
   const aceditor = new Aceditor(container)
   window[`aceditor-${name}`] = aceditor
   registerEditor(name, {
-    getValue: () => aceditor.editor.getValue(),
+    getValue: () => {
+      if (aceditor.isPlainText) aceditor.syncEditorFromTextarea()
+      return aceditor.editor.getValue()
+    },
     setValue: (text) => aceditor.editor.setValue(text),
   })
 })

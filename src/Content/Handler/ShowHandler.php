@@ -16,6 +16,8 @@ use YesWiki\Content\Service\PageViewAppendices;
 use YesWiki\Content\Service\SemanticTransformer;
 use YesWiki\Content\Service\TranslatableContent;
 use YesWiki\Core\YesWikiHandler;
+use YesWiki\Federation\Service\ActivityPubLog;
+use YesWiki\Federation\Service\ActivityPubService;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Performable\RegisteredHandler;
 use YesWiki\Kernel\Service\AssetRegistry;
@@ -57,10 +59,23 @@ class ShowHandler extends YesWikiHandler implements RegisteredHandler
     private function emitBefore(): void
     {
         $entryManager = $this->getService(EntryManager::class);
+        $accept = is_string($_SERVER['HTTP_ACCEPT'] ?? null) ? $_SERVER['HTTP_ACCEPT'] : '';
+        $wantsActivity = str_contains($accept, 'application/activity+json')
+            || (str_contains($accept, 'application/ld+json') && str_contains($accept, 'activitystreams'));
+
+        if ($wantsActivity && $this->getService(PageContext::class)->getPage() === null) {
+            $this->getService(ActivityPubLog::class)->served(null, $this->getRequest(), 404);
+            http_response_code(404);
+            header('Content-type: application/activity+json; charset=UTF-8');
+            $this->getService(Redirector::class)->terminate((string)json_encode(['error' => 'Not found']));
+        }
 
         if ($entryManager->isEntry($this->getService(PageContext::class)->getTag()) && $this->getService(AclService::class)->hasAccess('read')) {
-            if (isset($_SERVER['HTTP_ACCEPT']) && (strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false || strpos($_SERVER['HTTP_ACCEPT'], 'application/ld+json') !== false)) {
-                $semantic = strpos($_SERVER['HTTP_ACCEPT'], 'application/ld+json') !== false;
+            if ($wantsActivity) {
+                $this->serveActivityObject($entryManager);
+            }
+            if (str_contains($accept, 'application/json') || str_contains($accept, 'application/ld+json')) {
+                $semantic = str_contains($accept, 'application/ld+json');
                 $contentType = $semantic ? 'application/ld+json' : 'application/json';
 
                 header("Content-type: $contentType; charset=UTF-8");
@@ -93,6 +108,24 @@ class ShowHandler extends YesWikiHandler implements RegisteredHandler
                 $translatable->sourceLanguageOfPage($pageContext->getMetadata())
             ));
         }
+    }
+
+    /** Answers a fediverse server asking for an entry with the object its form publishes, when the form is an actor. */
+    private function serveActivityObject(EntryManager $entryManager): void
+    {
+        $entry = $entryManager->getOne($this->getService(PageContext::class)->getTag());
+        $form = is_array($entry) ? $this->getService(FormManager::class)->getOne($entry['form_id'] ?? null) : null;
+        $activityPub = $this->getService(ActivityPubService::class);
+        if (!is_array($form) || !$activityPub->hasActor($form)) {
+            return;
+        }
+        $this->getService(ActivityPubLog::class)->served((string)$form['id'], $this->getRequest(), 200);
+        header('Content-type: application/activity+json; charset=UTF-8');
+        header('Access-Control-Allow-Origin: *');
+        $this->getService(Redirector::class)->terminate((string)json_encode(
+            ['@context' => 'https://www.w3.org/ns/activitystreams'] + $activityPub->entryObject($form, $entry),
+            JSON_UNESCAPED_SLASHES
+        ));
     }
 
     /** Ran as an after-callback until ticket 06 merged it in. */

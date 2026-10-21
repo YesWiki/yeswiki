@@ -35,8 +35,8 @@ class BlogStarterSemanticTest extends YesWikiTestCase
         $this->assertSame('Note', $note['type']);
         $this->assertStringStartsWith('<p><strong>Un titre</strong></p><p><em>Le chapeau</em></p>', $note['content']);
         $this->assertStringContainsString('<strong>gras</strong>', $note['content']);
-        $this->assertSame('2026-10-19T10:00:00', $note['published']);
-        $this->assertSame('2026-10-19T11:00:00', $note['updated']);
+        $this->assertSame(date('c', (int)strtotime('2026-10-19 10:00:00')), $note['published']);
+        $this->assertSame(date('c', (int)strtotime('2026-10-19 11:00:00')), $note['updated']);
     }
 
     public function testALinkedImageIsAttachedAsItIs(): void
@@ -58,6 +58,7 @@ class BlogStarterSemanticTest extends YesWikiTestCase
             'content' => '<p><strong>Un titre</strong></p><p><em>Le chapeau</em></p><p>Du <strong>gras</strong> {{include page="X"}}</p>',
         ]);
 
+        $this->assertNotNull($entry);
         $this->assertSame('Un titre', $entry['bf_titre']);
         $this->assertSame('Le chapeau', $entry['bf_chapeau']);
         $this->assertStringStartsWith('Du **gras** &#123;&#123;include', $entry['bf_description']);
@@ -69,7 +70,8 @@ class BlogStarterSemanticTest extends YesWikiTestCase
             'content' => '<p>Un pouet</p>',
         ]);
 
-        $this->assertNull($entry['bf_titre']);
+        $this->assertNotNull($entry);
+        $this->assertSame('', $entry['bf_titre']);
         $this->assertSame('Un pouet', $entry['bf_description']);
     }
 }

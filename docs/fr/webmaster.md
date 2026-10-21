@@ -377,6 +377,9 @@ avec attach) ou une fiche bazar avec bf_image , il remplace par cela
 
 `'opengraph_image' => 'files/nomdelimage.jpg',`
 
+Une adresse complète marche aussi :
+`'opengraph_image' => 'https://domaine.ext/nomdelimage.jpg',`
+
 ##### Flux Rss : modifier le nombre d'item
 
 Par défaut les flux RSS sont limités aux 20 dernieres pages, cette valeur peut

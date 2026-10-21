@@ -324,7 +324,7 @@ class EntryManager
             $data = $this->semanticTransformer->convertFromSemanticData(
                 $this->container->get(FormManager::class)->getOne($formId),
                 $data
-            );
+            ) ?? throw new \Exception(_t('BAZ_SEMANTIC_OBJECT_REFUSED'));
         }
 
         $this->refuseTagOfAnExistingPage($data['tag'] ?? null);
@@ -456,7 +456,7 @@ class EntryManager
         }
 
         if ($semantic) {
-            $data = $this->semanticTransformer->convertFromSemanticData($form, $data);
+            $data = $this->semanticTransformer->convertFromSemanticData($form, $data) ?? throw new \Exception(_t('BAZ_SEMANTIC_OBJECT_REFUSED'));
         }
 
         $data = $this->formatDataBeforeSave($data, $previousData);

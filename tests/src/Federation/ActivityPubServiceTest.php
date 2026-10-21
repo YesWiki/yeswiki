@@ -4,11 +4,13 @@ namespace YesWiki\Test\Federation;
 
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpClient\MockHttpClient;
 use Symfony\Component\HttpClient\Response\MockResponse;
 use YesWiki\Content\Service\SemanticTransformer;
 use YesWiki\Federation\Service\ActivityPubKeyStore;
+use YesWiki\Federation\Service\ActivityPubLog;
 use YesWiki\Federation\Service\ActivityPubProfiles;
 use YesWiki\Federation\Service\ActivityPubService;
 use YesWiki\Federation\Service\HttpSignatureService;
@@ -19,6 +21,7 @@ use YesWiki\Kernel\Service\TripleStore;
 
 require_once 'tests/YesWikiTestCase.php';
 require_once 'src/constants.php';
+require_once 'tests/src/Federation/RecordingJournal.php';
 
 /** A form's actor: its profile and key, the follows it sends and receives, and what it tells its followers. */
 class ActivityPubServiceTest extends TestCase
@@ -36,9 +39,12 @@ class ActivityPubServiceTest extends TestCase
     /** @var array<string, mixed> */
     private array $profile = ['username' => 'agenda'];
 
+    private RecordingJournal $journal;
+
     protected function setUp(): void
     {
         $this->root = sys_get_temp_dir() . '/yeswiki-activitypub-' . bin2hex(random_bytes(4));
+        $this->journal = new RecordingJournal();
     }
 
     protected function tearDown(): void
@@ -118,6 +124,7 @@ class ActivityPubServiceTest extends TestCase
             $this->createStub(SsrfUrlValidator::class),
             new ActivityPubKeyStore(Storage::rootedAt($this->root), new KeyPairGenerator()),
             new ActivityPubProfiles($this->createStub(ContainerInterface::class)),
+            new ActivityPubLog(new ParameterBag(['activitypub_log' => true]), $this->journal),
         );
         (new \ReflectionProperty($service, 'httpClient'))->setValue($service, $client);
 
@@ -330,5 +337,65 @@ class ActivityPubServiceTest extends TestCase
 
         $this->assertSame([], $service->getFollowRequests($this->form()));
         $this->assertSame([], $service->getFollowers($this->form()));
+    }
+
+    public function testTheActorIsAnApplicationAsMastodonAndMobilizonExpect(): void
+    {
+        $this->assertSame('Application', $this->service()->getActor($this->form())['type']);
+    }
+
+    public function testEveryDeliveryIsLoggedWithTheAnswerItGot(): void
+    {
+        $this->triples[] = ['resource' => self::US . '/followers', 'property' => ActivityPubService::$AS_PREFIX . 'items', 'value' => 'https://down.example/users/a'];
+        $this->triples[] = ['resource' => self::US . '/followers', 'property' => ActivityPubService::$AS_PREFIX . 'items', 'value' => self::THEM];
+        $this->unreachable[] = 'https://down.example/users/a';
+
+        $this->service()->notifyFollowers($this->form(), ['tag' => 'Fiche'], 'Create');
+
+        $records = array_column($this->journal->records, 'context');
+        $byPeer = array_column($records, null, 'peer');
+        $this->assertSame('activitypub.delivered', $byPeer[self::THEM]['action']);
+        $this->assertSame(202, $byPeer[self::THEM]['status']);
+        $this->assertSame('Create', $byPeer[self::THEM]['activity']['type']);
+        $this->assertSame('activitypub.delivery_failed', $byPeer['https://down.example/users/a']['action']);
+        $this->assertStringContainsString('500', $byPeer['https://down.example/users/a']['error']);
+    }
+
+    public function testADeletionIsSentAsATombstoneSoTheReceiverChecksTheObjectIsGone(): void
+    {
+        $this->triples[] = ['resource' => self::US . '/followers', 'property' => ActivityPubService::$AS_PREFIX . 'items', 'value' => self::THEM];
+
+        $this->service()->notifyFollowers($this->form(), ['tag' => 'Fiche'], 'Delete');
+
+        $this->assertSame('Delete', $this->posted[0]['body']['type']);
+        $this->assertSame(['id' => 'https://us.example/?Fiche', 'type' => 'Tombstone', 'formerType' => 'Note'], $this->posted[0]['body']['object']);
+    }
+
+    public function testFollowersAreToldWhenTheProfileChanges(): void
+    {
+        $this->triples[] = ['resource' => self::US . '/followers', 'property' => ActivityPubService::$AS_PREFIX . 'items', 'value' => self::THEM];
+        $this->profile['icon'] = 'https://us.example/files/avatar.png';
+        $service = $this->service();
+
+        $service->announceProfile($this->form());
+
+        $activity = $this->posted[0]['body'];
+        $actor = $service->getActor($this->form());
+        $this->assertSame('Update', $activity['type']);
+        $this->assertSame($actor['@context'], $activity['@context']);
+        $this->assertSame(self::US, $activity['object']['id']);
+        $this->assertSame('https://us.example/files/avatar.png', $activity['object']['icon']['url']);
+        $this->assertArrayNotHasKey('@context', $activity['object']);
+        $this->assertSame([ActivityPubService::PUBLIC], $activity['to']);
+    }
+
+    public function testAFormWithoutActorAnnouncesNothing(): void
+    {
+        $this->triples[] = ['resource' => self::US . '/followers', 'property' => ActivityPubService::$AS_PREFIX . 'items', 'value' => self::THEM];
+        $this->profile = [];
+
+        $this->service()->announceProfile($this->form());
+
+        $this->assertSame([], $this->posted);
     }
 }

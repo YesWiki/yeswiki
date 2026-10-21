@@ -94,6 +94,7 @@ class InstallCommand extends Command implements RunsOutsideAnInstance
             ->addOption('replace-existing', null, InputOption::VALUE_NONE, 'With --from-archive, replace the tables already under this prefix')
             ->addOption('allow-robots', null, InputOption::VALUE_NONE, 'Let search engines index this wiki')
             ->addOption('allow-raw-html', null, InputOption::VALUE_NONE, 'Allow raw HTML in page content')
+            ->addOption('ci-api', null, InputOption::VALUE_NONE, 'Open the config-writing endpoint test stacks drive (never on a real wiki)')
             ->addOption('db-admin-user', null, InputOption::VALUE_REQUIRED, 'Create this wiki\'s database and account as this administrator (or DB_ADMIN_USER)')
             ->addOption('db-admin-password', null, InputOption::VALUE_REQUIRED, 'Password of that administrator (or DB_ADMIN_PASSWORD, which keeps it out of ps)')
             ->addOption('s3-admin-key', null, InputOption::VALUE_REQUIRED, 'Create this wiki\'s bucket with this key (or S3_ADMIN_KEY), leaving the wiki its own scoped one')
@@ -234,6 +235,9 @@ class InstallCommand extends Command implements RunsOutsideAnInstance
         $config = $this->defaultConfig(array_merge($stated, $forced));
         $config['allow_robots'] = $input->getOption('allow-robots') ? '1' : '0';
         $config['allow_raw_html'] = $input->getOption('allow-raw-html') ? '1' : '0';
+        if ($input->getOption('ci-api')) {
+            $config['ci_api'] = '1';
+        }
 
         $drivers = InstallationService::availableDrivers();
         if ($drivers === []) {

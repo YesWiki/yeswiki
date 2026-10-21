@@ -5,6 +5,10 @@ namespace YesWiki\Files\Service;
 /** Local filesystem access by absolute path, for libraries that need a real path. */
 class LocalFiles
 {
+    public function __construct(private readonly DiskSpace $diskSpace = new DiskSpace())
+    {
+    }
+
     public function exists(string $path): bool
     {
         return file_exists($path);
@@ -79,6 +83,39 @@ class LocalFiles
         return file_put_contents($path, $contents) !== false;
     }
 
+    /** Write next to the target and rename over it, so a full disk or quota leaves the previous file whole. */
+    public function writeAtomically(string $path, string $contents): bool
+    {
+        $target = is_link($path) ? (string)realpath($path) : $path;
+        if ($target === '') {
+            return false;
+        }
+        if (!is_writable(dirname($target))) {
+            return @file_put_contents($target, $contents) === strlen($contents);
+        }
+        $temporary = dirname($target) . DIRECTORY_SEPARATOR . '.' . pathinfo($target, PATHINFO_FILENAME) . '.' . bin2hex(random_bytes(6)) . '.tmp';
+        $handle = @fopen($temporary, 'x');
+        if ($handle === false) {
+            return false;
+        }
+        $bytes = @fwrite($handle, $contents);
+        $flushed = @fflush($handle);
+        $closed = fclose($handle);
+        if ($bytes !== strlen($contents) || !$flushed || !$closed) {
+            @unlink($temporary);
+
+            return false;
+        }
+        @chmod($temporary, file_exists($target) ? (fileperms($target) & 0o777) : 0o644);
+        if (!@rename($temporary, $target)) {
+            @unlink($temporary);
+
+            return false;
+        }
+
+        return true;
+    }
+
     /** Add to the end of a file, for the callers that keep a log rather than a document. */
     public function append(string $path, string $contents): bool
     {
@@ -135,15 +172,12 @@ class LocalFiles
         return realpath($path);
     }
 
-    /** Free bytes on the disk holding $directory, null when the host will not say. */
+    /** Free bytes on the disk holding $directory, capped by a ZFS user quota, null when the host will not say. */
     public function freeSpace(string $directory): ?float
     {
-        if (!function_exists('disk_free_space')) {
-            return null;
-        }
-        $free = @disk_free_space($directory);
+        $free = function_exists('disk_free_space') ? @disk_free_space($directory) : false;
 
-        return $free === false ? null : $free;
+        return $this->diskSpace->capped($free === false ? null : $free, $directory);
     }
 
     /**

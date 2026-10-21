@@ -48,6 +48,7 @@ const EXTRAS = [
   'moon',
   'device-desktop',
   'circle-dot',
+  'text-spellcheck',
 ]
 const RENAMES = { loupe: 'search' }
 

@@ -8,10 +8,12 @@ use YesWiki\Content\Entity\Item;
 use YesWiki\Content\Entity\SuppliesItems;
 use YesWiki\Content\Service\EntryManager;
 use YesWiki\Content\Service\FeedLoader;
+use YesWiki\Content\Service\FileManager;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Files\Service\RemoteImageCache;
 use YesWiki\Files\Service\Storage;
 use YesWiki\Identity\Service\AclService;
+use YesWiki\Identity\Service\RequestGuard;
 use YesWiki\Kernel\Component\Category;
 use YesWiki\Kernel\Component\Component;
 use YesWiki\Kernel\Component\ProvidesComponents;
@@ -350,10 +352,11 @@ class SyndicationAction extends YesWikiAction implements RegisteredAction, Provi
 
     public function run(): ?string
     {
+        $refusal = '';
         $mappingToBazar = !empty($this->arguments['mapping']) && $this->getService(AclService::class)->isAdmin();
         $entries = [];
         if ($mappingToBazar) {
-            $this->addToBazar();
+            $refusal = $this->addToBazar();
             if (empty($this->arguments['mapping']['id'])) {
                 return '<div class="yw-alert yw-alert--danger">' . _t('ERROR') . ' ' . _t('SYNDICATION_MAPPING_ID_REQUIRED') . ', ex: id=1400,title=bf_titre,url=bf_url,description=bf_description,image=imagebf_image,categories=bf_tags.</div>';
             }
@@ -447,7 +450,7 @@ class SyndicationAction extends YesWikiAction implements RegisteredAction, Provi
                 $title = $this->arguments['title'];
             }
 
-            $errorsHtml = implode('', $errors);
+            $errorsHtml = $refusal . implode('', $errors);
             if (empty($syndication['pages']) && $errors !== []) {
                 return $errorsHtml;
             }
@@ -485,7 +488,7 @@ class SyndicationAction extends YesWikiAction implements RegisteredAction, Provi
             '</div>' . "\n";
         }
 
-        return '<div class="yw-alert yw-alert--danger"><strong>' . _t('SYNDICATION_ACTION_SYNDICATION') . '</strong> : '
+        return $refusal . '<div class="yw-alert yw-alert--danger"><strong>' . _t('SYNDICATION_ACTION_SYNDICATION') . '</strong> : '
         . _t('SYNDICATION_PARAM_URL_REQUIRED') . '.</div>' . "\n";
     }
 
@@ -496,6 +499,9 @@ class SyndicationAction extends YesWikiAction implements RegisteredAction, Provi
             return '';
         }
         $fileName = trim((string)preg_replace('/[^A-Za-z0-9._-]/', '_', basename((string)parse_url($sourceUrl, PHP_URL_PATH))), '.');
+        if (FileManager::hasExecutableExtension($fileName)) {
+            return '';
+        }
         $extension = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
         $storage = $this->getService(Storage::class);
         $destFile = null;
@@ -525,10 +531,14 @@ class SyndicationAction extends YesWikiAction implements RegisteredAction, Provi
         return $destFile;
     }
 
-    protected function addToBazar(): void
+    /** Copies the feed item given in the URL into an entry, or returns the error that stopped it. */
+    protected function addToBazar(): string
     {
         $mapping = $this->getRequest()->query->get('mapping');
         if (!empty($mapping)) {
+            if (!$this->getService(RequestGuard::class)->linkIsSigned($this->getRequest())) {
+                return '<div class="yw-alert yw-alert--danger">' . _t('ERROR') . ' ' . _t('CSRF_TOKEN_FAIL_ERROR') . '</div>' . "\n";
+            }
             $data = json_decode(urldecode($mapping), true);
             if (!empty($data)) {
                 $entryManager = $this->getService(EntryManager::class);
@@ -537,5 +547,7 @@ class SyndicationAction extends YesWikiAction implements RegisteredAction, Provi
                 $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href());
             }
         }
+
+        return '';
     }
 }

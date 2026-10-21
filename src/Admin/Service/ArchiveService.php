@@ -704,6 +704,7 @@ class ArchiveService
             $type = self::archiveType($filename);
             $onlyFiles = $type === 'only_files';
             $onlyDb = $type === 'only_db';
+            $this->assertRoomToRestore($zip, $restoreFiles && !$onlyDb, $restoreDatabase && !$onlyFiles);
             $stated = $zip->getFromName(basename(ConfigurationFileProvider::getConfigFileFromEnv()));
             if ($restoreFiles && !$onlyDb && $stated !== false) {
                 self::archivedSettings($stated);
@@ -1090,7 +1091,48 @@ class ArchiveService
                 }
                 continue;
             }
-            $zip->extractTo($wikiRoot, $name);
+            error_clear_last();
+            if (!@$zip->extractTo($wikiRoot, $name)) {
+                $reason = error_get_last()['message'] ?? $zip->getStatusString();
+
+                throw new \Exception("Cannot extract $name: $reason");
+            }
+        }
+    }
+
+    /** Bytes a restore adds to the disk: the dump it reads out, and each file beyond the one it replaces. */
+    public function bytesToRestore(\ZipArchive $zip, bool $restoreFiles, bool $restoreDatabase): int
+    {
+        $dumpName = self::PRIVATE_FOLDER_NAME_IN_ZIP . '/' . self::SQL_FILENAME_IN_PRIVATE_FOLDER_IN_ZIP;
+        $configName = basename(ConfigurationFileProvider::getConfigFileFromEnv());
+        $bytes = 0;
+        for ($i = 0; $i < $zip->numFiles; $i++) {
+            $stat = $zip->statIndex($i);
+            if ($stat === false || str_ends_with($stat['name'], '/')) {
+                continue;
+            }
+            if ($stat['name'] === $dumpName) {
+                $bytes += $restoreDatabase ? $stat['size'] : 0;
+                continue;
+            }
+            if (!$restoreFiles || strpos($stat['name'], self::PRIVATE_FOLDER_NAME_IN_ZIP . '/') === 0 || $stat['name'] === $configName
+                || self::isLocalOnly($stat['name']) || $this->isDatabaseFile($stat['name']) || strpos($stat['name'], '..') !== false) {
+                continue;
+            }
+            $existing = YESWIKI_INSTANCE_DIR . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $stat['name']);
+            $bytes += max(0, $stat['size'] - $this->localFiles->size($existing));
+        }
+
+        return $bytes;
+    }
+
+    /** @throws \Exception when what the restore will write does not fit in the room left */
+    protected function assertRoomToRestore(\ZipArchive $zip, bool $restoreFiles, bool $restoreDatabase): void
+    {
+        $needed = $this->bytesToRestore($zip, $restoreFiles, $restoreDatabase);
+        $free = $this->freeSpaceForArchives();
+        if ($free !== null && $free < $needed) {
+            throw new \Exception('Not enough free space to restore this backup' . self::spaceDetail($needed, $free));
         }
     }
 
@@ -1637,7 +1679,9 @@ class ArchiveService
         $config = $this->configurationService->getConfiguration(ConfigurationFileProvider::getConfigFileFromEnv());
         $config->load();
         $config['wiki_status'] = 'archiving';
-        $this->configurationService->write($config);
+        if (!$this->configurationService->write($config)) {
+            throw new \Exception('Cannot write the configuration file, the disk or the quota may be full');
+        }
     }
 
     protected function unsetWikiStatus(): void

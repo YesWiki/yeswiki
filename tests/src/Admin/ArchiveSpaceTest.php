@@ -57,6 +57,61 @@ class ArchiveSpaceTest extends YesWikiTestCase
         $this->assertTrue($free === null || $free > 0);
     }
 
+    public function testARestoreCountsOnlyWhatItAddsToTheDisk(): void
+    {
+        $zip = $this->zip([
+            'files/' . bin2hex(random_bytes(6)) . '.jpg' => str_repeat('n', 300),
+            basename(\YesWiki\Kernel\Service\ConfigurationFileProvider::getConfigFileFromEnv()) => str_repeat('c', 5000),
+            ArchiveService::PRIVATE_FOLDER_NAME_IN_ZIP . '/' . ArchiveService::SQL_FILENAME_IN_PRIVATE_FOLDER_IN_ZIP => str_repeat('s', 50),
+        ]);
+        $service = $this->service(null);
+
+        try {
+            $this->assertSame(300 + 50, $service->bytesToRestore($zip, true, true));
+            $this->assertSame(300, $service->bytesToRestore($zip, true, false));
+            $this->assertSame(50, $service->bytesToRestore($zip, false, true));
+        } finally {
+            $this->close($zip);
+        }
+    }
+
+    public function testARestoreThatDoesNotFitIsRefusedBeforeItStarts(): void
+    {
+        $zip = $this->zip(['files/' . bin2hex(random_bytes(6)) . '.jpg' => str_repeat('n', 64 * 1024)]);
+
+        try {
+            $this->service(1024)->assertRoomToRestoreForTest($zip);
+            $this->fail('a restore needing 64 kB with 1 kB free should be refused');
+        } catch (\Exception $exception) {
+            $this->assertStringContainsString('Not enough free space to restore this backup', $exception->getMessage());
+            $this->assertStringContainsString('1.0 kB free', $exception->getMessage());
+        } finally {
+            $this->close($zip);
+        }
+    }
+
+    /** @param array<string, string> $entries */
+    private function zip(array $entries): \ZipArchive
+    {
+        $path = sys_get_temp_dir() . '/restore-' . bin2hex(random_bytes(6)) . '.zip';
+        $zip = new \ZipArchive();
+        $zip->open($path, \ZipArchive::CREATE);
+        foreach ($entries as $name => $contents) {
+            $zip->addFromString($name, $contents);
+        }
+        $zip->close();
+        $zip->open($path);
+
+        return $zip;
+    }
+
+    private function close(\ZipArchive $zip): void
+    {
+        $path = $zip->filename;
+        $zip->close();
+        @unlink($path);
+    }
+
     public function testLocalFilesSaysNullRatherThanFalseForAMissingFolder(): void
     {
         $this->assertNull((new LocalFiles())->freeSpace('/no/such/folder/' . bin2hex(random_bytes(4))));
@@ -76,6 +131,11 @@ class SpaceArchiveService extends ArchiveService
     public function databaseSizeForTest(): int
     {
         return $this->databaseSize();
+    }
+
+    public function assertRoomToRestoreForTest(\ZipArchive $zip): void
+    {
+        $this->assertRoomToRestore($zip, true, true);
     }
 
     public function assertEnoughSpaceForTest(): void

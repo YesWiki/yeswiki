@@ -85,7 +85,9 @@ class ImageField extends FileField
 
         if ($isUrl) {
             if ($supprImage !== null && urldecode($supprImage) === $value) {
-                if ($this->isAllowedToDeleteFile($entry ?? [], $value)) {
+                if (!$this->deletionLinkIsSigned()) {
+                    $output = $this->unsignedDeletionAlert();
+                } elseif ($this->isAllowedToDeleteFile($entry ?? [], $value)) {
                     $this->updateEntryAfterFileDelete($entry);
                     $output = $this->render('@core/alert-message.twig', [
                         'type' => 'info',
@@ -93,18 +95,19 @@ class ImageField extends FileField
                     ]);
 
                     return $output . $this->render('@core/inputs/image.twig', ['maxSize' => $this->maxSize, 'isUrl' => false]);
+                } else {
+                    $output = $this->render('@core/alert-message.twig', [
+                        'type' => 'info',
+                        'message' => _t('BAZ_DROIT_INSUFFISANT'),
+                    ]) . "\n";
                 }
-                $output = $this->render('@core/alert-message.twig', [
-                    'type' => 'info',
-                    'message' => _t('BAZ_DROIT_INSUFFISANT'),
-                ]) . "\n";
             }
 
             return $output . $this->render('@core/inputs/image.twig', [
                 'value' => $value,
                 'isUrl' => true,
                 'downloadUrl' => $value,
-                'deleteUrl' => empty($entry) ? '' : $this->getService(UrlFormatter::class)->href('edit', $this->getService(\YesWiki\Kernel\Service\PageContext::class)->getTag(), 'suppr_image=' . urlencode($value), false),
+                'deleteUrl' => empty($entry) ? '' : $this->signedDeletionUrl($this->getService(UrlFormatter::class)->href('edit', $this->getService(\YesWiki\Kernel\Service\PageContext::class)->getTag(), 'suppr_image=' . urlencode($value), false)),
                 'image' => '<img src="' . htmlspecialchars($value) . '" class="img-responsive" alt="" />',
                 'isDefaultImage' => false,
                 'isAllowedToDeleteFile' => empty($entry) ? false : $this->isAllowedToDeleteFile($entry, $value),
@@ -117,7 +120,9 @@ class ImageField extends FileField
             || (!empty($imgDefault) && $this->storage()->exists($this->getBasePath() . $imgDefault))
         ) {
             if ($supprImage !== null && $supprImage === $value) {
-                if ($this->securedDeleteImageAndCache($entry, $value)) {
+                if (!$this->deletionLinkIsSigned()) {
+                    $alertMessage = $this->unsignedDeletionAlert();
+                } elseif ($this->securedDeleteImageAndCache($entry, $value)) {
                     $this->updateEntryAfterFileDelete($entry);
 
                     $output = $this->render('@core/alert-message.twig', [
@@ -143,7 +148,7 @@ class ImageField extends FileField
                     'value' => $img,
                     'isUrl' => false,
                     'downloadUrl' => $this->getBasePath() . $img,
-                    'deleteUrl' => empty($entry) ? '' : $this->getService(UrlFormatter::class)->href('edit', $this->getService(\YesWiki\Kernel\Service\PageContext::class)->getTag(), 'suppr_image=' . $img, false),
+                    'deleteUrl' => empty($entry) ? '' : $this->signedDeletionUrl($this->getService(UrlFormatter::class)->href('edit', $this->getService(\YesWiki\Kernel\Service\PageContext::class)->getTag(), 'suppr_image=' . $img, false)),
                     'image' => $this->getService(TemplateEngine::class)->renderSafely('@core/display-image.twig', [
                         'baseUrl' => $this->getService(UrlFormatter::class)->getBaseUrl() . '/',
                         'imageFullPath' => $this->getBasePath() . $img,

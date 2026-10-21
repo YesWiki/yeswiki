@@ -5,6 +5,7 @@ namespace YesWiki\Render\Service;
 use Symfony\Component\Security\Csrf\CsrfTokenManager;
 use YesWiki\Files\Service\ProgramFiles;
 use YesWiki\Files\Service\Storage;
+use YesWiki\Identity\Service\RequestGuard;
 use YesWiki\Kernel\Service\AssetRegistry;
 use YesWiki\Kernel\Service\LanguageService;
 use YesWiki\Kernel\Service\PageContext;
@@ -174,6 +175,7 @@ class CoreAssets implements RequestScopedState
     {
         $this->assets->addJsFile('javascripts/yw-init.js', true);
         $this->assets->addJsFile('javascripts/yeswiki-base-no-defer.js', true);
+        $this->assets->addJsFile(RequestGuard::SCRIPT, true);
 
         // A wiki's own copy of a theme's scripts wins over the shipped one, and the two live in
         // different filesystems: `custom/` is the Instance's and may be a bucket, `themes/` is the

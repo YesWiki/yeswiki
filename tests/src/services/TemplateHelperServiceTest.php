@@ -3,6 +3,9 @@
 namespace YesWiki\Test\Core\Service;
 
 use PHPUnit\Framework\Attributes\CoversMethod;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
+use YesWiki\Kernel\Service\PerformableArguments;
+use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\TemplateHelperService;
 use YesWiki\Test\Core\YesWikiTestCase;
 
@@ -42,5 +45,19 @@ class TemplateHelperServiceTest extends YesWikiTestCase
         $this->assertTrue($service->checkGraphicalElements('grid', 'SomePage', $quotedBlock));
 
         $this->assertFalse($service->checkGraphicalElements('panel', 'SomePage', '`{{end elem="panel"}}` {{panel}}'));
+    }
+
+    /** A full address in `opengraph_image` is used as it is, with no file to look for. */
+    public function testTheDefaultOpenGraphImageMayBeAUrl(): void
+    {
+        $services = $this->getWiki()->services;
+        $service = new TemplateHelperService(
+            new ParameterBag(['opengraph_image' => 'https://example.org/share.jpg']),
+            $services,
+            $services->get(UrlFormatter::class),
+            $services->get(PerformableArguments::class)
+        );
+
+        $this->assertSame('https://example.org/share.jpg', $service->getImageFromBody(['body' => []], '1200', '630'));
     }
 }

@@ -15,6 +15,7 @@ use YesWiki\Files\Service\ImageResizer;
 use YesWiki\Files\Service\RemoteImageCache;
 use YesWiki\Files\Service\Storage;
 use YesWiki\Identity\Service\AclService;
+use YesWiki\Identity\Service\RequestGuard;
 use YesWiki\Kernel\Exception\TemplateNotFound;
 use YesWiki\Kernel\Service\AssetRegistry;
 use YesWiki\Kernel\Service\FlashMessageService;
@@ -201,6 +202,9 @@ class TemplateEngine
         });
         $this->addTwigHelper('signedToken', function ($tokenId) {
             return $this->container->get(SignedTokens::class)->sign((string)$tokenId);
+        });
+        $this->addTwigHelper('signedUrl', function ($url) {
+            return $this->container->get(RequestGuard::class)->sign((string)$url);
         });
         $this->addTwigHelper('image_at', function ($url, $width = 0, $height = null) {
             $url = (string)$url;

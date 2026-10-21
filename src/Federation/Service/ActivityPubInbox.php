@@ -11,6 +11,8 @@ use YesWiki\Kernel\Service\TripleStore;
 class ActivityPubInbox
 {
     public const REMOTE_ACTOR_URI = 'http://outils-reseaux.org/_vocabulary/remoteActor';
+    public const REMOTE_ACTOR_PROFILE_URI = 'http://outils-reseaux.org/_vocabulary/remoteActorProfile';
+    private const ACTOR_TYPES = ['Person', 'Service', 'Application', 'Group', 'Organization'];
     private const GENERATED_TITLE_LENGTH = 80;
     private const GENERATED_TITLE_MARKER = '__generated_title';
 
@@ -20,16 +22,17 @@ class ActivityPubInbox
         private readonly HttpSignatureService $httpSignatureService,
         private readonly SemanticTransformer $semanticTransformer,
         private readonly TripleStore $tripleStore,
+        private readonly ActivityPubLog $log,
     ) {
     }
 
     /**
-     * Acts on an activity delivered to the inbox, on behalf of the actor that signed for it.
+     * Acts on an activity delivered to the inbox, on behalf of the actor that signed for it; returns why an object was left out, or null.
      *
      * @param array<string, mixed> $activity
      * @param array<string, mixed> $form
      */
-    public function processActivity(array $activity, array $form, string $verifiedActor): void
+    public function processActivity(array $activity, array $form, string $verifiedActor): ?string
     {
         if (empty($activity['type'])) {
             throw new \Exception('Malformed activity');
@@ -65,28 +68,18 @@ class ActivityPubInbox
                 break;
 
             case 'Create':
-                $object = is_array($activity['object'] ?? null) ? $activity['object'] : [];
-                if (!$this->httpSignatureService->sameHost($verifiedActor, is_string($object['id'] ?? null) ? $object['id'] : '')) {
-                    throw new \Exception('An actor can only bring objects from its own host');
-                }
-                $entry = $this->entryFromObject($form, $object);
-                $entry['read-only'] = 1;
-                $created = $this->entryManager()->create($form['id'], $this->withoutMarker($entry), false, $object['id']);
-                $this->rememberOwner($created['tag'] ?? null, $verifiedActor);
-                $this->rememberGeneratedTitle($created['tag'] ?? null, $entry);
-                break;
-
             case 'Update':
-                $object = is_array($activity['object'] ?? null) ? $activity['object'] : [];
-                $objectId = $this->objectId($object);
-                $tag = $objectId === null ? null : $this->mirrorOf($objectId);
-                if ($tag !== null) {
-                    $this->assertOwns($verifiedActor, $tag, (string)$objectId);
-                    $entry = $this->entryFromObject($form, $object);
-                    $this->entryManager()->update($tag, $this->withoutMarker($entry), false);
-                    $this->rememberGeneratedTitle($tag, $entry);
+                $object = $activity['object'] ?? null;
+                if (!is_array($object) || !is_string($object['id'] ?? null) || $object['id'] === '') {
+                    throw new \Exception('A ' . $activity['type'] . ' needs an object with an id');
                 }
-                break;
+                if ($object['id'] === $verifiedActor && in_array($object['type'] ?? null, self::ACTOR_TYPES, true)) {
+                    $this->rememberActor($verifiedActor, $form, $object);
+
+                    return null;
+                }
+
+                return $this->mirror($form, $object, $verifiedActor, $activity['type'] === 'Create');
 
             case 'Delete':
                 $objectId = $this->objectId($activity['object'] ?? null);
@@ -97,6 +90,150 @@ class ActivityPubInbox
                 }
                 break;
         }
+
+        return null;
+    }
+
+    /**
+     * Creates or updates the entry mirroring an object sent to the inbox; a Create of an object already mirrored updates it. Returns why a new object was left out, or null.
+     *
+     * @param array<string, mixed> $form
+     * @param array<string, mixed> $object
+     */
+    private function mirror(array $form, array $object, string $verifiedActor, bool $mayCreate): ?string
+    {
+        $tag = $this->mirrorOf($object['id']);
+        if ($tag === null) {
+            if (!$mayCreate) {
+                return null;
+            }
+            if (!$this->httpSignatureService->sameHost($verifiedActor, $object['id'])) {
+                throw new \Exception('An actor can only bring objects from its own host');
+            }
+            $refusal = $this->authorRefusal($form, $verifiedActor, $object) ?? $this->objectRefusal($form, $object);
+            if ($refusal !== null) {
+                return $refusal;
+            }
+            $entry = $this->entryFromObject($form, $object);
+            if ($entry === null) {
+                return null;
+            }
+            $created = $this->entryManager()->create($form['id'], $this->withoutMarker($entry), false, $object['id']);
+            $this->rememberOwner($created['tag'] ?? null, $verifiedActor);
+            $this->rememberGeneratedTitle($created['tag'] ?? null, $entry);
+            $this->rememberActor($verifiedActor, $form);
+
+            return null;
+        }
+        $this->assertOwns($verifiedActor, $tag, $object['id']);
+        $entry = $this->entryFromObject($form, $object);
+        if ($entry === null) {
+            return null;
+        }
+        $this->entryManager()->update($tag, $this->withoutMarker($entry), false);
+        $this->rememberGeneratedTitle($tag, $entry);
+
+        return null;
+    }
+
+    /**
+     * Why the form will not publish what this actor sends: by default only what a followed account signs, or attributes to a followed account on its own host, as a Mobilizon organizer does for its group.
+     *
+     * @param array<string, mixed> $form
+     * @param array<string, mixed> $object
+     */
+    private function authorRefusal(array $form, string $actorUri, array $object): ?string
+    {
+        if ($this->activityPubService->profile($form)['accept_unfollowed']) {
+            return null;
+        }
+        $following = $this->activityPubService->getFollowing($form);
+        if (in_array($actorUri, $following, true)) {
+            return null;
+        }
+        foreach ($this->attributedTo($object) as $author) {
+            if (in_array($author, $following, true) && $this->httpSignatureService->sameHost($actorUri, $author)) {
+                return null;
+            }
+        }
+
+        return 'This form does not follow ' . $actorUri;
+    }
+
+    /**
+     * The actor ids an object is attributed to, whether given as a string, an object or a list of either.
+     *
+     * @param array<string, mixed> $object
+     *
+     * @return list<string>
+     */
+    private function attributedTo(array $object): array
+    {
+        $authors = $object['attributedTo'] ?? [];
+        $authors = is_array($authors) && !array_is_list($authors) ? [$authors] : (array)$authors;
+
+        return array_values(array_filter(array_map(fn ($author) => is_array($author) ? ($author['id'] ?? null) : $author, $authors), 'is_string'));
+    }
+
+    /**
+     * Why the form will not publish this object: by default neither replies nor objects that are not public.
+     *
+     * @param array<string, mixed> $form
+     * @param array<string, mixed> $object
+     */
+    private function objectRefusal(array $form, array $object): ?string
+    {
+        $profile = $this->activityPubService->profile($form);
+        if (!$profile['accept_non_public'] && !$this->isPublic($object)) {
+            return 'Only public objects are published';
+        }
+        if (!$profile['accept_replies'] && !empty($object['inReplyTo'])) {
+            return 'Replies are not published';
+        }
+
+        return null;
+    }
+
+    /** @param array<string, mixed> $object */
+    private function isPublic(array $object): bool
+    {
+        foreach (['to', 'cc'] as $key) {
+            foreach ((array)($object[$key] ?? []) as $audience) {
+                if (in_array($audience, [ActivityPubService::PUBLIC, 'as:Public', 'Public'], true)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Keeps the display name, username and page of a remote account, fetching it once when no document is given; a fetch that fails leaves it unknown.
+     *
+     * @param array<string, mixed>      $form
+     * @param array<string, mixed>|null $document
+     */
+    private function rememberActor(string $actorUri, array $form, ?array $document = null): void
+    {
+        if ($document === null) {
+            if ($this->tripleStore->getOne($actorUri, self::REMOTE_ACTOR_PROFILE_URI, '', '') !== null) {
+                return;
+            }
+            try {
+                $document = $this->activityPubService->fetch($actorUri, $form);
+            } catch (\Throwable $e) {
+                return;
+            }
+        }
+        $text = fn ($value) => is_string($value) ? mb_substr(trim(strip_tags($value)), 0, 200) : '';
+        $profile = [
+            'name' => $text($document['name'] ?? null),
+            'username' => $text($document['preferredUsername'] ?? null),
+            'url' => is_string($document['url'] ?? null) && preg_match('~^https?://~i', $document['url']) ? $document['url'] : '',
+        ];
+        $this->tripleStore->delete($actorUri, self::REMOTE_ACTOR_PROFILE_URI, null, '', '');
+        $this->tripleStore->create($actorUri, self::REMOTE_ACTOR_PROFILE_URI, (string)json_encode($profile, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE), '', '');
     }
 
     /**
@@ -112,6 +249,7 @@ class ActivityPubInbox
         $entryManager = $this->entryManager();
 
         $actor = $this->activityPubService->fetch($actorUri, $form);
+        $this->rememberActor($actorUri, $form, $actor);
         if (empty($actor['outbox']) || !is_string($actor['outbox'])) {
             return $stats;
         }
@@ -135,7 +273,25 @@ class ActivityPubInbox
                 continue;
             }
 
-            if (!is_array($object) || !is_string($object['id'] ?? null)) {
+            if (is_string($object) && in_array($type, ['Create', 'Update'], true)) {
+                if (!$this->httpSignatureService->sameHost($actorUri, $object)) {
+                    continue;
+                }
+                $objectId = $object;
+                try {
+                    $object = $this->activityPubService->fetch($objectId, $form);
+                } catch (\Throwable $e) {
+                    $remoteObjectIds[] = $objectId;
+                    $stats['failed']++;
+                    $this->log->syncFailed((string)$form['id'], $actorUri, $objectId, $e->getMessage());
+                    continue;
+                }
+                if (($object['id'] ?? null) !== $objectId) {
+                    continue;
+                }
+            }
+
+            if (!is_array($object) || !is_string($object['id'] ?? null) || $this->objectRefusal($form, $object) !== null) {
                 continue;
             }
 
@@ -145,6 +301,7 @@ class ActivityPubInbox
                 $this->syncItem(is_string($type) ? $type : null, $object, $actorUri, $form, $stats);
             } catch (\Exception $e) {
                 $stats['failed']++;
+                $this->log->syncFailed((string)$form['id'], $actorUri, $object, $e->getMessage());
             }
         }
 
@@ -179,7 +336,9 @@ class ActivityPubInbox
                 return;
             }
             $entry = $this->entryFromObject($form, $object);
-            $entry['read-only'] = 1;
+            if ($entry === null) {
+                return;
+            }
             $created = $this->entryManager()->create($form['id'], $this->withoutMarker($entry), false, $object['id']);
             $this->rememberOwner($created['tag'] ?? null, $actorUri);
             $this->rememberGeneratedTitle($created['tag'] ?? null, $entry);
@@ -191,22 +350,29 @@ class ActivityPubInbox
             return;
         }
         $entry = $this->entryFromObject($form, $object);
+        if ($entry === null) {
+            return;
+        }
         $this->entryManager()->update($tag, $this->withoutMarker($entry), false);
         $this->rememberGeneratedTitle($tag, $entry);
         $stats['updated']++;
     }
 
     /**
-     * Turns a remote object into entry fields, titling it from its summary or text when it has no name, as Mastodon notes do.
+     * Turns a remote object into the fields of a read-only entry, titling it from its summary or text when it has no name, as Mastodon notes do; null when the form's reverse template turns it down.
      *
      * @param array<string, mixed> $form
      * @param array<string, mixed> $object
      *
-     * @return array<string, mixed>
+     * @return array<string, mixed>|null
      */
-    private function entryFromObject(array $form, array $object): array
+    private function entryFromObject(array $form, array $object): ?array
     {
         $entry = $this->semanticTransformer->convertFromSemanticData($form, $object);
+        if ($entry === null) {
+            return null;
+        }
+        $entry['read-only'] = 1;
         if ($this->plainText($entry['bf_titre'] ?? '') === '') {
             $entry['bf_titre'] = $this->titleFromObject($object);
             $entry[self::GENERATED_TITLE_MARKER] = true;

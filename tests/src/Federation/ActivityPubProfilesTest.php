@@ -58,6 +58,9 @@ class ActivityPubProfilesTest extends YesWikiTestCase
             'image' => 'https://cdn.example/banner.jpg',
             'fields' => ['Site' => 'https://us.example/'],
             'approve_followers' => false,
+            'accept_unfollowed' => false,
+            'accept_non_public' => false,
+            'accept_replies' => false,
         ], $profiles->get($this->forms[1]));
         $this->assertSame('1', $profiles->formIdForUsername('AGENDA'));
     }
@@ -115,5 +118,18 @@ class ActivityPubProfilesTest extends YesWikiTestCase
         $this->profiles()->save($this->forms[1], ['username' => 'agenda', 'fields' => $fields]);
 
         $this->assertCount(ActivityPubProfiles::MAX_FIELDS, $this->profiles()->get($this->forms[1])['fields']);
+    }
+
+    public function testIncomingPostsAreStrictUntilAnAdminRelaxesThem(): void
+    {
+        $keys = array_flip(['accept_unfollowed', 'accept_non_public', 'accept_replies']);
+        $this->assertSame([false, false, false], array_values(array_intersect_key($this->profiles()->get($this->forms[2]), $keys)));
+
+        $this->profiles()->save($this->forms[2], ['username' => 'blog', 'accept_unfollowed' => true, 'accept_replies' => '1']);
+
+        $profile = $this->profiles()->get($this->forms[2]);
+        $this->assertTrue($profile['accept_unfollowed']);
+        $this->assertFalse($profile['accept_non_public']);
+        $this->assertTrue($profile['accept_replies']);
     }
 }

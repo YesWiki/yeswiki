@@ -48,7 +48,7 @@ class SsrfUrlValidator
     ];
 
     /**
-     * Resolves the host exactly once, validates every address it returned, and hands back a Symfony HttpClient `resolve` map ([host => ip]) pinning the connection to the very address that was checked - the caller must pass this as the `resolve` request option so the HTTP client can't perform its own, independent DNS lookup at connect time (which would reopen a DNS-rebinding race against this check).
+     * Resolves the host once and returns a Symfony HttpClient `resolve` map ([host => ip]) pinned to the first public address it got; private ones are skipped, so a host that a local resolver also answers with loopback can still be reached. The caller must pass the map as the `resolve` option, or the client resolves again and reopens a DNS-rebinding race.
      *
      * @param string[] $schemes the schemes the caller accepts; plain http only where the content itself is public anyway, such as a syndicated feed
      *
@@ -65,48 +65,58 @@ class SsrfUrlValidator
         }
 
         $host = trim($parts['host'], '[]');
-        $isOwn = $this->ownOrigin !== null && self::originOf($url) === $this->ownOrigin;
+        $ips = filter_var($host, FILTER_VALIDATE_IP) ? [$host] : $this->lookup($host);
+        if (empty($ips)) {
+            throw new \Exception("Cannot resolve hostname of URL '{$url}'");
+        }
+        if ($this->ownOrigin !== null && self::originOf($url) === $this->ownOrigin) {
+            return [$host => $ips[0]];
+        }
 
-        if (filter_var($host, FILTER_VALIDATE_IP)) {
-            $ips = [$host];
-        } else {
-            $ips = [];
-            $ipv4 = gethostbyname($host);
-            if ($ipv4 !== $host) {
-                $ips[] = $ipv4;
-            }
-            foreach (@dns_get_record($host, DNS_AAAA) ?: [] as $record) {
-                if (!empty($record['ipv6'])) {
-                    $ips[] = $record['ipv6'];
-                }
-            }
-            if (empty($ips)) {
-                throw new \Exception("Cannot resolve hostname of URL '{$url}'");
+        $public = array_values(array_filter($ips, fn (string $ip) => $this->isPublic($ip)));
+        if (empty($public)) {
+            throw new \Exception("URL '{$url}' resolves to a private or reserved address");
+        }
+
+        return [$host => $public[0]];
+    }
+
+    /**
+     * Every IPv4 and IPv6 address the host resolves to.
+     *
+     * @return list<string>
+     */
+    protected function lookup(string $host): array
+    {
+        $ips = [];
+        $ipv4 = gethostbyname($host);
+        if ($ipv4 !== $host) {
+            $ips[] = $ipv4;
+        }
+        foreach (@dns_get_record($host, DNS_AAAA) ?: [] as $record) {
+            if (!empty($record['ipv6'])) {
+                $ips[] = $record['ipv6'];
             }
         }
 
-        foreach ($ips as $ip) {
-            if ($isOwn) {
-                continue;
-            }
-            if (!filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)
-                || $this->isReservedIPv4($ip)) {
-                throw new \Exception("URL '{$url}' resolves to a private or reserved address");
-            }
+        return $ips;
+    }
 
-            if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6) && stripos($ip, 'fe80') === 0) {
-                throw new \Exception("URL '{$url}' resolves to a private or reserved address");
-            }
-
-            $embeddedIPv4 = $this->extractEmbeddedIPv4($ip);
-            if ($embeddedIPv4 !== null
-                && (!filter_var($embeddedIPv4, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)
-                    || $this->isReservedIPv4($embeddedIPv4))) {
-                throw new \Exception("URL '{$url}' resolves to a private or reserved address");
-            }
+    /** Whether the wiki may connect to this address on somebody else's behalf. */
+    private function isPublic(string $ip): bool
+    {
+        if (!filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)
+            || $this->isReservedIPv4($ip)) {
+            return false;
         }
+        if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6) && stripos($ip, 'fe80') === 0) {
+            return false;
+        }
+        $embeddedIPv4 = $this->extractEmbeddedIPv4($ip);
 
-        return [$host => $ips[0]];
+        return $embeddedIPv4 === null
+            || (filter_var($embeddedIPv4, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)
+                && !$this->isReservedIPv4($embeddedIPv4));
     }
 
     /**

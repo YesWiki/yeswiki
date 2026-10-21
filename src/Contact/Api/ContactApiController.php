@@ -135,6 +135,9 @@ class ContactApiController extends YesWikiController
         if ($message['class'] == 'success' && ($refusal = $botGuard->check($request)) !== null) {
             $message = ['class' => 'danger', 'message' => $botGuard->message($refusal)];
         }
+        $writtenByARobot = $message['class'] == 'success'
+            && !in_array($type, ['mail', 'subscribe', 'unsubscribe'], true)
+            && $botGuard->checkMessage((string)$mailSender, (string)$nameSender, (string)$request->request->get('subject', ''), (string)$request->request->get('message', '')) !== null;
 
         if ($message['class'] == 'success') {
             $mailingList = (string)$request->request->get('mailinglist', '');
@@ -158,7 +161,7 @@ class ContactApiController extends YesWikiController
                 }
             }
             $mailer = $this->getService(Mailer::class);
-            if ($mailer->send($mailSender, $nameSender, $mailReceiver, $subject, $messageTxt, $messageHtml, in_array($type, ['subscribe', 'unsubscribe'], true))) {
+            if ($writtenByARobot || $mailer->send($mailSender, $nameSender, $mailReceiver, $subject, $messageTxt, $messageHtml, in_array($type, ['subscribe', 'unsubscribe'], true))) {
                 if (empty($type) || $type == 'contact' || $type == 'mail') {
                     $message['message'] = _t('CONTACT_MESSAGE_SUCCESSFULLY_SENT');
                 } elseif ($type == 'subscribe') {

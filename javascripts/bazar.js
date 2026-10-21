@@ -467,12 +467,10 @@ ywInitEach('body', () => {
             form
               .querySelectorAll('.form-actions button[type=submit]')
               .forEach((button) => {
+                button.dataset.label = button.innerHTML
                 button.setAttribute('disabled', 'disabled')
                 button.classList.add('submit-disabled')
-                button.setAttribute('title', _t('BAZ_SAVING'))
-                setTimeout(() => {
-                  button.removeAttribute('disabled')
-                }, 10000)
+                button.textContent = `${_t('BAZ_SAVING')}…`
               })
           }, 0)
           return
@@ -484,6 +482,19 @@ ywInitEach('body', () => {
     },
     true,
   )
+
+  window.addEventListener('pageshow', (event) => {
+    if (!event.persisted) return
+    document
+      .querySelectorAll('.bazar-form .form-actions button[type=submit]')
+      .forEach((button) => {
+        if (button.dataset.label !== undefined) {
+          button.innerHTML = button.dataset.label
+        }
+        button.removeAttribute('disabled')
+        button.classList.remove('submit-disabled')
+      })
+  })
 
   function initEventDates(form) {
     const startDate = form.querySelector('#bf_date_debut_evenement')

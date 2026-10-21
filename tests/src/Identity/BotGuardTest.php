@@ -7,6 +7,7 @@ use AltchaOrg\Altcha\Altcha;
 use AltchaOrg\Altcha\Challenge;
 use AltchaOrg\Altcha\Payload;
 use AltchaOrg\Altcha\SolveChallengeOptions;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Component\HttpFoundation\Request;
 use YesWiki\Files\Service\Storage;
 use YesWiki\Identity\Service\AuthenticationService;
@@ -243,6 +244,57 @@ class BotGuardTest extends YesWikiTestCase
             [BotGuard::RESOURCE_PREFIX . 'token:' . $id, BotGuard::USED_TOKEN_PROPERTY]
         );
         $this->assertCount(1, $rows, 'a replay is refused before it writes a row of its own');
+    }
+
+    /**
+     * @return array<string, array{string, string, string, string, string}>
+     */
+    public static function robotMessages(): array
+    {
+        return [
+            'long random letters' => ['gibberish', 'someone@example.org', 'RksTnXCbuIVhINwvtvIS', 'fVrYazAYnCkkMpoLANatX', 'JmVcOKXcLjfVzwwSHEsHdup'],
+            'short random letters' => ['gibberish', 'someone@example.org', 'hOue', 'SPGp', 'ocKC'],
+            'dotted gmail' => ['dotted-gmail', 'mad.is.oncvha.td.1.f.ost.er@gmail.com', 'Marie', 'Question', 'Bonjour'],
+            'link in the name' => ['link-in-name', 'x@uberip.com', '🔈 Transfer № R8378 from Coinbase. GET -> graph.org/Bitcoin', 'fzrr0e', 'hello'],
+            'url in the name' => ['link-in-name', 'x@example.org', 'https://spam.example', 'Hello', 'Hello there'],
+            'same word everywhere' => ['repeated', 'TALKTOTONYA@GMAIL.COM', 'Test', 'Test', 'test'],
+            'name and subject repeated in the message' => ['repeated', 'test@example.org', 'test', 'Test', 'Ceci est un message de TEST.'],
+            'script tag' => ['injection', 'x@example.org', 'n', "'>\"></script><svg/onload=confirm('x')>", 'm'],
+            'quote and bracket run' => ['injection', 'x@example.org', 'EmZZ', 'abBH', 'yrxU\'",,,.()))'],
+        ];
+    }
+
+    #[DataProvider('robotMessages')]
+    public function testARobotMessageIsRefusedAndCounted(string $reason, string $email, string $name, string $subject, string $message): void
+    {
+        $before = $this->guard->refusedLastDays(1)[$reason] ?? 0;
+
+        $this->assertSame($reason, $this->guard->checkMessage($email, $name, $subject, $message));
+        $this->assertSame($before + 1, $this->guard->refusedLastDays(1)[$reason] ?? 0);
+    }
+
+    /**
+     * @return array<string, array{string, string, string, string}>
+     */
+    public static function humanMessages(): array
+    {
+        return [
+            'a plain message' => ['marie.dupont@gmail.com', 'Marie Dupont', 'Mangeoire du parc', 'Bonjour, la mangeoire est vide (depuis lundi). Pouvez-vous "la" remplir ?'],
+            'a long dotted name' => ['marie.claire.de.villiers@gmail.com', 'Marie-Claire', 'Question', 'Bonjour'],
+            'a camel case name' => ['jb@example.org', 'JeanBaptisteDupont', 'Inscription', 'Je voudrais venir samedi.'],
+            'shouting' => ['x@example.org', 'PAUL', 'URGENT', 'BONJOURATOUS'],
+            'short words' => ['x@example.org', 'Paul', 'RDV', 'Merci'],
+            'the name in the message only' => ['paul@example.org', 'Paul', 'Question', 'Bonjour, ici Paul.'],
+            'name and subject inside a longer word' => ['x@example.org', 'test', 'test', 'Les tests du formulaire ont marché.'],
+            'a site in the message' => ['x@example.org', 'Paul', 'Lien', 'Voir https://exemple.org/page, merci !'],
+            'an email in the name' => ['paul@example.org', 'paul@example.org', 'Question', 'Bonjour'],
+        ];
+    }
+
+    #[DataProvider('humanMessages')]
+    public function testAHumanMessagePasses(string $email, string $name, string $subject, string $message): void
+    {
+        $this->assertNull($this->guard->checkMessage($email, $name, $subject, $message));
     }
 
     public function testRefusalsAreCountedPerReason(): void

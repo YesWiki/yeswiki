@@ -20,7 +20,7 @@
                         {% endblock %}
                         <li>
                             {% block logoutLink %}
-                                <a href="{{ incomingurl ~ (incomingurl matches '/\\?/' ? '&' : '?') }}action=logout&context={{ context }}"
+                                <a href="{{ signedUrl(incomingurl ~ (incomingurl matches '/\\?/' ? '&' : '?') ~ 'action=logout&context=' ~ context) }}"
                                    class="{% block logoutLinkClass %}login-signout-link{% endblock %}"
                                    title="{{ _t("LOGIN_LOGOUT") }}"><svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#logout"/></svg> {{ _t("LOGIN_LOGOUT") }}</a>
                             {% endblock %}

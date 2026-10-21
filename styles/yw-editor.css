@@ -30,6 +30,28 @@ textarea.aceditor-textarea {
   display: none;
 }
 
+.aceditor-container.plain-text textarea.aceditor-textarea {
+  display: block;
+  width: 100%;
+  min-height: 10rem;
+  padding: var(--yw-space-md-y) var(--yw-space-md-x);
+  font-family: monospace;
+  font-size: 1rem;
+  line-height: 1.5;
+  color: var(--yw-text);
+  background: transparent;
+  border: none;
+  resize: vertical;
+}
+
+#ACEditor .aceditor-container.plain-text textarea.aceditor-textarea {
+  min-height: 500px;
+}
+
+.aceditor-container.plain-text .ace-container {
+  display: none;
+}
+
 .ace-body {
   height: 65px;
   border: none;

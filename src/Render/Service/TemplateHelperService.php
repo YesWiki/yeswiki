@@ -88,18 +88,16 @@ class TemplateHelperService
 
     protected function getDefaultOpenGraphImage(): string
     {
-        $image = '';
-        if ($this->params->has('opengraph_image')) {
-            $opengraphImage = $this->params->get('opengraph_image');
-            if (!empty($opengraphImage)
-                && is_string($opengraphImage)
-                && $this->storage()->exists($opengraphImage)
-            ) {
-                $image = "{$this->urlFormatter->getBaseUrl()}/$opengraphImage";
-            }
+        $opengraphImage = $this->params->has('opengraph_image') ? $this->params->get('opengraph_image') : '';
+        if (empty($opengraphImage) || !is_string($opengraphImage)) {
+            return '';
         }
+        if (preg_match('/^https?:\/\//i', $opengraphImage)) {
+            return $opengraphImage;
+        }
+        $opengraphImage = ltrim($opengraphImage, '/');
 
-        return $image;
+        return $this->storage()->exists($opengraphImage) ? "{$this->urlFormatter->getBaseUrl()}/$opengraphImage" : '';
     }
 
     /**

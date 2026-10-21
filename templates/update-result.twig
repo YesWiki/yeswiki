@@ -16,6 +16,9 @@
 </ul>
 
 <br/>
+{% if confirmUrl is defined %}
+<a class="btn btn-sm btn-primary" href="{{ confirmUrl }}">{{ _t('CONTINUE') }}</a>
+{% endif %}
 <a class="btn btn-sm btn-secondary-1" href="{{ url({}) }}">
     <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#arrow-left"/></svg>
     {{ _t('GO_BACK') }}

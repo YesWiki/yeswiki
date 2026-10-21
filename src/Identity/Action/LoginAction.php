@@ -9,6 +9,7 @@ use YesWiki\Identity\Exception\LoginException;
 use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Identity\Service\AvatarService;
 use YesWiki\Identity\Service\InputFilter;
+use YesWiki\Identity\Service\RequestGuard;
 use YesWiki\Identity\Service\UserManager;
 use YesWiki\Kernel\Component\Category;
 use YesWiki\Kernel\Component\Component;
@@ -183,8 +184,12 @@ class LoginAction extends YesWikiAction implements RegisteredAction, ProvidesCom
                 $this->logout();
                 break;
             case 'login':
-                $this->login();
-                break;
+                if ($this->getRequest()->isMethod('POST')) {
+                    $this->login();
+                    break;
+                }
+
+                return $this->renderForm('');
 
             case 'checklogged':
             default:
@@ -248,7 +253,7 @@ class LoginAction extends YesWikiAction implements RegisteredAction, ProvidesCom
             parse_str($urlParts['query'], $queryParams);
         }
 
-        unset($queryParams['context']);
+        unset($queryParams['context'], $queryParams[RequestGuard::FIELD]);
 
         $newQuery = http_build_query($queryParams);
         $clean = ($urlParts['path'] ?? '') . ($newQuery !== '' ? '?' . $newQuery : '');
@@ -374,8 +379,12 @@ class LoginAction extends YesWikiAction implements RegisteredAction, ProvidesCom
 
     private function logout(): void
     {
-        $this->authenticationService->logout();
-        $this->getService(FlashMessageService::class)->setMessage(_t('LOGIN_YOU_ARE_NOW_DISCONNECTED'));
+        if ($this->getService(RequestGuard::class)->linkIsSigned($this->getRequest())) {
+            $this->authenticationService->logout();
+            $this->getService(FlashMessageService::class)->setMessage(_t('LOGIN_YOU_ARE_NOW_DISCONNECTED'));
+        } else {
+            $this->getService(FlashMessageService::class)->setMessage(_t('CSRF_TOKEN_FAIL_ERROR'));
+        }
         $this->getService(Redirector::class)->redirect((string)preg_replace('/(&|\\\?)$/m', '', (string)preg_replace('/(&|\\\?)action=logout(&)?/', '$1', $this->arguments['loggedouturl'])));
     }
 }
