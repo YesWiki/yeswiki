@@ -43,7 +43,9 @@ domaine, en dehors du `?` des pages du wiki :
 
 Sans règle de réécriture, ces adresses répondent 404 et l'abonnement depuis
 Mastodon échoue. L'adresse de l'acteur ne reprend que le domaine de la
-`base_url`, sans le sous-dossier éventuel du wiki.
+`base_url` : ActivityPub ne fonctionne que pour un wiki installé à la racine
+d'un domaine ou d'un sous-domaine. Dans un sous-dossier, deux wikis du même
+domaine donneraient le même identifiant `@agenda@monwiki.org`.
 
 Avec nginx, la configuration de l'image Docker
 ([`docker/nginx.conf`](https://github.com/YesWiki/yeswiki/blob/doryphore-dev/docker/nginx.conf))
@@ -57,10 +59,6 @@ RewriteEngine On
 RewriteRule ^actors/([0-9]+)(/[a-z]+)?$ index.php?wiki=api/forms/$1/actor$2 [L,QSA]
 RewriteRule ^\.well-known/webfinger$ index.php?wiki=api/webfinger [L,QSA]
 ```
-
-Pour un wiki installé dans un sous-dossier, `wiki/` par exemple, les mêmes
-règles vont dans le `.htaccess` de la racine du domaine, avec `wiki/index.php`
-à la place de `index.php`.
 
 Le paramètre `wiki` est nécessaire : YesWiki lit la page demandée dans l'adresse
 d'origine, qu'une réécriture Apache ne change pas. Certains hébergements
