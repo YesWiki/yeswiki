@@ -3,14 +3,9 @@ set -euo pipefail
 
 repo="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
-FRANKENPHP_VERSION="${FRANKENPHP_VERSION:-1.12.7}"
-# Pinned to a patch, not a minor. `spc download --with-php=8.4` resolves to whatever 8.4.x is
-# current on the day, so a minor here means two builds of the same tag ship two interpreters.
-PHP_VERSION="${PHP_VERSION:-8.4.24}"
+FRANKENPHP_VERSION="${FRANKENPHP_VERSION:-1.13.1}"
+PHP_VERSION="${PHP_VERSION:-8.5.12}"
 TARGETARCH="${TARGETARCH:-$(uname -m)}"
-# Upstream tests `[ -n "$COMPRESS" ]`, so **any** non-empty value means yes -- `COMPRESS=0` packs
-# the binary with UPX, which is the opposite of what it reads like and costs ten minutes. Normalise
-# here so this script's own contract is the obvious one: 1 compresses, anything falsy does not.
 case "${COMPRESS:-1}" in
     ''|0|no|false|off) COMPRESS='' ;;
     *) COMPRESS=1 ;;
@@ -23,35 +18,14 @@ BUILD_PROXY="${BUILD_PROXY:-${HTTPS_PROXY:-${https_proxy:-}}}"
 # shellcheck source=binary/build-manifest.sh
 . "$(dirname "${BASH_SOURCE[0]}")/build-manifest.sh"
 
-# Extensions PHP always compiles in, which static-php-cli therefore does not name.
 ALWAYS_COMPILED_IN="hash json pcre"
 
-# Optional in composer.json, required here: a static binary cannot add one later.
 ALWAYS_IN_THE_BINARY="opcache pdo_mysql pdo_pgsql pdo_sqlite intl"
 
-# Extensions that cannot be in a threaded build, whatever the manifest says. FrankenPHP is ZTS by
-# construction, and static-php-cli refuses ext-imap there: "not thread safe, do not build it with
-# ZTS builds". The IMAP importer therefore does not exist in the binary deployment.
 IMPOSSIBLE_IN_A_THREADED_BINARY="imap"
 
-# What gd is built against, matching docker/dockerfile.
 EXTENSION_LIBS="freetype,libjpeg,libwebp,libavif"
 
-# Caddy modules. Setting XCADDY_ARGS at all drops the three FrankenPHP includes by default,
-# so they are named again here, next to ours.
-# Two constraints, and getting either wrong fails 16 minutes in, at the xcaddy link.
-#
-# The path has to be a container path: the replacement is resolved inside the build, not here. The
-# Dockerfile's `COPY --link . ./` puts the context at /go/src/app, so staging the module at
-# <context>/$PLUGIN_DIR makes it /go/src/app/$PLUGIN_DIR there.
-#
-# And what `--with` names has to be a *module* whose root holds the plugin package, because xcaddy
-# turns it into both a `require` and an `import`. That is why this package sits at the module root
-# rather than in a caddy/ subdirectory: `github.com/YesWiki/yeswiki/binary/caddy` was a package
-# inside module `github.com/YesWiki/yeswiki/binary`, and go resolved it to a module rooted at a
-# directory with no .go files in it. Splitting caddy/ off into its own module does not work either
-# -- it would depend on the parent module, and a `replace` in a dependency is ignored, so xcaddy
-# would go to the network for a module that is not published.
 PLUGIN_DIR="yeswiki-binary"
 
 CADDY_MODULES=(
@@ -90,13 +64,7 @@ php_extensions() {
     printf '%s\n' "$(IFS=,; echo "${extensions[*]}")"
 }
 
-# static-php-cli asks the GitHub API for the current version of most of its dependencies, and
-# anonymous callers get 60 requests an hour per address. A build uses most of them, so the second
-# build of an afternoon fails part-way with a wall of `curl: (22) ... 403` and then a type error
-# out of Downloader::downloadFile -- which reads like a broken toolchain rather than a quota.
-#
-# CI passes a token (`release.yml`, `e2e.yml`) and never sees this. A laptop does. Say it before
-# the build starts rather than twenty minutes in.
+# Warns before the build when the anonymous GitHub API quota will not last it.
 warn_about_the_github_rate_limit() {
     if [ -n "${GITHUB_TOKEN:-}" ]; then
         printf 'github api: authenticated\n'
@@ -142,7 +110,6 @@ main() {
     git -C "$FRANKENPHP_SRC" fetch --depth 1 origin "refs/tags/v${FRANKENPHP_VERSION}:refs/tags/v${FRANKENPHP_VERSION}" >/dev/null 2>&1 || true
     git -C "$FRANKENPHP_SRC" checkout --quiet "v${FRANKENPHP_VERSION}"
 
-    # Excluding this checkout, which lives under the module being copied, and dist/.
     local staged="$FRANKENPHP_SRC/$PLUGIN_DIR"
     rm -rf "$staged"
     mkdir -p "$staged"
@@ -198,8 +165,6 @@ main() {
 
     chmod +x "$OUTPUT/yeswiki-linux-${TARGETARCH}"
 
-    # The same manifest beside the artefact, plus what only exists once it is built. This is what
-    # the repository index serves and what a field report can be checked against.
 stamp_build_manifest "$repo/binary/program/BUILD.json" "$OUTPUT/yeswiki-linux-${TARGETARCH}" \
         > "$OUTPUT/yeswiki-linux-${TARGETARCH}.build.json"
 

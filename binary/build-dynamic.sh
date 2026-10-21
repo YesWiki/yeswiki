@@ -3,7 +3,7 @@ set -euo pipefail
 
 repo="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
-FRANKENPHP_VERSION="${FRANKENPHP_VERSION:-1.12.7}"
+FRANKENPHP_VERSION="${FRANKENPHP_VERSION:-1.13.1}"
 OUTPUT="${OUTPUT:-$repo/binary/dist}"
 BINARY="${BINARY:-yeswiki-dev}"
 
@@ -29,15 +29,6 @@ main() {
 
     "$repo/binary/build-program.sh" >/dev/null
 
-    # The same manifest the shipped binary carries, so `version --build` answers here too and a
-    # dev build cannot be mistaken for a release one.
-    #
-    # The extension list is left EMPTY on purpose. A static build compiles its extensions in, so
-    # the list is a build input and stating it is the whole point. This one links the machine's
-    # libphp and resolves extensions at runtime -- and on a ZTS build it usually resolves none,
-    # because distribution .so files are compiled against non-ZTS PHP and fail with
-    # `undefined symbol: executor_globals`. Listing what the machine's *CLI* has would be a
-    # manifest that names extensions this binary cannot load, which is worse than naming none.
     write_build_manifest "$repo" "$FRANKENPHP_VERSION" "$(php-config --version)" "$(uname -m)" \
         "" "" "" "0" "dynamic-dev" \
         > "$repo/binary/program/BUILD.json"
