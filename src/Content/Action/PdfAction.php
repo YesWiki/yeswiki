@@ -92,6 +92,7 @@ class PdfAction extends YesWikiAction implements RegisteredAction, ProvidesCompo
     {
         if (
             empty($this->arguments['url'])
+            || !in_array(strtolower((string)parse_url($this->arguments['url'], PHP_URL_SCHEME)), ['http', 'https'], true)
             || (!in_array(parse_url($this->arguments['url'], PHP_URL_HOST), [$this->getRequest()->getHost(), 'www.' . $this->getRequest()->getHost()]))
                 || (
                     parse_url($this->arguments['url'], PHP_URL_PORT) == ''

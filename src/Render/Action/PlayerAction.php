@@ -32,6 +32,10 @@ class PlayerAction extends YesWikiAction implements RegisteredAction
     {
         $url = $this->getService(PerformableArguments::class)->get('url');
         $type = $this->getService(PerformableArguments::class)->get('type');
+        $scheme = strtolower((string)parse_url((string)preg_replace('/[\x00-\x20\x7f]+/', '', (string)$url), PHP_URL_SCHEME));
+        if (!empty($url) && !in_array($scheme, ['', 'http', 'https'], true)) {
+            $url = '';
+        }
 
         if (!empty($url)) {
             $height = $this->getService(PerformableArguments::class)->get('height');
@@ -55,7 +59,7 @@ class PlayerAction extends YesWikiAction implements RegisteredAction
                     . '<a href="' . htmlspecialchars($url) . '">' . htmlspecialchars($url) . '</a>'
                     . '</video>';
             } else {
-                echo '<div class="yw-alert yw-alert--danger"><strong>' . _t('ATTACH_ACTION_PLAYER') . '</strong> : ' . _t('ATTACH_PLAYER_CAN_ONLY_OPEN_FILES_LIKE') . ' (' . $url . ') ' . _t('ATTACH_NOT_LINKED_TO_GOOD_FILE_EXTENSION') . '.</div>' . "\n";
+                echo '<div class="yw-alert yw-alert--danger"><strong>' . _t('ATTACH_ACTION_PLAYER') . '</strong> : ' . _t('ATTACH_PLAYER_CAN_ONLY_OPEN_FILES_LIKE') . ' (' . htmlspecialchars($url) . ') ' . _t('ATTACH_NOT_LINKED_TO_GOOD_FILE_EXTENSION') . '.</div>' . "\n";
             }
         } else {
             echo '<div class="yw-alert yw-alert--danger"><strong>' . _t('ATTACH_ACTION_PLAYER') . '</strong> : '

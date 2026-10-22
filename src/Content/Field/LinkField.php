@@ -32,7 +32,6 @@ class LinkField extends BazarField
 
         $this->type = 'link';
         $this->maxChars = $this->maxChars ?? 255;
-        $this->default = $this->default ?? 'https://';
 
         $this->size = '';
         $this->displayVideo = ($values[self::FIELD_DISPLAYVIDEO] ?? '') === 'displayvideo';
@@ -49,7 +48,7 @@ class LinkField extends BazarField
     {
         $value = $this->getValue($entry);
 
-        return [$this->propertyName => $value !== 'https://' ? $value : null];
+        return [$this->propertyName => in_array($value, ['http://', 'https://'], true) ? null : $value];
     }
 
     public function getDisplayVideo(): bool
