@@ -88,7 +88,7 @@ $(document).ready(() => {
         bgimg.lastIndexOf('/') + 1,
         bgimg.length - bgimg.lastIndexOf('/'),
       )
-      bgimg = bgimg.replace('"', '').replace(')', '')
+      bgimg = bgimg.replace(/["')]/g, '')
     } else if (typeof imgsrc === 'string') {
       bgimg = imgsrc.substr(
         imgsrc.lastIndexOf('/') + 1,

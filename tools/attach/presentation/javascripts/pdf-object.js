@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
   pdfContainers.forEach((container) => {
     const pdfUrl = container.getAttribute('data-pdf')
 
-    if (!pdfUrl) return
+    if (!pdfUrl || !/^https?:\/\//i.test(pdfUrl)) return
 
     const fallback = document.createElement('div')
     fallback.className = 'pdf-fallback'

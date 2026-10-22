@@ -18,7 +18,7 @@ function reloadGererDroits(elem) {
     if (params.length > 0) {
       params = `${params}&`
     }
-    params = `${params}filter=${value}`
+    params = `${params}filter=${encodeURIComponent(value)}`
   }
   window.location = baseUrl + (params.length > 0 ? `?${params}` : '')
 }

@@ -86,7 +86,7 @@ $(document).ready(() => {
         .removeClass('btn-danger')
         .addClass('btn-add-point')
         .addClass('btn-primary')
-        .html(`<i class="fa fa-plus icon-plus"></i> ${labeladdpoint}</a>`)
+        .html(`<i class="fa fa-plus icon-plus"></i> ${escHtml(labeladdpoint)}`)
       $(this)
         .parents('.pointimage-container')
         .find('img')
