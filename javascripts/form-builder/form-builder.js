@@ -702,7 +702,8 @@ function renderCard(field) {
         type: field.type,
         data: { ...field.data, handle: newHandle() },
       }
-      if (copy.data.name) copy.data.name = uniqueName(copy.data.name)
+      if (copy.data.name && !attributeDefs(configFor(copy.type)).name?.options)
+        copy.data.name = uniqueName(copy.data.name)
       fields.splice(index + 1, 0, copy)
       syncToTextarea()
       renderCanvas()

@@ -53,6 +53,7 @@ export function refreshDesignerData(container) {
   })
   replaceEntries(readConf.options, { ...visibilityOptions, ...groupOptions })
   replaceEntries(writeConf.options, { ...visibilityOptions, ...groupOptions })
+  replaceEntries(linkedFormConf.options, { ...formAndListIds.forms })
   replaceEntries(selectConf.linked_object.options, {
     '': '',
     ...formAndListIds.lists,
@@ -73,6 +74,16 @@ export const writeConf = {
   options: { ...visibilityOptions },
   multiple: true,
   exclusive: ['*', '+'],
+}
+
+export const linkedFormConf = {
+  label: _t('BAZ_FORM_EDIT_LISTEFICHES_FORMID_LABEL'),
+  options: {},
+}
+
+/** Keeps a form id missing from the wiki selectable on the linked entries field. */
+export function linkedFormEditorSetup(api) {
+  api.setOptions('name', linkedFormConf.options)
 }
 
 export const searchableConf = {

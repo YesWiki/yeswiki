@@ -1,4 +1,9 @@
-import { readConf, writeConf } from './commons/attributes.js'
+import {
+  readConf,
+  writeConf,
+  linkedFormConf,
+  linkedFormEditorSetup,
+} from './commons/attributes.js'
 
 export default {
   field: {
@@ -8,7 +13,7 @@ export default {
     icon: '<svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#list-details"/></svg>',
   },
   attributes: {
-    name: { label: _t('BAZ_FORM_EDIT_LISTEFICHES_FORMID_LABEL'), value: '' },
+    name: linkedFormConf,
     query: {
       label: _t('BAZ_FORM_EDIT_LISTEFICHES_QUERY_LABEL'),
       value: '',
@@ -54,4 +59,5 @@ export default {
     'add_entry_btn_label',
   ],
   disabledAttributes: ['required', 'default'],
+  editorSetup: linkedFormEditorSetup,
 }

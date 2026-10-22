@@ -115,7 +115,7 @@
       body.innerHTML = '<span class="yw-modal__loading"></span>'
       const fragmentSelector =
         opener.getAttribute('data-yw-modal-fragment') || '.page'
-      fetch(url)
+      fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
         .then((response) => {
           if (!response.ok) throw new Error(`HTTP ${response.status}`)
           return response.text()
@@ -124,6 +124,9 @@
           const doc = new DOMParser().parseFromString(html, 'text/html')
           loadMissingAssets(doc)
           const target = doc.querySelector(fragmentSelector) || doc.body
+          target
+            .querySelectorAll('.yw-editbar')
+            .forEach((editbar) => editbar.remove())
           body.innerHTML = target ? target.innerHTML : ''
           document.dispatchEvent(new CustomEvent('yw-modal-open'))
         })

@@ -86,7 +86,7 @@ class ShareHandler extends YesWikiHandler implements RegisteredHandler
         </div>
         ';
 
-        if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
+        if ($this->getRequest()->isXmlHttpRequest()) {
             echo '<div class="page">' . "\n" . $html . "\n" . '</div>';
         } else {
             echo $this->getService(TemplateEngine::class)->renderPage(
