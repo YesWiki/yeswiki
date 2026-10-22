@@ -16,7 +16,7 @@
             <template v-if="filters.length > 0 && params.resetfiltersbutton">
                 <button type="button" class="yw-btn yw-btn--sm yw-btn--quiet reset-filters"
                       @click="resetFilters()"
-                      :class="{'btn-block': params.filtercolsize < 4}">{{ icon('x') }} {{ _t("BAZ_RESET_FILTERS") }}</button>
+                      :class="{'btn-block': params.filtercolsize < 4 && params.filterposition != 'top'}">{{ icon('x') }} {{ _t("BAZ_RESET_FILTERS") }}</button>
             </template>
         </div>
 
@@ -47,10 +47,21 @@
         </div>
 
         <div class="results-container">
-            <Panel class="filter-box" v-for="filter, key in filters" :collapsed.sync="filter.collapsed" :key="key">
+            <Panel class="filter-box" :class="{'yw-facet-select': params.filterposition == 'top'}"
+                   :dropdown="params.filterposition == 'top'"
+                   v-for="filter, key in filters" :collapsed.sync="filter.collapsed" :key="key">
             <template #header>
-                <i v-html="filter.icon" v-show="filter.icon"></i>
-                {{"{{ filter.title }}"}}
+                <template v-if="params.filterposition == 'top'">
+                    <span class="yw-facet-select__label">{{"{{ filter.title }}"}}</span>
+                    <span class="yw-tag-input yw-facet-select__box">
+                        <span class="yw-tag-input__chip" v-for="node in filter.flattenNodes.filter((node) => node.checked)" :key="node.value" v-html="node.label"></span>
+                        <span class="yw-facet-select__placeholder" v-if="!filter.flattenNodes.some((node) => node.checked)">{{ _t('BAZ_FILTER_CHOOSE') }}</span>
+                    </span>
+                </template>
+                <template v-else>
+                    <i v-html="filter.icon" v-show="filter.icon"></i>
+                    {{"{{ filter.title }}"}}
+                </template>
             </template>
             <template #body>
                 <div class="filter-nodes">

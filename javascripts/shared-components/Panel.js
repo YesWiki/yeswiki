@@ -14,6 +14,10 @@ export default {
       type: Boolean,
       default: true,
     },
+    dropdown: {
+      type: Boolean,
+      default: false,
+    },
   },
   emits: ['update:collapsed', 'opened'],
   components: { CollapseTransition },
@@ -34,12 +38,31 @@ export default {
       this.$emit('update:collapsed', this.internalCollapsed)
       if (!this.internalCollapsed) this.$emit('opened')
     },
+    close() {
+      if (this.internalCollapsed) return
+      this.internalCollapsed = true
+      this.$emit('update:collapsed', true)
+    },
+    closeFromOutside(event) {
+      if (!this.$el.contains(event.target)) this.close()
+    },
+    closeOnEscape(event) {
+      if (event.key === 'Escape') this.close()
+    },
   },
   beforeMount() {
     this.internalCollapsed = this.collapsed
   },
+  mounted() {
+    if (!this.dropdown) return
+    document.addEventListener('click', this.closeFromOutside)
+    this.$el.addEventListener('keydown', this.closeOnEscape)
+  },
+  beforeUnmount() {
+    document.removeEventListener('click', this.closeFromOutside)
+  },
   template: `
-    <div class="panel" :class="[panelClass, {collapsed: internalCollapsed}]">
+    <div class="panel" :class="[panelClass, {collapsed: internalCollapsed, 'panel--dropdown': dropdown}]">
       <button type="button" class="panel-heading" :class="{collapsed: internalCollapsed}"
            :aria-expanded="collapsable ? String(!internalCollapsed) : null"
            :data-toggle="collapsable ? 'collapse' : ''"
