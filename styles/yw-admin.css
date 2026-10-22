@@ -107,10 +107,6 @@
   margin-top: var(--yw-space-lg-y);
 }
 
-.yw-table-scroll {
-  overflow-x: auto;
-}
-
 .yw-source__head {
   display: flex;
   align-items: baseline;

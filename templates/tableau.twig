@@ -59,6 +59,9 @@
           {% elseif info.key is not empty %}
             {% set val = (info.key in val|split(',')) ? 'X' : '' %}
             {% set exportval = val %}
+          {% elseif info.htmlAsText %}
+            {% set val = val|html_to_text %}
+            {% set exportval = val %}
           {% endif %}
           <td data-sort="{{ exportval }}">
             {% if loop.first %}

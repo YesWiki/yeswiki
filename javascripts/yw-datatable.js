@@ -98,6 +98,14 @@
 
     const tbody = table.tBodies[0]
     if (!tbody) return
+
+    let scroller = table.parentElement
+    if (!scroller.classList.contains('yw-table-scroll')) {
+      scroller = document.createElement('div')
+      scroller.className = 'yw-table-scroll'
+      table.before(scroller)
+      scroller.append(table)
+    }
     const allRows = Array.from(tbody.rows)
     const headerCells = table.tHead ? Array.from(table.tHead.rows[0].cells) : []
 
@@ -171,14 +179,14 @@
         })
       }
 
-      table.parentNode.insertBefore(toolbar, table)
+      scroller.before(toolbar)
     }
 
     let paginationEl = null
     if (!noPaginate) {
       paginationEl = document.createElement('ul')
       paginationEl.className = 'yw-pagination yw-datatable__pagination'
-      table.parentNode.insertBefore(paginationEl, table.nextSibling)
+      scroller.after(paginationEl)
     }
 
     const emptyRow = document.createElement('tr')

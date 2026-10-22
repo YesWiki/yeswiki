@@ -529,6 +529,13 @@ class TemplateEngine
             return preg_replace($pattern, $replacement, (string)$subject);
         }));
 
+        $this->twig->addFilter(new \Twig\TwigFilter('html_to_text', function ($html): string {
+            $text = (string)preg_replace('~<br\s*/?>|</(p|div|li|h[1-6]|tr|blockquote)>~i', "\n", (string)$html);
+            $text = html_entity_decode(strip_tags($text), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+
+            return trim((string)preg_replace("~[ \t]*\n\s*\n+~", "\n", $text));
+        }));
+
         $this->twig->addFilter(new \Twig\TwigFilter('moment', function ($stamp, string $format = 'LL'): string {
             if (!is_string($stamp) || trim($stamp) === '') {
                 return '';

@@ -2287,6 +2287,7 @@ ywInitEach(\'#osmmap' . $params['listindex'] . '\', function() {
             'key' => null,
             'mapFieldId' => null,
             'multivalues' => $field instanceof CheckboxField,
+            'htmlAsText' => $field instanceof TextareaField && $field->getSyntax() === TextareaField::SYNTAX_HTML,
         ] + ($displayImagesAsThumbnails && $field instanceof ImageField ? ['imageAsThumbnail' => true] : [])];
     }
 

@@ -5,6 +5,7 @@ namespace YesWiki\Content\Service;
 use Psr\Container\ContainerInterface;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use YesWiki\Content\Controller\EntryController;
+use YesWiki\Content\Field\BazarField;
 use YesWiki\Content\Field\EnumField;
 use YesWiki\Files\Service\AttachedFilePaths;
 use YesWiki\Files\Service\Storage;
@@ -241,6 +242,7 @@ class BazarListService
                 'collapsed' => true,
             ];
 
+            $field = null;
             if (str_contains($propName, $linkedSep)) {
                 $field = $propName;
             } else {
@@ -250,6 +252,11 @@ class BazarListService
                         break;
                     }
                 }
+            }
+
+            $guardingField = $field instanceof BazarField || is_string($field) ? $field : $this->formManager->findFieldWithId($formIdsUsed, $propName);
+            if ($guardingField instanceof BazarField && !$this->readableInOneOf($guardingField, $entries)) {
+                continue;
             }
 
             if (!empty($field) && $field instanceof EnumField) {
@@ -323,7 +330,7 @@ class BazarListService
                 $filter['title'] = $options['titles'][$index];
             }
 
-            $filter['collapsed'] = ($index != 0) && !$options['groupsexpanded'];
+            $filter['collapsed'] = ($index != 0 || ($options['filterposition'] ?? '') === 'top') && !$options['groupsexpanded'];
 
             if ($options['dynamic'] == false) {
                 $checkedValues = $this->checkedFacets();
@@ -350,6 +357,22 @@ class BazarListService
         }
 
         return $filters;
+    }
+
+    /**
+     * Whether the reader may read this field in at least one of the listed entries, which is what offering a facet over it reveals.
+     *
+     * @param array<array<string, mixed>> $entries
+     */
+    private function readableInOneOf(BazarField $field, array $entries): bool
+    {
+        foreach ($entries as $entry) {
+            if ($field->canRead($entry)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**

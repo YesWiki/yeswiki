@@ -5,6 +5,7 @@ namespace YesWiki\Test\Handlers;
 use Symfony\Component\HttpFoundation\Request;
 use YesWiki\Content\Entity\ContentTypeSchema;
 use YesWiki\Content\Entity\PageBody;
+use YesWiki\Content\Service\EntryManager;
 use YesWiki\Content\Service\FormManager;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Identity\Service\AclService;
@@ -57,6 +58,7 @@ class FormScreenTest extends YesWikiTestCase
                 'label' => self::FORM_LABEL,
                 'template' => [
                     ['type' => 'texte', 'name' => 'bf_titre', 'label' => 'Titre', 'sub_type' => 'text', 'required' => '1'],
+                    ['type' => 'textelong', 'name' => 'bf_presentation', 'label' => 'Présentation', 'syntax' => 'html'],
                 ],
                 'entry_title_template' => '{{bf_titre}}',
             ]);
@@ -132,6 +134,24 @@ class FormScreenTest extends YesWikiTestCase
         $this->assertStringContainsString(self::PAGE_TITLE, $table, 'the probe page is missing from the table');
         $this->assertStringNotContainsString(self::MARKUP_SENTINEL, $table, 'the table rendered a page\'s markup');
         $this->assertStringContainsString('yw-list-toolbar', $table, 'a nested list took the search box away');
+    }
+
+    public function testTheTableShowsRichTextAsTextAndCountsOnce(): void
+    {
+        $GLOBALS['wiki'] = $this->wiki;
+        $entryManager = $this->wiki->services->get(EntryManager::class);
+        $this->assertNotNull($this->form);
+        $entry = $entryManager->create($this->form['id'], ['antispam' => 1, 'bf_titre' => 'Rich probe', 'bf_presentation' => '<p>Pionnière &amp; <strong>autrice</strong><br /></p>']);
+
+        try {
+            $table = $this->runHandler('show', self::FORM_TAG, ['display' => 'table']);
+        } finally {
+            $entryManager->delete($entry['tag'], true);
+        }
+
+        $this->assertStringContainsString('Pionnière &amp; autrice', $table);
+        $this->assertStringNotContainsString('&lt;p&gt;', $table, 'the cell shows the field\'s markup');
+        $this->assertStringNotContainsString('<div class="alert alert-info">' . _t('BAZ_IL_Y_A'), $table, 'the table counts the entries a second time');
     }
 
     public function testAFacetOverAListValuedFieldMatchesItsValues(): void

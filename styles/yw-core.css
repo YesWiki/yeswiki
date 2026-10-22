@@ -3186,6 +3186,7 @@ blockquote > cite {
 .form-screen__actions {
   display: flex;
   flex-wrap: wrap;
+  align-self: center;
   align-items: center;
   justify-content: flex-end;
   gap: var(--yw-space-sm-y) var(--yw-space-sm-x);
@@ -3194,6 +3195,11 @@ blockquote > cite {
 .form-screen__formats {
   flex-basis: 100%;
   justify-content: flex-end;
+}
+
+.yw-table-scroll {
+  max-width: 100%;
+  overflow-x: auto;
 }
 
 .yw-datatable__toolbar {
