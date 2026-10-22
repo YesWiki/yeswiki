@@ -11,6 +11,7 @@ final class Starter
      * @param array<string, string>                                              $pages
      * @param list<array{tag: string, title: string, nodes: list<array<mixed>>}> $menus
      * @param array{label: string, link: string}                                 $navigation
+     * @param string|null                                                        $activityPubUsername the fediverse account the form becomes when the wiki publishes there
      */
     public function __construct(
         public readonly string $slug,
@@ -22,6 +23,7 @@ final class Starter
         public readonly array $pages,
         public readonly array $menus,
         public readonly array $navigation,
+        public readonly ?string $activityPubUsername = null,
     ) {
     }
 
@@ -49,6 +51,7 @@ final class Starter
             array_combine(array_map('strval', array_keys($pages)), array_values($pages)),
             self::rows($data['menus'] ?? []),
             ['label' => $navigation['label'], 'link' => $navigation['link']],
+            is_string($data['activitypub_username'] ?? null) && $data['activitypub_username'] !== '' ? $data['activitypub_username'] : null,
         );
     }
 

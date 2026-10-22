@@ -29,7 +29,8 @@ class OnboardingCommand extends Command
             ->setHelp("With no starter named, the wiki starts empty. --all creates every Starter the Program ships.\n"
                 . 'Does nothing once the home page exists.')
             ->addArgument('starters', InputArgument::IS_ARRAY, 'Starter slugs, e.g. annuaire agenda')
-            ->addOption('all', null, InputOption::VALUE_NONE, 'Create every Starter');
+            ->addOption('all', null, InputOption::VALUE_NONE, 'Create every Starter')
+            ->addOption('activitypub', null, InputOption::VALUE_NONE, 'Publish the blog and the calendar on the fediverse (ActivityPub)');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
@@ -46,7 +47,7 @@ class OnboardingCommand extends Command
         $slugs = $input->getOption('all') ? array_keys($onboarding->starters()) : $input->getArgument('starters');
 
         try {
-            $onboarding->apply($slugs);
+            $onboarding->apply($slugs, (bool)$input->getOption('activitypub'));
         } catch (\InvalidArgumentException $unknown) {
             $output->writeln('<error>' . $unknown->getMessage() . '. Known: ' . implode(', ', array_keys($onboarding->starters())) . '</error>');
 

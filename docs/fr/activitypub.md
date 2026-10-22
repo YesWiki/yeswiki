@@ -32,6 +32,54 @@ Ce bouton ouvre une page en trois onglets : profil, abonnements et abonnés. Le
 compte n'existe pour les autres serveurs qu'une fois un nom d'utilisateur
 choisi et le profil enregistré.
 
+## Configurer le serveur web
+
+Les autres serveurs du fédivers cherchent un compte à deux adresses, toujours à
+la racine du domaine :
+
+- `/.well-known/webfinger?resource=acct:blog@monwiki.org`, qui transforme
+  l'identifiant `@blog@monwiki.org` en adresse du compte ;
+- `/actors/<identifiant du formulaire>`, le compte lui-même, avec ses boîtes
+  `/inbox` et `/outbox` et ses collections `/followers` et `/following`.
+
+Le wiki doit donc être servi à la racine de son domaine (`https://monwiki.org/`
+et non `https://exemple.org/monwiki/`). Dans un sous-dossier, deux wikis du même
+domaine auraient le même identifiant `@blog@monwiki.org`.
+
+Le serveur web doit aussi transmettre ces deux adresses au wiki. Le binaire le
+fait tout seul, et la configuration nginx fournie dans `docker/nginx.conf`
+aussi :
+
+```nginx
+location ~ ^/actors/(\d+)(/(?:outbox|inbox|followers|following))?$ {
+    include fastcgi_params;
+    fastcgi_param SCRIPT_FILENAME $document_root/index.php;
+    fastcgi_param QUERY_STRING "api/forms/$1/actor$2";
+    fastcgi_param REQUEST_URI "/?api/forms/$1/actor$2";
+    fastcgi_pass php-handler;
+}
+
+location = /.well-known/webfinger {
+    return 301 /?api/webfinger&$args;
+}
+```
+
+Derrière un autre serveur web, il faut écrire l'équivalent. Pour vérifier,
+`https://monwiki.org/actors/2` et
+`https://monwiki.org/.well-known/webfinger?resource=acct:agenda@monwiki.org`
+doivent répondre en JSON.
+
+Si l'une des deux adresses ne répond pas, la page ActivityPub du formulaire et
+l'action `entryfollow` affichent un avertissement aux administrateurs. Il dit
+laquelle manque. Un wiki installé dans un sous-dossier reçoit un autre
+avertissement, car aucune règle ne peut le rendre joignable.
+
+À la création du wiki, l'écran d'accueil propose de publier le blog et l'agenda
+sur le fédivers. La case active ActivityPub sur ces deux formulaires, avec les
+noms d'utilisateur `blog` et `agenda`. Elle est cochée d'office quand le wiki
+est à la racine de son domaine. En ligne de commande, c'est l'option
+`--activitypub` de `./yeswicli onboarding:apply`.
+
 ## Profil du compte
 
 L'onglet "Profil" règle ce que voient les personnes qui consultent ou suivent le
@@ -126,8 +174,8 @@ profil. YesWiki signe donc avec la clé du formulaire toutes ses requêtes vers
 les autres serveurs : lecture des profils, des clés et des boîtes d'envoi.
 
 Le serveur web doit faire suivre les adresses `/actors/…` et
-`/.well-known/webfinger` à YesWiki. Le binaire et la configuration nginx
-fournie le font déjà.
+`/.well-known/webfinger` à YesWiki (voir
+[Configurer le serveur web](#configurer-le-serveur-web)).
 
 Dans une boîte d'envoi GoToSocial, les objets sont souvent donnés par leur
 seule adresse. La synchronisation va alors chercher chaque objet, s'il est sur

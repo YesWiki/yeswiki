@@ -5,6 +5,7 @@
  */
 
 use YesWiki\Core\YesWikiLoader;
+use YesWiki\Kernel\Service\AfterResponse;
 use YesWiki\Kernel\Service\AssetPublisher;
 
 require_once __DIR__ . '/src/bootstrap_paths.php';
@@ -17,6 +18,8 @@ if (!function_exists('frankenphp_handle_request')) {
 }
 
 $wiki = YesWikiLoader::getWiki();
+$afterResponse = $wiki->services->get(AfterResponse::class);
+$afterResponse->drainedByWorker();
 
 $requestsBeforeRestart = (int)(getenv('YESWIKI_WORKER_REQUESTS') ?: 500);
 $served = 0;
@@ -49,7 +52,9 @@ while ($served < $requestsBeforeRestart) {
         break;
     }
 
-    if (!frankenphp_handle_request($handler)) {
+    $keepServing = frankenphp_handle_request($handler);
+    $afterResponse->run();
+    if (!$keepServing) {
         break;
     }
     $served++;

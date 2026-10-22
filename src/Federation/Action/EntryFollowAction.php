@@ -6,6 +6,7 @@ use YesWiki\Content\Service\FormManager;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Federation\Service\ActivityPubService;
 use YesWiki\Federation\Service\WebFingerService;
+use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\Redirector;
 
@@ -50,6 +51,7 @@ class EntryFollowAction extends YesWikiAction implements RegisteredAction
             'form' => $form,
             'formHandle' => $formHandle,
             'error' => $error,
+            'routes' => $this->getService(AclService::class)->isAdmin() ? $activityPubService->routesToCheck($form) : null,
         ]);
     }
 }

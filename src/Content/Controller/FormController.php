@@ -932,6 +932,7 @@ class FormController extends YesWikiController
             'suggestedUsername' => mb_substr(trim((string)preg_replace('/[^a-z0-9]+/', '_', strtolower((string)iconv('UTF-8', 'ASCII//TRANSLIT', $label))), '_'), 0, 30),
             'domain' => parse_url($this->getService(UrlFormatter::class)->getBaseUrl(), PHP_URL_HOST),
             'actorUri' => $this->activityPubService->getFormActorUri($form),
+            'routes' => $this->activityPubService->routesToCheck($form),
             'isEnabled' => $this->activityPubService->isEnabled($form),
             'followers' => $this->activityPubService->getFollowers($form),
             'followRequests' => $followRequests,

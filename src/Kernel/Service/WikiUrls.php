@@ -16,6 +16,14 @@ class WikiUrls
         return $protocol . $_SERVER['HTTP_HOST'];
     }
 
+    /** Whether a base url serves the wiki from the root of its domain, the only place ActivityPub actors and WebFinger can live. */
+    public static function isDomainRoot(string $baseUrl): bool
+    {
+        $path = (string)parse_url($baseUrl, PHP_URL_PATH);
+
+        return in_array(preg_replace('~/(index|wakka)\.php$~', '/', $path), ['', '/'], true);
+    }
+
     /** The address of the request being served, in full. */
     public static function absoluteUrl(): string
     {

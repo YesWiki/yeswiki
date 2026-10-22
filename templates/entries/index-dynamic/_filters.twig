@@ -14,10 +14,9 @@
             </span>
 
             <template v-if="filters.length > 0 && params.resetfiltersbutton">
-                <button type="button" class="btn btn-xs btn-info reset-filters pull-right"
+                <button type="button" class="yw-btn yw-btn--sm yw-btn--quiet reset-filters"
                       @click="resetFilters()"
-                      :class="{'btn-block': params.filtercolsize < 4}">{{ _t("BAZ_RESET_FILTERS") }}</button>
-                <div class="clearfix"></div>
+                      :class="{'btn-block': params.filtercolsize < 4}">{{ icon('x') }} {{ _t("BAZ_RESET_FILTERS") }}</button>
             </template>
         </div>
 

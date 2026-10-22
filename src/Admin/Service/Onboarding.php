@@ -10,6 +10,7 @@ use YesWiki\Content\Entity\PageType;
 use YesWiki\Content\Service\FormManager;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Files\Service\ProgramFiles;
+use YesWiki\Kernel\Service\WikiUrls;
 use YesWiki\Render\Service\LayoutService;
 
 /** The first screen of a fresh wiki: the Starters it offers, and what choosing them creates. */
@@ -41,6 +42,14 @@ class Onboarding
         return is_string($rootPage) ? $rootPage : '';
     }
 
+    /** Whether publishing on the fediverse is offered ticked, which it is when the wiki sits at the root of its domain. */
+    public function publishesOnTheFediverseByDefault(): bool
+    {
+        $baseUrl = $this->params->get('base_url');
+
+        return WikiUrls::isDomainRoot(is_string($baseUrl) ? $baseUrl : '');
+    }
+
     /**
      * Every Starter shipped with the Program, by slug.
      *
@@ -65,10 +74,11 @@ class Onboarding
      * Create the chosen Starters and the home page, which ends the onboarding.
      *
      * @param list<string> $slugs
+     * @param bool         $onTheFediverse whether the Starters that name an ActivityPub account get it
      *
      * @throws \InvalidArgumentException
      */
-    public function apply(array $slugs): void
+    public function apply(array $slugs, bool $onTheFediverse = false): void
     {
         $starters = $this->starters();
         $unknown = array_diff($slugs, array_keys($starters));
@@ -79,7 +89,7 @@ class Onboarding
         $links = [];
         $navigation = [];
         foreach (array_values(array_unique($slugs)) as $slug) {
-            $this->create($starters[$slug]);
+            $this->create($starters[$slug], $onTheFediverse);
             $links[] = $starters[$slug]->navigation;
             $navigation[] = ['id' => 'starter-' . $slug] + $starters[$slug]->navigation;
         }
@@ -88,7 +98,7 @@ class Onboarding
         $this->pageManager->save($this->rootPage(), [PageBody::CONTENT => $this->homePage($links)], '', true, null, PageType::PAGE);
     }
 
-    private function create(Starter $starter): void
+    private function create(Starter $starter, bool $onTheFediverse): void
     {
         foreach ($starter->lists as $list) {
             $this->saveIfFree($list['tag'], ['title' => $list['title'], 'nodes' => $list['nodes']], PageType::LIST);
@@ -98,7 +108,10 @@ class Onboarding
         if (!(is_int($formId) || is_string($formId)) || $formId === '' || $this->formManager->getOne($formId) !== null) {
             $formId = $this->formManager->findNewId();
         }
-        $this->formManager->create(['id' => $formId] + $starter->form);
+        $federation = $onTheFediverse && $starter->activityPubUsername !== null
+            ? ['activitypub_enable' => '1', 'activitypub_username' => $starter->activityPubUsername]
+            : [];
+        $this->formManager->create(['id' => $formId] + $federation + $starter->form);
 
         foreach ($starter->pages as $tag => $content) {
             $this->saveIfFree($tag, [PageBody::CONTENT => str_replace(self::FORM_ID_PLACEHOLDER, (string)$formId, $content)], PageType::PAGE);

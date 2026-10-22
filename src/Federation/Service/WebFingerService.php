@@ -85,6 +85,8 @@ class WebFingerService
                 'Accept' => 'application/json',
             ],
             'max_redirects' => 0,
+            'timeout' => HttpSignatureService::TIMEOUT,
+            'max_duration' => HttpSignatureService::MAX_DURATION,
             'resolve' => $resolve,
         ]);
 

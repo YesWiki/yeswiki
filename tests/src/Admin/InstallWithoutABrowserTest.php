@@ -216,6 +216,43 @@ class InstallWithoutABrowserTest extends YesWikiTestCase
         }
     }
 
+    public function testTheOnboardingCanPublishTheBlogOnTheFediverse(): void
+    {
+        $dir = $this->instanceDir() . '-fediverse';
+        mkdir($dir, 0o755, true);
+
+        try {
+            $installed = $this->install($dir, [
+                '--driver=sqlite',
+                '--base-url=https://federated.test/?',
+                '--root-page=PagePrincipale',
+                '--wiki-name=Federated',
+                '--admin-name=WikiAdmin',
+                '--admin-email=admin@example.tld',
+                '--admin-password=InstalledFromTheTerminal',
+            ]);
+            $this->assertSame(0, $installed['status'], $installed['out']);
+
+            $applied = $this->console($dir, 'onboarding:apply', ['--activitypub', 'blog', 'annuaire']);
+            $this->assertSame(0, $applied['status'], $applied['out']);
+
+            $db = new \PDO('sqlite:' . $dir . '/private/yeswiki.db');
+            $statement = $db->query("SELECT body, metadata FROM yeswiki_pages WHERE latest = 'Y' AND type = 'form'");
+            $this->assertNotFalse($statement);
+            $federation = [];
+            foreach ($statement->fetchAll(\PDO::FETCH_ASSOC) as $row) {
+                $label = (string)(json_decode((string)$row['body'], true)['label'] ?? '');
+                $federation[$label] = json_decode((string)$row['metadata'], true)['activitypub'] ?? [];
+            }
+
+            $this->assertSame('1', $federation['Blog-actu']['enabled'] ?? null);
+            $this->assertSame('blog', $federation['Blog-actu']['username'] ?? null);
+            $this->assertNotSame('1', $federation['Annuaire']['enabled'] ?? null, 'a Starter without an account stays off the fediverse');
+        } finally {
+            $this->removeInstance($dir);
+        }
+    }
+
     public function testItRefusesToInstallOverAWikiThatIsAlreadyThere(): void
     {
         $dir = $this->instanceDir() . '-twice';

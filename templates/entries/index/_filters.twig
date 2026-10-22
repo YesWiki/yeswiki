@@ -25,16 +25,15 @@
         <span class="results-label">{{ numEntries > 1 ? _t('BAZ_FICHES_CORRESPONDANTES_FILTRES') : _t('BAZ_FICHE_CORRESPONDANT_FILTRES') }}</span>
       {% endif %}
       {% if params.resetfiltersbutton %}
-        <a class="btn btn-xs btn-info reset-filters pull-right {{ params.filtercolsize < 4 and not horizontal ? "btn-block": "" }}"
+        <a class="yw-btn yw-btn--sm yw-btn--quiet reset-filters {{ params.filtercolsize < 4 and not horizontal ? "btn-block": "" }}"
            href="{{ facetForm.url }}"
            hx-get="{{ facetForm.url }}"
            hx-target="#facette-container-{{ listId }}"
            hx-select="#facette-container-{{ listId }}"
            hx-swap="outerHTML"
            hx-push-url="true">
-          {{ _t('BAZ_RESET_FILTERS') }}
+          {{ icon('x') }} {{ _t('BAZ_RESET_FILTERS') }}
         </a>
-        <div class="clearfix"></div>
       {% endif %}
     </div>
     {% if params.filtertext %}

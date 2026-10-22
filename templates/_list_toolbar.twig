@@ -1,8 +1,5 @@
-{#
-  The two lines every list has: the search box beside the sort and the presentation switch, then the facets and the exports.
-  `hidden` carries the query the row must keep; `inputAttrs`, `controlAttrs` and `buttonAttrs` say how each control fires (a form submit, or an htmx request).
-  `facets` and `exports` are slots: HTML the caller renders, or leaves for an out-of-band swap to fill.
-#}
+{# Every list's toolbar: search, sort, presentation switch and exports on one row, then the facets.
+   `inputAttrs`, `controlAttrs` and `buttonAttrs` say how each control fires; `facets` and `exports` are HTML slots. #}
 {% set sortOptions = sortOptions|default([
   { value: 'title:asc', label: _t('SORT_TITLE_ASC') },
   { value: 'title:desc', label: _t('SORT_TITLE_DESC') },
@@ -67,11 +64,12 @@
           </div>
         {% endfor %}
       </fieldset>
+
+      {{ exports|default('')|raw }}
     </div>
   </div>
 
   <div class="yw-list-toolbar__filters">
-    {{ facets|default('')|raw }}
-    {{ exports|default('')|raw }}
+    {{- facets|default('')|raw -}}
   </div>
 </form>

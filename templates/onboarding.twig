@@ -13,6 +13,11 @@
           </label>
         {% endfor %}
       </div>
+      <label class="yw-onboarding__federation">
+        <input type="checkbox" name="activitypub" value="1"{% if activitypub_by_default %} checked{% endif %}>
+        <span>{{ _t('ONBOARDING_ACTIVITYPUB') }}</span>
+        <span class="yw-onboarding__description">{{ _t('ONBOARDING_ACTIVITYPUB_HELP') }}</span>
+      </label>
       <div class="yw-onboarding__actions">
         <button type="submit" class="yw-btn yw-btn--primary">{{ _t('ONBOARDING_CREATE') }}</button>
         <button type="submit" name="empty" value="1" class="yw-btn">{{ _t('ONBOARDING_EMPTY') }}</button>

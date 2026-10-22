@@ -6,8 +6,10 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpClient\HttpClient;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use YesWiki\Content\Service\SemanticTransformer;
+use YesWiki\Kernel\Service\AfterResponse;
 use YesWiki\Kernel\Service\SsrfUrlValidator;
 use YesWiki\Kernel\Service\TripleStore;
+use YesWiki\Kernel\Service\WikiUrls;
 
 /** Each form as an ActivityPub actor: its profile, its key, who it follows and who follows it. */
 class ActivityPubService
@@ -26,6 +28,7 @@ class ActivityPubService
         protected ActivityPubKeyStore $keyStore,
         protected ActivityPubProfiles $profiles,
         protected ActivityPubLog $log,
+        protected AfterResponse $afterResponse = new AfterResponse(),
     ) {
         $this->httpClient = HttpClient::create();
     }
@@ -81,6 +84,28 @@ class ActivityPubService
         $host = is_array($parsed) ? ($parsed['host'] ?? '') : '';
 
         return $scheme . '://' . $host . '/actors/' . $form['id'];
+    }
+
+    /**
+     * What an admin's browser fetches to check that the web server passes WebFinger and the actor on to the wiki.
+     *
+     * @param array<string, mixed> $form
+     *
+     * @return array{atDomainRoot: bool, webfinger: string, actor: string}
+     */
+    public function routesToCheck(array $form): array
+    {
+        $baseUrl = $this->params->get('base_url');
+        $baseUrl = is_string($baseUrl) ? $baseUrl : '';
+        $parsed = parse_url($baseUrl);
+        $scheme = is_array($parsed) ? ($parsed['scheme'] ?? 'https') : 'https';
+        $host = is_array($parsed) ? ($parsed['host'] ?? '') : '';
+
+        return [
+            'atDomainRoot' => WikiUrls::isDomainRoot($baseUrl),
+            'webfinger' => $scheme . '://' . $host . '/.well-known/webfinger?resource=' . rawurlencode('acct:' . $this->username($form) . '@' . $host),
+            'actor' => $this->getFormActorUri($form),
+        ];
     }
 
     /** @param array<string, mixed> $form */
@@ -335,6 +360,8 @@ class ActivityPubService
                     'body' => $body,
                     'headers' => $this->httpSignatureService->signHeaders('POST', $inboxUri, $signer, $body),
                     'max_redirects' => 0,
+                    'timeout' => HttpSignatureService::TIMEOUT,
+                    'max_duration' => HttpSignatureService::MAX_DURATION,
                     'resolve' => $this->ssrfUrlValidator->resolveSafe($inboxUri),
                 ]);
 
@@ -667,17 +694,13 @@ class ActivityPubService
         $context = $actor['@context'];
         unset($actor['@context']);
 
-        try {
-            $this->postActivity([
-                '@context' => $context,
-                'type' => 'Update',
-                'object' => $actor,
-                'to' => [self::PUBLIC],
-                'cc' => [$this->getFormCollectionUri($form, 'followers')],
-            ], $form);
-        } catch (\Exception $e) {
-            error_log('ActivityPub: ' . $e->getMessage());
-        }
+        $this->deliverToFollowers([
+            '@context' => $context,
+            'type' => 'Update',
+            'object' => $actor,
+            'to' => [self::PUBLIC],
+            'cc' => [$this->getFormCollectionUri($form, 'followers')],
+        ], $form);
     }
 
     /**
@@ -690,17 +713,36 @@ class ActivityPubService
     {
         try {
             $object = $this->entryObject($form, $entry);
-            if ($activityType === 'Delete') {
-                $object = ['id' => $object['id'], 'type' => 'Tombstone', 'formerType' => $object['type'] ?? 'Object'];
-            }
-            $this->postActivity([
-                'type' => $activityType,
-                'object' => $object,
-                'to' => [self::PUBLIC],
-                'cc' => [$this->getFormCollectionUri($form, 'followers')],
-            ], $form);
         } catch (\Exception $e) {
             error_log('ActivityPub: ' . $e->getMessage());
+
+            return;
         }
+        if ($activityType === 'Delete') {
+            $object = ['id' => $object['id'], 'type' => 'Tombstone', 'formerType' => $object['type'] ?? 'Object'];
+        }
+        $this->deliverToFollowers([
+            'type' => $activityType,
+            'object' => $object,
+            'to' => [self::PUBLIC],
+            'cc' => [$this->getFormCollectionUri($form, 'followers')],
+        ], $form);
+    }
+
+    /**
+     * Sends an activity to the followers once the response has gone, so a slow follower never holds up the person saving.
+     *
+     * @param array<string, mixed> $activity
+     * @param array<string, mixed> $form
+     */
+    protected function deliverToFollowers(array $activity, array $form): void
+    {
+        $this->afterResponse->defer(function () use ($activity, $form): void {
+            try {
+                $this->postActivity($activity, $form);
+            } catch (\Exception $e) {
+                error_log('ActivityPub: ' . $e->getMessage());
+            }
+        });
     }
 }

@@ -255,7 +255,7 @@ class UserSettingsAction extends YesWikiAction implements RegisteredAction
      *
      * @param array<string, mixed> $post
      *
-     * @return array<string, scalar>
+     * @return array<string, mixed>
      */
     private function postedProfileValues(array $post, User $user): array
     {
@@ -264,11 +264,17 @@ class UserSettingsAction extends YesWikiAction implements RegisteredAction
         return (array)$this->asAccountPage($user, function () use ($entry) {
             $values = [];
             foreach ($this->profileFields() as $field) {
-                foreach ($field->formatValuesBeforeSaveIfEditable($entry) as $key => $value) {
-                    if ($key === 'fields-to-remove' || !is_scalar($value)) {
-                        continue;
+                $formatted = $field->formatValuesBeforeSaveIfEditable($entry);
+                foreach ((array)($formatted['fields-to-remove'] ?? []) as $removed) {
+                    if (is_string($removed) && !array_key_exists($removed, $values)) {
+                        $values[$removed] = '';
                     }
-                    $values[$key] = $value;
+                }
+                unset($formatted['fields-to-remove']);
+                foreach ($formatted as $key => $value) {
+                    if (is_scalar($value) || is_array($value)) {
+                        $values[$key] = $value;
+                    }
                 }
             }
 

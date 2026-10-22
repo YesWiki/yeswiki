@@ -17,3 +17,6 @@
 		</span>
 	</div>
 </form>
+{% if routes %}
+{{ include('@core/activitypub-routes-check.twig') }}
+{% endif %}

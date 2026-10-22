@@ -211,6 +211,7 @@ class UserSettingsActionTest extends YesWikiTestCase
         foreach (array_keys($guardFields) as $guardField) {
             unset($_POST[$guardField]);
         }
+        $this->refreshRequest($wiki);
         self::restoreBotGuard($wiki);
 
         $user = $userManager->getOneByName((string)$name);

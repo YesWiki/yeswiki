@@ -15,6 +15,7 @@
 <div class="yw-alert yw-alert--info">
   <strong>{{ _t('BAZ_FORM_ACTOR_ID') }}</strong> : @{{ profile.username }}@{{ domain }}
 </div>
+{{ include('@core/activitypub-routes-check.twig') }}
 {% endif %}
 
 <ul class="yw-nav" role="tablist">

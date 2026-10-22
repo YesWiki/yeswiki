@@ -2,6 +2,7 @@
   "label": "Blog",
   "description": "Des actualités avec une image, un résumé et un billet.",
   "icon": "rss",
+  "activitypub_username": "blog",
   "form": {
     "id": "3",
     "lang": "fr-FR",

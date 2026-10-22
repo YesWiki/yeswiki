@@ -2,6 +2,7 @@
   "label": "Agenda",
   "description": "Des événements à venir, en liste ou en calendrier, que chacun peut proposer.",
   "icon": "calendar",
+  "activitypub_username": "agenda",
   "form": {
     "id": "2",
     "lang": "fr-FR",

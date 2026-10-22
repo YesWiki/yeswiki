@@ -15,6 +15,7 @@ use YesWiki\Federation\Service\ActivityPubProfiles;
 use YesWiki\Federation\Service\ActivityPubService;
 use YesWiki\Federation\Service\HttpSignatureService;
 use YesWiki\Files\Service\Storage;
+use YesWiki\Kernel\Service\AfterResponse;
 use YesWiki\Kernel\Service\KeyPairGenerator;
 use YesWiki\Kernel\Service\SsrfUrlValidator;
 use YesWiki\Kernel\Service\TripleStore;
@@ -32,7 +33,7 @@ class ActivityPubServiceTest extends TestCase
     private string $root;
     /** @var list<array{resource: string, property: string, value: string}> */
     private array $triples = [];
-    /** @var list<array{url: string, body: array<string, mixed>, headers: array<string, list<string>>}> */
+    /** @var list<array{url: string, body: array<string, mixed>, headers: array<string, list<string>>, timeout: float|int, max_duration: float|int}> */
     private array $posted = [];
     /** @var list<string> */
     private array $unreachable = [];
@@ -40,6 +41,10 @@ class ActivityPubServiceTest extends TestCase
     private array $profile = ['username' => 'agenda'];
 
     private RecordingJournal $journal;
+
+    private ?AfterResponse $afterResponse = null;
+
+    private string $baseUrl = 'https://us.example/?';
 
     protected function setUp(): void
     {
@@ -95,7 +100,7 @@ class ActivityPubServiceTest extends TestCase
         });
 
         $params = $this->createStub(ParameterBagInterface::class);
-        $params->method('get')->willReturn('https://us.example/?');
+        $params->method('get')->willReturnCallback(fn () => $this->baseUrl);
 
         $semanticTransformer = $this->createStub(SemanticTransformer::class);
         $semanticTransformer->method('convertToSemanticData')->willReturn(['@context' => 'x', 'id' => 'https://us.example/?Fiche', 'type' => 'Note']);
@@ -108,7 +113,7 @@ class ActivityPubServiceTest extends TestCase
 
                 return new MockResponse((string)json_encode(['id' => $url, 'inbox' => $url . '/inbox']));
             }
-            $this->posted[] = ['url' => $url, 'body' => json_decode($options['body'], true), 'headers' => $options['normalized_headers']];
+            $this->posted[] = ['url' => $url, 'body' => json_decode($options['body'], true), 'headers' => $options['normalized_headers'], 'timeout' => $options['timeout'], 'max_duration' => $options['max_duration']];
 
             return new MockResponse('', ['http_code' => 202]);
         });
@@ -125,6 +130,7 @@ class ActivityPubServiceTest extends TestCase
             new ActivityPubKeyStore(Storage::rootedAt($this->root), new KeyPairGenerator()),
             new ActivityPubProfiles($this->createStub(ContainerInterface::class)),
             new ActivityPubLog(new ParameterBag(['activitypub_log' => true]), $this->journal),
+            $this->afterResponse ?? new AfterResponse(),
         );
         (new \ReflectionProperty($service, 'httpClient'))->setValue($service, $client);
 
@@ -397,5 +403,50 @@ class ActivityPubServiceTest extends TestCase
         $this->service()->announceProfile($this->form());
 
         $this->assertSame([], $this->posted);
+    }
+
+    public function testFollowersAreNotifiedOnlyOnceTheResponseHasGone(): void
+    {
+        $this->triples[] = ['resource' => self::US . '/followers', 'property' => ActivityPubService::$AS_PREFIX . 'items', 'value' => self::THEM];
+        $this->afterResponse = new class extends AfterResponse {
+            public function defer(callable $task): void
+            {
+                $this->tasks[] = $task;
+            }
+        };
+        $service = $this->service();
+
+        $service->notifyFollowers($this->form(), ['tag' => 'Fiche'], 'Create');
+        $service->announceProfile($this->form());
+        $this->assertSame([], $this->posted);
+
+        $this->afterResponse->run();
+        $this->assertSame(['Create', 'Update'], array_map(fn ($post) => $post['body']['type'], $this->posted));
+    }
+
+    public function testADeliveryGivesUpOnAFollowerThatDoesNotAnswer(): void
+    {
+        $this->triples[] = ['resource' => self::US . '/followers', 'property' => ActivityPubService::$AS_PREFIX . 'items', 'value' => self::THEM];
+
+        $this->service()->notifyFollowers($this->form(), ['tag' => 'Fiche'], 'Create');
+
+        $this->assertSame(HttpSignatureService::TIMEOUT, (int)$this->posted[0]['timeout']);
+        $this->assertSame(HttpSignatureService::MAX_DURATION, (int)$this->posted[0]['max_duration']);
+    }
+
+    public function testTheRoutesToCheckAreTheOnesOtherServersAsk(): void
+    {
+        $this->assertSame([
+            'atDomainRoot' => true,
+            'webfinger' => 'https://us.example/.well-known/webfinger?resource=acct%3Aagenda%40us.example',
+            'actor' => self::US,
+        ], $this->service()->routesToCheck($this->form()));
+    }
+
+    public function testAWikiInASubfolderIsNotAtTheDomainRoot(): void
+    {
+        $this->baseUrl = 'https://us.example/wiki/?';
+
+        $this->assertFalse($this->service()->routesToCheck($this->form())['atDomainRoot']);
     }
 }

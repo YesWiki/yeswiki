@@ -245,6 +245,7 @@ class ShowHandler extends YesWikiHandler implements RegisteredHandler
             echo $this->getService(TemplateEngine::class)->render('@core/onboarding.twig', [
                 'is_admin' => $this->getService(AclService::class)->isAdmin(),
                 'starters' => $onboarding->starters(),
+                'activitypub_by_default' => $onboarding->publishesOnTheFediverseByDefault(),
             ]);
         } elseif ($HasAccessRead = $this->getService(AclService::class)->hasAccess('read')) {
             if (!$this->getService(PageContext::class)->getPage()) {

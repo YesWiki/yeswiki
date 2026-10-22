@@ -507,7 +507,10 @@ class AdminController extends YesWikiController
             $this->getService(CsrfTokenChecker::class)->checkToken('main', 'POST', 'csrf-token', false);
             if ($onboarding->isPending()) {
                 $chosen = $request->request->all()['starters'] ?? [];
-                $onboarding->apply($request->request->get('empty') ? [] : array_values(array_filter((array)$chosen, 'is_string')));
+                $onboarding->apply(
+                    $request->request->get('empty') ? [] : array_values(array_filter((array)$chosen, 'is_string')),
+                    $request->request->get('activitypub') === '1'
+                );
             }
         } catch (\Throwable $failed) {
             Flash::error(_t('ONBOARDING_FAILED') . ' ' . $failed->getMessage());
