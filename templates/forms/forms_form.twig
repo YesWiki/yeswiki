@@ -1,5 +1,8 @@
 
 {{ include_javascript('javascripts/vendor/sortablejs/sortable.js') }}
+{% for script in builderExtensions.scripts|default([]) %}
+  {{ include_javascript(script, false, true) }}
+{% endfor %}
 {{ include_javascript('javascripts/form-builder/form-builder.js', false, true) }}
 {{ include_css('styles/yw-admin.css') }}
 
@@ -75,6 +78,7 @@
           data-locked-fields="{{ (lockedFields|default([]))|json_encode }}"
           data-groups="{{ (groupsList|default([]))|json_encode }}"
           data-form-and-list-ids="{{ (formAndListIds|default({}))|json_encode }}"
+          data-extensions="{{ (builderExtensions.data|default({}))|json_encode }}"
         ></div>
       </div>
       <div role="tabpanel" class="yw-tabs__pane" id="code">

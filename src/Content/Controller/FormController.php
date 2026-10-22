@@ -16,6 +16,7 @@ use YesWiki\Content\Field\PasswordField;
 use YesWiki\Content\Service\EntryDisplay;
 use YesWiki\Content\Service\ExportLinks;
 use YesWiki\Content\Service\FieldRoleResolver;
+use YesWiki\Content\Service\FormBuilderExtensions;
 use YesWiki\Content\Service\FormManager;
 use YesWiki\Content\Service\FormOverview;
 use YesWiki\Content\Service\FormPropertiesService;
@@ -597,6 +598,7 @@ class FormController extends YesWikiController
                 AclOptions::COMMENT => $aclOptions->for(AclOptions::COMMENT, true),
             ],
             'presentation' => $this->presentationChoices($form),
+            'builderExtensions' => $this->getService(FormBuilderExtensions::class)->forDesigner(),
         ] + $this->entryTemplateContext($form);
     }
 

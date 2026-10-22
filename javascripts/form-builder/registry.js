@@ -1,4 +1,5 @@
 import calc from './fields/calc.js'
+import * as commons from './fields/commons/attributes.js'
 import champsMail from './fields/champs_mail.js'
 import checkboxGroup from './fields/checkbox-group.js'
 import conditionschecking from './fields/conditionschecking.js'
@@ -46,7 +47,12 @@ const registry = {
   openinghours,
   calc,
   custom,
-  ...(window.formBuilderFields || {}),
+  ...Object.fromEntries(
+    Object.entries(window.formBuilderFields || {}).map(([type, config]) => [
+      type,
+      typeof config === 'function' ? config(commons) : config,
+    ]),
+  ),
 }
 
 export default registry

@@ -40,6 +40,7 @@ class YesWikiKernel extends Kernel
         \YesWiki\Content\Entity\SuppliesItems::class => 'yeswiki.item_source',
         \YesWiki\Content\Entity\ContributesEntryFields::class => 'yeswiki.entry_fields',
         \YesWiki\Content\Entity\AppendsToPageView::class => 'yeswiki.page_view_appendix',
+        \YesWiki\Content\Entity\ExtendsFormBuilder::class => 'yeswiki.form_builder_extension',
         \YesWiki\Kernel\Health\ProvidesHealthChecks::class => 'yeswiki.health_check_provider',
         \Symfony\Component\EventDispatcher\EventSubscriberInterface::class => 'yeswiki.event_subscriber',
         \YesWiki\Kernel\Service\RequestScopedState::class => 'yeswiki.request_scoped',

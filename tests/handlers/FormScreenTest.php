@@ -183,6 +183,7 @@ class FormScreenTest extends YesWikiTestCase
 
         $this->assertStringContainsString('id="form-builder-container"', $output, '/edit on a form tag did not open the designer');
         $this->assertStringContainsString('name="label"', $output);
+        $this->assertStringContainsString('data-extensions="', $output, 'the designer gave the extensions no data');
         $this->assertStringContainsString(self::FORM_LABEL, $output, 'the designer opened on the wrong form');
     }
 
