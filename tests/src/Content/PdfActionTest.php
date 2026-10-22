@@ -3,6 +3,7 @@
 namespace YesWiki\Test\Content;
 
 use PHPUnit\Framework\Attributes\DataProvider;
+use Symfony\Component\HttpFoundation\Request;
 use YesWiki\Kernel\Service\CurrentRequest;
 use YesWiki\Render\Service\ActionRunner;
 use YesWiki\Test\Core\YesWikiTestCase;
@@ -17,15 +18,19 @@ class PdfActionTest extends YesWikiTestCase
     private function render(string $url): string
     {
         $services = $this->getWiki()->services;
-        $request = $services->get(CurrentRequest::class)->get();
-        $request->headers->remove('referer');
-
-        return $services->get(ActionRunner::class)->action('pdf url="' . sprintf($url, str_starts_with($url, '%s/') ? $request->getSchemeAndHttpHost() : $request->getHost()) . '"');
+        $current = $services->get(CurrentRequest::class);
+        $previous = $current->get();
+        $current->replace(Request::create('http://wiki.test/'));
+        try {
+            return $services->get(ActionRunner::class)->action('pdf url="' . sprintf($url, 'wiki.test') . '"');
+        } finally {
+            $current->replace($previous);
+        }
     }
 
     public function testASameHostPdfIsEmbedded()
     {
-        $output = $this->render('%s/files/doc.pdf');
+        $output = $this->render('http://%s/files/doc.pdf');
 
         $this->assertStringContainsString('data-pdf="http', $output);
     }
