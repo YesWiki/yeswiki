@@ -6,6 +6,7 @@ use Attach;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Bazar\Controller\EntryController;
 use YesWiki\Bazar\Service\EntryManager;
+use YesWiki\Core\Service\AclService;
 use YesWiki\Wiki;
 
 class Utils
@@ -32,6 +33,11 @@ class Utils
      */
     public function getImageFromBody(array $page, string $width, string $height): string
     {
+        // Metadata is rendered even when the page body is access-restricted.
+        if (empty($page['tag']) || !$this->wiki->services->get(AclService::class)->hasAccess('read', $page['tag'])) {
+            return $this->getDefaultOpenGraphImage();
+        }
+
         $image = '';
         if (isset($page['body'])) {
             // on cherche les actions attach avec image, puis les images bazar
@@ -325,6 +331,11 @@ class Utils
      */
     public function getTitleFromBody($page): string
     {
+        // Metadata is rendered even when the page body is access-restricted.
+        if (empty($page['tag']) || !$this->wiki->services->get(AclService::class)->hasAccess('read', $page['tag'])) {
+            return '';
+        }
+
         $entryManager = $this->wiki->services->get(EntryManager::class);
 
         if (!isset($page['body']) || !isset($page['tag'])) {
@@ -368,6 +379,11 @@ class Utils
      */
     public function getDescriptionFromBody($page, $title, $length = 300)
     {
+        // Metadata is rendered even when the page body is access-restricted.
+        if (empty($page['tag']) || !$this->wiki->services->get(AclService::class)->hasAccess('read', $page['tag'])) {
+            return '';
+        }
+
         $entryManager = $this->wiki->services->get(EntryManager::class);
 
         if (!isset($page['body'])) {
