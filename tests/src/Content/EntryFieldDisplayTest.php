@@ -2,10 +2,13 @@
 
 namespace YesWiki\Test\Content;
 
+use YesWiki\Content\Entity\ContentTypeSchema;
 use YesWiki\Content\Field\BazarField;
 use YesWiki\Content\Service\EntryManager;
 use YesWiki\Content\Service\FormManager;
+use YesWiki\Content\Service\PageManager;
 use YesWiki\Identity\Service\AuthenticationService;
+use YesWiki\Identity\Service\UserManager;
 use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';
@@ -127,6 +130,34 @@ class EntryFieldDisplayTest extends YesWikiTestCase
         $direct = $this->field('listefiche', ['entry_display' => 'direct'])->renderStaticIfPermitted($entry);
         $this->assertStringNotContainsString('modalbox', $direct);
         $this->assertStringNotContainsString('target="_blank"', $direct);
+    }
+
+    public function testChosenAccountsGoThroughTheTemplateLikeEntries(): void
+    {
+        $services = $this->getWiki()->services;
+        $userForm = $services->get(FormManager::class)->getByContentType(ContentTypeSchema::TYPE_USER);
+        $this->assertNotNull($userForm, 'the User form should exist -- run ./yeswicli migrate');
+        $userManager = $services->get(UserManager::class);
+        $userManager->create('EntryFieldDisplayTestUser', 'efdt@example.tld', 'Aa1!aaaaRegression');
+        try {
+            $prepared = $services->get(FormManager::class)->prepareData(['template' => [[
+                'type' => 'checkboxfiche', 'linked_object' => (string)$userForm['id'], 'name' => 'bf_participantes',
+                'label' => 'Participantes', 'entries_template' => 'card',
+            ]]]);
+            $field = reset($prepared);
+            $this->assertInstanceOf(BazarField::class, $field);
+
+            $html = $field->renderStaticIfPermitted(['bf_participantes' => 'EntryFieldDisplayTestUser']);
+
+            $this->assertStringContainsString('EntryFieldDisplayTestUser', $html);
+            $this->assertStringNotContainsString('yw-items__empty', $html);
+        } finally {
+            $user = $userManager->getOneByName('EntryFieldDisplayTestUser');
+            if ($user) {
+                $userManager->delete($user);
+            }
+            $services->get(PageManager::class)->deleteOrphaned('EntryFieldDisplayTestUser');
+        }
     }
 
     public function testAValueCannotAddActionParameters(): void

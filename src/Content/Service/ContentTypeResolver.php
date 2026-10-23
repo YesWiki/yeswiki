@@ -9,6 +9,8 @@ use YesWiki\Content\Entity\PageType;
 /** Answers "what kind of Content is this row, and which form describes it?" (ticket 10). */
 class ContentTypeResolver
 {
+    public const PUBLISHED = '1';
+
     private ContainerInterface $container;
     private PageManager $pageManager;
 
@@ -98,6 +100,7 @@ class ContentTypeResolver
 
         $body['form_id'] = $form['id'];
         $body['tag'] = $tag;
+        $body['status'] ??= self::PUBLISHED;
         $mirror = ContentTypeSchema::tagMirrorField($contentType);
         if ($mirror !== null) {
             $body[$mirror] = $tag;

@@ -656,6 +656,12 @@ class DbService
         return $this->dialect->castToInteger($expression);
     }
 
+    /** SQL joining text expressions end to end; a NULL part makes the whole NULL. */
+    public function concat(string ...$parts): string
+    {
+        return $this->dialect->concat(...$parts);
+    }
+
     /**
      * Returns a SQL expression aggregating the distinct values of a column into a single comma-separated string, ordered by $orderBy.
      *

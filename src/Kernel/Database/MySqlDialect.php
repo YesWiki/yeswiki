@@ -55,6 +55,11 @@ class MySqlDialect implements SqlDialect
         return "'" . str_replace(['\\', "'"], ['\\\\', "''"], $quoted) . "'";
     }
 
+    public function concat(string ...$parts): string
+    {
+        return 'CONCAT(' . implode(', ', $parts) . ')';
+    }
+
     public function groupConcat(string $column, ?string $orderBy = null): string
     {
         $orderBy = $orderBy ?? $column;

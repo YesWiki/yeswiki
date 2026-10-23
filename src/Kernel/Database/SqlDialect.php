@@ -29,6 +29,9 @@ interface SqlDialect
     /** The same read, for JSON stored in a column that is **not** declared as JSON. */
     public function jsonExtractText(string $column, string $path): string;
 
+    /** SQL joining text expressions end to end; a NULL part makes the whole NULL. */
+    public function concat(string ...$parts): string;
+
     /** SQL aggregating a column's distinct values into one comma-separated string. */
     public function groupConcat(string $column, ?string $orderBy = null): string;
 

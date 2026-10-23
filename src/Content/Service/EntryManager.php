@@ -729,6 +729,7 @@ class EntryManager
         unset($data['valider']);
         unset($data['MAX_FILE_SIZE']);
         unset($data['antispam']);
+        unset($data['csrf-token']);
         unset($data[FormPropertiesService::COMMENTS_TOGGLE_POST_KEY]);
         unset($data['mot_de_passe_wikini']);
         unset($data['mot_de_passe_repete_wikini']);
@@ -838,7 +839,7 @@ class EntryManager
 
         $pEntry['owner'] = $pPage['owner'] ?? null;
 
-        $pEntry['updated_at'] = $pEntry['updated_at'] ?? $pPage['time'] ?? null;
+        $pEntry['updated_at'] = $pEntry['updated_at'] ?? (isset($pPage['time']) ? substr((string)$pPage['time'], 0, 19) : null);
 
         $pEntry = $this->applyFieldMappings($pEntry, $pFieldMappings, $pPage);
 

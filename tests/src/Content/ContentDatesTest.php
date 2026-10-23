@@ -88,9 +88,9 @@ class ContentDatesTest extends YesWikiTestCase
 
         $listed = $this->listed();
 
-        $this->assertSame($page['time'], $listed['updated_at'] ?? null);
+        $this->assertSame(substr((string)$page['time'], 0, 19), $listed['updated_at'] ?? null);
         $this->assertSame(
-            $this->getWiki()->services->get(PageManager::class)->getCreateTime(self::TAG),
+            substr((string)$this->getWiki()->services->get(PageManager::class)->getCreateTime(self::TAG), 0, 19),
             $listed['created_at'] ?? null,
             'the creation is the oldest revision, not the one being read'
         );

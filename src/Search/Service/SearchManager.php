@@ -525,8 +525,58 @@ class SearchManager
             'updated_at' => "COALESCE(NULLIF({$vStored}, ''), CAST(p.{$vTime} AS CHAR(19)))",
             'created_at' => "COALESCE(NULLIF({$vStored}, ''), CAST((SELECT MIN(rev0.{$vTime}) FROM "
                 . $this->dbService->prefixTable('pages') . " rev0 WHERE rev0.tag = p.tag AND rev0.parent = '') AS CHAR(19)))",
-            default => $vStored,
+            default => $this->withBuiltInFallback($vStored, $pFieldName),
         };
+    }
+
+    /** $pStored, or for an account, a page or a file the value ContentTypeResolver::asEntry() gives it in place of an entry's own. */
+    private function withBuiltInFallback(string $pStored, string $pFieldName): string
+    {
+        if ($pFieldName === 'tag') {
+            return "COALESCE(NULLIF({$pStored}, ''), p.tag)";
+        }
+
+        $vCases = '';
+        foreach ([PageType::USER, PageType::PAGE, PageType::FILE] as $vType) {
+            $vForm = $this->container->get(FormManager::class)->getByContentType($vType);
+            if ($vForm === null) {
+                continue;
+            }
+            $vValue = match (true) {
+                $pFieldName === 'form_id' => "'" . (int)$vForm['id'] . "'",
+                $pFieldName === 'status' => "'" . ContentTypeResolver::PUBLISHED . "'",
+                $pFieldName === ContentTypeSchema::tagMirrorField($vType) => 'p.tag',
+                $pFieldName === PageBody::TITLE => $this->builtInTitle($vType, $vForm),
+                default => null,
+            };
+            if ($vValue !== null) {
+                $vCases .= " WHEN '{$vType}' THEN {$vValue}";
+            }
+        }
+
+        return $vCases === ''
+            ? $pStored
+            : "COALESCE(NULLIF({$pStored}, ''), CASE p." . $this->dbService->quoteIdentifier('type') . "{$vCases} END)";
+    }
+
+    /** @param array<string, mixed> $pForm whose title template is rebuilt in SQL, each `{{field}}` read raw, the tag when empty */
+    private function builtInTitle(string $pType, array $pForm): string
+    {
+        $vTemplate = trim((string)($pForm['entry_title_template'] ?? '')) ?: (string)ContentTypeSchema::defaultTitleTemplate($pType);
+        $vParts = [];
+        foreach (preg_split('#({{.*}})#U', $vTemplate, -1, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY) ?: [] as $vPiece) {
+            if (preg_match('#^{{(.*)}}$#', $vPiece, $vMatch) !== 1) {
+                $vParts[] = "'" . str_replace("'", "''", $vPiece) . "'";
+            } elseif (trim($vMatch[1]) === ContentTypeSchema::tagMirrorField($pType)) {
+                $vParts[] = 'p.tag';
+            } elseif ($this->isFieldName(trim($vMatch[1]))) {
+                $vParts[] = 'COALESCE(' . $this->dbService->jsonExtract('body', '$.' . trim($vMatch[1])) . ", '')";
+            }
+        }
+
+        return $vParts === []
+            ? 'p.tag'
+            : 'COALESCE(NULLIF(TRIM(' . $this->dbService->concat(...$vParts) . "), ''), p.tag)";
     }
 
     /** The `elt` and `rest` columns cutting the first comma-separated value off $pList. */
@@ -803,7 +853,7 @@ class SearchManager
         $vSelectRequest
         = [
             'p.*',
-            $this->dbService->jsonExtract('body', '$.form_id') . ' AS ' . $this->renameJSONPathVariable('form_id'),
+            $this->fieldColumnExpression('form_id') . ' AS ' . $this->renameJSONPathVariable('form_id'),
         ];
 
         foreach (array_keys($vFields) as $vFieldName) {
@@ -973,7 +1023,7 @@ class SearchManager
         foreach ($rows as $row) {
             $tag = (string)($row['tag'] ?? '');
             if (isset($entries[$tag])) {
-                $entries[$tag]['created_at'] = $row['created_at'];
+                $entries[$tag]['created_at'] = substr((string)$row['created_at'], 0, 19);
             }
         }
     }

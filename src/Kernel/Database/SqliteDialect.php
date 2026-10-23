@@ -49,6 +49,11 @@ class SqliteDialect implements SqlDialect
         return $this->jsonExtract($column, $path);
     }
 
+    public function concat(string ...$parts): string
+    {
+        return '(' . implode(' || ', $parts) . ')';
+    }
+
     public function groupConcat(string $column, ?string $orderBy = null): string
     {
         return "GROUP_CONCAT(DISTINCT $column)";
