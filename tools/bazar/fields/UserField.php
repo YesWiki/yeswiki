@@ -27,6 +27,7 @@ class UserField extends BazarField
     protected const FIELD_MAILING_LIST = 5;
     protected const FIELD_AUTO_ADD_TO_GROUP = 6;
     protected const FIELD_AUTO_UPDATE_MAIL = 9;
+    private const FIELD_CLASS_TYPE = 'UserField';
 
     private const CONFIRM_NAME_SUFFIX = '_confirmNewName';
     private const FORCE_LABEL = '_force_label';
@@ -135,6 +136,7 @@ class UserField extends BazarField
             $this->updateEmailIfNeeded($wikiName, $entry[$this->emailField] ?? null);
         } else {
             $wikiName = $entry[$this->nameField];
+
             if (!$wiki->IsWikiName($wikiName)) {
                 // create a UserName from value that is a wikiname
                 // so the User could have a chance to have the same name as the created entry
@@ -264,6 +266,7 @@ class UserField extends BazarField
         return array_merge(
             parent::jsonSerialize(),
             [
+                'field_type' => self::FIELD_CLASS_TYPE,
                 'nameField' => $this->getNameField(),
                 'emailField' => $this->getEmailField(),
                 'mailingList' => $this->getMailingList(),
@@ -414,5 +417,18 @@ class UserField extends BazarField
         // if here, this is because all new usernames are existing
         // it could be an error
         throw new UserFieldException('Impossible to find a new user name !');
+    }
+
+    public static function mapToFieldArray($fieldProps): array
+    {
+        $new = parent::mapToFieldArray($fieldProps);
+        $new[self::FIELD_NAME_FIELD] = $fieldProps['nameField'];
+        $new[self::FIELD_EMAIL_FIELD] = $fieldProps['emailField'];
+        $new[self::FIELD_MAILING_LIST] = $fieldProps['mailingList'];
+        $new[self::FIELD_AUTO_ADD_TO_GROUP] = $fieldProps['autoAddToGroup'];
+        $new[self::FIELD_AUTO_UPDATE_MAIL] = $fieldProps['autoUpdateMail'] ? 1 : ' ';
+        ksort($new);
+
+        return $new;
     }
 }

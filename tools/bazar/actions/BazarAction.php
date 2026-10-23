@@ -39,9 +39,11 @@ class BazarAction extends YesWikiAction
     public const ACTION_FORM_CONFIRM_EMPTY = 'confirm_empty';
     public const ACTION_FORM_CLONE = 'clone';
     public const CHOISIR_TYPE_FICHE = 'choisir_type_fiche';
+    public const ACTION_FORM_TRANSLATE = 'translate';
 
     // Lists
     public const ACTION_LIST_CREATE = 'saisir_liste';
+    public const ACTION_LIST_TRANSLATE = 'traduire_liste';
     public const ACTION_LIST_EDIT = 'modif_liste';
     public const ACTION_LIST_DELETE = 'supprimer_liste';
 
@@ -207,6 +209,11 @@ class BazarAction extends YesWikiAction
                         }
 
                         return $formController->delete($req->query->get('idformulaire'));
+                    case self::ACTION_FORM_TRANSLATE:
+                        if ($this->isWikiHibernated()) {
+                            return $this->getMessageWhenHibernated();
+                        }
+                        return $formController->translate($req->query->get('idformulaire'));
                     case self::ACTION_FORM_CONFIRM_DELETE:
                     case self::ACTION_FORM_CONFIRM_EMPTY:
                         if ($this->isWikiHibernated()) {
@@ -270,6 +277,12 @@ class BazarAction extends YesWikiAction
                         }
 
                         return $listController->update($req->query->get('idliste'));
+                    case self::ACTION_LIST_TRANSLATE:
+                        if ($this->isWikiHibernated()) {
+                            return $this->getMessageWhenHibernated();
+                        }
+
+                        return $listController->translate($req->query->get('idliste'));
                     case self::ACTION_LIST_DELETE:
                         if ($this->isWikiHibernated()) {
                             return $this->getMessageWhenHibernated();

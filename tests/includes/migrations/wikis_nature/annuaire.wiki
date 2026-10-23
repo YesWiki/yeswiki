@@ -1,0 +1,14 @@
+titre***{{bf_nom}} {{bf_prenom}}***Titre Automatique*** *** *** *** *** *** *** *** *** *** *** *** *** *** ***
+texte***bf_nom***Nom***60***255*** *** ***text***1*** *** *** * *** * *** *** *** ***
+texte***bf_prenom***Prénom***60***255*** *** ***text***1*** *** *** * *** * *** *** *** ***
+image***bf_image***Image de présentation (facultatif mais c'est plus sympa)***140***140***600***600***right*** *** *** *** * *** * *** *** *** ***
+texte***bf_fonction***Mon métier, ma fonction***60***255*** *** ***text*** *** *** *** * *** * *** *** *** ***
+textelong***bf_projet***Ma présentation***5***5*** *** ***html*** *** *** *** * *** * *** *** *** ***
+champs_mail***bf_mail***Email (n'apparaitra pas sur le web)*** *** *** ***form*** ***1*** *** *** * *** * *** *** *** ***
+texte***bf_structure***Nom de la structure***60***255*** *** ***text*** *** *** *** * *** * *** *** *** ***
+lien_internet***bf_site_internet***Site Internet*** *** *** *** *** *** *** *** *** * *** * *** *** *** ***
+texte***bf_adresse***Adresse***50***50*** *** ***text*** *** *** *** * *** * *** *** *** ***
+texte***bf_code_postal***Code postal***8***8*** *** ***text*** *** *** *** * *** * *** *** *** ***
+texte***bf_ville***Ville***50***80*** *** ***text*** *** *** *** * *** * *** *** *** ***
+map***bf_latitude***bf_longitude*** ***bf_code_postal***
+labelhtml***<h3>Il ne vous reste plus qu'à valider ! </h3>*** *** ***

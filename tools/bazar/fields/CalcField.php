@@ -12,6 +12,7 @@ class CalcField extends BazarField
 {
     protected const FIELD_DISPLAY_TEXT = 4;
     protected const FIELD_CALCFORMULA = 5;
+    private const FIELD_CLASS_TYPE = 'CalcField';
 
     private const ALLOWED_FUNCTIONS = [
         'sin' => 'sin', 'sinh' => 'sinh',
@@ -37,7 +38,7 @@ class CalcField extends BazarField
     {
         parent::__construct($values, $services);
         $this->calcFormula = $values[self::FIELD_CALCFORMULA];
-        $this->displayText = empty($values[self::FIELD_DISPLAY_TEXT]) ? '{value}' : $values[self::FIELD_DISPLAY_TEXT];
+        $this->displayText = $values[self::FIELD_DISPLAY_TEXT] ?? '{value}';
         $this->default = ''; // to prevent field 5 to change default value
         $this->maxChars = ''; // to prevent field 4 to change maxChars
         $this->formManager = null;
@@ -351,6 +352,15 @@ class CalcField extends BazarField
     public function getDisplayText(): ?string
     {
         return $this->displayText;
+    }
+
+    public static function mapToFieldArray($fieldProps): array
+    {
+        $new = parent::mapToFieldArray($fieldProps);
+        $new[self::FIELD_CALCFORMULA] = $fieldProps['calcFormula'];
+        $new[self::FIELD_DISPLAY_TEXT] = $fieldProps['displayText'];
+        ksort($new);
+        return $new;
     }
 
     // change return of this method to keep compatible with php 7.3 (mixed is not managed)

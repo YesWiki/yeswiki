@@ -1,17 +1,17 @@
 <?php
 
-use YesWiki\Core\Service\DbService;
+use YesWiki\Bazar\Service\FormManager;
 
 $liste = '';
-$db = $GLOBALS['wiki']->services->get(DbService::class);
-$resultat = $db->loadAll("SELECT bn_id_nature,bn_label_nature FROM {$db->prefixTable('nature')} WHERE 1");
+$formManager = $GLOBALS['wiki']->services->get(FormManager::class);
+$resultat = $formManager->getAllIds();
 
 if ($this->CheckModuleACL('rss', 'handler')) {
     if (is_array($resultat) && count($resultat) > 0) {
-        foreach ($resultat as $form) {
+        foreach ($resultat as $id => $title) {
             $liste .= '  <link rel="alternate" type="application/rss+xml" '
-                . 'title="' . htmlspecialchars($form['bn_label_nature'] ?? '') . '" '
-                . 'href="' . $this->href('rss', $this->getPageTag(), 'id=' . $form['bn_id_nature']) . '">' . "\n";
+                . 'title="' . htmlspecialchars($title ?? '') . '" '
+                . 'href="' . $this->href('rss', $this->getPageTag(), 'id=' . $id) . '">' . "\n";
         }
     }
 

@@ -25,6 +25,7 @@ class FileField extends BazarField
     protected const FIELD_MAX_SIZE = 14;
     protected const FIELD_READ_LABEL = 6;
     protected const FIELD_AUTHORIZED_EXTS_LABEL = 7;
+    private const FIELD_CLASS_TYPE = 'FileField';
 
     protected $attach;
     protected $maxSize;
@@ -78,10 +79,9 @@ class FileField extends BazarField
         $wiki = $this->getWiki();
         $value = $this->getValue($entry);
         $deletedFile = false;
-        $isUrl = $this->isUrl($value);
         $wiki->services->get(AssetsManager::class)->AddJavascriptFile('tools/bazar/presentation/javascripts/inputs/file-field.js');
 
-        if (!empty($value) && !$isUrl) {
+        if (!empty($value) && !$this->isUrl($value)) {
             if (!empty($entry) && isset($_GET['delete_file']) && $_GET['delete_file'] === $value) {
                 if (!$this->deletionLinkIsSigned()) {
                     $alertMessage = $this->unsignedDeletionAlert();
@@ -102,7 +102,7 @@ class FileField extends BazarField
             }
         }
 
-        if ($isUrl) {
+        if ($this->isUrl($value)) {
             if (!empty($entry) && isset($_GET['delete_file']) && $_GET['delete_file'] === $value) {
                 if (!$this->deletionLinkIsSigned()) {
                     $alertMessage = $this->unsignedDeletionAlert();
@@ -313,12 +313,27 @@ class FileField extends BazarField
         return $this->authorizedExts;
     }
 
+    public static function mapToFieldArray($fieldProps): array
+    {
+        $new = parent::mapToFieldArray($fieldProps);
+        $new[self::FIELD_READ_LABEL] = $fieldProps['readLabel'] ?? '';
+        if (!empty($fieldProps['authorizedExts'])) {
+            $new[self::FIELD_AUTHORIZED_EXTS_LABEL] =
+            is_array($fieldProps['authorizedExts']) ? implode(',',$fieldProps['authorizedExts']) : $fieldProps['authorizedExts'];
+        } else {
+            $new[self::FIELD_AUTHORIZED_EXTS_LABEL] = '';
+        }
+        ksort($new);
+        return $new;
+    }
+
     #[\ReturnTypeWillChange]
     public function jsonSerialize()
     {
         return array_merge(
             parent::jsonSerialize(),
             [
+                'field_type' => self::FIELD_CLASS_TYPE,
                 'readLabel' => $this->getReadLabel(),
                 'authorizedExts' => $this->getAuthorizedExts(),
             ],

@@ -125,13 +125,13 @@ class EntryManager
      *
      * @throws \Exception
      */
-    public function getOne($tag, $semantic = false, $time = null, $cache = true, $bypassAcls = false, ?string $userNameForCheckingACL = null): ?array
+    public function getOne($tag, $semantic = false, $time = null, $cache = true, $bypassAcls = false, ?string $userNameForCheckingACL = null,  $bazar_lang = 'default'): ?array
     {
         if (!$this->isEntry($tag)) {
             return null;
         }
 
-        $page = $this->pageManager->getOne($tag, empty($time) ? null : $time, $cache, $bypassAcls, $userNameForCheckingACL);
+        $page = $this->pageManager->getOne($tag, empty($time) ? null : $time, $cache, $bypassAcls, $userNameForCheckingACL, $bazar_lang);
         $debug = ($this->wiki->GetConfigValue('debug') == 'yes');
         $data = $this->getDataFromPage($page, $semantic, $debug);
 
@@ -145,7 +145,7 @@ class EntryManager
         $extraFields = [
             'id_fiche', 'id_typeannonce', 'date_creation_fiche',
             'date_maj_fiche', 'statut_fiche', 'url',
-            '-is-external-', 'external-data',
+            '-is-external-', 'external-data', 'lang', 'extralang',
         ];
 
         foreach ($extraFields as $key) {
@@ -174,14 +174,15 @@ class EntryManager
                 return [];
             }
 
-            $data = $this->removeUnknownFields($data['id_typeannonce'], $data);
+            // duplicate code inside this function and after
+            //$data = $this->removeUnknownFields($data['id_typeannonce'], $data);
 
             $form = $this->wiki->services->get(FormManager::class)->getOne($data['id_typeannonce']);
 
             $vRegisteredData = [...$data];
             $extraFields = [
                 'id_fiche', 'id_typeannonce', 'date_creation_fiche',
-                'date_maj_fiche', 'statut_fiche', 'url',
+                'date_maj_fiche', 'statut_fiche', 'url', 'lang', 'extralang',
             ];
 
             foreach ($extraFields as $key) {
@@ -275,6 +276,8 @@ class EntryManager
         $data = $this->assignRestrictedFields($data, [], $form);
 
         $data = $this->formatDataBeforeSave($data);
+        // add lang information
+        $data['lang'] = $this->wiki->lang;
 
         $this->refuseTagOfAnExistingPage($data['id_fiche'] ?? null);
 
@@ -386,7 +389,7 @@ class EntryManager
         }
 
         $data['id_fiche'] = $tag;
-        $previousData = $this->getOne($data['id_fiche'], false, null, false, true);
+        $previousData = $this->getOne($data['id_fiche'], false, null, false, true, null, 'all');
         $data['id_typeannonce'] = $previousData['id_typeannonce'];
 
         $form = $this->wiki->services->get(FormManager::class)->getOne($data['id_typeannonce']);
@@ -394,6 +397,9 @@ class EntryManager
 
         $data = $this->assignRestrictedFields($data, $previousData, $form);
 
+        if (empty($data['extralang']) and !empty($previousData['extralang'])) {
+            $data['extralang'] = $previousData['extralang'];
+        }
         if (!$replace) {
             $data = $this->mergeFields($previousData, $data, $form);
         }

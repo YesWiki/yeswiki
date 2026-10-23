@@ -57,6 +57,11 @@
             <i class="fa fa-trash icon-white"></i>
           </a>
           {% endif %}
+          {% if isMultilang and list.canEdit %}
+          <a class="btn btn-default btn-xs" href="{{ url({ params: { vue: 'listes', action: 'traduire_liste', idliste: key }}) }}">
+              <i class="fa fa-globe"></i>
+          </a>
+          {% endif %}
       </td>
     </tr>
     {% endfor %}

@@ -1,0 +1,47 @@
+{{ include_javascript(config.debug == 'yes' ? 'javascripts/vendor/vue/vue.js' : 'javascripts/vendor/vue/vue.min.js') }}
+
+{{ include_javascript('tools/bazar/presentation/javascripts/list-translate.js', false, true) }}
+{{ include_css('tools/bazar/presentation/styles/list-form.css') }}
+
+<form method="post" @submit="onSubmit" class="list-form form-horizontal" id="translate-list" data-defaultlanguage="{{ default_language }}" data-langs="{{ langs| json_encode }}" data-jsonlist="{{ list|json_encode }}">
+    <div class="control-group form-group">
+        <label class="control-label col-sm-3">
+			{{ _t('BAZ_TRANSLATE_IN') }}
+		</label>
+          <select v-model="selectedLanguage" class="form-control input-sm" id="lang">
+            <option value="{{ default_language }}" selected> {{ default_language }} </option>
+              {% for lang in langs %}
+            <option value="{{ lang }}"> {{ lang }} </option>
+            {% endfor %}
+          </select>
+    </div>
+    <div class="control-group form-group">
+		<label class="control-label col-sm-3">
+			<span class="required_symbol">*&nbsp;</span>
+			{{ _t('BAZ_LIST_NAME') }}
+		</label>
+		<div class="controls input-group col-sm-9">
+			<input id="listTitle" type="text" v-model="list.title" name="title"
+			       placeholder="{{ _t('BAZ_LIST_NAME') }}" class="form-control" disabled required/>
+			<template v-for="lang in extraLangsList">
+			<input  v-model="list[lang]" type="text" class="form-control extra_lang_input" placeholder="{{ _t('BAZ_TRANSLATION') }}" v-if="selectedLanguage === lang"/>
+			</template>
+		</div>
+	</div>
+
+	{# List Nodes #}
+	<label class="control-label">{{ _t('BAZ_VALEURS_LISTE') }}</label>
+	<child-list-translate :node="list" :selectedLanguage="selectedLanguage" :langs="extraLangsList"  :depth="0" :langsvalues="extraLangsValues" :familytree="[]"></child-list-translate>
+	<input type=hidden name=jsonlist :value="jsonList"/>
+	{# Form Actions #}
+	<div class="form-actions form-group">
+		<div class="col-sm-9 col-sm-offset-3">
+			<button class="btn btn-primary" type="submit" name="submit">
+				{{ _t('BAZ_SAVE') }}
+			</button>
+			<a class="btn btn-default" href="{{ url({ params: { vue: 'listes' }})|raw }}">
+				{{ _t('BAZ_ANNULER') }}
+			</a>
+		</div>
+	</div>
+</div>

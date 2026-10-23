@@ -132,20 +132,55 @@ class AclService
             $privileges = [$privileges];
         }
 
+        // TODO set function in utils ?
+        $add_quote_func = function ($el) { return '"' . $this->dbService->escape($el) . '"' ;};
+
         // Add '"' at begin and end of each escaped privileges elements.
-        for ($i = 0; $i < count($privileges); $i++) {
-            $privileges[$i] = '"' . $this->dbService->escape($privileges[$i]) . '"';
-        }
+        array_map($add_quote_func, $privileges);
 
-        // Construct a CSV string with privileges elements
-        $privileges = implode(',', $privileges);
-
-        $this->dbService->query('DELETE FROM' . $this->dbService->prefixTable('acls') . ' WHERE page_tag = "' . $this->dbService->escape($tag) . '" AND privilege IN (' . $privileges . ')');
+        $this->dbService->query(<<<SQL
+            DELETE FROM {$this->dbService->prefixTable('acls')}
+            WHERE page_tag = "{$tag}" AND privilege IN ({$privileges})
+        SQL);
 
         if (isset($this->cache[$tag])) {
             unset($this->cache[$tag]);
         }
     }
+
+    /**
+     * remove acls associated with every page in tags
+     * @param array       $tag        The page's WikiName
+     * @param string|array $privileges a privilege or several privileges to delete from database
+     */
+    public function deleteMany($tags, $privileges = ['read', 'write', 'comment'])
+    {
+        if ($this->securityController->isWikiHibernated()) {
+            throw new \Exception(_t('WIKI_IN_HIBERNATION'));
+        }
+        if (!is_array($privileges)) {
+            $privileges = [$privileges];
+        }
+
+        $add_quote_func = function ($el) { return '"' . $this->dbService->escape($el) . '"';};
+
+        // Add '"' at begin and end of each escaped privileges elements.
+        array_map($add_quote_func, $privileges);
+        array_map($add_quote_func, $tags);
+
+
+        $this->dbService->query(<<<SQL
+        DELETE FROM {$this->dbService->prefixTable('acls')}
+        WHERE page_tag in ({implode(',', $tags)})
+        AND privilege IN ({implode(',', $privileges)})
+        SQL);
+
+        if (isset($this->cache)) {
+            unset($this->cache);
+        }
+    }
+
+
 
     /**
      * Check if user has a privilege on page.

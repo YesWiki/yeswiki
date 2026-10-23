@@ -1,0 +1,28 @@
+labelhtml***<h4>Contributor</h4>*** ***<h4>Contributor</h4>***
+listefiche***6***Organization*** *** *** ***listefiche6*** ***1*** *** *** * *** * *** *** *** ***
+labelhtml***If your organization is not in the list, please <a href="https://garden.fablim.org/?AddOrganizatioN&lang=en"> Add your Organization</a>*** *** ***
+listefiche***10***Name*** *** *** ***listefiche10*** *** *** *** *** * *** * *** *** *** ***
+labelhtml***If your name is not in the list, please <a href="https://garden.fablim.org/?AddDirectorY"> Add Yourself</a>*** *** ***
+labelhtml***<h4>Resource</h4>*** *** ***
+radio***ListeResourcesProject***This resource was created for the GARDEN project?*** *** *** ***bf_radio_group*** ***1*** *** *** * *** * *** *** *** ***
+texte***bf_titre***Title***255***255*** *** ***text***1*** *** *** * *** * *** *** *** ***
+texte***bf_text1***Author*** *** *** *** ***text***1*** *** *** * *** * *** *** *** ***
+textelong***bf_description***Description*** *** *** *** ***wiki***1*** *** *** * *** * *** *** *** ***
+checkbox***ListeTypeResource***Type of the resource*** *** *** ***checkboxListeTypeResourceid_resource*** ***1*** *** *** * *** * *** *** *** ***
+labelhtml***<div id="checkboxListeTypeResourceid_resource_9" style="display:none;">*** *** ***
+texte***bf_autreressource***Other type of resource***255***255*** *** ***text*** *** *** *** * *** * *** *** *** ***
+labelhtml***</div><!-- Fin de condition-->*** *** ***
+checkbox***ListeTheme***Theme*** *** *** ***checkboxListeThemeid_theme*** ***1*** *** *** * *** * *** *** *** ***
+labelhtml***<div id="checkboxListeThemeid_theme_10" style="display:none;">*** *** ***
+texte***bf_autrethematique***Other theme***255***255*** *** ***text*** *** *** *** * *** * *** *** *** ***
+labelhtml***</div><!-- Fin de condition-->*** *** ***
+lien_internet***bf_url***Link to the resource*** *** *** *** *** *** *** *** *** * *** * *** *** *** ***
+checkbox***ListeLangues***Languages*** *** *** ***checkboxListeLanguesbf_checkbox_group*** *** *** *** *** * *** * *** *** *** ***
+liste***ListeWorkPackage***Work package*** *** *** ***listeListeWorkPackage*** *** *** *** *** * *** * *** *** *** ***
+checkbox***ListeLicence***Licence*** *** *** ***checkboxListeLicenceid_licence*** *** *** *** *** * *** * *** *** *** ***
+labelhtml***<div id="checkboxListeLicenceid_licence_5" style="display:none;">*** *** ***
+texte***bf_text***Add other licence*** *** *** *** ***text*** *** *** *** * *** * *** *** *** ***
+labelhtml***</div><!-- Fin de condition-->*** *** ***
+image***bf_image***Image (facultative)***140***140***600***600***left*** *** *** *** * *** * *** *** *** ***
+acls*** * ***%***comments-closed*** ***non***bf_commentaires*** *** *** *** ***
+acls*** * ***%***comments-closed*** ***non***bf_acls1*** *** *** *** ***

@@ -23,6 +23,9 @@ class TabsField extends LabelField
     protected const FIELD_MOVE_SUBMIT_BUTTON_TO_LAST_TAB = 5;
     protected const FIELD_BTN_COLOR = 7;
     protected const FIELD_BTN_SIZE = 9;
+    protected const BTN_COLOR_LIST = ['btn-primary', 'btn-secondary-1', 'btn-secondary-2'];
+    protected const BTN_SIZE_SMALL = 'btn-xs';
+    private const FIELD_CLASS_TYPE = 'TabsField';
 
     public function __construct(array $values, ContainerInterface $services)
     {
@@ -32,8 +35,8 @@ class TabsField extends LabelField
         $this->formTitles = $this->sanitizeTitles($values[self::FIELD_FORM_TITLES]);
         $this->viewTitles = $this->sanitizeTitles($values[self::FIELD_VIEW_TITLES]);
         $this->moveSubmitButtonToLastTab = ($values[self::FIELD_MOVE_SUBMIT_BUTTON_TO_LAST_TAB] === 'moveSubmit');
-        $this->btnClass = (in_array($values[self::FIELD_BTN_COLOR], ['btn-primary', 'btn-secondary-1', 'btn-secondary-2'], true) ? $values[self::FIELD_BTN_COLOR] : 'btn-primary') .
-          ($values[self::FIELD_BTN_SIZE] === 'btn-xs' ? ' btn-xs' : '');
+        $this->btnClass = (in_array($values[self::FIELD_BTN_COLOR], self::BTN_COLOR_LIST, true) ? $values[self::FIELD_BTN_COLOR] : 'btn-primary') . ' ' .
+          ($values[self::FIELD_BTN_SIZE] === self::BTN_SIZE_SMALL ? self::BTN_SIZE_SMALL : '');
         $this->tabsController = $this->getService(TabsController::class);
         // does not call prepareText in constuct only in render (lazy loading)
         $this->formText = '';
@@ -92,6 +95,22 @@ class TabsField extends LabelField
         return $this->btnClass;
     }
 
+    // LANG_FIXME not sure about this function
+    public static function mapToFieldArray($fieldProps): array
+    {
+        $new = parent::mapToFieldArray($fieldProps);
+        $new[self::FIELD_FORM_TITLES] = implode(',', $fieldProps['formTitles']);
+        $new[self::FIELD_VIEW_TITLES] = implode(',', $fieldProps['viewTitles']);
+        $new[self::FIELD_BTN_COLOR] = array_filter(explode(' ', $fieldProps['btnClass']), function ($el) {
+            return in_array(trim($el), self::BTN_COLOR_LIST);
+        })[0];
+        $new[self::FIELD_BTN_SIZE] = str_contains($fieldProps['btnClass'], self::BTN_SIZE_SMALL) ? self::BTN_SIZE_SMALL : '';
+        $new[self::FIELD_MOVE_SUBMIT_BUTTON_TO_LAST_TAB] = $fieldProps['moveSubmitButtonToLastTab'] ? 'moveSubmit' : ' ';
+        ksort($new);
+
+        return $new;
+    }
+
     // change return of this method to keep compatible with php 7.3 (mixed is not managed)
     #[\ReturnTypeWillChange]
     public function jsonSerialize()
@@ -99,6 +118,7 @@ class TabsField extends LabelField
         return array_merge(
             parent::jsonSerialize(),
             [
+                'field_type' => self::FIELD_CLASS_TYPE,
                 'formTitles' => $this->getFormTitles(),
                 'viewTitles' => $this->getViewTitles(),
                 'moveSubmitButtonToLastTab' => $this->getMoveSubmitButtonToLastTab(),

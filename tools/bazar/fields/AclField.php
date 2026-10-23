@@ -32,6 +32,7 @@ class AclField extends BazarField
     protected const FIELD_LABEL = 4;
     protected const FIELD_NAME = 6;
     protected const FIELD_ASK_IF_ACTIVATE_COMMENTS = 7;
+    private const FIELD_CLASS_TYPE = 'AclField';
 
     public function __construct(array $values, ContainerInterface $services)
     {
@@ -41,8 +42,8 @@ class AclField extends BazarField
         $this->name = $this->filterNotEmptyString($values, self::FIELD_NAME, $this->askIfActivateComments ? 'bf_commentaires' : null);
         $this->propertyName = $this->name;
 
-        $this->default = $this->filterNotEmptyString(['default' => $this->default], 'default', '');
-        $this->default = ($this->default === '' || in_array($this->default, array_keys(self::OPTIONS), true)) ? $this->default : '';
+        $this->default ??= '';
+        $this->default = in_array($this->default, array_keys(self::OPTIONS), true) ? $this->default : '';
 
         $this->label = $this->filterNotEmptyString($values, self::FIELD_LABEL, _t('BAZ_ACTIVATE_COMMENTS'));
         $this->hint = $this->filterNotEmptyString(['hint' => $this->hint], 'hint', _t('BAZ_ACTIVATE_COMMENTS_HINT'));
@@ -208,6 +209,28 @@ class AclField extends BazarField
         }
     }
 
+    public static function mapToFieldArray($fieldProps): array
+    {
+
+        $new = parent::mapToFieldArray($fieldProps);
+
+        $new[self::FIELD_TYPE] = $fieldProps['type'];
+        $new[self::FIELD_ENTRY_READ_RIGHT] = $fieldProps['entryReadRight'];
+        $new[self::FIELD_ENTRY_WRITE_RIGHT] = $fieldProps['entryWriteRight'];
+        $new[self::FIELD_ENTRY_COMMENT_RIGHT] = $fieldProps['entryCommentRight'];
+        $new[self::FIELD_LABEL] = $fieldProps['label'] == _t('BAZ_ACTIVATE_COMMENTS') ? '' : $fieldProps['label'] ;
+        $new[self::FIELD_DEFAULT] = $fieldProps['default'];
+        $new[self::FIELD_NAME] = $fieldProps['name'];
+        $new[self::FIELD_ASK_IF_ACTIVATE_COMMENTS] = $fieldProps['askIfActivateComments'] ? 1 : ' ';
+        $new[self::FIELD_HINT] = $fieldProps['hint'] == _t('BAZ_ACTIVATE_COMMENTS_HINT') ? '' : $fieldProps['hint'];
+
+        ksort($new);
+
+        return $new;
+    }
+
+
+
     // change return of this method to keep compatible with php 7.3 (mixed is not managed)
     #[\ReturnTypeWillChange]
     public function jsonSerialize()
@@ -224,6 +247,7 @@ class AclField extends BazarField
             'hint' => $this->getHint(),
             'default' => $this->getDefault(),
             'askIfActivateComments' => $this->getAskIfActivateComments(),
+            'field_type' => self::FIELD_CLASS_TYPE,
         ];
     }
 }

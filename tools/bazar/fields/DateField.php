@@ -11,6 +11,8 @@ use YesWiki\Core\Service\DateService as CoreDateService;
  */
 class DateField extends BazarField
 {
+    private const FIELD_CLASS_TYPE = 'DateField';
+
     protected const FIELD_ENTRY_MODE = 6;
     public const ENTRY_MODE_TIME = 'time';
     public const ENTRY_MODE_ALL_DAY = 'allday';

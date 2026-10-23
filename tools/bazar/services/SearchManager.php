@@ -416,7 +416,7 @@ class SearchManager
      *
      * @return $string
      */
-    public function prepareSearchRequest(&$params = [], bool $filterOnReadACL = false, bool $applyOnAllRevisions = false): string
+    public function prepareSearchRequest(&$params = [], bool $filterOnReadACL = false, bool $applyOnAllRevisions = false, $columns = 'f.*', $lang = 'default'): string
     {
         $params = array_merge(
             [
@@ -636,8 +636,18 @@ class SearchManager
         ];
 
         foreach ($vFields as $vFieldName => $vField) {
+
+
+            $lang = $lang == 'default' ? $this->wiki->lang : $lang;
             if (!$vField['isExtracted']) {
-                $vSelectRequest[] = $this->bodyValue($this->jsonPath($vFieldName)) . ' AS ' . $this->column($vFieldName);
+                // Extract it if it is not yet done
+
+                $vSQLNom = mysqli_real_escape_string($this->wiki->dblink, $vFieldName);
+                $vRenamedSQLNom = mysqli_real_escape_string($this->wiki->dblink, $this->renameJSONPathVariable($vFieldName));
+
+                $vSelectRequest[] = "JSON_UNQUOTE(COALESCE(JSON_EXTRACT(body, '\$.extralang.{$lang}.{$vSQLNom}'), JSON_EXTRACT(body, '\$.{$vSQLNom}'))) AS `{$vRenamedSQLNom}`";
+
+                // rembember it was extracted
 
                 $vField['isExtracted'] = true;
             }
@@ -739,9 +749,9 @@ class SearchManager
                                         . ($vIDsRequest !== '' ? ' AND ' . $vIDsRequest : '')
                                 . ')'
                                 . ($vSplittedsRequest != '' ? $vSplittedsRequest . ' ' : ' ')
-                                . 'SELECT DISTINCT f.* '
-                                . 'FROM filteredPages f '
-                                . ($vSplittedsCount > 0 ? 'LEFT JOIN all_multiples s ON s.id = f.id ' : '')
+                                . 'SELECT DISTINCT '
+                                . $columns .
+                                ' FROM filteredPages f ' . ($vSplittedsCount > 0 ? 'LEFT JOIN all_multiples s ON s.id = f.id ' : '')
                                 . ($vWhereRequest != '' ? 'WHERE ' . $vWhereRequest : '');
 
         return $vCompleteRequest;
@@ -756,7 +766,16 @@ class SearchManager
      */
     public function search($params = [], bool $filterOnReadACL = false, bool $useGuard = false): array
     {
-        $requete = $this->prepareSearchRequest($params, $filterOnReadACL);
+
+        if (isset($this->wiki->config['supported_langs'])) {
+            $lang = $this->wiki->lang;
+            $columns = "f.id, f.tag, f.time, f.body_r, f.owner, f.user, f.latest, f.handler, f.comment_on ,JSON_MERGE_PATCH(f.body, COALESCE(JSON_EXTRACT(f.body, \"\$.extralang.$lang\"), body)) as body";
+        } else {
+            $columns = 'f.*';
+        }
+
+
+        $requete = $this->prepareSearchRequest($params, $filterOnReadACL, false, $columns);
 
         $searchResults = [];
         if ($requete === '') {

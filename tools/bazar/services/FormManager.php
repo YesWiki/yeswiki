@@ -5,7 +5,11 @@ namespace YesWiki\Bazar\Service;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Bazar\Field\BazarField;
 use YesWiki\Bazar\Field\ImageField;
+use YesWiki\Bazar\Service\ActivityPubService;
+use YesWiki\Core\Service\AclService;
 use YesWiki\Core\Service\DbService;
+use YesWiki\Core\Service\PageManager;
+use YesWiki\Core\Service\TripleStore;
 use YesWiki\Security\Controller\SecurityController;
 use YesWiki\Wiki;
 
@@ -23,6 +27,10 @@ class FormManager
     protected $isAvailableOnlyOneEntryOption;
     protected $isAvailableOnlyOneEntryMessage;
     protected $attach;
+    protected $pageManager;
+    protected $tripleStore;
+    protected $aclService;
+    protected $pageTableName;
 
     public function __construct(
         Wiki $wiki,
@@ -32,6 +40,10 @@ class FormManager
         ParameterBagInterface $params,
         SecurityController $securityController,
         ActivityPubService $activityPubService,
+        HttpSignatureService $httpSignatureService,
+        PageManager $pageManager,
+        TripleStore $tripleStore,
+        AclService $aclService,
     ) {
         if (!class_exists('attach')) {
             include 'tools/attach/libs/attach.lib.php';
@@ -42,6 +54,9 @@ class FormManager
         $this->entryManager = $entryManager;
         $this->fieldFactory = $fieldFactory;
         $this->params = $params;
+        $this->pageManager = $pageManager;
+        $this->tripleStore = $tripleStore;
+        $this->aclService = $aclService;
 
         $this->cachedForms = [];
         $this->cacheValidatedForAll = false;
@@ -49,13 +64,16 @@ class FormManager
         $this->isAvailableOnlyOneEntryOption = null;
         $this->isAvailableOnlyOneEntryMessage = null;
         $this->attach = new \Attach($this->wiki);
+        $this->pageTableName = $this->dbService->prefixTable('pages');
     }
 
     protected function getBasePath()
     {
         $basePath = $this->attach->GetUploadPath();
 
-        return $basePath . (substr($basePath, -1) != '/' ? '/' : '');
+        $basePath = substr($basePath, -1) == '/' ? $basePath : $basePath.'/';
+
+        return $basePath;
     }
 
     protected function cleanCacheDefaultImage($prefix)
@@ -98,6 +116,7 @@ class FormManager
                     } finally {
                         unlink($tempFile);
                     }
+                    dump(json_encode($image_comp));
                 } else {
                     $image_comp[ImageField::FIELD_IMAGE_DEFAULT] = '';
                     if (file_exists($default_image_filename)) {
@@ -114,76 +133,164 @@ class FormManager
         return $this->dbService->escape($template);
     }
 
-    protected function prepare_with_special_parameters($form)
+    // necessary until jquery form is rework to use new format
+    protected function prepare_with_special_parameters_old_format($form, $id_nature)
     {
         $basePath = $this->getBasePath();
         $template_list = $this->parseTemplate($form['bn_template']);
         $modify = false;
         for ($temp_index = 0; $temp_index < count($template_list); $temp_index++) {
             if ($template_list[$temp_index][0] == 'image') {
-                $modify = true;
-                $image_comp = $template_list[$temp_index];
-                $default_image_filename = $basePath . "defaultimage{$form['bn_id_nature']}_{$image_comp[1]}.jpg";
-                if (file_exists($default_image_filename)) {
-                    $image_comp[ImageField::FIELD_IMAGE_DEFAULT] = $image_comp[ImageField::FIELD_IMAGE_DEFAULT] . '|data:image/jpg;base64,' . base64_encode(file_get_contents($default_image_filename));
-                } else {
-                    $image_comp[ImageField::FIELD_IMAGE_DEFAULT] = '';
-                }
-                $template_list[$temp_index] = $image_comp;
+
+                ['wikifield' => $wikifield,
+                  'modify' => $modify] = $this->manage_default_image_field($template_list[$temp_index], $id_nature);
+
+                $template_list[$temp_index] = $wikifield;
             }
         }
 
         return [$template_list, $modify];
     }
 
-    public function getOne($formId): ?array
+    /**
+     * base64 encode default image in imageField if file not already done and file exists. Look for a default file with the following name :
+     *  $basePath . defaultimage{$formId}_{$wikifield[1]}.jpg
+     * @param $wikifield array encoded field
+     * @param $formId
+     *
+     * @return array with updated field and wether it has been modified or not : [ 'field' => updated_field, 'modifield' => bool ]
+     */
+    protected function manage_default_image_field($wikifield, $formId): array
     {
-        if (isset($this->cachedForms[$formId])) {
-            return $this->cachedForms[$formId];
+
+        // field already base64 encoded
+        if (str_contains($wikifield[ImageField::FIELD_IMAGE_DEFAULT], ';base64')) {
+            return [
+                'wikifield' => $wikifield,
+                'modify' => false,
+            ];
+        }
+        $basePath = $this->getBasePath();
+        $default_image_filename = $wikifield[ImageField::FIELD_IMAGE_DEFAULT] ?? $basePath."defaultimage{$formId}_{$wikifield[1]}.jpg";
+        if (file_exists($default_image_filename)) {
+            $wikifield[ImageField::FIELD_IMAGE_DEFAULT] = $wikifield[ImageField::FIELD_IMAGE_DEFAULT].'|data:image/jpg;base64,'.base64_encode(file_get_contents($default_image_filename));
+        } else {
+            $wikifield[ImageField::FIELD_IMAGE_DEFAULT] = '';
         }
 
-        if (intval($formId) . '' === $formId . '') {
-            $form = $this->dbService->loadSingle('SELECT * FROM ' . $this->dbService->prefixTable('nature') . 'WHERE bn_id_nature=\'' . $this->dbService->escape($formId) . '\'');
+        return [
+            'wikifield' => $wikifield,
+            'modify' => true,
+        ];
+    }
 
-            if (!$form) {
+    protected function prepare_with_special_parameters($form)
+    {
+        if (isset($form['fields'])) {
+            $template_list = $form;
+        } else {
+            $template_list = $this->parseTemplate($form['bn_template']);
+        }
+
+        $prepared = [];
+        $modify = false;
+
+        $fields = $template_list['fields'];
+        foreach ($fields as $key => $field) {
+            $cname = "YesWiki\\Bazar\\Field\\".$field['field_type'];
+            $wikifield = $cname::mapToFieldArray($field);
+
+            if ($wikifield[0] == 'image') {
+                ['wikifield' => $wikifield, 'modify' => $modify] = $this->manage_default_image_field($wikifield, $form['id']);
+            }
+            $prepared[] = $wikifield;
+        }
+
+        return [$prepared, $modify];
+    }
+
+    public function getPageTagFromId($id): ?String {
+        $request = 'SELECT tag FROM '. $this->pageManager->pageTableName .' WHERE latest = "Y" AND json_value(body, "$.id") = '.$id.'; ';
+        $tag = $this->dbService->loadSingle($request);
+        return $tag['tag'] ?? null ;
+    }
+
+    public function getOne($formId, $lang = 'default'): ?array
+    {
+        //COMMENT we should begin to use form name instead of form number to find form.
+        if (is_numeric($formId)) {
+            $formId = $this->getPageTagFromId($formId);
+            if ($formId == null) {
                 return null;
             }
-
-            $form = $this->getFromRawData($form);
         }
 
-        $this->cachedForms[$formId] = $form ?? [];
+        if (isset($this->cachedForms[$formId . $lang])) {
+            return $this->cachedForms[$formId . $lang];
+        }
+
+
+        $form = $this->pageManager->getOne($formId, null, true, false, null, $lang);
+
+        if (!$form) {
+            return null;
+        }
+
+        $form = $this->getFromRawData($form);
+
+        $form['tag'] = $formId;
+        $this->cachedForms[$formId] = $form;
 
         return $form ?? [];
     }
 
+    /*
+    * get json form representation from wiki syntax
+    */
     public function getFromRawData($form)
     {
-        foreach ($form as $key => $value) {
-            $form[$key] = _convert($value, 'ISO-8859-15');
+        if (isset($form['body'])) {
+            $form = json_decode($form['body'], true);
+            $form['bn_condition'] = $form['condition'];
+            $form['bn_sem_context'] = $form['semantic']['context'] ?? '';
+            $form['bn_sem_type'] = $form['semantic']['type'] ?? '';
+            $form['bn_sem_use_template'] = $form['semantic']['use_template'] ?? '' ;
+            $form['bn_condition'] = $form['condition'] ?? '';
+            $form['bn_only_one_entry'] = $form['only_one_entry'] ?? '';
+            $form['bn_only_one_entry_message'] = $form['one_entry_message'] ?? '';
+            $form['bn_id_nature'] = $form['id'];
+            $form['bn_label_nature'] = $form['title'];
+
+            uasort($form['fields'], function ($a, $b) { return $a['order'] - $b['order'] ; });
+
+            list($template_list, $modify) = $this->prepare_with_special_parameters($form);
+        } else {
+            list($template_list, $modify) = $this->prepare_with_special_parameters_old_format($form, $form['bn_id_nature']);
         }
-        list($template_list, $modify) = $this->prepare_with_special_parameters($form);
+
         $form['template'] = $template_list;
         $form['prepared'] = $this->prepareData($form);
-        if ($modify == true) {
-            $form['bn_template'] = $this->encodeTemplate($template_list);
-        }
+        $form['bn_template'] = $this->encodeTemplate($template_list);
 
         return $form;
     }
 
-    public function getAll(): array
+    public function getAll($bazar_lang = 'default'): array
     {
         if (!$this->cacheValidatedForAll) {
-            $forms = $this->dbService->loadAll("SELECT * FROM {$this->dbService->prefixTable('nature')} ORDER BY bn_label_nature ASC");
+            $forms =  $forms = $this->pageManager->getManyFromTriple('form', '*', $bazar_lang);
             foreach ($forms as $form) {
-                if (!empty($form['bn_id_nature'])) {
-                    $formId = $form['bn_id_nature'];
-                    $this->cachedForms[$formId] = $this->getFromRawData($form);
+                if (!empty($form['id'])) {
+                    // save only not empty formId
+                    $form_prepared = $this->getFromRawData($form);
+                    $this->cachedForms[$form_prepared['id']] = $form_prepared;
                 }
             }
+
+
             $this->cacheValidatedForAll = true;
         }
+
 
         return array_filter(
             $this->cachedForms,
@@ -194,33 +301,38 @@ class FormManager
         );
     }
 
+    /**
+    * @return array with id => title for each form
+    *
+    */
     public function getAllIds(): array
     {
-        if ($this->cacheValidatedForAll) {
-            return array_keys($this->getAll());
+        $forms = [];
+        $id_and_title = $this->pageManager->getManyFromTriple('form', ['JSON_VALUE(body, "$.id") as id', 'JSON_VALUE(body, "$.title") as title']);
+        foreach ($id_and_title as $value) {
+            $forms[$value['id']] = $value['title'];
         }
-
-        $rows = $this->dbService->loadAll("SELECT bn_id_nature FROM {$this->dbService->prefixTable('nature')}");
-
-        return array_column($rows, 'bn_id_nature');
+        return $forms;
     }
 
-    public function getMany($formsIds): array
+    public function getMany($formsIds, $bazar_lang = 'default'): array
     {
         if (count($formsIds) == 0) {
-            return $this->getAll();
+            return $this->getAll($bazar_lang);
         }
 
         $results = [];
 
         foreach ($formsIds as $formId) {
-            if (empty($this->cachedForms[$formId])) {
-                $form = $this->getOne($formId);
+
+            if (empty($this->cachedForms[$formId.$bazar_lang])) {
+                $form = $this->getOne($formId, $bazar_lang);
+
                 if ($form !== null) {
-                    $this->cachedForms[$formId] = $form;
+                    $this->cachedForms[$formId.$bazar_lang] = $form;
                 }
             } else {
-                $form = $this->cachedForms[$formId];
+                $form = $this->cachedForms[$formId.$bazar_lang];
             }
             $results[$formId] = $form;
         }
@@ -228,22 +340,75 @@ class FormManager
         return $results;
     }
 
+<<<<<<< HEAD
+    /**
+     * get all entries for specified form.
+     * @param $formId page name of the formulaire
+     */
+    public function getEntries($formId, $columns = '*')
+    {
+        return $this->dbService->loadAll(<<<SQL
+        SELECT {$columns} from {$this->pageManager->pageTableName}
+        WHERE tag in (select resource from {$this->dbService->prefixTable('triples')} where value = 'fiche_bazar') and
+         JSON_VALUE(body, '$.id_typeannonce') = (SELECT  JSON_VALUE(body, '$.id') from {$this->pageManager->pageTableName} where tag = '{$formId}' and latest = 'Y')
+        SQL);
+    }
+
+    // TODO Pass a Form object instead of a raw array
+||||||| 07120ed89
+    // TODO Pass a Form object instead of a raw array
+=======
     /**
      * Creates a form and returns its id, which differs from the requested one when that id is taken.
      */
+>>>>>>> v4.7.1
     public function create($data)
     {
         if ($this->securityController->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
+<<<<<<< HEAD
+
+
+        // If ID is not set or if it is already used, find a new ID
+||||||| 07120ed89
+        // If ID is not set or if it is already used, find a new ID
+=======
+>>>>>>> v4.7.1
         if (empty($data['bn_id_nature']) || $this->getOne($data['bn_id_nature'])) {
             $data['bn_id_nature'] = $this->findNewId();
         }
+        $id =  $data['id'] ?? $data['bn_id_nature'];
 
         $activitypubEnabled = (int)$this->activityPubService->isEnabled($data);
 
         $this->cacheValidatedForAll = false;
 
+<<<<<<< HEAD
+        $form = $this->getFromRawData($data);
+        $tag = getAvailableSlug($form['bn_label_nature']);
+        $saved = $this->__createOrUpdate($form, $tag);
+        if ($saved == 0) {
+||||||| 07120ed89
+        $query = 'INSERT INTO ' . $this->dbService->prefixTable('nature')
+                    . '(`bn_id_nature` ,`bn_ce_i18n` ,`bn_label_nature` ,`bn_template` ,`bn_description` ,`bn_sem_template` ,`bn_sem_reverse_template`, `bn_activitypub_enable`, `bn_activitypub_username`, `bn_activitypub_private_key`, `bn_activitypub_public_key`'
+                    . ($this->isAvailableOnlyOneEntryOption() ? ',`bn_only_one_entry`' : '')
+                    . ($this->isAvailableOnlyOneEntryMessage() ? ',`bn_only_one_entry_message`' : '')
+                    . ',`bn_condition`)'
+                    . ' VALUES (' . intval($data['bn_id_nature']) . ', "fr-FR", "'
+                    . $this->dbService->escape(_convert($data['bn_label_nature'] ?? '', YW_CHARSET, true)) . '", "'
+                    . $this->dbService->escape(_convert($data['bn_template'] ?? '', YW_CHARSET, true)) . '", "'
+                    . $this->dbService->escape(_convert($data['bn_description'] ?? '', YW_CHARSET, true)) . '", "'
+                    . $this->dbService->escape(_convert($data['bn_sem_template'] ?? '', YW_CHARSET, true)) . '", "'
+                    . $this->dbService->escape(_convert($data['bn_sem_reverse_template'] ?? '', YW_CHARSET, true)) . '", "'
+                    . $activitypubEnabled . '", "'
+                    . $this->dbService->escape(_convert($data['bn_activitypub_username'] ?? '', YW_CHARSET, true)) . '", "'
+                    . (isset($privateKey) ? $privateKey . '", "' : '", "')
+                    . (isset($publicKey) ? $publicKey . '", "' : '", "')
+                    . ($this->isAvailableOnlyOneEntryOption() ? ((isset($data['bn_only_one_entry']) && $data['bn_only_one_entry'] === 'Y') ? 'Y' : 'N') . '", "' : '", "')
+                    . ($this->isAvailableOnlyOneEntryMessage() ? (empty($data['bn_only_one_entry_message']) ? '' : $this->dbService->escape(_convert($data['bn_only_one_entry_message'], YW_CHARSET, true))) . '", "' : '", "')
+            . $this->dbService->escape(_convert($data['bn_condition'], YW_CHARSET, true)) . '")';
+=======
         $query = 'INSERT INTO ' . $this->dbService->prefixTable('nature')
                     . '(`bn_id_nature` ,`bn_ce_i18n` ,`bn_label_nature` ,`bn_template` ,`bn_description` ,`bn_sem_template` ,`bn_sem_reverse_template`, `bn_activitypub_enable`'
                     . ($this->isAvailableOnlyOneEntryOption() ? ',`bn_only_one_entry`' : '')
@@ -259,26 +424,119 @@ class FormManager
                     . ($this->isAvailableOnlyOneEntryOption() ? ((isset($data['bn_only_one_entry']) && $data['bn_only_one_entry'] === 'Y') ? 'Y' : 'N') . '", "' : '", "')
                     . ($this->isAvailableOnlyOneEntryMessage() ? (empty($data['bn_only_one_entry_message']) ? '' : $this->dbService->escape(_convert($data['bn_only_one_entry_message'], YW_CHARSET, true))) . '", "' : '", "')
             . $this->dbService->escape(_convert($data['bn_condition'], YW_CHARSET, true)) . '")';
+>>>>>>> v4.7.1
 
+<<<<<<< HEAD
+            $this->aclService->save($tag, 'write', '@admins');
+            $this->aclService->save($tag, 'read', '@admins');
+
+            $this->tripleStore->create(
+                $tag,
+                TripleStore::TYPE_URI,
+                'form',
+                '',
+                ''
+            );
+         }
+||||||| 07120ed89
+        return $this->dbService->query($query);
+=======
         $saved = $this->dbService->query($query);
         unset($this->cachedForms[$data['bn_id_nature']]);
 
         return $saved ? (string)intval($data['bn_id_nature']) : false;
+>>>>>>> v4.7.1
     }
 
-    public function update($data)
+    public function __createOrUpdate($form, $tag) {
+        $counter = 0;
+        $form_array = [];
+        foreach ($form['prepared'] as $i => $field) {
+            $classType = get_class($field);
+            $field = json_decode(json_encode($field), true);
+            $field['name'] = $field['name'] ?? $field['type'] . '__' . $counter;
+            $field['order'] = $counter++;
+            if (isset($field['options'])) {
+                unset($field['options']);
+            }
+            $fieldExploded = explode('\\', $classType);
+            $field['field_type'] = array_pop($fieldExploded);
+            $id = $field['id'] ?? $field['name'];
+            $form_array[$id] = $field;
+        }
+        $newform = [
+            'id' => $form['id'] ?? $form['bn_id_nature'],
+            'title' => $form['bn_label_nature'],
+            'description' => $form['bn_description'],
+            'condition' => $form['bn_condition'],
+            'semantic' => [
+                'context' => $form['bn_sem_context'] ?? '',
+                'type' => $form['bn_sem_type'] ?? '',
+                'use_template' => $form['bn_sem_use_template'] ?? '',
+            ],
+            'lang' => $this->wiki->lang,
+            'only_one_entry' => $form['bn_only_one_entry'] ?? '',
+            'only_one_entry_message' => $form['bn_only_one_entry_message'],
+            'fields' => $form_array,
+            'extralang' => $form['extralang']
+        ];
+        $saved = $this->pageManager->save($tag, json_encode($newform, JSON_FORCE_OBJECT), '', true);
+        return $saved;
+    }
+
+    public function update($data, $tag, $translating = false)
     {
         if ($this->securityController->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
 
-        $template = $this->convertWithSpecialParameters($data['bn_template'], $data['bn_id_nature']);
+        $id = $data['id'] ?? $data['bn_id_nature'];
+
+        $template = $this->convertWithSpecialParameters($data['bn_template'], $id);
 
         $this->cacheValidatedForAll = false;
         unset($this->cachedForms[$data['bn_id_nature']]);
 
         $activitypubEnabled = (int)$this->activityPubService->isEnabled($data);
 
+<<<<<<< HEAD
+        if ($activitypubEnabled && $data['bn_activitypub_private_key'] === null) {
+                 $keyPair = $this->httpSignatureService->generateKeyPair();
+                 $privateKey = $keyPair[0];
+                 $publicKey = $keyPair[1];
+             }
+
+        if ($translating) {
+            return $this->pageManager->save($tag, json_encode($data, JSON_FORCE_OBJECT), '', true);
+        }
+
+        $form = $this->getFromRawData($data);
+        $previous = $this->getOne($tag, 'all');
+        $form['extralang'] = $previous['extralang'] ?? [];
+
+        return $this->__createOrUpdate($form, $tag);
+||||||| 07120ed89
+        if ($activitypubEnabled && $data['bn_activitypub_private_key'] === null) {
+            $keyPair = $this->httpSignatureService->generateKeyPair();
+            $privateKey = $keyPair[0];
+            $publicKey = $keyPair[1];
+        }
+
+        return $this->dbService->query('UPDATE' . $this->dbService->prefixTable('nature') . 'SET '
+            . '`bn_label_nature`="' . $this->dbService->escape(_convert($data['bn_label_nature'], YW_CHARSET, true)) . '" ,'
+            . '`bn_template`="' . $template . '" ,'
+            . '`bn_description`="' . $this->dbService->escape(_convert($data['bn_description'], YW_CHARSET, true)) . '" ,'
+            . '`bn_sem_template`="' . $this->dbService->escape(_convert($data['bn_sem_template'] ?? '', YW_CHARSET, true)) . '" ,'
+            . '`bn_sem_reverse_template`="' . $this->dbService->escape(_convert($data['bn_sem_reverse_template'] ?? '', YW_CHARSET, true)) . '" ,'
+            . '`bn_activitypub_enable`=' . $activitypubEnabled . ' ,'
+            . '`bn_activitypub_username`="' . $this->dbService->escape(_convert($data['bn_activitypub_username'], YW_CHARSET, true)) . '" ,'
+            . (isset($privateKey) ? '`bn_activitypub_private_key`="' . $privateKey . '" ,' : '')
+            . (isset($publicKey) ? '`bn_activitypub_public_key`="' . $publicKey . '" ,' : '')
+            . ($this->isAvailableOnlyOneEntryOption() ? '`bn_only_one_entry`="' . ((isset($data['bn_only_one_entry']) && $data['bn_only_one_entry'] === 'Y') ? 'Y' : 'N') . '",' : '')
+            . ($this->isAvailableOnlyOneEntryMessage() ? '`bn_only_one_entry_message`="' . (empty($data['bn_only_one_entry_message']) ? '' : $this->dbService->escape(_convert($data['bn_only_one_entry_message'], YW_CHARSET, true))) . '",' : '')
+            . '`bn_condition`="' . $this->dbService->escape(_convert($data['bn_condition'], YW_CHARSET, true)) . '"'
+            . ' WHERE `bn_id_nature`=' . intval($data['bn_id_nature']));
+=======
         return $this->dbService->query('UPDATE' . $this->dbService->prefixTable('nature') . 'SET '
             . '`bn_label_nature`="' . $this->dbService->escape(_convert($data['bn_label_nature'], YW_CHARSET, true)) . '" ,'
             . '`bn_template`="' . $template . '" ,'
@@ -290,6 +548,7 @@ class FormManager
             . ($this->isAvailableOnlyOneEntryMessage() ? '`bn_only_one_entry_message`="' . (empty($data['bn_only_one_entry_message']) ? '' : $this->dbService->escape(_convert($data['bn_only_one_entry_message'], YW_CHARSET, true))) . '",' : '')
             . '`bn_condition`="' . $this->dbService->escape(_convert($data['bn_condition'], YW_CHARSET, true)) . '"'
             . ' WHERE `bn_id_nature`=' . intval($data['bn_id_nature']));
+>>>>>>> v4.7.1
     }
 
     public function clone($id)
@@ -311,18 +570,58 @@ class FormManager
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
 
+<<<<<<< HEAD
+        if (is_numeric($id)) {
+                $id = $this->getPageTagFromId($id);
+||||||| 07120ed89
+        // tests of if $formId is int
         if (strval(intval($id)) != strval($id)) {
             return null;
+=======
+        if (strval(intval($id)) != strval($id)) {
+            return null;
+>>>>>>> v4.7.1
         }
 
-        $this->clear($id);
+        $entries = $this->getEntries($id, 'tag');
+        $entries = array_map(function ($el) { return $el['tag'];}, $entries);
+        $entries[] = $id;
+        $this->pageManager->deleteManyOrphaned($entries);
+
 
         $this->cacheValidatedForAll = false;
         unset($this->cachedForms[$id]);
 
-        return $this->dbService->query('DELETE FROM ' . $this->dbService->prefixTable('nature') . 'WHERE bn_id_nature=' . $this->dbService->escape($id));
-    }
 
+<<<<<<< HEAD
+        return true;
+||||||| 07120ed89
+    public function clear($id)
+    {
+        if ($this->securityController->isWikiHibernated()) {
+            throw new \Exception(_t('WIKI_IN_HIBERNATION'));
+        }
+        $this->dbService->query(
+            'DELETE FROM' . $this->dbService->prefixTable('acls')
+                . 'WHERE page_tag IN (SELECT tag FROM ' . $this->dbService->prefixTable('pages')
+                . 'WHERE tag IN (SELECT resource FROM ' . $this->dbService->prefixTable('triples')
+                . 'WHERE property="http://outils-reseaux.org/_vocabulary/type" AND value="fiche_bazar") AND body LIKE \'%"id_typeannonce":"' . $this->dbService->escape($id) . '"%\' );',
+        );
+
+        // TODO use PageManager
+        $this->dbService->query(
+            'DELETE FROM' . $this->dbService->prefixTable('pages')
+                . 'WHERE tag IN (SELECT resource FROM ' . $this->dbService->prefixTable('triples')
+                . 'WHERE property="http://outils-reseaux.org/_vocabulary/type" AND value="fiche_bazar") AND body LIKE \'%"id_typeannonce":"' . $this->dbService->escape($id) . '"%\';',
+        );
+
+        // TODO use TripleStore
+        $this->dbService->query(
+            'DELETE FROM' . $this->dbService->prefixTable('triples')
+                . 'WHERE resource NOT IN (SELECT tag FROM ' . $this->dbService->prefixTable('pages')
+                . 'WHERE 1) AND property="http://outils-reseaux.org/_vocabulary/type" AND value="fiche_bazar";',
+        );
+=======
     public function clear($id)
     {
         if ($this->securityController->isWikiHibernated()) {
@@ -346,6 +645,7 @@ class FormManager
                 . 'WHERE resource NOT IN (SELECT tag FROM ' . $this->dbService->prefixTable('pages')
                 . 'WHERE 1) AND property="http://outils-reseaux.org/_vocabulary/type" AND value="fiche_bazar";',
         );
+>>>>>>> v4.7.1
     }
 
     public function findNewId()
@@ -414,7 +714,17 @@ class FormManager
         $chaine = explode("\n", $raw);
         foreach ($chaine as $ligne) {
             $ligne = trim($ligne);
+<<<<<<< HEAD
+            // on ignore les lignes vides ou commencant par # (commentaire)
+            if (!empty($ligne) && !str_starts_with($ligne, '#')) {
+                // on decoupe chaque ligne par le separateur *** (c'est historique)
+||||||| 07120ed89
+            // on ignore les lignes vides ou commencant par # (commentaire)
             if (!empty($ligne) && !(strrpos($ligne, '#', -strlen($ligne)) !== false)) {
+                // on decoupe chaque ligne par le separateur *** (c'est historique)
+=======
+            if (!empty($ligne) && !(strrpos($ligne, '#', -strlen($ligne)) !== false)) {
+>>>>>>> v4.7.1
                 $tablignechampsformulaire = array_map('trim', explode('***', $ligne));
 
                 if (true /* function_exists($tablignechampsformulaire[self::FIELD_TYPE]) */) {
@@ -446,7 +756,7 @@ class FormManager
                 } elseif ($value == '*') {
                     $new_line .= ' * ';
                 } else {
-                    $new_line .= $value;
+                    $new_line .= is_array($value) ? join(',', $value): $value;
                 }
                 $new_line .= '***';
             }
@@ -477,8 +787,6 @@ class FormManager
     {
         $i = 0;
         $prepared = $result = [];
-
-        $form['template'] = _convert($form['template'], 'ISO-8859-15');
 
         foreach ($form['template'] as $field) {
             $classField = $this->fieldFactory->create($field);

@@ -128,7 +128,7 @@ if (!class_exists('attach')) {
         }
 
         /**
-         * Calcul le repertoire d'upload en fonction du safe_mode.
+         * Calcul le repertoire d'upload en fonction du safe_mode le renvoi avec un '/' à la fin.
          */
         public function GetUploadPath()
         {
@@ -145,7 +145,7 @@ if (!class_exists('attach')) {
         }
 
         /**
-         * Calcul le repertoire de cache en fonction du safe_mode.
+         * Calcul le repertoire de cache en fonction du safe_mode et le renvoi avec un / à la fin.
          */
         public function GetCachePath()
         {
