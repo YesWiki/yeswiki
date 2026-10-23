@@ -28,7 +28,7 @@ class PdfActionTest extends YesWikiTestCase
         }
     }
 
-    public function testASameHostPdfIsEmbedded()
+    public function testASameHostPdfIsEmbedded(): void
     {
         $output = $this->render('http://%s/files/doc.pdf');
 
@@ -36,7 +36,7 @@ class PdfActionTest extends YesWikiTestCase
     }
 
     #[DataProvider('scriptUrlProvider')]
-    public function testAScriptUrlOnTheWikiHostIsRefused(string $url)
+    public function testAScriptUrlOnTheWikiHostIsRefused(string $url): void
     {
         $output = $this->render($url);
 
@@ -44,6 +44,7 @@ class PdfActionTest extends YesWikiTestCase
         $this->assertStringContainsString('yw-alert--danger', $output);
     }
 
+    /** @return array<string, array{0: string}> */
     public static function scriptUrlProvider(): array
     {
         return [

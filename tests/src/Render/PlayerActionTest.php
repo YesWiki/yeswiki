@@ -18,13 +18,13 @@ class PlayerActionTest extends YesWikiTestCase
         return $this->getWiki()->services->get(ActionRunner::class)->action('player', ['url' => $url]);
     }
 
-    public function testAnAudioFileIsPlayed()
+    public function testAnAudioFileIsPlayed(): void
     {
         $this->assertStringContainsString('src="https://example.org/song.mp3"', $this->render('https://example.org/song.mp3'));
     }
 
     #[DataProvider('breakoutProvider')]
-    public function testTheUrlCannotBreakOut(string $url)
+    public function testTheUrlCannotBreakOut(string $url): void
     {
         $html = $this->render($url);
 
@@ -32,6 +32,7 @@ class PlayerActionTest extends YesWikiTestCase
         $this->assertDoesNotMatchRegularExpression('/(href|src)="[\x00-\x20]*j[\x00-\x20]*a[\x00-\x20]*v[\x00-\x20]*a/i', $html);
     }
 
+    /** @return array<string, array{0: string}> */
     public static function breakoutProvider(): array
     {
         return [
