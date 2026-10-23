@@ -52,7 +52,8 @@ if ($referrers) {
     foreach ($referrer_sites as $site => $site_count) {
         echo '<tr>';
         echo '<td width="30" align="right" valign="top" style="padding-right: 10px">', $site_count, '</td>';
-        echo '<td valign="top">', ($site != 'unknown') ? "<a href=\"http://$site\">$site</a>" : $site, '</td>';
+        $safeSite = htmlspecialchars($site, ENT_QUOTES, YW_CHARSET);
+        echo '<td valign="top">', ($site != 'unknown') ? "<a href=\"http://$safeSite\">$safeSite</a>" : $safeSite, '</td>';
         echo "</tr>\n";
     }
     echo "</table>\n";

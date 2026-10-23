@@ -4,6 +4,7 @@ import {
   replaceEditorTextNewContent,
 } from './editor'
 import { errorShouldBe } from './alert'
+import { waitPastBotGuardMinimumAge } from './botGuard'
 
 export const createPageWithContent = async (
   page: Page,
@@ -14,6 +15,7 @@ export const createPageWithContent = async (
 
   await page.getByRole('link', { name: 'créer' }).click()
   await replaceEditorTextNewContent(page, content)
+  await waitPastBotGuardMinimumAge(page)
   await page.getByRole('button', { name: 'Sauver' }).first().click()
   await page.waitForLoadState()
 }

@@ -48,6 +48,7 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], [
     'ACEDITOR_LINK_CANCEL' => 'Annuler',
     'ACEDITOR_LINK_INSERT' => 'Insérer',
     'ACEDITOR_HELP' => 'Aide mémoire',
+    'ACEDITOR_PLAIN_TEXT' => 'Texte brut, avec le correcteur orthographique du navigateur',
     'ACEDITOR_ACTIONS' => 'Composants',
     'ACEDITOR_ACTIONS_EDIT_CURRENT' => 'Éditer le composant sélectionné',
     'ACEDITOR_COMMENT' => 'Commentaire, visible uniquement en mode édition',

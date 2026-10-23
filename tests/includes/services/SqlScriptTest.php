@@ -174,6 +174,32 @@ class SqlScriptTest extends TestCase
         $this->assertLessThan($size / 4, $used, 'reading the dump must not hold it all in memory');
     }
 
+    public static function sessionPlumbingProvider(): array
+    {
+        return [
+            'saves a user variable' => ['/*!40101 SET @saved_cs_client     = @@character_set_client */', true],
+            'restores from a saved user variable' => ['/*!40101 SET character_set_client = @saved_cs_client */', true],
+            'saves an OLD_ variable' => ['/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */', true],
+            'restores from an OLD_ variable' => ['/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */', true],
+            'restores the binary log setting' => ['SET @@SESSION.SQL_LOG_BIN = @MYSQLDUMP_TEMP_LOG_BIN', true],
+            'sets the GTIDs' => ["SET @@GLOBAL.GTID_PURGED=/*!80000 '+'*/ 'bf2e2fa1-9c6c-11f1-bb0d-cece544577d0:1-62055'", true],
+            'opens a transaction' => ['START TRANSACTION', true],
+            'commits' => ['COMMIT', true],
+            'sets autocommit' => ['SET AUTOCOMMIT = 0', true],
+            'sets the names' => ['/*!50503 SET NAMES utf8mb4 */', false],
+            'sets the client charset to a value' => ['/*!50503 SET character_set_client = utf8mb4 */', false],
+            'sets the time zone to a value' => ["/*!40103 SET TIME_ZONE='+00:00' */", false],
+            'creates a table' => ['CREATE TABLE `yeswiki_pages` (`id` int NOT NULL)', false],
+            'inserts a row' => ["INSERT INTO `yeswiki_pages` VALUES (1,'@saved_cs_client')", false],
+        ];
+    }
+
+    #[DataProvider('sessionPlumbingProvider')]
+    public function testOnlyWhatCannotOutliveASliceIsSessionPlumbing(string $statement, bool $expected)
+    {
+        $this->assertSame($expected, SqlScript::isSessionPlumbing($statement));
+    }
+
     public function testTheErrorShowsTheStatementNotItsComment()
     {
         $message = SqlScript::errorMessage('some error', "-- \n-- Data of table : `pages`\n-- \nINSERT INTO `pages` VALUES (1)", 0);

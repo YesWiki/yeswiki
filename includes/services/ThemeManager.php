@@ -126,7 +126,7 @@ class ThemeManager implements EventSubscriberInterface
             foreach ($keysToVerify as $val) {
                 $requested[$val] = null;
                 $requestVal = $request->get($val);
-                if (!empty($requestVal)) {
+                if (is_string($requestVal) && !empty($requestVal)) {
                     $path = str_replace('custom/', '', $requestVal); // exception for preset paths that may contain custom/<presetname>.css
                     if (preg_match('/\//', $path, $matches)) {
                         exit('ERROR: Suspicious path traversal attempt.');
@@ -411,7 +411,10 @@ class ThemeManager implements EventSubscriberInterface
 
     protected function setFavorite(string $key, $newVal)
     {
-        $this->favorites[$key] = (empty($newVal) || !is_string($newVal))
+        $name = ($key === 'preset' && is_string($newVal) && str_starts_with($newVal, self::CUSTOM_CSS_PRESETS_PREFIX))
+            ? substr($newVal, strlen(self::CUSTOM_CSS_PRESETS_PREFIX))
+            : $newVal;
+        $this->favorites[$key] = (empty($newVal) || !is_string($newVal) || !is_string($name) || preg_match('`[/\\\\]|^\.\.?$|\x00`', $name))
             ? ''
             : $newVal;
     }
@@ -569,7 +572,7 @@ class ThemeManager implements EventSubscriberInterface
     private function checkPOSTToAddCustomCSSPreset(array $post): bool
     {
         foreach (self::POST_DATA_KEYS as $key) {
-            if (empty($post[$key])) {
+            if (empty($post[$key]) || !is_string($post[$key]) || !preg_match('/^[A-Za-z0-9 #.,%()\'"_-]{1,200}$/D', $post[$key])) {
                 return false;
             }
         }

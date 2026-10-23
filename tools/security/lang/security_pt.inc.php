@@ -1,16 +1,9 @@
 <?php
 
 return [
-    'HASHCASH_ERROR_PAGE_UNSAVED' => '<strong>A página não pode ser salvo.</strong><br />Talvez você clicou duas vezes no botão "Salvar", resultando em dois backups consecutivos demasiado perto, ou deixou a página em aberto no modo de edição demasiado tempo.<br />Para salvar suas alterações, por favor, copie o conteúdo, atualize a página e cole sua página editada novamente.',
-    'HASHCASH_ANTISPAM_ACTIVATED' => 'Proteção anti-spam ativa',
-    'HASHCASH_COMMENT_NOT_SAVED_MAYBE_YOU_ARE_A_ROBOT' => 'O seu comentário não foi salvo, o wiki acho que você é um robô.',
     'DESPAM_VALIDATE' => 'Validar',
     'HASHCASH_GENERAL_PASSWORD' => 'Responder emenbsp;: emenbsp;',
     'HASHCASH_SEND' => 'Não há registro para este período.',
-    'CAPTCHA_WRITE' => 'Escreva aqui a palavra na imagem',
-    'CAPTCHA_ERROR_PAGE_UNSAVED' => 'A página não foi salva porque você não retornou a palavra de verificação.',
-    'CAPTCHA_ERROR_WRONG_WORD' => 'A página não foi salva porque a palavra de verificação retornada não está correta.',
-    'CAPTCHA_VERIFICATION' => 'Vṛeacute;rificação para salvar a página',
     'DESPAM_PAGES_SELECTION' => 'Sṛeacute; eliminação de páginas',
     'DESPAM_ALL_CHANGES_FROM' => 'Todas as mudanças desde',
     'DESPAM_FOR_ONE_HOUR' => '1 hora',
@@ -24,8 +17,6 @@ return [
     'DESPAM_RESTORED_PAGES' => 'Páginas restauradas',
     'DESPAM_BACK_TO_PREVIOUS_FORM' => 'Voltar ao formulário de partida',
     'DESPAM_ONLY_FOR_ADMINS' => 'Ação {despam}} reservada para administradores.',
-    'EDIT_CONFIG_HINT_USE_HASHCASH' => 'Activer l\'antispam hashcash du wiki (ativado por padrão)',
-    'EDIT_CONFIG_HINT_USE_CAPTCHA' => 'Ativar o uso de um captcha antes de salvar (verdade ou falso)',
     'EDIT_CONFIG_HINT_USE_ALERTE' => 'Notifique se você deixar a página sem salvar (verdadeiro ou falso)',
     'EDIT_CONFIG_GROUP_SECURITY' => 'Segurança',
     'EDIT_CONFIG_HINT_WIKI_STATUS' => 'Estado wiki (incrustante ou vazio = padrão, hibernante = ler sozinho)',

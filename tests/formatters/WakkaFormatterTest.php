@@ -91,4 +91,49 @@ class WakkaFormatterTest extends YesWikiTestCase
             . 'the markdown-link regex looks unbounded again (algorithmic-complexity DoS).'
         );
     }
+
+    /** Each list item of the formatted text, as its nesting depth and its own text. */
+    private function listItems(string $wikiText): array
+    {
+        $html = $this->getWiki()->Format($wikiText);
+        $dom = new \DOMDocument();
+        @$dom->loadHTML('<?xml encoding="utf-8"?><div>' . $html . '</div>');
+        $items = [];
+        foreach ($dom->getElementsByTagName('li') as $li) {
+            $depth = 0;
+            for ($node = $li->parentNode; $node !== null; $node = $node->parentNode) {
+                if (in_array($node->nodeName, ['ul', 'ol'], true)) {
+                    $depth++;
+                }
+            }
+            $own = '';
+            foreach ($li->childNodes as $child) {
+                if (!in_array($child->nodeName, ['ul', 'ol'], true)) {
+                    $own .= $child->textContent;
+                }
+            }
+            $items[] = [$depth, trim($own)];
+        }
+
+        return $items;
+    }
+
+    public static function indentedLists(): array
+    {
+        return [
+            'spaces' => [" - a\n  - b", [[1, 'a'], [2, 'b']]],
+            'tabs' => ["\t- a\n\t\t- b", [[1, 'a'], [2, 'b']]],
+            'tab then spaces' => ["\t- a\n\t  - b", [[1, 'a'], [2, 'b']]],
+            'a tab is wider than a space' => [" - a\n\t- b", [[1, 'a'], [2, 'b']]],
+            'back to the first level' => [" - a\n  - b\n - c", [[1, 'a'], [2, 'b'], [1, 'c']]],
+            'tabs back to the first level' => ["\t- a\n\t\t- b\n\t- c", [[1, 'a'], [2, 'b'], [1, 'c']]],
+            'numbered' => [" 1) a\n 1) b", [[1, 'a'], [1, 'b']]],
+        ];
+    }
+
+    #[DataProvider('indentedLists')]
+    public function testIndentedLists(string $wikiText, array $expected)
+    {
+        $this->assertSame($expected, $this->listItems($wikiText));
+    }
 }

@@ -1,4 +1,8 @@
 <strong>{{ _t('BAZ_FOLLOW_FORM_ACTOR')|replace({'{actorName}':form['bn_label_nature']}) }}</strong>
+<p class="text-muted"><code>{{ formHandle }}</code></p>
+{% if error %}
+<div class="alert alert-info">{{ error }}</div>
+{% endif %}
 <form action="" method="post" class="form-horizontal">
   <input name="form_id" type="hidden" value="{{ form['bn_id_nature'] }}" />
 	<div class="input-prepend input-append input-group">
@@ -13,3 +17,6 @@
 		</span>
 	</div>
 </form>
+{% if routes %}
+{{ include('@bazar/activitypub-routes-check.twig') }}
+{% endif %}

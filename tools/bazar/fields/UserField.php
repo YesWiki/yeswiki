@@ -126,6 +126,9 @@ class UserField extends BazarField
         }
 
         if ($value && $this->isUserByName($value)) {
+            if (!$this->mayActAs($value)) {
+                throw new UserFieldException(_t('BAZ_USER_FIELD_NOT_YOUR_ACCOUNT'));
+            }
             $wikiName = $value;
             // add in groups
             $this->addUserToGroups($wikiName, $entry);
@@ -208,11 +211,12 @@ class UserField extends BazarField
 
     protected function renderStatic($entry)
     {
-        $vUserManager = $this->getService(UserManager::class);
-        $userEntry = $vUserManager->getAssociatedEntry($this->getValue($entry));
-        $value = '';
-        if (!empty($userEntry)) {
-            $value = $userEntry['id_fiche'];
+        $userName = $this->getValue($entry);
+        if (!empty($userName) && !empty($entry['id_fiche']) && ($entry[$this->propertyName] ?? null) === $userName) {
+            $value = $entry['id_fiche'];
+        } else {
+            $userEntry = $this->getService(UserManager::class)->getAssociatedEntry($userName);
+            $value = empty($userEntry) ? '' : $userEntry['id_fiche'];
         }
         $authController = $this->getService(AuthController::class);
 
@@ -270,6 +274,19 @@ class UserField extends BazarField
                 'autoAddToGroup' => $this->getAutoAddToGroup(),
             ]
         );
+    }
+
+    /**
+     * Only the account itself, or an admin, may link an entry to an existing account.
+     */
+    private function mayActAs(string $userName): bool
+    {
+        if ($this->getWiki()->UserIsAdmin()) {
+            return true;
+        }
+        $loggedUser = $this->getService(AuthController::class)->getLoggedUser();
+
+        return !empty($loggedUser['name']) && $loggedUser['name'] === $userName;
     }
 
     private function isUserByName(string $userName): bool
@@ -366,7 +383,10 @@ class UserField extends BazarField
         UserManager $userManager,
         array $existingsGroups
     ) {
-        if (!preg_match('/^[A-Za-z0-9]+$/m', $groupName)) {
+        if (!preg_match('/^[A-Za-z0-9]+$/', $groupName)) {
+            return false;
+        }
+        if (strtolower($groupName) === ADMIN_GROUP && !$this->getWiki()->UserIsAdmin()) {
             return false;
         }
 

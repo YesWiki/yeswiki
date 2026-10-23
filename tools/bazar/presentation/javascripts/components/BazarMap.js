@@ -109,6 +109,7 @@ const BazarMapComponent = {
             break
           case 'geojson':
             this.layers[label] = L.geoJson.ajax(url, {
+              interactive: false,
               style(feature, _latlng) {
                 if (feature.geometry.type == 'Point') return
                 const props = feature.properties || {}
@@ -133,17 +134,6 @@ const BazarMapComponent = {
               },
               pointToLayer(feature, latlng) {
                 return L.circleMarker(latlng)
-              },
-              onEachFeature(feature, layer) {
-                let str = ''
-                for (const prop in feature.properties) {
-                  const content =
-                    prop.toLowerCase() == 'url'
-                      ? `<a href="${feature.properties[prop]}" target="_blank">${feature.properties[prop]}</a>`
-                      : feature.properties[prop]
-                  str += `${prop}: ${content}<br/>`
-                }
-                layer.bindPopup(str)
               },
             })
             if (visibleByDefault) this.layers[label].addTo(this.map)
@@ -179,7 +169,7 @@ const BazarMapComponent = {
       try {
         const cGeolocation = this.getGeolocation(entry)
 
-        if (cGeolocation) {
+        if (cGeolocation && cGeolocation.latitude && cGeolocation.longitude) {
           entry.marker = L.marker(
             [cGeolocation.latitude, cGeolocation.longitude],
             { riseOnHover: true },
@@ -207,11 +197,19 @@ const BazarMapComponent = {
 		            </span>
 		          </div>
 		          <${tagName} class="bazar-entry ${this.isModalDisplay() ? 'modalbox' : ''}" ` +
-                `${isLink ? `href="${url}"` : ''} style="color: ${entry.color}" ${modalData}>
+                `${isLink ? `href="${url}" tabindex="-1"` : ''} style="color: ${entry.color}" ${modalData}>
 		            <i class="${entry.icon || 'fa fa-bullseye'}"></i>
 		          </${tagName}>`,
             }),
           )
+          entry.marker.on('add', () => {
+            entry.marker.getElement().setAttribute('aria-label', entry.bf_titre)
+          })
+          entry.marker.on('keypress', (ev) => {
+            if (!['Enter', ' '].includes(ev.originalEvent.key)) return
+            ev.originalEvent.preventDefault()
+            entry.marker.getElement().querySelector('.bazar-entry').click()
+          })
           if (this.isDirectLinkDisplay()) {
             entry.marker.on('click', () => {
               window.event.preventDefault()
@@ -432,6 +430,8 @@ const BazarMapComponent = {
           this.$root.getEntryRender(this.selectedEntry)
         } else if (this.params.entrydisplay == 'popup') {
           this.openPopup(this.selectedEntry)
+        } else if (this.isModalDisplay()) {
+          this.$root.openEntryModal(this.selectedEntry)
         }
 
         this.$nextTick(function () {

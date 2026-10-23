@@ -47,7 +47,6 @@ return [
     'USERSETTINGS_EMAIL_NOT_CHANGED' => 'E-mail-ul nu a fost modificat.',
     'USERSETTINGS_PASSWORD_NOT_CHANGED' => 'Parola nu s-a schimbat.',
     'USERSETTINGS_USER_NOT_DELETED' => 'Utilizatorul nu este șters.',
-    'USERSETTINGS_CAPTCHA_USER_CREATION' => 'Verificaţi crearea unui utilizator',
     'USERSETTINGS_SIGNUP_MISSING_INPUT' => 'Parametrii \'{parameters}\' nu pot fi goi!',
     'USERSETTINGS_NAME_ALREADY_USED' => 'Identificatorul "{currentName}" există deja!',
     'USERSETTINGS_EMAIL_ALREADY_USED' => 'E-mailul "{email}" este deja folosit de un alt cont!',

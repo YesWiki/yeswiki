@@ -1,15 +1,8 @@
 <?php
 
 return [
-    'HASHCASH_ERROR_PAGE_UNSAVED' => '<strong><strong>Orria ezin da gorde.</strong><br />Agian, \'Gorde\' botoian klik bikoitza </strong> <br /> egin duzu, elkarren segidako 2 segurtasun-kopia gertuegi entrenatuz, edo editatze-moduan orria denbora luzeegian irekita utziz.<br />Aldaketak gordetzeko, kopiatu edukia, rafraichir página eta itsatsi <br /> aldatutako orria berriro.',
-    'HASHCASH_ANTISPAM_ACTIVATED' => 'Spamaren aurkako babesa aktibatuta',
-    'HASHCASH_COMMENT_NOT_SAVED_MAYBE_YOU_ARE_A_ROBOT' => 'Zure iruzkina ez da gorde, wikiak uste du robota zarela.',
     'HASHCASH_GENERAL_PASSWORD' => 'Erantzuna&nbsp;:&nbsp;',
     'HASHCASH_SEND' => 'Bidali',
-    'CAPTCHA_ERROR_PAGE_UNSAVED' => 'Orria ez da gorde, ez baituzu egiaztatze-hitza berriro sartu.',
-    'CAPTCHA_ERROR_WRONG_WORD' => 'Orria ez da gorde, sartutako egiaztapen-hitza ez baita zuzena.',
-    'CAPTCHA_VERIFICATION' => 'Egiaztatu orria salbatzeko',
-    'CAPTCHA_WRITE' => 'Idatzi hemen irudian agertzen den hitza',
     'DESPAM_PAGES_SELECTION' => 'Orrialdeak hautatzea',
     'DESPAM_ALL_CHANGES_FROM' => 'Aldaketa guztiak noiztik',
     'DESPAM_FOR_ONE_HOUR' => 'Duela ordu 1',
@@ -24,8 +17,6 @@ return [
     'DESPAM_DELETED_PAGES' => 'Ezabatutako orrialdeak',
     'DESPAM_BACK_TO_PREVIOUS_FORM' => 'Itzuli irteerako formulariora',
     'DESPAM_ONLY_FOR_ADMINS' => '{{despam}}} ekintza, administratzaileentzat erreserbatua.',
-    'EDIT_CONFIG_HINT_USE_CAPTCHA' => 'Gaitu babes- kopia egin aurretik (true edo false) captcha erabiltzea',
-    'EDIT_CONFIG_HINT_USE_HASHCASH' => 'Gaitu wikiaren hashcash antispam-a (lehenespenez gaitua)',
     'EDIT_CONFIG_HINT_USE_ALERTE' => 'Abisatu orria babeskopiarik egin gabe uzten baduzu (true edo false)',
     'EDIT_CONFIG_HINT_WIKI_STATUS' => 'Wikiaren egoera (running edo hutsa = estandarra, hibernate = irakurtzeko soilik)',
     'EDIT_CONFIG_GROUP_SECURITY' => 'Segurtasuna',

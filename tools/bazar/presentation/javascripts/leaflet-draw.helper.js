@@ -6,20 +6,21 @@ export function drawGeometries(
 ) {
   if (features && features.length > 0) {
     features.forEach((feature) => {
-      let layer
-      if (feature.properties && feature.properties.type === 'circle') {
+      const properties = feature.properties || {}
+      const className = `bazar-entry-geometry ${properties.className || ''}`
+      if (properties.type === 'circle') {
         const latlng = L.latLng(
           feature.geometry.coordinates[1],
           feature.geometry.coordinates[0],
         )
-        const { radius } = feature.properties
+        const { radius } = properties
 
-        const circleOptions = { ...feature.properties }
+        const circleOptions = { ...properties }
         delete circleOptions.type
         delete circleOptions.radius
         if (circleOptions.icon) delete circleOptions.icon
         if (circleOptions.title) delete circleOptions.title
-        circleOptions.className = `bazar-entry-geometry ${feature.properties.className || ''}`
+        circleOptions.className = className
         const circle = L.circle(latlng, { radius, ...circleOptions })
         if (popup && popup.length > 0) {
           circle.bindPopup((_layer) => popup)
@@ -36,29 +37,28 @@ export function drawGeometries(
         })
 
         circle.feature = feature
-        layer = circle
+        circle.id_fiche = id
+        drawnItems.addLayer(circle)
       } else {
-        layer = L.geoJSON(feature, {
+        L.geoJSON(feature, {
           style: /* function (feature) {
 			    return */ {
             color: 'blue',
-            className: `bazar-entry-geometry ${feature.properties.className || ''}`,
+            className,
           }, // ;
-          pointToLayer(feature, latlng) {
+          pointToLayer(_f, latlng) {
             const customIcon = L.Icon.Default.extend({
-              options: {
-                className: `bazar-entry-geometry ${feature.properties.className || ''}`,
-              },
+              options: { className },
             })
 
             return L.marker(latlng, { icon: new customIcon() })
           },
-          onEachFeature(f, layer) {
+          onEachFeature(f, subLayer) {
             if (popup && popup.length > 0) {
-              layer.bindPopup((_l) => popup)
+              subLayer.bindPopup((_l) => popup)
             }
-            if (layer.getElement) {
-              layer.on('add', function () {
+            if (subLayer.getElement) {
+              subLayer.on('add', function () {
                 const elem = this.getElement()
                 if (elem) {
                   elem.setAttribute('data-id', id)
@@ -66,12 +66,11 @@ export function drawGeometries(
                 }
               })
             }
-            drawnItems.addLayer(layer)
+            subLayer.id_fiche = id
+            drawnItems.addLayer(subLayer)
           },
         })
       }
-      layer.id_fiche = id
-      drawnItems.addLayer(layer)
     })
   }
   return drawnItems

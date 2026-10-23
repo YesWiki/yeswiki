@@ -45,7 +45,6 @@ return [
     'USERSETTINGS_EMAIL_NOT_CHANGED' => 'மின்னஞ்சல் அல்லாத மாற்றியமில்லை.',
     'USERSETTINGS_PASSWORD_NOT_CHANGED' => 'மோட் டி பாச் அல்லாத மோடிஃபை.',
     'USERSETTINGS_USER_NOT_DELETED' => 'Utilisateur அல்லாத SUPPRIMé.',
-    'USERSETTINGS_CAPTCHA_USER_CREATION' => 'Vérification bour creaer un utilisateur',
     'USERSETTINGS_SIGNUP_MISSING_INPUT' => 'Les parametres \'{parameters}\' ne peuvent être wides!',
     'USERSETTINGS_NAME_ALREADY_USED' => 'L\'delifiand "{currentName}" இருப்பு déjà!',
     'USERSETTINGS_EMAIL_ALREADY_USED' => 'L\'aigral "{email}" est déjà utilisé par un autre compte!',

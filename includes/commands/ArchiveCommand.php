@@ -32,12 +32,14 @@ class ArchiveCommand extends Command
             // the "--help" option
             ->setHelp("Create archive of the YesWiki.\n" .
                 "To save only the database use '--database-only'\n" .
-                "To save only the files use '--files-only'\n")
+                "To save only the files use '--files-only'\n" .
+                "To save a few folders and nothing else use '--onlyFolders custom,files'\n")
 
             ->addOption('database-only', 'd', InputOption::VALUE_NONE, 'Save only the database of the YesWiki')
             ->addOption('files-only', 'f', InputOption::VALUE_NONE, 'Save only the files of the YesWiki')
             ->addOption('foldersToInclude', 'i', InputOption::VALUE_REQUIRED, 'Folders to include, path relative to root, coma separated')
             ->addOption('foldersToExclude', 'x', InputOption::VALUE_REQUIRED, 'Folders to exclude, path relative to root, coma separated')
+            ->addOption('onlyFolders', 'o', InputOption::VALUE_REQUIRED, 'Archive these folders and no other, path relative to root, coma separated. Replaces the default list instead of adding to it')
             ->addOption('hideConfigValues', 'a', InputOption::VALUE_REQUIRED, 'Params to anonymize in wakka.config.php, json_encoded')
             ->addOption('uid', 'u', InputOption::VALUE_REQUIRED, 'uid to retrive input and ouput files')
         ;
@@ -68,8 +70,10 @@ class ArchiveCommand extends Command
         }
         $uid = $input->getOption('uid');
         $uid = empty($uid) ? '' : $uid;
+        $onlyFolders = $this->prepareFileList($input->getOption('onlyFolders'));
+        $onlyFolders = empty($onlyFolders) ? null : $onlyFolders;
 
-        $location = $this->archiveService->archive($output, !$databaseOnly, !$filesOnly, $foldersToInclude, $foldersToExclude, $hideConfigValues, $uid);
+        $location = $this->archiveService->archive($output, !$databaseOnly, !$filesOnly, $foldersToInclude, $foldersToExclude, $hideConfigValues, $uid, $onlyFolders);
 
         ob_end_clean(); // This code is necessary because Symfony stop the process if a response is sent back.
 

@@ -72,7 +72,7 @@ return [
     'BAZ_DATESHORT_OCTOBER' => '',
     'BAZ_DATESHORT_NOVEMBER' => '',
     'BAZ_DATESHORT_DECEMBER' => '',
-    'BAZ_SAVING' => '',
+    'BAZ_SAVING' => 'Guardando',
     'BAZ_FULLSCREEN' => '',
     'BAZ_BACK_TO_NORMAL_VIEW' => '',
     'MEMBER_OF_GROUP' => '',

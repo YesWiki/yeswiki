@@ -5,6 +5,7 @@
 use stefangabos\Zebra_Image\Zebra_Image;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Core\Controller\CsrfTokenController;
+use YesWiki\Core\Service\ExecutableFilename;
 use YesWiki\Core\Service\HtmlPurifierService;
 use YesWiki\Core\Service\LinkTracker;
 use YesWiki\Security\Controller\SecurityController;
@@ -189,7 +190,7 @@ if (!class_exists('attach')) {
             // decompose le nom du fichier en nom+extension ou en page/nom+extension
             if (preg_match('`^((.+)/)?(.*)\.(.*)$`', str_replace(' ', '_', $this->file), $match)) {
                 list(, , $file['page'], $file['name'], $file['ext']) = $match;
-                if (!$this->isPicture() && !$this->isAudio() && !$this->isVideo() && !$this->isFreeMindMindMap() && !$this->isWma() && !$this->isFlashvideo()) {
+                if (ExecutableFilename::matches('x.' . $file['ext']) || (!$this->isPicture() && !$this->isAudio() && !$this->isVideo() && !$this->isFreeMindMindMap() && !$this->isWma() && !$this->isFlashvideo())) {
                     $file['ext'] .= '_';
                 }
             } else {
@@ -607,7 +608,7 @@ if (!class_exists('attach')) {
         public function showAsPDF($fullFilename)
         {
             // Defines parameters for pdf action
-            $url = $this->wiki->href('download', $this->wiki->GetPageTag(), 'file=' . $this->file, false);
+            $url = $this->wiki->href('download', $this->wiki->GetPageTag(), 'file=' . $this->file . '&inline=1', false);
             $this->wiki->setParameter('url', $url);
             if (empty($this->wiki->GetParameter('hauteurmax')) && empty($this->wiki->GetParameter('largeurmax'))) {
                 $this->wiki->setParameter('hauteurmax', $this->wiki->GetParameter('height'));
@@ -746,7 +747,7 @@ if (!class_exists('attach')) {
          */
         public function performUpload()
         {
-            $this->file = $_POST['file'];
+            $this->file = basename($_POST['file'] ?? '');
             $pathinfo = pathinfo($this->file);
             $ext = strtolower($pathinfo['extension'] ?? '');
             if ($this->wiki->config['authorized-extensions'] && !in_array($ext, array_keys($this->wiki->config['authorized-extensions']))) {
@@ -763,6 +764,13 @@ if (!class_exists('attach')) {
             switch ($_FILES['upFile']['error']) {
                 case 0:
                     $srcFile = $_FILES['upFile']['tmp_name'];
+                    $uploadBase = realpath($this->attachConfig['upload_path']);
+                    $destDir = realpath(dirname($destFile));
+                    if ($uploadBase === false || $destDir === false
+                        || strncmp($destDir . DIRECTORY_SEPARATOR, $uploadBase . DIRECTORY_SEPARATOR, strlen($uploadBase . DIRECTORY_SEPARATOR)) !== 0) {
+                        echo '<div class="alert alert-error alert-danger">' . _t('ERROR_MOVING_TEMPORARY_FILE') . "</div>\n";
+                        break;
+                    }
                     if (move_uploaded_file($srcFile, $destFile)) {
                         chmod($destFile, 0644);
                         if ($ext === 'svg' || $ext === 'xml') {
@@ -813,7 +821,9 @@ if (!class_exists('attach')) {
             } else {
                 $file = $this->decodeLongFilename($fullFilename);
                 $size = $file['size'];
-                $dlFilename = $file['name'] . '.' . $file['ext'];
+                $dlFilename = isset($file['name'], $file['ext'])
+                    ? $file['name'] . '.' . $file['ext']
+                    : $file['realname'];
             }
             try {
                 header('Expires: Mon, 26 Jul 1997 05:00:00 GMT');
@@ -828,10 +838,13 @@ if (!class_exists('attach')) {
                 header('Content-Transfer-Encoding: none');
                 header('Content-Type: application/octet-stream; name="' . $dlFilename . '"'); // This should work for the rest
                 header('Content-Type: application/octetstream; name="' . $dlFilename . '"'); // This should work for IE & Opera
+                $mimeType = null;
                 if (in_array(preg_replace("/^.*\.([^.]+$)/", '$1', $dlFilename), ['pdf', 'txt', 'md', 'png', 'svg', 'jpeg', 'jpg', 'mp3'])) {
-                    header('Content-Type: ' . mime_content_type($fullFilename) . '; name="' . $dlFilename . '"');
+                    $mimeType = mime_content_type($fullFilename);
+                    header('Content-Type: ' . $mimeType . '; name="' . $dlFilename . '"');
                 }
-                header('Content-Disposition: attachment; filename="' . $dlFilename . '"');
+                $inline = !empty($_GET['inline']) && $mimeType === 'application/pdf';
+                header('Content-Disposition: ' . ($inline ? 'inline' : 'attachment') . '; filename="' . $dlFilename . '"');
                 header('Content-Description: File Transfer');
                 header("Content-length: $size");
                 readfile($fullFilename);
@@ -1163,65 +1176,50 @@ if (!class_exists('attach')) {
             $imgTrans->source_path = $image_src;
             $imgTrans->target_path = $image_dest;
 
-            // Zebra_Image still calls imagedestroy(), a no-op deprecated since PHP 8.5.
-            // Silence it here (rather than patching vendor/) so debug-mode deprecation
-            // output isn't echoed into an in-progress image response.
-            $previousErrorReporting = error_reporting();
-            error_reporting($previousErrorReporting & ~E_DEPRECATED);
-            try {
-                if ($mode == 'crop') {
-                    $wantedRatio = $largeur / $hauteur;
-                    // get image info except for webp (code copier from Zebra_Image)
-                    if (
-                        !(
-                            version_compare(PHP_VERSION, '7.0.0') >= 0
-                            && version_compare(PHP_VERSION, '7.1.0') < 0
-                            && (
-                                $imgTrans->source_type = strtolower(substr($imgTrans->source_path, strrpos($imgTrans->source_path, '.') + 1))
-                            ) === 'webp'
-                        )
-                        && !list($sourceImageWidth, $sourceImageHeight, $sourceImageType) = @getimagesize($imgTrans->source_path)
-                    ) {
-                        return false;
-                    }
-                    $imageRatio = $sourceImageWidth / $sourceImageHeight;
-
-                    if ($imageRatio != $wantedRatio) {
-                        if ($imageRatio > $wantedRatio) {
-                            // width too large, keep height
-                            $newWidth = round($sourceImageHeight * $wantedRatio);
-                            $newHeight = $sourceImageHeight;
-                        } else {
-                            // height too large, keep width
-                            $newHeight = round($sourceImageWidth / $wantedRatio);
-                            $newWidth = $sourceImageWidth;
-                        }
-                        // crop
-                        $ext = pathinfo($image_src)['extension'];
-                        do {
-                            $tempFile = tmpfile();
-                            $tempFileName = stream_get_meta_data($tempFile)['uri'] . ".$ext";
-                            unlink(stream_get_meta_data($tempFile)['uri']);
-                        } while (file_exists($tempFileName));
-                        $imgTrans->target_path = $tempFileName;
-                        if ($imgTrans->resize(intval($newWidth), intval($newHeight), ZEBRA_IMAGE_CROP_CENTER, -1)) {
-                            $imgTrans->source_path = $tempFileName;
-                        }
-                        $imgTrans->target_path = $image_dest;
-                    }
+            if ($mode == 'crop') {
+                $wantedRatio = $largeur / $hauteur;
+                if (
+                    !(
+                        version_compare(PHP_VERSION, '7.0.0') >= 0
+                        && version_compare(PHP_VERSION, '7.1.0') < 0
+                        && (
+                            $imgTrans->source_type = strtolower(substr($imgTrans->source_path, strrpos($imgTrans->source_path, '.') + 1))
+                        ) === 'webp'
+                    )
+                    && !list($sourceImageWidth, $sourceImageHeight, $sourceImageType) = @getimagesize($imgTrans->source_path)
+                ) {
+                    return false;
                 }
-                $result = $imgTrans->resize(intval($largeur), intval($hauteur), ZEBRA_IMAGE_NOT_BOXED, -1);
-            } finally {
-                error_reporting($previousErrorReporting);
+                $imageRatio = $sourceImageWidth / $sourceImageHeight;
+
+                if ($imageRatio != $wantedRatio) {
+                    if ($imageRatio > $wantedRatio) {
+                        $newWidth = round($sourceImageHeight * $wantedRatio);
+                        $newHeight = $sourceImageHeight;
+                    } else {
+                        $newHeight = round($sourceImageWidth / $wantedRatio);
+                        $newWidth = $sourceImageWidth;
+                    }
+                    $ext = pathinfo($image_src)['extension'];
+                    do {
+                        $tempFile = tmpfile();
+                        $tempFileName = stream_get_meta_data($tempFile)['uri'] . ".$ext";
+                        unlink(stream_get_meta_data($tempFile)['uri']);
+                    } while (file_exists($tempFileName));
+                    $imgTrans->target_path = $tempFileName;
+                    if (@$imgTrans->resize(intval($newWidth), intval($newHeight), ZEBRA_IMAGE_CROP_CENTER, -1)) {
+                        $imgTrans->source_path = $tempFileName;
+                    }
+                    $imgTrans->target_path = $image_dest;
+                }
             }
+            $result = @$imgTrans->resize(intval($largeur), intval($hauteur), ZEBRA_IMAGE_NOT_BOXED, -1);
 
             if ($mode == 'crop' && !empty($tempFileName) && file_exists($tempFileName)) {
                 unlink($tempFileName);
             }
             if (!$result) {
-                // in case of error, show error code
                 return $imgTrans->error;
-                // if there were no errors
             }
 
             return $imgTrans->target_path;

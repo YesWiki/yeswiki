@@ -32,7 +32,7 @@ if (empty($list)) {
             echo '<div class="well" style="width:600px; height:150px; overflow:auto; ">';
             foreach ($_POST['mails'] as $email) {
                 echo _t('CONTACT_SENT_TO_THE_LIST') . ' : ' . $listaction . ' ' . _t('CONTACT_THE_EMAIL') . ' : ' . $email;
-                echo send_mail($email, $email, $listaction, $_POST['action_mails'], $_POST['action_mails'], '', ' <span class="text-success">' . _t('CONTACT_OK') . '</span>') . '<br />';
+                echo (send_mail($email, $email, $listaction, $_POST['action_mails'], $_POST['action_mails'], '', true) ? ' <span class="text-success">' . _t('CONTACT_OK') . '</span>' : '') . '<br />';
             }
             echo '</div>
 			<a href="' . $this->href() . '" title="' . _t('CONTACT_SUBMIT_OTHER_EMAILS') . '">' . _t('CONTACT_SUBMIT_OTHER_EMAILS') . '</a>';

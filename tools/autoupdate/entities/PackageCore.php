@@ -18,6 +18,11 @@ class PackageCore extends Package
         'robots.txt',
         'wakka.config.php',
         'private',
+        '.htaccess',
+    ];
+
+    public const FILES_TO_ADD_WHEN_MISSING = [
+        '.htaccess',
     ];
 
     public const FILES_TO_ADD_TO_IGNORED_FOLDERS = [
@@ -43,7 +48,7 @@ class PackageCore extends Package
     {
         parent::__construct($release, $address, $desc, $doc, $minimalPhpVersion);
         $this->installed = true;
-        $this->localPath = realpath(dirname($_SERVER['SCRIPT_FILENAME']));
+        $this->localPath = $this->wikiRootPath();
         $this->name = $this::CORE_NAME;
         $this->updateAvailable = $this->updateAvailable();
     }
@@ -75,24 +80,33 @@ class PackageCore extends Package
             return false;
         }
 
+        $copied = true;
         if ($res = opendir($this->extractionPath)) {
             while (($file = readdir($res)) !== false) {
                 // Ignore les fichiers de la liste
                 if (!in_array($file, self::IGNORED_FILES)) {
-                    $this->copy(
+                    if (!$this->copy(
                         $this->extractionPath . '/' . $file,
                         $desPath . '/' . $file
-                    );
+                    )) {
+                        $copied = false;
+                    }
                 }
             }
             closedir($res);
-            foreach (self::FILES_TO_ADD_TO_IGNORED_FOLDERS as $file) {
+            foreach (array_merge(self::FILES_TO_ADD_TO_IGNORED_FOLDERS, self::FILES_TO_UPDATE_TO_IGNORED_FOLDERS) as $file) {
                 if (is_file($this->extractionPath . '/' . $file) or is_dir($this->extractionPath . '/' . $file)) {
-                    $this->copy($this->extractionPath . '/' . $file, $desPath . '/' . $file);
+                    if (!$this->copy($this->extractionPath . '/' . $file, $desPath . '/' . $file)) {
+                        $copied = false;
+                    }
                 }
             }
-            foreach (self::FILES_TO_UPDATE_TO_IGNORED_FOLDERS as $file) {
-                $this->copy($this->extractionPath . '/' . $file, $desPath . '/' . $file);
+            foreach (self::FILES_TO_ADD_WHEN_MISSING as $file) {
+                if (is_file($this->extractionPath . '/' . $file) && !file_exists($desPath . '/' . $file)) {
+                    if (!$this->copy($this->extractionPath . '/' . $file, $desPath . '/' . $file)) {
+                        $copied = false;
+                    }
+                }
             }
         }
 
@@ -103,7 +117,7 @@ class PackageCore extends Package
             }
         }
 
-        return true;
+        return $copied;
     }
 
     public function upgradeDefaultTheme()
@@ -111,17 +125,20 @@ class PackageCore extends Package
         $src = $this->extractionPath . '/themes/margot';
         $desPath = $this->localPath . '/themes/margot';
         $file2ignore = ['.', '..'];
+        $copied = true;
         if ($res = opendir($src)) {
             while (($file = readdir($res)) !== false) {
                 // Ignore les fichiers de la liste
                 if (!in_array($file, $file2ignore)) {
-                    $this->copy($src . '/' . $file, $desPath . '/' . $file);
+                    if (!$this->copy($src . '/' . $file, $desPath . '/' . $file)) {
+                        $copied = false;
+                    }
                 }
             }
             closedir($res);
         }
 
-        return true;
+        return $copied;
     }
 
     public function upgradeTools()
@@ -129,17 +146,20 @@ class PackageCore extends Package
         $src = $this->extractionPath . '/tools';
         $desPath = $this->localPath . '/tools';
         $file2ignore = ['.', '..'];
+        $copied = true;
         if ($res = opendir($src)) {
             while (($file = readdir($res)) !== false) {
                 // Ignore les fichiers de la liste
                 if (!in_array($file, $file2ignore)) {
-                    $this->copy($src . '/' . $file, $desPath . '/' . $file);
+                    if (!$this->copy($src . '/' . $file, $desPath . '/' . $file)) {
+                        $copied = false;
+                    }
                 }
             }
             closedir($res);
         }
 
-        return true;
+        return $copied;
     }
 
     public function upgradeInfos()

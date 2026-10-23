@@ -9,7 +9,7 @@ class PackageTool extends PackageExt
     protected function localPath()
     {
         return
-            dirname(dirname(dirname(__DIR__)))
+            $this->wikiRootPath()
             . $this::TOOL_PATH
             . $this->name
             . '/';

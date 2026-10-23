@@ -2,7 +2,8 @@
     {% if params.search %}{{ include("@bazar/entries/index-dynamic/_search_input.twig") }}{% endif %}
     <div class="filters no-dblclick {{ params.filterposition }}">
         <div class="results-info text-info">
-            {# Filter Result Count #}
+            {# Filter Result Count, announced to screen readers when it changes #}
+            <span role="status">
             <template v-if="filters.length > 0 && params.filtersresultnb">
                 <span class="nb-results">{{"{{ filteredEntriesCount }}"}}</span>
                 <span class="result-label">
@@ -10,11 +11,12 @@
                     <template v-else> {{ _t("BAZ_FICHE_CORRESPONDANT_FILTRES") }}</template>
                 </span>
             </template>
+            </span>
             {# Reset filters #}
             <template v-if="filters.length > 0 && params.resetfiltersbutton">
-                <span class="btn btn-xs btn-info reset-filters pull-right"
+                <button type="button" class="btn btn-xs btn-info reset-filters pull-right"
                       @click="resetFilters()"
-                      :class="{'btn-block': params.filtercolsize < 4}">{{ _t("BAZ_RESET_FILTERS") }}</span>
+                      :class="{'btn-block': params.filtercolsize < 4}">{{ _t("BAZ_RESET_FILTERS") }}</button>
                 <div class="clearfix"></div>
             </template>
         </div>

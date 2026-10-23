@@ -211,6 +211,13 @@ if (!class_exists('qqFileUploader')) {
             }
             ob_end_clean();
 
+            $uploadRealPath = realpath($uploadDirectory);
+            $targetRealDir = is_string($fullfilename) ? realpath(dirname($fullfilename)) : false;
+            if ($uploadRealPath === false || $targetRealDir === false
+                || ($targetRealDir !== $uploadRealPath && !str_starts_with($targetRealDir, $uploadRealPath . DIRECTORY_SEPARATOR))) {
+                return ['error' => _t('ATTACH_HANDLER_AJAXUPLOAD_ERROR')];
+            }
+
             if ($this->file->save($fullfilename)) {
                 chmod($fullfilename, 0664); // fix file permissions to be sure to be able to write on exotic servers configurations
                 // TODO : refactor this with attach

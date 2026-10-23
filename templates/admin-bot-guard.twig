@@ -1,0 +1,39 @@
+<div class="admin-bot-guard">
+  <h2>{{ _t('BOT_GUARD_STATS_TITLE') }}</h2>
+  <p>{{ _t('BOT_GUARD_STATS_INTRO', {days: days, total: total}) }}</p>
+  {% if total > 0 %}
+    <div class="table-responsive">
+      <table class="table table-condensed table-striped">
+        <thead>
+          <tr>
+            <th>{{ _t('BOT_GUARD_STATS_DAY') }}</th>
+            {% for reason in reasons|keys %}
+              <th>{{ _t('BOT_GUARD_REASON_' ~ reason|upper|replace({'-': '_'})) }}</th>
+            {% endfor %}
+            <th>{{ _t('BOT_GUARD_STATS_TOTAL') }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for day, counts in perDay %}
+            <tr>
+              <td>{{ day|date('d/m/Y') }}</td>
+              {% for reason in reasons|keys %}
+                <td>{{ counts[reason] ?? 0 }}</td>
+              {% endfor %}
+              <td><strong>{{ counts|reduce((sum, count) => sum + count, 0) }}</strong></td>
+            </tr>
+          {% endfor %}
+        </tbody>
+        <tfoot>
+          <tr>
+            <th>{{ _t('BOT_GUARD_STATS_TOTAL') }}</th>
+            {% for count in reasons %}
+              <th>{{ count }}</th>
+            {% endfor %}
+            <th>{{ total }}</th>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  {% endif %}
+</div>

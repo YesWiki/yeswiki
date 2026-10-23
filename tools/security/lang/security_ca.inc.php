@@ -1,16 +1,9 @@
 <?php
 
 return [
-    'HASHCASH_ERROR_PAGE_UNSAVED' => '<strong>No s\'ha pogut desar la pàgina.</strong> Potser heu clicat dues vegades el botó "desa" en un interval massa curt, o heu deixat la pàgina oberta en mode d\'edició massa estona. Per desar aquesta pàgina, copieu-ne sisplau el contingut, actualitzeu el vostre navegador i enganxeu el contingut abans de desar de nou.',
-    'HASHCASH_ANTISPAM_ACTIVATED' => 'Protecció contra el contingut no desitjat activada',
-    'HASHCASH_COMMENT_NOT_SAVED_MAYBE_YOU_ARE_A_ROBOT' => 'El vostre comentari no s\'ha pogut desar. No sou pas un robot ?',
     'DESPAM_VALIDATE' => 'Accepta',
     'HASHCASH_GENERAL_PASSWORD' => 'Emenbsp;: emenbsp;',
     'HASHCASH_SEND' => 'No hi ha inscripcions per aquest període.',
-    'CAPTCHA_ERROR_PAGE_UNSAVED' => 'No s\'ha guardat la pàgina perquè no ha retornat la paraula de verificació.',
-    'CAPTCHA_ERROR_WRONG_WORD' => 'La pàgina no ha estat guardada perquè la paraula de verificació retornada no és correcta.',
-    'CAPTCHA_VERIFICATION' => 'Vṛeacute;rificació per guardar la pàgina',
-    'CAPTCHA_WRITE' => 'Escriu aquí la paraula a la imatge',
     'DESPAM_PAGES_SELECTION' => 'Sṛeacute;lection of pages',
     'DESPAM_ALL_CHANGES_FROM' => 'Tots els canvis des de',
     'DESPAM_FOR_ONE_HOUR' => '1 hora',
@@ -24,8 +17,6 @@ return [
     'DESPAM_DELETED_PAGES' => 'Pàgines esborrades',
     'DESPAM_BACK_TO_PREVIOUS_FORM' => 'Formulari de devolució',
     'DESPAM_ONLY_FOR_ADMINS' => 'Els administradors es reserven a la web.',
-    'EDIT_CONFIG_HINT_USE_CAPTCHA' => 'Activar l\'ús d\'una captcha abans d\'estalviar (veritable o fals)',
-    'EDIT_CONFIG_HINT_USE_HASHCASH' => 'Activer l\'antispam hashcash du wiki (activat per defecte)',
     'EDIT_CONFIG_HINT_USE_ALERTE' => 'Si us plau, introdueix dins de la caixa de text els caràcters que veu a la imatge de sota. Això és requerit per evitar enviaments automàtics',
     'EDIT_CONFIG_HINT_WIKI_STATUS' => 'Estat wiki (running o buit = estàndard, hibernate = llegir sol)',
     'EDIT_CONFIG_GROUP_SECURITY' => 'Seguretat',

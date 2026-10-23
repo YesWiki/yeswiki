@@ -1,6 +1,7 @@
 <?php
 
 use Symfony\Component\Security\Csrf\CsrfTokenManager;
+use YesWiki\Core\Service\AssetsManager;
 use YesWiki\Core\Service\ThemeManager;
 
 $themeManager = $this->services->get(ThemeManager::class);
@@ -76,6 +77,8 @@ while ($customJsDir && ($file = readdir($customJsDir)) !== false) {
     }
 }
 
+$this->addJavascriptFile('javascripts/csrf-guard.js', true);
+
 // si quelque chose est passée dans la variable globale pour le javascript, on l'intègre
 $yeswiki_javascripts .= isset($GLOBALS['js']) ? $GLOBALS['js'] : '';
 
@@ -108,7 +111,7 @@ echo "<script>
     };
 </script>';
 
-// on affiche
+echo $this->services->get(AssetsManager::class)->importMap();
 echo $yeswiki_javascripts;
 
 // This GLOBALS is populated from AddCSS and AddCSSFile, but already flush in <HEAD> by actions/linkstyle__.php

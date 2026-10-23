@@ -1,5 +1,6 @@
 <?php
 
+use Tamtamchik\SimpleFlash\Flash;
 use YesWiki\Bazar\Controller\EntryController;
 use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Core\Controller\AuthController;
@@ -33,7 +34,8 @@ class IframeHandler extends YesWikiHandler
             $output .= '<body class="yeswiki-iframe-body">' . "\n"
                 . '<div class="container">' . "\n"
                 . '<div class="yeswiki-page-widget page-widget page" ' . $this->wiki->Format('{{doubleclic iframe="1"}}')
-                . '>' . "\n";
+                . '>' . "\n"
+                . Flash::display();
 
             if ($entryManager->isEntry($this->wiki->GetPageTag())) {
                 $output .= $this->renderBazarEntry();

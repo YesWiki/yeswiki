@@ -1,16 +1,24 @@
 {% block pagination %}
-  <ul class="pagination" v-if="pagination && entriesToDisplay.length > 0 && pages.length > 1">
-    <li @click="currentPage = 0" :class="{disabled: currentPage == 0}">
-      <i class="fa fa-chevron-left"></i>
-    </li>
-    <template v-for="page in pages">
-      <li v-if="page == 'divider'">...</li>
-      <li v-else :class="{active: currentPage == page}" @click="currentPage = page">
-        {{"{{ page + 1 }}"}}
+  <nav v-if="pagination && entriesToDisplay.length > 0 && pages.length > 1" aria-label="{{ _t('BAZ_PAGINATION') }}">
+    <ul class="pagination">
+      <li :class="{disabled: currentPage == 0}">
+        <button type="button" :aria-disabled="currentPage == 0 ? 'true' : null" @click="currentPage > 0 && currentPage--" aria-label="{{ _t('BAZ_PREVIOUS_PAGE') }}">
+          <i class="fa fa-chevron-left" aria-hidden="true"></i>
+        </button>
       </li>
-    </template>          
-    <li @click="currentPage = pages.length - 1" :class="{disabled: currentPage == pages.length - 1}">
-      <i class="fa fa-chevron-right"></i>
-    </li>
-  </ul>
+      <template v-for="page in pages">
+        <li v-if="page == 'divider'" aria-hidden="true">…</li>
+        <li v-else :class="{active: currentPage == page}">
+          <button type="button" @click="currentPage = page" :aria-current="currentPage == page ? 'page' : null">
+            {{"{{ page + 1 }}"}}
+          </button>
+        </li>
+      </template>
+      <li :class="{disabled: currentPage == pagesCount - 1}">
+        <button type="button" :aria-disabled="currentPage == pagesCount - 1 ? 'true' : null" @click="currentPage < pagesCount - 1 && currentPage++" aria-label="{{ _t('BAZ_NEXT_PAGE') }}">
+          <i class="fa fa-chevron-right" aria-hidden="true"></i>
+        </button>
+      </li>
+    </ul>
+  </nav>
 {% endblock %}

@@ -29,6 +29,7 @@
 .bazar-entry-edit-image .image-actions {
   display: flex;
   flex-direction: column;
+  gap: 0.25rem;
   margin-left: 1rem;
 }
 
@@ -65,7 +66,7 @@
 }
 
 /* submit button disabled */
-#formulaire .form-actions button[type='submit'].submit-disabled {
+.bazar-form .form-actions button[type='submit'].submit-disabled {
   cursor: progress;
 }
 
@@ -97,6 +98,14 @@
 
 .file-url-tabs .tab-pane input {
   max-width: 100%;
+}
+
+.file-url-tabs .image-actions {
+  clear: both;
+}
+
+.file-url-tabs .yw-image-cancel {
+  margin-top: 8px;
 }
 
 .url-indicator {

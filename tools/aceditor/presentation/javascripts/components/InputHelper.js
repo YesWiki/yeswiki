@@ -49,7 +49,11 @@ export default {
     },
     refFrom(config) {
       if (!config) return ''
-      return config.subproperties || config.type == 'geo' ? 'specialInput' : ''
+      return config.subproperties ||
+        config.type == 'geo' ||
+        config.type == 'query'
+        ? 'specialInput'
+        : ''
     },
     getFieldsFormSelectedForms(selectedForms, extraFields = []) {
       const fields = []
@@ -85,6 +89,7 @@ export default {
         })
       }
       const extraFieldsWithoutOptions = {
+        id_fiche: _t('ACTION_BUILDER_ENTRY_ID'),
         date_creation_fiche: _t('ACTION_BUILDER_CREATION_DATE'),
         date_maj_fiche: _t('ACTION_BUILDER_MODIFICATION_DATE'),
         owner: _t('ACTION_BUILDER_OWNER'),

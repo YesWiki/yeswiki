@@ -57,3 +57,12 @@ actions:
     label: _t(AB_management_filemanager_label)
   adminbackups:
     label: _t(AB_management_adminbackups_label)
+  adminbotguard:
+    label: _t(AB_management_adminbotguard_label)
+    properties:
+      days:
+        label: _t(AB_management_adminbotguard_days_label)
+        type: number
+        default: 30
+        min: 1
+        max: 30

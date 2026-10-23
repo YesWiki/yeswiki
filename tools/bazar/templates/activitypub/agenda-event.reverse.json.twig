@@ -1,0 +1,28 @@
+{% if type == "Event" %}
+{% set attachments = attachment is iterable ? attachment : [] %}
+{% set media = attachments | filter(item => item.type | default("") in ["Document", "Image"]) %}
+{% set banner = media | filter(item => item.name | default("") == "Banner") | first ?: media | first %}
+{% set website = attachments | filter(item => item.type | default("") == "Link" and item.name | default("") == "Website") | first %}
+{% set place = location is iterable ? location : {"name": location | default("")} %}
+{% set address = place.address | default({}) %}
+{% set address = address is iterable ? address : {"streetAddress": address} %}
+{
+  "bf_titre": {{ name | json_encode }},
+  "bf_description": {{ markdown(content | default("")) | json_encode }},
+  "bf_date_debut_evenement": {{ startTime | date("c") | json_encode }},
+  "bf_date_fin_evenement": {{ (endTime ?: startTime) | date("c") | json_encode }},
+  "bf_site_internet": {{ (website ? website.href : url | default("")) | json_encode }},
+  "bf_adresse": {{ (address.streetAddress | default("") ?: place.name | default("")) | json_encode }},
+  "bf_code_postal": {{ address.postalCode | default("") | json_encode }},
+  "bf_ville": {{ address.addressLocality | default("") | json_encode }},
+  "imagebf_image": {{ (banner ? banner.url | default(banner.href | default("")) : "") | json_encode }},
+  "bf_latitude": {
+    "latitude": {{ (place.latitude | default("") ~ "") | json_encode }},
+    "longitude": {{ (place.longitude | default("") ~ "") | json_encode }}
+  },
+  "date_creation_fiche": {{ (published ? published | date("Y-m-d H:i:s") : null) | json_encode }},
+  "date_maj_fiche": {{ ((updated ?: published) ? (updated ?: published) | date("Y-m-d H:i:s") : null) | json_encode }}
+}
+{% else %}
+null
+{% endif %}

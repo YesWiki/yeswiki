@@ -44,6 +44,17 @@ class MetadataField extends BazarField
         return '';
     }
 
+    public function requireIDFiche()
+    {
+        return true;
+    }
+
+    /** Applies the form's theme settings to every entry, whoever saves it: they are form configuration, not an input. */
+    public function formatValuesBeforeSaveIfEditable($entry)
+    {
+        return $this->formatValuesBeforeSave($entry);
+    }
+
     public function formatValuesBeforeSave($entry)
     {
         $this->getService(PageManager::class)->setMetadata($entry['id_fiche'], [

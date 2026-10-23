@@ -172,3 +172,7 @@ a.size4:hover {
   margin: 10px 0;
   font-weight: bold;
 }
+
+.tags-container:not(:empty) {
+  margin-bottom: 1rem;
+}

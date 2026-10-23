@@ -10,6 +10,9 @@ use Symfony\Component\Routing\Annotation\Route;
 use YesWiki\Bazar\Exception\RequiredFieldsException;
 use YesWiki\Bazar\Exception\TagAlreadyUsedException;
 use YesWiki\Bazar\Field\TextareaField;
+use YesWiki\Bazar\Service\ActivityPubInbox;
+use YesWiki\Bazar\Service\ActivityPubLog;
+use YesWiki\Bazar\Service\ActivityPubProfiles;
 use YesWiki\Bazar\Service\ActivityPubService;
 use YesWiki\Bazar\Service\BazarListService;
 use YesWiki\Bazar\Service\CSVManager;
@@ -68,8 +71,9 @@ class ApiController extends YesWikiController
 
         $form = $this->getService(BazarListService::class)->getForms(['idtypeannonce' => $formId])[$formId];
 
-        if ($activityPubService->isEnabled($form)) {
+        if ($activityPubService->hasActor($form)) {
             $actor = $activityPubService->getActor($form);
+            $this->getService(ActivityPubLog::class)->served($formId, $this->getRequest(), Response::HTTP_OK);
 
             return new ApiResponse($actor, Response::HTTP_OK, ['Content-Type' => 'application/activity+json']);
         }
@@ -85,13 +89,15 @@ class ApiController extends YesWikiController
 
         $form = $this->getService(BazarListService::class)->getForms(['idtypeannonce' => $formId])[$formId];
 
-        if ($activityPubService->isEnabled($form)) {
+        if ($activityPubService->hasActor($form)) {
             $followers = $activityPubService->getFollowers($form);
+            $this->getService(ActivityPubLog::class)->served($formId, $request, Response::HTTP_OK);
 
             return new ApiResponse([
                 '@context' => 'https://www.w3.org/ns/activitystreams',
                 'type' => 'Collection',
                 'id' => $activityPubService->getFormCollectionUri($form, 'followers'),
+                'totalItems' => count($followers),
                 'items' => $followers,
             ], Response::HTTP_OK, ['Content-Type' => 'application/activity+json']);
         }
@@ -107,13 +113,15 @@ class ApiController extends YesWikiController
 
         $form = $this->getService(BazarListService::class)->getForms(['idtypeannonce' => $formId])[$formId];
 
-        if ($activityPubService->isEnabled($form)) {
+        if ($activityPubService->hasActor($form)) {
             $following = $activityPubService->getFollowing($form);
+            $this->getService(ActivityPubLog::class)->served($formId, $request, Response::HTTP_OK);
 
             return new ApiResponse([
                 '@context' => 'https://www.w3.org/ns/activitystreams',
                 'type' => 'Collection',
                 'id' => $activityPubService->getFormCollectionUri($form, 'following'),
+                'totalItems' => count($following),
                 'items' => $following,
             ], Response::HTTP_OK, ['Content-Type' => 'application/activity+json']);
         }
@@ -130,20 +138,39 @@ class ApiController extends YesWikiController
 
         $form = $this->getService(BazarListService::class)->getForms(['idtypeannonce' => $formId])[$formId];
 
-        if ($activityPubService->isEnabled($form)) {
+        if ($activityPubService->hasActor($form)) {
+            $log = $this->getService(ActivityPubLog::class);
             try {
-                $verifiedActor = $httpSignatureService->verifySignature($request);
+                $verifiedActor = $httpSignatureService->verifySignature(
+                    $request,
+                    $activityPubService->signer($form),
+                    parse_url($activityPubService->getFormActorUri($form) . '/inbox', PHP_URL_PATH)
+                );
             } catch (\Exception $e) {
+                $log->received($formId, $request, Response::HTTP_UNAUTHORIZED, null, $e->getMessage());
+
                 return new ApiResponse(['error' => $e->getMessage()], Response::HTTP_UNAUTHORIZED, ['Content-Type' => 'application/activity+json']);
             }
 
             $activity = json_decode($request->getContent(), true);
 
             try {
-                $activityPubService->processActivity($activity, $form, $verifiedActor);
+                $leftOut = $this->getService(ActivityPubInbox::class)->processActivity($activity, $form, $verifiedActor);
             } catch (\Exception $e) {
+                $log->received($formId, $request, Response::HTTP_FORBIDDEN, $verifiedActor, $e->getMessage());
+
                 return new ApiResponse(['error' => $e->getMessage()], Response::HTTP_FORBIDDEN, ['Content-Type' => 'application/activity+json']);
+            } catch (\Throwable $e) {
+                $log->received($formId, $request, Response::HTTP_INTERNAL_SERVER_ERROR, $verifiedActor, get_class($e) . ': ' . $e->getMessage());
+
+                throw $e;
             }
+            if ($leftOut !== null) {
+                $log->received($formId, $request, Response::HTTP_ACCEPTED, $verifiedActor, $leftOut);
+
+                return new ApiResponse(null, Response::HTTP_ACCEPTED, ['Content-Type' => 'application/activity+json']);
+            }
+            $log->received($formId, $request, Response::HTTP_OK, $verifiedActor);
 
             return new ApiResponse(null, Response::HTTP_OK, ['Content-Type' => 'application/activity+json']);
         }
@@ -160,36 +187,34 @@ class ApiController extends YesWikiController
 
         $form = $this->getService(BazarListService::class)->getForms(['idtypeannonce' => $formId])[$formId];
 
-        if ($activityPubService->isEnabled($form)) {
+        if ($activityPubService->hasActor($form)) {
+            $this->getService(ActivityPubLog::class)->served($formId, $request, Response::HTTP_OK);
             $entries = $bazarListService->getEntries([
                 'idtypeannonce' => $formId,
                 'ordre' => 'asc',
                 'queries' => '',
-                // TODO Handle pagination
-                // 'nb' => 100
             ]);
 
             return new ApiResponse([
                 '@context' => 'https://www.w3.org/ns/activitystreams',
                 'type' => 'OrderedCollection',
-                'id' => $activityPubService->getFormCollectionUri($form, 'following'),
+                'id' => $activityPubService->getFormCollectionUri($form, 'outbox'),
                 'totalItems' => count($entries),
                 'orderedItems' => array_map(function ($entry) use ($form, $activityPubService) {
-                    $object = $this->getService(SemanticTransformer::class)->convertToSemanticData($form, $entry);
-                    unset($object['@context']);
+                    $object = $activityPubService->objectFor($form, $entry);
                     $published = new \DateTime($entry['date_creation_fiche']);
 
                     return [
+                        'id' => $object['id'] . '#create',
                         'type' => 'Create',
                         'actor' => $activityPubService->getFormActorUri($form),
-                        'published' => $published->format(\DateTime::ISO8601),
+                        'published' => $published->format(\DateTime::ATOM),
                         'object' => $object,
-                        'to' => [$activityPubService->getFormCollectionUri($form, 'followers'), 'https://www.w3.org/ns/activitystreams#Public'],
+                        'to' => [ActivityPubService::PUBLIC],
+                        'cc' => [$activityPubService->getFormCollectionUri($form, 'followers')],
                     ];
                 }, array_values($entries)),
             ], Response::HTTP_OK, ['Content-Type' => 'application/activity+json']);
-
-            return new ApiResponse(null, Response::HTTP_OK, ['Content-Type' => 'application/activity+json']);
         }
         throw new NotFoundHttpException();
     }
@@ -202,18 +227,21 @@ class ApiController extends YesWikiController
         $webfingerService = $this->getService(WebfingerService::class);
         $activityPubService = $this->getService(ActivityPubService::class);
 
-        $handle = substr($request->query->get('resource'), 5); // Remove 'acct:' prefix
+        $handle = substr($request->query->get('resource'), 5);
 
         $matches = $webfingerService->splitHandle($handle);
 
-        $form = $this->getService(FormManager::class)->findByActivityPubUsername($matches['user']);
+        $formId = $this->getService(ActivityPubProfiles::class)->formIdForUsername((string)($matches['user'] ?? ''));
+        $form = $formId === null ? null : $this->getService(FormManager::class)->getOne($formId);
 
-        if ($form) {
+        if ($form && $activityPubService->hasActor($form)) {
             $actorUri = $activityPubService->getFormActorUri($form);
-            $actor = $webfingerService->formatLocalActor($handle, $actorUri);
+            $actor = $webfingerService->formatLocalActor($handle, $actorUri, $activityPubService->getActor($form)['url']);
+            $this->getService(ActivityPubLog::class)->served($formId, $request, Response::HTTP_OK);
 
             return new ApiResponse($actor, Response::HTTP_OK, ['Content-Type' => 'application/json']);
         }
+        $this->getService(ActivityPubLog::class)->served($formId, $request, Response::HTTP_NOT_FOUND);
         throw new NotFoundHttpException();
     }
 
@@ -247,7 +275,7 @@ class ApiController extends YesWikiController
         $vNb = intval($get->get('nbitem') ?? $get->get('nb') ?? null);
         $vMinDate = urldecode($get->get('dateMin') ?? $get->get('minDate') ?? $get->get('period') ?? '');
 
-        if ($output == 'csv') { // Search is done in the CSV Manager
+        if ($output == 'csv') {
             $csvManager = $this->getService(CSVManager::class);
             $csvManager->sendCsvOrZip($vFormID, [
                 'queries' => $vQuery,
@@ -279,10 +307,9 @@ class ApiController extends YesWikiController
             $acceptHeader = $this->getRequest()->headers->get('accept', '');
             if ($output == 'json-ld' || strpos($acceptHeader, 'application/ld+json') !== false) {
                 return $this->getAllSemanticEntries($formId, $entries);
-            } // add entries in html format if asked
-            elseif ($output == 'html') {
+            } elseif ($output == 'html') {
                 foreach ($entries as $id => $entry) {
-                    $entries[$id]['html_output'] = $this->getService(EntryController::class)->view($entry, '', 0);
+                    $entries[$id]['html_output'] = $this->renderWithItsStyles(fn () => $this->getService(EntryController::class)->view($entry, '', 0));
                 }
             } elseif ($output == 'geojson') {
                 $entries = $this->getService(GeoJSONFormatter::class)->formatToGeoJSON($entries);
@@ -317,12 +344,11 @@ class ApiController extends YesWikiController
      */
     public function getAllEntries($output = null, $selectedEntries = null)
     {
-        // fast access for one entry
         $get = $this->getRequest()->query;
         if ($this->isEntryViewFastAccess($output, $selectedEntries, $get->all())) {
             $entryId = explode(',', $selectedEntries)[0];
             if ($this->getService(AclService::class)->hasAccess('read', $entryId)) {
-                $html = $this->getService(EntryController::class)->view($entryId, '', 1);
+                $html = $this->renderWithItsStyles(fn () => $this->getService(EntryController::class)->view($entryId, '', 1));
                 $isInIframe = $get->get('isInIframe');
                 if ($isInIframe && $isInIframe == 'iframe') {
                     $html = replaceLinksWithIframe($html);
@@ -338,6 +364,17 @@ class ApiController extends YesWikiController
         }
 
         return $this->getAllFormEntries([], $output, $selectedEntries);
+    }
+
+    /** Renders an entry and puts in front of its html the stylesheets the rendering asked for, which an API response has no page head to carry. */
+    private function renderWithItsStyles(callable $render): string
+    {
+        $stylesBefore = $GLOBALS['css'] ?? '';
+        $html = (string)$render();
+        $stylesAfter = $GLOBALS['css'] ?? '';
+        $addedStyles = str_starts_with($stylesAfter, $stylesBefore) ? substr($stylesAfter, strlen($stylesBefore)) : '';
+
+        return empty($html) ? $html : trim($addedStyles) . $html;
     }
 
     /**
@@ -377,7 +414,6 @@ class ApiController extends YesWikiController
 
     public function getAllSemanticEntries($formId, $entries)
     {
-        // Put data inside LDP container
         $form = $this->getService(FormManager::class)->getOne($formId);
 
         $resources = array_map(function ($entry) use ($form) {
@@ -442,7 +478,6 @@ class ApiController extends YesWikiController
                 $postData = $jsonData;
             }
         }
-        $postData['antispam'] = 1;
 
         try {
             if (!isset($postData['id_fiche']) || !$this->getService(EntryManager::class)->isEntry($postData['id_fiche'])) {
@@ -470,7 +505,6 @@ class ApiController extends YesWikiController
     public function createSemanticEntry($formId)
     {
         $postData = $this->getRequest()->request->all();
-        $postData['antispam'] = 1;
         $entry = $this->getService(EntryManager::class)->create($formId, $postData, true, $this->getRequest()->headers->get('source-url'));
 
         if (!$entry) {
@@ -490,10 +524,6 @@ class ApiController extends YesWikiController
     {
         $vBazarListService = $this->getService(BazarListService::class);
 
-        /* ------------------------------------ */
-        /*             Format Params */
-        /* ------------------------------------ */
-
         $queryAll = $this->getRequest()->query->all();
         $formattedGet = array_map(function ($value) {
             return ($value === 'true') ? true : (($value === 'false') ? false : $value);
@@ -510,24 +540,13 @@ class ApiController extends YesWikiController
         $formattedGet['searchfields'] = $searchfields;
         $formattedGet['idtypeannonce'] = $get->get('idtypeannonce') ?? $get->get('id') ?? null;
 
-        /* ------------------------------------ */
-        /*               Get Data */
-        /* ------------------------------------ */
-        // All forms
         $refreshVal = $get->get('refresh');
         $forms = $vBazarListService->getForms($formattedGet + ['refresh' => isset($refreshVal) ? in_array($refreshVal, [1, true, '1', 'true'], true) : false]);
 
-        // Entries
         $entries = $vBazarListService->getEntries($formattedGet, $forms);
 
-        // Filters
         $filters = $vBazarListService->getFilters($formattedGet, $entries, $forms);
 
-        /* ------------------------------------ */
-        /*            Transform Data */
-        /* ------------------------------------ */
-
-        // Associated Forms
         $formIds = array_unique(array_map(function ($entry) {
             return $entry['id_typeannonce'];
         }, $entries));
@@ -538,48 +557,35 @@ class ApiController extends YesWikiController
             return $f['prepared'];
         }, $usedForms);
 
-        // Basic fields
         $fieldList = ['id_fiche', 'bf_titre', 'url', '-is-external-', 'external-data'];
-        // If no id, we need idtypeannonce (== formId) to filter
         if (!$get->has('id')) {
             $fieldList[] = 'id_typeannonce';
         }
-        // fields for color / icon
         $colorfield = $get->get('colorfield');
         $fieldList = array_merge($fieldList, $colorfield ? [$colorfield] : []);
         $iconfield = $get->get('iconfield');
         $fieldList = array_merge($fieldList, $iconfield ? [$iconfield] : []);
-        // Fields used to search
         $fieldList = array_merge($fieldList, $searchfields);
-        // Fields used to sort
         $fieldList = array_merge($fieldList, $get->has('sortfields') ? $get->all('sortfields') : []);
-        // Fields used by template
         $fieldList = array_merge($fieldList, $get->has('displayfields') ? $get->all('displayfields') : []);
-        // extra fields required by template
         $fieldList = array_merge($fieldList, $get->has('necessary_fields') ? $get->all('necessary_fields') : []);
         $fieldList = array_merge($fieldList, $get->has('necessaryfields') ? $get->all('necessaryfields') : []);
-        // Fields for filters
         foreach ($filters as $filter) {
             $fieldList[] = $filter['propName'];
         }
 
-        // filter blank values, remove duplicates, array_values to have incremental keys
         $fieldList = array_values(array_unique(array_filter($fieldList)));
 
-        // Reduce the size of the data sent by transforming entries object into array
-        // we use the $fieldMapping to transform back the data when receiving data in the front end
         $entryFieldsService = $this->getService(EntryExtraFieldsService::class);
 
         $entries = array_map(function ($entry) use ($fieldList, $entryFieldsService) {
             $entryFieldsService->setEntryId($entry['id_fiche']);
             $result = [];
             foreach ($fieldList as $fieldName) {
-                // when the field is a TextareaField with the SYNTAX_WIKI syntax, transform the field value into HTML
                 $field = $this->getService(FormManager::class)->findFieldFromNameOrPropertyName($fieldName, $entry['id_typeannonce']);
                 if ($field && $field->getType() == 'textelong' && $field->getSyntax() == TextareaField::SYNTAX_WIKI) {
                     $entry[$fieldName] = $this->wiki->Format($entry[$fieldName]);
                 }
-                // handle specific fields like comments, reactions
                 if (!isset($entry[$fieldName]) || (is_string($entry[$fieldName]) && trim($entry[$fieldName]) == '')) {
                     $entry[$fieldName] = $entryFieldsService->get($fieldName);
                 }

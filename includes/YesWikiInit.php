@@ -234,6 +234,7 @@ class Init
             'allow_raw_html' => true,
             'disable_wiki_links' => false,
             'allowed_methods_in_iframe' => ['iframe', 'editiframe', 'bazariframe', 'render'],
+            'cookies_samesite' => 'None',
             'revisionscount' => 30,
             'timezone' => 'Europe/Paris', // Only used if not set in wakka.config.php nor in php.ini
             'root_page' => 'PagePrincipale', // backup root_page if deleted from wakka.config.php
@@ -403,21 +404,32 @@ class Init
             $sessionName = 'YesWiki-' . str_replace('/', '-', substr($CookiePath, 1, -1));
         }
 
-        // test if session exists, because the wiki object is instanciated for every plugin
         if (!isset($_SESSION)) {
             $cookiesParam = session_get_cookie_params();
             $cookiesParam['path'] = $CookiePath;
             $cookiesParam['httponly'] = true;
-            $cookiesParam['samesite'] = 'Lax';
-            if (preg_match('`^https://`', $this->config['base_url'], $matches)) {
+            $secure = preg_match('`^https://`', $this->config['base_url']) === 1;
+            if ($secure) {
                 $cookiesParam['secure'] = true;
             }
+            $cookiesParam['samesite'] = $this->cookiesSameSite($secure);
             session_set_cookie_params($cookiesParam);
             session_name($sessionName);
             session_start();
         }
 
         return $CookiePath;
+    }
+
+    /** SameSite for the wiki's cookies: None keeps a login inside an iframe on another site, and needs https. */
+    private function cookiesSameSite(bool $secure): string
+    {
+        $wanted = ucfirst(strtolower((string)($this->config['cookies_samesite'] ?? 'None')));
+        if (!in_array($wanted, ['None', 'Lax', 'Strict'], true)) {
+            return 'Lax';
+        }
+
+        return ($wanted === 'None' && !$secure) ? 'Lax' : $wanted;
     }
 
     /**

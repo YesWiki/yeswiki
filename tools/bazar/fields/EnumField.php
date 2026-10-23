@@ -14,6 +14,7 @@ abstract class EnumField extends BazarField
     protected $options;
     protected $optionsUrls; // only for loadOptionsFromJson
     protected $optionsTree; // only for list with multi levels
+    protected $optionsEntries; // only for loadOptionsFromEntries
 
     protected $linkedObjectName;
     protected $keywords;
@@ -36,6 +37,7 @@ abstract class EnumField extends BazarField
 
         $this->options = [];
         $this->optionsUrls = [];
+        $this->optionsEntries = [];
 
         $this->propertyName = $this->name;
     }
@@ -116,6 +118,22 @@ abstract class EnumField extends BazarField
 
     public function loadOptionsFromEntries()
     {
+        $this->optionsEntries = $this->searchEntries();
+
+        $this->options = [];
+        foreach ($this->optionsEntries as $fiche) {
+            $this->options[$fiche['id_fiche']] = $fiche['bf_titre'];
+        }
+        if (is_array($this->options)) {
+            asort($this->options);
+        }
+    }
+
+    /**
+     * Search the entries of the linked form, the ones the options are built from.
+     */
+    protected function searchEntries(): array
+    {
         $vSearchManager = $this->getService(SearchManager::class);
 
         if (!empty($this->queries)) {
@@ -124,7 +142,7 @@ abstract class EnumField extends BazarField
             $vQueries = [];
         }
 
-        $fiches = $vSearchManager->search(
+        return $vSearchManager->search(
             [
                 'queries' => $vQueries,
                 'formsIds' => $this->getLinkedObjectName(),
@@ -133,14 +151,6 @@ abstract class EnumField extends BazarField
             true, // filter on read ACL
             true  // use Guard
         );
-
-        $this->options = [];
-        foreach ($fiches as $fiche) {
-            $this->options[$fiche['id_fiche']] = $fiche['bf_titre'];
-        }
-        if (is_array($this->options)) {
-            asort($this->options);
-        }
     }
 
     /**

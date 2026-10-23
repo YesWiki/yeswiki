@@ -88,6 +88,14 @@ a.ical-export-button {
   }
 }
 
+@media (width <=600px) {
+  .fc .fc-daygrid-week-number {
+    font-size: 0.6em;
+    background: none;
+    color: var(--neutral-soft-color, #999);
+  }
+}
+
 @media (width >=810px) {
   .col-md-1 .fc table,
   .col-md-2 .fc table,
@@ -284,7 +292,6 @@ a.ical-export-button {
   .col-md-9 .fc .fc-today-button.fc-button::before,
   .col-md-10 .fc .fc-today-button::before,
   .col-md-10 .fc .fc-today-button.fc-button::before {
-    /* far fa-calendar-alt */
     content: '\f073';
     font-family: 'Font Awesome 5 Free';
     font-weight: 400;
@@ -308,7 +315,6 @@ a.ical-export-button {
   }
 }
 
-/* ENTRY PANEL */
 .bazar-list-dynamic-template-container .entry-container {
   position: relative;
   transition: all 0.3s;
@@ -348,10 +354,7 @@ a.ical-export-button {
   z-index: 1000;
 }
 
-/* === ENTRY PANEL === */
-
 :root {
-  /* use theming vars if existing */
   --fc-button-text-color: var(--primary-color, #333);
   --fc-button-bg-color: var(--main-bg-color, #fff);
   --fc-button-border-color: var(--main-bg-color, #ccc);

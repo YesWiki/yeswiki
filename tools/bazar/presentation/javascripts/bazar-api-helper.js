@@ -2,7 +2,7 @@ const BASE_URL = `${wiki.baseUrl.replace(/\?+$/, '')}`
 
 function addCommaSeparatedString(mainString, stringToAdd) {
   if (!stringToAdd) {
-    return mainString // Return mainString if stringToAdd is empty
+    return mainString
   }
 
   const mainArray = mainString
@@ -19,12 +19,6 @@ function addCommaSeparatedString(mainString, stringToAdd) {
   return mainArray.join(',')
 }
 
-/**
- * Loads an entry's value from the API.
- * @param {string} pageTag - The tag of the page to load.
- * @returns {Promise<object>} A promise that resolves with the JSON entry data.
- * @throws {Error} If the network request fails or the response is not OK.
- */
 async function loadEntry(pageTag) {
   try {
     const response = await fetch(`${BASE_URL}?${pageTag}`, {
@@ -43,13 +37,6 @@ async function loadEntry(pageTag) {
   }
 }
 
-/**
- * Creates a new entry via the API.
- * @param {string} formId - The ID of the form to create the entry for.
- * @param {object} data - The data for the new entry.
- * @returns {Promise<object>} A promise that resolves with the JSON response from the API.
- * @throws {Error} If the network request fails or the response is not OK.
- */
 async function createEntry(formId, data) {
   try {
     const response = await fetch(`${BASE_URL}api/entries/${formId}`, {
@@ -72,12 +59,6 @@ async function createEntry(formId, data) {
   }
 }
 
-/**
- * Modifies an existing entry via the API.
- * @param {object} data - The updated data for the entry.
- * @returns {Promise<object>} A promise that resolves with the JSON response from the API.
- * @throws {Error} If the network request fails or the response is not OK.
- */
 async function modifyEntry(data) {
   try {
     const response = await fetch(
@@ -146,7 +127,6 @@ document.addEventListener('DOMContentLoaded', () => {
           if (action === 'add' && val.length > 0) {
             try {
               const entry = await loadEntry(entryId)
-              entry.antispam = 1
 
               const currentFieldValue = entry[fieldId] || ''
               entry[fieldId] = addCommaSeparatedString(currentFieldValue, val)

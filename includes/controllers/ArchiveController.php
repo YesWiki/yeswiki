@@ -240,13 +240,38 @@ class ArchiveController extends YesWikiController
     ): string {
         $savefiles = (isset($params['savefiles']) && in_array($params['savefiles'], [1, '1', true, 'true'], true));
         $savedatabase = (isset($params['savedatabase']) && in_array($params['savedatabase'], [1, '1', true, 'true'], true));
+        $onlyFolders = $this->folderList($params['onlyFolders'] ?? null);
 
         return $this->archiveService->startArchive(
             $savefiles,
             $savedatabase,
-            [],
-            [],
-            $startAsync
+            $this->folderList($params['foldersToInclude'] ?? null) ?? [],
+            $this->folderList($params['foldersToExclude'] ?? null) ?? [],
+            $startAsync,
+            $onlyFolders
         );
+    }
+
+    /**
+     * A folder list as the API may send it, either an array or a coma separated string.
+     * Null when nothing usable was asked for, so that a caller can tell it apart from
+     * an empty list. ArchiveService drops the paths that would leave the wiki root.
+     */
+    private function folderList($raw): ?array
+    {
+        if (is_string($raw)) {
+            $raw = explode(',', $raw);
+        }
+        if (!is_array($raw)) {
+            return null;
+        }
+        $folders = array_values(array_filter(array_map(
+            function ($folder) {
+                return is_string($folder) ? trim($folder) : '';
+            },
+            $raw
+        )));
+
+        return empty($folders) ? null : $folders;
     }
 }

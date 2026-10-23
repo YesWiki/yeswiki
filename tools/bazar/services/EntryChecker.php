@@ -31,6 +31,7 @@ class EntryChecker
     public const INVALID_DATE = 'invalid_date';
     public const INVALID_URL = 'invalid_url';
     public const ORPHAN_FIELD = 'orphan_field';
+    public const OLD_FIELD_NAME = 'old_field_name';
 
     public const PROBLEMS = [
         self::REQUIRED_EMPTY,
@@ -43,6 +44,7 @@ class EntryChecker
         self::INVALID_EMAIL,
         self::INVALID_DATE,
         self::INVALID_URL,
+        self::OLD_FIELD_NAME,
         self::ORPHAN_FIELD,
     ];
 
@@ -119,6 +121,7 @@ class EntryChecker
         foreach ($fields as $field) {
             $knownProperties[$field->getPropertyName()] = true;
         }
+        $renamedProperties = $this->renamedEnumProperties($fields, $knownProperties);
 
         $entries = $this->entryManager->search(['formsIds' => [$formId]]);
         $this->probedUrls = $this->urlReachability->probe($this->remoteFileValues($fields, $entries));
@@ -136,7 +139,7 @@ class EntryChecker
                     $problems[$problem['code']][] = $problem;
                 }
             }
-            foreach ($this->checkOrphans($entry, $knownProperties) as $problem) {
+            foreach ($this->checkOrphans($entry, $knownProperties, $renamedProperties) as $problem) {
                 $problems[$problem['code']][] = $problem;
             }
         }
@@ -233,7 +236,12 @@ class EntryChecker
         }
 
         foreach ($rows as $row) {
-            if (array_key_exists('unset', $row['fix'])) {
+            if (array_key_exists('rename', $row['fix'])) {
+                if (array_key_exists($row['propertyName'], $data)) {
+                    $data[$row['fix']['rename']] = $data[$row['propertyName']];
+                    unset($data[$row['propertyName']]);
+                }
+            } elseif (array_key_exists('unset', $row['fix'])) {
                 unset($data[$row['propertyName']]);
             } else {
                 $data[$row['propertyName']] = $row['fix']['set'];
@@ -553,13 +561,60 @@ class EntryChecker
         )];
     }
 
-    private function checkOrphans(array $entry, array $knownProperties): array
+    /**
+     * Maps an enum field's former short name (e.g. bf_type) to its current full name
+     * (e.g. checkboxListeTypebf_type), so entries still stored under the old name are spotted.
+     */
+    private function renamedEnumProperties(array $fields, array $knownProperties): array
+    {
+        $renamed = [];
+        foreach ($fields as $field) {
+            if (!$field instanceof EnumField) {
+                continue;
+            }
+            $full = $field->getPropertyName();
+            $prefix = $field->getType() . $field->getLinkedObjectName();
+            if ($prefix === '' || !str_starts_with($full, $prefix)) {
+                continue;
+            }
+            $short = substr($full, strlen($prefix));
+            if ($short !== '' && $short !== $full && !isset($knownProperties[$short])) {
+                $renamed[$short] = $full;
+            }
+        }
+
+        return $renamed;
+    }
+
+    private function checkOrphans(array $entry, array $knownProperties, array $renamedProperties = []): array
     {
         $problems = [];
         foreach ($entry as $key => $value) {
             if (!is_string($key) || isset($knownProperties[$key])
                 || in_array($key, self::RESERVED_KEYS, true)
                 || $this->isDerivedKey($key, $knownProperties)) {
+                continue;
+            }
+            if (isset($renamedProperties[$key])) {
+                $newName = $renamedProperties[$key];
+                $collides = array_key_exists($newName, $entry);
+                $problems[] = [
+                    'code' => self::OLD_FIELD_NAME,
+                    'key' => self::OLD_FIELD_NAME . '::' . ($entry['id_fiche'] ?? '') . '::' . $key,
+                    'entryId' => $entry['id_fiche'] ?? '',
+                    'entryTitle' => $entry['bf_titre'] ?? ($entry['id_fiche'] ?? ''),
+                    'propertyName' => $key,
+                    'fieldLabel' => $newName,
+                    'detail' => $this->stringify($value),
+                    'fix' => $collides ? null : ['rename' => $newName],
+                    'fixLabel' => 'BAZ_CHECKCONTENT_FIX_MANUAL',
+                    'options' => [],
+                    'multiple' => false,
+                    'freeText' => '',
+                    'suggested' => '',
+                    'forced' => false,
+                ];
+
                 continue;
             }
             $problems[] = [

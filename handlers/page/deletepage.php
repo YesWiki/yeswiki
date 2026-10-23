@@ -5,26 +5,37 @@ use Symfony\Component\Security\Csrf\Exception\TokenNotFoundException;
 use YesWiki\Core\Controller\CsrfTokenController;
 use YesWiki\Core\Controller\PageController;
 use YesWiki\Core\Service\DbService;
+use YesWiki\Core\Service\PageManager;
 
-// get services
 $csrfTokenManager = $this->services->get(CsrfTokenManager::class);
 $csrfTokenController = $this->services->get(CsrfTokenController::class);
 
-// get the GET parameter 'incomingurl' for the incoming url
 if (!empty($_REQUEST['incomingurl'])) {
     $incomingurl = filter_var($_REQUEST['incomingurl'], FILTER_VALIDATE_URL);
 }
 $redirectToIncoming = false;
 $hasBeenDeleted = false;
+$confirmed = isset($_GET['confirme']) && $_GET['confirme'] == 'oui';
 
-if ($this->UserIsOwner() || $this->UserIsAdmin()) {
+$deletedByAPreHandler = false;
+if ($confirmed && !empty($this->page) && empty($this->services->get(PageManager::class)->getOne($this->GetPageTag(), null, false, true))) {
+    try {
+        $deletedByAPreHandler = $csrfTokenController->checkToken('main', 'POST', 'csrf-token', false);
+    } catch (TokenNotFoundException $th) {
+        $deletedByAPreHandler = false;
+    }
+}
+
+if ($deletedByAPreHandler) {
+    $hasBeenDeleted = true;
+    $msg = str_replace('{tag}', $this->GetPageTag(), _t('DELETEPAGE_MESSAGE'));
+    $redirectToIncoming = !empty($incomingurl);
+} elseif ($this->UserIsOwner() || $this->UserIsAdmin()) {
     $incomingUrlParam = '';
     $cancelUrl = $this->Href();
     if (!empty($incomingurl)) {
         $withoutExtraParams = strtok($incomingurl, '&');
         if ($withoutExtraParams != $this->Href()) {
-            // put the incoming url parameter only if the incoming page is not the one deleted
-            // if the delete page is loaded in a modal box, the incoming page is the modal caller (cf yeswiki-base.js)
             $incomingUrlParam = '&incomingurl=' . urlencode($incomingurl);
             $cancelUrl = $incomingurl;
         }
@@ -32,7 +43,7 @@ if ($this->UserIsOwner() || $this->UserIsAdmin()) {
 
     if ($this->IsOrphanedPage($this->GetPageTag())) {
         $tag = $this->GetPageTag();
-        if (!isset($_GET['confirme']) || !($_GET['confirme'] == 'oui')) {
+        if (!$confirmed) {
             $msg = '<form action="' . $this->Href('deletepage', '', 'confirme=oui' . $incomingUrlParam);
             $msg .= '" method="post" style="display: inline">' . "\n";
             $msg .= str_replace('{tag}', $this->Link($tag), _t('DELETEPAGE_CONFIRM')) . "\n";
@@ -50,16 +61,7 @@ if ($this->UserIsOwner() || $this->UserIsAdmin()) {
                 $hasBeenDeleted = $this->services->get(PageController::class)->delete($tag);
                 if ($hasBeenDeleted) {
                     $msg = str_replace('{tag}', $tag, _t('DELETEPAGE_MESSAGE'));
-                    // if $incomingurl has been defined and doesn't refer to the deleted page, redirect to it
                     $redirectToIncoming = !empty($incomingurl);
-                    if ($redirectToIncoming) {
-                        // to prevent errors when deleting entry from BazaR page
-                        $incomingurl = str_replace(
-                            ["&action=voir_fiche&id_fiche=$tag", '&message=ajout_ok'],
-                            [''],
-                            $incomingurl
-                        );
-                    }
                 } else {
                     $msg = $this->render('@templates/alert-message-with-back.twig', [
                         'type' => 'danger',
@@ -77,10 +79,8 @@ if ($this->UserIsOwner() || $this->UserIsAdmin()) {
         if (
             isset($_GET['eraselink'])
             && $_GET['eraselink'] === 'oui'
-            && isset($_GET['confirme'])
-            && ($_GET['confirme'] === 'oui')
+            && $confirmed
         ) {
-            // a trouble occured, invald token ?
             try {
                 $csrfTokenController->checkToken('main', 'POST', 'csrf-token', false);
             } catch (TokenNotFoundException $th) {
@@ -101,7 +101,6 @@ if ($this->UserIsOwner() || $this->UserIsAdmin()) {
         }
 
         $msg .= "</ul>\n";
-        // eraselink=oui will delete the page links in tools/tags/handlers/page/__deletepage.php
         $msg .= '</br><form action="' . $this->Href('deletepage', '', 'confirme=oui&eraselink=oui' . $incomingUrlParam);
         $msg .= '" method="post" style="display: inline">' . "\n";
         $msg .= str_replace('{tag}', $this->Link($this->tag), _t('DELETEPAGE_CONFIRM_WHEN_BACKLINKS')) . "\n";
@@ -119,12 +118,11 @@ if ($this->UserIsOwner() || $this->UserIsAdmin()) {
 }
 
 if ($hasBeenDeleted) {
+    $this->SetMessage($msg);
     if ($redirectToIncoming) {
-        $this->SetMessage($msg);
-        $this->Redirect($incomingurl);
+        $tag = $this->GetPageTag();
+        $this->Redirect(str_replace(["&action=voir_fiche&id_fiche=$tag", '&message=ajout_ok'], [''], $incomingurl));
     } else {
-        // it's the current page which has been deleted (and not from a modal box), redirect to the homepage
-        $this->SetMessage($msg);
         $this->Redirect($this->href('', $this->config['root_page']));
     }
 }

@@ -42,7 +42,7 @@ $(document).ready(() => {
       .parents('.input-group')
       .find('.checkbox-filter-input')
       .val('')
-      .keyup()
+      .trigger('input')
   })
 
   $('.checkbox-select-all').on('click', function (event) {
@@ -65,6 +65,17 @@ $(document).ready(() => {
       .click()
     return false
   })
+
+  function checkbox_dragndrop_count_selected(element) {
+    const container = $(element).parents('.yeswiki-checkbox')
+    container
+      .find('.checkbox-selected-count')
+      .text(
+        container
+          .find('ul.checkbox-selection-container .list-group-item')
+          .not('.empty-list').length,
+      )
+  }
 
   function checkbox_dragndrop_select(element) {
     $(element).siblings().filter('.remove-page-item').removeClass('hide')
@@ -90,10 +101,11 @@ $(document).ready(() => {
         .find('.list-entries-to-export .empty-list')
         .show()
     }
+    checkbox_dragndrop_count_selected(element)
     $(element)
       .parents('.yeswiki-checkbox')
       .find('.checkbox-filter-input')
-      .keyup()
+      .trigger('input')
   }
 
   $('.select-page-item').on('click', function () {
@@ -137,10 +149,11 @@ $(document).ready(() => {
         .find('.checkbox-selection-container .empty-list')
         .show()
     }
+    checkbox_dragndrop_count_selected(element)
     $(element)
       .parents('.yeswiki-checkbox')
       .find('.checkbox-filter-input')
-      .keyup()
+      .trigger('input')
   }
 
   $('.remove-page-item').on('click', function () {
@@ -178,37 +191,24 @@ $(document).ready(() => {
     }
   })
 
-  for (const filter of document.getElementsByClassName(
-    'checkbox-filter-input',
-  )) {
-    filter.onkeypress = function () {
-      // Retrieve the input field text and reset the count to zero
-      let count = 0
-
-      // TODO get filter depend on id instead of getting global
-
-      // Loop through the comment list
-      $(this)
-        .parents('.export-table-container')
-        .find('.list-group-item')
-        .not('.empty-list')
-        .each(function () {
-          // If the list item does not contain the text phrase fade it out
-          if ($(this).text().search(new RegExp(filter.value, 'i')) < 0) {
-            $(this).hide()
-
-            // Show the list item if the phrase matches and increase the count by 1
-          } else {
-            $(this).show()
-            count++
-          }
-        })
-
-      // Update the count
-      $(this)
-        .parents('.export-table-container')
-        .find('.checkbox-filter-count')
-        .text(count)
-    }
-  }
+  $('.checkbox-filter-input').on('input', function () {
+    const container = $(this).parents('.export-table-container')
+    const needle = $(this).val().trim().toLowerCase()
+    let count = 0
+    container
+      .find('.list-entries-to-export .list-group-item')
+      .not('.empty-list')
+      .each(function () {
+        if (
+          needle.length > 0 &&
+          $(this).text().toLowerCase().indexOf(needle) < 0
+        ) {
+          $(this).hide()
+        } else {
+          $(this).show()
+          count++
+        }
+      })
+    container.find('.checkbox-filter-count').text(count)
+  })
 })

@@ -447,6 +447,7 @@ return [
     'EDIT_CONFIG_HINT_DEFAULT_COMMENT_AVATAR' => 'Imagen avatar predeterminada para comentarios (URL a una imagen)',
     'YW_CANNOT_CHANGE_ACLS' => 'No puedes manejar permisos en esta página',
     'CSRF_TOKEN_FAIL_ERROR' => 'Es posible que esta página se haya abierto por segunda vez. Por favor, repita la solicitud desde esta ventana (el token de seguridad interno no era bueno).',
+    'CROSS_SITE_REQUEST_REFUSED' => 'Esta solicitud venía de otro sitio y se rechazó para proteger su cuenta. Vuelva a hacerla desde una página de este wiki.',
     'DELETEPAGE_CANCEL' => 'Cancelar',
     'NOT_AUTORIZED_TO_READ_PAGE' => 'No está autorizado a leer esta página',
     'EDIT_NO_WRITE_ACCESS' => '¡No tiene acceso de escritura a esta página!',

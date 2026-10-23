@@ -1,4 +1,3 @@
-{# Save Button #}
 {% if arguments.saveButton %}
   {% set action = config['preview_before_save'] ? 'preview' : saveValue %}
   <div class="btn-group">
@@ -8,7 +7,6 @@
   </div>
 {% endif %}
 
-{# Text formatting #}
 <div class="btn-group format-menu">
   <a class="btn btn-default dropdown-toggle" data-toggle="dropdown" href="#">
     {{ _t('ACEDITOR_FORMAT') }}
@@ -42,10 +40,8 @@
   {{ _self.button('link') }}
 </div>
 
-{# Upload file #}
 {{ include('@attach/file-upload-button.twig') }}
 
-{# Actions builder menu #}
 <div class="btn-group actions-builder-button">
   <a class="btn btn-default dropdown-toggle" data-toggle="dropdown" href="#">
     {{ _t('ACEDITOR_ACTIONS') }}
@@ -66,7 +62,12 @@
   </ul>
 </div>
 
-{# Help #}
+<div class="btn-group">
+  <button type="button" class="btn btn-default btn-icon aceditor-btn-plain-text" aria-pressed="false" title="{{ _t('ACEDITOR_PLAIN_TEXT') }}">
+    <i class="fa fa-spell-check"></i>
+  </button>
+</div>
+
 <div class="btn-group">
   <a class="btn btn-default btn-icon aceditor-btn aceditor-btn-help" data-remote="true"
      href="{{ url({ tag: 'ReglesDeFormatage' }) }}" title="{{ _t('ACEDITOR_HELP') }}">

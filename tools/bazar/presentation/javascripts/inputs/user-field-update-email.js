@@ -4,7 +4,7 @@ function updateEmailForUser() {
     const userEmail = $(this).data('useremail')
     if (emailField.length > 0 && userEmail.length > 0) {
       const emailInput = $(this)
-        .closest('form#formulaire')
+        .closest('form.bazar-form')
         .find(`input#${emailField}`)
       if (
         emailInput.length > 0 &&

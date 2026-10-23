@@ -17,6 +17,7 @@
   "dependencies": {
     "@fortawesome/fontawesome-free": "^5.15.4",
     "ace-builds": "^1",
+    "altcha": "^3.2.4",
     "bootstrap": "^3",
     "datatables.net-bs": "^1.11.3",
     "datatables.net-buttons-bs": "^2.2.1",
@@ -40,7 +41,7 @@
     "leaflet.markercluster": "^1.5.3",
     "mermaid": "^11.16.1",
     "minimist": "^1.2.6",
-    "moment": "^2.29.2",
+    "moment": "^2.31.0",
     "node-fetch": "^2.6.7",
     "sortablejs": "^1.15.2",
     "spectrum-colorpicker2": "^2.0.8",

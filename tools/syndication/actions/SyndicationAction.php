@@ -4,6 +4,8 @@ use League\HTMLToMarkdown\HtmlConverter;
 use Tamtamchik\SimpleFlash\Flash;
 use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Bazar\Service\SearchManager;
+use YesWiki\Core\Service\ExecutableFilename;
+use YesWiki\Core\Service\RequestGuard;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Syndication\Service\SafeFile;
 
@@ -23,6 +25,9 @@ class SyndicationAction extends YesWikiAction
             $arg['nb'] = 0;
         }
         if (empty($arg['template'])) {
+            $arg['template'] = 'liste_description.tpl.html';
+        }
+        if (!$this->getService(YesWiki\Core\Service\TemplateEngine::class)->hasTemplate('@syndication/' . $arg['template'])) {
             $arg['template'] = 'liste_description.tpl.html';
         }
         if (empty($arg['formatdate'])) {
@@ -62,19 +67,20 @@ class SyndicationAction extends YesWikiAction
 
     public function run(): ?string
     {
+        $refusal = '';
         $mappingToBazar = !empty($this->arguments['mapping']) && $this->wiki->userIsAdmin();
         if ($mappingToBazar) {
-            $this->addToBazar();
+            $refusal = $this->addToBazar();
             if (empty($this->arguments['mapping']['id'])) {
                 return '<div class="alert alert-danger">' . _t('ERROR') . ' ' . _t('SYNDICATION_MAPPING_ID_REQUIRED') . ', ex: id=1400,title=bf_titre,url=bf_url,description=bf_description,image=imagebf_image,categories=bf_tags.</div>';
             }
-            // we load all entries to check if entry were already created from feed
             $vSearchManager = $this->getService(SearchManager::class);
             $entries = $vSearchManager->search(['formsIds' => [$this->arguments['mapping']['id']]]);
         }
         if (!empty($this->arguments['url'])) {
             $nburl = 0;
             $syndication = ['pages' => []];
+            $errors = [];
             foreach ($this->arguments['url'] as $cle => $url) {
                 if ($url != '') {
                     $feed = new SimplePie\SimplePie();
@@ -84,11 +90,15 @@ class SyndicationAction extends YesWikiAction
                     try {
                         $feed->init();
                     } catch (Throwable $error) {
-                        return '<div class="alert alert-danger">' . _t('ERROR') . ' ' . htmlspecialchars($error->getMessage()) . '</div>' . "\n";
+                        $errors[] = htmlspecialchars($error->getMessage());
+                        $nburl++;
+                        continue;
                     }
                     $feed->handle_content_type();
                     if ($feed->error()) {
-                        return '<div class="alert alert-danger">' . _t('ERROR') . ' ' . $feed->error() . '</div>' . "\n";
+                        $errors[] = htmlspecialchars(implode(' ', (array)$feed->error()));
+                        $nburl++;
+                        continue;
                     }
 
                     if ($feed) {
@@ -135,7 +145,6 @@ class SyndicationAction extends YesWikiAction
                             if (!empty($this->arguments['nbchar'])) {
                                 $feedItem['description'] = preg_replace("/\s+/u", ' ', strip_tags($feedItem['description'] ?? ''));
                                 $descLen = strlen($feedItem['description']);
-                                // check if text longer than max chars specified
                                 if ($descLen > 0
                                     && $descLen > $this->arguments['nbchar']) {
                                     $feedItem['description'] = truncate(
@@ -172,7 +181,7 @@ class SyndicationAction extends YesWikiAction
                                     $feedItem['linkToEntry'] = $this->wiki->href('', $entryExists[0]['id_fiche']);
                                 } else {
                                     $entry = [];
-                                    $converter = new HtmlConverter(['strip_tags' => true]); // we will convert html to md, but safe
+                                    $converter = new HtmlConverter(['strip_tags' => true]);
                                     foreach ($this->arguments['mapping'] as $key => $val) {
                                         switch ($key) {
                                             case 'id':
@@ -200,14 +209,12 @@ class SyndicationAction extends YesWikiAction
                                     $feedItem['mappingInput'] = json_encode($entry);
                                 }
                             }
-                            // the key is beginning with the datestamp to order by date desc, and we concat the title for unicity
                             $syndication['pages'][$feedItem['datestamp'] . urlencode($feedItem['title'])] = $feedItem;
                         }
                     }
                 }
                 $nburl = $nburl + 1;
             }
-            // sort all feeds per date
             krsort($syndication['pages']);
             if (empty($this->arguments['title'])) {
                 $title = '';
@@ -217,7 +224,15 @@ class SyndicationAction extends YesWikiAction
                 $title = $this->arguments['title'];
             }
 
-            return '<div class="feed_syndication' . ($this->arguments['class'] ? ' ' . $this->arguments['class'] : '') . '">' . "\n" .
+            $errorsHtml = $refusal;
+            foreach ($errors as $error) {
+                $errorsHtml .= '<div class="alert alert-danger">' . _t('ERROR') . ' ' . $error . '</div>' . "\n";
+            }
+            if (empty($syndication['pages']) && !empty($errors)) {
+                return $errorsHtml;
+            }
+
+            return $errorsHtml . '<div class="feed_syndication' . ($this->arguments['class'] ? ' ' . $this->arguments['class'] : '') . '">' . "\n" .
                 $this->render('@syndication/' . $this->arguments['template'], [
                     'syndication' => $syndication,
                     'title' => $title,
@@ -229,7 +244,7 @@ class SyndicationAction extends YesWikiAction
             '</div>' . "\n";
         }
 
-        return '<div class="alert alert-danger"><strong>' . _t('SYNDICATION_ACTION_SYNDICATION') . '</strong> : '
+        return $refusal . '<div class="alert alert-danger"><strong>' . _t('SYNDICATION_ACTION_SYNDICATION') . '</strong> : '
         . _t('SYNDICATION_PARAM_URL_REQUIRED') . '.</div>' . "\n";
     }
 
@@ -243,8 +258,12 @@ class SyndicationAction extends YesWikiAction
         } catch (Throwable $error) {
             return '';
         }
-        $t = explode('/', $sourceUrl);
-        $fileName = array_pop($t);
+        $fileName = basename((string)parse_url($sourceUrl, PHP_URL_PATH));
+        $fileName = preg_replace('/[^A-Za-z0-9._-]/', '_', $fileName);
+        $imageExtensions = $this->params->get('attach_config')['ext_images'] ?? '';
+        if (ExecutableFilename::matches($fileName) || !preg_match("/\\.($imageExtensions)\$/i", $fileName)) {
+            return '';
+        }
         $destFile = sha1($sourceUrl) . '_' . $fileName;
         $destPath = 'files/' . $destFile;
         if (!file_exists($destPath) || (file_exists($destPath) && $replaceExisting)) {
@@ -275,18 +294,25 @@ class SyndicationAction extends YesWikiAction
         return $destFile;
     }
 
-    protected function addToBazar(): void
+    /**
+     * Copies the feed item given in the URL into a bazar entry, or returns the error that stopped it.
+     */
+    protected function addToBazar(): string
     {
         $mapping = $this->getRequest()->query->get('mapping');
         if (!empty($mapping)) {
+            if (!$this->getService(RequestGuard::class)->linkIsSigned($this->getRequest())) {
+                return '<div class="alert alert-danger">' . _t('ERROR') . ' ' . _t('CSRF_TOKEN_FAIL_ERROR') . '</div>' . "\n";
+            }
             $data = json_decode(urldecode($mapping), true);
             if (!empty($data)) {
-                $data['antispam'] = 1;
                 $entryManager = $this->getService(EntryManager::class);
                 $entryManager->create($data['id_typeannonce'], $data, false, $data['bf_url']);
                 Flash::success(_t('SYNDICATION_ENTRY_SAVED', ['title' => $data['bf_titre']]));
                 $this->wiki->redirect($this->wiki->href());
             }
         }
+
+        return '';
     }
 }

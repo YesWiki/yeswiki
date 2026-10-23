@@ -91,8 +91,6 @@ class ExternalBazarService
 
     private function getRefreshValue($pRefresh = false)
     {
-        // to prevent DDOS attack refresh only for admins
-        return true;
         if ($pRefresh == null || !$pRefresh || !$this->wiki->UserIsAdmin()) {
             return false;
         }

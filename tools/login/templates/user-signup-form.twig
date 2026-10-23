@@ -1,4 +1,3 @@
-<!-- FORM SIGN UP -->
 <h2>{{ _t('USER_SIGN_UP') }}</h2>
 <form action="{{ url({tag:''}) }}" method="post" class="form-horizontal">
   <input type="hidden" name="usersettings_action" value="signup" />
@@ -19,7 +18,7 @@
   </label>
   <div class="controls col-sm-9">
     <input class="form-control" name="name" size="40" value="{{ name }}" 
-      pattern="{{ regexUserName | raw}}"/>{# pattern for valid user name #}
+      pattern="{{ regexUserName | raw}}"/>
   </div>
 </div>
 <div class="control-group form-group">
@@ -27,7 +26,6 @@
   <div class="controls col-sm-9">
     <input class="form-control" name="email" size="40" value="{{ email }}" 
       pattern="[!#-'*+/-9=?A-Za-z^-~-]+(?:\.[!#-'*+/-9=?A-Z^-~-]+)*@(?:[!#-'*+/-9=?A-Z^-~-]+\.[!#-'*+/-9=?A-Z^-~-]+)*"/>
-    {# pattern inspired from RFC 5322  #}
   </div>
 </div>
 <div class="control-group form-group">
@@ -42,7 +40,6 @@
     <input class="form-control" type="password" name="confpassword" size="40" />
   </div>
 </div>
-{{ captcha|raw }}
 <div class="control-group form-group">
   <div class="controls col-sm-9 col-sm-offset-3">
     <input class="btn btn-block btn-primary" type="submit" value="{{ _t('USER_NEW_ACCOUNT')|e('html_attr') }}" size="40" />

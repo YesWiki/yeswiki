@@ -73,8 +73,8 @@ if (!class_exists('\YesWiki\WikiniFormatter')) {
                 . '&(?!(\#[xX][a-fA-F0-9]+|\#[0-9]+|[a-zA-Z0-9]+);)|'
                 . '={2,6}|'
                 . '-{3,}|'
-                . "\n(\t+|([ ]{1})+)(-|[[:alnum:]]+\))?|"
-                . "^(\t+|([ ]{1})+)(-|[[:alnum:]]+\))?|"
+                . "\n[\t ]+(?:-|[[:alnum:]]+\))?|"
+                . "^[\t ]+(?:-|[[:alnum:]]+\))?|"
                 . "\{\#.*?\#\}|"
                 . "\{\{.*?\}\}|"
                 . '\b' . WN_WIKI_LINK . '\b|'
@@ -383,7 +383,7 @@ if (!class_exists('\YesWiki\WikiniFormatter')) {
                         return '{{}}';
                     }
                     // indented text
-                    elseif (preg_match('`(^|\n)(\t+|([ ]{1})+)(-|([[:alnum:]]+)\))?`s', $thing, $matches)) {
+                    elseif (preg_match('`(^|\n)(?<indent>[\t ]+)(?<type>-|([[:alnum:]]+)\))?`s', $thing, $matches)) {
                         return $this->indentedText($matches);
                     }
                     // wiki links!
@@ -458,35 +458,20 @@ if (!class_exists('\YesWiki\WikiniFormatter')) {
             return $attrs;
         }
 
+        /** Opens, closes or continues the list an indented line belongs to; a tab counts as four spaces, as in the editor. */
         public function indentedText($matches)
         {
             $result = '';
             $closeLI = true;
 
-            // S'il n'y a pas de NL avant l'item (c'est le cas oé on
-            // est au debut de la page), alors on empéche qu'un <br />
-            // ne soit produit
             if (strpos($matches[1], "\n") === false) {
                 $this->br = 0;
             }
-            // Ajout un saut de ligne si necessaire (c'est le cas oé
-            // on est au debut d'une liste et pas au début d'une page,
-            // car $this->br vaut encore 1)
             $result .= ($this->br ? "<br />\n" : '');
-
-            // Les "\n" entre les Item de liste sont "mangés" par la
-            // regexp des listes, et ceci évite que le NL de fin de
-            // liste ne soit transformé abusivement en <br />
             $this->br = 0;
 
-            // recherche du type de la liste
-            if (isset($matches[4])) {
-                $newIndentType = $matches[4];
-            } else {
-                $newIndentType = '';
-            }
+            $newIndentType = $matches['type'] ?? '';
 
-            // calcul de la balise ouvrante/fermante selon le type de liste
             if (!$newIndentType) {
                 $opener = '<ul class="fake-ul">';
                 $closer = "</li>\n</ul>\n";
@@ -494,83 +479,53 @@ if (!class_exists('\YesWiki\WikiniFormatter')) {
                 $opener = "\n<ul>";
                 $closer = "</li>\n</ul>\n";
             } else {
-                // NB: <ol type="..."> est deprecié depuis HTML4.01 -> utilisation d'un style a la place
-                if (preg_match('`[0-9]+`', $matches[4])) {
+                $style = '';
+                if (preg_match('`[0-9]+`', $newIndentType)) {
                     $style = 'style="list-style: decimal;"';
                 }
-                if (preg_match('`[a-hj-z]+`', $matches[4])) {
+                if (preg_match('`[a-hj-z]+`', $newIndentType)) {
                     $style = 'style="list-style: lower-alpha;"';
                 }
-                if (preg_match('`[A-HJ-Z]+`', $matches[4])) {
+                if (preg_match('`[A-HJ-Z]+`', $newIndentType)) {
                     $style = 'style="list-style: upper-alpha;"';
                 }
-                if (preg_match('`[i]+`', $matches[4])) {
+                if (preg_match('`[i]+`', $newIndentType)) {
                     $style = 'style="list-style: lower-roman;"';
                 }
-                if (preg_match('`[I]+`', $matches[4])) {
+                if (preg_match('`[I]+`', $newIndentType)) {
                     $style = 'style="list-style: upper-roman;"';
                 }
                 $opener = "\n<ol $style>";
                 $closer = "</li>\n</ol>\n";
             }
 
-            // calcul du niveau d'indentation
-            // si il y a des tabulations devant la liste alors le niveau = nbr de tab
-            if (strpos($matches[2], "\t")) {
-                $newIndentLevel = strlen($matches[2]);
-            } else { // pas de tab => la difference du nbre d'espace definie le niveau d'indentation
-                $newIndentLevel = $this->oldIndentLevel;
-                // longeur de la chaine d'indentaton
-                $newIndentLength = strlen($matches[2]);
-                if ($newIndentLength > $this->oldIndentLength) {
-                    // si la chaine d'indentation est plus longue que la precedente
-                    // on incremente le niveau d'indentation
-                    $newIndentLevel++;
-                    // on stock la niveau correspondant a la longueur de la chaine d'indentation
-                    // la boucle for permet de corriger les erreurs de saisie d'espace.
-                    // $this->newIndentSpace[$newIndentLength]=$newIndentLevel;
-                    for ($i = $this->oldIndentLength + 1; $i <= $newIndentLength; $i++) {
-                        $this->newIndentSpace[$i] = $newIndentLevel;
-                    }
-                } elseif ($newIndentLength < $this->oldIndentLength) {
-                    // si la chaine d'indentation est plus courte que la precedente
-                    // on recupere le niveau d'indentation correspondant a la longueur de la chaune
-                    $newIndentLevel = $this->newIndentSpace[$newIndentLength];
+            $newIndentLevel = $this->oldIndentLevel;
+            $newIndentLength = strlen(str_replace("\t", '    ', $matches['indent']));
+            if ($newIndentLength > $this->oldIndentLength) {
+                $newIndentLevel++;
+                for ($i = $this->oldIndentLength + 1; $i <= $newIndentLength; $i++) {
+                    $this->newIndentSpace[$i] = $newIndentLevel;
                 }
+            } elseif ($newIndentLength < $this->oldIndentLength) {
+                $newIndentLevel = $this->newIndentSpace[$newIndentLength] ?? 1;
             }
 
-            // quoi qu'il en soit, on va ouvrir ou fermer des boites de type bloc
-            // il faut donc fermer les boites de type in-line
             $result .= $this->closeAllInLine();
 
-            // si le nouveau level est plus grand
             if ($newIndentLevel > $this->oldIndentLevel) {
                 for ($i = 0; $i < $newIndentLevel - $this->oldIndentLevel; $i++) {
-                    // on ajoute le tag d'ouverture de liste
                     $result .= $opener;
-                    // sauvegarde du tag de fermeture dans la pile
                     array_push($this->indentClosers, $closer);
                     $closeLI = false;
                 }
-            }
-            // si le nouveau level est plus petit
-            elseif ($newIndentLevel < $this->oldIndentLevel) {
+            } elseif ($newIndentLevel < $this->oldIndentLevel) {
                 for ($i = 0; $i < $this->oldIndentLevel - $newIndentLevel; $i++) {
-                    // on depile le tag de fermeture
                     $result .= array_pop($this->indentClosers);
                 }
                 $closeLI = true;
             }
-            // si c'est le meme level
-            elseif ($newIndentLevel == $this->oldIndentLevel) {
-                $closeLI = true;
-            }
 
             $result .= ($closeLI ? '</li>' : '') . "\n<li>";
-
-            // quoi qu'il se soit passe, on a ouvert ou ferme des boites de type bloc
-            // et on a du fermer les boites de type in-line
-            // il faut donc les re-ouvrir maintenant
             $result .= $this->openAllInLine();
 
             $this->oldIndentLevel = $newIndentLevel;

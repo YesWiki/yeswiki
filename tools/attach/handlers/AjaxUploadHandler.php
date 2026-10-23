@@ -61,7 +61,8 @@ class AjaxUploadHandler extends YesWikiHandler
 
         $this->hasTempTag = (
             isset($get['tempTag'])
-            && preg_match("/^{$this->params->get('temp_tag_for_entry_creation')}_[A-Fa-f0-9]+$/m", $get['tempTag'])
+            && is_string($get['tempTag'])
+            && preg_match('/^' . preg_quote($this->params->get('temp_tag_for_entry_creation'), '/') . '_[A-Fa-f0-9]+$/D', $get['tempTag'])
         );
         $page = $this->getService(PageManager::class)->getOne($tag);
         $aclService = $this->getService(AclService::class);

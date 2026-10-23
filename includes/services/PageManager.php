@@ -348,7 +348,9 @@ class PageManager
         $this->dbService->query("DELETE FROM {$this->pageTableName} WHERE tag='{$this->dbService->escape($tag)}' OR comment_on='{$this->dbService->escape($tag)}'");
         $this->dbService->query("DELETE FROM {$this->dbService->prefixTable('links')} WHERE from_tag='{$this->dbService->escape($tag)}' ");
         $this->dbService->query("DELETE FROM {$this->dbService->prefixTable('acls')} WHERE page_tag='{$this->dbService->escape($tag)}' ");
-        $this->tripleStore->deleteAll($tag, '');
+        if (stripos((string)$tag, GROUP_PREFIX) !== 0) {
+            $this->tripleStore->deleteAll($tag, '');
+        }
         $this->dbService->query("DELETE FROM {$this->dbService->prefixTable('referrers')} WHERE page_tag='{$this->dbService->escape($tag)}' ");
         $this->tagsManager->deleteAll($tag);
 
@@ -412,6 +414,9 @@ class PageManager
         if ($this->securityController->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
+        if (stripos((string)$tag, GROUP_PREFIX) === 0) {
+            return 1;
+        }
         $user = $this->authController->getLoggedUserName();
 
         // check bypass of rights or write privilege
@@ -468,9 +473,9 @@ class PageManager
             // set all other revisions to old
             $this->dbService->query("UPDATE {$this->pageTableName} SET latest = 'N' WHERE tag = '{$tag}'");
 
-            // use forcedDate is present
+            // use forcedDate when present, but only in the exact shape every caller produces, so no request value reaches the SQL
             $time = 'now()';
-            if (!empty($forcedDate)) {
+            if (!empty($forcedDate) && preg_match('/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/', (string)$forcedDate) === 1) {
                 $time = "\"{$forcedDate}\"";
             }
 

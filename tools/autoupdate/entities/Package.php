@@ -218,6 +218,20 @@ abstract class Package extends Files
     /****************************************************************************
      * Méthodes privées
      **************************************************************************/
+    /**
+     * The wiki root: the working directory YesWiki runs from, under the web as on the command line.
+     * Not this file's folder, which on a farm wiki is the master's through a symbolic link.
+     */
+    protected function wikiRootPath(): string
+    {
+        $cwd = realpath(getcwd());
+        if ($cwd !== false && is_file($cwd . '/wakka.config.php')) {
+            return $cwd;
+        }
+
+        return dirname(dirname(dirname(__DIR__)));
+    }
+
     protected function name()
     {
         $namePlusDate = explode('-', basename($this->address, '.zip'), 2)[1];

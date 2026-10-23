@@ -54,9 +54,9 @@ export default class {
         this.resetModal()
         this.$modal.modal('show')
 
-        // Insert Button
         this.$modal
           .find('.btn-insert-upload')
+          .prop('disabled', true)
           .off('click')
           .on('click', () => {
             this.onComplete(this.buildCode())
@@ -64,13 +64,14 @@ export default class {
           })
       },
       onComplete: (id, fileName, responseJSON) => {
+        if (!responseJSON || !responseJSON.success) return
+        this.$modal.find('.btn-insert-upload').prop('disabled', false)
         const fileuploaded = this.$downloadList.find(
           '.qq-upload-success .qq-upload-file',
         )
         const filesize = fileuploaded.siblings('.qq-upload-size')
         this.$modal.find('.modal-title').append(fileuploaded).append(filesize)
 
-        // If it's an image
         if (imagesExtensions.includes(responseJSON.extension)) {
           this.$imagesOptions.show()
           this.$hiddenFilenameInput.val(responseJSON.simplefilename)
@@ -94,7 +95,6 @@ export default class {
       },
     })
 
-    // We move the section where qq will display the upload progress into the modal
     this.$modal
       .find('.modal-body')
       .prepend($btnContainer.find('.qq-upload-list'))

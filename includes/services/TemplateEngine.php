@@ -4,6 +4,7 @@ namespace YesWiki\Core\Service;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Security\Csrf\CsrfTokenManager;
+use YesWiki\Attach\Service\RemoteImageCache;
 use YesWiki\Bazar\Service\FormManager;
 use YesWiki\Bazar\Service\ListManager;
 use YesWiki\Core\Exception\TemplateNotFound;
@@ -165,6 +166,11 @@ class TemplateEngine
             }
             throw new \Exception('`$tokenId` should be a string or an array !');
         });
+        $this->addTwigHelper('signedUrl', function (string $url) {
+            $glue = str_contains($url, '?') ? '&' : '?';
+
+            return $url . $glue . RequestGuard::FIELD . '=' . rawurlencode($this->csrfTokenManager->getToken(RequestGuard::TOKEN_ID)->getValue());
+        });
         $this->addTwigHelper('urlImage', function ($options) {
             if (!isset($options['fileName'])) {
                 throw new \Exception('`urlImage` should be called with `fileName` key in params!');
@@ -176,6 +182,12 @@ class TemplateEngine
                 throw new \Exception('`urlImage` should be called with `height` key in params!');
             }
             $options = array_merge(['mode' => 'fit', 'refresh' => false], $options);
+            if (RemoteImageCache::isRemote($options['fileName'])) {
+                $resized = $this->wiki->services->get(RemoteImageCache::class)
+                    ->resized($options['fileName'], intval($options['width']), intval($options['height']), $options['mode']);
+
+                return $resized === null ? $options['fileName'] : $this->wiki->getBaseUrl() . '/' . $resized;
+            }
 
             if (!class_exists('attach')) {
                 include 'tools/attach/libs/attach.lib.php';
@@ -190,7 +202,6 @@ class TemplateEngine
             if (!file_exists($image_dest) || $safeRefresh) {
                 $result = $attach->redimensionner_image($options['fileName'], $image_dest, $options['width'], $options['height'], $options['mode']);
                 if ($result != $image_dest) {
-                    // do nothing : error
                     return $basePath . $options['fileName'];
                 }
 
@@ -261,9 +272,7 @@ class TemplateEngine
         $twig = new \Twig\Environment($loader, ['autoescape' => false]);
 
         $policy = new \Twig\Sandbox\SecurityPolicy(
-            // allowed control-flow tags only
             ['if', 'for', 'set'],
-            // safe data-manipulation and formatting filters
             [
                 'abs', 'batch', 'capitalize', 'date', 'default',
                 'e', 'escape', 'filter', 'first', 'format',
@@ -272,11 +281,9 @@ class TemplateEngine
                 'reduce', 'replace', 'reverse', 'round', 'slice',
                 'sort', 'split', 'striptags', 'title', 'trim', 'upper',
             ],
-            // no method calls on objects
             [],
-            // no property access on objects
             [],
-            ['date', 'fileUrl', 'max', 'min', 'random', 'range']
+            ['date', 'fileUrl', 'format', 'markdown', 'max', 'min', 'random', 'range']
         );
         $twig->addExtension(new \Twig\Extension\SandboxExtension($policy, true));
 
@@ -284,6 +291,12 @@ class TemplateEngine
         $uploadPath = BAZ_CHEMIN_UPLOAD;
         $twig->addFunction(new \Twig\TwigFunction('fileUrl', function (string $fileName) use ($baseUrl, $uploadPath): string {
             return $baseUrl . '/' . $uploadPath . $fileName;
+        }));
+        $twig->addFunction(new \Twig\TwigFunction('format', function ($text): string {
+            return $this->wiki->Format((string)$text, 'wakka');
+        }));
+        $twig->addFunction(new \Twig\TwigFunction('markdown', function ($html): string {
+            return $this->wiki->services->get(HtmlToMarkdown::class)->convert(is_string($html) ? $html : '');
         }));
 
         return $twig->render('__sem__', $data);
@@ -336,15 +349,14 @@ class TemplateEngine
 
         $realTemplatePath = $this->twigLoader->getSourceContext($templatePath)->getPath();
 
-        // extract variables for the template
         if (!empty($data)) {
-            extract($data);
+            extract($data, EXTR_SKIP);
         }
 
-        ob_start(); // buffer
+        ob_start();
         include $realTemplatePath;
-        $content = ob_get_contents(); // get buffer's content
-        ob_end_clean(); // destroy buffer
+        $content = ob_get_contents();
+        ob_end_clean();
 
         return $content;
     }

@@ -1,9 +1,12 @@
 <?php
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use YesWiki\Bazar\Controller\EntryController;
+use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Core\Controller\AuthController;
 use YesWiki\Core\Service\AclService;
 use YesWiki\Core\Service\FavoritesManager;
+use YesWiki\Core\Service\RequestGuard;
 use YesWiki\Security\Controller\SecurityController;
 
 $user = $this->services->get(AuthController::class)->getLoggedUser();
@@ -26,6 +29,9 @@ if ((!empty($user) || $this->HasAccess('write')) && $this->method != 'revisions'
     if (empty($template)) {
         $template = 'barreredaction_basic.twig';
     }
+    if (!$this->services->get(YesWiki\Core\Service\TemplateEngine::class)->hasTemplate("@templates/$template")) {
+        $template = 'barreredaction_basic.twig';
+    }
 
     // on peut ajouter des classes, la classe par défaut est .footer
     $options['class'] = ($this->GetParameter('class') ? 'footer ' . $this->GetParameter('class') : 'footer');
@@ -33,7 +39,10 @@ if ((!empty($user) || $this->HasAccess('write')) && $this->method != 'revisions'
     if ($this->HasAccess('write')) {
         // on ajoute le lien d'édition si l'action est autorisée
         if ($this->HasAccess('write', $page) && !$this->services->get(SecurityController::class)->isWikiHibernated()) {
-            $options['linkedit'] = $this->href('edit', $page);
+            $editContextUrl = $this->services->get(EntryManager::class)->isEntry($page)
+                ? $this->services->get(EntryController::class)->getEditContextUrl($page)
+                : '';
+            $options['linkedit'] = $this->href('edit', $page, empty($editContextUrl) ? null : ['incomingurl' => $editContextUrl], false);
         }
 
         if ($time) {
@@ -67,15 +76,15 @@ if ((!empty($user) || $this->HasAccess('write')) && $this->method != 'revisions'
                 $options['wikigroups'] = $this->GetGroupsList();
                 if ($this->services->get(ParameterBagInterface::class)->get('comments_activated')) {
                     if ($hasAccessComment && $hasAccessComment !== 'comments-closed') {
-                        $options['linkclosecomments'] = $this->href('claim', $page, ['action' => 'closecomments'], false);
+                        $options['linkclosecomments'] = $this->services->get(RequestGuard::class)->sign($this->href('claim', $page, ['action' => 'closecomments'], false));
                     } else {
-                        $options['linkopencomments'] = $this->href('claim', $page, ['action' => 'opencomments'], false);
+                        $options['linkopencomments'] = $this->services->get(RequestGuard::class)->sign($this->href('claim', $page, ['action' => 'opencomments'], false));
                     }
                 }
             } elseif (!$owner && $this->GetUser()) {
                 $options['owner'] .= ' - ' . _t('TEMPLATE_CLAIM');
                 if (!$this->services->get(SecurityController::class)->isWikiHibernated()) {
-                    $options['linkacls'] = $this->href('claim', $page);
+                    $options['linkacls'] = $this->services->get(RequestGuard::class)->sign($this->href('claim', $page, null, false));
                 }
             }
         }

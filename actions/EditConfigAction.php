@@ -1,5 +1,6 @@
 <?php
 
+use YesWiki\Core\Service\BotGuard;
 use YesWiki\Core\Service\ConfigurationFileProvider;
 use YesWiki\Core\Service\ConfigurationService;
 use YesWiki\Core\YesWikiAction;
@@ -34,7 +35,7 @@ class EditConfigAction extends YesWikiAction
         'htmlPurifierSafeIframeRegexp' => 'security',
         'allowed_methods_in_iframe' => 'security',
 
-        'contact_from' => 'contact', // merged in contact instead of email to prevent duplication of blocks
+        'contact_from' => 'contact',
         'mail_custom_message' => 'contact',
         'supported_langs' => 'internationalisation',
         'default_language' => 'internationalisation',
@@ -71,7 +72,6 @@ class EditConfigAction extends YesWikiAction
             ]);
         }
 
-        // get services
         $this->configurationService = $this->getService(ConfigurationService::class);
 
         $output = '';
@@ -85,7 +85,6 @@ class EditConfigAction extends YesWikiAction
             ]);
         }
 
-        // display form
         list($data, $placeholders, $associatedExtensions) = $this->getDataFromConfigFile();
         $keysList = [];
         foreach ($data as $key => $value) {
@@ -101,13 +100,10 @@ class EditConfigAction extends YesWikiAction
             'keysList' => $keysList,
             'placeholders' => $placeholders,
             'help' => $this->getHelp(),
+            'botGuardRefusals' => $this->getService(BotGuard::class)->refusedLastDays(7),
         ]);
     }
 
-    /**
-     * get AUTHORIZED_KEYS
-     * return array [$keys,$associatedExtensions].
-     */
     private function getAuthorizedKeys(): array
     {
         if (is_null($this->keys)) {
@@ -135,8 +131,7 @@ class EditConfigAction extends YesWikiAction
                     }
                 }
             }
-            // remove duplicate
-            $scannedKeysNames = [];
+            $scannedKeysNames = (array)($this->wiki->config['edit_config_locked_params'] ?? []);
             $scannedKeys = [];
             foreach ($keys as $key) {
                 if (is_array($key)) {
@@ -161,14 +156,6 @@ class EditConfigAction extends YesWikiAction
         return [$this->keys, $this->associatedExtensions];
     }
 
-    /**
-     * prepare array of $keyNames from $keys
-     * recursive.
-     *
-     * @param array|string $keys
-     *
-     * @return array [$keyName1,$keyName2]
-     */
     private function prepareKeyNames($keys, bool $firstLevel = false): array
     {
         if (is_string($keys)) {
@@ -189,9 +176,6 @@ class EditConfigAction extends YesWikiAction
         return [];
     }
 
-    /**
-     * could be replace by array_is_list since php 8.1.
-     */
     private function arrayIsList(array $array): bool
     {
         $keys = array_keys($array);
@@ -204,11 +188,6 @@ class EditConfigAction extends YesWikiAction
         return true;
     }
 
-    /**
-     * save data to wakka.config.php.
-     *
-     * @return bool true if successfull
-     */
     private function save(): bool
     {
         $config = $this->configurationService->getConfiguration(ConfigurationFileProvider::getConfigFileFromEnv());
@@ -311,11 +290,6 @@ class EditConfigAction extends YesWikiAction
         return $config->write();
     }
 
-    /**
-     * get data from config file.
-     *
-     * @return array [$data,$placeholders,$associatedExtensions] format ['name' => string $value,'name2'=> "['ee'=>'yy',...]"]
-     */
     private function getDataFromConfigFile(): array
     {
         $config = $this->configurationService->getConfiguration(ConfigurationFileProvider::getConfigFileFromEnv());
@@ -385,11 +359,6 @@ class EditConfigAction extends YesWikiAction
         return [$data, $placeholders, $associatedExtensions];
     }
 
-    /**
-     * convert $keys to array of arrays.
-     *
-     * @return array $conertedKeys
-     */
     private function convertKeysAsArray(array $keys): array
     {
         $convertedKeys = [];
@@ -414,13 +383,6 @@ class EditConfigAction extends YesWikiAction
         return $convertedKeys;
     }
 
-    /**
-     * extract associated values from config second level.
-     */
-
-    /**
-     * array to string.
-     */
     private function array2Str($value): string
     {
         if (is_array($value)) {
@@ -454,9 +416,6 @@ class EditConfigAction extends YesWikiAction
         return $value;
     }
 
-    /**
-     * string to array if needed.
-     */
     private function strtoarray(string $value)
     {
         $val = trim($value);
@@ -498,9 +457,6 @@ class EditConfigAction extends YesWikiAction
         return $value;
     }
 
-    /**
-     * get help from translation.
-     */
     private function getHelp(): array
     {
         $help = [];

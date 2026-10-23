@@ -60,10 +60,7 @@ class UserControllerTest extends YesWikiTestCase
         do {
             $email = strtolower($wiki->generateRandomString(10, self::CHARS_FOR_EMAIL)) . '@example.com';
         } while (!empty($userManager->getOneByEmail($email)));
-        do {
-            $name = $wiki->generateRandomString(1, self::UPPER_CHARS)
-                . $wiki->generateRandomString(25, self::CHARS_FOR_PASSWORD);
-        } while (!empty($userManager->getOneByName($name)));
+        $name = $this->randomUserName($wiki, $userManager);
 
         $password = $wiki->generateRandomString(25, self::CHARS_FOR_PASSWORD);
 
@@ -149,10 +146,7 @@ class UserControllerTest extends YesWikiTestCase
         $users = $userManager->getAll();
         $firstUser = $users[array_key_first($users)];
         if ($name == 'newRandom') {
-            do {
-                $name = $wiki->generateRandomString(1, self::UPPER_CHARS)
-                    . $wiki->generateRandomString(25, self::CHARS_FOR_PASSWORD);
-            } while (!empty($userManager->getOneByName($name)));
+            $name = $this->randomUserName($wiki, $userManager);
         } elseif ($name == 'empty') {
             $name = '';
         } else {
@@ -244,10 +238,7 @@ class UserControllerTest extends YesWikiTestCase
         do {
             $email = strtolower($wiki->generateRandomString(10, self::CHARS_FOR_EMAIL)) . '@example.com';
         } while (!empty($userManager->getOneByEmail($email)));
-        do {
-            $name = $wiki->generateRandomString(1, self::UPPER_CHARS)
-                . $wiki->generateRandomString(25, self::CHARS_FOR_PASSWORD);
-        } while (!empty($userManager->getOneByName($name)));
+        $name = $this->randomUserName($wiki, $userManager);
         $userManager->create($name, $email, $wiki->generateRandomString(25, self::CHARS_FOR_PASSWORD));
         $user = $userManager->getOneByName($name);
 
@@ -298,10 +289,7 @@ class UserControllerTest extends YesWikiTestCase
         do {
             $email = strtolower($wiki->generateRandomString(10, self::CHARS_FOR_EMAIL)) . '@example.com';
         } while (!empty($userManager->getOneByEmail($email)));
-        do {
-            $name = $wiki->generateRandomString(1, self::UPPER_CHARS)
-                . $wiki->generateRandomString(25, self::CHARS_FOR_PASSWORD);
-        } while (!empty($userManager->getOneByName($name)));
+        $name = $this->randomUserName($wiki, $userManager);
         $userManager->create($name, $email, $wiki->generateRandomString(25, self::CHARS_FOR_PASSWORD));
         $targetUser = $userManager->getOneByName($name);
 
@@ -361,10 +349,7 @@ class UserControllerTest extends YesWikiTestCase
             do {
                 $email = strtolower($wiki->generateRandomString(10, self::CHARS_FOR_EMAIL)) . '@example.com';
             } while (!empty($userManager->getOneByEmail($email)));
-            do {
-                $name = $wiki->generateRandomString(1, self::UPPER_CHARS)
-                    . $wiki->generateRandomString(25, self::CHARS_FOR_PASSWORD);
-            } while (!empty($userManager->getOneByName($name)));
+            $name = $this->randomUserName($wiki, $userManager);
             $userManager->create($name, $email, $wiki->generateRandomString(25, self::CHARS_FOR_PASSWORD));
             $names[] = $name;
         }
@@ -434,10 +419,7 @@ class UserControllerTest extends YesWikiTestCase
         $userManager = $wiki->services->get(UserManager::class);
         switch ($name) {
             case 'newRandom':
-                do {
-                    $name = $wiki->generateRandomString(1, self::UPPER_CHARS)
-                        . $wiki->generateRandomString(25, self::CHARS_FOR_PASSWORD);
-                } while (!empty($userManager->getOneByName($name)));
+                $name = $this->randomUserName($wiki, $userManager);
                 break;
             case 'random':
                 $name = $wiki->generateRandomString($length, self::CHARS_FOR_EMAIL);
@@ -484,5 +466,17 @@ class UserControllerTest extends YesWikiTestCase
             $this->assertEquals($exceptionMessage, '');
             $this->assertInstanceOf(User::class, $user);
         }
+    }
+
+    /** Random unused user name; it never ends with a space, which UserManager::create() would trim. */
+    private function randomUserName(Wiki $wiki, UserManager $userManager): string
+    {
+        do {
+            $name = $wiki->generateRandomString(1, self::UPPER_CHARS)
+                . $wiki->generateRandomString(24, self::CHARS_FOR_PASSWORD)
+                . $wiki->generateRandomString(1, self::UPPER_CHARS);
+        } while (!empty($userManager->getOneByName($name)));
+
+        return $name;
     }
 }

@@ -50,6 +50,8 @@
   {# TODO: stop using all those edit__, and put directly the code here #}
   <div class="tags-container"></div>
 
+  {{ botGuardFields|raw }}
+
   <div class="form-actions">
     {# Save Button #}
     {% set action = (not bodyPreview and config['preview_before_save']) ? 'preview' : saveValue %}

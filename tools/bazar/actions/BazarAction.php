@@ -4,6 +4,7 @@ use YesWiki\Bazar\Controller\EntryController;
 use YesWiki\Bazar\Controller\FormController;
 use YesWiki\Bazar\Controller\ListController;
 use YesWiki\Bazar\Service\BazarListService;
+use YesWiki\Core\Service\RequestGuard;
 use YesWiki\Core\YesWikiAction;
 
 class BazarAction extends YesWikiAction
@@ -24,6 +25,7 @@ class BazarAction extends YesWikiAction
     // Entries
     public const MOTEUR_RECHERCHE = 'recherche';
     public const ACTION_ENTRY_VIEW = 'voir_fiche';
+    public const CONSULTER_PAGINATION = 50;
     public const ACTION_ENTRY_CREATE = 'saisir_fiche';
     public const ACTION_ENTRY_EDIT = 'modif_fiche';
     public const ACTION_ENTRY_DELETE = 'supprimer';
@@ -50,6 +52,7 @@ class BazarAction extends YesWikiAction
     public const ACTION_ABONNEMENT_ADD = 'add';
     public const ACTION_ABONNEMENT_REMOVE = 'remove';
     public const ACTION_ABONNEMENT_SYNC = 'sync';
+    public const ACTION_ABONNEMENT_ACCEPT = 'accept';
 
     public const ACTION_PUBLIER = 'publier'; // Valider la fiche
     public const ACTION_PAS_PUBLIER = 'pas_publier'; // Invalider la fiche
@@ -122,6 +125,21 @@ class BazarAction extends YesWikiAction
             : (is_callable($callback) ? $callback() : null);
     }
 
+    /**
+     * The alert shown instead of acting when a link that changes something lacks the session's token, or null when it carries it.
+     */
+    protected function unsignedLinkRefusal(): ?string
+    {
+        if ($this->getService(RequestGuard::class)->linkIsSigned($this->getRequest())) {
+            return null;
+        }
+
+        return $this->render('@templates/alert-message.twig', [
+            'type' => 'danger',
+            'message' => _t('CSRF_TOKEN_FAIL_ERROR'),
+        ]);
+    }
+
     public function run()
     {
         $req = $this->getRequest();
@@ -129,13 +147,11 @@ class BazarAction extends YesWikiAction
         $formController = $this->getService(FormController::class);
         $entryController = $this->getService(EntryController::class);
 
-        // TODO put in all bazar templates
         $this->wiki->AddJavascriptFile('tools/bazar/presentation/javascripts/bazar.js', true, true);
 
         $view = $this->arguments[self::VARIABLE_VOIR];
         $action = $this->arguments[self::VARIABLE_ACTION];
 
-        // Display menu, unless we explicitly don't want to see it
         if ($this->arguments['voirmenu'] !== '0') {
             echo $this->render('@bazar/menu.twig', [
                 'menuItems' => array_map('trim', explode(',', $this->arguments['voirmenu'])),
@@ -154,11 +170,11 @@ class BazarAction extends YesWikiAction
                     case self::ACTION_ENTRY_EDIT:
                         return $entryController->update($req->get('id_fiche'));
                     case self::ACTION_ENTRY_DELETE:
-                        return $entryController->delete($req->get('id_fiche'), true);
+                        return $this->unsignedLinkRefusal() ?? $entryController->delete($req->get('id_fiche'), true);
                     case self::ACTION_PUBLIER:
-                        return $entryController->publish($req->get('id_fiche'), true);
+                        return $this->unsignedLinkRefusal() ?? $entryController->publish($req->get('id_fiche'), true);
                     case self::ACTION_PAS_PUBLIER:
-                        return $entryController->publish($req->get('id_fiche'), false);
+                        return $this->unsignedLinkRefusal() ?? $entryController->publish($req->get('id_fiche'), false);
                     case self::CHOISIR_TYPE_FICHE:
                         return $entryController->selectForm();
                     default:
@@ -241,6 +257,8 @@ class BazarAction extends YesWikiAction
 
                     case self::ACTION_ABONNEMENT_SYNC:
                         return $formController->syncActorPosts($req->query->get('idformulaire'), $req->query->get('actor'));
+                    case self::ACTION_ABONNEMENT_ACCEPT:
+                        return $formController->acceptFollower($req->query->get('idformulaire'), $req->request->get('actor'));
                     default:
                         return $formController->displayAll($req->query->get('msg'));
                 }
@@ -270,7 +288,7 @@ class BazarAction extends YesWikiAction
                             return $this->getMessageWhenHibernated();
                         }
 
-                        return $listController->delete($req->query->get('idliste'));
+                        return $this->unsignedLinkRefusal() ?? $listController->delete($req->query->get('idliste'));
                     default:
                         return $listController->displayAll();
                 }
@@ -289,7 +307,11 @@ class BazarAction extends YesWikiAction
                     default:
                         $this->arguments['search'] = true;
 
-                        return $this->callAction('bazarliste', array_merge($this->arguments, ['idtypeannonce' => $this->arguments['idtypeannonce']['locals']]));
+                        return $this->callAction('bazarliste', array_merge(
+                            ['pagination' => self::CONSULTER_PAGINATION],
+                            $this->arguments,
+                            ['idtypeannonce' => $this->arguments['idtypeannonce']['locals']],
+                        ));
                 }
         }
     }

@@ -1,0 +1,263 @@
+{% if message %}
+<div class="alert alert-success">
+  <a data-dismiss="alert" class="close" type="button">&times;</a>
+  {{ _t(message) }}
+</div>
+{% endif %}
+
+<h2>{{ form.bn_label_nature }} <small>ActivityPub</small></h2>
+
+{% if not isEnabled %}
+<div class="alert alert-warning">{{ _t('BAZ_ACTIVITYPUB_DISABLED') }}</div>
+{% elseif profile.username is empty %}
+<div class="alert alert-warning">{{ _t('BAZ_ACTIVITYPUB_NO_USERNAME') }}</div>
+{% else %}
+<div class="alert alert-info">
+  <strong>{{ _t('BAZ_FORM_ACTOR_ID') }}</strong> : @{{ profile.username }}@{{ domain }}
+</div>
+{{ include('@bazar/activitypub-routes-check.twig') }}
+{% endif %}
+
+<ul class="nav nav-tabs">
+  {% for name, label in {
+    profile: _t('BAZ_ACTIVITYPUB_PROFILE'),
+    following: _t('BAZ_ABONNEMENTS') ~ ' (' ~ following|length ~ ')',
+    followers: _t('BAZ_ABONNES') ~ ' (' ~ followers|length ~ ')',
+  } %}
+  <li{% if tab == name %} class="active"{% endif %}>
+    <a href="{{ url({ params: { vue: 'abonnements', action: 'list', idformulaire: form.bn_id_nature, tab: name }}) }}">
+      {{ label }}
+      {% if name == 'followers' and followRequests is not empty %}<span class="badge">{{ followRequests|length }}</span>{% endif %}
+    </a>
+  </li>
+  {% endfor %}
+</ul>
+
+<div class="activitypub-tab" style="padding-top: 1.5em;">
+{% if tab == 'profile' %}
+<form action="{{ url({ params: { vue: 'abonnements', action: 'list', idformulaire: form.bn_id_nature }}) }}" method="post" enctype="multipart/form-data" class="form-horizontal">
+  <input type="hidden" name="csrf-token" value="{{ csrfToken({id: 'main', refresh: false})|e('html_attr') }}">
+
+  <div class="form-group">
+    <label class="control-label col-sm-3" for="activitypub_username">{{ _t('BAZ_ACTIVITYPUB_USERNAME') }}</label>
+    <div class="col-sm-9">
+      <div class="input-group">
+        <span class="input-group-addon">@</span>
+        <input class="form-control" id="activitypub_username" name="activitypub_username" type="text" required pattern="[a-zA-Z0-9_]{1,30}" maxlength="30" value="{{ profile.username ?: suggestedUsername|slice(0, 30) }}">
+        <span class="input-group-addon">@{{ domain }}</span>
+      </div>
+      <p class="help-block">{{ _t('BAZ_ACTIVITYPUB_USERNAME_HELP') }}</p>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label class="control-label col-sm-3" for="activitypub_summary">{{ _t('BAZ_ACTIVITYPUB_SUMMARY') }}</label>
+    <div class="col-sm-9">
+      <textarea class="form-control" id="activitypub_summary" name="activitypub_summary" rows="4" maxlength="5000" placeholder="{{ form.bn_description|striptags|e('html_attr') }}">{{ profile.summary }}</textarea>
+      <p class="help-block">{{ _t('BAZ_ACTIVITYPUB_SUMMARY_HELP') }}</p>
+    </div>
+  </div>
+
+  {% for role in ['icon', 'image'] %}
+  <div class="form-group">
+    <label class="control-label col-sm-3" for="activitypub_{{ role }}">{{ _t(role == 'icon' ? 'BAZ_ACTIVITYPUB_ICON' : 'BAZ_ACTIVITYPUB_IMAGE') }}</label>
+    <div class="col-sm-9">
+      {% if profile[role] is not empty %}
+      <p><img src="{{ profile[role] }}" alt="" style="max-height: {{ role == 'icon' ? '96px' : '160px' }}; max-width: 100%;{% if role == 'icon' %} border-radius: 8px;{% endif %}"></p>
+      {% endif %}
+      <input class="form-control" id="activitypub_{{ role }}" name="activitypub_{{ role }}" type="text" value="{{ profile[role] }}" placeholder="https://… / files/…">
+      <input class="form-control" name="activitypub_{{ role }}_file" type="file" accept="image/png,image/jpeg,image/gif,image/webp" style="margin-top: .5em;">
+      <p class="help-block">{{ _t(role == 'icon' ? 'BAZ_ACTIVITYPUB_ICON_HELP' : 'BAZ_ACTIVITYPUB_IMAGE_HELP') }}</p>
+    </div>
+  </div>
+  {% endfor %}
+
+  <div class="form-group">
+    <label class="control-label col-sm-3">{{ _t('BAZ_ACTIVITYPUB_FIELDS') }}</label>
+    <div class="col-sm-9">
+      {% set fieldNames = profile.fields|keys %}
+      {% for index in 0..(maxFields - 1) %}
+      <div class="row" style="margin-bottom: .5em;">
+        <div class="col-xs-5">
+          <input class="form-control" name="activitypub_field_name[]" type="text" maxlength="255" placeholder="{{ _t('BAZ_ACTIVITYPUB_FIELD_NAME') }}" value="{{ fieldNames[index] ?? '' }}">
+        </div>
+        <div class="col-xs-7">
+          <input class="form-control" name="activitypub_field_value[]" type="text" maxlength="2048" placeholder="{{ _t('BAZ_ACTIVITYPUB_FIELD_VALUE') }}" value="{{ fieldNames[index] is defined ? profile.fields[fieldNames[index]] : '' }}">
+        </div>
+      </div>
+      {% endfor %}
+      <p class="help-block">{{ _t('BAZ_ACTIVITYPUB_FIELDS_HELP') }}</p>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <div class="col-sm-offset-3 col-sm-9">
+      <div class="checkbox">
+        <label>
+          <input type="checkbox" name="activitypub_approve_followers" value="1"{% if profile.approve_followers %} checked{% endif %}>
+          {{ _t('BAZ_ACTIVITYPUB_APPROVE_FOLLOWERS') }}
+        </label>
+      </div>
+      <p class="help-block">{{ _t('BAZ_ACTIVITYPUB_APPROVE_FOLLOWERS_HELP') }}</p>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label class="control-label col-sm-3">{{ _t('BAZ_ACTIVITYPUB_INCOMING') }}</label>
+    <div class="col-sm-9">
+      {% for setting in ['accept_unfollowed', 'accept_non_public', 'accept_replies'] %}
+      <div class="checkbox">
+        <label>
+          <input type="checkbox" name="activitypub_{{ setting }}" value="1"{% if profile[setting] %} checked{% endif %}>
+          {{ _t('BAZ_ACTIVITYPUB_' ~ setting|upper) }}
+        </label>
+      </div>
+      {% endfor %}
+      <p class="help-block">{{ _t('BAZ_ACTIVITYPUB_INCOMING_HELP') }}</p>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <div class="col-sm-offset-3 col-sm-9">
+      <button class="btn btn-primary" type="submit">{{ _t('BAZ_SAVE') }}</button>
+      {% if profile.username is not empty %}
+      <a class="btn btn-default" href="{{ actorUri }}" target="_blank" rel="noopener">{{ _t('BAZ_ACTIVITYPUB_VIEW_ACTOR') }}</a>
+      {% endif %}
+    </div>
+  </div>
+</form>
+{% elseif tab == 'following' %}
+{% if profile.username is not empty %}
+<strong>{{ _t('BAZ_FOLLOW_ACTOR') }}</strong>
+<form action="{{ url({ params: { vue: 'abonnements', action: 'list', idformulaire: form.bn_id_nature }}) }}" method="post" class="form-horizontal">
+  <input type="hidden" name="csrf-token" value="{{ csrfToken({id: 'main', refresh: false})|e('html_attr') }}">
+  <div class="input-prepend input-append input-group">
+    <span class="add-on input-group-addon">
+      <i class="fa fa-link icon-globe"></i>
+    </span>
+    <input name="actor_handle" class="form-control input-xxlarge" placeholder="{{ _t('BAZ_FOLLOW_ACTOR_INFO') }}" />
+    <span class="input-group-btn">
+      <button class="btn btn-primary" type="submit">
+        {{ _t('BAZ_GO') }}&nbsp;!
+      </button>
+    </span>
+  </div>
+</form>
+{% endif %}
+
+<table class="table table-condensed table-striped">
+  <thead>
+    <tr>
+      <th>{{ _t('BAZ_ABONNEMENTS') }}</th>
+      <th style="width:140px;">{{ _t('BAZ_ACTIONS') }}</th>
+    </tr>
+  </thead>
+  <tbody>
+  {% for actorUri in following %}
+    <tr>
+      <td>
+        <a href="{{ actorUri }}" target="_blank">{{ actorUri }}</a>
+      </td>
+      <td>
+        <a
+          class="btn btn-default btn-xs"
+          href="{{ url({ params: { vue: 'abonnements', action: 'sync', actor: actorUri, idformulaire: form.bn_id_nature, synctoken: csrfToken({id: 'main', refresh: false}) }}) }}"
+          title="{{ _t('BAZ_SYNC_ACTOR_POSTS') }}"
+        >
+          <i class="fa fa-retweet icon-white"></i>
+        </a>
+        <a
+          class="btn btn-danger btn-xs"
+          href="{{ signedUrl(url({ params: { vue: 'abonnements', action: 'remove', actor: actorUri, type: 'following', idformulaire: form.bn_id_nature }})) }}"
+          onclick="javascript:return confirm('{{ _t('BAZ_CONFIRM_SUPPRIMER_ABONNEMENT') }} ?');"
+        >
+          <i class="fa fa-trash icon-white"></i>
+        </a>
+      </td>
+    </tr>
+  {% endfor %}
+  {% for actorUri in pendingFollowing %}
+    <tr>
+      <td>
+        <a href="{{ actorUri }}" target="_blank">{{ actorUri }}</a>
+        <span class="label label-default">{{ _t('BAZ_FOLLOWING_PENDING') }}</span>
+      </td>
+      <td>
+        <a
+          class="btn btn-danger btn-xs"
+          href="{{ signedUrl(url({ params: { vue: 'abonnements', action: 'remove', actor: actorUri, type: 'following', idformulaire: form.bn_id_nature }})) }}"
+          onclick="javascript:return confirm('{{ _t('BAZ_CONFIRM_SUPPRIMER_ABONNEMENT') }} ?');"
+        >
+          <i class="fa fa-trash icon-white"></i>
+        </a>
+      </td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+
+{% else %}
+{% if followRequests is not empty %}
+<h3>{{ _t('BAZ_ACTIVITYPUB_FOLLOW_REQUESTS') }}</h3>
+<table class="table table-condensed table-striped">
+  <tbody>
+  {% for actorUri in followRequests %}
+    <tr>
+      <td>
+        <a href="{{ actorUri }}" target="_blank">{{ actorUri }}</a>
+      </td>
+      <td style="width:220px;">
+        <form action="{{ url({ params: { vue: 'abonnements', action: 'accept', idformulaire: form.bn_id_nature }}) }}" method="post" style="display:inline;">
+          <input type="hidden" name="csrf-token" value="{{ csrfToken({id: 'main', refresh: false})|e('html_attr') }}">
+          <input type="hidden" name="actor" value="{{ actorUri }}">
+          <button class="btn btn-success btn-xs" type="submit">{{ _t('BAZ_ACTIVITYPUB_ACCEPT') }}</button>
+        </form>
+        <a
+          class="btn btn-danger btn-xs"
+          href="{{ signedUrl(url({ params: { vue: 'abonnements', action: 'remove', actor: actorUri, type: 'followers', idformulaire: form.bn_id_nature }})) }}"
+          onclick="javascript:return confirm('{{ _t('BAZ_ACTIVITYPUB_CONFIRM_REFUSE') }}');"
+        >{{ _t('BAZ_ACTIVITYPUB_REFUSE') }}</a>
+      </td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endif %}
+
+<table class="table table-condensed table-striped">
+  <thead>
+    <tr>
+      <th>{{ _t('BAZ_ABONNES') }}</th>
+      <th style="width:140px;">{{ _t('BAZ_ACTIONS') }}</th>
+    </tr>
+  </thead>
+  <tbody>
+  {% for actorUri in followers %}
+    <tr>
+      <td>
+        <a href="{{ actorUri }}" target="_blank">{{ actorUri }}</a>
+      </td>
+      <td>
+        {% if actorUri not in following %}
+        <a
+          class="btn btn-default btn-mini btn-xs"
+          href="{{ signedUrl(url({ params: { vue: 'abonnements', action: 'add', actor: actorUri, type: 'following', idformulaire: form.bn_id_nature }})) }}"
+          title="{{ _t('BAZ_FOLLOW_BACK') }}"
+        >
+          <i class="fa fa-user-plus icon-white"></i>
+        </a>
+        {% endif %}
+        <a
+          class="btn btn-danger btn-xs"
+          href="{{ signedUrl(url({ params: { vue: 'abonnements', action: 'remove', actor: actorUri, type: 'followers', idformulaire: form.bn_id_nature }})) }}"
+          onclick="javascript:return confirm('{{ _t('BAZ_CONFIRM_SUPPRIMER_ABONNE') }} ?');"
+        >
+          <i class="fa fa-trash icon-white"></i>
+        </a>
+      </td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endif %}
+</div>

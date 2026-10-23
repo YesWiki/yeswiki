@@ -6,6 +6,7 @@ use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Tamtamchik\SimpleFlash\Flash;
 use YesWiki\Core\Service\AssetsManager;
+use YesWiki\Core\Service\ExecutableFilename;
 use YesWiki\Security\Controller\SecurityController;
 
 /**
@@ -65,36 +66,34 @@ class ImageField extends FileField
         $wiki = $this->getWiki();
         $value = $this->getValue($entry);
         $isUrl = $this->isUrl($value);
-        // javascript pour gerer la previsualisation
-        // si une taille maximale est indiquée, on teste
         $wiki->services->get(AssetsManager::class)->AddJavascriptFile('tools/bazar/presentation/javascripts/inputs/image-field.js');
         $imgDefault = $this->getDefaultImageName($entry);
 
-        // Handle URL value
         if ($isUrl) {
-            // Handle URL deletion
             if ($this->getRequest()->query->has('suppr_image') && urldecode($this->getRequest()->query->get('suppr_image')) === $value) {
-                if ($this->isAllowedToDeleteFile($entry, $value)) {
+                if (!$this->deletionLinkIsSigned()) {
+                    $output = $this->unsignedDeletionAlert();
+                } elseif ($this->isAllowedToDeleteFile($entry, $value)) {
                     $this->updateEntryAfterFileDelete($entry);
                     $output = $this->render('@templates/alert-message.twig', [
                         'type' => 'info',
                         'message' => str_replace('{file}', $value, _t('BAZ_LE_FICHIER_A_ETE_EFFACE')),
                     ]);
 
-                    // Return empty input after deletion
                     return $output . $this->render('@bazar/inputs/image.twig', ['maxSize' => $this->maxSize, 'isUrl' => false]);
+                } else {
+                    $output = $this->render('@templates/alert-message.twig', [
+                        'type' => 'info',
+                        'message' => _t('BAZ_DROIT_INSUFFISANT'),
+                    ]) . "\n";
                 }
-                $output = $this->render('@templates/alert-message.twig', [
-                    'type' => 'info',
-                    'message' => _t('BAZ_DROIT_INSUFFISANT'),
-                ]) . "\n";
             }
 
             return $output . $this->render('@bazar/inputs/image.twig', [
                 'value' => $value,
                 'isUrl' => true,
                 'downloadUrl' => $value,
-                'deleteUrl' => empty($entry) ? '' : $wiki->href('edit', $wiki->GetPageTag(), 'suppr_image=' . urlencode($value), false),
+                'deleteUrl' => empty($entry) ? '' : $this->signedDeletionUrl($wiki->href('edit', $wiki->GetPageTag(), 'suppr_image=' . urlencode($value), false)),
                 'image' => '<img src="' . htmlspecialchars($value) . '" class="img-responsive" alt="" />',
                 'isDefaultImage' => false,
                 'isAllowedToDeleteFile' => empty($entry) ? false : $this->isAllowedToDeleteFile($entry, $value),
@@ -107,7 +106,9 @@ class ImageField extends FileField
             || (!empty($imgDefault) && file_exists($this->getBasePath() . $imgDefault))
         ) {
             if ($this->getRequest()->query->has('suppr_image') && $this->getRequest()->query->get('suppr_image') === $value) {
-                if ($this->securedDeleteImageAndCache($entry, $value)) {
+                if (!$this->deletionLinkIsSigned()) {
+                    $alertMessage = $this->unsignedDeletionAlert();
+                } elseif ($this->securedDeleteImageAndCache($entry, $value)) {
                     $this->updateEntryAfterFileDelete($entry);
 
                     $output = $this->render('@templates/alert-message.twig', [
@@ -133,7 +134,7 @@ class ImageField extends FileField
                     'value' => $img,
                     'isUrl' => false,
                     'downloadUrl' => $this->getBasePath() . $img,
-                    'deleteUrl' => empty($entry) ? '' : $wiki->href('edit', $wiki->GetPageTag(), 'suppr_image=' . $img, false),
+                    'deleteUrl' => empty($entry) ? '' : $this->signedDeletionUrl($wiki->href('edit', $wiki->GetPageTag(), 'suppr_image=' . $img, false)),
                     'image' => $this->getWiki()->render('@attach/display-image.twig', [
                         'baseUrl' => $this->getWiki()->GetBaseUrl() . '/',
                         'imageFullPath' => $this->getBasePath() . $img,
@@ -206,8 +207,7 @@ class ImageField extends FileField
                         throw new \Exception(_t('BAZ_FILEFIELD_TOO_LARGE_FILE', ['fileMaxSize' => $this->maxSize]));
                     }
 
-                    move_uploaded_file($_FILES[$this->propertyName]['tmp_name'], $filePath);
-                    chmod($filePath, 0755);
+                    $this->storeUploadedFile($filePath);
 
                     if (isset($entry['oldimage_' . $this->propertyName]) && $entry['oldimage_' . $this->propertyName] != '' && !$this->isUrl($entry['oldimage_' . $this->propertyName])) {
                         // delete previous files only if authorized (owner) and not a URL
@@ -287,6 +287,9 @@ class ImageField extends FileField
 
     protected function isImage($fileName)
     {
+        if (ExecutableFilename::matches($fileName)) {
+            return false;
+        }
         $imageExtPreg = $this->getService(ParameterBagInterface::class)->get('attach_config')['ext_images'];
 
         return preg_match("/($imageExtPreg)\$/i", $fileName);

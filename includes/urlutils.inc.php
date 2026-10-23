@@ -51,6 +51,16 @@ function computeBaseURL($rewrite_mode = false)
 }
 
 /**
+ * Whether a base url serves the wiki from the root of its domain, the only place ActivityPub actors and WebFinger can live.
+ */
+function isDomainRootUrl(string $baseUrl): bool
+{
+    $path = (string)parse_url($baseUrl, PHP_URL_PATH);
+
+    return in_array(preg_replace('~/(index|wakka)\.php$~', '/', $path), ['', '/'], true);
+}
+
+/**
  * Automatically detects the rewrite mode.
  *
  * @return bool true if the rewrite mode has been detected as activated,

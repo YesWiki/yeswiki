@@ -1,5 +1,4 @@
 $(document).ready(() => {
-  // on annule les changements de look
   $('#graphical_options a.button_cancel').on('click', () => {
     $('#graphical_options form')[0].reset()
     if (
@@ -8,7 +7,6 @@ $(document).ready(() => {
         $('[name=squelette_select]').first().val() ||
       $('#hiddenstyle').val() !== $('[name=style_select]').first().val()
     ) {
-      // on charge le theme et on remet les valeurs
       let newstyle = $('#mainstyle').attr('href')
       if (newstyle) {
         newstyle = `${newstyle.substring(0, newstyle.lastIndexOf('/'))}/${$('#hiddenstyle').val()}`
@@ -16,11 +14,9 @@ $(document).ready(() => {
       }
     }
 
-    // l'image de fond
     $('#bgCarousel .choosen').removeClass('choosen')
     const hiddenimg = $('#hiddenbgimg').val()
     if (hiddenimg !== '') {
-      // pour le jpg
       if (hiddenimg.substr(hiddenimg.length - 4) === '.jpg') {
         $(`#bgCarousel .bgimg[src$="${hiddenimg}"]`).addClass('choosen')
         $('body').css({
@@ -37,9 +33,7 @@ $(document).ready(() => {
           'background-origin': 'padding-box',
           'background-position': 'center center',
         })
-      }
-      // pour le png
-      else if (hiddenimg.substr(hiddenimg.length - 4) === '.png') {
+      } else if (hiddenimg.substr(hiddenimg.length - 4) === '.png') {
         $(`#bgCarousel .mozaicimg[style*="${hiddenimg}"]`).addClass('choosen')
         $('body').css({
           'background-image': `url(files/backgrounds/${hiddenimg})`,
@@ -57,7 +51,6 @@ $(document).ready(() => {
         })
       }
     } else {
-      // on enleve les images de fond
       $('body').css({
         'background-image': 'none',
         'background-repeat': 'repeat',
@@ -74,13 +67,11 @@ $(document).ready(() => {
       })
     }
 
-    // on remet les valeurs par défaut aux listes déroulantes
     $('[name=theme_select]').first().val($('#hiddentheme').val())
     $('[name=squelette_select]').first().val($('#hiddensquelette').val())
     $('[name=style_select]').first().val($('#hiddenstyle').val())
   })
 
-  // on sauve les metas et on transmet les valeurs changées du theme au formulaire
   $('#graphical_options a.button_save').on('click', () => {
     const theme = $('[name=theme_select]').first().val()
     $('#hiddentheme').val(theme)
@@ -149,15 +140,12 @@ $(document).ready(() => {
     $.post(url, data, (_data) => {})
   })
 
-  // changement de fond d ecran
   $('#bgCarousel img.bgimg').on('click', function () {
-    // Au cas ou le template ne le prend pas en compte, on met html à 100%
     $('html').css({
       width: '100%',
       height: '100%',
     })
 
-    // desactivation de la meme image de fond
     if ($(this).hasClass('choosen')) {
       $('body').css({
         'background-image': 'none',
@@ -196,9 +184,7 @@ $(document).ready(() => {
     }
   })
 
-  // changement de fond d ecran en mosaique
   $('#bgCarousel div.mozaicimg').on('click', function () {
-    // desactivation de la meme image de fond
     if ($(this).hasClass('choosen')) {
       $('body').css({
         'background-image': 'none',
@@ -234,7 +220,4 @@ $(document).ready(() => {
       $(this).addClass('choosen')
     }
   })
-
-  // on deplace hashcash au bon endroit
-  $('#hashcash-text').appendTo('#ACEditor .form-actions')
 })

@@ -35,7 +35,14 @@ class AssetsManager
         'javascripts/vendor/vue/vue.js' => 'javascripts/vendor/vue/vue.min.js',
     ];
 
+    protected const MODULE_GRAPH_CACHE = 'cache/es-module-graph.json';
+    protected const IMPORT_PATTERN = '/(?:^|[;\s])(?:import\s+(?:[\w*{}\s,$]+\s+from\s+)?|export\s+[\w*{}\s,$]+\s+from\s+|import\s*\(\s*|import\.meta\.resolve\(\s*)[\'"]([^\'"]+)[\'"]/m';
+
     protected $wiki;
+    protected array $moduleEntries = [];
+    protected array $inlineModules = [];
+    private ?array $moduleGraph = null;
+    private bool $moduleGraphChanged = false;
 
     public function __construct(Wiki $wiki)
     {
@@ -93,6 +100,9 @@ class AssetsManager
         }
         if (!empty($script) && !strpos($GLOBALS['js'], $script . '</script>')) {
             $GLOBALS['js'] .= '  <script' . ($module ? ' type="module"' : '') . '>' . "\n" . $script . '</script>' . "\n";
+            if ($module) {
+                $this->inlineModules[] = $script;
+            }
         }
     }
 
@@ -109,8 +119,10 @@ class AssetsManager
         $file = $this->mapFilePath($file);
 
         if (!empty($file) && file_exists($file)) {
-            // include local files
-            $code = "<script src='{$this->wiki->getBaseUrl()}/$file$rev'";
+            if ($module) {
+                $this->moduleEntries[] = $file;
+            }
+            $code = "<script src='{$this->versionedUrl($file)}'";
             if (!str_contains($GLOBALS['js'], $code) || $first) {
                 if (!$first) {
                     $code .= ' defer';
@@ -126,22 +138,113 @@ class AssetsManager
                 }
             }
         } elseif (strpos($file, 'http://') === 0 || strpos($file, 'https://') === 0) {
-            // include external files
-            $code = "<script defer src='$file.$rev'></script>";
+            $code = "<script defer src='$file$rev'></script>";
             if (!str_contains($GLOBALS['js'], $code)) {
                 $GLOBALS['js'] .= $code . "\n";
             }
         }
     }
 
+    /**
+     * The import map giving each module that the page's modules import the same versioned URL as a script tag would,
+     * so a browser never runs a module from one version against an import cached from another.
+     */
+    public function importMap(): string
+    {
+        $pending = $this->moduleEntries;
+        $imported = [];
+        foreach ($this->inlineModules as $script) {
+            foreach ($this->importsOf($script, '.') as $dependency) {
+                $imported[$dependency] = true;
+                $pending[] = $dependency;
+            }
+        }
+        while (($file = array_pop($pending)) !== null) {
+            foreach ($this->importsOfFile($file) as $dependency) {
+                if (!isset($imported[$dependency])) {
+                    $imported[$dependency] = true;
+                    $pending[] = $dependency;
+                }
+            }
+        }
+        if ($this->moduleGraphChanged) {
+            $this->moduleGraph = array_filter($this->moduleGraph, 'is_file', ARRAY_FILTER_USE_KEY);
+            @file_put_contents(self::MODULE_GRAPH_CACHE, json_encode(['pattern' => self::IMPORT_PATTERN, 'modules' => $this->moduleGraph]));
+            $this->moduleGraphChanged = false;
+        }
+        if (empty($imported)) {
+            return '';
+        }
+        $imports = [];
+        foreach (array_keys($imported) as $file) {
+            if (is_file($file)) {
+                $imports["{$this->wiki->getBaseUrl()}/$file"] = $this->versionedUrl($file);
+            }
+        }
+        ksort($imports);
+
+        return '<script type="importmap">' . json_encode(['imports' => $imports], JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT) . "</script>\n";
+    }
+
+    /** The URL of a local file, versioned by its modification time so it changes exactly when the file does. */
+    public function versionedUrl(string $file): string
+    {
+        return "{$this->wiki->getBaseUrl()}/$file" . (str_contains($file, '?') ? '&' : '?') . 'v=' . @filemtime(strtok($file, '?'));
+    }
+
+    /** The local files a local module imports, read again only when the module changed since it was cached. */
+    protected function importsOfFile(string $file): array
+    {
+        if ($this->moduleGraph === null) {
+            $cached = is_file(self::MODULE_GRAPH_CACHE) ? json_decode((string)file_get_contents(self::MODULE_GRAPH_CACHE), true) : null;
+            $this->moduleGraph = ($cached['pattern'] ?? null) === self::IMPORT_PATTERN ? $cached['modules'] : [];
+        }
+        $mtime = @filemtime($file);
+        if ($mtime === false) {
+            return [];
+        }
+        if (($this->moduleGraph[$file]['mtime'] ?? null) !== $mtime) {
+            $this->moduleGraph[$file] = ['mtime' => $mtime, 'imports' => $this->importsOf((string)file_get_contents($file), dirname($file))];
+            $this->moduleGraphChanged = true;
+        }
+
+        return $this->moduleGraph[$file]['imports'];
+    }
+
+    /** The local files a module's source imports or resolves, with literal specifiers, relative to the wiki root. */
+    protected function importsOf(string $source, string $directory): array
+    {
+        preg_match_all(self::IMPORT_PATTERN, $source, $matches);
+        $basePath = rtrim((string)parse_url($this->wiki->getBaseUrl(), PHP_URL_PATH), '/');
+        $imports = [];
+        foreach ($matches[1] as $specifier) {
+            if (str_starts_with($specifier, './') || str_starts_with($specifier, '../')) {
+                $path = $directory . '/' . $specifier;
+            } elseif (str_starts_with($specifier, '/') && !str_starts_with($specifier, '//')) {
+                $path = substr($specifier, strlen($basePath));
+            } else {
+                continue;
+            }
+            $resolved = [];
+            foreach (explode('/', strtok($path, '?#')) as $segment) {
+                if ($segment === '..') {
+                    array_pop($resolved);
+                } elseif ($segment !== '.' && $segment !== '') {
+                    $resolved[] = $segment;
+                }
+            }
+            $imports[] = implode('/', $resolved);
+        }
+
+        return array_values(array_unique($imports));
+    }
+
     private function mapFilePath($file)
     {
-        // Handle backwar compatibility
         if (array_key_exists($file, self::BACKWARD_PATH_MAPPING)) {
             $file = self::BACKWARD_PATH_MAPPING[$file];
         }
 
-        // Handle production environement
         if ($this->wiki->GetConfigValue('debug') != 'yes') {
             if (array_key_exists($file, self::PRODUCTION_PATH_MAPPING)) {
                 $file = self::PRODUCTION_PATH_MAPPING[$file];

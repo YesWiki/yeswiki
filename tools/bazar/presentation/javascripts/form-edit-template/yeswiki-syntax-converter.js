@@ -39,6 +39,20 @@ function removeBR(text) {
   return newValue
 }
 
+/** Label for a field whose syntax stores none: the end of a condition, else the label of its field type. */
+function defaultLabel(wikiType, fieldObject) {
+  if (
+    wikiType === 'labelhtml' &&
+    /^\s*<\/div>\s*<!--[^>]*-->\s*$/.test(fieldObject.content_saisie || '')
+  ) {
+    return _t('BAZ_FORM_EDIT_CONDITIONS_CHECKING_END')
+  }
+  const conf = Object.values(window.formBuilderFields || {}).find(
+    (fieldConf) => fieldConf.field && fieldConf.field.name === wikiType,
+  )
+  return conf ? conf.field.label : wikiType
+}
+
 // transform text with wiki text like "texte***bf_titre***Nom***255***255*** *** *** ***1***0***"
 // into a json object "{ type: 'texte', name: 'bf_titre', label: 'Nom' .... }"
 export function parseWikiTextIntoJsonData(text) {
@@ -101,12 +115,7 @@ export function parseWikiTextIntoJsonData(text) {
         }
       }
       if (!fieldObject.label) {
-        fieldObject.label = wikiType
-        for (const key in window.formBuilderFields) {
-          if (window.formBuilderFields[key].name == wikiType) {
-            fieldObject.label = window.formBuilderFields[key].label
-          }
-        }
+        fieldObject.label = defaultLabel(wikiType, fieldObject)
       }
       result.push(fieldObject)
     }

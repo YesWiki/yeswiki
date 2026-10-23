@@ -15,7 +15,4 @@ document.addEventListener('DOMContentLoaded', () => {
     trimValue: true,
     confirmKeys: [13, 186, 188],
   })
-
-  // bidouille antispam
-  $('.antispam').attr('value', '1')
 })

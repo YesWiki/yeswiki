@@ -1,15 +1,8 @@
 <?php
 
 return [
-    'HASHCASH_ERROR_PAGE_UNSAVED' => '<strong>La page ne peut pas être enregistrée.</strong><br />Vous avez peut-être double cliqué sur le bouton "Sauver", entrainant 2 sauvegardes consécutives trop rapprochées, ou laissé la page ouverte en mode édition trop longtemps.<br />Pour enregistrer vos modifications, veuillez copier le contenu, rafraichir la page et coller votre page modifiée à nouveau.',
-    'HASHCASH_ANTISPAM_ACTIVATED' => 'Protection anti-spam active',
-    'HASHCASH_COMMENT_NOT_SAVED_MAYBE_YOU_ARE_A_ROBOT' => 'Votre commentaire n\'a pas été enregistré, le wiki pense que vous êtes un robot.',
     'HASHCASH_GENERAL_PASSWORD' => 'Réponse&nbsp;:&nbsp;',
     'HASHCASH_SEND' => 'Envoyer',
-    'CAPTCHA_ERROR_PAGE_UNSAVED' => 'La page n\'a pas été enregistrée car vous n\'avez pas rentré le mot de vérification.',
-    'CAPTCHA_ERROR_WRONG_WORD' => 'La page n\'a pas été enregistrée car le mot de vérification rentré n\'est pas correct.',
-    'CAPTCHA_VERIFICATION' => 'Vérification pour sauver la page',
-    'CAPTCHA_WRITE' => 'Ecrire ici le mot présent dans l\'image',
     'DESPAM_PAGES_SELECTION' => 'Sélection des pages',
     'DESPAM_ALL_CHANGES_FROM' => 'Toutes les modifications depuis',
     'DESPAM_FOR_ONE_HOUR' => 'depuis 1 heure',
@@ -24,8 +17,7 @@ return [
     'DESPAM_DELETED_PAGES' => 'Pages supprimées',
     'DESPAM_BACK_TO_PREVIOUS_FORM' => 'Retour au formulaire de départ',
     'DESPAM_ONLY_FOR_ADMINS' => 'Action {{despam}} réservée aux administrateurs.',
-    'EDIT_CONFIG_HINT_USE_CAPTCHA' => 'Activer l\'utilisation d\'un captcha avant la sauvegarde (true ou false)',
-    'EDIT_CONFIG_HINT_USE_HASHCASH' => 'Activer l\'antispam hashcash du wiki (activé par défaut)',
+    'EDIT_CONFIG_HINT_ALTCHA' => 'Activer le système anti-bot ALTCHA sur tous les formulaires, à tous sauf aux admins (true ou false, activé par défaut)',
     'EDIT_CONFIG_HINT_USE_ALERTE' => 'Prévenir si l\'on quitte la page sans sauvegarder (true ou false)',
     'EDIT_CONFIG_HINT_WIKI_STATUS' => 'État du wiki (running ou vide = standard, hibernate = lecture seule)',
     'EDIT_CONFIG_GROUP_SECURITY' => 'Sécurité',

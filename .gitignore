@@ -78,14 +78,10 @@ tools/*
 !tools/contact/*
 !tools/despam
 !tools/despam/*
-!tools/hashcash
-!tools/hashcash/*
 !tools/lang
 !tools/lang/*
 !tools/login
 !tools/login/*
-!tools/nospam
-!tools/nospam/*
 !tools/progressBar
 !tools/progressBar/*
 !tools/rss

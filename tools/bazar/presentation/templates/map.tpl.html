@@ -281,10 +281,12 @@ endforeach;
     var drawnFeatures = new L.FeatureGroup()
     map".$params['nbbazarliste'].".addLayer(drawnFeatures)\n";
      foreach ($vAllGeometries as $id => $g) {
+         $geometriesModuleJs .= "try {\n";
          $geometriesModuleJs .= "const geo{$id} = ". $g ."\n";
-         $geometriesModuleJs .= 'var popup = \''.preg_replace("(\r\n|\n|\r|)", '', addslashes(baz_voir_fiche($params['barregestion'], $id))).'\''."\n";
+         $geometriesModuleJs .= 'const popup = \''.preg_replace("(\r\n|\n|\r|)", '', addslashes(baz_voir_fiche($params['barregestion'], $id))).'\''."\n";
 
          $geometriesModuleJs .= "drawnFeatures = drawGeometries(drawnFeatures, geo{$id}.features, popup, '{$id}')\n";
+         $geometriesModuleJs .= "} catch (e) { console.error(\"Error drawing geometry for {$id}\", e) }\n";
      }
      if (!empty($geometriesWithoutMarker)) {
          $js .= 'L.Control.geometriesPanel = L.Control.extend({

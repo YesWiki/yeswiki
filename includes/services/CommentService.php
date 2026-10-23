@@ -5,7 +5,6 @@ namespace YesWiki\Core\Service;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use YesWiki\Core\Entity\Event;
-use YesWiki\Security\Service\HashCashService;
 use YesWiki\Wiki;
 
 class CommentService implements EventSubscriberInterface
@@ -87,18 +86,8 @@ class CommentService implements EventSubscriberInterface
             $content['pagetag'] = $edited['comment_on'];
         }
         if ($this->wiki->HasAccess('comment', $content['pagetag']) && $this->wiki->Loadpage($content['pagetag'])) {
-            if ($this->params->get('use_hashcash')) {
-                require_once 'tools/security/secret/wp-hashcash.lib';
-                if (!isset($content['hashcash_value']) || ($content['hashcash_value'] != hashcash_field_value())) {
-                    return [
-                        'code' => 400,
-                        'error' => _t('HASHCASH_COMMENT_NOT_SAVED_MAYBE_YOU_ARE_A_ROBOT'),
-                    ];
-                }
-            }
             if (empty($idComment)) {
                 $newComment = true;
-                // find number
                 $sql = 'SELECT MAX(SUBSTRING(tag, 8) + 0) AS comment_id'
                     . ' FROM ' . $this->wiki->GetConfigValue('table_prefix') . 'pages'
                     . ' WHERE comment_on != ""';
@@ -119,10 +108,9 @@ class CommentService implements EventSubscriberInterface
                     'error' => _t('COMMENT_EMPTY_NOT_SAVED'),
                 ];
             }
-            // store new comment
+            $body = $this->wiki->services->get(HtmlPurifierService::class)->cleanHTML($body);
             $this->wiki->SavePage($idComment, $body, $content['pagetag']);
             if ($newComment) {
-                // default ACLs for comments : visible for all, writable by owner, commentable like parent.
                 $parentCommentAcl = $this->aclService->load($content['pagetag'], 'comment', false);
                 $parentCommentAcl = empty($parentCommentAcl) || empty($parentCommentAcl['list']) ? $this->aclService->load($content['pagetag'], 'comment', true) : $parentCommentAcl;
                 $parentCommentAcl = $parentCommentAcl['list'];
@@ -135,7 +123,6 @@ class CommentService implements EventSubscriberInterface
             $com['tag'] = $comment['tag'];
             $com['commentOn'] = $comment['comment_on'];
             $com['rawbody'] = $comment['body'];
-            // Do the page change in any case (useful for attach or grid)
             $oldPage = $GLOBALS['wiki']->GetPageTag();
             $oldPageArray = $GLOBALS['wiki']->page;
             $GLOBALS['wiki']->tag = $comment['tag'];
@@ -152,7 +139,6 @@ class CommentService implements EventSubscriberInterface
             if ($this->wiki->UserIsOwner($comment['tag']) || $this->wiki->UserIsAdmin()) {
                 $com['linkeditcomment'] = $this->wiki->href('edit', $comment['tag']);
                 $com['linkdeletecomment'] = $this->wiki->href("comments/{$comment['tag']}/delete", 'api');
-                // $this->wiki->href('deletepage', $comment['tag']);
             }
             $com['reponses'] = $this->getCommentList($comment['tag'], false);
             $com['parentPage'] = $this->getParentPage($comment['tag']);
@@ -179,7 +165,6 @@ class CommentService implements EventSubscriberInterface
      */
     public function delete(string $commentTag): array
     {
-        // delete children comments
         $comments = $this->loadComments($commentTag, true);
         foreach ($comments as $com) {
             $this->pageManager->deleteOrphaned($com['tag']);
@@ -236,7 +221,6 @@ class CommentService implements EventSubscriberInterface
             AND (`user` = '{$this->dbService->escape($username)}' OR `owner` = '{$this->dbService->escape($username)}')
             SQL;
         }
-        // remove current comment to prevent infinite loop
         $query .= " AND `tag` != '{$this->dbService->escape($tag)}' ";
         $query .= 'AND latest = "Y" ORDER BY substring(tag, 8) + 0';
         $comments = array_filter($this->wiki->LoadAll($query), function ($comment) {
@@ -249,7 +233,6 @@ class CommentService implements EventSubscriberInterface
         }
 
         if (!$bypassAcls) {
-            // filter on read acl on parent page
             $comments = array_filter($comments, function ($com) {
                 return !empty($com['comment_on']) && $this->aclService->hasAccess('read', $com['comment_on']);
             });
@@ -319,18 +302,12 @@ class CommentService implements EventSubscriberInterface
             ];
         } else {
             if ($this->wiki->HasAccess('comment', $tag)) {
-                $hashCashCode = '';
-                if ($this->wiki->config['use_hashcash']) {
-                    $hashCash = $this->wiki->services->get(HashCashService::class);
-                    $hashCashCode = $hashCash->getJavascriptCode('post-comment');
-                }
                 $page = $this->pageManager->getOne($tag);
                 $commentOn = !empty($page['comment_on']) ? $page['comment_on'] : $page['tag'];
                 $tempTag = ($this->wiki->config['temp_tag_for_entry_creation'] ?? null) . '_' . bin2hex(random_bytes(10));
                 $options = [
                     'pagetag' => $commentOn,
                     'formlink' => $this->wiki->href('comments', 'api'),
-                    'hashcash' => $hashCashCode,
                     'tempTag' => $tempTag,
                 ];
             } else {
@@ -341,7 +318,7 @@ class CommentService implements EventSubscriberInterface
             }
         }
 
-        return $this->wiki->render('@core/comment-form.twig', $options);
+        return $this->wiki->services->get(BotGuard::class)->insertInto($this->wiki->render('@core/comment-form.twig', $options), 'post-comment');
     }
 
     public function renderCommentsForPage($tag, $showOnlyOnce = true)
@@ -350,7 +327,6 @@ class CommentService implements EventSubscriberInterface
             return '';
         }
         $output = '';
-        // if the comments were allready render in page, we don't show them again
         if ($showOnlyOnce && in_array($tag, $this->pagesWhereCommentWereRendered)) {
             return '';
         }
@@ -378,23 +354,13 @@ class CommentService implements EventSubscriberInterface
             $output = $this->wiki->render('@core/comment-for-page.twig', $options);
         }
 
-        // indicate that those comments on page were already rendered once
         $this->pagesWhereCommentWereRendered[] = $tag;
 
         return $output;
     }
 
-    /*
-    * Outputs a color (#000000) based Text input thanks https://gist.github.com/mrkmg/1607621
-    *
-    * @param $text String of text
-    * @param $min_brightness Integer between 0 and 100
-    * @param $spec Integer between 2-10, determines how unique each color will be
-    */
-
     public function genColorCodeFromText($text, $min_brightness = 100, $spec = 10)
     {
-        // Check inputs
         if (!is_int($min_brightness)) {
             throw new \Exception("$min_brightness is not an integer");
         }
@@ -408,25 +374,25 @@ class CommentService implements EventSubscriberInterface
             throw new \Exception("$min_brightness is out of range");
         }
 
-        $hash = md5($text);  // Gen hash of text
+        $hash = md5($text);
         $colors = [];
         for ($i = 0; $i < 3; $i++) {
             $colors[$i] = max([round((hexdec(substr($hash, $spec * $i, $spec)) / hexdec(str_pad('', $spec, 'F'))) * 255), $min_brightness]);
-        } // convert hash into 3 decimal values between 0 and 255
+        }
 
-        if ($min_brightness > 0) {  // only check brightness requirements if min_brightness is about 100
-            while (array_sum($colors) / 3 < $min_brightness) {  // loop until brightness is above or equal to min_brightness
+        if ($min_brightness > 0) {
+            while (array_sum($colors) / 3 < $min_brightness) {
                 for ($i = 0; $i < 3; $i++) {
                     $colors[$i] += 10;
                 }
             }
-        }    // increase each color by 10
+        }
 
         $output = '';
 
         for ($i = 0; $i < 3; $i++) {
             $output .= str_pad(dechex($colors[$i]), 2, 0, STR_PAD_LEFT);
-        }  // convert each color to hex and append to output
+        }
 
         return '#' . $output;
     }
@@ -508,7 +474,6 @@ class CommentService implements EventSubscriberInterface
             }
         } catch (Throwable $th) {
         }
-        // filter
         $filteredUsers = [];
         foreach ($users as $user) {
             if (
@@ -547,7 +512,6 @@ class CommentService implements EventSubscriberInterface
         } elseif (empty($page['comment_on'])) {
             return $page;
         } elseif (in_array($page['comment_on'], $alreadyFoundTags)) {
-            // prevent infinite loop
             return null;
         }
         $foundTags = $alreadyFoundTags;

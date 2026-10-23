@@ -6,7 +6,6 @@ use Doctrine\Common\Annotations\AnnotationReader;
 use Doctrine\Common\Annotations\AnnotationRegistry;
 use Doctrine\Common\Annotations\CachedReader;
 use Doctrine\Common\Cache\PhpFileCache;
-use YesWiki\Core\Service\TemplateEngine;
 use YesWiki\Wiki;
 
 class FieldFactory
@@ -34,7 +33,6 @@ class FieldFactory
                 throw new \Exception('ERROR ! : Folder `cache/` is not writable ! Can you give it write acces by ftp for example (code 770) ?');
             }
         } catch (\Exception $th) {
-            // raw ouput because here TemplateEngine is not ready (services not already compiled and cache folder not available)
             echo "<div style=\"border:1px red solid;background-color: #FFCCCC;margin:3px;padding:5px;border-radius:5px;\">{$th->getMessage()}</div>";
             exit;
         }
@@ -64,19 +62,15 @@ class FieldFactory
                         $extensionName = 'HelloWorld';
                     }
 
-                    // TODO cache reflection class as this is a costly operation
                     $fieldClass = new \ReflectionClass('YesWiki\\' . $extensionName . '\\Field\\' . $fieldName . 'Field');
 
-                    $annotation = $reader->getClassAnnotation($fieldClass, 'Field');
+                    $keywords = $this->declaredKeywords($fieldClass, $reader);
 
-                    // If there is a Field annotation
-                    if ($annotation) {
-                        // Add all listed keywords
-                        foreach ($annotation->keywords as $keyword) {
+                    if ($keywords !== null) {
+                        foreach ($keywords as $keyword) {
                             $this->availableFields[$keyword] = $fieldClass->name;
                         }
 
-                        // Also use the field name as a possible keyword
                         if (!isset($this->availableFields[strtolower($fieldName)])) {
                             $this->availableFields[strtolower($fieldName)] = $fieldClass->name;
                         }
@@ -86,6 +80,21 @@ class FieldFactory
         }
     }
 
+    /**
+     * Keywords of a field class, from its #[Field] attribute or its @Field docblock annotation.
+     */
+    private function declaredKeywords(\ReflectionClass $fieldClass, CachedReader $reader): ?array
+    {
+        foreach ($fieldClass->getAttributes(\Field::class) as $attribute) {
+            $arguments = $attribute->getArguments();
+
+            return (array)($arguments['keywords'] ?? $arguments[0] ?? []);
+        }
+        $annotation = $reader->getClassAnnotation($fieldClass, 'Field');
+
+        return $annotation ? (array)$annotation->keywords : null;
+    }
+
     public function create(array $values)
     {
         if (!empty($this->availableFields[$values[0]])) {
@@ -93,6 +102,5 @@ class FieldFactory
         }
 
         return false;
-        // throw new \Exception('Unknown field type: ' . $values[0]);
     }
 }

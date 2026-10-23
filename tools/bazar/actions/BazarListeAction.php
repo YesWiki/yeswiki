@@ -3,9 +3,11 @@
 use YesWiki\Bazar\Exception\ParsingMultipleException;
 use YesWiki\Bazar\Service\BazarListService;
 use YesWiki\Bazar\Service\EntryManager;
+use YesWiki\Bazar\Service\EntryOrigin;
 use YesWiki\Bazar\Service\SearchManager;
 use YesWiki\Core\Controller\AuthController;
 use YesWiki\Core\Exception\TemplateNotFound;
+use YesWiki\Core\Service\TemplateEngine;
 use YesWiki\Core\YesWikiAction;
 
 class BazarListeAction extends YesWikiAction
@@ -77,7 +79,7 @@ class BazarListeAction extends YesWikiAction
 
         $template = $get->get('template') ?? $arg['template'] ?? null;
         if ($template) {
-            $template = htmlspecialchars($template);
+            $template = htmlspecialchars(basename((string)$template));
         }
         // Dynamic templates
         $dynamic = $this->formatBoolean($arg, false, 'dynamic');
@@ -122,10 +124,9 @@ class BazarListeAction extends YesWikiAction
                 )
             );
 
-        // Ordre du tri (asc ou desc)
-        $ordre = $get->get('ordre') ?? $arg['ordre'] ?? ((empty($arg['champ']) && $agendaMode) ? 'desc' : 'asc');
-        // Champ du formulaire utilisé pour le tri
-        $champ = $get->get('champ') ?? $arg['champ'] ?? (($agendaMode) ? 'bf_date_debut_evenement' : 'bf_titre');
+        $blogMode = preg_match('/^blog(\.tpl\.html|\.twig)?$/', (string)($arg['template'] ?? '')) === 1;
+        $ordre = $get->get('ordre') ?? $arg['ordre'] ?? ((empty($arg['champ']) && ($agendaMode || $blogMode)) ? 'desc' : 'asc');
+        $champ = $get->get('champ') ?? $arg['champ'] ?? ($agendaMode ? 'bf_date_debut_evenement' : ($blogMode ? 'date_creation_fiche' : 'bf_titre'));
 
         $vSearchManager = $this->getService(SearchManager::class);
 
@@ -353,11 +354,8 @@ class BazarListeAction extends YesWikiAction
     private function renderEntries($entries, $filters = [], $pForms = ''): string
     {
         $showNumEntries = count($entries) === 0 || $this->arguments['shownumentries'];
-        $templateName = $this->arguments['template'];
-        if (strpos($templateName, '.html') === false && strpos($templateName, '.twig') === false) {
-            $templateName = $templateName . '.tpl.html';
-            $this->arguments['template'] = $templateName;
-        }
+        $templateName = $this->resolveTemplateName($this->arguments['template']);
+        $this->arguments['template'] = $templateName;
         $data = [];
         $data['fiches'] = $entries;
         $data['info_res'] = $showNumEntries ? '<div class="alert alert-info">' . _t('BAZ_IL_Y_A') . ' ' . count($data['fiches']) . ' ' . (count($data['fiches']) <= 1 ? _t('BAZ_FICHE') : _t('BAZ_FICHES')) . '</div>' : '';
@@ -391,11 +389,32 @@ class BazarListeAction extends YesWikiAction
             $data['pager_links'] = '<div class="bazar_numero text-center"><ul class="pagination">' . $pager->links . '</ul></div>';
         }
 
+        $data['fiches'] = $this->getService(EntryOrigin::class)->describeAll($data['fiches']);
+
         try {
             return $this->render("@bazar/{$templateName}", $data);
         } catch (TemplateNotFound $e) {
             return '<div class="alert alert-danger">' . $e->getMessage() . '</div>';
         }
+    }
+
+    /**
+     * The file for a template name: the one named if it exists, else a .tpl.html (so PHP overrides keep winning), else the .twig.
+     */
+    private function resolveTemplateName(string $name): string
+    {
+        $templateEngine = $this->getService(TemplateEngine::class);
+        if (preg_match('/\.(html|twig)$/', $name) && $templateEngine->hasTemplate("@bazar/{$name}")) {
+            return $name;
+        }
+        $baseName = preg_replace('/(\.tpl)?\.(html|twig)$/', '', $name);
+        foreach (["{$baseName}.tpl.html", "{$baseName}.twig"] as $candidate) {
+            if ($templateEngine->hasTemplate("@bazar/{$candidate}")) {
+                return $candidate;
+            }
+        }
+
+        return preg_match('/\.(html|twig)$/', $name) ? $name : "{$baseName}.tpl.html";
     }
 
     private function formatDateMin($period)

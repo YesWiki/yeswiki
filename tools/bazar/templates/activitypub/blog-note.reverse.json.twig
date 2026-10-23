@@ -1,0 +1,15 @@
+{% set html = {"&": "&amp;", "<": "&lt;", ">": "&gt;"} %}
+{% set text = {"&amp;": "&", "&lt;": "<", "&gt;": ">"} %}
+{% set head = content | default("") | split("</strong></p>", 2) %}
+{% set leadTitle = head | length == 2 and head | first starts with "<p><strong>" ? head | first | slice(11) | replace(text) : "" %}
+{% set title = name | default("") ?: leadTitle %}
+{% set lead = "<p><strong>" ~ (title | replace(html)) ~ "</strong></p>" ~ (preview | default("") ? "<p><em>" ~ (preview | replace(html)) ~ "</em></p>" : "") %}
+{
+  "bf_titre": {{ title | json_encode }},
+  "bf_chapeau": {{ preview | default("") | json_encode }},
+  "bf_avertissement": {{ summary | default("") | json_encode }},
+  "bf_description": {{ markdown(content | default("") | replace({(lead): ""})) | json_encode }},
+  "imagebf_image": {{ (attachment | first).url | default("") | json_encode }},
+  "date_creation_fiche": {{ (published ? published | date("Y-m-d H:i:s") : null) | json_encode }},
+  "date_maj_fiche": {{ ((updated ?: published) ? (updated ?: published) | date("Y-m-d H:i:s") : null) | json_encode }}
+}

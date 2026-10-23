@@ -19,6 +19,7 @@ import InputColumnsWidth from './components/InputColumnsWidth.js'
 import InputGeo from './components/InputGeo.js'
 import InputClass from './components/InputClass.js'
 import InputCorrespondance from './components/InputCorrespondance.js'
+import InputQuery from './components/InputQuery.js'
 import WikiCodeInput from './components/WikiCodeInput.js'
 import PreviewAction from './components/PreviewAction.js'
 import InputHint from './components/InputHint.js'
@@ -44,6 +45,7 @@ const components = {
   InputGeo,
   InputClass,
   InputCorrespondance,
+  InputQuery,
   InputColumnsWidth,
   WikiCodeInput,
   PreviewAction,

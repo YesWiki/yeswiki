@@ -95,13 +95,7 @@ class CommentServiceTest extends YesWikiTestCase
      */
     private function post(string $parent, string $body): array
     {
-        $content = ['pagetag' => $parent, 'body' => $body];
-        if (!empty($this->wiki->config['use_hashcash'])) {
-            require_once 'tools/security/secret/wp-hashcash.lib';
-            $content['hashcash_value'] = hashcash_field_value();
-        }
-
-        return $content;
+        return ['pagetag' => $parent, 'body' => $body];
     }
 
     private function body(string $tag): ?string

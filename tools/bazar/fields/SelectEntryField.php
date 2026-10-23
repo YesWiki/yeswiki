@@ -69,11 +69,14 @@ class SelectEntryField extends EnumField
         }
 
         $entryUrl = explode('&', $entryUrl);
+        $options = $this->getOptions();
+        $label = isset($options[$value]) ? $options[$value] : $value;
+
         return $this->render('@bazar/fields/select_entry.twig', [
-            'value' => $value,
-            'label' => $this->getOptions()[$value],
-            'entryUrl' => $entryUrl,
-        ]);
+        'value' => $value,
+        'label' => $label,
+        'entryUrl' => $entryUrl,
+    ]);
     }
 
     public function getOptions()

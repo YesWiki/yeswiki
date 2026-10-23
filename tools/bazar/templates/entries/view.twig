@@ -33,10 +33,14 @@
       {% if isAdmin %}
         <span class="BAZ_main_fiche_info">
           {{ _t('BAZ_ECRITE') }}
-          {{ owner|raw }}
+          {% if origin.author.url %}
+            <a class="entry-author" href="{{ origin.author.url }}" title="{{ origin.author.handle }}" rel="nofollow noopener">{{ origin.author.name }}</a>
+          {% else %}
+            {{ owner|raw }}
+          {% endif %}
           <span class="category"> ({{form.bn_label_nature ~ (externalForm is not empty ? ' <- ' ~ externalForm.external_url ~ externalForm.bn_label_nature:'') }})
-          {% if sourceUrl %}- <a href="{{ sourceUrl }}" target="_blank">Source</a>{% endif %}
-          <br />
+          {% if origin.sourceUrl %}- <a href="{{ origin.sourceUrl }}" target="_blank" rel="noopener">{{ _t('BAZ_ORIGINAL_POST') }}</a>{% endif %}
+          <br />          
           <span class="date_creation">
             {{ _t('BAZ_DATE_CREATION')|capitalize }}
             {{ entry.date_creation_fiche|date('d/m/Y à H:i') }},
@@ -69,7 +73,7 @@
         {% endif %}
         {% if not entry['external-data'] %}
           {% if canEdit %}
-            <a class="btn btn-entry-action btn-sm btn-default" href="{{ url({ tag: entryId, handler: 'edit' }) }}">
+            <a class="btn btn-entry-action btn-sm btn-default" href="{{ url({ tag: entryId, handler: 'edit', params: editContextUrl ? { incomingurl: editContextUrl } : {} }) }}">
               <i class="fa fa-pencil-alt icon-pencil"></i>
               <span>{{ _t('BAZ_MODIFIER') }}</span>
             </a>

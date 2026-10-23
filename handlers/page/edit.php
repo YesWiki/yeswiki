@@ -1,5 +1,6 @@
 <?php
 
+use YesWiki\Core\Service\BotGuard;
 use YesWiki\Core\Service\LinkTracker;
 use YesWiki\Core\Service\PageManager;
 use YesWiki\Security\Controller\SecurityController;
@@ -42,6 +43,7 @@ if ($this->HasAccess('write') && $this->HasAccess('read') && !$isWikiHibernated)
             'preview' => true,
             'bodyPreview' => $this->Format($body),
             'saveValue' => SecurityController::EDIT_PAGE_SUBMIT_VALUE,
+            'botGuardFields' => $this->services->get(BotGuard::class)->fields(),
         ]);
         $this->SetInclusions($temp);
     } else {
@@ -97,6 +99,7 @@ if ($this->HasAccess('write') && $this->HasAccess('read') && !$isWikiHibernated)
                 'body' => empty($body) ? '' : htmlspecialchars($body, ENT_COMPAT, YW_CHARSET),
                 'saveValue' => SecurityController::EDIT_PAGE_SUBMIT_VALUE,
                 'preview' => false,
+                'botGuardFields' => $this->services->get(BotGuard::class)->fields(),
             ]);
         }
     }

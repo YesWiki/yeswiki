@@ -69,18 +69,16 @@ class Utils
 
     protected function getDefaultOpenGraphImage(): string
     {
-        $image = '';
-        if ($this->params->has('opengraph_image')) {
-            $opengraphImage = $this->params->get('opengraph_image');
-            if (!empty($opengraphImage)
-                && is_string($opengraphImage)
-                && file_exists($opengraphImage)
-            ) {
-                $image = "{$this->wiki->getBaseUrl()}/$opengraphImage";
-            }
+        $opengraphImage = $this->params->has('opengraph_image') ? $this->params->get('opengraph_image') : '';
+        if (empty($opengraphImage) || !is_string($opengraphImage)) {
+            return '';
         }
+        if (preg_match('/^https?:\/\//i', $opengraphImage)) {
+            return $opengraphImage;
+        }
+        $opengraphImage = ltrim($opengraphImage, '/');
 
-        return $image;
+        return file_exists($opengraphImage) ? "{$this->wiki->getBaseUrl()}/$opengraphImage" : '';
     }
 
     protected function getResizedFilename(string $fileName, array $page, string $tag, string $width, string $height, bool $extractFullFileName = false): string
@@ -332,6 +330,9 @@ class Utils
         }
 
         // on affiche le template
+        if (!$this->wiki->services->get(\YesWiki\Core\Service\TemplateEngine::class)->hasTemplate("@templates/$template")) {
+            $template = 'diaporama_slides.tpl.html';
+        }
         $output = $this->wiki->render("@templates/$template", [
             'pagetag' => $pagetag,
             'slides' => $slides,

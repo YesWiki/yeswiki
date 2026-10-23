@@ -6,9 +6,9 @@
 <form
   action=""
   method="post"
-  name="formulaire"
-  id="formulaire"
-  class="form-horizontal"
+  name="bazar-form-editor"
+  id="bazar-form-editor"
+  class="bazar-form form-horizontal"
 >
   <div class="control-group form-group">
     <label class="control-label col-sm-3">
@@ -151,19 +151,6 @@
               <input type="checkbox" name="bn_activitypub_enable" value="1" {% if form.bn_activitypub_enable %}checked{% endif %}>
               {{ _t('BAZ_ACTIVITYPUB_ENABLE') }}
             </label>
-          </div>
-          <div class="control-group form-group">
-            <label class="control-label col-sm-3">
-              {{ _t('BAZ_ACTIVITYPUB_USERNAME') }}
-            </label>
-            <div class="controls col-sm-9">
-              <input
-                class="form-control input-xxlarge"
-                name="bn_activitypub_username"
-                type="text"
-                value="{{ form.bn_activitypub_username }}"
-              />
-            </div>
           </div>
           <div class="control-group form-group">
             <label class="control-label col-sm-3"

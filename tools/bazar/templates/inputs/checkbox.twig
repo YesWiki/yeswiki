@@ -24,7 +24,7 @@
 			{% for key, option in options %}
 				<div class="checkbox">
 					{% block item_option %}
-						<label for="{{ field.propertyName ~ '[' ~ key ~ ']' }}">
+						<label>
 							{% apply spaceless %}
 							<input class="element_checkbox" type="checkbox" id="{{ field.propertyName ~ '[' ~ key ~ ']' }}" value="1" name="{{ field.propertyName ~ '[' ~ key ~ ']' }}" {% if key in values %} checked data-default="checked" {% endif %}/>
 							<span>{{ option|raw }}</span>

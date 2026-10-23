@@ -198,7 +198,6 @@ return [
     'BAZ_MODIFIER_FORMULAIRE' => 'Alterar a forma',
     'BAZ_SUPPRIMER_FORMULAIRE' => 'Excluir formulário',
     'BAZ_MODIFIER_FICHIER' => 'Editar arquivo',
-    'BAZ_PROTECTION_ANTISPAM' => 'Proteção anti-spam',
     'BAZ_COMMENTS_INFO_HUMHUB_EXTERNAL' => 'Comentários são gerenciados pela plataforma social HumHub (YesWiki integrado por Humhub)',
     'BAZ_FACETTES_DISPLAY' => 'Aparência de facetas',
     'BAZ_EXPANDED_FACETTES' => 'Facetas dobradas',

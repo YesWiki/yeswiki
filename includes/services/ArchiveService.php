@@ -4,15 +4,12 @@ namespace YesWiki\Core\Service;
 
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-use Symfony\Component\Process\Process;
 use YesWiki\Core\Exception\StopArchiveException;
 use YesWiki\Security\Controller\SecurityController;
 use YesWiki\Wiki;
 
 class ArchiveService
 {
-    // In order to prevent including subwikis or other folders that have nothing
-    // to do with the current wiki, specify the folders to includes
     public const FOLDERS_TO_INCLUDE = [
         'actions',
         'custom',
@@ -34,7 +31,6 @@ class ArchiveService
         'vendor',
     ];
 
-    // Some folders should not be included, like the existing backups
     public const FOLDERS_TO_EXCLUDE = [
         '.git',
         'node_modules',
@@ -57,6 +53,7 @@ class ArchiveService
     public const KEY_FOR_FOLDERS_TO_EXCLUDE = 'foldersToExclude';
     public const KEY_FOR_HIDE_CONFIG_VALUES = 'hideConfigValues';
     protected const DEFAULT_FOLDER_NAME_IN_TMP = 'yeswiki_archive';
+    protected const CODE_SIZE_ALLOWANCE = 300 * 1024 * 1024;
     public const ARCHIVE_SUFFIX = '_archive';
     public const ARCHIVE_ONLY_FILES_SUFFIX = '_archive_only_files';
     public const ARCHIVE_ONLY_DATABASE_SUFFIX = '_archive_only_db';
@@ -89,6 +86,7 @@ class ArchiveService
         'contact_smtp_pass',
         'api_allowed_keys',
         'archive',
+        BotGuard::SECRET_KEY,
     ];
     public const SQL_FILENAME_IN_PRIVATE_FOLDER_IN_ZIP = 'content.sql';
     public const INFO_FILENAME_IN_PRIVATE_FOLDER_IN_ZIP = DumpRewriter::INFO_FILENAME;
@@ -101,6 +99,7 @@ class ArchiveService
     protected $configurationService;
     protected $consoleService;
     protected $dbService;
+    protected $diskSpace;
     protected $params;
     protected $securityController;
     protected $wiki;
@@ -109,6 +108,7 @@ class ArchiveService
         ConfigurationService $configurationService,
         ConsoleService $consoleService,
         DbService $dbService,
+        DiskSpace $diskSpace,
         ParameterBagInterface $params,
         SecurityController $securityController,
         Wiki $wiki
@@ -116,6 +116,7 @@ class ArchiveService
         $this->configurationService = $configurationService;
         $this->consoleService = $consoleService;
         $this->dbService = $dbService;
+        $this->diskSpace = $diskSpace;
         $this->params = $params;
         $this->securityController = $securityController;
         $this->wiki = $wiki;
@@ -125,6 +126,9 @@ class ArchiveService
      * archive data in zip file.
      *
      * @param string|OutputInterface &$output
+     * @param array|null             $onlyFolders when given, the only folders the zip holds,
+     *                                            instead of FOLDERS_TO_INCLUDE widened by
+     *                                            $foldersToInclude
      *
      * @throws \Exception
      */
@@ -135,7 +139,8 @@ class ArchiveService
         array $foldersToInclude = [],
         array $foldersToExclude = [],
         ?array $hideConfigValuesParams = null,
-        string $uid = ''
+        string $uid = '',
+        ?array $onlyFolders = null
     ) {
         $vStatus = $this->getArchivingStatus();
 
@@ -143,7 +148,6 @@ class ArchiveService
         $outputFile = '';
 
         if (!$vStatus['canArchive']) {
-            // if we cannot archive, we need to stop the process and inform the user so that he can handle the problem
             $vMessages = $this->getCannotArchiveDetails($vStatus);
 
             $this->unsetWikiStatus();
@@ -166,7 +170,6 @@ class ArchiveService
             }
         }
 
-        // checking folder not available on the internet
         if (@file_put_contents("$privatePath/tmpTestFile000.txt", 'test') === false) {
             throw new \Exception('Cannot write to test file. Please check file system access rights');
         }
@@ -202,7 +205,6 @@ class ArchiveService
             return '';
         }
         $onlyDb = false;
-        // check options and prepare file suffix
         if (!$savefiles && !$savedatabase) {
             throw new \Exception("Invalid options : It is not possible to use 'savefiles = false' and 'savedatabase = false' options in same time.");
         } elseif (!$savefiles) {
@@ -220,7 +222,6 @@ class ArchiveService
 
             return '';
         }
-        // prepare location of zip file
 
         $archiveFileName = ArchiveFilename::withSource(
             (new \DateTime())->format('Y-m-d\\TH-i-s') . "$fileSuffix.zip",
@@ -238,9 +239,7 @@ class ArchiveService
         }
 
         try {
-            // set wiki status
             $this->setWikiStatus();
-            // get SQl
             $sqlContent = $savedatabase ? $this->getSQLContent($privatePath) : '';
 
             if ($this->checkIfNeedStop($inputFile)) {
@@ -252,10 +251,9 @@ class ArchiveService
 
             $this->writeOutput($output, '=== Creating zip archive ===', true, $outputFile);
 
-            if ($this->createZip($location, $foldersToInclude, $blacklistedRootFolders, $output, $sqlContent, $onlyDb, $hideConfigValuesParams, $inputFile, $outputFile)) {
+            if ($this->createZip($location, $foldersToInclude, $blacklistedRootFolders, $output, $sqlContent, $onlyDb, $hideConfigValuesParams, $inputFile, $outputFile, $onlyFolders)) {
                 $this->writeOutput($output, "Archive \"$location\" successfully created !", true, $outputFile);
 
-                // clean oldest files
                 $this->cleanOldestFiles();
 
                 $this->unsetWikiStatus();
@@ -363,7 +361,7 @@ class ArchiveService
     /**
      * retrieve the current status to archive.
      *
-     * @return array ['canArchive' => bool,'archiving' => bool, 'hibernated' => bool, 'privatePathWritable' => bool, 'canExec' => bool]
+     * @return array ['canArchive' => bool,'archiving' => bool, 'hibernated' => bool, 'privatePathWritable' => bool, 'canExec' => bool, 'estimatedSize' => int, 'freeSpace' => ?int]
      */
     public function getArchivingStatus(): array
     {
@@ -371,7 +369,6 @@ class ArchiveService
         $hibernated = false;
         $privatePathWritable = true;
         $notAvailableOnTheInternet = true;
-        $enoughSpace = true;
         $canExec = false;
         $dB = false;
         $archiveParams = $this->getArchiveParams();
@@ -431,7 +428,6 @@ class ArchiveService
             }
         }
 
-        // test console
         try {
             $results = $this->consoleService->startConsoleSync('helloworld:hello', []);
             if (!empty($results)) {
@@ -447,16 +443,12 @@ class ArchiveService
             $canExec = false;
         }
 
-        // test db
         if ($canExec) {
             $dB = $this->testDb();
         }
-        // free space
-        try {
-            $this->assertEnoughtSpace();
-        } catch (\Throwable $th) {
-            $enoughSpace = false;
-        }
+        $estimatedSize = $this->estimateArchiveSize();
+        $freeSpace = $this->freeSpaceForArchives();
+        $enoughSpace = is_null($freeSpace) || $freeSpace >= $estimatedSize;
 
         $canArchive = (
             !$archiving
@@ -470,7 +462,7 @@ class ArchiveService
             && $enoughSpace
         );
 
-        return compact(['canArchive', 'archiving', 'hibernated', 'privatePathWritable', 'canExec', 'callAsync', 'notAvailableOnTheInternet', 'enoughSpace', 'dB']);
+        return compact(['canArchive', 'archiving', 'hibernated', 'privatePathWritable', 'canExec', 'callAsync', 'notAvailableOnTheInternet', 'enoughSpace', 'estimatedSize', 'freeSpace', 'dB']);
     }
 
     /**
@@ -505,7 +497,8 @@ class ArchiveService
         bool $savedatabase = true,
         array $foldersToInclude = [],
         array $foldersToExclude = [],
-        bool $callAsync = true
+        bool $callAsync = true,
+        ?array $onlyFolders = null
     ): string {
         $privatePath = $this->getPrivateFolder();
         $uidData = $this->getUID($privatePath);
@@ -525,6 +518,10 @@ class ArchiveService
                 $args[] = '-x';
                 $args[] = implode(',', $foldersToExclude);
             }
+            if (!is_null($onlyFolders)) {
+                $args[] = '-o';
+                $args[] = implode(',', $onlyFolders);
+            }
 
             $args[] = '-u';
             $args[] = $uidData['uid'];
@@ -542,7 +539,7 @@ class ArchiveService
             return '';
         }
         $output = '';
-        $location = $this->archive($output, $savefiles, $savedatabase, $foldersToInclude, $foldersToExclude, null, $uidData['uid']);
+        $location = $this->archive($output, $savefiles, $savedatabase, $foldersToInclude, $foldersToExclude, null, $uidData['uid'], $onlyFolders);
         if (empty($location)) {
             $this->cleanUID($uidData['uid'], $privatePath);
 
@@ -601,7 +598,6 @@ class ArchiveService
     public function getFilePath(string $filename): string
     {
         $privatePath = $this->getPrivateFolder();
-        // sanitize $filename
         $filename = basename($filename);
         if (substr($filename, -4) != '.zip') {
             return '';
@@ -656,10 +652,14 @@ class ArchiveService
             throw new \Exception("Cannot open archive: $filename");
         }
         $entries = $zip->numFiles;
-        $zip->close();
 
         $onlyFiles = str_ends_with($filename, self::ARCHIVE_ONLY_FILES_SUFFIX . '.zip');
         $onlyDb = str_ends_with($filename, self::ARCHIVE_ONLY_DATABASE_SUFFIX . '.zip');
+        try {
+            $this->assertRoomToRestore($zip, $restoreFiles && !$onlyDb, $restoreDatabase && !$onlyFiles);
+        } finally {
+            $zip->close();
+        }
 
         $job = [
             'filename' => $filename,
@@ -718,7 +718,13 @@ class ArchiveService
         if ($job['step'] === self::RESTORE_DONE) {
             $this->finishRestore($job);
         } else {
-            $this->writeRestoreJob($job);
+            try {
+                $this->writeRestoreJob($job);
+            } catch (\Throwable $throwable) {
+                $this->giveUpRestore($job);
+
+                return ['step' => self::RESTORE_IDLE, 'running' => false, 'error' => $throwable->getMessage()];
+            }
         }
 
         return $this->restoreState($job);
@@ -751,7 +757,7 @@ class ArchiveService
                 return $this->importSlice($zip, $job, $deadline);
             case self::RESTORE_SWAPPING:
                 $this->swapTables($job['livePrefix'], $job['stagingPrefix'], $job['replacedPrefix']);
-                $job['step'] = $job['restoreFiles'] ? self::RESTORE_FILES : self::RESTORE_DONE;
+                $job['step'] = $job['restoreFiles'] ? self::RESTORE_CONFIG : self::RESTORE_DONE;
 
                 return $job;
             case self::RESTORE_FILES:
@@ -817,7 +823,7 @@ class ArchiveService
             fclose($handle);
             mysqli_close($conn);
         }
-        $job['step'] = self::RESTORE_SWAPPING;
+        $job['step'] = $job['restoreFiles'] ? self::RESTORE_FILES : self::RESTORE_SWAPPING;
 
         return $job;
     }
@@ -899,12 +905,17 @@ class ArchiveService
                 }
                 continue;
             }
-            $zip->extractTo($wikiRoot, $name);
+            error_clear_last();
+            if (!@$zip->extractTo($wikiRoot, $name)) {
+                $reason = error_get_last()['message'] ?? $zip->getStatusString();
+
+                throw new \Exception("Cannot extract $name: $reason");
+            }
             if (microtime(true) > $deadline) {
                 return $job;
             }
         }
-        $job['step'] = self::RESTORE_CONFIG;
+        $job['step'] = $job['restoreDatabase'] ? self::RESTORE_SWAPPING : self::RESTORE_CONFIG;
 
         return $job;
     }
@@ -1018,7 +1029,9 @@ class ArchiveService
      */
     protected function writeRestoreJob(array $job): void
     {
-        file_put_contents($this->restoreJobPath(), json_encode($job));
+        if (!$this->configurationService->writeAtomically($this->restoreJobPath(), json_encode($job))) {
+            throw new \Exception('Cannot write the restore progress into the backups folder, the disk or the quota may be full');
+        }
     }
 
     /**
@@ -1168,7 +1181,6 @@ class ArchiveService
         $archived = $this->configurationService->getConfiguration($temporaryFile);
         $archived->load();
         @unlink($temporaryFile);
-        // ConfigurationFile serves _parameters through __get, which empty() and ?? cannot see
         $archivedParameters = $archived->_parameters;
         if (empty($archivedParameters)) {
             return;
@@ -1181,7 +1193,8 @@ class ArchiveService
         foreach (array_keys($currentParameters) as $key) {
             unset($config[$key]);
         }
-        foreach (array_merge($archivedParameters, $kept) as $key => $value) {
+        $restored = array_diff_key($archivedParameters, array_flip(self::CONFIG_KEYS_KEPT_ON_RESTORE));
+        foreach (array_merge($restored, $kept) as $key => $value) {
             $config[$key] = $value;
         }
         if (!$config->write()) {
@@ -1344,13 +1357,11 @@ class ArchiveService
         ];
         $privateFolder = $this->getPrivateFolder();
         $info = $this->getInfoFromFile($privateFolder);
-        // clean others uids because it should not be ever existing
         foreach ($info as $infoUid => $infoData) {
             if ($infoUid != $uid) {
                 $this->cleanUID($infoUid, $privateFolder);
             }
         }
-        // refresh from file
         $info = $this->getInfoFromFile($privateFolder);
         if (!isset($info[$uid])) {
             return $results;
@@ -1439,7 +1450,8 @@ class ArchiveService
         bool $onlyDb = false,
         ?array $hideConfigValuesParams = null,
         string $inputFile = '',
-        string $outputFile = ''
+        string $outputFile = '',
+        ?array $onlyFolders = null
     ) {
         if (!file_exists('index.php') || !file_exists(ConfigurationFileProvider::getConfigFileFromEnv()) || !file_exists('composer.json') || !file_exists('composer.lock')) {
             throw new \Exception('Can only be started from main directory');
@@ -1450,9 +1462,8 @@ class ArchiveService
         $dirs = [$pathToArchive];
         $dirnamePathLen = strlen($pathToArchive);
 
-        $whitelistedRootFolders = $this->generateListRootFolders('white', $foldersToInclude);
+        $whitelistedRootFolders = $this->generateListRootFolders('white', $foldersToInclude, $onlyFolders);
 
-        // open file
         $zip = new \ZipArchive();
 
         $vCanceled = false;
@@ -1462,7 +1473,6 @@ class ArchiveService
             return;
         }
 
-        // register cancel callback if available
         if (method_exists($zip, 'registerCancelCallback')) {
             $zip->registerCancelCallback(function () use ($inputFile, &$vCanceled) {
                 $vNeedStop = $this->checkIfNeedStop($inputFile);
@@ -1477,7 +1487,6 @@ class ArchiveService
             });
         }
 
-        // register progress callback if available
         if (method_exists($zip, 'registerProgressCallback')) {
             $zip->registerProgressCallback(0.1, function ($r) use (&$output, $outputFile) {
                 $this->writeOutput($output, 'Zip file creation : ' . strval(round($r * 100, 0)) . ' %', true, $outputFile);
@@ -1511,7 +1520,6 @@ class ArchiveService
         }
 
         if (!$vCanceled && !$onlyDb) {
-            // add empty cache folder
             $zip->addEmptyDir('cache');
 
             while (count($dirs)) {
@@ -1612,7 +1620,7 @@ class ArchiveService
         }
 
         return count(array_filter($whitelistedRootFolders, function ($folder) use ($relativeFolderName) {
-            return strpos($relativeFolderName, $folder) === 0;
+            return $relativeFolderName === $folder || str_starts_with($relativeFolderName, $folder . '/');
         })) > 0;
     }
 
@@ -1622,8 +1630,6 @@ class ArchiveService
         foreach ($list as $filePath) {
             if (is_string($filePath)) {
                 $filePath = trim($filePath);
-                // remove path containing '/../' to be sure to keep in root folder of the wiki
-                // or begining by '/' or 'c:\' to be sure to keep relative to root folder of website
                 if (!empty($filePath) && !preg_match('/^(?:\\/|\\\\)|[A-Za-z]:\\\\|(?:\\/|\\\\|^)\\.\\.(?:\\/|\\\\|$)/', $filePath)) {
                     $formattedFilePath = preg_replace("/(\/|\\\\)$/", '', $filePath);
                     if (!in_array($formattedFilePath, $outputList)) {
@@ -1764,7 +1770,6 @@ class ArchiveService
      */
     private function getWakkaConfigSanitized(array $foldersToInclude, array $foldersToExclude, ?array $hideConfigValuesParams = null): string
     {
-        // get wakka.config.php content
         $config = $this->configurationService->getConfiguration(ConfigurationFileProvider::getConfigFileFromEnv());
         $config->load();
         if (
@@ -1789,7 +1794,6 @@ class ArchiveService
         $config[self::PARAMS_KEY_IN_WAKKA] = $data;
 
         $config = $this->setDefaultValuesRecursive($config[self::PARAMS_KEY_IN_WAKKA][self::KEY_FOR_HIDE_CONFIG_VALUES], $config);
-        // remove current wiki_status
         unset($config['wiki_status']);
 
         return $this->configurationService->getContentToWrite($config);
@@ -1817,7 +1821,9 @@ class ArchiveService
         $config = $this->configurationService->getConfiguration(ConfigurationFileProvider::getConfigFileFromEnv());
         $config->load();
         $config['wiki_status'] = 'archiving';
-        $this->configurationService->write($config);
+        if (!$this->configurationService->write($config)) {
+            throw new \Exception('Cannot write the configuration file, the disk or the quota may be full');
+        }
     }
 
     protected function unsetWikiStatus()
@@ -1867,7 +1873,6 @@ class ArchiveService
                     "--filepath=$resultFile",
                 ]);
 
-                // get content
                 if (file_exists($resultFile)) {
                     $sqlContent = @file_get_contents($resultFile);
 
@@ -1889,7 +1894,6 @@ class ArchiveService
                     }
                 }
             }
-            // backup
             $results = $this->dbService->getSQLContentBackupMethod();
             if (empty($results['sql'])) {
                 throw new \Exception($errorMessage . (empty($results['error']) ? 'SQL not exported via BackupMethod' : $results['error']));
@@ -1905,27 +1909,114 @@ class ArchiveService
     }
 
     /**
-     * check if there is enought free space before archive (size of files + custom + 300 Mo).
-     *
-     * @throws \Exception
+     * @throws \Exception when the backups folder cannot hold a new archive
      */
     protected function assertEnoughtSpace(array $blacklistedRootFolders = [])
+    {
+        $freeSpace = $this->freeSpaceForArchives();
+        if (!is_null($freeSpace) && $freeSpace < $this->estimateArchiveSize($blacklistedRootFolders)) {
+            throw new \Exception('Not enough free space for a new archive!');
+        }
+    }
+
+    /**
+     * Bytes a new archive is expected to need: the uploaded files, the customisations, the
+     * database, plus a fixed allowance for the code.
+     */
+    public function estimateArchiveSize(array $blacklistedRootFolders = []): int
     {
         if (empty($blacklistedRootFolders)) {
             $blacklistedRootFolders = self::FOLDERS_TO_EXCLUDE;
         }
-        $estimateZipSize = 0;
-        if (!in_array('files', $blacklistedRootFolders)) {
-            $estimateZipSize += $this->folderSize('files');
+        $estimate = self::CODE_SIZE_ALLOWANCE + $this->databaseSize();
+        foreach (['files', 'custom'] as $folder) {
+            if (!in_array($folder, $blacklistedRootFolders) && is_dir($folder)) {
+                $estimate += $this->folderSize($folder);
+            }
         }
-        if (!in_array('custom', $blacklistedRootFolders)) {
-            $estimateZipSize += $this->folderSize('custom');
-        }
-        $estimateZipSize += 300 * 1024 * 1024; // 300Mb for the rest of te wiki
 
-        $freeSpace = disk_free_space(realpath(getcwd()));
-        if ($freeSpace < $estimateZipSize) {
-            throw new \Exception('Not enough free space for a new archive!');
+        return $estimate;
+    }
+
+    /**
+     * Free bytes on the disk that receives the archives, null when the host will not say.
+     */
+    public function freeSpaceForArchives(): ?int
+    {
+        try {
+            $folder = $this->getPrivateFolder();
+        } catch (\Throwable $th) {
+            $folder = (string)realpath(getcwd());
+        }
+
+        return $this->diskSpace->free($folder);
+    }
+
+    /**
+     * Bytes a restore adds to the disk: the dump it copies out, and each file beyond the one it replaces.
+     */
+    public function bytesToRestore(\ZipArchive $zip, bool $restoreFiles, bool $restoreDatabase): int
+    {
+        $wikiRoot = realpath(getcwd());
+        $configFile = ConfigurationFileProvider::getConfigFileFromEnv();
+        $dumpName = self::PRIVATE_FOLDER_NAME_IN_ZIP . '/' . self::SQL_FILENAME_IN_PRIVATE_FOLDER_IN_ZIP;
+        $bytes = 0;
+        for ($i = 0; $i < $zip->numFiles; $i++) {
+            $stat = $zip->statIndex($i);
+            if ($stat === false || str_ends_with($stat['name'], '/')) {
+                continue;
+            }
+            if ($stat['name'] === $dumpName) {
+                $bytes += $restoreDatabase ? $stat['size'] : 0;
+                continue;
+            }
+            if (!$restoreFiles || strpos($stat['name'], self::PRIVATE_FOLDER_NAME_IN_ZIP . '/') === 0 || $stat['name'] === $configFile) {
+                continue;
+            }
+            $existing = $wikiRoot . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $stat['name']);
+            $bytes += max(0, $stat['size'] - (is_file($existing) ? (int)filesize($existing) : 0));
+        }
+
+        return $bytes;
+    }
+
+    /**
+     * @throws \Exception when what the restore will write does not fit in the room left
+     */
+    protected function assertRoomToRestore(\ZipArchive $zip, bool $restoreFiles, bool $restoreDatabase): void
+    {
+        $needed = $this->bytesToRestore($zip, $restoreFiles, $restoreDatabase);
+        $free = $this->freeSpaceForArchives();
+        if (!is_null($free) && $free < $needed) {
+            throw new \Exception('Not enough free space to restore this backup (' . DiskSpace::human($needed) . ' needed, ' . DiskSpace::human($free) . ' free)');
+        }
+    }
+
+    /**
+     * Bytes of data in this wiki's own tables, as the server counts them.
+     */
+    protected function databaseSize(): int
+    {
+        try {
+            $prefix = trim($this->dbService->prefixTable(''));
+            $tables = array_map(function ($row) {
+                return (string)array_values($row)[0];
+            }, $this->dbService->loadAll('show tables'));
+            $own = DumpRewriter::ownTables($tables, $prefix);
+            if (empty($own)) {
+                return 0;
+            }
+            $names = implode(', ', array_map(function ($table) {
+                return "'" . $this->dbService->escape($table) . "'";
+            }, $own));
+            $row = $this->dbService->loadSingle(
+                'SELECT COALESCE(SUM(data_length), 0) AS bytes FROM information_schema.TABLES'
+                . " WHERE table_schema = DATABASE() AND table_name IN ($names)"
+            );
+
+            return (int)($row['bytes'] ?? 0);
+        } catch (\Throwable $th) {
+            return 0;
         }
     }
 
@@ -1990,9 +2081,6 @@ class ArchiveService
         $maxNBFiles = $this->getMaxNbFiles();
         $nbFilesToRemove = count($archives) - $maxNBFiles + ($beforeArchive ? 1 : 0);
         if ($nbFilesToRemove > 0) {
-            // there are files to remove
-            // keep at least one file more than 1 day and other more than 2 days to prevent
-            // full deletion if attack on api
             $indexesToRemove = range($maxNBFiles, count($archives) - 1);
             if (!empty($indexesToRemove)) {
                 $archivesIndexesMoreThan2days = $this->getIndexesMoreThanxdays($archives, 2);
@@ -2000,7 +2088,6 @@ class ArchiveService
 
                 $notDeletedArchivesMoreThan2Days = array_diff($archivesIndexesMoreThan2days, $indexesToRemove);
                 if (!empty($archivesIndexesMoreThan2days) && empty($notDeletedArchivesMoreThan2Days)) {
-                    // we should kept the most recent 2 days old
                     $indexesToRemove = array_diff($indexesToRemove, [min($archivesIndexesMoreThan2days)]);
                     if (empty($indexesToRemove)) {
                         $indexesToRemove = [min($archivesIndexesMoreThan2days) - 1];
@@ -2011,7 +2098,6 @@ class ArchiveService
                 $archivesIndexesBetween1and2days = array_diff($archivesIndexesMoreThan1day, $archivesIndexesMoreThan2days);
                 $notDeletedArchivesBetween1and2days = array_diff($archivesIndexesBetween1and2days, $indexesToRemove);
                 if (!empty($archivesIndexesBetween1and2days) && empty($notDeletedArchivesBetween1and2days)) {
-                    // we should kept the most recent 1 day old
                     $indexesToRemove = array_diff($indexesToRemove, [min($archivesIndexesBetween1and2days)]);
                     if (empty($indexesToRemove)) {
                         $indexesToRemove = [min($archivesIndexesBetween1and2days) - 1];
@@ -2039,7 +2125,6 @@ class ArchiveService
         $indexes = [];
         $nowMinusXDays = (new \DateTime())->sub(new \DateInterval("P{$days}D"));
         foreach ($archives as $key => $archive) {
-            // check the the last file is aged more than x days
             $fileDateTime = (new \DateTime())
                 ->setDate($archive['year'], $archive['month'], $archive['day'])
                 ->setTime($archive['hours'], $archive['minutes'], $archive['seconds'], 0);
@@ -2107,7 +2192,6 @@ class ArchiveService
             $uid = uniqid();
         } while (in_array($uid, $usedIDS));
 
-        // create files
         $input = "$privateFolder/input-$uid.log";
         $output = "$privateFolder/output-$uid.log";
         if (@file_put_contents($input, '') === false) {
@@ -2193,15 +2277,21 @@ class ArchiveService
      *
      * @param string $type "white"|"black"
      */
-    private function generateListRootFolders(string $type, array $fromParams): array
+    private function generateListRootFolders(string $type, array $fromParams, ?array $onlyFolders = null): array
     {
+        if ($type == 'white' && !empty($onlyFolders)) {
+            $only = $this->sanitizeFileList($onlyFolders);
+            if (!empty($only)) {
+                return $only;
+            }
+        }
+
         $list = ($type == 'white') ? self::FOLDERS_TO_INCLUDE : self::FOLDERS_TO_EXCLUDE;
         foreach ($this->sanitizeFileList($fromParams) as $folderName) {
             if (!in_array($folderName, $list)) {
                 $list[] = $folderName;
             }
         }
-        // merge `foldersToInclude` or `foldersToExclude` from wakka.config.php
         $archiveParams = $this->getArchiveParams();
         $key = ($type == 'white') ? self::KEY_FOR_FOLDERS_TO_INCLUDE : self::KEY_FOR_FOLDERS_TO_EXCLUDE;
         if (
