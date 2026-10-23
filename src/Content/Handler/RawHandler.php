@@ -8,7 +8,7 @@ use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Performable\RegisteredHandler;
 use YesWiki\Kernel\Service\PageContext;
 
-/** `/PageName/raw` -- converted from the procedural handlers/page/raw.php by ticket 06. */
+/** `/PageName/raw` prints a page's markup; `/PageName/raw&format=json` prints its whole stored body, translations included. */
 class RawHandler extends YesWikiHandler implements RegisteredHandler
 {
     public static function performableName(): string
@@ -36,9 +36,16 @@ class RawHandler extends YesWikiHandler implements RegisteredHandler
             if (!$this->getService(PageContext::class)->getPage()) {
                 return;
             }
+            $body = $this->getService(PageContext::class)->getPage()['body'];
+            if ($this->getRequest()->query->get('format') === 'json') {
+                header('Content-type: application/json; charset=' . YW_CHARSET);
+                echo PageBody::encode($body);
+
+                return;
+            }
             header('Content-type: text/plain; charset=' . YW_CHARSET);
 
-            echo self::text($this->getService(PageContext::class)->getPage()['body']);
+            echo self::text($body);
         } else {
             return;
         }
