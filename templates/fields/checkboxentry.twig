@@ -1,10 +1,18 @@
 {% extends "@core/fields/checkbox.twig" %}
 
 {% block value_item -%}
+	{% if entryDisplay|default('') in ['newtab', 'direct'] %}
+	<a href="{{ value.href|e }}"
+			{{ entryDisplay == 'newtab' ? 'target="_blank" rel="noopener"' : '' }}
+			title="{{ _t('BAZ_SEE_ENTRY') }} {{ value.value|striptags }}">
+	{{- value.value|raw -}}
+	</a>
+	{% else %}
 	<a href="{{ value.href|e ~ '/iframe' }}"
 			{{ not isInIframe ? 'class="modalbox" data-size="modal-lg"' : '' }}
 			data-header="false" data-iframe="1"
 		 	title="{{ _t('BAZ_SEE_ENTRY') }} {{ value.value|striptags }}">
 	{{- value.value|raw -}}
 	</a>
+	{% endif %}
 {%- endblock %}

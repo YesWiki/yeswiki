@@ -14,6 +14,12 @@ use YesWiki\Kernel\Service\UrlFormatter;
 #[Field(['checkboxfiche'])]
 class CheckboxEntryField extends CheckboxField
 {
+    use ShowsEntriesThroughAList;
+
+    protected const FIELD_ENTRIES_TEMPLATE = 20;
+    protected const FIELD_ENTRIES_PARAMS = 21;
+    protected const FIELD_ENTRY_DISPLAY = 22;
+
     private const DESCRIPTION_FIELD_NAME = 'bf_description';
     private const THUMBNAIL_SIZE = 64;
     private const EXCERPT_MAX_LENGTH = 140;
@@ -36,11 +42,15 @@ class CheckboxEntryField extends CheckboxField
         $this->dragAndDropDisplayMode = '@core/inputs/checkbox_drag_and_drop_entry.twig';
 
         $this->options = null;
+        $this->readEntriesDisplay($values);
     }
 
     protected function renderStatic($entry)
     {
         $keys = $this->getValues($entry);
+        if ($this->entriesTemplate !== '') {
+            return $this->renderEntriesList($keys);
+        }
         $values = [];
         $options = $this->getOptions();
         foreach ($keys as $key) {
@@ -52,6 +62,7 @@ class CheckboxEntryField extends CheckboxField
 
         return (count($values) > 0) ? $this->render('@core/fields/checkboxentry.twig', [
             'values' => $values,
+            'entryDisplay' => $this->entryDisplay,
         ]) : '';
     }
 

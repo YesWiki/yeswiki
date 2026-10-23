@@ -1,4 +1,10 @@
-import { selectConf, enumEditorSetup } from './commons/attributes.js'
+import {
+  selectConf,
+  enumEditorSetup,
+  entriesDisplayConf,
+  entriesDisplayAttributes,
+  entriesDisplayEditorSetup,
+} from './commons/attributes.js'
 
 export default {
   field: {
@@ -49,6 +55,7 @@ export default {
         placeholder: _t('BAZ_FORM_EDIT_OPTIONS_FILTER_LIMIT_PLACEHOLDER'),
         description: _t('BAZ_FORM_EDIT_OPTIONS_FILTER_LIMIT_HINT'),
       },
+      ...entriesDisplayConf,
     },
   },
   advancedAttributes: [
@@ -59,6 +66,10 @@ export default {
     'order_direction',
     'max_options',
     'filter_limit',
+    ...entriesDisplayAttributes,
   ],
-  editorSetup: enumEditorSetup,
+  editorSetup: (api) => {
+    enumEditorSetup(api)
+    entriesDisplayEditorSetup(api)
+  },
 }

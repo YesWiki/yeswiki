@@ -8,11 +8,18 @@ use YesWiki\Content\Attribute\Field;
 #[Field(['radiofiche'])]
 class RadioEntryField extends RadioField
 {
+    use ShowsEntriesThroughAList;
+
+    protected const FIELD_ENTRIES_TEMPLATE = 20;
+    protected const FIELD_ENTRIES_PARAMS = 21;
+    protected const FIELD_ENTRY_DISPLAY = 22;
+
     public function __construct(array $values, ContainerInterface $services)
     {
         parent::__construct($values, $services);
 
         $this->options = null;
+        $this->readEntriesDisplay($values);
     }
 
     protected function renderStatic($entry)
@@ -26,12 +33,17 @@ class RadioEntryField extends RadioField
             return '';
         }
 
+        if ($this->entriesTemplate !== '') {
+            return $this->renderEntriesList([$value]);
+        }
+
         $entryUrl = $this->getService(\YesWiki\Kernel\Service\UrlFormatter::class)->href('', $value);
 
         return $this->render('@core/fields/select_entry.twig', [
             'value' => $value,
             'label' => $this->getOptions()[$value] ?? $value,
             'entryUrl' => $entryUrl,
+            'entryDisplay' => $this->entryDisplay,
         ]);
     }
 

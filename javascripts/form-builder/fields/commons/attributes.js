@@ -198,3 +198,42 @@ export const selectConf = {
   read_access: readConf,
   write_access: writeConf,
 }
+
+export const entriesDisplayConf = {
+  entry_display: {
+    label: _t('BAZ_FORM_EDIT_ENTRY_DISPLAY_LABEL'),
+    options: {
+      ' ': _t('BAZ_FORM_EDIT_ENTRY_DISPLAY_MODAL'),
+      newtab: _t('BAZ_FORM_EDIT_ENTRY_DISPLAY_NEWTAB'),
+      direct: _t('BAZ_FORM_EDIT_ENTRY_DISPLAY_DIRECT'),
+    },
+  },
+  entries_template: {
+    label: _t('BAZ_FORM_EDIT_LISTEFICHES_TEMPLATE_LABEL'),
+    value: '',
+    placeholder: _t('BAZ_FORM_EDIT_ENTRIES_TEMPLATE_PLACEHOLDER'),
+  },
+  entries_params: {
+    label: _t('BAZ_FORM_EDIT_LISTEFICHES_PARAMS_LABEL'),
+    value: '',
+    placeholder: 'Ex : displayfields="visual=imagebf_image" nb="5"',
+    description: _t('BAZ_FORM_EDIT_ENTRIES_PARAMS_HINT'),
+  },
+}
+
+export const entriesDisplayAttributes = Object.keys(entriesDisplayConf)
+
+export function entriesDisplayEditorSetup(api) {
+  const applyVisibility = () => {
+    const fromForm = api.getValue('subtype2') === 'form'
+    const withTemplate =
+      String(api.getValue('entries_template') ?? '').trim() !== ''
+    entriesDisplayAttributes.forEach((name) =>
+      api[fromForm ? 'show' : 'hide'](name),
+    )
+    if (fromForm && !withTemplate) api.hide('entries_params')
+  }
+  api.onChange('subtype2', applyVisibility)
+  api.onChange('entries_template', applyVisibility)
+  applyVisibility()
+}

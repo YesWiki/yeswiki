@@ -1,4 +1,10 @@
-import { selectConf, enumEditorSetup } from './commons/attributes.js'
+import {
+  selectConf,
+  enumEditorSetup,
+  entriesDisplayConf,
+  entriesDisplayAttributes,
+  entriesDisplayEditorSetup,
+} from './commons/attributes.js'
 
 export default {
   field: {
@@ -15,8 +21,17 @@ export default {
         value: '',
         placeholder: `ex. : checkboxfiche6=PageTag ; cf. ${wiki.url('doc')}#/docs/fr/bazar?id=_323-afficher-une-partie-des-donn%C3%A9es-query`,
       },
+      ...entriesDisplayConf,
     },
   },
-  advancedAttributes: ['read_access', 'write_access', 'queries'],
-  editorSetup: enumEditorSetup,
+  advancedAttributes: [
+    'read_access',
+    'write_access',
+    'queries',
+    ...entriesDisplayAttributes,
+  ],
+  editorSetup: (api) => {
+    enumEditorSetup(api)
+    entriesDisplayEditorSetup(api)
+  },
 }

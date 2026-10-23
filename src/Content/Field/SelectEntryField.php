@@ -9,16 +9,22 @@ use YesWiki\Content\Controller\EntryController;
 #[Field(['listefiche'])]
 class SelectEntryField extends EnumField
 {
+    use ShowsEntriesThroughAList;
+
     /** @var mixed the form definition's rendering choice for this list */
     protected $displayMethod;
 
     protected const FIELD_DISPLAY_METHOD = 3;
+    protected const FIELD_ENTRIES_TEMPLATE = 20;
+    protected const FIELD_ENTRIES_PARAMS = 21;
+    protected const FIELD_ENTRY_DISPLAY = 22;
 
     public function __construct(array $values, ContainerInterface $services)
     {
         parent::__construct($values, $services);
 
         $this->displayMethod = $values[self::FIELD_DISPLAY_METHOD];
+        $this->readEntriesDisplay($values);
 
         $this->options = null;
     }
@@ -51,12 +57,17 @@ class SelectEntryField extends EnumField
             return $this->getService(EntryController::class)->view($value);
         }
 
+        if ($this->entriesTemplate !== '') {
+            return $this->renderEntriesList([$value]);
+        }
+
         $entryUrl = $this->getService(\YesWiki\Kernel\Service\UrlFormatter::class)->href('', $value);
 
         return $this->render('@core/fields/select_entry.twig', [
             'value' => $value,
             'label' => $this->getOptions()[$value] ?? $value,
             'entryUrl' => $entryUrl,
+            'entryDisplay' => $this->entryDisplay,
         ]);
     }
 
