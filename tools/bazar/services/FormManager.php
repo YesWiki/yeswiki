@@ -116,7 +116,6 @@ class FormManager
                     } finally {
                         unlink($tempFile);
                     }
-                    dump(json_encode($image_comp));
                 } else {
                     $image_comp[ImageField::FIELD_IMAGE_DEFAULT] = '';
                     if (file_exists($default_image_filename)) {
@@ -340,7 +339,6 @@ class FormManager
         return $results;
     }
 
-<<<<<<< HEAD
     /**
      * get all entries for specified form.
      * @param $formId page name of the formulaire
@@ -355,26 +353,15 @@ class FormManager
     }
 
     // TODO Pass a Form object instead of a raw array
-||||||| 07120ed89
-    // TODO Pass a Form object instead of a raw array
-=======
     /**
      * Creates a form and returns its id, which differs from the requested one when that id is taken.
      */
->>>>>>> v4.7.1
     public function create($data)
     {
         if ($this->securityController->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
-<<<<<<< HEAD
 
-
-        // If ID is not set or if it is already used, find a new ID
-||||||| 07120ed89
-        // If ID is not set or if it is already used, find a new ID
-=======
->>>>>>> v4.7.1
         if (empty($data['bn_id_nature']) || $this->getOne($data['bn_id_nature'])) {
             $data['bn_id_nature'] = $this->findNewId();
         }
@@ -384,53 +371,15 @@ class FormManager
 
         $this->cacheValidatedForAll = false;
 
-<<<<<<< HEAD
         $form = $this->getFromRawData($data);
         $tag = getAvailableSlug($form['bn_label_nature']);
         $saved = $this->__createOrUpdate($form, $tag);
         if ($saved == 0) {
-||||||| 07120ed89
-        $query = 'INSERT INTO ' . $this->dbService->prefixTable('nature')
-                    . '(`bn_id_nature` ,`bn_ce_i18n` ,`bn_label_nature` ,`bn_template` ,`bn_description` ,`bn_sem_template` ,`bn_sem_reverse_template`, `bn_activitypub_enable`, `bn_activitypub_username`, `bn_activitypub_private_key`, `bn_activitypub_public_key`'
-                    . ($this->isAvailableOnlyOneEntryOption() ? ',`bn_only_one_entry`' : '')
-                    . ($this->isAvailableOnlyOneEntryMessage() ? ',`bn_only_one_entry_message`' : '')
-                    . ',`bn_condition`)'
-                    . ' VALUES (' . intval($data['bn_id_nature']) . ', "fr-FR", "'
-                    . $this->dbService->escape(_convert($data['bn_label_nature'] ?? '', YW_CHARSET, true)) . '", "'
-                    . $this->dbService->escape(_convert($data['bn_template'] ?? '', YW_CHARSET, true)) . '", "'
-                    . $this->dbService->escape(_convert($data['bn_description'] ?? '', YW_CHARSET, true)) . '", "'
-                    . $this->dbService->escape(_convert($data['bn_sem_template'] ?? '', YW_CHARSET, true)) . '", "'
-                    . $this->dbService->escape(_convert($data['bn_sem_reverse_template'] ?? '', YW_CHARSET, true)) . '", "'
-                    . $activitypubEnabled . '", "'
-                    . $this->dbService->escape(_convert($data['bn_activitypub_username'] ?? '', YW_CHARSET, true)) . '", "'
-                    . (isset($privateKey) ? $privateKey . '", "' : '", "')
-                    . (isset($publicKey) ? $publicKey . '", "' : '", "')
-                    . ($this->isAvailableOnlyOneEntryOption() ? ((isset($data['bn_only_one_entry']) && $data['bn_only_one_entry'] === 'Y') ? 'Y' : 'N') . '", "' : '", "')
-                    . ($this->isAvailableOnlyOneEntryMessage() ? (empty($data['bn_only_one_entry_message']) ? '' : $this->dbService->escape(_convert($data['bn_only_one_entry_message'], YW_CHARSET, true))) . '", "' : '", "')
-            . $this->dbService->escape(_convert($data['bn_condition'], YW_CHARSET, true)) . '")';
-=======
-        $query = 'INSERT INTO ' . $this->dbService->prefixTable('nature')
-                    . '(`bn_id_nature` ,`bn_ce_i18n` ,`bn_label_nature` ,`bn_template` ,`bn_description` ,`bn_sem_template` ,`bn_sem_reverse_template`, `bn_activitypub_enable`'
-                    . ($this->isAvailableOnlyOneEntryOption() ? ',`bn_only_one_entry`' : '')
-                    . ($this->isAvailableOnlyOneEntryMessage() ? ',`bn_only_one_entry_message`' : '')
-                    . ',`bn_condition`)'
-                    . ' VALUES (' . intval($data['bn_id_nature']) . ', "fr-FR", "'
-                    . $this->dbService->escape(_convert($data['bn_label_nature'] ?? '', YW_CHARSET, true)) . '", "'
-                    . $this->dbService->escape(_convert($data['bn_template'] ?? '', YW_CHARSET, true)) . '", "'
-                    . $this->dbService->escape(_convert($data['bn_description'] ?? '', YW_CHARSET, true)) . '", "'
-                    . $this->dbService->escape(_convert($data['bn_sem_template'] ?? '', YW_CHARSET, true)) . '", "'
-                    . $this->dbService->escape(_convert($data['bn_sem_reverse_template'] ?? '', YW_CHARSET, true)) . '", "'
-                    . $activitypubEnabled . '", "'
-                    . ($this->isAvailableOnlyOneEntryOption() ? ((isset($data['bn_only_one_entry']) && $data['bn_only_one_entry'] === 'Y') ? 'Y' : 'N') . '", "' : '", "')
-                    . ($this->isAvailableOnlyOneEntryMessage() ? (empty($data['bn_only_one_entry_message']) ? '' : $this->dbService->escape(_convert($data['bn_only_one_entry_message'], YW_CHARSET, true))) . '", "' : '", "')
-            . $this->dbService->escape(_convert($data['bn_condition'], YW_CHARSET, true)) . '")';
->>>>>>> v4.7.1
 
-<<<<<<< HEAD
-            $this->aclService->save($tag, 'write', '@admins');
-            $this->aclService->save($tag, 'read', '@admins');
+        $this->aclService->save($tag, 'write', '@admins');
+        $this->aclService->save($tag, 'read', '@admins');
 
-            $this->tripleStore->create(
+        $this->tripleStore->create(
                 $tag,
                 TripleStore::TYPE_URI,
                 'form',
@@ -438,14 +387,9 @@ class FormManager
                 ''
             );
          }
-||||||| 07120ed89
-        return $this->dbService->query($query);
-=======
-        $saved = $this->dbService->query($query);
         unset($this->cachedForms[$data['bn_id_nature']]);
 
         return $saved ? (string)intval($data['bn_id_nature']) : false;
->>>>>>> v4.7.1
     }
 
     public function __createOrUpdate($form, $tag) {
@@ -499,7 +443,6 @@ class FormManager
 
         $activitypubEnabled = (int)$this->activityPubService->isEnabled($data);
 
-<<<<<<< HEAD
         if ($activitypubEnabled && $data['bn_activitypub_private_key'] === null) {
                  $keyPair = $this->httpSignatureService->generateKeyPair();
                  $privateKey = $keyPair[0];
@@ -515,40 +458,6 @@ class FormManager
         $form['extralang'] = $previous['extralang'] ?? [];
 
         return $this->__createOrUpdate($form, $tag);
-||||||| 07120ed89
-        if ($activitypubEnabled && $data['bn_activitypub_private_key'] === null) {
-            $keyPair = $this->httpSignatureService->generateKeyPair();
-            $privateKey = $keyPair[0];
-            $publicKey = $keyPair[1];
-        }
-
-        return $this->dbService->query('UPDATE' . $this->dbService->prefixTable('nature') . 'SET '
-            . '`bn_label_nature`="' . $this->dbService->escape(_convert($data['bn_label_nature'], YW_CHARSET, true)) . '" ,'
-            . '`bn_template`="' . $template . '" ,'
-            . '`bn_description`="' . $this->dbService->escape(_convert($data['bn_description'], YW_CHARSET, true)) . '" ,'
-            . '`bn_sem_template`="' . $this->dbService->escape(_convert($data['bn_sem_template'] ?? '', YW_CHARSET, true)) . '" ,'
-            . '`bn_sem_reverse_template`="' . $this->dbService->escape(_convert($data['bn_sem_reverse_template'] ?? '', YW_CHARSET, true)) . '" ,'
-            . '`bn_activitypub_enable`=' . $activitypubEnabled . ' ,'
-            . '`bn_activitypub_username`="' . $this->dbService->escape(_convert($data['bn_activitypub_username'], YW_CHARSET, true)) . '" ,'
-            . (isset($privateKey) ? '`bn_activitypub_private_key`="' . $privateKey . '" ,' : '')
-            . (isset($publicKey) ? '`bn_activitypub_public_key`="' . $publicKey . '" ,' : '')
-            . ($this->isAvailableOnlyOneEntryOption() ? '`bn_only_one_entry`="' . ((isset($data['bn_only_one_entry']) && $data['bn_only_one_entry'] === 'Y') ? 'Y' : 'N') . '",' : '')
-            . ($this->isAvailableOnlyOneEntryMessage() ? '`bn_only_one_entry_message`="' . (empty($data['bn_only_one_entry_message']) ? '' : $this->dbService->escape(_convert($data['bn_only_one_entry_message'], YW_CHARSET, true))) . '",' : '')
-            . '`bn_condition`="' . $this->dbService->escape(_convert($data['bn_condition'], YW_CHARSET, true)) . '"'
-            . ' WHERE `bn_id_nature`=' . intval($data['bn_id_nature']));
-=======
-        return $this->dbService->query('UPDATE' . $this->dbService->prefixTable('nature') . 'SET '
-            . '`bn_label_nature`="' . $this->dbService->escape(_convert($data['bn_label_nature'], YW_CHARSET, true)) . '" ,'
-            . '`bn_template`="' . $template . '" ,'
-            . '`bn_description`="' . $this->dbService->escape(_convert($data['bn_description'], YW_CHARSET, true)) . '" ,'
-            . '`bn_sem_template`="' . $this->dbService->escape(_convert($data['bn_sem_template'] ?? '', YW_CHARSET, true)) . '" ,'
-            . '`bn_sem_reverse_template`="' . $this->dbService->escape(_convert($data['bn_sem_reverse_template'] ?? '', YW_CHARSET, true)) . '" ,'
-            . '`bn_activitypub_enable`=' . $activitypubEnabled . ' ,'
-            . ($this->isAvailableOnlyOneEntryOption() ? '`bn_only_one_entry`="' . ((isset($data['bn_only_one_entry']) && $data['bn_only_one_entry'] === 'Y') ? 'Y' : 'N') . '",' : '')
-            . ($this->isAvailableOnlyOneEntryMessage() ? '`bn_only_one_entry_message`="' . (empty($data['bn_only_one_entry_message']) ? '' : $this->dbService->escape(_convert($data['bn_only_one_entry_message'], YW_CHARSET, true))) . '",' : '')
-            . '`bn_condition`="' . $this->dbService->escape(_convert($data['bn_condition'], YW_CHARSET, true)) . '"'
-            . ' WHERE `bn_id_nature`=' . intval($data['bn_id_nature']));
->>>>>>> v4.7.1
     }
 
     public function clone($id)
@@ -570,17 +479,8 @@ class FormManager
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
 
-<<<<<<< HEAD
         if (is_numeric($id)) {
                 $id = $this->getPageTagFromId($id);
-||||||| 07120ed89
-        // tests of if $formId is int
-        if (strval(intval($id)) != strval($id)) {
-            return null;
-=======
-        if (strval(intval($id)) != strval($id)) {
-            return null;
->>>>>>> v4.7.1
         }
 
         $entries = $this->getEntries($id, 'tag');
@@ -592,60 +492,7 @@ class FormManager
         $this->cacheValidatedForAll = false;
         unset($this->cachedForms[$id]);
 
-
-<<<<<<< HEAD
         return true;
-||||||| 07120ed89
-    public function clear($id)
-    {
-        if ($this->securityController->isWikiHibernated()) {
-            throw new \Exception(_t('WIKI_IN_HIBERNATION'));
-        }
-        $this->dbService->query(
-            'DELETE FROM' . $this->dbService->prefixTable('acls')
-                . 'WHERE page_tag IN (SELECT tag FROM ' . $this->dbService->prefixTable('pages')
-                . 'WHERE tag IN (SELECT resource FROM ' . $this->dbService->prefixTable('triples')
-                . 'WHERE property="http://outils-reseaux.org/_vocabulary/type" AND value="fiche_bazar") AND body LIKE \'%"id_typeannonce":"' . $this->dbService->escape($id) . '"%\' );',
-        );
-
-        // TODO use PageManager
-        $this->dbService->query(
-            'DELETE FROM' . $this->dbService->prefixTable('pages')
-                . 'WHERE tag IN (SELECT resource FROM ' . $this->dbService->prefixTable('triples')
-                . 'WHERE property="http://outils-reseaux.org/_vocabulary/type" AND value="fiche_bazar") AND body LIKE \'%"id_typeannonce":"' . $this->dbService->escape($id) . '"%\';',
-        );
-
-        // TODO use TripleStore
-        $this->dbService->query(
-            'DELETE FROM' . $this->dbService->prefixTable('triples')
-                . 'WHERE resource NOT IN (SELECT tag FROM ' . $this->dbService->prefixTable('pages')
-                . 'WHERE 1) AND property="http://outils-reseaux.org/_vocabulary/type" AND value="fiche_bazar";',
-        );
-=======
-    public function clear($id)
-    {
-        if ($this->securityController->isWikiHibernated()) {
-            throw new \Exception(_t('WIKI_IN_HIBERNATION'));
-        }
-        $this->dbService->query(
-            'DELETE FROM' . $this->dbService->prefixTable('acls')
-                . 'WHERE page_tag IN (SELECT tag FROM ' . $this->dbService->prefixTable('pages')
-                . 'WHERE tag IN (SELECT resource FROM ' . $this->dbService->prefixTable('triples')
-                . 'WHERE property="http://outils-reseaux.org/_vocabulary/type" AND value="fiche_bazar") AND body LIKE \'%"id_typeannonce":"' . $this->dbService->escape($id) . '"%\' );',
-        );
-
-        $this->dbService->query(
-            'DELETE FROM' . $this->dbService->prefixTable('pages')
-                . 'WHERE tag IN (SELECT resource FROM ' . $this->dbService->prefixTable('triples')
-                . 'WHERE property="http://outils-reseaux.org/_vocabulary/type" AND value="fiche_bazar") AND body LIKE \'%"id_typeannonce":"' . $this->dbService->escape($id) . '"%\';',
-        );
-
-        $this->dbService->query(
-            'DELETE FROM' . $this->dbService->prefixTable('triples')
-                . 'WHERE resource NOT IN (SELECT tag FROM ' . $this->dbService->prefixTable('pages')
-                . 'WHERE 1) AND property="http://outils-reseaux.org/_vocabulary/type" AND value="fiche_bazar";',
-        );
->>>>>>> v4.7.1
     }
 
     public function findNewId()
@@ -714,17 +561,8 @@ class FormManager
         $chaine = explode("\n", $raw);
         foreach ($chaine as $ligne) {
             $ligne = trim($ligne);
-<<<<<<< HEAD
-            // on ignore les lignes vides ou commencant par # (commentaire)
-            if (!empty($ligne) && !str_starts_with($ligne, '#')) {
-                // on decoupe chaque ligne par le separateur *** (c'est historique)
-||||||| 07120ed89
-            // on ignore les lignes vides ou commencant par # (commentaire)
             if (!empty($ligne) && !(strrpos($ligne, '#', -strlen($ligne)) !== false)) {
-                // on decoupe chaque ligne par le separateur *** (c'est historique)
-=======
-            if (!empty($ligne) && !(strrpos($ligne, '#', -strlen($ligne)) !== false)) {
->>>>>>> v4.7.1
+
                 $tablignechampsformulaire = array_map('trim', explode('***', $ligne));
 
                 if (true /* function_exists($tablignechampsformulaire[self::FIELD_TYPE]) */) {
