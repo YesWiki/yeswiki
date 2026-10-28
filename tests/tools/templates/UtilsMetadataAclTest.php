@@ -23,7 +23,6 @@ class UtilsMetadataAclTest extends TestCase
 
     private function metadata(bool $allowed): array
     {
-        // No Wiki constructor or database is needed to test this metadata boundary.
         $wiki = (new \ReflectionClass(Wiki::class))->newInstanceWithoutConstructor();
         $wiki->services = new ContainerBuilder();
         $acl = $this->getMockBuilder(AclService::class)->disableOriginalConstructor()->getMock();

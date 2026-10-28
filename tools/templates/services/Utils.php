@@ -2,7 +2,6 @@
 
 namespace YesWiki\Templates\Service;
 
-use Attach;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Bazar\Controller\EntryController;
 use YesWiki\Bazar\Service\EntryManager;
@@ -33,16 +32,14 @@ class Utils
      */
     public function getImageFromBody(array $page, string $width, string $height): string
     {
-        // Metadata is rendered even when the page body is access-restricted.
-        if (empty($page['tag']) || !$this->wiki->services->get(AclService::class)->hasAccess('read', $page['tag'])) {
+        if (!$this->canRead($page)) {
             return $this->getDefaultOpenGraphImage();
         }
 
         $image = '';
         if (isset($page['body'])) {
-            // on cherche les actions attach avec image, puis les images bazar
             $images = [];
-            preg_match("/\{\{attach.*file=\"(.*\.(?i)(jpe?g|png))\".*\}\}/U", $page['body'], $images);
+            preg_match("/\{\{attach.*file=\"(.*\.(?i)(jpe?g|png|webp))\".*\}\}/U", $page['body'], $images);
             if (!empty($images[1])) {
                 $image = $this->getResizedFilename($images[1], $page, $page['tag'], $width, $height, true);
             } else {
@@ -73,6 +70,14 @@ class Utils
         return $image;
     }
 
+    /**
+     * Whether the current reader may read the page the metadata comes from.
+     */
+    protected function canRead($page): bool
+    {
+        return !empty($page['tag']) && $this->wiki->services->get(AclService::class)->hasAccess('read', $page['tag']);
+    }
+
     protected function getDefaultOpenGraphImage(): string
     {
         $opengraphImage = $this->params->has('opengraph_image') ? $this->params->get('opengraph_image') : '';
@@ -91,10 +96,8 @@ class Utils
     {
         $attach = $this->getAttach();
 
-        // current page
         $previousTag = $this->wiki->tag;
         $previousPage = $this->wiki->page;
-        // fake page
         $this->wiki->tag = $tag;
         $this->wiki->page = $page;
         if ($extractFullFileName) {
@@ -125,7 +128,6 @@ class Utils
             }
         }
 
-        // reset params
         unset($attach);
         $this->wiki->tag = $previousTag;
         $this->wiki->page = $previousPage;
@@ -253,7 +255,6 @@ class Utils
      */
     public function getDataParameter()
     {
-        // container data attributes
         $data = $this->wiki->GetParameter('data');
         if (!empty($data)) {
             $datas = [];
@@ -275,7 +276,6 @@ class Utils
 
     public function postFormat($output)
     {
-        // pour les buttondropdown, on ajoute les classes css aux listes
         $pattern = [
             '/(\<!-- start of buttondropdown -->.*)\<ul\>(.*\<!-- end of buttondropdown --\>)/Uis',
             '/<li>\s*<hr \/>\s*<\/li>/Uis',
@@ -331,8 +331,7 @@ class Utils
      */
     public function getTitleFromBody($page): string
     {
-        // Metadata is rendered even when the page body is access-restricted.
-        if (empty($page['tag']) || !$this->wiki->services->get(AclService::class)->hasAccess('read', $page['tag'])) {
+        if (!$this->canRead($page)) {
             return '';
         }
 
@@ -349,7 +348,6 @@ class Utils
                 $title = $entry['bf_titre'];
             }
         } else {
-            // on recupere les bf_titre ou les titres de niveau 1 et de niveau 2
             if (preg_match('/<h[12].*>\s*(.*)\s*<\/h[12]>/iUs', $page['body'], $titles)) {
                 $title = $titles[1];
             } else {
@@ -379,8 +377,7 @@ class Utils
      */
     public function getDescriptionFromBody($page, $title, $length = 300)
     {
-        // Metadata is rendered even when the page body is access-restricted.
-        if (empty($page['tag']) || !$this->wiki->services->get(AclService::class)->hasAccess('read', $page['tag'])) {
+        if (!$this->canRead($page)) {
             return '';
         }
 
@@ -402,12 +399,9 @@ class Utils
                 $desc = $this->wiki->services->get(EntryController::class)->view($entry, '', 0);
             }
         }
-        // $desc = $this->wiki->Format($page['body'], 'wakka', $page["tag"]);
 
-        // no javascript
         $desc = preg_replace('~<\s*\bscript\b[^>]*>(.*?)<\s*\/\s*script\s*>~Uis', '', $desc);
 
-        // no double space or new lines
         $desc = trim(
             preg_replace(
                 '!\s+!',
