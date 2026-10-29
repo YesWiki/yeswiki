@@ -4,7 +4,7 @@
 {{ include_css('tools/bazar/presentation/styles/list-form.css') }}
 
 <form method="post" id="translate-entry" class="translate-entry form-horizontal"
-    data-extraLang="{{ langs| json_encode }}" data-entry="{{ entry|json_encode }}" data-fieldsNames="{{ fieldsNames|json_encode }}" data-baseLang="{{ baseLang }}">
+    data-__translation="{{ langs| json_encode }}" data-entry="{{ entry|json_encode }}" data-fieldsNames="{{ fieldsNames|json_encode }}" data-baseLang="{{ baseLang }}">
     <div class="control-group form-group" v-if="extraLangsList.length > 0">
         <label class="control-label col-sm-3">
 			{{ _t('BAZ_TRANSLATE_IN') }}
@@ -52,7 +52,7 @@
 	</div>
 
 	<input type="hidden" name="entry" :value="jsonEntry" />
-	<input type="hidden" name="extralang" :value="JsonExtraLang" />
+	<input type="hidden" name="__translation" :value="JsonExtraLang" />
 	<input name="antispam" value="1" type="hidden">
 
 	{# Form Actions #}

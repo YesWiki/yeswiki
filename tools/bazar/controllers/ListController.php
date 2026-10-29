@@ -99,7 +99,7 @@ class ListController extends YesWikiController
         if ($post->has('submit')) {
             if ($this->aclService->hasAccess('write', $id)) {
                 $title = $post->get('title');
-                $this->listManager->update($id, $title, json_decode($post->get('nodes'), true), $list['extralang'] ?? []);
+                $this->listManager->update($id, $title, json_decode($post->get('nodes'), true), $list['__translation'] ?? []);
 
                 if ($this->shouldPostMessageOnSubmit()) {
                     return $this->render('@core/iframe_result.twig', [
@@ -126,7 +126,7 @@ class ListController extends YesWikiController
                 $req = $this->getRequest()->request;
                 $list = json_decode($req->get('jsonlist'), true);
 
-                $this->listManager->update($id, $list['title'], $list['nodes'], $list['extralang'] ?? []);
+                $this->listManager->update($id, $list['title'], $list['nodes'], $list['__translation'] ?? []);
 
                 $this->wiki->Redirect(
                     $this->wiki->Href('', '', [BAZ_VARIABLE_VOIR => BAZ_VOIR_LISTES], false)

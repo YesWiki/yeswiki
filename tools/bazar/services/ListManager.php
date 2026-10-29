@@ -171,7 +171,7 @@ class ListManager
                     $sanitized_langs[$lang]['nodes'] = $this->sanitizeHMTL($value['nodes']);
                 }
             }
-            $list['extralang'] = $sanitized_langs;
+            $list['__translation'] = $sanitized_langs;
         }
         $json = json_encode($list, JSON_FORCE_OBJECT);
         $this->pageManager->save($id, $json);

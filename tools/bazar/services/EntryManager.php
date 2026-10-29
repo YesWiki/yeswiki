@@ -145,7 +145,7 @@ class EntryManager
         $extraFields = [
             'id_fiche', 'id_typeannonce', 'date_creation_fiche',
             'date_maj_fiche', 'statut_fiche', 'url',
-            '-is-external-', 'external-data', 'lang', 'extralang',
+            '-is-external-', 'external-data', 'lang', '__translation',
         ];
 
         foreach ($extraFields as $key) {
@@ -182,7 +182,7 @@ class EntryManager
             $vRegisteredData = [...$data];
             $extraFields = [
                 'id_fiche', 'id_typeannonce', 'date_creation_fiche',
-                'date_maj_fiche', 'statut_fiche', 'url', 'lang', 'extralang',
+                'date_maj_fiche', 'statut_fiche', 'url', 'lang', '__translation',
             ];
 
             foreach ($extraFields as $key) {
@@ -397,8 +397,8 @@ class EntryManager
 
         $data = $this->assignRestrictedFields($data, $previousData, $form);
 
-        if (empty($data['extralang']) and !empty($previousData['extralang'])) {
-            $data['extralang'] = $previousData['extralang'];
+        if (empty($data['__translation']) and !empty($previousData['__translation'])) {
+            $data['__translation'] = $previousData['__translation'];
         }
         if (!$replace) {
             $data = $this->mergeFields($previousData, $data, $form);

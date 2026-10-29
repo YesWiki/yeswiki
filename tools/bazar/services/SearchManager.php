@@ -645,7 +645,7 @@ class SearchManager
                 $vSQLNom = mysqli_real_escape_string($this->wiki->dblink, $vFieldName);
                 $vRenamedSQLNom = mysqli_real_escape_string($this->wiki->dblink, $this->renameJSONPathVariable($vFieldName));
 
-                $vSelectRequest[] = "JSON_UNQUOTE(COALESCE(JSON_EXTRACT(body, '\$.extralang.{$lang}.{$vSQLNom}'), JSON_EXTRACT(body, '\$.{$vSQLNom}'))) AS `{$vRenamedSQLNom}`";
+                $vSelectRequest[] = "JSON_UNQUOTE(COALESCE(JSON_EXTRACT(body, '\$.__translation.{$lang}.{$vSQLNom}'), JSON_EXTRACT(body, '\$.{$vSQLNom}'))) AS `{$vRenamedSQLNom}`";
 
                 // rembember it was extracted
 
@@ -769,7 +769,7 @@ class SearchManager
 
         if (isset($this->wiki->config['supported_langs'])) {
             $lang = $this->wiki->lang;
-            $columns = "f.id, f.tag, f.time, f.body_r, f.owner, f.user, f.latest, f.handler, f.comment_on ,JSON_MERGE_PATCH(f.body, COALESCE(JSON_EXTRACT(f.body, \"\$.extralang.$lang\"), body)) as body";
+            $columns = "f.id, f.tag, f.time, f.body_r, f.owner, f.user, f.latest, f.handler, f.comment_on ,JSON_MERGE_PATCH(f.body, COALESCE(JSON_EXTRACT(f.body, \"\$.__translation.$lang\"), body)) as body";
         } else {
             $columns = 'f.*';
         }

@@ -162,7 +162,7 @@ class FormController extends YesWikiController
 
 
                 $form = json_decode($req->get('form'), true);
-                $form['extralang'] = json_decode($req->get('extraLangs'), true);
+                $form['__translation'] = json_decode($req->get('extraLangs'), true);
 
                 $saved = $this->formManager->update($form, $req->get('tag') , true);
 
@@ -186,8 +186,8 @@ class FormController extends YesWikiController
             $form = $this->formManager->getOne($tag, 'all');
             unset($form['template']);
             unset($form['prepared']);
-            if (isset($form['extralang']) and $form['extralang'] === '') {
-                unset($form['extralang']);
+            if (isset($form['__translation']) and $form['__translation'] === '') {
+                unset($form['__translation']);
             }
             $default_lang = $this->wiki->config['default_language'] ?? 'fr';
             return $this->render('@bazar/forms/form_translate.twig', [

@@ -257,15 +257,15 @@ class CSVManager
         }
 
         // export translations
-        if (!empty($this->wiki->config['supported_langs']) and !empty($entry['extralang'])) {
+        if (!empty($this->wiki->config['supported_langs']) and !empty($entry['__translation'])) {
             foreach ($this->wiki->config['supported_langs'] as $lang) {
-                if (empty($entry['extralang'][$lang])) {
+                if (empty($entry['__translation'][$lang])) {
                     foreach ($headers as $propertyName => $header) {
                         $line[] = '';
                     }
                 } else {
                     foreach ($headers as $propertyName => $header) {
-                        $line[] = $entry['extralang'][$lang][$propertyName] ?? '';
+                        $line[] = $entry['__translation'][$lang][$propertyName] ?? '';
                     }
                 }
             }
@@ -645,10 +645,10 @@ class CSVManager
         $entry = [];
         $skipFields = ['datetime_create', 'datetime_latest'];
         $extralangIndexes = array_filter($columnIndexesForPropertyNames, function($el) {
-            return str_starts_with($el, 'extralang');
+            return str_starts_with($el, '__translation');
         }, ARRAY_FILTER_USE_KEY);
         $columnIndexesForPropertyNames = array_filter($columnIndexesForPropertyNames, function($el) {
-            return !str_starts_with($el, 'extralang');
+            return !str_starts_with($el, '__translation');
         }, ARRAY_FILTER_USE_KEY);
         foreach ($columnIndexesForPropertyNames as $propertyName => $index) {
             if (in_array($propertyName, $skipFields)) {
@@ -710,7 +710,7 @@ class CSVManager
 
         $extralang = $this->translationFieldsToArray($data, $extralangIndexes, array_keys($headers));
         if (!empty($extralang)) {
-            $entry['extralang'] = $extralang;
+            $entry['__translation'] = $extralang;
         }
 
         return !empty($entry) ? $entry : null;
@@ -1024,8 +1024,8 @@ class CSVManager
     }
 
     /**
-     * genereate headers in form of extralang.LANG.HEADER_NAME.
-     * ex : extralang.fr.bf_titre
+     * genereate headers in form of __translation.LANG.HEADER_NAME.
+     * ex : __translation.fr.bf_titre
      */
     private function generateTranslationHeaders (array $headers): array {
 
@@ -1036,7 +1036,7 @@ class CSVManager
         $langHeaders = ['lang'];
         foreach ($langs as $lang) {
             foreach($headers as $header) {
-                $langHeaders[] = "extralang.{$lang}.{$header}";
+                $langHeaders[] = "__translation.{$lang}.{$header}";
             }
         }
         return $langHeaders;
@@ -1045,10 +1045,10 @@ class CSVManager
     /**
      * get i18n fields and convert it to recursive array
      * from
-     *  …, extralang.fr.bf_titre,extralang.fr.bf_description,…,extralang.en.bf_titre,…
+     *  …, __translation.fr.bf_titre,__translation.fr.bf_description,…,__translation.en.bf_titre,…
      * …,fr_titre,fr_description,…,en_titre,…
      * to
-     * extralang => [
+     * __translation => [
      *   fr => [
      *      bf_titre => 'fr_titre',
      *      bf_description => 'fr_description'
@@ -1058,7 +1058,7 @@ class CSVManager
      *      ]
      *  ]
      * @param $fields data indexed with numbers
-     * @param $headersIndexes array with dot notation as key and index as value ex: [ extralang.fr.bf_titre => 10 ]
+     * @param $headersIndexes array with dot notation as key and index as value ex: [ __translation.fr.bf_titre => 10 ]
      */
     private function translationFieldsToArray(array $fields, array $headersIndexes, array $headers)
     {
@@ -1073,7 +1073,7 @@ class CSVManager
             $extralang[$lang] = [];
             $langExists = false;
             foreach ($headers as $header) {
-                $key = "extralang.{$lang}.{$header}";
+                $key = "__translation.{$lang}.{$header}";
                 if (array_key_exists($key, $headersIndexes) and !empty($fields[$headersIndexes[$key]])) {
                     $extralang[$lang][$header] = $fields[$headersIndexes[$key]];
                     $langExists = true;

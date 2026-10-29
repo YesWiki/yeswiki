@@ -1,6 +1,6 @@
 const { createApp } = Vue
 
-const { entry, extralang, fieldsnames, baselang } =
+const { entry, __translation, fieldsnames, baselang } =
   document.getElementById('translate-entry').dataset
 
 const app = createApp({
@@ -8,10 +8,10 @@ const app = createApp({
     return {
       baseLang: baselang,
       selectedLanguage: baselang,
-      extraLangsList: JSON.parse(extralang),
+      extraLangsList: JSON.parse(__translation),
       entry: JSON.parse(entry),
       JsonExtraLang: '',
-      extraLangValues: JSON.parse(entry).extralang,
+      extraLangValues: JSON.parse(entry).__translation,
       jsonEntry: entry,
       fieldsNames: JSON.parse(fieldsnames),
     }

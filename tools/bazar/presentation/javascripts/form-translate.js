@@ -1,13 +1,13 @@
 const { createApp } = Vue
 
-const { jsonform, extralang, defaultlanguage } = document.getElementById('translate-form').dataset
+const { jsonform, __translation, defaultlanguage } = document.getElementById('translate-form').dataset
 
 const app = createApp({
   data() {
     const fieldTypes = ['label', 'helper', 'default']
-    const extraLangsList = JSON.parse(extralang)
+    const extraLangsList = JSON.parse(__translation)
     const form = JSON.parse(jsonform)
-    const extraLangsValues = form.extralang ?? {}
+    const extraLangsValues = form.__translation ?? {}
 
     for (const lang of Object.values(extraLangsList)) {
       extraLangsValues[lang] ??= {}

@@ -3,7 +3,7 @@
 {{ include_javascript('tools/bazar/presentation/javascripts/form-translate.js', false, true) }}
 {{ include_css('tools/bazar/presentation/styles/list-form.css') }}
 
-<form method="post" @submit="onSubmit" id="translate-form" class="translate-form form-horizontal" data-extraLang="{{ langs | json_encode }}" data-jsonform="{{ form|json_encode }}" data-defaultLanguage="{{ defaultLanguage }}" =>
+<form method="post" @submit="onSubmit" id="translate-form" class="translate-form form-horizontal" data-__translation="{{ langs | json_encode }}" data-jsonform="{{ form|json_encode }}" data-defaultLanguage="{{ defaultLanguage }}" =>
     <div class="control-group form-group">
         <label class="control-label col-sm-3">
 			{{ _t('BAZ_TRANSLATE_IN') }}

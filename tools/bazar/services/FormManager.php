@@ -422,7 +422,7 @@ class FormManager
             'only_one_entry' => $form['bn_only_one_entry'] ?? '',
             'only_one_entry_message' => $form['bn_only_one_entry_message'],
             'fields' => $form_array,
-            'extralang' => $form['extralang']
+            '__translation' => $form['__translation']
         ];
         $saved = $this->pageManager->save($tag, json_encode($newform, JSON_FORCE_OBJECT), '', true);
         return $saved;
@@ -455,7 +455,7 @@ class FormManager
 
         $form = $this->getFromRawData($data);
         $previous = $this->getOne($tag, 'all');
-        $form['extralang'] = $previous['extralang'] ?? [];
+        $form['__translation'] = $previous['__translation'] ?? [];
 
         return $this->__createOrUpdate($form, $tag);
     }

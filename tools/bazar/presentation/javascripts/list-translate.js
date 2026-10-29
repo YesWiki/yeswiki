@@ -9,11 +9,11 @@ const app = createApp({
     const extraLangsList = Object.values(JSON.parse(langs))
     const list = JSON.parse(jsonlist)
     list.children = list.nodes
-    let extraLangsValues = list.extralang ?? {}
+    let extraLangsValues = list.__translation ?? {}
 
     for (const lang of extraLangsList) {
       if (extraLangsValues[lang]) {
-        extraLangsValues = list.extralang[lang] ?? { title: '' }
+        extraLangsValues = list.__translation[lang] ?? { title: '' }
         if (extraLangsValues.nodes) {
           extraLangsValues.children = extraLangsValues.nodes
         }
@@ -40,15 +40,15 @@ const app = createApp({
             filteredlist.nodes ??= {}
             const { childdata, langsvalues } = this.filterLangInfo(this.list.nodes[child], lang)
             filteredlist.nodes[child] = childdata
-            filteredlist.extralang ??= {}
-            filteredlist.extralang[lang] ??= {}
-            filteredlist.extralang[lang].nodes ??= {}
-            filteredlist.extralang[lang].nodes[child] = langsvalues
+            filteredlist.__translation ??= {}
+            filteredlist.__translation[lang] ??= {}
+            filteredlist.__translation[lang].nodes ??= {}
+            filteredlist.__translation[lang].nodes[child] = langsvalues
           }
           if (this.list[lang]) {
-            filteredlist.extralang ??= {}
-            filteredlist.extralang[lang] ??= {}
-            filteredlist.extralang[lang].title = this.list[lang]
+            filteredlist.__translation ??= {}
+            filteredlist.__translation[lang] ??= {}
+            filteredlist.__translation[lang].title = this.list[lang]
           }
         }
 
