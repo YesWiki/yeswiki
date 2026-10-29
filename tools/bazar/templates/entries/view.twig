@@ -1,17 +1,27 @@
 <div class="BAZ_cadre_fiche id{{ form.bn_id_nature }}">
   {% if message and not entry['external-data'] %}
+  {% if 'ok' in message %}
     <div class="alert alert-success">
+  {% else %}
+    <div class="alert alert-danger">
+  {% endif %}
       {% if message == 'ajout_ok' %}
         {{ _t('BAZ_FICHE_ENREGISTREE') }}
         <a href="{{ url({ params: { vue: 'saisir', id: form.bn_id_nature }}) }}" class="pull-right btn-sm btn btn-primary">
           {{ _t('BAZ_ADD_NEW_ENTRY') }}
         </a>
-      {% endif %}
-      {% if message == 'modif_ok' %}
+      {% elseif message == 'modif_ok' %}
         {{ _t('BAZ_FICHE_MODIFIEE') }}
         <a href="{{ url({ tag: entryId, handler: 'edit'}) }}" class="pull-right btn-sm btn btn-primary">
           {{ _t('BAZ_MODIFY_ENTRY_AGAIN') }}
         </a>
+      {% elseif message == 'translate_ok' %}
+        {{ _t('BAZ_FICHE_TRANSLATED') }}
+        <a href="{{ url({ tag: entryId, handler: 'translate'}) }}" class="pull-right btn-sm btn btn-primary">
+          {{ _t('BAZ_TRANSLATE_ENTRY_AGAIN') }}
+        </a>
+      {% else %}
+       {{ _t('BAZ_TRANSLATE_MODIFIY_ERROR') }} : <br/> {{ message }}
       {% endif %}
       <div class="clearfix"></div>
     </div>
@@ -19,7 +29,7 @@
   {{ renderedEntry|raw }}
   {% if showFooter %}
     <div class="clearfix"></div>
-    <div class="BAZ_fiche_info">    
+    <div class="BAZ_fiche_info">
       {% if isAdmin %}
         <span class="BAZ_main_fiche_info">
           {{ _t('BAZ_ECRITE') }}
@@ -47,7 +57,7 @@
           {{ include_javascript('javascripts/favorites.js') }}
           <a href="#"
             title="{{ (isUserFavorite) ? _t('FAVORITES_REMOVE') : _t('FAVORITES_ADD') }}"
-            data-resource="{{ entryId }}" 
+            data-resource="{{ entryId }}"
             data-user="{{ currentuser }}"
             data-toggle="tooltip"
             data-placement="right"
@@ -67,6 +77,12 @@
               <i class="fa fa-pencil-alt icon-pencil"></i>
               <span>{{ _t('BAZ_MODIFIER') }}</span>
             </a>
+            {% if isMultilang %}
+            <a class="btn btn-entry-action btn-sm btn-default" href="{{ url({ tag: entryId, handler: 'translate' }) }}">
+                <i class="fa fa-globe"></i>
+                <span>{{ _t('BAZ_TRANSLATE') }}</span>
+            </a>
+            {% endif %}
           {% endif %}
         {% if canDuplicate %}
           <span class="dropup">
@@ -110,7 +126,7 @@
           {% endif %}
         {% endif %}
       </div>
-      
+
     </div>
   {% endif %}
 </div>

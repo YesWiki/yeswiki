@@ -24,6 +24,7 @@ class FormController extends YesWikiController
     protected $securityController;
     protected $activityPubService;
     protected $webfingerService;
+    protected $lang;
 
     public function __construct(FormManager $formManager, SecurityController $securityController, CsrfTokenController $csrfTokenController, ActivityPubService $activityPubService, WebfingerService $webfingerService)
     {
@@ -51,7 +52,7 @@ class FormController extends YesWikiController
                     Flash::error(htmlspecialchars($value['bn_label_nature'] ?? '') . ' : ' . _t('BAZ_FORM_INVALID_FIELD_NAMES', ['names' => htmlspecialchars(implode(', ', $invalidNames))]));
                     continue;
                 }
-                $existingForms = multiArraySearch($forms, 'bn_label_nature', $value['bn_label_nature']);
+                $existingForms = multiArraySearch($forms, 'title', $value['title']);
                 // If a form with the same name exist, replace it
                 if (count($existingForms) > 0) {
                     // Replace with ID of existing formulaire
@@ -69,16 +70,15 @@ class FormController extends YesWikiController
         $values = [];
         if (is_array($forms)) {
             foreach ($forms as $form) {
-                $values[$form['bn_id_nature']]['title'] = $form['bn_label_nature'];
-                $values[$form['bn_id_nature']]['description'] = $form['bn_description'];
-                $values[$form['bn_id_nature']]['canEdit'] = !$this->securityController->isWikiHibernated() && $this->getService(Guard::class)->isAllowed('saisie_formulaire');
-                $values[$form['bn_id_nature']]['canDelete'] = !$this->securityController->isWikiHibernated() && $this->wiki->UserIsAdmin();
-                $values[$form['bn_id_nature']]['isSemantic'] = !empty($form['bn_sem_template']);
-                $values[$form['bn_id_nature']]['isActivityPubEnabled'] = $form['bn_activitypub_enable'] === '1';
-                $values[$form['bn_id_nature']]['isGeo'] = !empty(array_filter($form['prepared'], function ($field) {
+                $values[$form['id']]['title'] = $form['title'];
+                $values[$form['id']]['description'] = $form['description'];
+                $values[$form['id']]['canEdit'] = !$this->securityController->isWikiHibernated() && $this->getService(Guard::class)->isAllowed('saisie_formulaire');
+                $values[$form['id']]['canDelete'] = !$this->securityController->isWikiHibernated() && $this->wiki->UserIsAdmin();
+                $values[$form['id']]['isSemantic'] = isset($form['bn_sem_type']) && $form['bn_sem_type'] !== '';
+                $values[$form['id']]['isGeo'] = !empty(array_filter($form['prepared'], function ($field) {
                     return $field instanceof MapField;
                 }));
-                $values[$form['bn_id_nature']]['isDate'] = $this->getService(IcalFormatter::class)->isICALForm($form);
+                $values[$form['id']]['isDate'] = $this->getService(IcalFormatter::class)->isICALForm($form);
             }
         }
 
@@ -86,6 +86,7 @@ class FormController extends YesWikiController
             'message' => $message,
             'forms' => $values,
             'userIsAdmin' => $this->wiki->UserIsAdmin(),
+            'isMultilang' => isset($this->wiki->config['supported_langs']),
             'isWikiHibernated' => $this->securityController->isWikiHibernated(),
         ]);
     }
@@ -124,15 +125,18 @@ class FormController extends YesWikiController
     {
         if ($this->getService(Guard::class)->isAllowed('saisie_formulaire')) {
             $form = $this->formManager->getOne($id);
-            $post = $this->getRequest()->request;
-            if ($post->has('valider')) {
-                $form = $this->formManager->getFromRawData($post->all());
-                if ($this->formIsValid($form)) {
-                    $this->formManager->update($post->all());
 
-                    return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'formulaire', 'msg' => 'BAZ_FORMULAIRE_MODIFIE'], false));
-                }
+            $tag = $form['tag'] ?? $form['bn_label_nature'];
+            $post = $this->getRequest()->request;
+
+            if ($post->has('valider')) {
+            $form = $this->formManager->getFromRawData($post->all());
+            if ($this->formIsValid($form)) {
+                $this->formManager->update($post->all(), $tag);
+
+                return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'formulaire', 'msg' => 'BAZ_FORMULAIRE_MODIFIE'], false));
             }
+        }
 
             return $this->render('@bazar/forms/forms_form.twig', [
                 'form' => $form,
@@ -143,6 +147,61 @@ class FormController extends YesWikiController
         }
 
         return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'formulaire', 'msg' => 'BAZ_NEED_ADMIN_RIGHTS'], false));
+    }
+
+    public function translate($tag)
+    {
+        if (is_numeric($tag)) {
+            $tag = $this->formManager->getPageTagFromId($tag);
+        }
+
+        $req = $this->getRequest()->request;
+
+        if ($this->getRequest()->getMethod() === 'POST') {
+            if ($this->getService(Guard::class)->isAllowed('saisie_formulaire')) {
+
+
+                $form = json_decode($req->get('form'), true);
+                $form['__translation'] = json_decode($req->get('extraLangs'), true);
+
+                $saved = $this->formManager->update($form, $req->get('tag') , true);
+
+
+
+                if ($req->get('onsubmit') === 'postmessage') {
+                    return $this->render('@core/iframe_result.twig', [
+                        'data' => ['msg' => 'form_updated', 'id' => $tag, 'title' => $form['title']],
+                    ]);
+                }
+
+                $this->wiki->Redirect(
+                    $this->wiki->Href('', '', [BAZ_VARIABLE_VOIR => BAZ_VOIR_FORMULAIRE], false)
+                );
+            } else {
+                throw new \Exception('Not allowed');
+            }
+        }
+
+        if ($this->getService(Guard::class)->isAllowed('saisie_formulaire')) {
+            $form = $this->formManager->getOne($tag, 'all');
+            unset($form['template']);
+            unset($form['prepared']);
+            if (isset($form['__translation']) and $form['__translation'] === '') {
+                unset($form['__translation']);
+            }
+            $default_lang = $this->wiki->config['default_language'] ?? 'fr';
+            return $this->render('@bazar/forms/form_translate.twig', [
+                'form' => $form,
+                'defaultLanguage' => $default_lang,
+                'langs' => array_filter($this->wiki->config['supported_langs'], function($el) use ($default_lang) {
+                    return $el != $default_lang;
+                }),
+                 'tag' =>  $form['tag'],
+                 'translatable_fields' => ['label', 'default', 'helper'],
+             ]);
+        } else {
+            return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'formulaire', 'msg' => 'BAZ_NEED_ADMIN_RIGHTS'], false));
+        }
     }
 
     private function formIsValid($form)
@@ -170,7 +229,6 @@ class FormController extends YesWikiController
         if ($this->wiki->UserIsAdmin()) {
             try {
                 $this->csrfTokenController->checkToken('main', 'POST', 'confirmDeleteToken', false);
-                $this->formManager->clear($id);
                 $this->formManager->delete($id);
 
                 return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'formulaire', 'msg' => 'BAZ_FORMULAIRE_ET_FICHES_SUPPRIMES'], false));

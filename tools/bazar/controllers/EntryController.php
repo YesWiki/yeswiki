@@ -217,6 +217,7 @@ class EntryController extends YesWikiController
             'isAdmin' => $this->wiki->UserIsAdmin($userNameForRendering),
             'renderedEntry' => $renderedEntry,
             'origin' => $origin,
+            'isMultilang' => isset($this->wiki->config['supported_langs']),
             'incomingUrl' => $this->getRequest()->query->get('incomingurl', getAbsoluteUrl()),
             'editContextUrl' => $this->getEditContextUrl($entryId),
         ]);
@@ -342,7 +343,7 @@ class EntryController extends YesWikiController
 
     public function update($entryId)
     {
-        $entry = $this->entryManager->getOne($entryId);
+        $entry = $this->entryManager->getOne($entryId, false, null, true, false, null, 'all');
         $form = $this->formManager->getOne($entry['id_typeannonce']);
 
         $state = true;
@@ -806,7 +807,7 @@ class EntryController extends YesWikiController
                 if (!empty($entries)) {
                     $firstEntry = $entries[array_keys($entries)[0]];
                     $message = !empty($form['bn_only_one_entry_message']) ? $form['bn_only_one_entry_message'] : _t('BAZ_FORM_DEFAULT_MESSAGE_FOR_OTHER_ENTRY_IN_FORM');
-                    $message = str_replace('{formName}', $form['bn_label_nature'], $message);
+                    $message = str_replace('{formName}', $form['title'], $message);
                     $results['output'] = $this->render('@templates/alert-message.twig', [
                         'type' => 'info',
                         'message' => $message,

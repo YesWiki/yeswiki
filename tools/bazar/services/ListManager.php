@@ -49,10 +49,17 @@ class ListManager
         return boolval($this->tripleStore->exist($id, TripleStore::TYPE_URI, self::TRIPLES_LIST_ID, '', ''));
     }
 
-    public function getOne($id, $parent = null): ?array
+    public function getOne($id, $parent = null, $lang='default'): ?array
     {
-        if (isset($this->cachedLists[$id]) && $parent === null) { // we cache all information, not just a level
-            return $this->cachedLists[$id];
+        if (is_numeric($id)) {
+            $id = $this->getPageTagFromId($id);
+            if($id == null) {
+                return null;
+            }
+        }
+
+        if (isset($this->cachedLists[$id. $lang]) && $parent === null) { // we cache all information, not just a level
+            return $this->cachedLists[$id. $lang];
         }
 
         // Ensure a list exist with this ID
@@ -60,15 +67,15 @@ class ListManager
             return null;
         }
 
-        $page = $this->pageManager->getOne($id);
+        $page = $this->pageManager->getOne($id, null, true, false, null, $lang);
         if (empty($page)) {
             echo '<div class="alert alert-danger">List id not found: ' . $id . '</div>';
 
             return null;
         }
-        $data = $this->loadJson($page['body'], $id);
+        $data = json_decode($page['body'], true);
         if ($parent != null) {
-            $this->cachedLists[$id] = $data;
+            $this->cachedLists[$id. $lang] = $data;
         }
 
         if ($parent === 'root') {
@@ -86,39 +93,13 @@ class ListManager
         return $data;
     }
 
-    private function loadJson(string $json, $id): array
-    {
-        $data = $this->convertDataStructure(json_decode($json, true));
-        $data['id'] = $id;
-
-        return $data;
-    }
-
-    // The structure of List object has been changed in 2024
-    // Convert old List { titre_liste: "My List", label: { id1: "first Key", id2: "second id" } }
-    // to { title: "My List", values: [{ id: "id1", label: "first id"}, { id: "id2", label: "second id"}]}
-    // We still convert the strucure on the fly in case the migration went wrong
-    public function convertDataStructure($json)
-    {
-        if (isset($json['titre_liste'])) {
-            $newJson = ['title' => $json['titre_liste'], 'nodes' => []];
-            foreach ($json['label'] as $id => $label) {
-                $newJson['nodes'][] = ['id' => $id, 'label' => $label];
-            }
-
-            return $newJson;
-        }
-
-        return $json;
-    }
-
     public function getAll($parent = null): array
     {
-        $lists = $this->tripleStore->getMatching(null, TripleStore::TYPE_URI, self::TRIPLES_LIST_ID, '', '');
+        $data = $this->pageManager->getManyFromTriple("liste", "tag, body");
 
         $result = [];
-        foreach ($lists as $list) {
-            $result[$list['resource']] = $this->getOne($list['resource'], $parent);
+        foreach ( $data as $value) {
+            $result[$value['tag']] = json_decode($value['body'], true) ;
         }
 
         return $result;
@@ -133,13 +114,14 @@ class ListManager
         $nodes = $nodes ?? [];
         $this->trimRecursiveInPlace($nodes);
         $json = json_encode([
+            'id' => $id,
             'title' => $title,
             'nodes' => $this->sanitizeHMTL($nodes),
-        ]);
+        ], JSON_FORCE_OBJECT);
         $this->pageManager->save($id, $json);
 
-        $data = $this->loadJson($json, $id);
-        $this->cachedLists[$id] = $data;
+        // cache the newly created list
+        $this->cachedLists[$id] = json_decode($json);
 
         $this->tripleStore->create($id, TripleStore::TYPE_URI, self::TRIPLES_LIST_ID, '', '');
 
@@ -166,21 +148,36 @@ class ListManager
         return $this->create($title, $nodes);
     }
 
-    public function update($id, $title, $nodes)
+    public function update($id, $title, $nodes, $extralang = [])
     {
         if ($this->securityController->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
         $nodes = $nodes ?? [];
         $this->trimRecursiveInPlace($nodes);
-        $json = json_encode([
-            'title' => $title,
-            'nodes' => $this->sanitizeHMTL($nodes),
-        ]);
+        $list = [
+        'id' => $id,
+        'title' => $title,
+        'nodes' => $this->sanitizeHMTL($nodes)
+        ];
+        if (!empty($extralang)) {
+            $sanitized_langs = [];
+            foreach ($extralang as $lang => $value) {
+                $sanitized_langs[$lang] = [];
+                if (array_key_exists('title', $value)) {
+                    $sanitized_langs[$lang]['title'] = $this->htmlPurifierService->cleanHTML($value['title']);
+                }
+                if (array_key_exists('nodes', $value)) {
+                    $sanitized_langs[$lang]['nodes'] = $this->sanitizeHMTL($value['nodes']);
+                }
+            }
+            $list['__translation'] = $sanitized_langs;
+        }
+        $json = json_encode($list, JSON_FORCE_OBJECT);
         $this->pageManager->save($id, $json);
 
-        $data = $this->loadJson($json, $id);
-        $this->cachedLists[$id] = $data;
+        // cache the newly created list
+        $this->cachedLists[$id] = json_decode($json);
     }
 
     public function delete($id)
@@ -217,11 +214,19 @@ class ListManager
     private function sanitizeHMTL(array $nodes)
     {
         return array_map(function ($node) {
-            $node['label'] = $this->htmlPurifierService->cleanHTML($node['label']);
+            if (array_key_exists('label', $node)) {
+                $node['label'] = $this->htmlPurifierService->cleanHTML($node['label']);
+            }
             $node['children'] = $this->sanitizeHMTL($node['children'] ?? []);
 
             return $node;
         }, $nodes);
+    }
+
+    public function getPageTagFromId($id): ?String {
+        $request = 'SELECT tag FROM '. $this->pageManager->pageTableName . ' WHERE latest = "Y" AND json_value(body, "$.id") = '.$id. ';';
+        $tag = $this->dbService->loadSingle($request);
+        return $tag['tag'] ?? null;
     }
 
     /**

@@ -12,6 +12,7 @@ class LinkField extends BazarField
     protected const FIELD_DISPLAYVIDEO = 3;
     protected const FIELD_OPTIONS = 6;
     protected const FIELD_CLASS = 7;
+    private const FIELD_CLASS_TYPE = 'LinkField';
 
     protected $class;
     protected $displayVideo;
@@ -70,6 +71,22 @@ class LinkField extends BazarField
         return is_scalar($this->class) ? strval($this->class) : '';
     }
 
+    public static function mapToFieldArray($fieldProps): array
+    {
+        $new = parent::mapToFieldArray($fieldProps);
+        $new[self::FIELD_DISPLAYVIDEO] = $fieldProps['displayVideo'] ? 'displayvideo' : ' ';
+        if (empty($fieldProps['ratio']) and $fieldProps['maxWidth'] == 0 and $fieldProps['maxHeight'] == 0) {
+            $new[self::FIELD_OPTIONS] = '';
+        } else {
+            $new[self::FIELD_OPTIONS] = $fieldProps['ratio'].'|'.($fieldProps['maxWidth'] == 0 ? '' : $fieldProps['maxWidth']).'|'.($fieldProps['maxHeight'] == 0 ? '' : $fieldProps['maxHeight']);
+
+        }
+        $new[self::FIELD_CLASS] = $fieldProps['class'];
+        ksort($new);
+        return $new;
+    }
+
+
     // change return of this method to keep compatible with php 7.3 (mixed is not managed)
     #[\ReturnTypeWillChange]
     public function jsonSerialize()
@@ -77,6 +94,7 @@ class LinkField extends BazarField
         return array_merge(
             parent::jsonSerialize(),
             [
+                'field_type' => self::FIELD_CLASS_TYPE,
                 'displayVideo' => $this->getDisplayVideo(),
                 'ratio' => $this->getRatio(),
                 'maxWidth' => $this->getMaxWidth(),

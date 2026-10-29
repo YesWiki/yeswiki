@@ -19,6 +19,11 @@
 .list-form .list-node-children:not(.root) {
   margin-left: 2.5rem;
 }
+
+.list-form .list-node-children:last-child {
+  margin-bottom: 1rem;
+}
+
 .list-form .list-new-node {
   margin-bottom: 15px;
 }

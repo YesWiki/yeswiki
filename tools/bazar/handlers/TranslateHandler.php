@@ -1,0 +1,156 @@
+<?php
+
+namespace YesWiki\Bazar;
+
+use Exception;
+use Vtiful\Kernel\Excel;
+use YesWiki\Bazar\Service\EntryManager;
+use YesWiki\Bazar\Service\FormManager;
+use YesWiki\Core\Service\PageManager;
+use YesWiki\Core\YesWikiHandler;
+
+class TranslateHandler extends YesWikiHandler
+{
+
+    private const IGNORE_FIELDS_TYPES = [
+        'checkboxfiche',
+        'listefiches',
+        'liste',
+        'radio',
+        'checkbox',
+        'listedatedeb',
+        'listefiche',
+        'map',
+        'tabs',
+        'labelhtml',
+    ];
+    private const IGNORE_SPECIFIC_TYPES = [
+        'id_typeannonce',
+        'id_fiche',
+        'date_creation_fiche',
+        'statut_fiche',
+        'date_maj_fiche',
+        'bf_longitude',
+        'bf_latitude',
+        'geolocation',
+        'lang'
+    ];
+
+    private function save($entryManager): string
+    {
+        $post = $this->getRequest()->request;
+        if ($post->get('entry') != null && $post->get('__translation') != null && $post->get('antispam') != null) {
+            $entry = json_decode($post->get('entry'), true);
+            $entry['__translation'] = json_decode($post->get('__translation'), true);
+            $entry['antispam'] = $post->get('antispam');
+
+            try {
+                $entryManager->update($entry['id_fiche'], $entry);
+                $this->wiki->redirect($this->wiki->Href(testUrlInIframe(), '', [
+                    'vue' => 'consulter',
+                    'action' => 'voir_fiche',
+                    'id_fiche' => $entry['id_fiche'],
+                    'message' => 'modif_ok',
+                ], false));
+            } catch (Exception $e) {
+                $this->wiki->redirect($this->wiki->Href(testUrlInIframe(), '', [
+                    'vue' => 'consulter',
+                    'action' => 'voir_fiche',
+                    'id_fiche' => $entry['id_fiche'],
+                    'message' => $e->getMessage(),
+                ], false));
+            }
+        }
+    }
+
+    private function display_form($tag): string {
+        $pageManager = $this->getService(PageManager::class);
+        $formManager = $this->getService(FormManager::class);
+
+        $page = $pageManager->getOne($tag);
+        $page = json_decode($page['body'], true);
+        $page_lang = $page['lang'] ?? $this->wiki->config['default_language'] ?? 'fr';
+        $langs = $this->wiki->config['supported_langs'];
+        $extra_langs = array_filter($langs, function($el) use ($page_lang) {
+            return $el != $page_lang;
+        });
+
+        $field_names = [];
+        $ignorefields = [];
+        $form = $formManager->getOne($page['id_typeannonce']);
+        foreach ($form['fields'] as $field) {
+            if (!in_array($field['type'], self::IGNORE_FIELDS_TYPES)) {
+                $type = $field['type'] ?? 'text';
+                if ($field['type'] == 'textarea') {
+                    $type = 'textarea';
+                } elseif ($field['type'] == 'text') {
+                    $type = $field['subtype'] ?? $field['subtype2'] ?? 'text';
+                } elseif ($field['type'] === 'link') {
+                    $type = 'url';
+                }
+                $field_names[] = [
+                    'name' => $field['name'] ?? '',
+                    'label' => $field['label'] ?? '',
+                    'type' => $type,
+                ];
+                // ensure $page['__translation'] exist and is array;
+                if (empty($page['__translation']) or is_string($page['__translation'])) {
+                    $page['__translation'] = [];
+                }
+                foreach ($extra_langs as $lang) {
+                    $page['__translation'][$lang] ??= [];
+                    $page['__translation'][$lang]['name'] ??= '';
+                }
+            }
+        }
+
+        $output = $this->render('@bazar/entries/translate.twig', [
+        'isEntry' => true,
+        'entry' => $page,
+        'langs' => $langs,
+        'baseLang' => $page_lang,
+        'fieldsNames' => $field_names,
+        ]);
+        return $output;
+    }
+
+    public function run(): string
+    {
+        $output = $this->wiki->Header();
+
+        if (!$this->wiki->HasAccess('write') || !$this->wiki->page) {
+            $output .= $this->render('@templates/alert-message.twig', [
+                            'type' => 'danger',
+                            'message' => _t('NOT_ALLOWED'),
+                        ]);
+        } else {
+            if (isset($this->wiki->config['supported_langs'])) {
+
+                $tag = $this->wiki->GetPageTag();
+                $this->arguments = [];
+                $entryManager = $this->getService(EntryManager::class);
+                $isEntry = $entryManager->isEntry($tag);
+
+                if ($isEntry) {
+                    if ($this->getRequest()->getMethod() === 'POST') {
+                        $output .= $this->save($entryManager);
+                    } else {
+                        $output .= $this->display_form($tag);
+                    }
+                } else {
+                    $output .= $this->render('@templates/alert-message.twig', [
+                                    'type' => 'danger',
+                                    'message' => _t('TRANSLATE_ACTION_ONLY_ALLOWED_FOR_ENTRY'),
+                                ]);
+                }
+            } else {
+                $output .= $this->render('@templates/alert-message.twig', [
+                                'type' => 'danger',
+                                'message' => _t('TRANSLATE_MISSING_EXTRA_LANG'),
+                            ]);
+            }
+        }
+        $output .= $this->wiki->Footer();
+        return $output;
+    }
+}

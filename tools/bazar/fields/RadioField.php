@@ -13,6 +13,7 @@ abstract class RadioField extends EnumField
     protected $wiki;
 
     protected const FIELD_DISPLAY_METHOD = 7;
+    private const FIELD_CLASS_TYPE = 'RadioField';
 
     public function __construct(array $values, ContainerInterface $services)
     {
@@ -71,5 +72,26 @@ abstract class RadioField extends EnumField
             'selectedOptions' => $selectedOptions,
             'limit' => 1,
         ];
+    }
+
+    public static function mapToFieldArray($fieldProps): array
+    {
+        $new = parent::mapToFieldArray($fieldProps);
+        $new[self::FIELD_DISPLAY_METHOD] = $fieldProps['displayMethod'];
+        ksort($new);
+        return $new;
+    }
+
+    // change return of this method to keep compatible with php 7.3 (mixed is not managed)
+    #[\ReturnTypeWillChange]
+    public function jsonSerialize()
+    {
+        return array_merge(
+            parent::jsonSerialize(),
+            [
+                'field_type' => self::FIELD_CLASS_TYPE,
+                'displayMethod' => $this->displayMethod,
+            ]
+        );
     }
 }

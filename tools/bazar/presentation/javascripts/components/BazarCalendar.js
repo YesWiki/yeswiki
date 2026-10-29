@@ -135,7 +135,7 @@ const BazarCalendar = {
       } else if (this.isDirectLinkDisplay()) {
         info.jsEvent.preventDefault()
         window.location =
-          info.event.url + (this.$root.isInIframe() ? '/iframe' : '')
+          this.orderUrl(info.event.url + (this.$root.isInIframe() ? '/iframe' : ''))
       } else if (
         ['listWeek', 'listMonth', 'listYear'].indexOf(info.view.type) > -1
       ) {
@@ -170,7 +170,7 @@ const BazarCalendar = {
         title: entry.bf_titre,
         start,
         end,
-        url: entry.url + (this.isModalDisplay() ? '/iframe' : ''),
+        url: this.orderUrl(entry.url + (this.isModalDisplay() ? '/iframe' : '')),
         allDay: this.isAllDayDate(start),
         className: `bazar-entry${this.isModalDisplay() ? ' modalbox' : ''}`,
         backgroundColor,
@@ -404,7 +404,7 @@ const BazarCalendar = {
         <div class="btn-close" @click="selectedEntry = null"><i class="fa fa-times"></i></div>
         <div v-html="selectedEntry.html_render"></div>
       </div>
-      <ButtonIcs v-if="this.params.showicalbutton" :bazarcalendar="this"/> 
+      <ButtonIcs v-if="this.params.showicalbutton" :bazarcalendar="this"/>
     </div>
   `,
 }

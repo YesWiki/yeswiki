@@ -8,6 +8,17 @@ use YesWiki\Core\Service\PageManager;
 use YesWiki\Core\Service\TripleStore;
 use YesWiki\Core\YesWikiMigration;
 
+function convertDataStructure($json) {
+    if (isset($json['titre_liste'])) {
+        $newJson = ['title' => $json['titre_liste'], 'nodes' =>[]];
+        foreach($json['label'] as $id => $label) {
+            $newJson['nodes'][] = ['id' => $id, 'label' => $label];
+        }
+        return $newJson;
+    }
+    return $json;
+}
+
 /** Redoes the list and enum field conversions that earlier migrations could silently skip. */
 class RepairListsAndEnumFieldNames extends YesWikiMigration
 {
@@ -29,7 +40,7 @@ class RepairListsAndEnumFieldNames extends YesWikiMigration
                 continue;
             }
             $oldJson = json_decode($page['body'], true);
-            $newJson = $listManager->convertDataStructure($oldJson);
+            $newJson = convertDataStructure($oldJson);
             if ($newJson !== $oldJson) {
                 $pageManager->save($list['resource'], json_encode($newJson), '', true);
             }

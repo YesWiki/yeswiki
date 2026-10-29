@@ -21,6 +21,7 @@ class LabelField extends BazarField
     protected const FIELD_FORM_TEXT = 1;
     protected const FIELD_VIEW_TEXT = 3;
     protected const FIELD_USE_WIKI_SYNTAX = 4;
+    private const FIELD_CLASS_TYPE = 'LabelField';
 
     public function __construct(array $values, ContainerInterface $services)
     {
@@ -29,11 +30,11 @@ class LabelField extends BazarField
         $this->name = null;
         $this->label = null;
         $this->propertyName = null;
-        $this->formText = $values[self::FIELD_FORM_TEXT];
-        $this->viewText = $values[self::FIELD_VIEW_TEXT];
+        $this->formText = $values[self::FIELD_FORM_TEXT] ?? '';
+        $this->viewText = $values[self::FIELD_VIEW_TEXT] ?? '';
         $this->useWikiSyntax = (
+            empty($values[self::FIELD_USE_WIKI_SYNTAX]) ||
             $values[self::FIELD_USE_WIKI_SYNTAX] === false
-            || empty($values[self::FIELD_USE_WIKI_SYNTAX])
             || in_array($values[self::FIELD_USE_WIKI_SYNTAX], [0, '0', 'no', 'non', 'false'])
         ) ? false : true;
     }
@@ -77,11 +78,23 @@ class LabelField extends BazarField
         return [];
     }
 
+    public static function mapToFieldArray($fieldProps): array
+    {
+        $new = parent::mapToFieldArray($fieldProps);
+        $new[self::FIELD_USE_WIKI_SYNTAX] = $fieldProps['useWikiSyntax'] ? true : '';
+        $new[self::FIELD_VIEW_TEXT] = $fieldProps['viewtext'] ?? '';
+        $new[self::FIELD_FORM_TEXT] = $fieldProps['formtext'] ?? '';
+        ksort($new);
+        return $new;
+    }
+
+
     // change return of this method to keep compatible with php 7.3 (mixed is not managed)
     #[\ReturnTypeWillChange]
     public function jsonSerialize()
     {
         return [
+            'field_type' => self::FIELD_CLASS_TYPE,
             'type' => $this->getType(),
             'viewtext' => $this->viewText,
             'formtext' => $this->formText,

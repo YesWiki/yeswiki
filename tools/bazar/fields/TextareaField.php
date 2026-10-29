@@ -18,6 +18,7 @@ class TextareaField extends BazarField
     protected const FIELD_NUM_ROWS = 4;
     protected const FIELD_MAX_CHARS = 6;
     protected const FIELD_SYNTAX = 7;
+    private const FIELD_CLASS_TYPE = 'TextareaField';
     protected const FIELD_PLACEHOLDER = 15;
 
     protected const ACCEPTED_TAGS = '<h1><h2><h3><h4><h5><h6><hr><hr/><br><br/><span><blockquote><i><u><b><strong><ol><ul><li><small><div><p><a><table><tr><th><td><img><figure><caption><iframe>';
@@ -30,7 +31,7 @@ class TextareaField extends BazarField
     {
         parent::__construct($values, $services);
 
-        $this->numRows = empty($values[self::FIELD_NUM_ROWS]) ? 3 : $values[self::FIELD_NUM_ROWS];
+        $this->numRows = $values[self::FIELD_NUM_ROWS] ?? 3;
         $this->syntax = $values[self::FIELD_SYNTAX] ?? self::SYNTAX_WIKI;
 
         $this->placeholder = $values[self::FIELD_PLACEHOLDER];
@@ -337,5 +338,33 @@ class TextareaField extends BazarField
     private function sanitizeHTML(string $value)
     {
         return $this->getService(HtmlPurifierService::class)->cleanHTML($value);
+    }
+
+    public static function mapToFieldArray($fieldProps): array
+    {
+        $new = parent::mapToFieldArray($fieldProps);
+        $new[self::FIELD_NUM_ROWS] = $fieldProps['numRow'];
+        $new[self::FIELD_MAX_CHARS] = $fieldProps['maxChars'] ?? '';
+        $new[self::FIELD_SYNTAX] = $fieldProps['syntax'] ?? '';
+        $new[self::FIELD_PLACEHOLDER] = $fieldProps['placeholder'] ?? '';
+        ksort($new);
+
+        return $new;
+    }
+
+    // change return of this method to keep compatible with php 7.3 (mixed is not managed)
+    #[\ReturnTypeWillChange]
+    public function jsonSerialize()
+    {
+        return array_merge(
+            parent::jsonSerialize(),
+            [
+                'field_type' => self::FIELD_CLASS_TYPE,
+                'numRow' => $this->numRows,
+                'maxChars' => $this->maxChars,
+                'syntax' => $this->syntax,
+                'placeholder' => $this->placeholder,
+            ]
+        );
     }
 }
