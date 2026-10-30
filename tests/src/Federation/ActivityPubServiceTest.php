@@ -9,19 +9,21 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpClient\MockHttpClient;
 use Symfony\Component\HttpClient\Response\MockResponse;
 use YesWiki\Content\Service\SemanticTransformer;
+use YesWiki\Federation\Message\DeliverActivity;
+use YesWiki\Federation\Message\DeliverActivityHandler;
 use YesWiki\Federation\Service\ActivityPubKeyStore;
 use YesWiki\Federation\Service\ActivityPubLog;
 use YesWiki\Federation\Service\ActivityPubProfiles;
 use YesWiki\Federation\Service\ActivityPubService;
 use YesWiki\Federation\Service\HttpSignatureService;
 use YesWiki\Files\Service\Storage;
-use YesWiki\Kernel\Service\AfterResponse;
 use YesWiki\Kernel\Service\KeyPairGenerator;
 use YesWiki\Kernel\Service\SsrfUrlValidator;
 use YesWiki\Kernel\Service\TripleStore;
 
 require_once 'tests/YesWikiTestCase.php';
 require_once 'src/constants.php';
+require_once 'tests/src/Federation/RecordingBus.php';
 require_once 'tests/src/Federation/RecordingJournal.php';
 
 /** A form's actor: its profile and key, the follows it sends and receives, and what it tells its followers. */
@@ -42,7 +44,8 @@ class ActivityPubServiceTest extends TestCase
 
     private RecordingJournal $journal;
 
-    private ?AfterResponse $afterResponse = null;
+    /** What was sent to the queue instead of being posted. */
+    private RecordingBus $bus;
 
     private string $baseUrl = 'https://us.example/?';
 
@@ -50,6 +53,7 @@ class ActivityPubServiceTest extends TestCase
     {
         $this->root = sys_get_temp_dir() . '/yeswiki-activitypub-' . bin2hex(random_bytes(4));
         $this->journal = new RecordingJournal();
+        $this->bus = new RecordingBus();
     }
 
     protected function tearDown(): void
@@ -130,11 +134,27 @@ class ActivityPubServiceTest extends TestCase
             new ActivityPubKeyStore(Storage::rootedAt($this->root), new KeyPairGenerator()),
             new ActivityPubProfiles($this->createStub(ContainerInterface::class)),
             new ActivityPubLog(new ParameterBag(['activitypub_log' => true]), $this->journal),
-            $this->afterResponse ?? new AfterResponse(),
+            $this->bus,
         );
         (new \ReflectionProperty($service, 'httpClient'))->setValue($service, $client);
 
         return $service;
+    }
+
+    /** What a pass of the queue would do with the deliveries sent to it: each one posted, the way the handler does, a failing one only logged. */
+    private function deliverQueued(): void
+    {
+        $handler = new DeliverActivityHandler($this->service());
+        foreach ($this->bus->messages as $message) {
+            if (!$message instanceof DeliverActivity) {
+                continue;
+            }
+            try {
+                $handler($message);
+            } catch (\Throwable) {
+            }
+        }
+        $this->bus->messages = [];
     }
 
     public function testTheActorDeclaresTheSecurityContextItsKeyNeeds(): void
@@ -270,6 +290,7 @@ class ActivityPubServiceTest extends TestCase
         $this->unreachable[] = 'https://down.example/users/a';
 
         $this->service()->notifyFollowers($this->form(), ['tag' => 'Fiche'], 'Create');
+        $this->deliverQueued();
 
         $this->assertCount(1, $this->posted);
         $activity = $this->posted[0]['body'];
@@ -357,6 +378,7 @@ class ActivityPubServiceTest extends TestCase
         $this->unreachable[] = 'https://down.example/users/a';
 
         $this->service()->notifyFollowers($this->form(), ['tag' => 'Fiche'], 'Create');
+        $this->deliverQueued();
 
         $records = array_column($this->journal->records, 'context');
         $byPeer = array_column($records, null, 'peer');
@@ -372,6 +394,7 @@ class ActivityPubServiceTest extends TestCase
         $this->triples[] = ['resource' => self::US . '/followers', 'property' => ActivityPubService::$AS_PREFIX . 'items', 'value' => self::THEM];
 
         $this->service()->notifyFollowers($this->form(), ['tag' => 'Fiche'], 'Delete');
+        $this->deliverQueued();
 
         $this->assertSame('Delete', $this->posted[0]['body']['type']);
         $this->assertSame(['id' => 'https://us.example/?Fiche', 'type' => 'Tombstone', 'formerType' => 'Note'], $this->posted[0]['body']['object']);
@@ -384,6 +407,7 @@ class ActivityPubServiceTest extends TestCase
         $service = $this->service();
 
         $service->announceProfile($this->form());
+        $this->deliverQueued();
 
         $activity = $this->posted[0]['body'];
         $actor = $service->getActor($this->form());
@@ -401,26 +425,22 @@ class ActivityPubServiceTest extends TestCase
         $this->profile = [];
 
         $this->service()->announceProfile($this->form());
+        $this->deliverQueued();
 
         $this->assertSame([], $this->posted);
     }
 
-    public function testFollowersAreNotifiedOnlyOnceTheResponseHasGone(): void
+    public function testFollowersAreNotifiedOnlyOnceTheQueueDeliversTheActivity(): void
     {
         $this->triples[] = ['resource' => self::US . '/followers', 'property' => ActivityPubService::$AS_PREFIX . 'items', 'value' => self::THEM];
-        $this->afterResponse = new class extends AfterResponse {
-            public function defer(callable $task): void
-            {
-                $this->tasks[] = $task;
-            }
-        };
         $service = $this->service();
 
         $service->notifyFollowers($this->form(), ['tag' => 'Fiche'], 'Create');
         $service->announceProfile($this->form());
-        $this->assertSame([], $this->posted);
+        $this->assertSame([], $this->posted, 'the person saving waits for nothing');
+        $this->assertCount(2, $this->bus->messages);
 
-        $this->afterResponse->run();
+        $this->deliverQueued();
         $this->assertSame(['Create', 'Update'], array_map(fn ($post) => $post['body']['type'], $this->posted));
     }
 
@@ -429,6 +449,7 @@ class ActivityPubServiceTest extends TestCase
         $this->triples[] = ['resource' => self::US . '/followers', 'property' => ActivityPubService::$AS_PREFIX . 'items', 'value' => self::THEM];
 
         $this->service()->notifyFollowers($this->form(), ['tag' => 'Fiche'], 'Create');
+        $this->deliverQueued();
 
         $this->assertSame(HttpSignatureService::TIMEOUT, (int)$this->posted[0]['timeout']);
         $this->assertSame(HttpSignatureService::MAX_DURATION, (int)$this->posted[0]['max_duration']);

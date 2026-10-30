@@ -8,6 +8,7 @@ use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpClient\MockHttpClient;
 use Symfony\Component\HttpClient\Response\MockResponse;
+use Symfony\Component\Messenger\MessageBusInterface;
 use YesWiki\Content\Service\EntryManager;
 use YesWiki\Content\Service\SemanticTransformer;
 use YesWiki\Federation\Service\ActivityPubInbox;
@@ -184,6 +185,7 @@ class ActivityPubInboxTest extends TestCase
             new ActivityPubKeyStore(Storage::rootedAt($this->root), new KeyPairGenerator()),
             new ActivityPubProfiles($container),
             new ActivityPubLog($params, new RecordingJournal()),
+            $this->createStub(MessageBusInterface::class),
         );
 
         return new ActivityPubInbox($activityPub, $container, $httpSignatureService, $semanticTransformer, $tripleStore, new ActivityPubLog($params, new RecordingJournal()));

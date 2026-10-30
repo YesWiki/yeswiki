@@ -4,9 +4,10 @@ namespace YesWiki\Federation\Service;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpClient\HttpClient;
+use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use YesWiki\Content\Service\SemanticTransformer;
-use YesWiki\Kernel\Service\AfterResponse;
+use YesWiki\Federation\Message\DeliverActivity;
 use YesWiki\Kernel\Service\SsrfUrlValidator;
 use YesWiki\Kernel\Service\TripleStore;
 use YesWiki\Kernel\Service\WikiUrls;
@@ -28,7 +29,7 @@ class ActivityPubService
         protected ActivityPubKeyStore $keyStore,
         protected ActivityPubProfiles $profiles,
         protected ActivityPubLog $log,
-        protected AfterResponse $afterResponse = new AfterResponse(),
+        protected MessageBusInterface $bus,
     ) {
         $this->httpClient = HttpClient::create();
     }
@@ -131,6 +132,24 @@ class ActivityPubService
             'keyId' => $this->getFormActorUri($form) . '#main-key',
             'privateKey' => $this->keyStore->privateKey((string)$form['id']),
         ];
+    }
+
+    /**
+     * The identity a queued delivery signs with, from what the message carries: the form's key and the actor it acts as.
+     *
+     * Null when the key is gone, since the form is not read again (it may have been deleted since the
+     * activity was queued: a Delete is sent for each entry of a deleted form) and generating a new key
+     * would sign with one no remote server knows.
+     *
+     * @return array{keyId: string, privateKey: string}|null
+     */
+    public function signerFor(string $formId, string $actorUri): ?array
+    {
+        if (!$this->keyStore->has($formId)) {
+            return null;
+        }
+
+        return ['keyId' => $actorUri . '#main-key', 'privateKey' => $this->keyStore->privateKey($formId)];
     }
 
     /**
@@ -289,10 +308,10 @@ class ActivityPubService
         return $propertyValues;
     }
 
-    /** @param array<string, mixed> $form */
-    public function getActorInbox(string $actorUri, array $form): string
+    /** @param array{keyId: string, privateKey: string}|null $signer */
+    public function getActorInbox(string $actorUri, ?array $signer): string
     {
-        $actor = $this->fetch($actorUri, $form);
+        $actor = $this->httpSignatureService->fetch($actorUri, $signer);
         if (empty($actor['inbox']) || !is_string($actor['inbox'])) {
             throw new \Exception("{$actorUri} has no inbox");
         }
@@ -329,7 +348,10 @@ class ActivityPubService
     }
 
     /**
-     * Delivers an activity to each recipient's inbox, and returns it with its id; one failing inbox does not stop the others.
+     * Delivers an activity to each recipient's inbox right now, and returns it with its id; one failing inbox does not stop the others.
+     *
+     * For what is answered to someone waiting (Follow, Accept...): what is published to the
+     * followers goes through the queue instead, one delivery at a time (deliverToFollowers).
      *
      * @param array<string, mixed> $activity
      * @param array<string, mixed> $form
@@ -338,42 +360,19 @@ class ActivityPubService
      */
     public function postActivity(array $activity, array $form): array
     {
-        $activity = ['@context' => $activity['@context'] ?? 'https://www.w3.org/ns/activitystreams'] + $activity;
-        $activity['actor'] = $this->getFormActorUri($form);
-        $activity['id'] ??= $this->newActivityId($form);
-
-        $body = json_encode($activity, JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR);
+        $activity = $this->prepare($activity, $form);
         $signer = $this->signer($form);
         if ($signer === null) {
             throw new \Exception('This form has no ActivityPub username');
         }
+        $body = json_encode($activity, JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR);
         $failures = [];
 
         foreach ($this->getRecipients($form, $activity) as $recipientUri) {
-            $inboxUri = null;
-            $statusCode = null;
-            $responseBody = null;
             try {
-                $inboxUri = $this->getActorInbox($recipientUri, $form);
-
-                $response = $this->httpClient->request('POST', $inboxUri, [
-                    'body' => $body,
-                    'headers' => $this->httpSignatureService->signHeaders('POST', $inboxUri, $signer, $body),
-                    'max_redirects' => 0,
-                    'timeout' => HttpSignatureService::TIMEOUT,
-                    'max_duration' => HttpSignatureService::MAX_DURATION,
-                    'resolve' => $this->ssrfUrlValidator->resolveSafe($inboxUri),
-                ]);
-
-                $statusCode = $response->getStatusCode();
-                $responseBody = $response->getContent(false);
-                if ($statusCode < 200 || $statusCode >= 300) {
-                    throw new \Exception("HTTP $statusCode: " . $responseBody);
-                }
-                $this->log->delivered((string)$form['id'], $recipientUri, $inboxUri, $activity, $statusCode, null, $responseBody);
+                $this->deliverTo($body, $signer, (string)$form['id'], $recipientUri);
             } catch (\Throwable $e) {
                 $failures[] = "$recipientUri: " . $e->getMessage();
-                $this->log->delivered((string)$form['id'], $recipientUri, $inboxUri, $activity, $statusCode, $e->getMessage(), $responseBody);
             }
         }
 
@@ -382,6 +381,64 @@ class ActivityPubService
         }
 
         return $activity;
+    }
+
+    /**
+     * The activity as it is sent: with its @context, its actor (the form) and its id, which it is given if it has none.
+     *
+     * @param array<string, mixed> $activity
+     * @param array<string, mixed> $form
+     *
+     * @return array<string, mixed>
+     */
+    protected function prepare(array $activity, array $form): array
+    {
+        $activity = ['@context' => $activity['@context'] ?? 'https://www.w3.org/ns/activitystreams'] + $activity;
+        $activity['actor'] = $this->getFormActorUri($form);
+        $activity['id'] ??= $this->newActivityId($form);
+
+        return $activity;
+    }
+
+    /**
+     * Posts a prepared activity to the inbox of one recipient, and logs what the inbox answered; throws when it did not take it.
+     *
+     * Takes everything it needs rather than the form: a queued delivery outlives its form when the
+     * form is deleted, and the body is sent as it was prepared, byte for byte.
+     *
+     * @param string                                   $body   the activity as JSON, as prepare() returned it
+     * @param array{keyId: string, privateKey: string} $signer
+     */
+    public function deliverTo(string $body, array $signer, string $formId, string $recipientUri): void
+    {
+        $activity = json_decode($body, true);
+        $activity = is_array($activity) ? $activity : [];
+        $inboxUri = null;
+        $statusCode = null;
+        $responseBody = null;
+        try {
+            $inboxUri = $this->getActorInbox($recipientUri, $signer);
+
+            $response = $this->httpClient->request('POST', $inboxUri, [
+                'body' => $body,
+                'headers' => $this->httpSignatureService->signHeaders('POST', $inboxUri, $signer, $body),
+                'max_redirects' => 0,
+                'timeout' => HttpSignatureService::TIMEOUT,
+                'max_duration' => HttpSignatureService::MAX_DURATION,
+                'resolve' => $this->ssrfUrlValidator->resolveSafe($inboxUri),
+            ]);
+
+            $statusCode = $response->getStatusCode();
+            $responseBody = $response->getContent(false);
+            if ($statusCode < 200 || $statusCode >= 300) {
+                throw new \Exception("HTTP $statusCode: " . $responseBody);
+            }
+            $this->log->delivered($formId, $recipientUri, $inboxUri, $activity, $statusCode, null, $responseBody);
+        } catch (\Throwable $e) {
+            $this->log->delivered($formId, $recipientUri, $inboxUri, $activity, $statusCode, $e->getMessage(), $responseBody);
+
+            throw $e;
+        }
     }
 
     /** @param array<string, mixed> $form */
@@ -730,19 +787,28 @@ class ActivityPubService
     }
 
     /**
-     * Sends an activity to the followers once the response has gone, so a slow follower never holds up the person saving.
+     * Queues an activity for each of the followers, so that a slow or dead one never holds up the person saving, nor the others.
+     *
+     * The activity is prepared here, once: it depends on the entry as it is now, and every
+     * recipient gets the same one, id included. Each delivery is then its own message, retried on its own.
      *
      * @param array<string, mixed> $activity
      * @param array<string, mixed> $form
      */
     protected function deliverToFollowers(array $activity, array $form): void
     {
-        $this->afterResponse->defer(function () use ($activity, $form): void {
-            try {
-                $this->postActivity($activity, $form);
-            } catch (\Exception $e) {
-                error_log('ActivityPub: ' . $e->getMessage());
+        try {
+            // Also makes sure the form has its key by now: a delivery is signed from the key alone.
+            if ($this->signer($form) === null) {
+                throw new \Exception('This form has no ActivityPub username');
             }
-        });
+            $activity = $this->prepare($activity, $form);
+            $json = json_encode($activity, JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR);
+            foreach ($this->getRecipients($form, $activity) as $recipientUri) {
+                $this->bus->dispatch(new DeliverActivity((string)$form['id'], $recipientUri, $json));
+            }
+        } catch (\Exception $e) {
+            error_log('ActivityPub: ' . $e->getMessage());
+        }
     }
 }
