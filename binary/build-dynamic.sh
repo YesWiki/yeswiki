@@ -3,7 +3,7 @@ set -euo pipefail
 
 repo="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
-FRANKENPHP_VERSION="${FRANKENPHP_VERSION:-1.13.1}"
+FRANKENPHP_VERSION="${FRANKENPHP_VERSION:-1.13.4}"
 OUTPUT="${OUTPUT:-$repo/binary/dist}"
 BINARY="${BINARY:-yeswiki-dev}"
 
