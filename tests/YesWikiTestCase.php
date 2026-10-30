@@ -2,6 +2,7 @@
 
 namespace YesWiki\Test\Core;
 
+use PHPUnit\Framework\Attributes\After;
 use PHPUnit\Framework\TestCase;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Core\YesWikiLoader;
@@ -229,6 +230,33 @@ class YesWikiTestCase extends TestCase
         }
         $this->createdDirectories = [];
         parent::tearDown();
+    }
+
+    /**
+     * Drops what the test's own properties hold, once its tearDown() has run.
+     *
+     * PHPUnit keeps every test object until the end of the run, and with it every database
+     * connection a fixture opened: a throw-away SQLite file is unlinked, but its three
+     * descriptors stay open. Past 1024 of them, a new pipe gets a descriptor select() cannot
+     * watch, and every subprocess the suite starts (ConsoleService) reads back as having said
+     * nothing. Only the properties a test class declares are dropped, not PHPUnit's own, and not
+     * readonly ones, which cannot be.
+     */
+    #[After(-1000)]
+    protected function releaseWhatTheTestHeld(): void
+    {
+        for ($class = new \ReflectionClass($this); $class !== false && $class->getName() !== TestCase::class; $class = $class->getParentClass()) {
+            foreach ($class->getProperties() as $property) {
+                if ($property->isStatic() || $property->isReadOnly() || $property->getDeclaringClass()->getName() !== $class->getName() || !$property->isInitialized($this)) {
+                    continue;
+                }
+                $name = $property->getName();
+                \Closure::bind(function () use ($name): void {
+                    unset($this->{$name});
+                }, $this, $class->getName())();
+            }
+        }
+        gc_collect_cycles();
     }
 
     /** Creates a directory and its missing parents, which tearDown() removes again once emptied. */

@@ -106,6 +106,11 @@ class ArchitectureTest extends TestCase
         'Kernel/Command/CreateInstanceCommand.php',
         'Kernel/Command/ConvertToInstanceCommand.php',
         'Kernel/Service/InstanceEntryPoints.php',
+
+        // /proc is the kernel's account of the processes running, neither a wiki's data nor the
+        // Program: the queue reads in it whether the process that holds a message is still there
+        // (R19), and a bucket could never answer that.
+        'Kernel/Queue/QueueClaimHolder.php',
     ];
 
     /**
@@ -445,6 +450,76 @@ class ArchitectureTest extends TestCase
 
         $this->assertSame([], $misplaced, 'Every /api/* route must live in a '
             . '<Module>/Api/<Resource>ApiController.php controller.');
+    }
+
+    /**
+     * A message and its handler are one piece of background work, kept side by side as src/<Module>/Message/<X>.php and <X>Handler.php (ADR-0030).
+     *
+     * The kernel registers the *Handler.php of a Message/ folder as services and nothing else of
+     * that folder, so a handler filed anywhere else is found only by the accident of another layer.
+     */
+    public function testEveryMessageHandlerLivesBesideItsMessage(): void
+    {
+        $misplaced = [];
+        $handlers = 0;
+        foreach (self::MODULES as $module) {
+            foreach ($this->phpFilesIn(self::SRC . '/' . $module) as $file) {
+                $text = (string)file_get_contents($file);
+                if (!preg_match('/^#\[AsMessageHandler\b/m', $text)) {
+                    continue;
+                }
+                $handlers++;
+                $rel = substr(str_replace('\\', '/', $file), strlen(self::SRC) + 1);
+                if (!preg_match('#^' . $module . '/Message/(\w+)Handler\.php$#', $rel, $named)
+                    || !preg_match('/function __invoke\(' . $named[1] . ' \$/', $text)) {
+                    $misplaced[] = $rel;
+                }
+            }
+        }
+
+        $this->assertSame([], $misplaced, 'A message handler is src/<Module>/Message/<X>Handler.php '
+            . 'and its __invoke() takes <X>, the message beside it.');
+        $this->assertGreaterThanOrEqual(
+            14,
+            $handlers,
+            'Handlers went missing. Moving them out of a Message/ folder unregisters them with no error.'
+        );
+    }
+
+    /** The other half: a class of a Message/ folder that is not a handler is a message, and the queue fails at once a message with no handler. */
+    public function testEveryMessageHasItsHandlerBesideIt(): void
+    {
+        $orphans = [];
+        foreach (self::MODULES as $module) {
+            foreach (glob(self::SRC . '/' . $module . '/Message/*.php') ?: [] as $file) {
+                if (!str_ends_with($file, 'Handler.php') && !is_file(substr($file, 0, -4) . 'Handler.php')) {
+                    $orphans[] = substr($file, strlen(self::SRC) + 1);
+                }
+            }
+        }
+
+        $this->assertSame([], $orphans, 'Every message of a Message/ folder has its <X>Handler.php beside it.');
+    }
+
+    /** A module's recurring work is declared in src/<Module>/Scheduler/, and that folder holds nothing but schedules (ADR-0030). */
+    public function testEveryScheduleLivesInASchedulerDirectory(): void
+    {
+        $misplaced = [];
+        $schedules = 0;
+        foreach (self::MODULES as $module) {
+            foreach ($this->phpFilesIn(self::SRC . '/' . $module) as $file) {
+                $rel = substr(str_replace('\\', '/', $file), strlen(self::SRC) + 1);
+                $declares = (bool)preg_match('/^(?:final )?class \w+[^{]*\bimplements\b[^{]*\bProvidesSchedule\b/m', (string)file_get_contents($file));
+                $schedules += (int)$declares;
+                if ($declares !== (bool)preg_match('#^' . $module . '/Scheduler/\w+\.php$#', $rel)) {
+                    $misplaced[] = $rel;
+                }
+            }
+        }
+
+        $this->assertSame([], $misplaced, 'A ProvidesSchedule is src/<Module>/Scheduler/<Module>Schedule.php, '
+            . 'and a Scheduler/ folder holds only schedules.');
+        $this->assertGreaterThanOrEqual(5, $schedules, 'Schedules went missing, and with them every recurring task they declared.');
     }
 
     public function testEveryModuleNamespaceIsRegisteredForPsr4Autoloading(): void

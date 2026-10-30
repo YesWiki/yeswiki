@@ -44,13 +44,20 @@ class YesWikiKernel extends Kernel
         \YesWiki\Kernel\Health\ProvidesHealthChecks::class => 'yeswiki.health_check_provider',
         \Symfony\Component\EventDispatcher\EventSubscriberInterface::class => 'yeswiki.event_subscriber',
         \YesWiki\Kernel\Service\RequestScopedState::class => 'yeswiki.request_scoped',
+        \YesWiki\Kernel\Queue\ProvidesSchedule::class => 'yeswiki.schedule_provider',
     ];
 
     /** The folders of a module whose classes are services: every class in them is registered, autowired and autoconfigured. */
-    private const SERVICE_LAYERS = ['Service', 'Action', 'Handler', 'Controller', 'Api', 'Component'];
+    private const SERVICE_LAYERS = ['Service', 'Action', 'Handler', 'Controller', 'Api', 'Component', 'Scheduler'];
 
     /** The same layers in an extension, named after the folders src/autoload.inc.php maps them to. */
-    private const EXTENSION_SERVICE_FOLDERS = ['actions', 'handlers', 'services', 'controllers'];
+    private const EXTENSION_SERVICE_FOLDERS = ['actions', 'handlers', 'services', 'controllers', 'schedulers'];
+
+    /**
+     * Where a module keeps its messages and their handlers (`Message`), and an extension too (`messages`): only the handlers in it are services, since a message is a value its sender builds.
+     */
+    private const MESSAGE_LAYER = 'Message';
+    private const EXTENSION_MESSAGE_FOLDER = 'messages';
 
     /** Services set from outside the container once it exists, see YesWikiRuntime::boot(). */
     private const SYNTHETIC = [
@@ -156,6 +163,7 @@ class YesWikiKernel extends Kernel
         $loader = new PhpFileLoader($container, new FileLocator(__DIR__));
         $prototype = (new Definition())->setAutowired(true)->setAutoconfigured(true)->setPublic(true)->setChanges([]);
         $loader->registerClasses($prototype, 'YesWiki\\', '*/{' . implode(',', self::SERVICE_LAYERS) . '}/*');
+        $loader->registerClasses($prototype, 'YesWiki\\', '*/' . self::MESSAGE_LAYER . '/*Handler.php');
 
         foreach ($this->runtime->extensions as $pluginBase) {
             foreach (self::EXTENSION_SERVICE_FOLDERS as $folder) {
@@ -163,6 +171,10 @@ class YesWikiKernel extends Kernel
                 if ($namespace !== null) {
                     $loader->registerClasses($prototype, $namespace . '\\', $pluginBase . $folder . '/*');
                 }
+            }
+            $namespace = self::namespaceOf($pluginBase . self::EXTENSION_MESSAGE_FOLDER);
+            if ($namespace !== null) {
+                $loader->registerClasses($prototype, $namespace . '\\', $pluginBase . self::EXTENSION_MESSAGE_FOLDER . '/*Handler.php');
             }
         }
 
@@ -237,10 +249,12 @@ class YesWikiKernel extends Kernel
         $container->addCompilerPass(new YesWikiEventCompilerPass());
         $container->addCompilerPass(new YesWikiPerformableCompilerPass());
         $container->addCompilerPass(new YesWikiRequestScopeCompilerPass());
+        $container->addCompilerPass(new YesWikiQueueCompilerPass());
 
         foreach (self::AUTOCONFIGURED as $interface => $tag) {
             $container->registerForAutoconfiguration($interface)->addTag($tag);
         }
+        YesWikiQueueCompilerPass::autoconfigure($container);
 
         $this->registerServices($container);
 
