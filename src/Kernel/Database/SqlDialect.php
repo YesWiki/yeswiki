@@ -98,6 +98,15 @@ interface SqlDialect
     public function journalDdl(string $table): array;
 
     /**
+     * The statements that add to an existing Journal the index the queue channel reads by, `(channel, target, at)`, which journalDdl() creates with the table. Run them only where `idx_channel_target_at` is missing: MySQL has no IF NOT EXISTS for an index.
+     *
+     * @param string $table already prefixed, unquoted
+     *
+     * @return list<string>
+     */
+    public function journalQueueIndexDdl(string $table): array;
+
+    /**
      * Every statement needed to remove what journalDdl() created, in execution order.
      *
      * @return list<string>

@@ -6,7 +6,7 @@
   {# Said once, at the boundary. Without it, an audit trail that goes back a year beside errors
      that go back a fortnight reads as errors having been hidden. #}
   <p class="yw-dashboard__intro">
-    {{ _t('ADMIN_LOGS_INTRO')|replace({'%{audit}': auditDays, '%{diagnostic}': diagnosticDays}) }}
+    {{ _t('ADMIN_LOGS_INTRO')|replace({'%{audit}': auditDays, '%{diagnostic}': diagnosticDays, '%{queue}': queueDays}) }}
   </p>
 
   <div class="yw-logs" id="yw-logs">
@@ -17,6 +17,7 @@
           <option value="">{{ _t('ADMIN_LOGS_CHANNEL_ALL') }}</option>
           <option value="audit">{{ _t('ADMIN_LOGS_CHANNEL_AUDIT') }}</option>
           <option value="diagnostic">{{ _t('ADMIN_LOGS_CHANNEL_DIAGNOSTIC') }}</option>
+          <option value="queue">{{ _t('ADMIN_LOGS_CHANNEL_QUEUE') }}</option>
         </select>
       </div>
 

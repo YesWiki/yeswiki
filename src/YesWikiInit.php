@@ -199,6 +199,7 @@ class YesWikiInit
             // `./yeswicli core:maintenance` alone. A wiki that is installed and forgotten keeps
             // working because the default is the one that needs nothing set up.
             'maintenance_trigger' => 'request',
+            'journal_queue_purge_time' => 7,
             'default_write_acl' => '*',
             'default_read_acl' => '*',
             'default_comment_acl' => 'comments-closed',

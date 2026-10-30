@@ -6,6 +6,7 @@ use YesWiki\Kernel\Entity\JournalChannel;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\Journal;
 use YesWiki\Kernel\Service\JournalSchema;
+use YesWiki\Kernel\Service\RuntimeConfig;
 use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';
@@ -207,5 +208,75 @@ class JournalTest extends YesWikiTestCase
 
         $this->assertCount(0, $this->rows(self::FIXTURE . '.old'), 'past journal_audit_purge_time');
         $this->assertCount(1, $this->rows(self::FIXTURE . '.recent'), 'and the rest is left alone');
+    }
+
+    /** A queue row dated in UTC, by PHP: the channel's rows are never dated by the database's clock. */
+    private function insertQueueRow(string $action, string $at, string $lastAt): void
+    {
+        $db = self::db();
+        $columns = implode(', ', array_map(
+            fn (string $column): string => $db->quoteIdentifier($column),
+            ['at', 'last_at', 'repeat', 'channel', 'level', 'actor', 'action', 'target']
+        ));
+        $db->query(
+            'INSERT INTO ' . self::table() . " ({$columns}) VALUES (?, ?, 1, ?, 'info', '', ?, '')",
+            [$at, $lastAt, JournalChannel::Queue->value, $action]
+        );
+    }
+
+    private static function utcAgo(string $offset): string
+    {
+        return gmdate('Y-m-d H:i:s', (int)strtotime($offset));
+    }
+
+    private function pruneWithQueueRetention(?int $days): void
+    {
+        $config = self::getWiki()->services->get(RuntimeConfig::class);
+        $before = $config[Journal::QUEUE_PURGE_SETTING];
+        if ($days !== null) {
+            $config[Journal::QUEUE_PURGE_SETTING] = $days;
+        }
+        try {
+            self::getWiki()->services->get(Journal::class)->prune();
+        } finally {
+            if ($before === null) {
+                $config->offsetUnset(Journal::QUEUE_PURGE_SETTING);
+            } else {
+                $config[Journal::QUEUE_PURGE_SETTING] = $before;
+            }
+        }
+    }
+
+    public function testQueueRowsArePrunedAfterTheirRetention(): void
+    {
+        $this->insertQueueRow(self::FIXTURE . '.eight', self::utcAgo('-8 days'), self::utcAgo('-8 days'));
+        $this->insertQueueRow(self::FIXTURE . '.six', self::utcAgo('-6 days'), self::utcAgo('-6 days'));
+
+        $this->pruneWithQueueRetention(7);
+
+        $this->assertCount(0, $this->rows(self::FIXTURE . '.eight'), 'past the seven days of the default');
+        $this->assertCount(1, $this->rows(self::FIXTURE . '.six'));
+
+        $this->pruneWithQueueRetention(2);
+
+        $this->assertCount(0, $this->rows(self::FIXTURE . '.six'), 'past journal_queue_purge_time');
+    }
+
+    public function testAZeroRetentionKeepsTheQueueRows(): void
+    {
+        $this->insertQueueRow(self::FIXTURE . '.ancient', self::utcAgo('-60 days'), self::utcAgo('-60 days'));
+
+        $this->pruneWithQueueRetention(0);
+
+        $this->assertCount(1, $this->rows(self::FIXTURE . '.ancient'));
+    }
+
+    public function testALongLivedPassSurvivesThePrune(): void
+    {
+        $this->insertQueueRow(self::FIXTURE . '.pass', self::utcAgo('-30 days'), self::utcAgo('-1 hour'));
+
+        $this->pruneWithQueueRetention(7);
+
+        $this->assertCount(1, $this->rows(self::FIXTURE . '.pass'), 'the retention runs on the last sign of life');
     }
 }

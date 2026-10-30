@@ -32,10 +32,11 @@ class JournalPruneCommand extends Command
         $config = $this->services->get(RuntimeConfig::class);
         $audit = (int)($config[Journal::AUDIT_PURGE_SETTING] ?? 365);
         $diagnostic = (int)($config[Journal::DIAGNOSTIC_PURGE_SETTING] ?? 14);
+        $queue = (int)($config[Journal::QUEUE_PURGE_SETTING] ?? 7);
 
         $removed = $this->services->get(Journal::class)->prune();
 
-        $output->writeln("Journal pruned: {$removed} entries removed (audit kept {$audit} days, diagnostics {$diagnostic}).");
+        $output->writeln("Journal pruned: {$removed} entries removed (audit kept {$audit} days, diagnostics {$diagnostic}, queue {$queue}).");
 
         return Command::SUCCESS;
     }

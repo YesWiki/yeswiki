@@ -64,6 +64,7 @@ class AdminController extends YesWikiController
             'levels' => AdminLogsApiController::levels(),
             'auditDays' => (int)($config[Journal::AUDIT_PURGE_SETTING] ?? 365),
             'diagnosticDays' => (int)($config[Journal::DIAGNOSTIC_PURGE_SETTING] ?? 14),
+            'queueDays' => (int)($config[Journal::QUEUE_PURGE_SETTING] ?? 7),
         ]);
     }
 

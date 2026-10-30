@@ -54,7 +54,7 @@
               {% endif %}
             </td>
             <td>
-              {{ entry.channel == 'audit' ? _t('ADMIN_LOGS_CHANNEL_AUDIT') : _t('ADMIN_LOGS_CHANNEL_DIAGNOSTIC') }}
+              {% if entry.channel == 'audit' %}{{ _t('ADMIN_LOGS_CHANNEL_AUDIT') }}{% elseif entry.channel == 'queue' %}{{ _t('ADMIN_LOGS_CHANNEL_QUEUE') }}{% else %}{{ _t('ADMIN_LOGS_CHANNEL_DIAGNOSTIC') }}{% endif %}
               {% if entry.channel != 'audit' %}<br><small class="yw-text-muted">{{ entry.level }}</small>{% endif %}
             </td>
             <td>{{ entry.actor }}</td>
