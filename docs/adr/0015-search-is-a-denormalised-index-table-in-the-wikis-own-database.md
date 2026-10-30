@@ -79,6 +79,8 @@ Per-Content events (`page.*`, `entry.*`, `comment.deleted`, `renameTag`) reindex
 
 New `form.updated` / `form.deleted` events mark those entries dirty and immediately spawn `search:reindex` through `ConsoleService::startConsoleAsync()`, under a lock so concurrent saves do not stampede. The **dirty mark is the source of truth**, not the spawn: `proc_open` is commonly disabled on shared hosting and `PhpExecutableFinder` can hand back the FPM binary — the `ASYNC_PHP_BINARY` escape hatch in that service exists because this has already bitten someone. When the spawn does not happen, the `YesWikiRuntime` maintenance hook drains the same rows in bounded batches, the way it already purges expired recovery keys. Every host converges; most converge fast.
 
+*Amended by ADR-0030:* nothing spawns a command, registers a shutdown function or drains in the maintenance sweep any more, and `search_queue` is gone. Queueing a Content dispatches one `ReindexContent` message for it (deduplicated while one is waiting for the same tag), which the background queue runs one at a time, spread over its passes by the consumer's budget. The waiting messages are the dirty marks.
+
 The same drain is how an existing wiki gets its index in the first place. The migration **creates schema and marks everything dirty; it indexes nothing** — a migration that decoded a million bodies inside the upgrade request would time out, and a half-applied migration on the upgrade path is precisely the failure class ticket 25 documented. Until the drain finishes, search reports that it is building rather than falling back to the `body LIKE` query this whole decision exists to kill.
 
 ## Considered Options

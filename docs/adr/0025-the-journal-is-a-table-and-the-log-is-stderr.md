@@ -141,3 +141,24 @@ outlive the request in worker mode (ADR-0024). And since `triples` has no unique
 `(resource, property)`, a claim that must be race-safe cannot count on a failed insert: every
 claimer inserts its own row with a random nonce in the value, reads back the oldest row for that
 resource and property, and wins only if that row is its own.
+
+**The Journal has a third channel, `queue`, for the background queue's runs and passes
+(2026-10-24, ADR-0030).** The queue needed a history of what it handled and a row per consumption
+pass, and the project's convention is to minimise tables, so they are rows of this one rather than
+tables of their own. They are a third population that shares columns and nothing else, as the first
+two do. `queue.run.<status>` is one fact about a past attempt (target: the message type; actor: the
+mode) and is never collapsed. `queue.pass` is the one row that is written, then updated by id as the
+consumer shows signs of life and when it stops (`at` is the start, `last_at` the last sign of life,
+target the reason it stopped). Three rules keep it from being what this ADR was written to avoid.
+Its rows are written by direct SQL, never through `Journal::store()`: a pass every few minutes must
+not put a line on stderr each time, and neither the per-day ceiling nor the fingerprint dedup has
+anything to say about them (`fingerprint` and `day` stay NULL). They are pruned on `last_at`, like
+diagnostics, since a pass is as old as its last sign of life, after 7 days
+(`journal_queue_purge_time`). And `/admin/logs` lists them only when the `queue` channel is chosen,
+so the default view stays the acts and errors it exists for. Their times are UTC, written from PHP
+(a pass's moments are compared to the exact second, and a conversion by the database's zone is wrong
+under SQLite and ambiguous at the autumn clock change), so the screen converts them for that channel
+alone. A backup leaves them out and a restore keeps the live ones, otherwise a restored copy would
+show a pass that never closes. The failures the queue reports as diagnostics (`queue.message_failed`
+and the rest) stay on the `diagnostic` channel: the same failure is a fact in both places, once as
+what broke and once as history.
