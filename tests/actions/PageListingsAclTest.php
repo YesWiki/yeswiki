@@ -43,7 +43,7 @@ class PageListingsAclTest extends YesWikiTestCase
         // The restricted page's ACL is written after it is saved, so it is re-indexed here rather
         // than by the save: the index carries the ACL it is filtered on.
         $this->wiki->services->get(SearchIndexer::class)->index(self::RESTRICTED_TAG);
-        $this->wiki->services->get(SearchIndexer::class)->drain(1000);
+        self::reindexWaitingContents($this->wiki);
         unset($_SESSION['user']);
     }
 

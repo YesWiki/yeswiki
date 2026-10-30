@@ -202,7 +202,7 @@ class SqliteDialect implements SqlDialect
     }
 
     /** An ordinary table plus an FTS5 **external-content** table over it, kept in sync by triggers. */
-    public function searchIndexDdl(string $table, string $queueTable, string $keywordsTable): array
+    public function searchIndexDdl(string $table, string $keywordsTable): array
     {
         return [
             "CREATE TABLE IF NOT EXISTS \"{$table}\" (
@@ -242,14 +242,6 @@ class SqliteDialect implements SqlDialect
                 VALUES ('delete', old.\"id\", old.\"title\", old.\"text\");
                 INSERT INTO \"{$table}_fts\"(rowid, \"title\", \"text\") VALUES (new.\"id\", new.\"title\", new.\"text\");
             END",
-            "CREATE TABLE IF NOT EXISTS \"{$queueTable}\" (
-                \"tag\" TEXT PRIMARY KEY,
-                \"queued_at\" TEXT NOT NULL,
-                \"claimed_at\" TEXT NULL,
-                \"claimed_by\" TEXT NULL
-            )",
-            "CREATE INDEX IF NOT EXISTS \"{$queueTable}_idx_claimed_by\" ON \"{$queueTable}\" (\"claimed_by\")",
-
             "CREATE TABLE IF NOT EXISTS \"{$keywordsTable}\" (
                 \"tag\" TEXT NOT NULL,
                 \"keyword\" TEXT NOT NULL,
@@ -259,11 +251,10 @@ class SqliteDialect implements SqlDialect
         ];
     }
 
-    public function searchIndexDropDdl(string $table, string $queueTable, string $keywordsTable): array
+    public function searchIndexDropDdl(string $table, string $keywordsTable): array
     {
         return [
             "DROP TABLE IF EXISTS \"{$keywordsTable}\"",
-            "DROP TABLE IF EXISTS \"{$queueTable}\"",
             "DROP TRIGGER IF EXISTS \"{$table}_ai\"",
             "DROP TRIGGER IF EXISTS \"{$table}_ad\"",
             "DROP TRIGGER IF EXISTS \"{$table}_au\"",

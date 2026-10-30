@@ -210,7 +210,7 @@ class PostgreSqlDialect implements SqlDialect
     }
 
     /** A generated `tsvector` with a GIN index over it. */
-    public function searchIndexDdl(string $table, string $queueTable, string $keywordsTable): array
+    public function searchIndexDdl(string $table, string $keywordsTable): array
     {
         return [
             "CREATE TABLE IF NOT EXISTS \"{$table}\" (
@@ -236,14 +236,6 @@ class PostgreSqlDialect implements SqlDialect
             "CREATE INDEX IF NOT EXISTS \"{$table}_idx_content_type\" ON \"{$table}\" (\"content_type\")",
             "CREATE INDEX IF NOT EXISTS \"{$table}_idx_form_id\" ON \"{$table}\" (\"form_id\")",
             "CREATE INDEX IF NOT EXISTS \"{$table}_ft_text\" ON \"{$table}\" USING GIN (\"search_vector\")",
-            "CREATE TABLE IF NOT EXISTS \"{$queueTable}\" (
-                \"tag\" VARCHAR(191) PRIMARY KEY,
-                \"queued_at\" TIMESTAMP NOT NULL,
-                \"claimed_at\" TIMESTAMP NULL,
-                \"claimed_by\" VARCHAR(64) NULL
-            )",
-            "CREATE INDEX IF NOT EXISTS \"{$queueTable}_idx_claimed_by\" ON \"{$queueTable}\" (\"claimed_by\")",
-
             "CREATE TABLE IF NOT EXISTS \"{$keywordsTable}\" (
                 \"tag\" VARCHAR(191) NOT NULL,
                 \"keyword\" VARCHAR(191) NOT NULL,
@@ -253,11 +245,10 @@ class PostgreSqlDialect implements SqlDialect
         ];
     }
 
-    public function searchIndexDropDdl(string $table, string $queueTable, string $keywordsTable): array
+    public function searchIndexDropDdl(string $table, string $keywordsTable): array
     {
         return [
             "DROP TABLE IF EXISTS \"{$table}\"",
-            "DROP TABLE IF EXISTS \"{$queueTable}\"",
             "DROP TABLE IF EXISTS \"{$keywordsTable}\"",
         ];
     }

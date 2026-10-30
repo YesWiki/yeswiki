@@ -4,6 +4,8 @@ namespace YesWiki\Test\Core;
 
 use PHPUnit\Framework\Attributes\After;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Messenger\MessageBusInterface;
+use Symfony\Component\Messenger\Stamp\ReceivedStamp;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Core\YesWikiLoader;
 use YesWiki\Core\YesWikiRuntime;
@@ -15,6 +17,9 @@ use YesWiki\Kernel\Database\SqlParameters;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\Journal;
 use YesWiki\Kernel\Service\JournalSchema;
+use YesWiki\Kernel\Service\Queue\QueueSchema;
+use YesWiki\Kernel\Service\Queue\QueueTransport;
+use YesWiki\Search\Message\ReindexContent;
 use YesWiki\Search\Service\SearchIndexer;
 
 class YesWikiTestCase extends TestCase
@@ -291,6 +296,36 @@ class YesWikiTestCase extends TestCase
     protected static function restoreBotGuard(YesWikiRuntime $wiki): void
     {
         $wiki->services->get(BotGuard::class)->useForTests();
+    }
+
+    /**
+     * Runs the ReindexContent messages waiting in the queue, and only those, the way the consumer does: what a test that reads the index after a save needs first.
+     *
+     * @return int how many were run
+     */
+    protected static function reindexWaitingContents(YesWikiRuntime $wiki): int
+    {
+        $db = $wiki->services->get(DbService::class);
+        $transport = $wiki->services->get(QueueTransport::class);
+        $bus = $wiki->services->get(MessageBusInterface::class);
+        $ids = $db->loadAll(
+            "SELECT id FROM {$wiki->services->get(QueueSchema::class)->table()}"
+            . ' WHERE queue_name = ? AND message_type = ? AND delivered_at IS NULL ORDER BY id',
+            [QueueTransport::DEFAULT_QUEUE, ReindexContent::class]
+        );
+
+        $run = 0;
+        foreach ($ids as $row) {
+            $envelope = $transport->getById((int)$row['id']);
+            if ($envelope === null) {
+                continue;
+            }
+            $bus->dispatch($envelope->with(new ReceivedStamp(QueueTransport::DEFAULT_QUEUE)));
+            $transport->ack($envelope);
+            $run++;
+        }
+
+        return $run;
     }
 
     protected static function requireUser(?User $user): User

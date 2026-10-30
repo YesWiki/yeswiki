@@ -228,7 +228,7 @@ class MySqlDialect implements SqlDialect
     }
 
     /** InnoDB FULLTEXT. */
-    public function searchIndexDdl(string $table, string $queueTable, string $keywordsTable): array
+    public function searchIndexDdl(string $table, string $keywordsTable): array
     {
         return [
             "CREATE TABLE IF NOT EXISTS `{$table}` (
@@ -252,15 +252,6 @@ class MySqlDialect implements SqlDialect
                 KEY `idx_form_id` (`form_id`),
                 FULLTEXT KEY `ft_text` (`title`, `text`)
             ) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci ENGINE=InnoDB",
-            "CREATE TABLE IF NOT EXISTS `{$queueTable}` (
-                `tag` VARCHAR(191) NOT NULL,
-                `queued_at` DATETIME NOT NULL,
-                `claimed_at` DATETIME NULL DEFAULT NULL,
-                `claimed_by` VARCHAR(64) NULL DEFAULT NULL,
-                PRIMARY KEY (`tag`),
-                KEY `idx_claimed_by` (`claimed_by`)
-            ) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci ENGINE=InnoDB",
-
             "CREATE TABLE IF NOT EXISTS `{$keywordsTable}` (
                 `tag` VARCHAR(191) NOT NULL,
                 `keyword` VARCHAR(191) NOT NULL,
@@ -270,11 +261,10 @@ class MySqlDialect implements SqlDialect
         ];
     }
 
-    public function searchIndexDropDdl(string $table, string $queueTable, string $keywordsTable): array
+    public function searchIndexDropDdl(string $table, string $keywordsTable): array
     {
         return [
             "DROP TABLE IF EXISTS `{$table}`",
-            "DROP TABLE IF EXISTS `{$queueTable}`",
             "DROP TABLE IF EXISTS `{$keywordsTable}`",
         ];
     }

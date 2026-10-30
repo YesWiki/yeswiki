@@ -4,6 +4,7 @@ namespace YesWiki\Admin\Service;
 
 use Symfony\Component\DependencyInjection\Attribute\Exclude;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
+use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\PasswordHasher\Hasher\PasswordHasherFactory;
 use YesWiki\Core\YesWikiLoader;
 use YesWiki\Kernel\Database\DumpRewriter;
@@ -12,8 +13,10 @@ use YesWiki\Kernel\Service\ConfigurationService;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\EnvironmentConfiguration;
 use YesWiki\Kernel\Service\ProgramVersion;
+use YesWiki\Kernel\Service\Queue\QueueSchema;
+use YesWiki\Kernel\Service\Queue\QueueTransport;
 use YesWiki\Render\Service\LayoutService;
-use YesWiki\Search\Service\SearchIndexSchema;
+use YesWiki\Search\Message\ReindexContent;
 
 /** Installing a wiki, with no HTTP in it. */
 #[Exclude]
@@ -528,7 +531,11 @@ class InstallationService
         $this->pass(_t('CREATION_OF_QUEUE'));
     }
 
-    /** Create the search index and queue the seeded content for it (ticket 18 / ADR-0015). */
+    /**
+     * Create the search index and send a ReindexContent per seeded Content (ticket 18 / ADR-0015), after the queue exists.
+     *
+     * Straight to the transport: the installer has no container, hence no bus.
+     */
     private function installSearchIndex(): void
     {
         $db = $this->dbLink;
@@ -536,15 +543,14 @@ class InstallationService
             throw new \Exception('no database connection');
         }
 
-        $dialect = SqlDialectFactory::forDriver((string)$db->getAttribute(\PDO::ATTR_DRIVER_NAME));
-        $prefix = $this->config['table_prefix'];
-        $queue = $prefix . SearchIndexSchema::QUEUE_TABLE;
-        SchemaCreator::createSearchIndex($db, $prefix);
+        SchemaCreator::createSearchIndex($db, $this->config['table_prefix']);
 
-        $db->exec(
-            "INSERT INTO {$queue} (tag, queued_at) SELECT DISTINCT tag, {$dialect->now()}"
-            . " FROM {$prefix}pages WHERE latest = 'Y'"
-        );
+        $wiki = new DbService(new ParameterBag($this->config + ['debug' => false]));
+        $transport = new QueueTransport($wiki, new QueueSchema($wiki));
+        foreach ($wiki->loadAll("SELECT DISTINCT tag FROM {$wiki->prefixTable('pages')} WHERE latest = 'Y'") as $row) {
+            $message = new ReindexContent((string)$row['tag']);
+            $transport->send(new Envelope($message, [$message->uniqueStamp()]));
+        }
 
         $this->pass(_t('CREATION_OF_SEARCH_INDEX'));
     }

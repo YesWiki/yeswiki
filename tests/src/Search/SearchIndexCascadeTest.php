@@ -5,6 +5,9 @@ namespace YesWiki\Test\Search;
 use YesWiki\Content\Service\EntryManager;
 use YesWiki\Content\Service\FormManager;
 use YesWiki\Content\Service\PageManager;
+use YesWiki\Kernel\Service\Queue\QueueSchema;
+use YesWiki\Kernel\Service\Queue\QueueTransport;
+use YesWiki\Search\Message\ReindexContent;
 use YesWiki\Search\Service\SearchIndexer;
 use YesWiki\Search\Service\SearchIndexQuery;
 use YesWiki\Search\Service\SearchIndexSchema;
@@ -102,40 +105,10 @@ class SearchIndexCascadeTest extends YesWikiTestCase
         return [$this->formId, (string)$entry['tag']];
     }
 
-    /**
-     * Empty the queue, however much of it belongs to something else.
-     *
-     * `drain($n)` takes at most $n Contents in queued order, and this suite shares its queue with
-     * every other spec that saves anything -- so a single `drain(1000)` can stop short of the row
-     * this test just added, which is the newest and therefore the last (ticket 54).
-     */
+    /** Run every ReindexContent waiting, however many of them belong to something else. */
     private function drainEverything(): void
     {
-        while ($this->indexer()->drain(1000) > 0) {
-        }
-    }
-
-    /**
-     * Whether draining takes this tag off the queue, waiting for whoever else is draining.
-     *
-     * Saving a form spawns `search:reindex --drain` in a process of its own
-     * (`SearchIndexSubscriber::onFormChanged`), and this test saves a form. Claiming means the two
-     * drainers never take the same rows (ticket 54); it does not mean this one can see the queue at
-     * an instant of its own choosing -- a row the other process is holding is neither drainable
-     * here nor gone yet. So the question is whether the row leaves, not whether it has left by the
-     * time this line runs.
-     */
-    private function leavesTheQueue(string $tag): bool
-    {
-        for ($attempt = 0; $attempt < 50; $attempt++) {
-            $this->drainEverything();
-            if (!in_array($tag, $this->queuedTags(), true)) {
-                return true;
-            }
-            usleep(100_000);
-        }
-
-        return false;
+        self::reindexWaitingContents($this->getWiki());
     }
 
     private function indexer(): SearchIndexer
@@ -156,7 +129,7 @@ class SearchIndexCascadeTest extends YesWikiTestCase
     }
 
     /**
-     * The cascade itself: saving the form must leave its entries queued, whatever happened to the spawn.
+     * The cascade itself: saving the form must leave its entries queued, whatever became of the drain message.
      */
     public function testSavingAFormQueuesItsEntries(): void
     {
@@ -175,7 +148,7 @@ class SearchIndexCascadeTest extends YesWikiTestCase
         $this->assertContains(
             $entryTag,
             $this->queuedTags(),
-            'form.updated must queue the form\'s entries -- the queue, not the spawn, is what carries the work'
+            'form.updated must queue the form\'s entries -- the queue is what carries the work'
         );
     }
 
@@ -191,77 +164,27 @@ class SearchIndexCascadeTest extends YesWikiTestCase
     }
 
     /**
-     * Draining reindexes and takes what it did off the queue.
+     * Running its message reindexes the Content and takes it off the queue.
      *
      * Asserted on this test's own tag rather than on `pending()`: that counts the whole queue, and
-     * the suite shares its database with whatever else is running -- another spec saving a page, a
-     * browser tab on the dev wiki, the shutdown sweep deleting fixtures. A test cannot own a global
+     * the suite shares its database with whatever else is running. A test cannot own a global
      * count, and asserting one is what made this fail once in six runs (ticket 54).
      */
-    public function testDrainingTakesWhatItIndexedOffTheQueue(): void
+    public function testRunningTheMessageTakesTheContentOffTheQueue(): void
     {
         [, $entryTag] = $this->makeFormWithAnEntry('livreche');
         $this->indexer()->enqueue([$entryTag]);
 
         $this->assertContains($entryTag, $this->queuedTags());
 
-        $this->assertTrue($this->leavesTheQueue($entryTag), 'draining left this test\'s Content queued');
+        $this->drainEverything();
+
+        $this->assertNotContains($entryTag, $this->queuedTags());
+        $found = $this->getWiki()->services->get(SearchIndexQuery::class)->search('livreche', null, 10);
+        $this->assertContains($entryTag, array_column($found['results'], 'tag'));
     }
 
-    /** Two drains never take the same tag: the first claims its chunk, the second gets the next one. */
-    public function testTwoDrainsNeverClaimTheSameTag(): void
-    {
-        $tags = [];
-        foreach (['livreche', 'ansérine', 'chénopode'] as $word) {
-            [, $tags[]] = $this->makeFormWithAnEntry($word);
-        }
-        $this->indexer()->enqueue($tags);
-
-        $claimed = [];
-        try {
-            $claimed = $first = $this->claim(2);
-            $second = $this->claim(2);
-            $claimed = [...$first, ...$second];
-
-            $this->assertNotEmpty($first);
-            $this->assertSame([], array_intersect($first, $second), 'a claimed row was handed out twice');
-        } finally {
-            $this->release($claimed);
-        }
-    }
-
-    /**
-     * @return list<string> what a drain of this size would take
-     */
-    private function claim(int $chunkSize): array
-    {
-        $claim = new \ReflectionMethod($this->indexer(), 'claim');
-        $claim->setAccessible(true);
-
-        return $claim->invoke($this->indexer(), $chunkSize, bin2hex(random_bytes(8)));
-    }
-
-    /**
-     * Hand the rows back: a claim taken and not drained is honoured until it expires, which would
-     * leave these tags unindexable for an hour of everybody else's runs.
-     *
-     * @param list<string> $tags
-     */
-    private function release(array $tags): void
-    {
-        if ($tags === []) {
-            return;
-        }
-        $wiki = $this->getWiki();
-        $queue = $wiki->services->get(SearchIndexSchema::class)->queueTable();
-        $wiki->services->get(\YesWiki\Kernel\Service\DbService::class)->query(
-            "UPDATE {$queue} SET claimed_at = NULL, claimed_by = NULL WHERE tag IN ("
-            . implode(', ', array_fill(0, count($tags), '?')) . ')',
-            $tags
-        );
-    }
-
-    /** Queueing the same Content twice leaves one row, not two. */
+    /** Queueing the same Content twice leaves one message, not two. */
     public function testQueueingIsIdempotent(): void
     {
         [, $entryTag] = $this->makeFormWithAnEntry('cerfeuil');
@@ -278,16 +201,23 @@ class SearchIndexCascadeTest extends YesWikiTestCase
     }
 
     /**
+     * The tags of the ReindexContent waiting in the queue, read off their dedup key.
+     *
      * @return list<string>
      */
     private function queuedTags(): array
     {
         $wiki = $this->getWiki();
-        $schema = $wiki->services->get(SearchIndexSchema::class);
-        $rows = $wiki->services->get(\YesWiki\Kernel\Service\DbService::class)
-            ->loadAll("SELECT tag FROM {$schema->queueTable()}");
+        $rows = $wiki->services->get(\YesWiki\Kernel\Service\DbService::class)->loadAll(
+            "SELECT dedup_key FROM {$wiki->services->get(QueueSchema::class)->table()}"
+            . ' WHERE queue_name = ? AND message_type = ? AND delivered_at IS NULL',
+            [QueueTransport::DEFAULT_QUEUE, ReindexContent::class]
+        );
 
-        return array_map(static fn (array $row): string => (string)$row['tag'], $rows);
+        return array_map(
+            static fn (array $row): string => substr((string)$row['dedup_key'], strlen(ReindexContent::UNIQUE_KEY_PREFIX)),
+            $rows
+        );
     }
 
     /**
@@ -315,9 +245,13 @@ class SearchIndexCascadeTest extends YesWikiTestCase
         }
 
         $dbService->query(
-            'DELETE FROM ' . $wiki->services->get(SearchIndexSchema::class)->queueTable()
-            . ' WHERE tag LIKE ? OR tag LIKE ?',
-            [self::tagPrefixOf(self::FORM_LABEL) . '%', self::tagPrefixOf(self::ENTRY_TITLE) . '%']
+            'DELETE FROM ' . $wiki->services->get(QueueSchema::class)->table()
+            . ' WHERE message_type = ? AND delivered_at IS NULL AND (dedup_key LIKE ? OR dedup_key LIKE ?)',
+            [
+                ReindexContent::class,
+                ReindexContent::UNIQUE_KEY_PREFIX . self::tagPrefixOf(self::FORM_LABEL) . '%',
+                ReindexContent::UNIQUE_KEY_PREFIX . self::tagPrefixOf(self::ENTRY_TITLE) . '%',
+            ]
         );
     }
 

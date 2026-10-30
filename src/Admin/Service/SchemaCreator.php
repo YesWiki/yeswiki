@@ -52,7 +52,7 @@ class SchemaCreator
     public static function createSearchIndex(\PDO $db, string $prefix): void
     {
         $dialect = SqlDialectFactory::forDriver(self::driver($db));
-        foreach ($dialect->searchIndexDdl($prefix . SearchIndexSchema::TABLE, $prefix . SearchIndexSchema::QUEUE_TABLE, $prefix . SearchIndexSchema::KEYWORDS_TABLE) as $statement) {
+        foreach ($dialect->searchIndexDdl($prefix . SearchIndexSchema::TABLE, $prefix . SearchIndexSchema::KEYWORDS_TABLE) as $statement) {
             $db->exec($statement);
         }
     }
