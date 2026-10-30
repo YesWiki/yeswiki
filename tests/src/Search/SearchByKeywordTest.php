@@ -48,7 +48,7 @@ class SearchByKeywordTest extends YesWikiTestCase
 
         $indexer = $wiki->services->get(SearchIndexer::class);
         $indexer->enqueue($this->created);
-        $indexer->drain(50);
+        self::reindexWaitingContents($wiki);
     }
 
     protected function tearDown(): void

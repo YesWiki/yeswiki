@@ -39,7 +39,7 @@ class AdmintagActionTest extends YesWikiTestCase
             PageBody::CONTENT => 'tagged content',
             PageBody::KEYWORDS => [self::TAG_VALUE],
         ], '', true);
-        $this->wiki->services->get(SearchIndexer::class)->drain(1000);
+        self::reindexWaitingContents($this->wiki);
 
         if (empty($this->wiki->services->get(AuthenticationService::class)->connectFirstAdmin())) {
             $this->markTestSkipped('no admin account in the test wiki');
@@ -134,7 +134,7 @@ class AdmintagActionTest extends YesWikiTestCase
             PageBody::CONTENT => 'also tagged',
             PageBody::KEYWORDS => [self::TAG_VALUE],
         ], '', true);
-        $this->wiki->services->get(SearchIndexer::class)->drain(1000);
+        self::reindexWaitingContents($this->wiki);
 
         try {
             $tagsManager = $this->wiki->services->get(TagsManager::class);

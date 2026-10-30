@@ -5,6 +5,10 @@
     {% else %}
         {{ _t('SEARCH_INDEX_BUILDING', {pending: pending}) }}
     {% endif %}
+    {% if jobsUrl %}
+        <br />
+        <a href="{{ jobsUrl }}">{{ _t('SEARCH_INDEX_JOBS_LINK') }}</a>
+    {% endif %}
     <br />
-    <small><code>./yeswicli search:reindex --drain</code></small>
+    <small><code>./yeswicli messenger:drain</code></small>
 </div>

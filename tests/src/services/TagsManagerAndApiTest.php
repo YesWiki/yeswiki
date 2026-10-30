@@ -34,7 +34,7 @@ class TagsManagerAndApiTest extends YesWikiTestCase
             PageBody::CONTENT => 'page b',
             PageBody::KEYWORDS => ['regressionbanana'],
         ], '', true);
-        $wiki->services->get(SearchIndexer::class)->drain(1000);
+        self::reindexWaitingContents($wiki);
     }
 
     public static function tearDownAfterClass(): void

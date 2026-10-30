@@ -1,0 +1,135 @@
+{# The part of /admin/jobs a pass changes: the mode, the alerts, the tiles. Swapped whole by every action. #}
+{% set mode = status.mode %}
+{% set docUrl = url({ tag: 'doc' }) ~ '#/docs/fr/async' %}
+{% set statusSwap = 'hx-target="#yw-jobs-status" hx-swap="outerHTML" hx-disabled-elt="this"' %}
+
+<div class="yw-jobs__status" id="yw-jobs-status">
+  <section class="yw-jobs__mode" aria-label="{{ _t('ADMIN_JOBS_MODE') }}">
+    <div>
+      <p class="yw-jobs__line">
+        <strong>{{ _t('ADMIN_JOBS_MODE') }}</strong> {{ mode.label }}
+        <small class="yw-text-muted">({{ mode.origin }})</small>
+      </p>
+      {% if mode.unknownValue is not null %}
+        <p class="yw-jobs__line yw-text-danger">{{ _t('ADMIN_JOBS_UNKNOWN_VALUE', { value: mode.unknownValue }) }}</p>
+      {% endif %}
+      <p class="yw-jobs__line yw-text-muted"><small>
+        {% if mode.budget is not null %}
+          {{ _t('ADMIN_JOBS_BUDGET', { seconds: mode.budget }) }}
+          ({{ mode.cli ? _t('ADMIN_JOBS_LIMITS_CLI') : mode.limits }})
+        {% else %}
+          {{ _t('ADMIN_JOBS_BUDGET_UNLIMITED') }}
+        {% endif %}
+        {% if mode.visitorsWait %}· <span class="yw-text-warning">{{ _t('ADMIN_JOBS_VISITORS_WAIT') }}</span>{% endif %}
+      </small></p>
+      {% if mode.api %}
+        <p class="yw-jobs__line">
+          <small>{{ mode.hasSecret ? _t('ADMIN_JOBS_SECRET_SET') : _t('ADMIN_JOBS_SECRET_MISSING') }}</small>
+          <button type="button" class="yw-btn yw-btn--sm"
+                  hx-post="{{ url({ tag: 'api/admin/jobs/secret' }) }}"
+                  hx-target="#yw-jobs-secret" hx-swap="innerHTML" hx-disabled-elt="this"
+                  {% if mode.hasSecret %}hx-confirm="{{ _t('ADMIN_JOBS_SECRET_REPLACE_CONFIRM') }}"{% endif %}>
+            {{ mode.hasSecret ? _t('ADMIN_JOBS_SECRET_REPLACE') : _t('ADMIN_JOBS_SECRET_GENERATE') }}
+          </button>
+        </p>
+        <div id="yw-jobs-secret" aria-live="polite"></div>
+      {% endif %}
+    </div>
+    <div class="yw-jobs__pass">
+      <p class="yw-jobs__line">
+        {{ mode.lastSeenMode is not null ? _t('ADMIN_JOBS_LAST_SEEN', { mode: mode.lastSeenMode }) : _t('ADMIN_JOBS_LAST_PASS') }}
+        <strong class="{{ mode.late ? 'yw-text-danger' : '' }}">
+          {% if mode.lastPass is null %}
+            {{ _t('ADMIN_JOBS_NEVER') }}
+          {% elseif mode.running %}
+            {{ _t('ADMIN_JOBS_RUNNING_SEEN', { ago: mode.lastPass }) }}
+          {% else %}
+            {{ mode.lastPass }}
+          {% endif %}
+        </strong>
+      </p>
+      <p class="yw-jobs__line yw-text-muted"><small>{{ _t('ADMIN_JOBS_PACE', { pace: mode.pace }) }}</small></p>
+    </div>
+  </section>
+
+  {% if notice is defined and notice %}
+    <p class="yw-jobs__notice yw-jobs__notice--{{ noticeLevel|default('success') }}" role="status">{{ notice }}</p>
+  {% endif %}
+
+  {% if status.alerts is empty %}
+    <p class="yw-jobs__well">{{ icon('circle-check') }} {{ _t('ADMIN_JOBS_ALL_WELL') }}</p>
+  {% else %}
+    <ul class="yw-jobs__alerts">
+      {% for alert in status.alerts %}
+        <li class="yw-jobs__alert yw-jobs__alert--{{ alert.broken ? 'broken' : 'degraded' }}" data-check="{{ alert.id }}">
+          <div class="yw-jobs__alert-text">
+            {# The detail can quote a raw error text: autoescaped, never |raw. #}
+            <p><strong class="{{ alert.broken ? 'yw-text-danger' : 'yw-text-warning' }}">{{ alert.label }}.</strong> {{ alert.detail }}</p>
+            {% if alert.says %}<p class="yw-text-muted"><small>{{ alert.says }}</small></p>{% endif %}
+          </div>
+          <div class="yw-jobs__actions">
+            {% for action in alert.actions %}
+              {% if action == 'consume' %}
+                <button type="button" class="yw-btn yw-btn--sm yw-btn--primary"
+                        hx-post="{{ url({ tag: 'api/admin/jobs/consume' }) }}" {{ statusSwap|raw }}>{{ _t('ADMIN_JOBS_CONSUME') }}</button>
+              {% elseif action starts with 'retry-all' %}
+                {# `retry-all` is the failures alert's, `retry-all:<Type>` a module's for one type. #}
+                {% set failed = action == 'retry-all' ? 'all' : 'of/' ~ action|slice(10) %}
+                <button type="button" class="yw-btn yw-btn--sm yw-btn--primary"
+                        hx-post="{{ url({ tag: 'api/admin/jobs/failed/' ~ failed ~ '/retry' }) }}" {{ statusSwap|raw }}>{{ _t('ADMIN_JOBS_RETRY_ALL') }}</button>
+              {% elseif action starts with 'ignore-all' %}
+                {% set failed = action == 'ignore-all' ? 'all' : 'of/' ~ action|slice(11) %}
+                <button type="button" class="yw-btn yw-btn--sm"
+                        hx-post="{{ url({ tag: 'api/admin/jobs/failed/' ~ failed ~ '/ignore' }) }}" {{ statusSwap|raw }}
+                        hx-confirm="{{ _t('ADMIN_JOBS_IGNORE_CONFIRM') }}">{{ _t('ADMIN_JOBS_IGNORE_ALL') }}</button>
+              {% elseif action starts with 'view-' %}
+                {% set tabName = action|slice(5) %}
+                <button type="button" class="yw-btn yw-btn--sm"
+                        hx-get="{{ url({ tag: 'api/admin/jobs/tab/' ~ tabName }) }}"
+                        hx-target="#yw-jobs-tabs" hx-swap="outerHTML show:#yw-jobs-tabs:top">{{ _t('ADMIN_JOBS_VIEW_' ~ tabName|upper) }}</button>
+              {% elseif action == 'secret' %}
+                <button type="button" class="yw-btn yw-btn--sm yw-btn--primary"
+                        hx-post="{{ url({ tag: 'api/admin/jobs/secret' }) }}"
+                        hx-target="#yw-jobs-secret" hx-swap="innerHTML" hx-disabled-elt="this">{{ _t('ADMIN_JOBS_SECRET_GENERATE') }}</button>
+              {% elseif action == 'docs' %}
+                <a class="yw-btn yw-btn--sm" href="{{ docUrl }}">{{ _t('ADMIN_JOBS_HOW') }}</a>
+              {% endif %}
+            {% endfor %}
+          </div>
+        </li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+
+  {% if status.tiles is not null %}
+    {% set tiles = status.tiles %}
+    <div class="yw-jobs__tiles">
+      <div class="yw-jobs__tile">
+        <span class="yw-jobs__number{{ tiles.pendingLevel ? ' yw-text-' ~ tiles.pendingLevel : '' }}">{{ tiles.pending }}</span>
+        <span class="yw-jobs__caption">
+          {{ _t('ADMIN_JOBS_TILE_PENDING') }}{% if tiles.oldest %} · {{ _t('ADMIN_JOBS_TILE_OLDEST', { age: tiles.oldest }) }}{% endif %}
+        </span>
+      </div>
+      <div class="yw-jobs__tile">
+        <span class="yw-jobs__number">{{ tiles.running }}</span>
+        <span class="yw-jobs__caption">{{ _t('ADMIN_JOBS_TILE_RUNNING') }}</span>
+      </div>
+      <div class="yw-jobs__tile">
+        <span class="yw-jobs__number{{ tiles.failed > 0 ? ' yw-text-danger' : '' }}">{{ tiles.failed }}</span>
+        <span class="yw-jobs__caption">{{ _t('ADMIN_JOBS_TILE_FAILED') }}</span>
+      </div>
+      <div class="yw-jobs__tile">
+        <span class="yw-jobs__number">{{ tiles.handled }}</span>
+        <span class="yw-jobs__caption">
+          {{ _t('ADMIN_JOBS_TILE_HANDLED') }}{% if tiles.rate is not null %} · {{ _t('ADMIN_JOBS_TILE_RATE', { rate: tiles.rate }) }}{% endif %}
+        </span>
+      </div>
+      <div class="yw-jobs__tile">
+        <span class="yw-jobs__number">{{ tiles.duration ?? '–' }}</span>
+        <span class="yw-jobs__caption">{{ _t('ADMIN_JOBS_TILE_DURATION') }}</span>
+      </div>
+    </div>
+  {% elseif status.unreadable %}
+    <p class="yw-jobs__notice yw-jobs__notice--danger">{{ _t('ADMIN_JOBS_UNREADABLE', { error: status.unreadable }) }}</p>
+  {% endif %}
+</div>

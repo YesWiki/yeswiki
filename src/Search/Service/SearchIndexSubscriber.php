@@ -4,21 +4,17 @@ namespace YesWiki\Search\Service;
 
 use Psr\Container\ContainerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
-use YesWiki\Core\YesWikiKernel;
 use YesWiki\Kernel\Entity\Event;
-use YesWiki\Kernel\Service\ConsoleService;
 
-/** Keeps the search index in step with the wiki (ticket 18 / ADR-0015). */
+/**
+ * Keeps the search index in step with the wiki (ticket 18 / ADR-0015).
+ *
+ * It only queues: SearchIndexer sends one ReindexContent per Content, and the queue's
+ * consumer runs them, so a save neither spawns a process nor registers work for the end of the request.
+ */
 class SearchIndexSubscriber implements EventSubscriberInterface
 {
-    /** Contents reindexed at the end of a request before the rest is left to the queue. */
-    private const FLUSH_LIMIT = 200;
-
-    /** Seconds the end-of-request flush may take before it leaves the rest queued. */
-    private const FLUSH_BUDGET_SEC = 5;
-
     private ContainerInterface $container;
-    private bool $flushRegistered = false;
 
     /** Ahead of the other listeners, since one throwing stops the rest and the index is local and cheap. */
     private const PRIORITY = 100;
@@ -53,7 +49,6 @@ class SearchIndexSubscriber implements EventSubscriberInterface
         }
 
         $this->indexer()->enqueue([$tag]);
-        $this->flushWhenTheRequestIsOver();
     }
 
     /** Deleting is safe to do inline: it is one `DELETE ... */
@@ -65,7 +60,7 @@ class SearchIndexSubscriber implements EventSubscriberInterface
         }
     }
 
-    /** Queue the form's entries, then try to drain them out of band. */
+    /** Queue the form's entries. */
     public function onFormChanged(Event $event): void
     {
         $formId = (string)($event->getData()['id'] ?? '');
@@ -73,41 +68,7 @@ class SearchIndexSubscriber implements EventSubscriberInterface
             return;
         }
 
-        if ($this->indexer()->enqueueForm($formId) > 0) {
-            $this->spawnReindex();
-        }
-    }
-
-    /**
-     * Drain what this request queued, once it is finished writing.
-     *
-     * A request only. A command has no reason to leave its work to a shutdown function -- it either
-     * drains the queue itself or leaves it to `search:reindex` -- and `migrate` ends by clearing
-     * `cache/container`, so a flush running after that would ask a container whose files have just
-     * been deleted for a service (ticket 54's hazard, in the CLI).
-     */
-    private function flushWhenTheRequestIsOver(): void
-    {
-        if ($this->flushRegistered || YesWikiKernel::isCli()) {
-            return;
-        }
-        $this->flushRegistered = true;
-
-        $container = $this->container;
-        register_shutdown_function(static function () use ($container): void {
-            try {
-                $container->get(SearchIndexer::class)->drain(self::FLUSH_LIMIT, self::FLUSH_BUDGET_SEC);
-            } catch (\Throwable $failed) {
-            }
-        });
-    }
-
-    private function spawnReindex(): void
-    {
-        try {
-            $this->container->get(ConsoleService::class)->startConsoleAsync('search:reindex', ['--drain']);
-        } catch (\Throwable $unavailable) {
-        }
+        $this->indexer()->enqueueForm($formId);
     }
 
     private function tagOf(Event $event): string

@@ -216,7 +216,7 @@ class SearchIndexTest extends YesWikiTestCase
             'page.created/page.updated must reach SearchIndexSubscriber'
         );
 
-        $this->getWiki()->services->get(SearchIndexer::class)->drain(1000);
+        self::reindexWaitingContents($this->getWiki());
 
         $this->assertSame(1, $this->search('panais')['total']);
     }

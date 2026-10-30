@@ -135,6 +135,15 @@ class PostgreSqlDialect implements SqlDialect
         return true;
     }
 
+    /** An insert with an explicit id leaves the sequence behind it where it was. */
+    public function realignIdentity(string $table, string $column): array
+    {
+        $quotedTable = $this->quoteIdentifier($table);
+        $quotedColumn = $this->quoteIdentifier($column);
+
+        return ["SELECT setval(pg_get_serial_sequence('{$quotedTable}', '{$column}'), (SELECT MAX({$quotedColumn}) FROM {$quotedTable}))"];
+    }
+
     public function journalDdl(string $table): array
     {
         $json = $this->jsonColumnType();
@@ -157,11 +166,49 @@ class PostgreSqlDialect implements SqlDialect
             "CREATE INDEX IF NOT EXISTS \"{$table}_idx_at\" ON \"{$table}\" (\"at\")",
             "CREATE INDEX IF NOT EXISTS \"{$table}_idx_channel_at\" ON \"{$table}\" (\"channel\", \"at\")",
             "CREATE INDEX IF NOT EXISTS \"{$table}_idx_actor_at\" ON \"{$table}\" (\"actor\", \"at\")",
+            "CREATE INDEX IF NOT EXISTS \"{$table}_idx_channel_target_at\" ON \"{$table}\" (\"channel\", \"target\", \"at\")",
             "CREATE UNIQUE INDEX IF NOT EXISTS \"{$table}_uniq_fingerprint_day\" ON \"{$table}\" (\"fingerprint\", \"day\")",
         ];
     }
 
+    public function journalQueueIndexDdl(string $table): array
+    {
+        return ["CREATE INDEX IF NOT EXISTS \"{$table}_idx_channel_target_at\" ON \"{$table}\" (\"channel\", \"target\", \"at\")"];
+    }
+
     public function journalDropDdl(string $table): array
+    {
+        return ["DROP TABLE IF EXISTS \"{$table}\""];
+    }
+
+    public function queueDdl(string $table): array
+    {
+        return [
+            "CREATE TABLE IF NOT EXISTS \"{$table}\" (
+                \"id\" SERIAL PRIMARY KEY,
+                \"queue_name\" VARCHAR(32) NOT NULL,
+                \"task_id\" VARCHAR(64) DEFAULT NULL,
+                \"message_type\" VARCHAR(191) NOT NULL,
+                \"body\" TEXT NOT NULL,
+                \"headers\" TEXT NOT NULL,
+                \"dedup_key\" VARCHAR(191) DEFAULT NULL,
+                \"created_at\" TIMESTAMP NOT NULL,
+                \"available_at\" TIMESTAMP NOT NULL,
+                \"delivered_at\" TIMESTAMP DEFAULT NULL,
+                \"delivered_by\" VARCHAR(64) DEFAULT NULL,
+                \"delivered_mode\" VARCHAR(16) DEFAULT NULL,
+                \"delivered_limit\" INTEGER DEFAULT NULL,
+                \"attempts\" INTEGER NOT NULL DEFAULT 0,
+                \"last_error\" TEXT DEFAULT NULL,
+                \"killed_in\" VARCHAR(16) DEFAULT NULL
+            )",
+            "CREATE INDEX IF NOT EXISTS \"{$table}_idx_queue_delivered_available\" ON \"{$table}\" (\"queue_name\", \"delivered_at\", \"available_at\")",
+            "CREATE INDEX IF NOT EXISTS \"{$table}_idx_dedup_key\" ON \"{$table}\" (\"dedup_key\")",
+            "CREATE UNIQUE INDEX IF NOT EXISTS \"{$table}_uniq_task_id\" ON \"{$table}\" (\"task_id\")",
+        ];
+    }
+
+    public function queueDropDdl(string $table): array
     {
         return ["DROP TABLE IF EXISTS \"{$table}\""];
     }
@@ -172,7 +219,7 @@ class PostgreSqlDialect implements SqlDialect
     }
 
     /** A generated `tsvector` with a GIN index over it. */
-    public function searchIndexDdl(string $table, string $queueTable, string $keywordsTable): array
+    public function searchIndexDdl(string $table, string $keywordsTable): array
     {
         return [
             "CREATE TABLE IF NOT EXISTS \"{$table}\" (
@@ -198,14 +245,6 @@ class PostgreSqlDialect implements SqlDialect
             "CREATE INDEX IF NOT EXISTS \"{$table}_idx_content_type\" ON \"{$table}\" (\"content_type\")",
             "CREATE INDEX IF NOT EXISTS \"{$table}_idx_form_id\" ON \"{$table}\" (\"form_id\")",
             "CREATE INDEX IF NOT EXISTS \"{$table}_ft_text\" ON \"{$table}\" USING GIN (\"search_vector\")",
-            "CREATE TABLE IF NOT EXISTS \"{$queueTable}\" (
-                \"tag\" VARCHAR(191) PRIMARY KEY,
-                \"queued_at\" TIMESTAMP NOT NULL,
-                \"claimed_at\" TIMESTAMP NULL,
-                \"claimed_by\" VARCHAR(64) NULL
-            )",
-            "CREATE INDEX IF NOT EXISTS \"{$queueTable}_idx_claimed_by\" ON \"{$queueTable}\" (\"claimed_by\")",
-
             "CREATE TABLE IF NOT EXISTS \"{$keywordsTable}\" (
                 \"tag\" VARCHAR(191) NOT NULL,
                 \"keyword\" VARCHAR(191) NOT NULL,
@@ -215,11 +254,10 @@ class PostgreSqlDialect implements SqlDialect
         ];
     }
 
-    public function searchIndexDropDdl(string $table, string $queueTable, string $keywordsTable): array
+    public function searchIndexDropDdl(string $table, string $keywordsTable): array
     {
         return [
             "DROP TABLE IF EXISTS \"{$table}\"",
-            "DROP TABLE IF EXISTS \"{$queueTable}\"",
             "DROP TABLE IF EXISTS \"{$keywordsTable}\"",
         ];
     }

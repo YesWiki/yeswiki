@@ -1,0 +1,47 @@
+{% if rows is empty %}
+  <p class="yw-text-muted">{{ _t('ADMIN_JOBS_EMPTY_CONSUMERS') }}</p>
+{% else %}
+  <div class="yw-jobs__scroll">
+    <table class="yw-table yw-table--striped yw-table--condensed yw-jobs__table">
+      <thead>
+        <tr>
+          <th>{{ _t('ADMIN_JOBS_COL_STARTED') }}</th>
+          <th>{{ _t('ADMIN_JOBS_COL_MODE') }}</th>
+          <th>{{ _t('ADMIN_JOBS_COL_DURATION') }}</th>
+          <th>{{ _t('ADMIN_JOBS_COL_HANDLED') }}</th>
+          <th>{{ _t('ADMIN_JOBS_COL_STOP') }}</th>
+          <th>{{ _t('ADMIN_JOBS_COL_BUDGET') }}</th>
+          <th>{{ _t('ADMIN_JOBS_COL_MEMORY') }}</th>
+          <th>{{ _t('ADMIN_JOBS_COL_PID') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in rows %}
+          <tr>
+            <td title="{{ row.at }} UTC">{{ row.started }}</td>
+            <td>{{ row.mode }}{% if row.fallbackFor %}<br><small class="yw-text-danger">{{ _t('ADMIN_JOBS_PASS_FALLBACK', { mode: row.fallbackFor }) }}</small>{% endif %}</td>
+            <td>
+              {% if row.running %}
+                {{ _t('ADMIN_JOBS_RUNNING_SEEN', { ago: row.lastSeen }) }}
+              {% else %}
+                {{ row.duration ?? '–' }}
+              {% endif %}
+              {% if row.visitorWaited %}<br><small class="yw-text-warning">{{ _t('ADMIN_JOBS_VISITOR_WAITED') }}</small>{% endif %}
+            </td>
+            <td>{{ row.handled }}</td>
+            <td class="{{ row.stopReason in ['error', 'no-budget'] ? 'yw-text-danger' : '' }}">{{ row.stop }}</td>
+            <td>{{ row.budget ?? _t('ADMIN_JOBS_UNLIMITED') }}</td>
+            <td>
+              {% if row.memory is not null %}
+                {{ _t('ADMIN_JOBS_MEGABYTES', { count: row.memory }) }}{% if row.memoryLimit is not null %} / {{ _t('ADMIN_JOBS_MEGABYTES', { count: row.memoryLimit }) }}{% endif %}
+              {% else %}
+                –
+              {% endif %}
+            </td>
+            <td>{{ row.pid }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% endif %}

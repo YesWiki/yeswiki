@@ -260,22 +260,28 @@ class ImporterManager
     }
 
     /**
+     * Imports one source and answers what to tell its admin.
+     *
+     * A failure throws, with the message that used to be the answer (the cause and the time spent) and the cause as its previous exception: it is the queue's to see, and whoever syncs by hand catches it to show the message.
+     *
      * @param array<string, mixed> $sourceOptions
+     *
+     * @throws \RuntimeException when the importer is unknown or the import failed
      */
     public function syncSource(string $source, array $sourceOptions): string
     {
         $startTime = microtime(true);
+        $importer = $this->findImporterClass($sourceOptions['importer'] ?? '', $source);
+        if (!$importer) {
+            throw new \RuntimeException('Importer ' . ($sourceOptions['importer'] ?? '') . ' not found');
+        }
         try {
-            $importer = $this->findImporterClass($sourceOptions['importer'], $source);
-            if (!$importer) {
-                return 'Importer ' . $sourceOptions['importer'] . ' not found';
-            }
             $data = $importer->getData();
             $data = $importer->mapData($data);
             $importer->syncFormModel();
             $importer->syncData($data);
         } catch (\Throwable $th) {
-            return $th->getMessage() . ' ' . _t('IMPORTER_ELAPSED_TIME', ['duration' => $this->formatDuration($startTime)]);
+            throw new \RuntimeException($th->getMessage() . ' ' . _t('IMPORTER_ELAPSED_TIME', ['duration' => $this->formatDuration($startTime)]), 0, $th);
         }
 
         return _t('SOURCE_SUCCESSFULLY_SYNCED', ['source' => $source])

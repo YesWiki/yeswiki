@@ -1,0 +1,28 @@
+{% if rows is empty %}
+  <p class="yw-text-muted">{{ _t('ADMIN_JOBS_EMPTY_TYPES') }}</p>
+{% else %}
+  <div class="yw-jobs__scroll">
+    <table class="yw-table yw-table--striped yw-table--condensed yw-jobs__table">
+      <thead>
+        <tr>
+          <th>{{ _t('ADMIN_JOBS_COL_TYPE') }}</th>
+          <th>{{ _t('ADMIN_JOBS_COL_PENDING') }}</th>
+          <th>{{ _t('ADMIN_JOBS_COL_FAILED') }}</th>
+          <th>{{ _t('ADMIN_JOBS_COL_LAST_SUCCESS') }}</th>
+          <th>{{ _t('ADMIN_JOBS_COL_AVERAGE') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in rows %}
+          <tr>
+            <td title="{{ row.type }}">{{ row.label }}</td>
+            <td>{{ row.pending }}</td>
+            <td{% if row.failed > 0 %} class="yw-text-danger"{% endif %}>{{ row.failed }}</td>
+            <td>{{ row.lastSuccess ?? _t('ADMIN_JOBS_NEVER') }}</td>
+            <td>{{ row.duration ?? '–' }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% endif %}

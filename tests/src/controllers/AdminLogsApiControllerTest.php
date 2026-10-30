@@ -8,6 +8,7 @@ use YesWiki\Kernel\Entity\JournalChannel;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\Journal;
 use YesWiki\Kernel\Service\JournalSchema;
+use YesWiki\Render\Service\TemplateEngine;
 use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';
@@ -144,7 +145,7 @@ class AdminLogsApiControllerTest extends YesWikiTestCase
             'from' => 'yesterday',
         ]);
 
-        $this->assertSame('1 = 1', $where);
+        $this->assertSame('1 = 1 AND ' . $this->db()->quoteIdentifier('channel') . " <> 'queue'", $where, 'only the default exclusion is left');
         $this->assertSame([], $params);
     }
 
@@ -178,5 +179,73 @@ class AdminLogsApiControllerTest extends YesWikiTestCase
         ]);
 
         $this->assertSame('Suppression de la page ->""MichelMelanie""', $presented['message']);
+    }
+
+    /** A queue row reads as a sentence too, and a run that failed shows its cause in the detail: it keeps it as its `message`, where a diagnostic keeps its own. */
+    public function testAQueueRowHasAPhraseAndAFailedRunItsCause(): void
+    {
+        foreach (['queue.run.handled', 'queue.run.retried', 'queue.run.failed', 'queue.run.killed', 'queue.run.ignored', 'queue.pass'] as $action) {
+            $phrase = $this->present(['channel' => 'queue', 'action' => $action])['phrase'];
+            $this->assertNotSame($action, $phrase, "{$action} has a phrase of its own");
+        }
+
+        $failed = $this->present([
+            'channel' => 'queue', 'action' => 'queue.run.failed', 'at' => '2026-07-01 12:00:00',
+            'context' => json_encode(['message_id' => 3, 'message' => 'The remote server did not answer']),
+        ]);
+        $this->assertSame('The remote server did not answer', $failed['message']);
+    }
+
+    public function testQueueRowsAreHiddenUnlessChosen(): void
+    {
+        $this->seed(JournalChannel::Audit->value, 'content.delete', '2026-03-01 10:00:00');
+        $this->seed(JournalChannel::Queue->value, 'queue.run.handled', '2026-03-02 10:00:00');
+
+        $this->assertSame(['content.delete'], $this->actionsMatching([]), 'the default list is not drowned by the queue');
+        $this->assertSame(['queue.run.handled'], $this->actionsMatching(['channel' => 'queue']));
+    }
+
+    public function testQueueRowsShowInTheWikiTimeZone(): void
+    {
+        $zone = date_default_timezone_get();
+        date_default_timezone_set('Europe/Paris');
+        try {
+            $this->seed(JournalChannel::Queue->value, 'queue.noon', '2026-07-01 12:00:00');
+            $this->seed(JournalChannel::Queue->value, 'queue.late', '2026-06-30 23:30:00');
+            $this->seed(JournalChannel::Queue->value, 'queue.before', '2026-06-30 21:30:00');
+            $this->seed(JournalChannel::Queue->value, 'queue.after', '2026-07-01 22:00:00');
+
+            $presented = $this->present([
+                'channel' => 'queue', 'action' => 'queue.noon', 'at' => '2026-07-01 12:00:00', 'last_at' => '2026-07-01 12:30:00',
+            ]);
+            $this->assertSame('2026-07-01 14:00:00', $presented['at']);
+            $this->assertSame('2026-07-01 14:30:00', $presented['last_at']);
+
+            $audit = $this->present(['channel' => 'audit', 'action' => 'acl.change', 'at' => '2026-07-01 12:00:00']);
+            $this->assertSame('2026-07-01 12:00:00', $audit['at'], 'only the queue channel is stored in UTC');
+
+            $this->assertSame(
+                ['queue.noon', 'queue.late'],
+                $this->actionsMatching(['channel' => 'queue', 'from' => '2026-07-01', 'to' => '2026-07-01']),
+                'the day is the wiki\'s, not UTC\'s'
+            );
+        } finally {
+            date_default_timezone_set($zone);
+        }
+    }
+
+    public function testTheTableNamesTheQueueChannelAndNotTheDiagnosticOne(): void
+    {
+        $html = self::getWiki()->services->get(TemplateEngine::class)->render('@core/admin/logs-table.twig', [
+            'entries' => [
+                $this->present(['channel' => 'queue', 'level' => 'warning', 'action' => 'queue.run.retried', 'at' => '2026-07-01 12:00:00']),
+            ],
+            'currentPage' => 1, 'perpage' => 100, 'total' => 1, 'totalPages' => 1, 'sort' => 'at', 'dir' => 'desc',
+        ]);
+
+        $this->assertStringContainsString('yw-logs__row--queue', $html);
+        $this->assertStringContainsString(_t('ADMIN_LOGS_CHANNEL_QUEUE'), $html);
+        $this->assertStringNotContainsString(_t('ADMIN_LOGS_CHANNEL_DIAGNOSTIC'), $html, 'a queue row is not an error');
+        $this->assertStringContainsString('warning', $html, 'its level still tells a retry from a success');
     }
 }

@@ -9,11 +9,19 @@ use YesWiki\Admin\Service\RemoteBackupService;
 use YesWiki\Admin\Service\RemoteWikiArchive;
 use YesWiki\Files\Service\LocalFiles;
 use YesWiki\Files\Service\Storage;
+use YesWiki\Kernel\Service\Queue\QueueBudgetContext;
 use YesWiki\Test\Core\YesWikiTestCase;
+use YesWiki\Test\Kernel\QueueTestKit;
 
 require_once 'tests/YesWikiTestCase.php';
+require_once 'tests/src/Kernel/QueueTestKit.php';
 
-/** The admin screen's fetch: started once, advanced by each poll, and ending among this wiki's backups. */
+/**
+ * The admin screen's fetch against a remote wiki that answers over HTTP: started once, advanced step by step, and ending among this wiki's backups.
+ *
+ * The steps are taken here by calling advance() as the queue's handler does; how the queue chains
+ * them is RemoteBackupQueueTest's. The queue is a throw-away one, so nothing lands in this wiki's.
+ */
 class RemoteBackupServiceTest extends YesWikiTestCase
 {
     private const REMOTE_NAME = '2026-08-20T13-29-28_archive.zip';
@@ -21,6 +29,7 @@ class RemoteBackupServiceTest extends YesWikiTestCase
     private string $zipBytes = '';
     private bool $archiveMade = false;
     private string $stored = '';
+    private ?QueueTestKit $kit = null;
 
     protected function setUp(): void
     {
@@ -43,6 +52,7 @@ class RemoteBackupServiceTest extends YesWikiTestCase
                 $storage->delete("$folder/$name");
             }
         }
+        $this->kit?->dispose();
         parent::tearDown();
     }
 
@@ -68,8 +78,17 @@ class RemoteBackupServiceTest extends YesWikiTestCase
             };
         }));
         $services = $this->getWiki()->services;
+        $this->kit = new QueueTestKit();
 
-        return new RemoteBackupService($services->get(ArchiveService::class), $services->get(Storage::class), $services->get(LocalFiles::class), $remote);
+        return new RemoteBackupService(
+            $services->get(ArchiveService::class),
+            $services->get(Storage::class),
+            $services->get(LocalFiles::class),
+            $remote,
+            $this->kit->bus,
+            new QueueBudgetContext(),
+            $this->kit->statistics
+        );
     }
 
     public function testTheFetchedBackupJoinsThisWikisBackups(): void
@@ -98,7 +117,7 @@ class RemoteBackupServiceTest extends YesWikiTestCase
         $this->stored = $state['filename'];
         $this->assertSame('2026-08-20T13-29-28_remote-org_archive.zip', $this->stored);
         $this->assertSame($this->zipBytes, $storage->read("$folder/{$this->stored}"));
-        $this->assertSame(['step' => RemoteBackupService::STEP_IDLE, 'running' => false], $service->status());
+        $this->assertSame($state, $service->status(), 'the browser that polls next still hears where the backup went');
         $this->assertContains($this->stored, array_column($this->getWiki()->services->get(ArchiveService::class)->getArchives(), 'filename'));
         $this->assertNotContains($this->stored, $this->getWiki()->services->get(ArchiveService::class)->archivesToDelete(true), 'a fetched backup is not rotated away');
     }

@@ -120,4 +120,34 @@ class EnvironmentConfigurationTest extends TestCase
             $this->assertArrayNotHasKey($key, $config);
         }
     }
+
+    public function testTheQueueVariableMapsToItsConfigKey(): void
+    {
+        $this->assertSame('queue_consumer', EnvironmentConfiguration::knownEnvNames()['YESWIKI_QUEUE_CONSUMER']);
+    }
+
+    public function testTheQueueVariableFromTheRealEnvironmentOverridesTheConfigKey(): void
+    {
+        $this->setRealEnv('YESWIKI_QUEUE_CONSUMER', 'worker');
+
+        $config = EnvironmentConfiguration::apply(['queue_consumer' => 'command'], []);
+
+        $this->assertSame('worker', $config['queue_consumer']);
+        $this->assertArrayNotHasKey('yeswiki_queue_consumer', $config);
+    }
+
+    public function testTheQueueVariableFromDotEnvOverridesTheConfigKey(): void
+    {
+        $config = EnvironmentConfiguration::apply(['queue_consumer' => ''], ['YESWIKI_QUEUE_CONSUMER' => 'api']);
+
+        $this->assertSame('api', $config['queue_consumer']);
+        $this->assertArrayNotHasKey('yeswiki_queue_consumer', $config);
+    }
+
+    public function testTheBinaryMarkerNeverBecomesConfiguration(): void
+    {
+        $config = EnvironmentConfiguration::apply([], ['YESWIKI_SERVED_BY_BINARY' => '1']);
+
+        $this->assertArrayNotHasKey('yeswiki_served_by_binary', $config);
+    }
 }

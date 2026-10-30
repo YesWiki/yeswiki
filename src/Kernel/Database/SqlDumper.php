@@ -4,7 +4,7 @@ namespace YesWiki\Kernel\Database;
 
 use YesWiki\Kernel\Service\DbService;
 
-/** The whole wiki's database as a replayable SQL dump. */
+/** The whole wiki's database as a replayable SQL dump: its content, without the queue's table (DumpRewriter::contentTables()) nor the Journal's queue rows (DumpRewriter::leftOutRows()). */
 class SqlDumper
 {
     /** An INSERT has to reach the server in a single packet, so it stays well under any max_allowed_packet. */
@@ -62,7 +62,8 @@ class SqlDumper
             throw new \Exception("'table_prefix' is empty in wakka.config.php — cannot determine which tables to back up");
         }
 
-        $tables = DumpRewriter::ownTables($this->dbService->schema()->getTables(), $tablesPrefix);
+        $tables = DumpRewriter::contentTables($this->dbService->schema()->getTables(), $tablesPrefix);
+        $leftOut = DumpRewriter::leftOutRows($tablesPrefix);
 
         $date = (new \DateTime())->format('c');
         $phpVersion = phpversion();
@@ -102,7 +103,7 @@ class SqlDumper
             }
 
             $this->write($handle, "\n--\n-- Data of table : `$tableName`\n--\n\n");
-            $this->dumpRows($handle, $tableName);
+            $this->dumpRows($handle, $tableName, $leftOut[$tableName] ?? null);
             $this->write($handle, "\n-- --------------------------------------------------------\n");
         }
 
@@ -117,9 +118,10 @@ class SqlDumper
     /**
      * One table's rows, as INSERTs of at most MAX_INSERT_ROWS rows and about MAX_INSERT_BYTES each.
      *
-     * @param resource $handle
+     * @param resource    $handle
+     * @param string|null $leftOut the condition of the rows the dump leaves out, if any
      */
-    private function dumpRows($handle, string $tableName): void
+    private function dumpRows($handle, string $tableName, ?string $leftOut): void
     {
         $columnNames = $this->dbService->schema()->dumpableColumns($tableName);
         if ($columnNames === []) {
@@ -133,6 +135,7 @@ class SqlDumper
 
         $rawData = $this->dbService->query(
             'SELECT ' . implode(', ', $quotedColumns) . ' FROM ' . $this->dbService->quoteIdentifier($tableName)
+            . ($leftOut === null ? '' : " WHERE NOT ($leftOut)")
         );
 
         $batch = '';

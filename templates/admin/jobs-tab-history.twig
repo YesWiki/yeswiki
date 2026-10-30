@@ -1,0 +1,32 @@
+{% if rows is empty %}
+  <p class="yw-text-muted">{{ _t('ADMIN_JOBS_EMPTY_HISTORY') }}</p>
+{% else %}
+  <div class="yw-jobs__scroll">
+    <table class="yw-table yw-table--striped yw-table--condensed yw-jobs__table">
+      <thead>
+        <tr>
+          <th>{{ _t('ADMIN_JOBS_COL_WHEN') }}</th>
+          <th>{{ _t('ADMIN_JOBS_COL_TYPE') }}</th>
+          <th>{{ _t('ADMIN_JOBS_COL_STATUS') }}</th>
+          <th>{{ _t('ADMIN_JOBS_COL_MODE') }}</th>
+          <th>{{ _t('ADMIN_JOBS_COL_DURATION') }}</th>
+          <th>{{ _t('ADMIN_JOBS_COL_ERROR') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in rows %}
+          <tr>
+            <td title="{{ row.at }} UTC">{{ row.when }}</td>
+            <td title="{{ row.type }}">{{ row.label }}</td>
+            <td class="{{ row.status == 'handled' ? 'yw-text-success' : (row.status in ['failed', 'killed'] ? 'yw-text-danger' : 'yw-text-warning') }}">{{ row.statusLabel }}</td>
+            <td>{{ row.mode ?: '–' }}</td>
+            <td>{{ row.duration ?? '–' }}</td>
+            <td class="yw-jobs__error">
+              {% include '@core/admin/jobs-error.twig' with { error: row.error } only %}
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% endif %}

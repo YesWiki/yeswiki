@@ -129,6 +129,11 @@ class SqliteDialect implements SqlDialect
         return true;
     }
 
+    public function realignIdentity(string $table, string $column): array
+    {
+        return [];
+    }
+
     public function journalDdl(string $table): array
     {
         return [
@@ -149,11 +154,49 @@ class SqliteDialect implements SqlDialect
             "CREATE INDEX IF NOT EXISTS \"{$table}_idx_at\" ON \"{$table}\" (\"at\")",
             "CREATE INDEX IF NOT EXISTS \"{$table}_idx_channel_at\" ON \"{$table}\" (\"channel\", \"at\")",
             "CREATE INDEX IF NOT EXISTS \"{$table}_idx_actor_at\" ON \"{$table}\" (\"actor\", \"at\")",
+            "CREATE INDEX IF NOT EXISTS \"{$table}_idx_channel_target_at\" ON \"{$table}\" (\"channel\", \"target\", \"at\")",
             "CREATE UNIQUE INDEX IF NOT EXISTS \"{$table}_uniq_fingerprint_day\" ON \"{$table}\" (\"fingerprint\", \"day\")",
         ];
     }
 
+    public function journalQueueIndexDdl(string $table): array
+    {
+        return ["CREATE INDEX IF NOT EXISTS \"{$table}_idx_channel_target_at\" ON \"{$table}\" (\"channel\", \"target\", \"at\")"];
+    }
+
     public function journalDropDdl(string $table): array
+    {
+        return ["DROP TABLE IF EXISTS \"{$table}\""];
+    }
+
+    public function queueDdl(string $table): array
+    {
+        return [
+            "CREATE TABLE IF NOT EXISTS \"{$table}\" (
+                \"id\" INTEGER PRIMARY KEY AUTOINCREMENT,
+                \"queue_name\" TEXT NOT NULL,
+                \"task_id\" TEXT DEFAULT NULL,
+                \"message_type\" TEXT NOT NULL,
+                \"body\" TEXT NOT NULL,
+                \"headers\" TEXT NOT NULL,
+                \"dedup_key\" TEXT DEFAULT NULL,
+                \"created_at\" TEXT NOT NULL,
+                \"available_at\" TEXT NOT NULL,
+                \"delivered_at\" TEXT DEFAULT NULL,
+                \"delivered_by\" TEXT DEFAULT NULL,
+                \"delivered_mode\" TEXT DEFAULT NULL,
+                \"delivered_limit\" INTEGER DEFAULT NULL,
+                \"attempts\" INTEGER NOT NULL DEFAULT 0,
+                \"last_error\" TEXT DEFAULT NULL,
+                \"killed_in\" TEXT DEFAULT NULL
+            )",
+            "CREATE INDEX IF NOT EXISTS \"{$table}_idx_queue_delivered_available\" ON \"{$table}\" (\"queue_name\", \"delivered_at\", \"available_at\")",
+            "CREATE INDEX IF NOT EXISTS \"{$table}_idx_dedup_key\" ON \"{$table}\" (\"dedup_key\")",
+            "CREATE UNIQUE INDEX IF NOT EXISTS \"{$table}_uniq_task_id\" ON \"{$table}\" (\"task_id\")",
+        ];
+    }
+
+    public function queueDropDdl(string $table): array
     {
         return ["DROP TABLE IF EXISTS \"{$table}\""];
     }
@@ -164,7 +207,7 @@ class SqliteDialect implements SqlDialect
     }
 
     /** An ordinary table plus an FTS5 **external-content** table over it, kept in sync by triggers. */
-    public function searchIndexDdl(string $table, string $queueTable, string $keywordsTable): array
+    public function searchIndexDdl(string $table, string $keywordsTable): array
     {
         return [
             "CREATE TABLE IF NOT EXISTS \"{$table}\" (
@@ -204,14 +247,6 @@ class SqliteDialect implements SqlDialect
                 VALUES ('delete', old.\"id\", old.\"title\", old.\"text\");
                 INSERT INTO \"{$table}_fts\"(rowid, \"title\", \"text\") VALUES (new.\"id\", new.\"title\", new.\"text\");
             END",
-            "CREATE TABLE IF NOT EXISTS \"{$queueTable}\" (
-                \"tag\" TEXT PRIMARY KEY,
-                \"queued_at\" TEXT NOT NULL,
-                \"claimed_at\" TEXT NULL,
-                \"claimed_by\" TEXT NULL
-            )",
-            "CREATE INDEX IF NOT EXISTS \"{$queueTable}_idx_claimed_by\" ON \"{$queueTable}\" (\"claimed_by\")",
-
             "CREATE TABLE IF NOT EXISTS \"{$keywordsTable}\" (
                 \"tag\" TEXT NOT NULL,
                 \"keyword\" TEXT NOT NULL,
@@ -221,11 +256,10 @@ class SqliteDialect implements SqlDialect
         ];
     }
 
-    public function searchIndexDropDdl(string $table, string $queueTable, string $keywordsTable): array
+    public function searchIndexDropDdl(string $table, string $keywordsTable): array
     {
         return [
             "DROP TABLE IF EXISTS \"{$keywordsTable}\"",
-            "DROP TABLE IF EXISTS \"{$queueTable}\"",
             "DROP TRIGGER IF EXISTS \"{$table}_ai\"",
             "DROP TRIGGER IF EXISTS \"{$table}_ad\"",
             "DROP TRIGGER IF EXISTS \"{$table}_au\"",

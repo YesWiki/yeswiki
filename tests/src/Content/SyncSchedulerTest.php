@@ -13,7 +13,7 @@ use YesWiki\Test\Core\YesWikiTestCase;
 require_once 'tests/YesWikiTestCase.php';
 require_once 'tests/ForcedParameterBag.php';
 
-/** Which data sources the wiki's housekeeping imports, and when. */
+/** What the last sync of a data source left behind, for the importers page and for the schedule. */
 class SyncSchedulerTest extends YesWikiTestCase
 {
     private const SOURCES = [
@@ -28,40 +28,6 @@ class SyncSchedulerTest extends YesWikiTestCase
         $this->assertTrue($wiki->services->has(YesWikiRuntime::class));
 
         return $wiki->services->get(YesWikiRuntime::class);
-    }
-
-    #[Depends('testWikiExisting')]
-    public function testOnlyFlaggedSourcesAreDue(YesWikiRuntime $wiki): void
-    {
-        $this->forgetPreviousRuns($wiki);
-        $due = $this->scheduler($wiki)->claimDueSources();
-
-        $this->assertSame(['every_time', 'once_a_day'], array_keys($due));
-
-        $this->assertSame('Rss', $due['every_time']['importer']);
-    }
-
-    #[Depends('testWikiExisting')]
-    public function testAClaimedSourceIsNotClaimedTwice(YesWikiRuntime $wiki): void
-    {
-        $this->forgetPreviousRuns($wiki);
-        $startedAt = time();
-        $this->scheduler($wiki)->claimDueSources($startedAt);
-
-        $this->assertSame([], $this->scheduler($wiki)->claimDueSources($startedAt));
-    }
-
-    #[Depends('testWikiExisting')]
-    public function testAPerSourceIntervalHoldsASourceBack(YesWikiRuntime $wiki): void
-    {
-        $this->forgetPreviousRuns($wiki);
-        $scheduler = $this->scheduler($wiki);
-        $scheduler->claimDueSources();
-
-        $this->ageStateFile($wiki, 'every_time', 3600);
-        $this->ageStateFile($wiki, 'once_a_day', 3600);
-
-        $this->assertSame(['every_time'], array_keys($this->scheduler($wiki)->claimDueSources()));
     }
 
     #[Depends('testWikiExisting')]
@@ -103,7 +69,6 @@ class SyncSchedulerTest extends YesWikiTestCase
     {
         return new SyncScheduler(
             new ForcedParameterBag($wiki->services->get(ParameterBagInterface::class), ['dataSources' => $dataSources]),
-            $wiki->services,
             $wiki->services->get(Storage::class)
         );
     }
@@ -120,15 +85,6 @@ class SyncSchedulerTest extends YesWikiTestCase
     {
         foreach (array_keys(self::SOURCES) as $id) {
             @unlink($this->stateDir($wiki) . '/' . $id . '.log');
-        }
-    }
-
-    /** Pretend this source's last run happened $seconds ago. */
-    private function ageStateFile(YesWikiRuntime $wiki, string $id, int $seconds): void
-    {
-        $file = $this->stateDir($wiki) . '/' . $id . '.log';
-        if (is_file($file)) {
-            touch($file, time() - $seconds);
         }
     }
 }

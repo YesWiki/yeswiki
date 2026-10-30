@@ -102,7 +102,7 @@ class DestroyCommand extends Command
 
         try {
             $written = '';
-            $made = $this->services->get(ArchiveService::class)->synchronously()->archive($written, true, true);
+            $made = $this->services->get(ArchiveService::class)->archive($written, true, true);
         } catch (\Throwable $th) {
             $io->error('The archive failed, so nothing was destroyed: ' . $th->getMessage());
 

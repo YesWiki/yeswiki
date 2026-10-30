@@ -19,6 +19,7 @@ class Journal implements LoggerInterface
 
     public const AUDIT_PURGE_SETTING = 'journal_audit_purge_time';
     public const DIAGNOSTIC_PURGE_SETTING = 'journal_diagnostic_purge_time';
+    public const QUEUE_PURGE_SETTING = 'journal_queue_purge_time';
 
     public const MIGRATION_APPLIED = 'migration.applied';
 
@@ -81,7 +82,7 @@ class Journal implements LoggerInterface
         $this->store(JournalChannel::Diagnostic, (string)$level, $action, $target, $context, null, $fingerprint, date('Y-m-d'));
     }
 
-    /** Delete what has outlived its retention: a year of audit, a fortnight of diagnostics. */
+    /** Delete what has outlived its retention: a year of audit, a fortnight of diagnostics, a week of the queue's. */
     public function prune(): int
     {
         $table = $this->container->get(JournalSchema::class)->table();
@@ -92,16 +93,23 @@ class Journal implements LoggerInterface
         foreach ([
             [JournalChannel::Audit, self::AUDIT_PURGE_SETTING, 365, 'at'],
             [JournalChannel::Diagnostic, self::DIAGNOSTIC_PURGE_SETTING, 14, 'last_at'],
+            [JournalChannel::Queue, self::QUEUE_PURGE_SETTING, 7, 'last_at'],
         ] as [$channel, $setting, $fallback, $column]) {
             $days = (int)($this->container->get(RuntimeConfig::class)[$setting] ?? $fallback);
             if ($days <= 0) {
                 continue;
             }
 
-            $statement = $db->query(
-                "DELETE FROM {$quote($table)} WHERE {$quote('channel')} = ? AND {$quote($column)} < {$db->dateSubDays($days)}",
-                [$channel->value]
-            );
+            // The queue writes its rows' times in UTC from PHP, so it cuts them in UTC from PHP: the database's NOW() may be in another zone.
+            $statement = $channel === JournalChannel::Queue
+                ? $db->query(
+                    "DELETE FROM {$quote($table)} WHERE {$quote('channel')} = ? AND {$quote($column)} < ?",
+                    [$channel->value, gmdate('Y-m-d H:i:s', time() - $days * 86400)]
+                )
+                : $db->query(
+                    "DELETE FROM {$quote($table)} WHERE {$quote('channel')} = ? AND {$quote($column)} < {$db->dateSubDays($days)}",
+                    [$channel->value]
+                );
             $removed += $statement->rowCount();
         }
 

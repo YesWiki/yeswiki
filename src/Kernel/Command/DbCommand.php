@@ -121,25 +121,37 @@ class DbCommand extends Command
             'password' => $password,
         ] = $this->getDbParams();
         try {
-            $tables = $this->ownTables($tablePrefix);
+            $tables = $this->contentTables($tablePrefix);
             if ($tables === []) {
                 $output->writeln("No table of this wiki starts with '$tablePrefix'.");
 
                 return Command::FAILURE;
             }
-            $result = $this->runDumpTool(
-                array_merge(
-                    $hostArg,
-                    [
-                        "--user=$username",
-                        "--password=$password",
-                        "--result-file=$realFilePath",
-                        $databasename,
-                    ],
-                    $tables
-                ),
-                120
+            $invocations = self::dumpInvocations(
+                array_merge($hostArg, ["--user=$username", "--password=$password"]),
+                $databasename,
+                $tables,
+                trim($tablePrefix),
+                $realFilePath
             );
+            $result = ['exit' => 0, 'stdout' => '', 'stderr' => ''];
+            try {
+                foreach ($invocations as $file => $args) {
+                    $result = $this->runDumpTool($args, 120);
+                    if ($result['exit'] !== 0) {
+                        break;
+                    }
+                    if ($file !== $realFilePath) {
+                        $this->append($file, $realFilePath);
+                    }
+                }
+            } finally {
+                foreach (array_keys($invocations) as $file) {
+                    if ($file !== $realFilePath) {
+                        $this->localFiles()->remove($file);
+                    }
+                }
+            }
             if ($result['exit'] === 0 && self::isDump($this->headOf($realFilePath))) {
                 return Command::SUCCESS;
             }
@@ -152,15 +164,62 @@ class DbCommand extends Command
     }
 
     /**
-     * This wiki's tables, and none of another wiki whose prefix starts like this one's.
+     * The dump tool's calls, each with the file it writes: the first writes the dump, each other one a part appended to it.
+     *
+     * A table some of whose rows a backup leaves out (DumpRewriter::leftOutRows()) is dumped by a
+     * call of its own, since mysqldump applies its `--where` to every table of one call.
+     *
+     * @param list<string> $connection the options that reach the server
+     * @param list<string> $tables     the tables to dump
+     *
+     * @return array<string, list<string>> the arguments of each call, by the file it writes
+     */
+    public static function dumpInvocations(array $connection, string $database, array $tables, string $tablePrefix, string $resultFile): array
+    {
+        $leftOut = array_intersect_key(DumpRewriter::leftOutRows($tablePrefix), array_flip($tables));
+        $whole = array_values(array_diff($tables, array_keys($leftOut)));
+
+        $invocations = [];
+        if ($whole !== []) {
+            $invocations[$resultFile] = [...$connection, "--result-file=$resultFile", $database, ...$whole];
+        }
+        foreach ($leftOut as $table => $condition) {
+            $file = $invocations === [] ? $resultFile : $resultFile . '.' . \count($invocations);
+            $invocations[$file] = [...$connection, "--where=NOT ($condition)", "--result-file=$file", $database, $table];
+        }
+
+        return $invocations;
+    }
+
+    /** Copy a part of the dump after what the dump file holds already. */
+    private function append(string $part, string $dump): void
+    {
+        $from = $this->localFiles()->openForReading($part);
+        $to = $this->localFiles()->openForAppending($dump);
+        try {
+            if ($from === null || $to === null || stream_copy_to_stream($from, $to) === false) {
+                throw new \Exception("Cannot append $part to $dump");
+            }
+        } finally {
+            if ($from !== null) {
+                fclose($from);
+            }
+            if ($to !== null) {
+                fclose($to);
+            }
+        }
+    }
+
+    /**
+     * This wiki's tables, none of another wiki whose prefix starts like this one's, and none of the queue's (DumpRewriter::contentTables()).
      *
      * @return list<string>
      */
-    private function ownTables(string $tablePrefix): array
+    private function contentTables(string $tablePrefix): array
     {
         $dbService = $this->services->get(DbService::class);
 
-        return DumpRewriter::ownTables($dbService->schema()->getTables(), trim($tablePrefix));
+        return DumpRewriter::contentTables($dbService->schema()->getTables(), trim($tablePrefix));
     }
 
     /**

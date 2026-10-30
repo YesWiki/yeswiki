@@ -89,6 +89,15 @@ interface SqlDialect
     public function supportsDump(): bool;
 
     /**
+     * The statements that make an identity column count on from the largest value in the table, once rows were inserted into it with their ids; none where the driver does so by itself.
+     *
+     * @param string $table already prefixed, unquoted
+     *
+     * @return list<string>
+     */
+    public function realignIdentity(string $table, string $column): array;
+
+    /**
      * Every statement needed to create the Journal table and its indexes, in execution order (ticket 51 / ADR-0025).
      *
      * @param string $table already prefixed, unquoted
@@ -98,11 +107,40 @@ interface SqlDialect
     public function journalDdl(string $table): array;
 
     /**
+     * The statements that add to an existing Journal the index the queue channel reads by, `(channel, target, at)`, which journalDdl() creates with the table. Run them only where `idx_channel_target_at` is missing: MySQL has no IF NOT EXISTS for an index.
+     *
+     * @param string $table already prefixed, unquoted
+     *
+     * @return list<string>
+     */
+    public function journalQueueIndexDdl(string $table): array;
+
+    /**
      * Every statement needed to remove what journalDdl() created, in execution order.
      *
      * @return list<string>
      */
     public function journalDropDdl(string $table): array;
+
+    /**
+     * Every statement needed to create the queue's table and its indexes, in execution order (messenger / scheduler).
+     *
+     * The table holds the messages and, in a queue of their own, the scheduled tasks and the
+     * Scheduler's checkpoint: `task_id` names a task's row, unique, and is NULL on every message.
+     * `killed_in` is the mode a failed message's consumer was killed in, NULL for every other row.
+     *
+     * @param string $table already prefixed, unquoted
+     *
+     * @return list<string>
+     */
+    public function queueDdl(string $table): array;
+
+    /**
+     * Every statement needed to remove what queueDdl() created, in execution order.
+     *
+     * @return list<string>
+     */
+    public function queueDropDdl(string $table): array;
 
     /**
      * An INSERT that, when the unique key over $conflictColumns is already taken, applies $assignments to the row that is there instead of failing.
@@ -116,21 +154,20 @@ interface SqlDialect
     public function upsert(string $table, array $values, array $conflictColumns, array $assignments): string;
 
     /**
-     * Every statement needed to create the search index table, its ordinary indexes, its full-text index and the queue of Contents awaiting reindexing, in execution order.
+     * Every statement needed to create the search index table, its ordinary indexes, its full-text index and the keywords table, in execution order.
      *
-     * @param string $table      already prefixed, unquoted
-     * @param string $queueTable already prefixed, unquoted
+     * @param string $table already prefixed, unquoted
      *
      * @return list<string>
      */
-    public function searchIndexDdl(string $table, string $queueTable, string $keywordsTable): array;
+    public function searchIndexDdl(string $table, string $keywordsTable): array;
 
     /**
      * Every statement needed to remove what searchIndexDdl() created, in execution order.
      *
      * @return list<string>
      */
-    public function searchIndexDropDdl(string $table, string $queueTable, string $keywordsTable): array;
+    public function searchIndexDropDdl(string $table, string $keywordsTable): array;
 
     /**
      * A boolean SQL expression selecting the index rows that match the query, each term matched as a prefix (`atelier` matches `ateliers`).

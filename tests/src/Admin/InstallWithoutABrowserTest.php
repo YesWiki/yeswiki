@@ -115,6 +115,11 @@ class InstallWithoutABrowserTest extends YesWikiTestCase
                 $this->tags($db),
                 'the seed holds what a wiki needs to run, and the home page is left for the onboarding to create'
             );
+            $this->assertSame(
+                9,
+                $this->countRows($db, "SELECT COUNT(*) FROM yeswiki_queue WHERE message_type = 'YesWiki\\Search\\Message\\ReindexContent' AND delivered_at IS NULL"),
+                'every seeded Content waits in the queue to be indexed'
+            );
             $this->assertSame([], array_values(array_diff(scandir($dir . '/files') ?: [], ['.', '..'])), 'a fresh wiki has no files');
             $this->assertSame(
                 2,

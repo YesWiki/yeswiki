@@ -303,10 +303,17 @@ class SeedCommand extends Command
             ));
         }
 
-        $pending = $indexer->pending();
-        if ($pending > 0) {
+        $db = $this->services->get(DbService::class);
+        $tags = array_map(
+            static fn (array $row): string => (string)$row['tag'],
+            $db->loadAll("SELECT DISTINCT tag FROM {$db->prefixTable('pages')} WHERE latest = 'Y' LIMIT 1000")
+        );
+        if ($tags !== []) {
             $startedAt = microtime(true);
-            $done = $indexer->drain(1000);
+            foreach ($tags as $tag) {
+                $indexer->index($tag);
+            }
+            $done = count($tags);
             $elapsed = microtime(true) - $startedAt;
             $output->writeln(sprintf(
                 'Reindex throughput: %d Contents in %.1fs (%.0f/s)',
@@ -315,7 +322,7 @@ class SeedCommand extends Command
                 $elapsed > 0 ? $done / $elapsed : 0
             ));
         } else {
-            $output->writeln('<comment>Queue empty; reindex throughput not measured. Run search:reindex --all first.</comment>');
+            $output->writeln('<comment>No Content; reindex throughput not measured.</comment>');
         }
     }
 }

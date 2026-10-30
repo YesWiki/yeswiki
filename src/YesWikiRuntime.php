@@ -32,7 +32,6 @@ use Symfony\Component\Routing\RouteCollection;
 use Symfony\Component\Security\Csrf\CsrfTokenManager;
 use YesWiki\Admin\Service\ApiService;
 use YesWiki\Admin\Service\DoryphoreArrival;
-use YesWiki\Admin\Service\MaintenanceService;
 use YesWiki\Content\Controller\LegacyPageController;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Identity\Action\LoginAction;
@@ -43,6 +42,7 @@ use YesWiki\Kernel\Exception\ExitException;
 use YesWiki\Kernel\Routing\ReservedTags;
 use YesWiki\Kernel\Service\CacheClearer;
 use YesWiki\Kernel\Service\ConfigurationFileProvider;
+use YesWiki\Kernel\Service\ConfigurationWatch;
 use YesWiki\Kernel\Service\CurrentRequest;
 use YesWiki\Kernel\Service\EventDispatcher;
 use YesWiki\Kernel\Service\ExtensionRegistry;
@@ -214,12 +214,6 @@ class YesWikiRuntime
             : ($default != null ? $default : '');
     }
 
-    /** @return void */
-    public function maintenance()
-    {
-        $this->service(MaintenanceService::class)->sweep();
-    }
-
     /**
      * @param string $tag
      * @param string $method
@@ -251,10 +245,6 @@ class YesWikiRuntime
             return;
         }
         $this->readThisRequest();
-
-        if ($this->service(MaintenanceService::class)->dueOnRequest()) {
-            $this->maintenance();
-        }
 
         $pageContext = $this->service(PageContext::class);
 
@@ -682,6 +672,8 @@ class YesWikiRuntime
         $this->service(CurrentRequest::class)->replace($this->request);
         $this->service(ExtensionRegistry::class)->bind($this->extensions);
         $this->service(RouteProvider::class)->setResolver(fn () => $this->getRoutes());
+        // The same two questions worker.php asks between requests: an upgrade or `cache:clear` empties the container cache with the configuration unchanged.
+        $this->service(ConfigurationWatch::class)->bind(fn (): bool => $this->containerCacheIsGone() || $this->configurationChanged());
         $this->service(PageContext::class)->setTag($this->initialTag);
         $this->service(PageContext::class)->setMethod((string)$this->initialMethod);
         $this->booted = true;

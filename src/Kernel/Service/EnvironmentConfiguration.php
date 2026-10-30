@@ -44,10 +44,18 @@ class EnvironmentConfiguration
     ];
 
     /**
+     * Variables honored from the real environment and from private/.env under a name that is not UPPER(key), as an envName => configKey map.
+     */
+    public const ENV_ALIASES = [
+        'YESWIKI_QUEUE_CONSUMER' => 'queue_consumer',
+    ];
+
+    /**
      * Variables that are environment-only and must never leak into the configuration (ADMIN_* hold plain credentials for the automated installation, YESWIKI_S3_* the bucket's, and both would otherwise end up in container parameters and config archives).
      */
     public const NOT_CONFIG = [
         'YESWIKI_CONFIG_FILE',
+        'YESWIKI_SERVED_BY_BINARY',
         'ASYNC_PHP_BINARY',
         'ADMIN_NAME',
         'ADMIN_PASSWORD',
@@ -87,7 +95,7 @@ class EnvironmentConfiguration
             if (in_array($name, self::NOT_CONFIG, true)) {
                 continue;
             }
-            $key = $keysByUpperName[strtoupper($name)] ?? strtolower($name);
+            $key = self::ENV_ALIASES[$name] ?? $keysByUpperName[strtoupper($name)] ?? strtolower($name);
             self::override($config, $key, $value);
         }
 
@@ -113,7 +121,7 @@ class EnvironmentConfiguration
             $names[strtoupper($key)] = $key;
         }
 
-        return $names;
+        return array_merge($names, self::ENV_ALIASES);
     }
 
     /**

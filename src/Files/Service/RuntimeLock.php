@@ -40,6 +40,26 @@ class RuntimeLock
         @touch($full);
     }
 
+    /** Stamp a lock with a time of the caller's clock, creating it and its directory if needed: lastTaken() then answers that time. */
+    public function stampAt(string $path, int $time): void
+    {
+        $full = $this->absolute($path);
+        $directory = \dirname($full);
+        if (!is_dir($directory)) {
+            @mkdir($directory, 0o777, true);
+        }
+        @touch($full, $time);
+        clearstatcache(true, $full);
+    }
+
+    /** Remove a stamp, so that lastTaken() answers 0 again; nothing happens when there is none. */
+    public function forget(string $path): void
+    {
+        $full = $this->absolute($path);
+        @unlink($full);
+        clearstatcache(true, $full);
+    }
+
     /**
      * Take an exclusive lock without waiting, and answer a handle to hold it with.
      *
@@ -68,6 +88,22 @@ class RuntimeLock
     public function tryLock($handle): bool
     {
         return \is_resource($handle) && flock($handle, LOCK_EX | LOCK_NB);
+    }
+
+    /**
+     * Whether some handle holds the lock now. Asked without creating the file: one that is not
+     * there is held by nobody.
+     */
+    public function isHeld(string $path): bool
+    {
+        $handle = @fopen($this->absolute($path), 'r');
+        if ($handle === false) {
+            return false;
+        }
+        $free = flock($handle, LOCK_EX | LOCK_NB);
+        $this->release($handle);
+
+        return !$free;
     }
 
     /** @param resource|null $handle */

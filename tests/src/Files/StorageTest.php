@@ -45,7 +45,7 @@ class StorageTest extends TestCase
             'the search index is runtime' => ['private/search-indexes/pages/index', Storage::RUNTIME_TIER],
             'the compiled container is runtime' => ['cache/container/prod/X.php', Storage::RUNTIME_TIER],
             'compiled twig is runtime' => ['cache/templates/ab/cd.php', Storage::RUNTIME_TIER],
-            'a lock is runtime' => ['cache/maintenance.lock', Storage::RUNTIME_TIER],
+            'a lock is runtime' => ['cache/queue-pass.lock', Storage::RUNTIME_TIER],
             'extensions are runtime' => ['custom/extensions/lms/index.php', Storage::RUNTIME_TIER],
             'the config is runtime' => ['yeswiki.config.php', Storage::RUNTIME_TIER],
         ];

@@ -1,0 +1,16 @@
+{% extends "@core/dashboard/layout.twig" %}
+
+{% block dashboard_content %}
+  <h1>{{ _t('ADMIN_JOBS_TITLE') }}</h1>
+
+  <p class="yw-dashboard__intro">{{ _t('ADMIN_JOBS_INTRO') }}</p>
+
+  {# The top (mode, alerts, tiles) is what every action answers with; the tabs reload themselves
+     on the ywJobsChanged event those answers carry. #}
+  <div class="yw-jobs" id="yw-jobs">
+    {% include '@core/admin/jobs-alerts.twig' %}
+    {% include '@core/admin/jobs-tabs.twig' %}
+  </div>
+
+  {{ include_css('styles/yw-admin.css') }}
+{% endblock %}

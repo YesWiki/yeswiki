@@ -55,6 +55,7 @@
     admin: true,
     items: [
       { route: 'admin/health',   icon: 'alert-triangle', label: _t('DASHBOARD_ADMIN_HEALTH'), count: health_broken|default(0) },
+      { route: 'admin/jobs',     icon: 'clock',          label: _t('DASHBOARD_ADMIN_JOBS'), count: queue_broken|default(0) },
       { route: 'admin/logs',     icon: 'list-details',   label: _t('DASHBOARD_ADMIN_LOGS') },
       { route: 'admin/config',   icon: 'settings', label: _t('DASHBOARD_ADMIN_CONFIG') },
       { route: 'admin/updates',  icon: 'refresh',  label: _t('DASHBOARD_ADMIN_UPDATES') },

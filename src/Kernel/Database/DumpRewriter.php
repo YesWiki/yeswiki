@@ -2,6 +2,10 @@
 
 namespace YesWiki\Kernel\Database;
 
+use YesWiki\Kernel\Entity\JournalChannel;
+use YesWiki\Kernel\Service\JournalSchema;
+use YesWiki\Kernel\Service\Queue\QueueSchema;
+
 class DumpRewriter
 {
     /**
@@ -9,7 +13,7 @@ class DumpRewriter
      *
      * @var list<string>
      */
-    public const CORE_TABLES = ['pages', 'triples', 'search_index', 'search_keywords', 'search_queue'];
+    public const CORE_TABLES = ['pages', 'triples', 'search_index', 'search_keywords'];
 
     public const TABLES_THAT_MAKE_A_WIKI = 2;
 
@@ -163,6 +167,39 @@ class DumpRewriter
         }
 
         return $own;
+    }
+
+    /**
+     * The tables a backup carries and a restore replaces: this wiki's own, less the queue's.
+     *
+     * The queue's table is state of the running instance, never content (QueueSchema::TABLES):
+     * a dump does not hold it, a restore neither drops nor fills it, and the statements an older
+     * backup still has for it are not replayed.
+     *
+     * @param list<string> $tables
+     *
+     * @return list<string>
+     */
+    public static function contentTables(array $tables, string $prefix): array
+    {
+        $runtime = array_map(static fn (string $table): string => $prefix . $table, QueueSchema::TABLES);
+
+        return array_values(array_diff(self::ownTables($tables, $prefix), $runtime));
+    }
+
+    /**
+     * The rows of a content table that are the running instance's state too: a backup leaves them out, and a restore puts the live ones back in place of any the dump brings.
+     *
+     * The Journal's `queue` channel is the consumer's runs and passes, among them the open row of
+     * the pass a restore runs in: a restored copy taking the backup's would show passes that never
+     * close, and the running consumer would write its pass by an id the restore has taken away.
+     * Each table listed has an `id` identity column, by which those rows are put back.
+     *
+     * @return array<string, string> the condition that picks those rows, by prefixed table
+     */
+    public static function leftOutRows(string $prefix): array
+    {
+        return [$prefix . JournalSchema::TABLE => "channel = '" . JournalChannel::Queue->value . "'"];
     }
 
     /**

@@ -456,6 +456,7 @@ func Environment(instance, programDir string) []string {
 		program.EnvProgram+"="+programDir,
 		program.EnvConfigFile+"="+instance+"/yeswiki.config.php",
 		program.EnvAsyncPHP+"="+program.ShimPath(filepath.Dir(programDir)),
+		program.EnvServedByBinary+"=1",
 	)
 }
 

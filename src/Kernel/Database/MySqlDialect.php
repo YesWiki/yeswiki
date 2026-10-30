@@ -137,6 +137,11 @@ class MySqlDialect implements SqlDialect
         return true;
     }
 
+    public function realignIdentity(string $table, string $column): array
+    {
+        return [];
+    }
+
     public function journalDdl(string $table): array
     {
         $json = $this->jsonColumnType();
@@ -159,12 +164,51 @@ class MySqlDialect implements SqlDialect
                 KEY `idx_at` (`at`),
                 KEY `idx_channel_at` (`channel`, `at`),
                 KEY `idx_actor_at` (`actor`, `at`),
+                KEY `idx_channel_target_at` (`channel`, `target`, `at`),
                 UNIQUE KEY `uniq_fingerprint_day` (`fingerprint`, `day`)
             ) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci ENGINE=InnoDB",
         ];
     }
 
+    public function journalQueueIndexDdl(string $table): array
+    {
+        return ["CREATE INDEX `idx_channel_target_at` ON `{$table}` (`channel`, `target`, `at`)"];
+    }
+
     public function journalDropDdl(string $table): array
+    {
+        return ["DROP TABLE IF EXISTS `{$table}`"];
+    }
+
+    public function queueDdl(string $table): array
+    {
+        return [
+            "CREATE TABLE IF NOT EXISTS `{$table}` (
+                `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+                `queue_name` VARCHAR(32) NOT NULL,
+                `task_id` VARCHAR(64) DEFAULT NULL,
+                `message_type` VARCHAR(191) NOT NULL,
+                `body` LONGTEXT NOT NULL,
+                `headers` LONGTEXT NOT NULL,
+                `dedup_key` VARCHAR(191) DEFAULT NULL,
+                `created_at` DATETIME NOT NULL,
+                `available_at` DATETIME NOT NULL,
+                `delivered_at` DATETIME DEFAULT NULL,
+                `delivered_by` VARCHAR(64) DEFAULT NULL,
+                `delivered_mode` VARCHAR(16) DEFAULT NULL,
+                `delivered_limit` INT DEFAULT NULL,
+                `attempts` INT NOT NULL DEFAULT 0,
+                `last_error` TEXT DEFAULT NULL,
+                `killed_in` VARCHAR(16) DEFAULT NULL,
+                PRIMARY KEY (`id`),
+                KEY `idx_queue_delivered_available` (`queue_name`, `delivered_at`, `available_at`),
+                KEY `idx_dedup_key` (`dedup_key`),
+                UNIQUE KEY `uniq_task_id` (`task_id`)
+            ) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci ENGINE=InnoDB",
+        ];
+    }
+
+    public function queueDropDdl(string $table): array
     {
         return ["DROP TABLE IF EXISTS `{$table}`"];
     }
@@ -189,7 +233,7 @@ class MySqlDialect implements SqlDialect
     }
 
     /** InnoDB FULLTEXT. */
-    public function searchIndexDdl(string $table, string $queueTable, string $keywordsTable): array
+    public function searchIndexDdl(string $table, string $keywordsTable): array
     {
         return [
             "CREATE TABLE IF NOT EXISTS `{$table}` (
@@ -213,15 +257,6 @@ class MySqlDialect implements SqlDialect
                 KEY `idx_form_id` (`form_id`),
                 FULLTEXT KEY `ft_text` (`title`, `text`)
             ) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci ENGINE=InnoDB",
-            "CREATE TABLE IF NOT EXISTS `{$queueTable}` (
-                `tag` VARCHAR(191) NOT NULL,
-                `queued_at` DATETIME NOT NULL,
-                `claimed_at` DATETIME NULL DEFAULT NULL,
-                `claimed_by` VARCHAR(64) NULL DEFAULT NULL,
-                PRIMARY KEY (`tag`),
-                KEY `idx_claimed_by` (`claimed_by`)
-            ) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci ENGINE=InnoDB",
-
             "CREATE TABLE IF NOT EXISTS `{$keywordsTable}` (
                 `tag` VARCHAR(191) NOT NULL,
                 `keyword` VARCHAR(191) NOT NULL,
@@ -231,11 +266,10 @@ class MySqlDialect implements SqlDialect
         ];
     }
 
-    public function searchIndexDropDdl(string $table, string $queueTable, string $keywordsTable): array
+    public function searchIndexDropDdl(string $table, string $keywordsTable): array
     {
         return [
             "DROP TABLE IF EXISTS `{$table}`",
-            "DROP TABLE IF EXISTS `{$queueTable}`",
             "DROP TABLE IF EXISTS `{$keywordsTable}`",
         ];
     }

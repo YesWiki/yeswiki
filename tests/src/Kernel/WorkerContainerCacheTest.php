@@ -5,6 +5,7 @@ namespace YesWiki\Test\Kernel;
 use YesWiki\Core\YesWikiKernel;
 use YesWiki\Files\Service\Storage;
 use YesWiki\Kernel\Service\CacheClearer;
+use YesWiki\Kernel\Service\ConfigurationWatch;
 use YesWiki\Kernel\Service\EnvironmentConfiguration;
 use YesWiki\Test\Core\YesWikiTestCase;
 
@@ -79,6 +80,51 @@ class WorkerContainerCacheTest extends YesWikiTestCase
         } finally {
             putenv($value === false ? $name : $name . '=' . $value);
             $booted->setValue($wiki, $was);
+        }
+    }
+
+    /** R17: a blocking queue consumer is told the same thing, through the ConfigurationWatch the runtime binds at boot. */
+    public function testTheConfigurationWatchAsksTheRuntime(): void
+    {
+        $wiki = $this->getWiki();
+        $watch = $wiki->services->get(ConfigurationWatch::class);
+        $booted = new \ReflectionProperty($wiki, 'bootedCacheDir');
+        $was = $booted->getValue($wiki);
+        $booted->setValue($wiki, (new YesWikiKernel($wiki, $wiki->getEnvironment()))->getCacheDir());
+
+        $name = (string)array_key_first(EnvironmentConfiguration::knownEnvNames());
+        $value = getenv($name);
+        try {
+            $this->assertFalse($watch->changedSinceBoot());
+            putenv($name . '=changed-under-a-running-consumer');
+            $this->assertTrue($watch->changedSinceBoot());
+        } finally {
+            putenv($value === false ? $name : $name . '=' . $value);
+            $booted->setValue($wiki, $was);
+        }
+        $this->assertFalse((new ConfigurationWatch())->changedSinceBoot(), 'unbound, as a service built by hand is: never changed');
+    }
+
+    /**
+     * An upgrade (`git pull && migrate`) or a `cache:clear` empties the container cache with the configuration unchanged: the consumer then runs old classes against a new schema, and is told to restart as FrankenPHP's worker is.
+     */
+    public function testTheConfigurationWatchSaysSoWhenTheContainerIsGone(): void
+    {
+        $wiki = $this->getWiki();
+        $watch = $wiki->services->get(ConfigurationWatch::class);
+        $booted = new \ReflectionProperty($wiki, 'bootedCacheDir');
+        $wasBooted = $booted->getValue($wiki);
+        $booted->setValue($wiki, (new YesWikiKernel($wiki, $wiki->getEnvironment()))->getCacheDir());
+        $directory = new \ReflectionProperty($wiki, 'containerDirectory');
+        $wasDirectory = $directory->getValue($wiki);
+
+        try {
+            $this->assertFalse($watch->changedSinceBoot());
+            $directory->setValue($wiki, sys_get_temp_dir() . '/a-container-directory-that-was-cleared');
+            $this->assertTrue($watch->changedSinceBoot(), 'the configuration is the same, the code may not be');
+        } finally {
+            $directory->setValue($wiki, $wasDirectory);
+            $booted->setValue($wiki, $wasBooted);
         }
     }
 

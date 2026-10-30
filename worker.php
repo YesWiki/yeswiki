@@ -5,8 +5,8 @@
  */
 
 use YesWiki\Core\YesWikiLoader;
-use YesWiki\Kernel\Service\AfterResponse;
 use YesWiki\Kernel\Service\AssetPublisher;
+use YesWiki\Kernel\Service\Queue\QueueRequestTrigger;
 
 require_once __DIR__ . '/src/bootstrap_paths.php';
 require_once __DIR__ . '/src/Kernel/Service/AssetPublisher.php';
@@ -18,8 +18,8 @@ if (!function_exists('frankenphp_handle_request')) {
 }
 
 $wiki = YesWikiLoader::getWiki();
-$afterResponse = $wiki->services->get(AfterResponse::class);
-$afterResponse->drainedByWorker();
+$queueTrigger = $wiki->services->get(QueueRequestTrigger::class);
+$queueTrigger->servedByWorker();
 
 $requestsBeforeRestart = (int)(getenv('YESWIKI_WORKER_REQUESTS') ?: 500);
 $served = 0;
@@ -53,7 +53,11 @@ while ($served < $requestsBeforeRestart) {
     }
 
     $keepServing = frankenphp_handle_request($handler);
-    $afterResponse->run();
+    $queueTrigger->afterResponse();
+    // the queue ran on this request's time limit, and a pinned run lifted it: the next request gets its own
+    if (function_exists('set_time_limit')) {
+        @set_time_limit($timeLimit);
+    }
     if (!$keepServing) {
         break;
     }

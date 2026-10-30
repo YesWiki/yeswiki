@@ -117,5 +117,5 @@ as `program-<version>/`. `YESWIKI_SOURCE_DIR` is renamed `YESWIKI_PROGRAM_DIR` t
   several threads on one file. It is the default database for the zero-install case, so this is
   the common path and not an edge.
 - **One replica.** See CONTEXT.md's decision on horizontal scaling: sessions, the hashcash secret,
-  the maintenance lock and extension distribution are all node-local, and each is its own piece of
-  work in its own spec.
+  the background queue's locks and extension distribution are all node-local, and each is its
+  own piece of work in its own spec.

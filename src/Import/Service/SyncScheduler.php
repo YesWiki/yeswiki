@@ -2,13 +2,14 @@
 
 namespace YesWiki\Import\Service;
 
-use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-use YesWiki\Files\Exception\StorageException;
 use YesWiki\Files\Service\Storage;
-use YesWiki\Kernel\Service\ConsoleService;
 
-/** Syncs, without any external cron, the data sources flagged `syncOnMaintenance`. */
+/**
+ * What the last sync of each data source did: the log under the cache directory that the importers page shows and that ImportSchedule counts the interval of a source from.
+ *
+ * Whoever syncs a source records the outcome here -- the scheduled task, the console command, the admin page and the API route -- so that "when did this last sync" has one answer rather than one per trigger.
+ */
 class SyncScheduler
 {
     /** Where the last sync of each source is recorded, under the cache directory. */
@@ -18,103 +19,15 @@ class SyncScheduler
     private const MAX_LOG_LENGTH = 20000;
 
     protected ParameterBagInterface $params;
-    protected ContainerInterface $services;
     protected Storage $storage;
 
-    public function __construct(ParameterBagInterface $params, ContainerInterface $services, Storage $storage)
+    public function __construct(ParameterBagInterface $params, Storage $storage)
     {
         $this->params = $params;
-        $this->services = $services;
         $this->storage = $storage;
     }
 
-    /** Claim whatever is due and get it imported off the visitor's clock. */
-    public function onMaintenance(?int $maintenanceStartedAt = null): void
-    {
-        try {
-            $dueSources = $this->claimDueSources($maintenanceStartedAt);
-        } catch (\Throwable $ex) {
-            return;
-        }
-        if (empty($dueSources)) {
-            return;
-        }
-
-        $couldNotSpawn = [];
-        foreach ($dueSources as $id => $options) {
-            if (!$this->spawnSync((string)$id)) {
-                $couldNotSpawn[$id] = $options;
-            }
-        }
-        if (!empty($couldNotSpawn)) {
-            register_shutdown_function(function () use ($couldNotSpawn) {
-                $this->runAfterResponse($couldNotSpawn);
-            });
-        }
-    }
-
-    /**
-     * The sources due for an automatic sync right now, already claimed (their state file is stamped before returning, so a concurrent request sees them as just-synced instead of starting the same import in parallel).
-     *
-     * @param int|null $maintenanceStartedAt when the housekeeping run asking this began. A
-     *                                       source that has synced since then has already been taken by this run --
-     *                                       which is what stops two page views crossing the interval together from
-     *                                       importing the same source twice. Null means "whatever ran before, this
-     *                                       is a fresh ask", for the console and for tests.
-     *
-     * @return array<string, array<string, mixed>> [sourceId => sourceOptions]
-     */
-    public function claimDueSources(?int $maintenanceStartedAt = null): array
-    {
-        $due = [];
-        foreach ($this->dataSources() as $id => $options) {
-            if (empty($options['syncOnMaintenance'])) {
-                continue;
-            }
-            $id = (string)$id;
-            $lastRun = $this->lastRunTime($id);
-            if ($maintenanceStartedAt !== null && $lastRun >= $maintenanceStartedAt) {
-                continue;
-            }
-
-            $minIntervalInSec = max(0, (int)($options['syncIntervalInMin'] ?? 0)) * 60;
-            if ($minIntervalInSec > 0 && (time() - $lastRun) < $minIntervalInSec) {
-                continue;
-            }
-            if (!$this->claim($id)) {
-                continue;
-            }
-            $due[$id] = $options;
-        }
-
-        return $due;
-    }
-
-    /**
-     * Sync the given sources in this process and record what happened.
-     *
-     * @param array<string, array<string, mixed>> $sources
-     */
-    public function run(array $sources): void
-    {
-        if (empty($sources)) {
-            return;
-        }
-        $importerManager = $this->services->get(ImporterManager::class);
-        foreach ($sources as $id => $options) {
-            ob_start();
-            try {
-                $result = $importerManager->syncSource((string)$id, $options);
-            } catch (\Throwable $ex) {
-                $result = 'Erreur : ' . $ex->getMessage();
-            }
-            $this->recordRun((string)$id, trim(ob_get_clean() . "\n" . $result));
-        }
-    }
-
-    /**
-     * Record a source's sync outcome, whoever ran it -- the console command and the admin page report theirs too, so "when did this last sync" has one answer rather than one per trigger.
-     */
+    /** Record a source's sync outcome, well or badly: the log's modification time is when it last ran. */
     public function recordRun(string $source, string $output): void
     {
         $file = $this->stateFile($source);
@@ -134,83 +47,26 @@ class SyncScheduler
      */
     public function getLastSync(string $source): ?array
     {
+        $time = $this->lastSyncTime($source);
+        if ($time === null) {
+            return null;
+        }
+
+        return [
+            'time' => $time,
+            'output' => $this->storage->read((string)$this->stateFile($source)),
+        ];
+    }
+
+    /** When $source last synced, as a Unix time, or null if it never ran: what the schedule needs, without reading the log. */
+    public function lastSyncTime(string $source): ?int
+    {
         $file = $this->stateFile($source);
         if ($file === null || !$this->storage->fileExists($file)) {
             return null;
         }
 
-        return [
-            'time' => $this->storage->lastModified($file),
-            'output' => $this->storage->read($file),
-        ];
-    }
-
-    /**
-     * @return array<string, array<string, mixed>>
-     */
-    private function dataSources(): array
-    {
-        $dataSources = $this->params->has('dataSources') ? $this->params->get('dataSources') : [];
-
-        return is_array($dataSources) ? $dataSources : [];
-    }
-
-    /** Hand one source's import to a console process. */
-    private function spawnSync(string $source): bool
-    {
-        try {
-            return $this->services->get(ConsoleService::class)
-                ->startConsoleAsync('importer:sync', ['-s', $source]) !== null;
-        } catch (\Throwable $unavailable) {
-            return false;
-        }
-    }
-
-    /**
-     * @param array<string, array<string, mixed>> $dueSources
-     */
-    private function runAfterResponse(array $dueSources): void
-    {
-        @ignore_user_abort(true);
-        if (function_exists('fastcgi_finish_request')) {
-            @fastcgi_finish_request();
-        }
-
-        @set_time_limit(0);
-        try {
-            $this->run($dueSources);
-        } catch (\Throwable $ex) {
-        }
-    }
-
-    private function lastRunTime(string $source): int
-    {
-        $file = $this->stateFile($source);
-        if ($file === null || !$this->storage->fileExists($file)) {
-            return 0;
-        }
-
         return $this->storage->lastModified($file);
-    }
-
-    /**
-     * Take this source's slot by stamping its state file now, before the import itself (which happens elsewhere, and may take minutes): the point of the stamp is that no other request starts the same import meanwhile.
-     */
-    private function claim(string $source): bool
-    {
-        $file = $this->stateFile($source);
-        if ($file === null) {
-            return false;
-        }
-        $kept = $this->storage->fileExists($file) ? $this->storage->read($file) : '';
-
-        try {
-            $this->storage->write($file, $kept);
-        } catch (StorageException) {
-            return false;
-        }
-
-        return true;
     }
 
     /** Path of $source's state file, or null when the source's name leaves nothing to make one from. */

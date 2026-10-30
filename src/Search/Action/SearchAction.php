@@ -3,6 +3,7 @@
 namespace YesWiki\Search\Action;
 
 use YesWiki\Core\YesWikiAction;
+use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Component\Category;
 use YesWiki\Kernel\Component\Component;
 use YesWiki\Kernel\Component\ProvidesComponents;
@@ -55,14 +56,15 @@ class SearchAction extends YesWikiAction implements RegisteredAction, ProvidesCo
         $schema = $this->getService(SearchIndexSchema::class);
         $templateEngine = $this->getService(TemplateEngine::class);
 
+        // An empty index is the queue's to fill, never this page's: it says where things stand.
         $indexer = $this->getService(SearchIndexer::class);
-        if ($schema->exists() && $indexer->indexedCount() === 0 && $indexer->pending() > 0) {
-            $indexer->drain(200, 2);
-        }
         if (!$schema->exists() || $indexer->indexedCount() === 0) {
             return $templateEngine->render('@core/search-building.twig', [
                 'exists' => $schema->exists(),
                 'pending' => $schema->exists() ? $indexer->pending() : 0,
+                'jobsUrl' => $this->getService(AclService::class)->isAdmin()
+                    ? $this->getService(UrlFormatter::class)->href('', 'admin/jobs')
+                    : '',
             ]);
         }
 

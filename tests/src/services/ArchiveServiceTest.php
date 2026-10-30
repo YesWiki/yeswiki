@@ -410,6 +410,45 @@ class ArchiveServiceTest extends YesWikiTestCase
     }
 
     /**
+     * Whoever holds a backup -- another wiki that fetched it, anyone who downloaded it -- could
+     * consume this wiki's queue with the secret, so no list of values to hide may let it through.
+     *
+     * @param array{wiki: YesWikiRuntime, archiveService: ArchiveService} $services
+     */
+    #[Depends('testArchiveServiceExisting')]
+    #[Depends('testArchive')]
+    public function testTheQueueSecretNeverLeavesWithABackup(array $services): void
+    {
+        $configService = $services['wiki']->services->get(ConfigurationService::class);
+        $config = $configService->getConfiguration('yeswiki.config.php');
+        $config->load();
+        $previous = $config['queue_consume_secret'] ?? null;
+        $config['queue_consume_secret'] = 'local-consume-secret';
+        $configService->write($config);
+        try {
+            $output = '';
+            $location = $services['archiveService']->archive(
+                $output,
+                true,
+                false,
+                [],
+                constant('\\YesWiki\\Admin\\Service\\ArchiveService::FOLDERS_TO_INCLUDE'),
+                ['db_password' => ''],
+            );
+        } finally {
+            $config = $configService->getConfiguration('yeswiki.config.php');
+            $config->load();
+            $config['queue_consume_secret'] = $previous;
+            $configService->write($config);
+        }
+
+        $data = $this->getDataFromLocation($location, $services['wiki']);
+        $this->assertArrayNotHasKey('error', $data);
+        $this->assertArrayHasKey('wakkaContent', $data);
+        $this->assertArrayNotHasKey('queue_consume_secret', $data['wakkaContent'], 'a hide list that does not name the secret still keeps it out');
+    }
+
+    /**
      * @return array<string, mixed>|null
      */
     protected function getHideConfigValuesParam(ConfigurationService $configurationService): ?array
