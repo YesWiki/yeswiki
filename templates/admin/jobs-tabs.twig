@@ -1,0 +1,29 @@
+{# The tabs of /admin/jobs: the nav and the open one, swapped whole when another is picked, and reloaded when an action says something changed. #}
+{% set statusSwap = 'hx-target="#yw-jobs-status" hx-swap="outerHTML" hx-disabled-elt="this"' %}
+
+<div class="yw-jobs__tabs" id="yw-jobs-tabs"
+     hx-get="{{ url({ tag: 'api/admin/jobs/tab/' ~ tab.name }) }}"
+     hx-trigger="ywJobsChanged from:body"
+     hx-swap="outerHTML">
+  <ul class="yw-nav" role="tablist">
+    {% for name in tab.tabs %}
+      <li role="presentation"{% if name == tab.name %} class="active"{% endif %}>
+        <a href="{{ url({ tag: 'admin/jobs' }) }}" role="tab" aria-selected="{{ name == tab.name ? 'true' : 'false' }}"
+           hx-get="{{ url({ tag: 'api/admin/jobs/tab/' ~ name }) }}" hx-target="#yw-jobs-tabs" hx-swap="outerHTML">
+          {{ _t('ADMIN_JOBS_TAB_' ~ name|upper) }}{% if name == 'failed' and tab.failedCount > 0 %} ({{ tab.failedCount }}){% endif %}
+        </a>
+      </li>
+    {% endfor %}
+  </ul>
+
+  <div class="yw-jobs__pane" role="tabpanel">
+    {% if tab.error %}
+      <p class="yw-jobs__notice yw-jobs__notice--danger">{{ _t('ADMIN_JOBS_UNREADABLE', { error: tab.error }) }}</p>
+    {% else %}
+      {% include '@core/admin/jobs-tab-' ~ tab.name ~ '.twig' with { rows: tab.rows, statusSwap: statusSwap } %}
+      {% if tab.rows|length >= tab.listed %}
+        <p class="yw-text-muted"><small>{{ _t('ADMIN_JOBS_SHOWN', { count: tab.listed }) }}</small></p>
+      {% endif %}
+    {% endif %}
+  </div>
+</div>

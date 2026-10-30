@@ -1,0 +1,45 @@
+{% if rows is empty %}
+  <p class="yw-text-muted">{{ _t('ADMIN_JOBS_EMPTY_FAILED') }}</p>
+{% else %}
+  <p class="yw-text-muted"><small>{{ _t('ADMIN_JOBS_FAILED_HELP') }}</small></p>
+  <div class="yw-jobs__scroll">
+    <table class="yw-table yw-table--striped yw-table--condensed yw-jobs__table">
+      <thead>
+        <tr>
+          <th>{{ _t('ADMIN_JOBS_COL_TYPE') }}</th>
+          <th>{{ _t('ADMIN_JOBS_COL_SINCE') }}</th>
+          <th>{{ _t('ADMIN_JOBS_COL_ATTEMPTS') }}</th>
+          <th>{{ _t('ADMIN_JOBS_COL_ERROR') }}</th>
+          <th><span class="sr-only">{{ _t('ADMIN_JOBS_COL_ACTIONS') }}</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in rows %}
+          <tr>
+            <td title="{{ row.type }}">{{ row.label }} <small class="yw-text-muted">#{{ row.id }}</small></td>
+            <td>{{ row.since }}</td>
+            <td>{{ row.attempts }}</td>
+            <td class="yw-jobs__error">
+              {% if row.killedIn is not null %}
+                {{ _t('ADMIN_JOBS_KILLED_IN', { mode: row.killedIn }) }}
+              {% else %}
+                {% include '@core/admin/jobs-error.twig' with { error: row.error } only %}
+              {% endif %}
+            </td>
+            <td>
+              <div class="yw-jobs__actions">
+                <button type="button" class="yw-btn yw-btn--sm yw-btn--primary"
+                        hx-post="{{ url({ tag: 'api/admin/jobs/failed/' ~ row.id ~ '/retry' }) }}" {{ statusSwap|raw }}>{{ _t('ADMIN_JOBS_RETRY') }}</button>
+                <button type="button" class="yw-btn yw-btn--sm"
+                        hx-post="{{ url({ tag: 'api/admin/jobs/failed/' ~ row.id ~ '/ignore' }) }}" {{ statusSwap|raw }}>{{ _t('ADMIN_JOBS_IGNORE') }}</button>
+                <button type="button" class="yw-btn yw-btn--sm yw-btn--danger"
+                        hx-post="{{ url({ tag: 'api/admin/jobs/failed/' ~ row.id ~ '/delete' }) }}" {{ statusSwap|raw }}
+                        hx-confirm="{{ _t('ADMIN_JOBS_DELETE_CONFIRM') }}">{{ _t('ADMIN_JOBS_DELETE') }}</button>
+              </div>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% endif %}
