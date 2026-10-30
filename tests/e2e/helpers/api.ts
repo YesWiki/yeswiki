@@ -40,6 +40,10 @@ const anchored = (pattern: string): RegExp | null => {
   }
 }
 
+/** The first value of a pattern that lists the ones it takes, as `types|failed|tasks` does. */
+const listed = (pattern: string): string[] =>
+  /^\w+(\|\w+)*$/.test(pattern) ? [pattern.split('|')[0]] : []
+
 /** A value the router accepts for `param`, so the request reaches the ACL gate. */
 const valueFor = (param: ApiParam): string => {
   if (param.pattern === null) {
@@ -50,8 +54,9 @@ const valueFor = (param: ApiParam): string => {
 
   return matcher === null
     ? PROBE
-    : ([PROBE, `${PROBE}.zip`, '1', '0', 'a'].find((c) => matcher.test(c)) ??
-        PROBE)
+    : ([PROBE, `${PROBE}.zip`, '1', '0', 'a', ...listed(param.pattern)].find(
+        (c) => matcher.test(c),
+      ) ?? PROBE)
 }
 
 const placeholders = (path: string) => path.replace(/\{!(\w+)\}/g, '{$1}')
