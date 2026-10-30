@@ -175,6 +175,39 @@ class MySqlDialect implements SqlDialect
         return ["DROP TABLE IF EXISTS `{$table}`"];
     }
 
+    public function queueDdl(string $table): array
+    {
+        return [
+            "CREATE TABLE IF NOT EXISTS `{$table}` (
+                `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+                `queue_name` VARCHAR(32) NOT NULL,
+                `task_id` VARCHAR(64) DEFAULT NULL,
+                `message_type` VARCHAR(191) NOT NULL,
+                `body` LONGTEXT NOT NULL,
+                `headers` LONGTEXT NOT NULL,
+                `dedup_key` VARCHAR(191) DEFAULT NULL,
+                `created_at` DATETIME NOT NULL,
+                `available_at` DATETIME NOT NULL,
+                `delivered_at` DATETIME DEFAULT NULL,
+                `delivered_by` VARCHAR(64) DEFAULT NULL,
+                `delivered_mode` VARCHAR(16) DEFAULT NULL,
+                `delivered_limit` INT DEFAULT NULL,
+                `attempts` INT NOT NULL DEFAULT 0,
+                `last_error` TEXT DEFAULT NULL,
+                `killed_in` VARCHAR(16) DEFAULT NULL,
+                PRIMARY KEY (`id`),
+                KEY `idx_queue_delivered_available` (`queue_name`, `delivered_at`, `available_at`),
+                KEY `idx_dedup_key` (`dedup_key`),
+                UNIQUE KEY `uniq_task_id` (`task_id`)
+            ) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci ENGINE=InnoDB",
+        ];
+    }
+
+    public function queueDropDdl(string $table): array
+    {
+        return ["DROP TABLE IF EXISTS `{$table}`"];
+    }
+
     /** `VALUES()` rather than the 8.0.20 row alias, which MariaDB does not have. */
     public function upsert(string $table, array $values, array $conflictColumns, array $assignments): string
     {

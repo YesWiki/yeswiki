@@ -960,6 +960,17 @@ class DbService
         return $this->transactionDepth > 0;
     }
 
+    /**
+     * The id the last INSERT on this connection generated for an auto-increment column.
+     *
+     * Per connection on every engine (LAST_INSERT_ID(), lastval(), last_insert_rowid()), so another
+     * process inserting at the same moment cannot answer in its place, which `SELECT MAX(id)` would.
+     */
+    public function lastInsertId(): int
+    {
+        return (int)$this->link->lastInsertId();
+    }
+
     /** A statement prepared once, to be executed many times with different values. */
     public function prepare(string $query): PreparedStatement
     {

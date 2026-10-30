@@ -787,6 +787,7 @@ return [
     'DATABASE_INSTALLATION' => 'Installation de la base de données',
     'CREATION_OF_SEARCH_INDEX' => 'Création de l\'index de recherche',
     'CREATION_OF_JOURNAL' => 'Création du Journal',
+    'CREATION_OF_QUEUE' => 'Création de la file des tâches de fond',
     'CREATION_OF_TABLES' => 'Création des tables, de l\'administrateur et du groupe admins',
     'NOT_POSSIBLE_TO_CREATE_SQL_TABLES' => 'Impossible de créer les tables SQL.',
     'ALREADY_CREATED' => 'Déjà créée',

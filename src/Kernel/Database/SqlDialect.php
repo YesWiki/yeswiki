@@ -114,6 +114,26 @@ interface SqlDialect
     public function journalDropDdl(string $table): array;
 
     /**
+     * Every statement needed to create the queue's table and its indexes, in execution order (messenger / scheduler).
+     *
+     * The table holds the messages and, in a queue of their own, the scheduled tasks and the
+     * Scheduler's checkpoint: `task_id` names a task's row, unique, and is NULL on every message.
+     * `killed_in` is the mode a failed message's consumer was killed in, NULL for every other row.
+     *
+     * @param string $table already prefixed, unquoted
+     *
+     * @return list<string>
+     */
+    public function queueDdl(string $table): array;
+
+    /**
+     * Every statement needed to remove what queueDdl() created, in execution order.
+     *
+     * @return list<string>
+     */
+    public function queueDropDdl(string $table): array;
+
+    /**
      * An INSERT that, when the unique key over $conflictColumns is already taken, applies $assignments to the row that is there instead of failing.
      *
      * @param string                $table           already prefixed, unquoted

@@ -250,4 +250,26 @@ class SqlDialectTest extends TestCase
 
         $this->assertSame(0, substr_count($quoted, $delimiter) % 2);
     }
+
+    #[DataProvider('dialects')]
+    public function testQueueDdlCreatesOneTableAndDropRemovesIt(SqlDialect $d, string $driver): void
+    {
+        $create = implode("\n", $d->queueDdl('p_queue'));
+        $this->assertSame(1, preg_match_all('/CREATE TABLE/', $create), "$driver creates one table");
+        $this->assertMatchesRegularExpression('/CREATE TABLE IF NOT EXISTS\s+[`"]p_queue[`"]/', $create);
+        $this->assertMatchesRegularExpression('/[`"]task_id[`"] (VARCHAR\(64\)|TEXT) DEFAULT NULL/', $create, "$driver gives messages no task id");
+        $this->assertMatchesRegularExpression('/UNIQUE (KEY|INDEX IF NOT EXISTS) [`"](p_queue_)?uniq_task_id[`"]/', $create, "$driver keeps a task id to one row");
+
+        $this->assertSame(["DROP TABLE IF EXISTS {$d->quoteIdentifier('p_queue')}"], $d->queueDropDdl('p_queue'));
+    }
+
+    #[DataProvider('dialects')]
+    public function testTheJournalIsIndexedForTheQueueChannelAndItsIndexCanBeAddedLater(SqlDialect $d, string $driver): void
+    {
+        $this->assertStringContainsString('idx_channel_target_at', implode("\n", $d->journalDdl('p_journal')), "$driver creates it with the table");
+
+        $later = implode("\n", $d->journalQueueIndexDdl('p_journal'));
+        $this->assertStringContainsString('idx_channel_target_at', $later, "$driver adds it to a table that exists");
+        $this->assertMatchesRegularExpression('/CREATE INDEX .*[`"]p_journal[`"]\s*\([`"]channel[`"], [`"]target[`"], [`"]at[`"]\)/', $later);
+    }
 }

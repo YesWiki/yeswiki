@@ -497,8 +497,9 @@ class InstallationService
         $this->db()->commit();
         $this->pass(_t('INSERTION_OF_PAGES'));
 
-        $this->installSearchIndex();
         $this->installJournal();
+        $this->installQueue();
+        $this->installSearchIndex();
     }
 
     /** Create the Journal, so a fresh wiki records its first act rather than its first migration (ticket 51 / ADR-0025). */
@@ -512,6 +513,19 @@ class InstallationService
         SchemaCreator::createJournal($db, $this->config['table_prefix']);
 
         $this->pass(_t('CREATION_OF_JOURNAL'));
+    }
+
+    /** Create the table of the background queue, so the first request of a fresh wiki can already dispatch (messenger / scheduler). */
+    private function installQueue(): void
+    {
+        $db = $this->dbLink;
+        if ($db === null) {
+            throw new \Exception('no database connection');
+        }
+
+        SchemaCreator::createQueue($db, $this->config['table_prefix']);
+
+        $this->pass(_t('CREATION_OF_QUEUE'));
     }
 
     /** Create the search index and queue the seeded content for it (ticket 18 / ADR-0015). */

@@ -4,17 +4,19 @@ namespace YesWiki\Admin\Service;
 
 use YesWiki\Kernel\Database\SqlDialectFactory;
 use YesWiki\Kernel\Service\JournalSchema;
+use YesWiki\Kernel\Service\Queue\QueueSchema;
 use YesWiki\Search\Service\SearchIndexSchema;
 
 /** The empty tables of one wiki on any supported engine, exactly as a fresh installation creates them. */
 class SchemaCreator
 {
-    /** Creates the content tables, the search index and the Journal under `$prefix` on `$db`. */
+    /** Creates the content tables, the search index, the Journal and the queue under `$prefix` on `$db`. */
     public static function create(\PDO $db, string $prefix): void
     {
         self::createContentTables($db, $prefix);
         self::createSearchIndex($db, $prefix);
         self::createJournal($db, $prefix);
+        self::createQueue($db, $prefix);
     }
 
     /** The tables and indexes `installation-create-tables.sql.twig` describes for this engine, without the seed rows the installer adds. */
@@ -59,6 +61,14 @@ class SchemaCreator
     public static function createJournal(\PDO $db, string $prefix): void
     {
         foreach (SqlDialectFactory::forDriver(self::driver($db))->journalDdl($prefix . JournalSchema::TABLE) as $statement) {
+            $db->exec($statement);
+        }
+    }
+
+    /** The table of the background queue (messenger / scheduler); what it did goes to the Journal's `queue` channel. */
+    public static function createQueue(\PDO $db, string $prefix): void
+    {
+        foreach (SqlDialectFactory::forDriver(self::driver($db))->queueDdl($prefix . QueueSchema::TABLE) as $statement) {
             $db->exec($statement);
         }
     }
