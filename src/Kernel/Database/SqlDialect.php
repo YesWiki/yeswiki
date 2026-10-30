@@ -89,6 +89,15 @@ interface SqlDialect
     public function supportsDump(): bool;
 
     /**
+     * The statements that make an identity column count on from the largest value in the table, once rows were inserted into it with their ids; none where the driver does so by itself.
+     *
+     * @param string $table already prefixed, unquoted
+     *
+     * @return list<string>
+     */
+    public function realignIdentity(string $table, string $column): array;
+
+    /**
      * Every statement needed to create the Journal table and its indexes, in execution order (ticket 51 / ADR-0025).
      *
      * @param string $table already prefixed, unquoted

@@ -34,7 +34,6 @@ const app = createApp({
       csrfToken: '',
       showReturn: true,
       warnIfNotStarted: true,
-      callAsync: true,
       remoteUrl: '',
       remoteUsername: '',
       remotePassword: '',
@@ -276,10 +275,13 @@ const app = createApp({
         })
         .catch(() => this.failRestore(archive))
     },
-    failRestore(archive) {
+    failRestore(archive, data = null) {
       this.message = _t('ADMIN_BACKUPS_RESTORE_ARCHIVE_ERROR', {
         filename: archive.filename,
       })
+      if (data && data.failed) {
+        this.message = this.failureMessage(data, this.message)
+      }
       this.messageClass = { alert: true, 'alert-danger': true }
       this.updating = false
       this.restoreUid = ''
@@ -293,6 +295,10 @@ const app = createApp({
       )
         .then((data) => {
           const tail = (data.output || '').split('\n').slice(-5).join('<br>')
+          // A run that failed or was stopped also reads as finished: it ended.
+          if (data.failed || data.stopped) {
+            return this.failRestore(archive, data)
+          }
           if (data.finished) {
             this.restoreUid = ''
             this.message = _t('ADMIN_BACKUPS_RESTORE_ARCHIVE_SUCCESS', {
@@ -310,9 +316,6 @@ const app = createApp({
               window.location.href = wiki.url(wiki.pageTag)
             }, 2000)
             return
-          }
-          if (data.stopped) {
-            return this.failRestore(archive)
           }
           this.message = `${_t('ADMIN_BACKUPS_RESTORE_ARCHIVE', {
             filename: archive.filename,
@@ -336,19 +339,6 @@ const app = createApp({
             ) {
               this.endStartingUpdateError()
             } else if (data.canArchive) {
-              if (
-                Object.prototype.hasOwnProperty.call(data, 'dB') &&
-                !data.dB
-              ) {
-                console.log(
-                  _t('ADMIN_BACKUPS_START_BACKUP_NOT_DB', {
-                    helpBaseUrl: wiki.url('doc'),
-                  }),
-                )
-              }
-              this.callAsync =
-                !Object.prototype.hasOwnProperty.call(data, 'callAsync') ||
-                data.callAsync
               return this.startArchiveNextStep()
             } else if (
               Object.prototype.hasOwnProperty.call(data, 'archiving') &&
@@ -376,14 +366,6 @@ const app = createApp({
               this.endStartingUpdateErrorWithT(
                 'ADMIN_BACKUPS_START_BACKUP_PATH_NOT_WRITABLE',
                 'danger',
-              )
-            } else if (
-              Object.prototype.hasOwnProperty.call(data, 'canExec') &&
-              !data.canExec
-            ) {
-              this.endStartingUpdateErrorWithT(
-                'ADMIN_BACKUPS_START_BACKUP_CANNOT_EXEC',
-                'info',
               )
             } else if (
               Object.prototype.hasOwnProperty.call(
@@ -434,40 +416,14 @@ const app = createApp({
         this.canForceDelete = false
         this.askConfirmationToDelete = false
       }
-      if (!this.callAsync) {
-        this.archiveMessage = _t('ADMIN_BACKUPS_START_BACKUP_SYNC').replace(
-          /\n/g,
-          '<br>',
-        )
-        this.archiveMessageClass = { alert: true, 'alert-warning': true }
-      }
       const formObject = {
         action: 'startArchive',
         'params[savefiles]': this.savefiles,
         'params[savedatabase]': this.savedatabase,
       }
-      formObject.callAsync = this.callAsync
-      const options = {}
-      if (!this.callAsync) {
-        const controller = new AbortController()
-        options.signal = controller.signal
-        setTimeout(() => {
-          controller.abort()
-        }, 6000000)
-      }
-      return await this.fetchPost(
-        wiki.url('?api/archives'),
-        formObject,
-        options,
-      ).then(
+      return await this.fetchPost(wiki.url('?api/archives'), formObject).then(
         (data) => {
-          if (this.callAsync) {
-            toastMessage(
-              _t('ADMIN_BACKUPS_STARTED'),
-              2000,
-              'alert alert-success',
-            )
-          }
+          toastMessage(_t('ADMIN_BACKUPS_STARTED'), 2000, 'alert alert-success')
           this.currentArchiveUid = data.uid
           setTimeout(this.updateStatus, 2000)
         },
@@ -570,15 +526,8 @@ const app = createApp({
     },
     async checkStopped() {
       if (this.archiving && this.currentArchiveUid > 0) {
-        const getData = {}
-        if (!this.callAsync) {
-          getData.forceStarted = true
-        }
         return await this.fetch(
-          wiki.url(
-            `?api/archives/uidstatus/${this.currentArchiveUid}`,
-            getData,
-          ),
+          wiki.url(`?api/archives/uidstatus/${this.currentArchiveUid}`),
         )
           .then(
             (data) => {
@@ -612,19 +561,23 @@ const app = createApp({
         setTimeout(() => {
           this.warnIfNotStarted = true
         }, 5000)
-        const getData = {}
-        if (!this.callAsync) {
-          getData.forceStarted = true
-        }
         return await this.fetch(
-          wiki.url(
-            `?api/archives/uidstatus/${this.currentArchiveUid}`,
-            getData,
-          ),
+          wiki.url(`?api/archives/uidstatus/${this.currentArchiveUid}`),
         )
           .then(
             (data) => {
-              if (data.stopped) {
+              if (data.failed) {
+                this.endUpdatingStatus(
+                  this.failureMessage(
+                    data,
+                    _t('ADMIN_BACKUPS_UID_STATUS_FAILED'),
+                  ),
+                  'danger',
+                )
+                if (this.isPreupdate) {
+                  this.canForceUpdate = true
+                }
+              } else if (data.stopped) {
                 this.endUpdatingStatus(
                   _t('ADMIN_BACKUPS_UID_STATUS_STOP'),
                   'success',
@@ -664,7 +617,10 @@ const app = createApp({
                 this.archiveMessage += `<pre>${data.output.split('\n').slice(-5).join('<br>')}</pre>`
                 setTimeout(this.updateStatus, 1000)
               } else {
-                this.archiveMessage = _t('ADMIN_BACKUPS_UID_STATUS_RUNNING')
+                this.archiveMessage =
+                  data.state === 'pending'
+                    ? _t('ADMIN_BACKUPS_UID_STATUS_PENDING')
+                    : _t('ADMIN_BACKUPS_UID_STATUS_RUNNING')
                 this.archiveMessage += `<pre>${data.output.split('\n').slice(-5).join('<br>')}</pre>`
                 this.archiveMessageClass = {
                   alert: true,
@@ -687,6 +643,22 @@ const app = createApp({
           })
       }
       this.endUpdatingStatus()
+    },
+    /**
+     * What to say of a run the queue reports failed or killed: why, and the last lines it wrote.
+     */
+    failureMessage(data, heading) {
+      let message = heading
+      if (data.state === 'killed') {
+        message += `<br>${_t('ADMIN_BACKUPS_UID_STATUS_KILLED')}`
+      } else if (data.error) {
+        message += `<br>${this.escapeHtml(data.error)}`
+      }
+      const tail = (data.output || '').split('\n').slice(-5).join('\n')
+      if (tail.trim() !== '') {
+        message += `<pre>${this.escapeHtml(tail)}</pre>`
+      }
+      return message
     },
     endUpdatingStatus(message = '', className = 'info') {
       this.archiveMessage = message
@@ -824,7 +796,7 @@ const app = createApp({
           }
           this.remoteRunning = true
           this.showRemoteState(data)
-          setTimeout(this.advanceRemoteBackup, 1000)
+          setTimeout(this.pollRemoteBackup, 1000)
         },
         () => {},
       )
@@ -846,21 +818,30 @@ const app = createApp({
         (data) => {
           this.remotePassword = ''
           this.showRemoteState(data)
-          setTimeout(this.advanceRemoteBackup, 500)
+          setTimeout(this.pollRemoteBackup, 500)
         },
         (pError) => {
           this.endRemoteBackup(this.escapeHtml(pError.message), 'danger')
         },
       )
     },
-    async advanceRemoteBackup() {
+    // The queue moves the fetch on, step by step; the page only watches it. On a wiki whose
+    // queue runs at the end of page views, each of these requests is one more such view.
+    async pollRemoteBackup() {
       if (!this.remoteRunning || this.remoteCancelling) {
         return
       }
-      return await this.postRemoteBackup({ action: 'advance' }).then(
+      return await this.fetch(wiki.url('?api/remotebackup')).then(
         (data) => {
           if (data.error) {
             return this.endRemoteBackup(this.escapeHtml(data.error), 'danger')
+          }
+          if (data.step === 'idle') {
+            // given up from another tab
+            return this.endRemoteBackup(
+              _t('ADMIN_BACKUPS_REMOTE_CANCELLED'),
+              'warning',
+            )
           }
           if (!data.running) {
             const done = _t('ADMIN_BACKUPS_REMOTE_FINISHED', {
@@ -872,7 +853,7 @@ const app = createApp({
           }
           this.showRemoteState(data)
           setTimeout(
-            this.advanceRemoteBackup,
+            this.pollRemoteBackup,
             data.step === 'downloading' ? 500 : 2000,
           )
         },

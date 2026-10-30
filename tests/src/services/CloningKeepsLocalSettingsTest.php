@@ -84,6 +84,19 @@ class CloningKeepsLocalSettingsTest extends TestCase
         $this->assertSame('wiki_new', $merged['db_database']);
     }
 
+    /** The secret a cron or an online scheduler consumes the queue with, and how this host consumes it, are this wiki's own: another wiki's would answer 401 here, or name a worker this host does not run. */
+    public function testTheRemotesQueueSecretAndConsumerNeverArrive(): void
+    {
+        $merged = ArchiveService::mergedSettings(
+            ['queue_consume_secret' => 'local-consume-secret', 'queue_consumer' => 'command'],
+            ['queue_consume_secret' => 'remote-consume-secret', 'queue_consumer' => 'worker', 'favorite_theme' => 'margot']
+        );
+
+        $this->assertSame('local-consume-secret', $merged['queue_consume_secret']);
+        $this->assertSame('command', $merged['queue_consumer']);
+        $this->assertSame('margot', $merged['favorite_theme']);
+    }
+
     /** A backup blanks the mail server and the API keys it was told to hide, and a restore must not copy the blanks over this wiki's. */
     public function testWhatTheBackupHidIsKept(): void
     {

@@ -5,21 +5,16 @@ return [
     'ADMIN_BACKUPS_RESTORE_CONFIRM' => 'Restore the backup {filename}?
 
 Warning: this overwrites the current database and files. It cannot be undone.',
-    'ADMIN_BACKUPS_START_BACKUP_SYNC' => 'Starting a live backup (less stable)
-The status will not update live
-Do not close or refresh this window!',
     'ADMIN_BACKUPS_START_BACKUP_ERROR_ARCHIVING' => 'The backup cannot start: one seems to be running already.
 Follow <a href="{helpBaseUrl}#/docs/en/admin?id=fixing-backup-problems" title="Help on restarting a backup" target="blank">this help page</a> to put it right.',
     'ADMIN_BACKUPS_START_BACKUP_ERROR_HIBERNATE' => 'The backup cannot start: the site is hibernating.
 Follow <a href="{helpBaseUrl}#/docs/en/admin?id=fixing-backup-problems" title="Help on waking the site up" target="blank">this help page</a> to wake it up.',
     'ADMIN_BACKUPS_START_BACKUP_PATH_NOT_WRITABLE' => 'The backup cannot start: the backup folder is not writable.
 Follow <a href="{helpBaseUrl}#/docs/en/admin?id=fixing-backup-problems" title="Help on setting the backup folder up" target="blank">this help page</a> to set the folder up.',
-    'ADMIN_BACKUPS_START_BACKUP_CANNOT_EXEC' => 'The backup cannot start: console commands cannot be run on this server (<a href="{helpBaseUrl}#/docs/en/admin?id=fixing-backup-problems" title="Help on the console command" target="blank">see the help page</a>).',
     'ADMIN_BACKUPS_CANNOT_ARCHIVE' => 'The backup cannot start: this server cannot archive.',
     'ADMIN_BACKUPS_START_BACKUP_FOLDER_AVAILABLE' => 'The backup cannot start: the backup folder can be reached from the internet.
 Follow <a href="{helpBaseUrl}?#/docs/en/admin?id=fixing-backup-problems" title="Help on restricting access to the backup folder" target="blank">this help page</a> to restrict access to it.',
     'ADMIN_BACKUPS_START_BACKUP_NOT_ENOUGH_SPACE' => 'The backup cannot start: there is not enough disk space left for a new one.',
-    'ADMIN_BACKUPS_START_BACKUP_NOT_DB' => 'The backup will not be complete: the database export tool (mysqldump) cannot be reached (<a href="{helpBaseUrl}#/docs/en/admin?id=fixing-backup-problems" title="Help on mysqldump" target="blank">see the help page</a>).',
     'ERROR_CONTACT_ADMIN' => 'Something went wrong. Please contact the site administrator and pass on this message:',
     'CHOOSE_AN_IMAGE' => 'Choose an image',
     'REMOVE_IMAGE' => 'Remove the image',
@@ -57,6 +52,9 @@ Follow <a href="{helpBaseUrl}?#/docs/en/admin?id=fixing-backup-problems" title="
     'ADMIN_BACKUPS_UPDATE_UID_STATUS_ERROR' => 'Not possible to update backup status',
     'ADMIN_BACKUPS_UID_STATUS_NOT_FOUND' => 'Data about backup was not found',
     'ADMIN_BACKUPS_UID_STATUS_RUNNING' => 'Running backup',
+    'ADMIN_BACKUPS_UID_STATUS_PENDING' => 'Backup waiting for the background queue to take it',
+    'ADMIN_BACKUPS_UID_STATUS_FAILED' => 'The backup failed',
+    'ADMIN_BACKUPS_UID_STATUS_KILLED' => 'The server stopped it before the end. The Background jobs page (?admin/jobs) says what to do.',
     'ADMIN_BACKUPS_UID_STATUS_FINISHED' => 'Finished backup',
     'ADMIN_BACKUPS_UID_STATUS_NOT_FINISHED' => 'Problem : backup is not running but not finished !',
     'ADMIN_BACKUPS_UID_STATUS_STOP' => 'Backup aborted',

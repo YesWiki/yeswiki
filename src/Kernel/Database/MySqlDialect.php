@@ -137,6 +137,11 @@ class MySqlDialect implements SqlDialect
         return true;
     }
 
+    public function realignIdentity(string $table, string $column): array
+    {
+        return [];
+    }
+
     public function journalDdl(string $table): array
     {
         $json = $this->jsonColumnType();

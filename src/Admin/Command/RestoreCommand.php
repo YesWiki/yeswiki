@@ -9,7 +9,7 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use YesWiki\Admin\Service\ArchiveService;
 
-/** The other half of core:archive: puts one back. Runs detached when the admin screen starts it, so a large restore is not cut short by a request timeout. */
+/** The other half of core:archive: puts one back, here and now. The admin screen does not use it: its restores go through the queue (RestoreArchive). */
 class RestoreCommand extends Command
 {
     protected ArchiveService $archiveService;
@@ -62,7 +62,7 @@ class RestoreCommand extends Command
         $uid = is_string($uid) ? $uid : '';
 
         try {
-            $this->archiveService->synchronously()->restoreArchive(
+            $this->archiveService->restoreArchive(
                 $filename,
                 !$databaseOnly,
                 !$filesOnly,

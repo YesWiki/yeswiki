@@ -135,6 +135,15 @@ class PostgreSqlDialect implements SqlDialect
         return true;
     }
 
+    /** An insert with an explicit id leaves the sequence behind it where it was. */
+    public function realignIdentity(string $table, string $column): array
+    {
+        $quotedTable = $this->quoteIdentifier($table);
+        $quotedColumn = $this->quoteIdentifier($column);
+
+        return ["SELECT setval(pg_get_serial_sequence('{$quotedTable}', '{$column}'), (SELECT MAX({$quotedColumn}) FROM {$quotedTable}))"];
+    }
+
     public function journalDdl(string $table): array
     {
         $json = $this->jsonColumnType();

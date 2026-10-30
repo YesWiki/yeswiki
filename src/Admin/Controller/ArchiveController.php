@@ -119,11 +119,11 @@ class ArchiveController extends YesWikiController
                             );
                         }
                         $params = is_array($postParams) ? $postParams : [];
-                        $callAsync = !$post->has('callAsync') || in_array($post->get('callAsync'), [1, true, 'true', '1'], true);
-                        $uid = $this->startArchive($params, $callAsync);
+                        // `callAsync` is still sent by older pages and older wikis fetching a backup from this one; the queue decides now.
+                        $uid = $this->startArchive($params);
                         if (empty($uid)) {
                             return new ApiResponse(
-                                ['error' => $callAsync ? _t('AU_NO_BACKGROUND_PROCESS') : _t('AU_BACKUP_PRODUCED_NO_FILE')],
+                                ['error' => _t('AU_BACKUP_NOT_QUEUED')],
                                 Response::HTTP_INTERNAL_SERVER_ERROR
                             );
                         }
@@ -165,11 +165,10 @@ class ArchiveController extends YesWikiController
                         $restoreFiles = !$post->has('restoreFiles') || in_array($post->get('restoreFiles'), [1, true, 'true', '1'], true);
                         $restoreDatabase = !$post->has('restoreDatabase') || in_array($post->get('restoreDatabase'), [1, true, 'true', '1'], true);
                         $rewriteUrls = !$post->has('rewriteUrls') || in_array($post->get('rewriteUrls'), [1, true, 'true', '1'], true);
-                        $callAsync = !$post->has('callAsync') || in_array($post->get('callAsync'), [1, true, 'true', '1'], true);
-                        $uid = $this->archiveService->startRestore($id, $restoreFiles, $restoreDatabase, $rewriteUrls, $callAsync);
+                        $uid = $this->archiveService->startRestore($id, $restoreFiles, $restoreDatabase, $rewriteUrls);
                         if (empty($uid)) {
                             return new ApiResponse(
-                                ['error' => 'no process created when starting restore action'],
+                                ['error' => _t('AU_BACKUP_NOT_QUEUED')],
                                 Response::HTTP_INTERNAL_SERVER_ERROR
                             );
                         }
@@ -204,7 +203,7 @@ class ArchiveController extends YesWikiController
         }
     }
 
-    public function getArchiveStatus(string $uid, bool $forceStarted): ApiResponse
+    public function getArchiveStatus(string $uid): ApiResponse
     {
         try {
             if (empty($uid)) {
@@ -215,7 +214,7 @@ class ArchiveController extends YesWikiController
             }
 
             return new ApiResponse(
-                $this->archiveService->getUIDStatus($uid, $forceStarted),
+                $this->archiveService->getUIDStatus($uid),
                 Response::HTTP_OK
             );
         } catch (\Throwable $pThrowable) {
@@ -227,15 +226,14 @@ class ArchiveController extends YesWikiController
     }
 
     /**
-     * start archive async or async via CLI.
+     * Queue the backup the API asks for.
      *
      * @param array<string, mixed> $params
      *
-     * @return string uid
+     * @return string uid, empty when the queue could not take it
      */
     protected function startArchive(
-        array $params = [],
-        bool $startAsync = true
+        array $params = []
     ): string {
         $savefiles = (isset($params['savefiles']) && in_array($params['savefiles'], [1, '1', true, 'true'], true));
         $savedatabase = (isset($params['savedatabase']) && in_array($params['savedatabase'], [1, '1', true, 'true'], true));
@@ -245,7 +243,6 @@ class ArchiveController extends YesWikiController
             $savedatabase,
             $this->folderList($params['foldersToInclude'] ?? null) ?? [],
             $this->folderList($params['foldersToExclude'] ?? null) ?? [],
-            $startAsync,
             $this->folderList($params['onlyFolders'] ?? null)
         );
     }
