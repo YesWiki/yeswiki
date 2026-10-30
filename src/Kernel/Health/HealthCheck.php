@@ -22,6 +22,9 @@ final class HealthCheck
 
     private ?string $route = null;
 
+    /** @var list<string> */
+    private array $offers = [];
+
     /** @var callable(): bool */
     private $gate;
 
@@ -71,6 +74,17 @@ final class HealthCheck
     }
 
     /**
+     * Buttons the screen linked to may offer on this alert, by the names that screen gives them.
+     *
+     * Opaque to the check: a screen offers the ones it knows and leaves out the others, so a check
+     * can ask for a shortcut (acknowledge every failed message of one type) without owning the screen.
+     */
+    public function offers(string ...$actions): self
+    {
+        return $this->with(fn (self $c) => $c->offers = array_values($actions));
+    }
+
+    /**
      * When this wiki can act on it at all.
      *
      * A badge a webmaster cannot clear is permanent, and a permanent badge teaches people to
@@ -107,6 +121,12 @@ final class HealthCheck
     public function route(): ?string
     {
         return $this->route;
+    }
+
+    /** @return list<string> */
+    public function offered(): array
+    {
+        return $this->offers;
     }
 
     public function isActionable(): bool
