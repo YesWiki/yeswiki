@@ -17,7 +17,11 @@ RUN docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp
 # pdo_pgsql for the same reason one level up: ADR-0015 commits the search index to all three
 # dialects, and the PostgreSQL one -- a generated tsvector with a GIN index -- had never been
 # executed by anything. A driver the image cannot load is a dialect nobody can test.
-RUN docker-php-ext-install pdo_mysql pdo_pgsql gd zip
+#
+# pcntl, suggested by composer.json: a blocking `messenger:consume` stopped with SIGTERM finishes
+# the message in hand (QueueConsumer::runStoppingOnSignals) instead of leaving it to be reaped as
+# killed hours later.
+RUN docker-php-ext-install pdo_mysql pdo_pgsql pcntl gd zip
 
 COPY --from=composer:latest /usr/bin/composer /usr/local/bin/composer
 
