@@ -7,6 +7,7 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use YesWiki\Contact\Service\DigestMarkers;
 use YesWiki\Contact\Service\MailSubscriptions;
 
 /** `./yeswicli contact:send-digest --period=week` -- the periodic mailing-list digest. */
@@ -33,8 +34,12 @@ class ContactDigestCommand extends Command
             ->setHelp(
                 "Mails each page to the users subscribed to it at that period.\n"
                 . "Meant for cron:  0 6 * * *  cd /path/to/wiki && ./yeswicli contact:send-digest -p day\n"
-                . "A wiki with no cron sends them from its own maintenance pass instead; see\n"
-                . "ContactDigestScheduler.\n"
+                . "A wiki with no cron has them sent by its background queue instead, as the scheduled\n"
+                . "tasks digest-day, digest-week and digest-month (see ContactSchedule). This command notes\n"
+                . "that a period went out, once it went out to everybody; a queued digest that finds the\n"
+                . "period noted since it was scheduled sends nothing, and the queue waits a floor from then\n"
+                . "(23 hours, 7 days, 30 days). That is all the two share: with a real cron, set\n"
+                . "contact_disable_periodic_digest to true rather than count on them taking turns.\n"
             )
             ->addOption(
                 'period',
@@ -63,6 +68,7 @@ class ContactDigestCommand extends Command
         $output->writeln("Sending the '{$period}' digest");
         try {
             $sent = $this->services->get(MailSubscriptions::class)->send($period, (string)$input->getOption('subject'));
+            $this->services->get(DigestMarkers::class)->markSent($period);
         } catch (\Throwable $th) {
             $output->writeln('<error>' . $th->getMessage() . '</error>');
 

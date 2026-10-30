@@ -2,6 +2,7 @@
 
 namespace YesWiki\Test\Contact;
 
+use Psr\Container\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use YesWiki\Contact\Service\MailSubscriptions;
 use YesWiki\Content\Entity\PageBody;
@@ -169,6 +170,53 @@ class MailSubscriptionsTest extends YesWikiTestCase
         $this->assertStringNotContainsString('mail-period', $pageMail['html']);
     }
 
+    /**
+     * A digest that cannot reach everybody must say so, after it has tried everybody: the caller does not mark the period as served, and the mails that left must not be lost to the ones that did not.
+     */
+    public function testASendTriesEveryoneBeforeItSaysWhoWasNotReached(): void
+    {
+        $this->subscriptions->subscribe(self::PAGE_TAG, self::ANN, 'day');
+        $this->subscriptions->subscribe(self::PAGE_TAG, self::ANNA, 'day');
+        $this->subscriptions->subscribe(self::OTHER_PAGE_TAG, self::ANNA, 'day');
+        $reached = [];
+
+        try {
+            $this->sendCapturing('day', function (string $email, string $subject) use (&$reached): bool {
+                if (!str_contains($email, 'mailsubscriptions')) {
+                    return true;
+                }
+                if ($email === strtolower(self::ANN) . '@example.com') {
+                    throw new \RuntimeException('mailbox full');
+                }
+                $reached[] = $email . ' ' . (str_contains($subject, 'Other') ? 'other' : 'page');
+
+                return true;
+            });
+            $this->fail('a digest some recipients did not get must throw');
+        } catch (\RuntimeException $failed) {
+            $this->assertStringContainsString("'day' digest did not reach 1 of ", $failed->getMessage());
+            $this->assertStringContainsString(self::PAGE_TAG . ' (' . self::ANN . ')', $failed->getMessage());
+            $this->assertStringContainsString('mailbox full', $failed->getMessage());
+            $this->assertStringNotContainsString('@example.com', $failed->getMessage(), 'user names, not addresses, end up in the journal');
+        }
+
+        sort($reached);
+        $this->assertSame([
+            strtolower(self::ANNA) . '@example.com other',
+            strtolower(self::ANNA) . '@example.com page',
+        ], $reached, 'the failure of one did not stop the others');
+    }
+
+    public function testAMailTheMailerRefusesIsAFailureToo(): void
+    {
+        $this->subscriptions->subscribe(self::PAGE_TAG, self::ANN, 'day');
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage(self::PAGE_TAG . ' (' . self::ANN . ')');
+
+        $this->sendCapturing('day', static fn (string $email): bool => !str_contains($email, 'mailsubscriptions'));
+    }
+
     public function testTheMigrationMovesSubscriptionGroupsToTriples(): void
     {
         $this->createGroup('Mail' . self::PAGE_TAG . 'Week', [self::ANN, self::ANNA, '@admins']);
@@ -224,18 +272,27 @@ class MailSubscriptionsTest extends YesWikiTestCase
         );
     }
 
-    /** @return list<array{email: string, subject: string, html: string}> */
-    private function sendCapturing(string $period): array
+    /**
+     * @param (\Closure(string, string): bool)|null $outcome whether a mail is delivered, or throws; every mail is by default
+     *
+     * @return list<array{email: string, subject: string, html: string}>
+     */
+    private function sendCapturing(string $period, ?\Closure $outcome = null): array
     {
-        $service = new class($this->wiki->services->get(TripleStore::class), $this->wiki->services->get(DbService::class), $this->wiki->services) extends MailSubscriptions {
+        $service = new class($this->wiki->services->get(TripleStore::class), $this->wiki->services->get(DbService::class), $this->wiki->services, $outcome) extends MailSubscriptions {
             /** @var list<array{email: string, subject: string, html: string}> */
             public array $mails = [];
+
+            public function __construct(TripleStore $tripleStore, DbService $db, ContainerInterface $services, private readonly ?\Closure $outcome)
+            {
+                parent::__construct($tripleStore, $db, $services);
+            }
 
             protected function deliver(string $email, string $subject, string $text, string $html): bool
             {
                 $this->mails[] = compact('email', 'subject', 'html');
 
-                return true;
+                return $this->outcome === null || ($this->outcome)($email, $subject);
             }
         };
         $service->send($period);

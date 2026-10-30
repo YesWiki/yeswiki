@@ -22,6 +22,9 @@ class MailSubscriptions implements EventSubscriberInterface
 
     private const REPORTS = ['day' => 'CONTACT_DAILY_REPORT', 'week' => 'CONTACT_WEEKLY_REPORT', 'month' => 'CONTACT_MONTHLY_REPORT'];
 
+    /** How many failed recipients an error message names before it counts the rest. */
+    private const FAILURES_LISTED = 10;
+
     private static bool $sending = false;
 
     public function __construct(
@@ -115,7 +118,16 @@ class MailSubscriptions implements EventSubscriberInterface
         return self::$sending;
     }
 
-    /** Sends the pages subscribed at a period; returns the number of mails. */
+    /**
+     * Sends the pages subscribed at a period; returns the number of mails.
+     *
+     * Everybody is tried, whoever fails before them: a recipient whose mail is refused, a page that
+     * cannot be rendered, take nobody else's digest with them. Once all have been tried, a
+     * RuntimeException lists who was not reached, so that the caller does not take the period for
+     * served (the mails that went out have gone out, and sending again would double them).
+     *
+     * @throws \RuntimeException when at least one recipient could not be reached
+     */
     public function send(string $period, string $subject = ''): int
     {
         if (!in_array($period, self::PERIODS, true)) {
@@ -124,30 +136,80 @@ class MailSubscriptions implements EventSubscriberInterface
         $config = $this->services->get(RuntimeConfig::class);
         $header = '[' . str_replace(['http://', 'https://', '/?'], '', (string)$config['base_url']) . ']';
         $sent = 0;
+        $attempted = 0;
+        /** @var array<string, list<string>> $failed the user names not reached, by page */
+        $failed = [];
+        /** @var array<string, true> $reasons */
+        $reasons = [];
         foreach ($this->subscribersAt($period) as $pageTag => $userNames) {
-            $page = $this->services->get(PageManager::class)->getOne($pageTag);
-            if (empty($page)) {
+            try {
+                $page = $this->services->get(PageManager::class)->getOne($pageTag);
+                if (empty($page)) {
+                    continue;
+                }
+                self::$sending = true;
+                try {
+                    $html = $this->services->get(MarkdownFormatterService::class)->format('{{include page="' . $page['tag'] . '"}}');
+                } finally {
+                    self::$sending = false;
+                }
+                $text = nl2br(strip_tags($html));
+                $pageSubject = $subject !== ''
+                    ? $subject
+                    : $header . ' ' . $this->services->get(PageSummary::class)->title($page) . ' (' . _t(self::REPORTS[$period]) . ' ' . date('d.m.Y') . ')';
+            } catch (\Throwable $unreadable) {
+                $attempted += count($userNames);
+                $failed[$pageTag] = $userNames;
+                $reasons[$unreadable->getMessage()] = true;
                 continue;
             }
-            self::$sending = true;
-            try {
-                $html = $this->services->get(MarkdownFormatterService::class)->format('{{include page="' . $page['tag'] . '"}}');
-            } finally {
-                self::$sending = false;
-            }
-            $text = nl2br(strip_tags($html));
-            $pageSubject = $subject !== ''
-                ? $subject
-                : $header . ' ' . $this->services->get(PageSummary::class)->title($page) . ' (' . _t(self::REPORTS[$period]) . ' ' . date('d.m.Y') . ')';
             foreach ($userNames as $userName) {
-                $user = $this->services->get(UserManager::class)->getOneByName($userName);
-                if (!empty($user['email']) && $this->deliver((string)$user['email'], $pageSubject, $text, $html)) {
-                    $sent++;
+                try {
+                    $user = $this->services->get(UserManager::class)->getOneByName($userName);
+                    if (empty($user['email'])) {
+                        continue;
+                    }
+                    $attempted++;
+                    if ($this->deliver((string)$user['email'], $pageSubject, $text, $html)) {
+                        $sent++;
+                    } else {
+                        $reasons[$this->services->get(Mailer::class)->lastError()] = true;
+                        $failed[$pageTag][] = $userName;
+                    }
+                } catch (\Throwable $refused) {
+                    $failed[$pageTag][] = $userName;
+                    $reasons[$refused->getMessage()] = true;
                 }
             }
         }
 
+        if ($failed !== []) {
+            throw new \RuntimeException($this->failureMessage($period, $attempted, $failed, array_values(array_filter(array_map('strval', array_keys($reasons))))));
+        }
+
         return $sent;
+    }
+
+    /**
+     * @param array<string, list<string>> $failed  the user names not reached, by page
+     * @param list<string>                $reasons what the mailer or the renderer said
+     */
+    private function failureMessage(string $period, int $attempted, array $failed, array $reasons): string
+    {
+        $count = array_sum(array_map('count', $failed));
+        $named = [];
+        $listed = 0;
+        foreach ($failed as $pageTag => $userNames) {
+            $shown = array_slice($userNames, 0, max(0, self::FAILURES_LISTED - $listed));
+            $listed += count($shown);
+            if ($shown !== []) {
+                $named[] = $pageTag . ' (' . implode(', ', $shown) . ')';
+            }
+        }
+
+        return "The '{$period}' digest did not reach {$count} of {$attempted} recipient(s): " . implode(', ', $named)
+            . ($count > $listed ? ' and ' . ($count - $listed) . ' more' : '')
+            . ($reasons === [] ? '' : '. ' . implode('; ', array_slice($reasons, 0, 3)));
     }
 
     protected function deliver(string $email, string $subject, string $text, string $html): bool
