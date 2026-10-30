@@ -3410,6 +3410,7 @@ which gives 1 if bf_type == premiere_cle, and 0 otherwise).',
     'IMPORTER_SYNC_RUN' => 'Run the sync',
     'IMPORTER_SYNC_NO_CONSOLE' => 'Could not start the console: sync from the command line instead (./yeswicli importer:sync).',
     'IMPORTER_ELAPSED_TIME' => '(in %{duration})',
+    'IMPORTER_TASK_SYNC' => 'Syncing the data source "%{source}"',
     'IMPORTER_ADD_SOURCE' => 'Add a source',
     'IMPORTER_EDIT_SOURCE' => 'Edit the source',
     'IMPORTER_CANCEL_EDIT' => 'Cancel the edit',
@@ -3451,12 +3452,12 @@ which gives 1 if bf_type == premiere_cle, and 0 otherwise).',
     'IMPORTER_FILESMODE_DOWNLOAD' => 'Download images and files to this wiki',
     'IMPORTER_FILESMODE_URL' => 'Keep a link to the remote wiki\'s images and files',
     'IMPORTER_FIELD_TIMEOUTINSEC' => 'Timeout for requests to the remote wiki, in seconds (optional, 120 by default)',
-    'IMPORTER_FIELD_SYNCONMAINTENANCE' => 'Sync automatically during YesWiki maintenance',
-    'IMPORTER_FIELD_SYNCONMAINTENANCE_HELP' => 'No cron, nothing to trigger: YesWiki does its periodic housekeeping '
-        . '(at most every 30 minutes, on some visit to the wiki) and this source is synced right after, '
-        . 'without keeping that visitor waiting.',
+    'IMPORTER_FIELD_SYNCONMAINTENANCE' => 'Sync automatically in the background',
+    'IMPORTER_FIELD_SYNCONMAINTENANCE_HELP' => 'No cron, nothing to trigger: YesWiki syncs this source from its background job queue '
+        . '(at most every 30 minutes), without keeping visitors waiting. '
+        . 'Failures show on the background jobs page.',
     'IMPORTER_FIELD_SYNCINTERVALINMIN' => 'Minimum interval between two automatic syncs, in minutes (optional)',
-    'IMPORTER_FIELD_SYNCINTERVALINMIN_HELP' => 'Leave empty to sync on every YesWiki maintenance. '
+    'IMPORTER_FIELD_SYNCINTERVALINMIN_HELP' => 'Leave empty to sync every 30 minutes (the minimum). '
         . 'For instance 1440 to sync this source at most once a day.',
     'IMPORTER_FIELD_MAPPING_TITLE' => 'Field mapping',
     'IMPORTER_FIELD_MAPPING_REMOTE' => 'Field to import',

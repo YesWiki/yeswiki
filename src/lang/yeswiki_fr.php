@@ -3407,6 +3407,7 @@ qui rend 1 si bf_type == premiere_cle sinon 0).',
     'IMPORTER_SYNC_RUN' => 'Lancer la synchronisation',
     'IMPORTER_SYNC_NO_CONSOLE' => 'Impossible de lancer la console : synchronisez depuis la ligne de commande (./yeswicli importer:sync).',
     'IMPORTER_ELAPSED_TIME' => '(en %{duration})',
+    'IMPORTER_TASK_SYNC' => 'Synchronisation de la source de données "%{source}"',
     'IMPORTER_ADD_SOURCE' => 'Ajouter une source',
     'IMPORTER_EDIT_SOURCE' => 'Modifier la source',
     'IMPORTER_CANCEL_EDIT' => 'Annuler la modification',
@@ -3451,12 +3452,12 @@ qui rend 1 si bf_type == premiere_cle sinon 0).',
     'IMPORTER_FILESMODE_DOWNLOAD' => 'Télécharger les images et fichiers sur ce wiki',
     'IMPORTER_FILESMODE_URL' => 'Garder un lien vers les images et fichiers du wiki distant',
     'IMPORTER_FIELD_TIMEOUTINSEC' => 'Délai maximum des requêtes vers le wiki distant, en secondes (optionnel, 120 par défaut)',
-    'IMPORTER_FIELD_SYNCONMAINTENANCE' => 'Synchroniser automatiquement lors de la maintenance de YesWiki',
-    'IMPORTER_FIELD_SYNCONMAINTENANCE_HELP' => 'Sans cron ni intervention : YesWiki fait son ménage périodique '
-        . '(au plus toutes les 30 minutes, à l\'occasion d\'une visite du wiki), et cette source est alors '
-        . 'synchronisée juste après, sans faire attendre la personne qui visitait.',
+    'IMPORTER_FIELD_SYNCONMAINTENANCE' => 'Synchroniser automatiquement en arrière-plan',
+    'IMPORTER_FIELD_SYNCONMAINTENANCE_HELP' => 'Sans cron ni intervention : YesWiki synchronise cette source dans sa file de tâches '
+        . 'de fond (au plus toutes les 30 minutes), sans faire attendre les visiteurs. '
+        . 'Les échecs apparaissent sur la page des tâches de fond.',
     'IMPORTER_FIELD_SYNCINTERVALINMIN' => 'Intervalle minimum entre deux synchronisations automatiques, en minutes (optionnel)',
-    'IMPORTER_FIELD_SYNCINTERVALINMIN_HELP' => 'Laisser vide pour synchroniser à chaque maintenance de YesWiki. '
+    'IMPORTER_FIELD_SYNCINTERVALINMIN_HELP' => 'Laisser vide pour synchroniser toutes les 30 minutes (le minimum). '
         . 'Par exemple 1440 pour ne pas synchroniser cette source plus d\'une fois par jour.',
     'IMPORTER_FIELD_MAPPING_TITLE' => 'Correspondance des champs',
     'IMPORTER_FIELD_MAPPING_REMOTE' => 'Champ à importer',

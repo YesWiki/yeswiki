@@ -33,7 +33,12 @@ class ImportApiController extends YesWikiController
         $results = [];
         foreach ((is_array($dataSources) ? $dataSources : []) as $source => $sourceOptions) {
             ob_start();
-            $results[$source] = $importerManager->syncSource((string)$source, $sourceOptions);
+            try {
+                $results[$source] = $importerManager->syncSource((string)$source, $sourceOptions);
+            } catch (\Throwable $failed) {
+                // The route has always answered the failure as the source's text, and went on with the others.
+                $results[$source] = $failed->getMessage();
+            }
 
             $scheduler->recordRun((string)$source, trim(ob_get_clean() . "\n" . $results[$source]));
         }

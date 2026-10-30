@@ -70,7 +70,12 @@ class ImporterCommand extends Command
     private function syncSource(string $id, array $sourceOptions, OutputInterface $output): void
     {
         ob_start();
-        $result = $this->services->get(ImporterManager::class)->syncSource($id, $sourceOptions);
+        try {
+            $result = $this->services->get(ImporterManager::class)->syncSource($id, $sourceOptions);
+        } catch (\Throwable $failed) {
+            // Shown and logged as the command always did; a failing source does not fail the command.
+            $result = $failed->getMessage();
+        }
         $log = trim(ob_get_clean() . "\n" . $result);
         $output->writeln($log);
         $this->services->get(SyncScheduler::class)->recordRun($id, $log);
