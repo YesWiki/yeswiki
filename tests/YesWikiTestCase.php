@@ -69,9 +69,11 @@ class YesWikiTestCase extends TestCase
     {
         $config = $wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class);
         $config['vditor_wiki_editor'] = false;
-        // Ticket 54: a page view of the dev wiki, served beside the run, would otherwise trip the
-        // poor man's cron and sweep the search queue underneath a spec that is draining it.
-        $config[\YesWiki\Admin\Service\MaintenanceService::TRIGGER_SETTING] = \YesWiki\Admin\Service\MaintenanceService::TRIGGER_CRON;
+        // A page view must never consume the queue underneath a test that is draining it. The
+        // end-of-request pass is registered by index.php and worker.php, which the suite does not
+        // go through, and QueueSettings reads the compiled parameters, which cannot be changed
+        // here: this keeps what the suite's configuration says in line with that.
+        $config['queue_consumer'] = \YesWiki\Kernel\Queue\QueueConsumerMode::Command->value;
     }
 
     /** Deletes the users and groups the run created, at process shutdown. */

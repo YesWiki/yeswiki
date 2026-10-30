@@ -32,7 +32,6 @@ use Symfony\Component\Routing\RouteCollection;
 use Symfony\Component\Security\Csrf\CsrfTokenManager;
 use YesWiki\Admin\Service\ApiService;
 use YesWiki\Admin\Service\DoryphoreArrival;
-use YesWiki\Admin\Service\MaintenanceService;
 use YesWiki\Content\Controller\LegacyPageController;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Identity\Action\LoginAction;
@@ -215,12 +214,6 @@ class YesWikiRuntime
             : ($default != null ? $default : '');
     }
 
-    /** @return void */
-    public function maintenance()
-    {
-        $this->service(MaintenanceService::class)->sweep();
-    }
-
     /**
      * @param string $tag
      * @param string $method
@@ -252,10 +245,6 @@ class YesWikiRuntime
             return;
         }
         $this->readThisRequest();
-
-        if ($this->service(MaintenanceService::class)->dueOnRequest()) {
-            $this->maintenance();
-        }
 
         $pageContext = $this->service(PageContext::class);
 

@@ -2,67 +2,38 @@
 
 namespace YesWiki\Admin\Command;
 
-use Psr\Container\ContainerInterface;
-use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use YesWiki\Admin\Service\MaintenanceService;
+use YesWiki\Kernel\Command\QueueDrainCommand;
 
-/** `./yeswicli core:maintenance` -- the housekeeping a request runs by default, with an exit code (ticket 54). */
-class MaintenanceCommand extends Command
+/**
+ * `./yeswicli core:maintenance`: a deprecated alias of `messenger:drain`, so that the crontabs written for the housekeeping sweep (ticket 54) keep working.
+ *
+ * The sweep is gone: each housekeeping step is a scheduled task of the queue, and a drain queues
+ * the due ones and consumes them. The alias does exactly what the drain does, exit code included,
+ * and says once on stderr -- which cron mails -- what to call instead.
+ */
+class MaintenanceCommand extends QueueDrainCommand
 {
-    private ContainerInterface $services;
-
-    public function __construct(ContainerInterface $services)
-    {
-        parent::__construct();
-        $this->services = $services;
-    }
-
     protected function configure(): void
     {
+        parent::configure();
         $this
             ->setName('core:maintenance')
-            ->setDescription('Run the wiki\'s housekeeping sweep (ticket 54)')
+            ->setDescription('Deprecated: runs messenger:drain, call that instead')
             ->setHelp(
-                "Purges old page revisions and Journal entries, expires recovery and activation\n"
-                . "keys, and drains the search index queue -- the same steps, and the same\n"
-                . "maintenance.before/after events, as a request-triggered sweep.\n\n"
-                . "A wiki with a crontab should set maintenance_trigger to 'cron' so a visitor\n"
-                . 'never pays for this; see INSTALL.md.'
+                "The housekeeping sweep this command ran is gone: every step is a scheduled task of\n"
+                . "the background queue, which `messenger:drain` consumes. This alias runs it, so an\n"
+                . 'existing crontab keeps working; replace it with `./yeswicli messenger:drain`.'
             )
-            ->addOption('force', 'f', InputOption::VALUE_NONE, 'Sweep even if one ran less than 30 minutes ago');
+            ->addOption('force', 'f', InputOption::VALUE_NONE, 'Ignored: kept so that crontabs that pass it keep working');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $maintenance = $this->services->get(MaintenanceService::class);
+        $this->errorOutput($output)->writeln('<comment>core:maintenance is deprecated: it runs messenger:drain, call `./yeswicli messenger:drain` instead.</comment>');
 
-        if (!$maintenance->claim((bool)$input->getOption('force'))) {
-            $ago = time() - $maintenance->lastRun();
-            $output->writeln("<comment>A sweep ran {$ago}s ago; the interval has not elapsed. Use --force to sweep anyway.</comment>");
-
-            return Command::SUCCESS;
-        }
-
-        $report = $maintenance->sweep();
-
-        foreach ($report->steps() as $step => $outcome) {
-            $output->writeln("  {$step}: {$outcome}");
-        }
-        foreach ($report->failures() as $step => $failure) {
-            $output->writeln("<error>  {$step}: {$failure}</error>");
-        }
-
-        $took = number_format($report->duration(), 2);
-        if ($report->hasFailures()) {
-            $output->writeln("<error>Maintenance finished in {$took}s with " . count($report->failures()) . ' failed step(s).</error>');
-
-            return Command::FAILURE;
-        }
-        $output->writeln("<info>Maintenance done in {$took}s.</info>");
-
-        return Command::SUCCESS;
+        return parent::execute($input, $output);
     }
 }
