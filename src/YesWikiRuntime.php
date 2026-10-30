@@ -43,6 +43,7 @@ use YesWiki\Kernel\Exception\ExitException;
 use YesWiki\Kernel\Routing\ReservedTags;
 use YesWiki\Kernel\Service\CacheClearer;
 use YesWiki\Kernel\Service\ConfigurationFileProvider;
+use YesWiki\Kernel\Service\ConfigurationWatch;
 use YesWiki\Kernel\Service\CurrentRequest;
 use YesWiki\Kernel\Service\EventDispatcher;
 use YesWiki\Kernel\Service\ExtensionRegistry;
@@ -682,6 +683,8 @@ class YesWikiRuntime
         $this->service(CurrentRequest::class)->replace($this->request);
         $this->service(ExtensionRegistry::class)->bind($this->extensions);
         $this->service(RouteProvider::class)->setResolver(fn () => $this->getRoutes());
+        // The same two questions worker.php asks between requests: an upgrade or `cache:clear` empties the container cache with the configuration unchanged.
+        $this->service(ConfigurationWatch::class)->bind(fn (): bool => $this->containerCacheIsGone() || $this->configurationChanged());
         $this->service(PageContext::class)->setTag($this->initialTag);
         $this->service(PageContext::class)->setMethod((string)$this->initialMethod);
         $this->booted = true;

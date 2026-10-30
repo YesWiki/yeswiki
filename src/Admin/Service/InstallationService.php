@@ -956,7 +956,7 @@ class InstallationService
         $values = [];
         foreach (YesWikiLoader::envFileValues() as $name => $value) {
             if (!in_array($name, EnvironmentConfiguration::NOT_CONFIG, true)) {
-                $values[strtolower($name)] = $value;
+                $values[EnvironmentConfiguration::ENV_ALIASES[$name] ?? strtolower($name)] = $value;
             }
         }
         foreach (EnvironmentConfiguration::knownEnvNames() as $name => $key) {

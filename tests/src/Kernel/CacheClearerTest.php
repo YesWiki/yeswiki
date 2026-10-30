@@ -20,6 +20,9 @@ class CacheClearerTest extends TestCase
         file_put_contents($this->root . '/cache/thumbs/keep.webp', 'x');
         file_put_contents($this->root . '/cache/.gitkeep', '');
         file_put_contents($this->root . '/cache/maintenance.lock', '');
+        foreach (['queue-pass.lock', 'queue-schedule.lock', 'queue-spawn.lock'] as $lock) {
+            file_put_contents($this->root . '/cache/' . $lock, '');
+        }
     }
 
     protected function tearDown(): void
@@ -53,11 +56,31 @@ class CacheClearerTest extends TestCase
         $this->assertSame([CacheClearer::CONTAINER => 0, CacheClearer::TEMPLATES => 0], $cleared);
     }
 
-    public function testEverythingGoesExceptTheGitkeepAndTheMaintenanceLock(): void
+    public function testEverythingGoesExceptTheGitkeepAndTheQueueLocks(): void
     {
         $count = (new CacheClearer())->clearEverything($this->root);
 
-        $this->assertSame(3, $count);
-        $this->assertSame(['.gitkeep', 'maintenance.lock'], array_values(array_diff(scandir($this->root . '/cache'), ['.', '..'])));
+        $this->assertSame(4, $count, 'the retired sweep\'s lock goes with the rest');
+        $this->assertSame(['.gitkeep', 'queue-pass.lock', 'queue-schedule.lock', 'queue-spawn.lock'], array_values(array_diff(scandir($this->root . '/cache'), ['.', '..'])));
+    }
+
+    /** A remote backup's step holds its lock for a whole download: deleted under it, a second step would take a fresh one and write beside it. */
+    public function testALockSomeoneHoldsIsKept(): void
+    {
+        $held = fopen($this->root . '/cache/remote-backup.lock', 'c');
+        $this->assertNotFalse($held);
+        $this->assertTrue(flock($held, LOCK_EX | LOCK_NB));
+        file_put_contents($this->root . '/cache/nobody-holds-this.lock', '');
+
+        try {
+            (new CacheClearer())->clearEverything($this->root);
+        } finally {
+            flock($held, LOCK_UN);
+            fclose($held);
+        }
+
+        $this->assertFileExists($this->root . '/cache/remote-backup.lock');
+        $this->assertFileDoesNotExist($this->root . '/cache/nobody-holds-this.lock', 'a lock nobody holds is a leftover, and goes');
+        $this->assertFileDoesNotExist($this->root . '/cache/maintenance.lock');
     }
 }

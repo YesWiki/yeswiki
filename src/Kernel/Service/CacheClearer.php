@@ -2,7 +2,12 @@
 
 namespace YesWiki\Kernel\Service;
 
+use YesWiki\Files\Exception\StorageException;
+use YesWiki\Files\Service\RuntimeLock;
 use YesWiki\Files\Service\Storage;
+use YesWiki\Kernel\Service\Queue\QueueCheckpoint;
+use YesWiki\Kernel\Service\Queue\QueueConsumer;
+use YesWiki\Kernel\Service\Queue\QueueRequestTrigger;
 
 /** Empties the caches a code change can leave stale: the compiled container and the compiled templates. */
 class CacheClearer
@@ -16,14 +21,25 @@ class CacheClearer
     /** @var list<string> */
     public const ALL = [self::CONTAINER, self::TEMPLATES];
 
-    /** What `clearEverything()` leaves alone: the placeholder git tracks, and the lock a maintenance run may be holding. */
-    public const KEPT = ['.gitkeep', 'maintenance.lock'];
+    /**
+     * What `clearEverything()` leaves alone: the placeholder git tracks, and the queue's locks.
+     *
+     * A pass or a schedule tick may be holding one while the cache is cleared: a lock file deleted
+     * under it would let a second one start beside it. The spawn lock's age is the throttle of
+     * `request-spawn`. Kept by name, as the constants that place them under `cache/` spell it.
+     * Any other `.lock` is kept while someone holds it (isHeld()): the features' own, such as a
+     * remote backup's step, cannot be named here, and one nobody holds is a leftover.
+     */
+    public const KEPT = ['.gitkeep', QueueConsumer::PASS_LOCK, QueueCheckpoint::LOCK, QueueRequestTrigger::SPAWN_LOCK];
 
     private ?Storage $storage;
 
-    public function __construct(?Storage $storage = null)
+    private RuntimeLock $locks;
+
+    public function __construct(?Storage $storage = null, ?RuntimeLock $locks = null)
     {
         $this->storage = $storage;
+        $this->locks = $locks ?? new RuntimeLock();
     }
 
     /**
@@ -70,9 +86,13 @@ class CacheClearer
         if (!$storage->directoryExists($directory)) {
             return 0;
         }
+        $kept = array_map(basename(...), $kept);
         $count = 0;
         foreach ($storage->listContents($directory) as $entry) {
             if (\in_array(basename($entry->path()), $kept, true)) {
+                continue;
+            }
+            if (!$entry->isDir() && str_ends_with($entry->path(), '.lock') && $this->isHeld($storage, $entry->path())) {
                 continue;
             }
             if ($entry->isDir()) {
@@ -84,6 +104,16 @@ class CacheClearer
         }
 
         return $count;
+    }
+
+    /** Whether someone holds this lock: deleted under its holder, it would let a second one in beside the first. */
+    private function isHeld(Storage $storage, string $path): bool
+    {
+        try {
+            return $this->locks->isHeld($storage->absolutePath($path));
+        } catch (StorageException) {
+            return false;
+        }
     }
 
     private function storageFor(?string $root): Storage

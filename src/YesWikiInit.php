@@ -200,6 +200,8 @@ class YesWikiInit
             // working because the default is the one that needs nothing set up.
             'maintenance_trigger' => 'request',
             'journal_queue_purge_time' => 7,
+            'queue_consumer' => '',
+            'queue_consume_secret' => '',
             'default_write_acl' => '*',
             'default_read_acl' => '*',
             'default_comment_acl' => 'comments-closed',
