@@ -937,13 +937,13 @@ ait à la modifier.
 On peut ajouter ou retirer une durée, en collant un nombre et une unité derrière
 `today` :
 
-| Unité   | Sens    | Exemple        | Donne                     |
-| ------- | ------- | -------------- | ------------------------- |
-| `d` `j` | jour    | `[today+10j]`  | dans dix jours            |
-| `w` `s` | semaine | `[today+3s]`   | dans trois semaines       |
-| `m`     | mois    | `[today-2m]`   | il y a deux mois          |
-| `y` `a` | année   | `[today-1a]`   | il y a un an              |
-| `h`     | heure   | `[now+2h]`     | dans deux heures          |
+| Unité   | Sens    | Exemple       | Donne               |
+| ------- | ------- | ------------- | ------------------- |
+| `d` `j` | jour    | `[today+10j]` | dans dix jours      |
+| `w` `s` | semaine | `[today+3s]`  | dans trois semaines |
+| `m`     | mois    | `[today-2m]`  | il y a deux mois    |
+| `y` `a` | année   | `[today-1a]`  | il y a un an        |
+| `h`     | heure   | `[now+2h]`    | dans deux heures    |
 
 Les décalages se cumulent : `[today+1m-1j]` donne la veille du même jour le mois
 prochain.
