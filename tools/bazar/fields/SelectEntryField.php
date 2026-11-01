@@ -69,7 +69,7 @@ class SelectEntryField extends EnumField
 
         $options = $this->getOptions();
         $label = isset($options[$value]) ? $options[$value] : $value;
-        
+
         return $this->render('@bazar/fields/select_entry.twig', [
             'value' => $value,
             'label' => $label,

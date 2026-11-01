@@ -437,7 +437,7 @@ class EntryManager
     protected function assignRestrictedFields(array $data, array $previousData, array $form)
     {
         foreach ($form['prepared'] as $field) {
-            if (!($field instanceof BazarField)) {
+            if (!$field instanceof BazarField) {
                 continue;
             }
             $propName = $field->getPropertyName();

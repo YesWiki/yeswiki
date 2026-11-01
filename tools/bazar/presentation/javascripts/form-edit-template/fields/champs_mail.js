@@ -58,7 +58,7 @@ export default {
         const currentField = renderHelper.getHolder(fieldData).parent()
         renderHelper.initializeField(currentField)
         const arrayEquals = (a, b) => {
-          if (a.length != b.length) {
+          if (a.length !== b.length) {
             return false
           }
           return a.every((e) => b.includes(e)) && b.every((e) => a.includes(e))
@@ -115,7 +115,7 @@ export default {
                 }
               }
             }
-            if ($(element).val() == 'form') {
+            if ($(element).val() === 'form') {
               // when chosing 'form' (or at init), if readAcl is ' % ', prefer ' * '
               // to show button to everyone
               const field = currentField.find('select[name=read]')

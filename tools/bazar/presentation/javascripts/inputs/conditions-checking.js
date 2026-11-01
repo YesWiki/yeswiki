@@ -27,8 +27,15 @@ const ConditionsChecking = {
     )
   },
   updateOperationData(data, rest, condition, element) {
-    const newIndex = rest == null ? -1 : condition.length - rest[0].length
-    if (Object.keys(data).length == 0 || data.indexOf == null) {
+    const newIndex =
+      rest === null || rest === undefined
+        ? -1
+        : condition.length - rest[0].length
+    if (
+      Object.keys(data).length === 0 ||
+      data.indexOf === null ||
+      data.indexOf === undefined
+    ) {
       data.indexOf = -1
     }
     if (newIndex > -1 && (newIndex < data.indexOf || data.indexOf < 0)) {
@@ -107,7 +114,7 @@ const ConditionsChecking = {
     $(field)
       .find('input[type=checkbox]')
       .each(function () {
-        if ($(this).prop('checked') == true) {
+        if ($(this).prop('checked') === true) {
           const name = $(this).attr('name')
           let value = name.match(/\[[A-Za-z0-9_-]+\]/)[0]
           value = value.substr(1, value.length - 2)
@@ -119,7 +126,7 @@ const ConditionsChecking = {
   getCheckboxTagValues(field) {
     let result = []
     const value = $(field).val()
-    if (value.trim() != '') {
+    if (value.trim() !== '') {
       result = value.split(',')
     }
     return result
@@ -127,7 +134,7 @@ const ConditionsChecking = {
   getRadioValues(inputs) {
     const result = []
     $(inputs).each(function () {
-      if ($(this).prop('checked') == true) {
+      if ($(this).prop('checked') === true) {
         result.push($(this).attr('value'))
       }
     })
@@ -136,7 +143,7 @@ const ConditionsChecking = {
   getSelectValues(field) {
     const result = []
     const value = $(field).val()
-    if (value.trim() != '') {
+    if (value.trim() !== '') {
       result.push(value.trim())
     }
     return result
@@ -228,11 +235,11 @@ const ConditionsChecking = {
     return []
   },
   extractValues(values) {
-    if (values.trim() == '') {
+    if (values.trim() === '') {
       return []
     }
     let tempValues = values.trim()
-    if (tempValues.substr(0, 1) == '[' && tempValues.substr(-1) == ']') {
+    if (tempValues.substr(0, 1) === '[' && tempValues.substr(-1) === ']') {
       tempValues = tempValues.substr(1, tempValues.length - 2)
     }
     return tempValues.split(',')
@@ -240,13 +247,13 @@ const ConditionsChecking = {
   commonForOperations(fieldName, values, extract) {
     const extractedValues = this.extractValues(values)
     for (let index = 0; index < extractedValues.length; index++) {
-      if (extract.uniqueValues.indexOf(extractedValues[index].trim()) == -1) {
+      if (extract.uniqueValues.indexOf(extractedValues[index].trim()) === -1) {
         extract.uniqueValues.push(extractedValues[index].trim())
       }
     }
     const fieldValues = this.getFieldNameValues(fieldName)
     for (let index = 0; index < fieldValues.length; index++) {
-      if (extract.uniqueFieldValues.indexOf(fieldValues[index].trim()) == -1) {
+      if (extract.uniqueFieldValues.indexOf(fieldValues[index].trim()) === -1) {
         extract.uniqueFieldValues.push(fieldValues[index].trim())
       }
     }
@@ -258,7 +265,7 @@ const ConditionsChecking = {
     const fieldValues = this.getFieldNameValues(fieldName)
     const uniqueFieldValues = []
     for (let index = 0; index < fieldValues.length; index++) {
-      if (uniqueFieldValues.indexOf(fieldValues[index].trim()) == -1) {
+      if (uniqueFieldValues.indexOf(fieldValues[index].trim()) === -1) {
         uniqueFieldValues.push(fieldValues[index].trim())
       }
     }
@@ -288,7 +295,7 @@ const ConditionsChecking = {
     }
 
     this.commonForOperations(fieldName, values, extract)
-    if (extract.uniqueValues.length != extract.uniqueFieldValues.length) {
+    if (extract.uniqueValues.length !== extract.uniqueFieldValues.length) {
       return false
     }
 
@@ -314,20 +321,20 @@ const ConditionsChecking = {
       typeof this.fieldNamesCache[fieldName] !== 'undefined' &&
       !this.fieldNamesCache[fieldName].isArray
     ) {
-      return this.getFieldNameValues(fieldName) == values
+      return this.getFieldNameValues(fieldName) === values
     }
     const extract = {
       uniqueValues: [],
       uniqueFieldValues: [],
     }
     this.commonForOperations(fieldName, values, extract)
-    if (extract.uniqueValues.length != extract.uniqueFieldValues.length) {
+    if (extract.uniqueValues.length !== extract.uniqueFieldValues.length) {
       return false
     }
     let result = true
     for (let index = 0; index < extract.uniqueFieldValues.length; index++) {
       if (
-        extract.uniqueValues.indexOf(extract.uniqueFieldValues[index]) == -1
+        extract.uniqueValues.indexOf(extract.uniqueFieldValues[index]) === -1
       ) {
         result = false
       }
@@ -349,7 +356,7 @@ const ConditionsChecking = {
       uniqueFieldValues: [],
     }
     this.commonForOperations(fieldName, values, extract)
-    if (extract.uniqueFieldValues.length == 0) {
+    if (extract.uniqueFieldValues.length === 0) {
       return false
     }
     let result = false
@@ -416,7 +423,7 @@ const ConditionsChecking = {
   renderBadFormatingError(structuredCondition, conditionData) {
     if (
       typeof structuredCondition.leftPart !== 'undefined' &&
-      structuredCondition.leftPart.length != 0
+      structuredCondition.leftPart.length !== 0
     ) {
       console.warn(
         `Left part ('${structuredCondition.leftPart}') should be empty before '${structuredCondition.operation}' in '${conditionData.condition}'`,
@@ -444,7 +451,7 @@ const ConditionsChecking = {
       .find('input[type=checkbox][data-default]')
       .each(function () {
         const defaultVal = $(this).data('default')
-        if (defaultVal == 'checked') {
+        if (String(defaultVal) === 'checked') {
           $(this).prop('checked', true)
           $(this).trigger('change')
         }
@@ -463,7 +470,7 @@ const ConditionsChecking = {
       .find('select[data-default]')
       .each(function () {
         const defaultVal = $(this).data('default')
-        if (defaultVal != null) {
+        if (defaultVal !== null && defaultVal !== undefined) {
           $(this).val(defaultVal)
           $(this).trigger('change')
         }
@@ -490,7 +497,7 @@ const ConditionsChecking = {
       .find('input[type=radio][data-default]')
       .each(function () {
         const defaultVal = $(this).data('default')
-        if (defaultVal == 'checked') {
+        if (String(defaultVal) === 'checked') {
           $(this).prop('checked', true)
           $(this).trigger('change')
         }
@@ -550,10 +557,11 @@ const ConditionsChecking = {
         const propertyName = $(this).prop('name')
         const val = $(this).val()
         if (
-          val.length == 0 &&
+          val.length === 0 &&
           propertyName.length > 0 &&
           typeof bazarlistTagsInputsData !== 'undefined' &&
-          bazarlistTagsInputsData[propertyName] != null &&
+          bazarlistTagsInputsData[propertyName] !== null &&
+          bazarlistTagsInputsData[propertyName] !== undefined &&
           ConditionsChecking.hasTagsInput(this)
         ) {
           const selectedOptions =
@@ -562,7 +570,7 @@ const ConditionsChecking = {
             bazarlistTagsInputsData[propertyName].existingTags || []
           $(this).tagsinput('removeAll')
           selectedOptions.forEach((tag) => {
-            if (existingTags[tag] != null) {
+            if (existingTags[tag] !== null && existingTags[tag] !== undefined) {
               $(this).tagsinput('add', existingTags[tag])
             }
           })
@@ -661,7 +669,7 @@ const ConditionsChecking = {
       }
       // for debug console.log(stringToEval+" => "+display)
       // extract no clean param
-      const clean = $(conditionData.node).data('noclean') != true
+      const clean = Number($(conditionData.node).data('noclean')) !== 1
       if (display) {
         const previousStateVisible =
           $(conditionData.node).filter(':visible').length > 0
@@ -725,7 +733,7 @@ const ConditionsChecking = {
     }
   },
   findCheckbox(fieldName, result) {
-    if (result.type != '') {
+    if (result.type !== '') {
       return result
     }
     const node = $(
@@ -734,7 +742,7 @@ const ConditionsChecking = {
       const classes = $(this).attr('class').split(' ')
       return (
         classes.filter(
-          (className) => className.slice(-fieldName.length) == fieldName,
+          (className) => className.slice(-fieldName.length) === fieldName,
         ).length > 0
       )
     })
@@ -752,7 +760,7 @@ const ConditionsChecking = {
     return result
   },
   findCheckboxTag(fieldName, result) {
-    if (result.type != '') {
+    if (result.type !== '') {
       return result
     }
     const node = $(`input[class$=${fieldName}].yeswiki-input-entries`)
@@ -765,7 +773,7 @@ const ConditionsChecking = {
     return result
   },
   findList(fieldName, result) {
-    if (result.type != '') {
+    if (result.type !== '') {
       return result
     }
     const node = $(`select[name$=${fieldName}]`)
@@ -778,7 +786,7 @@ const ConditionsChecking = {
     return result
   },
   findRadio(fieldName, result) {
-    if (result.type != '') {
+    if (result.type !== '') {
       return result
     }
     const inputs = $(`input[name$=${fieldName}][type=radio]`)
@@ -793,7 +801,7 @@ const ConditionsChecking = {
     return result
   },
   findText(fieldName, result) {
-    if (result.type != '') {
+    if (result.type !== '') {
       return result
     }
     const inputs = $(`input[name$=${fieldName}][type=text]`)
@@ -809,7 +817,7 @@ const ConditionsChecking = {
     return result
   },
   findTextarea(fieldName, result) {
-    if (result.type != '') {
+    if (result.type !== '') {
       return result
     }
     const inputs = $(`textarea[name$=${fieldName}]`)
@@ -847,7 +855,7 @@ const ConditionsChecking = {
     return result
   },
   findImage(fieldName, result) {
-    if (result.type != '') {
+    if (result.type !== '') {
       return result
     }
     const uploadDiv = $(`div[id$=image${fieldName}-upload]`)
@@ -872,7 +880,7 @@ const ConditionsChecking = {
     return result
   },
   findFile(fieldName, result) {
-    if (result.type != '') {
+    if (result.type !== '') {
       return result
     }
     const uploadDiv = $(`div[id=fichier${fieldName}-upload]`)

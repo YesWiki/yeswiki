@@ -274,7 +274,7 @@ const appParams = {
     toggleDay(key) {
       if (this.repetition === 'w') {
         if (this.days.includes(key) && key !== this.getCurrentStartDay()) {
-          this.days = this.days.filter((elem) => elem != key)
+          this.days = this.days.filter((elem) => elem !== key)
         } else {
           this.days.push(key)
         }

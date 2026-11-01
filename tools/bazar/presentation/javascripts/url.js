@@ -24,15 +24,15 @@ export function parseSearchParams(pParams) {
     const vValue = vParams.get(cKey)
 
     if (
-      cKey == 'q' ||
-      cKey == 'keywords'
+      cKey === 'q' ||
+      cKey === 'keywords'
     ) // keywords supports for clarity (q parameter is confusing with query parameter)
     {
       if (vValue && vValue.trim() !== '')
         vParseds.keywords = decodeURIComponent(vValue) // privilegiate use of "keywords"
-    } else if (cKey == 'champ' || cKey == 'ordre') {
+    } else if (cKey === 'champ' || cKey === 'ordre') {
       vParseds[cKey] = vValue
-    } else if (cKey == 'query') {
+    } else if (cKey === 'query') {
       if (vValue && vValue.trim() !== '')
         vParseds[cKey] = decodeURIComponent(vValue)
           .split('|')
@@ -128,7 +128,7 @@ export function mergeSearchParams(
       ].join('|')
     }
 
-    if (vQuery.trim() != '') vMerged.query = vQuery
+    if (vQuery.trim() !== '') vMerged.query = vQuery
   }
 
   // Merge keywords parameter
@@ -141,17 +141,17 @@ export function mergeSearchParams(
     vKeywords = vParamsObject2.keywords
   }
 
-  if (vKeywords != null && vKeywords.trim() != '') {
+  if (vKeywords != null && vKeywords.trim() !== '') {
     // URI encode the keywords
 
     // Remove duplicates and rebuild the query string
 
     vKeywords = [...new Set(vKeywords.split('|'))].join('|')
 
-    if (vKeywords.trim() != '') vMerged.keywords = vKeywords
+    if (vKeywords.trim() !== '') vMerged.keywords = vKeywords
   }
 
-  if (pOptions.returnMode == 'string') return $.param(vMerged)
+  if (pOptions.returnMode === 'string') return $.param(vMerged)
   return vMerged
 }
 
@@ -176,9 +176,9 @@ export function updateHash(
 
   if (vSearch.length < wiki.minSearchKeywordLength) vSearch = ''
 
-  if (vSearch != '') vCurrentParams.keywords = vSearch
-  if (pSortField && pSortField != '') vCurrentParams.champ = pSortField
-  if (pSortOrder && pSortOrder != '') vCurrentParams.ordre = pSortOrder
+  if (vSearch !== '') vCurrentParams.keywords = vSearch
+  if (pSortField && pSortField !== '') vCurrentParams.champ = pSortField
+  if (pSortOrder && pSortOrder !== '') vCurrentParams.ordre = pSortOrder
 
   let bHasFilter = false
 

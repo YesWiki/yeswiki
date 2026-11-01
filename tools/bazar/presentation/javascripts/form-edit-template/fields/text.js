@@ -37,9 +37,12 @@ export default {
   attributesMapping: { ...defaultMapping, ...{ 15: 'placeholder' } },
   renderInput(fieldData) {
     let string = `<input type="${fieldData.subtype}"`
-    if (fieldData.subtype == 'url') {
+    if (fieldData.subtype === 'url') {
       string += ` placeholder="${fieldData.value || ''}"/>`
-    } else if (fieldData.subtype == 'range' || fieldData.subtype == 'number') {
+    } else if (
+      fieldData.subtype === 'range' ||
+      fieldData.subtype === 'number'
+    ) {
       string += ` min="${fieldData.size || ''}" max="${fieldData.maxlength || ''}"/>`
     } else {
       string += ` value="${fieldData.value}"/>`

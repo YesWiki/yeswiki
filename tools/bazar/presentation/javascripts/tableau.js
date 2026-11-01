@@ -93,7 +93,7 @@ const TableHelper = {
           ...{ footer: true },
           ...{
             exportOptions:
-              option.extend != 'print'
+              option.extend !== 'print'
                 ? {
                     orthogonal: 'sort', // use sort data for export
                     columns(idx, data, node) {
@@ -105,7 +105,7 @@ const TableHelper = {
                       const isVisible = $(node).data('visible')
                       return (
                         !$(node).hasClass('not-export-this-col') &&
-                        (isVisible == null || isVisible != false)
+                        (isVisible == null || Number(isVisible) !== 0)
                       )
                     },
                   },
@@ -148,11 +148,11 @@ const TableHelper = {
     Object.keys(TableHelper.tables).forEach((key) => {
       const table = TableHelper.tables[key]
       const filterContainer = TableHelper.findBazarListFiltersContainer(table)
-      if (filterContainer.length == 0) {
+      if (filterContainer.length === 0) {
         res[key] = {}
       } else {
         const inputs = $(filterContainer).find('.filter-checkbox:checked')
-        if (inputs.length == 0) {
+        if (inputs.length === 0) {
           res[key] = {}
         } else {
           const tableRes = {}
@@ -173,12 +173,12 @@ const TableHelper = {
     return res
   },
   checkDataForNode(table, node) {
-    if (Object.keys(this.checkedFilters).length == 0) {
+    if (Object.keys(this.checkedFilters).length === 0) {
       return true
     }
     const tableId = $(table.table(0).node()).prop('id')
     if (
-      tableId.length == 0 ||
+      tableId.length === 0 ||
       !Object.prototype.hasOwnProperty.call(TableHelper.tablesByIds, tableId)
     ) {
       return true
@@ -193,13 +193,13 @@ const TableHelper = {
       return true
     }
     const checkedFilters = TableHelper.checkedFilters[indexTable]
-    if (Object.keys(checkedFilters).length == 0) {
+    if (Object.keys(checkedFilters).length === 0) {
       return true
     }
     for (const name in checkedFilters) {
-      if (checkedFilters[name].length != 0) {
+      if (checkedFilters[name].length !== 0) {
         const nodeValue = $(node).attr(`data-${name}`)
-        if (typeof nodeValue === 'undefined' || nodeValue.length == 0) {
+        if (typeof nodeValue === 'undefined' || nodeValue.length === 0) {
           return false
         }
         const values = nodeValue.split(',')

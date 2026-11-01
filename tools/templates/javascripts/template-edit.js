@@ -83,7 +83,7 @@ $(document).ready(() => {
     let bgimg = $('.choosen').css('background-image')
     const imgsrc = $('.choosen').attr('src')
 
-    if (!(typeof bgimg === 'undefined') && bgimg != 'none') {
+    if (!(typeof bgimg === 'undefined') && bgimg !== 'none') {
       bgimg = bgimg.substr(
         bgimg.lastIndexOf('/') + 1,
         bgimg.length - bgimg.lastIndexOf('/'),
@@ -104,7 +104,7 @@ $(document).ready(() => {
     const a = $('#form_graphical_options').serializeArray()
 
     $.each(a, function () {
-      if (this.name.slice(-'_select'.length) != '_select') {
+      if (this.name.slice(-'_select'.length) !== '_select') {
         if (o[this.name] !== undefined) {
           if (!o[this.name].push) {
             o[this.name] = [o[this.name]]
@@ -132,7 +132,7 @@ $(document).ready(() => {
     if (preset != null) {
       data.metadatas.favorite_preset =
         preset +
-        (preset.length == 0 || preset.slice(-'.css'.length) === '.css'
+        (preset.length === 0 || preset.slice(-'.css'.length) === '.css'
           ? ''
           : '.css')
     }

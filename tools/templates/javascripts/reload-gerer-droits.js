@@ -14,7 +14,7 @@ function reloadGererDroits(elem) {
       params += paramsSplitted[i]
     }
   }
-  if (value != '') {
+  if (value !== '') {
     if (params.length > 0) {
       params = `${params}&`
     }

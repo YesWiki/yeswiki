@@ -65,7 +65,7 @@ const geolocationHelper = (function () {
           const resettingLoading = () => {
             this.loadingCache[eventPrefix] = this.loadingCache[
               eventPrefix
-            ].filter((idToCheck) => idToCheck != eventId)
+            ].filter((idToCheck) => idToCheck !== eventId)
           }
           this.addEventOnce(errorEventName, resettingLoading)
           this.addEventOnce(readyEventName, resettingLoading)
@@ -624,7 +624,7 @@ const geolocationHelper = (function () {
             return ''
           }
         }
-        if (url.length == 0) {
+        if (url.length === 0) {
           if (typeof address === 'string') {
             const sanitizedAddress = this.sanitizeAddress(address)
             if (sanitizedAddress.length === 0) {
@@ -774,7 +774,7 @@ const geolocationHelper = (function () {
         const canStartDirectly = !this.loadingUrl[id].running
 
         const processNext = () => {
-          if (this.loadingUrl[id].next.length == 0) {
+          if (this.loadingUrl[id].next.length === 0) {
             this.loadingUrl[id].running = false
           } else {
             this.loadingUrl[id].running = true
@@ -819,11 +819,9 @@ const geolocationHelper = (function () {
           })
       },
       log(object, type = 'log') {
-        if (!['log', 'error', 'warn'].includes(type)) {
-          type = 'log'
-        }
+        const method = ['log', 'error', 'warn'].includes(type) ? type : 'log'
         if (this.isDebugMode) {
-          console[type](object)
+          console[method](object)
         }
       },
       init() {
@@ -947,7 +945,7 @@ const geolocationHelper = (function () {
       return await geolocationHelperInternal.methods
         .geolocate(address)
         .then((results) => {
-          if (results.length == 0) {
+          if (results.length === 0) {
             const matches = geolocationHelperInternal.methods
               .sanitizeAddress(address)
               .match(/^\d+(.*)/i)

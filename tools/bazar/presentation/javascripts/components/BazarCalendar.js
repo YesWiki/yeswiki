@@ -62,7 +62,7 @@ const BazarCalendar = {
       info.jsEvent.preventDefault()
       const { entries } = this
       this.selectedEntry = entries.filter(
-        (entry) => entry.id_fiche == info.event.groupId,
+        (entry) => String(entry.id_fiche) === String(info.event.groupId),
       )[0]
     },
     getEventById(id) {
@@ -74,21 +74,23 @@ const BazarCalendar = {
     isModalDisplay() {
       return (
         this.params.entrydisplay == null ||
-        this.params.entrydisplay.length == 0 ||
-        this.params.entrydisplay == 'modal' ||
+        this.params.entrydisplay.length === 0 ||
+        this.params.entrydisplay === 'modal' ||
         ['modal', 'newtab', 'direct', 'sidebar'].indexOf(
           this.params.entrydisplay,
-        ) == -1
+        ) === -1
       )
     },
     isNewTabDisplay() {
       return (
-        this.params.entrydisplay != null && this.params.entrydisplay == 'newtab'
+        this.params.entrydisplay != null &&
+        this.params.entrydisplay === 'newtab'
       )
     },
     isDirectLinkDisplay() {
       return (
-        this.params.entrydisplay != null && this.params.entrydisplay == 'direct'
+        this.params.entrydisplay != null &&
+        this.params.entrydisplay === 'direct'
       )
     },
     formatEndDate(entry) {
@@ -107,7 +109,7 @@ const BazarCalendar = {
       if (
         entry.bf_date_fin_evenement == null ||
         endDate == null ||
-        endDate == 'Invalid Date'
+        String(endDate) === 'Invalid Date'
       ) {
         if (startDate.length <= 10) {
           return startDate
@@ -154,7 +156,7 @@ const BazarCalendar = {
           this.calendarOptions,
         )
         this.calendar.setOption('eventDidMount', this.updateEventData)
-        if (this.params.entrydisplay == 'sidebar') {
+        if (this.params.entrydisplay === 'sidebar') {
           this.calendar.setOption('eventClick', this.displaySideBar)
         }
         this.calendar.render()
@@ -163,7 +165,7 @@ const BazarCalendar = {
     },
     buildEventObject(entry, id, start, end) {
       const backgroundColor =
-        entry.color == null || entry.color.length == 0 ? '' : entry.color
+        entry.color == null || entry.color.length === 0 ? '' : entry.color
       return {
         id,
         groupId: entry.id_fiche,
@@ -177,7 +179,7 @@ const BazarCalendar = {
         borderColor: backgroundColor,
         extendedProps: {
           icon:
-            entry.icon == null || entry.icon.length == 0
+            entry.icon == null || entry.icon.length === 0
               ? ''
               : `<i class="${entry.icon}">&nbsp;</i>`,
           htmlattributes: `${
@@ -378,7 +380,7 @@ const BazarCalendar = {
   watch: {
     selectedEntry(_newVal, _oldVal) {
       if (this.selectedEntry) {
-        if (this.params.entrydisplay == 'sidebar')
+        if (this.params.entrydisplay === 'sidebar')
           this.$root.getEntryRender(this.selectedEntry)
       }
     },
