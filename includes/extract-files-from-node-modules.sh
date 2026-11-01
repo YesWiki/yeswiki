@@ -155,7 +155,7 @@ mkdir -p javascripts/vendor/iframe-resizer &&
 
 # opening_hours
 mkdir -p javascripts/vendor/opening_hours &&
-	curl -s https://openingh.openstreetmap.de/opening_hours.js/opening_hours+deps.min.js \
+	curl -s https://openingh.openstreetmap.de/build/opening_hours+deps.min.js \
 		| sed '/^[[:space:]]*\/\/#[[:space:]]*sourceMappingURL=/d' \
 		> javascripts/vendor/opening_hours/opening_hours.js
 
