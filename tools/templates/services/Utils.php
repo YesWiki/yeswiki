@@ -2,10 +2,10 @@
 
 namespace YesWiki\Templates\Service;
 
-use Attach;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Bazar\Controller\EntryController;
 use YesWiki\Bazar\Service\EntryManager;
+use YesWiki\Core\Service\AclService;
 use YesWiki\Wiki;
 
 class Utils
@@ -32,11 +32,14 @@ class Utils
      */
     public function getImageFromBody(array $page, string $width, string $height): string
     {
+        if (!$this->canRead($page)) {
+            return $this->getDefaultOpenGraphImage();
+        }
+
         $image = '';
         if (isset($page['body'])) {
-            // on cherche les actions attach avec image, puis les images bazar
             $images = [];
-            preg_match("/\{\{attach.*file=\"(.*\.(?i)(jpe?g|png))\".*\}\}/U", $page['body'], $images);
+            preg_match("/\{\{attach.*file=\"(.*\.(?i)(jpe?g|png|webp))\".*\}\}/U", $page['body'], $images);
             if (!empty($images[1])) {
                 $image = $this->getResizedFilename($images[1], $page, $page['tag'], $width, $height, true);
             } else {
@@ -67,6 +70,14 @@ class Utils
         return $image;
     }
 
+    /**
+     * Whether the current reader may read the page the metadata comes from.
+     */
+    protected function canRead($page): bool
+    {
+        return !empty($page['tag']) && $this->wiki->services->get(AclService::class)->hasAccess('read', $page['tag']);
+    }
+
     protected function getDefaultOpenGraphImage(): string
     {
         $opengraphImage = $this->params->has('opengraph_image') ? $this->params->get('opengraph_image') : '';
@@ -85,10 +96,8 @@ class Utils
     {
         $attach = $this->getAttach();
 
-        // current page
         $previousTag = $this->wiki->tag;
         $previousPage = $this->wiki->page;
-        // fake page
         $this->wiki->tag = $tag;
         $this->wiki->page = $page;
         if ($extractFullFileName) {
@@ -119,7 +128,6 @@ class Utils
             }
         }
 
-        // reset params
         unset($attach);
         $this->wiki->tag = $previousTag;
         $this->wiki->page = $previousPage;
@@ -241,117 +249,12 @@ class Utils
     }
 
     /**
-     * cree un diaporama a partir d'une PageWiki.
-     *
-     * @param $pagetag  : nom de la PageWiki
-     * @param $template : fichier template pour le diaporama
-     * @param $class    : classe CSS a ajouter au diaporama
-     */
-    public function printDiaporama($pagetag, $template = 'diaporama_slides.tpl.html', $class = '')
-    {
-        // On teste si l'utilisateur peut lire la page
-        if (!$this->wiki->HasAccess('read', $pagetag)) {
-            return '<div class="alert alert-danger">'
-                . _t('TEMPLATE_NO_ACCESS_TO_PAGE') . '</div>'
-                . $this->wiki->Format('{{login template="minimal.tpl.html"}}');
-        }
-        // On teste si la page existe
-        if (!$page = $this->wiki->LoadPage($pagetag)) {
-            return '<div class="alert alert-danger">' . _t('TEMPLATE_PAGE_DOESNT_EXIST') . ' (' . $pagetag . ').</div>';
-        }
-        // $body_f = $this->wiki->Format($page["body"], 'wakka', $pagetag);
-        // on regarde si on gere la 2d pour reveal
-        // preg_match_all('/<h1>.*<\/h1>/m', $body_f, $titles);
-        preg_match_all('/======.*======/Um', $page['body'], $titles);
-        $istwodimensions = count($titles[0]) > 1;
-        $first = true;
-        // on decoupe pour chaque titre de niveau 1 ou 2, ou chaque fois que background-image est utilisée
-        // $body = preg_split(
-        //     '/(.*<h[12]>.*<\/h[12]>)'
-        //     .'|(.*<div class="background-image.*">.*<\!-- \/\.background-image -->)/m',
-        //     $body_f,
-        //     -1,
-        //     PREG_SPLIT_DELIM_CAPTURE
-        // );
-        $body = preg_split(
-            '/(\======.*======)'
-            . '|(=====.*=====)'
-            . '|(\{\{backgroundimage.*\}\}\s*.*\s*\{\{endbackgroundimage\}\})/Um',
-            $page['body'],
-            -1,
-            PREG_SPLIT_DELIM_CAPTURE
-        );
-        // var_dump($body);break;
-        if (!$body) {
-            return '<div class="=alert alert-danger">'
-                . _t('TEMPLATE_PAGE_CANNOT_BE_SLIDESHOW') . ' (' . $pagetag . ').</div>';
-        }
-        // preparation des tableaux pour le squelette -------------------------
-        $i = 0;
-        $slides = [];
-        $titles = [];
-        $previousistitle = false;
-        foreach ($body as $slide) {
-            $slide = $this->wiki->Format($slide);
-            // var_dump($slide);
-            // s'il a des titres de niveau 1 ou 2 il s'agit des separateurs de diapo
-            if (preg_match('/<h[12]>.*<\/h[12]>/', $slide)) {
-                // s'il y a un titre de niveau 1 qui commence la diapositive, on la deplace en titre
-                // et on gere l'aspect multidimentionnel
-                if (preg_match('/<h1>.*<\/h1>/', $slide)) {
-                    if ($istwodimensions) {
-                        if ($first) {
-                            $first = false;
-                        } else {
-                            $slides[$i]['closesection'] = true;
-                        }
-                        $slides[$i]['opensection'] = true;
-                    }
-                }
-                // pour les titres de niveau 2, on les transforme en titre 1
-                $titles[$i] = str_replace('<h2', '<h1', $slide);
-                if ($previousistitle) {
-                    $slides[$i]['html'] = '';
-                    $i++;
-                }
-                $previousistitle = true;
-            } elseif (!empty($slide) || $previousistitle) {
-                $previousistitle = false;
-                $slides[$i]['html'] = $slide;
-                $slides[$i]['title'] = ((isset($titles[$i])) ? strip_tags($titles[$i]) : '');
-                $i++;
-            }
-        }
-
-        $buttons = '';
-        // si la fonction est appelee par le handler diaporama, on ajoute les liens d'edition et de retour
-        if ($this->wiki->GetMethod() == 'diaporama') {
-            $buttons .= '<a class="btn" href="' . $this->wiki->href('', $pagetag) . '">&times;</a>' . "\n";
-        }
-
-        // on affiche le template
-        if (!$this->wiki->services->get(\YesWiki\Core\Service\TemplateEngine::class)->hasTemplate("@templates/$template")) {
-            $template = 'diaporama_slides.tpl.html';
-        }
-        $output = $this->wiki->render("@templates/$template", [
-            'pagetag' => $pagetag,
-            'slides' => $slides,
-            'titles' => $titles,
-            'buttons' => $buttons,
-            'class' => $class,
-        ]);
-
-        return $output;
-    }
-
-    /**
      * recupere le parametre data sous forme d'un tableau.
      *
      * @return array or null if not result
      */
     public function getDataParameter()
     {
-        // container data attributes
         $data = $this->wiki->GetParameter('data');
         if (!empty($data)) {
             $datas = [];
@@ -373,7 +276,6 @@ class Utils
 
     public function postFormat($output)
     {
-        // pour les buttondropdown, on ajoute les classes css aux listes
         $pattern = [
             '/(\<!-- start of buttondropdown -->.*)\<ul\>(.*\<!-- end of buttondropdown --\>)/Uis',
             '/<li>\s*<hr \/>\s*<\/li>/Uis',
@@ -429,6 +331,10 @@ class Utils
      */
     public function getTitleFromBody($page): string
     {
+        if (!$this->canRead($page)) {
+            return '';
+        }
+
         $entryManager = $this->wiki->services->get(EntryManager::class);
 
         if (!isset($page['body']) || !isset($page['tag'])) {
@@ -442,7 +348,6 @@ class Utils
                 $title = $entry['bf_titre'];
             }
         } else {
-            // on recupere les bf_titre ou les titres de niveau 1 et de niveau 2
             if (preg_match('/<h[12].*>\s*(.*)\s*<\/h[12]>/iUs', $page['body'], $titles)) {
                 $title = $titles[1];
             } else {
@@ -472,6 +377,10 @@ class Utils
      */
     public function getDescriptionFromBody($page, $title, $length = 300)
     {
+        if (!$this->canRead($page)) {
+            return '';
+        }
+
         $entryManager = $this->wiki->services->get(EntryManager::class);
 
         if (!isset($page['body'])) {
@@ -490,12 +399,9 @@ class Utils
                 $desc = $this->wiki->services->get(EntryController::class)->view($entry, '', 0);
             }
         }
-        // $desc = $this->wiki->Format($page['body'], 'wakka', $page["tag"]);
 
-        // no javascript
         $desc = preg_replace('~<\s*\bscript\b[^>]*>(.*?)<\s*\/\s*script\s*>~Uis', '', $desc);
 
-        // no double space or new lines
         $desc = trim(
             preg_replace(
                 '!\s+!',

@@ -60,7 +60,7 @@ export default {
   renderInput(field) {
     return {
       field:
-        field.askIfActivateComments == 1
+        Number(field.askIfActivateComments) === 1
           ? `<i class="far fa-comment-dots"></i> ${field.fieldlabel || _t('BAZ_ACTIVATE_COMMENTS')}`
           : '',
       onRender() {
@@ -76,8 +76,8 @@ export default {
 
             const nameInput = $(base).find('input[type=text][name=name]')
             if (
-              nameInput.val().trim().length == 0 ||
-              nameInput.val().trim() == 'bf_acls'
+              nameInput.val().trim().length === 0 ||
+              nameInput.val().trim() === 'bf_acls'
             ) {
               nameInput.val('bf_commentaires')
             }
@@ -96,8 +96,8 @@ export default {
               const currentValue = commentInput.val()
               if (
                 Array.isArray(currentValue) &&
-                (currentValue.length == 0 ||
-                  (currentValue.length == 1 &&
+                (currentValue.length === 0 ||
+                  (currentValue.length === 1 &&
                     currentValue.includes('comments-closed')))
               ) {
                 commentInput.val([' + '])

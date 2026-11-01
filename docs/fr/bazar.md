@@ -927,6 +927,48 @@ champ et la valeur qu'il contient.
 - `>=` Supérieur ou égal à
 - `!=` Différent de
 
+##### Dates relatives à aujourd'hui
+
+Pour comparer un champ date à la date du jour, on écrit `[today]` à la place de
+la valeur. YesWiki le remplace par la date du jour au moment où la page
+s'affiche, au format `2026-10-21`. La requête suit donc le calendrier sans qu'on
+ait à la modifier.
+
+On peut ajouter ou retirer une durée, en collant un nombre et une unité derrière
+`today` :
+
+| Unité   | Sens    | Exemple       | Donne               |
+| ------- | ------- | ------------- | ------------------- |
+| `d` `j` | jour    | `[today+10j]` | dans dix jours      |
+| `w` `s` | semaine | `[today+3s]`  | dans trois semaines |
+| `m`     | mois    | `[today-2m]`  | il y a deux mois    |
+| `y` `a` | année   | `[today-1a]`  | il y a un an        |
+| `h`     | heure   | `[now+2h]`    | dans deux heures    |
+
+Les décalages se cumulent : `[today+1m-1j]` donne la veille du même jour le mois
+prochain.
+
+`[now]` fonctionne comme `[today]` mais garde l'heure
+(`2026-10-21T14:30:00+02:00`). Il sert pour les événements saisis avec une heure
+de début. Pour garder les événements « toute la journée » du jour même, préférez
+`[today]` : leur date n'a pas d'heure, et `>=[now]` les écarte dès minuit passé.
+
+- `query="bf_date_debut_evenement>=[today]"` : les événements à venir,
+  y compris ceux d'aujourd'hui.
+- `query="bf_date_debut_evenement>=[today] AND bf_date_debut_evenement<[today+1s]"` :
+  les événements des sept prochains jours.
+- `query="bf_date_fin_evenement<[today-2m]"` : les événements terminés depuis
+  plus de deux mois.
+- `query="bf_date_debut_evenement>=[now]"` : les événements qui n'ont pas
+  encore commencé, à l'heure près.
+
+Les mêmes jetons marchent dans le paramètre Query d'un champ qui liste les
+fiches d'un autre formulaire. Un formulaire d'inscription peut ainsi ne proposer
+que les ateliers à venir avec `bf_date_debut_evenement>=[today]`.
+
+Un jeton mal écrit (`[today+3x]`, `[demain]`) n'est pas remplacé. La condition
+compare alors le champ au texte du jeton et ne trouve en général aucune fiche.
+
 ##### Quelques exemples
 
 - `query="bf_description=.*toto"` : Renverra les fiches dont le champ

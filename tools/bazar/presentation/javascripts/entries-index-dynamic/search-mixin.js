@@ -109,7 +109,7 @@ export default {
                 if (vMatches) {
                   vMatches.forEach((pMatch) => {
                     vOrScore +=
-                      pField == 'bf_titre'
+                      pField === 'bf_titre'
                         ? 2 * (pMatch.length + 1)
                         : pMatch.length + 1
                     vMatchedFields++
@@ -125,7 +125,7 @@ export default {
             if (vMatchedFields > 0) vMatchedOrs++
           })
 
-          if (vAndScore == 0) {
+          if (vAndScore === 0) {
             pEntry.searchScore = 0
             return false
           }

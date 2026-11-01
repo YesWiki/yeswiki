@@ -109,7 +109,7 @@ export default {
             if (!$(element).hasClass('initialized')) {
               $(element).addClass('initialized')
               if (
-                $(element).val().length == 0 ||
+                $(element).val().length === 0 ||
                 $(element).prop('tagName') === 'SELECT'
               ) {
                 // mapAutocompleteUpdateExtractFromOther(base)

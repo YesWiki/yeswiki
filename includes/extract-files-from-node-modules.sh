@@ -155,9 +155,10 @@ mkdir -p javascripts/vendor/iframe-resizer &&
 
 # opening_hours
 mkdir -p javascripts/vendor/opening_hours &&
-	curl -s https://openingh.openstreetmap.de/opening_hours.js/opening_hours+deps.min.js \
-		| sed '/^[[:space:]]*\/\/#[[:space:]]*sourceMappingURL=/d' \
-		> javascripts/vendor/opening_hours/opening_hours.js
+	curl -fsS https://openingh.openstreetmap.de/build/opening_hours+deps.min.js -o javascripts/vendor/opening_hours/opening_hours.download.js &&
+	copy_js javascripts/vendor/opening_hours/opening_hours.download.js javascripts/vendor/opening_hours/opening_hours.js &&
+	rm javascripts/vendor/opening_hours/opening_hours.download.js ||
+	{ echo "opening_hours download failed" >&2; exit 1; }
 
 # htmx
 mkdir -p javascripts/vendor/htmx && copy_js node_modules/htmx.org/dist/htmx.min.js javascripts/vendor/htmx/htmx.min.js

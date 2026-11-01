@@ -31,7 +31,7 @@ export default {
       }
     },
     displayLabel() {
-      return [0, '0', false, 'false'].indexOf(this.withlabel) == -1
+      return [0, '0', false, 'false'].indexOf(this.withlabel) === -1
     },
     displayOnOneLine() {
       return [1, '1', true, 'true'].indexOf(this.oneline) > -1
@@ -50,9 +50,9 @@ export default {
         case 'listefichesliees':
         case 'tags': {
           const values = value.split(',').map((v) => this.field.options[v])
-          return values.length == 0
+          return values.length === 0
             ? ''
-            : values.length == 1
+            : values.length === 1
               ? values[0]
               : values
         }

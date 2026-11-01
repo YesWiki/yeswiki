@@ -31,6 +31,25 @@ dans la liste des formulaires:
 Ce bouton mène à une page en deux onglets. Le compte n'existe pour les autres
 serveurs qu'une fois un nom d'utilisateur choisi et le profil enregistré.
 
+## Configuration du serveur web
+
+Les autres serveurs joignent le compte par deux adresses à la racine du
+domaine, en dehors du `?` des pages du wiki :
+
+- `/.well-known/webfinger`, qui transforme `@agenda@monwiki.org` en adresse
+  d'acteur ;
+- `/actors/<identifiant du formulaire>`, l'acteur, avec `/inbox`, `/outbox`,
+  `/followers` et `/following`.
+
+Sans règle de réécriture, ces adresses répondent 404 et l'abonnement depuis
+Mastodon échoue. L'adresse de l'acteur ne reprend que le domaine de la
+`base_url` : ActivityPub ne fonctionne que pour un wiki installé à la racine
+d'un domaine ou d'un sous-domaine. Dans un sous-dossier, deux wikis du même
+domaine donneraient le même identifiant `@agenda@monwiki.org`.
+
+Pour vérifier, `https://monwiki.org/actors/2` et
+`https://monwiki.org/.well-known/webfinger?resource=acct:agenda@monwiki.org`
+doivent répondre en JSON.
 Sur une installation neuve, la case "Publier le blog et l'agenda sur le
 Fédivers" de la configuration avancée fait tout cela pour les formulaires
 Agenda et Blog-actu, avec les noms d'utilisateur `agenda` et `blog`. Elle est
@@ -71,6 +90,12 @@ lignes :
 </IfModule>
 ```
 
+Le paramètre `wiki` est nécessaire : YesWiki lit la page demandée dans l'adresse
+d'origine, qu'une réécriture Apache ne change pas. Certains hébergements
+refusent les adresses qui commencent par un point (403 sur
+`/.well-known/webfinger`) : il faut alors autoriser ce chemin dans leur
+configuration.
+
 ### nginx
 
 Ajoutez ces deux lignes dans le bloc `server` du wiki :
@@ -79,6 +104,10 @@ Ajoutez ces deux lignes dans le bloc `server` du wiki :
 rewrite ^/actors/(\d+)(/(?:outbox|inbox|followers|following))?$ /index.php?wiki=api/forms/$1/actor$2 last;
 rewrite ^/\.well-known/webfinger$ /index.php?wiki=api/webfinger last;
 ```
+
+La configuration de l'image Docker
+([`docker/nginx.conf`](https://github.com/YesWiki/yeswiki/blob/doryphore-dev/docker/nginx.conf))
+contient les deux blocs `location`.
 
 Le paquet YunoHost de YesWiki contient déjà ces règles.
 

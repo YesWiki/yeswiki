@@ -58,7 +58,7 @@
       <label for="newTag" class="control-label">{{ _t('PAGE_TAG_TO_DUPLICATE') }}</label>
       <div class="input-group">
         <span class="input-group-addon" id="base-url">{{ baseUrl }}</span>
-        <input required type="text" class="form-control" id="newTag" name="newTag" placeholder="{{ _t('PAGE_TAG_TO_DUPLICATE') }}" value="{{proposedTag}}" />
+        <input required type="text" class="form-control" id="newTag" name="newTag" pattern="[\p{L}\-_.0-9]+" title="{{ _t('PAGE_TAG_ALLOWED_CHARACTERS') }}" placeholder="{{ _t('PAGE_TAG_TO_DUPLICATE') }}" value="{{proposedTag}}" />
         {% if toExternalWiki %}
         <span class="input-group-btn">
           <button class="btn-verify-tag btn btn-primary" type="submit">{{ _t('VERIFY_PAGE_AVAILABILITY') }}</button>

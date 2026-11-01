@@ -700,8 +700,6 @@ nom du handler. Exemple avec le handler `raw`: https://yeswiki.net/?AccueiL/raw
 - **/edit** : pour passer en mode Édition
 - **/revisions** : pour voir les versions de l'historique
 - **/filemanager** : pour accéder à la liste des fichiers attachés à cette page
-- **/slide_show** : pour transformer le texte en diaporama
-- **/diaporama** : idem slide_show en un peu différent
 - **/mail** : envoie la page en mailing
 - **/raw** : affiche le code wiki non formaté de la page
 - **/deletepage** : si vous êtes propriétaire de la page, vous pouvez la

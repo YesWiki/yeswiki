@@ -204,6 +204,16 @@ class DuplicationManager
         return $doneFiles;
     }
 
+    /**
+     * Refuses a tag that a page URL could not reach.
+     */
+    private function assertReachableTag($tag)
+    {
+        if (!is_string($tag) || !preg_match('`^' . WN_PAGE_TAG . '$`u', $tag)) {
+            throw new \Exception(_t('INVALID_PAGE_TAG', ['tag' => (string)$tag]) . ' ' . _t('PAGE_TAG_ALLOWED_CHARACTERS'));
+        }
+    }
+
     public function checkPostData($data)
     {
         if (empty($data['type']) || !in_array($data['type'], ['form', 'page', 'list', 'entry'])) {
@@ -212,6 +222,7 @@ class DuplicationManager
         if (empty($data['newTag'])) {
             throw new \Exception(_t('EMPTY_PAGE_TAG'));
         }
+        $this->assertReachableTag($data['newTag']);
         if ($data['type'] != 'page' && empty($data['newTitle'])) {
             throw new \Exception(_t('EMPTY_PAGE_TITLE'));
         }
@@ -292,6 +303,7 @@ class DuplicationManager
 
     public function importDistantContent($tag, $request)
     {
+        $this->assertReachableTag($tag);
         if ($this->wiki->services->get(PageManager::class)->getOne($tag)) {
             throw new \Exception(_t('ACEDITOR_LINK_PAGE_ALREADY_EXISTS'));
         }

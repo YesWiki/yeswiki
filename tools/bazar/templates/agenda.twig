@@ -1,0 +1,59 @@
+{{ include_css('tools/bazar/presentation/styles/agenda.css') }}
+{% set useModal = ((params.modal ?? '') ~ '') == '1' %}
+{% set nbcol = (params.nbcol ?? '') ~ '' %}
+{% set months = ['BAZ_JANVIER', 'BAZ_FEVRIER', 'BAZ_MARS', 'BAZ_AVRIL', 'BAZ_MAI', 'BAZ_JUIN', 'BAZ_JUILLET', 'BAZ_AOUT', 'BAZ_SEPTEMBRE', 'BAZ_OCTOBRE', 'BAZ_NOVEMBRE', 'BAZ_DECEMBRE'] %}
+{% if fiches|length > 0 %}
+  <div class="agenda-container">
+    {% for fiche in fiches %}
+      {% set start = fiche.bf_date_debut_evenement ?? '' %}
+      {% set month = start is empty ? 0 : start|date('n') %}
+      <div class="agenda-entry-container">
+        <figure class="bazar-entry agenda-entry" {{ fiche.html_data|raw }}>
+          <div class="image">
+            {% set file = fiche.imagebf_image ?? '' %}
+            {% if file is not empty %}
+              {% if fiche['external-data'] %}
+                {% set src = fiche['external-data'].baseUrl ~ 'files/' ~ file %}
+              {% elseif file matches '#^(https?:)?//#i' %}
+                {% set src = urlImage({fileName: file, width: 450, height: 450, mode: 'crop'}) %}
+              {% else %}
+                {% set src = urlImage({fileName: 'files/' ~ file, width: 450, height: 450, mode: 'crop'}) %}
+              {% endif %}
+              <img loading="lazy" class="img-responsive" alt="" src="{{ src }}">
+            {% else %}
+              <img loading="lazy" class="trombi-image img-placeholder" alt=""
+                   src="tools/bazar/libs/vendor/placeholder.php?size=300x300&amp;bg=efefef&amp;text=">
+              <i class="trombi-image icon-placeholder fa fa-calendar"></i>
+            {% endif %}
+          </div>
+          <fig-caption>
+            {% if month > 0 %}
+              <div class="date">
+                <span class="day">{{ start|date('d') }}</span>
+                <span class="month">{{ _t(months[month - 1])|slice(0, month in [6, 7] ? 4 : 3) }}</span>
+              </div>
+            {% endif %}
+            <h5>{{ fiche.bf_titre }}</h5>
+            {% if fiche.soustitre is not empty %}
+              {% set subtitle = format(fiche.soustitre)|striptags('<br>') %}
+              <small class="agenda-subtitle">{{ (subtitle|slice(0, 280) ~ (subtitle|length > 280 ? '...' : ''))|raw|nl2br }}</small>
+            {% endif %}
+          </fig-caption>
+          <a class="{{ useModal ? 'modalbox' }}"
+             title="{{ fiche.bf_titre|striptags }}"
+             href="{{ fiche.url ~ (fiche['external-data'] and useModal ? '/iframe' : '') }}"
+             {% if fiche['external-data'] and useModal %}data-iframe="1"{% endif %}></a>
+        </figure>
+      </div>
+    {% endfor %}
+  </div>
+  <style>
+    .agenda-entry-container {
+      width: {{ nbcol matches '/^[1-9][0-9]*$/' ? 100 / nbcol : 25 }}%;
+      padding: 1rem;
+    }
+    @media (max-width: 900px) { .agenda-entry-container { width: 33%; } }
+    @media (max-width: 700px) { .agenda-entry-container { width: 50%; } }
+  </style>
+{% endif %}
+{{ pager_links|raw }}

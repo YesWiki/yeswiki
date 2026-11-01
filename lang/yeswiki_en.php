@@ -29,6 +29,8 @@ return [
     'DB_CONNECT_FAIL' => 'For some reasons, probably database access error, this YesWiki is temporally unavailable. Please try again later, thank you for your patience.',
     'LOG_DB_CONNECT_FAIL' => 'YesWiki : database connection failed',
     'INCORRECT_PAGENAME' => 'Incorrect page name.',
+    'INVALID_PAGE_TAG' => 'The page name "%{tag}" is incorrect.',
+    'PAGE_TAG_ALLOWED_CHARACTERS' => 'Letters, digits, "-", "_" and "." only, no spaces.',
     'HOMEPAGE_WIKINAME' => 'HomePage',
     'MY_YESWIKI_SITE' => 'My YesWiki website',
     'YESWIKI_TOOLS_CONFIG' => 'Yeswiki extensions configuration',

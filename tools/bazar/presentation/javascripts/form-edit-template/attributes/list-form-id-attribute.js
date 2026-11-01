@@ -43,7 +43,7 @@ function updateOptionsList($select, $sourceSelect) {
   }
 
   Object.entries(optionToAddToSelect).forEach(([key, label]) => {
-    const newOption = new Option(label, key, false, key == currentValue)
+    const newOption = new Option(label, key, false, key === currentValue)
     $select.append(newOption)
   })
 }

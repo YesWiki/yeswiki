@@ -16,7 +16,7 @@ $(document).ready(() => {
         const { selectedOptions } = bazarlistTagsInputsData[propertyName]
 
         const anchor = $(`.bazar-form .yeswiki-input-entries${propertyName}`)
-        if (anchor.length == 0) {
+        if (anchor.length === 0) {
           console.log(
             `.bazar-form .yeswiki-input-entries${propertyName} NOT FOUND in bazar-tagsinput.js !`,
           )
@@ -69,7 +69,10 @@ $(document).ready(() => {
                 ? Object.values(data.prepared)
                 : data.prepared
             fields.forEach((field) => {
-              if (field.propertyname && field.propertyname == propertyName) {
+              if (
+                field.propertyname &&
+                field.propertyname === String(propertyName)
+              ) {
                 const { options } = field
                 if (options) {
                   // get current

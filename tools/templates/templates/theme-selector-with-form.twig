@@ -119,6 +119,21 @@
     </div> <!-- /#avanced-page-settings -->
     {% endif %}
 </form>
+{% if pageOwnTheme is not empty %}
+    <div class="alert alert-warning">
+        <p>{{ _t('TEMPLATE_PAGE_HAS_OWN_THEME', {theme: pageOwnTheme}) }}</p>
+        <form method="post">
+            <input type="hidden" name="action" value="useSiteTheme" />
+            <button type="submit" class="btn btn-default btn-sm">{{ _t('TEMPLATE_USE_SITE_THEME') }}</button>
+        </form>
+    </div>
+{% endif %}
+{% if pagesWithOwnTheme is defined and pagesWithOwnTheme > 0 %}
+    <div class="alert alert-info">
+        {{ _t('TEMPLATE_PAGES_WITH_OWN_THEME', {count: pagesWithOwnTheme}) }}
+        <a href="{{ url({tag: 'GererThemes'}) }}">{{ _t('TEMPLATE_SEE_PAGES_THEMES') }}</a>
+    </div>
+{% endif %}
 {% if (mode != 'edit') %}
 {# do not display this part in edit mode because handler edit__ is called after generation of .js and .css html  #}
     <div id="preset-sidenav" class="sidenav">

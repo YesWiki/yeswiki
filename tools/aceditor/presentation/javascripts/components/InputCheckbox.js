@@ -14,12 +14,12 @@ export default {
         // i.e. myparam="false" or myparam="0" if uncheckvalue is defined
         const defaultValue = this.config.default || 'false'
         const checkedvalue = this.config.checkedvalue || 'true'
-        this.checked = `${defaultValue}` == `${checkedvalue}`
+        this.checked = `${defaultValue}` === `${checkedvalue}`
       } else {
         // Cast values to string before compare, because in yaml we might use boolean or number, but
         // wikicode will always use strings
         const checkedvalue = this.config.checkedvalue || 'true'
-        this.checked = `${value}` == `${checkedvalue}`
+        this.checked = `${value}` === `${checkedvalue}`
       }
     },
   },

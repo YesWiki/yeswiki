@@ -94,6 +94,7 @@
   }
 
   const newUrlFromType = (url, type, currentBase) => {
+    let newUrl = url
     const element =
       type === 'theme'
         ? $(currentBase).find('select')
@@ -105,17 +106,17 @@
         if (type !== 'theme' && val.slice(-ext.length) !== ext) {
           val += ext
         }
-        if (url.match(new RegExp(`(\\?|&)${type}=`))) {
-          url = url.replace(
+        if (newUrl.match(new RegExp(`(\\?|&)${type}=`))) {
+          newUrl = newUrl.replace(
             new RegExp(`(\\?|&)${type}=[^#&=]+`),
             `$1${type}=${val}`,
           )
         } else {
-          url += `${url.includes('?') ? '&' : '?'}${type}=${val}`
+          newUrl += `${newUrl.includes('?') ? '&' : '?'}${type}=${val}`
         }
       }
     }
-    return url
+    return newUrl
   }
 
   const updateUrl = (data, currentBase) => {

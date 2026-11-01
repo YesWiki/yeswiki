@@ -134,7 +134,7 @@ function initializeFormbuilder() {
       // strange bug with jQuery Formbuilder, the fieldId given is not the last field, but
       // the one just before... so incrementing the id manually
       // transform frmb-XXXX-fld-6  into frmb-XXXX-fld-7
-      fieldId = fieldId.replace(
+      const renderedFieldId = fieldId.replace(
         /(.*)-fld-(\d+)$/gim,
         (string, formId, fieldId) =>
           `${formId}-fld-${parseInt(fieldId, 10) + 1}`,
@@ -142,7 +142,7 @@ function initializeFormbuilder() {
 
       // Timeout to wait the field ot be rendered
       setTimeout(() => {
-        const $field = $(`#${fieldId}`)
+        const $field = $(`#${renderedFieldId}`)
         addAdvancedAttributesSection($field)
         initListOrFormIdAttribute($field)
         adjustJqueryBuilderUI($field)
@@ -174,7 +174,7 @@ function initializeFormbuilder() {
             file_elem.files = dataTransfer.files
           }
         }
-        if (file_elem.parentElement.childElementCount == 1) {
+        if (file_elem.parentElement.childElementCount === 1) {
           const new_button = document.createElement('i')
           new_button.className = 'fas fa-remove btn-img-remove'
           new_button.onclick = function () {
@@ -242,7 +242,7 @@ function initializeFormbuilder() {
       Object.keys(window.defaultImage).forEach((image_name) => {
         if (
           window.defaultImage[image_name] &&
-          window.defaultImage[image_name] != ''
+          window.defaultImage[image_name] !== ''
         ) {
           const image_names = image_name.split('-')
           const field_idx = Number(image_names[image_names.length - 1]) - 1
@@ -273,7 +273,10 @@ function initializeFormbuilder() {
         }
 
         // if it's a map, we automatically add a bf_addresse
-        if (fieldType == 'map' && !existingFieldsNames.includes('bf_adresse')) {
+        if (
+          fieldType === 'map' &&
+          !existingFieldsNames.includes('bf_adresse')
+        ) {
           const field = {
             type: 'text',
             subtype: 'text',
@@ -305,7 +308,7 @@ function initializeFormbuilder() {
       .on('change', function () {
         $(this).addClass('initialized')
         const $parent = $(this).closest('.form-field')
-        if ($(this).val() == 'range' || $(this).val() == 'number') {
+        if ($(this).val() === 'range' || $(this).val() === 'number') {
           $parent
             .find('.maxlength-wrap label')
             .text(_t('BAZ_FORM_EDIT_MAX_VAL'))
@@ -316,7 +319,7 @@ function initializeFormbuilder() {
             .text(_t('BAZ_FORM_EDIT_MAX_LENGTH'))
           $parent.find('.size-wrap label').text(_t('BAZ_FORM_EDIT_NB_CHARS'))
         }
-        if ($(this).val() == 'color') {
+        if ($(this).val() === 'color') {
           $parent.find('.maxlength-wrap, .size-wrap').hide()
         } else {
           $parent.find('.maxlength-wrap, .size-wrap').show()

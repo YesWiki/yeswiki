@@ -32,7 +32,7 @@ class FilesTest extends TestCase
         file_put_contents($this->des . '/services/Deep.php', 'old deep');
         file_put_contents($this->des . '/Stale.php', 'stale');
 
-        $this->probe = new class() extends Files {
+        $this->probe = new class extends Files {
             public function run($src, $des)
             {
                 return $this->copy($src, $des);
