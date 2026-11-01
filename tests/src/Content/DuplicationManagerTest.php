@@ -61,4 +61,61 @@ class DuplicationManagerTest extends YesWikiTestCase
         $this->assertNotEmpty($page);
         $this->getWiki()->services->get(\YesWiki\Content\Service\PageManager::class)->deleteOrphaned($tag);
     }
+
+    #[DataProvider('unreachableTagProvider')]
+    public function testADuplicateNamedWithCharactersAUrlRefusesIsNotCreated(string $tag): void
+    {
+        $duplicationManager = $this->getWiki()->services->get(DuplicationManager::class);
+
+        try {
+            $duplicationManager->checkPostData(['type' => 'page', 'newTag' => $tag, 'duplicate-action' => 'open']);
+            $this->fail("{$tag} was accepted");
+        } catch (\Exception $e) {
+            $this->assertStringContainsString($tag, $e->getMessage());
+            $this->assertStringContainsString(_t('PAGE_TAG_ALLOWED_CHARACTERS'), $e->getMessage());
+        }
+    }
+
+    #[DataProvider('unreachableTagProvider')]
+    public function testAnImportNamedWithCharactersAUrlRefusesIsNotCreated(string $tag): void
+    {
+        $duplicationManager = $this->getWiki()->services->get(DuplicationManager::class);
+        $request = new \Symfony\Component\HttpFoundation\Request([], [
+            'originalContent' => 'body',
+            'sourceUrl' => 'https://example.org',
+            'originalTag' => 'Source',
+            'type' => 'page',
+        ]);
+
+        try {
+            $duplicationManager->importDistantContent($tag, $request);
+            $this->fail("{$tag} was accepted");
+        } catch (\Exception $e) {
+            $this->assertStringContainsString($tag, $e->getMessage());
+            $this->assertStringContainsString(_t('PAGE_TAG_ALLOWED_CHARACTERS'), $e->getMessage());
+        }
+        $this->assertEmpty($this->getWiki()->services->get(\YesWiki\Content\Service\PageManager::class)->getOne($tag));
+    }
+
+    /** @return array<string, array{0: string}> */
+    public static function unreachableTagProvider(): array
+    {
+        return [
+            'a space' => ['Ma Page'],
+            'a trailing space' => ['MaPage '],
+            'a slash' => ['Ma/Page'],
+            'a quote' => ["L'Atelier"],
+        ];
+    }
+
+    public function testEveryDuplicationMessageIsTranslatedInFrenchAndEnglish(): void
+    {
+        $sources = ['src/Content/Service/DuplicationManager.php', 'src/Content/Handler/DuplicateHandler.php', 'templates/handlers/duplicate.twig'];
+        preg_match_all("/_t\\('([A-Z_]+)'/", implode('', array_map('file_get_contents', $sources)), $matches);
+        foreach (['fr', 'en'] as $lang) {
+            $catalogue = require "src/lang/yeswiki_{$lang}.php";
+            $missing = array_values(array_diff(array_unique($matches[1]), array_keys($catalogue)));
+            $this->assertSame([], $missing, "untranslated in {$lang}");
+        }
+    }
 }

@@ -15,6 +15,7 @@ use YesWiki\Files\Service\AttachedFilePaths;
 use YesWiki\Files\Service\ImageResizer;
 use YesWiki\Files\Service\ProgramFiles;
 use YesWiki\Files\Service\Storage;
+use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Service\PerformableArguments;
 use YesWiki\Kernel\Service\UrlFormatter;
 
@@ -43,24 +44,20 @@ class TemplateHelperService
         return $this->container->get(Storage::class);
     }
 
-    /**
-     * Get the first image in the page.
-     *
-     * @param array<string, mixed> $page   Page info
-     * @param string               $width  Width of the image
-     * @param string               $height Height of the image
-     *
-     * @return string link to the image
-     */
+    /** @param array<string, mixed> $page the first image of the page, or the default Open Graph image */
     public function getImageFromBody(array $page, string $width, string $height): string
     {
+        if (!$this->canRead($page)) {
+            return $this->getDefaultOpenGraphImage();
+        }
+
         $image = '';
         if (isset($page['body'])) {
             $body = $page['body'];
             $content = PageBody::content($body);
 
             $images = [];
-            preg_match("/\{\{attach.*file=\"(.*\.(?i)(jpe?g|png))\".*\}\}/U", $content, $images);
+            preg_match("/\{\{attach.*file=\"(.*\.(?i)(jpe?g|png|webp))\".*\}\}/U", $content, $images);
             if (!empty($images[1])) {
                 $image = $this->getResizedFilename($images[1], $page, $page['tag'], $width, $height, true);
             } else {
@@ -86,6 +83,12 @@ class TemplateHelperService
         return $image;
     }
 
+    /** Whether the current reader may read the page the metadata would come from. */
+    protected function canRead(mixed $page): bool
+    {
+        return is_array($page) && !empty($page['tag']) && $this->container->get(AclService::class)->hasAccess('read', (string)$page['tag']);
+    }
+
     protected function getDefaultOpenGraphImage(): string
     {
         $opengraphImage = $this->params->has('opengraph_image') ? $this->params->get('opengraph_image') : '';
@@ -100,9 +103,7 @@ class TemplateHelperService
         return $this->storage()->exists($opengraphImage) ? "{$this->urlFormatter->getBaseUrl()}/$opengraphImage" : '';
     }
 
-    /**
-     * @param array<string, mixed> $page
-     */
+    /** @param array<string, mixed> $page */
     protected function getResizedFilename(string $fileName, array $page, string $tag, string $width, string $height, bool $extractFullFileName = false): string
     {
         $resizer = $this->container->get(ImageResizer::class);
@@ -146,13 +147,9 @@ class TemplateHelperService
     }
 
     /**
-     * Verifie si le nombre d'elements graphiques d'un type trouvés et de leur fermeture correspondent.
-     *
-     * @param string      $element     name of element
-     * @param string      $pagetag     the page being rendered
-     * @param string|null $pagecontent its wiki markup
-     *
-     * @return bool true when every element of this type is closed
+     * @param string $element
+     * @param string $pagetag
+     * @param string|null $pagecontent
      */
     public function checkGraphicalElements($element, $pagetag, $pagecontent): bool
     {
@@ -171,16 +168,7 @@ class TemplateHelperService
         return (string)preg_replace('/(?<!`)(`+)(?!`).+?(?<!`)\1(?!`)/s', '', $markup);
     }
 
-    /**
-     * Every theme in one tree, with the stylesheets, squelettes and presets it offers.
-     *
-     * `$isCustom` says which tree, and now decides which service is asked rather than only how the
-     * answer is labelled: a wiki's own themes are Instance data and live in `custom/themes`, the
-     * shipped ones are code and live in the Program. That was the same `opendir` for both, which
-     * is why a wiki on object storage listed its own themes off a disk that has none.
-     *
-     * @return array<string, array<string, mixed>> themes by name, alphabetically
-     */
+    /** @return array<string, array<string, mixed>> every theme of the custom or shipped tree, with its stylesheets, squelettes and presets */
     public function searchTemplateFiles(string $directory, bool $isCustom = false): array
     {
         $themes = [];
@@ -225,9 +213,7 @@ class TemplateHelperService
         return $themes;
     }
 
-    /**
-     * @return list<string>
-     */
+    /** @return list<string> */
     private function directoriesIn(string $directory, bool $isCustom): array
     {
         return $isCustom
@@ -235,9 +221,7 @@ class TemplateHelperService
             : $this->container->get(ProgramFiles::class)->directories($directory);
     }
 
-    /**
-     * @return list<string>
-     */
+    /** @return list<string> */
     private function filesIn(string $directory, bool $isCustom): array
     {
         return $isCustom
@@ -258,7 +242,6 @@ class TemplateHelperService
 
     /**
      * @param string $filename
-     *
      * @return string
      */
     public function removeExtension($filename, bool $onlyTemplate = false)
@@ -283,11 +266,7 @@ class TemplateHelperService
         return str_replace($token, $replace, $subject);
     }
 
-    /**
-     * recupere le parametre data sous forme d'un tableau.
-     *
-     * @return array<string, string> the `key=value` pairs, empty when the parameter is not set
-     */
+    /** @return array<string, string> the `data` parameter as key=value pairs */
     public function getDataParameter()
     {
         $data = $this->performableArguments->get('data');
@@ -328,7 +307,6 @@ class TemplateHelperService
 
     /**
      * @param string $output
-     *
      * @return string
      */
     public function postFormat($output)
@@ -346,10 +324,7 @@ class TemplateHelperService
     }
 
     /**
-     * Récupère les droits de la page désignée en argument et renvoie un tableau.
-     *
-     * @param array<string, mixed> $page a page row, with its acl columns
-     *
+     * @param array<string, mixed> $page
      * @return array<int|string, mixed>
      */
     public function recupDroits($page)
@@ -379,15 +354,13 @@ class TemplateHelperService
         return $acls;
     }
 
-    /**
-     * Get the first title in page.
-     *
-     * @param array<string, mixed> $page Informations de la page
-     *
-     * @return string The title string
-     */
+    /** @param array<string, mixed> $page the first heading of the page, or the title of the entry */
     public function getTitleFromBody($page): string
     {
+        if (!$this->canRead($page)) {
+            return '';
+        }
+
         $entryManager = $this->container->get(EntryManager::class);
 
         if (!isset($page['body']) || !isset($page['tag'])) {
@@ -421,16 +394,16 @@ class TemplateHelperService
     }
 
     /**
-     * Get the first title in page.
-     *
-     * @param array<string, mixed> $page   Page informations
-     * @param string               $title  The page title
-     * @param int                  $length Max number of chars (default 300)
-     *
-     * @return string The title string
+     * @param array<string, mixed> $page
+     * @param string $title
+     * @param int $length
      */
     public function getDescriptionFromBody($page, $title, $length = 300): string
     {
+        if (!$this->canRead($page)) {
+            return '';
+        }
+
         $entryManager = $this->container->get(EntryManager::class);
 
         if (!isset($page['body'])) {

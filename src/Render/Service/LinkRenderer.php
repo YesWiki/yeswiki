@@ -30,14 +30,9 @@ class LinkRenderer
     }
 
     /**
-     * Create an HTML link.
-     *
-     * @param string       $link    URL, or wiki tag / short link
-     * @param string       $text
-     * @param array<mixed> $options HTML attributes, plus 'method', 'params' and 'html'
-     *                              (when truthy, $text is already-safe HTML and is not escaped)
-     *
-     * @return string HTML link
+     * @param string $link
+     * @param string $text
+     * @param array<mixed> $options HTML attributes, plus method, params and html (already-safe HTML, not escaped)
      */
     public function linkTo($link, $text = '', $options = []): string
     {
@@ -120,30 +115,20 @@ class LinkRenderer
         ]);
     }
 
-    /**
-     * Query parameters a "create this missing page" edit link must carry so the new page inherits the current theme/squelette/style (historic ParamsForNewPageLink()).
-     *
-     * @return array<mixed>
-     */
+    /** @return array<mixed> query of a link creating a missing page: the current page's own theme, header and footer */
     public function paramsForNewPageLink(): array
     {
         $result = ['newpage' => 1];
 
-        $fromConfig = [
-            'theme' => 'favorite_theme',
-            'squelette' => 'favorite_squelette',
-            'style' => 'favorite_style',
-            'bgimg' => 'favorite_background_image',
-        ];
-        foreach ($fromConfig as $param => $configKey) {
-            $value = $this->params->has($configKey) ? $this->params->get($configKey) : null;
-            if (!empty($value)) {
-                $result[$param] = $value;
+        $currentPageTag = $this->pageContext->getTag();
+        $pageMetadatas = (empty($currentPageTag) ? [] : $this->pageManager->getMetadata($currentPageTag)) ?? [];
+        if (!empty($pageMetadatas['theme']) && !empty($pageMetadatas['style']) && !empty($pageMetadatas['squelette'])) {
+            foreach (['theme', 'squelette', 'style', 'bgimg'] as $param) {
+                if (!empty($pageMetadatas[$param])) {
+                    $result[$param] = $pageMetadatas[$param];
+                }
             }
         }
-
-        $currentPageTag = $this->pageContext->getTag();
-        $pageMetadatas = empty($currentPageTag) ? [] : $this->pageManager->getMetadata($currentPageTag);
         foreach (ThemeManager::SPECIAL_METADATA as $metadata) {
             if (!empty($pageMetadatas[$metadata])) {
                 $result[$metadata] = $pageMetadatas[$metadata];

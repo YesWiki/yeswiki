@@ -27,11 +27,7 @@ class ThemeSelectorRenderer extends YesWikiController
         $this->themeManager = $themeManager;
     }
 
-    /**
-     * render a template with theme-selector appending the right vars to params.
-     *
-     * @param array<string, mixed> $params
-     */
+    /** @param array<string, mixed> $params */
     public function renderWithThemeSelector(string $templateName, array $params): string
     {
         $templates = $this->themeManager->getTemplates();
@@ -85,8 +81,6 @@ class ThemeSelectorRenderer extends YesWikiController
     }
 
     /**
-     * render form theme selector.
-     *
      * @param string $mode
      * @param string $formclass
      */
@@ -128,14 +122,29 @@ class ThemeSelectorRenderer extends YesWikiController
             'languagesList' => $this->getService(LanguageService::class)->languagesList(),
             'page' => $this->getService(\YesWiki\Kernel\Service\PageContext::class)->getPage(),
             'updateUrl' => ($mode !== 'edit'),
-        ]);
+        ] + $this->pagesOwnThemeNotice($mode));
     }
 
-    /**
-     * prepare backgrounds.
-     *
-     * @return list<string> path of every background thumbnail on offer
-     */
+    /** @return array<string, mixed> this page's own theme and how many pages keep one, for an admin choosing the site theme */
+    private function pagesOwnThemeNotice(string $mode): array
+    {
+        if ($mode === 'edit' || !$this->getService(AclService::class)->isAdmin() || ($this->params->has('hide_action_template') && $this->params->get('hide_action_template') == '1')) {
+            return [];
+        }
+        $tag = (string)$this->getService(\YesWiki\Kernel\Service\PageContext::class)->getTag();
+        $ownTheme = $tag === '' ? null : $this->themeManager->getOwnTheme($tag);
+
+        return [
+            'pageOwnTheme' => $ownTheme === null ? '' : implode(' / ', [
+                $ownTheme['theme'],
+                preg_replace('/\\.css$/', '', $ownTheme['style']),
+                preg_replace('/\\.tpl\\.html$/', '', $ownTheme['squelette']),
+            ]),
+            'pagesWithOwnTheme' => $this->themeManager->countPagesWithOwnTheme(),
+        ];
+    }
+
+    /** @return list<string> every background thumbnail on offer */
     protected function prepareBackgrounds(): array
     {
         $backgrounds = [];

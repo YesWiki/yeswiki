@@ -403,7 +403,7 @@ class AdminPagesApiController extends YesWikiController
             $explicitMatch = "{$themeExpr} = ?";
             $params[] = $themeFilter;
             if ($themeFilter === $themeManager->getFavoriteTheme()) {
-                $noThemeStored = "(p.metadata IS NULL OR {$themeExpr} IS NULL)";
+                $noThemeStored = "(p.metadata IS NULL OR {$themeExpr} IS NULL OR {$themeExpr} IN ('', 'null'))";
                 $conditions[] = "({$explicitMatch} OR {$noThemeStored})";
             } else {
                 $conditions[] = $explicitMatch;

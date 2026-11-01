@@ -102,7 +102,7 @@ ywInitEach('#template-edit, .template-edit-form, body', () => {
 
         if (bgimg && bgimg !== 'none') {
           bgimg = bgimg.substr(bgimg.lastIndexOf('/') + 1)
-          bgimg = bgimg.replace('"', '').replace(')', '')
+          bgimg = bgimg.replace(/["')]/g, '')
         } else if (typeof imgsrc === 'string') {
           bgimg = imgsrc.substr(imgsrc.lastIndexOf('/') + 1)
         } else {

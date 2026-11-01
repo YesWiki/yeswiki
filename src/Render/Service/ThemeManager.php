@@ -15,6 +15,7 @@ use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Kernel\Entity\Event;
 use YesWiki\Kernel\Service\AssetRegistry;
 use YesWiki\Kernel\Service\CurrentRequest;
+use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Kernel\Service\LanguageService;
 use YesWiki\Kernel\Service\StringUtilService;
@@ -98,7 +99,6 @@ class ThemeManager implements EventSubscriberInterface
 
     /**
      * @param array<string, mixed>|null $metadata
-     *
      * @return array<string, array<string, mixed>>|null
      */
     public function loadTemplates($metadata = []): ?array
@@ -528,7 +528,6 @@ class ThemeManager implements EventSubscriberInterface
 
     /**
      * @param list<string> $fontFamilies
-     *
      * @return array{status: bool, message: string, errorCode: int|null}
      */
     public function writeCustomCSSPreset(string $filename, string $css, array $fontFamilies = []): array
@@ -816,41 +815,82 @@ class ThemeManager implements EventSubscriberInterface
         return '../../' . self::CUSTOM_FONT_PATH . '/' . $folder . '/' . $name;
     }
 
-    /** save metadata for new page if needed. */
+    /** Saves the theme a new page inherits from the page it was created from, if that page has its own. */
     public function saveMetadataIfNeeded(Event $event): void
     {
         $data = $event->getData();
         $request = $this->container->get(CurrentRequest::class)->get();
         $post = $request->request;
         $query = $request->query;
-        if (!empty($data['data']['tag'])
-            && !empty($post->get('newpage'))
-            && $post->has('theme')) {
-            $tag = $data['data']['tag'];
-            $previousMetadata = $this->pageManager->getMetadata($tag);
+        if (empty($data['data']['tag']) || empty($post->get('newpage'))) {
+            return;
+        }
+        $tag = $data['data']['tag'];
+        $wikiParam = $query->get('wiki');
+        $tagIsCurrentPage = (
+            !empty($wikiParam)
+            && is_string($wikiParam)
+            && explode('/', $wikiParam, 2)[0] === $tag
+        ) || explode('/', (string)array_key_first($query->all()), 2)[0] === $tag;
+        if (!$tagIsCurrentPage || $this->getOwnTheme($tag) !== null) {
+            return;
+        }
 
-            $wikiParam = $query->get('wiki');
-            $tagIsCurrentPage = (
-                !empty($wikiParam)
-                && is_string($wikiParam)
-                && explode('/', $wikiParam, 2)[0] === $tag
-            ) || explode('/', array_key_first($query->all()), 2)[0] === $tag;
-
-            if (empty($previousMetadata)
-                && $tagIsCurrentPage) {
-                $metadata = [
-                    'theme' => $post->get('theme'),
-                    'style' => $post->get('style') ?? CSS_PAR_DEFAUT,
-                    'squelette' => $post->get('squelette') ?? SQUELETTE_PAR_DEFAUT,
-                    'bgimg' => $post->get('bgimg') ?? null,
-                ];
-                foreach (ThemeManager::SPECIAL_METADATA as $metadataName) {
-                    if (!empty($post->get($metadataName))) {
-                        $metadata[$metadataName] = $post->get($metadataName);
-                    }
-                }
-                $this->pageManager->setMetadata($tag, $metadata);
+        $metadata = [];
+        if (!empty($post->get('theme')) && !empty($post->get('style')) && !empty($post->get('squelette'))) {
+            $metadata = [
+                'theme' => $post->get('theme'),
+                'style' => $post->get('style'),
+                'squelette' => $post->get('squelette'),
+                'bgimg' => $post->get('bgimg') ?? null,
+            ];
+        }
+        foreach (ThemeManager::SPECIAL_METADATA as $metadataName) {
+            if (!empty($post->get($metadataName))) {
+                $metadata[$metadataName] = $post->get($metadataName);
             }
         }
+        if (!empty($metadata)) {
+            $this->pageManager->setMetadata($tag, $metadata);
+        }
+    }
+
+    /** @return array{theme: string, style: string, squelette: string}|null the theme a page keeps instead of following the site's */
+    public function getOwnTheme(string $tag): ?array
+    {
+        $metadata = $this->pageManager->getMetadata($tag) ?? [];
+        if (empty($metadata['theme']) || empty($metadata['style']) || empty($metadata['squelette'])) {
+            return null;
+        }
+
+        return [
+            'theme' => (string)$metadata['theme'],
+            'style' => (string)$metadata['style'],
+            'squelette' => (string)$metadata['squelette'],
+        ];
+    }
+
+    /** How many pages keep their own theme instead of following the site's. */
+    public function countPagesWithOwnTheme(): int
+    {
+        $db = $this->container->get(DbService::class);
+        $theme = $db->jsonExtract('metadata', '$.theme');
+
+        return (int)$db->scalar(
+            'SELECT COUNT(*) FROM ' . $db->prefixTable('pages') . " WHERE latest = 'Y' AND {$theme} IS NOT NULL AND {$theme} NOT IN ('', 'null')",
+            0
+        );
+    }
+
+    /** Makes a page follow the site theme again, keeping its other settings. */
+    public function useSiteTheme(string $tag): void
+    {
+        $this->pageManager->setMetadata($tag, [
+            'theme' => null,
+            'style' => null,
+            'squelette' => null,
+            'bgimg' => null,
+            'favorite_preset' => null,
+        ]);
     }
 }

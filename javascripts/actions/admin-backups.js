@@ -524,7 +524,7 @@ const app = createApp({
               .replace(/"/g, '&quot;')
           this.archiveMessage = _t('ADMIN_BACKUPS_CONFIRMATION_TO_DELETE', {
             files: data.files.map(escHtml).join('<br>'),
-          }).replace('\n', '<br>')
+          }).replace(/\n/g, '<br>')
           this.archiveMessageClass = { alert: true, 'alert-warning': true }
         },
         () => {
