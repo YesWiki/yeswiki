@@ -147,8 +147,8 @@ class TemplateHelperService
     }
 
     /**
-     * @param string $element
-     * @param string $pagetag
+     * @param string      $element
+     * @param string      $pagetag
      * @param string|null $pagecontent
      */
     public function checkGraphicalElements($element, $pagetag, $pagecontent): bool
@@ -242,6 +242,7 @@ class TemplateHelperService
 
     /**
      * @param string $filename
+     *
      * @return string
      */
     public function removeExtension($filename, bool $onlyTemplate = false)
@@ -307,6 +308,7 @@ class TemplateHelperService
 
     /**
      * @param string $output
+     *
      * @return string
      */
     public function postFormat($output)
@@ -325,6 +327,7 @@ class TemplateHelperService
 
     /**
      * @param array<string, mixed> $page
+     *
      * @return array<int|string, mixed>
      */
     public function recupDroits($page)
@@ -395,8 +398,8 @@ class TemplateHelperService
 
     /**
      * @param array<string, mixed> $page
-     * @param string $title
-     * @param int $length
+     * @param string               $title
+     * @param int                  $length
      */
     public function getDescriptionFromBody($page, $title, $length = 300): string
     {

@@ -99,6 +99,7 @@ class ThemeManager implements EventSubscriberInterface
 
     /**
      * @param array<string, mixed>|null $metadata
+     *
      * @return array<string, array<string, mixed>>|null
      */
     public function loadTemplates($metadata = []): ?array
@@ -528,6 +529,7 @@ class ThemeManager implements EventSubscriberInterface
 
     /**
      * @param list<string> $fontFamilies
+     *
      * @return array{status: bool, message: string, errorCode: int|null}
      */
     public function writeCustomCSSPreset(string $filename, string $css, array $fontFamilies = []): array

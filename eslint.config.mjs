@@ -10,6 +10,7 @@ export default defineConfig([
     'javascripts/yw-icon-map.js',
     '**/custom/',
     'binary/.frankenphp/',
+    'binary/program/',
     'cache/',
   ]),
   {
@@ -25,7 +26,6 @@ export default defineConfig([
         htmx: 'readable',
         Vue: 'readable',
         Sortable: 'readable',
-        // Leaflet global (javascripts/vendor/leaflet)
         L: 'readable',
         Vditor: 'readable',
         _t: 'readable',
@@ -33,30 +33,23 @@ export default defineConfig([
         toastMessage: 'readable',
         multiDeleteService: 'readable',
         usersTableService: 'readable',
-        // page-level config globals injected by forms_form.twig (form designer)
         groupsList: 'readable',
         formAndListIds: 'readable',
-        // page-level config globals injected by theme-selector-with-form.twig
         themeSelectorTranslation: 'readable',
         customCSSPresetsPrefix: 'readable',
         geolocationHelper: 'readable',
-        // page-level config global injected by aceditor.twig (the actions palette)
         actionsBuilderData: 'readable',
-        // page-level config globals injected by doc.twig
         locale: 'readable',
         baseUrl: 'readable',
         i18n: 'readable',
         extensions: 'readable',
-        // vendored libraries with a global entry point (javascripts/vendor/)
         FullCalendar: 'readable',
         opening_hours: 'readable',
         module: 'writable',
-        // page-level config globals injected by reactions templates
         blockReactionRemove: 'readable',
         blockReactionRemoveMessage: 'readable',
         Html5Qrcode: 'readable',
         Html5QrcodeSupportedFormats: 'readable',
-        // p5.js "global mode" API, used by javascripts/qrcodetroc-visualisation.js
         p5: 'readable',
         resizeCanvas: 'readable',
         createCanvas: 'readable',
@@ -87,7 +80,6 @@ export default defineConfig([
       sourceType: 'module',
     },
 
-    // its `eslint-disable` comments name -- a rule that is off makes every disable of it a
     rules: {
       eqeqeq: ['error', 'smart'],
       'no-empty': ['error', { allowEmptyCatch: true }],

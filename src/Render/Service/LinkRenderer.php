@@ -30,8 +30,8 @@ class LinkRenderer
     }
 
     /**
-     * @param string $link
-     * @param string $text
+     * @param string       $link
+     * @param string       $text
      * @param array<mixed> $options HTML attributes, plus method, params and html (already-safe HTML, not escaped)
      */
     public function linkTo($link, $text = '', $options = []): string

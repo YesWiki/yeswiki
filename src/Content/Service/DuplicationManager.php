@@ -46,6 +46,7 @@ class DuplicationManager
 
     /**
      * @param string $id
+     *
      * @return list<\YesWiki\Content\Field\BazarField>
      */
     private function getUploadFieldsFromEntry($id)
@@ -66,11 +67,8 @@ class DuplicationManager
         return $fields;
     }
 
-    /**
-     * @param mixed $fieldValue
-     * @return array{path: string, size: int, humanSize: string}|array{}
-     */
-    private function findFilesInUploadField($fieldValue)
+    /** @return array{path: string, size: int, humanSize: string}|array{} */
+    private function findFilesInUploadField(mixed $fieldValue)
     {
         $f = $this->uploadPath . '/' . $fieldValue;
         if ($f !== $this->uploadPath . '/' && $this->storage->exists($f)) {
@@ -85,6 +83,7 @@ class DuplicationManager
     /**
      * @param string $tag
      * @param string $wikiText
+     *
      * @return array<array-key, array{path: string, size: int, humanSize: string, modified?: string}>
      */
     private function findFilesInWikiText($tag, $wikiText)
@@ -132,6 +131,7 @@ class DuplicationManager
 
     /**
      * @param string $tag
+     *
      * @return array<array-key, array{path: string, size: int, humanSize: string, modified?: string}>
      */
     public function findFiles($tag = '')
@@ -167,6 +167,7 @@ class DuplicationManager
     /**
      * @param string $fromTag
      * @param string $toTag
+     *
      * @return list<array{originalFile: string, duplicatedFile: string}>
      */
     public function duplicateFiles($fromTag, $toTag)
@@ -203,6 +204,7 @@ class DuplicationManager
 
     /**
      * @param array<string, mixed> $data
+     *
      * @return array<string, mixed>
      */
     public function checkPostData($data)
@@ -334,7 +336,8 @@ class DuplicationManager
      * @param string $sourceUrl
      * @param string $fromTag
      * @param string $toTag
-     * @param int $timeoutInSec
+     * @param int    $timeoutInSec
+     *
      * @return string
      */
     public function downloadFile($sourceUrl, $fromTag, $toTag, $timeoutInSec = 10)
@@ -361,7 +364,8 @@ class DuplicationManager
 
     /**
      * @param int|float $bytes
-     * @param int $decimals
+     * @param int       $decimals
+     *
      * @return string
      */
     public function humanFilesize($bytes, $decimals = 2)
