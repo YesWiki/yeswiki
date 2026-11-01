@@ -34,10 +34,12 @@ class MigrateCommand extends Command
             $output->writeln('No migrations to run');
         }
 
+        $failed = false;
         foreach ($messages as $message) {
             $output->writeln("{$message['status']} | {$message['text']}");
+            $failed = $failed || $message['status'] === _t('AU_ERROR');
         }
 
-        return Command::SUCCESS;
+        return $failed ? Command::FAILURE : Command::SUCCESS;
     }
 }
