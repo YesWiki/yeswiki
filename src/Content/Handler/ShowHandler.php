@@ -101,7 +101,7 @@ class ShowHandler extends YesWikiHandler implements RegisteredHandler
 
         $pageContext = $this->getService(PageContext::class);
         $body = ($pageContext->getPage() ?? [])['body'] ?? [];
-        if (isset($body[Translations::BODY_KEY])) {
+        if (is_array($body) && Translations::carries($body)) {
             $translatable = $this->getService(TranslatableContent::class);
             $pageContext->setPageField('body', $translatable->forReader(
                 $body,

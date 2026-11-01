@@ -43,7 +43,7 @@ class PageBody
      */
     public static function encode(array $body): string
     {
-        return (string)json_encode((object)$body, self::JSON_FLAGS);
+        return (string)json_encode((object)Translations::forEncoding($body), self::JSON_FLAGS);
     }
 
     /**

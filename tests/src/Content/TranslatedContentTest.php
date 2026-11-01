@@ -120,7 +120,7 @@ class TranslatedContentTest extends YesWikiTestCase
         $this->assertIsArray($stored);
 
         $this->assertSame('Le titre', $stored['bf_titre']);
-        $this->assertSame('The title', $stored[Translations::BODY_KEY]['en']['bf_titre']);
+        $this->assertSame('The title', Translations::of($stored, 'en')['bf_titre']);
     }
 
     /** The trap the upstream branch fell into: editing while reading in another language. */
@@ -142,7 +142,7 @@ class TranslatedContentTest extends YesWikiTestCase
 
         $this->assertSame('Le titre', $stored['bf_titre']);
         $this->assertSame('Une description modifiée', $stored['bf_description']);
-        $this->assertSame('The title', $stored[Translations::BODY_KEY]['en']['bf_titre']);
+        $this->assertSame('The title', Translations::of($stored, 'en')['bf_titre']);
     }
 
     public function testAPostedTranslationStoreIsIgnoredOnAnOrdinaryWrite(): void
@@ -202,7 +202,7 @@ class TranslatedContentTest extends YesWikiTestCase
         $this->assertIsArray($stored);
 
         $this->assertSame('Formulaire de test multilingue', $stored['label']);
-        $this->assertSame('Multilingual test form', $stored[Translations::BODY_KEY]['en']['label']);
+        $this->assertSame('Multilingual test form', Translations::of($stored, 'en')['label']);
     }
 
     public function testDeletingAFieldForgetsItsTranslations(): void
@@ -223,8 +223,8 @@ class TranslatedContentTest extends YesWikiTestCase
         $stored = $formManager->getUntranslated(self::FORM_ID);
         $this->assertIsArray($stored);
 
-        $this->assertArrayHasKey('template.bf_titre.label', $stored[Translations::BODY_KEY]['en']);
-        $this->assertArrayNotHasKey('template.bf_description.label', $stored[Translations::BODY_KEY]['en']);
+        $this->assertArrayHasKey('template.bf_titre.label', Translations::of($stored, 'en'));
+        $this->assertArrayNotHasKey('template.bf_description.label', Translations::of($stored, 'en'));
     }
 
     public function testAValueListIsReadInTheReadersLanguage(): void
@@ -270,7 +270,7 @@ class TranslatedContentTest extends YesWikiTestCase
         $this->assertIsArray($stored);
 
         $this->assertSame('Rouge', $stored['nodes'][0]['label']);
-        $this->assertSame('Red', $stored[Translations::BODY_KEY]['en']['nodes.rouge.label']);
+        $this->assertSame('Red', Translations::of($stored, 'en')['nodes.rouge.label']);
     }
 
     /**

@@ -3,6 +3,7 @@
 namespace YesWiki\Test\Content\Entity;
 
 use PHPUnit\Framework\TestCase;
+use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Entity\Translations;
 
 require_once 'tests/YesWikiTestCase.php';
@@ -42,9 +43,8 @@ class TranslationsTest extends TestCase
             ],
             Translations::BODY_KEY => [
                 'en' => [
-                    'label' => 'Calendar',
-                    'template.bf_titre.label' => 'Title',
-                    'template.bf_titre.hint' => 'The event name',
+                    'title' => 'Calendar',
+                    'fields' => ['bf_titre' => ['label' => 'Title', 'helper' => 'The event name']],
                 ],
             ],
         ];
@@ -66,8 +66,7 @@ class TranslationsTest extends TestCase
             Translations::BODY_KEY => [
                 'en' => [
                     'title' => 'Colours',
-                    'nodes.rouge.label' => 'Red',
-                    'nodes.rouge.children.carmin.label' => 'Carmine',
+                    'nodes' => [0 => ['label' => 'Red', 'children' => [0 => ['label' => 'Carmine']]]],
                 ],
             ],
         ];
@@ -139,7 +138,7 @@ class TranslationsTest extends TestCase
     public function testAPathThatNamesNothingWritesNothing(): void
     {
         $body = $this->form();
-        $body[Translations::BODY_KEY]['en']['template.bf_gone.label'] = 'Gone';
+        $body[Translations::BODY_KEY]['en']['fields']['bf_gone']['label'] = 'Gone';
 
         $read = Translations::apply($body, 'en');
 
@@ -157,7 +156,7 @@ class TranslationsTest extends TestCase
     public function testAPathMayNotOverwriteAContainer(): void
     {
         $body = $this->form();
-        $body[Translations::BODY_KEY]['en']['template'] = 'oops';
+        $body[Translations::BODY_KEY]['en']['fields'] = 'oops';
 
         $this->assertIsArray(Translations::apply($body, 'en')['template']);
     }
@@ -225,8 +224,8 @@ class TranslationsTest extends TestCase
     {
         $body = Translations::renamedPath($this->form(), 'template.bf_titre', 'template.bf_nom');
 
-        $this->assertArrayHasKey('template.bf_nom.label', $body[Translations::BODY_KEY]['en']);
-        $this->assertArrayHasKey('template.bf_nom.hint', $body[Translations::BODY_KEY]['en']);
+        $this->assertArrayHasKey('template.bf_nom.label', Translations::of($body, 'en'));
+        $this->assertArrayHasKey('template.bf_nom.hint', Translations::of($body, 'en'));
     }
 
     public function testWithoutPathDropsAnAttributeInEveryLanguage(): void
@@ -240,12 +239,12 @@ class TranslationsTest extends TestCase
     public function testPrunedForgetsTranslationsForWhatIsNoLongerThere(): void
     {
         $body = $this->form();
-        $body[Translations::BODY_KEY]['en']['template.bf_gone.label'] = 'Gone';
+        $body[Translations::BODY_KEY]['en']['fields']['bf_gone']['label'] = 'Gone';
 
         $pruned = Translations::pruned($body);
 
-        $this->assertArrayNotHasKey('template.bf_gone.label', $pruned[Translations::BODY_KEY]['en']);
-        $this->assertArrayHasKey('template.bf_titre.label', $pruned[Translations::BODY_KEY]['en']);
+        $this->assertArrayNotHasKey('bf_gone', $pruned[Translations::BODY_KEY]['en']['fields']);
+        $this->assertArrayHasKey('template.bf_titre.label', Translations::of($pruned, 'en'));
     }
 
     public function testSourceTextAtReadsThroughTemplatesAndNodes(): void
@@ -261,5 +260,88 @@ class TranslationsTest extends TestCase
 
         $this->assertArrayNotHasKey(Translations::BODY_KEY, $stripped);
         $this->assertSame('Le titre', $stripped['bf_titre']);
+    }
+
+    public function testAFormIsStoredTheWayDoryphoreStoresIt(): void
+    {
+        $body = Translations::with(Translations::strip($this->form()), 'en', [
+            'label' => 'Calendar',
+            'template.bf_titre.label' => 'Title',
+            'template.bf_titre.hint' => 'The event name',
+        ]);
+
+        $this->assertSame(
+            ['en' => ['title' => 'Calendar', 'fields' => ['bf_titre' => ['label' => 'Title', 'helper' => 'The event name']]]],
+            $body[Translations::BODY_KEY]
+        );
+    }
+
+    /** What garden.fablim.paquerette.eu's Agenda form carries, read as it is. */
+    public function testADoryphoreExtralangReadsAsIs(): void
+    {
+        $body = Translations::strip($this->form());
+        $body[Translations::BODY_KEY] = ['fr' => ['title' => 'fr agenda', 'fields' => ['bf_titre' => ['label' => 'name event en francais']]]];
+
+        $read = Translations::apply($body, 'fr');
+
+        $this->assertSame('fr agenda', $read['label']);
+        $this->assertSame('name event en francais', $read['template'][0]['label']);
+    }
+
+    public function testAListIsStoredByPosition(): void
+    {
+        $body = Translations::with(Translations::strip($this->valueList()), 'en', [
+            'nodes.bleu.label' => 'Blue',
+            'nodes.rouge.children.carmin.label' => 'Carmine',
+        ]);
+
+        $this->assertSame(
+            ['en' => ['nodes' => [1 => ['label' => 'Blue'], 0 => ['children' => [0 => ['label' => 'Carmine']]]]]],
+            $body[Translations::BODY_KEY]
+        );
+    }
+
+    public function testAReorderedListKeepsItsTranslationsOnTheRightNodes(): void
+    {
+        $reordered = Translations::strip($this->valueList());
+        $reordered['nodes'] = array_reverse($reordered['nodes']);
+
+        $carried = Translations::carriedOver($this->valueList(), $reordered);
+
+        $this->assertSame('Red', Translations::of($carried, 'en')['nodes.rouge.label']);
+        $this->assertSame('Red', $carried[Translations::BODY_KEY]['en']['nodes'][1]['label']);
+        $this->assertSame('Red', Translations::apply($carried, 'en')['nodes'][1]['label']);
+    }
+
+    public function testPositionsAreWrittenAsObjectKeys(): void
+    {
+        $encoded = PageBody::encode($this->valueList());
+
+        $this->assertStringContainsString('"__extralang":{"en":{"title":"Colours","nodes":{"0":{"label":"Red","children":{"0":{"label":"Carmine"}}}}}}', $encoded);
+        $this->assertSame('Red', Translations::of(PageBody::decode($encoded), 'en')['nodes.rouge.label']);
+    }
+
+    public function testTheLegacyStoreIsStillReadAndRewrittenOnTheNextChange(): void
+    {
+        $body = Translations::strip($this->entry());
+        $body[Translations::LEGACY_KEY] = ['en' => ['bf_titre' => 'The title']];
+
+        $this->assertSame('The title', Translations::apply($body, 'en')['bf_titre']);
+
+        $rewritten = Translations::with($body, 'es', ['bf_titre' => 'El título']);
+
+        $this->assertArrayNotHasKey(Translations::LEGACY_KEY, $rewritten);
+        $this->assertSame(['en' => ['bf_titre' => 'The title'], 'es' => ['bf_titre' => 'El título']], $rewritten[Translations::BODY_KEY]);
+    }
+
+    public function testTheMigrationRewritesALegacyStoreInDoryphoresShape(): void
+    {
+        $body = Translations::strip($this->valueList());
+        $body[Translations::LEGACY_KEY] = ['en' => ['title' => 'Colours', 'nodes.bleu.label' => 'Blue']];
+
+        $rewritten = Translations::inCurrentShape($body);
+
+        $this->assertArrayNotHasKey(Translations::LEGACY_KEY, $rewritten);
+        $this->assertSame(['en' => ['title' => 'Colours', 'nodes' => [1 => ['label' => 'Blue']]]], $rewritten[Translations::BODY_KEY]);
     }
 }

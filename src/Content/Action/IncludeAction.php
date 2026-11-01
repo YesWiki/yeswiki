@@ -91,7 +91,7 @@ class IncludeAction extends YesWikiAction implements RegisteredAction, ProvidesC
 
         $includedTag = trim((string)$this->getService(PerformableArguments::class)->get('page'));
         $includedPage = $this->getService(PageManager::class)->getOne($includedTag);
-        if (isset($includedPage['body'][Translations::BODY_KEY])) {
+        if (is_array($includedPage['body'] ?? null) && Translations::carries($includedPage['body'])) {
             $translatable = $this->getService(TranslatableContent::class);
             $includedPage['body'] = $translatable->forReader(
                 $includedPage['body'],
