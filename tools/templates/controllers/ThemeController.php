@@ -136,7 +136,7 @@ class ThemeController extends YesWikiController
             'languagesList' => $GLOBALS['languages_list'],
             'page' => $this->wiki->page,
             'updateUrl' => ($mode !== 'edit'),
-        ]);
+        ] + $this->pagesOwnThemeNotice($mode));
 
         return $selecteur;
     }
@@ -176,5 +176,25 @@ class ThemeController extends YesWikiController
         }
 
         return $backgrounds;
+    }
+
+    /**
+     * Tells an admin choosing the site theme which pages will not follow it.
+     */
+    private function pagesOwnThemeNotice(string $mode): array
+    {
+        if ($mode === 'edit' || !$this->wiki->UserIsAdmin() || ($this->params->has('hide_action_template') && $this->params->get('hide_action_template') == '1')) {
+            return [];
+        }
+        $ownTheme = empty($this->wiki->page['tag']) ? null : $this->themeManager->getOwnTheme($this->wiki->page['tag']);
+
+        return [
+            'pageOwnTheme' => $ownTheme === null ? '' : implode(' / ', [
+                $ownTheme['theme'],
+                preg_replace('/\\.css$/', '', $ownTheme['style']),
+                preg_replace('/\\.tpl\\.html$/', '', $ownTheme['squelette']),
+            ]),
+            'pagesWithOwnTheme' => $this->themeManager->countPagesWithOwnTheme(),
+        ];
     }
 }
