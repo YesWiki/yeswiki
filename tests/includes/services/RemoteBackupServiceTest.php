@@ -82,9 +82,6 @@ class RemoteBackupServiceTest extends YesWikiTestCase
         $this->assertContains('startArchive', $fetcher->calls);
     }
 
-    /**
-     * A fetcher whose remote and disk are scripted, and whose job file is a variable.
-     */
     public function testAnArchiveNameThatIsNotABackupIsNeverDownloaded()
     {
         $fetcher = $this->fetcher(['canArchive' => true], 6 * self::GB, [
@@ -145,12 +142,28 @@ class RemoteBackupServiceTest extends YesWikiTestCase
         $this->assertSame($name, $fetcher->job()['remoteFilename']);
     }
 
+    public function testEveryPostToTheRemoteCarriesTheTokenOfItsSession()
+    {
+        $fetcher = $this->fetcher(
+            ['canArchive' => true, 'canExec' => true, 'enoughSpace' => true, 'estimatedSize' => 5 * self::GB, 'freeSpace' => 20 * self::GB],
+            6 * self::GB
+        );
+
+        $fetcher->start('https://remote.example', 'admin', 'secret');
+        $fetcher->status();
+        $fetcher->status();
+
+        $this->assertSame('token-test', $fetcher->tokens['startArchive'] ?? null);
+    }
+
+    // A fetcher whose remote and disk are scripted, and whose job file is a variable.
     private function fetcher(array $remoteStatus, ?int $localFree, array $remoteArchives = []): RemoteBackupService
     {
         $archiveService = $this->getWiki()->services->get(ArchiveService::class);
 
         return new class($archiveService, $remoteStatus, $localFree, $remoteArchives) extends RemoteBackupService {
             public array $calls = [];
+            public array $tokens = [];
             private array $remoteStatus;
             private ?int $localFree;
             private array $remoteArchives;
@@ -174,14 +187,17 @@ class RemoteBackupServiceTest extends YesWikiTestCase
                 return $this->job;
             }
 
-            protected function login(string $baseUrl, string $username, string $password): string
+            protected function login(string $baseUrl, string $username, string $password): array
             {
-                return 'PHPSESSID=test';
+                return ['cookie' => 'PHPSESSID=test', 'csrfToken' => 'token-test'];
             }
 
-            protected function call(string $baseUrl, string $path, string $cookie, ?array $post = null): array
+            protected function call(string $baseUrl, string $path, string $cookie, ?array $post = null, string $csrfToken = ''): array
             {
                 $this->calls[] = $post['action'] ?? $path;
+                if ($post !== null) {
+                    $this->tokens[$post['action'] ?? $path] = $csrfToken;
+                }
                 if ($path === 'api/archives/archivingStatus/') {
                     return $this->remoteStatus;
                 }

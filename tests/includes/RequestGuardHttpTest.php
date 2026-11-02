@@ -10,9 +10,7 @@ use YesWiki\Core\Service\UserManager;
 
 require_once 'tests/YesWikiTestCase.php';
 
-/**
- * Sends forged and genuine requests to a real PHP server and checks which ones the request guard lets through.
- */
+// Sends forged and genuine requests to a real PHP server and checks which ones the request guard lets through.
 class RequestGuardHttpTest extends YesWikiTestCase
 {
     private const PORT = 8772;
@@ -128,5 +126,17 @@ class RequestGuardHttpTest extends YesWikiTestCase
 
         [$status] = $this->request('api/triples/' . self::PAGE, ['property' => 'x', 'value' => 'y'], [RequestGuard::HEADER . ': ' . json_decode('"' . $token[1] . '"')]);
         $this->assertNotSame(403, $status);
+    }
+
+    public function testSigningInThroughTheApiHandsOverTheTokenItsPostsNeed()
+    {
+        [$status, $body] = $this->request('api/login', ['username' => self::MEMBER, 'password' => self::MEMBER_PASSWORD]);
+        $token = json_decode($body, true)['csrfToken'] ?? '';
+
+        [$apiStatus] = $this->request('api/triples/' . self::PAGE, ['property' => 'x', 'value' => 'y'], [RequestGuard::HEADER . ': ' . $token]);
+
+        $this->assertSame(200, $status);
+        $this->assertNotEmpty($token);
+        $this->assertNotSame(403, $apiStatus);
     }
 }

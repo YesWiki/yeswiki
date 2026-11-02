@@ -42,6 +42,14 @@ class DiskSpaceTest extends YesWikiTestCase
         $this->assertNull($this->diskSpace("Filesystem Type\ndurable/home zfs\n", null)->quotaHeadroom('/home/wiki'), 'zfs refusing to answer is no quota');
     }
 
+    public function testWithoutTheZfsDeviceNoZfsCommandIsWaitedFor()
+    {
+        $diskSpace = $this->diskSpace("Filesystem Type\ndurable/home zfs\n", "9663676416\n6328701440\n", false);
+
+        $this->assertNull($diskSpace->quotaHeadroom('/home/wiki'));
+        $this->assertNotContains('zfs', array_column($diskSpace->commands, 0));
+    }
+
     public function testTheFreeSpaceIsTheSmallerOfTheDiskAndTheQuota()
     {
         $diskSpace = $this->diskSpace("Filesystem Type\ndurable/home zfs\n", (9 * self::GB) . "\n" . (8 * self::GB) . "\n");
@@ -56,13 +64,18 @@ class DiskSpaceTest extends YesWikiTestCase
         $this->assertSame('3.1 GB', DiskSpace::human(3334974976));
     }
 
-    private function diskSpace(?string $df, ?string $zfs): DiskSpace
+    private function diskSpace(?string $df, ?string $zfs, bool $zfsDevice = true): DiskSpace
     {
-        return new class($df, $zfs) extends DiskSpace {
+        return new class($df, $zfs, $zfsDevice) extends DiskSpace {
             public array $commands = [];
 
-            public function __construct(private ?string $df, private ?string $zfs)
+            public function __construct(private ?string $df, private ?string $zfs, private bool $zfsDevice)
             {
+            }
+
+            protected function zfsDeviceIsThere(): bool
+            {
+                return $this->zfsDevice;
             }
 
             protected function user(): ?string

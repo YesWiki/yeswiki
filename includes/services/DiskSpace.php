@@ -4,16 +4,12 @@ namespace YesWiki\Core\Service;
 
 use Symfony\Component\Process\Process;
 
-/**
- * Bytes this wiki can still write somewhere: the free space of the disk, capped by the owner's quota.
- */
+// Bytes this wiki can still write somewhere: the free space of the disk, capped by the owner's quota.
 class DiskSpace
 {
     public const SYSTEM_PATH = '/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin';
 
-    /**
-     * Free bytes at $path for this process, null when neither the disk nor a quota will say.
-     */
+    // Free bytes at $path for this process, null when neither the disk nor a quota will say.
     public function free(string $path): ?int
     {
         $disk = function_exists('disk_free_space') ? @disk_free_space($path) : false;
@@ -26,9 +22,7 @@ class DiskSpace
         return is_null($disk) ? $quota : min($disk, $quota);
     }
 
-    /**
-     * Bytes left under the user quota of the filesystem holding $path, null when there is none.
-     */
+    // Bytes left under the user quota of the filesystem holding $path, null when there is none.
     public function quotaHeadroom(string $path): ?int
     {
         $user = $this->user();
@@ -38,7 +32,7 @@ class DiskSpace
         }
         $lines = preg_split('/\R/', trim($mount));
         $fields = preg_split('/\s+/', trim(end($lines)));
-        if (count($fields) !== 2 || $fields[1] !== 'zfs') {
+        if (count($fields) !== 2 || $fields[1] !== 'zfs' || !$this->zfsDeviceIsThere()) {
             return null;
         }
         $values = $this->run(['zfs', 'get', '-Hp', '-o', 'value', "userquota@$user,userused@$user", $fields[0]]);
@@ -53,9 +47,7 @@ class DiskSpace
         return max(0, (int)$values[0] - (int)$values[1]);
     }
 
-    /**
-     * Human-readable size, for messages.
-     */
+    // Human-readable size, for messages.
     public static function human(int $bytes): string
     {
         $units = ['B', 'kB', 'MB', 'GB', 'TB'];
@@ -80,6 +72,12 @@ class DiskSpace
         $name = $this->run(['id', '-un']);
 
         return empty(trim((string)$name)) ? null : trim($name);
+    }
+
+    // Whether /dev/zfs exists here: without it, as under PrivateDevices, zfs waits 10 s for it before failing.
+    protected function zfsDeviceIsThere(): bool
+    {
+        return file_exists('/dev/zfs');
     }
 
     protected function run(array $command): ?string

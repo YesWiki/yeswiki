@@ -6,6 +6,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use YesWiki\Core\ApiResponse;
 use YesWiki\Core\Controller\AuthController;
+use YesWiki\Core\Service\RequestGuard;
 use YesWiki\Core\Service\UserManager;
 use YesWiki\Core\YesWikiController;
 
@@ -21,10 +22,8 @@ class ApiController extends YesWikiController
     public function login()
     {
         $post = $this->getRequest()->request;
-        // Try login by user name
         $user = $this->wiki->services->get(UserManager::class)->getOneByName($post->get('username'));
 
-        // Try login by email
         if (!$user && filter_var($post->get('username'), FILTER_VALIDATE_EMAIL)) {
             $user = $this->wiki->services->get(UserManager::class)->getOneByEmail($post->get('username'));
         }
@@ -43,6 +42,7 @@ class ApiController extends YesWikiController
         return new ApiResponse([
             'user' => $user->getName(),
             'isAdmin' => $this->wiki->UserIsAdmin(),
+            'csrfToken' => $this->wiki->services->get(RequestGuard::class)->token(),
         ]);
     }
 
