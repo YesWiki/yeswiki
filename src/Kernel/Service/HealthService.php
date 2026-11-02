@@ -28,6 +28,13 @@ class HealthService implements RequestScopedState
     private array $findings = [];
 
     /**
+     * What each check said this request, by id: the badge's list and a screen's share one run of it.
+     *
+     * @var array<string, ?string>
+     */
+    private array $failures = [];
+
+    /**
      * @param iterable<ProvidesHealthChecks> $providers tagged services, in no particular order
      */
     public function __construct(#[AutowireIterator('yeswiki.health_check_provider')] iterable $providers)
@@ -38,19 +45,22 @@ class HealthService implements RequestScopedState
     public function startNewRequest(): void
     {
         $this->findings = [];
+        $this->failures = [];
     }
 
     /**
      * What is failing, broken first.
      *
-     * @param Severity|null $only run only the checks of this severity -- which is how the badge
-     *                            asks about Broken without paying for the rest
+     * @param Severity|null $only  run only the checks of this severity -- which is how the badge
+     *                             asks about Broken without paying for the rest
+     * @param string|null   $route run only the checks that send the admin to that screen -- which is
+     *                             how a screen lists its own alerts without paying for the others
      *
      * @return list<Finding>
      */
-    public function findings(?Severity $only = null): array
+    public function findings(?Severity $only = null, ?string $route = null): array
     {
-        $key = $only === null ? 'all' : $only->value;
+        $key = ($only === null ? 'all' : $only->value) . '@' . ($route ?? '');
         if (isset($this->findings[$key])) {
             return $this->findings[$key];
         }
@@ -61,16 +71,15 @@ class HealthService implements RequestScopedState
                 continue;
             }
 
+            if ($route !== null && $check->route() !== $route) {
+                continue;
+            }
+
             if (!$check->isActionable()) {
                 continue;
             }
 
-            try {
-                $failure = $check->failure();
-            } catch (\Throwable $unanswerable) {
-                $failure = $unanswerable->getMessage();
-            }
-
+            $failure = $this->failureOf($check);
             if ($failure !== null) {
                 $findings[] = new Finding($check, $failure);
             }
@@ -116,6 +125,20 @@ class HealthService implements RequestScopedState
     public function ids(): array
     {
         return array_map(static fn (HealthCheck $check): string => $check->id(), $this->checks());
+    }
+
+    /** What that check says, asked once per request whichever list asks for it. */
+    private function failureOf(HealthCheck $check): ?string
+    {
+        if (!array_key_exists($check->id(), $this->failures)) {
+            try {
+                $this->failures[$check->id()] = $check->failure();
+            } catch (\Throwable $unanswerable) {
+                $this->failures[$check->id()] = $unanswerable->getMessage();
+            }
+        }
+
+        return $this->failures[$check->id()];
     }
 
     /**

@@ -145,8 +145,8 @@ class AdminLogsApiControllerTest extends YesWikiTestCase
             'from' => 'yesterday',
         ]);
 
-        $this->assertSame('1 = 1 AND ' . $this->db()->quoteIdentifier('channel') . " <> 'queue'", $where, 'only the default exclusion is left');
-        $this->assertSame([], $params);
+        $this->assertSame('1 = 1 AND ' . $this->db()->quoteIdentifier('channel') . ' IN (?, ?)', $where, 'only the default channels are left');
+        $this->assertSame(['audit', 'diagnostic'], $params);
     }
 
     /**

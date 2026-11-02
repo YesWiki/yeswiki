@@ -8,6 +8,7 @@ use YesWiki\Files\Service\RuntimeLock;
 use YesWiki\Kernel\Queue\QueueConsumerMode;
 use YesWiki\Kernel\Queue\QueueFallbackStatus;
 use YesWiki\Kernel\Service\HibernationService;
+use YesWiki\Kernel\Service\RequestScopedState;
 
 /**
  * Whether the end of requests has to consume the queue for the consumer the admin chose, because that consumer is no longer seen at work.
@@ -25,7 +26,7 @@ use YesWiki\Kernel\Service\HibernationService;
  * empties it would end it, and the work piling up again would start it. A few `cache/` stamps
  * keep requests from reading the database for it more than once a minute.
  */
-class QueueFallback
+class QueueFallback implements RequestScopedState
 {
     /** Seconds between two readings of the rule outside the fallback, and of the consumer's return during it. */
     public const CHECK_EVERY_SECONDS = 60;
@@ -40,6 +41,13 @@ class QueueFallback
     public const WATCH_STAMP = 'cache/queue-fallback-watch.lock';
 
     private ClockInterface $clock;
+
+    /**
+     * What the Journal said of the chosen consumer this request: the badge, the jobs page and a backup being started all ask.
+     *
+     * @var array{mode: QueueConsumerMode, seen: ?\DateTimeImmutable, status: ?QueueFallbackStatus}|null
+     */
+    private ?array $observed = null;
 
     public function __construct(
         private readonly QueueSettings $settings,
@@ -57,16 +65,17 @@ class QueueFallback
         return $mode !== QueueConsumerMode::Request;
     }
 
-    /** The fallback the wiki is in, read now: for the pages, which a request does not open often. */
+    public function startNewRequest(): void
+    {
+        $this->observed = null;
+    }
+
+    /** The fallback the wiki is in, read once per request: for the pages, which a request does not open often. */
     public function status(): ?QueueFallbackStatus
     {
         $mode = $this->settings->mode();
-        if (!self::canFallBack($mode)) {
-            return null;
-        }
-        $since = $this->statistics->fallbackSince($mode, QueueHealthChecks::stalledAfterSeconds($mode));
 
-        return $since === null ? null : new QueueFallbackStatus($mode, $since, $this->statistics->lastSeenAt($mode));
+        return self::canFallBack($mode) ? $this->observed($mode)['status'] : null;
     }
 
     /**
@@ -85,13 +94,13 @@ class QueueFallback
         if (!self::canFallBack($mode)) {
             return false;
         }
-        if ($this->status() !== null) {
+        ['seen' => $seen, 'status' => $status] = $this->observed($mode);
+        if ($status !== null) {
             return true;
         }
         if ($mode->isBudgeted()) {
             return false;
         }
-        $seen = $this->statistics->lastSeenAt($mode);
 
         return $seen === null || $this->clock->now()->getTimestamp() - $seen->getTimestamp() > QueueHealthChecks::stalledAfterSeconds($mode);
     }
@@ -118,7 +127,8 @@ class QueueFallback
         // Stamped before reading, and the last answer dropped: a reading that fails (the table missing) is tried again in a minute, not on every request.
         $this->runtimeLock->stampAt(self::CHECK_STAMP, $now);
         $this->runtimeLock->forget($active);
-        $consumes = $this->statistics->fallbackSince($mode, QueueHealthChecks::stalledAfterSeconds($mode)) !== null || $this->entersNow($mode, $now);
+        $seen = $this->statistics->lastSeenAt($mode);
+        $consumes = $this->statistics->fallbackSince($mode, $seen, QueueHealthChecks::stalledAfterSeconds($mode)) !== null || $this->entersNow($mode, $now, $seen);
         if ($consumes) {
             $this->runtimeLock->stampAt($active, $now);
         }
@@ -134,12 +144,12 @@ class QueueFallback
      * ticks the schedule: the schedule being due is the work that waits. A schedule that never
      * ticked has waited since the rule was first read.
      */
-    private function entersNow(QueueConsumerMode $mode, int $now): bool
+    private function entersNow(QueueConsumerMode $mode, int $now, ?\DateTimeImmutable $lastSeen): bool
     {
         if ($this->hibernation->isWikiHibernatedNow()) {
             return false;
         }
-        $seen = $this->statistics->lastSeenAt($mode)?->getTimestamp();
+        $seen = $lastSeen?->getTimestamp();
 
         if ($this->runtimeLock->lastTaken(self::WATCH_STAMP) === 0) {
             $this->runtimeLock->stampAt(self::WATCH_STAMP, $now);
@@ -151,5 +161,21 @@ class QueueFallback
         $patience = QueueHealthChecks::stalledAfterSeconds($mode);
 
         return $now - min($waiting) > $patience && ($seen === null || $now - $seen > $patience);
+    }
+
+    /**
+     * When the chosen consumer was last seen, and the fallback that stands in for it, if any.
+     *
+     * @return array{mode: QueueConsumerMode, seen: ?\DateTimeImmutable, status: ?QueueFallbackStatus}
+     */
+    private function observed(QueueConsumerMode $mode): array
+    {
+        if ($this->observed === null || $this->observed['mode'] !== $mode) {
+            $seen = $this->statistics->lastSeenAt($mode);
+            $since = $this->statistics->fallbackSince($mode, $seen, QueueHealthChecks::stalledAfterSeconds($mode));
+            $this->observed = ['mode' => $mode, 'seen' => $seen, 'status' => $since === null ? null : new QueueFallbackStatus($mode, $since, $seen)];
+        }
+
+        return $this->observed;
     }
 }

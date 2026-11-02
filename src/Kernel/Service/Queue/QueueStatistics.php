@@ -400,11 +400,11 @@ class QueueStatistics
      * fallback starts sooner (QueueFallback). One that started sooner ran in the minute a request
      * keeps the last answer for, after the consumer came back, and would start the fallback again.
      *
-     * @param int $patienceSeconds how long the consumer must have been unseen before the end of requests stands in for it
+     * @param \DateTimeImmutable|null $seen            when that consumer was last seen, as lastSeenAt() says it
+     * @param int                     $patienceSeconds how long the consumer must have been unseen before the end of requests stands in for it
      */
-    public function fallbackSince(QueueConsumerMode $mode, int $patienceSeconds = 0): ?\DateTimeImmutable
+    public function fallbackSince(QueueConsumerMode $mode, ?\DateTimeImmutable $seen, int $patienceSeconds = 0): ?\DateTimeImmutable
     {
-        $seen = $this->lastSeenAt($mode);
         $first = $this->db->scalar(
             "SELECT MIN(at) FROM {$this->journal->table()} WHERE channel = ? AND action = ? AND {$this->field('fallback_for')} = ?" . ($seen === null ? '' : ' AND at > ?'),
             null,

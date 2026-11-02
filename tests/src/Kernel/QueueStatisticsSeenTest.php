@@ -109,18 +109,18 @@ class QueueStatisticsSeenTest extends YesWikiTestCase
         $this->pass(QueueConsumerMode::Request, '-1 hour', '-1 hour', origin: QueuePassOrigin::Fallback, fallbackFor: QueueConsumerMode::Worker);
         $this->pass(QueueConsumerMode::Request, '-90 minutes', '-90 minutes', origin: QueuePassOrigin::Fallback, fallbackFor: QueueConsumerMode::Api);
 
-        $this->assertSame($this->at('-2 hours'), $this->format($this->statistics->fallbackSince(QueueConsumerMode::Worker)));
+        $this->assertSame($this->at('-2 hours'), $this->format($this->statistics->fallbackSince(QueueConsumerMode::Worker, $this->statistics->lastSeenAt(QueueConsumerMode::Worker))));
 
         $this->pass(QueueConsumerMode::Worker, '-10 minutes', '-10 minutes');
 
-        $this->assertNull($this->statistics->fallbackSince(QueueConsumerMode::Worker), 'the worker came back after the last fallback pass');
+        $this->assertNull($this->statistics->fallbackSince(QueueConsumerMode::Worker, $this->statistics->lastSeenAt(QueueConsumerMode::Worker)), 'the worker came back after the last fallback pass');
     }
 
     public function testFallbackSinceWhenTheConsumerWasNeverSeen(): void
     {
         $this->pass(QueueConsumerMode::Request, '-2 hours', '-2 hours', origin: QueuePassOrigin::Fallback, fallbackFor: QueueConsumerMode::Api);
 
-        $this->assertSame($this->at('-2 hours'), $this->format($this->statistics->fallbackSince(QueueConsumerMode::Api)));
+        $this->assertSame($this->at('-2 hours'), $this->format($this->statistics->fallbackSince(QueueConsumerMode::Api, $this->statistics->lastSeenAt(QueueConsumerMode::Api))));
     }
 
     public function testRecentPassesSayWhatStartedThem(): void
@@ -163,7 +163,7 @@ class QueueStatisticsSeenTest extends YesWikiTestCase
             $record(QueueConsumerMode::Request, '-2 hours', QueuePassOrigin::Fallback, QueueConsumerMode::Api);
 
             $this->assertSame($this->at('-4 hours'), $this->format($statistics->lastSeenAt(QueueConsumerMode::Api)), 'a pinned pass is not the cron');
-            $this->assertSame($this->at('-2 hours'), $this->format($statistics->fallbackSince(QueueConsumerMode::Api)));
+            $this->assertSame($this->at('-2 hours'), $this->format($statistics->fallbackSince(QueueConsumerMode::Api, $statistics->lastSeenAt(QueueConsumerMode::Api))));
         } finally {
             $journal->drop();
             $schema->drop();
@@ -184,7 +184,7 @@ class QueueStatisticsSeenTest extends YesWikiTestCase
         $this->pass(QueueConsumerMode::Api, '-90 seconds', '-90 seconds');
         $this->pass(QueueConsumerMode::Request, '-60 seconds', '-60 seconds', origin: QueuePassOrigin::Fallback, fallbackFor: QueueConsumerMode::Api);
 
-        $this->assertNull($this->statistics->fallbackSince(QueueConsumerMode::Api, 3 * 3600));
+        $this->assertNull($this->statistics->fallbackSince(QueueConsumerMode::Api, $this->statistics->lastSeenAt(QueueConsumerMode::Api), 3 * 3600));
     }
 
     private function pass(

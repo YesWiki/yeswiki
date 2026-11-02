@@ -194,10 +194,7 @@ class JobsOverview
     private function alerts(): array
     {
         $alerts = [];
-        foreach ($this->health->findings() as $finding) {
-            if ($finding->check->route() !== QueueHealthChecks::ROUTE) {
-                continue;
-            }
+        foreach ($this->health->findings(route: QueueHealthChecks::ROUTE) as $finding) {
             $alerts[] = [
                 'id' => $finding->check->id(),
                 'broken' => $finding->isBroken(),

@@ -6,6 +6,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use YesWiki\Core\YesWikiController;
+use YesWiki\Kernel\Database\SqlParameters;
 use YesWiki\Kernel\Entity\JournalChannel;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\JournalSchema;
@@ -71,7 +72,10 @@ class AdminLogsApiController extends YesWikiController
             $clauses[] = $db->quoteIdentifier('channel') . ' = ?';
             $params[] = $channel->value;
         } else {
-            $clauses[] = $db->quoteIdentifier('channel') . " <> '" . JournalChannel::Queue->value . "'";
+            // Named rather than `<> 'queue'`, which no index serves: `(channel, at)` does.
+            $listed = array_diff(array_column(JournalChannel::cases(), 'value'), [JournalChannel::Queue->value]);
+            $clauses[] = $db->quoteIdentifier('channel') . ' IN (' . SqlParameters::placeholders(count($listed)) . ')';
+            array_push($params, ...$listed);
         }
 
         $level = (string)$request->query->get('level', '');

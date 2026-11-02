@@ -4,7 +4,6 @@ namespace YesWiki\Core;
 
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\AuthenticationService;
-use YesWiki\Kernel\Health\Finding;
 use YesWiki\Kernel\Health\Severity;
 use YesWiki\Kernel\Service\HealthService;
 use YesWiki\Kernel\Service\Queue\QueueHealthChecks;
@@ -37,10 +36,7 @@ trait DashboardShell
     /** How many Broken findings send the admin to that screen; the same run of the checks as the badge's, which HealthService keeps for the request. */
     private function brokenOn(string $route): int
     {
-        return count(array_filter(
-            $this->getService(HealthService::class)->findings(Severity::Broken),
-            static fn (Finding $finding): bool => $finding->check->route() === $route
-        ));
+        return count($this->getService(HealthService::class)->findings(Severity::Broken, $route));
     }
 
     /** Which half of the rail this screen belongs to. */
