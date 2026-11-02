@@ -68,40 +68,34 @@ données et l'action `{{sync}}`.
 
 ## Choisir le mode de traitement
 
-| Mode                              | Qui traite la file                                              | Délai attendu                                                                            | Désavantage                                                                                                                                                   | Hébergement                         |
-| --------------------------------- | --------------------------------------------------------------- | ---------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------- |
-| `request` (défaut)                | la fin de chaque visite, une fois la page envoyée               | dès la fin de la visite qui l'ajoute, sinon à la visite suivante (voir sous le tableau)  | rien n'avance sans visite ; un traitement plus long que le temps maximal d'une page (souvent 30 s) est coupé ; sur certains serveurs, les visiteurs attendent | tous, même un mutualisé sans cron   |
-| `request-spawn`                   | un processus lancé à la fin d'une visite, au plus un par minute | dès la fin de la visite qui l'ajoute, sinon à une visite suivante (voir sous le tableau) | rien n'avance sans visite ; PHP doit pouvoir lancer des processus, ce qui est souvent interdit                                                                | mutualisé ou serveur qui le permet  |
-| `command`                         | une tâche cron, planifiée chez votre hébergeur                  | 5 min (cron toutes les 5 min)                                                            | un cron à créer                                                                                                                                               | mutualisé avec cron, serveur        |
-| `api`                             | un service de cron en ligne                                     | 5 min (appel toutes les 5 min)                                                           | dépend d'un service extérieur ; un traitement plus long que le temps maximal d'un appel (moins d'une minute) est coupé                                        | mutualisé sans cron                 |
-| `worker`                          | un processus qui tourne en continu, relancé par le serveur      | quelques secondes                                                                        | un service à installer et surveiller, par wiki                                                                                                                | serveur privé ou dédié, conteneur   |
-| `binary` (défaut sous le binaire) | le binaire YesWiki                                              | quelques secondes                                                                        | réservé au binaire YesWiki                                                                                                                                    | wiki ou ferme servis par le binaire |
+| Mode                              | Qui traite la file                                         | Délai attendu                                                                           | Désavantage                                                                                                                                                   | Hébergement                         |
+| --------------------------------- | ---------------------------------------------------------- | --------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------- |
+| `request` (défaut)                | la fin de chaque visite, une fois la page envoyée          | dès la fin de la visite qui l'ajoute, sinon à la visite suivante (voir sous le tableau) | rien n'avance sans visite ; un traitement plus long que le temps maximal d'une page (souvent 30 s) est coupé ; sur certains serveurs, les visiteurs attendent | tous, même un mutualisé sans cron   |
+| `api`                             | un service de cron en ligne                                | 5 min (appel toutes les 5 min)                                                          | dépend d'un service extérieur ; un traitement plus long que le temps maximal d'un appel (moins d'une minute) est coupé                                        | mutualisé sans cron                 |
+| `worker`                          | un processus qui tourne en continu, relancé par le serveur | quelques secondes                                                                       | un service à installer et surveiller, par wiki                                                                                                                | serveur privé ou dédié, conteneur   |
+| `binary` (défaut sous le binaire) | le binaire YesWiki                                         | quelques secondes                                                                       | réservé au binaire YesWiki                                                                                                                                    | wiki ou ferme servis par le binaire |
 
-En `request` et `request-spawn`, ce qu'une visite ajoute à la file est traité
+En `request`, ce qu'une visite ajoute à la file est traité
 dès la fin de cette visite, une fois la page envoyée : la page que vous venez
 d'enregistrer est réindexée tout de suite, sans attendre une autre visite. Ce
 qui ne vient pas d'une visite attend en revanche la visite suivante : les
 tâches planifiées arrivées à échéance, les nouvelles tentatives d'un traitement
 qui a échoué, le travail ajouté en ligne de commande, et ce qui n'a pas tenu
-dans le temps d'un passage. En `request-spawn`, si un processus a été lancé il
-y a moins d'une minute, aucun autre n'est lancé : le travail ajouté est pris par
-ce processus s'il tourne encore, sinon par la première visite après cette
-minute.
+dans le temps d'un passage.
 
 Comment choisir, en pratique :
 
 - **Wiki sur un hébergement mutualisé, sans accès au serveur** : laissez
   `request`. Si les pages sont lentes à s'afficher de temps en temps, ou si la
   page Traitements dit que « les visiteurs attendent pendant le traitement »,
-  passez à `command` (ou `api`) dès que vous avez un cron à disposition.
-- **Wiki très peu visité** : en `request` et en `request-spawn`, rien n'est
-  traité tant que personne ne vient. Un wiki qui reçoit une visite par jour
-  traite donc ses tâches une fois par jour. Préférez `command`, `api` ou
-  `worker`.
+  passez à `api` dès que vous avez un service de cron en ligne à disposition.
+- **Wiki très peu visité** : en `request`, rien n'est traité tant que personne
+  ne vient. Un wiki qui reçoit une visite par jour traite donc ses tâches une
+  fois par jour. Préférez `api` ou `worker`.
 - **Traitements longs** (synchronisations de grosses sources, par exemple) :
   `worker` ou `binary`. Les autres modes ne laissent à un traitement que le
-  temps que le serveur accorde à une page (ou, pour `command`, à une
-  commande) : un traitement plus long est coupé et passe en échec. Les
+  temps que le serveur accorde à une page ou à un appel : un traitement plus
+  long est coupé et passe en échec. Les
   sauvegardes et restaurations sont un cas à part, voir
   [plus bas](/docs/fr/async?id=sauvegardes-et-restaurations).
 - **Wiki servi par le binaire YesWiki** : ne touchez à rien.
@@ -118,7 +112,7 @@ serveur à l'autre, c'est si la page peut partir avant le traitement :
 | LiteSpeed (fréquent en mutualisé)                                     | oui                                                     | si la page Traitements montre des traitements interrompus en fin de visite, LiteSpeed arrête sans doute PHP quand la connexion se ferme : ajoutez `<IfModule Litespeed>` `SetEnv noabort 1` `</IfModule>` au `.htaccess` du wiki |
 | PHP intégré à Apache (`mod_php`), PHP en CGI ou FastCGI par `php-cgi` | non                                                     | le visiteur attend jusqu'à 3 s de traitement, d'où l'alerte « Attente ajoutée aux pages »                                                                                                                                        |
 | serveur intégré de PHP (`php -S`)                                     | non                                                     | réservé au développement : il ne sert qu'une page à la fois, et chaque traitement bloque les autres visites                                                                                                                      |
-| plateforme « serverless » (AWS Lambda avec Bref, Cloud Run…)          | oui, mais l'exécution est gelée une fois la page partie | `request` ne convient pas : le traitement est figé puis compté comme interrompu. Choisissez `api` ou `command`                                                                                                                   |
+| plateforme « serverless » (AWS Lambda avec Bref, Cloud Run…)          | oui, mais l'exécution est gelée une fois la page partie | `request` ne convient pas : le traitement est figé puis compté comme interrompu. Choisissez `api`                                                                                                                                |
 
 `request` fonctionne aussi sur un hébergement qui désactive `ignore_user_abort`
 ou `set_time_limit` (réglage `disable_functions` de PHP).
@@ -129,11 +123,11 @@ Le mode se choisit dans le fichier `private/.env` du wiki, avec une ligne comme
 celle-ci (modèle dans le fichier `.env.example` livré avec YesWiki) :
 
 ```
-YESWIKI_QUEUE_CONSUMER=command
+YESWIKI_QUEUE_CONSUMER=worker
 ```
 
 Il peut aussi se lire dans l'environnement du serveur, ou dans le fichier de
-configuration (`'queue_consumer' => 'command'` dans `yeswiki.config.php`). Il ne
+configuration (`'queue_consumer' => 'worker'` dans `yeswiki.config.php`). Il ne
 se règle pas depuis la page « Fichier de configuration » de la gestion du site.
 S'il est indiqué à plusieurs endroits, le premier de cette liste l'emporte :
 environnement du serveur, puis `private/.env`, puis `yeswiki.config.php`. La
@@ -141,24 +135,6 @@ page Traitements indique le mode en vigueur **et d'où vient le réglage**, ce q
 évite de modifier le mauvais fichier.
 
 ![Le bandeau du mode : mode de consommation « fin de requête » (par défaut), budget par passage, dernier passage et rythme attendu](images/async-bandeau-mode.png)
-
-### Mettre en place `command`
-
-Dans l'interface de votre hébergeur, créez une tâche planifiée (« cron »),
-toutes les 5 minutes, qui lance :
-
-```
-cd /chemin/du/wiki && ./yeswicli messenger:drain
-```
-
-(`/chemin/du/wiki` est le dossier où est installé le wiki.) Réglez ensuite
-`YESWIKI_QUEUE_CONSUMER=command` dans `private/.env`.
-
-Chaque lancement traite ce qui est dû puis s'arrête tout seul. Si la commande
-échoue, le cron de votre hébergeur peut vous envoyer un e-mail. Si votre cron
-ne passait qu'une fois par heure, comme le conseillaient les anciennes
-instructions, passez-le toutes les 5 minutes : il porte maintenant tout le
-travail d'arrière-plan, pas seulement le ménage.
 
 ### Mettre en place `api`
 
@@ -211,23 +187,25 @@ visites continuent de traiter la file en fin de page et la page Traitements
 affiche « fin de requête ». Un exemple complet de service est donné dans
 [INSTALL.md](https://github.com/YesWiki/yeswiki/blob/doryphore-dev/INSTALL.md#housekeeping).
 
-### Mettre en place `request-spawn`
+### Vider la file à la main
 
-Réglez `YESWIKI_QUEUE_CONSUMER=request-spawn`. La fin d'une visite lance alors
-le traitement dans un processus à part, au plus une fois par minute, et le
-visiteur n'attend jamais. Il faut que votre hébergeur autorise PHP à lancer des
-processus (`proc_open`), ce que beaucoup d'hébergements mutualisés interdisent.
-Si le processus ne peut pas être lancé, ou s'il ne traite rien, le wiki passe
-en [mode de secours](/docs/fr/async?id=le-mode-de-secours) au bout de
-5 minutes.
+Depuis un terminal, dans le dossier du wiki :
 
-Le processus est lancé avec le `php` en ligne de commande que le wiki trouve à
-côté de celui du serveur. Certains serveurs en ont plusieurs, de versions
-différentes, et le premier trouvé n'est pas toujours le bon. Dans ce cas,
-indiquez le chemin du bon dans `private/.env`, par exemple
-`ASYNC_PHP_BINARY=/usr/bin/php8.4`. C'est aussi ce `php` qui exécute une
-sauvegarde lancée depuis l'administration sur un serveur où la page ne peut
-pas partir avant la fin du traitement (`mod_php`, CGI), quel que soit le mode.
+```
+./yeswicli messenger:consume --drain
+```
+
+traite ce qui attend dans la file, puis s'arrête. Les tâches planifiées ne sont
+pas ajoutées, et il n'y a pas de limite de temps. C'est un outil, quel que soit
+le mode : pour traiter la file régulièrement en dehors des visites, choisissez
+`api` ou `worker`.
+
+Quand la page ne peut pas partir avant la fin du traitement (`mod_php`, CGI),
+une sauvegarde lancée depuis l'administration est exécutée dans un processus à
+part, avec le `php` en ligne de commande que le wiki trouve à côté de celui du
+serveur. Certains serveurs en ont plusieurs, de versions différentes, et le
+premier trouvé n'est pas toujours le bon. Dans ce cas, indiquez le chemin du bon
+dans `private/.env`, par exemple `ASYNC_PHP_BINARY=/usr/bin/php8.4`.
 
 ### Le mode `binary`
 
@@ -239,8 +217,7 @@ choisir un autre mode avec `YESWIKI_QUEUE_CONSUMER`.
 ## Le mode de secours
 
 Le mode choisi peut tomber en panne sans prévenir : le service `worker` s'est
-arrêté, l'hébergeur a supprimé la tâche cron, le service de cron en ligne
-n'appelle plus. Pour que la maintenance, la recherche et les envois ne
+arrêté, le service de cron en ligne n'appelle plus. Pour que la maintenance, la recherche et les envois ne
 s'arrêtent pas pendant des semaines sans que personne ne s'en aperçoive, le wiki
 vérifie que le mode choisi travaille bien. Quand ce n'est plus le cas, il passe
 en **mode de secours** : il traite la file à la fin des visites, comme en
@@ -252,8 +229,7 @@ Le secours se déclenche quand du travail attend et que le mode choisi n'a pas
 | Mode choisi        | Délai avant le secours                 |
 | ------------------ | -------------------------------------- |
 | `worker`, `binary` | 10 minutes                             |
-| `command`, `api`   | 3 heures                               |
-| `request-spawn`    | 5 minutes                              |
+| `api`              | 3 heures                               |
 | `request`          | jamais : c'est déjà le mode de secours |
 
 ![L'alerte du mode de secours : le worker ne répond plus, la file est traitée à la fin des visites. Le dernier passage du worker est affiché en rouge](images/async-secours.png)
@@ -386,7 +362,7 @@ avant une mise à jour) passe par la file et apparaît sur la page Traitements
 comme les autres. Il n'y a rien à régler : le wiki choisit qui l'exécute pour
 qu'elle ne soit pas coupée en route.
 
-- En modes `request` (le défaut), `request-spawn`, `api` et `command`, elle
+- En modes `request` (le défaut) et `api`, elle
   s'exécute dans la requête de la personne qui l'a lancée, juste après que la
   page lui a été envoyée, sans limite de temps quand l'hébergeur le permet. La
   progression s'affiche pendant ce temps. Sur un serveur qui ne sait pas
@@ -436,18 +412,15 @@ terminal). Si la base elle-même ne répond pas, contactez votre hébergeur.
 ### Traitements en arrière-plan : mode de secours (rouge)
 
 Le mode choisi ne traite plus la file : le processus `worker` ou `binary` est
-arrêté, la tâche cron de `command` ne tourne plus, le service de cron en ligne de
-`api` n'appelle plus, ou les processus de `request-spawn` ne démarrent pas. Le
+arrêté, ou le service de cron en ligne de `api` n'appelle plus. Le
 wiki traite alors la file à la fin des visites (voir
 [le mode de secours](/docs/fr/async?id=le-mode-de-secours)). Une sauvegarde ou
 une restauration que vous lancez se fait, elle, dans votre propre requête.
 
 1. Vérifiez selon le mode : `worker` : le service tourne-t-il
    (`systemctl status`) ? ; `binary` : le binaire YesWiki tourne-t-il ? ;
-   `command` : la tâche cron existe-t-elle encore chez l'hébergeur ? ; `api` :
-   le service de cron en ligne appelle-t-il toujours la bonne adresse avec le
-   bon secret ? ; `request-spawn` : l'hébergeur autorise-t-il encore
-   `proc_open` ?
+   `api` : le service de cron en ligne appelle-t-il toujours la bonne adresse
+   avec le bon secret ?
 2. Une fois le mode rétabli, l'alerte disparaît d'elle-même au premier passage
    de ce mode.
 3. Si vous ne pouvez pas rétablir ce mode, choisissez `request` : le wiki ne
@@ -460,14 +433,13 @@ La même alerte apparaît sur la page **Santé** :
 ### Traitements en arrière-plan à l'arrêt (rouge)
 
 Des traitements attendent et plus rien ne les traite depuis trop longtemps : 10
-minutes pour `worker` et `binary`, 3 heures pour `command` et `api`, 24 heures
-pour `request` et `request-spawn`. Conséquence : recherche pas à jour, e-mails
+minutes pour `worker` et `binary`, 3 heures pour `api`, 24 heures pour
+`request`. Conséquence : recherche pas à jour, e-mails
 récapitulatifs qui ne partent pas, synchronisations en suspens.
 
 1. Cliquez sur **Consommer maintenant** : si la file se vide, le wiki lui-même
    fonctionne et c'est le déclenchement automatique qui manque.
-2. Vérifiez ensuite selon le mode : `request` et `request-spawn` attendent des
-   visites, donc un wiki peu visité semble à l'arrêt ; pour les autres modes,
+2. Vérifiez ensuite selon le mode : `request` attend des visites, donc un wiki peu visité semble à l'arrêt ; pour les autres modes,
    faites les vérifications du
    [mode de secours](/docs/fr/async?id=traitements-en-arrière-plan--mode-de-secours-rouge).
 3. Si vous ne pouvez rien installer sur le serveur, repassez à `request`.
@@ -490,8 +462,7 @@ du mode actuel peut lui consacrer. Il échouera à chaque nouvel essai : le wiki
 ne le relance donc pas tout seul.
 
 1. Passez à un mode qui ne coupe pas les traitements longs : `worker` ou
-   `binary`. (`command` convient aussi si le PHP en ligne de commande de votre
-   hébergeur n'a pas de limite de temps, ce qui est le cas le plus courant.)
+   `binary`.
 2. Revenez sur la page Traitements, onglet _En échec_, et cliquez sur
    **Relancer**.
 
@@ -534,7 +505,7 @@ L'alerte dit dans quel fichier elle a lu la valeur :
 
 Le wiki reçoit du travail plus vite qu'il ne le traite : les résultats arrivent
 de plus en plus tard. Un mode qui traite plus régulièrement règle cela
-(`command` plus souvent, ou `worker`).
+(`api` appelé plus souvent, ou `worker`).
 
 ### Processus de traitement qui redémarre en boucle (rouge)
 
@@ -550,24 +521,17 @@ c'est sans gravité tant que c'est rare. Si cela revient souvent, un traitement
 est trop gourmand : augmentez la mémoire du processus (option
 `--memory-limit` de la commande).
 
-### Lancement d'un processus de traitement impossible (orange)
-
-Seulement en `request-spawn`. Le serveur interdit au wiki de lancer un processus
-(`proc_open`) : rien ne traite la file avant que le mode de secours prenne le
-relais (au bout de 5 minutes), à la fin des visites. Choisissez `request` ou
-`command` pour que le réglage dise la vérité.
-
 ### Temps insuffisant pour traiter les tâches (orange)
 
 Les pages arrivent déjà au bout du temps que PHP leur laisse : la file n'avance
 pas. Augmentez `max_execution_time` dans la configuration PHP, ou passez à
-`command` ou `worker`.
+`worker` ou `api`.
 
 ### Attente ajoutée aux pages (orange)
 
 Seulement en `request`. Sur ce serveur (PHP intégré à Apache, ou lancé en CGI),
 la page n'est envoyée qu'une fois le traitement fini : les visiteurs attendent.
-`request-spawn` ou `command` les en dispense.
+`api` ou `worker` les en dispense.
 
 ### Alertes propres à une fonctionnalité
 
@@ -596,14 +560,13 @@ problème de votre côté : réseau, clé, DNS).
 Si votre wiki existait avant cette version :
 
 - **Vous aviez un cron de maintenance** (`'maintenance_trigger' => 'cron'`) :
-  la mise à jour passe le wiki en mode `command`, sans que vous ayez rien à
-  faire. Votre crontab qui appelle `./yeswicli core:maintenance` continue de
-  fonctionner (la commande affiche un avertissement) : remplacez-la par
-  `./yeswicli messenger:drain` quand vous y pensez, et faites-la tourner toutes
-  les 5 minutes.
+  le réglage disparaît, et avec lui la commande `./yeswicli core:maintenance`.
+  Supprimez la ligne de votre crontab qui l'appelait : elle échoue désormais.
+  Le wiki traite la file à la fin des visites, comme par défaut ; pour la
+  traiter en dehors des visites, choisissez `worker` ou `api` (voir
+  [choisir le mode de traitement](/docs/fr/async?id=choisir-le-mode-de-traitement)).
 - Une ligne `MAINTENANCE_TRIGGER` dans `private/.env` ne fait plus rien :
-  supprimez-la, et mettez `YESWIKI_QUEUE_CONSUMER=command` à la place si c'est
-  votre cron qui doit traiter la file.
+  supprimez-la.
 - Le réglage `call_archive_async` des sauvegardes a disparu : c'est le mode de
   traitement qui décide maintenant comment une sauvegarde s'exécute.
 - La maintenance ne se fait plus avant l'affichage d'une page : elle passe par

@@ -108,29 +108,27 @@ Everything a wiki does outside a page view goes through one queue in its own dat
 search, delivering ActivityPub activities, mailing digests, syncing data sources, backups and
 restores, and the periodic cleanup (old page revisions and Journal entries, expired recovery and
 activation keys, the bot guard's counters). Something has to consume that queue, and
-`YESWIKI_QUEUE_CONSUMER` says what. There are six modes:
+`YESWIKI_QUEUE_CONSUMER` says what. There are four modes:
 
-| Mode            | What consumes the queue                                                                | You set up                     |
-| --------------- | -------------------------------------------------------------------------------------- | ------------------------------ |
-| `request`       | the end of each page view, once the page has been sent                                 | nothing (the default)          |
-| `request-spawn` | a detached `messenger:drain` that the end of a page view starts, at most once a minute | `proc_open` allowed to PHP     |
-| `command`       | a crontab line running `messenger:drain`                                               | a crontab                      |
-| `api`           | an HTTP call to `/api/queue/consume`, POST or GET (online cron, monitor)               | a call, and a secret           |
-| `worker`        | a process that never returns, `messenger:consume`, kept alive by systemd or similar    | a service                      |
-| `binary`        | the YesWiki binary, which supervises one `messenger:consume` per wiki                  | nothing (the default under it) |
+| Mode      | What consumes the queue                                                             | You set up                     |
+| --------- | ----------------------------------------------------------------------------------- | ------------------------------ |
+| `request` | the end of each page view, once the page has been sent                              | nothing (the default)          |
+| `api`     | an HTTP call to `/api/queue/consume`, POST or GET (online cron, monitor)            | a call, and a secret           |
+| `worker`  | a process that never returns, `messenger:consume`, kept alive by systemd or similar | a service                      |
+| `binary`  | the YesWiki binary, which supervises one `messenger:consume` per wiki               | nothing (the default under it) |
 
 Nothing has to be chosen: a wiki that says nothing consumes in `request` mode (in `binary` mode
 under the binary), which is what keeps a wiki that is installed and forgotten working on shared
 hosting with no shell and no cron. The cost is that work only moves when someone visits, so a quiet
 wiki lags, and where PHP cannot send the page before the script ends (mod_php, CGI: the PHP that runs inside Apache, or as a plain CGI program) the visitor
-waits for it, within a budget of a few seconds. A crontab or a worker has neither problem.
+waits for it, within a budget of a few seconds. An online cron or a worker has neither problem.
 
 The mode is read from the real environment, then from `private/.env` (see `.env.example`; the only
 option on a host where you cannot set environment variables), then from `queue_consumer` in
 `yeswiki.config.php`, and falls back to the default:
 
 ```sh
-YESWIKI_QUEUE_CONSUMER=command
+YESWIKI_QUEUE_CONSUMER=worker
 ```
 
 The binary does not set this variable, it only marks the wiki as served by it, so a wiki of a farm
@@ -143,26 +141,20 @@ A pass spends what the server allows a request (`max_execution_time`, `memory_li
 margin, and only one pass runs at a time per wiki. A job that cannot finish inside that is cut and
 moved to the failed jobs, with the advice to switch to `worker` or `binary`, where nothing cuts it.
 
-### `command`: a crontab
+### Emptying the queue by hand
 
+```sh
+./yeswicli messenger:consume --drain
 ```
-*/5 * * * * cd /home/jdoe/www/wiki && ./yeswicli messenger:drain
-```
 
-`messenger:drain` first queues the scheduled tasks that are due, then consumes until the queue is
-empty or the time is spent, and never waits for more. `--budget=<seconds>` shortens the time it may
-take (it never goes past what PHP allows) and `--no-schedule` leaves the scheduled tasks alone. It
-exits 0 when the pass ended normally, 1 when it ended on an error and 2 on a bad option, so cron
-mails you about a failure. Every few minutes is the right pace: in this mode the alert for "nothing
-consumes" only rises after three hours.
+consumes what is already waiting, then exits: it queues no scheduled task, never waits for more,
+and has no time limit. It exits 0 when it ended normally (or found another pass already running,
+which it says), 1 on an error and 2 on a bad option. It is meant for a terminal, whatever the mode;
+to consume regularly outside page views, choose `worker` or `api`.
 
-A crontab that already calls `./yeswicli core:maintenance` keeps working: the command is a
-deprecated alias of `messenger:drain` and says so. A wiki that had `'maintenance_trigger' => 'cron'`
-and chose no mode is moved to `command` by `./yeswicli migrate`; the setting itself is gone. That
-crontab now carries every background job, not only the housekeeping: if it ran hourly, as the old
-instructions said, make it every few minutes as above. A `MAINTENANCE_TRIGGER` line in
-`private/.env` does nothing any more: remove it, and put `YESWIKI_QUEUE_CONSUMER=command` there
-if that crontab is what should consume.
+`./yeswicli core:maintenance`, which the alphas ran from a crontab, no longer exists, nor does the
+`maintenance_trigger` setting, which `./yeswicli migrate` removes: remove that crontab line, and a
+`MAINTENANCE_TRIGGER` line in `private/.env`.
 
 ### `api`: an online cron
 
@@ -228,13 +220,6 @@ The consumer stops by itself, between two messages, once the wiki's configuratio
 setting saved, `private/.env` edited) or its compiled container was emptied (`migrate` after an
 upgrade, `cache:clear`), for its unit to start one on what is there now: keep `Restart=always`.
 After an upgrade, `systemctl restart yeswiki-queue` makes that immediate.
-
-### `request-spawn`
-
-The end of a page view starts `messenger:drain` in a process of its own, so the visitor never
-waits, at most once a minute. It needs PHP to be allowed `proc_open`, which many shared hosts
-forbid. When it cannot start a process the request consumes the queue itself, as `request` would,
-and `/admin/jobs` says so.
 
 ### `binary`
 

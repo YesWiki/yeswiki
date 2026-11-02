@@ -202,13 +202,14 @@ only thing that gives it a URL back. Its triples follow it.
 **The search index is created and every Content queued for it.** If it ever looks stale or
 incomplete, `./yeswicli search:reindex --all` queues every Content again.
 
-**`maintenance_trigger` becomes a mode of the background queue.** A wiki on `'cron'` that chose no
-mode is moved to `queue_consumer: command`, and its crontab line (`core:maintenance`, an alias of
-`messenger:drain` now) drains the queue. That crontab now carries every background job, search
-indexing and fediverse deliveries included, not only the housekeeping: if it ran hourly, as the
-old docs said, make it every few minutes. A `MAINTENANCE_TRIGGER` line in `private/.env` is not
-migrated and does nothing any more: remove it, and set `YESWIKI_QUEUE_CONSUMER=command` there if
-that crontab should do the work. The migration says which of these applies as it runs.
+**`maintenance_trigger` and `./yeswicli core:maintenance` are gone.** The housekeeping is a set of
+scheduled tasks of the background queue now, consumed as the queue's mode says (the end of page
+views by default). The migration removes the setting and chooses no mode in your place. A crontab
+that ran `./yeswicli core:maintenance` now fails with "command not defined": remove that line. To
+consume the queue outside page views, choose the `worker` mode (a process kept alive by systemd or
+similar) or the `api` mode (an online cron calling `/api/queue/consume`); see INSTALL.md,
+Housekeeping. A `MAINTENANCE_TRIGGER` line in `private/.env` is not migrated and does nothing any
+more: remove it. The migration says which of these applies as it runs.
 
 **Page markup becomes Markdown**, with the tags of block actions (`{{section}}`, `{{grid}}`,
 `{{col}}`, `{{panel}}`…) each on a line of its own, the only shape the editor shows as a
@@ -733,7 +734,7 @@ Check whether any page or template of yours depends on these, because nothing re
     _all_ of. This is a new capability, not just a relocation: keywords used to be folded into the
     index's free-text column, so a keyword could only be matched as loosely as any other word.
     **The keyword index fills as the background queue reindexes** — a tag link finds nothing until then,
-    which `./yeswicli messenger:drain` forces.
+    which `./yeswicli messenger:consume --drain` forces.
   - **`{{qrcodetroc}}` renders inside the page** rather than filling the window as the handler did.
     Give its page a minimal squelette for the old look — that is a `layout_*` setting now.
 
@@ -778,9 +779,9 @@ S3 instance the backups go to the bucket with everything else Protected.
 
 **`archive[call_archive_async]` is gone.** Backups and restores started from the backups page
 (or before an update) go through the wiki's background queue and show on `/admin/jobs`. In modes
-`request` (the default), `api` and `command` they run in the admin's own request, once the page
-has been sent and without PHP's time limit where the host allows it; in `worker`, `binary` and
-`request-spawn` the queue's consumer runs them. A migration removes the key. A backup no longer
+`request` (the default) and `api` they run in the admin's own request, once the page
+has been sent and without PHP's time limit where the host allows it; in `worker` and `binary`
+the queue's consumer runs them. A migration removes the key. A backup no longer
 starts a PHP process of its own, so a host that forbids `proc_open` can make one in the default
 mode. `core:archive` and `core:restore` stay, for use by hand.
 

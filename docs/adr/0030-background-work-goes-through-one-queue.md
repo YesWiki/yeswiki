@@ -16,7 +16,7 @@ that need this most are the ones with no shell, no cron and nobody who would go 
 
 We decided that **every piece of work the wiki defers is a Message on one queue, held in the wiki's
 own database and observed in one place, and that the periodic work is a Scheduler that produces
-messages onto that same queue**. How the queue gets consumed is a setting with six values, none of
+messages onto that same queue**. How the queue gets consumed is a setting with four values, none of
 which needs anything installed except the ones that name what they need, and the default works on
 an install nobody touches. A page, `/admin/jobs`, and a set of Health checks (ADR-0026) say when
 work waits, fails or has nothing consuming it, and push that to the admin as a badge.
@@ -32,7 +32,7 @@ adding either.
 
 Work enters the queue from two producers: module code that dispatches, and the Scheduler that turns
 the tasks which are due into messages. It is stored in the wiki's own database and taken out by one
-consumer, whichever of the six modes started it. What happened is then read back, from the queue
+consumer, whichever of the four modes started it. What happened is then read back, from the queue
 and from the Journal, by the Health checks and the jobs page. The producers never call the consumer:
 the table is all the two halves share.
 
@@ -49,11 +49,11 @@ flowchart LR
     journal[("«table» journal<br/>channels queue · diagnostic")]
   end
   subgraph Modes["Consumption modes, chosen by QueueSettings"]
-    req["QueueRequestTrigger<br/>request · request-spawn"]
-    drainCmd["messenger:drain<br/>command · spawned"]
+    req["QueueRequestTrigger<br/>request"]
     api["POST · GET /api/queue/consume<br/>api"]
     consumeCmd["messenger:consume<br/>worker · binary (Go supervisor)"]
   end
+  drainCmd["messenger:consume --drain · --message<br/>a pass by hand, a pinned message"]
   consumer["«component» QueueConsumer<br/>drain() budgeted · consume() blocking"]
   worker["Messenger Worker<br/>QueuePassReceiver · QueueRetryStrategy"]
   locator["QueueHandlerLocator"]
@@ -67,7 +67,7 @@ flowchart LR
   providers --> ticker
   ticker -->|"dispatch, UniqueStamp task:id"| bus
   bus -->|"QueueTransport::send"| queue
-  req -->|"request-spawn starts"| drainCmd
+  req -->|"a pinned message on mod_php, CGI"| drainCmd
   req --> consumer
   drainCmd --> consumer
   api --> consumer
@@ -88,8 +88,8 @@ The `__schedule` queue holds the Scheduler's state: one row per task, plus the c
 consumer reads it. The dashed arrow is a handler that splits its work and dispatches its own
 continuation.
 
-A budgeted pass in `request` mode runs once the response has left. `command`, `api` and a spawned
-`messenger:drain` run the same pass. `worker` and `binary` run `consume()` instead: it loops over the
+A budgeted pass in `request` mode runs once the response has left. `api` and
+`messenger:consume --drain` run the same pass. `worker` and `binary` run `consume()` instead: it loops over the
 same steps with no budget to stop it, and ticks the Scheduler whenever the queue is empty.
 
 ```mermaid
@@ -167,16 +167,21 @@ reaches stderr, the daily ceiling and the fingerprint dedup do not apply, and th
 runs because it was sent. A message may carry a dedup key, which collapses a **first send** into an
 identical message still waiting and never tried; a retry, or a failure, is never swallowed by it.
 
-**There are six consumption modes**, chosen by `YESWIKI_QUEUE_CONSUMER`:
+**There are four consumption modes**, chosen by `YESWIKI_QUEUE_CONSUMER`:
 
-| Mode            | Who consumes                                                                   | Budgeted |
-| --------------- | ------------------------------------------------------------------------------ | -------- |
-| `request`       | the end of each web request, after the response has left where the SAPI allows | yes      |
-| `request-spawn` | a detached `messenger:drain` the end of a request starts, one a minute at most | yes      |
-| `command`       | a crontab running `./yeswicli messenger:drain`                                 | yes      |
-| `api`           | `/api/queue/consume`, POST or GET, with the secret as header or `?secret=`     | yes      |
-| `worker`        | `./yeswicli messenger:consume`, kept alive by systemd or similar               | no       |
-| `binary`        | the Go binary, which supervises a `messenger:consume --supervised` per wiki    | no       |
+| Mode      | Who consumes                                                                   | Budgeted |
+| --------- | ------------------------------------------------------------------------------ | -------- |
+| `request` | the end of each web request, after the response has left where the SAPI allows | yes      |
+| `api`     | `/api/queue/consume`, POST or GET, with the secret as header or `?secret=`     | yes      |
+| `worker`  | `./yeswicli messenger:consume`, kept alive by systemd or similar               | no       |
+| `binary`  | the Go binary, which supervises a `messenger:consume --supervised` per wiki    | no       |
+
+Two more were tried during development and removed before any release: `request-spawn`, where the
+end of a request started a detached process to consume, and `command`, a crontab running a
+non-blocking command. They were the least used, and each carried code of its own (a launch
+throttle, a check for hosts that forbid `proc_open`, a CLI budget) for what `api` and `worker`
+already cover. `./yeswicli messenger:consume --drain` keeps the one thing that command did well:
+emptying the queue by hand, and exiting.
 
 The variable is read from the real environment, then `private/.env` (the only way on a host with
 no environment), then `queue_consumer` in the configuration, then the default: `binary` under the
@@ -185,8 +190,7 @@ which would read `QUEUE_CONSUMER`. The binary sets **no** `YESWIKI_QUEUE_CONSUME
 `YESWIKI_SERVED_BY_BINARY`, so a wiki of a farm can choose another mode, and `binary` without the
 marker is detectable and reported. An unknown value does not stop the wiki; it gets the default and
 keeps the origin it was found in, so the page can say where to correct it, and "origin is `default`"
-keeps meaning that nobody chose. A `request-spawn` launch that cannot start a process is journaled
-and consumes nothing: the fallback below takes over. The `api` route is public as far as the ACL goes and the
+keeps meaning that nobody chose. The `api` route is public as far as the ACL goes and the
 secret is the whole check, compared in constant time; with no secret set it answers 401 to
 everybody. It answers 409 when another pass runs, which is the caller's cue to come back, not a
 fault. It also answers GET with the secret in a `secret` query parameter, a deliberate departure
@@ -209,9 +213,10 @@ crash.
 **The budget is computed, not configured.** A pass takes `max_execution_time` less what the request
 already used, less a margin (2 s plus a tenth of the limit), then the mode's ceiling: 3 s while a
 visitor waits for a response that cannot leave before the script ends (mod_php, CGI), 20 s once it
-has, 50 s for an API call, 300 s from a CLI with no PHP limit. Memory is 80 % of `memory_limit`.
+has, 50 s for an API call. `messenger:consume --drain` has no time budget: it is run by hand, and
+ends when the queue is empty. Memory is 80 % of `memory_limit`.
 The consumer takes the next message only if the average duration of its type fits, except the first
-message of a pass nobody waits for (response already sent, command, API, spawned process): that one
+message of a pass nobody waits for (response already sent, API, a drain by hand): that one
 is taken whatever its average, or a type longer than any pass of its mode would block the queue for
 good; if PHP cuts it, it is failed as killed below. The same figures
 give each claim its **kill limit**. A claim also names the process that holds it: its pid, its
@@ -240,13 +245,12 @@ lifted the pause. Work that splits
 (remote backup, mass reindexing) does a bounded slice and dispatches its own continuation, so it
 runs in every mode. The one exception is a backup or restore an admin starts: it keeps a path
 through the admin's own request, **pinned** to the end of that request with no budget and
-`set_time_limit(0)`, in `request`, `api`, `command` and `request-spawn`, the modes that would
-otherwise run it only when something calls them -- in `request-spawn` nothing says before the launch
-that its process will run. In `worker` and `binary` it is queued for the worker while the worker is
+`set_time_limit(0)`, in `request` and `api`, the modes that would otherwise run it only when
+something calls them. In `worker` and `binary` it is queued for the worker while the worker is
 seen at work, and pinned too when it is not (`QueueFallback::consumerIsGone()`): left to the end of
 visitors' requests, on a request's budget, PHP would cut it. Where the response cannot leave before
 the script ends (mod_php, CGI), the request hands each message it pinned to a process of its own
-(`messenger:drain --message=<id>`), as `core:archive` was detached before the queue, so that the admin
+(`messenger:consume --message=<id>`), as `core:archive` was detached before the queue, so that the admin
 does not wait for the whole backup and a wiki fetching one does not give up; the request runs it
 itself only when no process can be started. A wiki
 installed and forgotten must still back itself up before an update. The queue's table and the Journal's
@@ -283,13 +287,12 @@ generic alert skip it). "Ignorer" on `/admin/jobs` **acknowledges**
 the failures present: they leave `failed` and the alert and stay in the history, and a new failure
 brings the alert back. There is deliberately no way to mute a cause.
 
-**The checks are the product.** Fourteen Health checks (`queue-tables`, `queue-fallback`, `queue-stalled`,
+**The checks are the product.** Thirteen Health checks (`queue-tables`, `queue-fallback`, `queue-stalled`,
 `queue-failed`, `queue-killed`, `queue-task-overdue`, `queue-task-failing`, `queue-backlog`,
-`queue-consumer-restarts`, `queue-consumer-memory`, `queue-config`, `queue-spawn-unavailable`,
-`queue-no-budget`, `queue-visitor-cost`) are re-derived from the `queue` table and the Journal's `queue` channel whenever they
+`queue-consumer-restarts`, `queue-consumer-memory`, `queue-config`, `queue-no-budget`, `queue-visitor-cost`) are re-derived from the `queue` table and the Journal's `queue` channel whenever they
 are asked. "Nothing is consuming" is judged on **consumer activity**, not message age: messages
 available and no pass, heartbeat or claim within its limit for 10 minutes in `worker` and `binary`,
-3 hours in `command` and `api`, 24 hours in `request` and `request-spawn`. A queue that moves but
+3 hours in `api`, 24 hours in `request`. A queue that moves but
 slowly is a backlog and only degraded (1 hour for the blocking modes, 6 for the others), and is
 silent while the stall alert fires. A wiki that is hibernated is silent too. A wiki where no pass
 has ever run falls back to the age of the oldest message, so a fresh install with messages and no
@@ -297,23 +300,20 @@ consumer alerts. The badge counts `Broken` only. The page is server-rendered Twi
 `@admins`, and every action ("Consommer maintenant", "Relancer", "Ignorer", "Lancer") answers with
 the page fragment it changed.
 
-**When the chosen consumer is gone, the end of requests stands in for it.** A worker that died, a
-crontab a host dropped, an online cron that stopped calling, a `request-spawn` whose processes never
-start or never consume: on a wiki nobody watches, maintenance and indexing would stop for weeks
+**When the chosen consumer is gone, the end of requests stands in for it.** A worker that died, an
+online cron that stopped calling: on a wiki nobody watches, maintenance and indexing would stop for weeks
 unnoticed. `QueueFallback` decides it, from what is already recorded. Every pass row says what started
 it (`origin` in its context, written only when it is not the consumer's own, so older rows read as the
 consumer's): the consumer of the mode, the messages a request **pinned**, the jobs page's **manual**
 button, or the **fallback**. Only the consumer's own passes make it "seen" (`lastSeenAt`), and so does
 a live claim of its mode held by the process of one of its open passes, since a worker inside one long
 message does not beat. A consumer's pass that finds `PASS_LOCK` taken, or the wiki hibernated, still
-leaves a row, closed at once, outside `request`, so that a cron coming back while a fallback pass runs
+leaves a row, closed at once, outside `request`, so that an online cron coming back while a fallback pass runs
 is seen, and one that kept running while the wiki slept is not taken for gone when it wakes. The fallback
 starts when work (an available message, or the schedule being due — on a quiet wiki nothing else is
 queued while nothing ticks) has waited longer than the mode's stall delay and the consumer has not
 been seen for as long; a schedule that never ticked has waited since the rule was first read
-(`cache/queue-fallback-watch.lock`). For `request-spawn` it is the first launch left unanswered for
-5 minutes (`cache/queue-spawn-unanswered.lock`); every launch, failed or not, stamps the throttle.
-The fallback consumes as `request` does, and its passes carry `fallback_for`: it lasts until the
+(`cache/queue-fallback-watch.lock`). The fallback consumes as `request` does, and its passes carry `fallback_for`: it lasts until the
 consumer is seen after its first fallback pass (`fallbackSince`), not until the queue is empty,
 which would make it flap; changing the mode ends it too. Outside it, a request reads the rule at
 most once a minute (`cache/queue-fallback-check.lock`, the answer kept as
@@ -342,9 +342,10 @@ code lives apart from the FrankenPHP dependency so `go test ./...` runs without 
 sweep (`MaintenanceService::sweep/claim/dueOnRequest` and its call in `YesWikiRuntime::doRun`), the
 `maintenance_trigger` setting and `cache/maintenance.lock`, the `register_shutdown_function` calls
 that deferred search, digests and syncs, and the `maintenance-sweep` Health check. A wiki with
-`maintenance_trigger: cron` and no explicit mode, outside the binary, is migrated to `command`,
-since its crontab exists; under the binary the setting is simply removed. `core:maintenance` stays
-as a deprecated alias of `messenger:drain` so existing crontabs keep working. What was synchronous
+`maintenance_trigger: cron` loses the setting and no mode is chosen for it: its admin is told that
+`./yeswicli core:maintenance` is gone too, that the crontab line is to be removed, and that `worker`
+or `api` is the way to consume outside page views. Released in the alphas, `core:maintenance` is
+removed without an alias, which breaks those crontabs on purpose. What was synchronous
 on purpose stays so: mail sends, webhooks, thumbnails, ActivityPub Follow/Accept, the Doryphore
 arrival, and the explicit actions of a human or a webhook (`importer:sync`, `GET /api/import/sync`,
 `{{sync}}`, the sync button).
@@ -382,8 +383,8 @@ arrival, and the explicit actions of a human or a webhook (`importer:sync`, `GET
   will be cut by it again; this is anti-objective four, "a job too long for the mode relaunched
   forever". It waits for a human who has changed mode.
 - **Judging "nothing is consuming" on the age of the oldest message** — rejected after being the
-  first design. A worker alive and draining a long queue is a backlog, not a stall, and for four of
-  the six modes the backlog check could then never fire. Activity is the right signal.
+  first design. A worker alive and draining a long queue is a backlog, not a stall, and for the
+  budgeted modes the backlog check could then never fire. Activity is the right signal.
 - **Muting an alert by cause** — rejected for ADR-0026's reason and anti-objective one: it would be
   a button that hides a real outage. Acknowledging the failures that exist is not the same thing.
 - **Priorities and several queues** — not now. One `default` queue and `failed`; a priority lane for
@@ -396,21 +397,21 @@ arrival, and the explicit actions of a human or a webhook (`importer:sync`, `GET
 - **The wiki gains one table and a write on every dispatch.** That is the price of a transport in
   the one store a shared host reliably has. A request with nothing to do costs two indexed reads
   (is a message available now, is the schedule due), not a pass row, and a pass that finds the lock
-  taken or the wiki asleep writes none in `request` mode, where that is most requests. A cron, an
-  API call or a spawned process that finds them writes one, closed at once, so that it is seen
+  taken or the wiki asleep writes none in `request` mode, where that is most requests. An API call
+  that finds them writes one, closed at once, so that it is seen
   coming back, or still coming while the wiki slept, rather than taken for gone.
 - **A delayed retry is not work.** The end-of-request check reads the oldest _available_ message,
   not the count of waiting ones, or a single message failing for half an hour would run a full pass
   on every request.
 - **The default mode makes a visitor's request longer on mod_php and CGI**, up to the 3 s ceiling,
-  and `queue-visitor-cost` says so once the average passes a second. Choosing `request-spawn`,
-  `command` or `worker` removes it, which is why the page names the cost beside the mode.
+  and `queue-visitor-cost` says so once the average passes a second. Choosing `api` or `worker`
+  removes it, which is why the page names the cost beside the mode.
 - **The end of a request assumes nothing of the SAPI it runs under**, since `request` is the
   default everywhere. It works from `YESWIKI_INSTANCE_DIR`, as mod_php may run shutdown functions
   elsewhere (FPM and `php -S` do not, checked) and an instance's extensions are autoloaded by a
   relative path. Where the response has not left (mod_php, CGI, `php -S`), it drops what the pass
   prints, which would land in the page. It calls `ignore_user_abort()` only where the host has not
-  disabled it. The processes it starts (`request-spawn`, a pinned message on mod_php or CGI) go
+  disabled it. The process it starts for a pinned message on mod_php or CGI goes
   through `ConsoleService::startDetachedConsole()`: no pipes, which the dropped `Process` closes
   and so kills the child with SIGPIPE, the instance's folder, and the console's ownership check
   lifted for the web server's user. How each SAPI fares is in `docs/fr/async.md`.
@@ -590,7 +591,7 @@ classDiagram
 - `tests/src/Kernel/QueueTestKit.php` builds a queue and its consumer on a throw-away SQLite file.
   1. Build it with `new QueueTestKit([DoThing::class => fn (DoThing $m) => $handler($m)])`.
   2. Send with `$kit->bus->dispatch(...)`.
-  3. Consume with `$kit->consumer->handleById($id, QueueConsumerMode::Command)` or `drain(...)`.
+  3. Consume with `$kit->consumer->handleById($id, QueueConsumerMode::Api)` or `drain(...)`.
   4. Assert on `$kit->statistics`: `pendingCount()`, `failedCount()`, `failed()`.
   5. Call `dispose()` in `tearDown()`.
 
