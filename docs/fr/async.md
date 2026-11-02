@@ -68,12 +68,12 @@ données et l'action `{{sync}}`.
 
 ## Choisir le mode de traitement
 
-| Mode                              | Qui traite la file                                         | Délai attendu                                                                           | Désavantage                                                                                                                                                   | Hébergement                         |
-| --------------------------------- | ---------------------------------------------------------- | --------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------- |
-| `request` (défaut)                | la fin de chaque visite, une fois la page envoyée          | dès la fin de la visite qui l'ajoute, sinon à la visite suivante (voir sous le tableau) | rien n'avance sans visite ; un traitement plus long que le temps maximal d'une page (souvent 30 s) est coupé ; sur certains serveurs, les visiteurs attendent | tous, même un mutualisé sans cron   |
-| `api`                             | un service de cron en ligne                                | 5 min (appel toutes les 5 min)                                                          | dépend d'un service extérieur ; un traitement plus long que le temps maximal d'un appel (moins d'une minute) est coupé                                        | mutualisé sans cron                 |
-| `worker`                          | un processus qui tourne en continu, relancé par le serveur | quelques secondes                                                                       | un service à installer et surveiller, par wiki                                                                                                                | serveur privé ou dédié, conteneur   |
-| `binary` (défaut sous le binaire) | le binaire YesWiki                                         | quelques secondes                                                                       | réservé au binaire YesWiki                                                                                                                                    | wiki ou ferme servis par le binaire |
+| Mode                        | Qui traite la file                                         | Délai attendu                                                                           | Désavantage                                                                                                                                                   | Hébergement                         |
+| --------------------------- | ---------------------------------------------------------- | --------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------- |
+| `request` (défaut, partout) | la fin de chaque visite, une fois la page envoyée          | dès la fin de la visite qui l'ajoute, sinon à la visite suivante (voir sous le tableau) | rien n'avance sans visite ; un traitement plus long que le temps maximal d'une page (souvent 30 s) est coupé ; sur certains serveurs, les visiteurs attendent | tous, même un mutualisé sans cron   |
+| `api`                       | un service de cron en ligne                                | 5 min (appel toutes les 5 min)                                                          | dépend d'un service extérieur ; un traitement plus long que le temps maximal d'un appel (moins d'une minute) est coupé                                        | mutualisé sans cron                 |
+| `worker`                    | un processus qui tourne en continu, relancé par le serveur | quelques secondes                                                                       | un service à installer et surveiller, par wiki                                                                                                                | serveur privé ou dédié, conteneur   |
+| `binary`                    | le binaire YesWiki                                         | quelques secondes                                                                       | réservé au binaire YesWiki ; un processus PHP par wiki, gardé en mémoire en permanence                                                                        | wiki ou ferme servis par le binaire |
 
 En `request`, ce qu'une visite ajoute à la file est traité
 dès la fin de cette visite, une fois la page envoyée : la page que vous venez
@@ -98,7 +98,8 @@ Comment choisir, en pratique :
   long est coupé et passe en échec. Les
   sauvegardes et restaurations sont un cas à part, voir
   [plus bas](/docs/fr/async?id=sauvegardes-et-restaurations).
-- **Wiki servi par le binaire YesWiki** : ne touchez à rien.
+- **Wiki servi par le binaire YesWiki** : `request` suffit, comme ailleurs.
+  Passez à `binary` si le wiki est peu visité ou si ses traitements sont longs.
 
 ### `request` selon la façon dont le serveur lance PHP
 
@@ -210,9 +211,15 @@ dans `private/.env`, par exemple `ASYNC_PHP_BINARY=/usr/bin/php8.4`.
 ### Le mode `binary`
 
 Quand le wiki est servi par le binaire YesWiki (`yeswiki serve`, ferme
-comprise), il n'y a rien à faire : le binaire lance et surveille le traitement
-de chaque wiki, et le relance s'il s'arrête. Un wiki d'une ferme peut quand même
-choisir un autre mode avec `YESWIKI_QUEUE_CONSUMER`.
+comprise), il traite sa file en `request` tant qu'il ne demande rien d'autre.
+Avec `YESWIKI_QUEUE_CONSUMER=binary` dans `private/.env`, c'est le binaire qui
+lance et surveille le traitement de ce wiki, et le relance s'il s'arrête : les
+tâches avancent sans visite, en quelques secondes, et peuvent durer aussi
+longtemps qu'il le faut. En contrepartie, un processus PHP reste en mémoire en
+permanence pour ce wiki : c'est pourquoi ce n'est pas le défaut.
+
+Le changement est pris en compte au prochain redémarrage du binaire, ou au
+prochain rechargement de la ferme.
 
 ## Le mode de secours
 

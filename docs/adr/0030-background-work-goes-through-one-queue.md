@@ -184,8 +184,9 @@ already cover. `./yeswicli messenger:consume --drain` keeps the one thing that c
 emptying the queue by hand, and exiting.
 
 The variable is read from the real environment, then `private/.env` (the only way on a host with
-no environment), then `queue_consumer` in the configuration, then the default: `binary` under the
-binary and `request` anywhere else. It needs an explicit mapping, not an entry in `KNOWN_KEYS`,
+no environment), then `queue_consumer` in the configuration, then the default: `request`, under the
+binary too, since `binary` keeps a PHP process alive per wiki and a wiki that never needed one
+would pay its memory for nothing; a wiki asks for it. It needs an explicit mapping, not an entry in `KNOWN_KEYS`,
 which would read `QUEUE_CONSUMER`. The binary sets **no** `YESWIKI_QUEUE_CONSUMER`: it sets
 `YESWIKI_SERVED_BY_BINARY`, so a wiki of a farm can choose another mode, and `binary` without the
 marker is detectable and reported. An unknown value does not stop the wiki; it gets the default and
@@ -326,7 +327,9 @@ then judged with `request`'s delay, so it speaks again only if the visits stop t
 `php-cli … messenger:consume --supervised --time-limit=3600 --memory-limit=128M` with the binary's
 marker in the environment. That command works out the effective mode itself and, if it is not
 `binary`, exits at once with 78 (`EX_CONFIG`), which the supervisor reads as "not my wiki" and does
-not restart until a SIGHUP reload. A blocking consumer stops between two messages once the wiki's
+not restart until a SIGHUP reload. Since `binary` is asked for, that is what most wikis do: a start
+or a reload boots PHP once per wiki, briefly, to learn this, which is accepted over a binary that
+reads PHP's configuration. A blocking consumer stops between two messages once the wiki's
 configuration changed (a setting saved, `private/.env` edited) or its compiled container was
 emptied (`migrate` after an upgrade, `cache:clear`), the two questions FrankenPHP's worker asks
 too, since it would otherwise run on what it booted with for up to an hour. Supervised, it then

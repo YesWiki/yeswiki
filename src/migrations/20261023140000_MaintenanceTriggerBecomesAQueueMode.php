@@ -11,7 +11,7 @@ use YesWiki\Kernel\Service\ConfigurationService;
  * `maintenance_trigger` chose who ran the housekeeping sweep: a page view (`request`) or `./yeswicli core:maintenance` from a crontab (`cron`). The sweep is gone, the queue's mode of consumption decides now, and the setting is removed.
  *
  * No mode is chosen in the admin's place: a wiki that chose none gets the default, the end of page
- * views (or the binary, which consumes by itself). A wiki on `cron` has a crontab running
+ * views, under the binary too. A wiki on `cron` has a crontab running
  * `./yeswicli core:maintenance`, which is gone too: the admin is told to remove that line, and that
  * the `worker` or `api` mode is the way to consume the queue outside page views. A
  * `MAINTENANCE_TRIGGER` set in private/.env is not the configuration and is not rewritten; it is

@@ -161,7 +161,7 @@ func TestBothRootsAreStatedForThePhpProcess(t *testing.T) {
 	}
 }
 
-// The marker is how PHP tells it runs under this binary, whose default is to consume each wiki's queue itself.
+// The marker is how PHP tells it runs under this binary, which consumes the queue of the wikis that ask for it.
 func TestEnvironmentCarriesTheBinaryMarker(t *testing.T) {
 	environment := Environment("/wikis/mine", "/opt/yeswiki/program-4.5.0")
 

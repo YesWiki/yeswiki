@@ -110,15 +110,15 @@ restores, and the periodic cleanup (old page revisions and Journal entries, expi
 activation keys, the bot guard's counters). Something has to consume that queue, and
 `YESWIKI_QUEUE_CONSUMER` says what. There are four modes:
 
-| Mode      | What consumes the queue                                                             | You set up                     |
-| --------- | ----------------------------------------------------------------------------------- | ------------------------------ |
-| `request` | the end of each page view, once the page has been sent                              | nothing (the default)          |
-| `api`     | an HTTP call to `/api/queue/consume`, POST or GET (online cron, monitor)            | a call, and a secret           |
-| `worker`  | a process that never returns, `messenger:consume`, kept alive by systemd or similar | a service                      |
-| `binary`  | the YesWiki binary, which supervises one `messenger:consume` per wiki               | nothing (the default under it) |
+| Mode      | What consumes the queue                                                             | You set up                    |
+| --------- | ----------------------------------------------------------------------------------- | ----------------------------- |
+| `request` | the end of each page view, once the page has been sent                              | nothing (the default)         |
+| `api`     | an HTTP call to `/api/queue/consume`, POST or GET (online cron, monitor)            | a call, and a secret          |
+| `worker`  | a process that never returns, `messenger:consume`, kept alive by systemd or similar | a service                     |
+| `binary`  | the YesWiki binary, which supervises one `messenger:consume` per wiki               | the setting, under the binary |
 
-Nothing has to be chosen: a wiki that says nothing consumes in `request` mode (in `binary` mode
-under the binary), which is what keeps a wiki that is installed and forgotten working on shared
+Nothing has to be chosen: a wiki that says nothing consumes in `request` mode, under the binary
+too, which is what keeps a wiki that is installed and forgotten working on shared
 hosting with no shell and no cron. The cost is that work only moves when someone visits, so a quiet
 wiki lags, and where PHP cannot send the page before the script ends (mod_php, CGI: the PHP that runs inside Apache, or as a plain CGI program) the visitor
 waits for it, within a budget of a few seconds. An online cron or a worker has neither problem.
@@ -223,11 +223,15 @@ After an upgrade, `systemctl restart yeswiki-queue` makes that immediate.
 
 ### `binary`
 
-Under the YesWiki binary (`yeswiki serve`, a farm included) nothing is needed: the binary starts
-`messenger:consume --supervised` for every wiki it serves, relays its output to its own log
+Under the YesWiki binary (`yeswiki serve`, a farm included), a wiki consumes in `request` mode
+unless it asks for `binary` with `YESWIKI_QUEUE_CONSUMER=binary`: a consumer kept alive is a PHP
+process per wiki, whose memory a wiki pays only if it wants work that moves without visits, or
+jobs longer than a page's time limit. The binary starts `messenger:consume --supervised` for every
+wiki it serves; a wiki in another mode exits it at once and is left alone until the next reload. For
+the wikis in `binary`, it relays the consumer's output to its own log
 prefixed with the wiki's name, and restarts it with a growing delay (up to a minute) if it keeps
-exiting. A farm reloaded with SIGHUP starts and stops consumers with its list of wikis. A wiki that
-chose another mode through `YESWIKI_QUEUE_CONSUMER` is left alone until the next reload.
+exiting. A farm reloaded with SIGHUP starts and stops consumers with its list of wikis, and is
+when a wiki's change to or from `binary` takes effect.
 
 ## Installation through Docker
 

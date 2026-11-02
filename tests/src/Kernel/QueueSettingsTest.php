@@ -92,15 +92,26 @@ class QueueSettingsTest extends TestCase
         $this->assertSame('config', $settings->origin());
     }
 
-    public function testWithNothingSetTheBinaryConsumes(): void
+    public function testWithNothingSetUnderTheBinaryARequestConsumes(): void
     {
+        // A supervised consumer is a PHP process kept alive per wiki: under the binary too, it is asked for, never the default.
         $this->setRealEnv(QueueSettings::ENV_BINARY, '1');
 
         $settings = $this->settings();
 
-        $this->assertSame(QueueConsumerMode::Binary, $settings->mode());
+        $this->assertSame(QueueConsumerMode::Request, $settings->mode());
         $this->assertSame('default', $settings->origin());
         $this->assertTrue($settings->isServedByBinary());
+    }
+
+    public function testTheBinaryConsumesWhenAskedTo(): void
+    {
+        $this->setRealEnv(QueueSettings::ENV_BINARY, '1');
+
+        $settings = $this->settings('', [QueueSettings::ENV_MODE => 'binary']);
+
+        $this->assertSame(QueueConsumerMode::Binary, $settings->mode());
+        $this->assertSame('dotenv', $settings->origin());
     }
 
     public function testWithNothingSetARequestConsumes(): void
@@ -112,7 +123,7 @@ class QueueSettingsTest extends TestCase
         $this->assertFalse($settings->isServedByBinary());
     }
 
-    public function testAnExplicitModeBeatsTheBinaryDefault(): void
+    public function testAnExplicitModeIsKeptUnderTheBinary(): void
     {
         $this->setRealEnv(QueueSettings::ENV_BINARY, '1');
 
