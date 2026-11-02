@@ -3,6 +3,7 @@
 namespace YesWiki\Test\Kernel;
 
 use PHPUnit\Framework\Attributes\CoversClass;
+use Symfony\Component\Clock\NativeClock;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 use Symfony\Component\DependencyInjection\ServiceLocator;
 use Symfony\Component\HttpFoundation\Request;
@@ -149,7 +150,7 @@ class QueueApiControllerTest extends YesWikiTestCase
             CurrentRequest::class => static fn (): CurrentRequest => $currentRequest,
             QueueSettings::class => static fn (): QueueSettings => $settings,
             QueueConsumer::class => fn (): QueueConsumer => $this->kit->consumer,
-            QueueBudgetFactory::class => static fn (): QueueBudgetFactory => new QueueBudgetFactory(),
+            QueueBudgetFactory::class => static fn (): QueueBudgetFactory => new QueueBudgetFactory(new NativeClock()),
         ]));
 
         return $controller->consume();

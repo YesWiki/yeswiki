@@ -4,6 +4,7 @@ namespace YesWiki\Test\Federation;
 
 use PHPUnit\Framework\Attributes\CoversClass;
 use Psr\Container\ContainerInterface;
+use Symfony\Component\Clock\NativeClock;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpClient\MockHttpClient;
@@ -400,7 +401,7 @@ class DeliverActivityTest extends YesWikiTestCase
 
     private function drain(): \YesWiki\Kernel\Queue\QueuePassReport
     {
-        return $this->kit->consumer->drain(QueueConsumerMode::Api, (new QueueBudgetFactory())->forMode(QueueConsumerMode::Api, true));
+        return $this->kit->consumer->drain(QueueConsumerMode::Api, (new QueueBudgetFactory(new NativeClock()))->forMode(QueueConsumerMode::Api, true));
     }
 
     /** @return list<Envelope> */

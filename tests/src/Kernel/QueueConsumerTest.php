@@ -356,7 +356,7 @@ class QueueConsumerTest extends YesWikiTestCase
         $script = $this->script(<<<'PHP'
             require_once 'tests/src/Kernel/QueueTestMessage.php';
             $db = new YesWiki\Kernel\Service\DbService(new Symfony\Component\DependencyInjection\ParameterBag\ParameterBag(['db_driver' => 'sqlite', 'db_database' => $argv[1], 'table_prefix' => 'ywq_', 'debug' => false]));
-            $transport = new YesWiki\Kernel\Service\Queue\QueueTransport($db, new YesWiki\Kernel\Service\Queue\QueueSchema($db));
+            $transport = new YesWiki\Kernel\Service\Queue\QueueTransport($db, new YesWiki\Kernel\Service\Queue\QueueSchema($db), new Symfony\Component\Clock\NativeClock());
             $transport->claimAs(YesWiki\Kernel\Queue\QueueConsumerMode::Request, 1);
             echo count([...$transport->get()]), "\n";
             sleep(60);
@@ -696,7 +696,7 @@ class QueueConsumerTest extends YesWikiTestCase
      */
     public function testAPinnedMessageIsNotHeldToPhpsTimeLimit(): void
     {
-        $this->budgets = new QueueBudgetFactory(static fn (string $name): string => $name === 'max_execution_time' ? '30' : '128M');
+        $this->budgets = new QueueBudgetFactory(new NativeClock(), static fn (string $name): string => $name === 'max_execution_time' ? '30' : '128M');
         $this->build($this->db, new MockClock(self::START, 'UTC'));
         $limits = [];
         $this->behaviour = function () use (&$limits): void {
@@ -752,7 +752,7 @@ class QueueConsumerTest extends YesWikiTestCase
     public function testATickThatFailsDoesNotStopThePass(): void
     {
         // A checkpoint whose due time cannot be read: no tick gets anywhere.
-        (new QueueTaskRows($this->db, $this->schema))->update(QueueCheckpoint::ROW, static fn (array $fields): array => ['next_due_at' => 'not a time']);
+        (new QueueTaskRows($this->db, $this->schema, new NativeClock()))->update(QueueCheckpoint::ROW, static fn (array $fields): array => ['next_due_at' => 'not a time']);
         $this->send(2);
 
         $report = $this->consumer->drain(QueueConsumerMode::Api, $this->seconds(30));
@@ -972,7 +972,7 @@ class QueueConsumerTest extends YesWikiTestCase
         $this->clock = $clock;
         $schema = new QueueSchema($db);
         $this->transport = new QueueTransport($db, $schema, clock: $clock);
-        $this->statistics = new QueueStatistics($db, $schema, new JournalSchema($db), $this->transport, $clock);
+        $this->statistics = new QueueStatistics($db, $schema, new JournalSchema($db), $this->transport, new QueueTaskRows($db, $schema, $clock), $clock);
         $this->log = self::memory();
         $journal = new Journal(new ServiceLocator([
             DbService::class => fn (): DbService => $this->db,
@@ -993,7 +993,7 @@ class QueueConsumerTest extends YesWikiTestCase
         );
 
         $bus = new QueueBus($this->transport, $locator, $journal);
-        $recorder = new QueueRecorder($db, $schema, new JournalSchema($db), $clock);
+        $recorder = new QueueRecorder($db, new QueueTaskRows($db, $schema, $clock), new JournalSchema($db), $clock);
         $provider = new class($schedule ?? static fn (): array => []) implements ProvidesSchedule {
             /** @param \Closure(): list<RecurringMessage> $schedule */
             public function __construct(private \Closure $schedule)
@@ -1019,14 +1019,14 @@ class QueueConsumerTest extends YesWikiTestCase
             $recorder,
             $this->statistics,
             $this->budgetContext,
-            $this->budgets ?? new QueueBudgetFactory(),
+            $this->budgets ?? new QueueBudgetFactory(new NativeClock()),
             new HibernationService($this->params),
             new RuntimeLock(),
             $journal,
-            new QueueScheduleTicker([$provider], $bus, new QueueCheckpoint($db, $schema, new RuntimeLock()), $recorder, $clock, $journal),
+            new QueueScheduleTicker([$provider], $bus, new QueueCheckpoint(new QueueTaskRows($db, $schema, new NativeClock()), new RuntimeLock()), $recorder, $clock, $journal),
             $clock,
-            configuration: $watch,
-            services: new ServiceLocator([EventDispatcher::class => fn (): EventDispatcher => $this->events]),
+            $watch,
+            fn (): EventDispatcher => $this->events,
         );
     }
 

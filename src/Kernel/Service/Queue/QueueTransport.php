@@ -3,7 +3,6 @@
 namespace YesWiki\Kernel\Service\Queue;
 
 use Psr\Clock\ClockInterface;
-use Symfony\Component\Clock\NativeClock;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\Exception\LogicException;
 use Symfony\Component\Messenger\Exception\MessageDecodingFailedException;
@@ -77,8 +76,6 @@ class QueueTransport implements TransportInterface, MessageCountAwareInterface, 
     /** The columns a claim sets, back to "nobody holds it". */
     private const UNCLAIMED = 'delivered_at = NULL, delivered_by = NULL, delivered_mode = NULL, delivered_limit = NULL';
 
-    private ClockInterface $clock;
-
     /** Written on the rows get() takes, so that the next pass can tell a slow delivery from a dead one. */
     private ?string $claimMode = null;
     private ?int $claimLimit = null;
@@ -101,11 +98,10 @@ class QueueTransport implements TransportInterface, MessageCountAwareInterface, 
     public function __construct(
         private readonly DbService $db,
         private readonly QueueSchema $schema,
+        private readonly ClockInterface $clock,
         private readonly SerializerInterface $serializer = new PhpSerializer(),
         private string $queueName = self::DEFAULT_QUEUE,
-        ?ClockInterface $clock = null,
     ) {
-        $this->clock = $clock ?? new NativeClock();
     }
 
     /** A pass ends with its request: the next one says who it is again, rather than inheriting a mode from the request before (worker mode). */

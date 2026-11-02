@@ -3,7 +3,6 @@
 namespace YesWiki\Kernel\Service\Queue;
 
 use Psr\Clock\ClockInterface;
-use Symfony\Component\Clock\NativeClock;
 use YesWiki\Kernel\Health\HealthCheck;
 use YesWiki\Kernel\Health\ProvidesHealthChecks;
 use YesWiki\Kernel\Queue\QueueConsumerMode;
@@ -54,8 +53,6 @@ class QueueHealthChecks implements ProvidesHealthChecks
     /** Types named in a message before it says "and others". */
     private const TYPES_LISTED = 5;
 
-    private ClockInterface $clock;
-
     public function __construct(
         private readonly QueueSettings $settings,
         private readonly QueueStatistics $statistics,
@@ -64,9 +61,8 @@ class QueueHealthChecks implements ProvidesHealthChecks
         private readonly QueueScheduleTicker $ticker,
         private readonly QueueFallback $fallback,
         private readonly QueueBudgetFactory $budgets,
-        ?ClockInterface $clock = null,
+        private readonly ClockInterface $clock,
     ) {
-        $this->clock = $clock ?? new NativeClock();
     }
 
     /** How long no consumer may have been seen at work, in the mode the wiki consumes in, while messages are available, before `queue-stalled` fires. */

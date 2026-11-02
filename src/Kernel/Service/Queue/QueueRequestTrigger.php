@@ -3,7 +3,6 @@
 namespace YesWiki\Kernel\Service\Queue;
 
 use Psr\Clock\ClockInterface;
-use Symfony\Component\Clock\NativeClock;
 use YesWiki\Kernel\Queue\QueueConsumerMode;
 use YesWiki\Kernel\Queue\QueuePassOrigin;
 use YesWiki\Kernel\Service\ConsoleService;
@@ -47,8 +46,6 @@ class QueueRequestTrigger implements RequestScopedState
     /** Whether the response has always left by the time afterResponse() runs: the FrankenPHP worker. */
     private bool $servedByWorker = false;
 
-    private ClockInterface $clock;
-
     /** @var \Closure(): bool */
     private \Closure $finishResponse;
 
@@ -68,11 +65,10 @@ class QueueRequestTrigger implements RequestScopedState
         private readonly ConsoleService $console,
         private readonly HibernationService $hibernation,
         private readonly Journal $journal,
-        ?ClockInterface $clock = null,
+        private readonly ClockInterface $clock,
         ?\Closure $finishResponse = null,
         ?string $workingDirectory = null,
     ) {
-        $this->clock = $clock ?? new NativeClock();
         $this->finishResponse = $finishResponse ?? self::finishResponse(...);
         $this->workingDirectory = $workingDirectory ?? (\defined('YESWIKI_INSTANCE_DIR') ? YESWIKI_INSTANCE_DIR : (string)getcwd());
     }

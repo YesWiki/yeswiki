@@ -4,7 +4,6 @@ namespace YesWiki\Kernel\Service\Queue;
 
 use Symfony\Component\Scheduler\Generator\CheckpointInterface;
 use YesWiki\Files\Service\RuntimeLock;
-use YesWiki\Kernel\Service\DbService;
 
 /**
  * Where the Scheduler keeps how far it got, in the wiki's own database (messenger / scheduler): the `__checkpoint` row of the queue's scheduled tasks (QueueTaskRows).
@@ -48,14 +47,10 @@ class QueueCheckpoint implements CheckpointInterface
     private \DateTimeImmutable $time;
     private int $index = -1;
 
-    private readonly QueueTaskRows $rows;
-
     public function __construct(
-        DbService $db,
-        QueueSchema $schema,
+        private readonly QueueTaskRows $rows,
         private readonly RuntimeLock $runtimeLock,
     ) {
-        $this->rows = new QueueTaskRows($db, $schema);
     }
 
     /**

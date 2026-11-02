@@ -3,7 +3,6 @@
 namespace YesWiki\Kernel\Service\Queue;
 
 use Psr\Clock\ClockInterface;
-use Symfony\Component\Clock\NativeClock;
 use YesWiki\Kernel\Database\SqlParameters;
 use YesWiki\Kernel\Entity\JournalChannel;
 use YesWiki\Kernel\Queue\QueueClaimHolder;
@@ -30,19 +29,14 @@ class QueueStatistics
     /** What failedRow() reads of a row of `failed`. */
     private const FAILED_COLUMNS = 'id, message_type, attempts, last_error, killed_in, created_at';
 
-    private ClockInterface $clock;
-
-    private QueueTaskRows $tasks;
-
     public function __construct(
         private readonly DbService $db,
         private readonly QueueSchema $schema,
         private readonly JournalSchema $journal,
         private readonly QueueTransport $transport,
-        ?ClockInterface $clock = null,
+        private readonly QueueTaskRows $tasks,
+        private readonly ClockInterface $clock,
     ) {
-        $this->clock = $clock ?? new NativeClock();
-        $this->tasks = new QueueTaskRows($db, $schema, $this->clock);
     }
 
     /** Messages waiting to be handled, delayed retries included; not those being handled. */

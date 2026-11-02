@@ -594,8 +594,8 @@ class QueueRecorderTest extends YesWikiTestCase
         $this->schema->create();
         $this->journal->create();
         $this->transport = new QueueTransport($db, $this->schema, clock: $this->clock);
-        $this->recorder = new QueueRecorder($db, $this->schema, $this->journal, $this->clock);
-        $this->statistics = new QueueStatistics($db, $this->schema, $this->journal, $this->transport, $this->clock);
+        $this->recorder = new QueueRecorder($db, new QueueTaskRows($db, $this->schema, $this->clock), $this->journal, $this->clock);
+        $this->statistics = new QueueStatistics($db, $this->schema, $this->journal, $this->transport, new QueueTaskRows($db, $this->schema, $this->clock), $this->clock);
     }
 
     /** @return array<string, mixed> */

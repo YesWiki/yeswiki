@@ -4,7 +4,6 @@ namespace YesWiki\Kernel\Service\Queue;
 
 use Psr\Clock\ClockInterface;
 use Psr\Log\LogLevel;
-use Symfony\Component\Clock\NativeClock;
 use YesWiki\Kernel\Entity\JournalChannel;
 use YesWiki\Kernel\Queue\QueueBudget;
 use YesWiki\Kernel\Queue\QueueClaimHolder;
@@ -61,18 +60,12 @@ class QueueRecorder
     /** What the Journal's `target` holds. */
     private const TARGET_LENGTH = 191;
 
-    private ClockInterface $clock;
-
-    private QueueTaskRows $tasks;
-
     public function __construct(
         private readonly DbService $db,
-        QueueSchema $schema,
+        private readonly QueueTaskRows $tasks,
         private readonly JournalSchema $journal,
-        ?ClockInterface $clock = null,
+        private readonly ClockInterface $clock,
     ) {
-        $this->clock = $clock ?? new NativeClock();
-        $this->tasks = new QueueTaskRows($db, $schema, $this->clock);
     }
 
     /**

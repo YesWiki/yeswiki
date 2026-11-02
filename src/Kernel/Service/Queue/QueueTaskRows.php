@@ -3,7 +3,6 @@
 namespace YesWiki\Kernel\Service\Queue;
 
 use Psr\Clock\ClockInterface;
-use Symfony\Component\Clock\NativeClock;
 use YesWiki\Kernel\Database\SqlParameters;
 use YesWiki\Kernel\Service\DbService;
 
@@ -30,14 +29,11 @@ class QueueTaskRows
     /** Replays of a transaction the engine undid to break a deadlock (see DbService::transactional()). */
     private const CONFLICT_ATTEMPTS = 3;
 
-    private ClockInterface $clock;
-
     public function __construct(
         private readonly DbService $db,
         private readonly QueueSchema $schema,
-        ?ClockInterface $clock = null,
+        private readonly ClockInterface $clock,
     ) {
-        $this->clock = $clock ?? new NativeClock();
     }
 
     /**

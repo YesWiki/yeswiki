@@ -14,9 +14,7 @@ use YesWiki\Admin\Message\RestoreArchive;
 use YesWiki\Admin\Message\RestoreArchiveHandler;
 use YesWiki\Admin\Service\ArchiveService;
 use YesWiki\Files\Service\LocalFiles;
-use YesWiki\Files\Service\RuntimeLock;
 use YesWiki\Files\Service\Storage;
-use YesWiki\Kernel\Queue\ProvidesSchedule;
 use YesWiki\Kernel\Queue\QueueConsumerMode;
 use YesWiki\Kernel\Queue\QueuePassReport;
 use YesWiki\Kernel\Service\ConfigurationService;
@@ -24,18 +22,9 @@ use YesWiki\Kernel\Service\ConsoleService;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\EventDispatcher;
 use YesWiki\Kernel\Service\HibernationService;
-use YesWiki\Kernel\Service\Journal;
-use YesWiki\Kernel\Service\JournalSchema;
-use YesWiki\Kernel\Service\Queue\QueueBudgetContext;
-use YesWiki\Kernel\Service\Queue\QueueBudgetFactory;
 use YesWiki\Kernel\Service\Queue\QueueBus;
-use YesWiki\Kernel\Service\Queue\QueueCheckpoint;
 use YesWiki\Kernel\Service\Queue\QueueConsumer;
-use YesWiki\Kernel\Service\Queue\QueueHandlerLocator;
-use YesWiki\Kernel\Service\Queue\QueueRecorder;
-use YesWiki\Kernel\Service\Queue\QueueFallback;
 use YesWiki\Kernel\Service\Queue\QueueRequestTrigger;
-use YesWiki\Kernel\Service\Queue\QueueScheduleTicker;
 use YesWiki\Kernel\Service\Queue\QueueSchema;
 use YesWiki\Kernel\Service\Queue\QueueSettings;
 use YesWiki\Kernel\Service\Queue\QueueStatistics;
@@ -43,11 +32,11 @@ use YesWiki\Kernel\Service\Queue\QueueTransport;
 use YesWiki\Kernel\Service\ThrowableFormatter;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Test\Core\YesWikiTestCase;
-use YesWiki\Test\Kernel\QueueTestConsole;
 use YesWiki\Test\Kernel\QueueTestHolders;
 use YesWiki\Test\Kernel\QueueTestKit;
 
 require_once 'tests/YesWikiTestCase.php';
+require_once 'tests/src/Kernel/QueueTestKit.php';
 require_once 'tests/src/Kernel/QueueTestConsole.php';
 require_once 'tests/src/Kernel/QueueTestHolders.php';
 
@@ -65,12 +54,8 @@ require_once 'tests/src/Kernel/QueueTestHolders.php';
 #[CoversClass(RestoreArchiveHandler::class)]
 class ArchiveQueueTest extends YesWikiTestCase
 {
-    private string $file;
-    private string $lockDir;
+    private QueueTestKit $kit;
     private string $root;
-    private string $configFile;
-    private string|false $previousConfigFile;
-    private string|false $previousMode;
 
     private DbService $db;
     private QueueSchema $schema;
@@ -79,54 +64,36 @@ class ArchiveQueueTest extends YesWikiTestCase
     private QueueStatistics $statistics;
     private QueueConsumer $consumer;
     private QueueBus $bus;
-    private Journal $journal;
-    private RuntimeLock $locks;
     private Storage $storage;
     private ?QueueRequestTrigger $trigger = null;
     private ?QueueArchiveService $archives = null;
 
     protected function setUp(): void
     {
-        $this->file = sys_get_temp_dir() . '/yw-archive-queue-' . bin2hex(random_bytes(6)) . '.db';
-        $this->lockDir = sys_get_temp_dir() . '/yw-archive-locks-' . bin2hex(random_bytes(4));
         $this->root = sys_get_temp_dir() . '/yw-archive-root-' . bin2hex(random_bytes(4));
         mkdir($this->root);
         $this->storage = Storage::rootedAt($this->root);
 
-        $this->db = new DbService(new ParameterBag([
-            'db_driver' => 'sqlite',
-            'db_database' => $this->file,
-            'table_prefix' => 'ywq_',
-            'debug' => false,
-        ]));
-        $this->schema = new QueueSchema($this->db);
-        $this->schema->create();
-        (new JournalSchema($this->db))->create();
-
-        $this->configFile = sys_get_temp_dir() . '/yw-archive-config-' . bin2hex(random_bytes(4)) . '.php';
-        $this->previousConfigFile = getenv('YESWIKI_CONFIG_FILE');
-        putenv('YESWIKI_CONFIG_FILE=' . $this->configFile);
-        $this->setWikiStatus('running');
-        $this->previousMode = getenv(QueueSettings::ENV_MODE);
-
         $this->clock = new MockClock('2026-10-23 12:00:00', 'UTC');
-        $this->locks = QueueTestKit::locksIn($this->lockDir);
-        $this->build();
+        $this->kit = new QueueTestKit(
+            [
+                CreateArchive::class => fn (CreateArchive $run) => (new CreateArchiveHandler($this->currentArchives()))($run),
+                RestoreArchive::class => fn (RestoreArchive $run) => (new RestoreArchiveHandler($this->currentArchives()))($run),
+            ],
+            $this->clock,
+            events: fn (): EventDispatcher => $this->events(),
+        );
+        $this->db = $this->kit->db;
+        $this->schema = $this->kit->schema;
+        $this->transport = $this->kit->transport;
+        $this->statistics = $this->kit->statistics;
+        $this->consumer = $this->kit->consumer;
+        $this->bus = $this->kit->bus;
     }
 
     protected function tearDown(): void
     {
-        putenv($this->previousMode === false ? QueueSettings::ENV_MODE : QueueSettings::ENV_MODE . '=' . $this->previousMode);
-        putenv($this->previousConfigFile === false ? 'YESWIKI_CONFIG_FILE' : 'YESWIKI_CONFIG_FILE=' . $this->previousConfigFile);
-        @unlink($this->configFile);
-        foreach (['', '-wal', '-shm'] as $suffix) {
-            @unlink($this->file . $suffix);
-        }
-        foreach (glob($this->lockDir . '/cache/*') ?: [] as $lock) {
-            @unlink($lock);
-        }
-        @rmdir($this->lockDir . '/cache');
-        @rmdir($this->lockDir);
+        $this->kit->dispose();
         $files = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($this->root, \FilesystemIterator::SKIP_DOTS), \RecursiveIteratorIterator::CHILD_FIRST);
         foreach ($files as $path => $file) {
             $file->isDir() ? @rmdir($path) : @unlink($path);
@@ -443,14 +410,14 @@ class ArchiveQueueTest extends YesWikiTestCase
         $killed = $this->messageOf($uid);
         $this->takeAndDie($killed);
 
-        $this->consumer->drain(QueueConsumerMode::from($mode), (new QueueBudgetFactory())->forMode(QueueConsumerMode::from($mode), true));
+        $this->consumer->drain(QueueConsumerMode::from($mode), $this->kit->budgets->forMode(QueueConsumerMode::from($mode), true));
 
         $this->assertSame('killed', $this->statistics->messageState($killed));
         $this->assertSame('running', $this->wikiStatus());
         $this->assertArrayNotHasKey($uid, $this->info(), 'the dead run is forgotten: a `core:archive` typed by hand next keeps its status');
 
         $this->archives('worker')->startArchive();
-        $report = $this->consumer->drain(QueueConsumerMode::from($mode), (new QueueBudgetFactory())->forMode(QueueConsumerMode::from($mode), true));
+        $report = $this->consumer->drain(QueueConsumerMode::from($mode), $this->kit->budgets->forMode(QueueConsumerMode::from($mode), true));
 
         $this->assertSame(QueuePassReport::EMPTY, $report->stopReason);
         $this->assertCount(1, $this->currentArchives()->archived, 'the next run went through');
@@ -661,7 +628,7 @@ class ArchiveQueueTest extends YesWikiTestCase
     {
         require_once 'src/migrations/20261023130000_ArchivesNoLongerChooseHowTheyRun.php';
         $configuration = new ConfigurationService();
-        $config = $configuration->getConfiguration($this->configFile);
+        $config = $configuration->getConfiguration($this->kit->configFile());
         $config->load();
         $config['archive'] = ['call_archive_async' => false, 'max_nb_files' => 4, 'preupdate_backup_activated' => true];
         $this->assertTrue($configuration->write($config));
@@ -669,7 +636,7 @@ class ArchiveQueueTest extends YesWikiTestCase
         $this->runMigration();
         $this->runMigration();
 
-        $config = $configuration->getConfiguration($this->configFile);
+        $config = $configuration->getConfiguration($this->kit->configFile());
         $config->load();
         $this->assertSame(['max_nb_files' => 4, 'preupdate_backup_activated' => true], $config['archive']);
 
@@ -708,19 +675,8 @@ class ArchiveQueueTest extends YesWikiTestCase
             QueueTestKit::recordPass($this->db, QueueConsumerMode::from($mode), $this->at('-1 hour'), $this->at('-1 minute'), '');
         }
         $settings = new QueueSettings(new ParameterBag([]), static fn (): array => []);
-        $fallback = new QueueFallback($settings, $this->statistics, new HibernationService(new ParameterBag(['wiki_status' => 'running'])), $this->locks, $this->clock);
-        $this->trigger = new QueueRequestTrigger(
-            $settings,
-            $this->consumer,
-            new QueueBudgetFactory(),
-            $this->statistics,
-            $fallback,
-            new QueueTestConsole(),
-            new HibernationService(new ParameterBag(['wiki_status' => 'running'])),
-            $this->journal,
-            $this->clock,
-            static fn (): bool => true,
-        );
+        $fallback = $this->kit->fallback($settings);
+        $this->trigger = $this->kit->requestTrigger($settings);
         $services = $this->getWiki()->services;
         $this->archives = new QueueArchiveService(
             new ConfigurationService(),
@@ -739,51 +695,6 @@ class ArchiveQueueTest extends YesWikiTestCase
         );
 
         return $this->archives;
-    }
-
-    private function build(): void
-    {
-        $this->transport = new QueueTransport($this->db, $this->schema, clock: $this->clock);
-        $this->statistics = new QueueStatistics($this->db, $this->schema, new JournalSchema($this->db), $this->transport, $this->clock);
-        $this->journal = new Journal(new ServiceLocator([
-            DbService::class => fn (): DbService => $this->db,
-            JournalSchema::class => fn (): JournalSchema => new JournalSchema($this->db),
-            ThrowableFormatter::class => static fn (): ThrowableFormatter => new ThrowableFormatter(),
-        ]));
-        $log = fopen('php://memory', 'w+b');
-        if ($log !== false) {
-            $this->journal->writeTo($log);
-        }
-
-        $locator = new QueueHandlerLocator(
-            [CreateArchive::class => ['create'], RestoreArchive::class => ['restore']],
-            new ServiceLocator([
-                'create' => fn (): CreateArchiveHandler => new CreateArchiveHandler($this->currentArchives()),
-                'restore' => fn (): RestoreArchiveHandler => new RestoreArchiveHandler($this->currentArchives()),
-            ])
-        );
-        $this->bus = $bus = new QueueBus($this->transport, $locator, $this->journal);
-        $recorder = new QueueRecorder($this->db, $this->schema, new JournalSchema($this->db), $this->clock);
-        $noSchedule = new class implements ProvidesSchedule {
-            public function recurringMessages(): array
-            {
-                return [];
-            }
-        };
-        $this->consumer = new QueueConsumer(
-            $this->transport,
-            $bus,
-            $recorder,
-            $this->statistics,
-            new QueueBudgetContext(),
-            new QueueBudgetFactory(),
-            new HibernationService(new ParameterBag(['wiki_status' => 'running'])),
-            $this->locks,
-            $this->journal,
-            new QueueScheduleTicker([$noSchedule], $bus, new QueueCheckpoint($this->db, $this->schema, $this->locks), $recorder, $this->clock),
-            $this->clock,
-            services: new ServiceLocator([EventDispatcher::class => fn (): EventDispatcher => $this->events()]),
-        );
     }
 
     /** The wiki's dispatcher, with the service under test subscribed to it as the kernel subscribes it. */
@@ -814,7 +725,7 @@ class ArchiveQueueTest extends YesWikiTestCase
     /** A pass of a consumer of its own, as the API route would run. */
     private function drain(): void
     {
-        $this->consumer->drain(QueueConsumerMode::Api, (new QueueBudgetFactory())->forMode(QueueConsumerMode::Api, true), false);
+        $this->consumer->drain(QueueConsumerMode::Api, $this->kit->budgets->forMode(QueueConsumerMode::Api, true), false);
     }
 
     /** A consumer on another machine takes the message and dies with it: no ack, no failure, and its limit runs out. */
@@ -870,7 +781,7 @@ class ArchiveQueueTest extends YesWikiTestCase
     private function setWikiStatus(string $status): void
     {
         $configuration = new ConfigurationService();
-        $config = $configuration->getConfiguration($this->configFile);
+        $config = $configuration->getConfiguration($this->kit->configFile());
         $config->load();
         $config['wiki_status'] = $status;
         $this->assertTrue($configuration->write($config));
@@ -883,7 +794,7 @@ class ArchiveQueueTest extends YesWikiTestCase
 
     private function wikiStatus(): string
     {
-        $config = (new ConfigurationService())->getConfiguration($this->configFile);
+        $config = (new ConfigurationService())->getConfiguration($this->kit->configFile());
         $config->load();
 
         return trim((string)($config['wiki_status'] ?? '')) ?: 'running';

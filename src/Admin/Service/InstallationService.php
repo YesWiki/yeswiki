@@ -2,6 +2,7 @@
 
 namespace YesWiki\Admin\Service;
 
+use Symfony\Component\Clock\NativeClock;
 use Symfony\Component\DependencyInjection\Attribute\Exclude;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 use Symfony\Component\Messenger\Envelope;
@@ -546,7 +547,7 @@ class InstallationService
         SchemaCreator::createSearchIndex($db, $this->config['table_prefix']);
 
         $wiki = new DbService(new ParameterBag($this->config + ['debug' => false]));
-        $transport = new QueueTransport($wiki, new QueueSchema($wiki));
+        $transport = new QueueTransport($wiki, new QueueSchema($wiki), new NativeClock());
         foreach ($wiki->loadAll("SELECT DISTINCT tag FROM {$wiki->prefixTable('pages')} WHERE latest = 'Y'") as $row) {
             $message = new ReindexContent((string)$row['tag']);
             $transport->send(new Envelope($message, [$message->uniqueStamp()]));

@@ -6,34 +6,25 @@ use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Component\Clock\MockClock;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
-use Symfony\Component\DependencyInjection\ServiceLocator;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\Stamp\DelayStamp;
 use Symfony\Component\Messenger\Stamp\TransportMessageIdStamp;
 use Symfony\Component\Process\Process;
 use YesWiki\Files\Service\RuntimeLock;
-use YesWiki\Kernel\Queue\ProvidesSchedule;
 use YesWiki\Kernel\Queue\QueueConsumerMode;
 use YesWiki\Kernel\Service\ConfigurationService;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Kernel\Service\Journal;
-use YesWiki\Kernel\Service\JournalSchema;
-use YesWiki\Kernel\Service\Queue\QueueBudgetContext;
-use YesWiki\Kernel\Service\Queue\QueueBudgetFactory;
-use YesWiki\Kernel\Service\Queue\QueueBus;
 use YesWiki\Kernel\Service\Queue\QueueCheckpoint;
 use YesWiki\Kernel\Service\Queue\QueueConsumer;
 use YesWiki\Kernel\Service\Queue\QueueFallback;
-use YesWiki\Kernel\Service\Queue\QueueHandlerLocator;
-use YesWiki\Kernel\Service\Queue\QueueRecorder;
 use YesWiki\Kernel\Service\Queue\QueueRequestTrigger;
-use YesWiki\Kernel\Service\Queue\QueueScheduleTicker;
 use YesWiki\Kernel\Service\Queue\QueueSchema;
 use YesWiki\Kernel\Service\Queue\QueueSettings;
 use YesWiki\Kernel\Service\Queue\QueueStatistics;
+use YesWiki\Kernel\Service\Queue\QueueTaskRows;
 use YesWiki\Kernel\Service\Queue\QueueTransport;
-use YesWiki\Kernel\Service\ThrowableFormatter;
 use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';
@@ -48,12 +39,7 @@ class QueueRequestTriggerTest extends YesWikiTestCase
 {
     private const START = '2026-10-23 12:00:00';
 
-    private string $file;
-    /** Where the test's locks live, instead of the dev wiki's cache/. */
-    private string $lockDir;
-    private string $configFile;
-    private string|false $previousConfigFile;
-    private string|false $previousMode;
+    private QueueTestKit $kit;
     /** @var resource */
     private $log;
 
@@ -79,47 +65,30 @@ class QueueRequestTriggerTest extends YesWikiTestCase
 
     protected function setUp(): void
     {
-        $this->file = sys_get_temp_dir() . '/yw-trigger-' . bin2hex(random_bytes(6)) . '.db';
-        $this->lockDir = sys_get_temp_dir() . '/yw-trigger-locks-' . bin2hex(random_bytes(4));
-        $this->db = new DbService(new ParameterBag([
-            'db_driver' => 'sqlite',
-            'db_database' => $this->file,
-            'table_prefix' => 'ywq_',
-            'debug' => false,
-        ]));
-        $this->schema = new QueueSchema($this->db);
-        $this->schema->create();
-        (new JournalSchema($this->db))->create();
-
-        $this->configFile = sys_get_temp_dir() . '/yw-trigger-config-' . bin2hex(random_bytes(4)) . '.php';
-        $this->previousConfigFile = getenv('YESWIKI_CONFIG_FILE');
-        putenv('YESWIKI_CONFIG_FILE=' . $this->configFile);
-        $configuration = new ConfigurationService();
-        $config = $configuration->getConfiguration($this->configFile);
-        $config->load();
-        $config['wiki_status'] = 'running';
-        $this->assertTrue($configuration->write($config));
-
-        $this->previousMode = getenv(QueueSettings::ENV_MODE);
         $this->clock = new MockClock(self::START, 'UTC');
-        $this->locks = QueueTestKit::locksIn($this->lockDir);
-        $this->build();
+        $this->kit = new QueueTestKit([QueueTestMessage::class => function (QueueTestMessage $message): void {
+            $this->handled[] = $message->value;
+            $this->steps[] = $message->value;
+            if ($this->behaviour !== null) {
+                ($this->behaviour)($message);
+            }
+        }], $this->clock);
+        $this->db = $this->kit->db;
+        $this->schema = $this->kit->schema;
+        $this->transport = $this->kit->transport;
+        $this->statistics = $this->kit->statistics;
+        $this->consumer = $this->kit->consumer;
+        $this->journal = $this->kit->journal;
+        $this->locks = $this->kit->locks;
+        $this->log = self::memory();
+        $this->journal->writeTo($this->log);
+        $this->console = new QueueTestConsole();
     }
 
     protected function tearDown(): void
     {
         unset($this->consumer, $this->statistics, $this->transport, $this->schema, $this->db);
-        putenv($this->previousMode === false ? QueueSettings::ENV_MODE : QueueSettings::ENV_MODE . '=' . $this->previousMode);
-        putenv($this->previousConfigFile === false ? 'YESWIKI_CONFIG_FILE' : 'YESWIKI_CONFIG_FILE=' . $this->previousConfigFile);
-        @unlink($this->configFile);
-        foreach (['', '-wal', '-shm'] as $suffix) {
-            @unlink($this->file . $suffix);
-        }
-        foreach (glob($this->lockDir . '/cache/*') ?: [] as $lock) {
-            @unlink($lock);
-        }
-        @rmdir($this->lockDir . '/cache');
-        @rmdir($this->lockDir);
+        $this->kit->dispose();
     }
 
     public function testInRequestModeAPendingMessageIsHandledAfterTheResponse(): void
@@ -476,7 +445,7 @@ class QueueRequestTriggerTest extends YesWikiTestCase
     private function setWikiStatus(string $status): void
     {
         $configuration = new ConfigurationService();
-        $config = $configuration->getConfiguration($this->configFile);
+        $config = $configuration->getConfiguration($this->kit->configFile());
         $config->load();
         $config['wiki_status'] = $status;
         $this->assertTrue($configuration->write($config));
@@ -485,24 +454,17 @@ class QueueRequestTriggerTest extends YesWikiTestCase
     private function trigger(string $mode, string $wikiStatus = 'running'): QueueRequestTrigger
     {
         putenv(QueueSettings::ENV_MODE . '=' . $mode);
-        $settings = new QueueSettings(new ParameterBag([]), static fn (): array => []);
 
-        return new QueueRequestTrigger(
-            $settings,
-            $this->consumer,
-            new QueueBudgetFactory(),
-            $this->statistics,
-            new QueueFallback($settings, $this->statistics, new HibernationService(new ParameterBag(['wiki_status' => $wikiStatus])), $this->locks, $this->clock),
+        return $this->kit->requestTrigger(
+            new QueueSettings(new ParameterBag([]), static fn (): array => []),
             $this->console,
-            new HibernationService(new ParameterBag(['wiki_status' => $wikiStatus])),
-            $this->journal,
-            $this->clock,
             function (): bool {
                 $this->steps[] = 'finish';
 
                 return $this->canFinishEarly;
             },
             self::wikiDir(),
+            new HibernationService(new ParameterBag(['wiki_status' => $wikiStatus])),
         );
     }
 
@@ -510,55 +472,6 @@ class QueueRequestTriggerTest extends YesWikiTestCase
     private static function wikiDir(): string
     {
         return (string)realpath(__DIR__ . '/../../..');
-    }
-
-    private function build(): void
-    {
-        $this->transport = new QueueTransport($this->db, $this->schema, clock: $this->clock);
-        $this->statistics = new QueueStatistics($this->db, $this->schema, new JournalSchema($this->db), $this->transport, $this->clock);
-        $this->log = self::memory();
-        $this->journal = new Journal(new ServiceLocator([
-            DbService::class => fn (): DbService => $this->db,
-            JournalSchema::class => fn (): JournalSchema => new JournalSchema($this->db),
-            ThrowableFormatter::class => static fn (): ThrowableFormatter => new ThrowableFormatter(),
-        ]));
-        $this->journal->writeTo($this->log);
-
-        $handler = function (QueueTestMessage $message): void {
-            $this->handled[] = $message->value;
-            $this->steps[] = $message->value;
-            if ($this->behaviour !== null) {
-                ($this->behaviour)($message);
-            }
-        };
-        $locator = new QueueHandlerLocator(
-            [QueueTestMessage::class => ['handler']],
-            new ServiceLocator(['handler' => static fn (): \Closure => $handler])
-        );
-        $bus = new QueueBus($this->transport, $locator, $this->journal);
-        $recorder = new QueueRecorder($this->db, $this->schema, new JournalSchema($this->db), $this->clock);
-        $noSchedule = new class implements ProvidesSchedule {
-            public function recurringMessages(): array
-            {
-                return [];
-            }
-        };
-
-        $this->consumer = new QueueConsumer(
-            $this->transport,
-            $bus,
-            $recorder,
-            $this->statistics,
-            new QueueBudgetContext(),
-            new QueueBudgetFactory(),
-            new HibernationService(new ParameterBag(['wiki_status' => 'running'])),
-            $this->locks,
-            $this->journal,
-            new QueueScheduleTicker([$noSchedule], $bus, new QueueCheckpoint($this->db, $this->schema, $this->locks), $recorder, $this->clock),
-            $this->clock,
-        );
-
-        $this->console = new QueueTestConsole();
     }
 
     /** Queues a test message and answers its id. */
@@ -586,7 +499,7 @@ class QueueRequestTriggerTest extends YesWikiTestCase
     /** The schedule ticked now, and is next due in $seconds. */
     private function scheduleDueIn(int $seconds): void
     {
-        $checkpoint = new QueueCheckpoint($this->db, $this->schema, $this->locks);
+        $checkpoint = new QueueCheckpoint(new QueueTaskRows($this->db, $this->schema, $this->clock), $this->locks);
         $now = $this->clock->now();
         $this->assertTrue($checkpoint->acquire($now));
         $checkpoint->release($now, $now->modify("+{$seconds} seconds"));

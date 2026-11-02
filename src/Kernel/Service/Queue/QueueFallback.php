@@ -3,7 +3,6 @@
 namespace YesWiki\Kernel\Service\Queue;
 
 use Psr\Clock\ClockInterface;
-use Symfony\Component\Clock\NativeClock;
 use YesWiki\Files\Service\RuntimeLock;
 use YesWiki\Kernel\Queue\QueueConsumerMode;
 use YesWiki\Kernel\Queue\QueueFallbackStatus;
@@ -40,8 +39,6 @@ class QueueFallback implements RequestScopedState
     /** When the rule was first read: what has waited since, on a wiki whose chosen consumer never ran and whose schedule never ticked. */
     public const WATCH_STAMP = 'cache/queue-fallback-watch.lock';
 
-    private ClockInterface $clock;
-
     /**
      * What the Journal said of the chosen consumer this request: the badge, the jobs page and a backup being started all ask.
      *
@@ -54,9 +51,8 @@ class QueueFallback implements RequestScopedState
         private readonly QueueStatistics $statistics,
         private readonly HibernationService $hibernation,
         private readonly RuntimeLock $runtimeLock,
-        ?ClockInterface $clock = null,
+        private readonly ClockInterface $clock,
     ) {
-        $this->clock = $clock ?? new NativeClock();
     }
 
     /** Whether a consumer of that mode can be replaced by the end of requests: all of them but the end of requests itself. */

@@ -4,6 +4,7 @@ namespace YesWiki\Test\Admin;
 
 use PHPUnit\Framework\Attributes\CoversClass;
 use Psr\Container\ContainerInterface;
+use Symfony\Component\Clock\NativeClock;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 use Symfony\Component\DependencyInjection\ServiceLocator;
 use Symfony\Component\HttpFoundation\Request;
@@ -434,7 +435,7 @@ class JobsControllerTest extends YesWikiTestCase
         $this->signInAsAdmin();
         $this->failed('a', 'RuntimeException: boom');
         $this->kit->send('b');
-        $this->kit->consumer->drain(QueueConsumerMode::Api, (new QueueBudgetFactory())->forMode(QueueConsumerMode::Api, true));
+        $this->kit->consumer->drain(QueueConsumerMode::Api, (new QueueBudgetFactory(new NativeClock()))->forMode(QueueConsumerMode::Api, true));
 
         foreach (JobsOverview::TABS as $tab) {
             $body = (string)$this->api()->tab($tab)->getContent();
@@ -612,7 +613,7 @@ class JobsControllerTest extends YesWikiTestCase
         $settings = $this->settings;
         $health ??= new HealthService([$this->kit->healthChecks($settings)]);
         $kit = $this->kit;
-        $overview = new JobsOverview($settings, $kit->statistics, new QueueBudgetFactory(), $health, $kit->ticker, $wiki->get(LanguageService::class), $kit->fallback($settings));
+        $overview = new JobsOverview($settings, $kit->statistics, new QueueBudgetFactory(new NativeClock()), $health, $kit->ticker, $wiki->get(LanguageService::class), $kit->fallback($settings), $kit->clock);
 
         return new ServiceLocator([
             AclService::class => static fn (): AclService => $wiki->get(AclService::class),
@@ -629,7 +630,7 @@ class JobsControllerTest extends YesWikiTestCase
             QueueRecorder::class => static fn (): QueueRecorder => $kit->recorder,
             QueueScheduleTicker::class => static fn (): QueueScheduleTicker => $kit->ticker,
             QueueConsumer::class => static fn (): QueueConsumer => $kit->consumer,
-            QueueBudgetFactory::class => static fn (): QueueBudgetFactory => new QueueBudgetFactory(),
+            QueueBudgetFactory::class => static fn (): QueueBudgetFactory => new QueueBudgetFactory(new NativeClock()),
             Journal::class => static fn (): Journal => $kit->journal,
             ConfigurationService::class => static fn (): ConfigurationService => new ConfigurationService(),
         ]);

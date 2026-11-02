@@ -3,11 +3,10 @@
 namespace YesWiki\Kernel\Service\Queue;
 
 use Psr\Clock\ClockInterface;
-use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
-use Symfony\Component\Clock\NativeClock;
 use Symfony\Component\Console\Logger\ConsoleLogger;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\DependencyInjection\Attribute\AutowireServiceClosure;
 use Symfony\Component\DependencyInjection\ServiceLocator;
 use Symfony\Component\EventDispatcher\EventDispatcher as PassDispatcher;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
@@ -84,8 +83,6 @@ class QueueConsumer
     /** How often a blocking consumer asks whether the configuration changed since it started: the question hashes a few files. */
     private const CONFIGURATION_CHECK_SECONDS = 5;
 
-    private ClockInterface $clock;
-
     /** Whether this consumer has asked PHP to fail what it still holds when the process ends. */
     private bool $watchesTheEnd = false;
 
@@ -100,11 +97,12 @@ class QueueConsumer
         private readonly RuntimeLock $runtimeLock,
         private readonly Journal $journal,
         private readonly QueueScheduleTicker $scheduleTicker,
-        ?ClockInterface $clock = null,
-        private readonly ?ConfigurationWatch $configuration = null,
-        private readonly ?ContainerInterface $services = null,
+        private readonly ClockInterface $clock,
+        private readonly ConfigurationWatch $configuration,
+        /** @var \Closure(): EventDispatcher the wiki's dispatcher, built only when a killed message is announced */
+        #[AutowireServiceClosure(EventDispatcher::class)]
+        private readonly \Closure $events,
     ) {
-        $this->clock = $clock ?? new NativeClock();
     }
 
     /**
@@ -482,7 +480,7 @@ class QueueConsumer
         $askedAt = $this->now();
 
         return function () use (&$changed, &$askedAt): bool {
-            if (!$changed && $this->configuration !== null && $this->now() - $askedAt >= self::CONFIGURATION_CHECK_SECONDS) {
+            if (!$changed && $this->now() - $askedAt >= self::CONFIGURATION_CHECK_SECONDS) {
                 $askedAt = $this->now();
                 $changed = $this->configuration->changedSinceBoot();
             }
@@ -594,13 +592,10 @@ class QueueConsumer
      */
     private function announceKilled(array $killed, ?object $message): void
     {
-        if ($this->services === null) {
-            return;
-        }
         $event = new Event(['messageId' => $killed['id'], 'type' => $killed['type'], 'mode' => $killed['mode'], 'message' => $message]);
 
         try {
-            $dispatcher = $this->services->get(EventDispatcher::class);
+            $dispatcher = ($this->events)();
             $dispatcher->dispatchToEach(self::MESSAGE_KILLED, $event, $this->listenerFailed(...));
         } catch (\Throwable $broken) {
             // Building the dispatcher, or the listeners it resolves, failed: none of them was called.

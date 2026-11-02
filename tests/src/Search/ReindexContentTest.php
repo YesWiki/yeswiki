@@ -4,6 +4,7 @@ namespace YesWiki\Test\Search;
 
 use PHPUnit\Framework\Attributes\CoversClass;
 use Psr\Container\ContainerInterface;
+use Symfony\Component\Clock\NativeClock;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 use Symfony\Component\DependencyInjection\ServiceLocator;
 use YesWiki\Content\Service\PageManager;
@@ -158,7 +159,7 @@ class ReindexContentTest extends YesWikiTestCase
         $journal->writeTo($log);
 
         try {
-            $transport = new QueueTransport($empty, new QueueSchema($empty));
+            $transport = new QueueTransport($empty, new QueueSchema($empty), new NativeClock());
             $indexer = new SearchIndexer(
                 $services->get(DbService::class),
                 $services->get(SearchIndexSchema::class),

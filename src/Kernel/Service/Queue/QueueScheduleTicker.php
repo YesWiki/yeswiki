@@ -3,7 +3,6 @@
 namespace YesWiki\Kernel\Service\Queue;
 
 use Psr\Clock\ClockInterface;
-use Symfony\Component\Clock\NativeClock;
 use Symfony\Component\DependencyInjection\Attribute\AutowireIterator;
 use Symfony\Component\Messenger\Stamp\TransportMessageIdStamp;
 use Symfony\Component\Scheduler\Exception\LogicException;
@@ -55,8 +54,6 @@ class QueueScheduleTicker
     /** How long a due time held in memory is trusted before the checkpoint row is read again. */
     private const RECHECK_SECONDS = 60;
 
-    private ClockInterface $clock;
-
     /** When the schedule is next due, as last read or written; null when it has to be read. */
     private ?\DateTimeImmutable $dueAt = null;
 
@@ -72,10 +69,9 @@ class QueueScheduleTicker
         private readonly QueueBus $bus,
         private readonly QueueCheckpoint $checkpoint,
         private readonly QueueRecorder $recorder,
-        ?ClockInterface $clock = null,
+        private readonly ClockInterface $clock,
         private readonly ?Journal $journal = null,
     ) {
-        $this->clock = $clock ?? new NativeClock();
     }
 
     /**

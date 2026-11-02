@@ -5,6 +5,7 @@ namespace YesWiki\Test\Kernel;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Component\Clock\MockClock;
+use Symfony\Component\Clock\NativeClock;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 use Symfony\Component\DependencyInjection\ServiceLocator;
 use Symfony\Component\Scheduler\Generator\MessageContext;
@@ -260,7 +261,7 @@ class QueueScheduleTickerTest extends YesWikiTestCase
 
     public function testConsecutiveFailuresAreCounted(): void
     {
-        $recorder = new QueueRecorder($this->db, $this->schema, new JournalSchema($this->db), $this->clock);
+        $recorder = new QueueRecorder($this->db, new QueueTaskRows($this->db, $this->schema, $this->clock), new JournalSchema($this->db), $this->clock);
 
         foreach (['first', 'second', 'third'] as $error) {
             $recorder->taskFinished('x', QueueRecorder::FAILED, $error);
@@ -276,7 +277,7 @@ class QueueScheduleTickerTest extends YesWikiTestCase
 
     public function testAHandledMessageOfATaskIsRecordedOnTheTask(): void
     {
-        $recorder = new QueueRecorder($this->db, $this->schema, new JournalSchema($this->db), $this->clock);
+        $recorder = new QueueRecorder($this->db, new QueueTaskRows($this->db, $this->schema, $this->clock), new JournalSchema($this->db), $this->clock);
 
         $recorder->messageFinished(1, QueueTestTask::class, 'test-task', QueueRecorder::KILLED, QueueConsumerMode::Request, (float)$this->clock->now()->format('U'), QueueTransport::killedCause('request'));
         $recorder->messageFinished(2, QueueTestMessage::class, null, QueueRecorder::FAILED, QueueConsumerMode::Request, (float)$this->clock->now()->format('U'), 'boom');
@@ -403,7 +404,7 @@ class QueueScheduleTickerTest extends YesWikiTestCase
             $this->assertTrue($this->ticker()->runNow('test-task'));
             $this->assertSame(1, $this->statistics->pendingCount());
 
-            $recorder = new QueueRecorder($this->db, $this->schema, new JournalSchema($this->db), $this->clock);
+            $recorder = new QueueRecorder($this->db, new QueueTaskRows($this->db, $this->schema, $this->clock), new JournalSchema($this->db), $this->clock);
             $recorder->taskFinished('test-task', QueueRecorder::FAILED, 'boom');
             $recorder->taskFinished('test-task', QueueRecorder::FAILED, 'boom');
             $this->assertSame(['test-task', 2, 'failed', 'boom'], $this->summary('test-task'));
@@ -428,7 +429,7 @@ class QueueScheduleTickerTest extends YesWikiTestCase
         $this->schema = new QueueSchema($db);
         $this->clock = new MockClock(self::START, 'UTC');
         $this->transport = new QueueTransport($db, $this->schema, clock: $this->clock);
-        $this->statistics = new QueueStatistics($db, $this->schema, new JournalSchema($db), $this->transport, $this->clock);
+        $this->statistics = new QueueStatistics($db, $this->schema, new JournalSchema($db), $this->transport, new QueueTaskRows($db, $this->schema, $this->clock), $this->clock);
     }
 
     /**
@@ -463,8 +464,8 @@ class QueueScheduleTickerTest extends YesWikiTestCase
         return new QueueScheduleTicker(
             [$provider, ...$more],
             new QueueBus($this->transport, new QueueHandlerLocator([], new ServiceLocator([])), $journal),
-            new QueueCheckpoint($this->db, $this->schema, new RuntimeLock()),
-            new QueueRecorder($this->db, $this->schema, new JournalSchema($this->db), $this->clock),
+            new QueueCheckpoint(new QueueTaskRows($this->db, $this->schema, new NativeClock()), new RuntimeLock()),
+            new QueueRecorder($this->db, new QueueTaskRows($this->db, $this->schema, $this->clock), new JournalSchema($this->db), $this->clock),
             $this->clock,
             $journal,
         );

@@ -16,34 +16,23 @@ use YesWiki\Admin\Service\ArchiveService;
 use YesWiki\Admin\Service\RemoteBackupService;
 use YesWiki\Admin\Service\RemoteWikiArchive;
 use YesWiki\Files\Service\LocalFiles;
-use YesWiki\Files\Service\RuntimeLock;
 use YesWiki\Files\Service\Storage;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\CsrfTokenChecker;
-use YesWiki\Kernel\Queue\ProvidesSchedule;
 use YesWiki\Kernel\Queue\QueueBudget;
 use YesWiki\Kernel\Queue\QueueConsumerMode;
 use YesWiki\Kernel\Service\ConfigurationService;
 use YesWiki\Kernel\Service\CurrentRequest;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\HibernationService;
-use YesWiki\Kernel\Service\Journal;
-use YesWiki\Kernel\Service\JournalSchema;
 use YesWiki\Kernel\Service\Queue\QueueBudgetContext;
-use YesWiki\Kernel\Service\Queue\QueueBudgetFactory;
-use YesWiki\Kernel\Service\Queue\QueueBus;
-use YesWiki\Kernel\Service\Queue\QueueCheckpoint;
 use YesWiki\Kernel\Service\Queue\QueueConsumer;
-use YesWiki\Kernel\Service\Queue\QueueHandlerLocator;
 use YesWiki\Kernel\Service\Queue\QueueRecorder;
-use YesWiki\Kernel\Service\Queue\QueueFallback;
 use YesWiki\Kernel\Service\Queue\QueueRequestTrigger;
-use YesWiki\Kernel\Service\Queue\QueueScheduleTicker;
 use YesWiki\Kernel\Service\Queue\QueueSchema;
 use YesWiki\Kernel\Service\Queue\QueueSettings;
 use YesWiki\Kernel\Service\Queue\QueueStatistics;
 use YesWiki\Kernel\Service\Queue\QueueTransport;
-use YesWiki\Kernel\Service\ThrowableFormatter;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Test\Core\YesWikiTestCase;
 use YesWiki\Test\Kernel\QueueTestConsole;
@@ -51,6 +40,7 @@ use YesWiki\Test\Kernel\QueueTestHolders;
 use YesWiki\Test\Kernel\QueueTestKit;
 
 require_once 'tests/YesWikiTestCase.php';
+require_once 'tests/src/Kernel/QueueTestKit.php';
 require_once 'tests/src/Kernel/QueueTestConsole.php';
 require_once 'tests/src/Kernel/QueueTestHolders.php';
 
@@ -73,12 +63,8 @@ class RemoteBackupQueueTest extends YesWikiTestCase
     /** The steps a whole fetch takes, the download in two slices. */
     private const EVERY_STEP = ['checking', 'starting', 'archiving', 'identifying', 'downloading', 'downloading', 'cleaning'];
 
-    private string $file;
-    private string $lockDir;
+    private QueueTestKit $kit;
     private string $root;
-    private string $configFile;
-    private string|false $previousConfigFile;
-    private string|false $previousMode;
 
     private DbService $db;
     private QueueSchema $schema;
@@ -88,8 +74,6 @@ class RemoteBackupQueueTest extends YesWikiTestCase
     private QueueConsumer $consumer;
     private QueueBudgetContext $budgetContext;
     private QueueRequestTrigger $trigger;
-    private Journal $journal;
-    private RuntimeLock $locks;
     private Storage $storage;
     private ArchiveService $archives;
     private StepByStepRemoteWiki $remote;
@@ -97,51 +81,22 @@ class RemoteBackupQueueTest extends YesWikiTestCase
 
     protected function setUp(): void
     {
-        $this->file = sys_get_temp_dir() . '/yw-remote-queue-' . bin2hex(random_bytes(6)) . '.db';
-        $this->lockDir = sys_get_temp_dir() . '/yw-remote-locks-' . bin2hex(random_bytes(4));
         $this->root = sys_get_temp_dir() . '/yw-remote-root-' . bin2hex(random_bytes(4));
         mkdir($this->root . '/' . ArchiveService::PRIVATE_FOLDER_NAME_IN_ZIP, 0777, true);
         $this->storage = Storage::rootedAt($this->root);
 
-        $this->db = new DbService(new ParameterBag([
-            'db_driver' => 'sqlite',
-            'db_database' => $this->file,
-            'table_prefix' => 'ywq_',
-            'debug' => false,
-        ]));
-        $this->schema = new QueueSchema($this->db);
-        $this->schema->create();
-        (new JournalSchema($this->db))->create();
-
-        $this->configFile = sys_get_temp_dir() . '/yw-remote-config-' . bin2hex(random_bytes(4)) . '.php';
-        $this->previousConfigFile = getenv('YESWIKI_CONFIG_FILE');
-        putenv('YESWIKI_CONFIG_FILE=' . $this->configFile);
-        $configuration = new ConfigurationService();
-        $config = $configuration->getConfiguration($this->configFile);
-        $config->load();
-        $config['wiki_status'] = 'running';
-        $this->assertTrue($configuration->write($config));
-        $this->previousMode = getenv(QueueSettings::ENV_MODE);
-        putenv(QueueSettings::ENV_MODE . '=request');
-
         $this->clock = new MockClock('2026-10-23 12:00:00', 'UTC');
-        $this->locks = QueueTestKit::locksIn($this->lockDir);
+        $this->kit = new QueueTestKit(
+            [AdvanceRemoteBackup::class => fn (AdvanceRemoteBackup $step) => (new AdvanceRemoteBackupHandler($this->service))($step)],
+            $this->clock,
+        );
+        putenv(QueueSettings::ENV_MODE . '=request');
         $this->build();
     }
 
     protected function tearDown(): void
     {
-        putenv($this->previousMode === false ? QueueSettings::ENV_MODE : QueueSettings::ENV_MODE . '=' . $this->previousMode);
-        putenv($this->previousConfigFile === false ? 'YESWIKI_CONFIG_FILE' : 'YESWIKI_CONFIG_FILE=' . $this->previousConfigFile);
-        @unlink($this->configFile);
-        foreach (['', '-wal', '-shm'] as $suffix) {
-            @unlink($this->file . $suffix);
-        }
-        foreach (glob($this->lockDir . '/cache/*') ?: [] as $lock) {
-            @unlink($lock);
-        }
-        @rmdir($this->lockDir . '/cache');
-        @rmdir($this->lockDir);
+        $this->kit->dispose();
         $files = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($this->root, \FilesystemIterator::SKIP_DOTS), \RecursiveIteratorIterator::CHILD_FIRST);
         foreach ($files as $path => $file) {
             $file->isDir() ? @rmdir($path) : @unlink($path);
@@ -487,58 +442,17 @@ class RemoteBackupQueueTest extends YesWikiTestCase
 
     private function build(): void
     {
-        $this->transport = new QueueTransport($this->db, $this->schema, clock: $this->clock);
-        $this->statistics = new QueueStatistics($this->db, $this->schema, new JournalSchema($this->db), $this->transport, $this->clock);
-        $this->journal = new Journal(new ServiceLocator([
-            DbService::class => fn (): DbService => $this->db,
-            JournalSchema::class => fn (): JournalSchema => new JournalSchema($this->db),
-            ThrowableFormatter::class => static fn (): ThrowableFormatter => new ThrowableFormatter(),
-        ]));
-        $log = fopen('php://memory', 'w+b');
-        if ($log !== false) {
-            $this->journal->writeTo($log);
-        }
-
-        $bus = new QueueBus($this->transport, new QueueHandlerLocator(
-            [AdvanceRemoteBackup::class => ['advance']],
-            new ServiceLocator(['advance' => fn (): AdvanceRemoteBackupHandler => new AdvanceRemoteBackupHandler($this->service)])
-        ), $this->journal);
-        $recorder = new QueueRecorder($this->db, $this->schema, new JournalSchema($this->db), $this->clock);
-        $noSchedule = new class implements ProvidesSchedule {
-            public function recurringMessages(): array
-            {
-                return [];
-            }
-        };
-        $this->budgetContext = new QueueBudgetContext();
+        $this->db = $this->kit->db;
+        $this->schema = $this->kit->schema;
+        $this->transport = $this->kit->transport;
+        $this->statistics = $this->kit->statistics;
+        $this->consumer = $this->kit->consumer;
+        $this->budgetContext = $this->kit->budgetContext;
+        $bus = $this->kit->bus;
         $hibernation = new HibernationService(new ParameterBag(['wiki_status' => 'running']));
-        $this->consumer = new QueueConsumer(
-            $this->transport,
-            $bus,
-            $recorder,
-            $this->statistics,
-            $this->budgetContext,
-            new QueueBudgetFactory(),
-            $hibernation,
-            $this->locks,
-            $this->journal,
-            new QueueScheduleTicker([$noSchedule], $bus, new QueueCheckpoint($this->db, $this->schema, $this->locks), $recorder, $this->clock),
-            $this->clock,
-        );
         $settings = new QueueSettings(new ParameterBag([]), static fn (): array => []);
-        $fallback = new QueueFallback($settings, $this->statistics, new HibernationService(new ParameterBag(['wiki_status' => 'running'])), $this->locks, $this->clock);
-        $this->trigger = new QueueRequestTrigger(
-            $settings,
-            $this->consumer,
-            new QueueBudgetFactory(),
-            $this->statistics,
-            $fallback,
-            new QueueTestConsole(),
-            $hibernation,
-            $this->journal,
-            $this->clock,
-            static fn (): bool => true,
-        );
+        $fallback = $this->kit->fallback($settings);
+        $this->trigger = $this->kit->requestTrigger($settings);
 
         $services = $this->getWiki()->services;
         $this->archives = new ArchiveService(

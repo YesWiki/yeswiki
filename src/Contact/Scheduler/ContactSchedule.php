@@ -3,7 +3,6 @@
 namespace YesWiki\Contact\Scheduler;
 
 use Psr\Clock\ClockInterface;
-use Symfony\Component\Clock\NativeClock;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Contact\Message\SendDigest;
 use YesWiki\Contact\Service\DigestMarkers;
@@ -37,15 +36,12 @@ class ContactSchedule implements ProvidesSchedule
         'month' => 2592000,
     ];
 
-    private ClockInterface $clock;
-
     public function __construct(
         private readonly ParameterBagInterface $params,
         private readonly MailSubscriptions $subscriptions,
         private readonly DigestMarkers $markers,
-        ?ClockInterface $clock = null,
+        private readonly ClockInterface $clock,
     ) {
-        $this->clock = $clock ?? new NativeClock();
     }
 
     /**

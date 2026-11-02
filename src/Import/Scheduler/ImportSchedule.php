@@ -3,7 +3,6 @@
 namespace YesWiki\Import\Scheduler;
 
 use Psr\Clock\ClockInterface;
-use Symfony\Component\Clock\NativeClock;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Import\Message\SyncDataSource;
 use YesWiki\Import\Service\SyncScheduler;
@@ -31,15 +30,12 @@ class ImportSchedule implements ProvidesSchedule
     /** Seconds under which a source is not run again, whatever its interval says. */
     private const MIN_INTERVAL = 1800;
 
-    private ClockInterface $clock;
-
     public function __construct(
         private readonly ParameterBagInterface $params,
         private readonly SyncScheduler $scheduler,
         private readonly Journal $journal,
-        ?ClockInterface $clock = null,
+        private readonly ClockInterface $clock,
     ) {
-        $this->clock = $clock ?? new NativeClock();
     }
 
     /**

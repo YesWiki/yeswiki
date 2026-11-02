@@ -4,6 +4,7 @@ namespace YesWiki\Test\Kernel;
 
 use PHPUnit\Framework\Attributes\CoversClass;
 use Symfony\Component\Clock\MockClock;
+use Symfony\Component\Clock\NativeClock;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 use Symfony\Component\Messenger\Envelope;
 use YesWiki\Files\Service\RuntimeLock;
@@ -18,6 +19,7 @@ use YesWiki\Kernel\Service\Queue\QueueFallback;
 use YesWiki\Kernel\Service\Queue\QueueSchema;
 use YesWiki\Kernel\Service\Queue\QueueSettings;
 use YesWiki\Kernel\Service\Queue\QueueStatistics;
+use YesWiki\Kernel\Service\Queue\QueueTaskRows;
 use YesWiki\Kernel\Service\Queue\QueueTransport;
 use YesWiki\Test\Core\YesWikiTestCase;
 
@@ -62,7 +64,7 @@ class QueueFallbackTest extends YesWikiTestCase
         $journal = new JournalSchema($this->db);
         $journal->create();
         $this->transport = new QueueTransport($this->db, $this->schema, clock: $this->clock);
-        $this->statistics = new QueueStatistics($this->db, $this->schema, $journal, $this->transport, $this->clock);
+        $this->statistics = new QueueStatistics($this->db, $this->schema, $journal, $this->transport, new QueueTaskRows($this->db, $this->schema, $this->clock), $this->clock);
         $this->locks = QueueTestKit::locksIn($this->lockDir);
 
         $this->configFile = sys_get_temp_dir() . '/yw-fallback-config-' . bin2hex(random_bytes(4)) . '.php';
@@ -334,7 +336,7 @@ class QueueFallbackTest extends YesWikiTestCase
     /** The schedule ticked long ago, and has been due for $seconds. */
     private function scheduleDueSince(int $seconds): void
     {
-        $checkpoint = new QueueCheckpoint($this->db, $this->schema, $this->locks);
+        $checkpoint = new QueueCheckpoint(new QueueTaskRows($this->db, $this->schema, new NativeClock()), $this->locks);
         $now = $this->clock->now();
         $this->assertTrue($checkpoint->acquire($now->modify('-1 day')));
         $checkpoint->release($now->modify('-1 day'), $now->modify("-{$seconds} seconds"));

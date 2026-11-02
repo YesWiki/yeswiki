@@ -2,6 +2,7 @@
 
 namespace YesWiki\Kernel\Service\Queue;
 
+use Psr\Clock\ClockInterface;
 use YesWiki\Kernel\Queue\QueueBudget;
 use YesWiki\Kernel\Queue\QueueConsumerMode;
 
@@ -30,23 +31,19 @@ class QueueBudgetFactory
 
     /** @var callable(string): (string|false) */
     private $ini;
-    /** @var callable(bool): float */
-    private $now;
     private readonly float $constructedAt;
 
     /**
      * @param (callable(string): (string|false))|null $ini              ini_get(), injectable for tests
-     * @param (callable(bool): float)|null            $now              microtime(), injectable for tests
      * @param float|null                              $requestStartedAt when the request began; default $_SERVER['REQUEST_TIME_FLOAT'], read at each budget so a worker that serves many requests measures each from its own start
      */
     public function __construct(
+        private readonly ClockInterface $clock,
         ?callable $ini = null,
-        ?callable $now = null,
         private readonly ?float $requestStartedAt = null
     ) {
         $this->ini = $ini ?? static fn (string $name) => ini_get($name);
-        $this->now = $now ?? static fn (bool $asFloat = true) => microtime(true);
-        $this->constructedAt = (float)($this->now)(true);
+        $this->constructedAt = $this->now();
     }
 
     /**
@@ -58,7 +55,7 @@ class QueueBudgetFactory
             return $this->forHand();
         }
 
-        $now = (float)($this->now)(true);
+        $now = $this->now();
         $elapsed = max(0.0, $now - $this->startedAt());
         $limit = (int)($this->ini)('max_execution_time');
 
@@ -124,5 +121,10 @@ class QueueBudgetFactory
     public static function bytes(string $size): int
     {
         return max(0, ini_parse_quantity($size));
+    }
+
+    private function now(): float
+    {
+        return (float)$this->clock->now()->format('U.u');
     }
 }

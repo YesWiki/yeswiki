@@ -5,6 +5,7 @@ namespace YesWiki\Test\Kernel;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Component\Clock\MockClock;
+use Symfony\Component\Clock\NativeClock;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 use Symfony\Component\Scheduler\RecurringMessage;
 use YesWiki\Files\Service\RuntimeLock;
@@ -79,7 +80,7 @@ class QueueHealthChecksTest extends YesWikiTestCase
         $this->schema->create();
         $this->journal = new JournalSchema($this->db);
         $this->journal->create();
-        $this->statistics = new QueueStatistics($this->db, $this->schema, $this->journal, new QueueTransport($this->db, $this->schema, clock: $this->clock), $this->clock);
+        $this->statistics = new QueueStatistics($this->db, $this->schema, $this->journal, new QueueTransport($this->db, $this->schema, clock: $this->clock), new QueueTaskRows($this->db, $this->schema, $this->clock), $this->clock);
     }
 
     protected function tearDown(): void
@@ -753,7 +754,7 @@ class QueueHealthChecksTest extends YesWikiTestCase
             $hibernation,
             $this->ticker(),
             new QueueFallback($settings, $this->statistics, $hibernation, new RuntimeLock(), $this->clock),
-            new QueueBudgetFactory(),
+            new QueueBudgetFactory(new NativeClock()),
             $this->clock
         ))->healthChecks();
     }
@@ -761,7 +762,7 @@ class QueueHealthChecksTest extends YesWikiTestCase
     /** What a fallback pass may spend, as its alert says it. */
     private function requestBudget(): int
     {
-        return (int)round((new QueueBudgetFactory())->forMode(QueueConsumerMode::Request, QueueRequestTrigger::respondsEarly())->remainingSeconds());
+        return (int)round((new QueueBudgetFactory(new NativeClock()))->forMode(QueueConsumerMode::Request, QueueRequestTrigger::respondsEarly())->remainingSeconds());
     }
 
     /** What the fallback's alert adds on a server that cannot hand the page over before the pass: the CLI, here. */
@@ -789,7 +790,7 @@ class QueueHealthChecksTest extends YesWikiTestCase
             [$provider],
             $this->createStub(QueueBus::class),
             $this->createStub(QueueCheckpoint::class),
-            new QueueRecorder($this->db, $this->schema, $this->journal, $this->clock),
+            new QueueRecorder($this->db, new QueueTaskRows($this->db, $this->schema, $this->clock), $this->journal, $this->clock),
             $this->clock
         );
     }

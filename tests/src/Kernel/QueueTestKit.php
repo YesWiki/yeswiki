@@ -18,7 +18,9 @@ use YesWiki\Kernel\Queue\QueuePassOrigin;
 use YesWiki\Kernel\Queue\QueuePassReport;
 use YesWiki\Kernel\Service\ConfigurationService;
 use YesWiki\Kernel\Service\ConfigurationWatch;
+use YesWiki\Kernel\Service\ConsoleService;
 use YesWiki\Kernel\Service\DbService;
+use YesWiki\Kernel\Service\EventDispatcher;
 use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Kernel\Service\Journal;
 use YesWiki\Kernel\Service\JournalSchema;
@@ -31,10 +33,12 @@ use YesWiki\Kernel\Service\Queue\QueueFallback;
 use YesWiki\Kernel\Service\Queue\QueueHandlerLocator;
 use YesWiki\Kernel\Service\Queue\QueueHealthChecks;
 use YesWiki\Kernel\Service\Queue\QueueRecorder;
+use YesWiki\Kernel\Service\Queue\QueueRequestTrigger;
 use YesWiki\Kernel\Service\Queue\QueueScheduleTicker;
 use YesWiki\Kernel\Service\Queue\QueueSchema;
 use YesWiki\Kernel\Service\Queue\QueueSettings;
 use YesWiki\Kernel\Service\Queue\QueueStatistics;
+use YesWiki\Kernel\Service\Queue\QueueTaskRows;
 use YesWiki\Kernel\Service\Queue\QueueTransport;
 use YesWiki\Kernel\Service\ThrowableFormatter;
 
@@ -54,9 +58,14 @@ final class QueueTestKit
     public readonly QueueScheduleTicker $ticker;
     public readonly Journal $journal;
     public readonly QueueBus $bus;
-    private readonly QueueSchema $schema;
-    private readonly DbService $db;
-    private readonly RuntimeLock $locks;
+    public readonly DbService $db;
+    public readonly QueueSchema $schema;
+    public readonly RuntimeLock $locks;
+    /** The one clock every part of the queue reads. */
+    public readonly ClockInterface $clock;
+    public readonly QueueBudgetFactory $budgets;
+    public readonly QueueBudgetContext $budgetContext;
+    private readonly HibernationService $hibernation;
     /** @var resource|null */
     private $heldPassLock;
 
@@ -75,13 +84,26 @@ final class QueueTestKit
     private readonly string|false $previousMode;
 
     /**
-     * @param array<class-string, \Closure> $handlers further messages the queue handles, by class, each with the closure that handles it
-     * @param ClockInterface|null           $clock    the consumer's clock, which spaces its questions about the configuration (default: the real one)
-     * @param string|null                   $database an SQLite file another kit or test made, for a consumer in another process to work on the same queue; left where it is by dispose()
-     * @param ProvidesSchedule|null         $schedule the recurring tasks the schedule declares (default: none)
+     * @param array<class-string, \Closure>      $handlers             further messages the queue handles, by class, each with the closure that handles it; one for QueueTestMessage replaces the kit's
+     * @param ClockInterface|null                $clock                the clock of every part of the queue (default: the real one)
+     * @param string|null                        $database             an SQLite file another kit or test made, for a consumer in another process to work on the same queue; left where it is by dispose()
+     * @param ProvidesSchedule|null              $schedule             the recurring tasks the schedule declares (default: none)
+     * @param QueueBudgetFactory|null            $budgets              what a pass may spend (default: from this PHP's limits)
+     * @param HibernationService|null            $hibernation          the wiki's status as the consumer reads it (default: awake)
+     * @param (\Closure(): EventDispatcher)|null $events               the wiki's dispatcher, which a killed message is announced on (default: one nobody listens to)
+     * @param \Closure(): bool|null              $configurationChanged what the consumer's ConfigurationWatch answers (default: $this->configurationChanged)
      */
-    public function __construct(array $handlers = [], ?ClockInterface $clock = null, ?string $database = null, ?ProvidesSchedule $schedule = null)
-    {
+    public function __construct(
+        array $handlers = [],
+        ?ClockInterface $clock = null,
+        ?string $database = null,
+        ?ProvidesSchedule $schedule = null,
+        ?QueueBudgetFactory $budgets = null,
+        ?HibernationService $hibernation = null,
+        ?\Closure $events = null,
+        ?\Closure $configurationChanged = null,
+    ) {
+        $this->clock = $clock ??= new NativeClock();
         $this->file = $database ?? sys_get_temp_dir() . '/yw-kit-' . bin2hex(random_bytes(6)) . '.db';
         $this->ownsDatabase = $database === null;
         $this->lockDir = sys_get_temp_dir() . '/yw-kit-locks-' . bin2hex(random_bytes(4));
@@ -105,8 +127,9 @@ final class QueueTestKit
         $config['wiki_status'] = 'running';
         $configuration->write($config);
 
-        $this->transport = new QueueTransport($db, $schema);
-        $this->statistics = new QueueStatistics($db, $schema, new JournalSchema($db), $this->transport);
+        $this->transport = new QueueTransport($db, $schema, $clock);
+        $tasks = new QueueTaskRows($db, $schema, $clock);
+        $this->statistics = new QueueStatistics($db, $schema, new JournalSchema($db), $this->transport, $tasks, $clock);
         $this->journal = $journal = new Journal(new ServiceLocator([
             DbService::class => static fn (): DbService => $db,
             JournalSchema::class => static fn (): JournalSchema => new JournalSchema($db),
@@ -117,17 +140,17 @@ final class QueueTestKit
             $journal->writeTo($log);
         }
 
-        $handler = function (QueueTestMessage $message): void {
+        $handlers += [QueueTestMessage::class => function (QueueTestMessage $message): void {
             $this->handled[] = $message->value;
-        };
-        $map = [QueueTestMessage::class => ['handler']];
-        $services = ['handler' => static fn (): \Closure => $handler];
-        foreach ($handlers as $type => $other) {
+        }];
+        $map = [];
+        $services = [];
+        foreach ($handlers as $type => $handler) {
             $map[$type] = ["handler:{$type}"];
-            $services["handler:{$type}"] = static fn (): \Closure => $other;
+            $services["handler:{$type}"] = static fn (): \Closure => $handler;
         }
         $this->bus = $bus = new QueueBus($this->transport, new QueueHandlerLocator($map, new ServiceLocator($services)), $journal);
-        $this->recorder = $recorder = new QueueRecorder($db, $schema, new JournalSchema($db));
+        $this->recorder = $recorder = new QueueRecorder($db, $tasks, new JournalSchema($db), $clock);
         $this->locks = $locks = self::locksIn($this->lockDir);
         $schedule ??= new class implements ProvidesSchedule {
             public function recurringMessages(): array
@@ -137,21 +160,26 @@ final class QueueTestKit
         };
 
         $watch = new ConfigurationWatch();
-        $watch->bind(fn (): bool => $this->configurationChanged);
+        $watch->bind($configurationChanged ?? fn (): bool => $this->configurationChanged);
 
+        // On the real clock whatever the queue's: a budget is spent against microtime() (QueueBudget).
+        $this->budgets = $budgets ??= new QueueBudgetFactory(new NativeClock());
+        $this->budgetContext = new QueueBudgetContext();
+        $this->hibernation = $hibernation ??= new HibernationService(new ParameterBag(['wiki_status' => 'running']));
         $this->consumer = new QueueConsumer(
             $this->transport,
             $bus,
             $recorder,
             $this->statistics,
-            new QueueBudgetContext(),
-            new QueueBudgetFactory(),
-            new HibernationService(new ParameterBag(['wiki_status' => 'running'])),
+            $this->budgetContext,
+            $budgets,
+            $hibernation,
             $locks,
             $journal,
-            $this->ticker = new QueueScheduleTicker([$schedule], $bus, new QueueCheckpoint($db, $schema, $locks), $recorder, $clock),
-            $clock ?? new NativeClock(),
-            configuration: $watch,
+            $this->ticker = new QueueScheduleTicker([$schedule], $bus, new QueueCheckpoint($tasks, $locks), $recorder, $clock, $journal),
+            $clock,
+            $watch,
+            $events ?? static fn (): EventDispatcher => new EventDispatcher(new ServiceLocator([]), new ThrowableFormatter()),
         );
     }
 
@@ -192,7 +220,7 @@ final class QueueTestKit
         $clock = new MockClock($finishedAt, 'UTC');
         $startedAt = (float)$clock->now()->format('U.u') - $durationMs / 1000;
 
-        (new QueueRecorder($db, new QueueSchema($db), new JournalSchema($db), $clock))
+        (new QueueRecorder($db, new QueueTaskRows($db, new QueueSchema($db), $clock), new JournalSchema($db), $clock))
             ->messageFinished($messageId, $type, null, $status, $mode, $startedAt, null);
     }
 
@@ -220,7 +248,7 @@ final class QueueTestKit
     ): int {
         $clock = new MockClock($startedAt, 'UTC');
         $journal = new JournalSchema($db);
-        $recorder = new QueueRecorder($db, new QueueSchema($db), $journal, $clock);
+        $recorder = new QueueRecorder($db, new QueueTaskRows($db, new QueueSchema($db), $clock), $journal, $clock);
 
         $id = $recorder->passStarted($mode, $memoryLimit === 0 ? null : new QueueBudget(INF, $memoryLimit, 0), $beforeResponse, $origin ?? QueuePassOrigin::Consumer, $fallbackFor);
         if ($holder !== null) {
@@ -272,7 +300,7 @@ final class QueueTestKit
         return new ServiceLocator([
             QueueConsumer::class => fn (): QueueConsumer => $this->consumer,
             QueueSettings::class => static fn (): QueueSettings => $settings,
-            QueueBudgetFactory::class => static fn (): QueueBudgetFactory => new QueueBudgetFactory(),
+            QueueBudgetFactory::class => fn (): QueueBudgetFactory => $this->budgets,
         ]);
     }
 
@@ -283,17 +311,41 @@ final class QueueTestKit
             $settings,
             $this->statistics,
             $this->schema,
-            new HibernationService(new ParameterBag(['wiki_status' => 'running'])),
+            $this->hibernation,
             $this->ticker,
             $this->fallback($settings),
-            new QueueBudgetFactory(),
+            $this->budgets,
+            $this->clock,
         );
     }
 
     /** Whether the end of requests consumes for the consumer those settings choose, over this kit's tables and locks. */
-    public function fallback(QueueSettings $settings): QueueFallback
+    public function fallback(QueueSettings $settings, ?HibernationService $hibernation = null): QueueFallback
     {
-        return new QueueFallback($settings, $this->statistics, new HibernationService(new ParameterBag(['wiki_status' => 'running'])), $this->locks);
+        return new QueueFallback($settings, $this->statistics, $hibernation ?? $this->hibernation, $this->locks, $this->clock);
+    }
+
+    /**
+     * The end of a request as index.php runs it, over this kit's queue, in the mode those settings say.
+     *
+     * @param (\Closure(): bool)|null $finishResponse hands the response over, answering whether it has left (default: it has)
+     * @param HibernationService|null $hibernation    the wiki's status as the end of the request reads it (default: the consumer's)
+     */
+    public function requestTrigger(QueueSettings $settings, ?ConsoleService $console = null, ?\Closure $finishResponse = null, ?string $workingDirectory = null, ?HibernationService $hibernation = null): QueueRequestTrigger
+    {
+        return new QueueRequestTrigger(
+            $settings,
+            $this->consumer,
+            $this->budgets,
+            $this->statistics,
+            $this->fallback($settings, $hibernation),
+            $console ?? new QueueTestConsole(),
+            $hibernation ?? $this->hibernation,
+            $this->journal,
+            $this->clock,
+            $finishResponse ?? static fn (): bool => true,
+            $workingDirectory,
+        );
     }
 
     /**

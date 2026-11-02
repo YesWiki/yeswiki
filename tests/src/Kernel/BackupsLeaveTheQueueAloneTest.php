@@ -20,6 +20,7 @@ use YesWiki\Kernel\Service\Journal;
 use YesWiki\Kernel\Service\JournalSchema;
 use YesWiki\Kernel\Service\Queue\QueueRecorder;
 use YesWiki\Kernel\Service\Queue\QueueSchema;
+use YesWiki\Kernel\Service\Queue\QueueTaskRows;
 use YesWiki\Kernel\Service\Queue\QueueTransport;
 use YesWiki\Kernel\Service\ThrowableFormatter;
 use YesWiki\Test\Core\YesWikiTestCase;
@@ -408,7 +409,7 @@ class BackupsLeaveTheQueueAloneTest extends YesWikiTestCase
         if ($log !== false) {
             $this->journal->writeTo($log);
         }
-        $this->recorder = new QueueRecorder($db, $this->schema, $journalSchema, new MockClock('2026-10-23 12:00:00', 'UTC'));
+        $this->recorder = new QueueRecorder($db, new QueueTaskRows($db, $this->schema, new MockClock('2026-10-23 12:00:00', 'UTC')), $journalSchema, new MockClock('2026-10-23 12:00:00', 'UTC'));
     }
 
     /** Records a handled run of that message type and answers the id of its row. */

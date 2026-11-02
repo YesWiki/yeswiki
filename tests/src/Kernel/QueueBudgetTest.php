@@ -4,6 +4,8 @@ namespace YesWiki\Test\Kernel;
 
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Clock\MockClock;
+use Symfony\Component\Clock\NativeClock;
 use YesWiki\Kernel\Queue\QueueBudget;
 use YesWiki\Kernel\Queue\QueueConsumerMode;
 use YesWiki\Kernel\Service\Queue\QueueBudgetContext;
@@ -23,11 +25,7 @@ class QueueBudgetTest extends TestCase
      */
     private function factory(array $ini, float $elapsed = 0.0): QueueBudgetFactory
     {
-        return new QueueBudgetFactory(
-            static fn (string $name) => $ini[$name] ?? false,
-            static fn (bool $asFloat = false) => self::NOW,
-            self::NOW - $elapsed
-        );
+        return new QueueBudgetFactory(new MockClock(new \DateTimeImmutable('@' . self::NOW)), static fn (string $name) => $ini[$name] ?? false, self::NOW - $elapsed);
     }
 
     /** Seconds the pass may last, counted from the (frozen) instant the factory was asked. */
@@ -256,7 +254,7 @@ class QueueBudgetTest extends TestCase
         $before = $_SERVER['REQUEST_TIME_FLOAT'] ?? null;
         $_SERVER['REQUEST_TIME_FLOAT'] = microtime(true) - 25.0;
         try {
-            $budget = (new QueueBudgetFactory(static fn (string $name) => ['max_execution_time' => '30', 'memory_limit' => '128M'][$name]))
+            $budget = (new QueueBudgetFactory(new NativeClock(), static fn (string $name) => ['max_execution_time' => '30', 'memory_limit' => '128M'][$name]))
                 ->forMode(QueueConsumerMode::Request, true);
         } finally {
             if ($before === null) {

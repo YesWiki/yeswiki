@@ -5,7 +5,6 @@ namespace YesWiki\Admin\Service;
 use Carbon\Carbon;
 use Carbon\CarbonInterface;
 use Psr\Clock\ClockInterface;
-use Symfony\Component\Clock\NativeClock;
 use YesWiki\Kernel\Health\Finding;
 use YesWiki\Kernel\Queue\QueueConsumerMode;
 use YesWiki\Kernel\Queue\QueueWording;
@@ -44,8 +43,6 @@ class JobsOverview
     /** Messages one "retry all" or "ignore all" acts on: what is left takes another click. */
     public const BULK_LIMIT = 500;
 
-    private ClockInterface $clock;
-
     public function __construct(
         private readonly QueueSettings $settings,
         private readonly QueueStatistics $statistics,
@@ -54,9 +51,8 @@ class JobsOverview
         private readonly QueueScheduleTicker $ticker,
         private readonly LanguageService $languages,
         private readonly QueueFallback $fallback,
-        ?ClockInterface $clock = null,
+        private readonly ClockInterface $clock,
     ) {
-        $this->clock = $clock ?? new NativeClock();
     }
 
     /**

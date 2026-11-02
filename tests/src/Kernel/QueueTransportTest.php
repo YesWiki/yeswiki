@@ -598,8 +598,8 @@ class QueueTransportTest extends YesWikiTestCase
 
         try {
             $transport = new QueueTransport($db, $schema, clock: $this->clock);
-            $statistics = new QueueStatistics($db, $schema, $journal, $transport, $this->clock);
-            (new QueueRecorder($db, $schema, $journal, $this->clock))->taskDispatched(new QueueTestTask(), 1800, $this->clock->now()->modify('+30 minutes'));
+            $statistics = new QueueStatistics($db, $schema, $journal, $transport, new QueueTaskRows($db, $schema, $this->clock), $this->clock);
+            (new QueueRecorder($db, new QueueTaskRows($db, $schema, $this->clock), $journal, $this->clock))->taskDispatched(new QueueTestTask(), 1800, $this->clock->now()->modify('+30 minutes'));
             (new QueueTaskRows($db, $schema, $this->clock))->update(
                 QueueCheckpoint::ROW,
                 static fn (array $fields): array => ['next_due_at' => '2026-10-23 12:30:00', 'state' => ['time' => '2026-10-23 12:00:00.000000', 'index' => -1, 'from' => '2026-10-23 12:00:00.000000']] + $fields

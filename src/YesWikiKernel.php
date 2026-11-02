@@ -2,7 +2,9 @@
 
 namespace YesWiki\Core;
 
+use Psr\Clock\ClockInterface;
 use Psr\Container\ContainerInterface;
+use Symfony\Component\Clock\NativeClock;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\Config\Loader\LoaderInterface;
 use Symfony\Component\Config\Resource\FileResource;
@@ -158,6 +160,8 @@ class YesWikiKernel extends Kernel
             $container->register($id)->setSynthetic(true)->setPublic(true);
         }
         $container->setAlias(ContainerInterface::class, 'service_container')->setPublic(true);
+        // One clock for every service that reads the time; a test hands its own (MockClock) to what it builds.
+        $container->register(ClockInterface::class, NativeClock::class)->setPublic(true);
         $container->register(ActionRegistry::class)->setAutowired(true)->setPublic(true);
 
         $loader = new PhpFileLoader($container, new FileLocator(__DIR__));
