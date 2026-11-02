@@ -279,12 +279,12 @@ class EditingInAnotherLanguageTest extends YesWikiTestCase
         $stored = $this->getWiki()->services->get(FormManager::class)->getUntranslated(self::FORM_ID);
         $this->assertIsArray($stored);
         $this->assertSame('Formulaire à traduire', $stored['label'], 'the source wording is untouched');
-        $this->assertSame('Form to translate', $stored[Translations::BODY_KEY]['en']['label']);
-        $this->assertSame('Title', $stored[Translations::BODY_KEY]['en']['template.bf_titre.label']);
-        $this->assertSame('The name', $stored[Translations::BODY_KEY]['en']['template.bf_titre.hint']);
+        $this->assertSame('Form to translate', Translations::of($stored, 'en')['label']);
+        $this->assertSame('Title', Translations::of($stored, 'en')['template.bf_titre.label']);
+        $this->assertSame('The name', Translations::of($stored, 'en')['template.bf_titre.hint']);
         $this->assertArrayNotHasKey(
             'template.bf_description.label',
-            $stored[Translations::BODY_KEY]['en'],
+            Translations::of($stored, 'en'),
             'a field left empty is not translated, so it falls back'
         );
     }
@@ -311,8 +311,8 @@ class EditingInAnotherLanguageTest extends YesWikiTestCase
         $this->assertIsArray($stored);
         $this->assertSame('Couleurs', $stored['title'], 'the source wording is untouched');
         $this->assertSame('Rouge', $stored['nodes'][0]['label']);
-        $this->assertSame('Colours', $stored[Translations::BODY_KEY]['en']['title']);
-        $this->assertSame('Red', $stored[Translations::BODY_KEY]['en']['nodes.rouge.label']);
+        $this->assertSame('Colours', Translations::of($stored, 'en')['title']);
+        $this->assertSame('Red', Translations::of($stored, 'en')['nodes.rouge.label']);
     }
 
     /** Structure is not this screen's to change: only the wording is taken. */

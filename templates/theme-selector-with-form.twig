@@ -67,3 +67,18 @@
     </details>
     {% endif %}
 </form>
+{% if pageOwnTheme is defined and pageOwnTheme is not empty %}
+    <div class="yw-alert yw-alert--warning">
+        <p>{{ _t('TEMPLATE_PAGE_HAS_OWN_THEME', {theme: pageOwnTheme}) }}</p>
+        <form method="post">
+            <input type="hidden" name="action" value="useSiteTheme" />
+            <button type="submit" class="yw-btn yw-btn--sm">{{ _t('TEMPLATE_USE_SITE_THEME') }}</button>
+        </form>
+    </div>
+{% endif %}
+{% if pagesWithOwnTheme is defined and pagesWithOwnTheme > 0 %}
+    <div class="yw-alert yw-alert--info">
+        {{ _t('TEMPLATE_PAGES_WITH_OWN_THEME', {count: pagesWithOwnTheme}) }}
+        <a href="{{ url({ tag: 'admin/content' }) }}">{{ _t('TEMPLATE_SEE_PAGES_THEMES') }}</a>
+    </div>
+{% endif %}

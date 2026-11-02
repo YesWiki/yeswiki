@@ -18,10 +18,9 @@ class AdminContentControllerThemeFilterTest extends YesWikiTestCase
 {
     private const THEMED_TAG = 'AdminContentThemeFilterRegressionThemed';
     private const UNTHEMED_TAG = 'AdminContentThemeFilterRegressionUntheme';
+    private const RESET_TAG = 'AdminContentThemeFilterRegressionReset';
 
-    /**
-     * @return array{string, list<mixed>, string, list<mixed>} [where, whereParams, having, havingParams]
-     */
+    /** @return array{string, list<mixed>, string, list<mixed>} [where, whereParams, having, havingParams] */
     private function buildWhere(AdminPagesApiController $controller, DbService $db, string $themeFilter): array
     {
         $reflection = new \ReflectionClass($controller);
@@ -60,6 +59,33 @@ class AdminContentControllerThemeFilterTest extends YesWikiTestCase
         } finally {
             $pageManager->deleteOrphaned(self::THEMED_TAG);
             $pageManager->deleteOrphaned(self::UNTHEMED_TAG);
+        }
+    }
+
+    public function testAPageHandedBackToTheSiteThemeIsListedUnderTheSiteTheme(): void
+    {
+        $wiki = $this->getWiki();
+        $pageManager = $wiki->services->get(PageManager::class);
+        $dbService = $wiki->services->get(DbService::class);
+        $controller = $wiki->services->get(AdminPagesApiController::class);
+        $themeManager = $wiki->services->get(ThemeManager::class);
+        $otherTheme = $themeManager->getFavoriteTheme() === 'colibris' ? 'margot' : 'colibris';
+
+        try {
+            $pageManager->save(self::RESET_TAG, [PageBody::CONTENT => 'reset page'], '', true);
+            $pageManager->setMetadata(self::RESET_TAG, ['theme' => $otherTheme, 'style' => 'x.css', 'squelette' => '1col.twig']);
+            $themeManager->useSiteTheme(self::RESET_TAG);
+
+            [$whereClause, $whereParams] = $this->buildWhere($controller, $dbService, $themeManager->getFavoriteTheme());
+            $pT = $dbService->prefixTable('pages');
+            $matchingTags = array_column(
+                $dbService->loadAll("SELECT tag FROM {$pT} p WHERE p.latest = 'Y' AND {$whereClause}", $whereParams),
+                'tag'
+            );
+
+            $this->assertContains(self::RESET_TAG, $matchingTags);
+        } finally {
+            $pageManager->deleteOrphaned(self::RESET_TAG);
         }
     }
 }

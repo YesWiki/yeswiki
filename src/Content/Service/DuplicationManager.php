@@ -20,22 +20,13 @@ class DuplicationManager
     protected $uploadPath;
     protected ContainerInterface $container;
 
-    /**
-     * DuplicationManager constructor.
-     *
-     * @param ContainerInterface $container service container
-     */
     public function __construct(ContainerInterface $container, private readonly Storage $storage)
     {
         $this->container = $container;
         $this->uploadPath = $this->getLocalFileUploadPath();
     }
 
-    /**
-     * Get the local path to files uploads (usually "files").
-     *
-     * @return string local path to files uploads
-     */
+    /** @return string the local path to file uploads, usually "files" */
     private function getLocalFileUploadPath()
     {
         $attachConfig = $this->container->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['attach_config'];
@@ -54,11 +45,9 @@ class DuplicationManager
     }
 
     /**
-     * Return fields that may contain attachments to import (fichier, image, or textelong fields for bazar entries).
+     * @param string $id
      *
-     * @param string $id the entry's tag
-     *
-     * @return list<\YesWiki\Content\Field\BazarField> the fields that may contain attachments to import
+     * @return list<\YesWiki\Content\Field\BazarField>
      */
     private function getUploadFieldsFromEntry($id)
     {
@@ -78,12 +67,8 @@ class DuplicationManager
         return $fields;
     }
 
-    /**
-     * @param mixed $fieldValue the field's stored value, a filename
-     *
-     * @return array{path: string, size: int, humanSize: string}|array{} the file's path and size, empty when there is no such file
-     */
-    private function findFilesInUploadField($fieldValue)
+    /** @return array{path: string, size: int, humanSize: string}|array{} */
+    private function findFilesInUploadField(mixed $fieldValue)
     {
         $f = $this->uploadPath . '/' . $fieldValue;
         if ($f !== $this->uploadPath . '/' && $this->storage->exists($f)) {
@@ -96,12 +81,10 @@ class DuplicationManager
     }
 
     /**
-     * find files in wiki text.
-     *
-     * @param string $tag      page id
+     * @param string $tag
      * @param string $wikiText
      *
-     * @return array<array-key, array{path: string, size: int, humanSize: string, modified?: string}> files
+     * @return array<array-key, array{path: string, size: int, humanSize: string, modified?: string}>
      */
     private function findFilesInWikiText($tag, $wikiText)
     {
@@ -147,11 +130,9 @@ class DuplicationManager
     }
 
     /**
-     * Get file attachements from newTag.
+     * @param string $tag
      *
-     * @param string $tag page id
-     *
-     * @return array<array-key, array{path: string, size: int, humanSize: string, modified?: string}> attachments filenames
+     * @return array<array-key, array{path: string, size: int, humanSize: string, modified?: string}>
      */
     public function findFiles($tag = '')
     {
@@ -213,10 +194,18 @@ class DuplicationManager
         return $doneFiles;
     }
 
+    /** Refuses a tag that no page URL could reach. */
+    private function assertReachableTag(mixed $tag): void
+    {
+        if (!is_string($tag) || !preg_match('`^' . WN_PAGE_TAG . '$`u', $tag)) {
+            throw new \Exception(_t('INVALID_PAGE_TAG', ['tag' => is_scalar($tag) ? (string)$tag : '']) . ' ' . _t('PAGE_TAG_ALLOWED_CHARACTERS'));
+        }
+    }
+
     /**
      * @param array<string, mixed> $data
      *
-     * @return array<string, mixed> the same data, once every check has passed
+     * @return array<string, mixed>
      */
     public function checkPostData($data)
     {
@@ -226,6 +215,7 @@ class DuplicationManager
         if (empty($data['newTag'])) {
             throw new \Exception(_t('EMPTY_PAGE_TAG'));
         }
+        $this->assertReachableTag($data['newTag']);
         if ($data['type'] != 'page' && empty($data['newTitle'])) {
             throw new \Exception(_t('EMPTY_PAGE_TITLE'));
         }
@@ -247,9 +237,7 @@ class DuplicationManager
         return $data;
     }
 
-    /**
-     * @param array<string, mixed> $data
-     */
+    /** @param array<string, mixed> $data */
     public function duplicateLocally($data): void
     {
         if (!$this->container->get(AclService::class)->isAdmin()) {
@@ -288,9 +276,6 @@ class DuplicationManager
                 foreach ($files as $f) {
                     $newBody = str_replace($f['originalFile'], $f['duplicatedFile'], $newBody);
                 }
-                // The keywords travel in the body, which is where they live (ticket 09). This used
-                // to be a second copy of the keyword triples made by hand beside it; the body is
-                // the truth, and the index follows from the save (ticket 62).
                 $keywords = TagsManager::keywordsOf(['body' => $originalBody]);
                 $this->container->get(PageManager::class)->save($data['newTag'], array_merge(
                     [PageBody::CONTENT => $newBody],
@@ -318,11 +303,10 @@ class DuplicationManager
         }
     }
 
-    /**
-     * @param string $tag the tag to create locally
-     */
+    /** @param string $tag the tag to create locally */
     public function importDistantContent($tag, \Symfony\Component\HttpFoundation\Request $request): void
     {
+        $this->assertReachableTag($tag);
         if ($this->container->get(PageManager::class)->getOne($tag)) {
             throw new \Exception(_t('ACEDITOR_LINK_PAGE_ALREADY_EXISTS'));
         }
@@ -349,14 +333,12 @@ class DuplicationManager
     }
 
     /**
-     * Copies a file of the source wiki into the upload folder, refusing private addresses and unauthorised extensions.
-     *
      * @param string $sourceUrl
      * @param string $fromTag
      * @param string $toTag
      * @param int    $timeoutInSec
      *
-     * @return string the local path the file was written to
+     * @return string
      */
     public function downloadFile($sourceUrl, $fromTag, $toTag, $timeoutInSec = 10)
     {

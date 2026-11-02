@@ -14,6 +14,7 @@ use YesWiki\Kernel\Service\PerformableArguments;
 use YesWiki\Kernel\Service\Redirector;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\ActionRunner;
+use YesWiki\Render\Service\ThemeManager;
 use YesWiki\Render\Service\ThemeSelectorRenderer;
 
 /** `{{themeselector}}` -- converted from the procedural actions/themeselector.php by ticket 06. */
@@ -62,6 +63,13 @@ class ThemeselectorAction extends YesWikiAction implements RegisteredAction, Pro
             && isset($_POST['action']) && ($_POST['action'] === 'setTemplate')
         ) {
             $this->getService(ActionRunner::class)->action('setwikidefaulttheme');
+
+            $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href('', $this->getService(PageContext::class)->getTag()));
+        } elseif (
+            $this->getService(AclService::class)->isAdmin()
+            && isset($_POST['action']) && ($_POST['action'] === 'useSiteTheme')
+        ) {
+            $this->getService(ThemeManager::class)->useSiteTheme($this->getService(PageContext::class)->getTag());
 
             $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href('', $this->getService(PageContext::class)->getTag()));
         } else {

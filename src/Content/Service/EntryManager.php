@@ -739,7 +739,7 @@ class EntryManager
 
         unset($data['-is-external-']);
         unset($data['external-data']);
-        unset($data[Translations::BODY_KEY]);
+        unset($data[Translations::BODY_KEY], $data[Translations::LEGACY_KEY]);
 
         if (isset($data['owner'])) {
             unset($data['owner']);

@@ -5,8 +5,17 @@ namespace YesWiki\Content\Entity;
 /** The translations a Content body carries, and the paths they address. */
 final class Translations
 {
-    /** The body key holding every language's translations. */
-    public const BODY_KEY = '__translations';
+    /** The body key holding every language's translations, nested the way Doryphore's `extralang` is. */
+    public const BODY_KEY = '__extralang';
+
+    /** Where translations lived before, flat as path => text; still read, never written. */
+    public const LEGACY_KEY = '__translations';
+
+    /** A form's own keys under the names Doryphore stores a form with. */
+    private const FORM_KEYS = ['label' => 'title', 'template' => 'fields'];
+
+    /** A form field's attributes under the names Doryphore gives them. */
+    private const FIELD_ATTRIBUTES = ['hint' => 'helper'];
 
     /** The keys a list element is identified by, so a path names an element rather than its position. */
     private const IDENTITY_KEYS = ['name', 'id'];
@@ -20,17 +29,7 @@ final class Translations
      */
     public static function languages(array $body): array
     {
-        $store = $body[self::BODY_KEY] ?? null;
-        if (!is_array($store)) {
-            return [];
-        }
-
-        $languages = [];
-        foreach ($store as $language => $values) {
-            if (is_string($language) && is_array($values) && $values !== []) {
-                $languages[] = $language;
-            }
-        }
+        $languages = array_map('strval', array_keys(self::store($body)));
         sort($languages);
 
         return $languages;
@@ -45,19 +44,7 @@ final class Translations
      */
     public static function of(array $body, string $language): array
     {
-        $values = $body[self::BODY_KEY][$language] ?? null;
-        if (!is_array($values)) {
-            return [];
-        }
-
-        $texts = [];
-        foreach ($values as $path => $text) {
-            if (is_string($path) && is_scalar($text) && (string)$text !== '') {
-                $texts[$path] = (string)$text;
-            }
-        }
-
-        return $texts;
+        return self::store($body)[$language] ?? [];
     }
 
     /**
@@ -69,7 +56,7 @@ final class Translations
      */
     public static function apply(array $body, string $language): array
     {
-        if (!isset($body[self::BODY_KEY])) {
+        if (!self::carries($body)) {
             return $body;
         }
 
@@ -106,9 +93,27 @@ final class Translations
      */
     public static function strip(array $body): array
     {
-        unset($body[self::BODY_KEY]);
+        unset($body[self::BODY_KEY], $body[self::LEGACY_KEY]);
 
         return $body;
+    }
+
+    /**
+     * $body with its translations rewritten under BODY_KEY, whichever key and shape they were in.
+     *
+     * @param array<string, mixed> $body
+     *
+     * @return array<string, mixed>
+     */
+    public static function inCurrentShape(array $body): array
+    {
+        return self::carries($body) ? self::withStore($body, self::store($body)) : $body;
+    }
+
+    /** @param array<string, mixed> $body */
+    public static function carries(array $body): bool
+    {
+        return isset($body[self::BODY_KEY]) || isset($body[self::LEGACY_KEY]);
     }
 
     /**
@@ -121,7 +126,7 @@ final class Translations
      */
     public static function with(array $body, string $language, array $values): array
     {
-        $store = is_array($body[self::BODY_KEY] ?? null) ? $body[self::BODY_KEY] : [];
+        $store = self::store($body);
 
         $kept = [];
         foreach ($values as $path => $text) {
@@ -137,15 +142,7 @@ final class Translations
             $store[$language] = $kept;
         }
 
-        ksort($store);
-
-        if ($store === []) {
-            return self::strip($body);
-        }
-
-        $body[self::BODY_KEY] = $store;
-
-        return $body;
+        return self::withStore($body, $store);
     }
 
     /**
@@ -158,13 +155,11 @@ final class Translations
      */
     public static function carriedOver(array $source, array $target): array
     {
-        if (isset($target[self::BODY_KEY]) || !isset($source[self::BODY_KEY])) {
+        if (self::carries($target) || !self::carries($source)) {
             return $target;
         }
 
-        $target[self::BODY_KEY] = $source[self::BODY_KEY];
-
-        return $target;
+        return self::withStore($target, self::store($source));
     }
 
     /**
@@ -176,15 +171,12 @@ final class Translations
      */
     public static function renamedPath(array $body, string $from, string $to): array
     {
-        $store = $body[self::BODY_KEY] ?? null;
-        if (!is_array($store) || $from === '' || $to === '' || $from === $to) {
+        if (!self::carries($body) || $from === '' || $to === '' || $from === $to) {
             return $body;
         }
 
+        $store = self::store($body);
         foreach ($store as $language => $values) {
-            if (!is_array($values)) {
-                continue;
-            }
             $renamed = [];
             foreach ($values as $path => $text) {
                 $renamed[self::rename((string)$path, $from, $to)] = $text;
@@ -192,9 +184,7 @@ final class Translations
             $store[$language] = $renamed;
         }
 
-        $body[self::BODY_KEY] = $store;
-
-        return $body;
+        return self::withStore($body, $store);
     }
 
     /**
@@ -206,15 +196,12 @@ final class Translations
      */
     public static function withoutPath(array $body, string $path): array
     {
-        $store = $body[self::BODY_KEY] ?? null;
-        if (!is_array($store) || $path === '') {
+        if (!self::carries($body) || $path === '') {
             return $body;
         }
 
+        $store = self::store($body);
         foreach ($store as $language => $values) {
-            if (!is_array($values)) {
-                continue;
-            }
             foreach (array_keys($values) as $translated) {
                 if (self::addresses((string)$translated, $path)) {
                     unset($values[$translated]);
@@ -227,13 +214,7 @@ final class Translations
             }
         }
 
-        if ($store === []) {
-            return self::strip($body);
-        }
-
-        $body[self::BODY_KEY] = $store;
-
-        return $body;
+        return self::withStore($body, $store);
     }
 
     /**
@@ -245,34 +226,35 @@ final class Translations
      */
     public static function pruned(array $body): array
     {
-        $store = $body[self::BODY_KEY] ?? null;
-        if (!is_array($store)) {
+        if (!self::carries($body)) {
             return $body;
         }
 
+        $store = self::store($body);
         foreach ($store as $language => $values) {
-            if (!is_array($values)) {
-                unset($store[$language]);
-
-                continue;
-            }
             foreach (array_keys($values) as $path) {
                 if (self::sourceTextAt($body, (string)$path) === '') {
                     unset($values[$path]);
                 }
             }
-            if ($values === []) {
-                unset($store[$language]);
-            } else {
-                $store[$language] = $values;
-            }
+            $store[$language] = $values;
         }
 
-        if ($store === []) {
-            return self::strip($body);
-        }
+        return self::withStore($body, $store);
+    }
 
-        $body[self::BODY_KEY] = $store;
+    /**
+     * $body with the translation store turned into objects all the way down, so `nodes.0` is written `{"0": ...}` as Doryphore writes it.
+     *
+     * @param array<string, mixed> $body
+     *
+     * @return array<string, mixed>
+     */
+    public static function forEncoding(array $body): array
+    {
+        if (is_array($body[self::BODY_KEY] ?? null)) {
+            $body[self::BODY_KEY] = self::asObject($body[self::BODY_KEY]);
+        }
 
         return $body;
     }
@@ -384,5 +366,232 @@ final class Translations
         }
 
         return null;
+    }
+
+    /**
+     * Every language's translations as path => text, read from whichever key $body holds them under.
+     *
+     * @param array<string, mixed> $body
+     *
+     * @return array<string, array<string, string>>
+     */
+    private static function store(array $body): array
+    {
+        $store = [];
+        if (is_array($body[self::BODY_KEY] ?? null)) {
+            foreach ($body[self::BODY_KEY] as $language => $tree) {
+                if (!is_array($tree)) {
+                    continue;
+                }
+                $values = [];
+                self::flatten($body, $tree, [], $values);
+                if ($values !== []) {
+                    $store[(string)$language] = $values;
+                }
+            }
+
+            return $store;
+        }
+
+        foreach (is_array($body[self::LEGACY_KEY] ?? null) ? $body[self::LEGACY_KEY] : [] as $language => $values) {
+            $texts = [];
+            foreach (is_array($values) ? $values : [] as $path => $text) {
+                if (is_string($path) && is_scalar($text) && (string)$text !== '') {
+                    $texts[$path] = (string)$text;
+                }
+            }
+            if ($texts !== []) {
+                $store[(string)$language] = $texts;
+            }
+        }
+
+        return $store;
+    }
+
+    /**
+     * $body holding $store under BODY_KEY in Doryphore's shape, or no store at all when it is empty.
+     *
+     * @param array<string, mixed>                 $body
+     * @param array<string, array<string, string>> $store
+     *
+     * @return array<string, mixed>
+     */
+    private static function withStore(array $body, array $store): array
+    {
+        $nested = [];
+        foreach ($store as $language => $values) {
+            $tree = [];
+            foreach ($values as $path => $text) {
+                $storagePath = self::toStorage($body, self::segments((string)$path));
+                if ($storagePath !== null && (string)$text !== '') {
+                    self::nest($tree, $storagePath, (string)$text);
+                }
+            }
+            if ($tree !== []) {
+                $nested[(string)$language] = $tree;
+            }
+        }
+        ksort($nested);
+
+        $body = self::strip($body);
+        if ($nested !== []) {
+            $body[self::BODY_KEY] = $nested;
+        }
+
+        return $body;
+    }
+
+    /**
+     * @param array<string, mixed>    $body
+     * @param array<array-key, mixed> $tree
+     * @param list<string>            $storagePath
+     * @param array<string, string>   $values
+     */
+    private static function flatten(array $body, array $tree, array $storagePath, array &$values): void
+    {
+        foreach ($tree as $key => $child) {
+            $path = [...$storagePath, (string)$key];
+            if (is_array($child)) {
+                self::flatten($body, $child, $path, $values);
+            } elseif (is_scalar($child) && (string)$child !== '') {
+                $internal = self::fromStorage($body, $path);
+                if ($internal !== null) {
+                    $values[implode('.', $internal)] = (string)$child;
+                }
+            }
+        }
+    }
+
+    /**
+     * A path's segments as Doryphore stores them: a form under its own names, a list element by its position.
+     *
+     * @param array<string, mixed> $body
+     * @param list<string>         $segments
+     *
+     * @return list<string>|null null when the path names an element $body no longer has
+     */
+    private static function toStorage(array $body, array $segments): ?array
+    {
+        if ($segments === []) {
+            return null;
+        }
+        if (self::isForm($body)) {
+            if ($segments[0] === 'template' && count($segments) === 3) {
+                return [self::FORM_KEYS['template'], $segments[1], self::FIELD_ATTRIBUTES[$segments[2]] ?? $segments[2]];
+            }
+            $segments[0] = self::FORM_KEYS[$segments[0]] ?? $segments[0];
+
+            return $segments;
+        }
+
+        $node = $body;
+        $stored = [];
+        foreach ($segments as $segment) {
+            if (is_array($node) && $node !== [] && array_is_list($node)) {
+                $index = self::indexOf($node, $segment);
+                if ($index === null) {
+                    return null;
+                }
+                $stored[] = (string)$index;
+                $node = $node[$index] ?? null;
+
+                continue;
+            }
+            $stored[] = $segment;
+            $node = is_array($node) ? ($node[$segment] ?? null) : null;
+        }
+
+        return $stored;
+    }
+
+    /**
+     * The inverse of toStorage(): a list element's position back to the name or id it is addressed by.
+     *
+     * @param array<string, mixed> $body
+     * @param list<string>         $stored
+     *
+     * @return list<string>|null
+     */
+    private static function fromStorage(array $body, array $stored): ?array
+    {
+        if (self::isForm($body)) {
+            $fields = array_flip(self::FORM_KEYS);
+            if ($stored[0] === self::FORM_KEYS['template'] && count($stored) === 3) {
+                return ['template', $stored[1], array_flip(self::FIELD_ATTRIBUTES)[$stored[2]] ?? $stored[2]];
+            }
+            $stored[0] = $fields[$stored[0]] ?? $stored[0];
+
+            return $stored;
+        }
+
+        $node = $body;
+        $segments = [];
+        foreach ($stored as $segment) {
+            if (is_array($node) && $node !== [] && array_is_list($node)) {
+                $element = ctype_digit($segment) ? ($node[(int)$segment] ?? null) : null;
+                $identity = is_array($element) ? self::identityOf($element) : null;
+                if ($identity === null) {
+                    return null;
+                }
+                $segments[] = $identity;
+                $node = $element;
+
+                continue;
+            }
+            $segments[] = $segment;
+            $node = is_array($node) ? ($node[$segment] ?? null) : null;
+        }
+
+        return $segments;
+    }
+
+    /** @param array<array-key, mixed> $element */
+    private static function identityOf(array $element): ?string
+    {
+        foreach (self::IDENTITY_KEYS as $identityKey) {
+            if (isset($element[$identityKey]) && is_scalar($element[$identityKey]) && (string)$element[$identityKey] !== '') {
+                return (string)$element[$identityKey];
+            }
+        }
+
+        return null;
+    }
+
+    /** @param array<string, mixed> $body */
+    private static function isForm(array $body): bool
+    {
+        return is_array($body['template'] ?? null) && array_is_list($body['template']);
+    }
+
+    /**
+     * @param array<array-key, mixed> $tree
+     * @param list<string>            $path
+     */
+    private static function nest(array &$tree, array $path, string $text): void
+    {
+        $key = array_shift($path);
+        if ($key === null) {
+            return;
+        }
+        if ($path === []) {
+            $tree[$key] = $text;
+
+            return;
+        }
+        if (!is_array($tree[$key] ?? null)) {
+            $tree[$key] = [];
+        }
+        self::nest($tree[$key], $path, $text);
+    }
+
+    /** @param array<array-key, mixed> $tree */
+    private static function asObject(array $tree): \stdClass
+    {
+        $object = new \stdClass();
+        foreach ($tree as $key => $child) {
+            $object->{(string)$key} = is_array($child) ? self::asObject($child) : $child;
+        }
+
+        return $object;
     }
 }

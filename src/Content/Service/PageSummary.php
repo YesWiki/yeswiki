@@ -97,7 +97,7 @@ class PageSummary
     private function bodyForReader(array $page): array
     {
         $body = is_array($page['body'] ?? null) ? $page['body'] : [];
-        if (!isset($body[Translations::BODY_KEY])) {
+        if (!Translations::carries($body)) {
             return $body;
         }
         $translatable = $this->services->get(TranslatableContent::class);
