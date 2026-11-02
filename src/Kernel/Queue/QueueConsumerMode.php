@@ -7,8 +7,6 @@ enum QueueConsumerMode: string
 {
     /** At the end of each web request, in its process. */
     case Request = 'request';
-    /** At the end of each web request, in a CLI process it starts. */
-    case RequestSpawn = 'request-spawn';
     /** From a crontab or any external scheduler, through the non-blocking command. */
     case Command = 'command';
     /** From an external HTTP call (online cron, webhook, monitor). */
@@ -22,7 +20,7 @@ enum QueueConsumerMode: string
     public function isBudgeted(): bool
     {
         return match ($this) {
-            self::Request, self::RequestSpawn, self::Command, self::Api => true,
+            self::Request, self::Command, self::Api => true,
             self::Worker, self::Binary => false,
         };
     }

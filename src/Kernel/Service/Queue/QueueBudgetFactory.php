@@ -20,7 +20,7 @@ class QueueBudgetFactory
     private const CEILING_VISITOR_WAITS = 3.0;
     /** `request` once the response has left (FPM, LiteSpeed, worker). */
     private const CEILING_RESPONSE_SENT = 20.0;
-    /** `command` and `request-spawn` when PHP sets no time limit (CLI): long enough to be useful, short enough to come back and reschedule. */
+    /** `command` when PHP sets no time limit (CLI): long enough to be useful, short enough to come back and reschedule. */
     private const CEILING_UNLIMITED = 300.0;
     /** `api`: an HTTP caller (online cron, monitor) gives up long before a command would. */
     private const CEILING_API = 50.0;

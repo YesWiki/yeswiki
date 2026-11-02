@@ -7,7 +7,6 @@ use YesWiki\Files\Service\RuntimeLock;
 use YesWiki\Files\Service\Storage;
 use YesWiki\Kernel\Service\Queue\QueueCheckpoint;
 use YesWiki\Kernel\Service\Queue\QueueConsumer;
-use YesWiki\Kernel\Service\Queue\QueueRequestTrigger;
 
 /** Empties the caches a code change can leave stale: the compiled container and the compiled templates. */
 class CacheClearer
@@ -25,12 +24,12 @@ class CacheClearer
      * What `clearEverything()` leaves alone: the placeholder git tracks, and the queue's locks.
      *
      * A pass or a schedule tick may be holding one while the cache is cleared: a lock file deleted
-     * under it would let a second one start beside it. The spawn lock's age is the throttle of
-     * `request-spawn`. Kept by name, as the constants that place them under `cache/` spell it.
+     * under it would let a second one start beside it. Kept by name, as the constants that place
+     * them under `cache/` spell it.
      * Any other `.lock` is kept while someone holds it (isHeld()): the features' own, such as a
      * remote backup's step, cannot be named here, and one nobody holds is a leftover.
      */
-    public const KEPT = ['.gitkeep', QueueConsumer::PASS_LOCK, QueueCheckpoint::LOCK, QueueRequestTrigger::SPAWN_LOCK];
+    public const KEPT = ['.gitkeep', QueueConsumer::PASS_LOCK, QueueCheckpoint::LOCK];
 
     private ?Storage $storage;
 

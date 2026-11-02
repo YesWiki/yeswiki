@@ -4,15 +4,12 @@ namespace YesWiki\Kernel\Service\Queue;
 
 use Psr\Clock\ClockInterface;
 use Symfony\Component\Clock\NativeClock;
-use YesWiki\Kernel\Entity\JournalChannel;
 use YesWiki\Kernel\Health\HealthCheck;
 use YesWiki\Kernel\Health\ProvidesHealthChecks;
 use YesWiki\Kernel\Queue\QueueConsumerMode;
 use YesWiki\Kernel\Queue\QueuePassReport;
 use YesWiki\Kernel\Queue\ToleratedFailure;
-use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\HibernationService;
-use YesWiki\Kernel\Service\JournalSchema;
 
 /**
  * What the admin is told when a background job stops, fails or is misconfigured (messenger / scheduler).
@@ -46,7 +43,6 @@ class QueueHealthChecks implements ProvidesHealthChecks
     private const NO_BUDGET_TRIPS = 3;
     private const VISITOR_WINDOW_SECONDS = 86400;
     private const VISITOR_WAIT_SECONDS = 1.0;
-    private const SPAWN_WINDOW_HOURS = 24;
 
     /** The jobs page, where every check here sends the admin. */
     public const ROUTE = 'admin/jobs';
@@ -64,8 +60,6 @@ class QueueHealthChecks implements ProvidesHealthChecks
         private readonly QueueStatistics $statistics,
         private readonly QueueSchema $schema,
         private readonly HibernationService $hibernation,
-        private readonly DbService $db,
-        private readonly JournalSchema $journal,
         private readonly QueueScheduleTicker $ticker,
         private readonly QueueFallback $fallback,
         ?ClockInterface $clock = null,
@@ -79,7 +73,7 @@ class QueueHealthChecks implements ProvidesHealthChecks
         return match ($mode) {
             QueueConsumerMode::Worker, QueueConsumerMode::Binary => self::STALLED_AFTER_BLOCKING,
             QueueConsumerMode::Command, QueueConsumerMode::Api => self::STALLED_AFTER_SCHEDULED,
-            QueueConsumerMode::Request, QueueConsumerMode::RequestSpawn => self::STALLED_AFTER_VISITS,
+            QueueConsumerMode::Request => self::STALLED_AFTER_VISITS,
         };
     }
 
@@ -142,7 +136,6 @@ class QueueHealthChecks implements ProvidesHealthChecks
             $check('queue-consumer-memory', 'QUEUE_HEALTH_MEMORY')->degraded()->runs($onceMigrated($this->consumerMemory(...))),
             // Reads the settings, not the table, and is the one to say a mode is wrong even before the migration ran.
             $check('queue-config', 'QUEUE_HEALTH_CONFIG')->runs($this->config(...)),
-            $check('queue-spawn-unavailable', 'QUEUE_HEALTH_SPAWN')->degraded()->runs($this->spawnUnavailable(...)),
             $check('queue-no-budget', 'QUEUE_HEALTH_NO_BUDGET')->degraded()->runs($onceMigrated($this->noBudget(...))),
             $check('queue-visitor-cost', 'QUEUE_HEALTH_VISITOR_COST')->degraded()->runs($onceMigrated($this->visitorCost(...))),
         ];
@@ -411,28 +404,6 @@ class QueueHealthChecks implements ProvidesHealthChecks
         }
 
         return $problems === [] ? null : implode(' ', $problems);
-    }
-
-    /**
-     * Whether `request-spawn` had to fall back to consuming in the visitor's request, today or yesterday.
-     *
-     * The Journal dates its rows by the database's own clock, not PHP's, so the window is cut by
-     * the database too: the one place where the injected clock is not the one to compare with.
-     */
-    private function spawnUnavailable(): ?string
-    {
-        if ($this->settings->mode() !== QueueConsumerMode::RequestSpawn || !$this->journal->exists()) {
-            return null;
-        }
-
-        $quote = fn (string $column): string => $this->db->quoteIdentifier($column);
-        $count = (int)$this->db->scalar(
-            "SELECT COUNT(*) FROM {$quote($this->journal->table())} WHERE {$quote('channel')} = ? AND {$quote('action')} = ? AND {$quote('last_at')} >= {$this->db->dateSubHours(self::SPAWN_WINDOW_HOURS)}",
-            0,
-            [JournalChannel::Diagnostic->value, 'queue.spawn_unavailable']
-        );
-
-        return $count > 0 ? _t('QUEUE_HEALTH_SPAWN_FAILED') : null;
     }
 
     /**

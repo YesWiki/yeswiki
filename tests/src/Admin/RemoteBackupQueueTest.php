@@ -534,7 +534,6 @@ class RemoteBackupQueueTest extends YesWikiTestCase
             $this->statistics,
             $fallback,
             new QueueTestConsole(),
-            $this->locks,
             $hibernation,
             $this->journal,
             $this->clock,

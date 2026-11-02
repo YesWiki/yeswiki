@@ -110,7 +110,7 @@ class MaintenanceTriggerBecomesAQueueModeTest extends YesWikiTestCase
         \MaintenanceTriggerBecomesAQueueMode::retire($inDotEnv, static fn (): array => [QueueSettings::ENV_MODE => 'api']);
         $this->assertNull($inDotEnv['queue_consumer'], 'private/.env already chose');
 
-        putenv(QueueSettings::ENV_MODE . '=request-spawn');
+        putenv(QueueSettings::ENV_MODE . '=worker');
         $inTheEnvironment = $this->configuration(['maintenance_trigger' => 'cron']);
         \MaintenanceTriggerBecomesAQueueMode::retire($inTheEnvironment, static fn (): array => []);
         $this->assertNull($inTheEnvironment['queue_consumer'], 'the server\'s environment already chose');

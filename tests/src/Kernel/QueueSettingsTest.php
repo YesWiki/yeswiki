@@ -134,11 +134,11 @@ class QueueSettingsTest extends TestCase
 
     public function testAKnownValueIsNotUnknown(): void
     {
-        $settings = $this->settings('request-spawn');
+        $settings = $this->settings('worker');
 
-        $this->assertSame(QueueConsumerMode::RequestSpawn, $settings->mode());
+        $this->assertSame(QueueConsumerMode::Worker, $settings->mode());
         $this->assertFalse($settings->isUnknownValue());
-        $this->assertSame('request-spawn', $settings->rawValue());
+        $this->assertSame('worker', $settings->rawValue());
     }
 
     public function testTheValueIsReadCaseInsensitively(): void
@@ -157,7 +157,7 @@ class QueueSettingsTest extends TestCase
         $budgeted = array_filter(QueueConsumerMode::cases(), static fn (QueueConsumerMode $mode) => $mode->isBudgeted());
 
         $this->assertEqualsCanonicalizing(
-            [QueueConsumerMode::Request, QueueConsumerMode::RequestSpawn, QueueConsumerMode::Command, QueueConsumerMode::Api],
+            [QueueConsumerMode::Request, QueueConsumerMode::Command, QueueConsumerMode::Api],
             array_values($budgeted)
         );
     }

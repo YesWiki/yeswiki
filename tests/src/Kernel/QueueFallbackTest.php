@@ -93,7 +93,7 @@ class QueueFallbackTest extends YesWikiTestCase
         $this->messageWaitingSince(660);
         $this->pass(QueueConsumerMode::Worker, '-2 hours', '-11 minutes');
 
-        $this->assertTrue($this->fallback('worker')->shouldConsume(static fn (): bool => true));
+        $this->assertTrue($this->fallback('worker')->shouldConsume());
     }
 
     public function testAWorkerSeenNineMinutesAgoDoesNot(): void
@@ -101,7 +101,7 @@ class QueueFallbackTest extends YesWikiTestCase
         $this->messageWaitingSince(660);
         $this->pass(QueueConsumerMode::Worker, '-2 hours', '-9 minutes');
 
-        $this->assertFalse($this->fallback('worker')->shouldConsume(static fn (): bool => true));
+        $this->assertFalse($this->fallback('worker')->shouldConsume());
     }
 
     /** It does not beat inside one long message (a backup): the claim its process holds shows it at work. */
@@ -111,7 +111,7 @@ class QueueFallbackTest extends YesWikiTestCase
         $this->pass(QueueConsumerMode::Worker, '-3 hours', '-30 minutes', stopReason: '', holder: self::ELSEWHERE . 'aa');
         $this->claimed('-30 minutes', QueueConsumerMode::Worker, self::ELSEWHERE . 'bb');
 
-        $this->assertFalse($this->fallback('worker')->shouldConsume(static fn (): bool => true));
+        $this->assertFalse($this->fallback('worker')->shouldConsume());
     }
 
     /** On a quiet wiki, nothing is queued while nothing ticks the schedule: its being due is what waits. */
@@ -120,7 +120,7 @@ class QueueFallbackTest extends YesWikiTestCase
         $this->scheduleDueSince(3 * 3600 + 60);
         $this->pass(QueueConsumerMode::Command, '-3 hours -1 minute', '-3 hours -1 minute');
 
-        $this->assertTrue($this->fallback('command')->shouldConsume(static fn (): bool => true));
+        $this->assertTrue($this->fallback('command')->shouldConsume());
     }
 
     public function testACronSeenTwoHoursAgoDoesNot(): void
@@ -128,25 +128,25 @@ class QueueFallbackTest extends YesWikiTestCase
         $this->scheduleDueSince(2 * 3600);
         $this->pass(QueueConsumerMode::Command, '-2 hours', '-2 hours');
 
-        $this->assertFalse($this->fallback('command')->shouldConsume(static fn (): bool => true));
+        $this->assertFalse($this->fallback('command')->shouldConsume());
     }
 
     public function testAConsumerThatNeverRanFallsBackAfterItsDelay(): void
     {
         $fallback = $this->fallback('worker');
 
-        $this->assertFalse($fallback->shouldConsume(static fn (): bool => true), 'nothing has waited yet');
+        $this->assertFalse($fallback->shouldConsume(), 'nothing has waited yet');
 
         $this->clock->sleep(660);
 
-        $this->assertTrue($fallback->shouldConsume(static fn (): bool => true), 'the schedule never ticked, and no worker ever showed up');
+        $this->assertTrue($fallback->shouldConsume(), 'the schedule never ticked, and no worker ever showed up');
     }
 
     public function testRequestNeverFallsBack(): void
     {
         $this->messageWaitingSince(48 * 3600);
 
-        $this->assertFalse($this->fallback('request')->shouldConsume(static fn (): bool => true));
+        $this->assertFalse($this->fallback('request')->shouldConsume());
     }
 
     public function testAHibernatedWikiNeverFallsBack(): void
@@ -155,7 +155,7 @@ class QueueFallbackTest extends YesWikiTestCase
         $this->pass(QueueConsumerMode::Worker, '-2 hours', '-1 hour');
         $this->setWikiStatus('archiving');
 
-        $this->assertFalse($this->fallback('worker')->shouldConsume(static fn (): bool => true));
+        $this->assertFalse($this->fallback('worker')->shouldConsume());
     }
 
     /** The fallback empties the queue, and the rule that started it no longer holds: it goes on all the same, until the worker is back. */
@@ -165,7 +165,7 @@ class QueueFallbackTest extends YesWikiTestCase
         $this->pass(QueueConsumerMode::Request, '-1 hour', '-1 hour', origin: QueuePassOrigin::Fallback, fallbackFor: QueueConsumerMode::Worker);
         $fallback = $this->fallback('worker');
 
-        $this->assertTrue($fallback->shouldConsume(static fn (): bool => false));
+        $this->assertTrue($fallback->shouldConsume());
         $status = $fallback->status();
         $this->assertNotNull($status);
         $this->assertSame($this->at('-1 hour'), $status->since->format('Y-m-d H:i:s'));
@@ -178,12 +178,12 @@ class QueueFallbackTest extends YesWikiTestCase
         $this->pass(QueueConsumerMode::Worker, '-3 hours', '-3 hours');
         $this->pass(QueueConsumerMode::Request, '-1 hour', '-1 hour', origin: QueuePassOrigin::Fallback, fallbackFor: QueueConsumerMode::Worker);
         $fallback = $this->fallback('worker');
-        $this->assertTrue($fallback->shouldConsume(static fn (): bool => true));
+        $this->assertTrue($fallback->shouldConsume());
 
         $this->pass(QueueConsumerMode::Worker, '-1 minute', '-1 minute');
         $this->clock->sleep(61);
 
-        $this->assertFalse($fallback->shouldConsume(static fn (): bool => true));
+        $this->assertFalse($fallback->shouldConsume());
         $this->assertNull($fallback->status());
     }
 
@@ -193,14 +193,14 @@ class QueueFallbackTest extends YesWikiTestCase
         $this->pass(QueueConsumerMode::Command, '-5 hours', '-5 hours');
         $this->pass(QueueConsumerMode::Request, '-1 hour', '-1 hour', origin: QueuePassOrigin::Fallback, fallbackFor: QueueConsumerMode::Command);
         $fallback = $this->fallback('command');
-        $this->assertTrue($fallback->shouldConsume(static fn (): bool => true));
+        $this->assertTrue($fallback->shouldConsume());
 
         $this->pass(QueueConsumerMode::Command, '-1 second', '-1 second');
         $this->clock->sleep(20);
         $this->pass(QueueConsumerMode::Request, '-1 second', '-1 second', origin: QueuePassOrigin::Fallback, fallbackFor: QueueConsumerMode::Command);
         $this->clock->sleep(45);
 
-        $this->assertFalse($fallback->shouldConsume(static fn (): bool => true));
+        $this->assertFalse($fallback->shouldConsume());
         $this->assertNull($fallback->status());
     }
 
@@ -209,11 +209,11 @@ class QueueFallbackTest extends YesWikiTestCase
     {
         $this->pass(QueueConsumerMode::Worker, '-3 hours', '-3 hours');
         $this->pass(QueueConsumerMode::Request, '-1 hour', '-1 hour', origin: QueuePassOrigin::Fallback, fallbackFor: QueueConsumerMode::Worker);
-        $this->assertTrue($this->fallback('worker')->shouldConsume(static fn (): bool => true));
+        $this->assertTrue($this->fallback('worker')->shouldConsume());
 
         $this->clock->sleep(10);
 
-        $this->assertFalse($this->fallback('command')->shouldConsume(static fn (): bool => true));
+        $this->assertFalse($this->fallback('command')->shouldConsume());
     }
 
     /** A wiki whose queue table is missing is told so once a minute, not on every request. */
@@ -222,14 +222,14 @@ class QueueFallbackTest extends YesWikiTestCase
         $this->schema->drop();
         $fallback = $this->fallback('worker');
         try {
-            $fallback->shouldConsume(static fn (): bool => true);
+            $fallback->shouldConsume();
             $this->fail('the missing table is not hidden');
         } catch (\Throwable) {
         }
 
         $this->clock->sleep(30);
 
-        $this->assertFalse($fallback->shouldConsume(static fn (): bool => true));
+        $this->assertFalse($fallback->shouldConsume());
     }
 
     public function testFallbackEndsWhenTheAdminChangesTheMode(): void
@@ -256,74 +256,15 @@ class QueueFallbackTest extends YesWikiTestCase
         $this->pass(QueueConsumerMode::Worker, '-2 hours', '-9 minutes -30 seconds');
         $this->messageWaitingSince(3600);
         $fallback = $this->fallback('worker');
-        $this->assertFalse($fallback->shouldConsume(static fn (): bool => true));
+        $this->assertFalse($fallback->shouldConsume());
 
         $this->clock->sleep(40);
 
-        $this->assertFalse($fallback->shouldConsume(static fn (): bool => true), 'the worker is now over ten minutes gone, but 40 s after the check its answer stands');
+        $this->assertFalse($fallback->shouldConsume(), 'the worker is now over ten minutes gone, but 40 s after the check its answer stands');
 
         $this->clock->sleep(21);
 
-        $this->assertTrue($fallback->shouldConsume(static fn (): bool => true), 'a minute on, the rule is read again');
-    }
-
-    public function testBetweenTwoChecksTheWorkIsNotEvenAskedFor(): void
-    {
-        $this->pass(QueueConsumerMode::Worker, '-2 hours', '-1 minute');
-        $fallback = $this->fallback('worker');
-        $fallback->shouldConsume(static fn (): bool => true);
-        $asked = false;
-
-        $fallback->shouldConsume(static function () use (&$asked): bool {
-            $asked = true;
-
-            return true;
-        });
-
-        $this->assertFalse($asked);
-    }
-
-    public function testASpawnUnansweredForFiveMinutesFallsBack(): void
-    {
-        $fallback = $this->fallback('request-spawn');
-        $fallback->spawnAttempted();
-        $this->clock->sleep(301);
-
-        $this->assertTrue($fallback->shouldConsume(static fn (): bool => true));
-    }
-
-    public function testASpawnThatWasAnsweredDoesNot(): void
-    {
-        $fallback = $this->fallback('request-spawn');
-        $fallback->spawnAttempted();
-        $this->clock->sleep(30);
-        $this->pass(QueueConsumerMode::RequestSpawn, '-1 second', '-1 second');
-        $this->clock->sleep(271);
-
-        $this->assertFalse($fallback->shouldConsume(static fn (): bool => true));
-    }
-
-    public function testASpawnWithNothingToDoDoesNot(): void
-    {
-        $fallback = $this->fallback('request-spawn');
-        $fallback->spawnAttempted();
-        $this->clock->sleep(301);
-
-        $this->assertFalse($fallback->shouldConsume(static fn (): bool => false));
-    }
-
-    /** A launch is attempted every minute: each one must not push back the first that went unanswered. */
-    public function testRepeatedSpawnAttemptsKeepTheFirstUnansweredOne(): void
-    {
-        $fallback = $this->fallback('request-spawn');
-        $fallback->spawnAttempted();
-        $this->clock->sleep(60);
-        $fallback->spawnAttempted();
-        $this->clock->sleep(60);
-        $fallback->spawnAttempted();
-        $this->clock->sleep(181);
-
-        $this->assertTrue($fallback->shouldConsume(static fn (): bool => true));
+        $this->assertTrue($fallback->shouldConsume(), 'a minute on, the rule is read again');
     }
 
     /** A long message -- a backup an admin starts -- must not be left to a worker that is gone: the end of requests would take it on a request's budget, and PHP would cut it. */
@@ -346,15 +287,15 @@ class QueueFallbackTest extends YesWikiTestCase
         $this->assertTrue($this->fallback('worker')->consumerIsGone());
     }
 
-    /** A cron, an API call or a launched process only comes when called: nothing it left says it will come, so only a fallback already under way says it is gone. */
+    /** A cron or an API call only comes when called: nothing it left says it will come, so only a fallback already under way says it is gone. */
     public function testAConsumerThatComesWhenCalledIsGoneOnlyOnceTheFallbackRuns(): void
     {
         $this->assertFalse($this->fallback('command')->consumerIsGone());
-        $this->assertFalse($this->fallback('request-spawn')->consumerIsGone());
+        $this->assertFalse($this->fallback('api')->consumerIsGone());
 
-        $this->pass(QueueConsumerMode::Request, '-1 minute', '-1 minute', origin: QueuePassOrigin::Fallback, fallbackFor: QueueConsumerMode::RequestSpawn);
+        $this->pass(QueueConsumerMode::Request, '-1 minute', '-1 minute', origin: QueuePassOrigin::Fallback, fallbackFor: QueueConsumerMode::Api);
 
-        $this->assertTrue($this->fallback('request-spawn')->consumerIsGone());
+        $this->assertTrue($this->fallback('api')->consumerIsGone());
     }
 
     public function testTheEndOfRequestsIsNeverGone(): void

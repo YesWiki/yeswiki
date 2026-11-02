@@ -245,7 +245,7 @@ class JobsOverview
             'queue-config' => $this->settings->mode() === QueueConsumerMode::Api && $this->settings->consumeSecret() === ''
                 ? ['secret', 'docs']
                 : ['docs'],
-            'queue-tables', 'queue-fallback', 'queue-consumer-restarts', 'queue-consumer-memory', 'queue-spawn-unavailable', 'queue-visitor-cost' => ['docs'],
+            'queue-tables', 'queue-fallback', 'queue-consumer-restarts', 'queue-consumer-memory', 'queue-visitor-cost' => ['docs'],
             // A module's own check about its messages (federation deliveries): the failures are where it shows, and it may ask for the buttons that deal with them all.
             default => $this->offeredActions($finding),
         };
@@ -297,7 +297,7 @@ class JobsOverview
         }
 
         return [
-            'label' => _t('QUEUE_MODE_' . self::keyOf($mode)),
+            'label' => _t('QUEUE_MODE_' . strtoupper($mode->value)),
             'origin' => $origin === QueueSettings::ORIGIN_DEFAULT
                 ? _t('ADMIN_JOBS_ORIGIN_DEFAULT')
                 : _t('ADMIN_JOBS_ORIGIN_SET', ['origin' => _t('QUEUE_ORIGIN_' . strtoupper($origin))]),
@@ -309,13 +309,13 @@ class JobsOverview
             ]),
             'cli' => self::passesInTheCli($mode),
             'visitorsWait' => $mode === QueueConsumerMode::Request && !$respondsEarly,
-            'pace' => _t('QUEUE_PACE_' . self::keyOf($mode)),
+            'pace' => _t('QUEUE_PACE_' . strtoupper($mode->value)),
             'lastPass' => $fallback !== null
                 ? $this->ago($fallback->lastSeen)
                 : ($lastPass === null ? null : $this->ago($lastPass['stopReason'] === '' ? $lastPass['finishedAt'] : $lastPass['startedAt'])),
             'running' => $fallback === null && $lastPass !== null && $lastPass['stopReason'] === '',
             // In a fallback, the last pass is the chosen consumer's, which is late by definition: the requests' passes are the alert's to tell.
-            'lastSeenMode' => $fallback === null ? null : _t('QUEUE_MODE_' . self::keyOf($mode)),
+            'lastSeenMode' => $fallback === null ? null : _t('QUEUE_MODE_' . strtoupper($mode->value)),
             'late' => $fallback !== null || ($idle !== null && $idle > QueueHealthChecks::stalledAfterSeconds($mode)),
             'api' => $mode === QueueConsumerMode::Api,
             'hasSecret' => $this->settings->consumeSecret() !== '',
@@ -326,7 +326,7 @@ class JobsOverview
      * What one pass may spend in this mode, as QueueBudgetFactory works it out, in whole seconds; null for the blocking modes, which have no deadline.
      *
      * The page is a web request, so the factory reads this server's PHP limits: right for `request`
-     * and `api`, which run under them. `command` and `request-spawn` run in the CLI, where PHP sets
+     * and `api`, which run under them. `command` runs in the CLI, where PHP sets
      * no time limit unless told to: they are worked out without one.
      */
     private function budget(QueueConsumerMode $mode, bool $respondsEarly): ?int
@@ -344,7 +344,7 @@ class JobsOverview
     /** Whether the budgeted passes of this mode run in a CLI process rather than under this server's PHP limits. */
     private static function passesInTheCli(QueueConsumerMode $mode): bool
     {
-        return $mode === QueueConsumerMode::Command || $mode === QueueConsumerMode::RequestSpawn;
+        return $mode === QueueConsumerMode::Command;
     }
 
     /**
@@ -509,11 +509,5 @@ class JobsOverview
     private function decimal(float $number): string
     {
         return number_format($number, 1, _t('ADMIN_JOBS_DECIMAL_SEPARATOR'), '');
-    }
-
-    /** `request-spawn` → `REQUEST_SPAWN`, the shape of the translation keys. */
-    private static function keyOf(QueueConsumerMode $mode): string
-    {
-        return strtoupper(str_replace('-', '_', $mode->value));
     }
 }

@@ -4,7 +4,6 @@ namespace YesWiki\Kernel\Service\Queue;
 
 use Psr\Clock\ClockInterface;
 use Symfony\Component\Clock\NativeClock;
-use YesWiki\Files\Service\RuntimeLock;
 use YesWiki\Kernel\Queue\QueueConsumerMode;
 use YesWiki\Kernel\Queue\QueuePassOrigin;
 use YesWiki\Kernel\Service\ConsoleService;
@@ -25,12 +24,9 @@ use YesWiki\Kernel\Service\RequestScopedState;
  * - the messages this request pinned run now, whatever the mode: a backup an admin started on a
  *   wiki whose queue runs only when something calls it (§9.5); the sender decides when to pin;
  * - in `request`, a budgeted pass consumes the queue in this process;
- * - in `request-spawn`, a detached `messenger:drain` does, at most one launch tried a minute; a
- *   launch that fails is journaled, and the request does not consume in its place;
- * - in every other mode, nothing: a command, the API route or a blocking consumer does the work;
+ * - in every other mode, nothing: the API route or a blocking consumer does the work;
  * - but when the consumer of the mode is no longer seen at work (QueueFallback), the request
- *   consumes as `request` would, and its pass says for which consumer it stood in. In
- *   `request-spawn`, the request that tries a launch leaves the pass to it.
+ *   consumes as `request` would, and its pass says for which consumer it stood in.
  *
  * Before any pass it asks two cheap questions -- can a message be taken now (a delayed retry
  * cannot), is the schedule due -- so a request with nothing to do costs two indexed reads, not a pass row. They are also what
@@ -42,12 +38,6 @@ use YesWiki\Kernel\Service\RequestScopedState;
  */
 class QueueRequestTrigger implements RequestScopedState
 {
-    /** Stamped each time a `request-spawn` launch is tried, whether a process started or not; its age is the throttle. */
-    public const SPAWN_LOCK = 'cache/queue-spawn.lock';
-
-    /** At most one `messenger:drain` started per this many seconds: a busy wiki would otherwise start one per page view. */
-    private const SPAWN_EVERY_SECONDS = 60;
-
     /** The functions with which a server ends the response early, in the order they are tried. */
     private const FINISHERS = ['fastcgi_finish_request', 'frankenphp_finish_request', 'litespeed_finish_request'];
 
@@ -76,7 +66,6 @@ class QueueRequestTrigger implements RequestScopedState
         private readonly QueueStatistics $statistics,
         private readonly QueueFallback $fallback,
         private readonly ConsoleService $console,
-        private readonly RuntimeLock $runtimeLock,
         private readonly HibernationService $hibernation,
         private readonly Journal $journal,
         ?ClockInterface $clock = null,
@@ -113,8 +102,8 @@ class QueueRequestTrigger implements RequestScopedState
             $pinned = $this->pinned;
             $this->pinned = [];
             $mode = $this->settings->mode();
-            $consumesByItself = $mode === QueueConsumerMode::Request || $mode === QueueConsumerMode::RequestSpawn;
-            $fallback = !$consumesByItself && $this->fallback->shouldConsume($this->hasWork(...));
+            $consumesByItself = $mode === QueueConsumerMode::Request;
+            $fallback = !$consumesByItself && $this->fallback->shouldConsume();
             if ($pinned === [] && !$consumesByItself && !$fallback) {
                 return;
             }
@@ -142,8 +131,6 @@ class QueueRequestTrigger implements RequestScopedState
 
             if ($mode === QueueConsumerMode::Request) {
                 $this->drainIfNeeded($responseAlreadySent);
-            } elseif ($mode === QueueConsumerMode::RequestSpawn) {
-                $this->spawnIfNeeded($responseAlreadySent);
             } elseif ($fallback && $this->hasWork()) {
                 $this->drain($responseAlreadySent, $mode);
             }
@@ -178,45 +165,6 @@ class QueueRequestTrigger implements RequestScopedState
             return;
         }
         $this->drain($responseAlreadySent);
-    }
-
-    /**
-     * Tries to start `messenger:drain` in a process of its own, at most once a minute; between two tries, does the pass here if that process has gone unanswered.
-     *
-     * The throttle is stamped by every try, a failed one too: a server that cannot start a process
-     * would otherwise try on every request. Nothing consumes in its place until the fallback does
-     * (QueueFallback): a launch that fails and one that starts a process that never consumes are
-     * the same outage, told the same way.
-     */
-    private function spawnIfNeeded(bool $responseAlreadySent): void
-    {
-        // time(), not the clock: the stamp is a file's mtime, which is the system's time.
-        if (time() - $this->runtimeLock->lastTaken(self::SPAWN_LOCK) < self::SPAWN_EVERY_SECONDS) {
-            if ($this->fallback->shouldConsume($this->hasWork(...)) && $this->hasWork()) {
-                $this->drain($responseAlreadySent, QueueConsumerMode::RequestSpawn);
-            }
-
-            return;
-        }
-        if (!$this->hasWork()) {
-            return;
-        }
-
-        try {
-            $process = $this->console->startDetachedConsole('messenger:drain');
-            $unavailable = $process === null ? 'no PHP binary to run the console with' : null;
-        } catch (\Throwable $failed) {
-            // Symfony's Process throws when proc_open() is disabled, as it often is on shared hosting.
-            $unavailable = $failed->getMessage();
-        }
-        $this->runtimeLock->stamp(self::SPAWN_LOCK);
-        $this->fallback->spawnAttempted();
-
-        if ($unavailable !== null) {
-            $this->journal->warning('No process could be started to consume the queue: ' . $unavailable, [
-                'action' => 'queue.spawn_unavailable',
-            ]);
-        }
     }
 
     /**

@@ -137,7 +137,7 @@ class ArchiveQueueTest extends YesWikiTestCase
     /** @return array<string, array{string}> */
     public static function nonBlockingModes(): array
     {
-        return ['request' => ['request'], 'api' => ['api'], 'command' => ['command'], 'request-spawn' => ['request-spawn']];
+        return ['request' => ['request'], 'api' => ['api'], 'command' => ['command']];
     }
 
     /** @return array<string, array{string}> */
@@ -146,7 +146,7 @@ class ArchiveQueueTest extends YesWikiTestCase
         return ['worker' => ['worker'], 'binary' => ['binary']];
     }
 
-    /** Spec 9.5: where the queue runs only when something calls it, the admin's backup does not wait for that; it runs once the admin has the response. So in `request-spawn`, where nothing says before the launch that its process will run. */
+    /** Spec 9.5: where the queue runs only when something calls it, the admin's backup does not wait for that; it runs once the admin has the response. */
     #[DataProvider('nonBlockingModes')]
     public function testStartingAnArchiveQueuesItAndPinsItInRequestMode(string $mode): void
     {
@@ -716,7 +716,6 @@ class ArchiveQueueTest extends YesWikiTestCase
             $this->statistics,
             $fallback,
             new QueueTestConsole(),
-            $this->locks,
             new HibernationService(new ParameterBag(['wiki_status' => 'running'])),
             $this->journal,
             $this->clock,

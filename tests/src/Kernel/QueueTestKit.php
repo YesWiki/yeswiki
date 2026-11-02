@@ -55,7 +55,6 @@ final class QueueTestKit
     public readonly Journal $journal;
     public readonly QueueBus $bus;
     private readonly QueueSchema $schema;
-    private readonly DbService $db;
     private readonly RuntimeLock $locks;
     /** @var resource|null */
     private $heldPassLock;
@@ -91,7 +90,6 @@ final class QueueTestKit
             'table_prefix' => 'ywq_',
             'debug' => false,
         ]));
-        $this->db = $db;
         $this->schema = $schema = new QueueSchema($db);
         $schema->create();
         (new JournalSchema($db))->create();
@@ -285,8 +283,6 @@ final class QueueTestKit
             $this->statistics,
             $this->schema,
             new HibernationService(new ParameterBag(['wiki_status' => 'running'])),
-            $this->db,
-            new JournalSchema($this->db),
             $this->ticker,
             $this->fallback($settings),
         );

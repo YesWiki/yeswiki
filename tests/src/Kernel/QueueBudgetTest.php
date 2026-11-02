@@ -87,14 +87,6 @@ class QueueBudgetTest extends TestCase
         $this->assertEqualsWithDelta(300.0, $this->allowed($budget), 0.001);
     }
 
-    public function testRequestSpawnWithNoTimeLimitIsCappedAtFiveMinutes(): void
-    {
-        $budget = $this->factory(['max_execution_time' => '0', 'memory_limit' => '128M'])
-            ->forMode(QueueConsumerMode::RequestSpawn, true);
-
-        $this->assertEqualsWithDelta(300.0, $this->allowed($budget), 0.001);
-    }
-
     public function testCommandWithATimeLimitUsesTheLimitMinusTheMargin(): void
     {
         $budget = $this->factory(['max_execution_time' => '100', 'memory_limit' => '128M'], 10.0)

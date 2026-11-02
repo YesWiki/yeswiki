@@ -60,8 +60,8 @@ class CacheClearerTest extends TestCase
     {
         $count = (new CacheClearer())->clearEverything($this->root);
 
-        $this->assertSame(4, $count, 'the retired sweep\'s lock goes with the rest');
-        $this->assertSame(['.gitkeep', 'queue-pass.lock', 'queue-schedule.lock', 'queue-spawn.lock'], array_values(array_diff(scandir($this->root . '/cache'), ['.', '..'])));
+        $this->assertSame(5, $count, 'the retired sweep\'s lock and the retired spawn throttle go with the rest');
+        $this->assertSame(['.gitkeep', 'queue-pass.lock', 'queue-schedule.lock'], array_values(array_diff(scandir($this->root . '/cache'), ['.', '..'])));
     }
 
     /** A remote backup's step holds its lock for a whole download: deleted under it, a second step would take a fresh one and write beside it. */

@@ -108,7 +108,7 @@ class QueueHealthChecksTest extends YesWikiTestCase
 
     public function testEveryCheckPointsToTheJobsPage(): void
     {
-        $this->assertCount(14, $this->ids());
+        $this->assertCount(13, $this->ids());
         foreach ($this->checks() as $check) {
             $this->assertSame('admin/jobs', $check->route(), $check->id());
             $this->assertNotSame('', $check->sentence(), $check->id());
@@ -118,7 +118,7 @@ class QueueHealthChecksTest extends YesWikiTestCase
 
     public function testSeverities(): void
     {
-        $degraded = ['queue-backlog', 'queue-consumer-memory', 'queue-spawn-unavailable', 'queue-no-budget', 'queue-visitor-cost'];
+        $degraded = ['queue-backlog', 'queue-consumer-memory', 'queue-no-budget', 'queue-visitor-cost'];
         foreach ($this->checks() as $check) {
             $this->assertSame(
                 in_array($check->id(), $degraded, true) ? Severity::Degraded : Severity::Broken,
@@ -332,7 +332,6 @@ class QueueHealthChecksTest extends YesWikiTestCase
         yield 'command' => ['command', 3 * 3600];
         yield 'api' => ['api', 3 * 3600];
         yield 'request' => ['request', 24 * 3600];
-        yield 'request-spawn' => ['request-spawn', 24 * 3600];
     }
 
     public function testAnEmptyQueueIsNeverStalled(): void
@@ -643,33 +642,6 @@ class QueueHealthChecksTest extends YesWikiTestCase
         $this->assertNull($this->failure('queue-config'));
     }
 
-    public function testRequestSpawnWhereNoProcessCanBeStarted(): void
-    {
-        $this->mode = 'request-spawn';
-        $this->journalRow('queue.spawn_unavailable', '-2 hours');
-        $this->assertNotNull($this->failure('queue-spawn-unavailable'));
-
-        $this->mode = 'request';
-        $this->assertNull($this->failure('queue-spawn-unavailable'), 'the journal row says nothing about a mode the admin has left');
-    }
-
-    public function testASpawnUnavailableActionOnAnotherChannelIsIgnored(): void
-    {
-        $this->mode = 'request-spawn';
-        $this->journalRow('queue.spawn_unavailable', '-2 hours', 'queue');
-
-        $this->assertNull($this->failure('queue-spawn-unavailable'));
-    }
-
-    public function testSpawnUnavailableForgetsAfterADay(): void
-    {
-        $this->mode = 'request-spawn';
-        $this->journalRow('queue.spawn_unavailable', '-26 hours');
-        $this->journalRow('something.else', '-1 hours');
-
-        $this->assertNull($this->failure('queue-spawn-unavailable'));
-    }
-
     // --- cost to the wiki's users -------------------------------------------------------------
 
     public function testNoBudget(): void
@@ -751,8 +723,6 @@ class QueueHealthChecksTest extends YesWikiTestCase
             $this->statistics,
             $this->schema,
             $hibernation,
-            $this->db,
-            $this->journal,
             $this->ticker(),
             new QueueFallback($settings, $this->statistics, $hibernation, new RuntimeLock(), $this->clock),
             $this->clock
@@ -884,14 +854,4 @@ class QueueHealthChecksTest extends YesWikiTestCase
         );
     }
 
-    /** A Journal row, dated by the database's own clock as the Journal does (the PHP clock is not the one it used). */
-    private function journalRow(string $action, string $ago, string $channel = 'diagnostic'): void
-    {
-        $hours = (int)abs((int)$ago);
-        $at = $this->db->dateSubHours($hours);
-        $this->db->query(
-            "INSERT INTO {$this->journal->table()} (at, last_at, channel, level, actor, action, target) VALUES ({$at}, {$at}, ?, ?, ?, ?, ?)",
-            [$channel, 'warning', '', $action, '']
-        );
-    }
 }

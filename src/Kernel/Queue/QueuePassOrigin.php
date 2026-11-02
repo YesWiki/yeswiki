@@ -11,7 +11,7 @@ namespace YesWiki\Kernel\Queue;
  */
 enum QueuePassOrigin: string
 {
-    /** The consumer of the mode: the worker, the binary, a cron's or a spawned `messenger:drain`, the API route, the end of a request in `request`. */
+    /** The consumer of the mode: the worker, the binary, a cron, the API route, the end of a request in `request`. */
     case Consumer = 'consumer';
     /** The messages a request pinned, run at its end whatever the mode. */
     case Pinned = 'pinned';

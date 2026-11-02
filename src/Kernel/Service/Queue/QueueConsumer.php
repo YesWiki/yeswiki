@@ -38,7 +38,7 @@ use YesWiki\Kernel\Service\Journal;
  * The only code that takes messages from the queue and runs their handlers, in every mode (messenger / scheduler).
  *
  * Two ways to run, one machinery: drain() is a pass that has to end by itself -- at the end of a
- * request, from the non-blocking command, the API route or the process `request-spawn` starts --
+ * request, from the non-blocking command or the API route --
  * and stops when the queue is empty or the budget spent, never waiting; consume() blocks like
  * `messenger:consume`, for the `worker` and `binary` modes. Both build Messenger's Worker over
  * the QueueBus (whose handlers come from QueueHandlerLocator, the one way a handler is found),
@@ -297,7 +297,7 @@ class QueueConsumer
     /**
      * The row of a consumer's pass that did nothing -- the lock taken, the wiki hibernated --, closed at once, outside `request`.
      *
-     * A cron, an API call or a spawned process that comes back while the end of a request consumes
+     * A cron or an API call that comes back while the end of a request consumes
      * in its place, or that kept running while the wiki slept, has to be seen (QueueFallback): or
      * it is taken for gone, and the end of requests stands in for it. In `request` that place is its
      * own, and a busy wiki's requests finding each other's lock, or a hibernated wiki's visits,

@@ -43,7 +43,7 @@ require_once 'tests/src/Kernel/QueueTestMessage.php';
 require_once 'tests/src/Kernel/QueueTestConsole.php';
 require_once 'tests/src/Kernel/QueueTestHolders.php';
 
-/** What the end of a web request does with the queue: consume it (`request`), start a process that does (`request-spawn`), and run what the request pinned, in any mode. */
+/** What the end of a web request does with the queue: consume it (`request`), stand in for a consumer that is gone (the fallback), and run what the request pinned, in any mode. */
 #[CoversClass(QueueRequestTrigger::class)]
 class QueueRequestTriggerTest extends YesWikiTestCase
 {
@@ -248,10 +248,8 @@ class QueueRequestTriggerTest extends YesWikiTestCase
         $this->transport->send(new Envelope(new QueueTestMessage('retry'), [new DelayStamp(60000)]));
 
         $this->trigger('request')->afterResponse();
-        $this->trigger('request-spawn')->afterResponse();
 
         $this->assertNull($this->statistics->lastPass(), 'no pass on every request while a retry waits for its time');
-        $this->assertSame([], $this->console->commands);
         $this->assertSame(1, $this->statistics->pendingCount());
     }
 
@@ -327,9 +325,20 @@ class QueueRequestTriggerTest extends YesWikiTestCase
     }
 
     /**
+     * Why a process cannot be started: the server has no PHP binary to give it, or forbids proc_open().
+     *
+     * @return iterable<string, array{\Closure(): ?Process}>
+     */
+    public static function processFailures(): iterable
+    {
+        yield 'no PHP binary found' => [static fn (): ?Process => null];
+        yield 'proc_open disabled' => [static fn (): ?Process => throw new \RuntimeException('The Process class relies on proc_open, which is not available on your PHP installation.')];
+    }
+
+    /**
      * @param \Closure(): ?Process $answer
      */
-    #[DataProvider('spawnFailures')]
+    #[DataProvider('processFailures')]
     public function testAPinnedMessageNoProcessCanTakeRunsInTheRequest(\Closure $answer): void
     {
         $this->canFinishEarly = false;
@@ -401,29 +410,6 @@ class QueueRequestTriggerTest extends YesWikiTestCase
         $this->assertStringNotContainsString('queue.pass_failed', $journal, 'the cheap checks failed first: no pass was attempted');
     }
 
-    /** @return iterable<string, array{\Closure(): ?Process}> */
-    public static function spawnFailures(): iterable
-    {
-        yield 'no PHP binary found' => [static fn (): ?Process => null];
-        yield 'proc_open disabled' => [static fn (): ?Process => throw new \RuntimeException('The Process class relies on proc_open, which is not available on your PHP installation.')];
-    }
-
-    /** @param \Closure(): ?Process $answer */
-    #[DataProvider('spawnFailures')]
-    public function testASpawnThatCannotStartIsJournaledAndConsumesNothing(\Closure $answer): void
-    {
-        $this->console->answer = $answer;
-        $this->send('m0');
-        $trigger = $this->trigger('request-spawn');
-
-        $trigger->afterResponse();
-        $trigger->afterResponse();
-
-        $this->assertSame([], $this->handled, 'the fallback takes over once the launch has gone unanswered, not this request');
-        $this->assertStringContainsString('"action":"queue.spawn_unavailable"', $this->journaled());
-        $this->assertSame(['messenger:drain'], $this->console->commands, 'a failed launch is throttled as a started one');
-    }
-
     public function testInWorkerModeTheRequestConsumesWhenTheWorkerIsGone(): void
     {
         $this->sendSince('m0', 660);
@@ -460,61 +446,13 @@ class QueueRequestTriggerTest extends YesWikiTestCase
         $this->assertStringNotContainsString('queue.trigger_failed', $this->journaled());
     }
 
-    public function testInRequestSpawnASilentProcessLeadsToFallback(): void
-    {
-        $this->send('m0');
-        $this->trigger('request-spawn')->afterResponse();
-        $this->assertSame([], $this->handled, 'the process it started is to do it');
-
-        $this->clock->sleep(301);
-        $this->trigger('request-spawn')->afterResponse();
-
-        $this->assertSame(['m0'], $this->handled, 'five minutes on, nothing of that process has been seen');
-        $this->assertSame('fallback', $this->statistics->lastPass()['origin'] ?? null);
-        $this->assertSame(['messenger:drain'], $this->console->commands, 'the request that consumes leaves the launch to the next one');
-    }
-
-    public function testTheRequestThatLaunchesAProcessLeavesThePassToIt(): void
-    {
-        $this->send('m0');
-        QueueTestKit::recordPass($this->db, QueueConsumerMode::Request, $this->at('-10 minutes'), $this->at('-10 minutes'), 'empty', origin: QueuePassOrigin::Fallback, fallbackFor: QueueConsumerMode::RequestSpawn);
-
-        $this->trigger('request-spawn')->afterResponse();
-
-        $this->assertSame(['messenger:drain'], $this->console->commands, 'in fallback, a launch is still tried, to see the process come back');
-        $this->assertSame([], $this->handled);
-    }
-
-    public function testSpawnIsThrottled(): void
-    {
-        $this->send('m0');
-        $trigger = $this->trigger('request-spawn');
-
-        $trigger->afterResponse();
-        $trigger->afterResponse();
-
-        $this->assertSame([], $this->handled, 'the process it started does the work, not the request');
-        $this->assertSame(['messenger:drain'], $this->console->commands);
-        $this->assertSame([true], $this->console->detached, 'detached: it outlives the request');
-    }
-
-    public function testSpawnWithNothingToDoStartsNothing(): void
-    {
-        $this->scheduleDueIn(3600);
-
-        $this->trigger('request-spawn')->afterResponse();
-
-        $this->assertSame([], $this->console->commands);
-    }
-
-    public function testAHibernatedWikiStartsNothing(): void
+    public function testAHibernatedWikiConsumesNothing(): void
     {
         $this->send('m0');
 
-        $this->trigger('request-spawn', 'hibernate')->afterResponse();
+        $this->trigger('request', 'hibernate')->afterResponse();
         $this->trigger('request', 'archiving')->afterResponse();
 
-        $this->assertSame([], $this->console->commands, 'no process started only to find the wiki paused');
         $this->assertSame([], $this->handled);
     }
 
@@ -534,22 +472,6 @@ class QueueRequestTriggerTest extends YesWikiTestCase
         $this->assertSame([(int)$abandoned->last(TransportMessageIdStamp::class)?->getId()], array_column($this->statistics->failed(), 'id'));
         $this->assertSame([], $this->handled, 'reaped, nothing consumed');
         $this->assertSame(1, $this->statistics->pendingCount());
-
-        $this->trigger('request-spawn', 'archiving')->afterResponse();
-        $this->assertSame([], $this->console->commands, 'nothing left to reap: no process started');
-    }
-
-    public function testInRequestSpawnAHibernatedWikiStartsAProcessToReap(): void
-    {
-        $this->send('m0');
-        $this->transport->claimAs(QueueConsumerMode::Request, 1);
-        [$abandoned] = [...$this->transport->get()];
-        QueueTestHolders::hand($this->db, $this->schema, (int)$abandoned->last(TransportMessageIdStamp::class)?->getId(), QueueTestHolders::elsewhere());
-        $this->clock->sleep(62);
-
-        $this->trigger('request-spawn', 'hibernate')->afterResponse();
-
-        $this->assertSame(['messenger:drain'], $this->console->commands);
     }
 
     private function setWikiStatus(string $status): void
@@ -573,7 +495,6 @@ class QueueRequestTriggerTest extends YesWikiTestCase
             $this->statistics,
             new QueueFallback($settings, $this->statistics, new HibernationService(new ParameterBag(['wiki_status' => $wikiStatus])), $this->locks, $this->clock),
             $this->console,
-            $this->locks,
             new HibernationService(new ParameterBag(['wiki_status' => $wikiStatus])),
             $this->journal,
             $this->clock,
