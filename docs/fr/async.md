@@ -316,7 +316,8 @@ ActivityPub, `Purge...` et `Prune...` pour le ménage.
 Les traitements qui ont épuisé leurs tentatives, avec leur erreur. Pour chacun :
 
 - **Relancer** le remet dans la file, avec de nouvelles tentatives. À utiliser
-  une fois la cause réglée ;
+  une fois la cause réglée. Une sauvegarde ou une restauration n'a pas ce
+  bouton : elle se relance depuis la page des sauvegardes ;
 - **Ignorer** le retire de la liste (et de l'alerte), mais garde sa trace dans
   l'historique. Si le même problème revient, l'alerte revient : il n'existe pas
   de façon de « faire taire » une cause ;
@@ -361,7 +362,8 @@ C'est ici qu'on vérifie qu'un cron ou un worker passe vraiment.
   navigation, quel que soit le mode. C'est le premier réflexe quand une alerte
   dit que « plus rien ne traite ».
 - **Relancer** et **Ignorer** agissent sur tous les traitements en échec à la
-  fois ; **Voir** ouvre l'onglet concerné.
+  fois (**Relancer** laisse de côté les sauvegardes et les restaurations) ;
+  **Voir** ouvre l'onglet concerné.
 - **Générer un secret** apparaît en mode `api` sans secret.
 - **Comment faire ?** mène à l'explication de l'alerte, sur cette page.
 
@@ -393,9 +395,9 @@ une restauration à moitié faite rejouée sans vous serait pire que l'échec. S
 elle échoue ou est arrêtée en route, la page des sauvegardes affiche l'erreur et
 les dernières lignes écrites, et la page Traitements la liste parmi les
 traitements en échec. Corrigez la cause, puis relancez-la **depuis la page des
-sauvegardes**. **Relancer** sur la page Traitements ne la rejoue pas : elle y
-repasse en échec, sans rien toucher, avec un message qui renvoie à la page des
-sauvegardes. Vous pouvez l'y **Ignorer** ou la **Supprimer**.
+sauvegardes**. La page Traitements ne propose pas de la **Relancer**, et le
+**Relancer** de l'alerte la laisse en échec, avec un message qui renvoie à la
+page des sauvegardes. Vous pouvez l'y **Ignorer** ou la **Supprimer**.
 
 Si elle a été **arrêtée de force**, c'est le plus souvent que l'hébergeur coupe
 les requêtes trop longues (limite de temps de PHP-FPM, d'un proxy) ou qu'il a
