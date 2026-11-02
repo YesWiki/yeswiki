@@ -73,6 +73,12 @@ class QueueRequestTrigger implements RequestScopedState
         $this->workingDirectory = $workingDirectory ?? (\defined('YESWIKI_INSTANCE_DIR') ? YESWIKI_INSTANCE_DIR : (string)getcwd());
     }
 
+    /** Whether a message that must not run on a request's budget (RunsUnbudgeted) is this request's to run: no consumer of its own would take it soon. */
+    public function runsItself(): bool
+    {
+        return $this->settings->mode()->isBudgeted() || $this->fallback->consumerIsGone();
+    }
+
     /** Runs that message at the end of this request, after the response, without budget and whatever the mode; or, when the response cannot leave first, in a process of its own (handToAProcess()). */
     public function pin(int $messageId): void
     {
@@ -98,7 +104,7 @@ class QueueRequestTrigger implements RequestScopedState
             $pinned = $this->pinned;
             $this->pinned = [];
             $mode = $this->settings->mode();
-            $consumesByItself = $mode === QueueConsumerMode::Request;
+            $consumesByItself = $mode->consumesAtEndOfRequests();
             $fallback = !$consumesByItself && $this->fallback->shouldConsume();
             if ($pinned === [] && !$consumesByItself && !$fallback) {
                 return;

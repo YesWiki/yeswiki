@@ -55,15 +55,15 @@ class QueueFallback implements RequestScopedState
     ) {
     }
 
-    /** Whether a consumer of that mode can be replaced by the end of requests: all of them but the end of requests itself. */
-    public static function canFallBack(QueueConsumerMode $mode): bool
-    {
-        return $mode !== QueueConsumerMode::Request;
-    }
-
     public function startNewRequest(): void
     {
         $this->observed = null;
+    }
+
+    /** Who consumes now: the chosen mode, or `request` while the end of requests stands in for it. */
+    public function consumingMode(): QueueConsumerMode
+    {
+        return $this->status() === null ? $this->settings->mode() : QueueConsumerMode::Request;
     }
 
     /** The fallback the wiki is in, read once per request: for the pages, which a request does not open often. */
@@ -71,7 +71,7 @@ class QueueFallback implements RequestScopedState
     {
         $mode = $this->settings->mode();
 
-        return self::canFallBack($mode) ? $this->observed($mode)['status'] : null;
+        return $mode->consumesAtEndOfRequests() ? null : $this->observed($mode)['status'];
     }
 
     /**
@@ -87,7 +87,7 @@ class QueueFallback implements RequestScopedState
     public function consumerIsGone(): bool
     {
         $mode = $this->settings->mode();
-        if (!self::canFallBack($mode)) {
+        if ($mode->consumesAtEndOfRequests()) {
             return false;
         }
         ['seen' => $seen, 'status' => $status] = $this->observed($mode);
@@ -98,7 +98,7 @@ class QueueFallback implements RequestScopedState
             return false;
         }
 
-        return $seen === null || $this->clock->now()->getTimestamp() - $seen->getTimestamp() > QueueHealthChecks::stalledAfterSeconds($mode);
+        return $seen === null || $this->clock->now()->getTimestamp() - $seen->getTimestamp() > $mode->stalledAfterSeconds();
     }
 
     /**
@@ -111,7 +111,7 @@ class QueueFallback implements RequestScopedState
     public function shouldConsume(): bool
     {
         $mode = $this->settings->mode();
-        if (!self::canFallBack($mode)) {
+        if ($mode->consumesAtEndOfRequests()) {
             return false;
         }
         $now = $this->clock->now()->getTimestamp();
@@ -124,7 +124,7 @@ class QueueFallback implements RequestScopedState
         $this->runtimeLock->stampAt(self::CHECK_STAMP, $now);
         $this->runtimeLock->forget($active);
         $seen = $this->statistics->lastSeenAt($mode);
-        $consumes = $this->statistics->fallbackSince($mode, $seen, QueueHealthChecks::stalledAfterSeconds($mode)) !== null || $this->entersNow($mode, $now, $seen);
+        $consumes = $this->statistics->fallbackSince($mode, $seen, $mode->stalledAfterSeconds()) !== null || $this->entersNow($mode, $now, $seen);
         if ($consumes) {
             $this->runtimeLock->stampAt($active, $now);
         }
@@ -135,7 +135,7 @@ class QueueFallback implements RequestScopedState
     /**
      * Whether the chosen consumer is to be replaced now, when the end of requests does not consume for it yet.
      *
-     * Work has waited longer than the mode allows (QueueHealthChecks::stalledAfterSeconds()), and
+     * Work has waited longer than the mode allows (QueueConsumerMode::stalledAfterSeconds()), and
      * the consumer has not been seen for as long. On a quiet wiki nothing is queued while nothing
      * ticks the schedule: the schedule being due is the work that waits. A schedule that never
      * ticked has waited since the rule was first read.
@@ -154,7 +154,7 @@ class QueueFallback implements RequestScopedState
             $this->statistics->oldestPendingAt()?->getTimestamp(),
             $this->statistics->scheduleDueAt()?->getTimestamp() ?? $this->runtimeLock->lastTaken(self::WATCH_STAMP),
         ], static fn (?int $since): bool => $since !== null);
-        $patience = QueueHealthChecks::stalledAfterSeconds($mode);
+        $patience = $mode->stalledAfterSeconds();
 
         return $now - min($waiting) > $patience && ($seen === null || $now - $seen > $patience);
     }
@@ -168,7 +168,7 @@ class QueueFallback implements RequestScopedState
     {
         if ($this->observed === null || $this->observed['mode'] !== $mode) {
             $seen = $this->statistics->lastSeenAt($mode);
-            $since = $this->statistics->fallbackSince($mode, $seen, QueueHealthChecks::stalledAfterSeconds($mode));
+            $since = $this->statistics->fallbackSince($mode, $seen, $mode->stalledAfterSeconds());
             $this->observed = ['mode' => $mode, 'seen' => $seen, 'status' => $since === null ? null : new QueueFallbackStatus($mode, $since, $seen)];
         }
 

@@ -2,7 +2,9 @@
 
 namespace YesWiki\Admin\Message;
 
+use YesWiki\Kernel\Queue\NotReplayableByHand;
 use YesWiki\Kernel\Queue\RetryPolicy;
+use YesWiki\Kernel\Queue\RunsUnbudgeted;
 
 /**
  * "Make this backup": an archive an admin asked for, from the backups page, before an update or from another wiki fetching it (spec 9.5).
@@ -12,7 +14,7 @@ use YesWiki\Kernel\Queue\RetryPolicy;
  * `core:archive` used to. It is never retried: a backup that failed half way left nothing
  * worth finishing, and the admin who asked for it sees the failure and decides.
  */
-final class CreateArchive implements RetryPolicy
+final class CreateArchive implements RetryPolicy, RunsUnbudgeted, NotReplayableByHand
 {
     /**
      * @param list<string>      $foldersToInclude folders added to the usual ones

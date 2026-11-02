@@ -556,11 +556,8 @@ class ArchiveQueueTest extends YesWikiTestCase
         $this->assertArrayHasKey('canArchive', $status);
     }
 
-    /**
-     * A backup retried from the jobs page is a copy nothing follows: it would run on a visitor's budget, and the backups page would lift its `archiving` mid-way. It is refused, and touches nothing.
-     */
-    #[DataProvider('statuses')]
-    public function testAnArchiveRetriedFromTheJobsPageIsRefused(string $status): void
+    /** A backup in `failed` is not sent again from the jobs page: it would run with nothing following it, on a visitor's budget, and the backups page would lift its `archiving` mid-way. */
+    public function testAFailedArchiveIsNotReplayedByHand(): void
     {
         $archives = $this->archives('request');
         $archives->onArchive = static function (): void {
@@ -568,45 +565,17 @@ class ArchiveQueueTest extends YesWikiTestCase
         };
         $archives->startArchive();
         $this->endTheRequest();
-        $this->setWikiStatus($status);
-
         $copy = $this->failedCopyOf(CreateArchive::class);
-        $this->transport->requeue($copy);
-        // Taken by id, as no pass takes anything while the wiki is `archiving`: what is tested is that the handler refuses it.
-        $this->consumer->handleById($copy, QueueConsumerMode::Worker);
+
+        $this->assertFalse($this->transport->requeue($copy));
+        $this->drain();
 
         $this->assertCount(1, $archives->archived, 'the copy did not run');
-        $this->assertSame($status, $this->wikiStatus());
-        $refused = $this->statistics->failedMessage($this->failedCopyOf(CreateArchive::class));
-        $this->assertNotNull($refused);
-        $this->assertStringContainsString(_t('AU_RUN_NOT_REPLAYED'), (string)$refused['error']);
-    }
-
-    /** A blocking consumer may take the message before queue() has written its id under the uid: that first run is the run, not a copy. */
-    public function testARunTakenBeforeItsMessageIsRecordedGoesAhead(): void
-    {
-        $archives = $this->archives('worker');
-        $uid = $archives->startArchive();
-        $messageId = $this->messageOf($uid);
-        $info = json_decode($this->storage->read(ArchiveService::PROGRESS_FOLDER . '/info.json'), true);
-        $this->assertIsArray($info);
-        unset($info[$uid]['message']);
-        $this->storage->write(ArchiveService::PROGRESS_FOLDER . '/info.json', (string)json_encode($info));
-
-        $this->consumer->handleById($messageId, QueueConsumerMode::Worker);
-
-        $this->assertCount(1, $archives->archived);
-        $this->assertSame('handled', $this->statistics->messageState($messageId));
-    }
-
-    /** @return array<string, array{string}> */
-    public static function statuses(): array
-    {
-        return ['running' => ['running'], 'another run archiving' => ['archiving']];
+        $this->assertSame($copy, $this->failedCopyOf(CreateArchive::class), 'it stays where it failed');
     }
 
     /** "Retry all" on the jobs page would replay a restore half done: refused, whether or not the browser already saw the failure. */
-    public function testARestoreRetriedFromTheJobsPageIsRefused(): void
+    public function testAFailedRestoreIsNotReplayedByHand(): void
     {
         $archives = $this->archives('worker');
         $this->storage->write(ArchiveService::PRIVATE_FOLDER_NAME_IN_ZIP . '/backup.zip', 'zip');
@@ -617,7 +586,7 @@ class ArchiveQueueTest extends YesWikiTestCase
         $this->drain();
         $this->assertTrue($archives->getUIDStatus($uid)['failed']);
 
-        $this->transport->requeue($this->failedCopyOf(RestoreArchive::class));
+        $this->assertFalse($this->transport->requeue($this->failedCopyOf(RestoreArchive::class)));
         $this->drain();
 
         $this->assertCount(1, $archives->restored, 'the restore was not replayed');
@@ -675,7 +644,6 @@ class ArchiveQueueTest extends YesWikiTestCase
             QueueTestKit::recordPass($this->db, QueueConsumerMode::from($mode), $this->at('-1 hour'), $this->at('-1 minute'), '');
         }
         $settings = new QueueSettings(new ParameterBag([]), static fn (): array => []);
-        $fallback = $this->kit->fallback($settings);
         $this->trigger = $this->kit->requestTrigger($settings);
         $services = $this->getWiki()->services;
         $this->archives = new QueueArchiveService(
@@ -688,10 +656,7 @@ class ArchiveQueueTest extends YesWikiTestCase
             $this->storage,
             new LocalFiles(),
             $this->bus,
-            $settings,
-            $this->trigger,
             $this->statistics,
-            $fallback,
         );
 
         return $this->archives;

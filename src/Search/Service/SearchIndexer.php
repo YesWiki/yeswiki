@@ -2,7 +2,6 @@
 
 namespace YesWiki\Search\Service;
 
-use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\MessageBusInterface;
 use YesWiki\Kernel\Database\SqlParameters;
 use YesWiki\Kernel\Service\DbService;
@@ -113,8 +112,7 @@ class SearchIndexer
         }
 
         foreach (array_unique($tags) as $tag) {
-            $message = new ReindexContent($tag);
-            $this->bus->dispatch(new Envelope($message, [$message->uniqueStamp()]));
+            $this->bus->dispatch(new ReindexContent($tag));
         }
     }
 

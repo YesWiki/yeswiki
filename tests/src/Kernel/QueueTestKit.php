@@ -66,6 +66,8 @@ final class QueueTestKit
     public readonly QueueBudgetFactory $budgets;
     public readonly QueueBudgetContext $budgetContext;
     private readonly HibernationService $hibernation;
+    /** The end of the request the bus pins a message to (RunsUnbudgeted): the last one requestTrigger() built. */
+    private ?QueueRequestTrigger $trigger = null;
     /** @var resource|null */
     private $heldPassLock;
 
@@ -149,7 +151,12 @@ final class QueueTestKit
             $map[$type] = ["handler:{$type}"];
             $services["handler:{$type}"] = static fn (): \Closure => $handler;
         }
-        $this->bus = $bus = new QueueBus($this->transport, new QueueHandlerLocator($map, new ServiceLocator($services)), $journal);
+        $this->bus = $bus = new QueueBus(
+            $this->transport,
+            new QueueHandlerLocator($map, new ServiceLocator($services)),
+            $journal,
+            fn (): QueueRequestTrigger => $this->trigger ?? $this->requestTrigger(new QueueSettings(new ParameterBag([]), static fn (): array => [])),
+        );
         $this->recorder = $recorder = new QueueRecorder($db, $tasks, new JournalSchema($db), $clock);
         $this->locks = $locks = self::locksIn($this->lockDir);
         $schedule ??= new class implements ProvidesSchedule {
@@ -333,7 +340,7 @@ final class QueueTestKit
      */
     public function requestTrigger(QueueSettings $settings, ?ConsoleService $console = null, ?\Closure $finishResponse = null, ?string $workingDirectory = null, ?HibernationService $hibernation = null): QueueRequestTrigger
     {
-        return new QueueRequestTrigger(
+        return $this->trigger = new QueueRequestTrigger(
             $settings,
             $this->consumer,
             $this->budgets,
@@ -367,6 +374,12 @@ final class QueueTestKit
     public function configFile(): string
     {
         return $this->configFile;
+    }
+
+    /** The bus's way to the end of the request, for a bus that never sends a message a request must run itself (RunsUnbudgeted). */
+    public static function noRequest(): \Closure
+    {
+        return static fn (): QueueRequestTrigger => throw new \LogicException('No request runs here.');
     }
 
     /** RuntimeLock with every lock under $dir, so the tests never touch the dev wiki's cache/. */

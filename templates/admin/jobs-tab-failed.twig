@@ -28,8 +28,10 @@
             </td>
             <td>
               <div class="yw-jobs__actions">
-                <button type="button" class="yw-btn yw-btn--sm yw-btn--primary"
-                        hx-post="{{ url({ tag: 'api/admin/jobs/failed/' ~ row.id ~ '/retry' }) }}" {{ statusSwap|raw }}>{{ _t('ADMIN_JOBS_RETRY') }}</button>
+                {% if row.replayable %}
+                  <button type="button" class="yw-btn yw-btn--sm yw-btn--primary"
+                          hx-post="{{ url({ tag: 'api/admin/jobs/failed/' ~ row.id ~ '/retry' }) }}" {{ statusSwap|raw }}>{{ _t('ADMIN_JOBS_RETRY') }}</button>
+                {% endif %}
                 <button type="button" class="yw-btn yw-btn--sm"
                         hx-post="{{ url({ tag: 'api/admin/jobs/failed/' ~ row.id ~ '/ignore' }) }}" {{ statusSwap|raw }}>{{ _t('ADMIN_JOBS_IGNORE') }}</button>
                 <button type="button" class="yw-btn yw-btn--sm yw-btn--danger"

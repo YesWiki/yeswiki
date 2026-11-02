@@ -3,7 +3,6 @@
 namespace YesWiki\Admin\Message;
 
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
-use Symfony\Component\Messenger\Exception\UnrecoverableMessageHandlingException;
 use YesWiki\Admin\Service\ArchiveService;
 
 /**
@@ -13,8 +12,8 @@ use YesWiki\Admin\Service\ArchiveService;
  * brings back (`wiki_status` is one of the settings that stay this wiki's own): a failed restore
  * has no read-only status of its own to lift, and lifting one would end another run's.
  *
- * A copy retried from the jobs page (one by one or with "retry all") is refused: a restore is
- * never replayed behind the admin's back (see ArchiveService::isUnderWay()).
+ * A restore is never replayed behind the admin's back: its copy in `failed` is not retried from
+ * the jobs page, one by one nor with "retry all" (RestoreArchive is NotReplayableByHand).
  */
 #[AsMessageHandler]
 final class RestoreArchiveHandler
@@ -26,9 +25,6 @@ final class RestoreArchiveHandler
 
     public function __invoke(RestoreArchive $restore): void
     {
-        if (!$this->archives->isUnderWay($restore->uid)) {
-            throw new UnrecoverableMessageHandlingException(_t('AU_RUN_NOT_REPLAYED'));
-        }
         $this->archives->restoreArchive(
             $restore->filename,
             $restore->restoreFiles,

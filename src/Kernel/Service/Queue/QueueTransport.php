@@ -16,12 +16,14 @@ use Symfony\Component\Messenger\Transport\Serialization\PhpSerializer;
 use Symfony\Component\Messenger\Transport\Serialization\SerializerInterface;
 use Symfony\Component\Messenger\Transport\TransportInterface;
 use YesWiki\Kernel\Database\SqlParameters;
+use YesWiki\Kernel\Queue\Deduplicated;
+use YesWiki\Kernel\Queue\NotReplayableByHand;
 use YesWiki\Kernel\Queue\QueueClaimHolder;
 use YesWiki\Kernel\Queue\QueueClaimStamp;
 use YesWiki\Kernel\Queue\QueueConsumerMode;
 use YesWiki\Kernel\Queue\QueueFailureCause;
+use YesWiki\Kernel\Queue\ScheduledTask;
 use YesWiki\Kernel\Queue\UndecodableMessageException;
-use YesWiki\Kernel\Queue\UniqueStamp;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\RequestScopedState;
 
@@ -136,7 +138,7 @@ class QueueTransport implements TransportInterface, MessageCountAwareInterface, 
     /**
      * Queue the message, available after its DelayStamp if it has one.
      *
-     * With a UniqueStamp, a first send whose key matches a first send still waiting in this
+     * For a message that says it only needs doing once more (Deduplicated, and a scheduled task's run, on its task id), a first send whose key matches a first send still waiting in this
      * queue is absorbed by it: nothing is inserted, and the envelope comes back with the waiting
      * message's id. Only fresh triggers are absorbed that way. Messenger's own re-sends -- a retry
      * (RedeliveryStamp above 0), a definitive failure (SentToFailureTransportStamp), anything sent
@@ -157,7 +159,7 @@ class QueueTransport implements TransportInterface, MessageCountAwareInterface, 
         $now = $this->now();
         $delay = $envelope->last(DelayStamp::class)?->getDelay() ?? 0;
         $availableAt = $delay > 0 ? $now->modify("+{$delay} milliseconds") : $now;
-        $key = self::fitted($envelope->last(UniqueStamp::class)?->key);
+        $key = self::fitted(self::deduplicationKeyOf($envelope->getMessage()));
         $absorbable = $key !== null && $this->isFirstSend($envelope);
         $error = $this->queueName === self::FAILED_QUEUE ? QueueFailureCause::of($envelope) : null;
         $encoded = $this->serializer->encode($envelope);
@@ -477,13 +479,15 @@ class QueueTransport implements TransportInterface, MessageCountAwareInterface, 
      * drop it rather than send it back to `failed` if it failed again. A message that can no
      * longer be decoded goes back as it is (an extension may have brought its class back; if not,
      * get() returns it to `failed`).
+     *
+     * @return bool whether it went back; not when it left `failed` meanwhile, nor when its type is not to be replayed by hand (NotReplayableByHand)
      */
-    public function requeue(int $id): void
+    public function requeue(int $id): bool
     {
         $table = $this->schema->table();
         $row = $this->db->loadSingle("SELECT * FROM {$table} WHERE id = ? AND queue_name = ?", [$id, self::FAILED_QUEUE]);
-        if ($row === null) {
-            return;
+        if ($row === null || !self::replayableByHand((string)$row['message_type'])) {
+            return false;
         }
 
         $body = (string)$row['body'];
@@ -502,11 +506,27 @@ class QueueTransport implements TransportInterface, MessageCountAwareInterface, 
         } catch (MessageDecodingFailedException) {
         }
 
-        $this->db->query(
+        return $this->db->query(
             "UPDATE {$table} SET queue_name = ?, body = ?, headers = ?, attempts = 0, last_error = NULL, killed_in = NULL, available_at = ?, " . self::UNCLAIMED
             . ' WHERE id = ? AND queue_name = ?',
             [self::DEFAULT_QUEUE, $body, $headers, self::format($this->now()), $id, self::FAILED_QUEUE]
-        );
+        )->rowCount() === 1;
+    }
+
+    /** The key under which a message waits only once: the one it declares (Deduplicated), `task:<id>` for a scheduled task's run, none otherwise. */
+    private static function deduplicationKeyOf(object $message): ?string
+    {
+        return match (true) {
+            $message instanceof Deduplicated => $message->deduplicationKey(),
+            $message instanceof ScheduledTask => 'task:' . $message->taskId(),
+            default => null,
+        };
+    }
+
+    /** Whether the jobs page may send a failed message of that type again: every type but those that say otherwise (NotReplayableByHand). */
+    public static function replayableByHand(string $type): bool
+    {
+        return !is_a($type, NotReplayableByHand::class, true);
     }
 
     /**

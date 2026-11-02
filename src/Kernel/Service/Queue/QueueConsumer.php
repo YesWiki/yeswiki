@@ -303,7 +303,7 @@ class QueueConsumer
      */
     private function leaveATrace(QueuePassReport $report, QueueConsumerMode $mode, QueueBudget $budget, bool $responseAlreadySent, QueuePassOrigin $origin): QueuePassReport
     {
-        if ($origin === QueuePassOrigin::Consumer && $mode !== QueueConsumerMode::Request) {
+        if ($origin === QueuePassOrigin::Consumer && !$mode->consumesAtEndOfRequests()) {
             try {
                 $this->recorder->passFinished($this->recorder->passStarted($mode, $budget, !$responseAlreadySent), $report, memory_get_peak_usage(true));
             } catch (\Throwable) {

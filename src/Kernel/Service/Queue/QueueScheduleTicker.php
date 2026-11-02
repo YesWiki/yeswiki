@@ -12,7 +12,6 @@ use Symfony\Component\Scheduler\Trigger\TriggerInterface;
 use YesWiki\Kernel\Queue\ProvidesSchedule;
 use YesWiki\Kernel\Queue\ScheduledTask;
 use YesWiki\Kernel\Queue\ScheduleGenerator;
-use YesWiki\Kernel\Queue\UniqueStamp;
 use YesWiki\Kernel\Service\Journal;
 
 /**
@@ -21,7 +20,7 @@ use YesWiki\Kernel\Service\Journal;
  * The Scheduler here never runs a task: it produces, the queue consumes. QueueConsumer calls
  * tick() at the start of each pass and whenever a blocking consumer finds the queue empty, so
  * every mode gets its scheduled work the same way, as messages with retries, history and
- * failures like any other. A task's message is sent with a UniqueStamp on its id, so a run that
+ * failures like any other. A task's message waits under its task id (QueueTransport deduplicates it), so a run that
  * still waits (a wiki where passes are rare) absorbs the next one instead of piling up.
  *
  * What is due is decided by Symfony's rules (ScheduleGenerator, the loop of its MessageGenerator)
@@ -224,7 +223,7 @@ class QueueScheduleTicker
         }
 
         // QueueBus journals a queue it cannot write to, and hands the envelope back without an id.
-        $queued = $this->bus->dispatch($message, [new UniqueStamp('task:' . $message->taskId())])->last(TransportMessageIdStamp::class) !== null;
+        $queued = $this->bus->dispatch($message)->last(TransportMessageIdStamp::class) !== null;
         if ($queued) {
             $this->recorder->taskDispatched($message, $everySeconds, $nextDue);
         }

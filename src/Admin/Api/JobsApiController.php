@@ -8,7 +8,6 @@ use YesWiki\Admin\Service\JobsOverview;
 use YesWiki\Core\YesWikiController;
 use YesWiki\Identity\Service\RequestGuard;
 use YesWiki\Kernel\Api\QueueApiController;
-use YesWiki\Kernel\Queue\QueueConsumerMode;
 use YesWiki\Kernel\Queue\QueuePassOrigin;
 use YesWiki\Kernel\Queue\QueuePassReport;
 use YesWiki\Kernel\Service\ConfigurationFileProvider;
@@ -63,8 +62,7 @@ class JobsApiController extends YesWikiController
             return $refused;
         }
 
-        $mode = $this->getService(QueueSettings::class)->mode();
-        $mode = $mode->isBudgeted() ? $mode : QueueConsumerMode::Request;
+        $mode = $this->getService(QueueSettings::class)->mode()->forPassFromTheWeb();
         $budget = $this->getService(QueueBudgetFactory::class)->forMode($mode, true)->cappedTo(self::CONSUME_SECONDS);
         $report = $this->getService(QueueConsumer::class)->drain($mode, $budget, true, true, QueuePassOrigin::Manual);
 
@@ -208,13 +206,17 @@ class JobsApiController extends YesWikiController
      */
     private function requeued(array $messages): Response
     {
-        foreach ($messages as $message) {
-            $this->getService(QueueTransport::class)->requeue($message['id']);
+        $replayable = array_filter($messages, static fn (array $message): bool => QueueTransport::replayableByHand($message['type']));
+        if ($messages !== [] && $replayable === []) {
+            return $this->status(_t('ADMIN_JOBS_NOT_REPLAYABLE'), 'warning');
         }
+        $transport = $this->getService(QueueTransport::class);
+        // One retried meanwhile is not in `failed` any more: nothing was retried.
+        $requeued = count(array_filter($replayable, static fn (array $message): bool => $transport->requeue($message['id'])));
 
-        return $messages === []
+        return $requeued === 0
             ? $this->status(_t('ADMIN_JOBS_GONE'), 'warning')
-            : $this->status(_t('ADMIN_JOBS_RETRIED', ['count' => count($messages)]));
+            : $this->status(_t('ADMIN_JOBS_RETRIED', ['count' => $requeued]));
     }
 
     /**

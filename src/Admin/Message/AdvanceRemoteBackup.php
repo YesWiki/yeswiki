@@ -2,6 +2,7 @@
 
 namespace YesWiki\Admin\Message;
 
+use YesWiki\Kernel\Queue\Deduplicated;
 use YesWiki\Kernel\Queue\RetryPolicy;
 
 /**
@@ -9,14 +10,19 @@ use YesWiki\Kernel\Queue\RetryPolicy;
  *
  * It carries nothing: there is one fetch at a time, and its job file in the backups folder says
  * where it is. Each message queues the next one, so the fetch goes on without the admin's tab.
- * It is sent with UNIQUE_KEY, so that a fetch never has two chains of steps.
+ * It waits under UNIQUE_KEY (Deduplicated), so that a fetch never has two chains of steps.
  *
  * It is never retried: a step that fails has already given the fetch up and tidied the remote
  * wiki, and the admin, who sees why, starts it again.
  */
-final class AdvanceRemoteBackup implements RetryPolicy
+final class AdvanceRemoteBackup implements RetryPolicy, Deduplicated
 {
     public const UNIQUE_KEY = 'remote-backup';
+
+    public function deduplicationKey(): string
+    {
+        return self::UNIQUE_KEY;
+    }
 
     public function maxRetries(): int
     {

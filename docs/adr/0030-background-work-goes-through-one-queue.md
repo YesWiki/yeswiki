@@ -65,7 +65,7 @@ flowchart LR
 
   code -->|dispatch| bus
   providers --> ticker
-  ticker -->|"dispatch, UniqueStamp task:id"| bus
+  ticker -->|"dispatch, deduplicated on its task id"| bus
   bus -->|"QueueTransport::send"| queue
   req -->|"a pinned message on mod_php, CGI"| drainCmd
   req --> consumer
@@ -482,8 +482,15 @@ classDiagram
     class ToleratedFailure {
       <<interface>>
     }
-    class UniqueStamp {
-      +string key
+    class Deduplicated {
+      <<interface>>
+      +deduplicationKey() string
+    }
+    class RunsUnbudgeted {
+      <<interface>>
+    }
+    class NotReplayableByHand {
+      <<interface>>
     }
   }
   namespace Module_Message {
@@ -504,10 +511,12 @@ classDiagram
   DoThing ..|> ScheduledTask : when it recurs
   DoThing ..|> RetryPolicy : optional
   DoThing ..|> ToleratedFailure : optional
+  DoThing ..|> Deduplicated : optional
+  DoThing ..|> RunsUnbudgeted : optional
+  DoThing ..|> NotReplayableByHand : optional
   ModuleSchedule ..|> ProvidesSchedule
   ModuleSchedule ..> DoThing : RecurringMessage every()
   DoThingHandler ..> DoThing : handles
-  MessageBusInterface ..> UniqueStamp : optional stamp
 ```
 
 ### A piece of deferred work
@@ -540,16 +549,17 @@ classDiagram
 3. **The send**: inject `MessageBusInterface` (that is `QueueBus`) and call
    `dispatch(new DoThing($id))`. It only writes the row, in every mode and in the CLI too, and never
    breaks the caller: a queue it cannot write to is journaled as `queue.dispatch_failed`.
-   - `UniqueStamp('<module>:<what>')` is for work that only needs doing once more, however many
-     times it was asked for. The send is absorbed into an identical message that is still waiting
-     and untried (`ReindexContent::uniqueStamp()`, one key per Content).
+   - `Deduplicated::deduplicationKey()` (`'<module>:<what>'`) is for work that only needs doing
+     once more, however many times it was asked for. The send is absorbed into an identical message
+     that is still waiting and untried (`ReindexContent`, one key per Content). A scheduled task's
+     run is deduplicated on its task id without saying so.
    - Messenger's `DelayStamp` is for work that should wait.
 4. **Work longer than a pass** is done in slices. Each slice dispatches the next, so the work runs
    in every mode.
    - `QueueBudgetContext::sliceSeconds($atMost)` says how long a slice may take under the running
      pass's budget.
-   - The continuation is sent under a `UniqueStamp`. A "look again later" gets a key of its own, or
-     it would absorb the next real send and make it wait out its delay.
+   - The continuation is `Deduplicated`. A "look again later" gets a key of its own, or it would
+     absorb the next real send and make it wait out its delay.
    - Work that splits into independent items is better sent as one message per item: the
      consumer's budget already spreads them over passes (`Search/Message/ReindexContent`).
 5. **When they apply:**
@@ -558,15 +568,20 @@ classDiagram
      (`SendDigest`). Use more for a remote server that comes and goes (`DeliverActivity`).
    - **`ToleratedFailure`**, when failures are routine. The generic `queue-failed` alert then leaves
      the type out, and the module declares a `ProvidesHealthChecks` of its own to judge it. That
-     check reads `QueueStatistics::outcomesOfType()` and `failedGroups()`, and offers the jobs
+     check reads `QueueStatistics::outcomes()` for its type and `failedGroups()`, and offers the jobs
      page's buttons with `->offers(QueueHealthChecks::offeringFailedOf(DoThing::class))`
      (`FederationQueueHealthChecks`).
    - **A subscriber of `QueueConsumer::MESSAGE_KILLED`**, when the message holds some state of the
      wiki that a killed run would leave behind (`ArchiveService::releaseWhatAKilledRunLeft()`).
+   - **`RunsUnbudgeted`**, when an admin starts the work and it must not run on a request's budget:
+     where no consumer would take it soon, the bus has the sending request run it once its response
+     has left (`CreateArchive`, `RestoreArchive`).
+   - **`NotReplayableByHand`**, when a copy in `failed` must not be sent again from the jobs page:
+     it would follow nothing any more (`CreateArchive`, `RestoreArchive`).
 6. **Not done:**
    - calling the handler from the code that sends, or consuming from there;
-   - pinning a message to the request (`QueueRequestTrigger::pin()`), unless an admin started it
-     and waits for it, as for a backup.
+   - pinning a message to the request (`QueueRequestTrigger::pin()`) by hand: a message that needs
+     it says so (`RunsUnbudgeted`).
 
 ### A scheduled task
 
@@ -619,7 +634,7 @@ classDiagram
 - [ ] `Message/<X>.php`: final, readonly, identifiers only; its docblock says why it is retried or not
 - [ ] `Message/<X>Handler.php`: the attribute, a typed `__invoke()`; idempotent, reads the state as it
       is now, throws to fail
-- [ ] sent under a `UniqueStamp` when the work is idempotent; long work in slices
+- [ ] `Deduplicated` when the work is idempotent; long work in slices
 - [ ] `RetryPolicy`, `ToleratedFailure` with a check of the module's own, a `MESSAGE_KILLED`
       subscriber: each when it applies
 - [ ] recurring: a `ScheduledTask` with a stable id and a translated label, declared in

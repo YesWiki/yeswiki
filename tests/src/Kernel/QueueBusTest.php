@@ -21,6 +21,7 @@ use YesWiki\Kernel\Service\Queue\QueueTransport;
 use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';
+require_once 'tests/src/Kernel/QueueTestKit.php';
 require_once 'tests/src/Kernel/QueueTestMessageHandler.php';
 
 /** The bus the wiki dispatches on: a message always goes to the queue, and only the consumer ever runs a handler. */
@@ -60,7 +61,7 @@ class QueueBusTest extends YesWikiTestCase
             [QueueTestMessage::class => ['handler']],
             new ServiceLocator(['handler' => fn () => $this->handler])
         );
-        $this->bus = new QueueBus($this->transport, $locator, $this->journal);
+        $this->bus = new QueueBus($this->transport, $locator, $this->journal, QueueTestKit::noRequest());
     }
 
     protected function tearDown(): void
@@ -126,7 +127,7 @@ class QueueBusTest extends YesWikiTestCase
 
     public function testAReceivedMessageNobodyHandlesFailsLoudly(): void
     {
-        $bus = new QueueBus($this->transport, new QueueHandlerLocator([], new ServiceLocator([])), $this->journal);
+        $bus = new QueueBus($this->transport, new QueueHandlerLocator([], new ServiceLocator([])), $this->journal, QueueTestKit::noRequest());
 
         $this->expectException(NoHandlerForMessageException::class);
 

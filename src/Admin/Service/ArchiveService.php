@@ -6,7 +6,6 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\Messenger\MessageBusInterface;
-use Symfony\Component\Messenger\Stamp\DelayStamp;
 use Symfony\Component\Messenger\Stamp\TransportMessageIdStamp;
 use YesWiki\Admin\Exception\StopArchiveException;
 use YesWiki\Admin\Message\CreateArchive;
@@ -16,7 +15,6 @@ use YesWiki\Files\Service\Storage;
 use YesWiki\Kernel\Database\DumpRewriter;
 use YesWiki\Kernel\Database\SqlStatementSplitter;
 use YesWiki\Kernel\Entity\Event;
-use YesWiki\Kernel\Queue\QueueConsumerMode;
 use YesWiki\Kernel\Service\ConfigurationFileProvider;
 use YesWiki\Kernel\Service\ConfigurationLiteral;
 use YesWiki\Kernel\Service\ConfigurationService;
@@ -24,10 +22,7 @@ use YesWiki\Kernel\Service\ConsoleService;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Kernel\Service\Queue\QueueConsumer;
-use YesWiki\Kernel\Service\Queue\QueueFallback;
 use YesWiki\Kernel\Service\Queue\QueueRecorder;
-use YesWiki\Kernel\Service\Queue\QueueRequestTrigger;
-use YesWiki\Kernel\Service\Queue\QueueSettings;
 use YesWiki\Kernel\Service\Queue\QueueStatistics;
 use YesWiki\Kernel\Service\UrlFormatter;
 
@@ -89,23 +84,6 @@ class ArchiveService implements EventSubscriberInterface
         " - On Apache server, check that the file `.htaccess` is taken in count.\n" .
         " - On Nginx server or other, configure the server to **deny all** access on this folder\n";
 
-    /**
-     * The modes in which the queue runs only when something calls it: there the admin's own request runs the backup or the restore, once the response has left (spec 9.5).
-     *
-     * In `worker` a consumer of its own takes the message, while it is seen at work
-     * (QueueFallback::consumerIsGone()); otherwise the admin's request runs it too.
-     */
-    private const RUN_IN_THE_ADMINS_REQUEST = [QueueConsumerMode::Request, QueueConsumerMode::Api];
-
-    /**
-     * How long a run the admin's request is to make waits before any pass may take it instead.
-     *
-     * The request takes it as soon as the response has left; meanwhile another visitor's
-     * end-of-request pass would otherwise take it first, on a request's budget, with PHP's time
-     * limit still on. Should the request end without running it, the queue gets it after this.
-     */
-    private const LEFT_TO_THE_ADMINS_REQUEST_SECONDS = 300;
-
     protected ConfigurationService $configurationService;
     protected ConsoleService $consoleService;
     protected DbService $dbService;
@@ -125,10 +103,7 @@ class ArchiveService implements EventSubscriberInterface
         Storage $storage,
         private readonly LocalFiles $localFiles,
         private readonly MessageBusInterface $bus,
-        private readonly QueueSettings $queueSettings,
-        private readonly QueueRequestTrigger $requestTrigger,
         private readonly QueueStatistics $queueStatistics,
-        private readonly QueueFallback $queueFallback,
     ) {
         $this->storage = $storage;
         $this->urlFormatter = $urlFormatter;
@@ -512,9 +487,7 @@ class ArchiveService implements EventSubscriberInterface
      */
     private function queue(CreateArchive|RestoreArchive $run): bool
     {
-        $inThisRequest = in_array($this->queueSettings->mode(), self::RUN_IN_THE_ADMINS_REQUEST, true) || $this->queueFallback->consumerIsGone();
-        $stamps = $inThisRequest ? [new DelayStamp(self::LEFT_TO_THE_ADMINS_REQUEST_SECONDS * 1000)] : [];
-        $id = $this->bus->dispatch($run, $stamps)->last(TransportMessageIdStamp::class)?->getId();
+        $id = $this->bus->dispatch($run)->last(TransportMessageIdStamp::class)?->getId();
         if ($id === null) {
             $this->cleanUID($run->uid);
 
@@ -529,9 +502,6 @@ class ArchiveService implements EventSubscriberInterface
                 $info[$run->uid]['restore'] = true;
             }
             $this->setInfoToFile($info);
-        }
-        if ($inThisRequest) {
-            $this->requestTrigger->pin((int)$id);
         }
 
         return true;
@@ -1231,29 +1201,6 @@ class ArchiveService implements EventSubscriberInterface
         $results['output'] = $output;
 
         return $results;
-    }
-
-    /**
-     * Whether the run of that uid is the one being handled now: the uid is still followed, and the message it records, if any yet, is in progress.
-     *
-     * A backup or restore retried from the jobs page is a copy with an id of its own, while the
-     * uid still records the message that failed (or the uid is gone, once the browser saw the
-     * failure). Such a copy would run with nothing following it: not pinned to a request, so on a
-     * visitor's budget; its `archiving` lifted by the first visit to the backups page, which sees
-     * the run it knows of dead; a restore replayed by "retry all". Its handler refuses it instead.
-     *
-     * An uid that records no message yet is the first run's own: queue() writes the id once the
-     * dispatch has returned, and a blocking consumer may take the message in between.
-     */
-    public function isUnderWay(string $uid): bool
-    {
-        $info = $this->getInfoFromFile();
-        if (!isset($info[$uid])) {
-            return false;
-        }
-        $messageId = $info[$uid]['message'] ?? null;
-
-        return !is_int($messageId) || $this->queueStatistics->messageState($messageId) === 'running';
     }
 
     /**

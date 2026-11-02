@@ -2,7 +2,9 @@
 
 namespace YesWiki\Admin\Message;
 
+use YesWiki\Kernel\Queue\NotReplayableByHand;
 use YesWiki\Kernel\Queue\RetryPolicy;
+use YesWiki\Kernel\Queue\RunsUnbudgeted;
 
 /**
  * "Put this backup back": a restore an admin asked for from the backups page (spec 9.5).
@@ -11,7 +13,7 @@ use YesWiki\Kernel\Queue\RetryPolicy;
  * restore that stopped half way has already replaced part of the wiki, and running it again
  * on its own, later, is the last thing an admin would want.
  */
-final class RestoreArchive implements RetryPolicy
+final class RestoreArchive implements RetryPolicy, RunsUnbudgeted, NotReplayableByHand
 {
     /** @param string $filename the archive's name in the backups folder */
     public function __construct(

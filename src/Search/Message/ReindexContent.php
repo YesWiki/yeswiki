@@ -2,16 +2,16 @@
 
 namespace YesWiki\Search\Message;
 
-use YesWiki\Kernel\Queue\UniqueStamp;
+use YesWiki\Kernel\Queue\Deduplicated;
 
 /**
  * "Bring this Content's search index rows up to date": what a save, a rename, a form change or a migration sends, one per Content.
  *
  * It carries the tag only: the handler reads the Content as it is when it runs, so saving a
- * Content twice before then still costs one reindex, and the message is sent under uniqueStamp()
- * so that the second save is absorbed into the first while it waits.
+ * Content twice before then still costs one reindex, and the second save is absorbed into the
+ * first while it waits (Deduplicated).
  */
-final class ReindexContent
+final class ReindexContent implements Deduplicated
 {
     public const UNIQUE_KEY_PREFIX = 'search:reindex:';
 
@@ -19,8 +19,8 @@ final class ReindexContent
     {
     }
 
-    public function uniqueStamp(): UniqueStamp
+    public function deduplicationKey(): string
     {
-        return new UniqueStamp(self::UNIQUE_KEY_PREFIX . $this->tag);
+        return self::UNIQUE_KEY_PREFIX . $this->tag;
     }
 }

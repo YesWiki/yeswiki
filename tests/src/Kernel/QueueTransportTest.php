@@ -17,7 +17,6 @@ use Symfony\Component\Messenger\Stamp\SentToFailureTransportStamp;
 use Symfony\Component\Messenger\Stamp\TransportMessageIdStamp;
 use YesWiki\Kernel\Queue\QueueClaimHolder;
 use YesWiki\Kernel\Queue\QueueConsumerMode;
-use YesWiki\Kernel\Queue\UniqueStamp;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\JournalSchema;
 use YesWiki\Kernel\Service\Queue\QueueCheckpoint;
@@ -30,12 +29,12 @@ use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';
 require_once 'tests/src/Kernel/QueueTestMessage.php';
+require_once 'tests/src/Kernel/QueueTestUniqueMessage.php';
 require_once 'tests/src/Kernel/QueueTestTask.php';
 require_once 'tests/src/Kernel/QueueTestHolders.php';
 
 /** The Messenger transport that keeps the queue in the wiki's own database, and its claim that two consumers never share. */
 #[CoversClass(QueueTransport::class)]
-#[CoversClass(UniqueStamp::class)]
 #[CoversClass(QueueClaimHolder::class)]
 class QueueTransportTest extends YesWikiTestCase
 {
@@ -106,21 +105,21 @@ class QueueTransportTest extends YesWikiTestCase
         $this->assertCount(1, [...$this->transport->get()]);
     }
 
-    public function testUniqueStampDoesNotDuplicateAPendingMessage(): void
+    public function testADeduplicatedMessageDoesNotDuplicateAPendingOne(): void
     {
-        $first = $this->transport->send(new Envelope(new QueueTestMessage('one'), [new UniqueStamp('search:drain')]));
-        $second = $this->transport->send(new Envelope(new QueueTestMessage('two'), [new UniqueStamp('search:drain')]));
+        $first = $this->transport->send(new Envelope(new QueueTestUniqueMessage('one', 'search:drain')));
+        $second = $this->transport->send(new Envelope(new QueueTestUniqueMessage('two', 'search:drain')));
 
         $this->assertSame(1, $this->transport->getMessageCount());
         $this->assertSame(self::idOf($first), self::idOf($second), 'the caller is told which message will do the work');
     }
 
-    public function testUniqueStampAllowsANewOneOnceTheFirstIsTaken(): void
+    public function testADeduplicatedMessageAllowsANewOneOnceTheFirstIsTaken(): void
     {
-        $this->transport->send(new Envelope(new QueueTestMessage('one'), [new UniqueStamp('search:drain')]));
+        $this->transport->send(new Envelope(new QueueTestUniqueMessage('one', 'search:drain')));
         [$taken] = [...$this->transport->get()];
 
-        $again = $this->transport->send(new Envelope(new QueueTestMessage('two'), [new UniqueStamp('search:drain')]));
+        $again = $this->transport->send(new Envelope(new QueueTestUniqueMessage('two', 'search:drain')));
 
         $this->assertNotSame(self::idOf($taken), self::idOf($again));
         $this->assertSame(1, $this->transport->getMessageCount());
@@ -129,12 +128,12 @@ class QueueTransportTest extends YesWikiTestCase
         ));
     }
 
-    /** R7: Messenger re-sends the envelope with its UniqueStamp; absorbing the retry would drop its count, and a handler that always fails would never reach `failed`. */
+    /** R7: Messenger re-sends the envelope of a deduplicated message; absorbing the retry would drop its count, and a handler that always fails would never reach `failed`. */
     public function testARetryIsNeverAbsorbedByAWaitingMessage(): void
     {
-        $this->transport->send(new Envelope(new QueueTestMessage('first'), [new UniqueStamp('search:drain')]));
+        $this->transport->send(new Envelope(new QueueTestUniqueMessage('first', 'search:drain')));
         [$taken] = [...$this->transport->get()];
-        $fresh = $this->transport->send(new Envelope(new QueueTestMessage('fresh'), [new UniqueStamp('search:drain')]));
+        $fresh = $this->transport->send(new Envelope(new QueueTestUniqueMessage('fresh', 'search:drain')));
 
         $retry = $this->transport->send($taken->with(new RedeliveryStamp(1), new DelayStamp(60000)));
 
@@ -147,11 +146,11 @@ class QueueTransportTest extends YesWikiTestCase
     /** R7: a retry may wait up to 30 min; a fresh trigger must not wait behind it. */
     public function testAFreshTriggerIsNotAbsorbedIntoADelayedRetry(): void
     {
-        $this->transport->send(new Envelope(new QueueTestMessage('first'), [new UniqueStamp('search:drain')]));
+        $this->transport->send(new Envelope(new QueueTestUniqueMessage('first', 'search:drain')));
         [$taken] = [...$this->transport->get()];
         $retry = $this->transport->send($taken->with(new RedeliveryStamp(1), new DelayStamp(1800000)));
 
-        $fresh = $this->transport->send(new Envelope(new QueueTestMessage('fresh'), [new UniqueStamp('search:drain')]));
+        $fresh = $this->transport->send(new Envelope(new QueueTestUniqueMessage('fresh', 'search:drain')));
 
         $this->assertNotSame(self::idOf($retry), self::idOf($fresh));
         $received = [...$this->transport->get()];
@@ -163,8 +162,7 @@ class QueueTransportTest extends YesWikiTestCase
     public function testEveryDefinitiveFailureHasItsOwnRowAndCauseInFailed(): void
     {
         $failed = $this->transport->withQueue('failed');
-        $fail = static fn (string $why): Envelope => new Envelope(new QueueTestMessage('broken'), [
-            new UniqueStamp('task:digest'),
+        $fail = static fn (string $why): Envelope => new Envelope(new QueueTestUniqueMessage('broken', 'task:digest'), [
             new SentToFailureTransportStamp('default'),
             new RedeliveryStamp(0),
             ErrorDetailsStamp::create(new \RuntimeException($why)),
@@ -661,9 +659,9 @@ class QueueTransportTest extends YesWikiTestCase
             $long = 'search:reindex:' . str_repeat('é', 145) . 'l-ete-a-nantes' . str_repeat('x', 126);
             $sibling = mb_substr($long, 0, 160) . str_repeat('y', mb_strlen($long) - 160);
 
-            $first = $transport->send(new Envelope(new QueueTestMessage('one'), [new UniqueStamp($long)]));
-            $again = $transport->send(new Envelope(new QueueTestMessage('two'), [new UniqueStamp($long)]));
-            $other = $transport->send(new Envelope(new QueueTestMessage('three'), [new UniqueStamp($sibling)]));
+            $first = $transport->send(new Envelope(new QueueTestUniqueMessage('one', $long)));
+            $again = $transport->send(new Envelope(new QueueTestUniqueMessage('two', $long)));
+            $other = $transport->send(new Envelope(new QueueTestUniqueMessage('three', $sibling)));
 
             $this->assertSame(self::idOf($first), self::idOf($again));
             $this->assertNotSame(self::idOf($first), self::idOf($other));
@@ -745,9 +743,9 @@ class QueueTransportTest extends YesWikiTestCase
             $other = new QueueTransport($theirs, new QueueSchema($theirs), clock: $clock);
 
             for ($i = 0; $i < 6; $i++) {
-                $transport->send(new Envelope(new QueueTestMessage("m{$i}"), [new UniqueStamp("k{$i}")]));
+                $transport->send(new Envelope(new QueueTestUniqueMessage("m{$i}", "k{$i}")));
             }
-            $transport->send(new Envelope(new QueueTestMessage('duplicate'), [new UniqueStamp('k0')]));
+            $transport->send(new Envelope(new QueueTestUniqueMessage('duplicate', 'k0')));
             $this->assertSame(6, $other->getMessageCount());
 
             $taken = self::claimAlternately($transport, $other);
@@ -758,8 +756,8 @@ class QueueTransportTest extends YesWikiTestCase
             }
             $this->assertSame(0, $transport->getMessageCount());
 
-            $retried = $transport->send(new Envelope(new QueueTestMessage('retried'), [new UniqueStamp('k1'), new RedeliveryStamp(2)]));
-            $this->assertNotSame(self::idOf($retried), self::idOf($transport->send(new Envelope(new QueueTestMessage('fresh'), [new UniqueStamp('k1')]))));
+            $retried = $transport->send(new Envelope(new QueueTestUniqueMessage('retried', 'k1'), [new RedeliveryStamp(2)]));
+            $this->assertNotSame(self::idOf($retried), self::idOf($transport->send(new Envelope(new QueueTestUniqueMessage('fresh', 'k1')))));
             $broken = $other->withQueue('failed')->send(new Envelope(new QueueTestMessage('broken'), [
                 new SentToFailureTransportStamp('default'),
                 ErrorDetailsStamp::create(new \RuntimeException('boom')),

@@ -26,11 +26,6 @@ use YesWiki\Kernel\Service\HibernationService;
  */
 class QueueHealthChecks implements ProvidesHealthChecks
 {
-    /** Seconds the oldest waiting message may wait before nothing seems to be consuming. */
-    private const STALLED_AFTER_BLOCKING = 600;
-    private const STALLED_AFTER_SCHEDULED = 3 * 3600;
-    private const STALLED_AFTER_VISITS = 24 * 3600;
-
     /** Seconds after which a queue that still moves is allowed to be called a backlog. */
     private const BACKLOG_AFTER_BLOCKING = 3600;
     private const BACKLOG_AFTER_OTHERS = 6 * 3600;
@@ -63,16 +58,6 @@ class QueueHealthChecks implements ProvidesHealthChecks
         private readonly QueueBudgetFactory $budgets,
         private readonly ClockInterface $clock,
     ) {
-    }
-
-    /** How long no consumer may have been seen at work, in the mode the wiki consumes in, while messages are available, before `queue-stalled` fires. */
-    public static function stalledAfterSeconds(QueueConsumerMode $mode): int
-    {
-        return match ($mode) {
-            QueueConsumerMode::Worker => self::STALLED_AFTER_BLOCKING,
-            QueueConsumerMode::Api => self::STALLED_AFTER_SCHEDULED,
-            QueueConsumerMode::Request => self::STALLED_AFTER_VISITS,
-        };
     }
 
     /**
@@ -186,8 +171,7 @@ class QueueHealthChecks implements ProvidesHealthChecks
         }
         $lastActivity = $this->statistics->lastActivityAt();
         $idle = $lastActivity === null ? $age : $this->clock->now()->getTimestamp() - $lastActivity->getTimestamp();
-        $judgedAs = $this->fallback->status() === null ? $this->settings->mode() : QueueConsumerMode::Request;
-        if ($idle <= self::stalledAfterSeconds($judgedAs) || $this->hibernation->isWikiHibernatedNow()) {
+        if ($idle <= $this->fallback->consumingMode()->stalledAfterSeconds() || $this->hibernation->isWikiHibernatedNow()) {
             return null;
         }
 
@@ -303,7 +287,7 @@ class QueueHealthChecks implements ProvidesHealthChecks
      */
     public static function isOverdue(array $task, QueueConsumerMode $mode, int $now): bool
     {
-        return $task['nextDueAt'] !== null && $now - $task['nextDueAt']->getTimestamp() > max($task['everySeconds'], self::stalledAfterSeconds($mode));
+        return $task['nextDueAt'] !== null && $now - $task['nextDueAt']->getTimestamp() > max($task['everySeconds'], $mode->stalledAfterSeconds());
     }
 
     /**
@@ -445,7 +429,7 @@ class QueueHealthChecks implements ProvidesHealthChecks
 
     private function visitorCost(): ?string
     {
-        if ($this->settings->mode() !== QueueConsumerMode::Request) {
+        if (!$this->settings->mode()->consumesAtEndOfRequests()) {
             return null;
         }
         $waits = $this->statistics->visitorWaits(self::VISITOR_WINDOW_SECONDS);

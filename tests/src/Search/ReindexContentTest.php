@@ -26,8 +26,10 @@ use YesWiki\Search\Service\SearchIndexQuery;
 use YesWiki\Search\Service\SearchIndexSchema;
 use YesWiki\Search\Service\SearchIndexSubscriber;
 use YesWiki\Test\Core\YesWikiTestCase;
+use YesWiki\Test\Kernel\QueueTestKit;
 
 require_once 'tests/YesWikiTestCase.php';
+require_once 'tests/src/Kernel/QueueTestKit.php';
 
 /** Reindexing goes through the queue: one ReindexContent per Content, and nothing else reindexes. */
 #[CoversClass(ReindexContent::class)]
@@ -164,7 +166,7 @@ class ReindexContentTest extends YesWikiTestCase
                 $services->get(DbService::class),
                 $services->get(SearchIndexSchema::class),
                 $services->get(SearchableTextExtractor::class),
-                new QueueBus($transport, new QueueHandlerLocator([], new ServiceLocator([])), $journal),
+                new QueueBus($transport, new QueueHandlerLocator([], new ServiceLocator([])), $journal, QueueTestKit::noRequest()),
                 $services->get(QueueStatistics::class)
             );
 

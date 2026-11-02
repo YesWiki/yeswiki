@@ -17,13 +17,6 @@ class QueueBudgetFactory
     private const MARGIN_SECONDS = 2.0;
     private const MARGIN_RATIO = 0.1;
 
-    /** `request` while the visitor waits for the response (mod_php, CGI: it cannot leave before the script ends). */
-    private const CEILING_VISITOR_WAITS = 3.0;
-    /** `request` once the response has left (FPM, LiteSpeed, worker). */
-    private const CEILING_RESPONSE_SENT = 20.0;
-    /** `api`: an HTTP caller (online cron, monitor) gives up long before a command would. */
-    private const CEILING_API = 50.0;
-
     private const MEMORY_RATIO = 0.8;
 
     /** How long a message may stay in progress when no PHP limit would cut it: blocking consumers, passes on a server without `max_execution_time`, and the messages a request pins to its end. */
@@ -68,12 +61,7 @@ class QueueBudgetFactory
             $killLimit = self::KILL_LIMIT_NO_PHP_LIMIT;
         }
 
-        // The budgeted modes are `request` and `api`: the blocking ones returned above.
-        $ceiling = $mode === QueueConsumerMode::Api
-            ? self::CEILING_API
-            : ($responseAlreadySent ? self::CEILING_RESPONSE_SENT : self::CEILING_VISITOR_WAITS);
-
-        return new QueueBudget($now + $this->capped($usable, $ceiling), $this->memoryCeiling(), $killLimit);
+        return new QueueBudget($now + $this->capped($usable, $mode->passCeilingSeconds($responseAlreadySent)), $this->memoryCeiling(), $killLimit);
     }
 
     /**

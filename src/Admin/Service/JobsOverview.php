@@ -17,6 +17,7 @@ use YesWiki\Kernel\Service\Queue\QueueRequestTrigger;
 use YesWiki\Kernel\Service\Queue\QueueScheduleTicker;
 use YesWiki\Kernel\Service\Queue\QueueSettings;
 use YesWiki\Kernel\Service\Queue\QueueStatistics;
+use YesWiki\Kernel\Service\Queue\QueueTransport;
 
 /**
  * What the background jobs page shows (messenger / scheduler, spec §11.3).
@@ -282,7 +283,7 @@ class JobsOverview
                 'time' => (int)ini_get('max_execution_time') > 0 ? ini_get('max_execution_time') . ' s' : _t('ADMIN_JOBS_UNLIMITED'),
                 'memory' => (string)ini_get('memory_limit'),
             ]),
-            'visitorsWait' => $mode === QueueConsumerMode::Request && !$respondsEarly,
+            'visitorsWait' => $mode->consumesAtEndOfRequests() && !$respondsEarly,
             'pace' => _t($mode === QueueConsumerMode::Worker && $this->settings->isServedByBinary() ? 'QUEUE_PACE_WORKER_SUPERVISED' : 'QUEUE_PACE_' . strtoupper($mode->value)),
             'lastPass' => $fallback !== null
                 ? $this->ago($fallback->lastSeen)
@@ -290,7 +291,7 @@ class JobsOverview
             'running' => $fallback === null && $lastPass !== null && $lastPass['stopReason'] === '',
             // In a fallback, the last pass is the chosen consumer's, which is late by definition: the requests' passes are the alert's to tell.
             'lastSeenMode' => $fallback === null ? null : _t('QUEUE_MODE_' . strtoupper($mode->value)),
-            'late' => $fallback !== null || ($idle !== null && $idle > QueueHealthChecks::stalledAfterSeconds($mode)),
+            'late' => $fallback !== null || ($idle !== null && $idle > $mode->stalledAfterSeconds()),
             'api' => $mode === QueueConsumerMode::Api,
             'hasSecret' => $this->settings->consumeSecret() !== '',
         ];
@@ -348,6 +349,7 @@ class JobsOverview
             'error' => $message['error'],
             'killedIn' => $message['killedIn'],
             'since' => $this->ago($message['createdAt']),
+            'replayable' => QueueTransport::replayableByHand($message['type']),
         ], $this->statistics->failed(self::LISTED));
     }
 

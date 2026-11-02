@@ -463,7 +463,7 @@ class QueueScheduleTickerTest extends YesWikiTestCase
 
         return new QueueScheduleTicker(
             [$provider, ...$more],
-            new QueueBus($this->transport, new QueueHandlerLocator([], new ServiceLocator([])), $journal),
+            new QueueBus($this->transport, new QueueHandlerLocator([], new ServiceLocator([])), $journal, QueueTestKit::noRequest()),
             new QueueCheckpoint(new QueueTaskRows($this->db, $this->schema, new NativeClock()), new RuntimeLock()),
             new QueueRecorder($this->db, new QueueTaskRows($this->db, $this->schema, $this->clock), new JournalSchema($this->db), $this->clock),
             $this->clock,

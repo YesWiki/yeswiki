@@ -3,7 +3,6 @@
 namespace YesWiki\Admin\Message;
 
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
-use Symfony\Component\Messenger\Exception\UnrecoverableMessageHandlingException;
 use YesWiki\Admin\Service\ArchiveService;
 
 /**
@@ -14,8 +13,8 @@ use YesWiki\Admin\Service\ArchiveService;
  * backup never leaves the wiki read-only -- unless the wiki was already `archiving` before this
  * run began: that status belongs to another run, which this one must not cut short.
  *
- * A copy retried from the jobs page is refused before anything is touched (see
- * ArchiveService::isUnderWay()): nothing follows it, so nothing would lift what it sets.
+ * A copy in `failed` is never retried from the jobs page (CreateArchive is NotReplayableByHand):
+ * nothing would follow it, so nothing would lift what it sets.
  */
 #[AsMessageHandler]
 final class CreateArchiveHandler
@@ -27,9 +26,6 @@ final class CreateArchiveHandler
 
     public function __invoke(CreateArchive $archive): void
     {
-        if (!$this->archives->isUnderWay($archive->uid)) {
-            throw new UnrecoverableMessageHandlingException(_t('AU_RUN_NOT_REPLAYED'));
-        }
         $alreadyArchiving = $this->archives->getWikiStatus() === 'archiving';
         $output = '';
         $done = false;

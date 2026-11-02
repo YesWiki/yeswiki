@@ -14,6 +14,7 @@ use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\Stamp\TransportMessageIdStamp;
 use YesWiki\Admin\Api\JobsApiController;
 use YesWiki\Admin\Controller\JobsController;
+use YesWiki\Admin\Message\CreateArchive;
 use YesWiki\Admin\Service\JobsOverview;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\AuthenticationService;
@@ -188,6 +189,22 @@ class JobsControllerTest extends YesWikiTestCase
         $this->assertSame('ywJobsChanged', $response->headers->get('HX-Trigger'), 'the open tab reloads');
         $this->assertStringContainsString(htmlspecialchars(_t('ADMIN_JOBS_RETRIED', ['count' => 1]), ENT_QUOTES), (string)$response->getContent());
         $this->assertStringNotContainsString(_t('QUEUE_HEALTH_FAILED'), (string)$response->getContent(), 'the alert is gone from what the page swaps in');
+    }
+
+    /** A backup in `failed` follows nothing any more: the page offers no button to send it again, and the route refuses to (NotReplayableByHand). */
+    public function testABackupIsNeverRetriedFromThePage(): void
+    {
+        $this->signInAsAdmin();
+        $sent = $this->kit->transport->send(new Envelope(new CreateArchive('uid', true, true, [], [], null)))->last(TransportMessageIdStamp::class);
+        $this->assertNotNull($sent);
+        $id = (int)$sent->getId();
+        $this->kit->transport->moveToFailed($id, 'RuntimeException: disk exploded');
+
+        $this->assertStringNotContainsString("failed/{$id}/retry", (string)$this->api()->tab('failed')->getContent());
+        $response = $this->api(post: true)->retry((string)$id);
+
+        $this->assertStringContainsString(htmlspecialchars(_t('ADMIN_JOBS_NOT_REPLAYABLE'), ENT_QUOTES), (string)$response->getContent());
+        $this->assertSame('failed', $this->kit->statistics->messageState($id));
     }
 
     public function testRetryAllLeavesTheKilledOnesToTheirOwnAlert(): void

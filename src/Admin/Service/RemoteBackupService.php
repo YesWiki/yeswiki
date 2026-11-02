@@ -9,7 +9,6 @@ use YesWiki\Admin\Message\AdvanceRemoteBackup;
 use YesWiki\Files\Service\LocalFiles;
 use YesWiki\Files\Service\RuntimeLock;
 use YesWiki\Files\Service\Storage;
-use YesWiki\Kernel\Queue\UniqueStamp;
 use YesWiki\Kernel\Service\Queue\QueueBudgetContext;
 use YesWiki\Kernel\Service\Queue\QueueStatistics;
 
@@ -215,7 +214,7 @@ class RemoteBackupService
             return false;
         }
 
-        $stamps = [new UniqueStamp(AdvanceRemoteBackup::UNIQUE_KEY)];
+        $stamps = [];
         $pause = max(
             in_array($job['step'], self::WAITING_STEPS, true) ? RemoteWikiArchive::SETTLE_SECONDS : 0,
             (int)($job['failures'] ?? 0) * self::RETRY_PAUSE_SECONDS

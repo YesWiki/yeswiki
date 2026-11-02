@@ -451,7 +451,6 @@ class RemoteBackupQueueTest extends YesWikiTestCase
         $bus = $this->kit->bus;
         $hibernation = new HibernationService(new ParameterBag(['wiki_status' => 'running']));
         $settings = new QueueSettings(new ParameterBag([]), static fn (): array => []);
-        $fallback = $this->kit->fallback($settings);
         $this->trigger = $this->kit->requestTrigger($settings);
 
         $services = $this->getWiki()->services;
@@ -465,10 +464,7 @@ class RemoteBackupQueueTest extends YesWikiTestCase
             $this->storage,
             new LocalFiles(),
             $bus,
-            $settings,
-            $this->trigger,
             $this->statistics,
-            $fallback,
         );
         $this->remote = new StepByStepRemoteWiki(self::STORED);
         $this->service = new RemoteBackupService($this->archives, $this->storage, new LocalFiles(), $this->remote, $bus, $this->budgetContext, $this->statistics);

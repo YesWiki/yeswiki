@@ -992,7 +992,7 @@ class QueueConsumerTest extends YesWikiTestCase
             new ServiceLocator(['handler' => static fn (): \Closure => $handler])
         );
 
-        $bus = new QueueBus($this->transport, $locator, $journal);
+        $bus = new QueueBus($this->transport, $locator, $journal, QueueTestKit::noRequest());
         $recorder = new QueueRecorder($db, new QueueTaskRows($db, $schema, $clock), new JournalSchema($db), $clock);
         $provider = new class($schedule ?? static fn (): array => []) implements ProvidesSchedule {
             /** @param \Closure(): list<RecurringMessage> $schedule */
