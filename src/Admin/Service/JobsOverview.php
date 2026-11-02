@@ -308,7 +308,7 @@ class JobsOverview
                 'memory' => (string)ini_get('memory_limit'),
             ]),
             'visitorsWait' => $mode === QueueConsumerMode::Request && !$respondsEarly,
-            'pace' => _t('QUEUE_PACE_' . strtoupper($mode->value)),
+            'pace' => _t($mode === QueueConsumerMode::Worker && $this->settings->isServedByBinary() ? 'QUEUE_PACE_WORKER_SUPERVISED' : 'QUEUE_PACE_' . strtoupper($mode->value)),
             'lastPass' => $fallback !== null
                 ? $this->ago($fallback->lastSeen)
                 : ($lastPass === null ? null : $this->ago($lastPass['stopReason'] === '' ? $lastPass['finishedAt'] : $lastPass['startedAt'])),

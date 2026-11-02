@@ -40,7 +40,7 @@ use YesWiki\Kernel\Service\Journal;
  * Two ways to run, one machinery: drain() is a pass that has to end by itself -- at the end of a
  * request, from the API route or `messenger:consume --drain` --
  * and stops when the queue is empty or the budget spent, never waiting; consume() blocks like
- * `messenger:consume`, for the `worker` and `binary` modes. Both build Messenger's Worker over
+ * `messenger:consume`, for the `worker` mode. Both build Messenger's Worker over
  * the QueueBus (whose handlers come from QueueHandlerLocator, the one way a handler is found),
  * with Messenger's own retry and failure-transport listeners, and a QueuePassObserver that writes
  * the history; all of it on an event dispatcher of the pass's own, so that nothing a module

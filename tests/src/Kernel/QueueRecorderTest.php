@@ -306,7 +306,7 @@ class QueueRecorderTest extends YesWikiTestCase
 
     public function testABlockingConsumerBeatsAndCountsAsAStart(): void
     {
-        $id = $this->recorder->passStarted(QueueConsumerMode::Binary, QueueBudget::unlimited(21600), false);
+        $id = $this->recorder->passStarted(QueueConsumerMode::Worker, QueueBudget::unlimited(21600), false);
         $this->clock->sleep(60);
         $this->recorder->passHeartbeat($id, 7, 999);
 
@@ -532,10 +532,10 @@ class QueueRecorderTest extends YesWikiTestCase
         $this->on($params);
 
         $this->transport->send(new Envelope(new QueueTestMessage('waiting')));
-        $pass = $this->recorder->passStarted(QueueConsumerMode::Binary, new QueueBudget(INF, 1 << 33, 21600), false);
+        $pass = $this->recorder->passStarted(QueueConsumerMode::Worker, new QueueBudget(INF, 1 << 33, 21600), false);
         $startedAt = (float)$this->clock->now()->format('U.u');
         $this->clock->sleep(0.25);
-        $this->recorder->messageFinished(99, QueueTestMessage::class, null, QueueRecorder::HANDLED, QueueConsumerMode::Binary, $startedAt, null);
+        $this->recorder->messageFinished(99, QueueTestMessage::class, null, QueueRecorder::HANDLED, QueueConsumerMode::Worker, $startedAt, null);
         $this->recorder->passHeartbeat($pass, 1, 1 << 32);
         $this->recorder->passFinished($pass, new QueuePassReport(1, 1, 250, QueuePassReport::TIME_LIMIT), 1 << 32);
 

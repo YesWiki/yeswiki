@@ -16,11 +16,11 @@ use YesWiki\Kernel\Service\Queue\QueueConsumer;
 use YesWiki\Kernel\Service\Queue\QueueSettings;
 
 /**
- * `./yeswicli messenger:consume`: a consumer that blocks, waiting for messages, until a limit or a signal stops it. What a process manager (systemd, supervisord, a container) keeps alive in mode `worker`.
+ * `./yeswicli messenger:consume`: a consumer that blocks, waiting for messages, until a limit or a signal stops it. What keeps it alive in mode `worker` is the Go binary when it serves the wiki (`--supervised`), a process manager otherwise (systemd, supervisord, a container).
  *
  * `--supervised` is what the Go binary starts for each wiki it serves. The binary does not read
  * the wiki's configuration, so this is where the effective mode is found out: when it is not
- * `binary` (a wiki of a farm that picked another mode) the command exits at once with
+ * `worker` (the default `request`, or another mode the wiki picked) the command exits at once with
  * EXIT_NOT_MY_MODE, which the supervisor takes as "do not restart me" instead of a crash. A
  * supervised consumer the configuration change stopped exits with EXIT_CONFIGURATION_CHANGED,
  * which the supervisor takes as "restart me now", however short its life was; unsupervised, it
@@ -60,7 +60,7 @@ class QueueConsumeCommand extends Command
             ->addOption('time-limit', null, InputOption::VALUE_REQUIRED, 'Stop after this many seconds', '3600')
             ->addOption('memory-limit', null, InputOption::VALUE_REQUIRED, 'Stop when memory use passes this (128M, 512K, bytes, -1 for none)', '128M')
             ->addOption('limit', null, InputOption::VALUE_REQUIRED, 'Stop after this many messages')
-            ->addOption('supervised', null, InputOption::VALUE_NONE, 'Started by the Go binary: only runs when the wiki\'s mode is `binary`, exits ' . self::EXIT_NOT_MY_MODE . ' otherwise')
+            ->addOption('supervised', null, InputOption::VALUE_NONE, 'Started by the Go binary: only runs when the wiki\'s mode is `worker`, exits ' . self::EXIT_NOT_MY_MODE . ' otherwise')
             ->addOption('drain', null, InputOption::VALUE_NONE, 'Consume what is already in the queue, then exit: no scheduled task, no wait')
             ->addOption('message', null, InputOption::VALUE_REQUIRED, 'Handle only the message of this id, which a request pinned (a backup or a restore an admin started)');
     }
@@ -75,13 +75,12 @@ class QueueConsumeCommand extends Command
         }
 
         $supervised = (bool)$input->getOption('supervised');
-        $mode = $supervised ? QueueConsumerMode::Binary : QueueConsumerMode::Worker;
 
         // Before anything is read from the queue, and before the options are even looked at: a process that is not this wiki's consumer must not touch a message.
         if ($supervised) {
             $effective = $this->services->get(QueueSettings::class)->mode();
-            if ($effective !== QueueConsumerMode::Binary) {
-                $this->errorOutput($output)->writeln("The queue of this wiki is consumed in mode '{$effective->value}', not 'binary': the supervised consumer has nothing to do here.");
+            if ($effective !== QueueConsumerMode::Worker) {
+                $this->errorOutput($output)->writeln("The queue of this wiki is consumed in mode '{$effective->value}', not 'worker': the supervised consumer has nothing to do here.");
 
                 return self::EXIT_NOT_MY_MODE;
             }
@@ -96,7 +95,7 @@ class QueueConsumeCommand extends Command
             return Command::INVALID;
         }
 
-        $report = $this->services->get(QueueConsumer::class)->consume($mode, $timeLimit, $memoryLimit, $messageLimit, $output);
+        $report = $this->services->get(QueueConsumer::class)->consume(QueueConsumerMode::Worker, $timeLimit, $memoryLimit, $messageLimit, $output);
         $output->writeln($report->summary());
 
         return match (true) {

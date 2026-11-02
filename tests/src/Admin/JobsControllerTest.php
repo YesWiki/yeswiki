@@ -65,6 +65,7 @@ class JobsControllerTest extends YesWikiTestCase
     {
         $this->kit = new QueueTestKit();
         putenv(QueueSettings::ENV_MODE);
+        putenv(QueueSettings::ENV_BINARY);
         $this->settings = new QueueSettings(new ParameterBag(['queue_consumer' => '', 'queue_consume_secret' => '']), static fn (): array => []);
         $GLOBALS['yeswikiServices'] = $this->getWiki()->services;
     }
@@ -72,6 +73,7 @@ class JobsControllerTest extends YesWikiTestCase
     protected function tearDown(): void
     {
         $this->getWiki()->services->get(AuthenticationService::class)->logout();
+        putenv(QueueSettings::ENV_BINARY);
         $this->kit->dispose();
     }
 
@@ -138,6 +140,20 @@ class JobsControllerTest extends YesWikiTestCase
 
         $this->assertSame(Response::HTTP_FORBIDDEN, $response->getStatusCode());
         $this->assertSame([], $this->kit->handled);
+    }
+
+    public function testAWorkerUnderTheBinaryIsSaidToBeSupervisedByIt(): void
+    {
+        $this->signInAsAdmin();
+        putenv(QueueSettings::ENV_MODE . '=worker');
+
+        $body = (string)$this->page()->jobs()->getContent();
+        $this->assertStringContainsString(htmlspecialchars(_t('QUEUE_PACE_WORKER'), ENT_QUOTES), $body);
+
+        putenv(QueueSettings::ENV_BINARY . '=1');
+        $body = (string)$this->page()->jobs()->getContent();
+        $this->assertStringContainsString(_t('QUEUE_MODE_WORKER'), $body);
+        $this->assertStringContainsString(htmlspecialchars(_t('QUEUE_PACE_WORKER_SUPERVISED'), ENT_QUOTES), $body, 'there is no service to write: the binary keeps it up');
     }
 
     public function testThePageShowsTheModeAndItsOrigin(): void

@@ -32,7 +32,7 @@ adding either.
 
 Work enters the queue from two producers: module code that dispatches, and the Scheduler that turns
 the tasks which are due into messages. It is stored in the wiki's own database and taken out by one
-consumer, whichever of the four modes started it. What happened is then read back, from the queue
+consumer, whichever of the three modes started it. What happened is then read back, from the queue
 and from the Journal, by the Health checks and the jobs page. The producers never call the consumer:
 the table is all the two halves share.
 
@@ -51,7 +51,7 @@ flowchart LR
   subgraph Modes["Consumption modes, chosen by QueueSettings"]
     req["QueueRequestTrigger<br/>request"]
     api["POST · GET /api/queue/consume<br/>api"]
-    consumeCmd["messenger:consume<br/>worker · binary (Go supervisor)"]
+    consumeCmd["messenger:consume<br/>worker (systemd · Go supervisor)"]
   end
   drainCmd["messenger:consume --drain · --message<br/>a pass by hand, a pinned message"]
   consumer["«component» QueueConsumer<br/>drain() budgeted · consume() blocking"]
@@ -89,7 +89,7 @@ consumer reads it. The dashed arrow is a handler that splits its work and dispat
 continuation.
 
 A budgeted pass in `request` mode runs once the response has left. `api` and
-`messenger:consume --drain` run the same pass. `worker` and `binary` run `consume()` instead: it loops over the
+`messenger:consume --drain` run the same pass. `worker` runs `consume()` instead: it loops over the
 same steps with no budget to stop it, and ticks the Scheduler whenever the queue is empty.
 
 ```mermaid
@@ -167,14 +167,13 @@ reaches stderr, the daily ceiling and the fingerprint dedup do not apply, and th
 runs because it was sent. A message may carry a dedup key, which collapses a **first send** into an
 identical message still waiting and never tried; a retry, or a failure, is never swallowed by it.
 
-**There are four consumption modes**, chosen by `YESWIKI_QUEUE_CONSUMER`:
+**There are three consumption modes**, chosen by `YESWIKI_QUEUE_CONSUMER`:
 
-| Mode      | Who consumes                                                                   | Budgeted |
-| --------- | ------------------------------------------------------------------------------ | -------- |
-| `request` | the end of each web request, after the response has left where the SAPI allows | yes      |
-| `api`     | `/api/queue/consume`, POST or GET, with the secret as header or `?secret=`     | yes      |
-| `worker`  | `./yeswicli messenger:consume`, kept alive by systemd or similar               | no       |
-| `binary`  | the Go binary, which supervises a `messenger:consume --supervised` per wiki    | no       |
+| Mode      | Who consumes                                                                                                                          | Budgeted |
+| --------- | ------------------------------------------------------------------------------------------------------------------------------------- | -------- |
+| `request` | the end of each web request, after the response has left where the SAPI allows                                                        | yes      |
+| `api`     | `/api/queue/consume`, POST or GET, with the secret as header or `?secret=`                                                            | yes      |
+| `worker`  | `./yeswicli messenger:consume`, kept alive by the Go binary (`--supervised`) when it serves the wiki, by systemd or similar otherwise | no       |
 
 Two more were tried during development and removed before any release: `request-spawn`, where the
 end of a request started a detached process to consume, and `command`, a crontab running a
@@ -183,13 +182,23 @@ throttle, a check for hosts that forbid `proc_open`, a CLI budget) for what `api
 already cover. `./yeswicli messenger:consume --drain` keeps the one thing that command did well:
 emptying the queue by hand, and exiting.
 
+A fourth, `binary`, was merged into `worker` before any release. It was the same blocking consumer,
+the only difference being who keeps it alive: an admin chose between them by where the wiki is
+served, not by what they wanted, and a wiki moved to or from the binary had to change its mode or
+stop consuming. `worker` under the binary was no real alternative: its unit had to call the binary's
+hidden `php-cli` on a program folder whose path changes with every upgrade. Now `worker` says "a
+consumer stays up", and the binary supervises it where it serves the wiki. What was lost is the
+`binary`-without-the-binary alert: a `worker` nobody keeps up is reported as stalled after 10 minutes,
+and the fallback takes over. Two consumers of one wiki (a systemd unit kept from before the binary)
+do no harm: the pass lock lets one work, and the other exits at once.
+
 The variable is read from the real environment, then `private/.env` (the only way on a host with
 no environment), then `queue_consumer` in the configuration, then the default: `request`, under the
-binary too, since `binary` keeps a PHP process alive per wiki and a wiki that never needed one
+binary too, since `worker` keeps a PHP process alive per wiki and a wiki that never needed one
 would pay its memory for nothing; a wiki asks for it. It needs an explicit mapping, not an entry in `KNOWN_KEYS`,
 which would read `QUEUE_CONSUMER`. The binary sets **no** `YESWIKI_QUEUE_CONSUMER`: it sets
-`YESWIKI_SERVED_BY_BINARY`, so a wiki of a farm can choose another mode, and `binary` without the
-marker is detectable and reported. An unknown value does not stop the wiki; it gets the default and
+`YESWIKI_SERVED_BY_BINARY`, so each wiki of a farm chooses its mode, and the jobs page can say that
+the binary keeps the worker up. An unknown value does not stop the wiki; it gets the default and
 keeps the origin it was found in, so the page can say where to correct it, and "origin is `default`"
 keeps meaning that nobody chose. The `api` route is public as far as the ACL goes and the
 secret is the whole check, compared in constant time; with no secret set it answers 401 to
@@ -247,7 +256,7 @@ lifted the pause. Work that splits
 runs in every mode. The one exception is a backup or restore an admin starts: it keeps a path
 through the admin's own request, **pinned** to the end of that request with no budget and
 `set_time_limit(0)`, in `request` and `api`, the modes that would otherwise run it only when
-something calls them. In `worker` and `binary` it is queued for the worker while the worker is
+something calls them. In `worker` it is queued for the worker while the worker is
 seen at work, and pinned too when it is not (`QueueFallback::consumerIsGone()`): left to the end of
 visitors' requests, on a request's budget, PHP would cut it. Where the response cannot leave before
 the script ends (mod_php, CGI), the request hands each message it pinned to a process of its own
@@ -292,7 +301,7 @@ brings the alert back. There is deliberately no way to mute a cause.
 `queue-failed`, `queue-killed`, `queue-task-overdue`, `queue-task-failing`, `queue-backlog`,
 `queue-consumer-restarts`, `queue-consumer-memory`, `queue-config`, `queue-no-budget`, `queue-visitor-cost`) are re-derived from the `queue` table and the Journal's `queue` channel whenever they
 are asked. "Nothing is consuming" is judged on **consumer activity**, not message age: messages
-available and no pass, heartbeat or claim within its limit for 10 minutes in `worker` and `binary`,
+available and no pass, heartbeat or claim within its limit for 10 minutes in `worker`,
 3 hours in `api`, 24 hours in `request`. A queue that moves but
 slowly is a backlog and only degraded (1 hour for the blocking modes, 6 for the others), and is
 silent while the stall alert fires. A wiki that is hibernated is silent too. A wiki where no pass
@@ -326,8 +335,8 @@ then judged with `request`'s delay, so it speaks again only if the visits stop t
 **The binary supervises, and reads nothing of PHP's configuration.** For each open wiki it runs
 `php-cli … messenger:consume --supervised --time-limit=3600 --memory-limit=128M` with the binary's
 marker in the environment. That command works out the effective mode itself and, if it is not
-`binary`, exits at once with 78 (`EX_CONFIG`), which the supervisor reads as "not my wiki" and does
-not restart until a SIGHUP reload. Since `binary` is asked for, that is what most wikis do: a start
+`worker`, exits at once with 78 (`EX_CONFIG`), which the supervisor reads as "not my wiki" and does
+not restart until a SIGHUP reload. Since `worker` is asked for, that is what most wikis do: a start
 or a reload boots PHP once per wiki, briefly, to learn this, which is accepted over a binary that
 reads PHP's configuration. A blocking consumer stops between two messages once the wiki's
 configuration changed (a setting saved, `private/.env` edited) or its compiled container was

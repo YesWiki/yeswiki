@@ -341,7 +341,6 @@ class QueueHealthChecksTest extends YesWikiTestCase
     public static function stalledAfter(): iterable
     {
         yield 'worker' => ['worker', 600];
-        yield 'binary' => ['binary', 600];
         yield 'api' => ['api', 3 * 3600];
         yield 'request' => ['request', 24 * 3600];
     }
@@ -418,8 +417,17 @@ class QueueHealthChecksTest extends YesWikiTestCase
         $failure = (string)$this->failure('queue-killed');
 
         $this->assertStringContainsString('QueueTestMessage', $failure);
-        $this->assertStringContainsString('worker', $failure);
-        $this->assertStringContainsString('binary', $failure);
+        $this->assertStringContainsString($this->switchAdvice(), $failure);
+    }
+
+    /** The part of QUEUE_HEALTH_KILLED_FAILED after the mode: the advice to switch, whatever the language. */
+    private function switchAdvice(): string
+    {
+        $template = _t('QUEUE_HEALTH_KILLED_FAILED');
+        $advice = trim(substr($template, strrpos($template, '%{mode}') + strlen('%{mode}')));
+        $this->assertNotSame('', $advice);
+
+        return $advice;
     }
 
     public function testAMessageKilledInABlockingModeIsNotToldToMoveToIt(): void
@@ -429,7 +437,7 @@ class QueueHealthChecksTest extends YesWikiTestCase
         $failure = (string)$this->failure('queue-killed');
 
         $this->assertStringContainsString('QueueTestMessage', $failure);
-        $this->assertStringNotContainsString('binary', $failure);
+        $this->assertStringNotContainsString($this->switchAdvice(), $failure);
     }
 
     public function testAMessageKilledUnderAnotherModeIsNotToldToSwitchAgain(): void
@@ -439,13 +447,13 @@ class QueueHealthChecksTest extends YesWikiTestCase
         $this->mode = 'worker';
         $failure = (string)$this->failure('queue-killed');
         $this->assertStringContainsString('QueueTestMessage', $failure);
-        $this->assertStringNotContainsString('binary', $failure, 'the wiki already switched');
+        $this->assertStringNotContainsString($this->switchAdvice(), $failure, 'the wiki already switched');
 
         $this->mode = 'api';
-        $this->assertStringNotContainsString('binary', (string)$this->failure('queue-killed'), 'and it is not the mode the job was killed in');
+        $this->assertStringNotContainsString($this->switchAdvice(), (string)$this->failure('queue-killed'), 'and it is not the mode the job was killed in');
 
         $this->mode = 'request';
-        $this->assertStringContainsString('binary', (string)$this->failure('queue-killed'), 'still in the mode that kills it: the advice stands');
+        $this->assertStringContainsString($this->switchAdvice(), (string)$this->failure('queue-killed'), 'still in the mode that kills it: the advice stands');
     }
 
     public function testAClaimNobodyReapedYetIsKilledToo(): void
@@ -552,8 +560,8 @@ class QueueHealthChecksTest extends YesWikiTestCase
 
     public function testBacklogThresholdIsAnHourForBlockingModes(): void
     {
-        $this->mode = 'binary';
-        $this->pass('binary', startedAt: '-2 hours', finishedAt: '-10 seconds', stopReason: '');
+        $this->mode = 'worker';
+        $this->pass('worker', startedAt: '-2 hours', finishedAt: '-10 seconds', stopReason: '');
         $this->message('default', '-50 minutes');
         $this->assertNull($this->failure('queue-backlog'));
 
@@ -597,9 +605,9 @@ class QueueHealthChecksTest extends YesWikiTestCase
 
     public function testRestartsOlderThanTenMinutesDoNotCount(): void
     {
-        $this->mode = 'binary';
+        $this->mode = 'worker';
         foreach (range(11, 20) as $minutesAgo) {
-            $this->pass('binary', startedAt: "-{$minutesAgo} minutes");
+            $this->pass('worker', startedAt: "-{$minutesAgo} minutes");
         }
 
         $this->assertNull($this->failure('queue-consumer-restarts'));
@@ -635,14 +643,21 @@ class QueueHealthChecksTest extends YesWikiTestCase
         $this->assertStringContainsString('wroker', $failure);
     }
 
-    public function testBinaryWithoutMarkerIsBroken(): void
+    public function testAWorkerIsWellConfiguredUnderTheBinaryOrNot(): void
     {
-        $this->mode = 'binary';
-
-        $this->assertNotNull($this->failure('queue-config'));
+        $this->mode = 'worker';
+        $this->assertNull($this->failure('queue-config'));
 
         putenv(QueueSettings::ENV_BINARY . '=1');
         $this->assertNull($this->failure('queue-config'));
+    }
+
+    public function testBinaryIsAnUnknownMode(): void
+    {
+        $this->mode = 'binary';
+        putenv(QueueSettings::ENV_BINARY . '=1');
+
+        $this->assertStringContainsString('binary', (string)$this->failure('queue-config'));
     }
 
     public function testApiWithoutSecretIsBroken(): void

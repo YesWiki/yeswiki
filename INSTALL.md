@@ -108,14 +108,13 @@ Everything a wiki does outside a page view goes through one queue in its own dat
 search, delivering ActivityPub activities, mailing digests, syncing data sources, backups and
 restores, and the periodic cleanup (old page revisions and Journal entries, expired recovery and
 activation keys, the bot guard's counters). Something has to consume that queue, and
-`YESWIKI_QUEUE_CONSUMER` says what. There are four modes:
+`YESWIKI_QUEUE_CONSUMER` says what. There are three modes:
 
-| Mode      | What consumes the queue                                                             | You set up                    |
-| --------- | ----------------------------------------------------------------------------------- | ----------------------------- |
-| `request` | the end of each page view, once the page has been sent                              | nothing (the default)         |
-| `api`     | an HTTP call to `/api/queue/consume`, POST or GET (online cron, monitor)            | a call, and a secret          |
-| `worker`  | a process that never returns, `messenger:consume`, kept alive by systemd or similar | a service                     |
-| `binary`  | the YesWiki binary, which supervises one `messenger:consume` per wiki               | the setting, under the binary |
+| Mode      | What consumes the queue                                                                                       | You set up                                     |
+| --------- | ------------------------------------------------------------------------------------------------------------- | ---------------------------------------------- |
+| `request` | the end of each page view, once the page has been sent                                                        | nothing (the default)                          |
+| `api`     | an HTTP call to `/api/queue/consume`, POST or GET (online cron, monitor)                                      | a call, and a secret                           |
+| `worker`  | a process that never returns, `messenger:consume`, kept alive by the YesWiki binary, or by systemd or similar | the setting; and a service, outside the binary |
 
 Nothing has to be chosen: a wiki that says nothing consumes in `request` mode, under the binary
 too, which is what keeps a wiki that is installed and forgotten working on shared
@@ -131,15 +130,15 @@ option on a host where you cannot set environment variables), then from `queue_c
 YESWIKI_QUEUE_CONSUMER=worker
 ```
 
-The binary does not set this variable, it only marks the wiki as served by it, so a wiki of a farm
-can still choose another mode. `/admin/jobs` shows the mode in force and where the setting was
+The binary does not set this variable, it only marks the wiki as served by it, so each wiki of a
+farm chooses its mode. `/admin/jobs` shows the mode in force and where the setting was
 read. That page and `/admin/health` raise an alert when jobs wait and nothing consumes them, when
 the value is not a mode, or when the mode needs something that is missing; each alert is explained
 in [the admin documentation](docs/fr/async.md).
 
 A pass spends what the server allows a request (`max_execution_time`, `memory_limit`) less a
 margin, and only one pass runs at a time per wiki. A job that cannot finish inside that is cut and
-moved to the failed jobs, with the advice to switch to `worker` or `binary`, where nothing cuts it.
+moved to the failed jobs, with the advice to switch to `worker`, where nothing cuts it.
 
 ### Emptying the queue by hand
 
@@ -182,6 +181,9 @@ the old one at once.
 
 ### `worker`: a process that stays up
 
+Under the YesWiki binary, see [below](#worker-under-the-yeswiki-binary): the binary keeps the
+process up, and there is no service to write.
+
 `messenger:consume` waits for messages and runs them as they come, and queues the scheduled tasks
 itself. It stops after `--time-limit` seconds (default 3600), when its memory passes
 `--memory-limit` (default 128M), or after `--limit` messages, and the process manager starts it
@@ -221,17 +223,19 @@ setting saved, `private/.env` edited) or its compiled container was emptied (`mi
 upgrade, `cache:clear`), for its unit to start one on what is there now: keep `Restart=always`.
 After an upgrade, `systemctl restart yeswiki-queue` makes that immediate.
 
-### `binary`
+### `worker` under the YesWiki binary
 
 Under the YesWiki binary (`yeswiki serve`, a farm included), a wiki consumes in `request` mode
-unless it asks for `binary` with `YESWIKI_QUEUE_CONSUMER=binary`: a consumer kept alive is a PHP
-process per wiki, whose memory a wiki pays only if it wants work that moves without visits, or
-jobs longer than a page's time limit. The binary starts `messenger:consume --supervised` for every
-wiki it serves; a wiki in another mode exits it at once and is left alone until the next reload. For
-the wikis in `binary`, it relays the consumer's output to its own log
-prefixed with the wiki's name, and restarts it with a growing delay (up to a minute) if it keeps
-exiting. A farm reloaded with SIGHUP starts and stops consumers with its list of wikis, and is
-when a wiki's change to or from `binary` takes effect.
+unless it asks for `worker` with `YESWIKI_QUEUE_CONSUMER=worker` in its `private/.env`: a consumer
+kept alive is a PHP process per wiki, whose memory a wiki pays only if it wants work that moves
+without visits, or jobs longer than a page's time limit. There is no service to write: the binary
+starts `messenger:consume --supervised` for every wiki it serves, and a wiki in another mode exits
+it at once and is left alone until the next reload. For the wikis in `worker`, it relays the
+consumer's output to its own log prefixed with the wiki's name, and restarts it with a growing delay
+(up to a minute) if it keeps exiting. A farm reloaded with SIGHUP starts and stops consumers with its
+list of wikis, and is when a wiki's change to or from `worker` takes effect. A systemd unit kept from
+before the binary is not needed: only one consumer works at a time, the other one finds the queue
+taken and exits.
 
 ## Installation through Docker
 

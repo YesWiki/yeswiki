@@ -143,7 +143,7 @@ class ArchiveQueueTest extends YesWikiTestCase
     /** @return array<string, array{string}> */
     public static function queueModes(): array
     {
-        return ['worker' => ['worker'], 'binary' => ['binary']];
+        return ['worker' => ['worker']];
     }
 
     /** Spec 9.5: where the queue runs only when something calls it, the admin's backup does not wait for that; it runs once the admin has the response. */
@@ -698,7 +698,7 @@ class ArchiveQueueTest extends YesWikiTestCase
     /**
      * The service under test in that mode, on this test's queue, progress folder and configuration.
      *
-     * In `worker` and `binary`, the worker is seen at work a minute ago unless told otherwise:
+     * In `worker`, the worker is seen at work a minute ago unless told otherwise:
      * a backup is left to a worker only while there is one.
      */
     private function archives(string $mode, bool $consumerSeen = true): QueueArchiveService

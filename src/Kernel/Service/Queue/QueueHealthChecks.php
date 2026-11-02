@@ -71,7 +71,7 @@ class QueueHealthChecks implements ProvidesHealthChecks
     public static function stalledAfterSeconds(QueueConsumerMode $mode): int
     {
         return match ($mode) {
-            QueueConsumerMode::Worker, QueueConsumerMode::Binary => self::STALLED_AFTER_BLOCKING,
+            QueueConsumerMode::Worker => self::STALLED_AFTER_BLOCKING,
             QueueConsumerMode::Api => self::STALLED_AFTER_SCHEDULED,
             QueueConsumerMode::Request => self::STALLED_AFTER_VISITS,
         };
@@ -396,9 +396,6 @@ class QueueHealthChecks implements ProvidesHealthChecks
         }
 
         $mode = $this->settings->mode();
-        if ($mode === QueueConsumerMode::Binary && !$this->settings->isServedByBinary()) {
-            $problems[] = _t('QUEUE_HEALTH_CONFIG_BINARY');
-        }
         if ($mode === QueueConsumerMode::Api && $this->settings->consumeSecret() === '') {
             $problems[] = _t('QUEUE_HEALTH_CONFIG_API');
         }

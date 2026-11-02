@@ -9,17 +9,15 @@ enum QueueConsumerMode: string
     case Request = 'request';
     /** From an external HTTP call (online cron, webhook, monitor). */
     case Api = 'api';
-    /** A long-lived process kept alive by the host (systemd, supervisord, a container). */
+    /** A long-lived process kept alive by the Go binary when it serves the wiki, by the host otherwise (systemd, supervisord, a container). */
     case Worker = 'worker';
-    /** The Go binary supervises a long-lived consumer per wiki. */
-    case Binary = 'binary';
 
     /** Whether a pass in this mode has to end by itself, before the time PHP gives it runs out (the others block until told to stop). */
     public function isBudgeted(): bool
     {
         return match ($this) {
             self::Request, self::Api => true,
-            self::Worker, self::Binary => false,
+            self::Worker => false,
         };
     }
 }

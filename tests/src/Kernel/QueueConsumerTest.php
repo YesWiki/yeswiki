@@ -807,7 +807,7 @@ class QueueConsumerTest extends YesWikiTestCase
         );
 
         $started = microtime(true);
-        $report = $this->consumer->consume(QueueConsumerMode::Binary, 1, 512 * 1024 * 1024);
+        $report = $this->consumer->consume(QueueConsumerMode::Worker, 1, 512 * 1024 * 1024);
 
         $this->assertGreaterThanOrEqual(1.0, microtime(true) - $started, 'an empty queue is waited on, not left');
         $this->assertSame(QueuePassReport::TIME_LIMIT, $report->stopReason);
@@ -868,7 +868,7 @@ class QueueConsumerTest extends YesWikiTestCase
         $this->configurationChanged = true;
 
         $started = microtime(true);
-        $report = $this->consumer->consume(QueueConsumerMode::Binary, 30, 512 * 1024 * 1024);
+        $report = $this->consumer->consume(QueueConsumerMode::Worker, 30, 512 * 1024 * 1024);
 
         $this->assertSame(QueuePassReport::CONFIG_CHANGED, $report->stopReason);
         $this->assertLessThan(10.0, microtime(true) - $started, 'it did not wait for its time limit');

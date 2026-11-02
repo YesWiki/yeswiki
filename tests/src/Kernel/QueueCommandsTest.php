@@ -191,7 +191,7 @@ class QueueCommandsTest extends YesWikiTestCase
         ];
     }
 
-    public function testSupervisedConsumeExitsWith78WhenTheModeIsNotBinary(): void
+    public function testSupervisedConsumeExitsWith78WhenTheModeIsNotWorker(): void
     {
         putenv(QueueSettings::ENV_MODE . '=api');
         $this->kit->send('a');
@@ -205,16 +205,16 @@ class QueueCommandsTest extends YesWikiTestCase
         $this->assertNull($this->kit->statistics->lastPass(), 'not even a pass row');
     }
 
-    public function testSupervisedConsumeRunsInBinaryMode(): void
+    public function testSupervisedConsumeRunsInWorkerMode(): void
     {
-        putenv(QueueSettings::ENV_MODE . '=binary');
+        putenv(QueueSettings::ENV_MODE . '=worker');
         $this->kit->send('a');
 
         $tester = $this->execute('messenger:consume', ['--supervised' => true, '--limit' => '1', '--time-limit' => '2']);
 
         $this->assertSame(Command::SUCCESS, $tester->getStatusCode());
         $this->assertSame(['a'], $this->kit->handled);
-        $this->assertSame('binary', $this->kit->statistics->lastPass()['mode'] ?? null);
+        $this->assertSame('worker', $this->kit->statistics->lastPass()['mode'] ?? null, 'supervised or not, it is the worker');
         $this->assertStringContainsString('limit', $tester->getDisplay());
     }
 
@@ -222,7 +222,7 @@ class QueueCommandsTest extends YesWikiTestCase
     public function testSupervisedConsumeExitsWith75WhenTheConfigurationChanged(): void
     {
         $this->changeTheConfigurationOnTheFirstMessage();
-        putenv(QueueSettings::ENV_MODE . '=binary');
+        putenv(QueueSettings::ENV_MODE . '=worker');
 
         $tester = $this->execute('messenger:consume', ['--supervised' => true, '--time-limit' => '30', '--memory-limit' => '-1']);
 

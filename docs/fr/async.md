@@ -68,12 +68,11 @@ données et l'action `{{sync}}`.
 
 ## Choisir le mode de traitement
 
-| Mode                        | Qui traite la file                                         | Délai attendu                                                                           | Désavantage                                                                                                                                                   | Hébergement                         |
-| --------------------------- | ---------------------------------------------------------- | --------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------- |
-| `request` (défaut, partout) | la fin de chaque visite, une fois la page envoyée          | dès la fin de la visite qui l'ajoute, sinon à la visite suivante (voir sous le tableau) | rien n'avance sans visite ; un traitement plus long que le temps maximal d'une page (souvent 30 s) est coupé ; sur certains serveurs, les visiteurs attendent | tous, même un mutualisé sans cron   |
-| `api`                       | un service de cron en ligne                                | 5 min (appel toutes les 5 min)                                                          | dépend d'un service extérieur ; un traitement plus long que le temps maximal d'un appel (moins d'une minute) est coupé                                        | mutualisé sans cron                 |
-| `worker`                    | un processus qui tourne en continu, relancé par le serveur | quelques secondes                                                                       | un service à installer et surveiller, par wiki                                                                                                                | serveur privé ou dédié, conteneur   |
-| `binary`                    | le binaire YesWiki                                         | quelques secondes                                                                       | réservé au binaire YesWiki ; un processus PHP par wiki, gardé en mémoire en permanence                                                                        | wiki ou ferme servis par le binaire |
+| Mode                        | Qui traite la file                                                                   | Délai attendu                                                                           | Désavantage                                                                                                                                                   | Hébergement                                        |
+| --------------------------- | ------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------- |
+| `request` (défaut, partout) | la fin de chaque visite, une fois la page envoyée                                    | dès la fin de la visite qui l'ajoute, sinon à la visite suivante (voir sous le tableau) | rien n'avance sans visite ; un traitement plus long que le temps maximal d'une page (souvent 30 s) est coupé ; sur certains serveurs, les visiteurs attendent | tous, même un mutualisé sans cron                  |
+| `api`                       | un service de cron en ligne                                                          | 5 min (appel toutes les 5 min)                                                          | dépend d'un service extérieur ; un traitement plus long que le temps maximal d'un appel (moins d'une minute) est coupé                                        | mutualisé sans cron                                |
+| `worker`                    | un processus qui tourne en continu, relancé par le serveur ou par le binaire YesWiki | quelques secondes                                                                       | un processus PHP par wiki, gardé en mémoire en permanence ; hors du binaire, un service à installer et surveiller                                             | serveur privé ou dédié, conteneur, binaire YesWiki |
 
 En `request`, ce qu'une visite ajoute à la file est traité
 dès la fin de cette visite, une fois la page envoyée : la page que vous venez
@@ -93,13 +92,14 @@ Comment choisir, en pratique :
   ne vient. Un wiki qui reçoit une visite par jour traite donc ses tâches une
   fois par jour. Préférez `api` ou `worker`.
 - **Traitements longs** (synchronisations de grosses sources, par exemple) :
-  `worker` ou `binary`. Les autres modes ne laissent à un traitement que le
+  `worker`. Les autres modes ne laissent à un traitement que le
   temps que le serveur accorde à une page ou à un appel : un traitement plus
   long est coupé et passe en échec. Les
   sauvegardes et restaurations sont un cas à part, voir
   [plus bas](/docs/fr/async?id=sauvegardes-et-restaurations).
 - **Wiki servi par le binaire YesWiki** : `request` suffit, comme ailleurs.
-  Passez à `binary` si le wiki est peu visité ou si ses traitements sont longs.
+  Passez à `worker` si le wiki est peu visité ou si ses traitements sont longs :
+  le binaire s'occupe alors du processus, il n'y a rien à installer.
 
 ### `request` selon la façon dont le serveur lance PHP
 
@@ -174,7 +174,11 @@ suite) et `200` sinon, avec le nombre de traitements effectués et ce qui reste.
 
 ### Mettre en place `worker`
 
-C'est un travail pour la personne qui administre le serveur : une commande
+Sous le binaire YesWiki, voir
+[plus bas](/docs/fr/async?id=worker-sous-le-binaire-yeswiki) : il suffit d'une
+ligne dans `private/.env`.
+
+Ailleurs, c'est un travail pour la personne qui administre le serveur : une commande
 `php src/commands/console messenger:consume` à garder en vie, avec un service
 systemd par exemple. Le processus s'arrête de lui-même de temps en temps (au
 bout d'une heure, quand il a utilisé trop de mémoire, ou quand la configuration
@@ -208,15 +212,17 @@ serveur. Certains serveurs en ont plusieurs, de versions différentes, et le
 premier trouvé n'est pas toujours le bon. Dans ce cas, indiquez le chemin du bon
 dans `private/.env`, par exemple `ASYNC_PHP_BINARY=/usr/bin/php8.4`.
 
-### Le mode `binary`
+### `worker` sous le binaire YesWiki
 
 Quand le wiki est servi par le binaire YesWiki (`yeswiki serve`, ferme
 comprise), il traite sa file en `request` tant qu'il ne demande rien d'autre.
-Avec `YESWIKI_QUEUE_CONSUMER=binary` dans `private/.env`, c'est le binaire qui
-lance et surveille le traitement de ce wiki, et le relance s'il s'arrête : les
-tâches avancent sans visite, en quelques secondes, et peuvent durer aussi
-longtemps qu'il le faut. En contrepartie, un processus PHP reste en mémoire en
-permanence pour ce wiki : c'est pourquoi ce n'est pas le défaut.
+Avec `YESWIKI_QUEUE_CONSUMER=worker` dans `private/.env`, c'est le binaire qui
+lance et surveille le processus de ce wiki, et le relance s'il s'arrête : pas
+de service à écrire. Les tâches avancent sans visite, en quelques secondes, et
+peuvent durer aussi longtemps qu'il le faut. En contrepartie, un processus PHP
+reste en mémoire en permanence pour ce wiki : c'est pourquoi ce n'est pas le
+défaut. La page Traitements indique alors un rythme « en continu, surveillé par
+le binaire YesWiki ».
 
 Le changement est pris en compte au prochain redémarrage du binaire, ou au
 prochain rechargement de la ferme.
@@ -233,11 +239,11 @@ en **mode de secours** : il traite la file à la fin des visites, comme en
 Le secours se déclenche quand du travail attend et que le mode choisi n'a pas
 été vu au travail depuis :
 
-| Mode choisi        | Délai avant le secours                 |
-| ------------------ | -------------------------------------- |
-| `worker`, `binary` | 10 minutes                             |
-| `api`              | 3 heures                               |
-| `request`          | jamais : c'est déjà le mode de secours |
+| Mode choisi | Délai avant le secours                 |
+| ----------- | -------------------------------------- |
+| `worker`    | 10 minutes                             |
+| `api`       | 3 heures                               |
+| `request`   | jamais : c'est déjà le mode de secours |
 
 ![L'alerte du mode de secours : le worker ne répond plus, la file est traitée à la fin des visites. Le dernier passage du worker est affiché en rouge](images/async-secours.png)
 
@@ -376,7 +382,7 @@ qu'elle ne soit pas coupée en route.
   envoyer la page avant d'avoir fini (PHP intégré à Apache, ou lancé en CGI), le
   wiki la confie à un processus à part quand il le peut, pour ne pas vous faire
   attendre.
-- En modes `worker` et `binary`, c'est le processus qui traite la file qui
+- En mode `worker`, c'est le processus qui traite la file qui
   l'exécute. La page des sauvegardes affiche « en attente de la file de
   traitements » jusqu'à ce qu'il la prenne. Si ce processus n'est pas vu au
   travail (le wiki est en [mode de secours](/docs/fr/async?id=le-mode-de-secours)),
@@ -398,8 +404,7 @@ manqué de mémoire. Vous pouvez alors :
 - sauvegarder un sous-ensemble plus petit du site (seulement les fichiers, ou
   seulement la base de données), pour que la sauvegarde tienne dans le temps
   accordé ;
-- ou passer à un mode où un processus séparé traite la file (`worker` ou
-  `binary`) : voir
+- ou passer à un mode où un processus séparé traite la file (`worker`) : voir
   [choisir le mode de traitement](/docs/fr/async?id=choisir-le-mode-de-traitement).
 
 Les autres problèmes de sauvegarde (dossier non accessible en écriture,
@@ -418,14 +423,14 @@ terminal). Si la base elle-même ne répond pas, contactez votre hébergeur.
 
 ### Traitements en arrière-plan : mode de secours (rouge)
 
-Le mode choisi ne traite plus la file : le processus `worker` ou `binary` est
+Le mode choisi ne traite plus la file : le processus `worker` est
 arrêté, ou le service de cron en ligne de `api` n'appelle plus. Le
 wiki traite alors la file à la fin des visites (voir
 [le mode de secours](/docs/fr/async?id=le-mode-de-secours)). Une sauvegarde ou
 une restauration que vous lancez se fait, elle, dans votre propre requête.
 
 1. Vérifiez selon le mode : `worker` : le service tourne-t-il
-   (`systemctl status`) ? ; `binary` : le binaire YesWiki tourne-t-il ? ;
+   (`systemctl status`), ou, sous le binaire, le binaire YesWiki tourne-t-il ? ;
    `api` : le service de cron en ligne appelle-t-il toujours la bonne adresse
    avec le bon secret ?
 2. Une fois le mode rétabli, l'alerte disparaît d'elle-même au premier passage
@@ -440,7 +445,7 @@ La même alerte apparaît sur la page **Santé** :
 ### Traitements en arrière-plan à l'arrêt (rouge)
 
 Des traitements attendent et plus rien ne les traite depuis trop longtemps : 10
-minutes pour `worker` et `binary`, 3 heures pour `api`, 24 heures pour
+minutes pour `worker`, 3 heures pour `api`, 24 heures pour
 `request`. Conséquence : recherche pas à jour, e-mails
 récapitulatifs qui ne partent pas, synchronisations en suspens.
 
@@ -468,13 +473,12 @@ Un traitement a été coupé en route, parce qu'il dépasse le temps qu'un passa
 du mode actuel peut lui consacrer. Il échouera à chaque nouvel essai : le wiki
 ne le relance donc pas tout seul.
 
-1. Passez à un mode qui ne coupe pas les traitements longs : `worker` ou
-   `binary`.
+1. Passez à un mode qui ne coupe pas les traitements longs : `worker`.
 2. Revenez sur la page Traitements, onglet _En échec_, et cliquez sur
    **Relancer**.
 
-Si l'alerte parle d'un processus « arrêté de force » en mode `worker` ou
-`binary`, c'est que le serveur l'a coupé, le plus souvent faute de mémoire :
+Si l'alerte parle d'un processus « arrêté de force » en mode `worker`,
+c'est que le serveur l'a coupé, le plus souvent faute de mémoire :
 augmentez la mémoire accordée à PHP ou demandez à votre hébergeur.
 
 ### Tâches planifiées en retard (rouge)
@@ -502,8 +506,6 @@ L'alerte dit dans quel fichier elle a lu la valeur :
 
   ![Une faute de frappe dans le mode : « comand » n'est pas un mode connu](images/async-reglage-inconnu.png)
 
-- **`binary` hors du binaire** : le wiki n'est pas servi par le binaire YesWiki,
-  personne ne traite la file. Choisissez un autre mode ;
 - **`api` sans secret** : l'adresse d'appel est fermée à tous. Cliquez sur
   **Générer un secret** et configurez votre service de cron en ligne (voir
   [mettre en place `api`](/docs/fr/async?id=mettre-en-place-api)).
@@ -516,14 +518,14 @@ de plus en plus tard. Un mode qui traite plus régulièrement règle cela
 
 ### Processus de traitement qui redémarre en boucle (rouge)
 
-Seulement en `worker` et `binary`. Le processus s'arrête presque aussitôt lancé :
+Seulement en `worker`. Le processus s'arrête presque aussitôt lancé :
 rien n'avance. Son message d'erreur est dans le journal du service systemd ou
 dans celui du binaire YesWiki. Les causes habituelles sont une erreur PHP, une
 base injoignable ou une mémoire trop juste.
 
 ### Processus de traitement à la limite de sa mémoire (orange)
 
-Seulement en `worker` et `binary`. Le processus s'arrête pour repartir à neuf,
+Seulement en `worker`. Le processus s'arrête pour repartir à neuf,
 c'est sans gravité tant que c'est rare. Si cela revient souvent, un traitement
 est trop gourmand : augmentez la mémoire du processus (option
 `--memory-limit` de la commande).

@@ -59,7 +59,7 @@ class QueueSettingsTest extends TestCase
     {
         $this->setRealEnv(QueueSettings::ENV_MODE, 'worker');
 
-        $settings = $this->settings('binary', [QueueSettings::ENV_MODE => 'api']);
+        $settings = $this->settings('worker', [QueueSettings::ENV_MODE => 'api']);
 
         $this->assertSame(QueueConsumerMode::Worker, $settings->mode());
         $this->assertSame('env', $settings->origin());
@@ -67,7 +67,7 @@ class QueueSettingsTest extends TestCase
 
     public function testDotEnvWinsOverConfig(): void
     {
-        $settings = $this->settings('binary', [QueueSettings::ENV_MODE => 'api']);
+        $settings = $this->settings('worker', [QueueSettings::ENV_MODE => 'api']);
 
         $this->assertSame(QueueConsumerMode::Api, $settings->mode());
         $this->assertSame('dotenv', $settings->origin());
@@ -78,7 +78,7 @@ class QueueSettingsTest extends TestCase
         // The loader copies private/.env into the process environment: the same value present in both is still the file's.
         $this->setRealEnv(QueueSettings::ENV_MODE, 'api');
 
-        $settings = $this->settings('binary', [QueueSettings::ENV_MODE => 'api']);
+        $settings = $this->settings('worker', [QueueSettings::ENV_MODE => 'api']);
 
         $this->assertSame(QueueConsumerMode::Api, $settings->mode());
         $this->assertSame('dotenv', $settings->origin());
@@ -86,9 +86,9 @@ class QueueSettingsTest extends TestCase
 
     public function testTheConfigurationIsUsedWhenTheEnvironmentSaysNothing(): void
     {
-        $settings = $this->settings('binary');
+        $settings = $this->settings('worker');
 
-        $this->assertSame(QueueConsumerMode::Binary, $settings->mode());
+        $this->assertSame(QueueConsumerMode::Worker, $settings->mode());
         $this->assertSame('config', $settings->origin());
     }
 
@@ -104,14 +104,25 @@ class QueueSettingsTest extends TestCase
         $this->assertTrue($settings->isServedByBinary());
     }
 
-    public function testTheBinaryConsumesWhenAskedTo(): void
+    public function testUnderTheBinaryAWorkerIsAskedForAsAnywhereElse(): void
     {
+        $this->setRealEnv(QueueSettings::ENV_BINARY, '1');
+
+        $settings = $this->settings('', [QueueSettings::ENV_MODE => 'worker']);
+
+        $this->assertSame(QueueConsumerMode::Worker, $settings->mode());
+        $this->assertSame('dotenv', $settings->origin());
+    }
+
+    public function testBinaryIsNoLongerAMode(): void
+    {
+        // It was the worker the binary supervises: under the binary, `worker` is that worker.
         $this->setRealEnv(QueueSettings::ENV_BINARY, '1');
 
         $settings = $this->settings('', [QueueSettings::ENV_MODE => 'binary']);
 
-        $this->assertSame(QueueConsumerMode::Binary, $settings->mode());
-        $this->assertSame('dotenv', $settings->origin());
+        $this->assertSame(QueueConsumerMode::Request, $settings->mode());
+        $this->assertTrue($settings->isUnknownValue());
     }
 
     public function testWithNothingSetARequestConsumes(): void

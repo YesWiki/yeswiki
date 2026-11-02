@@ -92,7 +92,7 @@ class ArchiveService implements EventSubscriberInterface
     /**
      * The modes in which the queue runs only when something calls it: there the admin's own request runs the backup or the restore, once the response has left (spec 9.5).
      *
-     * In `worker` and `binary` a consumer of its own takes the message, while it is seen at work
+     * In `worker` a consumer of its own takes the message, while it is seen at work
      * (QueueFallback::consumerIsGone()); otherwise the admin's request runs it too.
      */
     private const RUN_IN_THE_ADMINS_REQUEST = [QueueConsumerMode::Request, QueueConsumerMode::Api];

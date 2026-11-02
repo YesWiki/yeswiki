@@ -9,7 +9,7 @@ use YesWiki\Kernel\Queue\QueueConsumerMode;
 /**
  * Which consumption mode the wiki runs in, and where that choice comes from.
  *
- * Precedence: the real environment, then private/.env, then `queue_consumer` in the configuration, then the default, `request`, under the Go binary too: its supervised consumer is a PHP process kept alive per wiki, which a wiki asks for with `binary`. The binary does not set YESWIKI_QUEUE_CONSUMER, it sets a marker of its own, so `binary` without the marker is detectable.
+ * Precedence: the real environment, then private/.env, then `queue_consumer` in the configuration, then the default, `request`, under the Go binary too: a consumer kept alive is a PHP process per wiki, which a wiki asks for with `worker`, and which the binary then supervises. The binary does not set YESWIKI_QUEUE_CONSUMER, it sets a marker of its own (isServedByBinary()).
  */
 class QueueSettings
 {

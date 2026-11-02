@@ -780,7 +780,7 @@ S3 instance the backups go to the bucket with everything else Protected.
 **`archive[call_archive_async]` is gone.** Backups and restores started from the backups page
 (or before an update) go through the wiki's background queue and show on `/admin/jobs`. In modes
 `request` (the default) and `api` they run in the admin's own request, once the page
-has been sent and without PHP's time limit where the host allows it; in `worker` and `binary`
+has been sent and without PHP's time limit where the host allows it; in `worker`
 the queue's consumer runs them. A migration removes the key. A backup no longer
 starts a PHP process of its own, so a host that forbids `proc_open` can make one in the default
 mode. `core:archive` and `core:restore` stay, for use by hand.

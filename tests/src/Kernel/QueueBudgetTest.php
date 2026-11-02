@@ -158,7 +158,6 @@ class QueueBudgetTest extends TestCase
     public static function blockingModes(): iterable
     {
         yield 'worker' => [QueueConsumerMode::Worker];
-        yield 'binary' => [QueueConsumerMode::Binary];
     }
 
     #[\PHPUnit\Framework\Attributes\DataProvider('blockingModes')]
