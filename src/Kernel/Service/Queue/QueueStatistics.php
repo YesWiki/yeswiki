@@ -473,17 +473,11 @@ class QueueStatistics
      */
     public function consumerStarts(int $sinceSeconds): int
     {
-        // A blocking consumer's pass starts when its process does (QueueRecorder::passStarted()).
-        $blocking = array_values(array_map(
-            static fn (QueueConsumerMode $mode): string => $mode->value,
-            array_filter(QueueConsumerMode::cases(), static fn (QueueConsumerMode $mode): bool => !$mode->isBudgeted())
-        ));
-
+        // The worker's pass starts when its process does (QueueRecorder::passStarted()).
         return (int)$this->db->scalar(
-            "SELECT COUNT(*) FROM {$this->journal->table()} WHERE channel = ? AND action = ? AND at >= ? AND target <> ?"
-            . ' AND actor IN (' . SqlParameters::placeholders(count($blocking)) . ')',
+            "SELECT COUNT(*) FROM {$this->journal->table()} WHERE channel = ? AND action = ? AND at >= ? AND target <> ? AND actor = ?",
             0,
-            [JournalChannel::Queue->value, QueueJournalEntry::PASS, $this->since($sinceSeconds), QueuePassReport::CONFIG_CHANGED, ...$blocking]
+            [JournalChannel::Queue->value, QueueJournalEntry::PASS, $this->since($sinceSeconds), QueuePassReport::CONFIG_CHANGED, QueueConsumerMode::Worker->value]
         );
     }
 

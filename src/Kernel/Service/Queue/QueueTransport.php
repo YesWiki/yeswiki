@@ -12,7 +12,6 @@ use Symfony\Component\Messenger\Stamp\ErrorDetailsStamp;
 use Symfony\Component\Messenger\Stamp\RedeliveryStamp;
 use Symfony\Component\Messenger\Stamp\SentToFailureTransportStamp;
 use Symfony\Component\Messenger\Stamp\TransportMessageIdStamp;
-use Symfony\Component\Messenger\Transport\Receiver\ListableReceiverInterface;
 use Symfony\Component\Messenger\Transport\Receiver\MessageCountAwareInterface;
 use Symfony\Component\Messenger\Transport\Serialization\PhpSerializer;
 use Symfony\Component\Messenger\Transport\Serialization\SerializerInterface;
@@ -52,7 +51,7 @@ use YesWiki\Kernel\Service\RequestScopedState;
  * process that goes on serving after the request that held the claim died, no /proc -- waits for
  * the limit the holder recorded, as everything did before.
  */
-class QueueTransport implements TransportInterface, ListableReceiverInterface, MessageCountAwareInterface, RequestScopedState
+class QueueTransport implements TransportInterface, MessageCountAwareInterface, RequestScopedState
 {
     public const DEFAULT_QUEUE = 'default';
     public const FAILED_QUEUE = 'failed';
@@ -273,6 +272,7 @@ class QueueTransport implements TransportInterface, ListableReceiverInterface, M
         return $released;
     }
 
+    /** The message of that id when it is in this queue, null otherwise (QueueConsumer::failedMessage()). */
     public function find(mixed $id): ?Envelope
     {
         if (!is_numeric($id)) {
@@ -284,22 +284,6 @@ class QueueTransport implements TransportInterface, ListableReceiverInterface, M
         );
 
         return $row === null ? null : $this->decode($row);
-    }
-
-    /**
-     * The messages waiting in this queue, delayed ones included, in the order they will be taken.
-     *
-     * @return list<Envelope>
-     */
-    public function all(?int $limit = null): iterable
-    {
-        $rows = $this->db->loadAll(
-            "SELECT * FROM {$this->schema->table()} WHERE queue_name = ? AND delivered_at IS NULL ORDER BY available_at, id"
-            . ($limit === null ? '' : ' LIMIT ' . max(0, $limit)),
-            [$this->queueName]
-        );
-
-        return array_map($this->decode(...), $rows);
     }
 
     /** Whether a caller holds a transaction open on this queue's connection, which a failed send() leaves only able to roll back (QueueBus). */

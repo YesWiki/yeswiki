@@ -8,6 +8,7 @@ use YesWiki\Admin\Service\JobsOverview;
 use YesWiki\Core\DashboardShell;
 use YesWiki\Core\YesWikiController;
 use YesWiki\Kernel\Service\PageContext;
+use YesWiki\Kernel\Service\Queue\QueueHealthChecks;
 use YesWiki\Render\Service\TemplateEngine;
 
 /**
@@ -29,7 +30,7 @@ class JobsController extends YesWikiController
         $this->denyAccessUnlessAdmin();
         $overview = $this->getService(JobsOverview::class);
 
-        return $this->page('@core/admin/jobs.twig', JobsOverview::ROUTE, [
+        return $this->page('@core/admin/jobs.twig', QueueHealthChecks::ROUTE, [
             'status' => $overview->status(),
             'tab' => $overview->tab(JobsOverview::TABS[0]),
         ]);

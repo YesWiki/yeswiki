@@ -412,7 +412,7 @@ class SendDigestTest extends YesWikiTestCase
         $page = 'SendDigestTestPage';
         $user = 'SendDigestTestUser';
 
-        $this->assertContains(SendDigest::class, $services->get(QueueHandlerLocator::class)->handledTypes());
+        self::assertHandled(SendDigest::class, $services->get(QueueHandlerLocator::class));
         $this->assertInstanceOf(SendDigestHandler::class, $services->get(SendDigestHandler::class));
         $this->assertInstanceOf(ProvidesSchedule::class, $services->get(ContactSchedule::class));
         $subscriptions->subscribe($page, $user, 'week');

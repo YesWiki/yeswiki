@@ -54,9 +54,8 @@ class QueueBudgetFactory
      */
     public function forMode(QueueConsumerMode $mode, bool $responseAlreadySent): QueueBudget
     {
-        $memoryCeiling = $this->memoryCeiling();
         if (!$mode->isBudgeted()) {
-            return new QueueBudget(INF, $memoryCeiling, self::KILL_LIMIT_NO_PHP_LIMIT);
+            return $this->forHand();
         }
 
         $now = (float)($this->now)(true);
@@ -77,10 +76,10 @@ class QueueBudgetFactory
             ? self::CEILING_API
             : ($responseAlreadySent ? self::CEILING_RESPONSE_SENT : self::CEILING_VISITOR_WAITS);
 
-        return new QueueBudget($now + $this->capped($usable, $ceiling), $memoryCeiling, $killLimit);
+        return new QueueBudget($now + $this->capped($usable, $ceiling), $this->memoryCeiling(), $killLimit);
     }
 
-    /** A pass run by hand (`messenger:consume --drain`): no deadline, since it ends when the queue is empty, but the memory ceiling every pass stops at. */
+    /** A pass with no deadline but the memory ceiling every pass stops at: one run by hand (`messenger:consume --drain`), which ends when the queue is empty, or a blocking consumer's. */
     public function forHand(): QueueBudget
     {
         return new QueueBudget(INF, $this->memoryCeiling(), self::KILL_LIMIT_NO_PHP_LIMIT);

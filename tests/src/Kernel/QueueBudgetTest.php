@@ -185,7 +185,7 @@ class QueueBudgetTest extends TestCase
 
     public function testUnlimitedHasNoDeadlineNorMemoryCeiling(): void
     {
-        $budget = QueueBudget::unlimited(120);
+        $budget = new QueueBudget(INF, PHP_INT_MAX, 120);
 
         $this->assertSame(120, $budget->killLimitSeconds);
         $this->assertSame(INF, $budget->remainingSeconds());
@@ -201,7 +201,7 @@ class QueueBudgetTest extends TestCase
         $this->assertSame(1000, $shorter->memoryCeilingBytes);
         $this->assertSame(60, $shorter->killLimitSeconds);
         $this->assertEqualsWithDelta(10.0, $budget->cappedTo(30)->remainingSeconds(), 0.2, 'a cap above the deadline changes nothing');
-        $this->assertEqualsWithDelta(5.0, QueueBudget::unlimited(60)->cappedTo(5)->remainingSeconds(), 0.2);
+        $this->assertEqualsWithDelta(5.0, new QueueBudget(INF, PHP_INT_MAX, 60)->cappedTo(5)->remainingSeconds(), 0.2);
     }
 
     public function testBytesReadsTheSizeNotationOfPhpIni(): void

@@ -114,9 +114,6 @@ class QueueRequestTrigger implements RequestScopedState
                 // would end up in the page, or break an API's JSON. Dropped every few kilobytes, so
                 // a handler that prints a lot costs no memory.
                 ob_start(static fn (): string => '', 4096);
-            }
-
-            if (!$responseAlreadySent) {
                 // The response leaves when the script ends (mod_php, CGI): run here, a backup would keep the admin waiting for all of it, and a wiki fetching it would give up.
                 $pinned = array_values(array_filter($pinned, fn (int $messageId): bool => !$this->handToAProcess($messageId)));
             }
@@ -129,10 +126,8 @@ class QueueRequestTrigger implements RequestScopedState
                 }
             }
 
-            if ($mode === QueueConsumerMode::Request) {
-                $this->drainIfNeeded($responseAlreadySent);
-            } elseif ($fallback && $this->hasWork()) {
-                $this->drain($responseAlreadySent, $mode);
+            if (($consumesByItself || $fallback) && $this->hasWork()) {
+                $this->drain($responseAlreadySent, $fallback ? $mode : null);
             }
         } catch (\Throwable $failed) {
             try {
@@ -157,14 +152,6 @@ class QueueRequestTrigger implements RequestScopedState
     public function startNewRequest(): void
     {
         $this->pinned = [];
-    }
-
-    private function drainIfNeeded(bool $responseAlreadySent): void
-    {
-        if (!$this->hasWork()) {
-            return;
-        }
-        $this->drain($responseAlreadySent);
     }
 
     /**

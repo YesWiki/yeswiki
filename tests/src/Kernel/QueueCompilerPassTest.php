@@ -23,7 +23,7 @@ class QueueCompilerPassTest extends YesWikiTestCase
         $locator = $this->compiled()->get(QueueHandlerLocator::class);
 
         $this->assertInstanceOf(QueueHandlerLocator::class, $locator);
-        $this->assertContains(QueueTestMessage::class, $locator->handledTypes());
+        self::assertHandled(QueueTestMessage::class, $locator);
     }
 
     public function testTheLocatorHandsOutTheHandlerFromTheContainer(): void
@@ -41,7 +41,7 @@ class QueueCompilerPassTest extends YesWikiTestCase
     public function testTheMessageAndSchedulerFoldersAreWhatTheContainerRegisters(): void
     {
         $services = $this->getWiki()->services;
-        $handled = $services->get(QueueHandlerLocator::class)->handledTypes();
+        $locator = $services->get(QueueHandlerLocator::class);
         $src = dirname(__DIR__, 3) . '/src/';
         $classOf = static fn (string $file): string => 'YesWiki\\' . str_replace('/', '\\', substr($file, strlen($src), -4));
 
@@ -51,7 +51,9 @@ class QueueCompilerPassTest extends YesWikiTestCase
             if (str_ends_with($class, 'Handler')) {
                 $handlers++;
                 $this->assertTrue($services->has($class), "{$class} is a service");
-                $this->assertContains(substr($class, 0, -strlen('Handler')), $handled);
+                $message = substr($class, 0, -strlen('Handler'));
+                $this->assertTrue(class_exists($message), "{$class} sits beside the message it handles");
+                self::assertHandled($message, $locator);
             } else {
                 $this->assertFalse($services->has($class), "{$class} is a message, not a service");
             }

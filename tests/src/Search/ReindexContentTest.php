@@ -113,9 +113,9 @@ class ReindexContentTest extends YesWikiTestCase
     {
         $services = $this->getWiki()->services;
 
-        $this->assertContains(
+        self::assertHandled(
             ReindexContent::class,
-            $services->get(QueueHandlerLocator::class)->handledTypes(),
+            $services->get(QueueHandlerLocator::class),
             'the compiler pass found #[AsMessageHandler] on ReindexContentHandler (delete cache/container/* after adding a service class)'
         );
         $this->assertInstanceOf(ReindexContentHandler::class, $services->get(ReindexContentHandler::class));

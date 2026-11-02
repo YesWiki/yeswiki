@@ -196,11 +196,6 @@ class SqliteDialect implements SqlDialect
         ];
     }
 
-    public function queueDropDdl(string $table): array
-    {
-        return ["DROP TABLE IF EXISTS \"{$table}\""];
-    }
-
     public function upsert(string $table, array $values, array $conflictColumns, array $assignments): string
     {
         return SqlUpsert::onConflict($this, $table, $values, $conflictColumns, $assignments);

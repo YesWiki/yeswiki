@@ -494,15 +494,11 @@ class QueueTransportTest extends YesWikiTestCase
         $this->assertEquals(new \DateTimeImmutable(self::START, new \DateTimeZone('UTC')), $this->transport->oldestPendingAt());
     }
 
-    public function testFindAndAllListWhatWaitsInThisQueueOnly(): void
+    public function testFindLooksInThisQueueOnly(): void
     {
         $waiting = $this->transport->send(new Envelope(new QueueTestMessage('waiting')));
         $failed = $this->transport->send(new Envelope(new QueueTestMessage('failed')));
         $this->transport->moveToFailed(self::idOf($failed), 'boom');
-
-        $listed = [...$this->transport->all()];
-        $this->assertSame([self::idOf($waiting)], array_map(self::idOf(...), $listed));
-        $this->assertSame([self::idOf($failed)], array_map(self::idOf(...), [...$this->transport->withQueue('failed')->all(10)]));
 
         $found = $this->transport->find(self::idOf($waiting));
         $this->assertNotNull($found);

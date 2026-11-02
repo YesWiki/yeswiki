@@ -306,7 +306,7 @@ class QueueRecorderTest extends YesWikiTestCase
 
     public function testABlockingConsumerBeatsAndCountsAsAStart(): void
     {
-        $id = $this->recorder->passStarted(QueueConsumerMode::Worker, QueueBudget::unlimited(21600), false);
+        $id = $this->recorder->passStarted(QueueConsumerMode::Worker, new QueueBudget(INF, PHP_INT_MAX, 21600), false);
         $this->clock->sleep(60);
         $this->recorder->passHeartbeat($id, 7, 999);
 

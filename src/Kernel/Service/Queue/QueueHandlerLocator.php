@@ -43,10 +43,4 @@ class QueueHandlerLocator implements HandlersLocatorInterface
             }
         }
     }
-
-    /** @return list<class-string> */
-    public function handledTypes(): array
-    {
-        return array_keys($this->handlers);
-    }
 }

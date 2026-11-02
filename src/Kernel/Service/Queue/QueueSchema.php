@@ -61,11 +61,10 @@ class QueueSchema
         }
     }
 
+    /** One table and no trigger nor sequence of its own to remove: the same statement on every engine. */
     public function drop(): void
     {
-        foreach ($this->dbService->dialect()->queueDropDdl($this->table()) as $statement) {
-            $this->dbService->query($statement);
-        }
+        $this->dbService->query('DROP TABLE IF EXISTS ' . $this->dbService->quoteIdentifier($this->table()));
     }
 
     public function exists(): bool

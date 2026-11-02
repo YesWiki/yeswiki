@@ -3,6 +3,7 @@
 namespace YesWiki\Kernel\Service;
 
 use YesWiki\Core\YesWikiLoader;
+use YesWiki\Kernel\Service\Queue\QueueSettings;
 
 /** Environment-variable overrides for the YesWiki configuration. */
 class EnvironmentConfiguration
@@ -47,7 +48,7 @@ class EnvironmentConfiguration
      * Variables honored from the real environment and from private/.env under a name that is not UPPER(key), as an envName => configKey map.
      */
     public const ENV_ALIASES = [
-        'YESWIKI_QUEUE_CONSUMER' => 'queue_consumer',
+        QueueSettings::ENV_MODE => 'queue_consumer',
     ];
 
     /**
@@ -55,7 +56,7 @@ class EnvironmentConfiguration
      */
     public const NOT_CONFIG = [
         'YESWIKI_CONFIG_FILE',
-        'YESWIKI_SERVED_BY_BINARY',
+        QueueSettings::ENV_BINARY,
         'ASYNC_PHP_BINARY',
         'ADMIN_NAME',
         'ADMIN_PASSWORD',

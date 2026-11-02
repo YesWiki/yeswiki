@@ -24,8 +24,8 @@ use YesWiki\Kernel\Entity\Event;
 use YesWiki\Kernel\Queue\QueueBudget;
 use YesWiki\Kernel\Queue\QueueConsumerMode;
 use YesWiki\Kernel\Queue\QueuePassObserver;
-use YesWiki\Kernel\Queue\QueuePassReceiver;
 use YesWiki\Kernel\Queue\QueuePassOrigin;
+use YesWiki\Kernel\Queue\QueuePassReceiver;
 use YesWiki\Kernel\Queue\QueuePassReport;
 use YesWiki\Kernel\Queue\QueueRetryStrategy;
 use YesWiki\Kernel\Queue\ScheduledTask;
@@ -282,9 +282,9 @@ class QueueConsumer
      * would fail the message as killed while it runs. A holder that really dies is still seen at
      * once: its process is gone, or it fails what it holds as it ends.
      */
-    public function handleById(int $messageId, QueueConsumerMode $mode, QueuePassOrigin $origin = QueuePassOrigin::Pinned): QueuePassReport
+    public function handleById(int $messageId, QueueConsumerMode $mode): QueuePassReport
     {
-        return $this->pass($mode, null, false, $origin, null, function (QueuePassObserver $observer) use ($messageId, $mode): string {
+        return $this->pass($mode, null, false, QueuePassOrigin::Pinned, null, function (QueuePassObserver $observer) use ($messageId, $mode): string {
             $this->transport->claimAs($mode, QueueBudgetFactory::KILL_LIMIT_NO_PHP_LIMIT);
 
             $receiver = new QueuePassReceiver($this->transport, static fn (): ?string => null, $observer, $messageId);
@@ -319,7 +319,7 @@ class QueueConsumer
     /**
      * Opens the pass's row, runs it, closes the row with the report.
      *
-     * @param QueueConsumerMode|null                  $fallbackFor the consumer a fallback pass stands in for
+     * @param QueueConsumerMode|null                   $fallbackFor the consumer a fallback pass stands in for
      * @param \Closure(QueuePassObserver, int): string $body        runs the pass and answers why it stopped
      */
     private function pass(QueueConsumerMode $mode, ?QueueBudget $budget, bool $beforeResponse, QueuePassOrigin $origin, ?QueueConsumerMode $fallbackFor, \Closure $body): QueuePassReport

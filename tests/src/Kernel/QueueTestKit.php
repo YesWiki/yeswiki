@@ -55,6 +55,7 @@ final class QueueTestKit
     public readonly Journal $journal;
     public readonly QueueBus $bus;
     private readonly QueueSchema $schema;
+    private readonly DbService $db;
     private readonly RuntimeLock $locks;
     /** @var resource|null */
     private $heldPassLock;
@@ -84,7 +85,7 @@ final class QueueTestKit
         $this->file = $database ?? sys_get_temp_dir() . '/yw-kit-' . bin2hex(random_bytes(6)) . '.db';
         $this->ownsDatabase = $database === null;
         $this->lockDir = sys_get_temp_dir() . '/yw-kit-locks-' . bin2hex(random_bytes(4));
-        $db = new DbService(new ParameterBag([
+        $this->db = $db = new DbService(new ParameterBag([
             'db_driver' => 'sqlite',
             'db_database' => $this->file,
             'table_prefix' => 'ywq_',
@@ -292,6 +293,21 @@ final class QueueTestKit
     public function fallback(QueueSettings $settings): QueueFallback
     {
         return new QueueFallback($settings, $this->statistics, new HibernationService(new ParameterBag(['wiki_status' => 'running'])), $this->locks);
+    }
+
+    /**
+     * The messages waiting in the queue, delayed ones included, in the order they will be taken.
+     *
+     * @return list<Envelope>
+     */
+    public function waiting(): array
+    {
+        $rows = $this->db->loadAll(
+            "SELECT id FROM {$this->schema->table()} WHERE queue_name = ? AND delivered_at IS NULL ORDER BY available_at, id",
+            [QueueTransport::DEFAULT_QUEUE]
+        );
+
+        return array_values(array_filter(array_map(fn (array $row): ?Envelope => $this->transport->find((int)$row['id']), $rows)));
     }
 
     /** The configuration file the kit points YESWIKI_CONFIG_FILE at, as it is now on disk. */

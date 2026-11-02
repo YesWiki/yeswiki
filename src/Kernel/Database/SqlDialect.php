@@ -136,13 +136,6 @@ interface SqlDialect
     public function queueDdl(string $table): array;
 
     /**
-     * Every statement needed to remove what queueDdl() created, in execution order.
-     *
-     * @return list<string>
-     */
-    public function queueDropDdl(string $table): array;
-
-    /**
      * An INSERT that, when the unique key over $conflictColumns is already taken, applies $assignments to the row that is there instead of failing.
      *
      * @param string                $table           already prefixed, unquoted

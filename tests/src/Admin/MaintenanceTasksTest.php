@@ -106,10 +106,10 @@ class MaintenanceTasksTest extends YesWikiTestCase
     public function testTheHandlersAndTheSchedulesAreDiscoveredOnTheRealContainer(): void
     {
         $services = $this->getWiki()->services;
-        $handled = $services->get(QueueHandlerLocator::class)->handledTypes();
+        $locator = $services->get(QueueHandlerLocator::class);
 
         foreach ([PurgeRevisions::class, PruneJournal::class, PurgeRecoveryKeys::class, PurgeActivationKeys::class, PurgeBotGuard::class, RunMaintenanceHooks::class] as $type) {
-            $this->assertContains($type, $handled);
+            self::assertHandled($type, $locator);
         }
         foreach ([PurgeRevisionsHandler::class, PruneJournalHandler::class, PurgeRecoveryKeysHandler::class, PurgeActivationKeysHandler::class, PurgeBotGuardHandler::class, RunMaintenanceHooksHandler::class] as $handler) {
             $this->assertInstanceOf($handler, $services->get($handler));

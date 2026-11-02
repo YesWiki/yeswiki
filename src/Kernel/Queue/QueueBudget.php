@@ -21,12 +21,6 @@ final class QueueBudget
     ) {
     }
 
-    /** A budget with no time and no memory bound, for a pass that blocks until told to stop. */
-    public static function unlimited(int $killLimitSeconds): self
-    {
-        return new self(INF, PHP_INT_MAX, $killLimitSeconds);
-    }
-
     /** The same budget, but with no more than that many seconds from now: an admin who runs a pass by hand may want it shorter than the server allows. */
     public function cappedTo(float $seconds): self
     {

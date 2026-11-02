@@ -405,7 +405,7 @@ class QueueConsumerTest extends YesWikiTestCase
             }], null, $argv[1]);
             // Registered before the consumer's own: the kit's config and locks go first, the database is the test's.
             register_shutdown_function($kit->dispose(...));
-            $kit->consumer->drain(YesWiki\Kernel\Queue\QueueConsumerMode::Api, YesWiki\Kernel\Queue\QueueBudget::unlimited(300));
+            $kit->consumer->drain(YesWiki\Kernel\Queue\QueueConsumerMode::Api, new YesWiki\Kernel\Queue\QueueBudget(INF, PHP_INT_MAX, 300));
             PHP);
 
         try {
@@ -947,9 +947,9 @@ class QueueConsumerTest extends YesWikiTestCase
             $this->assertSame(['handled', 'killed', 'retried'], $statuses);
             $this->assertSame('empty', $this->statistics->lastPass()['stopReason'] ?? null);
 
-            [$retry] = [...$this->transport->all()];
+            $retryId = (int)$db->scalar("SELECT id FROM {$schema->table()} WHERE queue_name = ? AND delivered_at IS NULL", 0, [QueueTransport::DEFAULT_QUEUE]);
             $this->behaviour = null;
-            $this->assertSame(1, $this->consumer->handleById((int)$retry->last(TransportMessageIdStamp::class)?->getId(), QueueConsumerMode::Api)->handled, 'a message asked for by id is taken even before its delay');
+            $this->assertSame(1, $this->consumer->handleById($retryId, QueueConsumerMode::Api)->handled, 'a message asked for by id is taken even before its delay');
             $this->assertSame(['m1', 'm2', 'm2'], $this->handled);
         } finally {
             $schema->drop();

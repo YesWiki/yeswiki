@@ -4,6 +4,7 @@ namespace YesWiki\Test\Core;
 
 use PHPUnit\Framework\Attributes\After;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Messenger\Stamp\ReceivedStamp;
 use YesWiki\Content\Service\PageManager;
@@ -17,6 +18,7 @@ use YesWiki\Kernel\Database\SqlParameters;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\Journal;
 use YesWiki\Kernel\Service\JournalSchema;
+use YesWiki\Kernel\Service\Queue\QueueHandlerLocator;
 use YesWiki\Kernel\Service\Queue\QueueSchema;
 use YesWiki\Kernel\Service\Queue\QueueTransport;
 use YesWiki\Search\Message\ReindexContent;
@@ -280,6 +282,22 @@ class YesWikiTestCase extends TestCase
             throw new \RuntimeException("cannot create {$path}");
         }
         $this->createdDirectories = [...$missing, ...$this->createdDirectories];
+    }
+
+    /**
+     * Asserts the locator hands that message class a handler, asked the way the consumer asks: with an envelope of it.
+     *
+     * The message is built without its constructor, whose arguments play no part in finding its
+     * handler. The locator defaults to the wiki's own, on the container it really runs on.
+     *
+     * @param class-string $messageClass
+     */
+    protected static function assertHandled(string $messageClass, ?QueueHandlerLocator $locator = null, string $message = ''): void
+    {
+        $locator ??= self::getWiki()->services->get(QueueHandlerLocator::class);
+        $envelope = new Envelope((new \ReflectionClass($messageClass))->newInstanceWithoutConstructor());
+
+        self::assertNotSame([], [...$locator->getHandlers($envelope)], $message !== '' ? $message : "{$messageClass} has a handler");
     }
 
     /**

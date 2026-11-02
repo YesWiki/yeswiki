@@ -252,15 +252,13 @@ class SqlDialectTest extends TestCase
     }
 
     #[DataProvider('dialects')]
-    public function testQueueDdlCreatesOneTableAndDropRemovesIt(SqlDialect $d, string $driver): void
+    public function testQueueDdlCreatesOneTable(SqlDialect $d, string $driver): void
     {
         $create = implode("\n", $d->queueDdl('p_queue'));
         $this->assertSame(1, preg_match_all('/CREATE TABLE/', $create), "$driver creates one table");
         $this->assertMatchesRegularExpression('/CREATE TABLE IF NOT EXISTS\s+[`"]p_queue[`"]/', $create);
         $this->assertMatchesRegularExpression('/[`"]task_id[`"] (VARCHAR\(64\)|TEXT) DEFAULT NULL/', $create, "$driver gives messages no task id");
         $this->assertMatchesRegularExpression('/UNIQUE (KEY|INDEX IF NOT EXISTS) [`"](p_queue_)?uniq_task_id[`"]/', $create, "$driver keeps a task id to one row");
-
-        $this->assertSame(["DROP TABLE IF EXISTS {$d->quoteIdentifier('p_queue')}"], $d->queueDropDdl('p_queue'));
     }
 
     #[DataProvider('dialects')]

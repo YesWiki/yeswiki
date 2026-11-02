@@ -104,7 +104,7 @@ class DeliverActivityTest extends YesWikiTestCase
 
         $this->assertSame([], $this->posted, 'nothing is sent while the person saves');
         $this->assertSame(3, $this->kit->statistics->pendingCount());
-        $messages = array_map(static fn (Envelope $envelope): object => $envelope->getMessage(), [...$this->kit->transport->all()]);
+        $messages = array_map(static fn (Envelope $envelope): object => $envelope->getMessage(), $this->kit->waiting());
         $this->assertContainsOnlyInstancesOf(DeliverActivity::class, $messages);
         $this->assertEqualsCanonicalizing([self::ALICE, self::BOB, self::CARL], array_column($messages, 'recipientUri'));
         $this->assertSame(['1'], array_values(array_unique(array_column($messages, 'formId'))));
@@ -122,7 +122,7 @@ class DeliverActivityTest extends YesWikiTestCase
     {
         $services = $this->getWiki()->services;
 
-        $this->assertContains(DeliverActivity::class, $services->get(QueueHandlerLocator::class)->handledTypes());
+        self::assertHandled(DeliverActivity::class, $services->get(QueueHandlerLocator::class));
         $this->assertInstanceOf(DeliverActivityHandler::class, $services->get(DeliverActivityHandler::class));
         $this->assertInstanceOf(ActivityPubService::class, $services->get(ActivityPubService::class));
         $ids = $services->get(HealthService::class)->ids();
@@ -406,7 +406,7 @@ class DeliverActivityTest extends YesWikiTestCase
     /** @return list<Envelope> */
     private function waiting(): array
     {
-        return [...$this->kit->transport->all()];
+        return $this->kit->waiting();
     }
 
     private function idOf(Envelope $envelope): int

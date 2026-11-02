@@ -35,9 +35,6 @@ class JobsOverview
 {
     public const TABS = ['types', 'failed', 'tasks', 'history', 'consumers'];
 
-    /** The route the alerts of this page are linked to. */
-    public const ROUTE = QueueHealthChecks::ROUTE;
-
     /** Rows a tab lists: the most recent. */
     private const LISTED = 100;
 
@@ -213,7 +210,7 @@ class JobsOverview
     {
         $alerts = [];
         foreach ($this->health->findings() as $finding) {
-            if ($finding->check->route() !== self::ROUTE) {
+            if ($finding->check->route() !== QueueHealthChecks::ROUTE) {
                 continue;
             }
             $alerts[] = [

@@ -10,7 +10,6 @@ use YesWiki\Kernel\Entity\Event;
 use YesWiki\Kernel\Queue\RetryPolicy;
 use YesWiki\Kernel\Service\EventDispatcher;
 use YesWiki\Kernel\Service\Journal;
-use YesWiki\Kernel\Service\Queue\QueueHandlerLocator;
 use YesWiki\Kernel\Service\Queue\QueueRecorder;
 use YesWiki\Kernel\Service\ThrowableFormatter;
 use YesWiki\Test\Core\YesWikiTestCase;
@@ -156,7 +155,7 @@ class MaintenanceEventsTest extends YesWikiTestCase
         $this->assertInstanceOf(RetryPolicy::class, $task);
         $this->assertSame(0, $task->maxRetries());
         $this->assertSame('extension-hooks', $task->taskId());
-        $this->assertContains(RunMaintenanceHooks::class, $this->getWiki()->services->get(QueueHandlerLocator::class)->handledTypes());
+        self::assertHandled(RunMaintenanceHooks::class);
     }
 
     /** What an extension hooked on the events keeps hearing, on the wiki's own dispatcher. */

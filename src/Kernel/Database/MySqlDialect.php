@@ -208,11 +208,6 @@ class MySqlDialect implements SqlDialect
         ];
     }
 
-    public function queueDropDdl(string $table): array
-    {
-        return ["DROP TABLE IF EXISTS `{$table}`"];
-    }
-
     /** `VALUES()` rather than the 8.0.20 row alias, which MariaDB does not have. */
     public function upsert(string $table, array $values, array $conflictColumns, array $assignments): string
     {

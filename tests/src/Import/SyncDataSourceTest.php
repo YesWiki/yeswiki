@@ -394,7 +394,7 @@ class SyncDataSourceTest extends YesWikiTestCase
     {
         $services = $this->getWiki()->services;
 
-        $this->assertContains(SyncDataSource::class, $services->get(QueueHandlerLocator::class)->handledTypes());
+        self::assertHandled(SyncDataSource::class, $services->get(QueueHandlerLocator::class));
         $this->assertInstanceOf(SyncDataSourceHandler::class, $services->get(SyncDataSourceHandler::class));
         $this->assertInstanceOf(ProvidesSchedule::class, $services->get(ImportSchedule::class));
         $this->assertContains('queue-prune', $services->get(QueueScheduleTicker::class)->declaredTaskIds(), 'fixture: the ticker builds its schedule from every provider');
