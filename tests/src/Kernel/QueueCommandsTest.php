@@ -11,9 +11,9 @@ use Symfony\Component\Console\Tester\CommandTester;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Scheduler\RecurringMessage;
+use YesWiki\Kernel\Command\QueueConsumeCommand;
 use YesWiki\Kernel\Queue\ProvidesSchedule;
 use YesWiki\Kernel\Queue\QueueConsumerMode;
-use YesWiki\Kernel\Command\QueueConsumeCommand;
 use YesWiki\Kernel\Service\Queue\QueueSettings;
 use YesWiki\Test\Core\YesWikiTestCase;
 

@@ -14,7 +14,6 @@ use Symfony\Component\Process\Process;
 use YesWiki\Files\Service\RuntimeLock;
 use YesWiki\Kernel\Queue\ProvidesSchedule;
 use YesWiki\Kernel\Queue\QueueConsumerMode;
-use YesWiki\Kernel\Queue\QueuePassOrigin;
 use YesWiki\Kernel\Service\ConfigurationService;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\HibernationService;
