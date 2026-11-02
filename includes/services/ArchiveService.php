@@ -69,10 +69,6 @@ class ArchiveService
     public const RESTORE_CONFIG = 'config';
     public const RESTORE_SWEEPING = 'sweeping';
     public const RESTORE_DONE = 'done';
-    /**
-     * Configuration entries that belong to this installation, not to the wiki that was backed up:
-     * where its database, its address, its mail server and its backups folder are.
-     */
     public const CONFIG_KEYS_KEPT_ON_RESTORE = [
         'mysql_host',
         'mysql_database',
@@ -122,16 +118,7 @@ class ArchiveService
         $this->wiki = $wiki;
     }
 
-    /**
-     * archive data in zip file.
-     *
-     * @param string|OutputInterface &$output
-     * @param array|null             $onlyFolders when given, the only folders the zip holds,
-     *                                            instead of FOLDERS_TO_INCLUDE widened by
-     *                                            $foldersToInclude
-     *
-     * @throws \Exception
-     */
+    // Archives the wiki into a zip file.
     public function archive(
         &$output,
         bool $savefiles = true,
@@ -305,13 +292,7 @@ class ArchiveService
         return $vMessages;
     }
 
-    /**
-     * Get YesWiki status
-     * We must use the configuration service to have the value of wiki_status since it can be modified dynamically
-     * and that ParameterBag is more static.
-     *
-     * @return string : the status
-     */
+    // Reads wiki_status from the configuration file, since the ParameterBag does not see it change.
     public function getWikiStatus()
     {
         $vConfig = $this->configurationService->getConfiguration(ConfigurationFileProvider::getConfigFileFromEnv());
@@ -324,21 +305,13 @@ class ArchiveService
         return trim($vConfig['wiki_status']);
     }
 
-    /**
-     * Test if YesWiki is read only
-     * We must use the configuration service to have the value of wiki_status since it can be modified dynamically
-     * and that ParameterBag is more static.
-     *
-     * @return bool : is read only
-     */
+    // Tells whether the wiki is read only, from the configuration file rather than the ParameterBag.
     public function isReadOnly()
     {
         return in_array($this->getWikiStatus(), ['hibernate', 'archiving', 'updating']);
     }
 
-    /**
-     * check if a recent and valided backup is present.
-     */
+    // Tells whether a recent, validated backup is present.
     public function hasValidatedBackup($token): bool
     {
         if (empty($token) || !is_string($token)) {
@@ -358,11 +331,7 @@ class ArchiveService
         return $result;
     }
 
-    /**
-     * retrieve the current status to archive.
-     *
-     * @return array ['canArchive' => bool,'archiving' => bool, 'hibernated' => bool, 'privatePathWritable' => bool, 'canExec' => bool, 'estimatedSize' => int, 'freeSpace' => ?int]
-     */
+    // Returns the current archiving status.
     public function getArchivingStatus(): array
     {
         $archiving = false;
@@ -465,11 +434,7 @@ class ArchiveService
         return compact(['canArchive', 'archiving', 'hibernated', 'privatePathWritable', 'canExec', 'callAsync', 'notAvailableOnTheInternet', 'enoughSpace', 'estimatedSize', 'freeSpace', 'dB']);
     }
 
-    /**
-     * get a token to force update.
-     *
-     * @return string $token
-     */
+    // Returns a token that allows forcing an update.
     public function getForcedUpdateToken(): string
     {
         $status = $this->getArchivingStatus();
@@ -487,11 +452,7 @@ class ArchiveService
         return $uid;
     }
 
-    /**
-     * start archive async via CLI or directly if sync.
-     *
-     * @return string uid
-     */
+    // Starts an archive, async through the CLI or directly when sync.
     public function startArchive(
         bool $savefiles = true,
         bool $savedatabase = true,
@@ -549,11 +510,7 @@ class ArchiveService
         return $uidData['uid'];
     }
 
-    /**
-     * get the list of archives in a array with information for each one.
-     *
-     * Reading the source address opens each archive, so only the screens offering a restore ask for it.
-     */
+    // Lists the archives with information on each one.
     public function getArchives(bool $withSourceBaseUrl = false): array
     {
         $archives = [];
@@ -590,11 +547,7 @@ class ArchiveService
         return $archives;
     }
 
-    /**
-     * get the path to an archive filename.
-     *
-     * @return string $filepath
-     */
+    // Returns the path of an archive filename.
     public function getFilePath(string $filename): string
     {
         $privatePath = $this->getPrivateFolder();
@@ -607,11 +560,7 @@ class ArchiveService
         return (file_exists($filePath) && is_file($filePath)) ? $filePath : '';
     }
 
-    /**
-     * Restore a backup archive, from start to finish.
-     *
-     * @throws \Exception
-     */
+    // Restores a backup archive from start to finish.
     public function restoreArchive(
         string $filename,
         bool $restoreFiles = true,
@@ -627,16 +576,7 @@ class ArchiveService
         }
     }
 
-    /**
-     * Begin a restore, without doing any of it yet.
-     *
-     * A restore is cut into slices short enough for one request on a shared host: the state of
-     * what is left to do lives in a file, and advanceRestore() takes it further each time.
-     *
-     * @return array<string,mixed>
-     *
-     * @throws \Exception
-     */
+    // Begins a restore without doing any of it yet.
     public function startRestore(
         string $filename,
         bool $restoreFiles = true,
@@ -682,11 +622,7 @@ class ArchiveService
         return $this->restoreState($job);
     }
 
-    /**
-     * Take the running restore as far as one request can, and say where it got to.
-     *
-     * @return array<string,mixed>
-     */
+    // Takes the running restore as far as one request can, and reports where it got to.
     public function advanceRestore(): array
     {
         $job = $this->readRestoreJob();
@@ -730,9 +666,6 @@ class ArchiveService
         return $this->restoreState($job);
     }
 
-    /**
-     * @return array<string,mixed>
-     */
     public function cancelRestore(): array
     {
         $job = $this->readRestoreJob();
@@ -743,13 +676,6 @@ class ArchiveService
         return ['step' => self::RESTORE_IDLE, 'running' => false];
     }
 
-    /**
-     * @param array<string,mixed> $job
-     *
-     * @return array<string,mixed>
-     *
-     * @throws \Exception
-     */
     protected function advanceRestoreStep(\ZipArchive $zip, array $job, float $deadline): array
     {
         switch ($job['step']) {
@@ -779,15 +705,7 @@ class ArchiveService
         }
     }
 
-    /**
-     * Import as many statements of the dump as the slice allows, remembering how far it got.
-     *
-     * @param array<string,mixed> $job
-     *
-     * @return array<string,mixed>
-     *
-     * @throws \Exception
-     */
+    // Imports as many statements of the dump as the slice allows, remembering how far it got.
     protected function importSlice(\ZipArchive $zip, array $job, float $deadline): array
     {
         if ($job['statementsDone'] === 0) {
@@ -828,12 +746,7 @@ class ArchiveService
         return $job;
     }
 
-    /**
-     * Another wiki sharing the database may be in an old backup: its tables are not restored,
-     * and above all not swapped away from under it.
-     *
-     * @param array<string,mixed> $job
-     */
+    // Leaves out the tables of another wiki sharing the database, so they are neither restored nor swapped.
     protected function skipsForeignTable(array $job, string $statement): bool
     {
         foreach ($job['skip'] ?? [] as $table) {
@@ -845,13 +758,6 @@ class ArchiveService
         return false;
     }
 
-    /**
-     * @param array<string,mixed> $job
-     *
-     * @return array<string,mixed>
-     *
-     * @throws \Exception
-     */
     protected function prepareImport(\ZipArchive $zip, array $job): array
     {
         $livePrefix = trim($this->dbService->prefixTable(''));
@@ -879,13 +785,7 @@ class ArchiveService
         return $job;
     }
 
-    /**
-     * Extract as many files as the slice allows, remembering how far it got.
-     *
-     * @param array<string,mixed> $job
-     *
-     * @return array<string,mixed>
-     */
+    // Extracts as many files as the slice allows, remembering how far it got.
     protected function filesSlice(\ZipArchive $zip, array $job, float $deadline): array
     {
         $wikiRoot = realpath(getcwd());
@@ -920,10 +820,7 @@ class ArchiveService
         return $job;
     }
 
-    /**
-     * How long a slice may take: half of what the host allows a request, and never all of it,
-     * since the answer still has to be written after the last statement.
-     */
+    // Time a slice may take: half of what the host allows a request.
     protected function sliceDeadline(): float
     {
         $limit = (int)ini_get('max_execution_time');
@@ -937,9 +834,6 @@ class ArchiveService
         return $this->getPrivateFolder() . DIRECTORY_SEPARATOR . self::RESTORE_DUMP_FILENAME;
     }
 
-    /**
-     * @throws \Exception
-     */
     protected function copyDumpOutOfArchive(\ZipArchive $zip): void
     {
         $from = $this->openDump($zip);
@@ -954,9 +848,6 @@ class ArchiveService
         fclose($to);
     }
 
-    /**
-     * @param array<string,mixed> $job
-     */
     protected function giveUpRestore(array $job): void
     {
         if (!empty($job['stagingPrefix'])) {
@@ -968,9 +859,6 @@ class ArchiveService
         $this->finishRestore($job);
     }
 
-    /**
-     * @param array<string,mixed> $job
-     */
     protected function finishRestore(array $job): void
     {
         if (!empty($job['replacedPrefix'])) {
@@ -988,11 +876,6 @@ class ArchiveService
         }
     }
 
-    /**
-     * @param array<string,mixed> $job
-     *
-     * @return array<string,mixed>
-     */
     protected function restoreState(array $job): array
     {
         return [
@@ -1010,9 +893,6 @@ class ArchiveService
         return $this->getPrivateFolder() . DIRECTORY_SEPARATOR . self::RESTORE_JOB_FILENAME;
     }
 
-    /**
-     * @return array<string,mixed>
-     */
     protected function readRestoreJob(): array
     {
         $path = $this->restoreJobPath();
@@ -1024,9 +904,6 @@ class ArchiveService
         return is_array($job) ? $job : [];
     }
 
-    /**
-     * @param array<string,mixed> $job
-     */
     protected function writeRestoreJob(array $job): void
     {
         if (!$this->configurationService->writeAtomically($this->restoreJobPath(), json_encode($job))) {
@@ -1034,9 +911,7 @@ class ArchiveService
         }
     }
 
-    /**
-     * A prefix of its own, that no prefix-wide operation can confuse with the wiki's own tables.
-     */
+    // Returns a table prefix that no prefix-wide operation can confuse with the wiki's own.
     protected function isolatedPrefix(string $livePrefix, string $tag): string
     {
         $prefix = 'yw' . $tag . substr(sha1($livePrefix), 0, 6) . '_';
@@ -1047,13 +922,7 @@ class ArchiveService
         return $prefix;
     }
 
-    /**
-     * The tables the dump creates, read without holding the dump in memory.
-     *
-     * @return string[]
-     *
-     * @throws \Exception
-     */
+    // Lists the tables the dump creates, without holding the dump in memory.
     protected function tablesOfDump(): array
     {
         $handle = fopen($this->dumpCopyPath(), 'r');
@@ -1074,11 +943,7 @@ class ArchiveService
         return array_keys($tables);
     }
 
-    /**
-     * Put the tables just imported in place of the wiki's own, all at once.
-     *
-     * @throws \Exception
-     */
+    // Puts the freshly imported tables in place of the wiki's own, all at once.
     protected function swapTables(string $livePrefix, string $stagingPrefix, string $replacedPrefix): void
     {
         $staged = $this->tablesWithPrefix($stagingPrefix);
@@ -1097,11 +962,6 @@ class ArchiveService
         $this->dbService->query('RENAME TABLE ' . implode(', ', $renames));
     }
 
-    /**
-     * @return resource
-     *
-     * @throws \Exception
-     */
     protected function openDump(\ZipArchive $zip)
     {
         $handle = $zip->getStream(self::PRIVATE_FOLDER_NAME_IN_ZIP . '/' . self::SQL_FILENAME_IN_PRIVATE_FOLDER_IN_ZIP);
@@ -1112,9 +972,6 @@ class ArchiveService
         return $handle;
     }
 
-    /**
-     * @return string[]
-     */
     protected function tablesWithPrefix(string $prefix): array
     {
         $names = [];
@@ -1126,9 +983,6 @@ class ArchiveService
         return DumpRewriter::ownTables($names, $prefix);
     }
 
-    /**
-     * @throws \Exception
-     */
     protected function dropTables(string $tablesPrefix): void
     {
         if (trim($tablesPrefix) === '') {
@@ -1141,11 +995,7 @@ class ArchiveService
         $this->dbService->query('SET FOREIGN_KEY_CHECKS=1');
     }
 
-    /**
-     * A connection of its own, so the restore does not disturb the one the wiki is using.
-     *
-     * @throws \Exception
-     */
+    // Opens a connection of its own, so the restore does not disturb the wiki's.
     protected function openRestoreConnection(): \mysqli
     {
         $conn = mysqli_connect(
@@ -1163,10 +1013,7 @@ class ArchiveService
         return $conn;
     }
 
-    /**
-     * The settings of the wiki come back from the backup; what ties this installation to its
-     * database, its address and its mail server does not.
-     */
+    // Restores the wiki settings from the backup, except what ties this installation to its database, address and mail server.
     protected function restoreConfiguration(\ZipArchive $zip, string $configFile): void
     {
         $archivedContent = $zip->getFromName(basename($configFile));
@@ -1202,10 +1049,7 @@ class ArchiveService
         }
     }
 
-    /**
-     * A full backup is the whole wiki, so what it does not contain has no place in the tree
-     * either. Deleting comes after extracting, so the wiki is never left without its own code.
-     */
+    // Deletes, after extraction, the files a full backup does not contain.
     protected function removeFilesAbsentFromArchive(\ZipArchive $zip, string $wikiRoot, float $deadline): bool
     {
         if (!is_dir($wikiRoot)) {
@@ -1233,9 +1077,6 @@ class ArchiveService
         return true;
     }
 
-    /**
-     * @param array<string,bool> $keep
-     */
     private function removeAbsentFiles(string $path, string $relativePath, array $keep, float $deadline): bool
     {
         if (!is_dir($path) || is_link($path) || $relativePath === self::PRIVATE_FOLDER_NAME_IN_ZIP) {
@@ -1265,9 +1106,7 @@ class ArchiveService
         return true;
     }
 
-    /**
-     * Describe the wiki the archive was taken from, so a restore can adapt links to another address.
-     */
+    // Describes the source wiki, so a restore can adapt links to another address.
     protected function buildRestoreInfo(): string
     {
         return json_encode([
@@ -1279,9 +1118,6 @@ class ArchiveService
         ], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
     }
 
-    /**
-     * @return array<string,mixed>
-     */
     protected function readRestoreInfo(\ZipArchive $zip): array
     {
         $content = $zip->getFromName(self::PRIVATE_FOLDER_NAME_IN_ZIP . '/' . self::INFO_FILENAME_IN_PRIVATE_FOLDER_IN_ZIP);
@@ -1293,9 +1129,7 @@ class ArchiveService
         return is_array($info) ? $info : [];
     }
 
-    /**
-     * base_url of the wiki an archive was taken from, empty when the archive predates the restore info file.
-     */
+    // Returns the base_url of the wiki an archive came from, empty for archives without restore info.
     public function getArchiveSourceBaseUrl(string $filename): string
     {
         $filePath = $this->getFilePath($filename);
@@ -1315,11 +1149,7 @@ class ArchiveService
         }
     }
 
-    /**
-     * delete archives.
-     *
-     * @return array $results = ['filename' => bool]
-     */
+    // Deletes archives.
     public function deleteArchives(array $filesnames): array
     {
         $privatePath = $this->getPrivateFolder();
@@ -1341,11 +1171,7 @@ class ArchiveService
         return $results;
     }
 
-    /**
-     * get uid status.
-     *
-     * @return array ['found'=> bool,'running' => bool,'finished'=>bool,'output' => string]
-     */
+    // Returns the status of an archive followed by its uid.
     public function getUIDStatus(string $uid, bool $forceStarted = false): array
     {
         $results = [
@@ -1390,9 +1216,7 @@ class ArchiveService
         return $results;
     }
 
-    /**
-     * put data in file to stop archive.
-     */
+    // Writes STOP to the input file so the archive stops.
     public function stopArchive(string $uid): bool
     {
         if (empty($uid)) {
@@ -1413,9 +1237,7 @@ class ArchiveService
         return true;
     }
 
-    /**
-     * check if need to stop archive.
-     */
+    // Tells whether the archive has been asked to stop.
     protected function checkIfNeedStop(string $inputFile = ''): bool
     {
         if (empty($inputFile) || !is_file($inputFile)) {
@@ -1434,13 +1256,7 @@ class ArchiveService
         return preg_match('/^STOP.*/', $content);
     }
 
-    /**
-     * create the zip file.
-     *
-     * @param string|OutputInterface &$output
-     *
-     * @return bool : true on success, false on failure
-     */
+    // Creates the zip file.
     protected function createZip(
         string $zipPath,
         array $foldersToInclude,
@@ -1604,9 +1420,7 @@ class ArchiveService
         return false;
     }
 
-    /**
-     * test if folder should be included.
-     */
+    // Tells whether a folder belongs in the archive.
     protected function shouldIncludeFolder(
         string $relativeFolderName,
         array $whitelistedRootFolders,
@@ -1744,11 +1558,7 @@ class ArchiveService
         return !$headers || !empty($headers[0]) && !strstr(get_headers($url, true, $ct)[0], '200 OK');
     }
 
-    /**
-     * write text to the output.
-     *
-     * @param string|OutputInterface &$output
-     */
+    // Writes text to the output.
     private function writeOutput(&$output, string $text, bool $newline = true, string $outputFile = '')
     {
         if (!empty($outputFile) && is_file($outputFile)) {
@@ -1765,9 +1575,7 @@ class ArchiveService
         }
     }
 
-    /**
-     * sanitize wakka.config.php before saving it.
-     */
+    // Sanitizes wakka.config.php before saving it.
     private function getWakkaConfigSanitized(array $foldersToInclude, array $foldersToExclude, ?array $hideConfigValuesParams = null): string
     {
         $config = $this->configurationService->getConfiguration(ConfigurationFileProvider::getConfigFileFromEnv());
@@ -1834,9 +1642,7 @@ class ArchiveService
         $this->configurationService->write($config);
     }
 
-    /**
-     * test db export connection.
-     */
+    // Tests the database export connection.
     protected function testDb(): bool
     {
         try {
@@ -1855,14 +1661,7 @@ class ArchiveService
         return false;
     }
 
-    /**
-     * extract sql content.
-     *
-     * @return string $sqlContent
-     *
-     * @throws \Exception
-     * @throws \Throwable
-     */
+    // Extracts the SQL content.
     protected function getSQLContent(string $privatePath): string
     {
         $resultFile = $privatePath . '/' . self::SQL_FILENAME_IN_PRIVATE_FOLDER_IN_ZIP;
@@ -1908,9 +1707,6 @@ class ArchiveService
         }
     }
 
-    /**
-     * @throws \Exception when the backups folder cannot hold a new archive
-     */
     protected function assertEnoughtSpace(array $blacklistedRootFolders = [])
     {
         $freeSpace = $this->freeSpaceForArchives();
@@ -1919,10 +1715,7 @@ class ArchiveService
         }
     }
 
-    /**
-     * Bytes a new archive is expected to need: the uploaded files, the customisations, the
-     * database, plus a fixed allowance for the code.
-     */
+    // Bytes a new archive is expected to need: files, customisations, database and an allowance for the code.
     public function estimateArchiveSize(array $blacklistedRootFolders = []): int
     {
         if (empty($blacklistedRootFolders)) {
@@ -1938,9 +1731,7 @@ class ArchiveService
         return $estimate;
     }
 
-    /**
-     * Free bytes on the disk that receives the archives, null when the host will not say.
-     */
+    // Free bytes on the disk that receives the archives, null when the host will not say.
     public function freeSpaceForArchives(): ?int
     {
         try {
@@ -1952,9 +1743,7 @@ class ArchiveService
         return $this->diskSpace->free($folder);
     }
 
-    /**
-     * Bytes a restore adds to the disk: the dump it copies out, and each file beyond the one it replaces.
-     */
+    // Bytes a restore adds to the disk: the dump it copies out and each file beyond the one it replaces.
     public function bytesToRestore(\ZipArchive $zip, bool $restoreFiles, bool $restoreDatabase): int
     {
         $wikiRoot = realpath(getcwd());
@@ -1980,9 +1769,6 @@ class ArchiveService
         return $bytes;
     }
 
-    /**
-     * @throws \Exception when what the restore will write does not fit in the room left
-     */
     protected function assertRoomToRestore(\ZipArchive $zip, bool $restoreFiles, bool $restoreDatabase): void
     {
         $needed = $this->bytesToRestore($zip, $restoreFiles, $restoreDatabase);
@@ -1992,9 +1778,7 @@ class ArchiveService
         }
     }
 
-    /**
-     * Bytes of data in this wiki's own tables, as the server counts them.
-     */
+    // Bytes of data in this wiki's own tables, as the server counts them.
     protected function databaseSize(): int
     {
         try {
@@ -2020,11 +1804,7 @@ class ArchiveService
         }
     }
 
-    /**
-     * recursive method.
-     *
-     * @return int $bytes
-     */
+    // Computes a folder size recursively.
     private function folderSize(string $folderPath): int
     {
         $contents = array_filter(scandir($folderPath), function ($path) {
@@ -2042,9 +1822,7 @@ class ArchiveService
         return $bytes;
     }
 
-    /**
-     * remove oldest files to keep only 10 files.
-     */
+    // Removes the oldest archives to keep only the allowed number.
     private function cleanOldestFiles()
     {
         $archivesToDelete = $this->archivesToDelete();
@@ -2064,14 +1842,7 @@ class ArchiveService
             : intval($archiveParams['max_nb_files']);
     }
 
-    /**
-     * extract list of archives to delete.
-     *
-     * Only this wiki's own backups are rotated: one fetched from another wiki was asked for
-     * by hand and is not this wiki's to throw away.
-     *
-     * @return array $files
-     */
+    // Lists the archives to delete.
     public function archivesToDelete(bool $beforeArchive = false): array
     {
         $ownSource = ArchiveFilename::slug($this->params->get('base_url'));
@@ -2129,7 +1900,7 @@ class ArchiveService
                 ->setDate($archive['year'], $archive['month'], $archive['day'])
                 ->setTime($archive['hours'], $archive['minutes'], $archive['seconds'], 0);
             if (
-                $fileDateTime->diff($nowMinusXDays)->invert == 0 // current file date is before - x days
+                $fileDateTime->diff($nowMinusXDays)->invert == 0
             ) {
                 $indexes[] = $key;
             }
@@ -2138,9 +1909,7 @@ class ArchiveService
         return $indexes;
     }
 
-    /**
-     * get content of info.json file from privatePath.
-     */
+    // Reads info.json from the private folder.
     private function getInfoFromFile(string $privateFolder = '')
     {
         if (empty($privateFolder)) {
@@ -2162,9 +1931,7 @@ class ArchiveService
         return (empty($content) || !is_array($content)) ? [] : $content;
     }
 
-    /**
-     * set content to info.json file from privatePath.
-     */
+    // Writes info.json to the private folder.
     private function setInfoToFile($content, string $privateFolder = '')
     {
         if (empty($privateFolder)) {
@@ -2176,11 +1943,7 @@ class ArchiveService
         }
     }
 
-    /**
-     * get a unique id for the current PID with input and output files created.
-     *
-     * @return array|null ['uid' => string, 'input' => string, 'output' => string]
-     */
+    // Creates a unique id with its input and output files.
     private function getUID(string $privateFolder = ''): ?array
     {
         if (empty($privateFolder)) {
@@ -2210,9 +1973,7 @@ class ArchiveService
         return compact(['uid', 'input', 'output']);
     }
 
-    /**
-     * savePID for uid in info.json.
-     */
+    // Saves the pid of a uid in info.json.
     private function updatePIDForUID(string $pid, string $uid, string $privateFolder = '')
     {
         if (empty($privateFolder)) {
@@ -2225,9 +1986,7 @@ class ArchiveService
         }
     }
 
-    /**
-     * clean uid info in info.json.
-     */
+    // Removes a uid and its files from info.json.
     private function cleanUID(string $uid, string $privateFolder = '')
     {
         if (empty($privateFolder)) {
@@ -2246,37 +2005,45 @@ class ArchiveService
         }
     }
 
-    /** check id current uid is running.
-     * @return array ['running' => bool, 'finished' => bool, 'stopped' => bool,'output' => string]
-     */
+    // Tells whether an archive followed by its uid is running, finished or stopped.
     private function getRunningUIDdata(string $uid, array $info): array
     {
-        if (!is_file($info['output'])) {
-            return false;
+        $output = '';
+        if (is_file($info['output'])) {
+            $output = @file_get_contents($info['output']);
+            if ($output === false) {
+                throw new \Exception('Cannot read archive output file. Please check file system access rights');
+            }
         }
-        $output = @file_get_contents($info['output']);
 
-        if ($output === false) {
-            throw new \Exception('Cannot read archive output file. Please check file system access rights');
-        }
-
-        $running = !empty(trim($output));
-        $finished = !$running
-            ? false
-            : (preg_match("/(END|STOP)\s*$/", $output) ? true : false);
-        $stopped = preg_match("/(STOP)\s*$/", $output) ? true : false;
-        if ($finished) {
-            $running = false;
-        }
+        $finished = preg_match("/(END|STOP)\s*$/", $output) === 1;
+        $stopped = preg_match("/(STOP)\s*$/", $output) === 1;
+        $running = !$finished && ($this->processIsAlive((string)($info['pid'] ?? '')) ?? !empty(trim($output)));
 
         return compact(['running', 'finished', 'stopped', 'output']);
     }
 
-    /**
-     * generate ---ListedRootFolder from DEFAULT, params and wakka.config.
-     *
-     * @param string $type "white"|"black"
-     */
+    // Whether the process is alive, a zombie counting as dead; null when there is no pid or no way to tell.
+    private function processIsAlive(string $pid): ?bool
+    {
+        if (!ctype_digit($pid) || (int)$pid <= 0) {
+            return null;
+        }
+        $stat = @file_get_contents("/proc/$pid/stat");
+        if ($stat !== false) {
+            return preg_match('/^\d+ \(.*\) [ZX] /s', $stat) !== 1;
+        }
+        if (is_dir('/proc/self')) {
+            return false;
+        }
+        if (function_exists('posix_kill')) {
+            return posix_kill((int)$pid, 0);
+        }
+
+        return null;
+    }
+
+    // Builds the list of root folders from the defaults, the params and wakka.config.
     private function generateListRootFolders(string $type, array $fromParams, ?array $onlyFolders = null): array
     {
         if ($type == 'white' && !empty($onlyFolders)) {

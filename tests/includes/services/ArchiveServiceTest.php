@@ -21,6 +21,7 @@ require_once 'tests/YesWikiTestCase.php';
 #[CoversMethod(ArchiveService::class, '__construct')]
 #[CoversMethod(ArchiveService::class, 'archive')]
 #[CoversMethod(ArchiveService::class, 'setWikiStatus')]
+#[CoversMethod(ArchiveService::class, 'getUIDStatus')]
 class ArchiveServiceTest extends YesWikiTestCase
 {
     public function testArchiveServiceExisting(): array
@@ -136,12 +137,7 @@ class ArchiveServiceTest extends YesWikiTestCase
         }
     }
 
-    /**
-     * Two other wikis sharing the database, as they are found in the wild: one with the core
-     * tables under a longer prefix, one whose tables a newer YesWiki names differently.
-     *
-     * @return array<string,string> the statement that creates each, keyed by table name
-     */
+    // Two other wikis sharing the database, one with a longer core prefix and one with newer table names.
     private static function neighbourTables(string $prefix): array
     {
         $tables = [];
@@ -155,9 +151,6 @@ class ArchiveServiceTest extends YesWikiTestCase
         return $tables;
     }
 
-    /**
-     * @param array<string,string> $tables
-     */
     private static function createNeighbours(DbService $db, array $tables): void
     {
         foreach ($tables as $table => $creation) {
@@ -167,9 +160,6 @@ class ArchiveServiceTest extends YesWikiTestCase
         }
     }
 
-    /**
-     * @param array<string,string> $tables
-     */
     private static function dropNeighbours(DbService $db, array $tables): void
     {
         foreach (array_keys($tables) as $table) {
@@ -449,9 +439,6 @@ class ArchiveServiceTest extends YesWikiTestCase
         }
     }
 
-    /**
-     * @param array<string,string> $files
-     */
     private function makeTemporaryTree(array $files): string
     {
         $root = sys_get_temp_dir() . '/yeswiki_restore_test_' . bin2hex(random_bytes(6));
@@ -482,9 +469,6 @@ class ArchiveServiceTest extends YesWikiTestCase
         rmdir($root);
     }
 
-    /**
-     * @param array<int,mixed> $arguments
-     */
     private function callProtected(object $target, string $method, array $arguments): mixed
     {
         $reflection = new \ReflectionMethod($target, $method);
@@ -540,10 +524,7 @@ class ArchiveServiceTest extends YesWikiTestCase
         }
     }
 
-    /**
-     * 'custom' alone, because asking for 'files' too would zip every upload of the wiki
-     * under test just to prove what is missing from the archive.
-     */
+    // Archives custom alone, so as not to zip every upload of the wiki under test.
     #[Depends('testArchiveServiceExisting')]
     public function testOnlyFoldersKeepsEverythingElseOutOfTheArchive(array $services)
     {
@@ -594,12 +575,7 @@ class ArchiveServiceTest extends YesWikiTestCase
         }
     }
 
-    /**
-     * retrieve data from location
-     * delete the zip file because only for tests.
-     *
-     * @return array $data
-     */
+    // Reads the data of an archive, then deletes the zip since it only served the test.
     private function getDataFromLocation(string $location, Wiki $wiki): array
     {
         $data = [];
@@ -870,5 +846,79 @@ class ArchiveServiceTest extends YesWikiTestCase
                 ['mysql_host' => '', 'mysql_database' => '', 'mysql_user' => '', 'mysql_password' => '', 'archive' => ['hideConfigValues' => ['mysql_host' => '', 'mysql_database' => '', 'mysql_user' => '', 'mysql_password' => '', 'custom_key_2' => '', 'custom_key_3' => '']]],
             ],
         ];
+    }
+
+    #[Depends('testArchiveServiceExisting')]
+    public function testAnArchiveStillStartingIsFollowedUntilItWrites(array $services)
+    {
+        $process = proc_open(['sleep', '30'], [], $pipes);
+        $pid = proc_get_status($process)['pid'];
+        $uid = $this->followUid($services['archiveService'], (string)$pid);
+
+        $status = $services['archiveService']->getUIDStatus($uid);
+        $stillFollowed = $services['archiveService']->getUIDStatus($uid);
+
+        proc_terminate($process);
+        proc_close($process);
+        $this->forgetUid($services['archiveService'], $uid);
+
+        $this->assertTrue($status['started']);
+        $this->assertTrue($status['running']);
+        $this->assertTrue($stillFollowed['started']);
+    }
+
+    #[Depends('testArchiveServiceExisting')]
+    public function testAnArchiveThatDiedWithoutWritingIsForgotten(array $services)
+    {
+        $process = proc_open(['true'], [], $pipes);
+        $pid = proc_get_status($process)['pid'];
+        proc_close($process);
+        $uid = $this->followUid($services['archiveService'], (string)$pid);
+
+        $status = $services['archiveService']->getUIDStatus($uid);
+        $afterwards = $services['archiveService']->getUIDStatus($uid);
+
+        $this->assertTrue($status['started']);
+        $this->assertFalse($status['running']);
+        $this->assertFalse($afterwards['started']);
+    }
+
+    #[Depends('testArchiveServiceExisting')]
+    public function testAnArchiveThatDiedAfterWritingIsNoLongerRunning(array $services)
+    {
+        $process = proc_open(['true'], [], $pipes);
+        $pid = proc_get_status($process)['pid'];
+        proc_close($process);
+        $uid = $this->followUid($services['archiveService'], (string)$pid);
+        file_put_contents($services['archiveService']->getPrivateFolder() . "/output-$uid.log", "=== Checking free space ===\n");
+
+        $status = $services['archiveService']->getUIDStatus($uid);
+
+        $this->assertTrue($status['started']);
+        $this->assertFalse($status['running']);
+        $this->assertFalse($status['finished']);
+    }
+
+    private function followUid(ArchiveService $archiveService, string $pid): string
+    {
+        $folder = $archiveService->getPrivateFolder();
+        $uid = uniqid('test');
+        file_put_contents("$folder/input-$uid.log", '');
+        file_put_contents("$folder/output-$uid.log", '');
+        $info = json_decode((string)@file_get_contents("$folder/info.json"), true) ?: [];
+        $info[$uid] = ['input' => "$folder/input-$uid.log", 'output' => "$folder/output-$uid.log", 'pid' => $pid];
+        file_put_contents("$folder/info.json", json_encode($info));
+
+        return $uid;
+    }
+
+    private function forgetUid(ArchiveService $archiveService, string $uid): void
+    {
+        $folder = $archiveService->getPrivateFolder();
+        @unlink("$folder/input-$uid.log");
+        @unlink("$folder/output-$uid.log");
+        $info = json_decode((string)@file_get_contents("$folder/info.json"), true) ?: [];
+        unset($info[$uid]);
+        file_put_contents("$folder/info.json", json_encode($info));
     }
 }
