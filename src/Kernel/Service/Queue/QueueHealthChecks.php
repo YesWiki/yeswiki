@@ -22,7 +22,7 @@ use YesWiki\Kernel\Service\HibernationService;
  * end of a request.
  *
  * Every check but the first stays silent while the table is missing: that wiki is not migrated
- * yet, `queue-tables` says so, and thirteen alerts for one cause would not help.
+ * yet, `queue-tables` says so, and a dozen alerts for one cause would not help.
  */
 class QueueHealthChecks implements ProvidesHealthChecks
 {

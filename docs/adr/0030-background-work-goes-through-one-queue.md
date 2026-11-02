@@ -190,7 +190,8 @@ hidden `php-cli` on a program folder whose path changes with every upgrade. Now 
 consumer stays up", and the binary supervises it where it serves the wiki. What was lost is the
 `binary`-without-the-binary alert: a `worker` nobody keeps up is reported as stalled after 10 minutes,
 and the fallback takes over. Two consumers of one wiki (a systemd unit kept from before the binary)
-do no harm: the pass lock lets one work, and the other exits at once.
+do no harm: blocking consumers take no pass lock, both run, and each message is claimed by one of
+them only.
 
 The variable is read from the real environment, then `private/.env` (the only way on a host with
 no environment), then `queue_consumer` in the configuration, then the default: `request`, under the
@@ -327,7 +328,7 @@ been seen for as long; a schedule that never ticked has waited since the rule wa
 consumer is seen after its first fallback pass (`fallbackSince`), not until the queue is empty,
 which would make it flap; changing the mode ends it too. Outside it, a request reads the rule at
 most once a minute (`cache/queue-fallback-check.lock`, the answer kept as
-`cache/queue-fallback-active.lock`), so a mode that does not consume at the end of requests still
+`cache/queue-fallback-active-<mode>.lock`), so a mode that does not consume at the end of requests still
 costs a request a `stat` and no query. `queue-fallback` is **broken**, the jobs page lists it first
 and keeps the chosen mode in its banner, with that consumer's last pass in red; `queue-stalled` is
 then judged with `request`'s delay, so it speaks again only if the visits stop too.
@@ -383,7 +384,7 @@ arrival, and the explicit actions of a human or a webhook (`importer:sync`, `GET
   after an update because it was not configured. The default has to be a mode that needs nothing.
 - **`request` as the only mode** — rejected as the whole answer, kept as the default. Work moves
   only when someone visits, a quiet wiki lags, a visitor on mod_php waits for it, and a job longer
-  than a request can never finish. Hence five more modes and a page that says which one is in force
+  than a request can never finish. Hence two more modes and a page that says which one is in force
   and what it costs.
 - **Symfony's `MessageGenerator` with its `Checkpoint`** — rejected. `MessageGenerator::checkpoint()`
   is typed to the final `Checkpoint` class, whose persistence wants a PSR cache pool and

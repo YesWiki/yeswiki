@@ -234,8 +234,8 @@ it at once and is left alone until the next reload. For the wikis in `worker`, i
 consumer's output to its own log prefixed with the wiki's name, and restarts it with a growing delay
 (up to a minute) if it keeps exiting. A farm reloaded with SIGHUP starts and stops consumers with its
 list of wikis, and is when a wiki's change to or from `worker` takes effect. A systemd unit kept from
-before the binary is not needed: only one consumer works at a time, the other one finds the queue
-taken and exits.
+before the binary is not needed: remove it. Left in place it does no harm, as both consumers run and
+each message is claimed by one of them only, but it is one more PHP process for the same work.
 
 ## Installation through Docker
 

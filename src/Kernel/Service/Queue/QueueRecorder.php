@@ -80,9 +80,8 @@ class QueueRecorder
     /**
      * Opens the row of a pass and answers its id.
      *
-     * The origin is written only when the pass is not the consumer's own, so that the rows written
-     * before there was an origin read as the consumer's; a consumer's row names its process
-     * (`holder`), as a claim it holds names it too.
+     * The origin is written only when the pass is not the consumer's own: a row without one is the
+     * consumer's. A consumer's row names its process (`holder`), as a claim it holds names it too.
      *
      * @param QueueBudget|null       $budget         what the pass may spend: `budget_ms` is its time left (none when it has no deadline), `memory_limit` the memory use it stops at (0 for no bound)
      * @param bool                   $beforeResponse whether a visitor is waiting for this pass to end (mod_php, CGI)

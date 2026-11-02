@@ -781,9 +781,10 @@ S3 instance the backups go to the bucket with everything else Protected.
 (or before an update) go through the wiki's background queue and show on `/admin/jobs`. In modes
 `request` (the default) and `api` they run in the admin's own request, once the page
 has been sent and without PHP's time limit where the host allows it; in `worker`
-the queue's consumer runs them. A migration removes the key. A backup no longer
-starts a PHP process of its own, so a host that forbids `proc_open` can make one in the default
-mode. `core:archive` and `core:restore` stay, for use by hand.
+the queue's consumer runs them. A migration removes the key. Where the page cannot leave before
+the work ends (mod_php, CGI), the backup still runs in a PHP process of its own; where none can be
+started (`proc_open` forbidden, no PHP CLI found), the admin's request runs it after all, so such a
+host can make one in the default mode. `core:archive` and `core:restore` stay, for use by hand.
 
 ---
 

@@ -11,7 +11,7 @@ use YesWiki\Kernel\Queue\ProvidesSchedule;
 class KernelSchedule implements ProvidesSchedule
 {
     /**
-     * Seconds between two runs of a housekeeping step: the interval of the sweep that these steps were run by, and that every module declaring one reuses.
+     * Seconds between two runs of a housekeeping step, which every module declaring one reuses.
      *
      * These tasks have no marker of their own to start from, so the Scheduler counts from its
      * checkpoint's birth; a step that came due while nobody consumed runs once at the next pass

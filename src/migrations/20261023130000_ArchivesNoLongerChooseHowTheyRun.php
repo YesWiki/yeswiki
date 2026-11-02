@@ -29,6 +29,6 @@ class ArchivesNoLongerChooseHowTheyRun extends YesWikiMigration
             throw new RuntimeException("could not write {$file}: archive.call_archive_async is still there");
         }
 
-        $this->say("archive.call_archive_async ({$was}) was removed: backups and restores now go through the background queue, and run in the admin's own request unless a consumer of its own (worker, binary) takes them.");
+        $this->say("archive.call_archive_async ({$was}) was removed: backups and restores now go through the background queue, and run in the admin's own request unless a consumer of its own (worker) takes them.");
     }
 }

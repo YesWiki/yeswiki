@@ -52,7 +52,7 @@ class ConsoleService
     }
 
     /**
-     * Starts a console command that outlives the web request starting it, as the queue's processes do (startDetached()); null when no PHP binary is found.
+     * Starts a console command that outlives the web request starting it (startDetached()), as a request does for a backup it cannot run before its response leaves (`messenger:consume --message`); null when no PHP binary is found.
      *
      * @param list<string> $args
      */

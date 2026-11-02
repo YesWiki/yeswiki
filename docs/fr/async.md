@@ -500,7 +500,7 @@ cliquez sur **Lancer** pour vérifier.
 Le réglage est incohérent, et le wiki ne traite pas ses tâches comme prévu.
 L'alerte dit dans quel fichier elle a lu la valeur :
 
-- **valeur inconnue** : ce qui est écrit n'est pas un des six modes (une faute de
+- **valeur inconnue** : ce qui est écrit n'est pas un des trois modes (une faute de
   frappe, souvent). Le mode par défaut est utilisé à la place. Corrigez la
   valeur à l'endroit indiqué ;
 
