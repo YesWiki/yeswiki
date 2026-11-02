@@ -80,6 +80,12 @@ class QueueBudgetFactory
         return new QueueBudget($now + $this->capped($usable, $ceiling), $memoryCeiling, $killLimit);
     }
 
+    /** A pass run by hand (`messenger:consume --drain`): no deadline, since it ends when the queue is empty, but the memory ceiling every pass stops at. */
+    public function forHand(): QueueBudget
+    {
+        return new QueueBudget(INF, $this->memoryCeiling(), self::KILL_LIMIT_NO_PHP_LIMIT);
+    }
+
     private function capped(?float $usable, float $ceiling): float
     {
         return $usable === null ? $ceiling : min($usable, $ceiling);

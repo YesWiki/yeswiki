@@ -116,6 +116,19 @@ class QueueHealthChecksTest extends YesWikiTestCase
         }
     }
 
+    /** `command` and `request-spawn` are gone: an admin who follows an alert's advice must not be sent to a mode the wiki no longer knows. */
+    public function testNoAdviceNamesARemovedMode(): void
+    {
+        foreach (['en', 'fr'] as $language) {
+            $translations = (array)require dirname(__DIR__, 3) . "/src/lang/yeswiki_{$language}.php";
+            foreach ($translations as $key => $text) {
+                if (str_starts_with((string)$key, 'QUEUE_') || str_starts_with((string)$key, 'ADMIN_JOBS_')) {
+                    $this->assertDoesNotMatchRegularExpression('/\b(command|commande|request-spawn)\b|la tâche planifiée ou|the scheduled task or/iu', (string)$text, "{$language}: {$key}");
+                }
+            }
+        }
+    }
+
     public function testSeverities(): void
     {
         $degraded = ['queue-backlog', 'queue-consumer-memory', 'queue-no-budget', 'queue-visitor-cost'];

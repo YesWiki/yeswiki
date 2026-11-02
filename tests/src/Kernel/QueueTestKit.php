@@ -314,11 +314,6 @@ final class QueueTestKit
                 return parent::lastTaken($this->in($path));
             }
 
-            public function stamp(string $path): void
-            {
-                parent::stamp($this->in($path));
-            }
-
             public function stampAt(string $path, int $time): void
             {
                 parent::stampAt($this->in($path), $time);

@@ -174,6 +174,16 @@ class QueueBudgetTest extends TestCase
         $this->assertSame(107374182, $budget->memoryCeilingBytes);
     }
 
+    /** `messenger:consume --drain`: run by hand, it has no deadline, but stops on memory before PHP kills it mid-message. */
+    public function testAPassByHandHasNoDeadlineButKeepsTheMemoryCeiling(): void
+    {
+        $budget = $this->factory(['max_execution_time' => '30', 'memory_limit' => '128M'])->forHand();
+
+        $this->assertSame(INF, $budget->remainingSeconds());
+        $this->assertSame(107374182, $budget->memoryCeilingBytes);
+        $this->assertSame(QueueBudgetFactory::KILL_LIMIT_NO_PHP_LIMIT, $budget->killLimitSeconds);
+    }
+
     public function testUnlimitedHasNoDeadlineNorMemoryCeiling(): void
     {
         $budget = QueueBudget::unlimited(120);

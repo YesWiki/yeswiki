@@ -14,6 +14,7 @@ use Symfony\Component\Scheduler\RecurringMessage;
 use YesWiki\Kernel\Command\QueueConsumeCommand;
 use YesWiki\Kernel\Queue\ProvidesSchedule;
 use YesWiki\Kernel\Queue\QueueConsumerMode;
+use YesWiki\Kernel\Service\Queue\QueueBudgetFactory;
 use YesWiki\Kernel\Service\Queue\QueueSettings;
 use YesWiki\Test\Core\YesWikiTestCase;
 
@@ -64,6 +65,18 @@ class QueueCommandsTest extends YesWikiTestCase
         $this->assertSame('request', $this->kit->statistics->lastPass()['mode'] ?? null);
         $this->assertSame('manual', $this->kit->statistics->lastPass()['origin'] ?? null);
         $this->assertNull($this->kit->statistics->lastSeenAt(QueueConsumerMode::Worker));
+    }
+
+    /** A long drain (a whole reindex) stops cleanly on memory, as every other pass does, rather than dying in PHP's fatal error mid-message. */
+    public function testDrainKeepsTheMemoryCeiling(): void
+    {
+        $this->kit->send('a');
+
+        $this->execute('messenger:consume', ['--drain' => true]);
+
+        $limit = QueueBudgetFactory::bytes((string)ini_get('memory_limit'));
+        $this->assertGreaterThan(0, $limit, 'the suite runs with a memory_limit');
+        $this->assertSame((int)floor($limit * 0.8), $this->kit->statistics->lastPass()['memoryLimit'] ?? null);
     }
 
     /** Emptying the queue is what is already in it: a scheduled task that is due waits for the consumer of the mode. */

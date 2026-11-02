@@ -29,17 +29,6 @@ class RuntimeLock
         return (int)@filemtime($this->absolute($path));
     }
 
-    /** Stamp a lock with the current time, creating it and its directory if needed. */
-    public function stamp(string $path): void
-    {
-        $full = $this->absolute($path);
-        $directory = \dirname($full);
-        if (!is_dir($directory)) {
-            @mkdir($directory, 0o777, true);
-        }
-        @touch($full);
-    }
-
     /** Stamp a lock with a time of the caller's clock, creating it and its directory if needed: lastTaken() then answers that time. */
     public function stampAt(string $path, int $time): void
     {

@@ -8,7 +8,6 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\ConsoleOutputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use YesWiki\Kernel\Queue\QueueBudget;
 use YesWiki\Kernel\Queue\QueueConsumerMode;
 use YesWiki\Kernel\Queue\QueuePassOrigin;
 use YesWiki\Kernel\Queue\QueuePassReport;
@@ -28,7 +27,7 @@ use YesWiki\Kernel\Service\Queue\QueueSettings;
  * exits with 0, which systemd's Restart=always restarts without calling it a failure.
  *
  * `--drain` does not block: it consumes what is already in the queue, then exits -- no scheduled
- * task, no wait, no time budget. It is a pass by hand, recorded as the button of /admin/jobs
+ * task, no wait, no time budget, but the memory ceiling of every pass. It is a pass by hand, recorded as the button of /admin/jobs
  * records one (`request`, origin `manual`): run under a worker, it neither counts as that worker
  * starting nor makes a dead one look alive. A pass already running makes it exit with 0, saying
  * `locked`.
@@ -120,7 +119,7 @@ class QueueConsumeCommand extends Command
         // No visitor waits for a command: the response has "already left".
         $report = $this->services->get(QueueConsumer::class)->drain(
             QueueConsumerMode::Request,
-            QueueBudget::unlimited(QueueBudgetFactory::KILL_LIMIT_NO_PHP_LIMIT),
+            $this->services->get(QueueBudgetFactory::class)->forHand(),
             false,
             true,
             QueuePassOrigin::Manual
