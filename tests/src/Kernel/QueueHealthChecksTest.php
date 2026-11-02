@@ -13,11 +13,12 @@ use YesWiki\Kernel\Health\Severity;
 use YesWiki\Kernel\Queue\ProvidesSchedule;
 use YesWiki\Kernel\Queue\QueueConsumerMode;
 use YesWiki\Kernel\Queue\QueuePassOrigin;
+use YesWiki\Kernel\Queue\QueueWording;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Kernel\Service\JournalSchema;
-use YesWiki\Kernel\Service\Queue\QueueBus;
 use YesWiki\Kernel\Service\Queue\QueueBudgetFactory;
+use YesWiki\Kernel\Service\Queue\QueueBus;
 use YesWiki\Kernel\Service\Queue\QueueCheckpoint;
 use YesWiki\Kernel\Service\Queue\QueueFallback;
 use YesWiki\Kernel\Service\Queue\QueueHealthChecks;
@@ -179,7 +180,7 @@ class QueueHealthChecksTest extends YesWikiTestCase
         $this->pass('request', startedAt: '-2 hours', origin: QueuePassOrigin::Fallback, fallbackFor: QueueConsumerMode::Api);
 
         $this->assertSame(
-            _t('QUEUE_HEALTH_FALLBACK_NEVER', ['mode' => 'api', 'since' => _t('QUEUE_HEALTH_HOURS', ['count' => 2]), 'budget' => $this->requestBudget()]) . $this->visitorsWait(),
+            _t('QUEUE_HEALTH_FALLBACK_NEVER', ['mode' => 'api', 'since' => QueueWording::duration(7200), 'budget' => $this->requestBudget()]) . $this->visitorsWait(),
             $this->failure('queue-fallback')
         );
     }
@@ -752,6 +753,7 @@ class QueueHealthChecksTest extends YesWikiTestCase
             $hibernation,
             $this->ticker(),
             new QueueFallback($settings, $this->statistics, $hibernation, new RuntimeLock(), $this->clock),
+            new QueueBudgetFactory(),
             $this->clock
         ))->healthChecks();
     }
@@ -880,5 +882,4 @@ class QueueHealthChecksTest extends YesWikiTestCase
             $fallbackFor,
         );
     }
-
 }

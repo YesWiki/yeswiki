@@ -50,7 +50,7 @@ class FederationQueueHealthChecks implements ProvidesHealthChecks
     private function allFailing(): ?string
     {
         try {
-            $outcomes = $this->statistics->outcomesOfType(DeliverActivity::class, self::WINDOW_SECONDS);
+            $outcomes = $this->statistics->outcomes(self::WINDOW_SECONDS, DeliverActivity::class);
         } catch (\Throwable) {
             return null;
         }

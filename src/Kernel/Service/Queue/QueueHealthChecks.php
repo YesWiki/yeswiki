@@ -8,6 +8,7 @@ use YesWiki\Kernel\Health\HealthCheck;
 use YesWiki\Kernel\Health\ProvidesHealthChecks;
 use YesWiki\Kernel\Queue\QueueConsumerMode;
 use YesWiki\Kernel\Queue\QueuePassReport;
+use YesWiki\Kernel\Queue\QueueWording;
 use YesWiki\Kernel\Queue\ToleratedFailure;
 use YesWiki\Kernel\Service\HibernationService;
 
@@ -62,6 +63,7 @@ class QueueHealthChecks implements ProvidesHealthChecks
         private readonly HibernationService $hibernation,
         private readonly QueueScheduleTicker $ticker,
         private readonly QueueFallback $fallback,
+        private readonly QueueBudgetFactory $budgets,
         ?ClockInterface $clock = null,
     ) {
         $this->clock = $clock ?? new NativeClock();
@@ -113,7 +115,9 @@ class QueueHealthChecks implements ProvidesHealthChecks
             }
         });
         $failedGroups = $once($this->statistics->failedGroups(...));
-        $declaredTasks = $once($this->declaredTasks(...));
+        $tasks = $once($this->statistics->tasks(...));
+        // Read only once a task is found late or failing: on a healthy wiki, the badge of every admin page never builds the schedule.
+        $declaredIds = $once(fn (): array => $this->ticker->declaredTaskIds());
         $stalled = $once($this->stalled(...));
         // What a check does once the table is there.
         $onceMigrated = static fn (callable $run): callable => static fn (): ?string => $tables() === null ? $run() : null;
@@ -129,8 +133,8 @@ class QueueHealthChecks implements ProvidesHealthChecks
             $check('queue-stalled', 'QUEUE_HEALTH_STALLED')->runs($onceMigrated($stalled)),
             $check('queue-failed', 'QUEUE_HEALTH_FAILED')->runs($onceMigrated(fn (): ?string => $this->failed($failedGroups()))),
             $check('queue-killed', 'QUEUE_HEALTH_KILLED')->runs($onceMigrated(fn (): ?string => $this->killed($failedGroups()))),
-            $check('queue-task-overdue', 'QUEUE_HEALTH_TASK_OVERDUE')->runs($onceMigrated(fn (): ?string => $this->taskOverdue($declaredTasks()))),
-            $check('queue-task-failing', 'QUEUE_HEALTH_TASK_FAILING')->runs($onceMigrated(fn (): ?string => $this->taskFailing($declaredTasks()))),
+            $check('queue-task-overdue', 'QUEUE_HEALTH_TASK_OVERDUE')->runs($onceMigrated(fn (): ?string => $this->taskOverdue($tasks(), $declaredIds))),
+            $check('queue-task-failing', 'QUEUE_HEALTH_TASK_FAILING')->runs($onceMigrated(fn (): ?string => $this->taskFailing($tasks(), $declaredIds))),
             $check('queue-backlog', 'QUEUE_HEALTH_BACKLOG')->degraded()->runs($onceMigrated(fn (): ?string => $this->backlog($stalled() !== null))),
             $check('queue-consumer-restarts', 'QUEUE_HEALTH_RESTARTS')->runs($onceMigrated($this->consumerRestarts(...))),
             $check('queue-consumer-memory', 'QUEUE_HEALTH_MEMORY')->degraded()->runs($onceMigrated($this->consumerMemory(...))),
@@ -157,12 +161,12 @@ class QueueHealthChecks implements ProvidesHealthChecks
         $respondsEarly = QueueRequestTrigger::respondsEarly();
         $values = [
             'mode' => $status->mode->value,
-            'since' => $this->duration($now - $status->since->getTimestamp()),
-            'budget' => (int)round((new QueueBudgetFactory())->forMode(QueueConsumerMode::Request, $respondsEarly)->remainingSeconds()),
+            'since' => QueueWording::duration($now - $status->since->getTimestamp()),
+            'budget' => $this->budgets->secondsPerPass(QueueConsumerMode::Request, $respondsEarly),
         ];
         $sentence = $status->lastSeen === null
             ? _t('QUEUE_HEALTH_FALLBACK_NEVER', $values)
-            : _t('QUEUE_HEALTH_FALLBACK_FAILED', $values + ['idle' => $this->duration($now - $status->lastSeen->getTimestamp())]);
+            : _t('QUEUE_HEALTH_FALLBACK_FAILED', $values + ['idle' => QueueWording::duration($now - $status->lastSeen->getTimestamp())]);
 
         return $respondsEarly ? $sentence : $sentence . _t('QUEUE_HEALTH_FALLBACK_VISITORS_WAIT');
     }
@@ -192,8 +196,8 @@ class QueueHealthChecks implements ProvidesHealthChecks
         }
 
         return $lastActivity === null
-            ? _t('QUEUE_HEALTH_STALLED_NEVER', ['count' => $this->statistics->pendingCount(), 'age' => $this->duration($age)])
-            : _t('QUEUE_HEALTH_STALLED_FAILED', ['count' => $this->statistics->pendingCount(), 'age' => $this->duration($age), 'idle' => $this->duration($idle)]);
+            ? _t('QUEUE_HEALTH_STALLED_NEVER', ['count' => $this->statistics->pendingCount(), 'age' => QueueWording::duration($age)])
+            : _t('QUEUE_HEALTH_STALLED_FAILED', ['count' => $this->statistics->pendingCount(), 'age' => QueueWording::duration($age), 'idle' => QueueWording::duration($idle)]);
     }
 
     /**
@@ -209,7 +213,7 @@ class QueueHealthChecks implements ProvidesHealthChecks
             return null;
         }
 
-        return _t('QUEUE_HEALTH_BACKLOG_FAILED', ['count' => $this->statistics->pendingCount(), 'age' => $this->duration($age)]);
+        return _t('QUEUE_HEALTH_BACKLOG_FAILED', ['count' => $this->statistics->pendingCount(), 'age' => QueueWording::duration($age)]);
     }
 
     /** Seconds since the longest-waiting available message became available; null when none is (a delayed retry is not waiting yet). */
@@ -294,61 +298,76 @@ class QueueHealthChecks implements ProvidesHealthChecks
         return $sentences === [] ? null : implode(' ', $sentences);
     }
 
-    /** @param list<array<string, mixed>> $declaredTasks as declaredTasks() gives them */
-    private function taskOverdue(array $declaredTasks): ?string
+    /**
+     * Whether that task is overdue: not before it was due plus a period (a task due every 23 h that runs 2 h late is not lost), nor before the mode had a chance to run it.
+     *
+     * The tasks tab marks late what this says, so the table and the alert agree.
+     *
+     * @param array{nextDueAt: ?\DateTimeImmutable, everySeconds: int} $task as QueueStatistics::tasks() gives it
+     */
+    public static function isOverdue(array $task, QueueConsumerMode $mode, int $now): bool
     {
-        $mode = $this->settings->mode();
-        $now = $this->clock->now()->getTimestamp();
-        $late = [];
-
-        foreach ($declaredTasks as $task) {
-            if ($task['nextDueAt'] === null) {
-                continue;
-            }
-            // Not before it was due plus a period (a task due every 23 h that runs 2 h late is not lost) nor before the mode had a chance to run it.
-            $lateBy = $now - $task['nextDueAt']->getTimestamp();
-            if ($lateBy > max($task['everySeconds'], self::stalledAfterSeconds($mode))) {
-                $late[] = _t('QUEUE_HEALTH_TASK_OVERDUE_ITEM', [
-                    'task' => $task['label'],
-                    'every' => $this->duration($task['everySeconds']),
-                    'late' => $this->duration($lateBy),
-                ]);
-            }
-        }
-        if ($late === [] || $this->hibernation->isWikiHibernatedNow()) {
-            return null;
-        }
-
-        return implode(' ; ', $late);
-    }
-
-    /** @param list<array<string, mixed>> $declaredTasks as declaredTasks() gives them */
-    private function taskFailing(array $declaredTasks): ?string
-    {
-        $failing = [];
-        foreach ($declaredTasks as $task) {
-            if ($task['consecutiveFailures'] >= self::TASK_FAILURES) {
-                $failing[] = _t('QUEUE_HEALTH_TASK_FAILING_ITEM', [
-                    'task' => $task['label'],
-                    'count' => $task['consecutiveFailures'],
-                    'error' => $task['lastError'] ?? '?',
-                ]);
-            }
-        }
-
-        return $failing === [] ? null : implode(' ; ', $failing);
+        return $task['nextDueAt'] !== null && $now - $task['nextDueAt']->getTimestamp() > max($task['everySeconds'], self::stalledAfterSeconds($mode));
     }
 
     /**
-     * The scheduled tasks the schedule still declares: a row left by a task that is gone (a deleted data source, a disabled extension) would be late or failing for ever, and nobody could clear it.
+     * The tasks the schedule still declares: a row left by a task that is gone (a deleted data source, a disabled extension) would be late or failing for ever, and nobody could clear it.
      *
-     * @return list<array{taskId: string, label: string, everySeconds: int, lastDispatchedAt: ?\DateTimeImmutable, nextDueAt: ?\DateTimeImmutable, lastFinishedAt: ?\DateTimeImmutable, lastStatus: ?string, lastError: ?string, consecutiveFailures: int}>
+     * @template T of array{taskId: string}
+     *
+     * @param list<T>      $tasks       as QueueStatistics::tasks() gives them
+     * @param list<string> $declaredIds as QueueScheduleTicker::declaredTaskIds() gives them
+     *
+     * @return list<T>
      */
-    private function declaredTasks(): array
+    public static function onlyDeclared(array $tasks, array $declaredIds): array
     {
-        $declared = array_flip($this->ticker->declaredTaskIds());
+        $declared = array_flip($declaredIds);
 
-        return array_values(array_filter($this->statistics->tasks(), static fn (array $task): bool => isset($declared[$task['taskId']])));
+        return array_values(array_filter($tasks, static fn (array $task): bool => isset($declared[$task['taskId']])));
+    }
+
+    /**
+     * @param list<array{taskId: string, label: string, everySeconds: int, nextDueAt: ?\DateTimeImmutable}> $tasks       every task row
+     * @param \Closure(): list<string>                                                                      $declaredIds the tasks the schedule still declares
+     */
+    private function taskOverdue(array $tasks, \Closure $declaredIds): ?string
+    {
+        $mode = $this->settings->mode();
+        $now = $this->clock->now()->getTimestamp();
+        $late = array_values(array_filter($tasks, static fn (array $task): bool => self::isOverdue($task, $mode, $now)));
+        if ($late === [] || ($late = self::onlyDeclared($late, $declaredIds())) === [] || $this->hibernation->isWikiHibernatedNow()) {
+            return null;
+        }
+
+        $items = [];
+        foreach ($late as $task) {
+            $items[] = _t('QUEUE_HEALTH_TASK_OVERDUE_ITEM', [
+                'task' => $task['label'],
+                'every' => QueueWording::duration($task['everySeconds']),
+                'late' => QueueWording::duration($now - ($task['nextDueAt']?->getTimestamp() ?? $now)),
+            ]);
+        }
+
+        return implode(' ; ', $items);
+    }
+
+    /**
+     * @param list<array{taskId: string, label: string, consecutiveFailures: int, lastError: ?string}> $tasks       every task row
+     * @param \Closure(): list<string>                                                                 $declaredIds the tasks the schedule still declares
+     */
+    private function taskFailing(array $tasks, \Closure $declaredIds): ?string
+    {
+        $failing = array_values(array_filter($tasks, static fn (array $task): bool => $task['consecutiveFailures'] >= self::TASK_FAILURES));
+        if ($failing !== []) {
+            $failing = self::onlyDeclared($failing, $declaredIds());
+        }
+
+        return $failing === [] ? null : implode(' ; ', array_map(static fn (array $task): string => _t('QUEUE_HEALTH_TASK_FAILING_ITEM', [
+            'task' => $task['label'],
+            'count' => $task['consecutiveFailures'],
+            'error' => $task['lastError'] ?? '?',
+        ]), $failing));
     }
 
     private function consumerRestarts(): ?string
@@ -454,20 +473,11 @@ class QueueHealthChecks implements ProvidesHealthChecks
         arsort($counts);
         $named = [];
         foreach ($counts as $type => $count) {
-            $named[] = ($pos = strrpos($type, '\\')) === false ? "$type ($count)" : substr($type, $pos + 1) . " ($count)";
+            $named[] = QueueWording::type($type) . " ($count)";
         }
         $more = count($named) - self::TYPES_LISTED;
 
         return implode(', ', array_slice($named, 0, self::TYPES_LISTED)) . ($more > 0 ? ', ' . _t('QUEUE_HEALTH_AND_OTHERS', ['count' => $more]) : '');
-    }
-
-    private function duration(int $seconds): string
-    {
-        return match (true) {
-            $seconds >= 86400 => _t('QUEUE_HEALTH_DAYS', ['count' => intdiv($seconds, 86400)]),
-            $seconds >= 3600 => _t('QUEUE_HEALTH_HOURS', ['count' => intdiv($seconds, 3600)]),
-            default => _t('QUEUE_HEALTH_MINUTES', ['count' => max(1, intdiv($seconds, 60))]),
-        };
     }
 
     private function megabytes(int $bytes): string

@@ -38,10 +38,17 @@ class HibernationService
      */
     public function isWikiHibernatedNow(): bool
     {
+        return in_array($this->wikiStatusNow(), self::HIBERNATED, true);
+    }
+
+    /** `wiki_status` as the config file says it now, `running` when it says none: the same reading as isWikiHibernatedNow(), and as costly. */
+    public function wikiStatusNow(): string
+    {
         $config = (new ConfigurationService())->getConfiguration(ConfigurationFileProvider::getConfigFileFromEnv());
         $config->load();
+        $status = trim((string)($config['wiki_status'] ?? ''));
 
-        return in_array(trim((string)($config['wiki_status'] ?? '')), self::HIBERNATED, true);
+        return $status === '' ? 'running' : $status;
     }
 
     /** The message body shown while hibernated, as text. */

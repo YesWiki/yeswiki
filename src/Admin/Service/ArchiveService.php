@@ -334,14 +334,7 @@ class ArchiveService implements EventSubscriberInterface
      */
     public function getWikiStatus()
     {
-        $vConfig = $this->configurationService->getConfiguration(ConfigurationFileProvider::getConfigFileFromEnv());
-        $vConfig->load();
-
-        if (trim($vConfig['wiki_status'] ?? '') == '') {
-            return 'running';
-        }
-
-        return trim($vConfig['wiki_status']);
+        return $this->hibernationService->wikiStatusNow();
     }
 
     /**

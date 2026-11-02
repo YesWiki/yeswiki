@@ -53,7 +53,7 @@
   </section>
 
   {% if notice is defined and notice %}
-    <p class="yw-jobs__notice yw-jobs__notice--{{ noticeLevel|default('success') }}" role="status">{{ notice }}</p>
+    <p class="yw-alert yw-alert--{{ noticeLevel|default('success') }}" role="status">{{ notice }}</p>
   {% endif %}
 
   {% if status.alerts is empty %}
@@ -130,6 +130,6 @@
       </div>
     </div>
   {% elseif status.unreadable %}
-    <p class="yw-jobs__notice yw-jobs__notice--danger">{{ _t('ADMIN_JOBS_UNREADABLE', { error: status.unreadable }) }}</p>
+    <p class="yw-alert yw-alert--danger">{{ _t('ADMIN_JOBS_UNREADABLE', { error: status.unreadable }) }}</p>
   {% endif %}
 </div>

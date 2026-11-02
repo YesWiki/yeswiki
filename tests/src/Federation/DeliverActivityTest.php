@@ -206,7 +206,7 @@ class DeliverActivityTest extends YesWikiTestCase
         $this->assertSame(4, $report->handled);
         $this->assertCount(4, $this->posted, 'the Tombstones are delivered although the form is gone');
         $this->assertSame(0, $this->kit->statistics->failedCount());
-        $this->assertSame(0, $this->kit->statistics->outcomesOfType(DeliverActivity::class, 3600)['failed']);
+        $this->assertSame(0, $this->kit->statistics->outcomes(3600, DeliverActivity::class)['failed']);
         $this->assertNull($this->check('federation-delivery')->failure());
         $this->assertNull($this->check('federation-delivery-failed')->failure());
     }

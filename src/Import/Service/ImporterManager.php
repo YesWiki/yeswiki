@@ -260,6 +260,30 @@ class ImporterManager
     }
 
     /**
+     * Imports one source for whoever asked by hand (the console, the importers page, the sync route), and keeps the run in its log (SyncScheduler).
+     *
+     * A failure is answered rather than thrown, as it always was by hand; the queue's handler calls
+     * syncSource() and lets it throw.
+     *
+     * @param array<string, mixed> $sourceOptions
+     *
+     * @return array{result: string, log: string} what to tell the admin, and the same after what the importer printed
+     */
+    public function syncByHand(string $source, array $sourceOptions): array
+    {
+        ob_start();
+        try {
+            $result = $this->syncSource($source, $sourceOptions);
+        } catch (\Throwable $failed) {
+            $result = $failed->getMessage();
+        }
+        $log = trim(ob_get_clean() . "\n" . $result);
+        $this->services->get(SyncScheduler::class)->recordRun($source, $log);
+
+        return ['result' => $result, 'log' => $log];
+    }
+
+    /**
      * Imports one source and answers what to tell its admin.
      *
      * A failure throws, with the message that used to be the answer (the cause and the time spent) and the cause as its previous exception: it is the queue's to see, and whoever syncs by hand catches it to show the message.

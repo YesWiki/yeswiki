@@ -9,6 +9,7 @@ use YesWiki\Kernel\Entity\JournalChannel;
 use YesWiki\Kernel\Queue\QueueBudget;
 use YesWiki\Kernel\Queue\QueueClaimHolder;
 use YesWiki\Kernel\Queue\QueueConsumerMode;
+use YesWiki\Kernel\Queue\QueueFailureCause;
 use YesWiki\Kernel\Queue\QueueJournalEntry;
 use YesWiki\Kernel\Queue\QueuePassOrigin;
 use YesWiki\Kernel\Queue\QueuePassReport;
@@ -53,9 +54,6 @@ class QueueRecorder
     public const IGNORED = 'ignored';
 
     private const TIME_FORMAT = 'Y-m-d H:i:s';
-
-    /** Characters of a failure's cause kept in `message`, as the transport keeps in `last_error`. */
-    private const ERROR_LENGTH = 1000;
 
     /** Characters of a task's label kept: what the jobs page has room for. */
     private const LABEL_LENGTH = 191;
@@ -212,7 +210,7 @@ class QueueRecorder
         $fields = [
             'last_finished_at' => $this->format($this->now()),
             'last_status' => $status,
-            'last_error' => $error === null ? null : mb_substr($error, 0, self::ERROR_LENGTH),
+            'last_error' => $error === null ? null : QueueFailureCause::fitted($error),
         ];
 
         $this->tasks->update($taskId, static function (array $state) use ($fields, $status): array {
@@ -234,7 +232,7 @@ class QueueRecorder
     private function insertRun(string $status, string $actor, string $type, string $finishedAt, array $context): void
     {
         if (isset($context['message'])) {
-            $context['message'] = mb_substr((string)$context['message'], 0, self::ERROR_LENGTH);
+            $context['message'] = QueueFailureCause::fitted((string)$context['message']);
         }
         $level = match ($status) {
             self::RETRIED => LogLevel::WARNING,

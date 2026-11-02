@@ -39,7 +39,7 @@ class QueueApiController extends YesWikiController
             $query = $request->query->all()[self::SECRET_QUERY] ?? '';
             $provided = is_string($query) ? $query : '';
         }
-        if ($expected === '' || $provided === '' || !hash_equals($expected, $provided)) {
+        if (!$this->sharesSecret($expected, $provided)) {
             return new ApiResponse(['error' => 'Unauthorized'], Response::HTTP_UNAUTHORIZED);
         }
 

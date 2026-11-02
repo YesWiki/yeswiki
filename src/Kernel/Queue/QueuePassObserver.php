@@ -70,7 +70,7 @@ final class QueuePassObserver implements EventSubscriberInterface
     {
         $this->handled++;
         $cause = self::causeOf($event->getThrowable());
-        $error = $cause::class . ': ' . $cause->getMessage();
+        $error = QueueFailureCause::ofThrowable($cause);
         $envelope = $event->getEnvelope();
 
         if ($event->willRetry()) {
@@ -86,6 +86,16 @@ final class QueuePassObserver implements EventSubscriberInterface
             'target' => $type,
             'exception' => $cause,
         ]);
+    }
+
+    /** What the handler threw, rather than the HandlerFailedException the bus wrapped it in: the one ErrorDetailsStamp describes too. */
+    private static function causeOf(\Throwable $failure): \Throwable
+    {
+        if ($failure instanceof HandlerFailedException) {
+            return $failure->getWrappedExceptions()[array_key_first($failure->getWrappedExceptions())] ?? $failure;
+        }
+
+        return $failure;
     }
 
     /** The transport took a message it could not decode, and has put it in `failed`. */
@@ -149,16 +159,6 @@ final class QueuePassObserver implements EventSubscriberInterface
             $this->startedAt,
             $error
         );
-    }
-
-    /** What the handler threw, rather than the HandlerFailedException the bus wrapped it in. */
-    private static function causeOf(\Throwable $failure): \Throwable
-    {
-        if ($failure instanceof HandlerFailedException) {
-            return $failure->getWrappedExceptions()[array_key_first($failure->getWrappedExceptions())] ?? $failure;
-        }
-
-        return $failure;
     }
 
     private function now(): float

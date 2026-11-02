@@ -2542,31 +2542,6 @@ body > button.primary {
   text-align: right;
 }
 
-.yw-jobs__notice {
-  margin: 0;
-  padding: var(--yw-space-sm-y) var(--yw-space-md-x);
-  border-radius: var(--yw-radius-sm);
-}
-
-.yw-jobs__notice p {
-  margin: 0 0 var(--yw-space-sm-y);
-}
-
-.yw-jobs__notice--success {
-  background: var(--yw-success-surface);
-  color: var(--yw-success-text);
-}
-
-.yw-jobs__notice--warning {
-  background: var(--yw-warning-surface);
-  color: var(--yw-warning-text);
-}
-
-.yw-jobs__notice--danger {
-  background: var(--yw-danger-surface);
-  color: var(--yw-danger-text);
-}
-
 .yw-jobs__secret {
   font-family: var(--yw-font-mono);
   word-break: break-all;
@@ -2648,10 +2623,6 @@ body > button.primary {
 .yw-jobs__caption {
   color: var(--yw-text-muted);
   font-size: 0.85em;
-}
-
-.yw-jobs__scroll {
-  overflow-x: auto;
 }
 
 .yw-jobs__table td {

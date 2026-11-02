@@ -84,15 +84,7 @@ class AdminImportersAction extends YesWikiAction implements RegisteredAction
             $syncedSourceId = $syncSource;
 
             set_time_limit(0);
-            ob_start();
-            try {
-                $result = $importerManager->syncSource($syncedSourceId, $dataSources[$syncedSourceId]);
-            } catch (\Throwable $failed) {
-                $result = $failed->getMessage();
-            }
-            $syncOutput = trim(ob_get_clean() . "\n" . $result);
-
-            $this->getService(SyncScheduler::class)->recordRun($syncedSourceId, $syncOutput);
+            $syncOutput = $importerManager->syncByHand($syncedSourceId, $dataSources[$syncedSourceId])['log'];
         } elseif (!empty($importer)) {
             $sourceOptions = $importerManager->collectSourceOptionsFromInput($importer, $importerFields, $request->request->all());
             $id = (string)($request->request->get('id') ?: $this->newSourceId($importer, $sourceOptions, $dataSources));

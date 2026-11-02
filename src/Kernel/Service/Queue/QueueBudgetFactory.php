@@ -79,6 +79,17 @@ class QueueBudgetFactory
         return new QueueBudget($now + $this->capped($usable, $ceiling), $this->memoryCeiling(), $killLimit);
     }
 
+    /**
+     * What one pass may spend in this mode, in whole seconds, as a page says it; null for a mode with no deadline.
+     *
+     * A page is a web request, so this reads this server's PHP limits: right for the budgeted modes,
+     * which run under them.
+     */
+    public function secondsPerPass(QueueConsumerMode $mode, bool $responseAlreadySent): ?int
+    {
+        return $mode->isBudgeted() ? (int)round($this->forMode($mode, $responseAlreadySent)->remainingSeconds()) : null;
+    }
+
     /** A pass with no deadline but the memory ceiling every pass stops at: one run by hand (`messenger:consume --drain`), which ends when the queue is empty, or a blocking consumer's. */
     public function forHand(): QueueBudget
     {

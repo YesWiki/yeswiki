@@ -243,7 +243,7 @@ class QueueRecorderTest extends YesWikiTestCase
         $this->ran(4, 'T', QueueRecorder::FAILED, 50, 'boom');
         $this->ran(5, 'T', QueueRecorder::RETRIED, 50, 'again');
 
-        $this->assertSame(['handled' => 3, 'failed' => 1, 'killed' => 0, 'avgMs' => 200], $this->statistics->outcomes());
+        $this->assertSame(['handled' => 3, 'failed' => 1, 'killed' => 0, 'avgMs' => 200], $this->statistics->outcomes(7 * 86400));
         $this->assertSame(200, $this->statistics->averageDurationMs('T'));
 
         $failed = $this->statistics->history(10, 'failed');
@@ -374,7 +374,7 @@ class QueueRecorderTest extends YesWikiTestCase
         $this->assertSame(300, $this->statistics->averageDurationMs(QueueTestMessage::class));
     }
 
-    public function testOutcomesOfOneTypeOverAWindow(): void
+    public function testTheOutcomesOfOneTypeOverAWindow(): void
     {
         $this->finish(1, QueueRecorder::HANDLED, 0.1);
         $this->finish(2, QueueRecorder::FAILED, 0.1);
@@ -386,11 +386,11 @@ class QueueRecorderTest extends YesWikiTestCase
         QueueTestKit::recordRun($this->db, QueueTestMessage::class, QueueRecorder::HANDLED, 1000, '2026-10-21 11:00:01', 10);
 
         $this->assertSame(
-            ['handled' => 1, 'failed' => 2, 'killed' => 1],
-            $this->statistics->outcomesOfType(QueueTestMessage::class, 86400),
+            ['handled' => 1, 'failed' => 2, 'killed' => 1, 'avgMs' => 100],
+            $this->statistics->outcomes(86400, QueueTestMessage::class),
             'a retry is not an outcome, nor an acknowledgement, nor another type, nor a row older than the window'
         );
-        $this->assertSame(['handled' => 0, 'failed' => 0, 'killed' => 0], $this->statistics->outcomesOfType('Never\\Seen', 86400));
+        $this->assertSame(['handled' => 0, 'failed' => 0, 'killed' => 0, 'avgMs' => null], $this->statistics->outcomes(86400, 'Never\\Seen'));
     }
 
     public function testByTypeJoinsTheQueueAndTheHistory(): void
@@ -543,7 +543,7 @@ class QueueRecorderTest extends YesWikiTestCase
         $this->assertSame([QueueTestMessage::class], array_column($this->statistics->byType(), 'type'));
         $this->assertSame(1, $this->statistics->byType()[0]['pending']);
         $this->assertSame(250, $this->statistics->byType()[0]['avgMs']);
-        $this->assertSame(['handled' => 1, 'failed' => 0, 'killed' => 0], $this->statistics->outcomesOfType(QueueTestMessage::class, 3600));
+        $this->assertSame(['handled' => 1, 'failed' => 0, 'killed' => 0, 'avgMs' => 250], $this->statistics->outcomes(3600, QueueTestMessage::class));
         $this->assertSame('time-limit', $this->statistics->lastPass()['stopReason'] ?? null);
         $this->assertSame(1 << 32, $this->statistics->lastPass()['peakMemory'] ?? null, 'bytes past 4 GB fit');
         $this->assertSame(1 << 33, $this->statistics->lastPass()['memoryLimit'] ?? null);

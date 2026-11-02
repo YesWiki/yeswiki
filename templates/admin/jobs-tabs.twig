@@ -18,7 +18,7 @@
 
   <div class="yw-jobs__pane" role="tabpanel">
     {% if tab.error %}
-      <p class="yw-jobs__notice yw-jobs__notice--danger">{{ _t('ADMIN_JOBS_UNREADABLE', { error: tab.error }) }}</p>
+      <p class="yw-alert yw-alert--danger">{{ _t('ADMIN_JOBS_UNREADABLE', { error: tab.error }) }}</p>
     {% else %}
       {% include '@core/admin/jobs-tab-' ~ tab.name ~ '.twig' with { rows: tab.rows, statusSwap: statusSwap } %}
       {% if tab.rows|length >= tab.listed %}

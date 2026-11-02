@@ -4,11 +4,11 @@ namespace YesWiki\Admin\Service;
 
 use Carbon\Carbon;
 use Carbon\CarbonInterface;
-use Carbon\CarbonInterval;
 use Psr\Clock\ClockInterface;
 use Symfony\Component\Clock\NativeClock;
 use YesWiki\Kernel\Health\Finding;
 use YesWiki\Kernel\Queue\QueueConsumerMode;
+use YesWiki\Kernel\Queue\QueueWording;
 use YesWiki\Kernel\Service\HealthService;
 use YesWiki\Kernel\Service\LanguageService;
 use YesWiki\Kernel\Service\Queue\QueueBudgetFactory;
@@ -149,27 +149,12 @@ class JobsOverview
     {
         $types = [];
         foreach ($this->statistics->failedGroups() as $group) {
-            if (self::shortName($group['type']) === $shortName) {
+            if (QueueWording::shortName($group['type']) === $shortName) {
                 $types[$group['type']] = $group['type'];
             }
         }
 
         return $this->statistics->failedOfTypes(array_values($types), self::BULK_LIMIT);
-    }
-
-    /** What a message type is called on the page: its `QUEUE_TYPE_<SHORT NAME>` translation, or its short class name. */
-    public static function typeLabel(string $type): string
-    {
-        $short = self::shortName($type);
-        $key = 'QUEUE_TYPE_' . strtoupper($short);
-        $label = _t($key);
-
-        return $label === $key ? $short : $label;
-    }
-
-    private static function shortName(string $type): string
-    {
-        return ($position = strrpos($type, '\\')) === false ? $type : substr($type, $position + 1);
     }
 
     public static function stopReasonLabel(string $reason): string
@@ -258,7 +243,7 @@ class JobsOverview
         $types = [];
         foreach ($finding->check->offered() as $offer) {
             if (str_starts_with($offer, QueueHealthChecks::OFFER_FAILED_OF)) {
-                $types[] = self::shortName(substr($offer, strlen(QueueHealthChecks::OFFER_FAILED_OF)));
+                $types[] = QueueWording::shortName(substr($offer, strlen(QueueHealthChecks::OFFER_FAILED_OF)));
             }
         }
         if ($types === []) {
@@ -299,7 +284,7 @@ class JobsOverview
                 ? _t('ADMIN_JOBS_ORIGIN_DEFAULT')
                 : _t('ADMIN_JOBS_ORIGIN_SET', ['origin' => _t('QUEUE_ORIGIN_' . strtoupper($origin))]),
             'unknownValue' => $this->settings->isUnknownValue() ? $this->settings->rawValue() : null,
-            'budget' => $this->budget($mode, $respondsEarly),
+            'budget' => $this->budgets->secondsPerPass($mode, $respondsEarly),
             'limits' => _t('ADMIN_JOBS_LIMITS', [
                 'time' => (int)ini_get('max_execution_time') > 0 ? ini_get('max_execution_time') . ' s' : _t('ADMIN_JOBS_UNLIMITED'),
                 'memory' => (string)ini_get('memory_limit'),
@@ -319,21 +304,6 @@ class JobsOverview
     }
 
     /**
-     * What one pass may spend in this mode, as QueueBudgetFactory works it out, in whole seconds; null for the blocking modes, which have no deadline.
-     *
-     * The page is a web request, so the factory reads this server's PHP limits: right for `request`
-     * and `api`, the budgeted modes, which run under them.
-     */
-    private function budget(QueueConsumerMode $mode, bool $respondsEarly): ?int
-    {
-        if (!$mode->isBudgeted()) {
-            return null;
-        }
-
-        return (int)round($this->budgets->forMode($mode, $respondsEarly)->remainingSeconds());
-    }
-
-    /**
      * @param list<string> $alerting the ids of the checks that fired
      *
      * @return array<string, mixed>
@@ -342,7 +312,7 @@ class JobsOverview
     {
         $pending = $this->statistics->pendingCount();
         $oldest = $this->statistics->oldestPendingAt();
-        $outcomes = $this->statistics->outcomes(self::DAYS);
+        $outcomes = $this->statistics->outcomes(self::DAYS * 86400);
         $ended = $outcomes['handled'] + $outcomes['failed'] + $outcomes['killed'];
 
         return [
@@ -365,7 +335,7 @@ class JobsOverview
     private function types(): array
     {
         return array_map(fn (array $type): array => [
-            'label' => self::typeLabel($type['type']),
+            'label' => QueueWording::type($type['type']),
             'type' => $type['type'],
             'pending' => $type['pending'],
             'failed' => $type['failed'],
@@ -379,7 +349,7 @@ class JobsOverview
     {
         return array_map(fn (array $message): array => [
             'id' => $message['id'],
-            'label' => self::typeLabel($message['type']),
+            'label' => QueueWording::type($message['type']),
             'type' => $message['type'],
             'attempts' => $message['attempts'],
             'error' => $message['error'],
@@ -395,30 +365,24 @@ class JobsOverview
      */
     private function tasks(): array
     {
-        $declared = array_flip($this->ticker->declaredTaskIds());
+        $mode = $this->settings->mode();
         $now = $this->clock->now()->getTimestamp();
-        $patience = QueueHealthChecks::stalledAfterSeconds($this->settings->mode());
         $rows = [];
 
-        foreach ($this->statistics->tasks() as $task) {
-            if (!isset($declared[$task['taskId']])) {
-                continue;
-            }
+        foreach (QueueHealthChecks::onlyDeclared($this->statistics->tasks(), $this->ticker->declaredTaskIds()) as $task) {
             $due = $task['nextDueAt'];
-            // Late as the overdue check judges it, so the table and the alert agree.
-            $lateBy = $due === null ? null : $now - $due->getTimestamp();
             $rows[] = [
                 'taskId' => $task['taskId'],
                 'label' => $task['label'],
-                'every' => $task['everySeconds'] > 0 ? $this->interval($task['everySeconds']) : null,
+                'every' => $task['everySeconds'] > 0 ? QueueWording::duration($task['everySeconds']) : null,
                 'lastRun' => $this->ago($task['lastFinishedAt']),
                 'status' => $task['lastStatus'],
                 'statusLabel' => $task['lastStatus'] === null ? null : _t('QUEUE_STATUS_' . strtoupper($task['lastStatus'])),
                 'error' => $task['lastError'],
                 'failures' => $task['consecutiveFailures'],
                 'next' => $this->ago($due),
-                'due' => $lateBy !== null && $lateBy >= 0,
-                'late' => $lateBy !== null && $lateBy > max($task['everySeconds'], $patience),
+                'due' => $due !== null && $due->getTimestamp() <= $now,
+                'late' => QueueHealthChecks::isOverdue($task, $mode, $now),
             ];
         }
 
@@ -431,7 +395,7 @@ class JobsOverview
         return array_map(fn (array $attempt): array => [
             'when' => $this->ago($attempt['finishedAt']),
             'at' => $attempt['finishedAt']->format('Y-m-d H:i:s'),
-            'label' => self::typeLabel($attempt['type']),
+            'label' => QueueWording::type($attempt['type']),
             'type' => $attempt['type'],
             'status' => $attempt['status'],
             'statusLabel' => _t('QUEUE_STATUS_' . strtoupper($attempt['status'])),
@@ -486,11 +450,6 @@ class JobsOverview
     }
 
     /** "30 minutes", "1 jour": how far apart a task's runs are. */
-    private function interval(int $seconds): string
-    {
-        return CarbonInterval::seconds($seconds)->cascade()->locale($this->languages->preferredLanguage())->forHumans(['parts' => 2]);
-    }
-
     /** One decimal, with the separator of the reader's language. */
     private function decimal(float $number): string
     {

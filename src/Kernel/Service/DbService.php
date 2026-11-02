@@ -397,7 +397,7 @@ class DbService
 
                 $taken = [];
                 foreach (array_chunk(array_map(static fn (array $row): int => (int)$row['id'], $rows), 500) as $ids) {
-                    foreach ($this->loadAll("SELECT id FROM {$quoted} WHERE id IN (" . implode(', ', array_fill(0, \count($ids), '?')) . ')', $ids) as $found) {
+                    foreach ($this->loadAll("SELECT id FROM {$quoted} WHERE id IN (" . SqlParameters::placeholders(\count($ids)) . ')', $ids) as $found) {
                         $taken[(int)$found['id']] = true;
                     }
                 }
@@ -427,7 +427,7 @@ class DbService
         $this->query(
             'INSERT INTO ' . $this->dialect->quoteIdentifier($table)
             . ' (' . implode(', ', array_map($this->dialect->quoteIdentifier(...), array_keys($row))) . ')'
-            . ' VALUES (' . implode(', ', array_fill(0, \count($row), '?')) . ')',
+            . ' VALUES (' . SqlParameters::placeholders(\count($row)) . ')',
             array_values($row)
         );
     }

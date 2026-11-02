@@ -27,8 +27,8 @@ use YesWiki\Kernel\Service\Queue\QueueBudgetFactory;
 use YesWiki\Kernel\Service\Queue\QueueBus;
 use YesWiki\Kernel\Service\Queue\QueueCheckpoint;
 use YesWiki\Kernel\Service\Queue\QueueConsumer;
-use YesWiki\Kernel\Service\Queue\QueueHandlerLocator;
 use YesWiki\Kernel\Service\Queue\QueueFallback;
+use YesWiki\Kernel\Service\Queue\QueueHandlerLocator;
 use YesWiki\Kernel\Service\Queue\QueueHealthChecks;
 use YesWiki\Kernel\Service\Queue\QueueRecorder;
 use YesWiki\Kernel\Service\Queue\QueueScheduleTicker;
@@ -199,7 +199,7 @@ final class QueueTestKit
     /**
      * A pass as QueueRecorder writes it in the Journal, as if it had started at $startedAt and was last seen at $lastSeenAt (both UTC).
      *
-     * @param string $stopReason  why it ended; '' leaves it open, its last heartbeat at $lastSeenAt
+     * @param string      $stopReason  why it ended; '' leaves it open, its last heartbeat at $lastSeenAt
      * @param int         $memoryLimit the memory use it stops at, 0 for none
      * @param string|null $holder      the claim token of the process that ran it, when not this one (a consumer's pass names its process)
      *
@@ -286,6 +286,7 @@ final class QueueTestKit
             new HibernationService(new ParameterBag(['wiki_status' => 'running'])),
             $this->ticker,
             $this->fallback($settings),
+            new QueueBudgetFactory(),
         );
     }
 

@@ -79,12 +79,6 @@ final class RunMaintenanceHooksHandler
     /** When the task last finished, as a Unix time. */
     private function previousRun(RunMaintenanceHooks $task): ?int
     {
-        foreach ($this->statistics->tasks() as $known) {
-            if ($known['taskId'] === $task->taskId()) {
-                return $known['lastFinishedAt']?->getTimestamp();
-            }
-        }
-
-        return null;
+        return ($this->statistics->scheduledTask($task->taskId())['lastFinishedAt'] ?? null)?->getTimestamp();
     }
 }

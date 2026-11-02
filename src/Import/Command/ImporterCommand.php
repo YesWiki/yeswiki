@@ -9,7 +9,6 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Import\Service\ImporterManager;
-use YesWiki\Import\Service\SyncScheduler;
 
 /** `./yeswicli importer:sync` -- imports the data sources declared in `dataSources`. */
 class ImporterCommand extends Command
@@ -69,16 +68,8 @@ class ImporterCommand extends Command
      */
     private function syncSource(string $id, array $sourceOptions, OutputInterface $output): void
     {
-        ob_start();
-        try {
-            $result = $this->services->get(ImporterManager::class)->syncSource($id, $sourceOptions);
-        } catch (\Throwable $failed) {
-            // Shown and logged as the command always did; a failing source does not fail the command.
-            $result = $failed->getMessage();
-        }
-        $log = trim(ob_get_clean() . "\n" . $result);
-        $output->writeln($log);
-        $this->services->get(SyncScheduler::class)->recordRun($id, $log);
+        // A failing source is shown like the others, and does not fail the command.
+        $output->writeln($this->services->get(ImporterManager::class)->syncByHand($id, $sourceOptions)['log']);
     }
 
     /**

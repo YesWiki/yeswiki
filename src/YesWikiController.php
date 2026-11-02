@@ -71,6 +71,14 @@ abstract class YesWikiController
     }
 
     /**
+     * Whether a caller that proves itself with a shared secret (a webhook, an online cron) sent the wiki's: a wiki with none set lets nobody in, so an empty secret never matches an empty answer.
+     */
+    protected function sharesSecret(string $expected, string $provided): bool
+    {
+        return $expected !== '' && $provided !== '' && hash_equals($expected, $provided);
+    }
+
+    /**
      * @template T
      *
      * @param class-string<T> $className

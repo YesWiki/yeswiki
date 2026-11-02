@@ -415,7 +415,6 @@ class SyncDataSourceTest extends YesWikiTestCase
             \Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface::class => static fn () => new ParameterBag(['sync_secret' => $secret, 'dataSources' => $sources]),
             CurrentRequest::class => static fn (): CurrentRequest => $currentRequest,
             ImporterManager::class => static fn (): ImporterManager => $importer,
-            SyncScheduler::class => fn (): SyncScheduler => $this->scheduler(),
         ]));
 
         return $controller->sync();
@@ -428,10 +427,12 @@ class SyncDataSourceTest extends YesWikiTestCase
      */
     private function importer(\Closure $sync): ImporterManager
     {
-        return new class($sync) extends ImporterManager {
+        return new class($sync, $this->scheduler()) extends ImporterManager {
             /** @param \Closure(string): string $sync */
-            public function __construct(private readonly \Closure $sync)
+            public function __construct(private readonly \Closure $sync, SyncScheduler $scheduler)
             {
+                // Where syncByHand() keeps the run, as the real one finds it in the container.
+                $this->services = new ServiceLocator([SyncScheduler::class => static fn (): SyncScheduler => $scheduler]);
             }
 
             public function syncSource(string $source, array $sourceOptions): string

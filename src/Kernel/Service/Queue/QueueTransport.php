@@ -20,6 +20,7 @@ use YesWiki\Kernel\Database\SqlParameters;
 use YesWiki\Kernel\Queue\QueueClaimHolder;
 use YesWiki\Kernel\Queue\QueueClaimStamp;
 use YesWiki\Kernel\Queue\QueueConsumerMode;
+use YesWiki\Kernel\Queue\QueueFailureCause;
 use YesWiki\Kernel\Queue\UndecodableMessageException;
 use YesWiki\Kernel\Queue\UniqueStamp;
 use YesWiki\Kernel\Service\DbService;
@@ -72,9 +73,6 @@ class QueueTransport implements TransportInterface, MessageCountAwareInterface, 
     private const CONFLICT_ATTEMPTS = 3;
 
     private const TIME_FORMAT = 'Y-m-d H:i:s';
-
-    /** Characters of a failure's cause kept in `last_error`: enough to recognise it; the whole of it stays in the envelope. */
-    private const ERROR_LENGTH = 1000;
 
     /** The columns a claim sets, back to "nobody holds it". */
     private const UNCLAIMED = 'delivered_at = NULL, delivered_by = NULL, delivered_mode = NULL, delivered_limit = NULL';
@@ -165,7 +163,7 @@ class QueueTransport implements TransportInterface, MessageCountAwareInterface, 
         $availableAt = $delay > 0 ? $now->modify("+{$delay} milliseconds") : $now;
         $key = self::fitted($envelope->last(UniqueStamp::class)?->key);
         $absorbable = $key !== null && $this->isFirstSend($envelope);
-        $error = $this->queueName === self::FAILED_QUEUE ? self::errorOf($envelope) : null;
+        $error = $this->queueName === self::FAILED_QUEUE ? QueueFailureCause::of($envelope) : null;
         $encoded = $this->serializer->encode($envelope);
         $table = $this->schema->table();
 
@@ -742,17 +740,6 @@ class QueueTransport implements TransportInterface, MessageCountAwareInterface, 
         return $this->queueName !== self::FAILED_QUEUE
             && self::retries($envelope) === 0
             && $envelope->last(SentToFailureTransportStamp::class) === null;
-    }
-
-    /** The cause of a definitive failure, from the stamp Messenger leaves on the envelope; null when it left none. */
-    private static function errorOf(Envelope $envelope): ?string
-    {
-        $details = $envelope->last(ErrorDetailsStamp::class);
-        if ($details === null) {
-            return null;
-        }
-
-        return mb_substr($details->getExceptionClass() . ': ' . $details->getExceptionMessage(), 0, self::ERROR_LENGTH);
     }
 
     /** How many times the message was already retried: what `attempts` shows. The failure transport adds a RedeliveryStamp(0) after the real count, hence the highest rather than the last. */

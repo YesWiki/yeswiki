@@ -141,21 +141,23 @@ class QueueStatistics
     }
 
     /**
-     * How the messages handled in the last $days ended, and how long the successful ones took on average.
+     * How the messages that finished in the last $sinceSeconds ended, of every type or of that one, and how long the successful ones took on average.
      *
      * An attempt that will be retried is not an outcome, and an "ignored" row only acknowledges a
      * failure already counted: neither is here.
      *
+     * @param string|null $type a message class, for a module's own check; null for every type
+     *
      * @return array{handled: int, failed: int, killed: int, avgMs: ?int}
      */
-    public function outcomes(int $days = 7): array
+    public function outcomes(int $sinceSeconds, ?string $type = null): array
     {
         $counts = [];
         $average = null;
         foreach ($this->db->loadAll(
             "SELECT action, COUNT(*) AS finished, AVG({$this->durationMs()}) AS average FROM {$this->journal->table()}"
-            . ' WHERE channel = ? AND action IN (?, ?, ?) AND at >= ? GROUP BY action',
-            [JournalChannel::Queue->value, ...self::outcomeActions(), $this->since($days * 86400)]
+            . ' WHERE channel = ? AND action IN (?, ?, ?) AND at >= ?' . ($type === null ? '' : ' AND target = ?') . ' GROUP BY action',
+            [JournalChannel::Queue->value, ...self::outcomeActions(), $this->since($sinceSeconds), ...($type === null ? [] : [$type])]
         ) as $row) {
             $status = QueueJournalEntry::statusOf((string)$row['action']);
             $counts[$status] = (int)$row['finished'];
@@ -169,29 +171,6 @@ class QueueStatistics
             'failed' => $counts[QueueRecorder::FAILED] ?? 0,
             'killed' => $counts[QueueRecorder::KILLED] ?? 0,
             'avgMs' => $average,
-        ];
-    }
-
-    /**
-     * How the messages of one type that finished in the last $sinceSeconds ended: the same count as outcomes(), for a module's own check.
-     *
-     * @return array{handled: int, failed: int, killed: int}
-     */
-    public function outcomesOfType(string $type, int $sinceSeconds): array
-    {
-        $counts = [];
-        foreach ($this->db->loadAll(
-            "SELECT action, COUNT(*) AS finished FROM {$this->journal->table()}"
-            . ' WHERE channel = ? AND target = ? AND at >= ? AND action IN (?, ?, ?) GROUP BY action',
-            [JournalChannel::Queue->value, $type, $this->since($sinceSeconds), ...self::outcomeActions()]
-        ) as $row) {
-            $counts[QueueJournalEntry::statusOf((string)$row['action'])] = (int)$row['finished'];
-        }
-
-        return [
-            'handled' => $counts[QueueRecorder::HANDLED] ?? 0,
-            'failed' => $counts[QueueRecorder::FAILED] ?? 0,
-            'killed' => $counts[QueueRecorder::KILLED] ?? 0,
         ];
     }
 
@@ -519,23 +498,46 @@ class QueueStatistics
      */
     public function tasks(): array
     {
-        $time = static fn (mixed $value): ?\DateTimeImmutable => $value === null ? null : self::time((string)$value);
         $tasks = [];
         foreach ($this->tasks->all() as $taskId => $task) {
-            $tasks[] = [
-                'taskId' => (string)$taskId,
-                'label' => (string)($task['label'] ?? '') ?: (string)$taskId,
-                'everySeconds' => (int)($task['every_seconds'] ?? 0),
-                'lastDispatchedAt' => $time($task['last_dispatched_at'] ?? null),
-                'nextDueAt' => $time($task['next_due_at'] ?? null),
-                'lastFinishedAt' => $time($task['last_finished_at'] ?? null),
-                'lastStatus' => isset($task['last_status']) ? (string)$task['last_status'] : null,
-                'lastError' => isset($task['last_error']) ? (string)$task['last_error'] : null,
-                'consecutiveFailures' => (int)($task['consecutive_failures'] ?? 0),
-            ];
+            $tasks[] = self::task((string)$taskId, $task);
         }
 
         return $tasks;
+    }
+
+    /**
+     * One scheduled task, as tasks() lists it; null when the schedule never ran it (the checkpoint is no task).
+     *
+     * @return array{taskId: string, label: string, everySeconds: int, lastDispatchedAt: ?\DateTimeImmutable, nextDueAt: ?\DateTimeImmutable, lastFinishedAt: ?\DateTimeImmutable, lastStatus: ?string, lastError: ?string, consecutiveFailures: int}|null
+     */
+    public function scheduledTask(string $taskId): ?array
+    {
+        $task = $taskId === QueueCheckpoint::ROW ? null : $this->tasks->read($taskId);
+
+        return $task === null ? null : self::task($taskId, $task);
+    }
+
+    /**
+     * @param array<string, mixed> $task the fields of the task's row (QueueTaskRows)
+     *
+     * @return array{taskId: string, label: string, everySeconds: int, lastDispatchedAt: ?\DateTimeImmutable, nextDueAt: ?\DateTimeImmutable, lastFinishedAt: ?\DateTimeImmutable, lastStatus: ?string, lastError: ?string, consecutiveFailures: int}
+     */
+    private static function task(string $taskId, array $task): array
+    {
+        $time = static fn (mixed $value): ?\DateTimeImmutable => $value === null ? null : self::time((string)$value);
+
+        return [
+            'taskId' => $taskId,
+            'label' => (string)($task['label'] ?? '') ?: $taskId,
+            'everySeconds' => (int)($task['every_seconds'] ?? 0),
+            'lastDispatchedAt' => $time($task['last_dispatched_at'] ?? null),
+            'nextDueAt' => $time($task['next_due_at'] ?? null),
+            'lastFinishedAt' => $time($task['last_finished_at'] ?? null),
+            'lastStatus' => isset($task['last_status']) ? (string)$task['last_status'] : null,
+            'lastError' => isset($task['last_error']) ? (string)$task['last_error'] : null,
+            'consecutiveFailures' => (int)($task['consecutive_failures'] ?? 0),
+        ];
     }
 
     /**
