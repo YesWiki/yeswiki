@@ -78,8 +78,9 @@ final class QueueTestKit
      * @param array<class-string, \Closure> $handlers further messages the queue handles, by class, each with the closure that handles it
      * @param ClockInterface|null           $clock    the consumer's clock, which spaces its questions about the configuration (default: the real one)
      * @param string|null                   $database an SQLite file another kit or test made, for a consumer in another process to work on the same queue; left where it is by dispose()
+     * @param ProvidesSchedule|null         $schedule the recurring tasks the schedule declares (default: none)
      */
-    public function __construct(array $handlers = [], ?ClockInterface $clock = null, ?string $database = null)
+    public function __construct(array $handlers = [], ?ClockInterface $clock = null, ?string $database = null, ?ProvidesSchedule $schedule = null)
     {
         $this->file = $database ?? sys_get_temp_dir() . '/yw-kit-' . bin2hex(random_bytes(6)) . '.db';
         $this->ownsDatabase = $database === null;
@@ -129,7 +130,7 @@ final class QueueTestKit
         $this->bus = $bus = new QueueBus($this->transport, new QueueHandlerLocator($map, new ServiceLocator($services)), $journal);
         $this->recorder = $recorder = new QueueRecorder($db, $schema, new JournalSchema($db));
         $this->locks = $locks = self::locksIn($this->lockDir);
-        $noSchedule = new class implements ProvidesSchedule {
+        $schedule ??= new class implements ProvidesSchedule {
             public function recurringMessages(): array
             {
                 return [];
@@ -149,7 +150,7 @@ final class QueueTestKit
             new HibernationService(new ParameterBag(['wiki_status' => 'running'])),
             $locks,
             $journal,
-            $this->ticker = new QueueScheduleTicker([$noSchedule], $bus, new QueueCheckpoint($db, $schema, $locks), $recorder),
+            $this->ticker = new QueueScheduleTicker([$schedule], $bus, new QueueCheckpoint($db, $schema, $locks), $recorder, $clock),
             $clock ?? new NativeClock(),
             configuration: $watch,
         );

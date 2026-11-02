@@ -14,7 +14,7 @@ use YesWiki\Search\Service\SearchIndexSchema;
  * `./yeswicli search:reindex` -- the one way the search index is (re)built (ticket 18).
  *
  * It only queues: the reindexing is the background queue's to run (ADR-0030), in whatever mode
- * the wiki consumes it, or at once with `./yeswicli messenger:drain`.
+ * the wiki consumes it, or at once with `./yeswicli messenger:consume --drain`.
  */
 class ReindexCommand extends Command
 {
@@ -70,7 +70,7 @@ class ReindexCommand extends Command
             $output->writeln($indexer->enqueueForm($form) . " entrie(s) of form {$form} queued.");
         }
 
-        $output->writeln('<info>' . $indexer->pending() . ' Content(s) waiting in the background queue; run ./yeswicli messenger:drain to reindex them now.</info>');
+        $output->writeln('<info>' . $indexer->pending() . ' Content(s) waiting in the background queue; run ./yeswicli messenger:consume --drain to reindex them now.</info>');
 
         return Command::SUCCESS;
     }

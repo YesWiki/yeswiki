@@ -3,23 +3,26 @@
 namespace YesWiki\Test\Kernel;
 
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Component\Clock\MockClock;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Tester\CommandTester;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 use Symfony\Component\Messenger\Envelope;
+use Symfony\Component\Scheduler\RecurringMessage;
+use YesWiki\Kernel\Queue\ProvidesSchedule;
+use YesWiki\Kernel\Queue\QueueConsumerMode;
 use YesWiki\Kernel\Command\QueueConsumeCommand;
-use YesWiki\Kernel\Command\QueueDrainCommand;
 use YesWiki\Kernel\Service\Queue\QueueSettings;
 use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';
 require_once 'tests/src/Kernel/QueueTestKit.php';
 require_once 'tests/src/Kernel/QueueTestOnceMessage.php';
+require_once 'tests/src/Kernel/QueueTestTask.php';
 
-/** `messenger:drain` (a pass that ends by itself) and `messenger:consume` (blocks; `--supervised` for the Go binary). */
-#[CoversClass(QueueDrainCommand::class)]
+/** `messenger:consume`: blocks (`--supervised` for the Go binary), or empties the queue and exits (`--drain`), or runs one pinned message (`--message`). */
 #[CoversClass(QueueConsumeCommand::class)]
 class QueueCommandsTest extends YesWikiTestCase
 {
@@ -40,7 +43,7 @@ class QueueCommandsTest extends YesWikiTestCase
         $this->kit->send('a');
         $this->kit->send('b');
 
-        $tester = $this->execute('messenger:drain', []);
+        $tester = $this->execute('messenger:consume', ['--drain' => true]);
 
         $this->assertSame(Command::SUCCESS, $tester->getStatusCode());
         $this->assertSame(['a', 'b'], $this->kit->handled);
@@ -49,59 +52,96 @@ class QueueCommandsTest extends YesWikiTestCase
         $this->assertStringContainsString('empty', $tester->getDisplay());
     }
 
-    public function testDrainBudgetCapsTheTimeTheFactoryGives(): void
-    {
-        $this->kit->send('a');
-
-        $capped = $this->execute('messenger:drain', ['--budget' => '0.001']);
-
-        $this->assertSame(Command::SUCCESS, $capped->getStatusCode(), 'not having the time is not a failure');
-        $this->assertSame([], $this->kit->handled);
-        $this->assertStringContainsString('no-budget', $capped->getDisplay());
-
-        $this->execute('messenger:drain', []);
-        $this->assertSame(['a'], $this->kit->handled, 'without --budget the factory\'s own budget applies');
-    }
-
-    public function testDrainRunsUnderTheModeOfTheWikiWhenItIsBudgeted(): void
-    {
-        putenv(QueueSettings::ENV_MODE . '=request-spawn');
-        $this->kit->send('a');
-
-        $this->execute('messenger:drain', []);
-
-        $this->assertSame('request-spawn', $this->kit->statistics->lastPass()['mode'] ?? null, 'a detached process started by a request is recorded as what it is');
-    }
-
-    public function testDrainRunsAsACommandWhenTheModeBlocks(): void
+    /** Run by hand under a worker, it must neither count as that worker starting nor make a dead one look alive. */
+    public function testDrainIsAManualRequestPassWhateverTheMode(): void
     {
         putenv(QueueSettings::ENV_MODE . '=worker');
         $this->kit->send('a');
 
-        $this->execute('messenger:drain', []);
+        $this->execute('messenger:consume', ['--drain' => true]);
 
         $this->assertSame(['a'], $this->kit->handled);
-        $this->assertSame('command', $this->kit->statistics->lastPass()['mode'] ?? null);
+        $this->assertSame('request', $this->kit->statistics->lastPass()['mode'] ?? null);
+        $this->assertSame('manual', $this->kit->statistics->lastPass()['origin'] ?? null);
+        $this->assertNull($this->kit->statistics->lastSeenAt(QueueConsumerMode::Worker));
+    }
+
+    /** Emptying the queue is what is already in it: a scheduled task that is due waits for the consumer of the mode. */
+    public function testDrainDoesNotTickTheSchedule(): void
+    {
+        $this->kit->dispose();
+        $clock = new MockClock();
+        $this->kit = new QueueTestKit([QueueTestTask::class => function (QueueTestTask $task): void {
+            $this->kit->handled[] = 'scheduled';
+        }], $clock, schedule: new class implements ProvidesSchedule {
+            public function recurringMessages(): array
+            {
+                return [RecurringMessage::every('30 minutes', new QueueTestTask('digest'))];
+            }
+        });
+        $this->kit->ticker->tick();
+        $clock->sleep(31 * 60);
+        $this->kit->send('a');
+
+        $this->execute('messenger:consume', ['--drain' => true]);
+
+        $this->assertSame(['a'], $this->kit->handled);
+        $this->assertSame(0, $this->kit->statistics->pendingCount());
+    }
+
+    public function testDrainWhileAnotherPassRunsSaysLocked(): void
+    {
+        $this->kit->send('a');
+        $this->kit->holdThePassLock();
+
+        $tester = $this->execute('messenger:consume', ['--drain' => true]);
+
+        $this->assertSame(Command::SUCCESS, $tester->getStatusCode(), 'another pass is at it: not a failure');
+        $this->assertSame([], $this->kit->handled);
+        $this->assertStringContainsString('locked', $tester->getDisplay());
     }
 
     public function testDrainFailsWhenThePassBreaks(): void
     {
         $this->kit->dropTables();
 
-        $tester = $this->execute('messenger:drain', []);
+        $tester = $this->execute('messenger:consume', ['--drain' => true]);
 
         $this->assertSame(Command::FAILURE, $tester->getStatusCode());
         $this->assertStringContainsString('error', $tester->getDisplay());
     }
 
-    /** The process a request hands its pinned message to when its response cannot leave first (QueueRequestTrigger): that message, and nothing else. */
-    public function testDrainWithAMessageHandlesThatOneOnly(): void
+    /** @param array<string, mixed> $option */
+    #[DataProvider('limitsOfABlockingConsumer')]
+    public function testDrainRefusesTheLimitsOfABlockingConsumer(array $option): void
     {
-        putenv(QueueSettings::ENV_MODE . '=command');
+        $this->kit->send('a');
+
+        $tester = $this->execute('messenger:consume', ['--drain' => true] + $option);
+
+        $this->assertSame(Command::INVALID, $tester->getStatusCode());
+        $this->assertSame([], $this->kit->handled);
+    }
+
+    /** @return array<string, array{array<string, mixed>}> */
+    public static function limitsOfABlockingConsumer(): array
+    {
+        return [
+            'time limit' => [['--time-limit' => '5']],
+            'memory limit' => [['--memory-limit' => '64M']],
+            'message limit' => [['--limit' => '1']],
+            'supervised' => [['--supervised' => true]],
+        ];
+    }
+
+    /** The process a request hands its pinned message to when its response cannot leave first (QueueRequestTrigger): that message, and nothing else. */
+    public function testMessageHandlesThatOneOnly(): void
+    {
+        putenv(QueueSettings::ENV_MODE . '=api');
         $this->kit->send('other');
         $pinned = $this->kit->send('pinned');
 
-        $tester = $this->execute('messenger:drain', ['--message' => (string)$pinned]);
+        $tester = $this->execute('messenger:consume', ['--message' => (string)$pinned]);
 
         $this->assertSame(Command::SUCCESS, $tester->getStatusCode());
         $this->assertSame(['pinned'], $this->kit->handled);
@@ -109,30 +149,44 @@ class QueueCommandsTest extends YesWikiTestCase
         $this->assertSame(1, $this->kit->statistics->pendingCount());
     }
 
-    public function testDrainRefusesAMessageThatIsNoId(): void
+    public function testMessageRefusesWhatIsNoId(): void
     {
-        $tester = $this->execute('messenger:drain', ['--message' => 'the backup']);
+        $tester = $this->execute('messenger:consume', ['--message' => 'the backup']);
 
         $this->assertSame(Command::INVALID, $tester->getStatusCode());
         $this->assertSame([], $this->kit->handled);
     }
 
-    public function testDrainRefusesAnUnreadableBudget(): void
+    /** @param array<string, mixed> $option */
+    #[DataProvider('notWithAMessage')]
+    public function testMessageCannotBeCombinedWithDrainOrSupervised(array $option): void
     {
-        $tester = $this->execute('messenger:drain', ['--budget' => 'soon']);
+        $pinned = $this->kit->send('pinned');
+
+        $tester = $this->execute('messenger:consume', ['--message' => (string)$pinned] + $option);
 
         $this->assertSame(Command::INVALID, $tester->getStatusCode());
+        $this->assertSame([], $this->kit->handled);
+    }
+
+    /** @return array<string, array{array<string, mixed>}> */
+    public static function notWithAMessage(): array
+    {
+        return [
+            'drain' => [['--drain' => true]],
+            'supervised' => [['--supervised' => true]],
+        ];
     }
 
     public function testSupervisedConsumeExitsWith78WhenTheModeIsNotBinary(): void
     {
-        putenv(QueueSettings::ENV_MODE . '=command');
+        putenv(QueueSettings::ENV_MODE . '=api');
         $this->kit->send('a');
 
         $tester = $this->execute('messenger:consume', ['--supervised' => true, '--limit' => '1', '--time-limit' => '2'], true);
 
         $this->assertSame(78, $tester->getStatusCode());
-        $this->assertStringContainsString('command', $tester->getErrorOutput(), 'one line on stderr says which mode the wiki is in');
+        $this->assertStringContainsString('api', $tester->getErrorOutput(), 'one line on stderr says which mode the wiki is in');
         $this->assertSame(1, substr_count(trim($tester->getErrorOutput()), "\n") + 1);
         $this->assertSame([], $this->kit->handled, 'nothing is consumed before it is known to be this process\'s job');
         $this->assertNull($this->kit->statistics->lastPass(), 'not even a pass row');
@@ -179,7 +233,7 @@ class QueueCommandsTest extends YesWikiTestCase
 
     public function testConsumeWithoutSupervisedRunsAsAWorkerWhateverTheMode(): void
     {
-        putenv(QueueSettings::ENV_MODE . '=command');
+        putenv(QueueSettings::ENV_MODE . '=api');
         $this->kit->send('a');
 
         $tester = $this->execute('messenger:consume', ['--limit' => '1', '--time-limit' => '2', '--memory-limit' => '128M']);
@@ -220,7 +274,6 @@ class QueueCommandsTest extends YesWikiTestCase
         $application = new Application();
         $services = $this->kit->services($settings);
         $application->add(match ($name) {
-            'messenger:drain' => new QueueDrainCommand($services),
             'messenger:consume' => new QueueConsumeCommand($services),
             default => throw new \InvalidArgumentException("No command $name here."),
         });

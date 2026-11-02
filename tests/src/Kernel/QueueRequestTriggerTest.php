@@ -320,7 +320,7 @@ class QueueRequestTriggerTest extends YesWikiTestCase
         $trigger->afterResponse();
 
         $this->assertSame([], $this->handled, 'not in this request');
-        $this->assertSame(['messenger:drain'], $this->console->commands);
+        $this->assertSame(['messenger:consume'], $this->console->commands);
         $this->assertSame([['--message', (string)$pinned]], $this->console->arguments);
         $this->assertSame([true], $this->console->detached, 'detached: the request ends long before the backup');
         $this->assertSame(1, $this->statistics->pendingCount(), 'still waiting, for that process');

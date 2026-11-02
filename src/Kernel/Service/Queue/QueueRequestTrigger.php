@@ -220,7 +220,7 @@ class QueueRequestTrigger implements RequestScopedState
     }
 
     /**
-     * Starts a process of its own that runs that pinned message (`messenger:drain --message`), answering whether one started.
+     * Starts a process of its own that runs that pinned message (`messenger:consume --message`), answering whether one started.
      *
      * The message keeps the delay it was pinned with, so no pass takes it while the process starts,
      * and the process holds its claim as a CLI: if it dies, the next pass sees it at once. Where no
@@ -230,7 +230,7 @@ class QueueRequestTrigger implements RequestScopedState
     private function handToAProcess(int $messageId): bool
     {
         try {
-            return $this->console->startDetachedConsole('messenger:drain', ['--message', (string)$messageId]) !== null;
+            return $this->console->startDetachedConsole('messenger:consume', ['--message', (string)$messageId]) !== null;
         } catch (\Throwable) {
             return false;
         }
