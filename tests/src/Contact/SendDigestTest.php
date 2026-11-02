@@ -345,7 +345,7 @@ class SendDigestTest extends YesWikiTestCase
 
         $queued = $this->kit->bus->dispatch($message)->last(TransportMessageIdStamp::class);
         $this->assertNotNull($queued);
-        $this->kit->consumer->handleById((int)$queued->getId(), QueueConsumerMode::Command);
+        $this->kit->consumer->handleById((int)$queued->getId(), QueueConsumerMode::Api);
 
         $this->assertSame(1, $attempts);
         $this->assertSame(0, $this->kit->statistics->pendingCount(), 'nothing is left to retry');

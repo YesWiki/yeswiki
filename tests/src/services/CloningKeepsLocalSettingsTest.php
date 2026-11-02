@@ -88,12 +88,12 @@ class CloningKeepsLocalSettingsTest extends TestCase
     public function testTheRemotesQueueSecretAndConsumerNeverArrive(): void
     {
         $merged = ArchiveService::mergedSettings(
-            ['queue_consume_secret' => 'local-consume-secret', 'queue_consumer' => 'command'],
+            ['queue_consume_secret' => 'local-consume-secret', 'queue_consumer' => 'api'],
             ['queue_consume_secret' => 'remote-consume-secret', 'queue_consumer' => 'worker', 'favorite_theme' => 'margot']
         );
 
         $this->assertSame('local-consume-secret', $merged['queue_consume_secret']);
-        $this->assertSame('command', $merged['queue_consumer']);
+        $this->assertSame('api', $merged['queue_consumer']);
         $this->assertSame('margot', $merged['favorite_theme']);
     }
 

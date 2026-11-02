@@ -79,23 +79,6 @@ class QueueBudgetTest extends TestCase
         $this->assertEqualsWithDelta(20.0, $this->allowed($factory->forMode(QueueConsumerMode::Request, true)), 0.001);
     }
 
-    public function testCommandWithNoTimeLimitIsCappedAtFiveMinutes(): void
-    {
-        $budget = $this->factory(['max_execution_time' => '0', 'memory_limit' => '128M'])
-            ->forMode(QueueConsumerMode::Command, false);
-
-        $this->assertEqualsWithDelta(300.0, $this->allowed($budget), 0.001);
-    }
-
-    public function testCommandWithATimeLimitUsesTheLimitMinusTheMargin(): void
-    {
-        $budget = $this->factory(['max_execution_time' => '100', 'memory_limit' => '128M'], 10.0)
-            ->forMode(QueueConsumerMode::Command, false);
-
-        // 100 - 10 - (2 + 10) = 78
-        $this->assertEqualsWithDelta(78.0, $this->allowed($budget), 0.001);
-    }
-
     public function testApiIsCappedAtFiftySeconds(): void
     {
         $ini = ['max_execution_time' => '0', 'memory_limit' => '128M'];
@@ -112,7 +95,7 @@ class QueueBudgetTest extends TestCase
     public function testMemoryCeilingIsEightyPercent(): void
     {
         $budget = $this->factory(['max_execution_time' => '30', 'memory_limit' => '128M'])
-            ->forMode(QueueConsumerMode::Command, false);
+            ->forMode(QueueConsumerMode::Api, false);
 
         $this->assertSame(107374182, $budget->memoryCeilingBytes);
     }
@@ -132,7 +115,7 @@ class QueueBudgetTest extends TestCase
     public function testMemoryLimitShorthandIsUnderstood(string $limit, int $ceiling): void
     {
         $budget = $this->factory(['max_execution_time' => '30', 'memory_limit' => $limit])
-            ->forMode(QueueConsumerMode::Command, false);
+            ->forMode(QueueConsumerMode::Api, false);
 
         $this->assertSame($ceiling, $budget->memoryCeilingBytes);
     }
@@ -141,7 +124,7 @@ class QueueBudgetTest extends TestCase
     public function testNoMemoryLimitMeansNoMemoryCeiling(): void
     {
         $budget = $this->factory(['max_execution_time' => '30', 'memory_limit' => '-1'])
-            ->forMode(QueueConsumerMode::Command, false);
+            ->forMode(QueueConsumerMode::Api, false);
 
         $this->assertSame(PHP_INT_MAX, $budget->memoryCeilingBytes);
         $this->assertFalse($budget->memoryExhausted());
@@ -164,7 +147,7 @@ class QueueBudgetTest extends TestCase
     public function testKillLimitWithoutAPhpLimitIsSixHours(): void
     {
         $budget = $this->factory(['max_execution_time' => '0', 'memory_limit' => '128M'])
-            ->forMode(QueueConsumerMode::Command, false);
+            ->forMode(QueueConsumerMode::Api, false);
 
         $this->assertSame(6 * 3600, $budget->killLimitSeconds);
     }

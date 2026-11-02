@@ -327,7 +327,7 @@ class SyncDataSourceTest extends YesWikiTestCase
 
         $queued = $this->kit->bus->dispatch(new SyncDataSource('every_time'))->last(TransportMessageIdStamp::class);
         $this->assertNotNull($queued);
-        $this->kit->consumer->handleById((int)$queued->getId(), QueueConsumerMode::Command);
+        $this->kit->consumer->handleById((int)$queued->getId(), QueueConsumerMode::Api);
 
         $this->assertSame(1, $attempts);
         $this->assertSame(1, $this->kit->statistics->pendingCount(), 'waits for its retry');

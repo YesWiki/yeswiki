@@ -118,17 +118,17 @@ class QueueFallbackTest extends YesWikiTestCase
     public function testACronNotSeenForThreeHoursWithTheScheduleDueFallsBack(): void
     {
         $this->scheduleDueSince(3 * 3600 + 60);
-        $this->pass(QueueConsumerMode::Command, '-3 hours -1 minute', '-3 hours -1 minute');
+        $this->pass(QueueConsumerMode::Api, '-3 hours -1 minute', '-3 hours -1 minute');
 
-        $this->assertTrue($this->fallback('command')->shouldConsume());
+        $this->assertTrue($this->fallback('api')->shouldConsume());
     }
 
     public function testACronSeenTwoHoursAgoDoesNot(): void
     {
         $this->scheduleDueSince(2 * 3600);
-        $this->pass(QueueConsumerMode::Command, '-2 hours', '-2 hours');
+        $this->pass(QueueConsumerMode::Api, '-2 hours', '-2 hours');
 
-        $this->assertFalse($this->fallback('command')->shouldConsume());
+        $this->assertFalse($this->fallback('api')->shouldConsume());
     }
 
     public function testAConsumerThatNeverRanFallsBackAfterItsDelay(): void
@@ -190,14 +190,14 @@ class QueueFallbackTest extends YesWikiTestCase
     /** Between the cron's return and the next check, a request still consumes for it: that pass must not start the fallback again. */
     public function testAFallbackPassJustAfterTheConsumerCameBackDoesNotKeepTheFallbackGoing(): void
     {
-        $this->pass(QueueConsumerMode::Command, '-5 hours', '-5 hours');
-        $this->pass(QueueConsumerMode::Request, '-1 hour', '-1 hour', origin: QueuePassOrigin::Fallback, fallbackFor: QueueConsumerMode::Command);
-        $fallback = $this->fallback('command');
+        $this->pass(QueueConsumerMode::Api, '-5 hours', '-5 hours');
+        $this->pass(QueueConsumerMode::Request, '-1 hour', '-1 hour', origin: QueuePassOrigin::Fallback, fallbackFor: QueueConsumerMode::Api);
+        $fallback = $this->fallback('api');
         $this->assertTrue($fallback->shouldConsume());
 
-        $this->pass(QueueConsumerMode::Command, '-1 second', '-1 second');
+        $this->pass(QueueConsumerMode::Api, '-1 second', '-1 second');
         $this->clock->sleep(20);
-        $this->pass(QueueConsumerMode::Request, '-1 second', '-1 second', origin: QueuePassOrigin::Fallback, fallbackFor: QueueConsumerMode::Command);
+        $this->pass(QueueConsumerMode::Request, '-1 second', '-1 second', origin: QueuePassOrigin::Fallback, fallbackFor: QueueConsumerMode::Api);
         $this->clock->sleep(45);
 
         $this->assertFalse($fallback->shouldConsume());
@@ -213,7 +213,7 @@ class QueueFallbackTest extends YesWikiTestCase
 
         $this->clock->sleep(10);
 
-        $this->assertFalse($this->fallback('command')->shouldConsume());
+        $this->assertFalse($this->fallback('api')->shouldConsume());
     }
 
     /** A wiki whose queue table is missing is told so once a minute, not on every request. */
@@ -235,19 +235,19 @@ class QueueFallbackTest extends YesWikiTestCase
     public function testFallbackEndsWhenTheAdminChangesTheMode(): void
     {
         $this->pass(QueueConsumerMode::Request, '-1 hour', '-1 hour', origin: QueuePassOrigin::Fallback, fallbackFor: QueueConsumerMode::Worker);
-        $this->pass(QueueConsumerMode::Command, '-1 minute', '-1 minute');
+        $this->pass(QueueConsumerMode::Api, '-1 minute', '-1 minute');
 
-        $this->assertNull($this->fallback('command')->status());
+        $this->assertNull($this->fallback('api')->status());
     }
 
     /** A cron that comes back while a fallback pass holds the lock leaves its row all the same (QueueConsumer::drain()). */
     public function testACronPassThatFoundTheLockTakenEndsTheFallback(): void
     {
-        $this->pass(QueueConsumerMode::Command, '-5 hours', '-5 hours');
-        $this->pass(QueueConsumerMode::Request, '-1 hour', '-1 hour', origin: QueuePassOrigin::Fallback, fallbackFor: QueueConsumerMode::Command);
-        $this->pass(QueueConsumerMode::Command, '-1 minute', '-1 minute', stopReason: 'locked');
+        $this->pass(QueueConsumerMode::Api, '-5 hours', '-5 hours');
+        $this->pass(QueueConsumerMode::Request, '-1 hour', '-1 hour', origin: QueuePassOrigin::Fallback, fallbackFor: QueueConsumerMode::Api);
+        $this->pass(QueueConsumerMode::Api, '-1 minute', '-1 minute', stopReason: 'locked');
 
-        $this->assertNull($this->fallback('command')->status());
+        $this->assertNull($this->fallback('api')->status());
     }
 
     /** Outside the fallback a request reads nothing between two checks: the answer of the last one stands. */
@@ -290,7 +290,6 @@ class QueueFallbackTest extends YesWikiTestCase
     /** A cron or an API call only comes when called: nothing it left says it will come, so only a fallback already under way says it is gone. */
     public function testAConsumerThatComesWhenCalledIsGoneOnlyOnceTheFallbackRuns(): void
     {
-        $this->assertFalse($this->fallback('command')->consumerIsGone());
         $this->assertFalse($this->fallback('api')->consumerIsGone());
 
         $this->pass(QueueConsumerMode::Request, '-1 minute', '-1 minute', origin: QueuePassOrigin::Fallback, fallbackFor: QueueConsumerMode::Api);

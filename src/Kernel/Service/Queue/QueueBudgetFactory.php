@@ -20,8 +20,6 @@ class QueueBudgetFactory
     private const CEILING_VISITOR_WAITS = 3.0;
     /** `request` once the response has left (FPM, LiteSpeed, worker). */
     private const CEILING_RESPONSE_SENT = 20.0;
-    /** `command` when PHP sets no time limit (CLI): long enough to be useful, short enough to come back and reschedule. */
-    private const CEILING_UNLIMITED = 300.0;
     /** `api`: an HTTP caller (online cron, monitor) gives up long before a command would. */
     private const CEILING_API = 50.0;
 
@@ -74,13 +72,12 @@ class QueueBudgetFactory
             $killLimit = self::KILL_LIMIT_NO_PHP_LIMIT;
         }
 
-        $seconds = match ($mode) {
-            QueueConsumerMode::Request => $this->capped($usable, $responseAlreadySent ? self::CEILING_RESPONSE_SENT : self::CEILING_VISITOR_WAITS),
-            QueueConsumerMode::Api => $this->capped($usable, self::CEILING_API),
-            default => $usable ?? self::CEILING_UNLIMITED,
-        };
+        // The budgeted modes are `request` and `api`: the blocking ones returned above.
+        $ceiling = $mode === QueueConsumerMode::Api
+            ? self::CEILING_API
+            : ($responseAlreadySent ? self::CEILING_RESPONSE_SENT : self::CEILING_VISITOR_WAITS);
 
-        return new QueueBudget($now + $seconds, $memoryCeiling, $killLimit);
+        return new QueueBudget($now + $this->capped($usable, $ceiling), $memoryCeiling, $killLimit);
     }
 
     private function capped(?float $usable, float $ceiling): float

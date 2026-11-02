@@ -137,7 +137,7 @@ class ArchiveQueueTest extends YesWikiTestCase
     /** @return array<string, array{string}> */
     public static function nonBlockingModes(): array
     {
-        return ['request' => ['request'], 'api' => ['api'], 'command' => ['command']];
+        return ['request' => ['request'], 'api' => ['api']];
     }
 
     /** @return array<string, array{string}> */
@@ -811,10 +811,10 @@ class ArchiveQueueTest extends YesWikiTestCase
         $this->trigger->afterResponse();
     }
 
-    /** A pass of a consumer of its own, as a `messenger:drain` would run. */
+    /** A pass of a consumer of its own, as the API route would run. */
     private function drain(): void
     {
-        $this->consumer->drain(QueueConsumerMode::Command, (new QueueBudgetFactory())->forMode(QueueConsumerMode::Command, true), false);
+        $this->consumer->drain(QueueConsumerMode::Api, (new QueueBudgetFactory())->forMode(QueueConsumerMode::Api, true), false);
     }
 
     /** A consumer on another machine takes the message and dies with it: no ack, no failure, and its limit runs out. */

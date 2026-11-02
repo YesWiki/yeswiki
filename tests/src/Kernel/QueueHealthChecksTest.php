@@ -204,22 +204,22 @@ class QueueHealthChecksTest extends YesWikiTestCase
     /** A cron that finds the lock held by a pass stuck in a handler leaves a row to say it came: that row is no sign the queue moves. */
     public function testPassesThatFoundTheLockTakenDoNotHideAStall(): void
     {
-        $this->mode = 'command';
+        $this->mode = 'api';
         $this->message('default', '-4 hours');
-        $this->pass('command', startedAt: '-5 hours', finishedAt: '-4 hours');
-        $this->pass('command', startedAt: '-1 minute', stopReason: 'locked');
+        $this->pass('api', startedAt: '-5 hours', finishedAt: '-4 hours');
+        $this->pass('api', startedAt: '-1 minute', stopReason: 'locked');
 
         $this->assertNotNull($this->failure('queue-stalled'));
     }
 
     public function testPassesThatFoundTheLockTakenDoNotHideStarvedPasses(): void
     {
-        $this->mode = 'command';
+        $this->mode = 'api';
         foreach (['-50', '-40', '-30'] as $minutes) {
-            $this->pass('command', startedAt: "$minutes minutes", stopReason: 'no-budget');
+            $this->pass('api', startedAt: "$minutes minutes", stopReason: 'no-budget');
         }
         foreach (['-3', '-2', '-1'] as $minutes) {
-            $this->pass('command', startedAt: "$minutes minutes", stopReason: 'locked');
+            $this->pass('api', startedAt: "$minutes minutes", stopReason: 'locked');
         }
 
         $this->assertNotNull($this->failure('queue-no-budget'));
@@ -329,7 +329,6 @@ class QueueHealthChecksTest extends YesWikiTestCase
     {
         yield 'worker' => ['worker', 600];
         yield 'binary' => ['binary', 600];
-        yield 'command' => ['command', 3 * 3600];
         yield 'api' => ['api', 3 * 3600];
         yield 'request' => ['request', 24 * 3600];
     }
@@ -429,7 +428,7 @@ class QueueHealthChecksTest extends YesWikiTestCase
         $this->assertStringContainsString('QueueTestMessage', $failure);
         $this->assertStringNotContainsString('binary', $failure, 'the wiki already switched');
 
-        $this->mode = 'command';
+        $this->mode = 'api';
         $this->assertStringNotContainsString('binary', (string)$this->failure('queue-killed'), 'and it is not the mode the job was killed in');
 
         $this->mode = 'request';
@@ -563,7 +562,7 @@ class QueueHealthChecksTest extends YesWikiTestCase
         $this->pass('worker', startedAt: '-6 minutes');
         $this->assertNotNull($this->failure('queue-consumer-restarts'));
 
-        $this->mode = 'command';
+        $this->mode = 'api';
         $this->assertNull($this->failure('queue-consumer-restarts'), 'only the blocking modes have consumers that restart');
     }
 
@@ -661,9 +660,9 @@ class QueueHealthChecksTest extends YesWikiTestCase
 
     public function testNoBudgetLooksOnlyAtBudgetedPasses(): void
     {
-        $this->mode = 'command';
+        $this->mode = 'api';
         foreach ([1, 2, 3] as $minutesAgo) {
-            $this->pass('command', startedAt: "-{$minutesAgo} minutes", stopReason: 'no-budget');
+            $this->pass('api', startedAt: "-{$minutesAgo} minutes", stopReason: 'no-budget');
         }
         // A blocking consumer started since: its row is not a budgeted pass and must not push the others out of the window.
         foreach ([1, 2, 3, 4, 5] as $secondsAgo) {
@@ -701,7 +700,7 @@ class QueueHealthChecksTest extends YesWikiTestCase
         $this->assertNull($this->failure('queue-visitor-cost'));
 
         $this->pass('request', startedAt: '-1 hours', finishedAt: '-1 hours +20 seconds', beforeResponse: true);
-        $this->mode = 'command';
+        $this->mode = 'api';
         $this->assertNull($this->failure('queue-visitor-cost'), 'only the request mode makes visitors wait');
     }
 

@@ -2,6 +2,7 @@
 
 namespace YesWiki\Test\Kernel;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 use YesWiki\Kernel\Queue\QueueConsumerMode;
@@ -58,7 +59,7 @@ class QueueSettingsTest extends TestCase
     {
         $this->setRealEnv(QueueSettings::ENV_MODE, 'worker');
 
-        $settings = $this->settings('command', [QueueSettings::ENV_MODE => 'api']);
+        $settings = $this->settings('binary', [QueueSettings::ENV_MODE => 'api']);
 
         $this->assertSame(QueueConsumerMode::Worker, $settings->mode());
         $this->assertSame('env', $settings->origin());
@@ -66,7 +67,7 @@ class QueueSettingsTest extends TestCase
 
     public function testDotEnvWinsOverConfig(): void
     {
-        $settings = $this->settings('command', [QueueSettings::ENV_MODE => 'api']);
+        $settings = $this->settings('binary', [QueueSettings::ENV_MODE => 'api']);
 
         $this->assertSame(QueueConsumerMode::Api, $settings->mode());
         $this->assertSame('dotenv', $settings->origin());
@@ -77,7 +78,7 @@ class QueueSettingsTest extends TestCase
         // The loader copies private/.env into the process environment: the same value present in both is still the file's.
         $this->setRealEnv(QueueSettings::ENV_MODE, 'api');
 
-        $settings = $this->settings('command', [QueueSettings::ENV_MODE => 'api']);
+        $settings = $this->settings('binary', [QueueSettings::ENV_MODE => 'api']);
 
         $this->assertSame(QueueConsumerMode::Api, $settings->mode());
         $this->assertSame('dotenv', $settings->origin());
@@ -85,9 +86,9 @@ class QueueSettingsTest extends TestCase
 
     public function testTheConfigurationIsUsedWhenTheEnvironmentSaysNothing(): void
     {
-        $settings = $this->settings('command');
+        $settings = $this->settings('binary');
 
-        $this->assertSame(QueueConsumerMode::Command, $settings->mode());
+        $this->assertSame(QueueConsumerMode::Binary, $settings->mode());
         $this->assertSame('config', $settings->origin());
     }
 
@@ -141,6 +142,23 @@ class QueueSettingsTest extends TestCase
         $this->assertSame('worker', $settings->rawValue());
     }
 
+    /** `command` and `request-spawn` were modes of the development versions: a wiki that still says one gets the default, and the health page says where to correct it. */
+    #[DataProvider('removedModes')]
+    public function testARemovedModeFallsBackToTheDefault(string $removed): void
+    {
+        $settings = $this->settings($removed);
+
+        $this->assertSame(QueueConsumerMode::Request, $settings->mode());
+        $this->assertTrue($settings->isUnknownValue());
+        $this->assertSame($removed, $settings->rawValue());
+    }
+
+    /** @return array<string, array{string}> */
+    public static function removedModes(): array
+    {
+        return ['command' => ['command'], 'request-spawn' => ['request-spawn']];
+    }
+
     public function testTheValueIsReadCaseInsensitively(): void
     {
         $this->assertSame(QueueConsumerMode::Api, $this->settings(' API ')->mode());
@@ -157,7 +175,7 @@ class QueueSettingsTest extends TestCase
         $budgeted = array_filter(QueueConsumerMode::cases(), static fn (QueueConsumerMode $mode) => $mode->isBudgeted());
 
         $this->assertEqualsCanonicalizing(
-            [QueueConsumerMode::Request, QueueConsumerMode::Command, QueueConsumerMode::Api],
+            [QueueConsumerMode::Request, QueueConsumerMode::Api],
             array_values($budgeted)
         );
     }

@@ -143,17 +143,17 @@ class JobsControllerTest extends YesWikiTestCase
     public function testThePageShowsTheModeAndItsOrigin(): void
     {
         $this->signInAsAdmin();
-        putenv(QueueSettings::ENV_MODE . '=command');
+        putenv(QueueSettings::ENV_MODE . '=api');
 
         $body = (string)$this->page()->jobs()->getContent();
 
-        $this->assertStringContainsString(_t('QUEUE_MODE_COMMAND'), $body);
+        $this->assertStringContainsString(_t('QUEUE_MODE_API'), $body);
         $this->assertStringContainsString(
             htmlspecialchars(_t('ADMIN_JOBS_ORIGIN_SET', ['origin' => _t('QUEUE_ORIGIN_ENV')]), ENT_QUOTES),
             $body,
             'the admin is told where the mode was set, so they know where to change it'
         );
-        $this->assertStringContainsString(htmlspecialchars(_t('QUEUE_PACE_COMMAND'), ENT_QUOTES), $body);
+        $this->assertStringContainsString(htmlspecialchars(_t('QUEUE_PACE_API'), ENT_QUOTES), $body);
         $this->assertStringContainsString('id="yw-jobs-tabs"', $body);
         $this->assertDoesNotMatchRegularExpression('/\b(ADMIN_JOBS|QUEUE_(MODE|PACE|STATUS|STOP|ORIGIN))_[A-Z_]+\b/', $body, 'every label is translated');
     }
@@ -358,7 +358,7 @@ class JobsControllerTest extends YesWikiTestCase
     public function testConsumeNowIsRecordedAsManual(): void
     {
         $this->signInAsAdmin();
-        putenv(QueueSettings::ENV_MODE . '=command');
+        putenv(QueueSettings::ENV_MODE . '=api');
         $this->kit->send('a');
 
         $this->api(post: true)->consume();
@@ -366,7 +366,8 @@ class JobsControllerTest extends YesWikiTestCase
         $this->assertSame('manual', $this->kit->statistics->lastPass()['origin'] ?? null);
     }
 
-    public function testABlockingModeIsConsumedAsTheCommandWould(): void
+    /** A blocking mode has no budget of its own: the button runs the pass a request would, once its response has left. */
+    public function testABlockingModeIsConsumedAsTheEndOfARequestWould(): void
     {
         $this->signInAsAdmin();
         putenv(QueueSettings::ENV_MODE . '=worker');
@@ -375,7 +376,8 @@ class JobsControllerTest extends YesWikiTestCase
         $this->api(post: true)->consume();
 
         $this->assertSame(['a'], $this->kit->handled);
-        $this->assertSame('command', $this->kit->statistics->lastPass()['mode'] ?? null);
+        $this->assertSame('request', $this->kit->statistics->lastPass()['mode'] ?? null);
+        $this->assertSame('manual', $this->kit->statistics->lastPass()['origin'] ?? null);
     }
 
     public function testGeneratingASecretStoresIt(): void
@@ -416,7 +418,7 @@ class JobsControllerTest extends YesWikiTestCase
         $this->signInAsAdmin();
         $this->failed('a', 'RuntimeException: boom');
         $this->kit->send('b');
-        $this->kit->consumer->drain(QueueConsumerMode::Command, (new QueueBudgetFactory())->forMode(QueueConsumerMode::Command, true));
+        $this->kit->consumer->drain(QueueConsumerMode::Api, (new QueueBudgetFactory())->forMode(QueueConsumerMode::Api, true));
 
         foreach (JobsOverview::TABS as $tab) {
             $body = (string)$this->api()->tab($tab)->getContent();

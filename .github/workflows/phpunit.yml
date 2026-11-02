@@ -146,9 +146,9 @@ jobs:
           mkdir -p ${{ github.workspace }}/cache ${{ github.workspace }}/private/backups
           # This server is browsed by the suite while the suite runs against the same database,
           # and in the default `request` mode a page view would consume the background queue
-          # underneath a test that is draining it. In `command` mode only ./yeswicli messenger:drain
+          # underneath a test that is draining it. In `api` mode only a call to /api/queue/consume
           # consumes, and nothing calls it here.
-          echo "YESWIKI_QUEUE_CONSUMER=command" >> ${{ github.workspace }}/private/.env
+          echo "YESWIKI_QUEUE_CONSUMER=api" >> ${{ github.workspace }}/private/.env
           # Workers > 1 so a request that triggers a sub-request cannot deadlock the server.
           # tests/ci-router.php denies private/, which .htaccess does for Apache and the
           # built-in server honours nothing. Without it ArchiveService correctly refuses to

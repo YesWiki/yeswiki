@@ -14,7 +14,7 @@ use YesWiki\Kernel\Service\DbService;
  * run's message in the schedule, and the time the schedule was first ticked, which anchors
  * every periodic trigger -- in the row's `state`, and takes RuntimeLock's file lock so that
  * two processes never tick at once. The state is read again at each acquire(), since the
- * process that ticked last is rarely this one: a request, then the command, then another request.
+ * process that ticked last is rarely this one: a request, then an API call, then another request.
  *
  * Unlike Symfony's, release() lets go of the lock. A blocking consumer that kept it for its
  * whole life would starve every other consumer of the schedule, and would gain nothing by it:

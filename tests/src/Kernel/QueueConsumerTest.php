@@ -126,7 +126,7 @@ class QueueConsumerTest extends YesWikiTestCase
     {
         $this->send(5);
 
-        $report = $this->consumer->drain(QueueConsumerMode::Command, $this->seconds(30));
+        $report = $this->consumer->drain(QueueConsumerMode::Api, $this->seconds(30));
 
         $this->assertSame(5, $report->handled);
         $this->assertSame(0, $report->remaining);
@@ -181,7 +181,7 @@ class QueueConsumerTest extends YesWikiTestCase
         $this->recordAverage(QueueTestMessage::class, 91000);
         $this->send(1);
 
-        $report = $this->consumer->drain(QueueConsumerMode::Command, $this->seconds(20), false, true);
+        $report = $this->consumer->drain(QueueConsumerMode::Api, $this->seconds(20), false, true);
 
         $this->assertSame(['m0'], $this->handled);
         $this->assertSame(QueuePassReport::EMPTY, $report->stopReason);
@@ -217,7 +217,7 @@ class QueueConsumerTest extends YesWikiTestCase
         $this->send(1);
 
         for ($pass = 0; $pass < 4; $pass++) {
-            $this->consumer->drain(QueueConsumerMode::Command, $this->seconds(30));
+            $this->consumer->drain(QueueConsumerMode::Api, $this->seconds(30));
             $this->assertInstanceOf(MockClock::class, $this->clock);
             $this->clock->sleep(self::PAST_ANY_RETRY);
         }
@@ -240,7 +240,7 @@ class QueueConsumerTest extends YesWikiTestCase
         };
         $this->transport->send(new Envelope(new QueueTestOnceMessage('once')));
 
-        $this->consumer->drain(QueueConsumerMode::Command, $this->seconds(30));
+        $this->consumer->drain(QueueConsumerMode::Api, $this->seconds(30));
 
         $journal = $this->journaled();
         $this->assertStringContainsString('"action":"queue.message_failed"', $journal);
@@ -255,7 +255,7 @@ class QueueConsumerTest extends YesWikiTestCase
         };
         $this->send(1);
 
-        $this->consumer->drain(QueueConsumerMode::Command, $this->seconds(30));
+        $this->consumer->drain(QueueConsumerMode::Api, $this->seconds(30));
 
         $this->assertStringNotContainsString('queue.message_failed', $this->journaled());
         $this->assertSame(['retried'], array_column($this->statistics->history(10), 'status'));
@@ -269,7 +269,7 @@ class QueueConsumerTest extends YesWikiTestCase
         };
         $this->transport->send(new Envelope(new QueueTestToleratedMessage('delivery')));
 
-        $this->consumer->drain(QueueConsumerMode::Command, $this->seconds(30));
+        $this->consumer->drain(QueueConsumerMode::Api, $this->seconds(30));
 
         $this->assertSame([QueueTestToleratedMessage::class], array_column($this->statistics->failed(), 'type'));
         $this->assertSame(['failed'], array_column($this->statistics->history(10), 'status'));
@@ -284,7 +284,7 @@ class QueueConsumerTest extends YesWikiTestCase
         };
         $this->transport->send(new Envelope(new QueueTestOnceMessage('once')));
 
-        $report = $this->consumer->drain(QueueConsumerMode::Command, $this->seconds(30));
+        $report = $this->consumer->drain(QueueConsumerMode::Api, $this->seconds(30));
 
         $this->assertSame(1, $report->handled);
         $this->assertSame(0, $this->statistics->pendingCount(), 'no retry is waiting');
@@ -296,7 +296,7 @@ class QueueConsumerTest extends YesWikiTestCase
     {
         $this->transport->send(new Envelope(new \stdClass()));
 
-        $this->consumer->drain(QueueConsumerMode::Command, $this->seconds(30));
+        $this->consumer->drain(QueueConsumerMode::Api, $this->seconds(30));
 
         $this->assertSame(0, $this->statistics->pendingCount(), 'retrying would find no handler either');
         $failed = $this->statistics->failed();
@@ -313,7 +313,7 @@ class QueueConsumerTest extends YesWikiTestCase
         );
         $this->send(1);
 
-        $report = $this->consumer->drain(QueueConsumerMode::Command, $this->seconds(30));
+        $report = $this->consumer->drain(QueueConsumerMode::Api, $this->seconds(30));
 
         $this->assertSame(['m0'], $this->handled);
         $this->assertSame(QueuePassReport::EMPTY, $report->stopReason);
@@ -328,7 +328,7 @@ class QueueConsumerTest extends YesWikiTestCase
     {
         $id = $this->abandonedAndExpired();
 
-        $report = $this->consumer->drain(QueueConsumerMode::Command, $this->seconds(30));
+        $report = $this->consumer->drain(QueueConsumerMode::Api, $this->seconds(30));
 
         $this->assertSame(0, $report->handled, 'a killed message is not run again in the same mode');
         $this->assertSame([], $this->handled);
@@ -367,7 +367,7 @@ class QueueConsumerTest extends YesWikiTestCase
         try {
             $this->assertSame("1\n", fgets($pipes[1]), 'the consumer took the message');
             $this->build($this->db, new MockClock(new \DateTimeImmutable('+2 hours')));
-            $this->consumer->drain(QueueConsumerMode::Command, $this->seconds(30));
+            $this->consumer->drain(QueueConsumerMode::Api, $this->seconds(30));
             $this->assertSame([], $this->statistics->failed(), 'two hours past its one-second limit, it is still at work');
             $this->assertSame([], $this->handled);
 
@@ -376,7 +376,7 @@ class QueueConsumerTest extends YesWikiTestCase
             proc_close($process);
             $process = null;
             $this->build($this->db, new NativeClock());
-            $this->consumer->drain(QueueConsumerMode::Command, $this->seconds(30));
+            $this->consumer->drain(QueueConsumerMode::Api, $this->seconds(30));
 
             $this->assertSame(['request'], array_column($this->statistics->failed(), 'killedIn'));
             $this->assertSame(['killed'], array_column($this->statistics->history(10), 'status'));
@@ -405,7 +405,7 @@ class QueueConsumerTest extends YesWikiTestCase
             }], null, $argv[1]);
             // Registered before the consumer's own: the kit's config and locks go first, the database is the test's.
             register_shutdown_function($kit->dispose(...));
-            $kit->consumer->drain(YesWiki\Kernel\Queue\QueueConsumerMode::Command, YesWiki\Kernel\Queue\QueueBudget::unlimited(300));
+            $kit->consumer->drain(YesWiki\Kernel\Queue\QueueConsumerMode::Api, YesWiki\Kernel\Queue\QueueBudget::unlimited(300));
             PHP);
 
         try {
@@ -415,12 +415,12 @@ class QueueConsumerTest extends YesWikiTestCase
         }
 
         $this->assertSame(3, $status, implode("\n", $out));
-        $this->assertSame(['command'], array_column($this->statistics->failed(), 'killedIn'), 'failed before any pass came');
+        $this->assertSame(['api'], array_column($this->statistics->failed(), 'killedIn'), 'failed before any pass came');
         $this->assertSame(['killed'], array_column($this->statistics->history(10), 'status'));
         $this->assertStringContainsString('queue.message_killed', (string)$this->db->scalar('SELECT GROUP_CONCAT(action) FROM ' . (new JournalSchema($this->db))->table()));
 
         $this->build($this->db, new NativeClock());
-        $this->consumer->drain(QueueConsumerMode::Command, $this->seconds(30));
+        $this->consumer->drain(QueueConsumerMode::Api, $this->seconds(30));
         $this->assertSame(['killed'], array_column($this->statistics->history(10), 'status'), 'recorded once');
     }
 
@@ -433,10 +433,10 @@ class QueueConsumerTest extends YesWikiTestCase
         };
         $this->send(1);
 
-        $this->consumer->drain(QueueConsumerMode::Command, $this->seconds(30));
+        $this->consumer->drain(QueueConsumerMode::Api, $this->seconds(30));
 
         $this->assertSame(['m0'], $this->handled);
-        $this->assertSame(['command'], array_column($this->statistics->failed(), 'killedIn'));
+        $this->assertSame(['api'], array_column($this->statistics->failed(), 'killedIn'));
         $this->assertStringContainsString('"action":"queue.message_ended_late"', $this->journaled());
     }
 
@@ -494,7 +494,7 @@ class QueueConsumerTest extends YesWikiTestCase
         });
         $id = $this->abandonedAndExpired();
 
-        $this->consumer->drain(QueueConsumerMode::Command, $this->seconds(30));
+        $this->consumer->drain(QueueConsumerMode::Api, $this->seconds(30));
 
         $this->assertCount(1, $heard);
         $this->assertSame($id, $heard[0]['messageId']);
@@ -532,7 +532,7 @@ class QueueConsumerTest extends YesWikiTestCase
             ['Gone\\Message', '2026-10-23 11:00:00', '2026-10-23 11:00:00', '2026-10-23 11:00:00']
         );
 
-        $this->consumer->drain(QueueConsumerMode::Command, $this->seconds(30));
+        $this->consumer->drain(QueueConsumerMode::Api, $this->seconds(30));
 
         $this->assertCount(1, $heard);
         $this->assertSame('Gone\\Message', $heard[0]['type']);
@@ -552,7 +552,7 @@ class QueueConsumerTest extends YesWikiTestCase
         $this->abandonedAndExpired();
         $this->transport->send(new Envelope(new QueueTestMessage('next')));
 
-        $report = $this->consumer->drain(QueueConsumerMode::Command, $this->seconds(30));
+        $report = $this->consumer->drain(QueueConsumerMode::Api, $this->seconds(30));
 
         $this->assertSame(QueuePassReport::EMPTY, $report->stopReason);
         $this->assertSame(['next'], $this->handled);
@@ -592,7 +592,7 @@ class QueueConsumerTest extends YesWikiTestCase
         $this->assertTrue($lock->tryLock($held));
 
         try {
-            $report = $this->consumer->drain(QueueConsumerMode::Command, $this->seconds(30));
+            $report = $this->consumer->drain(QueueConsumerMode::Api, $this->seconds(30));
         } finally {
             $lock->release($held);
         }
@@ -600,7 +600,7 @@ class QueueConsumerTest extends YesWikiTestCase
         $this->assertSame(QueuePassReport::LOCKED, $report->stopReason);
         $pass = $this->statistics->lastPass();
         $this->assertNotNull($pass);
-        $this->assertSame('command', $pass['mode']);
+        $this->assertSame('api', $pass['mode']);
         $this->assertSame(QueuePassReport::LOCKED, $pass['stopReason']);
         $this->assertSame('consumer', $pass['origin']);
     }
@@ -613,7 +613,7 @@ class QueueConsumerTest extends YesWikiTestCase
         $this->assertTrue($lock->tryLock($held));
 
         try {
-            $report = $this->consumer->drain(QueueConsumerMode::Command, $this->seconds(30), origin: QueuePassOrigin::Manual);
+            $report = $this->consumer->drain(QueueConsumerMode::Api, $this->seconds(30), origin: QueuePassOrigin::Manual);
         } finally {
             $lock->release($held);
         }
@@ -628,23 +628,23 @@ class QueueConsumerTest extends YesWikiTestCase
         $this->send(1);
         $this->setWikiStatus('hibernate');
 
-        $report = $this->consumer->drain(QueueConsumerMode::Command, $this->seconds(30));
+        $report = $this->consumer->drain(QueueConsumerMode::Api, $this->seconds(30));
 
         $this->assertSame(QueuePassReport::PAUSED, $report->stopReason);
         $this->assertSame([], $this->handled);
         $pass = $this->statistics->lastPass();
         $this->assertNotNull($pass);
-        $this->assertSame('command', $pass['mode']);
+        $this->assertSame('api', $pass['mode']);
         $this->assertSame(QueuePassReport::PAUSED, $pass['stopReason']);
         $this->assertSame('consumer', $pass['origin']);
-        $this->assertSame($this->clock->now()->getTimestamp(), $this->statistics->lastSeenAt(QueueConsumerMode::Command)?->getTimestamp());
+        $this->assertSame($this->clock->now()->getTimestamp(), $this->statistics->lastSeenAt(QueueConsumerMode::Api)?->getTimestamp());
     }
 
     public function testAManualPassThatFindsTheWikiHibernatedLeavesNoRow(): void
     {
         $this->setWikiStatus('hibernate');
 
-        $this->consumer->drain(QueueConsumerMode::Command, $this->seconds(30), origin: QueuePassOrigin::Manual);
+        $this->consumer->drain(QueueConsumerMode::Api, $this->seconds(30), origin: QueuePassOrigin::Manual);
 
         $this->assertNull($this->statistics->lastPass());
     }
@@ -668,7 +668,7 @@ class QueueConsumerTest extends YesWikiTestCase
         };
         $this->send(2);
 
-        $report = $this->consumer->drain(QueueConsumerMode::Command, $this->seconds(30));
+        $report = $this->consumer->drain(QueueConsumerMode::Api, $this->seconds(30));
 
         $this->assertSame(1, $report->handled);
         $this->assertSame(QueuePassReport::PAUSED, $report->stopReason);
@@ -733,7 +733,7 @@ class QueueConsumerTest extends YesWikiTestCase
         };
         $this->send(1);
 
-        $this->consumer->drain(QueueConsumerMode::Command, $this->seconds(30));
+        $this->consumer->drain(QueueConsumerMode::Api, $this->seconds(30));
 
         $this->assertNotNull($seen[0] ?? null, 'a handler can ask how long it has');
         $this->assertNull($this->budgetContext->remainingSeconds(), 'code after the pass is not told "0 s left"');
@@ -742,10 +742,10 @@ class QueueConsumerTest extends YesWikiTestCase
     public function testTheScheduleIsTickedFirstUnlessAskedNotTo(): void
     {
         $this->build($this->db, new MockClock(self::START, 'UTC'), static fn (): array => [RecurringMessage::every('30 minutes', new QueueTestTask())]);
-        $this->consumer->drain(QueueConsumerMode::Command, $this->seconds(30), false);
+        $this->consumer->drain(QueueConsumerMode::Api, $this->seconds(30), false);
         $this->assertNull($this->statistics->scheduleDueAt(), 'not ticked');
 
-        $this->consumer->drain(QueueConsumerMode::Command, $this->seconds(30));
+        $this->consumer->drain(QueueConsumerMode::Api, $this->seconds(30));
         $this->assertNotNull($this->statistics->scheduleDueAt(), 'ticked: the schedule has started');
     }
 
@@ -755,7 +755,7 @@ class QueueConsumerTest extends YesWikiTestCase
         (new QueueTaskRows($this->db, $this->schema))->update(QueueCheckpoint::ROW, static fn (array $fields): array => ['next_due_at' => 'not a time']);
         $this->send(2);
 
-        $report = $this->consumer->drain(QueueConsumerMode::Command, $this->seconds(30));
+        $report = $this->consumer->drain(QueueConsumerMode::Api, $this->seconds(30));
 
         $this->assertSame(2, $report->handled);
         $this->assertSame(QueuePassReport::EMPTY, $report->stopReason);
@@ -770,7 +770,7 @@ class QueueConsumerTest extends YesWikiTestCase
         });
         $this->send(2);
 
-        $report = $this->consumer->drain(QueueConsumerMode::Command, $this->seconds(30));
+        $report = $this->consumer->drain(QueueConsumerMode::Api, $this->seconds(30));
 
         $this->assertSame(2, $report->handled);
         $this->assertSame(QueuePassReport::EMPTY, $report->stopReason);
@@ -883,7 +883,7 @@ class QueueConsumerTest extends YesWikiTestCase
         $this->assertInstanceOf(MockClock::class, $this->clock);
         $this->clock->sleep(60);
 
-        $report = $this->consumer->drain(QueueConsumerMode::Command, $this->seconds(30));
+        $report = $this->consumer->drain(QueueConsumerMode::Api, $this->seconds(30));
 
         $this->assertSame(QueuePassReport::EMPTY, $report->stopReason);
         $this->assertSame(['m0', 'm1'], $this->handled);
@@ -936,7 +936,7 @@ class QueueConsumerTest extends YesWikiTestCase
                 }
             };
 
-            $report = $this->consumer->drain(QueueConsumerMode::Command, $this->seconds(30));
+            $report = $this->consumer->drain(QueueConsumerMode::Api, $this->seconds(30));
 
             $this->assertSame(2, $report->handled);
             $this->assertSame(1, $report->remaining, 'the retry of m2 waits');
@@ -949,7 +949,7 @@ class QueueConsumerTest extends YesWikiTestCase
 
             [$retry] = [...$this->transport->all()];
             $this->behaviour = null;
-            $this->assertSame(1, $this->consumer->handleById((int)$retry->last(TransportMessageIdStamp::class)?->getId(), QueueConsumerMode::Command)->handled, 'a message asked for by id is taken even before its delay');
+            $this->assertSame(1, $this->consumer->handleById((int)$retry->last(TransportMessageIdStamp::class)?->getId(), QueueConsumerMode::Api)->handled, 'a message asked for by id is taken even before its delay');
             $this->assertSame(['m1', 'm2', 'm2'], $this->handled);
         } finally {
             $schema->drop();
@@ -1076,7 +1076,7 @@ class QueueConsumerTest extends YesWikiTestCase
     /** Has the history say that messages of that type took that long when they succeeded. */
     private function recordAverage(string $type, int $durationMs): void
     {
-        QueueTestKit::recordRun($this->db, $type, QueueRecorder::HANDLED, $durationMs, '2026-10-23 11:01:31', mode: QueueConsumerMode::Command);
+        QueueTestKit::recordRun($this->db, $type, QueueRecorder::HANDLED, $durationMs, '2026-10-23 11:01:31', mode: QueueConsumerMode::Api);
     }
 
     /** A budget of that many seconds from now, with no memory bound. */

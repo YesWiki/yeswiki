@@ -346,7 +346,7 @@ class QueueScheduleTickerTest extends YesWikiTestCase
             );
         }
         foreach ([8, 6] as $days) {
-            QueueTestKit::recordRun($this->db, 'T', QueueRecorder::HANDLED, 1, $this->ago($days), mode: QueueConsumerMode::Command);
+            QueueTestKit::recordRun($this->db, 'T', QueueRecorder::HANDLED, 1, $this->ago($days), mode: QueueConsumerMode::Api);
         }
 
         (new PruneQueueHandler($this->transport))(new PruneQueue());

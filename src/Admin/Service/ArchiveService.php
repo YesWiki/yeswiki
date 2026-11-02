@@ -95,7 +95,7 @@ class ArchiveService implements EventSubscriberInterface
      * In `worker` and `binary` a consumer of its own takes the message, while it is seen at work
      * (QueueFallback::consumerIsGone()); otherwise the admin's request runs it too.
      */
-    private const RUN_IN_THE_ADMINS_REQUEST = [QueueConsumerMode::Request, QueueConsumerMode::Api, QueueConsumerMode::Command];
+    private const RUN_IN_THE_ADMINS_REQUEST = [QueueConsumerMode::Request, QueueConsumerMode::Api];
 
     /**
      * How long a run the admin's request is to make waits before any pass may take it instead.
@@ -471,7 +471,7 @@ class ArchiveService implements EventSubscriberInterface
     /**
      * Queue a backup (CreateArchive) and say which uid to follow it by.
      *
-     * Where the queue runs only when something calls it (`request`, `api`, `command`), this very
+     * Where the queue runs only when something calls it (`request`, `api`), this very
      * request runs it once the admin has the response, without a time limit when PHP allows it:
      * the backup before an update, and the one another wiki fetches, must work on a wiki nobody
      * set up a consumer for. Elsewhere the consumer takes it.

@@ -139,7 +139,7 @@ class MaintenanceTasksTest extends YesWikiTestCase
         foreach (['revisions' => new PurgeRevisions(), 'journal' => new PruneJournal(), 'recovery-keys' => new PurgeRecoveryKeys(), 'activation-keys' => new PurgeActivationKeys(), 'bot-guard' => new PurgeBotGuard(), 'extension-hooks' => new RunMaintenanceHooks()] as $message) {
             $queued = $this->kit->bus->dispatch($message)->last(TransportMessageIdStamp::class);
             $this->assertNotNull($queued);
-            $this->kit->consumer->handleById((int)$queued->getId(), QueueConsumerMode::Command);
+            $this->kit->consumer->handleById((int)$queued->getId(), QueueConsumerMode::Api);
         }
 
         $this->assertSame(['revisions', 'recovery-keys', 'activation-keys', 'bot-guard', 'extension-hooks'], $ran);

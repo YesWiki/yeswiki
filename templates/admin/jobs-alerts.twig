@@ -16,7 +16,7 @@
       <p class="yw-jobs__line yw-text-muted"><small>
         {% if mode.budget is not null %}
           {{ _t('ADMIN_JOBS_BUDGET', { seconds: mode.budget }) }}
-          ({{ mode.cli ? _t('ADMIN_JOBS_LIMITS_CLI') : mode.limits }})
+          ({{ mode.limits }})
         {% else %}
           {{ _t('ADMIN_JOBS_BUDGET_UNLIMITED') }}
         {% endif %}

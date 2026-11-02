@@ -72,8 +72,11 @@ class YesWikiTestCase extends TestCase
         // A page view must never consume the queue underneath a test that is draining it. The
         // end-of-request pass is registered by index.php and worker.php, which the suite does not
         // go through, and QueueSettings reads the compiled parameters, which cannot be changed
-        // here: this keeps what the suite's configuration says in line with that.
-        $config['queue_consumer'] = \YesWiki\Kernel\Queue\QueueConsumerMode::Command->value;
+        // here: this keeps what the suite's configuration says in line with that. In `api` only a
+        // call to /api/queue/consume consumes, and nothing calls it; the secret keeps the
+        // `queue-config` check from failing on a mode with none.
+        $config['queue_consumer'] = \YesWiki\Kernel\Queue\QueueConsumerMode::Api->value;
+        $config['queue_consume_secret'] = 'phpunit-nobody-calls-this';
     }
 
     /** Deletes the users and groups the run created, at process shutdown. */

@@ -51,7 +51,7 @@ class JobsApiController extends YesWikiController
     }
 
     /**
-     * A budgeted pass from the admin's request, whatever the mode (spec §11.3): the mode's own budget when it has one, the command's otherwise.
+     * A budgeted pass from the admin's request, whatever the mode (spec §11.3): the mode's own budget when it has one, the end of a request's otherwise.
      *
      * Recorded as a pass after the response, which it is as far as visitors go: an admin who asked
      * for it and waits is not the cost `queue-visitor-cost` measures.
@@ -64,7 +64,7 @@ class JobsApiController extends YesWikiController
         }
 
         $mode = $this->getService(QueueSettings::class)->mode();
-        $mode = $mode->isBudgeted() ? $mode : QueueConsumerMode::Command;
+        $mode = $mode->isBudgeted() ? $mode : QueueConsumerMode::Request;
         $budget = $this->getService(QueueBudgetFactory::class)->forMode($mode, true)->cappedTo(self::CONSUME_SECONDS);
         $report = $this->getService(QueueConsumer::class)->drain($mode, $budget, true, true, QueuePassOrigin::Manual);
 

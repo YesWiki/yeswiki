@@ -285,7 +285,7 @@ class QueueRequestTriggerTest extends YesWikiTestCase
     {
         $this->send('m0');
 
-        $this->trigger('command')->afterResponse();
+        $this->trigger('api')->afterResponse();
 
         $this->assertSame([], $this->handled);
         $this->assertSame(1, $this->statistics->pendingCount());

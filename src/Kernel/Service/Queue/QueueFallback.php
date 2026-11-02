@@ -12,7 +12,7 @@ use YesWiki\Kernel\Service\HibernationService;
 /**
  * Whether the end of requests has to consume the queue for the consumer the admin chose, because that consumer is no longer seen at work.
  *
- * A worker that died, a crontab an host dropped, an online cron that stopped calling: on a wiki
+ * A worker that died, an online cron that stopped calling: on a wiki
  * nobody watches, the search index and the maintenance would stop for weeks without a visitor
  * noticing. Once the chosen consumer has not been seen for longer than its mode allows while work
  * waits, each request consumes at its end as `request` does, and the pages say so; as soon as
@@ -75,9 +75,9 @@ class QueueFallback
      * For whoever sends a message the end of a request must not take on a request's budget (a
      * backup an admin starts, ArchiveService). Read only: the minute's answer shouldConsume()
      * keeps for the end of requests is left as it is. A worker beats every minute and holds a live
-     * claim while it handles, so one unseen for its delay is gone, or never ran; a consumer that
-     * only comes when called -- a cron, an API call -- shows nothing that says
-     * it will come, and is gone only once the fallback runs for it.
+     * claim while it handles, so one unseen for its delay is gone, or never ran; the API route
+     * only comes when called, shows nothing that says it will come, and is gone only once the
+     * fallback runs for it.
      */
     public function consumerIsGone(): bool
     {

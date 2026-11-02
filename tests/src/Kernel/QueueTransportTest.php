@@ -334,7 +334,7 @@ class QueueTransportTest extends YesWikiTestCase
     /** R19: a process of its own still at work is slow, not dead: PHP's limit counts CPU time, and a handler that waits on the network outlives it. Only the ceiling ends it. */
     public function testAProcessOfItsOwnStillAtWorkKeepsItsMessagePastItsLimit(): void
     {
-        $this->transport->claimAs(QueueConsumerMode::Command, 30);
+        $this->transport->claimAs(QueueConsumerMode::Api, 30);
         $this->transport->send(new Envelope(new QueueTestMessage('slow')));
         [$taken] = [...$this->transport->get()];
         QueueTestHolders::hand($this->db, $this->schema, self::idOf($taken), QueueTestHolders::living(true));
@@ -771,7 +771,7 @@ class QueueTransportTest extends YesWikiTestCase
             $this->assertSame('RuntimeException: boom', $mine->scalar("SELECT last_error FROM {$schema->table()} WHERE id = ?", null, [self::idOf($broken)]));
             $mine->query("DELETE FROM {$schema->table()}");
 
-            $transport->claimAs(QueueConsumerMode::Command, 1);
+            $transport->claimAs(QueueConsumerMode::Api, 1);
             $transport->send(new Envelope(new QueueTestMessage('dies'), [new DelayStamp(1000)]));
             $this->assertSame([], [...$other->get()]);
             $clock->sleep(1);

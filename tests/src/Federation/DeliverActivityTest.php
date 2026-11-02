@@ -162,7 +162,7 @@ class DeliverActivityTest extends YesWikiTestCase
 
         for ($attempt = 1; $attempt <= 6; $attempt++) {
             $this->assertCount(1, $this->waiting(), "attempt {$attempt} has a message to take");
-            $this->kit->consumer->handleById($this->idOf($this->waiting()[0]), QueueConsumerMode::Command);
+            $this->kit->consumer->handleById($this->idOf($this->waiting()[0]), QueueConsumerMode::Api);
         }
 
         $this->assertCount(6, $this->posted, 'the first try and five more');
@@ -230,7 +230,7 @@ class DeliverActivityTest extends YesWikiTestCase
         $this->service()->notifyFollowers($this->form(), ['tag' => 'Fiche'], 'Create');
         Storage::rootedAt($this->root)->deleteDirectory(ActivityPubKeyStore::DIRECTORY);
 
-        $this->kit->consumer->handleById($this->idOf($this->waiting()[0]), QueueConsumerMode::Command);
+        $this->kit->consumer->handleById($this->idOf($this->waiting()[0]), QueueConsumerMode::Api);
 
         $this->assertSame([], $this->posted, 'a new key would be one nobody knows');
         $this->assertSame(0, $this->kit->statistics->pendingCount(), 'no retry can bring the key back');
@@ -384,7 +384,7 @@ class DeliverActivityTest extends YesWikiTestCase
     private function history(string $status, int $count): void
     {
         for ($i = 0; $i < $count; $i++) {
-            $this->kit->recorder->messageFinished($i + 1, DeliverActivity::class, null, $status, QueueConsumerMode::Command, microtime(true), $status === QueueRecorder::HANDLED ? null : 'HTTP 410');
+            $this->kit->recorder->messageFinished($i + 1, DeliverActivity::class, null, $status, QueueConsumerMode::Api, microtime(true), $status === QueueRecorder::HANDLED ? null : 'HTTP 410');
         }
     }
 
@@ -400,7 +400,7 @@ class DeliverActivityTest extends YesWikiTestCase
 
     private function drain(): \YesWiki\Kernel\Queue\QueuePassReport
     {
-        return $this->kit->consumer->drain(QueueConsumerMode::Command, (new QueueBudgetFactory())->forMode(QueueConsumerMode::Command, true));
+        return $this->kit->consumer->drain(QueueConsumerMode::Api, (new QueueBudgetFactory())->forMode(QueueConsumerMode::Api, true));
     }
 
     /** @return list<Envelope> */

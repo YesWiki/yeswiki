@@ -72,7 +72,7 @@ class QueueHealthChecks implements ProvidesHealthChecks
     {
         return match ($mode) {
             QueueConsumerMode::Worker, QueueConsumerMode::Binary => self::STALLED_AFTER_BLOCKING,
-            QueueConsumerMode::Command, QueueConsumerMode::Api => self::STALLED_AFTER_SCHEDULED,
+            QueueConsumerMode::Api => self::STALLED_AFTER_SCHEDULED,
             QueueConsumerMode::Request => self::STALLED_AFTER_VISITS,
         };
     }

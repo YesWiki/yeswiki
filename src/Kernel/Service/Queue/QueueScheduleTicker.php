@@ -28,7 +28,7 @@ use YesWiki\Kernel\Service\Journal;
  * What is due is decided by Symfony's rules (ScheduleGenerator, the loop of its MessageGenerator)
  * over the RecurringMessages of every ProvidesSchedule service, with `processOnlyLastMissedRun`:
  * a task that missed ten runs while nothing ticked runs once, not ten times (spec §8). Its
- * progress lives in QueueCheckpoint, in the database, so a request, the command and the next
+ * progress lives in QueueCheckpoint, in the database, so a request, an API call and the next
  * request share one schedule.
  *
  * tick() has to be cheap, since a blocking consumer calls it about once a second. When the next

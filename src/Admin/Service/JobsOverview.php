@@ -307,7 +307,6 @@ class JobsOverview
                 'time' => (int)ini_get('max_execution_time') > 0 ? ini_get('max_execution_time') . ' s' : _t('ADMIN_JOBS_UNLIMITED'),
                 'memory' => (string)ini_get('memory_limit'),
             ]),
-            'cli' => self::passesInTheCli($mode),
             'visitorsWait' => $mode === QueueConsumerMode::Request && !$respondsEarly,
             'pace' => _t('QUEUE_PACE_' . strtoupper($mode->value)),
             'lastPass' => $fallback !== null
@@ -326,25 +325,15 @@ class JobsOverview
      * What one pass may spend in this mode, as QueueBudgetFactory works it out, in whole seconds; null for the blocking modes, which have no deadline.
      *
      * The page is a web request, so the factory reads this server's PHP limits: right for `request`
-     * and `api`, which run under them. `command` runs in the CLI, where PHP sets
-     * no time limit unless told to: they are worked out without one.
+     * and `api`, the budgeted modes, which run under them.
      */
     private function budget(QueueConsumerMode $mode, bool $respondsEarly): ?int
     {
         if (!$mode->isBudgeted()) {
             return null;
         }
-        $budgets = self::passesInTheCli($mode)
-            ? new QueueBudgetFactory(static fn (string $name) => $name === 'max_execution_time' ? '0' : ini_get($name))
-            : $this->budgets;
 
-        return (int)round($budgets->forMode($mode, $respondsEarly)->remainingSeconds());
-    }
-
-    /** Whether the budgeted passes of this mode run in a CLI process rather than under this server's PHP limits. */
-    private static function passesInTheCli(QueueConsumerMode $mode): bool
-    {
-        return $mode === QueueConsumerMode::Command;
+        return (int)round($this->budgets->forMode($mode, $respondsEarly)->remainingSeconds());
     }
 
     /**

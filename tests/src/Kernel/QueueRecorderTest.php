@@ -83,7 +83,7 @@ class QueueRecorderTest extends YesWikiTestCase
         $start = (float)$this->clock->now()->format('U.u');
         $this->clock->sleep(1.5);
 
-        $this->recorder->messageFinished(7, 'App\\Foo', 'digest-daily', QueueRecorder::FAILED, QueueConsumerMode::Command, $start, 'boom');
+        $this->recorder->messageFinished(7, 'App\\Foo', 'digest-daily', QueueRecorder::FAILED, QueueConsumerMode::Api, $start, 'boom');
 
         $rows = $this->db->loadAll("SELECT * FROM {$this->journal->table()}");
         $this->assertCount(1, $rows);
@@ -91,7 +91,7 @@ class QueueRecorderTest extends YesWikiTestCase
         $this->assertSame('queue', $row['channel']);
         $this->assertSame('queue.run.failed', $row['action']);
         $this->assertSame('App\\Foo', $row['target']);
-        $this->assertSame('command', $row['actor']);
+        $this->assertSame('api', $row['actor']);
         $this->assertSame('error', $row['level']);
         $this->assertSame(1, (int)$row['repeat']);
         $this->assertNull($row['fingerprint']);
@@ -104,7 +104,7 @@ class QueueRecorderTest extends YesWikiTestCase
         $this->assertSame(1500, $context['duration_ms'], 'it began that long before it ended: its start is not written apart');
         $this->assertSame('boom', $context['message'], 'the cause is where every Journal entry keeps its message');
 
-        $this->recorder->messageFinished(8, 'App\\Foo', null, QueueRecorder::HANDLED, QueueConsumerMode::Command, $start, null);
+        $this->recorder->messageFinished(8, 'App\\Foo', null, QueueRecorder::HANDLED, QueueConsumerMode::Api, $start, null);
         $handled = $this->db->loadSingle("SELECT * FROM {$this->journal->table()} WHERE action = ?", ['queue.run.handled']);
         $this->assertNotNull($handled);
         $this->assertSame('info', $handled['level']);
@@ -326,7 +326,7 @@ class QueueRecorderTest extends YesWikiTestCase
 
     public function testRecentPassesAreNewestFirst(): void
     {
-        $first = $this->recorder->passStarted(QueueConsumerMode::Command, null, false);
+        $first = $this->recorder->passStarted(QueueConsumerMode::Api, null, false);
         $second = $this->recorder->passStarted(QueueConsumerMode::Api, null, false);
 
         $this->assertSame([$second, $first], array_column($this->statistics->recentPasses(5), 'id'));
@@ -338,14 +338,14 @@ class QueueRecorderTest extends YesWikiTestCase
         $startedAt = (float)$this->clock->now()->format('U.u');
         $this->clock->sleep(1.5);
 
-        $this->recorder->messageFinished(12, QueueTestMessage::class, 'search-drain', QueueRecorder::FAILED, QueueConsumerMode::Command, $startedAt, str_repeat('x', 2000));
+        $this->recorder->messageFinished(12, QueueTestMessage::class, 'search-drain', QueueRecorder::FAILED, QueueConsumerMode::Api, $startedAt, str_repeat('x', 2000));
 
         [$row] = $this->statistics->history(10);
         $this->assertSame(12, $row['messageId']);
         $this->assertSame(QueueTestMessage::class, $row['type']);
         $this->assertSame('search-drain', $row['taskId']);
         $this->assertSame('failed', $row['status']);
-        $this->assertSame('command', $row['mode']);
+        $this->assertSame('api', $row['mode']);
         $this->assertSame(1500, $row['durationMs']);
         $this->assertEquals(new \DateTimeImmutable('2026-10-23 12:00:01', new \DateTimeZone('UTC')), $row['finishedAt'], 'dated by its end, to the second');
         $this->assertSame(1000, mb_strlen((string)$row['error']), 'the error is cut, not the row refused');

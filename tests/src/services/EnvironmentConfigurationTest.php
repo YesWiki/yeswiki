@@ -130,7 +130,7 @@ class EnvironmentConfigurationTest extends TestCase
     {
         $this->setRealEnv('YESWIKI_QUEUE_CONSUMER', 'worker');
 
-        $config = EnvironmentConfiguration::apply(['queue_consumer' => 'command'], []);
+        $config = EnvironmentConfiguration::apply(['queue_consumer' => 'api'], []);
 
         $this->assertSame('worker', $config['queue_consumer']);
         $this->assertArrayNotHasKey('yeswiki_queue_consumer', $config);

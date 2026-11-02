@@ -173,7 +173,7 @@ class BackupsLeaveTheQueueAloneTest extends YesWikiTestCase
         $this->openJournal();
         $this->journal->audit('backup.audited', 'Home');
         $this->recordRun('RunBeforeTheBackup');
-        $this->recorder->passStarted(QueueConsumerMode::Command, null, false);
+        $this->recorder->passStarted(QueueConsumerMode::Api, null, false);
 
         $dump = $this->db->dumper()->dump();
 
@@ -280,7 +280,7 @@ class BackupsLeaveTheQueueAloneTest extends YesWikiTestCase
         $this->openJournal();
         $this->journal->audit('backup.audited', 'Home');
         $dump = $this->db->dumper()->dump()['sql'];
-        $pass = $this->recorder->passStarted(QueueConsumerMode::Command, null, false);
+        $pass = $this->recorder->passStarted(QueueConsumerMode::Api, null, false);
         $swappedIn = '/\bTO [`"]' . preg_quote($this->journalSchema->table(), '/') . '[`"]/';
         $this->afterQuery = function (string $query) use ($swappedIn): void {
             if (preg_match($swappedIn, $query) === 1) {
@@ -313,7 +313,7 @@ class BackupsLeaveTheQueueAloneTest extends YesWikiTestCase
         $this->journal->audit('backup.audited', 'Home');
         $audit = (int)$this->db->scalar('SELECT MAX(id) FROM ' . $this->db->quoteIdentifier($this->journalSchema->table()));
         $run = $this->recordRun('RunBeforeTheBackup');
-        $pass = $this->recorder->passStarted(QueueConsumerMode::Command, null, false);
+        $pass = $this->recorder->passStarted(QueueConsumerMode::Api, null, false);
         $dump = $this->db->dumper()->dump()['sql'] . $this->journalInsert(['channel' => 'queue', 'action' => 'queue.pass', 'target' => 'ForeignPass']);
         $after = $this->recordRun('RunAfterTheBackup');
 
@@ -414,7 +414,7 @@ class BackupsLeaveTheQueueAloneTest extends YesWikiTestCase
     /** Records a handled run of that message type and answers the id of its row. */
     private function recordRun(string $type): int
     {
-        $this->recorder->messageFinished(1, $type, null, QueueRecorder::HANDLED, QueueConsumerMode::Command, (float)strtotime('2026-10-23 12:00:00 UTC'), null);
+        $this->recorder->messageFinished(1, $type, null, QueueRecorder::HANDLED, QueueConsumerMode::Api, (float)strtotime('2026-10-23 12:00:00 UTC'), null);
 
         return (int)$this->db->scalar('SELECT MAX(id) FROM ' . $this->db->quoteIdentifier($this->journalSchema->table()));
     }
