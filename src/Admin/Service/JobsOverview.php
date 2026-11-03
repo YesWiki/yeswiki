@@ -143,7 +143,7 @@ class JobsOverview
     }
 
     /** "il y a 3 j 4 h", "dans 12 min": a time as far as the reader is concerned. */
-    private function ago(?\DateTimeImmutable $time): ?string
+    public function ago(?\DateTimeImmutable $time): ?string
     {
         return $this->fromNow($time, CarbonInterface::DIFF_RELATIVE_TO_NOW);
     }

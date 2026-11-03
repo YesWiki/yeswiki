@@ -4,6 +4,7 @@ namespace YesWiki\Test\Admin;
 
 use PHPUnit\Framework\Attributes\CoversClass;
 use Psr\Container\ContainerInterface;
+use Symfony\Component\Clock\MockClock;
 use Symfony\Component\Clock\NativeClock;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 use Symfony\Component\DependencyInjection\ServiceLocator;
@@ -12,6 +13,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\Stamp\TransportMessageIdStamp;
+use Symfony\Component\Scheduler\RecurringMessage;
 use YesWiki\Admin\Api\JobsApiController;
 use YesWiki\Admin\Controller\JobsController;
 use YesWiki\Admin\Message\CreateArchive;
@@ -22,6 +24,7 @@ use YesWiki\Identity\Service\RequestGuard;
 use YesWiki\Identity\Service\UserManager;
 use YesWiki\Kernel\Health\HealthCheck;
 use YesWiki\Kernel\Health\ProvidesHealthChecks;
+use YesWiki\Kernel\Queue\ProvidesSchedule;
 use YesWiki\Kernel\Queue\QueueConsumerMode;
 use YesWiki\Kernel\Queue\QueuePassOrigin;
 use YesWiki\Kernel\Queue\QueuePassReport;
@@ -43,11 +46,13 @@ use YesWiki\Kernel\Service\RouteProvider;
 use YesWiki\Render\Service\TemplateEngine;
 use YesWiki\Test\Core\YesWikiTestCase;
 use YesWiki\Test\Kernel\QueueTestKit;
+use YesWiki\Test\Kernel\QueueTestTask;
 use YesWiki\Test\Kernel\QueueTestToleratedMessage;
 
 require_once 'tests/YesWikiTestCase.php';
 require_once 'tests/src/Kernel/QueueTestKit.php';
 require_once 'tests/src/Kernel/QueueTestToleratedMessage.php';
+require_once 'tests/src/Kernel/QueueTestTask.php';
 
 /**
  * `/admin/jobs`: the admin sees what waits, what failed and whether anything consumes, and acts on it (messenger / scheduler, spec §11.3).
@@ -599,6 +604,78 @@ class JobsControllerTest extends YesWikiTestCase
                 $this->assertArrayHasKey($key, $translations, "the {$language} label of the stop reason '{$reason}'");
             }
         }
+    }
+
+    /** Running a task by hand moves its next run to that launch plus its interval, and the answer says when, as the Tasks tab does. */
+    public function testRunningATaskSaysWhenItIsNextDue(): void
+    {
+        $this->signInAsAdmin();
+        $clock = $this->kitWithAHalfHourlyTask();
+        $clock->sleep(10 * 60);
+
+        $response = $this->api(post: true)->runTask('test-task');
+
+        $next = $this->kit->ticker->task('test-task')['nextDueAt'] ?? null;
+        $this->assertSame('2026-10-23 12:40:00', $next?->format('Y-m-d H:i:s'), 'counted from the launch, not from the schedule');
+        $shown = $this->nextRunShownOnTheTasksTab();
+        $this->assertStringContainsString(htmlspecialchars($shown, ENT_QUOTES), (string)$response->getContent(), 'the same words as the tab for the next run');
+        $this->assertStringContainsString(
+            htmlspecialchars(_t('ADMIN_JOBS_TASK_QUEUED', ['task' => 'Test task test-task', 'next' => $shown]), ENT_QUOTES),
+            (string)$response->getContent(),
+            'in the sentence that says the task is waiting'
+        );
+        $this->assertMatchesRegularExpression('/\b30\b/', $shown, 'in half an hour, not in the 20 minutes the schedule had left');
+    }
+
+    /** The Tasks tab tells, under the table and on the button, that running a task counts its next run from then. */
+    public function testTheTasksTabSaysThatRunningShiftsTheSchedule(): void
+    {
+        $this->signInAsAdmin();
+        $this->kitWithAHalfHourlyTask();
+
+        $body = (string)$this->api()->tab('tasks')->getContent();
+
+        $hint = htmlspecialchars(_t('ADMIN_JOBS_RUN_TASK_HINT'), ENT_QUOTES);
+        $this->assertNotSame('ADMIN_JOBS_RUN_TASK_HINT', _t('ADMIN_JOBS_RUN_TASK_HINT'), 'the hint is translated');
+        $this->assertMatchesRegularExpression('/<p class="yw-text-muted">\s*' . preg_quote($hint, '/') . '\s*<\/p>/', $body, 'under the table');
+        $this->assertStringContainsString('title="' . $hint . '"', $body, 'and on the button');
+    }
+
+    /** Both languages word the hint and the answer the same way: the next run is named, and counted from the launch. */
+    public function testEachLanguageSaysWhereTheNextRunComesFrom(): void
+    {
+        foreach (['fr', 'en'] as $language) {
+            $translations = require "src/lang/yeswiki_{$language}.php";
+            $this->assertArrayHasKey('ADMIN_JOBS_RUN_TASK_HINT', $translations, $language);
+            $this->assertStringContainsString('%{next}', $translations['ADMIN_JOBS_TASK_QUEUED'], "the {$language} answer names the next run");
+        }
+    }
+
+    /** The "next run" cell of the first row of the Tasks tab, as the admin reads it. */
+    private function nextRunShownOnTheTasksTab(): string
+    {
+        $tab = (string)$this->api()->tab('tasks')->getContent();
+        if (preg_match('/<td>\s*(\S[^<]*?)\s*<\/td>\s*<td>\s*<button/', $tab, $cell) !== 1) {
+            $this->fail('the Tasks tab shows no next run');
+        }
+
+        return $cell[1];
+    }
+
+    /** Replaces the kit by one whose schedule declares `test-task` every 30 minutes, seen by the Scheduler at 12:00; answers its clock. */
+    private function kitWithAHalfHourlyTask(): MockClock
+    {
+        $this->kit->dispose();
+        $clock = new MockClock('2026-10-23 12:00:00', 'UTC');
+        $this->kit = new QueueTestKit(clock: $clock, schedule: new class implements ProvidesSchedule {
+            public function recurringMessages(): array
+            {
+                return [RecurringMessage::every('30 minutes', new QueueTestTask('test-task'))];
+            }
+        });
+        $this->kit->ticker->tick();
+
+        return $clock;
     }
 
     private function page(?HealthService $health = null): JobsController

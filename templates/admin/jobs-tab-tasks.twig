@@ -38,7 +38,7 @@
               {% endif %}
             </td>
             <td>
-              <button type="button" class="yw-btn yw-btn--sm"
+              <button type="button" class="yw-btn yw-btn--sm" title="{{ _t('ADMIN_JOBS_RUN_TASK_HINT') }}"
                       hx-post="{{ url({ tag: 'api/admin/jobs/tasks/' ~ row.taskId|url_encode ~ '/run' }) }}" {{ statusSwap|raw }}>{{ _t('ADMIN_JOBS_RUN_TASK') }}</button>
             </td>
           </tr>
@@ -46,4 +46,5 @@
       </tbody>
     </table>
   </div>
+  <p class="yw-text-muted">{{ _t('ADMIN_JOBS_RUN_TASK_HINT') }}</p>
 {% endif %}

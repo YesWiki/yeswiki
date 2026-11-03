@@ -334,8 +334,9 @@ dans le Journal.
 
 Les tâches régulières, avec leur fréquence, leur dernière exécution, leur
 résultat (et la dernière erreur si elle a échoué) et leur prochaine échéance.
-**Lancer** met une tâche dans la file tout de suite, sans changer son
-calendrier : pratique pour vérifier qu'une correction a marché.
+**Lancer** met une tâche dans la file tout de suite, et sa prochaine échéance
+se compte alors à partir de ce lancement : pratique pour vérifier qu'une
+correction a marché.
 
 ![L'onglet Tâches planifiées : six tâches de ménage traitées et une synchronisation échouée](images/async-onglet-taches.png)
 

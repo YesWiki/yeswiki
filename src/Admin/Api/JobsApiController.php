@@ -128,7 +128,7 @@ class JobsApiController extends YesWikiController
             : $this->status(_t('ADMIN_JOBS_DELETED'));
     }
 
-    /** Queues a run of a scheduled task now; the next pass runs it, and the schedule keeps its own time. */
+    /** Queues a run of a scheduled task now; its next run is counted from this one. */
     #[Route('/api/admin/jobs/tasks/{taskId}/run', methods: ['POST'], options: ['acl' => self::ADMIN_ACL])]
     public function runTask(string $taskId): Response
     {
@@ -136,12 +136,16 @@ class JobsApiController extends YesWikiController
             return $refused;
         }
 
-        if (!$this->getService(QueueScheduleTicker::class)->runNow($taskId)) {
+        $ticker = $this->getService(QueueScheduleTicker::class);
+        if (!$ticker->runNow($taskId)) {
             return $this->status(_t('ADMIN_JOBS_TASK_UNKNOWN'), 'warning');
         }
-        $label = $this->getService(QueueScheduleTicker::class)->task($taskId)['label'] ?? $taskId;
+        $task = $ticker->task($taskId);
 
-        return $this->status(_t('ADMIN_JOBS_TASK_QUEUED', ['task' => $label]));
+        return $this->status(_t('ADMIN_JOBS_TASK_QUEUED', [
+            'task' => $task['label'] ?? $taskId,
+            'next' => $this->getService(JobsOverview::class)->ago($task['nextDueAt'] ?? null) ?? '–',
+        ]));
     }
 
     /** A new secret for the `api` mode's route, written into the wiki's configuration and shown this once. */
