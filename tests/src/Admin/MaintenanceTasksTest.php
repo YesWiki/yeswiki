@@ -7,7 +7,6 @@ use Symfony\Component\Clock\MockClock;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 use Symfony\Component\Messenger\Stamp\TransportMessageIdStamp;
 use Symfony\Component\Scheduler\Generator\MessageContext;
-use Symfony\Component\Scheduler\Schedule;
 use YesWiki\Admin\Message\PurgeRevisions;
 use YesWiki\Admin\Message\PurgeRevisionsHandler;
 use YesWiki\Admin\Message\RunMaintenanceHooks;
@@ -25,7 +24,7 @@ use YesWiki\Kernel\Message\PruneJournalHandler;
 use YesWiki\Kernel\Queue\ProvidesSchedule;
 use YesWiki\Kernel\Queue\QueueConsumerMode;
 use YesWiki\Kernel\Queue\ScheduledTask;
-use YesWiki\Kernel\Queue\ScheduleGenerator;
+use YesWiki\Kernel\Queue\TaskHistory;
 use YesWiki\Kernel\Scheduler\KernelSchedule;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\HibernationService;
@@ -33,7 +32,6 @@ use YesWiki\Kernel\Service\Queue\QueueHandlerLocator;
 use YesWiki\Kernel\Service\Queue\QueueRecorder;
 use YesWiki\Kernel\Service\Queue\QueueScheduleTicker;
 use YesWiki\Kernel\Service\RuntimeConfig;
-use YesWiki\Test\Contact\InMemoryCheckpoint;
 use YesWiki\Test\Core\YesWikiTestCase;
 use YesWiki\Test\Kernel\QueueTestKit;
 
@@ -44,7 +42,7 @@ require_once 'tests/src/Contact/SendDigestTest.php';
 /**
  * Each step of the old housekeeping sweep is a scheduled task of its own (messenger / scheduler, spec section 8).
  *
- * The schedules are the wiki's own services, ticked through the real ScheduleGenerator; the
+ * The schedules are the wiki's own services, ticked by the kit's Scheduler; the
  * queue is the kit's; the revisions live in a throw-away SQLite file.
  */
 #[CoversClass(KernelSchedule::class)]
@@ -144,7 +142,7 @@ class MaintenanceTasksTest extends YesWikiTestCase
 
         $this->assertSame(['revisions', 'recovery-keys', 'activation-keys', 'bot-guard', 'extension-hooks'], $ran);
         $this->assertSame(1, $this->kit->statistics->pendingCount(), 'the journal step waits for its retry, nothing else does');
-        $statuses = array_column($this->kit->statistics->tasks(), 'lastStatus', 'taskId');
+        $statuses = array_map(static fn (TaskHistory $task): ?string => $task->lastStatus, $this->kit->history->all());
         $this->assertSame(QueueRecorder::RETRIED, $statuses['journal']);
         foreach (['revisions', 'recovery-keys', 'activation-keys', 'bot-guard', 'extension-hooks'] as $step) {
             $this->assertSame(QueueRecorder::HANDLED, $statuses[$step], $step);
@@ -212,28 +210,15 @@ class MaintenanceTasksTest extends YesWikiTestCase
     }
 
     /**
-     * One tick of the Scheduler over a schedule rebuilt each time, as the queue does: the ids of the tasks that come due.
+     * One tick of the kit's Scheduler over that provider, on that clock: the ids of the housekeeping tasks that come due.
      *
      * @return \Closure(): list<string>
      */
     private function ticker(ProvidesSchedule $provider, MockClock $clock): \Closure
     {
-        $checkpoint = new InMemoryCheckpoint();
+        $kit = $this->kit = new QueueTestKit(clock: $clock, schedule: $provider);
 
-        return static function () use ($provider, $clock, $checkpoint): array {
-            $schedule = (new Schedule())->processOnlyLastMissedRun(true);
-            foreach ($provider->recurringMessages() as $recurring) {
-                $schedule->add($recurring);
-            }
-            $ids = [];
-            foreach ((new ScheduleGenerator($schedule, 'test', $clock, $checkpoint))->getMessages() as $message) {
-                if ($message instanceof ScheduledTask && $message->taskId() !== 'queue-prune') {
-                    $ids[] = $message->taskId();
-                }
-            }
-
-            return $ids;
-        };
+        return static fn (): array => array_values(array_diff($kit->tick(), ['queue-prune']));
     }
 
     /**

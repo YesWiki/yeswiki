@@ -7,7 +7,7 @@ use YesWiki\Kernel\Queue\ScheduledTask;
 /** The smallest recurring task: a message the schedule can name, and nothing to do. */
 final class QueueTestTask implements ScheduledTask
 {
-    public function __construct(private string $id = 'test-task')
+    public function __construct(private string $id = 'test-task', private ?string $label = null)
     {
     }
 
@@ -18,6 +18,6 @@ final class QueueTestTask implements ScheduledTask
 
     public function label(): string
     {
-        return "Test task {$this->id}";
+        return $this->label ?? "Test task {$this->id}";
     }
 }

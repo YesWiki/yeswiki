@@ -112,21 +112,10 @@ class QueueRecorder
         $this->insertTask(QueueJournalEntry::TASK_DECLARED, $task->taskId(), LogLevel::INFO, ['label' => mb_substr($task->label(), 0, self::LABEL_LENGTH)]);
     }
 
-    /** The schedule has queued a run of that task, or one was asked for by hand; a null $nextDue keeps the one known. */
-    public function taskDispatched(ScheduledTask $task, int $everySeconds, ?\DateTimeImmutable $nextDue): void
+    /** The queue took a run of that task, or a waiting one absorbed it (QueueBus): the date its schedule counts from. */
+    public function taskDispatched(ScheduledTask $task): void
     {
-        $label = mb_substr($task->label(), 0, self::LABEL_LENGTH);
-        $fields = [
-            'label' => $label,
-            'every_seconds' => $everySeconds,
-            'last_dispatched_at' => $this->format($this->now()),
-        ];
-        if ($nextDue !== null) {
-            $fields['next_due_at'] = $this->format($nextDue->setTimezone(new \DateTimeZone('UTC')));
-        }
-
-        $this->tasks->update($task->taskId(), static fn (array $state): array => array_merge($state, $fields));
-        $this->insertTask(QueueJournalEntry::TASK_DISPATCHED, $task->taskId(), LogLevel::INFO, ['label' => $label]);
+        $this->insertTask(QueueJournalEntry::TASK_DISPATCHED, $task->taskId(), LogLevel::INFO, ['label' => mb_substr($task->label(), 0, self::LABEL_LENGTH)]);
     }
 
     /**

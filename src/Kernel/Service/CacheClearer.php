@@ -5,8 +5,8 @@ namespace YesWiki\Kernel\Service;
 use YesWiki\Files\Exception\StorageException;
 use YesWiki\Files\Service\RuntimeLock;
 use YesWiki\Files\Service\Storage;
-use YesWiki\Kernel\Service\Queue\QueueCheckpoint;
 use YesWiki\Kernel\Service\Queue\QueueConsumer;
+use YesWiki\Kernel\Service\Queue\QueueScheduleTicker;
 
 /** Empties the caches a code change can leave stale: the compiled container and the compiled templates. */
 class CacheClearer
@@ -20,7 +20,7 @@ class CacheClearer
     /** @var list<string> */
     public const ALL = [self::CONTAINER, self::TEMPLATES];
 
-    public const KEPT = ['.gitkeep', QueueConsumer::PASS_LOCK, QueueCheckpoint::LOCK];
+    public const KEPT = ['.gitkeep', QueueConsumer::PASS_LOCK, QueueScheduleTicker::LOCK];
 
     private ?Storage $storage;
 

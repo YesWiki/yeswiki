@@ -139,7 +139,7 @@ class JobsApiController extends YesWikiController
         if (!$this->getService(QueueScheduleTicker::class)->runNow($taskId)) {
             return $this->status(_t('ADMIN_JOBS_TASK_UNKNOWN'), 'warning');
         }
-        $label = $this->getService(QueueStatistics::class)->scheduledTask($taskId)['label'] ?? $taskId;
+        $label = $this->getService(QueueScheduleTicker::class)->task($taskId)['label'] ?? $taskId;
 
         return $this->status(_t('ADMIN_JOBS_TASK_QUEUED', ['task' => $label]));
     }

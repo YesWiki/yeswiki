@@ -10,7 +10,9 @@ use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\Stamp\DelayStamp;
 use Symfony\Component\Messenger\Stamp\TransportMessageIdStamp;
 use Symfony\Component\Process\Process;
+use Symfony\Component\Scheduler\RecurringMessage;
 use YesWiki\Files\Service\RuntimeLock;
+use YesWiki\Kernel\Queue\ProvidesSchedule;
 use YesWiki\Kernel\Queue\QueueConsumerMode;
 use YesWiki\Kernel\Service\ConfigurationService;
 use YesWiki\Kernel\Service\DbService;
@@ -28,6 +30,7 @@ use YesWiki\Test\Core\YesWikiTestCase;
 require_once 'tests/YesWikiTestCase.php';
 require_once 'tests/src/Kernel/QueueTestKit.php';
 require_once 'tests/src/Kernel/QueueTestMessage.php';
+require_once 'tests/src/Kernel/QueueTestTask.php';
 require_once 'tests/src/Kernel/QueueTestConsole.php';
 require_once 'tests/src/Kernel/QueueTestHolders.php';
 
@@ -52,6 +55,9 @@ class QueueRequestTriggerTest extends YesWikiTestCase
 
     /** What the test handler does after noting the message; null to just note it. */
     private ?\Closure $behaviour = null;
+
+    /** @var array<string, int> task id => interval in seconds: what the kit's schedule declares, read at each call */
+    private array $scheduled = [];
     /** @var list<string> */
     private array $handled = [];
     /** @var list<string> each step of the end of the request, in order: `finish` when the response is handed over, then each message handled */
@@ -70,7 +76,22 @@ class QueueRequestTriggerTest extends YesWikiTestCase
             if ($this->behaviour !== null) {
                 ($this->behaviour)($message);
             }
-        }], $this->clock);
+        }], $this->clock, schedule: new class(fn (): array => $this->scheduled) implements ProvidesSchedule {
+            /** @param \Closure(): array<string, int> $scheduled */
+            public function __construct(private \Closure $scheduled)
+            {
+            }
+
+            public function recurringMessages(): array
+            {
+                $recurring = [];
+                foreach (($this->scheduled)() as $id => $every) {
+                    $recurring[] = RecurringMessage::every($every, new QueueTestTask((string)$id));
+                }
+
+                return $recurring;
+            }
+        });
         $this->db = $this->kit->db;
         $this->schema = $this->kit->schema;
         $this->transport = $this->kit->transport;
@@ -494,13 +515,11 @@ class QueueRequestTriggerTest extends YesWikiTestCase
         return $this->clock->now()->setTimezone(new \DateTimeZone('UTC'))->modify($relative)->format('Y-m-d H:i:s');
     }
 
-    /** The schedule ticked now, and is next due in $seconds. */
+    /** The schedule's one task was dispatched now, and is next due in $seconds. */
     private function scheduleDueIn(int $seconds): void
     {
-        $checkpoint = $this->kit->checkpoint;
-        $now = $this->clock->now();
-        $this->assertTrue($checkpoint->acquire($now));
-        $checkpoint->release($now, $now->modify("+{$seconds} seconds"));
+        $this->scheduled = ['test-task' => $seconds];
+        $this->kit->recorder->taskDispatched(new QueueTestTask());
     }
 
     /** Everything the Journal wrote, as its JSON lines. */

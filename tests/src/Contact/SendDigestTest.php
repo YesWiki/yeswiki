@@ -14,10 +14,8 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\Stamp\RedeliveryStamp;
 use Symfony\Component\Messenger\Stamp\TransportMessageIdStamp;
-use Symfony\Component\Scheduler\Generator\CheckpointInterface;
 use Symfony\Component\Scheduler\Generator\MessageContext;
 use Symfony\Component\Scheduler\RecurringMessage;
-use Symfony\Component\Scheduler\Schedule;
 use YesWiki\Contact\Command\ContactDigestCommand;
 use YesWiki\Contact\Message\SendDigest;
 use YesWiki\Contact\Message\SendDigestHandler;
@@ -28,8 +26,6 @@ use YesWiki\Kernel\Queue\ProvidesSchedule;
 use YesWiki\Kernel\Queue\QueueConsumerMode;
 use YesWiki\Kernel\Queue\QueueRetryStrategy;
 use YesWiki\Kernel\Queue\RetryPolicy;
-use YesWiki\Kernel\Queue\ScheduledTask;
-use YesWiki\Kernel\Queue\ScheduleGenerator;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\EventDispatcher;
 use YesWiki\Kernel\Service\HibernationService;
@@ -47,7 +43,7 @@ require_once 'tests/src/Kernel/QueueTestTask.php';
 /**
  * The mailing-list digests are scheduled tasks, one per period, on a cron in the wiki's own timezone (messenger / scheduler, spec 9.3).
  *
- * The queue is the kit's, the checkpoint is kept in memory, and the subscriptions are the wiki's
+ * The queue and the Scheduler are the kit's, and the subscriptions are the wiki's
  * own service with its sending replaced by what each test needs. NOW is a Friday, two days
  * before Paris leaves summer time.
  */
@@ -113,7 +109,7 @@ class SendDigestTest extends YesWikiTestCase
      */
     public function testTheDigestsKeepTheirHourDayAfterDay(): void
     {
-        $tick = $this->ticker($this->withHousekeeping($this->schedule()), new InMemoryCheckpoint());
+        $tick = $this->ticker($this->withHousekeeping($this->schedule()));
         $paris = new \DateTimeZone('Europe/Paris');
         $sent = [];
 
@@ -139,7 +135,7 @@ class SendDigestTest extends YesWikiTestCase
     /** What the user asked for: a digest sent by hand neither moves the scheduled one nor stops it. */
     public function testADigestSentByHandDoesNotMoveTheScheduledOne(): void
     {
-        $tick = $this->ticker($this->schedule(), new InMemoryCheckpoint());
+        $tick = $this->ticker($this->schedule());
         $tick();
         $this->assertSame(Command::SUCCESS, $this->runCommand($this->subscriptions(send: static fn (): int => 2), ['--period' => 'day'])->getStatusCode());
 
@@ -336,28 +332,15 @@ class SendDigestTest extends YesWikiTestCase
     }
 
     /**
-     * One tick of the Scheduler over a schedule rebuilt from the provider each time, as the queue does: the ids of the tasks that come due.
+     * One tick of the kit's Scheduler over that provider, on the test's clock: the ids of the tasks that come due.
      *
      * @return \Closure(): list<string>
      */
-    private function ticker(ProvidesSchedule $provider, InMemoryCheckpoint $checkpoint): \Closure
+    private function ticker(ProvidesSchedule $provider): \Closure
     {
-        $clock = $this->clock;
+        $this->kit = new QueueTestKit(clock: $this->clock, schedule: $provider);
 
-        return static function () use ($provider, $clock, $checkpoint): array {
-            $schedule = (new Schedule())->processOnlyLastMissedRun(true);
-            foreach ($provider->recurringMessages() as $recurring) {
-                $schedule->add($recurring);
-            }
-            $ids = [];
-            foreach ((new ScheduleGenerator($schedule, 'test', $clock, $checkpoint))->getMessages() as $message) {
-                if ($message instanceof ScheduledTask) {
-                    $ids[] = $message->taskId();
-                }
-            }
-
-            return $ids;
-        };
+        return $this->kit->tick(...);
     }
 
     /** The digests beside a task that ticks every half hour, as the wiki's housekeeping does. */
@@ -442,48 +425,6 @@ class SendDigestTest extends YesWikiTestCase
         }
 
         return $plan;
-    }
-}
-
-/** The Scheduler's checkpoint, kept in memory: what the database one holds between ticks, without the database. */
-final class InMemoryCheckpoint implements CheckpointInterface
-{
-    private ?\DateTimeImmutable $from = null;
-    private \DateTimeImmutable $time;
-    private int $index = -1;
-
-    public function acquire(\DateTimeImmutable $now): bool
-    {
-        if ($this->from === null) {
-            $this->from = $this->time = $now;
-        }
-
-        return true;
-    }
-
-    public function from(): \DateTimeImmutable
-    {
-        return $this->from ?? throw new \LogicException('The checkpoint was never acquired.');
-    }
-
-    public function time(): \DateTimeImmutable
-    {
-        return $this->time;
-    }
-
-    public function index(): int
-    {
-        return $this->index;
-    }
-
-    public function save(\DateTimeImmutable $time, int $index): void
-    {
-        $this->time = $time;
-        $this->index = $index;
-    }
-
-    public function release(\DateTimeImmutable $now, ?\DateTimeImmutable $nextTime): void
-    {
     }
 }
 

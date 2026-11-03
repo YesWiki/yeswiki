@@ -171,7 +171,7 @@ class MaintenanceEventsTest extends YesWikiTestCase
 
         try {
             $this->kit = new QueueTestKit();
-            $handler = new RunMaintenanceHooksHandler($dispatcher, $this->journal(), $this->kit->statistics);
+            $handler = new RunMaintenanceHooksHandler($dispatcher, $this->journal(), $this->kit->history);
             $handler(new RunMaintenanceHooks());
         } finally {
             $dispatcher->removeListener('maintenance.before', $listener);
@@ -189,7 +189,7 @@ class MaintenanceEventsTest extends YesWikiTestCase
     {
         $this->kit ??= new QueueTestKit();
 
-        return new RunMaintenanceHooksHandler($dispatcher, $journal, $this->kit->statistics);
+        return new RunMaintenanceHooksHandler($dispatcher, $journal, $this->kit->history);
     }
 
     private function journal(): ErrorsJournal

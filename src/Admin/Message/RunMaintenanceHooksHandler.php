@@ -7,7 +7,7 @@ use YesWiki\Kernel\Entity\Event;
 use YesWiki\Kernel\Scheduler\KernelSchedule;
 use YesWiki\Kernel\Service\EventDispatcher;
 use YesWiki\Kernel\Service\Journal;
-use YesWiki\Kernel\Service\Queue\QueueStatistics;
+use YesWiki\Kernel\Service\Queue\ScheduleHistory;
 
 /**
  * Dispatches `maintenance.before` then `maintenance.after`, one listener at a time: each failure is journaled (`maintenance.hook_failed`)
@@ -23,7 +23,7 @@ final class RunMaintenanceHooksHandler
     public function __construct(
         private readonly EventDispatcher $dispatcher,
         private readonly Journal $journal,
-        private readonly QueueStatistics $statistics,
+        private readonly ScheduleHistory $history,
     ) {
     }
 
@@ -70,6 +70,6 @@ final class RunMaintenanceHooksHandler
     /** When the task last finished, as a Unix time. */
     private function previousRun(RunMaintenanceHooks $task): ?int
     {
-        return ($this->statistics->scheduledTask($task->taskId())['lastFinishedAt'] ?? null)?->getTimestamp();
+        return $this->history->of($task->taskId())?->lastFinishedAt?->getTimestamp();
     }
 }

@@ -14,7 +14,6 @@ use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Messenger\Stamp\RedeliveryStamp;
 use Symfony\Component\Messenger\Stamp\TransportMessageIdStamp;
 use Symfony\Component\Scheduler\Generator\MessageContext;
-use Symfony\Component\Scheduler\Schedule;
 use YesWiki\Core\ApiResponse;
 use YesWiki\Files\Service\Storage;
 use YesWiki\Import\Api\ImportApiController;
@@ -28,13 +27,11 @@ use YesWiki\Kernel\Queue\QueueConsumerMode;
 use YesWiki\Kernel\Queue\QueueRetryStrategy;
 use YesWiki\Kernel\Queue\RetryPolicy;
 use YesWiki\Kernel\Queue\ScheduledTask;
-use YesWiki\Kernel\Queue\ScheduleGenerator;
 use YesWiki\Kernel\Service\CurrentRequest;
 use YesWiki\Kernel\Service\EventDispatcher;
 use YesWiki\Kernel\Service\Journal;
 use YesWiki\Kernel\Service\Queue\QueueHandlerLocator;
 use YesWiki\Kernel\Service\Queue\QueueScheduleTicker;
-use YesWiki\Test\Contact\InMemoryCheckpoint;
 use YesWiki\Test\Core\YesWikiTestCase;
 use YesWiki\Test\Kernel\QueueTestKit;
 
@@ -107,22 +104,26 @@ class SyncDataSourceTest extends YesWikiTestCase
         $this->assertSame(604800, $plan['sync-weekly']['every']);
     }
 
-    /** No state of its own: a source counts its interval from the start of the schedule, whatever its log says. */
-    public function testASourceSyncsEveryIntervalFromTheStartOfTheSchedule(): void
+    /** No state of its own: a source counts its interval from its last dispatch, or from when the Scheduler first saw it, whatever its log says. */
+    public function testASourceSyncsEveryIntervalFromItsLastDispatch(): void
     {
         $this->storage->storeDerived('cache/importer/once_a_day.log', 'done');
         $this->touchLog('once_a_day', '-23 hours');
         $tick = $this->ticker($this->schedule(self::SOURCES));
 
-        $this->assertSame([], $tick(), 'the tick that starts the Scheduler runs nothing');
+        $this->assertSame([], $tick(), 'the tick that first sees them runs nothing');
         $this->clock->sleep(29 * 60);
         $this->assertSame([], $tick(), 'neither source before its first interval');
+        $this->clock->sleep(2 * 60);
+        $this->assertSame(['sync-every_time'], $tick(), 'half an hour after it was first seen');
+        $this->clock->sleep(29 * 60);
+        $this->assertSame([], $tick(), 'half an hour from its dispatch, not from the start');
         $this->clock->sleep(60);
-        $this->assertSame(['sync-every_time'], $tick(), 'half an hour after the start');
-        $this->clock->sleep(23 * 3600);
-        $this->assertSame(['sync-every_time'], $tick(), 'synced 23 hours before the start, the once-a-day source still waits a day from the start');
+        $this->assertSame(['sync-every_time'], $tick());
+        $this->clock->sleep(22 * 3600 + 29 * 60);
+        $this->assertSame(['sync-every_time'], $tick(), 'synced 23 hours before it was first seen, the once-a-day source still waits a day from then');
         $this->clock->sleep(30 * 60);
-        $this->assertSame(['sync-every_time', 'sync-once_a_day'], $tick(), 'a day after the start');
+        $this->assertSame(['sync-every_time', 'sync-once_a_day'], $tick(), 'a day after it was first seen');
     }
 
     /** As for the digests: a sync run by hand (the button, `importer:sync`, `{{sync}}`, the API) moves nothing. */
@@ -453,29 +454,15 @@ class SyncDataSourceTest extends YesWikiTestCase
     }
 
     /**
-     * One tick of the Scheduler over a schedule rebuilt from the provider each time, as the queue does: the ids of the tasks that come due.
+     * One tick of the kit's Scheduler over that provider, on the test's clock: the ids of the tasks that come due.
      *
      * @return \Closure(): list<string>
      */
     private function ticker(ProvidesSchedule $provider): \Closure
     {
-        $clock = $this->clock;
-        $checkpoint = new InMemoryCheckpoint();
+        $this->kit = new QueueTestKit(clock: $this->clock, schedule: $provider);
 
-        return static function () use ($provider, $clock, $checkpoint): array {
-            $schedule = (new Schedule())->processOnlyLastMissedRun(true);
-            foreach ($provider->recurringMessages() as $recurring) {
-                $schedule->add($recurring);
-            }
-            $ids = [];
-            foreach ((new ScheduleGenerator($schedule, 'test', $clock, $checkpoint))->getMessages() as $message) {
-                if ($message instanceof ScheduledTask) {
-                    $ids[] = $message->taskId();
-                }
-            }
-
-            return $ids;
-        };
+        return $this->kit->tick(...);
     }
 
     /**

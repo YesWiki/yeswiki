@@ -6,25 +6,31 @@ use PHPUnit\Framework\Attributes\CoversClass;
 use Symfony\Component\Clock\MockClock;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 use Symfony\Component\Messenger\Envelope;
+use Symfony\Component\Scheduler\RecurringMessage;
 use YesWiki\Files\Service\RuntimeLock;
+use YesWiki\Kernel\Queue\ProvidesSchedule;
 use YesWiki\Kernel\Queue\QueueConsumerMode;
 use YesWiki\Kernel\Queue\QueuePassOrigin;
 use YesWiki\Kernel\Service\ConfigurationService;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Kernel\Service\JournalSchema;
-use YesWiki\Kernel\Service\Queue\QueueCheckpoint;
+use YesWiki\Kernel\Service\Queue\QueueBus;
 use YesWiki\Kernel\Service\Queue\QueueFallback;
+use YesWiki\Kernel\Service\Queue\QueueRecorder;
+use YesWiki\Kernel\Service\Queue\QueueScheduleTicker;
 use YesWiki\Kernel\Service\Queue\QueueSchema;
 use YesWiki\Kernel\Service\Queue\QueueSettings;
 use YesWiki\Kernel\Service\Queue\QueueStatistics;
 use YesWiki\Kernel\Service\Queue\QueueTaskRows;
 use YesWiki\Kernel\Service\Queue\QueueTransport;
+use YesWiki\Kernel\Service\Queue\ScheduleHistory;
 use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';
 require_once 'tests/src/Kernel/QueueTestKit.php';
 require_once 'tests/src/Kernel/QueueTestMessage.php';
+require_once 'tests/src/Kernel/QueueTestTask.php';
 
 /** When the end of requests has to consume for the consumer the admin chose, because that consumer is no longer seen at work. */
 #[CoversClass(QueueFallback::class)]
@@ -45,6 +51,7 @@ class QueueFallbackTest extends YesWikiTestCase
     private QueueSchema $schema;
     private QueueTransport $transport;
     private QueueStatistics $statistics;
+    private JournalSchema $journal;
     private RuntimeLock $locks;
 
     protected function setUp(): void
@@ -60,7 +67,7 @@ class QueueFallbackTest extends YesWikiTestCase
         ]));
         $this->schema = new QueueSchema($this->db);
         $this->schema->create();
-        $journal = new JournalSchema($this->db);
+        $this->journal = $journal = new JournalSchema($this->db);
         $journal->create();
         $this->transport = new QueueTransport($this->db, $this->schema, clock: $this->clock);
         $this->statistics = new QueueStatistics($this->db, $this->schema, $journal, $this->transport, new QueueTaskRows($this->db, $this->schema, $this->clock), $this->clock);
@@ -318,17 +325,29 @@ class QueueFallbackTest extends YesWikiTestCase
         return new QueueFallback(
             new QueueSettings(new ParameterBag([]), static fn (): array => []),
             $this->statistics,
-            $this->checkpoint(),
+            $this->ticker(),
             new HibernationService(new ParameterBag([])),
             $this->locks,
             $this->clock,
         );
     }
 
-    /** The Scheduler's checkpoint over this test's triples. */
-    private function checkpoint(): QueueCheckpoint
+    /** The Scheduler over this test's Journal, its one task due a day after its last dispatch. */
+    private function ticker(): QueueScheduleTicker
     {
-        return new QueueCheckpoint(QueueTestKit::tripleStore($this->db), $this->locks);
+        $daily = new class implements ProvidesSchedule {
+            public function recurringMessages(): array
+            {
+                return [RecurringMessage::every(86400, new QueueTestTask())];
+            }
+        };
+
+        return new QueueScheduleTicker([$daily], $this->createStub(QueueBus::class), new ScheduleHistory($this->db, $this->journal), $this->recorder($this->clock), $this->locks, $this->clock, new HibernationService(new ParameterBag([])));
+    }
+
+    private function recorder(MockClock $clock): QueueRecorder
+    {
+        return new QueueRecorder($this->db, new QueueTaskRows($this->db, $this->schema, $clock), $this->journal, $clock);
     }
 
     /** A message available since $seconds ago. */
@@ -339,13 +358,10 @@ class QueueFallbackTest extends YesWikiTestCase
         $this->clock->modify("+{$seconds} seconds");
     }
 
-    /** The schedule ticked long ago, and has been due for $seconds. */
+    /** The task was dispatched long ago, and has been due for $seconds. */
     private function scheduleDueSince(int $seconds): void
     {
-        $checkpoint = $this->checkpoint();
-        $now = $this->clock->now();
-        $this->assertTrue($checkpoint->acquire($now->modify('-1 day')));
-        $checkpoint->release($now->modify('-1 day'), $now->modify("-{$seconds} seconds"));
+        $this->recorder(new MockClock($this->at("-{$seconds} seconds -1 day"), 'UTC'))->taskDispatched(new QueueTestTask());
     }
 
     private function pass(

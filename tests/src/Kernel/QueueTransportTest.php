@@ -648,7 +648,7 @@ class QueueTransportTest extends YesWikiTestCase
         try {
             $transport = new QueueTransport($db, $schema, clock: $this->clock);
             $statistics = new QueueStatistics($db, $schema, $journal, $transport, new QueueTaskRows($db, $schema, $this->clock), $this->clock);
-            (new QueueRecorder($db, new QueueTaskRows($db, $schema, $this->clock), $journal, $this->clock))->taskDispatched(new QueueTestTask(), 1800, $this->clock->now()->modify('+30 minutes'));
+            (new QueueRecorder($db, new QueueTaskRows($db, $schema, $this->clock), $journal, $this->clock))->taskFinished('test-task', QueueRecorder::HANDLED, null);
             $rows = array_map(
                 static fn (array $row): int => (int)$row['id'],
                 $db->loadAll("SELECT id FROM {$schema->table()} WHERE queue_name = ? ORDER BY id", [QueueSchema::SCHEDULE_QUEUE])

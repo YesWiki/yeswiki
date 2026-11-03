@@ -464,31 +464,28 @@ class QueueRecorderTest extends YesWikiTestCase
     }
 
     /**
-     * A task's row keeps its failures counted run after run, and its next due time when a run asked for by hand does not know it.
+     * A task's row keeps its failures counted run after run; its dispatches are the Journal's alone (ScheduleHistory).
      *
      * @param array<string, string|bool> $params
      */
     #[DataProvider('servers')]
-    public function testTaskStateKeepsItsCountsAndDueTime(array $params): void
+    public function testTaskStateKeepsItsCounts(array $params): void
     {
         $this->on($params);
         $task = new QueueTestTask('digest');
 
-        $this->recorder->taskDispatched($task, 1800, new \DateTimeImmutable('2026-10-23 14:30:00', new \DateTimeZone('Europe/Paris')));
+        $this->recorder->taskDispatched($task);
         $this->recorder->taskFinished('digest', QueueRecorder::FAILED, 'boom');
         $this->assertSame([1, 'failed', 'boom'], $this->taskSummary('digest'));
         $this->clock->sleep(60);
-        $this->recorder->taskDispatched($task, 1800, null);
+        $this->recorder->taskDispatched($task);
         $this->recorder->taskFinished('digest', QueueRecorder::FAILED, 'boom again');
         $this->assertSame([2, 'failed', 'boom again'], $this->taskSummary('digest'));
         $this->recorder->taskFinished('digest', QueueRecorder::HANDLED, null);
         $this->assertSame([0, 'handled', null], $this->taskSummary('digest'));
 
         [$state] = $this->statistics->tasks();
-        $this->assertSame('Test task digest', $state['label']);
-        $this->assertSame(1800, $state['everySeconds']);
-        $this->assertSame('2026-10-23 12:01:00', $state['lastDispatchedAt']?->format('Y-m-d H:i:s'));
-        $this->assertSame('2026-10-23 12:30:00', $state['nextDueAt']?->format('Y-m-d H:i:s'), 'kept, in UTC, when the dispatch did not know it');
+        $this->assertNull($state['lastDispatchedAt'], 'a dispatch is no longer written on the row');
         $this->assertSame('2026-10-23 12:01:00', $state['lastFinishedAt']?->format('Y-m-d H:i:s'));
         $this->assertSame(['digest'], $this->recorder->taskIds());
 
@@ -511,7 +508,7 @@ class QueueRecorderTest extends YesWikiTestCase
         $table = $this->journal->table();
 
         $this->recorder->taskDeclared($task);
-        $this->recorder->taskDispatched($task, 1800, null);
+        $this->recorder->taskDispatched($task);
         $this->recorder->taskFinished('digest', QueueRecorder::RETRIED, 'again');
         $this->recorder->taskFinished('digest', QueueRecorder::FAILED, 'boom');
         $this->recorder->taskFinished('digest', QueueRecorder::HANDLED, null);

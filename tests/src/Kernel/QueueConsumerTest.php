@@ -30,7 +30,6 @@ use YesWiki\Kernel\Service\JournalSchema;
 use YesWiki\Kernel\Service\Queue\QueueBudgetContext;
 use YesWiki\Kernel\Service\Queue\QueueBudgetFactory;
 use YesWiki\Kernel\Service\Queue\QueueBus;
-use YesWiki\Kernel\Service\Queue\QueueCheckpoint;
 use YesWiki\Kernel\Service\Queue\QueueConsumer;
 use YesWiki\Kernel\Service\Queue\QueueHandlerLocator;
 use YesWiki\Kernel\Service\Queue\QueueRecorder;
@@ -39,6 +38,7 @@ use YesWiki\Kernel\Service\Queue\QueueSchema;
 use YesWiki\Kernel\Service\Queue\QueueStatistics;
 use YesWiki\Kernel\Service\Queue\QueueTaskRows;
 use YesWiki\Kernel\Service\Queue\QueueTransport;
+use YesWiki\Kernel\Service\Queue\ScheduleHistory;
 use YesWiki\Kernel\Service\ThrowableFormatter;
 use YesWiki\Test\Core\YesWikiTestCase;
 
@@ -88,7 +88,7 @@ class QueueConsumerTest extends YesWikiTestCase
     private ClockInterface $clock;
     private QueueTransport $transport;
     private QueueStatistics $statistics;
-    private QueueCheckpoint $checkpoint;
+    private ScheduleHistory $history;
     private QueueConsumer $consumer;
 
     protected function setUp(): void
@@ -744,16 +744,17 @@ class QueueConsumerTest extends YesWikiTestCase
     {
         $this->build($this->db, new MockClock(self::START, 'UTC'), static fn (): array => [RecurringMessage::every('30 minutes', new QueueTestTask())]);
         $this->consumer->drain(QueueConsumerMode::Api, $this->seconds(30), false);
-        $this->assertNull($this->checkpoint->dueAt(), 'not ticked');
+        $this->assertSame([], $this->history->all(), 'not ticked');
 
         $this->consumer->drain(QueueConsumerMode::Api, $this->seconds(30));
-        $this->assertNotNull($this->checkpoint->dueAt(), 'ticked: the schedule has started');
+        $this->assertSame(['test-task'], array_keys($this->history->all()), 'ticked: the task was noted');
     }
 
     public function testATickThatFailsDoesNotStopThePass(): void
     {
-        // A checkpoint that cannot be read, its triples gone: no tick gets anywhere.
-        $this->db->query('DROP TABLE ' . $this->db->quoteIdentifier(trim($this->db->prefixTable('triples'))));
+        // The Journal's table out of the Scheduler's reach (none under that prefix): no tick gets anywhere, though the pass writes its rows.
+        $elsewhere = new DbService(new ParameterBag(['db_driver' => 'sqlite', 'db_database' => $this->file, 'table_prefix' => 'ywgone_', 'debug' => false]));
+        $this->build($this->db, $this->clock, static fn (): array => [RecurringMessage::every('30 minutes', new QueueTestTask())], new ScheduleHistory($elsewhere, new JournalSchema($elsewhere)));
         $this->send(2);
 
         $report = $this->consumer->drain(QueueConsumerMode::Api, $this->seconds(30));
@@ -967,8 +968,9 @@ class QueueConsumerTest extends YesWikiTestCase
     /** (Re)builds the consumer and what it stands on over $db, on that clock. */
     /**
      * @param (\Closure(): list<RecurringMessage>)|null $schedule what the schedule declares; nothing by default
+     * @param ScheduleHistory|null                      $history  where the Scheduler reads the tasks' history (default: that database's Journal)
      */
-    private function build(DbService $db, ClockInterface $clock, ?\Closure $schedule = null): void
+    private function build(DbService $db, ClockInterface $clock, ?\Closure $schedule = null, ?ScheduleHistory $history = null): void
     {
         $this->clock = $clock;
         $schema = new QueueSchema($db);
@@ -993,8 +995,9 @@ class QueueConsumerTest extends YesWikiTestCase
             new ServiceLocator(['handler' => static fn (): \Closure => $handler])
         );
 
-        $bus = new QueueBus($this->transport, $locator, $journal, QueueTestKit::noRequest());
         $recorder = new QueueRecorder($db, new QueueTaskRows($db, $schema, $clock), new JournalSchema($db), $clock);
+        $bus = new QueueBus($this->transport, $locator, $journal, $recorder, QueueTestKit::noRequest());
+        $this->history = $history ?? new ScheduleHistory($db, new JournalSchema($db));
         $provider = new class($schedule ?? static fn (): array => []) implements ProvidesSchedule {
             /** @param \Closure(): list<RecurringMessage> $schedule */
             public function __construct(private \Closure $schedule)
@@ -1024,7 +1027,7 @@ class QueueConsumerTest extends YesWikiTestCase
             new HibernationService($this->params),
             new RuntimeLock(),
             $journal,
-            new QueueScheduleTicker([$provider], $bus, $this->checkpoint = new QueueCheckpoint(QueueTestKit::tripleStore($db, new HibernationService($this->params)), new RuntimeLock()), $recorder, $clock, new HibernationService($this->params), $journal),
+            new QueueScheduleTicker([$provider], $bus, $this->history, $recorder, new RuntimeLock(), $clock, new HibernationService($this->params), $journal),
             $clock,
             $watch,
             fn (): EventDispatcher => $this->events,

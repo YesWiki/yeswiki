@@ -77,8 +77,7 @@ class QueueHealthChecks implements ProvidesHealthChecks
             }
         });
         $failedGroups = $once($this->statistics->failedGroups(...));
-        $tasks = $once($this->statistics->tasks(...));
-        $declaredIds = $once(fn (): array => $this->ticker->declaredTaskIds());
+        $tasks = $once($this->ticker->tasks(...));
         $stalled = $once($this->stalled(...));
         $onceMigrated = static fn (callable $run): callable => static fn (): ?string => $tables() === null ? $run() : null;
         $check = static fn (string $id, string $key): HealthCheck => HealthCheck::named($id)
@@ -92,8 +91,8 @@ class QueueHealthChecks implements ProvidesHealthChecks
             $check('queue-stalled', 'QUEUE_HEALTH_STALLED')->runs($onceMigrated($stalled)),
             $check('queue-failed', 'QUEUE_HEALTH_FAILED')->runs($onceMigrated(fn (): ?string => $this->failed($failedGroups()))),
             $check('queue-killed', 'QUEUE_HEALTH_KILLED')->runs($onceMigrated(fn (): ?string => $this->killed($failedGroups()))),
-            $check('queue-task-overdue', 'QUEUE_HEALTH_TASK_OVERDUE')->runs($onceMigrated(fn (): ?string => $this->taskOverdue($tasks(), $declaredIds))),
-            $check('queue-task-failing', 'QUEUE_HEALTH_TASK_FAILING')->runs($onceMigrated(fn (): ?string => $this->taskFailing($tasks(), $declaredIds))),
+            $check('queue-task-overdue', 'QUEUE_HEALTH_TASK_OVERDUE')->runs($onceMigrated(fn (): ?string => $this->taskOverdue($tasks()))),
+            $check('queue-task-failing', 'QUEUE_HEALTH_TASK_FAILING')->runs($onceMigrated(fn (): ?string => $this->taskFailing($tasks()))),
             $check('queue-backlog', 'QUEUE_HEALTH_BACKLOG')->degraded()->runs($onceMigrated(fn (): ?string => $this->backlog($stalled() !== null))),
             $check('queue-consumer-restarts', 'QUEUE_HEALTH_RESTARTS')->runs($onceMigrated($this->consumerRestarts(...))),
             $check('queue-consumer-memory', 'QUEUE_HEALTH_MEMORY')->degraded()->runs($onceMigrated($this->consumerMemory(...))),
@@ -235,32 +234,14 @@ class QueueHealthChecks implements ProvidesHealthChecks
     }
 
     /**
-     * The tasks the schedule still declares: a row left by a task that is gone would be late or failing for ever.
-     *
-     * @template T of array{taskId: string}
-     *
-     * @param list<T>      $tasks
-     * @param list<string> $declaredIds
-     *
-     * @return list<T>
-     */
-    public static function onlyDeclared(array $tasks, array $declaredIds): array
-    {
-        $declared = array_flip($declaredIds);
-
-        return array_values(array_filter($tasks, static fn (array $task): bool => isset($declared[$task['taskId']])));
-    }
-
-    /**
      * @param list<array{taskId: string, label: string, everySeconds: int, nextDueAt: ?\DateTimeImmutable}> $tasks
-     * @param \Closure(): list<string>                                                                      $declaredIds
      */
-    private function taskOverdue(array $tasks, \Closure $declaredIds): ?string
+    private function taskOverdue(array $tasks): ?string
     {
         $mode = $this->settings->mode();
         $now = $this->clock->now()->getTimestamp();
         $late = array_values(array_filter($tasks, static fn (array $task): bool => self::isOverdue($task, $mode, $now)));
-        if ($late === [] || ($late = self::onlyDeclared($late, $declaredIds())) === [] || $this->hibernation->isWikiHibernatedNow()) {
+        if ($late === [] || $this->hibernation->isWikiHibernatedNow()) {
             return null;
         }
 
@@ -278,14 +259,10 @@ class QueueHealthChecks implements ProvidesHealthChecks
 
     /**
      * @param list<array{taskId: string, label: string, consecutiveFailures: int, lastError: ?string}> $tasks
-     * @param \Closure(): list<string>                                                                 $declaredIds
      */
-    private function taskFailing(array $tasks, \Closure $declaredIds): ?string
+    private function taskFailing(array $tasks): ?string
     {
         $failing = array_values(array_filter($tasks, static fn (array $task): bool => $task['consecutiveFailures'] >= self::TASK_FAILURES));
-        if ($failing !== []) {
-            $failing = self::onlyDeclared($failing, $declaredIds());
-        }
 
         return $failing === [] ? null : implode(' ; ', array_map(static fn (array $task): string => _t('QUEUE_HEALTH_TASK_FAILING_ITEM', [
             'task' => $task['label'],

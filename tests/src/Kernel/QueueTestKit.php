@@ -16,6 +16,7 @@ use YesWiki\Kernel\Queue\QueueBudget;
 use YesWiki\Kernel\Queue\QueueConsumerMode;
 use YesWiki\Kernel\Queue\QueuePassOrigin;
 use YesWiki\Kernel\Queue\QueuePassReport;
+use YesWiki\Kernel\Queue\ScheduledTask;
 use YesWiki\Kernel\Service\ConfigurationService;
 use YesWiki\Kernel\Service\ConfigurationWatch;
 use YesWiki\Kernel\Service\ConsoleService;
@@ -28,7 +29,6 @@ use YesWiki\Kernel\Service\JournalSchema;
 use YesWiki\Kernel\Service\Queue\QueueBudgetContext;
 use YesWiki\Kernel\Service\Queue\QueueBudgetFactory;
 use YesWiki\Kernel\Service\Queue\QueueBus;
-use YesWiki\Kernel\Service\Queue\QueueCheckpoint;
 use YesWiki\Kernel\Service\Queue\QueueConsumer;
 use YesWiki\Kernel\Service\Queue\QueueFallback;
 use YesWiki\Kernel\Service\Queue\QueueHandlerLocator;
@@ -41,6 +41,7 @@ use YesWiki\Kernel\Service\Queue\QueueSettings;
 use YesWiki\Kernel\Service\Queue\QueueStatistics;
 use YesWiki\Kernel\Service\Queue\QueueTaskRows;
 use YesWiki\Kernel\Service\Queue\QueueTransport;
+use YesWiki\Kernel\Service\Queue\ScheduleHistory;
 use YesWiki\Kernel\Service\ThrowableFormatter;
 use YesWiki\Kernel\Service\TripleStore;
 
@@ -68,8 +69,8 @@ final class QueueTestKit
     public readonly QueueBudgetFactory $budgets;
     public readonly QueueBudgetContext $budgetContext;
     private readonly HibernationService $hibernation;
-    /** The Scheduler's checkpoint, in this kit's triples. */
-    public readonly QueueCheckpoint $checkpoint;
+    /** What the Journal says of each scheduled task, which the Scheduler reads. */
+    public readonly ScheduleHistory $history;
     /** The end of the request the bus pins a message to (RunsUnbudgeted): the last one requestTrigger() built. */
     private ?QueueRequestTrigger $trigger = null;
     /** @var resource|null */
@@ -155,13 +156,15 @@ final class QueueTestKit
             $map[$type] = ["handler:{$type}"];
             $services["handler:{$type}"] = static fn (): \Closure => $handler;
         }
+        $this->recorder = $recorder = new QueueRecorder($db, $tasks, new JournalSchema($db), $clock);
         $this->bus = $bus = new QueueBus(
             $this->transport,
             new QueueHandlerLocator($map, new ServiceLocator($services)),
             $journal,
+            $recorder,
             fn (): QueueRequestTrigger => $this->trigger ?? $this->requestTrigger(new QueueSettings(new ParameterBag([]), static fn (): array => [])),
         );
-        $this->recorder = $recorder = new QueueRecorder($db, $tasks, new JournalSchema($db), $clock);
+        $this->history = new ScheduleHistory($db, new JournalSchema($db));
         $this->locks = $locks = self::locksIn($this->lockDir);
         $schedule ??= new class implements ProvidesSchedule {
             public function recurringMessages(): array
@@ -177,7 +180,6 @@ final class QueueTestKit
         $this->budgets = $budgets ??= new QueueBudgetFactory(new NativeClock());
         $this->budgetContext = new QueueBudgetContext();
         $this->hibernation = $hibernation ??= new HibernationService(new ParameterBag(['wiki_status' => 'running']));
-        $this->checkpoint = new QueueCheckpoint(self::tripleStore($db, $hibernation), $locks);
         $this->consumer = new QueueConsumer(
             $this->transport,
             $bus,
@@ -188,7 +190,7 @@ final class QueueTestKit
             $hibernation,
             $locks,
             $journal,
-            $this->ticker = new QueueScheduleTicker([$schedule], $bus, $this->checkpoint, $recorder, $clock, $hibernation, $journal),
+            $this->ticker = new QueueScheduleTicker([$schedule], $bus, $this->history, $recorder, $locks, $clock, $hibernation, $journal),
             $clock,
             $watch,
             $events ?? static fn (): EventDispatcher => new EventDispatcher(new ServiceLocator([]), new ThrowableFormatter()),
@@ -334,7 +336,7 @@ final class QueueTestKit
     /** Whether the end of requests consumes for the consumer those settings choose, over this kit's tables and locks. */
     public function fallback(QueueSettings $settings, ?HibernationService $hibernation = null): QueueFallback
     {
-        return new QueueFallback($settings, $this->statistics, $this->checkpoint, $hibernation ?? $this->hibernation, $this->locks, $this->clock);
+        return new QueueFallback($settings, $this->statistics, $this->ticker, $hibernation ?? $this->hibernation, $this->locks, $this->clock);
     }
 
     /**
@@ -350,7 +352,7 @@ final class QueueTestKit
             $this->consumer,
             $this->budgets,
             $this->statistics,
-            $this->checkpoint,
+            $this->ticker,
             $this->fallback($settings, $hibernation),
             $console ?? new QueueTestConsole(),
             $hibernation ?? $this->hibernation,
@@ -376,6 +378,26 @@ final class QueueTestKit
         return array_values(array_filter(array_map(fn (array $row): ?Envelope => $this->transport->find((int)$row['id']), $rows)));
     }
 
+    /**
+     * Ticks the Scheduler and answers the ids of the tasks it queued, taken out of the queue again so that none absorbs the next tick's.
+     *
+     * @return list<string>
+     */
+    public function tick(): array
+    {
+        $this->ticker->tick();
+        $ids = [];
+        foreach ($this->waiting() as $envelope) {
+            $message = $envelope->getMessage();
+            if ($message instanceof ScheduledTask) {
+                $ids[] = $message->taskId();
+            }
+        }
+        $this->db->query("DELETE FROM {$this->schema->table()} WHERE queue_name = ?", [QueueTransport::DEFAULT_QUEUE]);
+
+        return $ids;
+    }
+
     /** The configuration file the kit points YESWIKI_CONFIG_FILE at, as it is now on disk. */
     public function configFile(): string
     {
@@ -389,7 +411,7 @@ final class QueueTestKit
     }
 
     /**
-     * A triples table on that connection, made if it is not there, and the TripleStore over it: where the Scheduler's checkpoint lives (QueueCheckpoint).
+     * A triples table on that connection, made if it is not there, and the TripleStore over it.
      *
      * @param HibernationService|null $hibernation the wiki's status as the TripleStore reads it before each write (default: awake)
      */

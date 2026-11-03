@@ -20,7 +20,6 @@ use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Kernel\Service\JournalSchema;
 use YesWiki\Kernel\Service\Queue\QueueBudgetFactory;
 use YesWiki\Kernel\Service\Queue\QueueBus;
-use YesWiki\Kernel\Service\Queue\QueueCheckpoint;
 use YesWiki\Kernel\Service\Queue\QueueFallback;
 use YesWiki\Kernel\Service\Queue\QueueHealthChecks;
 use YesWiki\Kernel\Service\Queue\QueueRecorder;
@@ -31,6 +30,7 @@ use YesWiki\Kernel\Service\Queue\QueueSettings;
 use YesWiki\Kernel\Service\Queue\QueueStatistics;
 use YesWiki\Kernel\Service\Queue\QueueTaskRows;
 use YesWiki\Kernel\Service\Queue\QueueTransport;
+use YesWiki\Kernel\Service\Queue\ScheduleHistory;
 use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';
@@ -56,7 +56,7 @@ class QueueHealthChecksTest extends YesWikiTestCase
     private string $secret = '';
     private bool $hibernated = false;
 
-    /** @var list<string> the ids of the tasks the schedule declares */
+    /** @var array<string, array{string, int}> the tasks the schedule declares: id => label, interval in seconds */
     private array $declared = [];
 
     /** @var array<string, string|false> */
@@ -753,7 +753,7 @@ class QueueHealthChecksTest extends YesWikiTestCase
             $this->schema,
             $hibernation,
             $this->ticker(),
-            new QueueFallback($settings, $this->statistics, new QueueCheckpoint(QueueTestKit::tripleStore($this->db, $hibernation), new RuntimeLock()), $hibernation, new RuntimeLock(), $this->clock),
+            new QueueFallback($settings, $this->statistics, $this->ticker(), $hibernation, new RuntimeLock(), $this->clock),
             new QueueBudgetFactory(new NativeClock()),
             $this->clock
         ))->healthChecks();
@@ -771,29 +771,40 @@ class QueueHealthChecksTest extends YesWikiTestCase
         return QueueRequestTrigger::respondsEarly() ? '' : _t('QUEUE_HEALTH_FALLBACK_VISITORS_WAIT');
     }
 
-    /** A ticker over the tasks the test says are declared; the checks only ask it which ones. */
+    /** A ticker over the tasks the test says are declared and the Journal's rows: what the checks list the tasks from. */
     private function ticker(): QueueScheduleTicker
     {
         $provider = new class(fn (): array => $this->declared) implements ProvidesSchedule {
-            /** @param \Closure(): list<string> $declared */
+            /** @param \Closure(): array<string, array{string, int}> $declared */
             public function __construct(private \Closure $declared)
             {
             }
 
             public function recurringMessages(): array
             {
-                return array_map(static fn (string $id): RecurringMessage => RecurringMessage::every('30 minutes', new QueueTestTask($id)), ($this->declared)());
+                $recurring = [];
+                foreach (($this->declared)() as $id => [$label, $every]) {
+                    $recurring[] = RecurringMessage::every($every, new QueueTestTask((string)$id, $label === '' ? null : $label));
+                }
+
+                return $recurring;
             }
         };
 
         return new QueueScheduleTicker(
             [$provider],
             $this->createStub(QueueBus::class),
-            $this->createStub(QueueCheckpoint::class),
-            new QueueRecorder($this->db, new QueueTaskRows($this->db, $this->schema, $this->clock), $this->journal, $this->clock),
+            new ScheduleHistory($this->db, $this->journal),
+            $this->recorder($this->clock),
+            new RuntimeLock(),
             $this->clock,
             $this->createStub(HibernationService::class),
         );
+    }
+
+    private function recorder(MockClock $clock): QueueRecorder
+    {
+        return new QueueRecorder($this->db, new QueueTaskRows($this->db, $this->schema, $clock), $this->journal, $clock);
     }
 
     /** @return list<string> */
@@ -832,21 +843,23 @@ class QueueHealthChecksTest extends YesWikiTestCase
         );
     }
 
+    /** A task, declared or not, whose last dispatch makes it due at $nextDue (null: never seen), after $failures failed runs. */
     private function task(string $id, string $label = '', int $everySeconds = 1800, ?string $nextDue = null, int $failures = 0, ?string $error = null, bool $declared = true): void
     {
-        $this->declared = array_values(array_diff($this->declared, [$id]));
+        unset($this->declared[$id]);
         if ($declared) {
-            $this->declared[] = $id;
+            $this->declared[$id] = [$label, $everySeconds];
         }
-        // The task's whole state, as if written anew: what a row held before is not kept.
-        (new QueueTaskRows($this->db, $this->schema, $this->clock))->update($id, fn (array $fields): array => [
-            'label' => $label,
-            'every_seconds' => $everySeconds,
-            'last_dispatched_at' => $this->at('-1 hours'),
-            'next_due_at' => $nextDue === null ? null : $this->at($nextDue),
-            'consecutive_failures' => $failures,
-            'last_error' => $error,
-        ]);
+        if ($nextDue !== null) {
+            $this->recorder(new MockClock($this->at($nextDue . " -{$everySeconds} seconds"), 'UTC'))->taskDispatched(new QueueTestTask($id));
+        }
+        if ($failures > 0) {
+            $recorder = $this->recorder($this->clock);
+            $recorder->taskFinished($id, QueueRecorder::HANDLED, null);
+            for ($run = 0; $run < $failures; $run++) {
+                $recorder->taskFinished($id, QueueRecorder::FAILED, $error);
+            }
+        }
     }
 
     /** A message a consumer has taken and not acknowledged: how long ago, and the time it was given. */

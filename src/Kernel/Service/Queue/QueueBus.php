@@ -12,11 +12,13 @@ use Symfony\Component\Messenger\Stamp\DelayStamp;
 use Symfony\Component\Messenger\Stamp\ReceivedStamp;
 use Symfony\Component\Messenger\Stamp\TransportMessageIdStamp;
 use YesWiki\Kernel\Queue\RunsUnbudgeted;
+use YesWiki\Kernel\Queue\ScheduledTask;
 use YesWiki\Kernel\Service\Journal;
 
 /**
  * The bus the wiki dispatches on: a message is always stored in the queue, never handled in the request that sent it;
  * only a message the consumer took (ReceivedStamp) reaches the handlers. Dispatching never breaks the page.
+ * A scheduled task the queue took, or that a waiting run absorbed, is journaled as dispatched: the Scheduler counts from it.
  */
 #[AsAlias(MessageBusInterface::class, public: true)]
 class QueueBus implements MessageBusInterface
@@ -30,6 +32,7 @@ class QueueBus implements MessageBusInterface
         private readonly QueueTransport $transport,
         QueueHandlerLocator $handlers,
         private readonly Journal $journal,
+        private readonly QueueRecorder $recorder,
         #[AutowireServiceClosure(QueueRequestTrigger::class)]
         private readonly \Closure $requestTrigger,
     ) {
@@ -71,7 +74,27 @@ class QueueBus implements MessageBusInterface
         if ($runner !== null && $id !== null) {
             $runner->pin((int)$id);
         }
+        if ($message instanceof ScheduledTask && $id !== null) {
+            $this->recordDispatch($message);
+        }
 
         return $sent;
+    }
+
+    /** Journals that task's dispatch; a Journal that cannot be written is said, and breaks no page outside a transaction. */
+    private function recordDispatch(ScheduledTask $task): void
+    {
+        try {
+            $this->recorder->taskDispatched($task);
+        } catch (\Throwable $failed) {
+            if ($this->transport->inTransaction()) {
+                throw $failed;
+            }
+            $this->journal->error('Queued the task ' . $task->taskId() . ' but could not journal its dispatch: ' . $failed->getMessage(), [
+                'action' => 'queue.dispatch_failed',
+                'target' => $task::class,
+                'exception' => $failed,
+            ]);
+        }
     }
 }

@@ -334,7 +334,7 @@ class JobsOverview
     }
 
     /**
-     * The tasks the schedule declares, as their rows say they last ran; one never queued yet has no row and is not listed.
+     * The tasks the schedule declares, as the Journal says they last ran (QueueScheduleTicker::tasks()).
      *
      * @return list<array<string, mixed>>
      */
@@ -344,7 +344,7 @@ class JobsOverview
         $now = $this->clock->now()->getTimestamp();
         $rows = [];
 
-        foreach (QueueHealthChecks::onlyDeclared($this->statistics->tasks(), $this->ticker->declaredTaskIds()) as $task) {
+        foreach ($this->ticker->tasks() as $task) {
             $due = $task['nextDueAt'];
             $rows[] = [
                 'taskId' => $task['taskId'],

@@ -7,6 +7,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Component\Clock\MockClock;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 use Symfony\Component\DependencyInjection\ServiceLocator;
+use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Scheduler\Generator\MessageContext;
 use Symfony\Component\Scheduler\RecurringMessage;
 use YesWiki\Files\Service\RuntimeLock;
@@ -14,6 +15,7 @@ use YesWiki\Kernel\Message\PruneQueue;
 use YesWiki\Kernel\Message\PruneQueueHandler;
 use YesWiki\Kernel\Queue\ProvidesSchedule;
 use YesWiki\Kernel\Queue\QueueConsumerMode;
+use YesWiki\Kernel\Queue\QueueJournalEntry;
 use YesWiki\Kernel\Scheduler\KernelSchedule;
 use YesWiki\Kernel\Service\ConfigurationService;
 use YesWiki\Kernel\Service\DbService;
@@ -21,7 +23,6 @@ use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Kernel\Service\Journal;
 use YesWiki\Kernel\Service\JournalSchema;
 use YesWiki\Kernel\Service\Queue\QueueBus;
-use YesWiki\Kernel\Service\Queue\QueueCheckpoint;
 use YesWiki\Kernel\Service\Queue\QueueHandlerLocator;
 use YesWiki\Kernel\Service\Queue\QueueRecorder;
 use YesWiki\Kernel\Service\Queue\QueueScheduleTicker;
@@ -29,8 +30,8 @@ use YesWiki\Kernel\Service\Queue\QueueSchema;
 use YesWiki\Kernel\Service\Queue\QueueStatistics;
 use YesWiki\Kernel\Service\Queue\QueueTaskRows;
 use YesWiki\Kernel\Service\Queue\QueueTransport;
+use YesWiki\Kernel\Service\Queue\ScheduleHistory;
 use YesWiki\Kernel\Service\ThrowableFormatter;
-use YesWiki\Kernel\Service\TripleStore;
 use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';
@@ -38,11 +39,10 @@ require_once 'tests/src/Kernel/QueueTestTask.php';
 require_once 'tests/src/Kernel/QueueTestKit.php';
 require_once 'tests/src/Kernel/QueueTransportTest.php';
 
-/** The scheduler only feeds the queue: what is due becomes a message, once, and what the tasks did is kept per task. */
+/** The scheduler only feeds the queue: a task is due a trigger's run after its last dispatch, or after it first appeared, as the Journal tells. */
 #[CoversClass(QueueScheduleTicker::class)]
-#[CoversClass(QueueCheckpoint::class)]
 #[CoversClass(QueueRecorder::class)]
-#[CoversClass(QueueStatistics::class)]
+#[CoversClass(ScheduleHistory::class)]
 #[CoversClass(KernelSchedule::class)]
 #[CoversClass(PruneQueueHandler::class)]
 class QueueScheduleTickerTest extends YesWikiTestCase
@@ -50,14 +50,16 @@ class QueueScheduleTickerTest extends YesWikiTestCase
     private const START = '2026-10-23 12:00:00';
 
     private string $file;
+    private string $lockDir;
     private DbService $db;
     private QueueSchema $schema;
     private MockClock $clock;
     private QueueTransport $transport;
     private QueueStatistics $statistics;
-    private TripleStore $triples;
+    private ScheduleHistory $history;
+    private RuntimeLock $locks;
 
-    /** The wiki's status as the TripleStore reads it; the ticker reads the config file (setWikiStatus() writes both). */
+    /** The wiki's status as the parameters hold it; the ticker reads the config file (setWikiStatus() writes both). */
     private ParameterBag $params;
     private string $configFile;
     private string|false $previousConfigFile;
@@ -72,11 +74,13 @@ class QueueScheduleTickerTest extends YesWikiTestCase
     {
         $this->params = new ParameterBag(['wiki_status' => 'running']);
         $this->file = tempnam(sys_get_temp_dir(), 'yw-queue-') . '.db';
+        $this->lockDir = sys_get_temp_dir() . '/yw-ticker-locks-' . bin2hex(random_bytes(4));
+        $this->locks = QueueTestKit::locksIn($this->lockDir);
         $this->build(new DbService(new ParameterBag([
             'db_driver' => 'sqlite',
             'db_database' => $this->file,
             'table_prefix' => 'ywq_',
-            // The query log is how testATickWithNothingDueTouchesNoTable counts what a tick costs.
+            // The query log is how testATickWithNothingDueWritesNothing counts what a tick costs.
             'debug' => true,
         ])));
         $this->schema->create();
@@ -89,7 +93,7 @@ class QueueScheduleTickerTest extends YesWikiTestCase
 
     protected function tearDown(): void
     {
-        unset($this->statistics, $this->triples, $this->transport, $this->schema, $this->db);
+        unset($this->statistics, $this->history, $this->transport, $this->schema, $this->db);
         putenv($this->previousConfigFile === false ? 'YESWIKI_CONFIG_FILE' : 'YESWIKI_CONFIG_FILE=' . $this->previousConfigFile);
         @unlink($this->configFile);
         @unlink(substr($this->configFile, 0, -4));
@@ -97,18 +101,25 @@ class QueueScheduleTickerTest extends YesWikiTestCase
             @unlink($this->file . $suffix);
         }
         @unlink(substr($this->file, 0, -3));
+        foreach (glob($this->lockDir . '/cache/*') ?: [] as $lock) {
+            @unlink($lock);
+        }
+        @rmdir($this->lockDir . '/cache');
+        @rmdir($this->lockDir);
     }
 
-    public function testNothingIsDueBeforeTheFirstInterval(): void
+    public function testATaskSeenForTheFirstTimeIsDeclaredAndWaitsItsFirstSlot(): void
     {
-        $this->assertSame(0, $this->ticker()->tick());
+        $ticker = $this->ticker();
+        $this->assertSame(0, $ticker->tick());
+
+        $this->assertSame(self::START, $this->history->of('test-task')?->declaredAt?->format('Y-m-d H:i:s'));
+        $this->assertSame(0, $this->statistics->pendingCount(), 'its appearance is noted, nothing is sent');
+        $this->assertSame('2026-10-23 12:30:00', $ticker->dueAt()?->format('Y-m-d H:i:s'));
 
         $this->clock->sleep(29 * 60);
-
-        $later = $this->ticker();
-        $this->assertSame(0, $later->tick());
-        $this->assertSame(0, $this->statistics->pendingCount());
-        $this->assertSame('2026-10-23 12:30:00', $this->dueAt()?->format('Y-m-d H:i:s'));
+        $this->assertSame(0, $this->ticker()->tick());
+        $this->assertSame(1, $this->rows(QueueJournalEntry::TASK_DECLARED), 'noted once');
     }
 
     public function testADueTaskIsDispatchedOnceAndRecorded(): void
@@ -122,13 +133,29 @@ class QueueScheduleTickerTest extends YesWikiTestCase
 
         $this->assertSame(1, $this->statistics->pendingCount());
         $this->assertSame('task:test-task', $this->db->scalar("SELECT dedup_key FROM {$this->schema->table()} WHERE queue_name = 'default'"));
-        [$task] = $this->statistics->tasks();
-        $this->assertSame('test-task', $task['taskId']);
+        $task = $this->task('test-task');
         $this->assertSame('Test task test-task', $task['label']);
         $this->assertSame(1800, $task['everySeconds']);
         $this->assertSame('2026-10-23 12:31:00', $task['lastDispatchedAt']?->format('Y-m-d H:i:s'));
-        $this->assertSame('2026-10-23 13:00:00', $task['nextDueAt']?->format('Y-m-d H:i:s'), 'the next run, about 30 min away');
-        $this->assertSame('2026-10-23 13:00:00', $this->dueAt()?->format('Y-m-d H:i:s'));
+        $this->assertSame('2026-10-23 13:01:00', $task['nextDueAt']?->format('Y-m-d H:i:s'), 'the interval counts from the dispatch');
+        $this->assertSame('2026-10-23 13:01:00', $this->ticker()->dueAt()?->format('Y-m-d H:i:s'));
+    }
+
+    /** A periodical trigger anchors on the first date it is asked about: whatever a ticker is asked first, the interval runs from the task's anchor. */
+    public function testAnIntervalCountsFromTheAnchorWhateverAskedFirst(): void
+    {
+        $this->ticker()->tick();
+        $this->clock->sleep(31 * 60);
+
+        $ticker = $this->ticker();
+        $ticker->tasks();
+        $ticker->declaredTaskIds();
+        $this->assertSame(1, $ticker->tick());
+
+        $this->clock->sleep(60);
+        $this->assertSame('2026-10-23 13:01:00', ($ticker->task('test-task') ?? $this->fail('no task'))['nextDueAt']?->format('Y-m-d H:i:s'));
+        $this->clock->modify('2026-10-23 12:45:00');
+        $this->assertSame(0, $ticker->tick());
     }
 
     public function testAMissedTaskIsCaughtUpOnlyOnce(): void
@@ -138,25 +165,144 @@ class QueueScheduleTickerTest extends YesWikiTestCase
         $this->clock->sleep(5 * 3600);
 
         $this->assertSame(1, $ticker->tick(), 'ten missed runs, one catch-up');
+        $this->assertSame(0, $ticker->tick());
+        $this->clock->modify('2026-10-23 17:29:00');
+        $this->assertSame(0, $this->ticker()->tick());
         $this->assertSame(1, $this->statistics->pendingCount());
-        $this->assertSame('2026-10-23 17:30:00', $this->dueAt()?->format('Y-m-d H:i:s'));
     }
 
-    public function testTheCheckpointSurvivesANewTicker(): void
+    public function testACronTaskWaitsForItsNextSlot(): void
+    {
+        $this->tasks = [];
+        $daily = new class implements ProvidesSchedule {
+            public function recurringMessages(): array
+            {
+                return [RecurringMessage::cron('0 7 * * *', new QueueTestTask('daily'), 'UTC')];
+            }
+        };
+
+        $this->assertSame(0, $this->ticker([$daily])->tick());
+        $this->assertNotNull($this->history->of('daily')?->declaredAt, 'the first tick notes the task');
+
+        $this->clock->modify('2026-10-24 06:59:00');
+        $this->assertSame(0, $this->ticker([$daily])->tick());
+        $this->clock->modify('2026-10-24 07:00:00');
+        $this->assertSame(1, $this->ticker([$daily])->tick());
+    }
+
+    /** Digests switched off then on again: the task finds its last dispatch, and a slot that passed meanwhile runs once. */
+    public function testATaskThatComesBackRunsOnceIfItMissedASlot(): void
     {
         $this->ticker()->tick();
         $this->clock->sleep(31 * 60);
         $this->assertSame(1, $this->ticker()->tick());
+        $this->db->query("DELETE FROM {$this->schema->table()} WHERE queue_name = 'default'");
 
-        $fresh = $this->ticker();
-        $this->assertSame(0, $fresh->tick());
+        $every = $this->tasks;
+        $this->tasks = [];
+        $this->clock->sleep(3600);
+        $this->assertSame(0, $this->ticker()->tick());
+        $this->clock->sleep(3600);
+        $this->tasks = $every;
 
-        // Without the due time, a ticker has to rebuild the schedule from the saved state: the 12:30 run is still done.
-        $this->checkpointDueAt(null);
-        $rebuilt = $this->ticker();
-        $this->assertSame(0, $rebuilt->tick());
+        $this->assertSame(1, $this->ticker()->tick());
+        $this->assertSame(1, $this->rows(QueueJournalEntry::TASK_DECLARED), 'it is not seen anew');
+    }
+
+    /** What the user chose: a task run by hand counts its next run from then. */
+    public function testRunNowShiftsTheSchedule(): void
+    {
+        $this->ticker()->tick();
+        $this->clock->sleep(10 * 60);
+
+        $ticker = $this->ticker();
+        $this->assertTrue($ticker->runNow('test-task'));
+        $this->assertFalse($ticker->runNow('no-such-task'));
+
         $this->assertSame(1, $this->statistics->pendingCount());
-        $this->assertSame('2026-10-23 13:00:00', $this->dueAt()?->format('Y-m-d H:i:s'));
+        $this->assertSame('2026-10-23 12:40:00', $this->task('test-task')['nextDueAt']?->format('Y-m-d H:i:s'));
+        $this->clock->modify('2026-10-23 12:31:00');
+        $this->assertSame(0, $this->ticker()->tick());
+    }
+
+    /** A run of the task still waits: nothing more is queued, but the Scheduler did send it then, and counts from it. */
+    public function testAnAbsorbedDispatchStillMovesTheAnchor(): void
+    {
+        $this->ticker()->tick();
+        $this->transport->send(new Envelope(new QueueTestTask()));
+        $this->clock->sleep(10 * 60);
+
+        $this->assertTrue($this->ticker()->runNow('test-task'));
+
+        $this->assertSame(1, $this->statistics->pendingCount(), 'a run still waiting is not queued twice');
+        $this->assertSame('2026-10-23 12:10:00', $this->history->of('test-task')?->lastDispatchedAt?->format('Y-m-d H:i:s'));
+    }
+
+    public function testOnlyOneProcessTicksAtATime(): void
+    {
+        $held = $this->locks->acquire(QueueScheduleTicker::LOCK);
+        $this->assertNotNull($held);
+        $this->assertTrue($this->locks->tryLock($held));
+
+        try {
+            $this->clock->sleep(3600);
+            $this->assertSame(0, $this->ticker()->tick(), 'while another process ticks, this one does not');
+            $this->assertSame(0, $this->rows(), 'nor writes anything');
+        } finally {
+            $this->locks->release($held);
+        }
+
+        $this->assertSame(0, $this->ticker()->tick());
+        $this->assertSame('2026-10-23 13:30:00', $this->ticker()->dueAt()?->format('Y-m-d H:i:s'));
+        $this->clock->sleep(1801);
+        $this->assertSame(1, $this->ticker()->tick(), 'a tick lets go of the lock when it is over');
+    }
+
+    /** The due time held in memory goes stale when another process dispatches: it is read again once a minute. */
+    public function testALongLivedTickerSeesADispatchWrittenElsewhere(): void
+    {
+        $long = $this->ticker();
+        $long->tick();
+        $this->clock->sleep(31 * 60);
+        $this->assertSame('2026-10-23 12:30:00', $long->dueAt()?->format('Y-m-d H:i:s'));
+
+        $this->assertSame(1, $this->ticker()->tick(), 'another process ticks');
+        $this->assertSame('2026-10-23 12:30:00', $long->dueAt()?->format('Y-m-d H:i:s'), 'held in memory');
+
+        $this->clock->sleep(60);
+        $this->assertSame('2026-10-23 13:01:00', $long->dueAt()?->format('Y-m-d H:i:s'));
+        $this->assertSame(0, $long->tick());
+    }
+
+    public function testNoTaskDeclaredMeansNothingIsEverDue(): void
+    {
+        $this->tasks = [];
+
+        $this->assertSame(0, $this->ticker()->tick());
+        $this->clock->sleep(86400);
+        $this->assertSame(0, $this->ticker()->tick());
+
+        $this->assertSame(0, $this->rows());
+        $this->assertSame(0, $this->statistics->pendingCount());
+    }
+
+    /** Without a task id there is no anchor to find in the Journal: it would be sent at every tick. */
+    public function testARecurringMessageThatIsNotAScheduledTaskIsJournaledAndSkipped(): void
+    {
+        $this->tasks = [];
+        $plain = new class implements ProvidesSchedule {
+            public function recurringMessages(): array
+            {
+                return [RecurringMessage::every('30 minutes', new QueueTestMessage('x'))];
+            }
+        };
+
+        $this->assertSame(0, $this->ticker([$plain])->tick());
+        $this->clock->sleep(31 * 60);
+        $this->assertSame(0, $this->ticker([$plain])->tick());
+
+        $this->assertSame(0, $this->statistics->pendingCount());
+        $this->assertGreaterThan(0, $this->rows('queue.schedule_provider_failed'));
     }
 
     public function testTheDeclaredTasksAreWhatTheProvidersDeclareNow(): void
@@ -168,30 +314,30 @@ class QueueScheduleTickerTest extends YesWikiTestCase
         $this->assertSame(['test-task'], $this->ticker()->declaredTaskIds());
     }
 
-    /** A deleted data source or a disabled extension: its row would be late or failing for ever, with nothing left to run. */
-    public function testADueTickForgetsTheTasksThatLeftTheSchedule(): void
+    /** A deleted data source or a disabled extension: its task leaves the list, and its rows are the Journal's to prune. */
+    public function testATaskThatLeftTheScheduleIsNoLongerListed(): void
     {
         $this->tasks = ['test-task' => '30 minutes', 'gone' => '30 minutes'];
         $ticker = $this->ticker();
         $ticker->tick();
         $this->clock->sleep(31 * 60);
         $ticker->tick();
-        $ids = array_column($this->statistics->tasks(), 'taskId');
-        sort($ids);
-        $this->assertSame(['gone', 'test-task'], $ids);
+        $this->assertSame(['gone', 'test-task'], array_column($this->ticker()->tasks(), 'taskId'));
+        $rows = $this->rows();
 
         unset($this->tasks['gone']);
         $this->clock->sleep(31 * 60);
         $this->ticker()->tick();
 
-        $this->assertSame(['test-task'], array_column($this->statistics->tasks(), 'taskId'));
-        $this->assertNotNull($this->dueAt(), 'the Scheduler\'s own row is not a task and stays');
+        $this->assertSame(['test-task'], array_column($this->ticker()->tasks(), 'taskId'));
+        $this->assertNull($this->ticker()->task('gone'));
+        $this->assertSame($rows + 1, $this->rows(), 'one more dispatch, and nothing deleted');
     }
 
     /**
-     * A provider that throws (the digests' subscriptions unreadable, no triples table) is journaled and left out of that tick; the other tasks are still dispatched, and its tasks are kept, and still judged, rather than pruned as if it no longer declared them.
+     * A provider that throws (the digests' subscriptions unreadable, no triples table) is journaled and left out of that tick; the other tasks are still dispatched, and its tasks are still listed from the Journal, and still judged.
      *
-     * Pruned, they would leave no row for `queue-task-overdue` to find late: the digests would stop with nothing to say so.
+     * Left out, they would leave nothing for `queue-task-failing` to find: the digests would stop with nothing to say so.
      */
     public function testAProviderThatThrowsLeavesTheOthersScheduledAndKeepsItsTasks(): void
     {
@@ -222,9 +368,10 @@ class QueueScheduleTickerTest extends YesWikiTestCase
         $this->clock->sleep(31 * 60);
 
         $this->assertSame(1, $this->ticker([$digests])->tick(), 'the other task is still dispatched');
-        $ids = array_column($this->statistics->tasks(), 'taskId');
-        sort($ids);
-        $this->assertSame(['digest', 'test-task'], $ids, 'the digest task is kept');
+        $tasks = $this->ticker([$digests])->tasks();
+        $this->assertSame(['digest', 'test-task'], array_column($tasks, 'taskId'), 'the digest task is kept');
+        $this->assertSame(['Test task digest', 0, null], [$tasks[0]['label'], $tasks[0]['everySeconds'], $tasks[0]['nextDueAt']], 'from the Journal, with no schedule to say more');
+        $this->assertSame('2026-10-23 12:31:00', $tasks[0]['lastDispatchedAt']?->format('Y-m-d H:i:s'));
         $declared = $this->ticker([$digests])->declaredTaskIds();
         sort($declared);
         $this->assertSame(['digest', 'test-task'], $declared, 'and still judged by the health checks');
@@ -260,24 +407,10 @@ class QueueScheduleTickerTest extends YesWikiTestCase
         $this->assertSame($twice::class, $journaled[0]['target']);
     }
 
-    public function testRunNowDispatchesImmediately(): void
-    {
-        $ticker = $this->ticker();
-
-        $this->assertTrue($ticker->runNow('test-task'));
-        $this->assertTrue($ticker->runNow('test-task'));
-        $this->assertFalse($ticker->runNow('no-such-task'));
-
-        $this->assertSame(1, $this->statistics->pendingCount(), 'a run still waiting is not queued twice');
-        [$task] = $this->statistics->tasks();
-        $this->assertSame('2026-10-23 12:00:00', $task['lastDispatchedAt']?->format('Y-m-d H:i:s'));
-        $this->assertSame(1800, $task['everySeconds']);
-        $this->assertNull($this->dueAt(), 'running a task by hand is not a tick');
-    }
-
     public function testConsecutiveFailuresAreCounted(): void
     {
-        $recorder = new QueueRecorder($this->db, new QueueTaskRows($this->db, $this->schema, $this->clock), new JournalSchema($this->db), $this->clock);
+        $this->tasks = ['x' => '30 minutes'];
+        $recorder = $this->recorder();
 
         foreach (['first', 'second', 'third'] as $error) {
             $recorder->taskFinished('x', QueueRecorder::FAILED, $error);
@@ -293,16 +426,16 @@ class QueueScheduleTickerTest extends YesWikiTestCase
 
     public function testAHandledMessageOfATaskIsRecordedOnTheTask(): void
     {
-        $recorder = new QueueRecorder($this->db, new QueueTaskRows($this->db, $this->schema, $this->clock), new JournalSchema($this->db), $this->clock);
+        $recorder = $this->recorder();
 
         $recorder->messageFinished(1, QueueTestTask::class, 'test-task', QueueRecorder::KILLED, QueueConsumerMode::Request, (float)$this->clock->now()->format('U'), QueueTransport::killedCause('request'));
         $recorder->messageFinished(2, QueueTestMessage::class, null, QueueRecorder::FAILED, QueueConsumerMode::Request, (float)$this->clock->now()->format('U'), 'boom');
 
         $this->assertSame(['test-task', 1, 'killed', QueueTransport::killedCause('request')], $this->summary('test-task'));
-        $this->assertCount(1, $this->statistics->tasks(), 'a message that is no task has no row');
+        $this->assertSame(['test-task'], array_keys($this->history->all()), 'a message that is no task leaves no task row');
     }
 
-    public function testATickWithNothingDueTouchesNoTable(): void
+    public function testATickWithNothingDueWritesNothing(): void
     {
         $ticker = $this->ticker();
         $ticker->tick();
@@ -314,68 +447,18 @@ class QueueScheduleTickerTest extends YesWikiTestCase
 
         $this->clock->sleep(31);
         $ticker->tick();
-        $this->assertCount($queries + 1, $this->db->getQueryLog(), 'once a minute it is read again, and that is all');
+        $since = array_column(array_slice($this->db->getQueryLog(), $queries), 'query');
+        $this->assertSame([], preg_grep('/^\s*(INSERT|UPDATE|DELETE)\b/i', $since), 'nothing is written');
+        $journal = (new JournalSchema($this->db))->table();
+        $this->assertLessThanOrEqual(1, count(array_filter($since, static fn (string $query): bool => str_contains($query, $journal))), 'once a minute the Journal is read again, and that is all');
     }
 
-    /**
-     * The due time held in memory goes stale when another process writes the checkpoint: one whose schedule has a task this one did not know of when it last read, a restored database.
-     */
-    public function testALongLivedTickerNoticesADueTimeWrittenElsewhere(): void
-    {
-        $ticker = $this->ticker();
-        $ticker->tick();
-        $this->tasks['quick'] = '1 minute';
-        $this->checkpointDueAt('2026-10-23 12:01:00');
-
-        $this->clock->sleep(61);
-
-        $this->assertSame(1, $ticker->tick());
-        $this->assertSame(['quick'], array_column($this->statistics->tasks(), 'taskId'));
-    }
-
-    public function testOnlyOneProcessTicksAtATime(): void
-    {
-        $lock = new RuntimeLock();
-        $held = $lock->acquire(QueueCheckpoint::LOCK);
-        $this->assertTrue($lock->tryLock($held));
-
-        try {
-            $this->clock->sleep(3600);
-            $this->assertSame(0, $this->ticker()->tick(), 'while another process ticks, this one does not');
-            $this->assertNull($this->dueAt());
-        } finally {
-            $lock->release($held);
-        }
-
-        $this->assertSame(0, $this->ticker()->tick());
-        $this->assertSame('2026-10-23 13:30:00', $this->dueAt()?->format('Y-m-d H:i:s'));
-        $this->clock->sleep(1801);
-        $this->assertSame(1, $this->ticker()->tick(), 'a tick lets go of the lock when it is over');
-    }
-
-    public function testTheCheckpointIsKeptInTheTriples(): void
-    {
-        $this->ticker()->tick();
-        $this->clock->sleep(31 * 60);
-        $this->ticker()->tick();
-
-        $this->assertSame([
-            QueueCheckpoint::STATE => '{"time":"2026-10-23 12:30:00.000000","index":0,"from":"2026-10-23 12:00:00.000000"}',
-            QueueCheckpoint::NEXT_DUE_AT => '2026-10-23 13:00:00',
-        ], $this->checkpointTriples());
-        $this->assertSame(
-            ['test-task'],
-            array_column($this->db->loadAll("SELECT task_id FROM {$this->schema->table()} WHERE queue_name = ?", [QueueSchema::SCHEDULE_QUEUE]), 'task_id'),
-            "the queue's table holds the tasks, and nothing else of the schedule"
-        );
-    }
-
-    /** A hibernated wiki writes nothing (TripleStore refuses it): the ticker neither dispatches nor moves the checkpoint, whoever calls it. */
+    /** A hibernated wiki writes nothing: the ticker neither dispatches nor notes anything, whoever calls it. */
     public function testAHibernatedWikiTicksNothing(): void
     {
         $ticker = $this->ticker();
         $ticker->tick();
-        $before = $this->checkpointTriples();
+        $before = $this->rows();
         $this->setWikiStatus('hibernate');
         $this->clock->sleep(31 * 60);
 
@@ -383,8 +466,8 @@ class QueueScheduleTickerTest extends YesWikiTestCase
         $this->assertSame(0, $this->ticker()->tick(), 'nor does a ticker built while the wiki sleeps');
 
         $this->assertSame(0, $this->statistics->pendingCount());
-        $this->assertSame($before, $this->checkpointTriples());
-        $this->assertSame([], $this->statistics->tasks(), 'no task was run');
+        $this->assertSame($before, $this->rows());
+        $this->assertNull($this->task('test-task')['lastDispatchedAt'], 'no task was sent');
     }
 
     /** Once the wiki wakes up, what it missed while asleep runs once per task, not once per missed run. */
@@ -401,7 +484,7 @@ class QueueScheduleTickerTest extends YesWikiTestCase
 
         $this->assertSame(1, $ticker->tick(), 'ten runs missed while asleep, one catch-up');
         $this->assertSame(1, $this->statistics->pendingCount());
-        $this->assertSame('2026-10-23 17:30:00', $this->dueAt()?->format('Y-m-d H:i:s'));
+        $this->assertSame('2026-10-23 17:31:00', $this->ticker()->dueAt()?->format('Y-m-d H:i:s'));
     }
 
     public function testThePruneTaskForgetsWhatIsPastItsRetention(): void
@@ -426,6 +509,7 @@ class QueueScheduleTickerTest extends YesWikiTestCase
 
     public function testTheKernelPrunesTheQueueEveryDay(): void
     {
+        $ticker = self::getWiki()->services->get(QueueScheduleTicker::class);
         $kernel = (new KernelSchedule())->recurringMessages();
         $this->assertCount(2, $kernel, 'the queue prunes itself, and the Journal is pruned (MaintenanceTasksTest)');
         [$prune] = $kernel;
@@ -436,7 +520,6 @@ class QueueScheduleTickerTest extends YesWikiTestCase
         $this->assertSame('queue-prune', (new PruneQueue())->taskId());
         $this->assertNotSame('QUEUE_TASK_PRUNE', (new PruneQueue())->label(), 'the label is translated');
 
-        $ticker = self::getWiki()->services->get(QueueScheduleTicker::class);
         $this->assertInstanceOf(QueueScheduleTicker::class, $ticker);
         $this->assertContains(
             $prune->getId(),
@@ -446,7 +529,7 @@ class QueueScheduleTickerTest extends YesWikiTestCase
     }
 
     /**
-     * The checkpoint row, written and read back, on the engines the wiki may run on.
+     * The task rows, written and read back, on the engines the wiki may run on.
      *
      * @param array<string, string|bool> $params
      */
@@ -462,31 +545,28 @@ class QueueScheduleTickerTest extends YesWikiTestCase
         $journal->drop();
         $this->schema->create();
         $journal->create();
-        $triples = $this->db->quoteIdentifier(trim($this->db->prefixTable('triples')));
-        $this->db->query("DELETE FROM {$triples}");
 
         try {
             $this->assertSame(0, $this->ticker()->tick());
             $this->clock->sleep(31 * 60);
             $this->assertSame(1, $this->ticker()->tick());
-            $this->assertSame('2026-10-23 13:00:00', $this->dueAt()?->format('Y-m-d H:i:s'));
+            $this->assertSame('2026-10-23 13:01:00', $this->ticker()->dueAt()?->format('Y-m-d H:i:s'));
+            $this->assertSame(0, $this->ticker()->tick(), 'the dispatch is read back as it was written');
 
-            $this->checkpointDueAt(null);
-            $this->assertSame(0, $this->ticker()->tick(), 'the state is read back as it was written');
+            $this->clock->sleep(60);
             $this->assertTrue($this->ticker()->runNow('test-task'));
             $this->assertSame(1, $this->statistics->pendingCount());
+            $this->assertSame('2026-10-23 13:02:00', $this->task('test-task')['nextDueAt']?->format('Y-m-d H:i:s'), 'running it by hand moved the next due time');
 
-            $recorder = new QueueRecorder($this->db, new QueueTaskRows($this->db, $this->schema, $this->clock), new JournalSchema($this->db), $this->clock);
+            $recorder = $this->recorder();
             $recorder->taskFinished('test-task', QueueRecorder::FAILED, 'boom');
             $recorder->taskFinished('test-task', QueueRecorder::FAILED, 'boom');
             $this->assertSame(['test-task', 2, 'failed', 'boom'], $this->summary('test-task'));
-            $this->assertSame('2026-10-23 13:00:00', $this->statistics->tasks()[0]['nextDueAt']?->format('Y-m-d H:i:s'), 'running it by hand kept the next due time');
             $recorder->taskFinished('test-task', QueueRecorder::HANDLED, null);
             $this->assertSame(['test-task', 0, 'handled', null], $this->summary('test-task'));
         } finally {
             $this->schema->drop();
             $journal->drop();
-            $this->db->query("DROP TABLE IF EXISTS {$triples}");
         }
     }
 
@@ -504,7 +584,7 @@ class QueueScheduleTickerTest extends YesWikiTestCase
         $this->clock = new MockClock(self::START, 'UTC');
         $this->transport = new QueueTransport($db, $this->schema, clock: $this->clock);
         $this->statistics = new QueueStatistics($db, $this->schema, new JournalSchema($db), $this->transport, new QueueTaskRows($db, $this->schema, $this->clock), $this->clock);
-        $this->triples = QueueTestKit::tripleStore($db, new HibernationService($this->params));
+        $this->history = new ScheduleHistory($db, new JournalSchema($db));
     }
 
     /**
@@ -535,27 +615,49 @@ class QueueScheduleTickerTest extends YesWikiTestCase
             JournalSchema::class => fn (): JournalSchema => new JournalSchema($this->db),
             ThrowableFormatter::class => static fn (): ThrowableFormatter => new ThrowableFormatter(),
         ]));
+        $recorder = $this->recorder();
 
         return new QueueScheduleTicker(
             [$provider, ...$more],
-            new QueueBus($this->transport, new QueueHandlerLocator([], new ServiceLocator([])), $journal, QueueTestKit::noRequest()),
-            $this->checkpoint(),
-            new QueueRecorder($this->db, new QueueTaskRows($this->db, $this->schema, $this->clock), new JournalSchema($this->db), $this->clock),
+            new QueueBus($this->transport, new QueueHandlerLocator([], new ServiceLocator([])), $journal, $recorder, QueueTestKit::noRequest()),
+            $this->history,
+            $recorder,
+            $this->locks,
             $this->clock,
             new HibernationService($this->params),
             $journal,
         );
     }
 
+    private function recorder(): QueueRecorder
+    {
+        return new QueueRecorder($this->db, new QueueTaskRows($this->db, $this->schema, $this->clock), new JournalSchema($this->db), $this->clock);
+    }
+
+    /**
+     * That task as a fresh ticker lists it.
+     *
+     * @return array{taskId: string, label: string, everySeconds: int, lastDispatchedAt: ?\DateTimeImmutable, nextDueAt: ?\DateTimeImmutable, lastFinishedAt: ?\DateTimeImmutable, lastStatus: ?string, lastError: ?string, consecutiveFailures: int}
+     */
+    private function task(string $taskId): array
+    {
+        return $this->ticker()->task($taskId) ?? $this->fail("no task {$taskId}");
+    }
+
     /** @return array{string, int, ?string, ?string} the task's id, consecutive failures, last status and last error */
     private function summary(string $taskId): array
     {
-        foreach ($this->statistics->tasks() as $task) {
-            if ($task['taskId'] === $taskId) {
-                return [$task['taskId'], $task['consecutiveFailures'], $task['lastStatus'], $task['lastError']];
-            }
-        }
-        $this->fail("no row for {$taskId}");
+        $task = $this->task($taskId);
+
+        return [$task['taskId'], $task['consecutiveFailures'], $task['lastStatus'], $task['lastError']];
+    }
+
+    /** How many Journal rows there are, of that action or of any. */
+    private function rows(?string $action = null): int
+    {
+        $table = (new JournalSchema($this->db))->table();
+
+        return (int)$this->db->scalar("SELECT COUNT(*) FROM {$table}" . ($action === null ? '' : ' WHERE action = ?'), 0, $action === null ? [] : [$action]);
     }
 
     private function ago(int $days): string
@@ -563,45 +665,7 @@ class QueueScheduleTickerTest extends YesWikiTestCase
         return $this->clock->now()->modify("-{$days} days")->format('Y-m-d H:i:s');
     }
 
-    /** A checkpoint as each process gets one, over the triples. */
-    private function checkpoint(): QueueCheckpoint
-    {
-        return new QueueCheckpoint($this->triples, new RuntimeLock());
-    }
-
-    /** When the schedule is next due, as a fresh process reads it. */
-    private function dueAt(): ?\DateTimeImmutable
-    {
-        return $this->checkpoint()->dueAt();
-    }
-
-    /** Writes the checkpoint's due time as another process would, or takes it away. */
-    private function checkpointDueAt(?string $dueAt): void
-    {
-        $table = $this->db->quoteIdentifier(trim($this->db->prefixTable('triples')));
-        $this->db->query("DELETE FROM {$table} WHERE resource = ? AND property = ?", [QueueCheckpoint::RESOURCE, QueueCheckpoint::NEXT_DUE_AT]);
-        if ($dueAt !== null) {
-            $this->db->query("INSERT INTO {$table} (resource, property, value) VALUES (?, ?, ?)", [QueueCheckpoint::RESOURCE, QueueCheckpoint::NEXT_DUE_AT, $dueAt]);
-        }
-    }
-
-    /**
-     * The checkpoint's triples, by property.
-     *
-     * @return array<string, string>
-     */
-    private function checkpointTriples(): array
-    {
-        $table = $this->db->quoteIdentifier(trim($this->db->prefixTable('triples')));
-        $triples = [];
-        foreach ($this->db->loadAll("SELECT property, value FROM {$table} WHERE resource = ? ORDER BY property", [QueueCheckpoint::RESOURCE]) as $row) {
-            $triples[(string)$row['property']] = (string)$row['value'];
-        }
-
-        return $triples;
-    }
-
-    /** Sets the wiki's status as an archive or the hibernation setting does: in the config file, which the ticker reads, and in the parameters, which the TripleStore reads. */
+    /** Sets the wiki's status as an archive or the hibernation setting does: in the config file, which the ticker reads, and in the parameters. */
     private function setWikiStatus(string $status): void
     {
         $configuration = new ConfigurationService();

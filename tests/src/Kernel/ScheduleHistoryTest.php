@@ -85,9 +85,9 @@ class ScheduleHistoryTest extends YesWikiTestCase
         $this->assertSame('2026-10-23 12:00:00', $declared->anchor()?->format('Y-m-d H:i:s'));
 
         $this->clock->sleep(1800);
-        $this->recorder->taskDispatched($task, 1800, null);
+        $this->recorder->taskDispatched($task);
         $this->clock->sleep(1800);
-        $this->recorder->taskDispatched($task, 1800, null);
+        $this->recorder->taskDispatched($task);
 
         $dispatched = $this->history->of('x');
         $this->assertNotNull($dispatched);
@@ -149,7 +149,7 @@ class ScheduleHistoryTest extends YesWikiTestCase
         $this->on($params);
         $this->recorder->taskDeclared(new QueueTestTask('b'));
         $this->recorder->taskDeclared(new QueueTestTask('a'));
-        $this->recorder->taskDispatched(new QueueTestTask('a'), 60, null);
+        $this->recorder->taskDispatched(new QueueTestTask('a'));
         $this->recorder->taskFinished('a', QueueRecorder::HANDLED, null);
         $this->recorder->taskFinished('a', QueueRecorder::FAILED, 'late');
         $this->journalRowOfAnotherChannel();

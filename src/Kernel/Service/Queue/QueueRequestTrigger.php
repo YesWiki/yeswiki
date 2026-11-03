@@ -36,7 +36,7 @@ class QueueRequestTrigger implements RequestScopedState
         private readonly QueueConsumer $consumer,
         private readonly QueueBudgetFactory $budgets,
         private readonly QueueStatistics $statistics,
-        private readonly QueueCheckpoint $checkpoint,
+        private readonly QueueScheduleTicker $ticker,
         private readonly QueueFallback $fallback,
         private readonly ConsoleService $console,
         private readonly HibernationService $hibernation,
@@ -145,7 +145,7 @@ class QueueRequestTrigger implements RequestScopedState
         );
     }
 
-    /** Whether a message can be taken now, the schedule is due (or never ticked), or, while hibernated, a claim expired. */
+    /** Whether a message can be taken now, the schedule is due (or has a task never seen), or, while hibernated, a claim expired. */
     private function hasWork(): bool
     {
         if ($this->hibernation->isWikiHibernated()) {
@@ -156,7 +156,7 @@ class QueueRequestTrigger implements RequestScopedState
         if ($available !== null && $available <= $now) {
             return true;
         }
-        $due = $this->checkpoint->dueAt();
+        $due = $this->ticker->dueAt();
 
         return $due === null || $due <= $now;
     }

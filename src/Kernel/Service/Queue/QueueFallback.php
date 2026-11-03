@@ -29,7 +29,7 @@ class QueueFallback implements RequestScopedState
     public function __construct(
         private readonly QueueSettings $settings,
         private readonly QueueStatistics $statistics,
-        private readonly QueueCheckpoint $checkpoint,
+        private readonly QueueScheduleTicker $ticker,
         private readonly HibernationService $hibernation,
         private readonly RuntimeLock $runtimeLock,
         private readonly ClockInterface $clock,
@@ -110,7 +110,7 @@ class QueueFallback implements RequestScopedState
         }
         $waiting = array_filter([
             $this->statistics->oldestPendingAt()?->getTimestamp(),
-            $this->checkpoint->dueAt()?->getTimestamp() ?? $this->runtimeLock->lastTaken(self::WATCH_STAMP),
+            $this->ticker->dueAt()?->getTimestamp() ?? $this->runtimeLock->lastTaken(self::WATCH_STAMP),
         ], static fn (?int $since): bool => $since !== null);
         $patience = $mode->stalledAfterSeconds();
 
