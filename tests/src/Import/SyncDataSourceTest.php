@@ -9,10 +9,11 @@ use Symfony\Component\DependencyInjection\ServiceLocator;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\Exception\UnrecoverableMessageHandlingException;
+use Symfony\Component\Messenger\MessageBus;
+use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Messenger\Stamp\RedeliveryStamp;
 use Symfony\Component\Messenger\Stamp\TransportMessageIdStamp;
 use Symfony\Component\Scheduler\Generator\MessageContext;
-use Symfony\Component\Scheduler\RecurringMessage;
 use Symfony\Component\Scheduler\Schedule;
 use YesWiki\Core\ApiResponse;
 use YesWiki\Files\Service\Storage;
@@ -36,11 +37,9 @@ use YesWiki\Kernel\Service\Queue\QueueScheduleTicker;
 use YesWiki\Test\Contact\InMemoryCheckpoint;
 use YesWiki\Test\Core\YesWikiTestCase;
 use YesWiki\Test\Kernel\QueueTestKit;
-use YesWiki\Test\Kernel\QueueTestTask;
 
 require_once 'tests/YesWikiTestCase.php';
 require_once 'tests/src/Kernel/QueueTestKit.php';
-require_once 'tests/src/Kernel/QueueTestTask.php';
 require_once 'tests/src/Contact/SendDigestTest.php';
 
 /**
@@ -108,49 +107,45 @@ class SyncDataSourceTest extends YesWikiTestCase
         $this->assertSame(604800, $plan['sync-weekly']['every']);
     }
 
-    public function testASourceThatJustSyncedWaitsItsIntervalFromThen(): void
+    /** No state of its own: a source counts its interval from the start of the schedule, whatever its log says. */
+    public function testASourceSyncsEveryIntervalFromTheStartOfTheSchedule(): void
     {
         $this->storage->storeDerived('cache/importer/once_a_day.log', 'done');
-        $this->touchLog('once_a_day', '-1 hour');
-
-        $plan = $this->plan($this->schedule(self::SOURCES));
-
-        $this->assertSame($this->clock->now()->modify('-1 hour')->getTimestamp() + 86400, $plan['sync-once_a_day']['first']->getTimestamp(), 'an hour ago + 24 h');
-    }
-
-    public function testASourceThatNeverSyncedIsDueAtTheFirstTick(): void
-    {
+        $this->touchLog('once_a_day', '-23 hours');
         $tick = $this->ticker($this->schedule(self::SOURCES));
 
-        $tick();
+        $this->assertSame([], $tick(), 'the tick that starts the Scheduler runs nothing');
+        $this->clock->sleep(29 * 60);
+        $this->assertSame([], $tick(), 'neither source before its first interval');
         $this->clock->sleep(60);
-
-        $this->assertSame(['sync-every_time', 'sync-once_a_day'], $tick());
+        $this->assertSame(['sync-every_time'], $tick(), 'half an hour after the start');
+        $this->clock->sleep(23 * 3600);
+        $this->assertSame(['sync-every_time'], $tick(), 'synced 23 hours before the start, the once-a-day source still waits a day from the start');
+        $this->clock->sleep(30 * 60);
+        $this->assertSame(['sync-every_time', 'sync-once_a_day'], $tick(), 'a day after the start');
     }
 
-    /** Spec section 8: a late task runs once, at the next tick, and not at the next phase of a clock nobody anchored. */
-    public function testAnOverdueSourceIsDueAtTheFirstTickAndOnce(): void
+    /** As for the digests: a sync run by hand (the button, `importer:sync`, `{{sync}}`, the API) moves nothing. */
+    public function testASyncByHandDoesNotMoveTheScheduledOne(): void
     {
-        $this->storage->storeDerived('cache/importer/every_time.log', 'done');
-        $this->touchLog('every_time', '-3 hours');
         $tick = $this->ticker($this->schedule(['every_time' => self::SOURCES['every_time']]));
+        $tick();
+        $this->clock->sleep(20 * 60);
+        $this->scheduler()->recordRun('every_time', 'synced by hand');
+        $this->touchLog('every_time', '+0 seconds');
 
-        $this->assertSame([], $tick(), 'the tick that starts the Scheduler runs nothing, whatever the task');
-        $this->clock->sleep(60);
-        $this->assertSame(['sync-every_time'], $tick());
-        $this->assertSame([], $tick(), 'once');
+        $this->clock->sleep(10 * 60);
+
+        $this->assertSame(['sync-every_time'], $tick(), 'half an hour after the start, ten minutes after the sync by hand');
     }
 
-    /**
-     * What makes a source that always fails cost one attempt per interval and not one per tick: the log that recordRun() writes on failure is the anchor.
-     */
+    /** A source that always fails costs one attempt per interval, not one per tick: the schedule moves on whatever the handler did. */
     public function testAFailingSourceComesBackOneIntervalLaterAndNotAtEveryTick(): void
     {
-        $schedule = $this->schedule(['every_time' => self::SOURCES['every_time']]);
         $handler = $this->handler($this->importer(static fn (): string => throw new \RuntimeException('feed unreachable')));
-        $tick = $this->ticker($schedule);
+        $tick = $this->ticker($this->schedule(['every_time' => self::SOURCES['every_time']]));
         $tick();
-        $this->clock->sleep(60);
+        $this->clock->sleep(30 * 60);
         $this->assertSame(['sync-every_time'], $tick());
 
         try {
@@ -161,68 +156,56 @@ class SyncDataSourceTest extends YesWikiTestCase
 
         $this->clock->sleep(60);
         $this->assertSame([], $tick(), 'it failed a minute ago: not again at the next tick');
-        $this->clock->sleep(20 * 60);
+        $this->clock->sleep(28 * 60);
         $this->assertSame([], $tick(), 'nor before the interval');
-        $this->clock->sleep(10 * 60);
-        $this->assertSame(['sync-every_time'], $tick(), 'half an hour after the attempt');
-    }
-
-    /** The schedule is built anew at every due tick: a source that synced must not come due again at the next tick of another task. */
-    public function testASyncedSourceIsNotDueAgainAtTheNextTickOfAnotherTask(): void
-    {
-        $inner = $this->schedule(['every_time' => self::SOURCES['every_time']]);
-        $provider = new class($inner) implements ProvidesSchedule {
-            public function __construct(private readonly ImportSchedule $import)
-            {
-            }
-
-            public function recurringMessages(): array
-            {
-                return [RecurringMessage::every('10 minutes', new QueueTestTask('housekeeping')), ...$this->import->recurringMessages()];
-            }
-        };
-        $tick = $this->ticker($provider);
-        $tick();
         $this->clock->sleep(60);
-        $this->assertSame(['sync-every_time'], $tick());
-        $this->handler($this->importer(static fn (): string => 'ok'))(new SyncDataSource('every_time'));
-
-        $this->clock->sleep(10 * 60);
-        $this->assertSame(['housekeeping'], $tick(), 'synced ten minutes ago');
-        $this->clock->sleep(10 * 60);
-        $this->assertSame(['housekeeping'], $tick());
-        $this->clock->sleep(11 * 60);
-        $this->assertSame(['housekeeping', 'sync-every_time'], $tick(), 'and due again half an hour after the sync');
+        $this->assertSame(['sync-every_time'], $tick(), 'an interval after the last run');
     }
 
-    /** A schedule that throws stops every task with it: the source is left out and the reason is journaled, not swallowed. */
-    public function testASourceWhoseStateCannotBeReadIsSkippedAndJournaled(): void
+    /** Spec section 8: a wiki where nothing ticked for hours syncs once at the next tick, not once per interval missed. */
+    public function testMissedIntervalsMakeOneSync(): void
     {
-        $journal = new RecordingJournal();
-        $scheduler = new class(new ParameterBag(), $this->storage) extends SyncScheduler {
-            public function lastSyncTime(string $source): ?int
-            {
-                if ($source === 'broken') {
-                    throw new \RuntimeException('cache/importer is not readable');
-                }
+        $tick = $this->ticker($this->schedule(['every_time' => self::SOURCES['every_time']]));
+        $tick();
+        $this->clock->sleep(3 * 3600 + 60);
 
-                return null;
-            }
-        };
-        $schedule = new ImportSchedule(
-            new ParameterBag(['dataSources' => self::SOURCES + ['broken' => ['importer' => 'Rss', 'syncOnMaintenance' => true]]]),
-            $scheduler,
-            $journal,
-            $this->clock
-        );
+        $this->assertSame(['sync-every_time'], $tick());
+        $this->assertSame([], $tick(), 'once');
+    }
 
-        $this->assertSame(['sync-every_time', 'sync-once_a_day'], array_keys($this->plan($schedule)));
-        $this->assertCount(1, $journal->records);
-        [$level, $message, $context] = $journal->records[0];
-        $this->assertSame('error', $level);
-        $this->assertSame('import.schedule_failed', $context['action']);
-        $this->assertStringContainsString('broken', $message);
-        $this->assertStringContainsString('not readable', $message);
+    /**
+     * A source just set to sync itself does not wait a whole interval for its first sync: saving it queues one.
+     *
+     * Not at once, but a minute later: the pass at the end of the request that saved it, and a
+     * worker that has not yet seen the configuration change, would read the source as it was.
+     */
+    public function testASourceJustSetToSyncItselfIsQueuedForAMinuteLater(): void
+    {
+        $clock = new MockClock('2026-11-03 10:00:00', 'UTC');
+        $this->kit = new QueueTestKit([SyncDataSource::class => static fn (): null => null], $clock);
+        $schedule = $this->schedule(self::SOURCES, $this->kit->bus);
+
+        $schedule->sourceSaved('on_demand', self::SOURCES['on_demand'], ['importer' => 'Rss', 'syncOnMaintenance' => true]);
+        $schedule->sourceSaved('new_feed', null, ['importer' => 'Rss', 'syncOnMaintenance' => true, 'syncIntervalInMin' => 1440]);
+
+        $this->assertSame(2, $this->kit->statistics->waitingOfType(SyncDataSource::class));
+        $availableAt = $this->kit->statistics->oldestPendingAt();
+        $this->assertNotNull($availableAt);
+        $this->assertGreaterThan($clock->now(), $availableAt, 'not for a pass that still reads the configuration as it was');
+        $this->assertLessThanOrEqual($clock->now()->modify('+1 minute'), $availableAt, 'nor an interval later');
+    }
+
+    public function testASourceAlreadySyncingItselfOrNotSetToIsNotQueued(): void
+    {
+        $this->kit = new QueueTestKit();
+        $schedule = $this->schedule(self::SOURCES, $this->kit->bus);
+
+        $schedule->sourceSaved('once_a_day', self::SOURCES['once_a_day'], self::SOURCES['once_a_day'] + ['url' => 'https://example.org/feed']);
+        $schedule->sourceSaved('every_time', self::SOURCES['every_time'], ['importer' => 'Rss', 'syncOnMaintenance' => false]);
+        $schedule->sourceSaved('on_demand', self::SOURCES['on_demand'], self::SOURCES['on_demand']);
+        $schedule->sourceSaved(str_repeat('x', 60), null, ['importer' => 'Rss', 'syncOnMaintenance' => true]);
+
+        $this->assertSame(0, $this->kit->statistics->waitingOfType(SyncDataSource::class), 'the last one is not scheduled either: its name is too long for a task');
     }
 
     /** The queue keys a task by a 64-character id: a longer one would fail the whole tick. */
@@ -232,9 +215,8 @@ class SyncDataSourceTest extends YesWikiTestCase
         $long = str_repeat('x', 60);
         $schedule = new ImportSchedule(
             new ParameterBag(['dataSources' => ['every_time' => self::SOURCES['every_time'], $long => ['importer' => 'Rss', 'syncOnMaintenance' => true]]]),
-            new SyncScheduler(new ParameterBag(), $this->storage),
             $journal,
-            $this->clock
+            new MessageBus(),
         );
 
         $this->assertSame(['sync-every_time'], array_keys($this->plan($schedule)));
@@ -455,13 +437,12 @@ class SyncDataSourceTest extends YesWikiTestCase
     /**
      * @param array<string, array<string, mixed>> $sources
      */
-    private function schedule(array $sources): ImportSchedule
+    private function schedule(array $sources, ?MessageBusInterface $bus = null): ImportSchedule
     {
         return new ImportSchedule(
             new ParameterBag(['dataSources' => $sources]),
-            $this->scheduler(),
             new Journal(new ServiceLocator([])),
-            $this->clock
+            $bus ?? new MessageBus(),
         );
     }
 

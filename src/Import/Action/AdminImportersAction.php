@@ -6,6 +6,7 @@ use YesWiki\Content\Service\FormManager;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Files\Service\Storage;
 use YesWiki\Identity\Service\AclService;
+use YesWiki\Import\Scheduler\ImportSchedule;
 use YesWiki\Import\Service\ImporterManager;
 use YesWiki\Import\Service\SyncScheduler;
 use YesWiki\Kernel\Performable\RegisteredAction;
@@ -92,9 +93,11 @@ class AdminImportersAction extends YesWikiAction implements RegisteredAction
             if (!empty($fieldsMapping)) {
                 $sourceOptions['fieldsMapping'] = $fieldsMapping;
             }
+            $before = $dataSources[$id] ?? null;
             $dataSources[$id] = $sourceOptions;
             $config['dataSources'] = $dataSources;
             $config->write();
+            $this->getService(ImportSchedule::class)->sourceSaved($id, is_array($before) ? $before : null, $sourceOptions);
             $message = _t('IMPORTER_SOURCE_SAVED');
         }
 

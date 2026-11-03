@@ -12,10 +12,8 @@ use YesWiki\Import\Service\SyncScheduler;
  * Imports one data source, and records what happened for the importers page whether it worked or not.
  *
  * ImporterManager::syncSource() throws when the import fails. The failure is written to the
- * source's log (SyncScheduler::recordRun, the file `{{adminimporters}}` shows and the schedule
- * counts its interval from) and thrown again, so that it is the queue's too: retried, then
- * listed as failed. The log being written on a failure as on a success is what stops a source
- * that always fails from being tried again at every tick.
+ * source's log (SyncScheduler::recordRun, the file `{{adminimporters}}` shows) and thrown again,
+ * so that it is the queue's too: retried, then listed as failed.
  */
 #[AsMessageHandler]
 final class SyncDataSourceHandler

@@ -6,7 +6,9 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Files\Service\Storage;
 
 /**
- * What the last sync of each data source did: the log under the cache directory that the importers page shows and that ImportSchedule counts the interval of a source from.
+ * What the last sync of each data source did: the log under the cache directory that the importers page shows.
+ *
+ * The schedule does not read it: a source syncs every interval from the start of the schedule (ImportSchedule).
  *
  * Whoever syncs a source records the outcome here -- the scheduled task, the console command, the admin page and the API route -- so that "when did this last sync" has one answer rather than one per trigger.
  */
@@ -58,8 +60,8 @@ class SyncScheduler
         ];
     }
 
-    /** When $source last synced, as a Unix time, or null if it never ran: what the schedule needs, without reading the log. */
-    public function lastSyncTime(string $source): ?int
+    /** When $source last synced, as a Unix time, or null if it never ran. */
+    private function lastSyncTime(string $source): ?int
     {
         $file = $this->stateFile($source);
         if ($file === null || !$this->storage->fileExists($file)) {
