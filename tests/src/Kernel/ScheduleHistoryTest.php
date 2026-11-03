@@ -97,6 +97,33 @@ class ScheduleHistoryTest extends YesWikiTestCase
         $this->assertSame('Test task x', $dispatched->label);
     }
 
+    /**
+     * The period a task's last row carries, so it can still be judged while its provider says nothing.
+     *
+     * @param array<string, string|bool> $params
+     */
+    #[DataProvider('servers')]
+    public function testThePeriodIsTheOneTheLastRowCarries(array $params): void
+    {
+        $this->on($params);
+        $task = new QueueTestTask('x');
+
+        $this->recorder->taskDeclared($task, 3600);
+        $declared = $this->history->of('x');
+        $this->assertNotNull($declared);
+        $this->assertSame(3600, $declared->everySeconds);
+
+        $this->recorder->taskDispatched($task, 1800);
+        $dispatched = $this->history->of('x');
+        $this->assertNotNull($dispatched);
+        $this->assertSame(1800, $dispatched->everySeconds);
+
+        $this->recorder->taskFinished('y', QueueRecorder::HANDLED, null);
+        $run = $this->history->of('y');
+        $this->assertNotNull($run);
+        $this->assertNull($run->everySeconds, 'a task whose rows say nothing of its period has none');
+    }
+
     /** @param array<string, string|bool> $params */
     #[DataProvider('servers')]
     public function testConsecutiveFailuresCountFromTheLastHandledRun(array $params): void

@@ -2,7 +2,7 @@
 
 namespace YesWiki\Kernel\Queue;
 
-/** What the Journal says of one scheduled task: when it appeared, was last queued, and how its last run ended (ScheduleHistory). */
+/** What the Journal says of one scheduled task: when it appeared, was last queued, how often it recurs, and how its last run ended (ScheduleHistory). */
 final class TaskHistory
 {
     public function __construct(
@@ -14,6 +14,7 @@ final class TaskHistory
         public readonly ?string $lastStatus,
         public readonly ?string $lastError,
         public readonly int $consecutiveFailures,
+        public readonly ?int $everySeconds = null,
     ) {
     }
 

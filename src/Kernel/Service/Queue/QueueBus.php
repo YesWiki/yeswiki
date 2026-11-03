@@ -13,6 +13,7 @@ use Symfony\Component\Messenger\Stamp\ReceivedStamp;
 use Symfony\Component\Messenger\Stamp\TransportMessageIdStamp;
 use YesWiki\Kernel\Queue\RunsUnbudgeted;
 use YesWiki\Kernel\Queue\ScheduledTask;
+use YesWiki\Kernel\Queue\TaskPeriodStamp;
 use YesWiki\Kernel\Service\Journal;
 
 /**
@@ -42,6 +43,7 @@ class QueueBus implements MessageBusInterface
     public function dispatch(object $message, array $stamps = []): Envelope
     {
         $envelope = Envelope::wrap($message, $stamps);
+        $message = $envelope->getMessage();
 
         if ($envelope->last(ReceivedStamp::class) !== null) {
             return $this->handling->dispatch($envelope);
@@ -75,17 +77,17 @@ class QueueBus implements MessageBusInterface
             $runner->pin((int)$id);
         }
         if ($message instanceof ScheduledTask && $id !== null) {
-            $this->recordDispatch($message);
+            $this->recordDispatch($message, $envelope->last(TaskPeriodStamp::class)?->seconds);
         }
 
         return $sent;
     }
 
-    /** Journals that task's dispatch; a Journal that cannot be written is said, and breaks no page outside a transaction. */
-    private function recordDispatch(ScheduledTask $task): void
+    /** Journals that task's dispatch, with its period when the sender said it; a Journal that cannot be written is said, and breaks no page outside a transaction. */
+    private function recordDispatch(ScheduledTask $task, ?int $everySeconds): void
     {
         try {
-            $this->recorder->taskDispatched($task);
+            $this->recorder->taskDispatched($task, $everySeconds);
         } catch (\Throwable $failed) {
             if ($this->transport->inTransaction()) {
                 throw $failed;

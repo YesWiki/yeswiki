@@ -106,15 +106,15 @@ class QueueRecorder
     }
 
     /** The Scheduler met that task for the first time: the date its schedule counts from until a run is queued. */
-    public function taskDeclared(ScheduledTask $task): void
+    public function taskDeclared(ScheduledTask $task, ?int $everySeconds = null): void
     {
-        $this->insertTask(QueueJournalEntry::TASK_DECLARED, $task->taskId(), LogLevel::INFO, ['label' => mb_substr($task->label(), 0, self::LABEL_LENGTH)]);
+        $this->insertTask(QueueJournalEntry::TASK_DECLARED, $task->taskId(), LogLevel::INFO, $this->taskContext($task, $everySeconds));
     }
 
     /** The queue took a run of that task, or a waiting one absorbed it (QueueBus): the date its schedule counts from. */
-    public function taskDispatched(ScheduledTask $task): void
+    public function taskDispatched(ScheduledTask $task, ?int $everySeconds = null): void
     {
-        $this->insertTask(QueueJournalEntry::TASK_DISPATCHED, $task->taskId(), LogLevel::INFO, ['label' => mb_substr($task->label(), 0, self::LABEL_LENGTH)]);
+        $this->insertTask(QueueJournalEntry::TASK_DISPATCHED, $task->taskId(), LogLevel::INFO, $this->taskContext($task, $everySeconds));
     }
 
     /** A handling attempt of that task's message ended: a failed or killed run adds to `consecutive_failures`, a handled one resets it. */
@@ -122,7 +122,7 @@ class QueueRecorder
     {
         $before = $this->lastConsecutiveFailures($taskId);
 
-        $this->insertTask(QueueJournalEntry::TASK_FINISHED, $taskId, self::levelOf($status), [
+        $this->insertTask(QueueJournalEntry::TASK_FINISHED, $taskId, LogLevel::INFO, [
             'status' => $status,
             'message' => $error === null ? null : QueueFailureCause::fitted($error),
             'consecutive_failures' => match ($status) {
@@ -151,6 +151,32 @@ class QueueRecorder
     private function insertTask(string $action, string $taskId, string $level, array $context): void
     {
         $this->insert($this->format($this->now()), '', $action, mb_substr($taskId, 0, self::TARGET_LENGTH), $level, $context);
+    }
+
+    /**
+     * The label and period of a declared or dispatched row; a period unknown (or 0) is the one the task's last such row carries.
+     *
+     * @return array<string, int|string|null>
+     */
+    private function taskContext(ScheduledTask $task, ?int $everySeconds): array
+    {
+        return [
+            'label' => mb_substr($task->label(), 0, self::LABEL_LENGTH),
+            'every_seconds' => $everySeconds > 0 ? $everySeconds : $this->lastPeriod($task->taskId()),
+        ];
+    }
+
+    /** The period the task's last declared or dispatched row carries; null when it has none. */
+    private function lastPeriod(string $taskId): ?int
+    {
+        $stored = $this->db->scalar(
+            "SELECT context FROM {$this->journal->table()} WHERE channel = ? AND action IN (?, ?) AND target = ? ORDER BY id DESC LIMIT 1",
+            null,
+            [JournalChannel::Queue->value, QueueJournalEntry::TASK_DECLARED, QueueJournalEntry::TASK_DISPATCHED, mb_substr($taskId, 0, self::TARGET_LENGTH)]
+        );
+        $context = is_string($stored) ? json_decode($stored, true) : null;
+
+        return is_array($context) && isset($context['every_seconds']) ? (int)$context['every_seconds'] : null;
     }
 
     /** The count its last `queue.task.finished` row left; 0 for a task that has none. */

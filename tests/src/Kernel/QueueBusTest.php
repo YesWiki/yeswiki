@@ -6,12 +6,14 @@ use PHPUnit\Framework\Attributes\CoversClass;
 use Symfony\Component\Clock\MockClock;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 use Symfony\Component\DependencyInjection\ServiceLocator;
+use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\Exception\NoHandlerForMessageException;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Messenger\Stamp\HandledStamp;
 use Symfony\Component\Messenger\Stamp\ReceivedStamp;
 use Symfony\Component\Messenger\Stamp\TransportMessageIdStamp;
 use YesWiki\Kernel\Queue\QueueJournalEntry;
+use YesWiki\Kernel\Queue\TaskPeriodStamp;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\Journal;
 use YesWiki\Kernel\Service\JournalSchema;
@@ -131,6 +133,28 @@ class QueueBusTest extends YesWikiTestCase
 
         $this->assertSame(1, $this->transport->getMessageCount(), 'the second is absorbed by the run that waits');
         $this->assertSame(['test-task', 'test-task'], $this->dispatches());
+    }
+
+    /** A task sent in an Envelope of its own is a dispatch all the same. */
+    public function testAScheduledTaskSentInAnEnvelopeWritesItsDispatch(): void
+    {
+        $this->bus->dispatch(new Envelope(new QueueTestTask()));
+
+        $this->assertSame(['test-task'], $this->dispatches());
+    }
+
+    /** The Scheduler says how often the task recurs: its dispatch row keeps it, the stored message does not. */
+    public function testTheTasksPeriodGoesToItsDispatchRowOnly(): void
+    {
+        $sent = $this->bus->dispatch(new QueueTestTask(), [new TaskPeriodStamp(1800)]);
+
+        $table = (new JournalSchema($this->db))->table();
+        $context = json_decode((string)$this->db->scalar("SELECT context FROM {$table} WHERE action = ?", null, [QueueJournalEntry::TASK_DISPATCHED]), true);
+        $this->assertIsArray($context);
+        $this->assertSame(1800, $context['every_seconds'] ?? null);
+        $stored = $this->transport->find($sent->last(TransportMessageIdStamp::class)?->getId());
+        $this->assertNotNull($stored);
+        $this->assertSame([], $stored->all(TaskPeriodStamp::class));
     }
 
     public function testAFailedSendWritesNoDispatch(): void

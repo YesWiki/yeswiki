@@ -5,6 +5,7 @@ namespace YesWiki\Test\Kernel;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Component\Clock\MockClock;
+use Symfony\Component\Clock\NativeClock;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 use Symfony\Component\DependencyInjection\ServiceLocator;
 use Symfony\Component\Messenger\Envelope;
@@ -22,11 +23,15 @@ use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Kernel\Service\Journal;
 use YesWiki\Kernel\Service\JournalSchema;
+use YesWiki\Kernel\Service\Queue\QueueBudgetFactory;
 use YesWiki\Kernel\Service\Queue\QueueBus;
+use YesWiki\Kernel\Service\Queue\QueueFallback;
 use YesWiki\Kernel\Service\Queue\QueueHandlerLocator;
+use YesWiki\Kernel\Service\Queue\QueueHealthChecks;
 use YesWiki\Kernel\Service\Queue\QueueRecorder;
 use YesWiki\Kernel\Service\Queue\QueueScheduleTicker;
 use YesWiki\Kernel\Service\Queue\QueueSchema;
+use YesWiki\Kernel\Service\Queue\QueueSettings;
 use YesWiki\Kernel\Service\Queue\QueueStatistics;
 use YesWiki\Kernel\Service\Queue\QueueTransport;
 use YesWiki\Kernel\Service\Queue\ScheduleHistory;
@@ -334,29 +339,13 @@ class QueueScheduleTickerTest extends YesWikiTestCase
     }
 
     /**
-     * A provider that throws (the digests' subscriptions unreadable, no triples table) is journaled and left out of that tick; the other tasks are still dispatched, and its tasks are still listed from the Journal, and still judged.
+     * A provider that throws (the digests' subscriptions unreadable, no triples table) is journaled and left out of that tick; the other tasks are still dispatched, and its tasks are still listed from the Journal, with the period their rows carry.
      *
-     * Left out, they would leave nothing for `queue-task-failing` to find: the digests would stop with nothing to say so.
+     * Left out, they would leave nothing for `queue-task-failing` or `queue-task-overdue` to find: the digests would stop with nothing to say so.
      */
     public function testAProviderThatThrowsLeavesTheOthersScheduledAndKeepsItsTasks(): void
     {
-        $digests = new class(function (): array {
-            if ($this->digestsBroken) {
-                throw new \RuntimeException('no triples table');
-            }
-
-            return [RecurringMessage::every('30 minutes', new QueueTestTask('digest'))];
-        }) implements ProvidesSchedule {
-            /** @param \Closure(): list<RecurringMessage> $messages */
-            public function __construct(private \Closure $messages)
-            {
-            }
-
-            public function recurringMessages(): array
-            {
-                return ($this->messages)();
-            }
-        };
+        $digests = $this->digests();
         $ticker = $this->ticker([$digests]);
         $ticker->tick();
         $this->clock->sleep(31 * 60);
@@ -369,11 +358,11 @@ class QueueScheduleTickerTest extends YesWikiTestCase
         $this->assertSame(1, $this->ticker([$digests])->tick(), 'the other task is still dispatched');
         $tasks = $this->ticker([$digests])->tasks();
         $this->assertSame(['digest', 'test-task'], array_column($tasks, 'taskId'), 'the digest task is kept');
-        $this->assertSame(['Test task digest', 0, null], [$tasks[0]['label'], $tasks[0]['everySeconds'], $tasks[0]['nextDueAt']], 'from the Journal, with no schedule to say more');
+        $this->assertSame(['Test task digest', 1800, '2026-10-23 13:01:00'], [$tasks[0]['label'], $tasks[0]['everySeconds'], $tasks[0]['nextDueAt']?->format('Y-m-d H:i:s')], 'from the Journal: its period counts from its last dispatch');
         $this->assertSame('2026-10-23 12:31:00', $tasks[0]['lastDispatchedAt']?->format('Y-m-d H:i:s'));
         $declared = $this->ticker([$digests])->declaredTaskIds();
         sort($declared);
-        $this->assertSame(['digest', 'test-task'], $declared, 'and still judged by the health checks');
+        $this->assertSame(['digest', 'test-task'], $declared, 'and still declared');
         $journaled = $this->db->loadAll('SELECT action, target, context FROM ' . (new JournalSchema($this->db))->table() . " WHERE action = 'queue.schedule_provider_failed'");
         $this->assertNotEmpty($journaled);
         $this->assertSame($digests::class, $journaled[0]['target']);
@@ -381,6 +370,64 @@ class QueueScheduleTickerTest extends YesWikiTestCase
 
         $this->digestsBroken = false;
         $this->assertSame(['test-task', 'digest'], $this->ticker([$digests])->declaredTaskIds(), 'back as soon as it declares again');
+    }
+
+    /** The digests' provider throws and nothing sends them any more: once a period past due, the health checks say so, as they would of a task that stopped. */
+    public function testATaskWhoseProviderKeepsThrowingIsOverdueAfterAPeriod(): void
+    {
+        $digests = $this->digests();
+        $this->ticker([$digests])->tick();
+        $this->clock->sleep(31 * 60);
+        $this->assertSame(2, $this->ticker([$digests])->tick());
+        $this->digestsBroken = true;
+
+        $this->clock->modify('2026-10-23 13:30:00');
+        $this->ticker([$digests])->tick();
+        $this->assertNull($this->overdue([$digests]), 'within one period of its due time');
+
+        $this->clock->modify('2026-10-23 13:32:00');
+        $this->ticker([$digests])->tick();
+        $this->assertStringContainsString('Test task digest', (string)$this->overdue([$digests]));
+        $this->assertStringNotContainsString('Test task test-task', (string)$this->overdue([$digests]), 'the task still dispatched is on time');
+    }
+
+    /** A provider that throws is said by the tick that sends what is due, the one path that writes: the jobs page, the admin badge and the end of each request read the schedule in silence. */
+    public function testAProviderThatThrowsIsJournaledOnlyByTheTick(): void
+    {
+        $this->digestsBroken = true;
+        $ticker = $this->ticker([$this->digests()]);
+
+        $ticker->tasks();
+        $ticker->task('digest');
+        $ticker->dueAt();
+        $ticker->declaredTaskIds();
+        $ticker->runNow('test-task');
+        $this->assertSame(0, $this->rows('queue.schedule_provider_failed'));
+
+        $this->clock->sleep(31 * 60);
+        $this->assertSame(1, $this->ticker([$this->digests()])->tick());
+        $this->assertSame(1, $this->rows('queue.schedule_provider_failed'));
+    }
+
+    /** With nothing to schedule, or a schedule whose rows cannot be read back, the next tick waits a minute like any other: a blocking consumer ticks every second. */
+    public function testAnEmptyScheduleIsReadOnceAMinute(): void
+    {
+        $this->tasks = [];
+        $ticker = $this->ticker();
+        $ticker->tick();
+        $queries = count($this->db->getQueryLog());
+
+        $this->clock->sleep(30);
+        $ticker->tick();
+
+        $this->assertCount($queries, $this->db->getQueryLog());
+    }
+
+    /** A task the Scheduler has not seen yet is due at the next tick, which notes it: the jobs page shows it due, not with no date. */
+    public function testATaskNeverSeenIsListedDueNow(): void
+    {
+        $this->assertSame(self::START, $this->task('test-task')['nextDueAt']?->format('Y-m-d H:i:s'));
+        $this->assertSame(1800, $this->task('test-task')['everySeconds']);
     }
 
     /** The Scheduler refuses a message declared twice: refused for the whole schedule, every task of every provider would stop, the health checks with them. */
@@ -626,6 +673,56 @@ class QueueScheduleTickerTest extends YesWikiTestCase
             new HibernationService($this->params),
             $journal,
         );
+    }
+
+    /** The digests' provider: every 30 minutes, or a throw while $digestsBroken. */
+    private function digests(): ProvidesSchedule
+    {
+        return new class(function (): array {
+            if ($this->digestsBroken) {
+                throw new \RuntimeException('no triples table');
+            }
+
+            return [RecurringMessage::every('30 minutes', new QueueTestTask('digest'))];
+        }) implements ProvidesSchedule {
+            /** @param \Closure(): list<RecurringMessage> $messages */
+            public function __construct(private \Closure $messages)
+            {
+            }
+
+            public function recurringMessages(): array
+            {
+                return ($this->messages)();
+            }
+        };
+    }
+
+    /**
+     * What `queue-task-overdue` says, in worker mode, of the tasks a fresh ticker lists.
+     *
+     * @param list<ProvidesSchedule> $more
+     */
+    private function overdue(array $more = []): ?string
+    {
+        $settings = new QueueSettings(new ParameterBag(['queue_consumer' => 'worker']), static fn (): array => []);
+        $hibernation = new HibernationService($this->params);
+        $checks = new QueueHealthChecks(
+            $settings,
+            $this->statistics,
+            $this->schema,
+            $hibernation,
+            $this->ticker($more),
+            new QueueFallback($settings, $this->statistics, $this->ticker($more), $hibernation, $this->locks, $this->clock),
+            new QueueBudgetFactory(new NativeClock()),
+            $this->clock,
+        );
+        foreach ($checks->healthChecks() as $check) {
+            if ($check->id() === 'queue-task-overdue') {
+                return $check->failure();
+            }
+        }
+
+        return $this->fail('no queue-task-overdue check');
     }
 
     private function recorder(): QueueRecorder

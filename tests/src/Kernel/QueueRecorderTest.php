@@ -500,8 +500,8 @@ class QueueRecorderTest extends YesWikiTestCase
         $task = new QueueTestTask('digest');
         $table = $this->journal->table();
 
-        $this->recorder->taskDeclared($task);
-        $this->recorder->taskDispatched($task);
+        $this->recorder->taskDeclared($task, 1800);
+        $this->recorder->taskDispatched($task, 1800);
         $this->recorder->taskFinished('digest', QueueRecorder::RETRIED, 'again');
         $this->recorder->taskFinished('digest', QueueRecorder::FAILED, 'boom');
         $this->recorder->taskFinished('digest', QueueRecorder::HANDLED, null);
@@ -513,13 +513,28 @@ class QueueRecorderTest extends YesWikiTestCase
         );
         $this->assertSame(array_fill(0, 5, 'queue'), array_column($rows, 'channel'));
         $this->assertSame(array_fill(0, 5, 'digest'), array_column($rows, 'target'), 'the task, not the message type');
-        $this->assertSame(['info', 'info', 'warning', 'error', 'info'], array_column($rows, 'level'), 'a finished row has its run\'s level');
+        $this->assertSame(array_fill(0, 5, 'info'), array_column($rows, 'level'), 'a finished row is a fact of the task: its run\'s `queue.run.*` row carries the severity');
         $this->assertSame(array_fill(0, 5, self::START), array_column($rows, 'at'));
-        $this->assertSame(['label' => 'Test task digest'], $this->context($rows[0]));
-        $this->assertSame(['label' => 'Test task digest'], $this->context($rows[1]));
+        $this->assertSame(['label' => 'Test task digest', 'every_seconds' => 1800], $this->context($rows[0]));
+        $this->assertSame(['label' => 'Test task digest', 'every_seconds' => 1800], $this->context($rows[1]));
         $this->assertSame(['status' => 'retried', 'message' => 'again', 'consecutive_failures' => 0], $this->context($rows[2]));
         $this->assertSame(['status' => 'failed', 'message' => 'boom', 'consecutive_failures' => 1], $this->context($rows[3]));
         $this->assertSame(['status' => 'handled', 'consecutive_failures' => 0], $this->context($rows[4]), 'a null message is left out');
+    }
+
+    /** A send whose period is unknown (an import source's first sync) takes the one its task's last row carries, so a provider that throws later still leaves a period to judge it by. */
+    public function testADispatchWithNoPeriodKeepsTheLastOneKnown(): void
+    {
+        $task = new QueueTestTask('digest');
+
+        $this->recorder->taskDispatched($task);
+        $this->recorder->taskDeclared($task, 3600);
+        $this->recorder->taskDispatched($task);
+        $this->recorder->taskDispatched($task, 1800);
+        $this->recorder->taskDispatched($task);
+
+        $rows = $this->db->loadAll("SELECT context FROM {$this->journal->table()} ORDER BY id");
+        $this->assertSame([null, 3600, 3600, 1800, 1800], array_map(fn (array $row): ?int => $this->context($row)['every_seconds'] ?? null, $rows));
     }
 
     /** A run of a scheduled task is a `queue.run.*` row of its message type and a `queue.task.finished` row of the task. */

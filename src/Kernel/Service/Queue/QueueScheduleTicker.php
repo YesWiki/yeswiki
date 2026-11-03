@@ -13,6 +13,7 @@ use YesWiki\Files\Service\RuntimeLock;
 use YesWiki\Kernel\Queue\ProvidesSchedule;
 use YesWiki\Kernel\Queue\ScheduledTask;
 use YesWiki\Kernel\Queue\TaskHistory;
+use YesWiki\Kernel\Queue\TaskPeriodStamp;
 use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Kernel\Service\Journal;
 
@@ -74,7 +75,7 @@ class QueueScheduleTicker
                 return 0;
             }
             $due = $this->nextDueAt($now);
-            $this->learn($due !== null && $due <= $now ? $now->modify('+' . self::RECHECK_SECONDS . ' seconds') : $due, $now);
+            $this->learn($due === null || $due <= $now ? $now->modify('+' . self::RECHECK_SECONDS . ' seconds') : $due, $now);
 
             return $dispatched;
         } catch (\Throwable $failed) {
@@ -99,7 +100,7 @@ class QueueScheduleTicker
         return $this->dueAt;
     }
 
-    /** Every recurring task declared, built anew on each call; a provider that throws is journaled and left out. */
+    /** Every recurring task declared, built anew on each call; a provider that throws is left out (only a tick journals it). */
     public function schedule(): Schedule
     {
         return $this->build()[0];
@@ -122,7 +123,7 @@ class QueueScheduleTicker
     }
 
     /**
-     * The tasks declared, by id, with their history and next due time; while a provider throws, the Journal's others too, with neither period nor due time.
+     * The tasks declared, by id, with their history and next due time (now when never seen); while a provider throws, the Journal's others too, due a period after their anchor.
      *
      * @return list<array{taskId: string, label: string, everySeconds: int, lastDispatchedAt: ?\DateTimeImmutable, nextDueAt: ?\DateTimeImmutable, lastFinishedAt: ?\DateTimeImmutable, lastStatus: ?string, lastError: ?string, consecutiveFailures: int}>
      */
@@ -136,13 +137,15 @@ class QueueScheduleTicker
         foreach ($this->tasksOf($schedule, $now) as [$task, $trigger]) {
             $history = $histories[$task->taskId()] ?? null;
             $anchor = $history?->anchor();
-            $next = $anchor === null ? null : $trigger->getNextRunDate($anchor);
-            $every = self::periodOf($trigger, $next ?? $now, $next !== null);
+            $next = $anchor === null ? $now : $trigger->getNextRunDate($anchor);
+            $every = self::periodOf($trigger, $next ?? $now, $anchor !== null && $next !== null);
             $tasks[$task->taskId()] = self::row($task->taskId(), $task->label(), $every, $next, $history);
         }
         if (!$complete) {
             foreach ($histories as $taskId => $history) {
-                $tasks[(string)$taskId] ??= self::row((string)$taskId, $history->label ?? (string)$taskId, 0, null, $history);
+                $every = $history->everySeconds ?? 0;
+                $next = $every > 0 ? $history->anchor()?->modify("+{$every} seconds") : null;
+                $tasks[(string)$taskId] ??= self::row((string)$taskId, $history->label ?? (string)$taskId, $every, $next, $history);
             }
         }
         usort($tasks, static fn (array $a, array $b): int => strcmp($a['taskId'], $b['taskId']));
@@ -169,11 +172,12 @@ class QueueScheduleTicker
     /** Queues a run of that task now, from which its next run counts; false when no such task is declared or it could not be queued. */
     public function runNow(string $taskId): bool
     {
-        foreach ($this->tasksOf($this->schedule(), $this->clock->now()) as [$task]) {
+        $now = $this->clock->now();
+        foreach ($this->tasksOf($this->schedule(), $now) as [$task, $trigger]) {
             if ($task->taskId() === $taskId) {
                 $this->learntAt = null;
 
-                return $this->queue($task);
+                return $this->queue($task, self::periodOf($trigger, $now));
             }
         }
 
@@ -181,11 +185,11 @@ class QueueScheduleTicker
     }
 
     /**
-     * The schedule the providers declare now, and whether all of them could say.
+     * The schedule the providers declare now, and whether all of them could say; a provider that cannot is journaled when $say.
      *
      * @return array{Schedule, bool}
      */
-    private function build(): array
+    private function build(bool $say = false): array
     {
         $schedule = new Schedule();
         $complete = true;
@@ -194,11 +198,13 @@ class QueueScheduleTicker
                 $recurring = $provider->recurringMessages();
             } catch (\Throwable $failed) {
                 $complete = false;
-                $this->journal?->error($provider::class . ' could not say what it schedules; its tasks are kept as they were: ' . $failed->getMessage(), [
-                    'action' => 'queue.schedule_provider_failed',
-                    'target' => $provider::class,
-                    'exception' => $failed,
-                ]);
+                if ($say) {
+                    $this->journal?->error($provider::class . ' could not say what it schedules; its tasks are kept as they were: ' . $failed->getMessage(), [
+                        'action' => 'queue.schedule_provider_failed',
+                        'target' => $provider::class,
+                        'exception' => $failed,
+                    ]);
+                }
 
                 continue;
             }
@@ -206,11 +212,13 @@ class QueueScheduleTicker
                 try {
                     $schedule->add($message);
                 } catch (LogicException $twice) {
-                    $this->journal?->error($provider::class . ' declares a scheduled task twice; it is scheduled once: ' . $twice->getMessage(), [
-                        'action' => 'queue.schedule_provider_failed',
-                        'target' => $provider::class,
-                        'exception' => $twice,
-                    ]);
+                    if ($say) {
+                        $this->journal?->error($provider::class . ' declares a scheduled task twice; it is scheduled once: ' . $twice->getMessage(), [
+                            'action' => 'queue.schedule_provider_failed',
+                            'target' => $provider::class,
+                            'exception' => $twice,
+                        ]);
+                    }
                 }
             }
         }
@@ -232,18 +240,18 @@ class QueueScheduleTicker
         }
 
         try {
-            [$schedule] = $this->build();
+            [$schedule] = $this->build(true);
             $histories = $this->history->all();
             $dispatched = 0;
             foreach ($this->tasksOf($schedule, $now, true) as [$task, $trigger]) {
                 $anchor = ($histories[$task->taskId()] ?? null)?->anchor();
                 if ($anchor === null) {
-                    $this->recorder->taskDeclared($task);
+                    $this->recorder->taskDeclared($task, self::periodOf($trigger, $now));
 
                     continue;
                 }
                 $next = $trigger->getNextRunDate($anchor);
-                if ($next !== null && $next <= $now && $this->queue($task)) {
+                if ($next !== null && $next <= $now && $this->queue($task, self::periodOf($trigger, $next, true))) {
                     $dispatched++;
                 }
             }
@@ -274,10 +282,10 @@ class QueueScheduleTicker
         return $earliest?->setTimezone(new \DateTimeZone('UTC'));
     }
 
-    /** Sends one run of that task to the queue, which journals it (QueueBus); true once queued, or when that task already waits. */
-    private function queue(ScheduledTask $task): bool
+    /** Sends one run of that task to the queue, which journals it with its period (QueueBus); true once queued, or when that task already waits. */
+    private function queue(ScheduledTask $task, int $everySeconds): bool
     {
-        return $this->bus->dispatch($task)->last(TransportMessageIdStamp::class) !== null;
+        return $this->bus->dispatch($task, $everySeconds > 0 ? [new TaskPeriodStamp($everySeconds)] : [])->last(TransportMessageIdStamp::class) !== null;
     }
 
     /**

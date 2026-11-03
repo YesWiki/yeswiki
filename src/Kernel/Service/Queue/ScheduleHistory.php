@@ -75,6 +75,7 @@ class ScheduleHistory
         $finished = $rows[QueueJournalEntry::TASK_FINISHED] ?? null;
         $run = $finished === null ? [] : self::context($finished);
         $label = self::context($dispatched ?? [])['label'] ?? self::context($declared ?? [])['label'] ?? null;
+        $every = self::context($dispatched ?? [])['every_seconds'] ?? self::context($declared ?? [])['every_seconds'] ?? null;
 
         return new TaskHistory(
             $taskId,
@@ -85,6 +86,7 @@ class ScheduleHistory
             isset($run['status']) ? (string)$run['status'] : null,
             isset($run['message']) ? (string)$run['message'] : null,
             (int)($run['consecutive_failures'] ?? 0),
+            $every === null ? null : (int)$every,
         );
     }
 
