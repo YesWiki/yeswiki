@@ -170,6 +170,7 @@ class MySqlDialect implements SqlDialect
                 KEY `idx_channel_at` (`channel`, `at`),
                 KEY `idx_actor_at` (`actor`, `at`),
                 KEY `idx_channel_target_at` (`channel`, `target`, `at`),
+                KEY `idx_channel_action_target` (`channel`, `action`, `target`),
                 UNIQUE KEY `uniq_fingerprint_day` (`fingerprint`, `day`)
             ) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci ENGINE=InnoDB",
         ];
@@ -177,7 +178,10 @@ class MySqlDialect implements SqlDialect
 
     public function journalQueueIndexDdl(string $table): array
     {
-        return ["CREATE INDEX `idx_channel_target_at` ON `{$table}` (`channel`, `target`, `at`)"];
+        return [
+            'idx_channel_target_at' => ["CREATE INDEX `idx_channel_target_at` ON `{$table}` (`channel`, `target`, `at`)"],
+            'idx_channel_action_target' => ["CREATE INDEX `idx_channel_action_target` ON `{$table}` (`channel`, `action`, `target`)"],
+        ];
     }
 
     public function journalDropDdl(string $table): array

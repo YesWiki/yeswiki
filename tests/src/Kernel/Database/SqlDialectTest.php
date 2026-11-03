@@ -262,12 +262,17 @@ class SqlDialectTest extends TestCase
     }
 
     #[DataProvider('dialects')]
-    public function testTheJournalIsIndexedForTheQueueChannelAndItsIndexCanBeAddedLater(SqlDialect $d, string $driver): void
+    public function testTheJournalIsIndexedForTheQueueChannelAndItsIndexesCanBeAddedLater(SqlDialect $d, string $driver): void
     {
-        $this->assertStringContainsString('idx_channel_target_at', implode("\n", $d->journalDdl('p_journal')), "$driver creates it with the table");
+        $create = implode("\n", $d->journalDdl('p_journal'));
+        $later = $d->journalQueueIndexDdl('p_journal');
+        $this->assertSame(['idx_channel_target_at', 'idx_channel_action_target'], array_keys($later), "$driver names them unprefixed");
 
-        $later = implode("\n", $d->journalQueueIndexDdl('p_journal'));
-        $this->assertStringContainsString('idx_channel_target_at', $later, "$driver adds it to a table that exists");
-        $this->assertMatchesRegularExpression('/CREATE INDEX .*[`"]p_journal[`"]\s*\([`"]channel[`"], [`"]target[`"], [`"]at[`"]\)/', $later);
+        foreach ($later as $name => $statements) {
+            $this->assertStringContainsString($name, $create, "$driver creates $name with the table");
+            $this->assertStringContainsString($name, implode("\n", $statements), "$driver adds $name to a table that exists");
+        }
+        $this->assertMatchesRegularExpression('/CREATE INDEX .*[`"]p_journal[`"]\s*\([`"]channel[`"], [`"]target[`"], [`"]at[`"]\)/', implode("\n", $later['idx_channel_target_at']));
+        $this->assertMatchesRegularExpression('/CREATE INDEX .*[`"]p_journal[`"]\s*\([`"]channel[`"], [`"]action[`"], [`"]target[`"]\)/', implode("\n", $later['idx_channel_action_target']));
     }
 }

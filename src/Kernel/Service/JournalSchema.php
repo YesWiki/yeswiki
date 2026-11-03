@@ -8,8 +8,6 @@ class JournalSchema
     /** Unprefixed. */
     public const TABLE = 'journal';
 
-    private const QUEUE_INDEX = 'idx_channel_target_at';
-
     private DbService $dbService;
 
     public function __construct(DbService $dbService)
@@ -30,18 +28,20 @@ class JournalSchema
         }
     }
 
-    /** Adds the `(channel, target, at)` index to a Journal created before the queue channel existed. */
+    /** Adds the indexes the queue channel reads by to a Journal created before them, those it lacks only. */
     public function ensureQueueIndex(): void
     {
         $table = $this->table();
-        $name = $this->dbService->getDriver() === 'mysql' ? self::QUEUE_INDEX : $table . '_' . self::QUEUE_INDEX;
+        $mysql = $this->dbService->getDriver() === 'mysql';
 
-        if ($this->dbService->schema()->indexExists(self::TABLE, $name)) {
-            return;
-        }
+        foreach ($this->dbService->dialect()->journalQueueIndexDdl($table) as $index => $statements) {
+            if ($this->dbService->schema()->indexExists(self::TABLE, $mysql ? $index : $table . '_' . $index)) {
+                continue;
+            }
 
-        foreach ($this->dbService->dialect()->journalQueueIndexDdl($table) as $statement) {
-            $this->dbService->query($statement);
+            foreach ($statements as $statement) {
+                $this->dbService->query($statement);
+            }
         }
     }
 

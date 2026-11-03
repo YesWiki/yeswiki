@@ -108,9 +108,9 @@ interface SqlDialect
     public function journalDdl(string $table): array;
 
     /**
-     * Statements adding the `(channel, target, at)` index to an existing Journal; run only where `idx_channel_target_at` is missing.
+     * Statements adding to an existing Journal the indexes the queue channel reads by, per unprefixed index name; run each only where that index is missing.
      *
-     * @return list<string>
+     * @return array<string, list<string>>
      */
     public function journalQueueIndexDdl(string $table): array;
 

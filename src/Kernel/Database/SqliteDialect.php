@@ -160,13 +160,17 @@ class SqliteDialect implements SqlDialect
             "CREATE INDEX IF NOT EXISTS \"{$table}_idx_channel_at\" ON \"{$table}\" (\"channel\", \"at\")",
             "CREATE INDEX IF NOT EXISTS \"{$table}_idx_actor_at\" ON \"{$table}\" (\"actor\", \"at\")",
             "CREATE INDEX IF NOT EXISTS \"{$table}_idx_channel_target_at\" ON \"{$table}\" (\"channel\", \"target\", \"at\")",
+            "CREATE INDEX IF NOT EXISTS \"{$table}_idx_channel_action_target\" ON \"{$table}\" (\"channel\", \"action\", \"target\")",
             "CREATE UNIQUE INDEX IF NOT EXISTS \"{$table}_uniq_fingerprint_day\" ON \"{$table}\" (\"fingerprint\", \"day\")",
         ];
     }
 
     public function journalQueueIndexDdl(string $table): array
     {
-        return ["CREATE INDEX IF NOT EXISTS \"{$table}_idx_channel_target_at\" ON \"{$table}\" (\"channel\", \"target\", \"at\")"];
+        return [
+            'idx_channel_target_at' => ["CREATE INDEX IF NOT EXISTS \"{$table}_idx_channel_target_at\" ON \"{$table}\" (\"channel\", \"target\", \"at\")"],
+            'idx_channel_action_target' => ["CREATE INDEX IF NOT EXISTS \"{$table}_idx_channel_action_target\" ON \"{$table}\" (\"channel\", \"action\", \"target\")"],
+        ];
     }
 
     public function journalDropDdl(string $table): array
