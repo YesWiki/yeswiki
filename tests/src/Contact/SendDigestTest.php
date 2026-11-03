@@ -8,6 +8,7 @@ use Symfony\Component\Clock\MockClock;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Tester\CommandTester;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\DependencyInjection\ServiceLocator;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\Messenger\Envelope;
@@ -21,7 +22,6 @@ use YesWiki\Contact\Command\ContactDigestCommand;
 use YesWiki\Contact\Message\SendDigest;
 use YesWiki\Contact\Message\SendDigestHandler;
 use YesWiki\Contact\Scheduler\ContactSchedule;
-use YesWiki\Contact\Service\DigestMarkers;
 use YesWiki\Contact\Service\MailSubscriptions;
 use YesWiki\Files\Service\Storage;
 use YesWiki\Kernel\Queue\ProvidesSchedule;
@@ -45,54 +45,110 @@ require_once 'tests/src/Kernel/QueueTestKit.php';
 require_once 'tests/src/Kernel/QueueTestTask.php';
 
 /**
- * The mailing-list digests are scheduled tasks, one per period (messenger / scheduler, spec 9.3).
+ * The mailing-list digests are scheduled tasks, one per period, on a cron in the wiki's own timezone (messenger / scheduler, spec 9.3).
  *
- * The markers live in a throw-away directory, the queue is the kit's, and the subscriptions are
- * the wiki's own service with its sending replaced by what each test needs.
+ * The queue is the kit's, the checkpoint is kept in memory, and the subscriptions are the wiki's
+ * own service with its sending replaced by what each test needs. NOW is a Friday, two days
+ * before Paris leaves summer time.
  */
 #[CoversClass(SendDigest::class)]
 #[CoversClass(SendDigestHandler::class)]
 #[CoversClass(ContactSchedule::class)]
-#[CoversClass(DigestMarkers::class)]
 class SendDigestTest extends YesWikiTestCase
 {
     private const NOW = '2026-10-23 12:00:00';
 
-    private string $root;
-    private DigestMarkers $markers;
     private ?QueueTestKit $kit = null;
     private MockClock $clock;
 
     protected function setUp(): void
     {
         parent::setUp();
-        $this->root = sys_get_temp_dir() . '/yeswiki-digests-' . bin2hex(random_bytes(4));
-        mkdir($this->root);
-        $this->markers = new DigestMarkers(Storage::rootedAt($this->root));
         $this->clock = new MockClock(self::NOW, 'UTC');
     }
 
     protected function tearDown(): void
     {
         $this->kit?->dispose();
-        Storage::rootedAt($this->root)->deleteDirectory(DigestMarkers::DIRECTORY);
-        @rmdir($this->root . '/private');
-        @rmdir($this->root);
     }
 
-    public function testEachEnabledPeriodIsScheduled(): void
+    /** 7 a.m. in Paris is 05:00 UTC in summer time and 06:00 UTC once it is over, on Sunday the 25th. */
+    public function testEachPeriodGoesOutAtSevenInTheMorningOfTheWiki(): void
     {
         $plan = $this->plan($this->schedule());
 
         $this->assertSame(['digest-day', 'digest-week', 'digest-month'], array_keys($plan));
-        $this->assertSame(
-            [82800, 604800, 2592000],
-            array_column($plan, 'every'),
-            'the floors the scheduler of the housekeeping pass used: 23 h, 7 d, 30 d'
-        );
+        $this->assertSame('2026-10-24 05:00:00', $plan['digest-day']['first'], 'tomorrow, Saturday, at 7');
+        $this->assertSame('2026-10-26 06:00:00', $plan['digest-week']['first'], 'on Monday at 7');
+        $this->assertSame('2026-11-01 06:00:00', $plan['digest-month']['first'], 'on the first of the month at 7');
         foreach (MailSubscriptions::PERIODS as $period) {
             $this->assertEquals(new SendDigest($period), $plan['digest-' . $period]['message']);
         }
+    }
+
+    public function testSevenIsSevenInTheTimezoneTheWikiIsSetTo(): void
+    {
+        $this->assertSame('2026-10-24 11:00:00', $this->plan($this->schedule(['timezone' => 'America/New_York']))['digest-day']['first']);
+    }
+
+    /** A wiki whose configuration names no timezone runs on PHP's, which is what its pages show. */
+    public function testWithoutATimezoneOfItsOwnTheWikiRunsOnPhps(): void
+    {
+        $default = date_default_timezone_get();
+        date_default_timezone_set('Asia/Tokyo');
+        try {
+            $first = $this->plan($this->schedule(['timezone' => null]))['digest-day']['first'];
+        } finally {
+            date_default_timezone_set($default);
+        }
+
+        $this->assertSame('2026-10-23 22:00:00', $first, '7 a.m. in Tokyo, tonight in UTC');
+    }
+
+    /**
+     * The audit's finding: with a floor counted from the last run, every digest left a little earlier than the one before it.
+     *
+     * Ticks come every 47 minutes, so no run falls on the hour; whatever time one went at, the
+     * next is still at the first tick after 7, and once a day.
+     */
+    public function testTheDigestsKeepTheirHourDayAfterDay(): void
+    {
+        $tick = $this->ticker($this->withHousekeeping($this->schedule()), new InMemoryCheckpoint());
+        $paris = new \DateTimeZone('Europe/Paris');
+        $sent = [];
+
+        $tick();
+        while ($this->clock->now() < new \DateTimeImmutable('2026-10-28 00:00:00', $paris)) {
+            $this->clock->sleep(47 * 60);
+            foreach ($tick() as $taskId) {
+                if ($taskId !== 'housekeeping') {
+                    $sent[] = $taskId . ' ' . $this->clock->now()->setTimezone($paris)->format('D d H');
+                }
+            }
+        }
+
+        $this->assertSame([
+            'digest-day Sat 24 07',
+            'digest-day Sun 25 07',
+            'digest-day Mon 26 07',
+            'digest-week Mon 26 07',
+            'digest-day Tue 27 07',
+        ], $sent);
+    }
+
+    /** What the user asked for: a digest sent by hand neither moves the scheduled one nor stops it. */
+    public function testADigestSentByHandDoesNotMoveTheScheduledOne(): void
+    {
+        $tick = $this->ticker($this->schedule(), new InMemoryCheckpoint());
+        $tick();
+        $this->assertSame(Command::SUCCESS, $this->runCommand($this->subscriptions(send: static fn (): int => 2), ['--period' => 'day'])->getStatusCode());
+
+        $this->clock->modify('2026-10-24 05:01:00');
+        $this->assertSame(['digest-day'], $tick(), 'still at 7 the next morning');
+
+        $subscriptions = $this->subscriptions(send: static fn (): int => 2);
+        $this->handler($subscriptions)(new SendDigest('day'));
+        $this->assertSame(['day'], $subscriptions->sent, 'and it goes out');
     }
 
     public function testDisabledDigestsAreNotScheduled(): void
@@ -121,99 +177,7 @@ class SendDigestTest extends YesWikiTestCase
         $unreadable = $this->subscriptions(send: null, hasAny: static fn (): bool => throw new \RuntimeException('no triples table'));
 
         $this->expectExceptionMessage('no triples table');
-        (new ContactSchedule(new ParameterBag(), $unreadable, $this->markers, $this->clock))->recurringMessages();
-    }
-
-    /** What an upgrade must not do: send again a digest that has just gone out. */
-    public function testADigestThatJustWentOutWaitsItsFloorFromThen(): void
-    {
-        $this->markSentAt('day', '2026-10-23 11:00:00');
-        $this->markSentAt('week', '2026-10-22 12:00:00');
-
-        $plan = $this->plan($this->schedule());
-
-        $this->assertSame('2026-10-24 10:00:00', $plan['digest-day']['first'], 'an hour ago + 23 h');
-        $this->assertSame('2026-10-29 12:00:00', $plan['digest-week']['first'], 'yesterday + 7 d');
-    }
-
-    /** The later of the two markers counts: a digest that was tried and failed waits a floor from the try. */
-    public function testATriedDigestWaitsItsFloorFromTheTry(): void
-    {
-        $this->markSentAt('day', '2026-10-20 12:00:00');
-        $this->markTriedAt('day', '2026-10-23 10:00:00');
-
-        $this->assertSame('2026-10-24 09:00:00', $this->plan($this->schedule())['digest-day']['first']);
-    }
-
-    public function testTheScheduledMessageCarriesTheMarkerItWasBuiltFrom(): void
-    {
-        $this->assertNull($this->plan($this->schedule())['digest-day']['message']->lastSentAt);
-
-        $this->markSentAt('day', '2026-10-23 11:00:00');
-        $this->markTriedAt('week', '2026-10-23 11:00:00');
-        $plan = $this->plan($this->schedule());
-
-        $this->assertSame(strtotime('2026-10-23 11:00:00 UTC'), $plan['digest-day']['message']->lastSentAt);
-        $this->assertNull($plan['digest-week']['message']->lastSentAt, 'a try is not a send');
-    }
-
-    /** Spec section 8: a digest already overdue when the schedule is built (an upgrade, digests switched on, a marker lost) goes at the next tick, once, not at the next phase of a clock nobody anchored. */
-    public function testAnOverdueDigestIsDueAtTheFirstTick(): void
-    {
-        $this->quiet('day', 'month');
-        $this->markSentAt('week', '2026-10-15 12:00:00');
-        $tick = $this->ticker($this->schedule(), $this->clock, new InMemoryCheckpoint());
-
-        $this->assertSame([], $tick(), 'the tick that starts the Scheduler runs nothing, whatever the task');
-        $this->clock->sleep(60);
-        $this->assertSame(['digest-week'], $tick(), 'eight days since the last one');
-        $this->assertSame([], $tick(), 'once');
-    }
-
-    public function testADigestThatNeverWentOutIsDueAtTheFirstTick(): void
-    {
-        $tick = $this->ticker($this->schedule(), $this->clock, new InMemoryCheckpoint());
-
-        $tick();
-        $this->clock->sleep(60);
-
-        $this->assertSame(['digest-day', 'digest-week', 'digest-month'], $tick(), 'the old scheduler sent them all at its first pass');
-    }
-
-    /** A digest that failed (the handler stamped the try and threw) must wait a floor, or every tick would mail again those it had reached. */
-    public function testAnOverdueDigestThatFailsComesBackOneFloorLater(): void
-    {
-        $this->quiet('week', 'month');
-        $tick = $this->ticker($this->schedule(), $this->clock, new InMemoryCheckpoint());
-        $tick();
-        $this->clock->sleep(60);
-        $this->assertSame(['digest-day'], $tick());
-
-        $this->markTriedAt('day', $this->clock->now()->format('Y-m-d H:i:s'));
-        $this->clock->sleep(30 * 60);
-        $this->assertSame([], $tick(), 'no sent marker, and still not tried again at the next tick');
-        $this->clock->sleep(21 * 3600);
-        $this->assertSame([], $tick(), 'nor before the floor');
-        $this->clock->sleep(2 * 3600);
-        $this->assertSame(['digest-day'], $tick(), 'a floor after the try');
-    }
-
-    /** A hibernated wiki leaves no trace: the digest is due again at the next tick, without waiting a floor. */
-    public function testADigestSkippedWhileHibernatedIsDueAgainAtTheNextTick(): void
-    {
-        $this->quiet('week', 'month');
-        $tick = $this->ticker($this->schedule(), $this->clock, new InMemoryCheckpoint());
-        $tick();
-        $this->clock->sleep(60);
-        $due = $tick();
-        $this->assertSame(['digest-day'], $due);
-        $subscriptions = $this->subscriptions(send: static fn (): int => 1);
-        $this->handler($subscriptions, hibernated: true)($this->plan($this->schedule())['digest-day']['message']);
-        $this->assertSame([], $subscriptions->sent);
-
-        $this->clock->sleep(60);
-
-        $this->assertSame($due, $tick(), 'nothing was noted, so nothing postpones it');
+        (new ContactSchedule($this->params([]), $unreadable))->recurringMessages();
     }
 
     public function testTheTasksAreNamedInTheTranslationsOfTheWiki(): void
@@ -233,100 +197,25 @@ class SendDigestTest extends YesWikiTestCase
         new SendDigest('year');
     }
 
-    public function testTheMarkerIsWrittenOnlyAfterSuccess(): void
+    public function testTheHandlerSendsThePeriodAndSaysWhenItFailed(): void
     {
-        $failing = $this->subscriptions(send: static fn (): int => throw new \RuntimeException('2 of 5 mails could not be sent'));
-        try {
-            $this->handler($failing)(new SendDigest('week'));
-            $this->fail('a digest that failed must say so');
-        } catch (\RuntimeException $failed) {
-            $this->assertStringContainsString('2 of 5', $failed->getMessage());
-        }
-        $this->assertNull($this->markers->lastSentAt('week'), 'a period that failed is not a period that was served');
-
         $sending = $this->subscriptions(send: static fn (): int => 5);
         $this->handler($sending)(new SendDigest('week'));
-
         $this->assertSame(['week'], $sending->sent);
-        $sentAt = $this->markers->lastSentAt('week');
-        $this->assertNotNull($sentAt);
-        $this->assertEqualsWithDelta(time(), $sentAt->getTimestamp(), 5);
-        $this->assertNull($this->markers->lastSentAt('day'), 'one marker per period');
-        $this->assertFileExists($this->root . '/private/digests/week.last');
+
+        $failing = $this->subscriptions(send: static fn (): int => throw new \RuntimeException('2 of 5 mails could not be sent'));
+        $this->expectExceptionMessage('2 of 5');
+        $this->handler($failing)(new SendDigest('week'));
     }
 
-    public function testAHibernatedWikiSendsNothingAndIsNotMarked(): void
+    /** A hibernated wiki (an archive, an update) is read-only and mails nothing; that is not a failure. */
+    public function testAHibernatedWikiSendsNothing(): void
     {
         $subscriptions = $this->subscriptions(send: static fn (): int => 1);
 
         $this->handler($subscriptions, hibernated: true)(new SendDigest('day'));
 
         $this->assertSame([], $subscriptions->sent);
-        $this->assertNull($this->markers->lastSentAt('day'));
-    }
-
-    public function testTheTryIsNotedBeforeTheSendAndTheSendAfterIt(): void
-    {
-        $seen = [];
-        $subscriptions = $this->subscriptions(send: function () use (&$seen): int {
-            $seen = [$this->markers->lastTriedAt('week') !== null, $this->markers->lastSentAt('week') !== null];
-
-            return 1;
-        });
-
-        $this->handler($subscriptions)(new SendDigest('week'));
-
-        $this->assertSame([true, false], $seen, 'tried when the send begins, sent when it is over');
-        $this->assertNotNull($this->markers->lastSentAt('week'));
-    }
-
-    public function testAFailedDigestLeavesATryAndNoSend(): void
-    {
-        $subscriptions = $this->subscriptions(send: static fn (): int => throw new \RuntimeException('smtp down'));
-
-        try {
-            $this->handler($subscriptions)(new SendDigest('week'));
-            $this->fail('the failure is the queue\'s to show');
-        } catch (\RuntimeException) {
-        }
-
-        $this->assertNotNull($this->markers->lastTriedAt('week'));
-        $this->assertNull($this->markers->lastSentAt('week'));
-    }
-
-    /** The command (or a cron) sent the period while the message waited in the queue: mailing everybody again is the one thing to avoid. */
-    public function testADigestSentMeanwhileIsNotSentAgain(): void
-    {
-        $message = $this->plan($this->schedule())['digest-day']['message'];
-        $this->markers->markSent('day');
-        $subscriptions = $this->subscriptions(send: static fn (): int => 3);
-
-        $this->handler($subscriptions)($message);
-
-        $this->assertSame([], $subscriptions->sent);
-        $this->assertNull($this->markers->lastTriedAt('day'));
-    }
-
-    /** "Run now" on the jobs page and a retry from the failed queue both have to work. */
-    public function testARunNowAndARetryStillSend(): void
-    {
-        $this->markSentAt('day', '2026-10-21 12:00:00');
-        $subscriptions = $this->subscriptions(send: static fn (): int => 3);
-
-        // Built fresh by the schedule, as QueueScheduleTicker::runNow() does: it carries the marker as it is now.
-        $this->handler($subscriptions)($this->plan($this->schedule())['digest-day']['message']);
-        $this->assertSame(['day'], $subscriptions->sent);
-
-        // A message that failed once (a try, no new send) and is retried by an admin.
-        $failed = $this->subscriptions(send: static fn (): int => throw new \RuntimeException('smtp down'));
-        $message = $this->plan($this->schedule())['digest-week']['message'];
-        try {
-            $this->handler($failed)($message);
-        } catch (\RuntimeException) {
-        }
-        $retry = $this->subscriptions(send: static fn (): int => 3);
-        $this->handler($retry)($message);
-        $this->assertSame(['week'], $retry->sent);
     }
 
     public function testAFailedDigestIsNotRetried(): void
@@ -351,39 +240,27 @@ class SendDigestTest extends YesWikiTestCase
         $this->assertSame(0, $this->kit->statistics->pendingCount(), 'nothing is left to retry');
         $this->assertSame(1, $this->kit->statistics->failedCount(), 'the admin sees it in the failed queue');
         $this->assertSame([SendDigest::class], array_column($this->kit->statistics->failed(), 'type'));
-        $this->assertNull($this->markers->lastSentAt('day'));
     }
 
-    /**
-     * The schedule is built anew at every due tick, from the markers as they are then: a digest that was sent must not come due again at the next tick of another task.
-     */
-    public function testASentDigestIsNotDueAgainAtTheNextTickOfAnotherTask(): void
+    /** The markers the floors were counted from are gone from the wikis that kept them. */
+    public function testTheMigrationDeletesTheOldMarkers(): void
     {
-        $this->quiet('week', 'month');
-        $clock = $this->clock;
-        $provider = new class($this->schedule()) implements ProvidesSchedule {
-            public function __construct(private readonly ContactSchedule $contact)
-            {
-            }
+        $services = $this->getWiki()->services;
+        $storage = $services->get(Storage::class);
+        $storage->write('private/digests/day.last', '1761213600');
+        $storage->write('private/digests/day.tried', '1761213600');
 
-            public function recurringMessages(): array
-            {
-                return [RecurringMessage::every('30 minutes', new QueueTestTask('housekeeping')), ...$this->contact->recurringMessages()];
-            }
-        };
-        $tick = $this->ticker($provider, $clock, new InMemoryCheckpoint());
+        require_once 'src/migrations/20261103090000_DigestMarkersGiveWayToTheSchedule.php';
+        $migration = new \DigestMarkersGiveWayToTheSchedule();
+        $migration->setServices($services);
+        $migration->setDbService($services->get(DbService::class));
+        $migration->setParams($services->get(ParameterBagInterface::class));
+        $migration->run();
+        $migration->run();
 
-        $this->assertSame([], $tick(), 'the schedule starts now');
-        $clock->sleep(60);
-        $this->assertSame(['digest-day'], $tick(), 'overdue: due at the first tick');
-        $this->markSentAt('day', $clock->now()->modify('+90 seconds')->format('Y-m-d H:i:s'));
-        $clock->sleep(30 * 60);
-        $this->assertSame(['housekeeping'], $tick(), 'sent a moment ago: not again at the next tick of another task');
-        $clock->sleep(30 * 60);
-        $this->assertSame(['housekeeping'], $tick());
-
-        $clock->sleep(22 * 3600 + 300);
-        $this->assertSame(['housekeeping', 'digest-day'], $tick(), 'and due again a floor after the marker');
+        $this->assertFalse($storage->fileExists('private/digests/day.last'));
+        $this->assertFalse($storage->fileExists('private/digests/day.tried'));
+        $this->assertFalse($storage->directoryExists('private/digests'));
     }
 
     public function testNothingListensToMaintenanceAfterForDigests(): void
@@ -425,23 +302,21 @@ class SendDigestTest extends YesWikiTestCase
         $this->assertContains('queue-prune', $declared);
     }
 
-    /** `contact:send-digest` stays for a cron or a hand, and notes a digest the way the queue does: after it went out to everybody. */
-    public function testTheCommandMarksAPeriodOnlyAfterItWentOut(): void
+    /** `contact:send-digest` stays for a cron or a hand: it sends, and says when that failed. */
+    public function testTheCommandSendsThePeriodAndSaysWhenItFailed(): void
     {
         $failing = $this->subscriptions(send: static fn (): int => throw new \RuntimeException('did not reach 1 of 2'));
         $failed = $this->runCommand($failing, ['--period' => 'week']);
 
         $this->assertSame(Command::FAILURE, $failed->getStatusCode());
         $this->assertStringContainsString('did not reach 1 of 2', $failed->getDisplay());
-        $this->assertNull($this->markers->lastSentAt('week'));
 
         $sending = $this->subscriptions(send: static fn (): int => 2);
         $sent = $this->runCommand($sending, ['--period' => 'week']);
 
         $this->assertSame(Command::SUCCESS, $sent->getStatusCode());
         $this->assertStringContainsString('2 mail(s) sent', $sent->getDisplay());
-        $this->assertNotNull($this->markers->lastSentAt('week'));
-        $this->assertNull($this->markers->lastSentAt('day'));
+        $this->assertSame(['week'], $sending->sent);
         $this->assertSame(Command::INVALID, $this->runCommand($sending, ['--period' => 'year'])->getStatusCode());
     }
 
@@ -452,7 +327,6 @@ class SendDigestTest extends YesWikiTestCase
     {
         $services = new ServiceLocator([
             MailSubscriptions::class => static fn (): MailSubscriptions => $subscriptions,
-            DigestMarkers::class => fn (): DigestMarkers => $this->markers,
             HibernationService::class => static fn (): HibernationService => new HibernationService(new ParameterBag(['wiki_status' => 'running'])),
         ]);
         $tester = new CommandTester(new ContactDigestCommand($services));
@@ -466,8 +340,10 @@ class SendDigestTest extends YesWikiTestCase
      *
      * @return \Closure(): list<string>
      */
-    private function ticker(ProvidesSchedule $provider, MockClock $clock, InMemoryCheckpoint $checkpoint): \Closure
+    private function ticker(ProvidesSchedule $provider, InMemoryCheckpoint $checkpoint): \Closure
     {
+        $clock = $this->clock;
+
         return static function () use ($provider, $clock, $checkpoint): array {
             $schedule = (new Schedule())->processOnlyLastMissedRun(true);
             foreach ($provider->recurringMessages() as $recurring) {
@@ -484,12 +360,33 @@ class SendDigestTest extends YesWikiTestCase
         };
     }
 
+    /** The digests beside a task that ticks every half hour, as the wiki's housekeeping does. */
+    private function withHousekeeping(ContactSchedule $contact): ProvidesSchedule
+    {
+        return new class($contact) implements ProvidesSchedule {
+            public function __construct(private readonly ContactSchedule $contact)
+            {
+            }
+
+            public function recurringMessages(): array
+            {
+                return [RecurringMessage::every('30 minutes', new QueueTestTask('housekeeping')), ...$this->contact->recurringMessages()];
+            }
+        };
+    }
+
     /**
-     * @param array<string, mixed> $parameters
+     * @param array<string, mixed> $parameters the wiki's, its timezone Paris unless they say otherwise
      */
     private function schedule(array $parameters = [], bool $subscribed = true): ContactSchedule
     {
-        return new ContactSchedule(new ParameterBag($parameters), $this->subscriptions(send: null, hasAny: static fn (): bool => $subscribed), $this->markers, $this->clock);
+        return new ContactSchedule($this->params($parameters), $this->subscriptions(send: null, hasAny: static fn (): bool => $subscribed));
+    }
+
+    /** @param array<string, mixed> $parameters */
+    private function params(array $parameters): ParameterBag
+    {
+        return new ParameterBag($parameters + ['timezone' => 'Europe/Paris']);
     }
 
     private function handler(MailSubscriptions $subscriptions, bool $hibernated = false): SendDigestHandler
@@ -506,7 +403,7 @@ class SendDigestTest extends YesWikiTestCase
             }
         };
 
-        return new SendDigestHandler($subscriptions, $this->markers, $hibernation);
+        return new SendDigestHandler($subscriptions, $hibernation);
     }
 
     /**
@@ -523,9 +420,9 @@ class SendDigestTest extends YesWikiTestCase
     }
 
     /**
-     * What a schedule declares: per task id, its message, the run after NOW and the gap between runs.
+     * What a schedule declares: per task id, its message and its first run after NOW, in UTC.
      *
-     * @return array<string, array{message: SendDigest, first: string, every: int}>
+     * @return array<string, array{message: SendDigest, first: string}>
      */
     private function plan(ContactSchedule $schedule): array
     {
@@ -535,39 +432,16 @@ class SendDigestTest extends YesWikiTestCase
             $trigger = $recurring->getTrigger();
             $first = $trigger->getNextRunDate($now);
             $this->assertNotNull($first);
-            $second = $trigger->getNextRunDate($first);
-            $this->assertNotNull($second);
             foreach ($recurring->getMessages(new MessageContext('test', $recurring->getId(), $trigger, $now)) as $message) {
                 $this->assertInstanceOf(SendDigest::class, $message);
                 $plan[$message->taskId()] = [
                     'message' => $message,
                     'first' => $first->setTimezone(new \DateTimeZone('UTC'))->format('Y-m-d H:i:s'),
-                    'every' => $second->getTimestamp() - $first->getTimestamp(),
                 ];
             }
         }
 
         return $plan;
-    }
-
-    private function markSentAt(string $period, string $when): void
-    {
-        $this->markers->markSent($period);
-        touch($this->root . '/private/digests/' . $period . '.last', (new \DateTimeImmutable($when, new \DateTimeZone('UTC')))->getTimestamp());
-    }
-
-    private function markTriedAt(string $period, string $when): void
-    {
-        $this->markers->markTried($period);
-        touch($this->root . '/private/digests/' . $period . '.tried', (new \DateTimeImmutable($when, new \DateTimeZone('UTC')))->getTimestamp());
-    }
-
-    /** Periods that went out just now, so that a test about another one is not about them. */
-    private function quiet(string ...$periods): void
-    {
-        foreach ($periods as $period) {
-            $this->markSentAt($period, self::NOW);
-        }
     }
 }
 

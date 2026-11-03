@@ -2,50 +2,42 @@
 
 namespace YesWiki\Contact\Scheduler;
 
-use Psr\Clock\ClockInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use Symfony\Component\Scheduler\RecurringMessage;
 use YesWiki\Contact\Message\SendDigest;
-use YesWiki\Contact\Service\DigestMarkers;
 use YesWiki\Contact\Service\MailSubscriptions;
 use YesWiki\Kernel\Queue\ProvidesSchedule;
-use YesWiki\Kernel\Queue\RecurringAfterLastRun;
 
 /**
  * The mailing-list digests: one recurring task per period, as long as somebody subscribed and the wiki did not turn them off.
  *
- * The floors are how long a period must go unsent before it is due again, those of the scheduler
- * of the housekeeping pass that this replaces: 23 hours, 7 days, 30 days.
+ * Each period goes out at 7 a.m. in the wiki's timezone: every day, on Mondays, on the first of
+ * the month. A cron, and not a period counted from the last run, which made each digest leave a
+ * little earlier than the one before. What has gone out is the Scheduler's checkpoint, and
+ * nothing else: a digest sent by hand (`contact:send-digest`) moves nothing, and one that failed
+ * is due again at its next 7 a.m.
  *
  * The queue builds the schedule anew at every due tick, from what is declared then, and forgets
  * the tasks that are no longer declared: with the digests disabled or nobody subscribed this
- * declares nothing, and the tasks leave the jobs page. A period starts a floor after the later of
- * its two markers (see DigestMarkers), as RecurringAfterLastRun says: an upgrade does not mail
- * again a digest that has just gone out, and one sent by hand or by cron postpones the scheduled one.
- *
- * An overdue period, built again while its run still waits, starts a bit later and is due again,
- * which the queue absorbs, one waiting run per task. The tick that first starts the Scheduler
- * cannot run anything, as for every task: the schedule starts then, and the digest is due at the
- * next tick.
+ * declares nothing, and the tasks leave the jobs page.
  */
 class ContactSchedule implements ProvidesSchedule
 {
-    /** @var array<string, int> seconds */
-    private const FLOORS = [
-        'day' => 82800,
-        'week' => 604800,
-        'month' => 2592000,
+    /** @var array<string, string> the cron of each period, in the wiki's timezone */
+    private const CRONS = [
+        'day' => '0 7 * * *',
+        'week' => '0 7 * * 1',
+        'month' => '0 7 1 * *',
     ];
 
     public function __construct(
         private readonly ParameterBagInterface $params,
         private readonly MailSubscriptions $subscriptions,
-        private readonly DigestMarkers $markers,
-        private readonly ClockInterface $clock,
     ) {
     }
 
     /**
-     * Subscriptions or a marker that cannot be read (no triples table, `private/digests` unreadable, a broken private bucket) throw rather than count as nothing to schedule.
+     * Subscriptions that cannot be read (no triples table) throw rather than count as nothing to schedule.
      *
      * The queue journals it and keeps the digest tasks it knew, which then show late on the jobs
      * page and in the health checks; declaring nothing had them forgotten at the next due tick, and
@@ -57,18 +49,10 @@ class ContactSchedule implements ProvidesSchedule
             return [];
         }
 
-        $now = $this->clock->now();
+        $timezone = $this->timezone();
         $recurring = [];
         foreach (MailSubscriptions::PERIODS as $period) {
-            $floor = self::FLOORS[$period];
-            $sentAt = $this->markers->lastSentAt($period);
-            $triedAt = $this->markers->lastTriedAt($period);
-            $recurring[] = RecurringAfterLastRun::every(
-                $floor,
-                new SendDigest($period, $sentAt?->getTimestamp()),
-                max($sentAt?->getTimestamp(), $triedAt?->getTimestamp()),
-                $now
-            );
+            $recurring[] = RecurringMessage::cron(self::CRONS[$period], new SendDigest($period), $timezone);
         }
 
         return $recurring;
@@ -83,5 +67,13 @@ class ContactSchedule implements ProvidesSchedule
         }
 
         return $this->subscriptions->hasAny();
+    }
+
+    /** The wiki's `timezone`, or PHP's when it names none: the one its pages show times in. */
+    private function timezone(): string
+    {
+        $timezone = $this->params->has('timezone') ? $this->params->get('timezone') : null;
+
+        return is_string($timezone) && $timezone !== '' ? $timezone : date_default_timezone_get();
     }
 }

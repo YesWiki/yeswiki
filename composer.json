@@ -39,6 +39,7 @@
     "ext-zip": "^1.0",
     "altcha-org/altcha": "^2.2",
     "caxy/php-htmldiff": "^0.1.13",
+    "dragonmantank/cron-expression": "^3.6",
     "endroid/qr-code": "^6.0",
     "enshrined/svg-sanitize": "^1.1.0",
     "ezyang/htmlpurifier": "^4.19",
