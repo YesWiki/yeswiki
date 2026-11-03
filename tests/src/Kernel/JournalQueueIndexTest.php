@@ -48,42 +48,44 @@ class JournalQueueIndexTest extends YesWikiTestCase
     #[DataProvider('servers')]
     public function testTheIndexIsAddedToAnExistingJournalAndAddingItAgainChangesNothing(array $params): void
     {
-        $schema = $this->openJournal($params);
-        $name = $this->indexName('idx_channel_target_at');
-        $this->assertTrue($this->db->schema()->indexExists('journal', $name), 'a new Journal has it');
+        $db = $this->openDatabase($params);
+        $schema = $this->createJournal($db);
+        $name = $this->indexName($db, 'idx_channel_target_at');
+        $this->assertTrue($db->schema()->indexExists('journal', $name), 'a new Journal has it');
 
-        $this->dropIndex($name);
-        $this->assertFalse($this->db->schema()->indexExists('journal', $name), 'an old Journal does not');
+        $this->dropIndex($db, $name);
+        $this->assertFalse($db->schema()->indexExists('journal', $name), 'an old Journal does not');
 
         $schema->ensureQueueIndex();
         $schema->ensureQueueIndex();
 
-        $this->assertTrue($this->db->schema()->indexExists('journal', $name));
+        $this->assertTrue($db->schema()->indexExists('journal', $name));
     }
 
     /** @param array<string, string|bool> $params */
     #[DataProvider('servers')]
     public function testTheJournalHasTheTaskIndex(array $params): void
     {
-        $schema = $this->openJournal($params);
-        $name = $this->indexName('idx_channel_action_target');
-        $this->assertTrue($this->db->schema()->indexExists('journal', $name), 'a new Journal has it');
+        $db = $this->openDatabase($params);
+        $schema = $this->createJournal($db);
+        $name = $this->indexName($db, 'idx_channel_action_target');
+        $this->assertTrue($db->schema()->indexExists('journal', $name), 'a new Journal has it');
 
-        $this->dropIndex($name);
-        $this->assertFalse($this->db->schema()->indexExists('journal', $name), 'a Journal made before the task rows does not');
+        $this->dropIndex($db, $name);
+        $this->assertFalse($db->schema()->indexExists('journal', $name), 'a Journal made before the task rows does not');
 
         $schema->ensureQueueIndex();
         $schema->ensureQueueIndex();
 
-        $this->assertTrue($this->db->schema()->indexExists('journal', $name), 'it is added, and adding it again changes nothing');
+        $this->assertTrue($db->schema()->indexExists('journal', $name), 'it is added, and adding it again changes nothing');
     }
 
     /**
-     * A fresh Journal on that server, skipping the test where none is reachable.
+     * The database of that server, the test skipped where none is reachable.
      *
      * @param array<string, string|bool> $params
      */
-    private function openJournal(array $params): JournalSchema
+    private function openDatabase(array $params): DbService
     {
         if ($params['db_driver'] !== 'sqlite' && !QueueTransportTest::reachable($params)) {
             $this->markTestSkipped("no {$params['db_driver']} server at {$params['db_host']}");
@@ -92,24 +94,30 @@ class JournalQueueIndexTest extends YesWikiTestCase
             $this->file = tempnam(sys_get_temp_dir(), 'yw-journal-index-') . '.db';
             $params['db_database'] = $this->file;
         }
-        $this->db = new DbService(new ParameterBag($params));
-        $this->db->query('DROP TABLE IF EXISTS ' . $this->db->quoteIdentifier(self::PREFIX . 'journal'));
-        $schema = new JournalSchema($this->db);
+
+        return $this->db = new DbService(new ParameterBag($params));
+    }
+
+    /** A fresh Journal in that database. */
+    private function createJournal(DbService $db): JournalSchema
+    {
+        $db->query('DROP TABLE IF EXISTS ' . $db->quoteIdentifier(self::PREFIX . 'journal'));
+        $schema = new JournalSchema($db);
         $schema->create();
 
         return $schema;
     }
 
     /** The index as the server names it: MySQL keeps it per table, the others per schema. */
-    private function indexName(string $name): string
+    private function indexName(DbService $db, string $name): string
     {
-        return $this->db->getDriver() === 'mysql' ? $name : self::PREFIX . 'journal_' . $name;
+        return $db->getDriver() === 'mysql' ? $name : self::PREFIX . 'journal_' . $name;
     }
 
-    private function dropIndex(string $name): void
+    private function dropIndex(DbService $db, string $name): void
     {
-        $dialect = $this->db->dialect();
-        $this->db->query($this->db->getDriver() === 'mysql'
+        $dialect = $db->dialect();
+        $db->query($db->getDriver() === 'mysql'
             ? "DROP INDEX {$dialect->quoteIdentifier($name)} ON {$dialect->quoteIdentifier(self::PREFIX . 'journal')}"
             : "DROP INDEX {$dialect->quoteIdentifier($name)}");
     }
