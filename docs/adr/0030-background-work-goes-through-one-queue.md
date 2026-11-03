@@ -174,8 +174,9 @@ replayed by hand while the same work already waits is absorbed by it and leaves 
 **The Journal is the Scheduler's only source of truth,** with no column, triple or cache of "the
 next run" beside it. Three actions of the `queue` channel name the task in their `target`:
 `queue.task.declared` notes the first time a task is seen, and nothing is sent; `queue.task.dispatched`
-is written by `QueueBus` each time a run of the task is accepted; `queue.task.finished` is written
-when an attempt ends, with the task's `consecutive_failures` in its context. The purge spares the last
+is written by `QueueBus` each time a run of the task is accepted; both carry the task's label and
+period (`every_seconds`). `queue.task.finished` is written, at `info`, when an attempt ends, with the
+task's `consecutive_failures` in its context. The purge spares the last
 row of each of the three actions for each task, however old, so that a monthly digest still has its
 anchor after the 7 days, and "no row" always means "never seen". The **anchor** of a task is its last
 dispatch, or its first sighting when it was never sent. The task is due once its trigger's first run
@@ -482,7 +483,9 @@ Each point names the class or method to look at.
   limit, and where a host forbids that, PHP's remaining limit counts CPU time, which a backup waiting
   on disk or network outlives. Judging by that limit would make another process's pass fail the
   backup as killed while it runs.
-- **A schedule that breaks** is journaled and the pass goes on. The ticker waits
+- **A schedule that breaks** is journaled by the tick that sends what is due, and the pass goes on;
+  the paths that only read it (`tasks()`, `task()`, `dueAt()`, `declaredTaskIds()`, `runNow()`)
+  write nothing, or the admin badge and the end of each request would journal it too. The ticker waits
   `QueueScheduleTicker::RECHECK_SECONDS` (a minute) before trying again, so a blocking consumer that
   ticks at every idle second does not journal it every second.
 
@@ -500,7 +503,10 @@ Each point names the class or method to look at.
   `finished` row, worked out from the task's previous one when it is written (0 when handled, one
   more after a failed or killed attempt, unchanged by a retry), so the count survives the purge.
 - **Whatever sends a task writes its dispatch row,** because `QueueBus::dispatch()` does: the
-  Scheduler, the jobs page's "Lancer", and the first sync that `ImportSchedule` queues itself. A send
+  Scheduler, the jobs page's "Lancer", and the first sync that `ImportSchedule` queues itself. The
+  bus knows no period: the ticker hands it the trigger's in a `TaskPeriodStamp`, which is never
+  stored with the message, and a send that names none (that first sync) takes the `every_seconds`
+  of the task's last declared or dispatched row. A send
   absorbed by a run of the same task still waiting (dedup key `task:<id>`) is a dispatch too: the
   Scheduler did send it, and an interval counted from the older one would run the task twice after a
   jam. A send that failed, a retry and a "Relancer" from the jobs page (the same run resuming, not a
@@ -518,8 +524,10 @@ Each point names the class or method to look at.
 - **`dueAt()` is the earliest `getNextRunDate(anchor)` of the declared tasks,** worked out from the
   same elements as the tick. It is null, meaning "due at once", while a declared task has no anchor,
   so that the next tick writes its row; just after that tick it falls back on the real next date, or
-  the check would stay true on every request. A schedule whose triggers never fire again would leave
-  it null too, and the kernel's daily prune prevents that. It is kept in the ticker's memory and
+  the check would stay true on every request. When a tick finds no next date (nothing declared, or
+  rows that cannot be read back), it waits a minute like any other, rather than ticking again at the
+  next second. A schedule whose triggers never fire again would leave `dueAt()` null too between
+  ticks, and the kernel's daily prune prevents that. It is kept in the ticker's memory and
   worked out again after `RECHECK_SECONDS` (a minute); it is never persisted, and no other process
   reads it. `QueueRequestTrigger::hasWork()` and `QueueFallback::entersNow()` read it.
 - **The end of a request pays for it.** In `request` mode every request is a new process and starts
@@ -541,8 +549,11 @@ Each point names the class or method to look at.
   at every tick. No module declares one. Declaring the same message on the same interval twice
   (Symfony's `LogicException`) is one task, journaled, not fatal.
 - **While a provider throws,** the other providers' tasks go on and its own are listed from the
-  Journal, with neither period nor due time. Nothing is forgotten, since nothing is kept beside the
-  Journal to forget.
+  Journal, with the period their last declared or dispatched row carries and due that period after
+  their anchor (no due time when no row says the period), so `queue-task-overdue` still fires once
+  they stop being sent. Nothing is forgotten, since nothing is kept beside the Journal to forget; the
+  cost is that a task no longer declared, whose rows the purge spares, is listed and judged too while
+  a provider throws.
 - **"Lancer" moves the next run.** `runNow()` sends the task through the bus, which writes a dispatch
   row, and drops the memo. The button, the jobs page and `docs/fr/async.md` say so.
 
@@ -622,7 +633,8 @@ Each point names the class or method to look at.
 - **Reads shared by several checks run once per list,** and a read that throws throws again for the
   next check instead of answering null. `QueueScheduleTicker::tasks()` is one of them, for
   `queue-task-overdue` and `queue-task-failing`: it builds the Schedule and reads the Journal once,
-  which the badge's `Broken` checks pay on each page an admin loads.
+  which the badge's `Broken` checks pay on each page an admin loads, and writes nothing. A task never
+  seen yet is listed as due now, since the next tick notes it.
 - **`queue-config` reads the settings, not the table,** so it can say a mode is wrong before the
   migration ran. **`queue-killed`'s advice** to leave `request` is given only while the wiki is still
   in `request`. **`queue-no-budget`** counts only passes that started, since a locked or paused pass
@@ -990,7 +1002,7 @@ classDiagram
    - `RecurringMessage::every(<seconds, or '24 hours'>, $message)` is for a fixed period. The
      housekeeping steps share `KernelSchedule::HOUSEKEEPING_EVERY` (`AdminSchedule`).
      A source's own interval is the same (`ImportSchedule`). The period is counted from the
-     task's last dispatch, or from the day the Scheduler first saw it.
+     task's last dispatch, or from the moment the Scheduler first saw it.
    - `RecurringMessage::cron($expression, $message, $timezone)` is for a time of day, in the wiki's
      `timezone` (`ContactSchedule`).
    - Neither remembers anything beside the Journal. What was dispatched is the Journal's to tell
@@ -999,7 +1011,7 @@ classDiagram
    - It may depend on the configuration, and a task it stops declaring leaves the page.
    - A schedule that cannot read what it decides from throws, rather than declaring nothing. The
      ticker then journals `queue.schedule_provider_failed`, goes on with the other providers' tasks,
-     and lists that one's from the Journal, with no due time.
+     and lists that one's from the Journal, due a period (`every_seconds`) after their last dispatch.
 4. **A late task runs once.** A task ten periods late runs once at the next pass, and one the
    Scheduler sees for the first time is only noted, and waits for its first run. The same work may
    also run another way: a command that does it itself moves nothing, but "Lancer" sends the task,

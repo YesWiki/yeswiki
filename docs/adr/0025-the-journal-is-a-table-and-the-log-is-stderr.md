@@ -150,7 +150,10 @@ two do. `queue.run.<status>` is one fact about a past attempt (target: the messa
 mode) and is never collapsed. `queue.pass` is the one row that is written, then updated by id as the
 consumer shows signs of life and when it stops (`at` is the start, `last_at` the last sign of life,
 target the reason it stopped). Three more actions, `queue.task.declared`, `queue.task.dispatched` and
-`queue.task.finished` (target: the task's id), are all the Scheduler remembers of a recurring task.
+`queue.task.finished` (target: the task's id), are all the Scheduler remembers of a recurring task:
+the first two carry its label and period (`every_seconds`), so a task whose provider stops answering
+can still be listed and judged late; the third its `consecutive_failures`. Task rows are written at
+`info`, since the `queue.run.<status>` row of the same attempt already carries its severity.
 Three rules keep it from being what this ADR was written to avoid.
 Its rows are written by direct SQL, never through `Journal::store()`: a pass every few minutes must
 not put a line on stderr each time, and neither the per-day ceiling nor the fingerprint dedup has
