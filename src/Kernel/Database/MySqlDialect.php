@@ -207,10 +207,18 @@ class MySqlDialect implements SqlDialect
                 `killed_in` VARCHAR(16) DEFAULT NULL,
                 PRIMARY KEY (`id`),
                 KEY `idx_queue_delivered_available` (`queue_name`, `delivered_at`, `available_at`),
-                KEY `idx_dedup_key` (`dedup_key`),
+                UNIQUE KEY `uniq_waiting_dedup_key` (`queue_name`, `dedup_key`),
                 UNIQUE KEY `uniq_task_id` (`task_id`)
             ) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci ENGINE=InnoDB",
         ];
+    }
+
+    /** MySQL has no DO NOTHING: assigning a column to itself changes nothing, so the row count is 0 (PDO does not ask for found rows). */
+    public function onConflictDoNothing(array $conflictColumns): string
+    {
+        $column = $this->quoteIdentifier($conflictColumns[0]);
+
+        return " ON DUPLICATE KEY UPDATE {$column} = {$column}";
     }
 
     /** `VALUES()` rather than the 8.0.20 row alias, which MariaDB does not have. */

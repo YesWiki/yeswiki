@@ -47,6 +47,8 @@ use YesWiki\Kernel\Service\RequestScopedState;
  * A row is a message waiting while `delivered_at` is NULL, and a message some consumer is
  * handling once it is set; ack() and reject() delete it, as long as it is still under the claim
  * they were handed it with (a message whose holder was declared dead is in `failed` by then).
+ * `dedup_key` is only filled while a row is a first send waiting, so that the unique key over it
+ * and its queue is the dedup itself: every move out of that state clears it (see send()).
  *
  * Whether the holder of a claim is dead is first asked of the process itself (R19): the token in
  * `delivered_by` names it (QueueClaimHolder), so a process gone from this machine leaves a message
@@ -74,6 +76,9 @@ class QueueTransport implements TransportInterface, MessageCountAwareInterface, 
 
     /** Replays of a transaction the engine undid to break a deadlock (see DbService::transactional()). */
     private const CONFLICT_ATTEMPTS = 3;
+
+    /** How many times a send looks for the message waiting under its key, when the database keeps refusing its own (see send()). */
+    private const RACE_LOOKS = 3;
 
     private const TIME_FORMAT = 'Y-m-d H:i:s';
 
@@ -149,8 +154,11 @@ class QueueTransport implements TransportInterface, MessageCountAwareInterface, 
      * and lose its cause. And a fresh trigger never waits behind a retry that is delayed for
      * minutes, since it only matches rows that are themselves first sends (`attempts` = 0).
      *
-     * The check and the insert are not locked against another sender: two of them racing can
-     * both insert, which costs one redundant run of idempotent work and nothing else.
+     * The database holds the queue to it: `dedup_key` is only filled while its row is a first
+     * send waiting, and is unique within a queue. Two senders racing past the check both insert,
+     * and the second one's insert writes nothing (onConflictDoNothing()): it then reads the row of
+     * the first, which is what it would have been absorbed by. Nothing is refused, so a send made
+     * inside a caller's transaction (saving a page) never aborts it.
      *
      * A message sent to `failed` carries its cause in `last_error`, read from the ErrorDetailsStamp
      * Messenger put on it, so that the admin page and the health check need not decode bodies.
@@ -161,42 +169,43 @@ class QueueTransport implements TransportInterface, MessageCountAwareInterface, 
         $now = $this->now();
         $delay = $envelope->last(DelayStamp::class)?->getDelay() ?? 0;
         $availableAt = $delay > 0 ? $now->modify("+{$delay} milliseconds") : $now;
-        $key = self::fitted(self::deduplicationKeyOf($envelope->getMessage()));
-        $absorbable = $key !== null && $this->isFirstSend($envelope);
+        $key = $this->isFirstSend($envelope) ? self::fitted(self::deduplicationKeyOf($envelope->getMessage())) : null;
         $error = $this->queueName === self::FAILED_QUEUE ? QueueFailureCause::of($envelope) : null;
         $encoded = $this->serializer->encode($envelope);
         $table = $this->schema->table();
 
-        $id = $this->db->transactional(function () use ($envelope, $now, $availableAt, $key, $absorbable, $error, $encoded, $table): int {
-            if ($absorbable) {
-                $waiting = $this->db->scalar(
-                    "SELECT id FROM {$table} WHERE queue_name = ? AND dedup_key = ? AND delivered_at IS NULL AND attempts = 0"
-                    . ' ORDER BY id LIMIT 1',
-                    null,
-                    [$this->queueName, $key]
-                );
+        $id = $this->db->transactional(function () use ($envelope, $now, $availableAt, $key, $error, $encoded, $table): int {
+            for ($look = 1;; $look++) {
+                $waiting = $key === null ? null : $this->waitingUnder($this->queueName, $key, locked: $look > 1);
                 if ($waiting !== null) {
-                    return (int)$waiting;
+                    return $waiting;
+                }
+
+                $inserted = $this->db->query(
+                    "INSERT INTO {$table} (queue_name, message_type, body, headers, dedup_key, created_at, available_at, attempts, last_error)"
+                    . ' VALUES (' . SqlParameters::placeholders(9) . ')'
+                    . ($key !== null ? $this->db->dialect()->onConflictDoNothing(['queue_name', 'dedup_key']) : ''),
+                    [
+                        $this->queueName,
+                        $envelope->getMessage()::class,
+                        $encoded['body'],
+                        json_encode($encoded['headers'] ?? [], JSON_THROW_ON_ERROR),
+                        $key,
+                        self::format($now),
+                        self::format($availableAt),
+                        self::retries($envelope),
+                        $error,
+                    ]
+                );
+                if ($key === null || $inserted->rowCount() === 1) {
+                    return $this->db->lastInsertId();
+                }
+                // Another sender's row holds the key. Read it, now that it is committed; if a
+                // consumer took it meanwhile, nothing waits any more, and the insert can go in.
+                if ($look >= self::RACE_LOOKS) {
+                    throw new \RuntimeException("The queue kept refusing a message under {$key} that no longer waited");
                 }
             }
-
-            $this->db->query(
-                "INSERT INTO {$table} (queue_name, message_type, body, headers, dedup_key, created_at, available_at, attempts, last_error)"
-                . ' VALUES (' . SqlParameters::placeholders(9) . ')',
-                [
-                    $this->queueName,
-                    $envelope->getMessage()::class,
-                    $encoded['body'],
-                    json_encode($encoded['headers'] ?? [], JSON_THROW_ON_ERROR),
-                    $key,
-                    self::format($now),
-                    self::format($availableAt),
-                    self::retries($envelope),
-                    $error,
-                ]
-            );
-
-            return $this->db->lastInsertId();
         }, self::CONFLICT_ATTEMPTS);
 
         return $envelope->with(new TransportMessageIdStamp($id));
@@ -457,7 +466,7 @@ class QueueTransport implements TransportInterface, MessageCountAwareInterface, 
     public function moveToFailed(int $id, string $error): void
     {
         $this->db->query(
-            "UPDATE {$this->schema->table()} SET queue_name = ?, last_error = ?, created_at = ?, " . self::UNCLAIMED
+            "UPDATE {$this->schema->table()} SET queue_name = ?, last_error = ?, created_at = ?, dedup_key = NULL, " . self::UNCLAIMED
             . ' WHERE id = ? AND queue_name IN (' . SqlParameters::placeholders(count(self::QUEUES)) . ')',
             [self::FAILED_QUEUE, $error, self::format($this->now()), $id, ...self::QUEUES]
         );
@@ -482,7 +491,10 @@ class QueueTransport implements TransportInterface, MessageCountAwareInterface, 
      * longer be decoded goes back as it is (an extension may have brought its class back; if not,
      * get() returns it to `failed`).
      *
-     * @return bool whether it went back; not when it left `failed` meanwhile, nor when its type is not to be replayed by hand (NotReplayableByHand)
+     * A message whose dedup key already has a first send waiting is absorbed by it, as a fresh
+     * send would be: it leaves `failed` and nothing is added, the work it stood for being queued.
+     *
+     * @return bool whether it went back, or was absorbed; not when it left `failed` meanwhile, nor when its type is not to be replayed by hand (NotReplayableByHand)
      */
     public function requeue(int $id): bool
     {
@@ -494,9 +506,12 @@ class QueueTransport implements TransportInterface, MessageCountAwareInterface, 
 
         $body = (string)$row['body'];
         $headers = (string)$row['headers'];
+        $key = null;
         try {
+            $envelope = $this->decode($row);
+            $key = self::fitted(self::deduplicationKeyOf($envelope->getMessage()));
             $encoded = $this->serializer->encode(
-                $this->decode($row)
+                $envelope
                     ->withoutAll(TransportMessageIdStamp::class)
                     ->withoutAll(RedeliveryStamp::class)
                     ->withoutAll(SentToFailureTransportStamp::class)
@@ -508,11 +523,56 @@ class QueueTransport implements TransportInterface, MessageCountAwareInterface, 
         } catch (MessageDecodingFailedException) {
         }
 
-        return $this->db->query(
-            "UPDATE {$table} SET queue_name = ?, body = ?, headers = ?, attempts = 0, last_error = NULL, killed_in = NULL, available_at = ?, " . self::UNCLAIMED
-            . ' WHERE id = ? AND queue_name = ?',
-            [self::DEFAULT_QUEUE, $body, $headers, self::format($this->now()), $id, self::FAILED_QUEUE]
-        )->rowCount() === 1;
+        for ($attempt = 1;; $attempt++) {
+            try {
+                return $this->db->transactional(function () use ($table, $id, $body, $headers, $key): bool {
+                    if ($key !== null && $this->waitingUnder(self::DEFAULT_QUEUE, $key, locked: true) !== null) {
+                        return $this->db->query("DELETE FROM {$table} WHERE id = ? AND queue_name = ?", [$id, self::FAILED_QUEUE])->rowCount() === 1;
+                    }
+
+                    return $this->db->query(
+                        "UPDATE {$table} SET queue_name = ?, body = ?, headers = ?, dedup_key = ?, attempts = 0, last_error = NULL, killed_in = NULL, available_at = ?, " . self::UNCLAIMED
+                        . ' WHERE id = ? AND queue_name = ?',
+                        [self::DEFAULT_QUEUE, $body, $headers, $key, self::format($this->now()), $id, self::FAILED_QUEUE]
+                    )->rowCount() === 1;
+                }, self::CONFLICT_ATTEMPTS);
+            } catch (\Exception $refused) {
+                // A fresh send of its key went in between the look and the move: the next look finds it.
+                if ($attempt >= self::RACE_LOOKS || !self::isDuplicateKey($refused)) {
+                    throw $refused;
+                }
+            }
+        }
+    }
+
+    /**
+     * The first send waiting under that key in that queue, if one does.
+     *
+     * Locked, it reads the latest committed row rather than the transaction's snapshot (MySQL's
+     * repeatable read), and holds it until the caller is done: what a look after a refused write needs.
+     */
+    private function waitingUnder(string $queue, string $key, bool $locked = false): ?int
+    {
+        $id = $this->db->scalar(
+            "SELECT id FROM {$this->schema->table()} WHERE queue_name = ? AND dedup_key = ?"
+            . ($locked ? $this->db->dialect()->lockRowsClause() : ''),
+            null,
+            [$queue, $key]
+        );
+
+        return $id === null ? null : (int)$id;
+    }
+
+    /** Whether the database refused a write for a unique key already taken: SQLSTATE 23505 on PostgreSQL, 23000 on MySQL and SQLite. */
+    private static function isDuplicateKey(\Throwable $failure): bool
+    {
+        for ($cause = $failure; $cause !== null; $cause = $cause->getPrevious()) {
+            if ($cause instanceof \PDOException && in_array((string)$cause->getCode(), ['23000', '23505'], true)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /** The key under which a message waits only once: the one it declares (Deduplicated), `task:<id>` for a scheduled task's run, none otherwise. */
@@ -606,7 +666,7 @@ class QueueTransport implements TransportInterface, MessageCountAwareInterface, 
             }
 
             $this->db->query(
-                "UPDATE {$table} SET delivered_at = ?, delivered_by = ?, delivered_mode = ?, delivered_limit = ?"
+                "UPDATE {$table} SET delivered_at = ?, delivered_by = ?, delivered_mode = ?, delivered_limit = ?, dedup_key = NULL"
                 . ' WHERE id = ? AND queue_name = ? AND delivered_at IS NULL',
                 [$now, $token, $this->claimMode, $this->claimLimit, (int)$candidate, $this->queueName]
             );
@@ -726,7 +786,7 @@ class QueueTransport implements TransportInterface, MessageCountAwareInterface, 
     private function failClaim(int $id, string $token, string $mode): bool
     {
         return $this->db->query(
-            "UPDATE {$this->schema->table()} SET queue_name = ?, last_error = ?, killed_in = ?, created_at = ?, " . self::UNCLAIMED
+            "UPDATE {$this->schema->table()} SET queue_name = ?, last_error = ?, killed_in = ?, created_at = ?, dedup_key = NULL, " . self::UNCLAIMED
             . ' WHERE id = ? AND queue_name = ? AND delivered_by = ?',
             [self::FAILED_QUEUE, self::killedCause($mode), $mode, self::format($this->now()), $id, $this->queueName, $token]
         )->rowCount() === 1;

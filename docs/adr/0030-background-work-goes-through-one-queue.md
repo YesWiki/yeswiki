@@ -170,6 +170,10 @@ reaches stderr, the daily ceiling and the fingerprint dedup do not apply, and th
 `failed` is kept 30 days. `dispatch()` only writes, in every mode and in the CLI too: nothing
 runs because it was sent. A message may carry a dedup key, which collapses a **first send** into an
 identical message still waiting and never tried; a retry, or a failure, is never swallowed by it.
+The database holds the queue to it rather than the check alone: `dedup_key` is only filled while
+its row is a first send waiting (taking it, or failing it, clears it) and is unique within a queue,
+so two senders racing past the check still leave one row, the second reading the first's. A failure
+replayed by hand while the same work already waits is absorbed by it and leaves `failed`.
 
 **There are three consumption modes**, chosen by `YESWIKI_QUEUE_CONSUMER`:
 
@@ -461,8 +465,8 @@ arrival, and the explicit actions of a human or a webhook (`importer:sync`, `GET
   breaking the page.
 - **One replica is still the rule.** The queue is in the shared database, so several nodes can share
   it safely, but the pass lock and the schedule lock are local files: N nodes run N passes and N
-  ticks, and a due task can be queued by each. The dedup key limits the copies; the real fix stays
-  with the horizontal-scaling work CONTEXT.md defers.
+  ticks, and a due task can be queued by each. The dedup key keeps one waiting copy per task, as
+  the database enforces it; the real fix stays with the horizontal-scaling work CONTEXT.md defers.
 - **Search reindexes through the queue alone.** `search_queue`, its own claim and its slicing
   `DrainSearchQueue` were a second queue beside this one; they are gone, and each Content to reindex
   is a `ReindexContent` of its own, handled one at a time. A full reindex is as many rows on

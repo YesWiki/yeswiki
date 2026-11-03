@@ -196,9 +196,14 @@ class SqliteDialect implements SqlDialect
                 \"killed_in\" TEXT DEFAULT NULL
             )",
             "CREATE INDEX IF NOT EXISTS \"{$table}_idx_queue_delivered_available\" ON \"{$table}\" (\"queue_name\", \"delivered_at\", \"available_at\")",
-            "CREATE INDEX IF NOT EXISTS \"{$table}_idx_dedup_key\" ON \"{$table}\" (\"dedup_key\")",
+            "CREATE UNIQUE INDEX IF NOT EXISTS \"{$table}_uniq_waiting_dedup_key\" ON \"{$table}\" (\"queue_name\", \"dedup_key\")",
             "CREATE UNIQUE INDEX IF NOT EXISTS \"{$table}_uniq_task_id\" ON \"{$table}\" (\"task_id\")",
         ];
+    }
+
+    public function onConflictDoNothing(array $conflictColumns): string
+    {
+        return ' ON CONFLICT (' . implode(', ', array_map([$this, 'quoteIdentifier'], $conflictColumns)) . ') DO NOTHING';
     }
 
     public function upsert(string $table, array $values, array $conflictColumns, array $assignments): string

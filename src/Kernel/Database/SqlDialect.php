@@ -154,6 +154,15 @@ interface SqlDialect
     public function upsert(string $table, array $values, array $conflictColumns, array $assignments): string;
 
     /**
+     * What ends an INSERT so that, when the unique key over $conflictColumns is already taken, it writes nothing and does not fail: its row count is then 0.
+     *
+     * Not failing matters inside a transaction: a refused INSERT aborts all of a PostgreSQL one.
+     *
+     * @param list<string> $conflictColumns the columns the unique key is over
+     */
+    public function onConflictDoNothing(array $conflictColumns): string;
+
+    /**
      * Every statement needed to create the search index table, its ordinary indexes, its full-text index and the keywords table, in execution order.
      *
      * @param string $table already prefixed, unquoted

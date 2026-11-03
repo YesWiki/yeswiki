@@ -31,6 +31,7 @@ require_once 'tests/src/Kernel/QueueTestMessage.php';
 require_once 'tests/src/Kernel/QueueTestUniqueMessage.php';
 require_once 'tests/src/Kernel/QueueTestTask.php';
 require_once 'tests/src/Kernel/QueueTestHolders.php';
+require_once 'tests/src/Kernel/QueueTestRacingDb.php';
 
 /** The Messenger transport that keeps the queue in the wiki's own database, and its claim that two consumers never share. */
 #[CoversClass(QueueTransport::class)]
@@ -181,6 +182,57 @@ class QueueTransportTest extends YesWikiTestCase
         $sent = $this->transport->withQueue('failed')->send(new Envelope(new QueueTestMessage('quiet')));
 
         $this->assertNull($this->row(self::idOf($sent))['last_error'] ?? null);
+    }
+
+    /** The key only stays on a row while it is a first send waiting: what the unique index holds the queue to. */
+    public function testAMessageThatStopsWaitingLetsGoOfItsKey(): void
+    {
+        $sent = $this->transport->send(new Envelope(new QueueTestUniqueMessage('first', 'search:drain')));
+        $this->assertSame('search:drain', $this->row(self::idOf($sent))['dedup_key'] ?? null);
+
+        [$taken] = [...$this->transport->get()];
+        $this->assertNull(($this->row(self::idOf($taken)) ?? ['dedup_key' => 'no row'])['dedup_key'], 'a claimed message no longer waits');
+
+        $retry = $this->transport->send($taken->with(new RedeliveryStamp(1)));
+        $this->assertNull(($this->row(self::idOf($retry)) ?? ['dedup_key' => 'no row'])['dedup_key'], 'a retry never absorbs a fresh trigger');
+
+        $failed = $this->transport->withQueue('failed')->send(new Envelope(new QueueTestUniqueMessage('broken', 'search:drain'), [
+            new SentToFailureTransportStamp('default'),
+        ]));
+        $this->assertNull(($this->row(self::idOf($failed)) ?? ['dedup_key' => 'no row'])['dedup_key'], 'a failure is not waiting to run');
+
+        $waiting = $this->transport->send(new Envelope(new QueueTestUniqueMessage('waits', 'search:drain')));
+        $this->transport->moveToFailed(self::idOf($waiting), 'gave up');
+        $this->assertNull(($this->row(self::idOf($waiting)) ?? ['dedup_key' => 'no row'])['dedup_key'], 'moved to failed, it waits no more');
+    }
+
+    /** Sent back by hand, a message waits again under its key: a fresh trigger joins it. */
+    public function testARequeuedMessageWaitsUnderItsKeyAgain(): void
+    {
+        $sent = $this->transport->send(new Envelope(new QueueTestUniqueMessage('first', 'search:drain')));
+        $this->transport->moveToFailed(self::idOf($sent), 'boom');
+
+        $this->assertTrue($this->transport->requeue(self::idOf($sent)));
+        $again = $this->transport->send(new Envelope(new QueueTestUniqueMessage('again', 'search:drain')));
+
+        $this->assertSame(self::idOf($sent), self::idOf($again));
+        $this->assertSame(1, $this->transport->getMessageCount());
+    }
+
+    /** Sent back by hand while the same work already waits, a failure is absorbed by it: it leaves `failed`, and nothing is added to the queue. */
+    public function testARequeueIsAbsorbedByTheMessageWaitingUnderItsKey(): void
+    {
+        $sent = $this->transport->send(new Envelope(new QueueTestUniqueMessage('first', 'search:drain')));
+        $this->transport->moveToFailed(self::idOf($sent), 'boom');
+        $waiting = $this->transport->send(new Envelope(new QueueTestUniqueMessage('fresh', 'search:drain')));
+
+        $this->assertTrue($this->transport->requeue(self::idOf($sent)), 'the work it stood for will be done');
+
+        $this->assertNull($this->row(self::idOf($sent)));
+        $this->assertSame(0, $this->transport->withQueue('failed')->getMessageCount());
+        $this->assertSame(1, $this->transport->getMessageCount());
+        [$received] = [...$this->transport->get()];
+        $this->assertSame(self::idOf($waiting), self::idOf($received));
     }
 
     public function testTwoTransportsNeverClaimTheSameMessage(): void
@@ -667,6 +719,101 @@ class QueueTransportTest extends YesWikiTestCase
             if ($db !== $this->db) {
                 $schema->drop();
             }
+        }
+    }
+
+    /**
+     * The database itself refuses a second first send waiting under a key, however it is written.
+     *
+     * @param array<string, string|bool> $params
+     */
+    #[DataProvider('servers')]
+    public function testTheDatabaseRefusesTwoWaitingMessagesUnderOneKey(array $params): void
+    {
+        $this->onRacing($params, function (QueueTestRacingDb $db, QueueSchema $schema): void {
+            $transport = new QueueTransport($db, $schema, clock: $this->clock);
+            $transport->send(new Envelope(new QueueTestUniqueMessage('one', 'search:drain')));
+
+            $insert = static fn (string $queue): mixed => $db->query(
+                "INSERT INTO {$schema->table()} (queue_name, message_type, body, headers, dedup_key, created_at, available_at, attempts)"
+                . " VALUES (?, 'x', 'b', '{}', 'search:drain', ?, ?, 0)",
+                [$queue, self::START, self::START]
+            );
+
+            try {
+                $insert('default');
+                $this->fail('a second waiting row under the same key was accepted');
+            } catch (\Exception) {
+            }
+            $insert('elsewhere');
+            $this->assertSame(1, $transport->getMessageCount());
+        });
+    }
+
+    /**
+     * Two senders of one key at once: the one whose look came before the other's insert is absorbed by it when the database refuses its own.
+     *
+     * @param array<string, string|bool> $params
+     */
+    #[DataProvider('servers')]
+    public function testASendThatLosesTheRaceIsAbsorbedByTheWinner(array $params): void
+    {
+        $this->onRacing($params, function (QueueTestRacingDb $db, QueueSchema $schema): void {
+            $transport = new QueueTransport($db, $schema, clock: $this->clock);
+            $winner = $transport->send(new Envelope(new QueueTestUniqueMessage('winner', 'search:drain')));
+
+            $db->missNextWaitingLookup();
+            $loser = $transport->send(new Envelope(new QueueTestUniqueMessage('loser', 'search:drain')));
+
+            $this->assertSame(self::idOf($winner), self::idOf($loser));
+            $this->assertSame(1, $transport->getMessageCount());
+        });
+    }
+
+    /**
+     * A requeue that races a fresh send of its key is absorbed by it all the same.
+     *
+     * @param array<string, string|bool> $params
+     */
+    #[DataProvider('servers')]
+    public function testARequeueThatLosesTheRaceIsAbsorbedByTheWinner(array $params): void
+    {
+        $this->onRacing($params, function (QueueTestRacingDb $db, QueueSchema $schema): void {
+            $transport = new QueueTransport($db, $schema, clock: $this->clock);
+            $failed = $transport->send(new Envelope(new QueueTestUniqueMessage('failed', 'search:drain')));
+            $transport->moveToFailed(self::idOf($failed), 'boom');
+            $winner = $transport->send(new Envelope(new QueueTestUniqueMessage('winner', 'search:drain')));
+
+            $db->missNextWaitingLookup();
+            $this->assertTrue($transport->requeue(self::idOf($failed)));
+
+            $this->assertSame(0, $transport->withQueue('failed')->getMessageCount());
+            $this->assertSame(1, $transport->getMessageCount());
+            [$received] = [...$transport->get()];
+            $this->assertSame(self::idOf($winner), self::idOf($received));
+        });
+    }
+
+    /**
+     * @param array<string, string|bool>                     $params
+     * @param \Closure(QueueTestRacingDb, QueueSchema): void $work   on a queue table of its own, dropped afterwards
+     */
+    private function onRacing(array $params, \Closure $work): void
+    {
+        if ($params['db_driver'] === 'sqlite') {
+            $params += ['db_database' => $this->file];
+        } elseif (!self::reachable($params)) {
+            $this->markTestSkipped("no {$params['db_driver']} server at {$params['db_host']}");
+        }
+        $db = new QueueTestRacingDb(new ParameterBag(['table_prefix' => 'ywqrace_', 'debug' => false] + $params));
+        $schema = new QueueSchema($db);
+        $schema->drop();
+        $schema->create();
+
+        try {
+            $work($db, $schema);
+        } finally {
+            $schema->drop();
         }
     }
 
