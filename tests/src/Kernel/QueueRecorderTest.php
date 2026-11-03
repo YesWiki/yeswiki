@@ -84,7 +84,7 @@ class QueueRecorderTest extends YesWikiTestCase
 
         $this->recorder->messageFinished(7, 'App\\Foo', 'digest-daily', QueueRecorder::FAILED, QueueConsumerMode::Api, $start, 'boom');
 
-        $rows = $this->db->loadAll("SELECT * FROM {$this->journal->table()}");
+        $rows = $this->db->loadAll("SELECT * FROM {$this->journal->table()} WHERE action LIKE ?", [QueueJournalEntry::RUN_PREFIX . '%']);
         $this->assertCount(1, $rows);
         [$row] = $rows;
         $this->assertSame('queue', $row['channel']);
@@ -496,6 +496,55 @@ class QueueRecorderTest extends YesWikiTestCase
 
         $this->assertSame([], $this->recorder->taskIds());
         $this->assertSame([], $this->statistics->tasks());
+    }
+
+    /**
+     * A task's appearance, dispatches and runs are `queue` rows whose target is the task, and whose context says what the history needs.
+     *
+     * @param array<string, string|bool> $params
+     */
+    #[DataProvider('servers')]
+    public function testTaskRowsAreJournalRowsNamedByTheirTask(array $params): void
+    {
+        $this->on($params);
+        $task = new QueueTestTask('digest');
+        $table = $this->journal->table();
+
+        $this->recorder->taskDeclared($task);
+        $this->recorder->taskDispatched($task, 1800, null);
+        $this->recorder->taskFinished('digest', QueueRecorder::RETRIED, 'again');
+        $this->recorder->taskFinished('digest', QueueRecorder::FAILED, 'boom');
+        $this->recorder->taskFinished('digest', QueueRecorder::HANDLED, null);
+
+        $rows = $this->db->loadAll("SELECT * FROM {$table} ORDER BY id");
+        $this->assertSame(
+            [QueueJournalEntry::TASK_DECLARED, QueueJournalEntry::TASK_DISPATCHED, QueueJournalEntry::TASK_FINISHED, QueueJournalEntry::TASK_FINISHED, QueueJournalEntry::TASK_FINISHED],
+            array_column($rows, 'action')
+        );
+        $this->assertSame(array_fill(0, 5, 'queue'), array_column($rows, 'channel'));
+        $this->assertSame(array_fill(0, 5, 'digest'), array_column($rows, 'target'), 'the task, not the message type');
+        $this->assertSame(['info', 'info', 'warning', 'error', 'info'], array_column($rows, 'level'), 'a finished row has its run\'s level');
+        $this->assertSame(array_fill(0, 5, self::START), array_column($rows, 'at'));
+        $this->assertSame(['label' => 'Test task digest'], $this->context($rows[0]));
+        $this->assertSame(['label' => 'Test task digest'], $this->context($rows[1]));
+        $this->assertSame(['status' => 'retried', 'message' => 'again', 'consecutive_failures' => 0], $this->context($rows[2]));
+        $this->assertSame(['status' => 'failed', 'message' => 'boom', 'consecutive_failures' => 1], $this->context($rows[3]));
+        $this->assertSame(['status' => 'handled', 'consecutive_failures' => 0], $this->context($rows[4]), 'a null message is left out');
+    }
+
+    /** A run of a scheduled task is a `queue.run.*` row of its message type and a `queue.task.finished` row of the task. */
+    public function testAScheduledTasksRunWritesBothRows(): void
+    {
+        $this->recorder->messageFinished(7, QueueTestMessage::class, 'digest', QueueRecorder::FAILED, QueueConsumerMode::Api, (float)$this->clock->now()->format('U.u'), 'boom');
+        $this->recorder->messageFinished(8, QueueTestMessage::class, null, QueueRecorder::FAILED, QueueConsumerMode::Api, (float)$this->clock->now()->format('U.u'), 'boom');
+
+        $rows = $this->db->loadAll("SELECT action, target FROM {$this->journal->table()} ORDER BY id");
+
+        $this->assertSame([
+            ['action' => 'queue.run.failed', 'target' => QueueTestMessage::class],
+            ['action' => 'queue.task.finished', 'target' => 'digest'],
+            ['action' => 'queue.run.failed', 'target' => QueueTestMessage::class],
+        ], $rows, 'a message that is no task\'s leaves no task row');
     }
 
     /**

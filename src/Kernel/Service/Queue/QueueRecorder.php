@@ -17,7 +17,7 @@ use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\JournalSchema;
 
 /**
- * Writes what the consumer did: Journal `queue` rows, one per pass and one per handling attempt, and each task's last run (QueueTaskRows).
+ * Writes what the consumer did: Journal `queue` rows, one per pass, per handling attempt and per task event (declared, dispatched, finished), and each task's last run (QueueTaskRows).
  * A run is dated by its end, a pass by its start, open while its `target` is empty; `last_at` is when it was last seen.
  * Written straight into the Journal's table, never through Journal; `context` never holds a null; times are UTC.
  */
@@ -106,11 +106,18 @@ class QueueRecorder
         ]);
     }
 
+    /** The Scheduler met that task for the first time: the date its schedule counts from until a run is queued. */
+    public function taskDeclared(ScheduledTask $task): void
+    {
+        $this->insertTask(QueueJournalEntry::TASK_DECLARED, $task->taskId(), LogLevel::INFO, ['label' => mb_substr($task->label(), 0, self::LABEL_LENGTH)]);
+    }
+
     /** The schedule has queued a run of that task, or one was asked for by hand; a null $nextDue keeps the one known. */
     public function taskDispatched(ScheduledTask $task, int $everySeconds, ?\DateTimeImmutable $nextDue): void
     {
+        $label = mb_substr($task->label(), 0, self::LABEL_LENGTH);
         $fields = [
-            'label' => mb_substr($task->label(), 0, self::LABEL_LENGTH),
+            'label' => $label,
             'every_seconds' => $everySeconds,
             'last_dispatched_at' => $this->format($this->now()),
         ];
@@ -119,6 +126,7 @@ class QueueRecorder
         }
 
         $this->tasks->update($task->taskId(), static fn (array $state): array => array_merge($state, $fields));
+        $this->insertTask(QueueJournalEntry::TASK_DISPATCHED, $task->taskId(), LogLevel::INFO, ['label' => $label]);
     }
 
     /**
@@ -144,6 +152,7 @@ class QueueRecorder
     /** A handling attempt of that task's message ended: a failed or killed run adds to `consecutive_failures`, a handled one resets it. */
     public function taskFinished(string $taskId, string $status, ?string $error): void
     {
+        $before = $this->lastConsecutiveFailures($taskId);
         $fields = [
             'last_finished_at' => $this->format($this->now()),
             'last_status' => $status,
@@ -159,6 +168,16 @@ class QueueRecorder
                 default => $failures,
             }]);
         });
+
+        $this->insertTask(QueueJournalEntry::TASK_FINISHED, $taskId, self::levelOf($status), [
+            'status' => $status,
+            'message' => $error === null ? null : QueueFailureCause::fitted($error),
+            'consecutive_failures' => match ($status) {
+                self::HANDLED => 0,
+                self::FAILED, self::KILLED => $before + 1,
+                default => $before,
+            },
+        ]);
     }
 
     /**
@@ -171,13 +190,37 @@ class QueueRecorder
         if (isset($context['message'])) {
             $context['message'] = QueueFailureCause::fitted((string)$context['message']);
         }
-        $level = match ($status) {
+
+        $this->insert($finishedAt, $actor, QueueJournalEntry::run($status), mb_substr($type, 0, self::TARGET_LENGTH), self::levelOf($status), $context);
+    }
+
+    /** @param array<string, int|string|null> $context */
+    private function insertTask(string $action, string $taskId, string $level, array $context): void
+    {
+        $this->insert($this->format($this->now()), '', $action, mb_substr($taskId, 0, self::TARGET_LENGTH), $level, $context);
+    }
+
+    /** The count its last `queue.task.finished` row left; 0 for a task that has none. */
+    private function lastConsecutiveFailures(string $taskId): int
+    {
+        $stored = $this->db->scalar(
+            "SELECT context FROM {$this->journal->table()} WHERE channel = ? AND action = ? AND target = ? ORDER BY id DESC LIMIT 1",
+            null,
+            [JournalChannel::Queue->value, QueueJournalEntry::TASK_FINISHED, mb_substr($taskId, 0, self::TARGET_LENGTH)]
+        );
+        $context = is_string($stored) ? json_decode($stored, true) : null;
+
+        return is_array($context) ? (int)($context['consecutive_failures'] ?? 0) : 0;
+    }
+
+    /** The Journal level of a run that ended with that status. */
+    private static function levelOf(string $status): string
+    {
+        return match ($status) {
             self::RETRIED => LogLevel::WARNING,
             self::FAILED, self::KILLED => LogLevel::ERROR,
             default => LogLevel::INFO,
         };
-
-        $this->insert($finishedAt, $actor, QueueJournalEntry::run($status), mb_substr($type, 0, self::TARGET_LENGTH), $level, $context);
     }
 
     /** @param array<string, int|string|null> $context */

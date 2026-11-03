@@ -457,8 +457,11 @@ class QueueScheduleTickerTest extends YesWikiTestCase
             $this->markTestSkipped("no {$params['db_driver']} server at {$params['db_host']}");
         }
         $this->build(new DbService(new ParameterBag($params)));
+        $journal = new JournalSchema($this->db);
         $this->schema->drop();
+        $journal->drop();
         $this->schema->create();
+        $journal->create();
         $triples = $this->db->quoteIdentifier(trim($this->db->prefixTable('triples')));
         $this->db->query("DELETE FROM {$triples}");
 
@@ -482,6 +485,7 @@ class QueueScheduleTickerTest extends YesWikiTestCase
             $this->assertSame(['test-task', 0, 'handled', null], $this->summary('test-task'));
         } finally {
             $this->schema->drop();
+            $journal->drop();
             $this->db->query("DROP TABLE IF EXISTS {$triples}");
         }
     }
