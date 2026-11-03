@@ -758,11 +758,11 @@ Each point names the class or method to look at.
   a retained record of things that happened. The cost is a third Journal population with its own
   retention (a purge that spares the last row of each task's actions), and a backup/restore that must
   leave the Journal's `queue` rows out and keep the live ones.
-- **The Scheduler's state beside the Journal** — rejected, after being the design of the alphas: a
-  row per task in a reserved queue of the `queue` table, and Symfony's checkpoint kept in
-  triples. Three places then told the story of a task (those two and the Journal) and could
-  contradict each other, and a persisted "next due" is the same thing again. The Journal is the only
-  record, and what the end of a request must know is worked out from it, in memory.
+- **The Scheduler's state beside the Journal** — rejected, after being the first design of this work
+  (it never shipped): a row per task in a reserved queue of the `queue` table, and Symfony's
+  checkpoint kept in triples. Three places then told the story of a task (those two and the Journal)
+  and could contradict each other, and a persisted "next due" is the same thing again. The Journal is
+  the only record, and what the end of a request must know is worked out from it, in memory.
 - **Fixing each mechanism where it is** — rejected. Seven fixes would still be seven places an
   admin has to know to look, and nothing would answer "is anything consuming at all". The point is
   the single observable path.
