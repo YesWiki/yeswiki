@@ -15,6 +15,11 @@ class MySqlDialect implements SqlDialect
         return 'NOW()';
     }
 
+    public function utcNow(): string
+    {
+        return "DATE_FORMAT(UTC_TIMESTAMP(6), '%Y-%m-%d %H:%i:%s.%f')";
+    }
+
     public function dateSubDays(int $days): string
     {
         return 'DATE_SUB(NOW(), INTERVAL ' . intval($days) . ' DAY)';

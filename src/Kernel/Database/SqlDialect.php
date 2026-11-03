@@ -11,6 +11,13 @@ interface SqlDialect
     /** SQL expression for the current timestamp. */
     public function now(): string;
 
+    /**
+     * SQL expression for the database's current time in UTC, whatever the session's time zone, as text `Y-m-d H:i:s` followed by a fraction of a second.
+     *
+     * What DbService::utcNow() reads: the one clock every process sharing the database agrees on.
+     */
+    public function utcNow(): string;
+
     /** SQL expression for "current timestamp minus $days days". */
     public function dateSubDays(int $days): string;
 

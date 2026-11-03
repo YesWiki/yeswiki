@@ -699,6 +699,23 @@ class DbService
     }
 
     /**
+     * The database's current time, in UTC whatever the session's time zone.
+     *
+     * The time every process sharing this database agrees on, wherever it runs: PHP's clock is
+     * the clock of one machine, and the machines of a farm need not agree with each other.
+     */
+    public function utcNow(): \DateTimeImmutable
+    {
+        $row = $this->loadSingle('SELECT ' . $this->dialect->utcNow() . ' AS utc_now');
+        $time = \DateTimeImmutable::createFromFormat('Y-m-d H:i:s.u', (string)($row['utc_now'] ?? ''), new \DateTimeZone('UTC'));
+        if ($time === false) {
+            throw new \RuntimeException('The database did not tell its current time: ' . var_export($row, true));
+        }
+
+        return $time;
+    }
+
+    /**
      * Returns a SQL expression for "current timestamp minus X days"
      * This is database-driver agnostic.
      *

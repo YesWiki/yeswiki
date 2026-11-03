@@ -19,6 +19,7 @@ use YesWiki\Kernel\Queue\QueuePassReport;
 use YesWiki\Kernel\Service\ConfigurationService;
 use YesWiki\Kernel\Service\ConfigurationWatch;
 use YesWiki\Kernel\Service\ConsoleService;
+use YesWiki\Kernel\Service\DatabaseClock;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\EventDispatcher;
 use YesWiki\Kernel\Service\HibernationService;
@@ -90,7 +91,7 @@ final class QueueTestKit
 
     /**
      * @param array<class-string, \Closure>      $handlers             further messages the queue handles, by class, each with the closure that handles it; one for QueueTestMessage replaces the kit's
-     * @param ClockInterface|null                $clock                the clock of every part of the queue (default: the real one)
+     * @param ClockInterface|null                $clock                the clock of every part of the queue (default: the database's, as in production)
      * @param string|null                        $database             an SQLite file another kit or test made, for a consumer in another process to work on the same queue; left where it is by dispose()
      * @param ProvidesSchedule|null              $schedule             the recurring tasks the schedule declares (default: none)
      * @param QueueBudgetFactory|null            $budgets              what a pass may spend (default: from this PHP's limits)
@@ -108,7 +109,6 @@ final class QueueTestKit
         ?\Closure $events = null,
         ?\Closure $configurationChanged = null,
     ) {
-        $this->clock = $clock ??= new NativeClock();
         $this->file = $database ?? sys_get_temp_dir() . '/yw-kit-' . bin2hex(random_bytes(6)) . '.db';
         $this->ownsDatabase = $database === null;
         $this->lockDir = sys_get_temp_dir() . '/yw-kit-locks-' . bin2hex(random_bytes(4));
@@ -118,6 +118,7 @@ final class QueueTestKit
             'table_prefix' => 'ywq_',
             'debug' => false,
         ]));
+        $this->clock = $clock ??= new DatabaseClock($db);
         $this->schema = $schema = new QueueSchema($db);
         $schema->create();
         (new JournalSchema($db))->create();

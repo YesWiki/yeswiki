@@ -37,10 +37,12 @@ use YesWiki\Kernel\Service\RequestScopedState;
  * holds the scheduled tasks, in a queue of their own (QueueSchema::SCHEDULE_QUEUE): every query
  * here names the queues it means, so that a task's row is never taken, counted nor pruned.
  *
- * Every time is PHP's, from the injected clock, in UTC, bound as a parameter: never the
- * database's NOW(). A database on another time zone than PHP (common on shared hosting) would
- * otherwise make a message available hours early or late, and a delivery look killed or alive
- * for the wrong reason.
+ * Every time is the database's, from the injected clock (DatabaseClock), in UTC, bound as a
+ * parameter. The database's rather than PHP's: the processes of a farm may run on several
+ * machines whose clocks disagree, and one ahead of the others would take a message before it is
+ * available, or declare dead a delivery still at work. In UTC rather than the database's NOW():
+ * a session on another time zone than the rows' (common on shared hosting) would make a message
+ * available hours early or late.
  *
  * A row is a message waiting while `delivered_at` is NULL, and a message some consumer is
  * handling once it is set; ack() and reject() delete it, as long as it is still under the claim

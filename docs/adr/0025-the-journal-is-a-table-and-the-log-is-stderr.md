@@ -155,7 +155,7 @@ not put a line on stderr each time, and neither the per-day ceiling nor the fing
 anything to say about them (`fingerprint` and `day` stay NULL). They are pruned on `last_at`, like
 diagnostics, since a pass is as old as its last sign of life, after 7 days
 (`journal_queue_purge_time`). And `/admin/logs` lists them only when the `queue` channel is chosen,
-so the default view stays the acts and errors it exists for. Their times are UTC, written from PHP
+so the default view stays the acts and errors it exists for. Their times are UTC, read from the database's clock (`DatabaseClock`)
 (a pass's moments are compared to the exact second, and a conversion by the database's zone is wrong
 under SQLite and ambiguous at the autumn clock change), so the screen converts them for that channel
 alone. A backup leaves them out and a restore keeps the live ones, otherwise a restored copy would

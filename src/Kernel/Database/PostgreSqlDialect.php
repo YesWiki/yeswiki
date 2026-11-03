@@ -15,6 +15,12 @@ class PostgreSqlDialect implements SqlDialect
         return 'NOW()';
     }
 
+    /** clock_timestamp(), not NOW(): NOW() stands still for the whole transaction. */
+    public function utcNow(): string
+    {
+        return "to_char(clock_timestamp() AT TIME ZONE 'UTC', 'YYYY-MM-DD HH24:MI:SS.US')";
+    }
+
     public function dateSubDays(int $days): string
     {
         return "NOW() - INTERVAL '" . intval($days) . " days'";

@@ -15,6 +15,11 @@ class SqliteDialect implements SqlDialect
         return "datetime('now')";
     }
 
+    public function utcNow(): string
+    {
+        return "strftime('%Y-%m-%d %H:%M:%f', 'now')";
+    }
+
     public function dateSubDays(int $days): string
     {
         return "datetime('now', '-" . intval($days) . " days')";

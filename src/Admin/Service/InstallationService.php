@@ -2,7 +2,6 @@
 
 namespace YesWiki\Admin\Service;
 
-use Symfony\Component\Clock\NativeClock;
 use Symfony\Component\DependencyInjection\Attribute\Exclude;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 use Symfony\Component\Messenger\Envelope;
@@ -11,6 +10,7 @@ use YesWiki\Core\YesWikiLoader;
 use YesWiki\Kernel\Database\DumpRewriter;
 use YesWiki\Kernel\Database\SqlDialectFactory;
 use YesWiki\Kernel\Service\ConfigurationService;
+use YesWiki\Kernel\Service\DatabaseClock;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\EnvironmentConfiguration;
 use YesWiki\Kernel\Service\ProgramVersion;
@@ -547,7 +547,7 @@ class InstallationService
         SchemaCreator::createSearchIndex($db, $this->config['table_prefix']);
 
         $wiki = new DbService(new ParameterBag($this->config + ['debug' => false]));
-        $transport = new QueueTransport($wiki, new QueueSchema($wiki), new NativeClock());
+        $transport = new QueueTransport($wiki, new QueueSchema($wiki), new DatabaseClock($wiki));
         foreach ($wiki->loadAll("SELECT DISTINCT tag FROM {$wiki->prefixTable('pages')} WHERE latest = 'Y'") as $row) {
             $transport->send(new Envelope(new ReindexContent((string)$row['tag'])));
         }

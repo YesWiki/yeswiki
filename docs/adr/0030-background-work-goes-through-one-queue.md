@@ -449,8 +449,13 @@ arrival, and the explicit actions of a human or a webhook (`importer:sync`, `GET
   separate in history. Until the last one moves, the old and new paths coexist.
 - **The queue's rows in the Journal are hidden unless asked for.** `/admin/logs` lists `audit` and
   `diagnostic` by default and shows the `queue` channel only when it is chosen, so a pass every few
-  minutes does not bury the acts and errors the screen exists for. Their times are UTC, written from
-  PHP, and the screen converts them to the wiki's zone for that channel alone.
+  minutes does not bury the acts and errors the screen exists for. Their times are UTC, read from the
+  database's clock (`DatabaseClock`), and the screen converts them to the wiki's zone for that channel alone.
+- **Every time the queue writes or compares is the database's.** The processes of a farm may run on
+  several machines whose clocks disagree; `DatabaseClock` reads the database's time in UTC
+  (`DbService::utcNow()`), so `available_at`, the expiry of a claim and the checkpoint go by the one
+  clock they all share. Only what a pass may still spend, measured within one process, stays on PHP's
+  clock (`QueueBudgetFactory`).
 - **A wiki with the table missing keeps serving pages.** The checks that read the table are silent
   until the migration has run, and `queue-tables` says why, and the request trigger journals one failure a day instead of
   breaking the page.

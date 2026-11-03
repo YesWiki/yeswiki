@@ -11,13 +11,16 @@ use Symfony\Component\Config\Resource\FileResource;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Loader\PhpFileLoader;
+use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\HttpKernel\Kernel;
 use YesWiki\Content\Service\FileManager;
 use YesWiki\Kernel\Performable\ActionRegistry;
 use YesWiki\Kernel\Service\ConfigurationFileProvider;
+use YesWiki\Kernel\Service\DatabaseClock;
 use YesWiki\Kernel\Service\EnvironmentConfiguration;
 use YesWiki\Kernel\Service\LanguageService;
 use YesWiki\Kernel\Service\ProgramVersion;
+use YesWiki\Kernel\Service\Queue\QueueBudgetFactory;
 use YesWiki\Kernel\Service\StringUtilService;
 
 /** Owns the DI container build/compile/cache lifecycle for a Wiki instance. */
@@ -160,8 +163,9 @@ class YesWikiKernel extends Kernel
             $container->register($id)->setSynthetic(true)->setPublic(true);
         }
         $container->setAlias(ContainerInterface::class, 'service_container')->setPublic(true);
-        // One clock for every service that reads the time; a test hands its own (MockClock) to what it builds.
-        $container->register(ClockInterface::class, NativeClock::class)->setPublic(true);
+        // The database's clock for every service that reads the time: the machines of a farm need not agree on theirs (DatabaseClock). A test hands its own (MockClock) to what it builds.
+        $container->setAlias(ClockInterface::class, DatabaseClock::class)->setPublic(true);
+        $container->register(NativeClock::class)->setPublic(false);
         $container->register(ActionRegistry::class)->setAutowired(true)->setPublic(true);
 
         $loader = new PhpFileLoader($container, new FileLocator(__DIR__));
@@ -183,6 +187,8 @@ class YesWikiKernel extends Kernel
         }
 
         $loader->registerAliasesForSinglyImplementedInterfaces();
+        // A budget is time spent by this process alone, against microtime() (QueueBudget): PHP's clock, not a query per reading.
+        $container->getDefinition(QueueBudgetFactory::class)->setArgument('$clock', new Reference(NativeClock::class));
         $container->getDefinition(LanguageService::class)->setFactory([LanguageService::class, 'getInstance']);
     }
 

@@ -100,11 +100,11 @@ class Journal implements LoggerInterface
                 continue;
             }
 
-            // The queue writes its rows' times in UTC from PHP, so it cuts them in UTC from PHP: the database's NOW() may be in another zone.
+            // The queue writes its rows' times in UTC from the database's clock (DatabaseClock), so it cuts them the same way: the database's NOW() may be in another zone.
             $statement = $channel === JournalChannel::Queue
                 ? $db->query(
                     "DELETE FROM {$quote($table)} WHERE {$quote('channel')} = ? AND {$quote($column)} < ?",
-                    [$channel->value, gmdate('Y-m-d H:i:s', time() - $days * 86400)]
+                    [$channel->value, $db->utcNow()->modify("-{$days} days")->format('Y-m-d H:i:s')]
                 )
                 : $db->query(
                     "DELETE FROM {$quote($table)} WHERE {$quote('channel')} = ? AND {$quote($column)} < {$db->dateSubDays($days)}",
