@@ -22,7 +22,6 @@ use YesWiki\Kernel\Service\Queue\QueueScheduleTicker;
 use YesWiki\Kernel\Service\Queue\QueueSchema;
 use YesWiki\Kernel\Service\Queue\QueueSettings;
 use YesWiki\Kernel\Service\Queue\QueueStatistics;
-use YesWiki\Kernel\Service\Queue\QueueTaskRows;
 use YesWiki\Kernel\Service\Queue\QueueTransport;
 use YesWiki\Kernel\Service\Queue\ScheduleHistory;
 use YesWiki\Test\Core\YesWikiTestCase;
@@ -70,7 +69,7 @@ class QueueFallbackTest extends YesWikiTestCase
         $this->journal = $journal = new JournalSchema($this->db);
         $journal->create();
         $this->transport = new QueueTransport($this->db, $this->schema, clock: $this->clock);
-        $this->statistics = new QueueStatistics($this->db, $this->schema, $journal, $this->transport, new QueueTaskRows($this->db, $this->schema, $this->clock), $this->clock);
+        $this->statistics = new QueueStatistics($this->db, $this->schema, $journal, $this->transport, $this->clock);
         $this->locks = QueueTestKit::locksIn($this->lockDir);
 
         $this->configFile = sys_get_temp_dir() . '/yw-fallback-config-' . bin2hex(random_bytes(4)) . '.php';
@@ -347,7 +346,7 @@ class QueueFallbackTest extends YesWikiTestCase
 
     private function recorder(MockClock $clock): QueueRecorder
     {
-        return new QueueRecorder($this->db, new QueueTaskRows($this->db, $this->schema, $clock), $this->journal, $clock);
+        return new QueueRecorder($this->db, $this->journal, $clock);
     }
 
     /** A message available since $seconds ago. */

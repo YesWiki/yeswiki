@@ -39,7 +39,6 @@ use YesWiki\Kernel\Service\Queue\QueueScheduleTicker;
 use YesWiki\Kernel\Service\Queue\QueueSchema;
 use YesWiki\Kernel\Service\Queue\QueueSettings;
 use YesWiki\Kernel\Service\Queue\QueueStatistics;
-use YesWiki\Kernel\Service\Queue\QueueTaskRows;
 use YesWiki\Kernel\Service\Queue\QueueTransport;
 use YesWiki\Kernel\Service\Queue\ScheduleHistory;
 use YesWiki\Kernel\Service\ThrowableFormatter;
@@ -135,8 +134,7 @@ final class QueueTestKit
         $configuration->write($config);
 
         $this->transport = new QueueTransport($db, $schema, $clock);
-        $tasks = new QueueTaskRows($db, $schema, $clock);
-        $this->statistics = new QueueStatistics($db, $schema, new JournalSchema($db), $this->transport, $tasks, $clock);
+        $this->statistics = new QueueStatistics($db, $schema, new JournalSchema($db), $this->transport, $clock);
         $this->journal = $journal = new Journal(new ServiceLocator([
             DbService::class => static fn (): DbService => $db,
             JournalSchema::class => static fn (): JournalSchema => new JournalSchema($db),
@@ -156,7 +154,7 @@ final class QueueTestKit
             $map[$type] = ["handler:{$type}"];
             $services["handler:{$type}"] = static fn (): \Closure => $handler;
         }
-        $this->recorder = $recorder = new QueueRecorder($db, $tasks, new JournalSchema($db), $clock);
+        $this->recorder = $recorder = new QueueRecorder($db, new JournalSchema($db), $clock);
         $this->bus = $bus = new QueueBus(
             $this->transport,
             new QueueHandlerLocator($map, new ServiceLocator($services)),
@@ -234,7 +232,7 @@ final class QueueTestKit
         $clock = new MockClock($finishedAt, 'UTC');
         $startedAt = (float)$clock->now()->format('U.u') - $durationMs / 1000;
 
-        (new QueueRecorder($db, new QueueTaskRows($db, new QueueSchema($db), $clock), new JournalSchema($db), $clock))
+        (new QueueRecorder($db, new JournalSchema($db), $clock))
             ->messageFinished($messageId, $type, null, $status, $mode, $startedAt, null);
     }
 
@@ -262,7 +260,7 @@ final class QueueTestKit
     ): int {
         $clock = new MockClock($startedAt, 'UTC');
         $journal = new JournalSchema($db);
-        $recorder = new QueueRecorder($db, new QueueTaskRows($db, new QueueSchema($db), $clock), $journal, $clock);
+        $recorder = new QueueRecorder($db, $journal, $clock);
 
         $id = $recorder->passStarted($mode, $memoryLimit === 0 ? null : new QueueBudget(INF, $memoryLimit, 0), $beforeResponse, $origin ?? QueuePassOrigin::Consumer, $fallbackFor);
         if ($holder !== null) {

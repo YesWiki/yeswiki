@@ -4,7 +4,6 @@ namespace YesWiki\Kernel\Database;
 
 use YesWiki\Kernel\Entity\JournalChannel;
 use YesWiki\Kernel\Service\JournalSchema;
-use YesWiki\Kernel\Service\Queue\QueueCheckpoint;
 use YesWiki\Kernel\Service\Queue\QueueSchema;
 
 class DumpRewriter
@@ -193,7 +192,6 @@ class DumpRewriter
     {
         return [
             $prefix . JournalSchema::TABLE => "channel = '" . JournalChannel::Queue->value . "'",
-            $prefix . 'triples' => "resource = '" . QueueCheckpoint::RESOURCE . "'",
         ];
     }
 

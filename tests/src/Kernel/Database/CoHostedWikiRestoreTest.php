@@ -33,7 +33,6 @@ class CoHostedWikiRestoreTest extends YesWikiTestCase
 
         foreach ([self::LIVE, self::OTHER] as $prefix) {
             $this->db->query('CREATE TABLE ' . $this->db->quoteIdentifier($prefix . 'pages') . ' (tag VARCHAR(190), body TEXT)');
-            // A backup leaves the Scheduler's checkpoint out of the triples, by their resource (DumpRewriter::leftOutRows()).
             $this->db->query('CREATE TABLE ' . $this->db->quoteIdentifier($prefix . 'triples') . ' (id INTEGER, resource VARCHAR(190))');
         }
         $this->db->query('INSERT INTO ' . $this->db->quoteIdentifier(self::LIVE . 'pages') . " (tag, body) VALUES ('Mine', 'before')");

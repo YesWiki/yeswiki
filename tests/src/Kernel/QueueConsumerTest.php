@@ -36,7 +36,6 @@ use YesWiki\Kernel\Service\Queue\QueueRecorder;
 use YesWiki\Kernel\Service\Queue\QueueScheduleTicker;
 use YesWiki\Kernel\Service\Queue\QueueSchema;
 use YesWiki\Kernel\Service\Queue\QueueStatistics;
-use YesWiki\Kernel\Service\Queue\QueueTaskRows;
 use YesWiki\Kernel\Service\Queue\QueueTransport;
 use YesWiki\Kernel\Service\Queue\ScheduleHistory;
 use YesWiki\Kernel\Service\ThrowableFormatter;
@@ -975,7 +974,7 @@ class QueueConsumerTest extends YesWikiTestCase
         $this->clock = $clock;
         $schema = new QueueSchema($db);
         $this->transport = new QueueTransport($db, $schema, clock: $clock);
-        $this->statistics = new QueueStatistics($db, $schema, new JournalSchema($db), $this->transport, new QueueTaskRows($db, $schema, $clock), $clock);
+        $this->statistics = new QueueStatistics($db, $schema, new JournalSchema($db), $this->transport, $clock);
         $this->log = self::memory();
         $journal = new Journal(new ServiceLocator([
             DbService::class => fn (): DbService => $this->db,
@@ -995,7 +994,7 @@ class QueueConsumerTest extends YesWikiTestCase
             new ServiceLocator(['handler' => static fn (): \Closure => $handler])
         );
 
-        $recorder = new QueueRecorder($db, new QueueTaskRows($db, $schema, $clock), new JournalSchema($db), $clock);
+        $recorder = new QueueRecorder($db, new JournalSchema($db), $clock);
         $bus = new QueueBus($this->transport, $locator, $journal, $recorder, QueueTestKit::noRequest());
         $this->history = $history ?? new ScheduleHistory($db, new JournalSchema($db));
         $provider = new class($schedule ?? static fn (): array => []) implements ProvidesSchedule {

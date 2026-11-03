@@ -18,11 +18,7 @@ use Symfony\Component\Messenger\Stamp\TransportMessageIdStamp;
 use YesWiki\Kernel\Queue\QueueClaimHolder;
 use YesWiki\Kernel\Queue\QueueConsumerMode;
 use YesWiki\Kernel\Service\DbService;
-use YesWiki\Kernel\Service\JournalSchema;
-use YesWiki\Kernel\Service\Queue\QueueRecorder;
 use YesWiki\Kernel\Service\Queue\QueueSchema;
-use YesWiki\Kernel\Service\Queue\QueueStatistics;
-use YesWiki\Kernel\Service\Queue\QueueTaskRows;
 use YesWiki\Kernel\Service\Queue\QueueTransport;
 use YesWiki\Test\Core\YesWikiTestCase;
 
@@ -621,64 +617,6 @@ class QueueTransportTest extends YesWikiTestCase
         $this->assertSame('failed', $this->row(self::idOf($sent))['queue_name'] ?? null);
         $this->assertStringStartsWith('undecodable:', (string)($this->row(self::idOf($sent))['last_error'] ?? ''));
         $this->assertSame([], [...$this->transport->get()]);
-    }
-
-    /**
-     * A scheduled task is a row of the same table, in a queue no consumer reads: nothing done with messages sees it.
-     *
-     * @param array<string, string|bool> $params
-     */
-    #[DataProvider('servers')]
-    public function testTaskRowsAreNeverMessages(array $params): void
-    {
-        $db = $this->db;
-        if ($params['db_driver'] !== 'sqlite') {
-            if (!self::reachable($params)) {
-                $this->markTestSkipped("no {$params['db_driver']} server at {$params['db_host']}");
-            }
-            $db = new DbService(new ParameterBag($params));
-        }
-        $schema = new QueueSchema($db);
-        $journal = new JournalSchema($db);
-        foreach ([$schema, $journal] as $tables) {
-            $tables->drop();
-            $tables->create();
-        }
-
-        try {
-            $transport = new QueueTransport($db, $schema, clock: $this->clock);
-            $statistics = new QueueStatistics($db, $schema, $journal, $transport, new QueueTaskRows($db, $schema, $this->clock), $this->clock);
-            (new QueueRecorder($db, new QueueTaskRows($db, $schema, $this->clock), $journal, $this->clock))->taskFinished('test-task', QueueRecorder::HANDLED, null);
-            $rows = array_map(
-                static fn (array $row): int => (int)$row['id'],
-                $db->loadAll("SELECT id FROM {$schema->table()} WHERE queue_name = ? ORDER BY id", [QueueSchema::SCHEDULE_QUEUE])
-            );
-            $this->assertCount(1, $rows, 'one row for the task');
-            $this->clock->sleep(60);
-
-            $this->assertSame(0, $transport->getMessageCount());
-            $this->assertSame(0, $transport->withQueue(QueueTransport::FAILED_QUEUE)->getMessageCount());
-            $this->assertSame(0, $statistics->pendingCount());
-            $this->assertSame(0, $statistics->failedCount());
-            $this->assertSame([], [...$transport->get()]);
-            $this->assertSame([], [...$transport->withQueue(QueueTransport::FAILED_QUEUE)->get()]);
-            $this->assertSame([], $statistics->byType());
-            foreach ($rows as $id) {
-                $this->assertSame('unknown', $statistics->messageState($id));
-                $this->assertNull($transport->getById($id));
-                $transport->moveToFailed($id, 'boom');
-                $transport->deleteFailed($id);
-            }
-            $this->assertSame(0, $transport->pruneFailed(0));
-
-            $this->assertSame(1, (int)$db->scalar("SELECT COUNT(*) FROM {$schema->table()} WHERE queue_name = ?", 0, [QueueSchema::SCHEDULE_QUEUE]), 'neither moved nor deleted');
-            $this->assertSame(['test-task'], array_column($statistics->tasks(), 'taskId'));
-        } finally {
-            if ($db !== $this->db) {
-                $schema->drop();
-                $journal->drop();
-            }
-        }
     }
 
     /**

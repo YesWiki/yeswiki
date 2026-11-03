@@ -10,24 +10,31 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\DependencyInjection\ServiceLocator;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\Stamp\TransportMessageIdStamp;
+use Symfony\Component\Scheduler\RecurringMessage;
 use YesWiki\Files\Service\LocalFiles;
 use YesWiki\Kernel\Command\DbCommand;
 use YesWiki\Kernel\Database\DumpRewriter;
+use YesWiki\Kernel\Queue\ProvidesSchedule;
 use YesWiki\Kernel\Queue\QueueConsumerMode;
+use YesWiki\Kernel\Queue\QueueJournalEntry;
 use YesWiki\Kernel\Service\ConsoleService;
 use YesWiki\Kernel\Service\DbService;
+use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Kernel\Service\Journal;
 use YesWiki\Kernel\Service\JournalSchema;
-use YesWiki\Kernel\Service\Queue\QueueCheckpoint;
+use YesWiki\Kernel\Service\Queue\QueueBus;
+use YesWiki\Kernel\Service\Queue\QueueHandlerLocator;
 use YesWiki\Kernel\Service\Queue\QueueRecorder;
+use YesWiki\Kernel\Service\Queue\QueueScheduleTicker;
 use YesWiki\Kernel\Service\Queue\QueueSchema;
-use YesWiki\Kernel\Service\Queue\QueueTaskRows;
 use YesWiki\Kernel\Service\Queue\QueueTransport;
+use YesWiki\Kernel\Service\Queue\ScheduleHistory;
 use YesWiki\Kernel\Service\ThrowableFormatter;
 use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';
 require_once 'tests/src/Kernel/QueueTestMessage.php';
+require_once 'tests/src/Kernel/QueueTestTask.php';
 require_once 'tests/src/Kernel/QueueTestKit.php';
 require_once 'tests/src/Kernel/QueueTransportTest.php';
 
@@ -40,13 +47,15 @@ require_once 'tests/src/Kernel/QueueTransportTest.php';
  *
  * Otherwise a restored copy holds the backup's own message as "running", replays what was
  * pending when the backup was taken, acknowledges the restore by an id in a table it has just
- * replaced, and sends the scheduled tasks back to an older checkpoint.
+ * replaced, and sends the scheduled tasks back to an older anchor, which runs them again.
  */
 class BackupsLeaveTheQueueAloneTest extends YesWikiTestCase
 {
     private const PREFIX = 'ywqbak_';
 
     private ?string $file = null;
+    private ?string $lockDir = null;
+    private MockClock $clock;
 
     /** @var (\Closure(string): void)|null told of each statement the probe wiki's connection has run */
     private ?\Closure $afterQuery = null;
@@ -67,6 +76,14 @@ class BackupsLeaveTheQueueAloneTest extends YesWikiTestCase
             foreach (['', '-wal', '-shm'] as $suffix) {
                 @unlink($this->file . $suffix);
             }
+        }
+        if ($this->lockDir !== null) {
+            foreach (glob($this->lockDir . '/cache/*') ?: [] as $lock) {
+                @unlink($lock);
+            }
+            @rmdir($this->lockDir . '/cache');
+            @rmdir($this->lockDir);
+            $this->lockDir = null;
         }
         parent::tearDown();
     }
@@ -203,14 +220,13 @@ class BackupsLeaveTheQueueAloneTest extends YesWikiTestCase
         $this->assertStringNotContainsString('RunBeforeTheBackup', $dump);
     }
 
-    /** What core:exportdb asks of the dump tool: the content tables in one call, then the Journal less its queue rows in another, into a file of its own that is appended to the first. */
+    /** What core:exportdb asks of the dump tool: the content tables, triples included, in one call, then the Journal less its queue rows in another, into a file of its own that is appended to the first. */
     public function testTheDumpToolDumpsTheJournalApartWithoutItsQueueRows(): void
     {
         $this->assertSame(
             [
-                '/tmp/dump.sql' => ['--host=db', '--user=u', '--result-file=/tmp/dump.sql', 'wiki', 'yw_pages'],
+                '/tmp/dump.sql' => ['--host=db', '--user=u', '--result-file=/tmp/dump.sql', 'wiki', 'yw_pages', 'yw_triples'],
                 '/tmp/dump.sql.1' => ['--host=db', '--user=u', "--where=NOT (channel = 'queue')", '--result-file=/tmp/dump.sql.1', 'wiki', 'yw_journal'],
-                '/tmp/dump.sql.2' => ['--host=db', '--user=u', "--where=NOT (resource = 'queue:checkpoint')", '--result-file=/tmp/dump.sql.2', 'wiki', 'yw_triples'],
             ],
             DbCommand::dumpInvocations(['--host=db', '--user=u'], 'wiki', ['yw_pages', 'yw_journal', 'yw_triples'], 'yw_', '/tmp/dump.sql')
         );
@@ -221,46 +237,50 @@ class BackupsLeaveTheQueueAloneTest extends YesWikiTestCase
         );
     }
 
-    /** @param array<string, string|bool> $params */
+    /**
+     * The Scheduler keeps nothing in the triples: a dump carries every one of them.
+     *
+     * @param array<string, string|bool> $params
+     */
     #[DataProvider('servers')]
-    public function testADumpCarriesNoCheckpoint(array $params): void
+    public function testADumpCarriesEveryTriple(array $params): void
     {
         $this->open($params);
         $this->triple('Home', 'content');
-        $this->triple(QueueCheckpoint::RESOURCE, 'at backup time');
+        $this->triple('Other', 'more content');
 
         $dump = $this->db->dumper()->dump()['sql'];
 
         $this->assertStringContainsString('content', $dump);
-        $this->assertStringNotContainsString(QueueCheckpoint::RESOURCE, $dump);
+        $this->assertStringContainsString('more content', $dump);
     }
 
-    /** The same through core:exportdb: the triples are dumped by a call of their own, less the checkpoint. */
-    public function testTheDumpToolCarriesNoCheckpoint(): void
+    /** The same through core:exportdb: the triples are dumped with the pages, in the same call. */
+    public function testTheDumpToolCarriesEveryTriple(): void
     {
         $params = $this->openMysql();
         $this->triple('Home', 'content');
-        $this->triple(QueueCheckpoint::RESOURCE, 'at backup time');
+        $this->triple('Other', 'more content');
 
         $dump = $this->exportDb($params);
 
         $this->assertTrue(DbCommand::isDump($dump));
         $this->assertStringContainsString('content', $dump);
-        $this->assertStringNotContainsString(QueueCheckpoint::RESOURCE, $dump);
+        $this->assertStringContainsString('more content', $dump);
     }
 
     /** @param array<string, string|bool> $params */
     #[DataProvider('servers')]
-    public function testARestoreKeepsTheLiveCheckpoint(array $params): void
+    public function testARestoreKeepsTheLiveTasks(array $params): void
     {
-        $this->assertARestoreKeepsTheLiveCheckpoint($params, 'restoreFromDump');
+        $this->assertARestoreKeepsTheLiveTasks($params, 'restoreFromDump');
     }
 
     /** @param array<string, string|bool> $params */
     #[DataProvider('servers')]
-    public function testAStagedRestoreKeepsTheLiveCheckpoint(array $params): void
+    public function testAStagedRestoreKeepsTheLiveTasks(array $params): void
     {
-        $this->assertARestoreKeepsTheLiveCheckpoint($params, 'restoreStagedFromDump');
+        $this->assertARestoreKeepsTheLiveTasks($params, 'restoreStagedFromDump');
     }
 
     /** @param array<string, string|bool> $params */
@@ -347,35 +367,36 @@ class BackupsLeaveTheQueueAloneTest extends YesWikiTestCase
     }
 
     /**
-     * A backup that holds the checkpoint as it was then (an older one, or another wiki's) is restored: the content is the backup's, the checkpoint the live one.
+     * A task seen, then sent, after the backup: its live rows survive the restore, a task row the backup holds is dropped, and the task is not sent again.
      *
-     * @param array<string, string|bool> $params
+     * @param array<string, string|bool>                $params
+     * @param 'restoreFromDump'|'restoreStagedFromDump' $restore
      */
-    private function assertARestoreKeepsTheLiveCheckpoint(array $params, string $restore): void
+    private function assertARestoreKeepsTheLiveTasks(array $params, string $restore): void
     {
         $this->open($params);
-        $this->triple('Home', 'before');
-        $triples = $this->db->quoteIdentifier(self::PREFIX . 'triples');
-        $dump = $this->db->dumper()->dump()['sql']
-            . "\nINSERT INTO {$triples} (resource, property, value) VALUES ('" . QueueCheckpoint::RESOURCE . "', '" . QueueCheckpoint::NEXT_DUE_AT . "', '2026-10-01 00:00:00');\n";
-        $this->db->query("DELETE FROM {$triples}");
-        $this->triple('Home', 'after');
-        $this->triple(QueueCheckpoint::RESOURCE, '2026-10-23 13:00:00');
+        $this->openJournal();
+        $this->journal->audit('backup.audited', 'Home');
+        $this->assertSame(0, $this->ticker()->tick(), 'the task is seen, nothing is due');
+        $dump = $this->db->dumper()->dump()['sql'] . $this->journalInsert(['channel' => 'queue', 'action' => QueueJournalEntry::TASK_DISPATCHED, 'target' => 'ForeignTask']);
+        $this->clock->sleep(31 * 60);
+        $this->assertSame(1, $this->ticker()->tick(), 'it is due and sent');
+        $rows = $this->journalRows();
+        $this->assertContains('queue queue.task.dispatched digest', $rows);
 
         $this->db->{$restore}($dump);
 
-        $this->assertSame(
-            [['Home', 'before'], [QueueCheckpoint::RESOURCE, '2026-10-23 13:00:00']],
-            array_map(static fn (array $row): array => [(string)$row['resource'], (string)$row['value']], $this->db->loadAll("SELECT resource, value FROM {$triples} ORDER BY resource")),
-            "the content is the backup's, the checkpoint the live one"
-        );
+        $this->assertSame($rows, $this->journalRows(), "the content is the backup's, the task rows the live ones");
+        $this->assertSame('2026-10-23 12:31:00', (new ScheduleHistory($this->db, $this->journalSchema))->of('digest')?->lastDispatchedAt?->format('Y-m-d H:i:s'));
+        $this->clock->sleep(60);
+        $this->assertSame(0, $this->ticker()->tick(), 'a task that was sent is not sent again');
+        $this->assertCount(1, $this->pendingIds());
     }
 
-    /** Writes a triple of that resource into the probe wiki: its next due time when it is the checkpoint's. */
+    /** Writes a triple of that resource into the probe wiki. */
     private function triple(string $resource, string $value): void
     {
-        $property = $resource === QueueCheckpoint::RESOURCE ? QueueCheckpoint::NEXT_DUE_AT : 'https://yeswiki.net/vocabulary/probe';
-        $this->db->query('INSERT INTO ' . $this->db->quoteIdentifier(self::PREFIX . 'triples') . ' (resource, property, value) VALUES (?, ?, ?)', [$resource, $property, $value]);
+        $this->db->query('INSERT INTO ' . $this->db->quoteIdentifier(self::PREFIX . 'triples') . ' (resource, property, value) VALUES (?, ?, ?)', [$resource, 'https://yeswiki.net/vocabulary/probe', $value]);
     }
 
     /**
@@ -445,7 +466,8 @@ class BackupsLeaveTheQueueAloneTest extends YesWikiTestCase
         QueueTestKit::tripleStore($this->db);
         $this->schema = new QueueSchema($this->db);
         $this->schema->create();
-        $this->transport = new QueueTransport($this->db, $this->schema, clock: new MockClock('2026-10-23 12:00:00', 'UTC'));
+        $this->clock = new MockClock('2026-10-23 12:00:00', 'UTC');
+        $this->transport = new QueueTransport($this->db, $this->schema, clock: $this->clock);
     }
 
     /** A connection that tells afterQuery of each statement once it has run, to act at a given point of a restore. */
@@ -485,7 +507,36 @@ class BackupsLeaveTheQueueAloneTest extends YesWikiTestCase
         if ($log !== false) {
             $this->journal->writeTo($log);
         }
-        $this->recorder = new QueueRecorder($db, new QueueTaskRows($db, $this->schema, new MockClock('2026-10-23 12:00:00', 'UTC')), $journalSchema, new MockClock('2026-10-23 12:00:00', 'UTC'));
+        $this->recorder = new QueueRecorder($db, $journalSchema, $this->clock);
+    }
+
+    /** A ticker over the probe wiki as a request would build one, with one task every 30 minutes. */
+    private function ticker(): QueueScheduleTicker
+    {
+        $this->lockDir ??= sys_get_temp_dir() . '/yw-backup-locks-' . bin2hex(random_bytes(4));
+        $provider = new class implements ProvidesSchedule {
+            public function recurringMessages(): array
+            {
+                return [RecurringMessage::every('30 minutes', new QueueTestTask('digest'))];
+            }
+        };
+        $awake = new class(new ParameterBag(['wiki_status' => 'running'])) extends HibernationService {
+            public function isWikiHibernatedNow(): bool
+            {
+                return false;
+            }
+        };
+
+        return new QueueScheduleTicker(
+            [$provider],
+            new QueueBus($this->transport, new QueueHandlerLocator([], new ServiceLocator([])), $this->journal, $this->recorder, QueueTestKit::noRequest()),
+            new ScheduleHistory($this->db, $this->journalSchema),
+            $this->recorder,
+            QueueTestKit::locksIn($this->lockDir),
+            $this->clock,
+            $awake,
+            $this->journal
+        );
     }
 
     /** Records a handled run of that message type and answers the id of its row. */

@@ -195,7 +195,6 @@ class MySqlDialect implements SqlDialect
             "CREATE TABLE IF NOT EXISTS `{$table}` (
                 `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
                 `queue_name` VARCHAR(32) NOT NULL,
-                `task_id` VARCHAR(64) DEFAULT NULL,
                 `message_type` VARCHAR(191) NOT NULL,
                 `body` LONGTEXT NOT NULL,
                 `headers` LONGTEXT NOT NULL,
@@ -211,8 +210,7 @@ class MySqlDialect implements SqlDialect
                 `killed_in` VARCHAR(16) DEFAULT NULL,
                 PRIMARY KEY (`id`),
                 KEY `idx_queue_delivered_available` (`queue_name`, `delivered_at`, `available_at`),
-                UNIQUE KEY `uniq_waiting_dedup_key` (`queue_name`, `dedup_key`),
-                UNIQUE KEY `uniq_task_id` (`task_id`)
+                UNIQUE KEY `uniq_waiting_dedup_key` (`queue_name`, `dedup_key`)
             ) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci ENGINE=InnoDB",
         ];
     }

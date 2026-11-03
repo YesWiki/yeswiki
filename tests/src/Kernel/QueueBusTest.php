@@ -19,7 +19,6 @@ use YesWiki\Kernel\Service\Queue\QueueBus;
 use YesWiki\Kernel\Service\Queue\QueueHandlerLocator;
 use YesWiki\Kernel\Service\Queue\QueueRecorder;
 use YesWiki\Kernel\Service\Queue\QueueSchema;
-use YesWiki\Kernel\Service\Queue\QueueTaskRows;
 use YesWiki\Kernel\Service\Queue\QueueTransport;
 use YesWiki\Test\Core\YesWikiTestCase;
 
@@ -58,7 +57,7 @@ class QueueBusTest extends YesWikiTestCase
         (new JournalSchema($this->db))->create();
         $clock = new MockClock('2026-10-23 12:00:00', 'UTC');
         $this->transport = new QueueTransport($this->db, $this->schema, clock: $clock);
-        $this->recorder = new QueueRecorder($this->db, new QueueTaskRows($this->db, $this->schema, $clock), new JournalSchema($this->db), $clock);
+        $this->recorder = new QueueRecorder($this->db, new JournalSchema($this->db), $clock);
         $this->handler = new QueueTestMessageHandler();
 
         $this->journal = self::getWiki()->services->get(Journal::class);

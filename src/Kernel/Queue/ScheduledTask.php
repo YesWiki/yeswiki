@@ -7,7 +7,7 @@ interface ScheduledTask
 {
     public const MAX_ID_LENGTH = 64;
 
-    /** Stable across releases, at most MAX_ID_LENGTH characters: the task's identity in the queue's `task_id`. */
+    /** Stable across releases, at most MAX_ID_LENGTH characters: the `target` of the task's rows in the Journal. */
     public function taskId(): string;
 
     /** What the jobs page shows, already translated. */

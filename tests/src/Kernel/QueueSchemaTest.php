@@ -41,7 +41,7 @@ class QueueSchemaTest extends TestCase
         $this->assertSame('ywq_queue', $this->schema->table());
     }
 
-    /** One table, whatever the queue holds: its messages, its scheduled tasks and the Scheduler's checkpoint. */
+    /** One table, whatever the queue holds: its messages alone. */
     public function testCreateThenDrop(): void
     {
         $this->assertFalse($this->schema->exists());
@@ -63,26 +63,28 @@ class QueueSchemaTest extends TestCase
         $this->assertTrue($this->schema->exists());
     }
 
-    /** A message gets its defaults and no task id; a task id is held by one row at most, while any number of messages have none. */
+    /** A message gets its defaults, and the table has no column nor index for a task: the Journal keeps those. */
     public function testTheTableAcceptsItsRows(): void
     {
         $this->schema->create();
         $table = $this->db->quoteIdentifier($this->schema->table());
-        $insert = "INSERT INTO {$table} (queue_name, task_id, message_type, body, headers, created_at, available_at) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        $insert = "INSERT INTO {$table} (queue_name, message_type, body, headers, created_at, available_at) VALUES (?, ?, ?, ?, ?, ?)";
 
         foreach (['default', 'failed'] as $queue) {
-            $this->db->query($insert, [$queue, null, 'Some\\Message', '{}', '[]', '2026-10-23 12:00:00', '2026-10-23 12:00:00']);
+            $this->db->query($insert, [$queue, 'Some\\Message', '{}', '[]', '2026-10-23 12:00:00', '2026-10-23 12:00:00']);
         }
-        $message = $this->db->loadSingle("SELECT attempts, delivered_at, task_id FROM {$table} WHERE queue_name = 'default'");
+        $message = $this->db->loadSingle("SELECT * FROM {$table} WHERE queue_name = 'default'");
         $this->assertIsArray($message);
         $this->assertSame(0, (int)$message['attempts']);
         $this->assertNull($message['delivered_at']);
-        $this->assertNull($message['task_id']);
-
-        $task = [QueueSchema::SCHEDULE_QUEUE, '__checkpoint', '__checkpoint', '{}', '{}', '2026-10-23 12:00:00', '2026-10-23 12:00:00'];
-        $this->db->query($insert, $task);
-        $this->expectExceptionMessageMatches('/unique/i');
-        $this->db->query($insert, $task);
+        $this->assertSame(
+            ['id', 'queue_name', 'message_type', 'body', 'headers', 'dedup_key', 'created_at', 'available_at', 'delivered_at', 'delivered_by', 'delivered_mode', 'delivered_limit', 'attempts', 'last_error', 'killed_in'],
+            array_keys($message)
+        );
+        $this->assertSame([], array_filter(
+            $this->db->loadAll("SELECT name FROM sqlite_master WHERE type = 'index' AND tbl_name = ?", [$this->schema->table()]),
+            static fn (array $index): bool => str_contains((string)$index['name'], 'task')
+        ));
     }
 
     /** @return list<string> the tables of this wiki whose name starts like the queue's */

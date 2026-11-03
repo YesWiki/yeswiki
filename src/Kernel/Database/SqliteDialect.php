@@ -184,7 +184,6 @@ class SqliteDialect implements SqlDialect
             "CREATE TABLE IF NOT EXISTS \"{$table}\" (
                 \"id\" INTEGER PRIMARY KEY AUTOINCREMENT,
                 \"queue_name\" TEXT NOT NULL,
-                \"task_id\" TEXT DEFAULT NULL,
                 \"message_type\" TEXT NOT NULL,
                 \"body\" TEXT NOT NULL,
                 \"headers\" TEXT NOT NULL,
@@ -201,7 +200,6 @@ class SqliteDialect implements SqlDialect
             )",
             "CREATE INDEX IF NOT EXISTS \"{$table}_idx_queue_delivered_available\" ON \"{$table}\" (\"queue_name\", \"delivered_at\", \"available_at\")",
             "CREATE UNIQUE INDEX IF NOT EXISTS \"{$table}_uniq_waiting_dedup_key\" ON \"{$table}\" (\"queue_name\", \"dedup_key\")",
-            "CREATE UNIQUE INDEX IF NOT EXISTS \"{$table}_uniq_task_id\" ON \"{$table}\" (\"task_id\")",
         ];
     }
 

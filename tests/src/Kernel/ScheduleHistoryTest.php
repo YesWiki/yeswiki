@@ -11,7 +11,6 @@ use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\JournalSchema;
 use YesWiki\Kernel\Service\Queue\QueueRecorder;
 use YesWiki\Kernel\Service\Queue\QueueSchema;
-use YesWiki\Kernel\Service\Queue\QueueTaskRows;
 use YesWiki\Kernel\Service\Queue\ScheduleHistory;
 use YesWiki\Test\Core\YesWikiTestCase;
 
@@ -200,7 +199,7 @@ class ScheduleHistoryTest extends YesWikiTestCase
         }
         $this->schema->create();
         $this->journal->create();
-        $this->recorder = new QueueRecorder($db, new QueueTaskRows($db, $this->schema, $this->clock), $this->journal, $this->clock);
+        $this->recorder = new QueueRecorder($db, $this->journal, $this->clock);
         $this->history = new ScheduleHistory($db, $this->journal);
     }
 

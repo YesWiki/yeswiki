@@ -20,8 +20,8 @@ use YesWiki\Kernel\Service\JournalSchema;
 use YesWiki\Kernel\Service\Queue\QueueRecorder;
 use YesWiki\Kernel\Service\Queue\QueueSchema;
 use YesWiki\Kernel\Service\Queue\QueueStatistics;
-use YesWiki\Kernel\Service\Queue\QueueTaskRows;
 use YesWiki\Kernel\Service\Queue\QueueTransport;
+use YesWiki\Kernel\Service\Queue\ScheduleHistory;
 use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';
@@ -34,7 +34,6 @@ require_once 'tests/src/Kernel/QueueTestKit.php';
 #[CoversClass(QueueRecorder::class)]
 #[CoversClass(QueueStatistics::class)]
 #[CoversClass(QueueJournalEntry::class)]
-#[CoversClass(QueueTaskRows::class)]
 class QueueRecorderTest extends YesWikiTestCase
 {
     private const START = '2026-10-23 12:00:00';
@@ -464,12 +463,12 @@ class QueueRecorderTest extends YesWikiTestCase
     }
 
     /**
-     * A task's row keeps its failures counted run after run; its dispatches are the Journal's alone (ScheduleHistory).
+     * A task's failures are counted run after run by its Journal rows alone, and ScheduleHistory reads the count back.
      *
      * @param array<string, string|bool> $params
      */
     #[DataProvider('servers')]
-    public function testTaskStateKeepsItsCounts(array $params): void
+    public function testTaskCountsAreTheJournalsAlone(array $params): void
     {
         $this->on($params);
         $task = new QueueTestTask('digest');
@@ -484,15 +483,9 @@ class QueueRecorderTest extends YesWikiTestCase
         $this->recorder->taskFinished('digest', QueueRecorder::HANDLED, null);
         $this->assertSame([0, 'handled', null], $this->taskSummary('digest'));
 
-        [$state] = $this->statistics->tasks();
-        $this->assertNull($state['lastDispatchedAt'], 'a dispatch is no longer written on the row');
-        $this->assertSame('2026-10-23 12:01:00', $state['lastFinishedAt']?->format('Y-m-d H:i:s'));
-        $this->assertSame(['digest'], $this->recorder->taskIds());
-
-        $this->recorder->forgetTasksExcept([]);
-
-        $this->assertSame([], $this->recorder->taskIds());
-        $this->assertSame([], $this->statistics->tasks());
+        $history = (new ScheduleHistory($this->db, $this->journal))->of('digest') ?? $this->fail('no history');
+        $this->assertSame('2026-10-23 12:01:00', $history->lastDispatchedAt?->format('Y-m-d H:i:s'));
+        $this->assertSame('2026-10-23 12:01:00', $history->lastFinishedAt?->format('Y-m-d H:i:s'));
     }
 
     /**
@@ -574,7 +567,6 @@ class QueueRecorderTest extends YesWikiTestCase
         $this->assertSame('handled', $this->statistics->messageState(99));
         $this->assertSame([99], array_column($this->statistics->history(10), 'messageId'));
         $this->assertSame([], $this->statistics->failed());
-        $this->assertSame([], $this->statistics->tasks());
     }
 
     /**
@@ -617,8 +609,8 @@ class QueueRecorderTest extends YesWikiTestCase
         $this->schema->create();
         $this->journal->create();
         $this->transport = new QueueTransport($db, $this->schema, clock: $this->clock);
-        $this->recorder = new QueueRecorder($db, new QueueTaskRows($db, $this->schema, $this->clock), $this->journal, $this->clock);
-        $this->statistics = new QueueStatistics($db, $this->schema, $this->journal, $this->transport, new QueueTaskRows($db, $this->schema, $this->clock), $this->clock);
+        $this->recorder = new QueueRecorder($db, $this->journal, $this->clock);
+        $this->statistics = new QueueStatistics($db, $this->schema, $this->journal, $this->transport, $this->clock);
     }
 
     /** @return array<string, mixed> */
@@ -660,14 +652,11 @@ class QueueRecorderTest extends YesWikiTestCase
         $this->recorder->messageFinished($id, $type, null, $status, QueueConsumerMode::Request, $startedAt, $error);
     }
 
-    /** @return array{int, ?string, ?string} the task's consecutive failures, last status and last error, as the statistics read them */
+    /** @return array{int, ?string, ?string} the task's consecutive failures, last status and last error, as ScheduleHistory reads them */
     private function taskSummary(string $taskId): array
     {
-        foreach ($this->statistics->tasks() as $task) {
-            if ($task['taskId'] === $taskId) {
-                return [$task['consecutiveFailures'], $task['lastStatus'], $task['lastError']];
-            }
-        }
-        $this->fail("no row for {$taskId}");
+        $task = (new ScheduleHistory($this->db, $this->journal))->of($taskId) ?? $this->fail("no row for {$taskId}");
+
+        return [$task->consecutiveFailures, $task->lastStatus, $task->lastError];
     }
 }

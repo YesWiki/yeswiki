@@ -12,7 +12,6 @@ use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\JournalSchema;
 use YesWiki\Kernel\Service\Queue\QueueSchema;
 use YesWiki\Kernel\Service\Queue\QueueStatistics;
-use YesWiki\Kernel\Service\Queue\QueueTaskRows;
 use YesWiki\Kernel\Service\Queue\QueueTransport;
 use YesWiki\Test\Core\YesWikiTestCase;
 
@@ -50,7 +49,7 @@ class QueueStatisticsSeenTest extends YesWikiTestCase
         $this->schema->create();
         $journal = new JournalSchema($this->db);
         $journal->create();
-        $this->statistics = new QueueStatistics($this->db, $this->schema, $journal, new QueueTransport($this->db, $this->schema, clock: $this->clock), new QueueTaskRows($this->db, $this->schema, $this->clock), $this->clock);
+        $this->statistics = new QueueStatistics($this->db, $this->schema, $journal, new QueueTransport($this->db, $this->schema, clock: $this->clock), $this->clock);
     }
 
     protected function tearDown(): void
@@ -157,7 +156,7 @@ class QueueStatisticsSeenTest extends YesWikiTestCase
         }
 
         try {
-            $statistics = new QueueStatistics($db, $schema, $journal, new QueueTransport($db, $schema, clock: $this->clock), new QueueTaskRows($db, $schema, $this->clock), $this->clock);
+            $statistics = new QueueStatistics($db, $schema, $journal, new QueueTransport($db, $schema, clock: $this->clock), $this->clock);
             $record = fn (QueueConsumerMode $mode, string $at, ?QueuePassOrigin $origin = null, ?QueueConsumerMode $fallbackFor = null) => QueueTestKit::recordPass($db, $mode, $this->at($at), $this->at($at), 'empty', origin: $origin, fallbackFor: $fallbackFor);
             $record(QueueConsumerMode::Api, '-4 hours');
             $record(QueueConsumerMode::Api, '-1 minute', QueuePassOrigin::Pinned);

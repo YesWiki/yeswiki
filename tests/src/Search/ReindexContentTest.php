@@ -17,7 +17,6 @@ use YesWiki\Kernel\Service\Queue\QueueHandlerLocator;
 use YesWiki\Kernel\Service\Queue\QueueRecorder;
 use YesWiki\Kernel\Service\Queue\QueueSchema;
 use YesWiki\Kernel\Service\Queue\QueueStatistics;
-use YesWiki\Kernel\Service\Queue\QueueTaskRows;
 use YesWiki\Kernel\Service\Queue\QueueTransport;
 use YesWiki\Search\Action\SearchAction;
 use YesWiki\Search\Message\ReindexContent;
@@ -168,7 +167,7 @@ class ReindexContentTest extends YesWikiTestCase
                 $services->get(DbService::class),
                 $services->get(SearchIndexSchema::class),
                 $services->get(SearchableTextExtractor::class),
-                new QueueBus($transport, new QueueHandlerLocator([], new ServiceLocator([])), $journal, new QueueRecorder($empty, new QueueTaskRows($empty, new QueueSchema($empty), new NativeClock()), new JournalSchema($empty), new NativeClock()), QueueTestKit::noRequest()),
+                new QueueBus($transport, new QueueHandlerLocator([], new ServiceLocator([])), $journal, new QueueRecorder($empty, new JournalSchema($empty), new NativeClock()), QueueTestKit::noRequest()),
                 $services->get(QueueStatistics::class)
             );
 

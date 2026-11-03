@@ -15,7 +15,7 @@ use YesWiki\Kernel\Service\JournalSchema;
 
 /**
  * Reads the queue back for the health checks, the jobs page and the consumer's budget (messenger / scheduler).
- * Rows come from the transport, QueueRecorder's Journal `queue` channel and QueueTaskRows; times come out in UTC.
+ * Rows come from the transport and QueueRecorder's Journal `queue` channel; times come out in UTC.
  */
 class QueueStatistics
 {
@@ -28,7 +28,6 @@ class QueueStatistics
         private readonly QueueSchema $schema,
         private readonly JournalSchema $journal,
         private readonly QueueTransport $transport,
-        private readonly QueueTaskRows $tasks,
         private readonly ClockInterface $clock,
     ) {
     }
@@ -419,55 +418,6 @@ class QueueStatistics
                 'error' => isset($context['message']) ? (string)$context['message'] : null,
             ];
         }, $rows);
-    }
-
-    /**
-     * The scheduled tasks; a task whose row has no label is called by its id.
-     *
-     * @return list<array{taskId: string, label: string, everySeconds: int, lastDispatchedAt: ?\DateTimeImmutable, nextDueAt: ?\DateTimeImmutable, lastFinishedAt: ?\DateTimeImmutable, lastStatus: ?string, lastError: ?string, consecutiveFailures: int}>
-     */
-    public function tasks(): array
-    {
-        $tasks = [];
-        foreach ($this->tasks->all() as $taskId => $task) {
-            $tasks[] = self::task((string)$taskId, $task);
-        }
-
-        return $tasks;
-    }
-
-    /**
-     * One scheduled task, as tasks() lists it; null when the schedule never ran it.
-     *
-     * @return array{taskId: string, label: string, everySeconds: int, lastDispatchedAt: ?\DateTimeImmutable, nextDueAt: ?\DateTimeImmutable, lastFinishedAt: ?\DateTimeImmutable, lastStatus: ?string, lastError: ?string, consecutiveFailures: int}|null
-     */
-    public function scheduledTask(string $taskId): ?array
-    {
-        $task = $this->tasks->read($taskId);
-
-        return $task === null ? null : self::task($taskId, $task);
-    }
-
-    /**
-     * @param array<string, mixed> $task
-     *
-     * @return array{taskId: string, label: string, everySeconds: int, lastDispatchedAt: ?\DateTimeImmutable, nextDueAt: ?\DateTimeImmutable, lastFinishedAt: ?\DateTimeImmutable, lastStatus: ?string, lastError: ?string, consecutiveFailures: int}
-     */
-    private static function task(string $taskId, array $task): array
-    {
-        $time = static fn (mixed $value): ?\DateTimeImmutable => $value === null ? null : self::time((string)$value);
-
-        return [
-            'taskId' => $taskId,
-            'label' => (string)($task['label'] ?? '') ?: $taskId,
-            'everySeconds' => (int)($task['every_seconds'] ?? 0),
-            'lastDispatchedAt' => $time($task['last_dispatched_at'] ?? null),
-            'nextDueAt' => $time($task['next_due_at'] ?? null),
-            'lastFinishedAt' => $time($task['last_finished_at'] ?? null),
-            'lastStatus' => isset($task['last_status']) ? (string)$task['last_status'] : null,
-            'lastError' => isset($task['last_error']) ? (string)$task['last_error'] : null,
-            'consecutiveFailures' => (int)($task['consecutive_failures'] ?? 0),
-        ];
     }
 
     /** Where a message is: `pending`, `running`, `handled`, `failed`, `killed`, or `unknown` to the queue and the history. */

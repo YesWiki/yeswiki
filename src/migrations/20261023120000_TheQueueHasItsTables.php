@@ -4,7 +4,7 @@ use YesWiki\Core\YesWikiMigration;
 use YesWiki\Kernel\Service\JournalSchema;
 use YesWiki\Kernel\Service\Queue\QueueSchema;
 
-/** The background queue (messenger / scheduler) keeps its messages, its scheduled tasks and its checkpoint in one table of the wiki's own database, and its runs and passes in the Journal's `queue` channel. */
+/** The background queue (messenger / scheduler) keeps its messages in one table of the wiki's own database, and its runs, passes and scheduled tasks in the Journal's `queue` channel. */
 class TheQueueHasItsTables extends YesWikiMigration
 {
     public function run()

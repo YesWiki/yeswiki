@@ -5,14 +5,12 @@ namespace YesWiki\Kernel\Service\Queue;
 use YesWiki\Kernel\Service\DbService;
 
 /**
- * The queue's table in the wiki's own database: what it is called, and creating or removing it. It holds three
- * queues told apart by `queue_name`: `default`, `failed` (QueueTransport) and SCHEDULE_QUEUE (QueueTaskRows).
+ * The queue's table in the wiki's own database: what it is called, and creating or removing it. It holds two
+ * queues told apart by `queue_name`: `default` and `failed` (QueueTransport).
  */
 class QueueSchema
 {
     public const TABLE = 'queue';
-
-    public const SCHEDULE_QUEUE = '__schedule';
 
     public const TABLES = [self::TABLE];
 

@@ -28,7 +28,6 @@ use YesWiki\Kernel\Service\Queue\QueueRecorder;
 use YesWiki\Kernel\Service\Queue\QueueScheduleTicker;
 use YesWiki\Kernel\Service\Queue\QueueSchema;
 use YesWiki\Kernel\Service\Queue\QueueStatistics;
-use YesWiki\Kernel\Service\Queue\QueueTaskRows;
 use YesWiki\Kernel\Service\Queue\QueueTransport;
 use YesWiki\Kernel\Service\Queue\ScheduleHistory;
 use YesWiki\Kernel\Service\ThrowableFormatter;
@@ -583,7 +582,7 @@ class QueueScheduleTickerTest extends YesWikiTestCase
         $this->schema = new QueueSchema($db);
         $this->clock = new MockClock(self::START, 'UTC');
         $this->transport = new QueueTransport($db, $this->schema, clock: $this->clock);
-        $this->statistics = new QueueStatistics($db, $this->schema, new JournalSchema($db), $this->transport, new QueueTaskRows($db, $this->schema, $this->clock), $this->clock);
+        $this->statistics = new QueueStatistics($db, $this->schema, new JournalSchema($db), $this->transport, $this->clock);
         $this->history = new ScheduleHistory($db, new JournalSchema($db));
     }
 
@@ -631,7 +630,7 @@ class QueueScheduleTickerTest extends YesWikiTestCase
 
     private function recorder(): QueueRecorder
     {
-        return new QueueRecorder($this->db, new QueueTaskRows($this->db, $this->schema, $this->clock), new JournalSchema($this->db), $this->clock);
+        return new QueueRecorder($this->db, new JournalSchema($this->db), $this->clock);
     }
 
     /**
