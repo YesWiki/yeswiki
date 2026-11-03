@@ -103,3 +103,19 @@ Search results change shape for everyone: substring matches disappear, and short
 The index stores the text rather than only tokens, because a MySQL `FULLTEXT` index is an index _on a column_: a contentless index is not reachable there whatever SQLite permits. At a million Contents that is a few gigabytes plus the full-text index, and it is the price of the design. It does mean excerpts are computed in PHP from the index text, uniformly, instead of three ways through `ts_headline`, `snippet()` and nothing.
 
 Acceptance requires evidence the existing suite structurally cannot produce: alongside phpunit and the MySQL e2e run, a seeded synthetic corpus with `EXPLAIN` assertions that each dialect _uses_ its full-text index. A full scan and an index scan return identical results, so nothing else distinguishes a correct index from a decorative one until the wiki is large.
+
+## Implementation notes
+
+- **`ReindexContent` carries the tag only.** Its handler reads the Content's latest revision when it
+  runs, and a Content gone by then leaves no rows. So two saves before it runs cost one reindex, the
+  second absorbed into the first while it waits, and the handler is idempotent.
+- **Nothing in Search runs the reindexing.** A save, `SearchIndexSubscriber` and `search:reindex` only
+  queue it, and the queue runs it in whatever mode the wiki consumes it, or at once with
+  `./yeswicli messenger:consume --drain`. The search page never fills an empty index itself and only
+  says where things stand (`SearchAction`). A queue that cannot be written to is journaled by the bus,
+  so saving a Content never fails for want of one.
+- **The migrations fill the index through the queue, once.** `CreateSearchIndex` only creates the index,
+  because it runs before the queue's table exists. The search migrations before
+  `ReindexingGoesThroughTheQueue` had no queue to send to, so their reindexing was lost.
+  `ReindexingGoesThroughTheQueue` queues every Content once, which covers both. `search_queue` was
+  dropped without carrying its rows over.

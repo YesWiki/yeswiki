@@ -379,6 +379,337 @@ on purpose stays so: mail sends, webhooks, thumbnails, ActivityPub Follow/Accept
 arrival, and the explicit actions of a human or a webhook (`importer:sync`, `GET /api/import/sync`,
 `{{sync}}`, the sync button).
 
+### Implementation notes
+
+What follows is the reasoning behind choices in the code that the code itself does not explain.
+Each point names the class or method to look at.
+
+#### The transport and its claims
+
+- **UTC, not the database's `NOW()`.** A session in another time zone than the rows' (common on
+  shared hosting) would make a message available hours early or late, so `SqlDialect::utcNow()`
+  is bound as a parameter. On PostgreSQL it reads `clock_timestamp()`, because `NOW()` stands still
+  for the whole transaction.
+- **A racing send is never refused.** The second of two senders past the dedup check inserts with
+  `SqlDialect::onConflictDoNothing()`. A refused INSERT would abort a send made inside the caller's
+  transaction (saving a page), and on PostgreSQL every later statement too. It then reads the first
+  sender's row under a row lock. The lock reads the latest committed row, not MySQL's repeatable-read
+  snapshot. If a consumer took that row in the meantime, the insert is tried again, at most
+  `RACE_LOOKS` times. On MySQL the no-op is `ON DUPLICATE KEY UPDATE col = col`, which reports 0 rows
+  because PDO does not ask for found rows. `QueueTransport::requeue()` races the same way and catches
+  the duplicate-key refusal.
+- **A key longer than `dedup_key`** (191 characters, utf8mb4's widest indexable VARCHAR) keeps a
+  readable start and the `sha1` of the whole. Two keys that differ only past the width stay apart.
+- **`last_error` is read from Messenger's `ErrorDetailsStamp` when the message moves to `failed`,**
+  so the jobs page and the health checks never decode bodies.
+- **A claim** picks a candidate, marks it with a token only that call knows, provided nobody marked
+  it first, and reads back what carries the token. The candidate is `FOR UPDATE` on MySQL and
+  PostgreSQL, and the transaction is `BEGIN IMMEDIATE` on SQLite. An idle blocking consumer asks every
+  second, and "nothing to take" is answered without opening the transaction, because
+  `BEGIN IMMEDIATE` would take SQLite's write lock away from the wiki's requests.
+- **An undecodable message** (class gone, body damaged) would be taken by every pass. It is moved to
+  `failed` with its reason, and `UndecodableMessageException` names the row. `QueuePassReceiver`
+  records it and goes on, since Messenger's `Worker` would stop on it, and a blocking consumer with it.
+- **Each claim records `delivered_mode` and `delivered_limit`,** because a process killed by PHP or
+  the OOM killer cannot say so. A request resets the claim mode, so a worker-mode request never
+  inherits the previous one's. A claim with no recorded limit is given the longest a mode records
+  (6 hours).
+- **The process remembers the tokens it holds.** Its own token among the claims, but not among the
+  ones it holds, was left by an earlier request it served that died without letting go: that claim is
+  gone. Under threads (FrankenPHP, ZTS) another thread may hold it, so it is UNKNOWN instead. A live
+  process other than this one counts as alive only when it is a CLI, since a server process outlives
+  the request that claimed.
+- **The dead-or-alive comparison is made in PHP, row by row.** Only a handful of rows are being
+  handled at once, the limit varies per row, and date arithmetic on a column is not portable.
+  Reaping is guarded by the claim token, so two concurrent reapers, or a reaper and the holder's own
+  end, report a message once.
+- **The claim is forgotten only once the database accepted the ack.** If an ack is refused (locked,
+  connection lost), the process keeps the claim. Otherwise the next reap would see a live process
+  that no longer holds it and fail a handled message as killed.
+- **The token** (`QueueClaimHolder`) is `kind pid @ machine . start / nonce`, within the column's 64
+  characters, e.g. `c1234@0123456789ab.7100459/0123456789abcdef`. `kind` is `c` for a CLI and `s` for
+  a server process. The machine is the host name plus the pid namespace (a container has its own),
+  hashed to 12 hex digits. The start time, in clock ticks from `/proc/<pid>/stat`, tells a reused pid
+  apart. That file is parsed from the last `)`, because a process name may contain spaces and
+  parentheses. Where `hidepid` hides the process, `posix_kill($pid, 0)` failing with ESRCH proves it
+  gone but cannot prove it is the same process. A token in an older format names no holder (UNKNOWN).
+- **A requeued message loses `RedeliveryStamp` and `SentToFailureTransportStamp`.** It gets its
+  retries again, and Messenger would otherwise drop it rather than send it back to `failed` when it
+  fails again. A message that still cannot be decoded goes back as it is, in case an extension
+  brought its class back.
+- **Pruning `failed` counts from `created_at`,** which is reset whenever a message moves there.
+  Nothing in `default` is ever pruned, however old: it is work still to do. A delete from `failed`
+  only touches a message still there, because another tab may have retried it and a consumer may be
+  running it.
+
+#### The consumer
+
+- **Each pass has an event dispatcher of its own** for the `Worker`, so nothing subscribed to the
+  wiki's dispatcher runs inside a pass, and nothing of a pass outlives it. The wiki's dispatcher is
+  built only when a killed message is announced, because building it builds every subscriber.
+- **`QueuePassObserver` listens to `WorkerMessageFailedEvent` at priority -200,** after Messenger's
+  retry listener (100) has decided and its failure listener (-100) has moved the message. A failure
+  that will be retried goes only to the history. Every definitive failure is journaled, a
+  `ToleratedFailure` too, because that marker only changes which check judges it. A killed message is
+  recorded under the mode that could not carry it.
+- **A pass lock that cannot be created** (`cache/` not writable) is journaled as an error, not
+  reported as `locked`. Nobody holds it, and no pass would ever run.
+- **The shutdown function** that fails what a dying process still holds is registered through a weak
+  reference and never throws. PHP runs no further shutdown function once one has died of a fatal
+  error. So a pass that dies that way at the end of an FPM or mod_php request leaves its claim to the
+  transport's rules above.
+- **Type averages are read once per type per pass.** An unknown type (0.5 s assumed) is asked again,
+  since its first success may come within the pass. A request that spent its budget before the pass
+  began starts nothing, not even the first message (`no-budget`).
+- **A pass never throws.** A pass that breaks (table missing, database gone) is journaled and
+  reported as `error`, because it often runs at the end of a visitor's request.
+- **A blocking consumer checks for a configuration change before any tick.** A schedule built from
+  the old configuration would prune the tasks it no longer declares. The question is asked at most
+  every 5 seconds, and not at start. So a message dispatched in the few seconds after a change may
+  still run under the old configuration. Setting the wiki's status rewrites the config file, so a
+  hibernation or a backup restarts the consumer once.
+- **A message pinned to its sender's request** runs whatever the budget and even while hibernated,
+  still claimed, with no tick and no reaping. Its claim is held to no PHP limit. The sender lifted the
+  limit, and where a host forbids that, PHP's remaining limit counts CPU time, which a backup waiting
+  on disk or network outlives. Judging by that limit would make another process's pass fail the
+  backup as killed while it runs.
+- **A schedule that breaks** is journaled and the pass goes on. The ticker waits
+  `QueueScheduleTicker::RECHECK_SECONDS` (a minute) before trying again, so a blocking consumer that
+  ticks at every idle second does not journal it every second.
+
+#### The Scheduler's checkpoint and ticker
+
+- **`QueueCheckpoint` keeps Symfony's three values** (last run time, that run's message index, the
+  schedule's start, which anchors every periodic trigger). It locks with `RuntimeLock` and re-reads
+  them at each `acquire()`, since the last process to tick is rarely this one. Unlike Symfony's,
+  `release()` lets go of the lock. A blocking consumer holding the lock for its whole life would
+  starve the others, and gain nothing, since the state is in the database.
+- **Times are stored to the microsecond,** because the Scheduler compares them for equality. The next
+  due time is rounded up to the second, so "due" read from it is never early. A null due time means
+  "due at once". A schedule whose triggers never fire again would also leave it null, and the
+  kernel's daily prune prevents that.
+- **A wiki that never ticked starts its schedule now:** every periodic task first runs one interval
+  later. If the lock file cannot be created, the checkpoint throws rather than return false. Otherwise
+  no tick would ever run, which is not the same as somebody else ticking. A `finally` unlocks it,
+  because the Scheduler releases it only when it reaches the end, not when a provider or a write
+  threw. The checkpoint reads no time itself: it is handed the ticker's (`DatabaseClock`).
+- **`tick()` must be cheap,** because a blocking consumer calls it about once a second. It keeps the
+  next due time in memory and re-reads it at most once a minute, so it still sees a due time another
+  process wrote. It asks the providers for the schedule, takes the lock and builds the generator only
+  when something is due, which is also when a changed schedule is picked up.
+- **While a provider throws, no task row is forgotten.** Which rows were its tasks is not known, so
+  its tasks stay in sight and `queue-task-overdue` reports them once they are late. Pruned rows would
+  have let digests stop with nothing to say so. Declaring the same message on the same interval twice
+  (Symfony's `LogicException`) is one task, so it is journaled, not fatal.
+- **`ScheduleGenerator` keeps nothing between ticks,** since the ticker builds a new one at each due
+  tick. For the same reason, once a run at the saved time is recorded, it probes one microsecond
+  before that time, as Symfony's does on its first build, so the messages of that run not yet
+  dispatched still go. The
+  checkpoint is saved after each run's messages. Should Symfony's generator one day accept another
+  checkpoint, this class can give way to it.
+- **`QueueTaskRows::update()` is atomic.** An insert that leaves an existing row alone makes the row
+  exist. The row is then read under a row lock and written back in the same transaction, which is
+  replayed up to 3 times on a deadlock (`DbService::transactional()`). The body is always a JSON
+  object, `{}` when empty.
+
+#### The end of a request
+
+- **`QueueRequestTrigger::afterResponse()` is registered by `index.php` as a shutdown function as soon
+  as the wiki is booted,** so it runs however the request ends (a page, `ExitException`, `exit`, an
+  error). The FrankenPHP worker calls it itself after each response. It closes the session first,
+  since the visitor's next request would otherwise wait on its lock.
+- **A finisher function** (`fastcgi_finish_request()` and its equivalents) has sent the response once
+  it returns, whatever it answers. It answers false when Symfony's `Response::send()` already finished
+  the response, which is every routed page. Output the pass prints where the response cannot leave
+  first is discarded by a buffer that flushes every 4 KB, so a verbose handler costs no memory.
+  Output buffers left open are cleaned, so a worker's next request does not get them.
+- **A pinned message keeps the delay it was pinned with** (`RunsUnbudgeted::HELD_FOR_THE_SENDER_SECONDS`,
+  300 s), so no other pass takes it on a request's budget while the sender or its detached process
+  gets to it. If the request ends without running it, the queue takes it once the hold is over. The
+  detached process holds the claim as a CLI, so if it dies, the next pass sees it at once.
+- **`QueueBus` swallows a failed send, except inside a transaction the caller opened on the queue's
+  connection.** There the failure has already made the commit rollback-only, and on PostgreSQL it has
+  aborted every later statement. Swallowing it would surface later as a refused commit with no
+  explanation, so it is rethrown where it happened. The request trigger is injected as a service
+  closure, so it is built only when a `RunsUnbudgeted` message is sent.
+
+#### The fallback and the budget
+
+- **`QueueFallback` writes its check stamp before it reads,** and drops the last answer. A read that
+  fails (table missing) is then retried in a minute, not on every request.
+- **`QueueFallback::consumerIsGone()` is read-only** and memoised per request, since the badge, the
+  jobs page and a starting backup all ask. A worker unseen for its delay is gone. The `api` route
+  shows nothing that says it will come, so it counts as gone only once the fallback runs for it.
+- **`QueueStatistics::fallbackSince()` counts only a fallback pass that started after the patience
+  delay.** One that started sooner ran during the minute a request keeps the last answer, after the
+  consumer came back, and counting it would restart the fallback.
+- **`QueueBudgetFactory`** reads the request start time at each budget (`REQUEST_TIME_FLOAT`), so a
+  worker serving many requests measures each from its own start. With `memory_limit = -1` there is no
+  ceiling, since PHP will not say when it is too much. A budget is read between two messages, never
+  during one, and a handler that overruns is left to the kill detection.
+- **`QueueBudgetContext` answers null outside a budgeted pass, not infinity,** so a handler cannot
+  mistake "not measured" for "plenty". Once the pass ends, later code in the same request must not
+  read "0 s left".
+- **A pass started from a web page** (the jobs page's button) runs in the configured mode when that
+  mode is budgeted. When the mode's consumer would block the page, it runs as `request`.
+
+#### What the consumer records, and how it is read back
+
+- **`QueueRecorder`'s rows are all the checks and the jobs page know of the queue,** and the runs
+  also give the consumer its per-type averages. A run is dated by its end and began `duration_ms`
+  before. A pass's context names its process (`holder`), as its claims do, which is how a live claim
+  is matched to an open pass. Only the pass's own process writes its row, so updating it needs no
+  lock.
+- **`context` never holds a JSON null:** an empty field is left out, because MySQL reads a JSON null
+  back as the string `'null'`.
+- **`consecutive_failures` does not count a run that will be retried,** since that run is not over. An
+  `ignored` row has no mode and no duration, because it is not an attempt, but it keeps the cause.
+- **`QueueStatistics::lastActivityAt()` counts a message in progress as activity,** because a
+  blocking consumer does not beat while a handler runs. The cost is that a consumer that died
+  mid-message is seen as gone only once that message's limit is over. It counts the row a paused pass
+  leaves (a consumer that kept coming while the wiki slept is not stalled), but not the row of a pass
+  that found the lock taken: a pass stuck in a handler holds that lock.
+- **`failedOfTypes()` and `countsAsFailed()` leave killed messages out,** for the killed alert, since
+  retrying one in the mode that killed it only kills it again. `outcomes()` counts neither a retried
+  attempt nor an `ignored` row. `consumerStarts()` does not count a stop for `config-changed`, so an
+  admin saving settings several times is not a crash loop.
+- **`messageState()` asks the queue before the history,** because a message requeued from `failed`
+  keeps its id. A `retried` message is still to do, under its new id. An `ignored` one is still
+  `failed`, because the work was never done. A claim whose holder must be dead is already `killed`,
+  without waiting for a pass to reap it, because the admin following it is asking now.
+- **Portable SQL:** `failedGroups()` sorts on `COALESCE(killed_in, '')`, because databases put NULL
+  at different ends. `visitorWaits()` reads only the latest few hundred passes (in `request` mode
+  there may be one per page view) and computes durations in PHP. `ownPass()` reads `origin` as a JSON
+  field, because MySQL returns JSON reformatted and PostgreSQL has no `LIKE` on JSONB.
+
+#### The health checks
+
+- **Reads shared by several checks run once per list,** and a read that throws throws again for the
+  next check instead of answering null. The declared task ids are read only once a task is found late
+  or failing, so the badge on every admin page never builds the schedule on a healthy wiki.
+- **`queue-config` reads the settings, not the table,** so it can say a mode is wrong before the
+  migration ran. **`queue-killed`'s advice** to leave `request` is given only while the wiki is still
+  in `request`. **`queue-no-budget`** counts only passes that started, since a locked or paused pass
+  says nothing of the budget.
+- **`isOverdue()` allows a full period past the due time,** and at least as long as the mode needs to
+  get a chance to run the task. A task due every 23 h that runs 2 h late is not lost. The tasks tab
+  uses the same rule, so the table and the alert agree. `onlyDeclared()` drops rows of tasks no longer
+  declared, which nobody could otherwise clear.
+
+#### Commands, settings and the cache
+
+- **`messenger:consume --supervised` checks its mode before it reads anything from the queue or looks
+  at its options.** A process that is not this wiki's consumer must not touch a message. `--drain` is
+  recorded as a manual `request` pass, so under a worker it neither counts as the worker starting nor
+  makes a dead one look alive. `--message` runs in the mode the request would have used, so the run is
+  recorded the same whichever ran it. A `--memory-limit` that is not a `128M`-style size or `-1` is
+  rejected, so a typo does not mean "unlimited". `QueueBudgetFactory::bytes()` is public for that check.
+- **`QueueSettings`:** the `.env` loader never overrides the real environment, so when both hold the
+  same value they cannot be told apart, and the file is reported as the likelier source.
+- **`CacheClearer::clearEverything()` keeps the queue's locks** (`QueueConsumer::PASS_LOCK`,
+  `QueueCheckpoint::LOCK`) and any other `.lock` someone holds. Deleting a lock file under its holder
+  would let a second pass or tick start beside it.
+- **`QueueHandlerLocator` builds a handler only when its message is consumed,** so a page that merely
+  dispatches does not build search, federation or mail. Handler services are public because the
+  locator fetches them by id. `QueueFailureCause::MAX_LENGTH` (1000 characters) is enough to recognise
+  a failure, and the whole cause stays in the envelope.
+
+#### Backups and restores
+
+- **A restore puts the live Journal `queue` rows and checkpoint triples back under their own ids,**
+  because the running consumer still writes its pass by those ids. A backup of another wiki may hold
+  such an id. Then the restored row keeps it, and the live one takes the next free id once the
+  identity column is realigned. In a staged restore the kept rows go into the staged tables before the
+  swap, so a Journal write right after the swap cannot take their ids. The session settings are
+  restored before that, because a MySQL dump's preamble leaves AUTOCOMMIT off and the dump's own time
+  zone.
+- **On MySQL, a table some of whose rows are left out** (`DumpRewriter::leftOutRows()`) is dumped by a
+  `mysqldump` call of its own, because `--where` applies to every table of one call.
+- **`queue_consume_secret` and `queue_consumer` stay this wiki's own on restore.** Another wiki's
+  secret would answer 401 to this one's cron, and its mode could name a worker this host does not run.
+  The secret is always removed from the configuration a backup carries, whatever the hide list says,
+  since whoever holds the backup could otherwise consume this wiki's queue.
+- **The `archiving` status belongs to the run that set it.** `CreateArchiveHandler` lifts it when
+  `archive()` throws, unless the wiki was already `archiving` before the run began, because then the
+  status belongs to another run. A run refused because the wiki cannot archive lifts nothing, since
+  the status may be an admin's hibernation or an update. A restore never sets a status, and `info.json`
+  marks restores (`restore`) so that their death lifts nothing.
+- **`ArchiveService::releaseWhatADeadRunLeft()`:** only a killed backup can have left `archiving`,
+  since a failed one lifted it as it failed. While a run this wiki follows is waiting or under way, the
+  status stays, whoever asks. For example, a remote wiki's `api/archives` refused during an admin's
+  backup must not make the wiki writable under it. A run nothing here follows (`core:archive` typed
+  in a terminal) keeps the status too. Killed uids are forgotten as the status is lifted, or they
+  would lift the next unfollowed run's. The backups page applies the rule again on load, because the
+  browser that would have seen the run die may be gone.
+- **The reason a run failed comes from the queue's history, not from `failed`,** because the `failed`
+  row has an id of its own. The latest 50 failures are enough, since the browser asks within seconds.
+  Older pages and older wikis still send `callAsync`, which is now ignored.
+- **The installer creates the queue table first,** so a fresh wiki's first request can dispatch. It
+  sends the seeded content's `ReindexContent` straight to `QueueTransport`, because it has no container
+  and therefore no bus.
+
+#### Fetching a backup from another wiki
+
+- **`AdvanceRemoteBackup` carries nothing.** There is one fetch at a time, and its job file says where
+  it is. The message's dedup key `remote-backup` keeps one chain of steps, even when a fetch is
+  restarted while a step of the abandoned one waits. That step then runs the new fetch.
+- **`RemoteBackupService::STEP_LOCK` keeps one step running at a time.** The queue keeps one message
+  from two consumers, but not two messages of one fetch (a step retried from the jobs page, two
+  senders racing past the key), and two steps at once would both write the job file and the partial
+  download. After queuing the next step, the job file is read again before the message id is noted in
+  it, since a worker may already have moved the job on.
+- **A step finds nothing to do, without failing, when no fetch is running.** A step is never retried:
+  one that fails has already given up the fetch and tidied the remote wiki. A fetch whose step died
+  with its process is reported stopped by `status()`, and `start()` gives it up first.
+- **A download slice lasts what the pass has left, `SLICE_SECONDS` (20 s) at most,** and the time limit
+  is raised by the request timeout, which a stalled chunk may add. A failed slice waits
+  `RETRY_PAUSE_SECONDS` times its count of consecutive failures (30 s, 1 min, ...). Back-to-back retries
+  would all fall within the seconds a remote wiki takes to restart. The `advance` POST endpoint now
+  only reports, for pages loaded before the upgrade.
+
+#### The per-module tasks
+
+- **`RunMaintenanceHooks` is never retried,** because when it throws, some listeners have already
+  run. Each `maintenance.*` listener is called on its own (`EventDispatcher::dispatchToEach()`). A
+  failing listener is journaled as `maintenance.hook_failed` under its name, and the handler then
+  throws a summary, so the task shows as failed. `PurgeRevisions` is idempotent and keeps the default
+  retry.
+- **`MailSubscriptions::send()` tries every subscriber,** then throws a `RuntimeException` naming who
+  was not reached (10 named, 3 distinct reasons at most). The caller then does not take the period as
+  served. The digest is not retried, since resending it would double the mails that went out. A wiki
+  put to sleep during the pass mails nothing, and that is not a failure. Unreadable subscriptions
+  (no triples table) throw rather than declare no task (see "A scheduled task" below).
+- **A data source's sync** carries only the source's key, so a source edited or removed while its
+  message waited is imported as it is then, or not at all. `ImporterManager::syncSource()` throws, so
+  the queue sees the failure. `syncByHand()` catches it and answers its message, as manual syncs always
+  did. Every trigger records its run in `SyncScheduler`, and the handler buffers importers' output into
+  that log. The interval is never shorter than `ImportSchedule::MIN_INTERVAL` (1800 s, the
+  housekeeping period it replaces).
+- **The first sync of a newly flagged source waits 60 s** (`FIRST_SYNC_DELAY_SECONDS`). Until then, the
+  pass at the end of the saving request, and a worker that has not yet noticed the change, still read
+  the source as it was. A source whose task id is too long is journaled and left out, never thrown,
+  because a provider that throws has all its tasks left out of the tick.
+- **A federation delivery is one message per recipient,** and the activity is prepared once, when it
+  is queued, so every recipient gets the same activity and id, byte for byte. The message carries the
+  form id, the actor and the body, not the form, because deleting a form queues a Delete per entry and
+  then removes the form before any is delivered. The signer is rebuilt from the stored key alone, and
+  `signer()` is called before queueing so the form has its key by then. When the key is gone
+  (`ActivityPubKeyStore::has()`), the delivery is unrecoverable. Generating a new key would sign with
+  one no remote server knows.
+- **The federation checks are two,** because a check has one severity. `federation-delivery` is Broken
+  when at least 5 deliveries finished in 24 h and none was handled. Below that, "none succeeded" means
+  nothing. `federation-delivery-failed` is Degraded and counts deliveries that used their retries.
+  Deliveries cut off by a time limit belong to `queue-killed`.
+
+#### Migrations
+
+- **`MaintenanceTriggerBecomesAQueueMode`** does not rewrite a `MAINTENANCE_TRIGGER` in
+  `private/.env`, because that file is not the configuration. It tells the admin the variable does
+  nothing any more.
+- **`RemoteBackupInProgressJoinsTheQueue`** queues the next step of a fetch under way at the upgrade,
+  since nothing else would move it once no tab drives it. **`ArchivesNoLongerChooseHowTheyRun`**
+  removes `archive.call_archive_async`, since the queue's mode now decides how a backup runs.
+
 ## Considered Options
 
 - **`symfony/doctrine-messenger` on `doctrine/dbal`** — rejected. The codebase has no Doctrine, the

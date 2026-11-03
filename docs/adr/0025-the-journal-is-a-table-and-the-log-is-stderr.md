@@ -162,3 +162,17 @@ alone. A backup leaves them out and a restore keeps the live ones, otherwise a r
 show a pass that never closes. The failures the queue reports as diagnostics (`queue.message_failed`
 and the rest) stay on the `diagnostic` channel: the same failure is a fact in both places, once as
 what broke and once as history.
+
+## Implementation notes
+
+- **`/admin/logs` names the channels it lists** in an `IN (...)` list, served by the `(channel, at)`
+  index, rather than filtering with `<> 'queue'`, which no index serves (`AdminLogsApiController`).
+  For the `queue` channel the date filter's day is the wiki's day converted to UTC, as the rows'
+  times are converted back for display.
+- **The queue's rows are pruned against `DbService::utcNow()`** (`Journal::prune()`), not the
+  database's `NOW()` that the other channels' `dateSubDays()` uses, because `NOW()` may be in another
+  zone than the UTC the rows are written in.
+- **The queue's `(channel, target, at)` index** (`idx_channel_target_at`) is added to an older Journal
+  by `JournalSchema::ensureQueueIndex()` only after checking it is missing, because MySQL has no
+  `IF NOT EXISTS` for an index. The check names it with the table prefix that PostgreSQL and SQLite
+  put in front of every index name, and without it on MySQL.
