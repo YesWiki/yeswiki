@@ -41,11 +41,11 @@ flowchart LR
   subgraph Producers
     code["«component» Module code<br/>SearchIndexer, ActivityPubService,<br/>ArchiveService, RemoteBackupService"]
     providers["«component» Scheduler/*Schedule<br/>(ProvidesSchedule)<br/>Kernel, Admin, Identity, Contact, Import"]
-    ticker["«component» QueueScheduleTicker<br/>ScheduleGenerator, QueueCheckpoint"]
+    ticker["«component» QueueScheduleTicker<br/>ScheduleHistory"]
   end
   bus["«component» QueueBus<br/>(MessageBusInterface)"]
   subgraph DB["Wiki database"]
-    queue[("«table» queue<br/>default · failed · __schedule")]
+    queue[("«table» queue<br/>default · failed")]
     journal[("«table» journal<br/>channels queue · diagnostic")]
   end
   subgraph Modes["Consumption modes, chosen by QueueSettings"]
@@ -66,6 +66,8 @@ flowchart LR
   code -->|dispatch| bus
   providers --> ticker
   ticker -->|"dispatch, deduplicated on its task id"| bus
+  ticker <-->|"reads the last queue.task.* of each task · writes queue.task.declared"| journal
+  bus -->|"queue.task.dispatched"| journal
   bus -->|"QueueTransport::send"| queue
   req -->|"a pinned message on mod_php, CGI"| drainCmd
   req --> consumer
@@ -78,15 +80,15 @@ flowchart LR
   worker --> locator --> handlers
   handlers -.->|continuation| bus
   worker --> observer
-  observer -->|"queue.run.* · queue.pass · queue.message_failed"| journal
+  observer -->|"queue.run.* · queue.task.finished · queue.pass · queue.message_failed"| journal
   queue --> stats
   journal --> stats
   stats --> checks --> page
 ```
 
-The `__schedule` queue holds what each scheduled task did: one row per task. The Scheduler's
-checkpoint is triples (`QueueCheckpoint`). No consumer reads the `__schedule` queue. The dashed arrow is a handler that splits its work and dispatches its own
-continuation.
+The Scheduler keeps no state of its own: what each scheduled task did is the Journal's
+`queue.task.*` rows, which the ticker reads and the bus and the recorder write. The dashed arrow is a
+handler that splits its work and dispatches its own continuation.
 
 A budgeted pass in `request` mode runs once the response has left. `api` and
 `messenger:consume --drain` run the same pass. `worker` runs `consume()` instead: it loops over the
@@ -153,18 +155,12 @@ stateDiagram-v2
 **The transport is the wiki's database, on `DbService` and the dialects.** `QueueTransport` keeps
 messages in the one table the queue adds, `queue` (queue name `default` or `failed`), with an atomic
 claim that works on MySQL, PostgreSQL and SQLite (modelled on the one `search_queue` had). The rest is
-not a table of its own, because the project keeps its number of tables down. Each task's state is
-a row of the same table in a reserved queue, `__schedule`, which no consumer reads and which every
-query on messages leaves out; a task is found by `task_id`, a nullable unique column that every
-message leaves NULL, and its fields are JSON in `body`. The Scheduler's checkpoint -- the last run
-it dispatched, where the schedule started, and when it is next due -- is two triples of the
-resource `queue:checkpoint`, since the project stores new state in the triples by default.
-`QueueCheckpoint` writes them through `TripleStore` and reads them past its cache, since another
-process writes them while a blocking consumer lives on. What was
-handled (with duration and error) and the consumer's passes (one row per pass or per blocking
-consumer's life) are rows of the Journal's third channel, `queue` (ADR-0025): `queue.run.<status>`
-(the message type as target, the mode as actor) and `queue.pass` (the reason it stopped as target),
-kept 7 days on `last_at` (`journal_queue_purge_time`) and pruned by the Journal itself.
+not a table of its own, because the project keeps its number of tables down. What was
+handled (with duration and error), the consumer's passes (one row per pass or per blocking
+consumer's life) and what the Scheduler knows of each task are rows of the Journal's third channel,
+`queue` (ADR-0025): `queue.run.<status>` (the message type as target, the mode as actor),
+`queue.pass` (the reason it stopped as target) and the three `queue.task.*` actions below (the task's
+id as target), kept 7 days on `last_at` (`journal_queue_purge_time`) and pruned by the Journal itself.
 `QueueRecorder` writes them by direct SQL, never through `Journal::store()`, so that none of them
 reaches stderr, the daily ceiling and the fingerprint dedup do not apply, and their times stay UTC.
 `failed` is kept 30 days. `dispatch()` only writes, in every mode and in the CLI too: nothing
@@ -174,6 +170,18 @@ The database holds the queue to it rather than the check alone: `dedup_key` is o
 its row is a first send waiting (taking it, or failing it, clears it) and is unique within a queue,
 so two senders racing past the check still leave one row, the second reading the first's. A failure
 replayed by hand while the same work already waits is absorbed by it and leaves `failed`.
+
+**The Journal is the Scheduler's only source of truth,** with no column, triple or cache of "the
+next run" beside it. Three actions of the `queue` channel name the task in their `target`:
+`queue.task.declared` notes the first time a task is seen, and nothing is sent; `queue.task.dispatched`
+is written by `QueueBus` each time a run of the task is accepted; `queue.task.finished` is written
+when an attempt ends, with the task's `consecutive_failures` in its context. The purge spares the last
+row of each of the three actions for each task, however old, so that a monthly digest still has its
+anchor after the 7 days, and "no row" always means "never seen". The **anchor** of a task is its last
+dispatch, or its first sighting when it was never sent. The task is due once its trigger's first run
+after the anchor has passed, so the period counts from the send, not from the run. A run started by
+hand ("Lancer") is dispatched like any other: it writes a dispatch row and moves the next run, which
+the button says. The details are under "The Scheduler's history and ticker".
 
 **There are three consumption modes**, chosen by `YESWIKI_QUEUE_CONSUMER`:
 
@@ -226,10 +234,9 @@ heartbeat. Only one pass runs at a time per wiki, behind a non-blocking `Runtime
 (`cache/queue-pass.lock`); a blocking consumer does not take it, since the atomic claim already
 keeps them apart. Neither runs while the wiki is hibernated, archiving or updating, read from the
 configuration as it is now since an archive sets it while a consumer is running. Nor does the
-Scheduler: `QueueScheduleTicker::tick()` asks the same question itself, before it takes the
-checkpoint, whoever calls it, so the schedule stands still and the checkpoint stays where it was
-(`TripleStore` would refuse to write it anyway). Once the wiki wakes up, a task that missed any
-number of runs while it slept runs once, as after any time nothing ticked. A blocking consumer
+Scheduler: `QueueScheduleTicker::tick()` asks the same question itself, before it notes or sends
+anything, whoever calls it, so the schedule stands still. Once the wiki wakes up, a task that missed
+any number of runs while it slept runs once, as after any time nothing ticked. A blocking consumer
 idles through that rather than returning, because returning would look to the supervisor like a
 crash.
 
@@ -277,9 +284,9 @@ the script ends (mod_php, CGI), the request hands each message it pinned to a pr
 does not wait for the whole backup and a wiki fetching one does not give up; the request runs it
 itself only when no process can be started. A wiki
 installed and forgotten must still back itself up before an update. The queue's table and the Journal's
-`queue` rows are the running instance's state, not the wiki's content, and so are the checkpoint's
-triples: a backup leaves them out, and a restore neither drops, replaces nor fills the table (it
-creates it when the database has none) and puts the live Journal `queue` rows and checkpoint triples
+`queue` rows, the scheduled tasks' among them, are the running instance's state, not the wiki's
+content: a backup leaves them out, and a restore neither drops, replaces nor fills the table (it
+creates it when the database has none) and puts the live Journal `queue` rows
 back in place of any the dump brings (`DumpRewriter::leftOutRows()`), or a restored copy would hold
 the backup's own message as running, replay what was pending then, show passes that never close,
 acknowledge the restore by an id in a table it has just replaced, and send the schedule back to
@@ -289,17 +296,18 @@ where it stood when the backup was taken.
 `recovery-keys`, `activation-keys`, `bot-guard`) is its own recurring task, every 30 minutes as
 before, so that one failing hides none. Digests are one task per period, on a cron at 7 a.m. in
 the wiki's timezone (daily, Mondays, the first of the month). A data source that syncs itself is a
-task per source, at its own interval, counted from the start of the schedule; saving a source just
-set to sync queues its first sync a minute later. Neither keeps state beside the checkpoint: a
-digest or a sync run by hand moves nothing. `maintenance.before` and `maintenance.after` are still dispatched, by a task of their
+task per source, at its own interval, counted from its last dispatch; saving a source just
+set to sync queues its first sync a minute later, which is a dispatch like any other. Neither keeps
+state of its own: a task run by hand is a dispatch, and its next run counts from it. `maintenance.before` and `maintenance.after` are still dispatched, by a task of their
 own (`extension-hooks`), and a listener that throws is traced and no longer stops the next. Their
 context keeps its keys but not all its meaning, which an extension author should know: the
 listeners run in a queue pass, with no request, no logged-in user and no session; `previousRun` is
 when the `extension-hooks` task last finished (null before its first run); and `duration`, on
 `maintenance.after`, measures only the `before` listeners -- close to zero -- since the
 housekeeping steps no longer run between the two. A late task runs once at the
-next pass, not once per period missed. The schedule's state is rows of the `__schedule` queue of the `queue` table,
-behind a `RuntimeLock` of its own.
+next pass, not once per period missed, and one the Scheduler sees for the first time is noted and
+waits for its first run. The schedule's memory is the Journal's `queue.task.*` rows, and one tick at
+a time runs behind a `RuntimeLock` of its own.
 
 **Failures are visible, and rare ones are retried.** Messenger's retry gives three further attempts
 after 60 s, 5 min and 25 min (a message class can say otherwise), and a message
@@ -464,7 +472,8 @@ Each point names the class or method to look at.
 - **A pass never throws.** A pass that breaks (table missing, database gone) is journaled and
   reported as `error`, because it often runs at the end of a visitor's request.
 - **A blocking consumer checks for a configuration change before any tick.** A schedule built from
-  the old configuration would prune the tasks it no longer declares. The question is asked at most
+  the old configuration would send a task the new one no longer declares, and count a digest's 7 a.m.
+  in the old time zone. The question is asked at most
   every 5 seconds, and not at start. So a message dispatched in the few seconds after a change may
   still run under the old configuration. Setting the wiki's status rewrites the config file, so a
   hibernation or a backup restarts the consumer once.
@@ -477,40 +486,65 @@ Each point names the class or method to look at.
   `QueueScheduleTicker::RECHECK_SECONDS` (a minute) before trying again, so a blocking consumer that
   ticks at every idle second does not journal it every second.
 
-#### The Scheduler's checkpoint and ticker
+#### The Scheduler's history and ticker
 
-- **`QueueCheckpoint` keeps Symfony's three values** (last run time, that run's message index, the
-  schedule's start, which anchors every periodic trigger). It locks with `RuntimeLock` and re-reads
-  them at each `acquire()`, since the last process to tick is rarely this one. Unlike Symfony's,
-  `release()` lets go of the lock. A blocking consumer holding the lock for its whole life would
-  starve the others, and gain nothing, since the state is in the database.
-- **Times are stored to the microsecond,** because the Scheduler compares them for equality. The next
-  due time is rounded up to the second, so "due" read from it is never early. A null due time means
-  "due at once". A schedule whose triggers never fire again would also leave it null, and the
-  kernel's daily prune prevents that.
-- **A wiki that never ticked starts its schedule now:** every periodic task first runs one interval
-  later. If the lock file cannot be created, the checkpoint throws rather than return false. Otherwise
-  no tick would ever run, which is not the same as somebody else ticking. A `finally` unlocks it,
-  because the Scheduler releases it only when it reaches the end, not when a provider or a write
-  threw. The checkpoint reads no time itself: it is handed the ticker's (`DatabaseClock`).
-- **`tick()` must be cheap,** because a blocking consumer calls it about once a second. It keeps the
-  next due time in memory and re-reads it at most once a minute, so it still sees a due time another
-  process wrote. It asks the providers for the schedule, takes the lock and builds the generator only
-  when something is due, which is also when a changed schedule is picked up.
-- **While a provider throws, no task row is forgotten.** Which rows were its tasks is not known, so
-  its tasks stay in sight and `queue-task-overdue` reports them once they are late. Pruned rows would
-  have let digests stop with nothing to say so. Declaring the same message on the same interval twice
-  (Symfony's `LogicException`) is one task, so it is journaled, not fatal.
-- **`ScheduleGenerator` keeps nothing between ticks,** since the ticker builds a new one at each due
-  tick. For the same reason, once a run at the saved time is recorded, it probes one microsecond
-  before that time, as Symfony's does on its first build, so the messages of that run not yet
-  dispatched still go. The
-  checkpoint is saved after each run's messages. Should Symfony's generator one day accept another
-  checkpoint, this class can give way to it.
-- **`QueueTaskRows::update()` is atomic.** An insert that leaves an existing row alone makes the row
-  exist. The row is then read under a row lock and written back in the same transaction, which is
-  replayed up to 3 times on a deadlock (`DbService::transactional()`). The body is always a JSON
-  object, `{}` when empty.
+- **`ScheduleHistory` is the one place that reads what the tasks did,** in a single query: the last
+  row (`MAX(id)`, grouped by action and target) of each of `queue.task.declared`, `.dispatched` and
+  `.finished`, over the Journal's `(channel, action, target)` index (ADR-0025). The cost does not
+  grow with the runs around them: with 10 000 `queue.run.handled` rows and 12 tasks it is one
+  query of about a millisecond, which `ScheduleDueCostTest` holds under two queries and 50 ms. Times
+  are UTC, `Y-m-d H:i:s`, read from the injected clock (`DatabaseClock`).
+- **The last row of each action is what the purge spares,** since the queue channel keeps 7 days and
+  a digest runs monthly. A task no longer declared keeps its last rows and finds them again if it
+  returns, running once at once if a run came due meanwhile. `consecutive_failures` is a fact of the
+  `finished` row, worked out from the task's previous one when it is written (0 when handled, one
+  more after a failed or killed attempt, unchanged by a retry), so the count survives the purge.
+- **Whatever sends a task writes its dispatch row,** because `QueueBus::dispatch()` does: the
+  Scheduler, the jobs page's "Lancer", and the first sync that `ImportSchedule` queues itself. A send
+  absorbed by a run of the same task still waiting (dedup key `task:<id>`) is a dispatch too: the
+  Scheduler did send it, and an interval counted from the older one would run the task twice after a
+  jam. A send that failed, a retry and a "Relancer" from the jobs page (the same run resuming, not a
+  new due time) write nothing.
+- **A task seen for the first time is noted, not sent.** Under the lock the ticker writes
+  `queue.task.declared`, and the task waits for its first run after that. "Never sent means due at
+  once" was the first idea and was dropped: a wiki that has run for months can see a task appear with
+  no trace (its first subscriber, digests switched on again, a restore onto a new install, an upgrade
+  from a version without the queue), and its monthly digest would go out on the 17th and again on the
+  1st.
+- **Each computation builds a Schedule of its own.** A Symfony `PeriodicalTrigger` (`every`) fixes its
+  start on the first `getNextRunDate()` it is asked, so one kept would count from the first anchor it
+  was handed and ignore every dispatch after it. The ticker lives as long as a worker does, hence a
+  new Schedule, from the providers, each time it computes.
+- **`dueAt()` is the earliest `getNextRunDate(anchor)` of the declared tasks,** worked out from the
+  same elements as the tick. It is null, meaning "due at once", while a declared task has no anchor,
+  so that the next tick writes its row; just after that tick it falls back on the real next date, or
+  the check would stay true on every request. A schedule whose triggers never fire again would leave
+  it null too, and the kernel's daily prune prevents that. It is kept in the ticker's memory and
+  worked out again after `RECHECK_SECONDS` (a minute); it is never persisted, and no other process
+  reads it. `QueueRequestTrigger::hasWork()` and `QueueFallback::entersNow()` read it.
+- **The end of a request pays for it.** In `request` mode every request is a new process and starts
+  with no memo: one query on the Journal, measured above, plus what the providers read to say what
+  they declare (the digests' provider looks up whether anybody subscribed). That is the price of no
+  second state. Should it grow, the answer is a cheaper query, not a cache.
+- **`tick()` must be cheap,** because a blocking consumer calls it about once a second. It returns
+  while the due time in memory is ahead, so it reads the Journal at most once a minute, and a task
+  that another process dispatched is seen within that minute. It takes the lock only when something
+  is due.
+- **One process ticks at a time, under a file lock:** `RuntimeLock` on `cache/queue-schedule.lock`,
+  which `CacheClearer` keeps. It is no state, only an exclusion: two processes would otherwise read
+  the same last dispatch and each send the run that is due. The dedup key would absorb the second
+  send, but not its dispatch row. The history is read under the lock. A file lock is enough because
+  every machine that processes a wiki shares its `cache/`. If the lock file cannot be created the tick
+  throws, rather than answer "somebody else ticks" and never run; a `finally` releases it.
+- **A recurring message that is not a `ScheduledTask` is journaled and skipped** as
+  `queue.schedule_provider_failed`: with no id there is no last dispatch to find, and it would be sent
+  at every tick. No module declares one. Declaring the same message on the same interval twice
+  (Symfony's `LogicException`) is one task, journaled, not fatal.
+- **While a provider throws,** the other providers' tasks go on and its own are listed from the
+  Journal, with neither period nor due time. Nothing is forgotten, since nothing is kept beside the
+  Journal to forget.
+- **"Lancer" moves the next run.** `runNow()` sends the task through the bus, which writes a dispatch
+  row, and drops the memo. The button, the jobs page and `docs/fr/async.md` say so.
 
 #### The end of a request
 
@@ -562,7 +596,8 @@ Each point names the class or method to look at.
   lock.
 - **`context` never holds a JSON null:** an empty field is left out, because MySQL reads a JSON null
   back as the string `'null'`.
-- **`consecutive_failures` does not count a run that will be retried,** since that run is not over. An
+- **`consecutive_failures`, carried by the `queue.task.finished` row, does not count a run that will
+  be retried,** since that run is not over. An
   `ignored` row has no mode and no duration, because it is not an attempt, but it keeps the cause.
 - **`QueueStatistics::lastActivityAt()` counts a message in progress as activity,** because a
   blocking consumer does not beat while a handler runs. The cost is that a consumer that died
@@ -585,16 +620,17 @@ Each point names the class or method to look at.
 #### The health checks
 
 - **Reads shared by several checks run once per list,** and a read that throws throws again for the
-  next check instead of answering null. The declared task ids are read only once a task is found late
-  or failing, so the badge on every admin page never builds the schedule on a healthy wiki.
+  next check instead of answering null. `QueueScheduleTicker::tasks()` is one of them, for
+  `queue-task-overdue` and `queue-task-failing`: it builds the Schedule and reads the Journal once,
+  which the badge's `Broken` checks pay on each page an admin loads.
 - **`queue-config` reads the settings, not the table,** so it can say a mode is wrong before the
   migration ran. **`queue-killed`'s advice** to leave `request` is given only while the wiki is still
   in `request`. **`queue-no-budget`** counts only passes that started, since a locked or paused pass
   says nothing of the budget.
 - **`isOverdue()` allows a full period past the due time,** and at least as long as the mode needs to
   get a chance to run the task. A task due every 23 h that runs 2 h late is not lost. The tasks tab
-  uses the same rule, so the table and the alert agree. `onlyDeclared()` drops rows of tasks no longer
-  declared, which nobody could otherwise clear.
+  uses the same rule, so the table and the alert agree. `tasks()` lists the declared tasks only, so a
+  task no longer declared is neither shown nor judged late.
 
 #### Commands, settings and the cache
 
@@ -607,7 +643,7 @@ Each point names the class or method to look at.
 - **`QueueSettings`:** the `.env` loader never overrides the real environment, so when both hold the
   same value they cannot be told apart, and the file is reported as the likelier source.
 - **`CacheClearer::clearEverything()` keeps the queue's locks** (`QueueConsumer::PASS_LOCK`,
-  `QueueCheckpoint::LOCK`) and any other `.lock` someone holds. Deleting a lock file under its holder
+  `QueueScheduleTicker::LOCK`) and any other `.lock` someone holds. Deleting a lock file under its holder
   would let a second pass or tick start beside it.
 - **`QueueHandlerLocator` builds a handler only when its message is consumed,** so a page that merely
   dispatches does not build search, federation or mail. Handler services are public because the
@@ -616,7 +652,7 @@ Each point names the class or method to look at.
 
 #### Backups and restores
 
-- **A restore puts the live Journal `queue` rows and checkpoint triples back under their own ids,**
+- **A restore puts the live Journal `queue` rows back under their own ids,**
   because the running consumer still writes its pass by those ids. A backup of another wiki may hold
   such an id. Then the restored row keeps it, and the live one takes the next free id once the
   identity column is realigned. In a staged restore the kept rows go into the staged tables before the
@@ -718,12 +754,15 @@ Each point names the class or method to look at.
   small and `SearchIndexer` already had one to copy.
 - **A table each for messages, history, passes and tasks** — rejected, after being the first
   design. The project's convention is to minimise tables, and three of the four hold no message:
-  the scheduled tasks fit rows of the messages' table under a reserved queue, and the history and
-  the passes are what the Journal already is, a retained record of things that happened. The cost is
-  a rule every query on messages must keep (filter on `queue_name`, or a task's row is counted,
-  claimed or pruned as a message), a third Journal population with its own retention, and a
-  backup/restore that must leave the Journal's `queue` rows and the checkpoint's triples out and
-  keep the live ones.
+  the history, the passes and what the Scheduler knows of its tasks are what the Journal already is,
+  a retained record of things that happened. The cost is a third Journal population with its own
+  retention (a purge that spares the last row of each task's actions), and a backup/restore that must
+  leave the Journal's `queue` rows out and keep the live ones.
+- **The Scheduler's state beside the Journal** — rejected, after being the design of the alphas: a
+  row per task in a reserved queue of the `queue` table, and Symfony's checkpoint kept in
+  triples. Three places then told the story of a task (those two and the Journal) and could
+  contradict each other, and a persisted "next due" is the same thing again. The Journal is the only
+  record, and what the end of a request must know is worked out from it, in memory.
 - **Fixing each mechanism where it is** — rejected. Seven fixes would still be seven places an
   admin has to know to look, and nothing would answer "is anything consuming at all". The point is
   the single observable path.
@@ -736,10 +775,10 @@ Each point names the class or method to look at.
   and what it costs.
 - **Symfony's `MessageGenerator` with its `Checkpoint`** — rejected. `MessageGenerator::checkpoint()`
   is typed to the final `Checkpoint` class, whose persistence wants a PSR cache pool and
-  `symfony/lock`, neither of which the wiki has and the second of which is excluded. `ScheduleGenerator`
-  is the generator's loop against `CheckpointInterface`, and a differential run against the
-  original over four hundred ticks found no difference. The cost is a port to keep in step with
-  upstream on a Scheduler upgrade.
+  `symfony/lock`, neither of which the wiki has and the second of which is excluded. A port of the
+  generator's loop onto a checkpoint of our own worked, but it was a second state beside the Journal
+  and a port to keep in step with upstream. The Scheduler takes from Symfony its declaration (`Schedule`,
+  `RecurringMessage`, the triggers) and asks a trigger for `getNextRunDate()` from the Journal's anchor.
 - **Retrying a killed message automatically** — rejected. It was cut by the limit of its mode and
   will be cut by it again; this is anti-objective four, "a job too long for the mode relaunched
   forever". It waits for a human who has changed mode.
@@ -757,7 +796,8 @@ Each point names the class or method to look at.
 
 - **The wiki gains one table and a write on every dispatch.** That is the price of a transport in
   the one store a shared host reliably has. A request with nothing to do costs two indexed reads
-  (is a message available now, is the schedule due), not a pass row, and a pass that finds the lock
+  (is a message available now, is the schedule due: the last row of each task action in the Journal,
+  and what the providers read to say what they declare), not a pass row, and a pass that finds the lock
   taken or the wiki asleep writes none in `request` mode, where that is most requests. An API call
   that finds them writes one, closed at once, so that it is seen
   coming back, or still coming while the wiki slept, rather than taken for gone.
@@ -788,7 +828,7 @@ Each point names the class or method to look at.
   database's clock (`DatabaseClock`), and the screen converts them to the wiki's zone for that channel alone.
 - **Every time the queue writes or compares is the database's.** The processes of a farm may run on
   several machines whose clocks disagree; `DatabaseClock` reads the database's time in UTC
-  (`DbService::utcNow()`), so `available_at`, the expiry of a claim and the checkpoint go by the one
+  (`DbService::utcNow()`), so `available_at`, the expiry of a claim and a task's anchor go by the one
   clock they all share. Only what a pass may still spend, measured within one process, stays on PHP's
   clock (`QueueBudgetFactory`).
 - **A wiki with the table missing keeps serving pages.** The checks that read the table are silent
@@ -938,30 +978,32 @@ classDiagram
 ### A scheduled task
 
 1. **Its message implements `ScheduledTask`.**
-   - `taskId()` is the task's identity in its `__schedule` row and in its dedup key (`task:<id>`).
-     It is stable across releases and at most `ScheduledTask::MAX_ID_LENGTH` characters long.
+   - `taskId()` is the task's identity in its Journal rows (the `target` of its `queue.task.*` rows)
+     and in its dedup key (`task:<id>`). It is stable across releases and at most
+     `ScheduledTask::MAX_ID_LENGTH` characters long.
    - `label()` is what `/admin/jobs` shows, through `_t()`.
-   - A recurring message that is not a `ScheduledTask` is still sent when due, but with no dedup,
-     no row, and nothing on the page.
+   - A recurring message must be a `ScheduledTask`: one that is not has no id to find its last
+     dispatch by, so the Scheduler journals it as `queue.schedule_provider_failed` and skips it.
 2. **The module's schedule** is `src/<Module>/Scheduler/<Module>Schedule.php`, or `schedulers/` in
    an extension. It implements `ProvidesSchedule` and declares all of the module's tasks. It is a
    service tagged by autoconfiguration, so there is no list to add it to.
    - `RecurringMessage::every(<seconds, or '24 hours'>, $message)` is for a fixed period. The
      housekeeping steps share `KernelSchedule::HOUSEKEEPING_EVERY` (`AdminSchedule`).
      A source's own interval is the same (`ImportSchedule`). The period is counted from the
-     start of the schedule, which the checkpoint keeps.
+     task's last dispatch, or from the day the Scheduler first saw it.
    - `RecurringMessage::cron($expression, $message, $timezone)` is for a time of day, in the wiki's
      `timezone` (`ContactSchedule`).
-   - Neither remembers anything beside the checkpoint. What has run is the checkpoint's to know;
-     a file or a log read to postpone a task is a second state that drifts from it.
-3. **The schedule is built anew** at each tick where something is due.
+   - Neither remembers anything beside the Journal. What was dispatched is the Journal's to tell
+     (`ScheduleHistory`); a file or a log read to postpone a task is a second state that drifts from it.
+3. **The schedule is built anew** each time the Scheduler works out what is due.
    - It may depend on the configuration, and a task it stops declaring leaves the page.
    - A schedule that cannot read what it decides from throws, rather than declaring nothing. The
-     ticker then journals `queue.schedule_provider_failed` and keeps the tasks it knew, which show
-     as overdue.
-4. **A late task runs once.** A task ten periods late runs once at the next pass, and the very first
-   tick only starts the schedule. The same work may also run another way: a command, or "Lancer",
-   which queues a run at once. Neither moves the schedule.
+     ticker then journals `queue.schedule_provider_failed`, goes on with the other providers' tasks,
+     and lists that one's from the Journal, with no due time.
+4. **A late task runs once.** A task ten periods late runs once at the next pass, and one the
+   Scheduler sees for the first time is only noted, and waits for its first run. The same work may
+   also run another way: a command that does it itself moves nothing, but "Lancer" sends the task,
+   so it writes a dispatch row and the next run counts from it.
 5. **An extension that only wants a periodic hook** may still listen to `maintenance.after`, with
    the caveats given under "The Scheduler produces". A task of its own is shown, retried and alerted
    on; a listener's failure is only traced.

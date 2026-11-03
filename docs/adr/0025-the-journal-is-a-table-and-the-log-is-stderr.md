@@ -149,13 +149,17 @@ tables of their own. They are a third population that shares columns and nothing
 two do. `queue.run.<status>` is one fact about a past attempt (target: the message type; actor: the
 mode) and is never collapsed. `queue.pass` is the one row that is written, then updated by id as the
 consumer shows signs of life and when it stops (`at` is the start, `last_at` the last sign of life,
-target the reason it stopped). Three rules keep it from being what this ADR was written to avoid.
+target the reason it stopped). Three more actions, `queue.task.declared`, `queue.task.dispatched` and
+`queue.task.finished` (target: the task's id), are all the Scheduler remembers of a recurring task.
+Three rules keep it from being what this ADR was written to avoid.
 Its rows are written by direct SQL, never through `Journal::store()`: a pass every few minutes must
 not put a line on stderr each time, and neither the per-day ceiling nor the fingerprint dedup has
 anything to say about them (`fingerprint` and `day` stay NULL). They are pruned on `last_at`, like
 diagnostics, since a pass is as old as its last sign of life, after 7 days
-(`journal_queue_purge_time`). And `/admin/logs` lists them only when the `queue` channel is chosen,
-so the default view stays the acts and errors it exists for. Their times are UTC, read from the database's clock (`DatabaseClock`)
+(`journal_queue_purge_time`), bar the last row of each of the three task actions for each task, which
+stays however old: a monthly task would otherwise be forgotten between two runs. And `/admin/logs`
+lists them only when the `queue` channel is chosen, so the default view stays the acts and errors it
+exists for. Their times are UTC, read from the database's clock (`DatabaseClock`)
 (a pass's moments are compared to the exact second, and a conversion by the database's zone is wrong
 under SQLite and ambiguous at the autumn clock change), so the screen converts them for that channel
 alone. A backup leaves them out and a restore keeps the live ones, otherwise a restored copy would
@@ -172,7 +176,10 @@ what broke and once as history.
 - **The queue's rows are pruned against `DbService::utcNow()`** (`Journal::prune()`), not the
   database's `NOW()` that the other channels' `dateSubDays()` uses, because `NOW()` may be in another
   zone than the UTC the rows are written in.
-- **The queue's `(channel, target, at)` index** (`idx_channel_target_at`) is added to an older Journal
-  by `JournalSchema::ensureQueueIndex()` only after checking it is missing, because MySQL has no
+- **The queue's `(channel, target, at)` index** (`idx_channel_target_at`) and its
+  **`(channel, action, target)` index** (`idx_channel_action_target`) are added to an older Journal
+  by `JournalSchema::ensureQueueIndex()` only after checking each is missing, because MySQL has no
   `IF NOT EXISTS` for an index. The check names it with the table prefix that PostgreSQL and SQLite
-  put in front of every index name, and without it on MySQL.
+  put in front of every index name, and without it on MySQL. The second serves the last row of each
+  task action (`ScheduleHistory`) and the purge that spares those rows (`Journal::prune()`, which
+  reads them through a derived table so that MySQL lets the DELETE read its own table).

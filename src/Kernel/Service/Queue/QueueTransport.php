@@ -29,7 +29,7 @@ use YesWiki\Kernel\Service\RequestScopedState;
 
 /**
  * The Messenger transport of the queue: one row per message in the wiki's own database, written on DbService.
- * One table holds the `default` and `failed` queues and the scheduled tasks, told apart by `queue_name`.
+ * One table holds the `default` and `failed` queues, told apart by `queue_name`.
  * Every time is the database's (DatabaseClock), in UTC; whether a claim's holder is dead is judged per R19.
  */
 class QueueTransport implements TransportInterface, MessageCountAwareInterface, RequestScopedState
