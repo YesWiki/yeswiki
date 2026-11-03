@@ -184,7 +184,7 @@ class AdminLogsApiControllerTest extends YesWikiTestCase
     /** A queue row reads as a sentence too, and a run that failed shows its cause in the detail: it keeps it as its `message`, where a diagnostic keeps its own. */
     public function testAQueueRowHasAPhraseAndAFailedRunItsCause(): void
     {
-        foreach (['queue.run.handled', 'queue.run.retried', 'queue.run.failed', 'queue.run.killed', 'queue.run.ignored', 'queue.pass'] as $action) {
+        foreach (['queue.run.handled', 'queue.run.retried', 'queue.run.failed', 'queue.run.killed', 'queue.run.ignored', 'queue.pass', 'queue.task.declared', 'queue.task.dispatched', 'queue.task.finished'] as $action) {
             $phrase = $this->present(['channel' => 'queue', 'action' => $action])['phrase'];
             $this->assertNotSame($action, $phrase, "{$action} has a phrase of its own");
         }
