@@ -46,16 +46,16 @@ signale un problème.
 
 **Ce qui revient régulièrement (les « tâches planifiées ») :**
 
-| Tâche                                                                         | Fréquence                                                      |
-| ----------------------------------------------------------------------------- | -------------------------------------------------------------- |
-| suppression des anciennes révisions de pages                                  | toutes les 30 minutes                                          |
-| nettoyage du Journal au-delà de sa durée de conservation                      | toutes les 30 minutes                                          |
-| suppression des clés de récupération de mot de passe et d'activation expirées | toutes les 30 minutes                                          |
-| nettoyage des jetons et compteurs anti-robots                                 | toutes les 30 minutes                                          |
-| tâches de maintenance des extensions                                          | toutes les 30 minutes                                          |
-| envoi des e-mails récapitulatifs                                              | chaque jour, chaque semaine ou chaque mois, selon l'abonnement |
-| synchronisation automatique de chaque source de données                       | selon le réglage de la source, au plus toutes les 30 minutes   |
-| ménage de la file elle-même                                                   | une fois par jour                                              |
+| Tâche                                                                         | Fréquence                                                                                                   |
+| ----------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| suppression des anciennes révisions de pages                                  | toutes les 30 minutes                                                                                       |
+| nettoyage du Journal au-delà de sa durée de conservation                      | toutes les 30 minutes                                                                                       |
+| suppression des clés de récupération de mot de passe et d'activation expirées | toutes les 30 minutes                                                                                       |
+| nettoyage des jetons et compteurs anti-robots                                 | toutes les 30 minutes                                                                                       |
+| tâches de maintenance des extensions                                          | toutes les 30 minutes                                                                                       |
+| envoi des e-mails récapitulatifs                                              | à 7 h à l'heure du wiki : chaque jour, chaque lundi ou chaque 1er du mois, selon l'abonnement               |
+| synchronisation automatique de chaque source de données                       | selon le réglage de la source, au plus toutes les 30 minutes ; la première une minute après l'avoir activée |
+| ménage de la file elle-même                                                   | une fois par jour                                                                                           |
 
 Une tâche en retard (parce que rien n'a traité la file pendant un moment) ne
 tourne qu'**une fois** au passage suivant, pas autant de fois qu'elle a été

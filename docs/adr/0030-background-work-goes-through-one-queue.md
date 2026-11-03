@@ -273,9 +273,11 @@ close, and acknowledge the restore by an id in a table it has just replaced.
 
 **The Scheduler produces, the queue consumes.** Each maintenance step (`revisions`, `journal`,
 `recovery-keys`, `activation-keys`, `bot-guard`) is its own recurring task, every 30 minutes as
-before, so that one failing hides none. Digests are one task per period and the marker is written
-after a successful send, not before. A data source that syncs itself is a task per source, at its
-own interval. `maintenance.before` and `maintenance.after` are still dispatched, by a task of their
+before, so that one failing hides none. Digests are one task per period, on a cron at 7 a.m. in
+the wiki's timezone (daily, Mondays, the first of the month). A data source that syncs itself is a
+task per source, at its own interval, counted from the start of the schedule; saving a source just
+set to sync queues its first sync a minute later. Neither keeps state beside the checkpoint: a
+digest or a sync run by hand moves nothing. `maintenance.before` and `maintenance.after` are still dispatched, by a task of their
 own (`extension-hooks`), and a listener that throws is traced and no longer stops the next. Their
 context keeps its keys but not all its meaning, which an extension author should know: the
 listeners run in a queue pass, with no request, no logged-in user and no session; `previousRun` is
@@ -540,8 +542,7 @@ classDiagram
    - It may run twice for one dispatch (a retry, or a killed message an admin retries), so it is
      idempotent, or it checks first.
    - It reads the wiki as it is now, not as the consumer booted with it:
-     `HibernationService::isWikiHibernatedNow()`, or a marker that moved since the message was sent.
-     `Contact/Message/SendDigestHandler` does both.
+     `HibernationService::isWikiHibernatedNow()` (`Contact/Message/SendDigestHandler`).
    - It has no request, no signed-in user and no session. It keeps nothing from one message to the
      next, since a blocking consumer handles thousands (ADR-0024).
    - It fails by throwing. A swallowed exception is recorded as handled; a thrown one is retried,
@@ -596,11 +597,12 @@ classDiagram
    service tagged by autoconfiguration, so there is no list to add it to.
    - `RecurringMessage::every(<seconds, or '24 hours'>, $message)` is for a fixed period. The
      housekeeping steps share `KernelSchedule::HOUSEKEEPING_EVERY` (`AdminSchedule`).
-   - `RecurringAfterLastRun::every($seconds, $message, $lastRunAt, $now)` is for a task that
-     remembers when it last ran, so that a run by hand or by cron postpones the scheduled one
-     (`ContactSchedule`, `ImportSchedule`).
-   - `RecurringMessage::cron()` is not available, since `dragonmantank/cron-expression` is not
-     installed.
+     A source's own interval is the same (`ImportSchedule`). The period is counted from the
+     start of the schedule, which the checkpoint keeps.
+   - `RecurringMessage::cron($expression, $message, $timezone)` is for a time of day, in the wiki's
+     `timezone` (`ContactSchedule`).
+   - Neither remembers anything beside the checkpoint. What has run is the checkpoint's to know;
+     a file or a log read to postpone a task is a second state that drifts from it.
 3. **The schedule is built anew** at each tick where something is due.
    - It may depend on the configuration, and a task it stops declaring leaves the page.
    - A schedule that cannot read what it decides from throws, rather than declaring nothing. The
@@ -608,8 +610,7 @@ classDiagram
      as overdue.
 4. **A late task runs once.** A task ten periods late runs once at the next pass, and the very first
    tick only starts the schedule. The same work may also run another way: a command, or "Lancer",
-   which queues a run at once. In that case the handler checks its own marker before doing it again
-   (`SendDigestHandler`).
+   which queues a run at once. Neither moves the schedule.
 5. **An extension that only wants a periodic hook** may still listen to `maintenance.after`, with
    the caveats given under "The Scheduler produces". A task of its own is shown, retried and alerted
    on; a listener's failure is only traced.

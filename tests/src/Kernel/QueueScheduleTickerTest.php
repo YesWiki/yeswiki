@@ -173,7 +173,7 @@ class QueueScheduleTickerTest extends YesWikiTestCase
     }
 
     /**
-     * A provider that throws (the digests' markers unreadable, a broken private bucket) is journaled and left out of that tick; the other tasks are still dispatched, and its tasks are kept, and still judged, rather than pruned as if it no longer declared them.
+     * A provider that throws (the digests' subscriptions unreadable, no triples table) is journaled and left out of that tick; the other tasks are still dispatched, and its tasks are kept, and still judged, rather than pruned as if it no longer declared them.
      *
      * Pruned, they would leave no row for `queue-task-overdue` to find late: the digests would stop with nothing to say so.
      */
@@ -181,7 +181,7 @@ class QueueScheduleTickerTest extends YesWikiTestCase
     {
         $digests = new class(function (): array {
             if ($this->digestsBroken) {
-                throw new \RuntimeException('private/digests is not readable');
+                throw new \RuntimeException('no triples table');
             }
 
             return [RecurringMessage::every('30 minutes', new QueueTestTask('digest'))];
@@ -215,7 +215,7 @@ class QueueScheduleTickerTest extends YesWikiTestCase
         $journaled = $this->db->loadAll('SELECT action, target, context FROM ' . (new JournalSchema($this->db))->table() . " WHERE action = 'queue.schedule_provider_failed'");
         $this->assertNotEmpty($journaled);
         $this->assertSame($digests::class, $journaled[0]['target']);
-        $this->assertStringContainsString('private/digests is not readable', (string)$journaled[0]['context']);
+        $this->assertStringContainsString('no triples table', (string)$journaled[0]['context']);
 
         $this->digestsBroken = false;
         $this->assertSame(['test-task', 'digest'], $this->ticker([$digests])->declaredTaskIds(), 'back as soon as it declares again');
