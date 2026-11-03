@@ -84,8 +84,8 @@ flowchart LR
   stats --> checks --> page
 ```
 
-The `__schedule` queue holds the Scheduler's state: one row per task, plus the checkpoint. No
-consumer reads it. The dashed arrow is a handler that splits its work and dispatches its own
+The `__schedule` queue holds what each scheduled task did: one row per task. The Scheduler's
+checkpoint is triples (`QueueCheckpoint`). No consumer reads the `__schedule` queue. The dashed arrow is a handler that splits its work and dispatches its own
 continuation.
 
 A budgeted pass in `request` mode runs once the response has left. `api` and
@@ -153,10 +153,14 @@ stateDiagram-v2
 **The transport is the wiki's database, on `DbService` and the dialects.** `QueueTransport` keeps
 messages in the one table the queue adds, `queue` (queue name `default` or `failed`), with an atomic
 claim that works on MySQL, PostgreSQL and SQLite (modelled on the one `search_queue` had). The rest is
-not a table of its own, because the project keeps its number of tables down. The Scheduler's state
-(one row per task, and its checkpoint) is rows of the same table in a reserved queue, `__schedule`,
-which no consumer reads and which every query on messages leaves out; a task is found by `task_id`,
-a nullable unique column that every message leaves NULL, and its fields are JSON in `body`. What was
+not a table of its own, because the project keeps its number of tables down. Each task's state is
+a row of the same table in a reserved queue, `__schedule`, which no consumer reads and which every
+query on messages leaves out; a task is found by `task_id`, a nullable unique column that every
+message leaves NULL, and its fields are JSON in `body`. The Scheduler's checkpoint -- the last run
+it dispatched, where the schedule started, and when it is next due -- is two triples of the
+resource `queue:checkpoint`, since the project stores new state in the triples by default.
+`QueueCheckpoint` writes them through `TripleStore` and reads them past its cache, since another
+process writes them while a blocking consumer lives on. What was
 handled (with duration and error) and the consumer's passes (one row per pass or per blocking
 consumer's life) are rows of the Journal's third channel, `queue` (ADR-0025): `queue.run.<status>`
 (the message type as target, the mode as actor) and `queue.pass` (the reason it stopped as target),
@@ -217,7 +221,11 @@ limit, a memory limit and a message limit, ticks the Scheduler whenever it is id
 heartbeat. Only one pass runs at a time per wiki, behind a non-blocking `RuntimeLock`
 (`cache/queue-pass.lock`); a blocking consumer does not take it, since the atomic claim already
 keeps them apart. Neither runs while the wiki is hibernated, archiving or updating, read from the
-configuration as it is now since an archive sets it while a consumer is running. A blocking consumer
+configuration as it is now since an archive sets it while a consumer is running. Nor does the
+Scheduler: `QueueScheduleTicker::tick()` asks the same question itself, before it takes the
+checkpoint, whoever calls it, so the schedule stands still and the checkpoint stays where it was
+(`TripleStore` would refuse to write it anyway). Once the wiki wakes up, a task that missed any
+number of runs while it slept runs once, as after any time nothing ticked. A blocking consumer
 idles through that rather than returning, because returning would look to the supervisor like a
 crash.
 
@@ -265,11 +273,13 @@ the script ends (mod_php, CGI), the request hands each message it pinned to a pr
 does not wait for the whole backup and a wiki fetching one does not give up; the request runs it
 itself only when no process can be started. A wiki
 installed and forgotten must still back itself up before an update. The queue's table and the Journal's
-`queue` rows are the running instance's state, not the wiki's content: a backup leaves them out, and
-a restore neither drops, replaces nor fills the table (it creates it when the database has none) and
-puts the live Journal `queue` rows back in place of any the dump brings, or a restored copy would
-hold the backup's own message as running, replay what was pending then, show passes that never
-close, and acknowledge the restore by an id in a table it has just replaced.
+`queue` rows are the running instance's state, not the wiki's content, and so are the checkpoint's
+triples: a backup leaves them out, and a restore neither drops, replaces nor fills the table (it
+creates it when the database has none) and puts the live Journal `queue` rows and checkpoint triples
+back in place of any the dump brings (`DumpRewriter::leftOutRows()`), or a restored copy would hold
+the backup's own message as running, replay what was pending then, show passes that never close,
+acknowledge the restore by an id in a table it has just replaced, and send the schedule back to
+where it stood when the backup was taken.
 
 **The Scheduler produces, the queue consumes.** Each maintenance step (`revisions`, `journal`,
 `recovery-keys`, `activation-keys`, `bot-guard`) is its own recurring task, every 30 minutes as
@@ -377,7 +387,8 @@ arrival, and the explicit actions of a human or a webhook (`importer:sync`, `GET
   the passes are what the Journal already is, a retained record of things that happened. The cost is
   a rule every query on messages must keep (filter on `queue_name`, or a task's row is counted,
   claimed or pruned as a message), a third Journal population with its own retention, and a
-  backup/restore that must leave the Journal's `queue` rows out and keep the live ones.
+  backup/restore that must leave the Journal's `queue` rows and the checkpoint's triples out and
+  keep the live ones.
 - **Fixing each mechanism where it is** — rejected. Seven fixes would still be seven places an
   admin has to know to look, and nothing would answer "is anything consuming at all". The point is
   the single observable path.

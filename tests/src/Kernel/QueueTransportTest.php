@@ -19,7 +19,6 @@ use YesWiki\Kernel\Queue\QueueClaimHolder;
 use YesWiki\Kernel\Queue\QueueConsumerMode;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\JournalSchema;
-use YesWiki\Kernel\Service\Queue\QueueCheckpoint;
 use YesWiki\Kernel\Service\Queue\QueueRecorder;
 use YesWiki\Kernel\Service\Queue\QueueSchema;
 use YesWiki\Kernel\Service\Queue\QueueStatistics;
@@ -573,7 +572,7 @@ class QueueTransportTest extends YesWikiTestCase
     }
 
     /**
-     * A scheduled task and the Scheduler's checkpoint are rows of the same table, in a queue no consumer reads: nothing done with messages sees them.
+     * A scheduled task is a row of the same table, in a queue no consumer reads: nothing done with messages sees it.
      *
      * @param array<string, string|bool> $params
      */
@@ -598,15 +597,11 @@ class QueueTransportTest extends YesWikiTestCase
             $transport = new QueueTransport($db, $schema, clock: $this->clock);
             $statistics = new QueueStatistics($db, $schema, $journal, $transport, new QueueTaskRows($db, $schema, $this->clock), $this->clock);
             (new QueueRecorder($db, new QueueTaskRows($db, $schema, $this->clock), $journal, $this->clock))->taskDispatched(new QueueTestTask(), 1800, $this->clock->now()->modify('+30 minutes'));
-            (new QueueTaskRows($db, $schema, $this->clock))->update(
-                QueueCheckpoint::ROW,
-                static fn (array $fields): array => ['next_due_at' => '2026-10-23 12:30:00', 'state' => ['time' => '2026-10-23 12:00:00.000000', 'index' => -1, 'from' => '2026-10-23 12:00:00.000000']] + $fields
-            );
             $rows = array_map(
                 static fn (array $row): int => (int)$row['id'],
                 $db->loadAll("SELECT id FROM {$schema->table()} WHERE queue_name = ? ORDER BY id", [QueueSchema::SCHEDULE_QUEUE])
             );
-            $this->assertCount(2, $rows, 'one row for the task, one for the checkpoint');
+            $this->assertCount(1, $rows, 'one row for the task');
             $this->clock->sleep(60);
 
             $this->assertSame(0, $transport->getMessageCount());
@@ -624,9 +619,8 @@ class QueueTransportTest extends YesWikiTestCase
             }
             $this->assertSame(0, $transport->pruneFailed(0));
 
-            $this->assertSame(2, (int)$db->scalar("SELECT COUNT(*) FROM {$schema->table()} WHERE queue_name = ?", 0, [QueueSchema::SCHEDULE_QUEUE]), 'neither moved nor deleted');
+            $this->assertSame(1, (int)$db->scalar("SELECT COUNT(*) FROM {$schema->table()} WHERE queue_name = ?", 0, [QueueSchema::SCHEDULE_QUEUE]), 'neither moved nor deleted');
             $this->assertSame(['test-task'], array_column($statistics->tasks(), 'taskId'));
-            $this->assertSame('2026-10-23 12:30:00', $statistics->scheduleDueAt()?->format('Y-m-d H:i:s'));
         } finally {
             if ($db !== $this->db) {
                 $schema->drop();

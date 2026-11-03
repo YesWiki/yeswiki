@@ -367,8 +367,11 @@ C'est ici qu'on vérifie qu'un cron ou un worker passe vraiment.
 - **Générer un secret** apparaît en mode `api` sans secret.
 - **Comment faire ?** mène à l'explication de l'alerte, sur cette page.
 
-Pendant une sauvegarde, une restauration ou une mise à jour, le wiki est « en
-pause » : rien n'est traité, et aucune alerte de retard ne se déclenche.
+Pendant une sauvegarde, une restauration ou une mise à jour, et tant que le
+wiki est en hibernation, le wiki est « en pause » : rien n'est traité, aucune
+tâche planifiée n'est lancée, et aucune alerte de retard ne se déclenche. Au
+réveil, chaque tâche planifiée qui a manqué son heure tourne **une fois**, puis
+reprend son rythme habituel.
 
 ## Sauvegardes et restaurations
 
@@ -389,6 +392,12 @@ qu'elle ne soit pas coupée en route.
   traitements » jusqu'à ce qu'il la prenne. Si ce processus n'est pas vu au
   travail (le wiki est en [mode de secours](/docs/fr/async?id=le-mode-de-secours)),
   elle s'exécute dans votre requête, comme en `request`.
+
+Une sauvegarde ne contient pas la file : ni les traitements en attente, ni
+l'avancement des tâches planifiées. Une restauration remet le contenu du wiki,
+mais laisse la file et les tâches planifiées là où elles en étaient : rien de
+ce qui attendait au moment de la sauvegarde n'est rejoué, et une tâche déjà
+passée ne repasse pas.
 
 **Une sauvegarde ou une restauration n'est jamais relancée automatiquement** :
 une restauration à moitié faite rejouée sans vous serait pire que l'échec. Si

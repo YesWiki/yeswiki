@@ -17,7 +17,6 @@ use YesWiki\Kernel\Queue\QueuePassReport;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\Journal;
 use YesWiki\Kernel\Service\JournalSchema;
-use YesWiki\Kernel\Service\Queue\QueueCheckpoint;
 use YesWiki\Kernel\Service\Queue\QueueRecorder;
 use YesWiki\Kernel\Service\Queue\QueueSchema;
 use YesWiki\Kernel\Service\Queue\QueueStatistics;
@@ -464,27 +463,8 @@ class QueueRecorderTest extends YesWikiTestCase
         $this->assertSame('unknown', $this->statistics->messageState(999));
     }
 
-    public function testTasksLeaveTheCheckpointOut(): void
-    {
-        $rows = new QueueTaskRows($this->db, $this->schema, $this->clock);
-        $rows->update(QueueCheckpoint::ROW, static fn (array $fields): array => ['next_due_at' => '2026-10-23 12:30:00']);
-        $rows->update('queue-prune', static fn (array $fields): array => [
-            'label' => 'Prune',
-            'every_seconds' => 86400,
-            'next_due_at' => '2026-10-24 12:00:00',
-            'consecutive_failures' => 2,
-        ]);
-
-        $tasks = $this->statistics->tasks();
-
-        $this->assertSame(['queue-prune'], array_column($tasks, 'taskId'));
-        $this->assertSame(86400, $tasks[0]['everySeconds']);
-        $this->assertSame(2, $tasks[0]['consecutiveFailures']);
-        $this->assertEquals(new \DateTimeImmutable('2026-10-24 12:00:00', new \DateTimeZone('UTC')), $tasks[0]['nextDueAt']);
-    }
-
     /**
-     * A task's row keeps its failures counted run after run, and its next due time when a run asked for by hand does not know it; forgetting every task keeps the checkpoint.
+     * A task's row keeps its failures counted run after run, and its next due time when a run asked for by hand does not know it.
      *
      * @param array<string, string|bool> $params
      */
@@ -492,8 +472,6 @@ class QueueRecorderTest extends YesWikiTestCase
     public function testTaskStateKeepsItsCountsAndDueTime(array $params): void
     {
         $this->on($params);
-        $rows = new QueueTaskRows($this->db, $this->schema, $this->clock);
-        $rows->update(QueueCheckpoint::ROW, static fn (array $fields): array => ['next_due_at' => '2026-10-23 12:30:00'] + $fields);
         $task = new QueueTestTask('digest');
 
         $this->recorder->taskDispatched($task, 1800, new \DateTimeImmutable('2026-10-23 14:30:00', new \DateTimeZone('Europe/Paris')));
@@ -518,7 +496,6 @@ class QueueRecorderTest extends YesWikiTestCase
 
         $this->assertSame([], $this->recorder->taskIds());
         $this->assertSame([], $this->statistics->tasks());
-        $this->assertSame('2026-10-23 12:30:00', $this->statistics->scheduleDueAt()?->format('Y-m-d H:i:s'), 'the checkpoint is no task to forget');
     }
 
     /**

@@ -4,33 +4,45 @@ namespace YesWiki\Kernel\Service\Queue;
 
 use Symfony\Component\Scheduler\Generator\CheckpointInterface;
 use YesWiki\Files\Service\RuntimeLock;
+use YesWiki\Kernel\Service\TripleStore;
 
 /**
- * Where the Scheduler keeps how far it got, in the wiki's own database (messenger / scheduler): the `__checkpoint` row of the queue's scheduled tasks (QueueTaskRows).
+ * Where the Scheduler keeps how far it got, in the wiki's own database (messenger / scheduler): two triples of the resource RESOURCE.
  *
  * Symfony's own Checkpoint wants a cache pool and symfony/lock, neither of which the wiki has;
  * this one keeps the same three values -- the last run time it dispatched, the position of that
  * run's message in the schedule, and the time the schedule was first ticked, which anchors
- * every periodic trigger -- in the row's `state`, and takes RuntimeLock's file lock so that
- * two processes never tick at once. The state is read again at each acquire(), since the
+ * every periodic trigger -- in the triple STATE, as JSON, and takes RuntimeLock's file lock so
+ * that two processes never tick at once. The state is read again at each acquire(), since the
  * process that ticked last is rarely this one: a request, then an API call, then another request.
  *
  * Unlike Symfony's, release() lets go of the lock. A blocking consumer that kept it for its
  * whole life would starve every other consumer of the schedule, and would gain nothing by it:
  * the state is in the database anyway.
  *
- * The state is the row's `state` field, its times to the microsecond. release() also writes the
- * next due time to the row's `next_due_at`, rounded up to the second like every time of the
- * queue. That is what makes a tick cheap when nothing is due (QueueScheduleTicker reads that one
- * row and stops), and what the end of a request reads to know whether the schedule needs a pass
- * (QueueStatistics::scheduleDueAt()).
+ * The state's times are to the microsecond. release() also writes the next due time to the
+ * triple NEXT_DUE_AT, rounded up to the second like every time of the queue. That is what makes
+ * a tick cheap when nothing is due (QueueScheduleTicker reads that one triple and stops), and
+ * what the end of a request reads to know whether the schedule needs a pass (dueAt()).
+ *
+ * The triples are written through the TripleStore, which refuses any write while the wiki is
+ * hibernated: QueueScheduleTicker does not tick then, so that nothing is dispatched that the
+ * checkpoint would not remember. They are read past its cache, since another process writes
+ * them. A backup leaves them out and a restore keeps the live ones (DumpRewriter::leftOutRows()):
+ * a restored copy taking the backup's would send the schedule back to an older checkpoint.
  *
  * All times come from the Scheduler, which takes them from the ticker's clock; none is the database's.
  */
 class QueueCheckpoint implements CheckpointInterface
 {
-    /** The `task_id` of the checkpoint's row, which is not a task: no task id may start with two underscores. */
-    public const ROW = '__checkpoint';
+    /** The resource of the checkpoint's triples: no page tag has a colon. */
+    public const RESOURCE = 'queue:checkpoint';
+
+    /** The triple of the Scheduler's state: JSON, `time`, `index` and `from`. */
+    public const STATE = 'https://yeswiki.net/vocabulary/queue/checkpointState';
+
+    /** The triple of the time the schedule is next due, `Y-m-d H:i:s` in UTC; none when it never ticked. */
+    public const NEXT_DUE_AT = 'https://yeswiki.net/vocabulary/queue/nextDueAt';
 
     /** One tick at a time per wiki, whichever consumer runs it. */
     public const LOCK = 'cache/queue-schedule.lock';
@@ -48,7 +60,7 @@ class QueueCheckpoint implements CheckpointInterface
     private int $index = -1;
 
     public function __construct(
-        private readonly QueueTaskRows $rows,
+        private readonly TripleStore $triples,
         private readonly RuntimeLock $runtimeLock,
     ) {
     }
@@ -114,18 +126,18 @@ class QueueCheckpoint implements CheckpointInterface
         $this->index = $index;
         $this->from ??= $time;
 
-        $this->write(['state' => [
+        $this->write(self::STATE, (string)json_encode([
             'time' => self::stateTime($time),
             'index' => $index,
             'from' => self::stateTime($this->from),
-        ]]);
+        ]));
     }
 
     /** The tick is over: the next one is due at $nextTime (null when no trigger will ever fire again). */
     public function release(\DateTimeImmutable $now, ?\DateTimeImmutable $nextTime): void
     {
         try {
-            $this->write(['next_due_at' => $nextTime === null ? null : self::roundedUp($nextTime)]);
+            $this->write(self::NEXT_DUE_AT, $nextTime === null ? null : self::roundedUp($nextTime));
         } finally {
             $this->unlock();
         }
@@ -144,12 +156,19 @@ class QueueCheckpoint implements CheckpointInterface
         }
     }
 
-    /** When the schedule is next due, as release() last wrote it; null when it never ticked. */
+    /**
+     * When the schedule is next due, as release() last wrote it, which is when a pass has something to do even with no message waiting.
+     *
+     * Null when the schedule never ticked on this wiki: the first tick is due at once, to start it.
+     * (A schedule where no trigger will ever fire again would also leave it null; the kernel's own
+     * daily prune keeps that from happening.) Null too when the triple holds no time.
+     */
     public function dueAt(): ?\DateTimeImmutable
     {
-        $due = $this->rows->read(self::ROW)['next_due_at'] ?? null;
+        $due = $this->read(self::NEXT_DUE_AT);
+        $time = $due === null ? false : \DateTimeImmutable::createFromFormat('!' . self::TIME_FORMAT, $due, new \DateTimeZone('UTC'));
 
-        return $due === null ? null : new \DateTimeImmutable((string)$due, new \DateTimeZone('UTC'));
+        return $time === false ? null : $time;
     }
 
     /**
@@ -159,7 +178,7 @@ class QueueCheckpoint implements CheckpointInterface
      */
     private function state(): ?array
     {
-        $state = $this->rows->read(self::ROW)['state'] ?? null;
+        $state = json_decode($this->read(self::STATE) ?? '', true);
         if (!is_array($state) || !is_string($state['time'] ?? null) || !is_int($state['index'] ?? null) || !is_string($state['from'] ?? null)) {
             return null;
         }
@@ -170,10 +189,36 @@ class QueueCheckpoint implements CheckpointInterface
         return $time === false || $from === false ? null : [$time, $state['index'], $from];
     }
 
-    /** @param array<string, mixed> $fields written on the row, which is created if it is not there yet; a null one is taken away */
-    private function write(array $fields): void
+    /** That triple's value as the database has it now, not as this process cached it. */
+    private function read(string $property): ?string
     {
-        $this->rows->update(self::ROW, static fn (array $current): array => array_merge($current, $fields));
+        $this->triples->forget(self::RESOURCE, '');
+
+        return $this->triples->getOne(self::RESOURCE, $property, '', '');
+    }
+
+    /**
+     * Sets that triple to $value, or takes it away when $value is null.
+     *
+     * Only ever called under the lock, so no other process writes it in between.
+     *
+     * @throws \RuntimeException when the TripleStore does not write it
+     * @throws \Exception        when the wiki is hibernated (TripleStore)
+     */
+    private function write(string $property, ?string $value): void
+    {
+        $current = $this->read($property);
+        if ($value === $current) {
+            return;
+        }
+        $written = match (true) {
+            $value === null => $this->triples->delete(self::RESOURCE, $property, null, '', ''),
+            $current === null => $this->triples->create(self::RESOURCE, $property, $value, '', '') === 0,
+            default => $this->triples->update(self::RESOURCE, $property, $current, $value, '', '') === 0,
+        };
+        if (!$written) {
+            throw new \RuntimeException('The schedule checkpoint could not be written to the triples');
+        }
     }
 
     private static function stateTime(\DateTimeImmutable $time): string

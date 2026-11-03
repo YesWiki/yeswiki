@@ -14,7 +14,7 @@ use YesWiki\Kernel\Service\DbService;
  *
  * One table holds three queues, told apart by `queue_name`: `default`, the messages waiting to be
  * handled, `failed`, those an admin has to look at (QueueTransport), and SCHEDULE_QUEUE, the
- * scheduled tasks and the Scheduler's checkpoint, one row each (QueueTaskRows). Every query on it
+ * scheduled tasks, one row each (QueueTaskRows). Every query on it
  * says which queue it means: a task's row is never a message.
  */
 class QueueSchema
@@ -23,18 +23,18 @@ class QueueSchema
     public const TABLE = 'queue';
 
     /**
-     * The queue no consumer reads: a row per scheduled task, keyed by its `task_id`, and the checkpoint's (QueueCheckpoint::ROW).
+     * The queue no consumer reads: a row per scheduled task, keyed by its `task_id` (QueueTaskRows).
      *
-     * Two underscores, like the checkpoint's own id: no task id starts with them, and no queue of messages is named so.
+     * Two underscores: no queue of messages is named so.
      */
     public const SCHEDULE_QUEUE = '__schedule';
 
     /**
      * Unprefixed. The table holds the running instance's state, not the wiki's content: what this
-     * instance still has to do and where its schedule stands. A backup leaves it out and a restore
-     * leaves it alone (DumpRewriter::contentTables()); a restored copy taking the backup's rows
-     * would hold the backup's own message as running, replay what was pending then, and send the
-     * scheduled tasks back to an older checkpoint.
+     * instance still has to do and what its scheduled tasks did. A backup leaves it out and a
+     * restore leaves it alone (DumpRewriter::contentTables()); a restored copy taking the backup's
+     * rows would hold the backup's own message as running and replay what was pending then. The
+     * Scheduler's checkpoint, in the triples, is kept the same way (DumpRewriter::leftOutRows()).
      */
     public const TABLES = [self::TABLE];
 

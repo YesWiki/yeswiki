@@ -197,7 +197,8 @@ class DbService
      *
      * The queue's table is not the wiki's content (DumpRewriter::contentTables()): it stays as it
      * is, whatever the dump says of it, and is created if the database has none yet. Nor are the
-     * Journal's queue rows (DumpRewriter::leftOutRows()): the live ones are kept, with their ids.
+     * Journal's queue rows and the Scheduler's checkpoint triples (DumpRewriter::leftOutRows()):
+     * the live ones are kept, with their ids.
      *
      * @throws \Exception when the dump cannot be read, or fails before the swap
      */
@@ -615,7 +616,7 @@ class DbService
     }
 
     /**
-     * Drop this wiki's tables and replay $sqlContent into them; the queue's table is left as it is (DumpRewriter::contentTables()), and the Journal's live queue rows are kept with their ids (DumpRewriter::leftOutRows()).
+     * Drop this wiki's tables and replay $sqlContent into them; the queue's table is left as it is (DumpRewriter::contentTables()), and the Journal's live queue rows and the Scheduler's checkpoint are kept with their ids (DumpRewriter::leftOutRows()).
      *
      * @throws \Exception
      */

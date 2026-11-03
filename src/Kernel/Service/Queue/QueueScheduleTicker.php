@@ -12,6 +12,7 @@ use Symfony\Component\Scheduler\Trigger\TriggerInterface;
 use YesWiki\Kernel\Queue\ProvidesSchedule;
 use YesWiki\Kernel\Queue\ScheduledTask;
 use YesWiki\Kernel\Queue\ScheduleGenerator;
+use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Kernel\Service\Journal;
 
 /**
@@ -29,12 +30,18 @@ use YesWiki\Kernel\Service\Journal;
  * progress lives in QueueCheckpoint, in the database, so a request, an API call and the next
  * request share one schedule.
  *
+ * While the wiki is hibernated (hibernate, archiving, updating) the schedule stands still: tick()
+ * dispatches nothing and leaves the checkpoint as it was, whoever calls it, and asks again a
+ * minute later. The checkpoint could not move anyway, since the TripleStore refuses every write
+ * then. Once the wiki wakes up, each task that missed runs while it slept runs once, like any
+ * task that missed runs, and the schedule goes on from there.
+ *
  * tick() has to be cheap, since a blocking consumer calls it about once a second. When the next
  * due time is known and still ahead, it returns without touching anything: that time is held in
- * memory, and read again from the checkpoint row at most once a minute, so that a long-lived
+ * memory, and read again from the checkpoint at most once a minute, so that a long-lived
  * consumer still notices a due time another process wrote (one whose schedule has a task this
  * one had not seen, a restored database). A ticker that has just been built -- each request,
- * outside worker mode -- reads that one column. Only when something is due does it ask the
+ * outside worker mode -- reads that one triple. Only when something is due does it ask the
  * providers for the schedule, take the lock and build the generator; that is also when a
  * schedule that changed (a source set to sync) is picked up, since it is built anew each time.
  *
@@ -50,7 +57,7 @@ class QueueScheduleTicker
     /** The schedule's name, as the MessageContext of each run carries it. */
     private const NAME = 'yeswiki';
 
-    /** How long a due time held in memory is trusted before the checkpoint row is read again. */
+    /** How long a due time held in memory is trusted before the checkpoint is read again. */
     private const RECHECK_SECONDS = 60;
 
     /** When the schedule is next due, as last read or written; null when it has to be read. */
@@ -69,6 +76,7 @@ class QueueScheduleTicker
         private readonly QueueCheckpoint $checkpoint,
         private readonly QueueRecorder $recorder,
         private readonly ClockInterface $clock,
+        private readonly HibernationService $hibernation,
         private readonly ?Journal $journal = null,
     ) {
     }
@@ -90,6 +98,12 @@ class QueueScheduleTicker
         try {
             $this->learn($this->checkpoint->dueAt(), $now);
             if ($this->dueAt !== null && $now < $this->dueAt) {
+                return 0;
+            }
+            if ($this->hibernation->isWikiHibernatedNow()) {
+                // Asked again in a minute rather than at every idle second: reading the status parses the config file.
+                $this->learn($now->modify('+' . self::RECHECK_SECONDS . ' seconds'), $now);
+
                 return 0;
             }
 

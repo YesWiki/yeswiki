@@ -61,6 +61,7 @@ class QueueRequestTrigger implements RequestScopedState
         private readonly QueueConsumer $consumer,
         private readonly QueueBudgetFactory $budgets,
         private readonly QueueStatistics $statistics,
+        private readonly QueueCheckpoint $checkpoint,
         private readonly QueueFallback $fallback,
         private readonly ConsoleService $console,
         private readonly HibernationService $hibernation,
@@ -210,7 +211,7 @@ class QueueRequestTrigger implements RequestScopedState
         if ($available !== null && $available <= $now) {
             return true;
         }
-        $due = $this->statistics->scheduleDueAt();
+        $due = $this->checkpoint->dueAt();
 
         return $due === null || $due <= $now;
     }

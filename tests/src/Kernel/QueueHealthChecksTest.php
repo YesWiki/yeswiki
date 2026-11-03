@@ -753,7 +753,7 @@ class QueueHealthChecksTest extends YesWikiTestCase
             $this->schema,
             $hibernation,
             $this->ticker(),
-            new QueueFallback($settings, $this->statistics, $hibernation, new RuntimeLock(), $this->clock),
+            new QueueFallback($settings, $this->statistics, new QueueCheckpoint(QueueTestKit::tripleStore($this->db, $hibernation), new RuntimeLock()), $hibernation, new RuntimeLock(), $this->clock),
             new QueueBudgetFactory(new NativeClock()),
             $this->clock
         ))->healthChecks();
@@ -791,7 +791,8 @@ class QueueHealthChecksTest extends YesWikiTestCase
             $this->createStub(QueueBus::class),
             $this->createStub(QueueCheckpoint::class),
             new QueueRecorder($this->db, new QueueTaskRows($this->db, $this->schema, $this->clock), $this->journal, $this->clock),
-            $this->clock
+            $this->clock,
+            $this->createStub(HibernationService::class),
         );
     }
 

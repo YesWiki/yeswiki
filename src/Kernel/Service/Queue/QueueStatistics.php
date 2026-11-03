@@ -501,13 +501,13 @@ class QueueStatistics
     }
 
     /**
-     * One scheduled task, as tasks() lists it; null when the schedule never ran it (the checkpoint is no task).
+     * One scheduled task, as tasks() lists it; null when the schedule never ran it.
      *
      * @return array{taskId: string, label: string, everySeconds: int, lastDispatchedAt: ?\DateTimeImmutable, nextDueAt: ?\DateTimeImmutable, lastFinishedAt: ?\DateTimeImmutable, lastStatus: ?string, lastError: ?string, consecutiveFailures: int}|null
      */
     public function scheduledTask(string $taskId): ?array
     {
-        $task = $taskId === QueueCheckpoint::ROW ? null : $this->tasks->read($taskId);
+        $task = $this->tasks->read($taskId);
 
         return $task === null ? null : self::task($taskId, $task);
     }
@@ -532,20 +532,6 @@ class QueueStatistics
             'lastError' => isset($task['last_error']) ? (string)$task['last_error'] : null,
             'consecutiveFailures' => (int)($task['consecutive_failures'] ?? 0),
         ];
-    }
-
-    /**
-     * When the schedule is next due, which is when a pass has something to do even with no message waiting.
-     *
-     * Null when the schedule never ticked on this wiki: the first tick is due at once, to start it.
-     * (A schedule where no trigger will ever fire again would also leave it null; the kernel's own
-     * daily prune keeps that from happening.)
-     */
-    public function scheduleDueAt(): ?\DateTimeImmutable
-    {
-        $due = $this->tasks->read(QueueCheckpoint::ROW)['next_due_at'] ?? null;
-
-        return $due === null ? null : self::time((string)$due);
     }
 
     /**

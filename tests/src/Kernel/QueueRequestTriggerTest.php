@@ -16,14 +16,12 @@ use YesWiki\Kernel\Service\ConfigurationService;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Kernel\Service\Journal;
-use YesWiki\Kernel\Service\Queue\QueueCheckpoint;
 use YesWiki\Kernel\Service\Queue\QueueConsumer;
 use YesWiki\Kernel\Service\Queue\QueueFallback;
 use YesWiki\Kernel\Service\Queue\QueueRequestTrigger;
 use YesWiki\Kernel\Service\Queue\QueueSchema;
 use YesWiki\Kernel\Service\Queue\QueueSettings;
 use YesWiki\Kernel\Service\Queue\QueueStatistics;
-use YesWiki\Kernel\Service\Queue\QueueTaskRows;
 use YesWiki\Kernel\Service\Queue\QueueTransport;
 use YesWiki\Test\Core\YesWikiTestCase;
 
@@ -499,7 +497,7 @@ class QueueRequestTriggerTest extends YesWikiTestCase
     /** The schedule ticked now, and is next due in $seconds. */
     private function scheduleDueIn(int $seconds): void
     {
-        $checkpoint = new QueueCheckpoint(new QueueTaskRows($this->db, $this->schema, $this->clock), $this->locks);
+        $checkpoint = $this->kit->checkpoint;
         $now = $this->clock->now();
         $this->assertTrue($checkpoint->acquire($now));
         $checkpoint->release($now, $now->modify("+{$seconds} seconds"));

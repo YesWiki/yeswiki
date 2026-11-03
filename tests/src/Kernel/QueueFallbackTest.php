@@ -4,7 +4,6 @@ namespace YesWiki\Test\Kernel;
 
 use PHPUnit\Framework\Attributes\CoversClass;
 use Symfony\Component\Clock\MockClock;
-use Symfony\Component\Clock\NativeClock;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 use Symfony\Component\Messenger\Envelope;
 use YesWiki\Files\Service\RuntimeLock;
@@ -319,10 +318,17 @@ class QueueFallbackTest extends YesWikiTestCase
         return new QueueFallback(
             new QueueSettings(new ParameterBag([]), static fn (): array => []),
             $this->statistics,
+            $this->checkpoint(),
             new HibernationService(new ParameterBag([])),
             $this->locks,
             $this->clock,
         );
+    }
+
+    /** The Scheduler's checkpoint over this test's triples. */
+    private function checkpoint(): QueueCheckpoint
+    {
+        return new QueueCheckpoint(QueueTestKit::tripleStore($this->db), $this->locks);
     }
 
     /** A message available since $seconds ago. */
@@ -336,7 +342,7 @@ class QueueFallbackTest extends YesWikiTestCase
     /** The schedule ticked long ago, and has been due for $seconds. */
     private function scheduleDueSince(int $seconds): void
     {
-        $checkpoint = new QueueCheckpoint(new QueueTaskRows($this->db, $this->schema, new NativeClock()), $this->locks);
+        $checkpoint = $this->checkpoint();
         $now = $this->clock->now();
         $this->assertTrue($checkpoint->acquire($now->modify('-1 day')));
         $checkpoint->release($now->modify('-1 day'), $now->modify("-{$seconds} seconds"));

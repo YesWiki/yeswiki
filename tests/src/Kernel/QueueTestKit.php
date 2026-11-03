@@ -41,6 +41,7 @@ use YesWiki\Kernel\Service\Queue\QueueStatistics;
 use YesWiki\Kernel\Service\Queue\QueueTaskRows;
 use YesWiki\Kernel\Service\Queue\QueueTransport;
 use YesWiki\Kernel\Service\ThrowableFormatter;
+use YesWiki\Kernel\Service\TripleStore;
 
 require_once 'tests/src/Kernel/QueueTestMessage.php';
 
@@ -66,6 +67,8 @@ final class QueueTestKit
     public readonly QueueBudgetFactory $budgets;
     public readonly QueueBudgetContext $budgetContext;
     private readonly HibernationService $hibernation;
+    /** The Scheduler's checkpoint, in this kit's triples. */
+    public readonly QueueCheckpoint $checkpoint;
     /** The end of the request the bus pins a message to (RunsUnbudgeted): the last one requestTrigger() built. */
     private ?QueueRequestTrigger $trigger = null;
     /** @var resource|null */
@@ -173,6 +176,7 @@ final class QueueTestKit
         $this->budgets = $budgets ??= new QueueBudgetFactory(new NativeClock());
         $this->budgetContext = new QueueBudgetContext();
         $this->hibernation = $hibernation ??= new HibernationService(new ParameterBag(['wiki_status' => 'running']));
+        $this->checkpoint = new QueueCheckpoint(self::tripleStore($db, $hibernation), $locks);
         $this->consumer = new QueueConsumer(
             $this->transport,
             $bus,
@@ -183,7 +187,7 @@ final class QueueTestKit
             $hibernation,
             $locks,
             $journal,
-            $this->ticker = new QueueScheduleTicker([$schedule], $bus, new QueueCheckpoint($tasks, $locks), $recorder, $clock, $journal),
+            $this->ticker = new QueueScheduleTicker([$schedule], $bus, $this->checkpoint, $recorder, $clock, $hibernation, $journal),
             $clock,
             $watch,
             $events ?? static fn (): EventDispatcher => new EventDispatcher(new ServiceLocator([]), new ThrowableFormatter()),
@@ -329,7 +333,7 @@ final class QueueTestKit
     /** Whether the end of requests consumes for the consumer those settings choose, over this kit's tables and locks. */
     public function fallback(QueueSettings $settings, ?HibernationService $hibernation = null): QueueFallback
     {
-        return new QueueFallback($settings, $this->statistics, $hibernation ?? $this->hibernation, $this->locks, $this->clock);
+        return new QueueFallback($settings, $this->statistics, $this->checkpoint, $hibernation ?? $this->hibernation, $this->locks, $this->clock);
     }
 
     /**
@@ -345,6 +349,7 @@ final class QueueTestKit
             $this->consumer,
             $this->budgets,
             $this->statistics,
+            $this->checkpoint,
             $this->fallback($settings, $hibernation),
             $console ?? new QueueTestConsole(),
             $hibernation ?? $this->hibernation,
@@ -380,6 +385,24 @@ final class QueueTestKit
     public static function noRequest(): \Closure
     {
         return static fn (): QueueRequestTrigger => throw new \LogicException('No request runs here.');
+    }
+
+    /**
+     * A triples table on that connection, made if it is not there, and the TripleStore over it: where the Scheduler's checkpoint lives (QueueCheckpoint).
+     *
+     * @param HibernationService|null $hibernation the wiki's status as the TripleStore reads it before each write (default: awake)
+     */
+    public static function tripleStore(DbService $db, ?HibernationService $hibernation = null): TripleStore
+    {
+        $id = match ($db->getDriver()) {
+            'mysql' => 'INT AUTO_INCREMENT PRIMARY KEY',
+            'pgsql' => 'SERIAL PRIMARY KEY',
+            default => 'INTEGER PRIMARY KEY AUTOINCREMENT',
+        };
+        $db->query('CREATE TABLE IF NOT EXISTS ' . $db->quoteIdentifier(trim($db->prefixTable('triples')))
+            . " (id {$id}, resource VARCHAR(191) NOT NULL, property VARCHAR(191) NOT NULL, value TEXT NOT NULL)");
+
+        return new TripleStore($db, $hibernation ?? new HibernationService(new ParameterBag(['wiki_status' => 'running'])));
     }
 
     /** RuntimeLock with every lock under $dir, so the tests never touch the dev wiki's cache/. */

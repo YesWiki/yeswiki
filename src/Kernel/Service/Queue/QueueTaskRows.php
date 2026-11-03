@@ -7,20 +7,19 @@ use YesWiki\Kernel\Database\SqlParameters;
 use YesWiki\Kernel\Service\DbService;
 
 /**
- * The scheduled tasks' state and the Scheduler's checkpoint: rows of the queue's table, in the queue no consumer reads (messenger / scheduler).
+ * The scheduled tasks' state: rows of the queue's table, in the queue no consumer reads (messenger / scheduler).
  *
  * Each row is found by its `task_id`, unique, which every message leaves NULL. Its fields are
- * JSON in `body`: for a task `label`, `every_seconds`, `last_dispatched_at`, `next_due_at`,
- * `last_finished_at`, `last_status`, `last_error` and `consecutive_failures` (QueueRecorder);
- * for the checkpoint, the row QueueCheckpoint::ROW, `next_due_at` and `state`. A field that is
- * null is left out. The other columns only make the row a valid one of the table: its type is
+ * JSON in `body`: `label`, `every_seconds`, `last_dispatched_at`, `next_due_at`,
+ * `last_finished_at`, `last_status`, `last_error` and `consecutive_failures` (QueueRecorder).
+ * A field that is null is left out. The Scheduler's own checkpoint is no row: it is kept in
+ * triples (QueueCheckpoint). The other columns only make the row a valid one of the table: its type is
  * its task id, its headers `{}`, and it was created and made available when it was first written.
  *
  * Every query here is on QueueSchema::SCHEDULE_QUEUE, and every query elsewhere on a queue of
  * messages: the transport never takes, counts nor prunes a task's row.
  *
- * Times in the fields are written by the callers, in UTC, `Y-m-d H:i:s`; the checkpoint's state
- * keeps its own, to the microsecond.
+ * Times in the fields are written by the callers, in UTC, `Y-m-d H:i:s`.
  */
 class QueueTaskRows
 {
@@ -52,7 +51,7 @@ class QueueTaskRows
     }
 
     /**
-     * The tasks' fields by task id, in its order; the checkpoint is no task.
+     * The tasks' fields by task id, in its order.
      *
      * @return array<string, array<string, mixed>>
      */
@@ -60,8 +59,8 @@ class QueueTaskRows
     {
         $tasks = [];
         foreach ($this->db->loadAll(
-            "SELECT task_id, body FROM {$this->schema->table()} WHERE queue_name = ? AND task_id <> ? ORDER BY task_id",
-            [QueueSchema::SCHEDULE_QUEUE, QueueCheckpoint::ROW]
+            "SELECT task_id, body FROM {$this->schema->table()} WHERE queue_name = ? ORDER BY task_id",
+            [QueueSchema::SCHEDULE_QUEUE]
         ) as $row) {
             $tasks[(string)$row['task_id']] = self::decode($row['body']);
         }
@@ -70,7 +69,7 @@ class QueueTaskRows
     }
 
     /**
-     * The ids of the tasks that have a row, in order; the checkpoint is no task.
+     * The ids of the tasks that have a row, in order.
      *
      * @return list<string>
      */
@@ -79,8 +78,8 @@ class QueueTaskRows
         return array_map(
             static fn (array $row): string => (string)$row['task_id'],
             $this->db->loadAll(
-                "SELECT task_id FROM {$this->schema->table()} WHERE queue_name = ? AND task_id <> ? ORDER BY task_id",
-                [QueueSchema::SCHEDULE_QUEUE, QueueCheckpoint::ROW]
+                "SELECT task_id FROM {$this->schema->table()} WHERE queue_name = ? ORDER BY task_id",
+                [QueueSchema::SCHEDULE_QUEUE]
             )
         );
     }
@@ -125,16 +124,20 @@ class QueueTaskRows
     }
 
     /**
-     * Forgets the tasks that are no longer declared; the checkpoint always stays.
+     * Forgets the tasks that are no longer declared.
      *
      * @param list<string> $declared the ids of the tasks the schedule has now
      */
     public function forgetExcept(array $declared): void
     {
-        $keep = [QueueCheckpoint::ROW, ...$declared];
+        if ($declared === []) {
+            $this->db->query("DELETE FROM {$this->schema->table()} WHERE queue_name = ?", [QueueSchema::SCHEDULE_QUEUE]);
+
+            return;
+        }
         $this->db->query(
-            "DELETE FROM {$this->schema->table()} WHERE queue_name = ? AND task_id NOT IN (" . SqlParameters::placeholders(count($keep)) . ')',
-            [QueueSchema::SCHEDULE_QUEUE, ...$keep]
+            "DELETE FROM {$this->schema->table()} WHERE queue_name = ? AND task_id NOT IN (" . SqlParameters::placeholders(count($declared)) . ')',
+            [QueueSchema::SCHEDULE_QUEUE, ...$declared]
         );
     }
 

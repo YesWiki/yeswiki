@@ -4,7 +4,7 @@ namespace YesWiki\Kernel\Database;
 
 use YesWiki\Kernel\Service\DbService;
 
-/** The whole wiki's database as a replayable SQL dump: its content, without the queue's table (DumpRewriter::contentTables()) nor the Journal's queue rows (DumpRewriter::leftOutRows()). */
+/** The whole wiki's database as a replayable SQL dump: its content, without the queue's table (DumpRewriter::contentTables()) nor the Journal's queue rows and the Scheduler's checkpoint (DumpRewriter::leftOutRows()). */
 class SqlDumper
 {
     /** An INSERT has to reach the server in a single packet, so it stays well under any max_allowed_packet. */

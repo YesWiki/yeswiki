@@ -4,6 +4,7 @@ namespace YesWiki\Kernel\Database;
 
 use YesWiki\Kernel\Entity\JournalChannel;
 use YesWiki\Kernel\Service\JournalSchema;
+use YesWiki\Kernel\Service\Queue\QueueCheckpoint;
 use YesWiki\Kernel\Service\Queue\QueueSchema;
 
 class DumpRewriter
@@ -193,13 +194,18 @@ class DumpRewriter
      * The Journal's `queue` channel is the consumer's runs and passes, among them the open row of
      * the pass a restore runs in: a restored copy taking the backup's would show passes that never
      * close, and the running consumer would write its pass by an id the restore has taken away.
+     * The Scheduler's checkpoint is triples (QueueCheckpoint): a restored copy taking the backup's
+     * would send the schedule back to where it stood then, and run again what ran since.
      * Each table listed has an `id` identity column, by which those rows are put back.
      *
      * @return array<string, string> the condition that picks those rows, by prefixed table
      */
     public static function leftOutRows(string $prefix): array
     {
-        return [$prefix . JournalSchema::TABLE => "channel = '" . JournalChannel::Queue->value . "'"];
+        return [
+            $prefix . JournalSchema::TABLE => "channel = '" . JournalChannel::Queue->value . "'",
+            $prefix . 'triples' => "resource = '" . QueueCheckpoint::RESOURCE . "'",
+        ];
     }
 
     /**

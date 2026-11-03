@@ -5,7 +5,6 @@ namespace YesWiki\Test\Kernel;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Component\Clock\MockClock;
-use Symfony\Component\Clock\NativeClock;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 use Symfony\Component\DependencyInjection\ServiceLocator;
 use Symfony\Component\Scheduler\Generator\MessageContext;
@@ -16,7 +15,9 @@ use YesWiki\Kernel\Message\PruneQueueHandler;
 use YesWiki\Kernel\Queue\ProvidesSchedule;
 use YesWiki\Kernel\Queue\QueueConsumerMode;
 use YesWiki\Kernel\Scheduler\KernelSchedule;
+use YesWiki\Kernel\Service\ConfigurationService;
 use YesWiki\Kernel\Service\DbService;
+use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Kernel\Service\Journal;
 use YesWiki\Kernel\Service\JournalSchema;
 use YesWiki\Kernel\Service\Queue\QueueBus;
@@ -29,6 +30,7 @@ use YesWiki\Kernel\Service\Queue\QueueStatistics;
 use YesWiki\Kernel\Service\Queue\QueueTaskRows;
 use YesWiki\Kernel\Service\Queue\QueueTransport;
 use YesWiki\Kernel\Service\ThrowableFormatter;
+use YesWiki\Kernel\Service\TripleStore;
 use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';
@@ -53,6 +55,12 @@ class QueueScheduleTickerTest extends YesWikiTestCase
     private MockClock $clock;
     private QueueTransport $transport;
     private QueueStatistics $statistics;
+    private TripleStore $triples;
+
+    /** The wiki's status as the TripleStore reads it; the ticker reads the config file (setWikiStatus() writes both). */
+    private ParameterBag $params;
+    private string $configFile;
+    private string|false $previousConfigFile;
 
     /** @var array<string, string> task id => interval: what the test provider declares, rebuilt at each call as a module's provider would */
     private array $tasks = ['test-task' => '30 minutes'];
@@ -62,6 +70,7 @@ class QueueScheduleTickerTest extends YesWikiTestCase
 
     protected function setUp(): void
     {
+        $this->params = new ParameterBag(['wiki_status' => 'running']);
         $this->file = tempnam(sys_get_temp_dir(), 'yw-queue-') . '.db';
         $this->build(new DbService(new ParameterBag([
             'db_driver' => 'sqlite',
@@ -72,11 +81,18 @@ class QueueScheduleTickerTest extends YesWikiTestCase
         ])));
         $this->schema->create();
         (new JournalSchema($this->db))->create();
+        $this->configFile = tempnam(sys_get_temp_dir(), 'yw-config-') . '.php';
+        $this->previousConfigFile = getenv('YESWIKI_CONFIG_FILE');
+        putenv('YESWIKI_CONFIG_FILE=' . $this->configFile);
+        $this->setWikiStatus('running');
     }
 
     protected function tearDown(): void
     {
-        unset($this->statistics, $this->transport, $this->schema, $this->db);
+        unset($this->statistics, $this->triples, $this->transport, $this->schema, $this->db);
+        putenv($this->previousConfigFile === false ? 'YESWIKI_CONFIG_FILE' : 'YESWIKI_CONFIG_FILE=' . $this->previousConfigFile);
+        @unlink($this->configFile);
+        @unlink(substr($this->configFile, 0, -4));
         foreach (['', '-wal', '-shm'] as $suffix) {
             @unlink($this->file . $suffix);
         }
@@ -92,7 +108,7 @@ class QueueScheduleTickerTest extends YesWikiTestCase
         $later = $this->ticker();
         $this->assertSame(0, $later->tick());
         $this->assertSame(0, $this->statistics->pendingCount());
-        $this->assertSame('2026-10-23 12:30:00', $this->statistics->scheduleDueAt()?->format('Y-m-d H:i:s'));
+        $this->assertSame('2026-10-23 12:30:00', $this->dueAt()?->format('Y-m-d H:i:s'));
     }
 
     public function testADueTaskIsDispatchedOnceAndRecorded(): void
@@ -112,7 +128,7 @@ class QueueScheduleTickerTest extends YesWikiTestCase
         $this->assertSame(1800, $task['everySeconds']);
         $this->assertSame('2026-10-23 12:31:00', $task['lastDispatchedAt']?->format('Y-m-d H:i:s'));
         $this->assertSame('2026-10-23 13:00:00', $task['nextDueAt']?->format('Y-m-d H:i:s'), 'the next run, about 30 min away');
-        $this->assertSame('2026-10-23 13:00:00', $this->statistics->scheduleDueAt()?->format('Y-m-d H:i:s'));
+        $this->assertSame('2026-10-23 13:00:00', $this->dueAt()?->format('Y-m-d H:i:s'));
     }
 
     public function testAMissedTaskIsCaughtUpOnlyOnce(): void
@@ -123,7 +139,7 @@ class QueueScheduleTickerTest extends YesWikiTestCase
 
         $this->assertSame(1, $ticker->tick(), 'ten missed runs, one catch-up');
         $this->assertSame(1, $this->statistics->pendingCount());
-        $this->assertSame('2026-10-23 17:30:00', $this->statistics->scheduleDueAt()?->format('Y-m-d H:i:s'));
+        $this->assertSame('2026-10-23 17:30:00', $this->dueAt()?->format('Y-m-d H:i:s'));
     }
 
     public function testTheCheckpointSurvivesANewTicker(): void
@@ -140,7 +156,7 @@ class QueueScheduleTickerTest extends YesWikiTestCase
         $rebuilt = $this->ticker();
         $this->assertSame(0, $rebuilt->tick());
         $this->assertSame(1, $this->statistics->pendingCount());
-        $this->assertSame('2026-10-23 13:00:00', $this->statistics->scheduleDueAt()?->format('Y-m-d H:i:s'));
+        $this->assertSame('2026-10-23 13:00:00', $this->dueAt()?->format('Y-m-d H:i:s'));
     }
 
     public function testTheDeclaredTasksAreWhatTheProvidersDeclareNow(): void
@@ -169,7 +185,7 @@ class QueueScheduleTickerTest extends YesWikiTestCase
         $this->ticker()->tick();
 
         $this->assertSame(['test-task'], array_column($this->statistics->tasks(), 'taskId'));
-        $this->assertNotNull($this->statistics->scheduleDueAt(), 'the Scheduler\'s own row is not a task and stays');
+        $this->assertNotNull($this->dueAt(), 'the Scheduler\'s own row is not a task and stays');
     }
 
     /**
@@ -256,7 +272,7 @@ class QueueScheduleTickerTest extends YesWikiTestCase
         [$task] = $this->statistics->tasks();
         $this->assertSame('2026-10-23 12:00:00', $task['lastDispatchedAt']?->format('Y-m-d H:i:s'));
         $this->assertSame(1800, $task['everySeconds']);
-        $this->assertNull($this->statistics->scheduleDueAt(), 'running a task by hand is not a tick');
+        $this->assertNull($this->dueAt(), 'running a task by hand is not a tick');
     }
 
     public function testConsecutiveFailuresAreCounted(): void
@@ -326,15 +342,66 @@ class QueueScheduleTickerTest extends YesWikiTestCase
         try {
             $this->clock->sleep(3600);
             $this->assertSame(0, $this->ticker()->tick(), 'while another process ticks, this one does not');
-            $this->assertNull($this->statistics->scheduleDueAt());
+            $this->assertNull($this->dueAt());
         } finally {
             $lock->release($held);
         }
 
         $this->assertSame(0, $this->ticker()->tick());
-        $this->assertSame('2026-10-23 13:30:00', $this->statistics->scheduleDueAt()?->format('Y-m-d H:i:s'));
+        $this->assertSame('2026-10-23 13:30:00', $this->dueAt()?->format('Y-m-d H:i:s'));
         $this->clock->sleep(1801);
         $this->assertSame(1, $this->ticker()->tick(), 'a tick lets go of the lock when it is over');
+    }
+
+    public function testTheCheckpointIsKeptInTheTriples(): void
+    {
+        $this->ticker()->tick();
+        $this->clock->sleep(31 * 60);
+        $this->ticker()->tick();
+
+        $this->assertSame([
+            QueueCheckpoint::STATE => '{"time":"2026-10-23 12:30:00.000000","index":0,"from":"2026-10-23 12:00:00.000000"}',
+            QueueCheckpoint::NEXT_DUE_AT => '2026-10-23 13:00:00',
+        ], $this->checkpointTriples());
+        $this->assertSame(
+            ['test-task'],
+            array_column($this->db->loadAll("SELECT task_id FROM {$this->schema->table()} WHERE queue_name = ?", [QueueSchema::SCHEDULE_QUEUE]), 'task_id'),
+            "the queue's table holds the tasks, and nothing else of the schedule"
+        );
+    }
+
+    /** A hibernated wiki writes nothing (TripleStore refuses it): the ticker neither dispatches nor moves the checkpoint, whoever calls it. */
+    public function testAHibernatedWikiTicksNothing(): void
+    {
+        $ticker = $this->ticker();
+        $ticker->tick();
+        $before = $this->checkpointTriples();
+        $this->setWikiStatus('hibernate');
+        $this->clock->sleep(31 * 60);
+
+        $this->assertSame(0, $ticker->tick());
+        $this->assertSame(0, $this->ticker()->tick(), 'nor does a ticker built while the wiki sleeps');
+
+        $this->assertSame(0, $this->statistics->pendingCount());
+        $this->assertSame($before, $this->checkpointTriples());
+        $this->assertSame([], $this->statistics->tasks(), 'no task was run');
+    }
+
+    /** Once the wiki wakes up, what it missed while asleep runs once per task, not once per missed run. */
+    public function testAWokenWikiRunsEachMissedTaskOnce(): void
+    {
+        $ticker = $this->ticker();
+        $ticker->tick();
+        $this->setWikiStatus('hibernate');
+        $this->clock->sleep(5 * 3600);
+        $this->assertSame(0, $ticker->tick());
+
+        $this->setWikiStatus('running');
+        $this->clock->sleep(60);
+
+        $this->assertSame(1, $ticker->tick(), 'ten runs missed while asleep, one catch-up');
+        $this->assertSame(1, $this->statistics->pendingCount());
+        $this->assertSame('2026-10-23 17:30:00', $this->dueAt()?->format('Y-m-d H:i:s'));
     }
 
     public function testThePruneTaskForgetsWhatIsPastItsRetention(): void
@@ -392,12 +459,14 @@ class QueueScheduleTickerTest extends YesWikiTestCase
         $this->build(new DbService(new ParameterBag($params)));
         $this->schema->drop();
         $this->schema->create();
+        $triples = $this->db->quoteIdentifier(trim($this->db->prefixTable('triples')));
+        $this->db->query("DELETE FROM {$triples}");
 
         try {
             $this->assertSame(0, $this->ticker()->tick());
             $this->clock->sleep(31 * 60);
             $this->assertSame(1, $this->ticker()->tick());
-            $this->assertSame('2026-10-23 13:00:00', $this->statistics->scheduleDueAt()?->format('Y-m-d H:i:s'));
+            $this->assertSame('2026-10-23 13:00:00', $this->dueAt()?->format('Y-m-d H:i:s'));
 
             $this->checkpointDueAt(null);
             $this->assertSame(0, $this->ticker()->tick(), 'the state is read back as it was written');
@@ -413,6 +482,7 @@ class QueueScheduleTickerTest extends YesWikiTestCase
             $this->assertSame(['test-task', 0, 'handled', null], $this->summary('test-task'));
         } finally {
             $this->schema->drop();
+            $this->db->query("DROP TABLE IF EXISTS {$triples}");
         }
     }
 
@@ -430,6 +500,7 @@ class QueueScheduleTickerTest extends YesWikiTestCase
         $this->clock = new MockClock(self::START, 'UTC');
         $this->transport = new QueueTransport($db, $this->schema, clock: $this->clock);
         $this->statistics = new QueueStatistics($db, $this->schema, new JournalSchema($db), $this->transport, new QueueTaskRows($db, $this->schema, $this->clock), $this->clock);
+        $this->triples = QueueTestKit::tripleStore($db, new HibernationService($this->params));
     }
 
     /**
@@ -464,9 +535,10 @@ class QueueScheduleTickerTest extends YesWikiTestCase
         return new QueueScheduleTicker(
             [$provider, ...$more],
             new QueueBus($this->transport, new QueueHandlerLocator([], new ServiceLocator([])), $journal, QueueTestKit::noRequest()),
-            new QueueCheckpoint(new QueueTaskRows($this->db, $this->schema, new NativeClock()), new RuntimeLock()),
+            $this->checkpoint(),
             new QueueRecorder($this->db, new QueueTaskRows($this->db, $this->schema, $this->clock), new JournalSchema($this->db), $this->clock),
             $this->clock,
+            new HibernationService($this->params),
             $journal,
         );
     }
@@ -487,12 +559,52 @@ class QueueScheduleTickerTest extends YesWikiTestCase
         return $this->clock->now()->modify("-{$days} days")->format('Y-m-d H:i:s');
     }
 
+    /** A checkpoint as each process gets one, over the triples. */
+    private function checkpoint(): QueueCheckpoint
+    {
+        return new QueueCheckpoint($this->triples, new RuntimeLock());
+    }
+
+    /** When the schedule is next due, as a fresh process reads it. */
+    private function dueAt(): ?\DateTimeImmutable
+    {
+        return $this->checkpoint()->dueAt();
+    }
+
     /** Writes the checkpoint's due time as another process would, or takes it away. */
     private function checkpointDueAt(?string $dueAt): void
     {
-        (new QueueTaskRows($this->db, $this->schema, $this->clock))->update(
-            QueueCheckpoint::ROW,
-            static fn (array $fields): array => ['next_due_at' => $dueAt] + $fields
-        );
+        $table = $this->db->quoteIdentifier(trim($this->db->prefixTable('triples')));
+        $this->db->query("DELETE FROM {$table} WHERE resource = ? AND property = ?", [QueueCheckpoint::RESOURCE, QueueCheckpoint::NEXT_DUE_AT]);
+        if ($dueAt !== null) {
+            $this->db->query("INSERT INTO {$table} (resource, property, value) VALUES (?, ?, ?)", [QueueCheckpoint::RESOURCE, QueueCheckpoint::NEXT_DUE_AT, $dueAt]);
+        }
+    }
+
+    /**
+     * The checkpoint's triples, by property.
+     *
+     * @return array<string, string>
+     */
+    private function checkpointTriples(): array
+    {
+        $table = $this->db->quoteIdentifier(trim($this->db->prefixTable('triples')));
+        $triples = [];
+        foreach ($this->db->loadAll("SELECT property, value FROM {$table} WHERE resource = ? ORDER BY property", [QueueCheckpoint::RESOURCE]) as $row) {
+            $triples[(string)$row['property']] = (string)$row['value'];
+        }
+
+        return $triples;
+    }
+
+    /** Sets the wiki's status as an archive or the hibernation setting does: in the config file, which the ticker reads, and in the parameters, which the TripleStore reads. */
+    private function setWikiStatus(string $status): void
+    {
+        $configuration = new ConfigurationService();
+        $config = $configuration->getConfiguration($this->configFile);
+        $config->load();
+        $config['wiki_status'] = $status;
+        $this->assertTrue($configuration->write($config));
+        $this->params->set('wiki_status', $status);
     }
 }

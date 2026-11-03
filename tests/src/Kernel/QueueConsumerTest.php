@@ -88,6 +88,7 @@ class QueueConsumerTest extends YesWikiTestCase
     private ClockInterface $clock;
     private QueueTransport $transport;
     private QueueStatistics $statistics;
+    private QueueCheckpoint $checkpoint;
     private QueueConsumer $consumer;
 
     protected function setUp(): void
@@ -743,16 +744,16 @@ class QueueConsumerTest extends YesWikiTestCase
     {
         $this->build($this->db, new MockClock(self::START, 'UTC'), static fn (): array => [RecurringMessage::every('30 minutes', new QueueTestTask())]);
         $this->consumer->drain(QueueConsumerMode::Api, $this->seconds(30), false);
-        $this->assertNull($this->statistics->scheduleDueAt(), 'not ticked');
+        $this->assertNull($this->checkpoint->dueAt(), 'not ticked');
 
         $this->consumer->drain(QueueConsumerMode::Api, $this->seconds(30));
-        $this->assertNotNull($this->statistics->scheduleDueAt(), 'ticked: the schedule has started');
+        $this->assertNotNull($this->checkpoint->dueAt(), 'ticked: the schedule has started');
     }
 
     public function testATickThatFailsDoesNotStopThePass(): void
     {
-        // A checkpoint whose due time cannot be read: no tick gets anywhere.
-        (new QueueTaskRows($this->db, $this->schema, new NativeClock()))->update(QueueCheckpoint::ROW, static fn (array $fields): array => ['next_due_at' => 'not a time']);
+        // A checkpoint that cannot be read, its triples gone: no tick gets anywhere.
+        $this->db->query('DROP TABLE ' . $this->db->quoteIdentifier(trim($this->db->prefixTable('triples'))));
         $this->send(2);
 
         $report = $this->consumer->drain(QueueConsumerMode::Api, $this->seconds(30));
@@ -1023,7 +1024,7 @@ class QueueConsumerTest extends YesWikiTestCase
             new HibernationService($this->params),
             new RuntimeLock(),
             $journal,
-            new QueueScheduleTicker([$provider], $bus, new QueueCheckpoint(new QueueTaskRows($db, $schema, new NativeClock()), new RuntimeLock()), $recorder, $clock, $journal),
+            new QueueScheduleTicker([$provider], $bus, $this->checkpoint = new QueueCheckpoint(QueueTestKit::tripleStore($db, new HibernationService($this->params)), new RuntimeLock()), $recorder, $clock, new HibernationService($this->params), $journal),
             $clock,
             $watch,
             fn (): EventDispatcher => $this->events,

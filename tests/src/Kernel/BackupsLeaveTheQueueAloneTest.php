@@ -18,6 +18,7 @@ use YesWiki\Kernel\Service\ConsoleService;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\Journal;
 use YesWiki\Kernel\Service\JournalSchema;
+use YesWiki\Kernel\Service\Queue\QueueCheckpoint;
 use YesWiki\Kernel\Service\Queue\QueueRecorder;
 use YesWiki\Kernel\Service\Queue\QueueSchema;
 use YesWiki\Kernel\Service\Queue\QueueTaskRows;
@@ -27,6 +28,7 @@ use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';
 require_once 'tests/src/Kernel/QueueTestMessage.php';
+require_once 'tests/src/Kernel/QueueTestKit.php';
 require_once 'tests/src/Kernel/QueueTransportTest.php';
 
 /**
@@ -196,7 +198,7 @@ class BackupsLeaveTheQueueAloneTest extends YesWikiTestCase
         $dump = $this->exportDb($params);
 
         $this->assertTrue(DbCommand::isDump($dump));
-        $this->assertSame([self::PREFIX . 'pages', self::PREFIX . 'triples', $this->journalSchema->table()], DumpRewriter::tables($dump));
+        $this->assertSame([self::PREFIX . 'pages', $this->journalSchema->table(), self::PREFIX . 'triples'], DumpRewriter::tables($dump));
         $this->assertStringContainsString('backup.audited', $dump);
         $this->assertStringNotContainsString('RunBeforeTheBackup', $dump);
     }
@@ -206,8 +208,9 @@ class BackupsLeaveTheQueueAloneTest extends YesWikiTestCase
     {
         $this->assertSame(
             [
-                '/tmp/dump.sql' => ['--host=db', '--user=u', '--result-file=/tmp/dump.sql', 'wiki', 'yw_pages', 'yw_triples'],
+                '/tmp/dump.sql' => ['--host=db', '--user=u', '--result-file=/tmp/dump.sql', 'wiki', 'yw_pages'],
                 '/tmp/dump.sql.1' => ['--host=db', '--user=u', "--where=NOT (channel = 'queue')", '--result-file=/tmp/dump.sql.1', 'wiki', 'yw_journal'],
+                '/tmp/dump.sql.2' => ['--host=db', '--user=u', "--where=NOT (resource = 'queue:checkpoint')", '--result-file=/tmp/dump.sql.2', 'wiki', 'yw_triples'],
             ],
             DbCommand::dumpInvocations(['--host=db', '--user=u'], 'wiki', ['yw_pages', 'yw_journal', 'yw_triples'], 'yw_', '/tmp/dump.sql')
         );
@@ -216,6 +219,48 @@ class BackupsLeaveTheQueueAloneTest extends YesWikiTestCase
             DbCommand::dumpInvocations(['--host=db'], 'wiki', ['yw_pages'], 'yw_', '/tmp/dump.sql'),
             'a wiki without a Journal is dumped in one call'
         );
+    }
+
+    /** @param array<string, string|bool> $params */
+    #[DataProvider('servers')]
+    public function testADumpCarriesNoCheckpoint(array $params): void
+    {
+        $this->open($params);
+        $this->triple('Home', 'content');
+        $this->triple(QueueCheckpoint::RESOURCE, 'at backup time');
+
+        $dump = $this->db->dumper()->dump()['sql'];
+
+        $this->assertStringContainsString('content', $dump);
+        $this->assertStringNotContainsString(QueueCheckpoint::RESOURCE, $dump);
+    }
+
+    /** The same through core:exportdb: the triples are dumped by a call of their own, less the checkpoint. */
+    public function testTheDumpToolCarriesNoCheckpoint(): void
+    {
+        $params = $this->openMysql();
+        $this->triple('Home', 'content');
+        $this->triple(QueueCheckpoint::RESOURCE, 'at backup time');
+
+        $dump = $this->exportDb($params);
+
+        $this->assertTrue(DbCommand::isDump($dump));
+        $this->assertStringContainsString('content', $dump);
+        $this->assertStringNotContainsString(QueueCheckpoint::RESOURCE, $dump);
+    }
+
+    /** @param array<string, string|bool> $params */
+    #[DataProvider('servers')]
+    public function testARestoreKeepsTheLiveCheckpoint(array $params): void
+    {
+        $this->assertARestoreKeepsTheLiveCheckpoint($params, 'restoreFromDump');
+    }
+
+    /** @param array<string, string|bool> $params */
+    #[DataProvider('servers')]
+    public function testAStagedRestoreKeepsTheLiveCheckpoint(array $params): void
+    {
+        $this->assertARestoreKeepsTheLiveCheckpoint($params, 'restoreStagedFromDump');
     }
 
     /** @param array<string, string|bool> $params */
@@ -302,6 +347,38 @@ class BackupsLeaveTheQueueAloneTest extends YesWikiTestCase
     }
 
     /**
+     * A backup that holds the checkpoint as it was then (an older one, or another wiki's) is restored: the content is the backup's, the checkpoint the live one.
+     *
+     * @param array<string, string|bool> $params
+     */
+    private function assertARestoreKeepsTheLiveCheckpoint(array $params, string $restore): void
+    {
+        $this->open($params);
+        $this->triple('Home', 'before');
+        $triples = $this->db->quoteIdentifier(self::PREFIX . 'triples');
+        $dump = $this->db->dumper()->dump()['sql']
+            . "\nINSERT INTO {$triples} (resource, property, value) VALUES ('" . QueueCheckpoint::RESOURCE . "', '" . QueueCheckpoint::NEXT_DUE_AT . "', '2026-10-01 00:00:00');\n";
+        $this->db->query("DELETE FROM {$triples}");
+        $this->triple('Home', 'after');
+        $this->triple(QueueCheckpoint::RESOURCE, '2026-10-23 13:00:00');
+
+        $this->db->{$restore}($dump);
+
+        $this->assertSame(
+            [['Home', 'before'], [QueueCheckpoint::RESOURCE, '2026-10-23 13:00:00']],
+            array_map(static fn (array $row): array => [(string)$row['resource'], (string)$row['value']], $this->db->loadAll("SELECT resource, value FROM {$triples} ORDER BY resource")),
+            "the content is the backup's, the checkpoint the live one"
+        );
+    }
+
+    /** Writes a triple of that resource into the probe wiki: its next due time when it is the checkpoint's. */
+    private function triple(string $resource, string $value): void
+    {
+        $property = $resource === QueueCheckpoint::RESOURCE ? QueueCheckpoint::NEXT_DUE_AT : 'https://yeswiki.net/vocabulary/probe';
+        $this->db->query('INSERT INTO ' . $this->db->quoteIdentifier(self::PREFIX . 'triples') . ' (resource, property, value) VALUES (?, ?, ?)', [$resource, $property, $value]);
+    }
+
+    /**
      * Audit A, run R and open pass P in the Journal; a backup to which a foreign queue row X is added; run R2 after it; then the restore.
      *
      * @param array<string, string|bool>                $params
@@ -363,10 +440,9 @@ class BackupsLeaveTheQueueAloneTest extends YesWikiTestCase
         $bag = new ParameterBag(['table_prefix' => self::PREFIX] + $params);
         $this->db = $observed ? $this->observedDbService($bag) : new DbService($bag);
         $this->dropProbeTables();
-        foreach (['pages', 'triples'] as $table) {
-            $this->db->query('CREATE TABLE ' . $this->db->quoteIdentifier(self::PREFIX . $table) . ' (tag VARCHAR(190), body TEXT)');
-        }
+        $this->db->query('CREATE TABLE ' . $this->db->quoteIdentifier(self::PREFIX . 'pages') . ' (tag VARCHAR(190), body TEXT)');
         $this->db->query('INSERT INTO ' . $this->db->quoteIdentifier(self::PREFIX . 'pages') . " (tag, body) VALUES ('Home', 'before')");
+        QueueTestKit::tripleStore($this->db);
         $this->schema = new QueueSchema($this->db);
         $this->schema->create();
         $this->transport = new QueueTransport($this->db, $this->schema, clock: new MockClock('2026-10-23 12:00:00', 'UTC'));
