@@ -27,11 +27,7 @@ class HealthService implements RequestScopedState
      */
     private array $findings = [];
 
-    /**
-     * What each check said this request, by id: the badge's list and a screen's share one run of it.
-     *
-     * @var array<string, ?string>
-     */
+    /** @var array<string, ?string> */
     private array $failures = [];
 
     /**
@@ -51,10 +47,8 @@ class HealthService implements RequestScopedState
     /**
      * What is failing, broken first.
      *
-     * @param Severity|null $only  run only the checks of this severity -- which is how the badge
-     *                             asks about Broken without paying for the rest
-     * @param string|null   $route run only the checks that send the admin to that screen -- which is
-     *                             how a screen lists its own alerts without paying for the others
+     * @param Severity|null $only run only the checks of this severity -- which is how the badge
+     *                            asks about Broken without paying for the rest
      *
      * @return list<Finding>
      */

@@ -12,34 +12,13 @@ use YesWiki\Kernel\Queue\ScheduledTask;
 use YesWiki\Kernel\Service\Journal;
 
 /**
- * The automatic import of data sources: one recurring task per source flagged `syncOnMaintenance`.
- *
- * A source runs every `syncIntervalInMin` minutes, and never more often than every half hour,
- * which is how often the housekeeping pass that this replaces came round: a source with no
- * interval of its own went at each pass.
- *
- * The interval is counted from the start of the schedule, which the Scheduler's checkpoint keeps,
- * as for every periodic task; nothing else is read. A sync run by hand (the button,
- * `importer:sync`, `{{sync}}`, the API) moves nothing, and one that failed comes back an interval
- * later. A source just set to sync itself does not wait a whole interval for its first sync:
- * the importers page queues one when it saves it (sourceSaved()).
- *
- * The queue builds the schedule anew at every due tick, from what is configured then, and
- * forgets the tasks that are no longer declared: a source deleted or unflagged leaves the jobs
- * page.
+ * The automatic import of data sources: one recurring task per source flagged `syncOnMaintenance`,
+ * every `syncIntervalInMin` minutes but never more often than every half hour.
  */
 class ImportSchedule implements ProvidesSchedule
 {
-    /** Seconds under which a source is not run again, whatever its interval says. */
     private const MIN_INTERVAL = 1800;
 
-    /**
-     * How long the first sync of a source just set to sync itself waits.
-     *
-     * The pass at the end of the request that saved it, and a worker that has not yet noticed the
-     * configuration changed (QueueConsumer asks every 5 seconds), still read the source as it
-     * was; a request's pass lasts 20 seconds at most.
-     */
     private const FIRST_SYNC_DELAY_SECONDS = 60;
 
     public function __construct(
@@ -49,9 +28,7 @@ class ImportSchedule implements ProvidesSchedule
     ) {
     }
 
-    /**
-     * A source whose task id would not fit the queue is left out and journaled, never thrown: one source must not take the other sources out of the schedule with it, as a provider that throws would (the queue then leaves all of this provider's tasks out of the tick, and keeps their rows as they were).
-     */
+    /** A source whose task id would not fit the queue is left out and journaled, never thrown. */
     public function recurringMessages(): array
     {
         $dataSources = $this->params->has('dataSources') ? $this->params->get('dataSources') : [];
@@ -80,10 +57,10 @@ class ImportSchedule implements ProvidesSchedule
     }
 
     /**
-     * The importers page saved a source: if it has just been set to sync itself (or was created so), its first sync is queued now instead of an interval from now.
+     * Queues the first sync of a source just set (or created) to sync itself, rather than waiting an interval.
      *
-     * @param array<string, mixed>|null $before the source as it was configured, null for a new one
-     * @param array<string, mixed>      $after  the source as it is saved
+     * @param array<string, mixed>|null $before
+     * @param array<string, mixed>      $after
      */
     public function sourceSaved(string $id, ?array $before, array $after): void
     {

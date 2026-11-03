@@ -16,32 +16,13 @@ use YesWiki\Kernel\Service\Queue\QueueConsumer;
 use YesWiki\Kernel\Service\Queue\QueueSettings;
 
 /**
- * `./yeswicli messenger:consume`: a consumer that blocks, waiting for messages, until a limit or a signal stops it. What keeps it alive in mode `worker` is the Go binary when it serves the wiki (`--supervised`), a process manager otherwise (systemd, supervisord, a container).
- *
- * `--supervised` is what the Go binary starts for each wiki it serves. The binary does not read
- * the wiki's configuration, so this is where the effective mode is found out: when it is not
- * `worker` (the default `request`, or another mode the wiki picked) the command exits at once with
- * EXIT_NOT_MY_MODE, which the supervisor takes as "do not restart me" instead of a crash. A
- * supervised consumer the configuration change stopped exits with EXIT_CONFIGURATION_CHANGED,
- * which the supervisor takes as "restart me now", however short its life was; unsupervised, it
- * exits with 0, which systemd's Restart=always restarts without calling it a failure.
- *
- * `--drain` does not block: it consumes what is already in the queue, then exits -- no scheduled
- * task, no wait, no time budget, but the memory ceiling of every pass. It is a pass by hand, recorded as the button of /admin/jobs
- * records one (`request`, origin `manual`): run under a worker, it neither counts as that worker
- * starting nor makes a dead one look alive. A pass already running makes it exit with 0, saying
- * `locked`.
- *
- * `--message` is the process a request hands a message it pinned to (a backup or a restore an
- * admin started), when its response cannot leave before the script ends (QueueRequestTrigger):
- * that message only, run in the wiki's mode as the request would have run it.
+ * `./yeswicli messenger:consume`: a blocking consumer kept alive by the Go binary (`--supervised`) or a process manager;
+ * `--drain` empties the queue once and exits, `--message` runs the one message a request handed it.
  */
 class QueueConsumeCommand extends Command
 {
-    /** `EX_CONFIG`: the supervisor reads it as "this wiki is not mine to consume", not as a failure to retry. */
     public const EXIT_NOT_MY_MODE = 78;
 
-    /** `EX_TEMPFAIL`: the supervisor reads it as "the configuration changed, start me again on the new one", the ordinary end of a life rather than a loop to back off from. */
     public const EXIT_CONFIGURATION_CHANGED = 75;
 
     private ContainerInterface $services;
@@ -76,7 +57,6 @@ class QueueConsumeCommand extends Command
 
         $supervised = (bool)$input->getOption('supervised');
 
-        // Before anything is read from the queue, and before the options are even looked at: a process that is not this wiki's consumer must not touch a message.
         if ($supervised) {
             $effective = $this->services->get(QueueSettings::class)->mode();
             if ($effective !== QueueConsumerMode::Worker) {
@@ -115,7 +95,6 @@ class QueueConsumeCommand extends Command
             }
         }
 
-        // No visitor waits for a command: the response has "already left".
         $report = $this->services->get(QueueConsumer::class)->drain(
             QueueConsumerMode::Request,
             $this->services->get(QueueBudgetFactory::class)->forHand(),
@@ -142,7 +121,6 @@ class QueueConsumeCommand extends Command
             return Command::INVALID;
         }
 
-        // In the mode the request would have run it in: the message is recorded the same, whichever ran it.
         $report = $this->services->get(QueueConsumer::class)->handleById((int)$message, $this->services->get(QueueSettings::class)->mode());
         $output->writeln($report->summary());
 
@@ -154,7 +132,7 @@ class QueueConsumeCommand extends Command
         return is_string($value) && preg_match('/^[1-9]\d*$/', $value) ? (int)$value : null;
     }
 
-    /** Bytes for "128M"-style sizes, PHP_INT_MAX for -1 (no limit); null for anything else, so a typo does not silently mean "unlimited". */
+    /** Bytes for "128M"-style sizes, PHP_INT_MAX for -1 (no limit); null for anything else. */
     private function bytes(string $size): ?int
     {
         if (trim($size) === '-1') {

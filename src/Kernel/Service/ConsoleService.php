@@ -52,7 +52,7 @@ class ConsoleService
     }
 
     /**
-     * Starts a console command that outlives the web request starting it (startDetached()), as a request does for a backup it cannot run before its response leaves (`messenger:consume --message`); null when no PHP binary is found.
+     * Starts a console command that outlives the web request starting it (startDetached()); null when no PHP binary is found.
      *
      * @param list<string> $args
      */
@@ -67,15 +67,7 @@ class ConsoleService
     }
 
     /**
-     * Starts a process nobody waits for, in the wiki's folder.
-     *
-     * - Its output goes nowhere rather than to pipes: when the request ends, its Process object is
-     *   dropped and closes them, and the process died of SIGPIPE at the first line it printed.
-     * - The wiki's folder rather than getcwd(): the console finds its wiki in the folder it runs in,
-     *   and mod_php may run the end of a request elsewhere.
-     * - The console's ownership check is lifted (CliOwnership::ANY_USER): the web server's user
-     *   starts it, the one that writes the wiki's files from every request anyway.
-     * - No timeout: nobody is left to enforce it.
+     * Starts a process nobody waits for, in the wiki's folder, output discarded, without timeout.
      *
      * @param list<string> $args
      */

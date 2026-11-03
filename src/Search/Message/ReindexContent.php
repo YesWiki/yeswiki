@@ -6,10 +6,7 @@ use YesWiki\Kernel\Queue\Deduplicated;
 
 /**
  * "Bring this Content's search index rows up to date": what a save, a rename, a form change or a migration sends, one per Content.
- *
- * It carries the tag only: the handler reads the Content as it is when it runs, so saving a
- * Content twice before then still costs one reindex, and the second save is absorbed into the
- * first while it waits (Deduplicated).
+ * It carries the tag only, so a second save while it waits is absorbed into the first.
  */
 final class ReindexContent implements Deduplicated
 {

@@ -260,14 +260,11 @@ class ImporterManager
     }
 
     /**
-     * Imports one source for whoever asked by hand (the console, the importers page, the sync route), and keeps the run in its log (SyncScheduler).
-     *
-     * A failure is answered rather than thrown, as it always was by hand; the queue's handler calls
-     * syncSource() and lets it throw.
+     * Imports one source by hand, answering a failure rather than throwing it, and keeps the run in its log.
      *
      * @param array<string, mixed> $sourceOptions
      *
-     * @return array{result: string, log: string} what to tell the admin, and the same after what the importer printed
+     * @return array{result: string, log: string}
      */
     public function syncByHand(string $source, array $sourceOptions): array
     {
@@ -284,13 +281,11 @@ class ImporterManager
     }
 
     /**
-     * Imports one source and answers what to tell its admin.
-     *
-     * A failure throws, with the message that used to be the answer (the cause and the time spent) and the cause as its previous exception: it is the queue's to see, and whoever syncs by hand catches it to show the message.
+     * Imports one source and answers what to tell its admin; throws when the importer is unknown or the import failed.
      *
      * @param array<string, mixed> $sourceOptions
      *
-     * @throws \RuntimeException when the importer is unknown or the import failed
+     * @throws \RuntimeException
      */
     public function syncSource(string $source, array $sourceOptions): string
     {

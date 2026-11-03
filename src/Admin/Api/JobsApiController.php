@@ -23,22 +23,15 @@ use YesWiki\Kernel\Service\Queue\QueueTransport;
 
 /**
  * The background jobs page's tabs and actions, as HTML for htmx to swap (messenger / scheduler, spec §11.3).
- *
- * Every action answers with the top of the page as it is after it -- mode, alerts, tiles, and a
- * line saying what was done -- and the `ywJobsChanged` event, on which the open tab reloads itself.
- * The POSTs carry the session's token like every other admin POST; RequestGuard already refuses one
- * that does not, and each action checks it again so that nothing here relies on being reached
- * through the front controller.
+ * Every action answers with the top of the page as it is after it, and `ywJobsChanged`, on which the open tab reloads.
+ * Each POST checks the session's token itself, though RequestGuard already does.
  */
 class JobsApiController extends YesWikiController
 {
-    /** @var list<string> */
     private const ADMIN_ACL = ['@admins'];
 
-    /** The longest an admin waits for "consume now", whatever the mode would allow. */
     private const CONSUME_SECONDS = 20.0;
 
-    /** The event the open tab listens to. */
     private const CHANGED = 'ywJobsChanged';
 
     #[Route('/api/admin/jobs/tab/{tab}', methods: ['GET'], requirements: ['tab' => 'types|failed|tasks|history|consumers'], options: ['acl' => self::ADMIN_ACL])]
@@ -49,12 +42,7 @@ class JobsApiController extends YesWikiController
         return $this->html($this->render('@core/admin/jobs-tabs.twig', ['tab' => $this->getService(JobsOverview::class)->tab($tab)]));
     }
 
-    /**
-     * A budgeted pass from the admin's request, whatever the mode (spec §11.3): the mode's own budget when it has one, the end of a request's otherwise.
-     *
-     * Recorded as a pass after the response, which it is as far as visitors go: an admin who asked
-     * for it and waits is not the cost `queue-visitor-cost` measures.
-     */
+    /** A budgeted pass from the admin's request, whatever the mode (spec §11.3): the mode's budget, or else a request end's. */
     #[Route('/api/admin/jobs/consume', methods: ['POST'], options: ['acl' => self::ADMIN_ACL])]
     public function consume(): Response
     {
@@ -89,11 +77,7 @@ class JobsApiController extends YesWikiController
         return $this->requeued($this->failedMessages($id));
     }
 
-    /**
-     * Acknowledges a failed message (or every one the failures alert counts, for `all`): out of `failed` and of the alert, kept in the history as `ignored`.
-     *
-     * It mutes nothing: the next failure is a new message in `failed`, and the alert comes back.
-     */
+    /** Acknowledges a failed message (or all the failures alert counts, for `all`): out of `failed`, kept in history as `ignored`. */
     #[Route('/api/admin/jobs/failed/{id}/ignore', methods: ['POST'], requirements: ['id' => '\d+|all'], options: ['acl' => self::ADMIN_ACL])]
     public function ignore(string $id): Response
     {
@@ -104,11 +88,7 @@ class JobsApiController extends YesWikiController
         return $this->ignored($this->failedMessages($id));
     }
 
-    /**
-     * Gives every failed message of one type its retries again, tolerated types included: the offer of a module's alert.
-     *
-     * The type is its short class name; killed messages stay with their own alert.
-     */
+    /** Gives every failed message of one type (short class name, killed ones apart) its retries again: a module alert's offer. */
     #[Route('/api/admin/jobs/failed/of/{type}/retry', methods: ['POST'], requirements: ['type' => '\w+'], options: ['acl' => self::ADMIN_ACL])]
     public function retryType(string $type): Response
     {
@@ -119,11 +99,7 @@ class JobsApiController extends YesWikiController
         return $this->requeued($this->getService(JobsOverview::class)->failedOfType($type));
     }
 
-    /**
-     * Acknowledges every failed message of one type, tolerated types included, as `ignore` does for one: kept in the history as `ignored`.
-     *
-     * It mutes nothing: the next failure is a new message in `failed`, and the alert comes back.
-     */
+    /** Acknowledges every failed message of one type, tolerated types included, as `ignore` does for one. */
     #[Route('/api/admin/jobs/failed/of/{type}/ignore', methods: ['POST'], requirements: ['type' => '\w+'], options: ['acl' => self::ADMIN_ACL])]
     public function ignoreType(string $type): Response
     {
@@ -168,12 +144,7 @@ class JobsApiController extends YesWikiController
         return $this->status(_t('ADMIN_JOBS_TASK_QUEUED', ['task' => $label]));
     }
 
-    /**
-     * A new secret for the `api` mode's route, written into the wiki's configuration and shown this once.
-     *
-     * The settings of this request were read before it was written: the page says so until it is
-     * reloaded, so the answer is only the secret, not the top of the page.
-     */
+    /** A new secret for the `api` mode's route, written into the wiki's configuration and shown this once. */
     #[Route('/api/admin/jobs/secret', methods: ['POST'], options: ['acl' => self::ADMIN_ACL])]
     public function secret(): Response
     {
@@ -211,7 +182,6 @@ class JobsApiController extends YesWikiController
             return $this->status(_t('ADMIN_JOBS_NOT_REPLAYABLE'), 'warning');
         }
         $transport = $this->getService(QueueTransport::class);
-        // One retried meanwhile is not in `failed` any more: nothing was retried.
         $requeued = count(array_filter($replayable, static fn (array $message): bool => $transport->requeue($message['id'])));
 
         return $requeued === 0
@@ -227,7 +197,6 @@ class JobsApiController extends YesWikiController
     private function ignored(array $messages): Response
     {
         foreach ($messages as $message) {
-            // One retried meanwhile is not in `failed` any more: nothing was ignored.
             if ($this->getService(QueueTransport::class)->deleteFailed($message['id'])) {
                 $this->getService(QueueRecorder::class)->messageIgnored($message['id'], $message['type'], $message['error']);
             }

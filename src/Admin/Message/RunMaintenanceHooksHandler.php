@@ -10,18 +10,9 @@ use YesWiki\Kernel\Service\Journal;
 use YesWiki\Kernel\Service\Queue\QueueStatistics;
 
 /**
- * Dispatches `maintenance.before` and then `maintenance.after` to the extensions, one listener at a time.
- *
- * Every listener is called on its own, so that one that throws neither stops the ones after it
- * nor goes unseen: each failure is written to the Journal under `maintenance.hook_failed`, with
- * the listener's name as its target, and once all have run the handler throws a summary of them
- * for the task to show as failed on the jobs page. (EventDispatcher::yesWikiDispatch(), which
- * these events went through, caught the first throw around the whole dispatch and told nobody.)
- *
- * The listeners get the context they always had: `startedAt` (a Unix time), `interval` (seconds
- * between two runs), `previousRun` (a Unix time, or null if the task never finished a run), and,
- * for `maintenance.after` only, `duration` (the seconds the `before` listeners took -- the
- * housekeeping steps run as tasks of their own and are no longer between the two).
+ * Dispatches `maintenance.before` then `maintenance.after`, one listener at a time: each failure is journaled (`maintenance.hook_failed`)
+ * and the handler then throws a summary. Context: `startedAt` (Unix time), `interval` (seconds), `previousRun` (Unix time or null),
+ * and for `maintenance.after` only `duration` (seconds the `before` listeners took).
  */
 #[AsMessageHandler]
 final class RunMaintenanceHooksHandler

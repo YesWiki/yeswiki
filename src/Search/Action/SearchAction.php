@@ -56,7 +56,6 @@ class SearchAction extends YesWikiAction implements RegisteredAction, ProvidesCo
         $schema = $this->getService(SearchIndexSchema::class);
         $templateEngine = $this->getService(TemplateEngine::class);
 
-        // An empty index is the queue's to fill, never this page's: it says where things stand.
         $indexer = $this->getService(SearchIndexer::class);
         if (!$schema->exists() || $indexer->indexedCount() === 0) {
             return $templateEngine->render('@core/search-building.twig', [

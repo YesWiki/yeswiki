@@ -22,7 +22,6 @@ class MailSubscriptions implements EventSubscriberInterface
 
     private const REPORTS = ['day' => 'CONTACT_DAILY_REPORT', 'week' => 'CONTACT_WEEKLY_REPORT', 'month' => 'CONTACT_MONTHLY_REPORT'];
 
-    /** How many failed recipients an error message names before it counts the rest. */
     private const FAILURES_LISTED = 10;
 
     private static bool $sending = false;
@@ -119,14 +118,9 @@ class MailSubscriptions implements EventSubscriberInterface
     }
 
     /**
-     * Sends the pages subscribed at a period; returns the number of mails.
+     * Sends the pages subscribed at a period to everybody, then throws listing who was not reached; returns the number of mails.
      *
-     * Everybody is tried, whoever fails before them: a recipient whose mail is refused, a page that
-     * cannot be rendered, take nobody else's digest with them. Once all have been tried, a
-     * RuntimeException lists who was not reached, so that the caller does not take the period for
-     * served (the mails that went out have gone out, and sending again would double them).
-     *
-     * @throws \RuntimeException when at least one recipient could not be reached
+     * @throws \RuntimeException
      */
     public function send(string $period, string $subject = ''): int
     {
@@ -137,7 +131,7 @@ class MailSubscriptions implements EventSubscriberInterface
         $header = '[' . str_replace(['http://', 'https://', '/?'], '', (string)$config['base_url']) . ']';
         $sent = 0;
         $attempted = 0;
-        /** @var array<string, list<string>> $failed the user names not reached, by page */
+        /** @var array<string, list<string>> $failed */
         $failed = [];
         /** @var array<string, true> $reasons */
         $reasons = [];
@@ -191,8 +185,8 @@ class MailSubscriptions implements EventSubscriberInterface
     }
 
     /**
-     * @param array<string, list<string>> $failed  the user names not reached, by page
-     * @param list<string>                $reasons what the mailer or the renderer said
+     * @param array<string, list<string>> $failed
+     * @param list<string>                $reasons
      */
     private function failureMessage(string $period, int $attempted, array $failed, array $reasons): string
     {

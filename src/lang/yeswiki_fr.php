@@ -3210,7 +3210,6 @@ qui rend 1 si bf_type == premiere_cle sinon 0).',
     'HEALTH_FEDERATION_DELIVERY_FAILED_SAYS' => 'Ces serveurs n\'ont pas répondu après plusieurs tentatives : le plus souvent, l\'instance a disparu. Les autres abonnés ont bien reçu leur copie. Relancez ces envois, ou ignorez-les si les serveurs n\'existent plus.',
     'HEALTH_FEDERATION_DELIVERY_FAILED_SOME' => '%{count} envoi(s) vers d\'autres serveurs abandonné(s) après plusieurs tentatives',
 
-    // Traitements en arrière-plan (file de messages) : ce que l'admin lit quand l'un d'eux ne se fait plus.
     'QUEUE_HEALTH_TABLES' => 'Table de la file de traitements',
     'QUEUE_HEALTH_TABLES_SAYS' => 'Sans elle, rien de ce qui se fait en arrière-plan (indexation de la recherche, envois, synchronisations, sauvegardes, ménage) n\'est enregistré : ça ne se fait plus. La mise à jour du wiki la crée.',
     'QUEUE_HEALTH_TABLES_MISSING' => 'la table de la file n\'existe pas sur ce wiki',

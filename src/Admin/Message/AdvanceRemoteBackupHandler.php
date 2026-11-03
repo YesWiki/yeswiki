@@ -8,15 +8,7 @@ use YesWiki\Admin\Service\RemoteBackupService;
 
 /**
  * Takes one step of the fetch from another wiki, and queues the next while there is one.
- *
- * The next step is queued at once, or after RemoteWikiArchive::SETTLE_SECONDS while the remote
- * wiki writes its archive (see RemoteBackupService::queueNextStep()). On a wiki whose queue runs
- * at the end of page views, each step thus waits for a page view: the admin's own page polling
- * the fetch is one, any visitor's is another.
- *
- * A step that fails has already given the fetch up (RemoteBackupService::advance() tidies the
- * remote wiki and keeps the reason for the polling browser): the message fails for good with
- * that reason, for the jobs page. A message left from a fetch given up finds nothing to do.
+ * A step that fails has already given the fetch up: the message fails for good with its reason, for the jobs page.
  */
 #[AsMessageHandler]
 final class AdvanceRemoteBackupHandler

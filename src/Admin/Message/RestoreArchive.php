@@ -7,15 +7,11 @@ use YesWiki\Kernel\Queue\RetryPolicy;
 use YesWiki\Kernel\Queue\RunsUnbudgeted;
 
 /**
- * "Put this backup back": a restore an admin asked for from the backups page (spec 9.5).
- *
- * Like CreateArchive, it reports under the uid the browser follows. It is never retried: a
- * restore that stopped half way has already replaced part of the wiki, and running it again
- * on its own, later, is the last thing an admin would want.
+ * "Put this backup back": a restore an admin asked for from the backups page (spec 9.5), reporting under the uid the browser follows.
+ * Never retried: a restore that stopped half way has already replaced part of the wiki.
  */
 final class RestoreArchive implements RetryPolicy, RunsUnbudgeted, NotReplayableByHand
 {
-    /** @param string $filename the archive's name in the backups folder */
     public function __construct(
         public readonly string $uid,
         public readonly string $filename,

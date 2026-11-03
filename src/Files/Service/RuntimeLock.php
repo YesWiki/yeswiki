@@ -29,7 +29,7 @@ class RuntimeLock
         return (int)@filemtime($this->absolute($path));
     }
 
-    /** Stamp a lock with a time of the caller's clock, creating it and its directory if needed: lastTaken() then answers that time. */
+    /** Stamp a lock with a time of the caller's clock, creating it and its directory if needed. */
     public function stampAt(string $path, int $time): void
     {
         $full = $this->absolute($path);
@@ -79,10 +79,7 @@ class RuntimeLock
         return \is_resource($handle) && flock($handle, LOCK_EX | LOCK_NB);
     }
 
-    /**
-     * Whether some handle holds the lock now. Asked without creating the file: one that is not
-     * there is held by nobody.
-     */
+    /** Whether some handle holds the lock now, asked without creating the file. */
     public function isHeld(string $path): bool
     {
         $handle = @fopen($this->absolute($path), 'r');

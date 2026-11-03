@@ -8,7 +8,6 @@ class JournalSchema
     /** Unprefixed. */
     public const TABLE = 'journal';
 
-    /** The queue channel's index, without the table prefix that PostgreSQL and SQLite put in front of every index name. */
     private const QUEUE_INDEX = 'idx_channel_target_at';
 
     private DbService $dbService;
@@ -31,7 +30,7 @@ class JournalSchema
         }
     }
 
-    /** Adds the `(channel, target, at)` index to a Journal created before the queue channel existed; a Journal created since has it already. */
+    /** Adds the `(channel, target, at)` index to a Journal created before the queue channel existed. */
     public function ensureQueueIndex(): void
     {
         $table = $this->table();

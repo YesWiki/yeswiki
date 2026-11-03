@@ -11,11 +11,7 @@ interface SqlDialect
     /** SQL expression for the current timestamp. */
     public function now(): string;
 
-    /**
-     * SQL expression for the database's current time in UTC, whatever the session's time zone, as text `Y-m-d H:i:s` followed by a fraction of a second.
-     *
-     * What DbService::utcNow() reads: the one clock every process sharing the database agrees on.
-     */
+    /** SQL expression for the database's current time in UTC, whatever the session's time zone, as `Y-m-d H:i:s.u` text. */
     public function utcNow(): string;
 
     /** SQL expression for "current timestamp minus $days days". */
@@ -96,9 +92,7 @@ interface SqlDialect
     public function supportsDump(): bool;
 
     /**
-     * The statements that make an identity column count on from the largest value in the table, once rows were inserted into it with their ids; none where the driver does so by itself.
-     *
-     * @param string $table already prefixed, unquoted
+     * Statements making an identity column count on from the table's largest id after explicit-id inserts; none if automatic.
      *
      * @return list<string>
      */
@@ -114,9 +108,7 @@ interface SqlDialect
     public function journalDdl(string $table): array;
 
     /**
-     * The statements that add to an existing Journal the index the queue channel reads by, `(channel, target, at)`, which journalDdl() creates with the table. Run them only where `idx_channel_target_at` is missing: MySQL has no IF NOT EXISTS for an index.
-     *
-     * @param string $table already prefixed, unquoted
+     * Statements adding the `(channel, target, at)` index to an existing Journal; run only where `idx_channel_target_at` is missing.
      *
      * @return list<string>
      */
@@ -130,13 +122,7 @@ interface SqlDialect
     public function journalDropDdl(string $table): array;
 
     /**
-     * Every statement needed to create the queue's table and its indexes, in execution order (messenger / scheduler).
-     *
-     * The table holds the messages and, in a queue of their own, the scheduled tasks and the
-     * Scheduler's checkpoint: `task_id` names a task's row, unique, and is NULL on every message.
-     * `killed_in` is the mode a failed message's consumer was killed in, NULL for every other row.
-     *
-     * @param string $table already prefixed, unquoted
+     * Every statement needed to create the queue's table and its indexes, in execution order.
      *
      * @return list<string>
      */
@@ -154,18 +140,14 @@ interface SqlDialect
     public function upsert(string $table, array $values, array $conflictColumns, array $assignments): string;
 
     /**
-     * What ends an INSERT so that, when the unique key over $conflictColumns is already taken, it writes nothing and does not fail: its row count is then 0.
+     * What ends an INSERT so that a taken unique key over $conflictColumns writes nothing (row count 0) instead of failing.
      *
-     * Not failing matters inside a transaction: a refused INSERT aborts all of a PostgreSQL one.
-     *
-     * @param list<string> $conflictColumns the columns the unique key is over
+     * @param list<string> $conflictColumns
      */
     public function onConflictDoNothing(array $conflictColumns): string;
 
     /**
-     * Every statement needed to create the search index table, its ordinary indexes, its full-text index and the keywords table, in execution order.
-     *
-     * @param string $table already prefixed, unquoted
+     * The statements creating the search index table (prefixed, unquoted), its indexes and the keywords table, in order.
      *
      * @return list<string>
      */

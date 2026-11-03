@@ -6,11 +6,8 @@ use YesWiki\Kernel\Queue\RetryPolicy;
 use YesWiki\Kernel\Queue\ScheduledTask;
 
 /**
- * "Tell the extensions it is time for their own housekeeping": the `maintenance.before` and `maintenance.after` hooks, as a recurring task of their own (AdminSchedule).
- *
- * It is never retried: when the handler throws, some listeners have run, and a second run would
- * do their work again. The task shows as failed on the jobs page until the next run, which is
- * the extension's author's cue to read the Journal.
+ * "Tell the extensions it is time for their own housekeeping": the `maintenance.before` and `.after` hooks, a recurring task (AdminSchedule).
+ * Never retried: when the handler throws, some listeners have run; the task shows as failed on the jobs page until the next run.
  */
 final class RunMaintenanceHooks implements ScheduledTask, RetryPolicy
 {

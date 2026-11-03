@@ -10,20 +10,10 @@ use YesWiki\Kernel\Queue\ProvidesSchedule;
 
 /**
  * The mailing-list digests: one recurring task per period, as long as somebody subscribed and the wiki did not turn them off.
- *
- * Each period goes out at 7 a.m. in the wiki's timezone: every day, on Mondays, on the first of
- * the month. A cron, and not a period counted from the last run, which made each digest leave a
- * little earlier than the one before. What has gone out is the Scheduler's checkpoint, and
- * nothing else: a digest sent by hand (`contact:send-digest`) moves nothing, and one that failed
- * is due again at its next 7 a.m.
- *
- * The queue builds the schedule anew at every due tick, from what is declared then, and forgets
- * the tasks that are no longer declared: with the digests disabled or nobody subscribed this
- * declares nothing, and the tasks leave the jobs page.
+ * Each goes out at 7 a.m. in the wiki's timezone: every day, on Mondays, on the first of the month.
  */
 class ContactSchedule implements ProvidesSchedule
 {
-    /** @var array<string, string> the cron of each period, in the wiki's timezone */
     private const CRONS = [
         'day' => '0 7 * * *',
         'week' => '0 7 * * 1',
@@ -36,13 +26,7 @@ class ContactSchedule implements ProvidesSchedule
     ) {
     }
 
-    /**
-     * Subscriptions that cannot be read (no triples table) throw rather than count as nothing to schedule.
-     *
-     * The queue journals it and keeps the digest tasks it knew, which then show late on the jobs
-     * page and in the health checks; declaring nothing had them forgotten at the next due tick, and
-     * the digests stopped with nothing to say so. The other tasks are scheduled all the same.
-     */
+    /** Subscriptions that cannot be read (no triples table) throw rather than count as nothing to schedule. */
     public function recurringMessages(): array
     {
         if (!$this->isEnabled()) {
@@ -58,7 +42,7 @@ class ContactSchedule implements ProvidesSchedule
         return $recurring;
     }
 
-    /** Whether anything wants a digest at all. */
+    /** Whether digests are on and somebody subscribed to one. */
     private function isEnabled(): bool
     {
         if ($this->params->has('contact_disable_periodic_digest')

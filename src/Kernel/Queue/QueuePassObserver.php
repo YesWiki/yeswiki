@@ -15,21 +15,13 @@ use YesWiki\Kernel\Service\Queue\QueueRecorder;
 use YesWiki\Kernel\Service\Queue\QueueTransport;
 
 /**
- * Listens to one pass's Worker and writes down how each message ended, whatever the mode: the history row, and the Journal entry when the failure is for good.
- *
- * Built for a single pass and dropped with it, so the count it keeps never outlives the pass (a
- * worker-mode process serves many requests).
- *
- * A failure that will be retried only goes to the history: the admin hears of a message once it
- * is in `failed`, not at each attempt. Every definitive failure is journaled, a ToleratedFailure
- * message's too: what that marker changes is only which health check judges it.
+ * Listens to one pass's Worker and writes down how each message ended, whatever the mode: the history row, and the
+ * Journal entry when the failure is for good. Built for a single pass and dropped with it.
  */
 final class QueuePassObserver implements EventSubscriberInterface
 {
-    /** How many messages the pass took and ran, whatever came of them. */
     private int $handled = 0;
 
-    /** When the message being handled was received, on the recorder's clock. */
     private float $startedAt = 0.0;
 
     public function __construct(
@@ -45,7 +37,6 @@ final class QueuePassObserver implements EventSubscriberInterface
         return [
             WorkerMessageReceivedEvent::class => 'onReceived',
             WorkerMessageHandledEvent::class => 'onHandled',
-            // After the retry listener (100) has decided, and the failure listener (-100) has moved the message.
             WorkerMessageFailedEvent::class => ['onFailed', -200],
         ];
     }
@@ -109,12 +100,7 @@ final class QueuePassObserver implements EventSubscriberInterface
         ]);
     }
 
-    /**
-     * A message that ended after its holder had been declared dead (QueueTransport::release() found it in `failed`): it stays there, killed, and the Journal says how it ended.
-     *
-     * Only for the record: the admin has the failure to look at already, and the history row this
-     * pass wrote tells whether the handler succeeded in the end.
-     */
+    /** A message that ended after its holder had been declared dead (QueueTransport::release() found it in `failed`). */
     public function declaredKilledBeforeItEnded(Envelope $envelope): void
     {
         $type = $envelope->getMessage()::class;
@@ -126,12 +112,9 @@ final class QueuePassObserver implements EventSubscriberInterface
     }
 
     /**
-     * A message whose consumer died while handling it, found and moved to `failed` by QueueTransport::reapKilled().
-     *
-     * Recorded under the mode it was killed in, since that is the mode that could not carry it.
+     * A message whose consumer died while handling it, recorded under the mode it was killed in (QueueTransport::reapKilled()).
      *
      * @param array{id: int, type: string, mode: string, deliveredAt: string} $killed
-     * @param string|null                                                     $taskId the scheduled task it ran for, if it is one
      */
     public function killed(array $killed, ?string $taskId): void
     {

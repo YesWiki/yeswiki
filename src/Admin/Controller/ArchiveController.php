@@ -119,7 +119,6 @@ class ArchiveController extends YesWikiController
                             );
                         }
                         $params = is_array($postParams) ? $postParams : [];
-                        // `callAsync` is still sent by older pages and older wikis fetching a backup from this one; the queue decides now.
                         $uid = $this->startArchive($params);
                         if (empty($uid)) {
                             return new ApiResponse(
@@ -229,8 +228,6 @@ class ArchiveController extends YesWikiController
      * Queue the backup the API asks for.
      *
      * @param array<string, mixed> $params
-     *
-     * @return string uid, empty when the queue could not take it
      */
     protected function startArchive(
         array $params = []

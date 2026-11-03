@@ -12,16 +12,13 @@ use YesWiki\Kernel\Service\Queue\QueueHealthChecks;
 use YesWiki\Render\Service\TemplateEngine;
 
 /**
- * `/admin/jobs` -- the background jobs: what waits, what failed, whether anything still consumes (messenger / scheduler, spec §11.3).
- *
- * The page renders whole once; its actions and its tabs go through JobsApiController and swap
- * their part of it (ADR-0005).
+ * `/admin/jobs`: the background jobs, what waits, what failed, whether anything still consumes (messenger / scheduler, spec §11.3).
+ * Rendered whole once; its actions and tabs go through JobsApiController and swap their part of it (ADR-0005).
  */
 class JobsController extends YesWikiController
 {
     use DashboardShell;
 
-    /** @var list<string> */
     private const ADMIN_ACL = ['@admins'];
 
     #[Route('/admin/jobs', options: ['acl' => self::ADMIN_ACL])]
@@ -37,7 +34,7 @@ class JobsController extends YesWikiController
     }
 
     /**
-     * @see AdminController::page() -- same shell.
+     * The same shell as AdminController::page().
      *
      * @param array<string, mixed> $data
      */

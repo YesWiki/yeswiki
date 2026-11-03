@@ -195,11 +195,6 @@ class DbService
     /**
      * Replay a dump beside this wiki's tables and put it in their place only once it is all there.
      *
-     * The queue's table is not the wiki's content (DumpRewriter::contentTables()): it stays as it
-     * is, whatever the dump says of it, and is created if the database has none yet. Nor are the
-     * Journal's queue rows and the Scheduler's checkpoint triples (DumpRewriter::leftOutRows()):
-     * the live ones are kept, with their ids.
-     *
      * @throws \Exception when the dump cannot be read, or fails before the swap
      */
     public function restoreStagedFromDump(string $sqlContent): void
@@ -270,7 +265,6 @@ class DbService
         if ($sourcePrefix === '') {
             throw new \Exception('SQL restore failed: no table in the dump names a prefix, so it is not a wiki backup');
         }
-        // The queue's table, which an older backup may still hold, is skipped like another wiki's.
         $own = DumpRewriter::contentTables($tables, $sourcePrefix);
         $foreign = array_fill_keys(array_diff($tables, $own), true);
 
@@ -327,9 +321,7 @@ class DbService
                 fclose($handle);
             }
 
-            // The dump's preamble left MySQL with AUTOCOMMIT off and its own time zone: what follows is not the dump's.
             $this->restoreSessionSettings($session);
-            // Into the staged tables, so that they come in with the swap: a write to the Journal right after it cannot take their ids.
             $this->putBackRowsLeftOut($livePrefix, $staging, $this->liveRowsLeftOut($livePrefix));
             $this->swapTables($livePrefix, $staging, $replaced);
         } catch (\Throwable $th) {
@@ -353,9 +345,9 @@ class DbService
     }
 
     /**
-     * The rows of this wiki's tables that are the running instance's state (DumpRewriter::leftOutRows()), read before a restore replaces their tables.
+     * The rows that are the running instance's state (DumpRewriter::leftOutRows()), read before a restore replaces their tables.
      *
-     * @return array<string, list<array<string, mixed>>> by table
+     * @return array<string, list<array<string, mixed>>>
      */
     private function liveRowsLeftOut(string $livePrefix): array
     {
@@ -371,14 +363,9 @@ class DbService
     }
 
     /**
-     * Put those rows back into the restored tables, in place of any of their kind the dump brought (an older backup holds some).
+     * Put those rows back under their own ids into the restored tables, replacing any of their kind the dump brought.
      *
-     * Each comes back under its own id, which the running consumer still writes its pass by. A
-     * backup of this wiki holds none of them, so no restored row has that id; a backup of another
-     * wiki may, and then the restored row keeps it and the live one takes the next free id.
-     *
-     * @param string                                    $intoPrefix the prefix the restored tables have now: the live one, or the staging one before the swap
-     * @param array<string, list<array<string, mixed>>> $kept       by live table, as liveRowsLeftOut() read them
+     * @param array<string, list<array<string, mixed>>> $kept
      */
     private function putBackRowsLeftOut(string $livePrefix, string $intoPrefix, array $kept): void
     {
@@ -433,7 +420,7 @@ class DbService
         );
     }
 
-    /** The queue's table, created when a restore leaves the database without it (a new install from a backup); it is never part of the dump. */
+    /** Create the queue's table when a restore leaves the database without it (a new install from a backup). */
     private function ensureQueueTables(): void
     {
         $queue = new QueueSchema($this);
@@ -616,7 +603,7 @@ class DbService
     }
 
     /**
-     * Drop this wiki's tables and replay $sqlContent into them; the queue's table is left as it is (DumpRewriter::contentTables()), and the Journal's live queue rows and the Scheduler's checkpoint are kept with their ids (DumpRewriter::leftOutRows()).
+     * Drop this wiki's content tables and replay $sqlContent into them, keeping the live rows DumpRewriter::leftOutRows() names.
      *
      * @throws \Exception
      */
@@ -698,12 +685,7 @@ class DbService
         return $this->dialect->now();
     }
 
-    /**
-     * The database's current time, in UTC whatever the session's time zone.
-     *
-     * The time every process sharing this database agrees on, wherever it runs: PHP's clock is
-     * the clock of one machine, and the machines of a farm need not agree with each other.
-     */
+    /** The database's current time, in UTC whatever the session's time zone. */
     public function utcNow(): \DateTimeImmutable
     {
         $row = $this->loadSingle('SELECT ' . $this->dialect->utcNow() . ' AS utc_now');
@@ -1082,12 +1064,7 @@ class DbService
         return $this->transactionDepth > 0;
     }
 
-    /**
-     * The id the last INSERT on this connection generated for an auto-increment column.
-     *
-     * Per connection on every engine (LAST_INSERT_ID(), lastval(), last_insert_rowid()), so another
-     * process inserting at the same moment cannot answer in its place, which `SELECT MAX(id)` would.
-     */
+    /** The id the last INSERT on this connection generated, never another process's (unlike `SELECT MAX(id)`). */
     public function lastInsertId(): int
     {
         return (int)$this->link->lastInsertId();

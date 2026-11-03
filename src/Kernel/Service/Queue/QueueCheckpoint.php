@@ -7,52 +7,24 @@ use YesWiki\Files\Service\RuntimeLock;
 use YesWiki\Kernel\Service\TripleStore;
 
 /**
- * Where the Scheduler keeps how far it got, in the wiki's own database (messenger / scheduler): two triples of the resource RESOURCE.
- *
- * Symfony's own Checkpoint wants a cache pool and symfony/lock, neither of which the wiki has;
- * this one keeps the same three values -- the last run time it dispatched, the position of that
- * run's message in the schedule, and the time the schedule was first ticked, which anchors
- * every periodic trigger -- in the triple STATE, as JSON, and takes RuntimeLock's file lock so
- * that two processes never tick at once. The state is read again at each acquire(), since the
- * process that ticked last is rarely this one: a request, then an API call, then another request.
- *
- * Unlike Symfony's, release() lets go of the lock. A blocking consumer that kept it for its
- * whole life would starve every other consumer of the schedule, and would gain nothing by it:
- * the state is in the database anyway.
- *
- * The state's times are to the microsecond. release() also writes the next due time to the
- * triple NEXT_DUE_AT, rounded up to the second like every time of the queue. That is what makes
- * a tick cheap when nothing is due (QueueScheduleTicker reads that one triple and stops), and
- * what the end of a request reads to know whether the schedule needs a pass (dueAt()).
- *
- * The triples are written through the TripleStore, which refuses any write while the wiki is
- * hibernated: QueueScheduleTicker does not tick then, so that nothing is dispatched that the
- * checkpoint would not remember. They are read past its cache, since another process writes
- * them. A backup leaves them out and a restore keeps the live ones (DumpRewriter::leftOutRows()):
- * a restored copy taking the backup's would send the schedule back to an older checkpoint.
- *
- * All times come from the Scheduler, which takes them from the ticker's clock; none is the database's.
+ * Where the Scheduler keeps how far it got, in two triples of the resource RESOURCE, under RuntimeLock's file lock;
+ * release() also writes the next due time (NEXT_DUE_AT), which makes a tick and the end-of-request check cheap.
  */
 class QueueCheckpoint implements CheckpointInterface
 {
-    /** The resource of the checkpoint's triples: no page tag has a colon. */
     public const RESOURCE = 'queue:checkpoint';
 
-    /** The triple of the Scheduler's state: JSON, `time`, `index` and `from`. */
     public const STATE = 'https://yeswiki.net/vocabulary/queue/checkpointState';
 
-    /** The triple of the time the schedule is next due, `Y-m-d H:i:s` in UTC; none when it never ticked. */
     public const NEXT_DUE_AT = 'https://yeswiki.net/vocabulary/queue/nextDueAt';
 
-    /** One tick at a time per wiki, whichever consumer runs it. */
     public const LOCK = 'cache/queue-schedule.lock';
 
-    /** How the state's times are written: to the microsecond, since the Scheduler compares them for equality. */
     private const STATE_FORMAT = 'Y-m-d H:i:s.u';
 
     private const TIME_FORMAT = 'Y-m-d H:i:s';
 
-    /** @var resource|null the lock, held from acquire() to release() */
+    /** @var resource|null */
     private $lock;
 
     private \DateTimeImmutable $from;
@@ -66,12 +38,9 @@ class QueueCheckpoint implements CheckpointInterface
     }
 
     /**
-     * Takes the lock and reads the state; false when another process is ticking.
+     * Takes the lock and reads the state; false when another process is ticking. A wiki that never ticked starts now.
      *
-     * A wiki that never ticked starts its schedule now: every periodic task runs first one
-     * interval from now, not at once.
-     *
-     * @throws \RuntimeException when the lock cannot be created: no tick would ever run, which is not "somebody else is ticking"
+     * @throws \RuntimeException
      */
     public function acquire(\DateTimeImmutable $now): bool
     {
@@ -143,11 +112,7 @@ class QueueCheckpoint implements CheckpointInterface
         }
     }
 
-    /**
-     * Lets go of the lock if a tick still holds it; harmless otherwise.
-     *
-     * For a tick that broke before release(): the Scheduler only releases when it got to the end.
-     */
+    /** Lets go of the lock if a tick that broke before release() still holds it; harmless otherwise. */
     public function unlock(): void
     {
         if ($this->lock !== null) {
@@ -156,13 +121,7 @@ class QueueCheckpoint implements CheckpointInterface
         }
     }
 
-    /**
-     * When the schedule is next due, as release() last wrote it, which is when a pass has something to do even with no message waiting.
-     *
-     * Null when the schedule never ticked on this wiki: the first tick is due at once, to start it.
-     * (A schedule where no trigger will ever fire again would also leave it null; the kernel's own
-     * daily prune keeps that from happening.) Null too when the triple holds no time.
-     */
+    /** When the schedule is next due, as release() last wrote it; null when it never ticked (the first tick is due at once). */
     public function dueAt(): ?\DateTimeImmutable
     {
         $due = $this->read(self::NEXT_DUE_AT);
@@ -198,12 +157,10 @@ class QueueCheckpoint implements CheckpointInterface
     }
 
     /**
-     * Sets that triple to $value, or takes it away when $value is null.
+     * Sets that triple to $value, or takes it away when $value is null; only ever called under the lock.
      *
-     * Only ever called under the lock, so no other process writes it in between.
-     *
-     * @throws \RuntimeException when the TripleStore does not write it
-     * @throws \Exception        when the wiki is hibernated (TripleStore)
+     * @throws \RuntimeException
+     * @throws \Exception
      */
     private function write(string $property, ?string $value): void
     {
@@ -226,7 +183,7 @@ class QueueCheckpoint implements CheckpointInterface
         return $time->setTimezone(new \DateTimeZone('UTC'))->format(self::STATE_FORMAT);
     }
 
-    /** A due time to the second, as the queue keeps its times, never earlier than the real one: "due" read from it is never early. */
+    /** A due time to the second, never earlier than the real one: "due" read from it is never early. */
     private static function roundedUp(\DateTimeImmutable $time): string
     {
         $utc = $time->setTimezone(new \DateTimeZone('UTC'));

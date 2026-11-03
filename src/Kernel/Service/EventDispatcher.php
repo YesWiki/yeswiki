@@ -44,11 +44,9 @@ class EventDispatcher extends SymfonyEventDispatcher
     }
 
     /**
-     * Calls each listener of the event on its own: one that throws stops neither the ones after it nor the caller, which hears of it through $onFailure.
+     * Calls each listener on its own: one that throws stops neither the next ones nor the caller, told through $onFailure.
      *
-     * Unlike yesWikiDispatch(), which catches the first throw around the whole dispatch.
-     *
-     * @param \Closure(string, \Throwable): void $onFailure given the listener's name (nameOf()) and what it threw
+     * @param \Closure(string, \Throwable): void $onFailure
      */
     public function dispatchToEach(string $eventName, Event $event, \Closure $onFailure): void
     {
@@ -68,7 +66,7 @@ class EventDispatcher extends SymfonyEventDispatcher
         }
     }
 
-    /** What an operator reading the Journal can find in the code: `Class::method`, or where a closure was written. */
+    /** The listener's name as found in the code: `Class::method`, or where a closure was written. */
     public static function nameOf(callable $listener): string
     {
         if (is_array($listener)) {

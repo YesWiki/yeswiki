@@ -30,9 +30,11 @@ class LinkRenderer
     }
 
     /**
+     * $options are HTML attributes plus method, params and html (when truthy, $text is already-safe HTML, not escaped).
+     *
      * @param string       $link
      * @param string       $text
-     * @param array<mixed> $options HTML attributes, plus method, params and html (already-safe HTML, not escaped)
+     * @param array<mixed> $options
      */
     public function linkTo($link, $text = '', $options = []): string
     {
@@ -115,7 +117,11 @@ class LinkRenderer
         ]);
     }
 
-    /** @return array<mixed> query of a link creating a missing page: the current page's own theme, header and footer */
+    /**
+     * Query of a link creating a missing page: the current page's own theme, header and footer.
+     *
+     * @return array<mixed>
+     */
     public function paramsForNewPageLink(): array
     {
         $result = ['newpage' => 1];

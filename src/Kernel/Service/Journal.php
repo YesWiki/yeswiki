@@ -100,7 +100,6 @@ class Journal implements LoggerInterface
                 continue;
             }
 
-            // The queue writes its rows' times in UTC from the database's clock (DatabaseClock), so it cuts them the same way: the database's NOW() may be in another zone.
             $statement = $channel === JournalChannel::Queue
                 ? $db->query(
                     "DELETE FROM {$quote($table)} WHERE {$quote('channel')} = ? AND {$quote($column)} < ?",

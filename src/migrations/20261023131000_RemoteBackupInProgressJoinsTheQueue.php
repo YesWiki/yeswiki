@@ -3,9 +3,7 @@
 use YesWiki\Admin\Service\RemoteBackupService;
 use YesWiki\Core\YesWikiMigration;
 
-/**
- * A fetch from another wiki used to move one step per request of the admin's open tab: one left under way when the wiki is upgraded has nothing to move it any more, unless the queue is handed its next step.
- */
+/** Hands the queue the next step of a fetch from another wiki left under way, which used to move only with the admin's open tab. */
 class RemoteBackupInProgressJoinsTheQueue extends YesWikiMigration
 {
     public function run()

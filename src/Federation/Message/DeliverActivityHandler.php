@@ -8,12 +8,7 @@ use YesWiki\Federation\Service\ActivityPubService;
 
 /**
  * Posts a prepared activity to one recipient, signed with the identity the message carries.
- *
- * The form is not looked up: it may be gone by now (deleting a form sends a Delete for each of its
- * entries, and removes the form before they leave), and what a delivery needs from it is its key.
- * A failed delivery throws, which is what makes the queue retry it. What no retry can mend -- the
- * key is gone, or the activity names no actor, so nothing can sign -- is unrecoverable, and goes
- * straight to `failed` instead of knocking five times at a door that is not there.
+ * A failed delivery throws to be retried; one that nothing can sign is unrecoverable.
  */
 #[AsMessageHandler]
 final class DeliverActivityHandler

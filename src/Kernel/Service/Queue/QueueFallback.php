@@ -10,40 +10,20 @@ use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Kernel\Service\RequestScopedState;
 
 /**
- * Whether the end of requests has to consume the queue for the consumer the admin chose, because that consumer is no longer seen at work.
- *
- * A worker that died, an online cron that stopped calling: on a wiki
- * nobody watches, the search index and the maintenance would stop for weeks without a visitor
- * noticing. Once the chosen consumer has not been seen for longer than its mode allows while work
- * waits, each request consumes at its end as `request` does, and the pages say so; as soon as
- * that consumer is seen again, the requests leave the queue to it. `request` is that fallback, and
- * has none.
- *
- * Nothing is stored for it: it is derived from the pass rows (QueueStatistics::lastSeenAt(),
- * fallbackSince()). Its fallback passes carry the mode they stand in for, so the fallback lasts
- * until that consumer is seen again, not until the queue is empty -- otherwise each pass that
- * empties it would end it, and the work piling up again would start it. A few `cache/` stamps
- * keep requests from reading the database for it more than once a minute.
+ * Whether the end of requests has to consume the queue for the consumer the admin chose, because that consumer is
+ * no longer seen at work; derived from the pass rows (QueueStatistics), with `cache/` stamps read once a minute.
  */
 class QueueFallback implements RequestScopedState
 {
-    /** Seconds between two readings of the rule outside the fallback, and of the consumer's return during it. */
     public const CHECK_EVERY_SECONDS = 60;
 
-    /** When the rule was last read. */
     public const CHECK_STAMP = 'cache/queue-fallback-check.lock';
 
-    /** There while the last reading said the end of requests consumes for that mode: one per mode, so that a mode the admin just chose does not inherit the last one's answer. */
     public const ACTIVE_STAMP = 'cache/queue-fallback-active-%s.lock';
 
-    /** When the rule was first read: what has waited since, on a wiki whose chosen consumer never ran and whose schedule never ticked. */
     public const WATCH_STAMP = 'cache/queue-fallback-watch.lock';
 
-    /**
-     * What the Journal said of the chosen consumer this request: the badge, the jobs page and a backup being started all ask.
-     *
-     * @var array{mode: QueueConsumerMode, seen: ?\DateTimeImmutable, status: ?QueueFallbackStatus}|null
-     */
+    /** @var array{mode: QueueConsumerMode, seen: ?\DateTimeImmutable, status: ?QueueFallbackStatus}|null */
     private ?array $observed = null;
 
     public function __construct(
@@ -75,16 +55,7 @@ class QueueFallback implements RequestScopedState
         return $mode->consumesAtEndOfRequests() ? null : $this->observed($mode)['status'];
     }
 
-    /**
-     * Whether the chosen consumer cannot be counted on to take a long message now: the end of requests already stands in for it, or the worker it is has not been seen for longer than its mode allows.
-     *
-     * For whoever sends a message the end of a request must not take on a request's budget (a
-     * backup an admin starts, ArchiveService). Read only: the minute's answer shouldConsume()
-     * keeps for the end of requests is left as it is. A worker beats every minute and holds a live
-     * claim while it handles, so one unseen for its delay is gone, or never ran; the API route
-     * only comes when called, shows nothing that says it will come, and is gone only once the
-     * fallback runs for it.
-     */
+    /** Whether the chosen consumer cannot be counted on to take a long message now (read only, for senders). */
     public function consumerIsGone(): bool
     {
         $mode = $this->settings->mode();
@@ -102,13 +73,7 @@ class QueueFallback implements RequestScopedState
         return $seen === null || $this->clock->now()->getTimestamp() - $seen->getTimestamp() > $mode->stalledAfterSeconds();
     }
 
-    /**
-     * Whether this request consumes at its end for the chosen consumer.
-     *
-     * Read at most once a minute; in between, the last answer stands, so that a request with
-     * nothing to do in a mode that does not consume at the end of requests costs a file's `stat`
-     * and no query.
-     */
+    /** Whether this request consumes at its end for the chosen consumer; read at most once a minute. */
     public function shouldConsume(): bool
     {
         $mode = $this->settings->mode();
@@ -121,7 +86,6 @@ class QueueFallback implements RequestScopedState
             return $this->runtimeLock->lastTaken($active) > 0;
         }
 
-        // Stamped before reading, and the last answer dropped: a reading that fails (the table missing) is tried again in a minute, not on every request.
         $this->runtimeLock->stampAt(self::CHECK_STAMP, $now);
         $this->runtimeLock->forget($active);
         $seen = $this->statistics->lastSeenAt($mode);
@@ -133,14 +97,7 @@ class QueueFallback implements RequestScopedState
         return $consumes;
     }
 
-    /**
-     * Whether the chosen consumer is to be replaced now, when the end of requests does not consume for it yet.
-     *
-     * Work has waited longer than the mode allows (QueueConsumerMode::stalledAfterSeconds()), and
-     * the consumer has not been seen for as long. On a quiet wiki nothing is queued while nothing
-     * ticks the schedule: the schedule being due is the work that waits. A schedule that never
-     * ticked has waited since the rule was first read.
-     */
+    /** Whether work and the consumer have both waited longer than the mode allows, when no fallback runs yet. */
     private function entersNow(QueueConsumerMode $mode, int $now, ?\DateTimeImmutable $lastSeen): bool
     {
         if ($this->hibernation->isWikiHibernatedNow()) {

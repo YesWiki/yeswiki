@@ -5,12 +5,8 @@ namespace YesWiki\Import\Message;
 use YesWiki\Kernel\Queue\ScheduledTask;
 
 /**
- * "Import this data source": the recurring task of one source flagged `syncOnMaintenance` in the `dataSources` configuration (ImportSchedule declares one per source).
- *
- * It carries the source's key and nothing of its options, which are read from the configuration
- * when the message is handled: a source edited or removed while the message waited is imported
- * as it is then, or not at all. A sync is idempotent (it updates what the source already
- * brought), so the default retry applies.
+ * "Import this data source": the recurring task of one source flagged `syncOnMaintenance` in the `dataSources` configuration.
+ * It carries only the source's key; its options are read when the message is handled.
  */
 final class SyncDataSource implements ScheduledTask
 {

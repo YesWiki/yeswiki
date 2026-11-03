@@ -135,11 +135,7 @@ class ActivityPubService
     }
 
     /**
-     * The identity a queued delivery signs with, from what the message carries: the form's key and the actor it acts as.
-     *
-     * Null when the key is gone, since the form is not read again (it may have been deleted since the
-     * activity was queued: a Delete is sent for each entry of a deleted form) and generating a new key
-     * would sign with one no remote server knows.
+     * The identity a queued delivery signs with, from the form's key alone; null when that key is gone.
      *
      * @return array{keyId: string, privateKey: string}|null
      */
@@ -350,9 +346,6 @@ class ActivityPubService
     /**
      * Delivers an activity to each recipient's inbox right now, and returns it with its id; one failing inbox does not stop the others.
      *
-     * For what is answered to someone waiting (Follow, Accept...): what is published to the
-     * followers goes through the queue instead, one delivery at a time (deliverToFollowers).
-     *
      * @param array<string, mixed> $activity
      * @param array<string, mixed> $form
      *
@@ -384,7 +377,7 @@ class ActivityPubService
     }
 
     /**
-     * The activity as it is sent: with its @context, its actor (the form) and its id, which it is given if it has none.
+     * The activity as it is sent: with its @context, its actor (the form) and an id if it has none.
      *
      * @param array<string, mixed> $activity
      * @param array<string, mixed> $form
@@ -401,12 +394,8 @@ class ActivityPubService
     }
 
     /**
-     * Posts a prepared activity to the inbox of one recipient, and logs what the inbox answered; throws when it did not take it.
+     * Posts a prepared activity's JSON to one recipient's inbox and logs the answer; throws when it was not taken.
      *
-     * Takes everything it needs rather than the form: a queued delivery outlives its form when the
-     * form is deleted, and the body is sent as it was prepared, byte for byte.
-     *
-     * @param string                                   $body   the activity as JSON, as prepare() returned it
      * @param array{keyId: string, privateKey: string} $signer
      */
     public function deliverTo(string $body, array $signer, string $formId, string $recipientUri): void
@@ -787,10 +776,7 @@ class ActivityPubService
     }
 
     /**
-     * Queues an activity for each of the followers, so that a slow or dead one never holds up the person saving, nor the others.
-     *
-     * The activity is prepared here, once: it depends on the entry as it is now, and every
-     * recipient gets the same one, id included. Each delivery is then its own message, retried on its own.
+     * Queues one delivery of the activity per follower, so a slow or dead one holds up neither the person saving nor the others.
      *
      * @param array<string, mixed> $activity
      * @param array<string, mixed> $form
@@ -798,7 +784,6 @@ class ActivityPubService
     protected function deliverToFollowers(array $activity, array $form): void
     {
         try {
-            // Also makes sure the form has its key by now: a delivery is signed from the key alone.
             if ($this->signer($form) === null) {
                 throw new \Exception('This form has no ActivityPub username');
             }

@@ -4,10 +4,7 @@ use YesWiki\Core\YesWikiMigration;
 use YesWiki\Files\Service\Storage;
 
 /**
- * Deletes `private/digests/`: the files whose modification time said when each digest last went out, or was last tried.
- *
- * The digests go out on a cron now, at 7 a.m. in the wiki's timezone, and what has gone out is the
- * queue's checkpoint (ContactSchedule). Nothing reads the markers any more.
+ * Deletes `private/digests/`, the files whose modification time said when each digest last went out: nothing reads them now.
  */
 class DigestMarkersGiveWayToTheSchedule extends YesWikiMigration
 {

@@ -20,28 +20,18 @@ use YesWiki\Kernel\Service\Queue\QueueStatistics;
 use YesWiki\Kernel\Service\Queue\QueueTransport;
 
 /**
- * What the background jobs page shows (messenger / scheduler, spec §11.3).
- *
- * The page exists so that a job that fails on a poorly maintained install does not go unnoticed:
- * its top half -- the mode, the alerts, the tiles -- answers "is something wrong, and what do I do",
- * and it is what every action on the page refreshes. The alerts are the health findings of the
- * checks that send the admin here (`linkedTo('admin/jobs')`), the queue's own and those a module
- * declares, so the page never judges anything a second time. The tabs below are the detail.
- *
- * Everything is shaped for the templates here, already translated and formatted; the raw texts a
- * failure carries (`last_error`, an exception message) are passed as they are and escaped by Twig.
+ * What the background jobs page shows (messenger / scheduler, spec §11.3), translated and formatted for the templates.
+ * Its top half (mode, alerts, tiles) is what every action refreshes; the alerts are the findings of the checks linked to
+ * `admin/jobs`. Raw failure texts (`last_error`, an exception message) are passed as they are and escaped by Twig.
  */
 class JobsOverview
 {
     public const TABS = ['types', 'failed', 'tasks', 'history', 'consumers'];
 
-    /** Rows a tab lists: the most recent. */
     private const LISTED = 100;
 
-    /** The window the tiles and the "by type" tab count over, as the history keeps it. */
     private const DAYS = 7;
 
-    /** Messages one "retry all" or "ignore all" acts on: what is left takes another click. */
     public const BULK_LIMIT = 500;
 
     public function __construct(
@@ -72,7 +62,6 @@ class JobsOverview
             $lastActivity = $this->statistics->lastActivityAt();
             $unreadable = null;
         } catch (\Throwable $unreadable) {
-            // The table is missing or the database is gone: `queue-tables` says so among the alerts.
             $tiles = null;
             $lastPass = null;
             $lastActivity = null;
@@ -115,10 +104,7 @@ class JobsOverview
     }
 
     /**
-     * The failed messages a "retry all" or "ignore all" from the failures alert acts on: the ones that alert counts (QueueHealthChecks::countsAsFailed()).
-     *
-     * Chosen before the limit, not after: routine failures of a tolerated type, or killed ones,
-     * newer than those would otherwise fill the batch, and the alert's own buttons act on nothing.
+     * The failed messages the failures alert counts (QueueHealthChecks::countsAsFailed()), for its "retry all" and "ignore all".
      *
      * @return list<array{id: int, type: string, attempts: int, error: ?string, killedIn: ?string, createdAt: \DateTimeImmutable}>
      */
@@ -135,10 +121,7 @@ class JobsOverview
     }
 
     /**
-     * Every failed message of one type, killed ones apart, for the buttons a module's alert offers: tolerated types included, since the type is named.
-     *
-     * The type is named by its short class name, which is what the page shows and what a URL can
-     * carry; it stands for every failed class that ends so. At most BULK_LIMIT, the rest takes another click.
+     * Every failed message of one type (its short class name), killed ones apart, tolerated ones included: a module alert's buttons.
      *
      * @return list<array{id: int, type: string, attempts: int, error: ?string, killedIn: ?string, createdAt: \DateTimeImmutable}>
      */
@@ -206,7 +189,7 @@ class JobsOverview
     }
 
     /**
-     * The buttons an alert gets, by what fixes it: a pass for what waits, the failures tab for what failed, the modes documentation for a choice of mode.
+     * The buttons an alert gets: a pass for what waits, the failures tab for what failed, the modes documentation for a mode.
      *
      * @return list<string>
      */
@@ -222,7 +205,6 @@ class JobsOverview
                 ? ['secret', 'docs']
                 : ['docs'],
             'queue-tables', 'queue-fallback', 'queue-consumer-restarts', 'queue-consumer-memory', 'queue-visitor-cost' => ['docs'],
-            // A module's own check about its messages (federation deliveries): the failures are where it shows, and it may ask for the buttons that deal with them all.
             default => $this->offeredActions($finding),
         };
     }
@@ -254,7 +236,7 @@ class JobsOverview
     /**
      * The mode banner: which mode, who chose it, what a pass may spend, when one last ran and how often one should.
      *
-     * @param array<string, mixed>|null $lastPass as QueueStatistics::lastPass() gives it
+     * @param array<string, mixed>|null $lastPass
      *
      * @return array<string, mixed>
      */
@@ -268,7 +250,6 @@ class JobsOverview
         try {
             $fallback = $this->fallback->status();
         } catch (\Throwable) {
-            // The table is missing or the database is gone: `queue-tables` says so among the alerts.
             $fallback = null;
         }
 
@@ -289,7 +270,6 @@ class JobsOverview
                 ? $this->ago($fallback->lastSeen)
                 : ($lastPass === null ? null : $this->ago($lastPass['stopReason'] === '' ? $lastPass['finishedAt'] : $lastPass['startedAt'])),
             'running' => $fallback === null && $lastPass !== null && $lastPass['stopReason'] === '',
-            // In a fallback, the last pass is the chosen consumer's, which is late by definition: the requests' passes are the alert's to tell.
             'lastSeenMode' => $fallback === null ? null : _t('QUEUE_MODE_' . strtoupper($mode->value)),
             'late' => $fallback !== null || ($idle !== null && $idle > $mode->stalledAfterSeconds()),
             'api' => $mode === QueueConsumerMode::Api,
@@ -298,7 +278,7 @@ class JobsOverview
     }
 
     /**
-     * @param list<string> $alerting the ids of the checks that fired
+     * @param list<string> $alerting
      *
      * @return array<string, mixed>
      */
@@ -354,7 +334,7 @@ class JobsOverview
     }
 
     /**
-     * The tasks the schedule declares, as their rows say they last ran; a task never queued yet has no row and is not listed.
+     * The tasks the schedule declares, as their rows say they last ran; one never queued yet has no row and is not listed.
      *
      * @return list<array<string, mixed>>
      */
@@ -411,9 +391,7 @@ class JobsOverview
                 'at' => $pass['startedAt']->format('Y-m-d H:i:s'),
                 'mode' => $pass['mode'],
                 'running' => $pass['stopReason'] === '',
-                // A blocking consumer's first heartbeat comes a minute after it starts: until then, its start is when it was last seen.
                 'lastSeen' => $this->ago($end),
-                // The rows keep whole seconds: a pass that took less shows as such, not as "0 ms".
                 'duration' => $end->getTimestamp() - $pass['startedAt']->getTimestamp() < 1
                     ? _t('ADMIN_JOBS_UNDER_A_SECOND')
                     : $this->milliseconds(1000 * ($end->getTimestamp() - $pass['startedAt']->getTimestamp())),
@@ -444,7 +422,6 @@ class JobsOverview
         };
     }
 
-    /** "30 minutes", "1 jour": how far apart a task's runs are. */
     /** One decimal, with the separator of the reader's language. */
     private function decimal(float $number): string
     {

@@ -8,29 +8,19 @@ use YesWiki\Kernel\Service\ConfigurationFileProvider;
 use YesWiki\Kernel\Service\ConfigurationService;
 
 /**
- * `maintenance_trigger` chose who ran the housekeeping sweep: a page view (`request`) or `./yeswicli core:maintenance` from a crontab (`cron`). The sweep is gone, the queue's mode of consumption decides now, and the setting is removed.
- *
- * No mode is chosen in the admin's place: a wiki that chose none gets the default, the end of page
- * views, under the binary too. A wiki on `cron` has a crontab running
- * `./yeswicli core:maintenance`, which is gone too: the admin is told to remove that line, and that
- * the `worker` or `api` mode is the way to consume the queue outside page views. A
- * `MAINTENANCE_TRIGGER` set in private/.env is not the configuration and is not rewritten; it is
- * said to do nothing any more.
+ * Removes `maintenance_trigger`: the housekeeping sweep it chose a runner for is gone, the queue's mode decides now;
+ * the admin is told when a crontab or a `MAINTENANCE_TRIGGER` in private/.env still refers to it.
  */
 class MaintenanceTriggerBecomesAQueueMode extends YesWikiMigration
 {
     private const SETTING = 'maintenance_trigger';
 
-    /** The lock the sweep stamped; nothing reads it any more. */
     private const RETIRED_LOCK = 'cache/maintenance.lock';
 
-    /** retire() removed the setting, which was `cron`: a crontab still runs the command that went with it. */
     public const CRON_REMOVED = 'cron';
 
-    /** What a crontab that ran the sweep has to know. */
     private const CRONTAB_IS_DEAD = '`./yeswicli core:maintenance` no longer exists: remove its line from your crontab. To consume the queue outside page views, choose the `worker` mode (a process kept alive by systemd or similar) or the `api` mode (an online cron calling /api/queue/consume); see INSTALL.md, Housekeeping.';
 
-    /** retire() only removed the setting. */
     public const REMOVED = 'removed';
 
     public function run()
@@ -41,7 +31,6 @@ class MaintenanceTriggerBecomesAQueueMode extends YesWikiMigration
                 $storage->delete(self::RETIRED_LOCK);
             }
         } catch (Throwable) {
-            // A leftover in the cache does no harm, and `cache:clear --all` takes it.
         }
 
         $file = ConfigurationFileProvider::getConfigFileFromEnv();
@@ -62,11 +51,9 @@ class MaintenanceTriggerBecomesAQueueMode extends YesWikiMigration
     }
 
     /**
-     * What the admin is told: what became of the setting, and of a `MAINTENANCE_TRIGGER` line in private/.env; null when there was neither.
+     * What the admin is told of the setting and of a `MAINTENANCE_TRIGGER` line in private/.env; null when neither existed.
      *
-     * @param self::CRON_REMOVED|self::REMOVED|null $outcome    what retire() did
-     * @param string                                $was        the setting's value, as var_export() writes it
-     * @param string|null                           $envTrigger the value private/.env gives MAINTENANCE_TRIGGER, if it does
+     * @param self::CRON_REMOVED|self::REMOVED|null $outcome
      */
     public static function advice(?string $outcome, string $was, ?string $envTrigger): ?string
     {

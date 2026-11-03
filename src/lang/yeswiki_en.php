@@ -3213,7 +3213,6 @@ which gives 1 if bf_type == premiere_cle, and 0 otherwise).',
     'HEALTH_FEDERATION_DELIVERY_FAILED_SAYS' => 'These servers did not answer after several attempts: most often the instance is gone. The other followers did get their copy. Retry these deliveries, or ignore them if the servers no longer exist.',
     'HEALTH_FEDERATION_DELIVERY_FAILED_SOME' => '%{count} delivery(ies) to other servers given up after several attempts',
 
-    // Background jobs (message queue): what the admin reads when one of them stops getting done.
     'QUEUE_HEALTH_TABLES' => 'Job queue table',
     'QUEUE_HEALTH_TABLES_SAYS' => 'Without it nothing done in the background (search indexing, mailings, synchronisations, backups, housekeeping) is recorded: it no longer happens. Updating the wiki creates it.',
     'QUEUE_HEALTH_TABLES_MISSING' => 'the queue table does not exist on this wiki',

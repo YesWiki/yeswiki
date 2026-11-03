@@ -3,17 +3,11 @@
 namespace YesWiki\Kernel\Queue;
 
 /**
- * What one consumption pass may spend: time until it has to stop by itself, memory until it has to stop before PHP kills it, and how long a handler may run before it can only have been killed.
- *
- * A pass reads it between two messages, never during one: a handler that runs past the deadline is not interrupted, it is what the "killed" detection is for.
+ * What one consumption pass may spend: time until it has to stop by itself, memory until it has to stop before PHP
+ * kills it, and how long a handler may run before it can only have been killed. Read between two messages only.
  */
 final class QueueBudget
 {
-    /**
-     * @param float $deadline           microtime after which the pass takes no new message; INF when nothing but the consumer itself decides when to stop
-     * @param int   $memoryCeilingBytes memory use (real usage) above which the pass stops; PHP_INT_MAX when PHP sets no limit
-     * @param int   $killLimitSeconds   how long a message claimed under this budget may stay in progress before it is presumed killed (the transport adds its own grace)
-     */
     public function __construct(
         public readonly float $deadline,
         public readonly int $memoryCeilingBytes,
@@ -21,7 +15,7 @@ final class QueueBudget
     ) {
     }
 
-    /** The same budget, but with no more than that many seconds from now: an admin who runs a pass by hand may want it shorter than the server allows. */
+    /** The same budget, but with no more than that many seconds from now. */
     public function cappedTo(float $seconds): self
     {
         return new self(min($this->deadline, microtime(true) + $seconds), $this->memoryCeilingBytes, $this->killLimitSeconds);

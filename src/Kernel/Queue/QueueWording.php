@@ -18,7 +18,6 @@ final class QueueWording
         return $label === $key ? $short : $label;
     }
 
-    /** The class name without its namespace. */
     public static function shortName(string $class): string
     {
         return ($position = strrpos($class, '\\')) === false ? $class : substr($class, $position + 1);

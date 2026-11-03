@@ -857,7 +857,11 @@ class ThemeManager implements EventSubscriberInterface
         }
     }
 
-    /** @return array{theme: string, style: string, squelette: string}|null the theme a page keeps instead of following the site's */
+    /**
+     * The theme a page keeps instead of following the site's.
+     *
+     * @return array{theme: string, style: string, squelette: string}|null
+     */
     public function getOwnTheme(string $tag): ?array
     {
         $metadata = $this->pageManager->getMetadata($tag) ?? [];

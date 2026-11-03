@@ -26,7 +26,7 @@ class DuplicationManager
         $this->uploadPath = $this->getLocalFileUploadPath();
     }
 
-    /** @return string the local path to file uploads, usually "files" */
+    /** @return string */
     private function getLocalFileUploadPath()
     {
         $attachConfig = $this->container->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['attach_config'];
@@ -303,7 +303,7 @@ class DuplicationManager
         }
     }
 
-    /** @param string $tag the tag to create locally */
+    /** @param string $tag */
     public function importDistantContent($tag, \Symfony\Component\HttpFoundation\Request $request): void
     {
         $this->assertReachableTag($tag);

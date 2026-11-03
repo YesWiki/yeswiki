@@ -38,7 +38,6 @@ class Storage
 
         'private/files/' => self::PROTECTED_TIER,
         'private/backups/' => self::PROTECTED_TIER,
-        // Nothing writes there any more: kept so that DigestMarkersGiveWayToTheSchedule can delete what is left.
         'private/digests/' => self::PROTECTED_TIER,
         'private/keys/' => self::PROTECTED_TIER,
 

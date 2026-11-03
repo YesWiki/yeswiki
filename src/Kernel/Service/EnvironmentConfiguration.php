@@ -44,9 +44,6 @@ class EnvironmentConfiguration
         'contact_debug',
     ];
 
-    /**
-     * Variables honored from the real environment and from private/.env under a name that is not UPPER(key), as an envName => configKey map.
-     */
     public const ENV_ALIASES = [
         QueueSettings::ENV_MODE => 'queue_consumer',
     ];

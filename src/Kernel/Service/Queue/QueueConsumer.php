@@ -34,56 +34,26 @@ use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Kernel\Service\Journal;
 
 /**
- * The only code that takes messages from the queue and runs their handlers, in every mode (messenger / scheduler).
- *
- * Two ways to run, one machinery: drain() is a pass that has to end by itself -- at the end of a
- * request, from the API route or `messenger:consume --drain` --
- * and stops when the queue is empty or the budget spent, never waiting; consume() blocks like
- * `messenger:consume`, for the `worker` mode. Both build Messenger's Worker over
- * the QueueBus (whose handlers come from QueueHandlerLocator, the one way a handler is found),
- * with Messenger's own retry and failure-transport listeners, and a QueuePassObserver that writes
- * the history; all of it on an event dispatcher of the pass's own, so that nothing a module
- * subscribes to the wiki's dispatcher runs inside the Worker, and nothing of a pass outlives it.
- *
- * Every pass starts by moving to `failed` the messages a dead consumer left behind (killed by
- * PHP's time limit, the OOM killer), and stops there while the wiki is hibernated, archiving or
- * updating: a backup must not see the wiki change under it. Reaping changes no content, so a
- * paused pass still does it, and each message reaped is announced on the wiki's own dispatcher
- * as `queue.message_killed` (MESSAGE_KILLED): a backup PHP killed holds the wiki `archiving`,
- * and that is how its mechanism learns it died; once it lifted the status, the pass goes on. The
- * status is read from the config file as it is now (HibernationService::isWikiHibernatedNow()),
- * since an archive or an update sets it there while a pass or a blocking consumer is already
- * running.
- *
- * A consumer that dies in the middle of a message does not always leave it to the next pass: the
- * first pass of a process has PHP fail, as killed, whatever it still holds when the process ends
- * (R19), so a fatal error, PHP's time limit or an `exit` in a handler is seen at once, even in an
- * FPM child or a FrankenPHP worker that lives on after it.
+ * The only code that takes messages from the queue and runs their handlers, in every mode, over Messenger's Worker.
+ * drain() is a pass that ends by itself, never waiting; consume() blocks like `messenger:consume`, for `worker` mode.
+ * Every pass first fails what dead consumers left, then takes nothing while the wiki is hibernated.
  */
 class QueueConsumer
 {
-    /** One budgeted pass at a time per wiki; blocking consumers do not take it, the claim keeps them apart. */
     public const PASS_LOCK = 'cache/queue-pass.lock';
 
-    /** What the wiki's EventDispatcher is told each time a pass finds a message a dead consumer left, once it is in `failed`. */
     public const MESSAGE_KILLED = 'queue.message_killed';
 
-    /** The receiver's name in the Worker, under which the retry and failure listeners find their senders. */
     private const RECEIVER = QueueTransport::DEFAULT_QUEUE;
 
-    /** What a message is assumed to take before one of its type has ever succeeded. */
     private const UNKNOWN_DURATION_SECONDS = 0.5;
 
-    /** How often a blocking consumer says it is alive and looks for killed messages. */
     private const HEARTBEAT_SECONDS = 60;
 
-    /** How often a blocking consumer reads the wiki's status again: the config file is parsed at each read, and the Worker loops every second when idle. */
     private const STATUS_CHECK_SECONDS = 5;
 
-    /** How often a blocking consumer asks whether the configuration changed since it started: the question hashes a few files. */
     private const CONFIGURATION_CHECK_SECONDS = 5;
 
-    /** Whether this consumer has asked PHP to fail what it still holds when the process ends. */
     private bool $watchesTheEnd = false;
 
     public function __construct(
@@ -99,32 +69,13 @@ class QueueConsumer
         private readonly QueueScheduleTicker $scheduleTicker,
         private readonly ClockInterface $clock,
         private readonly ConfigurationWatch $configuration,
-        /** @var \Closure(): EventDispatcher the wiki's dispatcher, built only when a killed message is announced */
+        /** @var \Closure(): EventDispatcher */
         #[AutowireServiceClosure(EventDispatcher::class)]
         private readonly \Closure $events,
     ) {
     }
 
-    /**
-     * One pass that ends by itself: due tasks first, then messages until the queue is empty or the budget spent.
-     *
-     * Before each message it checks the memory, and whether that message still fits in the time
-     * left, judging by how long its type took on average (half a second when it never ran). The
-     * first message of a pass nobody waits for is taken whatever its average, as long as any time
-     * is left: a type that takes longer than any pass of its mode would otherwise stay at the head
-     * of the queue for good, and everything behind it with it. If PHP stops it, the next pass finds
-     * it killed and fails it with the advice to change mode (§7.2), which is what the admin needs
-     * to hear. A visitor who waits for the page is never made to wait for such a message.
-     * Never throws: a pass that breaks (table missing, database gone) is journaled and reported
-     * as `error`, since it often runs at the end of a visitor's request.
-     *
-     * A consumer's pass that finds the lock taken, or the wiki hibernated, still leaves a row,
-     * closed at once, outside `request` (leaveATrace()).
-     *
-     * @param bool                   $tickSchedule        whether to dispatch the scheduled tasks that are due before consuming
-     * @param bool                   $responseAlreadySent whether the visitor already has the response: when not, even the first message must fit its average; recorded, so that the cost of a pass a visitor waited for shows
-     * @param QueueConsumerMode|null $fallbackFor         the consumer a fallback pass stands in for
-     */
+    /** One pass that ends by itself: due tasks first, then messages until the queue is empty or the budget spent; never throws. */
     public function drain(QueueConsumerMode $mode, QueueBudget $budget, bool $tickSchedule = true, bool $responseAlreadySent = true, QueuePassOrigin $origin = QueuePassOrigin::Consumer, ?QueueConsumerMode $fallbackFor = null): QueuePassReport
     {
         $startedAt = microtime(true);
@@ -132,7 +83,6 @@ class QueueConsumer
 
         try {
             if ($lock === null) {
-                // Not "locked": nobody holds it, it cannot be created (cache/ not writable), and no pass would ever run.
                 $this->journal->error('The queue pass lock ' . self::PASS_LOCK . ' cannot be created', ['action' => 'queue.pass_failed']);
 
                 return $this->report(0, $startedAt, QueuePassReport::ERROR);
@@ -142,7 +92,6 @@ class QueueConsumer
             }
             if ($this->hibernation->isWikiHibernatedNow()) {
                 $this->reapWhilePaused($mode);
-                // A killed backup's listener sets the wiki back to running: then the pass is not paused any more.
                 if ($this->hibernation->isWikiHibernatedNow()) {
                     return $this->leaveATrace($this->report(0, $startedAt, QueuePassReport::PAUSED), $mode, $budget, $responseAlreadySent, $origin);
                 }
@@ -177,26 +126,7 @@ class QueueConsumer
         }
     }
 
-    /**
-     * A blocking consumer: takes messages as they come, waits when there are none, until a limit or a signal stops it.
-     *
-     * It keeps one pass row in the Journal for its whole life and moves it forward every minute, when
-     * it also reaps killed messages; the scheduled tasks are ticked whenever it is idle. While the
-     * wiki is hibernated it stays up but takes nothing: exiting would only have its supervisor
-     * restart it in a loop.
-     *
-     * Its container, and every parameter a handler or its own schedule reads, is the configuration
-     * it started on, and its classes the code that was there then. Once either changed (a data
-     * source added, mail settings saved, `private/.env` edited; an upgrade's `migrate` or a
-     * `cache:clear` emptied the container cache: the ConfigurationWatch says so, as it says it to
-     * FrankenPHP's worker), it takes no further message and stops with `config-changed`, for
-     * systemd or the binary to start a consumer that knows the new one. Setting the wiki's status rewrites the config file too, so
-     * a hibernation or a backup restarts it once more: the new one then idles as said above.
-     *
-     * @param int      $timeLimit        seconds after which it stops
-     * @param int      $memoryLimitBytes memory use after which it stops
-     * @param int|null $messageLimit     messages after which it stops; null for no such limit
-     */
+    /** A blocking consumer: takes messages as they come until a limit, a signal or a configuration change stops it. */
     public function consume(QueueConsumerMode $mode, int $timeLimit, int $memoryLimitBytes, ?int $messageLimit = null, ?OutputInterface $out = null): QueuePassReport
     {
         $startedAt = microtime(true);
@@ -241,7 +171,6 @@ class QueueConsumer
 
             $signalled = $this->work($receiver, $observer, $logger, function (WorkerRunningEvent $event) use ($observer, $passId, &$lastBeat, $isHibernated, $receiver): void {
                 if ($receiver->stopReason() === QueuePassReport::CONFIG_CHANGED) {
-                    // Before any tick: a schedule read from the old configuration would prune the tasks it does not declare.
                     $event->getWorker()->stop();
 
                     return;
@@ -267,19 +196,7 @@ class QueueConsumer
         });
     }
 
-    /**
-     * Runs that message now, whatever the budget and even while the wiki is hibernated: for a message its sender pinned to its own request (a backup archive, which sets the wiki to `archiving` itself).
-     *
-     * The message is claimed like any other, so a consumer running at the same moment cannot take
-     * it too; one already taken, handled or failed is left alone. No schedule tick, no reaping: this
-     * is not a pass over the queue, only that message.
-     *
-     * Its claim is held to no PHP limit: its sender lifted it (set_time_limit(0)), and where a host
-     * disabled that, the limit PHP keeps counts CPU time, which a backup waiting on the disk or the
-     * network outlives. Judged by it, a pass in another process -- this one holds no pass lock --
-     * would fail the message as killed while it runs. A holder that really dies is still seen at
-     * once: its process is gone, or it fails what it holds as it ends.
-     */
+    /** Runs that message now, whatever the budget and even while hibernated: for a message pinned to its sender's request. */
     public function handleById(int $messageId, QueueConsumerMode $mode): QueuePassReport
     {
         return $this->pass($mode, null, false, QueuePassOrigin::Pinned, null, function (QueuePassObserver $observer) use ($messageId, $mode): string {
@@ -292,22 +209,13 @@ class QueueConsumer
         });
     }
 
-    /**
-     * The row of a consumer's pass that did nothing -- the lock taken, the wiki hibernated --, closed at once, outside `request`.
-     *
-     * An API call that comes back while the end of a request consumes
-     * in its place, or that kept running while the wiki slept, has to be seen (QueueFallback): or
-     * it is taken for gone, and the end of requests stands in for it. In `request` that place is its
-     * own, and a busy wiki's requests finding each other's lock, or a hibernated wiki's visits,
-     * would only fill the Journal.
-     */
+    /** The row of a consumer's pass that did nothing (lock taken, wiki hibernated), closed at once, outside `request`. */
     private function leaveATrace(QueuePassReport $report, QueueConsumerMode $mode, QueueBudget $budget, bool $responseAlreadySent, QueuePassOrigin $origin): QueuePassReport
     {
         if ($origin === QueuePassOrigin::Consumer && !$mode->consumesAtEndOfRequests()) {
             try {
                 $this->recorder->passFinished($this->recorder->passStarted($mode, $budget, !$responseAlreadySent), $report, memory_get_peak_usage(true));
             } catch (\Throwable) {
-                // Nothing was done to be lost with it; the next pass that runs says whether the database is gone.
             }
         }
 
@@ -317,8 +225,7 @@ class QueueConsumer
     /**
      * Opens the pass's row, runs it, closes the row with the report.
      *
-     * @param QueueConsumerMode|null                   $fallbackFor the consumer a fallback pass stands in for
-     * @param \Closure(QueuePassObserver, int): string $body        runs the pass and answers why it stopped
+     * @param \Closure(QueuePassObserver, int): string $body
      */
     private function pass(QueueConsumerMode $mode, ?QueueBudget $budget, bool $beforeResponse, QueuePassOrigin $origin, ?QueueConsumerMode $fallbackFor, \Closure $body): QueuePassReport
     {
@@ -344,7 +251,6 @@ class QueueConsumer
             try {
                 $this->recorder->passFinished($passId, $report, memory_get_peak_usage(true));
             } catch (\Throwable) {
-                // The database is what broke the pass, and that is journaled already.
             }
         }
 
@@ -354,10 +260,8 @@ class QueueConsumer
     /**
      * Runs a Worker over the receiver until it stops, with the retry and failure listeners on a dispatcher of its own.
      *
-     * @param \Closure(WorkerRunningEvent): void $onRunning     after each message, and each time the queue is found empty
-     * @param list<EventSubscriberInterface>     $stopListeners Messenger's StopWorkerOn*Listener the Worker obeys
-     *
-     * @return bool whether a signal (SIGTERM, SIGINT) stopped it
+     * @param \Closure(WorkerRunningEvent): void $onRunning
+     * @param list<EventSubscriberInterface>     $stopListeners
      */
     private function work(QueuePassReceiver $receiver, QueuePassObserver $observer, ?LoggerInterface $logger, \Closure $onRunning, array $stopListeners = [], bool $stopOnSignals = false): bool
     {
@@ -383,11 +287,7 @@ class QueueConsumer
         return $this->runStoppingOnSignals($worker, $stopOnSignals);
     }
 
-    /**
-     * Runs the worker; for a blocking consumer, SIGTERM and SIGINT let the message in hand finish instead of killing it (which would leave it "running" until it is reaped as killed hours later).
-     *
-     * @return bool whether a signal stopped it
-     */
+    /** Runs the worker; for a blocking consumer, SIGTERM and SIGINT let the message in hand finish instead of killing it. */
     private function runStoppingOnSignals(Worker $worker, bool $stopOnSignals): bool
     {
         if (!$stopOnSignals || PHP_SAPI !== 'cli' || !function_exists('pcntl_signal')) {
@@ -419,7 +319,6 @@ class QueueConsumer
         return $signalled;
     }
 
-    /** A pass that ends with the queue: the worker stops the first time it finds nothing to take. */
     private static function stopWhenIdle(WorkerRunningEvent $event): void
     {
         if ($event->isWorkerIdle()) {
@@ -430,8 +329,7 @@ class QueueConsumer
     /**
      * Why a budgeted pass should take no further message, or null to take the next one.
      *
-     * @param bool                    $visitorWaits whether a visitor waits for the pass to end: only then is the first message held to its average duration too
-     * @param array<string, int|null> $averages     the average durations this pass already read, by type: a week of runs does not move while one pass runs, and the query reads them all (one still unknown is asked again, its first success may have come in this pass)
+     * @param array<string, int|null> $averages
      */
     private function reasonToStop(QueueBudget $budget, QueuePassObserver $observer, bool $visitorWaits, array &$averages): ?string
     {
@@ -449,7 +347,6 @@ class QueueConsumer
 
         $first = $observer->handled() === 0;
         if ($budget->remainingSeconds() <= 0.0) {
-            // The request spent the budget before the pass began (§7.2): nothing to start, not even the first message.
             return $first ? QueuePassReport::NO_BUDGET : QueuePassReport::BUDGET;
         }
         if ($first && !$visitorWaits) {
@@ -466,11 +363,7 @@ class QueueConsumer
     }
 
     /**
-     * Whether the configuration changed since this consumer started, asked of the ConfigurationWatch at most every few seconds and true for good once it was.
-     *
-     * Not asked at the start: the process just booted on the configuration as it is. The spacing
-     * is on the consumer's clock, so that a test can move it. A message dispatched in the few
-     * seconds after a change can still be taken under the old configuration.
+     * Whether the configuration changed since this consumer started, asked at most every few seconds, true for good once it was.
      *
      * @return \Closure(): bool
      */
@@ -494,16 +387,10 @@ class QueueConsumer
         return (float)$this->clock->now()->format('U.u');
     }
 
-    /**
-     * Moves to `failed`, as killed, the messages this consumer still holds, records them and tells the wiki: what PHP runs when the process ends.
-     *
-     * Nothing to do after a pass that ended as it should, every message acked. Never throws: the
-     * process is ending, and a failure here only leaves the claims to the next pass.
-     */
+    /** Moves to `failed`, as killed, what this consumer still holds, records it and tells the wiki; never throws. */
     public function failWhatItHolds(): void
     {
         try {
-            // Each claim is recorded under the mode it was taken in; Request only stands for a claim that recorded none.
             $observer = new QueuePassObserver($this->recorder, $this->journal, QueueConsumerMode::Request, $this->clock);
             foreach ($this->transport->failHeldClaims() as $killed) {
                 $this->killed($observer, $killed);
@@ -515,19 +402,11 @@ class QueueConsumer
                     'exception' => $broken,
                 ]);
             } catch (\Throwable) {
-                // The database is gone with the process; the next pass reaps them.
             }
         }
     }
 
-    /**
-     * Has PHP call failWhatItHolds() when the process ends, once per consumer.
-     *
-     * Through a weak reference, so that the consumer is not kept alive for it. PHP runs no further
-     * shutdown function once one has died of a fatal error: a pass that runs in one (the end of
-     * an FPM or mod_php request) and dies of one leaves its claim to the transport, which tells it
-     * dead from the next request this process serves, or by the time rule.
-     */
+    /** Has PHP call failWhatItHolds() when the process ends, once per consumer, through a weak reference. */
     private function failWhatItHoldsWhenTheProcessEnds(): void
     {
         if ($this->watchesTheEnd) {
@@ -560,12 +439,7 @@ class QueueConsumer
         $this->announceKilled($killed, $message);
     }
 
-    /**
-     * What a paused pass still does: reap, which changes no content (R18).
-     *
-     * Not a pass of its own (no row: a hibernated wiki in `request` mode would write one per page
-     * view), and a failure is journaled without changing what the pass answers: the wiki is paused.
-     */
+    /** What a paused pass still does: reap, which changes no content (R18); no pass row, and a failure is only journaled. */
     private function reapWhilePaused(QueueConsumerMode $mode): void
     {
         try {
@@ -580,13 +454,7 @@ class QueueConsumer
     }
 
     /**
-     * Tells the wiki's dispatcher that a dead consumer left that message, now in `failed`: how the code that followed it (a backup holding the wiki `archiving`) learns that it died.
-     *
-     * The Event carries `messageId`, `type` (its class), `mode` (the one it was killed in) and
-     * `message` (null when it cannot be read back). Each listener is called on its own
-     * (EventDispatcher::dispatchToEach()): one that throws is journaled under
-     * `queue.listener_failed`, and stops neither the ones after it nor the pass. The dispatcher
-     * is only asked for here, since building it builds every subscriber of the wiki.
+     * Tells the wiki's dispatcher that a dead consumer left that message, now in `failed`, each listener on its own.
      *
      * @param array{id: int, type: string, mode: string, deliveredAt: string} $killed
      */
@@ -598,7 +466,6 @@ class QueueConsumer
             $dispatcher = ($this->events)();
             $dispatcher->dispatchToEach(self::MESSAGE_KILLED, $event, $this->listenerFailed(...));
         } catch (\Throwable $broken) {
-            // Building the dispatcher, or the listeners it resolves, failed: none of them was called.
             $this->listenerFailed(EventDispatcher::class, $broken);
         }
     }
@@ -622,14 +489,7 @@ class QueueConsumer
         }
     }
 
-    /**
-     * Dispatches the scheduled tasks that are due.
-     *
-     * A schedule that breaks (a checkpoint that cannot be written; a provider that throws, the
-     * ticker leaves out itself) is journaled and the pass goes on: the messages already queued do
-     * not depend on it. The ticker waits a minute before trying a broken schedule again, so a
-     * blocking consumer that ticks at every idle second does not journal it every second.
-     */
+    /** Dispatches the scheduled tasks that are due; a schedule that breaks is journaled and the pass goes on. */
     private function tick(): void
     {
         try {
@@ -647,7 +507,7 @@ class QueueConsumer
         return new QueuePassReport($handled, $this->remaining(), (int)round((microtime(true) - $startedAt) * 1000), $stopReason);
     }
 
-    /** Messages still waiting; 0 when the queue cannot be read, which the pass's own report already says. */
+    /** Messages still waiting; 0 when the queue cannot be read. */
     private function remaining(): int
     {
         try {

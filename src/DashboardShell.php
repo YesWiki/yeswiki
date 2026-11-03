@@ -28,12 +28,11 @@ trait DashboardShell
             'shell_scope' => $this->scopeOf($current),
             // The same count the chrome badge shows, on the rail entry that leads to it (ticket 52).
             'health_broken' => $isAdmin ? $this->getService(HealthService::class)->brokenCount() : 0,
-            // Of those, the ones the jobs page answers -- the queue's own and those a module links there.
             'queue_broken' => $isAdmin ? $this->brokenOn(QueueHealthChecks::ROUTE) : 0,
         ];
     }
 
-    /** How many Broken findings send the admin to that screen; the same run of the checks as the badge's, which HealthService keeps for the request. */
+    /** How many Broken findings send the admin to that screen. */
     private function brokenOn(string $route): int
     {
         return count($this->getService(HealthService::class)->findings(Severity::Broken, $route));

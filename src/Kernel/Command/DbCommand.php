@@ -164,15 +164,12 @@ class DbCommand extends Command
     }
 
     /**
-     * The dump tool's calls, each with the file it writes: the first writes the dump, each other one a part appended to it.
+     * The dump tool's calls by the file each writes: the first writes the dump, each other a part appended to it.
      *
-     * A table some of whose rows a backup leaves out (DumpRewriter::leftOutRows()) is dumped by a
-     * call of its own, since mysqldump applies its `--where` to every table of one call.
+     * @param list<string> $connection
+     * @param list<string> $tables
      *
-     * @param list<string> $connection the options that reach the server
-     * @param list<string> $tables     the tables to dump
-     *
-     * @return array<string, list<string>> the arguments of each call, by the file it writes
+     * @return array<string, list<string>>
      */
     public static function dumpInvocations(array $connection, string $database, array $tables, string $tablePrefix, string $resultFile): array
     {
@@ -191,7 +188,6 @@ class DbCommand extends Command
         return $invocations;
     }
 
-    /** Copy a part of the dump after what the dump file holds already. */
     private function append(string $part, string $dump): void
     {
         $from = $this->localFiles()->openForReading($part);

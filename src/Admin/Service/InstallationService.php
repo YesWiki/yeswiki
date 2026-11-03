@@ -532,11 +532,7 @@ class InstallationService
         $this->pass(_t('CREATION_OF_QUEUE'));
     }
 
-    /**
-     * Create the search index and send a ReindexContent per seeded Content (ticket 18 / ADR-0015), after the queue exists.
-     *
-     * Straight to the transport: the installer has no container, hence no bus.
-     */
+    /** Create the search index and send a ReindexContent per seeded Content (ticket 18 / ADR-0015), after the queue exists. */
     private function installSearchIndex(): void
     {
         $db = $this->dbLink;

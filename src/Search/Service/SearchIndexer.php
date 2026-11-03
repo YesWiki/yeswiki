@@ -10,9 +10,7 @@ use YesWiki\Search\Entity\IndexedContent;
 use YesWiki\Search\Message\ReindexContent;
 
 /**
- * Writes the search index (ticket 18 / ADR-0015).
- *
- * Whatever needs a Content reindexed (a save, a rename, a form change, a migration) sends one
+ * Writes the search index (ticket 18 / ADR-0015). Whatever needs a Content reindexed sends one
  * ReindexContent per Content to the background queue (ADR-0030), whose consumer runs index().
  */
 class SearchIndexer
@@ -99,9 +97,6 @@ class SearchIndexer
 
     /**
      * Ask the queue to reindex these Contents, one message each.
-     *
-     * The bus journals a queue it cannot write to and carries on, so saving a Content never fails
-     * for want of one.
      *
      * @param list<string> $tags
      */

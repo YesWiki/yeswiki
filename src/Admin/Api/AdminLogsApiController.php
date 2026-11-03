@@ -66,13 +66,11 @@ class AdminLogsApiController extends YesWikiController
         $clauses = ['1 = 1'];
         $params = [];
 
-        // The queue's rows are many and routine: they are listed only when their channel is asked for.
         $channel = JournalChannel::tryFrom((string)$request->query->get('channel', ''));
         if ($channel !== null) {
             $clauses[] = $db->quoteIdentifier('channel') . ' = ?';
             $params[] = $channel->value;
         } else {
-            // Named rather than `<> 'queue'`, which no index serves: `(channel, at)` does.
             $listed = array_diff(array_column(JournalChannel::cases(), 'value'), [JournalChannel::Queue->value]);
             $clauses[] = $db->quoteIdentifier('channel') . ' IN (' . SqlParameters::placeholders(count($listed)) . ')';
             array_push($params, ...$listed);
@@ -93,8 +91,7 @@ class AdminLogsApiController extends YesWikiController
         }
 
         // A date range, not a timestamp one: the filter above the table is two date pickers, and
-        // "to" means the whole of that day. The queue's rows are stored in UTC, so for them the day is the
-        // wiki's own, converted.
+        // "to" means the whole of that day.
         $from = $this->dateOrNull((string)$request->query->get('from', ''));
         if ($from !== null) {
             $clauses[] = $db->quoteIdentifier('at') . ' >= ?';

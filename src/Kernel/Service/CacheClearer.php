@@ -20,15 +20,6 @@ class CacheClearer
     /** @var list<string> */
     public const ALL = [self::CONTAINER, self::TEMPLATES];
 
-    /**
-     * What `clearEverything()` leaves alone: the placeholder git tracks, and the queue's locks.
-     *
-     * A pass or a schedule tick may be holding one while the cache is cleared: a lock file deleted
-     * under it would let a second one start beside it. Kept by name, as the constants that place
-     * them under `cache/` spell it.
-     * Any other `.lock` is kept while someone holds it (isHeld()): the features' own, such as a
-     * remote backup's step, cannot be named here, and one nobody holds is a leftover.
-     */
     public const KEPT = ['.gitkeep', QueueConsumer::PASS_LOCK, QueueCheckpoint::LOCK];
 
     private ?Storage $storage;
@@ -105,7 +96,6 @@ class CacheClearer
         return $count;
     }
 
-    /** Whether someone holds this lock: deleted under its holder, it would let a second one in beside the first. */
     private function isHeld(Storage $storage, string $path): bool
     {
         try {

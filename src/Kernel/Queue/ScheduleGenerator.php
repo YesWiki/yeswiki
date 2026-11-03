@@ -12,21 +12,8 @@ use Symfony\Component\Scheduler\Schedule;
 use Symfony\Component\Scheduler\Trigger\StatefulTriggerInterface;
 
 /**
- * Symfony's MessageGenerator, for one tick, over a checkpoint of the wiki's own (messenger / scheduler).
- *
- * Symfony's generator takes a CheckpointInterface in its constructor but declares its private
- * checkpoint() as returning its own final Checkpoint class (symfony/scheduler 7.4 and 8.0), so
- * any other implementation fails with a TypeError on the first call; and that Checkpoint wants a
- * cache pool and symfony/lock, which the wiki does not ship. This is the same loop with the same
- * rules -- runs before the saved time are skipped, a run at the saved time is skipped up to the
- * saved index, `processOnlyLastMissedRun` dispatches only the last of the missed runs, a trigger
- * that does not move forward is an error -- written against the interface. It keeps nothing
- * between ticks (no heap, no "wait until"), since QueueScheduleTicker builds one per due tick
- * from the schedule as it is then; and for the same reason it always probes one microsecond
- * before the saved time, as Symfony's does on its first build, so that the messages due at that
- * very time and not yet dispatched still go.
- *
- * Should Symfony's generator accept other checkpoints one day, this class can give way to it.
+ * Symfony's MessageGenerator loop, for one tick, written against CheckpointInterface: Symfony's own only accepts
+ * its final Checkpoint class (symfony/scheduler 7.4, 8.0). It can give way to Symfony's should that change.
  */
 final class ScheduleGenerator implements MessageGeneratorInterface
 {
@@ -40,9 +27,6 @@ final class ScheduleGenerator implements MessageGeneratorInterface
 
     /**
      * The messages due now, each with the context of its run; nothing when another process holds the checkpoint.
-     *
-     * The checkpoint is saved after each run's messages and released once all are out, with the
-     * time the earliest next run is due.
      *
      * @return \Generator<MessageContext, object>
      */

@@ -17,57 +17,21 @@ use YesWiki\Kernel\Service\Journal;
 
 /**
  * Turns the recurring tasks that are due into messages in the queue, and does nothing else (messenger / scheduler).
- *
- * The Scheduler here never runs a task: it produces, the queue consumes. QueueConsumer calls
- * tick() at the start of each pass and whenever a blocking consumer finds the queue empty, so
- * every mode gets its scheduled work the same way, as messages with retries, history and
- * failures like any other. A task's message waits under its task id (QueueTransport deduplicates it), so a run that
- * still waits (a wiki where passes are rare) absorbs the next one instead of piling up.
- *
- * What is due is decided by Symfony's rules (ScheduleGenerator, the loop of its MessageGenerator)
- * over the RecurringMessages of every ProvidesSchedule service, with `processOnlyLastMissedRun`:
- * a task that missed ten runs while nothing ticked runs once, not ten times (spec §8). Its
- * progress lives in QueueCheckpoint, in the database, so a request, an API call and the next
- * request share one schedule.
- *
- * While the wiki is hibernated (hibernate, archiving, updating) the schedule stands still: tick()
- * dispatches nothing and leaves the checkpoint as it was, whoever calls it, and asks again a
- * minute later. The checkpoint could not move anyway, since the TripleStore refuses every write
- * then. Once the wiki wakes up, each task that missed runs while it slept runs once, like any
- * task that missed runs, and the schedule goes on from there.
- *
- * tick() has to be cheap, since a blocking consumer calls it about once a second. When the next
- * due time is known and still ahead, it returns without touching anything: that time is held in
- * memory, and read again from the checkpoint at most once a minute, so that a long-lived
- * consumer still notices a due time another process wrote (one whose schedule has a task this
- * one had not seen, a restored database). A ticker that has just been built -- each request,
- * outside worker mode -- reads that one triple. Only when something is due does it ask the
- * providers for the schedule, take the lock and build the generator; that is also when a
- * schedule that changed (a source set to sync) is picked up, since it is built anew each time.
- *
- * A provider that throws is journaled (`queue.schedule_provider_failed`) and left out of that
- * schedule; the others are scheduled as usual. Which rows were its tasks is not known here, so
- * while one fails no task row is forgotten, and every row recorded counts as declared: the tasks
- * of the provider that broke stay in sight, and `queue-task-overdue` says so once they are late,
- * rather than their rows being pruned as if nobody declared them any more (digests that stop
- * with nothing to say so).
+ * What is due follows Symfony's rules with `processOnlyLastMissedRun`; progress lives in QueueCheckpoint, in the database.
+ * The schedule stands still while the wiki is hibernated; tick() returns at once while the next due time is ahead.
  */
 class QueueScheduleTicker
 {
-    /** The schedule's name, as the MessageContext of each run carries it. */
     private const NAME = 'yeswiki';
 
-    /** How long a due time held in memory is trusted before the checkpoint is read again. */
     private const RECHECK_SECONDS = 60;
 
-    /** When the schedule is next due, as last read or written; null when it has to be read. */
     private ?\DateTimeImmutable $dueAt = null;
 
-    /** When $dueAt was learnt. */
     private ?\DateTimeImmutable $learntAt = null;
 
     /**
-     * @param iterable<ProvidesSchedule> $providers every service that declares recurring work
+     * @param iterable<ProvidesSchedule> $providers
      */
     public function __construct(
         #[AutowireIterator('yeswiki.schedule_provider')]
@@ -81,13 +45,7 @@ class QueueScheduleTicker
     ) {
     }
 
-    /**
-     * Queues the runs that are due, and answers how many.
-     *
-     * Throws when its checkpoint cannot be read or written: the caller journals it and goes on
-     * consuming (a provider that throws is only left out, see build()). A broken schedule is then
-     * tried again a minute later, not at every idle second of a blocking consumer.
-     */
+    /** Queues the runs that are due, and answers how many; throws when the checkpoint cannot be read or written. */
     public function tick(): int
     {
         $now = $this->clock->now();
@@ -101,7 +59,6 @@ class QueueScheduleTicker
                 return 0;
             }
             if ($this->hibernation->isWikiHibernatedNow()) {
-                // Asked again in a minute rather than at every idle second: reading the status parses the config file.
                 $this->learn($now->modify('+' . self::RECHECK_SECONDS . ' seconds'), $now);
 
                 return 0;
@@ -116,26 +73,18 @@ class QueueScheduleTicker
 
             throw $failed;
         } finally {
-            // The Scheduler releases the checkpoint only when it got to the end; not when a provider or a write threw.
             $this->checkpoint->unlock();
         }
     }
 
-    /**
-     * Every recurring task declared, as Symfony's Schedule; built anew on each call, so that it reflects what the providers declare now.
-     *
-     * A provider that throws is journaled and left out.
-     */
+    /** Every recurring task declared, built anew on each call; a provider that throws is journaled and left out. */
     public function schedule(): Schedule
     {
         return $this->build()[0];
     }
 
     /**
-     * The ids of the tasks the providers declare now: the only tasks whose rows (QueueTaskRows) mean anything.
-     *
-     * A row outlives its task (a deleted data source, a disabled extension) until the next due tick forgets it; whoever judges the rows, such as the health checks, ignores those.
-     * While a provider throws, every row recorded counts too: its own tasks are among them.
+     * The ids of the tasks the providers declare now, and while a provider throws every task row recorded.
      *
      * @return list<string>
      */
@@ -147,11 +96,7 @@ class QueueScheduleTicker
         return $complete ? $ids : array_values(array_unique([...$ids, ...$this->recorder->taskIds()]));
     }
 
-    /**
-     * Queues a run of that task now, outside its schedule (the jobs page's "run now"); false when no such task is declared or it could not be queued.
-     *
-     * The schedule is left as it is: the next run stays when it was due.
-     */
+    /** Queues a run of that task now, leaving its schedule as it is; false when no such task is declared or it could not be queued. */
     public function runNow(string $taskId): bool
     {
         $now = $this->clock->now();
@@ -165,7 +110,7 @@ class QueueScheduleTicker
     }
 
     /**
-     * The schedule the providers declare now, and whether all of them could say: a provider that throws is journaled and left out, and the others are scheduled all the same.
+     * The schedule the providers declare now, and whether all of them could say.
      *
      * @return array{Schedule, bool}
      */
@@ -190,7 +135,6 @@ class QueueScheduleTicker
                 try {
                     $schedule->add($message);
                 } catch (LogicException $twice) {
-                    // The same message on the same interval, declared again: it is the same task, scheduled once already.
                     $this->journal?->error($provider::class . ' declares a scheduled task twice; it is scheduled once: ' . $twice->getMessage(), [
                         'action' => 'queue.schedule_provider_failed',
                         'target' => $provider::class,
@@ -216,8 +160,6 @@ class QueueScheduleTicker
                 $dispatched++;
             }
         }
-        // The schedule was just built from what the providers declare now: the moment to forget the tasks that left it,
-        // unless a provider could not say, whose tasks would go with them.
         if ($complete) {
             $this->recorder->forgetTasksExcept($this->idsOf($schedule));
         }
@@ -225,18 +167,13 @@ class QueueScheduleTicker
         return $dispatched;
     }
 
-    /**
-     * Sends one run to the queue; a scheduled task is sent under its unique key and recorded on its row.
-     *
-     * @return bool whether it is in the queue (or a run of the same task already waiting there)
-     */
+    /** Sends one run to the queue, a scheduled task recorded on its row; true once queued, or when that task already waits. */
     private function dispatch(object $message, int $everySeconds, ?\DateTimeImmutable $nextDue): bool
     {
         if (!$message instanceof ScheduledTask) {
             return $this->bus->dispatch($message)->last(TransportMessageIdStamp::class) !== null;
         }
 
-        // QueueBus journals a queue it cannot write to, and hands the envelope back without an id.
         $queued = $this->bus->dispatch($message)->last(TransportMessageIdStamp::class) !== null;
         if ($queued) {
             $this->recorder->taskDispatched($message, $everySeconds, $nextDue);

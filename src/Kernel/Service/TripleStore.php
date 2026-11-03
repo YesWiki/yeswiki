@@ -152,12 +152,7 @@ class TripleStore
         return [];
     }
 
-    /**
-     * Drops what this instance cached of that resource: its next read is the database's.
-     *
-     * For triples another process writes while this one lives on, such as the Scheduler's
-     * checkpoint (QueueCheckpoint), which a blocking queue consumer reads for an hour.
-     */
+    /** Drops what this instance cached of that resource, for triples another process writes meanwhile. */
     public function forget(string $resource, string $re_prefix = THISWIKI_PREFIX): void
     {
         unset($this->cacheByResource[$re_prefix . $resource]);

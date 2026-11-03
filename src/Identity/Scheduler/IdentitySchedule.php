@@ -9,12 +9,7 @@ use YesWiki\Identity\Message\PurgeRecoveryKeys;
 use YesWiki\Kernel\Queue\ProvidesSchedule;
 use YesWiki\Kernel\Scheduler\KernelSchedule;
 
-/**
- * The housekeeping of accounts and of the anti-bot guard: the keys that expired, the tokens and counters that are past.
- *
- * One task for each, so that one that fails shows as its own on the jobs page and does not hide
- * the others.
- */
+/** The housekeeping of accounts and of the anti-bot guard, one task each: the keys that expired, the tokens and counters that are past. */
 class IdentitySchedule implements ProvidesSchedule
 {
     public function recurringMessages(): array

@@ -7,10 +7,7 @@ use YesWiki\Files\Service\Storage;
 
 /**
  * What the last sync of each data source did: the log under the cache directory that the importers page shows.
- *
- * The schedule does not read it: a source syncs every interval from the start of the schedule (ImportSchedule).
- *
- * Whoever syncs a source records the outcome here -- the scheduled task, the console command, the admin page and the API route -- so that "when did this last sync" has one answer rather than one per trigger.
+ * Whoever syncs a source records its outcome here; the schedule does not read it.
  */
 class SyncScheduler
 {

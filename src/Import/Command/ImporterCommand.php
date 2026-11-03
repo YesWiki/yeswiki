@@ -68,7 +68,6 @@ class ImporterCommand extends Command
      */
     private function syncSource(string $id, array $sourceOptions, OutputInterface $output): void
     {
-        // A failing source is shown like the others, and does not fail the command.
         $output->writeln($this->services->get(ImporterManager::class)->syncByHand($id, $sourceOptions)['log']);
     }
 

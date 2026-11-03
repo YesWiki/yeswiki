@@ -7,14 +7,7 @@ use YesWiki\Admin\Service\ArchiveService;
 
 /**
  * Makes the backup a CreateArchive asks for, reporting under its uid.
- *
- * ArchiveService::archive() sets the wiki read-only (`archiving`) while it works and lifts it on
- * every way out it knows of. Should it throw past that, the status is lifted here, so a failed
- * backup never leaves the wiki read-only -- unless the wiki was already `archiving` before this
- * run began: that status belongs to another run, which this one must not cut short.
- *
- * A copy in `failed` is never retried from the jobs page (CreateArchive is NotReplayableByHand):
- * nothing would follow it, so nothing would lift what it sets.
+ * Should archive() throw, `archiving` is lifted here, unless the wiki was already `archiving` before this run began.
  */
 #[AsMessageHandler]
 final class CreateArchiveHandler

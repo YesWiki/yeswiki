@@ -5,40 +5,17 @@ namespace YesWiki\Kernel\Service\Queue;
 use YesWiki\Kernel\Service\DbService;
 
 /**
- * The queue's table: what it is called, and creating or removing it (messenger / scheduler).
- *
- * It lives in the wiki's own database, like the Journal, so that a wiki on shared hosting needs
- * nothing beyond what it already has: no Redis, no AMQP, no second connection to configure. What
- * the consumer did, its runs and its passes, is not here but in the Journal's `queue` channel
- * (QueueRecorder).
- *
- * One table holds three queues, told apart by `queue_name`: `default`, the messages waiting to be
- * handled, `failed`, those an admin has to look at (QueueTransport), and SCHEDULE_QUEUE, the
- * scheduled tasks, one row each (QueueTaskRows). Every query on it
- * says which queue it means: a task's row is never a message.
+ * The queue's table in the wiki's own database: what it is called, and creating or removing it. It holds three
+ * queues told apart by `queue_name`: `default`, `failed` (QueueTransport) and SCHEDULE_QUEUE (QueueTaskRows).
  */
 class QueueSchema
 {
-    /** Unprefixed. */
     public const TABLE = 'queue';
 
-    /**
-     * The queue no consumer reads: a row per scheduled task, keyed by its `task_id` (QueueTaskRows).
-     *
-     * Two underscores: no queue of messages is named so.
-     */
     public const SCHEDULE_QUEUE = '__schedule';
 
-    /**
-     * Unprefixed. The table holds the running instance's state, not the wiki's content: what this
-     * instance still has to do and what its scheduled tasks did. A backup leaves it out and a
-     * restore leaves it alone (DumpRewriter::contentTables()); a restored copy taking the backup's
-     * rows would hold the backup's own message as running and replay what was pending then. The
-     * Scheduler's checkpoint, in the triples, is kept the same way (DumpRewriter::leftOutRows()).
-     */
     public const TABLES = [self::TABLE];
 
-    /** How many characters `dedup_key` holds in every dialect: utf8mb4's widest indexable VARCHAR. */
     public const DEDUP_KEY_LENGTH = 191;
 
     private DbService $dbService;

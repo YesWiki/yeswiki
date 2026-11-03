@@ -12,9 +12,7 @@ use YesWiki\Search\Service\SearchIndexSchema;
 
 /**
  * `./yeswicli search:reindex` -- the one way the search index is (re)built (ticket 18).
- *
- * It only queues: the reindexing is the background queue's to run (ADR-0030), in whatever mode
- * the wiki consumes it, or at once with `./yeswicli messenger:consume --drain`.
+ * It only queues: the reindexing is the background queue's to run (ADR-0030), or at once with `messenger:consume --drain`.
  */
 class ReindexCommand extends Command
 {

@@ -11,16 +11,13 @@ use YesWiki\Kernel\Service\Queue\QueueHandlerLocator;
 
 /**
  * Builds QueueHandlerLocator's message => service-ids map from the `#[AsMessageHandler]` attributes, mirroring YesWikiPerformableCompilerPass.
- *
- * The convention is the one every handler of the wiki follows: a class carrying the attribute,
- * with a `__invoke(<Message> $message)` method. The message is read off that parameter, so the
- * attribute needs no argument and a handler cannot disagree with its own signature.
+ * A handler is a class carrying the attribute; the message type is read off its `__invoke(<Message> $message)` parameter.
  */
 class YesWikiQueueCompilerPass implements CompilerPassInterface
 {
     public const TAG = 'yeswiki.message_handler';
 
-    /** Turns the attribute into a tag carrying the message type: called by the kernel's build(). */
+    /** Turns the attribute into a tag carrying the message type, for the kernel's build(). */
     public static function autoconfigure(ContainerBuilder $container): void
     {
         $container->registerAttributeForAutoconfiguration(
@@ -42,7 +39,6 @@ class YesWikiQueueCompilerPass implements CompilerPassInterface
 
         $handlers = [];
         foreach ($container->findTaggedServiceIds(self::TAG) as $id => $tags) {
-            // The locator fetches the service by id when its message is consumed, so it must be reachable.
             $container->findDefinition($id)->setPublic(true);
             foreach ($tags as $tag) {
                 $handlers[$tag['handles']][] = $id;

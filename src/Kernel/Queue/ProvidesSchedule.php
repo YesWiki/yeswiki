@@ -4,11 +4,7 @@ namespace YesWiki\Kernel\Queue;
 
 use Symfony\Component\Scheduler\RecurringMessage;
 
-/**
- * Implemented by a service that has recurring work, and nothing else: the scheduler finds it by this interface, tagged `yeswiki.schedule_provider`.
- *
- * A module enrols its tasks by implementing it; there is no central list to edit.
- */
+/** Implemented by a service that has recurring work, found by the scheduler through the tag `yeswiki.schedule_provider`. */
 interface ProvidesSchedule
 {
     /** @return list<RecurringMessage> */

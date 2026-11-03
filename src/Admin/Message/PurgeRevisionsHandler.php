@@ -8,11 +8,8 @@ use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Kernel\Service\RuntimeConfig;
 
 /**
- * Deletes the page versions older than the newest one that is itself older than `pages_purge_time`, so a revision from before the window always survives.
- *
- * It does nothing when the wiki does not purge (no `pages_purge_time`) and while it is
- * hibernated, an archive or an update being under way: the status as it is now, since a consumer
- * that has been up for an hour was built with the one from its start.
+ * Deletes the page versions older than the newest one itself older than `pages_purge_time`: one from before the window survives.
+ * Does nothing when the wiki does not purge, or while it is hibernated now (an archive or an update under way).
  */
 #[AsMessageHandler]
 final class PurgeRevisionsHandler

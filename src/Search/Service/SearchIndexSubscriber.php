@@ -8,9 +8,7 @@ use YesWiki\Kernel\Entity\Event;
 
 /**
  * Keeps the search index in step with the wiki (ticket 18 / ADR-0015).
- *
- * It only queues: SearchIndexer sends one ReindexContent per Content, and the queue's
- * consumer runs them, so a save neither spawns a process nor registers work for the end of the request.
+ * It only queues: SearchIndexer sends one ReindexContent per Content, and the queue's consumer runs them.
  */
 class SearchIndexSubscriber implements EventSubscriberInterface
 {

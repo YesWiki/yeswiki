@@ -7,25 +7,13 @@ use YesWiki\Kernel\Database\SqlParameters;
 use YesWiki\Kernel\Service\DbService;
 
 /**
- * The scheduled tasks' state: rows of the queue's table, in the queue no consumer reads (messenger / scheduler).
- *
- * Each row is found by its `task_id`, unique, which every message leaves NULL. Its fields are
- * JSON in `body`: `label`, `every_seconds`, `last_dispatched_at`, `next_due_at`,
- * `last_finished_at`, `last_status`, `last_error` and `consecutive_failures` (QueueRecorder).
- * A field that is null is left out. The Scheduler's own checkpoint is no row: it is kept in
- * triples (QueueCheckpoint). The other columns only make the row a valid one of the table: its type is
- * its task id, its headers `{}`, and it was created and made available when it was first written.
- *
- * Every query here is on QueueSchema::SCHEDULE_QUEUE, and every query elsewhere on a queue of
- * messages: the transport never takes, counts nor prunes a task's row.
- *
- * Times in the fields are written by the callers, in UTC, `Y-m-d H:i:s`.
+ * The scheduled tasks' state: rows of the queue's table in QueueSchema::SCHEDULE_QUEUE, found by their unique
+ * `task_id`, their fields JSON in `body` (QueueRecorder); the transport never takes, counts nor prunes them.
  */
 class QueueTaskRows
 {
     private const TIME_FORMAT = 'Y-m-d H:i:s';
 
-    /** Replays of a transaction the engine undid to break a deadlock (see DbService::transactional()). */
     private const CONFLICT_ATTEMPTS = 3;
 
     public function __construct(
@@ -36,8 +24,6 @@ class QueueTaskRows
     }
 
     /**
-     * That row's fields, or null when it has none.
-     *
      * @return array<string, mixed>|null
      */
     public function read(string $taskId): ?array
@@ -69,8 +55,6 @@ class QueueTaskRows
     }
 
     /**
-     * The ids of the tasks that have a row, in order.
-     *
      * @return list<string>
      */
     public function ids(): array
@@ -85,14 +69,9 @@ class QueueTaskRows
     }
 
     /**
-     * Writes that row's fields as $change makes them from the ones it has, the row being created first if it is not there.
+     * Atomically writes that row's fields as $change makes them from the ones it has (`[]` for a new row).
      *
-     * Atomic: two processes changing the same row one after the other each see what the first
-     * wrote. The row is made to exist by an insert that leaves one already there as it is, then
-     * read under a row lock (FOR UPDATE on MySQL and PostgreSQL; SQLite's transaction is BEGIN
-     * IMMEDIATE, one writer at a time) and written back in the same transaction.
-     *
-     * @param callable(array<string, mixed>): array<string, mixed> $change given `[]` for a new row
+     * @param callable(array<string, mixed>): array<string, mixed> $change
      */
     public function update(string $taskId, callable $change): void
     {
@@ -126,7 +105,7 @@ class QueueTaskRows
     /**
      * Forgets the tasks that are no longer declared.
      *
-     * @param list<string> $declared the ids of the tasks the schedule has now
+     * @param list<string> $declared
      */
     public function forgetExcept(array $declared): void
     {
@@ -152,7 +131,6 @@ class QueueTaskRows
     /** @param array<string, mixed> $fields */
     private static function encode(array $fields): string
     {
-        // An object even when empty: `{}`, as a new row starts.
         return json_encode(
             (object)array_filter($fields, static fn (mixed $value): bool => $value !== null),
             JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_INVALID_UTF8_SUBSTITUTE | JSON_THROW_ON_ERROR

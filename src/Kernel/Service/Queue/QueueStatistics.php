@@ -14,19 +14,13 @@ use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\JournalSchema;
 
 /**
- * Reads the queue back: what waits, what failed, what the passes and the scheduled tasks did (messenger / scheduler).
- *
- * Everything the health checks, the jobs page and the consumer's budget need to know, and
- * nothing else writes: the rows come from the transport and from QueueRecorder, the runs and the
- * passes being rows of the Journal's `queue` channel, the scheduled tasks rows of the queue's
- * table that no query on its messages sees (QueueTaskRows). Times come out as DateTimeImmutable
- * in UTC, since that is how they were written.
+ * Reads the queue back for the health checks, the jobs page and the consumer's budget (messenger / scheduler).
+ * Rows come from the transport, QueueRecorder's Journal `queue` channel and QueueTaskRows; times come out in UTC.
  */
 class QueueStatistics
 {
     private const TIME_FORMAT = 'Y-m-d H:i:s';
 
-    /** What failedRow() reads of a row of `failed`. */
     private const FAILED_COLUMNS = 'id, message_type, attempts, last_error, killed_in, created_at';
 
     public function __construct(
@@ -45,7 +39,7 @@ class QueueStatistics
         return $this->transport->getMessageCount();
     }
 
-    /** Messages of that class waiting to be handled, delayed retries included; not those being handled: what a module counts its own backlog with. */
+    /** Messages of that class waiting, delayed retries included, not those being handled: a module's own backlog. */
     public function waitingOfType(string $type): int
     {
         return (int)$this->db->scalar(
@@ -61,7 +55,7 @@ class QueueStatistics
     }
 
     /**
-     * The messages waiting in `failed` for an admin, most recent first.
+     * The messages waiting in `failed`, most recent first.
      *
      * @return list<array{id: int, type: string, attempts: int, error: ?string, killedIn: ?string, createdAt: \DateTimeImmutable}>
      */
@@ -78,9 +72,7 @@ class QueueStatistics
     /**
      * The messages of these types waiting in `failed`, most recent first, but those whose consumer was killed.
      *
-     * A killed message is the killed alert's: retried in the mode that killed it, it would only be killed again.
-     *
-     * @param list<string> $types message classes
+     * @param list<string> $types
      *
      * @return list<array{id: int, type: string, attempts: int, error: ?string, killedIn: ?string, createdAt: \DateTimeImmutable}>
      */
@@ -100,7 +92,7 @@ class QueueStatistics
     }
 
     /**
-     * That message, if it is waiting in `failed`: what an admin's "retry", "ignore" or "delete" acts on, and nothing else.
+     * That message, if it is waiting in `failed`: what an admin's "retry", "ignore" or "delete" acts on.
      *
      * @return array{id: int, type: string, attempts: int, error: ?string, killedIn: ?string, createdAt: \DateTimeImmutable}|null
      */
@@ -114,7 +106,6 @@ class QueueStatistics
         return $row === null ? null : self::failedRow($row);
     }
 
-    /** Messages waiting in `failed`, all of them. */
     public function failedCount(): int
     {
         return (int)$this->db->scalar(
@@ -135,12 +126,7 @@ class QueueStatistics
     }
 
     /**
-     * How the messages that finished in the last $sinceSeconds ended, of every type or of that one, and how long the successful ones took on average.
-     *
-     * An attempt that will be retried is not an outcome, and an "ignored" row only acknowledges a
-     * failure already counted: neither is here.
-     *
-     * @param string|null $type a message class, for a module's own check; null for every type
+     * How the messages finished in the last $sinceSeconds ended, of every type or of that one, and the successes' average duration.
      *
      * @return array{handled: int, failed: int, killed: int, avgMs: ?int}
      */
@@ -169,7 +155,7 @@ class QueueStatistics
     }
 
     /**
-     * The deliveries stuck "in progress" past the limit of their mode, which no pass has yet moved to `failed`.
+     * The deliveries stuck "in progress" past their mode's limit, which no pass has yet moved to `failed`.
      *
      * @return list<array{id: int, type: string, mode: string, deliveredAt: string}>
      */
@@ -181,20 +167,7 @@ class QueueStatistics
         );
     }
 
-    /**
-     * The last time a consumer was seen at work: the latest start, end or heartbeat of a pass (a pass row's `last_at` is the latest of them), or now while one holds a message whose limit has not passed.
-     *
-     * The message in progress counts because a blocking consumer does not beat while one handler
-     * runs: an hour-long backup would otherwise read as an hour without a consumer. Its delivery
-     * time would not do, it is just as old. The cost is that a consumer that died mid-message is
-     * seen gone only once that message's limit is over, when `queue-killed` speaks as well.
-     *
-     * The row a consumer's pass leaves when it finds the wiki hibernated counts: the stall check is
-     * silent while the wiki sleeps, and a consumer that kept coming through the sleep is not stalled
-     * when it wakes. Not the row it leaves when it finds the lock taken (QueueConsumer::leaveATrace()),
-     * which says the consumer came, not that the queue moved: a pass stuck in a handler holds that lock.
-     * Null when no pass ever ran on this wiki.
-     */
+    /** Last time a consumer was seen at work (a pass's latest `last_at`), or now while it holds a live claim; null if no pass ran. */
     public function lastActivityAt(): ?\DateTimeImmutable
     {
         if ($this->transport->isHandling()) {
@@ -211,10 +184,7 @@ class QueueStatistics
     }
 
     /**
-     * What waits in `failed`, by message type and by whether the consumer was killed mid-message, all of it rather than the page `failed()` gives.
-     *
-     * `killedIn` is the mode a message's consumer was killed in by PHP's time limit or the OOM
-     * killer, null for a message that failed by itself.
+     * All that waits in `failed`, by message type and by the mode its consumer was killed in (null: it failed by itself).
      *
      * @return list<array{type: string, killedIn: ?string, count: int}>
      */
@@ -222,7 +192,6 @@ class QueueStatistics
     {
         $rows = $this->db->loadAll(
             "SELECT message_type, killed_in, COUNT(*) AS waiting FROM {$this->schema->table()}"
-            // Those that failed by themselves first, whichever end of the order the database puts NULL at.
             . " WHERE queue_name = ? GROUP BY message_type, killed_in ORDER BY message_type, COALESCE(killed_in, '')",
             [QueueTransport::FAILED_QUEUE]
         );
@@ -235,17 +204,12 @@ class QueueStatistics
     }
 
     /**
-     * How long the passes that a visitor waited for lasted, in seconds, over the last $sinceSeconds.
-     *
-     * The most recent $limit of them: in `request` mode there can be one per page view, and an
-     * average needs no more than a few hundred. Computed here rather than in SQL, where the
-     * difference of two dates is not written the same way on the three databases.
+     * How long the $limit latest passes a visitor waited for lasted, in seconds, over the last $sinceSeconds.
      *
      * @return list<float>
      */
     public function visitorWaits(int $sinceSeconds, int $limit = 500): array
     {
-        // A closed pass was last seen when it ended.
         $rows = $this->db->loadAll(
             "SELECT at, last_at FROM {$this->journal->table()}"
             . " WHERE channel = ? AND action = ? AND target <> '' AND at >= ?"
@@ -262,8 +226,6 @@ class QueueStatistics
 
     /**
      * Per message type: how many wait, how many failed, and how the ones handled in the last $days went.
-     *
-     * A type is listed when it has messages in the queue or history in the window.
      *
      * @return list<array{type: string, pending: int, failed: int, lastSuccessAt: ?\DateTimeImmutable, avgMs: ?int}>
      */
@@ -319,7 +281,7 @@ class QueueStatistics
     /**
      * The most recent pass, open or not.
      *
-     * @return array<string, mixed>|null shaped as recentPasses() rows
+     * @return array<string, mixed>|null
      */
     public function lastPass(): ?array
     {
@@ -327,11 +289,7 @@ class QueueStatistics
     }
 
     /**
-     * The most recent passes, newest first.
-     *
-     * A pass whose `stopReason` is empty is still running, and its `finishedAt` is when it was last
-     * seen: its last heartbeat, or its start until the first one. `blocking` is a long-lived
-     * consumer's single pass, which starts when its process does.
+     * The most recent passes, newest first; one with an empty `stopReason` still runs, its `finishedAt` when last seen.
      *
      * @return list<array{id: int, mode: string, blocking: bool, startedAt: \DateTimeImmutable, finishedAt: \DateTimeImmutable, handled: int, stopReason: string, budgetMs: ?int, peakMemory: int, memoryLimit: int, pid: int, beforeResponse: bool, origin: string, fallbackFor: ?string}>
      */
@@ -364,14 +322,7 @@ class QueueStatistics
         }, $rows);
     }
 
-    /**
-     * When the consumer of that mode was last seen at work; null when it never was.
-     *
-     * Only its own passes count (QueuePassOrigin): those of a pinned message, of the jobs page's
-     * button or of the fallback run under the same mode without proving anything about it. A
-     * blocking consumer inside one long message does not beat, so a claim of that mode held by the
-     * process of one of its open passes, and not dead, makes it seen now.
-     */
+    /** When that mode's consumer was last seen at work, by its own passes or a live claim of one; null when it never was. */
     public function lastSeenAt(QueueConsumerMode $mode): ?\DateTimeImmutable
     {
         if ($this->holdsAClaim($mode)) {
@@ -387,16 +338,7 @@ class QueueStatistics
         return $last === null ? null : self::time((string)$last);
     }
 
-    /**
-     * When the end of requests began consuming for the consumer of that mode, as it still does: its first fallback pass since that consumer was last seen; null when none came after.
-     *
-     * Only a pass that started once the consumer had been gone for $patienceSeconds counts: no
-     * fallback starts sooner (QueueFallback). One that started sooner ran in the minute a request
-     * keeps the last answer for, after the consumer came back, and would start the fallback again.
-     *
-     * @param \DateTimeImmutable|null $seen            when that consumer was last seen, as lastSeenAt() says it
-     * @param int                     $patienceSeconds how long the consumer must have been unseen before the end of requests stands in for it
-     */
+    /** First fallback pass for that mode started $patienceSeconds after $seen (lastSeenAt()); null when none came after. */
     public function fallbackSince(QueueConsumerMode $mode, ?\DateTimeImmutable $seen, int $patienceSeconds = 0): ?\DateTimeImmutable
     {
         $first = $this->db->scalar(
@@ -438,15 +380,9 @@ class QueueStatistics
         return false;
     }
 
-    /**
-     * How many blocking consumers started in the last $sinceSeconds: more than a few means one keeps dying.
-     *
-     * A consumer that stopped because the configuration changed asked for the restart that
-     * followed it, and does not count: an admin saving settings several times is not a loop.
-     */
+    /** How many blocking consumers started in the last $sinceSeconds, restarts for a configuration change aside. */
     public function consumerStarts(int $sinceSeconds): int
     {
-        // The worker's pass starts when its process does (QueueRecorder::passStarted()).
         return (int)$this->db->scalar(
             "SELECT COUNT(*) FROM {$this->journal->table()} WHERE channel = ? AND action = ? AND at >= ? AND target <> ? AND actor = ?",
             0,
@@ -455,7 +391,7 @@ class QueueStatistics
     }
 
     /**
-     * The handling attempts, newest first, all of them or those with that status; `error` is the cause a run's row keeps as its `message`.
+     * The handling attempts, newest first, all or those with that status; `error` is the run row's `message`.
      *
      * @return list<array{id: int, messageId: ?int, type: string, taskId: ?string, status: string, mode: string, finishedAt: \DateTimeImmutable, durationMs: int, error: ?string}>
      */
@@ -486,7 +422,7 @@ class QueueStatistics
     }
 
     /**
-     * The scheduled tasks, by id; a task whose row has no label is called by its id.
+     * The scheduled tasks; a task whose row has no label is called by its id.
      *
      * @return list<array{taskId: string, label: string, everySeconds: int, lastDispatchedAt: ?\DateTimeImmutable, nextDueAt: ?\DateTimeImmutable, lastFinishedAt: ?\DateTimeImmutable, lastStatus: ?string, lastError: ?string, consecutiveFailures: int}>
      */
@@ -513,7 +449,7 @@ class QueueStatistics
     }
 
     /**
-     * @param array<string, mixed> $task the fields of the task's row (QueueTaskRows)
+     * @param array<string, mixed> $task
      *
      * @return array{taskId: string, label: string, everySeconds: int, lastDispatchedAt: ?\DateTimeImmutable, nextDueAt: ?\DateTimeImmutable, lastFinishedAt: ?\DateTimeImmutable, lastStatus: ?string, lastError: ?string, consecutiveFailures: int}
      */
@@ -534,17 +470,7 @@ class QueueStatistics
         ];
     }
 
-    /**
-     * Where a message is in its life: `pending`, `running`, `handled`, `failed`, `killed`, or `unknown` when neither the queue nor the history knows it.
-     *
-     * The queue is asked first: a message requeued from `failed` keeps its id and is pending again,
-     * whatever its history says. Gone from the queue, its last history row tells; a `retried`
-     * message is still to do, under the new id Messenger gave the retry.
-     *
-     * A claim whose holder must be dead (expiredClaims()) is `killed` already: a pass moves it to
-     * `failed`, but only once one runs, and on a wiki nobody visits that can be a long time, while
-     * whoever follows the message asks now.
-     */
+    /** Where a message is: `pending`, `running`, `handled`, `failed`, `killed`, or `unknown` to the queue and the history. */
     public function messageState(int $messageId): string
     {
         $row = $this->db->loadSingle(
@@ -573,14 +499,13 @@ class QueueStatistics
         return match ($status) {
             QueueRecorder::HANDLED => 'handled',
             QueueRecorder::RETRIED => 'pending',
-            // An admin acknowledged the failure: the work was still not done.
             QueueRecorder::FAILED, QueueRecorder::IGNORED => 'failed',
             QueueRecorder::KILLED => 'killed',
             default => 'unknown',
         };
     }
 
-    /** @return list<string> the actions of the runs that are an outcome: handled, failed, killed */
+    /** @return list<string> */
     private static function outcomeActions(): array
     {
         return array_map(QueueJournalEntry::run(...), [QueueRecorder::HANDLED, QueueRecorder::FAILED, QueueRecorder::KILLED]);
@@ -594,11 +519,7 @@ class QueueStatistics
         return $dialect->jsonExtractText($dialect->jsonAsText('context'), '$.' . $key);
     }
 
-    /**
-     * A pass row of the consumer itself: QueueRecorder writes an origin only for the others.
-     *
-     * Read as a field, not matched as text: MySQL gives JSON back reformatted, and PostgreSQL has no LIKE on JSONB.
-     */
+    /** A pass row of the consumer itself: QueueRecorder writes an origin only for the others. */
     private function ownPass(): string
     {
         return $this->field('origin') . ' IS NULL';

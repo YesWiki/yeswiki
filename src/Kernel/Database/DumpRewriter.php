@@ -173,10 +173,6 @@ class DumpRewriter
     /**
      * The tables a backup carries and a restore replaces: this wiki's own, less the queue's.
      *
-     * The queue's table is state of the running instance, never content (QueueSchema::TABLES):
-     * a dump does not hold it, a restore neither drops nor fills it, and the statements an older
-     * backup still has for it are not replayed.
-     *
      * @param list<string> $tables
      *
      * @return list<string>
@@ -189,16 +185,9 @@ class DumpRewriter
     }
 
     /**
-     * The rows of a content table that are the running instance's state too: a backup leaves them out, and a restore puts the live ones back in place of any the dump brings.
+     * The condition picking the rows of a content table that are running-instance state, by prefixed table.
      *
-     * The Journal's `queue` channel is the consumer's runs and passes, among them the open row of
-     * the pass a restore runs in: a restored copy taking the backup's would show passes that never
-     * close, and the running consumer would write its pass by an id the restore has taken away.
-     * The Scheduler's checkpoint is triples (QueueCheckpoint): a restored copy taking the backup's
-     * would send the schedule back to where it stood then, and run again what ran since.
-     * Each table listed has an `id` identity column, by which those rows are put back.
-     *
-     * @return array<string, string> the condition that picks those rows, by prefixed table
+     * @return array<string, string>
      */
     public static function leftOutRows(string $prefix): array
     {

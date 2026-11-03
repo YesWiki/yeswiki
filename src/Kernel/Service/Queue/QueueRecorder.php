@@ -17,47 +17,22 @@ use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\JournalSchema;
 
 /**
- * Writes what the consumer did: rows of the Journal's `queue` channel, one per pass and one per handling attempt, and on each scheduled task's row (QueueTaskRows) what it last did.
- *
- * These rows are all the health checks and the jobs page know of the queue (ADR-0026: they
- * re-derive every finding from them), and the runs are also where the consumer learns how long
- * a type of message takes, to decide whether the next one still fits in its budget.
- *
- * A run (`queue.run.<status>`) is dated by its end, its message type in `target`, its mode in
- * `actor`, and the cause it failed with in `message`, where every Journal entry keeps its own; it
- * began `duration_ms` before. A pass (`queue.pass`) is dated by its start; it is open while its
- * `target`, the reason it stopped, is empty. Its `last_at` is moved forward at each heartbeat and
- * at its end, so that `last_at` of an open row reads "last seen alive" and of a closed one "ended".
- * A blocking consumer keeps one open for its whole life: its `actor`, a blocking mode, is what
- * tells its row from a budgeted pass's.
- *
- * The rows are written here, straight into the Journal's table, and never through Journal: they
- * are not diagnostics, nothing of them goes to the server log, and neither the daily ceiling nor
- * the fingerprint applies (`fingerprint` and `day` stay NULL). Their `context` never holds a null:
- * an empty field is left out, since MySQL would read a JSON null back as the string 'null'.
- * The Journal prunes them itself (Journal::prune()).
- *
- * Times are PHP's, from the injected clock, in UTC, like the transport's.
+ * Writes what the consumer did: Journal `queue` rows, one per pass and one per handling attempt, and each task's last run (QueueTaskRows).
+ * A run is dated by its end, a pass by its start, open while its `target` is empty; `last_at` is when it was last seen.
+ * Written straight into the Journal's table, never through Journal; `context` never holds a null; times are UTC.
  */
 class QueueRecorder
 {
-    /** Run statuses: the handler returned. */
     public const HANDLED = 'handled';
-    /** The handler threw and the message waits for another attempt, under a new id. */
     public const RETRIED = 'retried';
-    /** The handler threw for the last time (or the message could not be decoded): it is in `failed`. */
     public const FAILED = 'failed';
-    /** Its consumer died while handling it: it is in `failed`, not retried in the same mode. */
     public const KILLED = 'killed';
-    /** An admin acknowledged the failure on the jobs page: the message left `failed`, this row is what remains of it. */
     public const IGNORED = 'ignored';
 
     private const TIME_FORMAT = 'Y-m-d H:i:s';
 
-    /** Characters of a task's label kept: what the jobs page has room for. */
     private const LABEL_LENGTH = 191;
 
-    /** What the Journal's `target` holds. */
     private const TARGET_LENGTH = 191;
 
     public function __construct(
@@ -68,16 +43,7 @@ class QueueRecorder
     ) {
     }
 
-    /**
-     * Opens the row of a pass and answers its id.
-     *
-     * The origin is written only when the pass is not the consumer's own: a row without one is the
-     * consumer's. A consumer's row names its process (`holder`), as a claim it holds names it too.
-     *
-     * @param QueueBudget|null       $budget         what the pass may spend: `budget_ms` is its time left (none when it has no deadline), `memory_limit` the memory use it stops at (0 for no bound)
-     * @param bool                   $beforeResponse whether a visitor is waiting for this pass to end (mod_php, CGI)
-     * @param QueueConsumerMode|null $fallbackFor    the consumer a fallback pass stands in for
-     */
+    /** Opens the row of a pass and answers its id; only a pass that is not the consumer's own gets an `origin`. */
     public function passStarted(QueueConsumerMode $mode, ?QueueBudget $budget, bool $beforeResponse, QueuePassOrigin $origin = QueuePassOrigin::Consumer, ?QueueConsumerMode $fallbackFor = null): int
     {
         $now = $this->format($this->now());
@@ -111,13 +77,7 @@ class QueueRecorder
         $this->movePass($passId, $report->handled, $peakMemory, $report->stopReason);
     }
 
-    /**
-     * One handling attempt of a message, ended now.
-     *
-     * @param string|null $taskId    the scheduled task the message ran for, if it is one
-     * @param string      $status    one of the status constants
-     * @param float       $startedAt when the attempt began, as a Unix timestamp from the same clock
-     */
+    /** One handling attempt of a message, ended now; $startedAt is a Unix timestamp from the same clock. */
     public function messageFinished(int $messageId, string $type, ?string $taskId, string $status, QueueConsumerMode $mode, float $startedAt, ?string $error): void
     {
         $finished = $this->now();
@@ -134,12 +94,7 @@ class QueueRecorder
         }
     }
 
-    /**
-     * An admin acknowledged a failed message (the jobs page's "ignore"): the trace that tells it apart from a deletion.
-     *
-     * Not an attempt, so no mode and no duration; the cause it failed with is kept. Nothing is
-     * muted by it: the next failure of the same kind is a new message in `failed`, and alerts again.
-     */
+    /** An admin acknowledged a failed message (the jobs page's "ignore"): the trace that tells it apart from a deletion. */
     public function messageIgnored(int $messageId, string $type, ?string $error): void
     {
         $now = $this->format($this->now());
@@ -151,12 +106,7 @@ class QueueRecorder
         ]);
     }
 
-    /**
-     * The schedule has queued a run of that task, or one was asked for by hand.
-     *
-     * @param int                     $everySeconds how far apart its runs are, for the jobs page and the "late" check
-     * @param \DateTimeImmutable|null $nextDue      when the schedule runs it next; null keeps the time already known (a run asked for by hand does not move the schedule)
-     */
+    /** The schedule has queued a run of that task, or one was asked for by hand; a null $nextDue keeps the one known. */
     public function taskDispatched(ScheduledTask $task, int $everySeconds, ?\DateTimeImmutable $nextDue): void
     {
         $fields = [
@@ -184,20 +134,14 @@ class QueueRecorder
     /**
      * Forgets the tasks that are no longer declared, keeping the Scheduler's checkpoint.
      *
-     * @param list<string> $declared the ids of the tasks the schedule has now
+     * @param list<string> $declared
      */
     public function forgetTasksExcept(array $declared): void
     {
         $this->tasks->forgetExcept($declared);
     }
 
-    /**
-     * A handling attempt of that task's message ended, with one of the status constants.
-     *
-     * `consecutive_failures` is what the "task keeps failing" check reads: a run that failed for
-     * good or was killed adds one, a handled run resets it. An attempt that will be retried is
-     * shown as the task's last status but counts for nothing yet: the run is not over.
-     */
+    /** A handling attempt of that task's message ended: a failed or killed run adds to `consecutive_failures`, a handled one resets it. */
     public function taskFinished(string $taskId, string $status, ?string $error): void
     {
         $fields = [
@@ -250,13 +194,7 @@ class QueueRecorder
         );
     }
 
-    /**
-     * Moves an open pass's row to now (`last_at`): what it did so far, and why it stopped when it did.
-     *
-     * Only the pass's own process writes its row, so reading its context and writing it back needs no lock.
-     *
-     * @param string|null $stopReason null while it runs
-     */
+    /** Moves an open pass's row to now (`last_at`): what it did so far, and why it stopped when it did. */
     private function movePass(int $passId, int $handled, int $peakMemory, ?string $stopReason): void
     {
         $now = $this->format($this->now());

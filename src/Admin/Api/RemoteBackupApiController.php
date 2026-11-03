@@ -11,11 +11,8 @@ use YesWiki\Core\YesWikiController;
 use YesWiki\Identity\Service\CsrfTokenChecker;
 
 /**
- * Fetching a backup from another wiki, from the admin backups screen: the browser starts it, then polls GET until it is done (spec 9.6).
- *
- * The queue takes the fetch from step to step; the browser only observes it, and may cancel it.
- * `advance`, which the page used to post to move the fetch one step, now only says where it is,
- * for a page loaded before the upgrade that still posts it.
+ * Fetching a backup from another wiki, from the admin backups screen: the browser starts it, polls GET until it is done
+ * and may cancel it, while the queue moves the fetch (spec 9.6). `advance` now only says where it is, for older pages.
  */
 class RemoteBackupApiController extends YesWikiController
 {

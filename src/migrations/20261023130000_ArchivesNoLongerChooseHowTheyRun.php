@@ -4,9 +4,7 @@ use YesWiki\Core\YesWikiMigration;
 use YesWiki\Kernel\Service\ConfigurationFileProvider;
 use YesWiki\Kernel\Service\ConfigurationService;
 
-/**
- * `archive.call_archive_async` chose between a detached `core:archive` and a backup made in the admin's request. Backups and restores now go through the queue, which decides that by its mode of consumption: the setting is removed.
- */
+/** Removes `archive.call_archive_async`: backups and restores go through the queue, whose mode decides how they run. */
 class ArchivesNoLongerChooseHowTheyRun extends YesWikiMigration
 {
     private const SETTING = 'call_archive_async';

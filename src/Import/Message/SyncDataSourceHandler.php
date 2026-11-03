@@ -9,11 +9,8 @@ use YesWiki\Import\Service\ImporterManager;
 use YesWiki\Import\Service\SyncScheduler;
 
 /**
- * Imports one data source, and records what happened for the importers page whether it worked or not.
- *
- * ImporterManager::syncSource() throws when the import fails. The failure is written to the
- * source's log (SyncScheduler::recordRun, the file `{{adminimporters}}` shows) and thrown again,
- * so that it is the queue's too: retried, then listed as failed.
+ * Imports one data source, and records what happened for the importers page whether it worked or not;
+ * a failure is logged and thrown again for the queue to retry.
  */
 #[AsMessageHandler]
 final class SyncDataSourceHandler
@@ -33,7 +30,6 @@ final class SyncDataSourceHandler
             throw new UnrecoverableMessageHandlingException("The data source '{$task->sourceId}' is not in the configuration any more");
         }
 
-        // Importers print what they did as they go; it belongs in the log, not in the response or the console of whoever is consuming.
         ob_start();
         try {
             $result = $this->importers->syncSource($task->sourceId, $options);

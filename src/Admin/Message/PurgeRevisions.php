@@ -5,10 +5,8 @@ namespace YesWiki\Admin\Message;
 use YesWiki\Kernel\Queue\ScheduledTask;
 
 /**
- * "Forget the page revisions older than `pages_purge_time` days", a step of the wiki's housekeeping that is a recurring task of its own (AdminSchedule).
- *
- * What goes is decided by the handler when it runs, from the configuration as it is then; a run
- * deletes what is past its time, so it is idempotent and the default retry applies.
+ * "Forget the page revisions older than `pages_purge_time` days": a housekeeping step, a recurring task of its own (AdminSchedule).
+ * The handler decides what goes from the configuration as it is when it runs; idempotent, so the default retry applies.
  */
 final class PurgeRevisions implements ScheduledTask
 {

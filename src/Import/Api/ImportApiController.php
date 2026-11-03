@@ -27,7 +27,6 @@ class ImportApiController extends YesWikiController
 
         $results = [];
         foreach ((is_array($dataSources) ? $dataSources : []) as $source => $sourceOptions) {
-            // A failure is the source's answer, and the others go on.
             $results[$source] = $importerManager->syncByHand((string)$source, $sourceOptions)['result'];
         }
 

@@ -4,10 +4,7 @@ use YesWiki\Core\YesWikiMigration;
 use YesWiki\Search\Service\SearchIndexSchema;
 
 /**
- * Ticket 18 / ADR-0015: create the search index.
- *
- * Filling it is ReindexingGoesThroughTheQueue's: this migration runs before the background
- * queue's table exists, so nothing could be sent to it here.
+ * Ticket 18 / ADR-0015: create the search index; ReindexingGoesThroughTheQueue fills it once the queue's table exists.
  */
 class CreateSearchIndex extends YesWikiMigration
 {

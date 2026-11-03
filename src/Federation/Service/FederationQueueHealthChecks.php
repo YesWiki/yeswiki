@@ -9,16 +9,11 @@ use YesWiki\Kernel\Service\Queue\QueueHealthChecks;
 use YesWiki\Kernel\Service\Queue\QueueStatistics;
 
 /**
- * What the admin is told about the deliveries to other servers (spec 11.2).
- *
- * Instances of the fediverse disappear all the time, so a failed delivery is routine and the
- * generic failed-jobs alert leaves it out (ToleratedFailure). Two checks judge it instead, because a
- * check has one severity: that the deliveries do not work at all is Broken, that some gave up is
- * only Degraded. Both stay silent when the queue cannot be read; `queue-tables` is the one to say so.
+ * What the admin is told about the deliveries to other servers (spec 11.2): Broken when none goes through,
+ * Degraded when some gave up; both silent when the queue cannot be read.
  */
 class FederationQueueHealthChecks implements ProvidesHealthChecks
 {
-    /** Deliveries that must have finished, over the window, before "none succeeded" means something. */
     private const MINIMUM_FINISHED = 5;
 
     private const WINDOW_SECONDS = 86400;

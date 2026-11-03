@@ -58,9 +58,6 @@ class YesWikiKernel extends Kernel
     /** The same layers in an extension, named after the folders src/autoload.inc.php maps them to. */
     private const EXTENSION_SERVICE_FOLDERS = ['actions', 'handlers', 'services', 'controllers', 'schedulers'];
 
-    /**
-     * Where a module keeps its messages and their handlers (`Message`), and an extension too (`messages`): only the handlers in it are services, since a message is a value its sender builds.
-     */
     private const MESSAGE_LAYER = 'Message';
     private const EXTENSION_MESSAGE_FOLDER = 'messages';
 
@@ -163,7 +160,6 @@ class YesWikiKernel extends Kernel
             $container->register($id)->setSynthetic(true)->setPublic(true);
         }
         $container->setAlias(ContainerInterface::class, 'service_container')->setPublic(true);
-        // The database's clock for every service that reads the time: the machines of a farm need not agree on theirs (DatabaseClock). A test hands its own (MockClock) to what it builds.
         $container->setAlias(ClockInterface::class, DatabaseClock::class)->setPublic(true);
         $container->register(NativeClock::class)->setPublic(false);
         $container->register(ActionRegistry::class)->setAutowired(true)->setPublic(true);
@@ -187,7 +183,6 @@ class YesWikiKernel extends Kernel
         }
 
         $loader->registerAliasesForSinglyImplementedInterfaces();
-        // A budget is time spent by this process alone, against microtime() (QueueBudget): PHP's clock, not a query per reading.
         $container->getDefinition(QueueBudgetFactory::class)->setArgument('$clock', new Reference(NativeClock::class));
         $container->getDefinition(LanguageService::class)->setFactory([LanguageService::class, 'getInstance']);
     }

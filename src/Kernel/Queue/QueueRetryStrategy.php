@@ -8,11 +8,8 @@ use Symfony\Component\Messenger\Retry\MultiplierRetryStrategy;
 use Symfony\Component\Messenger\Retry\RetryStrategyInterface;
 
 /**
- * When a failed message is tried again: 60 s, then 5 min, then 25 min (capped at 30 min), three times unless the message says otherwise (RetryPolicy).
- *
- * A message nobody handles is never retried: Messenger counts "no handler" as recoverable, but
- * the next attempt would find no handler either, so it goes straight to `failed` where an admin
- * sees it (an extension that was removed, a class renamed without its handler).
+ * When a failed message is tried again: 60 s, 5 min, 25 min (capped at 30 min), three times unless the message says otherwise (RetryPolicy).
+ * A message nobody handles is never retried: it goes straight to `failed`.
  */
 final class QueueRetryStrategy implements RetryStrategyInterface
 {

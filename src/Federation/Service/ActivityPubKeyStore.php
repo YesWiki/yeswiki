@@ -36,7 +36,7 @@ class ActivityPubKeyStore
         return $this->privateKeys[$account] = $pem;
     }
 
-    /** Whether the account has a key already, without generating one: what tells a delivery that was signed for a form whose key is gone. */
+    /** Whether the account has a key already, without generating one. */
     public function has(string $account): bool
     {
         return $this->storage->exists($this->file($account));

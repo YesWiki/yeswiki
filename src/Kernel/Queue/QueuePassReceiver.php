@@ -7,28 +7,17 @@ use Symfony\Component\Messenger\Transport\Receiver\ReceiverInterface;
 use YesWiki\Kernel\Service\Queue\QueueTransport;
 
 /**
- * The transport as one pass's Worker sees it: it asks the pass whether to take another message before it claims one, and it never lets an unreadable row end the pass.
- *
- * Messenger's Worker would stop on the first MessageDecodingFailedException, and a blocking
- * consumer with it; the transport has already moved that row to `failed`, so the receiver has it
- * recorded and goes on to the next one.
- *
- * A message whose holder was declared dead while it ran is in `failed` by the time the Worker
- * acks it: the ack leaves it there, and the pass's observer says so.
- *
- * Built for a single pass and dropped with it.
+ * The transport as one pass's Worker sees it: it asks the pass whether to take another message before it claims one,
+ * and it never lets an unreadable row end the pass. Built for a single pass and dropped with it.
  */
 final class QueuePassReceiver implements ReceiverInterface
 {
-    /** Why the last get() came back empty: one of QueuePassReport's reasons. */
     private ?string $stopReason = null;
 
     private bool $taken = false;
 
     /**
-     * @param \Closure(): ?string $guard    asked before each claim: a QueuePassReport reason to take nothing, or null to go on
-     * @param QueuePassObserver   $observer told of each row the transport could not decode, and of each message that was no longer this pass's when it was done
-     * @param int|null            $onlyId   that message and nothing else, once, whether or not its delay is over
+     * @param \Closure(): ?string $guard
      */
     public function __construct(
         private readonly QueueTransport $transport,

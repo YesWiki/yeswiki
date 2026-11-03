@@ -5,13 +5,7 @@ namespace YesWiki\Search\Message;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 use YesWiki\Search\Service\SearchIndexer;
 
-/**
- * Reindexes one Content.
- *
- * Idempotent: it reads the Content's latest revision when it runs, and one that is gone by then
- * leaves no rows. A backlog (a new form, `search:reindex --all`) is spread over passes by the
- * consumer's budget, one message at a time.
- */
+/** Reindexes one Content from its latest revision as it is when the message runs; idempotent. */
 #[AsMessageHandler]
 final class ReindexContentHandler
 {

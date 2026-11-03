@@ -7,9 +7,8 @@ use YesWiki\Core\YesWikiLoader;
 use YesWiki\Kernel\Queue\QueueConsumerMode;
 
 /**
- * Which consumption mode the wiki runs in, and where that choice comes from.
- *
- * Precedence: the real environment, then private/.env, then `queue_consumer` in the configuration, then the default, `request`, under the Go binary too: a consumer kept alive is a PHP process per wiki, which a wiki asks for with `worker`, and which the binary then supervises. The binary does not set YESWIKI_QUEUE_CONSUMER, it sets a marker of its own (isServedByBinary()).
+ * Which consumption mode the wiki runs in, and where that choice comes from: the real environment, then private/.env,
+ * then `queue_consumer` in the configuration, then the default, `request`.
  */
 class QueueSettings
 {
@@ -25,7 +24,7 @@ class QueueSettings
     private $envFileValues;
 
     /**
-     * @param (callable(): array<string, string>)|null $envFileValues private/.env content, injectable for tests (default: YesWikiLoader::envFileValues())
+     * @param (callable(): array<string, string>)|null $envFileValues
      */
     public function __construct(
         private readonly ParameterBagInterface $params,
@@ -41,11 +40,7 @@ class QueueSettings
             ?? QueueConsumerMode::Request;
     }
 
-    /**
-     * Where the setting was found: 'env', 'dotenv', 'config', or 'default' when nobody chose.
-     *
-     * An unknown value keeps the origin it was found in, so the page can say where to correct it.
-     */
+    /** Where the setting was found: 'env', 'dotenv', 'config', or 'default'; an unknown value keeps its origin. */
     public function origin(): string
     {
         return $this->resolve()['origin'];
@@ -87,7 +82,6 @@ class QueueSettings
         $real = $real === false ? '' : trim($real);
         $file = trim(($this->envFileValues)()[self::ENV_MODE] ?? '');
 
-        // The loader copies private/.env into the process environment without overriding what is already there: the real environment holds the file's value, or a different one that came first and wins. Equal values cannot be told apart, and the file is the likelier source.
         if ($real !== '' && $real !== $file) {
             return ['value' => $real, 'origin' => self::ORIGIN_ENV];
         }

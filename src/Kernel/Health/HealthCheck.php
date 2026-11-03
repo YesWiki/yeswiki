@@ -73,12 +73,7 @@ final class HealthCheck
         return $this->with(fn (self $c) => $c->route = $route);
     }
 
-    /**
-     * Buttons the screen linked to may offer on this alert, by the names that screen gives them.
-     *
-     * Opaque to the check: a screen offers the ones it knows and leaves out the others, so a check
-     * can ask for a shortcut (acknowledge every failed message of one type) without owning the screen.
-     */
+    /** Buttons the linked screen may offer on this alert, by the names that screen gives them; unknown ones are left out. */
     public function offers(string ...$actions): self
     {
         return $this->with(fn (self $c) => $c->offers = array_values($actions));
