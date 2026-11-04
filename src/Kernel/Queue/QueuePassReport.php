@@ -19,6 +19,8 @@ final class QueuePassReport
     public const STOPPED = 'stopped';
     public const CONFIG_CHANGED = 'config-changed';
     public const ERROR = 'error';
+    /** Closed by another pass: its process is gone and will never close it. */
+    public const KILLED = 'killed';
 
     public function __construct(
         public readonly int $handled,

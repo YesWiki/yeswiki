@@ -64,7 +64,7 @@ final class QueueTestKit
     public readonly DbService $db;
     public readonly QueueSchema $schema;
     public readonly RuntimeLock $locks;
-    /** The locks the transport holds for its claims, in the kit's own directory. */
+    /** The locks the transport holds for its claims and the consumer for its passes, in the kit's own directory. */
     public readonly QueueHolderLock $holderLock;
     /** The one clock every part of the queue reads. */
     public readonly ClockInterface $clock;
@@ -195,6 +195,7 @@ final class QueueTestKit
             $this->ticker = new QueueScheduleTicker([$schedule], $bus, $this->history, $recorder, $locks, $clock, $hibernation, $journal),
             $clock,
             $watch,
+            $this->holderLock,
             $events ?? static fn (): EventDispatcher => new EventDispatcher(new ServiceLocator([]), new ThrowableFormatter()),
         );
     }

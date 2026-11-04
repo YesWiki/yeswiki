@@ -10,8 +10,10 @@ use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\Stamp\DelayStamp;
 use Symfony\Component\Messenger\Stamp\TransportMessageIdStamp;
 use YesWiki\Kernel\Queue\QueueBudget;
+use YesWiki\Kernel\Queue\QueueClaimHolder;
 use YesWiki\Kernel\Queue\QueueConsumerMode;
 use YesWiki\Kernel\Queue\QueueJournalEntry;
+use YesWiki\Kernel\Queue\QueuePassOrigin;
 use YesWiki\Kernel\Queue\QueuePassReport;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\JournalSchema;
@@ -382,6 +384,81 @@ echo $db->scalar("SELECT COUNT(*) FROM {$journal->table()}");
         $this->assertSame('budget', $closed['stopReason']);
         $this->assertSame(12345, $closed['peakMemory']);
         $this->assertEquals(new \DateTimeImmutable('2026-10-23 12:00:02', new \DateTimeZone('UTC')), $closed['finishedAt']);
+    }
+
+    /**
+     * A pass found dead keeps its last sign of life: `last_at` is when its consumer was last seen at work, not when it was found gone.
+     *
+     * @param array<string, string|bool> $params
+     */
+    #[DataProvider('servers')]
+    public function testAKilledPassKeepsItsLastSignOfLife(array $params): void
+    {
+        $this->on($params);
+        $id = $this->recorder->passStarted(QueueConsumerMode::Worker, null, false);
+        $this->recorder->passHeartbeat($id, 2, 4096);
+        $before = $this->journalRow($id);
+        $this->assertEquals([['id' => $id, 'holder' => (string)$this->context($before)['holder'], 'lastAt' => new \DateTimeImmutable(self::START, new \DateTimeZone('UTC'))]], $this->statistics->openPasses());
+
+        $this->clock->sleep(3600);
+        $this->assertTrue($this->recorder->passKilled($id));
+
+        $row = $this->journalRow($id);
+        $this->assertSame(QueuePassReport::KILLED, $row['target']);
+        $this->assertSame(self::START, $row['last_at'], 'found dead an hour later, it was last seen when it started');
+        $this->assertSame($before['context'], $row['context'], 'what it did so far is what it did');
+        $this->assertSame([], $this->statistics->openPasses());
+        $this->assertSame(QueuePassReport::KILLED, $this->statistics->lastPass()['stopReason'] ?? null);
+    }
+
+    public function testAPassThatEndsAfterAllRewritesItsReason(): void
+    {
+        $id = $this->recorder->passStarted(QueueConsumerMode::Request, null, false);
+        $this->recorder->passKilled($id);
+
+        $this->recorder->passFinished($id, new QueuePassReport(1, 0, 10, QueuePassReport::EMPTY), 0);
+
+        $this->assertSame(QueuePassReport::EMPTY, $this->journalRow($id)['target'], 'it was not dead after all');
+    }
+
+    public function testAPassClosedOnceIsNotKilled(): void
+    {
+        $id = $this->recorder->passStarted(QueueConsumerMode::Request, null, false);
+        $this->recorder->passFinished($id, new QueuePassReport(1, 0, 10, QueuePassReport::EMPTY), 0);
+
+        $this->assertFalse($this->recorder->passKilled($id));
+        $this->assertSame(QueuePassReport::EMPTY, $this->journalRow($id)['target']);
+        $this->assertFalse($this->recorder->passKilled($id + 1000), 'no such pass');
+    }
+
+    /** @param array<string, string|bool> $params */
+    #[DataProvider('servers')]
+    public function testAKilledPassIsNoVisitorWait(array $params): void
+    {
+        $this->on($params);
+        $waited = $this->recorder->passStarted(QueueConsumerMode::Request, null, true);
+        $killed = $this->recorder->passStarted(QueueConsumerMode::Request, null, true);
+        $this->clock->sleep(2);
+        $this->recorder->passHeartbeat($killed, 0, 0);
+        $this->recorder->passFinished($waited, new QueuePassReport(1, 0, 2000, QueuePassReport::EMPTY), 0);
+        $this->assertTrue($this->recorder->passKilled($killed));
+
+        $this->assertSame([2.0], $this->statistics->visitorWaits(3600), 'how long a dead pass lasted measures no wait');
+    }
+
+    public function testEveryPassNamesItsHolder(): void
+    {
+        $token = QueueClaimHolder::thisProcess()->token();
+        $manual = $this->recorder->passStarted(QueueConsumerMode::Request, null, false, QueuePassOrigin::Manual, null, $token);
+        $unnamed = $this->recorder->passStarted(QueueConsumerMode::Request, null, false, QueuePassOrigin::Manual);
+        $consumer = $this->recorder->passStarted(QueueConsumerMode::Request, null, false);
+
+        $this->assertSame($token, $this->context($this->journalRow($manual))['holder']);
+        $this->assertArrayNotHasKey('holder', $this->context($this->journalRow($unnamed)), 'as before: only a consumer names its process by itself');
+        $this->assertNotNull(QueueClaimHolder::ofToken((string)$this->context($this->journalRow($consumer))['holder']));
+        $holders = array_column($this->statistics->openPasses(), 'holder', 'id');
+        $this->assertSame($token, $holders[$manual] ?? null);
+        $this->assertSame('', $holders[$unnamed] ?? null, 'a pass that names no holder has an empty one');
     }
 
     public function testABlockingConsumerBeatsAndCountsAsAStart(): void

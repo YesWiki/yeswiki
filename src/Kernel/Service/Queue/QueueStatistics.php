@@ -203,7 +203,7 @@ class QueueStatistics
     }
 
     /**
-     * How long the $limit latest passes a visitor waited for lasted, in seconds, over the last $sinceSeconds.
+     * How long the $limit latest passes a visitor waited for lasted, in seconds, over the last $sinceSeconds; a pass found dead measures no wait.
      *
      * @return list<float>
      */
@@ -211,10 +211,10 @@ class QueueStatistics
     {
         $rows = $this->db->loadAll(
             "SELECT at, last_at FROM {$this->journal->table()}"
-            . " WHERE channel = ? AND action = ? AND target <> '' AND at >= ?"
+            . " WHERE channel = ? AND action = ? AND target <> '' AND target <> ? AND at >= ?"
             . " AND {$this->db->dialect()->castToInteger($this->field('before_response'))} = 1"
             . ' ORDER BY id DESC LIMIT ' . max(0, $limit),
-            [JournalChannel::Queue->value, QueueJournalEntry::PASS, $this->since($sinceSeconds)]
+            [JournalChannel::Queue->value, QueueJournalEntry::PASS, QueuePassReport::KILLED, $this->since($sinceSeconds)]
         );
 
         return array_map(
@@ -319,6 +319,25 @@ class QueueStatistics
                 'fallbackFor' => isset($context['fallback_for']) ? (string)$context['fallback_for'] : null,
             ];
         }, $rows);
+    }
+
+    /**
+     * The passes still open, of every origin, with the claim token of the process that runs them ('' when the row names none) and when it was last seen.
+     *
+     * @return list<array{id: int, holder: string, lastAt: \DateTimeImmutable}>
+     */
+    public function openPasses(): array
+    {
+        $rows = $this->db->loadAll(
+            "SELECT id, last_at, context FROM {$this->journal->table()} WHERE channel = ? AND action = ? AND target = '' ORDER BY id",
+            [JournalChannel::Queue->value, QueueJournalEntry::PASS]
+        );
+
+        return array_map(static fn (array $row): array => [
+            'id' => (int)$row['id'],
+            'holder' => (string)(self::context($row)['holder'] ?? ''),
+            'lastAt' => self::time((string)$row['last_at']),
+        ], $rows);
     }
 
     /** When that mode's consumer was last seen at work, by its own passes or a live claim of one; null when it never was. */

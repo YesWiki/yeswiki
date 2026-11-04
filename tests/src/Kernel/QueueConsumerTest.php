@@ -32,6 +32,7 @@ use YesWiki\Kernel\Service\Queue\QueueBudgetFactory;
 use YesWiki\Kernel\Service\Queue\QueueBus;
 use YesWiki\Kernel\Service\Queue\QueueConsumer;
 use YesWiki\Kernel\Service\Queue\QueueHandlerLocator;
+use YesWiki\Kernel\Service\Queue\QueueHolderLock;
 use YesWiki\Kernel\Service\Queue\QueueRecorder;
 use YesWiki\Kernel\Service\Queue\QueueScheduleTicker;
 use YesWiki\Kernel\Service\Queue\QueueSchema;
@@ -89,10 +90,15 @@ class QueueConsumerTest extends YesWikiTestCase
     private QueueStatistics $statistics;
     private ScheduleHistory $history;
     private QueueConsumer $consumer;
+    /** Where the holders' lock files go, the test's own: the transport and the consumer share it, as in production. */
+    private string $lockDir;
+    private QueueHolderLock $holderLock;
 
     protected function setUp(): void
     {
         $this->file = tempnam(sys_get_temp_dir(), 'yw-queue-') . '.db';
+        $this->lockDir = sys_get_temp_dir() . '/yw-queue-holders-' . bin2hex(random_bytes(4));
+        $this->holderLock = new QueueHolderLock(QueueTestKit::locksIn($this->lockDir));
         $this->db = new DbService(new ParameterBag([
             'db_driver' => 'sqlite',
             'db_database' => $this->file,
@@ -120,6 +126,12 @@ class QueueConsumerTest extends YesWikiTestCase
         foreach (['', '-wal', '-shm'] as $suffix) {
             @unlink($this->file . $suffix);
         }
+        foreach (glob($this->lockDir . '/' . QueueHolderLock::DIRECTORY . '/*') ?: [] as $holder) {
+            @unlink($holder);
+        }
+        @rmdir($this->lockDir . '/' . QueueHolderLock::DIRECTORY);
+        @rmdir($this->lockDir . '/cache');
+        @rmdir($this->lockDir);
     }
 
     public function testDrainHandlesEverythingWhenTheBudgetAllows(): void
@@ -614,6 +626,122 @@ class QueueConsumerTest extends YesWikiTestCase
         $this->consumer->drain(QueueConsumerMode::Api, $this->seconds(30), origin: QueuePassOrigin::Manual);
 
         $this->assertNull($this->statistics->lastPass());
+    }
+
+    public function testAPassWhoseProcessIsGoneIsClosedByTheNextOne(): void
+    {
+        $dead = QueueTestKit::recordPass($this->db, QueueConsumerMode::Worker, self::START, self::START, '', holder: QueueTestHolders::gone()->token());
+
+        $this->consumer->drain(QueueConsumerMode::Api, $this->seconds(30));
+
+        $this->assertSame(QueuePassReport::KILLED, $this->stopReasonOf($dead), 'its process ended without closing it: it will never run again');
+        $this->assertSame(self::START, $this->lastSeenOf($dead), 'last seen when it last beat');
+    }
+
+    public function testAPassWhoseLockIsFreeIsClosedAndItsFileRemoved(): void
+    {
+        $token = QueueTestHolders::living(false)->token();
+        $file = $this->holderFile($token);
+        mkdir(\dirname($file), 0o777, true);
+        touch($file);
+        $dead = QueueTestKit::recordPass($this->db, QueueConsumerMode::Request, self::START, self::START, '', holder: $token);
+
+        $this->consumer->drain(QueueConsumerMode::Api, $this->seconds(30));
+
+        $this->assertSame(QueuePassReport::KILLED, $this->stopReasonOf($dead), 'a lock nobody holds is a holder that is gone, however alive its pid looks');
+        $this->assertFileDoesNotExist($file);
+    }
+
+    public function testAPassWhoseLockIsHeldStaysOpen(): void
+    {
+        $token = QueueTestHolders::living(false)->token();
+        $alive = QueueTestKit::recordPass($this->db, QueueConsumerMode::Request, self::START, self::START, '', holder: $token);
+        $letGo = QueueTestHolders::lockHeldByAnotherProcess($this->holderFile($token));
+
+        try {
+            $this->assertInstanceOf(MockClock::class, $this->clock);
+            $this->clock->sleep(7200);
+            $this->consumer->drain(QueueConsumerMode::Api, $this->seconds(30));
+
+            $this->assertSame('', $this->stopReasonOf($alive), 'a process that holds its lock is at work, however long it takes');
+            $this->assertFileExists($this->holderFile($token), 'the file of a living holder is its own');
+        } finally {
+            $this->assertSame(0, $letGo());
+        }
+    }
+
+    public function testAnOpenPassWithoutHolderIsClosedPastTheCeiling(): void
+    {
+        $unnamed = QueueTestKit::recordPass($this->db, QueueConsumerMode::Request, self::START, self::START, '', origin: QueuePassOrigin::Manual);
+        $this->assertInstanceOf(MockClock::class, $this->clock);
+
+        $this->clock->sleep(QueueBudgetFactory::KILL_LIMIT_NO_PHP_LIMIT + 60);
+        $this->consumer->drain(QueueConsumerMode::Api, $this->seconds(30));
+        $this->assertSame('', $this->stopReasonOf($unnamed), 'nothing tells it is gone: it may still run, up to the longest a process lives and the grace');
+
+        $this->clock->sleep(1);
+        $this->consumer->drain(QueueConsumerMode::Api, $this->seconds(30));
+        $this->assertSame(QueuePassReport::KILLED, $this->stopReasonOf($unnamed), 'no process lives that long');
+        $this->assertSame(self::START, $this->lastSeenOf($unnamed));
+    }
+
+    public function testAPassHoldsItsLockWhileItRuns(): void
+    {
+        $seen = [];
+        $this->behaviour = function () use (&$seen): void {
+            foreach ($this->statistics->openPasses() as $pass) {
+                $seen[$pass['id']] = QueueTestHolders::seenFromAnotherProcess($this->holderFile($pass['holder']));
+            }
+        };
+        $this->send(1);
+
+        $report = $this->consumer->drain(QueueConsumerMode::Api, $this->seconds(30));
+
+        $this->assertSame(QueuePassReport::EMPTY, $report->stopReason);
+        $this->assertCount(1, $seen, 'the pass that runs is the one open');
+        $passId = (int)array_key_first($seen);
+        $this->assertSame(QueueHolderLock::HELD, $seen[$passId], 'while it runs, its lock tells it is there');
+        $this->assertSame(QueuePassReport::EMPTY, $this->stopReasonOf($passId), 'its own pass is never taken for dead');
+        $this->assertSame([], glob($this->lockDir . '/' . QueueHolderLock::DIRECTORY . '/*') ?: [], 'its file goes with it');
+    }
+
+    public function testAPassRunsEvenWhenItsLockCannotBeCreated(): void
+    {
+        $notADirectory = (string)tempnam(sys_get_temp_dir(), 'yw-not-a-dir-');
+        $this->holderLock = new QueueHolderLock(QueueTestKit::locksIn($notADirectory));
+        $this->build($this->db, $this->clock);
+        $this->send(1);
+
+        try {
+            $report = $this->consumer->drain(QueueConsumerMode::Api, $this->seconds(30));
+        } finally {
+            @unlink($notADirectory);
+        }
+
+        $this->assertSame(QueuePassReport::EMPTY, $report->stopReason, 'without its lock, a pass is judged by the rules it had before');
+        $this->assertSame(['m0'], $this->handled);
+    }
+
+    public function testAPassPausedStillClosesDeadPasses(): void
+    {
+        $dead = QueueTestKit::recordPass($this->db, QueueConsumerMode::Worker, self::START, self::START, '', holder: QueueTestHolders::gone()->token());
+        $this->setWikiStatus('hibernate');
+
+        $report = $this->consumer->drain(QueueConsumerMode::Api, $this->seconds(30));
+
+        $this->assertSame(QueuePassReport::PAUSED, $report->stopReason);
+        $this->assertSame(QueuePassReport::KILLED, $this->stopReasonOf($dead), 'closing a dead pass changes no content');
+    }
+
+    public function testABlockingConsumerClosesDeadPassesWhenItStarts(): void
+    {
+        $dead = QueueTestKit::recordPass($this->db, QueueConsumerMode::Worker, self::START, self::START, '', holder: QueueTestHolders::gone()->token());
+        $this->send(1);
+
+        $report = $this->consumer->consume(QueueConsumerMode::Worker, 30, 512 * 1024 * 1024, 1);
+
+        $this->assertSame(QueuePassReport::LIMIT, $report->stopReason);
+        $this->assertSame(QueuePassReport::KILLED, $this->stopReasonOf($dead));
     }
 
     public function testAHibernatedWikiDoesNotConsume(): void
@@ -1120,7 +1248,7 @@ class QueueConsumerTest extends YesWikiTestCase
     {
         $this->clock = $clock;
         $schema = new QueueSchema($db);
-        $this->transport = new QueueTransport($db, $schema, clock: $clock);
+        $this->transport = new QueueTransport($db, $schema, clock: $clock, holderLock: $this->holderLock);
         $this->statistics = new QueueStatistics($db, $schema, new JournalSchema($db), $this->transport, $clock);
         $this->log = self::memory();
         $journal = new Journal(new ServiceLocator([
@@ -1176,6 +1304,7 @@ class QueueConsumerTest extends YesWikiTestCase
             new QueueScheduleTicker([$provider], $bus, $this->history, $recorder, new RuntimeLock(), $clock, new HibernationService($this->params), $journal),
             $clock,
             $watch,
+            $this->holderLock,
             fn (): EventDispatcher => $this->events,
         );
     }
@@ -1232,6 +1361,33 @@ class QueueConsumerTest extends YesWikiTestCase
         file_put_contents($script, "<?php\nchdir(" . var_export((string)getcwd(), true) . ");\nrequire 'vendor/autoload.php';\n" . $body . "\n");
 
         return $script;
+    }
+
+    /** Why that pass stopped, as its row says; '' while it is open. */
+    private function stopReasonOf(int $passId): string
+    {
+        $row = $this->db->loadSingle('SELECT target FROM ' . (new JournalSchema($this->db))->table() . ' WHERE id = ?', [$passId]);
+        $this->assertNotNull($row);
+
+        return (string)$row['target'];
+    }
+
+    /** When that pass was last seen at work, as its row says (UTC). */
+    private function lastSeenOf(int $passId): string
+    {
+        $row = $this->db->loadSingle('SELECT last_at FROM ' . (new JournalSchema($this->db))->table() . ' WHERE id = ?', [$passId]);
+        $this->assertNotNull($row);
+
+        return (string)$row['last_at'];
+    }
+
+    /** The absolute path of that token's lock file, in the test's own lock directory. */
+    private function holderFile(string $token): string
+    {
+        $path = QueueHolderLock::pathOf($token);
+        $this->assertNotNull($path);
+
+        return $this->lockDir . '/' . $path;
     }
 
     /** Queues $count test messages, m0 to m{count-1}, in that order. */

@@ -40,7 +40,7 @@ class QueueTransport implements TransportInterface, MessageCountAwareInterface, 
 
     public const QUEUES = [self::DEFAULT_QUEUE, self::FAILED_QUEUE];
 
-    private const KILL_GRACE_SECONDS = 60;
+    public const KILL_GRACE_SECONDS = 60;
 
     private const UNRECORDED_LIMIT_SECONDS = QueueBudgetFactory::KILL_LIMIT_NO_PHP_LIMIT;
 

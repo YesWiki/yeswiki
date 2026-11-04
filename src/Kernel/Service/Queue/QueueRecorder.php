@@ -42,8 +42,8 @@ class QueueRecorder
     ) {
     }
 
-    /** Opens the row of a pass and answers its id; only a pass that is not the consumer's own gets an `origin`. */
-    public function passStarted(QueueConsumerMode $mode, ?QueueBudget $budget, bool $beforeResponse, QueuePassOrigin $origin = QueuePassOrigin::Consumer, ?QueueConsumerMode $fallbackFor = null): int
+    /** Opens the row of a pass and answers its id; only a pass that is not the consumer's own gets an `origin`, and with no $holder only the consumer's names its process. */
+    public function passStarted(QueueConsumerMode $mode, ?QueueBudget $budget, bool $beforeResponse, QueuePassOrigin $origin = QueuePassOrigin::Consumer, ?QueueConsumerMode $fallbackFor = null, ?string $holder = null): int
     {
         $now = $this->format($this->now());
         $seconds = $budget?->remainingSeconds();
@@ -59,7 +59,7 @@ class QueueRecorder
             'before_response' => $beforeResponse ? 1 : 0,
             'origin' => $consumer ? null : $origin->value,
             'fallback_for' => $fallbackFor?->value,
-            'holder' => $consumer ? QueueClaimHolder::thisProcess()->token() : null,
+            'holder' => $holder ?? ($consumer ? QueueClaimHolder::thisProcess()->token() : null),
         ]);
 
         return $this->db->lastInsertId();
@@ -74,6 +74,15 @@ class QueueRecorder
     public function passFinished(int $passId, QueuePassReport $report, int $peakMemory): void
     {
         $this->movePass($passId, $report->handled, $peakMemory, $report->stopReason);
+    }
+
+    /** Closes, as killed, a pass still open whose process is gone, leaving `last_at` its last sign of life; answers whether it was still open. */
+    public function passKilled(int $passId): bool
+    {
+        return $this->db->query(
+            "UPDATE {$this->journal->table()} SET target = ? WHERE id = ? AND channel = ? AND action = ? AND target = ''",
+            [QueuePassReport::KILLED, $passId, JournalChannel::Queue->value, QueueJournalEntry::PASS]
+        )->rowCount() === 1;
     }
 
     /** One handling attempt of a message, ended now; $startedAt is a Unix timestamp from the same clock. */

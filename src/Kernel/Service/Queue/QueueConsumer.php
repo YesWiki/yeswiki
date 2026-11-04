@@ -21,6 +21,7 @@ use Symfony\Component\Messenger\Worker;
 use YesWiki\Files\Service\RuntimeLock;
 use YesWiki\Kernel\Entity\Event;
 use YesWiki\Kernel\Queue\QueueBudget;
+use YesWiki\Kernel\Queue\QueueClaimHolder;
 use YesWiki\Kernel\Queue\QueueConsumerMode;
 use YesWiki\Kernel\Queue\QueuePassObserver;
 use YesWiki\Kernel\Queue\QueuePassOrigin;
@@ -69,6 +70,7 @@ class QueueConsumer
         private readonly QueueScheduleTicker $scheduleTicker,
         private readonly ClockInterface $clock,
         private readonly ConfigurationWatch $configuration,
+        private readonly QueueHolderLock $holderLock,
         /** @var \Closure(): EventDispatcher */
         #[AutowireServiceClosure(EventDispatcher::class)]
         private readonly \Closure $events,
@@ -97,11 +99,12 @@ class QueueConsumer
                 }
             }
 
-            return $this->pass($mode, $budget, !$responseAlreadySent, $origin, $fallbackFor, function (QueuePassObserver $observer) use ($mode, $budget, $responseAlreadySent): string {
+            return $this->pass($mode, $budget, !$responseAlreadySent, $origin, $fallbackFor, function (QueuePassObserver $observer, int $passId) use ($mode, $budget, $responseAlreadySent): string {
                 $this->budgetContext->start($budget);
                 try {
                     $this->transport->claimAs($mode, $budget->killLimitSeconds);
                     $this->reapKilled($observer);
+                    $this->closeDeadPasses($passId);
                     $this->tick();
 
                     $averages = [];
@@ -134,6 +137,7 @@ class QueueConsumer
             $logger = $out === null ? null : new ConsoleLogger($out);
             $this->transport->claimAs($mode, $limits->killLimitSeconds);
             $this->reapKilled($observer);
+            $this->closeDeadPasses($passId);
             $hibernated = $this->hibernation->isWikiHibernatedNow();
             $statusReadAt = microtime(true);
             $isHibernated = function () use (&$hibernated, &$statusReadAt): bool {
@@ -180,6 +184,7 @@ class QueueConsumer
                     $lastBeat = microtime(true);
                     $this->recorder->passHeartbeat($passId, $observer->handled(), memory_get_peak_usage(true));
                     $this->reapKilled($observer);
+                    $this->closeDeadPasses($passId);
                 }
             }, $stopListeners, true);
 
@@ -221,7 +226,7 @@ class QueueConsumer
     }
 
     /**
-     * Opens the pass's row, runs it, closes the row with the report.
+     * Opens the pass's row, runs it, closes the row with the report; the pass holds its holder lock from before its row names it until after the row is closed.
      *
      * @param \Closure(QueuePassObserver, int): string $body
      */
@@ -230,26 +235,33 @@ class QueueConsumer
         $startedAt = microtime(true);
         $observer = new QueuePassObserver($this->recorder, $this->journal, $mode, $this->clock);
         $passId = null;
+        $holder = QueueClaimHolder::thisProcess()->token();
         $this->failWhatItHoldsWhenTheProcessEnds();
 
         try {
-            $passId = $this->recorder->passStarted($mode, $budget, $beforeResponse, $origin, $fallbackFor);
-            $stopReason = $body($observer, $passId);
-            $report = $this->report($observer->handled(), $startedAt, $stopReason);
-        } catch (\Throwable $broken) {
-            $this->journal->error('A queue pass stopped on an error: ' . $broken->getMessage(), [
-                'action' => 'queue.pass_failed',
-                'target' => $mode->value,
-                'exception' => $broken,
-            ]);
-            $report = $this->report($observer->handled(), $startedAt, QueuePassReport::ERROR);
-        }
-
-        if ($passId !== null) {
             try {
-                $this->recorder->passFinished($passId, $report, memory_get_peak_usage(true));
-            } catch (\Throwable) {
+                // Taken before the row names it, so a judge never finds the file of a pass that has not locked it yet.
+                $this->holderLock->hold($holder);
+                $passId = $this->recorder->passStarted($mode, $budget, $beforeResponse, $origin, $fallbackFor, $holder);
+                $stopReason = $body($observer, $passId);
+                $report = $this->report($observer->handled(), $startedAt, $stopReason);
+            } catch (\Throwable $broken) {
+                $this->journal->error('A queue pass stopped on an error: ' . $broken->getMessage(), [
+                    'action' => 'queue.pass_failed',
+                    'target' => $mode->value,
+                    'exception' => $broken,
+                ]);
+                $report = $this->report($observer->handled(), $startedAt, QueuePassReport::ERROR);
             }
+
+            if ($passId !== null) {
+                try {
+                    $this->recorder->passFinished($passId, $report, memory_get_peak_usage(true));
+                } catch (\Throwable) {
+                }
+            }
+        } finally {
+            $this->holderLock->release($holder);
         }
 
         return $report;
@@ -437,7 +449,7 @@ class QueueConsumer
         $this->announceKilled($killed, $message);
     }
 
-    /** What a paused pass still does: reap, which changes no content (R18); no pass row, and a failure is only journaled. */
+    /** What a paused pass still does: reap and close dead passes, which change no content (R18); no pass row, and a failure is only journaled. */
     private function reapWhilePaused(QueueConsumerMode $mode): void
     {
         try {
@@ -446,6 +458,33 @@ class QueueConsumer
             $this->journal->error('The killed messages could not be reaped while the wiki is paused: ' . $broken->getMessage(), [
                 'action' => 'queue.pass_failed',
                 'target' => $mode->value,
+                'exception' => $broken,
+            ]);
+        }
+        $this->closeDeadPasses(null);
+    }
+
+    /** Closes as killed the open passes, but its own, whose holder is gone, or that nothing tells about and no process could still run; a failure is only journaled. */
+    private function closeDeadPasses(?int $ownPassId): void
+    {
+        try {
+            $longestLife = QueueBudgetFactory::KILL_LIMIT_NO_PHP_LIMIT + QueueTransport::KILL_GRACE_SECONDS;
+            $lastPossible = $this->clock->now()->setTimezone(new \DateTimeZone('UTC'))->modify("-{$longestLife} seconds");
+            foreach ($this->statistics->openPasses() as $pass) {
+                if ($pass['id'] === $ownPassId) {
+                    continue;
+                }
+                $state = $pass['holder'] === '' ? QueueClaimHolder::UNKNOWN : $this->transport->holderState($pass['holder']);
+                if ($state === QueueClaimHolder::GONE) {
+                    $this->recorder->passKilled($pass['id']);
+                    $this->holderLock->forget($pass['holder']);
+                } elseif ($state === QueueClaimHolder::UNKNOWN && $pass['lastAt'] < $lastPossible) {
+                    $this->recorder->passKilled($pass['id']);
+                }
+            }
+        } catch (\Throwable $broken) {
+            $this->journal->error('The passes whose process is gone could not be closed: ' . $broken->getMessage(), [
+                'action' => 'queue.pass_failed',
                 'exception' => $broken,
             ]);
         }
