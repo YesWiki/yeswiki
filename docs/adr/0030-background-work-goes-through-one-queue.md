@@ -41,7 +41,7 @@ flowchart LR
   subgraph Producers
     code["«component» Module code<br/>SearchIndexer, ActivityPubService,<br/>ArchiveService, RemoteBackupService"]
     providers["«component» Scheduler/*Schedule<br/>(ProvidesSchedule)<br/>Kernel, Admin, Identity, Contact, Import"]
-    ticker["«component» QueueScheduleTicker<br/>ScheduleHistory"]
+    ticker["«component» QueueScheduleTicker<br/>ScheduleHistory, ScheduleGrid"]
   end
   bus["«component» QueueBus<br/>(MessageBusInterface)"]
   subgraph DB["Wiki database"]
@@ -179,10 +179,13 @@ period (`every_seconds`). `queue.task.finished` is written, at `info`, when an a
 task's `consecutive_failures` in its context. The purge spares the last
 row of each of the three actions for each task, however old, so that a monthly digest still has its
 anchor after the 7 days, and "no row" always means "never seen". The **anchor** of a task is its last
-dispatch, or its first sighting when it was never sent. The task is due once its trigger's first run
-after the anchor has passed, so the period counts from the send, not from the run. A run started by
-hand ("Lancer") is dispatched like any other: it writes a dispatch row and moves the next run, which
-the button says. The details are under "The Scheduler's history and ticker".
+dispatch, or its first sighting when it was never sent. The task is due once its first run after the
+anchor has passed. A task declared with `every()` runs on **fixed slots** in the wiki's timezone,
+counted from midnight (`ScheduleGrid`): every 30 minutes is at :00 and :30, every 24 hours at
+midnight, whenever the tick that sent the last one came. A period counted from the send drifted by
+the lateness of each tick, half an hour becoming 7:00, 7:33, 8:05. A run started by hand ("Lancer")
+is dispatched like any other: it writes a dispatch row, and the next run stays on its slot, which the
+button says. The details are under "The Scheduler's history and ticker".
 
 **There are three consumption modes**, chosen by `YESWIKI_QUEUE_CONSUMER`:
 
@@ -297,9 +300,9 @@ where it stood when the backup was taken.
 `recovery-keys`, `activation-keys`, `bot-guard`) is its own recurring task, every 30 minutes as
 before, so that one failing hides none. Digests are one task per period, on a cron at 7 a.m. in
 the wiki's timezone (daily, Mondays, the first of the month). A data source that syncs itself is a
-task per source, at its own interval, counted from its last dispatch; saving a source just
+task per source, at its own interval, on the slots of that interval; saving a source just
 set to sync queues its first sync a minute later, which is a dispatch like any other. Neither keeps
-state of its own: a task run by hand is a dispatch, and its next run counts from it. `maintenance.before` and `maintenance.after` are still dispatched, by a task of their
+state of its own: a task run by hand is a dispatch, and its next run stays on its slot. `maintenance.before` and `maintenance.after` are still dispatched, by a task of their
 own (`extension-hooks`), and a listener that throws is traced and no longer stops the next. Their
 context keeps its keys but not all its meaning, which an extension author should know: the
 listeners run in a queue pass, with no request, no logged-in user and no session; `previousRun` is
@@ -517,11 +520,22 @@ Each point names the class or method to look at.
   no trace (its first subscriber, digests switched on again, a restore onto a new install, an upgrade
   from a version without the queue), and its monthly digest would go out on the 17th and again on the
   1st.
-- **Each computation builds a Schedule of its own.** A Symfony `PeriodicalTrigger` (`every`) fixes its
-  start on the first `getNextRunDate()` it is asked, so one kept would count from the first anchor it
-  was handed and ignore every dispatch after it. The ticker lives as long as a worker does, hence a
-  new Schedule, from the providers, each time it computes.
-- **`dueAt()` is the earliest `getNextRunDate(anchor)` of the declared tasks,** worked out from the
+- **Each computation builds a Schedule of its own.** The schedule may change with the configuration,
+  and the ticker lives as long as a worker does, hence a new Schedule, from the providers, each time
+  it computes.
+- **An `every()` runs on fixed slots, which `ScheduleGrid` works out.** Left to itself, a Symfony
+  `PeriodicalTrigger` with no `from` starts on the first date it is asked about, the anchor, so its
+  next run was the last dispatch plus the period, and each late tick pushed every later run back.
+  The grid counts instead from midnight in the wiki's `timezone` (PHP's when it names none). A period
+  of a day or less restarts at each midnight, on the wall clock: 45 minutes is 0:00, 0:45 ... 23:15,
+  then 0:00, and 24 hours is midnight. A longer one counts from a fixed midnight, Monday 3 January
+  2000, in whole days when it is some, in elapsed time otherwise. A wall-clock time the change to
+  summer time skips is the hour after it, and the hour the change to winter time repeats gets no
+  slots of its own, an hour and a half between two half-hourly runs once a year. The grid reads the
+  trigger's period and its `until` from clones and never moves the trigger; a `cron()` keeps its own
+  times. The Journal still holds the last dispatch, which is how a slot that already ran is told from
+  one that is due. `every()` takes a fixed length: a calendar period such as a month is a `cron()`.
+- **`dueAt()` is the earliest next slot after the anchor of the declared tasks,** worked out from the
   same elements as the tick. It is null, meaning "due at once", while a declared task has no anchor,
   so that the next tick writes its row; just after that tick it falls back on the real next date, or
   the check would stay true on every request. When a tick finds no next date (nothing declared, or
@@ -549,13 +563,15 @@ Each point names the class or method to look at.
   at every tick. No module declares one. Declaring the same message on the same interval twice
   (Symfony's `LogicException`) is one task, journaled, not fatal.
 - **While a provider throws,** the other providers' tasks go on and its own are listed from the
-  Journal, with the period their last declared or dispatched row carries and due that period after
-  their anchor (no due time when no row says the period), so `queue-task-overdue` still fires once
+  Journal, with the period their last declared or dispatched row carries and due on the first slot
+  of that period after their anchor (no due time when no row says the period), so `queue-task-overdue` still fires once
   they stop being sent. Nothing is forgotten, since nothing is kept beside the Journal to forget; the
   cost is that a task no longer declared, whose rows the purge spares, is listed and judged too while
   a provider throws.
-- **"Lancer" moves the next run.** `runNow()` sends the task through the bus, which writes a dispatch
-  row, and drops the memo. The button, the jobs page and `docs/fr/async.md` say so.
+- **"Lancer" leaves the next run on its slot.** `runNow()` sends the task through the bus, which
+  writes a dispatch row, and drops the memo; run at 7:10, a half-hourly task still runs at 7:30. It
+  moved the next run while the period counted from the last dispatch. The button, the jobs page and
+  `docs/fr/async.md` say so.
 
 #### The end of a request
 
@@ -790,7 +806,7 @@ Each point names the class or method to look at.
   `symfony/lock`, neither of which the wiki has and the second of which is excluded. A port of the
   generator's loop onto a checkpoint of our own worked, but it was a second state beside the Journal
   and a port to keep in step with upstream. The Scheduler takes from Symfony its declaration (`Schedule`,
-  `RecurringMessage`, the triggers) and asks a trigger for `getNextRunDate()` from the Journal's anchor.
+  `RecurringMessage`, the triggers) and asks `ScheduleGrid` for the next run after the Journal's anchor.
 - **Retrying a killed message automatically** — rejected. It was cut by the limit of its mode and
   will be cut by it again; this is anti-objective four, "a job too long for the mode relaunched
   forever". It waits for a human who has changed mode.
@@ -1001,8 +1017,9 @@ classDiagram
    service tagged by autoconfiguration, so there is no list to add it to.
    - `RecurringMessage::every(<seconds, or '24 hours'>, $message)` is for a fixed period. The
      housekeeping steps share `KernelSchedule::HOUSEKEEPING_EVERY` (`AdminSchedule`).
-     A source's own interval is the same (`ImportSchedule`). The period is counted from the
-     task's last dispatch, or from the moment the Scheduler first saw it.
+     A source's own interval is the same (`ImportSchedule`). The task runs on fixed slots counted
+     from midnight in the wiki's timezone (every 30 minutes is :00 and :30), never a period after
+     its last dispatch. Pass it no `from`: the Scheduler places the slots.
    - `RecurringMessage::cron($expression, $message, $timezone)` is for a time of day, in the wiki's
      `timezone` (`ContactSchedule`).
    - Neither remembers anything beside the Journal. What was dispatched is the Journal's to tell
@@ -1011,11 +1028,12 @@ classDiagram
    - It may depend on the configuration, and a task it stops declaring leaves the page.
    - A schedule that cannot read what it decides from throws, rather than declaring nothing. The
      ticker then journals `queue.schedule_provider_failed`, goes on with the other providers' tasks,
-     and lists that one's from the Journal, due a period (`every_seconds`) after their last dispatch.
+     and lists that one's from the Journal, due on the first slot of their period (`every_seconds`)
+     after their last dispatch.
 4. **A late task runs once.** A task ten periods late runs once at the next pass, and one the
    Scheduler sees for the first time is only noted, and waits for its first run. The same work may
-   also run another way: a command that does it itself moves nothing, but "Lancer" sends the task,
-   so it writes a dispatch row and the next run counts from it.
+   also run another way: a command that does it itself moves nothing, and "Lancer" sends the task,
+   so it writes a dispatch row; either way the next run stays on its slot.
 5. **An extension that only wants a periodic hook** may still listen to `maintenance.after`, with
    the caveats given under "The Scheduler produces". A task of its own is shown, retried and alerted
    on; a listener's failure is only traced.
