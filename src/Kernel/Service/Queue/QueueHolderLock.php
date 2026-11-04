@@ -26,9 +26,9 @@ final class QueueHolderLock
     }
 
     /**
-     * Creates the token's file and locks it, keeping the handle until release().
+     * Creates the token's file and locks it, keeping the handle until release(); it refuses, without creating a file, a token that is not of this machine, since only this machine's tokens are ever judged by their file.
      *
-     * @return bool false when the file cannot be created or locked, or when the token's machine is not told apart from another, as no judge would read the file
+     * @return bool false when the token is not of this machine, or when the file cannot be created or locked
      */
     public function hold(string $token): bool
     {

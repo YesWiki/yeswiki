@@ -149,6 +149,14 @@ class QueueHolderLockTest extends TestCase
         $this->assertDirectoryDoesNotExist($this->dir . '/' . QueueHolderLock::DIRECTORY);
     }
 
+    public function testATokenOfAnotherMachineIsNotHeld(): void
+    {
+        $token = QueueTestHolders::elsewhere()->token();
+
+        $this->assertFalse($this->lock->hold($token), 'a file here says nothing about a process there, so no judge would read it');
+        $this->assertDirectoryDoesNotExist($this->dir . '/' . QueueHolderLock::DIRECTORY);
+    }
+
     public function testThePathIsTheNonceInTheHoldersDirectory(): void
     {
         $this->assertSame(QueueHolderLock::DIRECTORY . '/00ff12ab.lock', QueueHolderLock::pathOf('c12@abc.34/00ff12ab'));
