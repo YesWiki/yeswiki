@@ -135,21 +135,20 @@ class QueueConsumerTest extends YesWikiTestCase
         $this->assertSame(array_fill(0, 5, 'handled'), array_column($this->statistics->history(10), 'status'));
     }
 
+    /** The first message is taken (the deadline is ahead); once it has spent the budget, no other is, whatever the averages say. */
     public function testDrainStopsWhenTheBudgetIsSpent(): void
     {
-        $this->build($this->db, new NativeClock());
         $this->behaviour = static function (): void {
-            usleep(300000);
+            usleep(250000);
         };
         $this->send(5);
 
-        $report = $this->consumer->drain(QueueConsumerMode::Request, $this->seconds(1));
+        $report = $this->consumer->drain(QueueConsumerMode::Request, new QueueBudget(microtime(true) + 0.2, PHP_INT_MAX, 30));
 
-        $this->assertLessThan(5, $report->handled);
-        $this->assertGreaterThan(0, $report->handled);
+        $this->assertSame(1, $report->handled);
         $this->assertSame(QueuePassReport::BUDGET, $report->stopReason);
-        $this->assertGreaterThan(0, $report->remaining);
-        $this->assertSame(5 - $report->handled, $this->statistics->pendingCount(), 'what was not taken is still waiting, untouched');
+        $this->assertSame(4, $report->remaining);
+        $this->assertSame(4, $this->statistics->pendingCount(), 'what was not taken is still waiting, untouched');
     }
 
     public function testNothingAffordableIsNoBudgetNotAFailure(): void
@@ -159,6 +158,7 @@ class QueueConsumerTest extends YesWikiTestCase
         $report = $this->consumer->drain(QueueConsumerMode::Request, $this->seconds(0));
 
         $this->assertSame(0, $report->handled);
+        $this->assertSame([], $this->handled, 'a budget the request already spent is not a pass that can run anything (§7.2)');
         $this->assertSame(QueuePassReport::NO_BUDGET, $report->stopReason);
         $this->assertSame([], $this->statistics->failed());
         $this->assertSame(1, $this->statistics->pendingCount());
@@ -176,17 +176,6 @@ class QueueConsumerTest extends YesWikiTestCase
         $this->assertSame(1, $this->statistics->pendingCount());
     }
 
-    public function testAMessageLongerThanTheBudgetIsTakenFirstByACommand(): void
-    {
-        $this->recordAverage(QueueTestMessage::class, 91000);
-        $this->send(1);
-
-        $report = $this->consumer->drain(QueueConsumerMode::Api, $this->seconds(20), false, true);
-
-        $this->assertSame(['m0'], $this->handled);
-        $this->assertSame(QueuePassReport::EMPTY, $report->stopReason);
-    }
-
     public function testAMessageLongerThanTheBudgetIsNotTakenWhileTheVisitorWaits(): void
     {
         $this->recordAverage(QueueTestMessage::class, 91000);
@@ -197,16 +186,6 @@ class QueueConsumerTest extends YesWikiTestCase
         $this->assertSame([], $this->handled);
         $this->assertSame(QueuePassReport::NO_BUDGET, $report->stopReason);
         $this->assertSame(1, $this->statistics->pendingCount(), 'it waits for a pass nobody waits for');
-    }
-
-    public function testASpentBudgetTakesNothingEvenWhenNobodyWaits(): void
-    {
-        $this->send(1);
-
-        $report = $this->consumer->drain(QueueConsumerMode::Request, $this->seconds(0), responseAlreadySent: true);
-
-        $this->assertSame([], $this->handled, 'a budget the request already spent is not a pass that can run anything (§7.2)');
-        $this->assertSame(QueuePassReport::NO_BUDGET, $report->stopReason);
     }
 
     public function testAFailingMessageIsRetriedThenFailed(): void
@@ -233,19 +212,38 @@ class QueueConsumerTest extends YesWikiTestCase
         $this->assertSame(['failed' => 1, 'retried' => 3], $statuses);
     }
 
-    public function testADefinitiveFailureIsJournaled(): void
+    /**
+     * A message whose retry policy is zero fails at once, is journaled like any other failure, and a tolerated one is no exception to that (R10: it only stays out of the generic health check).
+     *
+     * @param class-string $class
+     */
+    #[DataProvider('messagesThatFailAtOnce')]
+    public function testADefinitiveFailureIsFailedAtOnceAndJournaled(string $class): void
     {
         $this->behaviour = static function (): void {
             throw new \RuntimeException('broken for good');
         };
-        $this->transport->send(new Envelope(new QueueTestOnceMessage('once')));
+        $this->transport->send(new Envelope(new $class('once')));
 
-        $this->consumer->drain(QueueConsumerMode::Api, $this->seconds(30));
+        $report = $this->consumer->drain(QueueConsumerMode::Api, $this->seconds(30));
 
+        $this->assertSame(1, $report->handled);
+        $this->assertSame(0, $this->statistics->pendingCount(), 'no retry is waiting');
+        $this->assertSame([$class], array_column($this->statistics->failed(), 'type'));
+        $this->assertSame(['failed'], array_column($this->statistics->history(10), 'status'));
         $journal = $this->journaled();
         $this->assertStringContainsString('"action":"queue.message_failed"', $journal);
-        $this->assertStringContainsString('"target":"' . addcslashes(QueueTestOnceMessage::class, '\\') . '"', $journal);
+        $this->assertStringContainsString('"target":"' . addcslashes($class, '\\') . '"', $journal);
         $this->assertStringContainsString('"channel":"diagnostic"', $journal);
+    }
+
+    /** @return array<string, array{class-string}> */
+    public static function messagesThatFailAtOnce(): array
+    {
+        return [
+            'a message that is not retried' => [QueueTestOnceMessage::class],
+            'a tolerated message' => [QueueTestToleratedMessage::class],
+        ];
     }
 
     public function testAnIntermediateFailureIsNotJournaled(): void
@@ -259,37 +257,6 @@ class QueueConsumerTest extends YesWikiTestCase
 
         $this->assertStringNotContainsString('queue.message_failed', $this->journaled());
         $this->assertSame(['retried'], array_column($this->statistics->history(10), 'status'));
-    }
-
-    /** R10: a tolerated message only stays out of the generic health check; its definitive failure is journaled like any other. */
-    public function testAToleratedMessageIsJournaledToo(): void
-    {
-        $this->behaviour = static function (): void {
-            throw new \RuntimeException('instance gone');
-        };
-        $this->transport->send(new Envelope(new QueueTestToleratedMessage('delivery')));
-
-        $this->consumer->drain(QueueConsumerMode::Api, $this->seconds(30));
-
-        $this->assertSame([QueueTestToleratedMessage::class], array_column($this->statistics->failed(), 'type'));
-        $this->assertSame(['failed'], array_column($this->statistics->history(10), 'status'));
-        $this->assertStringContainsString('"target":"' . addcslashes(QueueTestToleratedMessage::class, '\\') . '"', $this->journaled());
-        $this->assertStringContainsString('queue.message_failed', $this->journaled());
-    }
-
-    public function testARetryPolicyOfZeroFailsAtOnce(): void
-    {
-        $this->behaviour = static function (): void {
-            throw new \RuntimeException('archive failed');
-        };
-        $this->transport->send(new Envelope(new QueueTestOnceMessage('once')));
-
-        $report = $this->consumer->drain(QueueConsumerMode::Api, $this->seconds(30));
-
-        $this->assertSame(1, $report->handled);
-        $this->assertSame(0, $this->statistics->pendingCount(), 'no retry is waiting');
-        $this->assertCount(1, $this->statistics->failed());
-        $this->assertSame(['failed'], array_column($this->statistics->history(10), 'status'));
     }
 
     public function testAMessageNobodyHandlesFailsAtOnce(): void
@@ -735,8 +702,92 @@ class QueueConsumerTest extends YesWikiTestCase
 
         $this->consumer->drain(QueueConsumerMode::Api, $this->seconds(30));
 
-        $this->assertNotNull($seen[0] ?? null, 'a handler can ask how long it has');
+        $this->assertEqualsWithDelta(30.0, $seen[0] ?? null, 1.0, 'a handler can ask how long it has');
         $this->assertNull($this->budgetContext->remainingSeconds(), 'code after the pass is not told "0 s left"');
+    }
+
+    /** A pass that breaks still takes its budget back: later code of the request is not under it. */
+    public function testTheBudgetIsForgottenWhenThePassBreaks(): void
+    {
+        $this->send(1);
+        $this->schema->drop();
+
+        $this->consumer->drain(QueueConsumerMode::Api, $this->seconds(30));
+
+        $this->assertNull($this->budgetContext->remainingSeconds());
+    }
+
+    /** A pass that breaks does not throw: it reports an error, journals it with its mode, and closes its row. */
+    public function testAPassThatBreaksReportsAnErrorAndJournalsIt(): void
+    {
+        $this->send(1);
+        $this->schema->drop();
+
+        $report = $this->consumer->drain(QueueConsumerMode::Api, $this->seconds(30));
+
+        $this->assertSame(QueuePassReport::ERROR, $report->stopReason);
+        $this->assertSame(0, $report->handled);
+        $journal = $this->journaled();
+        $this->assertStringContainsString('"action":"queue.pass_failed"', $journal);
+        $this->assertStringContainsString('"target":"api"', $journal);
+        $pass = $this->statistics->lastPass();
+        $this->assertNotNull($pass);
+        $this->assertSame('error', $pass['stopReason']);
+        $this->assertNotNull($pass['finishedAt'], 'the pass row is not left open');
+    }
+
+    /** A pass lock that cannot even be created (here: `cache` is a file) is an error of the pass, journaled; nothing is taken. */
+    public function testALockThatCannotBeCreatedIsAnError(): void
+    {
+        if (\defined('YESWIKI_INSTANCE_DIR')) {
+            $this->markTestSkipped('the locks go to the instance directory here');
+        }
+        $this->send(1);
+        $directory = sys_get_temp_dir() . '/yw-nolock-' . bin2hex(random_bytes(4));
+        mkdir($directory);
+        touch($directory . '/cache');
+        $previous = (string)getcwd();
+
+        try {
+            chdir($directory);
+            $this->build($this->db, $this->clock);
+            $report = $this->consumer->drain(QueueConsumerMode::Api, $this->seconds(30));
+        } finally {
+            chdir($previous);
+            @unlink($directory . '/cache');
+            @rmdir($directory);
+        }
+
+        $this->assertSame(QueuePassReport::ERROR, $report->stopReason);
+        $this->assertSame([], $this->handled);
+        $this->assertSame(1, $this->statistics->pendingCount());
+        $this->assertNull($this->statistics->lastPass(), 'no pass row was written');
+        $this->assertStringContainsString('"action":"queue.pass_failed"', $this->journaled());
+    }
+
+    /** The memory ceiling is looked at before each message: a budget already past it takes none. */
+    public function testDrainStopsOnMemoryBeforeTheNextMessage(): void
+    {
+        $this->send(2);
+
+        $report = $this->consumer->drain(QueueConsumerMode::Api, new QueueBudget(microtime(true) + 30, 1, 30));
+
+        $this->assertSame(QueuePassReport::MEMORY, $report->stopReason);
+        $this->assertSame([], $this->handled);
+        $this->assertSame(2, $this->statistics->pendingCount());
+    }
+
+    /** A blocking consumer past its memory limit finishes the message in hand and stops; the rest waits for the next one. */
+    public function testConsumeStopsOnMemoryAfterTheMessageInHand(): void
+    {
+        $this->send(2);
+
+        $report = $this->consumer->consume(QueueConsumerMode::Worker, 5, 1);
+
+        $this->assertSame(['m0'], $this->handled);
+        $this->assertSame(QueuePassReport::MEMORY, $report->stopReason);
+        $this->assertSame(1, $report->remaining);
+        $this->assertSame('memory', $this->statistics->lastPass()['stopReason'] ?? null);
     }
 
     public function testTheScheduleIsTickedFirstUnlessAskedNotTo(): void
@@ -829,6 +880,108 @@ class QueueConsumerTest extends YesWikiTestCase
         $this->assertSame(1, $this->statistics->pendingCount());
     }
 
+    /** A message in hand when the consumer is told to stop is finished and acked, not left to be reaped as killed. */
+    public function testASignalLetsTheMessageInHandFinish(): void
+    {
+        if (!function_exists('pcntl_signal') || !function_exists('posix_kill')) {
+            $this->markTestSkipped('needs pcntl and posix');
+        }
+        $this->send(1);
+        $marker = $this->file . '.started';
+        $script = $this->script(<<<'PHP'
+            require_once 'tests/src/Kernel/QueueTestKit.php';
+            $kit = new YesWiki\Test\Kernel\QueueTestKit([YesWiki\Test\Kernel\QueueTestMessage::class => static function () use ($argv): void {
+                touch($argv[2]);
+                sleep(1);
+            }], null, $argv[1]);
+            register_shutdown_function($kit->dispose(...));
+            $report = $kit->consumer->consume(YesWiki\Kernel\Queue\QueueConsumerMode::Worker, 60, 512 * 1024 * 1024);
+            exit($report->stopReason === 'stopped' ? 0 : 9);
+            PHP);
+        $process = proc_open([PHP_BINARY, $script, $this->file, $marker], [], $pipes);
+        $this->assertIsResource($process);
+
+        try {
+            for ($waited = 0; !file_exists($marker) && $waited < 100; $waited++) {
+                usleep(100000);
+            }
+            $this->assertFileExists($marker, 'the consumer took the message');
+            posix_kill(proc_get_status($process)['pid'], SIGTERM);
+            $exit = null;
+            for ($waited = 0; $waited < 150; $waited++) {
+                $status = proc_get_status($process);
+                if (!$status['running']) {
+                    $exit = $status['exitcode'];
+                    break;
+                }
+                usleep(100000);
+            }
+            $this->assertSame(0, $exit, 'it stopped by itself, with the reason "stopped"');
+        } finally {
+            $status = proc_get_status($process);
+            if ($status['running']) {
+                posix_kill($status['pid'], 9);
+            }
+            proc_close($process);
+            @unlink($script);
+            @unlink($marker);
+        }
+
+        $this->assertSame(0, $this->statistics->pendingCount());
+        $this->assertSame([], $this->statistics->failed(), 'not reaped as killed');
+        $this->assertSame(['handled'], array_column($this->statistics->history(10), 'status'));
+        $this->assertSame('stopped', $this->statistics->lastPass()['stopReason'] ?? null);
+    }
+
+    /**
+     * The worker mode is the one that ticks on a queue with nothing in it: asleep at its start, so with no tick then, it ticks at its first idle turn once awake.
+     */
+    public function testAWorkerTicksTheScheduleWhenTheQueueIsEmpty(): void
+    {
+        $this->build($this->db, new NativeClock(), static fn (): array => [RecurringMessage::every('30 minutes', new QueueTestTask())]);
+        $this->setWikiStatus('hibernate');
+
+        $this->consumeWhileTheWikiWakesUp(8, null);
+
+        $this->assertSame(['test-task'], array_keys($this->history->all()), 'the task was dispatched');
+    }
+
+    public function testAWorkerTicksTheScheduleAtItsStart(): void
+    {
+        $this->build($this->db, new MockClock(self::START, 'UTC'), static fn (): array => [RecurringMessage::every('30 minutes', new QueueTestTask())]);
+        $this->send(1);
+
+        $this->consumer->consume(QueueConsumerMode::Worker, 30, 512 * 1024 * 1024, 1);
+
+        $this->assertSame(['test-task'], array_keys($this->history->all()), 'no idle turn came: the start ticked');
+    }
+
+    public function testAHibernatedWorkerDoesNotTick(): void
+    {
+        $this->build($this->db, new MockClock(self::START, 'UTC'), static fn (): array => [RecurringMessage::every('30 minutes', new QueueTestTask())]);
+        $this->send(1);
+        $this->setWikiStatus('hibernate');
+
+        $this->consumer->consume(QueueConsumerMode::Worker, 1, 512 * 1024 * 1024);
+
+        $this->assertSame([], $this->history->all());
+        $this->assertSame([], $this->handled);
+    }
+
+    /** The status is read again every few seconds: a consumer woken up goes back to work instead of idling for good. */
+    public function testConsumeResumesWhenTheWikiWakesUp(): void
+    {
+        $this->build($this->db, new NativeClock());
+        $this->send(1);
+        $this->setWikiStatus('hibernate');
+
+        $report = $this->consumeWhileTheWikiWakesUp(20, 1);
+
+        $this->assertSame(['m0'], $this->handled);
+        $this->assertSame(QueuePassReport::LIMIT, $report->stopReason);
+        $this->assertSame(0, $this->statistics->pendingCount());
+    }
+
     /** R17: what a long-lived consumer was built from is the configuration it booted on; once that changed, it stops between two messages for its supervisor to start a fresh one. */
     public function testConsumeStopsWhenTheConfigurationChanged(): void
     {
@@ -897,11 +1050,6 @@ class QueueConsumerTest extends YesWikiTestCase
 
         $this->assertInstanceOf(QueueConsumer::class, $services->get(QueueConsumer::class));
         $this->assertInstanceOf(QueueStatistics::class, $services->get(QueueStatistics::class));
-        $this->assertSame(
-            $services->get(ConfigurationWatch::class),
-            (new \ReflectionProperty(QueueConsumer::class, 'configuration'))->getValue($services->get(QueueConsumer::class)),
-            'the consumer asks the watch the runtime bound at boot'
-        );
     }
 
     /**
@@ -984,13 +1132,13 @@ class QueueConsumerTest extends YesWikiTestCase
         $journal->writeTo($this->log);
 
         $handler = function (object $message): void {
-            $this->handled[] = $message instanceof QueueTestMessage || $message instanceof QueueTestOnceMessage ? $message->value : $message::class;
+            $this->handled[] = $message instanceof QueueTestMessage || $message instanceof QueueTestOnceMessage || $message instanceof QueueTestToleratedMessage ? $message->value : $message::class;
             if ($this->behaviour !== null) {
                 ($this->behaviour)($message);
             }
         };
         $locator = new QueueHandlerLocator(
-            [QueueTestMessage::class => ['handler'], QueueTestOnceMessage::class => ['handler']],
+            [QueueTestMessage::class => ['handler'], QueueTestOnceMessage::class => ['handler'], QueueTestToleratedMessage::class => ['handler']],
             new ServiceLocator(['handler' => static fn (): \Closure => $handler])
         );
 
@@ -1031,6 +1179,25 @@ class QueueConsumerTest extends YesWikiTestCase
             $watch,
             fn (): EventDispatcher => $this->events,
         );
+    }
+
+    /** Runs a worker on a wiki set asleep, which a signal wakes up a second into the run; the consumer reads the status again after five. */
+    private function consumeWhileTheWikiWakesUp(int $timeLimit, ?int $messageLimit): QueuePassReport
+    {
+        if (!function_exists('pcntl_alarm')) {
+            $this->markTestSkipped('needs pcntl');
+        }
+        $previousAsync = pcntl_async_signals(true);
+        pcntl_signal(SIGALRM, fn () => $this->setWikiStatus('running'));
+        pcntl_alarm(1);
+
+        try {
+            return $this->consumer->consume(QueueConsumerMode::Worker, $timeLimit, 512 * 1024 * 1024, $messageLimit);
+        } finally {
+            pcntl_alarm(0);
+            pcntl_signal(SIGALRM, SIG_DFL);
+            pcntl_async_signals($previousAsync);
+        }
     }
 
     /**

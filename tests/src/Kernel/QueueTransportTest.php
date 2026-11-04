@@ -519,13 +519,16 @@ class QueueTransportTest extends YesWikiTestCase
         $this->assertNull($this->transport->peekNextType());
     }
 
-    /** Review Focus 4: a database on another time zone, or a PHP clock far from the database's, must not hide messages. */
-    public function testClaimIgnoresTheDatabaseClock(): void
+    /** The queue's dates are UTC whatever zone the PHP clock reads in: a sender on another zone neither hides its message from a consumer on UTC nor shows it early. */
+    public function testTheQueueKeepsUtcWhateverTheZoneOfTheClock(): void
     {
-        $transport = new QueueTransport($this->db, $this->schema, clock: new MockClock('2030-01-01 00:00:00', 'UTC'));
-        $transport->send(new Envelope(new QueueTestMessage('future')));
+        $tokyo = new QueueTransport($this->db, $this->schema, clock: new MockClock('2026-10-23 21:00:00', 'Asia/Tokyo'));
+        $sent = $tokyo->send(new Envelope(new QueueTestMessage('from tokyo')));
 
-        $this->assertCount(1, [...$transport->get()]);
+        $this->assertSame(self::START, $this->row(self::idOf($sent))['available_at'] ?? null, 'the instant it was sent, in UTC');
+        $received = [...$this->transport->get()];
+        $this->assertCount(1, $received, 'a consumer on UTC sees it at once');
+        $this->assertSame(self::idOf($sent), self::idOf($received[0]));
     }
 
     public function testOldestPendingAtIsWhenTheLongestWaitingMessageBecameAvailable(): void
@@ -578,6 +581,56 @@ class QueueTransportTest extends YesWikiTestCase
             $received->last(SentToFailureTransportStamp::class),
             'Messenger would otherwise drop it, rather than send it to failed, if it failed again'
         );
+    }
+
+    /** A message whose body cannot be read any more is still given another go: it goes back to the queue as it is, to fail there with its reason. */
+    public function testAnUndecodableFailedMessageIsRequeuedAsItIs(): void
+    {
+        $sent = $this->transport->send(new Envelope(new QueueTestMessage('corrupt')));
+        $id = self::idOf($sent);
+        $this->transport->moveToFailed($id, 'boom');
+        $this->db->query("UPDATE {$this->schema->table()} SET body = ? WHERE id = ?", ['not a serialized envelope}', $id]);
+
+        $this->assertTrue($this->transport->requeue($id));
+
+        $row = $this->row($id);
+        $this->assertSame('default', $row['queue_name'] ?? null);
+        $this->assertSame('not a serialized envelope}', $row['body'] ?? null);
+        $this->assertNull($row['dedup_key'] ?? null);
+        $this->assertNull($row['last_error'] ?? null);
+    }
+
+    /** getById() hands out one message of this queue to whoever asks, when it is due or not, and only once. */
+    public function testGetByIdClaimsADelayedMessageOnceAndNeverAFailedOne(): void
+    {
+        $delayed = self::idOf($this->transport->send(new Envelope(new QueueTestMessage('later'), [new DelayStamp(3600000)])));
+        $failed = self::idOf($this->transport->send(new Envelope(new QueueTestMessage('failed'))));
+        $this->transport->moveToFailed($failed, 'boom');
+
+        $taken = $this->transport->getById($delayed);
+
+        $this->assertNotNull($taken, 'not due yet, and handed out all the same');
+        $this->assertSame($delayed, self::idOf($taken));
+        $this->assertNotNull($this->row($delayed)['delivered_at'] ?? null, 'it is claimed');
+        $this->assertNull($this->transport->getById($delayed), 'a claimed message is nobody else\'s');
+        $this->assertNull($this->transport->getById($failed), 'a failed one is in the other queue');
+        $this->assertNull($this->transport->getById(9999));
+    }
+
+    /** Who is at work on this queue: the live claims, not the ones whose process is gone. */
+    public function testLiveHoldersListsALiveClaimAndOmitsADeadOne(): void
+    {
+        $this->transport->claimAs(QueueConsumerMode::Worker, 21600);
+        $this->transport->send(new Envelope(new QueueTestMessage('mine')));
+        $this->transport->send(new Envelope(new QueueTestMessage('dies')));
+        [$mine, $dies] = [...$this->transport->get(), ...$this->transport->get()];
+        QueueTestHolders::hand($this->db, $this->schema, self::idOf($dies), QueueTestHolders::gone());
+
+        $this->assertSame(
+            [['holder' => (string)($this->row(self::idOf($mine))['delivered_by'] ?? ''), 'mode' => 'worker']],
+            $this->transport->liveHolders()
+        );
+        $this->assertSame([], $this->transport->withQueue('failed')->liveHolders(), 'the other queue holds nothing');
     }
 
     public function testDeleteFailedRemovesAFailedMessage(): void
@@ -705,6 +758,21 @@ class QueueTransportTest extends YesWikiTestCase
 
             $this->assertSame(self::idOf($winner), self::idOf($loser));
             $this->assertSame(1, $transport->getMessageCount());
+        });
+    }
+
+    /** A key whose holder keeps vanishing before the look is not looped on for ever: the send says it gave up. */
+    public function testASendGivesUpWhenTheWinnerKeepsVanishing(): void
+    {
+        $this->onRacing(['db_driver' => 'sqlite'], function (QueueTestRacingDb $db, QueueSchema $schema): void {
+            $transport = new QueueTransport($db, $schema, clock: $this->clock);
+            $transport->send(new Envelope(new QueueTestUniqueMessage('winner', 'search:drain')));
+            $db->missEveryWaitingLookup();
+
+            $this->expectException(\RuntimeException::class);
+            $this->expectExceptionMessageMatches('/search:drain/');
+
+            $transport->send(new Envelope(new QueueTestUniqueMessage('loser', 'search:drain')));
         });
     }
 

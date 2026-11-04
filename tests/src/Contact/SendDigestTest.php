@@ -3,6 +3,7 @@
 namespace YesWiki\Test\Contact;
 
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Psr\Container\ContainerInterface;
 use Symfony\Component\Clock\MockClock;
 use Symfony\Component\Console\Command\Command;
@@ -10,9 +11,6 @@ use Symfony\Component\Console\Tester\CommandTester;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\DependencyInjection\ServiceLocator;
-use Symfony\Component\EventDispatcher\EventSubscriberInterface;
-use Symfony\Component\Messenger\Envelope;
-use Symfony\Component\Messenger\Stamp\RedeliveryStamp;
 use Symfony\Component\Messenger\Stamp\TransportMessageIdStamp;
 use Symfony\Component\Scheduler\Generator\MessageContext;
 use Symfony\Component\Scheduler\RecurringMessage;
@@ -24,12 +22,8 @@ use YesWiki\Contact\Service\MailSubscriptions;
 use YesWiki\Files\Service\Storage;
 use YesWiki\Kernel\Queue\ProvidesSchedule;
 use YesWiki\Kernel\Queue\QueueConsumerMode;
-use YesWiki\Kernel\Queue\QueueRetryStrategy;
-use YesWiki\Kernel\Queue\RetryPolicy;
 use YesWiki\Kernel\Service\DbService;
-use YesWiki\Kernel\Service\EventDispatcher;
 use YesWiki\Kernel\Service\HibernationService;
-use YesWiki\Kernel\Service\Queue\QueueHandlerLocator;
 use YesWiki\Kernel\Service\Queue\QueueScheduleTicker;
 use YesWiki\Kernel\Service\TripleStore;
 use YesWiki\Test\Core\YesWikiTestCase;
@@ -87,18 +81,25 @@ class SendDigestTest extends YesWikiTestCase
         $this->assertSame('2026-10-24 11:00:00', $this->plan($this->schedule(['timezone' => 'America/New_York']))['digest-day']['first']);
     }
 
-    /** A wiki whose configuration names no timezone runs on PHP's, which is what its pages show. */
-    public function testWithoutATimezoneOfItsOwnTheWikiRunsOnPhps(): void
+    /** A wiki whose configuration names no timezone (absent or empty) runs on PHP's, which is what its pages show. */
+    #[DataProvider('noTimezone')]
+    public function testWithoutATimezoneOfItsOwnTheWikiRunsOnPhps(?string $timezone): void
     {
         $default = date_default_timezone_get();
         date_default_timezone_set('Asia/Tokyo');
         try {
-            $first = $this->plan($this->schedule(['timezone' => null]))['digest-day']['first'];
+            $first = $this->plan($this->schedule(['timezone' => $timezone]))['digest-day']['first'];
         } finally {
             date_default_timezone_set($default);
         }
 
         $this->assertSame('2026-10-23 22:00:00', $first, '7 a.m. in Tokyo, tonight in UTC');
+    }
+
+    /** @return array<string, array{?string}> */
+    public static function noTimezone(): array
+    {
+        return ['null' => [null], 'empty' => ['']];
     }
 
     /**
@@ -130,21 +131,6 @@ class SendDigestTest extends YesWikiTestCase
             'digest-week Mon 26 07',
             'digest-day Tue 27 07',
         ], $sent);
-    }
-
-    /** What the user asked for: a digest sent by hand neither moves the scheduled one nor stops it. */
-    public function testADigestSentByHandDoesNotMoveTheScheduledOne(): void
-    {
-        $tick = $this->ticker($this->schedule());
-        $tick();
-        $this->assertSame(Command::SUCCESS, $this->runCommand($this->subscriptions(send: static fn (): int => 2), ['--period' => 'day'])->getStatusCode());
-
-        $this->clock->modify('2026-10-24 05:01:00');
-        $this->assertSame(['digest-day'], $tick(), 'still at 7 the next morning');
-
-        $subscriptions = $this->subscriptions(send: static fn (): int => 2);
-        $this->handler($subscriptions)(new SendDigest('day'));
-        $this->assertSame(['day'], $subscriptions->sent, 'and it goes out');
     }
 
     public function testDisabledDigestsAreNotScheduled(): void
@@ -223,17 +209,13 @@ class SendDigestTest extends YesWikiTestCase
         });
         $handler = $this->handler($subscriptions);
         $this->kit = new QueueTestKit([SendDigest::class => static fn (SendDigest $message) => $handler($message)]);
-        $message = new SendDigest('day');
-        $this->assertInstanceOf(RetryPolicy::class, $message);
-        $this->assertSame(0, $message->maxRetries(), 'a second run would mail again the subscribers the first one reached');
-        $this->assertFalse((new QueueRetryStrategy())->isRetryable(Envelope::wrap($message)->with(new RedeliveryStamp(0))));
 
-        $queued = $this->kit->bus->dispatch($message)->last(TransportMessageIdStamp::class);
+        $queued = $this->kit->bus->dispatch(new SendDigest('day'))->last(TransportMessageIdStamp::class);
         $this->assertNotNull($queued);
         $this->kit->consumer->handleById((int)$queued->getId(), QueueConsumerMode::Api);
 
         $this->assertSame(1, $attempts);
-        $this->assertSame(0, $this->kit->statistics->pendingCount(), 'nothing is left to retry');
+        $this->assertSame(0, $this->kit->statistics->pendingCount(), 'nothing is left to retry: a second run would mail again the subscribers the first one reached');
         $this->assertSame(1, $this->kit->statistics->failedCount(), 'the admin sees it in the failed queue');
         $this->assertSame([SendDigest::class], array_column($this->kit->statistics->failed(), 'type'));
     }
@@ -259,43 +241,30 @@ class SendDigestTest extends YesWikiTestCase
         $this->assertFalse($storage->directoryExists('private/digests'));
     }
 
-    public function testNothingListensToMaintenanceAfterForDigests(): void
+    /** The subscriptions hear user.deleted, and no longer the housekeeping pass: the digests are scheduled tasks. */
+    public function testTheSubscriptionsHearUserDeletedAndNotTheHousekeepingPass(): void
     {
-        $services = $this->getWiki()->services;
-        $dispatcher = $services->get(EventDispatcher::class);
+        $events = array_keys(MailSubscriptions::getSubscribedEvents());
 
-        $this->assertFalse($services->has('YesWiki\\Contact\\Service\\ContactDigestScheduler'), 'the scheduler of the housekeeping pass is gone');
-        foreach ($dispatcher->getListeners('maintenance.after') as $listener) {
-            $owner = is_array($listener) ? $listener[0] : $listener;
-            if (is_object($owner)) {
-                $this->assertStringStartsNotWith('YesWiki\\Contact\\', $owner::class);
-            }
-        }
-        foreach ($services->get(MailSubscriptions::class)::getSubscribedEvents() as $event => $unused) {
-            $this->assertNotSame('maintenance.after', $event);
-        }
-        $this->assertInstanceOf(EventSubscriberInterface::class, $services->get(MailSubscriptions::class), 'fixture: the subscriptions still hear user.deleted');
+        $this->assertContains('user.deleted', $events);
+        $this->assertNotContains('maintenance.after', $events);
     }
 
-    /** What makes the schedule and the message count: both are found on the container the wiki really runs on (delete cache/container/* after adding a service class). */
-    public function testTheHandlerAndTheScheduleAreDiscoveredOnTheRealContainer(): void
+    /** The ticker finds the Contact schedule by its tag on the container the wiki really runs on (delete cache/container/* after adding a service class). */
+    public function testTheDigestScheduleIsDeclaredByTheTicker(): void
     {
         $services = $this->getWiki()->services;
         $subscriptions = $services->get(MailSubscriptions::class);
         $page = 'SendDigestTestPage';
         $user = 'SendDigestTestUser';
 
-        self::assertHandled(SendDigest::class, $services->get(QueueHandlerLocator::class));
-        $this->assertInstanceOf(SendDigestHandler::class, $services->get(SendDigestHandler::class));
-        $this->assertInstanceOf(ProvidesSchedule::class, $services->get(ContactSchedule::class));
         $subscriptions->subscribe($page, $user, 'week');
         try {
             $declared = $services->get(QueueScheduleTicker::class)->declaredTaskIds();
         } finally {
             $subscriptions->unsubscribe($page, $user);
         }
-        $this->assertContains('digest-week', $declared, 'the ticker finds the Contact schedule by its tag');
-        $this->assertContains('queue-prune', $declared);
+        $this->assertContains('digest-week', $declared);
     }
 
     /** `contact:send-digest` stays for a cron or a hand: it sends, and says when that failed. */

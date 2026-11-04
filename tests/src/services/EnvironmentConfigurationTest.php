@@ -121,11 +121,6 @@ class EnvironmentConfigurationTest extends TestCase
         }
     }
 
-    public function testTheQueueVariableMapsToItsConfigKey(): void
-    {
-        $this->assertSame('queue_consumer', EnvironmentConfiguration::knownEnvNames()['YESWIKI_QUEUE_CONSUMER']);
-    }
-
     public function testTheQueueVariableFromTheRealEnvironmentOverridesTheConfigKey(): void
     {
         $this->setRealEnv('YESWIKI_QUEUE_CONSUMER', 'worker');

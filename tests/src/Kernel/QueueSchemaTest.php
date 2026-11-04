@@ -55,36 +55,48 @@ class QueueSchemaTest extends TestCase
         $this->assertSame([], $this->queueTables());
     }
 
-    public function testCreateIsIdempotent(): void
+    /** Creating it again is what a re-run migration does: the table stays as it is, with the messages it holds. */
+    public function testCreateKeepsWhatTheTableHolds(): void
     {
         $this->schema->create();
+        $this->insertMessage('default');
+
         $this->schema->create();
 
         $this->assertTrue($this->schema->exists());
+        $this->assertSame(1, (int)$this->db->scalar('SELECT COUNT(*) FROM ' . $this->db->quoteIdentifier($this->schema->table())));
     }
 
-    /** A message gets its defaults, and the table has no column nor index for a task: the Journal keeps those. */
+    public function testDroppingAMissingTableChangesNothing(): void
+    {
+        $this->assertFalse($this->schema->exists());
+
+        $this->schema->drop();
+
+        $this->assertFalse($this->schema->exists());
+    }
+
+    /** A message gets its defaults: not yet attempted, not yet delivered. */
     public function testTheTableAcceptsItsRows(): void
     {
         $this->schema->create();
         $table = $this->db->quoteIdentifier($this->schema->table());
-        $insert = "INSERT INTO {$table} (queue_name, message_type, body, headers, created_at, available_at) VALUES (?, ?, ?, ?, ?, ?)";
+        $this->insertMessage('default');
+        $this->insertMessage('failed');
 
-        foreach (['default', 'failed'] as $queue) {
-            $this->db->query($insert, [$queue, 'Some\\Message', '{}', '[]', '2026-10-23 12:00:00', '2026-10-23 12:00:00']);
-        }
         $message = $this->db->loadSingle("SELECT * FROM {$table} WHERE queue_name = 'default'");
         $this->assertIsArray($message);
         $this->assertSame(0, (int)$message['attempts']);
         $this->assertNull($message['delivered_at']);
-        $this->assertSame(
-            ['id', 'queue_name', 'message_type', 'body', 'headers', 'dedup_key', 'created_at', 'available_at', 'delivered_at', 'delivered_by', 'delivered_mode', 'delivered_limit', 'attempts', 'last_error', 'killed_in'],
-            array_keys($message)
+    }
+
+    private function insertMessage(string $queue): void
+    {
+        $table = $this->db->quoteIdentifier($this->schema->table());
+        $this->db->query(
+            "INSERT INTO {$table} (queue_name, message_type, body, headers, created_at, available_at) VALUES (?, ?, ?, ?, ?, ?)",
+            [$queue, 'Some\\Message', '{}', '[]', '2026-10-23 12:00:00', '2026-10-23 12:00:00']
         );
-        $this->assertSame([], array_filter(
-            $this->db->loadAll("SELECT name FROM sqlite_master WHERE type = 'index' AND tbl_name = ?", [$this->schema->table()]),
-            static fn (array $index): bool => str_contains((string)$index['name'], 'task')
-        ));
     }
 
     /** @return list<string> the tables of this wiki whose name starts like the queue's */

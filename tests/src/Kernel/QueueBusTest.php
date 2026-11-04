@@ -3,12 +3,12 @@
 namespace YesWiki\Test\Kernel;
 
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\TestCase;
 use Symfony\Component\Clock\MockClock;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 use Symfony\Component\DependencyInjection\ServiceLocator;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\Exception\NoHandlerForMessageException;
-use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Messenger\Stamp\HandledStamp;
 use Symfony\Component\Messenger\Stamp\ReceivedStamp;
 use Symfony\Component\Messenger\Stamp\TransportMessageIdStamp;
@@ -22,9 +22,8 @@ use YesWiki\Kernel\Service\Queue\QueueHandlerLocator;
 use YesWiki\Kernel\Service\Queue\QueueRecorder;
 use YesWiki\Kernel\Service\Queue\QueueSchema;
 use YesWiki\Kernel\Service\Queue\QueueTransport;
-use YesWiki\Test\Core\YesWikiTestCase;
+use YesWiki\Kernel\Service\ThrowableFormatter;
 
-require_once 'tests/YesWikiTestCase.php';
 require_once 'tests/src/Kernel/QueueTestKit.php';
 require_once 'tests/src/Kernel/QueueTestMessageHandler.php';
 require_once 'tests/src/Kernel/QueueTestTask.php';
@@ -32,7 +31,7 @@ require_once 'tests/src/Kernel/QueueTestTask.php';
 /** The bus the wiki dispatches on: a message always goes to the queue, and only the consumer ever runs a handler. */
 #[CoversClass(QueueBus::class)]
 #[CoversClass(QueueHandlerLocator::class)]
-class QueueBusTest extends YesWikiTestCase
+class QueueBusTest extends TestCase
 {
     private string $file;
     private DbService $db;
@@ -62,7 +61,11 @@ class QueueBusTest extends YesWikiTestCase
         $this->recorder = new QueueRecorder($this->db, new JournalSchema($this->db), $clock);
         $this->handler = new QueueTestMessageHandler();
 
-        $this->journal = self::getWiki()->services->get(Journal::class);
+        $this->journal = new Journal(new ServiceLocator([
+            DbService::class => fn (): DbService => $this->db,
+            JournalSchema::class => fn (): JournalSchema => new JournalSchema($this->db),
+            ThrowableFormatter::class => static fn (): ThrowableFormatter => new ThrowableFormatter(),
+        ]));
         $this->log = self::memory();
         $this->journal->writeTo($this->log);
 
@@ -75,13 +78,6 @@ class QueueBusTest extends YesWikiTestCase
 
     protected function tearDown(): void
     {
-        $this->journal->writeTo(self::memory());
-        $wikiDb = self::getWiki()->services->get(DbService::class);
-        $wikiDb->query(
-            'DELETE FROM ' . $wikiDb->quoteIdentifier(self::getWiki()->services->get(JournalSchema::class)->table())
-            . ' WHERE ' . $wikiDb->quoteIdentifier('action') . ' = ?',
-            ['queue.dispatch_failed']
-        );
         unset($this->bus, $this->recorder, $this->transport, $this->schema, $this->db);
         foreach (['', '-wal', '-shm'] as $suffix) {
             @unlink($this->file . $suffix);
@@ -109,6 +105,12 @@ class QueueBusTest extends YesWikiTestCase
         $this->assertIsString($written);
         $this->assertStringContainsString('queue.dispatch_failed', $written);
         $this->assertStringContainsString(addcslashes(QueueTestMessage::class, '\\'), $written, 'the target is the message class');
+        $table = (new JournalSchema($this->db))->table();
+        $this->assertSame(
+            QueueTestMessage::class,
+            $this->db->scalar("SELECT target FROM {$table} WHERE action = ?", null, ['queue.dispatch_failed']),
+            'and the Journal keeps it for the health page'
+        );
     }
 
     /** Inside the caller's transaction a failed send cannot be swallowed: its scope has already doomed the caller's commit, and on PostgreSQL aborted the transaction. It is thrown where it happened rather than at a commit far from it. */
@@ -120,6 +122,20 @@ class QueueBusTest extends YesWikiTestCase
         try {
             $this->expectExceptionMessageMatches('/ywq_queue/');
             $this->bus->dispatch(new QueueTestMessage('lost'));
+        } finally {
+            $this->db->rollBack();
+        }
+    }
+
+    /** The task is queued, but its dispatch is what the Scheduler counts from: inside the caller's transaction a Journal that cannot take it is thrown, not swallowed. */
+    public function testADispatchTheJournalCannotTakeInsideATransactionThrows(): void
+    {
+        (new JournalSchema($this->db))->drop();
+        $this->db->beginTransaction();
+
+        try {
+            $this->expectExceptionMessageMatches('/ywq_journal/');
+            $this->bus->dispatch(new QueueTestTask());
         } finally {
             $this->db->rollBack();
         }
@@ -222,13 +238,5 @@ class QueueBusTest extends YesWikiTestCase
         self::assertIsResource($stream);
 
         return $stream;
-    }
-
-    public function testTheKernelsBusIsTheQueueBus(): void
-    {
-        $services = self::getWiki()->services;
-
-        $this->assertInstanceOf(QueueBus::class, $services->get(MessageBusInterface::class));
-        $this->assertInstanceOf(QueueTransport::class, $services->get(QueueTransport::class));
     }
 }

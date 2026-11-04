@@ -76,7 +76,10 @@ class QueueCommandsTest extends YesWikiTestCase
 
         $limit = QueueBudgetFactory::bytes((string)ini_get('memory_limit'));
         $this->assertGreaterThan(0, $limit, 'the suite runs with a memory_limit');
-        $this->assertSame((int)floor($limit * 0.8), $this->kit->statistics->lastPass()['memoryLimit'] ?? null);
+        $ceiling = $this->kit->statistics->lastPass()['memoryLimit'] ?? null;
+        $this->assertIsInt($ceiling);
+        $this->assertGreaterThan(0, $ceiling, 'a drain is not unbounded in memory');
+        $this->assertLessThan($limit, $ceiling, 'and stops short of PHP\'s own limit, which would be a fatal error');
     }
 
     /** Emptying the queue is what is already in it: a scheduled task that is due waits for the consumer of the mode. */
@@ -162,12 +165,21 @@ class QueueCommandsTest extends YesWikiTestCase
         $this->assertSame(1, $this->kit->statistics->pendingCount());
     }
 
-    public function testMessageRefusesWhatIsNoId(): void
+    #[DataProvider('whatIsNoId')]
+    public function testMessageRefusesWhatIsNoId(string $value): void
     {
-        $tester = $this->execute('messenger:consume', ['--message' => 'the backup']);
+        $this->kit->send('a');
+
+        $tester = $this->execute('messenger:consume', ['--message' => $value]);
 
         $this->assertSame(Command::INVALID, $tester->getStatusCode());
         $this->assertSame([], $this->kit->handled);
+    }
+
+    /** @return array<string, array{string}> */
+    public static function whatIsNoId(): array
+    {
+        return ['words' => ['the backup'], 'zero' => ['0'], 'digits then letters' => ['12abc'], 'negative' => ['-1']];
     }
 
     /** @param array<string, mixed> $option */
@@ -256,14 +268,123 @@ class QueueCommandsTest extends YesWikiTestCase
         $this->assertSame('worker', $this->kit->statistics->lastPass()['mode'] ?? null);
     }
 
-    public function testConsumeRefusesAMemoryLimitItCannotRead(): void
+    /**
+     * A limit that is not what it says would make a consumer that never stops itself (0), or one that stops at once.
+     *
+     * @param array<string, string> $option
+     */
+    #[DataProvider('optionsItCannotRead')]
+    public function testConsumeRefusesAnOptionItCannotRead(array $option): void
     {
         $this->kit->send('a');
 
-        $tester = $this->execute('messenger:consume', ['--memory-limit' => 'lots', '--limit' => '1', '--time-limit' => '2']);
+        $tester = $this->execute('messenger:consume', $option + ['--limit' => '1', '--time-limit' => '2']);
 
         $this->assertSame(Command::INVALID, $tester->getStatusCode());
         $this->assertSame([], $this->kit->handled);
+    }
+
+    /** @return array<string, array{array<string, string>}> */
+    public static function optionsItCannotRead(): array
+    {
+        return [
+            'a time limit of zero' => [['--time-limit' => '0']],
+            'a time limit that is no number' => [['--time-limit' => 'abc']],
+            'a negative time limit' => [['--time-limit' => '-5']],
+            'a fractional time limit' => [['--time-limit' => '1.5']],
+            'a message limit of zero' => [['--limit' => '0']],
+            'a fractional message limit' => [['--limit' => '1.5']],
+            'a negative message limit' => [['--limit' => '-1']],
+            'a memory limit that is no size' => [['--memory-limit' => 'lots']],
+            'a memory limit of zero' => [['--memory-limit' => '0']],
+            'a memory limit of zero megabytes' => [['--memory-limit' => '0M']],
+            'a memory limit with a unit nobody knows' => [['--memory-limit' => '12x']],
+        ];
+    }
+
+    /** @param array<string, string> $option */
+    #[DataProvider('sizesItReads')]
+    public function testConsumeReadsTheSizesPhpReads(array $option): void
+    {
+        $this->kit->send('a');
+
+        $tester = $this->execute('messenger:consume', $option + ['--limit' => '1', '--time-limit' => '2']);
+
+        $this->assertSame(Command::SUCCESS, $tester->getStatusCode());
+        $this->assertSame(['a'], $this->kit->handled);
+    }
+
+    /** @return array<string, array{array<string, string>}> */
+    public static function sizesItReads(): array
+    {
+        return [
+            'gigabytes' => [['--memory-limit' => '1G']],
+            'megabytes in lower case' => [['--memory-limit' => '4096m']],
+            'bytes' => [['--memory-limit' => '4294967296']],
+            'no limit' => [['--memory-limit' => '-1']],
+        ];
+    }
+
+    /** A size below what the process already uses is a size, not an error: the consumer stops on it once the message in hand is done. */
+    public function testAMemoryLimitBelowWhatIsUsedStopsTheConsumerOnMemory(): void
+    {
+        $this->kit->send('a');
+        $this->kit->send('b');
+
+        $tester = $this->execute('messenger:consume', ['--memory-limit' => '512K', '--time-limit' => '2']);
+
+        $this->assertSame(Command::SUCCESS, $tester->getStatusCode());
+        $this->assertSame(['a'], $this->kit->handled, 'the second waits for the consumer that replaces this one');
+        $this->assertStringContainsString('memory', $tester->getDisplay());
+    }
+
+    public function testAConsumerWhosePassBreaksFails(): void
+    {
+        $this->kit->dropTables();
+
+        $tester = $this->execute('messenger:consume', ['--limit' => '1', '--time-limit' => '2']);
+
+        $this->assertSame(Command::FAILURE, $tester->getStatusCode());
+    }
+
+    /** An id no one waits on any more (already handled, never there, or given up on) is not an error for the request that pinned it: nothing is left to do. */
+    #[DataProvider('messagesThatAreNotWaiting')]
+    public function testMessageThatIsNotWaitingHandlesNothing(string $which): void
+    {
+        $id = match ($which) {
+            'missing' => 999999,
+            'handled', 'failed' => $this->kit->send('gone'),
+        };
+        if ($which === 'handled') {
+            $this->execute('messenger:consume', ['--drain' => true]);
+            $this->kit->handled = [];
+        }
+        if ($which === 'failed') {
+            $this->kit->transport->moveToFailed($id, 'RuntimeException: boom');
+        }
+        $other = $this->kit->send('other');
+
+        $tester = $this->execute('messenger:consume', ['--message' => (string)$id]);
+
+        $this->assertSame(Command::SUCCESS, $tester->getStatusCode());
+        $this->assertSame([], $this->kit->handled);
+        $this->assertSame('pending', $this->kit->statistics->messageState($other), 'it takes no other message in its place');
+    }
+
+    /** @return array<string, array{string}> */
+    public static function messagesThatAreNotWaiting(): array
+    {
+        return ['never there' => ['missing'], 'already handled' => ['handled'], 'failed' => ['failed']];
+    }
+
+    public function testMessageOnAQueueThatCannotBeReadFails(): void
+    {
+        $id = $this->kit->send('a');
+        $this->kit->dropTables();
+
+        $tester = $this->execute('messenger:consume', ['--message' => (string)$id]);
+
+        $this->assertSame(Command::FAILURE, $tester->getStatusCode());
     }
 
     /** Two messages; handling the first changes the configuration, and moves the consumer's clock past the moment it asks again. */

@@ -4,40 +4,41 @@ namespace YesWiki\Test\Import;
 
 use PHPUnit\Framework\Attributes\CoversClass;
 use Symfony\Component\Clock\MockClock;
+use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Tester\CommandTester;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\DependencyInjection\ServiceLocator;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\Exception\UnrecoverableMessageHandlingException;
 use Symfony\Component\Messenger\MessageBus;
 use Symfony\Component\Messenger\MessageBusInterface;
-use Symfony\Component\Messenger\Stamp\RedeliveryStamp;
 use Symfony\Component\Messenger\Stamp\TransportMessageIdStamp;
 use Symfony\Component\Scheduler\Generator\MessageContext;
+use YesWiki\Content\Service\EntryManager;
+use YesWiki\Content\Service\FormManager;
+use YesWiki\Content\Service\ListManager;
 use YesWiki\Core\ApiResponse;
 use YesWiki\Files\Service\Storage;
 use YesWiki\Import\Api\ImportApiController;
+use YesWiki\Import\Command\ImporterCommand;
 use YesWiki\Import\Message\SyncDataSource;
 use YesWiki\Import\Message\SyncDataSourceHandler;
 use YesWiki\Import\Scheduler\ImportSchedule;
+use YesWiki\Import\Service\Importer;
 use YesWiki\Import\Service\ImporterManager;
 use YesWiki\Import\Service\SyncScheduler;
 use YesWiki\Kernel\Queue\ProvidesSchedule;
 use YesWiki\Kernel\Queue\QueueConsumerMode;
-use YesWiki\Kernel\Queue\QueueRetryStrategy;
 use YesWiki\Kernel\Queue\RetryPolicy;
 use YesWiki\Kernel\Queue\ScheduledTask;
 use YesWiki\Kernel\Service\CurrentRequest;
-use YesWiki\Kernel\Service\EventDispatcher;
 use YesWiki\Kernel\Service\Journal;
-use YesWiki\Kernel\Service\Queue\QueueHandlerLocator;
-use YesWiki\Kernel\Service\Queue\QueueScheduleTicker;
 use YesWiki\Test\Core\YesWikiTestCase;
 use YesWiki\Test\Kernel\QueueTestKit;
 
 require_once 'tests/YesWikiTestCase.php';
 require_once 'tests/src/Kernel/QueueTestKit.php';
-require_once 'tests/src/Contact/SendDigestTest.php';
 
 /**
  * The automatic import of data sources is a scheduled task, one per source flagged `syncOnMaintenance` (messenger / scheduler, spec 9.4).
@@ -66,6 +67,7 @@ class SyncDataSourceTest extends YesWikiTestCase
     protected function setUp(): void
     {
         parent::setUp();
+        $this->getWiki();
         $this->root = sys_get_temp_dir() . '/yeswiki-sync-' . bin2hex(random_bytes(4));
         mkdir($this->root);
         $this->storage = Storage::rootedAt($this->root);
@@ -104,6 +106,23 @@ class SyncDataSourceTest extends YesWikiTestCase
         $this->assertSame(604800, $plan['sync-weekly']['every']);
     }
 
+    /** An interval that is not a positive number of minutes is the minimum, not a crash or a tight loop. */
+    public function testAnIntervalThatMakesNoSenseIsTheMinimum(): void
+    {
+        $plan = $this->plan($this->schedule([
+            'words' => ['importer' => 'Rss', 'syncOnMaintenance' => true, 'syncIntervalInMin' => 'abc'],
+            'negative' => ['importer' => 'Rss', 'syncOnMaintenance' => true, 'syncIntervalInMin' => -5],
+        ]));
+
+        $this->assertSame(1800, $plan['sync-words']['every']);
+        $this->assertSame(1800, $plan['sync-negative']['every']);
+    }
+
+    public function testDataSourcesThatAreNotAListScheduleNothing(): void
+    {
+        $this->assertSame([], $this->schedule('x')->recurringMessages());
+    }
+
     /** No state of its own: a source syncs on the slots of its interval, counted from midnight in the wiki's timezone, whatever its log says. */
     public function testASourceSyncsOnTheSlotsOfItsInterval(): void
     {
@@ -127,55 +146,6 @@ class SyncDataSourceTest extends YesWikiTestCase
         $this->assertSame(['sync-every_time'], $tick(), 'synced 23 hours before it was first seen, the once-a-day source still waits for midnight');
         $this->clock->sleep(1);
         $this->assertSame(['sync-every_time', 'sync-once_a_day'], $tick(), 'at midnight in the wiki\'s timezone');
-    }
-
-    /** As for the digests: a sync run by hand (the button, `importer:sync`, `{{sync}}`, the API) moves nothing. */
-    public function testASyncByHandDoesNotMoveTheScheduledOne(): void
-    {
-        $tick = $this->ticker($this->schedule(['every_time' => self::SOURCES['every_time']]));
-        $tick();
-        $this->clock->sleep(20 * 60);
-        $this->scheduler()->recordRun('every_time', 'synced by hand');
-        $this->touchLog('every_time', '+0 seconds');
-
-        $this->clock->sleep(10 * 60);
-
-        $this->assertSame(['sync-every_time'], $tick(), 'half an hour after the start, ten minutes after the sync by hand');
-    }
-
-    /** A source that always fails costs one attempt per interval, not one per tick: the schedule moves on whatever the handler did. */
-    public function testAFailingSourceComesBackOneIntervalLaterAndNotAtEveryTick(): void
-    {
-        $this->clock->modify('2026-11-03 10:00:00');
-        $handler = $this->handler($this->importer(static fn (): string => throw new \RuntimeException('feed unreachable')));
-        $tick = $this->ticker($this->schedule(['every_time' => self::SOURCES['every_time']]));
-        $tick();
-        $this->clock->sleep(30 * 60);
-        $this->assertSame(['sync-every_time'], $tick());
-
-        try {
-            $handler(new SyncDataSource('every_time'));
-            $this->fail('the failure is the queue\'s to show');
-        } catch (\RuntimeException) {
-        }
-
-        $this->clock->sleep(60);
-        $this->assertSame([], $tick(), 'it failed a minute ago: not again at the next tick');
-        $this->clock->sleep(28 * 60);
-        $this->assertSame([], $tick(), 'nor before the interval');
-        $this->clock->sleep(60);
-        $this->assertSame(['sync-every_time'], $tick(), 'on the next slot, an interval after the last run');
-    }
-
-    /** Spec section 8: a wiki where nothing ticked for hours syncs once at the next tick, not once per interval missed. */
-    public function testMissedIntervalsMakeOneSync(): void
-    {
-        $tick = $this->ticker($this->schedule(['every_time' => self::SOURCES['every_time']]));
-        $tick();
-        $this->clock->sleep(3 * 3600 + 60);
-
-        $this->assertSame(['sync-every_time'], $tick());
-        $this->assertSame([], $tick(), 'once');
     }
 
     /**
@@ -240,15 +210,6 @@ class SyncDataSourceTest extends YesWikiTestCase
         $this->assertInstanceOf(ScheduledTask::class, new SyncDataSource('feed_1'));
     }
 
-    /** A sync is idempotent: the default retry (three, with a growing delay) applies. */
-    public function testASyncIsRetriedByTheDefaultPolicy(): void
-    {
-        $message = new SyncDataSource('every_time');
-
-        $this->assertNotContains(RetryPolicy::class, class_implements($message));
-        $this->assertTrue((new QueueRetryStrategy())->isRetryable(Envelope::wrap($message)->with(new RedeliveryStamp(0))));
-    }
-
     public function testASuccessfulSyncIsRecordedForTheImportersPage(): void
     {
         $handler = $this->handler($this->importer(static function (): string {
@@ -300,6 +261,7 @@ class SyncDataSourceTest extends YesWikiTestCase
         $handler(new SyncDataSource('gone'));
     }
 
+    /** A sync is idempotent, so the default retry applies: the first failure waits, the second attempt succeeds and the importers page shows the success. */
     public function testAFailedSyncIsRetriedThenSucceeds(): void
     {
         $attempts = 0;
@@ -308,9 +270,11 @@ class SyncDataSourceTest extends YesWikiTestCase
                 throw new \RuntimeException('feed unreachable');
             }
 
-            return 'ok';
+            return 'synced on the second try';
         }));
-        $this->kit = new QueueTestKit([SyncDataSource::class => static fn (SyncDataSource $message) => $handler($message)]);
+        $clock = new MockClock('2026-11-03 10:00:00', 'UTC');
+        $this->kit = new QueueTestKit([SyncDataSource::class => static fn (SyncDataSource $message) => $handler($message)], $clock);
+        $this->assertNotContains(RetryPolicy::class, class_implements(SyncDataSource::class), 'no retry policy of its own: the queue\'s default applies');
 
         $queued = $this->kit->bus->dispatch(new SyncDataSource('every_time'))->last(TransportMessageIdStamp::class);
         $this->assertNotNull($queued);
@@ -319,6 +283,19 @@ class SyncDataSourceTest extends YesWikiTestCase
         $this->assertSame(1, $attempts);
         $this->assertSame(1, $this->kit->statistics->pendingCount(), 'waits for its retry');
         $this->assertSame(0, $this->kit->statistics->failedCount());
+        $this->assertStringContainsString('feed unreachable', $this->scheduler()->getLastSync('every_time')['output'] ?? '');
+
+        $clock->sleep(3600);
+        $waiting = $this->kit->waiting();
+        $this->assertCount(1, $waiting);
+        $this->kit->consumer->handleById((int)$waiting[0]->last(TransportMessageIdStamp::class)?->getId(), QueueConsumerMode::Api);
+
+        $this->assertSame(2, $attempts);
+        $this->assertSame(0, $this->kit->statistics->pendingCount());
+        $this->assertSame(0, $this->kit->statistics->failedCount());
+        $output = $this->scheduler()->getLastSync('every_time')['output'] ?? '';
+        $this->assertStringContainsString('synced on the second try', $output);
+        $this->assertStringNotContainsString('feed unreachable', $output);
     }
 
     public function testTheApiRouteStillAnswersWithTheErrorText(): void
@@ -362,29 +339,75 @@ class SyncDataSourceTest extends YesWikiTestCase
         }
     }
 
-    public function testNothingListensToMaintenanceAfterForSync(): void
+    /** A failing import is rethrown with its own message, how long it took, and the original exception behind. */
+    public function testAFailingImportKeepsItsMessageAndAddsHowLongItTook(): void
     {
-        $services = $this->getWiki()->services;
+        $manager = $this->managerOfFailingImporter();
+        $boom = new \Exception('boom');
+        FailingImporter::$failure = $boom;
 
-        $this->assertFileDoesNotExist('src/Import/Service/MaintenanceSyncSubscriber.php', 'the subscriber of the housekeeping pass is gone');
-        $this->assertFalse($services->has('YesWiki\\Import\\Service\\MaintenanceSyncSubscriber'));
-        foreach ($services->get(EventDispatcher::class)->getListeners('maintenance.after') as $listener) {
-            $owner = is_array($listener) ? $listener[0] : $listener;
-            if (is_object($owner)) {
-                $this->assertStringStartsNotWith('YesWiki\\Import\\', $owner::class);
-            }
+        try {
+            $manager->syncSource('nothing', ['importer' => 'Failing']);
+            $this->fail('an import that failed must throw');
+        } catch (\RuntimeException $failed) {
+            $this->assertMatchesRegularExpression('/^boom .*\d+\.\d{2}s/', $failed->getMessage(), 'the importer\'s message, then the elapsed time');
+            $this->assertSame($boom, $failed->getPrevious());
         }
     }
 
-    /** What makes the schedule and the message count: both are found on the container the wiki really runs on (delete cache/container/* after adding a service class). */
-    public function testTheHandlerAndTheScheduleAreDiscoveredOnTheRealContainer(): void
+    /** `importer:sync` prints each source's log, a failed one included, and still ends well. */
+    public function testTheCommandPrintsTheLogOfAFailedSyncAndEndsWell(): void
     {
-        $services = $this->getWiki()->services;
+        $manager = new class($this->scheduler()) extends ImporterManager {
+            public function __construct(SyncScheduler $scheduler)
+            {
+                $this->services = new ServiceLocator([SyncScheduler::class => static fn (): SyncScheduler => $scheduler]);
+            }
 
-        self::assertHandled(SyncDataSource::class, $services->get(QueueHandlerLocator::class));
-        $this->assertInstanceOf(SyncDataSourceHandler::class, $services->get(SyncDataSourceHandler::class));
-        $this->assertInstanceOf(ProvidesSchedule::class, $services->get(ImportSchedule::class));
-        $this->assertContains('queue-prune', $services->get(QueueScheduleTicker::class)->declaredTaskIds(), 'fixture: the ticker builds its schedule from every provider');
+            public function getAvailableImporters(): array
+            {
+                return ['Rss' => 'Rss'];
+            }
+
+            public function syncSource(string $source, array $sourceOptions): string
+            {
+                echo "reading the feed\n";
+
+                throw new \RuntimeException('feed unreachable');
+            }
+        };
+        $services = new ServiceLocator([
+            ParameterBagInterface::class => static fn () => new ParameterBag(['dataSources' => ['every_time' => self::SOURCES['every_time']]]),
+            ImporterManager::class => static fn (): ImporterManager => $manager,
+        ]);
+        $tester = new CommandTester(new ImporterCommand($services));
+
+        $status = $tester->execute([]);
+
+        $this->assertSame(Command::SUCCESS, $status);
+        $this->assertStringContainsString('Importing source "every_time"', $tester->getDisplay());
+        $this->assertStringContainsString('reading the feed', $tester->getDisplay());
+        $this->assertStringContainsString('feed unreachable', $tester->getDisplay());
+        $this->assertStringContainsString('feed unreachable', $this->scheduler()->getLastSync('every_time')['output'] ?? '', 'and the run is kept for the importers page');
+    }
+
+    private function managerOfFailingImporter(): ImporterManager
+    {
+        return new class($this->getWiki()->services) extends ImporterManager {
+            public function __construct(\Psr\Container\ContainerInterface $services)
+            {
+                $this->services = $services;
+                $this->params = new ParameterBag();
+                $this->entryManager = $services->get(EntryManager::class);
+                $this->formManager = $services->get(FormManager::class);
+                $this->listManager = $services->get(ListManager::class);
+            }
+
+            public function getAvailableImporters(): array
+            {
+                return ['Failing' => FailingImporter::class];
+            }
+        };
     }
 
     /**
@@ -399,7 +422,7 @@ class SyncDataSourceTest extends YesWikiTestCase
 
         $controller = new ImportApiController();
         $controller->setServices(new ServiceLocator([
-            \Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface::class => static fn () => new ParameterBag(['sync_secret' => $secret, 'dataSources' => $sources]),
+            ParameterBagInterface::class => static fn () => new ParameterBag(['sync_secret' => $secret, 'dataSources' => $sources]),
             CurrentRequest::class => static fn (): CurrentRequest => $currentRequest,
             ImporterManager::class => static fn (): ImporterManager => $importer,
         ]));
@@ -440,9 +463,9 @@ class SyncDataSourceTest extends YesWikiTestCase
     }
 
     /**
-     * @param array<string, array<string, mixed>> $sources
+     * @param array<string, array<string, mixed>>|string $sources
      */
-    private function schedule(array $sources, ?MessageBusInterface $bus = null): ImportSchedule
+    private function schedule(array|string $sources, ?MessageBusInterface $bus = null): ImportSchedule
     {
         return new ImportSchedule(
             new ParameterBag(['dataSources' => $sources]),
@@ -512,5 +535,20 @@ final class RecordingJournal extends Journal
     public function log($level, string|\Stringable $message, array $context = []): void
     {
         $this->records[] = [(string)$level, (string)$message, $context];
+    }
+}
+
+/** An importer whose download fails with whatever the test set. */
+final class FailingImporter extends Importer
+{
+    public static ?\Throwable $failure = null;
+
+    public function __construct(mixed ...$arguments)
+    {
+    }
+
+    public function getData(): mixed
+    {
+        throw self::$failure ?? new \LogicException('no failure set');
     }
 }

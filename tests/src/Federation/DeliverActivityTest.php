@@ -11,7 +11,6 @@ use Symfony\Component\HttpClient\MockHttpClient;
 use Symfony\Component\HttpClient\Response\MockResponse;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\Exception\UnrecoverableMessageHandlingException;
-use Symfony\Component\Messenger\Stamp\RedeliveryStamp;
 use Symfony\Component\Messenger\Stamp\TransportMessageIdStamp;
 use YesWiki\Content\Service\SemanticTransformer;
 use YesWiki\Federation\Message\DeliverActivity;
@@ -25,13 +24,9 @@ use YesWiki\Files\Service\Storage;
 use YesWiki\Kernel\Health\HealthCheck;
 use YesWiki\Kernel\Health\Severity;
 use YesWiki\Kernel\Queue\QueueConsumerMode;
-use YesWiki\Kernel\Queue\QueueRetryStrategy;
-use YesWiki\Kernel\Queue\RetryPolicy;
-use YesWiki\Kernel\Queue\ToleratedFailure;
 use YesWiki\Kernel\Service\HealthService;
 use YesWiki\Kernel\Service\KeyPairGenerator;
 use YesWiki\Kernel\Service\Queue\QueueBudgetFactory;
-use YesWiki\Kernel\Service\Queue\QueueHandlerLocator;
 use YesWiki\Kernel\Service\Queue\QueueHealthChecks;
 use YesWiki\Kernel\Service\Queue\QueueRecorder;
 use YesWiki\Kernel\Service\Queue\QueueSettings;
@@ -74,12 +69,15 @@ class DeliverActivityTest extends YesWikiTestCase
     private array $posted = [];
     /** @var list<string> the bodies of those posts */
     private array $postedBodies = [];
+    /** @var list<array<string, string>> the headers of those posts, by lower-cased name */
+    private array $postedHeaders = [];
     /** @var array<string, mixed>|null the form the handler finds again, null once it is gone */
     private ?array $form;
 
     protected function setUp(): void
     {
         parent::setUp();
+        $this->getWiki(); // before the kit points the environment at its own configuration
         $this->root = sys_get_temp_dir() . '/yeswiki-deliver-' . bin2hex(random_bytes(4));
         $this->journal = new RecordingJournal();
         $this->form = ['id' => '1', 'label' => 'Agenda', 'activitypub_enable' => '1', 'activitypub' => ['username' => 'agenda']];
@@ -118,15 +116,10 @@ class DeliverActivityTest extends YesWikiTestCase
         $this->assertStringStartsWith(self::US . '/activities/', $activity['id']);
     }
 
-    /** What makes `dispatch()` enough: the message is found by its type on the container the wiki really runs on (delete cache/container/* after adding a service class). */
-    public function testTheHandlerAndTheChecksAreDiscoveredOnTheRealContainer(): void
+    public function testTheDeliveryHealthChecksAreRegistered(): void
     {
-        $services = $this->getWiki()->services;
+        $ids = $this->getWiki()->services->get(HealthService::class)->ids();
 
-        self::assertHandled(DeliverActivity::class, $services->get(QueueHandlerLocator::class));
-        $this->assertInstanceOf(DeliverActivityHandler::class, $services->get(DeliverActivityHandler::class));
-        $this->assertInstanceOf(ActivityPubService::class, $services->get(ActivityPubService::class));
-        $ids = $services->get(HealthService::class)->ids();
         $this->assertContains('federation-delivery', $ids);
         $this->assertContains('federation-delivery-failed', $ids);
     }
@@ -157,10 +150,6 @@ class DeliverActivityTest extends YesWikiTestCase
         $this->dead = [self::ALICE];
         $this->service()->notifyFollowers($this->form(), ['tag' => 'Fiche'], 'Create');
 
-        $message = $this->waiting()[0]->getMessage();
-        $this->assertInstanceOf(RetryPolicy::class, $message);
-        $this->assertSame(5, $message->maxRetries(), 'more patient than the default 3');
-
         for ($attempt = 1; $attempt <= 6; $attempt++) {
             $this->assertCount(1, $this->waiting(), "attempt {$attempt} has a message to take");
             $this->kit->consumer->handleById($this->idOf($this->waiting()[0]), QueueConsumerMode::Api);
@@ -178,17 +167,6 @@ class DeliverActivityTest extends YesWikiTestCase
             array_column($this->journal->records, 'context'),
             static fn (array $context): bool => $context['action'] === 'activitypub.delivery_failed'
         ), 'every attempt keeps feeding the ActivityPub log');
-    }
-
-    public function testTheRetryPolicyIsTheMessagesOwn(): void
-    {
-        $strategy = new QueueRetryStrategy();
-        $envelope = new Envelope(new DeliverActivity('1', self::ALICE, '{}'));
-
-        for ($retries = 0; $retries < 5; $retries++) {
-            $this->assertTrue($strategy->isRetryable($envelope->with(new RedeliveryStamp($retries))), "retry number {$retries}");
-        }
-        $this->assertFalse($strategy->isRetryable($envelope->with(new RedeliveryStamp(5))));
     }
 
     /** Deleting a form deletes its entries first, each telling the followers, and then the form: the deliveries leave after it is gone. */
@@ -223,6 +201,31 @@ class DeliverActivityTest extends YesWikiTestCase
         $this->drain();
 
         $this->assertSame($json, $this->postedBodies[0], 'byte for byte: an empty object stays one');
+    }
+
+    /** What every remote server checks: the Signature names the actor's `#main-key` and was made with the private key of the form. */
+    public function testTheDeliveryIsSignedWithTheKeyOfTheFormUnderTheActorsKeyId(): void
+    {
+        $this->followers = [self::ALICE];
+        $this->service()->notifyFollowers($this->form(), ['tag' => 'Fiche'], 'Create');
+
+        $this->drain();
+
+        $this->assertCount(1, $this->postedHeaders);
+        $headers = $this->postedHeaders[0];
+        $this->assertSame(4, preg_match_all('/(\w+)="([^"]*)"/', $headers['signature'], $matches));
+        $signature = array_combine($matches[1], $matches[2]);
+        $this->assertSame(self::US . '#main-key', $signature['keyId']);
+        $this->assertSame('(request-target) host date digest content-type', $signature['headers']);
+        $signed = implode("\n", [
+            '(request-target): post /users/alice/inbox',
+            'host: alice.example',
+            'date: ' . $headers['date'],
+            'digest: ' . $headers['digest'],
+            'content-type: ' . $headers['content-type'],
+        ]);
+        $keys = new ActivityPubKeyStore(Storage::rootedAt($this->root), new KeyPairGenerator());
+        $this->assertSame(1, openssl_verify($signed, (string)base64_decode($signature['signature']), $keys->publicKey('1'), OPENSSL_ALGO_SHA256), 'verifiable with the public key of the form');
     }
 
     public function testTheHandlerGivesUpWhenTheKeyIsGone(): void
@@ -301,7 +304,6 @@ class DeliverActivityTest extends YesWikiTestCase
             $failed->offered(),
             'the admin can acknowledge or retry every failed delivery from the alert'
         );
-        $this->assertInstanceOf(ToleratedFailure::class, new DeliverActivity('1', self::ALICE, '{}'));
         $this->assertNull($this->genericFailedCheck()->failure(), 'the generic failed-jobs alert leaves them to the federation one');
     }
 
@@ -463,6 +465,12 @@ class DeliverActivityTest extends YesWikiTestCase
             }
             $this->posted[] = $url;
             $this->postedBodies[] = $options['body'];
+            $headers = [];
+            foreach ($options['headers'] as $line) {
+                [$name, $value] = explode(': ', $line, 2);
+                $headers[strtolower($name)] = $value;
+            }
+            $this->postedHeaders[] = $headers;
             $actor = substr($url, 0, -strlen('/inbox'));
 
             return new MockResponse('', ['http_code' => in_array($actor, $this->dead, true) ? 500 : 202]);

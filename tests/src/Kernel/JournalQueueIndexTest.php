@@ -46,38 +46,32 @@ class JournalQueueIndexTest extends YesWikiTestCase
 
     /** @param array<string, string|bool> $params */
     #[DataProvider('servers')]
-    public function testTheIndexIsAddedToAnExistingJournalAndAddingItAgainChangesNothing(array $params): void
+    public function testAnOldJournalGetsTheMissingQueueIndexesOnceEach(array $params): void
     {
         $db = $this->openDatabase($params);
         $schema = $this->createJournal($db);
-        $name = $this->indexName($db, 'idx_channel_target_at');
-        $this->assertTrue($db->schema()->indexExists('journal', $name), 'a new Journal has it');
+        $names = [$this->indexName($db, 'idx_channel_target_at'), $this->indexName($db, 'idx_channel_action_target')];
+        foreach ($names as $name) {
+            $this->assertTrue($db->schema()->indexExists('journal', $name), 'a new Journal has it');
+        }
 
-        $this->dropIndex($db, $name);
-        $this->assertFalse($db->schema()->indexExists('journal', $name), 'an old Journal does not');
+        $this->dropIndex($db, $names[0]);
+        $schema->ensureQueueIndex();
+        foreach ($names as $name) {
+            $this->assertTrue($db->schema()->indexExists('journal', $name), 'only the missing one is added, the other is left as it is');
+        }
+
+        foreach ($names as $name) {
+            $this->dropIndex($db, $name);
+            $this->assertFalse($db->schema()->indexExists('journal', $name), 'a Journal made before the queue channel does not');
+        }
 
         $schema->ensureQueueIndex();
         $schema->ensureQueueIndex();
 
-        $this->assertTrue($db->schema()->indexExists('journal', $name));
-    }
-
-    /** @param array<string, string|bool> $params */
-    #[DataProvider('servers')]
-    public function testTheJournalHasTheTaskIndex(array $params): void
-    {
-        $db = $this->openDatabase($params);
-        $schema = $this->createJournal($db);
-        $name = $this->indexName($db, 'idx_channel_action_target');
-        $this->assertTrue($db->schema()->indexExists('journal', $name), 'a new Journal has it');
-
-        $this->dropIndex($db, $name);
-        $this->assertFalse($db->schema()->indexExists('journal', $name), 'a Journal made before the task rows does not');
-
-        $schema->ensureQueueIndex();
-        $schema->ensureQueueIndex();
-
-        $this->assertTrue($db->schema()->indexExists('journal', $name), 'it is added, and adding it again changes nothing');
+        foreach ($names as $name) {
+            $this->assertTrue($db->schema()->indexExists('journal', $name), 'added, and adding again changes nothing');
+        }
     }
 
     /**

@@ -3,6 +3,7 @@
 namespace YesWiki\Test\Kernel;
 
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\Messenger\Envelope;
 use YesWiki\Core\YesWikiQueueCompilerPass;
@@ -12,6 +13,7 @@ use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';
 require_once 'tests/src/Kernel/QueueTestMessageHandler.php';
+require_once 'tests/src/Kernel/QueueTestMisdeclaredHandlers.php';
 
 /** A handler enrols by carrying the attribute and nothing else: there is no list of handlers. */
 #[CoversClass(YesWikiQueueCompilerPass::class)]
@@ -69,13 +71,67 @@ class QueueCompilerPassTest extends YesWikiTestCase
         }
     }
 
-    private function compiled(): ContainerBuilder
+    /** A handler that cannot say which message it handles would compile into a wrong or empty map: it stops the build instead. */
+    #[DataProvider('misdeclaredHandlers')]
+    public function testAHandlerThatDoesNotSayWhatItHandlesStopsTheBuild(string $handler): void
+    {
+        $this->expectException(\LogicException::class);
+
+        $this->compiled($handler);
+    }
+
+    /** @return array<string, array{class-string}> */
+    public static function misdeclaredHandlers(): array
+    {
+        return [
+            'no __invoke()' => [QueueTestHandlerWithoutInvoke::class],
+            'untyped parameter' => [QueueTestHandlerUntyped::class],
+            'builtin parameter' => [QueueTestHandlerBuiltin::class],
+            'attribute on a method' => [QueueTestHandlerOnAMethod::class],
+        ];
+    }
+
+    /** `handles:` is the message when given, whatever the parameter says. */
+    public function testAHandlerThatNamesItsMessageIsFoundForIt(): void
+    {
+        $locator = $this->compiled(QueueTestHandlerExplicit::class)->get(QueueHandlerLocator::class);
+
+        $descriptors = [...$locator->getHandlers(new Envelope(new QueueTestMessage('x')))];
+
+        $this->assertCount(1, $descriptors);
+        $this->assertStringContainsString(QueueTestHandlerExplicit::class, $descriptors[0]->getName());
+    }
+
+    /** The locator hands a handler out of the compiled container: it cannot if the service was left private and removed. */
+    public function testAHandlerIsMadePublicForTheLocator(): void
+    {
+        $container = $this->compiled(QueueTestMessageHandler::class);
+
+        $this->assertTrue($container->findDefinition(QueueTestMessageHandler::class)->isPublic());
+        $this->assertInstanceOf(QueueTestMessageHandler::class, $container->get(QueueTestMessageHandler::class));
+    }
+
+    /** A container that has no queue (no locator to fill) compiles all the same. */
+    public function testWithoutALocatorThereIsNothingToBuild(): void
+    {
+        $container = new ContainerBuilder();
+        YesWikiQueueCompilerPass::autoconfigure($container);
+        $container->addCompilerPass(new YesWikiQueueCompilerPass());
+        $container->register(QueueTestMessageHandler::class)->setAutoconfigured(true);
+
+        $container->compile();
+
+        $this->assertFalse($container->has(QueueHandlerLocator::class));
+    }
+
+    /** @param class-string $handler */
+    private function compiled(string $handler = QueueTestMessageHandler::class): ContainerBuilder
     {
         $container = new ContainerBuilder();
         YesWikiQueueCompilerPass::autoconfigure($container);
         $container->addCompilerPass(new YesWikiQueueCompilerPass());
         $container->register(QueueHandlerLocator::class)->setPublic(true);
-        $container->register(QueueTestMessageHandler::class)->setAutoconfigured(true);
+        $container->register($handler)->setAutoconfigured(true)->setPublic(false);
         $container->compile();
 
         return $container;

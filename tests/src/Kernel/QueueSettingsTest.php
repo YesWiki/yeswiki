@@ -55,130 +55,72 @@ class QueueSettingsTest extends TestCase
         $this->unsetRealEnv(QueueSettings::ENV_BINARY);
     }
 
-    public function testTheRealEnvironmentWinsOverDotEnvAndConfig(): void
+    /**
+     * @param string|null $env    what the real environment says; null when it says nothing
+     * @param string|null $dotenv what private/.env says; null when it says nothing
+     */
+    #[DataProvider('precedence')]
+    public function testTheMostSpecificSourceWins(?string $env, ?string $dotenv, string $config, QueueConsumerMode $mode, string $origin): void
     {
-        $this->setRealEnv(QueueSettings::ENV_MODE, 'worker');
+        if ($env !== null) {
+            $this->setRealEnv(QueueSettings::ENV_MODE, $env);
+        }
 
-        $settings = $this->settings('worker', [QueueSettings::ENV_MODE => 'api']);
+        $settings = $this->settings($config, $dotenv === null ? [] : [QueueSettings::ENV_MODE => $dotenv]);
 
-        $this->assertSame(QueueConsumerMode::Worker, $settings->mode());
-        $this->assertSame('env', $settings->origin());
-    }
-
-    public function testDotEnvWinsOverConfig(): void
-    {
-        $settings = $this->settings('worker', [QueueSettings::ENV_MODE => 'api']);
-
-        $this->assertSame(QueueConsumerMode::Api, $settings->mode());
-        $this->assertSame('dotenv', $settings->origin());
-    }
-
-    public function testDotEnvPopulatesTheRealEnvironmentButStaysDotEnv(): void
-    {
-        // The loader copies private/.env into the process environment: the same value present in both is still the file's.
-        $this->setRealEnv(QueueSettings::ENV_MODE, 'api');
-
-        $settings = $this->settings('worker', [QueueSettings::ENV_MODE => 'api']);
-
-        $this->assertSame(QueueConsumerMode::Api, $settings->mode());
-        $this->assertSame('dotenv', $settings->origin());
-    }
-
-    public function testTheConfigurationIsUsedWhenTheEnvironmentSaysNothing(): void
-    {
-        $settings = $this->settings('worker');
-
-        $this->assertSame(QueueConsumerMode::Worker, $settings->mode());
-        $this->assertSame('config', $settings->origin());
-    }
-
-    public function testWithNothingSetUnderTheBinaryARequestConsumes(): void
-    {
-        // A supervised consumer is a PHP process kept alive per wiki: under the binary too, it is asked for, never the default.
-        $this->setRealEnv(QueueSettings::ENV_BINARY, '1');
-
-        $settings = $this->settings();
-
-        $this->assertSame(QueueConsumerMode::Request, $settings->mode());
-        $this->assertSame('default', $settings->origin());
-        $this->assertTrue($settings->isServedByBinary());
-    }
-
-    public function testUnderTheBinaryAWorkerIsAskedForAsAnywhereElse(): void
-    {
-        $this->setRealEnv(QueueSettings::ENV_BINARY, '1');
-
-        $settings = $this->settings('', [QueueSettings::ENV_MODE => 'worker']);
-
-        $this->assertSame(QueueConsumerMode::Worker, $settings->mode());
-        $this->assertSame('dotenv', $settings->origin());
-    }
-
-    public function testBinaryIsNoLongerAMode(): void
-    {
-        // It was the worker the binary supervises: under the binary, `worker` is that worker.
-        $this->setRealEnv(QueueSettings::ENV_BINARY, '1');
-
-        $settings = $this->settings('', [QueueSettings::ENV_MODE => 'binary']);
-
-        $this->assertSame(QueueConsumerMode::Request, $settings->mode());
-        $this->assertTrue($settings->isUnknownValue());
-    }
-
-    public function testWithNothingSetARequestConsumes(): void
-    {
-        $settings = $this->settings();
-
-        $this->assertSame(QueueConsumerMode::Request, $settings->mode());
-        $this->assertSame('default', $settings->origin());
-        $this->assertFalse($settings->isServedByBinary());
-    }
-
-    public function testAnExplicitModeIsKeptUnderTheBinary(): void
-    {
-        $this->setRealEnv(QueueSettings::ENV_BINARY, '1');
-
-        $settings = $this->settings('worker');
-
-        $this->assertSame(QueueConsumerMode::Worker, $settings->mode());
-        $this->assertSame('config', $settings->origin());
-    }
-
-    public function testAnUnknownValueFallsBackToTheDefaultAndSaysSo(): void
-    {
-        $this->setRealEnv(QueueSettings::ENV_MODE, 'cronjob');
-
-        $settings = $this->settings();
-
-        $this->assertSame(QueueConsumerMode::Request, $settings->mode());
-        $this->assertTrue($settings->isUnknownValue());
-        $this->assertSame('cronjob', $settings->rawValue());
-    }
-
-    public function testAKnownValueIsNotUnknown(): void
-    {
-        $settings = $this->settings('worker');
-
-        $this->assertSame(QueueConsumerMode::Worker, $settings->mode());
+        $this->assertSame($mode, $settings->mode());
+        $this->assertSame($origin, $settings->origin());
         $this->assertFalse($settings->isUnknownValue());
-        $this->assertSame('worker', $settings->rawValue());
+        $this->assertSame($origin === 'default' ? '' : $mode->value, $settings->rawValue());
     }
 
-    /** `command` and `request-spawn` were modes of the development versions: a wiki that still says one gets the default, and the health page says where to correct it. */
-    #[DataProvider('removedModes')]
-    public function testARemovedModeFallsBackToTheDefault(string $removed): void
+    /** @return array<string, array{?string, ?string, string, QueueConsumerMode, string}> */
+    public static function precedence(): array
     {
-        $settings = $this->settings($removed);
+        return [
+            'the real environment wins over private/.env and the configuration' => ['worker', 'api', 'request', QueueConsumerMode::Worker, 'env'],
+            'private/.env wins over the configuration' => [null, 'api', 'worker', QueueConsumerMode::Api, 'dotenv'],
+            // The loader copies private/.env into the process environment: the same value present in both is still the file's.
+            'the same value in both is the file\'s' => ['api', 'api', 'worker', QueueConsumerMode::Api, 'dotenv'],
+            'the configuration alone' => [null, null, 'worker', QueueConsumerMode::Worker, 'config'],
+            'a blank environment falls through to the configuration' => [' ', null, 'worker', QueueConsumerMode::Worker, 'config'],
+            'a blank private/.env falls through to the configuration' => [null, '  ', 'worker', QueueConsumerMode::Worker, 'config'],
+            'a blank configuration is no choice' => [null, null, '  ', QueueConsumerMode::Request, 'default'],
+            'nothing set: a request consumes' => [null, null, '', QueueConsumerMode::Request, 'default'],
+        ];
+    }
+
+    /** A supervised consumer is a PHP process kept alive per wiki: the binary marker says so, and does not choose a mode. */
+    public function testTheBinaryMarkerIsSeenOnlyWhenSet(): void
+    {
+        $this->assertFalse($this->settings()->isServedByBinary());
+
+        $this->setRealEnv(QueueSettings::ENV_BINARY, '1');
+        $this->assertTrue($this->settings()->isServedByBinary());
+        $this->assertSame(QueueConsumerMode::Request, $this->settings()->mode(), 'under the binary too, a worker is asked for, never the default');
+
+        $this->setRealEnv(QueueSettings::ENV_BINARY, '');
+        $this->assertFalse($this->settings()->isServedByBinary());
+    }
+
+    /** `binary`, `command` and `request-spawn` were modes of the development versions: a wiki that still says one gets the default, and the health page says where to correct it. */
+    #[DataProvider('notModes')]
+    public function testAValueThatIsNoModeFallsBackToTheDefaultAndSaysSo(string $written): void
+    {
+        $this->setRealEnv(QueueSettings::ENV_MODE, $written);
+
+        $settings = $this->settings('worker');
 
         $this->assertSame(QueueConsumerMode::Request, $settings->mode());
+        $this->assertSame('env', $settings->origin(), 'an unknown value keeps its origin');
         $this->assertTrue($settings->isUnknownValue());
-        $this->assertSame($removed, $settings->rawValue());
+        $this->assertSame($written, $settings->rawValue());
     }
 
     /** @return array<string, array{string}> */
-    public static function removedModes(): array
+    public static function notModes(): array
     {
-        return ['command' => ['command'], 'request-spawn' => ['request-spawn']];
+        return ['cronjob' => ['cronjob'], 'binary' => ['binary'], 'command' => ['command'], 'request-spawn' => ['request-spawn']];
     }
 
     public function testTheValueIsReadCaseInsensitively(): void
@@ -190,6 +132,14 @@ class QueueSettingsTest extends TestCase
     {
         $this->assertSame('s3cret', $this->settings('api', [], 's3cret')->consumeSecret());
         $this->assertSame('', $this->settings()->consumeSecret());
+    }
+
+    /** A secret that is a list in the configuration is no secret. */
+    public function testASecretThatIsNotAScalarIsNone(): void
+    {
+        $settings = new QueueSettings(new ParameterBag(['queue_consume_secret' => ['x']]), static fn (): array => []);
+
+        $this->assertSame('', $settings->consumeSecret());
     }
 
     public function testOnlyThePassagesThatEndWithTheirTimeAreBudgeted(): void

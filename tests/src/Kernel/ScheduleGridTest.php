@@ -30,7 +30,19 @@ class ScheduleGridTest extends TestCase
         yield 'spring forward: the 2:00 that does not exist is 3:00' => [1800, '2026-03-29 01:45:00', '2026-03-29 03:00:00'];
         yield 'spring forward: 24 hours is the next midnight, 23 hours later' => ['24 hours', '2026-03-29 00:00:00', '2026-03-30 00:00:00'];
         yield 'fall back: 24 hours is the next midnight, 25 hours later' => ['24 hours', '2026-10-25 00:00:00', '2026-10-26 00:00:00'];
-        yield 'fall back: from the hour that comes twice, its second time' => [1800, '2026-10-25 02:15:00 +01:00', '2026-10-25 02:30:00'];
+        // The reference is a Monday: every 7 days falls on Mondays, and the 2-day slots keep the parity of the days counted from it.
+        yield '7 days, the next Monday' => ['7 days', '2026-11-04 07:03:00', '2026-11-09 00:00:00'];
+        yield '7 days, from a Monday midnight, the Monday after' => ['7 days', '2026-11-09 00:00:00', '2026-11-16 00:00:00'];
+        yield '2 days, the next even day from the reference' => ['2 days', '2026-11-04 07:03:00', '2026-11-06 00:00:00'];
+        yield '2 days, from the slot before it' => ['2 days', '2026-11-04 00:00:00', '2026-11-06 00:00:00'];
+        yield '2 days, spring forward: midnight to midnight is 47 hours' => ['2 days', '2026-03-29 12:00:00', '2026-03-31 00:00:00'];
+        yield '2 days, the slot that precedes spring forward' => ['2 days', '2026-03-28 12:00:00', '2026-03-29 00:00:00'];
+        yield '2 days, fall back: midnight to midnight is 49 hours' => ['2 days', '2026-10-25 12:00:00', '2026-10-27 00:00:00'];
+        yield '2 days, the slot that precedes fall back' => ['2 days', '2026-10-24 12:00:00', '2026-10-25 00:00:00'];
+        yield '25 hours, counted in elapsed time from the reference' => [25 * 3600, '2026-11-04 07:03:00', '2026-11-05 03:00:00'];
+        yield '25 hours, the slot after' => [25 * 3600, '2026-11-05 03:00:00', '2026-11-06 04:00:00'];
+        yield '25 hours, across spring forward the wall clock moves' => [25 * 3600, '2026-03-28 12:00:00', '2026-03-29 08:00:00'];
+        yield '25 hours, across fall back the wall clock moves' => [25 * 3600, '2026-10-24 12:00:00', '2026-10-24 17:00:00'];
     }
 
     #[DataProvider('slots')]
@@ -39,6 +51,14 @@ class ScheduleGridTest extends TestCase
         $next = $this->grid()->nextRun(new PeriodicalTrigger($every), self::paris($after));
 
         $this->assertSame($expected, $next?->setTimezone(new \DateTimeZone(self::PARIS))->format('Y-m-d H:i:s'));
+    }
+
+    /** An anchor inside the hour that comes twice goes on with that hour's half hours; a grid run from before it skips the hour (see the sweep below). */
+    public function testFromTheHourThatComesTwiceTheSecondTimeKeepsItsHalfHour(): void
+    {
+        $next = $this->grid()->nextRun(new PeriodicalTrigger(1800), self::paris('2026-10-25 02:15:00 +01:00'));
+
+        $this->assertSame('2026-10-25T02:30:00+01:00', $next?->setTimezone(new \DateTimeZone(self::PARIS))->format('c'));
     }
 
     public function testTheAnchorsTimezoneDoesNotMatter(): void
@@ -69,6 +89,20 @@ class ScheduleGridTest extends TestCase
         $this->assertSame('2026-11-05 00:00:00', $next?->setTimezone(new \DateTimeZone('America/New_York'))->format('Y-m-d H:i:s'));
     }
 
+    public function testAnUnknownTimezoneFallsBackToPhps(): void
+    {
+        $previous = date_default_timezone_get();
+        date_default_timezone_set('America/New_York');
+
+        try {
+            $next = (new ScheduleGrid(new ParameterBag(['timezone' => 'Not/AZone'])))->nextRun(new PeriodicalTrigger('24 hours'), self::paris('2026-11-04 07:03:00'));
+        } finally {
+            date_default_timezone_set($previous);
+        }
+
+        $this->assertSame('2026-11-05 00:00:00', $next?->setTimezone(new \DateTimeZone('America/New_York'))->format('Y-m-d H:i:s'));
+    }
+
     /** @return iterable<string, array{string}> */
     public static function changesOfTime(): iterable
     {
@@ -78,7 +112,7 @@ class ScheduleGridTest extends TestCase
 
     /**
      * Across a change of time the slots keep moving forward, on the half hours of the wall clock: the 2:00 and 2:30 that do not exist
-     * in spring are 3:00, and the hour that comes twice in autumn gets no slots of its own, an hour and a half between two runs.
+     * in spring are 3:00, and run from midnight the hour that comes twice in autumn gets no slots of its own, an hour and a half between two runs.
      */
     #[DataProvider('changesOfTime')]
     public function testThirtyMinutesAcrossAChangeOfTime(string $day): void
@@ -95,28 +129,6 @@ class ScheduleGridTest extends TestCase
             $run = $next;
         }
         $this->assertEquals($end, $run, 'the day ends on midnight');
-    }
-
-    public function testSeveralDaysAreCountedInWholeDaysFromAFixedMidnight(): void
-    {
-        $trigger = new PeriodicalTrigger(2 * 86400);
-        $first = $this->grid()->nextRun($trigger, self::paris('2026-11-04 07:03:00')) ?? $this->fail('no run');
-        $second = $this->grid()->nextRun($trigger, $first) ?? $this->fail('no run');
-        $fromTheDayBefore = $this->grid()->nextRun($trigger, $first->modify('-1 day')->setTime(7, 3));
-
-        $this->assertSame('00:00:00', $first->setTimezone(new \DateTimeZone(self::PARIS))->format('H:i:s'));
-        $this->assertSame(2, (int)$first->diff($second)->days);
-        $this->assertEquals($first, $fromTheDayBefore, 'the same slots whatever the anchor');
-    }
-
-    public function testAPeriodLongerThanADayThatIsNoWholeDayCountsFromAFixedMidnight(): void
-    {
-        $trigger = new PeriodicalTrigger(25 * 3600);
-        $first = $this->grid()->nextRun($trigger, self::paris('2026-11-04 07:03:00')) ?? $this->fail('no run');
-        $second = $this->grid()->nextRun($trigger, $first) ?? $this->fail('no run');
-
-        $this->assertSame(25 * 3600, $second->getTimestamp() - $first->getTimestamp());
-        $this->assertEquals($first, $this->grid()->nextRun($trigger, $first->modify('-1 second')));
     }
 
     public function testATriggerPastItsEndHasNoNextRun(): void

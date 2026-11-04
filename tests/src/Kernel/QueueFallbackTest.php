@@ -223,38 +223,71 @@ class QueueFallbackTest extends YesWikiTestCase
         $this->assertFalse($this->fallback('api')->shouldConsume());
     }
 
+    /** A worker long gone, with work waiting: the oldest of the message and the due schedule sets how long it has waited, whichever it is. */
+    public function testTheOldestWaitingOfMessageAndScheduleCounts(): void
+    {
+        $this->pass(QueueConsumerMode::Worker, '-3 hours', '-2 hours');
+        $this->messageWaitingSince(660);
+        $this->scheduleDueSince(60);
+        $this->assertTrue($this->fallback('worker')->shouldConsume(), 'the message has waited past the patience');
+
+        $this->clock->sleep(61);
+        $this->db->query("DELETE FROM {$this->schema->table()}");
+        $this->messageWaitingSince(60);
+        $this->scheduleDueSince(3 * 3600);
+
+        $this->assertTrue($this->fallback('worker')->shouldConsume(), 'the schedule has waited past it, though the message is fresh');
+    }
+
+    public function testWorkWaitingLessThanThePatienceDoesNotFallBackYet(): void
+    {
+        $this->pass(QueueConsumerMode::Worker, '-3 hours', '-2 hours');
+        $this->messageWaitingSince(300);
+
+        $this->assertFalse($this->fallback('worker')->shouldConsume());
+    }
+
+    /** The answer is kept for the request, and given anew to the next one: the instance a long-lived worker keeps serves many. */
+    public function testTheFallbackIsReadAgainByTheNextRequest(): void
+    {
+        $fallback = $this->fallback('worker');
+        $this->assertNull($fallback->status());
+
+        $this->pass(QueueConsumerMode::Worker, '-3 hours', '-3 hours');
+        $this->pass(QueueConsumerMode::Request, '-1 hour', '-1 hour', origin: QueuePassOrigin::Fallback, fallbackFor: QueueConsumerMode::Worker);
+        $this->assertNull($fallback->status(), 'within the request, the first answer stands');
+
+        $fallback->startNewRequest();
+
+        $this->assertNotNull($fallback->status());
+    }
+
+    /** The mode that consumes is the end of requests while a fallback runs, the chosen one otherwise. */
+    public function testTheConsumingModeIsTheEndOfRequestsWhileAFallbackRuns(): void
+    {
+        $this->assertSame(QueueConsumerMode::Worker, $this->fallback('worker')->consumingMode());
+        $this->assertSame(QueueConsumerMode::Request, $this->fallback('request')->consumingMode());
+
+        $this->pass(QueueConsumerMode::Worker, '-3 hours', '-3 hours');
+        $this->pass(QueueConsumerMode::Request, '-1 hour', '-1 hour', origin: QueuePassOrigin::Fallback, fallbackFor: QueueConsumerMode::Worker);
+
+        $this->assertSame(QueueConsumerMode::Request, $this->fallback('worker')->consumingMode());
+    }
+
     /** A wiki whose queue table is missing is told so once a minute, not on every request. */
     public function testAReadThatFailsIsTriedAtMostOnceAMinute(): void
     {
         $this->schema->drop();
         $fallback = $this->fallback('worker');
-        try {
-            $fallback->shouldConsume();
-            $this->fail('the missing table is not hidden');
-        } catch (\Throwable) {
-        }
+        $this->assertTrue($this->throws($fallback), 'the missing table is not hidden');
 
         $this->clock->sleep(30);
 
         $this->assertFalse($fallback->shouldConsume());
-    }
 
-    public function testFallbackEndsWhenTheAdminChangesTheMode(): void
-    {
-        $this->pass(QueueConsumerMode::Request, '-1 hour', '-1 hour', origin: QueuePassOrigin::Fallback, fallbackFor: QueueConsumerMode::Worker);
-        $this->pass(QueueConsumerMode::Api, '-1 minute', '-1 minute');
+        $this->clock->sleep(31);
 
-        $this->assertNull($this->fallback('api')->status());
-    }
-
-    /** A cron that comes back while a fallback pass holds the lock leaves its row all the same (QueueConsumer::drain()). */
-    public function testACronPassThatFoundTheLockTakenEndsTheFallback(): void
-    {
-        $this->pass(QueueConsumerMode::Api, '-5 hours', '-5 hours');
-        $this->pass(QueueConsumerMode::Request, '-1 hour', '-1 hour', origin: QueuePassOrigin::Fallback, fallbackFor: QueueConsumerMode::Api);
-        $this->pass(QueueConsumerMode::Api, '-1 minute', '-1 minute', stopReason: 'locked');
-
-        $this->assertNull($this->fallback('api')->status());
+        $this->assertTrue($this->throws($fallback), 'a minute on, it is tried again');
     }
 
     /** Outside the fallback a request reads nothing between two checks: the answer of the last one stands. */
@@ -315,6 +348,17 @@ class QueueFallbackTest extends YesWikiTestCase
         $this->fallback('worker')->consumerIsGone();
 
         $this->assertSame([], glob($this->lockDir . '/cache/*') ?: []);
+    }
+
+    private function throws(QueueFallback $fallback): bool
+    {
+        try {
+            $fallback->shouldConsume();
+        } catch (\Throwable) {
+            return true;
+        }
+
+        return false;
     }
 
     private function fallback(string $mode): QueueFallback

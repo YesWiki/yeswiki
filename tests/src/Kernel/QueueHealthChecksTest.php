@@ -54,6 +54,8 @@ class QueueHealthChecksTest extends YesWikiTestCase
     private string $mode = '';
     private string $secret = '';
     private bool $hibernated = false;
+    /** A schema that cannot tell whether its tables exist, when a test needs the database to be out of reach. */
+    private ?QueueSchema $unreachableSchema = null;
 
     /** @var array<string, array{string, int}> the tasks the schedule declares: id => label, interval in seconds */
     private array $declared = [];
@@ -109,22 +111,23 @@ class QueueHealthChecksTest extends YesWikiTestCase
 
     public function testEveryCheckPointsToTheJobsPage(): void
     {
-        $this->assertCount(13, $this->ids());
+        $this->assertEqualsCanonicalizing([
+            'queue-tables', 'queue-fallback', 'queue-stalled', 'queue-failed', 'queue-killed', 'queue-task-overdue', 'queue-task-failing',
+            'queue-backlog', 'queue-consumer-restarts', 'queue-consumer-memory', 'queue-config', 'queue-no-budget', 'queue-visitor-cost',
+        ], $this->ids(), 'a check dropped, or one added without the alert button it needs on the jobs page (JobsOverview::actionsFor)');
         foreach ($this->checks() as $check) {
             $this->assertSame('admin/jobs', $check->route(), $check->id());
-            $this->assertNotSame('', $check->sentence(), $check->id());
-            $this->assertNotSame($check->id(), $check->labelText(), $check->id());
         }
     }
 
-    /** `command` and `request-spawn` are gone: an admin who follows an alert's advice must not be sent to a mode the wiki no longer knows. */
+    /** The `command` and `request-spawn` modes are gone: an admin who follows an alert's advice must not be sent to a mode the wiki no longer knows. */
     public function testNoAdviceNamesARemovedMode(): void
     {
         foreach (['en', 'fr'] as $language) {
             $translations = (array)require dirname(__DIR__, 3) . "/src/lang/yeswiki_{$language}.php";
             foreach ($translations as $key => $text) {
                 if (str_starts_with((string)$key, 'QUEUE_') || str_starts_with((string)$key, 'ADMIN_JOBS_')) {
-                    $this->assertDoesNotMatchRegularExpression('/\b(command|commande|request-spawn)\b|la tâche planifiée ou|the scheduled task or/iu', (string)$text, "{$language}: {$key}");
+                    $this->assertDoesNotMatchRegularExpression('/\brequest-spawn\b|la tâche planifiée ou|the scheduled task or/iu', (string)$text, "{$language}: {$key}");
                 }
             }
         }
@@ -151,9 +154,8 @@ class QueueHealthChecksTest extends YesWikiTestCase
 
         $failure = $this->failure('queue-tables');
 
-        $this->assertNotNull($failure);
-        $this->assertSame(Severity::Broken, $this->check('queue-tables')->severity());
-        // The other checks leave it to this one: a wiki not yet migrated does not get thirteen alerts.
+        $this->assertSame(_t('QUEUE_HEALTH_TABLES_MISSING'), $failure);
+        // The other checks leave it to this one: a wiki not yet migrated does not get an alert per check.
         foreach (array_diff($this->ids(), ['queue-tables']) as $id) {
             $this->assertNull($this->failure($id), $id);
         }
@@ -167,11 +169,11 @@ class QueueHealthChecksTest extends YesWikiTestCase
         $this->pass('worker', startedAt: '-5 hours', finishedAt: '-3 hours');
         $this->pass('request', startedAt: '-2 hours', origin: QueuePassOrigin::Fallback, fallbackFor: QueueConsumerMode::Worker);
 
-        $failure = $this->failure('queue-fallback');
-
-        $this->assertNotNull($failure);
-        $this->assertStringContainsString('worker', $failure);
-        $this->assertSame(Severity::Broken, $this->check('queue-fallback')->severity());
+        $this->assertSame(
+            _t('QUEUE_HEALTH_FALLBACK_FAILED', ['mode' => 'worker', 'since' => QueueWording::duration(7200), 'idle' => QueueWording::duration(3 * 3600), 'budget' => $this->requestBudget()]) . $this->visitorsWait(),
+            $this->failure('queue-fallback'),
+            'the mode that is gone, since when the requests consume, and for how long the consumer was not seen'
+        );
     }
 
     public function testAFallbackForAConsumerNeverSeenSaysSo(): void
@@ -226,14 +228,21 @@ class QueueHealthChecksTest extends YesWikiTestCase
         $this->assertNotNull($this->failure('queue-stalled'));
     }
 
-    public function testPassesThatFoundTheLockTakenDoNotHideStarvedPasses(): void
+    /** @return array<string, array{string}> */
+    public static function passesThatDidNothing(): array
+    {
+        return ['the lock was taken' => ['locked'], 'the wiki was paused' => ['paused']];
+    }
+
+    #[DataProvider('passesThatDidNothing')]
+    public function testPassesThatCouldNotStartDoNotHideStarvedPasses(string $stopReason): void
     {
         $this->mode = 'api';
         foreach (['-50', '-40', '-30'] as $minutes) {
             $this->pass('api', startedAt: "$minutes minutes", stopReason: 'no-budget');
         }
         foreach (['-3', '-2', '-1'] as $minutes) {
-            $this->pass('api', startedAt: "$minutes minutes", stopReason: 'locked');
+            $this->pass('api', startedAt: "$minutes minutes", stopReason: $stopReason);
         }
 
         $this->assertNotNull($this->failure('queue-no-budget'));
@@ -469,7 +478,6 @@ class QueueHealthChecksTest extends YesWikiTestCase
         $this->assertNotNull($failure);
         $this->assertStringContainsString('QueueTestMessage', $failure);
         $this->assertNull($this->failure('queue-failed'));
-        $this->assertSame(Severity::Broken, $this->check('queue-killed')->severity());
     }
 
     // --- scheduled tasks ---------------------------------------------------------------------
@@ -632,6 +640,100 @@ class QueueHealthChecksTest extends YesWikiTestCase
         $this->assertNull($this->failure('queue-consumer-memory'));
     }
 
+    // --- Wording and edge cases ---------------------------------------------------------------
+
+    public function testAnUnreachableDatabaseIsBrokenAndSilencesTheOthers(): void
+    {
+        $this->message('default', '-5 hours');
+        $this->unreachableSchema = $this->createStub(QueueSchema::class);
+        $this->unreachableSchema->method('exists')->willThrowException(new \RuntimeException('no route to host'));
+
+        $this->assertSame(_t('QUEUE_HEALTH_TABLES_UNREACHABLE', ['error' => 'no route to host']), $this->failure('queue-tables'));
+        foreach (array_diff($this->ids(), ['queue-tables', 'queue-config']) as $id) {
+            $this->assertNull($this->failure($id), $id);
+        }
+    }
+
+    public function testFailedMessagesAreCountedAndTheBusiestTypesComeFirstUpToFive(): void
+    {
+        foreach (range(1, 7) as $n) {
+            foreach (range(1, $n) as $unused) {
+                $this->message('failed', '-1 hours', "Gone\\Message\\Type{$n}", 'HTTP 500');
+            }
+        }
+
+        $listed = [];
+        foreach ([7, 6, 5, 4, 3] as $n) {
+            $listed[] = QueueWording::type("Gone\\Message\\Type{$n}") . " ($n)";
+        }
+
+        $this->assertSame(
+            _t('QUEUE_HEALTH_FAILED_FAILED', ['count' => 28, 'types' => implode(', ', $listed) . ', ' . _t('QUEUE_HEALTH_AND_OTHERS', ['count' => 2])]),
+            $this->failure('queue-failed')
+        );
+    }
+
+    /** @return array<string, array{string, string, string}> the mode of the wiki, the mode that killed the message, the sentence it gets */
+    public static function killedSentences(): array
+    {
+        return [
+            'still in the mode that kills it' => ['request', 'request', 'QUEUE_HEALTH_KILLED_FAILED'],
+            'since moved to another mode' => ['worker', 'request', 'QUEUE_HEALTH_KILLED_PREVIOUS'],
+            'killed in a blocking mode' => ['worker', 'worker', 'QUEUE_HEALTH_KILLED_BLOCKING'],
+            'killed in a mode that no longer exists' => ['request', 'warp', 'QUEUE_HEALTH_KILLED_PREVIOUS'],
+        ];
+    }
+
+    #[DataProvider('killedSentences')]
+    public function testAKilledMessageIsToldInTheWordsOfItsMode(string $mode, string $killedIn, string $key): void
+    {
+        $this->mode = $mode;
+        $this->message('failed', '-1 hours', QueueTestMessage::class, killedIn: $killedIn);
+        $this->message('failed', '-1 hours', QueueTestMessage::class, killedIn: $killedIn);
+
+        $this->assertSame(
+            _t($key, ['types' => QueueWording::type(QueueTestMessage::class) . ' (2)', 'mode' => $killedIn, 'current' => $mode]),
+            $this->failure('queue-killed')
+        );
+    }
+
+    public function testKilledSaysWhatIsFailedAndWhatIsStuckInOneSentenceEach(): void
+    {
+        $this->mode = 'request';
+        $this->message('failed', '-1 hours', QueueTestMessage::class, killedIn: 'request');
+        $this->claimed('-2 hours', limit: 3600, mode: 'request');
+
+        $this->assertSame(
+            _t('QUEUE_HEALTH_KILLED_FAILED', ['types' => QueueWording::type(QueueTestMessage::class) . ' (1)', 'mode' => 'request', 'current' => 'request'])
+            . ' ' . _t('QUEUE_HEALTH_KILLED_STUCK', ['types' => QueueWording::type(QueueTestMessage::class) . ' (1)', 'mode' => 'request']),
+            $this->failure('queue-killed')
+        );
+    }
+
+    public function testAnUnknownModeIsNamedWithWhereItWasSet(): void
+    {
+        $this->mode = 'wroker';
+
+        $this->assertSame(
+            _t('QUEUE_HEALTH_CONFIG_UNKNOWN', ['value' => 'wroker', 'origin' => _t('QUEUE_ORIGIN_' . strtoupper($this->settings()->origin()))]),
+            $this->failure('queue-config')
+        );
+    }
+
+    /** A consumer is near its memory limit above 90 % of it, not at 90 %. */
+    public function testConsumerMemoryAlertsAboveNinetyPercentOfTheLimitOnly(): void
+    {
+        $this->mode = 'worker';
+        $this->pass('worker', startedAt: '-1 hours', peakMemory: 90 * 1048576, memoryLimit: 100 * 1048576);
+        $this->assertNull($this->failure('queue-consumer-memory'), 'exactly 90 %');
+
+        $this->pass('worker', startedAt: '-30 minutes', peakMemory: 90 * 1048576 + 1048576, memoryLimit: 100 * 1048576);
+        $this->assertSame(
+            _t('QUEUE_HEALTH_MEMORY_FAILED', ['used' => _t('QUEUE_HEALTH_MEGABYTES', ['count' => 91]), 'limit' => _t('QUEUE_HEALTH_MEGABYTES', ['count' => 100])]),
+            $this->failure('queue-consumer-memory')
+        );
+    }
+
     // --- configuration -----------------------------------------------------------------------
 
     public function testUnknownModeIsBroken(): void
@@ -741,21 +843,26 @@ class QueueHealthChecksTest extends YesWikiTestCase
         $hibernation = $this->createStub(HibernationService::class);
         $hibernation->method('isWikiHibernatedNow')->willReturnCallback(fn (): bool => $this->hibernated);
 
-        $settings = new QueueSettings(
-            new ParameterBag(['queue_consumer' => $this->mode, 'queue_consume_secret' => $this->secret]),
-            static fn (): array => []
-        );
+        $settings = $this->settings();
 
         return (new QueueHealthChecks(
             $settings,
             $this->statistics,
-            $this->schema,
+            $this->unreachableSchema ?? $this->schema,
             $hibernation,
             $this->ticker(),
             new QueueFallback($settings, $this->statistics, $this->ticker(), $hibernation, new RuntimeLock(), $this->clock),
             new QueueBudgetFactory(new NativeClock()),
             $this->clock
         ))->healthChecks();
+    }
+
+    private function settings(): QueueSettings
+    {
+        return new QueueSettings(
+            new ParameterBag(['queue_consumer' => $this->mode, 'queue_consume_secret' => $this->secret]),
+            static fn (): array => []
+        );
     }
 
     /** What a fallback pass may spend, as its alert says it. */

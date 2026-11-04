@@ -150,19 +150,10 @@ class QueueBudgetTest extends TestCase
         $this->assertSame(6 * 3600, $budget->killLimitSeconds);
     }
 
-    /**
-     * @return iterable<string, array{QueueConsumerMode}>
-     */
-    public static function blockingModes(): iterable
-    {
-        yield 'worker' => [QueueConsumerMode::Worker];
-    }
-
-    #[\PHPUnit\Framework\Attributes\DataProvider('blockingModes')]
-    public function testBlockingModesHaveNoTimeBudgetAndTheSixHourKillLimit(QueueConsumerMode $mode): void
+    public function testTheWorkerHasNoTimeBudgetAndTheSixHourKillLimit(): void
     {
         $budget = $this->factory(['max_execution_time' => '30', 'memory_limit' => '128M'], 10.0)
-            ->forMode($mode, false);
+            ->forMode(QueueConsumerMode::Worker, false);
 
         $this->assertSame(6 * 3600, $budget->killLimitSeconds);
         $this->assertTrue($budget->canAfford(1e9));
@@ -177,17 +168,9 @@ class QueueBudgetTest extends TestCase
         $budget = $this->factory(['max_execution_time' => '30', 'memory_limit' => '128M'])->forHand();
 
         $this->assertSame(INF, $budget->remainingSeconds());
+        $this->assertTrue($budget->canAfford(1e9));
         $this->assertSame(107374182, $budget->memoryCeilingBytes);
         $this->assertSame(QueueBudgetFactory::KILL_LIMIT_NO_PHP_LIMIT, $budget->killLimitSeconds);
-    }
-
-    public function testUnlimitedHasNoDeadlineNorMemoryCeiling(): void
-    {
-        $budget = new QueueBudget(INF, PHP_INT_MAX, 120);
-
-        $this->assertSame(120, $budget->killLimitSeconds);
-        $this->assertSame(INF, $budget->remainingSeconds());
-        $this->assertFalse($budget->memoryExhausted());
     }
 
     public function testCappedToNeverGrantsMoreThanTheBudgetHad(): void
@@ -212,18 +195,14 @@ class QueueBudgetTest extends TestCase
         $this->assertSame(0, QueueBudgetFactory::bytes(''));
     }
 
-    public function testRemainingSecondsCountsDownToZeroAndStaysThere(): void
-    {
-        $this->assertEqualsWithDelta(5.0, (new QueueBudget(microtime(true) + 5, PHP_INT_MAX, 60))->remainingSeconds(), 0.2);
-        $this->assertSame(0.0, (new QueueBudget(microtime(true) - 5, PHP_INT_MAX, 60))->remainingSeconds());
-    }
-
-    public function testCanAffordAMessageOnlyWhenItsExpectedDurationFits(): void
+    public function testRemainingSecondsCountDownToZeroAndAMessageIsAffordedOnlyWhenItFits(): void
     {
         $budget = new QueueBudget(microtime(true) + 5, PHP_INT_MAX, 60);
 
+        $this->assertEqualsWithDelta(5.0, $budget->remainingSeconds(), 0.2);
         $this->assertTrue($budget->canAfford(1.0));
         $this->assertFalse($budget->canAfford(10.0));
+        $this->assertSame(0.0, (new QueueBudget(microtime(true) - 5, PHP_INT_MAX, 60))->remainingSeconds());
     }
 
     public function testTheContextKnowsNoRemainingTimeOutsideABudgetedPass(): void
@@ -269,8 +248,54 @@ class QueueBudgetTest extends TestCase
         $this->assertFalse($budget->canAfford(1.0));
     }
 
-    public function testTheContextIsPartOfTheRequestScope(): void
+    /** A handler cuts its work in slices of whole seconds: never longer than it asks, never longer than the pass has left, never under one. */
+    public function testSliceSecondsNeverExceedsWhatIsAskedNorGoesUnderOne(): void
     {
-        $this->assertInstanceOf(\YesWiki\Kernel\Service\RequestScopedState::class, new QueueBudgetContext());
+        $context = new QueueBudgetContext();
+        $this->assertSame(30, $context->sliceSeconds(30), 'outside a pass, as much as asked');
+
+        $context->start(new QueueBudget(microtime(true) + 5.5, PHP_INT_MAX, 60));
+        $this->assertSame(5, $context->sliceSeconds(30), 'what the pass has left, in whole seconds');
+        $this->assertSame(3, $context->sliceSeconds(3), 'no more than asked');
+
+        $context->start(new QueueBudget(microtime(true) - 1, PHP_INT_MAX, 60));
+        $this->assertSame(1, $context->sliceSeconds(30), 'never under one second');
+
+        $context->end();
+        $this->assertSame(30, $context->sliceSeconds(30));
+    }
+
+    /** What a page says a pass may take: whole seconds for a budgeted mode, nothing for a blocking one. */
+    public function testSecondsPerPassIsNullForTheWorkerAndWholeSecondsOtherwise(): void
+    {
+        // the budget counts down on the real clock: the factory runs on it, from this very instant
+        $ini = ['max_execution_time' => '30', 'memory_limit' => '128M'];
+        $factory = new QueueBudgetFactory(new NativeClock(), static fn (string $name) => $ini[$name], microtime(true));
+
+        $this->assertNull($factory->secondsPerPass(QueueConsumerMode::Worker, false));
+        $this->assertSame(3, $factory->secondsPerPass(QueueConsumerMode::Request, false));
+        $this->assertSame(20, $factory->secondsPerPass(QueueConsumerMode::Request, true));
+        $this->assertSame(25, $factory->secondsPerPass(QueueConsumerMode::Api, false));
+    }
+
+    /** A request that has used more than PHP gives it still hands its pass a kill limit of one second, not zero (which would mean no limit). */
+    public function testKillLimitNeverDropsBelowOneSecond(): void
+    {
+        $over = $this->factory(['max_execution_time' => '30', 'memory_limit' => '128M'], 35.0)->forMode(QueueConsumerMode::Api, false);
+        $this->assertSame(1, $over->killLimitSeconds);
+        $this->assertSame(0.0, $over->remainingSeconds());
+
+        $almost = $this->factory(['max_execution_time' => '30', 'memory_limit' => '128M'], 29.5)->forMode(QueueConsumerMode::Api, false);
+        $this->assertSame(1, $almost->killLimitSeconds);
+    }
+
+    /** A host that hides PHP's limits: nothing bounds the pass but the mode's own ceiling. */
+    public function testUnreadableLimitsMeanNoPhpLimit(): void
+    {
+        $budget = $this->factory([])->forMode(QueueConsumerMode::Api, false);
+
+        $this->assertSame(QueueBudgetFactory::KILL_LIMIT_NO_PHP_LIMIT, $budget->killLimitSeconds);
+        $this->assertSame(PHP_INT_MAX, $budget->memoryCeilingBytes);
+        $this->assertEqualsWithDelta(50.0, $this->allowed($budget), 0.001);
     }
 }

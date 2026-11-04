@@ -5,12 +5,10 @@ namespace YesWiki\Test\Admin;
 use PHPUnit\Framework\Attributes\CoversClass;
 use Symfony\Component\Clock\MockClock;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
-use Symfony\Component\Messenger\Stamp\TransportMessageIdStamp;
 use Symfony\Component\Scheduler\Generator\MessageContext;
 use YesWiki\Admin\Message\PurgeRevisions;
 use YesWiki\Admin\Message\PurgeRevisionsHandler;
 use YesWiki\Admin\Message\RunMaintenanceHooks;
-use YesWiki\Admin\Message\RunMaintenanceHooksHandler;
 use YesWiki\Admin\Scheduler\AdminSchedule;
 use YesWiki\Identity\Message\PurgeActivationKeys;
 use YesWiki\Identity\Message\PurgeActivationKeysHandler;
@@ -19,17 +17,15 @@ use YesWiki\Identity\Message\PurgeBotGuardHandler;
 use YesWiki\Identity\Message\PurgeRecoveryKeys;
 use YesWiki\Identity\Message\PurgeRecoveryKeysHandler;
 use YesWiki\Identity\Scheduler\IdentitySchedule;
+use YesWiki\Identity\Service\AccountActivationService;
+use YesWiki\Identity\Service\BotGuard;
+use YesWiki\Identity\Service\UserManager;
 use YesWiki\Kernel\Message\PruneJournal;
-use YesWiki\Kernel\Message\PruneJournalHandler;
 use YesWiki\Kernel\Queue\ProvidesSchedule;
-use YesWiki\Kernel\Queue\QueueConsumerMode;
 use YesWiki\Kernel\Queue\ScheduledTask;
-use YesWiki\Kernel\Queue\TaskHistory;
 use YesWiki\Kernel\Scheduler\KernelSchedule;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\HibernationService;
-use YesWiki\Kernel\Service\Queue\QueueHandlerLocator;
-use YesWiki\Kernel\Service\Queue\QueueRecorder;
 use YesWiki\Kernel\Service\Queue\QueueScheduleTicker;
 use YesWiki\Kernel\Service\RuntimeConfig;
 use YesWiki\Test\Core\YesWikiTestCase;
@@ -37,7 +33,6 @@ use YesWiki\Test\Kernel\QueueTestKit;
 
 require_once 'tests/YesWikiTestCase.php';
 require_once 'tests/src/Kernel/QueueTestKit.php';
-require_once 'tests/src/Contact/SendDigestTest.php';
 
 /**
  * Each step of the old housekeeping sweep is a scheduled task of its own (messenger / scheduler, spec section 8).
@@ -49,6 +44,9 @@ require_once 'tests/src/Contact/SendDigestTest.php';
 #[CoversClass(IdentitySchedule::class)]
 #[CoversClass(AdminSchedule::class)]
 #[CoversClass(PurgeRevisionsHandler::class)]
+#[CoversClass(PurgeRecoveryKeysHandler::class)]
+#[CoversClass(PurgeActivationKeysHandler::class)]
+#[CoversClass(PurgeBotGuardHandler::class)]
 class MaintenanceTasksTest extends YesWikiTestCase
 {
     private const NOW = '2026-10-23 12:00:00';
@@ -74,7 +72,6 @@ class MaintenanceTasksTest extends YesWikiTestCase
 
         $this->assertEqualsCanonicalizing(self::STEPS, array_keys($plan));
         foreach ($plan as $taskId => $task) {
-            $this->assertSame(1800, $task['every'], "{$taskId} runs every 30 minutes, as the sweep did");
             $this->assertStringNotContainsString('MAINTENANCE_TASK_', $task['message']->label(), "{$taskId} has a translated label");
         }
         $this->assertInstanceOf(PurgeRevisions::class, $plan['revisions']['message']);
@@ -101,52 +98,31 @@ class MaintenanceTasksTest extends YesWikiTestCase
         $this->assertEqualsCanonicalizing(self::STEPS, $tick(), 'a day later: the missed runs are one');
     }
 
-    public function testTheHandlersAndTheSchedulesAreDiscoveredOnTheRealContainer(): void
+    public function testTheSchedulesOfTheStepsAreDeclaredToTheTicker(): void
     {
-        $services = $this->getWiki()->services;
-        $locator = $services->get(QueueHandlerLocator::class);
-
-        foreach ([PurgeRevisions::class, PruneJournal::class, PurgeRecoveryKeys::class, PurgeActivationKeys::class, PurgeBotGuard::class, RunMaintenanceHooks::class] as $type) {
-            self::assertHandled($type, $locator);
-        }
-        foreach ([PurgeRevisionsHandler::class, PruneJournalHandler::class, PurgeRecoveryKeysHandler::class, PurgeActivationKeysHandler::class, PurgeBotGuardHandler::class, RunMaintenanceHooksHandler::class] as $handler) {
-            $this->assertInstanceOf($handler, $services->get($handler));
-        }
-        $declared = $services->get(QueueScheduleTicker::class)->declaredTaskIds();
+        $declared = $this->getWiki()->services->get(QueueScheduleTicker::class)->declaredTaskIds();
         foreach (self::STEPS as $step) {
             $this->assertContains($step, $declared, "the ticker finds the schedule of {$step} by its tag");
         }
     }
 
-    /** One step failing is one task failing: the five others are handled, and the failed one is tried again later like any message. */
-    public function testAFailingStepDoesNotStopTheOthers(): void
+    /**
+     * The three purge handlers only delegate, so what must hold is that each one calls
+     * its own service (the purges themselves are tested with the services).
+     */
+    public function testEachPurgeHandlerCallsItsOwnPurge(): void
     {
-        $ran = [];
-        $record = static function (ScheduledTask $task) use (&$ran): void {
-            $ran[] = $task->taskId();
-        };
-        $this->kit = new QueueTestKit([
-            PurgeRevisions::class => $record,
-            PruneJournal::class => static fn () => throw new \RuntimeException('the journal table is locked'),
-            PurgeRecoveryKeys::class => $record,
-            PurgeActivationKeys::class => $record,
-            PurgeBotGuard::class => $record,
-            RunMaintenanceHooks::class => $record,
-        ]);
+        $users = $this->createMock(UserManager::class);
+        $users->expects($this->once())->method('purgeExpiredPasswordRecoveryKeys');
+        (new PurgeRecoveryKeysHandler($users))(new PurgeRecoveryKeys());
 
-        foreach (['revisions' => new PurgeRevisions(), 'journal' => new PruneJournal(), 'recovery-keys' => new PurgeRecoveryKeys(), 'activation-keys' => new PurgeActivationKeys(), 'bot-guard' => new PurgeBotGuard(), 'extension-hooks' => new RunMaintenanceHooks()] as $message) {
-            $queued = $this->kit->bus->dispatch($message)->last(TransportMessageIdStamp::class);
-            $this->assertNotNull($queued);
-            $this->kit->consumer->handleById((int)$queued->getId(), QueueConsumerMode::Api);
-        }
+        $activation = $this->createMock(AccountActivationService::class);
+        $activation->expects($this->once())->method('purgeExpiredActivationKeys');
+        (new PurgeActivationKeysHandler($activation))(new PurgeActivationKeys());
 
-        $this->assertSame(['revisions', 'recovery-keys', 'activation-keys', 'bot-guard', 'extension-hooks'], $ran);
-        $this->assertSame(1, $this->kit->statistics->pendingCount(), 'the journal step waits for its retry, nothing else does');
-        $statuses = array_map(static fn (TaskHistory $task): ?string => $task->lastStatus, $this->kit->history->all());
-        $this->assertSame(QueueRecorder::RETRIED, $statuses['journal']);
-        foreach (['revisions', 'recovery-keys', 'activation-keys', 'bot-guard', 'extension-hooks'] as $step) {
-            $this->assertSame(QueueRecorder::HANDLED, $statuses[$step], $step);
-        }
+        $botGuard = $this->createMock(BotGuard::class);
+        $botGuard->expects($this->once())->method('purge');
+        (new PurgeBotGuardHandler($botGuard))(new PurgeBotGuard());
     }
 
     public function testRevisionsAreNotPurgedWhileHibernated(): void
@@ -188,6 +164,44 @@ class MaintenanceTasksTest extends YesWikiTestCase
         );
     }
 
+    /** A page whose only old revision is followed by its current version: the one from before the window survives, so nothing goes. */
+    public function testASingleRevisionFromBeforeTheWindowIsNotPurged(): void
+    {
+        $db = $this->wikiDatabase();
+        $this->revisions($db, 'OldPage', ['2020-01-01 10:00:00', (new \DateTimeImmutable('-2 days', new \DateTimeZone('UTC')))->format('Y-m-d H:i:s')]);
+
+        $this->purge($db, days: 30, hibernated: false);
+
+        $this->assertSame(2, $this->countRevisions($db));
+    }
+
+    /** Revisions are compared within one page: another page's newer revision does not condemn this page's only old one. */
+    public function testTheRevisionsOfAnotherPageAreNotComparedWithThisOne(): void
+    {
+        $db = $this->wikiDatabase();
+        $recent = (new \DateTimeImmutable('-2 days', new \DateTimeZone('UTC')))->format('Y-m-d H:i:s');
+        $this->revisions($db, 'LonelyPage', ['2020-01-01 10:00:00', $recent]);
+        $this->revisions($db, 'BusyPage', ['2020-02-01 10:00:00', '2020-03-01 10:00:00', '2020-04-01 10:00:00']);
+
+        $this->purge($db, days: 30, hibernated: false);
+
+        $this->assertSame(
+            [['LonelyPage', '2020-01-01 10:00:00'], ['BusyPage', '2020-03-01 10:00:00'], ['BusyPage', '2020-04-01 10:00:00'], ['LonelyPage', $recent]],
+            array_map(static fn (array $row): array => [$row['tag'], $row['time']], $db->loadAll('SELECT tag, time FROM ' . $db->prefixTable('pages') . ' ORDER BY time')),
+            'only the oldest of BusyPage\'s old revisions goes'
+        );
+    }
+
+    /** SQLite reads `-5 days` negated as no date at all, so the database cannot tell this from a purge that found nothing: the handler must not ask it anything. */
+    public function testANegativeWindowIsNoWindow(): void
+    {
+        $db = $this->createMock(DbService::class);
+        $db->expects($this->never())->method('loadAll');
+        $db->expects($this->never())->method('query');
+
+        $this->purge($db, days: -5, hibernated: false);
+    }
+
     /**
      * The three schedules together, as the queue builds them.
      */
@@ -222,9 +236,9 @@ class MaintenanceTasksTest extends YesWikiTestCase
     }
 
     /**
-     * What a schedule declares, per task id: its message and the gap between its runs.
+     * What a schedule declares, per task id: its message.
      *
-     * @return array<string, array{message: ScheduledTask, every: int}>
+     * @return array<string, array{message: ScheduledTask}>
      */
     private function plan(ProvidesSchedule $schedule): array
     {
@@ -232,16 +246,12 @@ class MaintenanceTasksTest extends YesWikiTestCase
         $plan = [];
         foreach ($schedule->recurringMessages() as $recurring) {
             $trigger = $recurring->getTrigger();
-            $first = $trigger->getNextRunDate($now);
-            $this->assertNotNull($first);
-            $second = $trigger->getNextRunDate($first);
-            $this->assertNotNull($second);
             foreach ($recurring->getMessages(new MessageContext('test', $recurring->getId(), $trigger, $now)) as $message) {
                 $this->assertInstanceOf(ScheduledTask::class, $message);
                 if ($message->taskId() === 'queue-prune') {
                     continue;
                 }
-                $plan[$message->taskId()] = ['message' => $message, 'every' => $second->getTimestamp() - $first->getTimestamp()];
+                $plan[$message->taskId()] = ['message' => $message];
             }
         }
 

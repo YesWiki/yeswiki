@@ -145,8 +145,12 @@ class AdminLogsApiControllerTest extends YesWikiTestCase
             'from' => 'yesterday',
         ]);
 
-        $this->assertSame('1 = 1 AND ' . $this->db()->quoteIdentifier('channel') . ' IN (?, ?)', $where, 'only the default channels are left');
-        $this->assertSame(['audit', 'diagnostic'], $params);
+        $defaults = array_values(array_diff(array_column(JournalChannel::cases(), 'value'), [JournalChannel::Queue->value]));
+        $this->assertSame($defaults, $params, 'only the default channels are left, whatever the user sent');
+        $this->assertSame(count($params), substr_count($where, '?'), 'and nothing the user sent is in the SQL: only placeholders are');
+        foreach (['shouting', "OR '1'", 'yesterday', 'audit\''] as $injected) {
+            $this->assertStringNotContainsString($injected, $where);
+        }
     }
 
     /**
@@ -194,6 +198,17 @@ class AdminLogsApiControllerTest extends YesWikiTestCase
             'context' => json_encode(['message_id' => 3, 'message' => 'The remote server did not answer']),
         ]);
         $this->assertSame('The remote server did not answer', $failed['message']);
+    }
+
+    /** A detail that is not a sentence (a list, an object) is not shown as one. */
+    public function testAContextMessageThatIsNotAStringReadsAsNothing(): void
+    {
+        $presented = $this->present([
+            'channel' => 'queue', 'action' => 'queue.run.failed',
+            'context' => json_encode(['message' => ['not', 'a', 'sentence']]),
+        ]);
+
+        $this->assertSame('', $presented['message']);
     }
 
     public function testQueueRowsAreHiddenUnlessChosen(): void
@@ -246,6 +261,6 @@ class AdminLogsApiControllerTest extends YesWikiTestCase
         $this->assertStringContainsString('yw-logs__row--queue', $html);
         $this->assertStringContainsString(_t('ADMIN_LOGS_CHANNEL_QUEUE'), $html);
         $this->assertStringNotContainsString(_t('ADMIN_LOGS_CHANNEL_DIAGNOSTIC'), $html, 'a queue row is not an error');
-        $this->assertStringContainsString('warning', $html, 'its level still tells a retry from a success');
+        $this->assertMatchesRegularExpression('#<small class="yw-text-muted">\s*warning\s*</small>#', $html, 'its level still tells a retry from a success');
     }
 }

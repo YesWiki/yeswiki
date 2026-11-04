@@ -7,10 +7,11 @@ use Psr\Container\ContainerInterface;
 use Symfony\Component\Clock\NativeClock;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 use Symfony\Component\DependencyInjection\ServiceLocator;
+use Symfony\Component\Messenger\MessageBusInterface;
 use YesWiki\Content\Service\PageManager;
+use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Entity\Event;
 use YesWiki\Kernel\Service\DbService;
-use YesWiki\Kernel\Service\Journal;
 use YesWiki\Kernel\Service\JournalSchema;
 use YesWiki\Kernel\Service\Queue\QueueBus;
 use YesWiki\Kernel\Service\Queue\QueueHandlerLocator;
@@ -67,33 +68,16 @@ class ReindexContentTest extends YesWikiTestCase
         parent::tearDown();
     }
 
-    public function testSavingAContentQueuesOneMessageForIt(): void
+    /** A Content saved queues one message; the point of the unique key: saved twice before the consumer gets to it, it is reindexed once. */
+    public function testSavingTwiceBeforeThePassQueuesOneMessage(): void
     {
         $subscriber = $this->getWiki()->services->get(SearchIndexSubscriber::class);
 
         $subscriber->onContentChanged(new Event(['id' => self::TAG_PREFIX . 'A']));
         $subscriber->onContentChanged(new Event(['id' => self::TAG_PREFIX . 'B']));
+        $subscriber->onContentChanged(new Event(['id' => self::TAG_PREFIX . 'A']));
 
-        $this->assertSame([self::TAG_PREFIX . 'A', self::TAG_PREFIX . 'B'], $this->waitingTags());
-    }
-
-    /** The point of the unique key: a Content saved twice before the consumer gets to it is reindexed once. */
-    public function testSavingTwiceBeforeThePassQueuesOneMessage(): void
-    {
-        $subscriber = $this->getWiki()->services->get(SearchIndexSubscriber::class);
-
-        $subscriber->onContentChanged(new Event(['id' => self::TAG_PREFIX . 'Twice']));
-        $subscriber->onContentChanged(new Event(['id' => self::TAG_PREFIX . 'Twice']));
-
-        $this->assertSame([self::TAG_PREFIX . 'Twice'], $this->waitingTags());
-        $this->assertSame(
-            ReindexContent::UNIQUE_KEY_PREFIX . self::TAG_PREFIX . 'Twice',
-            $this->getWiki()->services->get(DbService::class)->scalar(
-                'SELECT dedup_key FROM ' . $this->messages() . ' WHERE message_type = ? AND delivered_at IS NULL',
-                null,
-                [ReindexContent::class]
-            )
-        );
+        $this->assertSame([self::TAG_PREFIX . 'A', self::TAG_PREFIX . 'B'], $this->waitingTags(), 'one message each, in the order they were first sent, keyed by the tag');
     }
 
     public function testARenameQueuesTheNewTag(): void
@@ -112,26 +96,13 @@ class ReindexContentTest extends YesWikiTestCase
         $this->assertSame($before + 2, $this->indexer()->pending());
     }
 
-    /** What makes the dispatches enough: the message is found by its type, on the container the wiki really runs on. */
-    public function testTheHandlerIsDiscoveredOnTheRealContainer(): void
-    {
-        $services = $this->getWiki()->services;
-
-        self::assertHandled(
-            ReindexContent::class,
-            $services->get(QueueHandlerLocator::class),
-            'the compiler pass found #[AsMessageHandler] on ReindexContentHandler (delete cache/container/* after adding a service class)'
-        );
-        $this->assertInstanceOf(ReindexContentHandler::class, $services->get(ReindexContentHandler::class));
-    }
-
     public function testRunningTheMessageIndexesTheContent(): void
     {
         $services = $this->getWiki()->services;
         $services->get(PageManager::class)->save(self::TAG_PREFIX . 'Indexed', ['title' => 'Indexed', 'content' => 'a word like zygopetalumqueue'], '', true);
         $this->assertSame([self::TAG_PREFIX . 'Indexed'], $this->waitingTags(), 'the save went through the subscriber');
 
-        $this->assertSame(1, self::reindexWaitingContents($this->getWiki()));
+        $this->assertGreaterThanOrEqual(1, self::reindexWaitingContents($this->getWiki()), 'it runs every waiting message, whoever queued them');
 
         $this->assertSame([], $this->waitingTags());
         $found = $services->get(SearchIndexQuery::class)->search('zygopetalumqueue', null, 10);
@@ -150,16 +121,13 @@ class ReindexContentTest extends YesWikiTestCase
         ));
     }
 
-    /** Saving a page must never break because the queue cannot be written to. */
+    /** Saving a page must never break because the queue cannot be written to (the journaling of the failure is QueueBus's own). */
     public function testAQueueThatCannotBeWrittenToDoesNotBreakEnqueue(): void
     {
         $services = $this->getWiki()->services;
         $file = tempnam(sys_get_temp_dir(), 'yw-search-queue-') . '.db';
         $empty = new DbService(new ParameterBag(['db_driver' => 'sqlite', 'db_database' => $file, 'table_prefix' => 'ywq_', 'debug' => false]));
-        $journal = $services->get(Journal::class);
-        $log = fopen('php://memory', 'w+b');
-        $this->assertIsResource($log);
-        $journal->writeTo($log);
+        $kit = new QueueTestKit();
 
         try {
             $transport = new QueueTransport($empty, new QueueSchema($empty), new NativeClock());
@@ -167,21 +135,15 @@ class ReindexContentTest extends YesWikiTestCase
                 $services->get(DbService::class),
                 $services->get(SearchIndexSchema::class),
                 $services->get(SearchableTextExtractor::class),
-                new QueueBus($transport, new QueueHandlerLocator([], new ServiceLocator([])), $journal, new QueueRecorder($empty, new JournalSchema($empty), new NativeClock()), QueueTestKit::noRequest()),
+                new QueueBus($transport, new QueueHandlerLocator([], new ServiceLocator([])), $kit->journal, new QueueRecorder($empty, new JournalSchema($empty), new NativeClock()), QueueTestKit::noRequest()),
                 $services->get(QueueStatistics::class)
             );
 
             $indexer->enqueue([self::TAG_PREFIX . 'Broken']);
 
-            rewind($log);
-            $this->assertStringContainsString('queue.dispatch_failed', (string)stream_get_contents($log));
+            $this->assertSame([], $this->waitingTags(), 'nothing reached the real queue');
         } finally {
-            $journal->writeTo(fopen('php://memory', 'w+b') ?: $log);
-            $services->get(DbService::class)->query(
-                'DELETE FROM ' . $services->get(DbService::class)->quoteIdentifier($services->get(JournalSchema::class)->table())
-                . ' WHERE ' . $services->get(DbService::class)->quoteIdentifier('action') . ' = ?',
-                ['queue.dispatch_failed']
-            );
+            $kit->dispose();
             foreach (['', '-wal', '-shm'] as $suffix) {
                 @unlink($file . $suffix);
             }
@@ -191,42 +153,28 @@ class ReindexContentTest extends YesWikiTestCase
     /** The page shows where things stand; getting the work done is the queue's job. */
     public function testTheSearchActionOnlyReportsWhatWaits(): void
     {
-        $services = $this->getWiki()->services;
-        $indexer = $this->createMock(SearchIndexer::class);
-        $indexer->method('indexedCount')->willReturn(0);
-        $indexer->method('pending')->willReturn(7);
-        $indexer->expects($this->never())->method('index');
-
-        $replaced = new class($services, $indexer) implements ContainerInterface {
-            public function __construct(private readonly ContainerInterface $real, private readonly SearchIndexer $indexer)
-            {
-            }
-
-            public function get(string $id): mixed
-            {
-                return $id === SearchIndexer::class ? $this->indexer : $this->real->get($id);
-            }
-
-            public function has(string $id): bool
-            {
-                return $this->real->has($id);
-            }
-        };
-        $action = new SearchAction();
-        $action->setServices($replaced);
-
-        $html = $action->run();
+        $html = $this->searchPageWhileBuilding(admin: false);
 
         $this->assertStringContainsString(htmlspecialchars(_t('SEARCH_INDEX_BUILDING', ['pending' => 7]), ENT_QUOTES), $html);
     }
 
-    /** A request has no business reindexing: that is what the old shutdown function did, and a spawned `search:reindex --drain` after it. */
-    public function testNoShutdownFunctionIsRegistered(): void
+    /** Only an admin is sent to the jobs page, where the queue can be watched. */
+    public function testOnlyAnAdminIsGivenTheLinkToTheJobs(): void
     {
-        $source = (string)file_get_contents((string)(new \ReflectionClass(SearchIndexSubscriber::class))->getFileName());
+        $this->assertStringContainsString('admin/jobs', $this->searchPageWhileBuilding(admin: true));
+        $this->assertStringNotContainsString('admin/jobs', $this->searchPageWhileBuilding(admin: false));
+    }
 
-        $this->assertStringNotContainsString('register_shutdown_function', $source);
-        $this->assertStringNotContainsString('startConsoleAsync', $source);
+    /** A request has no business reindexing: saving queues, and nothing is reindexed (or run) before the consumer comes. */
+    public function testSavingReindexesNothingByItself(): void
+    {
+        $indexer = $this->indexer();
+        $indexed = $indexer->indexedCount();
+
+        $this->getWiki()->services->get(SearchIndexSubscriber::class)->onContentChanged(new Event(['id' => self::TAG_PREFIX . 'Lazy']));
+
+        $this->assertSame([self::TAG_PREFIX . 'Lazy'], $this->waitingTags(), 'the message is still waiting');
+        $this->assertSame($indexed, $indexer->indexedCount(), 'and the index has not moved');
     }
 
     public function testTheMigrationDropsTheOldTableAndQueuesEverything(): void
@@ -238,14 +186,66 @@ class ReindexContentTest extends YesWikiTestCase
         $db->query("CREATE TABLE IF NOT EXISTS {$old} (tag VARCHAR(191) PRIMARY KEY)");
         $services->get(PageManager::class)->save(self::TAG_PREFIX . 'Migrated', ['title' => 'Migrated', 'content' => 'x'], '', true);
         $this->forgetWaitingReindexing();
+        $lastMessage = (int)$db->scalar('SELECT MAX(id) FROM ' . $this->messages(), 0);
 
-        $migration = new \ReindexingGoesThroughTheQueue();
-        $migration->setServices($services);
-        $migration->setDbService($db);
-        $migration->run();
+        try {
+            $migration = new \ReindexingGoesThroughTheQueue();
+            $migration->setServices($services);
+            $migration->setDbService($db);
+            $migration->run();
 
-        $this->assertNotContains($old, $db->schema()->getTables());
-        $this->assertContains(self::TAG_PREFIX . 'Migrated', $this->waitingTags());
+            $this->assertNotContains($old, $db->schema()->getTables());
+            $this->assertContains(self::TAG_PREFIX . 'Migrated', $this->waitingTags());
+        } finally {
+            // It queued the whole wiki: take back what it queued, and only that.
+            $db->query('DELETE FROM ' . $this->messages() . ' WHERE message_type = ? AND delivered_at IS NULL AND id > ?', [ReindexContent::class, $lastMessage]);
+        }
+    }
+
+    public function testEnqueueEverythingReturnsTheNumberOfDistinctLatestTags(): void
+    {
+        $services = $this->getWiki()->services;
+        $pages = $services->get(PageManager::class);
+        $pages->save(self::TAG_PREFIX . 'Revised', ['title' => 'One', 'content' => 'first'], '', true);
+        $pages->save(self::TAG_PREFIX . 'Revised', ['title' => 'Two', 'content' => 'second'], '', true);
+        $pages->save(self::TAG_PREFIX . 'Other', ['title' => 'Other', 'content' => 'x'], '', true);
+        $db = $services->get(DbService::class);
+        $expected = (int)$db->scalar('SELECT COUNT(*) FROM (SELECT DISTINCT tag FROM ' . $db->prefixTable('pages') . " WHERE latest = 'Y') latest_tags", 0);
+        $this->assertSame(2, (int)$db->scalar('SELECT COUNT(*) FROM ' . $db->prefixTable('pages') . ' WHERE tag = ?', 0, [self::TAG_PREFIX . 'Revised']), 'fixture: two revisions, one tag');
+        $lastMessage = (int)$db->scalar('SELECT MAX(id) FROM ' . $this->messages(), 0);
+        $this->forgetWaitingReindexing();
+
+        try {
+            $queued = $this->indexer()->enqueueEverything();
+
+            $this->assertSame($expected, $queued);
+            $tags = $this->waitingTags();
+            sort($tags);
+            $this->assertSame([self::TAG_PREFIX . 'Other', self::TAG_PREFIX . 'Revised'], $tags, 'each once, whatever its revisions');
+        } finally {
+            $db->query('DELETE FROM ' . $this->messages() . ' WHERE message_type = ? AND delivered_at IS NULL AND id > ?', [ReindexContent::class, $lastMessage]);
+        }
+    }
+
+    /** Without the index tables nothing is queued, so a wiki that never got them does not fill its queue. */
+    public function testWithoutIndexTablesNothingIsQueued(): void
+    {
+        $services = $this->getWiki()->services;
+        $schema = $this->createStub(SearchIndexSchema::class);
+        $schema->method('exists')->willReturn(false);
+        $indexer = new SearchIndexer(
+            $services->get(DbService::class),
+            $schema,
+            $services->get(SearchableTextExtractor::class),
+            $services->get(MessageBusInterface::class),
+            $services->get(QueueStatistics::class)
+        );
+
+        $indexer->enqueue([self::TAG_PREFIX . 'Nowhere']);
+
+        $this->assertSame(0, $indexer->enqueueEverything());
+        $this->assertSame(0, $indexer->enqueueForm('1'));
+        $this->assertSame([], $this->waitingTags());
     }
 
     private function indexer(): SearchIndexer
@@ -277,12 +277,45 @@ class ReindexContentTest extends YesWikiTestCase
         );
     }
 
-    /** Whatever ReindexContent waits, this test's and everybody else's: the migration test queues the whole wiki. */
+    /** This test's waiting ReindexContent, not the ones another test or a real visitor queued. */
     private function forgetWaitingReindexing(): void
     {
         $this->getWiki()->services->get(DbService::class)->query(
-            'DELETE FROM ' . $this->messages() . ' WHERE message_type = ? AND delivered_at IS NULL',
-            [ReindexContent::class]
+            'DELETE FROM ' . $this->messages() . ' WHERE message_type = ? AND delivered_at IS NULL AND dedup_key LIKE ?',
+            [ReindexContent::class, ReindexContent::UNIQUE_KEY_PREFIX . self::TAG_PREFIX . '%']
         );
+    }
+
+    /** The page of the search action while the index is being built, as an admin or a visitor sees it. */
+    private function searchPageWhileBuilding(bool $admin): string
+    {
+        $services = $this->getWiki()->services;
+        $indexer = $this->createStub(SearchIndexer::class);
+        $indexer->method('indexedCount')->willReturn(0);
+        $indexer->method('pending')->willReturn(7);
+        $acl = $this->createStub(AclService::class);
+        $acl->method('isAdmin')->willReturn($admin);
+        $replaced = [SearchIndexer::class => $indexer, AclService::class => $acl];
+
+        $container = new class($services, $replaced) implements ContainerInterface {
+            /** @param array<string, object> $replaced */
+            public function __construct(private readonly ContainerInterface $real, private readonly array $replaced)
+            {
+            }
+
+            public function get(string $id): mixed
+            {
+                return $this->replaced[$id] ?? $this->real->get($id);
+            }
+
+            public function has(string $id): bool
+            {
+                return $this->real->has($id);
+            }
+        };
+        $action = new SearchAction();
+        $action->setServices($container);
+
+        return $action->run();
     }
 }

@@ -102,6 +102,32 @@ class QueueStatisticsSeenTest extends YesWikiTestCase
         $this->assertNull($this->statistics->lastSeenAt(QueueConsumerMode::Worker));
     }
 
+    /** A claim only shows the consumer at work when the process holding it is the one of its open pass. */
+    public function testAClaimOfAnotherProcessIsNotTheConsumerAtWork(): void
+    {
+        $this->pass(QueueConsumerMode::Worker, '-3 hours', '-30 minutes', stopReason: '', holder: self::ELSEWHERE . 'aa');
+        $this->claimed('-30 minutes', QueueConsumerMode::Worker, 'c999@abcdef012345.777/bb');
+
+        $this->assertSame($this->at('-30 minutes'), $this->format($this->statistics->lastSeenAt(QueueConsumerMode::Worker)));
+    }
+
+    public function testAClaimOfAConsumerThatHasEndedIsNotItAtWork(): void
+    {
+        $this->pass(QueueConsumerMode::Worker, '-3 hours', '-1 hour', stopReason: 'empty', holder: self::ELSEWHERE . 'aa');
+        $this->claimed('-30 minutes', QueueConsumerMode::Worker, self::ELSEWHERE . 'bb');
+
+        $this->assertSame($this->at('-1 hour'), $this->format($this->statistics->lastSeenAt(QueueConsumerMode::Worker)), 'its pass is closed: only its last sign of life counts');
+    }
+
+    public function testAClaimOfAnotherModeIsNotTheConsumerAtWork(): void
+    {
+        $this->pass(QueueConsumerMode::Worker, '-3 hours', '-30 minutes', stopReason: '', holder: self::ELSEWHERE . 'aa');
+        $this->claimed('-30 minutes', QueueConsumerMode::Api, self::ELSEWHERE . 'bb');
+
+        $this->assertSame($this->at('-30 minutes'), $this->format($this->statistics->lastSeenAt(QueueConsumerMode::Worker)));
+        $this->assertNull($this->statistics->lastSeenAt(QueueConsumerMode::Api), 'it holds a claim, but no pass of its mode says whose');
+    }
+
     public function testFallbackSinceIsTheFirstFallbackPassAfterTheConsumerWasLastSeen(): void
     {
         $this->pass(QueueConsumerMode::Worker, '-3 hours', '-3 hours');

@@ -8,6 +8,7 @@ use Symfony\Component\Clock\MockClock;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\DependencyInjection\ServiceLocator;
+use Symfony\Component\Messenger\MessageBusInterface;
 use YesWiki\Admin\Message\CreateArchive;
 use YesWiki\Admin\Message\CreateArchiveHandler;
 use YesWiki\Admin\Message\RestoreArchive;
@@ -32,6 +33,7 @@ use YesWiki\Kernel\Service\Queue\QueueTransport;
 use YesWiki\Kernel\Service\ThrowableFormatter;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Test\Core\YesWikiTestCase;
+use YesWiki\Test\Kernel\QueueTestConsole;
 use YesWiki\Test\Kernel\QueueTestHolders;
 use YesWiki\Test\Kernel\QueueTestKit;
 
@@ -39,6 +41,7 @@ require_once 'tests/YesWikiTestCase.php';
 require_once 'tests/src/Kernel/QueueTestKit.php';
 require_once 'tests/src/Kernel/QueueTestConsole.php';
 require_once 'tests/src/Kernel/QueueTestHolders.php';
+require_once 'tests/src/Admin/AdminHandlersRefusingBus.php';
 
 /**
  * Backups and restores an admin starts go through the queue, and run in the admin's own request when the queue would otherwise wait for something to call it (messenger / scheduler, spec 9.5).
@@ -107,12 +110,6 @@ class ArchiveQueueTest extends YesWikiTestCase
         return ['request' => ['request'], 'api' => ['api']];
     }
 
-    /** @return array<string, array{string}> */
-    public static function queueModes(): array
-    {
-        return ['worker' => ['worker']];
-    }
-
     /** Spec 9.5: where the queue runs only when something calls it, the admin's backup does not wait for that; it runs once the admin has the response. */
     #[DataProvider('nonBlockingModes')]
     public function testStartingAnArchiveQueuesItAndPinsItInRequestMode(string $mode): void
@@ -138,24 +135,9 @@ class ArchiveQueueTest extends YesWikiTestCase
         $this->assertSame('handled', $this->stateOf($uid));
     }
 
-    /** Another visitor's end-of-request pass must not take the backup first: it would run it on a request's budget, with PHP's time limit still on. */
-    public function testAPinnedArchiveIsLeftToTheRequestThatPinnedIt(): void
+    public function testInWorkerModeItIsOnlyQueued(): void
     {
-        $archives = $this->archives('request');
-        $uid = $archives->startArchive();
-
-        $this->drain();
-        $this->assertSame([], $archives->archived);
-        $this->assertSame('pending', $this->stateOf($uid));
-
-        $this->endTheRequest();
-        $this->assertCount(1, $archives->archived);
-    }
-
-    #[DataProvider('queueModes')]
-    public function testInWorkerModeItIsOnlyQueued(string $mode): void
-    {
-        $archives = $this->archives($mode);
+        $archives = $this->archives('worker');
         $uid = $archives->startArchive();
 
         $this->endTheRequest();
@@ -168,10 +150,9 @@ class ArchiveQueueTest extends YesWikiTestCase
     }
 
     /** A worker that is gone would leave the backup to the end of visitors' requests, on a request's budget, where PHP cuts it: the admin's request runs it instead. */
-    #[DataProvider('queueModes')]
-    public function testABackupIsPinnedWhenTheWorkerIsGone(string $mode): void
+    public function testABackupIsPinnedWhenTheWorkerIsGone(): void
     {
-        $archives = $this->archives($mode, consumerSeen: false);
+        $archives = $this->archives('worker', consumerSeen: false);
         $uid = $archives->startArchive();
 
         $this->drain();
@@ -180,16 +161,6 @@ class ArchiveQueueTest extends YesWikiTestCase
         $this->endTheRequest();
         $this->assertCount(1, $archives->archived);
         $this->assertSame('handled', $this->stateOf($uid));
-    }
-
-    public function testABackupIsPinnedWhenTheWorkerWasLastSeenElevenMinutesAgo(): void
-    {
-        $archives = $this->archives('worker', consumerSeen: false);
-        QueueTestKit::recordPass($this->db, QueueConsumerMode::Worker, $this->at('-1 hour'), $this->at('-11 minutes'), '');
-        $archives->startArchive();
-
-        $this->endTheRequest();
-        $this->assertCount(1, $archives->archived);
     }
 
     public function testARestoreGoesThroughTheQueueToo(): void
@@ -203,6 +174,91 @@ class ArchiveQueueTest extends YesWikiTestCase
 
         $this->assertSame([['filename' => 'backup.zip', 'restoreFiles' => true, 'restoreDatabase' => false, 'rewriteUrls' => false, 'uid' => $uid]], $archives->restored);
         $this->assertSame('handled', $this->stateOf($uid));
+    }
+
+    /**
+     * @param list<mixed>       $include
+     * @param array<mixed>|null $only
+     * @param list<string>      $expectedInclude
+     * @param list<string>|null $expectedOnly
+     */
+    #[DataProvider('foldersAsTheApiMaySendThem')]
+    public function testOnlyTheNamesOfFoldersReachTheBackup(array $include, ?array $only, array $expectedInclude, ?array $expectedOnly): void
+    {
+        $archives = $this->archives('request');
+
+        $archives->startArchive(true, true, $include, [], $only);
+        $this->endTheRequest();
+
+        $this->assertSame($expectedInclude, $archives->archived[0]['foldersToInclude']);
+        $this->assertSame($expectedOnly, $archives->archived[0]['onlyFolders'], 'no list at all is not an empty one');
+    }
+
+    /** @return array<string, array{list<mixed>, array<mixed>|null, list<string>, list<string>|null}> */
+    public static function foldersAsTheApiMaySendThem(): array
+    {
+        return [
+            'what is not a name is dropped, a number is one' => [['custom', ['nested'], null, 5, 'files'], null, ['custom', '5', 'files'], null],
+            'an empty list of only folders is kept' => [[], [], [], []],
+            'only folders are cleaned the same way' => [[], ['custom', new \stdClass(), 'files'], [], ['custom', 'files']],
+        ];
+    }
+
+    public function testARestoreIsQueuedUnderTheNameOfTheFileNotItsPath(): void
+    {
+        $archives = $this->archives('request');
+        $this->storage->write(ArchiveService::PRIVATE_FOLDER_NAME_IN_ZIP . '/backup.zip', 'zip');
+
+        $archives->startRestore('../../elsewhere/backup.zip');
+        $this->endTheRequest();
+
+        $this->assertSame('backup.zip', $archives->restored[0]['filename'], 'a path in the request does not travel in the message');
+    }
+
+    /** The queue did not take the message: nothing was started, and nothing is left to follow. */
+    public function testABackupTheQueueRefusesIsNotStarted(): void
+    {
+        $bus = new AdminHandlersRefusingBus();
+        $archives = $this->archives('request', bus: $bus);
+
+        $uid = $archives->startArchive();
+
+        $this->assertSame('', $uid, 'no uid for the browser to follow');
+        $this->assertCount(1, $bus->asked);
+        $this->assertSame([], $this->info(), 'and none left in info.json');
+        $this->assertSame([], glob($this->root . '/' . ArchiveService::PROGRESS_FOLDER . '/*.log') ?: [], 'nor its progress files');
+        $this->assertSame(0, $this->statistics->pendingCount());
+    }
+
+    public function testARestoreTheQueueRefusesIsNotStarted(): void
+    {
+        $archives = $this->archives('request', bus: new AdminHandlersRefusingBus());
+        $this->storage->write(ArchiveService::PRIVATE_FOLDER_NAME_IN_ZIP . '/backup.zip', 'zip');
+
+        $this->assertSame('', $archives->startRestore('backup.zip'));
+        $this->assertSame([], $this->info());
+    }
+
+    /**
+     * A refused call (a remote wiki's `api/archives` arriving during the admin's backup) is not the run that set `archiving`: it must not lift it.
+     *
+     * Through the real archive(), not a failed message: whether the refusal lifts the status is archive()'s own.
+     */
+    public function testARefusedArchiveLeavesTheReadOnlyStatusOfTheRunThatIsUnderWay(): void
+    {
+        $archives = $this->archives('request');
+        $archives->real = true;
+        $this->setWikiStatus('archiving');
+        $output = '';
+
+        try {
+            $archives->archive($output);
+            $this->fail('a second backup was accepted while one is under way');
+        } catch (\Exception $refused) {
+            $this->assertStringContainsString(_t('AU_CANNOT_ARCHIVE'), $refused->getMessage());
+        }
+
+        $this->assertSame('archiving', $this->wikiStatus());
     }
 
     public function testRestoringAnArchiveThatIsNotThereQueuesNothing(): void
@@ -333,21 +389,33 @@ class ArchiveQueueTest extends YesWikiTestCase
     }
 
     /**
-     * R19: a backup the host killed (FPM's request_terminate_timeout, the OOM killer) leaves no process behind: its read-only status is lifted at once, not when its limit, hours away, has passed.
+     * R19, spec 9.5 and 7.2: a backup that was killed (by the host, PHP, or a limit that ran out) leaves the wiki read-only; the browser that follows it lifts that once the queue says killed.
+     *
+     * How the queue comes to say killed is its own (QueueStatisticsSeenTest, QueueConsumerTest): the backup only hears the state.
      */
-    public function testAnArchiveTheHostKilledReleasesTheReadOnlyStatusAtOnce(): void
+    #[DataProvider('waysToBeKilled')]
+    public function testAKilledArchiveReleasesTheReadOnlyStatus(string $mode, string $death): void
     {
-        $archives = $this->archives('request');
+        $archives = $this->archives($mode);
         $uid = $archives->startArchive();
-        $this->transport->claimAs(QueueConsumerMode::Request, 21600);
-        $this->assertNotNull($this->transport->getById($this->messageOf($uid)));
-        QueueTestHolders::hand($this->db, $this->schema, $this->messageOf($uid), QueueTestHolders::gone());
-        $this->setWikiStatus('archiving');
+        $this->dieAs($death, $this->messageOf($uid));
 
         $status = $archives->getUIDStatus($uid);
 
         $this->assertSame('killed', $status['state']);
+        $this->assertTrue($status['failed']);
+        $this->assertFalse($status['running']);
         $this->assertSame('running', $this->wikiStatus());
+    }
+
+    /** @return array<string, array{string, string}> */
+    public static function waysToBeKilled(): array
+    {
+        return [
+            'its host is gone' => ['request', 'host'],
+            'reaped by a pass' => ['worker', 'reaped'],
+            'past its limit before any pass' => ['request', 'limit'],
+        ];
     }
 
     /**
@@ -363,36 +431,6 @@ class ArchiveQueueTest extends YesWikiTestCase
             && $listener[0] instanceof ArchiveService
             && $listener[1] === 'releaseWhatAKilledRunLeft');
         $this->assertCount(1, $archives);
-    }
-
-    /** Spec 9.5 and 7.2: a run PHP or the server killed leaves the wiki read-only; the browser that follows it lifts that once the queue says killed. */
-    public function testAKilledArchiveReleasesTheReadOnlyStatus(): void
-    {
-        $archives = $this->archives('worker');
-        $uid = $archives->startArchive();
-        $this->takeAndDie($this->messageOf($uid));
-        $this->transport->reapKilled();
-
-        $status = $archives->getUIDStatus($uid);
-
-        $this->assertSame('killed', $status['state']);
-        $this->assertTrue($status['failed']);
-        $this->assertFalse($status['running']);
-        $this->assertSame('running', $this->wikiStatus());
-    }
-
-    /** In `request` mode, nothing reaps until a visit runs a pass. A claim past its limit is killed all the same. */
-    public function testAnArchivePastItsLimitIsKilledBeforeAnyPassReapsIt(): void
-    {
-        $archives = $this->archives('request');
-        $uid = $archives->startArchive();
-        $this->takeAndDie($this->messageOf($uid));
-
-        $status = $archives->getUIDStatus($uid);
-
-        $this->assertSame('killed', $status['state']);
-        $this->assertTrue($status['failed']);
-        $this->assertSame('running', $this->wikiStatus());
     }
 
     /**
@@ -472,65 +510,45 @@ class ArchiveQueueTest extends YesWikiTestCase
     }
 
     /**
-     * Only a killed backup can have left `archiving`: one that failed lifted it as it failed (archive()), and a restore never sets it.
+     * Only a killed backup can have left `archiving`: one that failed lifted it as it failed (archive()), a restore never sets it, and a run still going owns it.
      *
-     * A dead run nobody polled stays in info.json, and must not lift the status of a run nothing
+     * A run nobody polled stays in info.json, and must not lift the status of a run nothing
      * here follows -- a `core:archive` typed by hand -- the wiki would turn writable in the middle of it.
      */
-    public function testAFailedRestoreNobodyPolledLeavesTheStatusOfABackupTypedByHand(): void
-    {
-        $archives = $this->archives('request');
-        $this->storage->write(ArchiveService::PRIVATE_FOLDER_NAME_IN_ZIP . '/backup.zip', 'zip');
-        $archives->onRestore = static function (): void {
-            throw new \RuntimeException('half restored');
-        };
-        $uid = $archives->startRestore('backup.zip');
-        $this->endTheRequest();
-        $this->assertSame('failed', $this->stateOf($uid));
-
-        $this->setWikiStatus('archiving');
-
-        $this->assertTrue($archives->getArchivingStatus()['archiving']);
-        $this->assertSame('archiving', $this->wikiStatus());
-    }
-
-    public function testAFailedBackupNobodyPolledLeavesTheStatusOfABackupTypedByHand(): void
-    {
-        $archives = $this->archives('request');
-        $archives->onArchive = static function (): void {
-            throw new \RuntimeException('disk exploded');
-        };
-        $uid = $archives->startArchive();
-        $this->endTheRequest();
-        $this->assertSame('failed', $this->stateOf($uid));
-
-        $this->setWikiStatus('archiving');
-
-        $this->assertTrue($archives->getArchivingStatus()['archiving']);
-        $this->assertSame('archiving', $this->wikiStatus());
-    }
-
-    public function testAKilledRestoreLeavesTheStatusOfABackupTypedByHand(): void
+    #[DataProvider('runsThatLeaveTheStatus')]
+    public function testARunThatCannotHaveLeftTheStatusLeavesTheStatusOfABackupTypedByHand(string $run): void
     {
         $archives = $this->archives('worker');
         $this->storage->write(ArchiveService::PRIVATE_FOLDER_NAME_IN_ZIP . '/backup.zip', 'zip');
-        $uid = $archives->startRestore('backup.zip');
-        $this->takeAndDie($this->messageOf($uid));
+        switch ($run) {
+            case 'failed backup':
+                $archives->onArchive = static function (): void {
+                    throw new \RuntimeException('disk exploded');
+                };
+                $uid = $archives->startArchive();
+                $this->drain();
+                $this->assertSame('failed', $this->stateOf($uid));
+                $this->setWikiStatus('archiving');
+                break;
+            case 'killed restore':
+                $this->takeAndDie($this->messageOf($archives->startRestore('backup.zip')));
+                break;
+            case 'run still going':
+                $uid = $archives->startArchive();
+                $this->transport->claimAs(QueueConsumerMode::Worker, 3600);
+                $this->assertNotNull($this->transport->getById($this->messageOf($uid)));
+                $this->setWikiStatus('archiving');
+                break;
+        }
 
-        $this->assertTrue($archives->getArchivingStatus()['archiving'], 'takeAndDie() stands for the `core:archive` that set it');
+        $this->assertTrue($archives->getArchivingStatus()['archiving'], 'the status is the `core:archive` that set it');
         $this->assertSame('archiving', $this->wikiStatus());
     }
 
-    public function testTheArchivingStatusLeavesARunThatIsStillGoing(): void
+    /** @return array<string, array{string}> */
+    public static function runsThatLeaveTheStatus(): array
     {
-        $archives = $this->archives('worker');
-        $uid = $archives->startArchive();
-        $this->transport->claimAs(QueueConsumerMode::Worker, 3600);
-        $this->transport->getById($this->messageOf($uid));
-        $this->setWikiStatus('archiving');
-
-        $this->assertTrue($archives->getArchivingStatus()['archiving']);
-        $this->assertSame('archiving', $this->wikiStatus());
+        return ['failed backup' => ['failed backup'], 'killed restore' => ['killed restore'], 'run still going' => ['run still going']];
     }
 
     /** What a detached `core:archive` left in info.json before the update has no message to follow: it is forgotten. */
@@ -547,13 +565,19 @@ class ArchiveQueueTest extends YesWikiTestCase
         $this->assertSame('[]', $this->storage->read(ArchiveService::PROGRESS_FOLDER . '/info.json'));
     }
 
-    public function testTheArchivingStatusNoLongerAsksWhetherAProcessCanBeStarted(): void
+    /** Backups run in the queue's consumer, so whether this host can start a process of its own no longer decides whether it can back up. */
+    public function testTheArchivingStatusDoesNotAskWhetherAProcessCanBeStarted(): void
     {
-        $status = $this->archives('request')->getArchivingStatus();
+        $console = new QueueTestConsole();
+        $console->answer = static fn (): null => null;
+        $archives = $this->archives('request', console: $console);
 
+        $status = $archives->getArchivingStatus();
+
+        $this->assertTrue($status['canArchive'], 'a host that starts no process can still back up: nothing else than room and a writable folder is asked');
+        $this->assertSame([], $console->commands, 'and the status started none to find out');
         $this->assertArrayNotHasKey('canExec', $status);
         $this->assertArrayNotHasKey('callAsync', $status);
-        $this->assertArrayHasKey('canArchive', $status);
     }
 
     /** A backup in `failed` is not sent again from the jobs page: it would run with nothing following it, on a visitor's budget, and the backups page would lift its `archiving` mid-way. */
@@ -593,51 +617,13 @@ class ArchiveQueueTest extends YesWikiTestCase
         $this->assertSame(1, $this->statistics->failedCount());
     }
 
-    public function testCallArchiveAsyncIsGone(): void
-    {
-        require_once 'src/migrations/20261023130000_ArchivesNoLongerChooseHowTheyRun.php';
-        $configuration = new ConfigurationService();
-        $config = $configuration->getConfiguration($this->kit->configFile());
-        $config->load();
-        $config['archive'] = ['call_archive_async' => false, 'max_nb_files' => 4, 'preupdate_backup_activated' => true];
-        $this->assertTrue($configuration->write($config));
-
-        $this->runMigration();
-        $this->runMigration();
-
-        $config = $configuration->getConfiguration($this->kit->configFile());
-        $config->load();
-        $this->assertSame(['max_nb_files' => 4, 'preupdate_backup_activated' => true], $config['archive']);
-
-        $mentions = [];
-        foreach (['src', 'templates', 'javascripts'] as $folder) {
-            $files = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($folder, \FilesystemIterator::SKIP_DOTS));
-            foreach ($files as $path => $file) {
-                if ($file->isFile() && !str_contains($path, 'ArchivesNoLongerChooseHowTheyRun') && str_contains((string)file_get_contents($path), 'call_archive_async')) {
-                    $mentions[] = $path;
-                }
-            }
-        }
-        $this->assertSame([], $mentions, 'nothing reads, sets or offers the setting any more');
-    }
-
-    private function runMigration(): void
-    {
-        $services = $this->getWiki()->services;
-        $migration = new \ArchivesNoLongerChooseHowTheyRun();
-        $migration->setServices($services);
-        $migration->setDbService($services->get(DbService::class));
-        $migration->setParams($services->get(ParameterBagInterface::class));
-        $migration->run();
-    }
-
     /**
      * The service under test in that mode, on this test's queue, progress folder and configuration.
      *
      * In `worker`, the worker is seen at work a minute ago unless told otherwise:
      * a backup is left to a worker only while there is one.
      */
-    private function archives(string $mode, bool $consumerSeen = true): QueueArchiveService
+    private function archives(string $mode, bool $consumerSeen = true, ?MessageBusInterface $bus = null, ?ConsoleService $console = null): QueueArchiveService
     {
         putenv(QueueSettings::ENV_MODE . '=' . $mode);
         if ($consumerSeen && !QueueConsumerMode::from($mode)->isBudgeted()) {
@@ -648,14 +634,14 @@ class ArchiveQueueTest extends YesWikiTestCase
         $services = $this->getWiki()->services;
         $this->archives = new QueueArchiveService(
             new ConfigurationService(),
-            $services->get(ConsoleService::class),
+            $console ?? $services->get(ConsoleService::class),
             $services->get(DbService::class),
             $services->get(ParameterBagInterface::class),
             new HibernationService(new ParameterBag(['wiki_status' => 'running'])),
             $services->get(UrlFormatter::class),
             $this->storage,
             new LocalFiles(),
-            $this->bus,
+            $bus ?? $this->bus,
             $this->statistics,
         );
 
@@ -691,6 +677,23 @@ class ArchiveQueueTest extends YesWikiTestCase
     private function drain(): void
     {
         $this->consumer->drain(QueueConsumerMode::Api, $this->kit->budgets->forMode(QueueConsumerMode::Api, true), false);
+    }
+
+    /** @param 'host'|'reaped'|'limit' $death */
+    private function dieAs(string $death, int $messageId): void
+    {
+        if ($death === 'host') {
+            $this->transport->claimAs(QueueConsumerMode::Request, 21600);
+            $this->assertNotNull($this->transport->getById($messageId));
+            QueueTestHolders::hand($this->db, $this->schema, $messageId, QueueTestHolders::gone());
+            $this->setWikiStatus('archiving');
+
+            return;
+        }
+        $this->takeAndDie($messageId);
+        if ($death === 'reaped') {
+            $this->transport->reapKilled();
+        }
     }
 
     /** A consumer on another machine takes the message and dies with it: no ack, no failure, and its limit runs out. */
@@ -777,9 +780,14 @@ class QueueArchiveService extends ArchiveService
     public ?\Closure $onArchive = null;
     /** @var (\Closure(string): void)|null */
     public ?\Closure $onRestore = null;
+    /** Whether archive() is the real one, for a test of what it refuses. */
+    public bool $real = false;
 
     public function archive(&$output, bool $savefiles = true, bool $savedatabase = true, array $foldersToInclude = [], array $foldersToExclude = [], ?array $hideConfigValuesParams = null, string $uid = '', ?array $onlyFolders = null): string
     {
+        if ($this->real) {
+            return parent::archive($output, $savefiles, $savedatabase, $foldersToInclude, $foldersToExclude, $hideConfigValuesParams, $uid, $onlyFolders);
+        }
         $this->archived[] = compact('savefiles', 'savedatabase', 'foldersToInclude', 'foldersToExclude', 'uid', 'onlyFolders');
         if ($this->onArchive !== null) {
             ($this->onArchive)($uid);

@@ -4,7 +4,6 @@ namespace YesWiki\Test\Kernel;
 
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
-use Psr\Log\LoggerInterface;
 use Symfony\Component\Clock\MockClock;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 use Symfony\Component\Messenger\Envelope;
@@ -15,7 +14,6 @@ use YesWiki\Kernel\Queue\QueueConsumerMode;
 use YesWiki\Kernel\Queue\QueueJournalEntry;
 use YesWiki\Kernel\Queue\QueuePassReport;
 use YesWiki\Kernel\Service\DbService;
-use YesWiki\Kernel\Service\Journal;
 use YesWiki\Kernel\Service\JournalSchema;
 use YesWiki\Kernel\Service\Queue\QueueRecorder;
 use YesWiki\Kernel\Service\Queue\QueueSchema;
@@ -29,6 +27,7 @@ require_once 'tests/src/Kernel/QueueTestMessage.php';
 require_once 'tests/src/Kernel/QueueTestTask.php';
 require_once 'tests/src/Kernel/QueueTransportTest.php';
 require_once 'tests/src/Kernel/QueueTestKit.php';
+require_once 'tests/src/Kernel/QueueTestHolders.php';
 
 /** What the consumer writes about its passes and messages, and what the health checks and the admin page read back. */
 #[CoversClass(QueueRecorder::class)]
@@ -109,23 +108,45 @@ class QueueRecorderTest extends YesWikiTestCase
         $this->assertEqualsCanonicalizing(['message_id', 'duration_ms'], array_keys($this->context($handled)), 'a null is left out, never written');
     }
 
-    /** The queue's rows never reach stderr: the recorder is given no Journal nor any logger to write them through. */
-    public function testTheRecorderHasNoWayToTheServerLog(): void
+    /** The queue's rows never reach stderr: they are written to the table alone, whatever the severity of the run. */
+    public function testTheQueueRowsNeverReachTheServerLog(): void
     {
-        $constructor = (new \ReflectionClass(QueueRecorder::class))->getConstructor();
-        $this->assertNotNull($constructor);
+        $script = sys_get_temp_dir() . '/yw-recorder-' . bin2hex(random_bytes(4)) . '.php';
+        $database = sys_get_temp_dir() . '/yw-recorder-' . bin2hex(random_bytes(4)) . '.db';
+        file_put_contents($script, '<?php
+chdir(' . var_export((string)getcwd(), true) . ');
+require "vendor/autoload.php";
+use YesWiki\Kernel\Queue\QueueConsumerMode;
+use YesWiki\Kernel\Queue\QueuePassReport;
+use YesWiki\Kernel\Service\Queue\QueueRecorder;
 
-        foreach ($constructor->getParameters() as $parameter) {
-            $type = $parameter->getType();
-            $names = $type instanceof \ReflectionNamedType ? [$type->getName()]
-                : ($type instanceof \ReflectionUnionType || $type instanceof \ReflectionIntersectionType
-                    ? array_map(static fn (\ReflectionType $part): string => $part instanceof \ReflectionNamedType ? $part->getName() : (string)$part, $type->getTypes())
-                    : []);
-            foreach ($names as $name) {
-                $this->assertFalse(
-                    $name === Journal::class || $name === LoggerInterface::class || (class_exists($name) && is_a($name, LoggerInterface::class, true)),
-                    "\${$parameter->getName()} would let the recorder log through stderr"
-                );
+$db = new YesWiki\Kernel\Service\DbService(new Symfony\Component\DependencyInjection\ParameterBag\ParameterBag([
+    "db_driver" => "sqlite", "db_database" => ' . var_export($database, true) . ', "table_prefix" => "ywq_", "debug" => false,
+]));
+$journal = new YesWiki\Kernel\Service\JournalSchema($db);
+$journal->create();
+$recorder = new QueueRecorder($db, $journal, new Symfony\Component\Clock\MockClock("2026-10-23 12:00:00", "UTC"));
+$pass = $recorder->passStarted(QueueConsumerMode::Worker, null, false);
+$recorder->passHeartbeat($pass, 1, 10);
+$recorder->messageFinished(1, "T", "task", QueueRecorder::FAILED, QueueConsumerMode::Api, 0.0, "boom");
+$recorder->messageFinished(2, "T", null, QueueRecorder::KILLED, QueueConsumerMode::Api, 0.0, "gone");
+$recorder->messageIgnored(3, "T", "boom");
+$recorder->passFinished($pass, new QueuePassReport(1, 0, 10, QueuePassReport::EMPTY), 10);
+echo $db->scalar("SELECT COUNT(*) FROM {$journal->table()}");
+');
+
+        try {
+            $process = proc_open([PHP_BINARY, '-d', 'display_errors=0', $script], [1 => ['pipe', 'w'], 2 => ['pipe', 'w']], $pipes);
+            $this->assertIsResource($process);
+            $stdout = (string)stream_get_contents($pipes[1]);
+            $stderr = (string)stream_get_contents($pipes[2]);
+            proc_close($process);
+
+            $this->assertSame('', $stderr, 'the recorder wrote to stderr');
+            $this->assertSame('5', $stdout, 'a pass, two runs, the task\'s row and the ignored one are all in the table');
+        } finally {
+            foreach ([$script, $database, $database . '-wal', $database . '-shm'] as $file) {
+                @unlink($file);
             }
         }
     }
@@ -221,8 +242,9 @@ class QueueRecorderTest extends YesWikiTestCase
         $this->recorder->passStarted(QueueConsumerMode::Request, null, true);
         $this->recorder->passStarted(QueueConsumerMode::Request, null, false);
         $this->recorder->passStarted(QueueConsumerMode::Worker, null, false);
+        $this->recorder->passStarted(QueueConsumerMode::Api, null, false);
 
-        $this->assertSame(1, $this->statistics->consumerStarts(3600));
+        $this->assertSame(1, $this->statistics->consumerStarts(3600), 'only a worker is a consumer that started');
 
         $restarted = $this->recorder->passStarted(QueueConsumerMode::Worker, null, false);
         $this->recorder->passFinished($restarted, new QueuePassReport(0, 0, 10, QueuePassReport::CONFIG_CHANGED), 0);
@@ -266,13 +288,73 @@ class QueueRecorderTest extends YesWikiTestCase
 
         $this->assertSame([2.0], $this->statistics->visitorWaits(3600), 'only the closed passes a visitor waited for');
         $this->assertEquals(new \DateTimeImmutable('2026-10-23 12:00:02', new \DateTimeZone('UTC')), $this->statistics->lastActivityAt());
+        $this->assertSame([5, 4, 3, 2, 1], array_column($this->statistics->history(10), 'messageId'), 'a pass is not a run');
+
+        $this->clock->sleep(10);
+        $locked = $this->recorder->passStarted(QueueConsumerMode::Request, null, false);
+        $this->recorder->passFinished($locked, new QueuePassReport(0, 0, 0, QueuePassReport::LOCKED), 0);
+
+        $this->assertEquals(new \DateTimeImmutable('2026-10-23 12:00:02', new \DateTimeZone('UTC')), $this->statistics->lastActivityAt(), 'a pass that found the lock taken did no work');
     }
 
-    public function testARunsActionCarriesItsStatus(): void
+    public function testAClaimHeldNowIsActivityNow(): void
     {
-        $this->assertSame('queue.run.killed', QueueJournalEntry::run(QueueRecorder::KILLED));
-        $this->assertSame(QueueRecorder::KILLED, QueueJournalEntry::statusOf('queue.run.killed'));
-        $this->assertNull(QueueJournalEntry::statusOf(QueueJournalEntry::PASS), 'a pass is not a run');
+        $this->transport->send(new Envelope(new QueueTestMessage('one')));
+        $pass = $this->recorder->passStarted(QueueConsumerMode::Request, null, false);
+        $this->recorder->passFinished($pass, new QueuePassReport(0, 0, 0, QueuePassReport::EMPTY), 0);
+        $this->clock->sleep(100);
+        $this->assertEquals(new \DateTimeImmutable(self::START, new \DateTimeZone('UTC')), $this->statistics->lastActivityAt(), 'nothing is held: the last pass tells');
+
+        [$taken] = [...$this->transport->get()];
+
+        $this->assertEquals(new \DateTimeImmutable('2026-10-23 12:01:40', new \DateTimeZone('UTC')), $this->statistics->lastActivityAt(), 'a consumer holding a message is at work now');
+        $this->transport->ack($taken);
+        $this->assertEquals(new \DateTimeImmutable(self::START, new \DateTimeZone('UTC')), $this->statistics->lastActivityAt());
+    }
+
+    /**
+     * @return array<string, array{string, string}>
+     */
+    public static function levels(): array
+    {
+        return [
+            'handled' => [QueueRecorder::HANDLED, 'info'],
+            'retried' => [QueueRecorder::RETRIED, 'warning'],
+            'failed' => [QueueRecorder::FAILED, 'error'],
+            'killed' => [QueueRecorder::KILLED, 'error'],
+        ];
+    }
+
+    /** A run sits at the Journal level its outcome deserves, so that the admin filters tell a retry from a failure. */
+    #[DataProvider('levels')]
+    public function testARunIsAtTheLevelOfItsOutcome(string $status, string $level): void
+    {
+        $this->recorder->messageFinished(1, QueueTestMessage::class, null, $status, QueueConsumerMode::Request, 0.0, $status === QueueRecorder::HANDLED ? null : 'boom');
+
+        $this->assertSame($level, $this->db->scalar("SELECT level FROM {$this->journal->table()} WHERE action = ?", null, [QueueJournalEntry::run($status)]));
+    }
+
+    /** A type, a task or a label longer than the column is cut, not refused, and cut the same way each time it is looked up. */
+    public function testWhatIsLongerThanTheColumnIsCut(): void
+    {
+        $long = str_repeat('é', 300);
+        $cut = str_repeat('é', 191);
+        $task = new QueueTestTask($long, $long);
+
+        $this->recorder->taskDeclared($task, 600);
+        $this->recorder->messageFinished(1, $long, $long, QueueRecorder::FAILED, QueueConsumerMode::Request, 0.0, 'boom');
+        $this->recorder->messageFinished(2, $long, $long, QueueRecorder::FAILED, QueueConsumerMode::Request, 0.0, 'boom');
+        $this->recorder->taskDispatched($task);
+
+        $rows = $this->db->loadAll("SELECT action, target, context FROM {$this->journal->table()} ORDER BY id");
+        $this->assertSame(
+            [QueueJournalEntry::TASK_DECLARED, 'queue.run.failed', QueueJournalEntry::TASK_FINISHED, 'queue.run.failed', QueueJournalEntry::TASK_FINISHED, QueueJournalEntry::TASK_DISPATCHED],
+            array_column($rows, 'action')
+        );
+        $this->assertSame(array_fill(0, 6, $cut), array_column($rows, 'target'));
+        $this->assertSame($cut, $this->context($rows[0])['label']);
+        $this->assertSame(2, $this->context($rows[4])['consecutive_failures'], 'the second failure finds the first by the cut id');
+        $this->assertSame(600, $this->context($rows[5])['every_seconds'], 'the dispatch finds the declared period by the cut id');
     }
 
     public function testAPassIsOpenUntilItFinishes(): void
@@ -424,6 +506,50 @@ class QueueRecorderTest extends YesWikiTestCase
         $this->assertSame(0, $this->statistics->pendingCount());
     }
 
+    public function testOnlyAClaimedMessageOfTheDefaultQueueIsInProgress(): void
+    {
+        $this->transport->send(new Envelope(new QueueTestMessage('claimed')));
+        $this->transport->send(new Envelope(new QueueTestMessage('waiting')));
+        $this->assertSame(0, $this->statistics->inProgressCount());
+
+        $failed = (int)$this->transport->send(new Envelope(new QueueTestMessage('failed')))->last(TransportMessageIdStamp::class)?->getId();
+        $this->transport->moveToFailed($failed, 'boom');
+        $killed = (int)$this->transport->send(new Envelope(new QueueTestMessage('killed')))->last(TransportMessageIdStamp::class)?->getId();
+        QueueTestKit::failAsKilled($this->transport, $killed, QueueConsumerMode::Request);
+        [$taken] = [...$this->transport->get()];
+
+        $this->assertSame(1, $this->statistics->inProgressCount(), 'neither the one waiting nor those in `failed`');
+        $this->transport->ack($taken);
+        $this->assertSame(0, $this->statistics->inProgressCount());
+    }
+
+    public function testFailedMessagesAreListedByTypeLeavingTheKilledOnes(): void
+    {
+        $fail = function (object $message): int {
+            $id = (int)$this->transport->send(new Envelope($message))->last(TransportMessageIdStamp::class)?->getId();
+            $this->transport->moveToFailed($id, 'boom');
+
+            return $id;
+        };
+        $first = $fail(new QueueTestMessage('a'));
+        $second = $fail(new QueueTestMessage('b'));
+        $third = $fail(new QueueTestMessage('c'));
+        $other = $fail(new QueueTestTask('d'));
+        $killed = (int)$this->transport->send(new Envelope(new QueueTestMessage('k')))->last(TransportMessageIdStamp::class)?->getId();
+        QueueTestKit::failAsKilled($this->transport, $killed, QueueConsumerMode::Api);
+
+        $this->assertSame([], $this->statistics->failedOfTypes([]));
+        $this->assertSame([$third, $second], array_column($this->statistics->failedOfTypes([QueueTestMessage::class], 2), 'id'), 'the newest first, up to the limit, the killed one left out');
+        $this->assertSame([$third, $second, $first], array_column($this->statistics->failedOfTypes([QueueTestMessage::class]), 'id'));
+        $this->assertSame([$other, $third, $second, $first], array_column($this->statistics->failedOfTypes([QueueTestMessage::class, QueueTestTask::class]), 'id'));
+        $this->assertSame([], $this->statistics->failedOfTypes(['Never\\Seen']));
+        $this->assertSame([
+            ['type' => QueueTestMessage::class, 'killedIn' => null, 'count' => 3],
+            ['type' => QueueTestMessage::class, 'killedIn' => 'api', 'count' => 1],
+            ['type' => QueueTestTask::class, 'killedIn' => null, 'count' => 1],
+        ], $this->statistics->failedGroups(), 'by type, and by the mode its consumer was killed in');
+    }
+
     public function testPendingCountAndOldest(): void
     {
         $this->assertNull($this->statistics->oldestPendingAt());
@@ -459,7 +585,25 @@ class QueueRecorderTest extends YesWikiTestCase
         $this->transport->moveToFailed($failed, 'undecodable: gone');
         $this->assertSame('failed', $this->statistics->messageState($failed));
 
+        $this->recorder->messageIgnored(52, QueueTestMessage::class, 'boom');
+        $this->assertSame('failed', $this->statistics->messageState(52), 'an acknowledged failure is still a failure');
+
         $this->assertSame('unknown', $this->statistics->messageState(999));
+    }
+
+    /** A delivery past its limit whose consumer is dead is killed, though no pass has moved it to `failed` yet. */
+    public function testAnAbandonedDeliveryPastItsLimitIsKilled(): void
+    {
+        $id = (int)$this->transport->send(new Envelope(new QueueTestMessage('one')))->last(TransportMessageIdStamp::class)?->getId();
+        $this->transport->claimAs(QueueConsumerMode::Request, 1);
+        [...$this->transport->get()];
+        QueueTestHolders::hand($this->db, $this->schema, $id, QueueTestHolders::elsewhere());
+
+        $this->clock->sleep(30);
+        $this->assertSame('running', $this->statistics->messageState($id), 'within its limit and the grace after it');
+
+        $this->clock->sleep(32);
+        $this->assertSame('killed', $this->statistics->messageState($id));
     }
 
     /**

@@ -356,6 +356,37 @@ class InstallWithoutABrowserTest extends YesWikiTestCase
     }
 
     /** The ticket's second Done-when, stated as an assertion: the controller handles the request and nothing else. */
+    /** private/.env states the queue's mode as YESWIKI_QUEUE_CONSUMER, the configuration knows it as queue_consumer: the installer must force the key the wiki reads. */
+    public function testTheEnvironmentFileForcesTheKeysTheWikiReads(): void
+    {
+        $dir = $this->instanceDir() . '-env';
+        mkdir($dir . '/private', 0o755, true);
+        file_put_contents($dir . '/private/.env', "YESWIKI_QUEUE_CONSUMER=worker\nYESWIKI_PAGES_PURGE_TIME=30\nADMIN_PASSWORD=never-in-the-configuration\n");
+        file_put_contents($dir . '/forced.php', "<?php\nrequire " . var_export(\YESWIKI_PROGRAM_DIR . '/src/bootstrap_paths.php', true) . ";\nrequire " . var_export(\YESWIKI_PROGRAM_DIR . '/vendor/autoload.php', true) . ";\necho json_encode(\\YesWiki\\Admin\\Service\\InstallationService::environmentForcedValues());\n");
+
+        try {
+            $out = [];
+            exec(
+                'cd ' . escapeshellarg($dir)
+                . ' && env -u YESWIKI_QUEUE_CONSUMER -u YESWIKI_PAGES_PURGE_TIME'
+                . ' YESWIKI_INSTANCE_DIR=' . escapeshellarg($dir)
+                . ' YESWIKI_PROGRAM_DIR=' . escapeshellarg(\YESWIKI_PROGRAM_DIR)
+                . ' ' . escapeshellarg(PHP_BINARY) . ' forced.php 2>&1',
+                $out
+            );
+            $forced = json_decode(implode("\n", $out), true);
+
+            $this->assertIsArray($forced, implode("\n", $out));
+            $this->assertSame('worker', $forced['queue_consumer'] ?? null, 'the variable is forced under the key the wiki reads');
+            $this->assertArrayNotHasKey('yeswiki_queue_consumer', $forced);
+            $this->assertArrayNotHasKey('admin_password', $forced, 'credentials of the automated installation never become configuration');
+        } finally {
+            @unlink($dir . '/private/.env');
+            @unlink($dir . '/private/.htaccess');
+            $this->removeInstance($dir);
+        }
+    }
+
     public function testTheControllerHoldsNoInstallLogic(): void
     {
         $controller = new \ReflectionClass(InstallationController::class);

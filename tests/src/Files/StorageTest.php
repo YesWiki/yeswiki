@@ -6,6 +6,9 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use YesWiki\Files\Exception\StorageException;
 use YesWiki\Files\Service\Storage;
+use YesWiki\Kernel\Service\Queue\QueueConsumer;
+use YesWiki\Kernel\Service\Queue\QueueFallback;
+use YesWiki\Kernel\Service\Queue\QueueScheduleTicker;
 
 /** Ticket 41: the path decides the tier, an unknown prefix is refused, and only a derived artefact may fail quietly (ADR-0022). */
 class StorageTest extends TestCase
@@ -45,7 +48,10 @@ class StorageTest extends TestCase
             'the search index is runtime' => ['private/search-indexes/pages/index', Storage::RUNTIME_TIER],
             'the compiled container is runtime' => ['cache/container/prod/X.php', Storage::RUNTIME_TIER],
             'compiled twig is runtime' => ['cache/templates/ab/cd.php', Storage::RUNTIME_TIER],
-            'a lock is runtime' => ['cache/queue-pass.lock', Storage::RUNTIME_TIER],
+            'a lock is runtime' => ['cache/anything.lock', Storage::RUNTIME_TIER],
+            'the queue pass lock is runtime' => [QueueConsumer::PASS_LOCK, Storage::RUNTIME_TIER],
+            'the queue schedule lock is runtime' => [QueueScheduleTicker::LOCK, Storage::RUNTIME_TIER],
+            'the queue fallback stamp is runtime' => [QueueFallback::CHECK_STAMP, Storage::RUNTIME_TIER],
             'extensions are runtime' => ['custom/extensions/lms/index.php', Storage::RUNTIME_TIER],
             'the config is runtime' => ['yeswiki.config.php', Storage::RUNTIME_TIER],
         ];

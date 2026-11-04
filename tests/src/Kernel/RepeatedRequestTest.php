@@ -188,6 +188,19 @@ class RepeatedRequestTest extends YesWikiTestCase
         );
     }
 
+    /** The queue's end-of-request pass runs on a request's time limit, which a pinned run lifts: each request of a worker gets its own back, after the response. */
+    public function testTheWorkerGivesEachRequestItsTimeLimitBackAfterTheQueueRan(): void
+    {
+        $worker = (string)file_get_contents(\YESWIKI_PROGRAM_DIR . '/worker.php');
+
+        $this->assertMatchesRegularExpression('/servedByWorker\(\);.*while \(/s', $worker, 'the trigger is told it runs under a worker before the loop');
+        $this->assertMatchesRegularExpression(
+            '/frankenphp_handle_request\(\$handler\);\s*\$queueTrigger->afterResponse\(\);.*?set_time_limit\(\$timeLimit\)/s',
+            $worker,
+            'the queue runs after the response, then the time limit is set back before the next request'
+        );
+    }
+
     /** Anything derived from the request has to be derived again for the next one. */
     public function testTheRuntimeRereadsEachRequest(): void
     {
@@ -237,6 +250,7 @@ class RepeatedRequestTest extends YesWikiTestCase
         $this->assertContains(\YesWiki\Render\Service\GraphicalElementState::class, $scoped);
         $this->assertContains(\YesWiki\Kernel\Service\Queue\QueueBudgetContext::class, $scoped);
         $this->assertContains(\YesWiki\Kernel\Service\Queue\QueueRequestTrigger::class, $scoped);
+        $this->assertContains(\YesWiki\Kernel\Service\Queue\QueueFallback::class, $scoped);
     }
 
     /**

@@ -143,6 +143,51 @@ class QueueRequestTriggerTest extends YesWikiTestCase
         $this->assertStringContainsString('OK (1 test', $phpunit->getOutput(), 'the test ran, it was not filtered out');
     }
 
+    /** The visitor's session is released before the response leaves and before any handler runs: a pass must not lock the next request of the same visitor. */
+    public function testTheSessionIsReleasedBeforeTheResponseLeavesAndTheHandlersRun(): void
+    {
+        $hadSession = session_status() === PHP_SESSION_ACTIVE;
+        if ($hadSession) {
+            session_write_close();
+        }
+        @session_start();
+        if (session_status() !== PHP_SESSION_ACTIVE) {
+            $this->markTestSkipped('a session cannot be opened here');
+        }
+        $this->send('m0');
+        $sessionAt = [];
+        $this->behaviour = static function () use (&$sessionAt): void {
+            $sessionAt['handler'] = session_status();
+        };
+        putenv(QueueSettings::ENV_MODE . '=request');
+        $trigger = $this->kit->requestTrigger(
+            new QueueSettings(new ParameterBag([]), static fn (): array => []),
+            $this->console,
+            static function () use (&$sessionAt): bool {
+                $sessionAt['response'] = session_status();
+
+                return true;
+            },
+            self::wikiDir(),
+            new HibernationService(new ParameterBag(['wiki_status' => 'running'])),
+        );
+
+        try {
+            $trigger->afterResponse();
+        } finally {
+            if (session_status() === PHP_SESSION_ACTIVE) {
+                session_write_close();
+            }
+            if ($hadSession) {
+                @session_start();
+            }
+        }
+
+        $this->assertSame(['m0'], $this->handled);
+        $this->assertNotSame(PHP_SESSION_ACTIVE, $sessionAt['response'] ?? PHP_SESSION_ACTIVE, 'released before the response is handed over');
+        $this->assertNotSame(PHP_SESSION_ACTIVE, $sessionAt['handler'] ?? PHP_SESSION_ACTIVE, 'and while the handlers run');
+    }
+
     /**
      * On mod_php, CGI or `php -S` the response is still being written while the pass runs: an `echo` or a displayed warning would end up in the page, or break an API's JSON.
      *

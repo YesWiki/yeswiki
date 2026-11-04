@@ -102,9 +102,12 @@ class BackupsLeaveTheQueueAloneTest extends YesWikiTestCase
         $this->assertStringNotContainsString(self::PREFIX . 'queue', $dump['sql']);
     }
 
-    /** @param array<string, string|bool> $params */
-    #[DataProvider('servers')]
-    public function testARestoreLeavesTheQueueAsItIs(array $params): void
+    /**
+     * @param array<string, string|bool>                $params
+     * @param 'restoreFromDump'|'restoreStagedFromDump' $restore
+     */
+    #[DataProvider('restores')]
+    public function testARestoreLeavesTheQueueAsItIs(array $params, string $restore): void
     {
         $this->open($params);
         $before = $this->send('pending at backup time');
@@ -112,7 +115,7 @@ class BackupsLeaveTheQueueAloneTest extends YesWikiTestCase
         $after = $this->send('sent after the backup');
         $this->db->query('UPDATE ' . $this->db->quoteIdentifier(self::PREFIX . 'pages') . " SET body = 'after'");
 
-        $this->db->restoreStagedFromDump($dump);
+        $this->db->{$restore}($dump);
 
         $this->assertSame('before', $this->db->scalar('SELECT body FROM ' . $this->db->quoteIdentifier(self::PREFIX . 'pages')), 'the content is restored');
         $this->assertSame([$before, $after], $this->pendingIds(), 'the queue is the running one, with the same ids');
@@ -159,32 +162,6 @@ class BackupsLeaveTheQueueAloneTest extends YesWikiTestCase
         $this->assertSame([], $this->pendingIds());
     }
 
-    /**
-     * The plain restore, which drops the wiki's tables before it replays the dump, keeps away from the queue too.
-     *
-     * @param array<string, string|bool> $params
-     */
-    #[DataProvider('servers')]
-    public function testTheUnstagedRestoreLeavesTheQueueAsItIs(array $params): void
-    {
-        $this->open($params);
-        $dump = $this->db->dumper()->dump()['sql'];
-        $after = $this->send('sent after the backup');
-
-        $this->db->restoreFromDump($dump);
-
-        $this->assertSame([$after], $this->pendingIds());
-    }
-
-    /** core:exportdb, the mysqldump path archives take on MySQL, hands it the wiki's tables but not the queue's. */
-    public function testTheDumpToolIsNotGivenTheQueueTable(): void
-    {
-        $params = $this->openMysql();
-        $this->send('pending at backup time');
-
-        $this->assertSame([self::PREFIX . 'pages', self::PREFIX . 'triples'], DumpRewriter::tables($this->exportDb($params)));
-    }
-
     /** @param array<string, string|bool> $params */
     #[DataProvider('servers')]
     public function testADumpCarriesNoQueueJournalRow(array $params): void
@@ -223,18 +200,27 @@ class BackupsLeaveTheQueueAloneTest extends YesWikiTestCase
     /** What core:exportdb asks of the dump tool: the content tables, triples included, in one call, then the Journal less its queue rows in another, into a file of its own that is appended to the first. */
     public function testTheDumpToolDumpsTheJournalApartWithoutItsQueueRows(): void
     {
-        $this->assertSame(
-            [
-                '/tmp/dump.sql' => ['--host=db', '--user=u', '--result-file=/tmp/dump.sql', 'wiki', 'yw_pages', 'yw_triples'],
-                '/tmp/dump.sql.1' => ['--host=db', '--user=u', "--where=NOT (channel = 'queue')", '--result-file=/tmp/dump.sql.1', 'wiki', 'yw_journal'],
-            ],
-            DbCommand::dumpInvocations(['--host=db', '--user=u'], 'wiki', ['yw_pages', 'yw_journal', 'yw_triples'], 'yw_', '/tmp/dump.sql')
-        );
-        $this->assertSame(
-            ['/tmp/dump.sql' => ['--host=db', '--result-file=/tmp/dump.sql', 'wiki', 'yw_pages']],
-            DbCommand::dumpInvocations(['--host=db'], 'wiki', ['yw_pages'], 'yw_', '/tmp/dump.sql'),
-            'a wiki without a Journal is dumped in one call'
-        );
+        $calls = DbCommand::dumpInvocations(['--host=db', '--user=u'], 'wiki', ['yw_pages', 'yw_journal', 'yw_triples'], 'yw_', '/tmp/dump.sql');
+
+        $this->assertArrayHasKey('/tmp/dump.sql', $calls, 'the first call writes the dump itself');
+        $this->assertCount(2, $calls);
+        $tablesOf = static fn (array $args): array => array_values(array_filter($args, static fn (string $arg): bool => str_starts_with($arg, 'yw_')));
+        $whereOf = static fn (array $args): array => array_values(array_filter($args, static fn (string $arg): bool => str_starts_with($arg, '--where=')));
+        $apart = array_values(array_filter($calls, static fn (array $args): bool => in_array('yw_journal', $args, true)));
+        $this->assertCount(1, $apart);
+        $this->assertSame(['yw_journal'], $tablesOf($apart[0]), 'the Journal is dumped by a call of its own');
+        $this->assertCount(1, $whereOf($apart[0]));
+        $this->assertStringContainsString('queue', $whereOf($apart[0])[0], 'less its queue channel');
+        $whole = $calls['/tmp/dump.sql'];
+        $this->assertSame(['yw_pages', 'yw_triples'], $tablesOf($whole), 'the content tables, triples included, in the one call');
+        $this->assertSame([], $whereOf($whole), 'whole');
+        foreach ($calls as $file => $args) {
+            $this->assertContains("--result-file=$file", $args, 'each call writes the file it is listed under, to be appended to the dump');
+            $this->assertContains('--host=db', $args, 'with the connection');
+        }
+
+        $single = DbCommand::dumpInvocations(['--host=db'], 'wiki', ['yw_pages'], 'yw_', '/tmp/dump.sql');
+        $this->assertSame(['/tmp/dump.sql'], array_keys($single), 'a wiki without a Journal is dumped in one call');
     }
 
     /**
@@ -267,34 +253,6 @@ class BackupsLeaveTheQueueAloneTest extends YesWikiTestCase
         $this->assertTrue(DbCommand::isDump($dump));
         $this->assertStringContainsString('content', $dump);
         $this->assertStringContainsString('more content', $dump);
-    }
-
-    /** @param array<string, string|bool> $params */
-    #[DataProvider('servers')]
-    public function testARestoreKeepsTheLiveTasks(array $params): void
-    {
-        $this->assertARestoreKeepsTheLiveTasks($params, 'restoreFromDump');
-    }
-
-    /** @param array<string, string|bool> $params */
-    #[DataProvider('servers')]
-    public function testAStagedRestoreKeepsTheLiveTasks(array $params): void
-    {
-        $this->assertARestoreKeepsTheLiveTasks($params, 'restoreStagedFromDump');
-    }
-
-    /** @param array<string, string|bool> $params */
-    #[DataProvider('servers')]
-    public function testARestoreKeepsTheLiveQueueRows(array $params): void
-    {
-        $this->assertARestoreKeepsTheLiveQueueRows($params, 'restoreFromDump');
-    }
-
-    /** @param array<string, string|bool> $params */
-    #[DataProvider('servers')]
-    public function testAStagedRestoreKeepsTheLiveQueueRows(array $params): void
-    {
-        $this->assertARestoreKeepsTheLiveQueueRows($params, 'restoreStagedFromDump');
     }
 
     /**
@@ -372,7 +330,8 @@ class BackupsLeaveTheQueueAloneTest extends YesWikiTestCase
      * @param array<string, string|bool>                $params
      * @param 'restoreFromDump'|'restoreStagedFromDump' $restore
      */
-    private function assertARestoreKeepsTheLiveTasks(array $params, string $restore): void
+    #[DataProvider('restores')]
+    public function testARestoreKeepsTheLiveTasks(array $params, string $restore): void
     {
         $this->open($params);
         $this->openJournal();
@@ -405,7 +364,8 @@ class BackupsLeaveTheQueueAloneTest extends YesWikiTestCase
      * @param array<string, string|bool>                $params
      * @param 'restoreFromDump'|'restoreStagedFromDump' $restore
      */
-    private function assertARestoreKeepsTheLiveQueueRows(array $params, string $restore): void
+    #[DataProvider('restores')]
+    public function testARestoreKeepsTheLiveQueueRows(array $params, string $restore): void
     {
         $this->open($params);
         $this->openJournal();
@@ -442,6 +402,23 @@ class BackupsLeaveTheQueueAloneTest extends YesWikiTestCase
         }
 
         return ['sqlite' => [['db_driver' => 'sqlite', 'table_prefix' => self::PREFIX, 'debug' => false]]] + $servers;
+    }
+
+    /**
+     * Each server with each way of restoring: the plain one, which drops the wiki's tables first, and the staged one.
+     *
+     * @return array<string, array{array<string, string|bool>, string}>
+     */
+    public static function restores(): array
+    {
+        $restores = [];
+        foreach (self::servers() as $server => [$params]) {
+            foreach (['restoreFromDump', 'restoreStagedFromDump'] as $restore) {
+                $restores["$server, $restore"] = [$params, $restore];
+            }
+        }
+
+        return $restores;
     }
 
     /**

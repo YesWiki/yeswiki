@@ -8,12 +8,14 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 use Symfony\Component\DependencyInjection\ServiceLocator;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Route;
 use YesWiki\Core\ApiResponse;
 use YesWiki\Kernel\Api\QueueApiController;
 use YesWiki\Kernel\Service\CurrentRequest;
 use YesWiki\Kernel\Service\Queue\QueueBudgetFactory;
 use YesWiki\Kernel\Service\Queue\QueueConsumer;
 use YesWiki\Kernel\Service\Queue\QueueSettings;
+use YesWiki\Kernel\Service\RouteProvider;
 use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';
@@ -29,12 +31,27 @@ class QueueApiControllerTest extends YesWikiTestCase
 
     protected function setUp(): void
     {
+        // The wiki loads its configuration before the kit points YESWIKI_CONFIG_FILE at its own.
+        $this->getWiki();
         $this->kit = new QueueTestKit();
     }
 
     protected function tearDown(): void
     {
         $this->kit->dispose();
+    }
+
+    /** The route is what makes the `api` mode work for a cron that is nobody: public, and reachable by both verbs a cron service can send. */
+    public function testTheRouteIsPublicAndTakesGetAndPost(): void
+    {
+        $routes = array_values(array_filter(
+            $this->getWiki()->services->get(RouteProvider::class)->get()->all(),
+            static fn (Route $route): bool => $route->getPath() === '/api/queue/consume'
+        ));
+
+        $this->assertCount(1, $routes);
+        $this->assertEqualsCanonicalizing(['GET', 'POST'], $routes[0]->getMethods());
+        $this->assertSame(['public'], (array)$routes[0]->getOption('acl'), 'the secret is the guard, not a login');
     }
 
     public function testWrongSecretIs401(): void

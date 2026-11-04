@@ -216,13 +216,13 @@ class JournalTest extends YesWikiTestCase
     }
 
     /** A queue row dated in UTC, by PHP: the channel's rows are never dated by the database's clock. */
-    private function insertQueueRow(string $action, string $at, string $lastAt, string $target = ''): int
+    private function insertQueueRow(string $action, string $at, string $lastAt, string $target = '', JournalChannel $channel = JournalChannel::Queue): int
     {
-        return $this->insertQueueRowOn(self::db(), self::table(), $action, $at, $lastAt, $target);
+        return $this->insertQueueRowOn(self::db(), self::table(), $action, $at, $lastAt, $target, $channel);
     }
 
     /** The same row in that database's Journal, and the id it was given. */
-    private function insertQueueRowOn(DbService $db, string $table, string $action, string $at, string $lastAt, string $target = ''): int
+    private function insertQueueRowOn(DbService $db, string $table, string $action, string $at, string $lastAt, string $target = '', JournalChannel $channel = JournalChannel::Queue): int
     {
         $columns = implode(', ', array_map(
             fn (string $column): string => $db->quoteIdentifier($column),
@@ -230,7 +230,7 @@ class JournalTest extends YesWikiTestCase
         ));
         $db->query(
             "INSERT INTO {$table} ({$columns}) VALUES (?, ?, 1, ?, 'info', '', ?, ?)",
-            [$at, $lastAt, JournalChannel::Queue->value, $action, $target]
+            [$at, $lastAt, $channel->value, $action, $target]
         );
 
         return $db->lastInsertId();
@@ -241,7 +241,8 @@ class JournalTest extends YesWikiTestCase
         return gmdate('Y-m-d H:i:s', (int)strtotime($offset));
     }
 
-    private function pruneWithQueueRetention(?int $days): void
+    /** @return int how many rows the prune removed, all channels together */
+    private function pruneWithQueueRetention(?int $days): int
     {
         $config = self::getWiki()->services->get(RuntimeConfig::class);
         $before = $config[Journal::QUEUE_PURGE_SETTING];
@@ -249,7 +250,7 @@ class JournalTest extends YesWikiTestCase
             $config[Journal::QUEUE_PURGE_SETTING] = $days;
         }
         try {
-            self::getWiki()->services->get(Journal::class)->prune();
+            return self::getWiki()->services->get(Journal::class)->prune();
         } finally {
             if ($before === null) {
                 $config->offsetUnset(Journal::QUEUE_PURGE_SETTING);
@@ -261,17 +262,32 @@ class JournalTest extends YesWikiTestCase
 
     public function testQueueRowsArePrunedAfterTheirRetention(): void
     {
+        $this->pruneWithQueueRetention(7); // what the dev wiki already holds past its retention is not this test's
         $this->insertQueueRow(self::FIXTURE . '.eight', self::utcAgo('-8 days'), self::utcAgo('-8 days'));
         $this->insertQueueRow(self::FIXTURE . '.six', self::utcAgo('-6 days'), self::utcAgo('-6 days'));
 
-        $this->pruneWithQueueRetention(7);
+        $removed = $this->pruneWithQueueRetention(7);
 
         $this->assertCount(0, $this->rows(self::FIXTURE . '.eight'), 'past the seven days of the default');
         $this->assertCount(1, $this->rows(self::FIXTURE . '.six'));
+        $this->assertSame(1, $removed, 'the prune says how many it removed');
 
-        $this->pruneWithQueueRetention(2);
+        $removed = $this->pruneWithQueueRetention(2);
 
         $this->assertCount(0, $this->rows(self::FIXTURE . '.six'), 'past journal_queue_purge_time');
+        $this->assertGreaterThanOrEqual(1, $removed);
+    }
+
+    public function testAnAuditRowOfATasksActionDoesNotSpareTheQueuesLastRow(): void
+    {
+        $target = self::FIXTURE . '-task';
+        $queued = $this->insertQueueRow(QueueJournalEntry::TASK_DISPATCHED, self::utcAgo('-30 days'), self::utcAgo('-30 days'), $target);
+        $audited = $this->insertQueueRow(QueueJournalEntry::TASK_DISPATCHED, self::utcAgo('-400 days'), self::utcAgo('-400 days'), $target, JournalChannel::Audit);
+
+        $this->pruneWithQueueRetention(7);
+
+        $this->assertCount(0, self::db()->loadAll('SELECT id FROM ' . self::table() . ' WHERE id = ?', [$audited]), 'the audit trail is pruned by its own retention');
+        $this->assertCount(1, self::db()->loadAll('SELECT id FROM ' . self::table() . ' WHERE id = ?', [$queued]), 'the queue\'s last row of the task is the last of its own channel');
     }
 
     public function testAZeroRetentionKeepsTheQueueRows(): void

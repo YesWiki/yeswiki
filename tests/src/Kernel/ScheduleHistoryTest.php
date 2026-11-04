@@ -3,7 +3,7 @@
 namespace YesWiki\Test\Kernel;
 
 use PHPUnit\Framework\Attributes\CoversClass;
-use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\DataProviderExternal;
 use Symfony\Component\Clock\MockClock;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 use YesWiki\Kernel\Queue\TaskHistory;
@@ -60,7 +60,7 @@ class ScheduleHistoryTest extends YesWikiTestCase
     }
 
     /** @param array<string, string|bool> $params */
-    #[DataProvider('servers')]
+    #[DataProviderExternal(QueueTransportTest::class, 'servers')]
     public function testATaskNeverSeenHasNoHistory(array $params): void
     {
         $this->on($params);
@@ -70,7 +70,7 @@ class ScheduleHistoryTest extends YesWikiTestCase
     }
 
     /** @param array<string, string|bool> $params */
-    #[DataProvider('servers')]
+    #[DataProviderExternal(QueueTransportTest::class, 'servers')]
     public function testTheAnchorIsTheLastDispatchElseTheDeclaration(array $params): void
     {
         $this->on($params);
@@ -102,7 +102,7 @@ class ScheduleHistoryTest extends YesWikiTestCase
      *
      * @param array<string, string|bool> $params
      */
-    #[DataProvider('servers')]
+    #[DataProviderExternal(QueueTransportTest::class, 'servers')]
     public function testThePeriodIsTheOneTheLastRowCarries(array $params): void
     {
         $this->on($params);
@@ -124,8 +124,41 @@ class ScheduleHistoryTest extends YesWikiTestCase
         $this->assertNull($run->everySeconds, 'a task whose rows say nothing of its period has none');
     }
 
+    /**
+     * The label and the period come from the last dispatch, else from the declaration: a task renamed since it appeared goes by its new name.
+     *
+     * @param array<string, string|bool> $params
+     */
+    #[DataProviderExternal(QueueTransportTest::class, 'servers')]
+    public function testTheLabelIsTheOneTheLastDispatchCarries(array $params): void
+    {
+        $this->on($params);
+
+        $this->recorder->taskDeclared(new QueueTestTask('x', 'Old name'));
+        $declared = $this->history->of('x');
+        $this->assertSame('Old name', $declared?->label);
+
+        $this->recorder->taskDispatched(new QueueTestTask('x', 'New name'));
+
+        $this->assertSame('New name', $this->history->of('x')?->label);
+    }
+
+    /** SQLite only: MySQL and PostgreSQL refuse to store a context that is not JSON, so there it cannot happen. */
+    public function testARowWhoseContextIsNotJsonSaysNothingAndBreaksNothing(): void
+    {
+        $this->journalRow('queue', 'z', 'not json');
+
+        $run = $this->history->of('z');
+
+        $this->assertNotNull($run, 'the task is still known');
+        $this->assertNull($run->lastStatus);
+        $this->assertNull($run->lastError);
+        $this->assertSame(0, $run->consecutiveFailures);
+        $this->assertNull($run->label);
+    }
+
     /** @param array<string, string|bool> $params */
-    #[DataProvider('servers')]
+    #[DataProviderExternal(QueueTransportTest::class, 'servers')]
     public function testConsecutiveFailuresCountFromTheLastHandledRun(array $params): void
     {
         $this->on($params);
@@ -136,40 +169,31 @@ class ScheduleHistoryTest extends YesWikiTestCase
         $failing = $this->history->of('x');
         $this->assertNotNull($failing);
         $this->assertSame(3, $failing->consecutiveFailures, 'a retry changes nothing, a failure or a kill adds one');
+        $this->assertSame(QueueRecorder::KILLED, $failing->lastStatus);
 
+        $this->recorder->taskFinished('x', QueueRecorder::RETRIED, 'again');
+        $retried = $this->history->of('x');
+        $this->assertNotNull($retried);
+        $this->assertSame([3, QueueRecorder::RETRIED, 'again'], [$retried->consecutiveFailures, $retried->lastStatus, $retried->lastError], 'an attempt that will be retried does not end the run');
+
+        $this->clock->sleep(90);
         $this->recorder->taskFinished('x', QueueRecorder::HANDLED, null);
 
         $handled = $this->history->of('x');
         $this->assertNotNull($handled);
+        $this->assertSame('x', $handled->taskId);
+        $this->assertEquals($this->clock->now(), $handled->lastFinishedAt);
         $this->assertSame(0, $handled->consecutiveFailures);
         $this->assertSame(QueueRecorder::HANDLED, $handled->lastStatus);
         $this->assertNull($handled->lastError);
         $this->assertNull($handled->declaredAt);
         $this->assertNull($handled->label, 'a task whose rows say nothing of its label has none');
         $this->assertNull($handled->anchor());
+        $this->assertNull($handled->lastDispatchedAt);
     }
 
     /** @param array<string, string|bool> $params */
-    #[DataProvider('servers')]
-    public function testTheLastRunSaysHowItEnded(array $params): void
-    {
-        $this->on($params);
-        $this->clock->sleep(90);
-
-        $this->recorder->taskFinished('x', QueueRecorder::FAILED, 'boom');
-
-        $run = $this->history->of('x');
-        $this->assertNotNull($run);
-        $this->assertSame('x', $run->taskId);
-        $this->assertSame(QueueRecorder::FAILED, $run->lastStatus);
-        $this->assertSame('boom', $run->lastError);
-        $this->assertSame(1, $run->consecutiveFailures);
-        $this->assertEquals($this->clock->now(), $run->lastFinishedAt);
-        $this->assertNull($run->lastDispatchedAt);
-    }
-
-    /** @param array<string, string|bool> $params */
-    #[DataProvider('servers')]
+    #[DataProviderExternal(QueueTransportTest::class, 'servers')]
     public function testAllAnswersEachTaskOnceByItsId(array $params): void
     {
         $this->on($params);
@@ -189,16 +213,6 @@ class ScheduleHistoryTest extends YesWikiTestCase
         $this->assertNull($all['b']->lastDispatchedAt);
         $this->assertNull($all['b']->lastStatus);
         $this->assertSame(0, $all['b']->consecutiveFailures);
-    }
-
-    /**
-     * SQLite in a file of its own, and the development servers when they are there.
-     *
-     * @return array<string, array{array<string, string|bool>}>
-     */
-    public static function servers(): array
-    {
-        return ['sqlite' => [['db_driver' => 'sqlite']]] + QueueTransportTest::realServers();
     }
 
     /** @param array<string, string|bool> $params */
@@ -233,10 +247,16 @@ class ScheduleHistoryTest extends YesWikiTestCase
     /** An audit row named like a task, which the history must not take for one. */
     private function journalRowOfAnotherChannel(): void
     {
+        $this->journalRow('audit', 'intruder', '{"status":"handled"}');
+    }
+
+    /** A `queue.task.finished` row of that channel, with that raw context. */
+    private function journalRow(string $channel, string $target, string $context): void
+    {
         $columns = implode(', ', array_map($this->db->quoteIdentifier(...), ['at', 'last_at', 'repeat', 'channel', 'level', 'actor', 'action', 'target', 'context']));
         $this->db->query(
             "INSERT INTO {$this->journal->table()} ({$columns}) VALUES (?, ?, 1, ?, ?, ?, ?, ?, ?)",
-            [self::START, self::START, 'audit', 'info', 'admin', 'queue.task.finished', 'intruder', '{"status":"handled"}']
+            [self::START, self::START, $channel, 'info', 'admin', 'queue.task.finished', $target, $context]
         );
     }
 }

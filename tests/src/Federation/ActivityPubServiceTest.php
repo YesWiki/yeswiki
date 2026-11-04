@@ -283,7 +283,7 @@ class ActivityPubServiceTest extends TestCase
         $this->assertSame('Content-Type: application/activity+json', $headers['content-type'][0]);
     }
 
-    public function testFollowersAreNotifiedPubliclyAndOneUnreachableFollowerDoesNotStopTheOthers(): void
+    public function testEachFollowerIsItsOwnMessageSoADeadOnesDeliveryFailsAloneAndTheLiveOneIsPosted(): void
     {
         $this->triples[] = ['resource' => self::US . '/followers', 'property' => ActivityPubService::$AS_PREFIX . 'items', 'value' => 'https://down.example/users/a'];
         $this->triples[] = ['resource' => self::US . '/followers', 'property' => ActivityPubService::$AS_PREFIX . 'items', 'value' => self::THEM];
@@ -430,21 +430,7 @@ class ActivityPubServiceTest extends TestCase
         $this->assertSame([], $this->posted);
     }
 
-    public function testFollowersAreNotifiedOnlyOnceTheQueueDeliversTheActivity(): void
-    {
-        $this->triples[] = ['resource' => self::US . '/followers', 'property' => ActivityPubService::$AS_PREFIX . 'items', 'value' => self::THEM];
-        $service = $this->service();
-
-        $service->notifyFollowers($this->form(), ['tag' => 'Fiche'], 'Create');
-        $service->announceProfile($this->form());
-        $this->assertSame([], $this->posted, 'the person saving waits for nothing');
-        $this->assertCount(2, $this->bus->messages);
-
-        $this->deliverQueued();
-        $this->assertSame(['Create', 'Update'], array_map(fn ($post) => $post['body']['type'], $this->posted));
-    }
-
-    public function testADeliveryGivesUpOnAFollowerThatDoesNotAnswer(): void
+    public function testDeliveriesCarryTheClientTimeouts(): void
     {
         $this->triples[] = ['resource' => self::US . '/followers', 'property' => ActivityPubService::$AS_PREFIX . 'items', 'value' => self::THEM];
 

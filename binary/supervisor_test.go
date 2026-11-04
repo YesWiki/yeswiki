@@ -3,7 +3,10 @@ package yeswiki
 import (
 	"context"
 	"errors"
+	"io"
 	"os"
+	"os/exec"
+	"strconv"
 	"strings"
 	"sync"
 	"syscall"
@@ -53,6 +56,7 @@ func (c *fakeClock) advance(by time.Duration) {
 type fakeChild struct {
 	wiki      program.Wiki
 	stubborn  bool
+	waitErr   error
 	exit      chan int
 	signalled chan os.Signal
 
@@ -63,7 +67,7 @@ type fakeChild struct {
 }
 
 func (c *fakeChild) Wait() (int, error) {
-	return <-c.exit, nil
+	return <-c.exit, c.waitErr
 }
 
 func (c *fakeChild) exitWith(code int) bool {
@@ -125,6 +129,12 @@ func (c *fakeChild) received() ([]os.Signal, bool) {
 type fakeStarter struct {
 	stubborn map[string]bool
 	started  chan *fakeChild
+
+	mu sync.Mutex
+	// failures are the errors the next starts fail with, one each, before any succeeds.
+	failures []error
+	// waitErr is what the children started from now on report from Wait besides their exit code.
+	waitErr error
 }
 
 func newFakeStarter(stubborn ...string) *fakeStarter {
@@ -137,8 +147,20 @@ func newFakeStarter(stubborn ...string) *fakeStarter {
 }
 
 func (s *fakeStarter) Start(_ context.Context, wiki program.Wiki) (Child, error) {
+	s.mu.Lock()
+	if len(s.failures) > 0 {
+		err := s.failures[0]
+		s.failures = s.failures[1:]
+		s.mu.Unlock()
+
+		return nil, err
+	}
+	waitErr := s.waitErr
+	s.mu.Unlock()
+
 	child := &fakeChild{
 		wiki:      wiki,
+		waitErr:   waitErr,
 		stubborn:  s.stubborn[wiki.Host],
 		exit:      make(chan int, 1),
 		signalled: make(chan os.Signal, 8),
@@ -505,5 +527,113 @@ func TestTheConsumersOutputIsPrefixedByItsWiki(t *testing.T) {
 	expected := "[alpha.example.org] Consuming messages\n[alpha.example.org] from the queue\n[alpha.example.org] Killed\n"
 	if log.String() != expected {
 		t.Errorf("expected\n%q\ngot\n%q", expected, log.String())
+	}
+}
+
+func TestAStartThatFailsIsRetriedWithABackoff(t *testing.T) {
+	starter := newFakeStarter()
+	starter.failures = []error{errors.New("php is missing"), errors.New("php is still missing")}
+	sleep := newRecordingSleep()
+	log := newLogLines()
+	supervisor := NewSupervisor(starter, (&fakeClock{}).now, sleep.sleep, log)
+	defer supervisor.Stop(StopGrace)
+
+	supervisor.Reconcile([]program.Wiki{alpha})
+
+	for _, expected := range []time.Duration{time.Second, 2 * time.Second} {
+		if waited := sleep.next(t); waited != expected {
+			t.Fatalf("expected a %s wait, got %s", expected, waited)
+		}
+	}
+	log.waitFor(t, "could not start, retrying in 2s: php is still missing")
+	if child := starter.next(t); child.wiki.Host != alpha.Host {
+		t.Fatalf("expected alpha's consumer once the start worked, got %s", child.wiki.Host)
+	}
+	starter.nothingMore(t)
+}
+
+// A wiki reopened while its previous consumer is still finishing its message must not have two
+// consumers at once: the new one starts when the old one has gone.
+func TestAWikiReopenedWhileItsOldConsumerLeavesWaitsForIt(t *testing.T) {
+	starter := newFakeStarter(beta.Host)
+	never := make(chan struct{})
+	defer close(never)
+	supervisor := NewSupervisor(starter, (&fakeClock{}).now, func(time.Duration) { <-never }, newLogLines())
+
+	supervisor.Reconcile([]program.Wiki{beta})
+	old := starter.next(t)
+	supervisor.Reconcile([]program.Wiki{closed(beta)})
+	old.signalledOnce(t)
+
+	supervisor.Reconcile([]program.Wiki{beta})
+	time.Sleep(50 * time.Millisecond)
+	starter.nothingMore(t)
+
+	old.exitWith(0)
+	if fresh := starter.next(t); fresh == old || fresh.wiki.Host != beta.Host {
+		t.Fatalf("expected a new consumer for beta once the old one left")
+	}
+}
+
+func TestNothingIsStartedAfterStopAndStoppingTwiceIsHarmless(t *testing.T) {
+	starter := newFakeStarter()
+	supervisor := NewSupervisor(starter, (&fakeClock{}).now, newRecordingSleep().sleep, newLogLines())
+
+	supervisor.Reconcile([]program.Wiki{alpha})
+	starter.next(t)
+	supervisor.Stop(StopGrace)
+	supervisor.Stop(StopGrace)
+
+	supervisor.Reconcile([]program.Wiki{alpha, beta})
+
+	time.Sleep(50 * time.Millisecond)
+	starter.nothingMore(t)
+}
+
+func TestTheLogSaysWhyAConsumerWasLostAndHowItEnded(t *testing.T) {
+	starter := newFakeStarter()
+	starter.waitErr = errors.New("wait: no child processes")
+	clock := &fakeClock{}
+	sleep := newRecordingSleep()
+	log := newLogLines()
+	supervisor := NewSupervisor(starter, clock.now, sleep.sleep, log)
+	defer supervisor.Stop(StopGrace)
+
+	supervisor.Reconcile([]program.Wiki{alpha})
+	child := starter.next(t)
+	clock.advance(5 * time.Second)
+	child.exitWith(255)
+
+	log.waitFor(t, "lost track of the background jobs consumer: wait: no child processes")
+	log.waitFor(t, "exited with 255 after 5s, restarting in 1s")
+}
+
+// The two sides of the exit-code contract: the numbers are the ones QueueConsumeCommand::EXIT_NOT_MY_MODE
+// and EXIT_CONFIGURATION_CHANGED exit with, which QueueCommandsTest pins on the PHP side.
+func TestTheExitCodesAreTheOnesTheConsumeCommandExitsWith(t *testing.T) {
+	if ExitNotMyMode != 78 || ExitConfigurationChanged != 75 {
+		t.Fatalf("the PHP command exits with 78 and 75, got %d and %d", ExitNotMyMode, ExitConfigurationChanged)
+	}
+}
+
+func TestTheConsumerIsStartedAsTheSupervisedConsumeCommand(t *testing.T) {
+	expected := []string{"messenger:consume", "--supervised", "--time-limit=3600", "--memory-limit=128M"}
+	if strings.Join(consumeArguments, " ") != strings.Join(expected, " ") {
+		t.Fatalf("expected %v, got %v", expected, consumeArguments)
+	}
+}
+
+// The status a real process exits with is the one the supervisor acts on, not an error.
+func TestAConsumerProcessReportsItsExitStatus(t *testing.T) {
+	for _, code := range []int{ExitNotMyMode, ExitConfigurationChanged, 0} {
+		command := exec.Command("sh", "-c", "exit "+strconv.Itoa(code))
+		if err := command.Start(); err != nil {
+			t.Skipf("no shell to run: %v", err)
+		}
+
+		got, err := queueConsumer{command: command, output: &prefixedLines{out: io.Discard}}.Wait()
+		if err != nil || got != code {
+			t.Errorf("expected exit %d without error, got %d (%v)", code, got, err)
+		}
 	}
 }

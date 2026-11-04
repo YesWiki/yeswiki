@@ -6,6 +6,8 @@ use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Field\TextareaField;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Kernel\Service\DbService;
+use YesWiki\Kernel\Service\Queue\QueueSchema;
+use YesWiki\Search\Message\ReindexContent;
 use YesWiki\Search\Service\SearchIndexer;
 use YesWiki\Search\Service\SearchIndexQuery;
 use YesWiki\Search\Service\SearchIndexSchema;
@@ -210,10 +212,15 @@ class SearchIndexTest extends YesWikiTestCase
             PageBody::CONTENT => 'un texte sur le panais',
         ], '', true);
 
-        $this->assertGreaterThan(
-            0,
-            $this->getWiki()->services->get(SearchIndexer::class)->pending(),
-            'page.created/page.updated must reach SearchIndexSubscriber'
+        $services = $this->getWiki()->services;
+        $this->assertSame(
+            1,
+            (int)$services->get(DbService::class)->scalar(
+                'SELECT COUNT(*) FROM ' . $services->get(QueueSchema::class)->table() . ' WHERE message_type = ? AND delivered_at IS NULL AND dedup_key = ?',
+                0,
+                [ReindexContent::class, ReindexContent::UNIQUE_KEY_PREFIX . self::TAG]
+            ),
+            'page.created/page.updated must reach SearchIndexSubscriber, which queues this page'
         );
 
         self::reindexWaitingContents($this->getWiki());

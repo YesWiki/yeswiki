@@ -150,54 +150,12 @@ class SearchIndexCascadeTest extends YesWikiTestCase
             $this->queuedTags(),
             'form.updated must queue the form\'s entries -- the queue is what carries the work'
         );
-    }
 
-    public function testEnqueueFormFindsEveryEntryOfTheForm(): void
-    {
-        [$formId, $entryTag] = $this->makeFormWithAnEntry('estragon');
         $this->drainEverything();
-
-        $queued = $this->indexer()->enqueueForm($formId);
-
-        $this->assertGreaterThanOrEqual(1, $queued);
+        $this->assertSame(1, $this->indexer()->enqueueForm($formId), 'the number of entries of the form, which search:reindex --form prints');
         $this->assertContains($entryTag, $this->queuedTags());
-    }
-
-    /**
-     * Running its message reindexes the Content and takes it off the queue.
-     *
-     * Asserted on this test's own tag rather than on `pending()`: that counts the whole queue, and
-     * the suite shares its database with whatever else is running. A test cannot own a global
-     * count, and asserting one is what made this fail once in six runs (ticket 54).
-     */
-    public function testRunningTheMessageTakesTheContentOffTheQueue(): void
-    {
-        [, $entryTag] = $this->makeFormWithAnEntry('livreche');
-        $this->indexer()->enqueue([$entryTag]);
-
-        $this->assertContains($entryTag, $this->queuedTags());
-
-        $this->drainEverything();
-
-        $this->assertNotContains($entryTag, $this->queuedTags());
-        $found = $this->getWiki()->services->get(SearchIndexQuery::class)->search('livreche', null, 10);
-        $this->assertContains($entryTag, array_column($found['results'], 'tag'));
-    }
-
-    /** Queueing the same Content twice leaves one message, not two. */
-    public function testQueueingIsIdempotent(): void
-    {
-        [, $entryTag] = $this->makeFormWithAnEntry('cerfeuil');
-        $this->drainEverything();
-
-        $this->indexer()->enqueue([$entryTag]);
-        $this->indexer()->enqueue([$entryTag]);
-        $this->indexer()->enqueue([$entryTag]);
-
-        $this->assertSame([$entryTag], array_values(array_filter(
-            $this->queuedTags(),
-            static fn (string $tag): bool => $tag === $entryTag
-        )));
+        $this->assertSame(0, $this->indexer()->enqueueForm('NoSuchForm'));
+        $this->assertSame(0, $this->indexer()->enqueueForm(''));
     }
 
     /**

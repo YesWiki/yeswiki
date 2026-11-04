@@ -8,6 +8,8 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\DependencyInjection\ServiceLocator;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Messenger\Exception\UnrecoverableMessageHandlingException;
+use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Messenger\Stamp\TransportMessageIdStamp;
 use YesWiki\Admin\Api\RemoteBackupApiController;
 use YesWiki\Admin\Message\AdvanceRemoteBackup;
@@ -16,6 +18,7 @@ use YesWiki\Admin\Service\ArchiveService;
 use YesWiki\Admin\Service\RemoteBackupService;
 use YesWiki\Admin\Service\RemoteWikiArchive;
 use YesWiki\Files\Service\LocalFiles;
+use YesWiki\Files\Service\RuntimeLock;
 use YesWiki\Files\Service\Storage;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\CsrfTokenChecker;
@@ -43,6 +46,7 @@ require_once 'tests/YesWikiTestCase.php';
 require_once 'tests/src/Kernel/QueueTestKit.php';
 require_once 'tests/src/Kernel/QueueTestConsole.php';
 require_once 'tests/src/Kernel/QueueTestHolders.php';
+require_once 'tests/src/Admin/AdminHandlersRefusingBus.php';
 
 /**
  * Fetching a backup from another wiki goes on through the queue, one message per step or download slice, so it finishes with no tab open (messenger / scheduler, spec 9.6).
@@ -201,10 +205,11 @@ class RemoteBackupQueueTest extends YesWikiTestCase
         $this->assertSame(['downloading'], $this->remote->steps);
         $this->assertSame(RemoteBackupService::SLICE_SECONDS, $this->remote->slices[0], 'a blocking consumer has no pass budget');
 
-        $this->consumer->drain(QueueConsumerMode::Request, new QueueBudget(microtime(true) + 7.9, PHP_INT_MAX, 60));
+        $this->consumer->drain(QueueConsumerMode::Request, new QueueBudget(microtime(true) + 3.5, PHP_INT_MAX, 60));
 
         $this->assertSame(['downloading', 'downloading', 'cleaning'], $this->remote->steps);
-        $this->assertSame(7, $this->remote->slices[1]);
+        $this->assertGreaterThanOrEqual(2, $this->remote->slices[1], 'the pass left about 3 s: a slice of that, whatever the machine\'s speed between the budget and the step');
+        $this->assertLessThanOrEqual(3, $this->remote->slices[1], 'and no more than the pass has left');
     }
 
     /** No retry (the step already gave up on the remote wiki), the queue's failure carries the reason, and the polling browser hears it too. */
@@ -355,6 +360,104 @@ class RemoteBackupQueueTest extends YesWikiTestCase
         $this->assertTrue($this->service->status()['running']);
     }
 
+    /** The queue did not take the first step: the fetch is given up at once, rather than left "running" with nothing to move it. */
+    public function testAFetchTheQueueRefusesIsGivenUp(): void
+    {
+        $bus = new AdminHandlersRefusingBus();
+
+        try {
+            $this->serviceOn($bus)->start('https://remote.org', 'RemoteAdmin', 'secret');
+            $this->fail('a fetch nothing will run was accepted');
+        } catch (\Exception $refused) {
+            $this->assertStringContainsString('could not take the fetch', $refused->getMessage());
+        }
+
+        $this->assertCount(1, $bus->asked);
+        $this->assertSame(['step' => RemoteBackupService::STEP_IDLE, 'running' => false], $this->service->status(), 'no job file left behind');
+        $this->assertCount(1, $this->remote->abandoned, 'the remote archive is tidied up');
+        $this->assertTrue($this->service->start('https://remote.org', 'RemoteAdmin', 'secret')['running'], 'and the next fetch is not blocked');
+    }
+
+    /** The step ran but the next could not be queued: the chain would stop silently with the job "running" for ever, so the message fails with the reason. */
+    public function testAStepWhoseSuccessorTheQueueRefusesFailsTheMessage(): void
+    {
+        $this->service->start('https://remote.org', 'RemoteAdmin', 'secret');
+        $refusing = $this->serviceOn(new AdminHandlersRefusingBus());
+
+        try {
+            (new AdvanceRemoteBackupHandler($refusing))(new AdvanceRemoteBackup());
+            $this->fail('the chain stopped without a word');
+        } catch (UnrecoverableMessageHandlingException $stopped) {
+            $this->assertStringContainsString('could not be queued', $stopped->getMessage());
+        }
+
+        $this->assertSame(['checking'], $this->remote->steps, 'the step itself was taken');
+    }
+
+    public function testThereIsNoNextStepToQueueForAFetchThatIsNotRunning(): void
+    {
+        $this->assertFalse($this->service->queueNextStep());
+        $this->assertSame(0, $this->statistics->pendingCount());
+    }
+
+    /** What a finished or failed fetch left is cleared by giving up, so the status goes back to idle. */
+    public function testGivingUpAFinishedFetchClearsItsStatus(): void
+    {
+        $this->service->start('https://remote.org', 'RemoteAdmin', 'secret');
+        $this->visitUntilDone();
+        $this->assertSame(self::STORED, $this->service->status()['filename']);
+
+        $this->assertSame(['step' => RemoteBackupService::STEP_IDLE, 'running' => false], $this->service->cancel());
+
+        $this->assertSame(['step' => RemoteBackupService::STEP_IDLE, 'running' => false], $this->service->status());
+        $this->assertSame([], $this->remote->abandoned, 'a finished fetch has nothing left on the remote wiki to tidy');
+    }
+
+    public function testANewFetchStartsOverAFinishedOne(): void
+    {
+        $this->service->start('https://remote.org', 'RemoteAdmin', 'secret');
+        $this->visitUntilDone();
+
+        $this->service->start('https://other.org', 'RemoteAdmin', 'secret');
+
+        $state = $this->service->status();
+        $this->assertTrue($state['running']);
+        $this->assertSame(['https://remote.org', 'https://other.org'], $this->remote->started);
+    }
+
+    /** A step is the only writer of the job file: where another holds the lock for good, the message fails rather than touching it. */
+    public function testAStepThatCannotGetItsLockFails(): void
+    {
+        $this->service->start('https://remote.org', 'RemoteAdmin', 'secret');
+        $noLock = new RemoteBackupService($this->archives, $this->storage, new LocalFiles(), $this->remote, $this->kit->bus, $this->budgetContext, $this->statistics, new class extends RuntimeLock {
+            public function acquire(string $path)
+            {
+                return null;
+            }
+        });
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage(RemoteBackupService::STEP_LOCK);
+        $noLock->advance();
+    }
+
+    /** A step that failed in the queue (rather than died) without the job hearing of it: no step will follow, and the browser is told. */
+    public function testAMessageThatFailedLeavesNoFetchShownAsRunning(): void
+    {
+        $this->service->start('https://remote.org', 'RemoteAdmin', 'secret');
+        $this->transport->claimAs(QueueConsumerMode::Worker, 60);
+        $taken = iterator_to_array($this->transport->get());
+        $this->assertCount(1, $taken);
+        $this->transport->moveToFailed((int)$taken[0]->last(TransportMessageIdStamp::class)?->getId(), 'RuntimeException: the handler broke');
+
+        $state = $this->service->status();
+
+        $this->assertFalse($state['running']);
+        $this->assertSame(_t('ADMIN_BACKUPS_REMOTE_STOPPED'), $state['error']);
+        $this->service->start('https://other.org', 'RemoteAdmin', 'secret');
+        $this->assertTrue($this->service->status()['running'], 'and the next fetch is not blocked');
+    }
+
     /** A fetch the browser was driving when the wiki was upgraded has no message behind it: the migration queues its next step. */
     public function testTheMigrationResumesAFetchLeftInProgress(): void
     {
@@ -438,6 +541,12 @@ class RemoteBackupQueueTest extends YesWikiTestCase
         ]));
 
         return $controller;
+    }
+
+    /** The service of the fetch, on that bus instead of the queue's: same folders, same remote wiki, same job file. */
+    private function serviceOn(MessageBusInterface $bus): RemoteBackupService
+    {
+        return new RemoteBackupService($this->archives, $this->storage, new LocalFiles(), $this->remote, $bus, $this->budgetContext, $this->statistics);
     }
 
     private function build(): void

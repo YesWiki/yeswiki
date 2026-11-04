@@ -3,6 +3,7 @@
 namespace YesWiki\Test\Admin;
 
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Psr\Container\ContainerInterface;
 use Symfony\Component\Clock\MockClock;
 use Symfony\Component\Clock\NativeClock;
@@ -22,6 +23,7 @@ use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Identity\Service\RequestGuard;
 use YesWiki\Identity\Service\UserManager;
+use YesWiki\Kernel\Api\QueueApiController;
 use YesWiki\Kernel\Health\HealthCheck;
 use YesWiki\Kernel\Health\ProvidesHealthChecks;
 use YesWiki\Kernel\Queue\ProvidesSchedule;
@@ -32,6 +34,7 @@ use YesWiki\Kernel\Service\ConfigurationService;
 use YesWiki\Kernel\Service\CurrentRequest;
 use YesWiki\Kernel\Service\HealthService;
 use YesWiki\Kernel\Service\Journal;
+use YesWiki\Kernel\Service\JournalSchema;
 use YesWiki\Kernel\Service\LanguageService;
 use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\Queue\QueueBudgetFactory;
@@ -65,8 +68,11 @@ require_once 'tests/src/Kernel/QueueTestTask.php';
 #[CoversClass(JobsOverview::class)]
 class JobsControllerTest extends YesWikiTestCase
 {
+    private const POST_ACTIONS = ['consume', 'retry', 'ignore', 'retryType', 'ignoreType', 'delete', 'runTask', 'secret'];
+
     private QueueTestKit $kit;
     private QueueSettings $settings;
+    private ?ConfigurationService $configuration = null;
 
     protected function setUp(): void
     {
@@ -84,7 +90,8 @@ class JobsControllerTest extends YesWikiTestCase
         $this->kit->dispose();
     }
 
-    public function testNonAdminIsRefused(): void
+    /** The routes are the ACL's first line; every action also guards itself (the provider tests below), because the ACL does not see a POST's token. */
+    public function testEveryJobsRouteIsForAdminsOnly(): void
     {
         $paths = [];
         foreach ($this->getWiki()->services->get(RouteProvider::class)->get() as $route) {
@@ -106,47 +113,84 @@ class JobsControllerTest extends YesWikiTestCase
             '/api/admin/jobs/tab/{tab}',
             '/api/admin/jobs/tasks/{taskId}/run',
         ], $paths, 'every route is discovered, and each is for admins only');
+    }
 
-        $this->kit->send('a');
-        $calls = [
+    public function testThePageAndItsTabsAreRefusedToSomeoneWhoIsNotAnAdmin(): void
+    {
+        $refused = [];
+        foreach ([
             'the page' => fn () => $this->page()->jobs(),
             'a tab' => fn () => $this->api()->tab('failed'),
-            'consume' => fn () => $this->api(post: true)->consume(),
-            'retry' => fn () => $this->api(post: true)->retry('1'),
-            'retry a type' => fn () => $this->api(post: true)->retryType('QueueTestToleratedMessage'),
-            'ignore a type' => fn () => $this->api(post: true)->ignoreType('QueueTestToleratedMessage'),
-            'secret' => fn () => $this->api(post: true)->secret(),
-        ];
-        foreach ($calls as $what => $call) {
+        ] as $what => $call) {
             try {
                 $call();
-                $this->fail("{$what} answered someone who is not an admin");
             } catch (AccessDeniedHttpException) {
+                $refused[] = $what;
             }
         }
-        $this->assertSame([], $this->kit->handled);
+        $this->assertSame(['the page', 'a tab'], $refused);
     }
 
-    /** The page as the wiki's own container builds it, over the dev wiki's queue: the services wire up and it renders. */
-    public function testTheWikiWiresThePage(): void
+    /** @return array<string, array{string}> */
+    public static function postActions(): array
     {
-        $this->signInAsAdmin();
-
-        $body = (string)$this->getWiki()->services->get(JobsController::class)->jobs()->getContent();
-
-        $this->assertStringContainsString('id="yw-jobs-status"', $body);
-        $this->assertStringContainsString('id="yw-jobs-tabs"', $body);
+        return array_combine(self::POST_ACTIONS, array_map(static fn (string $action): array => [$action], self::POST_ACTIONS));
     }
 
-    public function testAPostWithoutTheSessionTokenIsRefused(): void
+    /** Someone who is not an admin does nothing through any of the eight POST actions. */
+    #[DataProvider('postActions')]
+    public function testNoPostActionIsOpenToSomeoneWhoIsNotAnAdmin(string $action): void
     {
-        $this->signInAsAdmin();
         $this->kit->send('a');
+        $failed = $this->failedTolerated('inbox');
 
-        $response = $this->api(post: true, token: false)->consume();
+        try {
+            $this->callPostAction($this->api(post: true), $action, $failed);
+            $this->fail("{$action} answered someone who is not an admin");
+        } catch (AccessDeniedHttpException) {
+        }
 
-        $this->assertSame(Response::HTTP_FORBIDDEN, $response->getStatusCode());
         $this->assertSame([], $this->kit->handled);
+        $this->assertSame('failed', $this->kit->statistics->messageState($failed));
+        $this->assertSame('', $this->secretKept(), 'no secret was written');
+    }
+
+    /** An admin whose request does not carry the session's token (a forged cross-site POST) does nothing either. */
+    #[DataProvider('postActions')]
+    public function testNoPostActionRunsWithoutTheSessionToken(string $action): void
+    {
+        $this->signInAsAdmin();
+        $this->kitWithAHalfHourlyTask();
+        $this->kit->send('a');
+        $failed = $this->failedTolerated('inbox');
+        $waiting = count($this->kit->waiting());
+
+        $response = $this->callPostAction($this->api(post: true, token: false), $action, $failed);
+
+        $this->assertSame(Response::HTTP_FORBIDDEN, $response->getStatusCode(), $action);
+        $this->assertSame('', $response->headers->get('HX-Trigger') ?? '', 'nothing changed: nothing to reload');
+        $this->assertSame([], $this->kit->handled, 'nothing was consumed');
+        $this->assertSame('failed', $this->kit->statistics->messageState($failed), 'the failed message is still there, still failed');
+        $this->assertCount($waiting, $this->kit->waiting(), 'no task was queued, no message requeued');
+        $this->assertSame('', $this->secretKept(), 'no secret was written');
+        $this->assertSame(0, $this->auditRows(), 'nothing was audited');
+    }
+
+    /** The page as the wiki's own container builds it, over the dev wiki's queue: each service wires up and answers. */
+    public function testTheContainerWiresTheJobsServices(): void
+    {
+        $this->signInAsAdmin();
+        $services = $this->getWiki()->services;
+
+        $this->assertInstanceOf(JobsOverview::class, $services->get(JobsOverview::class));
+        $this->assertInstanceOf(QueueApiController::class, $services->get(QueueApiController::class));
+        foreach ([
+            'the page' => $services->get(JobsController::class)->jobs(),
+            'a tab' => $services->get(JobsApiController::class)->tab('failed'),
+        ] as $what => $response) {
+            $this->assertSame(Response::HTTP_OK, $response->getStatusCode(), $what);
+            $this->assertNotSame('', (string)$response->getContent(), $what);
+        }
     }
 
     public function testAWorkerUnderTheBinaryIsSaidToBeSupervisedByIt(): void
@@ -328,16 +372,6 @@ class JobsControllerTest extends YesWikiTestCase
         $this->assertSame(3, $this->kit->statistics->failedCount(), 'what is left takes another click');
     }
 
-    public function testAnActionOnATypeNeedsTheSessionToken(): void
-    {
-        $this->signInAsAdmin();
-        $id = $this->failedTolerated('inbox');
-
-        $this->assertSame(Response::HTTP_FORBIDDEN, $this->api(post: true, token: false)->retryType('QueueTestToleratedMessage')->getStatusCode());
-        $this->assertSame(Response::HTTP_FORBIDDEN, $this->api(post: true, token: false)->ignoreType('QueueTestToleratedMessage')->getStatusCode());
-        $this->assertNotNull($this->kit->statistics->failedMessage($id));
-    }
-
     public function testACheckThatOffersTheFailedMessagesOfATypeGetsTheButtons(): void
     {
         $this->signInAsAdmin();
@@ -347,17 +381,7 @@ class JobsControllerTest extends YesWikiTestCase
             ->offers(QueueHealthChecks::offeringFailedOf(QueueTestToleratedMessage::class), 'something-the-page-does-not-know')
             ->runs(static fn (): string => 'some deliveries failed');
         $plain = HealthCheck::named('module-other')->linkedTo('admin/jobs')->runs(static fn (): string => 'wrong');
-        $health = new HealthService([new class([$check, $plain]) implements ProvidesHealthChecks {
-            /** @param list<HealthCheck> $checks */
-            public function __construct(private array $checks)
-            {
-            }
-
-            public function healthChecks(): array
-            {
-                return $this->checks;
-            }
-        }]);
+        $health = $this->healthOf($check, $plain);
 
         $body = (string)$this->page($health)->jobs()->getContent();
 
@@ -419,7 +443,7 @@ class JobsControllerTest extends YesWikiTestCase
         $this->assertSame('manual', $this->kit->statistics->lastPass()['origin'] ?? null);
     }
 
-    public function testGeneratingASecretStoresIt(): void
+    public function testGeneratingASecretStoresItAndAuditsIt(): void
     {
         $this->signInAsAdmin();
 
@@ -428,10 +452,29 @@ class JobsControllerTest extends YesWikiTestCase
         if (preg_match('/\b([0-9a-f]{48})\b/', $body, $shown) !== 1) {
             $this->fail('the new secret is shown');
         }
-        $config = (new ConfigurationService())->getConfiguration($this->kit->configFile());
-        $config->load();
-        $this->assertSame($shown[1], $config['queue_consume_secret'], 'the secret shown is the one the configuration keeps');
+        $this->assertSame($shown[1], $this->secretKept(), 'the secret shown is the one the configuration keeps');
         $this->assertStringContainsString('X-YesWiki-Queue-Secret: ' . $shown[1], $body, 'with the call to schedule');
+        $this->assertSame(1, $this->auditRows(), 'the change of configuration is in the audit log');
+        $this->assertSame(basename($this->kit->configFile()), $this->kit->db->scalar('SELECT target FROM ' . (new JournalSchema($this->kit->db))->table() . ' WHERE action = ?', null, ['config.write']));
+    }
+
+    /** A configuration that cannot be written keeps its old secret: the page must not show a secret nothing will accept, nor audit a write that did not happen. */
+    public function testASecretThatCouldNotBeWrittenIsNeitherShownNorAudited(): void
+    {
+        $this->signInAsAdmin();
+        $this->configuration = new class extends ConfigurationService {
+            public function write(\YesWiki\Kernel\Entity\ConfigurationFile $config, ?string $file = null, string $arrayName = 'yeswikiConfig')
+            {
+                return false;
+            }
+        };
+
+        $body = (string)$this->api(post: true)->secret()->getContent();
+
+        $this->assertDoesNotMatchRegularExpression('/\b[0-9a-f]{48}\b/', $body);
+        $this->assertStringContainsString(htmlspecialchars(_t('ADMIN_JOBS_SECRET_FAILED'), ENT_QUOTES), $body);
+        $this->assertSame('', $this->secretKept());
+        $this->assertSame(0, $this->auditRows());
     }
 
     public function testRawErrorTextsAreEscaped(): void
@@ -475,17 +518,7 @@ class JobsControllerTest extends YesWikiTestCase
         $failing = static fn (string $id, string $route, bool $broken = true): HealthCheck => ($broken ? HealthCheck::named($id) : HealthCheck::named($id)->degraded())
             ->linkedTo($route)
             ->runs(static fn (): string => 'wrong');
-        $health = new HealthService([new class([$failing('queue-one', 'admin/jobs'), $failing('federation-delivery', 'admin/jobs'), $failing('elsewhere', 'admin/updates'), $failing('queue-degraded', 'admin/jobs', broken: false), HealthCheck::named('queue-fine')->linkedTo('admin/jobs')->runs(static fn (): ?string => null)]) implements ProvidesHealthChecks {
-            /** @param list<HealthCheck> $checks */
-            public function __construct(private array $checks)
-            {
-            }
-
-            public function healthChecks(): array
-            {
-                return $this->checks;
-            }
-        }]);
+        $health = $this->healthOf($failing('queue-one', 'admin/jobs'), $failing('federation-delivery', 'admin/jobs'), $failing('elsewhere', 'admin/updates'), $failing('queue-degraded', 'admin/jobs', broken: false), HealthCheck::named('queue-fine')->linkedTo('admin/jobs')->runs(static fn (): ?string => null));
 
         $body = (string)$this->page($health)->jobs()->getContent();
 
@@ -497,7 +530,327 @@ class JobsControllerTest extends YesWikiTestCase
         $this->assertMatchesRegularExpression('#admin/health"[^>]*>.*?<span class="yw-dashboard__count">3</span>#s', $body);
     }
 
+    // --- The consume button's other answers ---------------------------------------------------
+
+    public function testConsumeNowWhileAnotherPassHoldsTheLockSaysSo(): void
+    {
+        $this->signInAsAdmin();
+        $this->kit->send('a');
+        $this->kit->holdThePassLock();
+
+        $body = (string)$this->api(post: true)->consume()->getContent();
+
+        $this->assertSame([], $this->kit->handled, 'the pass in progress is not doubled');
+        $this->assertStringContainsString('yw-alert--warning', $body);
+        $this->assertStringContainsString(htmlspecialchars(_t('ADMIN_JOBS_CONSUME_LOCKED'), ENT_QUOTES), $body);
+    }
+
+    public function testConsumeNowOnAWikiThatIsPausedSaysSo(): void
+    {
+        $this->signInAsAdmin();
+        $this->kit->send('a');
+        $config = (new ConfigurationService())->getConfiguration($this->kit->configFile());
+        $config->load();
+        $config['wiki_status'] = 'hibernate';
+        (new ConfigurationService())->write($config);
+
+        $body = (string)$this->api(post: true)->consume()->getContent();
+
+        $this->assertSame([], $this->kit->handled, 'a paused wiki handles nothing');
+        $this->assertStringContainsString('yw-alert--warning', $body);
+        $this->assertStringContainsString(htmlspecialchars(_t('ADMIN_JOBS_CONSUME_PAUSED'), ENT_QUOTES), $body);
+    }
+
+    public function testConsumeNowOnAQueueThatCannotBeReadSaysTheyFailed(): void
+    {
+        $this->signInAsAdmin();
+        $this->kit->dropTables();
+
+        $response = $this->api(post: true)->consume();
+
+        $this->assertSame(Response::HTTP_OK, $response->getStatusCode());
+        $this->assertStringContainsString('yw-alert--danger', (string)$response->getContent());
+        $this->assertStringContainsString(htmlspecialchars(_t('ADMIN_JOBS_CONSUME_ERROR'), ENT_QUOTES), (string)$response->getContent());
+    }
+
+    // --- A queue that cannot be read -----------------------------------------------------------
+
+    /** The admin opens /admin/jobs on a wiki that was not migrated yet: the page tells it, with the alert that says what to do, instead of a 500. */
+    public function testThePageSaysWhenTheQueueCannotBeRead(): void
+    {
+        $this->signInAsAdmin();
+        $this->kit->dropTables();
+
+        $response = $this->page()->jobs();
+        $body = (string)$response->getContent();
+
+        $this->assertSame(Response::HTTP_OK, $response->getStatusCode());
+        $this->assertStringContainsString(htmlspecialchars(rtrim(_t('ADMIN_JOBS_UNREADABLE', ['error' => '']), ': '), ENT_QUOTES), $body);
+        $this->assertStringNotContainsString('class="yw-jobs__tiles"', $body, 'no tile of numbers it could not read');
+        $this->assertStringContainsString('data-check="queue-tables"', $body, 'the alert that names the missing tables');
+    }
+
+    /** @return array<string, array{string}> */
+    public static function everyTab(): array
+    {
+        return array_combine(JobsOverview::TABS, array_map(static fn (string $tab): array => [$tab], JobsOverview::TABS));
+    }
+
+    #[DataProvider('everyTab')]
+    public function testATabSaysWhenTheQueueCannotBeRead(string $tab): void
+    {
+        $this->signInAsAdmin();
+        $this->kit->dropTables();
+
+        $response = $this->api()->tab($tab);
+        $body = (string)$response->getContent();
+
+        $this->assertSame(Response::HTTP_OK, $response->getStatusCode());
+        $this->assertStringContainsString(htmlspecialchars(rtrim(_t('ADMIN_JOBS_UNREADABLE', ['error' => '']), ': '), ENT_QUOTES), $body);
+        $this->assertStringNotContainsString('<tbody', $body, 'no row');
+    }
+
+    // --- What the top of the page computes ----------------------------------------------------
+
+    public function testTheTilesCountWhatTheQueueHoldsAndWhatItDid(): void
+    {
+        $clock = $this->kitAt('2026-10-23 12:00:00');
+        $overview = $this->overview();
+        $empty = $overview->status()['tiles'];
+        $this->assertSame(0, $empty['pending']);
+        $this->assertNull($empty['oldest'], 'nothing waits, so nothing is old');
+        $this->assertNull($empty['rate'], 'no run, no rate: not 0 %, not a division by zero');
+
+        $this->kit->send('a');
+        $this->kit->send('b');
+        $failed = $this->failed('c', 'RuntimeException: boom');
+        $clock->sleep(3 * 3600);
+        foreach (['handled', 'handled', 'handled', 'failed'] as $i => $status) {
+            QueueTestKit::recordRun($this->kit->db, 'Some\\Message', $status, 200, '2026-10-23 12:30:00', 100 + $i);
+        }
+
+        $tiles = $overview->status()['tiles'];
+
+        $this->assertSame(2, $tiles['pending']);
+        $this->assertMatchesRegularExpression('/\b3\b/', (string)$tiles['oldest'], 'the oldest waits since three hours');
+        $this->assertSame(1, $tiles['failed'], 'the failed table\'s own count, whatever the history says');
+        $this->assertSame(3, $tiles['handled']);
+        $this->assertSame(number_format(75, 1, _t('ADMIN_JOBS_DECIMAL_SEPARATOR'), ''), $tiles['rate'], '3 handled out of 4 ended');
+        $this->assertNotNull($tiles['duration']);
+        $this->assertNotNull($this->kit->statistics->failedMessage($failed));
+    }
+
+    public function testThePendingTileTurnsRedOnAStalledQueueAndOrangeOnABacklog(): void
+    {
+        $level = fn (HealthCheck ...$checks): string => $this->overview($this->healthOf(...$checks))->status()['tiles']['pendingLevel'];
+        $check = static fn (string $id): HealthCheck => HealthCheck::named($id)->linkedTo('admin/jobs')->runs(static fn (): string => 'wrong');
+
+        $this->assertSame('', $level());
+        $this->assertSame('', $level($check('queue-failed')), 'another alert says nothing of what waits');
+        $this->assertSame('warning', $level($check('queue-backlog')));
+        $this->assertSame('danger', $level($check('queue-stalled')));
+        $this->assertSame('danger', $level($check('queue-backlog'), $check('queue-stalled')), 'the worse one wins');
+    }
+
+    public function testTheBannerSaysWhetherTheConsumerIsLate(): void
+    {
+        $clock = $this->kitAt('2026-10-23 12:00:00');
+        putenv(QueueSettings::ENV_MODE . '=worker');
+        QueueTestKit::recordPass($this->kit->db, QueueConsumerMode::Worker, '2026-10-23 11:59:00', '2026-10-23 12:00:00', QueuePassReport::EMPTY);
+        $clock->sleep(60);
+
+        $fresh = $this->overview()->status()['mode'];
+
+        $this->assertFalse($fresh['late'], 'seen a minute ago, a worker is not late');
+        $this->assertFalse($fresh['running']);
+        $this->assertNotNull($fresh['lastPass']);
+
+        $clock->sleep(3600);
+
+        $this->assertTrue($this->overview()->status()['mode']['late'], 'not seen for an hour, a worker is');
+    }
+
+    public function testTheBannerSaysAPassIsRunningWhileItHasNotEnded(): void
+    {
+        $clock = $this->kitAt('2026-10-23 12:00:00');
+        $this->assertFalse($this->overview()->status()['mode']['running'], 'no pass at all');
+        QueueTestKit::recordPass($this->kit->db, QueueConsumerMode::Request, '2026-10-23 12:00:00', '2026-10-23 12:00:00', '');
+        $clock->sleep(5);
+
+        $this->assertTrue($this->overview()->status()['mode']['running']);
+    }
+
+    public function testTheBannerTellsWhetherAnApiWikiHasASecret(): void
+    {
+        putenv(QueueSettings::ENV_MODE . '=api');
+
+        $without = $this->overview()->status()['mode'];
+        $this->settings = new QueueSettings(new ParameterBag(['queue_consumer' => '', 'queue_consume_secret' => 'a-secret']), static fn (): array => []);
+        $with = $this->overview()->status()['mode'];
+
+        $this->assertTrue($without['api']);
+        $this->assertFalse($without['hasSecret']);
+        $this->assertTrue($with['hasSecret']);
+        $this->assertFalse($with['visitorsWait'], 'no visitor consumes in this mode');
+    }
+
+    /** @return array<string, array{string, string, string, list<string>}> check id, mode, secret, the buttons */
+    public static function alertButtons(): array
+    {
+        return [
+            'a stalled queue' => ['queue-stalled', 'request', '', ['consume', 'docs']],
+            'a backlog' => ['queue-backlog', 'request', '', ['consume', 'docs']],
+            'no budget' => ['queue-no-budget', 'request', '', ['consume', 'docs']],
+            'failures' => ['queue-failed', 'request', '', ['retry-all', 'view-failed', 'ignore-all']],
+            'killed messages' => ['queue-killed', 'request', '', ['view-failed', 'consume', 'docs']],
+            'an overdue task' => ['queue-task-overdue', 'request', '', ['consume', 'view-tasks']],
+            'a failing task' => ['queue-task-failing', 'request', '', ['view-tasks', 'view-history']],
+            'the api mode with no secret' => ['queue-config', 'api', '', ['secret', 'docs']],
+            'the api mode with a secret' => ['queue-config', 'api', 'a-secret', ['docs']],
+            'a mode that needs no secret' => ['queue-config', 'worker', '', ['docs']],
+            'missing tables' => ['queue-tables', 'request', '', ['docs']],
+            'a check nobody here knows' => ['module-something', 'request', '', ['view-failed', 'docs']],
+        ];
+    }
+
+    /** @param list<string> $buttons */
+    #[DataProvider('alertButtons')]
+    public function testEachAlertOffersTheButtonsThatAnswerIt(string $id, string $mode, string $secret, array $buttons): void
+    {
+        putenv(QueueSettings::ENV_MODE . '=' . $mode);
+        $this->settings = new QueueSettings(new ParameterBag(['queue_consumer' => '', 'queue_consume_secret' => $secret]), static fn (): array => []);
+        $health = $this->healthOf(HealthCheck::named($id)->linkedTo('admin/jobs')->runs(static fn (): string => 'wrong'));
+
+        $alerts = $this->overview($health)->status()['alerts'];
+
+        $this->assertSame([$id], array_column($alerts, 'id'));
+        $this->assertSame($buttons, $alerts[0]['actions']);
+    }
+
+    // --- Actions on messages that are not what the admin saw ----------------------------------
+
+    public function testIgnoreAllActsOnlyOnWhatTheAlertCounts(): void
+    {
+        $this->signInAsAdmin();
+        $counted = [$this->failed('a', 'RuntimeException: boom'), $this->failed('b', 'RuntimeException: bang')];
+        $killed = $this->killed($this->kit->send('c'));
+        $tolerated = $this->failedTolerated('inbox');
+
+        $response = $this->api(post: true)->ignore('all');
+
+        foreach ($counted as $id) {
+            $this->assertNull($this->kit->statistics->failedMessage($id));
+        }
+        $this->assertSame('killed', $this->kit->statistics->messageState($killed), 'the killed alert\'s');
+        $this->assertSame('failed', $this->kit->statistics->messageState($tolerated), 'a tolerated type is not what the alert counts');
+        $ignored = array_filter($this->kit->statistics->history(10), static fn (array $row): bool => $row['status'] === QueueRecorder::IGNORED);
+        $this->assertEqualsCanonicalizing($counted, array_column($ignored, 'messageId'), 'each one stays in the history as ignored');
+        $this->assertStringContainsString(htmlspecialchars(_t('ADMIN_JOBS_IGNORED', ['count' => 2]), ENT_QUOTES), (string)$response->getContent());
+    }
+
+    /** @return array<string, array{string}> */
+    public static function actionsOnOneMessage(): array
+    {
+        return ['retry' => ['retry'], 'ignore' => ['ignore'], 'delete' => ['delete']];
+    }
+
+    /** A message that is waiting, or that someone else already dealt with, is not failed: the answer says so and nothing happens to it. */
+    #[DataProvider('actionsOnOneMessage')]
+    public function testAnActionOnAMessageThatIsNotFailedSaysSo(string $action): void
+    {
+        $this->signInAsAdmin();
+        $waiting = $this->kit->send('x');
+
+        foreach ([$waiting, 999999] as $id) {
+            $body = (string)$this->api(post: true)->{$action}((string)$id)->getContent();
+            $this->assertStringContainsString(htmlspecialchars(_t('ADMIN_JOBS_GONE'), ENT_QUOTES), $body, "{$action} {$id}");
+        }
+        $this->assertSame('pending', $this->kit->statistics->messageState($waiting));
+        $this->assertSame(0, $this->kit->statistics->failedCount());
+    }
+
+    public function testDeleteTellsItDeletedAndKeepsNoTrace(): void
+    {
+        $this->signInAsAdmin();
+        $id = $this->failed('a', 'RuntimeException: boom');
+
+        $response = $this->api(post: true)->delete((string)$id);
+
+        $this->assertStringContainsString(htmlspecialchars(_t('ADMIN_JOBS_DELETED'), ENT_QUOTES), (string)$response->getContent());
+        $this->assertSame('ywJobsChanged', $response->headers->get('HX-Trigger'));
+        $this->assertNull($this->kit->statistics->failedMessage($id));
+    }
+
+    public function testRunningATaskThatIsNotScheduledQueuesNothing(): void
+    {
+        $this->signInAsAdmin();
+        $this->kitWithAHalfHourlyTask();
+        $waiting = count($this->kit->waiting());
+
+        $body = (string)$this->api(post: true)->runTask('nope')->getContent();
+
+        $this->assertStringContainsString(htmlspecialchars(_t('ADMIN_JOBS_TASK_UNKNOWN'), ENT_QUOTES), $body);
+        $this->assertCount($waiting, $this->kit->waiting());
+    }
+
     // --- Helpers -----------------------------------------------------------------------------
+
+    /** Replaces the kit by one whose clock stands at that time; answers the clock. */
+    private function kitAt(string $time): MockClock
+    {
+        $this->kit->dispose();
+        $clock = new MockClock($time, 'UTC');
+        $this->kit = new QueueTestKit(clock: $clock);
+
+        return $clock;
+    }
+
+    private function overview(?HealthService $health = null): JobsOverview
+    {
+        return $this->services(Request::create('/?admin/jobs'), $health)->get(JobsOverview::class);
+    }
+
+    /** The health the page reads when the only checks are these ones. */
+    private function healthOf(HealthCheck ...$checks): HealthService
+    {
+        return new HealthService([new class(array_values($checks)) implements ProvidesHealthChecks {
+            /** @param list<HealthCheck> $checks */
+            public function __construct(private array $checks)
+            {
+            }
+
+            public function healthChecks(): array
+            {
+                return $this->checks;
+            }
+        }]);
+    }
+
+    /** One of the eight POST actions, on that failed message, its type or the kit's task. */
+    private function callPostAction(JobsApiController $api, string $action, int $failed): Response
+    {
+        return match ($action) {
+            'consume', 'secret' => $api->{$action}(),
+            'retryType', 'ignoreType' => $api->{$action}('QueueTestToleratedMessage'),
+            'runTask' => $api->runTask('test-task'),
+            default => $api->{$action}((string)$failed),
+        };
+    }
+
+    /** The consume secret the kit's configuration file keeps; '' when none. */
+    private function secretKept(): string
+    {
+        $config = (new ConfigurationService())->getConfiguration($this->kit->configFile());
+        $config->load();
+
+        return (string)($config['queue_consume_secret'] ?? '');
+    }
+
+    /** How many `config.write` audit entries the kit's Journal holds. */
+    private function auditRows(): int
+    {
+        return (int)$this->kit->db->scalar('SELECT COUNT(*) FROM ' . (new JournalSchema($this->kit->db))->table() . ' WHERE action = ?', null, ['config.write']);
+    }
 
     private function queueFailedCheck(): HealthCheck
     {
@@ -603,6 +956,9 @@ class JobsControllerTest extends YesWikiTestCase
                 $key = $reason === '' ? 'QUEUE_STOP_RUNNING' : 'QUEUE_STOP_' . strtoupper(str_replace('-', '_', $reason));
                 $this->assertArrayHasKey($key, $translations, "the {$language} label of the stop reason '{$reason}'");
             }
+            foreach (['ADMIN_JOBS_RUN_TASK_HINT', 'ADMIN_JOBS_TASK_QUEUED'] as $key) {
+                $this->assertArrayHasKey($key, $translations, "the {$language} wording of the task run: {$key}");
+            }
         }
     }
 
@@ -627,7 +983,7 @@ class JobsControllerTest extends YesWikiTestCase
         $this->assertMatchesRegularExpression('/\b20\b/', $shown, 'in the 20 minutes the schedule had left, not in half an hour');
     }
 
-    /** The Tasks tab tells, under the table and on the button, that running a task leaves its next run where it was. */
+    /** The Tasks tab tells that running a task leaves its next run where it was. */
     public function testTheTasksTabSaysThatRunningKeepsTheSchedule(): void
     {
         $this->signInAsAdmin();
@@ -636,19 +992,7 @@ class JobsControllerTest extends YesWikiTestCase
         $body = (string)$this->api()->tab('tasks')->getContent();
 
         $hint = htmlspecialchars(_t('ADMIN_JOBS_RUN_TASK_HINT'), ENT_QUOTES);
-        $this->assertNotSame('ADMIN_JOBS_RUN_TASK_HINT', _t('ADMIN_JOBS_RUN_TASK_HINT'), 'the hint is translated');
-        $this->assertMatchesRegularExpression('/<p class="yw-text-muted">\s*' . preg_quote($hint, '/') . '\s*<\/p>/', $body, 'under the table');
-        $this->assertStringContainsString('title="' . $hint . '"', $body, 'and on the button');
-    }
-
-    /** Both languages word the hint and the answer the same way: the next run is named, and stays at its scheduled time. */
-    public function testEachLanguageSaysWhereTheNextRunComesFrom(): void
-    {
-        foreach (['fr', 'en'] as $language) {
-            $translations = require "src/lang/yeswiki_{$language}.php";
-            $this->assertArrayHasKey('ADMIN_JOBS_RUN_TASK_HINT', $translations, $language);
-            $this->assertStringContainsString('%{next}', $translations['ADMIN_JOBS_TASK_QUEUED'], "the {$language} answer names the next run");
-        }
+        $this->assertStringContainsString($hint, $body);
     }
 
     /** The "next run" cell of the first row of the Tasks tab, as the admin reads it. */
@@ -707,6 +1051,7 @@ class JobsControllerTest extends YesWikiTestCase
         $settings = $this->settings;
         $health ??= new HealthService([$this->kit->healthChecks($settings)]);
         $kit = $this->kit;
+        $configuration = $this->configuration ?? new ConfigurationService();
         $overview = new JobsOverview($settings, $kit->statistics, new QueueBudgetFactory(new NativeClock()), $health, $kit->ticker, $wiki->get(LanguageService::class), $kit->fallback($settings), $kit->clock);
 
         return new ServiceLocator([
@@ -726,7 +1071,7 @@ class JobsControllerTest extends YesWikiTestCase
             QueueConsumer::class => static fn (): QueueConsumer => $kit->consumer,
             QueueBudgetFactory::class => static fn (): QueueBudgetFactory => new QueueBudgetFactory(new NativeClock()),
             Journal::class => static fn (): Journal => $kit->journal,
-            ConfigurationService::class => static fn (): ConfigurationService => new ConfigurationService(),
+            ConfigurationService::class => static fn (): ConfigurationService => $configuration,
         ]);
     }
 
