@@ -46,11 +46,11 @@ class RemoteBackupService
     /**
      * Sign in to the remote wiki, keep what the next steps need, and queue the first one; the password is not kept.
      *
-     * @param array<string, mixed> $params
+     * @param array<string, mixed> $params what to ask the remote for on top of a full archive
      *
      * @return array<string, mixed>
      *
-     * @throws \Exception
+     * @throws \Exception when a fetch is already running, this wiki is busy, or the remote refuses
      */
     public function start(string $url, string $username, string $password, array $params = []): array
     {

@@ -125,11 +125,7 @@ class ThemeSelectorRenderer extends YesWikiController
         ] + $this->pagesOwnThemeNotice($mode));
     }
 
-    /**
-     * This page's own theme and how many pages keep one, for an admin choosing the site theme.
-     *
-     * @return array<string, mixed>
-     */
+    /** @return array<string, mixed> this page's own theme and how many pages keep one, for an admin choosing the site theme */
     private function pagesOwnThemeNotice(string $mode): array
     {
         if ($mode === 'edit' || !$this->getService(AclService::class)->isAdmin() || ($this->params->has('hide_action_template') && $this->params->get('hide_action_template') == '1')) {
@@ -148,11 +144,7 @@ class ThemeSelectorRenderer extends YesWikiController
         ];
     }
 
-    /**
-     * Every background thumbnail on offer.
-     *
-     * @return list<string>
-     */
+    /** @return list<string> every background thumbnail on offer */
     protected function prepareBackgrounds(): array
     {
         $backgrounds = [];

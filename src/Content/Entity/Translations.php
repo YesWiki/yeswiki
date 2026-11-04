@@ -5,12 +5,16 @@ namespace YesWiki\Content\Entity;
 /** The translations a Content body carries, and the paths they address. */
 final class Translations
 {
+    /** The body key holding every language's translations, nested the way Doryphore's `extralang` is. */
     public const BODY_KEY = '__extralang';
 
+    /** Where translations lived before, flat as path => text; still read, never written. */
     public const LEGACY_KEY = '__translations';
 
+    /** A form's own keys under the names Doryphore stores a form with. */
     private const FORM_KEYS = ['label' => 'title', 'template' => 'fields'];
 
+    /** A form field's attributes under the names Doryphore gives them. */
     private const FIELD_ATTRIBUTES = ['hint' => 'helper'];
 
     /** The keys a list element is identified by, so a path names an element rather than its position. */
@@ -240,7 +244,7 @@ final class Translations
     }
 
     /**
-     * $body with the translation store as nested objects, so `nodes.0` encodes as `{"0": ...}` like Doryphore.
+     * $body with the translation store turned into objects all the way down, so `nodes.0` is written `{"0": ...}` as Doryphore writes it.
      *
      * @param array<string, mixed> $body
      *
@@ -464,7 +468,7 @@ final class Translations
      * @param array<string, mixed> $body
      * @param list<string>         $segments
      *
-     * @return list<string>|null
+     * @return list<string>|null null when the path names an element $body no longer has
      */
     private static function toStorage(array $body, array $segments): ?array
     {

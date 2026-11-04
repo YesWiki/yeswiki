@@ -34,7 +34,7 @@ class LinkRenderer
      *
      * @param string       $link
      * @param string       $text
-     * @param array<mixed> $options
+     * @param array<mixed> $options HTML attributes, plus method, params and html (already-safe HTML, not escaped)
      */
     public function linkTo($link, $text = '', $options = []): string
     {
@@ -117,11 +117,7 @@ class LinkRenderer
         ]);
     }
 
-    /**
-     * Query of a link creating a missing page: the current page's own theme, header and footer.
-     *
-     * @return array<mixed>
-     */
+    /** @return array<mixed> query of a link creating a missing page: the current page's own theme, header and footer */
     public function paramsForNewPageLink(): array
     {
         $result = ['newpage' => 1];

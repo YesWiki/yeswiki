@@ -345,7 +345,7 @@ class ArchiveService implements EventSubscriberInterface
     /**
      * retrieve the current status to archive.
      *
-     * @return array<string, mixed>
+     * @return array<string, mixed> ['canArchive' => bool,'archiving' => bool, 'hibernated' => bool, 'privatePathWritable' => bool, 'canExec' => bool, 'estimatedSize' => int, 'freeSpace' => ?int]
      */
     public function getArchivingStatus(): array
     {
@@ -435,7 +435,9 @@ class ArchiveService implements EventSubscriberInterface
      *
      * @param array<array-key, mixed>      $foldersToInclude
      * @param array<array-key, mixed>      $foldersToExclude
-     * @param array<array-key, mixed>|null $onlyFolders
+     * @param array<array-key, mixed>|null $onlyFolders      the only folders the zip holds, null for the usual ones
+     *
+     * @return string uid
      */
     public function startArchive(
         bool $savefiles = true,
@@ -2011,7 +2013,7 @@ class ArchiveService implements EventSubscriberInterface
     /**
      * What is running, where each run says so, and the message in the queue that runs it (`message`).
      *
-     * @return array<string, mixed>
+     * @return array<string, mixed> the decoded info.json, keyed by uid
      */
     private function getInfoFromFile(): array
     {

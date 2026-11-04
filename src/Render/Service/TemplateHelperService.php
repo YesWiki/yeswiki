@@ -44,11 +44,7 @@ class TemplateHelperService
         return $this->container->get(Storage::class);
     }
 
-    /**
-     * The first image of the page, or the default Open Graph image.
-     *
-     * @param array<string, mixed> $page
-     */
+    /** @param array<string, mixed> $page the first image of the page, or the default Open Graph image */
     public function getImageFromBody(array $page, string $width, string $height): string
     {
         if (!$this->canRead($page)) {
@@ -172,11 +168,7 @@ class TemplateHelperService
         return (string)preg_replace('/(?<!`)(`+)(?!`).+?(?<!`)\1(?!`)/s', '', $markup);
     }
 
-    /**
-     * Every theme of the custom or shipped tree, with its stylesheets, squelettes and presets.
-     *
-     * @return array<string, array<string, mixed>>
-     */
+    /** @return array<string, array<string, mixed>> every theme of the custom or shipped tree, with its stylesheets, squelettes and presets */
     public function searchTemplateFiles(string $directory, bool $isCustom = false): array
     {
         $themes = [];
@@ -275,11 +267,7 @@ class TemplateHelperService
         return str_replace($token, $replace, $subject);
     }
 
-    /**
-     * The `data` parameter as key=value pairs.
-     *
-     * @return array<string, string>
-     */
+    /** @return array<string, string> the `data` parameter as key=value pairs */
     public function getDataParameter()
     {
         $data = $this->performableArguments->get('data');
@@ -369,11 +357,7 @@ class TemplateHelperService
         return $acls;
     }
 
-    /**
-     * The first heading of the page, or the title of the entry.
-     *
-     * @param array<string, mixed> $page
-     */
+    /** @param array<string, mixed> $page the first heading of the page, or the title of the entry */
     public function getTitleFromBody($page): string
     {
         if (!$this->canRead($page)) {

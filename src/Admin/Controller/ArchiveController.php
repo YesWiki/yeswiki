@@ -228,6 +228,8 @@ class ArchiveController extends YesWikiController
      * Queue the backup the API asks for.
      *
      * @param array<string, mixed> $params
+     *
+     * @return string uid
      */
     protected function startArchive(
         array $params = []
