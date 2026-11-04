@@ -525,6 +525,31 @@ class QueueScheduleTickerTest extends YesWikiTestCase
         $this->assertSame(1, $this->statistics->pendingCount());
     }
 
+    /**
+     * A run whose dispatch the Journal refuses is not queued. Queued without it, the task's anchor would not move; and once the pass
+     * took that run, which clears its dedup key, the next tick would queue the task again: a second digest to every subscriber.
+     */
+    public function testARunWhoseDispatchTheJournalRefusesIsNotQueuedSoItRunsOnce(): void
+    {
+        $this->ticker()->tick();
+        $this->clock->sleep(31 * 60);
+        $journal = (new JournalSchema($this->db))->table();
+        $this->db->query("CREATE TRIGGER refuse_dispatch BEFORE INSERT ON {$journal} WHEN NEW.action = '" . QueueJournalEntry::TASK_DISPATCHED . "'"
+            . " BEGIN SELECT RAISE(ABORT, 'database is locked'); END");
+
+        $this->assertSame(0, $this->ticker()->tick(), 'a run whose dispatch was refused is not counted as sent');
+        $this->transport->get();
+        $this->db->query('DROP TRIGGER refuse_dispatch');
+        $this->clock->sleep(60);
+
+        $this->assertSame(1, $this->ticker()->tick(), 'the task is still due, and queued once the Journal takes it');
+        $this->transport->get();
+        $this->clock->sleep(60);
+        $this->assertSame(0, $this->ticker()->tick(), 'its anchor moved: nothing is due before the next slot');
+
+        $this->assertSame(1, (int)$this->db->scalar("SELECT COUNT(*) FROM {$this->schema->table()}"), 'one run of the task in all');
+    }
+
     /** A task whose trigger has ended has no next run: it is never sent, and the schedule is read again in a minute rather than at every tick. */
     public function testATaskWhoseTriggerHasEndedIsNeverSent(): void
     {

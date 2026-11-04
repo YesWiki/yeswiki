@@ -19,7 +19,8 @@ use YesWiki\Kernel\Service\Journal;
 /**
  * The bus the wiki dispatches on: a message is always stored in the queue, never handled in the request that sent it;
  * only a message the consumer took (ReceivedStamp) reaches the handlers. Dispatching never breaks the page.
- * A scheduled task the queue took, or that a waiting run absorbed, is journaled as dispatched: the Scheduler counts from it.
+ * A scheduled task the queue took, or that a waiting run absorbed, is journaled as dispatched in the same transaction: the Scheduler
+ * counts from that row, so a Journal that refuses it leaves the run unqueued and the task due, rather than queued twice.
  */
 #[AsAlias(MessageBusInterface::class, public: true)]
 class QueueBus implements MessageBusInterface
@@ -58,7 +59,9 @@ class QueueBus implements MessageBusInterface
         }
 
         try {
-            $sent = $this->transport->send($envelope);
+            $sent = $message instanceof ScheduledTask
+                ? $this->transport->atomically(fn (): Envelope => $this->sendWithItsDispatch($envelope, $message))
+                : $this->transport->send($envelope);
         } catch (\Throwable $failed) {
             if ($this->transport->inTransaction()) {
                 throw $failed;
@@ -76,27 +79,19 @@ class QueueBus implements MessageBusInterface
         if ($runner !== null && $id !== null) {
             $runner->pin((int)$id);
         }
-        if ($message instanceof ScheduledTask && $id !== null) {
-            $this->recordDispatch($message, $envelope->last(TaskPeriodStamp::class)?->seconds);
-        }
 
         return $sent;
     }
 
-    /** Journals that task's dispatch, with its period when the sender said it; a Journal that cannot be written is said, and breaks no page outside a transaction. */
-    private function recordDispatch(ScheduledTask $task, ?int $everySeconds): void
+    /**
+     * Sends that task's run and journals its dispatch, with its period when the sender said it, in the transaction atomically() opened:
+     * the Scheduler counts from that row, so a run is never queued without it.
+     */
+    private function sendWithItsDispatch(Envelope $envelope, ScheduledTask $task): Envelope
     {
-        try {
-            $this->recorder->taskDispatched($task, $everySeconds);
-        } catch (\Throwable $failed) {
-            if ($this->transport->inTransaction()) {
-                throw $failed;
-            }
-            $this->journal->error('Queued the task ' . $task->taskId() . ' but could not journal its dispatch: ' . $failed->getMessage(), [
-                'action' => 'queue.dispatch_failed',
-                'target' => $task::class,
-                'exception' => $failed,
-            ]);
-        }
+        $sent = $this->transport->send($envelope);
+        $this->recorder->taskDispatched($task, $envelope->last(TaskPeriodStamp::class)?->seconds);
+
+        return $sent;
     }
 }

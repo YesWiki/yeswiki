@@ -205,6 +205,21 @@ class QueueTransport implements TransportInterface, MessageCountAwareInterface, 
         return $row === null ? null : $this->decode($row);
     }
 
+    /**
+     * Runs $work in one transaction on this queue's connection, so that what it writes besides a send() is kept or undone with it;
+     * the whole of it is retried on a conflict, which a send() inside it no longer is on its own.
+     *
+     * @template T
+     *
+     * @param callable(): T $work
+     *
+     * @return T
+     */
+    public function atomically(callable $work): mixed
+    {
+        return $this->db->transactional($work, self::CONFLICT_ATTEMPTS);
+    }
+
     /** Whether a caller's transaction is open on this queue's connection, which a failed send() leaves only able to roll back. */
     public function inTransaction(): bool
     {

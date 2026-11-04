@@ -127,7 +127,7 @@ class QueueBusTest extends TestCase
         }
     }
 
-    /** The task is queued, but its dispatch is what the Scheduler counts from: inside the caller's transaction a Journal that cannot take it is thrown, not swallowed. */
+    /** Inside the caller's transaction a Journal that cannot take the task's dispatch is thrown, not swallowed: the caller's commit is doomed either way. */
     public function testADispatchTheJournalCannotTakeInsideATransactionThrows(): void
     {
         (new JournalSchema($this->db))->drop();
@@ -182,16 +182,34 @@ class QueueBusTest extends TestCase
         $this->assertSame([], $this->dispatches(), 'nothing was sent: the task is still due');
     }
 
-    /** The run is queued all the same: the page that sent it carries on, and the next tick's send is absorbed by it. */
-    public function testADispatchTheJournalCannotTakeIsSaidNotThrown(): void
+    /**
+     * A task's run and its dispatch row are written together or not at all: a run queued without the row the Scheduler counts from
+     * would leave the task due, and once the pass took the run (which clears its dedup key) the next tick would queue it again.
+     * The page that sent it carries on, the failure is said, and the task stays due for the next tick.
+     */
+    public function testATaskWhoseDispatchTheJournalCannotTakeIsNotQueued(): void
     {
         (new JournalSchema($this->db))->drop();
 
-        $this->bus->dispatch(new QueueTestTask());
+        $envelope = $this->bus->dispatch(new QueueTestTask());
 
-        $this->assertSame(1, $this->transport->getMessageCount());
+        $this->assertNull($envelope->last(TransportMessageIdStamp::class), 'the ticker is told it was not sent');
+        $this->assertSame(0, $this->transport->getMessageCount(), 'no run without its dispatch row');
         rewind($this->log);
-        $this->assertStringContainsString('could not journal its dispatch', (string)stream_get_contents($this->log));
+        $written = (string)stream_get_contents($this->log);
+        $this->assertStringContainsString('queue.dispatch_failed', $written);
+        $this->assertStringContainsString('ywq_journal', $written, 'what the Journal answered');
+    }
+
+    /** Only a scheduled task needs its dispatch row: a plain message is queued whatever the Journal. */
+    public function testAPlainMessageIsQueuedWhenTheJournalIsMissing(): void
+    {
+        (new JournalSchema($this->db))->drop();
+
+        $envelope = $this->bus->dispatch(new QueueTestMessage('plain'));
+
+        $this->assertNotNull($envelope->last(TransportMessageIdStamp::class));
+        $this->assertSame(1, $this->transport->getMessageCount());
     }
 
     public function testAPlainMessageWritesNoDispatch(): void

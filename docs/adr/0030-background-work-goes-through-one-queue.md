@@ -113,6 +113,7 @@ sequenceDiagram
   R->>C: drain(mode, budget)
   C->>S: tick()
   S->>B: dispatch the scheduled tasks that are due
+  Note over B,O: each run is sent with its queue.task.dispatched row, in one transaction
   loop until the queue is empty or the budget is spent
     W->>C: take another? (the average of its type fits the budget)
     W->>T: claim, atomic, naming pid, start time and machine
@@ -514,6 +515,14 @@ Each point names the class or method to look at.
   Scheduler did send it, and an interval counted from the older one would run the task twice after a
   jam. A send that failed, a retry and a "Relancer" from the jobs page (the same run resuming, not a
   new due time) write nothing.
+- **A task's run and its dispatch row are one transaction.** The pass that follows the tick takes the
+  run at once, and taking it clears its dedup key: a run queued without its row would leave the anchor
+  where it was, and the next tick would queue the task a second time (a second digest to every
+  subscriber). So the bus sends the run and writes the row together (`QueueTransport::atomically()`),
+  and a Journal that refuses the row undoes the send: the dispatch is journaled as
+  `queue.dispatch_failed`, the ticker counts nothing sent, and the task stays due for the next tick. A
+  Journal that stays broken holds the scheduled tasks back, said every minute, rather than running
+  them again and again. A plain message needs no row and is queued whatever the Journal.
 - **A task seen for the first time is noted, not sent.** Under the lock the ticker writes
   `queue.task.declared`, and the task waits for its first run after that. "Never sent means due at
   once" was the first idea and was dropped: a wiki that has run for months can see a task appear with
