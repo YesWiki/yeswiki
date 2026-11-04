@@ -138,7 +138,6 @@ class QueueRequestTrigger implements RequestScopedState
         $this->consumer->drain(
             QueueConsumerMode::Request,
             $this->budgets->forMode(QueueConsumerMode::Request, $responseAlreadySent),
-            true,
             $responseAlreadySent,
             $fallbackFor === null ? QueuePassOrigin::Consumer : QueuePassOrigin::Fallback,
             $fallbackFor,

@@ -678,7 +678,7 @@ class ArchiveQueueTest extends YesWikiTestCase
     /** A pass of a consumer of its own, as the API route would run. */
     private function drain(): void
     {
-        $this->consumer->drain(QueueConsumerMode::Api, $this->kit->budgets->forMode(QueueConsumerMode::Api, true), false);
+        $this->consumer->drain(QueueConsumerMode::Api, $this->kit->budgets->forMode(QueueConsumerMode::Api, true));
     }
 
     /** @param 'host'|'reaped'|'limit' $death */

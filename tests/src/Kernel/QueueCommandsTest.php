@@ -82,27 +82,29 @@ class QueueCommandsTest extends YesWikiTestCase
         $this->assertLessThan($limit, $ceiling, 'and stops short of PHP\'s own limit, which would be a fatal error');
     }
 
-    /** Emptying the queue is what is already in it: a scheduled task that is due waits for the consumer of the mode. */
-    public function testDrainDoesNotTickTheSchedule(): void
+    /** A drain ticks the schedule first: a scheduled task that is due is queued and handled in the same pass. */
+    public function testDrainTicksTheScheduleThenHandlesWhatIsDue(): void
     {
-        $this->kit->dispose();
-        $clock = new MockClock();
-        $this->kit = new QueueTestKit([QueueTestTask::class => function (QueueTestTask $task): void {
-            $this->kit->handled[] = 'scheduled';
-        }], $clock, schedule: new class implements ProvidesSchedule {
-            public function recurringMessages(): array
-            {
-                return [RecurringMessage::every('30 minutes', new QueueTestTask('digest'))];
-            }
-        });
-        $this->kit->ticker->tick();
+        $clock = $this->kitWithAHalfHourlyTask();
         $clock->sleep(31 * 60);
         $this->kit->send('a');
 
         $this->execute('messenger:consume', ['--drain' => true]);
 
-        $this->assertSame(['a'], $this->kit->handled);
+        $this->assertEqualsCanonicalizing(['a', 'scheduled'], $this->kit->handled);
         $this->assertSame(0, $this->kit->statistics->pendingCount());
+    }
+
+    /** Only the tasks that are due: one whose next run is ahead is not run early. */
+    public function testDrainLeavesATaskThatIsNotDueYet(): void
+    {
+        $clock = $this->kitWithAHalfHourlyTask();
+        $clock->sleep(10 * 60);
+        $this->kit->send('a');
+
+        $this->execute('messenger:consume', ['--drain' => true]);
+
+        $this->assertSame(['a'], $this->kit->handled);
     }
 
     public function testDrainWhileAnotherPassRunsSaysLocked(): void
@@ -403,6 +405,24 @@ class QueueCommandsTest extends YesWikiTestCase
         }], $clock);
         $this->kit->transport->send(new Envelope(new QueueTestOnceMessage('a')));
         $this->kit->send('b');
+    }
+
+    /** A kit whose schedule has one task every 30 minutes, seen once at 12:01 so that its next run is the 12:30 slot; returns its clock. */
+    private function kitWithAHalfHourlyTask(): MockClock
+    {
+        $this->kit->dispose();
+        $clock = new MockClock('2026-01-05 12:01:00');
+        $this->kit = new QueueTestKit([QueueTestTask::class => function (QueueTestTask $task): void {
+            $this->kit->handled[] = 'scheduled';
+        }], $clock, schedule: new class implements ProvidesSchedule {
+            public function recurringMessages(): array
+            {
+                return [RecurringMessage::every('30 minutes', new QueueTestTask('digest'))];
+            }
+        });
+        $this->kit->ticker->tick();
+
+        return $clock;
     }
 
     /** @param array<string, mixed> $options */

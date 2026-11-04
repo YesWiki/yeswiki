@@ -205,8 +205,9 @@ Depuis un terminal, dans le dossier du wiki :
 ./yeswicli messenger:consume --drain
 ```
 
-traite ce qui attend dans la file, puis s'arrête. Les tâches planifiées ne sont
-pas ajoutées, et il n'y a pas de limite de temps. C'est un outil, quel que soit
+ajoute à la file les tâches planifiées qui sont dues, traite ce qui attend dans
+la file, puis s'arrête. Une tâche planifiée qui n'est pas encore due n'est pas
+lancée en avance, et il n'y a pas de limite de temps. C'est un outil, quel que soit
 le mode : pour traiter la file régulièrement en dehors des visites, choisissez
 `api` ou `worker`.
 

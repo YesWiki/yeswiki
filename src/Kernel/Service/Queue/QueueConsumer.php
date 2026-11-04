@@ -76,7 +76,7 @@ class QueueConsumer
     }
 
     /** One pass that ends by itself: due tasks first, then messages until the queue is empty or the budget spent; never throws. */
-    public function drain(QueueConsumerMode $mode, QueueBudget $budget, bool $tickSchedule = true, bool $responseAlreadySent = true, QueuePassOrigin $origin = QueuePassOrigin::Consumer, ?QueueConsumerMode $fallbackFor = null): QueuePassReport
+    public function drain(QueueConsumerMode $mode, QueueBudget $budget, bool $responseAlreadySent = true, QueuePassOrigin $origin = QueuePassOrigin::Consumer, ?QueueConsumerMode $fallbackFor = null): QueuePassReport
     {
         $startedAt = microtime(true);
         $lock = $this->runtimeLock->acquire(self::PASS_LOCK);
@@ -97,14 +97,12 @@ class QueueConsumer
                 }
             }
 
-            return $this->pass($mode, $budget, !$responseAlreadySent, $origin, $fallbackFor, function (QueuePassObserver $observer) use ($mode, $budget, $tickSchedule, $responseAlreadySent): string {
+            return $this->pass($mode, $budget, !$responseAlreadySent, $origin, $fallbackFor, function (QueuePassObserver $observer) use ($mode, $budget, $responseAlreadySent): string {
                 $this->budgetContext->start($budget);
                 try {
                     $this->transport->claimAs($mode, $budget->killLimitSeconds);
                     $this->reapKilled($observer);
-                    if ($tickSchedule) {
-                        $this->tick();
-                    }
+                    $this->tick();
 
                     $averages = [];
                     $receiver = new QueuePassReceiver(

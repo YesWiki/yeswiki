@@ -17,7 +17,7 @@ use YesWiki\Kernel\Service\Queue\QueueSettings;
 
 /**
  * `./yeswicli messenger:consume`: a blocking consumer kept alive by the Go binary (`--supervised`) or a process manager;
- * `--drain` empties the queue once and exits, `--message` runs the one message a request handed it.
+ * `--drain` queues the scheduled tasks that are due, empties the queue once and exits, `--message` runs the one message a request handed it.
  */
 class QueueConsumeCommand extends Command
 {
@@ -42,7 +42,7 @@ class QueueConsumeCommand extends Command
             ->addOption('memory-limit', null, InputOption::VALUE_REQUIRED, 'Stop when memory use passes this (128M, 512K, bytes, -1 for none)', '128M')
             ->addOption('limit', null, InputOption::VALUE_REQUIRED, 'Stop after this many messages')
             ->addOption('supervised', null, InputOption::VALUE_NONE, 'Started by the Go binary: only runs when the wiki\'s mode is `worker`, exits ' . self::EXIT_NOT_MY_MODE . ' otherwise')
-            ->addOption('drain', null, InputOption::VALUE_NONE, 'Consume what is already in the queue, then exit: no scheduled task, no wait')
+            ->addOption('drain', null, InputOption::VALUE_NONE, 'Queue the scheduled tasks that are due, consume what is in the queue, then exit: no wait')
             ->addOption('message', null, InputOption::VALUE_REQUIRED, 'Handle only the message of this id, which a request pinned (a backup or a restore an admin started)');
     }
 
@@ -98,7 +98,6 @@ class QueueConsumeCommand extends Command
         $report = $this->services->get(QueueConsumer::class)->drain(
             QueueConsumerMode::Request,
             $this->services->get(QueueBudgetFactory::class)->forHand(),
-            false,
             true,
             QueuePassOrigin::Manual
         );

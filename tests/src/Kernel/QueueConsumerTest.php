@@ -680,7 +680,7 @@ class QueueConsumerTest extends YesWikiTestCase
     {
         $this->send(2);
 
-        $this->consumer->drain(QueueConsumerMode::Request, $this->seconds(30), true, false);
+        $this->consumer->drain(QueueConsumerMode::Request, $this->seconds(30), false);
 
         $pass = $this->statistics->lastPass();
         $this->assertNotNull($pass);
@@ -790,11 +790,10 @@ class QueueConsumerTest extends YesWikiTestCase
         $this->assertSame('memory', $this->statistics->lastPass()['stopReason'] ?? null);
     }
 
-    public function testTheScheduleIsTickedFirstUnlessAskedNotTo(): void
+    public function testTheScheduleIsTickedFirst(): void
     {
         $this->build($this->db, new MockClock(self::START, 'UTC'), static fn (): array => [RecurringMessage::every('30 minutes', new QueueTestTask())]);
-        $this->consumer->drain(QueueConsumerMode::Api, $this->seconds(30), false);
-        $this->assertSame([], $this->history->all(), 'not ticked');
+        $this->assertSame([], $this->history->all(), 'never seen before the pass');
 
         $this->consumer->drain(QueueConsumerMode::Api, $this->seconds(30));
         $this->assertSame(['test-task'], array_keys($this->history->all()), 'ticked: the task was noted');

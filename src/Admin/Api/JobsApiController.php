@@ -52,7 +52,7 @@ class JobsApiController extends YesWikiController
 
         $mode = $this->getService(QueueSettings::class)->mode()->forPassFromTheWeb();
         $budget = $this->getService(QueueBudgetFactory::class)->forMode($mode, true)->cappedTo(self::CONSUME_SECONDS);
-        $report = $this->getService(QueueConsumer::class)->drain($mode, $budget, true, true, QueuePassOrigin::Manual);
+        $report = $this->getService(QueueConsumer::class)->drain($mode, $budget, true, QueuePassOrigin::Manual);
 
         return match ($report->stopReason) {
             QueuePassReport::LOCKED => $this->status(_t('ADMIN_JOBS_CONSUME_LOCKED'), 'warning'),

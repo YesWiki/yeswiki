@@ -146,8 +146,8 @@ moved to the failed jobs, with the advice to switch to `worker`, where nothing c
 ./yeswicli messenger:consume --drain
 ```
 
-consumes what is already waiting, then exits: it queues no scheduled task, never waits for more,
-and has no time limit. It exits 0 when it ended normally (or found another pass already running,
+queues the scheduled tasks that are due (none ahead of its time), consumes what is waiting, then
+exits: it never waits for more, and has no time limit. It exits 0 when it ended normally (or found another pass already running,
 which it says), 1 on an error and 2 on a bad option. It is meant for a terminal, whatever the mode;
 to consume regularly outside page views, choose `worker` or `api`.
 
