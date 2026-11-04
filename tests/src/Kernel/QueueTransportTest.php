@@ -17,8 +17,10 @@ use Symfony\Component\Messenger\Stamp\RedeliveryStamp;
 use Symfony\Component\Messenger\Stamp\SentToFailureTransportStamp;
 use Symfony\Component\Messenger\Stamp\TransportMessageIdStamp;
 use YesWiki\Kernel\Queue\QueueClaimHolder;
+use YesWiki\Kernel\Queue\QueueClaimStamp;
 use YesWiki\Kernel\Queue\QueueConsumerMode;
 use YesWiki\Kernel\Service\DbService;
+use YesWiki\Kernel\Service\Queue\QueueHolderLock;
 use YesWiki\Kernel\Service\Queue\QueueSchema;
 use YesWiki\Kernel\Service\Queue\QueueTransport;
 use YesWiki\Test\Core\YesWikiTestCase;
@@ -29,6 +31,7 @@ require_once 'tests/src/Kernel/QueueTestUniqueMessage.php';
 require_once 'tests/src/Kernel/QueueTestTask.php';
 require_once 'tests/src/Kernel/QueueTestHolders.php';
 require_once 'tests/src/Kernel/QueueTestRacingDb.php';
+require_once 'tests/src/Kernel/QueueTestKit.php';
 
 /** The Messenger transport that keeps the queue in the wiki's own database, and its claim that two consumers never share. */
 #[CoversClass(QueueTransport::class)]
@@ -42,6 +45,11 @@ class QueueTransportTest extends YesWikiTestCase
     private DbService $db;
     private QueueSchema $schema;
     private QueueTransport $transport;
+    /** The instance directory of the holder locks of $locked. */
+    private string $dir;
+    private QueueHolderLock $holderLock;
+    /** A transport that holds a lock for each of its claims and judges holders by theirs. */
+    private QueueTransport $locked;
 
     protected function setUp(): void
     {
@@ -51,14 +59,23 @@ class QueueTransportTest extends YesWikiTestCase
         $this->schema = new QueueSchema($this->db);
         $this->schema->create();
         $this->transport = new QueueTransport($this->db, $this->schema, clock: $this->clock);
+        $this->dir = sys_get_temp_dir() . '/yw-holders-' . bin2hex(random_bytes(4));
+        $this->holderLock = new QueueHolderLock(QueueTestKit::locksIn($this->dir));
+        $this->locked = new QueueTransport($this->db, $this->schema, clock: $this->clock, holderLock: $this->holderLock);
     }
 
     protected function tearDown(): void
     {
-        unset($this->transport, $this->schema, $this->db);
+        unset($this->transport, $this->locked, $this->holderLock, $this->schema, $this->db);
         foreach (['', '-wal', '-shm'] as $suffix) {
             @unlink($this->file . $suffix);
         }
+        foreach (glob($this->dir . '/' . QueueHolderLock::DIRECTORY . '/*') ?: [] as $holder) {
+            @unlink($holder);
+        }
+        @rmdir($this->dir . '/' . QueueHolderLock::DIRECTORY);
+        @rmdir($this->dir . '/cache');
+        @rmdir($this->dir);
     }
 
     public function testSendThenGetReturnsTheSameMessageOnce(): void
@@ -434,6 +451,118 @@ class QueueTransportTest extends YesWikiTestCase
 
         $this->clock->sleep(1);
         $this->assertSame([self::idOf($taken)], array_column($this->transport->reapKilled(), 'id'));
+    }
+
+    /** A claim's lock is held, as another process sees it, from the moment the claim is made until its ack, which removes the file. */
+    public function testAClaimHoldsItsLockUntilAcked(): void
+    {
+        $this->locked->send(new Envelope(new QueueTestMessage('held')));
+        [$taken] = [...$this->locked->get()];
+        $token = self::tokenOf($taken);
+
+        $this->assertSame(QueueHolderLock::HELD, self::seenFromAnotherProcess($this->holderFile($token)));
+        $this->assertSame(QueueHolderLock::HELD, $this->holderLock->stateOf($token));
+
+        $this->locked->ack($taken);
+
+        $this->assertFileDoesNotExist($this->holderFile($token));
+    }
+
+    /** What the consumer fails as its process ends lets go of its lock too, and leaves no file behind. */
+    public function testAClaimFailedAsItsProcessEndsLetsGoOfItsLock(): void
+    {
+        $this->locked->claimAs(QueueConsumerMode::Request, 30);
+        $this->locked->send(new Envelope(new QueueTestMessage('held')));
+        [$taken] = [...$this->locked->get()];
+        $token = self::tokenOf($taken);
+        $this->assertSame(QueueHolderLock::HELD, self::seenFromAnotherProcess($this->holderFile($token)));
+
+        $this->assertSame([self::idOf($taken)], array_column($this->locked->failHeldClaims(), 'id'));
+
+        $this->assertFileDoesNotExist($this->holderFile($token));
+    }
+
+    /** A claim that finds nothing to take, the queue being empty or the message gone, releases the lock it took first. */
+    public function testAClaimThatTakesNothingLeavesNoLockBehind(): void
+    {
+        $this->assertSame([], [...$this->locked->get()]);
+        $this->assertNull($this->locked->getById(9999), 'a claim of a message that is not there');
+
+        $this->assertSame([], glob($this->dir . '/' . QueueHolderLock::DIRECTORY . '/*'));
+    }
+
+    /** A server's process (FPM) still at work past its limit holds its lock: no judge reaps it nor calls it dead; only the ceiling ends it. */
+    public function testAServersProcessThatHoldsItsLockKeepsItsMessagePastItsLimit(): void
+    {
+        $this->locked->claimAs(QueueConsumerMode::Request, 1);
+        $this->locked->send(new Envelope(new QueueTestMessage('slow')));
+        [$taken] = [...$this->locked->get()];
+        $token = QueueTestHolders::hand($this->db, $this->schema, self::idOf($taken), QueueTestHolders::living(false));
+        $release = QueueTestHolders::lockHeldByAnotherProcess($this->holderFile($token));
+        try {
+            $this->clock->sleep(120);
+            $this->assertSame([], $this->locked->reapKilled());
+            $this->assertSame([], $this->locked->expiredClaims());
+            $this->assertTrue($this->locked->isHandling());
+
+            $this->clock->sleep(3600);
+            $this->assertSame([self::idOf($taken)], array_column($this->locked->reapKilled(), 'id'), 'past the ceiling it is stuck, not slow');
+        } finally {
+            $this->assertSame(0, $release());
+        }
+    }
+
+    /** A server's process that let go of its lock without its ack has ended its request: its message is failed at once, and the file removed. */
+    public function testAServersProcessThatLetGoOfItsLockIsGoneAtOnce(): void
+    {
+        $this->locked->claimAs(QueueConsumerMode::Request, 1);
+        $this->locked->send(new Envelope(new QueueTestMessage('dies')));
+        [$taken] = [...$this->locked->get()];
+        $token = QueueTestHolders::hand($this->db, $this->schema, self::idOf($taken), QueueTestHolders::living(false));
+        $this->assertSame(0, QueueTestHolders::lockHeldByAnotherProcess($this->holderFile($token))());
+
+        $this->assertSame([self::idOf($taken)], array_column($this->locked->reapKilled(), 'id'));
+
+        $this->assertSame('request', $this->row(self::idOf($taken))['killed_in'] ?? null);
+        $this->assertFileDoesNotExist($this->holderFile($token));
+    }
+
+    /** The judges that only read (statistics, health checks, the end of request) leave the file of a holder that is gone; the reaper removes it. */
+    public function testOnlyTheReaperForgetsALockLeftBehind(): void
+    {
+        $this->locked->claimAs(QueueConsumerMode::Request, 1);
+        $this->locked->send(new Envelope(new QueueTestMessage('dies')));
+        [$taken] = [...$this->locked->get()];
+        $token = QueueTestHolders::hand($this->db, $this->schema, self::idOf($taken), QueueTestHolders::living(false));
+        $this->assertSame(0, QueueTestHolders::lockHeldByAnotherProcess($this->holderFile($token))());
+
+        $this->assertSame([self::idOf($taken)], array_column($this->locked->expiredClaims(), 'id'));
+        $this->assertFalse($this->locked->isHandling());
+        $this->assertSame([], $this->locked->liveHolders());
+        $this->assertFileExists($this->holderFile($token));
+
+        $this->locked->reapKilled();
+
+        $this->assertFileDoesNotExist($this->holderFile($token));
+    }
+
+    /** Where cache/ cannot be written the claim is made all the same, without a lock, and judged by the rules a claim without one always was. */
+    public function testAClaimIsMadeEvenWhenItsLockCannotBeCreated(): void
+    {
+        $notADirectory = (string)tempnam(sys_get_temp_dir(), 'yw-not-a-dir-');
+        try {
+            $transport = new QueueTransport($this->db, $this->schema, clock: $this->clock, holderLock: new QueueHolderLock(QueueTestKit::locksIn($notADirectory)));
+            $transport->send(new Envelope(new QueueTestMessage('unlocked')));
+
+            [$taken] = [...$transport->get()];
+
+            $this->assertSame(self::tokenOf($taken), $this->row(self::idOf($taken))['delivered_by'] ?? null);
+            $this->assertTrue($transport->isHandling());
+            $transport->ack($taken);
+            $this->assertNull($this->row(self::idOf($taken)));
+        } finally {
+            @unlink($notADirectory);
+        }
     }
 
     /**
@@ -1096,6 +1225,28 @@ class QueueTransportTest extends YesWikiTestCase
     private function row(int $id): ?array
     {
         return $this->db->loadSingle("SELECT * FROM {$this->schema->table()} WHERE id = ?", [$id]);
+    }
+
+    /** The absolute path of the lock file of that token. */
+    private function holderFile(string $token): string
+    {
+        return $this->dir . '/' . QueueHolderLock::pathOf($token);
+    }
+
+    private static function tokenOf(Envelope $envelope): string
+    {
+        $stamp = $envelope->last(QueueClaimStamp::class);
+        self::assertInstanceOf(QueueClaimStamp::class, $stamp);
+
+        return $stamp->token;
+    }
+
+    /** Whether that file's lock is HELD, FREE or ABSENT, as a process other than this one finds it. */
+    private static function seenFromAnotherProcess(string $absolutePath): string
+    {
+        $code = '$h = @fopen($argv[1], "r"); if ($h === false) { echo "' . QueueHolderLock::ABSENT . '"; exit; } echo flock($h, LOCK_EX | LOCK_NB) ? "' . QueueHolderLock::FREE . '" : "' . QueueHolderLock::HELD . '";';
+
+        return trim((string)shell_exec(escapeshellarg(PHP_BINARY) . ' -r ' . escapeshellarg($code) . ' -- ' . escapeshellarg($absolutePath)));
     }
 
     private static function idOf(Envelope $envelope): int

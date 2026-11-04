@@ -11,6 +11,7 @@ use YesWiki\Kernel\Service\DatabaseClock;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\Queue\QueueBudgetFactory;
 use YesWiki\Kernel\Service\Queue\QueueBus;
+use YesWiki\Kernel\Service\Queue\QueueHolderLock;
 use YesWiki\Kernel\Service\Queue\QueueSchema;
 use YesWiki\Kernel\Service\Queue\QueueTransport;
 use YesWiki\Test\Core\YesWikiTestCase;
@@ -21,6 +22,7 @@ require_once 'tests/src/Kernel/QueueTestMessage.php';
 /** On the wiki's own container: what a service dispatches on Messenger's bus is stored for the consumer, not handled on the spot. */
 #[CoversClass(QueueBus::class)]
 #[CoversClass(QueueBudgetFactory::class)]
+#[CoversClass(QueueTransport::class)]
 class QueueKernelWiringTest extends YesWikiTestCase
 {
     public function testAMessageDispatchedOnTheContainersBusIsStoredAndNotHandled(): void
@@ -58,5 +60,15 @@ class QueueKernelWiringTest extends YesWikiTestCase
         $clock = (new \ReflectionProperty(QueueBudgetFactory::class, 'phpClock'))->getValue($services->get(QueueBudgetFactory::class));
 
         $this->assertNotInstanceOf(DatabaseClock::class, $clock);
+    }
+
+    /** The container's transport holds and reads the holder lock of its claims: without it a server's process at work is judged by its limit alone. */
+    public function testTheContainersTransportHoldsTheLocksOfItsClaims(): void
+    {
+        $services = self::getWiki()->services;
+
+        $holderLock = (new \ReflectionProperty(QueueTransport::class, 'holderLock'))->getValue($services->get(QueueTransport::class));
+
+        $this->assertSame($services->get(QueueHolderLock::class), $holderLock);
     }
 }

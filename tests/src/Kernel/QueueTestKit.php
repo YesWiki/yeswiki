@@ -64,6 +64,8 @@ final class QueueTestKit
     public readonly DbService $db;
     public readonly QueueSchema $schema;
     public readonly RuntimeLock $locks;
+    /** The locks the transport holds for its claims, in the kit's own directory. */
+    public readonly QueueHolderLock $holderLock;
     /** The one clock every part of the queue reads. */
     public readonly ClockInterface $clock;
     public readonly QueueBudgetFactory $budgets;
@@ -134,7 +136,9 @@ final class QueueTestKit
         $config['wiki_status'] = 'running';
         $configuration->write($config);
 
-        $this->transport = new QueueTransport($db, $schema, $clock);
+        $this->locks = $locks = self::locksIn($this->lockDir);
+        $this->holderLock = new QueueHolderLock($locks);
+        $this->transport = new QueueTransport($db, $schema, $clock, holderLock: $this->holderLock);
         $this->statistics = new QueueStatistics($db, $schema, new JournalSchema($db), $this->transport, $clock);
         $this->journal = $journal = new Journal(new ServiceLocator([
             DbService::class => static fn (): DbService => $db,
@@ -164,7 +168,6 @@ final class QueueTestKit
             fn (): QueueRequestTrigger => $this->trigger ?? $this->requestTrigger(new QueueSettings(new ParameterBag([]), static fn (): array => [])),
         );
         $this->history = new ScheduleHistory($db, new JournalSchema($db));
-        $this->locks = $locks = self::locksIn($this->lockDir);
         $schedule ??= new class implements ProvidesSchedule {
             public function recurringMessages(): array
             {

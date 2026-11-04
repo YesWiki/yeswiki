@@ -31,6 +31,7 @@ use YesWiki\Kernel\Service\RequestScopedState;
  * The Messenger transport of the queue: one row per message in the wiki's own database, written on DbService.
  * One table holds the `default` and `failed` queues, told apart by `queue_name`.
  * Every time is the database's (DatabaseClock), in UTC; whether a claim's holder is dead is judged per R19.
+ * Each claim holds a lock on a file of its token (QueueHolderLock) from before its token is written until it is let go: a holder of this machine that holds it is alive, one that left it free is gone, whatever PHP's limit says.
  */
 class QueueTransport implements TransportInterface, MessageCountAwareInterface, RequestScopedState
 {
@@ -68,6 +69,7 @@ class QueueTransport implements TransportInterface, MessageCountAwareInterface, 
         private readonly ClockInterface $clock,
         private readonly SerializerInterface $serializer = new PhpSerializer(),
         private string $queueName = self::DEFAULT_QUEUE,
+        private readonly ?QueueHolderLock $holderLock = null,
     ) {
     }
 
@@ -262,7 +264,7 @@ class QueueTransport implements TransportInterface, MessageCountAwareInterface, 
     }
 
     /**
-     * Moves to `failed` the deliveries expiredClaims() calls dead, each once whoever else reaps, and returns them.
+     * Moves to `failed` the deliveries expiredClaims() calls dead, each once whoever else reaps, removes their holder's lock file, and returns them.
      *
      * @return list<array{id: int, type: string, mode: string, deliveredAt: string}>
      */
@@ -271,6 +273,7 @@ class QueueTransport implements TransportInterface, MessageCountAwareInterface, 
         $killed = [];
         foreach ($this->expiredClaims() as $claim) {
             if ($this->failClaim($claim['id'], $claim['deliveredBy'], $claim['mode'])) {
+                $this->holderLock?->forget($claim['deliveredBy']);
                 $killed[] = ['id' => $claim['id'], 'type' => $claim['type'], 'mode' => $claim['mode'], 'deliveredAt' => $claim['deliveredAt']];
             }
         }
@@ -297,7 +300,7 @@ class QueueTransport implements TransportInterface, MessageCountAwareInterface, 
     }
 
     /**
-     * The deliveries whose consumer must be dead (R19) and that nobody has moved to `failed` yet.
+     * The deliveries whose consumer must be dead (R19) and that nobody has moved to `failed` yet; it only reads, leaving every lock file where it is.
      *
      * @return list<array{id: int, type: string, mode: string, deliveredAt: string, deliveredBy: string}>
      */
@@ -489,6 +492,9 @@ class QueueTransport implements TransportInterface, MessageCountAwareInterface, 
     /**
      * Claims the next available message (or that one) with a token only this call knows, and answers its row.
      *
+     * The token's lock is taken before the token is written, so that a judge, which only reads tokens already written, never finds its file
+     * free between its creation and its lock; a claim that takes nothing lets it go, and one whose file cannot be made is still made, without it.
+     *
      * @return array<string, mixed>|null
      */
     private function claim(?int $id = null): ?array
@@ -500,6 +506,7 @@ class QueueTransport implements TransportInterface, MessageCountAwareInterface, 
         $table = $this->schema->table();
         $now = self::format($this->now());
         $token = QueueClaimHolder::thisProcess()->token();
+        $this->holderLock?->hold($token);
 
         $row = $this->db->transactional(function () use ($table, $now, $token, $id): ?array {
             $candidate = $id === null
@@ -536,6 +543,8 @@ class QueueTransport implements TransportInterface, MessageCountAwareInterface, 
                 'deliveredAt' => (string)$row['delivered_at'],
             ];
             self::$heldHere[$token] = true;
+        } else {
+            $this->holderLock?->release($token);
         }
 
         return $row;
@@ -600,19 +609,26 @@ class QueueTransport implements TransportInterface, MessageCountAwareInterface, 
         return $seconds === null || $now > self::parse((string)$row['delivered_at'])->modify('+' . ($seconds + self::KILL_GRACE_SECONDS) . ' seconds');
     }
 
-    /** Whether the holder a claim token names is ALIVE, GONE or UNKNOWN, as far as this process can tell. */
-    private function holderState(string $token): string
+    /** Whether the holder a claim token names is ALIVE, GONE or UNKNOWN, as far as this process can tell: by its lock when it has one, else by its process. */
+    public function holderState(string $token): string
     {
         $holder = QueueClaimHolder::ofToken($token);
         if ($holder === null) {
             return QueueClaimHolder::UNKNOWN;
         }
         $here = QueueClaimHolder::thisProcess();
-        if ($holder->isSameProcessAs($here)) {
-            if (isset(self::$heldHere[$token])) {
-                return QueueClaimHolder::ALIVE;
-            }
+        $sameProcess = $holder->isSameProcessAs($here);
+        if ($sameProcess && isset(self::$heldHere[$token])) {
+            return QueueClaimHolder::ALIVE;
+        }
 
+        // Read only: the file of a holder that is gone stays until reapKilled() fails its claim.
+        $lock = $this->holderLock?->stateOf($token) ?? QueueHolderLock::ABSENT;
+        if ($lock !== QueueHolderLock::ABSENT) {
+            return $lock === QueueHolderLock::HELD ? QueueClaimHolder::ALIVE : QueueClaimHolder::GONE;
+        }
+
+        if ($sameProcess) {
             return ZEND_THREAD_SAFE ? QueueClaimHolder::UNKNOWN : QueueClaimHolder::GONE;
         }
 
@@ -634,9 +650,11 @@ class QueueTransport implements TransportInterface, MessageCountAwareInterface, 
         )->rowCount() === 1;
     }
 
+    /** Forgets a claim this transport made, and lets go of its lock: the file is removed before the lock is, and after an ack its row is already gone. */
     private function letGo(string $token): void
     {
         unset($this->held[$token], self::$heldHere[$token]);
+        $this->holderLock?->release($token);
     }
 
     /** A dedup key cut to its column: a readable start and the hash of the whole, so that long keys stay distinct. */
