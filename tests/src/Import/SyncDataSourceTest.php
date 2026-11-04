@@ -104,26 +104,29 @@ class SyncDataSourceTest extends YesWikiTestCase
         $this->assertSame(604800, $plan['sync-weekly']['every']);
     }
 
-    /** No state of its own: a source counts its interval from its last dispatch, or from when the Scheduler first saw it, whatever its log says. */
-    public function testASourceSyncsEveryIntervalFromItsLastDispatch(): void
+    /** No state of its own: a source syncs on the slots of its interval, counted from midnight in the wiki's timezone, whatever its log says. */
+    public function testASourceSyncsOnTheSlotsOfItsInterval(): void
     {
+        $this->clock->modify('2026-11-03 10:00:00');
         $this->storage->storeDerived('cache/importer/once_a_day.log', 'done');
         $this->touchLog('once_a_day', '-23 hours');
         $tick = $this->ticker($this->schedule(self::SOURCES));
 
         $this->assertSame([], $tick(), 'the tick that first sees them runs nothing');
         $this->clock->sleep(29 * 60);
-        $this->assertSame([], $tick(), 'neither source before its first interval');
+        $this->assertSame([], $tick(), 'neither source before its first slot');
         $this->clock->sleep(2 * 60);
-        $this->assertSame(['sync-every_time'], $tick(), 'half an hour after it was first seen');
-        $this->clock->sleep(29 * 60);
-        $this->assertSame([], $tick(), 'half an hour from its dispatch, not from the start');
+        $this->assertSame(['sync-every_time'], $tick(), 'the 10:30 slot, a minute late');
+        $this->clock->sleep(28 * 60);
+        $this->assertSame([], $tick());
         $this->clock->sleep(60);
-        $this->assertSame(['sync-every_time'], $tick());
-        $this->clock->sleep(22 * 3600 + 29 * 60);
-        $this->assertSame(['sync-every_time'], $tick(), 'synced 23 hours before it was first seen, the once-a-day source still waits a day from then');
-        $this->clock->sleep(30 * 60);
-        $this->assertSame(['sync-every_time', 'sync-once_a_day'], $tick(), 'a day after it was first seen');
+        $this->assertSame(['sync-every_time'], $tick(), 'on the hour, not half an hour after the late run');
+
+        $midnight = new \DateTimeImmutable('2026-11-04 00:00:00', new \DateTimeZone(date_default_timezone_get()));
+        $this->clock->sleep($midnight->getTimestamp() - $this->clock->now()->getTimestamp() - 1);
+        $this->assertSame(['sync-every_time'], $tick(), 'synced 23 hours before it was first seen, the once-a-day source still waits for midnight');
+        $this->clock->sleep(1);
+        $this->assertSame(['sync-every_time', 'sync-once_a_day'], $tick(), 'at midnight in the wiki\'s timezone');
     }
 
     /** As for the digests: a sync run by hand (the button, `importer:sync`, `{{sync}}`, the API) moves nothing. */
@@ -143,6 +146,7 @@ class SyncDataSourceTest extends YesWikiTestCase
     /** A source that always fails costs one attempt per interval, not one per tick: the schedule moves on whatever the handler did. */
     public function testAFailingSourceComesBackOneIntervalLaterAndNotAtEveryTick(): void
     {
+        $this->clock->modify('2026-11-03 10:00:00');
         $handler = $this->handler($this->importer(static fn (): string => throw new \RuntimeException('feed unreachable')));
         $tick = $this->ticker($this->schedule(['every_time' => self::SOURCES['every_time']]));
         $tick();
@@ -160,7 +164,7 @@ class SyncDataSourceTest extends YesWikiTestCase
         $this->clock->sleep(28 * 60);
         $this->assertSame([], $tick(), 'nor before the interval');
         $this->clock->sleep(60);
-        $this->assertSame(['sync-every_time'], $tick(), 'an interval after the last run');
+        $this->assertSame(['sync-every_time'], $tick(), 'on the next slot, an interval after the last run');
     }
 
     /** Spec section 8: a wiki where nothing ticked for hours syncs once at the next tick, not once per interval missed. */

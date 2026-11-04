@@ -128,7 +128,7 @@ class JobsApiController extends YesWikiController
             : $this->status(_t('ADMIN_JOBS_DELETED'));
     }
 
-    /** Queues a run of a scheduled task now; its next run is counted from this one. */
+    /** Queues a run of a scheduled task now; its next run stays on its slot (ScheduleGrid). */
     #[Route('/api/admin/jobs/tasks/{taskId}/run', methods: ['POST'], options: ['acl' => self::ADMIN_ACL])]
     public function runTask(string $taskId): Response
     {

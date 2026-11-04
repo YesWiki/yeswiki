@@ -43,7 +43,7 @@ require_once 'tests/src/Kernel/QueueTestTask.php';
 require_once 'tests/src/Kernel/QueueTestKit.php';
 require_once 'tests/src/Kernel/QueueTransportTest.php';
 
-/** The scheduler only feeds the queue: a task is due a trigger's run after its last dispatch, or after it first appeared, as the Journal tells. */
+/** The scheduler only feeds the queue: a task is due on its grid's first slot after its last dispatch, or after it first appeared, as the Journal tells. */
 #[CoversClass(QueueScheduleTicker::class)]
 #[CoversClass(QueueRecorder::class)]
 #[CoversClass(ScheduleHistory::class)]
@@ -141,8 +141,28 @@ class QueueScheduleTickerTest extends YesWikiTestCase
         $this->assertSame('Test task test-task', $task['label']);
         $this->assertSame(1800, $task['everySeconds']);
         $this->assertSame('2026-10-23 12:31:00', $task['lastDispatchedAt']?->format('Y-m-d H:i:s'));
-        $this->assertSame('2026-10-23 13:01:00', $task['nextDueAt']?->format('Y-m-d H:i:s'), 'the interval counts from the dispatch');
-        $this->assertSame('2026-10-23 13:01:00', $this->ticker()->dueAt()?->format('Y-m-d H:i:s'));
+        $this->assertSame('2026-10-23 13:00:00', $task['nextDueAt']?->format('Y-m-d H:i:s'), 'the next slot, not a period after the dispatch');
+        $this->assertSame('2026-10-23 13:00:00', $this->ticker()->dueAt()?->format('Y-m-d H:i:s'));
+    }
+
+    /** Ticks that come late do not add up: every 30 minutes stays on :00 and :30. */
+    public function testALateTickDoesNotPushTheNextSlotBack(): void
+    {
+        $this->ticker()->tick();
+        $this->clock->modify('2026-10-23 12:33:00');
+        $this->assertSame(1, $this->ticker()->tick());
+        $this->assertSame('2026-10-23 13:00:00', $this->ticker()->dueAt()?->format('Y-m-d H:i:s'));
+        $this->db->query("DELETE FROM {$this->schema->table()} WHERE queue_name = 'default'");
+
+        $this->clock->modify('2026-10-23 13:07:00');
+        $this->assertSame(1, $this->ticker()->tick());
+        $this->assertSame('2026-10-23 13:30:00', $this->ticker()->dueAt()?->format('Y-m-d H:i:s'));
+        $this->db->query("DELETE FROM {$this->schema->table()} WHERE queue_name = 'default'");
+
+        $this->clock->modify('2026-10-23 13:29:59');
+        $this->assertSame(0, $this->ticker()->tick());
+        $this->clock->modify('2026-10-23 13:30:00');
+        $this->assertSame(1, $this->ticker()->tick());
     }
 
     /** A periodical trigger anchors on the first date it is asked about: whatever a ticker is asked first, the interval runs from the task's anchor. */
@@ -157,7 +177,7 @@ class QueueScheduleTickerTest extends YesWikiTestCase
         $this->assertSame(1, $ticker->tick());
 
         $this->clock->sleep(60);
-        $this->assertSame('2026-10-23 13:01:00', ($ticker->task('test-task') ?? $this->fail('no task'))['nextDueAt']?->format('Y-m-d H:i:s'));
+        $this->assertSame('2026-10-23 13:00:00', ($ticker->task('test-task') ?? $this->fail('no task'))['nextDueAt']?->format('Y-m-d H:i:s'));
         $this->clock->modify('2026-10-23 12:45:00');
         $this->assertSame(0, $ticker->tick());
     }
@@ -213,7 +233,7 @@ class QueueScheduleTickerTest extends YesWikiTestCase
         $this->assertSame(1, $this->rows(QueueJournalEntry::TASK_DECLARED), 'it is not seen anew');
     }
 
-    /** What the user chose: a task run by hand counts its next run from then. */
+    /** A task run by hand waits for the slot after it: the grid does not move. */
     public function testRunNowShiftsTheSchedule(): void
     {
         $this->ticker()->tick();
@@ -224,9 +244,12 @@ class QueueScheduleTickerTest extends YesWikiTestCase
         $this->assertFalse($ticker->runNow('no-such-task'));
 
         $this->assertSame(1, $this->statistics->pendingCount());
-        $this->assertSame('2026-10-23 12:40:00', $this->task('test-task')['nextDueAt']?->format('Y-m-d H:i:s'));
-        $this->clock->modify('2026-10-23 12:31:00');
+        $this->assertSame('2026-10-23 12:30:00', $this->task('test-task')['nextDueAt']?->format('Y-m-d H:i:s'));
+        $this->clock->modify('2026-10-23 12:29:00');
         $this->assertSame(0, $this->ticker()->tick());
+        $this->db->query("DELETE FROM {$this->schema->table()} WHERE queue_name = 'default'");
+        $this->clock->modify('2026-10-23 12:30:00');
+        $this->assertSame(1, $this->ticker()->tick());
     }
 
     /** A run of the task still waits: nothing more is queued, but the Scheduler did send it then, and counts from it. */
@@ -274,7 +297,7 @@ class QueueScheduleTickerTest extends YesWikiTestCase
         $this->assertSame('2026-10-23 12:30:00', $long->dueAt()?->format('Y-m-d H:i:s'), 'held in memory');
 
         $this->clock->sleep(60);
-        $this->assertSame('2026-10-23 13:01:00', $long->dueAt()?->format('Y-m-d H:i:s'));
+        $this->assertSame('2026-10-23 13:00:00', $long->dueAt()?->format('Y-m-d H:i:s'));
         $this->assertSame(0, $long->tick());
     }
 
@@ -358,7 +381,7 @@ class QueueScheduleTickerTest extends YesWikiTestCase
         $this->assertSame(1, $this->ticker([$digests])->tick(), 'the other task is still dispatched');
         $tasks = $this->ticker([$digests])->tasks();
         $this->assertSame(['digest', 'test-task'], array_column($tasks, 'taskId'), 'the digest task is kept');
-        $this->assertSame(['Test task digest', 1800, '2026-10-23 13:01:00'], [$tasks[0]['label'], $tasks[0]['everySeconds'], $tasks[0]['nextDueAt']?->format('Y-m-d H:i:s')], 'from the Journal: its period counts from its last dispatch');
+        $this->assertSame(['Test task digest', 1800, '2026-10-23 13:00:00'], [$tasks[0]['label'], $tasks[0]['everySeconds'], $tasks[0]['nextDueAt']?->format('Y-m-d H:i:s')], 'from the Journal: the slot of its period after its last dispatch');
         $this->assertSame('2026-10-23 12:31:00', $tasks[0]['lastDispatchedAt']?->format('Y-m-d H:i:s'));
         $declared = $this->ticker([$digests])->declaredTaskIds();
         sort($declared);
@@ -530,7 +553,7 @@ class QueueScheduleTickerTest extends YesWikiTestCase
 
         $this->assertSame(1, $ticker->tick(), 'ten runs missed while asleep, one catch-up');
         $this->assertSame(1, $this->statistics->pendingCount());
-        $this->assertSame('2026-10-23 17:31:00', $this->ticker()->dueAt()?->format('Y-m-d H:i:s'));
+        $this->assertSame('2026-10-23 17:30:00', $this->ticker()->dueAt()?->format('Y-m-d H:i:s'));
     }
 
     public function testThePruneTaskForgetsWhatIsPastItsRetention(): void
@@ -596,13 +619,14 @@ class QueueScheduleTickerTest extends YesWikiTestCase
             $this->assertSame(0, $this->ticker()->tick());
             $this->clock->sleep(31 * 60);
             $this->assertSame(1, $this->ticker()->tick());
-            $this->assertSame('2026-10-23 13:01:00', $this->ticker()->dueAt()?->format('Y-m-d H:i:s'));
+            $this->assertSame('2026-10-23 13:00:00', $this->ticker()->dueAt()?->format('Y-m-d H:i:s'));
             $this->assertSame(0, $this->ticker()->tick(), 'the dispatch is read back as it was written');
 
             $this->clock->sleep(60);
             $this->assertTrue($this->ticker()->runNow('test-task'));
             $this->assertSame(1, $this->statistics->pendingCount());
-            $this->assertSame('2026-10-23 13:02:00', $this->task('test-task')['nextDueAt']?->format('Y-m-d H:i:s'), 'running it by hand moved the next due time');
+            $this->assertSame('2026-10-23 12:32:00', $this->task('test-task')['lastDispatchedAt']?->format('Y-m-d H:i:s'), 'running it by hand is read back as a dispatch');
+            $this->assertSame('2026-10-23 13:00:00', $this->task('test-task')['nextDueAt']?->format('Y-m-d H:i:s'), 'and the next slot stays put');
 
             $recorder = $this->recorder();
             $recorder->taskFinished('test-task', QueueRecorder::FAILED, 'boom');

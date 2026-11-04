@@ -606,7 +606,7 @@ class JobsControllerTest extends YesWikiTestCase
         }
     }
 
-    /** Running a task by hand moves its next run to that launch plus its interval, and the answer says when, as the Tasks tab does. */
+    /** Running a task by hand leaves its next run on its slot, and the answer says when, as the Tasks tab does. */
     public function testRunningATaskSaysWhenItIsNextDue(): void
     {
         $this->signInAsAdmin();
@@ -616,7 +616,7 @@ class JobsControllerTest extends YesWikiTestCase
         $response = $this->api(post: true)->runTask('test-task');
 
         $next = $this->kit->ticker->task('test-task')['nextDueAt'] ?? null;
-        $this->assertSame('2026-10-23 12:40:00', $next?->format('Y-m-d H:i:s'), 'counted from the launch, not from the schedule');
+        $this->assertSame('2026-10-23 12:30:00', $next?->format('Y-m-d H:i:s'), 'the schedule, not the launch plus an interval');
         $shown = $this->nextRunShownOnTheTasksTab();
         $this->assertStringContainsString(htmlspecialchars($shown, ENT_QUOTES), (string)$response->getContent(), 'the same words as the tab for the next run');
         $this->assertStringContainsString(
@@ -624,11 +624,11 @@ class JobsControllerTest extends YesWikiTestCase
             (string)$response->getContent(),
             'in the sentence that says the task is waiting'
         );
-        $this->assertMatchesRegularExpression('/\b30\b/', $shown, 'in half an hour, not in the 20 minutes the schedule had left');
+        $this->assertMatchesRegularExpression('/\b20\b/', $shown, 'in the 20 minutes the schedule had left, not in half an hour');
     }
 
-    /** The Tasks tab tells, under the table and on the button, that running a task counts its next run from then. */
-    public function testTheTasksTabSaysThatRunningShiftsTheSchedule(): void
+    /** The Tasks tab tells, under the table and on the button, that running a task leaves its next run where it was. */
+    public function testTheTasksTabSaysThatRunningKeepsTheSchedule(): void
     {
         $this->signInAsAdmin();
         $this->kitWithAHalfHourlyTask();
@@ -641,7 +641,7 @@ class JobsControllerTest extends YesWikiTestCase
         $this->assertStringContainsString('title="' . $hint . '"', $body, 'and on the button');
     }
 
-    /** Both languages word the hint and the answer the same way: the next run is named, and counted from the launch. */
+    /** Both languages word the hint and the answer the same way: the next run is named, and stays at its scheduled time. */
     public function testEachLanguageSaysWhereTheNextRunComesFrom(): void
     {
         foreach (['fr', 'en'] as $language) {

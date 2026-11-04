@@ -57,6 +57,11 @@ signale un problème.
 | synchronisation automatique de chaque source de données                       | selon le réglage de la source, au plus toutes les 30 minutes ; la première une minute après l'avoir activée |
 | ménage de la file elle-même                                                   | une fois par jour                                                                                           |
 
+Les fréquences se calent sur l'horloge du wiki, à partir de minuit : « toutes
+les 30 minutes » veut dire à l'heure pile et à la demie (7 h 00, 7 h 30…), « une
+fois par jour » veut dire à minuit. Un passage en retard ne décale pas les
+suivants.
+
 Une tâche en retard (parce que rien n'a traité la file pendant un moment) ne
 tourne qu'**une fois** au passage suivant, pas autant de fois qu'elle a été
 manquée.
@@ -334,9 +339,9 @@ dans le Journal.
 
 Les tâches régulières, avec leur fréquence, leur dernière exécution, leur
 résultat (et la dernière erreur si elle a échoué) et leur prochaine échéance.
-**Lancer** met une tâche dans la file tout de suite, et sa prochaine échéance
-se compte alors à partir de ce lancement : pratique pour vérifier qu'une
-correction a marché.
+**Lancer** met une tâche dans la file tout de suite, sans décaler sa prochaine
+échéance, qui reste à l'heure prévue : pratique pour vérifier qu'une correction
+a marché.
 
 ![L'onglet Tâches planifiées : six tâches de ménage traitées et une synchronisation échouée](images/async-onglet-taches.png)
 

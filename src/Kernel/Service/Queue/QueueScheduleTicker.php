@@ -8,6 +8,7 @@ use Symfony\Component\Messenger\Stamp\TransportMessageIdStamp;
 use Symfony\Component\Scheduler\Exception\LogicException;
 use Symfony\Component\Scheduler\Generator\MessageContext;
 use Symfony\Component\Scheduler\Schedule;
+use Symfony\Component\Scheduler\Trigger\PeriodicalTrigger;
 use Symfony\Component\Scheduler\Trigger\TriggerInterface;
 use YesWiki\Files\Service\RuntimeLock;
 use YesWiki\Kernel\Queue\ProvidesSchedule;
@@ -19,7 +20,8 @@ use YesWiki\Kernel\Service\Journal;
 
 /**
  * Turns the recurring tasks that are due into messages in the queue (messenger / scheduler): a task is due at its trigger's first run after
- * its anchor, its last dispatch or its first sighting, as the Journal tells (ScheduleHistory); one process ticks at a time, under LOCK.
+ * its anchor, its last dispatch or its first sighting, as the Journal tells (ScheduleHistory), on the fixed slots of ScheduleGrid rather
+ * than a period after the anchor; one process ticks at a time, under LOCK.
  * The schedule stands still while the wiki is hibernated; tick() returns at once while the next due time, held in memory, is ahead.
  */
 class QueueScheduleTicker
@@ -47,6 +49,7 @@ class QueueScheduleTicker
         private readonly ClockInterface $clock,
         private readonly HibernationService $hibernation,
         private readonly ?Journal $journal = null,
+        private readonly ScheduleGrid $grid = new ScheduleGrid(),
     ) {
     }
 
@@ -123,7 +126,7 @@ class QueueScheduleTicker
     }
 
     /**
-     * The tasks declared, by id, with their history and next due time (now when never seen); while a provider throws, the Journal's others too, due a period after their anchor.
+     * The tasks declared, by id, with their history and next due time (now when never seen); while a provider throws, the Journal's others too, due on the slot after their anchor.
      *
      * @return list<array{taskId: string, label: string, everySeconds: int, lastDispatchedAt: ?\DateTimeImmutable, nextDueAt: ?\DateTimeImmutable, lastFinishedAt: ?\DateTimeImmutable, lastStatus: ?string, lastError: ?string, consecutiveFailures: int}>
      */
@@ -137,14 +140,15 @@ class QueueScheduleTicker
         foreach ($this->tasksOf($schedule, $now) as [$task, $trigger]) {
             $history = $histories[$task->taskId()] ?? null;
             $anchor = $history?->anchor();
-            $next = $anchor === null ? $now : $trigger->getNextRunDate($anchor);
-            $every = self::periodOf($trigger, $next ?? $now, $anchor !== null && $next !== null);
+            $next = $anchor === null ? $now : $this->grid->nextRun($trigger, $anchor);
+            $every = $this->periodOf($trigger, $next ?? $now, $anchor !== null && $next !== null);
             $tasks[$task->taskId()] = self::row($task->taskId(), $task->label(), $every, $next, $history);
         }
         if (!$complete) {
             foreach ($histories as $taskId => $history) {
                 $every = $history->everySeconds ?? 0;
-                $next = $every > 0 ? $history->anchor()?->modify("+{$every} seconds") : null;
+                $anchor = $history->anchor();
+                $next = $every > 0 && $anchor !== null ? $this->grid->nextRun(new PeriodicalTrigger($every), $anchor) : null;
                 $tasks[(string)$taskId] ??= self::row((string)$taskId, $history->label ?? (string)$taskId, $every, $next, $history);
             }
         }
@@ -177,7 +181,7 @@ class QueueScheduleTicker
             if ($task->taskId() === $taskId) {
                 $this->learntAt = null;
 
-                return $this->queue($task, self::periodOf($trigger, $now));
+                return $this->queue($task, $this->periodOf($trigger, $now));
             }
         }
 
@@ -246,12 +250,12 @@ class QueueScheduleTicker
             foreach ($this->tasksOf($schedule, $now, true) as [$task, $trigger]) {
                 $anchor = ($histories[$task->taskId()] ?? null)?->anchor();
                 if ($anchor === null) {
-                    $this->recorder->taskDeclared($task, self::periodOf($trigger, $now));
+                    $this->recorder->taskDeclared($task, $this->periodOf($trigger, $now));
 
                     continue;
                 }
-                $next = $trigger->getNextRunDate($anchor);
-                if ($next !== null && $next <= $now && $this->queue($task, self::periodOf($trigger, $next, true))) {
+                $next = $this->grid->nextRun($trigger, $anchor);
+                if ($next !== null && $next <= $now && $this->queue($task, $this->periodOf($trigger, $next, true))) {
                     $dispatched++;
                 }
             }
@@ -273,7 +277,7 @@ class QueueScheduleTicker
             if ($anchor === null) {
                 return null;
             }
-            $next = $trigger->getNextRunDate($anchor);
+            $next = $this->grid->nextRun($trigger, $anchor);
             if ($next !== null && ($earliest === null || $next < $earliest)) {
                 $earliest = $next;
             }
@@ -349,11 +353,18 @@ class QueueScheduleTicker
         return $this->learntAt === null || $now->getTimestamp() - $this->learntAt->getTimestamp() >= self::RECHECK_SECONDS;
     }
 
-    /** How far apart a trigger's runs are, from the next two after $from, or $from and the one after when it is a run; 0 when they are not there. */
-    private static function periodOf(TriggerInterface $trigger, \DateTimeImmutable $from, bool $isARun = false): int
+    /**
+     * How far apart a trigger's runs are: an every()'s period, else from the next two runs after $from, or $from and the one after
+     * when it is a run; 0 when they are not there.
+     */
+    private function periodOf(TriggerInterface $trigger, \DateTimeImmutable $from, bool $isARun = false): int
     {
-        $next = $isARun ? $from : $trigger->getNextRunDate($from);
-        $after = $next === null ? null : $trigger->getNextRunDate($next);
+        $every = $this->grid->everySeconds($trigger);
+        if ($every !== null) {
+            return $every;
+        }
+        $next = $isARun ? $from : $this->grid->nextRun($trigger, $from);
+        $after = $next === null ? null : $this->grid->nextRun($trigger, $next);
 
         return $next === null || $after === null ? 0 : $after->getTimestamp() - $next->getTimestamp();
     }
