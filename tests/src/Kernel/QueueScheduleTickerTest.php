@@ -75,8 +75,15 @@ class QueueScheduleTickerTest extends YesWikiTestCase
     /** Whether the digests' provider of testAProviderThatThrowsLeavesTheOthersScheduledAndKeepsItsTasks throws. */
     private bool $digestsBroken = false;
 
+    /** @var array<string, string|false> the environment overdue() clears: a wiki loaded earlier in the run puts its .env there, and CI's says `api` */
+    private array $savedEnv = [];
+
     protected function setUp(): void
     {
+        foreach ([QueueSettings::ENV_MODE, QueueSettings::ENV_BINARY] as $name) {
+            $this->savedEnv[$name] = getenv($name);
+            putenv($name);
+        }
         $this->params = new ParameterBag(['wiki_status' => 'running']);
         $this->file = tempnam(sys_get_temp_dir(), 'yw-queue-') . '.db';
         $this->lockDir = sys_get_temp_dir() . '/yw-ticker-locks-' . bin2hex(random_bytes(4));
@@ -98,6 +105,10 @@ class QueueScheduleTickerTest extends YesWikiTestCase
 
     protected function tearDown(): void
     {
+        foreach ($this->savedEnv as $name => $before) {
+            putenv($before === false ? $name : "$name=$before");
+        }
+        $this->savedEnv = [];
         unset($this->statistics, $this->history, $this->transport, $this->schema, $this->db);
         putenv($this->previousConfigFile === false ? 'YESWIKI_CONFIG_FILE' : 'YESWIKI_CONFIG_FILE=' . $this->previousConfigFile);
         @unlink($this->configFile);
