@@ -47,6 +47,13 @@ class JobsApiController extends YesWikiController
         if (($refused = $this->refusal()) !== null) {
             return $refused;
         }
+        // The pass has no limit: holding the admin's session that long would keep every other page of theirs waiting, and a closed tab must not cut it.
+        if (session_status() === PHP_SESSION_ACTIVE) {
+            session_write_close();
+        }
+        if (function_exists('ignore_user_abort')) {
+            ignore_user_abort(true);
+        }
 
         $mode = $this->getService(QueueSettings::class)->mode()->forPassFromTheWeb();
         $report = $this->getService(QueueConsumer::class)->drain($mode, $this->getService(QueueBudgetFactory::class)->untilEmpty(), true, QueuePassOrigin::Manual);

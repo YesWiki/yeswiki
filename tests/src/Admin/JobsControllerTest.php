@@ -439,6 +439,43 @@ class JobsControllerTest extends YesWikiTestCase
         ]), ENT_QUOTES), (string)$response->getContent());
     }
 
+    /** The button's pass may run for long: the admin's session is released before it, or every other page of that admin would wait for it to end. */
+    public function testConsumeNowReleasesTheSessionBeforeThePass(): void
+    {
+        $sessionWhileHandling = [];
+        $this->kit->dispose();
+        $this->kit = new QueueTestKit([QueueTestMessage::class => static function () use (&$sessionWhileHandling): void {
+            $sessionWhileHandling[] = session_status();
+        }]);
+        $hadSession = session_status() === PHP_SESSION_ACTIVE;
+        if (!$hadSession) {
+            @session_start();
+        }
+        if (session_status() !== PHP_SESSION_ACTIVE) {
+            $this->markTestSkipped('a session cannot be opened here');
+        }
+        // Signed in once the session is open, which would otherwise load over the login.
+        $this->signInAsAdmin();
+        $this->kit->send('a');
+
+        try {
+            $response = $this->api(post: true)->consume();
+        } finally {
+            if ($hadSession && session_status() !== PHP_SESSION_ACTIVE) {
+                @session_start();
+            } elseif (!$hadSession) {
+                session_write_close();
+            }
+        }
+
+        $this->assertSame([PHP_SESSION_NONE], $sessionWhileHandling, 'released while the message runs');
+        $this->assertStringContainsString(htmlspecialchars(_t('ADMIN_JOBS_CONSUMED', [
+            'handled' => 1,
+            'remaining' => 0,
+            'reason' => _t('QUEUE_STOP_EMPTY'),
+        ]), ENT_QUOTES), (string)$response->getContent(), 'the answer is rendered all the same');
+    }
+
     /** The admin's button is not the consumer the wiki waits for: pressed during a fallback, it must not end it. */
     public function testConsumeNowIsRecordedAsManual(): void
     {

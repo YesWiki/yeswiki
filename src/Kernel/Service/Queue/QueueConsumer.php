@@ -125,7 +125,15 @@ class QueueConsumer
                         },
                         $observer
                     );
-                    $this->work($receiver, $observer, null, self::stopWhenIdle(...));
+                    // A pass with no deadline (the jobs page's button) may run for hours: it says it is alive, as consume() does, so that no judge closes it as killed.
+                    $lastBeat = $this->now();
+                    $this->work($receiver, $observer, null, function (WorkerRunningEvent $event) use ($observer, $passId, &$lastBeat): void {
+                        self::stopWhenIdle($event);
+                        if (!$event->isWorkerIdle() && $this->now() - $lastBeat >= self::HEARTBEAT_SECONDS) {
+                            $lastBeat = $this->now();
+                            $this->recorder->passHeartbeat($passId, $observer->handled(), memory_get_peak_usage(true));
+                        }
+                    });
 
                     return $receiver->stopReason() ?? QueuePassReport::EMPTY;
                 } finally {

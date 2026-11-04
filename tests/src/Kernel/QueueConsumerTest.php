@@ -670,6 +670,30 @@ class QueueConsumerTest extends YesWikiTestCase
         }
     }
 
+    /** A long pass with no deadline (the jobs page's button) says it is alive between its messages, at most once a minute, so that nobody closes it as killed while it works. */
+    public function testADrainSaysItIsAliveBetweenItsMessages(): void
+    {
+        $this->assertInstanceOf(MockClock::class, $this->clock);
+        $seen = [];
+        $this->behaviour = function (QueueTestMessage $message) use (&$seen): void {
+            $pass = $this->statistics->openPasses()[0] ?? null;
+            $this->assertNotNull($pass);
+            $seen[$message->value] = $this->lastSeenOf($pass['id']);
+            $this->clock->sleep($message->value === 'm1' ? 61 : 30);
+        };
+        $this->send(4);
+
+        $report = $this->consumer->drain(QueueConsumerMode::Api, new QueueBudget(INF, PHP_INT_MAX, 3600), origin: QueuePassOrigin::Manual);
+
+        $this->assertSame(QueuePassReport::EMPTY, $report->stopReason);
+        $this->assertSame([
+            'm0' => self::START,
+            'm1' => self::START,
+            'm2' => '2026-10-23 12:01:31',
+            'm3' => '2026-10-23 12:01:31',
+        ], $seen, 'a beat once a minute has passed since the last one, after the message that crossed it');
+    }
+
     public function testAnOpenPassWithoutHolderIsClosedPastTheCeiling(): void
     {
         $unnamed = QueueTestKit::recordPass($this->db, QueueConsumerMode::Request, self::START, self::START, '', origin: QueuePassOrigin::Manual);
