@@ -79,17 +79,27 @@ class RuntimeLock
         return \is_resource($handle) && flock($handle, LOCK_EX | LOCK_NB);
     }
 
-    /** Whether some handle holds the lock now, asked without creating the file. */
-    public function isHeld(string $path): bool
+    /**
+     * Whether some handle holds the lock now, asked without creating the file.
+     *
+     * @return bool|null null when there is no file, true when another handle holds it, false when it is free
+     */
+    public function probe(string $path): ?bool
     {
         $handle = @fopen($this->absolute($path), 'r');
         if ($handle === false) {
-            return false;
+            return null;
         }
         $free = flock($handle, LOCK_EX | LOCK_NB);
         $this->release($handle);
 
         return !$free;
+    }
+
+    /** Whether some handle holds the lock now, asked without creating the file. */
+    public function isHeld(string $path): bool
+    {
+        return $this->probe($path) === true;
     }
 
     /** @param resource|null $handle */

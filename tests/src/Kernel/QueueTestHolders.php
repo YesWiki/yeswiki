@@ -46,6 +46,38 @@ final class QueueTestHolders
         return new QueueClaimHolder($ownProcess, $pid, QueueClaimHolder::thisProcess()->machine, $fields[19]);
     }
 
+    /**
+     * Another process takes the exclusive lock on that file and keeps it until the closure returns; it answers once the lock is taken.
+     *
+     * @return \Closure(): int lets the other process go, waits for it to end, and answers its exit code (0 when it held the lock all along)
+     */
+    public static function lockHeldByAnotherProcess(string $absolutePath): \Closure
+    {
+        if (!is_dir(\dirname($absolutePath))) {
+            mkdir(\dirname($absolutePath), 0o777, true);
+        }
+        $code = '$h = fopen($argv[1], "c"); if ($h === false || !flock($h, LOCK_EX | LOCK_NB)) { exit(2); } fwrite(STDOUT, "ok\n"); fflush(STDOUT); fgets(STDIN); exit(0);';
+        $process = proc_open([PHP_BINARY, '-r', $code, '--', $absolutePath], [0 => ['pipe', 'r'], 1 => ['pipe', 'w'], 2 => ['pipe', 'w']], $pipes);
+        Assert::assertIsResource($process, 'the other process could not be started');
+        stream_set_timeout($pipes[1], 10);
+        $answer = trim((string)fgets($pipes[1]));
+        if ($answer !== 'ok') {
+            fclose($pipes[0]);
+            $error = (string)stream_get_contents($pipes[2]);
+            proc_terminate($process);
+            proc_close($process);
+            Assert::fail("the other process did not take the lock: '{$answer}' {$error}");
+        }
+
+        return static function () use ($process, $pipes): int {
+            fclose($pipes[0]);
+            fclose($pipes[1]);
+            fclose($pipes[2]);
+
+            return proc_close($process);
+        };
+    }
+
     /** Hands the claim on that message to that holder, as if its process had taken it; answers the token it now carries. */
     public static function hand(DbService $db, QueueSchema $schema, int $messageId, QueueClaimHolder $holder): string
     {

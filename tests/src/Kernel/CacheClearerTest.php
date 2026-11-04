@@ -23,6 +23,8 @@ class CacheClearerTest extends TestCase
         foreach (['queue-pass.lock', 'queue-schedule.lock'] as $lock) {
             file_put_contents($this->root . '/cache/' . $lock, '');
         }
+        mkdir($this->root . '/cache/queue-holders');
+        file_put_contents($this->root . '/cache/queue-holders/00ff12ab.lock', '');
     }
 
     protected function tearDown(): void
@@ -61,7 +63,8 @@ class CacheClearerTest extends TestCase
         $count = (new CacheClearer())->clearEverything($this->root);
 
         $this->assertGreaterThan(0, $count, 'the rest goes');
-        $this->assertSame(['.gitkeep', 'queue-pass.lock', 'queue-schedule.lock'], array_values(array_diff(scandir($this->root . '/cache'), ['.', '..'])));
+        $this->assertSame(['.gitkeep', 'queue-holders', 'queue-pass.lock', 'queue-schedule.lock'], array_values(array_diff(scandir($this->root . '/cache'), ['.', '..'])));
+        $this->assertFileExists($this->root . '/cache/queue-holders/00ff12ab.lock', 'a holder lock is what tells a judge its holder is still there');
     }
 
     /** A remote backup's step holds its lock for a whole download: deleted under it, a second step would take a fresh one and write beside it. */

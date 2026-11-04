@@ -33,6 +33,7 @@ use YesWiki\Kernel\Service\Queue\QueueConsumer;
 use YesWiki\Kernel\Service\Queue\QueueFallback;
 use YesWiki\Kernel\Service\Queue\QueueHandlerLocator;
 use YesWiki\Kernel\Service\Queue\QueueHealthChecks;
+use YesWiki\Kernel\Service\Queue\QueueHolderLock;
 use YesWiki\Kernel\Service\Queue\QueueRecorder;
 use YesWiki\Kernel\Service\Queue\QueueRequestTrigger;
 use YesWiki\Kernel\Service\Queue\QueueScheduleTicker;
@@ -207,6 +208,10 @@ final class QueueTestKit
         foreach ($this->ownsDatabase ? ['', '-wal', '-shm'] : [] as $suffix) {
             @unlink($this->file . $suffix);
         }
+        foreach (glob($this->lockDir . '/' . QueueHolderLock::DIRECTORY . '/*') ?: [] as $holder) {
+            @unlink($holder);
+        }
+        @rmdir($this->lockDir . '/' . QueueHolderLock::DIRECTORY);
         foreach (glob($this->lockDir . '/cache/*') ?: [] as $lock) {
             @unlink($lock);
         }
@@ -453,6 +458,11 @@ final class QueueTestKit
             public function acquire(string $path)
             {
                 return parent::acquire($this->in($path));
+            }
+
+            public function probe(string $path): ?bool
+            {
+                return parent::probe($this->in($path));
             }
 
             private function in(string $path): string
