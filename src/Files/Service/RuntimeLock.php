@@ -82,7 +82,11 @@ class RuntimeLock
     /**
      * Whether some handle holds the lock now, asked without creating the file.
      *
-     * @return bool|null null when there is no file, true when another handle holds it, false when it is free
+     * A shared lock, not an exclusive one: it still conflicts with the holder's exclusive lock, two
+     * probes at once do not take each other for the holder, and it works on a read handle where an
+     * exclusive one would not (NFS, whose client emulates flock with fcntl, wants a write handle for that).
+     *
+     * @return bool|null null when the file cannot be opened (there is none, or it may not be read), true when another handle holds it, false when it is free
      */
     public function probe(string $path): ?bool
     {
@@ -90,7 +94,7 @@ class RuntimeLock
         if ($handle === false) {
             return null;
         }
-        $free = flock($handle, LOCK_EX | LOCK_NB);
+        $free = flock($handle, LOCK_SH | LOCK_NB);
         $this->release($handle);
 
         return !$free;

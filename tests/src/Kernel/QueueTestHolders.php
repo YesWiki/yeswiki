@@ -78,10 +78,10 @@ final class QueueTestHolders
         };
     }
 
-    /** Whether that file's lock is held, free or absent, as a process other than this one finds it (QueueHolderLock's HELD, FREE, ABSENT). */
+    /** Whether that file's lock is held, free or absent, as a process other than this one finds it the way a judge does (QueueHolderLock's HELD, FREE, ABSENT). */
     public static function seenFromAnotherProcess(string $absolutePath): string
     {
-        $code = '$h = @fopen($argv[1], "r"); if ($h === false) { echo "absent"; exit; } echo flock($h, LOCK_EX | LOCK_NB) ? "free" : "held";';
+        $code = '$h = @fopen($argv[1], "r"); if ($h === false) { echo "absent"; exit; } echo flock($h, LOCK_SH | LOCK_NB) ? "free" : "held";';
 
         return trim((string)shell_exec(escapeshellarg(PHP_BINARY) . ' -r ' . escapeshellarg($code) . ' -- ' . escapeshellarg($absolutePath)));
     }

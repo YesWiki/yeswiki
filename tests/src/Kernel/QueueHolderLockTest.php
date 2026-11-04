@@ -35,11 +35,12 @@ class QueueHolderLockTest extends TestCase
         $path = $this->absolutePathOf($token);
 
         $this->assertTrue($this->lock->hold($token));
-        $this->assertSame('held', $this->seenFromAnotherProcess($path));
+        $this->assertSame('held', QueueTestHolders::seenFromAnotherProcess($path));
 
         $this->lock->release($token);
 
         $this->assertFileDoesNotExist($path, 'the file goes with the lock');
+        $this->assertSame('absent', QueueTestHolders::seenFromAnotherProcess($path), 'a file that cannot be opened is no holder');
     }
 
     public function testAFreeLockIsFree(): void
@@ -65,6 +66,25 @@ class QueueHolderLockTest extends TestCase
 
         $this->assertSame(0, $exit);
         $this->assertSame(QueueHolderLock::FREE, $this->lock->stateOf($token));
+    }
+
+    /** Two judges asking at once do not take each other for the holder: a lock another judge is only looking at is free. */
+    public function testALockAnotherJudgeIsLookingAtIsFree(): void
+    {
+        $token = $this->tokenOfThisMachine();
+        $path = $this->absolutePathOf($token);
+        mkdir(\dirname($path), 0o777, true);
+        touch($path);
+        $judge = fopen($path, 'r');
+        $this->assertNotFalse($judge);
+        $this->assertTrue(flock($judge, LOCK_SH | LOCK_NB), 'the other judge looks');
+
+        try {
+            $this->assertSame(QueueHolderLock::FREE, $this->lock->stateOf($token));
+        } finally {
+            flock($judge, LOCK_UN);
+            fclose($judge);
+        }
     }
 
     public function testAMissingFileIsAbsent(): void
@@ -179,13 +199,5 @@ class QueueHolderLockTest extends TestCase
         $this->assertNotNull($path);
 
         return $this->dir . '/' . $path;
-    }
-
-    /** What a process other than this one finds when it tries that lock without waiting: 'held' or 'free'. */
-    private function seenFromAnotherProcess(string $path): string
-    {
-        $code = '$h = fopen($argv[1], "r"); echo $h !== false && flock($h, LOCK_EX | LOCK_NB) ? "free" : "held";';
-
-        return trim((string)shell_exec(escapeshellarg(PHP_BINARY) . ' -r ' . escapeshellarg($code) . ' -- ' . escapeshellarg($path)));
     }
 }

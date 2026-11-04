@@ -22,6 +22,7 @@ use YesWiki\Kernel\Service\Queue\QueueBudgetFactory;
 use YesWiki\Kernel\Service\Queue\QueueBus;
 use YesWiki\Kernel\Service\Queue\QueueFallback;
 use YesWiki\Kernel\Service\Queue\QueueHealthChecks;
+use YesWiki\Kernel\Service\Queue\QueueHolderLock;
 use YesWiki\Kernel\Service\Queue\QueueRecorder;
 use YesWiki\Kernel\Service\Queue\QueueRequestTrigger;
 use YesWiki\Kernel\Service\Queue\QueueScheduleTicker;
@@ -34,6 +35,7 @@ use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';
 require_once 'tests/src/Kernel/QueueTestKit.php';
+require_once 'tests/src/Kernel/QueueTestHolders.php';
 require_once 'tests/src/Kernel/QueueTestMessage.php';
 require_once 'tests/src/Kernel/QueueTestTask.php';
 require_once 'tests/src/Kernel/QueueTestToleratedMessage.php';
@@ -710,6 +712,36 @@ class QueueHealthChecksTest extends YesWikiTestCase
         );
     }
 
+    /** A server's process past its limit that still holds its lock is at work, not stuck: no sentence about it until it lets go. */
+    public function testAClaimWhoseLockIsHeldPastItsLimitIsNotStuck(): void
+    {
+        $this->mode = 'request';
+        $dir = sys_get_temp_dir() . '/yw-health-holders-' . bin2hex(random_bytes(4));
+        $this->statistics = new QueueStatistics($this->db, $this->schema, $this->journal, new QueueTransport($this->db, $this->schema, clock: $this->clock, holderLock: new QueueHolderLock(QueueTestKit::locksIn($dir))), $this->clock);
+        $token = QueueTestHolders::living(false)->token();
+        $this->claimed('-10 minutes', limit: 30, mode: 'request', holder: $token);
+        $letGo = QueueTestHolders::lockHeldByAnotherProcess($dir . '/' . QueueHolderLock::pathOf($token));
+
+        try {
+            try {
+                $this->assertNull($this->failure('queue-killed'), 'its limit and the grace are long past, but its lock says it is at work');
+            } finally {
+                $this->assertSame(0, $letGo());
+            }
+
+            $this->assertSame(
+                _t('QUEUE_HEALTH_KILLED_STUCK', ['types' => QueueWording::type(QueueTestMessage::class) . ' (1)', 'mode' => 'request']),
+                $this->failure('queue-killed'),
+                'once it let go of its lock without its ack, it is gone'
+            );
+        } finally {
+            @unlink($dir . '/' . QueueHolderLock::pathOf($token));
+            @rmdir($dir . '/' . QueueHolderLock::DIRECTORY);
+            @rmdir($dir . '/cache');
+            @rmdir($dir);
+        }
+    }
+
     public function testAnUnknownModeIsNamedWithWhereItWasSet(): void
     {
         $this->mode = 'wroker';
@@ -969,12 +1001,12 @@ class QueueHealthChecksTest extends YesWikiTestCase
     }
 
     /** A message a consumer has taken and not acknowledged: how long ago, and the time it was given. */
-    private function claimed(string $deliveredAt, int $limit, string $mode): void
+    private function claimed(string $deliveredAt, int $limit, string $mode, string $holder = 'token'): void
     {
         $this->db->query(
             "INSERT INTO {$this->schema->table()} (queue_name, message_type, body, headers, created_at, available_at, delivered_at, delivered_by, delivered_mode, delivered_limit, attempts)"
             . ' VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-            ['default', QueueTestMessage::class, '{}', '{}', $this->at('-1 days'), $this->at('-1 days'), $this->at($deliveredAt), 'token', $mode, $limit, 0]
+            ['default', QueueTestMessage::class, '{}', '{}', $this->at('-1 days'), $this->at('-1 days'), $this->at($deliveredAt), $holder, $mode, $limit, 0]
         );
     }
 

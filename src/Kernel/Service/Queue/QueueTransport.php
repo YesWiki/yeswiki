@@ -493,7 +493,7 @@ class QueueTransport implements TransportInterface, MessageCountAwareInterface, 
      * Claims the next available message (or that one) with a token only this call knows, and answers its row.
      *
      * The token's lock is taken before the token is written, so that a judge, which only reads tokens already written, never finds its file
-     * free between its creation and its lock; a claim that takes nothing lets it go, and one whose file cannot be made is still made, without it.
+     * free between its creation and its lock; a claim that takes nothing, or whose transaction throws, lets it go, and one whose file cannot be made is still made, without it.
      *
      * @return array<string, mixed>|null
      */
@@ -508,7 +508,36 @@ class QueueTransport implements TransportInterface, MessageCountAwareInterface, 
         $token = QueueClaimHolder::thisProcess()->token();
         $this->holderLock?->hold($token);
 
-        $row = $this->db->transactional(function () use ($table, $now, $token, $id): ?array {
+        try {
+            $row = $this->transactionalClaim($table, $now, $token, $id);
+        } catch (\Throwable $failed) {
+            $this->holderLock?->release($token);
+
+            throw $failed;
+        }
+        if ($row !== null) {
+            $this->held[$token] = [
+                'id' => (int)$row['id'],
+                'type' => (string)$row['message_type'],
+                'mode' => (string)($row['delivered_mode'] ?? 'unknown'),
+                'deliveredAt' => (string)$row['delivered_at'],
+            ];
+            self::$heldHere[$token] = true;
+        } else {
+            $this->holderLock?->release($token);
+        }
+
+        return $row;
+    }
+
+    /**
+     * Takes that message, or the next one waiting, for that token in one transaction.
+     *
+     * @return array<string, mixed>|null
+     */
+    private function transactionalClaim(string $table, string $now, string $token, ?int $id): ?array
+    {
+        return $this->db->transactional(function () use ($table, $now, $token, $id): ?array {
             $candidate = $id === null
                 ? $this->db->scalar(
                     "SELECT id FROM {$table} WHERE queue_name = ? AND delivered_at IS NULL AND available_at <= ?"
@@ -535,19 +564,6 @@ class QueueTransport implements TransportInterface, MessageCountAwareInterface, 
 
             return $this->db->loadSingle("SELECT * FROM {$table} WHERE id = ? AND queue_name = ? AND delivered_by = ?", [(int)$candidate, $this->queueName, $token]);
         }, self::CONFLICT_ATTEMPTS);
-        if ($row !== null) {
-            $this->held[$token] = [
-                'id' => (int)$row['id'],
-                'type' => (string)$row['message_type'],
-                'mode' => (string)($row['delivered_mode'] ?? 'unknown'),
-                'deliveredAt' => (string)$row['delivered_at'],
-            ];
-            self::$heldHere[$token] = true;
-        } else {
-            $this->holderLock?->release($token);
-        }
-
-        return $row;
     }
 
     /**

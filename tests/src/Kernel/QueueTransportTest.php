@@ -491,6 +491,28 @@ class QueueTransportTest extends YesWikiTestCase
         $this->assertSame([], glob($this->dir . '/' . QueueHolderLock::DIRECTORY . '/*'));
     }
 
+    /** A claim whose transaction throws lets go of the lock it took first: no file stays behind for a claim that was never written. */
+    public function testAClaimWhoseTransactionThrowsLeavesNoLockBehind(): void
+    {
+        $this->onRacing(['db_driver' => 'sqlite'], function (QueueTestRacingDb $db, QueueSchema $schema): void {
+            $transport = new QueueTransport($db, $schema, clock: $this->clock, holderLock: $this->holderLock);
+            $transport->send(new Envelope(new QueueTestMessage('unlucky')));
+            $db->failNextTransaction();
+
+            try {
+                [...$transport->get()];
+                $this->fail('the claim should have thrown');
+            } catch (\RuntimeException $thrown) {
+                $this->assertSame('the database went away', $thrown->getMessage());
+            }
+
+            $this->assertSame([], glob($this->dir . '/' . QueueHolderLock::DIRECTORY . '/*'));
+            [$taken] = [...$transport->get()];
+            $this->assertSame('unlucky', $taken->getMessage() instanceof QueueTestMessage ? $taken->getMessage()->value : null, 'the message waits for the next claim');
+            $transport->ack($taken);
+        });
+    }
+
     /** A server's process (FPM) still at work past its limit holds its lock: no judge reaps it nor calls it dead; only the ceiling ends it. */
     public function testAServersProcessThatHoldsItsLockKeepsItsMessagePastItsLimit(): void
     {
@@ -1241,10 +1263,10 @@ class QueueTransportTest extends YesWikiTestCase
         return $stamp->token;
     }
 
-    /** Whether that file's lock is HELD, FREE or ABSENT, as a process other than this one finds it. */
+    /** Whether that file's lock is HELD, FREE or ABSENT, as a process other than this one finds it the way a judge does. */
     private static function seenFromAnotherProcess(string $absolutePath): string
     {
-        $code = '$h = @fopen($argv[1], "r"); if ($h === false) { echo "' . QueueHolderLock::ABSENT . '"; exit; } echo flock($h, LOCK_EX | LOCK_NB) ? "' . QueueHolderLock::FREE . '" : "' . QueueHolderLock::HELD . '";';
+        $code = '$h = @fopen($argv[1], "r"); if ($h === false) { echo "' . QueueHolderLock::ABSENT . '"; exit; } echo flock($h, LOCK_SH | LOCK_NB) ? "' . QueueHolderLock::FREE . '" : "' . QueueHolderLock::HELD . '";';
 
         return trim((string)shell_exec(escapeshellarg(PHP_BINARY) . ' -r ' . escapeshellarg($code) . ' -- ' . escapeshellarg($absolutePath)));
     }
