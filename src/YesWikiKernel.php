@@ -183,7 +183,7 @@ class YesWikiKernel extends Kernel
         }
 
         $loader->registerAliasesForSinglyImplementedInterfaces();
-        $container->getDefinition(QueueBudgetFactory::class)->setArgument('$clock', new Reference(NativeClock::class));
+        $container->getDefinition(QueueBudgetFactory::class)->setArgument('$phpClock', new Reference(NativeClock::class));
         $container->getDefinition(LanguageService::class)->setFactory([LanguageService::class, 'getInstance']);
     }
 

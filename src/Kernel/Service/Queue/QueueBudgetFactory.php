@@ -9,6 +9,10 @@ use YesWiki\Kernel\Queue\QueueConsumerMode;
 /**
  * Works out what a pass may spend from the limits the server itself gives PHP, at the moment the pass starts:
  * `max_execution_time` less what was used and a margin, capped by the mode's ceiling; 80 % of `memory_limit`.
+ *
+ * Durations and deadlines are in PHP's time, timestamps in the database's: $phpClock is PHP's own clock (NativeClock, wired by
+ * YesWikiKernel), never the DatabaseClock the queue writes times by. The deadline is counted down on microtime() (QueueBudget)
+ * and the time used from `REQUEST_TIME_FLOAT`, so a database clock ahead or behind PHP's would add to the budget or take from it.
  */
 class QueueBudgetFactory
 {
@@ -27,7 +31,7 @@ class QueueBudgetFactory
      * @param (callable(string): (string|false))|null $ini
      */
     public function __construct(
-        private readonly ClockInterface $clock,
+        private readonly ClockInterface $phpClock,
         ?callable $ini = null,
         private readonly ?float $requestStartedAt = null
     ) {
@@ -96,6 +100,6 @@ class QueueBudgetFactory
 
     private function now(): float
     {
-        return (float)$this->clock->now()->format('U.u');
+        return (float)$this->phpClock->now()->format('U.u');
     }
 }

@@ -3,10 +3,13 @@
 namespace YesWiki\Test\Kernel;
 
 use PHPUnit\Framework\Attributes\CoversClass;
+use Psr\Clock\ClockInterface;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Messenger\Stamp\HandledStamp;
 use Symfony\Component\Messenger\Stamp\TransportMessageIdStamp;
+use YesWiki\Kernel\Service\DatabaseClock;
 use YesWiki\Kernel\Service\DbService;
+use YesWiki\Kernel\Service\Queue\QueueBudgetFactory;
 use YesWiki\Kernel\Service\Queue\QueueBus;
 use YesWiki\Kernel\Service\Queue\QueueSchema;
 use YesWiki\Kernel\Service\Queue\QueueTransport;
@@ -17,6 +20,7 @@ require_once 'tests/src/Kernel/QueueTestMessage.php';
 
 /** On the wiki's own container: what a service dispatches on Messenger's bus is stored for the consumer, not handled on the spot. */
 #[CoversClass(QueueBus::class)]
+#[CoversClass(QueueBudgetFactory::class)]
 class QueueKernelWiringTest extends YesWikiTestCase
 {
     public function testAMessageDispatchedOnTheContainersBusIsStoredAndNotHandled(): void
@@ -40,5 +44,19 @@ class QueueKernelWiringTest extends YesWikiTestCase
                 $db->query("DELETE FROM {$table} WHERE id = ?", [$id]);
             }
         }
+    }
+
+    /**
+     * A pass's budget is a duration that QueueBudget counts down on microtime(): the factory must read the same clock, not the
+     * database's. With the database's, a server whose clock lags by 25 s gave the end-of-request pass no budget at all.
+     */
+    public function testTheContainersBudgetFactoryCountsOnPhpsClockNotTheDatabases(): void
+    {
+        $services = self::getWiki()->services;
+        $this->assertInstanceOf(DatabaseClock::class, $services->get(ClockInterface::class), 'the clock the queue writes and compares times by');
+
+        $clock = (new \ReflectionProperty(QueueBudgetFactory::class, 'phpClock'))->getValue($services->get(QueueBudgetFactory::class));
+
+        $this->assertNotInstanceOf(DatabaseClock::class, $clock);
     }
 }
