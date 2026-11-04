@@ -49,6 +49,7 @@ use YesWiki\Kernel\Service\RouteProvider;
 use YesWiki\Render\Service\TemplateEngine;
 use YesWiki\Test\Core\YesWikiTestCase;
 use YesWiki\Test\Kernel\QueueTestKit;
+use YesWiki\Test\Kernel\QueueTestMessage;
 use YesWiki\Test\Kernel\QueueTestTask;
 use YesWiki\Test\Kernel\QueueTestToleratedMessage;
 
@@ -412,6 +413,27 @@ class JobsControllerTest extends YesWikiTestCase
         $this->assertStringContainsString('id="yw-jobs-status"', (string)$response->getContent(), 'the alerts come back refreshed');
         $this->assertStringContainsString(htmlspecialchars(_t('ADMIN_JOBS_CONSUMED', [
             'handled' => 2,
+            'remaining' => 0,
+            'reason' => _t('QUEUE_STOP_EMPTY'),
+        ]), ENT_QUOTES), (string)$response->getContent());
+    }
+
+    /** The button has no deadline, no memory ceiling and no averages rule: it stops on an empty queue, however long the messages are said to take. */
+    public function testConsumeNowEmptiesTheQueueWhateverTheAverages(): void
+    {
+        $this->signInAsAdmin();
+        $this->kitAt('2026-10-23 12:00:00');
+        QueueTestKit::recordRun($this->kit->db, QueueTestMessage::class, QueueRecorder::HANDLED, 60_000, '2026-10-23 11:30:00');
+        $this->assertSame(60_000, $this->kit->statistics->averageDurationMs(QueueTestMessage::class), 'the history says each message takes a minute');
+        foreach (['a', 'b', 'c'] as $value) {
+            $this->kit->send($value);
+        }
+
+        $response = $this->api(post: true)->consume();
+
+        $this->assertSame(['a', 'b', 'c'], $this->kit->handled);
+        $this->assertStringContainsString(htmlspecialchars(_t('ADMIN_JOBS_CONSUMED', [
+            'handled' => 3,
             'remaining' => 0,
             'reason' => _t('QUEUE_STOP_EMPTY'),
         ]), ENT_QUOTES), (string)$response->getContent());

@@ -30,8 +30,6 @@ class JobsApiController extends YesWikiController
 {
     private const ADMIN_ACL = ['@admins'];
 
-    private const CONSUME_SECONDS = 20.0;
-
     private const CHANGED = 'ywJobsChanged';
 
     #[Route('/api/admin/jobs/tab/{tab}', methods: ['GET'], requirements: ['tab' => 'types|failed|tasks|history|consumers'], options: ['acl' => self::ADMIN_ACL])]
@@ -42,7 +40,7 @@ class JobsApiController extends YesWikiController
         return $this->html($this->render('@core/admin/jobs-tabs.twig', ['tab' => $this->getService(JobsOverview::class)->tab($tab)]));
     }
 
-    /** A budgeted pass from the admin's request, whatever the mode (spec §11.3): the mode's budget, or else a request end's. */
+    /** A pass from the admin's request, whatever the mode (spec §11.3), that empties the queue with no limit: it stops on an empty queue, a paused wiki or the server killing it. */
     #[Route('/api/admin/jobs/consume', methods: ['POST'], options: ['acl' => self::ADMIN_ACL])]
     public function consume(): Response
     {
@@ -51,8 +49,7 @@ class JobsApiController extends YesWikiController
         }
 
         $mode = $this->getService(QueueSettings::class)->mode()->forPassFromTheWeb();
-        $budget = $this->getService(QueueBudgetFactory::class)->forMode($mode, true)->cappedTo(self::CONSUME_SECONDS);
-        $report = $this->getService(QueueConsumer::class)->drain($mode, $budget, true, QueuePassOrigin::Manual);
+        $report = $this->getService(QueueConsumer::class)->drain($mode, $this->getService(QueueBudgetFactory::class)->untilEmpty(), true, QueuePassOrigin::Manual);
 
         return match ($report->stopReason) {
             QueuePassReport::LOCKED => $this->status(_t('ADMIN_JOBS_CONSUME_LOCKED'), 'warning'),

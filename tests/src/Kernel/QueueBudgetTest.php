@@ -173,16 +173,18 @@ class QueueBudgetTest extends TestCase
         $this->assertSame(QueueBudgetFactory::KILL_LIMIT_NO_PHP_LIMIT, $budget->killLimitSeconds);
     }
 
-    public function testCappedToNeverGrantsMoreThanTheBudgetHad(): void
+    /** The jobs page's button: no deadline, no memory ceiling, only PHP's own limit (or one hour without) for the claim. */
+    public function testUntilEmptyHasNoDeadlineNoMemoryCeilingAndPhpsKillLimit(): void
     {
-        $budget = new QueueBudget(microtime(true) + 10, 1000, 60);
+        $budget = $this->factory(['max_execution_time' => '30', 'memory_limit' => '128M'], 4.0)->untilEmpty();
 
-        $shorter = $budget->cappedTo(2);
-        $this->assertEqualsWithDelta(2.0, $shorter->remainingSeconds(), 0.2);
-        $this->assertSame(1000, $shorter->memoryCeilingBytes);
-        $this->assertSame(60, $shorter->killLimitSeconds);
-        $this->assertEqualsWithDelta(10.0, $budget->cappedTo(30)->remainingSeconds(), 0.2, 'a cap above the deadline changes nothing');
-        $this->assertEqualsWithDelta(5.0, (new QueueBudget(INF, PHP_INT_MAX, 60))->cappedTo(5)->remainingSeconds(), 0.2);
+        $this->assertSame(INF, $budget->remainingSeconds());
+        $this->assertTrue($budget->canAfford(1e9));
+        $this->assertSame(PHP_INT_MAX, $budget->memoryCeilingBytes);
+        $this->assertFalse($budget->memoryExhausted());
+        $this->assertSame(26, $budget->killLimitSeconds);
+
+        $this->assertSame(3600, $this->factory(['max_execution_time' => '0', 'memory_limit' => '128M'], 4.0)->untilEmpty()->killLimitSeconds);
     }
 
     public function testBytesReadsTheSizeNotationOfPhpIni(): void

@@ -33,7 +33,7 @@ class QueueApiController extends YesWikiController
         }
 
         $mode = QueueConsumerMode::Api;
-        $report = $this->getService(QueueConsumer::class)->drain($mode, $this->getService(QueueBudgetFactory::class)->forMode($mode, false));
+        $report = $this->getService(QueueConsumer::class)->drain($mode, $this->getService(QueueBudgetFactory::class)->forMode($mode, true));
 
         return new ApiResponse([
             'handled' => $report->handled,

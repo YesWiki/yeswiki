@@ -47,19 +47,11 @@ class QueueBudgetFactory
         }
 
         $now = $this->now();
-        $elapsed = max(0.0, $now - $this->startedAt());
-        $limit = (int)($this->ini)('max_execution_time');
+        $limit = $this->phpTimeLimit();
+        $untilPhpStops = $this->untilPhpStops($limit, $now);
+        $usable = $untilPhpStops === null ? null : max(0.0, $untilPhpStops - (self::MARGIN_SECONDS + self::MARGIN_RATIO * $limit));
 
-        if ($limit > 0) {
-            $untilPhpStops = max(0.0, $limit - $elapsed);
-            $usable = max(0.0, $untilPhpStops - (self::MARGIN_SECONDS + self::MARGIN_RATIO * $limit));
-            $killLimit = max(1, (int)floor($untilPhpStops));
-        } else {
-            $usable = null;
-            $killLimit = self::KILL_LIMIT_NO_PHP_LIMIT;
-        }
-
-        return new QueueBudget($now + $this->capped($usable, $mode->passCeilingSeconds($responseAlreadySent)), $this->memoryCeiling(), $killLimit);
+        return new QueueBudget($now + $this->capped($usable, $mode->passCeilingSeconds($responseAlreadySent)), $this->memoryCeiling(), $this->killLimit($untilPhpStops));
     }
 
     /** What one pass may spend in this mode, in whole seconds, as a page says it; null for a mode with no deadline. */
@@ -74,9 +66,33 @@ class QueueBudgetFactory
         return new QueueBudget(INF, $this->memoryCeiling(), self::KILL_LIMIT_NO_PHP_LIMIT);
     }
 
+    /** A pass that stops only when the queue is empty, hibernates or the server kills it: no deadline, no memory ceiling (the jobs page's button). */
+    public function untilEmpty(): QueueBudget
+    {
+        return new QueueBudget(INF, PHP_INT_MAX, $this->killLimit($this->untilPhpStops($this->phpTimeLimit(), $this->now())));
+    }
+
     private function capped(?float $usable, float $ceiling): float
     {
         return $usable === null ? $ceiling : min($usable, $ceiling);
+    }
+
+    /** PHP's `max_execution_time` in seconds; 0 when it has none. */
+    private function phpTimeLimit(): int
+    {
+        return (int)($this->ini)('max_execution_time');
+    }
+
+    /** What PHP leaves of that limit to the request at that instant, never negative; null when PHP has no limit. */
+    private function untilPhpStops(int $limit, float $now): ?float
+    {
+        return $limit > 0 ? max(0.0, $limit - max(0.0, $now - $this->startedAt())) : null;
+    }
+
+    /** How long a claim may last before it can only have been killed: what PHP leaves, at least a second, or an hour when it has no limit. */
+    private function killLimit(?float $untilPhpStops): int
+    {
+        return $untilPhpStops === null ? self::KILL_LIMIT_NO_PHP_LIMIT : max(1, (int)floor($untilPhpStops));
     }
 
     private function startedAt(): float

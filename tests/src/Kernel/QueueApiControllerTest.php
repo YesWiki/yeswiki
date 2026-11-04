@@ -14,6 +14,7 @@ use YesWiki\Kernel\Api\QueueApiController;
 use YesWiki\Kernel\Service\CurrentRequest;
 use YesWiki\Kernel\Service\Queue\QueueBudgetFactory;
 use YesWiki\Kernel\Service\Queue\QueueConsumer;
+use YesWiki\Kernel\Service\Queue\QueueRecorder;
 use YesWiki\Kernel\Service\Queue\QueueSettings;
 use YesWiki\Kernel\Service\RouteProvider;
 use YesWiki\Test\Core\YesWikiTestCase;
@@ -98,6 +99,21 @@ class QueueApiControllerTest extends YesWikiTestCase
         $this->assertIsInt($body['durationMs']);
         $this->assertSame(['a', 'b'], $this->kit->handled);
         $this->assertSame('api', $this->kit->statistics->lastPass()['mode'] ?? null);
+    }
+
+    /** Nobody waits for the API's pass: the first message is taken however long the history says it takes, the averages only bound the next ones. */
+    public function testAFirstLongMessageIsStillTaken(): void
+    {
+        QueueTestKit::recordRun($this->kit->db, QueueTestMessage::class, QueueRecorder::HANDLED, 120_000, '2026-10-23 11:00:00');
+        $this->kit->send('a');
+        $this->kit->send('b');
+
+        $body = $this->body($this->call(self::SECRET, self::SECRET));
+
+        $this->assertSame(['a'], $this->kit->handled, 'the second message does not fit the 50 s the pass has left');
+        $this->assertSame(1, $body['handled']);
+        $this->assertSame(1, $body['remaining']);
+        $this->assertSame('budget', $body['stopReason']);
     }
 
     public function testGetWithTheSecretInTheQueryDrains(): void

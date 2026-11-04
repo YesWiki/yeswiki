@@ -15,12 +15,6 @@ final class QueueBudget
     ) {
     }
 
-    /** The same budget, but with no more than that many seconds from now. */
-    public function cappedTo(float $seconds): self
-    {
-        return new self(min($this->deadline, microtime(true) + $seconds), $this->memoryCeilingBytes, $this->killLimitSeconds);
-    }
-
     /** Seconds before the deadline; never negative, INF without a deadline. */
     public function remainingSeconds(): float
     {
