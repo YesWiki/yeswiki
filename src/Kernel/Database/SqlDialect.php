@@ -11,6 +11,9 @@ interface SqlDialect
     /** SQL expression for the current timestamp. */
     public function now(): string;
 
+    /** SQL expression for the database's current time in UTC, whatever the session's time zone, as `Y-m-d H:i:s.u` text. */
+    public function utcNow(): string;
+
     /** SQL expression for "current timestamp minus $days days". */
     public function dateSubDays(int $days): string;
 
@@ -89,6 +92,13 @@ interface SqlDialect
     public function supportsDump(): bool;
 
     /**
+     * Statements making an identity column count on from the table's largest id after explicit-id inserts; none if automatic.
+     *
+     * @return list<string>
+     */
+    public function realignIdentity(string $table, string $column): array;
+
+    /**
      * Every statement needed to create the Journal table and its indexes, in execution order (ticket 51 / ADR-0025).
      *
      * @param string $table already prefixed, unquoted
@@ -98,11 +108,25 @@ interface SqlDialect
     public function journalDdl(string $table): array;
 
     /**
+     * Statements adding to an existing Journal the indexes the queue channel reads by, per unprefixed index name; run each only where that index is missing.
+     *
+     * @return array<string, list<string>>
+     */
+    public function journalQueueIndexDdl(string $table): array;
+
+    /**
      * Every statement needed to remove what journalDdl() created, in execution order.
      *
      * @return list<string>
      */
     public function journalDropDdl(string $table): array;
+
+    /**
+     * Every statement needed to create the queue's table and its indexes, in execution order.
+     *
+     * @return list<string>
+     */
+    public function queueDdl(string $table): array;
 
     /**
      * An INSERT that, when the unique key over $conflictColumns is already taken, applies $assignments to the row that is there instead of failing.
@@ -116,21 +140,25 @@ interface SqlDialect
     public function upsert(string $table, array $values, array $conflictColumns, array $assignments): string;
 
     /**
-     * Every statement needed to create the search index table, its ordinary indexes, its full-text index and the queue of Contents awaiting reindexing, in execution order.
+     * What ends an INSERT so that a taken unique key over $conflictColumns writes nothing (row count 0) instead of failing.
      *
-     * @param string $table      already prefixed, unquoted
-     * @param string $queueTable already prefixed, unquoted
+     * @param list<string> $conflictColumns
+     */
+    public function onConflictDoNothing(array $conflictColumns): string;
+
+    /**
+     * The statements creating the search index table (prefixed, unquoted), its indexes and the keywords table, in order.
      *
      * @return list<string>
      */
-    public function searchIndexDdl(string $table, string $queueTable, string $keywordsTable): array;
+    public function searchIndexDdl(string $table, string $keywordsTable): array;
 
     /**
      * Every statement needed to remove what searchIndexDdl() created, in execution order.
      *
      * @return list<string>
      */
-    public function searchIndexDropDdl(string $table, string $queueTable, string $keywordsTable): array;
+    public function searchIndexDropDdl(string $table, string $keywordsTable): array;
 
     /**
      * A boolean SQL expression selecting the index rows that match the query, each term matched as a prefix (`atelier` matches `ateliers`).

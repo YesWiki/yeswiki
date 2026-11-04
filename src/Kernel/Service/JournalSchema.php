@@ -28,6 +28,23 @@ class JournalSchema
         }
     }
 
+    /** Adds the indexes the queue channel reads by to a Journal created before them, those it lacks only. */
+    public function ensureQueueIndex(): void
+    {
+        $table = $this->table();
+        $mysql = $this->dbService->getDriver() === 'mysql';
+
+        foreach ($this->dbService->dialect()->journalQueueIndexDdl($table) as $index => $statements) {
+            if ($this->dbService->schema()->indexExists(self::TABLE, $mysql ? $index : $table . '_' . $index)) {
+                continue;
+            }
+
+            foreach ($statements as $statement) {
+                $this->dbService->query($statement);
+            }
+        }
+    }
+
     public function drop(): void
     {
         foreach ($this->dbService->dialect()->journalDropDdl($this->table()) as $statement) {

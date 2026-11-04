@@ -95,3 +95,10 @@ What is left local during an archive is Runtime by the same rule as everything e
 the progress files a web request polls while a separate process writes them, now in
 `cache/archive/` rather than beside the backups, and the zip being built, which `ZipArchive` can
 only produce as a real file.
+
+## Implementation notes
+
+- **`private/digests/` stays declared as Protected in `Storage::TIERS` although nothing writes there
+  any more.** Digests now go by the queue's schedule (ADR-0030), and the prefix is kept so that the
+  migration `DigestMarkersGiveWayToTheSchedule` can delete the marker files left there. An undeclared
+  prefix would throw.

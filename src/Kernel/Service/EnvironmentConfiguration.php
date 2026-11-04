@@ -3,6 +3,7 @@
 namespace YesWiki\Kernel\Service;
 
 use YesWiki\Core\YesWikiLoader;
+use YesWiki\Kernel\Service\Queue\QueueSettings;
 
 /** Environment-variable overrides for the YesWiki configuration. */
 class EnvironmentConfiguration
@@ -43,11 +44,16 @@ class EnvironmentConfiguration
         'contact_debug',
     ];
 
+    public const ENV_ALIASES = [
+        QueueSettings::ENV_MODE => 'queue_consumer',
+    ];
+
     /**
      * Variables that are environment-only and must never leak into the configuration (ADMIN_* hold plain credentials for the automated installation, YESWIKI_S3_* the bucket's, and both would otherwise end up in container parameters and config archives).
      */
     public const NOT_CONFIG = [
         'YESWIKI_CONFIG_FILE',
+        QueueSettings::ENV_BINARY,
         'ASYNC_PHP_BINARY',
         'ADMIN_NAME',
         'ADMIN_PASSWORD',
@@ -87,7 +93,7 @@ class EnvironmentConfiguration
             if (in_array($name, self::NOT_CONFIG, true)) {
                 continue;
             }
-            $key = $keysByUpperName[strtoupper($name)] ?? strtolower($name);
+            $key = self::ENV_ALIASES[$name] ?? $keysByUpperName[strtoupper($name)] ?? strtolower($name);
             self::override($config, $key, $value);
         }
 
@@ -113,7 +119,7 @@ class EnvironmentConfiguration
             $names[strtoupper($key)] = $key;
         }
 
-        return $names;
+        return array_merge($names, self::ENV_ALIASES);
     }
 
     /**

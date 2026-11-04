@@ -22,6 +22,9 @@ final class HealthCheck
 
     private ?string $route = null;
 
+    /** @var list<string> */
+    private array $offers = [];
+
     /** @var callable(): bool */
     private $gate;
 
@@ -70,6 +73,12 @@ final class HealthCheck
         return $this->with(fn (self $c) => $c->route = $route);
     }
 
+    /** Buttons the linked screen may offer on this alert, by the names that screen gives them; unknown ones are left out. */
+    public function offers(string ...$actions): self
+    {
+        return $this->with(fn (self $c) => $c->offers = array_values($actions));
+    }
+
     /**
      * When this wiki can act on it at all.
      *
@@ -107,6 +116,12 @@ final class HealthCheck
     public function route(): ?string
     {
         return $this->route;
+    }
+
+    /** @return list<string> */
+    public function offered(): array
+    {
+        return $this->offers;
     }
 
     public function isActionable(): bool

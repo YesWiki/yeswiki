@@ -6,6 +6,7 @@ use YesWiki\Content\Service\FormManager;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Files\Service\Storage;
 use YesWiki\Identity\Service\AclService;
+use YesWiki\Import\Scheduler\ImportSchedule;
 use YesWiki\Import\Service\ImporterManager;
 use YesWiki\Import\Service\SyncScheduler;
 use YesWiki\Kernel\Performable\RegisteredAction;
@@ -84,11 +85,7 @@ class AdminImportersAction extends YesWikiAction implements RegisteredAction
             $syncedSourceId = $syncSource;
 
             set_time_limit(0);
-            ob_start();
-            $result = $importerManager->syncSource($syncedSourceId, $dataSources[$syncedSourceId]);
-            $syncOutput = trim(ob_get_clean() . "\n" . $result);
-
-            $this->getService(SyncScheduler::class)->recordRun($syncedSourceId, $syncOutput);
+            $syncOutput = $importerManager->syncByHand($syncedSourceId, $dataSources[$syncedSourceId])['log'];
         } elseif (!empty($importer)) {
             $sourceOptions = $importerManager->collectSourceOptionsFromInput($importer, $importerFields, $request->request->all());
             $id = (string)($request->request->get('id') ?: $this->newSourceId($importer, $sourceOptions, $dataSources));
@@ -96,9 +93,11 @@ class AdminImportersAction extends YesWikiAction implements RegisteredAction
             if (!empty($fieldsMapping)) {
                 $sourceOptions['fieldsMapping'] = $fieldsMapping;
             }
+            $before = $dataSources[$id] ?? null;
             $dataSources[$id] = $sourceOptions;
             $config['dataSources'] = $dataSources;
             $config->write();
+            $this->getService(ImportSchedule::class)->sourceSaved($id, is_array($before) ? $before : null, $sourceOptions);
             $message = _t('IMPORTER_SOURCE_SAVED');
         }
 

@@ -30,8 +30,9 @@ type caddyFarm struct {
 // ServeFarm loads the farm and then reloads it on SIGHUP.
 func (c caddyFarm) ServeFarm(farm string, wikis []program.Wiki, programDir string) error {
 	for name, value := range map[string]string{
-		program.EnvProgram:  programDir,
-		program.EnvAsyncPHP: program.ShimPath(filepath.Dir(programDir)),
+		program.EnvProgram:        programDir,
+		program.EnvAsyncPHP:       program.ShimPath(filepath.Dir(programDir)),
+		program.EnvServedByBinary: "1",
 	} {
 		if err := os.Setenv(name, value); err != nil {
 			return err
@@ -42,7 +43,8 @@ func (c caddyFarm) ServeFarm(farm string, wikis []program.Wiki, programDir strin
 		sayWhichNamesWillNotGetACertificate(wikis)
 	}
 
-	if err := c.load(wikis, programDir); err != nil {
+	served, err := c.load(wikis, programDir)
+	if err != nil {
 		return err
 	}
 
@@ -51,6 +53,11 @@ func (c caddyFarm) ServeFarm(farm string, wikis []program.Wiki, programDir strin
 
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, os.Interrupt, syscall.SIGTERM)
+
+	// A wiki's queue is consumed exactly when the farm serves it: the wikis closed here, by Enrol
+	// or because their worker would not start, have no consumer either.
+	consumers := serveConsumers(programDir)
+	consumers.Reconcile(served)
 
 	for {
 		select {
@@ -61,10 +68,18 @@ func (c caddyFarm) ServeFarm(farm string, wikis []program.Wiki, programDir strin
 
 				continue
 			}
-			if err := c.load(found, programDir); err != nil {
+			served, err := c.load(found, programDir)
+			if err != nil {
+				// Caddy kept the previous configuration, and the consumers stay with it.
 				fmt.Fprintf(os.Stderr, "reload: %s\n", err)
+
+				continue
 			}
+			consumers.Reconcile(served)
 		case <-stop:
+			// The consumers first, while the wikis they write to are still served.
+			consumers.Stop(StopGrace)
+
 			return caddy.Stop()
 		}
 	}
@@ -99,17 +114,18 @@ func internalName(host string) bool {
 	return host == "localhost" || strings.HasSuffix(host, ".localhost") || strings.HasSuffix(host, ".internal")
 }
 
-// load swaps the farm's configuration in, closing each wiki whose worker cannot start rather than leaving the whole farm on the old one.
-func (c caddyFarm) load(wikis []program.Wiki, programDir string) error {
+// load swaps the farm's configuration in, closing each wiki whose worker cannot start rather than
+// leaving the whole farm on the old one, and is the wikis as they are now served.
+func (c caddyFarm) load(wikis []program.Wiki, programDir string) ([]program.Wiki, error) {
 	wikis = append([]program.Wiki(nil), wikis...)
 	for {
 		err := c.loadOnce(wikis, programDir)
 		if err == nil {
-			return nil
+			return wikis, nil
 		}
 		broken, found := brokenWorker(err, wikis)
 		if !found {
-			return err
+			return nil, err
 		}
 		fmt.Fprintf(os.Stderr, "%s cannot start and is closed: %s\n", wikis[broken].Host, err)
 		wikis[broken].Closed = true

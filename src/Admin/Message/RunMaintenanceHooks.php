@@ -1,0 +1,28 @@
+<?php
+
+namespace YesWiki\Admin\Message;
+
+use YesWiki\Kernel\Queue\RetryPolicy;
+use YesWiki\Kernel\Queue\ScheduledTask;
+
+/**
+ * "Tell the extensions it is time for their own housekeeping": the `maintenance.before` and `.after` hooks, a recurring task (AdminSchedule).
+ * Never retried: when the handler throws, some listeners have run; the task shows as failed on the jobs page until the next run.
+ */
+final class RunMaintenanceHooks implements ScheduledTask, RetryPolicy
+{
+    public function taskId(): string
+    {
+        return 'extension-hooks';
+    }
+
+    public function label(): string
+    {
+        return _t('MAINTENANCE_TASK_EXTENSION_HOOKS');
+    }
+
+    public function maxRetries(): int
+    {
+        return 0;
+    }
+}

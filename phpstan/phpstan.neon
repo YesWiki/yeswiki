@@ -78,6 +78,14 @@ parameters:
             path: ../src/Admin/Service/ArchiveService.php
             reportUnmatched: false
 
+        # These handlers are fixtures of what the queue's compiler pass must cope with: one whose
+        # __invoke() parameter has no type (it must be refused), one that names its message in
+        # the attribute instead (its parameter need not tell). Typing them would test nothing.
+        -
+            identifier: missingType.parameter
+            path: ../tests/src/Kernel/QueueTestMisdeclaredHandlers.php
+            count: 2
+
     paths:
         - ../src
         # Only the bundled sample extension is repo content. extensions/* is gitignored

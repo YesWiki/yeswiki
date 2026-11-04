@@ -4,20 +4,29 @@ namespace YesWiki\Admin\Service;
 
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+use Symfony\Component\Messenger\MessageBusInterface;
+use Symfony\Component\Messenger\Stamp\TransportMessageIdStamp;
 use YesWiki\Admin\Exception\StopArchiveException;
+use YesWiki\Admin\Message\CreateArchive;
+use YesWiki\Admin\Message\RestoreArchive;
 use YesWiki\Files\Service\LocalFiles;
 use YesWiki\Files\Service\Storage;
 use YesWiki\Kernel\Database\DumpRewriter;
 use YesWiki\Kernel\Database\SqlStatementSplitter;
+use YesWiki\Kernel\Entity\Event;
 use YesWiki\Kernel\Service\ConfigurationFileProvider;
 use YesWiki\Kernel\Service\ConfigurationLiteral;
 use YesWiki\Kernel\Service\ConfigurationService;
 use YesWiki\Kernel\Service\ConsoleService;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\HibernationService;
+use YesWiki\Kernel\Service\Queue\QueueConsumer;
+use YesWiki\Kernel\Service\Queue\QueueRecorder;
+use YesWiki\Kernel\Service\Queue\QueueStatistics;
 use YesWiki\Kernel\Service\UrlFormatter;
 
-class ArchiveService
+class ArchiveService implements EventSubscriberInterface
 {
     /** The folders an archive takes, so that subwikis and unrelated folders stay out. */
     public const FOLDERS_TO_INCLUDE = [
@@ -84,8 +93,6 @@ class ArchiveService
     protected UrlFormatter $urlFormatter;
     protected Storage $storage;
 
-    private bool $needsAsync = true;
-
     public function __construct(
         ConfigurationService $configurationService,
         ConsoleService $consoleService,
@@ -95,6 +102,8 @@ class ArchiveService
         UrlFormatter $urlFormatter,
         Storage $storage,
         private readonly LocalFiles $localFiles,
+        private readonly MessageBusInterface $bus,
+        private readonly QueueStatistics $queueStatistics,
     ) {
         $this->storage = $storage;
         $this->urlFormatter = $urlFormatter;
@@ -136,7 +145,6 @@ class ArchiveService
         if (!$vStatus['canArchive']) {
             $vMessages = $this->getCannotArchiveDetails($vStatus);
 
-            $this->unsetWikiStatus();
             $this->writeOutput($output, 'STOP', true, $outputFile);
 
             throw new \Exception(_t('AU_CANNOT_ARCHIVE') . implode(', ', $vMessages));
@@ -203,7 +211,7 @@ class ArchiveService
         if ($this->storage->fileExists($location)) {
             throw new \Exception('Zip file already existing !');
         }
-        if ($this->hibernationService->isWikiHibernated()) {
+        if ($this->hibernationService->isWikiHibernatedNow()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
 
@@ -283,9 +291,6 @@ class ArchiveService
         if (!$pStatus['notAvailableOnTheInternet']) {
             $vMessages[] = _t('AU_PRIVATE_PATH_AVAILABLE_ON_INTERNET');
         }
-        if (!(!$pStatus['callAsync'] || $pStatus['canExec'])) {
-            $vMessages[] = _t('AU_CANNOT_EXECUTE_BACKUP');
-        }
         if (!$pStatus['enoughSpace']) {
             $vMessages[] = _t('AU_NOT_ENOUGHT_SPACE');
         }
@@ -302,14 +307,7 @@ class ArchiveService
      */
     public function getWikiStatus()
     {
-        $vConfig = $this->configurationService->getConfiguration(ConfigurationFileProvider::getConfigFileFromEnv());
-        $vConfig->load();
-
-        if (trim($vConfig['wiki_status'] ?? '') == '') {
-            return 'running';
-        }
-
-        return trim($vConfig['wiki_status']);
+        return $this->hibernationService->wikiStatusNow();
     }
 
     /**
@@ -321,7 +319,7 @@ class ArchiveService
      */
     public function isReadOnly()
     {
-        return in_array($this->getWikiStatus(), ['hibernate', 'archiving', 'updating']);
+        return in_array($this->getWikiStatus(), HibernationService::HIBERNATED, true);
     }
 
     /** @param mixed $token the token the update flow was handed back, when it was handed one */
@@ -344,14 +342,6 @@ class ArchiveService
         return $result;
     }
 
-    /** Archive without needing to start a background job, for a caller that is already one. */
-    public function synchronously(): self
-    {
-        $this->needsAsync = false;
-
-        return $this;
-    }
-
     /**
      * retrieve the current status to archive.
      *
@@ -359,16 +349,12 @@ class ArchiveService
      */
     public function getArchivingStatus(): array
     {
+        $this->releaseWhatADeadRunLeft();
+
         $archiving = false;
         $hibernated = false;
         $privatePathWritable = true;
         $notAvailableOnTheInternet = true;
-        $canExec = false;
-        $dB = false;
-        $archiveParams = $this->getArchiveParams();
-        $callAsync = (isset($archiveParams['call_archive_async']) && is_bool($archiveParams['call_archive_async']))
-            ? $archiveParams['call_archive_async']
-            : true;
         if ($this->isReadOnly()) {
             switch ($this->getWikiStatus()) {
                 case 'archiving':
@@ -407,24 +393,6 @@ class ArchiveService
             }
         }
 
-        try {
-            $results = $this->consoleService->startConsoleSync('list', ['--raw']);
-            if (!empty($results)) {
-                $result = $results[array_key_first($results)];
-                if (
-                    empty($result['stderr']) && !empty($result['stdout'])
-                    && preg_match('/^core:archive\s/m', $result['stdout'])
-                ) {
-                    $canExec = true;
-                }
-            }
-        } catch (\Throwable $th) {
-            $canExec = false;
-        }
-
-        if ($canExec) {
-            $dB = $this->testDb();
-        }
         $estimatedSize = $this->estimateArchiveSize();
         $freeSpace = $this->freeSpaceForArchives();
         $enoughSpace = $freeSpace === null || $freeSpace >= $estimatedSize;
@@ -434,15 +402,10 @@ class ArchiveService
             && !$hibernated
             && $privatePathWritable
             && $notAvailableOnTheInternet
-            && (
-                !$callAsync
-                || $canExec
-                || !$this->needsAsync
-            )
             && $enoughSpace
         );
 
-        return compact(['canArchive', 'archiving', 'hibernated', 'privatePathWritable', 'canExec', 'callAsync', 'notAvailableOnTheInternet', 'enoughSpace', 'estimatedSize', 'freeSpace', 'dB']);
+        return compact(['canArchive', 'archiving', 'hibernated', 'privatePathWritable', 'notAvailableOnTheInternet', 'enoughSpace', 'estimatedSize', 'freeSpace']);
     }
 
     /**
@@ -468,7 +431,7 @@ class ArchiveService
     }
 
     /**
-     * start archive async via CLI or directly if sync.
+     * Queue a backup (CreateArchive) and say which uid to follow it by.
      *
      * @param array<array-key, mixed>      $foldersToInclude
      * @param array<array-key, mixed>      $foldersToExclude
@@ -481,56 +444,50 @@ class ArchiveService
         bool $savedatabase = true,
         array $foldersToInclude = [],
         array $foldersToExclude = [],
-        bool $callAsync = true,
         ?array $onlyFolders = null
     ): string {
-        $privatePath = $this->getPrivateFolder();
-        $uidData = $this->getUID();
-        if ($callAsync) {
-            $args = [];
-            if (!$savefiles) {
-                $args[] = '-d';
-            }
-            if (!$savedatabase) {
-                $args[] = '-f';
-            }
-            if (!empty($foldersToInclude)) {
-                $args[] = '-i';
-                $args[] = implode(',', $foldersToInclude);
-            }
-            if (!empty($foldersToExclude)) {
-                $args[] = '-x';
-                $args[] = implode(',', $foldersToExclude);
-            }
-            if (!empty($onlyFolders)) {
-                $args[] = '-o';
-                $args[] = implode(',', $onlyFolders);
-            }
+        $uid = $this->getUID()['uid'];
 
-            $args[] = '-u';
-            $args[] = $uidData['uid'];
-            $process = $this->consoleService->startConsoleAsync(
-                'core:archive',
-                $args
-            );
-            if (!empty($process)) {
-                $this->updatePIDForUID((string)$process->getPid(), $uidData['uid']);
+        return $this->queue(new CreateArchive(
+            $uid,
+            $savefiles,
+            $savedatabase,
+            self::folderNames($foldersToInclude),
+            self::folderNames($foldersToExclude),
+            $onlyFolders === null ? null : self::folderNames($onlyFolders)
+        )) ? $uid : '';
+    }
 
-                return $uidData['uid'];
-            }
-            $this->cleanUID($uidData['uid']);
+    /**
+     * @param array<array-key, mixed> $folders
+     *
+     * @return list<string>
+     */
+    private static function folderNames(array $folders): array
+    {
+        return array_values(array_map('strval', array_filter($folders, 'is_scalar')));
+    }
 
-            return '';
-        }
-        $output = '';
-        $location = $this->archive($output, $savefiles, $savedatabase, $foldersToInclude, $foldersToExclude, null, $uidData['uid'], $onlyFolders);
-        if (empty($location)) {
-            $this->cleanUID($uidData['uid']);
+    /** Queues the run and notes its message under its uid; false (and the uid forgotten) when the queue did not take it. */
+    private function queue(CreateArchive|RestoreArchive $run): bool
+    {
+        $id = $this->bus->dispatch($run)->last(TransportMessageIdStamp::class)?->getId();
+        if ($id === null) {
+            $this->cleanUID($run->uid);
 
-            return '';
+            return false;
         }
 
-        return $uidData['uid'];
+        $info = $this->getInfoFromFile();
+        if (isset($info[$run->uid])) {
+            $info[$run->uid]['message'] = (int)$id;
+            if ($run instanceof RestoreArchive) {
+                $info[$run->uid]['restore'] = true;
+            }
+            $this->setInfoToFile($info);
+        }
+
+        return true;
     }
 
     /**
@@ -625,56 +582,23 @@ class ArchiveService
     }
 
     /**
-     * Start a restore, in a process of its own unless told otherwise, and say which uid to follow it by.
+     * Queue a restore (RestoreArchive) and say which uid to follow it by.
      *
-     * A restore replays a whole database and unpacks a whole zip; on any wiki worth backing up that outlasts a request, so it runs the way an archive does -- detached, reporting into the same progress files getUIDStatus() reads and stopArchive() interrupts.
-     *
-     * @return string the uid to poll, empty when no process could be started
+     * @throws \Exception
      */
     public function startRestore(
         string $filename,
         bool $restoreFiles = true,
         bool $restoreDatabase = true,
-        bool $rewriteUrls = true,
-        bool $callAsync = true
+        bool $rewriteUrls = true
     ): string {
         if ($this->getFilePath($filename) === '') {
             throw new \Exception("Archive not found: $filename");
         }
 
-        $uidData = $this->getUID();
+        $uid = $this->getUID()['uid'];
 
-        if ($callAsync) {
-            $args = ['-a', $filename, '-u', $uidData['uid']];
-            if (!$restoreFiles) {
-                $args[] = '-d';
-            }
-            if (!$restoreDatabase) {
-                $args[] = '-f';
-            }
-            if (!$rewriteUrls) {
-                $args[] = '-k';
-            }
-            $process = $this->consoleService->startConsoleAsync('core:restore', $args);
-            if (!empty($process)) {
-                $this->updatePIDForUID((string)$process->getPid(), $uidData['uid']);
-
-                return $uidData['uid'];
-            }
-            $this->cleanUID($uidData['uid']);
-
-            return '';
-        }
-
-        try {
-            $this->restoreArchive($filename, $restoreFiles, $restoreDatabase, $rewriteUrls, $uidData['uid']);
-        } catch (\Throwable $th) {
-            $this->cleanUID($uidData['uid']);
-
-            throw $th;
-        }
-
-        return $uidData['uid'];
+        return $this->queue(new RestoreArchive($uid, basename($filename), $restoreFiles, $restoreDatabase, $rewriteUrls)) ? $uid : '';
     }
 
     /** Where a run reports its progress, empty when it was not given a uid to report under. */
@@ -1016,6 +940,8 @@ class ArchiveService
             'api_allowed_keys',
             self::PARAMS_KEY_IN_WAKKA,
             'wiki_status',
+            'queue_consume_secret',
+            'queue_consumer',
         ];
     }
 
@@ -1165,52 +1091,156 @@ class ArchiveService
     }
 
     /**
-     * get uid status.
+     * Where the backup or restore followed by this uid is, from its progress file and from its message in the queue.
      *
-     * @return array<string, mixed> ['found'=> bool,'running' => bool,'finished'=>bool,'output' => string]
+     * @return array{started: bool, running: bool, finished: bool, stopped: bool, failed: bool, state: string, error: string, output: string}
      */
-    public function getUIDStatus(string $uid, bool $forceStarted = false): array
+    public function getUIDStatus(string $uid): array
     {
         $results = [
             'started' => false,
             'running' => false,
             'finished' => false,
             'stopped' => false,
+            'failed' => false,
+            'state' => 'unknown',
+            'error' => '',
             'output' => '',
         ];
-        $privateFolder = $this->getPrivateFolder();
         $info = $this->getInfoFromFile();
         foreach ($info as $infoUid => $infoData) {
-            if ($infoUid != $uid) {
-                $this->cleanUID($infoUid);
+            if ($infoUid != $uid && !$this->isStillGoing($infoData)) {
+                $this->cleanUID((string)$infoUid);
             }
         }
         $info = $this->getInfoFromFile();
         if (!isset($info[$uid])) {
             return $results;
-        } elseif (!$forceStarted && empty($info[$uid]['pid'])) {
+        }
+        $messageId = $info[$uid]['message'] ?? null;
+        if (!is_int($messageId)) {
             $this->cleanUID($uid);
-        } else {
-            $results['started'] = true;
-            list(
-                'running' => $running,
-                'finished' => $finished,
-                'stopped' => $stopped,
-                'output' => $output
-            ) = $this->getRunningUIDdata($uid, $info[$uid]);
-            $results['running'] = $running;
-            $results['finished'] = $finished;
-            $results['stopped'] = $stopped;
-            if (!$running) {
-                $output = preg_replace("/(^Archive \\\")(.*)(\\\" successfully created !(?:\s*END)?\s*$)/m", '$1---$3', $output);
-            }
-            $results['output'] = $output;
-            if (!$results['running']) {
-                $this->cleanUID($uid);
+
+            return $results;
+        }
+
+        $state = $this->queueStatistics->messageState($messageId);
+        list(
+            'running' => $running,
+            'finished' => $finished,
+            'stopped' => $stopped,
+            'output' => $output
+        ) = $this->getRunningUIDdata($uid, $info[$uid]);
+        $failed = $state === 'failed' || $state === 'killed';
+        if ($failed) {
+            $running = false;
+            $finished = true;
+            $stopped = true;
+            $results['error'] = $state === 'failed' ? $this->failureOf($messageId) : '';
+            $this->releaseWhatADeadRunLeft();
+        } elseif ($state === 'handled') {
+            $running = false;
+            $finished = true;
+        } elseif ($state === 'pending' || $state === 'running') {
+            $running = !$finished;
+        }
+
+        $results['started'] = true;
+        $results['running'] = $running;
+        $results['finished'] = $finished;
+        $results['stopped'] = $stopped;
+        $results['failed'] = $failed;
+        $results['state'] = $state;
+        if (!$running) {
+            $output = (string)preg_replace("/(^Archive \\\")(.*)(\\\" successfully created !(?:\s*END)?\s*$)/m", '$1---$3', $output);
+            $this->cleanUID($uid);
+        }
+        $results['output'] = $output;
+
+        return $results;
+    }
+
+    /** Whether the run an info.json entry follows is waiting or under way: its message is in the queue, not handled nor failed. */
+    private function isStillGoing(mixed $data): bool
+    {
+        $messageId = is_array($data) ? ($data['message'] ?? null) : null;
+        if (!is_int($messageId)) {
+            return false;
+        }
+        $state = $this->queueStatistics->messageState($messageId);
+
+        return $state === 'pending' || $state === 'running';
+    }
+
+    /** Why that message failed, as the queue's history recorded it. */
+    private function failureOf(int $messageId): string
+    {
+        foreach ($this->queueStatistics->history(50, QueueRecorder::FAILED) as $attempt) {
+            if ($attempt['messageId'] === $messageId) {
+                return (string)$attempt['error'];
             }
         }
 
-        return $results;
+        return '';
+    }
+
+    /** Sets the wiki back to running if a backup left it `archiving`; any other status (hibernation, an update) stays. */
+    public function releaseArchivingStatus(): void
+    {
+        if ($this->getWikiStatus() === 'archiving') {
+            $this->unsetWikiStatus();
+        }
+    }
+
+    /** Lifts `archiving` once every run this wiki follows has ended and one was a killed backup, forgetting the killed ones. */
+    private function releaseWhatADeadRunLeft(): void
+    {
+        if ($this->getWikiStatus() !== 'archiving') {
+            return;
+        }
+        $killed = [];
+        foreach ($this->getInfoFromFile() as $uid => $data) {
+            $messageId = is_array($data) ? ($data['message'] ?? null) : null;
+            if (!is_int($messageId)) {
+                continue;
+            }
+            $state = $this->queueStatistics->messageState($messageId);
+            if ($state === 'pending' || $state === 'running') {
+                return;
+            }
+            if ($state === 'killed' && empty($data['restore'])) {
+                $killed[] = (string)$uid;
+            }
+        }
+        if ($killed !== []) {
+            foreach ($killed as $uid) {
+                $this->cleanUID($uid);
+            }
+            $this->unsetWikiStatus();
+        }
+    }
+
+    public static function getSubscribedEvents(): array
+    {
+        return [QueueConsumer::MESSAGE_KILLED => 'releaseWhatAKilledRunLeft'];
+    }
+
+    /** On a message a dead consumer left (R18): lifts what that run, if this wiki follows it, left, by releaseWhatADeadRunLeft()'s rule. */
+    public function releaseWhatAKilledRunLeft(Event $event): void
+    {
+        $messageId = $event->getData()['messageId'] ?? null;
+        $followedBy = null;
+        foreach ($this->getInfoFromFile() as $uid => $data) {
+            if (is_array($data) && ($data['message'] ?? null) === $messageId) {
+                $followedBy = (string)$uid;
+            }
+        }
+        if ($followedBy === null) {
+            return;
+        }
+
+        $this->releaseWhatADeadRunLeft();
+        $this->cleanUID($followedBy);
     }
 
     /**
@@ -1648,6 +1678,7 @@ class ArchiveService
 
         $config = $this->setDefaultValuesRecursive($config[self::PARAMS_KEY_IN_WAKKA][self::KEY_FOR_HIDE_CONFIG_VALUES], $config);
         unset($config['wiki_status']);
+        unset($config['queue_consume_secret']);
 
         return $this->configurationService->getContentToWrite($config);
     }
@@ -1768,7 +1799,7 @@ class ArchiveService
         } finally {
             fclose($handle);
         }
-        $own = DumpRewriter::ownTables($this->dbService->schema()->getTables(), trim($this->dbService->prefixTable('')));
+        $own = DumpRewriter::contentTables($this->dbService->schema()->getTables(), trim($this->dbService->prefixTable('')));
 
         return $own !== [] && array_diff($own, array_keys($created)) === [];
     }
@@ -1980,7 +2011,7 @@ class ArchiveService
     }
 
     /**
-     * What is running, and where each run says so.
+     * What is running, where each run says so, and the message in the queue that runs it (`message`).
      *
      * @return array<string, mixed> the decoded info.json, keyed by uid
      */
@@ -2002,7 +2033,7 @@ class ArchiveService
     }
 
     /**
-     * get a unique id for the current PID with input and output files created.
+     * A new uid for a run to report under, with its input (STOP) and output (progress) files created.
      *
      * @return array{uid: string, input: string|false, output: string|false}
      */
@@ -2026,18 +2057,6 @@ class ArchiveService
         $this->setInfoToFile($info);
 
         return compact(['uid', 'input', 'output']);
-    }
-
-    /**
-     * savePID for uid in info.json.
-     */
-    private function updatePIDForUID(string $pid, string $uid): void
-    {
-        $info = $this->getInfoFromFile();
-        if (isset($info[$uid])) {
-            $info[$uid]['pid'] = $pid;
-            $this->setInfoToFile($info);
-        }
     }
 
     /**

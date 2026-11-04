@@ -250,4 +250,73 @@ class SqlDialectTest extends TestCase
 
         $this->assertSame(0, substr_count($quoted, $delimiter) % 2);
     }
+
+    #[DataProvider('dialects')]
+    public function testQueueDdlCreatesOneTable(SqlDialect $d, string $driver): void
+    {
+        $create = implode("\n", $d->queueDdl('p_queue'));
+        $this->assertSame(1, preg_match_all('/CREATE TABLE/', $create), "$driver creates one table");
+        $this->assertMatchesRegularExpression('/CREATE TABLE IF NOT EXISTS\s+[`"]p_queue[`"]/', $create);
+    }
+
+    #[DataProvider('dialects')]
+    public function testTheJournalIsIndexedForTheQueueChannelAndItsIndexesCanBeAddedLater(SqlDialect $d, string $driver): void
+    {
+        $create = implode("\n", $d->journalDdl('p_journal'));
+        $later = $d->journalQueueIndexDdl('p_journal');
+        $this->assertSame(['idx_channel_target_at', 'idx_channel_action_target'], array_keys($later), "$driver names them unprefixed");
+
+        foreach ($later as $name => $statements) {
+            $this->assertStringContainsString($name, $create, "$driver creates $name with the table");
+            $this->assertStringContainsString($name, implode("\n", $statements), "$driver adds $name to a table that exists");
+        }
+        $this->assertMatchesRegularExpression('/CREATE INDEX .*[`"]p_journal[`"]\s*\([`"]channel[`"], [`"]target[`"], [`"]at[`"]\)/', implode("\n", $later['idx_channel_target_at']));
+        $this->assertMatchesRegularExpression('/CREATE INDEX .*[`"]p_journal[`"]\s*\([`"]channel[`"], [`"]action[`"], [`"]target[`"]\)/', implode("\n", $later['idx_channel_action_target']));
+    }
+
+    #[DataProvider('dialects')]
+    public function testOnConflictDoNothingNamesTheKeyItGivesWayTo(SqlDialect $d, string $driver): void
+    {
+        $expected = match ($driver) {
+            'mysql' => ' ON DUPLICATE KEY UPDATE `queue_name` = `queue_name`',
+            default => ' ON CONFLICT ("queue_name", "dedup_key") DO NOTHING',
+        };
+
+        $this->assertSame($expected, $d->onConflictDoNothing(['queue_name', 'dedup_key']));
+    }
+
+    /** What the suffix means, run: a second insert with the same key adds no row and raises no error. */
+    public function testSqliteDoesNothingOnAConflict(): void
+    {
+        $d = new SqliteDialect();
+        $pdo = new \PDO('sqlite::memory:');
+        $pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
+        $pdo->exec('CREATE TABLE t (queue_name TEXT, dedup_key TEXT, n INTEGER, UNIQUE (queue_name, dedup_key))');
+        $insert = $pdo->prepare('INSERT INTO t (queue_name, dedup_key, n) VALUES (?, ?, ?)' . $d->onConflictDoNothing(['queue_name', 'dedup_key']));
+
+        $insert->execute(['default', 'k', 1]);
+        $insert->execute(['default', 'k', 2]);
+
+        $this->assertSame(0, $insert->rowCount(), 'the second insert did nothing');
+        $rows = $pdo->query('SELECT n FROM t');
+        $this->assertNotFalse($rows);
+        $this->assertSame([['n' => 1]], $rows->fetchAll(\PDO::FETCH_ASSOC), 'and left the first row as it was');
+    }
+
+    #[DataProvider('dialects')]
+    public function testOnlyPostgreSqlRealignsItsIdentityAfterAnInsertWithAnExplicitId(SqlDialect $d, string $driver): void
+    {
+        $statements = $d->realignIdentity('p_queue', 'id');
+
+        if ($driver !== 'pgsql') {
+            $this->assertSame([], $statements, "$driver keeps its counter by itself");
+
+            return;
+        }
+
+        $this->assertCount(1, $statements);
+        $this->assertStringContainsString('setval(pg_get_serial_sequence(', $statements[0]);
+        $this->assertStringContainsString('"p_queue"', $statements[0]);
+        $this->assertStringContainsString('MAX("id")', $statements[0]);
+    }
 }

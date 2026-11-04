@@ -6,6 +6,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use YesWiki\Core\YesWikiController;
+use YesWiki\Kernel\Database\SqlParameters;
 use YesWiki\Kernel\Entity\JournalChannel;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\JournalSchema;
@@ -65,10 +66,14 @@ class AdminLogsApiController extends YesWikiController
         $clauses = ['1 = 1'];
         $params = [];
 
-        $channel = (string)$request->query->get('channel', '');
-        if (JournalChannel::tryFrom($channel) !== null) {
+        $channel = JournalChannel::tryFrom((string)$request->query->get('channel', ''));
+        if ($channel !== null) {
             $clauses[] = $db->quoteIdentifier('channel') . ' = ?';
-            $params[] = $channel;
+            $params[] = $channel->value;
+        } else {
+            $listed = array_diff(array_column(JournalChannel::cases(), 'value'), [JournalChannel::Queue->value]);
+            $clauses[] = $db->quoteIdentifier('channel') . ' IN (' . SqlParameters::placeholders(count($listed)) . ')';
+            array_push($params, ...$listed);
         }
 
         $level = (string)$request->query->get('level', '');
@@ -90,15 +95,35 @@ class AdminLogsApiController extends YesWikiController
         $from = $this->dateOrNull((string)$request->query->get('from', ''));
         if ($from !== null) {
             $clauses[] = $db->quoteIdentifier('at') . ' >= ?';
-            $params[] = $from . ' 00:00:00';
+            $params[] = $channel === JournalChannel::Queue ? $this->wikiTimeToUtc($from . ' 00:00:00') : $from . ' 00:00:00';
         }
         $to = $this->dateOrNull((string)$request->query->get('to', ''));
         if ($to !== null) {
             $clauses[] = $db->quoteIdentifier('at') . ' <= ?';
-            $params[] = $to . ' 23:59:59';
+            $params[] = $channel === JournalChannel::Queue ? $this->wikiTimeToUtc($to . ' 23:59:59') : $to . ' 23:59:59';
         }
 
         return [implode(' AND ', $clauses), $params];
+    }
+
+    /** A moment in the wiki's time zone, as the UTC one the queue's rows are stored in. */
+    private function wikiTimeToUtc(string $moment): string
+    {
+        return (new \DateTimeImmutable($moment, new \DateTimeZone(date_default_timezone_get())))
+            ->setTimezone(new \DateTimeZone('UTC'))
+            ->format('Y-m-d H:i:s');
+    }
+
+    /** A moment the queue stored in UTC, as the wiki's time zone shows it. */
+    private function utcToWikiTime(string $moment): string
+    {
+        if ($moment === '') {
+            return '';
+        }
+
+        return (new \DateTimeImmutable($moment, new \DateTimeZone('UTC')))
+            ->setTimezone(new \DateTimeZone(date_default_timezone_get()))
+            ->format('Y-m-d H:i:s');
     }
 
     private function dateOrNull(string $value): ?string
@@ -125,10 +150,17 @@ class AdminLogsApiController extends YesWikiController
         $action = (string)($row['action'] ?? '');
         $key = 'JOURNAL_ACTION_' . strtoupper(str_replace('.', '_', $action));
         $phrase = _t($key);
+        $at = (string)($row['at'] ?? '');
+        $lastAt = (string)($row['last_at'] ?? '');
+        $message = $context['message'] ?? null;
+        if (($row['channel'] ?? '') === JournalChannel::Queue->value) {
+            $at = $this->utcToWikiTime($at);
+            $lastAt = $this->utcToWikiTime($lastAt);
+        }
 
         return [
-            'at' => (string)($row['at'] ?? ''),
-            'last_at' => (string)($row['last_at'] ?? ''),
+            'at' => $at,
+            'last_at' => $lastAt,
             'repeat' => (int)($row['repeat'] ?? 1),
             'channel' => (string)($row['channel'] ?? ''),
             'level' => (string)($row['level'] ?? ''),
@@ -136,7 +168,7 @@ class AdminLogsApiController extends YesWikiController
             'action' => $action,
             'phrase' => $phrase === $key ? $action : $phrase,
             'target' => (string)($row['target'] ?? ''),
-            'message' => (string)($context['message'] ?? ''),
+            'message' => is_scalar($message) ? (string)$message : '',
             'frames' => array_map('strval', is_array($context['frames'] ?? null) ? $context['frames'] : []),
         ];
     }

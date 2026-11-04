@@ -2,13 +2,19 @@
 
 namespace YesWiki\Test\Kernel;
 
+use PHPUnit\Framework\Attributes\DataProvider;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
+use Symfony\Component\DependencyInjection\ServiceLocator;
 use YesWiki\Kernel\Entity\JournalChannel;
+use YesWiki\Kernel\Queue\QueueJournalEntry;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\Journal;
 use YesWiki\Kernel\Service\JournalSchema;
+use YesWiki\Kernel\Service\RuntimeConfig;
 use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';
+require_once 'tests/src/Kernel/QueueTransportTest.php';
 
 /** Ticket 51 / ADR-0025: the two sinks, the collapse, and the retention. */
 class JournalTest extends YesWikiTestCase
@@ -43,8 +49,8 @@ class JournalTest extends YesWikiTestCase
         $db = self::db();
         $table = self::table();
         $db->query(
-            "DELETE FROM {$table} WHERE {$db->quoteIdentifier('action')} LIKE ?",
-            [self::FIXTURE . '%']
+            "DELETE FROM {$table} WHERE {$db->quoteIdentifier('action')} LIKE ? OR {$db->quoteIdentifier('target')} LIKE ?",
+            [self::FIXTURE . '%', self::FIXTURE . '%']
         );
     }
 
@@ -207,5 +213,168 @@ class JournalTest extends YesWikiTestCase
 
         $this->assertCount(0, $this->rows(self::FIXTURE . '.old'), 'past journal_audit_purge_time');
         $this->assertCount(1, $this->rows(self::FIXTURE . '.recent'), 'and the rest is left alone');
+    }
+
+    /** A queue row dated in UTC, by PHP: the channel's rows are never dated by the database's clock. */
+    private function insertQueueRow(string $action, string $at, string $lastAt, string $target = '', JournalChannel $channel = JournalChannel::Queue): int
+    {
+        return $this->insertQueueRowOn(self::db(), self::table(), $action, $at, $lastAt, $target, $channel);
+    }
+
+    /** The same row in that database's Journal, and the id it was given. */
+    private function insertQueueRowOn(DbService $db, string $table, string $action, string $at, string $lastAt, string $target = '', JournalChannel $channel = JournalChannel::Queue): int
+    {
+        $columns = implode(', ', array_map(
+            fn (string $column): string => $db->quoteIdentifier($column),
+            ['at', 'last_at', 'repeat', 'channel', 'level', 'actor', 'action', 'target']
+        ));
+        $db->query(
+            "INSERT INTO {$table} ({$columns}) VALUES (?, ?, 1, ?, 'info', '', ?, ?)",
+            [$at, $lastAt, $channel->value, $action, $target]
+        );
+
+        return $db->lastInsertId();
+    }
+
+    private static function utcAgo(string $offset): string
+    {
+        return gmdate('Y-m-d H:i:s', (int)strtotime($offset));
+    }
+
+    /** @return int how many rows the prune removed, all channels together */
+    private function pruneWithQueueRetention(?int $days): int
+    {
+        $config = self::getWiki()->services->get(RuntimeConfig::class);
+        $before = $config[Journal::QUEUE_PURGE_SETTING];
+        if ($days !== null) {
+            $config[Journal::QUEUE_PURGE_SETTING] = $days;
+        }
+        try {
+            return self::getWiki()->services->get(Journal::class)->prune();
+        } finally {
+            if ($before === null) {
+                $config->offsetUnset(Journal::QUEUE_PURGE_SETTING);
+            } else {
+                $config[Journal::QUEUE_PURGE_SETTING] = $before;
+            }
+        }
+    }
+
+    public function testQueueRowsArePrunedAfterTheirRetention(): void
+    {
+        $this->pruneWithQueueRetention(7); // what the dev wiki already holds past its retention is not this test's
+        $this->insertQueueRow(self::FIXTURE . '.eight', self::utcAgo('-8 days'), self::utcAgo('-8 days'));
+        $this->insertQueueRow(self::FIXTURE . '.six', self::utcAgo('-6 days'), self::utcAgo('-6 days'));
+
+        $removed = $this->pruneWithQueueRetention(7);
+
+        $this->assertCount(0, $this->rows(self::FIXTURE . '.eight'), 'past the seven days of the default');
+        $this->assertCount(1, $this->rows(self::FIXTURE . '.six'));
+        $this->assertSame(1, $removed, 'the prune says how many it removed');
+
+        $removed = $this->pruneWithQueueRetention(2);
+
+        $this->assertCount(0, $this->rows(self::FIXTURE . '.six'), 'past journal_queue_purge_time');
+        $this->assertGreaterThanOrEqual(1, $removed);
+    }
+
+    public function testAnAuditRowOfATasksActionDoesNotSpareTheQueuesLastRow(): void
+    {
+        $target = self::FIXTURE . '-task';
+        $queued = $this->insertQueueRow(QueueJournalEntry::TASK_DISPATCHED, self::utcAgo('-30 days'), self::utcAgo('-30 days'), $target);
+        $audited = $this->insertQueueRow(QueueJournalEntry::TASK_DISPATCHED, self::utcAgo('-400 days'), self::utcAgo('-400 days'), $target, JournalChannel::Audit);
+
+        $this->pruneWithQueueRetention(7);
+
+        $this->assertCount(0, self::db()->loadAll('SELECT id FROM ' . self::table() . ' WHERE id = ?', [$audited]), 'the audit trail is pruned by its own retention');
+        $this->assertCount(1, self::db()->loadAll('SELECT id FROM ' . self::table() . ' WHERE id = ?', [$queued]), 'the queue\'s last row of the task is the last of its own channel');
+    }
+
+    public function testAZeroRetentionKeepsTheQueueRows(): void
+    {
+        $this->insertQueueRow(self::FIXTURE . '.ancient', self::utcAgo('-60 days'), self::utcAgo('-60 days'));
+
+        $this->pruneWithQueueRetention(0);
+
+        $this->assertCount(1, $this->rows(self::FIXTURE . '.ancient'));
+    }
+
+    public function testALongLivedPassSurvivesThePrune(): void
+    {
+        $this->insertQueueRow(self::FIXTURE . '.pass', self::utcAgo('-30 days'), self::utcAgo('-1 hour'));
+
+        $this->pruneWithQueueRetention(7);
+
+        $this->assertCount(1, $this->rows(self::FIXTURE . '.pass'), 'the retention runs on the last sign of life');
+    }
+
+    public function testThePurgeSparesTheLastRowOfEachTask(): void
+    {
+        $this->assertThePurgeSparesTheLastRowOfEachTask(self::db(), self::table(), fn () => $this->pruneWithQueueRetention(7));
+    }
+
+    /** @return array<string, array{array<string, string|bool>}> */
+    public static function realServers(): array
+    {
+        return QueueTransportTest::realServers();
+    }
+
+    /**
+     * The purge's sub-select over the kept ids, on the engines the wiki may run on.
+     *
+     * @param array<string, string|bool> $params
+     */
+    #[DataProvider('realServers')]
+    public function testThePurgeSparesTheLastRowOfEachTaskOnARealServer(array $params): void
+    {
+        if (!QueueTransportTest::reachable($params)) {
+            $this->markTestSkipped("no {$params['db_driver']} server at {$params['db_host']}");
+        }
+        $db = new DbService(new ParameterBag(['table_prefix' => 'ywjournal_'] + $params));
+        $schema = new JournalSchema($db);
+        $journal = new Journal(new ServiceLocator([
+            DbService::class => static fn (): DbService => $db,
+            JournalSchema::class => static fn (): JournalSchema => $schema,
+            RuntimeConfig::class => static fn (): RuntimeConfig => new RuntimeConfig(),
+        ]));
+        $schema->drop();
+        $schema->create();
+
+        try {
+            $this->assertThePurgeSparesTheLastRowOfEachTask($db, $db->quoteIdentifier($schema->table()), static fn () => $journal->prune());
+        } finally {
+            $schema->drop();
+        }
+    }
+
+    /** @param \Closure(): mixed $prune */
+    private function assertThePurgeSparesTheLastRowOfEachTask(DbService $db, string $table, \Closure $prune): void
+    {
+        $old = self::utcAgo('-30 days');
+        $insert = fn (string $action, string $target, ?string $at = null): int => $this->insertQueueRowOn($db, $table, $action, $at ?? $old, $at ?? $old, self::FIXTURE . '-' . $target);
+        $dispatched = QueueJournalEntry::TASK_DISPATCHED;
+        $finished = QueueJournalEntry::TASK_FINISHED;
+
+        $insert($dispatched, 'task-a');
+        $lastDispatched = $insert($dispatched, 'task-a');
+        $insert($finished, 'task-a');
+        $lastFinished = $insert($finished, 'task-a');
+        $declared = $insert(QueueJournalEntry::TASK_DECLARED, 'task-a');
+        $other = $insert($dispatched, 'task-b');
+        $insert(QueueJournalEntry::run('handled'), 'run');
+        $insert(QueueJournalEntry::PASS, 'pass');
+        $recent = $insert($dispatched, 'task-c', self::utcAgo('-2 days'));
+
+        $prune();
+
+        $kept = array_map('intval', array_column($db->loadAll(
+            "SELECT {$db->quoteIdentifier('id')} FROM {$table} WHERE {$db->quoteIdentifier('target')} LIKE ? ORDER BY {$db->quoteIdentifier('id')}",
+            [self::FIXTURE . '-%']
+        ), 'id'));
+        $this->assertSame(
+            [$lastDispatched, $lastFinished, $declared, $other, $recent],
+            $kept,
+            'the last row of each task and action survives however old, a run or a pass does not, and a recent row is not touched'
+        );
     }
 }

@@ -70,7 +70,7 @@ class ArchiveCommand extends Command
         $uid = empty($uid) ? '' : $uid;
         $onlyFolders = $this->prepareFileList($input->getOption('onlyFolders'));
 
-        $this->archiveService->synchronously()->archive($output, !$databaseOnly, !$filesOnly, $foldersToInclude, $foldersToExclude, $hideConfigValues, $uid, $onlyFolders === [] ? null : $onlyFolders);
+        $this->archiveService->archive($output, !$databaseOnly, !$filesOnly, $foldersToInclude, $foldersToExclude, $hideConfigValues, $uid, $onlyFolders === [] ? null : $onlyFolders);
 
         ob_end_clean();
 

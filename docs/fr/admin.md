@@ -64,6 +64,16 @@ Vous pourrez ici gérer les sauvegardes de votre wiki
 
 [Voir la rubrique dédiée](/docs/fr/admin?id=sauvegardes)
 
+### Traitements
+
+Cette page dit ce que le wiki fait en dehors de l'affichage des pages (recherche,
+envois, synchronisations, sauvegardes, ménage), ce qui attend ou a échoué, et si
+quelque chose le traite. Une pastille rouge dans la barre d'administration vous
+y envoie dès qu'un problème demande votre attention. Il faut être identifié
+comme administrateurice pour la consulter.
+
+[Voir la rubrique dédiée](/docs/fr/async.md)
+
 ## Gérer les droits
 
 ### Introduction aux droits d'accès
@@ -1106,12 +1116,15 @@ dans le dossier private\backups )
 
 Quelques pistes si vous rencontrez des erreurs lors de la sauvegarde :
 
-- **sauvegarde déjà en cours** Si lors de la sauvegarde, vous avec un message
-  comme quoi "une sauvegarde est déjà en cours", alors que vous êtes sûrs que ça
-  n'est pas le cas, ceci peut être dû à un arrêt brutal d'une sauvegarde avant
-  que YesWiki est pu remettre à jour le statut du site. Pour résoudre ce souci,
-  il vous suffit d'appliquer les instructions du paragraphe suivant _"site en
-  hibernation"_.
+- **sauvegarde déjà en cours** Pendant une sauvegarde, le site est en lecture
+  seule (`wiki_status` vaut `archiving`). Si la sauvegarde échoue ou si le
+  serveur l'arrête en route, YesWiki remet le site en ligne dès que la page
+  [`GererSauvegardes`](?GererSauvegardes ':ignore') est ouverte ou qu'elle suit
+  la sauvegarde : tout de suite pour un échec, une fois passé le temps que la
+  sauvegarde pouvait prendre pour un processus arrêté de force. Si le message
+  "une sauvegarde est déjà en cours" reste affiché alors que vous êtes sûrs que
+  ça n'est pas le cas, appliquez les instructions du paragraphe suivant _"site
+  en hibernation"_.
 
 - **site en hibernation** Si lors de la sauvegarde, vous avec un message comme
   quoi le site est en "hibernation" :
@@ -1138,31 +1151,12 @@ pour en changer. Vérifiez donc que ce dossier existe et que l'environnement
 `php` du site a le droit d'y écrire — et qu'il n'est pas accessible depuis
 internet.
 
-- **lancement impossible des commandes console sur le serveur** Le système de
-  sauvegarde de YesWiki utilise des commandes console sur le serveur pour faire
-  les sauvegardes. Ceci permet d'exécuter les tâches en arrière plan et éviter
-  les déconnexions intempestives pendant la sauvegarde (surtout quand elle est
-  longue). Certaines restrictions de sécurité de votre serveur peuvent empêcher
-  l'utilisation de cette fonctionnalité. Pour résoudre ce souci, vous pouvez :
-- Vérifier dans votre interface de gestion de votre serveur si les commandes
-  `exec`, `proc_open`, `proc_terminate` ... sont autorisées pour `php`
-- OU passez en mode synchrone :
-  1.  Rendez-vous dans la page [`GererConfig`](?GererConfig ':ignore') de votre
-      site (aussi accessible en passant par
-      [`GererSite`](?GererSite ':ignore') > `Fichier de conf`).
-  2.  Rendez-vous dans la partie `Sécurité`
-  3.  Recherchez le paramètre `call_archive_async` (Lancer les opérations de
-      sauvegardes en arrière-plan)
-  4.  Mettez `false` pour ce paramètre
-  5.  Sauvegardez en cliquant sur `Valider` en bas de la page
-  6.  Vérifier que la valeur a bien été enregistrée puis revenez lancer votre
-      sauvegarde
-
-**Important, en mode `synchrone`, si la sauvegarde est plus longue que le
-réglage de temps maximum de connexion de votre serveur, alors elle peut ne pas
-se terminer.** Il faudra alors choisir un sous-ensemble plus petit de votre site
-pour que la sauvegarde se fasse plus rapidement que la limite de temps de
-connexion de votre serveur.
+- **comment la sauvegarde s'exécute, et si elle échoue ou est arrêtée en
+  route** Une sauvegarde ou une restauration passe par la file des traitements
+  en arrière-plan, et apparaît sur la page **Traitements** comme les autres. Qui
+  l'exécute selon le mode de traitement, ce qui se passe quand elle échoue et
+  comment la relancer sont décrits dans
+  [sauvegardes et restaurations](/docs/fr/async?id=sauvegardes-et-restaurations).
 
 - **mysqldump inaccessible** Pour réaliser des sauvegardes de votre site,
   YesWiki utilise l'utilitaire `mysqldump`.
@@ -1186,6 +1180,18 @@ avec votre configuration de serveur.
   `DENY FROM ALL` dans ce fichier
 - soit en configurant votre logiciel http (`apache`, `nginx`, ...) pour qu'il
   interdise l'accès internet à ce dossier
+
+## Traitements en arrière-plan
+
+Recherche, e-mails récapitulatifs, synchronisations, livraisons ActivityPub,
+sauvegardes et ménage régulier passent par une file d'attente, que le wiki
+traite en dehors de l'affichage des pages. La page **Traitements** de
+l'administration (`?admin/jobs`, menu « Système ») dit ce qui attend, ce qui a
+échoué et si quelque chose traite la file.
+
+Le choix du mode de traitement, la lecture de cette page et ce qu'il faut faire
+pour chacune de ses alertes sont décrits dans
+[Traitements en arrière-plan](/docs/fr/async.md).
 
 ## Stocker les fichiers dans un bucket S3
 

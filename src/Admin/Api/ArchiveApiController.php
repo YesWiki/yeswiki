@@ -21,12 +21,7 @@ class ArchiveApiController extends YesWikiController
     #[Route('/api/archives/uidstatus/{uid}', methods: ['GET'], options: ['acl' => ['@admins']])]
     public function getArchiveStatus(string $uid): ApiResponse
     {
-        $forceStarted = $this->getRequest()->query->get('forceStarted');
-
-        return $this->getService(ArchiveController::class)->getArchiveStatus(
-            $uid,
-            !empty($forceStarted) && in_array($forceStarted, [1, true, '1', 'true'], true)
-        );
+        return $this->getService(ArchiveController::class)->getArchiveStatus($uid);
     }
 
     #[Route('/api/archives/archivingStatus', methods: ['GET'], options: ['acl' => ['@admins']])]

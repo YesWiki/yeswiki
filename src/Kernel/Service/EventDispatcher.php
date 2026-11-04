@@ -42,4 +42,49 @@ class EventDispatcher extends SymfonyEventDispatcher
             return $errors;
         }
     }
+
+    /**
+     * Calls each listener on its own: one that throws stops neither the next ones nor the caller, told through $onFailure.
+     *
+     * @param \Closure(string, \Throwable): void $onFailure
+     */
+    public function dispatchToEach(string $eventName, Event $event, \Closure $onFailure): void
+    {
+        foreach ($this->getListeners($eventName) as $listener) {
+            if ($event->isPropagationStopped()) {
+                break;
+            }
+            if (!is_callable($listener)) {
+                continue;
+            }
+
+            try {
+                $listener($event, $eventName, $this);
+            } catch (\Throwable $failed) {
+                $onFailure(self::nameOf($listener), $failed);
+            }
+        }
+    }
+
+    /** The listener's name as found in the code: `Class::method`, or where a closure was written. */
+    public static function nameOf(callable $listener): string
+    {
+        if (is_array($listener)) {
+            return (is_object($listener[0]) ? $listener[0]::class : (string)$listener[0]) . '::' . $listener[1];
+        }
+        if ($listener instanceof \Closure) {
+            $function = new \ReflectionFunction($listener);
+            if (str_contains($function->getName(), '{closure')) {
+                return 'closure in ' . basename((string)$function->getFileName()) . ':' . $function->getStartLine();
+            }
+            $class = $function->getClosureScopeClass();
+
+            return ($class !== null ? $class->getName() . '::' : '') . $function->getName();
+        }
+        if (is_object($listener)) {
+            return $listener::class . '::__invoke';
+        }
+
+        return is_string($listener) ? $listener : 'a listener';
+    }
 }

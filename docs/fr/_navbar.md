@@ -6,6 +6,7 @@
 - [✌️ Prise en main](/docs/fr/prise-en-main.md)
 - [📑 Formulaires](/docs/fr/bazar.md)
 - [😎 Administration](/docs/fr/admin.md)
+- [⚙️ Traitements en arrière-plan](/docs/fr/async.md)
 - 🌱 Contribuer
   - [Participer à la communauté](/docs/fr/communaute.md)
   - [Améliorer la documentation](/docs/fr/documentation.md)

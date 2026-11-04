@@ -2,16 +2,21 @@
 package yeswiki
 
 import (
+	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"os"
 	"os/exec"
 	"os/signal"
 	"path/filepath"
 	"strconv"
 	"strings"
+	"sync"
 	"syscall"
+	"time"
 
 	"github.com/caddyserver/caddy/v2"
 	"github.com/caddyserver/caddy/v2/caddyconfig"
@@ -545,15 +550,10 @@ type phpConsole struct{}
 
 // Listing is the wiki's own command list, captured rather than streamed so it can be shown inside this binary's help.
 func (phpConsole) Listing(instance, programDir string) (string, error) {
-	self, err := os.Executable()
+	command, err := consoleCommand(context.Background(), instance, programDir, "list", "--format=txt")
 	if err != nil {
 		return "", err
 	}
-
-	console := filepath.Join(programDir, "src", "commands", "console")
-	command := exec.Command(self, "php-cli", console, "list", "--format=txt")
-	command.Dir = instance
-	command.Env = commands.Environment(instance, programDir)
 
 	listed, err := command.Output()
 	if exit := (&exec.ExitError{}); errors.As(err, &exit) && len(exit.Stderr) > 0 {
@@ -575,18 +575,126 @@ func firstLine(text string) string {
 }
 
 func (phpConsole) Console(instance, programDir string, arguments []string) error {
-	self, err := os.Executable()
+	command, err := consoleCommand(context.Background(), instance, programDir, arguments...)
 	if err != nil {
 		return err
 	}
-
-	console := filepath.Join(programDir, "src", "commands", "console")
-	command := exec.Command(self, append([]string{"php-cli", console}, arguments...)...)
-	command.Dir = instance
-	command.Env = commands.Environment(instance, programDir)
 	command.Stdin, command.Stdout, command.Stderr = os.Stdin, os.Stdout, os.Stderr
 
 	return command.Run()
+}
+
+// consoleCommand is the wiki console of that instance, run in the embedded PHP with those arguments.
+func consoleCommand(ctx context.Context, instance, programDir string, arguments ...string) (*exec.Cmd, error) {
+	self, err := os.Executable()
+	if err != nil {
+		return nil, err
+	}
+
+	console := filepath.Join(programDir, "src", "commands", "console")
+	command := exec.CommandContext(ctx, self, append([]string{"php-cli", console}, arguments...)...)
+	command.Dir = instance
+	command.Env = commands.Environment(instance, programDir)
+
+	return command, nil
+}
+
+// consumeArguments are the wiki console's, for the consumer this binary supervises. The limits
+// make it restart on a regular basis, which is what a long-running PHP process needs.
+var consumeArguments = []string{"messenger:consume", "--supervised", "--time-limit=3600", "--memory-limit=128M"}
+
+// queueConsumers starts each wiki's queue consumer in the embedded PHP, its output relayed to the
+// binary's own log line by line under the wiki's name.
+type queueConsumers struct {
+	programDir string
+	log        io.Writer
+}
+
+func (q queueConsumers) Start(ctx context.Context, wiki program.Wiki) (Child, error) {
+	command, err := consoleCommand(ctx, wiki.Directory, q.programDir, consumeArguments...)
+	if err != nil {
+		return nil, err
+	}
+
+	// One writer for both streams, so exec copies them through one pipe and lines never interleave.
+	output := &prefixedLines{prefix: logPrefix(wiki), out: q.log}
+	command.Stdout, command.Stderr = output, output
+	// A consumer that left a grandchild holding its output open is still waited for, but not forever.
+	command.WaitDelay = 5 * time.Second
+
+	if err := command.Start(); err != nil {
+		return nil, err
+	}
+
+	return queueConsumer{command: command, output: output}, nil
+}
+
+// queueConsumer is one running php-cli consumer.
+type queueConsumer struct {
+	command *exec.Cmd
+	output  *prefixedLines
+}
+
+func (q queueConsumer) Wait() (int, error) {
+	err := q.command.Wait()
+	q.output.flush()
+
+	if exit := (&exec.ExitError{}); err != nil && !errors.As(err, &exit) {
+		return -1, err
+	}
+
+	return q.command.ProcessState.ExitCode(), nil
+}
+
+func (q queueConsumer) Signal(signal os.Signal) error {
+	return q.command.Process.Signal(signal)
+}
+
+func (q queueConsumer) Kill() error {
+	return q.command.Process.Kill()
+}
+
+// prefixedLines writes each complete line it is given after a prefix.
+type prefixedLines struct {
+	prefix  string
+	out     io.Writer
+	mu      sync.Mutex
+	pending []byte
+}
+
+func (p *prefixedLines) Write(written []byte) (int, error) {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+
+	p.pending = append(p.pending, written...)
+	for {
+		end := bytes.IndexByte(p.pending, '\n')
+		if end < 0 {
+			break
+		}
+		if _, err := io.WriteString(p.out, p.prefix+string(p.pending[:end+1])); err != nil {
+			return len(written), err
+		}
+		p.pending = p.pending[end+1:]
+	}
+
+	return len(written), nil
+}
+
+// flush writes the last line, which a process that died mid-sentence did not end.
+func (p *prefixedLines) flush() {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+
+	if len(p.pending) > 0 {
+		_, _ = io.WriteString(p.out, p.prefix+string(p.pending)+"\n")
+		p.pending = nil
+	}
+}
+
+// serveConsumers supervises the queue consumers of the wikis being served, logging to stderr.
+func serveConsumers(programDir string) *Supervisor {
+	return NewSupervisor(queueConsumers{programDir: programDir, log: os.Stderr}, time.Now, time.Sleep, os.Stderr)
 }
 
 // caddyServer serves an Instance until the process is asked to stop.
@@ -603,10 +711,11 @@ func (c caddyServer) Serve(instance, programDir string) error {
 	}
 
 	for name, value := range map[string]string{
-		program.EnvInstance:   instance,
-		program.EnvProgram:    programDir,
-		program.EnvConfigFile: filepath.Join(instance, "yeswiki.config.php"),
-		program.EnvAsyncPHP:   program.ShimPath(filepath.Dir(programDir)),
+		program.EnvInstance:       instance,
+		program.EnvProgram:        programDir,
+		program.EnvConfigFile:     filepath.Join(instance, "yeswiki.config.php"),
+		program.EnvAsyncPHP:       program.ShimPath(filepath.Dir(programDir)),
+		program.EnvServedByBinary: "1",
 	} {
 		if err := os.Setenv(name, value); err != nil {
 			return err
@@ -641,7 +750,15 @@ func (c caddyServer) Serve(instance, programDir string) error {
 
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, os.Interrupt, syscall.SIGTERM)
+
+	stated, _ := program.BaseURL(instance)
+	consumers := serveConsumers(programDir)
+	consumers.Reconcile([]program.Wiki{{Directory: instance, Host: program.HostOf(stated)}})
+
 	<-stop
+
+	// The consumers first, while the wiki they write to is still served.
+	consumers.Stop(StopGrace)
 
 	return caddy.Stop()
 }

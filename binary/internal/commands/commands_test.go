@@ -161,6 +161,22 @@ func TestBothRootsAreStatedForThePhpProcess(t *testing.T) {
 	}
 }
 
+// The marker is how PHP tells it runs under this binary, which keeps the queue's worker up for the wikis that ask for one.
+func TestEnvironmentCarriesTheBinaryMarker(t *testing.T) {
+	environment := Environment("/wikis/mine", "/opt/yeswiki/program-4.5.0")
+
+	marked := false
+	for _, entry := range environment {
+		if entry == program.EnvServedByBinary+"=1" {
+			marked = true
+		}
+	}
+
+	if !marked {
+		t.Fatalf("%s=1 is not stated", program.EnvServedByBinary)
+	}
+}
+
 type recordingFarm struct {
 	farm       string
 	wikis      []program.Wiki

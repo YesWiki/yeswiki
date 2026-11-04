@@ -36,6 +36,12 @@ class ActivityPubKeyStore
         return $this->privateKeys[$account] = $pem;
     }
 
+    /** Whether the account has a key already, without generating one. */
+    public function has(string $account): bool
+    {
+        return $this->storage->exists($this->file($account));
+    }
+
     public function publicKey(string $account): string
     {
         $key = openssl_pkey_get_private($this->privateKey($account));

@@ -12,6 +12,7 @@ use YesWiki\Kernel\Database\SqlDialectFactory;
 use YesWiki\Kernel\Database\SqlDumper;
 use YesWiki\Kernel\Database\SqlParameters;
 use YesWiki\Kernel\Database\SqlStatementSplitter;
+use YesWiki\Kernel\Service\Queue\QueueSchema;
 
 class DbService
 {
@@ -264,7 +265,7 @@ class DbService
         if ($sourcePrefix === '') {
             throw new \Exception('SQL restore failed: no table in the dump names a prefix, so it is not a wiki backup');
         }
-        $own = DumpRewriter::ownTables($tables, $sourcePrefix);
+        $own = DumpRewriter::contentTables($tables, $sourcePrefix);
         $foreign = array_fill_keys(array_diff($tables, $own), true);
 
         $staging = $this->isolatedPrefix($livePrefix, 'staging');
@@ -320,6 +321,8 @@ class DbService
                 fclose($handle);
             }
 
+            $this->restoreSessionSettings($session);
+            $this->putBackRowsLeftOut($livePrefix, $staging, $this->liveRowsLeftOut($livePrefix));
             $this->swapTables($livePrefix, $staging, $replaced);
         } catch (\Throwable $th) {
             if ($this->driver === 'pgsql' && $this->transactionDepth === 0) {
@@ -338,6 +341,92 @@ class DbService
 
         $this->dropTablesWithPrefix($replaced);
         $this->renameStagedObjects($staging, $livePrefix);
+        $this->ensureQueueTables();
+    }
+
+    /**
+     * The rows that are the running instance's state (DumpRewriter::leftOutRows()), read before a restore replaces their tables.
+     *
+     * @return array<string, list<array<string, mixed>>>
+     */
+    private function liveRowsLeftOut(string $livePrefix): array
+    {
+        $tables = array_flip($this->schema()->getTables());
+        $rows = [];
+        foreach (DumpRewriter::leftOutRows($livePrefix) as $table => $condition) {
+            if (isset($tables[$table])) {
+                $rows[$table] = $this->loadAll('SELECT * FROM ' . $this->dialect->quoteIdentifier($table) . " WHERE {$condition} ORDER BY id");
+            }
+        }
+
+        return $rows;
+    }
+
+    /**
+     * Put those rows back under their own ids into the restored tables, replacing any of their kind the dump brought.
+     *
+     * @param array<string, list<array<string, mixed>>> $kept
+     */
+    private function putBackRowsLeftOut(string $livePrefix, string $intoPrefix, array $kept): void
+    {
+        $tables = array_flip($this->schema()->getTables());
+        foreach (DumpRewriter::leftOutRows($livePrefix) as $liveTable => $condition) {
+            $table = $intoPrefix . substr($liveTable, \strlen($livePrefix));
+            if (!isset($tables[$table])) {
+                continue;
+            }
+            $rows = $kept[$liveTable] ?? [];
+            $this->transactional(function () use ($table, $condition, $rows): void {
+                $quoted = $this->dialect->quoteIdentifier($table);
+                $this->query("DELETE FROM {$quoted} WHERE {$condition}");
+                if ($rows === []) {
+                    return;
+                }
+
+                $taken = [];
+                foreach (array_chunk(array_map(static fn (array $row): int => (int)$row['id'], $rows), 500) as $ids) {
+                    foreach ($this->loadAll("SELECT id FROM {$quoted} WHERE id IN (" . SqlParameters::placeholders(\count($ids)) . ')', $ids) as $found) {
+                        $taken[(int)$found['id']] = true;
+                    }
+                }
+
+                $renumbered = [];
+                foreach ($rows as $row) {
+                    if (isset($taken[(int)$row['id']])) {
+                        unset($row['id']);
+                        $renumbered[] = $row;
+                    } else {
+                        $this->insertRow($table, $row);
+                    }
+                }
+                foreach ($this->dialect->realignIdentity($table, 'id') as $statement) {
+                    $this->query($statement);
+                }
+                foreach ($renumbered as $row) {
+                    $this->insertRow($table, $row);
+                }
+            });
+        }
+    }
+
+    /** @param array<string, mixed> $row */
+    private function insertRow(string $table, array $row): void
+    {
+        $this->query(
+            'INSERT INTO ' . $this->dialect->quoteIdentifier($table)
+            . ' (' . implode(', ', array_map($this->dialect->quoteIdentifier(...), array_keys($row))) . ')'
+            . ' VALUES (' . SqlParameters::placeholders(\count($row)) . ')',
+            array_values($row)
+        );
+    }
+
+    /** Create the queue's table when a restore leaves the database without it (a new install from a backup). */
+    private function ensureQueueTables(): void
+    {
+        $queue = new QueueSchema($this);
+        if (!$queue->exists()) {
+            $queue->create();
+        }
     }
 
     /**
@@ -459,7 +548,7 @@ class DbService
         }
 
         $renames = [];
-        foreach ($this->withoutShadowTables($this->tablesWithPrefix($livePrefix)) as $table) {
+        foreach ($this->withoutShadowTables(DumpRewriter::contentTables($this->schema()->getTables(), $livePrefix)) as $table) {
             $renames[$table] = $replaced . substr($table, \strlen($livePrefix));
         }
         foreach ($staged as $table) {
@@ -514,7 +603,7 @@ class DbService
     }
 
     /**
-     * Drop this wiki's tables and replay $sqlContent into them.
+     * Drop this wiki's content tables and replay $sqlContent into them, keeping the live rows DumpRewriter::leftOutRows() names.
      *
      * @throws \Exception
      */
@@ -533,8 +622,9 @@ class DbService
         }
 
         $tables = DumpRewriter::tables($sqlContent);
-        $foreign = array_fill_keys(array_diff($tables, DumpRewriter::ownTables($tables, DumpRewriter::prefixOf($tables))), true);
+        $foreign = array_fill_keys(array_diff($tables, DumpRewriter::contentTables($tables, DumpRewriter::prefixOf($tables))), true);
 
+        $kept = $this->liveRowsLeftOut($tablesPrefix);
         $session = $this->sessionSettings();
         $disable = $this->dialect->foreignKeyChecks(false);
         if ($disable !== null) {
@@ -542,7 +632,7 @@ class DbService
         }
 
         try {
-            foreach ($this->tablesWithPrefix($tablesPrefix) as $tableName) {
+            foreach (DumpRewriter::contentTables($this->schema()->getTables(), $tablesPrefix) as $tableName) {
                 $this->query('DROP TABLE IF EXISTS ' . $this->dialect->quoteIdentifier($tableName));
             }
 
@@ -565,6 +655,8 @@ class DbService
             }
             $this->restoreSessionSettings($session);
         }
+        $this->putBackRowsLeftOut($tablesPrefix, $tablesPrefix, $kept);
+        $this->ensureQueueTables();
     }
 
     /**
@@ -591,6 +683,18 @@ class DbService
     public function now(): string
     {
         return $this->dialect->now();
+    }
+
+    /** The database's current time, in UTC whatever the session's time zone. */
+    public function utcNow(): \DateTimeImmutable
+    {
+        $row = $this->loadSingle('SELECT ' . $this->dialect->utcNow() . ' AS utc_now');
+        $time = \DateTimeImmutable::createFromFormat('Y-m-d H:i:s.u', (string)($row['utc_now'] ?? ''), new \DateTimeZone('UTC'));
+        if ($time === false) {
+            throw new \RuntimeException('The database did not tell its current time: ' . var_export($row, true));
+        }
+
+        return $time;
     }
 
     /**
@@ -958,6 +1062,12 @@ class DbService
     public function inTransaction(): bool
     {
         return $this->transactionDepth > 0;
+    }
+
+    /** The id the last INSERT on this connection generated, never another process's (unlike `SELECT MAX(id)`). */
+    public function lastInsertId(): int
+    {
+        return (int)$this->link->lastInsertId();
     }
 
     /** A statement prepared once, to be executed many times with different values. */

@@ -8,6 +8,7 @@ use Psr\Log\LoggerTrait;
 use Psr\Log\LogLevel;
 use Symfony\Component\DependencyInjection\Attribute\AsAlias;
 use YesWiki\Kernel\Entity\JournalChannel;
+use YesWiki\Kernel\Queue\QueueJournalEntry;
 
 /** The wiki's log, in two sinks and one call site (ADR-0025): every event reaches stderr as a JSON line, unconditionally and first, and then the Journal table, best-effort. */
 #[AsAlias(LoggerInterface::class, public: true)]
@@ -19,6 +20,7 @@ class Journal implements LoggerInterface
 
     public const AUDIT_PURGE_SETTING = 'journal_audit_purge_time';
     public const DIAGNOSTIC_PURGE_SETTING = 'journal_diagnostic_purge_time';
+    public const QUEUE_PURGE_SETTING = 'journal_queue_purge_time';
 
     public const MIGRATION_APPLIED = 'migration.applied';
 
@@ -81,7 +83,7 @@ class Journal implements LoggerInterface
         $this->store(JournalChannel::Diagnostic, (string)$level, $action, $target, $context, null, $fingerprint, date('Y-m-d'));
     }
 
-    /** Delete what has outlived its retention: a year of audit, a fortnight of diagnostics. */
+    /** Delete what has outlived its retention: a year of audit, a fortnight of diagnostics, a week of the queue's, bar the last row of each scheduled task. */
     public function prune(): int
     {
         $table = $this->container->get(JournalSchema::class)->table();
@@ -92,20 +94,36 @@ class Journal implements LoggerInterface
         foreach ([
             [JournalChannel::Audit, self::AUDIT_PURGE_SETTING, 365, 'at'],
             [JournalChannel::Diagnostic, self::DIAGNOSTIC_PURGE_SETTING, 14, 'last_at'],
+            [JournalChannel::Queue, self::QUEUE_PURGE_SETTING, 7, 'last_at'],
         ] as [$channel, $setting, $fallback, $column]) {
             $days = (int)($this->container->get(RuntimeConfig::class)[$setting] ?? $fallback);
             if ($days <= 0) {
                 continue;
             }
 
-            $statement = $db->query(
-                "DELETE FROM {$quote($table)} WHERE {$quote('channel')} = ? AND {$quote($column)} < {$db->dateSubDays($days)}",
-                [$channel->value]
-            );
+            $statement = $channel === JournalChannel::Queue
+                ? $this->deleteExpiredQueueRows($db, $table, $days)
+                : $db->query(
+                    "DELETE FROM {$quote($table)} WHERE {$quote('channel')} = ? AND {$quote($column)} < {$db->dateSubDays($days)}",
+                    [$channel->value]
+                );
             $removed += $statement->rowCount();
         }
 
         return $removed;
+    }
+
+    /** Deletes the queue's rows past their retention bar the last of each scheduled task, whose ids come through a derived table so MySQL lets the DELETE read its own table. */
+    private function deleteExpiredQueueRows(DbService $db, string $table, int $days): \PDOStatement
+    {
+        $quote = fn (string $column): string => $db->quoteIdentifier($column);
+        $actions = implode(', ', array_fill(0, count(QueueJournalEntry::TASK_ACTIONS), '?'));
+        $kept = "SELECT {$quote('id')} FROM (SELECT MAX({$quote('id')}) AS {$quote('id')} FROM {$quote($table)} WHERE {$quote('channel')} = ? AND {$quote('action')} IN ({$actions}) GROUP BY {$quote('action')}, {$quote('target')}) kept";
+
+        return $db->query(
+            "DELETE FROM {$quote($table)} WHERE {$quote('channel')} = ? AND {$quote('last_at')} < ? AND {$quote('id')} NOT IN ({$kept})",
+            [JournalChannel::Queue->value, $db->utcNow()->modify("-{$days} days")->format('Y-m-d H:i:s'), JournalChannel::Queue->value, ...QueueJournalEntry::TASK_ACTIONS]
+        );
     }
 
     /** @param array<string, mixed> $payload */

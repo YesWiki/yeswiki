@@ -70,6 +70,12 @@ abstract class YesWikiController
         }
     }
 
+    /** Whether a caller sent the wiki's shared secret (a webhook, an online cron); an empty secret never matches. */
+    protected function sharesSecret(string $expected, string $provided): bool
+    {
+        return $expected !== '' && $provided !== '' && hash_equals($expected, $provided);
+    }
+
     /**
      * @template T
      *

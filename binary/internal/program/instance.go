@@ -17,6 +17,11 @@ const EnvProgram = "YESWIKI_PROGRAM_DIR"
 // EnvConfigFile names the Instance's configuration file.
 const EnvConfigFile = "YESWIKI_CONFIG_FILE"
 
+// EnvServedByBinary marks a PHP process as running under this binary, which keeps the queue's
+// consumer up for the wikis in `worker` mode. It is a marker and not the mode itself: a wiki served
+// here consumes in `request` unless it asks for `worker`.
+const EnvServedByBinary = "YESWIKI_SERVED_BY_BINARY"
+
 // dataFolders are the Instance's own, created on sight, as bootstrap_paths.php also does.
 var dataFolders = []string{"cache", "custom", "files", "private"}
 

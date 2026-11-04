@@ -1,0 +1,8 @@
+{# A failure's cause in a jobs table: a dash when there is none, folded away past 160 characters. Autoescaped, never |raw. #}
+{% if error is null %}
+  –
+{% elseif error|length > 160 %}
+  <details><summary>{{ error|slice(0, 160) }}…</summary>{{ error }}</details>
+{% else %}
+  {{ error }}
+{% endif %}
