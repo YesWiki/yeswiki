@@ -2,6 +2,7 @@
 
 namespace YesWiki\Test\Kernel;
 
+use PHPUnit\Framework\AssertionFailedError;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Component\Clock\MockClock;
@@ -838,15 +839,88 @@ class QueueTransportTest extends YesWikiTestCase
     }
 
     /**
+     * The wiki's own connection when it runs on PostgreSQL or MySQL, read once: see wikiServer().
+     *
+     * @var array{db_driver: string, db_host: string, db_port: string, db_database: string, db_user: string, db_password: string}|null
+     */
+    private static ?array $wikiServer = null;
+    private static bool $wikiServerRead = false;
+
+    /**
+     * The PostgreSQL and MySQL servers the queue's SQL is tried on.
+     *
+     * The engine the wiki under test runs on is tried on the wiki's own database -- in CI, the one the
+     * matrix leg installed it on -- so a leg's driver is the one its queue tests prove, and that server is
+     * never skipped (reachable()). The other engine is the development container, unless
+     * YESWIKI_TEST_{PGSQL,MYSQL}_{HOST,PORT,DATABASE,USER,PASSWORD} say otherwise, and is skipped when absent.
+     *
      * @return array<string, array{array<string, string|bool>}>
      */
     public static function realServers(): array
     {
-        $common = ['db_database' => 'yeswiki', 'db_user' => 'yeswiki', 'db_password' => 'password', 'table_prefix' => 'ywqtest_', 'debug' => false];
+        $common = ['table_prefix' => 'ywqtest_', 'debug' => false];
+        $wiki = self::wikiServer();
+        $server = static fn (string $driver, string $engine, string $host, string $port): array => ($wiki !== null && $wiki['db_driver'] === $driver)
+            ? $wiki
+            : ['db_driver' => $driver] + self::serverFromEnvironment($engine, $host, $port);
 
         return [
-            'postgresql' => [['db_driver' => 'pgsql', 'db_host' => 'yeswiki-pg', 'db_port' => '5432'] + $common],
-            'mysql' => [['db_driver' => 'mysql', 'db_host' => 'yeswiki-db', 'db_port' => '3306'] + $common],
+            'postgresql' => [$server('pgsql', 'PGSQL', 'yeswiki-pg', '5432') + $common],
+            'mysql' => [$server('mysql', 'MYSQL', 'yeswiki-db', '3306') + $common],
+        ];
+    }
+
+    /**
+     * The connection of the wiki the suite runs on when it is PostgreSQL or MySQL, as the wiki resolved it; null on SQLite.
+     *
+     * @return array{db_driver: string, db_host: string, db_port: string, db_database: string, db_user: string, db_password: string}|null
+     */
+    private static function wikiServer(): ?array
+    {
+        if (!self::$wikiServerRead) {
+            self::$wikiServerRead = true;
+            $config = self::getWiki()->config;
+            $driver = (string)($config['db_driver'] ?? '');
+            if (in_array($driver, ['pgsql', 'mysql'], true)) {
+                $host = (string)($config['db_host'] ?? '');
+                $port = (string)($config['db_port'] ?? '');
+                // "host:port" is how a MySQL host is often written; the DSN wants them apart.
+                if ($port === '' && preg_match('/^([^:]+):(\d+)$/', $host, $parts) === 1) {
+                    [, $host, $port] = $parts;
+                }
+                self::$wikiServer = [
+                    'db_driver' => $driver,
+                    'db_host' => $host,
+                    'db_port' => $port !== '' ? $port : ($driver === 'pgsql' ? '5432' : '3306'),
+                    'db_database' => (string)($config['db_database'] ?? ''),
+                    'db_user' => (string)($config['db_user'] ?? ''),
+                    'db_password' => (string)($config['db_password'] ?? ''),
+                ];
+            }
+        }
+
+        return self::$wikiServer;
+    }
+
+    /**
+     * One engine's connection, each setting from its YESWIKI_TEST_{$engine}_* variable when set, an empty one included.
+     *
+     * @return array{db_host: string, db_port: string, db_database: string, db_user: string, db_password: string}
+     */
+    private static function serverFromEnvironment(string $engine, string $host, string $port): array
+    {
+        $read = static function (string $setting, string $default) use ($engine): string {
+            $value = getenv("YESWIKI_TEST_{$engine}_{$setting}");
+
+            return $value === false ? $default : $value;
+        };
+
+        return [
+            'db_host' => $read('HOST', $host),
+            'db_port' => $read('PORT', $port),
+            'db_database' => $read('DATABASE', 'yeswiki'),
+            'db_user' => $read('USER', 'yeswiki'),
+            'db_password' => $read('PASSWORD', 'password'),
         ];
     }
 
@@ -963,7 +1037,11 @@ class QueueTransportTest extends YesWikiTestCase
     }
 
     /**
-     * Whether the development container of that engine answers; the other queue tests that run on real servers ask it too.
+     * Whether that engine's server answers; the other queue tests that run on real servers ask it too.
+     *
+     * The wiki's own server, and any under YESWIKI_TEST_REAL_SERVERS=required, fails the test that asked
+     * when it does not answer, instead of letting it be skipped: a skip is silent, and the engine a CI leg
+     * exists to prove would go untested unseen.
      *
      * @param array<string, string|bool> $params
      */
@@ -978,7 +1056,13 @@ class QueueTransportTest extends YesWikiTestCase
             new \PDO($dsn, (string)$params['db_user'], (string)$params['db_password'], [\PDO::ATTR_TIMEOUT => 2]);
 
             return true;
-        } catch (\PDOException) {
+        } catch (\PDOException $e) {
+            $wiki = self::wikiServer();
+            $isTheWikis = $wiki !== null && array_intersect_key($params, $wiki) == $wiki;
+            if ($isTheWikis || getenv('YESWIKI_TEST_REAL_SERVERS') === 'required') {
+                throw new AssertionFailedError("no {$params['db_driver']} server at {$params['db_host']}:{$params['db_port']}/{$params['db_database']} although " . ($isTheWikis ? 'it is the database of the wiki under test' : 'YESWIKI_TEST_REAL_SERVERS=required') . ": {$e->getMessage()}");
+            }
+
             return false;
         }
     }
