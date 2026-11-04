@@ -447,11 +447,11 @@ class JobsControllerTest extends YesWikiTestCase
         $this->kit = new QueueTestKit([QueueTestMessage::class => static function () use (&$sessionWhileHandling): void {
             $sessionWhileHandling[] = session_status();
         }]);
-        $hadSession = session_status() === PHP_SESSION_ACTIVE;
+        $hadSession = $this->sessionIsOpen();
         if (!$hadSession) {
             @session_start();
         }
-        if (session_status() !== PHP_SESSION_ACTIVE) {
+        if (!$this->sessionIsOpen()) {
             $this->markTestSkipped('a session cannot be opened here');
         }
         // Signed in once the session is open, which would otherwise load over the login.
@@ -461,7 +461,7 @@ class JobsControllerTest extends YesWikiTestCase
         try {
             $response = $this->api(post: true)->consume();
         } finally {
-            if ($hadSession && session_status() !== PHP_SESSION_ACTIVE) {
+            if ($hadSession && !$this->sessionIsOpen()) {
                 @session_start();
             } elseif (!$hadSession) {
                 session_write_close();
@@ -474,6 +474,11 @@ class JobsControllerTest extends YesWikiTestCase
             'remaining' => 0,
             'reason' => _t('QUEUE_STOP_EMPTY'),
         ]), ENT_QUOTES), (string)$response->getContent(), 'the answer is rendered all the same');
+    }
+
+    private function sessionIsOpen(): bool
+    {
+        return session_status() === PHP_SESSION_ACTIVE;
     }
 
     /** The admin's button is not the consumer the wiki waits for: pressed during a fallback, it must not end it. */

@@ -673,13 +673,14 @@ class QueueConsumerTest extends YesWikiTestCase
     /** A long pass with no deadline (the jobs page's button) says it is alive between its messages, at most once a minute, so that nobody closes it as killed while it works. */
     public function testADrainSaysItIsAliveBetweenItsMessages(): void
     {
-        $this->assertInstanceOf(MockClock::class, $this->clock);
+        $clock = $this->clock;
+        $this->assertInstanceOf(MockClock::class, $clock);
         $seen = [];
-        $this->behaviour = function (QueueTestMessage $message) use (&$seen): void {
+        $this->behaviour = function (QueueTestMessage $message) use (&$seen, $clock): void {
             $pass = $this->statistics->openPasses()[0] ?? null;
             $this->assertNotNull($pass);
             $seen[$message->value] = $this->lastSeenOf($pass['id']);
-            $this->clock->sleep($message->value === 'm1' ? 61 : 30);
+            $clock->sleep($message->value === 'm1' ? 61 : 30);
         };
         $this->send(4);
 
@@ -834,12 +835,13 @@ class QueueConsumerTest extends YesWikiTestCase
     public function testTheFirstMessageAfterTheResponseIsClaimedWithTheLimitLifted(): void
     {
         $lifts = 0;
-        $this->budgets = $this->budgetsUnderA30SecondLimit(true, $lifts);
+        $budgets = $this->budgetsUnderA30SecondLimit(true, $lifts);
+        $this->budgets = $budgets;
         $this->build($this->db, new MockClock(self::START, 'UTC'));
         $limits = $this->limitsOfTheClaimsOfTheHandlers();
         $this->send(2);
 
-        $report = $this->consumer->drain(QueueConsumerMode::Request, $this->budgets->forMode(QueueConsumerMode::Request, true), true);
+        $report = $this->consumer->drain(QueueConsumerMode::Request, $budgets->forMode(QueueConsumerMode::Request, true), true);
 
         $this->assertSame(2, $report->handled);
         $this->assertSame([QueueBudgetFactory::KILL_LIMIT_NO_PHP_LIMIT, QueueBudgetFactory::KILL_LIMIT_NO_PHP_LIMIT], $limits());
@@ -850,11 +852,12 @@ class QueueConsumerTest extends YesWikiTestCase
     public function testAFirstMessageWhileAVisitorWaitsLiftsNothing(): void
     {
         $lifts = 0;
-        $this->budgets = $this->budgetsUnderA30SecondLimit(true, $lifts);
+        $budgets = $this->budgetsUnderA30SecondLimit(true, $lifts);
+        $this->budgets = $budgets;
         $this->build($this->db, new MockClock(self::START, 'UTC'));
         $limits = $this->limitsOfTheClaimsOfTheHandlers();
         $this->send(1);
-        $budget = $this->budgets->forMode(QueueConsumerMode::Request, false);
+        $budget = $budgets->forMode(QueueConsumerMode::Request, false);
 
         $report = $this->consumer->drain(QueueConsumerMode::Request, $budget, false);
 
@@ -867,11 +870,12 @@ class QueueConsumerTest extends YesWikiTestCase
     public function testALimitTheHostImposesStaysOnTheClaim(): void
     {
         $lifts = 0;
-        $this->budgets = $this->budgetsUnderA30SecondLimit(false, $lifts);
+        $budgets = $this->budgetsUnderA30SecondLimit(false, $lifts);
+        $this->budgets = $budgets;
         $this->build($this->db, new MockClock(self::START, 'UTC'));
         $limits = $this->limitsOfTheClaimsOfTheHandlers();
         $this->send(2);
-        $budget = $this->budgets->forMode(QueueConsumerMode::Request, true);
+        $budget = $budgets->forMode(QueueConsumerMode::Request, true);
 
         $report = $this->consumer->drain(QueueConsumerMode::Request, $budget, true);
 
