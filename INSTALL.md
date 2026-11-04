@@ -137,8 +137,12 @@ the value is not a mode, or when the mode needs something that is missing; each 
 in [the admin documentation](docs/fr/async.md).
 
 A pass spends what the server allows a request (`max_execution_time`, `memory_limit`) less a
-margin, and only one pass runs at a time per wiki. A job that cannot finish inside that is cut and
-moved to the failed jobs, with the advice to switch to `worker`, where nothing cuts it.
+margin, and only one pass runs at a time per wiki. A pass nobody waits for (after the page is sent,
+an `api` call, the jobs page's button, `--drain`) lifts PHP's time limit before its first job, when
+the host lets it: that job may then run past `max_execution_time`. Where the host keeps the limit
+(`php_admin_value`, `set_time_limit` disabled), a job that cannot finish inside it is cut and moved
+to the failed jobs; `worker` avoids that, as the CLI has no time limit. In every mode, `worker`
+included, a job still running after an hour is declared killed and moved to the failed jobs.
 
 ### Emptying the queue by hand
 

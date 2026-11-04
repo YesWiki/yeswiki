@@ -102,9 +102,10 @@ Comment choisir, en pratique :
   personne n'attend (voir plus bas, sous le tableau des serveurs) : un traitement qui
   boucle garde alors un processus du serveur occupé. Là où un visiteur attend
   (`mod_php`, CGI), ou quand l'hébergeur impose la limite, un traitement plus
-  long que le temps accordé est coupé et passe en échec. Aucun mode ne laisse
-  un traitement durer plus d'une heure : au-delà, le wiki le déclare arrêté,
-  même en `worker`. Les
+  long que le temps accordé est coupé et passe en échec. Dans tous les modes,
+  même en `worker`, le wiki déclare arrêté un traitement qui dure plus d'une
+  heure : il le passe en échec, même si son processus tourne encore. Relancer
+  ce traitement à la main peut alors le faire tourner deux fois en même temps. Les
   sauvegardes et restaurations sont un cas à part, voir
   [plus bas](/docs/fr/async?id=sauvegardes-et-restaurations).
 - **Wiki servi par le binaire YesWiki** : `request` suffit, comme ailleurs.
@@ -391,7 +392,7 @@ C'est ici qu'on vérifie qu'un cron ou un worker passe vraiment.
 
 Un passage dont le processus a disparu (mémoire épuisée, processus arrêté par
 le serveur...) n'est pas laissé « en cours » : le passage suivant le clôt avec
-le motif « arrêtée avant la fin, son processus a disparu ». C'est immédiat quand
+le motif « arrêtée avant la fin : son processus a disparu ». C'est immédiat quand
 les deux tournent sur le même serveur ; sinon, il faut qu'une heure et une
 minute se soient écoulées sans signe de vie. L'heure de fin affichée est celle
 de son dernier signe de vie, pas celle du moment où le wiki s'en est aperçu.
@@ -404,8 +405,10 @@ de son dernier signe de vie, pas celle du moment où le wiki s'en est aperçu.
   toute la file, un traitement après l'autre, et ne s'arrête que quand la file
   est vide, que le wiki est en pause, qu'un autre passage est déjà en cours, ou
   que le serveur le coupe. Il peut donc durer longtemps, et la page attend sa
-  réponse jusqu'au bout. Tant qu'il dure, le wiki ne lance pas d'autre passage,
-  en fin de visite par exemple.
+  réponse jusqu'au bout. Vos autres pages ne l'attendent pas : vous pouvez
+  continuer à naviguer dans le wiki, dans un autre onglet, pendant qu'il tourne.
+  Tant qu'il dure, le wiki ne lance pas d'autre passage, en fin de visite par
+  exemple.
 - **Relancer** et **Ignorer** agissent sur tous les traitements en échec à la
   fois (**Relancer** laisse de côté les sauvegardes et les restaurations) ;
   **Voir** ouvre l'onglet concerné.
@@ -530,7 +533,11 @@ du mode actuel peut lui consacrer : la limite de temps que l'hébergeur impose �
 PHP quand il refuse qu'on la lève, ou, dans tous les modes, une heure. Il
 échouera à chaque nouvel essai : le wiki ne le relance donc pas tout seul.
 
-1. Passez à un mode qui ne coupe pas les traitements longs : `worker`.
+1. Si l'hébergeur impose une limite de temps que le wiki ne peut pas lever,
+   passez au mode `worker` : son processus n'en a pas. Un traitement qui dure
+   plus d'une heure, en revanche, est déclaré arrêté dans tous les modes : il
+   faut alléger ce qu'il traite (une source de données plus petite, par
+   exemple).
 2. Revenez sur la page Traitements, onglet _En échec_, et cliquez sur
    **Relancer**.
 

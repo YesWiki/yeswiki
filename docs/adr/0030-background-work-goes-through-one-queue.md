@@ -236,7 +236,8 @@ only code that takes messages, over Messenger's `Worker`, so the observation is 
 mode. `drain()` runs a **Pass**: it ticks the Scheduler, then consumes until the queue is empty or
 the **Budget** is spent, and never waits. `consume()` blocks like `messenger:consume`, with a time
 limit, a memory limit and a message limit, ticks the Scheduler whenever it is idle, and leaves a
-heartbeat. Only one pass runs at a time per wiki, behind a non-blocking `RuntimeLock`
+heartbeat. A `drain()` leaves one too, after a message, at most once a minute, since the button's
+pass has no deadline and may run for hours. Only one pass runs at a time per wiki, behind a non-blocking `RuntimeLock`
 (`cache/queue-pass.lock`); a blocking consumer does not take it, since the atomic claim already
 keeps them apart. Neither runs while the wiki is hibernated, archiving or updating, read from the
 configuration as it is now since an archive sets it while a consumer is running. Nor does the
@@ -253,7 +254,7 @@ has, 50 s for an API call. `messenger:consume --drain` has no time budget: it is
 ends when the queue is empty. Nor has the jobs page's "Consommer maintenant", which empties the whole
 queue with no deadline, no memory ceiling and so no averages rule (`QueueBudgetFactory::untilEmpty()`):
 it stops on an empty queue, a paused wiki, a pass that already holds the lock, or the server killing
-it. Memory is 80 % of `memory_limit`.
+it. Any other pass stops taking messages at 80 % of `memory_limit`.
 The consumer takes the next message only if the average duration of its type fits, except the first
 message of a pass nobody waits for (response already sent, fallback, API call, the button, a drain):
 that one is taken whatever its average, or a type longer than any pass of its mode would block the
@@ -481,13 +482,18 @@ Each point names the class or method to look at.
   Its `nonce` names the holder's lock file.
 - **The holder lock** (`QueueHolderLock`, on `RuntimeLock`) is one file, `cache/queue-holders/<nonce>.lock`,
   per token. It is taken before the claim's transaction, so a judge, which only reads tokens already
-  written, never finds a file free between its creation and its lock. A claim that takes nothing lets
-  it go and leaves no file; one whose file cannot be made (`cache/` not writable) is made all the same,
+  written, never finds a file free between its creation and its lock. A claim that takes nothing, or
+  whose transaction throws, lets it go and leaves no file; one whose file cannot be made (`cache/` not writable) is made all the same,
   without a lock, and judged by the rules a token with no file gets. `letGo()` removes the file and then
   closes the handle, for an ack, a reject, the shutdown function and an undecodable message; after an
   ack the row is already gone, so a judge that finds the file free just after has nothing to fail.
-  `stateOf()` opens the file without creating it and tries a non-blocking `flock`: no file is `ABSENT`,
-  a refusal is `HELD`, a lock it gets is dropped at once and is `FREE`, the file left where it was. The
+  `stateOf()` opens the file without creating it and tries a non-blocking shared `flock`: a file it
+  cannot open (none, or one it may not read) is `ABSENT`, a refusal is `HELD`, a lock it gets is
+  dropped at once and is `FREE`, the file left where it was. Shared rather than exclusive, because it
+  still conflicts with the holder's exclusive lock, two judges looking at once do not take each other
+  for the holder, and an NFS client, which emulates `flock` with `fcntl`, refuses an exclusive lock on
+  a read handle and would make every holder look alive. Even so, a `cache/` on NFS with that emulation
+  and a threaded PHP (ZTS) do not mix: `fcntl` locks belong to the process, not to the handle. The
   file counts only for a token whose machine is not empty and is this process's, whatever the file says.
   Only the judges that reap remove the file of a holder that is gone: `reapKilled()` after it failed
   the claim, and `closeDeadPasses()` after it closed the pass. A judge of another machine never removes
