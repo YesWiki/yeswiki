@@ -10,7 +10,6 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\DependencyInjection\ServiceLocator;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\Stamp\TransportMessageIdStamp;
-use Symfony\Component\Scheduler\RecurringMessage;
 use YesWiki\Files\Service\LocalFiles;
 use YesWiki\Kernel\Command\DbCommand;
 use YesWiki\Kernel\Database\DumpRewriter;
@@ -18,6 +17,7 @@ use YesWiki\Kernel\Queue\ProvidesSchedule;
 use YesWiki\Kernel\Queue\QueueConsumerMode;
 use YesWiki\Kernel\Queue\QueueJournalEntry;
 use YesWiki\Kernel\Queue\QueuePassReport;
+use YesWiki\Kernel\Queue\RecurringMessageTimezoned;
 use YesWiki\Kernel\Service\ConsoleService;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\HibernationService;
@@ -548,7 +548,7 @@ class BackupsLeaveTheQueueAloneTest extends YesWikiTestCase
         $provider = new class implements ProvidesSchedule {
             public function recurringMessages(): array
             {
-                return [RecurringMessage::every('30 minutes', new QueueTestTask('digest'))];
+                return [RecurringMessageTimezoned::every('30 minutes', new QueueTestTask('digest'))];
             }
         };
         $awake = new class(new ParameterBag(['wiki_status' => 'running'])) extends HibernationService {

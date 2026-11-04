@@ -40,7 +40,7 @@ the table is all the two halves share.
 flowchart LR
   subgraph Producers
     code["«component» Module code<br/>SearchIndexer, ActivityPubService,<br/>ArchiveService, RemoteBackupService"]
-    providers["«component» Scheduler/*Schedule<br/>(ProvidesSchedule)<br/>Kernel, Admin, Identity, Contact, Import"]
+    providers["«component» Scheduler/*Schedule<br/>(ProvidesSchedule, RecurringMessageTimezoned)<br/>Kernel, Admin, Identity, Contact, Import"]
     ticker["«component» QueueScheduleTicker<br/>ScheduleHistory, ScheduleGrid"]
   end
   bus["«component» QueueBus<br/>(MessageBusInterface)"]
@@ -181,9 +181,10 @@ task's `consecutive_failures` in its context. The purge spares the last
 row of each of the three actions for each task, however old, so that a monthly digest still has its
 anchor after the 7 days, and "no row" always means "never seen". The **anchor** of a task is its last
 dispatch, or its first sighting when it was never sent. The task is due once its first run after the
-anchor has passed. A task declared with `every()` runs on **fixed slots** in the wiki's timezone,
-counted from midnight (`ScheduleGrid`): every 30 minutes is at :00 and :30, every 24 hours at
-midnight, whenever the tick that sent the last one came. A period counted from the send drifted by
+anchor has passed. A task declared with `every()` runs on **fixed slots** in its timezone, the
+wiki's unless it names another (`RecurringMessageTimezoned`), counted from midnight
+(`ScheduleGrid`): every 30 minutes is at :00 and :30, every 24 hours at midnight, whenever the tick
+that sent the last one came. A period counted from the send drifted by
 the lateness of each tick, half an hour becoming 7:00, 7:33, 8:05. A run started by hand ("Lancer")
 is dispatched like any other: it writes a dispatch row, and the next run stays on its slot, which the
 button says. The details are under "The Scheduler's history and ticker".
@@ -535,7 +536,8 @@ Each point names the class or method to look at.
 - **An `every()` runs on fixed slots, which `ScheduleGrid` works out.** Left to itself, a Symfony
   `PeriodicalTrigger` with no `from` starts on the first date it is asked about, the anchor, so its
   next run was the last dispatch plus the period, and each late tick pushed every later run back.
-  The grid counts instead from midnight in the wiki's `timezone` (PHP's when it names none). A period
+  The grid counts instead from midnight in the task's timezone (`RecurringMessageTimezoned`), the
+  wiki's when it names none. A period
   of a day or less restarts at each midnight, on the wall clock: 45 minutes is 0:00, 0:45 ... 23:15,
   then 0:00, and 24 hours is midnight. A longer one counts from a fixed midnight, Monday 3 January
   2000, in whole days when it is some, in elapsed time otherwise. A wall-clock time the change to
@@ -544,6 +546,21 @@ Each point names the class or method to look at.
   trigger's period and its `until` from clones and never moves the trigger; a `cron()` keeps its own
   times. The Journal still holds the last dispatch, which is how a slot that already ran is told from
   one that is due. `every()` takes a fixed length: a calendar period such as a month is a `cron()`.
+- **Each task says its timezone, and checks it: `RecurringMessageTimezoned`.** A provider declares
+  its tasks with `RecurringMessageTimezoned::every()`, `cron()` or `trigger()` rather than Symfony's
+  `RecurringMessage`, which is final and is wrapped. With no timezone, or an empty one, a task runs
+  in the wiki's (`wikiTimezone()`): PHP's, which `YesWikiInit` sets to the wiki's `timezone` when it
+  exists, and which every provider of the core relies on, the digests included: none reads the
+  setting. A name PHP does not know (`Europe/Pariss`, a trailing space), given by a task that runs in
+  a timezone of its own, falls back to PHP's timezone too, what the pages show times in, and the
+  name is kept (`rejectedTimezone()`). Each tick then journals `queue.schedule_provider_failed` for
+  that provider, naming it. A wiki `timezone` that does not exist is no task's to say: `YesWikiInit`
+  keeps PHP's and warns. Symfony's `cron()` takes
+  such a name without a word and throws on the first run asked for, out of the ticker's reach:
+  `dueAt()`, `tick()` and the jobs page threw, and not a task of the wiki ran any more, purges and
+  imports included. The ticker hands the grid each task's timezone, so the grid reads no setting
+  of its own. Anything else a provider returns (a bare `RecurringMessage`) is journaled at the tick
+  and left out, while the other tasks run.
 - **`dueAt()` is the earliest next slot after the anchor of the declared tasks,** worked out from the
   same elements as the tick. It is null, meaning "due at once", while a declared task has no anchor,
   so that the next tick writes its row; just after that tick it falls back on the real next date, or
@@ -819,7 +836,8 @@ Each point names the class or method to look at.
   `symfony/lock`, neither of which the wiki has and the second of which is excluded. A port of the
   generator's loop onto a checkpoint of our own worked, but it was a second state beside the Journal
   and a port to keep in step with upstream. The Scheduler takes from Symfony its declaration (`Schedule`,
-  `RecurringMessage`, the triggers) and asks `ScheduleGrid` for the next run after the Journal's anchor.
+  `RecurringMessage`, wrapped in `RecurringMessageTimezoned`, the triggers) and asks `ScheduleGrid` for
+  the next run after the Journal's anchor.
 - **Retrying a killed message automatically** — rejected. It was cut by the limit of its mode and
   will be cut by it again; this is anti-objective four, "a job too long for the mode relaunched
   forever". It waits for a human who has changed mode.
@@ -902,7 +920,17 @@ classDiagram
     }
     class ProvidesSchedule {
       <<interface>>
-      +recurringMessages() list~RecurringMessage~
+      +recurringMessages() list~RecurringMessageTimezoned~
+    }
+    class RecurringMessageTimezoned {
+      <<final>>
+      +every(frequency, message, timezone)$ RecurringMessageTimezoned
+      +cron(expression, message, timezone)$ RecurringMessageTimezoned
+      +trigger(trigger, message, timezone)$ RecurringMessageTimezoned
+      +wikiTimezone()$ DateTimeZone
+      +timezone() DateTimeZone
+      +rejectedTimezone() string|null
+      +getTrigger() TriggerInterface
     }
     class ScheduledTask {
       <<interface>>
@@ -949,7 +977,9 @@ classDiagram
   DoThing ..|> RunsUnbudgeted : optional
   DoThing ..|> NotReplayableByHand : optional
   ModuleSchedule ..|> ProvidesSchedule
-  ModuleSchedule ..> DoThing : RecurringMessage every()
+  ProvidesSchedule ..> RecurringMessageTimezoned : declares
+  ModuleSchedule ..> RecurringMessageTimezoned : every() or cron()
+  RecurringMessageTimezoned ..> DoThing : recurs
   DoThingHandler ..> DoThing : handles
 ```
 
@@ -1028,13 +1058,20 @@ classDiagram
 2. **The module's schedule** is `src/<Module>/Scheduler/<Module>Schedule.php`, or `schedulers/` in
    an extension. It implements `ProvidesSchedule` and declares all of the module's tasks. It is a
    service tagged by autoconfiguration, so there is no list to add it to.
-   - `RecurringMessage::every(<seconds, or '24 hours'>, $message)` is for a fixed period. The
-     housekeeping steps share `KernelSchedule::HOUSEKEEPING_EVERY` (`AdminSchedule`).
+   - Each task is a `RecurringMessageTimezoned`, never Symfony's `RecurringMessage`, which the
+     Scheduler journals and leaves out. Its last argument is the timezone the task runs in: leave it
+     out for the wiki's, rather than reading the wiki's `timezone`, which `YesWikiInit` has made PHP's.
+     Name one only for a task that runs in a timezone of its own; the class checks it, a name that
+     does not exist runs in PHP's timezone, and each tick says it.
+   - `RecurringMessageTimezoned::every(<seconds, or '24 hours'>, $message)` is for a fixed period.
+     The housekeeping steps share `KernelSchedule::HOUSEKEEPING_EVERY` (`AdminSchedule`).
      A source's own interval is the same (`ImportSchedule`). The task runs on fixed slots counted
-     from midnight in the wiki's timezone (every 30 minutes is :00 and :30), never a period after
-     its last dispatch. Pass it no `from`: the Scheduler places the slots.
-   - `RecurringMessage::cron($expression, $message, $timezone)` is for a time of day, in the wiki's
-     `timezone` (`ContactSchedule`).
+     from midnight in its timezone (every 30 minutes is :00 and :30), never a period after its last
+     dispatch. Give its trigger no `from`: the Scheduler places the slots.
+   - `RecurringMessageTimezoned::cron($expression, $message)` is for a time of day, in the wiki's
+     timezone (`ContactSchedule`).
+   - `RecurringMessageTimezoned::trigger($trigger, $message, $timezone)` takes any other trigger, a
+     `PeriodicalTrigger` that ends, say.
    - Neither remembers anything beside the Journal. What was dispatched is the Journal's to tell
      (`ScheduleHistory`); a file or a log read to postpone a task is a second state that drifts from it.
 3. **The schedule is built anew** each time the Scheduler works out what is due.

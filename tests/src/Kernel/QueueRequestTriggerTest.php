@@ -10,10 +10,10 @@ use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\Stamp\DelayStamp;
 use Symfony\Component\Messenger\Stamp\TransportMessageIdStamp;
 use Symfony\Component\Process\Process;
-use Symfony\Component\Scheduler\RecurringMessage;
 use YesWiki\Files\Service\RuntimeLock;
 use YesWiki\Kernel\Queue\ProvidesSchedule;
 use YesWiki\Kernel\Queue\QueueConsumerMode;
+use YesWiki\Kernel\Queue\RecurringMessageTimezoned;
 use YesWiki\Kernel\Service\ConfigurationService;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\HibernationService;
@@ -86,7 +86,7 @@ class QueueRequestTriggerTest extends YesWikiTestCase
             {
                 $recurring = [];
                 foreach (($this->scheduled)() as $id => $every) {
-                    $recurring[] = RecurringMessage::every($every, new QueueTestTask((string)$id));
+                    $recurring[] = RecurringMessageTimezoned::every($every, new QueueTestTask((string)$id));
                 }
 
                 return $recurring;

@@ -7,7 +7,6 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Component\Clock\MockClock;
 use Symfony\Component\Clock\NativeClock;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
-use Symfony\Component\Scheduler\RecurringMessage;
 use YesWiki\Files\Service\RuntimeLock;
 use YesWiki\Kernel\Health\HealthCheck;
 use YesWiki\Kernel\Health\Severity;
@@ -15,6 +14,7 @@ use YesWiki\Kernel\Queue\ProvidesSchedule;
 use YesWiki\Kernel\Queue\QueueConsumerMode;
 use YesWiki\Kernel\Queue\QueuePassOrigin;
 use YesWiki\Kernel\Queue\QueueWording;
+use YesWiki\Kernel\Queue\RecurringMessageTimezoned;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Kernel\Service\JournalSchema;
@@ -890,7 +890,7 @@ class QueueHealthChecksTest extends YesWikiTestCase
             {
                 $recurring = [];
                 foreach (($this->declared)() as $id => [$label, $every]) {
-                    $recurring[] = RecurringMessage::every($every, new QueueTestTask((string)$id, $label === '' ? null : $label));
+                    $recurring[] = RecurringMessageTimezoned::every($every, new QueueTestTask((string)$id, $label === '' ? null : $label));
                 }
 
                 return $recurring;

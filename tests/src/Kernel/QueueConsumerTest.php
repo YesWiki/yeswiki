@@ -11,7 +11,6 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 use Symfony\Component\DependencyInjection\ServiceLocator;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\Stamp\TransportMessageIdStamp;
-use Symfony\Component\Scheduler\RecurringMessage;
 use YesWiki\Files\Service\RuntimeLock;
 use YesWiki\Kernel\Entity\Event;
 use YesWiki\Kernel\Queue\ProvidesSchedule;
@@ -20,6 +19,7 @@ use YesWiki\Kernel\Queue\QueueClaimHolder;
 use YesWiki\Kernel\Queue\QueueConsumerMode;
 use YesWiki\Kernel\Queue\QueuePassOrigin;
 use YesWiki\Kernel\Queue\QueuePassReport;
+use YesWiki\Kernel\Queue\RecurringMessageTimezoned;
 use YesWiki\Kernel\Service\ConfigurationService;
 use YesWiki\Kernel\Service\ConfigurationWatch;
 use YesWiki\Kernel\Service\DbService;
@@ -792,7 +792,7 @@ class QueueConsumerTest extends YesWikiTestCase
 
     public function testTheScheduleIsTickedFirst(): void
     {
-        $this->build($this->db, new MockClock(self::START, 'UTC'), static fn (): array => [RecurringMessage::every('30 minutes', new QueueTestTask())]);
+        $this->build($this->db, new MockClock(self::START, 'UTC'), static fn (): array => [RecurringMessageTimezoned::every('30 minutes', new QueueTestTask())]);
         $this->assertSame([], $this->history->all(), 'never seen before the pass');
 
         $this->consumer->drain(QueueConsumerMode::Api, $this->seconds(30));
@@ -803,7 +803,7 @@ class QueueConsumerTest extends YesWikiTestCase
     {
         // The Journal's table out of the Scheduler's reach (none under that prefix): no tick gets anywhere, though the pass writes its rows.
         $elsewhere = new DbService(new ParameterBag(['db_driver' => 'sqlite', 'db_database' => $this->file, 'table_prefix' => 'ywgone_', 'debug' => false]));
-        $this->build($this->db, $this->clock, static fn (): array => [RecurringMessage::every('30 minutes', new QueueTestTask())], new ScheduleHistory($elsewhere, new JournalSchema($elsewhere)));
+        $this->build($this->db, $this->clock, static fn (): array => [RecurringMessageTimezoned::every('30 minutes', new QueueTestTask())], new ScheduleHistory($elsewhere, new JournalSchema($elsewhere)));
         $this->send(2);
 
         $report = $this->consumer->drain(QueueConsumerMode::Api, $this->seconds(30));
@@ -937,7 +937,7 @@ class QueueConsumerTest extends YesWikiTestCase
      */
     public function testAWorkerTicksTheScheduleWhenTheQueueIsEmpty(): void
     {
-        $this->build($this->db, new NativeClock(), static fn (): array => [RecurringMessage::every('30 minutes', new QueueTestTask())]);
+        $this->build($this->db, new NativeClock(), static fn (): array => [RecurringMessageTimezoned::every('30 minutes', new QueueTestTask())]);
         $this->setWikiStatus('hibernate');
 
         $this->consumeWhileTheWikiWakesUp(8, null);
@@ -947,7 +947,7 @@ class QueueConsumerTest extends YesWikiTestCase
 
     public function testAWorkerTicksTheScheduleAtItsStart(): void
     {
-        $this->build($this->db, new MockClock(self::START, 'UTC'), static fn (): array => [RecurringMessage::every('30 minutes', new QueueTestTask())]);
+        $this->build($this->db, new MockClock(self::START, 'UTC'), static fn (): array => [RecurringMessageTimezoned::every('30 minutes', new QueueTestTask())]);
         $this->send(1);
 
         $this->consumer->consume(QueueConsumerMode::Worker, 30, 512 * 1024 * 1024, 1);
@@ -957,7 +957,7 @@ class QueueConsumerTest extends YesWikiTestCase
 
     public function testAHibernatedWorkerDoesNotTick(): void
     {
-        $this->build($this->db, new MockClock(self::START, 'UTC'), static fn (): array => [RecurringMessage::every('30 minutes', new QueueTestTask())]);
+        $this->build($this->db, new MockClock(self::START, 'UTC'), static fn (): array => [RecurringMessageTimezoned::every('30 minutes', new QueueTestTask())]);
         $this->send(1);
         $this->setWikiStatus('hibernate');
 
@@ -1113,8 +1113,8 @@ class QueueConsumerTest extends YesWikiTestCase
 
     /** (Re)builds the consumer and what it stands on over $db, on that clock. */
     /**
-     * @param (\Closure(): list<RecurringMessage>)|null $schedule what the schedule declares; nothing by default
-     * @param ScheduleHistory|null                      $history  where the Scheduler reads the tasks' history (default: that database's Journal)
+     * @param (\Closure(): list<RecurringMessageTimezoned>)|null $schedule what the schedule declares; nothing by default
+     * @param ScheduleHistory|null                               $history  where the Scheduler reads the tasks' history (default: that database's Journal)
      */
     private function build(DbService $db, ClockInterface $clock, ?\Closure $schedule = null, ?ScheduleHistory $history = null): void
     {
@@ -1145,7 +1145,7 @@ class QueueConsumerTest extends YesWikiTestCase
         $bus = new QueueBus($this->transport, $locator, $journal, $recorder, QueueTestKit::noRequest());
         $this->history = $history ?? new ScheduleHistory($db, new JournalSchema($db));
         $provider = new class($schedule ?? static fn (): array => []) implements ProvidesSchedule {
-            /** @param \Closure(): list<RecurringMessage> $schedule */
+            /** @param \Closure(): list<RecurringMessageTimezoned> $schedule */
             public function __construct(private \Closure $schedule)
             {
             }

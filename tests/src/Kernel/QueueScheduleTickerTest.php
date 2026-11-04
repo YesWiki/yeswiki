@@ -12,12 +12,14 @@ use Symfony\Component\DependencyInjection\ServiceLocator;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Scheduler\Generator\MessageContext;
 use Symfony\Component\Scheduler\RecurringMessage;
+use Symfony\Component\Scheduler\Trigger\PeriodicalTrigger;
 use YesWiki\Files\Service\RuntimeLock;
 use YesWiki\Kernel\Message\PruneQueue;
 use YesWiki\Kernel\Message\PruneQueueHandler;
 use YesWiki\Kernel\Queue\ProvidesSchedule;
 use YesWiki\Kernel\Queue\QueueConsumerMode;
 use YesWiki\Kernel\Queue\QueueJournalEntry;
+use YesWiki\Kernel\Queue\RecurringMessageTimezoned;
 use YesWiki\Kernel\Scheduler\KernelSchedule;
 use YesWiki\Kernel\Service\ConfigurationService;
 use YesWiki\Kernel\Service\DatabaseClock;
@@ -183,7 +185,7 @@ class QueueScheduleTickerTest extends YesWikiTestCase
         $daily = new class implements ProvidesSchedule {
             public function recurringMessages(): array
             {
-                return [RecurringMessage::cron('0 7 * * *', new QueueTestTask('daily'), 'UTC')];
+                return [RecurringMessageTimezoned::cron('0 7 * * *', new QueueTestTask('daily'), 'UTC')];
             }
         };
 
@@ -302,7 +304,7 @@ class QueueScheduleTickerTest extends YesWikiTestCase
         $plain = new class implements ProvidesSchedule {
             public function recurringMessages(): array
             {
-                return [RecurringMessage::every('30 minutes', new QueueTestMessage('x'))];
+                return [RecurringMessageTimezoned::every('30 minutes', new QueueTestMessage('x'))];
             }
         };
 
@@ -557,7 +559,7 @@ class QueueScheduleTickerTest extends YesWikiTestCase
         $ended = new class implements ProvidesSchedule {
             public function recurringMessages(): array
             {
-                return [RecurringMessage::every('30 minutes', new QueueTestTask('ended'), '2026-10-23 10:00:00', '2026-10-23 11:00:00')];
+                return [RecurringMessageTimezoned::trigger(new PeriodicalTrigger('30 minutes', '2026-10-23 10:00:00', '2026-10-23 11:00:00'), new QueueTestTask('ended'))];
             }
         };
         $ticker = $this->ticker([$ended]);
@@ -580,8 +582,8 @@ class QueueScheduleTickerTest extends YesWikiTestCase
             public function recurringMessages(): array
             {
                 return [
-                    RecurringMessage::cron('0 7 * * *', new QueueTestTask('daily'), 'UTC'),
-                    RecurringMessage::cron('0 7 1 * *', new QueueTestTask('monthly'), 'UTC'),
+                    RecurringMessageTimezoned::cron('0 7 * * *', new QueueTestTask('daily'), 'UTC'),
+                    RecurringMessageTimezoned::cron('0 7 1 * *', new QueueTestTask('monthly'), 'UTC'),
                 ];
             }
         };
@@ -600,18 +602,68 @@ class QueueScheduleTickerTest extends YesWikiTestCase
         $this->assertSame(31 * 86400, $this->task('monthly', [$crons])['everySeconds'], 'listed since, the gap of the runs to come: March');
     }
 
-    /** The ticker counts days in the wiki's timezone, whatever the clock's: midnight in Paris is 22:00 UTC in summer. */
-    public function testTheTickerFollowsTheGridItIsGiven(): void
+    /** A task runs on the wall clock of the timezone it is declared in, whatever the clock's: midnight in Paris is 22:00 UTC in summer. */
+    public function testATaskRunsOnTheWallClockOfItsTimezone(): void
     {
-        $this->tasks = ['daily' => '24 hours'];
-        $grid = new ScheduleGrid(new ParameterBag(['timezone' => 'Europe/Paris']));
-        $this->ticker([], null, null, $grid)->tick();
+        $this->tasks = [];
+        $paris = new class implements ProvidesSchedule {
+            public function recurringMessages(): array
+            {
+                return [RecurringMessageTimezoned::every('24 hours', new QueueTestTask('daily'), 'Europe/Paris')];
+            }
+        };
+        $this->ticker([$paris])->tick();
 
-        $this->assertSame('2026-10-23 22:00:00', ($this->ticker([], null, null, $grid)->task('daily') ?? $this->fail('no task daily'))['nextDueAt']?->format('Y-m-d H:i:s'));
+        $this->assertSame('2026-10-23 22:00:00', $this->task('daily', [$paris])['nextDueAt']?->format('Y-m-d H:i:s'));
         $this->clock->modify('2026-10-23 21:59:00');
-        $this->assertSame(0, $this->ticker([], null, null, $grid)->tick());
+        $this->assertSame(0, $this->ticker([$paris])->tick());
         $this->clock->modify('2026-10-23 22:00:00');
-        $this->assertSame(1, $this->ticker([], null, null, $grid)->tick());
+        $this->assertSame(1, $this->ticker([$paris])->tick());
+    }
+
+    /**
+     * A timezone that does not exist (the wiki's `timezone` mistyped) stops nothing: the task runs in PHP's timezone, the other
+     * tasks run, and each tick says the name. Symfony's cron() threw on the first run asked for, which stopped the whole schedule.
+     */
+    public function testAnUnknownTimezoneStopsNothingAndIsSaidAtEachTick(): void
+    {
+        $mistyped = new class implements ProvidesSchedule {
+            public function recurringMessages(): array
+            {
+                return [RecurringMessageTimezoned::cron('0 7 * * *', new QueueTestTask('digest'), 'Europe/Pariss')];
+            }
+        };
+
+        $this->assertNull($this->ticker([$mistyped])->dueAt(), 'never seen: due now, and no throw');
+        $this->assertSame(0, $this->ticker([$mistyped])->tick());
+        $this->assertNotNull($this->history->of('digest')?->declaredAt);
+        $this->assertSame('2026-10-24 07:00:00', $this->task('digest', [$mistyped])['nextDueAt']?->setTimezone(new \DateTimeZone(date_default_timezone_get()))->format('Y-m-d H:i:s'), "at 7 in PHP's timezone");
+
+        $this->clock->sleep(31 * 60);
+        $this->assertSame(1, $this->ticker([$mistyped])->tick(), 'the other tasks run');
+        $this->assertSame(2, $this->repeats('queue.schedule_provider_failed'), 'said at each tick');
+        $table = (new JournalSchema($this->db))->table();
+        $this->assertStringContainsString('Europe/Pariss', (string)$this->db->scalar("SELECT context FROM {$table} WHERE action = ?", null, ['queue.schedule_provider_failed']));
+        $this->assertSame($mistyped::class, $this->db->scalar("SELECT target FROM {$table} WHERE action = ?", null, ['queue.schedule_provider_failed']));
+    }
+
+    /** A provider must say which timezone each task runs in: a bare RecurringMessage is journaled at the tick and left out, and the others run. */
+    public function testABareRecurringMessageIsJournaledAndLeftOut(): void
+    {
+        $bare = new class implements ProvidesSchedule {
+            public function recurringMessages(): array
+            {
+                /* @phpstan-ignore return.type (what the test checks: a provider that declares no timezone) */
+                return [RecurringMessage::every('30 minutes', new QueueTestTask('bare'))];
+            }
+        };
+
+        $this->assertSame(0, $this->ticker([$bare])->tick());
+
+        $this->assertNull($this->history->of('bare'), 'not scheduled');
+        $this->assertNotNull($this->history->of('test-task')?->declaredAt, 'the others are');
+        $this->assertSame(1, $this->rows('queue.schedule_provider_failed', $bare::class));
+        $this->assertNotContains('bare', $this->ticker([$bare])->declaredTaskIds());
     }
 
     /** A tick sends the tasks whose slot has come and only those: a task not due yet stays unsent while another one runs. */
@@ -652,8 +704,8 @@ class QueueScheduleTickerTest extends YesWikiTestCase
             public function recurringMessages(): array
             {
                 return [
-                    RecurringMessage::every('30 minutes', new QueueTestTask('x')),
-                    RecurringMessage::every('1 hour', new QueueTestTask('x')),
+                    RecurringMessageTimezoned::every('30 minutes', new QueueTestTask('x')),
+                    RecurringMessageTimezoned::every('1 hour', new QueueTestTask('x')),
                 ];
             }
         };
@@ -686,8 +738,8 @@ class QueueScheduleTickerTest extends YesWikiTestCase
             public function recurringMessages(): array
             {
                 return [
-                    RecurringMessage::every('30 minutes', new QueueTestTask('digest')),
-                    RecurringMessage::every('30 minutes', new QueueTestTask('digest')),
+                    RecurringMessageTimezoned::every('30 minutes', new QueueTestTask('digest')),
+                    RecurringMessageTimezoned::every('30 minutes', new QueueTestTask('digest')),
                 ];
             }
         };
@@ -784,7 +836,7 @@ class QueueScheduleTickerTest extends YesWikiTestCase
         $ticker = self::getWiki()->services->get(QueueScheduleTicker::class);
         $pruning = array_values(array_filter(
             (new KernelSchedule())->recurringMessages(),
-            fn (RecurringMessage $recurring): bool => [...$recurring->getMessages(new MessageContext('yeswiki', $recurring->getId(), $recurring->getTrigger(), $this->clock->now()))] == [new PruneQueue()]
+            fn (RecurringMessageTimezoned $recurring): bool => [...$recurring->getMessages(new MessageContext('yeswiki', $recurring->getId(), $recurring->getTrigger(), $this->clock->now()))] == [new PruneQueue()]
         ));
         $this->assertCount(1, $pruning, 'the queue prunes itself, once (the Journal is pruned by MaintenanceTasksTest)');
         [$prune] = $pruning;
@@ -798,23 +850,21 @@ class QueueScheduleTickerTest extends YesWikiTestCase
         $this->assertInstanceOf(QueueScheduleTicker::class, $ticker);
         $this->assertContains(
             $prune->getId(),
-            array_map(static fn (RecurringMessage $recurring): string => $recurring->getId(), $ticker->schedule()->getRecurringMessages()),
+            array_map(static fn (RecurringMessageTimezoned $recurring): string => $recurring->getId(), $ticker->schedule()),
             'the kernel finds the providers by their tag'
         );
     }
 
-    /** The kernel's ticker counts days in the wiki's timezone and the queue goes by the database's clock: the wiring a hand-built ticker does not have. */
-    public function testTheKernelWiresTheWikisTimezoneAndTheDatabaseClock(): void
+    /**
+     * The wiki's tasks run in its timezone and the queue goes by the database's clock: the wiring a hand-built ticker does not have.
+     * A task that names no timezone runs in PHP's (RecurringMessageTimezoned::wikiTimezone()), which YesWikiInit set to the wiki's.
+     */
+    public function testTheKernelRunsTheTasksInTheWikisTimezoneAndGoesByTheDatabaseClock(): void
     {
         $services = self::getWiki()->services;
 
         $this->assertInstanceOf(DatabaseClock::class, $services->get(ClockInterface::class));
-
-        $grid = (new \ReflectionProperty(QueueScheduleTicker::class, 'grid'))->getValue($services->get(QueueScheduleTicker::class));
-        $this->assertInstanceOf(ScheduleGrid::class, $grid);
-        $params = (new \ReflectionProperty(ScheduleGrid::class, 'params'))->getValue($grid);
-        $this->assertInstanceOf(ParameterBagInterface::class, $params, 'the grid is given the wiki parameters');
-        $this->assertSame($services->get(ParameterBagInterface::class)->get('timezone'), $params->get('timezone'));
+        $this->assertSame($services->get(ParameterBagInterface::class)->get('timezone'), RecurringMessageTimezoned::wikiTimezone()->getName());
     }
 
     /** Points the test at $db, on a fresh clock. */
@@ -834,9 +884,8 @@ class QueueScheduleTickerTest extends YesWikiTestCase
      * @param list<ProvidesSchedule> $more    providers besides the test's own
      * @param ?ScheduleHistory       $history the Journal's reader, when the test breaks it
      * @param ?RuntimeLock           $locks   the lock, when the test breaks it
-     * @param ?ScheduleGrid          $grid    the grid, when it is not PHP's timezone
      */
-    private function ticker(array $more = [], ?ScheduleHistory $history = null, ?RuntimeLock $locks = null, ?ScheduleGrid $grid = null): QueueScheduleTicker
+    private function ticker(array $more = [], ?ScheduleHistory $history = null, ?RuntimeLock $locks = null): QueueScheduleTicker
     {
         $provider = new class(fn (): array => $this->tasks) implements ProvidesSchedule {
             /** @param \Closure(): array<string, string> $tasks */
@@ -848,7 +897,7 @@ class QueueScheduleTickerTest extends YesWikiTestCase
             {
                 $recurring = [];
                 foreach (($this->tasks)() as $id => $every) {
-                    $recurring[] = RecurringMessage::every($every, new QueueTestTask($id));
+                    $recurring[] = RecurringMessageTimezoned::every($every, new QueueTestTask($id));
                 }
 
                 return $recurring;
@@ -870,7 +919,7 @@ class QueueScheduleTickerTest extends YesWikiTestCase
             $this->clock,
             new HibernationService($this->params),
             $journal,
-            $grid ?? new ScheduleGrid(),
+            new ScheduleGrid(),
         );
     }
 
@@ -882,9 +931,9 @@ class QueueScheduleTickerTest extends YesWikiTestCase
                 throw new \RuntimeException('no triples table');
             }
 
-            return [RecurringMessage::every('30 minutes', new QueueTestTask('digest'))];
+            return [RecurringMessageTimezoned::every('30 minutes', new QueueTestTask('digest'))];
         }) implements ProvidesSchedule {
-            /** @param \Closure(): list<RecurringMessage> $messages */
+            /** @param \Closure(): list<RecurringMessageTimezoned> $messages */
             public function __construct(private \Closure $messages)
             {
             }

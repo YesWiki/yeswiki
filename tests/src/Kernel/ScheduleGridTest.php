@@ -5,12 +5,11 @@ namespace YesWiki\Test\Kernel;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
-use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 use Symfony\Component\Scheduler\Trigger\CronExpressionTrigger;
 use Symfony\Component\Scheduler\Trigger\PeriodicalTrigger;
 use YesWiki\Kernel\Service\Queue\ScheduleGrid;
 
-/** A task declared with every() runs on fixed slots counted from midnight in the wiki's timezone, never a period after its last run. */
+/** A task declared with every() runs on fixed slots counted from midnight in its timezone, never a period after its last run. */
 #[CoversClass(ScheduleGrid::class)]
 class ScheduleGridTest extends TestCase
 {
@@ -48,7 +47,7 @@ class ScheduleGridTest extends TestCase
     #[DataProvider('slots')]
     public function testATaskRunsOnTheNextSlotOfItsGrid(int|string $every, string $after, string $expected): void
     {
-        $next = $this->grid()->nextRun(new PeriodicalTrigger($every), self::paris($after));
+        $next = $this->grid()->nextRun(new PeriodicalTrigger($every), self::paris($after), self::zone());
 
         $this->assertSame($expected, $next?->setTimezone(new \DateTimeZone(self::PARIS))->format('Y-m-d H:i:s'));
     }
@@ -56,51 +55,24 @@ class ScheduleGridTest extends TestCase
     /** An anchor inside the hour that comes twice goes on with that hour's half hours; a grid run from before it skips the hour (see the sweep below). */
     public function testFromTheHourThatComesTwiceTheSecondTimeKeepsItsHalfHour(): void
     {
-        $next = $this->grid()->nextRun(new PeriodicalTrigger(1800), self::paris('2026-10-25 02:15:00 +01:00'));
+        $next = $this->grid()->nextRun(new PeriodicalTrigger(1800), self::paris('2026-10-25 02:15:00 +01:00'), self::zone());
 
         $this->assertSame('2026-10-25T02:30:00+01:00', $next?->setTimezone(new \DateTimeZone(self::PARIS))->format('c'));
     }
 
     public function testTheAnchorsTimezoneDoesNotMatter(): void
     {
-        $next = $this->grid()->nextRun(new PeriodicalTrigger('24 hours'), new \DateTimeImmutable('2026-11-04 06:03:00', new \DateTimeZone('UTC')));
+        $next = $this->grid()->nextRun(new PeriodicalTrigger('24 hours'), new \DateTimeImmutable('2026-11-04 06:03:00', new \DateTimeZone('UTC')), self::zone());
 
         $this->assertSame('2026-11-04 23:00:00', $next?->setTimezone(new \DateTimeZone('UTC'))->format('Y-m-d H:i:s'), 'midnight in Paris');
     }
 
-    public function testTheGridIsTheWikisTimezone(): void
+    /** The slots fall on the wall clock of the timezone the task is declared in (RecurringMessageTimezoned), whatever the anchor's. */
+    public function testTheGridIsTheTasksTimezone(): void
     {
-        $next = (new ScheduleGrid(new ParameterBag(['timezone' => 'UTC'])))->nextRun(new PeriodicalTrigger('24 hours'), self::paris('2026-11-04 07:03:00'));
+        $next = $this->grid()->nextRun(new PeriodicalTrigger('24 hours'), self::paris('2026-11-04 07:03:00'), new \DateTimeZone('UTC'));
 
         $this->assertSame('2026-11-05 00:00:00', $next?->setTimezone(new \DateTimeZone('UTC'))->format('Y-m-d H:i:s'));
-    }
-
-    public function testAWikiWithNoTimezoneUsesPhps(): void
-    {
-        $previous = date_default_timezone_get();
-        date_default_timezone_set('America/New_York');
-
-        try {
-            $next = (new ScheduleGrid(new ParameterBag([])))->nextRun(new PeriodicalTrigger('24 hours'), self::paris('2026-11-04 07:03:00'));
-        } finally {
-            date_default_timezone_set($previous);
-        }
-
-        $this->assertSame('2026-11-05 00:00:00', $next?->setTimezone(new \DateTimeZone('America/New_York'))->format('Y-m-d H:i:s'));
-    }
-
-    public function testAnUnknownTimezoneFallsBackToPhps(): void
-    {
-        $previous = date_default_timezone_get();
-        date_default_timezone_set('America/New_York');
-
-        try {
-            $next = (new ScheduleGrid(new ParameterBag(['timezone' => 'Not/AZone'])))->nextRun(new PeriodicalTrigger('24 hours'), self::paris('2026-11-04 07:03:00'));
-        } finally {
-            date_default_timezone_set($previous);
-        }
-
-        $this->assertSame('2026-11-05 00:00:00', $next?->setTimezone(new \DateTimeZone('America/New_York'))->format('Y-m-d H:i:s'));
     }
 
     /** @return iterable<string, array{string}> */
@@ -122,7 +94,7 @@ class ScheduleGridTest extends TestCase
         $end = self::paris($day . ' 00:00:00')->modify('+1 day');
         $grid = $this->grid();
         while ($run < $end) {
-            $next = $grid->nextRun($trigger, $run) ?? $this->fail('the grid ended');
+            $next = $grid->nextRun($trigger, $run, self::zone()) ?? $this->fail('the grid ended');
             $this->assertGreaterThan($run, $next);
             $this->assertLessThanOrEqual(5400, $next->getTimestamp() - $run->getTimestamp(), $run->format(DATE_ATOM));
             $this->assertContains($next->setTimezone(new \DateTimeZone(self::PARIS))->format('i:s'), ['00:00', '30:00']);
@@ -135,12 +107,12 @@ class ScheduleGridTest extends TestCase
     {
         $trigger = new PeriodicalTrigger(1800, null, self::paris('2026-11-04 07:20:00'));
 
-        $this->assertNull($this->grid()->nextRun($trigger, self::paris('2026-11-04 07:03:00')));
+        $this->assertNull($this->grid()->nextRun($trigger, self::paris('2026-11-04 07:03:00'), self::zone()));
     }
 
     public function testACronTriggerKeepsItsOwnTimes(): void
     {
-        $next = $this->grid()->nextRun(CronExpressionTrigger::fromSpec('0 7 * * *', null, self::PARIS), self::paris('2026-11-04 07:03:00'));
+        $next = $this->grid()->nextRun(CronExpressionTrigger::fromSpec('0 7 * * *', null, self::PARIS), self::paris('2026-11-04 07:03:00'), self::zone());
 
         $this->assertSame('2026-11-05 07:00:00', $next?->setTimezone(new \DateTimeZone(self::PARIS))->format('Y-m-d H:i:s'));
     }
@@ -148,7 +120,7 @@ class ScheduleGridTest extends TestCase
     public function testTheGridLeavesTheTriggerAsItWas(): void
     {
         $trigger = new PeriodicalTrigger(1800);
-        $this->grid()->nextRun($trigger, self::paris('2026-11-04 07:03:00'));
+        $this->grid()->nextRun($trigger, self::paris('2026-11-04 07:03:00'), self::zone());
 
         $this->assertEquals(self::paris('2026-11-04 07:10:00')->modify('+30 minutes'), $trigger->getNextRunDate(self::paris('2026-11-04 07:10:00')));
     }
@@ -162,7 +134,12 @@ class ScheduleGridTest extends TestCase
 
     private function grid(): ScheduleGrid
     {
-        return new ScheduleGrid(new ParameterBag(['timezone' => self::PARIS]));
+        return new ScheduleGrid();
+    }
+
+    private static function zone(): \DateTimeZone
+    {
+        return new \DateTimeZone(self::PARIS);
     }
 
     private static function paris(string $time): \DateTimeImmutable

@@ -10,10 +10,10 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Tester\CommandTester;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 use Symfony\Component\Messenger\Envelope;
-use Symfony\Component\Scheduler\RecurringMessage;
 use YesWiki\Kernel\Command\QueueConsumeCommand;
 use YesWiki\Kernel\Queue\ProvidesSchedule;
 use YesWiki\Kernel\Queue\QueueConsumerMode;
+use YesWiki\Kernel\Queue\RecurringMessageTimezoned;
 use YesWiki\Kernel\Service\Queue\QueueBudgetFactory;
 use YesWiki\Kernel\Service\Queue\QueueSettings;
 use YesWiki\Test\Core\YesWikiTestCase;
@@ -417,7 +417,7 @@ class QueueCommandsTest extends YesWikiTestCase
         }], $clock, schedule: new class implements ProvidesSchedule {
             public function recurringMessages(): array
             {
-                return [RecurringMessage::every('30 minutes', new QueueTestTask('digest'))];
+                return [RecurringMessageTimezoned::every('30 minutes', new QueueTestTask('digest'))];
             }
         });
         $this->kit->ticker->tick();

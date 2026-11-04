@@ -6,11 +6,11 @@ use PHPUnit\Framework\Attributes\CoversClass;
 use Symfony\Component\Clock\MockClock;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 use Symfony\Component\Messenger\Envelope;
-use Symfony\Component\Scheduler\RecurringMessage;
 use YesWiki\Files\Service\RuntimeLock;
 use YesWiki\Kernel\Queue\ProvidesSchedule;
 use YesWiki\Kernel\Queue\QueueConsumerMode;
 use YesWiki\Kernel\Queue\QueuePassOrigin;
+use YesWiki\Kernel\Queue\RecurringMessageTimezoned;
 use YesWiki\Kernel\Service\ConfigurationService;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\HibernationService;
@@ -381,7 +381,7 @@ class QueueFallbackTest extends YesWikiTestCase
         $daily = new class implements ProvidesSchedule {
             public function recurringMessages(): array
             {
-                return [RecurringMessage::every(86400, new QueueTestTask())];
+                return [RecurringMessageTimezoned::every(86400, new QueueTestTask())];
             }
         };
 

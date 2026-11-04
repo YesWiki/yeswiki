@@ -3,14 +3,14 @@
 namespace YesWiki\Contact\Scheduler;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-use Symfony\Component\Scheduler\RecurringMessage;
 use YesWiki\Contact\Message\SendDigest;
 use YesWiki\Contact\Service\MailSubscriptions;
 use YesWiki\Kernel\Queue\ProvidesSchedule;
+use YesWiki\Kernel\Queue\RecurringMessageTimezoned;
 
 /**
  * The mailing-list digests: one recurring task per period, as long as somebody subscribed and the wiki did not turn them off.
- * Each goes out at 7 a.m. in the wiki's timezone: every day, on Mondays, on the first of the month.
+ * Each goes out at 7 a.m. in the wiki's timezone (RecurringMessageTimezoned::wikiTimezone()): every day, on Mondays, on the first of the month.
  */
 class ContactSchedule implements ProvidesSchedule
 {
@@ -33,10 +33,9 @@ class ContactSchedule implements ProvidesSchedule
             return [];
         }
 
-        $timezone = $this->timezone();
         $recurring = [];
         foreach (MailSubscriptions::PERIODS as $period) {
-            $recurring[] = RecurringMessage::cron(self::CRONS[$period], new SendDigest($period), $timezone);
+            $recurring[] = RecurringMessageTimezoned::cron(self::CRONS[$period], new SendDigest($period));
         }
 
         return $recurring;
@@ -51,13 +50,5 @@ class ContactSchedule implements ProvidesSchedule
         }
 
         return $this->subscriptions->hasAny();
-    }
-
-    /** The wiki's `timezone`, or PHP's when it names none: the one its pages show times in. */
-    private function timezone(): string
-    {
-        $timezone = $this->params->has('timezone') ? $this->params->get('timezone') : null;
-
-        return is_string($timezone) && $timezone !== '' ? $timezone : date_default_timezone_get();
     }
 }

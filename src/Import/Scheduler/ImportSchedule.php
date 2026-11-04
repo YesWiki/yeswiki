@@ -5,9 +5,9 @@ namespace YesWiki\Import\Scheduler;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Messenger\Stamp\DelayStamp;
-use Symfony\Component\Scheduler\RecurringMessage;
 use YesWiki\Import\Message\SyncDataSource;
 use YesWiki\Kernel\Queue\ProvidesSchedule;
+use YesWiki\Kernel\Queue\RecurringMessageTimezoned;
 use YesWiki\Kernel\Queue\ScheduledTask;
 use YesWiki\Kernel\Service\Journal;
 
@@ -50,7 +50,7 @@ class ImportSchedule implements ProvidesSchedule
                 continue;
             }
 
-            $recurring[] = RecurringMessage::every(max(self::MIN_INTERVAL, (int)($options['syncIntervalInMin'] ?? 0) * 60), $message);
+            $recurring[] = RecurringMessageTimezoned::every(max(self::MIN_INTERVAL, (int)($options['syncIntervalInMin'] ?? 0) * 60), $message);
         }
 
         return $recurring;

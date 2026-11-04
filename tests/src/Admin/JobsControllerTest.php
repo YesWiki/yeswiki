@@ -14,7 +14,6 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\Stamp\TransportMessageIdStamp;
-use Symfony\Component\Scheduler\RecurringMessage;
 use YesWiki\Admin\Api\JobsApiController;
 use YesWiki\Admin\Controller\JobsController;
 use YesWiki\Admin\Message\CreateArchive;
@@ -30,6 +29,7 @@ use YesWiki\Kernel\Queue\ProvidesSchedule;
 use YesWiki\Kernel\Queue\QueueConsumerMode;
 use YesWiki\Kernel\Queue\QueuePassOrigin;
 use YesWiki\Kernel\Queue\QueuePassReport;
+use YesWiki\Kernel\Queue\RecurringMessageTimezoned;
 use YesWiki\Kernel\Service\ConfigurationService;
 use YesWiki\Kernel\Service\CurrentRequest;
 use YesWiki\Kernel\Service\HealthService;
@@ -1014,7 +1014,7 @@ class JobsControllerTest extends YesWikiTestCase
         $this->kit = new QueueTestKit(clock: $clock, schedule: new class implements ProvidesSchedule {
             public function recurringMessages(): array
             {
-                return [RecurringMessage::every('30 minutes', new QueueTestTask('test-task'))];
+                return [RecurringMessageTimezoned::every('30 minutes', new QueueTestTask('test-task'))];
             }
         });
         $this->kit->ticker->tick();

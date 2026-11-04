@@ -3,7 +3,6 @@
 namespace YesWiki\Test\Contact;
 
 use PHPUnit\Framework\Attributes\CoversClass;
-use PHPUnit\Framework\Attributes\DataProvider;
 use Psr\Container\ContainerInterface;
 use Symfony\Component\Clock\MockClock;
 use Symfony\Component\Console\Command\Command;
@@ -13,7 +12,6 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\DependencyInjection\ServiceLocator;
 use Symfony\Component\Messenger\Stamp\TransportMessageIdStamp;
 use Symfony\Component\Scheduler\Generator\MessageContext;
-use Symfony\Component\Scheduler\RecurringMessage;
 use YesWiki\Contact\Command\ContactDigestCommand;
 use YesWiki\Contact\Message\SendDigest;
 use YesWiki\Contact\Message\SendDigestHandler;
@@ -22,6 +20,7 @@ use YesWiki\Contact\Service\MailSubscriptions;
 use YesWiki\Files\Service\Storage;
 use YesWiki\Kernel\Queue\ProvidesSchedule;
 use YesWiki\Kernel\Queue\QueueConsumerMode;
+use YesWiki\Kernel\Queue\RecurringMessageTimezoned;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Kernel\Service\Queue\QueueScheduleTicker;
@@ -51,14 +50,20 @@ class SendDigestTest extends YesWikiTestCase
     private ?QueueTestKit $kit = null;
     private MockClock $clock;
 
+    /** PHP's timezone before the test, which each test sets to the wiki's: Paris unless it says otherwise. */
+    private string $phpTimezone;
+
     protected function setUp(): void
     {
         parent::setUp();
         $this->clock = new MockClock(self::NOW, 'UTC');
+        $this->phpTimezone = date_default_timezone_get();
+        date_default_timezone_set('Europe/Paris');
     }
 
     protected function tearDown(): void
     {
+        date_default_timezone_set($this->phpTimezone);
         $this->kit?->dispose();
     }
 
@@ -76,30 +81,12 @@ class SendDigestTest extends YesWikiTestCase
         }
     }
 
+    /** The wiki's timezone is PHP's, which YesWikiInit sets to the wiki's `timezone`: the one its pages show times in. */
     public function testSevenIsSevenInTheTimezoneTheWikiIsSetTo(): void
     {
-        $this->assertSame('2026-10-24 11:00:00', $this->plan($this->schedule(['timezone' => 'America/New_York']))['digest-day']['first']);
-    }
+        date_default_timezone_set('America/New_York');
 
-    /** A wiki whose configuration names no timezone (absent or empty) runs on PHP's, which is what its pages show. */
-    #[DataProvider('noTimezone')]
-    public function testWithoutATimezoneOfItsOwnTheWikiRunsOnPhps(?string $timezone): void
-    {
-        $default = date_default_timezone_get();
-        date_default_timezone_set('Asia/Tokyo');
-        try {
-            $first = $this->plan($this->schedule(['timezone' => $timezone]))['digest-day']['first'];
-        } finally {
-            date_default_timezone_set($default);
-        }
-
-        $this->assertSame('2026-10-23 22:00:00', $first, '7 a.m. in Tokyo, tonight in UTC');
-    }
-
-    /** @return array<string, array{?string}> */
-    public static function noTimezone(): array
-    {
-        return ['null' => [null], 'empty' => ['']];
+        $this->assertSame('2026-10-24 11:00:00', $this->plan($this->schedule())['digest-day']['first']);
     }
 
     /**
@@ -320,13 +307,13 @@ class SendDigestTest extends YesWikiTestCase
 
             public function recurringMessages(): array
             {
-                return [RecurringMessage::every('30 minutes', new QueueTestTask('housekeeping')), ...$this->contact->recurringMessages()];
+                return [RecurringMessageTimezoned::every('30 minutes', new QueueTestTask('housekeeping')), ...$this->contact->recurringMessages()];
             }
         };
     }
 
     /**
-     * @param array<string, mixed> $parameters the wiki's, its timezone Paris unless they say otherwise
+     * @param array<string, mixed> $parameters the wiki's
      */
     private function schedule(array $parameters = [], bool $subscribed = true): ContactSchedule
     {
@@ -336,7 +323,7 @@ class SendDigestTest extends YesWikiTestCase
     /** @param array<string, mixed> $parameters */
     private function params(array $parameters): ParameterBag
     {
-        return new ParameterBag($parameters + ['timezone' => 'Europe/Paris']);
+        return new ParameterBag($parameters);
     }
 
     private function handler(MailSubscriptions $subscriptions, bool $hibernated = false): SendDigestHandler
