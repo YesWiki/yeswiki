@@ -366,7 +366,7 @@ class SyncDataSourceTest extends YesWikiTestCase
 
             public function getAvailableImporters(): array
             {
-                return ['Rss' => 'Rss'];
+                return ['Rss' => FailingImporter::class];
             }
 
             public function syncSource(string $source, array $sourceOptions): string
@@ -543,7 +543,8 @@ final class FailingImporter extends Importer
 {
     public static ?\Throwable $failure = null;
 
-    public function __construct(mixed ...$arguments)
+    /** The manager hands it what any importer gets; it needs none of it. */
+    public function __construct()
     {
     }
 

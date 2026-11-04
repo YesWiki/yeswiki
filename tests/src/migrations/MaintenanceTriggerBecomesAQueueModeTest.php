@@ -66,7 +66,7 @@ class MaintenanceTriggerBecomesAQueueModeTest extends YesWikiTestCase
         $removed = (string)\MaintenanceTriggerBecomesAQueueMode::advice(\MaintenanceTriggerBecomesAQueueMode::REMOVED, "'cron'", null);
         $said = (string)\MaintenanceTriggerBecomesAQueueMode::advice(\MaintenanceTriggerBecomesAQueueMode::CRON_REMOVED, "'cron'", null);
         $this->assertStringContainsString('core:maintenance', $said, 'the command whose crontab line must go is named');
-        $this->assertStringStartsWith($removed, $said, 'what is said of any removal comes first');
+        $this->assertTrue(str_starts_with($said, $removed), 'what is said of any removal comes first');
         $this->assertGreaterThan(strlen($removed), strlen($said), 'and the crontab is told to go on top of it');
     }
 

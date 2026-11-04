@@ -146,7 +146,8 @@ class QueueRequestTriggerTest extends YesWikiTestCase
     /** The visitor's session is released before the response leaves and before any handler runs: a pass must not lock the next request of the same visitor. */
     public function testTheSessionIsReleasedBeforeTheResponseLeavesAndTheHandlersRun(): void
     {
-        $hadSession = session_status() === PHP_SESSION_ACTIVE;
+        $statusBefore = session_status();
+        $hadSession = $statusBefore === PHP_SESSION_ACTIVE;
         if ($hadSession) {
             session_write_close();
         }
@@ -175,9 +176,8 @@ class QueueRequestTriggerTest extends YesWikiTestCase
         try {
             $trigger->afterResponse();
         } finally {
-            if (session_status() === PHP_SESSION_ACTIVE) {
-                session_write_close();
-            }
+            // Unconditional: the trigger may already have closed it, and closing none is a no-op.
+            session_write_close();
             if ($hadSession) {
                 @session_start();
             }

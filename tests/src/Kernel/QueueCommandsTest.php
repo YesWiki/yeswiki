@@ -347,7 +347,11 @@ class QueueCommandsTest extends YesWikiTestCase
         $this->assertSame(Command::FAILURE, $tester->getStatusCode());
     }
 
-    /** An id no one waits on any more (already handled, never there, or given up on) is not an error for the request that pinned it: nothing is left to do. */
+    /**
+     * An id no one waits on any more (already handled, never there, or given up on) is not an error for the request that pinned it: nothing is left to do.
+     *
+     * @param 'missing'|'handled'|'failed' $which
+     */
     #[DataProvider('messagesThatAreNotWaiting')]
     public function testMessageThatIsNotWaitingHandlesNothing(string $which): void
     {
@@ -371,7 +375,7 @@ class QueueCommandsTest extends YesWikiTestCase
         $this->assertSame('pending', $this->kit->statistics->messageState($other), 'it takes no other message in its place');
     }
 
-    /** @return array<string, array{string}> */
+    /** @return array<string, array{'missing'|'handled'|'failed'}> */
     public static function messagesThatAreNotWaiting(): array
     {
         return ['never there' => ['missing'], 'already handled' => ['handled'], 'failed' => ['failed']];

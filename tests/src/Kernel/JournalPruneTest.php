@@ -28,6 +28,7 @@ class JournalPruneTest extends YesWikiTestCase
     private DbService $db;
     private JournalSchema $schema;
     private RuntimeConfig $config;
+    /** @var ServiceLocator<mixed> */
     private ServiceLocator $services;
 
     protected function setUp(): void

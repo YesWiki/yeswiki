@@ -392,6 +392,8 @@ class ArchiveQueueTest extends YesWikiTestCase
      * R19, spec 9.5 and 7.2: a backup that was killed (by the host, PHP, or a limit that ran out) leaves the wiki read-only; the browser that follows it lifts that once the queue says killed.
      *
      * How the queue comes to say killed is its own (QueueStatisticsSeenTest, QueueConsumerTest): the backup only hears the state.
+     *
+     * @param 'host'|'reaped'|'limit' $death
      */
     #[DataProvider('waysToBeKilled')]
     public function testAKilledArchiveReleasesTheReadOnlyStatus(string $mode, string $death): void
@@ -408,7 +410,7 @@ class ArchiveQueueTest extends YesWikiTestCase
         $this->assertSame('running', $this->wikiStatus());
     }
 
-    /** @return array<string, array{string, string}> */
+    /** @return array<string, array{string, 'host'|'reaped'|'limit'}> */
     public static function waysToBeKilled(): array
     {
         return [

@@ -36,7 +36,12 @@ class ArchiveControllerQueueTest extends YesWikiTestCase
         self::getWiki();
     }
 
-    /** @param array<string, mixed> $post */
+    /**
+     * @param array<string, mixed> $post
+     * @param list<string>         $include
+     * @param list<string>         $exclude
+     * @param list<string>|null    $only
+     */
     #[DataProvider('flagsAsTheBrowserSendsThem')]
     public function testTheFlagsAndFoldersOfTheRequestReachTheBackup(array $post, bool $files, bool $database, array $include, array $exclude, ?array $only): void
     {

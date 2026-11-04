@@ -298,7 +298,9 @@ class SqlDialectTest extends TestCase
         $insert->execute(['default', 'k', 2]);
 
         $this->assertSame(0, $insert->rowCount(), 'the second insert did nothing');
-        $this->assertSame([['n' => 1]], $pdo->query('SELECT n FROM t')->fetchAll(\PDO::FETCH_ASSOC), 'and left the first row as it was');
+        $rows = $pdo->query('SELECT n FROM t');
+        $this->assertNotFalse($rows);
+        $this->assertSame([['n' => 1]], $rows->fetchAll(\PDO::FETCH_ASSOC), 'and left the first row as it was');
     }
 
     #[DataProvider('dialects')]

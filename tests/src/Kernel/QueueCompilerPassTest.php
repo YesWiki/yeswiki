@@ -71,7 +71,11 @@ class QueueCompilerPassTest extends YesWikiTestCase
         }
     }
 
-    /** A handler that cannot say which message it handles would compile into a wrong or empty map: it stops the build instead. */
+    /**
+     * A handler that cannot say which message it handles would compile into a wrong or empty map: it stops the build instead.
+     *
+     * @param class-string $handler
+     */
     #[DataProvider('misdeclaredHandlers')]
     public function testAHandlerThatDoesNotSayWhatItHandlesStopsTheBuild(string $handler): void
     {

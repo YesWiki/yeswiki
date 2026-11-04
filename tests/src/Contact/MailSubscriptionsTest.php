@@ -239,7 +239,7 @@ class MailSubscriptionsTest extends YesWikiTestCase
             $message = $failed->getMessage();
             $this->assertStringContainsString('did not reach 12 of 12 recipient(s)', $message);
             $this->assertSame(1, preg_match('/' . self::PAGE_TAG . ' \(([^)]*)\)/', $message, $names));
-            $this->assertCount(10, explode(', ', $names[1]), 'ten names are listed');
+            $this->assertCount(10, explode(', ', $names[1] ?? ''), 'ten names are listed');
             $this->assertStringContainsString(') and 2 more', $message);
         }
     }

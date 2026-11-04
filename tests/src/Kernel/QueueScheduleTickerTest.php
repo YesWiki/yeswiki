@@ -562,8 +562,8 @@ class QueueScheduleTickerTest extends YesWikiTestCase
         };
         $this->clock->modify('2026-01-15 08:00:00');
 
-        $this->assertSame(86400, $this->ticker([$crons])->task('daily')['everySeconds']);
-        $this->assertSame(28 * 86400, $this->ticker([$crons])->task('monthly')['everySeconds'], 'never seen: the gap between the next two runs, February');
+        $this->assertSame(86400, $this->task('daily', [$crons])['everySeconds']);
+        $this->assertSame(28 * 86400, $this->task('monthly', [$crons])['everySeconds'], 'never seen: the gap between the next two runs, February');
         $this->ticker([$crons])->tick();
         $this->assertSame(28 * 86400, $this->history->of('monthly')?->everySeconds, 'the declaration carries it');
 
@@ -572,7 +572,7 @@ class QueueScheduleTickerTest extends YesWikiTestCase
 
         $this->assertSame(86400, $this->history->of('daily')?->everySeconds);
         $this->assertSame(28 * 86400, $this->history->of('monthly')?->everySeconds, 'the dispatch carries the gap from the slot it ran on, to the next');
-        $this->assertSame(31 * 86400, $this->ticker([$crons])->task('monthly')['everySeconds'], 'listed since, the gap of the runs to come: March');
+        $this->assertSame(31 * 86400, $this->task('monthly', [$crons])['everySeconds'], 'listed since, the gap of the runs to come: March');
     }
 
     /** The ticker counts days in the wiki's timezone, whatever the clock's: midnight in Paris is 22:00 UTC in summer. */
@@ -582,7 +582,7 @@ class QueueScheduleTickerTest extends YesWikiTestCase
         $grid = new ScheduleGrid(new ParameterBag(['timezone' => 'Europe/Paris']));
         $this->ticker([], null, null, $grid)->tick();
 
-        $this->assertSame('2026-10-23 22:00:00', $this->ticker([], null, null, $grid)->task('daily')['nextDueAt']?->format('Y-m-d H:i:s'));
+        $this->assertSame('2026-10-23 22:00:00', ($this->ticker([], null, null, $grid)->task('daily') ?? $this->fail('no task daily'))['nextDueAt']?->format('Y-m-d H:i:s'));
         $this->clock->modify('2026-10-23 21:59:00');
         $this->assertSame(0, $this->ticker([], null, null, $grid)->tick());
         $this->clock->modify('2026-10-23 22:00:00');
