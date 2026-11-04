@@ -250,25 +250,53 @@ crash.
 already used, less a margin (2 s plus a tenth of the limit), then the mode's ceiling: 3 s while a
 visitor waits for a response that cannot leave before the script ends (mod_php, CGI), 20 s once it
 has, 50 s for an API call. `messenger:consume --drain` has no time budget: it is run by hand, and
-ends when the queue is empty. Memory is 80 % of `memory_limit`.
+ends when the queue is empty. Nor has the jobs page's "Consommer maintenant", which empties the whole
+queue with no deadline, no memory ceiling and so no averages rule (`QueueBudgetFactory::untilEmpty()`):
+it stops on an empty queue, a paused wiki, a pass that already holds the lock, or the server killing
+it. Memory is 80 % of `memory_limit`.
 The consumer takes the next message only if the average duration of its type fits, except the first
-message of a pass nobody waits for (response already sent, API, a drain by hand): that one
-is taken whatever its average, or a type longer than any pass of its mode would block the queue for
-good; if PHP cuts it, it is failed as killed below. The same figures
-give each claim its **kill limit**. A claim also names the process that holds it: its pid, its
-start time, and the machine (host name and pid namespace), read from `/proc`. If that process
-dies (PHP's limit, the OOM killer, a host's request timeout, a restart), the message stays
-claimed, and the next pass moves it to `failed`, recording the mode that cut it: **at once** when
-the holder's process is gone from the machine the pass runs on; **past the limit plus a minute**
-when nothing can be told of it (another machine, no `/proc`, or a server's process -- FPM, Apache,
-FrankenPHP -- which lives on after the request that held the claim); and a process of its own (the
-CLI) that is still there keeps its message up to a **6-hour ceiling**, since PHP's limit counts CPU
-time on Linux and a handler waiting on the network outlives it. A consumer whose process ends in
-the middle of a message (a fatal error, PHP's limit, an `exit` in a handler) fails it itself, from
-a shutdown function; and an ack or reject deletes only a row still under its own claim, so a holder
-declared dead that finishes after all leaves its failure in place and the Journal says how it
-ended. **A message killed this way is not retried by itself**, because it would be cut again, and
-`/admin/jobs` says to change mode and retry it by hand.
+message of a pass nobody waits for (response already sent, fallback, API call, the button, a drain):
+that one is taken whatever its average, or a type longer than any pass of its mode would block the
+queue for good. **Before it, the pass lifts PHP's time limit** (`set_time_limit(0)`), whatever that
+message's average, a short one included (an average is only a guess), and reads
+`max_execution_time` back. PHP's limit counts CPU time on Linux, so a handler waiting on the network
+or the disk would be cut off long before the time it was given. If it reads 0, the claims of the pass carry the one hour of the ceiling
+below; if the host keeps it (`php_admin_value`, `set_time_limit` disabled), they keep what PHP leaves
+of it, and a message PHP cuts is failed as killed, below. A pass a visitor waits for never lifts it.
+The price is stated under Consequences.
+
+The same figures give each claim its **kill limit**: what PHP leaves of its limit, or **one hour**
+when it has none, since a host does not let a process live longer. A claim also names the process
+that holds it: its pid, its start time, and the machine (host name and pid namespace), read from
+`/proc`. If that process dies (PHP's limit, the OOM killer, a host's request timeout, a restart),
+the message stays claimed, and the next pass moves it to `failed`, recording the mode that cut it:
+**at once** when the holder's lock is free (below) or, with no lock to read, when its process is gone
+from the machine the pass runs on; **past the limit plus a minute** when nothing can be told of it
+(another machine, no lock and no `/proc`, or a server's process -- FPM, Apache, FrankenPHP -- which
+lives on after the request that held the claim); and a holder that is still there keeps its message
+up to a **one-hour ceiling**, since PHP's limit counts CPU time on Linux and a handler waiting on the
+network outlives it.
+
+**A lock says whether the holder is there.** Each claim, and each pass, holds a `flock` on
+`cache/queue-holders/<nonce>.lock` (`QueueHolderLock`), taken before its token is written and kept
+until it lets go. The kernel drops it when the process ends, however it ends, and PHP at the end of the
+request, even after a fatal error in a shutdown function. A judge on the same machine reads it,
+creating and removing nothing, and tells three states apart: **held**, the holder is alive and only
+the one-hour ceiling applies, whatever PHP's limit says; **free**, the holder is gone and its claim is
+failed as killed at once; **absent** (a token in an older format, a token of another machine, a
+`cache/` that is not writable), the rules above apply. So an FPM worker that survives a fatal error in
+a shutdown function frees the lock when its request ends and the next pass reaps its claim at once,
+and a live worker keeps its message past its limit plus a minute, up to the ceiling. The file only counts for
+a token of the machine that reads it, since on a `cache/` shared over NFS another machine's lock
+proves nothing. Only the reaper deletes a file, once it has failed the claim: the judges that only
+read (health checks, statistics, the jobs page) never do, and `CacheClearer` keeps the folder.
+
+A consumer whose process ends in the middle of a message (a fatal error, PHP's limit, an `exit` in a
+handler) still fails it itself, from a shutdown function, but that only journals it earlier, since the
+lock already tells the next pass; and an ack or reject deletes only a row still under its own claim,
+so a holder declared dead that finishes after all leaves its failure in place and the Journal says
+how it ended. **A message killed this way is not retried by itself**, because it would be cut again,
+and `/admin/jobs` says to change mode and retry it by hand.
 
 Each message found killed is announced on the wiki's own dispatcher as **`queue.message_killed`**
 (`QueueConsumer::MESSAGE_KILLED`), once it is in `failed`, with `messageId`, `type` (its class),
@@ -427,12 +455,14 @@ Each point names the class or method to look at.
 - **Each claim records `delivered_mode` and `delivered_limit`,** because a process killed by PHP or
   the OOM killer cannot say so. A request resets the claim mode, so a worker-mode request never
   inherits the previous one's. A claim with no recorded limit is given the longest a mode records
-  (6 hours).
+  (one hour, `QueueBudgetFactory::KILL_LIMIT_NO_PHP_LIMIT`: the longest a host lets a process live).
+  `QueueHealthChecks::BACKLOG_AFTER_OTHERS` is 6 hours too, but it is a threshold for an alert about
+  lateness, not a ceiling on anyone's life.
 - **The process remembers the tokens it holds.** Its own token among the claims, but not among the
   ones it holds, was left by an earlier request it served that died without letting go: that claim is
-  gone. Under threads (FrankenPHP, ZTS) another thread may hold it, so it is UNKNOWN instead. A live
-  process other than this one counts as alive only when it is a CLI, since a server process outlives
-  the request that claimed.
+  gone. Under threads (FrankenPHP, ZTS) another thread may hold it, so it is UNKNOWN instead, unless
+  the holder lock says otherwise. With no lock to read, a live process other than this one counts as
+  alive only when it is a CLI, since a server process outlives the request that claimed.
 - **The dead-or-alive comparison is made in PHP, row by row.** Only a handful of rows are being
   handled at once, the limit varies per row, and date arithmetic on a column is not portable.
   Reaping is guarded by the claim token, so two concurrent reapers, or a reaper and the holder's own
@@ -447,6 +477,21 @@ Each point names the class or method to look at.
   apart. That file is parsed from the last `)`, because a process name may contain spaces and
   parentheses. Where `hidepid` hides the process, `posix_kill($pid, 0)` failing with ESRCH proves it
   gone but cannot prove it is the same process. A token in an older format names no holder (UNKNOWN).
+  Its `nonce` names the holder's lock file.
+- **The holder lock** (`QueueHolderLock`, on `RuntimeLock`) is one file, `cache/queue-holders/<nonce>.lock`,
+  per token. It is taken before the claim's transaction, so a judge, which only reads tokens already
+  written, never finds a file free between its creation and its lock. A claim that takes nothing lets
+  it go and leaves no file; one whose file cannot be made (`cache/` not writable) is made all the same,
+  without a lock, and judged by the rules a token with no file gets. `letGo()` removes the file and then
+  closes the handle, for an ack, a reject, the shutdown function and an undecodable message; after an
+  ack the row is already gone, so a judge that finds the file free just after has nothing to fail.
+  `stateOf()` opens the file without creating it and tries a non-blocking `flock`: no file is `ABSENT`,
+  a refusal is `HELD`, a lock it gets is dropped at once and is `FREE`, the file left where it was. The
+  file counts only for a token whose machine is not empty and is this process's, whatever the file says.
+  Only `reapKilled()` removes the file of a holder that is gone, after it failed the claim, and a judge
+  of another machine never removes one, so the file of a dead holder stays until a judge of its own
+  machine reaps it. `expiredClaims()`, `isHandling()` and `liveHolders()` only read, since the health
+  checks, the statistics and the end-of-request check call them.
 - **A requeued message loses `RedeliveryStamp` and `SentToFailureTransportStamp`.** It gets its
   retries again, and Messenger would otherwise drop it rather than send it back to `failed` when it
   fails again. A message that still cannot be decoded goes back as it is, in case an extension
@@ -469,9 +514,28 @@ Each point names the class or method to look at.
 - **A pass lock that cannot be created** (`cache/` not writable) is journaled as an error, not
   reported as `locked`. Nobody holds it, and no pass would ever run.
 - **The shutdown function** that fails what a dying process still holds is registered through a weak
-  reference and never throws. PHP runs no further shutdown function once one has died of a fatal
-  error. So a pass that dies that way at the end of an FPM or mod_php request leaves its claim to the
+  reference and never throws. It no longer decides whether a death is noticed, the holder lock does:
+  it only journals the failure earlier than the next pass would. PHP runs no further shutdown function
+  once one has died of a fatal error, but an FPM or Apache worker that survives it still frees the lock
+  when the request ends, so the next pass reaps the claim at once instead of leaving it to the
   transport's rules above.
+- **Every pass holds a holder lock of its own,** taken before its row names its token and let go in a
+  `finally`, and every pass row names it (`holder`), whatever the pass's origin. A `cache/` where it
+  cannot be made does not stop the pass, which is judged by the rules a row with no file gets.
+- **A pass whose holder is gone is closed as `killed`,** so that a pass that died (a fatal error, the
+  OOM killer, a restart) does not stay "running" for good. Each judge that reaps (`drain()` under its pass
+  lock, `consume()` at its start and at each heartbeat, a paused pass) also looks at the other open pass
+  rows, never its own (`QueueConsumer::closeDeadPasses()`). A holder whose lock is free is closed at
+  once, and its file removed. A holder whose lock is held stays open however long: a worker may run
+  for days, and its heartbeats say so. A row with no holder, an old row, a row of another machine or
+  one `/proc` cannot tell, is closed once its `last_at` is older than the ceiling plus the grace
+  (1 h + 60 s), by the database's clock. The stop reason is `killed` (`QUEUE_STOP_KILLED`).
+  `QueueRecorder::passKilled()` leaves `last_at` as it was, the last sign of life, because the fallback
+  (`lastSeenAt()`) and the stalled alert read it as "the consumer was seen at work then": moving it to
+  now would hide a dead consumer for the whole stall delay. It closes only a row still open, so a pass
+  that finishes after all writes its true reason over `killed`. `visitorWaits()` leaves a killed pass
+  out, since its duration measures no wait. The claims of a dead pass are reaped by their own locks,
+  whatever becomes of its row.
 - **Type averages are read once per type per pass.** An unknown type (0.5 s assumed) is asked again,
   since its first success may come within the pass. A request that spent its budget before the pass
   began starts nothing, not even the first message (`no-budget`).
@@ -638,25 +702,34 @@ Each point names the class or method to look at.
   mistake "not measured" for "plenty". Once the pass ends, later code in the same request must not
   read "0 s left".
 - **A pass started from a web page** (the jobs page's button) runs in the configured mode when that
-  mode is budgeted. When the mode's consumer would block the page, it runs as `request`.
+  mode is budgeted. When the mode's consumer would block the page, it runs as `request`. It empties the
+  queue with no limit: `QueueBudgetFactory::untilEmpty()` gives it no deadline and no memory ceiling
+  (a memory fatal is the server killing it), so `canAfford()` is always true and the averages rule never
+  stops it. Its claims carry what PHP leaves of its limit, or one hour once the pass has lifted it, as
+  any pass nobody waits for does. It stops on an empty queue (`empty`), a paused wiki (`paused`), a
+  pass lock already taken (`locked`) or an error, and holds the pass lock throughout, so the passes of
+  visitors' requests answer `locked` meanwhile, on purpose. It is no wait of a visitor's, so it stays
+  out of `visitorWaits()`. `QueueApiController` says `forMode($mode, true)`: the call is a pass nobody
+  waits for, and its 50 s ceiling is the same either way.
 
 #### What the consumer records, and how it is read back
 
 - **`QueueRecorder`'s rows are all the checks and the jobs page know of the queue,** and the runs
   also give the consumer its per-type averages. A run is dated by its end and began `duration_ms`
-  before. A pass's context names its process (`holder`), as its claims do, which is how a live claim
-  is matched to an open pass. Only the pass's own process writes its row, so updating it needs no
-  lock.
+  before. A pass's context names its process (`holder`), whatever its origin, as its claims do, which
+  is how a live claim is matched to an open pass and a dead pass told from one at work. Only the
+  pass's own process writes its row, so updating it needs no lock.
 - **`context` never holds a JSON null:** an empty field is left out, because MySQL reads a JSON null
   back as the string `'null'`.
 - **`consecutive_failures`, carried by the `queue.task.finished` row, does not count a run that will
   be retried,** since that run is not over. An
   `ignored` row has no mode and no duration, because it is not an attempt, but it keeps the cause.
 - **`QueueStatistics::lastActivityAt()` counts a message in progress as activity,** because a
-  blocking consumer does not beat while a handler runs. The cost is that a consumer that died
-  mid-message is seen as gone only once that message's limit is over. It counts the row a paused pass
-  leaves (a consumer that kept coming while the wiki slept is not stalled), but not the row of a pass
-  that found the lock taken: a pass stuck in a handler holds that lock.
+  blocking consumer does not beat while a handler runs. The cost is that, with no lock to read, a
+  consumer that died mid-message is seen as gone only once that message's limit is over; with one, at
+  once. It counts the row a paused pass leaves (a consumer that kept coming while the wiki slept is not
+  stalled), but not the row of a pass that found the lock taken: a pass stuck in a handler holds that
+  lock.
 - **`failedOfTypes()` and `countsAsFailed()` leave killed messages out,** for the killed alert, since
   retrying one in the mode that killed it only kills it again. `outcomes()` counts neither a retried
   attempt nor an `ignored` row. `consumerStarts()` does not count a stop for `config-changed`, so an
@@ -697,8 +770,8 @@ Each point names the class or method to look at.
 - **`QueueSettings`:** the `.env` loader never overrides the real environment, so when both hold the
   same value they cannot be told apart, and the file is reported as the likelier source.
 - **`CacheClearer::clearEverything()` keeps the queue's locks** (`QueueConsumer::PASS_LOCK`,
-  `QueueScheduleTicker::LOCK`) and any other `.lock` someone holds. Deleting a lock file under its holder
-  would let a second pass or tick start beside it.
+  `QueueScheduleTicker::LOCK`, the `cache/queue-holders` folder) and any other `.lock` someone holds.
+  Deleting a lock file under its holder would let a second pass or tick start beside it.
 - **`QueueHandlerLocator` builds a handler only when its message is consumed,** so a page that merely
   dispatches does not build search, federation or mail. Handler services are public because the
   locator fetches them by id. `QueueFailureCause::MAX_LENGTH` (1000 characters) is enough to recognise
@@ -841,6 +914,14 @@ Each point names the class or method to look at.
 - **Retrying a killed message automatically** — rejected. It was cut by the limit of its mode and
   will be cut by it again; this is anti-objective four, "a job too long for the mode relaunched
   forever". It waits for a human who has changed mode.
+- **A detached process for the long message of a pass nobody waits for** — rejected, for the reason
+  `request-spawn` was removed: it needs `proc_open`, which some hosts forbid, and a process of its own
+  to launch and watch, for what lifting PHP's limit in the pass gets as far as the host lets it. The
+  price is under Consequences.
+- **Judging a same-machine holder by a duration alone** — rejected. PHP's limit counts CPU time, so no
+  duration tells a handler waiting on the network from a process that is gone: either a live message
+  was declared killed, or a dead one stayed "running" for hours. The kernel knows, and is asked
+  through the holder lock.
 - **Judging "nothing is consuming" on the age of the oldest message** — rejected after being the
   first design. A worker alive and draining a long queue is a backlog, not a stall, and for the
   budgeted modes the backlog check could then never fire. Activity is the right signal.
@@ -863,6 +944,13 @@ Each point names the class or method to look at.
 - **A delayed retry is not work.** The end-of-request check reads the oldest _available_ message,
   not the count of waiting ones, or a single message failing for half an hour would run a full pass
   on every request.
+- **A pass nobody waits for is bound by nothing but the host.** It lifts PHP's time limit before its
+  first message, so after `fastcgi_finish_request()` nothing bounds an FPM worker (its
+  `request_terminate_timeout` does not apply once the response has left, by default): a handler that
+  loops holds a worker until the host or an admin kills it. The queue judges and never bounds: the
+  one-hour ceiling is when a live holder is declared killed, not when it stops. A stop seen from another
+  machine, where no lock can be read, is only detected after an hour and a minute. In `worker` mode, a
+  message that lasts more than an hour is declared killed even if its CLI is alive.
 - **The default mode makes a visitor's request longer on mod_php and CGI**, up to the 3 s ceiling,
   and `queue-visitor-cost` says so once the average passes a second. Choosing `api` or `worker`
   removes it, which is why the page names the cost beside the mode.

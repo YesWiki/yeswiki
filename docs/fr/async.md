@@ -73,11 +73,11 @@ données et l'action `{{sync}}`.
 
 ## Choisir le mode de traitement
 
-| Mode                        | Qui traite la file                                                                   | Délai attendu                                                                           | Désavantage                                                                                                                                                   | Hébergement                                        |
-| --------------------------- | ------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------- |
-| `request` (défaut, partout) | la fin de chaque visite, une fois la page envoyée                                    | dès la fin de la visite qui l'ajoute, sinon à la visite suivante (voir sous le tableau) | rien n'avance sans visite ; un traitement plus long que le temps maximal d'une page (souvent 30 s) est coupé ; sur certains serveurs, les visiteurs attendent | tous, même un mutualisé sans cron                  |
-| `api`                       | un service de cron en ligne                                                          | 5 min (appel toutes les 5 min)                                                          | dépend d'un service extérieur ; un traitement plus long que le temps maximal d'un appel (moins d'une minute) est coupé                                        | mutualisé sans cron                                |
-| `worker`                    | un processus qui tourne en continu, relancé par le serveur ou par le binaire YesWiki | quelques secondes                                                                       | un processus PHP par wiki, gardé en mémoire en permanence ; hors du binaire, un service à installer et surveiller                                             | serveur privé ou dédié, conteneur, binaire YesWiki |
+| Mode                        | Qui traite la file                                                                   | Délai attendu                                                                           | Désavantage                                                                                                                                          | Hébergement                                        |
+| --------------------------- | ------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------- |
+| `request` (défaut, partout) | la fin de chaque visite, une fois la page envoyée                                    | dès la fin de la visite qui l'ajoute, sinon à la visite suivante (voir sous le tableau) | rien n'avance sans visite ; un traitement long garde un processus du serveur occupé tant qu'il dure ; sur certains serveurs, les visiteurs attendent | tous, même un mutualisé sans cron                  |
+| `api`                       | un service de cron en ligne                                                          | 5 min (appel toutes les 5 min)                                                          | dépend d'un service extérieur ; un traitement long garde l'appel ouvert tant qu'il dure                                                              | mutualisé sans cron                                |
+| `worker`                    | un processus qui tourne en continu, relancé par le serveur ou par le binaire YesWiki | quelques secondes                                                                       | un processus PHP par wiki, gardé en mémoire en permanence ; hors du binaire, un service à installer et surveiller                                    | serveur privé ou dédié, conteneur, binaire YesWiki |
 
 En `request`, ce qu'une visite ajoute à la file est traité
 dès la fin de cette visite, une fois la page envoyée : la page que vous venez
@@ -97,9 +97,14 @@ Comment choisir, en pratique :
   ne vient. Un wiki qui reçoit une visite par jour traite donc ses tâches une
   fois par jour. Préférez `api` ou `worker`.
 - **Traitements longs** (synchronisations de grosses sources, par exemple) :
-  `worker`. Les autres modes ne laissent à un traitement que le
-  temps que le serveur accorde à une page ou à un appel : un traitement plus
-  long est coupé et passe en échec. Les
+  `worker`. Les autres modes lèvent la limite de temps de PHP pour le premier
+  traitement d'un passage, mais seulement quand l'hébergeur le permet et que
+  personne n'attend (voir plus bas, sous le tableau des serveurs) : un traitement qui
+  boucle garde alors un processus du serveur occupé. Là où un visiteur attend
+  (`mod_php`, CGI), ou quand l'hébergeur impose la limite, un traitement plus
+  long que le temps accordé est coupé et passe en échec. Aucun mode ne laisse
+  un traitement durer plus d'une heure : au-delà, le wiki le déclare arrêté,
+  même en `worker`. Les
   sauvegardes et restaurations sont un cas à part, voir
   [plus bas](/docs/fr/async?id=sauvegardes-et-restaurations).
 - **Wiki servi par le binaire YesWiki** : `request` suffit, comme ailleurs.
@@ -113,7 +118,7 @@ serveur à l'autre, c'est si la page peut partir avant le traitement :
 
 | Le serveur lance PHP avec…                                            | La page part avant le traitement ?                      | Ce qu'il faut savoir                                                                                                                                                                                                             |
 | --------------------------------------------------------------------- | ------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| PHP-FPM (nginx, Apache avec `proxy_fcgi`, Caddy)                      | oui                                                     | rien : le traitement dispose de 20 s au plus, sans que le visiteur attende                                                                                                                                                       |
+| PHP-FPM (nginx, Apache avec `proxy_fcgi`, Caddy)                      | oui                                                     | le visiteur n'attend pas ; le premier traitement d'un passage n'a pas de limite de temps (voir sous le tableau)                                                                                                                  |
 | FrankenPHP, avec ou sans son mode worker                              | oui                                                     | rien                                                                                                                                                                                                                             |
 | LiteSpeed (fréquent en mutualisé)                                     | oui                                                     | si la page Traitements montre des traitements interrompus en fin de visite, LiteSpeed arrête sans doute PHP quand la connexion se ferme : ajoutez `<IfModule Litespeed>` `SetEnv noabort 1` `</IfModule>` au `.htaccess` du wiki |
 | PHP intégré à Apache (`mod_php`), PHP en CGI ou FastCGI par `php-cgi` | non                                                     | le visiteur attend jusqu'à 3 s de traitement, d'où l'alerte « Attente ajoutée aux pages »                                                                                                                                        |
@@ -122,6 +127,26 @@ serveur à l'autre, c'est si la page peut partir avant le traitement :
 
 `request` fonctionne aussi sur un hébergement qui désactive `ignore_user_abort`
 ou `set_time_limit` (réglage `disable_functions` de PHP).
+
+**La limite de temps de PHP est levée pour le premier traitement de tout
+passage que personne n'attend** : la fin d'une visite une fois la page partie,
+le mode de secours, un appel `api`, le bouton **Consommer maintenant** et
+`--drain`. Elle l'est même quand ce traitement est court (une durée moyenne
+n'est qu'une estimation), car la limite de PHP compte le temps de calcul : un
+traitement qui attend le réseau ou le disque serait coupé bien avant le temps
+qu'on lui destinait. Si l'hébergeur impose la
+limite (`php_admin_value`, `set_time_limit` désactivé), elle reste en place et
+le traitement n'a que ce qu'elle laisse. Un visiteur qui attend la page
+(`mod_php`, CGI) ne voit jamais la limite levée. Deux conséquences :
+
+- une fois la page envoyée, plus rien ne borne la durée du processus PHP-FPM
+  qui travaille : un traitement qui boucle le garde occupé jusqu'à ce que
+  l'hébergeur ou vous l'arrêtiez (la limite `request_terminate_timeout` de
+  PHP-FPM ne s'applique pas, par défaut, après l'envoi de la page) ;
+- quand un traitement s'arrête, le wiki le sait **tout de suite** si le
+  processus tournait sur le même serveur que lui, mais seulement **au bout
+  d'une heure et une minute** s'il tournait sur un autre serveur ou si le wiki
+  ne peut pas le vérifier.
 
 ### Où se règle le mode
 
@@ -225,9 +250,9 @@ comprise), il traite sa file en `request` tant qu'il ne demande rien d'autre.
 Avec `YESWIKI_QUEUE_CONSUMER=worker` dans `private/.env`, c'est le binaire qui
 lance et surveille le processus de ce wiki, et le relance s'il s'arrête : pas
 de service à écrire. Les tâches avancent sans visite, en quelques secondes, et
-peuvent durer aussi longtemps qu'il le faut. En contrepartie, un processus PHP
-reste en mémoire en permanence pour ce wiki : c'est pourquoi ce n'est pas le
-défaut. La page Traitements indique alors un rythme « en continu, surveillé par
+peuvent durer jusqu'à une heure, au-delà de laquelle le wiki les déclare
+arrêtées. En contrepartie, un processus PHP reste en mémoire en permanence pour
+ce wiki : c'est pourquoi ce n'est pas le défaut. La page Traitements indique alors un rythme « en continu, surveillé par
 le binaire YesWiki ».
 
 Le changement est pris en compte au prochain redémarrage du binaire, ou au
@@ -258,8 +283,9 @@ Pendant le secours :
 - le bandeau du mode montre toujours le mode **choisi**, et la ligne « Dernier
   passage du mode... » passe en rouge : c'est la date à laquelle ce mode a été
   vu pour la dernière fois ;
-- les traitements longs (imports, synchronisations) risquent d'être coupés,
-  puisqu'ils n'ont que le temps d'une page ;
+- les traitements longs (imports, synchronisations) tournent dans le processus
+  d'une visite, comme en `request` : ils risquent d'être coupés si l'hébergeur
+  impose la limite de temps de PHP ;
 - l'onglet _Consommateurs_ marque les passages faits en secours.
 
 ![L'onglet Consommateurs : le passage le plus récent est marqué « secours de worker »](images/async-onglet-consommateurs-secours.png)
@@ -363,11 +389,23 @@ C'est ici qu'on vérifie qu'un cron ou un worker passe vraiment.
 
 ![L'onglet Consommateurs](images/async-onglet-consommateurs.png)
 
+Un passage dont le processus a disparu (mémoire épuisée, processus arrêté par
+le serveur...) n'est pas laissé « en cours » : le passage suivant le clôt avec
+le motif « arrêtée avant la fin, son processus a disparu ». C'est immédiat quand
+les deux tournent sur le même serveur ; sinon, il faut qu'une heure et une
+minute se soient écoulées sans signe de vie. L'heure de fin affichée est celle
+de son dernier signe de vie, pas celle du moment où le wiki s'en est aperçu.
+
 ### Les boutons des alertes
 
 - **Consommer maintenant** lance un passage tout de suite, depuis votre
   navigation, quel que soit le mode. C'est le premier réflexe quand une alerte
-  dit que « plus rien ne traite ».
+  dit que « plus rien ne traite ». Ce passage n'a **aucune limite** : il vide
+  toute la file, un traitement après l'autre, et ne s'arrête que quand la file
+  est vide, que le wiki est en pause, qu'un autre passage est déjà en cours, ou
+  que le serveur le coupe. Il peut donc durer longtemps, et la page attend sa
+  réponse jusqu'au bout. Tant qu'il dure, le wiki ne lance pas d'autre passage,
+  en fin de visite par exemple.
 - **Relancer** et **Ignorer** agissent sur tous les traitements en échec à la
   fois (**Relancer** laisse de côté les sauvegardes et les restaurations) ;
   **Voir** ouvre l'onglet concerné.
@@ -488,8 +526,9 @@ envoi, une synchronisation, une indexation...) n'a pas été fait. Cliquez sur
 ### Traitements trop longs pour le mode choisi (rouge)
 
 Un traitement a été coupé en route, parce qu'il dépasse le temps qu'un passage
-du mode actuel peut lui consacrer. Il échouera à chaque nouvel essai : le wiki
-ne le relance donc pas tout seul.
+du mode actuel peut lui consacrer : la limite de temps que l'hébergeur impose à
+PHP quand il refuse qu'on la lève, ou, dans tous les modes, une heure. Il
+échouera à chaque nouvel essai : le wiki ne le relance donc pas tout seul.
 
 1. Passez à un mode qui ne coupe pas les traitements longs : `worker`.
 2. Revenez sur la page Traitements, onglet _En échec_, et cliquez sur
