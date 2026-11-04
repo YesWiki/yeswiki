@@ -258,12 +258,12 @@ The consumer takes the next message only if the average duration of its type fit
 message of a pass nobody waits for (response already sent, fallback, API call, the button, a drain):
 that one is taken whatever its average, or a type longer than any pass of its mode would block the
 queue for good. **Before it, the pass lifts PHP's time limit** (`set_time_limit(0)`), whatever that
-message's average, a short one included (an average is only a guess), and reads
-`max_execution_time` back. PHP's limit counts CPU time on Linux, so a handler waiting on the network
-or the disk would be cut off long before the time it was given. If it reads 0, the claims of the pass carry the one hour of the ceiling
-below; if the host keeps it (`php_admin_value`, `set_time_limit` disabled), they keep what PHP leaves
-of it, and a message PHP cuts is failed as killed, below. A pass a visitor waits for never lifts it.
-The price is stated under Consequences.
+message's average, a short one included, and reads `max_execution_time` back. An average is only a
+guess, and PHP's limit counts the CPU time of the whole request, the page just served included, so a
+message whose average looks short can still be cut. If it reads 0, the claims of the pass carry the
+one hour of the ceiling below; if the host keeps it (`php_admin_value`, `set_time_limit` disabled),
+they keep what PHP leaves of it, and a message PHP cuts is failed as killed, below. A pass a visitor
+waits for never lifts it. The price is stated under Consequences.
 
 The same figures give each claim its **kill limit**: what PHP leaves of its limit, or **one hour**
 when it has none, since a host does not let a process live longer. A claim also names the process
@@ -288,8 +288,9 @@ failed as killed at once; **absent** (a token in an older format, a token of ano
 a shutdown function frees the lock when its request ends and the next pass reaps its claim at once,
 and a live worker keeps its message past its limit plus a minute, up to the ceiling. The file only counts for
 a token of the machine that reads it, since on a `cache/` shared over NFS another machine's lock
-proves nothing. Only the reaper deletes a file, once it has failed the claim: the judges that only
-read (health checks, statistics, the jobs page) never do, and `CacheClearer` keeps the folder.
+proves nothing. Only the judges that reap delete a file (`reapKilled()` once it has failed a claim,
+`closeDeadPasses()` once it has closed a pass): the judges that only read (health checks, statistics,
+the jobs page) never do, and `CacheClearer` keeps the folder.
 
 A consumer whose process ends in the middle of a message (a fatal error, PHP's limit, an `exit` in a
 handler) still fails it itself, from a shutdown function, but that only journals it earlier, since the
@@ -488,10 +489,11 @@ Each point names the class or method to look at.
   `stateOf()` opens the file without creating it and tries a non-blocking `flock`: no file is `ABSENT`,
   a refusal is `HELD`, a lock it gets is dropped at once and is `FREE`, the file left where it was. The
   file counts only for a token whose machine is not empty and is this process's, whatever the file says.
-  Only `reapKilled()` removes the file of a holder that is gone, after it failed the claim, and a judge
-  of another machine never removes one, so the file of a dead holder stays until a judge of its own
-  machine reaps it. `expiredClaims()`, `isHandling()` and `liveHolders()` only read, since the health
-  checks, the statistics and the end-of-request check call them.
+  Only the judges that reap remove the file of a holder that is gone: `reapKilled()` after it failed
+  the claim, and `closeDeadPasses()` after it closed the pass. A judge of another machine never removes
+  one, so the file of a dead holder stays until a judge of its own machine reaps it.
+  `expiredClaims()`, `isHandling()` and `liveHolders()` only read, since the health checks, the
+  statistics and the end-of-request check call them.
 - **A requeued message loses `RedeliveryStamp` and `SentToFailureTransportStamp`.** It gets its
   retries again, and Messenger would otherwise drop it rather than send it back to `failed` when it
   fails again. A message that still cannot be decoded goes back as it is, in case an extension

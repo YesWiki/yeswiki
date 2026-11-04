@@ -131,12 +131,12 @@ ou `set_time_limit` (réglage `disable_functions` de PHP).
 **La limite de temps de PHP est levée pour le premier traitement de tout
 passage que personne n'attend** : la fin d'une visite une fois la page partie,
 le mode de secours, un appel `api`, le bouton **Consommer maintenant** et
-`--drain`. Elle l'est même quand ce traitement est court (une durée moyenne
-n'est qu'une estimation), car la limite de PHP compte le temps de calcul : un
-traitement qui attend le réseau ou le disque serait coupé bien avant le temps
-qu'on lui destinait. Si l'hébergeur impose la
-limite (`php_admin_value`, `set_time_limit` désactivé), elle reste en place et
-le traitement n'a que ce qu'elle laisse. Un visiteur qui attend la page
+`--drain`. Elle l'est même quand ce traitement est court : une durée moyenne
+n'est qu'une estimation, et la limite de PHP compte le temps de calcul cumulé
+de toute la requête, page déjà servie comprise, si bien qu'un traitement qui
+paraît court peut quand même être coupé. Si l'hébergeur impose la limite
+(`php_admin_value`, `set_time_limit` désactivé), elle reste en place et le
+traitement n'a que ce qu'elle laisse. Un visiteur qui attend la page
 (`mod_php`, CGI) ne voit jamais la limite levée. Deux conséquences :
 
 - une fois la page envoyée, plus rien ne borne la durée du processus PHP-FPM
