@@ -365,6 +365,11 @@ class DbService
     /**
      * Put those rows back under their own ids into the restored tables, replacing any of their kind the dump brought.
      *
+     * The live rows are the instance's state and are found by their ids: the open row of the pass running the restore, which
+     * it closes by id, and the dispatches the Scheduler takes the largest id of as a task's latest. So a row of the dump that
+     * holds one of their ids (a backup of another wiki) is the one that gives way: it moves past every other, the rows that
+     * moved keeping their order, and the identity counts on from there.
+     *
      * @param array<string, list<array<string, mixed>>> $kept
      */
     private function putBackRowsLeftOut(string $livePrefix, string $intoPrefix, array $kept): void
@@ -383,27 +388,24 @@ class DbService
                     return;
                 }
 
-                $taken = [];
+                $displaced = [];
                 foreach (array_chunk(array_map(static fn (array $row): int => (int)$row['id'], $rows), 500) as $ids) {
-                    foreach ($this->loadAll("SELECT id FROM {$quoted} WHERE id IN (" . SqlParameters::placeholders(\count($ids)) . ')', $ids) as $found) {
-                        $taken[(int)$found['id']] = true;
-                    }
+                    $in = 'id IN (' . SqlParameters::placeholders(\count($ids)) . ')';
+                    array_push($displaced, ...$this->loadAll("SELECT * FROM {$quoted} WHERE {$in}", $ids));
+                    $this->query("DELETE FROM {$quoted} WHERE {$in}", $ids);
                 }
+                usort($displaced, static fn (array $a, array $b): int => (int)$a['id'] <=> (int)$b['id']);
 
-                $renumbered = [];
                 foreach ($rows as $row) {
-                    if (isset($taken[(int)$row['id']])) {
-                        unset($row['id']);
-                        $renumbered[] = $row;
-                    } else {
-                        $this->insertRow($table, $row);
-                    }
+                    $this->insertRow($table, $row);
+                }
+                $next = (int)$this->scalar("SELECT MAX(id) FROM {$quoted}", 0);
+                foreach ($displaced as $row) {
+                    $row['id'] = ++$next;
+                    $this->insertRow($table, $row);
                 }
                 foreach ($this->dialect->realignIdentity($table, 'id') as $statement) {
                     $this->query($statement);
-                }
-                foreach ($renumbered as $row) {
-                    $this->insertRow($table, $row);
                 }
             });
         }

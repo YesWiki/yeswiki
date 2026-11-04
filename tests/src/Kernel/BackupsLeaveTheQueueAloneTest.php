@@ -17,6 +17,7 @@ use YesWiki\Kernel\Database\DumpRewriter;
 use YesWiki\Kernel\Queue\ProvidesSchedule;
 use YesWiki\Kernel\Queue\QueueConsumerMode;
 use YesWiki\Kernel\Queue\QueueJournalEntry;
+use YesWiki\Kernel\Queue\QueuePassReport;
 use YesWiki\Kernel\Service\ConsoleService;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\HibernationService;
@@ -256,12 +257,14 @@ class BackupsLeaveTheQueueAloneTest extends YesWikiTestCase
     }
 
     /**
-     * A backup of another wiki may give a live row's id to a row of its own: that row stays, and the live one comes back under a new id.
+     * A backup of another wiki may hold a row under the id of a live queue row. The live row keeps its id, since the consumer
+     * and the Scheduler find their rows by it, and the backup's row moves to a new id after every other.
      *
-     * @param array<string, string|bool> $params
+     * @param array<string, string|bool>                $params
+     * @param 'restoreFromDump'|'restoreStagedFromDump' $restore
      */
-    #[DataProvider('servers')]
-    public function testALiveQueueRowWhoseIdTheBackupHoldsComesBackUnderANewOne(array $params): void
+    #[DataProvider('restores')]
+    public function testABackupRowWhoseIdALiveQueueRowHoldsMovesToANewOne(array $params, string $restore): void
     {
         $this->open($params);
         $this->openJournal();
@@ -269,16 +272,67 @@ class BackupsLeaveTheQueueAloneTest extends YesWikiTestCase
         $run = $this->recordRun('RunBeforeTheBackup');
         $dump = $this->db->dumper()->dump()['sql'] . $this->journalInsert(['id' => $run, 'channel' => 'audit', 'action' => 'foreign.audited']);
 
-        $this->db->restoreStagedFromDump($dump);
+        $this->db->{$restore}($dump);
 
         $rows = $this->journalRows();
-        $this->assertSame('audit foreign.audited ', $rows[$run] ?? null, 'the backup keeps its row');
-        $moved = array_keys($rows, 'queue queue.run.handled RunBeforeTheBackup', true);
-        $this->assertCount(1, $moved);
+        $this->assertSame('queue queue.run.handled RunBeforeTheBackup', $rows[$run] ?? null, 'the live row keeps its id');
+        $moved = array_keys($rows, 'audit foreign.audited ', true);
+        $this->assertCount(1, $moved, "the backup's row is kept");
         $this->assertGreaterThan($run, $moved[0]);
 
         $this->journal->audit('after.restore');
-        $this->assertContains('audit after.restore ', $this->journalRows());
+        $after = $this->journalRows();
+        $last = max([0, ...array_keys($after)]);
+        $this->assertSame('audit after.restore ', $after[$last] ?? null, 'the Journal counts on from its largest id');
+        $this->assertGreaterThan($moved[0], $last);
+    }
+
+    /**
+     * The pass that runs the restore opened its row before it: a backup of another wiki that holds a row under that id leaves
+     * the pass its row, which the pass closes by id when it ends. Renumbered, it would show "running" until it was purged.
+     *
+     * @param array<string, string|bool>                $params
+     * @param 'restoreFromDump'|'restoreStagedFromDump' $restore
+     */
+    #[DataProvider('restores')]
+    public function testAForeignBackupHoldingTheRunningPassesIdLetsThePassCloseItsRow(array $params, string $restore): void
+    {
+        $this->open($params);
+        $this->openJournal();
+        $this->journal->audit('backup.audited', 'Home');
+        $pass = $this->recorder->passStarted(QueueConsumerMode::Api, null, false);
+        $dump = $this->db->dumper()->dump()['sql'] . $this->journalInsert(['id' => $pass, 'channel' => 'audit', 'action' => 'foreign.audited']);
+
+        $this->db->{$restore}($dump);
+        $this->recorder->passFinished($pass, new QueuePassReport(0, 0, 10, QueuePassReport::EMPTY), 1024);
+
+        $rows = $this->journalRows();
+        $this->assertSame('queue queue.pass ' . QueuePassReport::EMPTY, $rows[$pass] ?? null, 'the pass closed its own row');
+        $this->assertCount(1, array_keys($rows, 'audit foreign.audited ', true));
+    }
+
+    /**
+     * A backup of another wiki that holds a row under the id of a task's older dispatch, and none under its latest: both keep
+     * their ids, so the latest is still the one with the largest id, and the task is not sent again before its next slot.
+     *
+     * @param array<string, string|bool>                $params
+     * @param 'restoreFromDump'|'restoreStagedFromDump' $restore
+     */
+    #[DataProvider('restores')]
+    public function testAForeignBackupHoldingATasksOlderDispatchLeavesItsAnchorWhereItWas(array $params, string $restore): void
+    {
+        $this->open($params);
+        $this->openJournal();
+        $this->recorder->taskDispatched(new QueueTestTask('digest'), 1800);
+        $older = (int)$this->db->scalar('SELECT MAX(id) FROM ' . $this->db->quoteIdentifier($this->journalSchema->table()));
+        $this->journal->audit('between.the.dispatches');
+        $this->clock->sleep(86400);
+        $this->recorder->taskDispatched(new QueueTestTask('digest'), 1800);
+        $dump = $this->db->dumper()->dump()['sql'] . $this->journalInsert(['id' => $older, 'channel' => 'audit', 'action' => 'foreign.audited']);
+
+        $this->db->{$restore}($dump);
+
+        $this->assertSame('2026-10-24 12:00:00', (new ScheduleHistory($this->db, $this->journalSchema))->of('digest')?->lastDispatchedAt?->format('Y-m-d H:i:s'));
     }
 
     public function testOnlyTheQueueTableIsLeftOut(): void

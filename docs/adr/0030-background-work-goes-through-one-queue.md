@@ -690,12 +690,16 @@ Each point names the class or method to look at.
 #### Backups and restores
 
 - **A restore puts the live Journal `queue` rows back under their own ids,**
-  because the running consumer still writes its pass by those ids. A backup of another wiki may hold
-  such an id. Then the restored row keeps it, and the live one takes the next free id once the
-  identity column is realigned. In a staged restore the kept rows go into the staged tables before the
-  swap, so a Journal write right after the swap cannot take their ids. The session settings are
-  restored before that, because a MySQL dump's preamble leaves AUTOCOMMIT off and the dump's own time
-  zone.
+  because the running consumer still writes its pass by those ids, and the Scheduler takes the
+  largest id of a task's dispatches as its latest. A backup of another wiki may hold such an id. Then
+  the backup's row gives way: it moves past every other row, the rows that moved keeping their order,
+  and the identity column is realigned after them. The other way round, the pass running the restore
+  would lose its row (shown "running" until it was purged), and a live dispatch moved past a later
+  one would send the task back to an older anchor, which runs it again. A row of the restored wiki
+  that moved only looks newer in a list sorted by id. In a staged restore the kept rows go into the
+  staged tables before the swap, so a Journal write right after the swap cannot take their ids. The
+  session settings are restored before that, because a MySQL dump's preamble leaves AUTOCOMMIT off
+  and the dump's own time zone.
 - **On MySQL, a table some of whose rows are left out** (`DumpRewriter::leftOutRows()`) is dumped by a
   `mysqldump` call of its own, because `--where` applies to every table of one call.
 - **`queue_consume_secret` and `queue_consumer` stay this wiki's own on restore.** Another wiki's
