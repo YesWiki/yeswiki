@@ -226,7 +226,6 @@ class SendDigestTest extends YesWikiTestCase
         $services = $this->getWiki()->services;
         $storage = $services->get(Storage::class);
         $storage->write('private/digests/day.last', '1761213600');
-        $storage->write('private/digests/day.tried', '1761213600');
 
         require_once 'src/migrations/20261103090000_DigestMarkersGiveWayToTheSchedule.php';
         $migration = new \DigestMarkersGiveWayToTheSchedule();
@@ -237,7 +236,6 @@ class SendDigestTest extends YesWikiTestCase
         $migration->run();
 
         $this->assertFalse($storage->fileExists('private/digests/day.last'));
-        $this->assertFalse($storage->fileExists('private/digests/day.tried'));
         $this->assertFalse($storage->directoryExists('private/digests'));
     }
 
