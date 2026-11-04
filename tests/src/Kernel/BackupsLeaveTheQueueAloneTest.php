@@ -192,7 +192,7 @@ class BackupsLeaveTheQueueAloneTest extends YesWikiTestCase
         $dump = $this->exportDb($params);
 
         $this->assertTrue(DbCommand::isDump($dump));
-        $this->assertSame([self::PREFIX . 'pages', $this->journalSchema->table(), self::PREFIX . 'triples'], DumpRewriter::tables($dump));
+        $this->assertSame([self::PREFIX . 'pages', self::PREFIX . 'triples', $this->journalSchema->table()], DumpRewriter::tables($dump), 'the content tables, then the Journal its own call appends');
         $this->assertStringContainsString('backup.audited', $dump);
         $this->assertStringNotContainsString('RunBeforeTheBackup', $dump);
     }
