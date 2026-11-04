@@ -108,10 +108,20 @@ class QueueConsumer
                     $this->tick();
 
                     $averages = [];
+                    $lifted = false;
+                    $liftTheLimit = function () use ($mode, &$lifted): void {
+                        if (!$lifted) {
+                            $lifted = true;
+                            $limit = $this->budgets->liftPhpLimit();
+                            if ($limit !== null) {
+                                $this->transport->claimAs($mode, $limit);
+                            }
+                        }
+                    };
                     $receiver = new QueuePassReceiver(
                         $this->transport,
-                        function () use ($budget, $observer, $responseAlreadySent, &$averages): ?string {
-                            return $this->reasonToStop($budget, $observer, !$responseAlreadySent, $averages);
+                        function () use ($budget, $observer, $responseAlreadySent, &$averages, $liftTheLimit): ?string {
+                            return $this->reasonToStop($budget, $observer, !$responseAlreadySent, $averages, $liftTheLimit);
                         },
                         $observer
                     );
@@ -337,11 +347,12 @@ class QueueConsumer
     }
 
     /**
-     * Why a budgeted pass should take no further message, or null to take the next one.
+     * Why a budgeted pass should take no further message, or null to take the next one; a pass nobody waits for lifts PHP's limit before its first.
      *
      * @param array<string, int|null> $averages
+     * @param \Closure(): void        $liftTheLimit
      */
-    private function reasonToStop(QueueBudget $budget, QueuePassObserver $observer, bool $visitorWaits, array &$averages): ?string
+    private function reasonToStop(QueueBudget $budget, QueuePassObserver $observer, bool $visitorWaits, array &$averages, \Closure $liftTheLimit): ?string
     {
         if ($this->hibernation->isWikiHibernatedNow()) {
             return QueuePassReport::PAUSED;
@@ -360,6 +371,8 @@ class QueueConsumer
             return $first ? QueuePassReport::NO_BUDGET : QueuePassReport::BUDGET;
         }
         if ($first && !$visitorWaits) {
+            $liftTheLimit();
+
             return null;
         }
 

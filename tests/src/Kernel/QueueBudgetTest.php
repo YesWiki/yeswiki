@@ -187,6 +187,42 @@ class QueueBudgetTest extends TestCase
         $this->assertSame(3600, $this->factory(['max_execution_time' => '0', 'memory_limit' => '128M'], 4.0)->untilEmpty()->killLimitSeconds);
     }
 
+    /** A pass nobody waits for lifts PHP's limit, then asks again what limit holds: none left means the one-hour ceiling. */
+    public function testLiftingTheLimitAnswersTheHoursCeiling(): void
+    {
+        $ini = ['max_execution_time' => '30', 'memory_limit' => '128M'];
+        $asked = [];
+        $factory = new QueueBudgetFactory(
+            new MockClock(new \DateTimeImmutable('@' . self::NOW)),
+            static function (string $name) use (&$ini) {
+                return $ini[$name] ?? false;
+            },
+            self::NOW,
+            static function (int $seconds) use (&$ini, &$asked): bool {
+                $asked[] = $seconds;
+                $ini['max_execution_time'] = (string)$seconds;
+
+                return true;
+            }
+        );
+
+        $this->assertSame(QueueBudgetFactory::KILL_LIMIT_NO_PHP_LIMIT, $factory->liftPhpLimit());
+        $this->assertSame([0], $asked);
+    }
+
+    /** A limit the host imposes (`php_admin_value`) ignores set_time_limit(), and the claim keeps what is left of it. */
+    public function testALimitTheHostImposesIsKept(): void
+    {
+        $factory = new QueueBudgetFactory(
+            new MockClock(new \DateTimeImmutable('@' . self::NOW)),
+            static fn (string $name) => $name === 'max_execution_time' ? '30' : false,
+            self::NOW,
+            static fn (int $seconds): bool => false
+        );
+
+        $this->assertNull($factory->liftPhpLimit());
+    }
+
     public function testBytesReadsTheSizeNotationOfPhpIni(): void
     {
         $this->assertSame(128 * 1024 ** 2, QueueBudgetFactory::bytes('128M'));

@@ -804,6 +804,59 @@ class QueueConsumerTest extends YesWikiTestCase
         $this->assertSame([QueueBudgetFactory::KILL_LIMIT_NO_PHP_LIMIT], $limits);
     }
 
+    /**
+     * A pass nobody waits for lifts PHP's limit before its first message, whatever that message's average, and claims by the limit that then holds.
+     */
+    public function testTheFirstMessageAfterTheResponseIsClaimedWithTheLimitLifted(): void
+    {
+        $lifts = 0;
+        $this->budgets = $this->budgetsUnderA30SecondLimit(true, $lifts);
+        $this->build($this->db, new MockClock(self::START, 'UTC'));
+        $limits = $this->limitsOfTheClaimsOfTheHandlers();
+        $this->send(2);
+
+        $report = $this->consumer->drain(QueueConsumerMode::Request, $this->budgets->forMode(QueueConsumerMode::Request, true), true);
+
+        $this->assertSame(2, $report->handled);
+        $this->assertSame([QueueBudgetFactory::KILL_LIMIT_NO_PHP_LIMIT, QueueBudgetFactory::KILL_LIMIT_NO_PHP_LIMIT], $limits());
+        $this->assertSame(1, $lifts, 'the limit is lifted once per pass, not once per message');
+    }
+
+    /** A visitor is waiting: the limit stays what the server gave, and the claim is judged by it. */
+    public function testAFirstMessageWhileAVisitorWaitsLiftsNothing(): void
+    {
+        $lifts = 0;
+        $this->budgets = $this->budgetsUnderA30SecondLimit(true, $lifts);
+        $this->build($this->db, new MockClock(self::START, 'UTC'));
+        $limits = $this->limitsOfTheClaimsOfTheHandlers();
+        $this->send(1);
+        $budget = $this->budgets->forMode(QueueConsumerMode::Request, false);
+
+        $report = $this->consumer->drain(QueueConsumerMode::Request, $budget, false);
+
+        $this->assertSame(1, $report->handled);
+        $this->assertSame(0, $lifts);
+        $this->assertSame([$budget->killLimitSeconds], $limits());
+    }
+
+    /** `set_time_limit()` that changes nothing (`php_admin_value`): the claim keeps the limit that holds, not an hour. */
+    public function testALimitTheHostImposesStaysOnTheClaim(): void
+    {
+        $lifts = 0;
+        $this->budgets = $this->budgetsUnderA30SecondLimit(false, $lifts);
+        $this->build($this->db, new MockClock(self::START, 'UTC'));
+        $limits = $this->limitsOfTheClaimsOfTheHandlers();
+        $this->send(2);
+        $budget = $this->budgets->forMode(QueueConsumerMode::Request, true);
+
+        $report = $this->consumer->drain(QueueConsumerMode::Request, $budget, true);
+
+        $this->assertSame(2, $report->handled);
+        $this->assertSame(1, $lifts, 'it was tried, once');
+        $this->assertSame([$budget->killLimitSeconds, $budget->killLimitSeconds], $limits());
+        $this->assertLessThan(QueueBudgetFactory::KILL_LIMIT_NO_PHP_LIMIT, $budget->killLimitSeconds);
+    }
+
     public function testAPassIsRecorded(): void
     {
         $this->send(2);
@@ -1408,6 +1461,47 @@ class QueueConsumerTest extends YesWikiTestCase
     private function seconds(float $seconds): QueueBudget
     {
         return new QueueBudget(microtime(true) + $seconds, PHP_INT_MAX, 30);
+    }
+
+    /**
+     * PHP's limits as a server gives them, `max_execution_time` 30 s from now and no memory limit (the run's own use is not the test's business); set_time_limit(0) lifts it when $hostLetsIt, and is counted in $lifts.
+     */
+    private function budgetsUnderA30SecondLimit(bool $hostLetsIt, int &$lifts): QueueBudgetFactory
+    {
+        $ini = ['max_execution_time' => '30', 'memory_limit' => '-1'];
+
+        return new QueueBudgetFactory(
+            new NativeClock(),
+            static function (string $name) use (&$ini): string {
+                return $ini[$name];
+            },
+            microtime(true),
+            static function (int $seconds) use (&$ini, &$lifts, $hostLetsIt): bool {
+                $lifts++;
+                if ($hostLetsIt) {
+                    $ini['max_execution_time'] = (string)$seconds;
+                }
+
+                return $hostLetsIt;
+            }
+        );
+    }
+
+    /**
+     * Has the handler note, for each message, the limit its claim was recorded with; the closure answers the notes.
+     *
+     * @return \Closure(): list<int>
+     */
+    private function limitsOfTheClaimsOfTheHandlers(): \Closure
+    {
+        $limits = [];
+        $this->behaviour = function () use (&$limits): void {
+            $limits[] = (int)$this->db->scalar("SELECT delivered_limit FROM {$this->schema->table()} WHERE delivered_at IS NOT NULL", null);
+        };
+
+        return static function () use (&$limits): array {
+            return $limits;
+        };
     }
 
     /** Everything the Journal wrote, as its JSON lines. */

@@ -26,17 +26,22 @@ class QueueBudgetFactory
 
     /** @var callable(string): (string|false) */
     private $ini;
+    /** @var callable(int): bool */
+    private $setTimeLimit;
     private readonly float $constructedAt;
 
     /**
      * @param (callable(string): (string|false))|null $ini
+     * @param (callable(int): bool)|null              $setTimeLimit
      */
     public function __construct(
         private readonly ClockInterface $phpClock,
         ?callable $ini = null,
-        private readonly ?float $requestStartedAt = null
+        private readonly ?float $requestStartedAt = null,
+        ?callable $setTimeLimit = null
     ) {
         $this->ini = $ini ?? static fn (string $name) => ini_get($name);
+        $this->setTimeLimit = $setTimeLimit ?? static fn (int $seconds): bool => function_exists('set_time_limit') && @set_time_limit($seconds);
         $this->constructedAt = $this->now();
     }
 
@@ -70,6 +75,16 @@ class QueueBudgetFactory
     public function untilEmpty(): QueueBudget
     {
         return new QueueBudget(INF, PHP_INT_MAX, $this->killLimit($this->untilPhpStops($this->phpTimeLimit(), $this->now())));
+    }
+
+    /**
+     * Asks PHP to drop its time limit for this request, then reads the limit that holds; the kill limit to claim by when it is gone, null when the host keeps one.
+     */
+    public function liftPhpLimit(): ?int
+    {
+        ($this->setTimeLimit)(0);
+
+        return $this->phpTimeLimit() === 0 ? self::KILL_LIMIT_NO_PHP_LIMIT : null;
     }
 
     private function capped(?float $usable, float $ceiling): float
