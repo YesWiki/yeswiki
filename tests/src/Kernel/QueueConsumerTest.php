@@ -333,9 +333,9 @@ class QueueConsumerTest extends YesWikiTestCase
 
         try {
             $this->assertSame("1\n", fgets($pipes[1]), 'the consumer took the message');
-            $this->build($this->db, new MockClock(new \DateTimeImmutable('+2 hours')));
+            $this->build($this->db, new MockClock(new \DateTimeImmutable('+30 minutes')));
             $this->consumer->drain(QueueConsumerMode::Api, $this->seconds(30));
-            $this->assertSame([], $this->statistics->failed(), 'two hours past its one-second limit, it is still at work');
+            $this->assertSame([], $this->statistics->failed(), 'half an hour past its one-second limit, and inside the ceiling, it is still at work');
             $this->assertSame([], $this->handled);
 
             posix_kill(proc_get_status($process)['pid'], 9);

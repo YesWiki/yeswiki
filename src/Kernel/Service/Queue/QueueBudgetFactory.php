@@ -21,7 +21,8 @@ class QueueBudgetFactory
 
     private const MEMORY_RATIO = 0.8;
 
-    public const KILL_LIMIT_NO_PHP_LIMIT = 6 * 3600;
+    /** One hour, the longest a host lets a process live: the kill limit of a pass to which PHP gives no limit of its own. */
+    public const KILL_LIMIT_NO_PHP_LIMIT = 3600;
 
     /** @var callable(string): (string|false) */
     private $ini;

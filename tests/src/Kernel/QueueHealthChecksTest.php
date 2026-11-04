@@ -326,7 +326,7 @@ class QueueHealthChecksTest extends YesWikiTestCase
     {
         $this->mode = 'worker';
         $this->pass('worker', startedAt: '-3 hours', finishedAt: '-2 hours');
-        $this->claimed('-1 hours', limit: 21600, mode: 'worker');
+        $this->claimed('-30 minutes', limit: 3600, mode: 'worker');
 
         $this->assertNull($this->failure('queue-stalled'), 'nothing is available, the consumer has it');
     }
@@ -337,12 +337,12 @@ class QueueHealthChecksTest extends YesWikiTestCase
         $this->mode = 'worker';
         $this->message('default', '-40 minutes');
         $this->pass('worker', startedAt: '-3 hours', finishedAt: '-50 minutes', stopReason: '');
-        $this->claimed('-50 minutes', limit: 21600, mode: 'worker');
+        $this->claimed('-50 minutes', limit: 3600, mode: 'worker');
 
         $this->assertNull($this->failure('queue-stalled'), 'the consumer is busy, not gone');
 
         $this->db->query("DELETE FROM {$this->schema->table()} WHERE delivered_at IS NOT NULL");
-        $this->claimed('-7 hours', limit: 21600, mode: 'worker');
+        $this->claimed('-2 hours', limit: 3600, mode: 'worker');
 
         $this->assertNotNull($this->failure('queue-stalled'), 'a claim past its limit is a dead consumer, not a busy one');
     }

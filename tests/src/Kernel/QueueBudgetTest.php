@@ -142,20 +142,20 @@ class QueueBudgetTest extends TestCase
         $this->assertSame(26, $budget->killLimitSeconds);
     }
 
-    public function testKillLimitWithoutAPhpLimitIsSixHours(): void
+    public function testKillLimitWithoutAPhpLimitIsOneHour(): void
     {
         $budget = $this->factory(['max_execution_time' => '0', 'memory_limit' => '128M'])
             ->forMode(QueueConsumerMode::Api, false);
 
-        $this->assertSame(6 * 3600, $budget->killLimitSeconds);
+        $this->assertSame(3600, $budget->killLimitSeconds);
     }
 
-    public function testTheWorkerHasNoTimeBudgetAndTheSixHourKillLimit(): void
+    public function testTheWorkerHasNoTimeBudgetAndTheOneHourKillLimit(): void
     {
         $budget = $this->factory(['max_execution_time' => '30', 'memory_limit' => '128M'], 10.0)
             ->forMode(QueueConsumerMode::Worker, false);
 
-        $this->assertSame(6 * 3600, $budget->killLimitSeconds);
+        $this->assertSame(3600, $budget->killLimitSeconds);
         $this->assertTrue($budget->canAfford(1e9));
         $this->assertSame(INF, $budget->remainingSeconds());
         // a long-lived process still stops before PHP's own memory limit kills it in the middle of a handler

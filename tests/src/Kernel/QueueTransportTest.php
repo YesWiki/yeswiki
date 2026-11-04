@@ -385,13 +385,28 @@ class QueueTransportTest extends YesWikiTestCase
         [$taken] = [...$this->transport->get()];
         QueueTestHolders::hand($this->db, $this->schema, self::idOf($taken), QueueTestHolders::living(true));
 
-        $this->clock->sleep(3 * 3600);
+        $this->clock->sleep(3000);
         $this->assertSame([], $this->transport->reapKilled());
         $this->assertSame([], $this->transport->expiredClaims());
         $this->assertTrue($this->transport->isHandling());
 
-        $this->clock->sleep(3 * 3600 + 61);
+        $this->clock->sleep(600 + 61);
         $this->assertSame([self::idOf($taken)], array_column($this->transport->reapKilled(), 'id'), 'past the ceiling it is stuck, not slow');
+    }
+
+    /** R19: a claim that recorded no limit (made before limits were recorded, or by a caller that never set one) is judged on the ceiling, one hour, and the grace. */
+    public function testAClaimWithoutARecordedLimitIsReapedPastOneHour(): void
+    {
+        $this->transport->send(new Envelope(new QueueTestMessage('untimed')));
+        [$taken] = [...$this->transport->get()];
+        QueueTestHolders::hand($this->db, $this->schema, self::idOf($taken), QueueTestHolders::elsewhere());
+        $this->assertNull($this->row(self::idOf($taken))['delivered_limit'] ?? null);
+
+        $this->clock->sleep(3600 + 60);
+        $this->assertSame([], $this->transport->reapKilled(), 'within the ceiling and the grace');
+
+        $this->clock->sleep(1);
+        $this->assertSame([self::idOf($taken)], array_column($this->transport->reapKilled(), 'id'));
     }
 
     /** The same holds for this very process while it holds the claim: a budgeted pass that outlives its own limit is not reaped under it. */
