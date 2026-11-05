@@ -1130,6 +1130,8 @@ Url: {{ baseUrl }}
     'PRESENTATION_IMAGE_COVER' => 'நிரப்ப வெட்டப்பட்டது',
     'PRESENTATION_IMAGE_CONTAIN' => 'முழுமையாக, வெட்டாமல்',
     'PRESENTATION_COLUMNS' => 'நெடுவரிசைகள்',
+    'PRESENTATION_TABLE_COLUMNS' => 'அட்டவணை நெடுவரிசைகள்',
+    'PRESENTATION_TABLE_COLUMNS_HINT' => 'காலி = தலைப்பு, துணைத்தலைப்பு மற்றும் தேதி',
     'PRESENTATION_LIST' => 'பட்டியல்',
     'PRESENTATION_SOURCE' => 'பட்டியலிடப்படுவது',
     'PRESENTATION_TABLE' => 'அட்டவணை',

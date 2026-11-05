@@ -2678,6 +2678,8 @@ Il tuo account %{userName} deve essere attivato cliccando sul link qui sotto o c
     'PRESENTATION_IMAGE_COVER' => 'Ritagliata per riempire',
     'PRESENTATION_IMAGE_CONTAIN' => 'Intera, senza ritagliare',
     'PRESENTATION_COLUMNS' => 'Colonne',
+    'PRESENTATION_TABLE_COLUMNS' => 'Colonne della tabella',
+    'PRESENTATION_TABLE_COLUMNS_HINT' => 'Vuoto = titolo, sottotitolo e data',
     'PRESENTATION_LIST' => 'Elenco',
     'PRESENTATION_SOURCE' => 'Che cosa viene elencato',
     'PRESENTATION_TABLE' => 'Tabella',

@@ -35,6 +35,8 @@ return [
     'EDIT_CONFIG_GROUP_IMPORT' => 'Import de données externes',
     'PRESENTATION_TABLE_SUBTITLE' => 'Sous-titre',
     'PRESENTATION_TABLE_DATE' => 'Date',
+    'PRESENTATION_TABLE_COLUMNS' => 'Colonnes du tableau',
+    'PRESENTATION_TABLE_COLUMNS_HINT' => 'Vide = titre, sous-titre et date',
     'PRESENTATION_TABLE_TITLE' => 'Titre',
     'PRESENTATION_CARD' => 'Cartes',
     'AB_bazarliste_cta_label' => 'Bouton d\'action',

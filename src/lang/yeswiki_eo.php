@@ -2675,6 +2675,8 @@ Via konto %{userName} devas esti aktivigita klakante la suban ligilon aŭ kopian
     'PRESENTATION_IMAGE_COVER' => 'Tondita por plenigi',
     'PRESENTATION_IMAGE_CONTAIN' => 'Tuta, sen tondi',
     'PRESENTATION_COLUMNS' => 'Kolumnoj',
+    'PRESENTATION_TABLE_COLUMNS' => 'Kolumnoj de la tabelo',
+    'PRESENTATION_TABLE_COLUMNS_HINT' => 'Malplena = titolo, subtitolo kaj dato',
     'PRESENTATION_LIST' => 'Listo',
     'PRESENTATION_SOURCE' => 'Kio estas listigita',
     'PRESENTATION_TABLE' => 'Tabelo',

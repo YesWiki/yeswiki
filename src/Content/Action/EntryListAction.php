@@ -54,6 +54,13 @@ use YesWiki\Search\Service\SearchManager;
 
 class EntryListAction extends YesWikiAction implements AliasesPerformable, RegisteredAction, ProvidesComponents, SuppliesItems
 {
+    /** What a `table` with columns means by default: one column per field, labels, the same link as any Presentation. */
+    private const TABLE_COLUMNS_DEFAULTS = [
+        'checkboxfieldsincolumns' => 'false',
+        'displayvaluesinsteadofkeys' => 'true',
+        'entrydisplay' => 'direct',
+    ];
+
     /** `{{entrylist}}` in page content -- stated, not inferred from the filename. */
     public static function performableName(): string
     {
@@ -93,6 +100,13 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
     {
         return [
             self::formSetting(),
+            Setting::formField('columnfieldsids')
+                ->label(_t('PRESENTATION_TABLE_COLUMNS'))
+                ->hint(_t('PRESENTATION_TABLE_COLUMNS_HINT'))
+                ->default('')
+                ->multiple()
+                ->extraFields(['form_id', 'created_at', 'updated_at', 'url'])
+                ->onlyFor(['presentation-table']),
             Setting::fieldMapping('displayfields')
                 ->subSettings(
                     Setting::formField('title')
@@ -1721,6 +1735,11 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
         try {
             $templateBaseName = preg_replace('/\.(twig|tpl\.html)$/', '', $templateName);
             $warning = $this->missingRoleWarning((string)$templateBaseName, $pForms);
+            if ($templateBaseName === 'table' && !empty($this->arguments['columnfieldsids'])) {
+                $data['params'] += self::TABLE_COLUMNS_DEFAULTS;
+
+                return $warning . $this->renderTableau($data) . $data['pager_links'];
+            }
             if (PresentationRenderer::knows($templateName)) {
                 return $warning . $this->getService(PresentationRenderer::class)
                     ->render($templateName, $this->itemsFrom($data['entries']), $this->arguments)

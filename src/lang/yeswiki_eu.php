@@ -1049,6 +1049,8 @@ Zalantzarik izanez gero, ireki inprimaki hau orrialde propio batean esteka honet
     'PRESENTATION_IMAGE_COVER' => 'Moztuta betetzeko',
     'PRESENTATION_IMAGE_CONTAIN' => 'Osorik, moztu gabe',
     'PRESENTATION_COLUMNS' => 'Zutabeak',
+    'PRESENTATION_TABLE_COLUMNS' => 'Taularen zutabeak',
+    'PRESENTATION_TABLE_COLUMNS_HINT' => 'Hutsik = izenburua, azpititulua eta data',
     'PRESENTATION_LIST' => 'Zerrenda',
     'PRESENTATION_SOURCE' => 'Zerrendatzen dena',
     'PRESENTATION_TABLE' => 'Taula',

@@ -172,6 +172,8 @@ You are on %{CURRENTPHPVERSION}.
     'EDIT_CONFIG_GROUP_IMPORT' => 'External data import',
     'PRESENTATION_TABLE_SUBTITLE' => 'Subtitle',
     'PRESENTATION_TABLE_DATE' => 'Date',
+    'PRESENTATION_TABLE_COLUMNS' => 'Table columns',
+    'PRESENTATION_TABLE_COLUMNS_HINT' => 'Empty = title, subtitle and date',
     'PRESENTATION_TABLE_TITLE' => 'Title',
     'PRESENTATION_CARD' => 'Cards',
     'AB_bazarliste_cta_label' => 'Action button',

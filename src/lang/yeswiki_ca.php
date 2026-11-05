@@ -1686,6 +1686,8 @@ Davant del mínim dubte, obriu aquest formulari en una pàgina dedicada fent cli
     'PRESENTATION_IMAGE_COVER' => 'Retallada per omplir',
     'PRESENTATION_IMAGE_CONTAIN' => 'Sencera, sense retallar',
     'PRESENTATION_COLUMNS' => 'Columnes',
+    'PRESENTATION_TABLE_COLUMNS' => 'Columnes de la taula',
+    'PRESENTATION_TABLE_COLUMNS_HINT' => 'Buit = títol, subtítol i data',
     'PRESENTATION_LIST' => 'Llista',
     'PRESENTATION_SOURCE' => 'Què es llista',
     'PRESENTATION_TABLE' => 'Taula',

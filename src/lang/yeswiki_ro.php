@@ -1049,6 +1049,8 @@ La cea mai mică îndoială, deschide acest formular într-o pagină dedicată f
     'PRESENTATION_IMAGE_COVER' => 'Decupată ca să umple',
     'PRESENTATION_IMAGE_CONTAIN' => 'Întreagă, fără decupare',
     'PRESENTATION_COLUMNS' => 'Coloane',
+    'PRESENTATION_TABLE_COLUMNS' => 'Coloanele tabelului',
+    'PRESENTATION_TABLE_COLUMNS_HINT' => 'Gol = titlu, subtitlu și dată',
     'PRESENTATION_LIST' => 'Listă',
     'PRESENTATION_SOURCE' => 'Ce este listat',
     'PRESENTATION_TABLE' => 'Tabel',

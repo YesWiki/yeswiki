@@ -1061,6 +1061,8 @@ Ante la menor duda, abra este formulario en una página dedicada haciendo clic e
     'PRESENTATION_IMAGE_COVER' => 'Recortada para llenar',
     'PRESENTATION_IMAGE_CONTAIN' => 'Entera, sin recortar',
     'PRESENTATION_COLUMNS' => 'Columnas',
+    'PRESENTATION_TABLE_COLUMNS' => 'Columnas de la tabla',
+    'PRESENTATION_TABLE_COLUMNS_HINT' => 'Vacío = título, subtítulo y fecha',
     'PRESENTATION_LIST' => 'Lista',
     'PRESENTATION_SOURCE' => 'Lo que se lista',
     'PRESENTATION_TABLE' => 'Tabla',

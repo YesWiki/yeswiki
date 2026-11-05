@@ -2678,6 +2678,8 @@ Url: {{ baseUrl }}
     'PRESENTATION_IMAGE_COVER' => 'Обрезано по размеру',
     'PRESENTATION_IMAGE_CONTAIN' => 'Целиком, без обрезки',
     'PRESENTATION_COLUMNS' => 'Колонки',
+    'PRESENTATION_TABLE_COLUMNS' => 'Столбцы таблицы',
+    'PRESENTATION_TABLE_COLUMNS_HINT' => 'Пусто = заголовок, подзаголовок и дата',
     'PRESENTATION_LIST' => 'Список',
     'PRESENTATION_SOURCE' => 'Что показывается',
     'PRESENTATION_TABLE' => 'Таблица',

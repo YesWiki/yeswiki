@@ -1695,6 +1695,8 @@ Bij de minste twijfel, open dit formulier in een eigen pagina door op deze link 
     'PRESENTATION_IMAGE_COVER' => 'Bijgesneden om te vullen',
     'PRESENTATION_IMAGE_CONTAIN' => 'Volledig, zonder bijsnijden',
     'PRESENTATION_COLUMNS' => 'Kolommen',
+    'PRESENTATION_TABLE_COLUMNS' => 'Tabelkolommen',
+    'PRESENTATION_TABLE_COLUMNS_HINT' => 'Leeg = titel, ondertitel en datum',
     'PRESENTATION_LIST' => 'Lijst',
     'PRESENTATION_SOURCE' => 'Wat er wordt getoond',
     'PRESENTATION_TABLE' => 'Tabel',

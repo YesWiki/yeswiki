@@ -72,8 +72,12 @@
                     (not searchTitle and loop.first and not info.mapFieldId) %}
                 {% if colors[entry.tag] is not empty %}<span class="pellet" style="background-color: {{ colors[entry.tag] }} ;"></span>{% endif %}
                 {% if icons[entry.tag] is not empty %}<i class="{{ icons[entry.tag] }}"></i>{% endif %}
-                  {% if param.entrydisplay is defined and param.entrydisplay =='direct' %}
+                  {% if params.entrydisplay is defined and params.entrydisplay =='direct' %}
                       <a href="{{ entry.url }}">
+                          {{ val|nl2br }}
+                      </a>
+                  {% elseif params.entrydisplay is defined and params.entrydisplay =='newtab' %}
+                      <a href="{{ entry.url }}" target="_blank" rel="noopener">
                           {{ val|nl2br }}
                       </a>
                   {% else %}
