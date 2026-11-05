@@ -181,6 +181,27 @@ test('facets can be laid out above the list rather than beside it', async ({
   expect(await page.evaluate(() => typeof window['Vue'])).toBe('undefined')
 })
 
+test('facets above the list sit in three columns, fewer on a narrow screen', async ({
+  page,
+}) => {
+  const columns = () =>
+    page
+      .locator('.results-container')
+      .evaluate(
+        (node) => getComputedStyle(node).gridTemplateColumns.split(' ').length,
+      )
+
+  for (const width of [1440, 900]) {
+    await page.setViewportSize({ width, height: 900 })
+    await page.goto(`${CARD_LIST}&filterposition=top`)
+    expect(await columns(), `at ${width}px`).toBe(3)
+  }
+
+  await page.setViewportSize({ width: 390, height: 900 })
+  await page.goto(`${CARD_LIST}&filterposition=top`)
+  expect(await columns(), 'on a phone').toBeLessThan(3)
+})
+
 /** The tag input is a way of *saying* the same thing: it writes the same parameter into the same form, and the server does the filtering either way. */
 test('the facet chips filter, survive the swap, and come off again', async ({
   page,

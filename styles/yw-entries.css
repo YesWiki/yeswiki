@@ -2347,29 +2347,26 @@ input.yw-input.error {
 }
 
 .facette-container[data-filter-align='top'] .results-container {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(
+    auto-fill,
+    minmax(max(12rem, calc((100% - 2 * var(--yw-space-md-x)) / 3)), 1fr)
+  );
   gap: var(--yw-space-md-y) var(--yw-space-md-x);
   align-items: start;
 }
 
 .facette-container[data-filter-align='top'] .results-container > .filter-box {
-  flex: 0 1 auto;
-  min-width: 12rem;
+  min-width: 0;
   max-width: 100%;
   margin-bottom: 0;
 }
 
-.facette-container[data-filter-align='top'] .results-container {
-  gap: var(--yw-space-md-y) var(--yw-space-md-x);
-}
-
 .yw-facet-select {
   display: flex;
-  flex: 0 1 20rem;
   flex-direction: column;
   gap: var(--yw-space-sm-y) var(--yw-space-sm-x);
-  min-width: 14rem;
+  min-width: 0;
 }
 
 .yw-facet-select__label {
@@ -2380,13 +2377,6 @@ input.yw-input.error {
 
 .yw-facet-select .yw-tag-input {
   margin: 0;
-}
-
-.facette-container[data-filter-align='top']
-  .results-container
-  > .filter-box.yw-facet-select {
-  flex: 0 1 20rem;
-  min-width: 14rem;
 }
 
 .filter-box.yw-facet-select.panel {
