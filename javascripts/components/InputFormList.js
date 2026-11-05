@@ -1,7 +1,10 @@
+import revealDropdown from './revealDropdown.js'
+
 /** Which of this wiki's forms a list is pointed at -- one of them, or several. */
 export default {
   props: ['value', 'config'],
   emits: ['input'],
+  methods: { revealDropdown },
   computed: {
     /** id => label, as the wiki handed them over. */
     forms() {
@@ -40,7 +43,7 @@ export default {
       <addon-icon :config="config" v-if="config.icon"></addon-icon>
       <label v-if="config.label" class="yw-form-label">{{ config.label }}</label>
       <v-select v-model="picked" :options="options" label="label" :multiple="true"
-                :close-on-select="false">
+                :close-on-select="false" @open="revealDropdown">
       </v-select>
       <input-hint :config="config"></input-hint>
     </div>

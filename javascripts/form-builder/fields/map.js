@@ -8,6 +8,13 @@ export default {
     icon: '<svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#map-2"/></svg>',
   },
   defaultIdentifier: 'bf_geolocation',
+  companions: [
+    {
+      type: 'text',
+      name: 'bf_adresse',
+      label: _t('BAZ_FORM_EDIT_ADDRESS'),
+    },
+  ],
   attributes: {
     autocomplete_street: {
       transient: true,

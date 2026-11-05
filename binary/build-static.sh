@@ -117,51 +117,54 @@ main() {
     printf 'staged the caddy plugin and the Program into %s\n' "$staged"
 
     local image="yeswiki-static-builder-${TARGETARCH}"
-    local golang_base network=()
-    golang_base="$(cd "$FRANKENPHP_SRC" && docker buildx bake --print static-builder-musl 2>/dev/null \
-        | php -r '$j = json_decode(stream_get_contents(STDIN), true); echo $j["target"]["static-builder-musl"]["contexts"]["golang-base"];')"
+    ( cd "$FRANKENPHP_SRC" && docker buildx build --load \
+        --file static-builder.Dockerfile \
+        --tag "${image}" \
+        --platform "linux/${TARGETARCH}" \
+        --build-arg "FRANKENPHP_VERSION=${FRANKENPHP_VERSION}" \
+        --build-arg "LIBC=musl" \
+        . )
 
+    local network=()
     if [ -n "$BUILD_PROXY" ]; then
-        network=(--network=host --allow=network.host
-            --build-arg "HTTP_PROXY=${BUILD_PROXY}"
-            --build-arg "HTTPS_PROXY=${BUILD_PROXY}"
-            --build-arg "http_proxy=${BUILD_PROXY}"
-            --build-arg "https_proxy=${BUILD_PROXY}"
-            --build-arg "NO_PROXY=localhost,127.0.0.1")
+        network=(--network=host
+            --env "HTTP_PROXY=${BUILD_PROXY}"
+            --env "HTTPS_PROXY=${BUILD_PROXY}"
+            --env "http_proxy=${BUILD_PROXY}"
+            --env "https_proxy=${BUILD_PROXY}"
+            --env "NO_PROXY=localhost,127.0.0.1")
     fi
+
+    local container
+    container="$(docker create \
+        --platform "linux/${TARGETARCH}" \
+        --ulimit nofile=8192:8192 \
+        ${network[@]+"${network[@]}"} \
+        --env GITHUB_TOKEN \
+        --env "PHP_VERSION=${PHP_VERSION}" \
+        --env "PHP_EXTENSIONS=${extensions}" \
+        --env "PHP_EXTENSION_LIBS=${EXTENSION_LIBS}" \
+        --env "XCADDY_ARGS=${CADDY_MODULES[*]}" \
+        --env "COMPRESS=${COMPRESS}" \
+        --env "DEBUG_SYMBOLS=${DEBUG_SYMBOLS}" \
+        "${image}")"
+    trap 'docker rm --force "$container" >/dev/null 2>&1 || true' EXIT
 
     local attempts="${BUILD_ATTEMPTS:-3}" attempt
     for attempt in $(seq "$attempts"); do
-        if ( cd "$FRANKENPHP_SRC" && GITHUB_TOKEN="${GITHUB_TOKEN:-}" docker buildx build --load \
-            --file static-builder-musl.Dockerfile \
-            --build-context "golang-base=${golang_base}" \
-            --secret id=github-token,env=GITHUB_TOKEN \
-            --tag "${image}" \
-            --platform "linux/${TARGETARCH}" \
-            ${network[@]+"${network[@]}"} \
-            --build-arg "FRANKENPHP_VERSION=${FRANKENPHP_VERSION}" \
-            --build-arg "PHP_VERSION=${PHP_VERSION}" \
-            --build-arg "PHP_EXTENSIONS=${extensions}" \
-            --build-arg "PHP_EXTENSION_LIBS=${EXTENSION_LIBS}" \
-            --build-arg "XCADDY_ARGS=${CADDY_MODULES[*]}" \
-            --build-arg "COMPRESS=${COMPRESS}" \
-            --build-arg "DEBUG_SYMBOLS=${DEBUG_SYMBOLS}" \
-            . ); then
+        if docker start --attach "$container"; then
             break
         fi
         if [ "$attempt" -ge "$attempts" ]; then
-            printf 'the image did not build in %s attempts\n' "$attempts" >&2
+            printf 'the binary did not build in %s attempts\n' "$attempts" >&2
             exit 1
         fi
-        printf 'build attempt %s of %s failed; retrying from the last step that succeeded\n' "$attempt" "$attempts" >&2
+        printf 'build attempt %s of %s failed; retrying in the same container, which keeps its downloads\n' "$attempt" "$attempts" >&2
         sleep 15
     done
 
     mkdir -p "$OUTPUT"
-    local container
-    container="$(docker create "$image")"
     docker cp "$container:/go/src/app/dist/frankenphp-linux-${TARGETARCH}" "$OUTPUT/yeswiki-linux-${TARGETARCH}"
-    docker rm "$container" >/dev/null
 
     chmod +x "$OUTPUT/yeswiki-linux-${TARGETARCH}"
 

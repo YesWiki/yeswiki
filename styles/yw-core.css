@@ -259,12 +259,6 @@ body.nav-up {
 
 html {
   font-size: var(--yw-font-size-base) !important;
-  /*
-   * Deep enough to clear the floating page actions, not just the bar.
-   * `.yw-page-actions` is fixed under the top bar and one button tall when it is not hovered, so
-   * scrolling a control to the top of the viewport used to park it underneath them -- and a click
-   * aimed at the control reached the floating edit button instead.
-   */
   scroll-padding-top: calc(max(var(--yw-navbar-height), 4rem) + 4rem);
 }
 
@@ -413,8 +407,6 @@ h6 {
   align-items: stretch;
   text-align: left;
 }
-
-/* Clearing whichever sits lower: the pencil hanging under the bar, or the banner. */
 
 body:has(#yw-topnav .yw-chrome-edit) .yw-page-actions {
   top: max(
@@ -691,12 +683,6 @@ body:has(#yw-topnav .yw-chrome-edit) .yw-page-actions {
   border: none;
 }
 
-/**
- * The viewer's own controls -- Colour scheme and language -- docked in the bottom corner
- * instead of sitting in the bar: what a page's author arranged is one thing, what its
- * reader chooses is another. Each opens upward, because downward is off the window.
- */
-
 .yw-corner-tools {
   position: fixed;
   left: var(--yw-space-md-x);
@@ -742,8 +728,6 @@ body:has(#yw-topnav .yw-chrome-edit) .yw-page-actions {
   background: var(--yw-surface-hover);
 }
 
-/* Named twice over, and restated below: the generic menu rules are as specific and come later. */
-
 .yw-corner-tools__menu.yw-dropdown__menu {
   top: auto;
   bottom: calc(100% + var(--yw-space-sm-y));
@@ -782,8 +766,6 @@ body:has(#yw-topnav .yw-chrome-edit) .yw-page-actions {
   color: var(--yw-on-primary);
   background: var(--yw-primary);
 }
-
-/* An option names itself here: a menu is read, not recognised by its glyph alone. */
 
 .yw-corner-tools__menu .yw-switcher__label {
   position: static;
@@ -890,12 +872,6 @@ body:has(#yw-topnav .yw-chrome-edit) .yw-page-actions {
   top: 0;
 }
 
-/**
- * The main menu as a column down one side, chosen on the Layout screen and stated by the
- * squelette as `data-yw-navbar` on the root element. Narrow screens keep the bar: a fixed
- * column would eat the width the content needs.
- */
-
 :root[data-yw-navbar='left'],
 :root[data-yw-navbar='right'] {
   --yw-navbar-width: 15rem;
@@ -928,11 +904,6 @@ body:has(#yw-topnav .yw-chrome-edit) .yw-page-actions {
     border-left: var(--yw-border-width) solid var(--yw-navbar-border);
   }
 
-  /**
-   * A banner asked for before the menu runs the whole width of the page: it steps back out of
-   * the room the container reserves for the column, and the column starts under it.
-   */
-
   :root[data-yw-navbar='left'][data-yw-header='before'] #yw-header {
     margin-left: calc(-1 * var(--yw-navbar-width));
   }
@@ -940,8 +911,6 @@ body:has(#yw-topnav .yw-chrome-edit) .yw-page-actions {
   :root[data-yw-navbar='right'][data-yw-header='before'] #yw-header {
     margin-right: calc(-1 * var(--yw-navbar-width));
   }
-
-  /* Having stepped out of that room, a full-bleed section inside it bleeds to the window. */
 
   :root[data-yw-navbar='left'][data-yw-header='before'] #yw-header,
   :root[data-yw-navbar='right'][data-yw-header='before'] #yw-header {
@@ -1026,8 +995,6 @@ body:has(#yw-topnav .yw-chrome-edit) .yw-page-actions {
     right: var(--yw-navbar-width);
   }
 
-  /* The screens that dock a rail of their own: it starts where the column ends. */
-
   :root[data-yw-navbar='left'] .yw-dashboard__sidebar {
     left: var(--yw-navbar-width);
   }
@@ -1040,8 +1007,6 @@ body:has(#yw-topnav .yw-chrome-edit) .yw-page-actions {
     right: var(--yw-navbar-width);
   }
 }
-
-/* A menu down one side owns the corner, so the reader's controls step clear of it. */
 
 @media (min-width: 768px) {
   :root[data-yw-navbar='left'] .yw-corner-tools {
@@ -1597,10 +1562,6 @@ section.with-bg-image > * {
 .comment-reponses .yw-comment {
   margin: var(--yw-space-md-y) 0;
 }
-
-/* Multilingual content hides the other languages; an element that NAMES one is marked and survives. */
-
-/* One pair per language in LanguageService::SUPPORTED_LANGUAGES, which a test pins. */
 
 html[lang='ca']
   [lang]:not([lang='ca']):not(.yw-switcher__option):not([data-yw-lang-label]),
@@ -2645,12 +2606,6 @@ blockquote > cite {
   top: var(--yw-rail-top);
   border-radius: var(--yw-radius-md) 0 0 var(--yw-radius-md);
   right: 0;
-  /*
-   * Above the page's own floating actions (90) and the chrome pencil (91), below the modals.
-   * The rail is pinned to the same right edge they are, so at 10 they sat on top of its header
-   * and swallowed the clicks meant for its close button -- while the rail is open, it is what
-   * the reader is doing and the page's floating buttons are not.
-   */
   z-index: 95;
   box-sizing: border-box;
   width: var(--yw-rail-width);
@@ -4188,11 +4143,6 @@ progress.yw-progressbar::-moz-progress-bar {
   text-align: center;
 }
 
-/**
- * A heading states its own alignment, from its Preset, which would otherwise ignore the
- * alignment the container asks for -- a centred section with left-aligned titles in it.
- */
-
 .text-center :is(h1, h2, h3, h4, h5, h6),
 .text-left :is(h1, h2, h3, h4, h5, h6),
 .text-right :is(h1, h2, h3, h4, h5, h6),
@@ -4288,6 +4238,12 @@ progress.yw-progressbar::-moz-progress-bar {
 .input-group > .form-control {
   flex: 1;
   min-width: 0;
+}
+
+.ajax-mail-form .yw-input {
+  flex: 1;
+  min-width: 0;
+  max-width: none;
 }
 
 .input-group-addon,
@@ -4863,8 +4819,6 @@ figcaption *:last-child {
   }
 }
 
-/** Holds a {{section}} animation until yw-core.js sees it scroll into view. */
-
 .yw-animate.animate__animated {
   animation-play-state: paused;
 }
@@ -4879,8 +4833,6 @@ figcaption *:last-child {
     animation: none !important;
   }
 }
-
-/* QR scanning and the multimedia player. */
 
 @keyframes pbLoaderFrames {
   50% {
@@ -5118,8 +5070,6 @@ figcaption *:last-child {
   with: 100%;
   display: block;
 }
-
-/* A guided access list: who, then which members (templates/_acl-picker.twig). */
 
 .yw-acl__audience,
 .yw-acl__members {

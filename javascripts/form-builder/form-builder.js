@@ -468,7 +468,10 @@ function addFromPalette(type, index = fields.length) {
   } else {
     added.push(makeField(type))
   }
-  fields.splice(index, 0, ...added)
+  const companions = (config.companions || [])
+    .filter(({ name }) => !fields.some((field) => field.data.name === name))
+    .map(({ type: companionType, ...data }) => makeField(companionType, data))
+  fields.splice(index, 0, ...companions, ...added)
   syncToTextarea()
   renderCanvas()
   selectField(added[0].id)

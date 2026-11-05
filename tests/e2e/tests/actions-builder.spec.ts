@@ -2,7 +2,12 @@ import { test, expect, Page } from '@playwright/test'
 import { resetEnv } from '../helpers/db'
 import { attachConsole, watchConsole } from '../helpers/console'
 import { ADMIN_PASSWORD, ADMIN_USERNAME, login } from '../helpers/login'
-import { editorReady, editorText, openEditorWith } from '../helpers/editor'
+import {
+  editorReady,
+  editorText,
+  openEditorWith,
+  useSourceEditor,
+} from '../helpers/editor'
 import {
   clickText,
   components,
@@ -394,4 +399,26 @@ test('a bazar entry form gets the same rail', async ({ page }) => {
   await expect(page.locator('.yw-designer__canvas')).toHaveCount(1)
   await expect(page.locator(PANEL)).toHaveCount(1)
   await expect(page.locator(`form.bazar-form ${PANEL}`)).toHaveCount(0)
+})
+
+/** The rail writes 400ms after a key: that write must not reopen the rail on the text it just replaced. */
+test('the source editor keeps every key typed into the rail, pauses included', async ({
+  page,
+}) => {
+  await login(page, ADMIN_USERNAME, ADMIN_PASSWORD)
+  await useSourceEditor(page)
+  await openEditor(page)
+  await page.locator('.ace_content').click()
+  await page.locator('.open-actions-builder-btn').first().click()
+  await pickFromPalette(page, 'Bouton')
+  await expect.poll(() => editorText(page)).toMatch(/\{\{button/)
+
+  const name = `${SETTINGS} input[type="text"]`
+  await page.locator(name).first().click()
+  await page.keyboard.press('End')
+  const typed = 'un nom long'
+  await page.keyboard.type(typed, { delay: 450 })
+
+  await expect(page.locator(name).first()).toHaveValue(new RegExp(`${typed}$`))
+  await expect.poll(() => editorText(page)).toContain(`${typed}"`)
 })

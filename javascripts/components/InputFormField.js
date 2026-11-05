@@ -1,4 +1,5 @@
 import InputHelper from './InputHelper.js'
+import revealDropdown from './revealDropdown.js'
 
 export default {
   props: ['value', 'config', 'selectedForms'],
@@ -40,6 +41,7 @@ export default {
     },
   },
   methods: {
+    revealDropdown,
     /** Match the value against the fields on offer -- but only once there ARE fields. */
     selectWhatTheValueNames() {
       if (this.fieldOptions.length === 0) return
@@ -64,7 +66,7 @@ export default {
     <div class="yw-form-group" :class="config.type" :title="config.hint" >
       <label v-if="config.label" class="yw-form-label">{{ config.label }}</label>
       
-      <v-select v-if="config.multiple" v-model="fields" :options="fieldOptions" label="id" :multiple="true">
+      <v-select v-if="config.multiple" v-model="fields" :options="fieldOptions" label="id" :multiple="true" @open="revealDropdown">
         <template v-slot:option="option">
           <span v-html="option.label"></span> - {{ option.id }}
         </template>

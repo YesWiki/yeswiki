@@ -1130,6 +1130,10 @@ input[type='range'] {
   margin-bottom: var(--yw-space-lg-y);
 }
 
+#actions-builder-panel .vs__dropdown-menu {
+  position: static;
+}
+
 .config-panel-content {
   display: grid;
   grid-template-columns: repeat(6, minmax(0, 1fr));
@@ -1647,7 +1651,6 @@ input[type='range'] {
   white-space: pre-wrap;
 }
 
-/* Visual query builder (entrylist `query` setting) */
 .query-builder__tabs {
   display: flex;
   gap: 0.25rem;

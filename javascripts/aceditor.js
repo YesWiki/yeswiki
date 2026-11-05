@@ -36,7 +36,6 @@ class Aceditor {
   editor
   linkPanel
   filePicker
-  cursorDrivesRails = false
 
   constructor(container) {
     this.container = container
@@ -300,7 +299,7 @@ class Aceditor {
 
   /** The rails follow the cursor: one opens on whatever the cursor moves into -- a component, a link -- swaps to the next one, and closes when the cursor leaves for ordinary text. */
   syncRailsWithCursor(cursor) {
-    if (!this.cursorDrivesRails) return
+    if (!this.editor.ace.isFocused()) return
     if (
       this.actionsBuilder.isPlacingNewAction ||
       this.linkPanel.isPlacingNewLink ||
@@ -340,9 +339,6 @@ class Aceditor {
   }
 
   initEditionHelpers() {
-    this.editor.on('focus', () => {
-      this.cursorDrivesRails = true
-    })
     this.editor.onCursorChange((cursor) => {
       this.editor.disableAutocompletion()
       this.syncRailsWithCursor(cursor)

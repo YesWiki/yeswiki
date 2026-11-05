@@ -364,3 +364,25 @@ test('a list of cards can be told to open its entries in a pop-up', async ({
   await attachConsole(watcher, testInfo)
   expect(watcher.errors(), 'the browser reported errors').toEqual([])
 })
+
+test('the form picker at the bottom of the rail opens where it can be seen', async ({
+  page,
+}) => {
+  await login(page, ADMIN_USERNAME, ADMIN_PASSWORD)
+  await page.goto('/?PagePrincipale/edit')
+  await editorReady(page)
+
+  await toolbarButton(page, 'yw-component').click()
+  await page.locator(`${PANEL} input[type="text"]`).first().fill('création')
+  await page
+    .locator(`${PANEL} .actions-builder-panel__component`)
+    .first()
+    .click()
+  await expect(page.locator(SETTINGS)).toBeVisible()
+
+  await formPicker(page).locator('.vs__dropdown-toggle').click()
+
+  await expect(page.locator('.vs__dropdown-option').last()).toBeInViewport({
+    ratio: 1,
+  })
+})

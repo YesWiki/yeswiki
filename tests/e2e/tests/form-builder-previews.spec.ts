@@ -3,15 +3,7 @@ import { resetEnv } from '../helpers/db'
 import { attachConsole, watchConsole } from '../helpers/console'
 import { ADMIN_PASSWORD, ADMIN_USERNAME, login } from '../helpers/login'
 
-/**
- * The form designer's live previews, which are what ticket 14 was really about.
- *
- * Ticket 14 replaced the request-wide asset globals with a registry a render declares into,
- * and `POST /api/forms/preview` is the hardest case it has: a preview arrives by htmx into a
- * page that is already built, so whatever it needs has to arrive with it, once, and has to
- * keep working when a sibling preview is thrown away. None of that is visible to phpunit or
- * to eslint, so the ticket carried a manual checklist instead. This is that checklist.
- */
+/** The form designer's live previews, each asset arriving once with the preview that needs it. */
 
 test.beforeEach(async () => {
   resetEnv()
@@ -55,8 +47,6 @@ test('a map field previews as a map you could pan', async ({
 
   const map = page.locator('.yw-fb__card-preview .leaflet-container')
   await expect(map).toBeVisible()
-  // `.leaflet-container` is on the div before leaflet touches it; the panes only exist once
-  // leaflet has run, which is the difference between a preview and a grey box.
   await expect(map.locator('.leaflet-pane')).not.toHaveCount(0)
   await expect
     .poll(() => map.evaluate((el) => getComputedStyle(el).overflow))
@@ -78,9 +68,6 @@ test('a second map field does not fetch leaflet a second time', async ({
   await expect(page.locator('.leaflet-container')).toHaveCount(2)
   await previewsSettled(page)
 
-  // The registry deduplicates by resolved URL, so the second preview declares the same
-  // assets and the page ends up with one of each. Loading leaflet twice would re-enter its
-  // module and is how the old accumulate-into-a-global mechanism failed.
   expect(await assetCount(page, 'leaflet/leaflet.min.js')).toBe(1)
   expect(await assetCount(page, 'leaflet/leaflet.css')).toBe(1)
   expect(await assetCount(page, 'leaflet-providers')).toBe(1)
@@ -96,13 +83,15 @@ test('deleting one map leaves the other mounted and styled', async ({
   await expect(page.locator('.leaflet-container')).toHaveCount(2)
   await previewsSettled(page)
 
-  // The card added first, which is the one after the locked title field.
-  await cards(page).nth(1).locator('[data-fb-action="delete"]').click()
+  await cards(page)
+    .filter({ has: page.locator('.leaflet-container') })
+    .first()
+    .locator('[data-fb-action="delete"]')
+    .click()
 
   await expect(page.locator('.leaflet-container')).toHaveCount(1)
   const survivor = page.locator('.leaflet-container')
   await expect(survivor.locator('.leaflet-pane')).not.toHaveCount(0)
-  // Removing a preview must not take the stylesheet its sibling is still using with it.
   expect(await assetCount(page, 'leaflet/leaflet.css')).toBe(1)
   await expect
     .poll(() => survivor.evaluate((el) => getComputedStyle(el).overflow))
@@ -156,8 +145,6 @@ test('a field with nothing to show says so instead of spinning', async ({
   const watcher = watchConsole(page)
   await openDesigner(page)
 
-  // Conditional display is logic rather than an input, so it draws nothing in a form and
-  // nothing is the right preview. What matters is that the card resolves and says why.
   await addField(page, 'conditionschecking')
   await previewsSettled(page)
 
@@ -191,4 +178,20 @@ test('a form with required checkbox, radio and map fields saves', async ({
 
   await expect(page.locator('#bazar-form-editor')).toHaveCount(0)
   expect(alerts).toEqual([])
+})
+
+test('a geolocation field brings its address field, once', async ({ page }) => {
+  await openDesigner(page)
+  const before = await cards(page).count()
+
+  await addField(page, 'map')
+  await expect(cards(page)).toHaveCount(before + 2)
+  await expect(cards(page).filter({ hasText: 'Adresse' })).not.toHaveCount(0)
+  const withAddress = await cards(page).count()
+
+  await addField(page, 'map')
+  await expect(
+    cards(page),
+    'the second map finds the address already there',
+  ).toHaveCount(withAddress + 1)
 })
