@@ -135,7 +135,6 @@ main() {
             --env "NO_PROXY=localhost,127.0.0.1")
     fi
 
-    local container
     container="$(docker create \
         --platform "linux/${TARGETARCH}" \
         --ulimit nofile=8192:8192 \
