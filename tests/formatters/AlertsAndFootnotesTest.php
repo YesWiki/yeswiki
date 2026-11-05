@@ -122,4 +122,38 @@ class AlertsAndFootnotesTest extends YesWikiTestCase
 
         $this->assertStringNotContainsString('[^note]', $html);
     }
+
+    /** French typography puts a space before the colon. */
+    public function testAFootnoteDefinitionAcceptsASpaceBeforeTheColon(): void
+    {
+        $html = $this->format("Texte[^1].\n\n[^1] : La note.");
+
+        $this->assertMatchesRegularExpression('/id="fn:1"/', $html);
+        $this->assertStringNotContainsString('[^1]', $html);
+    }
+
+    public function testAFootnoteDefinitionCanFollowAParagraphWithoutABlankLine(): void
+    {
+        $html = $this->format("Texte[^1].\n\nDernière ligne.\n[^1]: La note.");
+
+        $this->assertMatchesRegularExpression('/id="fn:1"/', $html);
+        $this->assertStringContainsString('<p>Dernière ligne.</p>', $html);
+        $this->assertStringNotContainsString('[^1]', $html);
+    }
+
+    public function testAHardBreakBeforeAFootnoteDefinitionLeavesNoBackslash(): void
+    {
+        $html = $this->format("Texte[^1].\n\nDernière ligne.\\\n[^1] : La note.");
+
+        $this->assertMatchesRegularExpression('/id="fn:1"/', $html);
+        $this->assertStringNotContainsString('\\', $html);
+    }
+
+    public function testABracketedCaretInsideASentenceStaysText(): void
+    {
+        $html = $this->format('Voir la ligne [^1] : pas une note.');
+
+        $this->assertStringNotContainsString('id="fn:1"', $html);
+        $this->assertStringContainsString('[^1] : pas une note.', $html);
+    }
 }

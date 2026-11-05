@@ -20,6 +20,7 @@ use YesWiki\Kernel\Service\HtmlPurifierService;
 use YesWiki\Render\Formatter\ActionExtension;
 use YesWiki\Render\Formatter\AlertExtension;
 use YesWiki\Render\Formatter\CommentExtension;
+use YesWiki\Render\Formatter\FootnoteDefinitionExtension;
 use YesWiki\Render\Formatter\ProgressExtension;
 use YesWiki\Render\Formatter\TaskListClassExtension;
 
@@ -160,6 +161,7 @@ class MarkdownFormatterService
             $environment->addExtension(new TaskListClassExtension());
 
             $environment->addExtension(new FootnoteExtension());
+            $environment->addExtension(new FootnoteDefinitionExtension());
 
             $environment->addExtension(new AlertExtension());
             $actionRunner = $this->actionRunner;
