@@ -68,11 +68,7 @@ class MarkdownFormatterService
         );
     }
 
-    /**
-     * The headings of $text with the exact ids the rendered HTML will carry.
-     *
-     * @return list<array{level: int, id: string, title: string}>
-     */
+    /** @return list<array{level: int, id: string, title: string}> */
     public function headings(string $text): array
     {
         $document = (new MarkdownParser($this->getStructureEnvironment()))->parse($text);
@@ -101,9 +97,7 @@ class MarkdownFormatterService
         return $headings;
     }
 
-    /**
-     * Parsing-only environment: same heading configuration as the renderer, but WITHOUT ActionExtension.
-     */
+    /** Parsing-only environment. */
     private function getStructureEnvironment(): EnvironmentInterface
     {
         if ($this->structureEnvironment === null) {

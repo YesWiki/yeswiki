@@ -23,11 +23,9 @@ class YesWikiInit
 
     public string $configFile;
 
-    /**
-     * Create a new YesWikiInit instance.
-     *
-     * @param array<string, mixed> $config initial config array (empty by default)
-     */
+    public string $configHash = '';
+
+    /** @param array<string, mixed> $config initial config array (empty by default) */
     public function __construct(array $config = [])
     {
         $this->configFile = ConfigurationFileProvider::getConfigFileFromEnv();
@@ -42,11 +40,7 @@ class YesWikiInit
         }
     }
 
-    /**
-     * Guess the page and the handler called by current url.
-     *
-     * @return void
-     */
+    /** @return void */
     public function getRoute()
     {
         $this->page = '';
@@ -139,8 +133,6 @@ class YesWikiInit
     }
 
     /**
-     * Utility function to merge the multidimentionnal config array the right way.
-     *
      * @param array<array-key, mixed> $array1
      * @param array<array-key, mixed> $array2
      *
@@ -162,8 +154,6 @@ class YesWikiInit
     }
 
     /**
-     * Check in the config file exists and provide default configuration.
-     *
      * @param array<string, mixed> $yeswikiConfig initial config array (empty by default)
      *
      * @return array<string, mixed> the configuration
@@ -190,14 +180,10 @@ class YesWikiInit
             'meta_description' => '',
             'navigation_links' => 'DerniersChangements :: DerniersCommentaires :: ParametresUtilisateur',
             'pages_purge_time' => 365,
-            // ADR-0025: the Journal's two halves have different memories -- an act is a fact
-            // worth a year, a fortnight of diagnostics is all anybody reads.
+
             'journal_audit_purge_time' => 365,
             'journal_diagnostic_purge_time' => 14,
-            // Ticket 54: 'request' is the poor man's cron -- whoever loads a page once the
-            // interval has elapsed sweeps -- and 'cron' hands the sweep to
-            // `./yeswicli core:maintenance` alone. A wiki that is installed and forgotten keeps
-            // working because the default is the one that needs nothing set up.
+
             'maintenance_trigger' => 'request',
             'default_write_acl' => '*',
             'default_read_acl' => '*',
@@ -488,6 +474,7 @@ class YesWikiInit
         unset($_rewrite_mode);
 
         if (file_exists($this->configFile)) {
+            $this->configHash = (string)@md5_file($this->configFile);
             include $this->configFile;
 
             if (isset($wakkaConfig) && is_array($wakkaConfig)) {
@@ -573,20 +560,8 @@ class YesWikiInit
         return $yeswikiConfig;
     }
 
-    /**
-     * Initialize the cookie.
-     *
-     * @return string $CookiePath path to the cookie
-     */
-    /**
-     * The cookie path, and this request's session.
-     *
-     * Called once per request, not once per process: a worker outlives the visitor whose session
-     * it opened, so starting one at boot would serve every later visitor the first one's
-     * `$_SESSION` (ADR-0024, single-binary 07).
-     *
-     * @return string
-     */
+    /** @return string $CookiePath path to the cookie */
+    /** @return string */
     public function initCookies()
     {
         $urlParsed = parse_url(is_string($this->config['base_url'] ?? null) ? $this->config['base_url'] : '');
@@ -649,26 +624,13 @@ class YesWikiInit
             || !in_array(strtoupper((string)($_SERVER['REQUEST_METHOD'] ?? 'GET')), ['GET', 'HEAD'], true);
     }
 
-    /**
-     * Keys a once-constructed vendor object believes it created, seeded on every session.
-     *
-     * `Tamtamchik\SimpleFlash`'s SessionManager sets `$_SESSION['flash_messages']` in a
-     * constructor that a static facade runs once per process. Under php-fpm that is once per
-     * request; under a worker (ADR-0024) the object outlives the session it initialised, so every
-     * request after the first reads a key nothing put back.
-     *
-     * @return void
-     */
+    /** @return void */
     private function seedSessionKeysVendorSingletonsAssume()
     {
         $_SESSION['flash_messages'] ??= [];
     }
 
-    /**
-     * Start the install process.
-     *
-     * @return void
-     */
+    /** @return void */
     public function doInstall()
     {
         $controller = new \YesWiki\Admin\Controller\InstallationController($this->config, $this->configFile);

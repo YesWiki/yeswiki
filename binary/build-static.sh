@@ -3,7 +3,7 @@ set -euo pipefail
 
 repo="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
-FRANKENPHP_VERSION="${FRANKENPHP_VERSION:-1.13.1}"
+FRANKENPHP_VERSION="${FRANKENPHP_VERSION:-1.13.5}"
 PHP_VERSION="${PHP_VERSION:-8.5.12}"
 TARGETARCH="${TARGETARCH:-$(uname -m)}"
 case "${COMPRESS:-1}" in

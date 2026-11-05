@@ -1,6 +1,6 @@
 #!/bin/bash
 # Starts, stops or checks the runtime the browser suite is pointed at: fpm is already up, binary is started here.
-# Usage: bash tests/e2e/runtime.sh start|stop|running|url
+# Usage: bash tests/e2e/runtime.sh start|stop|running|crashed|url
 
 set -e
 
@@ -11,6 +11,7 @@ BINARY="${YESWIKI_TEST_BINARY:-${ROOT}/binary/dist/yeswiki-linux-$(uname -m)}"
 ADDRESS="${YESWIKI_TEST_ADDRESS:-127.0.0.1:8081}"
 PIDFILE="${YESWIKI_TEST_PIDFILE:-/tmp/yeswiki-e2e-serve.pid}"
 LOGFILE="${YESWIKI_TEST_LOGFILE:-/tmp/yeswiki-e2e-serve.log}"
+CRASHFILE="${YESWIKI_TEST_CRASHFILE:-/tmp/yeswiki-e2e-crashes.log}"
 WORKERS="${YESWIKI_TEST_WORKERS:-1}"
 
 url() {
@@ -38,6 +39,16 @@ wait_for_it() {
 
 running() {
   [ -f "$PIDFILE" ] && kill -0 "$(cat "$PIDFILE")" 2>/dev/null
+}
+
+# Succeeds when the server died without stop(), and records its last log lines in the crash file.
+crashed() {
+  [ -f "$PIDFILE" ] && ! running || return 1
+  {
+    printf '\n=== RUNTIME CRASH: %s, pid %s died without being stopped ===\n' "$RUNTIME" "$(cat "$PIDFILE")"
+    tail -30 "$LOGFILE" 2>/dev/null || true
+    printf '=== END OF RUNTIME CRASH ===\n'
+  } | tee -a "$CRASHFILE" >&2
 }
 
 start() {
@@ -75,6 +86,7 @@ case "${1:-start}" in
   start) start ;;
   stop) stop ;;
   running) running ;;
+  crashed) crashed ;;
   url) url ;;
-  *) echo "usage: runtime.sh [start|stop|running|url]" >&2; exit 1 ;;
+  *) echo "usage: runtime.sh [start|stop|running|crashed|url]" >&2; exit 1 ;;
 esac

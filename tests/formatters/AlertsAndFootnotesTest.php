@@ -8,9 +8,7 @@ use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';
 
-/**
- * Two additions to the page syntax, asked for in HedgeDoc's spelling: `:::info` callouts and `[^1]` footnotes.
- */
+/** Two additions to the page syntax, asked for in HedgeDoc's spelling. */
 class AlertsAndFootnotesTest extends YesWikiTestCase
 {
     private function format(string $markdown): string
@@ -21,9 +19,7 @@ class AlertsAndFootnotesTest extends YesWikiTestCase
         return $wiki->services->get(MarkdownFormatterService::class)->format($markdown);
     }
 
-    /**
-     * @return array<string, array{string, string}>
-     */
+    /** @return array<string, array{string, string}> */
     public static function alertTypeProvider(): array
     {
         return [
@@ -45,9 +41,7 @@ class AlertsAndFootnotesTest extends YesWikiTestCase
         $this->assertStringNotContainsString(':::', $html, 'the fences are markup, not content');
     }
 
-    /**
-     * A container, which is the whole reason for having this beside `{{panel}}`: you can put one around prose that is already written, and what is inside stays markdown.
-     */
+    /** A container, which is the whole reason for having this beside `{{panel}}`. */
     public function testWhatIsInsideIsStillMarkdown(): void
     {
         $html = $this->format(":::success\n- un\n- deux\n\n**gras**\n:::");

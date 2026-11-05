@@ -122,6 +122,9 @@ case "$RUNTIME" in
     if "${RUNTIME_SCRIPT[@]}" running; then
       SERVING=1
       "${RUNTIME_SCRIPT[@]}" stop
+    elif "${RUNTIME_SCRIPT[@]}" crashed; then
+      SERVING=1
+      "${RUNTIME_SCRIPT[@]}" stop
     fi
 
     export YESWIKI_PROGRAM_ROOT="${YESWIKI_TEST_PROGRAM_ROOT:-${INSTANCE}-program}"

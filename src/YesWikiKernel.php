@@ -59,7 +59,8 @@ class YesWikiKernel extends Kernel
         YesWikiRuntime::class,
     ];
 
-    public function __construct(YesWikiRuntime $runtime, string $environment)
+    /** @param string|null $configHash hash of the configuration $runtime loaded, so its values are never cached under a newer file's hash */
+    public function __construct(YesWikiRuntime $runtime, string $environment, private readonly ?string $configHash = null)
     {
         $this->runtime = $runtime;
 
@@ -94,7 +95,7 @@ class YesWikiKernel extends Kernel
 
         $parts = [
             self::VERSION,
-            $this->hashOf(ConfigurationFileProvider::getConfigFileFromEnv()),
+            $this->configHash ?? $this->hashOf(ConfigurationFileProvider::getConfigFileFromEnv()),
             $this->hashOf(YESWIKI_INSTANCE_DIR . '/private/.env'),
             $this->hashOf(__FILE__),
             $this->hashOf($this->getProjectDir() . '/composer.lock'),
@@ -121,11 +122,7 @@ class YesWikiKernel extends Kernel
         return $contents === false ? '' : md5($contents);
     }
 
-    /**
-     * Every extension descriptor and config, sorted, from both roots.
-     *
-     * @return list<string>
-     */
+    /** @return list<string> */
     private static function extensionDescriptors(string $projectDir): array
     {
         $found = [];
@@ -272,9 +269,7 @@ class YesWikiKernel extends Kernel
         $this->pruneOldContainers();
     }
 
-    /**
-     * Invalidate the compiled container cache when: an admin setting is saved (yeswiki.config.php is rewritten), an extension is installed/removed (extensions/ or custom/ itself gains or loses an entry), switched on or off (active_extensions, in that configuration), or reconfigured (its composer.json/config.php is rewritten).
-     */
+    /** Lists what makes the compiled container stale: the configuration, .env, environment values and extensions. */
     private function addInvalidationResources(ContainerBuilder $container): void
     {
         $container->addResource(new ConfigFileHashResource(ConfigurationFileProvider::getConfigFileFromEnv()));
@@ -291,11 +286,7 @@ class YesWikiKernel extends Kernel
         }
     }
 
-    /**
-     * Resources that change whenever the *set* of extensions changes (tool installed/removed, enabled/disabled).
-     *
-     * @return FileResource[]
-     */
+    /** @return FileResource[] */
     public static function extensionSetResources(string $projectDir): array
     {
         $resources = [];

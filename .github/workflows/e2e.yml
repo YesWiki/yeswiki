@@ -1,16 +1,6 @@
 name: Browser suite
 
-# Single-binary 06: the binary is the recommended deployment, and until now CI never ran it.
-#
-# ADR-0015's amendment set this project's precedent and its warning in one paragraph: full-text
-# indexes are built *and exercised* on all three dialects, because phpunit running SQLite only meant
-# the suite exercised a query path no real wiki used, and that is the gap that hid ticket 25's seven
-# defects. Recommending a deployment CI never runs is the same mistake with a different subject.
-#
-# The full matrix is three drivers times two runtimes and one of the runtimes takes half an hour to
-# build, so it does not run on every push. A pull request gets the cheap default; the rest runs
-# nightly and before a release. Whatever is skipped is named in the job summary -- a silent gap
-# reads as coverage.
+# Browser suite: a cheap matrix by default, the full one nightly and before a release.
 
 on:
   pull_request:
@@ -18,7 +8,6 @@ on:
   push:
     branches: [ectoplasme]
   schedule:
-    # Nightly, so the combinations a pull request skips are never more than a day stale.
     - cron: '0 3 * * *'
   release:
     types: [published]
@@ -33,7 +22,6 @@ env:
   YESWIKI_TEST_ROOT: ${{ github.workspace }}
 
 jobs:
-  # What this run decided to cover, said out loud before anything runs.
   plan:
     runs-on: ubuntu-26.04
     outputs:
@@ -127,10 +115,6 @@ jobs:
     name: ${{ matrix.driver }} / ${{ matrix.runtime }}
     runs-on: ubuntu-26.04
 
-    # On the job rather than on the step that installs the wiki, because the specs reset between
-    # themselves: `resetEnv()` runs the same `reset.sh` from inside the browser suite, in a step
-    # that had none of this set -- so a mid-suite reset fell back to the compose defaults and went
-    # looking for a host called `yeswiki-db`.
     env:
       YESWIKI_TEST_DRIVER: ${{ matrix.driver }}
       YESWIKI_TEST_RUNTIME: ${{ matrix.runtime }}
@@ -143,12 +127,8 @@ jobs:
       YESWIKI_BASE_URL: ${{ matrix.runtime == 'binary' && 'http://127.0.0.1:8081' || 'http://127.0.0.1:8080' }}
 
     strategy:
-      # Which combination a change breaks is the information this matrix exists to produce, and
-      # fail-fast throws most of it away.
       fail-fast: false
       matrix:
-        # Spelled out rather than a product with exclusions: which legs exist and which are
-        # conditional is the thing a reader of this file needs to see at a glance.
         include:
           - { driver: mysql,  runtime: fpm }
           - { driver: mysql,  runtime: binary }
@@ -234,8 +214,6 @@ jobs:
         if: steps.covered.outputs.run == 'true' && matrix.runtime == 'binary' && needs.binary.outputs.cached == 'true'
         run: bash binary/build-program.sh
 
-      # php-fpm's stand-in is PHP's built-in server, the same one phpunit.yml uses: the SAPI is the
-      # matrix PHP by construction, which installing a distro php-fpm cannot promise.
       - name: Start the fpm runtime
         if: steps.covered.outputs.run == 'true' && matrix.runtime == 'fpm'
         run: |
@@ -267,6 +245,15 @@ jobs:
         run: |
           tail -200 /tmp/yeswiki-e2e-serve.log 2>/dev/null || true
           tail -200 "${{ runner.temp }}/fpm.log" 2>/dev/null || true
+
+      - name: Report runtime crashes
+        if: always() && steps.covered.outputs.run == 'true'
+        run: |
+          [ -f /tmp/yeswiki-e2e-crashes.log ] || exit 0
+          count="$(grep -c '^=== RUNTIME CRASH' /tmp/yeswiki-e2e-crashes.log)"
+          echo "::error title=Runtime crash::the server under test crashed ${count} time(s) during this run, tests may have passed only after a restart"
+          cat /tmp/yeswiki-e2e-crashes.log
+          { echo '### Runtime crashes'; echo '```'; cat /tmp/yeswiki-e2e-crashes.log; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
 
       - uses: actions/upload-artifact@v6
         if: failure() && steps.covered.outputs.run == 'true'

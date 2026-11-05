@@ -204,9 +204,7 @@ class YesWikiRuntime
         return $service;
     }
 
-    /**
-     * @param string $name
-     */
+    /** @param string $name */
     private function getConfigValue($name, mixed $default = null): mixed
     {
         return isset($this->config[$name])
@@ -660,7 +658,7 @@ class YesWikiRuntime
     /** @return void */
     private function boot()
     {
-        $kernel = new YesWikiKernel($this, $this->environment);
+        $kernel = new YesWikiKernel($this, $this->environment, $this->init->configHash);
         $kernel->boot();
         $this->bootedCacheDir = $kernel->getCacheDir();
         $this->templatesStamp = $this->readTemplatesStamp();

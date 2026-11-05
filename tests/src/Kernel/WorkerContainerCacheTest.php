@@ -5,24 +5,13 @@ namespace YesWiki\Test\Kernel;
 use YesWiki\Core\YesWikiKernel;
 use YesWiki\Files\Service\Storage;
 use YesWiki\Kernel\Service\CacheClearer;
+use YesWiki\Kernel\Service\ConfigurationFileProvider;
 use YesWiki\Kernel\Service\EnvironmentConfiguration;
 use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';
 
-/**
- * A worker has to be able to tell that its compiled container has been deleted (ADR-0024).
- *
- * `worker.php` boots once and serves hundreds of requests, and the container it booted on resolves
- * each service by requiring a file per service. Anything that empties `cache/container` --
- * `cache:clear`, `migrate`, the browser suite's own reset -- leaves that worker unable to build
- * another service for the rest of its life, with every page failing on whichever service it
- * reaches for first. The loop asks between requests and stops instead.
- *
- * The answer is derived by reflection from the container class, so this test is what notices if
- * Symfony ever dumps it somewhere else: a null directory is a worker that never restarts, and
- * nothing else would say so.
- */
+/** A worker has to be able to tell that its compiled container has been deleted (ADR-0024). */
 class WorkerContainerCacheTest extends YesWikiTestCase
 {
     public function testABootedWikiKnowsWhereItsContainerWasDumped(): void
@@ -80,6 +69,19 @@ class WorkerContainerCacheTest extends YesWikiTestCase
             putenv($value === false ? $name : $name . '=' . $value);
             $booted->setValue($wiki, $was);
         }
+    }
+
+    /** A request that read the configuration before a save must not cache its old values under the new file's hash. */
+    public function testAContainerIsCachedUnderTheConfigurationItWasBuiltFrom(): void
+    {
+        $wiki = $this->getWiki();
+        $onDisk = new YesWikiKernel($wiki, 'test');
+        $readBeforeTheSave = new YesWikiKernel($wiki, 'test', md5('the configuration before the save'));
+        $readJustNow = new YesWikiKernel($wiki, 'test', (string)md5_file(ConfigurationFileProvider::getConfigFileFromEnv()));
+
+        $this->assertNotSame($onDisk->getCacheDir(), $readBeforeTheSave->getCacheDir());
+        $this->assertSame($onDisk->getCacheDir(), $readJustNow->getCacheDir());
+        $this->assertFalse($wiki->configurationChanged(), 'a wiki boots on the hash of what it loaded');
     }
 
     /** Twig keeps a compiled template's class in memory, so an override saved elsewhere is only seen by a fresh worker. */
