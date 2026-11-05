@@ -9,7 +9,7 @@
 
         hx-get="{{ facetForm.action }}"
 
-        hx-trigger="change from:find .filter-checkbox, yw:tags-changed"
+        hx-trigger="change[target.matches('.filter-checkbox')], yw:tags-changed"
         hx-target="#facette-container-{{ listId }}"
         hx-select="#facette-container-{{ listId }}"
         hx-swap="outerHTML"

@@ -41,6 +41,18 @@ test('checking a facet filters the list without leaving the page', async ({
   await expect(page.getByRole('checkbox').first()).toBeChecked()
 })
 
+test('every checkbox filters, not only the first of the form', async ({
+  page,
+}) => {
+  await page.goto(CARD_LIST)
+  const cards = page.locator('.yw-item')
+  await expect(cards).toHaveCount(2)
+
+  await page.getByRole('checkbox', { name: /Partenaire/ }).check()
+  await expect(cards).toHaveCount(1)
+  await expect(page).toHaveURL(/facet/)
+})
+
 test('the filtered list survives a reload', async ({ page }) => {
   await page.goto(CARD_LIST)
   await page.getByRole('checkbox').first().check()
