@@ -2,6 +2,7 @@
 
 use PHPMailer\PHPMailer\Exception;
 use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\SMTP;
 
 // sends a mail through the transport set in the contact_* config, to a lone recipient in To or in batches of bcc recipients
 function send_mail($mail_sender, $name_sender, $mail_receiver, $subject, $message_txt, $message_html = '', bool $keepSender = false)
@@ -94,6 +95,9 @@ function send_mail($mail_sender, $name_sender, $mail_receiver, $subject, $messag
 
         if (count($mail_receiver) === 1) {
             $mail->addAddress(reset($mail_receiver));
+            if ($keepSender && deliverToMailServer($mail, reset($mail_receiver))) {
+                return true;
+            }
             $mail->send();
 
             return true;
@@ -116,11 +120,56 @@ function send_mail($mail_sender, $name_sender, $mail_receiver, $subject, $messag
         return true;
     } catch (Exception $e) {
         if ($GLOBALS['wiki']->UserIsAdmin()) {
-            echo $e->errorMessage();
+            echo mailFailureMessage($mail, $e);
         }
 
         return false;
     }
+}
+
+/** Hands $mail to the recipient domain's own servers with an empty envelope, for a sender no authenticated SMTP relay would accept; returns whether one took it. */
+function deliverToMailServer(PHPMailer $mail, string $recipient, ?array $servers = null, int $port = 25): bool
+{
+    $mail->preSend();
+    foreach ($servers ?? mailServersOf(substr((string)strrchr($recipient, '@'), 1)) as $server) {
+        $smtp = new SMTP();
+        $smtp->Timeout = 10;
+        $accepted = $smtp->connect($server, $port, 10, ['ssl' => ['verify_peer' => false, 'verify_peer_name' => false]])
+            && $smtp->hello($mail->Hostname)
+            && (!$smtp->getServerExt('STARTTLS') || ($smtp->startTLS() && $smtp->hello($mail->Hostname)))
+            && $smtp->mail('')
+            && $smtp->recipient($recipient)
+            && $smtp->data($mail->getSentMIMEMessage());
+        $smtp->quit();
+        $smtp->close();
+        if ($accepted) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+/** The mail servers of $domain, preferred first. */
+function mailServersOf(string $domain): array
+{
+    $servers = [];
+    $weights = [];
+    if ($domain === '' || !getmxrr($domain, $servers, $weights)) {
+        return $domain === '' ? [] : [$domain];
+    }
+    array_multisort($weights, SORT_ASC, SORT_NUMERIC, $servers);
+
+    return $servers;
+}
+
+/** What went wrong with a send, with the SMTP server's own words when PHPMailer left them out. */
+function mailFailureMessage(PHPMailer $mail, Exception $e): string
+{
+    $message = $e->errorMessage();
+    $reply = trim($mail->getSMTPInstance()->getError()['detail'] ?? '');
+
+    return $reply === '' || str_contains($message, $reply) ? $message : $message . ' ' . htmlspecialchars($reply);
 }
 
 /** The address a mail goes out from: the wiki's contact_from when set, unless the recipient acts on the sender's own address, as a mailing list subscribing it does. */

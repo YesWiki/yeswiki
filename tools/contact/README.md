@@ -31,6 +31,10 @@ Pour les développeurs, exemple de configuration avec [Mailcatcher](https://gith
 
 ```
 
+### abonnement aux listes de diffusion
+
+Sympa abonne l'adresse du `From`, qu'un SMTP authentifié refuse quand elle n'est pas celle du compte. Ces commandes partent donc directement vers les serveurs MX du domaine de la liste, avec une enveloppe vide, et le port 25 doit être ouvert en sortie. Si cette livraison échoue, le mail repasse par le transport configuré.
+
 ### autres parametres de configuration
 
 ```php
