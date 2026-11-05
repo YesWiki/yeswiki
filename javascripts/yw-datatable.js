@@ -226,12 +226,7 @@
     })
 
     function render() {
-      const filters = window.ywDatatableRowFilters || {}
-      const customFilter = table.id ? filters[table.id] : null
-      let rows = allRows.filter(
-        (row) =>
-          rowMatches(row, searchTerm) && (!customFilter || customFilter(row)),
-      )
+      let rows = allRows.filter((row) => rowMatches(row, searchTerm))
 
       if (sortCol !== null) {
         rows = rows.slice().sort((a, b) => compareRows(a, b, sortCol, sortDir))

@@ -96,3 +96,70 @@ test('the rail of a card does not offer them', async ({ page }) => {
       .filter({ hasText: 'Colonnes du tableau' }),
   ).toBeHidden()
 })
+
+const NUMBERS = 'displayvaluesinsteadofkeys="false"'
+
+test('a table totals and averages the rows the facets leave', async ({
+  page,
+}) => {
+  await setPageContent(
+    page,
+    'TableTotaux',
+    `{{entrylist id="4" template="table" ${COLUMNS} ${NUMBERS} groups="bf_type" sumfieldsids="bf_type" averagefieldsids="bf_type"}}`,
+  )
+  const sum = page.locator('table tfoot tr', { hasText: 'Somme' })
+  const average = page.locator('table tfoot tr', { hasText: 'Moyenne' })
+
+  await expect(sum.locator('th').nth(1)).toHaveText('4')
+  await expect(average.locator('th').nth(1)).toHaveText('2')
+
+  await page.getByRole('checkbox', { name: /Partenaire/ }).check()
+  await expect(page.locator('table tbody tr:visible')).toHaveCount(1)
+  await expect(sum.locator('th').nth(1)).toHaveText('3')
+  await expect(average.locator('th').nth(1)).toHaveText('3')
+  await expect(page.locator('.results-label')).toBeVisible()
+})
+
+test('a table asked for a total only draws no average row', async ({
+  page,
+}) => {
+  await setPageContent(
+    page,
+    'TableSomme',
+    `{{entrylist id="4" template="table" ${COLUMNS} ${NUMBERS} sumfieldsids="bf_type"}}`,
+  )
+
+  await expect(page.locator('table tfoot tr')).toHaveCount(1)
+  await expect(page.locator('table tfoot th').nth(1)).toHaveText('4')
+})
+
+test('the rail offers totals and averages once a table has columns', async ({
+  page,
+}) => {
+  const setting = (label: string) =>
+    page
+      .locator(`${PANEL} .yw-form-group.form-field`)
+      .filter({ hasText: label })
+
+  await openEditorWith(page, '{{entrylist id="4" template="table"}}')
+  await components(page).first().click()
+  await expect(setting('calculer la somme')).toBeHidden()
+  await expect(setting('calculer la moyenne')).toBeHidden()
+
+  await setting('Colonnes du tableau').locator('.vs__search').click()
+  await page
+    .locator('.vs__dropdown-option', { hasText: 'Type de ressource' })
+    .first()
+    .click()
+  await expect(setting('calculer la somme')).toBeVisible()
+  await expect(setting('calculer la moyenne')).toBeVisible()
+
+  await setting('calculer la moyenne').locator('.vs__search').click()
+  await page
+    .locator('.vs__dropdown-option', { hasText: 'Type de ressource' })
+    .first()
+    .click()
+  await expect
+    .poll(() => editorText(page), { message: 'the average is written' })
+    .toContain('averagefieldsids="bf_type"')
+})

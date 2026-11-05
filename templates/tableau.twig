@@ -9,7 +9,7 @@
             {{ multidelete.insertSelectAll('entry-list-'~ params.listindex,'top') }}
           {% endif %}
       {% for index,info in columnsInfo %}
-        <th{{ (info.propertyName in sumFieldsIds) ? ' class="sum-activated"' : ''}}
+        <th class="{{ (info.propertyName in sumFieldsIds) ? 'sum-activated' : '' }} {{ (info.propertyName in averageFieldsIds) ? 'average-activated' : '' }}"
           {% if columnswidth[info.propertyName] is not empty %}
             data-width="{{ columnswidth[info.propertyName] }}"
           {% elseif params.defaultcolumnwidth is not empty %}
@@ -150,10 +150,11 @@
         {% endif %}
       </tr>
     {% endfor %}
-    {% if sumFieldsIds is not empty or displayadmincol %}
-
-      <tfoot>
-        <tr>
+  </tbody>
+  {% if sumFieldsIds is not empty or averageFieldsIds is not empty or displayadmincol %}
+    <tfoot>
+      {% if sumFieldsIds is not empty or displayadmincol %}
+        <tr data-yw-footer="sum">
           {% if displayadmincol %}
             {{ multidelete.insertSelectAll('entry-list-'~ params.listindex,'bottom') }}
           {% endif %}
@@ -168,9 +169,22 @@
             <th class="not-export-this-col"></th>
           {% endif %}
         </tr>
-      </tfoot>
-    {% endif %}
-  </tbody>
+      {% endif %}
+      {% if averageFieldsIds is not empty %}
+        <tr data-yw-footer="average">
+          {% if displayadmincol %}
+            <th class="not-export-this-col"></th>
+          {% endif %}
+          {% for index,info in columnsInfo %}
+            <th>{{ loop.first and (info.propertyName not in averageFieldsIds) ? _t('AVERAGE'):''}}</th>
+          {% endfor %}
+          {% if displayadmincol %}
+            <th class="not-export-this-col"></th>
+          {% endif %}
+        </tr>
+      {% endif %}
+    </tfoot>
+  {% endif %}
 </table>
 {% if displayadmincol %}
             {{ multidelete.insertButton('entry-list-'~ params.listindex,'pages') }}

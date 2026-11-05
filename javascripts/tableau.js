@@ -1,107 +1,66 @@
 const TableHelper = {
-  tables: [],
-  checkedFilters: {},
-  findEntryListFiltersContainer(table) {
+  findEntryListFilters(table) {
     const entryList = table.closest('.entry-list')
     if (!entryList || !entryList.parentElement) return null
     if (!entryList.parentElement.classList.contains('results-col')) return null
     const columns = entryList.parentElement.parentElement
-    const filtersCol = columns ? columns.querySelector('.filters-col') : null
-    return filtersCol ? filtersCol.querySelector('.filters') : null
-  },
-  updateCheckedFilters() {
-    const res = {}
-    this.tables.forEach((table) => {
-      const filterContainer = this.findEntryListFiltersContainer(table)
-      const tableFilters = {}
-      if (filterContainer) {
-        filterContainer
-          .querySelectorAll('.filter-checkbox:checked')
-          .forEach((input) => {
-            const name = input.getAttribute('name')
-            const value = input.getAttribute('value')
-            if (!tableFilters[name]) tableFilters[name] = []
-            tableFilters[name].push(value)
-          })
-      }
-      res[table.id] = tableFilters
-    })
-    this.checkedFilters = res
-  },
-  rowMatchesFilters(table, row) {
-    const checked = this.checkedFilters[table.id] || {}
-    return Object.keys(checked).every((name) => {
-      if (checked[name].length === 0) return true
-      const rowValue = row.getAttribute(`data-${name}`)
-      if (!rowValue || rowValue.length === 0) return false
-      const values = rowValue.split(',')
-      return checked[name].some((wanted) => values.indexOf(wanted) > -1)
-    })
+    return columns ? columns.querySelector('.filters-col .filters') : null
   },
   updateNBResults(table, nbResults) {
-    const filterContainer = this.findEntryListFiltersContainer(table)
-    if (!filterContainer) return
-    const nbResultInfoNode = filterContainer.querySelector('.nb-results')
-    if (!nbResultInfoNode) return
-    nbResultInfoNode.textContent = nbResults
-    const single = filterContainer.querySelectorAll('.result-label')
-    const plural = filterContainer.querySelectorAll('.results-label')
-    single.forEach((elParam) => {
-      const el = elParam
-      el.style.display = nbResults > 1 ? 'none' : ''
-    })
-    plural.forEach((elParam) => {
-      const el = elParam
-      el.style.display = nbResults > 1 ? '' : 'none'
-    })
+    const filters = this.findEntryListFilters(table)
+    const node = filters ? filters.querySelector('.nb-results') : null
+    if (node) node.textContent = nbResults
   },
-  sanitizeValue(val) {
-    return Number.isNaN(Number(val)) ? 1 : Number(val)
+  cellText(row, index) {
+    const cell = row.cells[index]
+    return (cell ? cell.textContent.trim() : '').replace(',', '.')
   },
-  updateFooter(table, matchedRows) {
-    const headerCells = table.tHead ? Array.from(table.tHead.rows[0].cells) : []
-    const footerRow = table.tFoot ? table.tFoot.rows[0] : null
+  sum(matchedRows, index) {
+    const total = matchedRows.reduce((acc, row) => {
+      const value = Number(this.cellText(row, index))
+      return acc + (Number.isNaN(value) ? 1 : value)
+    }, 0)
+    return Number(total.toFixed(10))
+  },
+  average(matchedRows, index) {
+    const values = matchedRows
+      .map((row) => this.cellText(row, index))
+      .filter((text) => text !== '' && !Number.isNaN(Number(text)))
+      .map(Number)
+    if (values.length === 0) return ''
+    const total = values.reduce((acc, value) => acc + value, 0)
+    return Math.round((total / values.length) * 100) / 100
+  },
+  fillFooterRow(table, rowName, headerClass, compute, matchedRows) {
+    const footerRow = table.tFoot.querySelector(`[data-yw-footer="${rowName}"]`)
     if (!footerRow) return
-    headerCells.forEach((th, index) => {
-      if (!th.classList.contains('sum-activated')) return
-      let sum = 0
-      matchedRows.forEach((row) => {
-        const cell = row.cells[index]
-        sum += this.sanitizeValue(cell ? cell.textContent.trim() : '')
-      })
+    Array.from(table.tHead.rows[0].cells).forEach((th, index) => {
       const footerCell = footerRow.cells[index]
-      if (footerCell) footerCell.textContent = sum
-    })
-  },
-  refreshTables() {
-    this.updateCheckedFilters()
-    this.tables.forEach((table) => {
-      table.dispatchEvent(new CustomEvent('yw-datatable-refresh'))
-    })
-  },
-  init() {
-    this.tables = Array.from(
-      document.querySelectorAll('table.in-tableau-template'),
-    )
-    if (this.tables.length === 0) return
-    window.ywDatatableRowFilters = window.ywDatatableRowFilters || {}
-    this.tables.forEach((table) => {
-      window.ywDatatableRowFilters[table.id] = (row) =>
-        this.rowMatchesFilters(table, row)
-      table.addEventListener('yw-datatable-drawn', (e) => {
-        this.updateNBResults(table, e.detail.matchedRows.length)
-        this.updateFooter(table, e.detail.matchedRows)
-      })
-    })
-    document.addEventListener('click', (e) => {
-      if (e.target.closest('.filter-checkbox')) {
-        this.refreshTables()
+      if (th.classList.contains(headerClass) && footerCell) {
+        footerCell.textContent = compute(matchedRows, index)
       }
     })
-    this.refreshTables()
+  },
+  updateFooter(table, matchedRows) {
+    if (!table.tHead || !table.tFoot) return
+    const sum = this.sum.bind(this)
+    const average = this.average.bind(this)
+    this.fillFooterRow(table, 'sum', 'sum-activated', sum, matchedRows)
+    this.fillFooterRow(
+      table,
+      'average',
+      'average-activated',
+      average,
+      matchedRows,
+    )
+  },
+  init(table) {
+    table.addEventListener('yw-datatable-drawn', (e) => {
+      this.updateNBResults(table, e.detail.matchedRows.length)
+      this.updateFooter(table, e.detail.matchedRows)
+    })
+    table.dispatchEvent(new CustomEvent('yw-datatable-refresh'))
   },
 }
 
-ywInitEach('.yeswiki-tableau, table.tableau', () => {
-  TableHelper.init()
-})
+ywInitEach('table.in-tableau-template', (table) => TableHelper.init(table))

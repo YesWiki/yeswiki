@@ -107,6 +107,20 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
                 ->multiple()
                 ->extraFields(['form_id', 'created_at', 'updated_at', 'url'])
                 ->onlyFor(['presentation-table']),
+            Setting::formField('sumfieldsids')
+                ->label(_t('AB_bazartableau_sumfieldsids_label'))
+                ->hint(_t('AB_bazartableau_sumfieldsids_hint'))
+                ->default('')
+                ->multiple()
+                ->onlyFor(['presentation-table'])
+                ->showIf(['columnfieldsids' => 'notNull']),
+            Setting::formField('averagefieldsids')
+                ->label(_t('AB_bazartableau_averagefieldsids_label'))
+                ->hint(_t('AB_bazartableau_sumfieldsids_hint'))
+                ->default('')
+                ->multiple()
+                ->onlyFor(['presentation-table'])
+                ->showIf(['columnfieldsids' => 'notNull']),
             Setting::fieldMapping('displayfields')
                 ->subSettings(
                     Setting::formField('title')
@@ -932,6 +946,11 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
                         ->checkedValues('true', 'false'),
                     Setting::formField('sumfieldsids')
                         ->label(_t('AB_bazartableau_sumfieldsids_label'))
+                        ->hint(_t('AB_bazartableau_sumfieldsids_hint'))
+                        ->default('')
+                        ->multiple(),
+                    Setting::formField('averagefieldsids')
+                        ->label(_t('AB_bazartableau_averagefieldsids_label'))
                         ->hint(_t('AB_bazartableau_sumfieldsids_hint'))
                         ->default('')
                         ->multiple(),
@@ -1805,6 +1824,7 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
         /** @var array<mixed> $optionsIfDisplayvaluesinsteadofkeys */
         $optionsIfDisplayvaluesinsteadofkeys = [];
         $sumFieldsIds = [];
+        $averageFieldsIds = [];
 
         if (count($entries) > 0) {
             $formId = $entries[array_key_first($entries)]['form_id'] ?? null;
@@ -1813,7 +1833,7 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
                 $fields = $form['prepared'];
 
                 $listParams = [];
-                foreach (['columntitles', 'columnfieldsids', 'sumfieldsids'] as $paramKey) {
+                foreach (['columntitles', 'columnfieldsids', 'sumfieldsids', 'averagefieldsids'] as $paramKey) {
                     $tmp = (isset($params[$paramKey]) && is_string($params[$paramKey])) ? $params[$paramKey] : '';
                     $listParams[$paramKey] = array_filter(
                         array_map('trim', explode(',', trim($tmp))),
@@ -1825,6 +1845,7 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
                 $columnTitlesNames = $listParams['columntitles'];
                 $columnFieldsIdsRaw = $listParams['columnfieldsids'];
                 $sumFieldsIds = $listParams['sumfieldsids'];
+                $averageFieldsIds = $listParams['averagefieldsids'];
 
                 $checkboxFieldsInColumns = $params['checkboxfieldsincolumns'] ?? null;
                 $checkboxFieldsInColumns = !in_array($checkboxFieldsInColumns, ['0', 0, false, 'false', 'non'], true);
@@ -1964,6 +1985,7 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
             'titleFieldName' => $this->getService(FormPropertiesService::class)->titleFieldName($form ?? null),
             'entries' => $entries,
             'sumFieldsIds' => $sumFieldsIds,
+            'averageFieldsIds' => $averageFieldsIds,
             'displayadmincol' => $sanitizedParams['displayadmincol'] ?? null,
             'displayvaluesinsteadofkeys' => $sanitizedParams['displayvaluesinsteadofkeys'] ?? null,
             'optionsIfDisplayvaluesinsteadofkeys' => $optionsIfDisplayvaluesinsteadofkeys,

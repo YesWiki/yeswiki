@@ -1387,6 +1387,7 @@ Zalantzarik izanez gero, ireki inprimaki hau orrialde propio batean esteka honet
     'AB_bazartableau_displayvaluesinsteadofkeys_label' => 'Erakutsi balioak gakoen ordez',
     'AB_bazartableau_sumfieldsids_label' => 'Batura kalkulatzeko eremuak',
     'AB_bazartableau_sumfieldsids_hint' => 'Hutsik = bat ere ez',
+    'AB_bazartableau_averagefieldsids_label' => 'Batez bestekoa kalkulatzeko eremuak',
     'AB_bazartableau_displayadmincol_label' => 'Erakutsi administrazio-botoiak',
     'AB_bazartableau_displayadmincol_hint' => 'Aldatu/ezabatu',
     'AB_bazartableau_displayadmincol_onlyadmins' => 'Administratzaileentzat bakarrik',
@@ -2657,6 +2658,7 @@ Zutabearen testua, gero aldatzeko
     'BAZ_USER_FIELD_EXISTING_USER_BY_NAME' => '"{currentName}" identifikatzailea dagoeneko existitzen da! 
 Hautatu kontrol-laukia "{proposedName}"(r)ekin ordezkatzeko, edo, bestela, aldatu zure identifikatzailea inprimaki honetan.',
     'SUM' => 'Batura',
+    'AVERAGE' => 'Batez bestekoa',
     'EVENT_UP_TO_DATE' => 'Noiz arte:',
     'EVENT_REPETITION_FOR_YEARS' => '%{x} urtean behin, %{monthRepetition}',
     'EVENT_FIRST_Y_OF_MONTH' => 'Hileko lehen Y-a',
