@@ -72,6 +72,7 @@ class SectionAction extends YesWikiAction
 
         ob_start();
         $file = $this->arguments['file'] ?? '';
+        $height = $this->arguments['height'] ?? '';
         $backgroundimg = true;
         if (empty($file) && empty($bgcolor)) {
             $bgcolor = false;
@@ -90,7 +91,6 @@ class SectionAction extends YesWikiAction
 
                 return;
             }
-            $height = $this->arguments['height'] ?? '';
             $width = $this->arguments['width'] ?? '';
             if (empty($width)) {
                 $width = 1920;
@@ -124,7 +124,7 @@ class SectionAction extends YesWikiAction
 
             echo '<!-- start of section -->
     <section' . (!empty($id) ? ' id="' . $id . '"' : '') . ' class="' . $class . '" data-file="' . $file . '" style="'
-                . (!empty($bgcolor) ? 'background-color:' . $bgcolor . '; ' : '')
+                . (!empty($bgcolor) && !$patternborder ? 'background-color:' . $bgcolor . '; ' : '')
                 . (!empty($height) ? 'height:' . $height . 'px; ' : '')
                 . (!empty($pattern) ? $pattern : '')
                 . (isset($fullFilename) ? 'background-image:url(' . $fullFilename . ');' : '') . '"'
