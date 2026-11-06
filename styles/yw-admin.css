@@ -2793,3 +2793,20 @@ body > button.primary {
   flex: 1;
   min-width: 10em;
 }
+
+.yw-templates__fields {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--yw-space-sm-y) var(--yw-space-sm-x);
+  margin-bottom: var(--yw-space-md-y);
+}
+
+.yw-templates__fields select {
+  width: auto;
+}
+
+.yw-templates__fields .yw-alert {
+  flex-basis: 100%;
+  margin: 0;
+}

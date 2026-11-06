@@ -27,6 +27,27 @@
         <input type="hidden" name="csrf-token" value="{{ csrfToken({id: 'main', refresh: false}) }}">
         <input type="hidden" name="file" value="{{ editing }}">
 
+        {% if fieldCatalog and writable %}
+          <div class="yw-templates__fields" data-yw-template-fields="{{ fieldCatalog|json_encode }}">
+            {% if fieldCatalog.kind == 'list' %}
+              <label for="yw-template-form">{{ _t('ADMIN_TEMPLATES_FIELDS_FORM') }}</label>
+              <select id="yw-template-form" class="yw-input">
+                {% for form in fieldCatalog.forms %}
+                  <option value="{{ form.id }}"{% if form.id == fieldCatalog.selected %} selected{% endif %}>{{ form.label }}</option>
+                {% endfor %}
+              </select>
+            {% endif %}
+            <div class="yw-dropdown yw-fb__template-fields">
+              <button type="button" class="yw-btn yw-btn--sm" data-yw-dropdown-toggle aria-haspopup="true" data-yw-fb-template-fields-toggle>
+                {{ _t('FORM_EDIT_ENTRY_TEMPLATE_INSERT_FIELD') }}
+                <b class="yw-dropdown__caret"></b>
+              </button>
+              <ul class="yw-dropdown__menu" data-yw-fb-template-fields></ul>
+            </div>
+            <p class="yw-alert yw-alert--warning" data-yw-template-fields-notice hidden></p>
+          </div>
+        {% endif %}
+
         <textarea id="yw-template-source" name="contents" class="yw-input yw-templates__editor"
                   rows="28" spellcheck="false" autocomplete="off"
                   {{ writable ? '' : 'readonly' }}>{{ contents }}</textarea>

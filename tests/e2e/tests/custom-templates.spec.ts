@@ -1,10 +1,16 @@
-import { rmSync } from 'fs'
+import { mkdirSync, rmSync, writeFileSync } from 'fs'
+import { dirname } from 'path'
 import { test, expect } from '@playwright/test'
 import { resetEnv } from '../helpers/db'
 import { instancePath } from '../helpers/instance'
 import { ADMIN_PASSWORD, ADMIN_USERNAME, login } from '../helpers/login'
 
-const PROBES = ['core/admin/keywords.twig', 'core/admin/custom-templates.twig']
+const PROBES = [
+  'core/admin/keywords.twig',
+  'core/admin/custom-templates.twig',
+  'core/fiche-1.twig',
+  'core/entries/index-dynamic-templates/picker-probe.twig',
+]
 const clearProbes = () => {
   PROBES.forEach((probe) =>
     rmSync(instancePath(`custom/templates/${probe}`), { force: true }),
@@ -219,4 +225,87 @@ test('the screen that fixes overrides renders as shipped, whatever is in custom/
   await expect(page.locator('.yw-templates__table')).toContainText(
     'core/admin/custom-templates.twig',
   )
+})
+
+const writeProbe = (probe: string, source: string) => {
+  const path = instancePath(`custom/templates/${probe}`)
+  mkdirSync(dirname(path), { recursive: true })
+  writeFileSync(path, source)
+}
+
+const openProbe = async (page, probe: string) => {
+  await login(page, ADMIN_USERNAME, ADMIN_PASSWORD)
+  await page.goto(`/?admin/custom-templates&file=${encodeURIComponent(probe)}`)
+  await expect(page.locator('.yw-templates__ace')).toBeVisible()
+}
+
+const editorText = (page) =>
+  page.evaluate(() =>
+    window['ace'].edit(document.querySelector('.yw-templates__ace')).getValue(),
+  )
+
+const pickFirstField = async (page, label: string) => {
+  await page.locator('[data-yw-fb-template-fields-toggle]').click()
+  await page
+    .locator('[data-yw-fb-template-fields] li')
+    .first()
+    .getByRole('button', { name: label, exact: true })
+    .click()
+}
+
+test('an entry template offers the fields of the form in its name', async ({
+  page,
+}) => {
+  writeProbe('core/fiche-1.twig', '<div></div>\n')
+  await openProbe(page, 'core/fiche-1.twig')
+
+  await expect(page.locator('#yw-template-form')).toHaveCount(0)
+  await pickFirstField(page, 'Valeur HTML')
+
+  expect(await editorText(page)).toContain('{{ html.bf_nom|raw }}')
+})
+
+test('a list template finds its form from what it reads, and loads what it inserts', async ({
+  page,
+}) => {
+  const probe = 'core/entries/index-dynamic-templates/picker-probe.twig'
+  writeProbe(
+    probe,
+    `{% extends "@core/entries/index-dynamic.twig" %}\n{% set necessary_fields = ['bf_prenom', 'bf_fonction'] %}\n`,
+  )
+  await openProbe(page, probe)
+
+  await expect(page.locator('#yw-template-form option:checked')).toHaveText(
+    'Annuaire',
+  )
+  await pickFirstField(page, 'Valeur brute')
+
+  const source = await editorText(page)
+  expect(source).toContain('<span v-text="entry.bf_nom"></span>')
+  expect(source).toContain("['bf_prenom', 'bf_fonction', 'bf_nom']")
+})
+
+test('a computed necessary_fields is left alone, with a word about it', async ({
+  page,
+}) => {
+  const probe = 'core/entries/index-dynamic-templates/picker-probe.twig'
+  writeProbe(
+    probe,
+    `{% extends "@core/entries/index-dynamic.twig" %}\n{% set necessary_fields = (necessary_fields|default([]))|merge(['bf_prenom']) %}\n`,
+  )
+  await openProbe(page, probe)
+  await pickFirstField(page, 'Valeur brute')
+
+  await expect(page.locator('[data-yw-template-fields-notice]')).toContainText(
+    'necessary_fields',
+  )
+})
+
+test('a template with no form behind it has no field picker', async ({
+  page,
+}) => {
+  writeProbe('core/admin/keywords.twig', '<div></div>\n')
+  await openProbe(page, 'core/admin/keywords.twig')
+
+  await expect(page.locator('[data-yw-template-fields]')).toHaveCount(0)
 })

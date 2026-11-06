@@ -12,6 +12,7 @@ use YesWiki\Admin\Api\AdminLogsApiController;
 use YesWiki\Admin\Service\Onboarding;
 use YesWiki\Content\Service\MenuManager;
 use YesWiki\Content\Service\PageManager;
+use YesWiki\Content\Service\TemplateFieldCatalog;
 use YesWiki\Content\Service\TranslationCoverage;
 use YesWiki\Core\DashboardShell;
 use YesWiki\Core\YesWikiController;
@@ -440,6 +441,7 @@ class AdminController extends YesWikiController
             'writable' => $service->isWritable(),
             'editing' => $editing,
             'contents' => $contents,
+            'fieldCatalog' => $editing === '' ? null : $this->getService(TemplateFieldCatalog::class)->forTemplate($editing, $contents),
 
             'original' => $shipped,
         ]);

@@ -2,6 +2,7 @@ import registry, { paletteEntries } from './registry.js'
 import { parseFields, resolveWikiType, serializeFields } from './converter.js'
 import { refreshDesignerData } from './fields/commons/attributes.js'
 import { editorFor } from '../editor-handles.js'
+import { fillFieldMenu, twigAccess, twigInsertions } from '../field-picker.js'
 
 let container
 let textarea
@@ -321,13 +322,6 @@ function initPresentation() {
   })
 }
 
-/** The Twig that reads one key of a template variable, whatever characters the key holds. */
-function twigAccess(variable, key) {
-  return /^[a-zA-Z_]\w*$/.test(key)
-    ? `${variable}.${key}`
-    : `${variable}['${key.replace(/'/g, "\\'")}']`
-}
-
 /** The key a field's rendered value goes by: a linked entries field stores nothing and is named after its type too. */
 const renderedKey = ({ type, data }) =>
   type === 'listefichesliees' || type === 'listefiches'
@@ -337,28 +331,12 @@ const renderedKey = ({ type, data }) =>
 const storesAValue = ({ type }) =>
   !['listefichesliees', 'listefiches'].includes(type)
 
-/** What the field picker offers for a field, as button labels and the Twig each one inserts. */
-function fieldInsertions(field) {
-  const { name } = field.data
-  return [
-    [
-      _t('FORM_EDIT_ENTRY_TEMPLATE_FIELD_LABEL'),
-      `{{ ${twigAccess('formFields', name)}.label }}`,
-    ],
-    [
-      _t('FORM_EDIT_ENTRY_TEMPLATE_FIELD_HTML'),
-      `{{ ${twigAccess('html', renderedKey(field))}|raw }}`,
-    ],
-    ...(storesAValue(field)
-      ? [
-          [
-            _t('FORM_EDIT_ENTRY_TEMPLATE_FIELD_RAW'),
-            `{{ ${twigAccess('entry', name)} }}`,
-          ],
-        ]
-      : []),
-  ]
-}
+const pickableField = (field) => ({
+  name: field.data.name,
+  label: field.data.label,
+  key: renderedKey(field),
+  stored: storesAValue(field),
+})
 
 /** The first draft of a template: markdown for the wysiwyg editor, HTML for Ace. */
 function starterTemplate(inMarkdown) {
@@ -464,27 +442,11 @@ function initEntryTemplate() {
   document
     .querySelector('[data-yw-fb-template-fields-toggle]')
     ?.addEventListener('click', () => {
-      menu.replaceChildren(
-        ...fields
-          .filter(({ data }) => data.name)
-          .map((field) => {
-            const row = document.createElement('li')
-            row.className = 'yw-fb__template-field'
-            const name = document.createElement('span')
-            name.className = 'yw-fb__template-field-name'
-            name.textContent = field.data.label || field.data.name
-            row.append(name)
-            fieldInsertions(field).forEach(([label, twig]) => {
-              const button = document.createElement('button')
-              button.type = 'button'
-              button.className = 'yw-btn yw-btn--sm'
-              button.textContent = label
-              button.title = twig
-              button.addEventListener('click', () => insertText(twig))
-              row.append(button)
-            })
-            return row
-          }),
+      fillFieldMenu(
+        menu,
+        fields.filter(({ data }) => data.name).map(pickableField),
+        twigInsertions,
+        ({ text }) => insertText(text),
       )
     })
 }
