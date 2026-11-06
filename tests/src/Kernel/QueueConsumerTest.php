@@ -882,7 +882,26 @@ class QueueConsumerTest extends YesWikiTestCase
     public function testAPassStopsTakingMessagesOncePhpsLimitThatCouldNotBeLiftedIsReached(): void
     {
         $lifts = 0;
-        $passLimits = $this->passLimitsUnderA30SecondLimit(false, $lifts, 24.5);
+        $passLimits = $this->passLimitsUnderA30SecondLimit(false, $lifts, 22.0);
+        $this->passLimits = $passLimits;
+        $this->build($this->db, new MockClock(self::START, 'UTC'));
+        $this->behaviour = static function (): void {
+            usleep(3500000);
+        };
+        $this->send(3);
+
+        $report = $this->consumer->drain(QueueConsumerMode::Request, $passLimits->forPass());
+
+        $this->assertSame(1, $report->handled, 'the stop is at 30 − (2 + 3) = 25 s, three seconds after the pass began; the first message ends at 25.5 s');
+        $this->assertSame(QueuePassReport::PHP_LIMIT, $report->stopReason);
+        $this->assertSame(2, $this->statistics->pendingCount(), 'what was not taken is still waiting, untouched');
+    }
+
+    /** The lift lasts the whole pass: 24.5 s into a 30 s request, the three messages (1.8 s) all run. */
+    public function testALiftedLimitHoldsForTheWholePass(): void
+    {
+        $lifts = 0;
+        $passLimits = $this->passLimitsUnderA30SecondLimit(true, $lifts, 24.5);
         $this->passLimits = $passLimits;
         $this->build($this->db, new MockClock(self::START, 'UTC'));
         $this->behaviour = static function (): void {
@@ -892,9 +911,8 @@ class QueueConsumerTest extends YesWikiTestCase
 
         $report = $this->consumer->drain(QueueConsumerMode::Request, $passLimits->forPass());
 
-        $this->assertSame(1, $report->handled, 'the stop is at 30 − (2 + 3) = 25 s, half a second after the pass began');
-        $this->assertSame(QueuePassReport::PHP_LIMIT, $report->stopReason);
-        $this->assertSame(2, $this->statistics->pendingCount(), 'what was not taken is still waiting, untouched');
+        $this->assertSame(3, $report->handled);
+        $this->assertSame(QueuePassReport::EMPTY, $report->stopReason);
     }
 
     public function testAPassUnderALimitThatCouldNotBeLiftedGoesOnWhileTimeIsLeft(): void

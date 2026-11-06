@@ -697,10 +697,13 @@ class QueueTransportTest extends YesWikiTestCase
 
     public function testPeekNextTypeHonoursTheCutoff(): void
     {
+        $this->transport->send(new Envelope(new QueueTestMessage('before')));
         $cut = $this->transport->lastId();
         $this->transport->send(new Envelope(new QueueTestMessage('after')));
 
-        $this->assertNull($this->transport->peekNextType($cut));
+        $this->assertSame(QueueTestMessage::class, $this->transport->peekNextType($cut), 'the row at the cutoff is seen');
+        $this->assertCount(1, [...$this->transport->get()]);
+        $this->assertNull($this->transport->peekNextType($cut), 'nothing is left up to the cutoff');
         $this->assertNotNull($this->transport->peekNextType());
     }
 
