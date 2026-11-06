@@ -11,7 +11,7 @@ use Symfony\Component\Messenger\Middleware\HandleMessageMiddleware;
 use Symfony\Component\Messenger\Stamp\DelayStamp;
 use Symfony\Component\Messenger\Stamp\ReceivedStamp;
 use Symfony\Component\Messenger\Stamp\TransportMessageIdStamp;
-use YesWiki\Kernel\Queue\RunsUnbudgeted;
+use YesWiki\Kernel\Queue\RunsForItsSender;
 use YesWiki\Kernel\Queue\ScheduledTask;
 use YesWiki\Kernel\Queue\TaskPeriodStamp;
 use YesWiki\Kernel\Service\Journal;
@@ -50,12 +50,12 @@ class QueueBus implements MessageBusInterface
             return $this->handling->dispatch($envelope);
         }
 
-        $runner = $message instanceof RunsUnbudgeted ? ($this->requestTrigger)() : null;
+        $runner = $message instanceof RunsForItsSender ? ($this->requestTrigger)() : null;
         if ($runner !== null && !$runner->runsItself()) {
             $runner = null;
         }
         if ($runner !== null) {
-            $envelope = $envelope->with(new DelayStamp(RunsUnbudgeted::HELD_FOR_THE_SENDER_SECONDS * 1000));
+            $envelope = $envelope->with(new DelayStamp(RunsForItsSender::HELD_FOR_THE_SENDER_SECONDS * 1000));
         }
 
         try {

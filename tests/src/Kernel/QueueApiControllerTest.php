@@ -101,7 +101,7 @@ class QueueApiControllerTest extends YesWikiTestCase
         $this->assertSame('api', $this->kit->statistics->lastPass()['mode'] ?? null);
     }
 
-    /** The API's pass has no time budget: messages the history says are long are all taken, the averages bound nothing. */
+    /** The API's pass has no time limit: messages the history says are long are all taken, the averages bound nothing. */
     public function testLongMessagesAreAllTaken(): void
     {
         QueueTestKit::recordRun($this->kit->db, QueueTestMessage::class, QueueRecorder::HANDLED, 120_000, '2026-10-23 11:00:00');

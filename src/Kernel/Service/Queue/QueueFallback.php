@@ -66,7 +66,7 @@ class QueueFallback implements RequestScopedState
         if ($status !== null) {
             return true;
         }
-        if ($mode->isBudgeted()) {
+        if ($mode->endsByItself()) {
             return false;
         }
 

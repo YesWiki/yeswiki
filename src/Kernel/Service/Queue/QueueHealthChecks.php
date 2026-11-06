@@ -142,7 +142,7 @@ class QueueHealthChecks implements ProvidesHealthChecks
     private function backlog(bool $stalled): ?string
     {
         $age = $this->availableAge();
-        $threshold = $this->settings->mode()->isBudgeted() ? self::BACKLOG_AFTER_OTHERS : self::BACKLOG_AFTER_BLOCKING;
+        $threshold = $this->settings->mode()->endsByItself() ? self::BACKLOG_AFTER_OTHERS : self::BACKLOG_AFTER_BLOCKING;
         if ($age === null || $age <= $threshold || $stalled || $this->hibernation->isWikiHibernatedNow()) {
             return null;
         }
@@ -201,8 +201,8 @@ class QueueHealthChecks implements ProvidesHealthChecks
         foreach ($byMode as $mode => $counts) {
             $killedIn = QueueConsumerMode::tryFrom($mode);
             $key = match (true) {
-                $killedIn?->isBudgeted() === false => 'QUEUE_HEALTH_KILLED_BLOCKING',
-                $killedIn === $current && $current->isBudgeted() => 'QUEUE_HEALTH_KILLED_FAILED',
+                $killedIn?->endsByItself() === false => 'QUEUE_HEALTH_KILLED_BLOCKING',
+                $killedIn === $current && $current->endsByItself() => 'QUEUE_HEALTH_KILLED_FAILED',
                 default => 'QUEUE_HEALTH_KILLED_PREVIOUS',
             };
             $sentences[] = _t($key, ['types' => $this->typesIn($counts), 'mode' => $mode, 'current' => $current->value]);
@@ -270,7 +270,7 @@ class QueueHealthChecks implements ProvidesHealthChecks
 
     private function consumerRestarts(): ?string
     {
-        if ($this->settings->mode()->isBudgeted()) {
+        if ($this->settings->mode()->endsByItself()) {
             return null;
         }
         $starts = $this->statistics->consumerStarts(self::RESTARTS_WINDOW_SECONDS);
@@ -282,7 +282,7 @@ class QueueHealthChecks implements ProvidesHealthChecks
 
     private function consumerMemory(): ?string
     {
-        if ($this->settings->mode()->isBudgeted()) {
+        if ($this->settings->mode()->endsByItself()) {
             return null;
         }
         foreach ($this->statistics->recentPasses(200) as $pass) {
@@ -322,7 +322,7 @@ class QueueHealthChecks implements ProvidesHealthChecks
     /** Whether one of the last passes stopped on PHP's time limit, which the host would not let the wiki lift. */
     private function phpLimit(): ?string
     {
-        if (!$this->settings->mode()->isBudgeted()) {
+        if (!$this->settings->mode()->endsByItself()) {
             return null;
         }
 

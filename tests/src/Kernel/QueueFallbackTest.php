@@ -307,7 +307,7 @@ class QueueFallbackTest extends YesWikiTestCase
         $this->assertTrue($fallback->shouldConsume(), 'a minute on, the rule is read again');
     }
 
-    /** A long message -- a backup an admin starts -- must not be left to a worker that is gone: the end of requests would take it on a request's budget, and PHP would cut it. */
+    /** A long message -- a backup an admin starts -- must not be left to a worker that is gone: the end of requests would take it on a request, and PHP would cut it. */
     public function testAWorkerNotSeenForElevenMinutesIsGone(): void
     {
         $this->pass(QueueConsumerMode::Worker, '-1 hour', '-11 minutes', stopReason: '');

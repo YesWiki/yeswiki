@@ -51,7 +51,7 @@ require_once 'tests/src/Kernel/QueueTransportTest.php';
 require_once 'tests/src/Kernel/QueueTestHolders.php';
 require_once 'tests/src/Kernel/QueueTestKit.php';
 
-/** The one consumer of the queue: budgeted passes and blocking loops, retries, killed messages, and what it records of all that. */
+/** The one consumer of the queue: passes that end by themselves and blocking loops, retries, killed messages, and what it records of all that. */
 #[CoversClass(QueueConsumer::class)]
 #[CoversClass(QueuePassReport::class)]
 class QueueConsumerTest extends YesWikiTestCase
@@ -72,7 +72,7 @@ class QueueConsumerTest extends YesWikiTestCase
     /** @var resource */
     private $log;
     /** What the consumer reads PHP's limits through; null for the real ones. */
-    private ?QueuePassLimitsFactory $budgets = null;
+    private ?QueuePassLimitsFactory $passLimits = null;
 
     /** What the test handler does after noting the message; null to just note it. */
     private ?\Closure $behaviour = null;
@@ -132,7 +132,7 @@ class QueueConsumerTest extends YesWikiTestCase
         @rmdir($this->lockDir);
     }
 
-    public function testDrainHandlesEverythingWhenTheBudgetAllows(): void
+    public function testDrainHandlesEverythingWhenThePassLimitsAllow(): void
     {
         $this->send(5);
 
@@ -145,7 +145,7 @@ class QueueConsumerTest extends YesWikiTestCase
         $this->assertSame(array_fill(0, 5, 'handled'), array_column($this->statistics->history(10), 'status'));
     }
 
-    /** No time budget any more: slow messages are all taken, the pass ends when what was there is done. */
+    /** No time limit any more: slow messages are all taken, the pass ends when what was there is done. */
     public function testAPassRunsEveryMessageEvenWhenTheyAreSlow(): void
     {
         $this->behaviour = static function (): void {
@@ -808,7 +808,7 @@ class QueueConsumerTest extends YesWikiTestCase
         $this->assertSame(1, $this->statistics->pendingCount());
     }
 
-    public function testHandleByIdIgnoresBudgetAndHibernation(): void
+    public function testHandleByIdIgnoresPassLimitsAndHibernation(): void
     {
         $this->send(2);
         $this->setWikiStatus('hibernate');
@@ -829,7 +829,7 @@ class QueueConsumerTest extends YesWikiTestCase
      */
     public function testAPinnedMessageIsNotHeldToPhpsTimeLimit(): void
     {
-        $this->budgets = new QueuePassLimitsFactory(new NativeClock(), static fn (string $name): string => $name === 'max_execution_time' ? '30' : '128M');
+        $this->passLimits = new QueuePassLimitsFactory(new NativeClock(), static fn (string $name): string => $name === 'max_execution_time' ? '30' : '128M');
         $this->build($this->db, new MockClock(self::START, 'UTC'));
         $limits = [];
         $this->behaviour = function () use (&$limits): void {
@@ -848,30 +848,30 @@ class QueueConsumerTest extends YesWikiTestCase
     public function testTheFirstMessageAfterTheResponseIsClaimedWithTheLimitLifted(): void
     {
         $lifts = 0;
-        $budgets = $this->budgetsUnderA30SecondLimit(true, $lifts);
-        $this->budgets = $budgets;
+        $passLimits = $this->passLimitsUnderA30SecondLimit(true, $lifts);
+        $this->passLimits = $passLimits;
         $this->build($this->db, new MockClock(self::START, 'UTC'));
         $limits = $this->limitsOfTheClaimsOfTheHandlers();
         $this->send(2);
 
-        $report = $this->consumer->drain(QueueConsumerMode::Request, $budgets->forPass(), true);
+        $report = $this->consumer->drain(QueueConsumerMode::Request, $passLimits->forPass(), true);
 
         $this->assertSame(2, $report->handled);
         $this->assertSame([QueuePassLimitsFactory::KILL_LIMIT_NO_PHP_LIMIT, QueuePassLimitsFactory::KILL_LIMIT_NO_PHP_LIMIT], $limits());
         $this->assertSame(1, $lifts, 'the limit is lifted once per pass, not once per message');
     }
 
-    /** A visitor still waits: the limit is lifted all the same, a pass has no budget of its own left to keep. */
+    /** A visitor still waits: the limit is lifted all the same, a pass has no time limit of its own left to keep. */
     public function testAPassBeforeTheResponseAlsoLiftsTheLimit(): void
     {
         $lifts = 0;
-        $budgets = $this->budgetsUnderA30SecondLimit(true, $lifts);
-        $this->budgets = $budgets;
+        $passLimits = $this->passLimitsUnderA30SecondLimit(true, $lifts);
+        $this->passLimits = $passLimits;
         $this->build($this->db, new MockClock(self::START, 'UTC'));
         $limits = $this->limitsOfTheClaimsOfTheHandlers();
         $this->send(2);
 
-        $report = $this->consumer->drain(QueueConsumerMode::Request, $budgets->forPass(), responseAlreadySent: false);
+        $report = $this->consumer->drain(QueueConsumerMode::Request, $passLimits->forPass(), responseAlreadySent: false);
 
         $this->assertSame(2, $report->handled);
         $this->assertSame(1, $lifts);
@@ -882,15 +882,15 @@ class QueueConsumerTest extends YesWikiTestCase
     public function testAPassStopsTakingMessagesOncePhpsLimitThatCouldNotBeLiftedIsReached(): void
     {
         $lifts = 0;
-        $budgets = $this->budgetsUnderA30SecondLimit(false, $lifts, 24.5);
-        $this->budgets = $budgets;
+        $passLimits = $this->passLimitsUnderA30SecondLimit(false, $lifts, 24.5);
+        $this->passLimits = $passLimits;
         $this->build($this->db, new MockClock(self::START, 'UTC'));
         $this->behaviour = static function (): void {
             usleep(600000);
         };
         $this->send(3);
 
-        $report = $this->consumer->drain(QueueConsumerMode::Request, $budgets->forPass());
+        $report = $this->consumer->drain(QueueConsumerMode::Request, $passLimits->forPass());
 
         $this->assertSame(1, $report->handled, 'the stop is at 30 − (2 + 3) = 25 s, half a second after the pass began');
         $this->assertSame(QueuePassReport::PHP_LIMIT, $report->stopReason);
@@ -900,12 +900,12 @@ class QueueConsumerTest extends YesWikiTestCase
     public function testAPassUnderALimitThatCouldNotBeLiftedGoesOnWhileTimeIsLeft(): void
     {
         $lifts = 0;
-        $budgets = $this->budgetsUnderA30SecondLimit(false, $lifts);
-        $this->budgets = $budgets;
+        $passLimits = $this->passLimitsUnderA30SecondLimit(false, $lifts);
+        $this->passLimits = $passLimits;
         $this->build($this->db, new MockClock(self::START, 'UTC'));
         $this->send(2);
 
-        $report = $this->consumer->drain(QueueConsumerMode::Request, $budgets->forPass());
+        $report = $this->consumer->drain(QueueConsumerMode::Request, $passLimits->forPass());
 
         $this->assertSame(2, $report->handled);
         $this->assertSame(QueuePassReport::EMPTY, $report->stopReason);
@@ -915,19 +915,19 @@ class QueueConsumerTest extends YesWikiTestCase
     public function testALimitTheHostImposesStaysOnTheClaim(): void
     {
         $lifts = 0;
-        $budgets = $this->budgetsUnderA30SecondLimit(false, $lifts);
-        $this->budgets = $budgets;
+        $passLimits = $this->passLimitsUnderA30SecondLimit(false, $lifts);
+        $this->passLimits = $passLimits;
         $this->build($this->db, new MockClock(self::START, 'UTC'));
-        $limits = $this->limitsOfTheClaimsOfTheHandlers();
+        $claimLimits = $this->limitsOfTheClaimsOfTheHandlers();
         $this->send(2);
-        $budget = $budgets->forPass();
+        $limits = $passLimits->forPass();
 
-        $report = $this->consumer->drain(QueueConsumerMode::Request, $budget, true);
+        $report = $this->consumer->drain(QueueConsumerMode::Request, $limits, true);
 
         $this->assertSame(2, $report->handled);
         $this->assertSame(1, $lifts, 'it was tried, once');
-        $this->assertSame([$budget->killLimitSeconds, $budget->killLimitSeconds], $limits());
-        $this->assertLessThan(QueuePassLimitsFactory::KILL_LIMIT_NO_PHP_LIMIT, $budget->killLimitSeconds);
+        $this->assertSame([$limits->killLimitSeconds, $limits->killLimitSeconds], $claimLimits());
+        $this->assertLessThan(QueuePassLimitsFactory::KILL_LIMIT_NO_PHP_LIMIT, $limits->killLimitSeconds);
     }
 
     public function testAPassIsRecorded(): void
@@ -994,7 +994,7 @@ class QueueConsumerTest extends YesWikiTestCase
         $this->assertStringContainsString('"action":"queue.pass_failed"', $this->journaled());
     }
 
-    /** The memory ceiling is looked at before each message: a budget already past it takes none. */
+    /** The memory ceiling is looked at before each message: limits already past it take none. */
     public function testDrainStopsOnMemoryBeforeTheNextMessage(): void
     {
         $this->send(2);
@@ -1257,7 +1257,7 @@ class QueueConsumerTest extends YesWikiTestCase
         $this->assertSame(1, $this->configurationAsked);
     }
 
-    /** A budgeted pass is a process, or a request, of its own: it runs on the configuration it just read. */
+    /** A pass that ends by itself is a process, or a request, of its own: it runs on the configuration it just read. */
     public function testDrainDoesNotAskAboutTheConfiguration(): void
     {
         $this->configurationChanged = true;
@@ -1281,7 +1281,7 @@ class QueueConsumerTest extends YesWikiTestCase
     }
 
     /**
-     * The claim and the reaping of a budgeted pass on the engines the wiki may run on.
+     * The claim and the reaping of a pass that ends by itself on the engines the wiki may run on.
      *
      * @param array<string, string|bool> $params
      */
@@ -1397,7 +1397,7 @@ class QueueConsumerTest extends YesWikiTestCase
             $bus,
             $recorder,
             $this->statistics,
-            $this->budgets ?? new QueuePassLimitsFactory(new NativeClock()),
+            $this->passLimits ?? new QueuePassLimitsFactory(new NativeClock()),
             new HibernationService($this->params),
             new RuntimeLock(),
             $journal,
@@ -1501,7 +1501,7 @@ class QueueConsumerTest extends YesWikiTestCase
     /**
      * PHP's limits as a server gives them, `max_execution_time` 30 s for a request that began $startedSecondsAgo, and no memory limit (the run's own use is not the test's business); set_time_limit(0) lifts it when $hostLetsIt, and is counted in $lifts.
      */
-    private function budgetsUnderA30SecondLimit(bool $hostLetsIt, int &$lifts, float $startedSecondsAgo = 0.0): QueuePassLimitsFactory
+    private function passLimitsUnderA30SecondLimit(bool $hostLetsIt, int &$lifts, float $startedSecondsAgo = 0.0): QueuePassLimitsFactory
     {
         $ini = ['max_execution_time' => '30', 'memory_limit' => '-1'];
 

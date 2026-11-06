@@ -149,7 +149,7 @@ class ArchiveQueueTest extends YesWikiTestCase
         $this->assertSame('handled', $this->stateOf($uid));
     }
 
-    /** A worker that is gone would leave the backup to the end of visitors' requests, on a request's budget, where PHP cuts it: the admin's request runs it instead. */
+    /** A worker that is gone would leave the backup to the end of visitors' requests, on a request, where PHP cuts it: the admin's request runs it instead. */
     public function testABackupIsPinnedWhenTheWorkerIsGone(): void
     {
         $archives = $this->archives('worker', consumerSeen: false);
@@ -450,14 +450,14 @@ class ArchiveQueueTest extends YesWikiTestCase
         $killed = $this->messageOf($uid);
         $this->takeAndDie($killed);
 
-        $this->consumer->drain(QueueConsumerMode::from($mode), $this->kit->budgets->forPass());
+        $this->consumer->drain(QueueConsumerMode::from($mode), $this->kit->passLimits->forPass());
 
         $this->assertSame('killed', $this->statistics->messageState($killed));
         $this->assertSame('running', $this->wikiStatus());
         $this->assertArrayNotHasKey($uid, $this->info(), 'the dead run is forgotten: a `core:archive` typed by hand next keeps its status');
 
         $this->archives('worker')->startArchive();
-        $report = $this->consumer->drain(QueueConsumerMode::from($mode), $this->kit->budgets->forPass());
+        $report = $this->consumer->drain(QueueConsumerMode::from($mode), $this->kit->passLimits->forPass());
 
         $this->assertSame(QueuePassReport::EMPTY, $report->stopReason);
         $this->assertCount(1, $this->currentArchives()->archived, 'the next run went through');
@@ -582,7 +582,7 @@ class ArchiveQueueTest extends YesWikiTestCase
         $this->assertArrayNotHasKey('callAsync', $status);
     }
 
-    /** A backup in `failed` is not sent again from the jobs page: it would run with nothing following it, on a visitor's budget, and the backups page would lift its `archiving` mid-way. */
+    /** A backup in `failed` is not sent again from the jobs page: it would run with nothing following it, on a visitor's request, and the backups page would lift its `archiving` mid-way. */
     public function testAFailedArchiveIsNotReplayedByHand(): void
     {
         $archives = $this->archives('request');
@@ -628,7 +628,7 @@ class ArchiveQueueTest extends YesWikiTestCase
     private function archives(string $mode, bool $consumerSeen = true, ?MessageBusInterface $bus = null, ?ConsoleService $console = null): QueueArchiveService
     {
         putenv(QueueSettings::ENV_MODE . '=' . $mode);
-        if ($consumerSeen && !QueueConsumerMode::from($mode)->isBudgeted()) {
+        if ($consumerSeen && !QueueConsumerMode::from($mode)->endsByItself()) {
             QueueTestKit::recordPass($this->db, QueueConsumerMode::from($mode), $this->at('-1 hour'), $this->at('-1 minute'), '');
         }
         $settings = new QueueSettings(new ParameterBag([]), static fn (): array => []);
@@ -678,7 +678,7 @@ class ArchiveQueueTest extends YesWikiTestCase
     /** A pass of a consumer of its own, as the API route would run. */
     private function drain(): void
     {
-        $this->consumer->drain(QueueConsumerMode::Api, $this->kit->budgets->forPass());
+        $this->consumer->drain(QueueConsumerMode::Api, $this->kit->passLimits->forPass());
     }
 
     /** @param 'host'|'reaped'|'limit' $death */

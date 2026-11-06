@@ -67,11 +67,11 @@ final class QueueTestKit
     public readonly QueueHolderLock $holderLock;
     /** The one clock every part of the queue reads. */
     public readonly ClockInterface $clock;
-    public readonly QueuePassLimitsFactory $budgets;
+    public readonly QueuePassLimitsFactory $passLimits;
     private readonly HibernationService $hibernation;
     /** What the Journal says of each scheduled task, which the Scheduler reads. */
     public readonly ScheduleHistory $history;
-    /** The end of the request the bus pins a message to (RunsUnbudgeted): the last one requestTrigger() built. */
+    /** The end of the request the bus pins a message to (RunsForItsSender): the last one requestTrigger() built. */
     private ?QueueRequestTrigger $trigger = null;
     /** @var resource|null */
     private $heldPassLock;
@@ -95,7 +95,7 @@ final class QueueTestKit
      * @param ClockInterface|null                $clock                the clock of every part of the queue (default: the database's, as in production)
      * @param string|null                        $database             an SQLite file another kit or test made, for a consumer in another process to work on the same queue; left where it is by dispose()
      * @param ProvidesSchedule|null              $schedule             the recurring tasks the schedule declares (default: none)
-     * @param QueuePassLimitsFactory|null        $budgets              what a pass may spend (default: from this PHP's limits)
+     * @param QueuePassLimitsFactory|null        $passLimits              what a pass may spend (default: from this PHP's limits)
      * @param HibernationService|null            $hibernation          the wiki's status as the consumer reads it (default: awake)
      * @param (\Closure(): EventDispatcher)|null $events               the wiki's dispatcher, which a killed message is announced on (default: one nobody listens to)
      * @param \Closure(): bool|null              $configurationChanged what the consumer's ConfigurationWatch answers (default: $this->configurationChanged)
@@ -105,7 +105,7 @@ final class QueueTestKit
         ?ClockInterface $clock = null,
         ?string $database = null,
         ?ProvidesSchedule $schedule = null,
-        ?QueuePassLimitsFactory $budgets = null,
+        ?QueuePassLimitsFactory $passLimits = null,
         ?HibernationService $hibernation = null,
         ?\Closure $events = null,
         ?\Closure $configurationChanged = null,
@@ -177,14 +177,14 @@ final class QueueTestKit
         $watch->bind($configurationChanged ?? fn (): bool => $this->configurationChanged);
 
         // On the real clock whatever the queue's: PHP's limit is read against microtime() (QueuePassLimits).
-        $this->budgets = $budgets ??= new QueuePassLimitsFactory(new NativeClock());
+        $this->passLimits = $passLimits ??= new QueuePassLimitsFactory(new NativeClock());
         $this->hibernation = $hibernation ??= new HibernationService(new ParameterBag(['wiki_status' => 'running']));
         $this->consumer = new QueueConsumer(
             $this->transport,
             $bus,
             $recorder,
             $this->statistics,
-            $budgets,
+            $passLimits,
             $hibernation,
             $locks,
             $journal,
@@ -317,7 +317,7 @@ final class QueueTestKit
         return new ServiceLocator([
             QueueConsumer::class => fn (): QueueConsumer => $this->consumer,
             QueueSettings::class => static fn (): QueueSettings => $settings,
-            QueuePassLimitsFactory::class => fn (): QueuePassLimitsFactory => $this->budgets,
+            QueuePassLimitsFactory::class => fn (): QueuePassLimitsFactory => $this->passLimits,
         ]);
     }
 
@@ -352,7 +352,7 @@ final class QueueTestKit
         return $this->trigger = new QueueRequestTrigger(
             $settings,
             $this->consumer,
-            $this->budgets,
+            $this->passLimits,
             $this->statistics,
             $this->ticker,
             $this->fallback($settings, $hibernation),
@@ -406,7 +406,7 @@ final class QueueTestKit
         return $this->configFile;
     }
 
-    /** The bus's way to the end of the request, for a bus that never sends a message a request must run itself (RunsUnbudgeted). */
+    /** The bus's way to the end of the request, for a bus that never sends a message a request must run itself (RunsForItsSender). */
     public static function noRequest(): \Closure
     {
         return static fn (): QueueRequestTrigger => throw new \LogicException('No request runs here.');

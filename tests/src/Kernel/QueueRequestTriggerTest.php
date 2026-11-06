@@ -451,7 +451,7 @@ class QueueRequestTriggerTest extends YesWikiTestCase
 
         $this->assertSame(['m0'], $this->handled);
         $pass = $this->statistics->lastPass();
-        $this->assertSame('request', $pass['mode'] ?? null, 'as `request` does: in the visitor\'s process, on its budget');
+        $this->assertSame('request', $pass['mode'] ?? null, 'as `request` does: in the visitor\'s process');
         $this->assertSame('fallback', $pass['origin'] ?? null);
         $this->assertSame('worker', $pass['fallbackFor'] ?? null);
     }

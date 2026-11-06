@@ -223,7 +223,7 @@ class JobsControllerTest extends YesWikiTestCase
         );
         $this->assertStringContainsString(htmlspecialchars(_t('QUEUE_PACE_API'), ENT_QUOTES), $body);
         $this->assertStringContainsString('id="yw-jobs-tabs"', $body);
-        $this->assertStringNotContainsString('Budget', $body, 'a pass has no budget to show');
+        $this->assertStringNotContainsString('Budget', $body, 'a pass has no time limit to show');
         $this->assertDoesNotMatchRegularExpression('/\b(ADMIN_JOBS|QUEUE_(MODE|PACE|STATUS|STOP|ORIGIN))_[A-Z_]+\b/', $body, 'every label is translated');
     }
 
@@ -409,7 +409,7 @@ class JobsControllerTest extends YesWikiTestCase
         $this->assertSame(['a', 'b'], $this->kit->handled);
         $pass = $this->kit->statistics->lastPass();
         $this->assertNotNull($pass);
-        $this->assertSame('request', $pass['mode'], 'the mode of the wiki, which is budgeted');
+        $this->assertSame('request', $pass['mode'], 'the mode of the wiki, which ends by itself');
         $this->assertFalse($pass['beforeResponse'], 'an admin who asked for the pass is not a visitor kept waiting');
         $this->assertStringContainsString('id="yw-jobs-status"', (string)$response->getContent(), 'the alerts come back refreshed');
         $this->assertStringContainsString(htmlspecialchars(_t('ADMIN_JOBS_CONSUMED', [
@@ -425,7 +425,6 @@ class JobsControllerTest extends YesWikiTestCase
         $this->signInAsAdmin();
         $this->kitAt('2026-10-23 12:00:00');
         QueueTestKit::recordRun($this->kit->db, QueueTestMessage::class, QueueRecorder::HANDLED, 60_000, '2026-10-23 11:30:00');
-        $this->assertSame(60_000, $this->kit->statistics->averageDurationMs(QueueTestMessage::class), 'the history says each message takes a minute');
         foreach (['a', 'b', 'c'] as $value) {
             $this->kit->send($value);
         }
@@ -494,7 +493,7 @@ class JobsControllerTest extends YesWikiTestCase
         $this->assertSame('manual', $this->kit->statistics->lastPass()['origin'] ?? null);
     }
 
-    /** A blocking mode has no budget of its own: the button runs the pass a request would, once its response has left. */
+    /** A blocking mode has no time limit of its own: the button runs the pass a request would, once its response has left. */
     public function testABlockingModeIsConsumedAsTheEndOfARequestWould(): void
     {
         $this->signInAsAdmin();

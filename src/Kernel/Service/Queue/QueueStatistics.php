@@ -265,18 +265,6 @@ class QueueStatistics
         return array_values($types);
     }
 
-    /** How long a message of that type takes when it succeeds, in milliseconds; null before the first success. */
-    public function averageDurationMs(string $type): ?int
-    {
-        $average = $this->db->scalar(
-            "SELECT AVG({$this->durationMs()}) FROM {$this->journal->table()} WHERE channel = ? AND target = ? AND action = ?",
-            null,
-            [JournalChannel::Queue->value, $type, QueueJournalEntry::run(QueueRecorder::HANDLED)]
-        );
-
-        return $average === null ? null : (int)round((float)$average);
-    }
-
     /**
      * The most recent pass, open or not.
      *
@@ -305,7 +293,7 @@ class QueueStatistics
             return [
                 'id' => (int)$row['id'],
                 'mode' => (string)$row['actor'],
-                'blocking' => QueueConsumerMode::tryFrom((string)$row['actor'])?->isBudgeted() === false,
+                'blocking' => QueueConsumerMode::tryFrom((string)$row['actor'])?->endsByItself() === false,
                 'startedAt' => self::time((string)$row['at']),
                 'finishedAt' => self::time((string)$row['last_at']),
                 'handled' => (int)($context['handled'] ?? 0),

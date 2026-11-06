@@ -426,7 +426,7 @@ class QueueTransportTest extends YesWikiTestCase
         $this->assertSame([self::idOf($taken)], array_column($this->transport->reapKilled(), 'id'));
     }
 
-    /** The same holds for this very process while it holds the claim: a budgeted pass that outlives its own limit is not reaped under it. */
+    /** The same holds for this very process while it holds the claim: a pass that outlives its own limit is not reaped under it. */
     public function testThisProcessKeepsWhatItHoldsPastItsLimit(): void
     {
         $this->transport->claimAs(QueueConsumerMode::Request, 1);

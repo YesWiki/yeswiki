@@ -49,10 +49,10 @@ class QueueKernelWiringTest extends YesWikiTestCase
     }
 
     /**
-     * A pass's budget is a duration that QueuePassLimits counts down on microtime(): the factory must read the same clock, not the
-     * database's. With the database's, a server whose clock lags by 25 s gave the end-of-request pass no budget at all.
+     * A pass's limits are counted down by QueuePassLimits on microtime(): the factory must read the same clock, not the
+     * database's. With the database's, a server whose clock lags by 25 s gave the end-of-request pass no time at all.
      */
-    public function testTheContainersBudgetFactoryCountsOnPhpsClockNotTheDatabases(): void
+    public function testTheContainersPassLimitsFactoryCountsOnPhpsClockNotTheDatabases(): void
     {
         $services = self::getWiki()->services;
         $this->assertInstanceOf(DatabaseClock::class, $services->get(ClockInterface::class), 'the clock the queue writes and compares times by');

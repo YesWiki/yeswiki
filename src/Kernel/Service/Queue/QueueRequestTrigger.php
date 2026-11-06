@@ -12,7 +12,7 @@ use YesWiki\Kernel\Service\RequestScopedState;
 
 /**
  * What the end of a web request does with the queue, once the response is handed over: runs the messages it pinned,
- * then a budgeted pass in `request` mode, or when the mode's own consumer is no longer seen at work (QueueFallback).
+ * then a pass in `request` mode, or when the mode's own consumer is no longer seen at work (QueueFallback).
  */
 class QueueRequestTrigger implements RequestScopedState
 {
@@ -34,7 +34,7 @@ class QueueRequestTrigger implements RequestScopedState
     public function __construct(
         private readonly QueueSettings $settings,
         private readonly QueueConsumer $consumer,
-        private readonly QueuePassLimitsFactory $budgets,
+        private readonly QueuePassLimitsFactory $passLimits,
         private readonly QueueStatistics $statistics,
         private readonly QueueScheduleTicker $ticker,
         private readonly QueueFallback $fallback,
@@ -49,13 +49,13 @@ class QueueRequestTrigger implements RequestScopedState
         $this->workingDirectory = $workingDirectory ?? (\defined('YESWIKI_INSTANCE_DIR') ? YESWIKI_INSTANCE_DIR : (string)getcwd());
     }
 
-    /** Whether a message that must not run on a request's budget (RunsUnbudgeted) is this request's to run. */
+    /** Whether a message that that runs for its sender (RunsForItsSender) is this request's to run. */
     public function runsItself(): bool
     {
-        return $this->settings->mode()->isBudgeted() || $this->fallback->consumerIsGone();
+        return $this->settings->mode()->endsByItself() || $this->fallback->consumerIsGone();
     }
 
-    /** Runs that message at the end of this request, after the response, without budget and whatever the mode. */
+    /** Runs that message at the end of this request, after the response, whatever the mode. */
     public function pin(int $messageId): void
     {
         $this->pinned[] = $messageId;
@@ -137,7 +137,7 @@ class QueueRequestTrigger implements RequestScopedState
     {
         $this->consumer->drain(
             QueueConsumerMode::Request,
-            $this->budgets->forPass(),
+            $this->passLimits->forPass(),
             $responseAlreadySent,
             $fallbackFor === null ? QueuePassOrigin::Consumer : QueuePassOrigin::Fallback,
             $fallbackFor,

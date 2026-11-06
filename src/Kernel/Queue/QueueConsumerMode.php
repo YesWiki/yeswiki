@@ -12,8 +12,8 @@ enum QueueConsumerMode: string
     case Api = 'api';
     case Worker = 'worker';
 
-    /** Whether a pass in this mode has to end by itself, before the time PHP gives it runs out. */
-    public function isBudgeted(): bool
+    /** Whether a pass in this mode stops by itself once the queue is empty, rather than waiting for messages. */
+    public function endsByItself(): bool
     {
         return match ($this) {
             self::Request, self::Api => true,
@@ -37,19 +37,9 @@ enum QueueConsumerMode: string
         };
     }
 
-    /** The longest a pass of this mode runs, whatever PHP allows; INF for a mode with no deadline. */
-    public function passCeilingSeconds(bool $responseAlreadySent): float
-    {
-        return match ($this) {
-            self::Request => $responseAlreadySent ? 20.0 : 3.0,
-            self::Api => 50.0,
-            self::Worker => INF,
-        };
-    }
-
     /** The mode a pass started from a web page runs in: this one when it ends by itself, `request` for a consumer that would block. */
     public function forPassFromTheWeb(): self
     {
-        return $this->isBudgeted() ? $this : self::Request;
+        return $this->endsByItself() ? $this : self::Request;
     }
 }

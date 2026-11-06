@@ -142,13 +142,13 @@ class QueueSettingsTest extends TestCase
         $this->assertSame('', $settings->consumeSecret());
     }
 
-    public function testOnlyThePassagesThatEndWithTheirTimeAreBudgeted(): void
+    public function testOnlyThePassagesThatStopByThemselvesEndByThemselves(): void
     {
-        $budgeted = array_filter(QueueConsumerMode::cases(), static fn (QueueConsumerMode $mode) => $mode->isBudgeted());
+        $endingByThemselves = array_filter(QueueConsumerMode::cases(), static fn (QueueConsumerMode $mode) => $mode->endsByItself());
 
         $this->assertEqualsCanonicalizing(
             [QueueConsumerMode::Request, QueueConsumerMode::Api],
-            array_values($budgeted)
+            array_values($endingByThemselves)
         );
     }
 }

@@ -198,7 +198,7 @@ echo $db->scalar("SELECT COUNT(*) FROM {$journal->table()}");
         $this->assertSame($row['at'], $row['last_at']);
         $started = $this->context($row);
         $this->assertSame(getmypid(), $started['pid']);
-        $this->assertArrayNotHasKey('budget_ms', $started, 'a pass has no time budget');
+        $this->assertArrayNotHasKey('budget_ms', $started, 'a pass has no time limit column');
         $this->assertEquals($this->statistics->recentPasses(1)[0]['startedAt'], $this->statistics->recentPasses(1)[0]['finishedAt'], 'no sign of life yet: last seen when it started');
 
         $this->clock->sleep(60);
@@ -238,7 +238,7 @@ echo $db->scalar("SELECT COUNT(*) FROM {$journal->table()}");
 
     /** @param array<string, string|bool> $params */
     #[DataProvider('servers')]
-    public function testBudgetedPassesAreNotConsumerStarts(array $params): void
+    public function testPassesThatEndByThemselvesAreNotConsumerStarts(array $params): void
     {
         $this->on($params);
         $this->recorder->passStarted(QueueConsumerMode::Request, null, true);
@@ -266,7 +266,6 @@ echo $db->scalar("SELECT COUNT(*) FROM {$journal->table()}");
         $this->ran(5, 'T', QueueRecorder::RETRIED, 50, 'again');
 
         $this->assertSame(['handled' => 3, 'failed' => 1, 'killed' => 0, 'avgMs' => 200], $this->statistics->outcomes(7 * 86400));
-        $this->assertSame(200, $this->statistics->averageDurationMs('T'));
 
         $failed = $this->statistics->history(10, 'failed');
         $this->assertCount(1, $failed);
@@ -518,17 +517,6 @@ echo $db->scalar("SELECT COUNT(*) FROM {$journal->table()}");
         $this->assertSame([3, 2, 1], array_column($this->statistics->history(10), 'messageId'));
         $this->assertSame([3, 1], array_column($this->statistics->history(10, 'handled'), 'messageId'));
         $this->assertSame([3], array_column($this->statistics->history(1, 'handled'), 'messageId'));
-    }
-
-    public function testAveragesOnlyCountSuccesses(): void
-    {
-        $this->assertNull($this->statistics->averageDurationMs(QueueTestMessage::class), 'never seen: no guess');
-
-        $this->finish(1, QueueRecorder::HANDLED, 0.2);
-        $this->finish(2, QueueRecorder::HANDLED, 0.4);
-        $this->finish(3, QueueRecorder::FAILED, 9.0);
-
-        $this->assertSame(300, $this->statistics->averageDurationMs(QueueTestMessage::class));
     }
 
     public function testTheOutcomesOfOneTypeOverAWindow(): void
@@ -791,7 +779,6 @@ echo $db->scalar("SELECT COUNT(*) FROM {$journal->table()}");
         $this->recorder->passHeartbeat($pass, 1, 1 << 32);
         $this->recorder->passFinished($pass, new QueuePassReport(1, 1, 250, QueuePassReport::TIME_LIMIT), 1 << 32);
 
-        $this->assertSame(250, $this->statistics->averageDurationMs(QueueTestMessage::class));
         $this->assertSame([QueueTestMessage::class], array_column($this->statistics->byType(), 'type'));
         $this->assertSame(1, $this->statistics->byType()[0]['pending']);
         $this->assertSame(250, $this->statistics->byType()[0]['avgMs']);

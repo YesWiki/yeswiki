@@ -60,7 +60,7 @@ class QueueConsumer
         private readonly QueueBus $bus,
         private readonly QueueRecorder $recorder,
         private readonly QueueStatistics $statistics,
-        private readonly QueuePassLimitsFactory $budgets,
+        private readonly QueuePassLimitsFactory $passLimits,
         private readonly HibernationService $hibernation,
         private readonly RuntimeLock $runtimeLock,
         private readonly Journal $journal,
@@ -113,7 +113,7 @@ class QueueConsumer
                         return null;
                     }
                     $lifted = true;
-                    $limit = $this->budgets->liftPhpLimit();
+                    $limit = $this->passLimits->liftPhpLimit();
                     if ($limit !== null) {
                         $this->transport->claimAs($mode, $limit);
                     }
@@ -231,11 +231,11 @@ class QueueConsumer
     }
 
     /** The row of a consumer's pass that did nothing (lock taken, wiki hibernated), closed at once, outside `request`. */
-    private function leaveATrace(QueuePassReport $report, QueueConsumerMode $mode, QueuePassLimits $budget, bool $responseAlreadySent, QueuePassOrigin $origin): QueuePassReport
+    private function leaveATrace(QueuePassReport $report, QueueConsumerMode $mode, QueuePassLimits $limits, bool $responseAlreadySent, QueuePassOrigin $origin): QueuePassReport
     {
         if ($origin === QueuePassOrigin::Consumer && !$mode->consumesAtEndOfRequests()) {
             try {
-                $this->recorder->passFinished($this->recorder->passStarted($mode, $budget, !$responseAlreadySent), $report, memory_get_peak_usage(true));
+                $this->recorder->passFinished($this->recorder->passStarted($mode, $limits, !$responseAlreadySent), $report, memory_get_peak_usage(true));
             } catch (\Throwable) {
             }
         }
@@ -248,7 +248,7 @@ class QueueConsumer
      *
      * @param \Closure(QueuePassObserver, int): string $body
      */
-    private function pass(QueueConsumerMode $mode, ?QueuePassLimits $budget, bool $beforeResponse, QueuePassOrigin $origin, ?QueueConsumerMode $fallbackFor, \Closure $body): QueuePassReport
+    private function pass(QueueConsumerMode $mode, ?QueuePassLimits $limits, bool $beforeResponse, QueuePassOrigin $origin, ?QueueConsumerMode $fallbackFor, \Closure $body): QueuePassReport
     {
         $startedAt = microtime(true);
         $observer = new QueuePassObserver($this->recorder, $this->journal, $mode, $this->clock);
@@ -260,7 +260,7 @@ class QueueConsumer
             try {
                 // Taken before the row names it, so a judge never finds the file of a pass that has not locked it yet.
                 $this->holderLock->hold($holder);
-                $passId = $this->recorder->passStarted($mode, $budget, $beforeResponse, $origin, $fallbackFor, $holder);
+                $passId = $this->recorder->passStarted($mode, $limits, $beforeResponse, $origin, $fallbackFor, $holder);
                 $stopReason = $body($observer, $passId);
                 $report = $this->report($observer->handled(), $startedAt, $stopReason);
             } catch (\Throwable $broken) {

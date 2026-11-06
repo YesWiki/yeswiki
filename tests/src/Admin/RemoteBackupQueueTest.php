@@ -199,7 +199,7 @@ class RemoteBackupQueueTest extends YesWikiTestCase
         $this->assertSame(self::STORED, $this->service->status()['filename']);
     }
 
-    /** A slice of download is 20 s, run by hand or in a pass: a pass has no time budget to cut it to. */
+    /** A slice of download is 20 s, run by hand or in a pass: a pass has no time limit to cut it to. */
     public function testADownloadSliceIsTwentySeconds(): void
     {
         $this->service->start('https://remote.org', 'RemoteAdmin', 'secret');
