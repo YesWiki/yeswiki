@@ -349,7 +349,7 @@ class RemoteBackupQueueTest extends YesWikiTestCase
         $taken = iterator_to_array($this->transport->get());
         $this->assertCount(1, $taken);
         // A consumer on another machine: its limit decides.
-        QueueTestHolders::hand($this->db, $this->schema, (int)$taken[0]->last(TransportMessageIdStamp::class)?->getId(), QueueTestHolders::elsewhere());
+        QueueTestHolders::hand($this->db, $this->schema, (int)$taken[0]->last(TransportMessageIdStamp::class)?->getId(), QueueTestHolders::token());
         $underWay = $this->service->status();
         $this->assertTrue($underWay['running'], 'under way while its claim holds');
 

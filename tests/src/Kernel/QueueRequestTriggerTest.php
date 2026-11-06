@@ -494,7 +494,7 @@ class QueueRequestTriggerTest extends YesWikiTestCase
         $this->send('m0');
         $this->transport->claimAs(QueueConsumerMode::Request, 1);
         [$abandoned] = [...$this->transport->get()];
-        QueueTestHolders::hand($this->db, $this->schema, (int)$abandoned->last(TransportMessageIdStamp::class)?->getId(), QueueTestHolders::elsewhere());
+        QueueTestHolders::hand($this->db, $this->schema, (int)$abandoned->last(TransportMessageIdStamp::class)?->getId(), QueueTestHolders::token());
         $this->send('m1');
         $this->clock->sleep(62);
         $this->setWikiStatus('archiving');

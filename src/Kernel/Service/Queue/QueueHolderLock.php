@@ -3,12 +3,11 @@
 namespace YesWiki\Kernel\Service\Queue;
 
 use YesWiki\Files\Service\RuntimeLock;
-use YesWiki\Kernel\Queue\QueueClaimHolder;
 
 /**
- * Tells, on one machine, whether whoever took a claim (or runs a pass) is still there: the process holds a lock on a file named after its token, and the kernel drops that lock when the process ends, however it ends.
+ * Tells whether whoever runs a pass is still there: the pass holds a lock on a file named after its token, and the kernel drops that lock when the process ends, however it ends.
  *
- * The token's pid says who to look for, but only /proc can say whether that pid is the same process; the lock says it for a process /proc cannot tell from another (a pid shared by two containers), and for a server's process that is alive and working.
+ * One host is assumed (a shared host or a single container): every process that reads `cache/` shares one kernel, so a lock it finds held or free is the truth.
  */
 final class QueueHolderLock
 {
@@ -25,15 +24,21 @@ final class QueueHolderLock
     {
     }
 
+    /** A token for a pass: the pid, for whoever reads it, and a nonce that names its file. */
+    public static function newToken(): string
+    {
+        return getmypid() . '/' . bin2hex(random_bytes(8));
+    }
+
     /**
-     * Creates the token's file and locks it, keeping the handle until release(); it refuses, without creating a file, a token that is not of this machine, since only this machine's tokens are ever judged by their file.
+     * Creates the token's file and locks it, keeping the handle until release().
      *
-     * @return bool false when the token is not of this machine, or when the file cannot be created or locked
+     * @return bool false when the file cannot be created or locked
      */
     public function hold(string $token): bool
     {
         $path = self::pathOf($token);
-        if ($path === null || !self::isOfThisMachine($token)) {
+        if ($path === null) {
             return false;
         }
         if (isset($this->handles[$token])) {
@@ -70,11 +75,11 @@ final class QueueHolderLock
         $this->locks->release($handle);
     }
 
-    /** HELD while the holder keeps its lock, FREE once it let go or ended, ABSENT when there is no file or the token is not of this machine; asked without creating or removing anything. */
+    /** HELD while the holder keeps its lock, FREE once it let go or ended, ABSENT when there is no file; asked without creating or removing anything. */
     public function stateOf(string $token): string
     {
         $path = self::pathOf($token);
-        if ($path === null || !self::isOfThisMachine($token)) {
+        if ($path === null) {
             return self::ABSENT;
         }
 
@@ -85,11 +90,11 @@ final class QueueHolderLock
         };
     }
 
-    /** Removes the file of a holder that is gone, for a token of this machine only: another machine's file is none of ours to touch. */
+    /** Removes the file of a holder that is gone. */
     public function forget(string $token): void
     {
         $path = self::pathOf($token);
-        if ($path !== null && self::isOfThisMachine($token)) {
+        if ($path !== null) {
             $this->locks->forget($path);
         }
     }
@@ -98,12 +103,5 @@ final class QueueHolderLock
     public static function pathOf(string $token): ?string
     {
         return preg_match('~/([0-9a-f]+)$~', $token, $parts) === 1 ? self::DIRECTORY . '/' . $parts[1] . '.lock' : null;
-    }
-
-    private static function isOfThisMachine(string $token): bool
-    {
-        $machine = QueueClaimHolder::ofToken($token)?->machine;
-
-        return $machine !== null && $machine !== '' && $machine === QueueClaimHolder::thisProcess()->machine;
     }
 }

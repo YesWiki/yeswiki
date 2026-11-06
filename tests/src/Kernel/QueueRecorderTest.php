@@ -9,7 +9,6 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\Stamp\DelayStamp;
 use Symfony\Component\Messenger\Stamp\TransportMessageIdStamp;
-use YesWiki\Kernel\Queue\QueueClaimHolder;
 use YesWiki\Kernel\Queue\QueueConsumerMode;
 use YesWiki\Kernel\Queue\QueueJournalEntry;
 use YesWiki\Kernel\Queue\QueuePassLimits;
@@ -17,6 +16,7 @@ use YesWiki\Kernel\Queue\QueuePassOrigin;
 use YesWiki\Kernel\Queue\QueuePassReport;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\JournalSchema;
+use YesWiki\Kernel\Service\Queue\QueueHolderLock;
 use YesWiki\Kernel\Service\Queue\QueueRecorder;
 use YesWiki\Kernel\Service\Queue\QueueSchema;
 use YesWiki\Kernel\Service\Queue\QueueStatistics;
@@ -442,14 +442,14 @@ echo $db->scalar("SELECT COUNT(*) FROM {$journal->table()}");
 
     public function testEveryPassNamesItsHolder(): void
     {
-        $token = QueueClaimHolder::thisProcess()->token();
+        $token = QueueHolderLock::newToken();
         $manual = $this->recorder->passStarted(QueueConsumerMode::Request, null, false, QueuePassOrigin::Manual, null, $token);
         $unnamed = $this->recorder->passStarted(QueueConsumerMode::Request, null, false, QueuePassOrigin::Manual);
         $consumer = $this->recorder->passStarted(QueueConsumerMode::Request, null, false);
 
         $this->assertSame($token, $this->context($this->journalRow($manual))['holder']);
         $this->assertArrayNotHasKey('holder', $this->context($this->journalRow($unnamed)), 'as before: only a consumer names its process by itself');
-        $this->assertNotNull(QueueClaimHolder::ofToken((string)$this->context($this->journalRow($consumer))['holder']));
+        $this->assertMatchesRegularExpression('~^\d+/[0-9a-f]{16}$~', (string)$this->context($this->journalRow($consumer))['holder']);
         $holders = array_column($this->statistics->openPasses(), 'holder', 'id');
         $this->assertSame($token, $holders[$manual] ?? null);
         $this->assertSame('', $holders[$unnamed] ?? null, 'a pass that names no holder has an empty one');
@@ -658,7 +658,7 @@ echo $db->scalar("SELECT COUNT(*) FROM {$journal->table()}");
         $id = (int)$this->transport->send(new Envelope(new QueueTestMessage('one')))->last(TransportMessageIdStamp::class)?->getId();
         $this->transport->claimAs(QueueConsumerMode::Request, 1);
         [...$this->transport->get()];
-        QueueTestHolders::hand($this->db, $this->schema, $id, QueueTestHolders::elsewhere());
+        QueueTestHolders::hand($this->db, $this->schema, $id, QueueTestHolders::token());
 
         $this->clock->sleep(30);
         $this->assertSame('running', $this->statistics->messageState($id), 'within its limit and the grace after it');

@@ -16,7 +16,6 @@ use Symfony\Component\Messenger\Stamp\ErrorDetailsStamp;
 use Symfony\Component\Messenger\Stamp\RedeliveryStamp;
 use Symfony\Component\Messenger\Stamp\SentToFailureTransportStamp;
 use Symfony\Component\Messenger\Stamp\TransportMessageIdStamp;
-use YesWiki\Kernel\Queue\QueueClaimHolder;
 use YesWiki\Kernel\Queue\QueueClaimStamp;
 use YesWiki\Kernel\Queue\QueueConsumerMode;
 use YesWiki\Kernel\Service\DbService;
@@ -35,7 +34,6 @@ require_once 'tests/src/Kernel/QueueTestKit.php';
 
 /** The Messenger transport that keeps the queue in the wiki's own database, and its claim that two consumers never share. */
 #[CoversClass(QueueTransport::class)]
-#[CoversClass(QueueClaimHolder::class)]
 class QueueTransportTest extends YesWikiTestCase
 {
     private const START = '2026-10-23 12:00:00';
@@ -278,21 +276,17 @@ class QueueTransportTest extends YesWikiTestCase
         $this->assertNotEmpty($row['delivered_by']);
     }
 
-    /** R19: the claim's token names the process that took it, so that another process on this machine can tell whether it is still there. */
-    public function testAClaimNamesTheProcessThatTookIt(): void
+    /** A claim outside a pass gets a token of its own, the pid that took it and a nonce, with no file: it is judged by its limit. */
+    public function testAClaimOutsideAPassHasATokenOfItsOwnWithNoFile(): void
     {
-        $this->transport->send(new Envelope(new QueueTestMessage('named')));
+        $this->locked->send(new Envelope(new QueueTestMessage('named')));
 
-        [$taken] = [...$this->transport->get()];
+        [$taken] = [...$this->locked->get()];
 
         $token = (string)($this->row(self::idOf($taken))['delivered_by'] ?? '');
         $this->assertLessThanOrEqual(64, strlen($token), 'the column holds 64 characters');
-        $holder = QueueClaimHolder::ofToken($token);
-        $this->assertNotNull($holder);
-        $this->assertTrue($holder->isSameProcessAs(QueueClaimHolder::thisProcess()));
-        $this->assertSame(getmypid(), $holder->pid);
-        $this->assertTrue($holder->ownProcess, 'the CLI runs nothing but its consumer');
-        $this->assertNull(QueueClaimHolder::ofToken('1234:0123456789abcdef'), 'a token written before tokens named their holder names none');
+        $this->assertMatchesRegularExpression('~^' . getmypid() . '/[0-9a-f]{16}$~', $token);
+        $this->assertSame(QueueHolderLock::ABSENT, $this->locked->holderState($token));
     }
 
     /** Worker mode: the transport outlives the request whose pass said who was consuming. */
@@ -309,19 +303,19 @@ class QueueTransportTest extends YesWikiTestCase
         $this->assertNull($row['delivered_limit'] ?? null);
     }
 
-    /** R19: from another machine nothing can be told of the holder's process; the limit it recorded and the grace decide, as they always did. */
-    public function testAClaimFromAnotherMachineIsReapedOncePastItsLimit(): void
+    /** R19: with no file nothing can be told of the holder; the limit it recorded and the grace decide. */
+    public function testAClaimWithNoFileIsReapedOncePastItsLimit(): void
     {
-        $this->transport->claimAs(QueueConsumerMode::Request, 1);
-        $this->transport->send(new Envelope(new QueueTestMessage('dies')));
-        [$taken] = [...$this->transport->get()];
-        QueueTestHolders::hand($this->db, $this->schema, self::idOf($taken), QueueTestHolders::elsewhere());
+        $this->locked->claimAs(QueueConsumerMode::Request, 1);
+        $this->locked->send(new Envelope(new QueueTestMessage('dies')));
+        [$taken] = [...$this->locked->get()];
+        QueueTestHolders::hand($this->db, $this->schema, self::idOf($taken), QueueTestHolders::token());
 
         $this->clock->sleep(61);
-        $this->assertSame([], $this->transport->reapKilled(), 'within its limit and the grace, it may still be running');
+        $this->assertSame([], $this->locked->reapKilled(), 'within its limit and the grace, it may still be running');
 
         $this->clock->sleep(1);
-        $reaped = $this->transport->reapKilled();
+        $reaped = $this->locked->reapKilled();
 
         $this->assertSame([[
             'id' => self::idOf($taken),
@@ -336,16 +330,16 @@ class QueueTransportTest extends YesWikiTestCase
         $this->assertSame('request', $this->row(self::idOf($taken))['killed_in'] ?? null);
     }
 
-    /** R19: a holder whose process is gone from this machine (the host killed it, a restart) will never ack: its message is failed at once, not hours later. */
-    public function testAClaimWhoseProcessIsGoneIsReapedAtOnce(): void
+    /** R19: a holder whose file nobody holds is gone (the host killed it, a restart) and will never ack: its message is failed at once, not hours later. */
+    public function testAClaimWhoseFileIsFreeIsReapedAtOnce(): void
     {
-        $this->transport->claimAs(QueueConsumerMode::Worker, 21600);
-        $this->transport->send(new Envelope(new QueueTestMessage('dies')));
-        [$taken] = [...$this->transport->get()];
-        QueueTestHolders::hand($this->db, $this->schema, self::idOf($taken), QueueTestHolders::gone());
+        $this->locked->claimAs(QueueConsumerMode::Worker, 21600);
+        $this->locked->send(new Envelope(new QueueTestMessage('dies')));
+        [$taken] = [...$this->locked->get()];
+        QueueTestHolders::hand($this->db, $this->schema, self::idOf($taken), QueueTestHolders::gone($this->dir));
 
-        $this->assertFalse($this->transport->isHandling());
-        $this->assertSame([self::idOf($taken)], array_column($this->transport->reapKilled(), 'id'));
+        $this->assertFalse($this->locked->isHandling());
+        $this->assertSame([self::idOf($taken)], array_column($this->locked->reapKilled(), 'id'));
         $this->assertSame('worker', $this->row(self::idOf($taken))['killed_in'] ?? null);
     }
 
@@ -394,29 +388,31 @@ class QueueTransportTest extends YesWikiTestCase
         $this->assertSame('failed', $this->row($id)['queue_name'] ?? null);
     }
 
-    /** R19: a process of its own still at work is slow, not dead: PHP's limit counts CPU time, and a handler that waits on the network outlives it. Only the ceiling ends it. */
-    public function testAProcessOfItsOwnStillAtWorkKeepsItsMessagePastItsLimit(): void
+    /** R19: a holder that holds its file is at work, not dead, however long past its limit: PHP's limit counts CPU time, and a handler that waits on the network outlives it. */
+    public function testAHolderThatHoldsItsFileKeepsItsMessageForHours(): void
     {
-        $this->transport->claimAs(QueueConsumerMode::Api, 30);
-        $this->transport->send(new Envelope(new QueueTestMessage('slow')));
-        [$taken] = [...$this->transport->get()];
-        QueueTestHolders::hand($this->db, $this->schema, self::idOf($taken), QueueTestHolders::living(true));
+        $this->locked->claimAs(QueueConsumerMode::Api, 30);
+        $this->locked->send(new Envelope(new QueueTestMessage('slow')));
+        [$taken] = [...$this->locked->get()];
+        $token = QueueTestHolders::hand($this->db, $this->schema, self::idOf($taken), QueueTestHolders::token());
+        $letGo = QueueTestHolders::lockHeldByAnotherProcess($this->holderFile($token));
 
-        $this->clock->sleep(3000);
-        $this->assertSame([], $this->transport->reapKilled());
-        $this->assertSame([], $this->transport->expiredClaims());
-        $this->assertTrue($this->transport->isHandling());
-
-        $this->clock->sleep(600 + 61);
-        $this->assertSame([self::idOf($taken)], array_column($this->transport->reapKilled(), 'id'), 'past the ceiling it is stuck, not slow');
+        try {
+            $this->clock->sleep(5 * 3600);
+            $this->assertSame([], $this->locked->reapKilled());
+            $this->assertSame([], $this->locked->expiredClaims());
+            $this->assertTrue($this->locked->isHandling());
+        } finally {
+            $this->assertSame(0, $letGo());
+        }
     }
 
-    /** R19: a claim that recorded no limit (made before limits were recorded, or by a caller that never set one) is judged on the ceiling, one hour, and the grace. */
+    /** R19: a claim that recorded no limit (made by a caller that never set one) and has no file is judged on one hour and the grace. */
     public function testAClaimWithoutARecordedLimitIsReapedPastOneHour(): void
     {
         $this->transport->send(new Envelope(new QueueTestMessage('untimed')));
         [$taken] = [...$this->transport->get()];
-        QueueTestHolders::hand($this->db, $this->schema, self::idOf($taken), QueueTestHolders::elsewhere());
+        QueueTestHolders::hand($this->db, $this->schema, self::idOf($taken), QueueTestHolders::token());
         $this->assertNull($this->row(self::idOf($taken))['delivered_limit'] ?? null);
 
         $this->clock->sleep(3600 + 60);
@@ -426,32 +422,32 @@ class QueueTransportTest extends YesWikiTestCase
         $this->assertSame([self::idOf($taken)], array_column($this->transport->reapKilled(), 'id'));
     }
 
-    /** The same holds for this very process while it holds the claim: a pass that outlives its own limit is not reaped under it. */
-    public function testThisProcessKeepsWhatItHoldsPastItsLimit(): void
+    /** The same holds for this very process while its pass runs: what the pass took is not reaped, however long past its limit. */
+    public function testThisProcessKeepsWhatItsPassHoldsForHours(): void
     {
         $this->transport->claimAs(QueueConsumerMode::Request, 1);
         $this->transport->send(new Envelope(new QueueTestMessage('slow')));
         $this->transport->workFor(QueueTestHolders::passToken());
         [...$this->transport->get()];
 
-        $this->clock->sleep(3600);
+        $this->clock->sleep(5 * 3600);
 
         $this->assertSame([], $this->transport->reapKilled());
     }
 
-    /** R19: a server's process (FPM, Apache, FrankenPHP) outlives the request that claimed: that it is there proves nothing, and the time rule decides. */
-    public function testAServersProcessStillThereIsJudgedByItsLimit(): void
+    /** A claim left behind by a pass that ended (its ack refused) has lost its file with its pass: it waits for its limit, as nothing tells. */
+    public function testAClaimLeftBehindByAnEndedPassIsJudgedByItsLimit(): void
     {
-        $this->transport->claimAs(QueueConsumerMode::Request, 1);
-        $this->transport->send(new Envelope(new QueueTestMessage('dies')));
-        [$taken] = [...$this->transport->get()];
-        QueueTestHolders::hand($this->db, $this->schema, self::idOf($taken), QueueTestHolders::living(false));
+        $this->locked->claimAs(QueueConsumerMode::Request, 1);
+        $this->locked->send(new Envelope(new QueueTestMessage('left')));
+        $this->locked->workFor(QueueTestHolders::passToken());
+        [$taken] = [...$this->locked->get()];
+        $this->locked->workFor(null);
 
-        $this->clock->sleep(61);
-        $this->assertSame([], $this->transport->reapKilled());
+        $this->assertSame([], $this->locked->reapKilled(), 'no file: nothing says it is gone');
 
-        $this->clock->sleep(1);
-        $this->assertSame([self::idOf($taken)], array_column($this->transport->reapKilled(), 'id'));
+        $this->clock->sleep(62);
+        $this->assertSame([self::idOf($taken)], array_column($this->locked->reapKilled(), 'id'));
     }
 
     /** Every message a pass takes carries the pass's token; the transport itself locks nothing, the pass does, and an ack releases its own message only. */
@@ -510,34 +506,13 @@ class QueueTransportTest extends YesWikiTestCase
         $this->assertSame([self::idOf($first), self::idOf($second)], array_column($this->locked->failHeldClaims(), 'id'));
     }
 
-    /** A server's process (FPM) still at work past its limit holds its lock: no judge reaps it nor calls it dead; only the ceiling ends it. */
-    public function testAServersProcessThatHoldsItsLockKeepsItsMessagePastItsLimit(): void
-    {
-        $this->locked->claimAs(QueueConsumerMode::Request, 1);
-        $this->locked->send(new Envelope(new QueueTestMessage('slow')));
-        [$taken] = [...$this->locked->get()];
-        $token = QueueTestHolders::hand($this->db, $this->schema, self::idOf($taken), QueueTestHolders::living(false));
-        $release = QueueTestHolders::lockHeldByAnotherProcess($this->holderFile($token));
-        try {
-            $this->clock->sleep(120);
-            $this->assertSame([], $this->locked->reapKilled());
-            $this->assertSame([], $this->locked->expiredClaims());
-            $this->assertTrue($this->locked->isHandling());
-
-            $this->clock->sleep(3600);
-            $this->assertSame([self::idOf($taken)], array_column($this->locked->reapKilled(), 'id'), 'past the ceiling it is stuck, not slow');
-        } finally {
-            $this->assertSame(0, $release());
-        }
-    }
-
     /** A server's process that let go of its lock without its ack has ended its request: its message is failed at once, and the file removed. */
     public function testAServersProcessThatLetGoOfItsLockIsGoneAtOnce(): void
     {
         $this->locked->claimAs(QueueConsumerMode::Request, 1);
         $this->locked->send(new Envelope(new QueueTestMessage('dies')));
         [$taken] = [...$this->locked->get()];
-        $token = QueueTestHolders::hand($this->db, $this->schema, self::idOf($taken), QueueTestHolders::living(false));
+        $token = QueueTestHolders::hand($this->db, $this->schema, self::idOf($taken), QueueTestHolders::token());
         $this->assertSame(0, QueueTestHolders::lockHeldByAnotherProcess($this->holderFile($token))());
 
         $this->assertSame([self::idOf($taken)], array_column($this->locked->reapKilled(), 'id'));
@@ -552,7 +527,7 @@ class QueueTransportTest extends YesWikiTestCase
         $this->locked->claimAs(QueueConsumerMode::Request, 1);
         $this->locked->send(new Envelope(new QueueTestMessage('dies')));
         [$taken] = [...$this->locked->get()];
-        $token = QueueTestHolders::hand($this->db, $this->schema, self::idOf($taken), QueueTestHolders::living(false));
+        $token = QueueTestHolders::hand($this->db, $this->schema, self::idOf($taken), QueueTestHolders::token());
         $this->assertSame(0, QueueTestHolders::lockHeldByAnotherProcess($this->holderFile($token))());
 
         $this->assertSame([self::idOf($taken)], array_column($this->locked->expiredClaims(), 'id'));
@@ -563,24 +538,6 @@ class QueueTransportTest extends YesWikiTestCase
         $this->locked->reapKilled();
 
         $this->assertFileDoesNotExist($this->holderFile($token));
-    }
-
-    /**
-     * R19: a claim this very process made and no longer holds was made by a request it served before, which died without letting go (a fatal error in a shutdown function).
-     *
-     * A process without threads runs one request at a time, so that request is over.
-     */
-    public function testAClaimThisProcessNoLongerHoldsIsDead(): void
-    {
-        if (ZEND_THREAD_SAFE) {
-            $this->markTestSkipped('a process with threads may hold it in another one');
-        }
-        $this->transport->claimAs(QueueConsumerMode::Request, 1);
-        $this->transport->send(new Envelope(new QueueTestMessage('dies')));
-        [$taken] = [...$this->transport->get()];
-        QueueTestHolders::hand($this->db, $this->schema, self::idOf($taken), QueueClaimHolder::thisProcess());
-
-        $this->assertSame([self::idOf($taken)], array_column($this->transport->reapKilled(), 'id'));
     }
 
     /** R19: what a process still holds as it ends goes to `failed` as killed, once; a pass that comes after finds nothing more. */
@@ -807,18 +764,18 @@ class QueueTransportTest extends YesWikiTestCase
     /** Who is at work on this queue: the live claims, not the ones whose process is gone. */
     public function testLiveHoldersListsALiveClaimAndOmitsADeadOne(): void
     {
-        $this->transport->claimAs(QueueConsumerMode::Worker, 21600);
-        $this->transport->send(new Envelope(new QueueTestMessage('mine')));
-        $this->transport->send(new Envelope(new QueueTestMessage('dies')));
-        $this->transport->workFor(QueueTestHolders::passToken());
-        [$mine, $dies] = [...$this->transport->get(), ...$this->transport->get()];
-        QueueTestHolders::hand($this->db, $this->schema, self::idOf($dies), QueueTestHolders::gone());
+        $this->locked->claimAs(QueueConsumerMode::Worker, 21600);
+        $this->locked->send(new Envelope(new QueueTestMessage('mine')));
+        $this->locked->send(new Envelope(new QueueTestMessage('dies')));
+        $this->locked->workFor(QueueTestHolders::passToken());
+        [$mine, $dies] = [...$this->locked->get(), ...$this->locked->get()];
+        QueueTestHolders::hand($this->db, $this->schema, self::idOf($dies), QueueTestHolders::gone($this->dir));
 
         $this->assertSame(
             [['holder' => (string)($this->row(self::idOf($mine))['delivered_by'] ?? ''), 'mode' => 'worker']],
-            $this->transport->liveHolders()
+            $this->locked->liveHolders()
         );
-        $this->assertSame([], $this->transport->withQueue('failed')->liveHolders(), 'the other queue holds nothing');
+        $this->assertSame([], $this->locked->withQueue('failed')->liveHolders(), 'the other queue holds nothing');
     }
 
     public function testDeleteFailedRemovesAFailedMessage(): void
@@ -1182,7 +1139,7 @@ class QueueTransportTest extends YesWikiTestCase
             [$taken] = [...$transport->get()];
             $clock->sleep(62);
             $this->assertSame([], $other->reapKilled(), 'its holder, this process, is still at work');
-            QueueTestHolders::hand($mine, $schema, self::idOf($taken), QueueTestHolders::elsewhere());
+            QueueTestHolders::hand($mine, $schema, self::idOf($taken), QueueTestHolders::token());
             $this->assertSame([self::idOf($taken)], array_column($other->reapKilled(), 'id'));
             $this->assertSame(1, $other->withQueue('failed')->getMessageCount());
             $transport->ack($taken);

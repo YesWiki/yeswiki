@@ -27,7 +27,7 @@ class QueueStatisticsSeenTest extends YesWikiTestCase
     private const START = '2026-10-29 12:00:00';
 
     /** A holder on a machine other than this one: its process can be neither seen alive nor seen gone, so its claim lives until its limit. */
-    private const ELSEWHERE = 'c4242@abcdef012345.777/';
+    private const ELSEWHERE = '4242/';
 
     private string $file;
     private MockClock $clock;
@@ -88,7 +88,7 @@ class QueueStatisticsSeenTest extends YesWikiTestCase
     public function testALiveClaimOfTheConsumerIsSeenNow(): void
     {
         $this->pass(QueueConsumerMode::Worker, '-3 hours', '-30 minutes', stopReason: '', holder: self::ELSEWHERE . 'aa');
-        $this->claimed('-30 minutes', QueueConsumerMode::Worker, self::ELSEWHERE . 'bb');
+        $this->claimed('-30 minutes', QueueConsumerMode::Worker, self::ELSEWHERE . 'aa');
 
         $this->assertSame(self::START, $this->format($this->statistics->lastSeenAt(QueueConsumerMode::Worker)));
     }
@@ -102,11 +102,11 @@ class QueueStatisticsSeenTest extends YesWikiTestCase
         $this->assertNull($this->statistics->lastSeenAt(QueueConsumerMode::Worker));
     }
 
-    /** A claim only shows the consumer at work when the process holding it is the one of its open pass. */
-    public function testAClaimOfAnotherProcessIsNotTheConsumerAtWork(): void
+    /** A claim only shows the consumer at work when it carries the token of its open pass. */
+    public function testAClaimOfAnotherPassIsNotTheConsumerAtWork(): void
     {
         $this->pass(QueueConsumerMode::Worker, '-3 hours', '-30 minutes', stopReason: '', holder: self::ELSEWHERE . 'aa');
-        $this->claimed('-30 minutes', QueueConsumerMode::Worker, 'c999@abcdef012345.777/bb');
+        $this->claimed('-30 minutes', QueueConsumerMode::Worker, '999/bb');
 
         $this->assertSame($this->at('-30 minutes'), $this->format($this->statistics->lastSeenAt(QueueConsumerMode::Worker)));
     }

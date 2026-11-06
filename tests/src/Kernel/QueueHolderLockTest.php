@@ -5,7 +5,6 @@ namespace YesWiki\Test\Kernel;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Filesystem\Filesystem;
-use YesWiki\Kernel\Queue\QueueClaimHolder;
 use YesWiki\Kernel\Service\CacheClearer;
 use YesWiki\Kernel\Service\Queue\QueueHolderLock;
 
@@ -31,7 +30,7 @@ class QueueHolderLockTest extends TestCase
 
     public function testAHeldTokenIsHeldFromAnotherProcessesView(): void
     {
-        $token = $this->tokenOfThisMachine();
+        $token = QueueHolderLock::newToken();
         $path = $this->absolutePathOf($token);
 
         $this->assertTrue($this->lock->hold($token));
@@ -45,7 +44,7 @@ class QueueHolderLockTest extends TestCase
 
     public function testAFreeLockIsFree(): void
     {
-        $token = $this->tokenOfThisMachine();
+        $token = QueueHolderLock::newToken();
 
         $ends = QueueTestHolders::lockHeldByAnotherProcess($this->absolutePathOf($token));
         $this->assertSame(0, $ends());
@@ -55,7 +54,7 @@ class QueueHolderLockTest extends TestCase
 
     public function testAHeldLockIsHeld(): void
     {
-        $token = $this->tokenOfThisMachine();
+        $token = QueueHolderLock::newToken();
 
         $ends = QueueTestHolders::lockHeldByAnotherProcess($this->absolutePathOf($token));
         try {
@@ -71,7 +70,7 @@ class QueueHolderLockTest extends TestCase
     /** Two judges asking at once do not take each other for the holder: a lock another judge is only looking at is free. */
     public function testALockAnotherJudgeIsLookingAtIsFree(): void
     {
-        $token = $this->tokenOfThisMachine();
+        $token = QueueHolderLock::newToken();
         $path = $this->absolutePathOf($token);
         mkdir(\dirname($path), 0o777, true);
         touch($path);
@@ -89,21 +88,7 @@ class QueueHolderLockTest extends TestCase
 
     public function testAMissingFileIsAbsent(): void
     {
-        $this->assertSame(QueueHolderLock::ABSENT, $this->lock->stateOf($this->tokenOfThisMachine()));
-    }
-
-    public function testATokenOfAnotherMachineIsAbsentAndNeverForgotten(): void
-    {
-        $token = QueueTestHolders::elsewhere()->token();
-        $path = $this->absolutePathOf($token);
-        mkdir(\dirname($path), 0o777, true);
-        touch($path);
-
-        $this->assertSame(QueueHolderLock::ABSENT, $this->lock->stateOf($token), 'a file here says nothing about a process there');
-
-        $this->lock->forget($token);
-
-        $this->assertFileExists($path);
+        $this->assertSame(QueueHolderLock::ABSENT, $this->lock->stateOf(QueueHolderLock::newToken()));
     }
 
     public function testAnUnreadableTokenIsAbsent(): void
@@ -117,9 +102,9 @@ class QueueHolderLockTest extends TestCase
         $this->assertContains(QueueHolderLock::DIRECTORY, CacheClearer::KEPT);
     }
 
-    public function testAForgottenLockOfThisMachineIsRemoved(): void
+    public function testAForgottenLockIsRemoved(): void
     {
-        $token = $this->tokenOfThisMachine();
+        $token = QueueHolderLock::newToken();
         $path = $this->absolutePathOf($token);
         mkdir(\dirname($path), 0o777, true);
         touch($path);
@@ -132,7 +117,7 @@ class QueueHolderLockTest extends TestCase
 
     public function testReleasingATokenNobodyHoldsLeavesItsFile(): void
     {
-        $token = $this->tokenOfThisMachine();
+        $token = QueueHolderLock::newToken();
         $path = $this->absolutePathOf($token);
         mkdir(\dirname($path), 0o777, true);
         touch($path);
@@ -144,7 +129,7 @@ class QueueHolderLockTest extends TestCase
 
     public function testAHoldFailsWhenSomeoneElseHoldsTheFile(): void
     {
-        $token = $this->tokenOfThisMachine();
+        $token = QueueHolderLock::newToken();
 
         $ends = QueueTestHolders::lockHeldByAnotherProcess($this->absolutePathOf($token));
         try {
@@ -158,39 +143,18 @@ class QueueHolderLockTest extends TestCase
     {
         file_put_contents($this->dir . '/cache', 'a file where the directory should be');
 
-        $this->assertFalse($this->lock->hold($this->tokenOfThisMachine()));
+        $this->assertFalse($this->lock->hold(QueueHolderLock::newToken()));
     }
 
-    public function testATokenWithoutAMachineIsNotHeld(): void
+    public function testANewTokenIsThePidAndANonce(): void
     {
-        $token = (new QueueClaimHolder(true, 1, '', ''))->token();
-
-        $this->assertFalse($this->lock->hold($token), 'no judge would read a lock for a process that cannot be told from another');
-        $this->assertDirectoryDoesNotExist($this->dir . '/' . QueueHolderLock::DIRECTORY);
-    }
-
-    public function testATokenOfAnotherMachineIsNotHeld(): void
-    {
-        $token = QueueTestHolders::elsewhere()->token();
-
-        $this->assertFalse($this->lock->hold($token), 'a file here says nothing about a process there, so no judge would read it');
-        $this->assertDirectoryDoesNotExist($this->dir . '/' . QueueHolderLock::DIRECTORY);
+        $this->assertMatchesRegularExpression('~^' . getmypid() . '/[0-9a-f]{16}$~', QueueHolderLock::newToken());
+        $this->assertNotSame(QueueHolderLock::newToken(), QueueHolderLock::newToken());
     }
 
     public function testThePathIsTheNonceInTheHoldersDirectory(): void
     {
         $this->assertSame(QueueHolderLock::DIRECTORY . '/00ff12ab.lock', QueueHolderLock::pathOf('c12@abc.34/00ff12ab'));
-    }
-
-    /** A token as this process makes them; skips where the machine cannot be told from another, as nothing is held there. */
-    private function tokenOfThisMachine(): string
-    {
-        $holder = QueueClaimHolder::thisProcess();
-        if ($holder->machine === '') {
-            $this->markTestSkipped('this machine does not show its processes in /proc');
-        }
-
-        return $holder->token();
     }
 
     private function absolutePathOf(string $token): string

@@ -38,7 +38,7 @@ class QueueFallbackTest extends YesWikiTestCase
     private const START = '2026-10-29 12:00:00';
 
     /** A holder on a machine other than this one: its claim lives until its limit. */
-    private const ELSEWHERE = 'c4242@abcdef012345.777/';
+    private const ELSEWHERE = '4242/';
 
     private string $file;
     private string $lockDir;
@@ -111,12 +111,12 @@ class QueueFallbackTest extends YesWikiTestCase
         $this->assertFalse($this->fallback('worker')->shouldConsume());
     }
 
-    /** It does not beat inside one long message (a backup): the claim its process holds shows it at work. */
+    /** It does not beat inside one long message (a backup): the claim its pass holds shows it at work. */
     public function testAWorkerHandlingOneLongMessageDoesNot(): void
     {
         $this->messageWaitingSince(3600);
         $this->pass(QueueConsumerMode::Worker, '-3 hours', '-30 minutes', stopReason: '', holder: self::ELSEWHERE . 'aa');
-        $this->claimed('-30 minutes', QueueConsumerMode::Worker, self::ELSEWHERE . 'bb');
+        $this->claimed('-30 minutes', QueueConsumerMode::Worker, self::ELSEWHERE . 'aa');
 
         $this->assertFalse($this->fallback('worker')->shouldConsume());
     }

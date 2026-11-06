@@ -18,7 +18,6 @@ use Symfony\Component\Messenger\Transport\TransportInterface;
 use YesWiki\Kernel\Database\SqlParameters;
 use YesWiki\Kernel\Queue\Deduplicated;
 use YesWiki\Kernel\Queue\NotReplayableByHand;
-use YesWiki\Kernel\Queue\QueueClaimHolder;
 use YesWiki\Kernel\Queue\QueueClaimStamp;
 use YesWiki\Kernel\Queue\QueueConsumerMode;
 use YesWiki\Kernel\Queue\QueueFailureCause;
@@ -41,10 +40,6 @@ class QueueTransport implements TransportInterface, MessageCountAwareInterface, 
     public const QUEUES = [self::DEFAULT_QUEUE, self::FAILED_QUEUE];
 
     public const KILL_GRACE_SECONDS = 60;
-
-    private const UNRECORDED_LIMIT_SECONDS = QueuePassLimitsFactory::KILL_LIMIT_NO_PHP_LIMIT;
-
-    private const ALIVE_CEILING_SECONDS = QueuePassLimitsFactory::KILL_LIMIT_NO_PHP_LIMIT;
 
     private const CONFLICT_ATTEMPTS = 3;
 
@@ -546,7 +541,7 @@ class QueueTransport implements TransportInterface, MessageCountAwareInterface, 
             return null;
         }
 
-        $token = $this->passToken ?? QueueClaimHolder::thisProcess()->token();
+        $token = $this->passToken ?? QueueHolderLock::newToken();
         $row = $this->transactionalClaim($this->schema->table(), self::format($this->now()), $token, $id, $upToId);
         if ($row !== null) {
             $this->held[(int)$row['id']] = [
@@ -646,46 +641,35 @@ class QueueTransport implements TransportInterface, MessageCountAwareInterface, 
     /** @param array<string, mixed> $row */
     private function isDead(array $row, \DateTimeImmutable $now): bool
     {
-        $limit = $row['delivered_limit'] === null ? self::UNRECORDED_LIMIT_SECONDS : (int)$row['delivered_limit'];
-
-        $seconds = match ($this->holderState((string)($row['delivered_by'] ?? ''))) {
-            QueueClaimHolder::GONE => null,
-            QueueClaimHolder::ALIVE => max($limit, self::ALIVE_CEILING_SECONDS),
-            default => $limit,
-        };
-
-        return $seconds === null || $now > self::parse((string)$row['delivered_at'])->modify('+' . ($seconds + self::KILL_GRACE_SECONDS) . ' seconds');
+        return $this->isOverdue(
+            (string)($row['delivered_by'] ?? ''),
+            self::parse((string)$row['delivered_at']),
+            $row['delivered_limit'] === null ? null : (int)$row['delivered_limit'],
+            $now
+        );
     }
 
-    /** Whether the holder a claim token names is ALIVE, GONE or UNKNOWN, as far as this process can tell: by its lock when it has one, else by its process. */
+    /**
+     * The one verdict on a holder (R19), for a claim and for a pass: never while it holds its file, at once when its file is free,
+     * and with no file once $since plus its limit (one hour when none was recorded) plus the grace is past.
+     */
+    public function isOverdue(string $token, \DateTimeImmutable $since, ?int $limitSeconds, \DateTimeImmutable $now): bool
+    {
+        return match ($this->holderState($token)) {
+            QueueHolderLock::HELD => false,
+            QueueHolderLock::FREE => true,
+            default => $now > $since->modify('+' . (($limitSeconds ?? QueuePassLimitsFactory::KILL_LIMIT_NO_PHP_LIMIT) + self::KILL_GRACE_SECONDS) . ' seconds'),
+        };
+    }
+
+    /** HELD for a pass running in this process, else what its file says: HELD, FREE, or ABSENT when there is none (or no lock to read). Read only. */
     public function holderState(string $token): string
     {
-        $holder = QueueClaimHolder::ofToken($token);
-        if ($holder === null) {
-            return QueueClaimHolder::UNKNOWN;
-        }
-        $here = QueueClaimHolder::thisProcess();
-        $sameProcess = $holder->isSameProcessAs($here);
-        if ($sameProcess && isset(self::$heldHere[$token])) {
-            return QueueClaimHolder::ALIVE;
+        if (isset(self::$heldHere[$token])) {
+            return QueueHolderLock::HELD;
         }
 
-        // Read only: the file of a holder that is gone stays until reapKilled() fails its claim.
-        $lock = $this->holderLock?->stateOf($token) ?? QueueHolderLock::ABSENT;
-        if ($lock !== QueueHolderLock::ABSENT) {
-            return $lock === QueueHolderLock::HELD ? QueueClaimHolder::ALIVE : QueueClaimHolder::GONE;
-        }
-
-        if ($sameProcess) {
-            return ZEND_THREAD_SAFE ? QueueClaimHolder::UNKNOWN : QueueClaimHolder::GONE;
-        }
-
-        $process = $holder->processSeenFrom($here);
-        if ($process === QueueClaimHolder::ALIVE && !$holder->ownProcess) {
-            return QueueClaimHolder::UNKNOWN;
-        }
-
-        return $process;
+        return $this->holderLock?->stateOf($token) ?? QueueHolderLock::ABSENT;
     }
 
     /** Moves that message to `failed` as killed in that mode, if it still carries that claim. */

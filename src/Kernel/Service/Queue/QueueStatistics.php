@@ -5,7 +5,6 @@ namespace YesWiki\Kernel\Service\Queue;
 use Psr\Clock\ClockInterface;
 use YesWiki\Kernel\Database\SqlParameters;
 use YesWiki\Kernel\Entity\JournalChannel;
-use YesWiki\Kernel\Queue\QueueClaimHolder;
 use YesWiki\Kernel\Queue\QueueConsumerMode;
 use YesWiki\Kernel\Queue\QueueJournalEntry;
 use YesWiki\Kernel\Queue\QueuePassOrigin;
@@ -360,10 +359,10 @@ class QueueStatistics
         return $first === null ? null : self::time((string)$first);
     }
 
-    /** Whether a live claim of that mode is held by the process of one of that mode's open consumer passes. */
+    /** Whether a live claim of that mode was made by one of that mode's open consumer passes, whose token it carries. */
     private function holdsAClaim(QueueConsumerMode $mode): bool
     {
-        $claims = array_filter($this->transport->liveHolders(), static fn (array $claim): bool => $claim['mode'] === $mode->value);
+        $claims = array_column(array_filter($this->transport->liveHolders(), static fn (array $claim): bool => $claim['mode'] === $mode->value), 'holder');
         if ($claims === []) {
             return false;
         }
@@ -373,12 +372,8 @@ class QueueStatistics
             [JournalChannel::Queue->value, QueueJournalEntry::PASS, $mode->value, '']
         );
         foreach ($open as $row) {
-            $pass = QueueClaimHolder::ofToken((string)(self::context($row)['holder'] ?? ''));
-            foreach ($claims as $claim) {
-                $holder = QueueClaimHolder::ofToken($claim['holder']);
-                if ($pass !== null && $holder !== null && $holder->isSameProcessAs($pass)) {
-                    return true;
-                }
+            if (in_array((string)(self::context($row)['holder'] ?? ''), $claims, true)) {
+                return true;
             }
         }
 

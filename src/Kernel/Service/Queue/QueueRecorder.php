@@ -5,7 +5,6 @@ namespace YesWiki\Kernel\Service\Queue;
 use Psr\Clock\ClockInterface;
 use Psr\Log\LogLevel;
 use YesWiki\Kernel\Entity\JournalChannel;
-use YesWiki\Kernel\Queue\QueueClaimHolder;
 use YesWiki\Kernel\Queue\QueueConsumerMode;
 use YesWiki\Kernel\Queue\QueueFailureCause;
 use YesWiki\Kernel\Queue\QueueJournalEntry;
@@ -57,7 +56,7 @@ class QueueRecorder
             'before_response' => $beforeResponse ? 1 : 0,
             'origin' => $consumer ? null : $origin->value,
             'fallback_for' => $fallbackFor?->value,
-            'holder' => $holder ?? ($consumer ? QueueClaimHolder::thisProcess()->token() : null),
+            'holder' => $holder ?? ($consumer ? QueueHolderLock::newToken() : null),
         ]);
 
         return $this->db->lastInsertId();

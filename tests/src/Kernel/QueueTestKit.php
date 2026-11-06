@@ -82,7 +82,7 @@ final class QueueTestKit
     private readonly string $file;
     /** Whether the kit made its database, and removes it with the rest; not when it was given one. */
     private readonly bool $ownsDatabase;
-    private readonly string $lockDir;
+    public readonly string $lockDir;
     private readonly string $configFile;
     private readonly string|false $previousConfigFile;
     private readonly string|false $previousMode;

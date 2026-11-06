@@ -15,7 +15,6 @@ use Symfony\Component\Messenger\Stamp\TransportMessageIdStamp;
 use YesWiki\Files\Service\RuntimeLock;
 use YesWiki\Kernel\Entity\Event;
 use YesWiki\Kernel\Queue\ProvidesSchedule;
-use YesWiki\Kernel\Queue\QueueClaimHolder;
 use YesWiki\Kernel\Queue\QueueConsumerMode;
 use YesWiki\Kernel\Queue\QueuePassLimits;
 use YesWiki\Kernel\Queue\QueuePassOrigin;
@@ -341,26 +340,31 @@ class QueueConsumerTest extends YesWikiTestCase
      */
     public function testAConsumerTheHostKillsIsReapedByTheNextPassAtOnce(): void
     {
-        if (QueueClaimHolder::thisProcess()->machine === '' || !function_exists('posix_kill')) {
-            $this->markTestSkipped('this machine does not show its processes in /proc');
+        if (!function_exists('posix_kill')) {
+            $this->markTestSkipped('posix_kill is needed to kill the consumer');
         }
         $this->send(1);
         $script = $this->script(<<<'PHP'
+            define('YESWIKI_INSTANCE_DIR', $argv[2]);
             require_once 'tests/src/Kernel/QueueTestMessage.php';
             $db = new YesWiki\Kernel\Service\DbService(new Symfony\Component\DependencyInjection\ParameterBag\ParameterBag(['db_driver' => 'sqlite', 'db_database' => $argv[1], 'table_prefix' => 'ywq_', 'debug' => false]));
             $transport = new YesWiki\Kernel\Service\Queue\QueueTransport($db, new YesWiki\Kernel\Service\Queue\QueueSchema($db), new Symfony\Component\Clock\NativeClock());
             $transport->claimAs(YesWiki\Kernel\Queue\QueueConsumerMode::Request, 1);
+            $holder = YesWiki\Kernel\Service\Queue\QueueHolderLock::newToken();
+            $locks = new YesWiki\Kernel\Service\Queue\QueueHolderLock(new YesWiki\Files\Service\RuntimeLock());
+            $locks->hold($holder) or exit(2);
+            $transport->workFor($holder);
             echo count([...$transport->get()]), "\n";
             sleep(60);
             PHP);
-        $process = proc_open([PHP_BINARY, $script, $this->file], [1 => ['pipe', 'w']], $pipes);
+        $process = proc_open([PHP_BINARY, $script, $this->file, $this->lockDir], [1 => ['pipe', 'w']], $pipes);
         $this->assertIsResource($process);
 
         try {
             $this->assertSame("1\n", fgets($pipes[1]), 'the consumer took the message');
             $this->build($this->db, new MockClock(new \DateTimeImmutable('+30 minutes')));
             $this->consumer->drain(QueueConsumerMode::Api, new QueuePassLimits(PHP_INT_MAX, 30));
-            $this->assertSame([], $this->statistics->failed(), 'half an hour past its one-second limit, and inside the ceiling, it is still at work');
+            $this->assertSame([], $this->statistics->failed(), 'half an hour past its one-second limit, it holds its lock: it is still at work');
             $this->assertSame([], $this->handled);
 
             posix_kill(proc_get_status($process)['pid'], 9);
@@ -605,7 +609,7 @@ class QueueConsumerTest extends YesWikiTestCase
 
     public function testAPassWhoseProcessIsGoneIsClosedByTheNextOne(): void
     {
-        $dead = QueueTestKit::recordPass($this->db, QueueConsumerMode::Worker, self::START, self::START, '', holder: QueueTestHolders::gone()->token());
+        $dead = QueueTestKit::recordPass($this->db, QueueConsumerMode::Worker, self::START, self::START, '', holder: QueueTestHolders::gone($this->lockDir));
 
         $this->consumer->drain(QueueConsumerMode::Api, new QueuePassLimits(PHP_INT_MAX, 30));
 
@@ -615,7 +619,7 @@ class QueueConsumerTest extends YesWikiTestCase
 
     public function testAPassWhoseLockIsFreeIsClosedAndItsFileRemoved(): void
     {
-        $token = QueueTestHolders::living(false)->token();
+        $token = QueueTestHolders::token();
         $file = $this->holderFile($token);
         mkdir(\dirname($file), 0o777, true);
         touch($file);
@@ -629,7 +633,7 @@ class QueueConsumerTest extends YesWikiTestCase
 
     public function testAPassWhoseLockIsHeldStaysOpen(): void
     {
-        $token = QueueTestHolders::living(false)->token();
+        $token = QueueTestHolders::token();
         $alive = QueueTestKit::recordPass($this->db, QueueConsumerMode::Request, self::START, self::START, '', holder: $token);
         $letGo = QueueTestHolders::lockHeldByAnotherProcess($this->holderFile($token));
 
@@ -744,7 +748,7 @@ class QueueConsumerTest extends YesWikiTestCase
 
     public function testAPassPausedStillClosesDeadPasses(): void
     {
-        $dead = QueueTestKit::recordPass($this->db, QueueConsumerMode::Worker, self::START, self::START, '', holder: QueueTestHolders::gone()->token());
+        $dead = QueueTestKit::recordPass($this->db, QueueConsumerMode::Worker, self::START, self::START, '', holder: QueueTestHolders::gone($this->lockDir));
         $this->setWikiStatus('hibernate');
 
         $report = $this->consumer->drain(QueueConsumerMode::Api, new QueuePassLimits(PHP_INT_MAX, 30));
@@ -755,7 +759,7 @@ class QueueConsumerTest extends YesWikiTestCase
 
     public function testABlockingConsumerClosesDeadPassesWhenItStarts(): void
     {
-        $dead = QueueTestKit::recordPass($this->db, QueueConsumerMode::Worker, self::START, self::START, '', holder: QueueTestHolders::gone()->token());
+        $dead = QueueTestKit::recordPass($this->db, QueueConsumerMode::Worker, self::START, self::START, '', holder: QueueTestHolders::gone($this->lockDir));
         $this->send(1);
 
         $report = $this->consumer->consume(QueueConsumerMode::Worker, 30, 512 * 1024 * 1024, 1);
@@ -1304,7 +1308,7 @@ class QueueConsumerTest extends YesWikiTestCase
             $this->send(3);
             $this->transport->claimAs(QueueConsumerMode::Request, 1);
             [$abandoned] = [...$this->transport->get()];
-            QueueTestHolders::hand($db, $schema, (int)$abandoned->last(TransportMessageIdStamp::class)?->getId(), QueueTestHolders::elsewhere());
+            QueueTestHolders::hand($db, $schema, (int)$abandoned->last(TransportMessageIdStamp::class)?->getId(), QueueTestHolders::token());
             $this->assertInstanceOf(MockClock::class, $this->clock);
             $this->clock->sleep(62);
             $this->behaviour = function (QueueTestMessage $message): void {
@@ -1446,7 +1450,7 @@ class QueueConsumerTest extends YesWikiTestCase
         $this->transport->claimAs(QueueConsumerMode::Request, 1);
         [$abandoned] = [...$this->transport->get()];
         $id = (int)$abandoned->last(TransportMessageIdStamp::class)?->getId();
-        QueueTestHolders::hand($this->db, $this->schema, $id, QueueTestHolders::elsewhere());
+        QueueTestHolders::hand($this->db, $this->schema, $id, QueueTestHolders::token());
         $this->assertInstanceOf(MockClock::class, $this->clock);
         $this->clock->sleep(62);
 

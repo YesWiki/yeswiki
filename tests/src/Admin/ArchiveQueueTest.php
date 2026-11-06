@@ -689,7 +689,7 @@ class ArchiveQueueTest extends YesWikiTestCase
         if ($death === 'host') {
             $this->transport->claimAs(QueueConsumerMode::Request, 21600);
             $this->assertNotNull($this->transport->getById($messageId));
-            QueueTestHolders::hand($this->db, $this->schema, $messageId, QueueTestHolders::gone());
+            QueueTestHolders::hand($this->db, $this->schema, $messageId, QueueTestHolders::gone($this->kit->lockDir));
             $this->setWikiStatus('archiving');
 
             return;
@@ -705,7 +705,7 @@ class ArchiveQueueTest extends YesWikiTestCase
     {
         $this->transport->claimAs(QueueConsumerMode::Worker, 60);
         $this->assertNotNull($this->transport->getById($messageId));
-        QueueTestHolders::hand($this->db, $this->schema, $messageId, QueueTestHolders::elsewhere());
+        QueueTestHolders::hand($this->db, $this->schema, $messageId, QueueTestHolders::token());
         $this->setWikiStatus('archiving');
         $this->clock->sleep(3600);
     }

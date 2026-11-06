@@ -19,7 +19,6 @@ use Symfony\Component\Messenger\EventListener\StopWorkerOnMessageLimitListener;
 use Symfony\Component\Messenger\EventListener\StopWorkerOnTimeLimitListener;
 use Symfony\Component\Messenger\Worker;
 use YesWiki\Kernel\Entity\Event;
-use YesWiki\Kernel\Queue\QueueClaimHolder;
 use YesWiki\Kernel\Queue\QueueConsumerMode;
 use YesWiki\Kernel\Queue\QueuePassLimits;
 use YesWiki\Kernel\Queue\QueuePassObserver;
@@ -235,7 +234,7 @@ class QueueConsumer
         $startedAt = microtime(true);
         $observer = new QueuePassObserver($this->recorder, $this->journal, $mode, $this->clock);
         $passId = null;
-        $holder = QueueClaimHolder::thisProcess()->token();
+        $holder = QueueHolderLock::newToken();
         $this->failWhatItHoldsWhenTheProcessEnds();
 
         try {
@@ -464,18 +463,14 @@ class QueueConsumer
     private function closeDeadPasses(?int $ownPassId): void
     {
         try {
-            $longestLife = QueuePassLimitsFactory::KILL_LIMIT_NO_PHP_LIMIT + QueueTransport::KILL_GRACE_SECONDS;
-            $lastPossible = $this->clock->now()->setTimezone(new \DateTimeZone('UTC'))->modify("-{$longestLife} seconds");
+            $now = $this->clock->now();
             foreach ($this->statistics->openPasses() as $pass) {
-                if ($pass['id'] === $ownPassId) {
+                if ($pass['id'] === $ownPassId || !$this->transport->isOverdue($pass['holder'], $pass['lastAt'], null, $now)) {
                     continue;
                 }
-                $state = $pass['holder'] === '' ? QueueClaimHolder::UNKNOWN : $this->transport->holderState($pass['holder']);
-                if ($state === QueueClaimHolder::GONE) {
-                    $this->recorder->passKilled($pass['id']);
+                $this->recorder->passKilled($pass['id']);
+                if ($this->transport->holderState($pass['holder']) === QueueHolderLock::FREE) {
                     $this->holderLock->forget($pass['holder']);
-                } elseif ($state === QueueClaimHolder::UNKNOWN && $pass['lastAt'] < $lastPossible) {
-                    $this->recorder->passKilled($pass['id']);
                 }
             }
         } catch (\Throwable $broken) {

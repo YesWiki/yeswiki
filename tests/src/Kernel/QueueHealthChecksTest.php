@@ -705,7 +705,7 @@ class QueueHealthChecksTest extends YesWikiTestCase
         $this->mode = 'request';
         $dir = sys_get_temp_dir() . '/yw-health-holders-' . bin2hex(random_bytes(4));
         $this->statistics = new QueueStatistics($this->db, $this->schema, $this->journal, new QueueTransport($this->db, $this->schema, clock: $this->clock, holderLock: new QueueHolderLock(QueueTestKit::locksIn($dir))), $this->clock);
-        $token = QueueTestHolders::living(false)->token();
+        $token = QueueTestHolders::token();
         $this->claimed('-10 minutes', limit: 30, mode: 'request', holder: $token);
         $letGo = QueueTestHolders::lockHeldByAnotherProcess($dir . '/' . QueueHolderLock::pathOf($token));
 

@@ -106,11 +106,6 @@ class ArchitectureTest extends TestCase
         'Kernel/Command/CreateInstanceCommand.php',
         'Kernel/Command/ConvertToInstanceCommand.php',
         'Kernel/Service/InstanceEntryPoints.php',
-
-        // /proc is the kernel's account of the processes running, neither a wiki's data nor the
-        // Program: the queue reads in it whether the process that holds a message is still there
-        // (R19), and a bucket could never answer that.
-        'Kernel/Queue/QueueClaimHolder.php',
     ];
 
     /**
