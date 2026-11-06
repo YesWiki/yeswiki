@@ -7,7 +7,6 @@ use Symfony\Component\Routing\Attribute\Route;
 use YesWiki\Core\ApiResponse;
 use YesWiki\Core\YesWikiController;
 use YesWiki\Kernel\Queue\QueueConsumerMode;
-use YesWiki\Kernel\Queue\QueuePassReport;
 use YesWiki\Kernel\Service\Queue\QueueConsumer;
 use YesWiki\Kernel\Service\Queue\QueuePassLimitsFactory;
 use YesWiki\Kernel\Service\Queue\QueueSettings;
@@ -17,7 +16,7 @@ class QueueApiController extends YesWikiController
     public const SECRET_HEADER = 'X-YesWiki-Queue-Secret';
     public const SECRET_QUERY = 'secret';
 
-    /** One pass over the queue (mode `api`) for a caller sending the wiki's `queue_consume_secret`; 409 when a pass is running. */
+    /** One pass over the queue (mode `api`) for a caller sending the wiki's `queue_consume_secret`; it runs alongside any other pass. */
     #[Route('/api/queue/consume', methods: ['GET', 'POST'], options: ['acl' => ['public']])]
     public function consume(): ApiResponse
     {
@@ -40,6 +39,6 @@ class QueueApiController extends YesWikiController
             'remaining' => $report->remaining,
             'durationMs' => $report->durationMs,
             'stopReason' => $report->stopReason,
-        ], $report->stopReason === QueuePassReport::LOCKED ? Response::HTTP_CONFLICT : Response::HTTP_OK);
+        ]);
     }
 }

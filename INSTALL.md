@@ -177,8 +177,8 @@ The secret then ends up in access logs, so prefer the header when the service al
 curl 'https://mysite.com/wiki/?api/queue/consume&secret=THE-SECRET'
 ```
 
-The route answers `401` to a missing or wrong secret (and to everybody while none is set), `409`
-when another pass is already running (call again later, nothing is wrong), and `200` otherwise with
+The route answers `401` to a missing or wrong secret (and to everybody while none is set), and `200` otherwise, even
+while another pass runs (both run side by side), with
 `{"handled": 3, "remaining": 0, "durationMs": 412, "stopReason": "empty"}`. Every few minutes is
 enough, and a call takes at most about 50 seconds. Replacing the secret from the same page cuts off
 the old one at once.

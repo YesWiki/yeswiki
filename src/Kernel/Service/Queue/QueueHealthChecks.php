@@ -328,7 +328,7 @@ class QueueHealthChecks implements ProvidesHealthChecks
 
         $passes = array_slice(array_values(array_filter(
             $this->statistics->recentPasses(200),
-            static fn (array $pass): bool => !$pass['blocking'] && !in_array($pass['stopReason'], [QueuePassReport::LOCKED, QueuePassReport::PAUSED], true)
+            static fn (array $pass): bool => !$pass['blocking'] && $pass['stopReason'] !== QueuePassReport::PAUSED
         )), 0, self::PHP_LIMIT_WINDOW);
         $stopped = count(array_filter($passes, static fn (array $pass): bool => $pass['stopReason'] === QueuePassReport::PHP_LIMIT));
 

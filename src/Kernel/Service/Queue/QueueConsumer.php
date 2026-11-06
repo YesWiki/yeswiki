@@ -18,7 +18,6 @@ use Symfony\Component\Messenger\EventListener\StopWorkerOnMemoryLimitListener;
 use Symfony\Component\Messenger\EventListener\StopWorkerOnMessageLimitListener;
 use Symfony\Component\Messenger\EventListener\StopWorkerOnTimeLimitListener;
 use Symfony\Component\Messenger\Worker;
-use YesWiki\Files\Service\RuntimeLock;
 use YesWiki\Kernel\Entity\Event;
 use YesWiki\Kernel\Queue\QueueClaimHolder;
 use YesWiki\Kernel\Queue\QueueConsumerMode;
@@ -41,8 +40,6 @@ use YesWiki\Kernel\Service\Journal;
  */
 class QueueConsumer
 {
-    public const PASS_LOCK = 'cache/queue-pass.lock';
-
     public const MESSAGE_KILLED = 'queue.message_killed';
 
     private const RECEIVER = QueueTransport::DEFAULT_QUEUE;
@@ -62,7 +59,6 @@ class QueueConsumer
         private readonly QueueStatistics $statistics,
         private readonly QueuePassLimitsFactory $passLimits,
         private readonly HibernationService $hibernation,
-        private readonly RuntimeLock $runtimeLock,
         private readonly Journal $journal,
         private readonly QueueScheduleTicker $scheduleTicker,
         private readonly ClockInterface $clock,
@@ -81,68 +77,54 @@ class QueueConsumer
     public function drain(QueueConsumerMode $mode, QueuePassLimits $limits, bool $responseAlreadySent = true, QueuePassOrigin $origin = QueuePassOrigin::Consumer, ?QueueConsumerMode $fallbackFor = null): QueuePassReport
     {
         $startedAt = microtime(true);
-        $lock = $this->runtimeLock->acquire(self::PASS_LOCK);
-
-        try {
-            if ($lock === null) {
-                $this->journal->error('The queue pass lock ' . self::PASS_LOCK . ' cannot be created', ['action' => 'queue.pass_failed']);
-
-                return $this->report(0, $startedAt, QueuePassReport::ERROR);
-            }
-            if (!$this->runtimeLock->tryLock($lock)) {
-                return $this->leaveATrace($this->report(0, $startedAt, QueuePassReport::LOCKED), $mode, $limits, $responseAlreadySent, $origin);
-            }
+        if ($this->hibernation->isWikiHibernatedNow()) {
+            $this->reapWhilePaused($mode);
             if ($this->hibernation->isWikiHibernatedNow()) {
-                $this->reapWhilePaused($mode);
-                if ($this->hibernation->isWikiHibernatedNow()) {
-                    return $this->leaveATrace($this->report(0, $startedAt, QueuePassReport::PAUSED), $mode, $limits, $responseAlreadySent, $origin);
-                }
+                return $this->leaveATrace($this->report(0, $startedAt, QueuePassReport::PAUSED), $mode, $limits, $responseAlreadySent, $origin);
             }
-
-            return $this->pass($mode, $limits, !$responseAlreadySent, $origin, $fallbackFor, function (QueuePassObserver $observer, int $passId) use ($mode, $limits): string {
-                $this->transport->claimAs($mode, $limits->killLimitSeconds);
-                $this->reapKilled($observer);
-                $this->closeDeadPasses($passId);
-                $this->tick();
-                // Read after the tick, so that what it dispatched is run now; what the handlers send waits for the next pass.
-                $cutoff = $this->transport->lastId();
-
-                $lifted = false;
-                $liftTheLimit = function () use ($mode, &$lifted): ?int {
-                    if ($lifted) {
-                        return null;
-                    }
-                    $lifted = true;
-                    $limit = $this->passLimits->liftPhpLimit();
-                    if ($limit !== null) {
-                        $this->transport->claimAs($mode, $limit);
-                    }
-
-                    return $limit;
-                };
-                $receiver = new QueuePassReceiver(
-                    $this->transport,
-                    function () use (&$limits, $observer, $cutoff, $liftTheLimit): ?string {
-                        return $this->reasonToStop($limits, $observer, $cutoff, $liftTheLimit);
-                    },
-                    $observer,
-                    upToId: $cutoff
-                );
-                // A pass that lifted PHP's limit (or never had one) may run for hours: it says it is alive, as consume() does, so that no judge closes it as killed.
-                $lastBeat = $this->now();
-                $this->work($receiver, $observer, null, function (WorkerRunningEvent $event) use ($observer, $passId, &$lastBeat): void {
-                    self::stopWhenIdle($event);
-                    if (!$event->isWorkerIdle() && $this->now() - $lastBeat >= self::HEARTBEAT_SECONDS) {
-                        $lastBeat = $this->now();
-                        $this->recorder->passHeartbeat($passId, $observer->handled(), memory_get_peak_usage(true));
-                    }
-                });
-
-                return $receiver->stopReason() ?? QueuePassReport::EMPTY;
-            });
-        } finally {
-            $this->runtimeLock->release($lock);
         }
+
+        return $this->pass($mode, $limits, !$responseAlreadySent, $origin, $fallbackFor, function (QueuePassObserver $observer, int $passId) use ($mode, $limits): string {
+            $this->transport->claimAs($mode, $limits->killLimitSeconds);
+            $this->reapKilled($observer);
+            $this->closeDeadPasses($passId);
+            $this->tick();
+            // Read after the tick, so that what it dispatched is run now; what the handlers send waits for the next pass.
+            $cutoff = $this->transport->lastId();
+
+            $lifted = false;
+            $liftTheLimit = function () use ($mode, &$lifted): ?int {
+                if ($lifted) {
+                    return null;
+                }
+                $lifted = true;
+                $limit = $this->passLimits->liftPhpLimit();
+                if ($limit !== null) {
+                    $this->transport->claimAs($mode, $limit);
+                }
+
+                return $limit;
+            };
+            $receiver = new QueuePassReceiver(
+                $this->transport,
+                function () use (&$limits, $observer, $cutoff, $liftTheLimit): ?string {
+                    return $this->reasonToStop($limits, $observer, $cutoff, $liftTheLimit);
+                },
+                $observer,
+                upToId: $cutoff
+            );
+            // A pass that lifted PHP's limit (or never had one) may run for hours: it says it is alive, as consume() does, so that no judge closes it as killed.
+            $lastBeat = $this->now();
+            $this->work($receiver, $observer, null, function (WorkerRunningEvent $event) use ($observer, $passId, &$lastBeat): void {
+                self::stopWhenIdle($event);
+                if (!$event->isWorkerIdle() && $this->now() - $lastBeat >= self::HEARTBEAT_SECONDS) {
+                    $lastBeat = $this->now();
+                    $this->recorder->passHeartbeat($passId, $observer->handled(), memory_get_peak_usage(true));
+                }
+            });
+
+            return $receiver->stopReason() ?? QueuePassReport::EMPTY;
+        });
     }
 
     /** A blocking consumer: takes messages as they come until a limit, a signal or a configuration change stops it. */
@@ -230,7 +212,7 @@ class QueueConsumer
         });
     }
 
-    /** The row of a consumer's pass that did nothing (lock taken, wiki hibernated), closed at once, outside `request`. */
+    /** The row of a consumer's pass that did nothing (wiki hibernated), closed at once, outside `request`. */
     private function leaveATrace(QueuePassReport $report, QueueConsumerMode $mode, QueuePassLimits $limits, bool $responseAlreadySent, QueuePassOrigin $origin): QueuePassReport
     {
         if ($origin === QueuePassOrigin::Consumer && !$mode->consumesAtEndOfRequests()) {

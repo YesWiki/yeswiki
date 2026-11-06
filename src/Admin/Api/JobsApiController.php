@@ -59,7 +59,6 @@ class JobsApiController extends YesWikiController
         $report = $this->getService(QueueConsumer::class)->drain($mode, $this->getService(QueuePassLimitsFactory::class)->untilEmpty(), true, QueuePassOrigin::Manual);
 
         return match ($report->stopReason) {
-            QueuePassReport::LOCKED => $this->status(_t('ADMIN_JOBS_CONSUME_LOCKED'), 'warning'),
             QueuePassReport::PAUSED => $this->status(_t('ADMIN_JOBS_CONSUME_PAUSED'), 'warning'),
             QueuePassReport::ERROR => $this->status(_t('ADMIN_JOBS_CONSUME_ERROR'), 'danger'),
             default => $this->status(_t('ADMIN_JOBS_CONSUMED', [

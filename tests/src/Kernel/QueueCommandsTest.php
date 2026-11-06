@@ -107,18 +107,6 @@ class QueueCommandsTest extends YesWikiTestCase
         $this->assertSame(['a'], $this->kit->handled);
     }
 
-    public function testDrainWhileAnotherPassRunsSaysLocked(): void
-    {
-        $this->kit->send('a');
-        $this->kit->holdThePassLock();
-
-        $tester = $this->execute('messenger:consume', ['--drain' => true]);
-
-        $this->assertSame(Command::SUCCESS, $tester->getStatusCode(), 'another pass is at it: not a failure');
-        $this->assertSame([], $this->kit->handled);
-        $this->assertStringContainsString('locked', $tester->getDisplay());
-    }
-
     public function testDrainFailsWhenThePassBreaks(): void
     {
         $this->kit->dropTables();

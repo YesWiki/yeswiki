@@ -214,8 +214,7 @@ hidden `php-cli` on a program folder whose path changes with every upgrade. Now 
 consumer stays up", and the binary supervises it where it serves the wiki. What was lost is the
 `binary`-without-the-binary alert: a `worker` nobody keeps up is reported as stalled after 10 minutes,
 and the fallback takes over. Two consumers of one wiki (a systemd unit kept from before the binary)
-do no harm: blocking consumers take no pass lock, both run, and each message is claimed by one of
-them only.
+do no harm: both run, and each message is claimed by one of them only.
 
 The variable is read from the real environment, then `private/.env` (the only way on a host with
 no environment), then `queue_consumer` in the configuration, then the default: `request`, under the
@@ -227,8 +226,7 @@ the binary keeps the worker up. An unknown value does not stop the wiki; it gets
 keeps the origin it was found in, so the page can say where to correct it, and "origin is `default`"
 keeps meaning that nobody chose. The `api` route is public as far as the ACL goes and the
 secret is the whole check, compared in constant time; with no secret set it answers 401 to
-everybody. It answers 409 when another pass runs, which is the caller's cue to come back, not a
-fault. It also answers GET with the secret in a `secret` query parameter, a deliberate departure
+everybody. A call that comes while another pass runs makes a pass of its own beside it. It also answers GET with the secret in a `secret` query parameter, a deliberate departure
 from HTTP: some hosts schedule nothing but a GET without custom headers, and `api` is the only mode
 left to them. The header wins when both are sent, and stays the advice, since a query string lands
 in access logs.
@@ -240,9 +238,11 @@ before the first message (only when there is one), then consumes what was in the
 began, and never waits. `consume()` blocks like `messenger:consume`, with a time
 limit, a memory limit and a message limit, ticks the Scheduler whenever it is idle, and leaves a
 heartbeat. A `drain()` leaves one too, after a message, at most once a minute, since a pass has
-no deadline and may run for hours. Only one pass runs at a time per wiki, behind a non-blocking `RuntimeLock`
-(`cache/queue-pass.lock`); a blocking consumer does not take it, since the atomic claim already
-keeps them apart. Neither runs while the wiki is hibernated, archiving or updating, read from the
+no deadline and may run for hours. Several passes may run at once, and beside a blocking consumer:
+nothing but the atomic claim of each message keeps them apart, so that a long message (an archive,
+a full reindex) holds back no other while another request can take them. There is no cap on how
+many run, on purpose: a cap would be one more mechanism, and each pass is a PHP process the server
+already bounds. Neither runs while the wiki is hibernated, archiving or updating, read from the
 configuration as it is now since an archive sets it while a consumer is running. Nor does the
 Scheduler: `QueueScheduleTicker::tick()` asks the same question itself, before it notes or sends
 anything, whoever calls it, so the schedule stands still. Once the wiki wakes up, a task that missed
@@ -382,9 +382,9 @@ it (`origin` in its context, written only when it is not the consumer's own, so 
 consumer's): the consumer of the mode, the messages a request **pinned**, the jobs page's **manual**
 button, or the **fallback**. Only the consumer's own passes make it "seen" (`lastSeenAt`), and so does
 a live claim of its mode held by the process of one of its open passes, since a worker inside one long
-message does not beat. A consumer's pass that finds `PASS_LOCK` taken, or the wiki hibernated, still
-leaves a row, closed at once, outside `request`, so that an online cron coming back while a fallback pass runs
-is seen, and one that kept running while the wiki slept is not taken for gone when it wakes. The fallback
+message does not beat. A consumer's pass that finds the wiki hibernated still
+leaves a row, closed at once, outside `request`, so that an online cron that kept running while the wiki slept
+is not taken for gone when it wakes. The fallback
 starts when work (an available message, or the schedule being due — on a quiet wiki nothing else is
 queued while nothing ticks) has waited longer than the mode's stall delay and the consumer has not
 been seen for as long; a schedule that never ticked has waited since the rule was first read
@@ -534,8 +534,6 @@ sections below describe the code as it now is.
   that will be retried goes only to the history. Every definitive failure is journaled, a
   `ToleratedFailure` too, because that marker only changes which check judges it. A killed message is
   recorded under the mode that could not carry it.
-- **A pass lock that cannot be created** (`cache/` not writable) is journaled as an error, not
-  reported as `locked`. Nobody holds it, and no pass would ever run.
 - **The shutdown function** that fails what a dying process still holds is registered through a weak
   reference and never throws. It no longer decides whether a death is noticed, the holder lock does:
   it only journals the failure earlier than the next pass would. PHP runs no further shutdown function
@@ -731,9 +729,8 @@ sections below describe the code as it now is.
   mode ends by itself. When the mode's consumer would block the page, it runs as `request`. It empties
   the queue up to its cutoff with no memory ceiling either: `QueuePassLimitsFactory::untilEmpty()`
   (a memory fatal is the server killing it). Its claims carry what PHP leaves of its limit, or one hour once the pass has lifted it, as
-  any pass nobody waits for does. It stops on an empty queue (`empty`), a paused wiki (`paused`), a
-  pass lock already taken (`locked`) or an error, and holds the pass lock throughout, so the passes of
-  visitors' requests answer `locked` meanwhile, on purpose. It is no wait of a visitor's, so it stays
+  any pass nobody waits for does. It stops on an empty queue (`empty`), a paused wiki (`paused`) or an
+  error; the passes of visitors' requests run beside it and take what it has not taken yet. It is no wait of a visitor's, so it stays
   out of `visitorWaits()`. `QueueApiController` says `forMode($mode, true)`: the call is a pass nobody
   waits for.
 
@@ -777,7 +774,7 @@ sections below describe the code as it now is.
   seen yet is listed as due now, since the next tick notes it.
 - **`queue-config` reads the settings, not the table,** so it can say a mode is wrong before the
   migration ran. **`queue-killed`'s advice** to leave `request` is given only while the wiki is still
-  in `request`. **`queue-php-limit`** counts only passes that started, since a locked or paused pass
+  in `request`. **`queue-php-limit`** counts only passes that started, since a paused pass
   says nothing of PHP's limit: it is orange when at least 1 of the last 5 such passes stopped on
   `php-limit`, and its advice is to allow `set_time_limit` or to switch to `worker`.
 - **`isOverdue()` allows a full period past the due time,** and at least as long as the mode needs to
@@ -795,9 +792,9 @@ sections below describe the code as it now is.
   rejected, so a typo does not mean "unlimited". `QueuePassLimitsFactory::bytes()` is public for that check.
 - **`QueueSettings`:** the `.env` loader never overrides the real environment, so when both hold the
   same value they cannot be told apart, and the file is reported as the likelier source.
-- **`CacheClearer::clearEverything()` keeps the queue's locks** (`QueueConsumer::PASS_LOCK`,
-  `QueueScheduleTicker::LOCK`, the `cache/queue-holders` folder) and any other `.lock` someone holds.
-  Deleting a lock file under its holder would let a second pass or tick start beside it.
+- **`CacheClearer::clearEverything()` keeps the queue's locks** (`QueueScheduleTicker::LOCK`,
+  the `cache/queue-holders` folder) and any other `.lock` someone holds. Deleting a lock file under
+  its holder would let a second tick start beside it, or a judge take a live holder for gone.
 - **`QueueHandlerLocator` builds a handler only when its message is consumed,** so a page that merely
   dispatches does not build search, federation or mail. Handler services are public because the
   locator fetches them by id. `QueueFailureCause::MAX_LENGTH` (1000 characters) is enough to recognise
@@ -1008,7 +1005,7 @@ sections below describe the code as it now is.
   until the migration has run, and `queue-tables` says why, and the request trigger journals one failure a day instead of
   breaking the page.
 - **One replica is still the rule.** The queue is in the shared database, so several nodes can share
-  it safely, but the pass lock and the schedule lock are local files: N nodes run N passes and N
+  it safely, but the schedule lock is a local file: N nodes run N
   ticks, and a due task can be queued by each. The dedup key keeps one waiting copy per task, as
   the database enforces it; the real fix stays with the horizontal-scaling work CONTEXT.md defers.
 - **Search reindexes through the queue alone.** `search_queue`, its own claim and its slicing

@@ -553,65 +553,27 @@ class QueueConsumerTest extends YesWikiTestCase
         $this->assertStringContainsString('listener broken', $this->journaled());
     }
 
-    public function testOnlyOnePassAtATime(): void
+    /** A long message does not hold the others back: a second pass, started while the first runs it, takes what waits behind it. */
+    public function testTwoPassesRunAtOnce(): void
     {
-        $this->send(1);
-        $lock = new RuntimeLock();
-        $held = $lock->acquire(QueueConsumer::PASS_LOCK);
-        $this->assertTrue($lock->tryLock($held));
+        $this->transport->send(new Envelope(new QueueTestMessage('long')));
+        $this->send(2);
+        $second = null;
+        $this->behaviour = function (QueueTestMessage $message) use (&$second): void {
+            if ($message->value === 'long') {
+                $second = $this->consumer->drain(QueueConsumerMode::Request, new QueuePassLimits(PHP_INT_MAX, 30));
+            }
+        };
 
-        try {
-            $report = $this->consumer->drain(QueueConsumerMode::Request, new QueuePassLimits(PHP_INT_MAX, 30));
-        } finally {
-            $lock->release($held);
-        }
+        $first = $this->consumer->drain(QueueConsumerMode::Request, new QueuePassLimits(PHP_INT_MAX, 30));
 
-        $this->assertSame(QueuePassReport::LOCKED, $report->stopReason);
-        $this->assertSame(0, $report->handled);
-        $this->assertSame(1, $report->remaining);
-        $this->assertSame([], $this->handled);
-        $this->assertNull($this->statistics->lastPass(), 'a locked pass records nothing');
-
-        $this->assertSame(1, $this->consumer->drain(QueueConsumerMode::Request, new QueuePassLimits(PHP_INT_MAX, 30))->handled, 'and the lock is free again after');
-    }
-
-    /** A cron or an API call that comes back while the end of a request consumes in its place must still be seen: it leaves a row, closed at once. */
-    public function testAConsumerPassThatFindsTheLockTakenLeavesARow(): void
-    {
-        $this->send(1);
-        $lock = new RuntimeLock();
-        $held = $lock->acquire(QueueConsumer::PASS_LOCK);
-        $this->assertTrue($lock->tryLock($held));
-
-        try {
-            $report = $this->consumer->drain(QueueConsumerMode::Api, new QueuePassLimits(PHP_INT_MAX, 30));
-        } finally {
-            $lock->release($held);
-        }
-
-        $this->assertSame(QueuePassReport::LOCKED, $report->stopReason);
-        $pass = $this->statistics->lastPass();
-        $this->assertNotNull($pass);
-        $this->assertSame('api', $pass['mode']);
-        $this->assertSame(QueuePassReport::LOCKED, $pass['stopReason']);
-        $this->assertSame('consumer', $pass['origin']);
-    }
-
-    public function testAManualPassThatFindsTheLockTakenLeavesNoRow(): void
-    {
-        $this->send(1);
-        $lock = new RuntimeLock();
-        $held = $lock->acquire(QueueConsumer::PASS_LOCK);
-        $this->assertTrue($lock->tryLock($held));
-
-        try {
-            $report = $this->consumer->drain(QueueConsumerMode::Api, new QueuePassLimits(PHP_INT_MAX, 30), origin: QueuePassOrigin::Manual);
-        } finally {
-            $lock->release($held);
-        }
-
-        $this->assertSame(QueuePassReport::LOCKED, $report->stopReason);
-        $this->assertNull($this->statistics->lastPass());
+        $this->assertNotNull($second);
+        $this->assertSame(2, $second->handled, 'the second pass took the short messages while the first ran the long one');
+        $this->assertSame(1, $first->handled, 'and the first did not take them again');
+        $this->assertSame(QueuePassReport::EMPTY, $first->stopReason);
+        $this->assertSame(['long', 'm0', 'm1'], $this->handled);
+        $this->assertSame(0, $this->statistics->pendingCount());
+        $this->assertSame([], $this->statistics->openPasses(), 'both passes are closed');
     }
 
     /** A cron that keeps running while the wiki sleeps must still be seen when it wakes up, or it would be taken for gone and the end of requests would stand in for it. */
@@ -1417,7 +1379,6 @@ class QueueConsumerTest extends YesWikiTestCase
             $this->statistics,
             $this->passLimits ?? new QueuePassLimitsFactory(new NativeClock()),
             new HibernationService($this->params),
-            new RuntimeLock(),
             $journal,
             new QueueScheduleTicker([$provider], $bus, $this->history, $recorder, new RuntimeLock(), $clock, new HibernationService($this->params), $journal),
             $clock,

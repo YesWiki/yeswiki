@@ -206,9 +206,10 @@ serveur : préférez l'en-tête quand c'est possible.
 https://votre-site/?api/queue/consume&secret=LE-SECRET
 ```
 
-Le wiki répond `401` si le secret est faux ou absent, `409` si un autre
-traitement est déjà en cours (rien de grave : le prochain appel traitera la
-suite) et `200` sinon, avec le nombre de traitements effectués et ce qui reste.
+Le wiki répond `401` si le secret est faux ou absent, et `200` sinon, avec le
+nombre de traitements effectués et ce qui reste. Un appel qui arrive pendant
+qu'un autre passage tourne travaille à côté de lui : un long traitement en
+cours n'empêche pas les autres d'avancer.
 
 L'appel dure aussi longtemps que les traitements en attente quand il a
 commencé : le wiki ne le borne pas. Trois précautions en découlent :
@@ -424,8 +425,8 @@ de son dernier signe de vie, pas celle du moment où le wiki s'en est aperçu.
   navigation, quel que soit le mode. C'est le premier réflexe quand une alerte
   dit que « plus rien ne traite ». Ce passage n'a **aucune limite** : il vide
   toute la file, un traitement après l'autre, et ne s'arrête que quand la file
-  est vide, que le wiki est en pause, qu'un autre passage est déjà en cours, ou
-  que le serveur le coupe. Il peut donc durer longtemps, et la page attend sa
+  est vide, que le wiki est en pause, ou que le serveur le coupe. Les passages
+  des visites continuent à côté de lui. Il peut donc durer longtemps, et la page attend sa
   réponse jusqu'au bout. Vos autres pages ne l'attendent pas : vous pouvez
   continuer à naviguer dans le wiki, dans un autre onglet, pendant qu'il tourne.
   Tant qu'il dure, le wiki ne lance pas d'autre passage, en fin de visite par

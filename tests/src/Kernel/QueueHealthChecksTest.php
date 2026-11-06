@@ -217,21 +217,10 @@ class QueueHealthChecksTest extends YesWikiTestCase
         $this->assertNotNull($this->failure('queue-stalled'));
     }
 
-    /** A cron that finds the lock held by a pass stuck in a handler leaves a row to say it came: that row is no sign the queue moves. */
-    public function testPassesThatFoundTheLockTakenDoNotHideAStall(): void
-    {
-        $this->mode = 'api';
-        $this->message('default', '-4 hours');
-        $this->pass('api', startedAt: '-5 hours', finishedAt: '-4 hours');
-        $this->pass('api', startedAt: '-1 minute', stopReason: 'locked');
-
-        $this->assertNotNull($this->failure('queue-stalled'));
-    }
-
     /** @return array<string, array{string}> */
     public static function passesThatDidNothing(): array
     {
-        return ['the lock was taken' => ['locked'], 'the wiki was paused' => ['paused']];
+        return ['the wiki was paused' => ['paused']];
     }
 
     #[DataProvider('passesThatDidNothing')]

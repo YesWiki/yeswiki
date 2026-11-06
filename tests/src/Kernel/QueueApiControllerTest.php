@@ -143,17 +143,6 @@ class QueueApiControllerTest extends YesWikiTestCase
         $this->assertSame(Response::HTTP_UNAUTHORIZED, $this->call(self::SECRET, 'not-the-secret', 'GET', self::SECRET)->getStatusCode());
     }
 
-    public function testAPassAlreadyRunningIs409WithTheSameBody(): void
-    {
-        $this->kit->holdThePassLock();
-
-        $response = $this->call(self::SECRET, self::SECRET);
-
-        $this->assertSame(Response::HTTP_CONFLICT, $response->getStatusCode());
-        $this->assertSame(['handled', 'remaining', 'durationMs', 'stopReason'], array_keys($this->body($response)));
-        $this->assertSame('locked', $this->body($response)['stopReason']);
-    }
-
     /** @return array<string, mixed> */
     private function body(Response $response): array
     {

@@ -73,9 +73,6 @@ final class QueueTestKit
     public readonly ScheduleHistory $history;
     /** The end of the request the bus pins a message to (RunsForItsSender): the last one requestTrigger() built. */
     private ?QueueRequestTrigger $trigger = null;
-    /** @var resource|null */
-    private $heldPassLock;
-
     /** @var list<string> the values of the messages handled, in order */
     public array $handled = [];
 
@@ -95,7 +92,7 @@ final class QueueTestKit
      * @param ClockInterface|null                $clock                the clock of every part of the queue (default: the database's, as in production)
      * @param string|null                        $database             an SQLite file another kit or test made, for a consumer in another process to work on the same queue; left where it is by dispose()
      * @param ProvidesSchedule|null              $schedule             the recurring tasks the schedule declares (default: none)
-     * @param QueuePassLimitsFactory|null        $passLimits              what a pass may spend (default: from this PHP's limits)
+     * @param QueuePassLimitsFactory|null        $passLimits           what a pass may spend (default: from this PHP's limits)
      * @param HibernationService|null            $hibernation          the wiki's status as the consumer reads it (default: awake)
      * @param (\Closure(): EventDispatcher)|null $events               the wiki's dispatcher, which a killed message is announced on (default: one nobody listens to)
      * @param \Closure(): bool|null              $configurationChanged what the consumer's ConfigurationWatch answers (default: $this->configurationChanged)
@@ -186,7 +183,6 @@ final class QueueTestKit
             $this->statistics,
             $passLimits,
             $hibernation,
-            $locks,
             $journal,
             $this->ticker = new QueueScheduleTicker([$schedule], $bus, $this->history, $recorder, $locks, $clock, $hibernation, $journal),
             $clock,
@@ -199,9 +195,6 @@ final class QueueTestKit
     /** Puts the process's environment back and removes the files; the kit is of no use after. */
     public function dispose(): void
     {
-        if ($this->heldPassLock !== null) {
-            $this->locks->release($this->heldPassLock);
-        }
         putenv($this->previousMode === false ? QueueSettings::ENV_MODE : QueueSettings::ENV_MODE . '=' . $this->previousMode);
         putenv($this->previousConfigFile === false ? 'YESWIKI_CONFIG_FILE' : 'YESWIKI_CONFIG_FILE=' . $this->previousConfigFile);
         @unlink($this->configFile);
@@ -217,16 +210,6 @@ final class QueueTestKit
         }
         @rmdir($this->lockDir . '/cache');
         @rmdir($this->lockDir);
-    }
-
-    /** A pass in another process, as far as the consumer can tell: it finds the pass lock taken. */
-    public function holdThePassLock(): void
-    {
-        $handle = $this->locks->acquire(QueueConsumer::PASS_LOCK);
-        if ($handle === null || !$this->locks->tryLock($handle)) {
-            throw new \LogicException('The pass lock could not be taken.');
-        }
-        $this->heldPassLock = $handle;
     }
 
     /**

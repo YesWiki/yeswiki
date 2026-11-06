@@ -174,9 +174,9 @@ class QueueStatistics
         }
 
         $last = $this->db->scalar(
-            "SELECT MAX(last_at) FROM {$this->journal->table()} WHERE channel = ? AND action = ? AND target <> ?",
+            "SELECT MAX(last_at) FROM {$this->journal->table()} WHERE channel = ? AND action = ?",
             null,
-            [JournalChannel::Queue->value, QueueJournalEntry::PASS, QueuePassReport::LOCKED]
+            [JournalChannel::Queue->value, QueueJournalEntry::PASS]
         );
 
         return $last === null ? null : self::time((string)$last);

@@ -20,9 +20,7 @@ class CacheClearerTest extends TestCase
         file_put_contents($this->root . '/cache/thumbs/keep.webp', 'x');
         file_put_contents($this->root . '/cache/.gitkeep', '');
         file_put_contents($this->root . '/cache/maintenance.lock', '');
-        foreach (['queue-pass.lock', 'queue-schedule.lock'] as $lock) {
-            file_put_contents($this->root . '/cache/' . $lock, '');
-        }
+        file_put_contents($this->root . '/cache/queue-schedule.lock', '');
         mkdir($this->root . '/cache/queue-holders');
         file_put_contents($this->root . '/cache/queue-holders/00ff12ab.lock', '');
     }
@@ -63,7 +61,7 @@ class CacheClearerTest extends TestCase
         $count = (new CacheClearer())->clearEverything($this->root);
 
         $this->assertGreaterThan(0, $count, 'the rest goes');
-        $this->assertSame(['.gitkeep', 'queue-holders', 'queue-pass.lock', 'queue-schedule.lock'], array_values(array_diff(scandir($this->root . '/cache'), ['.', '..'])));
+        $this->assertSame(['.gitkeep', 'queue-holders', 'queue-schedule.lock'], array_values(array_diff(scandir($this->root . '/cache'), ['.', '..'])));
         $this->assertFileExists($this->root . '/cache/queue-holders/00ff12ab.lock', 'a holder lock is what tells a judge its holder is still there');
     }
 

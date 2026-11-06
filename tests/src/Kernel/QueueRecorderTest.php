@@ -290,12 +290,6 @@ echo $db->scalar("SELECT COUNT(*) FROM {$journal->table()}");
         $this->assertSame([2.0], $this->statistics->visitorWaits(3600), 'only the closed passes a visitor waited for');
         $this->assertEquals(new \DateTimeImmutable('2026-10-23 12:00:02', new \DateTimeZone('UTC')), $this->statistics->lastActivityAt());
         $this->assertSame([5, 4, 3, 2, 1], array_column($this->statistics->history(10), 'messageId'), 'a pass is not a run');
-
-        $this->clock->sleep(10);
-        $locked = $this->recorder->passStarted(QueueConsumerMode::Request, null, false);
-        $this->recorder->passFinished($locked, new QueuePassReport(0, 0, 0, QueuePassReport::LOCKED), 0);
-
-        $this->assertEquals(new \DateTimeImmutable('2026-10-23 12:00:02', new \DateTimeZone('UTC')), $this->statistics->lastActivityAt(), 'a pass that found the lock taken did no work');
     }
 
     public function testAClaimHeldNowIsActivityNow(): void

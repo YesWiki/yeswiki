@@ -596,19 +596,6 @@ class JobsControllerTest extends YesWikiTestCase
 
     // --- The consume button's other answers ---------------------------------------------------
 
-    public function testConsumeNowWhileAnotherPassHoldsTheLockSaysSo(): void
-    {
-        $this->signInAsAdmin();
-        $this->kit->send('a');
-        $this->kit->holdThePassLock();
-
-        $body = (string)$this->api(post: true)->consume()->getContent();
-
-        $this->assertSame([], $this->kit->handled, 'the pass in progress is not doubled');
-        $this->assertStringContainsString('yw-alert--warning', $body);
-        $this->assertStringContainsString(htmlspecialchars(_t('ADMIN_JOBS_CONSUME_LOCKED'), ENT_QUOTES), $body);
-    }
-
     public function testConsumeNowOnAWikiThatIsPausedSaysSo(): void
     {
         $this->signInAsAdmin();
