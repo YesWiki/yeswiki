@@ -705,6 +705,26 @@ class QueueConsumerTest extends YesWikiTestCase
         $this->assertSame([], glob($this->lockDir . '/' . QueueHolderLock::DIRECTORY . '/*') ?: [], 'its file goes with it');
     }
 
+    /** The messages of a pass carry the pass's own token, the one its lock file is named after. */
+    public function testEveryMessageOfAPassCarriesItsHolder(): void
+    {
+        $seen = [];
+        $this->behaviour = function () use (&$seen): void {
+            $claimed = $this->db->loadAll("SELECT delivered_by FROM {$this->schema->table()} WHERE delivered_at IS NOT NULL");
+            $open = $this->statistics->openPasses();
+            $seen[] = [array_column($claimed, 'delivered_by'), array_column($open, 'holder')];
+        };
+        $this->send(2);
+
+        $this->consumer->drain(QueueConsumerMode::Api, new QueuePassLimits(PHP_INT_MAX, 30));
+
+        $this->assertCount(2, $seen);
+        foreach ($seen as [$claims, $holders]) {
+            $this->assertCount(1, $holders);
+            $this->assertSame($holders, $claims, 'the message being handled is claimed under the token of the pass that runs');
+        }
+    }
+
     public function testAPassRunsEvenWhenItsLockCannotBeCreated(): void
     {
         $notADirectory = (string)tempnam(sys_get_temp_dir(), 'yw-not-a-dir-');

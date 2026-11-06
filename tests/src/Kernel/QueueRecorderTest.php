@@ -300,6 +300,7 @@ echo $db->scalar("SELECT COUNT(*) FROM {$journal->table()}");
         $this->clock->sleep(100);
         $this->assertEquals(new \DateTimeImmutable(self::START, new \DateTimeZone('UTC')), $this->statistics->lastActivityAt(), 'nothing is held: the last pass tells');
 
+        $this->transport->workFor(QueueTestHolders::passToken());
         [$taken] = [...$this->transport->get()];
 
         $this->assertEquals(new \DateTimeImmutable('2026-10-23 12:01:40', new \DateTimeZone('UTC')), $this->statistics->lastActivityAt(), 'a consumer holding a message is at work now');
@@ -625,6 +626,7 @@ echo $db->scalar("SELECT COUNT(*) FROM {$journal->table()}");
         $id = (int)$this->transport->send(new Envelope(new QueueTestMessage('one')))->last(TransportMessageIdStamp::class)?->getId();
         $this->assertSame('pending', $this->statistics->messageState($id));
 
+        $this->transport->workFor(QueueTestHolders::passToken());
         [$taken] = [...$this->transport->get()];
         $this->assertSame('running', $this->statistics->messageState($id));
 

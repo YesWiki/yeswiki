@@ -374,6 +374,7 @@ class ArchiveQueueTest extends YesWikiTestCase
         $archives = $this->archives('worker');
         $going = $archives->startArchive();
         $this->transport->claimAs(QueueConsumerMode::Worker, 3600);
+        $this->transport->workFor(QueueTestHolders::passToken());
         $this->assertNotNull($this->transport->getById($this->messageOf($going)), 'a consumer is at work on it');
         $this->setWikiStatus('archiving');
         $refused = $archives->startArchive();
@@ -538,6 +539,7 @@ class ArchiveQueueTest extends YesWikiTestCase
             case 'run still going':
                 $uid = $archives->startArchive();
                 $this->transport->claimAs(QueueConsumerMode::Worker, 3600);
+                $this->transport->workFor(QueueTestHolders::passToken());
                 $this->assertNotNull($this->transport->getById($this->messageOf($uid)));
                 $this->setWikiStatus('archiving');
                 break;

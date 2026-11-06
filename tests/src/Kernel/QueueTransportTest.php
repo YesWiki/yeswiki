@@ -431,6 +431,7 @@ class QueueTransportTest extends YesWikiTestCase
     {
         $this->transport->claimAs(QueueConsumerMode::Request, 1);
         $this->transport->send(new Envelope(new QueueTestMessage('slow')));
+        $this->transport->workFor(QueueTestHolders::passToken());
         [...$this->transport->get()];
 
         $this->clock->sleep(3600);
@@ -453,64 +454,60 @@ class QueueTransportTest extends YesWikiTestCase
         $this->assertSame([self::idOf($taken)], array_column($this->transport->reapKilled(), 'id'));
     }
 
-    /** A claim's lock is held, as another process sees it, from the moment the claim is made until its ack, which removes the file. */
-    public function testAClaimHoldsItsLockUntilAcked(): void
+    /** Every message a pass takes carries the pass's token; the transport itself locks nothing, the pass does, and an ack releases its own message only. */
+    public function testAClaimCarriesThePassToken(): void
     {
-        $this->locked->send(new Envelope(new QueueTestMessage('held')));
+        $this->locked->workFor('1/aaaaaaaaaaaaaaaa');
+        $this->locked->send(new Envelope(new QueueTestMessage('a')));
+        $this->locked->send(new Envelope(new QueueTestMessage('b')));
+        [$a] = [...$this->locked->get()];
+        [$b] = [...$this->locked->get()];
+        $this->assertSame('1/aaaaaaaaaaaaaaaa', $this->row(self::idOf($a))['delivered_by'] ?? null);
+        $this->assertSame('1/aaaaaaaaaaaaaaaa', $this->row(self::idOf($b))['delivered_by'] ?? null);
+        $this->assertFileDoesNotExist($this->holderFile('1/aaaaaaaaaaaaaaaa'), 'the transport locks nothing: the pass does');
+
+        $this->locked->ack($a);
+
+        $this->assertNull($this->row(self::idOf($a)));
+        $this->assertSame('1/aaaaaaaaaaaaaaaa', $this->row(self::idOf($b))['delivered_by'] ?? null, 'an ack releases its own message only');
+    }
+
+    /** Once its pass is over, a claim no longer carries that pass's token, whose lock is already let go. */
+    public function testAClaimAfterThePassEndedDoesNotCarryItsToken(): void
+    {
+        $this->locked->workFor('1/aaaaaaaaaaaaaaaa');
+        $this->locked->workFor(null);
+        $this->locked->send(new Envelope(new QueueTestMessage('late')));
+
         [$taken] = [...$this->locked->get()];
-        $token = self::tokenOf($taken);
 
-        $this->assertSame(QueueHolderLock::HELD, self::seenFromAnotherProcess($this->holderFile($token)));
-        $this->assertSame(QueueHolderLock::HELD, $this->holderLock->stateOf($token));
-
-        $this->locked->ack($taken);
-
-        $this->assertFileDoesNotExist($this->holderFile($token));
+        $this->assertNotSame('1/aaaaaaaaaaaaaaaa', $this->row(self::idOf($taken))['delivered_by'] ?? null);
     }
 
-    /** What the consumer fails as its process ends lets go of its lock too, and leaves no file behind. */
-    public function testAClaimFailedAsItsProcessEndsLetsGoOfItsLock(): void
+    /** In worker mode a request never inherits the pass token of the request before. */
+    public function testANewRequestForgetsThePassToken(): void
     {
-        $this->locked->claimAs(QueueConsumerMode::Request, 30);
-        $this->locked->send(new Envelope(new QueueTestMessage('held')));
+        $this->locked->workFor('1/aaaaaaaaaaaaaaaa');
+        $this->locked->startNewRequest();
+        $this->locked->send(new Envelope(new QueueTestMessage('next')));
+
         [$taken] = [...$this->locked->get()];
-        $token = self::tokenOf($taken);
-        $this->assertSame(QueueHolderLock::HELD, self::seenFromAnotherProcess($this->holderFile($token)));
 
-        $this->assertSame([self::idOf($taken)], array_column($this->locked->failHeldClaims(), 'id'));
-
-        $this->assertFileDoesNotExist($this->holderFile($token));
+        $this->assertNotSame('1/aaaaaaaaaaaaaaaa', $this->row(self::idOf($taken))['delivered_by'] ?? null);
     }
 
-    /** A claim that finds nothing to take, the queue being empty or the message gone, releases the lock it took first. */
-    public function testAClaimThatTakesNothingLeavesNoLockBehind(): void
+    /** What is failed as the process ends is failed under the token each claim was made with, an earlier pass's too. */
+    public function testWhatIsFailedAtTheEndKeepsTheTokenOfEachClaim(): void
     {
-        $this->assertSame([], [...$this->locked->get()]);
-        $this->assertNull($this->locked->getById(9999), 'a claim of a message that is not there');
+        $this->locked->claimAs(QueueConsumerMode::Api, 50);
+        $this->locked->send(new Envelope(new QueueTestMessage('first')));
+        $this->locked->send(new Envelope(new QueueTestMessage('second')));
+        $this->locked->workFor('1/aaaaaaaaaaaaaaaa');
+        [$first] = [...$this->locked->get()];
+        $this->locked->workFor('1/bbbbbbbbbbbbbbbb');
+        [$second] = [...$this->locked->get()];
 
-        $this->assertSame([], glob($this->dir . '/' . QueueHolderLock::DIRECTORY . '/*'));
-    }
-
-    /** A claim whose transaction throws lets go of the lock it took first: no file stays behind for a claim that was never written. */
-    public function testAClaimWhoseTransactionThrowsLeavesNoLockBehind(): void
-    {
-        $this->onRacing(['db_driver' => 'sqlite'], function (QueueTestRacingDb $db, QueueSchema $schema): void {
-            $transport = new QueueTransport($db, $schema, clock: $this->clock, holderLock: $this->holderLock);
-            $transport->send(new Envelope(new QueueTestMessage('unlucky')));
-            $db->failNextTransaction();
-
-            try {
-                [...$transport->get()];
-                $this->fail('the claim should have thrown');
-            } catch (\RuntimeException $thrown) {
-                $this->assertSame('the database went away', $thrown->getMessage());
-            }
-
-            $this->assertSame([], glob($this->dir . '/' . QueueHolderLock::DIRECTORY . '/*'));
-            [$taken] = [...$transport->get()];
-            $this->assertSame('unlucky', $taken->getMessage() instanceof QueueTestMessage ? $taken->getMessage()->value : null, 'the message waits for the next claim');
-            $transport->ack($taken);
-        });
+        $this->assertSame([self::idOf($first), self::idOf($second)], array_column($this->locked->failHeldClaims(), 'id'));
     }
 
     /** A server's process (FPM) still at work past its limit holds its lock: no judge reaps it nor calls it dead; only the ceiling ends it. */
@@ -566,25 +563,6 @@ class QueueTransportTest extends YesWikiTestCase
         $this->locked->reapKilled();
 
         $this->assertFileDoesNotExist($this->holderFile($token));
-    }
-
-    /** Where cache/ cannot be written the claim is made all the same, without a lock, and judged by the rules a claim without one always was. */
-    public function testAClaimIsMadeEvenWhenItsLockCannotBeCreated(): void
-    {
-        $notADirectory = (string)tempnam(sys_get_temp_dir(), 'yw-not-a-dir-');
-        try {
-            $transport = new QueueTransport($this->db, $this->schema, clock: $this->clock, holderLock: new QueueHolderLock(QueueTestKit::locksIn($notADirectory)));
-            $transport->send(new Envelope(new QueueTestMessage('unlocked')));
-
-            [$taken] = [...$transport->get()];
-
-            $this->assertSame(self::tokenOf($taken), $this->row(self::idOf($taken))['delivered_by'] ?? null);
-            $this->assertTrue($transport->isHandling());
-            $transport->ack($taken);
-            $this->assertNull($this->row(self::idOf($taken)));
-        } finally {
-            @unlink($notADirectory);
-        }
     }
 
     /**
@@ -652,6 +630,7 @@ class QueueTransportTest extends YesWikiTestCase
         }
         $this->transport->claimAs(QueueConsumerMode::Worker, 21600);
         $this->transport->send(new Envelope(new QueueTestMessage('handled')));
+        $this->transport->workFor(QueueTestHolders::passToken());
         [$taken] = [...$this->transport->get()];
         $table = $this->schema->table();
         $this->db->query("ALTER TABLE {$table} RENAME TO {$table}_away");
@@ -831,6 +810,7 @@ class QueueTransportTest extends YesWikiTestCase
         $this->transport->claimAs(QueueConsumerMode::Worker, 21600);
         $this->transport->send(new Envelope(new QueueTestMessage('mine')));
         $this->transport->send(new Envelope(new QueueTestMessage('dies')));
+        $this->transport->workFor(QueueTestHolders::passToken());
         [$mine, $dies] = [...$this->transport->get(), ...$this->transport->get()];
         QueueTestHolders::hand($this->db, $this->schema, self::idOf($dies), QueueTestHolders::gone());
 
@@ -1198,6 +1178,7 @@ class QueueTransportTest extends YesWikiTestCase
             $this->assertSame([], [...$other->get()]);
             $clock->sleep(1);
             $this->assertSame(QueueTestMessage::class, $other->peekNextType());
+            $transport->workFor(QueueTestHolders::passToken());
             [$taken] = [...$transport->get()];
             $clock->sleep(62);
             $this->assertSame([], $other->reapKilled(), 'its holder, this process, is still at work');

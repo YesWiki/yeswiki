@@ -57,10 +57,13 @@ class QueueTransport implements TransportInterface, MessageCountAwareInterface, 
     private ?string $claimMode = null;
     private ?int $claimLimit = null;
 
-    /** @var array<string, array{id: int, type: string, mode: string, deliveredAt: string}> */
+    /** The token of the pass this transport takes messages for, whose lock that pass holds; null outside a pass. */
+    private ?string $passToken = null;
+
+    /** @var array<int, array{id: int, type: string, mode: string, deliveredAt: string, token: string}> the claims this transport holds, by message id */
     private array $held = [];
 
-    /** @var array<string, true> */
+    /** @var array<string, true> the tokens of the passes running in this process */
     private static array $heldHere = [];
 
     public function __construct(
@@ -73,11 +76,24 @@ class QueueTransport implements TransportInterface, MessageCountAwareInterface, 
     ) {
     }
 
-    /** Forgets the claim mode, so that in worker mode a request never inherits the one of the request before. */
+    /** Forgets the claim mode and the pass token, so that in worker mode a request never inherits the ones of the request before. */
     public function startNewRequest(): void
     {
         $this->claimMode = null;
         $this->claimLimit = null;
+        $this->passToken = null;
+    }
+
+    /** The token of the pass that now takes messages, written on each of its claims; null once it is over, so that a later claim never carries a token whose lock is let go. */
+    public function workFor(?string $passToken): void
+    {
+        if ($this->passToken !== null) {
+            unset(self::$heldHere[$this->passToken]);
+        }
+        $this->passToken = $passToken;
+        if ($passToken !== null) {
+            self::$heldHere[$passToken] = true;
+        }
     }
 
     /** The same table seen as another queue: `withQueue('failed')` is the failure transport. */
@@ -209,11 +225,12 @@ class QueueTransport implements TransportInterface, MessageCountAwareInterface, 
             throw new LogicException('No QueueClaimStamp found on the Envelope: it was not handed out by this transport.');
         }
 
+        $id = self::idOf($envelope);
         $released = $this->db->query(
             "DELETE FROM {$this->schema->table()} WHERE id = ? AND delivered_by = ? AND queue_name IN (" . SqlParameters::placeholders(count(self::QUEUES)) . ')',
-            [self::idOf($envelope), $token, ...self::QUEUES]
+            [$id, $token, ...self::QUEUES]
         )->rowCount() === 1;
-        $this->letGo($token);
+        $this->letGo($id);
 
         return $released;
     }
@@ -315,10 +332,10 @@ class QueueTransport implements TransportInterface, MessageCountAwareInterface, 
     public function failHeldClaims(): array
     {
         $killed = [];
-        foreach ($this->held as $token => $claim) {
-            $this->letGo($token);
-            if ($this->failClaim($claim['id'], $token, $claim['mode'])) {
-                $killed[] = $claim;
+        foreach ($this->held as $id => $claim) {
+            $this->letGo($id);
+            if ($this->failClaim($id, $claim['token'], $claim['mode'])) {
+                $killed[] = ['id' => $id, 'type' => $claim['type'], 'mode' => $claim['mode'], 'deliveredAt' => $claim['deliveredAt']];
             }
         }
 
@@ -516,10 +533,10 @@ class QueueTransport implements TransportInterface, MessageCountAwareInterface, 
     }
 
     /**
-     * Claims the next available message (or that one, or the next of those with an id up to $upToId) with a token only this call knows, and answers its row.
+     * Claims the next available message (or that one, or the next of those with an id up to $upToId) under the token of the pass, and answers its row.
      *
-     * The token's lock is taken before the token is written, so that a judge, which only reads tokens already written, never finds its file
-     * free between its creation and its lock; a claim that takes nothing, or whose transaction throws, lets it go, and one whose file cannot be made is still made, without it.
+     * The pass locked its token before it gave it here, so a judge never finds the file of a written token free while the pass runs.
+     * Outside a pass the claim gets a token of its own with no file, judged by its limit.
      *
      * @return array<string, mixed>|null
      */
@@ -529,28 +546,16 @@ class QueueTransport implements TransportInterface, MessageCountAwareInterface, 
             return null;
         }
 
-        $table = $this->schema->table();
-        $now = self::format($this->now());
-        $token = QueueClaimHolder::thisProcess()->token();
-        $this->holderLock?->hold($token);
-
-        try {
-            $row = $this->transactionalClaim($table, $now, $token, $id, $upToId);
-        } catch (\Throwable $failed) {
-            $this->holderLock?->release($token);
-
-            throw $failed;
-        }
+        $token = $this->passToken ?? QueueClaimHolder::thisProcess()->token();
+        $row = $this->transactionalClaim($this->schema->table(), self::format($this->now()), $token, $id, $upToId);
         if ($row !== null) {
-            $this->held[$token] = [
+            $this->held[(int)$row['id']] = [
                 'id' => (int)$row['id'],
                 'type' => (string)$row['message_type'],
                 'mode' => (string)($row['delivered_mode'] ?? 'unknown'),
                 'deliveredAt' => (string)$row['delivered_at'],
+                'token' => $token,
             ];
-            self::$heldHere[$token] = true;
-        } else {
-            $this->holderLock?->release($token);
         }
 
         return $row;
@@ -609,7 +614,7 @@ class QueueTransport implements TransportInterface, MessageCountAwareInterface, 
         try {
             return $this->decode($row)->with(new QueueClaimStamp((string)$row['delivered_by']));
         } catch (MessageDecodingFailedException $undecodable) {
-            $this->letGo((string)$row['delivered_by']);
+            $this->letGo((int)$row['id']);
             $this->moveToFailed((int)$row['id'], 'undecodable: ' . $undecodable->getMessage());
 
             throw new UndecodableMessageException((int)$row['id'], (string)$row['message_type'], $undecodable);
@@ -693,11 +698,10 @@ class QueueTransport implements TransportInterface, MessageCountAwareInterface, 
         )->rowCount() === 1;
     }
 
-    /** Forgets a claim this transport made, and lets go of its lock: the file is removed before the lock is, and after an ack its row is already gone. */
-    private function letGo(string $token): void
+    /** Forgets a claim this transport made, once the database accepted its end; the lock is the pass's, and stays with it. */
+    private function letGo(int $id): void
     {
-        unset($this->held[$token], self::$heldHere[$token]);
-        $this->holderLock?->release($token);
+        unset($this->held[$id]);
     }
 
     /** A dedup key cut to its column: a readable start and the hash of the whole, so that long keys stay distinct. */

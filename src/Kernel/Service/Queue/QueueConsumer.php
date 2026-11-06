@@ -242,6 +242,7 @@ class QueueConsumer
             try {
                 // Taken before the row names it, so a judge never finds the file of a pass that has not locked it yet.
                 $this->holderLock->hold($holder);
+                $this->transport->workFor($holder);
                 $passId = $this->recorder->passStarted($mode, $limits, $beforeResponse, $origin, $fallbackFor, $holder);
                 $stopReason = $body($observer, $passId);
                 $report = $this->report($observer->handled(), $startedAt, $stopReason);
@@ -262,6 +263,7 @@ class QueueConsumer
             }
         } finally {
             $this->holderLock->release($holder);
+            $this->transport->workFor(null);
         }
 
         return $report;

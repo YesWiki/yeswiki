@@ -15,6 +15,12 @@ use YesWiki\Kernel\Service\Queue\QueueSchema;
  */
 final class QueueTestHolders
 {
+    /** A token for a pass of this process, for a test that takes messages as a pass would and gives it to the transport with workFor(). */
+    public static function passToken(): string
+    {
+        return QueueClaimHolder::thisProcess()->token();
+    }
+
     /** A holder on another machine: nothing about its process can be told from here, and the limit it recorded decides. */
     public static function elsewhere(): QueueClaimHolder
     {
