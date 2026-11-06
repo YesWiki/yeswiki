@@ -8,8 +8,8 @@ use YesWiki\Core\ApiResponse;
 use YesWiki\Core\YesWikiController;
 use YesWiki\Kernel\Queue\QueueConsumerMode;
 use YesWiki\Kernel\Queue\QueuePassReport;
-use YesWiki\Kernel\Service\Queue\QueueBudgetFactory;
 use YesWiki\Kernel\Service\Queue\QueueConsumer;
+use YesWiki\Kernel\Service\Queue\QueuePassLimitsFactory;
 use YesWiki\Kernel\Service\Queue\QueueSettings;
 
 class QueueApiController extends YesWikiController
@@ -33,7 +33,7 @@ class QueueApiController extends YesWikiController
         }
 
         $mode = QueueConsumerMode::Api;
-        $report = $this->getService(QueueConsumer::class)->drain($mode, $this->getService(QueueBudgetFactory::class)->forMode($mode, true));
+        $report = $this->getService(QueueConsumer::class)->drain($mode, $this->getService(QueuePassLimitsFactory::class)->forMode($mode, true));
 
         return new ApiResponse([
             'handled' => $report->handled,

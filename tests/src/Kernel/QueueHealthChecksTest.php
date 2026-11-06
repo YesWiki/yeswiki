@@ -18,11 +18,11 @@ use YesWiki\Kernel\Queue\RecurringMessageTimezoned;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Kernel\Service\JournalSchema;
-use YesWiki\Kernel\Service\Queue\QueueBudgetFactory;
 use YesWiki\Kernel\Service\Queue\QueueBus;
 use YesWiki\Kernel\Service\Queue\QueueFallback;
 use YesWiki\Kernel\Service\Queue\QueueHealthChecks;
 use YesWiki\Kernel\Service\Queue\QueueHolderLock;
+use YesWiki\Kernel\Service\Queue\QueuePassLimitsFactory;
 use YesWiki\Kernel\Service\Queue\QueueRecorder;
 use YesWiki\Kernel\Service\Queue\QueueRequestTrigger;
 use YesWiki\Kernel\Service\Queue\QueueScheduleTicker;
@@ -884,7 +884,7 @@ class QueueHealthChecksTest extends YesWikiTestCase
             $hibernation,
             $this->ticker(),
             new QueueFallback($settings, $this->statistics, $this->ticker(), $hibernation, new RuntimeLock(), $this->clock),
-            new QueueBudgetFactory(new NativeClock()),
+            new QueuePassLimitsFactory(new NativeClock()),
             $this->clock
         ))->healthChecks();
     }
@@ -900,7 +900,7 @@ class QueueHealthChecksTest extends YesWikiTestCase
     /** What a fallback pass may spend, as its alert says it. */
     private function requestBudget(): int
     {
-        return (int)round((new QueueBudgetFactory(new NativeClock()))->forMode(QueueConsumerMode::Request, QueueRequestTrigger::respondsEarly())->remainingSeconds());
+        return (int)(new QueuePassLimitsFactory(new NativeClock()))->secondsPerPass(QueueConsumerMode::Request, QueueRequestTrigger::respondsEarly());
     }
 
     /** What the fallback's alert adds on a server that cannot hand the page over before the pass: the CLI, here. */

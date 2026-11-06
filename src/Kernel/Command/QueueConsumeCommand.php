@@ -11,8 +11,8 @@ use Symfony\Component\Console\Output\OutputInterface;
 use YesWiki\Kernel\Queue\QueueConsumerMode;
 use YesWiki\Kernel\Queue\QueuePassOrigin;
 use YesWiki\Kernel\Queue\QueuePassReport;
-use YesWiki\Kernel\Service\Queue\QueueBudgetFactory;
 use YesWiki\Kernel\Service\Queue\QueueConsumer;
+use YesWiki\Kernel\Service\Queue\QueuePassLimitsFactory;
 use YesWiki\Kernel\Service\Queue\QueueSettings;
 
 /**
@@ -97,7 +97,7 @@ class QueueConsumeCommand extends Command
 
         $report = $this->services->get(QueueConsumer::class)->drain(
             QueueConsumerMode::Request,
-            $this->services->get(QueueBudgetFactory::class)->forHand(),
+            $this->services->get(QueuePassLimitsFactory::class)->forMode(QueueConsumerMode::Worker, false),
             true,
             QueuePassOrigin::Manual
         );
@@ -137,7 +137,7 @@ class QueueConsumeCommand extends Command
         if (trim($size) === '-1') {
             return PHP_INT_MAX;
         }
-        $bytes = preg_match('/^\s*\d+\s*[kmg]?\s*$/i', $size) ? QueueBudgetFactory::bytes($size) : 0;
+        $bytes = preg_match('/^\s*\d+\s*[kmg]?\s*$/i', $size) ? QueuePassLimitsFactory::bytes($size) : 0;
 
         return $bytes > 0 ? $bytes : null;
     }

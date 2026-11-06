@@ -9,9 +9,9 @@ use Symfony\Component\Messenger\Stamp\HandledStamp;
 use Symfony\Component\Messenger\Stamp\TransportMessageIdStamp;
 use YesWiki\Kernel\Service\DatabaseClock;
 use YesWiki\Kernel\Service\DbService;
-use YesWiki\Kernel\Service\Queue\QueueBudgetFactory;
 use YesWiki\Kernel\Service\Queue\QueueBus;
 use YesWiki\Kernel\Service\Queue\QueueHolderLock;
+use YesWiki\Kernel\Service\Queue\QueuePassLimitsFactory;
 use YesWiki\Kernel\Service\Queue\QueueSchema;
 use YesWiki\Kernel\Service\Queue\QueueTransport;
 use YesWiki\Test\Core\YesWikiTestCase;
@@ -21,7 +21,7 @@ require_once 'tests/src/Kernel/QueueTestMessage.php';
 
 /** On the wiki's own container: what a service dispatches on Messenger's bus is stored for the consumer, not handled on the spot. */
 #[CoversClass(QueueBus::class)]
-#[CoversClass(QueueBudgetFactory::class)]
+#[CoversClass(QueuePassLimitsFactory::class)]
 #[CoversClass(QueueTransport::class)]
 class QueueKernelWiringTest extends YesWikiTestCase
 {
@@ -49,7 +49,7 @@ class QueueKernelWiringTest extends YesWikiTestCase
     }
 
     /**
-     * A pass's budget is a duration that QueueBudget counts down on microtime(): the factory must read the same clock, not the
+     * A pass's budget is a duration that QueuePassLimits counts down on microtime(): the factory must read the same clock, not the
      * database's. With the database's, a server whose clock lags by 25 s gave the end-of-request pass no budget at all.
      */
     public function testTheContainersBudgetFactoryCountsOnPhpsClockNotTheDatabases(): void
@@ -57,7 +57,7 @@ class QueueKernelWiringTest extends YesWikiTestCase
         $services = self::getWiki()->services;
         $this->assertInstanceOf(DatabaseClock::class, $services->get(ClockInterface::class), 'the clock the queue writes and compares times by');
 
-        $clock = (new \ReflectionProperty(QueueBudgetFactory::class, 'phpClock'))->getValue($services->get(QueueBudgetFactory::class));
+        $clock = (new \ReflectionProperty(QueuePassLimitsFactory::class, 'phpClock'))->getValue($services->get(QueuePassLimitsFactory::class));
 
         $this->assertNotInstanceOf(DatabaseClock::class, $clock);
     }

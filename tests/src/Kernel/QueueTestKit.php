@@ -12,8 +12,8 @@ use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\Stamp\TransportMessageIdStamp;
 use YesWiki\Files\Service\RuntimeLock;
 use YesWiki\Kernel\Queue\ProvidesSchedule;
-use YesWiki\Kernel\Queue\QueueBudget;
 use YesWiki\Kernel\Queue\QueueConsumerMode;
+use YesWiki\Kernel\Queue\QueuePassLimits;
 use YesWiki\Kernel\Queue\QueuePassOrigin;
 use YesWiki\Kernel\Queue\QueuePassReport;
 use YesWiki\Kernel\Queue\ScheduledTask;
@@ -27,13 +27,13 @@ use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Kernel\Service\Journal;
 use YesWiki\Kernel\Service\JournalSchema;
 use YesWiki\Kernel\Service\Queue\QueueBudgetContext;
-use YesWiki\Kernel\Service\Queue\QueueBudgetFactory;
 use YesWiki\Kernel\Service\Queue\QueueBus;
 use YesWiki\Kernel\Service\Queue\QueueConsumer;
 use YesWiki\Kernel\Service\Queue\QueueFallback;
 use YesWiki\Kernel\Service\Queue\QueueHandlerLocator;
 use YesWiki\Kernel\Service\Queue\QueueHealthChecks;
 use YesWiki\Kernel\Service\Queue\QueueHolderLock;
+use YesWiki\Kernel\Service\Queue\QueuePassLimitsFactory;
 use YesWiki\Kernel\Service\Queue\QueueRecorder;
 use YesWiki\Kernel\Service\Queue\QueueRequestTrigger;
 use YesWiki\Kernel\Service\Queue\QueueScheduleTicker;
@@ -68,7 +68,7 @@ final class QueueTestKit
     public readonly QueueHolderLock $holderLock;
     /** The one clock every part of the queue reads. */
     public readonly ClockInterface $clock;
-    public readonly QueueBudgetFactory $budgets;
+    public readonly QueuePassLimitsFactory $budgets;
     public readonly QueueBudgetContext $budgetContext;
     private readonly HibernationService $hibernation;
     /** What the Journal says of each scheduled task, which the Scheduler reads. */
@@ -97,7 +97,7 @@ final class QueueTestKit
      * @param ClockInterface|null                $clock                the clock of every part of the queue (default: the database's, as in production)
      * @param string|null                        $database             an SQLite file another kit or test made, for a consumer in another process to work on the same queue; left where it is by dispose()
      * @param ProvidesSchedule|null              $schedule             the recurring tasks the schedule declares (default: none)
-     * @param QueueBudgetFactory|null            $budgets              what a pass may spend (default: from this PHP's limits)
+     * @param QueuePassLimitsFactory|null        $budgets              what a pass may spend (default: from this PHP's limits)
      * @param HibernationService|null            $hibernation          the wiki's status as the consumer reads it (default: awake)
      * @param (\Closure(): EventDispatcher)|null $events               the wiki's dispatcher, which a killed message is announced on (default: one nobody listens to)
      * @param \Closure(): bool|null              $configurationChanged what the consumer's ConfigurationWatch answers (default: $this->configurationChanged)
@@ -107,7 +107,7 @@ final class QueueTestKit
         ?ClockInterface $clock = null,
         ?string $database = null,
         ?ProvidesSchedule $schedule = null,
-        ?QueueBudgetFactory $budgets = null,
+        ?QueuePassLimitsFactory $budgets = null,
         ?HibernationService $hibernation = null,
         ?\Closure $events = null,
         ?\Closure $configurationChanged = null,
@@ -178,8 +178,8 @@ final class QueueTestKit
         $watch = new ConfigurationWatch();
         $watch->bind($configurationChanged ?? fn (): bool => $this->configurationChanged);
 
-        // On the real clock whatever the queue's: a budget is spent against microtime() (QueueBudget).
-        $this->budgets = $budgets ??= new QueueBudgetFactory(new NativeClock());
+        // On the real clock whatever the queue's: a budget is spent against microtime() (QueuePassLimits).
+        $this->budgets = $budgets ??= new QueuePassLimitsFactory(new NativeClock());
         $this->budgetContext = new QueueBudgetContext();
         $this->hibernation = $hibernation ??= new HibernationService(new ParameterBag(['wiki_status' => 'running']));
         $this->consumer = new QueueConsumer(
@@ -271,7 +271,7 @@ final class QueueTestKit
         $journal = new JournalSchema($db);
         $recorder = new QueueRecorder($db, $journal, $clock);
 
-        $id = $recorder->passStarted($mode, $memoryLimit === 0 ? null : new QueueBudget(INF, $memoryLimit, 0), $beforeResponse, $origin ?? QueuePassOrigin::Consumer, $fallbackFor);
+        $id = $recorder->passStarted($mode, $memoryLimit === 0 ? null : new QueuePassLimits($memoryLimit, 0), $beforeResponse, $origin ?? QueuePassOrigin::Consumer, $fallbackFor);
         if ($holder !== null) {
             // The recorder only knows the process it runs in: a pass of another process is written as that one would have.
             $context = json_decode((string)$db->scalar("SELECT context FROM {$journal->table()} WHERE id = ?", null, [$id]), true);
@@ -321,7 +321,7 @@ final class QueueTestKit
         return new ServiceLocator([
             QueueConsumer::class => fn (): QueueConsumer => $this->consumer,
             QueueSettings::class => static fn (): QueueSettings => $settings,
-            QueueBudgetFactory::class => fn (): QueueBudgetFactory => $this->budgets,
+            QueuePassLimitsFactory::class => fn (): QueuePassLimitsFactory => $this->budgets,
         ]);
     }
 

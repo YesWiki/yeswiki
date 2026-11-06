@@ -5,11 +5,11 @@ namespace YesWiki\Kernel\Service\Queue;
 use Psr\Clock\ClockInterface;
 use Psr\Log\LogLevel;
 use YesWiki\Kernel\Entity\JournalChannel;
-use YesWiki\Kernel\Queue\QueueBudget;
 use YesWiki\Kernel\Queue\QueueClaimHolder;
 use YesWiki\Kernel\Queue\QueueConsumerMode;
 use YesWiki\Kernel\Queue\QueueFailureCause;
 use YesWiki\Kernel\Queue\QueueJournalEntry;
+use YesWiki\Kernel\Queue\QueuePassLimits;
 use YesWiki\Kernel\Queue\QueuePassOrigin;
 use YesWiki\Kernel\Queue\QueuePassReport;
 use YesWiki\Kernel\Queue\ScheduledTask;
@@ -43,16 +43,15 @@ class QueueRecorder
     }
 
     /** Opens the row of a pass and answers its id; only a pass that is not the consumer's own gets an `origin`, and with no $holder only the consumer's names its process. */
-    public function passStarted(QueueConsumerMode $mode, ?QueueBudget $budget, bool $beforeResponse, QueuePassOrigin $origin = QueuePassOrigin::Consumer, ?QueueConsumerMode $fallbackFor = null, ?string $holder = null): int
+    public function passStarted(QueueConsumerMode $mode, ?QueuePassLimits $limits, bool $beforeResponse, QueuePassOrigin $origin = QueuePassOrigin::Consumer, ?QueueConsumerMode $fallbackFor = null, ?string $holder = null): int
     {
         $now = $this->format($this->now());
-        $seconds = $budget?->remainingSeconds();
-        $memory = $budget?->memoryCeilingBytes;
+        $memory = $limits?->memoryCeilingBytes;
         $consumer = $origin === QueuePassOrigin::Consumer;
 
         $this->insert($now, $mode->value, QueueJournalEntry::PASS, '', LogLevel::INFO, [
             'handled' => 0,
-            'budget_ms' => $seconds === null || is_infinite($seconds) ? null : (int)round($seconds * 1000),
+            'budget_ms' => null, // a pass has no time budget any more; the column goes in a later step
             'peak_memory' => 0,
             'memory_limit' => $memory === null || $memory === PHP_INT_MAX ? 0 : $memory,
             'pid' => (int)getmypid(),

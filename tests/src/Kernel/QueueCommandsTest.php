@@ -14,7 +14,7 @@ use YesWiki\Kernel\Command\QueueConsumeCommand;
 use YesWiki\Kernel\Queue\ProvidesSchedule;
 use YesWiki\Kernel\Queue\QueueConsumerMode;
 use YesWiki\Kernel\Queue\RecurringMessageTimezoned;
-use YesWiki\Kernel\Service\Queue\QueueBudgetFactory;
+use YesWiki\Kernel\Service\Queue\QueuePassLimitsFactory;
 use YesWiki\Kernel\Service\Queue\QueueSettings;
 use YesWiki\Test\Core\YesWikiTestCase;
 
@@ -74,7 +74,7 @@ class QueueCommandsTest extends YesWikiTestCase
 
         $this->execute('messenger:consume', ['--drain' => true]);
 
-        $limit = QueueBudgetFactory::bytes((string)ini_get('memory_limit'));
+        $limit = QueuePassLimitsFactory::bytes((string)ini_get('memory_limit'));
         $this->assertGreaterThan(0, $limit, 'the suite runs with a memory_limit');
         $ceiling = $this->kit->statistics->lastPass()['memoryLimit'] ?? null;
         $this->assertIsInt($ceiling);

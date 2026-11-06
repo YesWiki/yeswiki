@@ -37,9 +37,9 @@ use YesWiki\Kernel\Service\Journal;
 use YesWiki\Kernel\Service\JournalSchema;
 use YesWiki\Kernel\Service\LanguageService;
 use YesWiki\Kernel\Service\PageContext;
-use YesWiki\Kernel\Service\Queue\QueueBudgetFactory;
 use YesWiki\Kernel\Service\Queue\QueueConsumer;
 use YesWiki\Kernel\Service\Queue\QueueHealthChecks;
+use YesWiki\Kernel\Service\Queue\QueuePassLimitsFactory;
 use YesWiki\Kernel\Service\Queue\QueueRecorder;
 use YesWiki\Kernel\Service\Queue\QueueScheduleTicker;
 use YesWiki\Kernel\Service\Queue\QueueSettings;
@@ -564,7 +564,7 @@ class JobsControllerTest extends YesWikiTestCase
         $this->signInAsAdmin();
         $this->failed('a', 'RuntimeException: boom');
         $this->kit->send('b');
-        $this->kit->consumer->drain(QueueConsumerMode::Api, (new QueueBudgetFactory(new NativeClock()))->forMode(QueueConsumerMode::Api, true));
+        $this->kit->consumer->drain(QueueConsumerMode::Api, (new QueuePassLimitsFactory(new NativeClock()))->forMode(QueueConsumerMode::Api, true));
 
         foreach (JobsOverview::TABS as $tab) {
             $body = (string)$this->api()->tab($tab)->getContent();
@@ -1116,7 +1116,7 @@ class JobsControllerTest extends YesWikiTestCase
         $health ??= new HealthService([$this->kit->healthChecks($settings)]);
         $kit = $this->kit;
         $configuration = $this->configuration ?? new ConfigurationService();
-        $overview = new JobsOverview($settings, $kit->statistics, new QueueBudgetFactory(new NativeClock()), $health, $kit->ticker, $wiki->get(LanguageService::class), $kit->fallback($settings), $kit->clock);
+        $overview = new JobsOverview($settings, $kit->statistics, new QueuePassLimitsFactory(new NativeClock()), $health, $kit->ticker, $wiki->get(LanguageService::class), $kit->fallback($settings), $kit->clock);
 
         return new ServiceLocator([
             AclService::class => static fn (): AclService => $wiki->get(AclService::class),
@@ -1133,7 +1133,7 @@ class JobsControllerTest extends YesWikiTestCase
             QueueRecorder::class => static fn (): QueueRecorder => $kit->recorder,
             QueueScheduleTicker::class => static fn (): QueueScheduleTicker => $kit->ticker,
             QueueConsumer::class => static fn (): QueueConsumer => $kit->consumer,
-            QueueBudgetFactory::class => static fn (): QueueBudgetFactory => new QueueBudgetFactory(new NativeClock()),
+            QueuePassLimitsFactory::class => static fn (): QueuePassLimitsFactory => new QueuePassLimitsFactory(new NativeClock()),
             Journal::class => static fn (): Journal => $kit->journal,
             ConfigurationService::class => static fn (): ConfigurationService => $configuration,
         ]);

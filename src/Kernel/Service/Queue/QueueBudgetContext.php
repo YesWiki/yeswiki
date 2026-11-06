@@ -2,7 +2,7 @@
 
 namespace YesWiki\Kernel\Service\Queue;
 
-use YesWiki\Kernel\Queue\QueueBudget;
+use YesWiki\Kernel\Queue\QueuePassLimits;
 use YesWiki\Kernel\Service\RequestScopedState;
 
 /**
@@ -11,9 +11,9 @@ use YesWiki\Kernel\Service\RequestScopedState;
  */
 class QueueBudgetContext implements RequestScopedState
 {
-    private ?QueueBudget $budget = null;
+    private ?QueuePassLimits $budget = null;
 
-    public function start(QueueBudget $budget): void
+    public function start(QueuePassLimits $budget): void
     {
         $this->budget = $budget;
     }
@@ -24,10 +24,16 @@ class QueueBudgetContext implements RequestScopedState
         $this->budget = null;
     }
 
-    /** Seconds the running pass has left; null when no budgeted pass is running. */
+    /** The limits of the pass running right now; null outside a pass. */
+    public function limits(): ?QueuePassLimits
+    {
+        return $this->budget;
+    }
+
+    /** A pass has no time left to give any more, only limits (deleted with the context): always null. */
     public function remainingSeconds(): ?float
     {
-        return $this->budget?->remainingSeconds();
+        return null;
     }
 
     /** Whole seconds one slice of a handler's work may take: $atMost or what the pass has left if less, never under one. */

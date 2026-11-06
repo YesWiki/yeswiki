@@ -13,8 +13,8 @@ use YesWiki\Kernel\Queue\QueuePassReport;
 use YesWiki\Kernel\Service\ConfigurationFileProvider;
 use YesWiki\Kernel\Service\ConfigurationService;
 use YesWiki\Kernel\Service\Journal;
-use YesWiki\Kernel\Service\Queue\QueueBudgetFactory;
 use YesWiki\Kernel\Service\Queue\QueueConsumer;
+use YesWiki\Kernel\Service\Queue\QueuePassLimitsFactory;
 use YesWiki\Kernel\Service\Queue\QueueRecorder;
 use YesWiki\Kernel\Service\Queue\QueueScheduleTicker;
 use YesWiki\Kernel\Service\Queue\QueueSettings;
@@ -56,7 +56,7 @@ class JobsApiController extends YesWikiController
         }
 
         $mode = $this->getService(QueueSettings::class)->mode()->forPassFromTheWeb();
-        $report = $this->getService(QueueConsumer::class)->drain($mode, $this->getService(QueueBudgetFactory::class)->untilEmpty(), true, QueuePassOrigin::Manual);
+        $report = $this->getService(QueueConsumer::class)->drain($mode, $this->getService(QueuePassLimitsFactory::class)->untilEmpty(), true, QueuePassOrigin::Manual);
 
         return match ($report->stopReason) {
             QueuePassReport::LOCKED => $this->status(_t('ADMIN_JOBS_CONSUME_LOCKED'), 'warning'),

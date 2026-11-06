@@ -20,9 +20,9 @@ use Symfony\Component\Messenger\EventListener\StopWorkerOnTimeLimitListener;
 use Symfony\Component\Messenger\Worker;
 use YesWiki\Files\Service\RuntimeLock;
 use YesWiki\Kernel\Entity\Event;
-use YesWiki\Kernel\Queue\QueueBudget;
 use YesWiki\Kernel\Queue\QueueClaimHolder;
 use YesWiki\Kernel\Queue\QueueConsumerMode;
+use YesWiki\Kernel\Queue\QueuePassLimits;
 use YesWiki\Kernel\Queue\QueuePassObserver;
 use YesWiki\Kernel\Queue\QueuePassOrigin;
 use YesWiki\Kernel\Queue\QueuePassReceiver;
@@ -47,8 +47,6 @@ class QueueConsumer
 
     private const RECEIVER = QueueTransport::DEFAULT_QUEUE;
 
-    private const UNKNOWN_DURATION_SECONDS = 0.5;
-
     private const HEARTBEAT_SECONDS = 60;
 
     private const STATUS_CHECK_SECONDS = 5;
@@ -63,7 +61,7 @@ class QueueConsumer
         private readonly QueueRecorder $recorder,
         private readonly QueueStatistics $statistics,
         private readonly QueueBudgetContext $budgetContext,
-        private readonly QueueBudgetFactory $budgets,
+        private readonly QueuePassLimitsFactory $budgets,
         private readonly HibernationService $hibernation,
         private readonly RuntimeLock $runtimeLock,
         private readonly Journal $journal,
@@ -78,7 +76,7 @@ class QueueConsumer
     }
 
     /** One pass that ends by itself: due tasks first, then messages until the queue is empty or the budget spent; never throws. */
-    public function drain(QueueConsumerMode $mode, QueueBudget $budget, bool $responseAlreadySent = true, QueuePassOrigin $origin = QueuePassOrigin::Consumer, ?QueueConsumerMode $fallbackFor = null): QueuePassReport
+    public function drain(QueueConsumerMode $mode, QueuePassLimits $budget, bool $responseAlreadySent = true, QueuePassOrigin $origin = QueuePassOrigin::Consumer, ?QueueConsumerMode $fallbackFor = null): QueuePassReport
     {
         $startedAt = microtime(true);
         $lock = $this->runtimeLock->acquire(self::PASS_LOCK);
@@ -107,7 +105,6 @@ class QueueConsumer
                     $this->closeDeadPasses($passId);
                     $this->tick();
 
-                    $averages = [];
                     $lifted = false;
                     $liftTheLimit = function () use ($mode, &$lifted): void {
                         if (!$lifted) {
@@ -120,8 +117,8 @@ class QueueConsumer
                     };
                     $receiver = new QueuePassReceiver(
                         $this->transport,
-                        function () use ($budget, $observer, $responseAlreadySent, &$averages, $liftTheLimit): ?string {
-                            return $this->reasonToStop($budget, $observer, !$responseAlreadySent, $averages, $liftTheLimit);
+                        function () use ($budget, $observer, $responseAlreadySent, $liftTheLimit): ?string {
+                            return $this->reasonToStop($budget, $observer, !$responseAlreadySent, $liftTheLimit);
                         },
                         $observer
                     );
@@ -149,7 +146,7 @@ class QueueConsumer
     public function consume(QueueConsumerMode $mode, int $timeLimit, int $memoryLimitBytes, ?int $messageLimit = null, ?OutputInterface $out = null): QueuePassReport
     {
         $startedAt = microtime(true);
-        $limits = new QueueBudget(INF, $memoryLimitBytes, $this->budgets->forMode($mode, true)->killLimitSeconds);
+        $limits = new QueuePassLimits($memoryLimitBytes, $this->budgets->forMode($mode, true)->killLimitSeconds);
 
         return $this->pass($mode, $limits, false, QueuePassOrigin::Consumer, null, function (QueuePassObserver $observer, int $passId) use ($mode, $limits, $timeLimit, $memoryLimitBytes, $messageLimit, $out, $startedAt): string {
             $logger = $out === null ? null : new ConsoleLogger($out);
@@ -221,7 +218,7 @@ class QueueConsumer
     public function handleById(int $messageId, QueueConsumerMode $mode): QueuePassReport
     {
         return $this->pass($mode, null, false, QueuePassOrigin::Pinned, null, function (QueuePassObserver $observer) use ($messageId, $mode): string {
-            $this->transport->claimAs($mode, QueueBudgetFactory::KILL_LIMIT_NO_PHP_LIMIT);
+            $this->transport->claimAs($mode, QueuePassLimitsFactory::KILL_LIMIT_NO_PHP_LIMIT);
 
             $receiver = new QueuePassReceiver($this->transport, static fn (): ?string => null, $observer, $messageId);
             $this->work($receiver, $observer, null, self::stopWhenIdle(...));
@@ -231,7 +228,7 @@ class QueueConsumer
     }
 
     /** The row of a consumer's pass that did nothing (lock taken, wiki hibernated), closed at once, outside `request`. */
-    private function leaveATrace(QueuePassReport $report, QueueConsumerMode $mode, QueueBudget $budget, bool $responseAlreadySent, QueuePassOrigin $origin): QueuePassReport
+    private function leaveATrace(QueuePassReport $report, QueueConsumerMode $mode, QueuePassLimits $budget, bool $responseAlreadySent, QueuePassOrigin $origin): QueuePassReport
     {
         if ($origin === QueuePassOrigin::Consumer && !$mode->consumesAtEndOfRequests()) {
             try {
@@ -248,7 +245,7 @@ class QueueConsumer
      *
      * @param \Closure(QueuePassObserver, int): string $body
      */
-    private function pass(QueueConsumerMode $mode, ?QueueBudget $budget, bool $beforeResponse, QueuePassOrigin $origin, ?QueueConsumerMode $fallbackFor, \Closure $body): QueuePassReport
+    private function pass(QueueConsumerMode $mode, ?QueuePassLimits $budget, bool $beforeResponse, QueuePassOrigin $origin, ?QueueConsumerMode $fallbackFor, \Closure $body): QueuePassReport
     {
         $startedAt = microtime(true);
         $observer = new QueuePassObserver($this->recorder, $this->journal, $mode, $this->clock);
@@ -357,10 +354,9 @@ class QueueConsumer
     /**
      * Why a budgeted pass should take no further message, or null to take the next one; a pass nobody waits for lifts PHP's limit before its first.
      *
-     * @param array<string, int|null> $averages
-     * @param \Closure(): void        $liftTheLimit
+     * @param \Closure(): void $liftTheLimit
      */
-    private function reasonToStop(QueueBudget $budget, QueuePassObserver $observer, bool $visitorWaits, array &$averages, \Closure $liftTheLimit): ?string
+    private function reasonToStop(QueuePassLimits $budget, QueuePassObserver $observer, bool $visitorWaits, \Closure $liftTheLimit): ?string
     {
         if ($this->hibernation->isWikiHibernatedNow()) {
             return QueuePassReport::PAUSED;
@@ -375,19 +371,10 @@ class QueueConsumer
         }
 
         $first = $observer->handled() === 0;
-        if ($budget->remainingSeconds() <= 0.0) {
-            return $first ? QueuePassReport::NO_BUDGET : QueuePassReport::BUDGET;
-        }
         if ($first && !$visitorWaits) {
             $liftTheLimit();
 
             return null;
-        }
-
-        $averageMs = $averages[$type] ??= $this->statistics->averageDurationMs($type);
-        $expected = $averageMs === null ? self::UNKNOWN_DURATION_SECONDS : $averageMs / 1000;
-        if (!$budget->canAfford($expected)) {
-            return $first ? QueuePassReport::NO_BUDGET : QueuePassReport::BUDGET;
         }
 
         return null;
@@ -489,7 +476,7 @@ class QueueConsumer
     private function closeDeadPasses(?int $ownPassId): void
     {
         try {
-            $longestLife = QueueBudgetFactory::KILL_LIMIT_NO_PHP_LIMIT + QueueTransport::KILL_GRACE_SECONDS;
+            $longestLife = QueuePassLimitsFactory::KILL_LIMIT_NO_PHP_LIMIT + QueueTransport::KILL_GRACE_SECONDS;
             $lastPossible = $this->clock->now()->setTimezone(new \DateTimeZone('UTC'))->modify("-{$longestLife} seconds");
             foreach ($this->statistics->openPasses() as $pass) {
                 if ($pass['id'] === $ownPassId) {

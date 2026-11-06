@@ -27,11 +27,11 @@ use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Kernel\Service\Journal;
 use YesWiki\Kernel\Service\JournalSchema;
-use YesWiki\Kernel\Service\Queue\QueueBudgetFactory;
 use YesWiki\Kernel\Service\Queue\QueueBus;
 use YesWiki\Kernel\Service\Queue\QueueFallback;
 use YesWiki\Kernel\Service\Queue\QueueHandlerLocator;
 use YesWiki\Kernel\Service\Queue\QueueHealthChecks;
+use YesWiki\Kernel\Service\Queue\QueuePassLimitsFactory;
 use YesWiki\Kernel\Service\Queue\QueueRecorder;
 use YesWiki\Kernel\Service\Queue\QueueScheduleTicker;
 use YesWiki\Kernel\Service\Queue\QueueSchema;
@@ -961,7 +961,7 @@ class QueueScheduleTickerTest extends YesWikiTestCase
             $hibernation,
             $this->ticker($more),
             new QueueFallback($settings, $this->statistics, $this->ticker($more), $hibernation, $this->locks, $this->clock),
-            new QueueBudgetFactory(new NativeClock()),
+            new QueuePassLimitsFactory(new NativeClock()),
             $this->clock,
         );
         foreach ($checks->healthChecks() as $check) {

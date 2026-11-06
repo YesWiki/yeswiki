@@ -20,7 +20,7 @@ use YesWiki\Kernel\Service\DatabaseClock;
 use YesWiki\Kernel\Service\EnvironmentConfiguration;
 use YesWiki\Kernel\Service\LanguageService;
 use YesWiki\Kernel\Service\ProgramVersion;
-use YesWiki\Kernel\Service\Queue\QueueBudgetFactory;
+use YesWiki\Kernel\Service\Queue\QueuePassLimitsFactory;
 use YesWiki\Kernel\Service\StringUtilService;
 
 /** Owns the DI container build/compile/cache lifecycle for a Wiki instance. */
@@ -183,7 +183,7 @@ class YesWikiKernel extends Kernel
         }
 
         $loader->registerAliasesForSinglyImplementedInterfaces();
-        $container->getDefinition(QueueBudgetFactory::class)->setArgument('$phpClock', new Reference(NativeClock::class));
+        $container->getDefinition(QueuePassLimitsFactory::class)->setArgument('$phpClock', new Reference(NativeClock::class));
         $container->getDefinition(LanguageService::class)->setFactory([LanguageService::class, 'getInstance']);
     }
 

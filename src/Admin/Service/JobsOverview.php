@@ -10,9 +10,9 @@ use YesWiki\Kernel\Queue\QueueConsumerMode;
 use YesWiki\Kernel\Queue\QueueWording;
 use YesWiki\Kernel\Service\HealthService;
 use YesWiki\Kernel\Service\LanguageService;
-use YesWiki\Kernel\Service\Queue\QueueBudgetFactory;
 use YesWiki\Kernel\Service\Queue\QueueFallback;
 use YesWiki\Kernel\Service\Queue\QueueHealthChecks;
+use YesWiki\Kernel\Service\Queue\QueuePassLimitsFactory;
 use YesWiki\Kernel\Service\Queue\QueueRequestTrigger;
 use YesWiki\Kernel\Service\Queue\QueueScheduleTicker;
 use YesWiki\Kernel\Service\Queue\QueueSettings;
@@ -37,7 +37,7 @@ class JobsOverview
     public function __construct(
         private readonly QueueSettings $settings,
         private readonly QueueStatistics $statistics,
-        private readonly QueueBudgetFactory $budgets,
+        private readonly QueuePassLimitsFactory $budgets,
         private readonly HealthService $health,
         private readonly QueueScheduleTicker $ticker,
         private readonly LanguageService $languages,

@@ -26,8 +26,8 @@ use YesWiki\Kernel\Health\Severity;
 use YesWiki\Kernel\Queue\QueueConsumerMode;
 use YesWiki\Kernel\Service\HealthService;
 use YesWiki\Kernel\Service\KeyPairGenerator;
-use YesWiki\Kernel\Service\Queue\QueueBudgetFactory;
 use YesWiki\Kernel\Service\Queue\QueueHealthChecks;
+use YesWiki\Kernel\Service\Queue\QueuePassLimitsFactory;
 use YesWiki\Kernel\Service\Queue\QueueRecorder;
 use YesWiki\Kernel\Service\Queue\QueueSettings;
 use YesWiki\Kernel\Service\SsrfUrlValidator;
@@ -403,7 +403,7 @@ class DeliverActivityTest extends YesWikiTestCase
 
     private function drain(): \YesWiki\Kernel\Queue\QueuePassReport
     {
-        return $this->kit->consumer->drain(QueueConsumerMode::Api, (new QueueBudgetFactory(new NativeClock()))->forMode(QueueConsumerMode::Api, true));
+        return $this->kit->consumer->drain(QueueConsumerMode::Api, (new QueuePassLimitsFactory(new NativeClock()))->forMode(QueueConsumerMode::Api, true));
     }
 
     /** @return list<Envelope> */

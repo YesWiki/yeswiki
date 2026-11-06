@@ -43,7 +43,7 @@ class QueueHealthChecks implements ProvidesHealthChecks
         private readonly HibernationService $hibernation,
         private readonly QueueScheduleTicker $ticker,
         private readonly QueueFallback $fallback,
-        private readonly QueueBudgetFactory $budgets,
+        private readonly QueuePassLimitsFactory $budgets,
         private readonly ClockInterface $clock,
     ) {
     }

@@ -34,7 +34,7 @@ class QueueRequestTrigger implements RequestScopedState
     public function __construct(
         private readonly QueueSettings $settings,
         private readonly QueueConsumer $consumer,
-        private readonly QueueBudgetFactory $budgets,
+        private readonly QueuePassLimitsFactory $budgets,
         private readonly QueueStatistics $statistics,
         private readonly QueueScheduleTicker $ticker,
         private readonly QueueFallback $fallback,

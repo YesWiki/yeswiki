@@ -3,18 +3,18 @@
 namespace YesWiki\Kernel\Service\Queue;
 
 use Psr\Clock\ClockInterface;
-use YesWiki\Kernel\Queue\QueueBudget;
 use YesWiki\Kernel\Queue\QueueConsumerMode;
+use YesWiki\Kernel\Queue\QueuePassLimits;
 
 /**
- * Works out what a pass may spend from the limits the server itself gives PHP, at the moment the pass starts:
- * `max_execution_time` less what was used and a margin, capped by the mode's ceiling; 80 % of `memory_limit`.
+ * Works out what limits a pass from what the server itself gives PHP, at the moment the pass starts: the instant
+ * `max_execution_time` less what was used and a margin makes it stop, the kill limit of its claim, 80 % of `memory_limit`.
  *
- * Durations and deadlines are in PHP's time, timestamps in the database's: $phpClock is PHP's own clock (NativeClock, wired by
- * YesWikiKernel), never the DatabaseClock the queue writes times by. The deadline is counted down on microtime() (QueueBudget)
- * and the time used from `REQUEST_TIME_FLOAT`, so a database clock ahead or behind PHP's would add to the budget or take from it.
+ * The instants are in PHP's time, timestamps in the database's: $phpClock is PHP's own clock (NativeClock, wired by
+ * YesWikiKernel), never the DatabaseClock the queue writes times by. The stop is read against microtime() (QueuePassLimits)
+ * and the time used from `REQUEST_TIME_FLOAT`, so a database clock ahead or behind PHP's would add to the time or take from it.
  */
-class QueueBudgetFactory
+class QueuePassLimitsFactory
 {
     private const MARGIN_SECONDS = 2.0;
     private const MARGIN_RATIO = 0.1;
@@ -45,36 +45,48 @@ class QueueBudgetFactory
         $this->constructedAt = $this->now();
     }
 
-    public function forMode(QueueConsumerMode $mode, bool $responseAlreadySent): QueueBudget
+    /**
+     * What one pass may spend: the memory ceiling, a kill limit of what PHP leaves of its time limit, and the instant
+     * PHP's limit less a margin makes it stop taking messages (none without a limit).
+     */
+    public function forPass(): QueuePassLimits
+    {
+        $now = $this->now();
+        $limit = $this->phpTimeLimit();
+        $untilPhpStops = $this->untilPhpStops($limit, $now);
+        $phpStopsAt = $untilPhpStops === null ? null : $now + max(0.0, $untilPhpStops - (self::MARGIN_SECONDS + self::MARGIN_RATIO * $limit));
+
+        return new QueuePassLimits($this->memoryCeiling(), $this->killLimit($untilPhpStops), $phpStopsAt);
+    }
+
+    /** Temporary, until the consumer asks for the limits itself: a mode that stops by itself gets forPass(), a blocking one no PHP stop. */
+    public function forMode(QueueConsumerMode $mode, bool $responseAlreadySent): QueuePassLimits
+    {
+        return $mode->isBudgeted() ? $this->forPass() : new QueuePassLimits($this->memoryCeiling(), self::KILL_LIMIT_NO_PHP_LIMIT);
+    }
+
+    /** What one pass may spend in this mode, in whole seconds, as a page says it; null for a mode that never stops by itself. */
+    public function secondsPerPass(QueueConsumerMode $mode, bool $responseAlreadySent): ?int
     {
         if (!$mode->isBudgeted()) {
-            return $this->forHand();
+            return null;
         }
 
         $now = $this->now();
         $limit = $this->phpTimeLimit();
         $untilPhpStops = $this->untilPhpStops($limit, $now);
         $usable = $untilPhpStops === null ? null : max(0.0, $untilPhpStops - (self::MARGIN_SECONDS + self::MARGIN_RATIO * $limit));
+        $ceiling = $mode->passCeilingSeconds($responseAlreadySent);
 
-        return new QueueBudget($now + $this->capped($usable, $mode->passCeilingSeconds($responseAlreadySent)), $this->memoryCeiling(), $this->killLimit($untilPhpStops));
+        return (int)round($usable === null ? $ceiling : min($usable, $ceiling));
     }
 
-    /** What one pass may spend in this mode, in whole seconds, as a page says it; null for a mode with no deadline. */
-    public function secondsPerPass(QueueConsumerMode $mode, bool $responseAlreadySent): ?int
+    /** A pass that stops only when the queue is empty, hibernates or the server kills it: no memory ceiling, PHP's own kill limit (the jobs page's button). */
+    public function untilEmpty(): QueuePassLimits
     {
-        return $mode->isBudgeted() ? (int)round($this->forMode($mode, $responseAlreadySent)->remainingSeconds()) : null;
-    }
+        $limits = $this->forPass();
 
-    /** A pass with no deadline but the memory ceiling: one run by hand (`messenger:consume --drain`), or a blocking consumer's. */
-    public function forHand(): QueueBudget
-    {
-        return new QueueBudget(INF, $this->memoryCeiling(), self::KILL_LIMIT_NO_PHP_LIMIT);
-    }
-
-    /** A pass that stops only when the queue is empty, hibernates or the server kills it: no deadline, no memory ceiling (the jobs page's button). */
-    public function untilEmpty(): QueueBudget
-    {
-        return new QueueBudget(INF, PHP_INT_MAX, $this->killLimit($this->untilPhpStops($this->phpTimeLimit(), $this->now())));
+        return new QueuePassLimits(PHP_INT_MAX, $limits->killLimitSeconds, $limits->phpStopsAt);
     }
 
     /**
@@ -85,11 +97,6 @@ class QueueBudgetFactory
         ($this->setTimeLimit)(0);
 
         return $this->phpTimeLimit() === 0 ? self::KILL_LIMIT_NO_PHP_LIMIT : null;
-    }
-
-    private function capped(?float $usable, float $ceiling): float
-    {
-        return $usable === null ? $ceiling : min($usable, $ceiling);
     }
 
     /** PHP's `max_execution_time` in seconds; 0 when it has none. */
