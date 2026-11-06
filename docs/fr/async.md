@@ -151,10 +151,10 @@ passage suivant. Sans moyen d'envoyer la page avant la fin du traitement
   qui travaille : un traitement qui boucle le garde occupé jusqu'à ce que
   l'hébergeur ou vous l'arrêtiez (la limite `request_terminate_timeout` de
   PHP-FPM ne s'applique pas, par défaut, après l'envoi de la page) ;
-- quand un traitement s'arrête, le wiki le sait **tout de suite** si le
-  processus tournait sur le même serveur que lui, mais seulement **au bout
-  d'une heure et une minute** s'il tournait sur un autre serveur ou si le wiki
-  ne peut pas le vérifier.
+- quand un traitement s'arrête, le wiki le sait **tout de suite** ; s'il ne
+  peut pas le vérifier (dossier `cache/` non inscriptible), seulement **une
+  minute après la limite** du traitement, soit une heure et une minute quand
+  la limite a été levée.
 
 ### Où se règle le mode
 
@@ -273,8 +273,7 @@ comprise), il traite sa file en `request` tant qu'il ne demande rien d'autre.
 Avec `YESWIKI_QUEUE_CONSUMER=worker` dans `private/.env`, c'est le binaire qui
 lance et surveille le processus de ce wiki, et le relance s'il s'arrête : pas
 de service à écrire. Les tâches avancent sans visite, en quelques secondes, et
-peuvent durer jusqu'à une heure, au-delà de laquelle le wiki les déclare
-arrêtées. En contrepartie, un processus PHP reste en mémoire en permanence pour
+peuvent durer aussi longtemps qu'il le faut. En contrepartie, un processus PHP reste en mémoire en permanence pour
 ce wiki : c'est pourquoi ce n'est pas le défaut. La page Traitements indique alors un rythme « en continu, surveillé par
 le binaire YesWiki ».
 
@@ -414,9 +413,9 @@ C'est ici qu'on vérifie qu'un cron ou un worker passe vraiment.
 
 Un passage dont le processus a disparu (mémoire épuisée, processus arrêté par
 le serveur...) n'est pas laissé « en cours » : le passage suivant le clôt avec
-le motif « arrêtée avant la fin : son processus a disparu ». C'est immédiat quand
-les deux tournent sur le même serveur ; sinon, il faut qu'une heure et une
-minute se soient écoulées sans signe de vie. L'heure de fin affichée est celle
+le motif « arrêtée avant la fin : son processus a disparu ». C'est immédiat ; si le
+wiki ne peut pas le vérifier, il faut qu'une heure et une minute se soient
+écoulées sans signe de vie. L'heure de fin affichée est celle
 de son dernier signe de vie, pas celle du moment où le wiki s'en est aperçu.
 
 ### Les boutons des alertes
@@ -552,21 +551,17 @@ envoi, une synchronisation, une indexation...) n'a pas été fait. Cliquez sur
 
 Un traitement a été coupé en route, parce qu'il dépasse le temps dont il
 disposait : la limite de temps que l'hébergeur impose à PHP quand il refuse
-qu'on la lève, ou, dans tous les modes, une heure. Un traitement qui
+qu'on la lève. Un traitement qui
 commence trop tard n'est pas concerné : quand la limite de PHP ne peut pas être
 levée, le passage s'arrête avant de l'atteindre, sans rien commencer de nouveau.
 Seul est coupé un traitement qui, à lui seul, est plus long que ce que PHP
-laisse, ou une coupure extérieure à PHP (proxy, hébergeur), ou le plafond d'une
-heure. Le wiki ne le relance pas tout seul. Un traitement qui, à lui seul,
+laisse, ou une coupure extérieure à PHP (proxy, hébergeur). Le wiki ne le relance pas tout seul. Un traitement qui, à lui seul,
 dépasse la limite échouera à chaque nouvel essai. Un traitement coupé par une
 limite extérieure parce que l'ensemble du passage la dépassait peut en
 revanche réussir si vous le relancez à la main depuis l'onglet « En échec ».
 
 1. Si l'hébergeur impose une limite de temps que le wiki ne peut pas lever,
-   passez au mode `worker` : son processus n'en a pas. Un traitement qui dure
-   plus d'une heure, en revanche, est déclaré arrêté dans tous les modes : il
-   faut alléger ce qu'il traite (une source de données plus petite, par
-   exemple).
+   passez au mode `worker` : son processus n'en a pas.
 2. Revenez sur la page Traitements, onglet _En échec_, et cliquez sur
    **Relancer**.
 

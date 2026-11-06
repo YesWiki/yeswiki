@@ -118,7 +118,7 @@ sequenceDiagram
   Note over B,O: each run is sent with its queue.task.dispatched row, in one transaction
   loop until nothing is left up to the cutoff, or memory, or a PHP limit that could not be lifted
     W->>C: take another? (memory below its ceiling, PHP's time not used up)
-    W->>T: claim, atomic, naming pid, start time and machine
+    W->>T: claim, atomic, under the token of the pass
     W->>H: __invoke(message)
     alt handled
       W->>T: ack, the row is deleted
@@ -271,31 +271,31 @@ waits for the next pass; a delayed message that was already there and comes due 
 taken. Without that cutoff, a handler that requeues itself (the download of a remote backup queues its
 next slice at once) or a busy wiki would keep the pass, and the visitor waiting on it, from ever ending.
 The same figures give each claim its **kill limit**: what PHP leaves of its limit, or **one hour**
-when it has none, since a host does not let a process live longer. A claim also names the process
-that holds it: its pid, its start time, and the machine (host name and pid namespace), read from
-`/proc`. If that process dies (PHP's limit, the OOM killer, a host's request timeout, a restart),
-the message stays claimed, and the next pass moves it to `failed`, recording the mode that cut it:
-**at once** when the holder's lock is free (below) or, with no lock to read, when its process is gone
-from the machine the pass runs on; **past the limit plus a minute** when nothing can be told of it
-(another machine, no lock and no `/proc`, or a server's process -- FPM, Apache, FrankenPHP -- which
-lives on after the request that held the claim); and a holder that is still there keeps its message
-up to a **one-hour ceiling**, since PHP's limit counts CPU time on Linux and a handler waiting on the
-network outlives it.
+when it has none, since a host does not let a process live longer. A claim also names the pass
+that holds it: every message a pass takes carries the pass's token. If that pass's process dies
+(PHP's limit, the OOM killer, a host's request timeout, a restart), the message stays claimed, and
+the next pass moves it to `failed`, recording the mode that cut it: **at once** when the holder's
+lock is free (below); **past the limit plus a minute** when there is no lock to read (`cache/` not
+writable, a pass that has ended, a token in an older format); and **never** while the holder still
+holds its lock, however long past its limit, since PHP's limit counts CPU time on Linux and a
+handler waiting on the network outlives it.
 
-**A lock says whether the holder is there.** Each claim, and each pass, holds a `flock` on
-`cache/queue-holders/<nonce>.lock` (`QueueHolderLock`), taken before its token is written and kept
-until it lets go. The kernel drops it when the process ends, however it ends, and PHP at the end of the
-request, even after a fatal error in a shutdown function. A judge on the same machine reads it,
-creating and removing nothing, and tells three states apart: **held**, the holder is alive and only
-the one-hour ceiling applies, whatever PHP's limit says; **free**, the holder is gone and its claim is
-failed as killed at once; **absent** (a token in an older format, a token of another machine, a
-`cache/` that is not writable), the rules above apply. So an FPM worker that survives a fatal error in
-a shutdown function frees the lock when its request ends and the next pass reaps its claim at once,
-and a live worker keeps its message past its limit plus a minute, up to the ceiling. The file only counts for
-a token of the machine that reads it, since on a `cache/` shared over NFS another machine's lock
-proves nothing. Only the judges that reap delete a file (`reapKilled()` once it has failed a claim,
-`closeDeadPasses()` once it has closed a pass): the judges that only read (health checks, statistics,
-the jobs page) never do, and `CacheClearer` keeps the folder.
+**A lock says whether the holder is there.** Each pass holds a `flock` on
+`cache/queue-holders/<nonce>.lock` (`QueueHolderLock`), taken before its token is written anywhere
+and kept until its row is closed; its messages carry its token and have no lock of their own. The
+kernel drops the lock when the process ends, however it ends, and PHP at the end of the request, even
+after a fatal error in a shutdown function. A judge reads it, creating and removing nothing, and tells
+three states apart: **held**, the holder is alive, whatever PHP's limit says and however long it takes;
+**free**, the holder is gone and its claims are failed, and its pass closed, as killed at once;
+**absent**, the rules above apply. So an FPM worker that survives a fatal error in a shutdown function
+frees the lock when its request ends and the next pass reaps its claims at once, and a live worker keeps
+its message for as long as it works. **One host is assumed** (a shared host or a single container):
+every process that reads `cache/` shares one kernel, so a lock it finds is the truth. Several hosts
+over one database and one `cache/` are left to the work on several nodes, for the whole application;
+until then, a lock read over NFS from another host may say free when it is not. Only the reaper deletes
+a file (`QueueConsumer::reapTheDead()`, once the holder's claims are failed and its pass closed): the
+judges that only read (health checks, statistics, the jobs page) never do, and `CacheClearer` keeps the
+folder.
 
 A consumer whose process ends in the middle of a message (a fatal error, PHP's limit, an `exit` in a
 handler) still fails it itself, from a shutdown function, but that only journals it earlier, since the
@@ -475,44 +475,42 @@ sections below describe the code as it now is.
   (one hour, `QueuePassLimitsFactory::KILL_LIMIT_NO_PHP_LIMIT`: the longest a host lets a process live).
   `QueueHealthChecks::BACKLOG_AFTER_OTHERS` is 6 hours too, but it is a threshold for an alert about
   lateness, not a ceiling on anyone's life.
-- **The process remembers the tokens it holds.** Its own token among the claims, but not among the
-  ones it holds, was left by an earlier request it served that died without letting go: that claim is
-  gone. Under threads (FrankenPHP, ZTS) another thread may hold it, so it is UNKNOWN instead, unless
-  the holder lock says otherwise. With no lock to read, a live process other than this one counts as
-  alive only when it is a CLI, since a server process outlives the request that claimed.
+- **The process remembers the passes it runs** (`QueueTransport::workFor()`, which also gives the
+  transport the token to write on each claim). A pass running here is alive without reading its file,
+  because on NFS `flock` is emulated with `fcntl`, whose locks belong to the process: a process probing
+  its own lock would find it free. The transport forgets the token when the pass ends and at the start
+  of each request, so a claim made after a pass never carries a token whose lock is let go. A claim
+  made outside any pass (only tests do) gets a token of its own with no file, judged by its limit.
+- **One verdict for claims and passes** (`QueueTransport::isOverdue()`): held, never; free, at once;
+  absent, once the claim's `delivered_at` (or the pass's `last_at`) plus its limit (one hour when none
+  is recorded, and always for a pass) plus a minute is past.
 - **The dead-or-alive comparison is made in PHP, row by row.** Only a handful of rows are being
   handled at once, the limit varies per row, and date arithmetic on a column is not portable.
   Reaping is guarded by the claim token, so two concurrent reapers, or a reaper and the holder's own
   end, report a message once.
 - **The claim is forgotten only once the database accepted the ack.** If an ack is refused (locked,
-  connection lost), the process keeps the claim. Otherwise the next reap would see a live process
-  that no longer holds it and fail a handled message as killed.
-- **The token** (`QueueClaimHolder`) is `kind pid @ machine . start / nonce`, within the column's 64
-  characters, e.g. `c1234@0123456789ab.7100459/0123456789abcdef`. `kind` is `c` for a CLI and `s` for
-  a server process. The machine is the host name plus the pid namespace (a container has its own),
-  hashed to 12 hex digits. The start time, in clock ticks from `/proc/<pid>/stat`, tells a reused pid
-  apart. That file is parsed from the last `)`, because a process name may contain spaces and
-  parentheses. Where `hidepid` hides the process, `posix_kill($pid, 0)` failing with ESRCH proves it
-  gone but cannot prove it is the same process. A token in an older format names no holder (UNKNOWN).
-  Its `nonce` names the holder's lock file.
+  connection lost), the process keeps the claim, and fails it as killed when it ends. Its pass's lock
+  goes with the pass, so a claim left behind by a pass that ended has no file any more: another
+  process reaps it past its limit plus a minute, not at once.
+- **The token** (`QueueHolderLock::newToken()`) is `pid / nonce`, e.g. `1234/0123456789abcdef`. The
+  pid is only for whoever reads it; no decision reads it. The `nonce` names the pass's lock file. A
+  token in an older format is judged by its file like any other, and has none.
 - **The holder lock** (`QueueHolderLock`, on `RuntimeLock`) is one file, `cache/queue-holders/<nonce>.lock`,
-  per token. It is taken before the claim's transaction, so a judge, which only reads tokens already
-  written, never finds a file free between its creation and its lock. A claim that takes nothing, or
-  whose transaction throws, lets it go and leaves no file; one whose file cannot be made (`cache/` not writable) is made all the same,
-  without a lock, and judged by the rules a token with no file gets. `letGo()` removes the file and then
-  closes the handle, for an ack, a reject, the shutdown function and an undecodable message; after an
-  ack the row is already gone, so a judge that finds the file free just after has nothing to fail.
+  per pass. `QueueConsumer::pass()` takes it before the pass's row names the token and before any claim,
+  so a judge, which only reads tokens already written, never finds a file free between its creation
+  and its lock. A pass whose file cannot be made (`cache/` not writable) runs all the same, and what it
+  holds is judged by the rules a token with no file gets. `release()` removes the file and then closes
+  the handle, after the pass's messages are acked and its row closed, so a judge that finds the file
+  free just after has nothing to fail or close.
   `stateOf()` opens the file without creating it and tries a non-blocking shared `flock`: a file it
   cannot open (none, or one it may not read) is `ABSENT`, a refusal is `HELD`, a lock it gets is
   dropped at once and is `FREE`, the file left where it was. Shared rather than exclusive, because it
   still conflicts with the holder's exclusive lock, two judges looking at once do not take each other
   for the holder, and an NFS client, which emulates `flock` with `fcntl`, refuses an exclusive lock on
   a read handle and would make every holder look alive. Even so, a `cache/` on NFS with that emulation
-  and a threaded PHP (ZTS) do not mix: `fcntl` locks belong to the process, not to the handle. The
-  file counts only for a token whose machine is not empty and is this process's, whatever the file says.
-  Only the judges that reap remove the file of a holder that is gone: `reapKilled()` after it failed
-  the claim, and `closeDeadPasses()` after it closed the pass. A judge of another machine never removes
-  one, so the file of a dead holder stays until a judge of its own machine reaps it.
+  and a threaded PHP (ZTS) do not mix: `fcntl` locks belong to the process, not to the handle.
+  Only the reaper removes the file of a holder that is gone, and last: removed before the pass's row
+  was closed, the file would read absent and leave that row open for an hour.
   `expiredClaims()`, `isHandling()` and `liveHolders()` only read, since the health checks, the
   statistics and the end-of-request check call them.
 - **A requeued message loses `RedeliveryStamp` and `SentToFailureTransportStamp`.** It gets its
@@ -541,22 +539,25 @@ sections below describe the code as it now is.
   when the request ends, so the next pass reaps the claim at once instead of leaving it to the
   transport's rules above.
 - **Every pass holds a holder lock of its own,** taken before its row names its token and let go in a
-  `finally`, and every pass row names it (`holder`), whatever the pass's origin. A `cache/` where it
-  cannot be made does not stop the pass, which is judged by the rules a row with no file gets.
+  `finally`, and every pass row names it (`holder`), whatever the pass's origin. Its messages carry the
+  same token. A `cache/` where it cannot be made does not stop the pass, which is judged by the rules a
+  row with no file gets.
+- **One reaper** (`QueueConsumer::reapTheDead()`), called by `drain()` and `consume()` at their start,
+  by `consume()` at each heartbeat, and by a paused pass. It fails the claims the verdict calls dead,
+  announcing each; closes as killed the other open passes the same verdict calls dead, never its own;
+  then removes the file of each of those holders whose lock is free. Two reapers at once report a
+  message, and close a pass, once, since each write is guarded by the claim's token or by the row
+  still being open. A failure while reaping is only journaled.
 - **A pass whose holder is gone is closed as `killed`,** so that a pass that died (a fatal error, the
-  OOM killer, a restart) does not stay "running" for good. Each judge that reaps (`drain()` under its pass
-  lock, `consume()` at its start and at each heartbeat, a paused pass) also looks at the other open pass
-  rows, never its own (`QueueConsumer::closeDeadPasses()`). A holder whose lock is free is closed at
-  once, and its file removed. A holder whose lock is held stays open however long: a worker may run
-  for days, and its heartbeats say so. A row with no holder, an old row, a row of another machine or
-  one `/proc` cannot tell, is closed once its `last_at` is older than the ceiling plus the grace
-  (1 h + 60 s), by the database's clock. The stop reason is `killed` (`QUEUE_STOP_KILLED`).
+  OOM killer, a restart) does not stay "running" for good. A holder whose lock is free is closed at
+  once. A holder whose lock is held stays open however long: a worker may run for days, and its
+  heartbeats say so. A row with no holder, an old row, or one with no file, is closed once its
+  `last_at` is older than an hour plus the grace (1 h + 60 s). The stop reason is `killed` (`QUEUE_STOP_KILLED`).
   `QueueRecorder::passKilled()` leaves `last_at` as it was, the last sign of life, because the fallback
   (`lastSeenAt()`) and the stalled alert read it as "the consumer was seen at work then": moving it to
   now would hide a dead consumer for the whole stall delay. It closes only a row still open, so a pass
   that finishes after all writes its true reason over `killed`. `visitorWaits()` leaves a killed pass
-  out, since its duration measures no wait. The claims of a dead pass are reaped by their own locks,
-  whatever becomes of its row.
+  out, since its duration measures no wait.
 - **No duration is estimated.** Nothing takes the average of a type to decide whether to start a
   message. The stop reasons are `empty`, `paused`, `memory` and `php-limit`, and the last is set only
   when PHP's limit could not be lifted.
@@ -941,10 +942,15 @@ sections below describe the code as it now is.
   `request-spawn` was removed: it needs `proc_open`, which some hosts forbid, and a process of its own
   to launch and watch, for what lifting PHP's limit in the pass gets as far as the host lets it. The
   price is under Consequences.
-- **Judging a same-machine holder by a duration alone** — rejected. PHP's limit counts CPU time, so no
+- **Judging a holder by a duration alone** — rejected. PHP's limit counts CPU time, so no
   duration tells a handler waiting on the network from a process that is gone: either a live message
   was declared killed, or a dead one stayed "running" for hours. The kernel knows, and is asked
   through the holder lock.
+- **Asking `/proc` whether the holder's process is there** — removed on 2026-11-06. It was a second
+  source beside the lock, with a machine identity, a start time, a CLI/server flag and a case for
+  threads, all to answer what the lock already answers on one host; and a server's process outlives
+  the request that claimed, so its being there proved nothing. With one lock per pass and nothing
+  else, a missing file falls back on the limit, which is accepted.
 - **Judging "nothing is consuming" on the age of the oldest message** — rejected after being the
   first design. A worker alive and draining a long queue is a backlog, not a stall, and for the
   modes that end by themselves the backlog check could then never fire. Activity is the right signal.
@@ -970,10 +976,9 @@ sections below describe the code as it now is.
 - **A pass is bound by nothing but the host.** It lifts PHP's time limit before its
   first message, whether or not a visitor still waits, so after `fastcgi_finish_request()` nothing bounds an FPM worker (its
   `request_terminate_timeout` does not apply once the response has left, by default): a handler that
-  loops holds a worker until the host or an admin kills it. The queue judges and never bounds: the
-  one-hour ceiling is when a live holder is declared killed, not when it stops. A stop seen from another
-  machine, where no lock can be read, is only detected after an hour and a minute. In `worker` mode, a
-  message that lasts more than an hour is declared killed even if its CLI is alive.
+  loops holds a worker until the host or an admin kills it. The queue judges and never bounds: a holder
+  that keeps its lock is never declared killed, however long it runs. A stop where no lock can be read
+  is only detected after its limit and a minute, an hour and a minute when the limit was lifted.
 - **The default mode makes a visitor's request longer on mod_php and CGI**: the visitor waits until the
   pass is over, which nothing bounds but the queue it found, and `queue-visitor-cost` says so once the
   average passes a second. Choosing `api` or `worker`
