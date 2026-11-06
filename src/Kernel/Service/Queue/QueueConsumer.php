@@ -85,8 +85,7 @@ class QueueConsumer
 
         return $this->pass($mode, $limits, !$responseAlreadySent, $origin, $fallbackFor, function (QueuePassObserver $observer, int $passId) use ($mode, $limits): string {
             $this->transport->claimAs($mode, $limits->killLimitSeconds);
-            $this->reapKilled($observer);
-            $this->closeDeadPasses($passId);
+            $this->reapTheDead($observer, $passId);
             $this->tick();
             // Read after the tick, so that what it dispatched is run now; what the handlers send waits for the next pass.
             $cutoff = $this->transport->lastId();
@@ -135,8 +134,7 @@ class QueueConsumer
         return $this->pass($mode, $limits, false, QueuePassOrigin::Consumer, null, function (QueuePassObserver $observer, int $passId) use ($mode, $limits, $timeLimit, $memoryLimitBytes, $messageLimit, $out, $startedAt): string {
             $logger = $out === null ? null : new ConsoleLogger($out);
             $this->transport->claimAs($mode, $limits->killLimitSeconds);
-            $this->reapKilled($observer);
-            $this->closeDeadPasses($passId);
+            $this->reapTheDead($observer, $passId);
             $hibernated = $this->hibernation->isWikiHibernatedNow();
             $statusReadAt = microtime(true);
             $isHibernated = function () use (&$hibernated, &$statusReadAt): bool {
@@ -182,8 +180,7 @@ class QueueConsumer
                 if (microtime(true) - $lastBeat >= self::HEARTBEAT_SECONDS) {
                     $lastBeat = microtime(true);
                     $this->recorder->passHeartbeat($passId, $observer->handled(), memory_get_peak_usage(true));
-                    $this->reapKilled($observer);
-                    $this->closeDeadPasses($passId);
+                    $this->reapTheDead($observer, $passId);
                 }
             }, $stopListeners, true);
 
@@ -424,11 +421,35 @@ class QueueConsumer
         });
     }
 
-    /** Moves to `failed` what dead consumers left in progress, records each as killed, and tells the wiki. */
-    private function reapKilled(QueuePassObserver $observer): void
+    /**
+     * The one reaper (R19): moves to `failed` what dead holders left in progress, recording and announcing each; closes as killed the open passes, but its own, that are overdue by the same verdict;
+     * and only then removes the file of each of those holders that is gone, so that no judge finds it absent while one of its rows is still open. A failure is only journaled.
+     */
+    private function reapTheDead(QueuePassObserver $observer, ?int $ownPassId): void
     {
-        foreach ($this->transport->reapKilled() as $killed) {
-            $this->killed($observer, $killed);
+        try {
+            $dead = [];
+            foreach ($this->transport->reapKilled() as $killed) {
+                $dead[$killed['deliveredBy']] = true;
+                $this->killed($observer, $killed);
+            }
+            $now = $this->clock->now();
+            foreach ($this->statistics->openPasses() as $pass) {
+                if ($pass['id'] !== $ownPassId && $this->transport->isOverdue($pass['holder'], $pass['lastAt'], null, $now)) {
+                    $this->recorder->passKilled($pass['id']);
+                    $dead[$pass['holder']] = true;
+                }
+            }
+            foreach (array_keys($dead) as $holder) {
+                if ($this->transport->holderState((string)$holder) === QueueHolderLock::FREE) {
+                    $this->holderLock->forget((string)$holder);
+                }
+            }
+        } catch (\Throwable $broken) {
+            $this->journal->error('The work of holders that are gone could not be reaped: ' . $broken->getMessage(), [
+                'action' => 'queue.pass_failed',
+                'exception' => $broken,
+            ]);
         }
     }
 
@@ -447,38 +468,7 @@ class QueueConsumer
     /** What a paused pass still does: reap and close dead passes, which change no content (R18); no pass row, and a failure is only journaled. */
     private function reapWhilePaused(QueueConsumerMode $mode): void
     {
-        try {
-            $this->reapKilled(new QueuePassObserver($this->recorder, $this->journal, $mode, $this->clock));
-        } catch (\Throwable $broken) {
-            $this->journal->error('The killed messages could not be reaped while the wiki is paused: ' . $broken->getMessage(), [
-                'action' => 'queue.pass_failed',
-                'target' => $mode->value,
-                'exception' => $broken,
-            ]);
-        }
-        $this->closeDeadPasses(null);
-    }
-
-    /** Closes as killed the open passes, but its own, whose holder is gone, or that nothing tells about and no process could still run; a failure is only journaled. */
-    private function closeDeadPasses(?int $ownPassId): void
-    {
-        try {
-            $now = $this->clock->now();
-            foreach ($this->statistics->openPasses() as $pass) {
-                if ($pass['id'] === $ownPassId || !$this->transport->isOverdue($pass['holder'], $pass['lastAt'], null, $now)) {
-                    continue;
-                }
-                $this->recorder->passKilled($pass['id']);
-                if ($this->transport->holderState($pass['holder']) === QueueHolderLock::FREE) {
-                    $this->holderLock->forget($pass['holder']);
-                }
-            }
-        } catch (\Throwable $broken) {
-            $this->journal->error('The passes whose process is gone could not be closed: ' . $broken->getMessage(), [
-                'action' => 'queue.pass_failed',
-                'exception' => $broken,
-            ]);
-        }
+        $this->reapTheDead(new QueuePassObserver($this->recorder, $this->journal, $mode, $this->clock), null);
     }
 
     /**

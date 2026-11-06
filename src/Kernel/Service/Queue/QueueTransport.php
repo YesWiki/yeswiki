@@ -302,21 +302,16 @@ class QueueTransport implements TransportInterface, MessageCountAwareInterface, 
     }
 
     /**
-     * Moves to `failed` the deliveries expiredClaims() calls dead, each once whoever else reaps, removes their holder's lock file, and returns them.
+     * Moves to `failed` the deliveries expiredClaims() calls dead, each once whoever else reaps, and returns them; the holder's file is the consumer's reaper's to remove, once its pass is closed too.
      *
-     * @return list<array{id: int, type: string, mode: string, deliveredAt: string}>
+     * @return list<array{id: int, type: string, mode: string, deliveredAt: string, deliveredBy: string}>
      */
     public function reapKilled(): array
     {
-        $killed = [];
-        foreach ($this->expiredClaims() as $claim) {
-            if ($this->failClaim($claim['id'], $claim['deliveredBy'], $claim['mode'])) {
-                $this->holderLock?->forget($claim['deliveredBy']);
-                $killed[] = ['id' => $claim['id'], 'type' => $claim['type'], 'mode' => $claim['mode'], 'deliveredAt' => $claim['deliveredAt']];
-            }
-        }
-
-        return $killed;
+        return array_values(array_filter(
+            $this->expiredClaims(),
+            fn (array $claim): bool => $this->failClaim($claim['id'], $claim['deliveredBy'], $claim['mode'])
+        ));
     }
 
     /**

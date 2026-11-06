@@ -709,6 +709,91 @@ class QueueConsumerTest extends YesWikiTestCase
         $this->assertSame([], glob($this->lockDir . '/' . QueueHolderLock::DIRECTORY . '/*') ?: [], 'its file goes with it');
     }
 
+    /** A holder found gone has its messages failed and its pass closed by the same reaping, and only then its file removed. */
+    public function testADeadPassAndItsMessagesAreReapedTogetherAndItsFileRemoved(): void
+    {
+        $heard = [];
+        $this->events->addListener(QueueConsumer::MESSAGE_KILLED, function (Event $event) use (&$heard): void {
+            $heard[] = $event->getData();
+        });
+        $this->send(1);
+        $this->transport->claimAs(QueueConsumerMode::Worker, 21600);
+        [$taken] = [...$this->transport->get()];
+        $id = (int)$taken->last(TransportMessageIdStamp::class)?->getId();
+        $gone = QueueTestHolders::hand($this->db, $this->schema, $id, QueueTestHolders::gone($this->lockDir));
+        $dead = QueueTestKit::recordPass($this->db, QueueConsumerMode::Worker, self::START, self::START, '', holder: $gone);
+
+        $this->consumer->drain(QueueConsumerMode::Api, new QueuePassLimits(PHP_INT_MAX, 30));
+
+        $this->assertSame([$id], array_column($this->statistics->failed(), 'id'));
+        $this->assertCount(1, $heard);
+        $this->assertSame(QueuePassReport::KILLED, $this->stopReasonOf($dead), 'its pass goes with its messages');
+        $this->assertFileDoesNotExist($this->holderFile($gone));
+    }
+
+    /** Passes run side by side: one that holds its file keeps its row open and its message, however long. */
+    public function testAPassDoesNotReapAnotherPassThatHoldsItsFile(): void
+    {
+        $this->send(1);
+        $this->transport->claimAs(QueueConsumerMode::Worker, 60);
+        [$taken] = [...$this->transport->get()];
+        $id = (int)$taken->last(TransportMessageIdStamp::class)?->getId();
+        $other = QueueTestHolders::hand($this->db, $this->schema, $id, QueueTestHolders::token());
+        $running = QueueTestKit::recordPass($this->db, QueueConsumerMode::Worker, self::START, self::START, '', holder: $other);
+        $letGo = QueueTestHolders::lockHeldByAnotherProcess($this->holderFile($other));
+
+        try {
+            $this->assertInstanceOf(MockClock::class, $this->clock);
+            $this->clock->sleep(5 * 3600);
+            $this->consumer->drain(QueueConsumerMode::Api, new QueuePassLimits(PHP_INT_MAX, 30));
+
+            $this->assertSame('', $this->stopReasonOf($running));
+            $this->assertSame([], $this->statistics->failed());
+            $this->assertSame($other, $this->db->scalar("SELECT delivered_by FROM {$this->schema->table()} WHERE id = ?", null, [$id]));
+            $this->assertFileExists($this->holderFile($other));
+        } finally {
+            $this->assertSame(0, $letGo());
+        }
+    }
+
+    /** Every pass reaps: the first one to find a dead claim reports it, and the next ones find nothing more. */
+    public function testTwoReapersReportADeadClaimOnce(): void
+    {
+        $heard = [];
+        $this->events->addListener(QueueConsumer::MESSAGE_KILLED, function (Event $event) use (&$heard): void {
+            $heard[] = $event->getData();
+        });
+        $this->send(1);
+        $this->transport->claimAs(QueueConsumerMode::Worker, 21600);
+        [$taken] = [...$this->transport->get()];
+        QueueTestHolders::hand($this->db, $this->schema, (int)$taken->last(TransportMessageIdStamp::class)?->getId(), QueueTestHolders::gone($this->lockDir));
+
+        $this->consumer->drain(QueueConsumerMode::Api, new QueuePassLimits(PHP_INT_MAX, 30));
+        $this->consumer->drain(QueueConsumerMode::Request, new QueuePassLimits(PHP_INT_MAX, 30));
+
+        $this->assertCount(1, $heard);
+        $this->assertSame(1, substr_count($this->journaled(), '"action":"queue.message_killed"'));
+    }
+
+    /** Two passes in a row in one request (a pinned message, then a drain) each claim under their own token, and neither takes the other for dead. */
+    public function testTwoPassesInARowEachClaimUnderItsOwnToken(): void
+    {
+        $claimedBy = [];
+        $this->behaviour = function (QueueTestMessage $message) use (&$claimedBy): void {
+            $claimedBy[$message->value] = (string)$this->db->scalar("SELECT delivered_by FROM {$this->schema->table()} WHERE delivered_at IS NOT NULL", '');
+        };
+        $this->send(2);
+        $first = (int)$this->db->scalar("SELECT MIN(id) FROM {$this->schema->table()}", 0);
+
+        $this->consumer->handleById($first, QueueConsumerMode::Api);
+        $this->consumer->drain(QueueConsumerMode::Api, new QueuePassLimits(PHP_INT_MAX, 30));
+
+        $this->assertSame(['m0', 'm1'], array_keys($claimedBy));
+        $this->assertNotSame($claimedBy['m0'], $claimedBy['m1']);
+        $this->assertSame([], $this->statistics->failed(), 'nothing was taken for dead');
+        $this->assertSame(['m0', 'm1'], $this->handled);
+    }
+
     /** The messages of a pass carry the pass's own token, the one its lock file is named after. */
     public function testEveryMessageOfAPassCarriesItsHolder(): void
     {

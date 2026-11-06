@@ -309,7 +309,7 @@ class QueueTransportTest extends YesWikiTestCase
         $this->locked->claimAs(QueueConsumerMode::Request, 1);
         $this->locked->send(new Envelope(new QueueTestMessage('dies')));
         [$taken] = [...$this->locked->get()];
-        QueueTestHolders::hand($this->db, $this->schema, self::idOf($taken), QueueTestHolders::token());
+        $token = QueueTestHolders::hand($this->db, $this->schema, self::idOf($taken), QueueTestHolders::token());
 
         $this->clock->sleep(61);
         $this->assertSame([], $this->locked->reapKilled(), 'within its limit and the grace, it may still be running');
@@ -322,6 +322,7 @@ class QueueTransportTest extends YesWikiTestCase
             'type' => QueueTestMessage::class,
             'mode' => 'request',
             'deliveredAt' => self::START,
+            'deliveredBy' => $token,
         ]], $reaped);
         $this->assertSame([], $this->transport->reapKilled(), 'reaped once');
         $failed = [...$this->transport->withQueue('failed')->get()];
@@ -506,7 +507,7 @@ class QueueTransportTest extends YesWikiTestCase
         $this->assertSame([self::idOf($first), self::idOf($second)], array_column($this->locked->failHeldClaims(), 'id'));
     }
 
-    /** A server's process that let go of its lock without its ack has ended its request: its message is failed at once, and the file removed. */
+    /** A server's process that let go of its lock without its ack has ended its request: its message is failed at once. */
     public function testAServersProcessThatLetGoOfItsLockIsGoneAtOnce(): void
     {
         $this->locked->claimAs(QueueConsumerMode::Request, 1);
@@ -518,11 +519,10 @@ class QueueTransportTest extends YesWikiTestCase
         $this->assertSame([self::idOf($taken)], array_column($this->locked->reapKilled(), 'id'));
 
         $this->assertSame('request', $this->row(self::idOf($taken))['killed_in'] ?? null);
-        $this->assertFileDoesNotExist($this->holderFile($token));
     }
 
-    /** The judges that only read (statistics, health checks, the end of request) leave the file of a holder that is gone; the reaper removes it. */
-    public function testOnlyTheReaperForgetsALockLeftBehind(): void
+    /** The transport only judges and fails: the file of a holder that is gone stays until the consumer's reaper has closed its pass too. */
+    public function testTheTransportLeavesTheFileOfAHolderThatIsGone(): void
     {
         $this->locked->claimAs(QueueConsumerMode::Request, 1);
         $this->locked->send(new Envelope(new QueueTestMessage('dies')));
@@ -537,7 +537,7 @@ class QueueTransportTest extends YesWikiTestCase
 
         $this->locked->reapKilled();
 
-        $this->assertFileDoesNotExist($this->holderFile($token));
+        $this->assertFileExists($this->holderFile($token));
     }
 
     /** R19: what a process still holds as it ends goes to `failed` as killed, once; a pass that comes after finds nothing more. */
