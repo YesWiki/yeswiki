@@ -331,7 +331,6 @@ final class QueueTestKit
             $this->hibernation,
             $this->ticker,
             $this->fallback($settings),
-            $this->budgets,
             $this->clock,
         );
     }

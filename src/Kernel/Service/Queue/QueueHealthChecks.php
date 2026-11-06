@@ -25,8 +25,7 @@ class QueueHealthChecks implements ProvidesHealthChecks
     private const RESTARTS_WINDOW_SECONDS = 600;
     private const RESTARTS_TOLERATED = 5;
     private const MEMORY_RATIO = 0.9;
-    private const NO_BUDGET_WINDOW = 5;
-    private const NO_BUDGET_TRIPS = 3;
+    private const PHP_LIMIT_WINDOW = 5;
     private const VISITOR_WINDOW_SECONDS = 86400;
     private const VISITOR_WAIT_SECONDS = 1.0;
 
@@ -43,7 +42,6 @@ class QueueHealthChecks implements ProvidesHealthChecks
         private readonly HibernationService $hibernation,
         private readonly QueueScheduleTicker $ticker,
         private readonly QueueFallback $fallback,
-        private readonly QueuePassLimitsFactory $budgets,
         private readonly ClockInterface $clock,
     ) {
     }
@@ -97,7 +95,7 @@ class QueueHealthChecks implements ProvidesHealthChecks
             $check('queue-consumer-restarts', 'QUEUE_HEALTH_RESTARTS')->runs($onceMigrated($this->consumerRestarts(...))),
             $check('queue-consumer-memory', 'QUEUE_HEALTH_MEMORY')->degraded()->runs($onceMigrated($this->consumerMemory(...))),
             $check('queue-config', 'QUEUE_HEALTH_CONFIG')->runs($this->config(...)),
-            $check('queue-no-budget', 'QUEUE_HEALTH_NO_BUDGET')->degraded()->runs($onceMigrated($this->noBudget(...))),
+            $check('queue-php-limit', 'QUEUE_HEALTH_PHP_LIMIT')->degraded()->runs($onceMigrated($this->phpLimit(...))),
             $check('queue-visitor-cost', 'QUEUE_HEALTH_VISITOR_COST')->degraded()->runs($onceMigrated($this->visitorCost(...))),
         ];
     }
@@ -114,7 +112,6 @@ class QueueHealthChecks implements ProvidesHealthChecks
         $values = [
             'mode' => $status->mode->value,
             'since' => QueueWording::duration($now - $status->since->getTimestamp()),
-            'budget' => $this->budgets->secondsPerPass(QueueConsumerMode::Request, $respondsEarly),
         ];
         $sentence = $status->lastSeen === null
             ? _t('QUEUE_HEALTH_FALLBACK_NEVER', $values)
@@ -322,8 +319,8 @@ class QueueHealthChecks implements ProvidesHealthChecks
         return $problems === [] ? null : implode(' ', $problems);
     }
 
-    /** Whether the last passes that did start were mostly too late in the request to take a single message. */
-    private function noBudget(): ?string
+    /** Whether one of the last passes stopped on PHP's time limit, which the host would not let the wiki lift. */
+    private function phpLimit(): ?string
     {
         if (!$this->settings->mode()->isBudgeted()) {
             return null;
@@ -332,11 +329,11 @@ class QueueHealthChecks implements ProvidesHealthChecks
         $passes = array_slice(array_values(array_filter(
             $this->statistics->recentPasses(200),
             static fn (array $pass): bool => !$pass['blocking'] && !in_array($pass['stopReason'], [QueuePassReport::LOCKED, QueuePassReport::PAUSED], true)
-        )), 0, self::NO_BUDGET_WINDOW);
-        $starved = count(array_filter($passes, static fn (array $pass): bool => $pass['stopReason'] === QueuePassReport::NO_BUDGET));
+        )), 0, self::PHP_LIMIT_WINDOW);
+        $stopped = count(array_filter($passes, static fn (array $pass): bool => $pass['stopReason'] === QueuePassReport::PHP_LIMIT));
 
-        return $starved >= self::NO_BUDGET_TRIPS
-            ? _t('QUEUE_HEALTH_NO_BUDGET_FAILED', ['starved' => $starved, 'passes' => count($passes)])
+        return $stopped >= 1
+            ? _t('QUEUE_HEALTH_PHP_LIMIT_FAILED', ['count' => $stopped, 'passes' => count($passes)])
             : null;
     }
 

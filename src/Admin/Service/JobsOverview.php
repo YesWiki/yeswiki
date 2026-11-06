@@ -12,7 +12,6 @@ use YesWiki\Kernel\Service\HealthService;
 use YesWiki\Kernel\Service\LanguageService;
 use YesWiki\Kernel\Service\Queue\QueueFallback;
 use YesWiki\Kernel\Service\Queue\QueueHealthChecks;
-use YesWiki\Kernel\Service\Queue\QueuePassLimitsFactory;
 use YesWiki\Kernel\Service\Queue\QueueRequestTrigger;
 use YesWiki\Kernel\Service\Queue\QueueScheduleTicker;
 use YesWiki\Kernel\Service\Queue\QueueSettings;
@@ -37,7 +36,6 @@ class JobsOverview
     public function __construct(
         private readonly QueueSettings $settings,
         private readonly QueueStatistics $statistics,
-        private readonly QueuePassLimitsFactory $budgets,
         private readonly HealthService $health,
         private readonly QueueScheduleTicker $ticker,
         private readonly LanguageService $languages,
@@ -196,7 +194,7 @@ class JobsOverview
     private function actionsFor(Finding $finding): array
     {
         return match ($finding->check->id()) {
-            'queue-stalled', 'queue-backlog', 'queue-no-budget' => ['consume', 'docs'],
+            'queue-stalled', 'queue-backlog', 'queue-php-limit' => ['consume', 'docs'],
             'queue-failed' => ['retry-all', 'view-failed', 'ignore-all'],
             'queue-killed' => ['view-failed', 'consume', 'docs'],
             'queue-task-overdue' => ['consume', 'view-tasks'],
@@ -259,7 +257,6 @@ class JobsOverview
                 ? _t('ADMIN_JOBS_ORIGIN_DEFAULT')
                 : _t('ADMIN_JOBS_ORIGIN_SET', ['origin' => _t('QUEUE_ORIGIN_' . strtoupper($origin))]),
             'unknownValue' => $this->settings->isUnknownValue() ? $this->settings->rawValue() : null,
-            'budget' => $this->budgets->secondsPerPass($mode, $respondsEarly),
             'limits' => _t('ADMIN_JOBS_LIMITS', [
                 'time' => (int)ini_get('max_execution_time') > 0 ? ini_get('max_execution_time') . ' s' : _t('ADMIN_JOBS_UNLIMITED'),
                 'memory' => (string)ini_get('memory_limit'),
@@ -398,7 +395,6 @@ class JobsOverview
                 'handled' => $pass['handled'],
                 'stop' => self::stopReasonLabel($pass['stopReason']),
                 'stopReason' => $pass['stopReason'],
-                'budget' => $pass['budgetMs'] === null ? null : $this->milliseconds($pass['budgetMs']),
                 'memory' => $pass['peakMemory'] > 0 ? (int)round($pass['peakMemory'] / 1048576) : null,
                 'memoryLimit' => $pass['memoryLimit'] > 0 ? (int)round($pass['memoryLimit'] / 1048576) : null,
                 'pid' => $pass['pid'],

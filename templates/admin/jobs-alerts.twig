@@ -14,12 +14,7 @@
         <p class="yw-jobs__line yw-text-danger">{{ _t('ADMIN_JOBS_UNKNOWN_VALUE', { value: mode.unknownValue }) }}</p>
       {% endif %}
       <p class="yw-jobs__line yw-text-muted"><small>
-        {% if mode.budget is not null %}
-          {{ _t('ADMIN_JOBS_BUDGET', { seconds: mode.budget }) }}
-          ({{ mode.limits }})
-        {% else %}
-          {{ _t('ADMIN_JOBS_BUDGET_UNLIMITED') }}
-        {% endif %}
+        {{ mode.limits }}
         {% if mode.visitorsWait %}· <span class="yw-text-warning">{{ _t('ADMIN_JOBS_VISITORS_WAIT') }}</span>{% endif %}
       </small></p>
       {% if mode.api %}

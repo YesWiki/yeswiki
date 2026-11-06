@@ -115,7 +115,7 @@ class QueueHealthChecksTest extends YesWikiTestCase
     {
         $this->assertEqualsCanonicalizing([
             'queue-tables', 'queue-fallback', 'queue-stalled', 'queue-failed', 'queue-killed', 'queue-task-overdue', 'queue-task-failing',
-            'queue-backlog', 'queue-consumer-restarts', 'queue-consumer-memory', 'queue-config', 'queue-no-budget', 'queue-visitor-cost',
+            'queue-backlog', 'queue-consumer-restarts', 'queue-consumer-memory', 'queue-config', 'queue-php-limit', 'queue-visitor-cost',
         ], $this->ids(), 'a check dropped, or one added without the alert button it needs on the jobs page (JobsOverview::actionsFor)');
         foreach ($this->checks() as $check) {
             $this->assertSame('admin/jobs', $check->route(), $check->id());
@@ -137,7 +137,7 @@ class QueueHealthChecksTest extends YesWikiTestCase
 
     public function testSeverities(): void
     {
-        $degraded = ['queue-backlog', 'queue-consumer-memory', 'queue-no-budget', 'queue-visitor-cost'];
+        $degraded = ['queue-backlog', 'queue-consumer-memory', 'queue-php-limit', 'queue-visitor-cost'];
         foreach ($this->checks() as $check) {
             $this->assertSame(
                 in_array($check->id(), $degraded, true) ? Severity::Degraded : Severity::Broken,
@@ -172,7 +172,7 @@ class QueueHealthChecksTest extends YesWikiTestCase
         $this->pass('request', startedAt: '-2 hours', origin: QueuePassOrigin::Fallback, fallbackFor: QueueConsumerMode::Worker);
 
         $this->assertSame(
-            _t('QUEUE_HEALTH_FALLBACK_FAILED', ['mode' => 'worker', 'since' => QueueWording::duration(7200), 'idle' => QueueWording::duration(3 * 3600), 'budget' => $this->requestBudget()]) . $this->visitorsWait(),
+            _t('QUEUE_HEALTH_FALLBACK_FAILED', ['mode' => 'worker', 'since' => QueueWording::duration(7200), 'idle' => QueueWording::duration(3 * 3600)]) . $this->visitorsWait(),
             $this->failure('queue-fallback'),
             'the mode that is gone, since when the requests consume, and for how long the consumer was not seen'
         );
@@ -184,7 +184,7 @@ class QueueHealthChecksTest extends YesWikiTestCase
         $this->pass('request', startedAt: '-2 hours', origin: QueuePassOrigin::Fallback, fallbackFor: QueueConsumerMode::Api);
 
         $this->assertSame(
-            _t('QUEUE_HEALTH_FALLBACK_NEVER', ['mode' => 'api', 'since' => QueueWording::duration(7200), 'budget' => $this->requestBudget()]) . $this->visitorsWait(),
+            _t('QUEUE_HEALTH_FALLBACK_NEVER', ['mode' => 'api', 'since' => QueueWording::duration(7200)]) . $this->visitorsWait(),
             $this->failure('queue-fallback')
         );
     }
@@ -237,17 +237,17 @@ class QueueHealthChecksTest extends YesWikiTestCase
     }
 
     #[DataProvider('passesThatDidNothing')]
-    public function testPassesThatCouldNotStartDoNotHideStarvedPasses(string $stopReason): void
+    public function testPassesThatCouldNotStartDoNotHidePhpLimitPasses(string $stopReason): void
     {
         $this->mode = 'api';
         foreach (['-50', '-40', '-30'] as $minutes) {
-            $this->pass('api', startedAt: "$minutes minutes", stopReason: 'no-budget');
+            $this->pass('api', startedAt: "$minutes minutes", stopReason: 'php-limit');
         }
         foreach (['-3', '-2', '-1'] as $minutes) {
             $this->pass('api', startedAt: "$minutes minutes", stopReason: $stopReason);
         }
 
-        $this->assertNotNull($this->failure('queue-no-budget'));
+        $this->assertNotNull($this->failure('queue-php-limit'));
     }
 
     // --- queue-stalled -----------------------------------------------------------------------
@@ -806,36 +806,40 @@ class QueueHealthChecksTest extends YesWikiTestCase
 
     // --- cost to the wiki's users -------------------------------------------------------------
 
-    public function testNoBudget(): void
+    public function testPhpLimitTripsOnOneOfTheLastFivePasses(): void
     {
         $this->mode = 'request';
-        foreach ([5, 4, 3] as $minutesAgo) {
+        foreach ([5, 4, 3, 2] as $minutesAgo) {
             $this->pass('request', startedAt: "-{$minutesAgo} minutes", stopReason: 'empty');
         }
-        foreach ([2, 1] as $minutesAgo) {
-            $this->pass('request', startedAt: "-{$minutesAgo} minutes", stopReason: 'no-budget');
-        }
-        $this->assertNull($this->failure('queue-no-budget'), 'two of the last five');
+        $this->assertNull($this->failure('queue-php-limit'), 'no pass stopped on the limit');
 
-        $this->pass('request', startedAt: '-30 seconds', stopReason: 'no-budget');
-        $this->assertNotNull($this->failure('queue-no-budget'), 'three of the last five');
+        $this->pass('request', startedAt: '-1 minutes', stopReason: 'php-limit');
+
+        $this->assertSame(
+            _t('QUEUE_HEALTH_PHP_LIMIT_FAILED', ['count' => 1, 'passes' => 5]),
+            $this->failure('queue-php-limit'),
+            'one of the last five'
+        );
     }
 
-    public function testNoBudgetLooksOnlyAtBudgetedPasses(): void
+    public function testPhpLimitIgnoresAnOlderStop(): void
     {
-        $this->mode = 'api';
-        foreach ([1, 2, 3] as $minutesAgo) {
-            $this->pass('api', startedAt: "-{$minutesAgo} minutes", stopReason: 'no-budget');
-        }
-        // A blocking consumer started since: its row is not a budgeted pass and must not push the others out of the window.
-        foreach ([1, 2, 3, 4, 5] as $secondsAgo) {
-            $this->pass('worker', startedAt: "-{$secondsAgo} seconds");
+        $this->mode = 'request';
+        $this->pass('request', startedAt: '-6 minutes', stopReason: 'php-limit');
+        foreach ([5, 4, 3, 2, 1] as $minutesAgo) {
+            $this->pass('request', startedAt: "-{$minutesAgo} minutes", stopReason: 'empty');
         }
 
-        $this->assertNotNull($this->failure('queue-no-budget'));
+        $this->assertNull($this->failure('queue-php-limit'), 'the stop is the sixth pass back');
+    }
 
+    public function testPhpLimitIsSilentForTheWorker(): void
+    {
         $this->mode = 'worker';
-        $this->assertNull($this->failure('queue-no-budget'), 'the budgeted modes are gone, so is the problem');
+        $this->pass('request', startedAt: '-1 minutes', stopReason: 'php-limit');
+
+        $this->assertNull($this->failure('queue-php-limit'), 'a worker is not under a request\'s limit');
     }
 
     public function testVisitorCost(): void
@@ -884,7 +888,6 @@ class QueueHealthChecksTest extends YesWikiTestCase
             $hibernation,
             $this->ticker(),
             new QueueFallback($settings, $this->statistics, $this->ticker(), $hibernation, new RuntimeLock(), $this->clock),
-            new QueuePassLimitsFactory(new NativeClock()),
             $this->clock
         ))->healthChecks();
     }
@@ -895,12 +898,6 @@ class QueueHealthChecksTest extends YesWikiTestCase
             new ParameterBag(['queue_consumer' => $this->mode, 'queue_consume_secret' => $this->secret]),
             static fn (): array => []
         );
-    }
-
-    /** What a fallback pass may spend, as its alert says it. */
-    private function requestBudget(): int
-    {
-        return (int)(new QueuePassLimitsFactory(new NativeClock()))->secondsPerPass(QueueConsumerMode::Request, QueueRequestTrigger::respondsEarly());
     }
 
     /** What the fallback's alert adds on a server that cannot hand the page over before the pass: the CLI, here. */

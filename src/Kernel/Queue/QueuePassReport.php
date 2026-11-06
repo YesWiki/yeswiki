@@ -12,7 +12,6 @@ final class QueuePassReport
     public const PHP_LIMIT = 'php-limit';
     public const MEMORY = 'memory';
     public const LOCKED = 'locked';
-    public const NO_BUDGET = 'no-budget';
     public const PAUSED = 'paused';
     public const TIME_LIMIT = 'time-limit';
     public const LIMIT = 'limit';

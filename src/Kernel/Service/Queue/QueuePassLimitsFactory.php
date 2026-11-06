@@ -3,7 +3,6 @@
 namespace YesWiki\Kernel\Service\Queue;
 
 use Psr\Clock\ClockInterface;
-use YesWiki\Kernel\Queue\QueueConsumerMode;
 use YesWiki\Kernel\Queue\QueuePassLimits;
 
 /**
@@ -57,22 +56,6 @@ class QueuePassLimitsFactory
         $phpStopsAt = $untilPhpStops === null ? null : $now + max(0.0, $untilPhpStops - (self::MARGIN_SECONDS + self::MARGIN_RATIO * $limit));
 
         return new QueuePassLimits($this->memoryCeiling(), $this->killLimit($untilPhpStops), $phpStopsAt);
-    }
-
-    /** What one pass may spend in this mode, in whole seconds, as a page says it; null for a mode that never stops by itself. */
-    public function secondsPerPass(QueueConsumerMode $mode, bool $responseAlreadySent): ?int
-    {
-        if (!$mode->isBudgeted()) {
-            return null;
-        }
-
-        $now = $this->now();
-        $limit = $this->phpTimeLimit();
-        $untilPhpStops = $this->untilPhpStops($limit, $now);
-        $usable = $untilPhpStops === null ? null : max(0.0, $untilPhpStops - (self::MARGIN_SECONDS + self::MARGIN_RATIO * $limit));
-        $ceiling = $mode->passCeilingSeconds($responseAlreadySent);
-
-        return (int)round($usable === null ? $ceiling : min($usable, $ceiling));
     }
 
     /** A pass that stops only when the queue is empty, hibernates or the server kills it: no memory ceiling, PHP's own kill limit (the jobs page's button). */

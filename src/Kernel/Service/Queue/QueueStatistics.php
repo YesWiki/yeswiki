@@ -14,7 +14,7 @@ use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\JournalSchema;
 
 /**
- * Reads the queue back for the health checks, the jobs page and the consumer's budget (messenger / scheduler).
+ * Reads the queue back for the health checks and the jobs page (messenger / scheduler).
  * Rows come from the transport and QueueRecorder's Journal `queue` channel; times come out in UTC.
  */
 class QueueStatistics
@@ -290,7 +290,7 @@ class QueueStatistics
     /**
      * The most recent passes, newest first; one with an empty `stopReason` still runs, its `finishedAt` when last seen.
      *
-     * @return list<array{id: int, mode: string, blocking: bool, startedAt: \DateTimeImmutable, finishedAt: \DateTimeImmutable, handled: int, stopReason: string, budgetMs: ?int, peakMemory: int, memoryLimit: int, pid: int, beforeResponse: bool, origin: string, fallbackFor: ?string}>
+     * @return list<array{id: int, mode: string, blocking: bool, startedAt: \DateTimeImmutable, finishedAt: \DateTimeImmutable, handled: int, stopReason: string, peakMemory: int, memoryLimit: int, pid: int, beforeResponse: bool, origin: string, fallbackFor: ?string}>
      */
     public function recentPasses(int $limit): array
     {
@@ -310,7 +310,6 @@ class QueueStatistics
                 'finishedAt' => self::time((string)$row['last_at']),
                 'handled' => (int)($context['handled'] ?? 0),
                 'stopReason' => (string)$row['target'],
-                'budgetMs' => isset($context['budget_ms']) ? (int)$context['budget_ms'] : null,
                 'peakMemory' => (int)($context['peak_memory'] ?? 0),
                 'memoryLimit' => (int)($context['memory_limit'] ?? 0),
                 'pid' => (int)($context['pid'] ?? 0),

@@ -961,7 +961,6 @@ class QueueScheduleTickerTest extends YesWikiTestCase
             $hibernation,
             $this->ticker($more),
             new QueueFallback($settings, $this->statistics, $this->ticker($more), $hibernation, $this->locks, $this->clock),
-            new QueuePassLimitsFactory(new NativeClock()),
             $this->clock,
         );
         foreach ($checks->healthChecks() as $check) {

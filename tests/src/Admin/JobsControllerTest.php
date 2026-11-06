@@ -223,6 +223,7 @@ class JobsControllerTest extends YesWikiTestCase
         );
         $this->assertStringContainsString(htmlspecialchars(_t('QUEUE_PACE_API'), ENT_QUOTES), $body);
         $this->assertStringContainsString('id="yw-jobs-tabs"', $body);
+        $this->assertStringNotContainsString('Budget', $body, 'a pass has no budget to show');
         $this->assertDoesNotMatchRegularExpression('/\b(ADMIN_JOBS|QUEUE_(MODE|PACE|STATUS|STOP|ORIGIN))_[A-Z_]+\b/', $body, 'every label is translated');
     }
 
@@ -764,7 +765,7 @@ class JobsControllerTest extends YesWikiTestCase
         return [
             'a stalled queue' => ['queue-stalled', 'request', '', ['consume', 'docs']],
             'a backlog' => ['queue-backlog', 'request', '', ['consume', 'docs']],
-            'no budget' => ['queue-no-budget', 'request', '', ['consume', 'docs']],
+            'php limit' => ['queue-php-limit', 'request', '', ['consume', 'docs']],
             'failures' => ['queue-failed', 'request', '', ['retry-all', 'view-failed', 'ignore-all']],
             'killed messages' => ['queue-killed', 'request', '', ['view-failed', 'consume', 'docs']],
             'an overdue task' => ['queue-task-overdue', 'request', '', ['consume', 'view-tasks']],
@@ -1116,7 +1117,7 @@ class JobsControllerTest extends YesWikiTestCase
         $health ??= new HealthService([$this->kit->healthChecks($settings)]);
         $kit = $this->kit;
         $configuration = $this->configuration ?? new ConfigurationService();
-        $overview = new JobsOverview($settings, $kit->statistics, new QueuePassLimitsFactory(new NativeClock()), $health, $kit->ticker, $wiki->get(LanguageService::class), $kit->fallback($settings), $kit->clock);
+        $overview = new JobsOverview($settings, $kit->statistics, $health, $kit->ticker, $wiki->get(LanguageService::class), $kit->fallback($settings), $kit->clock);
 
         return new ServiceLocator([
             AclService::class => static fn (): AclService => $wiki->get(AclService::class),

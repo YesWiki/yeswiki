@@ -10,7 +10,6 @@
           <th>{{ _t('ADMIN_JOBS_COL_DURATION') }}</th>
           <th>{{ _t('ADMIN_JOBS_COL_HANDLED') }}</th>
           <th>{{ _t('ADMIN_JOBS_COL_STOP') }}</th>
-          <th>{{ _t('ADMIN_JOBS_COL_BUDGET') }}</th>
           <th>{{ _t('ADMIN_JOBS_COL_MEMORY') }}</th>
           <th>{{ _t('ADMIN_JOBS_COL_PID') }}</th>
         </tr>
@@ -29,8 +28,7 @@
               {% if row.visitorWaited %}<br><small class="yw-text-warning">{{ _t('ADMIN_JOBS_VISITOR_WAITED') }}</small>{% endif %}
             </td>
             <td>{{ row.handled }}</td>
-            <td class="{{ row.stopReason in ['error', 'no-budget', 'killed'] ? 'yw-text-danger' : '' }}">{{ row.stop }}</td>
-            <td>{{ row.budget ?? _t('ADMIN_JOBS_UNLIMITED') }}</td>
+            <td class="{{ row.stopReason in ['error', 'php-limit', 'killed'] ? 'yw-text-danger' : '' }}">{{ row.stop }}</td>
             <td>
               {% if row.memory is not null %}
                 {{ _t('ADMIN_JOBS_MEGABYTES', { count: row.memory }) }}{% if row.memoryLimit is not null %} / {{ _t('ADMIN_JOBS_MEGABYTES', { count: row.memoryLimit }) }}{% endif %}

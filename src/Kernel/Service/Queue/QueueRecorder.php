@@ -51,7 +51,6 @@ class QueueRecorder
 
         $this->insert($now, $mode->value, QueueJournalEntry::PASS, '', LogLevel::INFO, [
             'handled' => 0,
-            'budget_ms' => null, // a pass has no time budget any more; the column goes in a later step
             'peak_memory' => 0,
             'memory_limit' => $memory === null || $memory === PHP_INT_MAX ? 0 : $memory,
             'pid' => (int)getmypid(),
