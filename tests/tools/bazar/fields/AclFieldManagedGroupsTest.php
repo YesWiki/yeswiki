@@ -29,6 +29,7 @@ class AclFieldManagedGroupsTest extends YesWikiTestCase
     private string $peopleForm;
     private string $orgForm;
     private string $memberForm;
+    private string $ownedForm;
     private array $tags = [];
     private string $aliceEntry;
     private string $bobEntry;
@@ -62,6 +63,11 @@ class AclFieldManagedGroupsTest extends YesWikiTestCase
             "listefiche***{$this->orgForm}***Organisation*** *** *** ***bf_adherent*** ***0*** *** *** * *** * *** *** *** ***",
             'acls***%***%***comments-closed*** ***non***bf_acls***0*** *** *** *** *** *** ***@contributeurs{bf_adherent},@admin{bf_adherent}*** *** ***',
         ])]);
+        $this->ownedForm = $this->forms->create(['bn_label_nature' => 'Managed groups with creator', 'bn_condition' => '', 'bn_template' => implode("\n", [
+            'texte***bf_titre***Titre*** *** *** *** ***text***1*** *** *** * *** * *** *** *** ***',
+            "checkboxfiche***{$this->peopleForm}***Admins*** *** *** ***bf_admin_structure*** ***0*** *** *** * *** * *** *** *** ***",
+            'acls*** * ***%***comments-closed*** ***non***bf_acls***0*** *** *** *** *** ***admin=bf_admin_structure|owner*** ***@admin{id_fiche}*** ***',
+        ])]);
         $this->aliceEntry = $this->create($this->peopleForm, ['bf_titre' => 'Managed Alice', 'nomwiki' => self::ALICE])['id_fiche'];
         $this->bobEntry = $this->create($this->peopleForm, ['bf_titre' => 'Managed Bob', 'nomwiki' => self::BOB])['id_fiche'];
         $this->wiki->services->get(AuthController::class)->logout();
@@ -76,7 +82,7 @@ class AclFieldManagedGroupsTest extends YesWikiTestCase
             }
             $this->acl->delete($tag);
         }
-        foreach ([$this->memberForm, $this->orgForm, $this->peopleForm] as $form) {
+        foreach ([$this->ownedForm, $this->memberForm, $this->orgForm, $this->peopleForm] as $form) {
             $this->forms->delete($form);
         }
         foreach ([self::ALICE, self::BOB] as $name) {
@@ -116,6 +122,46 @@ class AclFieldManagedGroupsTest extends YesWikiTestCase
 
         $this->assertSame([self::ALICE], $this->groups->getMembers("admin$tag"));
         $this->assertSame([self::BOB], $this->groups->getMembers("contributeurs$tag"));
+    }
+
+    public function testTheCreatorRunsTheGroupWhenNobodyIsListed()
+    {
+        $this->login(self::ALICE);
+        $tag = $this->create($this->ownedForm, ['bf_titre' => 'Managed Owned Creator'])['id_fiche'];
+
+        $this->assertSame([self::ALICE], $this->groups->getMembers("admin$tag"));
+    }
+
+    public function testListedPeopleReplaceTheCreatorAndClearingBringsItBack()
+    {
+        $this->login(self::ALICE);
+        $org = $this->create($this->ownedForm, ['bf_titre' => 'Managed Owned Replace']);
+        $tag = $org['id_fiche'];
+
+        $this->update($org, ['bf_admin_structure' => $this->bobEntry]);
+        $this->assertSame([self::BOB], $this->groups->getMembers("admin$tag"));
+
+        $this->update($org, ['bf_admin_structure' => '']);
+        $this->assertSame([self::ALICE], $this->groups->getMembers("admin$tag"));
+    }
+
+    public function testAnAnonymousCreationLeavesNoGroup()
+    {
+        $tag = $this->create($this->ownedForm, ['bf_titre' => 'Managed Owned Anonymous'])['id_fiche'];
+
+        $this->assertFalse($this->groups->groupExists("admin$tag"));
+    }
+
+    public function testWhoeverEditsAnEntryWithoutOwnerDoesNotBecomeItsAdmin()
+    {
+        $org = $this->create($this->ownedForm, ['bf_titre' => 'Managed Owned Orphan']);
+        $tag = $org['id_fiche'];
+
+        $this->login(self::BOB);
+        $this->acl->save($tag, 'write', '*');
+        $this->update($org, []);
+
+        $this->assertFalse($this->groups->groupExists("admin$tag"));
     }
 
     public function testNoGroupIsCreatedForAnEntryWithoutPeople()

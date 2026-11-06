@@ -45,7 +45,7 @@ export default {
     managedGroups: {
       label: _t('BAZ_FORM_EDIT_ACL_MANAGED_GROUPS_LABEL'),
       value: '',
-      placeholder: 'admin=bf_admins,contributeurs=bf_contributeurs',
+      placeholder: 'admin=bf_admins|owner,contributeurs=bf_contributeurs',
     },
     linkedReadRight: {
       label: _t('BAZ_FORM_EDIT_ACL_LINKED_READ_LABEL'),

@@ -232,7 +232,7 @@ return [
     'BAZ_FORM_EDIT_RADIO_LABEL' => 'Radio buttons',
     'BAZ_FORM_EDIT_COMMENTS_FIELD_ACTIVATE_HINT' => 'Leave empty to use the default text',
     'BAZ_FORM_EDIT_ACL_ASK_IF_ACTIVATE_COMMENT_LABEL' => 'Ask to activate comments?',
-    'BAZ_FORM_EDIT_ACL_MANAGED_GROUPS_LABEL' => 'Groups kept up to date (prefix=field, ...)',
+    'BAZ_FORM_EDIT_ACL_MANAGED_GROUPS_LABEL' => 'Groups kept up to date (prefix=field, or prefix=field|owner for the creator when the field is empty)',
     'BAZ_FORM_EDIT_ACL_LINKED_READ_LABEL' => 'Read rights from linked entries',
     'BAZ_FORM_EDIT_ACL_LINKED_WRITE_LABEL' => 'Write rights from linked entries',
     'BAZ_REACTIONS_FIELD' => 'Reactions',

@@ -8,6 +8,7 @@ use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Bazar\Service\FormManager;
 use YesWiki\Core\Service\AclService;
 use YesWiki\Core\Service\GroupManager;
+use YesWiki\Core\Service\PageManager;
 use YesWiki\Core\Service\TripleStore;
 use YesWiki\Core\Service\UserManager;
 
@@ -245,7 +246,11 @@ class AclField extends BazarField
             $group = $prefix . $entry['id_fiche'];
             $owned = $triples->exist($entry['id_fiche'], self::MANAGED_GROUP_URI, $group, '', '');
             $exists = $groups->groupExists($group);
-            $members = array_values(array_filter(array_map([$this, 'accountOf'], $this->valuesOf($entry, $field))));
+            [$name, $fallback] = array_pad(explode('|', $field, 2), 2, '');
+            $members = array_values(array_filter(array_map([$this, 'accountOf'], $this->valuesOf($entry, $name))));
+            if (empty($members) && $fallback === 'owner') {
+                $members = $this->creatorOf($entry['id_fiche']);
+            }
             if ((!$owned && $exists) || (!$exists && empty($members))) {
                 continue;
             }
@@ -258,6 +263,15 @@ class AclField extends BazarField
                 $triples->create($entry['id_fiche'], self::MANAGED_GROUP_URI, $group, '', '');
             }
         }
+    }
+
+    /** Returns the account that created the entry: its page owner, or the logged user while it is being created. */
+    private function creatorOf(string $tag): array
+    {
+        $users = $this->getService(UserManager::class);
+        $name = $this->getService(PageManager::class)->getOwner($tag) ?? ($users->getLoggedUser()['name'] ?? '');
+
+        return $name !== '' && $users->getOneByName($name) ? [$name] : [];
     }
 
     /** Returns the account behind a linked entry, or the account of that name. */
