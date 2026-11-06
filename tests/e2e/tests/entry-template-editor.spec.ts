@@ -1,13 +1,23 @@
-import { existsSync, readFileSync, rmSync, writeFileSync } from 'fs'
-import { expect, test } from '@playwright/test'
+import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'fs'
+import { dirname } from 'path'
+import { expect, Page, test } from '@playwright/test'
 import { resetEnv } from '../helpers/db'
 import { instancePath } from '../helpers/instance'
 import { createEntry } from '../helpers/bazar'
 import { ADMIN_PASSWORD, ADMIN_USERNAME, login } from '../helpers/login'
-import { surface } from '../helpers/wysiwyg'
 
 const TEMPLATE = 'custom/templates/core/fiche-1.twig'
 const clearTemplate = () => rmSync(instancePath(TEMPLATE), { force: true })
+
+const writeTemplate = (source: string) => {
+  mkdirSync(dirname(instancePath(TEMPLATE)), { recursive: true })
+  writeFileSync(instancePath(TEMPLATE), source)
+}
+
+/** The form's own preview can hold a Vditor too, so every lookup stays in this section. */
+const templateSection = (page: Page) => page.locator('#entry-presentation')
+const surface = (page: Page) =>
+  templateSection(page).locator('.vditor-wysiwyg .vditor-reset')
 
 test.beforeEach(async ({ page }) => {
   resetEnv()
@@ -54,7 +64,7 @@ test('a new template is written in Vditor, fields included, and survives a headi
     ),
   )
   await expect(
-    page.locator('.yw-component[data-yw-component="button"]'),
+    templateSection(page).locator('.yw-component[data-yw-component="button"]'),
   ).toBeVisible()
 
   await page.locator('#bazar-form-editor button[type="submit"]').first().click()
@@ -82,14 +92,11 @@ test('a new template is written in Vditor, fields included, and survives a headi
 test('a handwritten HTML template stays in Ace, with the same field picker', async ({
   page,
 }) => {
-  writeFileSync(
-    instancePath(TEMPLATE),
-    '<div class="x">{{ html.bf_titre|raw }}</div>\n',
-  )
+  writeTemplate('<div class="x">{{ html.bf_titre|raw }}</div>\n')
   await openTemplateSection(page)
 
   await expect(page.locator('.yw-templates__ace')).toBeVisible()
-  await expect(page.locator('.vditor-wysiwyg')).toHaveCount(0)
+  await expect(templateSection(page).locator('.vditor-wysiwyg')).toHaveCount(0)
   await pickField(page, 'Libellé')
   await expect(page.locator('#entry-template')).toHaveValue(/\.label \}\}/)
 })
@@ -99,14 +106,17 @@ test('the components rail opens on the form screen, and the saved template rende
 }) => {
   await openTemplateSection(page)
   await expect(surface(page)).toBeVisible()
-  await page.locator('.vditor-toolbar button[data-type="yw-component"]').click()
+  await templateSection(page)
+    .locator('.vditor-toolbar button[data-type="yw-component"]')
+    .click()
   await expect(page.locator('#actions-builder-panel')).toBeVisible()
   await expect(
-    page.locator('.vditor-toolbar button[data-type="yw-switch-editor"]'),
+    templateSection(page).locator(
+      '.vditor-toolbar button[data-type="yw-switch-editor"]',
+    ),
   ).toHaveCount(0)
 
-  writeFileSync(
-    instancePath(TEMPLATE),
+  writeTemplate(
     '{# markdown #}\n## {{ formFields.bf_nom.label }}\n\n**{{ entry.bf_nom }}** {{ html.bf_prenom|raw }}\n',
   )
   const tag = await createEntry(page, 1, {
