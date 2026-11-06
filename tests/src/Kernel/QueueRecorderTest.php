@@ -185,8 +185,7 @@ echo $db->scalar("SELECT COUNT(*) FROM {$journal->table()}");
     #[DataProvider('servers')]
     public function testAPassIsOneJournalRowMovedByItsHeartbeats(array $params): void
     {
-        $this->markTestSkipped('removed in task 4 (budget_ms)');
-        $this->on($params); // @phpstan-ignore deadCode.unreachable
+        $this->on($params);
         $id = $this->recorder->passStarted(QueueConsumerMode::Worker, new QueuePassLimits(1 << 30, 30), false);
 
         $row = $this->journalRow($id);
@@ -199,7 +198,7 @@ echo $db->scalar("SELECT COUNT(*) FROM {$journal->table()}");
         $this->assertSame($row['at'], $row['last_at']);
         $started = $this->context($row);
         $this->assertSame(getmypid(), $started['pid']);
-        $this->assertEqualsWithDelta(600000, $started['budget_ms'], 1000);
+        $this->assertNull($started['budget_ms'] ?? null, 'a pass has no time budget: budget_ms is kept null until it is removed');
         $this->assertEquals($this->statistics->recentPasses(1)[0]['startedAt'], $this->statistics->recentPasses(1)[0]['finishedAt'], 'no sign of life yet: last seen when it started');
 
         $this->clock->sleep(60);
@@ -213,7 +212,7 @@ echo $db->scalar("SELECT COUNT(*) FROM {$journal->table()}");
         $this->assertSame(3, $beaten['handled']);
         $this->assertArrayNotHasKey('finished_at', $beaten, 'the heartbeat is `last_at`, not written twice');
         $this->assertSame($started['pid'], $beaten['pid']);
-        $this->assertSame($started['budget_ms'], $beaten['budget_ms']);
+        $this->assertSame($started['budget_ms'] ?? null, $beaten['budget_ms'] ?? null);
 
         $this->clock->sleep(60);
         $this->recorder->passFinished($id, new QueuePassReport(5, 0, 120000, QueuePassReport::STOPPED), 2000);
@@ -229,7 +228,7 @@ echo $db->scalar("SELECT COUNT(*) FROM {$journal->table()}");
         $this->assertEquals(new \DateTimeImmutable('2026-10-23 12:02:00', new \DateTimeZone('UTC')), $pass['finishedAt']);
         $this->assertSame(5, $pass['handled']);
         $this->assertSame(QueuePassReport::STOPPED, $pass['stopReason']);
-        $this->assertSame($started['budget_ms'], $pass['budgetMs']);
+        $this->assertNull($pass['budgetMs']);
         $this->assertSame(2000, $pass['peakMemory']);
         $this->assertSame(1 << 30, $pass['memoryLimit']);
         $this->assertSame(getmypid(), $pass['pid']);
@@ -362,8 +361,7 @@ echo $db->scalar("SELECT COUNT(*) FROM {$journal->table()}");
 
     public function testAPassIsOpenUntilItFinishes(): void
     {
-        $this->markTestSkipped('removed in task 4 (budget_ms)');
-        $id = $this->recorder->passStarted(QueueConsumerMode::Request, new QueuePassLimits(1000, 30), true); // @phpstan-ignore deadCode.unreachable
+        $id = $this->recorder->passStarted(QueueConsumerMode::Request, new QueuePassLimits(1000, 30), true);
 
         $open = $this->statistics->lastPass();
         $this->assertNotNull($open);
@@ -372,7 +370,7 @@ echo $db->scalar("SELECT COUNT(*) FROM {$journal->table()}");
         $this->assertSame('', $open['stopReason'], 'a pass still running has no stop reason yet');
         $this->assertEquals($open['startedAt'], $open['finishedAt'], 'last seen when it started');
         $this->assertTrue($open['beforeResponse']);
-        $this->assertEqualsWithDelta(3000, (int)$open['budgetMs'], 100);
+        $this->assertNull($open['budgetMs']);
         $this->assertSame(1000, $open['memoryLimit']);
         $this->assertSame(getmypid(), $open['pid']);
         $this->assertFalse($open['blocking'], 'a budgeted pass is not a long-lived consumer');
