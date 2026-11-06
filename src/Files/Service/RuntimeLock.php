@@ -86,7 +86,11 @@ class RuntimeLock
      * probes at once do not take each other for the holder, and it works on a read handle where an
      * exclusive one would not (NFS, whose client emulates flock with fcntl, wants a write handle for that).
      *
-     * @return bool|null null when the file cannot be opened (there is none, or it may not be read), true when another handle holds it, false when it is free
+     * Only a lock refused because another handle holds it is "held": a filesystem that cannot lock at all
+     * (an NFS mount without its lock daemon, some FUSE or SMB mounts) answers null, so that nothing is
+     * taken for alive on a lock that was never there.
+     *
+     * @return bool|null null when the file cannot be opened (there is none, or it may not be read) or cannot be locked at all, true when another handle holds it, false when it is free
      */
     public function probe(string $path): ?bool
     {
@@ -94,10 +98,15 @@ class RuntimeLock
         if ($handle === false) {
             return null;
         }
-        $free = flock($handle, LOCK_SH | LOCK_NB);
+        $wouldBlock = 0;
+        $free = flock($handle, LOCK_SH | LOCK_NB, $wouldBlock);
         $this->release($handle);
 
-        return !$free;
+        return match (true) {
+            $free => false,
+            $wouldBlock === 1 => true,
+            default => null,
+        };
     }
 
     /** Whether some handle holds the lock now, asked without creating the file. */

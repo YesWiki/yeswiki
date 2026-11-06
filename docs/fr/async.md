@@ -107,10 +107,9 @@ Comment choisir, en pratique :
   processus du serveur occupé. Quand l'hébergeur impose la limite, le passage
   s'arrête avant qu'elle soit atteinte et laisse le reste pour le suivant ; un
   traitement qui, à lui seul, dure plus longtemps que ce que PHP laisse est
-  coupé et passe en échec. Dans tous les modes,
-  même en `worker`, le wiki déclare arrêté un traitement qui dure plus d'une
-  heure : il le passe en échec, même si son processus tourne encore. Relancer
-  ce traitement à la main peut alors le faire tourner deux fois en même temps. Les
+  coupé et passe en échec. Dans tous les modes, un traitement dont le
+  processus tourne encore n'est jamais déclaré arrêté, quelle que soit sa
+  durée. Les
   sauvegardes et restaurations sont un cas à part, voir
   [plus bas](/docs/fr/async?id=sauvegardes-et-restaurations).
 - **Wiki servi par le binaire YesWiki** : `request` suffit, comme ailleurs.
