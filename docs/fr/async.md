@@ -38,7 +38,9 @@ signale un problème.
   avant une mise à jour (voir
   [sauvegardes et restaurations](/docs/fr/async?id=sauvegardes-et-restaurations)) ;
 - la récupération d'une **sauvegarde d'un autre wiki** : elle avance étape par
-  étape dans la file, et continue même si vous fermez la page des sauvegardes ;
+  étape dans la file (une tranche d'environ 20 secondes par passage, la suivante
+  attendant le passage d'après), et continue même si vous fermez la page des
+  sauvegardes ;
 - l'**indexation de la recherche** : chaque page ou fiche modifiée est
   réindexée peu après son enregistrement ;
 - la **livraison des publications ActivityPub** aux serveurs abonnés, une par
@@ -83,9 +85,11 @@ En `request`, ce qu'une visite ajoute à la file est traité
 dès la fin de cette visite, une fois la page envoyée : la page que vous venez
 d'enregistrer est réindexée tout de suite, sans attendre une autre visite. Ce
 qui ne vient pas d'une visite attend en revanche la visite suivante : les
-tâches planifiées arrivées à échéance, les nouvelles tentatives d'un traitement
-qui a échoué, le travail ajouté en ligne de commande, et ce qui n'a pas tenu
-dans le temps d'un passage.
+nouvelles tentatives d'un traitement qui a échoué, le travail ajouté en ligne de
+commande, et ce qu'un traitement ajoute à la file pendant un passage : un passage
+traite ce qui attendait quand il a commencé, le reste attend le passage suivant.
+Les tâches planifiées arrivées à échéance, elles, sont ajoutées au début du
+passage et traitées dans le même.
 
 Comment choisir, en pratique :
 
@@ -97,12 +101,13 @@ Comment choisir, en pratique :
   ne vient. Un wiki qui reçoit une visite par jour traite donc ses tâches une
   fois par jour. Préférez `api` ou `worker`.
 - **Traitements longs** (synchronisations de grosses sources, par exemple) :
-  `worker`. Les autres modes lèvent la limite de temps de PHP pour le premier
-  traitement d'un passage, mais seulement quand l'hébergeur le permet et que
-  personne n'attend (voir plus bas, sous le tableau des serveurs) : un traitement qui
-  boucle garde alors un processus du serveur occupé. Là où un visiteur attend
-  (`mod_php`, CGI), ou quand l'hébergeur impose la limite, un traitement plus
-  long que le temps accordé est coupé et passe en échec. Dans tous les modes,
+  `worker`. Les autres modes lèvent la limite de temps de PHP au début de
+  chaque passage, mais seulement quand l'hébergeur le permet (voir plus bas,
+  sous le tableau des serveurs) : un traitement qui boucle garde alors un
+  processus du serveur occupé. Quand l'hébergeur impose la limite, le passage
+  s'arrête avant qu'elle soit atteinte et laisse le reste pour le suivant ; un
+  traitement qui, à lui seul, dure plus longtemps que ce que PHP laisse est
+  coupé et passe en échec. Dans tous les modes,
   même en `worker`, le wiki déclare arrêté un traitement qui dure plus d'une
   heure : il le passe en échec, même si son processus tourne encore. Relancer
   ce traitement à la main peut alors le faire tourner deux fois en même temps. Les
@@ -119,26 +124,28 @@ serveur à l'autre, c'est si la page peut partir avant le traitement :
 
 | Le serveur lance PHP avec…                                            | La page part avant le traitement ?                      | Ce qu'il faut savoir                                                                                                                                                                                                             |
 | --------------------------------------------------------------------- | ------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| PHP-FPM (nginx, Apache avec `proxy_fcgi`, Caddy)                      | oui                                                     | le visiteur n'attend pas ; le premier traitement d'un passage n'a pas de limite de temps (voir sous le tableau)                                                                                                                  |
+| PHP-FPM (nginx, Apache avec `proxy_fcgi`, Caddy)                      | oui                                                     | le visiteur n'attend pas ; le passage n'a pas de limite de temps (voir sous le tableau)                                                                                                                  |
 | FrankenPHP, avec ou sans son mode worker                              | oui                                                     | rien                                                                                                                                                                                                                             |
 | LiteSpeed (fréquent en mutualisé)                                     | oui                                                     | si la page Traitements montre des traitements interrompus en fin de visite, LiteSpeed arrête sans doute PHP quand la connexion se ferme : ajoutez `<IfModule Litespeed>` `SetEnv noabort 1` `</IfModule>` au `.htaccess` du wiki |
-| PHP intégré à Apache (`mod_php`), PHP en CGI ou FastCGI par `php-cgi` | non                                                     | le visiteur attend jusqu'à 3 s de traitement, d'où l'alerte « Attente ajoutée aux pages »                                                                                                                                        |
+| PHP intégré à Apache (`mod_php`), PHP en CGI ou FastCGI par `php-cgi` | non                                                     | le visiteur attend la fin du passage, d'où l'alerte « Attente ajoutée aux pages »                                                                                                                                        |
 | serveur intégré de PHP (`php -S`)                                     | non                                                     | réservé au développement : il ne sert qu'une page à la fois, et chaque traitement bloque les autres visites                                                                                                                      |
 | plateforme « serverless » (AWS Lambda avec Bref, Cloud Run…)          | oui, mais l'exécution est gelée une fois la page partie | `request` ne convient pas : le traitement est figé puis compté comme interrompu. Choisissez `api`                                                                                                                                |
 
 `request` fonctionne aussi sur un hébergement qui désactive `ignore_user_abort`
 ou `set_time_limit` (réglage `disable_functions` de PHP).
 
-**La limite de temps de PHP est levée pour le premier traitement de tout
-passage que personne n'attend** : la fin d'une visite une fois la page partie,
-le mode de secours, un appel `api`, le bouton **Consommer maintenant** et
-`--drain`. Elle l'est même quand ce traitement est court : une durée moyenne
-n'est qu'une estimation, et la limite de PHP compte le temps de calcul cumulé
-de toute la requête, page déjà servie comprise, si bien qu'un traitement qui
-paraît court peut quand même être coupé. Si l'hébergeur impose la limite
-(`php_admin_value`, `set_time_limit` désactivé), elle reste en place et le
-traitement n'a que ce qu'elle laisse. Un visiteur qui attend la page
-(`mod_php`, CGI) ne voit jamais la limite levée. Deux conséquences :
+**La limite de temps de PHP est levée au début de tout passage** : la fin
+d'une visite une fois la page partie, le mode de secours, un appel `api`, le
+bouton **Consommer maintenant** et `--drain`. Elle l'est avant le premier
+traitement, même quand il est court : la limite de PHP compte le temps de
+calcul cumulé de toute la requête, page déjà servie comprise, si bien qu'un
+traitement qui paraît court peut quand même être coupé. Le passage traite alors
+tout ce qui attendait dans la file quand il a commencé, sans s'arrêter au bout
+d'un certain temps. Si l'hébergeur impose la limite (`php_admin_value`,
+`set_time_limit` désactivé), elle reste en place : le passage s'arrête un peu
+avant de l'atteindre (2 secondes plus 10 % de la limite) et le reste attend le
+passage suivant. Sans moyen d'envoyer la page avant la fin du traitement
+(`mod_php`, CGI), le visiteur attend la fin du passage. Deux conséquences :
 
 - une fois la page envoyée, plus rien ne borne la durée du processus PHP-FPM
   qui travaille : un traitement qui boucle le garde occupé jusqu'à ce que
@@ -166,7 +173,7 @@ environnement du serveur, puis `private/.env`, puis `yeswiki.config.php`. La
 page Traitements indique le mode en vigueur **et d'où vient le réglage**, ce qui
 évite de modifier le mauvais fichier.
 
-![Le bandeau du mode : mode de consommation « fin de requête » (par défaut), budget par passage, dernier passage et rythme attendu](images/async-bandeau-mode.png)
+![Le bandeau du mode : mode de consommation « fin de requête » (par défaut), dernier passage et rythme attendu](images/async-bandeau-mode.png)
 
 ### Mettre en place `api`
 
@@ -308,10 +315,10 @@ Pour savoir quoi vérifier, voir
 De haut en bas :
 
 - **Le bandeau du mode** : le mode en vigueur et d'où vient le réglage, le
-  temps accordé à chaque passage (le « budget »), la date du dernier passage et
-  le rythme attendu. Un « passage » est une séance de travail du wiki sur la
-  file : il traite ce qui attend jusqu'à ce que la file soit vide ou que le
-  temps soit écoulé. Sur un serveur où PHP ne sait pas envoyer la page avant
+  la date du dernier passage et le rythme attendu. Un « passage » est une séance
+  de travail du wiki sur la file : il traite ce qui attendait quand il a
+  commencé, puis s'arrête. Ce qu'un traitement ajoute à la file pendant le
+  passage attend le passage suivant. Sur un serveur où PHP ne sait pas envoyer la page avant
   d'avoir fini (PHP intégré à Apache, ou lancé en CGI), le bandeau précise que
   les visiteurs attendent pendant le traitement.
 - **Les alertes**, les plus graves d'abord. Une alerte **rouge** veut dire que
@@ -385,7 +392,7 @@ signale un échec qui sera retenté.
 
 Les passages et les processus qui ont travaillé sur la file : quand, dans quel
 mode, combien de temps, combien de traitements, pourquoi ils se sont arrêtés
-(« plus rien à traiter », temps écoulé...), le budget et la mémoire utilisée.
+(« plus rien à traiter », « limite de temps de PHP atteinte »...) et la mémoire utilisée.
 C'est ici qu'on vérifie qu'un cron ou un worker passe vraiment.
 
 ![L'onglet Consommateurs](images/async-onglet-consommateurs.png)
@@ -528,10 +535,15 @@ envoi, une synchronisation, une indexation...) n'a pas été fait. Cliquez sur
 
 ### Traitements trop longs pour le mode choisi (rouge)
 
-Un traitement a été coupé en route, parce qu'il dépasse le temps qu'un passage
-du mode actuel peut lui consacrer : la limite de temps que l'hébergeur impose à
-PHP quand il refuse qu'on la lève, ou, dans tous les modes, une heure. Il
-échouera à chaque nouvel essai : le wiki ne le relance donc pas tout seul.
+Un traitement a été coupé en route, parce qu'il dépasse le temps dont il
+disposait : la limite de temps que l'hébergeur impose à PHP quand il refuse
+qu'on la lève, ou, dans tous les modes, une heure. Un traitement qui
+commence trop tard n'est pas concerné : quand la limite de PHP ne peut pas être
+levée, le passage s'arrête avant de l'atteindre, sans rien commencer de nouveau.
+Seul est coupé un traitement qui, à lui
+seul, est plus long que ce que PHP laisse, ou une coupure extérieure à PHP
+(proxy, hébergeur), ou le plafond d'une heure. Il échouera à chaque nouvel
+essai : le wiki ne le relance donc pas tout seul.
 
 1. Si l'hébergeur impose une limite de temps que le wiki ne peut pas lever,
    passez au mode `worker` : son processus n'en a pas. Un traitement qui dure
@@ -594,17 +606,22 @@ c'est sans gravité tant que c'est rare. Si cela revient souvent, un traitement
 est trop gourmand : augmentez la mémoire du processus (option
 `--memory-limit` de la commande).
 
-### Temps insuffisant pour traiter les tâches (orange)
+### Limite de temps de PHP impossible à lever (orange)
 
-Les pages arrivent déjà au bout du temps que PHP leur laisse : la file n'avance
-pas. Augmentez `max_execution_time` dans la configuration PHP, ou passez à
-`worker` ou `api`.
+Cet hébergeur refuse que le wiki lève la limite de temps de PHP : des
+traitements attendent le passage suivant, ou sont coupés en route. L'alerte
+apparaît quand au moins 1 des 5 derniers passages (hors passages ignorés parce
+qu'un autre était en cours ou que le wiki est en hibernation) s'est arrêté sur
+cette limite. Autorisez `set_time_limit` (fonction désactivée par
+`disable_functions`, ou limite imposée par l'hébergeur), ou passez à `worker`,
+dont le processus n'a pas de limite de temps.
 
 ### Attente ajoutée aux pages (orange)
 
 Seulement en `request`. Sur ce serveur (PHP intégré à Apache, ou lancé en CGI),
-la page n'est envoyée qu'une fois le traitement fini : les visiteurs attendent.
-`api` ou `worker` les en dispense.
+la page n'est envoyée qu'une fois le traitement fini : les visiteurs attendent
+que les traitements présents au début du passage soient terminés. `api` ou
+`worker` les en dispense.
 
 ### Alertes propres à une fonctionnalité
 

@@ -54,7 +54,7 @@ flowchart LR
     consumeCmd["messenger:consume<br/>worker (systemd · Go supervisor)"]
   end
   drainCmd["messenger:consume --drain · --message<br/>a pass by hand, a pinned message"]
-  consumer["«component» QueueConsumer<br/>drain() budgeted · consume() blocking"]
+  consumer["«component» QueueConsumer<br/>drain() one pass · consume() blocking"]
   worker["Messenger Worker<br/>QueuePassReceiver · QueueRetryStrategy"]
   locator["QueueHandlerLocator"]
   handlers["«component» Message/*Handler<br/>(AsMessageHandler)"]
@@ -90,9 +90,9 @@ The Scheduler keeps no state of its own: what each scheduled task did is the Jou
 `queue.task.*` rows, which the ticker reads and the bus and the recorder write. The dashed arrow is a
 handler that splits its work and dispatches its own continuation.
 
-A budgeted pass in `request` mode runs once the response has left. `api` and
+A pass in `request` mode runs once the response has left. `api` and
 `messenger:consume --drain` run the same pass. `worker` runs `consume()` instead: it loops over the
-same steps with no budget to stop it, and ticks the Scheduler whenever the queue is empty.
+same steps with nothing to end it, and ticks the Scheduler whenever the queue is empty.
 
 ```mermaid
 sequenceDiagram
@@ -110,12 +110,14 @@ sequenceDiagram
   B->>T: send(envelope)
   T-->>B: a row in default, or absorbed by an identical untried one
   Note over R: request mode, after the response has left
-  R->>C: drain(mode, budget)
+  R->>C: drain(mode, limits)
+  C->>W: lift PHP's time limit
   C->>S: tick()
   S->>B: dispatch the scheduled tasks that are due
+  C->>T: cutoff = the highest id in the queue
   Note over B,O: each run is sent with its queue.task.dispatched row, in one transaction
-  loop until the queue is empty or the budget is spent
-    W->>C: take another? (the average of its type fits the budget)
+  loop until nothing is left up to the cutoff, or memory, or a PHP limit that could not be lifted
+    W->>C: take another? (memory below its ceiling, PHP's time not used up)
     W->>T: claim, atomic, naming pid, start time and machine
     W->>H: __invoke(message)
     alt handled
@@ -129,7 +131,7 @@ sequenceDiagram
       W->>O: queue.run.failed, and queue.message_failed on diagnostic
     end
   end
-  C->>O: queue.pass (stop reason, budget, peak memory)
+  C->>O: queue.pass (stop reason, peak memory)
 ```
 
 A message is **killed** when its holder's process died while it ran. It is reaped by the next pass,
@@ -191,16 +193,16 @@ button says. The details are under "The Scheduler's history and ticker".
 
 **There are three consumption modes**, chosen by `YESWIKI_QUEUE_CONSUMER`:
 
-| Mode      | Who consumes                                                                                                                          | Budgeted |
-| --------- | ------------------------------------------------------------------------------------------------------------------------------------- | -------- |
-| `request` | the end of each web request, after the response has left where the SAPI allows                                                        | yes      |
-| `api`     | `/api/queue/consume`, POST or GET, with the secret as header or `?secret=`                                                            | yes      |
-| `worker`  | `./yeswicli messenger:consume`, kept alive by the Go binary (`--supervised`) when it serves the wiki, by systemd or similar otherwise | no       |
+| Mode      | Who consumes                                                                                                                          | Ends by itself |
+| --------- | ------------------------------------------------------------------------------------------------------------------------------------- | -------------- |
+| `request` | the end of each web request, after the response has left where the SAPI allows                                                        | yes            |
+| `api`     | `/api/queue/consume`, POST or GET, with the secret as header or `?secret=`                                                            | yes            |
+| `worker`  | `./yeswicli messenger:consume`, kept alive by the Go binary (`--supervised`) when it serves the wiki, by systemd or similar otherwise | no             |
 
 Two more were tried during development and removed before any release: `request-spawn`, where the
 end of a request started a detached process to consume, and `command`, a crontab running a
 non-blocking command. They were the least used, and each carried code of its own (a launch
-throttle, a check for hosts that forbid `proc_open`, a CLI budget) for what `api` and `worker`
+throttle, a check for hosts that forbid `proc_open`, a CLI time limit) for what `api` and `worker`
 already cover. `./yeswicli messenger:consume --drain` keeps the one thing that command did well:
 emptying the queue by hand, and exiting.
 
@@ -231,13 +233,13 @@ from HTTP: some hosts schedule nothing but a GET without custom headers, and `ap
 left to them. The header wins when both are sent, and stays the advice, since a query string lands
 in access logs.
 
-**Budgeted and blocking consumption are two ways to run one consumer.** `QueueConsumer` is the
+**A pass that ends by itself and a blocking consumer are two ways to run one consumer.** `QueueConsumer` is the
 only code that takes messages, over Messenger's `Worker`, so the observation is the same in every
-mode. `drain()` runs a **Pass**: it ticks the Scheduler, then consumes until the queue is empty or
-the **Budget** is spent, and never waits. `consume()` blocks like `messenger:consume`, with a time
+mode. `drain()` runs a **Pass**: it lifts PHP's time limit, ticks the Scheduler, then consumes what
+was in the queue when it began, and never waits. `consume()` blocks like `messenger:consume`, with a time
 limit, a memory limit and a message limit, ticks the Scheduler whenever it is idle, and leaves a
-heartbeat. A `drain()` leaves one too, after a message, at most once a minute, since the button's
-pass has no deadline and may run for hours. Only one pass runs at a time per wiki, behind a non-blocking `RuntimeLock`
+heartbeat. A `drain()` leaves one too, after a message, at most once a minute, since a pass has
+no deadline and may run for hours. Only one pass runs at a time per wiki, behind a non-blocking `RuntimeLock`
 (`cache/queue-pass.lock`); a blocking consumer does not take it, since the atomic claim already
 keeps them apart. Neither runs while the wiki is hibernated, archiving or updating, read from the
 configuration as it is now since an archive sets it while a consumer is running. Nor does the
@@ -247,25 +249,26 @@ any number of runs while it slept runs once, as after any time nothing ticked. A
 idles through that rather than returning, because returning would look to the supervisor like a
 crash.
 
-**The budget is computed, not configured.** A pass takes `max_execution_time` less what the request
-already used, less a margin (2 s plus a tenth of the limit), then the mode's ceiling: 3 s while a
-visitor waits for a response that cannot leave before the script ends (mod_php, CGI), 20 s once it
-has, 50 s for an API call. `messenger:consume --drain` has no time budget: it is run by hand, and
-ends when the queue is empty. Nor has the jobs page's "Consommer maintenant", which empties the whole
-queue with no deadline, no memory ceiling and so no averages rule (`QueueBudgetFactory::untilEmpty()`):
-it stops on an empty queue, a paused wiki, a pass that already holds the lock, or the server killing
-it. Any other pass stops taking messages at 80 % of `memory_limit`.
-The consumer takes the next message only if the average duration of its type fits, except the first
-message of a pass nobody waits for (response already sent, fallback, API call, the button, a drain):
-that one is taken whatever its average, or a type longer than any pass of its mode would block the
-queue for good. **Before it, the pass lifts PHP's time limit** (`set_time_limit(0)`), whatever that
-message's average, a short one included, and reads `max_execution_time` back. An average is only a
-guess, and PHP's limit counts the CPU time of the whole request, the page just served included, so a
-message whose average looks short can still be cut. If it reads 0, the claims of the pass carry the
-one hour of the ceiling below; if the host keeps it (`php_admin_value`, `set_time_limit` disabled),
-they keep what PHP leaves of it, and a message PHP cuts is failed as killed, below. A pass a visitor
-waits for never lifts it. The price is stated under Consequences.
+**A pass has limits, not a time allowance.** Before its first message, whether or not a visitor still
+waits for the response, the pass lifts PHP's time limit (`set_time_limit(0)`) and reads
+`max_execution_time` back. PHP's limit counts the CPU time of the whole request, the page just served
+included, so no estimate of a message's duration can tell whether it fits; and the slow messages (an
+HTTP call that times out) are the ones no average predicts. With the limit lifted, the pass runs every
+message that was in the queue when it began, and stops on only four things: nothing left up to the
+cutoff (`empty`), a paused wiki (`paused`), memory above 80 % of `memory_limit`
+(`memory`, a guard rail and not a forecast; none when `memory_limit` is -1), or, only when the limit
+could not be lifted (`php_admin_value`, `set_time_limit` disabled), PHP's remaining time less a margin of
+2 s plus a tenth of `max_execution_time` (`php-limit`). `messenger:consume --drain` and the jobs page's
+"Consommer maintenant" are the same pass; the button has no memory ceiling either
+(`QueuePassLimitsFactory::untilEmpty()`). Where the response cannot leave before the script ends
+(mod_php, CGI), the visitor waits until the pass is over.
 
+**What "in the queue when it began" means.** Right after the Scheduler's tick, the pass reads the
+highest message id and takes nothing above it. So a task the tick has just made due runs in the same
+pass; a message queued during the pass, by a request elsewhere or by one of the pass's own handlers,
+waits for the next pass; a delayed message that was already there and comes due during the pass is
+taken. Without that cutoff, a handler that requeues itself (the download of a remote backup queues its
+next slice at once) or a busy wiki would keep the pass, and the visitor waiting on it, from ever ending.
 The same figures give each claim its **kill limit**: what PHP leaves of its limit, or **one hour**
 when it has none, since a host does not let a process live longer. A claim also names the process
 that holds it: its pid, its start time, and the machine (host name and pid namespace), read from
@@ -310,11 +313,11 @@ way. Reaping changes no content, so a paused pass still reaps, and goes on once 
 lifted the pause. Work that splits
 (remote backup, mass reindexing) does a bounded slice and dispatches its own continuation, so it
 runs in every mode. The one exception is a backup or restore an admin starts: it keeps a path
-through the admin's own request, **pinned** to the end of that request with no budget and
+through the admin's own request, **pinned** to the end of that request, run with
 `set_time_limit(0)`, in `request` and `api`, the modes that would otherwise run it only when
 something calls them. In `worker` it is queued for the worker while the worker is
 seen at work, and pinned too when it is not (`QueueFallback::consumerIsGone()`): left to the end of
-visitors' requests, on a request's budget, PHP would cut it. Where the response cannot leave before
+visitors' requests, in passes where PHP's limit may hold, it could be cut. Where the response cannot leave before
 the script ends (mod_php, CGI), the request hands each message it pinned to a process of its own
 (`messenger:consume --message=<id>`), as `core:archive` was detached before the queue, so that the admin
 does not wait for the whole backup and a wiki fetching one does not give up; the request runs it
@@ -360,7 +363,7 @@ brings the alert back. There is deliberately no way to mute a cause.
 
 **The checks are the product.** Thirteen Health checks (`queue-tables`, `queue-fallback`, `queue-stalled`,
 `queue-failed`, `queue-killed`, `queue-task-overdue`, `queue-task-failing`, `queue-backlog`,
-`queue-consumer-restarts`, `queue-consumer-memory`, `queue-config`, `queue-no-budget`, `queue-visitor-cost`) are re-derived from the `queue` table and the Journal's `queue` channel whenever they
+`queue-consumer-restarts`, `queue-consumer-memory`, `queue-config`, `queue-php-limit`, `queue-visitor-cost`) are re-derived from the `queue` table and the Journal's `queue` channel whenever they
 are asked. "Nothing is consuming" is judged on **consumer activity**, not message age: messages
 available and no pass, heartbeat or claim within its limit for 10 minutes in `worker`,
 3 hours in `api`, 24 hours in `request`. A queue that moves but
@@ -428,6 +431,17 @@ arrival, and the explicit actions of a human or a webhook (`importer:sync`, `GET
 What follows is the reasoning behind choices in the code that the code itself does not explain.
 Each point names the class or method to look at.
 
+**Note, 2026-11-06: the per-pass time budget was removed.** A pass used to compute a deadline from
+`max_execution_time`, cap it by mode (3 s while a visitor waits, 20 s once the response had left, 50 s for an
+API call) and take a message only if the average duration of its type fitted. Most jobs are short, and
+the slow ones are not predicted by an average (the timeout of an HTTP call cannot be). Since a pass also
+lifts PHP's time limit and the life of a claim is judged by its holder's lock, the estimate protected
+little and cost a factory, a context, clocks, a health check and a screen column. It is replaced by a
+mark taken when the pass begins (the highest message id after the schedule's tick: the pass runs what was
+there and what the tick made due, and what is queued meanwhile waits for the next pass) and by a stop on
+PHP's own limit, only when it could not be lifted (`php-limit`, with the `queue-php-limit` alert). The
+sections below describe the code as it now is.
+
 #### The transport and its claims
 
 - **UTC, not the database's `NOW()`.** A session in another time zone than the rows' (common on
@@ -457,7 +471,7 @@ Each point names the class or method to look at.
 - **Each claim records `delivered_mode` and `delivered_limit`,** because a process killed by PHP or
   the OOM killer cannot say so. A request resets the claim mode, so a worker-mode request never
   inherits the previous one's. A claim with no recorded limit is given the longest a mode records
-  (one hour, `QueueBudgetFactory::KILL_LIMIT_NO_PHP_LIMIT`: the longest a host lets a process live).
+  (one hour, `QueuePassLimitsFactory::KILL_LIMIT_NO_PHP_LIMIT`: the longest a host lets a process live).
   `QueueHealthChecks::BACKLOG_AFTER_OTHERS` is 6 hours too, but it is a threshold for an alert about
   lateness, not a ceiling on anyone's life.
 - **The process remembers the tokens it holds.** Its own token among the claims, but not among the
@@ -544,9 +558,9 @@ Each point names the class or method to look at.
   that finishes after all writes its true reason over `killed`. `visitorWaits()` leaves a killed pass
   out, since its duration measures no wait. The claims of a dead pass are reaped by their own locks,
   whatever becomes of its row.
-- **Type averages are read once per type per pass.** An unknown type (0.5 s assumed) is asked again,
-  since its first success may come within the pass. A request that spent its budget before the pass
-  began starts nothing, not even the first message (`no-budget`).
+- **No duration is estimated.** Nothing takes the average of a type to decide whether to start a
+  message. The stop reasons are `empty`, `paused`, `memory` and `php-limit`, and the last is set only
+  when PHP's limit could not be lifted.
 - **A pass never throws.** A pass that breaks (table missing, database gone) is journaled and
   reported as `error`, because it often runs at the end of a visitor's request.
 - **A blocking consumer checks for a configuration change before any tick.** A schedule built from
@@ -555,7 +569,7 @@ Each point names the class or method to look at.
   every 5 seconds, and not at start. So a message dispatched in the few seconds after a change may
   still run under the old configuration. Setting the wiki's status rewrites the config file, so a
   hibernation or a backup restarts the consumer once.
-- **A message pinned to its sender's request** runs whatever the budget and even while hibernated,
+- **A message pinned to its sender's request** runs whatever the pass's limits and even while hibernated,
   still claimed, with no tick and no reaping. Its claim is held to no PHP limit. The sender lifted the
   limit, and where a host forbids that, PHP's remaining limit counts CPU time, which a backup waiting
   on disk or network outlives. Judging by that limit would make another process's pass fail the
@@ -682,17 +696,17 @@ Each point names the class or method to look at.
   the response, which is every routed page. Output the pass prints where the response cannot leave
   first is discarded by a buffer that flushes every 4 KB, so a verbose handler costs no memory.
   Output buffers left open are cleaned, so a worker's next request does not get them.
-- **A pinned message keeps the delay it was pinned with** (`RunsUnbudgeted::HELD_FOR_THE_SENDER_SECONDS`,
-  300 s), so no other pass takes it on a request's budget while the sender or its detached process
+- **A pinned message keeps the delay it was pinned with** (`RunsForItsSender::HELD_FOR_THE_SENDER_SECONDS`,
+  300 s), so no other pass takes it while the sender or its detached process
   gets to it. If the request ends without running it, the queue takes it once the hold is over. The
   detached process holds the claim as a CLI, so if it dies, the next pass sees it at once.
 - **`QueueBus` swallows a failed send, except inside a transaction the caller opened on the queue's
   connection.** There the failure has already made the commit rollback-only, and on PostgreSQL it has
   aborted every later statement. Swallowing it would surface later as a refused commit with no
   explanation, so it is rethrown where it happened. The request trigger is injected as a service
-  closure, so it is built only when a `RunsUnbudgeted` message is sent.
+  closure, so it is built only when a `RunsForItsSender` message is sent.
 
-#### The fallback and the budget
+#### The fallback and the limits
 
 - **`QueueFallback` writes its check stamp before it reads,** and drops the last answer. A read that
   fails (table missing) is then retried in a minute, not on every request.
@@ -702,23 +716,25 @@ Each point names the class or method to look at.
 - **`QueueStatistics::fallbackSince()` counts only a fallback pass that started after the patience
   delay.** One that started sooner ran during the minute a request keeps the last answer, after the
   consumer came back, and counting it would restart the fallback.
-- **`QueueBudgetFactory`** reads the request start time at each budget (`REQUEST_TIME_FLOAT`), so a
+- **`QueuePassLimitsFactory`** reads the request start time at each pass (`REQUEST_TIME_FLOAT`), so a
   worker serving many requests measures each from its own start. With `memory_limit = -1` there is no
-  ceiling, since PHP will not say when it is too much. A budget is read between two messages, never
-  during one, and a handler that overruns is left to the kill detection.
-- **`QueueBudgetContext` answers null outside a budgeted pass, not infinity,** so a handler cannot
-  mistake "not measured" for "plenty". Once the pass ends, later code in the same request must not
-  read "0 s left".
+  ceiling, since PHP will not say when it is too much. The limits are read between two messages, never
+  during one, and a handler that overruns is left to the kill detection. A handler is told nothing of
+  what is left (no handler context says how much time is left): it does its work, or splits it.
+- **`liftPhpLimit()` is tried by every pass that ends by itself,** and its answer is read back from
+  `max_execution_time`, not from the return of `set_time_limit()`. Lifted, the claims carry one hour
+  (`KILL_LIMIT_NO_PHP_LIMIT`); not lifted, they carry what PHP leaves, and the pass stops
+  `margin` before it runs out. The margin is 2 s plus a tenth of `max_execution_time`
+  (`MARGIN_SECONDS`, `MARGIN_RATIO`).
 - **A pass started from a web page** (the jobs page's button) runs in the configured mode when that
-  mode is budgeted. When the mode's consumer would block the page, it runs as `request`. It empties the
-  queue with no limit: `QueueBudgetFactory::untilEmpty()` gives it no deadline and no memory ceiling
-  (a memory fatal is the server killing it), so `canAfford()` is always true and the averages rule never
-  stops it. Its claims carry what PHP leaves of its limit, or one hour once the pass has lifted it, as
+  mode ends by itself. When the mode's consumer would block the page, it runs as `request`. It empties
+  the queue up to its cutoff with no memory ceiling either: `QueuePassLimitsFactory::untilEmpty()`
+  (a memory fatal is the server killing it). Its claims carry what PHP leaves of its limit, or one hour once the pass has lifted it, as
   any pass nobody waits for does. It stops on an empty queue (`empty`), a paused wiki (`paused`), a
   pass lock already taken (`locked`) or an error, and holds the pass lock throughout, so the passes of
   visitors' requests answer `locked` meanwhile, on purpose. It is no wait of a visitor's, so it stays
   out of `visitorWaits()`. `QueueApiController` says `forMode($mode, true)`: the call is a pass nobody
-  waits for, and its 50 s ceiling is the same either way.
+  waits for.
 
 #### What the consumer records, and how it is read back
 
@@ -760,8 +776,9 @@ Each point names the class or method to look at.
   seen yet is listed as due now, since the next tick notes it.
 - **`queue-config` reads the settings, not the table,** so it can say a mode is wrong before the
   migration ran. **`queue-killed`'s advice** to leave `request` is given only while the wiki is still
-  in `request`. **`queue-no-budget`** counts only passes that started, since a locked or paused pass
-  says nothing of the budget.
+  in `request`. **`queue-php-limit`** counts only passes that started, since a locked or paused pass
+  says nothing of PHP's limit: it is orange when at least 1 of the last 5 such passes stopped on
+  `php-limit`, and its advice is to allow `set_time_limit` or to switch to `worker`.
 - **`isOverdue()` allows a full period past the due time,** and at least as long as the mode needs to
   get a chance to run the task. A task due every 23 h that runs 2 h late is not lost. The tasks tab
   uses the same rule, so the table and the alert agree. `tasks()` lists the declared tasks only, so a
@@ -774,7 +791,7 @@ Each point names the class or method to look at.
   recorded as a manual `request` pass, so under a worker it neither counts as the worker starting nor
   makes a dead one look alive. `--message` runs in the mode the request would have used, so the run is
   recorded the same whichever ran it. A `--memory-limit` that is not a `128M`-style size or `-1` is
-  rejected, so a typo does not mean "unlimited". `QueueBudgetFactory::bytes()` is public for that check.
+  rejected, so a typo does not mean "unlimited". `QueuePassLimitsFactory::bytes()` is public for that check.
 - **`QueueSettings`:** the `.env` loader never overrides the real environment, so when both hold the
   same value they cannot be told apart, and the file is reported as the likelier source.
 - **`CacheClearer::clearEverything()` keeps the queue's locks** (`QueueConsumer::PASS_LOCK`,
@@ -836,8 +853,8 @@ Each point names the class or method to look at.
 - **A step finds nothing to do, without failing, when no fetch is running.** A step is never retried:
   one that fails has already given up the fetch and tidied the remote wiki. A fetch whose step died
   with its process is reported stopped by `status()`, and `start()` gives it up first.
-- **A download slice lasts what the pass has left, `SLICE_SECONDS` (20 s) at most,** and the time limit
-  is raised by the request timeout, which a stalled chunk may add. A failed slice waits
+- **A download slice lasts `SLICE_SECONDS` (20 s),** one per pass, since each slice queues the next
+  and the next waits for the following pass; the time limit is raised by the request timeout, which a stalled chunk may add. A failed slice waits
   `RETRY_PAUSE_SECONDS` times its count of consecutive failures (30 s, 1 min, ...). Back-to-back retries
   would all fall within the seconds a remote wiki takes to restart. The `advance` POST endpoint now
   only reports, for pages loaded before the upgrade.
@@ -932,7 +949,7 @@ Each point names the class or method to look at.
   through the holder lock.
 - **Judging "nothing is consuming" on the age of the oldest message** — rejected after being the
   first design. A worker alive and draining a long queue is a backlog, not a stall, and for the
-  budgeted modes the backlog check could then never fire. Activity is the right signal.
+  modes that end by themselves the backlog check could then never fire. Activity is the right signal.
 - **Muting an alert by cause** — rejected for ADR-0026's reason and anti-objective one: it would be
   a button that hides a real outage. Acknowledging the failures that exist is not the same thing.
 - **Priorities and several queues** — not now. One `default` queue and `failed`; a priority lane for
@@ -952,15 +969,16 @@ Each point names the class or method to look at.
 - **A delayed retry is not work.** The end-of-request check reads the oldest _available_ message,
   not the count of waiting ones, or a single message failing for half an hour would run a full pass
   on every request.
-- **A pass nobody waits for is bound by nothing but the host.** It lifts PHP's time limit before its
-  first message, so after `fastcgi_finish_request()` nothing bounds an FPM worker (its
+- **A pass is bound by nothing but the host.** It lifts PHP's time limit before its
+  first message, whether or not a visitor still waits, so after `fastcgi_finish_request()` nothing bounds an FPM worker (its
   `request_terminate_timeout` does not apply once the response has left, by default): a handler that
   loops holds a worker until the host or an admin kills it. The queue judges and never bounds: the
   one-hour ceiling is when a live holder is declared killed, not when it stops. A stop seen from another
   machine, where no lock can be read, is only detected after an hour and a minute. In `worker` mode, a
   message that lasts more than an hour is declared killed even if its CLI is alive.
-- **The default mode makes a visitor's request longer on mod_php and CGI**, up to the 3 s ceiling,
-  and `queue-visitor-cost` says so once the average passes a second. Choosing `api` or `worker`
+- **The default mode makes a visitor's request longer on mod_php and CGI**: the visitor waits until the
+  pass is over, which nothing bounds but the queue it found, and `queue-visitor-cost` says so once the
+  average passes a second. Choosing `api` or `worker`
   removes it, which is why the page names the cost beside the mode.
 - **The end of a request assumes nothing of the SAPI it runs under**, since `request` is the
   default everywhere. It works from `YESWIKI_INSTANCE_DIR`, as mod_php may run shutdown functions
@@ -971,8 +989,7 @@ Each point names the class or method to look at.
   through `ConsoleService::startDetachedConsole()`: no pipes, which the dropped `Process` closes
   and so kills the child with SIGPIPE, the instance's folder, and the console's ownership check
   lifted for the web server's user. How each SAPI fares is in `docs/fr/async.md`.
-- **Under worker mode** the consumer holds no request state: the budget context is cleared at the
-  end of each pass, the pinned messages are the request's own and forgotten at the next, and the
+- **Under worker mode** the consumer holds no request state: the pinned messages are the request's own and forgotten at the next, and the
   ratchet on `$GLOBALS` does not move (ADR-0024).
 - **Every module with deferred work now owns messages, handlers and a schedule**, and the work of
   migrating each mechanism is a commit of its own, which is how this ADR and its mechanisms stay
@@ -984,8 +1001,8 @@ Each point names the class or method to look at.
 - **Every time the queue writes or compares is the database's.** The processes of a farm may run on
   several machines whose clocks disagree; `DatabaseClock` reads the database's time in UTC
   (`DbService::utcNow()`), so `available_at`, the expiry of a claim and a task's anchor go by the one
-  clock they all share. Only what a pass may still spend, measured within one process, stays on PHP's
-  clock (`QueueBudgetFactory`).
+  clock they all share. Only how much of PHP's time a pass has left, measured within one process, stays on PHP's
+  clock (`QueuePassLimitsFactory`).
 - **A wiki with the table missing keeps serving pages.** The checks that read the table are silent
   until the migration has run, and `queue-tables` says why, and the request trigger journals one failure a day instead of
   breaking the page.
@@ -1044,7 +1061,7 @@ classDiagram
       <<interface>>
       +deduplicationKey() string
     }
-    class RunsUnbudgeted {
+    class RunsForItsSender {
       <<interface>>
     }
     class NotReplayableByHand {
@@ -1070,7 +1087,7 @@ classDiagram
   DoThing ..|> RetryPolicy : optional
   DoThing ..|> ToleratedFailure : optional
   DoThing ..|> Deduplicated : optional
-  DoThing ..|> RunsUnbudgeted : optional
+  DoThing ..|> RunsForItsSender : optional
   DoThing ..|> NotReplayableByHand : optional
   ModuleSchedule ..|> ProvidesSchedule
   ProvidesSchedule ..> RecurringMessageTimezoned : declares
@@ -1115,12 +1132,13 @@ classDiagram
    - Messenger's `DelayStamp` is for work that should wait.
 4. **Work longer than a pass** is done in slices. Each slice dispatches the next, so the work runs
    in every mode.
-   - `QueueBudgetContext::sliceSeconds($atMost)` says how long a slice may take under the running
-     pass's budget.
+   - A slice has a fixed length of its own (`RemoteBackupService::SLICE_SECONDS`): a handler is told
+     nothing of the time the pass has left. A pass runs only what was queued when it began, so the next
+     slice waits for the next pass.
    - The continuation is `Deduplicated`. A "look again later" gets a key of its own, or it would
      absorb the next real send and make it wait out its delay.
    - Work that splits into independent items is better sent as one message per item: the
-     consumer's budget already spreads them over passes (`Search/Message/ReindexContent`).
+     consumer already spreads them over passes (`Search/Message/ReindexContent`).
 5. **When they apply:**
    - **`RetryPolicy::maxRetries()`**, when the default (three retries, after 60 s, 5 min and 25
      min) is wrong. Use 0 for work whose second run would do harm, such as a half-sent digest
@@ -1132,7 +1150,7 @@ classDiagram
      (`FederationQueueHealthChecks`).
    - **A subscriber of `QueueConsumer::MESSAGE_KILLED`**, when the message holds some state of the
      wiki that a killed run would leave behind (`ArchiveService::releaseWhatAKilledRunLeft()`).
-   - **`RunsUnbudgeted`**, when an admin starts the work and it must not run on a request's budget:
+   - **`RunsForItsSender`**, when an admin starts the work and no pass may take it first:
      where no consumer would take it soon, the bus has the sending request run it once its response
      has left (`CreateArchive`, `RestoreArchive`).
    - **`NotReplayableByHand`**, when a copy in `failed` must not be sent again from the jobs page:
@@ -1140,7 +1158,7 @@ classDiagram
 6. **Not done:**
    - calling the handler from the code that sends, or consuming from there;
    - pinning a message to the request (`QueueRequestTrigger::pin()`) by hand: a message that needs
-     it says so (`RunsUnbudgeted`).
+     it says so (`RunsForItsSender`).
 
 ### A scheduled task
 
