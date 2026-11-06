@@ -32,6 +32,11 @@ const openTemplateSection = async (page) => {
   await page.locator('#entry-presentation summary').first().click()
 }
 
+const saveForm = async (page) => {
+  await page.locator('#bazar-form-editor button[type="submit"]').first().click()
+  await page.waitForURL((url) => !url.search.includes('/edit'))
+}
+
 const pickField = async (page, label: string) => {
   await page.locator('[data-yw-fb-template-fields-toggle]').click()
   await page
@@ -67,13 +72,12 @@ test('a new template is written in Vditor, fields included, and survives a headi
     templateSection(page).locator('.yw-component[data-yw-component="button"]'),
   ).toBeVisible()
 
-  await page.locator('#bazar-form-editor button[type="submit"]').first().click()
-  await expect.poll(() => existsSync(instancePath(TEMPLATE))).toBe(true)
+  await saveForm(page)
+  expect(existsSync(instancePath(TEMPLATE))).toBe(true)
   const saved = readFileSync(instancePath(TEMPLATE), 'utf8')
   expect(saved.startsWith('{# markdown #}\n')).toBe(true)
   expect(saved).toContain('## {{ html.bf_titre|raw }}')
   expect(saved).toContain('| {{ html.bf_titre|raw }} |')
-  await page.waitForURL((url) => !url.search.includes('/edit'))
 
   await page.goto('/?annuaire/edit')
   await expect
@@ -116,9 +120,15 @@ test('the components rail opens on the form screen, and the saved template rende
     ),
   ).toHaveCount(0)
 
-  writeTemplate(
-    '{# markdown #}\n## {{ formFields.bf_nom.label }}\n\n**{{ entry.bf_nom }}** {{ html.bf_prenom|raw }}\n',
+  await openTemplateSection(page)
+  await expect(surface(page)).toBeVisible()
+  await page.evaluate(() =>
+    window['ywEditors'].entry_template.setValue(
+      '## {{ formFields.bf_nom.label }}\n\n**{{ entry.bf_nom }}** {{ html.bf_prenom|raw }}\n',
+    ),
   )
+  await saveForm(page)
+
   const tag = await createEntry(page, 1, {
     bf_nom: 'Dupont',
     bf_prenom: 'Camille',

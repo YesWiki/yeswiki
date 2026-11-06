@@ -12,8 +12,10 @@ An example of how a custom folder look like can be found at https://github.com/Y
 
 If you have created a bazar form, you can customize how to render each entry created from this form.
 
-Create a file `fiche-FORM_ID.twig` inside `custom/templates/bazar`
-Example: If you have a bazar form with id 5, create `custom/templates/bazar/fiche-5.twig`
+Create a file `fiche-FORM_ID.twig` inside `custom/templates/core`
+Example: If you have a bazar form with id 5, create `custom/templates/core/fiche-5.twig`
+
+If the wiki runs on the binary, a new file needs one more step: see [Customize any templates from the codebase](#customize-any-templates-from-the-codebase).
 
 #### Available variables inside the template
 
@@ -23,7 +25,7 @@ Some variables like `entry` and `fiche` are the same. We have rename old variabl
 #### Example
 
 ```twig
-<!-- custom/templates/bazar/fiche-5.twig -->
+<!-- custom/templates/core/fiche-5.twig -->
 
 <!-- Use directly the entry data -->
 <h1>{{ entry.bf_titre }}</h1>
@@ -216,6 +218,14 @@ You can override any template used in yeswiki by mimicking the same folder struc
 | `templates/comment.twig`                      | `custom/templates/core/comment.twig`           |
 | `tools/login/templates/user-signup-form.twig` | `custom/templates/login/user-signup-form.twig` |
 | `templates/notify-email-text.twig`            | `custom/templates/core/notify-email-text.twig` |
+
+**On the binary**, workers stay alive between requests and may not see a file you add by hand. After adding one, run this from the wiki's folder:
+
+```bash
+yeswiki cache:clear
+```
+
+Each worker then answers one more request the old way before it restarts, so reload the page a few times if the template does not show up at once. Editing a file the wiki already uses takes effect immediately, and templates saved from the wiki's admin screens need none of this. Under php-fpm, nothing needs clearing.
 
 ### Custom Javascript
 
