@@ -33,6 +33,7 @@ import {
   unfenceComponents,
 } from './vditor-components.js'
 import { followScheme, vditorThemeOptions } from './editor-scheme.js'
+import { maskTwig, unmaskTwig } from './twig-in-vditor.js'
 
 const VDITOR_CDN = 'javascripts/vendor/vditor'
 
@@ -203,6 +204,13 @@ function initVditorWiki(textareaParam) {
   const saveButton = textarea.form?.querySelector('.vditor-wiki-save')
   const rows = parseInt(textarea.getAttribute('rows'), 10) || 10
   const lang = textarea.getAttribute('data-vditor-lang') || 'en_US'
+  const isTwigTemplate = textarea.hasAttribute('data-yw-twig-template')
+  const toEditor = (text) =>
+    fenceComponents(isTwigTemplate ? maskTwig(text) : text)
+  const fromEditor = () => {
+    const text = unfenceComponents(editor.getValue())
+    return isTwigTemplate ? unmaskTwig(text) : text
+  }
   const actionsBuilder = new ActionsBuilder()
   const linkPanel = new LinkPanel()
   let componentEditor = null
@@ -276,16 +284,20 @@ function initVditorWiki(textareaParam) {
           openModal(_t('ACEDITOR_HELP'), wiki.url('BacASable'))
         },
       },
-      {
-        name: 'yw-switch-editor',
-        tip: _t('SWITCH_TO_SOURCE_EDITOR'),
-        tipPosition: 'sw',
-        icon: `${legacyIconToSprite('source-code')}<span>${_t('SWITCH_TO_SOURCE_EDITOR_SHORT')}</span>`,
-        click() {
-          flush()
-          switchEditorTo('aceditor', textarea)
-        },
-      },
+      ...(isTwigTemplate
+        ? []
+        : [
+            {
+              name: 'yw-switch-editor',
+              tip: _t('SWITCH_TO_SOURCE_EDITOR'),
+              tipPosition: 'sw',
+              icon: `${legacyIconToSprite('source-code')}<span>${_t('SWITCH_TO_SOURCE_EDITOR_SHORT')}</span>`,
+              click() {
+                flush()
+                switchEditorTo('aceditor', textarea)
+              },
+            },
+          ]),
     ],
     cache: { enable: false },
     resize: { enable: true },
@@ -298,7 +310,7 @@ function initVditorWiki(textareaParam) {
     after() {
       componentEditor = new ComponentEditor(editor)
       componentEditor.onChange = sync
-      editor.setValue(fenceComponents(textarea.value))
+      editor.setValue(toEditor(textarea.value))
       container
         .querySelectorAll('.vditor-toolbar > .vditor-toolbar__item > button')
         .forEach((button) => button.classList.add('yw-btn'))
@@ -319,9 +331,13 @@ function initVditorWiki(textareaParam) {
       repaint()
       new ResizeObserver(repaint).observe(componentEditor.content)
       registerEditor(textarea.name, {
-        getValue: () => unfenceComponents(editor.getValue()),
+        getValue: fromEditor,
         setValue(text) {
-          editor.setValue(fenceComponents(text))
+          editor.setValue(toEditor(text))
+          sync()
+        },
+        insert(text) {
+          editor.insertValue(isTwigTemplate ? maskTwig(text) : text)
           sync()
         },
       })
@@ -339,12 +355,12 @@ function initVditorWiki(textareaParam) {
   /** Write what the editor holds into the textarea now, without waiting for the debounced input. */
   function flush() {
     if (!componentEditor) return
-    textarea.value = unfenceComponents(editor.getValue())
+    textarea.value = fromEditor()
   }
 
   /** The textarea stays the thing that gets posted: the editor writes into it and says so, so validation, unsaved-changes and live conditions keep working off the field they always watched. */
   function sync() {
-    textarea.value = unfenceComponents(editor.getValue())
+    textarea.value = fromEditor()
     textarea.dispatchEvent(new Event('input', { bubbles: true }))
     textarea.dispatchEvent(new Event('change', { bubbles: true }))
     repaint()

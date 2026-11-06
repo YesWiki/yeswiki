@@ -14,7 +14,7 @@
  * Kept on `window` because not every caller is a module -- `yeswiki-base.js` is a classic
  * script -- and because a browser test has no other way in.
  *
- * @typedef {{getValue: () => string, setValue: (text: string) => void}} EditorHandle
+ * @typedef {{getValue: () => string, setValue: (text: string) => void, insert?: (text: string) => void}} EditorHandle
  */
 
 /** @param {EditorHandle} handle */

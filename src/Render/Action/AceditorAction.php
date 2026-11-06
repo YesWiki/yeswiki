@@ -30,6 +30,7 @@ class AceditorAction extends YesWikiAction implements RegisteredAction
             'maxChars' => $args['maxChars'] ?? null,
             'tempTag' => $args['tempTag'] ?? null,
             'saveButton' => $this->formatBoolean($args['saveButton'] ?? null, false),
+            'twigTemplate' => $this->formatBoolean($args['twigTemplate'] ?? null, false),
         ];
     }
 
@@ -60,6 +61,10 @@ class AceditorAction extends YesWikiAction implements RegisteredAction
     /** Which editor writes this field. */
     private function chosenEditorTemplate(): string
     {
+        if ($this->arguments['twigTemplate']) {
+            return '@core/vditor-wiki.twig';
+        }
+
         $chosen = $this->getService(CurrentRequest::class)->get()->cookies->get(self::EDITOR_COOKIE);
         if ($chosen === 'vditor' || $chosen === 'aceditor') {
             return $chosen === 'vditor' ? '@core/vditor-wiki.twig' : '@core/aceditor.twig';

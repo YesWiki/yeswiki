@@ -12,6 +12,7 @@
           placeholder="{{ arguments.placeholder }}"
           data-vditor-lang="{{ vditorLang }}"
           {% if arguments.required is not empty %}required{% endif %}
+          {% if arguments.twigTemplate %}data-yw-twig-template{% endif %}
           class="vditor-wiki">
   {{- arguments.value|raw -}}
 </textarea>

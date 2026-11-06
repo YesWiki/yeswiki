@@ -52,6 +52,34 @@ final class WikiActionSyntax
         return $calls;
     }
 
+    /**
+     * Where each Twig construct of $source lies, its expressions, blocks and comments.
+     *
+     * @return list<array{0: int, 1: int}> offset and length of each
+     */
+    public static function constructs(string $source): array
+    {
+        $found = [];
+        $length = strlen($source);
+        $position = 0;
+        while ($position < $length && preg_match('/\{[{%#]/', $source, $opener, PREG_OFFSET_CAPTURE, $position)) {
+            $start = $opener[0][1];
+            if ($opener[0][0] === '{#') {
+                $end = strpos($source, '#}', $start + 2);
+                $position = $end === false ? $length : $end + 2;
+            } elseif ($opener[0][0] === '{%') {
+                $position = preg_match(self::RAW_BLOCK, $source, $raw, 0, $start)
+                    ? self::skipRawBlock($source, $start + strlen($raw[0]), $raw[1])
+                    : self::skipExpression($source, $start + 2, '%}');
+            } else {
+                $position = self::skipExpression($source, $start + 2, '}}');
+            }
+            $found[] = [$start, $position - $start];
+        }
+
+        return $found;
+    }
+
     /** @return array{offset: int, length: int, line: int, name: string, params: array<string, string>, bare: bool, newlines: int}|null */
     private static function callAt(string $source, int $start): ?array
     {

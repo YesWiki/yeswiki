@@ -1,6 +1,7 @@
 import registry, { paletteEntries } from './registry.js'
 import { parseFields, resolveWikiType, serializeFields } from './converter.js'
 import { refreshDesignerData } from './fields/commons/attributes.js'
+import { editorFor } from '../editor-handles.js'
 
 let container
 let textarea
@@ -320,67 +321,171 @@ function initPresentation() {
   })
 }
 
-/** The entry template editor: Ace, fetched once the section opens, plus a starter naming every field. */
+/** The Twig that reads one key of a template variable, whatever characters the key holds. */
+function twigAccess(variable, key) {
+  return /^[a-zA-Z_]\w*$/.test(key)
+    ? `${variable}.${key}`
+    : `${variable}['${key.replace(/'/g, "\\'")}']`
+}
+
+/** The key a field's rendered value goes by: a linked entries field stores nothing and is named after its type too. */
+const renderedKey = ({ type, data }) =>
+  type === 'listefichesliees' || type === 'listefiches'
+    ? `${type}${data.name}`
+    : data.name
+
+const storesAValue = ({ type }) =>
+  !['listefichesliees', 'listefiches'].includes(type)
+
+/** What the field picker offers for a field, as button labels and the Twig each one inserts. */
+function fieldInsertions(field) {
+  const { name } = field.data
+  return [
+    [
+      _t('FORM_EDIT_ENTRY_TEMPLATE_FIELD_LABEL'),
+      `{{ ${twigAccess('formFields', name)}.label }}`,
+    ],
+    [
+      _t('FORM_EDIT_ENTRY_TEMPLATE_FIELD_HTML'),
+      `{{ ${twigAccess('html', renderedKey(field))}|raw }}`,
+    ],
+    ...(storesAValue(field)
+      ? [
+          [
+            _t('FORM_EDIT_ENTRY_TEMPLATE_FIELD_RAW'),
+            `{{ ${twigAccess('entry', name)} }}`,
+          ],
+        ]
+      : []),
+  ]
+}
+
+/** The first draft of a template: markdown for the wysiwyg editor, HTML for Ace. */
+function starterTemplate(inMarkdown) {
+  const named = fields.filter(({ data }) => data.name)
+  const value = (field) => `{{ ${twigAccess('html', renderedKey(field))}|raw }}`
+  const comment = `{# ${_t('FORM_EDIT_ENTRY_TEMPLATE_STARTER_COMMENT')} #}`
+  if (inMarkdown) {
+    return [
+      comment,
+      '',
+      ...named.flatMap((field, index) => [
+        index === 0 ? `# ${value(field)}` : value(field),
+        '',
+      ]),
+    ].join('\n')
+  }
+  return [
+    comment,
+    '<div class="BAZ_fiche_custom">',
+    ...named.map((field, index) =>
+      index === 0
+        ? `  <h1 class="BAZ_fiche_titre">${value(field)}</h1>`
+        : `  <div class="BAZ_texte yw-field-${field.data.name}">${value(field)}</div>`,
+    ),
+    '</div>',
+    '',
+  ].join('\n')
+}
+
+/** The entry template editor: Vditor when the template is markdown, otherwise Ace once the section opens, plus a starter and a field picker. */
 function initEntryTemplate() {
   const source = document.querySelector('[data-yw-twig-editor]')
-  if (!source) return
-  let editor = null
+  const vditorName = document.querySelector(
+    'textarea[data-yw-twig-template]',
+  )?.name
+  if (!source && !vditorName) return
+  let ace = null
 
   const setText = (text) => {
-    if (editor) {
-      editor.setValue(text)
-      editor.ace.clearSelection()
+    if (vditorName) {
+      editorFor(vditorName)?.setValue(text)
+    } else if (ace) {
+      ace.setValue(text)
+      ace.ace.clearSelection()
     } else {
       source.value = text
     }
   }
 
-  const mount = async () => {
-    if (editor || source.readOnly) return
+  const insertText = (text) => {
+    if (vditorName) {
+      editorFor(vditorName)?.insert(text)
+    } else if (ace) {
+      ace.ace.insert(text)
+      ace.ace.focus()
+    } else {
+      source.setRangeText(
+        text,
+        source.selectionStart,
+        source.selectionEnd,
+        'end',
+      )
+    }
+  }
+
+  const mountAce = async () => {
+    if (ace || source.readOnly) return
     const { default: AceWrapper } = await import('../ace-wrapper.js')
-    if (editor) return
+    if (ace) return
     const host = document.createElement('div')
     host.className = 'yw-templates__ace'
     source.parentNode.insertBefore(host, source)
     source.hidden = true
-    editor = new AceWrapper(host, { mode: 'ace/mode/twig', rows: 14 })
-    editor.setValue(source.value)
-    editor.ace.clearSelection()
-    editor.ace.moveCursorTo(0, 0)
-    editor.disableAutocompletion()
-    editor.on('change', () => {
-      source.value = editor.getValue()
+    ace = new AceWrapper(host, { mode: 'ace/mode/twig', rows: 14 })
+    ace.setValue(source.value)
+    ace.ace.clearSelection()
+    ace.ace.moveCursorTo(0, 0)
+    ace.disableAutocompletion()
+    ace.on('change', () => {
+      source.value = ace.getValue()
     })
   }
 
-  const section = source.closest('details')
-  if (!section || section.open) {
-    mount()
-  } else {
-    section.addEventListener('toggle', () => section.open && mount(), {
-      once: true,
+  if (source) {
+    const section = source.closest('details')
+    if (!section || section.open) {
+      mountAce()
+    } else {
+      section.addEventListener('toggle', () => section.open && mountAce(), {
+        once: true,
+      })
+    }
+    source.form?.addEventListener('submit', () => {
+      if (ace) source.value = ace.getValue()
     })
   }
-  source.form?.addEventListener('submit', () => {
-    if (editor) source.value = editor.getValue()
-  })
 
   document
     .querySelector('[data-yw-fb-template-starter]')
+    ?.addEventListener('click', () => setText(starterTemplate(!!vditorName)))
+
+  const menu = document.querySelector('[data-yw-fb-template-fields]')
+  document
+    .querySelector('[data-yw-fb-template-fields-toggle]')
     ?.addEventListener('click', () => {
-      const named = fields.filter(({ data }) => data.name)
-      const lines = [
-        `{# ${_t('FORM_EDIT_ENTRY_TEMPLATE_STARTER_COMMENT')} #}`,
-        '<div class="BAZ_fiche_custom">',
-        ...named.map(({ data }, index) =>
-          index === 0
-            ? `  <h1 class="BAZ_fiche_titre">{{ html.${data.name}|raw }}</h1>`
-            : `  <div class="BAZ_texte yw-field-${data.name}">{{ html.${data.name}|raw }}</div>`,
-        ),
-        '</div>',
-        '',
-      ]
-      setText(lines.join('\n'))
+      menu.replaceChildren(
+        ...fields
+          .filter(({ data }) => data.name)
+          .map((field) => {
+            const row = document.createElement('li')
+            row.className = 'yw-fb__template-field'
+            const name = document.createElement('span')
+            name.className = 'yw-fb__template-field-name'
+            name.textContent = field.data.label || field.data.name
+            row.append(name)
+            fieldInsertions(field).forEach(([label, twig]) => {
+              const button = document.createElement('button')
+              button.type = 'button'
+              button.className = 'yw-btn yw-btn--sm'
+              button.textContent = label
+              button.title = twig
+              button.addEventListener('click', () => insertText(twig))
+              row.append(button)
+            })
+            return row
+          }),
+      )
     })
 }
 

@@ -3149,7 +3149,17 @@ img.popup-visual {
 }
 
 .yw-entry-form .yw-form-group {
-  margin: 0 0 var(--yw-space-md-y);
+  margin: 0 0 calc(var(--yw-space-md-y) * 2);
+}
+
+.yw-entry-form .controls .checkbox,
+.yw-entry-form .controls .radio {
+  margin: 0 0 var(--yw-space-sm-y);
+}
+
+.yw-entry-form .controls .checkbox input[type='checkbox'],
+.yw-entry-form .controls .radio input[type='radio'] {
+  margin-left: 0;
 }
 
 .yw-entry-form .yw-form-group > .yw-form-label {

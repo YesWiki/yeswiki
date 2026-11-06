@@ -35,6 +35,7 @@ class TemplateEngine
 {
     protected ContainerInterface $container;
     protected \Twig\Loader\FilesystemLoader $twigLoader;
+    private WikiActionLoader $wikiActionLoader;
     protected \Twig\Environment $twig;
     protected AssetRegistry $assetRegistry;
     protected CsrfTokenManager $csrfTokenManager;
@@ -109,7 +110,11 @@ class TemplateEngine
 
         $this->twigLoader->addPath(YESWIKI_PROGRAM_DIR . '/templates/', 'shipped');
 
-        $this->twig = new \Twig\Environment(new WikiActionLoader($this->twigLoader), [
+        $this->wikiActionLoader = new WikiActionLoader(
+            $this->twigLoader,
+            fn (string $markdown): string => $this->container->get(MarkdownFormatterService::class)->format($markdown)
+        );
+        $this->twig = new \Twig\Environment($this->wikiActionLoader, [
             'cache' => 'cache/templates/',
             'auto_reload' => true,
         ]);
@@ -785,7 +790,7 @@ class TemplateEngine
      */
     public function parseTemplateSource(string $name, string $source): void
     {
-        $this->twig->parse($this->twig->tokenize(new \Twig\Source(WikiActionSyntax::rewrite($source), $name)));
+        $this->twig->parse($this->twig->tokenize(new \Twig\Source($this->wikiActionLoader->compile($source), $name)));
     }
 
     /**

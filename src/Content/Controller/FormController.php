@@ -42,6 +42,7 @@ use YesWiki\Render\Service\LanguageSwitch;
 use YesWiki\Render\Service\Performer;
 use YesWiki\Render\Service\PresentationCatalog;
 use YesWiki\Render\Service\ThemeManager;
+use YesWiki\Render\Twig\MarkdownTemplate;
 
 class FormController extends YesWikiController
 {
@@ -330,7 +331,7 @@ class FormController extends YesWikiController
     private function normalizeFormPropertiesPost(array $data): array
     {
         $data['entry_permit_activate_comments'] = !empty($data['entry_permit_activate_comments']);
-        unset($data['entry_template']);
+        unset($data['entry_template'], $data['entry_template_format']);
 
         $metadatas = array_filter(array_map(function ($value) {
             return trim((string)$value);
@@ -666,13 +667,28 @@ class FormController extends YesWikiController
         $service = $this->getService(CustomTemplateService::class);
         $name = $this->entryTemplateName($id);
         $post = $this->getRequest()->request;
+        $writable = $service->isWritable();
+        $contents = $post->has('entry_template') ? $this->postedEntryTemplate() : $service->read($name);
+        $inMarkdown = $writable && (trim($contents) === '' || MarkdownTemplate::isMarked($contents));
 
         return [
             'canEditTemplate' => true,
-            'entryTemplate' => $post->has('entry_template') ? (string)$post->get('entry_template') : $service->read($name),
+            'entryTemplate' => $inMarkdown ? MarkdownTemplate::unmark($contents) : $contents,
             'entryTemplateFile' => CustomTemplateService::DIRECTORY . '/' . $name,
-            'entryTemplateWritable' => $service->isWritable(),
+            'entryTemplateWritable' => $writable,
+            'entryTemplateInMarkdown' => $inMarkdown,
         ];
+    }
+
+    /** The posted entry template as it goes in its file, marked as markdown when the wysiwyg editor wrote it. */
+    private function postedEntryTemplate(): string
+    {
+        $post = $this->getRequest()->request;
+        $contents = str_replace(["\r\n", "\r"], "\n", (string)$post->get('entry_template'));
+
+        return $post->get('entry_template_format') === 'markdown' && trim($contents) !== ''
+            ? MarkdownTemplate::mark($contents)
+            : $contents;
     }
 
     private function entryTemplateName(string $id): string
@@ -687,8 +703,8 @@ class FormController extends YesWikiController
         if (!$post->has('entry_template') || !$this->getService(AclService::class)->isAdmin()) {
             return true;
         }
-        $contents = trim((string)$post->get('entry_template'));
-        if ($contents === '') {
+        $contents = $this->postedEntryTemplate();
+        if (trim($contents) === '') {
             return true;
         }
 
@@ -712,7 +728,7 @@ class FormController extends YesWikiController
         }
         $service = $this->getService(CustomTemplateService::class);
         $name = $this->entryTemplateName($id);
-        $contents = str_replace(["\r\n", "\r"], "\n", (string)$post->get('entry_template'));
+        $contents = $this->postedEntryTemplate();
 
         try {
             if (trim($contents) === '') {

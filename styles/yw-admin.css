@@ -2774,3 +2774,22 @@ body > button.primary {
   color: var(--yw-on-warning);
   background: var(--yw-warning);
 }
+
+.yw-fb__template-fields .yw-dropdown__menu {
+  max-height: 24em;
+  overflow-y: auto;
+  padding: var(--yw-space-sm-y) var(--yw-space-sm-x);
+}
+
+.yw-fb__template-field {
+  display: flex;
+  align-items: center;
+  gap: var(--yw-space-sm-x);
+  padding: var(--yw-space-sm-y) 0;
+  white-space: nowrap;
+}
+
+.yw-fb__template-field-name {
+  flex: 1;
+  min-width: 10em;
+}

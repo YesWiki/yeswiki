@@ -208,7 +208,7 @@
 
         {% if canEditTemplate %}
           <div class="yw-form-group yw-fb__template">
-            <label class="yw-form-label" for="entry-template">{{ _t('FORM_EDIT_ENTRY_TEMPLATE') }}</label>
+            <label class="yw-form-label" for="{{ entryTemplateInMarkdown ? 'entry_template' : 'entry-template' }}">{{ _t('FORM_EDIT_ENTRY_TEMPLATE') }}</label>
             <p class="yw-text-muted">{{ _t('FORM_EDIT_ENTRY_TEMPLATE_HINT', { file: entryTemplateFile }) }}</p>
             {% if not entryTemplateWritable %}
               <div class="yw-alert yw-alert--warning">{{ _t('FORM_EDIT_ENTRY_TEMPLATE_NOT_WRITABLE', { path: entryTemplateFile }) }}</div>
@@ -217,9 +217,23 @@
               <button type="button" class="yw-btn yw-btn--sm" data-yw-fb-template-starter{% if not entryTemplateWritable %} disabled{% endif %}>
                 {{ _t('FORM_EDIT_ENTRY_TEMPLATE_STARTER') }}
               </button>
+              {% if entryTemplateWritable %}
+                <div class="yw-dropdown yw-fb__template-fields">
+                  <button type="button" class="yw-btn yw-btn--sm" data-yw-dropdown-toggle aria-haspopup="true" data-yw-fb-template-fields-toggle>
+                    {{ _t('FORM_EDIT_ENTRY_TEMPLATE_INSERT_FIELD') }}
+                    <b class="yw-dropdown__caret"></b>
+                  </button>
+                  <ul class="yw-dropdown__menu" data-yw-fb-template-fields></ul>
+                </div>
+              {% endif %}
             </div>
-            <textarea id="entry-template" name="entry_template" class="yw-input yw-templates__editor" rows="14"
-              spellcheck="false" autocomplete="off" data-yw-twig-editor{% if not entryTemplateWritable %} readonly{% endif %}>{{ entryTemplate }}</textarea>
+            {% if entryTemplateInMarkdown %}
+              <input type="hidden" name="entry_template_format" value="markdown">
+              {{ renderAction('aceditor', { name: 'entry_template', value: entryTemplate|e, rows: 14, twigTemplate: true })|raw }}
+            {% else %}
+              <textarea id="entry-template" name="entry_template" class="yw-input yw-templates__editor" rows="14"
+                spellcheck="false" autocomplete="off" data-yw-twig-editor{% if not entryTemplateWritable %} readonly{% endif %}>{{ entryTemplate }}</textarea>
+            {% endif %}
           </div>
         {% endif %}
       {% endblock %}
@@ -412,3 +426,6 @@
   />
   {% endif %}
 </form>
+{% if entryTemplateInMarkdown %}
+  {{ include('@core/aceditor-rails.twig') }}
+{% endif %}
