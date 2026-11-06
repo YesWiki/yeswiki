@@ -1,8 +1,10 @@
 volumes:
   yeswiki-db:
-    name: yeswiki-db
+    name: yeswiki-db-messenger
   yeswiki-pg:
-    name: yeswiki-pg
+    name: yeswiki-pg-messenger
+
+name: yeswiki-messenger
 
 services:
     yeswiki-app:
@@ -12,7 +14,7 @@ services:
           args:
             UID: "${UID:-1000}"
             GID: "${GID:-1000}"
-        container_name: yeswiki
+        container_name: yeswiki-messenger
         volumes:
           - ..:/var/www/html
         depends_on:
@@ -24,7 +26,7 @@ services:
 
     yeswiki-db:
         image: mysql:latest
-        container_name: yeswiki-db
+        container_name: yeswiki-db-messenger
         volumes:
           - yeswiki-db:/var/lib/mysql
         env_file: ./yeswiki.secrets
@@ -37,7 +39,7 @@ services:
     # untouched.
     yeswiki-pg:
         image: postgres:16-alpine
-        container_name: yeswiki-pg
+        container_name: yeswiki-pg-messenger
         volumes:
           - yeswiki-pg:/var/lib/postgresql/data
         environment:
@@ -54,7 +56,7 @@ services:
     # deployment step docs/fr/admin.md carries.
     yeswiki-s3:
         image: chrislusf/seaweedfs
-        container_name: yeswiki-s3
+        container_name: yeswiki-s3-messenger
         command: server -s3 -s3.config=/etc/seaweedfs/s3.json -dir=/data -master.volumeSizeLimitMB=64
         volumes:
           - ./seaweedfs-s3.json:/etc/seaweedfs/s3.json:ro
@@ -63,7 +65,7 @@ services:
 
     yeswiki-web:
         image: nginx:alpine
-        container_name: yeswiki-web
+        container_name: yeswiki-web-messenger
         volumes:
           - ..:/var/www/html:ro
           - ./nginx.conf:/etc/nginx/nginx.conf:ro
@@ -75,7 +77,7 @@ services:
 
     myadmin:
       image: phpmyadmin:latest
-      container_name: myadmin
+      container_name: myadmin-messenger
       env_file: ./yeswiki.secrets
       environment:
         PMA_HOST: yeswiki-db
@@ -85,6 +87,6 @@ services:
 
     mail:
       image: maildev/maildev
-      container_name: mail
+      container_name: mail-messenger
       ports:
         - "1080:1080"

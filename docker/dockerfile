@@ -8,6 +8,9 @@ RUN apt-get update && \
     apt-get install -y libfreetype-dev libjpeg-dev libpng-dev libwebp-dev zlib1g-dev libzip-dev git unzip mariadb-client libpq-dev postgresql-client && \
     # Playwright dependencies
     apt-get install -y libglib2.0-0 libnss3 libnspr4 libdbus-1-3 libatk1.0-0 libatk-bridge2.0-0 libatspi2.0-0 libxcomposite1 libxdamage1 libxfixes3 libxrandr2 libgbm1 libxkbcommon0 libasound2 libcups2 libpango-1.0-0 libcairo2 && \
+    # the container runs as yeswiki; sudo lets it install a package or fix a permission
+    # without a rebuild
+    apt-get install -y sudo && \
     rm -rf /var/lib/apt/lists/*
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp
 # pdo_mysql, not mysqli: the app talks to the database through PDO (DbService), and
@@ -21,16 +24,26 @@ RUN docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp
 # pcntl, suggested by composer.json: a blocking `messenger:consume` stopped with SIGTERM finishes
 # the message in hand (QueueConsumer::runStoppingOnSignals) instead of leaving it to be reaped as
 # killed hours later.
-RUN docker-php-ext-install pdo_mysql pdo_pgsql pcntl gd zip
+#
+# exif: Zebra_Image turns JPEGs by their Exif orientation (ImageResizer), and refuses to resize
+# one at all without exif_read_data().
+RUN docker-php-ext-install pdo_mysql pdo_pgsql pcntl gd zip exif
 
 COPY --from=composer:latest /usr/bin/composer /usr/local/bin/composer
+
+# The binary/ Go module (ADR-0023) is built and tested from this image too; pinned to the
+# go.mod line so `go test ./...` never fetches a toolchain of its own.
+COPY --from=golang:1.25.14 /usr/local/go /usr/local/go
+ENV PATH="/usr/local/go/bin:/home/yeswiki/go/bin:${PATH}"
 
 ARG UID
 
 ARG GID
 
 RUN groupadd -g "${GID}" yeswiki \
-  && useradd --no-log-init --create-home -u "${UID}" -g "${GID}" -G www-data yeswiki
+  && useradd --no-log-init --create-home -u "${UID}" -g "${GID}" -G www-data,sudo yeswiki \
+  && echo 'yeswiki ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers.d/yeswiki \
+  && chmod 0440 /etc/sudoers.d/yeswiki
 
 USER yeswiki
 
