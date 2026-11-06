@@ -9,9 +9,7 @@ use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';
 
-/**
- * A duplication only creates a page its URL can reach, and only fetches files from public http(s) addresses.
- */
+/** A duplication only creates a page its URL can reach, and only fetches files from public http(s) addresses. */
 class DuplicationManagerTest extends YesWikiTestCase
 {
     #[DataProvider('refusedProvider')]
@@ -41,6 +39,9 @@ class DuplicationManagerTest extends YesWikiTestCase
             'a php file' => ['https://93.184.216.34/files/wakka.config.php', null],
             'a hidden file' => ['https://93.184.216.34/files/.htaccess', null],
             'no extension' => ['https://93.184.216.34/latest/meta-data/', null],
+            'a php file with the stored suffix' => ['https://93.184.216.34/files/SourcePage_x.php_', null],
+            'two trailing underscores' => ['https://93.184.216.34/files/SourcePage_x.pdf__', null],
+            'a stored pdf on a private address' => ['http://127.0.0.1/files/SourcePage_x.pdf_', 'private or reserved'],
         ];
     }
 
