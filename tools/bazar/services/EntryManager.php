@@ -7,6 +7,7 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Bazar\Exception\ParsingMultipleException;
 use YesWiki\Bazar\Exception\RequiredFieldsException;
 use YesWiki\Bazar\Exception\TagAlreadyUsedException;
+use YesWiki\Bazar\Field\AclField;
 use YesWiki\Bazar\Field\BazarField;
 use YesWiki\Bazar\Field\TitleField;
 use YesWiki\Core\Controller\AuthController;
@@ -521,6 +522,11 @@ class EntryManager
 
         $isExternalEntry = !empty($this->tripleStore->getMatching($tag, TripleStore::SOURCE_URL_URI, null, '=', '=', ''));
 
+        foreach ($form['prepared'] ?? [] as $field) {
+            if ($field instanceof AclField) {
+                $field->removeManagedGroups($tag);
+            }
+        }
         $this->pageManager->deleteOrphaned($tag);
         $this->wiki->LogAdministrativeAction(
             $this->authController->getLoggedUserName(),

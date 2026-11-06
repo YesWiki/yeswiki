@@ -94,7 +94,7 @@ class AclService
         if ($this->securityController->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
-        // If list is comma-separated, convert into to line-break-separated
+
         if (strpos($list, ',') !== false) {
             $list = preg_replace('/\s*,\s*/', "\n", $list);
         }
@@ -111,7 +111,6 @@ class AclService
             $this->dbService->query('INSERT INTO' . $this->dbService->prefixTable('acls') . "SET list = '" . $this->dbService->escape(trim(str_replace("\r", '', $list))) . "', page_tag = '" . $this->dbService->escape($tag) . "', privilege = '" . $this->dbService->escape($privilege) . "'");
         }
 
-        // Update the cache
         $this->cache[$tag][$privilege] = [
             'page_tag' => $tag,
             'privilege' => $privilege,
@@ -132,12 +131,10 @@ class AclService
             $privileges = [$privileges];
         }
 
-        // Add '"' at begin and end of each escaped privileges elements.
         for ($i = 0; $i < count($privileges); $i++) {
             $privileges[$i] = '"' . $this->dbService->escape($privileges[$i]) . '"';
         }
 
-        // Construct a CSV string with privileges elements
         $privileges = implode(',', $privileges);
 
         $this->dbService->query('DELETE FROM' . $this->dbService->prefixTable('acls') . ' WHERE page_tag = "' . $this->dbService->escape($tag) . '" AND privilege IN (' . $privileges . ')');
@@ -159,21 +156,18 @@ class AclService
      */
     public function hasAccess($privilege, $tag = '', $user = '')
     {
-        // set default to current page
+
         if ($tag == null || !$tag = trim($tag)) {
             $tag = $this->wiki->GetPageTag();
         }
 
-        // set default to current user
         if (!$user) {
             $loggedUser = $this->authController->getLoggedUser();
             $user = $loggedUser['name'] ?? '';
         }
 
-        // load acl
         $acl = $this->load($tag, $privilege);
 
-        // empty acls is considered as no access
         if ($acl === null) {
             return false;
         } elseif (isset($acl['list']) && (
@@ -185,12 +179,10 @@ class AclService
             return false;
         }
 
-        // if current user is owner, return true. owner can do anything!
         if ($this->wiki->UserIsOwner($tag)) {
             return true;
         }
 
-        // now check the acls
         $access = $this->check($acl['list'], $user);
 
         return $access;
@@ -233,13 +225,12 @@ class AclService
         }
 
         $acl = is_string($acl) ? trim($acl) : '';
-        $result = false; // result by default , this function is like a big "OR LOGICAL"
+        $result = false; 
 
         $acl = str_replace(["\r\n", "\r"], "\n", $acl);
         foreach (explode("\n", $acl) as $line) {
             $line = trim($line);
 
-            // check for inversion character "!"
             if (preg_match('/^[!](.*)$/', $line, $matches)) {
                 $std_response = false;
                 $line = $matches[1];
@@ -247,33 +238,30 @@ class AclService
                 $std_response = true;
             }
 
-            // if there's still anything left... lines with just a "!" don't count!
             if ($line) {
                 switch ($line[0]) {
-                    case '#': // comments
+                    case '#': 
                         break;
-                    case '*': // everyone
+                    case '*': 
                         $result = $std_response;
                         break;
-                    case '+': // registered users
+                    case '+': 
                         $result = (!empty($username) && $this->userManager->getOneByName($username)) ? $std_response : !$std_response;
                         break;
-                    case '%': // owner
+                    case '%': 
                         if ($mode == 'creation') {
-                            // in creation mode, even if there is a tag
-                            // the current user can access to field
+
                             $result = $std_response;
                         } elseif ($tag == '') {
-                            // to manage retrocompatibility without usage of CheckACL without $tag
-                            // and no management of '%'
+
                             $result = false;
                         } else {
                             $result = ($this->wiki->UserIsOwner($tag)) ? $std_response : !$std_response;
                         }
                         break;
-                    case '@': // groups
+                    case '@': 
                         $gname = substr($line, 1);
-                        // paranoiac: avoid line = '@'
+
                         if ($gname) {
                             if (in_array($gname, $formerGroups)) {
                                 $this->wiki->setMessage('Error group ' . $gname . ' inside same groups, inception was a bad movie');
@@ -283,8 +271,8 @@ class AclService
                                 && $this->userManager->isInGroup(
                                     $gname,
                                     $username,
-                                    false/* we have allready checked if user was an admin */,
-                                    array_merge($formerGroups, [$gname]) // does not change $formerGroups param
+                                    false,
+                                    array_merge($formerGroups, [$gname]) 
                                 )
                                 ) {
                                     $result = $std_response;
@@ -293,10 +281,10 @@ class AclService
                                 }
                             }
                         } else {
-                            $result = false; // line '@'
+                            $result = false; 
                         }
                         break;
-                    default: // simple user entry
+                    default: 
                         if (!empty($username) && $line == $username) {
                             $result = $std_response;
                         } else {
@@ -305,11 +293,10 @@ class AclService
                 }
                 if ($result) {
                     return true;
-                } // else continue like a big logical OR
+                } 
             }
         }
 
-        // tough luck.
         return false;
     }
 
@@ -361,27 +348,23 @@ class AclService
 
     public function updateRequestWithACL(): string
     {
-        // needed ACL
+
         $neededACL = ['*'];
-        // connected ?
+
         $user = $this->authController->getLoggedUser();
         if (!empty($user)) {
             $userName = $user['name'];
             $neededACL[] = '+';
             $neededACL[] = $userName;
-            $groups = $this->wiki->GetGroupsList();
-            foreach ($groups as $group) {
-                if (!empty($userName) && $this->userManager->isInGroup($group, $userName, true)) {
-                    $neededACL[] = '@' . $group;
-                }
+            foreach ($this->groupsOf($userName) as $group) {
+                $neededACL[] = '@' . $group;
             }
         }
 
-        // check default readacl
         $newRequestStart = '';
         $newRequestEnd = '';
         if ($this->check($this->params->has('default_read_acl') ? $this->params->get('default_read_acl') : '*')) {
-            // current user can display pages without read acl
+
             $newRequestStart .= '(';
             $newRequestEnd = ')' . $newRequestEnd;
 
@@ -391,12 +374,11 @@ class AclService
             $newRequestStart .= ' OR (';
             $newRequestEnd = ')' . $newRequestEnd;
         }
-        // construct new request when acl
+
         $newRequestStart .= 'tag in (SELECT DISTINCT page_tag FROM ' . $this->dbService->prefixTable('acls') .
             'WHERE privilege="read"';
         $newRequestEnd = ')' . $newRequestEnd;
 
-        // needed ACL
         if (count($neededACL) > 0) {
             $newRequestStart .= ' AND (';
             if (!empty($user)) {
@@ -411,16 +393,15 @@ class AclService
                 } else {
                     $addOr = true;
                 }
-                $newRequestStart .= ' list LIKE "%' . $this->dbService->escape($this->escapeLikeValue($acl)) . '%"';
+                $newRequestStart .= $this->aclLineMatches($acl, '');
             }
             $newRequestStart .= ')';
-            // not authorized ACL
+
             foreach ($neededACL as $acl) {
                 $newRequestStart .= ' AND ';
-                $newRequestStart .= ' list NOT LIKE "%!' . $this->dbService->escape($this->escapeLikeValue($acl)) . '%"';
+                $newRequestStart .= $this->aclLineMatches($acl, '!', 'NOT ');
             }
 
-            // add detection of '%'
             if (!empty($user)) {
                 $newRequestStart .= ') OR (';
 
@@ -431,8 +412,50 @@ class AclService
 
         $request = $newRequestStart . $newRequestEnd;
 
-        // return request to append
         return $request;
+    }
+
+    /** Returns the SQL testing that an ACL list holds this value as a whole line; the visibility signs match anywhere. */
+    private function aclLineMatches(string $value, string $negation, string $not = ''): string
+    {
+        $escaped = $this->dbService->escape($this->escapeLikeValue($negation . $value));
+        if (in_array($value, ['*', '+'], true)) {
+            return " list {$not}LIKE \"%$escaped%\"";
+        }
+
+        return " CONCAT(CHAR(10), REPLACE(REPLACE(list, CHAR(13), ''), ' ', ''), CHAR(10)) {$not}LIKE CONCAT('%', CHAR(10), \"$escaped\", CHAR(10), '%')";
+    }
+
+    /**
+     * Returns the groups the user belongs to, nested ones included, from a single query.
+     * A group using a sign other than plain names and nested groups goes through the full check.
+     */
+    private function groupsOf(string $userName): array
+    {
+        $triples = $this->dbService->prefixTable('triples');
+        $prefix = $this->dbService->escape($this->escapeLikeValue(GROUP_PREFIX));
+        $members = [];
+        foreach ($this->dbService->loadAll("SELECT resource, value FROM $triples WHERE resource LIKE '$prefix%' AND property = '" . WIKINI_VOC_PREFIX . WIKINI_VOC_ACLS . "'") as $row) {
+            $members[substr($row['resource'], strlen(GROUP_PREFIX))] = preg_split('/\s*[\r\n]+\s*/', trim($row['value']), -1, PREG_SPLIT_NO_EMPTY);
+        }
+        $found = [];
+        foreach ($members as $group => $lines) {
+            $signed = preg_grep('/^[!*+%#]/', $lines);
+            if (in_array($userName, $lines, true) || ($signed && $this->userManager->isInGroup((string) $group, $userName, true))) {
+                $found[$group] = true;
+            }
+        }
+        do {
+            $added = false;
+            foreach ($members as $group => $lines) {
+                if (!isset($found[$group]) && array_filter($lines, fn ($line) => $line[0] === '@' && isset($found[substr($line, 1)]))) {
+                    $found[$group] = true;
+                    $added = true;
+                }
+            }
+        } while ($added);
+
+        return array_map('strval', array_keys($found));
     }
 
     /** Escapes the LIKE metacharacters of an identity so a username made of wildcards cannot widen the ACL match. */

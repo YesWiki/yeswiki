@@ -4,7 +4,12 @@ namespace YesWiki\Bazar\Field;
 
 use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use YesWiki\Bazar\Service\EntryManager;
+use YesWiki\Bazar\Service\FormManager;
 use YesWiki\Core\Service\AclService;
+use YesWiki\Core\Service\GroupManager;
+use YesWiki\Core\Service\TripleStore;
+use YesWiki\Core\Service\UserManager;
 
 /**
  * @Field({"acls"})
@@ -18,6 +23,9 @@ class AclField extends BazarField
     protected $entryCommentRight;
     protected $params;
     protected $options;
+    protected $managedGroups;
+    protected $linkedReadRight;
+    protected $linkedWriteRight;
 
     public const OPTIONS = [
         'oui' => 'YES',
@@ -32,13 +40,22 @@ class AclField extends BazarField
     protected const FIELD_LABEL = 4;
     protected const FIELD_NAME = 6;
     protected const FIELD_ASK_IF_ACTIVATE_COMMENTS = 7;
+    protected const FIELD_MANAGED_GROUPS = 13;
+    protected const FIELD_LINKED_READ_RIGHT = 14;
+    protected const FIELD_LINKED_WRITE_RIGHT = 15;
+    private const MANAGED_GROUP_URI = 'http://outils-reseaux.org/_vocabulary/managedGroup';
 
     public function __construct(array $values, ContainerInterface $services)
     {
         parent::__construct($values, $services);
         $this->askIfActivateComments = in_array($this->filterNotEmptyString($values, self::FIELD_ASK_IF_ACTIVATE_COMMENTS, 'no'), [1, true, '1', 'true', 'yes'], true);
 
-        $this->name = $this->filterNotEmptyString($values, self::FIELD_NAME, $this->askIfActivateComments ? 'bf_commentaires' : null);
+        $this->managedGroups = $this->filterNotEmptyString($values, self::FIELD_MANAGED_GROUPS, '');
+        $this->linkedReadRight = $this->filterNotEmptyString($values, self::FIELD_LINKED_READ_RIGHT, '');
+        $this->linkedWriteRight = $this->filterNotEmptyString($values, self::FIELD_LINKED_WRITE_RIGHT, '');
+
+        $defaultName = $this->askIfActivateComments ? 'bf_commentaires' : ($this->managedGroups . $this->linkedReadRight . $this->linkedWriteRight !== '' ? 'bf_acls' : null);
+        $this->name = $this->filterNotEmptyString($values, self::FIELD_NAME, $defaultName);
         $this->propertyName = $this->name;
 
         $this->default = $this->filterNotEmptyString(['default' => $this->default], 'default', '');
@@ -87,10 +104,6 @@ class AclField extends BazarField
             : '';
     }
 
-    /*
-     *	indicates if id_fiche must be set before to format the value
-     */
-
     public function requireIDFiche()
     {
         return true;
@@ -98,6 +111,7 @@ class AclField extends BazarField
 
     public function formatValuesBeforeSave($entry)
     {
+        $this->syncAccess($entry);
         if (empty($this->aclService->load($entry['id_fiche'], 'read', false)['list'])) {
             $this->aclService->save($entry['id_fiche'], 'read', $this->replaceWithCreator($this->entryReadRight, $entry));
         }
@@ -114,7 +128,7 @@ class AclField extends BazarField
                         $this->openComments($entry);
                         break;
                     }
-                    // no break
+
                 case 'external_humhub':
                 case 'embedded_humhub':
                 case 'discourse':
@@ -152,7 +166,7 @@ class AclField extends BazarField
 
     private function replaceWithCreator($right, $entry)
     {
-        // le signe # ou le mot user indiquent que le owner de la fiche sera utilisé pour les droits
+
         if ($right === 'user' or $right === '#') {
             return $entry['nomwiki'];
         }
@@ -175,7 +189,7 @@ class AclField extends BazarField
     public function getOptions()
     {
         if (is_null($this->options)) {
-            // force usage of predefined values with translation
+
             $this->options = array_map('_t', self::OPTIONS);
         }
 
@@ -185,6 +199,107 @@ class AclField extends BazarField
     public function getAskIfActivateComments()
     {
         return $this->askIfActivateComments;
+    }
+
+    /** Brings the managed groups and the linked rights of an entry in line with its current values. */
+    public function syncAccess(array $entry): void
+    {
+        if (empty($entry['id_fiche'])) {
+            return;
+        }
+        $this->syncManagedGroups($entry);
+        $this->saveLinkedRight($entry, 'read', $this->entryReadRight, $this->linkedReadRight);
+        $this->saveLinkedRight($entry, 'write', $this->entryWriteRight, $this->linkedWriteRight);
+    }
+
+    /** Deletes the groups this entry manages. */
+    public function removeManagedGroups(string $tag): void
+    {
+        $groups = $this->getService(GroupManager::class);
+        $triples = $this->getService(TripleStore::class);
+        foreach ($triples->getMatching($tag, self::MANAGED_GROUP_URI, null, '=') as $row) {
+            $groups->delete($row['value']);
+        }
+        $triples->delete($tag, self::MANAGED_GROUP_URI, null, '', '');
+    }
+
+    /** Returns the configured [group prefix => field name] pairs. */
+    private function managedGroupFields(): array
+    {
+        $out = [];
+        foreach (preg_split('/\s*,\s*/', $this->managedGroups, -1, PREG_SPLIT_NO_EMPTY) as $pair) {
+            [$prefix, $field] = array_pad(array_map('trim', explode('=', $pair, 2)), 2, '');
+            if ($prefix !== '' && $field !== '') {
+                $out[$prefix] = $field;
+            }
+        }
+
+        return $out;
+    }
+
+    private function syncManagedGroups(array $entry): void
+    {
+        $groups = $this->getService(GroupManager::class);
+        $triples = $this->getService(TripleStore::class);
+        foreach ($this->managedGroupFields() as $prefix => $field) {
+            $group = $prefix . $entry['id_fiche'];
+            $owned = $triples->exist($entry['id_fiche'], self::MANAGED_GROUP_URI, $group, '', '');
+            $exists = $groups->groupExists($group);
+            $members = array_values(array_filter(array_map([$this, 'accountOf'], $this->valuesOf($entry, $field))));
+            if ((!$owned && $exists) || (!$exists && empty($members))) {
+                continue;
+            }
+            if ($exists) {
+                $groups->updateMembers($group, $members);
+            } else {
+                $groups->create($group, $members);
+            }
+            if (!$owned) {
+                $triples->create($entry['id_fiche'], self::MANAGED_GROUP_URI, $group, '', '');
+            }
+        }
+    }
+
+    /** Returns the account behind a linked entry, or the account of that name. */
+    private function accountOf(string $tag): ?string
+    {
+        $linked = $this->getService(EntryManager::class)->getOne($tag, false, null, true, true);
+        $name = $linked ? (string) ($linked['nomwiki'] ?? '') : $tag;
+
+        return $name !== '' && $this->getService(UserManager::class)->getOneByName($name) ? $name : null;
+    }
+
+    /** Returns the values of a field of the entry, or its tag for id_fiche. */
+    private function valuesOf(array $entry, string $name): array
+    {
+        if ($name === 'id_fiche') {
+            return [$entry['id_fiche']];
+        }
+        $field = $this->getService(FormManager::class)->findFieldFromNameOrPropertyName($name, $entry['id_typeannonce'] ?? null);
+        $value = $entry[$field ? $field->getPropertyName() : $name] ?? '';
+        if (is_array($value)) {
+            return array_map('strval', array_keys(array_filter($value)));
+        }
+
+        return preg_split('/\s*,\s*/', trim((string) $value), -1, PREG_SPLIT_NO_EMPTY);
+    }
+
+    private function saveLinkedRight(array $entry, string $privilege, string $base, string $linked): void
+    {
+        if ($linked === '') {
+            return;
+        }
+        $lines = preg_split('/\s*[,\n]\s*/', trim($this->replaceWithCreator($base, $entry)), -1, PREG_SPLIT_NO_EMPTY);
+        foreach (preg_split('/\s*[,\n]\s*/', $linked, -1, PREG_SPLIT_NO_EMPTY) as $token) {
+            if (!preg_match('/\{(\w+)\}/', $token, $placeholder)) {
+                $lines[] = $token;
+                continue;
+            }
+            foreach ($this->valuesOf($entry, $placeholder[1]) as $value) {
+                $lines[] = str_replace($placeholder[0], $value, $token);
+            }
+        }
+        $this->aclService->save($entry['id_fiche'], $privilege, implode("\n", array_values(array_unique($lines))));
     }
 
     protected function closeComments($entry)
@@ -202,13 +317,12 @@ class AclField extends BazarField
                 && is_string($entry['id_fiche'])
                 && !empty(trim($entry['id_fiche']))) {
             $defaultRights = (empty($this->entryCommentRight) || $this->entryCommentRight === 'comments-closed')
-                    ? '+' // backup
+                    ? '+' 
                     : $this->entryCommentRight;
             $this->aclService->save($entry['id_fiche'], 'comment', $defaultRights);
         }
     }
 
-    // change return of this method to keep compatible with php 7.3 (mixed is not managed)
     #[\ReturnTypeWillChange]
     public function jsonSerialize()
     {
@@ -224,6 +338,9 @@ class AclField extends BazarField
             'hint' => $this->getHint(),
             'default' => $this->getDefault(),
             'askIfActivateComments' => $this->getAskIfActivateComments(),
+            'managedGroups' => $this->managedGroups,
+            'linkedReadRight' => $this->linkedReadRight,
+            'linkedWriteRight' => $this->linkedWriteRight,
         ];
     }
 }

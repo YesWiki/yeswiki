@@ -238,6 +238,9 @@ qui rend 1 si bf_type == premiere_cle sinon 0).',
     'BAZ_FORM_EDIT_COMMENTS_FIELD_ACTIVATE_LABEL' => 'Texte pour édition',
     'BAZ_FORM_EDIT_COMMENTS_FIELD_ACTIVATE_HINT' => 'Laisser vide pour utiliser le texte par défaut',
     'BAZ_FORM_EDIT_ACL_ASK_IF_ACTIVATE_COMMENT_LABEL' => 'Demander d\'activer les commentaires ?',
+    'BAZ_FORM_EDIT_ACL_MANAGED_GROUPS_LABEL' => 'Groupes tenus à jour (préfixe=champ, ...)',
+    'BAZ_FORM_EDIT_ACL_LINKED_READ_LABEL' => 'Droits de lecture selon les fiches liées',
+    'BAZ_FORM_EDIT_ACL_LINKED_WRITE_LABEL' => 'Droits d\'écriture selon les fiches liées',
     'BAZ_FORM_EDIT_CONDITIONS_CHECKING_HINT' => 'La condition doit respecter le format suivant (sans les `):{br}
  - ` and ` : donne ET{br}
  - ` or ` : donne OU{br}
