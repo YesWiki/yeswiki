@@ -403,7 +403,7 @@ class DeliverActivityTest extends YesWikiTestCase
 
     private function drain(): \YesWiki\Kernel\Queue\QueuePassReport
     {
-        return $this->kit->consumer->drain(QueueConsumerMode::Api, (new QueuePassLimitsFactory(new NativeClock()))->forMode(QueueConsumerMode::Api, true));
+        return $this->kit->consumer->drain(QueueConsumerMode::Api, (new QueuePassLimitsFactory(new NativeClock()))->forPass());
     }
 
     /** @return list<Envelope> */

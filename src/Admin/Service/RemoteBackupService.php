@@ -9,7 +9,6 @@ use YesWiki\Admin\Message\AdvanceRemoteBackup;
 use YesWiki\Files\Service\LocalFiles;
 use YesWiki\Files\Service\RuntimeLock;
 use YesWiki\Files\Service\Storage;
-use YesWiki\Kernel\Service\Queue\QueueBudgetContext;
 use YesWiki\Kernel\Service\Queue\QueueStatistics;
 
 /**
@@ -37,7 +36,6 @@ class RemoteBackupService
         private readonly LocalFiles $localFiles,
         private readonly RemoteWikiArchive $remote,
         private readonly MessageBusInterface $bus,
-        private readonly QueueBudgetContext $budget,
         private readonly QueueStatistics $queueStatistics,
         private readonly RuntimeLock $runtimeLock = new RuntimeLock(),
     ) {
@@ -130,7 +128,7 @@ class RemoteBackupService
             return ['step' => self::STEP_IDLE, 'running' => false];
         }
 
-        $slice = $this->budget->sliceSeconds(self::SLICE_SECONDS);
+        $slice = self::SLICE_SECONDS;
         $previousLimit = null;
         if ($job['step'] === RemoteWikiArchive::STEP_DOWNLOADING && function_exists('set_time_limit')) {
             $previousLimit = (int)ini_get('max_execution_time');

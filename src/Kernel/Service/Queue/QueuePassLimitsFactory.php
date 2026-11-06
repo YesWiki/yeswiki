@@ -59,12 +59,6 @@ class QueuePassLimitsFactory
         return new QueuePassLimits($this->memoryCeiling(), $this->killLimit($untilPhpStops), $phpStopsAt);
     }
 
-    /** Temporary, until the consumer asks for the limits itself: a mode that stops by itself gets forPass(), a blocking one no PHP stop. */
-    public function forMode(QueueConsumerMode $mode, bool $responseAlreadySent): QueuePassLimits
-    {
-        return $mode->isBudgeted() ? $this->forPass() : new QueuePassLimits($this->memoryCeiling(), self::KILL_LIMIT_NO_PHP_LIMIT);
-    }
-
     /** What one pass may spend in this mode, in whole seconds, as a page says it; null for a mode that never stops by itself. */
     public function secondsPerPass(QueueConsumerMode $mode, bool $responseAlreadySent): ?int
     {

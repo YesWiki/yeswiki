@@ -28,7 +28,6 @@ use YesWiki\Kernel\Service\ConfigurationService;
 use YesWiki\Kernel\Service\CurrentRequest;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\HibernationService;
-use YesWiki\Kernel\Service\Queue\QueueBudgetContext;
 use YesWiki\Kernel\Service\Queue\QueueConsumer;
 use YesWiki\Kernel\Service\Queue\QueueRecorder;
 use YesWiki\Kernel\Service\Queue\QueueRequestTrigger;
@@ -75,8 +74,7 @@ class RemoteBackupQueueTest extends YesWikiTestCase
     private MockClock $clock;
     private QueueTransport $transport;
     private QueueStatistics $statistics;
-    private QueueConsumer $consumer; // @phpstan-ignore property.onlyWritten
-    private QueueBudgetContext $budgetContext;
+    private QueueConsumer $consumer;
     private QueueRequestTrigger $trigger;
     private Storage $storage;
     private ArchiveService $archives;
@@ -148,7 +146,11 @@ class RemoteBackupQueueTest extends YesWikiTestCase
         $this->service->start('https://remote.org', 'RemoteAdmin', 'secret');
 
         $this->visit();
-        $this->assertSame(['checking', 'starting'], $this->remote->steps, 'the steps that need no waiting follow each other in one pass');
+        $this->assertSame(['checking'], $this->remote->steps, 'one step per pass: the next one, queued during the pass, waits for the next');
+        $this->assertEquals($this->clock->now(), $this->statistics->oldestPendingAt(), 'with no delay');
+
+        $this->visit();
+        $this->assertSame(['checking', 'starting'], $this->remote->steps);
         $this->assertSame(1, $this->statistics->pendingCount());
         $this->assertEquals(
             $this->clock->now()->modify('+' . RemoteWikiArchive::SETTLE_SECONDS . ' seconds'),
@@ -165,8 +167,10 @@ class RemoteBackupQueueTest extends YesWikiTestCase
         $this->assertGreaterThan($this->clock->now(), $this->statistics->oldestPendingAt(), 'identifying the archive waits too');
 
         $this->clock->sleep(RemoteWikiArchive::SETTLE_SECONDS);
-        $this->visit();
-        $this->assertSame(self::EVERY_STEP, $this->remote->steps, 'from the download on, each slice follows the last at once');
+        for ($left = count(self::EVERY_STEP) - 3; $left > 0; $left--) {
+            $this->visit();
+        }
+        $this->assertSame(self::EVERY_STEP, $this->remote->steps, 'from the download on, each slice follows the last at the next page view, with no wait');
     }
 
     /**
@@ -195,22 +199,21 @@ class RemoteBackupQueueTest extends YesWikiTestCase
         $this->assertSame(self::STORED, $this->service->status()['filename']);
     }
 
-    /** A slice of download fits what is left of the pass, and takes the full slice where no pass budget applies. */
-    public function testADownloadSliceFitsThePass(): void
+    /** A slice of download is 20 s, run by hand or in a pass: a pass has no time budget to cut it to. */
+    public function testADownloadSliceIsTwentySeconds(): void
     {
-        $this->markTestSkipped('removed in task 3');
-        $this->service->start('https://remote.org', 'RemoteAdmin', 'secret'); // @phpstan-ignore deadCode.unreachable
+        $this->service->start('https://remote.org', 'RemoteAdmin', 'secret');
         $this->remote->toStep = 'downloading';
 
         (new AdvanceRemoteBackupHandler($this->service))(new AdvanceRemoteBackup());
         $this->assertSame(['downloading'], $this->remote->steps);
-        $this->assertSame(RemoteBackupService::SLICE_SECONDS, $this->remote->slices[0], 'a blocking consumer has no pass budget');
 
         $this->consumer->drain(QueueConsumerMode::Request, new QueuePassLimits(PHP_INT_MAX, 60));
+        $this->consumer->drain(QueueConsumerMode::Request, new QueuePassLimits(PHP_INT_MAX, 60));
 
-        $this->assertSame(['downloading', 'downloading', 'cleaning'], $this->remote->steps);
-        $this->assertGreaterThanOrEqual(2, $this->remote->slices[1], 'the pass left about 3 s: a slice of that, whatever the machine\'s speed between the budget and the step');
-        $this->assertLessThanOrEqual(3, $this->remote->slices[1], 'and no more than the pass has left');
+        $this->assertSame(['downloading', 'downloading', 'cleaning'], $this->remote->steps, 'a step per pass');
+        $this->assertSame(array_fill(0, 3, RemoteBackupService::SLICE_SECONDS), $this->remote->slices, 'the full slice each time, by hand or in a pass');
+        $this->assertSame(20, RemoteBackupService::SLICE_SECONDS);
     }
 
     /** No retry (the step already gave up on the remote wiki), the queue's failure carries the reason, and the polling browser hears it too. */
@@ -292,7 +295,7 @@ class RemoteBackupQueueTest extends YesWikiTestCase
         $this->assertSame(1, $this->statistics->pendingCount(), 'one message for the one fetch there is');
 
         $this->visitUntilDone();
-        $this->assertSame(array_merge(['checking', 'starting'], self::EVERY_STEP), $this->remote->steps);
+        $this->assertSame(array_merge(['checking'], self::EVERY_STEP), $this->remote->steps);
         $this->assertSame('https://other.org', $this->service->status()['source']);
         $this->assertSame(0, $this->statistics->pendingCount());
     }
@@ -430,7 +433,7 @@ class RemoteBackupQueueTest extends YesWikiTestCase
     public function testAStepThatCannotGetItsLockFails(): void
     {
         $this->service->start('https://remote.org', 'RemoteAdmin', 'secret');
-        $noLock = new RemoteBackupService($this->archives, $this->storage, new LocalFiles(), $this->remote, $this->kit->bus, $this->budgetContext, $this->statistics, new class extends RuntimeLock {
+        $noLock = new RemoteBackupService($this->archives, $this->storage, new LocalFiles(), $this->remote, $this->kit->bus, $this->statistics, new class extends RuntimeLock {
             public function acquire(string $path)
             {
                 return null;
@@ -547,7 +550,7 @@ class RemoteBackupQueueTest extends YesWikiTestCase
     /** The service of the fetch, on that bus instead of the queue's: same folders, same remote wiki, same job file. */
     private function serviceOn(MessageBusInterface $bus): RemoteBackupService
     {
-        return new RemoteBackupService($this->archives, $this->storage, new LocalFiles(), $this->remote, $bus, $this->budgetContext, $this->statistics);
+        return new RemoteBackupService($this->archives, $this->storage, new LocalFiles(), $this->remote, $bus, $this->statistics);
     }
 
     private function build(): void
@@ -557,7 +560,6 @@ class RemoteBackupQueueTest extends YesWikiTestCase
         $this->transport = $this->kit->transport;
         $this->statistics = $this->kit->statistics;
         $this->consumer = $this->kit->consumer;
-        $this->budgetContext = $this->kit->budgetContext;
         $bus = $this->kit->bus;
         $hibernation = new HibernationService(new ParameterBag(['wiki_status' => 'running']));
         $settings = new QueueSettings(new ParameterBag([]), static fn (): array => []);
@@ -577,7 +579,7 @@ class RemoteBackupQueueTest extends YesWikiTestCase
             $this->statistics,
         );
         $this->remote = new StepByStepRemoteWiki(self::STORED);
-        $this->service = new RemoteBackupService($this->archives, $this->storage, new LocalFiles(), $this->remote, $bus, $this->budgetContext, $this->statistics);
+        $this->service = new RemoteBackupService($this->archives, $this->storage, new LocalFiles(), $this->remote, $bus, $this->statistics);
     }
 }
 

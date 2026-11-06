@@ -26,7 +26,6 @@ use YesWiki\Kernel\Service\EventDispatcher;
 use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Kernel\Service\Journal;
 use YesWiki\Kernel\Service\JournalSchema;
-use YesWiki\Kernel\Service\Queue\QueueBudgetContext;
 use YesWiki\Kernel\Service\Queue\QueueBus;
 use YesWiki\Kernel\Service\Queue\QueueConsumer;
 use YesWiki\Kernel\Service\Queue\QueueFallback;
@@ -69,7 +68,6 @@ final class QueueTestKit
     /** The one clock every part of the queue reads. */
     public readonly ClockInterface $clock;
     public readonly QueuePassLimitsFactory $budgets;
-    public readonly QueueBudgetContext $budgetContext;
     private readonly HibernationService $hibernation;
     /** What the Journal says of each scheduled task, which the Scheduler reads. */
     public readonly ScheduleHistory $history;
@@ -178,16 +176,14 @@ final class QueueTestKit
         $watch = new ConfigurationWatch();
         $watch->bind($configurationChanged ?? fn (): bool => $this->configurationChanged);
 
-        // On the real clock whatever the queue's: a budget is spent against microtime() (QueuePassLimits).
+        // On the real clock whatever the queue's: PHP's limit is read against microtime() (QueuePassLimits).
         $this->budgets = $budgets ??= new QueuePassLimitsFactory(new NativeClock());
-        $this->budgetContext = new QueueBudgetContext();
         $this->hibernation = $hibernation ??= new HibernationService(new ParameterBag(['wiki_status' => 'running']));
         $this->consumer = new QueueConsumer(
             $this->transport,
             $bus,
             $recorder,
             $this->statistics,
-            $this->budgetContext,
             $budgets,
             $hibernation,
             $locks,

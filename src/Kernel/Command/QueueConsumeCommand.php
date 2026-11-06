@@ -97,7 +97,7 @@ class QueueConsumeCommand extends Command
 
         $report = $this->services->get(QueueConsumer::class)->drain(
             QueueConsumerMode::Request,
-            $this->services->get(QueuePassLimitsFactory::class)->forMode(QueueConsumerMode::Worker, false),
+            $this->services->get(QueuePassLimitsFactory::class)->forPass(),
             true,
             QueuePassOrigin::Manual
         );

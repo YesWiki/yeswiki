@@ -101,20 +101,19 @@ class QueueApiControllerTest extends YesWikiTestCase
         $this->assertSame('api', $this->kit->statistics->lastPass()['mode'] ?? null);
     }
 
-    /** Nobody waits for the API's pass: the first message is taken however long the history says it takes, the averages only bound the next ones. */
-    public function testAFirstLongMessageIsStillTaken(): void
+    /** The API's pass has no time budget: messages the history says are long are all taken, the averages bound nothing. */
+    public function testLongMessagesAreAllTaken(): void
     {
-        $this->markTestSkipped('removed in task 3');
-        QueueTestKit::recordRun($this->kit->db, QueueTestMessage::class, QueueRecorder::HANDLED, 120_000, '2026-10-23 11:00:00'); // @phpstan-ignore deadCode.unreachable
+        QueueTestKit::recordRun($this->kit->db, QueueTestMessage::class, QueueRecorder::HANDLED, 120_000, '2026-10-23 11:00:00');
         $this->kit->send('a');
         $this->kit->send('b');
 
         $body = $this->body($this->call(self::SECRET, self::SECRET));
 
-        $this->assertSame(['a'], $this->kit->handled, 'the second message does not fit the 50 s the pass has left');
-        $this->assertSame(1, $body['handled']);
-        $this->assertSame(1, $body['remaining']);
-        $this->assertSame('budget', $body['stopReason']);
+        $this->assertSame(['a', 'b'], $this->kit->handled);
+        $this->assertSame(2, $body['handled']);
+        $this->assertSame(0, $body['remaining']);
+        $this->assertSame('empty', $body['stopReason']);
     }
 
     public function testGetWithTheSecretInTheQueryDrains(): void

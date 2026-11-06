@@ -248,7 +248,6 @@ class RepeatedRequestTest extends YesWikiTestCase
         $this->assertContains(\YesWiki\Content\Service\ListIndex::class, $scoped);
         $this->assertContains(\YesWiki\Contact\Service\MailFormCounter::class, $scoped);
         $this->assertContains(\YesWiki\Render\Service\GraphicalElementState::class, $scoped);
-        $this->assertContains(\YesWiki\Kernel\Service\Queue\QueueBudgetContext::class, $scoped);
         $this->assertContains(\YesWiki\Kernel\Service\Queue\QueueRequestTrigger::class, $scoped);
         $this->assertContains(\YesWiki\Kernel\Service\Queue\QueueFallback::class, $scoped);
     }

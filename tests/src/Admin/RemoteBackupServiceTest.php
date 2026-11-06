@@ -9,7 +9,6 @@ use YesWiki\Admin\Service\RemoteBackupService;
 use YesWiki\Admin\Service\RemoteWikiArchive;
 use YesWiki\Files\Service\LocalFiles;
 use YesWiki\Files\Service\Storage;
-use YesWiki\Kernel\Service\Queue\QueueBudgetContext;
 use YesWiki\Test\Core\YesWikiTestCase;
 use YesWiki\Test\Kernel\QueueTestKit;
 
@@ -86,7 +85,6 @@ class RemoteBackupServiceTest extends YesWikiTestCase
             $services->get(LocalFiles::class),
             $remote,
             $this->kit->bus,
-            new QueueBudgetContext(),
             $this->kit->statistics
         );
     }

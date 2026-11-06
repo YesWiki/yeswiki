@@ -9,7 +9,7 @@ namespace YesWiki\Kernel\Queue;
 final class QueuePassReport
 {
     public const EMPTY = 'empty';
-    public const BUDGET = 'budget';
+    public const PHP_LIMIT = 'php-limit';
     public const MEMORY = 'memory';
     public const LOCKED = 'locked';
     public const NO_BUDGET = 'no-budget';

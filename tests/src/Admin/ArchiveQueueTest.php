@@ -450,14 +450,14 @@ class ArchiveQueueTest extends YesWikiTestCase
         $killed = $this->messageOf($uid);
         $this->takeAndDie($killed);
 
-        $this->consumer->drain(QueueConsumerMode::from($mode), $this->kit->budgets->forMode(QueueConsumerMode::from($mode), true));
+        $this->consumer->drain(QueueConsumerMode::from($mode), $this->kit->budgets->forPass());
 
         $this->assertSame('killed', $this->statistics->messageState($killed));
         $this->assertSame('running', $this->wikiStatus());
         $this->assertArrayNotHasKey($uid, $this->info(), 'the dead run is forgotten: a `core:archive` typed by hand next keeps its status');
 
         $this->archives('worker')->startArchive();
-        $report = $this->consumer->drain(QueueConsumerMode::from($mode), $this->kit->budgets->forMode(QueueConsumerMode::from($mode), true));
+        $report = $this->consumer->drain(QueueConsumerMode::from($mode), $this->kit->budgets->forPass());
 
         $this->assertSame(QueuePassReport::EMPTY, $report->stopReason);
         $this->assertCount(1, $this->currentArchives()->archived, 'the next run went through');
@@ -678,7 +678,7 @@ class ArchiveQueueTest extends YesWikiTestCase
     /** A pass of a consumer of its own, as the API route would run. */
     private function drain(): void
     {
-        $this->consumer->drain(QueueConsumerMode::Api, $this->kit->budgets->forMode(QueueConsumerMode::Api, true));
+        $this->consumer->drain(QueueConsumerMode::Api, $this->kit->budgets->forPass());
     }
 
     /** @param 'host'|'reaped'|'limit' $death */

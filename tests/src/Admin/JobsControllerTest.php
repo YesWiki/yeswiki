@@ -564,7 +564,7 @@ class JobsControllerTest extends YesWikiTestCase
         $this->signInAsAdmin();
         $this->failed('a', 'RuntimeException: boom');
         $this->kit->send('b');
-        $this->kit->consumer->drain(QueueConsumerMode::Api, (new QueuePassLimitsFactory(new NativeClock()))->forMode(QueueConsumerMode::Api, true));
+        $this->kit->consumer->drain(QueueConsumerMode::Api, (new QueuePassLimitsFactory(new NativeClock()))->forPass());
 
         foreach (JobsOverview::TABS as $tab) {
             $body = (string)$this->api()->tab($tab)->getContent();

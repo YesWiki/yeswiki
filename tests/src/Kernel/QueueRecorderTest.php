@@ -376,12 +376,12 @@ echo $db->scalar("SELECT COUNT(*) FROM {$journal->table()}");
         $this->assertFalse($open['blocking'], 'a budgeted pass is not a long-lived consumer');
 
         $this->clock->sleep(2);
-        $this->recorder->passFinished($id, new QueuePassReport(4, 1, 2000, QueuePassReport::BUDGET), 12345);
+        $this->recorder->passFinished($id, new QueuePassReport(4, 1, 2000, QueuePassReport::PHP_LIMIT), 12345);
 
         $closed = $this->statistics->lastPass();
         $this->assertNotNull($closed);
         $this->assertSame(4, $closed['handled']);
-        $this->assertSame('budget', $closed['stopReason']);
+        $this->assertSame('php-limit', $closed['stopReason']);
         $this->assertSame(12345, $closed['peakMemory']);
         $this->assertEquals(new \DateTimeImmutable('2026-10-23 12:00:02', new \DateTimeZone('UTC')), $closed['finishedAt']);
     }
