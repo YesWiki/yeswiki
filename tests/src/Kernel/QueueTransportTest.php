@@ -676,6 +676,44 @@ class QueueTransportTest extends YesWikiTestCase
         $this->transport->ack($sent);
     }
 
+    public function testLastIdIsZeroForAnEmptyQueue(): void
+    {
+        $this->assertSame(0, $this->transport->lastId());
+    }
+
+    public function testGetUpToTakesNothingSentAfterTheCutoff(): void
+    {
+        $first = $this->transport->send(new Envelope(new QueueTestMessage('m0')));
+        $second = $this->transport->send(new Envelope(new QueueTestMessage('m1')));
+        $cut = $this->transport->lastId();
+        $third = $this->transport->send(new Envelope(new QueueTestMessage('m2')));
+
+        $this->assertSame(self::idOf($second), $cut);
+        $this->assertSame(self::idOf($first), self::idOf([...$this->transport->getUpTo($cut)][0]));
+        $this->assertSame(self::idOf($second), self::idOf([...$this->transport->getUpTo($cut)][0]));
+        $this->assertSame([], [...$this->transport->getUpTo($cut)]);
+        $this->assertSame(self::idOf($third), self::idOf([...$this->transport->get()][0]));
+    }
+
+    public function testPeekNextTypeHonoursTheCutoff(): void
+    {
+        $cut = $this->transport->lastId();
+        $this->transport->send(new Envelope(new QueueTestMessage('after')));
+
+        $this->assertNull($this->transport->peekNextType($cut));
+        $this->assertNotNull($this->transport->peekNextType());
+    }
+
+    public function testADeduplicatedMessageResentDuringThePassKeepsItsPlace(): void
+    {
+        $this->transport->send(new Envelope(new QueueTestUniqueMessage('one', 'search:drain')));
+        $cut = $this->transport->lastId();
+        $this->transport->send(new Envelope(new QueueTestUniqueMessage('two', 'search:drain')));
+
+        $this->assertCount(1, [...$this->transport->getUpTo($cut)]);
+        $this->assertSame([], [...$this->transport->getUpTo($cut)]);
+    }
+
     public function testPeekNextTypeDoesNotClaim(): void
     {
         $this->assertNull($this->transport->peekNextType());

@@ -8,7 +8,7 @@ use YesWiki\Kernel\Service\Queue\QueueTransport;
 
 /**
  * The transport as one pass's Worker sees it: it asks the pass whether to take another message before it claims one,
- * and it never lets an unreadable row end the pass. Built for a single pass and dropped with it.
+ * and it never lets an unreadable row end the pass. Built for a single pass and dropped with it. Given an upper id, it claims only the messages up to that one.
  */
 final class QueuePassReceiver implements ReceiverInterface
 {
@@ -24,6 +24,7 @@ final class QueuePassReceiver implements ReceiverInterface
         private readonly \Closure $guard,
         private readonly QueuePassObserver $observer,
         private readonly ?int $onlyId = null,
+        private readonly ?int $upToId = null,
     ) {
     }
 
@@ -37,7 +38,9 @@ final class QueuePassReceiver implements ReceiverInterface
             }
 
             try {
-                $envelopes = $this->onlyId === null ? [...$this->transport->get()] : $this->takeOnlyOne();
+                $envelopes = $this->onlyId !== null
+                    ? $this->takeOnlyOne()
+                    : [...($this->upToId === null ? $this->transport->get() : $this->transport->getUpTo($this->upToId))];
             } catch (UndecodableMessageException $undecodable) {
                 $this->observer->undecodable($undecodable);
                 continue;

@@ -158,6 +158,30 @@ class QueueTransport implements TransportInterface, MessageCountAwareInterface, 
     }
 
     /**
+     * Like get(), but only a message whose id is at most $lastId: what was sent after that point stays for a later pass.
+     *
+     * @return list<Envelope>
+     *
+     * @throws UndecodableMessageException
+     */
+    public function getUpTo(int $lastId): iterable
+    {
+        $envelope = $this->take($this->claim(null, $lastId));
+
+        return $envelope === null ? [] : [$envelope];
+    }
+
+    /** The highest id this queue has handed out, whatever the state of its message; 0 when it never held any. */
+    public function lastId(): int
+    {
+        return (int)$this->db->scalar(
+            "SELECT MAX(id) FROM {$this->schema->table()} WHERE queue_name = ?",
+            0,
+            [$this->queueName]
+        );
+    }
+
+    /**
      * That message, claimed like get() would whether or not its delay is over; null when it no longer waits here.
      *
      * @throws UndecodableMessageException
@@ -238,14 +262,16 @@ class QueueTransport implements TransportInterface, MessageCountAwareInterface, 
         );
     }
 
-    /** The class of the message get() would take now, without taking it. */
-    public function peekNextType(): ?string
+    /** The class of the message get() would take now (getUpTo($upToId) when given), without taking it. */
+    public function peekNextType(?int $upToId = null): ?string
     {
         $type = $this->db->scalar(
             "SELECT message_type FROM {$this->schema->table()}"
-            . ' WHERE queue_name = ? AND delivered_at IS NULL AND available_at <= ? ORDER BY available_at, id LIMIT 1',
+            . ' WHERE queue_name = ? AND delivered_at IS NULL AND available_at <= ?'
+            . ($upToId === null ? '' : ' AND id <= ?')
+            . ' ORDER BY available_at, id LIMIT 1',
             null,
-            [$this->queueName, self::format($this->now())]
+            [$this->queueName, self::format($this->now()), ...($upToId === null ? [] : [$upToId])]
         );
 
         return $type === null ? null : (string)$type;
@@ -490,16 +516,16 @@ class QueueTransport implements TransportInterface, MessageCountAwareInterface, 
     }
 
     /**
-     * Claims the next available message (or that one) with a token only this call knows, and answers its row.
+     * Claims the next available message (or that one, or the next of those with an id up to $upToId) with a token only this call knows, and answers its row.
      *
      * The token's lock is taken before the token is written, so that a judge, which only reads tokens already written, never finds its file
      * free between its creation and its lock; a claim that takes nothing, or whose transaction throws, lets it go, and one whose file cannot be made is still made, without it.
      *
      * @return array<string, mixed>|null
      */
-    private function claim(?int $id = null): ?array
+    private function claim(?int $id = null, ?int $upToId = null): ?array
     {
-        if ($id === null && $this->peekNextType() === null) {
+        if ($id === null && $this->peekNextType($upToId) === null) {
             return null;
         }
 
@@ -509,7 +535,7 @@ class QueueTransport implements TransportInterface, MessageCountAwareInterface, 
         $this->holderLock?->hold($token);
 
         try {
-            $row = $this->transactionalClaim($table, $now, $token, $id);
+            $row = $this->transactionalClaim($table, $now, $token, $id, $upToId);
         } catch (\Throwable $failed) {
             $this->holderLock?->release($token);
 
@@ -535,16 +561,17 @@ class QueueTransport implements TransportInterface, MessageCountAwareInterface, 
      *
      * @return array<string, mixed>|null
      */
-    private function transactionalClaim(string $table, string $now, string $token, ?int $id): ?array
+    private function transactionalClaim(string $table, string $now, string $token, ?int $id, ?int $upToId = null): ?array
     {
-        return $this->db->transactional(function () use ($table, $now, $token, $id): ?array {
+        return $this->db->transactional(function () use ($table, $now, $token, $id, $upToId): ?array {
             $candidate = $id === null
                 ? $this->db->scalar(
                     "SELECT id FROM {$table} WHERE queue_name = ? AND delivered_at IS NULL AND available_at <= ?"
+                    . ($upToId === null ? '' : ' AND id <= ?')
                     . ' ORDER BY available_at, id LIMIT 1'
                     . $this->db->dialect()->lockRowsClause(),
                     null,
-                    [$this->queueName, $now]
+                    [$this->queueName, $now, ...($upToId === null ? [] : [$upToId])]
                 )
                 : $this->db->scalar(
                     "SELECT id FROM {$table} WHERE id = ? AND queue_name = ? AND delivered_at IS NULL"
