@@ -49,7 +49,7 @@ class QueueRequestTrigger implements RequestScopedState
         $this->workingDirectory = $workingDirectory ?? (\defined('YESWIKI_INSTANCE_DIR') ? YESWIKI_INSTANCE_DIR : (string)getcwd());
     }
 
-    /** Whether a message that that runs for its sender (RunsForItsSender) is this request's to run. */
+    /** Whether a message that runs for its sender (RunsForItsSender) is this request's to run. */
     public function runsItself(): bool
     {
         return $this->settings->mode()->endsByItself() || $this->fallback->consumerIsGone();

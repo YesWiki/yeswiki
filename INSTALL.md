@@ -120,7 +120,7 @@ Nothing has to be chosen: a wiki that says nothing consumes in `request` mode, u
 too, which is what keeps a wiki that is installed and forgotten working on shared
 hosting with no shell and no cron. The cost is that work only moves when someone visits, so a quiet
 wiki lags, and where PHP cannot send the page before the script ends (mod_php, CGI: the PHP that runs inside Apache, or as a plain CGI program) the visitor
-waits for the pass to end. An online cron or a worker has neither problem.
+waits for the pass to end. A worker has neither problem; an online cron spares the visitor, but its call lasts as long as the pass, so its client needs a long timeout (see `docs/fr/async.md`).
 
 The mode is read from the real environment, then from `private/.env` (see `.env.example`; the only
 option on a host where you cannot set environment variables), then from `queue_consumer` in

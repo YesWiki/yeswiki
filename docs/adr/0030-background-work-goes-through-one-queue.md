@@ -111,10 +111,10 @@ sequenceDiagram
   T-->>B: a row in default, or absorbed by an identical untried one
   Note over R: request mode, after the response has left
   R->>C: drain(mode, limits)
-  C->>W: lift PHP's time limit
   C->>S: tick()
   S->>B: dispatch the scheduled tasks that are due
   C->>T: cutoff = the highest id in the queue
+  C->>C: before the first message, if there is one: lift PHP's time limit
   Note over B,O: each run is sent with its queue.task.dispatched row, in one transaction
   loop until nothing is left up to the cutoff, or memory, or a PHP limit that could not be lifted
     W->>C: take another? (memory below its ceiling, PHP's time not used up)
@@ -235,8 +235,9 @@ in access logs.
 
 **A pass that ends by itself and a blocking consumer are two ways to run one consumer.** `QueueConsumer` is the
 only code that takes messages, over Messenger's `Worker`, so the observation is the same in every
-mode. `drain()` runs a **Pass**: it lifts PHP's time limit, ticks the Scheduler, then consumes what
-was in the queue when it began, and never waits. `consume()` blocks like `messenger:consume`, with a time
+mode. `drain()` runs a **Pass**: it ticks the Scheduler, marks the cutoff, lifts PHP's time limit
+before the first message (only when there is one), then consumes what was in the queue when it
+began, and never waits. `consume()` blocks like `messenger:consume`, with a time
 limit, a memory limit and a message limit, ticks the Scheduler whenever it is idle, and leaves a
 heartbeat. A `drain()` leaves one too, after a message, at most once a minute, since a pass has
 no deadline and may run for hours. Only one pass runs at a time per wiki, behind a non-blocking `RuntimeLock`
@@ -989,8 +990,8 @@ sections below describe the code as it now is.
   through `ConsoleService::startDetachedConsole()`: no pipes, which the dropped `Process` closes
   and so kills the child with SIGPIPE, the instance's folder, and the console's ownership check
   lifted for the web server's user. How each SAPI fares is in `docs/fr/async.md`.
-- **Under worker mode** the consumer holds no request state: the pinned messages are the request's own and forgotten at the next, and the
-  ratchet on `$GLOBALS` does not move (ADR-0024).
+- **Under worker mode** the consumer holds no request state: the pinned messages are the request's
+  own and forgotten at the next, and the ratchet on `$GLOBALS` does not move (ADR-0024).
 - **Every module with deferred work now owns messages, handlers and a schedule**, and the work of
   migrating each mechanism is a commit of its own, which is how this ADR and its mechanisms stay
   separate in history. Until the last one moves, the old and new paths coexist.

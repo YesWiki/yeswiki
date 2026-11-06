@@ -58,7 +58,7 @@ class QueuePassLimitsFactory
         return new QueuePassLimits($this->memoryCeiling(), $this->killLimit($untilPhpStops), $phpStopsAt);
     }
 
-    /** A pass that stops only when the queue is empty, hibernates or the server kills it: no memory ceiling, PHP's own kill limit (the jobs page's button). */
+    /** The limits of the jobs page's button: like any drain pass it runs what was waiting when it began (the cutoff), but it has no memory ceiling and no PHP stop time; its claims carry PHP's own kill limit. */
     public function untilEmpty(): QueuePassLimits
     {
         $limits = $this->forPass();

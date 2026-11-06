@@ -40,14 +40,14 @@ class JobsApiController extends YesWikiController
         return $this->html($this->render('@core/admin/jobs-tabs.twig', ['tab' => $this->getService(JobsOverview::class)->tab($tab)]));
     }
 
-    /** A pass from the admin's request, whatever the mode (spec §11.3), that empties the queue with no limit: it stops on an empty queue, a paused wiki or the server killing it. */
+    /** A pass from the admin's request, whatever the mode (spec §11.3), that, like any drain pass, runs what was waiting when it began and has no memory ceiling: it stops on that, a paused wiki or the server killing it. */
     #[Route('/api/admin/jobs/consume', methods: ['POST'], options: ['acl' => self::ADMIN_ACL])]
     public function consume(): Response
     {
         if (($refused = $this->refusal()) !== null) {
             return $refused;
         }
-        // The pass has no limit: holding the admin's session that long would keep every other page of theirs waiting, and a closed tab must not cut it.
+        // The pass has no memory ceiling and no time limit of its own: holding the admin's session that long would keep every other page of theirs waiting, and a closed tab must not cut it.
         if (session_status() === PHP_SESSION_ACTIVE) {
             session_write_close();
         }

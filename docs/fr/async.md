@@ -124,7 +124,7 @@ serveur à l'autre, c'est si la page peut partir avant le traitement :
 
 | Le serveur lance PHP avec…                                            | La page part avant le traitement ?                      | Ce qu'il faut savoir                                                                                                                                                                                                             |
 | --------------------------------------------------------------------- | ------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| PHP-FPM (nginx, Apache avec `proxy_fcgi`, Caddy)                      | oui                                                     | le visiteur n'attend pas ; le passage n'a pas de limite de temps (voir sous le tableau)                                                                                                                  |
+| PHP-FPM (nginx, Apache avec `proxy_fcgi`, Caddy)                      | oui                                                     | le visiteur n'attend pas ; le passage n'a pas de limite de temps quand l'hébergeur le permet (voir sous le tableau)                                                                                                                  |
 | FrankenPHP, avec ou sans son mode worker                              | oui                                                     | rien                                                                                                                                                                                                                             |
 | LiteSpeed (fréquent en mutualisé)                                     | oui                                                     | si la page Traitements montre des traitements interrompus en fin de visite, LiteSpeed arrête sans doute PHP quand la connexion se ferme : ajoutez `<IfModule Litespeed>` `SetEnv noabort 1` `</IfModule>` au `.htaccess` du wiki |
 | PHP intégré à Apache (`mod_php`), PHP en CGI ou FastCGI par `php-cgi` | non                                                     | le visiteur attend la fin du passage, d'où l'alerte « Attente ajoutée aux pages »                                                                                                                                        |
@@ -209,6 +209,20 @@ https://votre-site/?api/queue/consume&secret=LE-SECRET
 Le wiki répond `401` si le secret est faux ou absent, `409` si un autre
 traitement est déjà en cours (rien de grave : le prochain appel traitera la
 suite) et `200` sinon, avec le nombre de traitements effectués et ce qui reste.
+
+L'appel dure aussi longtemps que les traitements en attente quand il a
+commencé : le wiki ne le borne pas. Trois précautions en découlent :
+
+- le service de cron doit accepter une réponse longue. Les services en ligne
+  coupent souvent l'appel au bout de 30 secondes environ, et certains
+  désactivent une tâche dont les appels échouent : réglez un délai d'attente
+  long, de plusieurs minutes, ou plus si vous avez de gros traitements ;
+- le serveur web peut couper le passage lui-même : `request_terminate_timeout`
+  de PHP-FPM, `fastcgi_read_timeout` de nginx, ou la limite d'un proxy. Le
+  traitement en cours est alors coupé en route (voir
+  [Traitements trop longs pour le mode choisi](/docs/fr/async?id=traitements-trop-longs-pour-le-mode-choisi-rouge)) ;
+- si ces limites sont courtes et que vous ne pouvez pas les relever, préférez
+  `worker`.
 
 ### Mettre en place `worker`
 
@@ -540,10 +554,12 @@ disposait : la limite de temps que l'hébergeur impose à PHP quand il refuse
 qu'on la lève, ou, dans tous les modes, une heure. Un traitement qui
 commence trop tard n'est pas concerné : quand la limite de PHP ne peut pas être
 levée, le passage s'arrête avant de l'atteindre, sans rien commencer de nouveau.
-Seul est coupé un traitement qui, à lui
-seul, est plus long que ce que PHP laisse, ou une coupure extérieure à PHP
-(proxy, hébergeur), ou le plafond d'une heure. Il échouera à chaque nouvel
-essai : le wiki ne le relance donc pas tout seul.
+Seul est coupé un traitement qui, à lui seul, est plus long que ce que PHP
+laisse, ou une coupure extérieure à PHP (proxy, hébergeur), ou le plafond d'une
+heure. Le wiki ne le relance pas tout seul. Un traitement qui, à lui seul,
+dépasse la limite échouera à chaque nouvel essai. Un traitement coupé par une
+limite extérieure parce que l'ensemble du passage la dépassait peut en
+revanche réussir si vous le relancez à la main depuis l'onglet « En échec ».
 
 1. Si l'hébergeur impose une limite de temps que le wiki ne peut pas lever,
    passez au mode `worker` : son processus n'en a pas. Un traitement qui dure
