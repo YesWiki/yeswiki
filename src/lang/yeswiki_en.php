@@ -865,6 +865,7 @@ You are on %{CURRENTPHPVERSION}.
     'DATABASE_INSTALLATION' => 'Installation of the database',
     'CREATION_OF_SEARCH_INDEX' => 'Creation of the search index',
     'CREATION_OF_JOURNAL' => 'Creation of the Journal',
+    'CREATION_OF_QUEUE' => 'Creation of the background task queue',
     'QUEUE_TASK_PRUNE' => 'Clean-up of the failed background tasks past a month',
     'MAINTENANCE_TASK_REVISIONS' => 'Deletion of the old page revisions',
     'MAINTENANCE_TASK_JOURNAL' => 'Clean-up of the Journal past its retention',

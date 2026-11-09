@@ -784,6 +784,7 @@ return [
     'DATABASE_INSTALLATION' => 'Installation de la base de données',
     'CREATION_OF_SEARCH_INDEX' => 'Création de l\'index de recherche',
     'CREATION_OF_JOURNAL' => 'Création du Journal',
+    'CREATION_OF_QUEUE' => 'Création de la file des tâches de fond',
     'QUEUE_TASK_PRUNE' => 'Nettoyage des tâches de fond en échec depuis plus d\'un mois',
     'MAINTENANCE_TASK_REVISIONS' => 'Suppression des anciennes révisions de pages',
     'MAINTENANCE_TASK_JOURNAL' => 'Nettoyage du Journal au-delà de sa durée de conservation',

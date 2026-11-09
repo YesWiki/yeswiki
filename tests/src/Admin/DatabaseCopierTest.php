@@ -152,6 +152,31 @@ class DatabaseCopierTest extends YesWikiTestCase
         }
     }
 
+    /** The installer's schema comes with the queue's table, so a copy always leaves the target one the wiki can use. */
+    public function testTheTargetGetsTheQueueTableToo(): void
+    {
+        $sourceFile = sys_get_temp_dir() . '/yeswiki-db-copy-queue-' . bin2hex(random_bytes(4)) . '.sqlite';
+        try {
+            $sourcePdo = DatabaseCopier::connect('sqlite', '', '', $sourceFile, '', '');
+            SchemaCreator::create($sourcePdo, 'ywcopy_');
+            $queued = "INSERT INTO ywcopy_queue (queue_name, message_type, body, headers, created_at, available_at, delivered_at, delivered_by) VALUES ('default', 'Pending', '{}', '[]', '2026-10-01 00:00:00', '2026-10-01 00:00:00', %s, %s)";
+            $sourcePdo->exec(sprintf($queued, 'NULL', 'NULL'));
+            $sourcePdo->exec(sprintf($queued, "'2026-10-01 00:00:05'", "'host:1234'"));
+            $source = new DbService(new ParameterBag(['db_driver' => 'sqlite', 'db_database' => $sourceFile, 'table_prefix' => 'ywcopy_', 'base_url' => '', 'debug' => false]));
+            $target = DatabaseCopier::connect('sqlite', '', '', $this->file, '', '');
+
+            $counts = (new DatabaseCopier($source))->copy($target, 'ywcopy_');
+
+            $this->assertSame([2, 2], $counts['ywcopy_queue'], 'the table is created and copied like any other of the wiki\'s own');
+            $claimed = $target->query("SELECT delivered_by FROM ywcopy_queue WHERE message_type = 'Pending' AND delivered_at IS NOT NULL");
+            $this->assertNotFalse($claimed);
+            $this->assertSame('host:1234', $claimed->fetchColumn(), 'its rows arrive as they are, claims included');
+        } finally {
+            unset($source, $sourcePdo);
+            @unlink($sourceFile);
+        }
+    }
+
     public function testASecondCopyOverTheFirstIsRefused(): void
     {
         $db = $this->getWiki()->services->get(DbService::class);
