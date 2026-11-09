@@ -4,7 +4,7 @@ namespace YesWiki\Kernel\Database;
 
 use YesWiki\Kernel\Service\DbService;
 
-/** The whole wiki's database as a replayable SQL dump. */
+/** The whole wiki's database as a replayable SQL dump, less the queue's tables (DumpRewriter::contentTables()). */
 class SqlDumper
 {
     /** An INSERT has to reach the server in a single packet, so it stays well under any max_allowed_packet. */
@@ -62,7 +62,7 @@ class SqlDumper
             throw new \Exception("'table_prefix' is empty in wakka.config.php — cannot determine which tables to back up");
         }
 
-        $tables = DumpRewriter::ownTables($this->dbService->schema()->getTables(), $tablesPrefix);
+        $tables = DumpRewriter::contentTables($this->dbService->schema()->getTables(), $tablesPrefix);
 
         $date = (new \DateTime())->format('c');
         $phpVersion = phpversion();

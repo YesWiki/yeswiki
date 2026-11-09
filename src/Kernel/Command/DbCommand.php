@@ -121,7 +121,7 @@ class DbCommand extends Command
             'password' => $password,
         ] = $this->getDbParams();
         try {
-            $tables = $this->ownTables($tablePrefix);
+            $tables = $this->contentTables($tablePrefix);
             if ($tables === []) {
                 $output->writeln("No table of this wiki starts with '$tablePrefix'.");
 
@@ -152,15 +152,15 @@ class DbCommand extends Command
     }
 
     /**
-     * This wiki's tables, and none of another wiki whose prefix starts like this one's.
+     * This wiki's tables, none of another wiki whose prefix starts like this one's, and none of the queue's (DumpRewriter::contentTables()).
      *
      * @return list<string>
      */
-    private function ownTables(string $tablePrefix): array
+    private function contentTables(string $tablePrefix): array
     {
         $dbService = $this->services->get(DbService::class);
 
-        return DumpRewriter::ownTables($dbService->schema()->getTables(), trim($tablePrefix));
+        return DumpRewriter::contentTables($dbService->schema()->getTables(), trim($tablePrefix));
     }
 
     /**

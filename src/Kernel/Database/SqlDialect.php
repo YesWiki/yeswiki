@@ -105,6 +105,22 @@ interface SqlDialect
     public function journalDropDdl(string $table): array;
 
     /**
+     * Every statement needed to create the queue's table and its indexes, in execution order.
+     *
+     * @return list<string>
+     */
+    public function queueDdl(string $table): array;
+
+    /**
+     * Every statement needed to create the table of what the queue did (passes, runs, scheduled tasks) and its indexes, in execution order.
+     *
+     * @param string $table already prefixed, unquoted
+     *
+     * @return list<string>
+     */
+    public function queueHistoryDdl(string $table): array;
+
+    /**
      * An INSERT that, when the unique key over $conflictColumns is already taken, applies $assignments to the row that is there instead of failing.
      *
      * @param string                $table           already prefixed, unquoted
@@ -114,6 +130,13 @@ interface SqlDialect
      *                                               stands for the value the insert would have written
      */
     public function upsert(string $table, array $values, array $conflictColumns, array $assignments): string;
+
+    /**
+     * What ends an INSERT so that a taken unique key over $conflictColumns writes nothing (row count 0) instead of failing.
+     *
+     * @param list<string> $conflictColumns
+     */
+    public function onConflictDoNothing(array $conflictColumns): string;
 
     /**
      * Every statement needed to create the search index table, its ordinary indexes, its full-text index and the queue of Contents awaiting reindexing, in execution order.

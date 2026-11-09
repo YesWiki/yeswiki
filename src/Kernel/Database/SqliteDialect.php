@@ -158,6 +158,53 @@ class SqliteDialect implements SqlDialect
         return ["DROP TABLE IF EXISTS \"{$table}\""];
     }
 
+    public function queueDdl(string $table): array
+    {
+        return [
+            "CREATE TABLE IF NOT EXISTS \"{$table}\" (
+                \"id\" INTEGER PRIMARY KEY AUTOINCREMENT,
+                \"queue_name\" TEXT NOT NULL,
+                \"message_type\" TEXT NOT NULL,
+                \"body\" TEXT NOT NULL,
+                \"headers\" TEXT NOT NULL,
+                \"dedup_key\" TEXT DEFAULT NULL,
+                \"created_at\" TEXT NOT NULL,
+                \"available_at\" TEXT NOT NULL,
+                \"delivered_at\" TEXT DEFAULT NULL,
+                \"delivered_by\" TEXT DEFAULT NULL,
+                \"delivered_mode\" TEXT DEFAULT NULL,
+                \"attempts\" INTEGER NOT NULL DEFAULT 0,
+                \"last_error\" TEXT DEFAULT NULL,
+                \"killed_in\" TEXT DEFAULT NULL
+            )",
+            "CREATE INDEX IF NOT EXISTS \"{$table}_idx_queue_delivered_available\" ON \"{$table}\" (\"queue_name\", \"delivered_at\", \"available_at\")",
+            "CREATE UNIQUE INDEX IF NOT EXISTS \"{$table}_uniq_waiting_dedup_key\" ON \"{$table}\" (\"queue_name\", \"dedup_key\")",
+        ];
+    }
+
+    public function queueHistoryDdl(string $table): array
+    {
+        return [
+            "CREATE TABLE IF NOT EXISTS \"{$table}\" (
+                \"id\" INTEGER PRIMARY KEY AUTOINCREMENT,
+                \"at\" TEXT NOT NULL,
+                \"last_at\" TEXT NOT NULL,
+                \"action\" TEXT NOT NULL,
+                \"actor\" TEXT NOT NULL DEFAULT '',
+                \"target\" TEXT NOT NULL DEFAULT '',
+                \"context\" TEXT DEFAULT NULL
+            )",
+            "CREATE INDEX IF NOT EXISTS \"{$table}_idx_action_target\" ON \"{$table}\" (\"action\", \"target\")",
+            "CREATE INDEX IF NOT EXISTS \"{$table}_idx_action_at\" ON \"{$table}\" (\"action\", \"at\")",
+            "CREATE INDEX IF NOT EXISTS \"{$table}_idx_action_actor_last_at\" ON \"{$table}\" (\"action\", \"actor\", \"last_at\")",
+        ];
+    }
+
+    public function onConflictDoNothing(array $conflictColumns): string
+    {
+        return ' ON CONFLICT (' . implode(', ', array_map([$this, 'quoteIdentifier'], $conflictColumns)) . ') DO NOTHING';
+    }
+
     public function upsert(string $table, array $values, array $conflictColumns, array $assignments): string
     {
         return SqlUpsert::onConflict($this, $table, $values, $conflictColumns, $assignments);

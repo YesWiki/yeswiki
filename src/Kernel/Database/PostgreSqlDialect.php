@@ -166,6 +166,55 @@ class PostgreSqlDialect implements SqlDialect
         return ["DROP TABLE IF EXISTS \"{$table}\""];
     }
 
+    public function queueDdl(string $table): array
+    {
+        return [
+            "CREATE TABLE IF NOT EXISTS \"{$table}\" (
+                \"id\" SERIAL PRIMARY KEY,
+                \"queue_name\" VARCHAR(32) NOT NULL,
+                \"message_type\" VARCHAR(191) NOT NULL,
+                \"body\" TEXT NOT NULL,
+                \"headers\" TEXT NOT NULL,
+                \"dedup_key\" VARCHAR(191) DEFAULT NULL,
+                \"created_at\" TIMESTAMP NOT NULL,
+                \"available_at\" TIMESTAMP NOT NULL,
+                \"delivered_at\" TIMESTAMP DEFAULT NULL,
+                \"delivered_by\" VARCHAR(64) DEFAULT NULL,
+                \"delivered_mode\" VARCHAR(16) DEFAULT NULL,
+                \"attempts\" INTEGER NOT NULL DEFAULT 0,
+                \"last_error\" TEXT DEFAULT NULL,
+                \"killed_in\" VARCHAR(16) DEFAULT NULL
+            )",
+            "CREATE INDEX IF NOT EXISTS \"{$table}_idx_queue_delivered_available\" ON \"{$table}\" (\"queue_name\", \"delivered_at\", \"available_at\")",
+            "CREATE UNIQUE INDEX IF NOT EXISTS \"{$table}_uniq_waiting_dedup_key\" ON \"{$table}\" (\"queue_name\", \"dedup_key\")",
+        ];
+    }
+
+    public function queueHistoryDdl(string $table): array
+    {
+        $json = $this->jsonColumnType();
+
+        return [
+            "CREATE TABLE IF NOT EXISTS \"{$table}\" (
+                \"id\" SERIAL PRIMARY KEY,
+                \"at\" TIMESTAMP NOT NULL,
+                \"last_at\" TIMESTAMP NOT NULL,
+                \"action\" VARCHAR(64) NOT NULL,
+                \"actor\" VARCHAR(32) NOT NULL DEFAULT '',
+                \"target\" VARCHAR(191) NOT NULL DEFAULT '',
+                \"context\" {$json} DEFAULT NULL
+            )",
+            "CREATE INDEX IF NOT EXISTS \"{$table}_idx_action_target\" ON \"{$table}\" (\"action\", \"target\")",
+            "CREATE INDEX IF NOT EXISTS \"{$table}_idx_action_at\" ON \"{$table}\" (\"action\", \"at\")",
+            "CREATE INDEX IF NOT EXISTS \"{$table}_idx_action_actor_last_at\" ON \"{$table}\" (\"action\", \"actor\", \"last_at\")",
+        ];
+    }
+
+    public function onConflictDoNothing(array $conflictColumns): string
+    {
+        return ' ON CONFLICT (' . implode(', ', array_map([$this, 'quoteIdentifier'], $conflictColumns)) . ') DO NOTHING';
+    }
+
     public function upsert(string $table, array $values, array $conflictColumns, array $assignments): string
     {
         return SqlUpsert::onConflict($this, $table, $values, $conflictColumns, $assignments);

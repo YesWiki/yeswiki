@@ -2,6 +2,8 @@
 
 namespace YesWiki\Kernel\Database;
 
+use YesWiki\Kernel\Service\Queue\QueueSchema;
+
 class DumpRewriter
 {
     /**
@@ -163,6 +165,20 @@ class DumpRewriter
         }
 
         return $own;
+    }
+
+    /**
+     * The tables a backup carries and a restore replaces: this wiki's own, less the queue's.
+     *
+     * @param list<string> $tables
+     *
+     * @return list<string>
+     */
+    public static function contentTables(array $tables, string $prefix): array
+    {
+        $runtime = array_map(static fn (string $table): string => $prefix . $table, QueueSchema::TABLES);
+
+        return array_values(array_diff(self::ownTables($tables, $prefix), $runtime));
     }
 
     /**
