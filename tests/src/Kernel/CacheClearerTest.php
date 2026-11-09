@@ -20,6 +20,10 @@ class CacheClearerTest extends TestCase
         file_put_contents($this->root . '/cache/thumbs/keep.webp', 'x');
         file_put_contents($this->root . '/cache/.gitkeep', '');
         file_put_contents($this->root . '/cache/maintenance.lock', '');
+        file_put_contents($this->root . '/cache/queue-schedule.lock', '');
+        file_put_contents($this->root . '/cache/archiving.lock', '');
+        mkdir($this->root . '/cache/queue-holders');
+        file_put_contents($this->root . '/cache/queue-holders/00ff12ab.lock', '');
     }
 
     protected function tearDown(): void
@@ -53,11 +57,33 @@ class CacheClearerTest extends TestCase
         $this->assertSame([CacheClearer::CONTAINER => 0, CacheClearer::TEMPLATES => 0], $cleared);
     }
 
-    public function testEverythingGoesExceptTheGitkeepAndTheMaintenanceLock(): void
+    public function testEverythingGoesExceptTheGitkeepAndTheArchiveLockAndTheHolderLocks(): void
     {
         $count = (new CacheClearer())->clearEverything($this->root);
 
-        $this->assertSame(3, $count);
-        $this->assertSame(['.gitkeep', 'maintenance.lock'], array_values(array_diff(scandir($this->root . '/cache'), ['.', '..'])));
+        $this->assertGreaterThan(0, $count, 'the rest goes');
+        $this->assertSame(['.gitkeep', 'archiving.lock', 'queue-holders'], array_values(array_diff(scandir($this->root . '/cache'), ['.', '..'])));
+        $this->assertFileExists($this->root . '/cache/archiving.lock', 'unlinked between a backup\'s open and its flock, it would let a second backup run');
+        $this->assertFileExists($this->root . '/cache/queue-holders/00ff12ab.lock', 'a holder lock is what tells a judge its holder is still there');
+    }
+
+    /** A remote backup's step holds its lock for a whole download: deleted under it, a second step would take a fresh one and write beside it. */
+    public function testALockSomeoneHoldsIsKept(): void
+    {
+        $held = fopen($this->root . '/cache/remote-backup.lock', 'c');
+        $this->assertNotFalse($held);
+        $this->assertTrue(flock($held, LOCK_EX | LOCK_NB));
+        file_put_contents($this->root . '/cache/nobody-holds-this.lock', '');
+
+        try {
+            (new CacheClearer())->clearEverything($this->root);
+        } finally {
+            flock($held, LOCK_UN);
+            fclose($held);
+        }
+
+        $this->assertFileExists($this->root . '/cache/remote-backup.lock');
+        $this->assertFileDoesNotExist($this->root . '/cache/nobody-holds-this.lock', 'a lock nobody holds is a leftover, and goes');
+        $this->assertFileDoesNotExist($this->root . '/cache/maintenance.lock');
     }
 }

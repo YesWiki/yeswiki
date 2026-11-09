@@ -38,11 +38,8 @@ class ConsoleService
      */
     public function startConsoleAsync(string $command, array $args = [], string $subfolder = '', bool $newConsole = true, int $timeoutInSec = 60): ?Process
     {
-        $phpBinaryPath = getenv('ASYNC_PHP_BINARY');
-        if (!$phpBinaryPath) {
-            $phpBinaryPath = $this->phpBinaryFinder->find();
-        }
-        if (empty($phpBinaryPath)) {
+        $phpBinaryPath = $this->phpBinary();
+        if ($phpBinaryPath === null) {
             return null;
         }
         $newCommand = $phpBinaryPath;
@@ -52,6 +49,36 @@ class ConsoleService
         }
 
         return $this->startRawCommandAsync($newCommand, $newArgs, $subfolder, $newConsole, $timeoutInSec);
+    }
+
+    /**
+     * Starts a console command that outlives the web request starting it (startDetached()); null when no PHP binary is found.
+     *
+     * @param list<string> $args
+     */
+    public function startDetachedConsole(string $command, array $args = []): ?Process
+    {
+        $phpBinaryPath = $this->phpBinary();
+        if ($phpBinaryPath === null) {
+            return null;
+        }
+
+        return $this->startDetached($phpBinaryPath, [self::console(), $command, ...$args]);
+    }
+
+    /**
+     * Starts a process nobody waits for, in the wiki's folder, output discarded, without timeout.
+     *
+     * @param list<string> $args
+     */
+    public function startDetached(string $command, array $args = []): Process
+    {
+        $process = new Process([$command, ...$args], \defined('YESWIKI_INSTANCE_DIR') ? YESWIKI_INSTANCE_DIR : null, [CliOwnership::ANY_USER => '1'], null, null);
+        $process->disableOutput();
+        $process->setOptions(['create_new_console' => true]);
+        $process->start();
+
+        return $process;
     }
 
     /**
@@ -162,6 +189,17 @@ class ConsoleService
         $process->wait();
 
         return $this->getProcessOut($process);
+    }
+
+    /** The PHP to run the console with: ASYNC_PHP_BINARY, or the one Symfony finds; null when there is none. */
+    private function phpBinary(): ?string
+    {
+        $phpBinaryPath = getenv('ASYNC_PHP_BINARY');
+        if (!$phpBinaryPath) {
+            $phpBinaryPath = $this->phpBinaryFinder->find();
+        }
+
+        return empty($phpBinaryPath) ? null : $phpBinaryPath;
     }
 
     /**

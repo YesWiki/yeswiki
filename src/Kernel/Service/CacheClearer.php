@@ -2,7 +2,10 @@
 
 namespace YesWiki\Kernel\Service;
 
+use YesWiki\Files\Exception\StorageException;
+use YesWiki\Files\Service\RuntimeLock;
 use YesWiki\Files\Service\Storage;
+use YesWiki\Kernel\Service\Queue\QueueHolderLock;
 
 /** Empties the caches a code change can leave stale: the compiled container and the compiled templates. */
 class CacheClearer
@@ -16,14 +19,17 @@ class CacheClearer
     /** @var list<string> */
     public const ALL = [self::CONTAINER, self::TEMPLATES];
 
-    /** What `clearEverything()` leaves alone: the placeholder git tracks, and the lock a maintenance run may be holding. */
-    public const KEPT = ['.gitkeep', 'maintenance.lock'];
+    /** The archive lock stays: unlinked between a backup's open and its flock, it would let the next reader lift `archiving` mid-backup and a second backup run. */
+    public const KEPT = ['.gitkeep', HibernationService::ARCHIVING_LOCK, QueueHolderLock::DIRECTORY];
 
     private ?Storage $storage;
 
-    public function __construct(?Storage $storage = null)
+    private RuntimeLock $locks;
+
+    public function __construct(?Storage $storage = null, ?RuntimeLock $locks = null)
     {
         $this->storage = $storage;
+        $this->locks = $locks ?? new RuntimeLock();
     }
 
     /**
@@ -70,9 +76,13 @@ class CacheClearer
         if (!$storage->directoryExists($directory)) {
             return 0;
         }
+        $kept = array_map(basename(...), $kept);
         $count = 0;
         foreach ($storage->listContents($directory) as $entry) {
             if (\in_array(basename($entry->path()), $kept, true)) {
+                continue;
+            }
+            if (!$entry->isDir() && str_ends_with($entry->path(), '.lock') && $this->isHeld($storage, $entry->path())) {
                 continue;
             }
             if ($entry->isDir()) {
@@ -84,6 +94,15 @@ class CacheClearer
         }
 
         return $count;
+    }
+
+    private function isHeld(Storage $storage, string $path): bool
+    {
+        try {
+            return $this->locks->isHeld($storage->absolutePath($path));
+        } catch (StorageException) {
+            return false;
+        }
     }
 
     private function storageFor(?string $root): Storage
