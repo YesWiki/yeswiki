@@ -866,6 +866,8 @@ You are on %{CURRENTPHPVERSION}.
     'DATABASE_INSTALLATION' => 'Installation of the database',
     'CREATION_OF_SEARCH_INDEX' => 'Creation of the search index',
     'CREATION_OF_JOURNAL' => 'Creation of the Journal',
+    'QUEUE_TASK_PRUNE' => 'Clean-up of the failed background tasks past a month',
+    'MAINTENANCE_TASK_JOURNAL' => 'Clean-up of the Journal past its retention',
     'CREATION_OF_TABLES' => 'Creation of tables, admin user and group',
     'ALREADY_CREATED' => 'Already created',
     'IMPORT_DB_BACKUP' => 'Import the database from the backup',
