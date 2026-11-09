@@ -152,6 +152,12 @@ class TripleStore
         return [];
     }
 
+    /** Drops what this instance cached of that resource, for triples another process writes meanwhile. */
+    public function forget(string $resource, string $re_prefix = THISWIKI_PREFIX): void
+    {
+        unset($this->cacheByResource[$re_prefix . $resource]);
+    }
+
     /** Whether this resource carries any triple at all, whatever the property. */
     public function hasAnyProperty(?string $resource, string $re_prefix = THISWIKI_PREFIX): bool
     {
