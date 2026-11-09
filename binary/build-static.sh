@@ -116,6 +116,9 @@ main() {
     tar -C "$repo/binary" --exclude=./.frankenphp --exclude=./dist -cf - . | tar -C "$staged" -xf -
     printf 'staged the caddy plugin and the Program into %s\n' "$staged"
 
+    # Since 1.13.4 the image is only the toolchain and the build happens when the container runs,
+    # configured by its environment. The image is LIBC=gnu unless told otherwise, which would link
+    # against glibc: musl is what makes the binary static.
     local image="yeswiki-static-builder-${TARGETARCH}"
     ( cd "$FRANKENPHP_SRC" && docker buildx build --load \
         --file static-builder.Dockerfile \
@@ -135,19 +138,24 @@ main() {
             --env "NO_PROXY=localhost,127.0.0.1")
     fi
 
-    container="$(docker create \
+    # One container, started again on failure: what it downloaded and built is still in it.
+    # The musl toolchain opens more files than the default limit allows.
+    local container="yeswiki-static-build-${TARGETARCH}"
+    docker rm --force "$container" >/dev/null 2>&1 || true
+    GITHUB_TOKEN="${GITHUB_TOKEN:-}" docker create --name "$container" \
         --platform "linux/${TARGETARCH}" \
         --ulimit nofile=8192:8192 \
         ${network[@]+"${network[@]}"} \
         --env GITHUB_TOKEN \
+        --env "LIBC=musl" \
+        --env "FRANKENPHP_VERSION=${FRANKENPHP_VERSION}" \
         --env "PHP_VERSION=${PHP_VERSION}" \
         --env "PHP_EXTENSIONS=${extensions}" \
         --env "PHP_EXTENSION_LIBS=${EXTENSION_LIBS}" \
         --env "XCADDY_ARGS=${CADDY_MODULES[*]}" \
         --env "COMPRESS=${COMPRESS}" \
         --env "DEBUG_SYMBOLS=${DEBUG_SYMBOLS}" \
-        "${image}")"
-    trap 'docker rm --force "$container" >/dev/null 2>&1 || true' EXIT
+        "$image" >/dev/null
 
     local attempts="${BUILD_ATTEMPTS:-3}" attempt
     for attempt in $(seq "$attempts"); do
@@ -164,6 +172,7 @@ main() {
 
     mkdir -p "$OUTPUT"
     docker cp "$container:/go/src/app/dist/frankenphp-linux-${TARGETARCH}" "$OUTPUT/yeswiki-linux-${TARGETARCH}"
+    docker rm "$container" >/dev/null
 
     chmod +x "$OUTPUT/yeswiki-linux-${TARGETARCH}"
 
