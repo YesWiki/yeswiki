@@ -24,7 +24,6 @@ abstract class EnumField extends BazarField
     public const FIELD_NAME = 6;
     protected const FIELD_KEYWORDS = 13;
     protected const FIELD_QUERIES = 15;
-    private const FIELD_CLASS_TYPE = 'EnumField';
 
     public function __construct(array $values, ContainerInterface $services)
     {
@@ -47,7 +46,7 @@ abstract class EnumField extends BazarField
         if (!empty($this->getLinkedObjectName())) {
             $list = $this->getService(ListManager::class)->getOne($this->getLinkedObjectName());
             $this->options = [];
-            foreach ($list['nodes'] ?? [] as $key => $node) {
+            foreach ($list['nodes'] ?? [] as $node) {
                 $this->loadOptionsFromListNode($node);
                 if (isset($node['children']) && count($node['children']) > 0) {
                     $this->optionsTree = $list['nodes'];
@@ -61,7 +60,7 @@ abstract class EnumField extends BazarField
     {
         $this->options[$node['id']] = $parentLabel . $node['label'];
         if (!empty($node['children'])) {
-            foreach ($node['children'] as $key => $childNode) {
+            foreach ($node['children'] as $childNode) {
                 $this->loadOptionsFromListNode($childNode, "$parentLabel {$node['label']} ➤ ");
             }
         }
@@ -211,18 +210,6 @@ abstract class EnumField extends BazarField
         return false;
     }
 
-    public static function mapToFieldArray($fieldProps): array
-    {
-        $new = parent::mapToFieldArray($fieldProps);
-        $new[self::FIELD_LINKED_OBJECT] = $fieldProps['linkedObjectName'];
-        $new[self::FIELD_QUERIES] = $fieldProps['queries'];
-        $new[self::FIELD_KEYWORDS] = $fieldProps['keywords'] ?? '';
-        $new[self::FIELD_NAME] = $fieldProps['name'];
-        ksort($new);
-
-        return $new;
-    }
-
     // change return of this method to keep compatible with php 7.3 (mixed is not managed)
     #[\ReturnTypeWillChange]
     public function jsonSerialize()
@@ -230,12 +217,9 @@ abstract class EnumField extends BazarField
         return array_merge(
             parent::jsonSerialize(),
             [
-                'field_type' => self::FIELD_CLASS_TYPE,
                 'linkedObjectName' => $this->getLinkedObjectName(),
                 'queries' => $this->queries,
                 'options' => $this->getOptions(),
-                'keywords' => $this->keywords,
-                'name' => $this->name,
             ]
         );
     }

@@ -24,8 +24,6 @@ class MapField extends BazarField
     protected const FIELD_SHOW_MAP_IN_ENTRY_VIEW = 7;
     protected const FIELD_GEOMETRIES = 9;
     protected const FIELD_MAX_GEOMETRIES = 13;
-    private const FIELD_CLASS_TYPE = 'MapField';
-
     public const DEFAULT_FIELDNAME_POSTALCODE = 'bf_code_postal';
     public const DEFAULT_FIELDNAME_STREET = 'bf_adresse';
     public const DEFAULT_FIELDNAME_STREET1 = 'bf_adresse1';
@@ -41,27 +39,41 @@ class MapField extends BazarField
         parent::__construct($values, $services);
 
         $this->showMapInEntryView = $values[self::FIELD_SHOW_MAP_IN_ENTRY_VIEW] ?? '0';
+        $this->autocomplete = (!empty($values[self::FIELD_AUTOCOMPLETE_POSTALCODE]) && !empty($values[self::FIELD_AUTOCOMPLETE_TOWN])) ?
+            trim($values[self::FIELD_AUTOCOMPLETE_POSTALCODE]) . ',' . trim($values[self::FIELD_AUTOCOMPLETE_TOWN]) : null;
 
-        $autocomplete_other = [];
-        if (!empty($values[self::FIELD_AUTOCOMPLETE_OTHERS])) {
-            if (is_string($values[self::FIELD_AUTOCOMPLETE_OTHERS])) {
-                $autocomplete_other = explode('|', $values[self::FIELD_AUTOCOMPLETE_OTHERS]);
-            } elseif (is_array($values[self::FIELD_AUTOCOMPLETE_OTHERS])) {
-                $autocomplete_other = $values[self::FIELD_AUTOCOMPLETE_OTHERS];
-            }
-        }
+        $autocomplete = empty($this->autocomplete) ? '' : (
+            is_string($this->autocomplete)
+            ? $this->autocomplete
+            : (
+                is_array($this->autocomplete)
+                ? implode(',', $this->autocomplete)
+                : ''
+            )
+        );
+        $data = array_map('trim', explode(',', $autocomplete));
+        $postalCode = empty($data[0]) ? self::DEFAULT_FIELDNAME_POSTALCODE : $data[0];
+        $town = empty($data[1]) ? self::DEFAULT_FIELDNAME_TOWN : $data[1];
 
-        $postalCode = $values[self::FIELD_AUTOCOMPLETE_POSTALCODE] ?? self::DEFAULT_FIELDNAME_POSTALCODE;
-        $town = $values[self::FIELD_AUTOCOMPLETE_TOWN] ?? self::DEFAULT_FIELDNAME_TOWN;
+        $autocompleteFieldnames = empty($values[self::FIELD_AUTOCOMPLETE_OTHERS])
+            ? ''
+            : (
+                is_string($values[self::FIELD_AUTOCOMPLETE_OTHERS])
+                ? $values[self::FIELD_AUTOCOMPLETE_OTHERS]
+                : (
+                    is_array($values[self::FIELD_AUTOCOMPLETE_OTHERS])
+                    ? implode('|', $values[self::FIELD_AUTOCOMPLETE_OTHERS])
+                    : ''
+                )
+            );
+        $data = array_map('trim', explode('|', $autocompleteFieldnames));
 
-        $this->autocomplete = implode(',', [trim($postalCode), trim($town)]);
-
-        $this->geolocate = (empty($autocomplete_other[0]) || $autocomplete_other[0] != 1) ? 0 : 1;
-        $street = trim($autocomplete_other[1] ?? self::DEFAULT_FIELDNAME_STREET);
-        $street1 = trim($autocomplete_other[2] ?? self::DEFAULT_FIELDNAME_STREET1);
-        $street2 = trim($autocomplete_other[3] ?? self::DEFAULT_FIELDNAME_STREET2);
-        $county = trim($autocomplete_other[4] ?? self::DEFAULT_FIELDNAME_COUNTY);
-        $state = trim($autocomplete_other[5] ?? self::DEFAULT_FIELDNAME_STATE);
+        $this->geolocate = (empty($data[0]) || $data[0] != 1) ? 0 : 1;
+        $street = empty($data[1]) ? self::DEFAULT_FIELDNAME_STREET : $data[1];
+        $street1 = empty($data[2]) ? self::DEFAULT_FIELDNAME_STREET1 : $data[2];
+        $street2 = empty($data[3]) ? self::DEFAULT_FIELDNAME_STREET2 : $data[3];
+        $county = empty($data[4]) ? self::DEFAULT_FIELDNAME_COUNTY : $data[4];
+        $state = empty($data[5]) ? self::DEFAULT_FIELDNAME_STATE : $data[5];
 
         $this->autocompleteFieldnames = compact(['postalCode', 'town', 'street', 'street1', 'street2', 'county', 'state']);
 
@@ -244,16 +256,6 @@ class MapField extends BazarField
 
     // GETTERS. Needed to use them in the Twig syntax
 
-    public function getLatitudeField()
-    {
-        return $this->latitudeField;
-    }
-
-    public function getLongitudeField()
-    {
-        return $this->longitudeField;
-    }
-
     public function getAutocomplete()
     {
         return $this->autocomplete;
@@ -269,21 +271,6 @@ class MapField extends BazarField
         return $this->autocompleteFieldnames;
     }
 
-    public static function mapToFieldArray($fieldProps): array
-    {
-        $new = parent::mapToFieldArray($fieldProps);
-        $new[self::FIELD_AUTOCOMPLETE_POSTALCODE] = $fieldProps['autocompleteFieldnames']['postalCode'];
-        $new[self::FIELD_AUTOCOMPLETE_TOWN] = $fieldProps['autocompleteFieldnames']['town'];
-        $autocomplete_other = array_values(array_slice($fieldProps['autocompleteFieldnames'], 2));
-        array_unshift($autocomplete_other, $fieldProps['geolocate']);
-        $new[self::FIELD_AUTOCOMPLETE_OTHERS] = implode('|', $autocomplete_other);
-        $new[self::FIELD_SHOW_MAP_IN_ENTRY_VIEW] = $fieldProps['showMapInEntryView'] ?? '';
-        $new[self::FIELD_MAX_GEOMETRIES] = $fieldProps['maxGeometries'] ?? ' ';
-        ksort($new);
-
-        return $new;
-    }
-
     // change return of this method to keep compatible with php 7.3 (mixed is not managed)
     #[\ReturnTypeWillChange]
     public function jsonSerialize()
@@ -291,12 +278,9 @@ class MapField extends BazarField
         return array_merge(
             parent::jsonSerialize(),
             [
-                'field_type' => self::FIELD_CLASS_TYPE,
                 'autocomplete' => $this->getAutocomplete(),
                 'geolocate' => $this->getGeolocate(),
                 'autocompleteFieldnames' => $this->getAutocompleteFieldnames(),
-                'showMapInEntryView' => $this->showMapInEntryView,
-                'maxGeometries' => $this->max_geometries,
             ]
         );
     }

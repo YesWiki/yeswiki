@@ -19,20 +19,21 @@ function _t(message, replacements = {}) {
   return translation
 }
 
-/** Moves handler segments such as /iframe before the query parameters, e.g. ?Tag&lang=en/iframe becomes ?Tag/iframe&lang=en. */
-function reorderUrl(url) {
-  const cut = url.search(/[&#]/)
-  if (cut === -1) return url
-  const parts = url.slice(cut).split(/([&#/][^&#/]*)/).filter(Boolean)
-  return url.slice(0, cut)
-    + parts.filter((part) => part.startsWith('/')).join('')
-    + parts.filter((part) => part.startsWith('&')).join('')
-    + parts.filter((part) => part.startsWith('#')).join('')
-}
-
 var wiki = {
   ...(typeof wiki !== 'undefined' ? wiki : null),
   ...{
+    /** Moves handler segments such as /iframe before the query parameters, e.g. ?Tag&lang=en/iframe becomes ?Tag/iframe&lang=en. */
+    reorderUrl(url) {
+      const cut = url.search(/[&#]/)
+      if (cut === -1) return url
+      const parts = url.slice(cut).split(/([&#/][^&#/]*)/).filter(Boolean)
+      return (
+        url.slice(0, cut) +
+        parts.filter((part) => part.startsWith('/')).join('') +
+        parts.filter((part) => part.startsWith('&')).join('') +
+        parts.filter((part) => part.startsWith('#')).join('')
+      )
+    },
     url(url, params = {}) {
       let result = wiki.baseUrl + url
       result = result.replace('??', '?')

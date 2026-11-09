@@ -447,7 +447,7 @@ return [
     'EDIT_CONFIG_HINT_HTMLPURIFIERSAFEIFRAMEREGEXP' => 'Regexp used to allow <iframe> src urls when HTML purifier is active. Leave empty to forbid all iframes. Default is very permissive (any https url) : restrict it to trusted domains on public wikis.',
     'EDIT_CONFIG_HINT_FAVORITES_ACTIVATED' => 'Enable favorites (true or false)',
     'EDIT_CONFIG_HINT_PREVIEW_BEFORE_SAVE' => 'Enable pre-save preview (true or false)',
-    'EDIT_CONFIG_HINT_SUPPORTED_LANGS' => 'Languages content can be translated into (e.g. [\'fr\',\'en\'])',
+    'EDIT_CONFIG_HINT_OTHER_LANGUAGES' => 'Languages content can be translated into, besides the default one (e.g. [\'en\',\'es\'])',
     'EDIT_CONFIG_GROUP_CORE' => 'Main parameters',
     'EDIT_CONFIG_GROUP_ACCESS' => 'Access rights',
     'EDIT_CONFIG_GROUP_EMAIL' => 'Emails',

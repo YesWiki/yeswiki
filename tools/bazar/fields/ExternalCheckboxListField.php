@@ -12,8 +12,6 @@ class ExternalCheckboxListField extends CheckboxListField
 {
     protected $JSONFormAddress;
 
-    private const FIELD_CLASS_TYPE = 'ExternalCheckboxListField';
-
     public function __construct(array $values, ContainerInterface $services)
     {
         $values[self::FIELD_TYPE] = $values[ExternalBazarService::FIELD_ORIGINAL_TYPE];
@@ -22,17 +20,6 @@ class ExternalCheckboxListField extends CheckboxListField
         $values[ExternalBazarService::FIELD_JSON_FORM_ADDR] = '';
 
         parent::__construct($values, $services);
-    }
-
-    #[\ReturnTypeWillChange]
-    public function jsonSerialize()
-    {
-        return array_merge(
-            parent::jsonSerialize(),
-            [
-                'field_type' => self::FIELD_CLASS_TYPE,
-            ]
-        );
     }
 
     protected function renderInput($entry)

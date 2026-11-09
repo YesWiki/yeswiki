@@ -59,7 +59,7 @@ class ListController extends YesWikiController
             'lists' => $lists,
             'loggedUser' => $this->authController->getLoggedUser(),
             'canCreate' => !$this->securityController->isWikiHibernated(),
-            'isMultilang' => !empty($this->wiki->config['supported_langs']),
+            'isMultilang' => !empty($this->wiki->translationLanguages()),
         ]);
     }
 
@@ -124,7 +124,7 @@ class ListController extends YesWikiController
         if (!$this->getService(Guard::class)->isAllowed('saisie_formulaire') || !$this->aclService->hasAccess('write', $id)) {
             return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'formulaire', 'msg' => 'BAZ_NEED_ADMIN_RIGHTS'], false));
         }
-        if (empty($this->wiki->config['supported_langs'])) {
+        if (empty($this->wiki->translationLanguages())) {
             return $this->render('@templates/alert-message.twig', ['type' => 'danger', 'message' => _t('TRANSLATE_MISSING_EXTRA_LANG')]);
         }
         $list = $this->listManager->getOne($id, null, 'all');
@@ -137,12 +137,11 @@ class ListController extends YesWikiController
 
             return $this->wiki->redirect($this->wiki->Href('', '', [BAZ_VARIABLE_VOIR => BAZ_VOIR_LISTES], false));
         }
-        $defaultLanguage = $this->wiki->config['default_language'] ?? 'fr';
 
         return $this->render('@bazar/forms/list_translate.twig', [
             'list' => $list,
-            'default_language' => $defaultLanguage,
-            'langs' => array_values(array_filter($this->wiki->config['supported_langs'], fn ($lang) => $lang !== $defaultLanguage)),
+            'default_language' => $this->wiki->defaultLanguage(),
+            'langs' => $this->wiki->translationTargets(null),
         ]);
     }
 

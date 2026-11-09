@@ -25,7 +25,6 @@ class LinkedEntryField extends BazarField
     protected const FIELD_LINK_TYPE = 6;
     protected const FIELD_LABEL = 7;
     protected const FIELD_ADD_ENTRY_BTN_LABEL = 10;
-    private const FIELD_CLASS_TYPE = 'LinkedEntryField';
 
     public function __construct(array $values, ContainerInterface $services)
     {
@@ -145,20 +144,6 @@ class LinkedEntryField extends BazarField
         return $query;
     }
 
-    public static function mapToFieldArray($fieldProps): array
-    {
-        $new = parent::mapToFieldArray($fieldProps);
-        $new[self::FIELD_QUERY] = $fieldProps['query'];
-        $new[self::FIELD_LIMIT] = $fieldProps['limit'];
-        $new[self::FIELD_LINK_TYPE] = $fieldProps['linkedId'] ?? '';
-        $new[self::FIELD_TEMPLATE] = $fieldProps['template'];
-        $new[self::FIELD_OTHER_PARAMS] = $fieldProps['otherParams'];
-        $new[self::FIELD_LABEL] = $fieldProps['label'] ?? '';
-        ksort($new);
-
-        return $new;
-    }
-
     // change return of this method to keep compatible with php 7.3 (mixed is not managed)
     #[\ReturnTypeWillChange]
     public function jsonSerialize()
@@ -166,13 +151,11 @@ class LinkedEntryField extends BazarField
         return array_merge(
             parent::jsonSerialize(),
             [
-                'field_type' => self::FIELD_CLASS_TYPE,
                 'query' => $this->query,
                 'limit' => $this->limit,
                 'linkedId' => $this->linkedId,
                 'template' => $this->template,
                 'otherParams' => $this->otherParams,
-                'label' => $this->label,
             ]
         );
     }

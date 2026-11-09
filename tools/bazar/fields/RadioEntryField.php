@@ -12,7 +12,6 @@ class RadioEntryField extends RadioField
 {
     public $isDistantJson;
     protected $baseUrl;
-    private const FIELD_CLASS_TYPE = 'RadioEntryField';
 
     public function __construct(array $values, ContainerInterface $services)
     {
@@ -26,17 +25,6 @@ class RadioEntryField extends RadioField
             $this->options = null;
             $this->baseUrl = null;
         }
-    }
-
-    #[\ReturnTypeWillChange]
-    public function jsonSerialize()
-    {
-        return array_merge(
-            parent::jsonSerialize(),
-            [
-                'field_type' => self::FIELD_CLASS_TYPE,
-            ]
-        );
     }
 
     protected function renderStatic($entry)

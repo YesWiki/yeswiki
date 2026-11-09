@@ -4,7 +4,6 @@ const { jsonform, __translation, defaultlanguage } = document.getElementById('tr
 
 const app = createApp({
   data() {
-    const fieldTypes = ['label', 'helper', 'default']
     const extraLangsList = JSON.parse(__translation)
     const form = JSON.parse(jsonform)
     const extraLangsValues = form.__translation ?? {}
@@ -16,10 +15,8 @@ const app = createApp({
       extraLangsValues[lang].fields ??= {}
       for (const entry in form.fields) {
         extraLangsValues[lang].fields[entry] ??= {}
-        for (const prop of fieldTypes) {
-          if (form.fields[entry][prop]) {
-            extraLangsValues[lang].fields[entry][prop] ??= ''
-          }
+        for (const attribute in form.fields[entry].attributes) {
+          extraLangsValues[lang].fields[entry][attribute] ??= ''
         }
       }
     }
@@ -29,7 +26,10 @@ const app = createApp({
       form,
       jsonForm: jsonform,
       jsonExtraLangs: '',
-      fieldTypes,
+      captions: JSON.parse(
+        document.querySelector('#translate-form .nodes-container').dataset
+          .captions
+      ),
       extraLangsValues
     }
   },
@@ -44,6 +44,9 @@ const app = createApp({
   methods: {
     onSubmit(data) {
       return data
+    },
+    multiline(attribute) {
+      return !['label', 'default'].includes(attribute)
     },
     filterData(value) {
       if (typeof value === 'string' || value instanceof String) {

@@ -635,7 +635,7 @@ class SearchManager
             $this->bodyValue('$.id_typeannonce') . ' AS ' . $this->column('id_typeannonce'),
         ];
 
-        $translated = !empty($this->wiki->config['supported_langs']);
+        $translated = !empty($this->wiki->translationLanguages());
         foreach ($vFields as $vFieldName => $vField) {
             if (!$vField['isExtracted']) {
                 $value = $this->bodyValue($this->jsonPath($vFieldName));
@@ -772,7 +772,7 @@ class SearchManager
         $vPageManager = $this->wiki->services->get(PageManager::class);
         $vEntryManager = $this->wiki->services->get(EntryManager::class);
 
-        $lang = empty($this->wiki->config['supported_langs']) ? null : 'default';
+        $lang = empty($this->wiki->translationLanguages()) ? null : 'default';
         foreach ($results as $page) {
             $vPageManager->cacheOwner($page);
             $page = $vPageManager->translatePage($page, $lang);

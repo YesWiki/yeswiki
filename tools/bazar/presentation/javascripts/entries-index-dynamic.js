@@ -498,7 +498,7 @@ const load = (domElement) => {
         return window !== window.parent
       },
       orderUrl(url) {
-        return reorderUrl(url)
+        return wiki.reorderUrl(url)
       },
       getExternalEntry(entry) {
         const url = this.orderUrl(`${entry.url}/iframe`)

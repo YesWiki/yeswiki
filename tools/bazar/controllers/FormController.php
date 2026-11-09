@@ -19,6 +19,8 @@ use YesWiki\Security\Controller\SecurityController;
 
 class FormController extends YesWikiController
 {
+    private const TRANSLATION_CAPTIONS = ['label', 'helper', 'default', 'form_text', 'view_text', 'form_titles', 'view_titles'];
+
     protected $csrfTokenController;
     protected $formManager;
     protected $securityController;
@@ -86,7 +88,7 @@ class FormController extends YesWikiController
             'message' => $message,
             'forms' => $values,
             'userIsAdmin' => $this->wiki->UserIsAdmin(),
-            'isMultilang' => !empty($this->wiki->config['supported_langs']),
+            'isMultilang' => !empty($this->wiki->translationLanguages()),
             'isWikiHibernated' => $this->securityController->isWikiHibernated(),
         ]);
     }
@@ -152,7 +154,7 @@ class FormController extends YesWikiController
         if (!$this->getService(Guard::class)->isAllowed('saisie_formulaire')) {
             return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'formulaire', 'msg' => 'BAZ_NEED_ADMIN_RIGHTS'], false));
         }
-        if (empty($this->wiki->config['supported_langs'])) {
+        if (empty($this->wiki->translationLanguages())) {
             return $this->render('@templates/alert-message.twig', ['type' => 'danger', 'message' => _t('TRANSLATE_MISSING_EXTRA_LANG')]);
         }
         $form = $this->formManager->getOne($id, 'all');
@@ -167,18 +169,19 @@ class FormController extends YesWikiController
             return $this->wiki->redirect($this->wiki->href('', '', [BAZ_VARIABLE_VOIR => BAZ_VOIR_FORMULAIRE, 'msg' => 'BAZ_FORMULAIRE_MODIFIE'], false));
         }
 
-        $defaultLanguage = $form['lang'] ?? $this->wiki->config['default_language'] ?? 'fr';
+        $sourceLanguage = $form['lang'] ?: $this->wiki->defaultLanguage();
+        $fields = $this->formManager->translatableFields($form['bn_id_nature']);
 
         return $this->render('@bazar/forms/form_translate.twig', [
             'form' => [
                 'title' => $form['bn_label_nature'],
                 'description' => $form['bn_description'],
-                'fields' => $form['fields'] ?? [],
+                'fields' => $fields ?: new \stdClass(),
                 '__translation' => $form['__translation'] ?: new \stdClass(),
             ],
-            'defaultLanguage' => $defaultLanguage,
-            'langs' => array_values(array_filter($this->wiki->config['supported_langs'], fn ($lang) => $lang !== $defaultLanguage)),
-            'translatable_fields' => FormManager::TRANSLATABLE_FIELD_PROPERTIES,
+            'defaultLanguage' => $sourceLanguage,
+            'langs' => $this->wiki->translationTargets($sourceLanguage),
+            'attributeCaptions' => array_map(fn ($attribute) => _t('BAZ_TRANSLATE_ATTRIBUTE_' . strtoupper($attribute)), array_combine(self::TRANSLATION_CAPTIONS, self::TRANSLATION_CAPTIONS)),
         ]);
     }
 

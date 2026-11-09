@@ -45,24 +45,22 @@
 			</template>
 		</div>
 	</div>
-	<div class="nodes-container">
+	<div class="nodes-container" data-captions="{{ attributeCaptions|json_encode }}">
 	   <div class="form-entry" v-for="(entry, key) in form.fields">
-
-				<label class="control-label"> {{ "{{ entry.id }}"  }} </label>
-				{% for field in translatable_fields %}
-				<div class="control-group form-group" v-if="entry.{{ field }}">
+				<label class="control-label"> {{ "{{ entry.caption }}" }} </label>
+				<div class="control-group form-group" v-for="(source, attribute) in entry.attributes">
 				    <label class="control-label col-sm-3">
-                        {{ field }}
+                        {{ "{{ captions[attribute] ?? attribute }}" }}
 				    </label>
 				    <div class="controls input-group col-sm-9">
-    				    <input type="text" v-model="entry.{{ field }}"
-    	       		       placeholder="{{ _t('BAZ_LIST_NAME') }}" class="form-control" disabled required/>
+    				    <textarea :value="source" class="form-control" disabled v-if="multiline(attribute)"></textarea>
+    				    <input type="text" :value="source" class="form-control" disabled v-else/>
                 <template v-for="lang in extraLangsList">
-                <input v-model="extraLangsValues[lang]['fields'][key]['{{field}}']" type="text" class="form-control extra_lang_input" placeholder="{{ _t('BAZ_TRANSLATION') }}" v-if="selectedLanguage === lang"/>
+                <textarea v-model="extraLangsValues[lang]['fields'][key][attribute]" class="form-control extra_lang_input" placeholder="{{ _t('BAZ_TRANSLATION') }}" v-if="selectedLanguage === lang && multiline(attribute)"></textarea>
+                <input v-model="extraLangsValues[lang]['fields'][key][attribute]" type="text" class="form-control extra_lang_input" placeholder="{{ _t('BAZ_TRANSLATION') }}" v-if="selectedLanguage === lang && !multiline(attribute)"/>
                 </template>
 					</div>
 				</div>
-				{% endfor %}
 	   </div>
 	</div>
 

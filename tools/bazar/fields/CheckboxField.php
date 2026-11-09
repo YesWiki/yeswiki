@@ -34,7 +34,6 @@ abstract class CheckboxField extends EnumField
     ];
 
     protected const FROM_FORM_ID = '_fromForm';
-    private const FIELD_CLASS_TYPE = 'CheckboxField';
 
     public function __construct(array $values, ContainerInterface $services)
     {
@@ -55,27 +54,6 @@ abstract class CheckboxField extends EnumField
     public function getValueStructure() // See BazarField::getValueStructure
     {
         return [$this->propertyName => ['_mode_' => 'multiple', '_type_' => 'string']];
-    }
-
-    public static function mapToFieldArray($fieldProps): array
-    {
-        $new = parent::mapToFieldArray($fieldProps);
-        $new[self::FIELD_DISPLAY_METHOD] = $fieldProps['displayMethod'] ?? '';
-        ksort($new);
-
-        return $new;
-    }
-
-    #[\ReturnTypeWillChange]
-    public function jsonSerialize()
-    {
-        return array_merge(
-            parent::jsonSerialize(),
-            [
-                'field_type' => self::FIELD_CLASS_TYPE,
-                'displayMethod' => $this->displayMethod,
-            ]
-        );
     }
 
     protected function renderInput($entry)

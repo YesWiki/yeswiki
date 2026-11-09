@@ -16,7 +16,6 @@ class SelectEntryField extends EnumField
     protected $baseUrl;
 
     protected const FIELD_DISPLAY_METHOD = 3;
-    private const FIELD_CLASS_TYPE = 'SelectEntryField';
 
     public function __construct(array $values, ContainerInterface $services)
     {
@@ -62,13 +61,12 @@ class SelectEntryField extends EnumField
             if (!empty($this->optionsUrls[$value])) {
                 $entryUrl = $this->optionsUrls[$value];
             } else {
-                $entryUrl = $this->baseUrl . $value;
+                $entryUrl = $baseUrl . $value;
             }
         } else {
             $entryUrl = $this->services->get(Wiki::class)->Href('', $value);
         }
 
-        $entryUrl = explode('&', $entryUrl);
         $options = $this->getOptions();
         $label = isset($options[$value]) ? $options[$value] : $value;
 
@@ -90,26 +88,5 @@ class SelectEntryField extends EnumField
     public function isEnumEntryField(): bool
     {
         return true;
-    }
-
-    public static function mapToFieldArray($fieldProps): array
-    {
-        $new = parent::mapToFieldArray($fieldProps);
-        $new[self::FIELD_DISPLAY_METHOD] = $fieldProps['displayMethod'];
-        ksort($new);
-
-        return $new;
-    }
-
-    #[\ReturnTypeWillChange]
-    public function jsonSerialize()
-    {
-        return array_merge(
-            parent::jsonSerialize(),
-            [
-                'field_type' => self::FIELD_CLASS_TYPE,
-                'displayMethod' => $this->displayMethod,
-            ]
-        );
     }
 }

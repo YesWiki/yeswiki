@@ -50,8 +50,6 @@ class ReactionsField extends BazarField
     public const DEFAULT_OK_KEY = 'oui';
     public const MAX_REACTIONS = 1;
 
-    private const FIELD_CLASS_TYPE = 'ReactionsField';
-
     protected $ids;
     protected $labels;
     protected $images;
@@ -88,7 +86,8 @@ class ReactionsField extends BazarField
         $this->size = null;
         $this->maxChars = null;
 
-        $this->ids = empty($values[self::FIELD_IDS]) ? [] : explode(',', $values[self::FIELD_IDS]);
+        $this->ids = trim($values[self::FIELD_IDS]);
+        $this->ids = empty($this->ids) ? [] : explode(',', $this->ids);
         $this->ids = array_map('trim', $this->ids);
 
         $labels = isset($values[self::FIELD_LABELS]) && is_string($values[self::FIELD_LABELS])
@@ -189,18 +188,6 @@ class ReactionsField extends BazarField
         ]);
     }
 
-    public static function mapToFieldArray($fieldProps): array
-    {
-        $new = parent::mapToFieldArray($fieldProps);
-        $new[self::FIELD_IDS] = join(',', $fieldProps['ids']);
-        $new[self::FIELD_LABELS] = implode(',', (array)$fieldProps['labels']);
-        $new[self::FIELD_IMAGES] = implode(',', (array)$fieldProps['images']);
-        $new[self::FIELD_LABEL_REACTION] = $fieldProps['label_reaction'];
-        ksort($new);
-
-        return $new;
-    }
-
     // change return of this method to keep compatible with php 7.3 (mixed is not managed)
     #[\ReturnTypeWillChange]
     public function jsonSerialize()
@@ -208,11 +195,9 @@ class ReactionsField extends BazarField
         return array_merge(
             parent::jsonSerialize(),
             [
-                'field_type' => self::FIELD_CLASS_TYPE,
                 'ids' => $this->getIds(),
                 'labels' => $this->getLabels(),
                 'images' => array_map('basename', $this->getImagesPath()),
-                'label_reaction' => $this->label,
             ]
         );
     }

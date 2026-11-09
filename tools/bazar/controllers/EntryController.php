@@ -217,7 +217,7 @@ class EntryController extends YesWikiController
             'isAdmin' => $this->wiki->UserIsAdmin($userNameForRendering),
             'renderedEntry' => $renderedEntry,
             'origin' => $origin,
-            'isMultilang' => isset($this->wiki->config['supported_langs']),
+            'isMultilang' => !empty($this->wiki->translationLanguages()),
             'incomingUrl' => $this->getRequest()->query->get('incomingurl', getAbsoluteUrl()),
             'editContextUrl' => $this->getEditContextUrl($entryId),
         ]);

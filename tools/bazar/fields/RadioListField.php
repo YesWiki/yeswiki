@@ -9,24 +9,11 @@ use Psr\Container\ContainerInterface;
  */
 class RadioListField extends RadioField
 {
-    private const FIELD_CLASS_TYPE = 'RadioListField';
-
     public function __construct(array $values, ContainerInterface $services)
     {
         parent::__construct($values, $services);
 
         $this->loadOptionsFromList();
-    }
-
-    #[\ReturnTypeWillChange]
-    public function jsonSerialize()
-    {
-        return array_merge(
-            parent::jsonSerialize(),
-            [
-                'field_type' => self::FIELD_CLASS_TYPE,
-            ]
-        );
     }
 
     protected function renderStatic($entry)

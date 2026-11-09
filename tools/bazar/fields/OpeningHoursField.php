@@ -7,8 +7,6 @@ namespace YesWiki\Bazar\Field;
  */
 class OpeningHoursField extends BazarField
 {
-    private const FIELD_CLASS_TYPE = 'OpeningHoursField';
-
     protected function renderInput($entry)
     {
         return $this->render('@bazar/inputs/openingHours.twig', [

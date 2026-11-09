@@ -73,6 +73,61 @@ class Wiki
     public $_groupsCache = [];
     public $_actionsAclsCache = [];
     public $lang;
+    protected $installedLanguages;
+
+    /** The wiki's own language: `default_language` when it names one, else French. */
+    public function defaultLanguage(): string
+    {
+        return self::sanitizeLang($this->config['default_language'] ?? '', 'fr');
+    }
+
+    /** The languages with an installed catalogue, as Ectoplasme counts them. */
+    public function installedLanguages(): array
+    {
+        if ($this->installedLanguages === null) {
+            if (!function_exists('detectAvailableLanguages')) {
+                require_once 'includes/i18n.inc.php';
+            }
+            $this->installedLanguages = detectAvailableLanguages();
+        }
+
+        return $this->installedLanguages;
+    }
+
+    /** The installed languages Content may be translated into besides the default one: `other_languages`, or the older `supported_langs`. */
+    public function translationLanguages(): array
+    {
+        $configured = $this->config['other_languages'] ?? $this->config['supported_langs'] ?? [];
+        if (is_string($configured)) {
+            $configured = preg_split('/[\s,\[\]\'"]+/', $configured, -1, PREG_SPLIT_NO_EMPTY);
+        }
+        $languages = [];
+        foreach ((array)$configured as $language) {
+            $language = self::sanitizeLang($language, '');
+            if ($language !== '' && $language !== $this->defaultLanguage() && in_array($language, $this->installedLanguages(), true) && !in_array($language, $languages, true)) {
+                $languages[] = $language;
+            }
+        }
+
+        return $languages;
+    }
+
+    /** The default language followed by the translation languages. */
+    public function availableLanguages(): array
+    {
+        return array_merge([$this->defaultLanguage()], $this->translationLanguages());
+    }
+
+    /** The languages a Content written in $sourceLanguage may be translated into; none while no translation language is turned on. */
+    public function translationTargets(?string $sourceLanguage): array
+    {
+        if ($this->translationLanguages() === []) {
+            return [];
+        }
+        $sourceLanguage = $sourceLanguage ?: $this->defaultLanguage();
+
+        return array_values(array_filter($this->availableLanguages(), fn ($language) => $language !== $sourceLanguage));
+    }
 
     /** A language code such as `fr` or `pt-BR` from $lang, else $default. */
     public static function sanitizeLang($lang, string $default): string
@@ -94,7 +149,7 @@ class Wiki
         $this->method = $init->method;
 
         $this->request = Request::createFromGlobals();
-        $this->lang = self::sanitizeLang($this->request->get('lang'), $this->config['default_language'] ?? 'fr');
+        $this->lang = self::sanitizeLang($this->request->get('lang'), $this->defaultLanguage());
         $this->services = $init->initCoreServices($this);
         $this->loadExtensions();
 

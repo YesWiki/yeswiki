@@ -14,7 +14,6 @@ class ConditionsCheckingField extends LabelField
 
     protected const FIELD_CONDITION = 1;
     protected const FIELD_OPTIONS = 2;
-    private const FIELD_CLASS_TYPE = 'ConditionCheckingField';
 
     public function __construct(array $values, ContainerInterface $services)
     {
@@ -39,16 +38,6 @@ class ConditionsCheckingField extends LabelField
     public function getOptions()
     {
         return $this->options;
-    }
-
-    public static function mapToFieldArray($fieldProps): array
-    {
-        $new = parent::mapToFieldArray($fieldProps);
-        $new[self::FIELD_CONDITION] = $fieldProps['condition'];
-        $new[self::FIELD_OPTIONS] = $fieldProps['option'];
-        ksort($new);
-
-        return $new;
     }
 
     /**

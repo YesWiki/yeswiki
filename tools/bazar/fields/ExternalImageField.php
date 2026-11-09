@@ -12,7 +12,6 @@ class ExternalImageField extends ImageField
     protected $JSONFormAddress;
 
     public const FIELD_JSON_FORM_ADDR = 13; // replace nothing
-    private const FIELD_CLASS_TYPE = 'ExternalImageField';
 
     public function __construct(array $values, ContainerInterface $services)
     {

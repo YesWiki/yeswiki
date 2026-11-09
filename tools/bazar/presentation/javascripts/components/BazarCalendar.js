@@ -137,7 +137,7 @@ const BazarCalendar = {
       } else if (this.isDirectLinkDisplay()) {
         info.jsEvent.preventDefault()
         window.location =
-          reorderUrl(info.event.url + (this.$root.isInIframe() ? '/iframe' : ''))
+          wiki.reorderUrl(info.event.url + (this.$root.isInIframe() ? '/iframe' : ''))
       } else if (
         ['listWeek', 'listMonth', 'listYear'].indexOf(info.view.type) > -1
       ) {
@@ -172,7 +172,7 @@ const BazarCalendar = {
         title: entry.bf_titre,
         start,
         end,
-        url: reorderUrl(entry.url + (this.isModalDisplay() ? '/iframe' : '')),
+        url: wiki.reorderUrl(entry.url + (this.isModalDisplay() ? '/iframe' : '')),
         allDay: this.isAllDayDate(start),
         className: `bazar-entry${this.isModalDisplay() ? ' modalbox' : ''}`,
         backgroundColor,

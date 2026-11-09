@@ -9,8 +9,6 @@ use Psr\Container\ContainerInterface;
  */
 class PasswordField extends BazarField
 {
-    private const FIELD_CLASS_TYPE = 'PasswordField';
-
     public function __construct(array $values, ContainerInterface $services)
     {
         parent::__construct($values, $services);

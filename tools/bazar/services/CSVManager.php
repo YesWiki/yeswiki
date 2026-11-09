@@ -215,7 +215,7 @@ class CSVManager
             $line[] = $value ?? '';
         }
 
-        $langs = $this->wiki->config['supported_langs'] ?? [];
+        $langs = empty($this->wiki->translationLanguages()) ? [] : $this->wiki->availableLanguages();
         if (!empty($langs)) {
             $line[] = $entry['lang'] ?? '';
             foreach ($langs as $lang) {
@@ -876,10 +876,10 @@ class CSVManager
     /** Translation headers such as `__translation.fr.bf_titre`, after a `lang` header, when the wiki has several languages. */
     private function generateTranslationHeaders(array $headers): array
     {
-        $langs = $this->wiki->config['supported_langs'] ?? [];
-        if (empty($langs)) {
+        if (empty($this->wiki->translationLanguages())) {
             return [];
         }
+        $langs = $this->wiki->availableLanguages();
 
         $langHeaders = ['lang'];
         foreach ($langs as $lang) {
@@ -898,7 +898,7 @@ class CSVManager
     {
         $purifier = $this->wiki->services->get(HtmlPurifierService::class);
         $extralang = [];
-        foreach ($this->wiki->config['supported_langs'] ?? [] as $lang) {
+        foreach (empty($this->wiki->translationLanguages()) ? [] : $this->wiki->availableLanguages() as $lang) {
             foreach ($headers as $header) {
                 $key = "__translation.{$lang}.{$header}";
                 if (array_key_exists($key, $headersIndexes) && is_scalar($fields[$headersIndexes[$key]] ?? null) && trim((string)$fields[$headersIndexes[$key]]) !== '') {

@@ -18,7 +18,6 @@ class EmailField extends BazarField
     protected const FIELD_SHOW_CONTACT_FORM = 6;
     protected const FIELD_SEE_MAIL_ACLS = 4;
     protected const FIELD_SEND_EMAIL = 9;
-    private const FIELD_CLASS_TYPE = 'EmailField';
 
     public function __construct(array $values, ContainerInterface $services)
     {
@@ -100,17 +99,6 @@ class EmailField extends BazarField
     public function getSeeEmailAcls(): string
     {
         return $this->seeEmailAcls;
-    }
-
-    public static function mapToFieldArray($fieldProps): array
-    {
-        $new = parent::mapToFieldArray($fieldProps);
-        $new[self::FIELD_SHOW_CONTACT_FORM] = $fieldProps['showContactForm'] ? 'form' : '';
-        $new[self::FIELD_SEE_MAIL_ACLS] = $fieldProps['seeEmailAcls'] == '@admins' ? '' : $fieldProps['seeEmailAcls'];
-        $new[self::FIELD_SEND_EMAIL] = !empty($fieldProps['sendMail']) ? '1' : ($fieldProps['searchable'] ?? '');
-        ksort($new);
-
-        return $new;
     }
 
     #[\ReturnTypeWillChange]

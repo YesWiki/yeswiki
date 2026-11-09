@@ -179,7 +179,7 @@ const BazarMapComponent = {
             this.isDirectLinkDisplay() ||
             this.isNewTabDisplay()
           const tagName = isLink ? 'a' : 'div'
-          const url = reorderUrl(entry.url + (this.isModalDisplay() ? '/iframe' : ''))
+          const url = wiki.reorderUrl(entry.url + (this.isModalDisplay() ? '/iframe' : ''))
           const modalData = this.isModalDisplay()
             ? 'data-size="modal-lg" data-iframe="1" data-header="false"'
             : ''
@@ -214,7 +214,7 @@ const BazarMapComponent = {
             entry.marker.on('click', () => {
               window.event.preventDefault()
               window.location =
-                reorderUrl(entry.url + (this.$root.isInIframe() ? '/iframe' : ''))
+                wiki.reorderUrl(entry.url + (this.$root.isInIframe() ? '/iframe' : ''))
             })
           } else if (this.isNewTabDisplay()) {
             entry.marker.on('click', function () {

@@ -9,8 +9,6 @@ use Psr\Container\ContainerInterface;
  */
 class HiddenField extends BazarField
 {
-    protected const FIELD_CLASS_TYPE = 'HiddenField';
-
     public function __construct(array $values, ContainerInterface $services)
     {
         parent::__construct($values, $services);
@@ -36,7 +34,6 @@ class HiddenField extends BazarField
         return [
             'type' => $this->getType(),
             'default' => $this->getDefault(),
-            'field_type' => self::FIELD_CLASS_TYPE,
         ];
     }
 }

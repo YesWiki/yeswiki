@@ -21,7 +21,7 @@ class TranslateHandler extends YesWikiHandler
 
         if (!$this->wiki->page || !$this->wiki->HasAccess('write')) {
             $output .= $this->alert(_t('NOT_ALLOWED'));
-        } elseif (empty($this->wiki->config['supported_langs'])) {
+        } elseif (empty($this->wiki->translationLanguages())) {
             $output .= $this->alert(_t('TRANSLATE_MISSING_EXTRA_LANG'));
         } elseif (!$entryManager->isEntry($tag)) {
             $output .= $this->alert(_t('TRANSLATE_ACTION_ONLY_ALLOWED_FOR_ENTRY'));
@@ -72,11 +72,12 @@ class TranslateHandler extends YesWikiHandler
     {
         $entry = $this->storedEntry($tag);
         $fields = $this->translatableFields($entry);
+        $targets = $this->wiki->translationTargets($entry['lang'] ?? null);
         $posted = json_decode((string)$this->getRequest()->request->get('__translation'), true);
         $purifier = $this->getService(HtmlPurifierService::class);
-        $translations = [];
+        $translations = is_array($entry['__translation'] ?? null) ? array_diff_key($entry['__translation'], array_flip($targets)) : [];
         foreach (is_array($posted) ? $posted : [] as $lang => $values) {
-            if (!in_array($lang, $this->wiki->config['supported_langs'], true) || !is_array($values)) {
+            if (!in_array($lang, $targets, true) || !is_array($values)) {
                 continue;
             }
             foreach (array_intersect_key($values, $fields) as $name => $value) {
@@ -101,8 +102,8 @@ class TranslateHandler extends YesWikiHandler
     private function displayForm(string $tag): string
     {
         $entry = $this->storedEntry($tag);
-        $baseLang = $entry['lang'] ?? $this->wiki->config['default_language'] ?? 'fr';
-        $langs = array_values($this->wiki->config['supported_langs']);
+        $baseLang = $entry['lang'] ?? $this->wiki->defaultLanguage();
+        $langs = array_merge([$baseLang], $this->wiki->translationTargets($baseLang));
         if (!is_array($entry['__translation'] ?? null)) {
             $entry['__translation'] = [];
         }

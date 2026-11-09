@@ -41,7 +41,6 @@ class AclField extends BazarField
     protected const FIELD_LABEL = 4;
     protected const FIELD_NAME = 6;
     protected const FIELD_ASK_IF_ACTIVATE_COMMENTS = 7;
-    private const FIELD_CLASS_TYPE = 'AclField';
     protected const FIELD_MANAGED_GROUPS = 13;
     protected const FIELD_LINKED_READ_RIGHT = 14;
     protected const FIELD_LINKED_WRITE_RIGHT = 15;
@@ -60,8 +59,8 @@ class AclField extends BazarField
         $this->name = $this->filterNotEmptyString($values, self::FIELD_NAME, $defaultName);
         $this->propertyName = $this->name;
 
-        $this->default ??= '';
-        $this->default = in_array($this->default, array_keys(self::OPTIONS), true) ? $this->default : '';
+        $this->default = $this->filterNotEmptyString(['default' => $this->default], 'default', '');
+        $this->default = ($this->default === '' || in_array($this->default, array_keys(self::OPTIONS), true)) ? $this->default : '';
 
         $this->label = $this->filterNotEmptyString($values, self::FIELD_LABEL, _t('BAZ_ACTIVATE_COMMENTS'));
         $this->hint = $this->filterNotEmptyString(['hint' => $this->hint], 'hint', _t('BAZ_ACTIVATE_COMMENTS_HINT'));
@@ -131,7 +130,6 @@ class AclField extends BazarField
                         break;
                     }
 
-                    // no break
                 case 'external_humhub':
                 case 'embedded_humhub':
                 case 'discourse':
@@ -169,6 +167,7 @@ class AclField extends BazarField
 
     private function replaceWithCreator($right, $entry)
     {
+
         if ($right === 'user' or $right === '#') {
             return $entry['nomwiki'];
         }
@@ -191,6 +190,7 @@ class AclField extends BazarField
     public function getOptions()
     {
         if (is_null($this->options)) {
+
             $this->options = array_map('_t', self::OPTIONS);
         }
 
@@ -278,7 +278,7 @@ class AclField extends BazarField
     private function accountOf(string $tag): ?string
     {
         $linked = $this->getService(EntryManager::class)->getOne($tag, false, null, true, true);
-        $name = $linked ? (string)($linked['nomwiki'] ?? '') : $tag;
+        $name = $linked ? (string) ($linked['nomwiki'] ?? '') : $tag;
 
         return $name !== '' && $this->getService(UserManager::class)->getOneByName($name) ? $name : null;
     }
@@ -295,7 +295,7 @@ class AclField extends BazarField
             return array_map('strval', array_keys(array_filter($value)));
         }
 
-        return preg_split('/\s*,\s*/', trim((string)$value), -1, PREG_SPLIT_NO_EMPTY);
+        return preg_split('/\s*,\s*/', trim((string) $value), -1, PREG_SPLIT_NO_EMPTY);
     }
 
     private function saveLinkedRight(array $entry, string $privilege, string $base, string $linked): void
@@ -331,30 +331,10 @@ class AclField extends BazarField
                 && is_string($entry['id_fiche'])
                 && !empty(trim($entry['id_fiche']))) {
             $defaultRights = (empty($this->entryCommentRight) || $this->entryCommentRight === 'comments-closed')
-                    ? '+'
+                    ? '+' 
                     : $this->entryCommentRight;
             $this->aclService->save($entry['id_fiche'], 'comment', $defaultRights);
         }
-    }
-
-    public static function mapToFieldArray($fieldProps): array
-    {
-        $new = parent::mapToFieldArray($fieldProps);
-        $new[self::FIELD_TYPE] = $fieldProps['type'];
-        $new[self::FIELD_ENTRY_READ_RIGHT] = $fieldProps['entryReadRight'] ?? '';
-        $new[self::FIELD_ENTRY_WRITE_RIGHT] = $fieldProps['entryWriteRight'] ?? '';
-        $new[self::FIELD_ENTRY_COMMENT_RIGHT] = $fieldProps['entryCommentRight'] ?? '';
-        $new[self::FIELD_LABEL] = ($fieldProps['label'] ?? '') == _t('BAZ_ACTIVATE_COMMENTS') ? '' : ($fieldProps['label'] ?? '');
-        $new[self::FIELD_DEFAULT] = $fieldProps['default'] ?? '';
-        $new[self::FIELD_NAME] = $fieldProps['name'] ?? '';
-        $new[self::FIELD_ASK_IF_ACTIVATE_COMMENTS] = !empty($fieldProps['askIfActivateComments']) ? '1' : '';
-        $new[self::FIELD_HINT] = ($fieldProps['hint'] ?? '') == _t('BAZ_ACTIVATE_COMMENTS_HINT') ? '' : ($fieldProps['hint'] ?? '');
-        $new[self::FIELD_MANAGED_GROUPS] = $fieldProps['managedGroups'] ?? '';
-        $new[self::FIELD_LINKED_READ_RIGHT] = $fieldProps['linkedReadRight'] ?? '';
-        $new[self::FIELD_LINKED_WRITE_RIGHT] = $fieldProps['linkedWriteRight'] ?? '';
-        ksort($new);
-
-        return $new;
     }
 
     #[\ReturnTypeWillChange]
@@ -372,7 +352,6 @@ class AclField extends BazarField
             'hint' => $this->getHint(),
             'default' => $this->getDefault(),
             'askIfActivateComments' => $this->getAskIfActivateComments(),
-            'field_type' => self::FIELD_CLASS_TYPE,
             'managedGroups' => $this->managedGroups,
             'linkedReadRight' => $this->linkedReadRight,
             'linkedWriteRight' => $this->linkedWriteRight,

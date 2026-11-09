@@ -14,6 +14,7 @@ class FieldFactory
     protected $wiki;
 
     protected $availableFields;
+    protected $attributeMaps = [];
 
     public function __construct(Wiki $wiki)
     {
@@ -102,5 +103,67 @@ class FieldFactory
         }
 
         return false;
+    }
+
+    /** Positional index => attribute key for a field type, the keys being its FIELD_* constants in lower snake case, as Ectoplasme names them. */
+    public function getAttributeIndexToKeyMap(string $type): array
+    {
+        return $this->getAttributeMap($type)['byIndex'];
+    }
+
+    /** Attribute key => positional index for a field type. */
+    public function getAttributeKeyToIndexMap(string $type): array
+    {
+        return $this->getAttributeMap($type)['byKey'];
+    }
+
+    private function getAttributeMap(string $type): array
+    {
+        if (!isset($this->attributeMaps[$type])) {
+            $this->attributeMaps[$type] = $this->buildAttributeMap($type);
+        }
+
+        return $this->attributeMaps[$type];
+    }
+
+    /** The most derived FIELD_* declaration wins, by name then by index; index 0 is the type and has no key. */
+    private function buildAttributeMap(string $type): array
+    {
+        if (empty($this->availableFields[$type])) {
+            return ['byIndex' => [], 'byKey' => []];
+        }
+
+        $chain = [];
+        for ($class = new \ReflectionClass($this->availableFields[$type]); $class; $class = $class->getParentClass()) {
+            array_unshift($chain, $class);
+        }
+
+        $byName = [];
+        foreach ($chain as $depth => $class) {
+            foreach ($class->getReflectionConstants() as $constant) {
+                if ($constant->getDeclaringClass()->getName() !== $class->getName()) {
+                    continue;
+                }
+                $name = $constant->getName();
+                if (!str_starts_with($name, 'FIELD_') || !is_int($constant->getValue())) {
+                    continue;
+                }
+                $byName[$name] = ['index' => $constant->getValue(), 'depth' => $depth];
+            }
+        }
+
+        $byIndex = [];
+        $depthAtIndex = [];
+        foreach ($byName as $name => $info) {
+            $index = $info['index'];
+            if (!isset($byIndex[$index]) || $info['depth'] >= $depthAtIndex[$index]) {
+                $byIndex[$index] = strtolower(substr($name, strlen('FIELD_')));
+                $depthAtIndex[$index] = $info['depth'];
+            }
+        }
+        unset($byIndex[0]);
+        ksort($byIndex);
+
+        return ['byIndex' => $byIndex, 'byKey' => array_flip($byIndex)];
     }
 }

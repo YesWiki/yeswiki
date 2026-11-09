@@ -3,6 +3,7 @@
 namespace YesWiki\Bazar\Service;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use YesWiki\Core\Entity\Translations;
 use YesWiki\Core\Service\DbService;
 use YesWiki\Core\Service\HtmlPurifierService;
 use YesWiki\Core\Service\PageManager;
@@ -179,29 +180,27 @@ class ListManager
             'title' => $title,
             'nodes' => $this->sanitizeHMTL($nodes),
         ];
-        $translations = $this->storedTranslations($id);
-        if (!empty($translations)) {
-            $list['__translation'] = $translations;
-        }
-        $this->save($id, $list);
+        $this->save($id, Translations::pruned(Translations::carriedOver($this->storedBody($id), $list)));
     }
 
     /**
-     * Replaces the translations of list $id with $translations: per supported language, a `title`
-     * and `nodes` holding a `label` and `children` per node position. Anything else is dropped.
+     * Replaces the translations of list $id with $translations: per translation language, a `title`
+     * and `nodes` holding a `label` and `children` per node position. Only the translation targets are replaced; anything else,
+     * and a position no node holds, is dropped, and with no target nothing is saved.
      */
     public function updateTranslations($id, array $translations): void
     {
         if ($this->securityController->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
+        $targets = $this->wiki->translationTargets(null);
+        if ($targets === []) {
+            return;
+        }
         $list = $this->storedBody($id);
-        $langs = $this->wiki->config['supported_langs'] ?? [];
-        $result = [];
-        foreach ($translations as $lang => $values) {
-            if (!in_array($lang, $langs, true) || !is_array($values)) {
-                continue;
-            }
+        $store = is_array($list[Translations::BODY_KEY] ?? null) ? $list[Translations::BODY_KEY] : [];
+        foreach ($targets as $lang) {
+            $values = is_array($translations[$lang] ?? null) ? $translations[$lang] : [];
             $sanitized = [];
             if (is_scalar($values['title'] ?? null) && trim((string)$values['title']) !== '') {
                 $sanitized['title'] = $this->htmlPurifierService->cleanHTML((string)$values['title']);
@@ -210,12 +209,17 @@ class ListManager
             if (!empty($nodes)) {
                 $sanitized['nodes'] = $nodes;
             }
-            if (!empty($sanitized)) {
-                $result[$lang] = $sanitized;
+            if ($sanitized === []) {
+                unset($store[$lang]);
+            } else {
+                $store[$lang] = $sanitized;
             }
         }
-        $list['__translation'] = $result;
-        $this->save($id, $list);
+        unset($list[Translations::BODY_KEY]);
+        if ($store !== []) {
+            $list[Translations::BODY_KEY] = $store;
+        }
+        $this->save($id, Translations::pruned($list));
     }
 
     private function sanitizeTranslatedNodes($nodes): array
@@ -249,16 +253,9 @@ class ListManager
         return is_array($body) ? $this->convertDataStructure($body) : [];
     }
 
-    private function storedTranslations($id): array
-    {
-        $translations = $this->storedBody($id)['__translation'] ?? [];
-
-        return is_array($translations) ? $translations : [];
-    }
-
     private function save($id, array $list): void
     {
-        $json = json_encode($list);
+        $json = json_encode((object)Translations::forEncoding($list));
         $this->pageManager->save($id, $json);
         $this->cachedLists = array_filter($this->cachedLists, fn ($key) => $key !== $id && !str_starts_with((string)$key, "{$id}|"), ARRAY_FILTER_USE_KEY);
         $this->cachedLists[$id] = $this->loadJson($json, $id);

@@ -6,6 +6,7 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Bazar\Service\Guard;
 use YesWiki\Core\Controller\AuthController;
+use YesWiki\Core\Entity\Translations;
 use YesWiki\Security\Controller\SecurityController;
 use YesWiki\Tags\Service\TagsManager;
 use YesWiki\Wiki;
@@ -104,36 +105,23 @@ class PageManager
     }
 
     /**
-     * Overlays a JSON page body with its `__translation[$lang]` part, the way JSON merge patch (RFC 7396) does.
+     * A JSON page body as a reader of $lang sees it ('default' = the current language, 'all' or null = untouched);
+     * the translation store stays in the body for the code that edits or exports it.
      */
     public function translatePage(?array $page, ?string $lang): ?array
     {
-        if (empty($page['body']) || $lang === null || $lang === 'all' || !str_contains($page['body'], '"__translation"')) {
+        if (empty($page['body']) || $lang === null || $lang === 'all' || !str_contains($page['body'], '"' . Translations::BODY_KEY . '"')) {
             return $page;
         }
-        $lang = $lang === 'default' ? $this->wiki->lang : $lang;
         $body = json_decode($page['body'], true);
-        if (!is_array($body) || !isset($body['__translation'][$lang]) || !is_array($body['__translation'][$lang])) {
+        if (!is_array($body) || !Translations::carries($body)) {
             return $page;
         }
-        $page['body'] = json_encode($this->mergePatch($body, $body['__translation'][$lang]));
+        $translated = Translations::apply($body, $lang === 'default' ? $this->wiki->lang : $lang);
+        $translated[Translations::BODY_KEY] = $body[Translations::BODY_KEY];
+        $page['body'] = json_encode($translated);
 
         return $page;
-    }
-
-    private function mergePatch(array $target, array $patch): array
-    {
-        foreach ($patch as $key => $value) {
-            if ($value === null) {
-                unset($target[$key]);
-            } elseif (is_array($value) && isset($target[$key]) && is_array($target[$key])) {
-                $target[$key] = $this->mergePatch($target[$key], $value);
-            } else {
-                $target[$key] = $value;
-            }
-        }
-
-        return $target;
     }
 
     /**

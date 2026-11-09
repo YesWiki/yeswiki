@@ -37,7 +37,7 @@ class EditConfigAction extends YesWikiAction
 
         'contact_from' => 'contact',
         'mail_custom_message' => 'contact',
-        'supported_langs' => 'internationalisation',
+        'other_languages' => 'internationalisation',
         'default_language' => 'internationalisation',
     ];
 
