@@ -9,7 +9,6 @@ use YesWiki\Core\ApiResponse;
 use YesWiki\Core\YesWikiController;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Import\Service\ImporterManager;
-use YesWiki\Import\Service\SyncScheduler;
 
 class ImportApiController extends YesWikiController
 {
@@ -18,24 +17,17 @@ class ImportApiController extends YesWikiController
     public function sync(): ApiResponse
     {
         $params = $this->getService(ParameterBagInterface::class);
-        $expectedSecret = $params->has('sync_secret') ? $params->get('sync_secret') : null;
-        $providedSecret = $this->getRequest()->headers->get('secret');
-
-        if (empty($expectedSecret) || !is_scalar($expectedSecret) || empty($providedSecret)
-            || !hash_equals((string)$expectedSecret, (string)$providedSecret)) {
+        $expectedSecret = $params->has('sync_secret') ? $params->get('sync_secret') : '';
+        if (!$this->sharesSecret(is_scalar($expectedSecret) ? (string)$expectedSecret : '', (string)$this->getRequest()->headers->get('secret', ''))) {
             return new ApiResponse(['error' => 'Unauthorized'], 401);
         }
 
         $importerManager = $this->getService(ImporterManager::class);
-        $scheduler = $this->getService(SyncScheduler::class);
         $dataSources = $params->has('dataSources') ? $params->get('dataSources') : [];
 
         $results = [];
         foreach ((is_array($dataSources) ? $dataSources : []) as $source => $sourceOptions) {
-            ob_start();
-            $results[$source] = $importerManager->syncSource((string)$source, $sourceOptions);
-
-            $scheduler->recordRun((string)$source, trim(ob_get_clean() . "\n" . $results[$source]));
+            $results[$source] = $importerManager->syncByHand((string)$source, $sourceOptions)['result'];
         }
 
         return new ApiResponse($results);
