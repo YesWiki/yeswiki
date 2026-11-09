@@ -44,6 +44,7 @@ class TemplateFieldCatalogTest extends YesWikiTestCase
     {
         $found = $this->catalog()->forTemplate('core/fiche-' . self::FORM_ID . '.twig', '');
 
+        $this->assertNotNull($found);
         $this->assertSame('entry', $found['kind']);
         $this->assertSame([self::FORM_ID], array_column($found['forms'], 'id'));
         $this->assertSame('Le titre', $found['forms'][0]['fields'][0]['label']);
@@ -60,6 +61,7 @@ class TemplateFieldCatalogTest extends YesWikiTestCase
 
         $found = $this->catalog()->forTemplate('core/entries/index-dynamic-templates/probe.twig', $source);
 
+        $this->assertNotNull($found);
         $this->assertSame('list', $found['kind']);
         $this->assertSame(self::FORM_ID, $found['selected']);
     }
@@ -68,6 +70,7 @@ class TemplateFieldCatalogTest extends YesWikiTestCase
     {
         $found = $this->catalog()->forTemplate('core/fiche-' . self::FORM_ID . '.twig', '');
 
+        $this->assertNotNull($found);
         $this->assertSame([false, true], array_column($found['forms'][0]['fields'], 'html'));
     }
 
