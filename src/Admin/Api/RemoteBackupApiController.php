@@ -10,7 +10,10 @@ use YesWiki\Core\ApiResponse;
 use YesWiki\Core\YesWikiController;
 use YesWiki\Identity\Service\CsrfTokenChecker;
 
-/** Fetching a backup from another wiki, from the admin backups screen: the browser starts it, then posts 'advance' until it is done. */
+/**
+ * Fetching a backup from another wiki, from the admin backups screen: the browser starts it, polls GET until it is done
+ * and may cancel it, while the queue moves the fetch (ADR-0030, "Fetching a backup from another wiki"). `advance` now only says where it is, for older pages.
+ */
 class RemoteBackupApiController extends YesWikiController
 {
     #[Route('/api/remotebackup', methods: ['GET'], options: ['acl' => ['@admins']])]
@@ -51,7 +54,7 @@ class RemoteBackupApiController extends YesWikiController
                     trim((string)$post->get('username', '')),
                     (string)$post->get('password', '')
                 ), Response::HTTP_OK),
-                'advance' => new ApiResponse($service->advance(), Response::HTTP_OK),
+                'advance' => new ApiResponse($service->status(), Response::HTTP_OK),
                 'cancel' => new ApiResponse($service->cancel(), Response::HTTP_OK),
                 default => new ApiResponse(['error' => "Not supported action : $action"], Response::HTTP_BAD_REQUEST),
             };

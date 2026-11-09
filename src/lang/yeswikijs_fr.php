@@ -35,14 +35,14 @@ return [
     'ADMIN_BACKUPS_RESTORE_ARCHIVE_ERROR' => 'Restauration impossible de {filename}',
     'ADMIN_BACKUPS_RESTORE_CONFIRM' => "Restaurer la sauvegarde {filename} ?\n\nAttention : cela va écraser la base de données et les fichiers actuels. Cette action est irréversible.",
     'ADMIN_BACKUPS_START_BACKUP' => "Lancement d'une sauvegarde",
-    'ADMIN_BACKUPS_START_BACKUP_SYNC' => "Lancement d'une sauvegarde en direct (moins stable)\n" .
-        "Il ne sera pas possible de mettre à jour le statut en direct\n" .
-        'Ne pas fermer, ni rafraîchir cette fenêtre !',
     'ADMIN_BACKUPS_STARTED' => 'Sauvegarde lancée',
     'ADMIN_BACKUPS_START_BACKUP_ERROR' => 'Lancement de la sauvegarde impossible',
     'ADMIN_BACKUPS_UPDATE_UID_STATUS_ERROR' => 'Impossible de mettre à jour le statut de la sauvegarde',
     'ADMIN_BACKUPS_UID_STATUS_NOT_FOUND' => "Les informations de suivi n'ont pas été trouvées",
     'ADMIN_BACKUPS_UID_STATUS_RUNNING' => 'Sauvegarde en cours',
+    'ADMIN_BACKUPS_UID_STATUS_PENDING' => 'Sauvegarde en attente de la file de traitements',
+    'ADMIN_BACKUPS_UID_STATUS_FAILED' => 'La sauvegarde a échoué',
+    'ADMIN_BACKUPS_UID_STATUS_KILLED' => 'Le serveur l\'a arrêtée avant la fin. La page Traitements (?admin/jobs) dit quoi faire.',
     'ADMIN_BACKUPS_UID_STATUS_FINISHED' => 'Sauvegarde terminée',
     'ADMIN_BACKUPS_UID_STATUS_NOT_FINISHED' => "Il y a un problème car la sauvegarde n'est plus en cours et elle n'est pas terminée !",
     'ADMIN_BACKUPS_UID_STATUS_STOP' => 'Sauvegarde arrêtée',
@@ -77,13 +77,10 @@ return [
         'Suivez <a href="{helpBaseUrl}#/docs/fr/admin?id=résoudre-les-problèmes-de-sauvegarde" title="Aide pour configurer le dossier de sauvegarde" target="blank">cette aide</a> pour configurer le dossier de sauvegarde.',
     'ADMIN_BACKUPS_FORCED_UPDATE_NOT_POSSIBLE' => 'Mise à jour forcée impossible',
     'ADMIN_BACKUPS_UID_STATUS_FINISHED_THEN_UPDATING' => 'Mise à jour lancée (veuillez patienter)',
-    'ADMIN_BACKUPS_START_BACKUP_CANNOT_EXEC' => "Lancement de la sauvegarde impossible car il n'est pas possible de lancer des commandes console sur le serveur " .
-        '(<a href="{helpBaseUrl}#/docs/fr/admin?id=résoudre-les-problèmes-de-sauvegarde" title="Aide sur la commande console" target="blank">voir aide</a>).',
     'ADMIN_BACKUPS_CANNOT_ARCHIVE' => "Lancement de la sauvegarde impossible car le serveur n'a pas la capacité d'archiver.",
     'ADMIN_BACKUPS_START_BACKUP_FOLDER_AVAILABLE' => "Lancement de la sauvegarde impossible car le dossier de sauvegarde est accessible sur internet.\n" .
         "Suivez <a href=\"{helpBaseUrl}?#/docs/fr/admin?id=résoudre-les-problèmes-de-sauvegarde\" title=\"Aide pour restreindre l'accès au dossier de sauvegarde\" target=\"blank\">cette aide</a> pour restreindre l'accès au dossier de sauvegarde.",
     'ADMIN_BACKUPS_START_BACKUP_NOT_ENOUGH_SPACE' => "Lancement de la sauvegarde impossible car il n'y a plus assez d'espace disque disponible pour une nouvelle sauvegarde.",
-    'ADMIN_BACKUPS_START_BACKUP_NOT_DB' => "Lancement de la sauvegarde non optimal : l'utilitaire d'export de base de données ('mysqldump') n'est pas accessible (<a href=\"{helpBaseUrl}#/docs/fr/admin?id=résoudre-les-problèmes-de-sauvegarde\" title=\"Aide sur mysqldump\" target=\"blank\">voir aide</a>).",
     'REVISIONS_COMMIT_DIFF' => 'Modifs apportées par cette version',
     'REVISIONS_DIFF' => 'Comparaison avec version actuelle',
     'REVISIONS_PREVIEW' => 'Aperçu de cette version',
