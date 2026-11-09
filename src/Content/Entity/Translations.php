@@ -5,11 +5,17 @@ namespace YesWiki\Content\Entity;
 /** The translations a Content body carries, and the paths they address. */
 final class Translations
 {
-    /** The body key holding every language's translations, nested the way Doryphore's `extralang` is. */
-    public const BODY_KEY = '__extralang';
+    /** The body key holding every language's translations, nested, the key Doryphore stores them under too. */
+    public const BODY_KEY = '__translation';
 
-    /** Where translations lived before, flat as path => text; still read, never written. */
+    /** Where translations lived until the key was agreed with Doryphore, nested as now; still read, never written. */
+    public const NESTED_LEGACY_KEY = '__extralang';
+
+    /** Where translations lived first, flat as path => text; still read, never written. */
     public const LEGACY_KEY = '__translations';
+
+    /** Every key a body may hold translations under, the current one first. */
+    public const STORE_KEYS = [self::BODY_KEY, self::NESTED_LEGACY_KEY, self::LEGACY_KEY];
 
     /** A form's own keys under the names Doryphore stores a form with. */
     private const FORM_KEYS = ['label' => 'title', 'template' => 'fields'];
@@ -17,8 +23,8 @@ final class Translations
     /** A form field's attributes under the names Doryphore gives them. */
     private const FIELD_ATTRIBUTES = ['hint' => 'helper'];
 
-    /** The keys a list element is identified by, so a path names an element rather than its position. */
-    private const IDENTITY_KEYS = ['name', 'id'];
+    /** The keys a list element is identified by, so a path names an element rather than its position; a field without a name answers to its handle. */
+    private const IDENTITY_KEYS = ['name', 'id', 'handle'];
 
     /**
      * The languages $body carries at least one translation for.
@@ -93,13 +99,15 @@ final class Translations
      */
     public static function strip(array $body): array
     {
-        unset($body[self::BODY_KEY], $body[self::LEGACY_KEY]);
+        foreach (self::STORE_KEYS as $key) {
+            unset($body[$key]);
+        }
 
         return $body;
     }
 
     /**
-     * $body with its translations rewritten under BODY_KEY, whichever key and shape they were in.
+     * $body with its translations rewritten under BODY_KEY, whichever key and shape they were in; the current key wins over a legacy one.
      *
      * @param array<string, mixed> $body
      *
@@ -113,7 +121,13 @@ final class Translations
     /** @param array<string, mixed> $body */
     public static function carries(array $body): bool
     {
-        return isset($body[self::BODY_KEY]) || isset($body[self::LEGACY_KEY]);
+        foreach (self::STORE_KEYS as $key) {
+            if (isset($body[$key])) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -378,8 +392,9 @@ final class Translations
     private static function store(array $body): array
     {
         $store = [];
-        if (is_array($body[self::BODY_KEY] ?? null)) {
-            foreach ($body[self::BODY_KEY] as $language => $tree) {
+        $nestedKey = is_array($body[self::BODY_KEY] ?? null) ? self::BODY_KEY : (is_array($body[self::NESTED_LEGACY_KEY] ?? null) ? self::NESTED_LEGACY_KEY : null);
+        if ($nestedKey !== null) {
+            foreach ($body[$nestedKey] as $language => $tree) {
                 if (!is_array($tree)) {
                     continue;
                 }

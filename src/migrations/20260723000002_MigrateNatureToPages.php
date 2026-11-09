@@ -4,6 +4,7 @@ use YesWiki\Content\Service\FormManager;
 use YesWiki\Core\YesWikiMigration;
 use YesWiki\Federation\Service\ActivityPubKeyStore;
 
+/** Stores each `nature` form as a form page; a page already holding that id is kept unless it has no fields, then it is rebuilt from the row. */
 class MigrateNatureToPages extends YesWikiMigration
 {
     public function run()
@@ -18,7 +19,8 @@ class MigrateNatureToPages extends YesWikiMigration
         );
 
         foreach ($rows as $row) {
-            if ($formManager->getOne($row['bn_id_nature'])) {
+            $existing = $formManager->getOne($row['bn_id_nature']);
+            if ($existing && (!empty($existing['template']) || trim((string)($row['bn_template'] ?? '')) === '')) {
                 continue;
             }
 
@@ -35,7 +37,12 @@ class MigrateNatureToPages extends YesWikiMigration
                 unset($row[$legacyKey]);
             }
 
-            $formManager->create($row);
+            if ($existing) {
+                $formManager->update($row);
+                $this->say("Form {$row['id']} had a page without fields; it was rebuilt from the nature table.");
+            } else {
+                $formManager->create($row);
+            }
 
             if (!empty($existingPrivateKey)) {
                 $this->getService(ActivityPubKeyStore::class)->import((string)$row['id'], $existingPrivateKey);

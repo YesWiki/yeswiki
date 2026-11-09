@@ -54,16 +54,23 @@ class TranslatableContent
     }
 
     /**
-     * The languages a translator may fill in for a Content written in $sourceLanguage.
+     * The languages a translator may fill in for a Content written in $sourceLanguage; none while `other_languages`
+     * turns on no installed language, whatever language the Content is written in, as Doryphore decides it.
      *
      * @return list<string>
      */
     public function targetLanguages(string $sourceLanguage): array
     {
-        return array_values(array_filter(
-            $this->languageService->availableLanguages(),
-            fn ($language) => $language !== $sourceLanguage
-        ));
+        $available = $this->languageService->availableLanguages();
+        $others = array_filter(
+            (array)$this->runtimeConfig->getValue('other_languages', []),
+            fn ($language) => is_string($language) && $language !== $this->wikiLanguage() && in_array($language, $available, true)
+        );
+        if ($others === []) {
+            return [];
+        }
+
+        return array_values(array_filter($available, fn ($language) => $language !== $sourceLanguage));
     }
 
     /**
@@ -194,6 +201,22 @@ class TranslatableContent
     }
 
     /**
+     * The key a form field's translations are addressed by: its name, or its handle when it has none.
+     *
+     * @param array<array-key, mixed> $fieldObject
+     */
+    public static function fieldIdentity(array $fieldObject): string
+    {
+        foreach (['name', 'handle'] as $key) {
+            if (is_scalar($fieldObject[$key] ?? null) && (string)$fieldObject[$key] !== '') {
+                return (string)$fieldObject[$key];
+            }
+        }
+
+        return '';
+    }
+
+    /**
      * What a translator is asked to retype for a form: its own wording, then each field's.
      *
      * @param array<string, mixed> $form
@@ -214,20 +237,13 @@ class TranslatableContent
             ];
         }
 
-        $byName = [];
-        foreach ($form['prepared'] ?? [] as $field) {
-            if ($field instanceof BazarField && (string)$field->getName() !== '') {
-                $byName[(string)$field->getName()] = $field;
-            }
-        }
-
-        foreach ($form['template'] ?? [] as $fieldObject) {
+        foreach ($form['template'] ?? [] as $index => $fieldObject) {
             if (!is_array($fieldObject)) {
                 continue;
             }
-            $name = (string)($fieldObject['name'] ?? '');
-            $field = $byName[$name] ?? null;
-            if ($name === '' || $field === null) {
+            $identity = self::fieldIdentity($fieldObject);
+            $field = $form['prepared'][$index] ?? null;
+            if ($identity === '' || !$field instanceof BazarField) {
                 continue;
             }
             foreach ($field->translatableAttributes() as $attribute) {
@@ -235,8 +251,8 @@ class TranslatableContent
                     continue;
                 }
                 $paths[] = [
-                    'path' => 'template.' . $name . '.' . $attribute,
-                    'label' => _t('TRANSLATE_FIELD_' . strtoupper($attribute), ['field' => $field->getLabel() ?: $name]),
+                    'path' => 'template.' . $identity . '.' . $attribute,
+                    'label' => _t('TRANSLATE_FIELD_' . strtoupper($attribute), ['field' => $field->getLabel() ?: $identity]),
                     'multiline' => $attribute !== 'label',
                 ];
             }

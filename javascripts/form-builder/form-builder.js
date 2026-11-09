@@ -927,7 +927,7 @@ function renderSettings() {
       <label class="yw-form-label">${esc(def.label ?? name)}</label>
     </div>`)
     row.append(controlFor(name, def, field.data[name] ?? def.value ?? ''))
-    const wrote = sourceWording[`${field.data.name}.${name}`]
+    const wrote = sourceWording[`${field.data.name || field.data.handle}.${name}`]
     if (wrote)
       row.append(
         el(

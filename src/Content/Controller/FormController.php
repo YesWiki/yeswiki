@@ -49,9 +49,6 @@ class FormController extends YesWikiController
     /** The form-level wording a translator retypes. */
     private const TRANSLATABLE_PROPERTIES = ['label', 'description', 'only_one_entry_message', 'max_entries_message', 'max_entries_count_message'];
 
-    /** The per-field wording a translator retypes. */
-    private const TRANSLATABLE_ATTRIBUTES = ['label', 'hint'];
-
     /** What a form's own screen shows of its Content before paging. */
     public const ROWS_PER_PAGE = '50';
 
@@ -464,13 +461,13 @@ class FormController extends YesWikiController
 
         $template = json_decode((string)($posted['template'] ?? ''), true);
         foreach (is_array($template) ? $template : [] as $field) {
-            $name = is_array($field) ? (string)($field['name'] ?? '') : '';
-            if ($name === '') {
+            $identity = is_array($field) ? TranslatableContent::fieldIdentity($field) : '';
+            if ($identity === '') {
                 continue;
             }
-            foreach (['label', 'hint'] as $attribute) {
-                if (isset($field[$attribute]) && is_scalar($field[$attribute])) {
-                    $values['template.' . $name . '.' . $attribute] = (string)$field[$attribute];
+            foreach ($field as $attribute => $value) {
+                if (is_string($attribute) && !in_array($attribute, ['type', 'name', 'handle'], true) && is_scalar($value)) {
+                    $values['template.' . $identity . '.' . $attribute] = (string)$value;
                 }
             }
         }
@@ -479,14 +476,7 @@ class FormController extends YesWikiController
     }
 
     /**
-     * The form as the designer should show it for $language: its translations, blank where it has none.
-     *
-     * @param array<string, mixed>|null $form
-     *
-     * @return array<string, mixed>|null
-     */
-    /**
-     * What the form says in the language it was written in, keyed the way the designer addresses it.
+     * What the form says in the language it was written in, keyed the way the designer addresses it: a form property, or `<name or handle>.<attribute>`.
      *
      * @param array<string, mixed> $form
      *
@@ -496,20 +486,10 @@ class FormController extends YesWikiController
     {
         $source = Translations::strip($form);
         $wording = [];
-        foreach (self::TRANSLATABLE_PROPERTIES as $property) {
-            if (is_scalar($source[$property] ?? null) && (string)$source[$property] !== '') {
-                $wording[$property] = (string)$source[$property];
-            }
-        }
-        foreach ($source['template'] ?? [] as $field) {
-            $name = is_array($field) ? (string)($field['name'] ?? '') : '';
-            if ($name === '') {
-                continue;
-            }
-            foreach (self::TRANSLATABLE_ATTRIBUTES as $attribute) {
-                if (is_scalar($field[$attribute] ?? null) && (string)$field[$attribute] !== '') {
-                    $wording[$name . '.' . $attribute] = (string)$field[$attribute];
-                }
+        foreach ($this->getService(TranslatableContent::class)->formPaths($source) as $path) {
+            $text = Translations::sourceTextAt($source, $path['path']);
+            if ($text !== '') {
+                $wording[str_starts_with($path['path'], 'template.') ? substr($path['path'], strlen('template.')) : $path['path']] = $text;
             }
         }
 
@@ -528,16 +508,11 @@ class FormController extends YesWikiController
         }
 
         $blanked = Translations::strip($form);
-        foreach (self::TRANSLATABLE_PROPERTIES as $property) {
-            $blanked[$property] = '';
+        $blanks = [];
+        foreach ($this->getService(TranslatableContent::class)->formPaths($blanked) as $path) {
+            $blanks[$path['path']] = '';
         }
-        foreach ($blanked['template'] ?? [] as $index => $field) {
-            foreach (self::TRANSLATABLE_ATTRIBUTES as $attribute) {
-                if (isset($field[$attribute])) {
-                    $blanked['template'][$index][$attribute] = '';
-                }
-            }
-        }
+        $blanked = Translations::applied($blanked, $blanks);
 
         $blanked = Translations::applied($blanked, Translations::of($form, $language));
 

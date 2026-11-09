@@ -317,7 +317,7 @@ class TranslationsTest extends TestCase
     {
         $encoded = PageBody::encode($this->valueList());
 
-        $this->assertStringContainsString('"__extralang":{"en":{"title":"Colours","nodes":{"0":{"label":"Red","children":{"0":{"label":"Carmine"}}}}}}', $encoded);
+        $this->assertStringContainsString('"__translation":{"en":{"title":"Colours","nodes":{"0":{"label":"Red","children":{"0":{"label":"Carmine"}}}}}}', $encoded);
         $this->assertSame('Red', Translations::of(PageBody::decode($encoded), 'en')['nodes.rouge.label']);
     }
 
@@ -343,5 +343,64 @@ class TranslationsTest extends TestCase
 
         $this->assertArrayNotHasKey(Translations::LEGACY_KEY, $rewritten);
         $this->assertSame(['en' => ['title' => 'Colours', 'nodes' => [1 => ['label' => 'Blue']]]], $rewritten[Translations::BODY_KEY]);
+    }
+
+    public function testTheNestedStoreUnderItsFormerKeyIsStillReadAndMovesToTheAgreedKey(): void
+    {
+        $body = Translations::strip($this->valueList());
+        $body[Translations::NESTED_LEGACY_KEY] = ['en' => ['title' => 'Colours', 'nodes' => [1 => ['label' => 'Blue']]]];
+
+        $this->assertSame('Blue', Translations::apply($body, 'en')['nodes'][1]['label']);
+
+        $rewritten = Translations::inCurrentShape($body);
+
+        $this->assertArrayNotHasKey(Translations::NESTED_LEGACY_KEY, $rewritten);
+        $this->assertSame(['en' => ['title' => 'Colours', 'nodes' => [1 => ['label' => 'Blue']]]], $rewritten[Translations::BODY_KEY]);
+    }
+
+    public function testTheAgreedKeyIsReadNestedAndTheFlatKeyOneLetterLongerIsReadFlat(): void
+    {
+        $nested = Translations::strip($this->entry());
+        $nested['__translation'] = ['en' => ['bf_titre' => 'The title']];
+        $flat = Translations::strip($this->valueList());
+        $flat['__translations'] = ['en' => ['nodes.bleu.label' => 'Blue']];
+
+        $this->assertSame(['bf_titre' => 'The title'], Translations::of($nested, 'en'));
+        $this->assertSame(['nodes.bleu.label' => 'Blue'], Translations::of($flat, 'en'));
+        $this->assertSame('Blue', Translations::apply($flat, 'en')['nodes'][1]['label']);
+    }
+
+    public function testTheAgreedKeyWinsOverAFormerOneAndNoneSurvivesARewrite(): void
+    {
+        $body = Translations::strip($this->entry());
+        $body[Translations::BODY_KEY] = ['en' => ['bf_titre' => 'Current']];
+        $body[Translations::NESTED_LEGACY_KEY] = ['en' => ['bf_titre' => 'Former nested']];
+        $body[Translations::LEGACY_KEY] = ['en' => ['bf_titre' => 'Former flat']];
+
+        $this->assertSame('Current', Translations::apply($body, 'en')['bf_titre']);
+
+        $rewritten = Translations::inCurrentShape($body);
+
+        $this->assertSame(['en' => ['bf_titre' => 'Current']], $rewritten[Translations::BODY_KEY]);
+        $this->assertArrayNotHasKey(Translations::NESTED_LEGACY_KEY, $rewritten);
+        $this->assertArrayNotHasKey(Translations::LEGACY_KEY, $rewritten);
+        $this->assertSame([], array_intersect(Translations::STORE_KEYS, array_keys(Translations::strip($body))));
+    }
+
+    public function testAFieldWithoutANameIsAddressedByItsHandle(): void
+    {
+        $body = [
+            'label' => 'Agenda',
+            'template' => [
+                ['type' => 'labelhtml', 'form_text' => 'Bonjour', 'handle' => 'ab12cd34'],
+                ['type' => 'texte', 'name' => 'bf_titre', 'label' => 'Titre', 'handle' => 'ef56ab78'],
+            ],
+            Translations::BODY_KEY => ['en' => ['fields' => ['ab12cd34' => ['form_text' => 'Hello'], 'bf_titre' => ['label' => 'Title']]]],
+        ];
+
+        $this->assertSame(['template.ab12cd34.form_text' => 'Hello', 'template.bf_titre.label' => 'Title'], Translations::of($body, 'en'));
+        $read = Translations::apply($body, 'en');
+        $this->assertSame('Hello', $read['template'][0]['form_text']);
+        $this->assertSame('Title', $read['template'][1]['label']);
     }
 }

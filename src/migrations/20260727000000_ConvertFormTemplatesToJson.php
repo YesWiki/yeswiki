@@ -21,7 +21,7 @@ class ConvertFormTemplatesToJson extends YesWikiMigration
 
         foreach ($rows as $row) {
             $body = json_decode($row['body'] ?? '', true);
-            if (!is_array($body) || is_array($body['bn_template'] ?? null)) {
+            if (!is_array($body) || is_array($body['bn_template'] ?? null) || (is_array($body['template'] ?? null) && !array_key_exists('bn_template', $body))) {
                 continue;
             }
             $template = trim((string)($body['bn_template'] ?? ''));

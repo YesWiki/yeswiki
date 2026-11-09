@@ -1170,7 +1170,7 @@ class FormManager implements RequestScopedState
     }
 
     /**
-     * $body with the translations of every field renamed since $before moved to the field's new name.
+     * $body with the translations of every field whose name or handle changed since $before moved to what it answers to now.
      *
      * @param array<string, mixed> $before
      * @param array<string, mixed> $body
@@ -1182,9 +1182,13 @@ class FormManager implements RequestScopedState
         $previousNames = $this->namesByHandle($before['template'] ?? []);
         $renames = [];
         foreach ($this->namesByHandle($body['template'] ?? []) as $handle => $name) {
-            $previous = $previousNames[$handle] ?? '';
-            if ($previous !== '' && $name !== '' && $previous !== $name) {
-                $renames[$previous] = $name;
+            if (!array_key_exists($handle, $previousNames)) {
+                continue;
+            }
+            $previous = $previousNames[$handle] !== '' ? $previousNames[$handle] : (string)$handle;
+            $current = $name !== '' ? $name : (string)$handle;
+            if ($previous !== $current) {
+                $renames[$previous] = $current;
             }
         }
 

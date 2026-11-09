@@ -130,4 +130,10 @@ class TabsField extends LabelField
             ]
         );
     }
+
+    /** The tab titles, in the form and in the entry. */
+    public function translatableAttributes(): array
+    {
+        return ['form_titles', 'view_titles'];
+    }
 }

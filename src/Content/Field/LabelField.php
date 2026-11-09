@@ -88,4 +88,10 @@ class LabelField extends BazarField
             'useWikiSyntax' => $this->useWikiSyntax,
         ];
     }
+
+    /** A label has no name nor input: what a translator retypes is the text it shows in the form and in the entry. */
+    public function translatableAttributes(): array
+    {
+        return ['form_text', 'view_text'];
+    }
 }
