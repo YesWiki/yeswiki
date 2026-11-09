@@ -1,11 +1,11 @@
 <?php
 
 use YesWiki\Core\YesWikiMigration;
-use YesWiki\Kernel\Service\ConsoleService;
-use YesWiki\Search\Service\SearchIndexer;
 use YesWiki\Search\Service\SearchIndexSchema;
 
-/** Ticket 18 / ADR-0015: create the search index, and queue every Content for it. */
+/**
+ * Ticket 18 / ADR-0015: create the search index; ReindexingGoesThroughTheQueue fills it once the queue's table exists.
+ */
 class CreateSearchIndex extends YesWikiMigration
 {
     public function run()
@@ -13,19 +13,9 @@ class CreateSearchIndex extends YesWikiMigration
         $schema = $this->getService(SearchIndexSchema::class);
         $schema->create();
 
-        $queued = $this->getService(SearchIndexer::class)->enqueueEverything();
-
         $this->dropDeadFulltextIndexOnPages();
 
-        try {
-            $this->getService(ConsoleService::class)->startConsoleAsync('search:reindex', ['--drain']);
-        } catch (Throwable $unavailable) {
-        }
-
-        $this->say(
-            "search index created; {$queued} Content(s) queued for indexing "
-            . '(run `./yeswicli search:reindex --drain` to finish now)'
-        );
+        $this->say('search index created; it is filled once the background queue exists');
     }
 
     /**

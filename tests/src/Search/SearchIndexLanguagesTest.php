@@ -35,7 +35,7 @@ class SearchIndexLanguagesTest extends YesWikiTestCase
 
         $indexer = $wiki->services->get(SearchIndexer::class);
         $indexer->enqueue([self::TRANSLATED, self::UNTRANSLATED]);
-        $indexer->drain(50);
+        self::reindexWaitingContents($wiki);
     }
 
     protected function tearDown(): void

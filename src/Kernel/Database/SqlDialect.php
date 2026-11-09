@@ -139,21 +139,18 @@ interface SqlDialect
     public function onConflictDoNothing(array $conflictColumns): string;
 
     /**
-     * Every statement needed to create the search index table, its ordinary indexes, its full-text index and the queue of Contents awaiting reindexing, in execution order.
-     *
-     * @param string $table      already prefixed, unquoted
-     * @param string $queueTable already prefixed, unquoted
+     * The statements creating the search index table (prefixed, unquoted), its indexes and the keywords table, in order.
      *
      * @return list<string>
      */
-    public function searchIndexDdl(string $table, string $queueTable, string $keywordsTable): array;
+    public function searchIndexDdl(string $table, string $keywordsTable): array;
 
     /**
      * Every statement needed to remove what searchIndexDdl() created, in execution order.
      *
      * @return list<string>
      */
-    public function searchIndexDropDdl(string $table, string $queueTable, string $keywordsTable): array;
+    public function searchIndexDropDdl(string $table, string $keywordsTable): array;
 
     /**
      * A boolean SQL expression selecting the index rows that match the query, each term matched as a prefix (`atelier` matches `ateliers`).

@@ -11,7 +11,7 @@ class DumpRewriter
      *
      * @var list<string>
      */
-    public const CORE_TABLES = ['pages', 'triples', 'search_index', 'search_keywords', 'search_queue'];
+    public const CORE_TABLES = ['pages', 'triples', 'search_index', 'search_keywords'];
 
     public const TABLES_THAT_MAKE_A_WIKI = 2;
 

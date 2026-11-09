@@ -2,7 +2,6 @@
 
 use YesWiki\Core\YesWikiMigration;
 use YesWiki\Kernel\Service\DbService;
-use YesWiki\Search\Service\SearchIndexSchema;
 
 /** Ticket 54: a drain takes the rows it is about to work on, so two of them cannot hold the same tags. */
 class TheSearchQueueClaimsItsRows extends YesWikiMigration
@@ -10,7 +9,7 @@ class TheSearchQueueClaimsItsRows extends YesWikiMigration
     public function run()
     {
         $db = $this->getService(DbService::class);
-        $queue = $this->getService(SearchIndexSchema::class)->queueTable();
+        $queue = trim($db->prefixTable('search_queue'));
 
         if (!in_array($queue, $db->schema()->getTables(), true)) {
             return;
@@ -30,7 +29,7 @@ class TheSearchQueueClaimsItsRows extends YesWikiMigration
 
     private function addColumn(DbService $db, string $queue, string $column, string $definition): void
     {
-        if ($db->schema()->columnExists(SearchIndexSchema::QUEUE_TABLE, $column)) {
+        if ($db->schema()->columnExists('search_queue', $column)) {
             return;
         }
         $db->query("ALTER TABLE {$queue} ADD COLUMN {$db->quoteIdentifier($column)} {$definition}");

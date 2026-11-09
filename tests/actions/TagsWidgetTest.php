@@ -44,7 +44,7 @@ class TagsWidgetTest extends YesWikiTestCase
             PageBody::CONTENT => 'another page',
             PageBody::KEYWORDS => ['unrelatedtag'],
         ], '', true);
-        $indexer->drain(1000);
+        self::reindexWaitingContents($wiki);
 
         $admin = current(array_filter($userManager->getAll(), fn ($u) => $wiki->services->get(\YesWiki\Identity\Service\AclService::class)->isAdmin($u['name'])));
         $this->assertNotFalse($admin, 'need an existing admin user to exercise write access');
