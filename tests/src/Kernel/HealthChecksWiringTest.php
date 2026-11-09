@@ -27,6 +27,7 @@ class HealthChecksWiringTest extends YesWikiTestCase
         $this->assertContains('bucket-reachable', $ids);
         $this->assertContains('ext-intl', $ids, 'Search declares the extension it degrades without');
         $this->assertContains('core-update', $ids);
+        $this->assertContains('queue-stalled', $ids, 'the queue declares its own');
     }
 
     /**
