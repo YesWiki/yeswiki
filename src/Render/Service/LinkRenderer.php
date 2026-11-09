@@ -30,6 +30,8 @@ class LinkRenderer
     }
 
     /**
+     * $options are HTML attributes plus method, params and html (when truthy, $text is already-safe HTML, not escaped).
+     *
      * @param string       $link
      * @param string       $text
      * @param array<mixed> $options HTML attributes, plus method, params and html (already-safe HTML, not escaped)
