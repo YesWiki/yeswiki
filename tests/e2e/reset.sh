@@ -105,6 +105,8 @@ case "$RUNTIME" in
     if [ "${YESWIKI_TEST_ONBOARDED:-1}" = "1" ]; then
       "${ROOT}/yeswicli" onboarding:apply --all
     fi
+    # What the install queued -- the search index among it -- is done before a spec looks.
+    "${ROOT}/yeswicli" messenger:consume --drain
     ;;
 
   binary)
@@ -143,6 +145,7 @@ case "$RUNTIME" in
     if [ "${YESWIKI_TEST_ONBOARDED:-1}" = "1" ]; then
       "$BINARY" onboarding:apply --all --instance "${INSTANCE}"
     fi
+    "$BINARY" messenger:consume --drain --instance "${INSTANCE}"
     if [ "$SERVING" = "1" ]; then
       "${RUNTIME_SCRIPT[@]}" start
     fi
