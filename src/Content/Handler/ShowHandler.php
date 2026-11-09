@@ -164,27 +164,14 @@ class ShowHandler extends YesWikiHandler implements RegisteredHandler
         }
 
         if (!$this->getService(AclService::class)->hasAccess('read')) {
-            if ($contenu = $this->getService(PageManager::class)->getOne('PageLogin')) {
-                $output = '<body class="login-body">' . "\n"
-                    . '<div class="container">' . "\n"
-                    . '<div class="yeswiki-page-widget page-widget page" ' . $this->getService(MarkdownFormatterService::class)->format('{{doubleclick iframe="1"}}') . '>' . "\n";
-                $output .= '<div class="yw-alert yw-alert--danger">' .
+            $output = str_replace(
+                '<i>' . _t('LOGIN_NOT_AUTORIZED') . '</i>',
+                '<div class="yw-alert yw-alert--danger">' .
                     _t('LOGIN_NOT_AUTORIZED') . ', ' . _t('LOGIN_PLEASE_REGISTER') . '.' .
-                    '</div>' . "\n";
-                $output .= $this->getService(MarkdownFormatterService::class)->format('{{include page="PageLogin"}}');
-                $output .= '</div><!-- end .page-widget -->' . "\n";
-                $output .= '</div><!-- end .container -->' . "\n";
-                $output = $this->getService(TemplateEngine::class)->renderPage($output);
-            } else {
-                $output = str_replace(
-                    '<i>' . _t('LOGIN_NOT_AUTORIZED') . '</i>',
-                    '<div class="alert alert-danger alert-error">' .
-                        _t('LOGIN_NOT_AUTORIZED') . ', ' . _t('LOGIN_PLEASE_REGISTER') . '.' .
-                        '</div>' . "\n" .
-                        $this->getService(MarkdownFormatterService::class)->format('{{login template="login-form.twig" context="login-page" signupurl="0"}}'),
-                    $plugin_output_new
-                );
-            }
+                    '</div>' . "\n" .
+                    $this->getService(TemplateEngine::class)->render('@core/account/login.twig'),
+                $plugin_output_new
+            );
             $this->getService(Redirector::class)->terminate($output);
         }
 
