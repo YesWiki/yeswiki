@@ -189,15 +189,15 @@ class ReactionsField extends BazarField
         ]);
     }
 
-    // LANG_FIXME not sure about this function
     public static function mapToFieldArray($fieldProps): array
     {
         $new = parent::mapToFieldArray($fieldProps);
         $new[self::FIELD_IDS] = join(',', $fieldProps['ids']);
-        $new[self::FIELD_LABELS] = $fieldProps['labels'];
-        $new[self::FIELD_IMAGES] = $fieldProps['images'];
+        $new[self::FIELD_LABELS] = implode(',', (array)$fieldProps['labels']);
+        $new[self::FIELD_IMAGES] = implode(',', (array)$fieldProps['images']);
         $new[self::FIELD_LABEL_REACTION] = $fieldProps['label_reaction'];
         ksort($new);
+
         return $new;
     }
 

@@ -49,33 +49,27 @@ class ListManager
         return boolval($this->tripleStore->exist($id, TripleStore::TYPE_URI, self::TRIPLES_LIST_ID, '', ''));
     }
 
-    public function getOne($id, $parent = null, $lang='default'): ?array
+    /** The list $id, with its `__translation` for $lang applied ('default' = current language, 'all' = untranslated). */
+    public function getOne($id, $parent = null, string $lang = 'default'): ?array
     {
-        if (is_numeric($id)) {
-            $id = $this->getPageTagFromId($id);
-            if($id == null) {
-                return null;
-            }
+        $cacheKey = $lang === 'default' ? $id : "{$id}|{$lang}";
+        if (isset($this->cachedLists[$cacheKey]) && $parent === null) {
+            return $this->cachedLists[$cacheKey];
         }
 
-        if (isset($this->cachedLists[$id. $lang]) && $parent === null) { // we cache all information, not just a level
-            return $this->cachedLists[$id. $lang];
-        }
-
-        // Ensure a list exist with this ID
         if (!$this->tripleStore->exist($id, TripleStore::TYPE_URI, self::TRIPLES_LIST_ID, '', '')) {
             return null;
         }
 
         $page = $this->pageManager->getOne($id, null, true, false, null, $lang);
         if (empty($page)) {
-            echo '<div class="alert alert-danger">List id not found: ' . $id . '</div>';
+            echo '<div class="alert alert-danger">List id not found: ' . htmlspecialchars((string)$id) . '</div>';
 
             return null;
         }
-        $data = json_decode($page['body'], true);
+        $data = $this->loadJson($page['body'], $id);
         if ($parent != null) {
-            $this->cachedLists[$id. $lang] = $data;
+            $this->cachedLists[$cacheKey] = $data;
         }
 
         if ($parent === 'root') {
@@ -93,13 +87,39 @@ class ListManager
         return $data;
     }
 
+    private function loadJson(string $json, $id): array
+    {
+        $data = $this->convertDataStructure(json_decode($json, true));
+        $data['id'] = $id;
+
+        return $data;
+    }
+
+    // The structure of List object has been changed in 2024
+    // Convert old List { titre_liste: "My List", label: { id1: "first Key", id2: "second id" } }
+    // to { title: "My List", values: [{ id: "id1", label: "first id"}, { id: "id2", label: "second id"}]}
+    // We still convert the strucure on the fly in case the migration went wrong
+    public function convertDataStructure($json)
+    {
+        if (isset($json['titre_liste'])) {
+            $newJson = ['title' => $json['titre_liste'], 'nodes' => []];
+            foreach ($json['label'] as $id => $label) {
+                $newJson['nodes'][] = ['id' => $id, 'label' => $label];
+            }
+
+            return $newJson;
+        }
+
+        return $json;
+    }
+
     public function getAll($parent = null): array
     {
-        $data = $this->pageManager->getManyFromTriple("liste", "tag, body");
+        $lists = $this->tripleStore->getMatching(null, TripleStore::TYPE_URI, self::TRIPLES_LIST_ID, '', '');
 
         $result = [];
-        foreach ( $data as $value) {
-            $result[$value['tag']] = json_decode($value['body'], true) ;
+        foreach ($lists as $list) {
+            $result[$list['resource']] = $this->getOne($list['resource'], $parent);
         }
 
         return $result;
@@ -114,14 +134,13 @@ class ListManager
         $nodes = $nodes ?? [];
         $this->trimRecursiveInPlace($nodes);
         $json = json_encode([
-            'id' => $id,
             'title' => $title,
             'nodes' => $this->sanitizeHMTL($nodes),
-        ], JSON_FORCE_OBJECT);
+        ]);
         $this->pageManager->save($id, $json);
 
-        // cache the newly created list
-        $this->cachedLists[$id] = json_decode($json);
+        $data = $this->loadJson($json, $id);
+        $this->cachedLists[$id] = $data;
 
         $this->tripleStore->create($id, TripleStore::TYPE_URI, self::TRIPLES_LIST_ID, '', '');
 
@@ -148,7 +167,8 @@ class ListManager
         return $this->create($title, $nodes);
     }
 
-    public function update($id, $title, $nodes, $extralang = [])
+    /** Saves the title and nodes of list $id, keeping its translations. */
+    public function update($id, $title, $nodes)
     {
         if ($this->securityController->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
@@ -156,28 +176,92 @@ class ListManager
         $nodes = $nodes ?? [];
         $this->trimRecursiveInPlace($nodes);
         $list = [
-        'id' => $id,
-        'title' => $title,
-        'nodes' => $this->sanitizeHMTL($nodes)
+            'title' => $title,
+            'nodes' => $this->sanitizeHMTL($nodes),
         ];
-        if (!empty($extralang)) {
-            $sanitized_langs = [];
-            foreach ($extralang as $lang => $value) {
-                $sanitized_langs[$lang] = [];
-                if (array_key_exists('title', $value)) {
-                    $sanitized_langs[$lang]['title'] = $this->htmlPurifierService->cleanHTML($value['title']);
-                }
-                if (array_key_exists('nodes', $value)) {
-                    $sanitized_langs[$lang]['nodes'] = $this->sanitizeHMTL($value['nodes']);
-                }
-            }
-            $list['__translation'] = $sanitized_langs;
+        $translations = $this->storedTranslations($id);
+        if (!empty($translations)) {
+            $list['__translation'] = $translations;
         }
-        $json = json_encode($list, JSON_FORCE_OBJECT);
-        $this->pageManager->save($id, $json);
+        $this->save($id, $list);
+    }
 
-        // cache the newly created list
-        $this->cachedLists[$id] = json_decode($json);
+    /**
+     * Replaces the translations of list $id with $translations: per supported language, a `title`
+     * and `nodes` holding a `label` and `children` per node position. Anything else is dropped.
+     */
+    public function updateTranslations($id, array $translations): void
+    {
+        if ($this->securityController->isWikiHibernated()) {
+            throw new \Exception(_t('WIKI_IN_HIBERNATION'));
+        }
+        $list = $this->storedBody($id);
+        $langs = $this->wiki->config['supported_langs'] ?? [];
+        $result = [];
+        foreach ($translations as $lang => $values) {
+            if (!in_array($lang, $langs, true) || !is_array($values)) {
+                continue;
+            }
+            $sanitized = [];
+            if (is_scalar($values['title'] ?? null) && trim((string)$values['title']) !== '') {
+                $sanitized['title'] = $this->htmlPurifierService->cleanHTML((string)$values['title']);
+            }
+            $nodes = $this->sanitizeTranslatedNodes($values['nodes'] ?? []);
+            if (!empty($nodes)) {
+                $sanitized['nodes'] = $nodes;
+            }
+            if (!empty($sanitized)) {
+                $result[$lang] = $sanitized;
+            }
+        }
+        $list['__translation'] = $result;
+        $this->save($id, $list);
+    }
+
+    private function sanitizeTranslatedNodes($nodes): array
+    {
+        $result = [];
+        foreach (is_array($nodes) ? $nodes : [] as $index => $node) {
+            if (!is_array($node)) {
+                continue;
+            }
+            $clean = [];
+            if (is_scalar($node['label'] ?? null) && trim((string)$node['label']) !== '') {
+                $clean['label'] = $this->htmlPurifierService->cleanHTML((string)$node['label']);
+            }
+            $children = $this->sanitizeTranslatedNodes($node['children'] ?? []);
+            if (!empty($children)) {
+                $clean['children'] = $children;
+            }
+            if (!empty($clean)) {
+                $result[$index] = $clean;
+            }
+        }
+
+        return $result;
+    }
+
+    private function storedBody($id): array
+    {
+        $page = $this->pageManager->getOne($id, null, false, true);
+        $body = json_decode($page['body'] ?? '', true);
+
+        return is_array($body) ? $this->convertDataStructure($body) : [];
+    }
+
+    private function storedTranslations($id): array
+    {
+        $translations = $this->storedBody($id)['__translation'] ?? [];
+
+        return is_array($translations) ? $translations : [];
+    }
+
+    private function save($id, array $list): void
+    {
+        $json = json_encode($list);
+        $this->pageManager->save($id, $json);
+        $this->cachedLists = array_filter($this->cachedLists, fn ($key) => $key !== $id && !str_starts_with((string)$key, "{$id}|"), ARRAY_FILTER_USE_KEY);
+        $this->cachedLists[$id] = $this->loadJson($json, $id);
     }
 
     public function delete($id)
@@ -214,19 +298,11 @@ class ListManager
     private function sanitizeHMTL(array $nodes)
     {
         return array_map(function ($node) {
-            if (array_key_exists('label', $node)) {
-                $node['label'] = $this->htmlPurifierService->cleanHTML($node['label']);
-            }
+            $node['label'] = $this->htmlPurifierService->cleanHTML($node['label']);
             $node['children'] = $this->sanitizeHMTL($node['children'] ?? []);
 
             return $node;
         }, $nodes);
-    }
-
-    public function getPageTagFromId($id): ?String {
-        $request = 'SELECT tag FROM '. $this->pageManager->pageTableName . ' WHERE latest = "Y" AND json_value(body, "$.id") = '.$id. ';';
-        $tag = $this->dbService->loadSingle($request);
-        return $tag['tag'] ?? null;
     }
 
     /**

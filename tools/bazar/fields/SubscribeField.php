@@ -109,18 +109,17 @@ class SubscribeField extends BazarField
         return $unsubscribeEmail;
     }
 
-    // LANG_FIXME not sure about this function
     public static function mapToFieldArray($fieldProps): array
     {
-       $new = parent::mapToFieldArray($fieldProps);
-       $new[self::FIELD_MAILER_TOOL] = $fieldProps['mailerTool'];
-       $new[self::FIELD_MAILER_EMAIL] = $fieldProps['mailerEmail'];
-       $new[self::FIELD_EMAIL_FIELD] = $fieldProps['emailField'];
-       ksort($new);
-       return $new;
+        $new = parent::mapToFieldArray($fieldProps);
+        $new[self::FIELD_MAILER_TOOL] = $fieldProps['mailerTool'];
+        $new[self::FIELD_MAILER_EMAIL] = $fieldProps['mailerEmail'];
+        $new[self::FIELD_EMAIL_FIELD] = $fieldProps['emailField'];
+        ksort($new);
+
+        return $new;
     }
 
-    // change return of this method to keep compatible with php 7.3 (mixed is not managed)
     #[\ReturnTypeWillChange]
     public function jsonSerialize()
     {
@@ -134,5 +133,4 @@ class SubscribeField extends BazarField
             ]
         );
     }
-
 }

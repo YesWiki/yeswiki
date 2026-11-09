@@ -27,6 +27,9 @@ export default {
   },
   advancedAttributes: ['read', 'write', 'today_button'],
   // disabledAttributes: [],
-  attributesMapping: { ...defaultMapping, ...{ 5: 'today_button', 6: 'entry_mode' } },
+  attributesMapping: {
+    ...defaultMapping,
+    ...{ 5: 'today_button', 6: 'entry_mode' },
+  },
   // renderInput(fieldData) {},
 }

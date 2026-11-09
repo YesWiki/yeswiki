@@ -1,5 +1,6 @@
 <?php
 
+use YesWiki\Attach\Service\RemoteImageCache;
 use YesWiki\Bazar\Service\SsrfUrlValidator;
 use YesWiki\Security\Controller\SecurityController;
 
@@ -14,25 +15,28 @@ function getConfigValue($key, $default = false, $cfg = '')
 
 function sanitizeFilename($string = '')
 {
-    // our list of "dangerous characters", add/remove characters if necessary
     $dangerous_characters = [' ', '"', "'", '&', '/', '\\', '?', '#', '(', ')', '+'];
-    // every forbidden character is replace by an underscore
     $string = str_replace($dangerous_characters, '-', removeAccents($string));
 
-    // Only allow one dash separator at a time (and make string lowercase)
     return mb_strtolower(preg_replace('/--+/u', '-', $string), YW_CHARSET);
 }
 
+/**
+ * Path of a resized copy of an image, from a file or from a link stored in a field.
+ */
 function redimensionner_image($image_src, $image_dest, $largeur, $hauteur, $method = 'fit')
 {
     $wiki = $GLOBALS['wiki'];
+    $remoteUrl = preg_replace('#^files/#', '', (string)$image_src);
+    if (RemoteImageCache::isRemote($remoteUrl)) {
+        return $wiki->services->get(RemoteImageCache::class)->resized($remoteUrl, intval($largeur), intval($hauteur), $method);
+    }
     if (file_exists($image_src)) {
         if (!class_exists('attach')) {
             include 'tools/attach/libs/attach.lib.php';
         }
         $attach = new attach($wiki);
 
-        // force new name
         $image_dest = $attach->getResizedFilename($image_src, $largeur, $hauteur, $method);
 
         if (!$wiki->services->get(SecurityController::class)->isWikiHibernated()
@@ -45,7 +49,6 @@ function redimensionner_image($image_src, $image_dest, $largeur, $hauteur, $meth
         if (!file_exists($image_dest)) {
             $result = $attach->redimensionner_image($image_src, $image_dest, $largeur, $hauteur, $method);
             if ($result != $image_dest) {
-                // do nothing : error
                 return $image_src;
             }
 
@@ -75,7 +78,7 @@ function copyUrlToLocalFile($url, $localPath)
     } catch (Throwable $error) {
         return false;
     }
-    if ($ch = curl_init($url)) { // teste l'existance du fichier a distance
+    if ($ch = curl_init($url)) {
         foreach ($pin as $option => $optionValue) {
             curl_setopt($ch, $option, $optionValue);
         }
@@ -132,12 +135,10 @@ function afficher_image(
     $method = 'fit',
     $show_vignette = true
 ) {
-    // l'image initiale existe t'elle et est bien avec une extension jpg ou png et bien formatee
     $destimg = sanitizeFilename($nom_image);
     $wiki = $GLOBALS['wiki'];
     $authorizedExts = $wiki->config['authorized-extensions'];
     $url_base = $wiki->GetBaseUrl() . '/';
-    // If we have a full URL, remove the base URL first
     $nom_image = str_replace($url_base . BAZ_CHEMIN_UPLOAD, '', $nom_image);
     $ext = pathinfo($nom_image)['extension'];
 

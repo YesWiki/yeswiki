@@ -12,7 +12,6 @@ export default defineConfig([
     'tools/aceditor/presentation/javascripts/ext-searchbox.js',
     'tools/attach/presentation/javascripts/qq.js',
     'tools/bazar/presentation/javascripts/jquery.photobox.js',
-    'tools/bazar/presentation/javascripts/jquery.galleriffic.js',
     'tools/bazar/presentation/javascripts/jquery.colorbox-min.js',
   ]),
   {

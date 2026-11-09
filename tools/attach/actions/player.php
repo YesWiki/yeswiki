@@ -3,6 +3,12 @@
 $url = $this->GetParameter('url');
 $type = $this->getParameter('type');
 
+$scheme = strtolower((string)parse_url((string)preg_replace('/[\x00-\x20\x7f]+/', '', (string)$url), PHP_URL_SCHEME));
+if (!empty($url) && !in_array($scheme, ['', 'http', 'https'], true)) {
+    $url = '';
+}
+$jsonFlags = JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_UNESCAPED_SLASHES;
+
 if (!empty($url)) {
     $height = $this->GetParameter('height');
     if (empty($height)) {
@@ -14,7 +20,10 @@ if (!empty($url)) {
         $width = '400px';
     }
 
+    $height = htmlspecialchars($height, ENT_QUOTES);
+    $width = htmlspecialchars($width, ENT_QUOTES);
     $extension = strtolower(substr(strrchr($url, '.'), 1));
+    $htmlUrl = htmlspecialchars($url, ENT_QUOTES);
     if ($type == 'audio' || $extension == 'mp3' || $extension == 'm4a') {
         if (!isset($GLOBALS['jplayer'])) {
             $GLOBALS['jplayer'] = 1;
@@ -38,7 +47,7 @@ if (!empty($url)) {
     $("#jquery_jplayer_' . $GLOBALS['jplayer'] . '").jPlayer({
         ready: function () {
             $(this).jPlayer("setMedia", {
-                mp3:"' . $url . '"
+                mp3:' . json_encode($url, $jsonFlags) . '
             });
         },
         cssSelectorAncestor: "#jp_container_' . $GLOBALS['jplayer'] . '",
@@ -81,7 +90,7 @@ if (!empty($url)) {
                     </span>
                     <a href="#" class="jp-unmute btn btn-default"><i class="fa fa-volume-off icon-volume-off"></i></a>
                     <a href="#" class="jp-mute btn btn-default" style="display: none;"><i class="fa fa-volume-up icon-volume-up"></i></a>
-                    <a href="' . $url . '" download rel="download" title="' . _t('ATTACH_DOWNLOAD_THE_FILE') . ' : ' . $url . '" class="btn btn-default"><i class="fas fa-download"></i></a>
+                    <a href="' . $htmlUrl . '" download rel="download" title="' . _t('ATTACH_DOWNLOAD_THE_FILE') . ' : ' . $htmlUrl . '" class="btn btn-default"><i class="fas fa-download"></i></a>
                 </div>
             </div>
           </div>';
@@ -125,7 +134,7 @@ if (!empty($url)) {
     $("#jquery_jplayer_' . $GLOBALS['jplayer'] . '").jPlayer({
         ready: function () {
             $(this).jPlayer("setMedia", {
-                ' . $playbackFormat . ':"' . $url . '#t=0.1"
+                ' . $playbackFormat . ':' . json_encode($url . '#t=0.1', $jsonFlags) . '
             });
         },
         cssSelectorAncestor: "#jp_container_' . $GLOBALS['jplayer'] . '",
@@ -174,17 +183,17 @@ if (!empty($url)) {
                     <a href="#" class="jp-unmute btn btn-default"><i class="fa fa-volume-off icon-volume-off"></i></a>
                     <a href="#" class="jp-mute btn btn-default" style="display: none;"><i class="fa fa-volume-up icon-volume-up"></i></a>
                     <a href="#" class="jp-full-screen btn btn-default" role="button" tabindex="0"><i class="fas fa-expand-arrows-alt"></i></a>
-                    <a href="' . $url . '" rel="download" title="' . _t('ATTACH_DOWNLOAD_THE_FILE') . ' : ' . $url . '" class="btn btn-default"><i class="fas fa-download"></i></a>
+                    <a href="' . $htmlUrl . '" rel="download" title="' . _t('ATTACH_DOWNLOAD_THE_FILE') . ' : ' . $htmlUrl . '" class="btn btn-default"><i class="fas fa-download"></i></a>
                 </div>
             </div>
           </div>';
         echo $output;
     } elseif ($extension == 'mm') {
-        $output = '<embed id="visorFreeMind" height="' . $height . '" align="middle" width="' . $width . '" flashvars="openUrl=_blank&initLoadFile=' . $url . '&startCollapsedToLevel=5" quality="high" bgcolor="#ffffff" src="tools/attach/players/visorFreemind.swf" type="application/x-shockwave-flash"/>';
-        $output .= "[<a href=\"$url\" title=\"" . _t('ATTACH_DOWNLOAD_THE_FILE') . '">mm</a>]';
+        $output = '<embed id="visorFreeMind" height="' . $height . '" align="middle" width="' . $width . '" flashvars="openUrl=_blank&initLoadFile=' . $htmlUrl . '&startCollapsedToLevel=5" quality="high" bgcolor="#ffffff" src="tools/attach/players/visorFreemind.swf" type="application/x-shockwave-flash"/>';
+        $output .= "[<a href=\"$htmlUrl\" title=\"" . _t('ATTACH_DOWNLOAD_THE_FILE') . '">mm</a>]';
         echo $output;
     } else {
-        echo '<div class="alert alert-danger"><strong>' . _t('ATTACH_ACTION_PLAYER') . '</strong> : ' . _t('ATTACH_PLAYER_CAN_ONLY_OPEN_FILES_LIKE') . ' (' . $url . ') ' . _t('ATTACH_NOT_LINKED_TO_GOOD_FILE_EXTENSION') . '.</div>' . "\n";
+        echo '<div class="alert alert-danger"><strong>' . _t('ATTACH_ACTION_PLAYER') . '</strong> : ' . _t('ATTACH_PLAYER_CAN_ONLY_OPEN_FILES_LIKE') . ' (' . $htmlUrl . ') ' . _t('ATTACH_NOT_LINKED_TO_GOOD_FILE_EXTENSION') . '.</div>' . "\n";
     }
 } else {
     echo '<div class="alert alert-danger"><strong>' . _t('ATTACH_ACTION_PLAYER') . '</strong> : '

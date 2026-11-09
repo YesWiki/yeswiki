@@ -40,10 +40,10 @@ const componentParams = {
               !this.$root.isExternalUrl(entry) &&
               'owner' in entry &&
               (isadmin ||
-                (currentusername.length > 0 && entry.owner == currentusername))
+                (currentusername.length > 0 && entry.owner === currentusername))
           } else if (['==adminsbuttons=='].includes(col.data)) {
             formattedData[col.data] = ''
-          } else if (col.data == 'geolocation') {
+          } else if (col.data === 'geolocation') {
             formattedData[col.geolocationfield] = entry[col.geolocationfield]
           } else if (
             'firstlevel' in col &&
@@ -166,7 +166,7 @@ const componentParams = {
       )
     },
     async getColumns() {
-      if (this.columns.length == 0) {
+      if (this.columns.length === 0) {
         const fields = await Waiter.waitFor('fields', this)
         const params = await Waiter.waitFor('params', this)
         let columnfieldsids = this.sanitizedParam(
@@ -179,7 +179,7 @@ const componentParams = {
           this.isAdmin,
           'defaultcolumnwidth',
         )
-        if (columnfieldsids.every((id) => id.length == 0)) {
+        if (columnfieldsids.every((id) => id.length === 0)) {
           // backup
           columnfieldsids = ['bf_titre']
         }
@@ -280,7 +280,7 @@ const componentParams = {
               },
             })
           } else if (fieldsToRegister.includes(id)) {
-            fieldsToRegister = fieldsToRegister.filter((e) => e != id)
+            fieldsToRegister = fieldsToRegister.filter((e) => e !== id)
             this.registerSpecialFields([id], false, params, data, options)
           }
         })
@@ -328,7 +328,7 @@ const componentParams = {
             if (
               (!('orderable' in data.columns[index]) ||
                 data.columns[index].orderable) &&
-              data.columns[index].data == champField
+              data.columns[index].data === champField
             ) {
               columnToOrder = index
             }

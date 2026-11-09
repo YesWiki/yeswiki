@@ -7,6 +7,7 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Bazar\Exception\ParsingMultipleException;
 use YesWiki\Bazar\Exception\RequiredFieldsException;
 use YesWiki\Bazar\Exception\TagAlreadyUsedException;
+use YesWiki\Bazar\Field\AclField;
 use YesWiki\Bazar\Field\BazarField;
 use YesWiki\Bazar\Field\TitleField;
 use YesWiki\Core\Controller\AuthController;
@@ -125,13 +126,13 @@ class EntryManager
      *
      * @throws \Exception
      */
-    public function getOne($tag, $semantic = false, $time = null, $cache = true, $bypassAcls = false, ?string $userNameForCheckingACL = null,  $bazar_lang = 'default'): ?array
+    public function getOne($tag, $semantic = false, $time = null, $cache = true, $bypassAcls = false, ?string $userNameForCheckingACL = null, string $lang = 'default'): ?array
     {
         if (!$this->isEntry($tag)) {
             return null;
         }
 
-        $page = $this->pageManager->getOne($tag, empty($time) ? null : $time, $cache, $bypassAcls, $userNameForCheckingACL, $bazar_lang);
+        $page = $this->pageManager->getOne($tag, empty($time) ? null : $time, $cache, $bypassAcls, $userNameForCheckingACL, $lang);
         $debug = ($this->wiki->GetConfigValue('debug') == 'yes');
         $data = $this->getDataFromPage($page, $semantic, $debug);
 
@@ -174,8 +175,7 @@ class EntryManager
                 return [];
             }
 
-            // duplicate code inside this function and after
-            //$data = $this->removeUnknownFields($data['id_typeannonce'], $data);
+            $data = $this->removeUnknownFields($data['id_typeannonce'], $data);
 
             $form = $this->wiki->services->get(FormManager::class)->getOne($data['id_typeannonce']);
 
@@ -276,7 +276,6 @@ class EntryManager
         $data = $this->assignRestrictedFields($data, [], $form);
 
         $data = $this->formatDataBeforeSave($data);
-        // add lang information
         $data['lang'] = $this->wiki->lang;
 
         $this->refuseTagOfAnExistingPage($data['id_fiche'] ?? null);
@@ -443,7 +442,7 @@ class EntryManager
     protected function assignRestrictedFields(array $data, array $previousData, array $form)
     {
         foreach ($form['prepared'] as $field) {
-            if (!($field instanceof BazarField)) {
+            if (!$field instanceof BazarField) {
                 continue;
             }
             $propName = $field->getPropertyName();
@@ -527,6 +526,11 @@ class EntryManager
 
         $isExternalEntry = !empty($this->tripleStore->getMatching($tag, TripleStore::SOURCE_URL_URI, null, '=', '=', ''));
 
+        foreach ($form['prepared'] ?? [] as $field) {
+            if ($field instanceof AclField) {
+                $field->removeManagedGroups($tag);
+            }
+        }
         $this->pageManager->deleteOrphaned($tag);
         $this->wiki->LogAdministrativeAction(
             $this->authController->getLoggedUserName(),

@@ -1,6 +1,6 @@
 function openNav() {
   // si c'est déja ouvert, on ferme
-  if (document.getElementById('preset-sidenav').style.width == '250px') {
+  if (document.getElementById('preset-sidenav').style.width === '250px') {
     closeNav()
   } else {
     document.getElementById('preset-sidenav').style.width = '250px'
@@ -246,9 +246,10 @@ function deleteCSSPreset(elem, text, url) {
 }
 function componentToHex(c) {
   const hex = parseInt(c).toString(16)
-  return hex.length == 1 ? `0${hex}` : hex
+  return hex.length === 1 ? `0${hex}` : hex
 }
-function extractFromStringWithRGB(value) {
+function extractFromStringWithRGB(rawValue) {
+  let value = rawValue
   const res = value.match(
     /\s*rgb\(\s*([0-9]*)\s*,\s*([0-9]*)\s*,\s*([0-9]*)\s*\)/,
   )
@@ -264,12 +265,12 @@ function getStyleValueEvenIfNotInitialized(prop) {
   }
   return value
 }
-function saveCSSPreset(elem, url, rewriteMode) {
+function saveCSSPreset(elem, baseUrl, rewriteMode) {
   window.event.preventDefault()
   let fileName = $(elem).prev().find('input[name=filename]').val()
   fileName = fileName.replace('.css', '')
   const fullFileName = `${fileName}.css`
-  url += fullFileName
+  const url = baseUrl + fullFileName
   // get values
   const primaryColor = extractFromStringWithRGB(
     getStyleValueEvenIfNotInitialized('--primary-color'),
@@ -298,14 +299,14 @@ function saveCSSPreset(elem, url, rewriteMode) {
   let mainTitleFontfamily = getStyleValueEvenIfNotInitialized(
     '--main-title-fontfamily',
   )
-  if (mainTextFontfamily.search(/^[A-Za-z0-9 ]*$/) != -1) {
+  if (mainTextFontfamily.search(/^[A-Za-z0-9 ]*$/) !== -1) {
     mainTextFontfamily = `'${mainTextFontfamily}', sans-serif`
-  } else if (mainTextFontfamily.search(/^'[A-Za-z0-9 ]*'$/) != -1) {
+  } else if (mainTextFontfamily.search(/^'[A-Za-z0-9 ]*'$/) !== -1) {
     mainTextFontfamily = `${mainTextFontfamily}, sans-serif`
   }
-  if (mainTitleFontfamily.search(/^[A-Za-z0-9 ]*$/) != -1) {
+  if (mainTitleFontfamily.search(/^[A-Za-z0-9 ]*$/) !== -1) {
     mainTitleFontfamily = `'${mainTitleFontfamily}', sans-serif`
-  } else if (mainTitleFontfamily.search(/^'[A-Za-z0-9 ]*'$/) != -1) {
+  } else if (mainTitleFontfamily.search(/^'[A-Za-z0-9 ]*'$/) !== -1) {
     mainTitleFontfamily = `${mainTitleFontfamily}, sans-serif`
   }
   $.ajax({
@@ -356,7 +357,7 @@ function saveCSSPreset(elem, url, rewriteMode) {
       let message =
         fullFileName + themeSelectorTranslation.TEMPLATE_FILE_NOT_ADDED
       let duration = 3000
-      if (data && data.errorCode == 2) {
+      if (data && Number(data.errorCode) === 2) {
         message = `${message}\n${themeSelectorTranslation.TEMPLATE_FILE_ALREADY_EXISTING}`
         duration = 6000
       }

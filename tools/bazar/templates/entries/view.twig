@@ -1,10 +1,6 @@
 <div class="BAZ_cadre_fiche id{{ form.bn_id_nature }}">
-  {% if message and not entry['external-data'] %}
-  {% if 'ok' in message %}
-    <div class="alert alert-success">
-  {% else %}
-    <div class="alert alert-danger">
-  {% endif %}
+  {% if message in ['ajout_ok', 'modif_ok', 'translate_ok', 'translate_error'] and not entry['external-data'] %}
+    <div class="alert alert-{{ message == 'translate_error' ? 'danger' : 'success' }}">
       {% if message == 'ajout_ok' %}
         {{ _t('BAZ_FICHE_ENREGISTREE') }}
         <a href="{{ url({ params: { vue: 'saisir', id: form.bn_id_nature }}) }}" class="pull-right btn-sm btn btn-primary">
@@ -21,7 +17,7 @@
           {{ _t('BAZ_TRANSLATE_ENTRY_AGAIN') }}
         </a>
       {% else %}
-       {{ _t('BAZ_TRANSLATE_MODIFIY_ERROR') }} : <br/> {{ message }}
+        {{ _t('BAZ_TRANSLATE_MODIFIY_ERROR') }}
       {% endif %}
       <div class="clearfix"></div>
     </div>

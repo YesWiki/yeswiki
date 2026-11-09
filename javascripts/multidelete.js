@@ -31,7 +31,7 @@ const multiDeleteService = {
   },
   updateProgressBar(modal, items, currentIndex) {
     const value =
-      items.length == 0
+      items.length === 0
         ? 100
         : Math.min(100, Math.round(((currentIndex + 1) / items.length) * 100))
     $(modal)
@@ -42,7 +42,7 @@ const multiDeleteService = {
       })
   },
   modalIsClosed(modal) {
-    return $(modal).filter(':visible').length == 0
+    return $(modal).filter(':visible').length === 0
   },
   addErrorMessage(modal, message) {
     $(modal)
@@ -52,7 +52,7 @@ const multiDeleteService = {
   },
   removeLine(target, itemId) {
     const table = $(`#${target} .dataTable[id]`)
-    if (table.length == 0) {
+    if (table.length === 0) {
       return false
     }
     table
@@ -75,7 +75,7 @@ const multiDeleteService = {
     }
   },
   deleteOneItem(modal, items, type, currentIndex, target) {
-    if (['pages', 'comments', 'users'].indexOf(type) == -1) {
+    if (['pages', 'comments', 'users'].indexOf(type) === -1) {
       this.addErrorMessage(
         modal,
         "Unknown type ! Should be 'pages' or 'users' or 'comments'!",
@@ -90,7 +90,7 @@ const multiDeleteService = {
         : item.token != null
           ? item.token
           : ''
-    if (itemId.length == 0 || csrfToken.length == 0) {
+    if (itemId.length === 0 || csrfToken.length === 0) {
       this.deleteNextItem(modal, items, type, currentIndex, target)
       return
     }
@@ -138,7 +138,10 @@ const multiDeleteService = {
       for (let index = 0; index < inputs.length; index++) {
         const itemId = $(inputs[index]).data('itemid')
         const csrfToken = $(inputs[index]).data('csrftoken')
-        if (itemId.length > 0 && (csrfToken == null || csrfToken.length == 0)) {
+        if (
+          itemId.length > 0 &&
+          (csrfToken == null || csrfToken.length === 0)
+        ) {
           items.push({ id: itemId })
         } else if (itemId.length > 0 && csrfToken.length > 0) {
           items.push({ id: itemId, token: csrfToken })

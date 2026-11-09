@@ -74,13 +74,14 @@ class OldField extends BazarField
     }
 
     public static function mapToFieldArray($fieldProps): array
-     {
-         $autocomplete_array = $fieldProps['autocomplete'].split(',');
-         $new = parent::mapToFieldArray($fieldProps);
-         $new[0] = $fieldProps['functionName'];
-         ksort($new);
-         return $new;
-     }
+    {
+        $autocomplete_array = $fieldProps['autocomplete'] . split(',');
+        $new = parent::mapToFieldArray($fieldProps);
+        $new[0] = $fieldProps['functionName'];
+        ksort($new);
+
+        return $new;
+    }
 
     // change return of this method to keep compatible with php 7.3 (mixed is not managed)
     #[\ReturnTypeWillChange]

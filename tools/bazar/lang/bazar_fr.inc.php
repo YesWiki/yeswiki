@@ -465,7 +465,7 @@ return [
     'BAZ_TRANSLATION' => 'Traduction',
     'TRANSLATE_MISSING_EXTRA_LANG' => 'Les langues supplémentaires ne sont pas correctement configurées',
     'TRANSLATE_ACTION_ONLY_ALLOWED_FOR_ENTRY' => 'Le formulaire de traduction est réservé aux fiches',
-    'BAZ_TRANSLATE_MODIFIY_ERROR' => 'Erreur d\'enregistrement de la fiche. Veuillez corriger l\'erreur suivante ',
+    'BAZ_TRANSLATE_MODIFIY_ERROR' => 'La traduction de la fiche n\'a pas pu être enregistrée.',
     'BAZ_FICHE_TRANSLATED' => 'Fiche traduite avec succès',
     'BAZ_TRANSLATE_ENTRY_AGAIN' => 'Traduire la fiche à nouveau',
     'BAZ_CHECKCONTENT_FORM_LABEL' => 'Formulaire à vérifier',

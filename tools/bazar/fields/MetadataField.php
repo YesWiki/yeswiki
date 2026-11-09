@@ -110,6 +110,7 @@ class MetadataField extends BazarField
         $new[self::FIELD_BG_IMAGE] = $fieldProps['bgImage'];
         $new[self::FIELD_CSS_PRESET] = $fieldProps['favorite_preset'];
         ksort($new);
+
         return $new;
     }
 

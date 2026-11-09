@@ -1,7 +1,7 @@
 const FavoritesHelper = {
   propertyName: 'https://yeswiki.net/vocabulary/favorite',
   updateElem(elem, mode, withMessage = true) {
-    if (mode == 'add') {
+    if (mode === 'add') {
       $(elem).addClass('user-favorite')
       $(elem).find('i').removeClass('far fa-star').addClass('fas fa-star')
       $(elem).tooltip('destroy')
@@ -49,7 +49,7 @@ const FavoritesHelper = {
         user,
       },
       success(data) {
-        if (!Array.isArray(data) || data.length == 0) {
+        if (!Array.isArray(data) || data.length === 0) {
           if (checkNotEmpty) {
             toastMessage(
               _t('FAVORITES_ERROR', { error: 'not created' }),
@@ -144,7 +144,7 @@ const FavoritesHelper = {
   manageFavorites(event) {
     event.preventDefault()
     let { target } = event
-    if ($(target).prop('tagName') == 'I') {
+    if ($(target).prop('tagName') === 'I') {
       target = $(target).parent()
     }
     const resource = $(target).data('resource')

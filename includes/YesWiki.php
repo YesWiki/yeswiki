@@ -74,6 +74,14 @@ class Wiki
     public $_actionsAclsCache = [];
     public $lang;
 
+    /** A language code such as `fr` or `pt-BR` from $lang, else $default. */
+    public static function sanitizeLang($lang, string $default): string
+    {
+        $lang = explode('#', (string)$lang)[0];
+
+        return preg_match('/^[a-z]{2,3}(?:[-_][A-Za-z0-9]{2,8})?$/', $lang) === 1 ? $lang : $default;
+    }
+
     /**
      * Constructor.
      */
@@ -86,7 +94,7 @@ class Wiki
         $this->method = $init->method;
 
         $this->request = Request::createFromGlobals();
-        $this->lang = explode('#', $this->request->get('lang', $this->config['default_language'] ?? 'fr'))[0];
+        $this->lang = self::sanitizeLang($this->request->get('lang'), $this->config['default_language'] ?? 'fr');
         $this->services = $init->initCoreServices($this);
         $this->loadExtensions();
 
@@ -618,21 +626,15 @@ class Wiki
     {
         $result = ['newpage' => 1];
 
-        $config = $this->config;
-        $fromConfig = [
-            'theme' => 'favorite_theme',
-            'squelette' => 'favorite_squelette',
-            'style' => 'favorite_style',
-            'bgimg' => 'favorite_background_image',
-        ];
-        foreach ($fromConfig as $param => $configKey) {
-            if (!empty($config[$configKey])) {
-                $result[$param] = $config[$configKey];
+        $currentPageTag = $this->GetPageTag();
+        $pageMetadatas = (empty($currentPageTag) ? [] : $this->GetMetaDatas($currentPageTag)) ?? [];
+        if (!empty($pageMetadatas['theme']) && !empty($pageMetadatas['style']) && !empty($pageMetadatas['squelette'])) {
+            foreach (['theme', 'squelette', 'style', 'bgimg'] as $param) {
+                if (!empty($pageMetadatas[$param])) {
+                    $result[$param] = $pageMetadatas[$param];
+                }
             }
         }
-
-        $currentPageTag = $this->GetPageTag();
-        $pageMetadatas = empty($currentPageTag) ? [] : $this->GetMetaDatas($currentPageTag);
         foreach (ThemeManager::SPECIAL_METADATA as $metadata) {
             if (!empty($pageMetadatas[$metadata])) {
                 $result[$metadata] = $pageMetadatas[$metadata];

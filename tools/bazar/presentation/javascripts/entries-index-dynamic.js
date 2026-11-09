@@ -146,12 +146,12 @@ const load = (domElement) => {
         if (this.searchFormId) {
           // filter based on formId, when no form id is specified
           result = result.filter(
-            (entry) => entry.id_typeannonce == this.searchFormId,
+            (entry) => String(entry.id_typeannonce) === this.searchFormId,
           )
         }
 
         let vSearch = this.params.keywords ?? ''
-        if (this.search) vSearch += (vSearch != '' ? '|' : '') + this.search
+        if (this.search) vSearch += (vSearch !== '' ? '|' : '') + this.search
 
         vSearch = vSearch
           .split('|')
@@ -213,10 +213,10 @@ const load = (domElement) => {
           const valueB = deepGet(b, field)
 
           if (typeof valueA === 'number' && typeof valueB === 'number') {
-            return order == 'asc' ? valueA - valueB : valueB - valueA
+            return order === 'asc' ? valueA - valueB : valueB - valueA
           }
 
-          return order == 'asc'
+          return order === 'asc'
             ? collator.compare(
                 String(valueA)
                   .normalize('NFD')
@@ -283,7 +283,7 @@ const load = (domElement) => {
                     .replace(/</g, '&lt;')
                     .replace(/>/g, '&gt;')
                     .replace(/"/g, '&quot;')
-                    .replace(/'/g, '&#039;') ==
+                    .replace(/'/g, '&#039;') ===
                   node.value
                     .normalize('NFD')
                     .replace(/[\u0300-\u036f]/g, '')
@@ -347,10 +347,10 @@ const load = (domElement) => {
         }
 
         if (vParams.keywords !== undefined && vParams.keywords.trim() !== '') {
-          vSearch = (vSearch != '' ? `${vSearch}|` : '') + vParams.keywords
+          vSearch = (vSearch !== '' ? `${vSearch}|` : '') + vParams.keywords
         }
 
-        if (vSearch != '') this.search = vSearch
+        if (vSearch !== '') this.search = vSearch
 
         if (vParams.champ !== undefined && vParams.champ.trim() !== '') {
           vChamp = vParams.champ
@@ -362,7 +362,7 @@ const load = (domElement) => {
 
         this.conditionsFromUrl(vParams).forEach((pCondition) => {
           const cFilter = vThis.filters.find(
-            (pF) => pF.propName == pCondition.name,
+            (pF) => pF.propName === pCondition.name,
           )
 
           if (cFilter) {
@@ -420,7 +420,7 @@ const load = (domElement) => {
           this.getExternalEntry(entry)
         } else {
           let fieldsToExclude = []
-          if (this.params.template == 'list' && this.params.displayfields) {
+          if (this.params.template === 'list' && this.params.displayfields) {
             // In list template (collapsible panels with header and body), the rendered entry
             // is displayed in the body section and we don't want to show the fields
             // that are already displayed in the panel header
@@ -436,7 +436,7 @@ const load = (domElement) => {
               ? { showmapinlistview: this.params.showmapinlistview }
               : {}),
           })
-          this.setEntryFromUrl(entry,this.orderUrl(url)).then((html) => {
+          this.setEntryFromUrl(entry, this.orderUrl(url)).then((html) => {
             this.loadBazarListDynamicIfNeeded(html)
             initEntryMaps(this.$refs.entriesContainer)
           })
@@ -482,7 +482,7 @@ const load = (domElement) => {
         return this.formFields[field] || {}
       },
       openEntry(entry) {
-        if (this.params.entrydisplay == 'newtab') window.open(entry.url)
+        if (this.params.entrydisplay === 'newtab') window.open(entry.url)
         else this.$root.openEntryModal(entry)
       },
       openEntryModal(entry) {
@@ -495,19 +495,10 @@ const load = (domElement) => {
         return entry.url !== wiki.url(entry.id_fiche)
       },
       isInIframe() {
-        return window != window.parent
+        return window !== window.parent
       },
       orderUrl(url) {
-        const arrayUrl = url.split('/?');
-        const parameters = arrayUrl[1].split(/([&/#][^&/#]+)/s);
-        return (
-          arrayUrl[0] +
-          '/?' +
-          parameters[0] +
-          parameters.filter((el) => el.startsWith('/')).join("") +
-          parameters.filter((el) => el.startsWith('&')).join("") +
-          parameters.filter((el) => el.startsWith('#')).join("")
-        )
+        return reorderUrl(url)
       },
       getExternalEntry(entry) {
         const url = this.orderUrl(`${entry.url}/iframe`)
@@ -573,9 +564,9 @@ const load = (domElement) => {
                   ((
                     typeof this.params.ordre == 'boolean'
                       ? this.params.ordre
-                      : this.params.ordre == '1' ||
-                        this.params.ordre == 'true' ||
-                        this.params.ordre == 'asc'
+                      : this.params.ordre === '1' ||
+                        this.params.ordre === 'true' ||
+                        this.params.ordre === 'asc'
                   )
                     ? 'asc'
                     : 'desc'),
@@ -608,7 +599,7 @@ const load = (domElement) => {
               this.formFields[field.id] = field
               Object.entries(this.params.displayfields).forEach(
                 ([fieldId, mappedField]) => {
-                  if (mappedField == field.id)
+                  if (mappedField === field.id)
                     this.formFields[fieldId] = this.formFields[mappedField]
                 },
               )
@@ -637,7 +628,7 @@ const load = (domElement) => {
                 const entryValues = entry[propName].split(',')
                 entryValues.forEach((value) => {
                   const correspondingNode = filter.flattenNodes.find(
-                    (node) => node.value == value,
+                    (node) => node.value === value,
                   )
                   if (correspondingNode) {
                     correspondingNode.parents.forEach((parent) => {

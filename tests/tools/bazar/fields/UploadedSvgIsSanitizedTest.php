@@ -83,12 +83,12 @@ class UploadedSvgIsSanitizedTest extends YesWikiTestCase
                     return rename($source, $destination);
                 }
             }
-            : new class($values, $this->wiki->services) extends FileField {
-                protected function moveUploadedFile(string $source, string $destination): bool
-                {
-                    return rename($source, $destination);
-                }
-            };
+        : new class($values, $this->wiki->services) extends FileField {
+            protected function moveUploadedFile(string $source, string $destination): bool
+            {
+                return rename($source, $destination);
+            }
+        };
 
         return $subclass;
     }

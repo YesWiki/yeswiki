@@ -360,6 +360,7 @@ class CalcField extends BazarField
         $new[self::FIELD_CALCFORMULA] = $fieldProps['calcFormula'];
         $new[self::FIELD_DISPLAY_TEXT] = $fieldProps['displayText'];
         ksort($new);
+
         return $new;
     }
 

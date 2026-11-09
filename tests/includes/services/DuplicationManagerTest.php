@@ -3,14 +3,13 @@
 namespace YesWiki\Test\Core\Service;
 
 use PHPUnit\Framework\Attributes\DataProvider;
+use Symfony\Component\HttpFoundation\Request;
 use YesWiki\Core\Service\DuplicationManager;
 use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';
 
-/**
- * A file named by a duplication request is only fetched from a public http(s) address, under an authorised name.
- */
+/** A duplication only creates a page its URL can reach, and only fetches files from public http(s) addresses. */
 class DuplicationManagerTest extends YesWikiTestCase
 {
     #[DataProvider('refusedProvider')]
@@ -40,6 +39,48 @@ class DuplicationManagerTest extends YesWikiTestCase
             'a php file' => ['https://93.184.216.34/files/wakka.config.php', null],
             'a hidden file' => ['https://93.184.216.34/files/.htaccess', null],
             'no extension' => ['https://93.184.216.34/latest/meta-data/', null],
+            'a php file with the stored suffix' => ['https://93.184.216.34/files/SourcePage_x.php_', null],
+            'two trailing underscores' => ['https://93.184.216.34/files/SourcePage_x.pdf__', null],
+            'a stored pdf on a private address' => ['http://127.0.0.1/files/SourcePage_x.pdf_', 'private or reserved'],
+        ];
+    }
+
+    #[DataProvider('unreachableTagProvider')]
+    public function testADuplicateNamedWithCharactersAUrlRefusesIsNotCreated(string $tag)
+    {
+        $duplicationManager = self::getWiki()->services->get(DuplicationManager::class);
+
+        try {
+            $duplicationManager->checkPostData(['type' => 'page', 'newTag' => $tag, 'duplicate-action' => 'open']);
+            $this->fail("{$tag} was accepted");
+        } catch (\Exception $e) {
+            $this->assertStringStartsWith(_t('INVALID_PAGE_TAG', ['tag' => $tag]), $e->getMessage());
+        }
+    }
+
+    #[DataProvider('unreachableTagProvider')]
+    public function testAnImportNamedWithCharactersAUrlRefusesIsNotCreated(string $tag)
+    {
+        $duplicationManager = self::getWiki()->services->get(DuplicationManager::class);
+        $request = new Request([], [
+            'originalContent' => 'body', 'sourceUrl' => 'https://example.org', 'originalTag' => 'Source', 'type' => 'page',
+        ]);
+
+        try {
+            $duplicationManager->importDistantContent($tag, $request);
+            $this->fail("{$tag} was accepted");
+        } catch (\Exception $e) {
+            $this->assertStringStartsWith(_t('INVALID_PAGE_TAG', ['tag' => $tag]), $e->getMessage());
+        }
+    }
+
+    public static function unreachableTagProvider(): array
+    {
+        return [
+            'a space' => ['Ma Page'],
+            'a trailing space' => ['MaPage '],
+            'a slash' => ['Ma/Page'],
+            'a quote' => ["L'Atelier"],
         ];
     }
 }

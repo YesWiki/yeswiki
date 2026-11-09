@@ -426,7 +426,7 @@ $(document).ready(() => {
         let manageData = null
 
         const processNextSet = async () => {
-          if (setToTry.length == 0) {
+          if (setToTry.length === 0) {
             throw new Error(_t('GEOLOCATER_NOT_FOUND', { addr: lAddress }))
           } else {
             const newSet = setToTry[0]
@@ -472,7 +472,7 @@ $(document).ready(() => {
 
       function showAddressError(pMessage) {
         // console.log("showAddressError: " + pMessage);
-        if (pMessage == 'not found') {
+        if (pMessage === 'not found') {
           alert(_t('BAZ_GEOLOC_NOT_FOUND'))
           geocodedmarkerRefresh()
         } else {
@@ -540,9 +540,9 @@ $(document).ready(() => {
 
       if (
         vLatitude !== null &&
-        vLatitude != 0 &&
+        Number(vLatitude) !== 0 &&
         vLongitude !== null &&
-        vLongitude != 0
+        Number(vLongitude) !== 0
       ) {
         showAddressOk(vLatitude, vLongitude)
       }

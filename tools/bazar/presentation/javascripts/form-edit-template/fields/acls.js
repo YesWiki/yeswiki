@@ -42,6 +42,21 @@ export default {
       label: _t('BAZ_FORM_EDIT_COMMENTS_FIELD_DEFAULT_ACTIVATION_LABEL'),
       options: { non: _t('NO'), oui: _t('YES'), ' ': '' },
     },
+    managedGroups: {
+      label: _t('BAZ_FORM_EDIT_ACL_MANAGED_GROUPS_LABEL'),
+      value: '',
+      placeholder: 'admin=bf_admins|owner,contributeurs=bf_contributeurs',
+    },
+    linkedReadRight: {
+      label: _t('BAZ_FORM_EDIT_ACL_LINKED_READ_LABEL'),
+      value: '',
+      placeholder: '@contributeurs{bf_structure},@admin{bf_structure}',
+    },
+    linkedWriteRight: {
+      label: _t('BAZ_FORM_EDIT_ACL_LINKED_WRITE_LABEL'),
+      value: '',
+      placeholder: '@admin{id_fiche}',
+    },
   },
   disabledAttributes: ['label', 'required'],
   attributesMapping: {
@@ -56,11 +71,14 @@ export default {
     8: '',
     9: '',
     10: 'hint',
+    13: 'managedGroups',
+    14: 'linkedReadRight',
+    15: 'linkedWriteRight',
   },
   renderInput(field) {
     return {
       field:
-        field.askIfActivateComments == 1
+        Number(field.askIfActivateComments) === 1
           ? `<i class="far fa-comment-dots"></i> ${field.fieldlabel || _t('BAZ_ACTIVATE_COMMENTS')}`
           : '',
       onRender() {
@@ -76,8 +94,8 @@ export default {
 
             const nameInput = $(base).find('input[type=text][name=name]')
             if (
-              nameInput.val().trim().length == 0 ||
-              nameInput.val().trim() == 'bf_acls'
+              nameInput.val().trim().length === 0 ||
+              nameInput.val().trim() === 'bf_acls'
             ) {
               nameInput.val('bf_commentaires')
             }
@@ -96,8 +114,8 @@ export default {
               const currentValue = commentInput.val()
               if (
                 Array.isArray(currentValue) &&
-                (currentValue.length == 0 ||
-                  (currentValue.length == 1 &&
+                (currentValue.length === 0 ||
+                  (currentValue.length === 1 &&
                     currentValue.includes('comments-closed')))
               ) {
                 commentInput.val([' + '])

@@ -8,7 +8,7 @@ function updateEmailForUser() {
         .find(`input#${emailField}`)
       if (
         emailInput.length > 0 &&
-        (emailInput.val().length == 0 || emailInput.val() == false)
+        (emailInput.val().length === 0 || Number(emailInput.val()) === 0)
       ) {
         emailInput.val(userEmail)
         emailInput.trigger('change')

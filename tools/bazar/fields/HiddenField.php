@@ -23,7 +23,6 @@ class HiddenField extends BazarField
         return '';
     }
 
-
     // Format input values before save
     // public function formatValuesBeforeSave($entry)
     // {

@@ -51,10 +51,8 @@ if ($fp) {
     }
 
     echo "<br />\n<div class=\"alert alert-success\"><strong>" . _t('FINISHED_CONGRATULATIONS') . ' !</strong><br />' . _t('IT_IS_RECOMMANDED_TO_REMOVE_WRITE_ACCESS_TO_CONFIG_FILE') . ' <tt>wakka.config.php</tt> (' . _t('THIS_COULD_BE_UNSECURE') . ').</div>';
-    echo '<h2>' . _t('PERFORM_MIGRATIONS').'</h2>';
-
+    echo '<h2>' . _t('PERFORM_MIGRATIONS') . '</h2>';
     require_once 'setup/runmigrations.php';
-//header('Location: '.$config['base_url'].$config['root_page']);
 } else {
     // complain
     echo "<br />\n<div class=\"alert alert-danger\"><strong>" . _t('WARNING') . '</strong> :</span> ' . _t('CONFIGURATION_FILE') . ' <tt>', $wakkaConfigLocation, '</tt> ' . _t('CONFIGURATION_FILE_NOT_CREATED') . '.<br />' .

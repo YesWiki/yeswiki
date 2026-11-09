@@ -213,6 +213,7 @@ class BazarAction extends YesWikiAction
                         if ($this->isWikiHibernated()) {
                             return $this->getMessageWhenHibernated();
                         }
+
                         return $formController->translate($req->query->get('idformulaire'));
                     case self::ACTION_FORM_CONFIRM_DELETE:
                     case self::ACTION_FORM_CONFIRM_EMPTY:

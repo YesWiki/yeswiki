@@ -1,8 +1,8 @@
 name: Release
 
 on:
-  release:
-    types: [published]
+  push:
+    tags: ['v*']
   workflow_dispatch:
     inputs:
       tag:
@@ -11,9 +11,29 @@ on:
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  TAG: ${{ github.event.inputs.tag || github.ref_name }}
 
 jobs:
+  release:
+    permissions:
+      contents: write
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Create the release for this tag
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" > /dev/null 2>&1; then
+            echo "release $TAG already exists"
+            exit 0
+          fi
+          prerelease=()
+          case "$TAG" in *-*) prerelease=(--prerelease) ;; esac
+          gh release create "$TAG" --repo "$GITHUB_REPOSITORY" --verify-tag --generate-notes "${prerelease[@]}"
+
   build:
+    needs: release
     permissions:
       contents: write
     runs-on: ubuntu-24.04
@@ -21,7 +41,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
         with:
-          ref: ${{ github.event.inputs.tag || github.event.release.tag_name }}
+          ref: ${{ env.TAG }}
 
       - uses: shivammathur/setup-php@v2
         with:
@@ -40,8 +60,6 @@ jobs:
         run: yarn install
 
       - name: Set the release number
-        env:
-          TAG: ${{ github.event.inputs.tag || github.event.release.tag_name }}
         run: |
           RELEASE="${TAG#v}"
           echo "$RELEASE" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$'
@@ -50,7 +68,6 @@ jobs:
 
       - name: Create release archive
         run: |
-          TAG="${{ github.event.inputs.tag || github.event.release.tag_name }}"
           ARCHIVE_NAME="yeswiki-${TAG}.zip"
           mkdir -p /tmp/release/yeswiki
           rsync -a \
@@ -71,5 +88,5 @@ jobs:
       - name: Upload release asset
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ github.event.inputs.tag || github.event.release.tag_name }}
+          tag_name: ${{ env.TAG }}
           files: ${{ env.ARCHIVE_NAME }}

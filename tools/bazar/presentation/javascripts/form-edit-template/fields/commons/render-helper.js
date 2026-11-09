@@ -8,7 +8,7 @@ export default {
     if (!Object.prototype.hasOwnProperty.call(this.formFields, fieldId)) {
       const formField = $(`.field-${fieldId}`).closest('li.form-field')
       const newFormField = {}
-      newFormField[fieldId] = formField.length == 0 ? false : formField
+      newFormField[fieldId] = formField.length === 0 ? false : formField
       this.formFields = { ...this.formFields, ...newFormField }
     }
     return this.formFields[fieldId]
@@ -33,7 +33,7 @@ export default {
       if (formField) {
         id = $(formField).attr('id')
         const anchor = $(`#${id}-holder`)
-        if (typeof anchor === 'undefined' || anchor.length == 0) {
+        if (typeof anchor === 'undefined' || anchor.length === 0) {
           newHolder[fieldId] = false
           newId[fieldId] = false
         } else {
@@ -59,7 +59,7 @@ export default {
   initializeField(field) {
     if (
       !field.hasClass('initialized') ||
-      field.data('savedId') != field.prop('id')
+      field.data('savedId') !== field.prop('id')
     ) {
       field.addClass('initialized')
       field.data('savedId', field.prop('id'))

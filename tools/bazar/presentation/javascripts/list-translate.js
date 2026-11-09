@@ -70,8 +70,6 @@ const app = createApp({
           lang, extraLangsChildren[child] ?? { title: '' }
         )
       }
-      // node.children = children
-      // return node
     },
     filterLangInfo(node, lang) {
       const filterednode = { id: node.id, label: node.label }

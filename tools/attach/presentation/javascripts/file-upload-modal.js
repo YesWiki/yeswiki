@@ -126,7 +126,7 @@ export default class {
   buildCode() {
     const formvals = this.$form.find(':input').serialize()
     let desctxt = this.getParameterByName(formvals, 'attach_alt')
-    if (typeof desctxt == 'undefined' || desctxt == '') {
+    if (typeof desctxt == 'undefined' || desctxt === '') {
       desctxt = this.getParameterByName(formvals, 'attach_link_text')
     }
 
@@ -137,12 +137,12 @@ export default class {
       formvals,
       'attach_action_display_pdf',
     )
-    if (typeof displaypdf != 'undefined' && displaypdf == '1') {
+    if (typeof displaypdf != 'undefined' && displaypdf === '1') {
       result += ' displaypdf="1"'
     }
 
     const imagesize = this.getParameterByName(formvals, 'attach_imagesize')
-    if (typeof imagesize != 'undefined' && imagesize != '') {
+    if (typeof imagesize != 'undefined' && imagesize !== '') {
       result += ` size="${imagesize}"`
     }
 
@@ -171,7 +171,7 @@ export default class {
       formvals,
       'attach_nofullimagelink',
     )
-    if (typeof nofullimagelink != 'undefined' && nofullimagelink == '1') {
+    if (typeof nofullimagelink != 'undefined' && nofullimagelink === '1') {
       result += ' nofullimagelink="1"'
     }
 
@@ -180,8 +180,8 @@ export default class {
   }
 
   getParameterByName(querystring, name) {
-    name = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-    const regex = new RegExp(`[\\?&]${name}=([^&#]*)`)
+    const escapedName = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+    const regex = new RegExp(`[\\?&]${escapedName}=([^&#]*)`)
     const results = regex.exec(`?${querystring}`)
     return results == null
       ? ''

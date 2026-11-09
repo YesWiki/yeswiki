@@ -36,9 +36,7 @@ class FileField extends BazarField
     public const FILE_UNREADABLE = 'unreadable';
     public const FILE_REMOTE = 'remote';
 
-    /**
-     * Check if a value is a URL.
-     */
+    /** Check if a value is a URL. */
     protected function isUrl(?string $value): bool
     {
         if (empty($value)) {
@@ -87,11 +85,7 @@ class FileField extends BazarField
                     $alertMessage = $this->unsignedDeletionAlert();
                 } elseif ($this->isAllowedToDeleteFile($entry, $value)) {
                     if (substr($value, 0, strlen($this->defineFilePrefix($entry))) == $this->defineFilePrefix($entry)) {
-                        $attach = $this->getAttach();
-                        $rawFileName = $this->getService(SecurityController::class)->filterInput(INPUT_GET, 'delete_file', FILTER_SANITIZE_FULL_SPECIAL_CHARS, false, 'string');
-                        if (!empty($rawFileName)) {
-                            $attach->fmDelete($rawFileName);
-                        }
+                        $this->getAttach()->fmDelete($value);
                     } else {
                         $deletedFile = true;
                         $this->updateEntryAfterFileDelete($entry);
@@ -148,25 +142,19 @@ class FileField extends BazarField
         );
     }
 
-    /**
-     * Whether the edit link asking to delete a file carries the session's token.
-     */
+    /** Whether the edit link asking to delete a file carries the session's token. */
     protected function deletionLinkIsSigned(): bool
     {
         return $this->getService(RequestGuard::class)->linkIsSigned($this->getRequest());
     }
 
-    /**
-     * The given file deletion link with the session's token added.
-     */
+    /** The given file deletion link with the session's token added. */
     protected function signedDeletionUrl(string $url): string
     {
         return $this->getService(RequestGuard::class)->sign($url);
     }
 
-    /**
-     * The alert shown instead of deleting a file when the link lacks the session's token.
-     */
+    /** The alert shown instead of deleting a file when the link lacks the session's token. */
     protected function unsignedDeletionAlert(): string
     {
         return '<div class="alert alert-danger">' . _t('CSRF_TOKEN_FAIL_ERROR') . '</div>' . "\n";
@@ -258,30 +246,20 @@ class FileField extends BazarField
         return '';
     }
 
-    /**
-     * check if user is allowed to delete file.
-     */
+    /** check if user is allowed to delete file. */
     protected function isAllowedToDeleteFile(array $entry, string $fileName): bool
     {
         return !$this->getService(SecurityController::class)->isWikiHibernated()
             && $this->getService(Guard::class)->isAllowed('supp_fiche', $entry['owner'] ?? '');
     }
 
-    /**
-     * define file prefix.
-     *
-     * @return string $prefixFileName
-     */
+    /** define file prefix. */
     protected function defineFilePrefix(array $entry)
     {
         return $entry['id_fiche'] . '_' . $this->getPropertyName() . '_';
     }
 
-    /**
-     * method to get the filename from the value.
-     *
-     * @return string $shortFileName
-     */
+    /** method to get the filename from the value. */
     protected function getShortFileName(string $longFileName): string
     {
         $attach = $this->getAttach();
@@ -319,11 +297,12 @@ class FileField extends BazarField
         $new[self::FIELD_READ_LABEL] = $fieldProps['readLabel'] ?? '';
         if (!empty($fieldProps['authorizedExts'])) {
             $new[self::FIELD_AUTHORIZED_EXTS_LABEL] =
-            is_array($fieldProps['authorizedExts']) ? implode(',',$fieldProps['authorizedExts']) : $fieldProps['authorizedExts'];
+            is_array($fieldProps['authorizedExts']) ? implode(',', $fieldProps['authorizedExts']) : $fieldProps['authorizedExts'];
         } else {
             $new[self::FIELD_AUTHORIZED_EXTS_LABEL] = '';
         }
         ksort($new);
+
         return $new;
     }
 
@@ -365,11 +344,7 @@ class FileField extends BazarField
         return $fullFileName;
     }
 
-    /**
-     * sanitize filename.
-     *
-     * @return string $sanitizedFilename
-     */
+    /** sanitize filename. */
     protected function sanitizeFilename(string $filename): string
     {
         $attach = $this->getAttach();
@@ -378,10 +353,7 @@ class FileField extends BazarField
         return $sanitizedFilename;
     }
 
-    /**
-     * Tell where the value stored on an entry points: a remote URL, a readable file,
-     * a missing one, or one the server refuses to read.
-     */
+    /** Tell where the value stored on an entry points: a remote URL, a readable file, */
     public function locateFile($entry, ?string $value): string
     {
         if (empty($value)) {
@@ -409,9 +381,7 @@ class FileField extends BazarField
         return $uploadPath . '/' . ($entry['id_fiche'] ?? '') . '/';
     }
 
-    /**
-     * Moves this field's upload to $filePath and strips active content from svg and html files.
-     */
+    /** Moves this field's upload to $filePath and strips active content from svg and html files. */
     protected function storeUploadedFile(string $filePath): void
     {
         $this->moveUploadedFile($_FILES[$this->propertyName]['tmp_name'], $filePath);

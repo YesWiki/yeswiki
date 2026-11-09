@@ -95,7 +95,6 @@ class TabsField extends LabelField
         return $this->btnClass;
     }
 
-    // LANG_FIXME not sure about this function
     public static function mapToFieldArray($fieldProps): array
     {
         $new = parent::mapToFieldArray($fieldProps);

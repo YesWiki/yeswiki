@@ -2,9 +2,9 @@
   // Creating the sweetPages jQuery plugin:
   $.fn.sweetPages = function (opts) {
     // If no options were passed, create an empty opts object
-    if (!opts) opts = {}
+    const options = opts || {}
 
-    const resultsPerPage = opts.perPage || 3
+    const resultsPerPage = options.perPage || 3
 
     // The plugin works best for unordered lists, althugh ols would do just as well:
     const ul = this

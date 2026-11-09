@@ -29,11 +29,9 @@
 		</div>
 	</div>
 
-	{# List Nodes #}
 	<label class="control-label">{{ _t('BAZ_VALEURS_LISTE') }}</label>
 	<child-list-translate :node="list" :selectedLanguage="selectedLanguage" :langs="extraLangsList"  :depth="0" :langsvalues="extraLangsValues" :familytree="[]"></child-list-translate>
 	<input type=hidden name=jsonlist :value="jsonList"/>
-	{# Form Actions #}
 	<div class="form-actions form-group">
 		<div class="col-sm-9 col-sm-offset-3">
 			<button class="btn btn-primary" type="submit" name="submit">
@@ -44,4 +42,4 @@
 			</a>
 		</div>
 	</div>
-</div>
+</form>

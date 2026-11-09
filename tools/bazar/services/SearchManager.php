@@ -416,7 +416,7 @@ class SearchManager
      *
      * @return $string
      */
-    public function prepareSearchRequest(&$params = [], bool $filterOnReadACL = false, bool $applyOnAllRevisions = false, $columns = 'f.*', $lang = 'default'): string
+    public function prepareSearchRequest(&$params = [], bool $filterOnReadACL = false, bool $applyOnAllRevisions = false): string
     {
         $params = array_merge(
             [
@@ -635,20 +635,14 @@ class SearchManager
             $this->bodyValue('$.id_typeannonce') . ' AS ' . $this->column('id_typeannonce'),
         ];
 
+        $translated = !empty($this->wiki->config['supported_langs']);
         foreach ($vFields as $vFieldName => $vField) {
-
-
-            $lang = $lang == 'default' ? $this->wiki->lang : $lang;
             if (!$vField['isExtracted']) {
-                // Extract it if it is not yet done
-
-                $vSQLNom = mysqli_real_escape_string($this->wiki->dblink, $vFieldName);
-                $vRenamedSQLNom = mysqli_real_escape_string($this->wiki->dblink, $this->renameJSONPathVariable($vFieldName));
-
-                $vSelectRequest[] = "JSON_UNQUOTE(COALESCE(JSON_EXTRACT(body, '\$.__translation.{$lang}.{$vSQLNom}'), JSON_EXTRACT(body, '\$.{$vSQLNom}'))) AS `{$vRenamedSQLNom}`";
-
-                // rembember it was extracted
-
+                $value = $this->bodyValue($this->jsonPath($vFieldName));
+                if ($translated) {
+                    $value = 'COALESCE(' . $this->bodyValue($this->jsonPath('__translation.' . $this->wiki->lang . '.' . $vFieldName)) . ', ' . $value . ')';
+                }
+                $vSelectRequest[] = $value . ' AS ' . $this->column($vFieldName);
                 $vField['isExtracted'] = true;
             }
         }
@@ -749,9 +743,9 @@ class SearchManager
                                         . ($vIDsRequest !== '' ? ' AND ' . $vIDsRequest : '')
                                 . ')'
                                 . ($vSplittedsRequest != '' ? $vSplittedsRequest . ' ' : ' ')
-                                . 'SELECT DISTINCT '
-                                . $columns .
-                                ' FROM filteredPages f ' . ($vSplittedsCount > 0 ? 'LEFT JOIN all_multiples s ON s.id = f.id ' : '')
+                                . 'SELECT DISTINCT f.* '
+                                . 'FROM filteredPages f '
+                                . ($vSplittedsCount > 0 ? 'LEFT JOIN all_multiples s ON s.id = f.id ' : '')
                                 . ($vWhereRequest != '' ? 'WHERE ' . $vWhereRequest : '');
 
         return $vCompleteRequest;
@@ -766,16 +760,7 @@ class SearchManager
      */
     public function search($params = [], bool $filterOnReadACL = false, bool $useGuard = false): array
     {
-
-        if (isset($this->wiki->config['supported_langs'])) {
-            $lang = $this->wiki->lang;
-            $columns = "f.id, f.tag, f.time, f.body_r, f.owner, f.user, f.latest, f.handler, f.comment_on ,JSON_MERGE_PATCH(f.body, COALESCE(JSON_EXTRACT(f.body, \"\$.__translation.$lang\"), body)) as body";
-        } else {
-            $columns = 'f.*';
-        }
-
-
-        $requete = $this->prepareSearchRequest($params, $filterOnReadACL, false, $columns);
+        $requete = $this->prepareSearchRequest($params, $filterOnReadACL);
 
         $searchResults = [];
         if ($requete === '') {
@@ -787,8 +772,10 @@ class SearchManager
         $vPageManager = $this->wiki->services->get(PageManager::class);
         $vEntryManager = $this->wiki->services->get(EntryManager::class);
 
+        $lang = empty($this->wiki->config['supported_langs']) ? null : 'default';
         foreach ($results as $page) {
             $vPageManager->cacheOwner($page);
+            $page = $vPageManager->translatePage($page, $lang);
             $filteredPage = (!$this->wiki->UserIsAdmin() && $useGuard)
                 ? $this->wiki->services->get(Guard::class)->checkAcls($page, $page['tag'])
                 : $page;
@@ -935,6 +922,9 @@ class SearchManager
                                 $vValue = $entry['id_fiche'];
                             }
                             break;
+                        default:
+                            $vValue = $this->resolveDateToken($matches[1]) ?? $vValue;
+                            break;
                     }
                 }
                 if (!in_array($vValue, $vUniqueValues, true)) {
@@ -948,6 +938,25 @@ class SearchManager
             'operator' => $vOperator,
             'values' => $vUniqueValues,
         ];
+    }
+
+    // Resolves `now` or `today` with offsets such as `+3w` or `-2m-1d`, or returns null.
+    private function resolveDateToken(string $pToken): ?string
+    {
+        if (!preg_match('/^(now|today)((?:[+-]\d+[a-z]+)*)$/', $pToken, $vMatches)) {
+            return null;
+        }
+        $vUnits = ['d' => 'day', 'j' => 'day', 'w' => 'week', 's' => 'week', 'm' => 'month', 'y' => 'year', 'a' => 'year', 'h' => 'hour'];
+        $vDate = new \DateTimeImmutable($vMatches[1] === 'today' ? 'today' : 'now');
+        preg_match_all('/([+-]\d+)([a-z]+)/', $vMatches[2], $vOffsets, PREG_SET_ORDER);
+        foreach ($vOffsets as [, $vAmount, $vUnit]) {
+            if (!isset($vUnits[$vUnit])) {
+                return null;
+            }
+            $vDate = $vDate->modify("$vAmount {$vUnits[$vUnit]}");
+        }
+
+        return $vDate->format($vMatches[1] === 'today' ? 'Y-m-d' : 'c');
     }
 
     /**

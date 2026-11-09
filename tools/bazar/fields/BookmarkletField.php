@@ -80,10 +80,9 @@ class BookmarkletField extends BazarField
         $new[self::FIELD_DESCRIPTION_FIELD] = $fieldProps['descriptionField'];
         $new[self::FIELD_TEXT_FIELD] = $fieldProps['text'];
         ksort($new);
+
         return $new;
     }
-
-
 
     // change return of this method to keep compatible with php 7.3 (mixed is not managed)
     #[\ReturnTypeWillChange]

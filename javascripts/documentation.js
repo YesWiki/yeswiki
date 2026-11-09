@@ -144,9 +144,9 @@ window.$docsify = {
         }
       })
 
-      hook.afterEach((html) => {
+      hook.afterEach((rawHtml) => {
         // Lazy load images and iframes
-        html = html.replace(
+        let html = rawHtml.replace(
           /<img src=([^\s]*)/g,
           '<img class="lazyload" data-src=$1',
         )
@@ -207,7 +207,7 @@ window.$docsify = {
       hook.ready(() => {
         // Redirect properly to home page, otherwise we stay on "#/" hash
         // and it cause some translations issues
-        if (location.hash == '#/') location.hash = `/docs/${locale}/README`
+        if (location.hash === '#/') location.hash = `/docs/${locale}/README`
 
         // adds backdrop for mobile search menu
         const backdrop = document.createElement('div')

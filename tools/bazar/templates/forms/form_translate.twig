@@ -3,7 +3,7 @@
 {{ include_javascript('tools/bazar/presentation/javascripts/form-translate.js', false, true) }}
 {{ include_css('tools/bazar/presentation/styles/list-form.css') }}
 
-<form method="post" @submit="onSubmit" id="translate-form" class="translate-form form-horizontal" data-__translation="{{ langs | json_encode }}" data-jsonform="{{ form|json_encode }}" data-defaultLanguage="{{ defaultLanguage }}" =>
+<form method="post" @submit="onSubmit" id="translate-form" class="translate-form form-horizontal" data-__translation="{{ langs | json_encode }}" data-jsonform="{{ form|json_encode }}" data-defaultLanguage="{{ defaultLanguage }}">
     <div class="control-group form-group">
         <label class="control-label col-sm-3">
 			{{ _t('BAZ_TRANSLATE_IN') }}
@@ -45,7 +45,6 @@
 			</template>
 		</div>
 	</div>
-	{# List Nodes #}
 	<div class="nodes-container">
 	   <div class="form-entry" v-for="(entry, key) in form.fields">
 
@@ -67,18 +66,15 @@
 	   </div>
 	</div>
 
-	<input type="hidden" name="form" :value="jsonForm" />
 	<input type="hidden" name="extraLangs" :value="jsonExtraLangs" />
-	<input type="hidden" name="tag" value="{{ tag }}"/>
-	{# Form Actions #}
 	<div class="form-actions form-group">
 		<div class="col-sm-9 col-sm-offset-3">
 			<button class="btn btn-primary" type="submit" name="submit">
 				{{ _t('BAZ_SAVE') }}
 			</button>
-			<a class="btn btn-default" href="{{ url({ params: { vue: 'form' }})|raw }}">
+			<a class="btn btn-default" href="{{ url({ params: { vue: 'formulaire' }})|raw }}">
 				{{ _t('BAZ_ANNULER') }}
 			</a>
 		</div>
 	</div>
-</div>
+</form>

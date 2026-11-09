@@ -78,14 +78,13 @@ class LinkField extends BazarField
         if (empty($fieldProps['ratio']) and $fieldProps['maxWidth'] == 0 and $fieldProps['maxHeight'] == 0) {
             $new[self::FIELD_OPTIONS] = '';
         } else {
-            $new[self::FIELD_OPTIONS] = $fieldProps['ratio'].'|'.($fieldProps['maxWidth'] == 0 ? '' : $fieldProps['maxWidth']).'|'.($fieldProps['maxHeight'] == 0 ? '' : $fieldProps['maxHeight']);
-
+            $new[self::FIELD_OPTIONS] = $fieldProps['ratio'] . '|' . ($fieldProps['maxWidth'] == 0 ? '' : $fieldProps['maxWidth']) . '|' . ($fieldProps['maxHeight'] == 0 ? '' : $fieldProps['maxHeight']);
         }
         $new[self::FIELD_CLASS] = $fieldProps['class'];
         ksort($new);
+
         return $new;
     }
-
 
     // change return of this method to keep compatible with php 7.3 (mixed is not managed)
     #[\ReturnTypeWillChange]

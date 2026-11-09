@@ -11,6 +11,7 @@ use YesWiki\Bazar\Field\ImageField;
 use YesWiki\Bazar\Field\MapField;
 use YesWiki\Bazar\Field\TagsField;
 use YesWiki\Bazar\Field\UserField;
+use YesWiki\Core\Service\HtmlPurifierService;
 use YesWiki\Core\Service\StringUtilService;
 use YesWiki\Wiki;
 
@@ -23,9 +24,6 @@ class CSVManager
     protected $importdone;
     protected $errormsg;
 
-    /**
-     * contructor.
-     */
     public function __construct(
         EntryManager $entryManager,
         FormManager $formManager,
@@ -39,15 +37,7 @@ class CSVManager
         $this->errormsg = [];
     }
 
-    /**
-     * get headers from a form.
-     *
-     * @param array $form form from which headers shoudl be extracted
-     *
-     * @return array ['propertyName1' => ['field' => field, 'fullHeader' => 'jjjjk'],
-     *               'propertyName2' => ['field' => field, 'fullHeader' => 'jjjjk']]
-     *               null if error
-     */
+    /** get headers from a form. */
     private function getHeaders(array $form): ?array
     {
         $headers = [];
@@ -89,11 +79,7 @@ class CSVManager
         return $headers;
     }
 
-    /**
-     * convert array to csv.
-     *
-     * @return string csv
-     */
+    /** convert array to csv. */
     public function arrayToCSV(?array $data): ?string
     {
         if (!empty($data)) {
@@ -112,22 +98,7 @@ class CSVManager
         return $csv ?? null;
     }
 
-    /**
-     * get CSV of all entries from form.
-     *
-     * @param <array> $pParams : parameters for SearchManager::search
-     *	        	[
-     *					"query" => <string>|<array> the query
-     *					"keywords" => <string> the keywords string
-     *				]
-     * @param <array>|null $pOptions =
-     *			 [
-     * 				"fakeMode" => <bool> to create a template (default false),
-     *				"keysInsteadOfValues" => <bool> export keys instead of values (default false)
-     *			]
-     *
-     * @return array|null csv; null is empty or error
-     */
+    /** get CSV of all entries from form. */
     public function getCSVfromFormId(
         $pFormID,
         array $pParams,
@@ -162,10 +133,7 @@ class CSVManager
                     return $fieldHeader['fullHeader'];
                 }, $headers),
         ));
-
-
-        $extralang = $this->generateTranslationHeaders($headers);
-        $csv_raw[0] = array_merge($csv_raw[0], $extralang);
+        $csv_raw[0] = array_merge($csv_raw[0], $this->generateTranslationHeaders(array_keys($headers)));
 
         if (!$vFakeMode) {
             $vSearchManager = $this->wiki->services->get(SearchManager::class);
@@ -199,20 +167,11 @@ class CSVManager
         return $csv_raw ?? null;
     }
 
-    /**
-     * getCSVLineFromEntry.
-     *
-     * @param array $headers             from $this->getHeaders
-     * @param bool  $keysInsteadOfValues to export keys insteadof values
-     *
-     * @return array|null $entry in csv or null if error
-     */
     private function getCSVLineFromEntry(array $entry, array $headers, bool $keysInsteadOfValues = false): ?array
     {
         $line = [];
         $line[] = date_format(date_create_from_format('Y-m-d H:i:s', $entry['date_creation_fiche']), 'd/m/Y H:i:s');
         $line[] = date_format(date_create_from_format('Y-m-d H:i:s', $entry['date_maj_fiche']), 'd/m/Y H:i:s');
-
 
         foreach ($headers as $propertyName => $header) {
             $value = $entry[$propertyName] ?? null;
@@ -256,17 +215,13 @@ class CSVManager
             $line[] = $value ?? '';
         }
 
-        // export translations
-        if (!empty($this->wiki->config['supported_langs']) and !empty($entry['__translation'])) {
-            foreach ($this->wiki->config['supported_langs'] as $lang) {
-                if (empty($entry['__translation'][$lang])) {
-                    foreach ($headers as $propertyName => $header) {
-                        $line[] = '';
-                    }
-                } else {
-                    foreach ($headers as $propertyName => $header) {
-                        $line[] = $entry['__translation'][$lang][$propertyName] ?? '';
-                    }
+        $langs = $this->wiki->config['supported_langs'] ?? [];
+        if (!empty($langs)) {
+            $line[] = $entry['lang'] ?? '';
+            foreach ($langs as $lang) {
+                foreach (array_keys($headers) as $propertyName) {
+                    $value = $entry['__translation'][$lang][$propertyName] ?? '';
+                    $line[] = is_scalar($value) ? (string)$value : '';
                 }
             }
         }
@@ -274,13 +229,6 @@ class CSVManager
         return $line;
     }
 
-    /**
-     * getLabelsFromEnumFieldOptions.
-     *
-     * @param BazarEnumFieldField $field
-     *
-     * @return mixed array|string|null
-     */
     private function getLabelsFromEnumFieldOptions($value, EnumField $field, array $entry)
     {
         if (is_array($value)) {
@@ -317,13 +265,6 @@ class CSVManager
         return $newValue ?? null;
     }
 
-    /**
-     * getTempalteCSVLine.
-     *
-     * @param array $headers from $this->getHeaders
-     *
-     * @return array|null $entry in csv or null if error
-     */
     private function getTemplateCSVLine(array $headers, int $lineNumber): ?array
     {
         $line = [];
@@ -364,11 +305,6 @@ class CSVManager
         return $line;
     }
 
-    /**
-     * importEntry.
-     *
-     * @return array|null $createdEntries
-     */
     public function importEntry(array $importedEntries, string $formId): ?array
     {
         if (!$this->importdone) {
@@ -398,11 +334,7 @@ class CSVManager
         return null;
     }
 
-    /**
-     * extract CSV from csv file.
-     *
-     * @return array|null [['entry' => $extractedData,'errormsg' => ['error1','error2']],...]
-     */
+    /** extract CSV from csv file. */
     public function extractCSVfromCSVFile($pFormId, $filesData, bool $detectColumnsOnHeaders = true, $pForm = null, bool $keepRemoteFilesAsUrl = false)
     {
         $vBazarListService = $this->wiki->services->get(BazarListService::class);
@@ -443,14 +375,7 @@ class CSVManager
         return null;
     }
 
-    /**
-     * get columnIndexes for propertyNames.
-     *
-     * @param array $firstLine of the CSV from fgetcsv
-     * @param array $headers   from getHeaders
-     *
-     * @return array|null [$propertyName => $index, ...], null if error
-     */
+    /** get columnIndexes for propertyNames. */
     private function getColumnIndexesForPropertyNames(array $firstLine, array $headers, bool $detectColumnsOnHeaders = false): ?array
     {
         if ($detectColumnsOnHeaders) {
@@ -486,18 +411,14 @@ class CSVManager
         return !empty($columnIndexes) ? $columnIndexes : null;
     }
 
-    /**
-     * splice array from key.
-     */
+    /** splice array from key. */
     private function array_splice_from_key(array &$line, string $key)
     {
         $index = array_search($key, array_keys($line));
         array_splice($line, $index, 1);
     }
 
-    /**
-     * get column indexes for datetimes.
-     */
+    /** get column indexes for datetimes. */
     private function detectDateTimeHeaders(array $data): array
     {
         foreach (['datetime_create', 'datetime_latest'] as $value) {
@@ -511,9 +432,7 @@ class CSVManager
         return $data;
     }
 
-    /**
-     * remove column indexes for datetimes.
-     */
+    /** remove column indexes for datetimes. */
     private function removeDateTimeColumns(array $columns): array
     {
         foreach (['datetime_create', 'datetime_latest'] as $value) {
@@ -525,9 +444,7 @@ class CSVManager
         return $columns;
     }
 
-    /**
-     * get column indexes on condition.
-     */
+    /** get column indexes on condition. */
     private function detectHeaders(array $data, $condition): array
     {
         $foundPropertyNames = [];
@@ -546,10 +463,7 @@ class CSVManager
         return $data;
     }
 
-
-    /**
-     * get columns index for extra lang values
-     */
+    /** Get columns index for extra lang values. */
     private function detectExtraLangColumns(array $data, array $headers): array
     {
         $extralang = $this->generateTranslationHeaders(array_keys($headers));
@@ -563,9 +477,7 @@ class CSVManager
         return $data;
     }
 
-    /**
-     * get column indexes on fullHeaders.
-     */
+    /** get column indexes on fullHeaders. */
     private function detectHeadersOnFullHeader(array $data): array
     {
         return $this->detectHeaders($data, function ($propertyName, $header) {
@@ -573,9 +485,7 @@ class CSVManager
         });
     }
 
-    /**
-     * get column indexes on labels.
-     */
+    /** get column indexes on labels. */
     private function detectHeadersOnLabels(array $data): array
     {
         return $this->detectHeaders($data, function ($propertyName, $header) {
@@ -583,9 +493,7 @@ class CSVManager
         });
     }
 
-    /**
-     * get column indexes on labels with stars.
-     */
+    /** get column indexes on labels with stars. */
     private function detectHeadersOnLabelsWithStar(array $data): array
     {
         return $this->detectHeaders($data, function ($propertyName, $header) {
@@ -593,9 +501,7 @@ class CSVManager
         });
     }
 
-    /**
-     * get column indexes on propertyName.
-     */
+    /** get column indexes on propertyName. */
     private function detectHeadersOnPropertyName(array $data): array
     {
         return $this->detectHeaders($data, function ($propertyName, $header) {
@@ -603,9 +509,7 @@ class CSVManager
         });
     }
 
-    /**
-     * get column indexes if modified after one detected columns.
-     */
+    /** get column indexes if modified after one detected columns. */
     private function detectHeadersModifiedAfterOneDetected(array $data): array
     {
         $notFoundIndexes = array_map(function ($key) {
@@ -631,30 +535,17 @@ class CSVManager
         return $data;
     }
 
-    /**
-     * getEntryFromCSVLine.
-     *
-     * @param array $data                          array line from CSV file
-     * @param array $headers                       from getHeaders
-     * @param array $columnIndexesForPropertyNames from getcolumnIndexesForPropertyNames
-     *
-     * @return array|null entry
-     */
     private function getEntryFromCSVLine(array $data, array $headers, array $columnIndexesForPropertyNames, string $formId, bool $keepRemoteFilesAsUrl = false): ?array
     {
         $entry = [];
         $skipFields = ['datetime_create', 'datetime_latest'];
-        $extralangIndexes = array_filter($columnIndexesForPropertyNames, function($el) {
-            return str_starts_with($el, '__translation');
-        }, ARRAY_FILTER_USE_KEY);
-        $columnIndexesForPropertyNames = array_filter($columnIndexesForPropertyNames, function($el) {
-            return !str_starts_with($el, '__translation');
-        }, ARRAY_FILTER_USE_KEY);
+        $extralangIndexes = array_filter($columnIndexesForPropertyNames, fn ($key) => str_starts_with($key, '__translation'), ARRAY_FILTER_USE_KEY);
+        $columnIndexesForPropertyNames = array_filter($columnIndexesForPropertyNames, fn ($key) => !str_starts_with($key, '__translation') && $key !== 'lang', ARRAY_FILTER_USE_KEY);
         foreach ($columnIndexesForPropertyNames as $propertyName => $index) {
-            if (in_array($propertyName, $skipFields)) {
-                $field = '';
-            } else {
+            if (!in_array($propertyName, $skipFields)) {
                 $field = $headers[$propertyName]['field'];
+            } else {
+                $field = '';
             }
 
             if (intval($index) == $index) {
@@ -716,13 +607,7 @@ class CSVManager
         return !empty($entry) ? $entry : null;
     }
 
-    /**
-     * extract value from data.
-     *
-     * @param array $data array line from CSV file
-     *
-     * @return mixed value
-     */
+    /** extract value from data. */
     private function getValueFromData(array $data, int $index)
     {
         if (isset($data[$index])) {
@@ -757,13 +642,7 @@ class CSVManager
         return $value ?? null;
     }
 
-    /**
-     * convert a CSV list of labels or of keys into the comma separated list of keys stored in an entry.
-     *
-     * @param string $value CSV list read from one cell
-     *
-     * @return string comma separated keys
-     */
+    /** convert a CSV list of labels or of keys into the comma separated list of keys stored in an entry. */
     private function extractValueFromEnumFieldData(string $value, EnumField $field): string
     {
         $options = array_map('trim', $field->getOptions());
@@ -797,11 +676,7 @@ class CSVManager
         return implode(',', $indexes);
     }
 
-    /**
-     * turn the JSON cell written by the export back into the latitude/longitude/geometries structure.
-     *
-     * @return array|string the structure, or the raw cell when it cannot be read
-     */
+    /** turn the JSON cell written by the export back into the latitude/longitude/geometries structure. */
     private function extractValueFromMapFieldData(string $value, MapField $field)
     {
         $decoded = json_decode(trim($value), true);
@@ -820,13 +695,6 @@ class CSVManager
         ];
     }
 
-    /**
-     * extractValueFromImageFieldData.
-     *
-     * @param string $value, CSV saved in value
-     *
-     * @return string $newValue
-     */
     private function extractValueFromImageFieldData(string $value, ImageField $field): string
     {
         $imageorig = trim($value);
@@ -873,19 +741,12 @@ class CSVManager
         return $value;
     }
 
-    /**
-     * extractValueFromFileFieldData.
-     *
-     * @param string $value, CSV saved in value
-     *
-     * @return string $newValue
-     */
     private function extractValueFromFileFieldData(string $value, FileField $field): string
     {
         $fileUrl = trim($value);
         $file = renameUrlToSanitizedFilename($fileUrl);
 
-        $extension = strtolower(pathinfo($file, PATHINFO_EXTENSION));
+        $extension = preg_replace('/_$/', '', strtolower(pathinfo($file, PATHINFO_EXTENSION)));
         $authorizedExtensions = array_keys($this->wiki->services->get(ParameterBagInterface::class)->get('authorized-extensions'));
         if ($extension === '' || !in_array($extension, $authorizedExtensions, true)) {
             $this->errormsg[] = _t('BAZ_NOT_AUTHORIZED_FILE');
@@ -913,11 +774,7 @@ class CSVManager
         return $value;
     }
 
-    /**
-     * convert CSV raw to string to display in <pre>.
-     *
-     * @return string $csvToDisplay
-     */
+    /** convert CSV raw to string to display in <pre>. */
     public function arrayToCSVToDisplay(?array $data): ?string
     {
         $csv = $this->arrayToCSV($data) ?? '';
@@ -943,14 +800,7 @@ class CSVManager
         return $vFilename;
     }
 
-    /**
-     * send CSV file or archive.
-     *
-     * @params $pFormIDs : forms ids
-     * @params <array> $pParams for search. ex : [ "query" => ..., "keywords" => ..., "champ" => ..., "ordre" => ... ]
-     *
-     * @return string $csvToDisplay
-     */
+    /** send CSV file or archive. */
     public function sendCsvOrZip($pFormIDs, array $pParams, string $zipFileName = 'yeswiki-csv-exports.zip')
     {
         $vBazarListService = $this->wiki->services->get(BazarListService::class);
@@ -1023,64 +873,37 @@ class CSVManager
         }
     }
 
-    /**
-     * genereate headers in form of __translation.LANG.HEADER_NAME.
-     * ex : __translation.fr.bf_titre
-     */
-    private function generateTranslationHeaders (array $headers): array {
-
-        if (empty($langs = $this->wiki->config['supported_langs'])) {
+    /** Translation headers such as `__translation.fr.bf_titre`, after a `lang` header, when the wiki has several languages. */
+    private function generateTranslationHeaders(array $headers): array
+    {
+        $langs = $this->wiki->config['supported_langs'] ?? [];
+        if (empty($langs)) {
             return [];
         }
 
         $langHeaders = ['lang'];
         foreach ($langs as $lang) {
-            foreach($headers as $header) {
+            foreach ($headers as $header) {
                 $langHeaders[] = "__translation.{$lang}.{$header}";
             }
         }
+
         return $langHeaders;
     }
 
     /**
-     * get i18n fields and convert it to recursive array
-     * from
-     *  …, __translation.fr.bf_titre,__translation.fr.bf_description,…,__translation.en.bf_titre,…
-     * …,fr_titre,fr_description,…,en_titre,…
-     * to
-     * __translation => [
-     *   fr => [
-     *      bf_titre => 'fr_titre',
-     *      bf_description => 'fr_description'
-     *      ],
-     *   en => [
-     *      bf_titre => 'en_titre'
-     *      ]
-     *  ]
-     * @param $fields data indexed with numbers
-     * @param $headersIndexes array with dot notation as key and index as value ex: [ __translation.fr.bf_titre => 10 ]
+     * The translations of an imported line, from its `__translation.<lang>.<field>` columns, as [lang => [field => value]].
      */
-    private function translationFieldsToArray(array $fields, array $headersIndexes, array $headers)
+    private function translationFieldsToArray(array $fields, array $headersIndexes, array $headers): array
     {
-        $langs = $this->wiki->config['supported_langs'];
-        if (empty($langs)) {
-            return [];
-        }
-
-        $langExists = false;
+        $purifier = $this->wiki->services->get(HtmlPurifierService::class);
         $extralang = [];
-        foreach ($langs as $lang) {
-            $extralang[$lang] = [];
-            $langExists = false;
+        foreach ($this->wiki->config['supported_langs'] ?? [] as $lang) {
             foreach ($headers as $header) {
                 $key = "__translation.{$lang}.{$header}";
-                if (array_key_exists($key, $headersIndexes) and !empty($fields[$headersIndexes[$key]])) {
-                    $extralang[$lang][$header] = $fields[$headersIndexes[$key]];
-                    $langExists = true;
+                if (array_key_exists($key, $headersIndexes) && is_scalar($fields[$headersIndexes[$key]] ?? null) && trim((string)$fields[$headersIndexes[$key]]) !== '') {
+                    $extralang[$lang][$header] = $purifier->cleanHTML((string)$fields[$headersIndexes[$key]]);
                 }
-            }
-            if (!$langExists) {
-                unset($extralang[$lang]);
             }
         }
 

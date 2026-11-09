@@ -12,6 +12,7 @@ return [
     'ATTACH_ACTION_FULLIMAGELINK_TEXT' => 'Add a link to only display the full image',
     'ATTACH_FILE_MANAGEMENT' => 'File management',
     'ATTACH_TRASH' => 'Trash',
+    'ATTACH_DOWNLOAD_NOT_FOUND' => 'This file does not exist or you cannot access it.',
     'ATTACH_NO_ATTACHED_FILES' => 'At this time, no attached files to the page {tag}.',
     'ATTACH_FILENAME' => 'Filename',
     'ATTACH_SIZE' => 'Size',

@@ -5,9 +5,9 @@ namespace YesWiki\Bazar\Service;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Bazar\Field\BazarField;
 use YesWiki\Bazar\Field\ImageField;
-use YesWiki\Bazar\Service\ActivityPubService;
 use YesWiki\Core\Service\AclService;
 use YesWiki\Core\Service\DbService;
+use YesWiki\Core\Service\HtmlPurifierService;
 use YesWiki\Core\Service\PageManager;
 use YesWiki\Core\Service\TripleStore;
 use YesWiki\Security\Controller\SecurityController;
@@ -24,13 +24,14 @@ class FormManager
     protected $params;
     protected $cachedForms;
     protected $cacheValidatedForAll;
-    protected $isAvailableOnlyOneEntryOption;
-    protected $isAvailableOnlyOneEntryMessage;
     protected $attach;
     protected $pageManager;
     protected $tripleStore;
     protected $aclService;
-    protected $pageTableName;
+    protected $formTags;
+
+    public const TRIPLE_FORM_TYPE = 'form';
+    public const TRANSLATABLE_FIELD_PROPERTIES = ['label', 'helper', 'hint', 'default'];
 
     public function __construct(
         Wiki $wiki,
@@ -40,7 +41,6 @@ class FormManager
         ParameterBagInterface $params,
         SecurityController $securityController,
         ActivityPubService $activityPubService,
-        HttpSignatureService $httpSignatureService,
         PageManager $pageManager,
         TripleStore $tripleStore,
         AclService $aclService,
@@ -61,19 +61,15 @@ class FormManager
         $this->cachedForms = [];
         $this->cacheValidatedForAll = false;
         $this->securityController = $securityController;
-        $this->isAvailableOnlyOneEntryOption = null;
-        $this->isAvailableOnlyOneEntryMessage = null;
+        $this->formTags = null;
         $this->attach = new \Attach($this->wiki);
-        $this->pageTableName = $this->dbService->prefixTable('pages');
     }
 
     protected function getBasePath()
     {
         $basePath = $this->attach->GetUploadPath();
 
-        $basePath = substr($basePath, -1) == '/' ? $basePath : $basePath.'/';
-
-        return $basePath;
+        return $basePath . (substr($basePath, -1) != '/' ? '/' : '');
     }
 
     protected function cleanCacheDefaultImage($prefix)
@@ -129,167 +125,297 @@ class FormManager
             $template = $this->encodeTemplate($template_list);
         }
 
-        return $this->dbService->escape($template);
+        return $template;
     }
 
-    // necessary until jquery form is rework to use new format
-    protected function prepare_with_special_parameters_old_format($form, $id_nature)
+    /** Attaches the stored default image of each image field, as base64, to the template rows. */
+    protected function withDefaultImages(array $template_list, $formId): array
     {
         $basePath = $this->getBasePath();
-        $template_list = $this->parseTemplate($form['bn_template']);
-        $modify = false;
-        for ($temp_index = 0; $temp_index < count($template_list); $temp_index++) {
-            if ($template_list[$temp_index][0] == 'image') {
-
-                ['wikifield' => $wikifield,
-                  'modify' => $modify] = $this->manage_default_image_field($template_list[$temp_index], $id_nature);
-
-                $template_list[$temp_index] = $wikifield;
+        foreach ($template_list as $index => $row) {
+            if ($row[0] == 'image') {
+                $default_image_filename = $basePath . "defaultimage{$formId}_{$row[1]}.jpg";
+                if (file_exists($default_image_filename)) {
+                    $row[ImageField::FIELD_IMAGE_DEFAULT] = explode('|', $row[ImageField::FIELD_IMAGE_DEFAULT])[0] . '|data:image/jpg;base64,' . base64_encode(file_get_contents($default_image_filename));
+                } else {
+                    $row[ImageField::FIELD_IMAGE_DEFAULT] = '';
+                }
+                $template_list[$index] = $row;
             }
         }
 
-        return [$template_list, $modify];
+        return $template_list;
+    }
+
+    /** The template rows of a form stored as JSON, in field order. */
+    protected function templateFromFields(array $fields): array
+    {
+        uasort($fields, fn ($a, $b) => ($a['order'] ?? 0) <=> ($b['order'] ?? 0));
+        $template_list = [];
+        foreach ($fields as $field) {
+            if (isset($field['template_row']) && is_array($field['template_row'])) {
+                $template_list[] = $field['template_row'];
+            } else {
+                $template_list[] = $this->fieldClass($field)::mapToFieldArray($field);
+            }
+        }
+
+        return $template_list;
+    }
+
+    /** The field class a stored JSON field rebuilds into. */
+    protected function fieldClass(array $field): string
+    {
+        foreach ([$field['field_class'] ?? null, isset($field['field_type']) ? 'YesWiki\\Bazar\\Field\\' . $field['field_type'] : null] as $class) {
+            if (is_string($class) && class_exists($class) && is_a($class, BazarField::class, true)) {
+                return $class;
+            }
+        }
+
+        return BazarField::class;
+    }
+
+    /** The tag of the page holding form $id, or null. */
+    public function getPageTagFromId($id): ?string
+    {
+        return $this->formTags()[(string)$id] ?? null;
+    }
+
+    /** Form ids mapped to the tags of their pages. */
+    protected function formTags(): array
+    {
+        if ($this->formTags === null) {
+            $this->formTags = [];
+            foreach ($this->pageManager->getManyFromTriple(self::TRIPLE_FORM_TYPE) as $page) {
+                $body = json_decode($page['body'] ?? '', true);
+                if (isset($body['id']) && intval($body['id']) . '' === $body['id'] . '') {
+                    $this->formTags[(string)$body['id']] = $page['tag'];
+                }
+            }
+        }
+
+        return $this->formTags;
+    }
+
+    public function forgetCaches(): void
+    {
+        $this->cachedForms = [];
+        $this->cacheValidatedForAll = false;
+        $this->formTags = null;
     }
 
     /**
-     * base64 encode default image in imageField if file not already done and file exists. Look for a default file with the following name :
-     *  $basePath . defaultimage{$formId}_{$wikifield[1]}.jpg
-     * @param $wikifield array encoded field
-     * @param $formId
-     *
-     * @return array with updated field and wether it has been modified or not : [ 'field' => updated_field, 'modifield' => bool ]
+     * The form $formId (its numeric id or its page tag), with its `__translation` for $lang applied
+     * ('default' = the current language, 'all' = untranslated, with every translation).
      */
-    protected function manage_default_image_field($wikifield, $formId): array
+    public function getOne($formId, string $lang = 'default'): ?array
     {
-
-        // field already base64 encoded
-        if (str_contains($wikifield[ImageField::FIELD_IMAGE_DEFAULT], ';base64')) {
-            return [
-                'wikifield' => $wikifield,
-                'modify' => false,
-            ];
+        if ($formId === null || $formId === '') {
+            return null;
         }
-        $basePath = $this->getBasePath();
-        $default_image_filename = $wikifield[ImageField::FIELD_IMAGE_DEFAULT] ?? $basePath."defaultimage{$formId}_{$wikifield[1]}.jpg";
-        if (file_exists($default_image_filename)) {
-            $wikifield[ImageField::FIELD_IMAGE_DEFAULT] = $wikifield[ImageField::FIELD_IMAGE_DEFAULT].'|data:image/jpg;base64,'.base64_encode(file_get_contents($default_image_filename));
+        $formId = (string)$formId;
+        if (intval($formId) . '' === $formId) {
+            $id = $formId;
+            $tag = $this->getPageTagFromId($id);
         } else {
-            $wikifield[ImageField::FIELD_IMAGE_DEFAULT] = '';
-        }
-
-        return [
-            'wikifield' => $wikifield,
-            'modify' => true,
-        ];
-    }
-
-    protected function prepare_with_special_parameters($form)
-    {
-        if (isset($form['fields'])) {
-            $template_list = $form;
-        } else {
-            $template_list = $this->parseTemplate($form['bn_template']);
-        }
-
-        $prepared = [];
-        $modify = false;
-
-        $fields = $template_list['fields'];
-        foreach ($fields as $key => $field) {
-            $cname = "YesWiki\\Bazar\\Field\\".$field['field_type'];
-            $wikifield = $cname::mapToFieldArray($field);
-
-            if ($wikifield[0] == 'image') {
-                ['wikifield' => $wikifield, 'modify' => $modify] = $this->manage_default_image_field($wikifield, $form['id']);
-            }
-            $prepared[] = $wikifield;
-        }
-
-        return [$prepared, $modify];
-    }
-
-    public function getPageTagFromId($id): ?String {
-        $request = 'SELECT tag FROM '. $this->pageManager->pageTableName .' WHERE latest = "Y" AND json_value(body, "$.id") = '.$id.'; ';
-        $tag = $this->dbService->loadSingle($request);
-        return $tag['tag'] ?? null ;
-    }
-
-    public function getOne($formId, $lang = 'default'): ?array
-    {
-        //COMMENT we should begin to use form name instead of form number to find form.
-        if (is_numeric($formId)) {
-            $formId = $this->getPageTagFromId($formId);
-            if ($formId == null) {
+            $tag = $formId;
+            $id = array_search($tag, $this->formTags(), true);
+            if ($id === false) {
                 return null;
             }
         }
-
-        if (isset($this->cachedForms[$formId . $lang])) {
-            return $this->cachedForms[$formId . $lang];
+        $cacheKey = $lang === 'default' ? $id : "{$id}|{$lang}";
+        if (array_key_exists($cacheKey, $this->cachedForms)) {
+            return $this->cachedForms[$cacheKey] ?: null;
         }
-
-
-        $form = $this->pageManager->getOne($formId, null, true, false, null, $lang);
-
-        if (!$form) {
+        if ($tag === null) {
             return null;
         }
 
-        $form = $this->getFromRawData($form);
-
-        $form['tag'] = $formId;
-        $this->cachedForms[$formId] = $form;
-
-        return $form ?? [];
-    }
-
-    /*
-    * get json form representation from wiki syntax
-    */
-    public function getFromRawData($form)
-    {
-        if (isset($form['body'])) {
-            $form = json_decode($form['body'], true);
-            $form['bn_condition'] = $form['condition'];
-            $form['bn_sem_context'] = $form['semantic']['context'] ?? '';
-            $form['bn_sem_type'] = $form['semantic']['type'] ?? '';
-            $form['bn_sem_use_template'] = $form['semantic']['use_template'] ?? '' ;
-            $form['bn_condition'] = $form['condition'] ?? '';
-            $form['bn_only_one_entry'] = $form['only_one_entry'] ?? '';
-            $form['bn_only_one_entry_message'] = $form['one_entry_message'] ?? '';
-            $form['bn_id_nature'] = $form['id'];
-            $form['bn_label_nature'] = $form['title'];
-
-            uasort($form['fields'], function ($a, $b) { return $a['order'] - $b['order'] ; });
-
-            list($template_list, $modify) = $this->prepare_with_special_parameters($form);
-        } else {
-            list($template_list, $modify) = $this->prepare_with_special_parameters_old_format($form, $form['bn_id_nature']);
+        $page = $this->pageManager->getOne($tag, null, true, false, null, $lang);
+        if (empty($page['body'])) {
+            return null;
         }
-
-        $form['template'] = $template_list;
-        $form['prepared'] = $this->prepareData($form);
-        $form['bn_template'] = $this->encodeTemplate($template_list);
+        $form = $this->getFromRawData($page);
+        $form['tag'] = $tag;
+        $this->cachedForms[$cacheKey] = $form;
 
         return $form;
     }
 
-    public function getAll($bazar_lang = 'default'): array
+    /**
+     * A form ready for use (`template` rows and `prepared` fields) from a form page, a `nature` row or posted form data.
+     */
+    public function getFromRawData($form)
     {
-        if (!$this->cacheValidatedForAll) {
-            $forms =  $forms = $this->pageManager->getManyFromTriple('form', '*', $bazar_lang);
-            foreach ($forms as $form) {
-                if (!empty($form['id'])) {
-                    // save only not empty formId
-                    $form_prepared = $this->getFromRawData($form);
-                    $this->cachedForms[$form_prepared['id']] = $form_prepared;
+        if (isset($form['body'])) {
+            $body = json_decode($form['body'], true);
+            if (!is_array($body)) {
+                return null;
+            }
+            $form = [
+                'bn_id_nature' => (string)($body['id'] ?? ''),
+                'bn_label_nature' => $body['title'] ?? '',
+                'bn_description' => $body['description'] ?? '',
+                'bn_condition' => $body['condition'] ?? '',
+                'bn_sem_template' => $body['sem_template'] ?? '',
+                'bn_sem_reverse_template' => $body['sem_reverse_template'] ?? '',
+                'bn_activitypub_enable' => (string)($body['activitypub_enable'] ?? '0'),
+                'bn_only_one_entry' => $body['only_one_entry'] ?? 'N',
+                'bn_only_one_entry_message' => $body['only_one_entry_message'] ?? '',
+                'fields' => $body['fields'] ?? [],
+                'lang' => $body['lang'] ?? null,
+                '__translation' => $body['__translation'] ?? [],
+            ];
+            $template_list = $this->templateFromFields($form['fields']);
+        } else {
+            foreach ($form as $key => $value) {
+                $form[$key] = _convert($value, 'ISO-8859-15');
+            }
+            $template_list = $this->parseTemplate($form['bn_template'] ?? '');
+        }
+        $form['id'] = $form['bn_id_nature'] ?? '';
+        $form['title'] = $form['bn_label_nature'] ?? '';
+        $form['description'] = $form['bn_description'] ?? '';
+
+        $form['template'] = $this->withDefaultImages($template_list, $form['bn_id_nature'] ?? '');
+        $form['prepared'] = $this->prepareData($form);
+        $form['bn_template'] = $this->encodeTemplate($form['template']);
+
+        return $form;
+    }
+
+    /**
+     * The JSON stored in a form page. A field keeps its template row when its JSON does not rebuild into the same field.
+     */
+    public function toPageBody(array $form, array $translations = []): array
+    {
+        $template_list = $this->parseTemplate($form['bn_template'] ?? '');
+        $fields = [];
+        $order = 0;
+        foreach ($this->prepareData(['template' => $template_list]) as $index => $field) {
+            $json = $this->storableJson($field);
+            $json['order'] = $order;
+            $json['field_class'] = get_class($field);
+            $json['field_type'] = (new \ReflectionClass($field))->getShortName();
+            if (!$this->rebuildsIdentically($json, $field)) {
+                $json['template_row'] = $template_list[$index];
+            }
+            $key = $this->fieldKey($json, $order, $fields);
+            $fields[$key] = $json;
+            $order++;
+        }
+
+        return [
+            'id' => (string)$form['bn_id_nature'],
+            'title' => $form['bn_label_nature'] ?? '',
+            'description' => $form['bn_description'] ?? '',
+            'condition' => $form['bn_condition'] ?? '',
+            'sem_template' => $form['bn_sem_template'] ?? '',
+            'sem_reverse_template' => $form['bn_sem_reverse_template'] ?? '',
+            'activitypub_enable' => (string)(int)$this->activityPubService->isEnabled($form),
+            'only_one_entry' => ($form['bn_only_one_entry'] ?? 'N') === 'Y' ? 'Y' : 'N',
+            'only_one_entry_message' => $form['bn_only_one_entry_message'] ?? '',
+            'lang' => $form['lang'] ?? $this->wiki->lang,
+            'fields' => $fields,
+            '__translation' => $translations,
+        ];
+    }
+
+    protected function storableJson(BazarField $field): array
+    {
+        $json = json_decode(json_encode($field), true);
+        unset($json['options']);
+
+        return $json;
+    }
+
+    protected function rebuildsIdentically(array $json, BazarField $original): bool
+    {
+        try {
+            $rebuilt = $this->fieldFactory->create($this->fieldClass($json)::mapToFieldArray($json));
+        } catch (\Throwable $th) {
+            return false;
+        }
+
+        return $rebuilt instanceof BazarField
+            && get_class($rebuilt) === get_class($original)
+            && $this->fieldState($rebuilt) == $this->fieldState($original);
+    }
+
+    /** Every scalar or array property of $field, services left out. */
+    protected function fieldState(BazarField $field): array
+    {
+        $state = [];
+        for ($class = new \ReflectionClass($field); $class !== false; $class = $class->getParentClass()) {
+            foreach ($class->getProperties() as $property) {
+                if ($property->isStatic() || !$property->isInitialized($field)) {
+                    continue;
+                }
+                $value = $property->getValue($field);
+                if (is_scalar($value) || is_null($value) || (is_array($value) && json_encode($value) !== false && !str_contains(json_encode($value), '{}'))) {
+                    $state[$class->getName() . '::' . $property->getName()] = $value;
+                }
+            }
+        }
+
+        return $state;
+    }
+
+    protected function fieldKey(array $json, int $order, array $taken): string
+    {
+        $key = (string)($json['id'] ?? '');
+        if ($key === '') {
+            $key = (string)($json['name'] ?? '');
+        }
+        if ($key === '' || isset($taken[$key])) {
+            $key = ($key === '' ? ($json['type'] ?? 'field') : $key) . '__' . $order;
+        }
+
+        return $key;
+    }
+
+    /** Saves form $form into the page $tag, keeping $translations. */
+    protected function savePage(string $tag, array $form, array $translations): bool
+    {
+        $body = $this->toPageBody($form, $translations);
+
+        return $this->pageManager->save($tag, json_encode($body), '', true) === 0;
+    }
+
+    /** The untranslated JSON body of the page $tag. */
+    protected function storedBody(string $tag): array
+    {
+        $page = $this->pageManager->getOne($tag, null, false, true);
+        $body = json_decode($page['body'] ?? '', true);
+
+        return is_array($body) ? $body : [];
+    }
+
+    public function getAll(string $lang = 'default'): array
+    {
+        if ($lang !== 'default') {
+            $forms = [];
+            foreach ($this->pageManager->getManyFromTriple(self::TRIPLE_FORM_TYPE, $lang) as $page) {
+                $form = $this->getFromRawData($page);
+                if (!empty($form['bn_id_nature'])) {
+                    $form['tag'] = $page['tag'];
+                    $forms[$form['bn_id_nature']] = $form;
                 }
             }
 
-
+            return $forms;
+        }
+        if (!$this->cacheValidatedForAll) {
+            foreach ($this->pageManager->getManyFromTriple(self::TRIPLE_FORM_TYPE, $lang) as $page) {
+                $form = $this->getFromRawData($page);
+                if (!empty($form['bn_id_nature'])) {
+                    $form['tag'] = $page['tag'];
+                    $this->cachedForms[$form['bn_id_nature']] = $form;
+                }
+            }
             $this->cacheValidatedForAll = true;
         }
-
 
         return array_filter(
             $this->cachedForms,
@@ -300,59 +426,43 @@ class FormManager
         );
     }
 
-    /**
-    * @return array with id => title for each form
-    *
-    */
     public function getAllIds(): array
     {
-        $forms = [];
-        $id_and_title = $this->pageManager->getManyFromTriple('form', ['JSON_VALUE(body, "$.id") as id', 'JSON_VALUE(body, "$.title") as title']);
-        foreach ($id_and_title as $value) {
-            $forms[$value['id']] = $value['title'];
-        }
-        return $forms;
+        return array_map('strval', array_keys($this->formTags()));
     }
 
-    public function getMany($formsIds, $bazar_lang = 'default'): array
+    /** Form ids mapped to their titles. */
+    public function getAllTitles(): array
+    {
+        return array_map(fn ($form) => $form['bn_label_nature'], $this->getAll());
+    }
+
+    public function getMany($formsIds, string $lang = 'default'): array
     {
         if (count($formsIds) == 0) {
-            return $this->getAll($bazar_lang);
+            return $this->getAll($lang);
         }
 
         $results = [];
-
         foreach ($formsIds as $formId) {
-
-            if (empty($this->cachedForms[$formId.$bazar_lang])) {
-                $form = $this->getOne($formId, $bazar_lang);
-
-                if ($form !== null) {
-                    $this->cachedForms[$formId.$bazar_lang] = $form;
-                }
-            } else {
-                $form = $this->cachedForms[$formId.$bazar_lang];
-            }
-            $results[$formId] = $form;
+            $results[$formId] = $this->getOne($formId, $lang);
         }
 
         return $results;
     }
 
-    /**
-     * get all entries for specified form.
-     * @param $formId page name of the formulaire
-     */
-    public function getEntries($formId, $columns = '*')
+    /** Tags of the entries of form $formId. */
+    protected function entryTags($formId): array
     {
-        return $this->dbService->loadAll(<<<SQL
-        SELECT {$columns} from {$this->pageManager->pageTableName}
-        WHERE tag in (select resource from {$this->dbService->prefixTable('triples')} where value = 'fiche_bazar') and
-         JSON_VALUE(body, '$.id_typeannonce') = (SELECT  JSON_VALUE(body, '$.id') from {$this->pageManager->pageTableName} where tag = '{$formId}' and latest = 'Y')
-        SQL);
+        $rows = $this->dbService->loadAll(
+            'SELECT DISTINCT tag FROM ' . $this->dbService->prefixTable('pages')
+            . 'WHERE tag IN (SELECT resource FROM ' . $this->dbService->prefixTable('triples')
+            . 'WHERE property="' . TripleStore::TYPE_URI . '" AND value="fiche_bazar") AND body LIKE \'%"id_typeannonce":"' . $this->dbService->escape((string)$formId) . '"%\''
+        );
+
+        return array_column($rows, 'tag');
     }
 
-    // TODO Pass a Form object instead of a raw array
     /**
      * Creates a form and returns its id, which differs from the requested one when that id is taken.
      */
@@ -361,108 +471,141 @@ class FormManager
         if ($this->securityController->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
-
         if (empty($data['bn_id_nature']) || $this->getOne($data['bn_id_nature'])) {
             $data['bn_id_nature'] = $this->findNewId();
         }
-        $id =  $data['id'] ?? $data['bn_id_nature'];
+        $data['bn_id_nature'] = (string)intval($data['bn_id_nature']);
+        $data['bn_template'] = $this->convertWithSpecialParameters($data['bn_template'] ?? '', $data['bn_id_nature']);
 
-        $activitypubEnabled = (int)$this->activityPubService->isEnabled($data);
-
-        $this->cacheValidatedForAll = false;
-
-        $form = $this->getFromRawData($data);
-        $tag = getAvailableSlug($form['bn_label_nature']);
-        $saved = $this->__createOrUpdate($form, $tag);
-        if ($saved == 0) {
-
-        $this->aclService->save($tag, 'write', '@admins');
-        $this->aclService->save($tag, 'read', '@admins');
-
-        $this->tripleStore->create(
-                $tag,
-                TripleStore::TYPE_URI,
-                'form',
-                '',
-                ''
-            );
-         }
-        unset($this->cachedForms[$data['bn_id_nature']]);
-
-        return $saved ? (string)intval($data['bn_id_nature']) : false;
-    }
-
-    public function __createOrUpdate($form, $tag) {
-        $counter = 0;
-        $form_array = [];
-        foreach ($form['prepared'] as $i => $field) {
-            $classType = get_class($field);
-            $field = json_decode(json_encode($field), true);
-            $field['name'] = $field['name'] ?? $field['type'] . '__' . $counter;
-            $field['order'] = $counter++;
-            if (isset($field['options'])) {
-                unset($field['options']);
-            }
-            $fieldExploded = explode('\\', $classType);
-            $field['field_type'] = array_pop($fieldExploded);
-            $id = $field['id'] ?? $field['name'];
-            $form_array[$id] = $field;
+        $tag = $this->availableTag($data['bn_label_nature'] ?? '');
+        $saved = $this->savePage($tag, $data, []);
+        if ($saved) {
+            $this->registerFormPage($tag);
         }
-        $newform = [
-            'id' => $form['id'] ?? $form['bn_id_nature'],
-            'title' => $form['bn_label_nature'],
-            'description' => $form['bn_description'],
-            'condition' => $form['bn_condition'],
-            'semantic' => [
-                'context' => $form['bn_sem_context'] ?? '',
-                'type' => $form['bn_sem_type'] ?? '',
-                'use_template' => $form['bn_sem_use_template'] ?? '',
-            ],
-            'lang' => $this->wiki->lang,
-            'only_one_entry' => $form['bn_only_one_entry'] ?? '',
-            'only_one_entry_message' => $form['bn_only_one_entry_message'],
-            'fields' => $form_array,
-            '__translation' => $form['__translation']
-        ];
-        $saved = $this->pageManager->save($tag, json_encode($newform, JSON_FORCE_OBJECT), '', true);
-        return $saved;
+        $this->forgetCaches();
+
+        return $saved ? $data['bn_id_nature'] : false;
     }
 
-    public function update($data, $tag, $translating = false)
+    /** A page tag made from $name that no page uses yet. */
+    protected function availableTag($name): string
+    {
+        $base = \URLify::slug((string)$name) ?: 'form';
+        $tag = $base;
+        for ($counter = 0; !empty($this->pageManager->getOne($tag, null, false, true)); $counter++) {
+            $tag = $base . $counter;
+        }
+
+        return $tag;
+    }
+
+    protected function registerFormPage(string $tag): void
+    {
+        $this->aclService->save($tag, 'read', '@admins');
+        $this->aclService->save($tag, 'write', '@admins');
+        $this->aclService->save($tag, 'comment', 'comments-closed');
+        $this->tripleStore->create($tag, TripleStore::TYPE_URI, self::TRIPLE_FORM_TYPE, '', '');
+    }
+
+    /**
+     * Stores a row of the `nature` table as a form page under the same id, and returns the page tag.
+     * Throws, saving nothing, when the stored form would not rebuild into the same fields.
+     */
+    public function importLegacyForm(array $row): string
+    {
+        foreach ($row as $key => $value) {
+            $row[$key] = _convert($value, 'ISO-8859-15');
+        }
+        $legacy = $this->getFromRawData($row);
+        $body = $this->toPageBody($row);
+        $rebuilt = $this->getFromRawData(['body' => json_encode($body)]);
+        $describe = fn ($form) => array_map(fn ($field) => $this->storableJson($field), $form['prepared']);
+        if ($describe($rebuilt) != $describe($legacy)) {
+            throw new \Exception("Form {$row['bn_id_nature']} would not keep its fields once stored as a page");
+        }
+
+        $tag = $this->availableTag($row['bn_label_nature'] ?? '');
+        if ($this->pageManager->save($tag, json_encode($body), '', true) !== 0) {
+            throw new \Exception("Form {$row['bn_id_nature']} could not be saved into page {$tag}");
+        }
+        $this->registerFormPage($tag);
+        $this->forgetCaches();
+
+        return $tag;
+    }
+
+    /** Saves $data over the form it names by `bn_id_nature`, keeping the form's translations. */
+    public function update($data)
     {
         if ($this->securityController->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
-
-        $id = $data['id'] ?? $data['bn_id_nature'];
-
-        $template = $this->convertWithSpecialParameters($data['bn_template'], $id);
-
-        $this->cacheValidatedForAll = false;
-        unset($this->cachedForms[$data['bn_id_nature']]);
-
-        $activitypubEnabled = (int)$this->activityPubService->isEnabled($data);
-
-        if ($activitypubEnabled && $data['bn_activitypub_private_key'] === null) {
-                 $keyPair = $this->httpSignatureService->generateKeyPair();
-                 $privateKey = $keyPair[0];
-                 $publicKey = $keyPair[1];
-             }
-
-        if ($translating) {
-            return $this->pageManager->save($tag, json_encode($data, JSON_FORCE_OBJECT), '', true);
+        $id = (string)($data['bn_id_nature'] ?? $data['id'] ?? '');
+        $tag = $this->getPageTagFromId($id);
+        if ($tag === null) {
+            return false;
         }
+        $stored = $this->storedBody($tag);
+        $data['bn_id_nature'] = $id;
+        $data['lang'] = $stored['lang'] ?? null;
+        $data['bn_template'] = $this->convertWithSpecialParameters($data['bn_template'] ?? '', $id);
 
-        $form = $this->getFromRawData($data);
-        $previous = $this->getOne($tag, 'all');
-        $form['__translation'] = $previous['__translation'] ?? [];
+        $saved = $this->savePage($tag, $data, $stored['__translation'] ?? []);
+        $this->forgetCaches();
 
-        return $this->__createOrUpdate($form, $tag);
+        return $saved;
+    }
+
+    /**
+     * Replaces the translations of form $formId with $translations: per language, `title`, `description`
+     * and `fields.<key>.<label|helper|hint|default>`. Anything else, and any unsupported language, is dropped.
+     */
+    public function updateTranslations($formId, array $translations): bool
+    {
+        if ($this->securityController->isWikiHibernated()) {
+            throw new \Exception(_t('WIKI_IN_HIBERNATION'));
+        }
+        $form = $this->getOne($formId, 'all');
+        if (empty($form['tag'])) {
+            return false;
+        }
+        $body = $this->storedBody($form['tag']);
+        $purifier = $this->wiki->services->get(HtmlPurifierService::class);
+        $clean = fn ($value) => is_scalar($value) && trim((string)$value) !== '' ? $purifier->cleanHTML((string)$value) : null;
+        $langs = $this->wiki->config['supported_langs'] ?? [];
+        $result = [];
+        foreach ($translations as $lang => $values) {
+            if (!in_array($lang, $langs, true) || !is_array($values)) {
+                continue;
+            }
+            $sanitized = array_filter([
+                'title' => $clean($values['title'] ?? null),
+                'description' => $clean($values['description'] ?? null),
+            ], fn ($value) => $value !== null);
+            foreach ($values['fields'] ?? [] as $key => $properties) {
+                if (!isset($body['fields'][$key]) || !is_array($properties)) {
+                    continue;
+                }
+                foreach (self::TRANSLATABLE_FIELD_PROPERTIES as $property) {
+                    if (($value = $clean($properties[$property] ?? null)) !== null) {
+                        $sanitized['fields'][$key][$property] = $value;
+                    }
+                }
+            }
+            if (!empty($sanitized)) {
+                $result[$lang] = $sanitized;
+            }
+        }
+        $body['__translation'] = $result;
+        $saved = $this->pageManager->save($form['tag'], json_encode($body), '', true) === 0;
+        $this->forgetCaches();
+
+        return $saved;
     }
 
     public function clone($id)
     {
-        $data = $this->getOne($id);
+        $data = $this->getOne($id, 'all');
         if (!empty($data)) {
             unset($data['bn_id_nature']);
             $data['bn_label_nature'] = $data['bn_label_nature'] . ' (' . _t('BAZ_DUPLICATE') . ')';
@@ -473,65 +616,50 @@ class FormManager
         return false;
     }
 
+    /** Deletes form $id, its page and all its entries. */
     public function delete($id)
     {
         if ($this->securityController->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
-
-        if (is_numeric($id)) {
-                $id = $this->getPageTagFromId($id);
+        if (strval(intval($id)) != strval($id)) {
+            return null;
         }
-
-        $entries = $this->getEntries($id, 'tag');
-        $entries = array_map(function ($el) { return $el['tag'];}, $entries);
-        $entries[] = $id;
-        $this->pageManager->deleteManyOrphaned($entries);
-
-
-        $this->cacheValidatedForAll = false;
-        unset($this->cachedForms[$id]);
+        $tag = $this->getPageTagFromId($id);
+        $this->clear($id);
+        if ($tag !== null) {
+            $this->pageManager->deleteManyOrphaned([$tag]);
+        }
+        $this->forgetCaches();
 
         return true;
     }
 
+    /** Deletes every entry of form $id. */
+    public function clear($id)
+    {
+        if ($this->securityController->isWikiHibernated()) {
+            throw new \Exception(_t('WIKI_IN_HIBERNATION'));
+        }
+        $this->pageManager->deleteManyOrphaned($this->entryTags($id));
+    }
+
     public function findNewId()
     {
-        $vArrayKeys = array_keys($this->cachedForms);
+        $ids = array_map('intval', array_filter(
+            array_merge(array_keys($this->cachedForms), array_keys($this->formTags())),
+            fn ($key) => intval($key) . '' === $key . ''
+        ));
 
-        $vArrayKeys = array_map(function ($Key) {
-            return intval($Key);
-        }, array_filter($vArrayKeys, function ($vKey) {
-            return intval($vKey) . '' === $vKey . '';
-        }));
-
-        $vMaxCachedFormId = (count($vArrayKeys) > 0) ? max($vArrayKeys) : 0;
-
-        $vResult = $this->dbService->loadSingle('SELECT MAX(bn_id_nature) AS maxi FROM ' . $this->dbService->prefixTable('nature') . 'where bn_id_nature < 1000');
-
-        if (!empty($vResult) && isset($vResult['maxi'])) {
-            $vMaxDBFormIdLowerThan1000 = $vResult['maxi'];
-        } else {
-            $vMaxDBFormIdLowerThan1000 = 1;
-        }
-
-        $vCandidate = max($vMaxCachedFormId, $vMaxDBFormIdLowerThan1000) + 1;
-
+        $lowIds = array_filter($ids, fn ($id) => $id < 1000);
+        $vCandidate = (empty($lowIds) ? 1 : max($lowIds)) + 1;
         if ($vCandidate < 999) {
             return $this->firstFreeIdFrom($vCandidate);
         }
 
-        $vResult = $this->dbService->loadSingle('SELECT MAX(bn_id_nature) AS maxi FROM' . $this->dbService->prefixTable('nature') . ' where bn_id_nature > 10000');
+        $highIds = array_filter($ids, fn ($id) => $id > 10000);
 
-        if (!empty($vResult) && isset($vResult['maxi'])) {
-            $vMaxDBFormIdHigherThan10000 = $vResult['maxi'];
-        } else {
-            $vMaxDBFormIdHigherThan10000 = 10001;
-        }
-
-        $vCandidate = max($vMaxCachedFormId, $vMaxDBFormIdHigherThan10000) + 1;
-
-        return $this->firstFreeIdFrom($vCandidate);
+        return $this->firstFreeIdFrom((empty($highIds) ? 10001 : max($highIds)) + 1);
     }
 
     /**
@@ -562,7 +690,6 @@ class FormManager
         foreach ($chaine as $ligne) {
             $ligne = trim($ligne);
             if (!empty($ligne) && !(strrpos($ligne, '#', -strlen($ligne)) !== false)) {
-
                 $tablignechampsformulaire = array_map('trim', explode('***', $ligne));
 
                 if (true /* function_exists($tablignechampsformulaire[self::FIELD_TYPE]) */) {
@@ -594,7 +721,7 @@ class FormManager
                 } elseif ($value == '*') {
                     $new_line .= ' * ';
                 } else {
-                    $new_line .= is_array($value) ? join(',', $value): $value;
+                    $new_line .= is_array($value) ? join(',', $value) : $value;
                 }
                 $new_line .= '***';
             }
@@ -678,30 +805,14 @@ class FormManager
         return null;
     }
 
-    /**
-     * check if the bn_only_one_entry option is available.
-     */
     public function isAvailableOnlyOneEntryOption(): bool
     {
-        if (is_null($this->isAvailableOnlyOneEntryOption)) {
-            $result = $this->dbService->query("SHOW COLUMNS FROM {$this->dbService->prefixTable('nature')} LIKE 'bn_only_one_entry';");
-            $this->isAvailableOnlyOneEntryOption = (@mysqli_num_rows($result) !== 0);
-        }
-
-        return $this->isAvailableOnlyOneEntryOption;
+        return true;
     }
 
-    /**
-     * check if the bn_only_one_entry_message is available.
-     */
     public function isAvailableOnlyOneEntryMessage(): bool
     {
-        if (is_null($this->isAvailableOnlyOneEntryMessage)) {
-            $result = $this->dbService->query("SHOW COLUMNS FROM {$this->dbService->prefixTable('nature')} LIKE 'bn_only_one_entry_message';");
-            $this->isAvailableOnlyOneEntryMessage = (@mysqli_num_rows($result) !== 0);
-        }
-
-        return $this->isAvailableOnlyOneEntryMessage;
+        return true;
     }
 
     public function findTypeOfFields($formId, array $fieldTypes): array

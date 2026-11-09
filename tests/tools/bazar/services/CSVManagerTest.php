@@ -154,6 +154,66 @@ class CSVManagerTest extends YesWikiTestCase
         $this->assertStringContainsString('Mauve', $imported[0]['errormsg'][0]);
     }
 
+    public function testAStoredFileKeepsItsTrailingUnderscoreOnImport()
+    {
+        $file = 'CsvManagerTestDocument_20260624160314_20260624160314.pdf_';
+        touch("files/{$file}");
+
+        try {
+            $imported = $this->importFileValue("https://93.184.216.34/files/{$file}");
+        } finally {
+            unlink("files/{$file}");
+        }
+
+        $this->assertSame([], $imported['errormsg']);
+        $this->assertSame($file, $imported['entry']['fichierbf_doc']);
+    }
+
+    #[DataProvider('refusedFilesProvider')]
+    public function testAFileOutsideTheAllowlistIsRefusedOnImport(string $url)
+    {
+        $before = glob('files/*');
+
+        $imported = $this->importFileValue($url);
+
+        $this->assertSame([_t('BAZ_NOT_AUTHORIZED_FILE')], $imported['errormsg']);
+        $this->assertSame($before, glob('files/*'));
+    }
+
+    public static function refusedFilesProvider(): array
+    {
+        return [
+            'php' => ['https://93.184.216.34/files/x.php'],
+            'php with the stored suffix' => ['https://93.184.216.34/files/x.php_'],
+            'two trailing underscores' => ['https://93.184.216.34/files/x.pdf__'],
+            'only an underscore' => ['https://93.184.216.34/files/x._'],
+        ];
+    }
+
+    private function importFileValue(string $value): array
+    {
+        $formId = $this->formManager->create([
+            'bn_label_nature' => 'CSVManager file test form',
+            'bn_template' => implode("\n", [
+                'texte***bf_titre***Titre***60***255*** *** ***text***1*** *** *** * *** * *** *** *** ***',
+                'fichier***bf_doc***Document*** *** *** *** *** ***0*** *** *** * *** * *** *** *** ***',
+            ]),
+            'bn_condition' => '',
+        ]);
+
+        try {
+            return $this->reimport(
+                $this->csvManager->arrayToCSV([
+                    ['datetime_create', 'datetime_latest', 'Titre *', 'Document'],
+                    ['', '', 'Fiche', $value],
+                ]),
+                $formId,
+            )[0];
+        } finally {
+            $this->formManager->delete($formId);
+        }
+    }
+
     private function createEntry(array $values): void
     {
         $entry = $this->entryManager->create($this->formId, array_merge(
@@ -169,17 +229,18 @@ class CSVManagerTest extends YesWikiTestCase
         return $this->csvManager->arrayToCSV($this->csvManager->getCSVfromFormId($this->formId, []));
     }
 
-    private function reimport(string $csv): array
+    private function reimport(string $csv, ?string $formId = null): array
     {
+        $formId ??= $this->formId;
         $path = tempnam(sys_get_temp_dir(), 'csvmanagertest') . '.csv';
         file_put_contents($path, $csv);
 
         try {
             return $this->csvManager->extractCSVfromCSVFile(
-                $this->formId,
+                $formId,
                 ['name' => basename($path), 'tmp_name' => $path, 'error' => 0],
                 true,
-                $this->formManager->getOne($this->formId),
+                $this->formManager->getOne($formId),
             ) ?? [];
         } finally {
             unlink($path);

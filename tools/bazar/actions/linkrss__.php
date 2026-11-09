@@ -4,7 +4,7 @@ use YesWiki\Bazar\Service\FormManager;
 
 $liste = '';
 $formManager = $GLOBALS['wiki']->services->get(FormManager::class);
-$resultat = $formManager->getAllIds();
+$resultat = $formManager->getAllTitles();
 
 if ($this->CheckModuleACL('rss', 'handler')) {
     if (is_array($resultat) && count($resultat) > 0) {

@@ -104,7 +104,7 @@ function replaceLinksWithIframe(string $body): string
                     $matches[2][$key] .
                     $matches[3][$key] .
                     $matches[4][$key] .
-                    ($matches[5][$key] == '/edit' ? '/editiframe' : ('/translate' ? '/translateiframe' : '/iframe')) .
+                    (['/edit' => '/editiframe', '/translate' => '/translateiframe'][$matches[5][$key]] ?? '/iframe') .
                     $matches[6][$key] .
                     $matches[7][$key] .
                     $matches[8][$key];

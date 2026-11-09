@@ -81,7 +81,7 @@ const app = createApp({
           (pError) => {
             // on error
             this.message = _t(
-              `ADMIN_BACKUPS_NOT_POSSIBLE_TO_LOAD_LIST${pError.message.trim() != '' ? ` : ${pError}` : ''}`,
+              `ADMIN_BACKUPS_NOT_POSSIBLE_TO_LOAD_LIST${pError.message.trim() !== '' ? ` : ${pError}` : ''}`,
             )
             this.messageClass = { alert: true, 'alert-danger': true }
             this.selectedArchivesToDelete = []
@@ -129,7 +129,7 @@ const app = createApp({
         })
     },
     async deleteSelectedArchives() {
-      if (this.selectedArchivesToDelete.length == 0) {
+      if (this.selectedArchivesToDelete.length === 0) {
         toastMessage(
           _t('ADMIN_BACKUPS_NO_ARCHIVE_TO_DELETE'),
           2000,
@@ -246,7 +246,7 @@ const app = createApp({
     toggleSelectedArchive(filename) {
       if (this.selectedArchivesToDelete.includes(filename)) {
         this.selectedArchivesToDelete = this.selectedArchivesToDelete.filter(
-          (e) => e != filename,
+          (e) => e !== filename,
         )
       } else {
         this.selectedArchivesToDelete.push(filename)
@@ -308,7 +308,7 @@ const app = createApp({
       )
     },
     async advanceRestore() {
-      if (this.restoring.length == 0) {
+      if (this.restoring.length === 0) {
         return
       }
       return await this.fetch(wiki.url('?api/archives/restorestatus/'))
@@ -512,14 +512,14 @@ const app = createApp({
           console.log(pError)
           this.endStartingUpdateError(
             _t('ADMIN_BACKUPS_START_BACKUP_ERROR') +
-              (pError.message.trim() != '' ? ` : ${pError}` : ''),
+              (pError.message.trim() !== '' ? ` : ${pError}` : ''),
           )
         },
       )
     },
     endStartingUpdateError(message = '', className = 'danger') {
       this.archiveMessage =
-        message.length == 0 ? _t('ADMIN_BACKUPS_START_BACKUP_ERROR') : message
+        message.length === 0 ? _t('ADMIN_BACKUPS_START_BACKUP_ERROR') : message
       this.archiveMessageClass = {
         alert: true,
         [`alert-${className.length > 0 ? className : 'danger'}`]: true,
@@ -544,7 +544,7 @@ const app = createApp({
         action: 'futureDeletedArchives',
       }).then(
         (data) => {
-          if (data.files.length == 0) {
+          if (data.files.length === 0) {
             this.canForceDelete = true
             this.askConfirmationToDelete = false
             return this.startArchiveNextStep()
@@ -561,7 +561,7 @@ const app = createApp({
               .replace(/"/g, '&quot;')
           this.archiveMessage = _t('ADMIN_BACKUPS_CONFIRMATION_TO_DELETE', {
             files: data.files.map(escHtml).join('<br>'),
-          }).replace('\n', '<br>')
+          }).replace(/\n/g, '<br>')
           this.archiveMessageClass = { alert: true, 'alert-warning': true }
         },
         (_error) => {
@@ -577,7 +577,7 @@ const app = createApp({
       this.canForceDelete = !this.canForceDelete
     },
     async stopArchive() {
-      if (this.archiving && this.currentArchiveUid.length == 0) {
+      if (this.archiving && this.currentArchiveUid.length === 0) {
         setTimeout(() => {
           this.stopArchive()
         }, 300)
@@ -596,7 +596,7 @@ const app = createApp({
           },
           (pError) => {
             this.archiveMessage = _t(
-              `ADMIN_BACKUPS_STOP_BACKUP_ERROR${pError.message.trim() != '' ? ` : ${pError}` : ''}`,
+              `ADMIN_BACKUPS_STOP_BACKUP_ERROR${pError.message.trim() !== '' ? ` : ${pError}` : ''}`,
             )
             this.archiveMessageClass = { alert: true, 'alert-danger': true }
             this.stoppingArchive = false
@@ -714,7 +714,7 @@ const app = createApp({
             (pError) => {
               this.endUpdatingStatus(
                 _t('ADMIN_BACKUPS_UPDATE_UID_STATUS_ERROR') +
-                  (pError.message.trim() != '' ? ` : ${pError}` : ''),
+                  (pError.message.trim() !== '' ? ` : ${pError}` : ''),
                 'danger',
               )
               setTimeout(this.loadArchives, 3000)
@@ -738,7 +738,7 @@ const app = createApp({
       }
     },
     formatFileSize(bytes, decimalPoint) {
-      if (bytes == 0) {
+      if (Number(bytes) === 0) {
         return '0'
       }
       const k = 1024
@@ -783,11 +783,11 @@ const app = createApp({
           (data) => {
             if (
               typeof this.packageName != 'string' ||
-              this.packageName.length == 0 ||
+              this.packageName.length === 0 ||
               typeof data != 'object' ||
               !Object.prototype.hasOwnProperty.call(data, 'token') ||
               typeof data.token != 'string' ||
-              data.token.length == 0
+              data.token.length === 0
             ) {
               this.endStartingUpdateErrorWithT(
                 'ADMIN_BACKUPS_FORCED_UPDATE_NOT_POSSIBLE',
@@ -805,7 +805,7 @@ const app = createApp({
           },
           (pError) => {
             this.endStartingUpdateErrorWithT(
-              `ADMIN_BACKUPS_FORCED_UPDATE_NOT_POSSIBLE${pError.message.trim() != '' ? ` : ${pError}` : ''}`,
+              `ADMIN_BACKUPS_FORCED_UPDATE_NOT_POSSIBLE${pError.message.trim() !== '' ? ` : ${pError}` : ''}`,
             )
             this.canForceUpdate = false
           },
@@ -880,7 +880,7 @@ const app = createApp({
           this.showRemoteState(data)
           setTimeout(
             this.pollRemoteBackup,
-            data.step == 'downloading' ? 1000 : 2000,
+            data.step === 'downloading' ? 1000 : 2000,
           )
         },
         (pError) => {
@@ -894,7 +894,7 @@ const app = createApp({
       let message = _t(
         `ADMIN_BACKUPS_REMOTE_STEP_${String(data.step).toUpperCase()}`,
       )
-      if (data.step == 'downloading' && this.remoteTotal > 0) {
+      if (data.step === 'downloading' && this.remoteTotal > 0) {
         message += ` ${this.formatFileSize(this.remoteBytes)} / ${this.formatFileSize(this.remoteTotal)}`
       }
       if (data.warning) {

@@ -1,6 +1,6 @@
 // Adds the wiki's anti-CSRF token to every request this page sends to the wiki itself:
 // fetch and XMLHttpRequest calls get a header, POST forms get a hidden field.
-(() => {
+;(() => {
   const SAFE_METHODS = ['GET', 'HEAD', 'OPTIONS']
   const HEADER = 'X-CSRF-Token'
   const FIELD = 'csrf-token'
@@ -9,13 +9,16 @@
 
   const isHere = (url) => {
     try {
-      return new URL(url, window.location.href).origin === window.location.origin
+      return (
+        new URL(url, window.location.href).origin === window.location.origin
+      )
     } catch (_error) {
       return false
     }
   }
 
-  const changes = (method) => !SAFE_METHODS.includes(String(method || 'GET').toUpperCase())
+  const changes = (method) =>
+    !SAFE_METHODS.includes(String(method || 'GET').toUpperCase())
 
   const nativeFetch = window.fetch
   if (nativeFetch) {
@@ -26,7 +29,9 @@
       if (!changes(method) || !isHere(url) || !token()) {
         return nativeFetch.call(this, input, init)
       }
-      const headers = new Headers(init.headers || (request ? request.headers : undefined))
+      const headers = new Headers(
+        init.headers || (request ? request.headers : undefined),
+      )
       if (!headers.has(HEADER)) headers.set(HEADER, token())
       return nativeFetch.call(this, input, { ...init, headers })
     }
@@ -51,7 +56,8 @@
 
   const arm = (form) => {
     if (!(form instanceof HTMLFormElement) || !token()) return
-    if (String(form.method).toUpperCase() !== 'POST' || !isHere(form.action)) return
+    if (String(form.method).toUpperCase() !== 'POST' || !isHere(form.action))
+      return
     if (form.querySelector(`input[name="${FIELD}"]`)) return
     const field = document.createElement('input')
     field.type = 'hidden'

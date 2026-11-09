@@ -28,6 +28,8 @@ if (preg_match('/<([a-z]+)([^>]*class="mermaid"[^>]*)>(.*?)<\/\1>/is', $plugin_o
             startOnLoad: true,
             fontFamily: \'inherit\',
             theme: "base",
+            layout: "dagre",
+            look: "classic",
             themeCSS: \':root { --mermaid-font-family: inherit;} .titleText, .taskText, .sectionTitle, .grid , .grid .tick text {font-family:inherit;} g.label {color:inherit;}\'            
         });
         })', true);

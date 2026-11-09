@@ -39,7 +39,9 @@ export default {
     },
     removeElement(group) {
       this.elements = this.elements.filter(
-        (el) => el[this.propertiesIds[0]] != group[this.propertiesIds[0]],
+        (el) =>
+          String(el[this.propertiesIds[0]]) !==
+          String(group[this.propertiesIds[0]]),
       )
     },
     resetValues() {

@@ -20,7 +20,7 @@ class BazarConvertQueriesToExplicitSyntax extends YesWikiMigration
     private function convertFormQueries(SearchManager $searchManager): void
     {
         $formManager = $this->wiki->services->get(FormManager::class);
-        foreach ($formManager->getAll() as $form) {
+        foreach ($this->legacyForms() as $form) {
             $template = $form['template'];
             $changed = false;
             foreach ($template as $index => $field) {

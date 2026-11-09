@@ -74,7 +74,7 @@ class BazarChangeModelForGeolocation extends YesWikiMigration
         $vEntryManager = $this->wiki->services->get(EntryManager::class);
         $vSearchManager = $this->wiki->services->get(SearchManager::class);
 
-        $vForms = $vFormManager->getAll();
+        $vForms = $this->legacyForms();
 
         $this->report('Found ' . count($vForms) . ' forms :');
 
@@ -152,9 +152,8 @@ class BazarChangeModelForGeolocation extends YesWikiMigration
 
         $this->report('The entries of forms ' . implode(', ', $vFormsToProcess) . ' need to be updated');
 
-        $vFormsToProcess = array_map(function ($pID) use ($vFormManager) {
-            return $vFormManager->getOne($pID);
-        }, $vFormsToProcess);
+        $vLegacyForms = $this->legacyForms();
+        $vFormsToProcess = array_map(fn ($pID) => $vLegacyForms[$pID], $vFormsToProcess);
 
         foreach ($vFormsToProcess as $vForm) {
             $this->report('----------------------');

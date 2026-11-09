@@ -12,7 +12,7 @@ class RefactorEnumFieldPropertyName extends YesWikiMigration
     {
         $formManager = $this->getService(FormManager::class);
         $fieldFactory = $this->getService(FieldFactory::class);
-        foreach ($formManager->getAll() as $form) {
+        foreach ($this->legacyForms() as $form) {
             $newTemplate = [];
             foreach ($form['template'] as $fieldArray) {
                 $field = $fieldFactory->create($fieldArray);
@@ -30,7 +30,6 @@ class RefactorEnumFieldPropertyName extends YesWikiMigration
                 . " SET `bn_template` = '" . $this->dbService->escape($form['bn_template']) . "'"
                 . ' WHERE `bn_id_nature` = ' . intval($form['bn_id_nature'])
             );
-            $formManager->cacheForm($form['bn_id_nature'], $formManager->getFromRawData(array_diff_key($form, ['template' => 0, 'prepared' => 0])));
         }
     }
 }

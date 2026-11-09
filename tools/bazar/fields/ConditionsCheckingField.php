@@ -47,6 +47,7 @@ class ConditionsCheckingField extends LabelField
         $new[self::FIELD_CONDITION] = $fieldProps['condition'];
         $new[self::FIELD_OPTIONS] = $fieldProps['option'];
         ksort($new);
+
         return $new;
     }
 

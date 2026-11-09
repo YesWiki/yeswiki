@@ -17,22 +17,13 @@ class DuplicationManager
     protected $uploadPath;
     protected $wiki;
 
-    /**
-     * DuplicationManager constructor.
-     *
-     * @param Wiki $wiki the injected Wiki instance
-     */
     public function __construct(Wiki $wiki)
     {
         $this->wiki = $wiki;
         $this->uploadPath = $this->getLocalFileUploadPath();
     }
 
-    /**
-     * Get the local path to files uploads (usually "files").
-     *
-     * @return string local path to files uploads
-     */
+    /** Get the local path to files uploads (usually "files"). */
     private function getLocalFileUploadPath()
     {
         $attachConfig = $this->wiki->config['attach_config'];
@@ -50,13 +41,7 @@ class DuplicationManager
         return $this->uploadPath;
     }
 
-    /**
-     * Return fields that may contain attachments to import (fichier, image, or textelong fields for bazar entries).
-     *
-     * @param array $id
-     *
-     * @return array keys of fields that may contain attachments to import
-     */
+    /** Return fields that may contain attachments to import (fichier, image, or textelong fields for bazar entries). */
     private function getUploadFieldsFromEntry($id)
     {
         $fields = [];
@@ -87,13 +72,7 @@ class DuplicationManager
         return [];
     }
 
-    /**
-     * find files in wiki text.
-     *
-     * @param string $wikiText
-     *
-     * @return array files
-     */
+    /** find files in wiki text. */
     private function findFilesInWikiText($tag, $wikiText)
     {
         $filesMatched = [];
@@ -144,13 +123,7 @@ class DuplicationManager
         return $filesMatched;
     }
 
-    /**
-     * Get file attachements from newTag.
-     *
-     * @param string $tag page id
-     *
-     * @return array attachments filenames
-     */
+    /** Get file attachements from newTag. */
     public function findFiles($tag = '')
     {
         $files = [];
@@ -204,6 +177,14 @@ class DuplicationManager
         return $doneFiles;
     }
 
+    /** Refuses a tag that a page URL could not reach. */
+    private function assertReachableTag($tag)
+    {
+        if (!is_string($tag) || !preg_match('`^' . WN_PAGE_TAG . '$`u', $tag)) {
+            throw new \Exception(_t('INVALID_PAGE_TAG', ['tag' => (string)$tag]) . ' ' . _t('PAGE_TAG_ALLOWED_CHARACTERS'));
+        }
+    }
+
     public function checkPostData($data)
     {
         if (empty($data['type']) || !in_array($data['type'], ['form', 'page', 'list', 'entry'])) {
@@ -212,6 +193,7 @@ class DuplicationManager
         if (empty($data['newTag'])) {
             throw new \Exception(_t('EMPTY_PAGE_TAG'));
         }
+        $this->assertReachableTag($data['newTag']);
         if ($data['type'] != 'page' && empty($data['newTitle'])) {
             throw new \Exception(_t('EMPTY_PAGE_TITLE'));
         }
@@ -292,6 +274,7 @@ class DuplicationManager
 
     public function importDistantContent($tag, $request)
     {
+        $this->assertReachableTag($tag);
         if ($this->wiki->services->get(PageManager::class)->getOne($tag)) {
             throw new \Exception(_t('ACEDITOR_LINK_PAGE_ALREADY_EXISTS'));
         }
@@ -316,13 +299,11 @@ class DuplicationManager
         }
     }
 
-    /**
-     * Copies a file of the source wiki into the upload folder, refusing private addresses and unauthorised extensions.
-     */
+    /** Copies a file of the source wiki into the upload folder, refusing private addresses and unauthorised extensions. */
     public function downloadFile($sourceUrl, $fromTag, $toTag, $timeoutInSec = 10)
     {
         $fileName = basename(str_replace($fromTag, $toTag, basename((string)parse_url((string)$sourceUrl, PHP_URL_PATH))));
-        $extension = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
+        $extension = preg_replace('/_$/', '', strtolower(pathinfo($fileName, PATHINFO_EXTENSION)));
         $authorizedExtensions = array_keys($this->wiki->services->get(ParameterBagInterface::class)->get('authorized-extensions'));
         if ($fileName === '' || $fileName[0] === '.' || !in_array($extension, $authorizedExtensions, true)) {
             throw new \Exception(_t('BAZ_NOT_AUTHORIZED_FILE') . ' : ' . $sourceUrl);

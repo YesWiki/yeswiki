@@ -108,14 +108,14 @@ class TitleField extends BazarField
     }
 
     public static function mapToFieldArray($fieldProps): array
-        {
-           $new = parent::mapToFieldArray($fieldProps);
-           $new[self::FIELD_TITLE_TEMPLATE] = $fieldProps['titleTemplate'] ?? '';
-           ksort($new);
-           return $new;
-        }
+    {
+        $new = parent::mapToFieldArray($fieldProps);
+        $new[self::FIELD_TITLE_TEMPLATE] = $fieldProps['titleTemplate'] ?? '';
+        ksort($new);
 
-    // change return of this method to keep compatible with php 7.3 (mixed is not managed)
+        return $new;
+    }
+
     #[\ReturnTypeWillChange]
     public function jsonSerialize()
     {

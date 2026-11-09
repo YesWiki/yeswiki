@@ -29,7 +29,7 @@ export default {
         this.selectedForms,
         extraFields,
       )
-      if (this.config.only == 'lists') {
+      if (this.config.only === 'lists') {
         fields = fields.filter(
           (a) => typeof a.options == 'object' && a.options !== null,
         )

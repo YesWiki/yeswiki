@@ -3,7 +3,6 @@
 namespace YesWiki\Test\Core\Migration;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-use YesWiki\Bazar\Service\FormManager;
 use YesWiki\Core\Service\DbService;
 use YesWiki\Test\Core\YesWikiTestCase;
 
@@ -25,7 +24,7 @@ class UpdateAgendaActivityPubCoordinatesTest extends YesWikiTestCase
     protected function tearDown(): void
     {
         foreach ($this->formIds as $id) {
-            $GLOBALS['wiki']->services->get(FormManager::class)->delete($id);
+            self::deleteLegacyForm($GLOBALS['wiki'], $id);
         }
     }
 
@@ -36,7 +35,7 @@ class UpdateAgendaActivityPubCoordinatesTest extends YesWikiTestCase
 
     private function formWith(string $template, string $reverseTemplate): string
     {
-        $id = (string)$GLOBALS['wiki']->services->get(FormManager::class)->create([
+        $id = self::createLegacyForm($GLOBALS['wiki'], [
             'bn_label_nature' => 'Agenda migration test form',
             'bn_template' => 'texte***bf_titre***Titre***60***255*** *** ***text***1*** *** *** * *** * *** *** *** ***',
             'bn_condition' => '',

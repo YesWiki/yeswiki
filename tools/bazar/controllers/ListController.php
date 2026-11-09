@@ -3,12 +3,12 @@
 namespace YesWiki\Bazar\Controller;
 
 use YesWiki\Bazar\Service\FieldFactory;
+use YesWiki\Bazar\Service\Guard;
 use YesWiki\Bazar\Service\ListManager;
 use YesWiki\Core\Controller\AuthController;
 use YesWiki\Core\Service\AclService;
 use YesWiki\Core\Service\Mailer;
 use YesWiki\Core\YesWikiController;
-use YesWiki\Bazar\Service\Guard;
 use YesWiki\Security\Controller\SecurityController;
 
 class ListController extends YesWikiController
@@ -48,8 +48,7 @@ class ListController extends YesWikiController
         $lists = $this->listManager->getAll();
 
         foreach ($lists as $key => $list) {
-
-            $lists[$key]['canEdit'] = !$this->securityController->isWikiHibernated() && $this->aclService->hasAccess('write', $key);
+            $lists[$key]['canEdit'] = !$this->securityController->isWikiHibernated() && $this->wiki->HasAccess('write', $key);
             $lists[$key]['canDelete'] = !$this->securityController->isWikiHibernated() && ($this->wiki->UserIsAdmin() || $this->wiki->UserIsOwner($key));
             // Small trick : create a fake SelectListField so we can reuse the code to compute the options
             $field = $this->fieldFactory->create(['liste', $list['id'], '', '', '', '', '', '', '', '', '', '', '', '', '', '']);
@@ -60,7 +59,7 @@ class ListController extends YesWikiController
             'lists' => $lists,
             'loggedUser' => $this->authController->getLoggedUser(),
             'canCreate' => !$this->securityController->isWikiHibernated(),
-            'isMultilang' => isset($this->wiki->config['supported_langs']),
+            'isMultilang' => !empty($this->wiki->config['supported_langs']),
         ]);
     }
 
@@ -99,7 +98,7 @@ class ListController extends YesWikiController
         if ($post->has('submit')) {
             if ($this->aclService->hasAccess('write', $id)) {
                 $title = $post->get('title');
-                $this->listManager->update($id, $title, json_decode($post->get('nodes'), true), $list['__translation'] ?? []);
+                $this->listManager->update($id, $title, json_decode($post->get('nodes'), true));
 
                 if ($this->shouldPostMessageOnSubmit()) {
                     return $this->render('@core/iframe_result.twig', [
@@ -120,33 +119,31 @@ class ListController extends YesWikiController
         ]);
     }
 
-    public function translate($id) {
-        if ($this->getService(Guard::class)->isAllowed('saisie_formulaire')) {
-            if ($this->getRequest()->getMethod() === 'POST') {
-                $req = $this->getRequest()->request;
-                $list = json_decode($req->get('jsonlist'), true);
-
-                $this->listManager->update($id, $list['title'], $list['nodes'], $list['__translation'] ?? []);
-
-                $this->wiki->Redirect(
-                    $this->wiki->Href('', '', [BAZ_VARIABLE_VOIR => BAZ_VOIR_LISTES], false)
-                );
-
-            } else {
-                $list = $this->listManager->getOne($id, null,  'all');
-                $default_lang = $this->wiki->config['default_language'] ?? 'fr';
-
-                return $this->render('@bazar/forms/list_translate.twig', ['list' => $list,
-                'default_language' => $default_lang,
-                'langs' => array_filter($this->wiki->config['supported_langs'], function($el) use ($default_lang) {
-                    return $el != $default_lang;
-                })
-                ]);
-
-            }
-        } else {
+    public function translate($id)
+    {
+        if (!$this->getService(Guard::class)->isAllowed('saisie_formulaire') || !$this->aclService->hasAccess('write', $id)) {
             return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'formulaire', 'msg' => 'BAZ_NEED_ADMIN_RIGHTS'], false));
         }
+        if (empty($this->wiki->config['supported_langs'])) {
+            return $this->render('@templates/alert-message.twig', ['type' => 'danger', 'message' => _t('TRANSLATE_MISSING_EXTRA_LANG')]);
+        }
+        $list = $this->listManager->getOne($id, null, 'all');
+        if (empty($list)) {
+            return $this->wiki->redirect($this->wiki->Href('', '', [BAZ_VARIABLE_VOIR => BAZ_VOIR_LISTES], false));
+        }
+        if ($this->getRequest()->getMethod() === 'POST') {
+            $posted = json_decode((string)$this->getRequest()->request->get('jsonlist'), true);
+            $this->listManager->updateTranslations($id, is_array($posted['__translation'] ?? null) ? $posted['__translation'] : []);
+
+            return $this->wiki->redirect($this->wiki->Href('', '', [BAZ_VARIABLE_VOIR => BAZ_VOIR_LISTES], false));
+        }
+        $defaultLanguage = $this->wiki->config['default_language'] ?? 'fr';
+
+        return $this->render('@bazar/forms/list_translate.twig', [
+            'list' => $list,
+            'default_language' => $defaultLanguage,
+            'langs' => array_values(array_filter($this->wiki->config['supported_langs'], fn ($lang) => $lang !== $defaultLanguage)),
+        ]);
     }
 
     public function delete($id)

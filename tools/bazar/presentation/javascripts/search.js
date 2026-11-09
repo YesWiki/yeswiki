@@ -135,11 +135,11 @@ export function removeDiacritics(str) {
  * @return <string> : chaîne lowercase, sans accents
  */
 
-export function toLowerCaseWithoutAccent(str) {
-  if (typeof str !== 'string') return ''
+export function toLowerCaseWithoutAccent(input) {
+  if (typeof input !== 'string') return ''
 
   // 1. Lowercase unicode
-  str = str.toLowerCase()
+  let str = input.toLowerCase()
 
   // 2. Remplacer les ligatures
   const replacements = {

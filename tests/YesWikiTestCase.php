@@ -4,8 +4,10 @@ namespace YesWiki\Test\Core;
 
 use PHPUnit\Framework\TestCase;
 use Twig\Loader\FilesystemLoader;
+use YesWiki\Bazar\Service\FormManager;
 use YesWiki\Core\Service\BotGuard;
 use YesWiki\Core\Service\ConfigurationFileProvider;
+use YesWiki\Core\Service\DbService;
 use YesWiki\Core\Service\TemplateEngine;
 use YesWiki\Core\YesWikiLoader;
 use YesWiki\Wiki;
@@ -18,6 +20,32 @@ class YesWikiTestCase extends TestCase
         $wiki = YesWikiLoader::getWiki(true);
 
         return $wiki;
+    }
+
+    /**
+     * Inserts a row in the `nature` table, as forms were stored before form pages, under an id no form uses; returns that id.
+     */
+    protected static function createLegacyForm(Wiki $wiki, array $row): string
+    {
+        $dbService = $wiki->services->get(DbService::class);
+        $table = $dbService->prefixTable('nature');
+        $maxLegacy = (int)($dbService->loadSingle("SELECT MAX(bn_id_nature) AS maxi FROM {$table}")['maxi'] ?? 0);
+        $id = (string)max($maxLegacy + 1, (int)$wiki->services->get(FormManager::class)->findNewId());
+        $row = ['bn_id_nature' => $id] + $row + ['bn_ce_i18n' => 'fr-FR', 'bn_condition' => '', 'bn_description' => '', 'bn_sem_template' => '', 'bn_sem_reverse_template' => '', 'bn_activitypub_enable' => '0', 'bn_only_one_entry' => 'N'];
+        $columns = implode(', ', array_map(fn ($column) => "`{$column}`", array_keys($row)));
+        $values = implode(', ', array_map(fn ($value) => "'" . $dbService->escape((string)$value) . "'", $row));
+        $dbService->query("INSERT INTO {$table} ({$columns}) VALUES ({$values})");
+        if (empty($dbService->loadSingle("SELECT bn_id_nature FROM {$table} WHERE bn_id_nature = '{$id}'"))) {
+            throw new \RuntimeException("legacy form {$id} was not inserted");
+        }
+
+        return $id;
+    }
+
+    protected static function deleteLegacyForm(Wiki $wiki, string $id): void
+    {
+        $dbService = $wiki->services->get(DbService::class);
+        $dbService->query('DELETE FROM ' . $dbService->prefixTable('nature') . " WHERE bn_id_nature = '" . $dbService->escape($id) . "'");
     }
 
     /**

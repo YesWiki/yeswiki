@@ -73,10 +73,10 @@ class SelectEntryField extends EnumField
         $label = isset($options[$value]) ? $options[$value] : $value;
 
         return $this->render('@bazar/fields/select_entry.twig', [
-        'value' => $value,
-        'label' => $label,
-        'entryUrl' => $entryUrl,
-    ]);
+            'value' => $value,
+            'label' => $label,
+            'entryUrl' => $entryUrl,
+        ]);
     }
 
     public function getOptions()
@@ -92,16 +92,15 @@ class SelectEntryField extends EnumField
         return true;
     }
 
-    // LANG_FIXME not sure about this function
     public static function mapToFieldArray($fieldProps): array
     {
-       $new = parent::mapToFieldArray($fieldProps);
-       $new[self::FIELD_DISPLAY_METHOD] = $fieldProps['displayMethod'];
-       ksort($new);
-       return $new;
+        $new = parent::mapToFieldArray($fieldProps);
+        $new[self::FIELD_DISPLAY_METHOD] = $fieldProps['displayMethod'];
+        ksort($new);
+
+        return $new;
     }
 
-    // change return of this method to keep compatible with php 7.3 (mixed is not managed)
     #[\ReturnTypeWillChange]
     public function jsonSerialize()
     {

@@ -320,6 +320,7 @@ class ImageField extends FileField
         $new[self::FIELD_IMAGE_CLASS] = $fieldProps['imageClass'];
         $new[self::FIELD_IMAGE_DEFAULT] = $fieldProps['imageDefault'] ?? '';
         ksort($new);
+
         return $new;
     }
 

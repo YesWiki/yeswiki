@@ -4,43 +4,43 @@
 
 use stefangabos\Zebra_Image\Zebra_Image;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use Symfony\Component\HttpFoundation\HeaderUtils;
 use YesWiki\Core\Controller\CsrfTokenController;
+use YesWiki\Core\Service\AclService;
 use YesWiki\Core\Service\ExecutableFilename;
 use YesWiki\Core\Service\HtmlPurifierService;
 use YesWiki\Core\Service\LinkTracker;
-use YesWiki\Security\Controller\SecurityController;
+use YesWiki\Core\Service\PageManager;
 
 if (!class_exists('attach')) {
     class attach
     {
-        public $wiki = ''; // objet wiki courant
-        public $attachConfig = []; // configuration de l'action
-        public $file = ''; // nom du fichier
+        public $wiki = '';
+        public $attachConfig = [];
+        public $file = '';
         public $height;
         public $width;
-        public $desc = ''; // description du fichier
-        public $link = ''; // url de lien (image sensible)
-        public $caption = ''; // texte de la vignette au survol
-        public $legend = ''; // texte en dessous de l'image
-        public $nofullimagelink = ''; // mettre un lien vers l'image entiere
-        public $isPicture = 0; // indique si c'est une image
-        public $isAudio = 0; // indique si c'est un fichier audio
-        public $isFreeMindMindMap = 0; // indique si c'est un fichier mindmap freemind
-        public $isWma = 0; // indique si c'est un fichier wma
-        public $isPDF = 0; // indique si c'est un fichier pdf
-        public $displayPDF = 0; // indique s'il faut afficher le fichier pdf
-        public $classes = 'attached_file'; // classe pour afficher une image
-        public $attachErr = ''; // message d'erreur
-        public $pageId = 0; // identifiant de la page
-        public $isSafeMode = true; // indicateur du safe mode de PHP
-        public $data = ''; // indicateur du safe mode de PHP
+        public $desc = '';
+        public $link = '';
+        public $caption = '';
+        public $legend = '';
+        public $nofullimagelink = '';
+        public $isPicture = 0;
+        public $isAudio = 0;
+        public $isFreeMindMindMap = 0;
+        public $isWma = 0;
+        public $isPDF = 0;
+        public $displayPDF = 0;
+        public $classes = 'attached_file';
+        public $attachErr = '';
+        public $pageId = 0;
+        public $isSafeMode = true;
+        public $data = '';
         private $params;
 
         public const FM_WRITE_OPERATIONS = ['restore', 'erase', 'del', 'emptytrash'];
 
-        /**
-         * Constructeur. Met les valeurs par defaut aux parametres de configuration.
-         */
+        /** Constructeur. Met les valeurs par defaut aux parametres de configuration. */
         public function __construct(&$wiki)
         {
             $this->wiki = $wiki;
@@ -58,7 +58,6 @@ if (!class_exists('attach')) {
             $safemode = $this->wiki->GetConfigValue('no_safe_mode');
             if (empty($safemode)) {
                 if (version_compare(phpversion(), '5.3', '<')) {
-                    // le safe_mode n'existe que pour php < 5.3
                     $this->isSafeMode = ini_get('safe_mode');
                 } else {
                     $this->isSafeMode = true;
@@ -68,31 +67,19 @@ if (!class_exists('attach')) {
             }
         }
 
-        /******************************************************************************
-         *    FONCTIONS UTILES
-         *******************************************************************************/
-        /**
-         * transforme des valeurs en mega / kilo / giga octets en entier.
-         *
-         * @param string $size la taille
-         *
-         * @return int
-         */
+        /** transforme des valeurs en mega / kilo / giga octets en entier. */
         public function parse_size($size)
         {
-            $unit = preg_replace('/[^bkmgtpezy]/i', '', $size); // Remove the non-unit characters from the size.
-            $size = preg_replace('/[^0-9\.]/', '', $size); // Remove the non-numeric characters from the size.
+            $unit = preg_replace('/[^bkmgtpezy]/i', '', $size);
+            $size = preg_replace('/[^0-9\.]/', '', $size);
             if ($unit) {
-                // Find the position of the unit in the ordered string which is the power of magnitude to multiply a kilobyte by.
                 return round($size * pow(1024, stripos('bkmgtpezy', $unit[0])));
             }
 
             return round($size);
         }
 
-        /**
-         * Création d'une suite de répertoires récursivement.
-         */
+        /** Création d'une suite de répertoires récursivement. */
         public function mkdir_recursif($dir)
         {
             if (strlen($dir) == 0) {
@@ -108,28 +95,13 @@ if (!class_exists('attach')) {
             return $this->mkdir_recursif(dirname($dir)) and mkdir($dir, 0755);
         }
 
-        /**
-         * Renvois le chemin du script.
-         */
+        /** Renvois le chemin du script. */
         public function GetScriptPath()
         {
             return $this->wiki->getBaseUrl() . '/';
-            // if (preg_match("/.(php)$/i", $_SERVER["PHP_SELF"])) {
-            //     $a = explode('/', $_SERVER["PHP_SELF"]);
-            //     $a[count($a) - 1] = '';
-            //     $path = implode('/', $a);
-            // } else {
-            //     $path = $_SERVER["PHP_SELF"];
-            // }
-            // $http = (isset($_SERVER['HTTPS']) ? 'https://' : 'http://');
-            // return !empty($_SERVER["HTTP_HOST"]) ?
-            //     $http . $_SERVER["HTTP_HOST"] . $path
-            //     : $http . $_SERVER["SERVER_NAME"] . $path;
         }
 
-        /**
-         * Calcul le repertoire d'upload en fonction du safe_mode le renvoi avec un '/' à la fin.
-         */
+        /** Calcul le repertoire d'upload en fonction du safe_mode. */
         public function GetUploadPath()
         {
             if ($this->isSafeMode) {
@@ -144,9 +116,7 @@ if (!class_exists('attach')) {
             return $path;
         }
 
-        /**
-         * Calcul le repertoire de cache en fonction du safe_mode et le renvoi avec un / à la fin.
-         */
+        /** Calcul le repertoire de cache en fonction du safe_mode. */
         public function GetCachePath()
         {
             if ($this->isSafeMode) {
@@ -161,33 +131,20 @@ if (!class_exists('attach')) {
             return $path;
         }
 
-        /**
-         * Calcule le nom complet du fichier attaché en fonction du safe_mode, du nom et de la date de
-         * revision la page courante.
-         * Le nom du fichier "mon fichier.ext" attache ? la page "LaPageWiki"sera :
-         *  mon_fichier_datepage_update.ext
-         *     update : date de derniere mise a jour du fichier
-         *     datepage : date de revision de la page ? laquelle le fichier a ete lié/mis a jour
-         *  Si le fichier n'est pas une image un '_' est ajoute : mon_fichier_datepage_update.ext_
-         *  Selon la valeur de safe_mode :
-         *  safe_mode = on :     LaPageWiki_mon_fichier_datepage_update.ext_
-         *  safe_mode = off:     LaPageWiki/mon_fichier_datepage_update.ext_ avec "LaPageWiki" un sous-repertoire du répertoire upload.
-         */
+        /** Calcule le nom complet du fichier attaché en fonction du safe_mode, du nom et de la date de */
         public function GetFullFilename($newName = false)
         {
-            // use current date if page has no date that could arrive when using page 'root' via Actions Builder
             $pagedate = $this->convertDate(
                 isset($this->wiki->page['time'])
                     ? $this->wiki->page['time']
                     : (
                         $this->wiki->tag == 'root'
                         ? date('Y-m-d H:i:s')
-                        : null // error
+                        : null
                     )
             );
 
             $file = [];
-            // decompose le nom du fichier en nom+extension ou en page/nom+extension
             if (preg_match('`^((.+)/)?(.*)\.(.*)$`', str_replace(' ', '_', $this->file), $match)) {
                 list(, , $file['page'], $file['name'], $file['ext']) = $match;
                 if (ExecutableFilename::matches('x.' . $file['ext']) || (!$this->isPicture() && !$this->isAudio() && !$this->isVideo() && !$this->isFreeMindMindMap() && !$this->isWma() && !$this->isFlashvideo())) {
@@ -196,10 +153,8 @@ if (!class_exists('attach')) {
             } else {
                 return false;
             }
-            // recuperation du chemin d'upload
             $path = $this->GetUploadPath($this->isSafeMode);
             $page_tag = $file['page'] ? $file['page'] : $this->wiki->GetPageTag();
-            // generation du nom ou recherche de fichier ?
             if ($newName) {
                 $full_file_name = $file['name'] . '_' . $pagedate . '_' . $this->getDate() . '.' . $file['ext'];
                 if ($this->isSafeMode) {
@@ -209,22 +164,19 @@ if (!class_exists('attach')) {
                 }
             } else {
                 $isActionBuilderPreview = $this->wiki->GetPageTag() == 'root';
-                // recherche du fichier
+                $quotedName = preg_quote($file['name'], '`') . '_\d{14}_\d{14}\.' . preg_quote($file['ext'], '`') . '$`';
                 if ($isActionBuilderPreview) {
-                    // bazar action builder, preview action
-                    $searchPattern = '`' . $file['name'] . '_\d{14}_\d{14}\.' . $file['ext'] . '$`';
+                    $searchPattern = '`' . $quotedName;
                 } elseif ($this->isSafeMode) {
-                    // TODO Recherche dans le cas ou safe_mode=on
-                    $searchPattern = '`^' . $page_tag . '_' . $file['name'] . '_\d{14}_\d{14}\.' . $file['ext'] . '$`';
+                    $searchPattern = '`^' . preg_quote($page_tag, '`') . '_' . $quotedName;
                 } else {
-                    $searchPattern = '`^' . $file['name'] . '_\d{14}_\d{14}\.' . $file['ext'] . '$`';
+                    $searchPattern = '`^' . $quotedName;
                 }
 
                 $files = $this->searchFiles($searchPattern, $path);
 
                 $unedate = 0;
                 foreach ($files as $file) {
-                    // on garde la dateupload la plus grande
                     if ($file['dateupload'] > $unedate) {
                         $theFile = $file;
                         $unedate = $file['dateupload'];
@@ -242,9 +194,7 @@ if (!class_exists('attach')) {
             return $full_file_name;
         }
 
-        /**
-         * Test si le fichier est une image.
-         */
+        /** Test si le fichier est une image. */
         public function isPicture($file = null)
         {
             if ($file == null) {
@@ -254,65 +204,49 @@ if (!class_exists('attach')) {
             return preg_match('/.(' . $this->attachConfig['ext_images'] . ')$/i', $file) == 1;
         }
 
-        /**
-         * Test si le fichier est un fichier audio.
-         */
+        /** Test si le fichier est un fichier audio. */
         public function isAudio()
         {
             return preg_match('/.(' . $this->attachConfig['ext_audio'] . ')$/i', $this->file) == 1;
         }
 
-        /**
-         * Test si le fichier est un fichier vidéo.
-         */
+        /** Test si le fichier est un fichier vidéo. */
         public function isVideo()
         {
             return preg_match('/.(' . $this->attachConfig['ext_video'] . ')$/i', $this->file) == 1;
         }
 
-        /**
-         * Test si le fichier est un fichier freemind mind map.
-         */
+        /** Test si le fichier est un fichier freemind mind map. */
         public function isFreeMindMindMap()
         {
             return preg_match('/.(' . $this->attachConfig['ext_freemind'] . ')$/i', $this->file) == 1;
         }
 
-        /**
-         * Test si le fichier est un fichier flv Flash video.
-         */
+        /** Test si le fichier est un fichier flv Flash video. */
         public function isFlashvideo()
         {
             return preg_match('/.(' . $this->attachConfig['ext_flashvideo'] . ')$/i', $this->file) == 1;
         }
 
-        /**
-         * Test si le fichier est un fichier wma.
-         */
+        /** Test si le fichier est un fichier wma. */
         public function isWma()
         {
             return preg_match('/.(' . $this->attachConfig['ext_wma'] . ')$/i', $this->file) == 1;
         }
 
-        /**
-         * Test si le fichier est un fichier pdf.
-         */
+        /** Test si le fichier est un fichier pdf. */
         public function isPDF()
         {
             return preg_match('/.(' . $this->attachConfig['ext_pdf'] . ')$/i', $this->file) == 1;
         }
 
-        /**
-         * Renvoie la date courante au format utilise par les fichiers.
-         */
+        /** Renvoie la date courante au format utilise par les fichiers. */
         public function getDate()
         {
             return date('YmdHis');
         }
 
-        /**
-         * convertie une date yyyy-mm-dd hh:mm:ss au format yyyymmddhhmmss.
-         */
+        /** convertie une date yyyy-mm-dd hh:mm:ss au format yyyymmddhhmmss. */
         public function convertDate($date)
         {
             if (!is_string($date)) {
@@ -324,26 +258,19 @@ if (!class_exists('attach')) {
             return str_replace('-', '', $date);
         }
 
-        /**
-         * Parse une date au format yyyymmddhhmmss et renvoie un tableau assiatif.
-         */
+        /** Parse une date au format yyyymmddhhmmss et renvoie un tableau assiatif. */
         public function parseDate($sDate)
         {
             $pattern = '`^(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})$`';
             $res = '';
             if (preg_match($pattern, $sDate, $m)) {
-                // list(,$res['year'],$res['month'],$res['day'],$res['hour'],$res['min'],$res['sec'])=$m;
                 $res = $m[1] . '-' . $m[2] . '-' . $m[3] . ' ' . $m[4] . ':' . $m[5] . ':' . $m[6];
             }
 
             return $res ? $res : false;
         }
 
-        /**
-         * sanitize filename without special chars - spaces or accents.
-         *
-         * @return string $sanitizedFilename
-         */
+        /** sanitize filename without special chars - spaces or accents. */
         public function sanitizeFilename(string $filename): string
         {
             $search = ['@[éèêëÊË]@i', '@[àâäÂÄ]@i', '@[îïÎÏ]@i', '@[ûùüÛÜ]@i', '@[ôöÔÖ]@i', '@[ç]@i', '@[ ]@i', '@[^a-zA-Z0-9_\.]@'];
@@ -353,9 +280,7 @@ if (!class_exists('attach')) {
             return $sanitizedFilename;
         }
 
-        /**
-         * Decode un nom long de fichier.
-         */
+        /** Decode un nom long de fichier. */
         public function decodeLongFilename($filename)
         {
             $afile = [];
@@ -364,26 +289,20 @@ if (!class_exists('attach')) {
             $afile['path'] = dirname($filename);
             if (preg_match('`^(.*)_(\d{14})_(\d{14})\.(.*)(trash\d{14})?$`', $afile['realname'], $m)) {
                 $afile['name'] = $m[1];
-                // suppression du nom de la page si safe_mode=on
                 if ($this->isSafeMode) {
                     $afile['name'] = preg_replace('`^(' . $this->wiki->tag . ')_(.*)$`i', '$2', $afile['name']);
                 }
                 $afile['datepage'] = $m[2];
                 $afile['dateupload'] = $m[3];
                 $afile['trashdate'] = preg_replace('`(.*)trash(\d{14})`', '$2', $m[4]);
-                // suppression de trashxxxxxxxxxxxxxx eventuel
                 $afile['ext'] = preg_replace('`^(.*)(trash\d{14})$`', '$1', $m[4]);
                 $afile['ext'] = rtrim($afile['ext'], '_');
-                // $afile['ext'] = rtrim($m[4],'_');
             }
 
             return $afile;
         }
 
-        /**
-         * Renvois un tableau des fichiers correspondant au pattern. Chaque element du tableau est un
-         * tableau associatif contenant les informations sur le fichier.
-         */
+        /** Renvois un tableau des fichiers correspondant au pattern. Chaque element du tableau est un */
         public function searchFiles($filepattern, $start_dir)
         {
             $files_matched = [];
@@ -402,15 +321,9 @@ if (!class_exists('attach')) {
             return $files_matched;
         }
 
-        /******************************************************************************
-         *    FONCTIONS D'ATTACHEMENTS
-         *******************************************************************************/
-        /**
-         * Test les parametres passes a l'action.
-         */
+        /** Test les parametres passes a l'action. */
         public function CheckParams()
         {
-            // recuperation des parametres necessaire
             $this->file = htmlspecialchars($this->wiki->GetParameter('attachfile'));
             if (empty($this->file)) {
                 $this->file = htmlspecialchars($this->wiki->GetParameter('file'));
@@ -420,22 +333,21 @@ if (!class_exists('attach')) {
             if (empty($this->desc)) {
                 $this->desc = $this->wiki->GetParameter('desc');
             }
-            $this->desc = htmlentities(strip_tags($this->desc)); // avoid XSS
+            $this->desc = htmlentities(strip_tags($this->desc));
 
-            $this->link = $this->wiki->GetParameter('attachlink'); // url de lien - uniquement si c'est une image
+            $this->link = $this->wiki->GetParameter('attachlink');
             if (empty($this->link)) {
                 $this->link = $this->wiki->GetParameter('link');
             }
 
-            $this->caption = $this->wiki->GetParameter('caption'); // texte de la vignette (au survol)
-            $this->legend = $this->wiki->GetParameter('legend'); // texte de la vignette (en dessous)
+            $this->caption = $this->wiki->GetParameter('caption');
+            $this->legend = $this->wiki->GetParameter('legend');
             $this->nofullimagelink = $this->wiki->GetParameter('nofullimagelink');
             $this->height = $this->wiki->GetParameter('height');
             $this->width = $this->wiki->GetParameter('width');
             $this->displayPDF = $this->wiki->GetParameter('displaypdf');
             $this->data = $this->wiki->services->get(YesWiki\Templates\Service\Utils::class)->getDataParameter();
 
-            // test de validité des parametres
             if (empty($this->file)) {
                 $this->attachErr = '<div class="alert alert-danger"><strong>' . _t('ATTACH_ACTION_ATTACH') . '</strong> : ' . _t('ATTACH_PARAM_FILE_NOT_FOUND') . '.</div>' . "\n";
             }
@@ -470,25 +382,18 @@ if (!class_exists('attach')) {
             }
 
             if (empty($this->height) && !empty($this->width)) {
-                // on ajuste la hauteur
                 $this->height = $this->width;
             } elseif (!empty($this->height) && empty($this->width)) {
-                // on ajuste la largeur
                 $this->width = $this->height;
             }
         }
 
-        /**
-         * Affiche le fichier lié comme une image.
-         */
+        /** Affiche le fichier lié comme une image. */
         public function showAsImage($fullFilename)
         {
-            // Generation d'une vignette si absente ou si changement de dimension  , TODO : suupprimer ancienne vignette ?
-
             $image_redimensionnee = 0;
             if (!preg_match('/.(svg)$/i', $this->file) == 1) {
                 if ((!empty($this->height)) && (!empty($this->width))) {
-                    // Si des parametres width ou height present : redimensionnement
                     if (!file_exists($image_dest = $this->getResizedFilename($fullFilename, $this->width, $this->height))) {
                         $this->redimensionner_image($fullFilename, $image_dest, $this->width, $this->height);
                     }
@@ -498,21 +403,17 @@ if (!class_exists('attach')) {
                 }
                 list($width, $height, $type, $attr) = getimagesize($img_name);
             } else {
-                // valeurs par défaut pour le svg
                 $width = $this->width;
                 $height = $this->height;
                 $img_name = $fullFilename;
             }
-            // pour l'image avec bordure on enleve la taille de la bordure!
             if (strstr($this->classes, 'whiteborder')) {
                 $width = $width - 20;
                 $height = $height - 20;
             }
 
-            // c'est une image : balise <IMG..../>
             $img = '<img loading="lazy" class="img-responsive" src="' . $this->GetScriptPath() . $img_name . '" ' .
                 'alt="' . $this->desc . ($this->link ? "\nLien vers: $this->link" : '') . '" width="' . $width . '" height="' . $height . '" />';
-            // test si c'est une image sensible
             $classDataForLinks =
                 strstr($this->classes, 'new-window')
                 ? ' class="new-window"'
@@ -522,7 +423,6 @@ if (!class_exists('attach')) {
                     : ''
                 );
             if (!empty($this->link)) {
-                // create link if needed
                 $linkParts = $this->wiki->extractLinkParts($this->link);
                 if ($linkParts) {
                     $this->wiki->services->get(LinkTracker::class)->forceAddIfNotIncluded($linkParts['tag']);
@@ -552,20 +452,16 @@ if (!class_exists('attach')) {
             $output = ($notAligned ? '<div>' : '') . (isset($link) ? $link : '') . "<figure class=\"$this->classes\" $data>$img$caption$legend</figure>" . (isset($link) ? '</a>' : '') . ($notAligned ? '</div>' : '');
 
             echo $output;
-            // $this->showUpdateLink();
         }
 
-        /**
-         * Affiche le fichier lié comme un lien.
-         */
+        /** Affiche le fichier lié comme un lien. */
         public function showAsLink($fullFilename)
         {
-            $url = $this->wiki->href('download', $this->wiki->GetPageTag(), "file=$this->file");
+            $url = $this->wiki->href('download', $this->wiki->GetPageTag(), 'file=' . rawurlencode($this->file));
             echo '<a href="' . $url . '">' . ($this->desc ? $this->desc : $this->file) . '</a>';
             $this->showUpdateLink();
         }
 
-        // Affiche le fichier liee comme un fichier video
         public function showAsVideo($fullFilename)
         {
             $output = $this->wiki->format(
@@ -577,7 +473,6 @@ if (!class_exists('attach')) {
             $this->showUpdateLink();
         }
 
-        // Affiche le fichier liee comme un fichier audio
         public function showAsAudio($fullFilename)
         {
             $output = $this->wiki->format('{{player url="' . $this->wiki->getBaseUrl() . '/' . $fullFilename . '" type="audio"}}');
@@ -585,7 +480,6 @@ if (!class_exists('attach')) {
             $this->showUpdateLink();
         }
 
-        // Affiche le fichier liee comme un fichier mind map  freemind
         public function showAsFreeMindMindMap($fullFilename)
         {
             $output = $this->wiki->format(
@@ -597,24 +491,18 @@ if (!class_exists('attach')) {
             $this->showUpdateLink();
         }
 
-        // Affiche le fichier liee comme un fichier mind map  freemind
         public function showAsWma($fullFilename)
         {
         }
 
-        // End Paste
-
-        // Affiche le fichier liee comme un fichier pdf
         public function showAsPDF($fullFilename)
         {
-            // Defines parameters for pdf action
-            $url = $this->wiki->href('download', $this->wiki->GetPageTag(), 'file=' . $this->file . '&inline=1', false);
+            $url = $this->wiki->href('download', $this->wiki->GetPageTag(), 'file=' . rawurlencode($this->file) . '&inline=1', false);
             $this->wiki->setParameter('url', $url);
             if (empty($this->wiki->GetParameter('hauteurmax')) && empty($this->wiki->GetParameter('largeurmax'))) {
                 $this->wiki->setParameter('hauteurmax', $this->wiki->GetParameter('height'));
                 $this->wiki->setParameter('largeurmax', $this->wiki->GetParameter('width'));
             }
-            // position
             $newclass = '';
             if (strstr($this->classes, 'right')) {
                 if (strstr($this->classes, 'pull-right')) {
@@ -631,19 +519,15 @@ if (!class_exists('attach')) {
                 }
             }
 
-            // define class
             if ($newclass != '') {
                 $this->wiki->setParameter('class', $newclass);
             }
 
-            // Call pdf actions
             $params = $this->wiki->parameter;
             echo $this->wiki->Action('pdf', 0, $params);
         }
 
-        /**
-         * Affiche le lien de mise a jour.
-         */
+        /** Affiche le lien de mise a jour. */
         public function showUpdateLink()
         {
             echo ' <a href="' .
@@ -651,18 +535,14 @@ if (!class_exists('attach')) {
                 "\" title='Mise à jour'>" . $this->attachConfig['update_symbole'] . '</a>';
         }
 
-        /**
-         * Affiche un liens comme un fichier inexistant.
-         */
+        /** Affiche un liens comme un fichier inexistant. */
         public function showFileNotExits()
         {
             $filename = htmlspecialchars($this->file);
             echo '<a href="' . $this->wiki->href('upload', $this->wiki->GetPageTag(), "file=$filename") . '" class="btn btn-primary"><i class="fa fa-upload icon-upload icon-white"></i> ' . _t('UPLOAD_FILE') . ' ' . $this->file . '</a>';
         }
 
-        /**
-         * Affiche l'attachement.
-         */
+        /** Affiche l'attachement. */
         public function doAttach()
         {
             $this->CheckParams();
@@ -672,13 +552,11 @@ if (!class_exists('attach')) {
                 return;
             }
             $fullFilename = $this->GetFullFilename();
-            // test d'existance du fichier
             if ((!file_exists($fullFilename)) || ($fullFilename == '')) {
                 $this->showFileNotExits();
 
                 return;
             }
-            // le fichier existe : affichage en fonction du type
             if ($this->isPicture()) {
                 $this->showAsImage($fullFilename);
             } elseif ($this->isVideo() || $this->isFlashvideo()) {
@@ -696,12 +574,7 @@ if (!class_exists('attach')) {
             }
         }
 
-        /******************************************************************************
-         *    FONTIONS D'UPLOAD DE FICHIERS
-         *******************************************************************************/
-        /**
-         * Traitement des uploads.
-         */
+        /** Traitement des uploads. */
         public function doUpload()
         {
             $HasAccessWrite = $this->wiki->HasAccess('write');
@@ -722,9 +595,7 @@ if (!class_exists('attach')) {
             }
         }
 
-        /**
-         * Formulaire d'upload.
-         */
+        /** Formulaire d'upload. */
         public function showUploadForm()
         {
             $this->file = basename(filter_input(INPUT_GET, 'file', FILTER_SANITIZE_FULL_SPECIAL_CHARS));
@@ -742,9 +613,7 @@ if (!class_exists('attach')) {
             }
         }
 
-        /**
-         * Execute l'upload.
-         */
+        /** Execute l'upload. */
         public function performUpload()
         {
             $this->file = basename($_POST['file'] ?? '');
@@ -753,8 +622,7 @@ if (!class_exists('attach')) {
             if ($this->wiki->config['authorized-extensions'] && !in_array($ext, array_keys($this->wiki->config['authorized-extensions']))) {
                 $_FILES['upFile']['error'] = 5;
             }
-            $destFile = $this->GetFullFilename(true); // nom du fichier destination
-            // test de la taille du fichier recu
+            $destFile = $this->GetFullFilename(true);
             if ($_FILES['upFile']['error'] == 0) {
                 $size = filesize($_FILES['upFile']['tmp_name']);
                 if ($size > $this->attachConfig['max_file_size']) {
@@ -806,47 +674,34 @@ if (!class_exists('attach')) {
             echo $this->wiki->Format(_t('ATTACH_BACK_TO_PAGE') . ' ' . $this->wiki->GetPageTag());
         }
 
-        /******************************************************************************
-         *    FUNCTIONS DE DOWNLOAD DE FICHIERS
-         *******************************************************************************/
-        public function doDownload()
+        /** Sends the requested file; false when there is nothing this visitor may download. */
+        public function doDownload(): bool
         {
-            $this->file = $_GET['file'];
-            $fullFilename = $this->GetUploadPath() . '/' . basename(realpath($this->file) . $this->file);
-            //        $fullFilename = $this->GetUploadPath().'/'.$this->file;
-            if (!file_exists($fullFilename)) {
-                $fullFilename = $this->GetFullFilename();
-                $dlFilename = $this->file;
-                $size = filesize($fullFilename);
-            } else {
-                $file = $this->decodeLongFilename($fullFilename);
-                $size = $file['size'];
-                $dlFilename = isset($file['name'], $file['ext'])
-                    ? $file['name'] . '.' . $file['ext']
-                    : $file['realname'];
+            $fullFilename = $this->resolveDownload($_GET['file'] ?? null);
+            if ($fullFilename === null) {
+                return false;
             }
+            $file = $this->decodeLongFilename($fullFilename);
+            $ext = rtrim(preg_replace('/^.*\.([^.]+)$/', '$1', $this->downloadName($fullFilename)), '_');
             try {
                 header('Expires: Mon, 26 Jul 1997 05:00:00 GMT');
-                header('Content-type: application/force-download');
                 header('Pragma: public');
-                header('Pragma: no-cache'); // HTTP/1.0
+                header('Pragma: no-cache');
                 header('Last-Modified: ' . gmdate('D, d M Y H:i:s') . ' GMT');
-                header('Cache-Control: no-store, no-cache, must-revalidate'); // HTTP/1.1
-                header('Cache-Control: pre-check=0, post-check=0, max-age=0'); // HTTP/1.1
+                header('Cache-Control: no-store, no-cache, must-revalidate');
+                header('Cache-Control: pre-check=0, post-check=0, max-age=0');
                 header("Content-Security-Policy: frame-ancestors 'self'");
                 header('X-Frame-Options: SAMEORIGIN', true);
+                header('X-Content-Type-Options: nosniff');
                 header('Content-Transfer-Encoding: none');
-                header('Content-Type: application/octet-stream; name="' . $dlFilename . '"'); // This should work for the rest
-                header('Content-Type: application/octetstream; name="' . $dlFilename . '"'); // This should work for IE & Opera
-                $mimeType = null;
-                if (in_array(preg_replace("/^.*\.([^.]+$)/", '$1', $dlFilename), ['pdf', 'txt', 'md', 'png', 'svg', 'jpeg', 'jpg', 'mp3'])) {
-                    $mimeType = mime_content_type($fullFilename);
-                    header('Content-Type: ' . $mimeType . '; name="' . $dlFilename . '"');
-                }
+                $mimeType = in_array($ext, ['pdf', 'txt', 'md', 'png', 'svg', 'jpeg', 'jpg', 'mp3'])
+                    ? mime_content_type($fullFilename)
+                    : 'application/octet-stream';
+                header('Content-Type: ' . $mimeType);
                 $inline = !empty($_GET['inline']) && $mimeType === 'application/pdf';
-                header('Content-Disposition: ' . ($inline ? 'inline' : 'attachment') . '; filename="' . $dlFilename . '"');
+                header('Content-Disposition: ' . $this->downloadDisposition($fullFilename, $inline));
                 header('Content-Description: File Transfer');
-                header("Content-length: $size");
+                header('Content-length: ' . $file['size']);
                 readfile($fullFilename);
             } catch (Throwable $th) {
                 if (!headers_sent()) {
@@ -857,11 +712,76 @@ if (!class_exists('attach')) {
                 }
                 throw $th;
             }
+
+            return true;
         }
 
-        /******************************************************************************
-         *    FONTIONS DU FILEMANAGER
-         *******************************************************************************/
+        /** Path of the file a download asks for, null if it is missing or this visitor may not have it. */
+        public function resolveDownload($requested): ?string
+        {
+            if (!is_string($requested) || $requested === '') {
+                return null;
+            }
+            $this->file = $requested;
+            $fullFilename = $this->GetUploadPath() . '/' . basename($requested);
+            if (!is_file($fullFilename)) {
+                $fullFilename = $this->GetFullFilename();
+            }
+            if (empty($fullFilename) || !is_file($fullFilename) || !$this->visitorMayDownload($fullFilename)) {
+                return null;
+            }
+
+            return $fullFilename;
+        }
+
+        /** Content-Disposition value naming the file as its uploader did. */
+        public function downloadDisposition(string $fullFilename, bool $inline): string
+        {
+            $name = str_replace(['/', '\\'], '_', $this->downloadName($fullFilename));
+            $fallback = preg_replace('/[^\x20-\x7e]|[%"]/u', '_', $name) ?? 'download';
+
+            return HeaderUtils::makeDisposition(
+                $inline ? HeaderUtils::DISPOSITION_INLINE : HeaderUtils::DISPOSITION_ATTACHMENT,
+                $name,
+                $fallback
+            );
+        }
+
+        /** Name of a stored file without its page, dates and trash marker. */
+        private function downloadName(string $fullFilename): string
+        {
+            $file = $this->decodeLongFilename($fullFilename);
+
+            return isset($file['name'], $file['ext'])
+                ? $file['name'] . '.' . $file['ext']
+                : $file['realname'];
+        }
+
+        /** A file name starts with its page tag; tags may hold underscores, so every page the name could belong to must be readable. */
+        private function visitorMayDownload(string $fullFilename): bool
+        {
+            $name = basename($fullFilename);
+            if (preg_match('/trash\d{14}$/', $name)
+                && !$this->wiki->UserIsAdmin()
+                && !(str_starts_with($name, $this->wiki->GetPageTag() . '_') && $this->wiki->UserIsOwner())) {
+                return false;
+            }
+            if (!$this->isSafeMode) {
+                return true;
+            }
+            $pageManager = $this->wiki->services->get(PageManager::class);
+            $aclService = $this->wiki->services->get(AclService::class);
+            $tag = '';
+            foreach (array_slice(explode('_', $name), 0, -1) as $piece) {
+                $tag .= ($tag === '' ? '' : '_') . $piece;
+                if ($pageManager->getOne($tag, null, true, true) && !$aclService->hasAccess('read', $tag)) {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
         public function doFileManager($isAction = false)
         {
             $do = (isset($_GET['do']) && $_GET['do']) ? $_GET['do'] : '';
@@ -896,38 +816,23 @@ if (!class_exists('attach')) {
                     $this->fmShow(true, $isAction);
                     break;
                 case 'emptytrash':
-                    $this->fmEmptyTrash(); // pas de break car apres un emptytrash => retour au gestionnaire
-                    // no break
+                    $this->fmEmptyTrash();
+                    $this->fmShow(false, $isAction);
+                    break;
                 default:
                     $this->fmShow(false, $isAction);
             }
         }
 
-        /**
-         * Controlleur du gestionnaire des fichiers, modifie pour utilisation dans une action {{filemanager}}.
-         */
+        /** Controlleur du gestionnaire des fichiers, modifie pour utilisation dans une action {{filemanager}}. */
         public function doFileManagerAction()
         {
             $this->doFileManager(true);
         }
 
-        /**
-         * Return human readable sizes.
-         *
-         * @author      Aidan Lister <aidan@php.net>
-         *
-         * @version     1.3.0
-         *
-         * @see        http://aidanlister.com/2004/04/human-readable-file-sizes/
-         *
-         * @param int    $size      size in bytes
-         * @param string $max       maximum unit
-         * @param string $system    'si' for SI, 'bi' for binary prefixes
-         * @param string $retstring return string format
-         */
+        /** Return human readable sizes. */
         public function size_readable($size, $max = null, $system = 'si', $retstring = '%01.2f %s')
         {
-            // Pick units
             $systems = [];
             $systems['si']['prefix'] = ['', 'Ko', 'Mo', 'Go', 'To', 'Po'];
             $systems['si']['size'] = 1000;
@@ -935,13 +840,11 @@ if (!class_exists('attach')) {
             $systems['bi']['size'] = 1024;
             $sys = isset($systems[$system]) ? $systems[$system] : $systems['si'];
 
-            // Max unit to display
             $depth = count($sys['prefix']) - 1;
             if ($max && false !== $d = array_search($max, $sys['prefix'])) {
                 $depth = $d;
             }
 
-            // Loop
             $i = 0;
             while ($size >= $sys['size'] && $i < $depth) {
                 $size /= $sys['size'];
@@ -954,17 +857,13 @@ if (!class_exists('attach')) {
             return sprintf($retstring, $size, $sys['prefix'][$i]);
         }
 
-        /**
-         * Affiche la liste des fichiers, modifiee pour utilisation dans une action {{filemanager}}.
-         */
+        /** Affiche la liste des fichiers, modifiee pour utilisation dans une action {{filemanager}}. */
         public function fmShowAction($trash = false)
         {
             $this->fmShow($trash, true);
         }
 
-        /**
-         * Affiche la liste des fichiers.
-         */
+        /** Affiche la liste des fichiers. */
         public function fmShow($trash = false, bool $isAction = false)
         {
             $method = ($this->wiki->GetMethod() != 'show' ? $this->wiki->GetMethod() : '');
@@ -990,37 +889,22 @@ if (!class_exists('attach')) {
                 ]);
         }
 
-        /**
-         * Renvoie la liste des fichiers.
-         */
+        /** Renvoie la liste des fichiers. */
         public function fmGetFiles($trash = false)
         {
-            $path = $this->GetUploadPath();
-            if ($this->isSafeMode) {
-                $filePattern = '^' . $this->wiki->GetPageTag() . '_.*_\d{14}_\d{14}\..*';
-            } else {
-                $filePattern = '^.*_\d{14}_\d{14}\..*';
-            }
-            if ($trash) {
-                $filePattern .= 'trash\d{14}';
-            } else {
-                $filePattern .= '[^(trash\d{14})]';
-            }
+            $prefix = $this->isSafeMode ? preg_quote($this->wiki->GetPageTag(), '`') . '_' : '';
+            $ending = $trash ? 'trash\d{14}' : '.+(?<!trash\d{14})';
 
-            return $this->searchFiles('`' . $filePattern . '$`', $path);
+            return $this->searchFiles('`^' . $prefix . '.*_\d{14}_\d{14}\..*' . $ending . '$`', $this->GetUploadPath());
         }
 
-        /**
-         * Nom du fichier vise par une operation du gestionnaire de fichiers.
-         */
+        /** Nom du fichier vise par une operation du gestionnaire de fichiers. */
         public function fmPostedFileName(): string
         {
             return isset($_POST['file']) && is_string($_POST['file']) ? $_POST['file'] : '';
         }
 
-        /**
-         * Vide la corbeille.
-         */
+        /** Vide la corbeille. */
         public function fmEmptyTrash()
         {
             $files = $this->fmGetFiles(true);
@@ -1032,40 +916,30 @@ if (!class_exists('attach')) {
             }
         }
 
-        /**
-         * Effacement d'un fichier dans la corbeille.
-         */
+        /** Effacement d'un fichier dans la corbeille. */
         public function fmErase()
         {
             $path = $this->GetUploadPath();
-            // Sanitize file path
             $filename = $path . '/' . basename($this->fmPostedFileName());
-            // Make sure that the filename ends with trash and a date
             if (file_exists($filename) && preg_match('/trash\d{14}$/', $filename)) {
                 unlink($filename);
             }
         }
 
-        /**
-         * Met le fichier a la corbeille.
-         */
+        /** Met le fichier a la corbeille. */
         public function fmDelete(string $rawFileName = '')
         {
             $path = $this->GetUploadPath();
-            $rawFileName = empty($rawFileName)
-                ? $this->wiki->services->get(SecurityController::class)->filterInput(INPUT_POST, 'file', FILTER_SANITIZE_FULL_SPECIAL_CHARS, false, 'string')
-                : $rawFileName;
+            $rawFileName = empty($rawFileName) ? $this->fmPostedFileName() : $rawFileName;
             $filename = $path . '/' . basename($rawFileName);
             if (!empty($rawFileName) && file_exists($filename)) {
                 $trash = $filename . 'trash' . $this->getDate();
                 rename($filename, $trash);
 
-                // delete cache files
                 $cachePath = $this->GetCachePath();
                 $fileInfo = $this->decodeLongFilename($filename);
 
                 $filenamesToDelete = [];
-                // vignettes
                 $filenamesToDelete[] = $this->getResizedFilename($filename, '[0-9][0-9][0-9]', '[0-9][0-9][0-9]', 'fit');
                 $filenamesToDelete[] = $this->getResizedFilename($filename, '[0-9][0-9][0-9][0-9]', '[0-9][0-9][0-9]', 'fit');
                 $filenamesToDelete[] = $this->getResizedFilename($filename, '[0-9][0-9][0-9]', '[0-9][0-9][0-9][0-9]', 'fit');
@@ -1074,15 +948,12 @@ if (!class_exists('attach')) {
                 $filenamesToDelete[] = $this->getResizedFilename($filename, '[0-9][0-9][0-9][0-9]', '[0-9][0-9][0-9]', 'crop');
                 $filenamesToDelete[] = $this->getResizedFilename($filename, '[0-9][0-9][0-9]', '[0-9][0-9][0-9][0-9]', 'crop');
                 $filenamesToDelete[] = $this->getResizedFilename($filename, '[0-9][0-9][0-9][0-9]', '[0-9][0-9][0-9][0-9]', 'crop');
-                // old Image Field
                 $filenamesToDelete[] = $cachePath . '/vignette_' . basename($filename);
                 $filenamesToDelete[] = $cachePath . '/image_' . basename($filename);
-                // old agenda.tpl.html|blog.tpl.html|damier.tpl.html|materiel-card.tpl.html|news.tpl.html|photobox.tpl.html|trombinoscope.tpl.html
                 $filenamesToDelete[] = $cachePath . '/image_[0-9][0-9][0-9][x_][0-9][0-9][0-9]_' . basename($filename);
                 $filenamesToDelete[] = $cachePath . '/image_[0-9][0-9][0-9][x_][0-9][0-9][0-9][0-9]_' . basename($filename);
                 $filenamesToDelete[] = $cachePath . '/image_[0-9][0-9][0-9][0-9][x_][0-9][0-9][0-9]_' . basename($filename);
                 $filenamesToDelete[] = $cachePath . '/image_[0-9][0-9][0-9][0-9][x_][0-9][0-9][0-9][0-9]_' . basename($filename);
-                // old templates.functions.php getImageFromBody
                 $filenamesToDelete[] = $cachePath . '/[0-9][0-9][0-9]x[0-9][0-9][0-9]-' . basename($filename);
                 $filenamesToDelete[] = $cachePath . '/[0-9][0-9][0-9][0-9]x[0-9][0-9][0-9]-' . basename($filename);
                 $filenamesToDelete[] = $cachePath . '/[0-9][0-9][0-9]x[0-9]0-9][0-9][0-9]-' . basename($filename);
@@ -1093,9 +964,7 @@ if (!class_exists('attach')) {
             }
         }
 
-        /**
-         * Restauration d'un fichier mis a la corbeille.
-         */
+        /** Restauration d'un fichier mis a la corbeille. */
         public function fmRestore()
         {
             $path = $this->GetUploadPath();
@@ -1106,9 +975,7 @@ if (!class_exists('attach')) {
             }
         }
 
-        /**
-         * Tri tu tableau liste des fichiers par nom puis par date de revision(upload) du fichier, ordre croissant.
-         */
+        /** Tri tu tableau liste des fichiers par nom puis par date de revision(upload) du fichier, ordre croissant. */
         public function sortByNameRevFile($files)
         {
             if (!function_exists('ByNameByRevFile')) {
@@ -1118,7 +985,6 @@ if (!class_exists('attach')) {
                     $f2Name = $f2['name'] . '.' . $f2['ext'];
                     $res = strcasecmp($f1Name, $f2Name);
                     if ($res == 0) {
-                        // si meme nom => compare la revision du fichier
                         $res = strcasecmp($f1['dateupload'], $f2['dateupload']);
                     }
 

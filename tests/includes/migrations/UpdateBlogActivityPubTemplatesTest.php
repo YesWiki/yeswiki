@@ -4,7 +4,6 @@ namespace YesWiki\Test\Core\Migration;
 
 use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-use YesWiki\Bazar\Service\FormManager;
 use YesWiki\Core\Service\DbService;
 use YesWiki\Test\Core\YesWikiTestCase;
 
@@ -28,7 +27,7 @@ class UpdateBlogActivityPubTemplatesTest extends YesWikiTestCase
     protected function tearDown(): void
     {
         foreach ($this->formIds as $id) {
-            $GLOBALS['wiki']->services->get(FormManager::class)->delete($id);
+            self::deleteLegacyForm($GLOBALS['wiki'], $id);
         }
     }
 
@@ -39,7 +38,7 @@ class UpdateBlogActivityPubTemplatesTest extends YesWikiTestCase
 
     private function formWith(string $template, string $reverseTemplate, string $fields = self::FIELDS): string
     {
-        $id = (string)$GLOBALS['wiki']->services->get(FormManager::class)->create([
+        $id = self::createLegacyForm($GLOBALS['wiki'], [
             'bn_label_nature' => 'Blog migration test form',
             'bn_template' => $fields,
             'bn_condition' => '',

@@ -100,14 +100,15 @@ class TextField extends BazarField
     }
 
     public static function mapToFieldArray($fieldProps): array
-        {
-           $new = parent::mapToFieldArray($fieldProps);
-           $new[self::FIELD_TYPE] = 'text';
-           $new[self::FIELD_PATTERN] = $fieldProps['pattern'];
-           $new[self::FIELD_SUB_TYPE] = $fieldProps['subType'] ?? '';
-           ksort($new);
-           return $new;
-        }
+    {
+        $new = parent::mapToFieldArray($fieldProps);
+        $new[self::FIELD_TYPE] = 'text';
+        $new[self::FIELD_PATTERN] = $fieldProps['pattern'];
+        $new[self::FIELD_SUB_TYPE] = $fieldProps['subType'] ?? '';
+        ksort($new);
+
+        return $new;
+    }
 
     public function getPlaceholder()
     {

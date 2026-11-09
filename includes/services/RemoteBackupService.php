@@ -1,17 +1,13 @@
 <?php
 
+// Fetches a full backup from another YesWiki, in steps short enough for one HTTP request each, and leaves nothing behind on it.
+
 namespace YesWiki\Core\Service;
 
 use Symfony\Component\HttpClient\HttpClient;
 use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
-/**
- * Fetches a full backup from another YesWiki and leaves nothing behind on it.
- *
- * The work is cut into steps a single HTTP request can finish, because the archive of a large
- * wiki takes minutes and no web server waits that long. The browser calls status() until done.
- */
 class RemoteBackupService
 {
     public const JOB_FILENAME = 'remote-backup.json';
@@ -42,17 +38,7 @@ class RemoteBackupService
         $this->archiveService = $archiveService;
     }
 
-    /**
-     * Log in to the remote wiki, then leave the rest of the opening to the polled steps: asking a
-     * wiki whether it can archive makes it weigh itself, which takes longer than a request may last.
-     *
-     * @param array<string,mixed> $archiveParams what to ask the remote for, on top of the full
-     *                                           backup taken by default. 'savedatabase' => '0'
-     *                                           and 'onlyFolders' => ['custom', 'files'] fetch
-     *                                           the content of a wiki without its database.
-     *
-     * @throws \Exception
-     */
+    // Logs in to the remote wiki and leaves the rest to the polled steps, since weighing a wiki outlasts a request.
     public function start(string $url, string $username, string $password, array $archiveParams = []): array
     {
         if (!empty($this->readJob())) {
@@ -63,9 +49,11 @@ class RemoteBackupService
             throw new \Exception('The administrator name and password of the remote wiki are both needed.');
         }
 
+        $session = $this->login($baseUrl, $username, $password);
         $job = [
             'baseUrl' => $baseUrl,
-            'cookie' => $this->login($baseUrl, $username, $password),
+            'cookie' => $session['cookie'],
+            'csrfToken' => $session['csrfToken'],
             'archiveParams' => $archiveParams,
             'expectedType' => 'full',
             'knownArchives' => [],
@@ -85,9 +73,7 @@ class RemoteBackupService
         return $this->state($job);
     }
 
-    /**
-     * Move the running job one step further, then describe it.
-     */
+    // Moves the running job one step further, then describes it.
     public function status(): array
     {
         $job = $this->readJob();
@@ -131,9 +117,7 @@ class RemoteBackupService
         return $this->state($job);
     }
 
-    /**
-     * Give up, and take the remote archive and the half-downloaded file with it.
-     */
+    // Gives up, removing the remote archive and the half-downloaded file.
     public function cancel(): array
     {
         $job = $this->readJob();
@@ -145,11 +129,7 @@ class RemoteBackupService
         return ['step' => self::STEP_IDLE, 'running' => false];
     }
 
-    /**
-     * Drop the job, and take with it whatever it left on either side.
-     *
-     * @param array<string,mixed> $job
-     */
+    // Drops the job and whatever it left on either side.
     protected function abandon(array $job): void
     {
         if (!empty($job['filename'])) {
@@ -165,18 +145,13 @@ class RemoteBackupService
                 $this->call($job['baseUrl'], 'api/archives', $job['cookie'], [
                     'action' => 'stopArchive',
                     'uid' => $job['remoteUid'],
-                ]);
+                ], $job['csrfToken'] ?? '');
             }
         } catch (\Throwable $throwable) {
         }
         $this->deleteJob();
     }
 
-    /**
-     * @param array<string,mixed> $job
-     *
-     * @return array<string,mixed>
-     */
     protected function checkRemote(array $job): array
     {
         $remote = $this->assertRemoteCanArchive($job['baseUrl'], $job['cookie']);
@@ -186,11 +161,6 @@ class RemoteBackupService
         return $job;
     }
 
-    /**
-     * @param array<string,mixed> $job
-     *
-     * @return array<string,mixed>
-     */
     protected function askRemoteToArchive(array $job): array
     {
         $params = array_merge(
@@ -199,19 +169,14 @@ class RemoteBackupService
         );
         $job['knownArchives'] = array_column($this->remoteArchives($job['baseUrl'], $job['cookie']), 'filename');
         $job['expectedType'] = $this->archiveType($params);
-        $job['remoteUid'] = $this->startRemoteArchive($job['baseUrl'], $job['cookie'], $params);
+        $job['remoteUid'] = $this->startRemoteArchive($job['baseUrl'], $job['cookie'], $params, $job['csrfToken'] ?? '');
         $job['startedAt'] = time();
         $job['step'] = self::STEP_ARCHIVING;
 
         return $job;
     }
 
-    /**
-     * How the remote will name what it is about to make, so that the new file can be told apart
-     * from the backups it already had.
-     *
-     * @param array<string,mixed> $params
-     */
+    // Tells how the remote will name the archive it is about to make, to tell it from older ones.
     protected function archiveType(array $params): string
     {
         $asked = function ($key) use ($params) {
@@ -257,9 +222,7 @@ class RemoteBackupService
         return $job;
     }
 
-    /**
-     * A zip grows on disk while it is written, so the new archive is taken only once its size settles.
-     */
+    // Picks the new remote archive once its size has settled, since a zip grows while written.
     protected function identifyArchive(array $job): array
     {
         $job['identifyingSince'] = (int)($job['identifyingSince'] ?? time());
@@ -391,13 +354,6 @@ class RemoteBackupService
         return $job;
     }
 
-    /**
-     * @param array<string,mixed> $job
-     *
-     * @return array<string,mixed>
-     *
-     * @throws \Exception once the attempts are spent
-     */
     protected function downloadFailed(array $job, string $message): array
     {
         $job['failures'] = (int)($job['failures'] ?? 0) + 1;
@@ -426,11 +382,12 @@ class RemoteBackupService
             $job['baseUrl'],
             "api/archives/{$job['remoteFilename']}",
             $job['cookie'],
-            ['action' => 'delete']
+            ['action' => 'delete'],
+            $job['csrfToken'] ?? ''
         );
     }
 
-    protected function login(string $baseUrl, string $username, string $password): string
+    protected function login(string $baseUrl, string $username, string $password): array
     {
         try {
             $response = $this->client()->request('POST', $this->apiUrl($baseUrl, 'api/login'), [
@@ -465,14 +422,12 @@ class RemoteBackupService
             throw new \Exception('The remote wiki opened no session.');
         }
 
-        return implode('; ', $cookies);
+        return [
+            'cookie' => implode('; ', $cookies),
+            'csrfToken' => is_string($data['csrfToken'] ?? null) ? $data['csrfToken'] : '',
+        ];
     }
 
-    /**
-     * @return array<string,mixed> the remote's archiving status, with the size it expects when it is recent enough to say
-     *
-     * @throws \Exception
-     */
     protected function assertRemoteCanArchive(string $baseUrl, string $cookie): array
     {
         $status = $this->call($baseUrl, 'api/archives/archivingStatus/', $cookie);
@@ -492,9 +447,6 @@ class RemoteBackupService
         throw new \Exception('The remote wiki cannot make a backup right now.');
     }
 
-    /**
-     * @throws \Exception when the backups folder cannot hold that many bytes
-     */
     protected function assertLocalSpace(int $bytes): void
     {
         if ($bytes <= 0) {
@@ -533,16 +485,13 @@ class RemoteBackupService
         return ($unit === 0 ? (string)$bytes : number_format($value, 1)) . ' ' . $units[$unit];
     }
 
-    /**
-     * @param array<string,mixed> $params
-     */
-    protected function startRemoteArchive(string $baseUrl, string $cookie, array $params): string
+    protected function startRemoteArchive(string $baseUrl, string $cookie, array $params, string $csrfToken = ''): string
     {
         $data = $this->call($baseUrl, 'api/archives', $cookie, [
             'action' => 'startArchive',
             'params' => $params,
             'callAsync' => '1',
-        ]);
+        ], $csrfToken);
         if (empty($data['uid'])) {
             throw new \Exception('The remote wiki did not start the backup.');
         }
@@ -550,9 +499,6 @@ class RemoteBackupService
         return (string)$data['uid'];
     }
 
-    /**
-     * @return array<int,array<string,mixed>>
-     */
     protected function remoteArchives(string $baseUrl, string $cookie): array
     {
         $archives = $this->call($baseUrl, 'api/archives', $cookie);
@@ -560,15 +506,14 @@ class RemoteBackupService
         return array_values(array_filter($archives, 'is_array'));
     }
 
-    /**
-     * @param array<string,mixed> $post
-     *
-     * @return array<mixed>
-     */
-    protected function call(string $baseUrl, string $path, string $cookie, ?array $post = null): array
+    protected function call(string $baseUrl, string $path, string $cookie, ?array $post = null, string $csrfToken = ''): array
     {
+        $headers = ['Cookie' => $cookie];
+        if ($csrfToken !== '') {
+            $headers[RequestGuard::HEADER] = $csrfToken;
+        }
         $options = [
-            'headers' => ['Cookie' => $cookie],
+            'headers' => $headers,
             'timeout' => self::REQUEST_TIMEOUT,
             'max_duration' => self::REQUEST_MAX_DURATION,
         ];
@@ -596,9 +541,7 @@ class RemoteBackupService
         return $data;
     }
 
-    /**
-     * The address of a wiki, whatever part of it was pasted in.
-     */
+    // Returns the address of a wiki from whatever part of it was pasted in.
     public function baseUrl(string $url): string
     {
         $url = trim($url);
@@ -642,10 +585,7 @@ class RemoteBackupService
         return $this->archiveService->getPrivateFolder() . DIRECTORY_SEPARATOR . $filename;
     }
 
-    /**
-     * A wiki names its backups after itself; an older one that does not gets named after the
-     * address it was fetched from.
-     */
+    // Names a fetched backup after its wiki, or after its address for older wikis that do not.
     protected function nameForSource(string $filename, string $baseUrl): string
     {
         $parts = ArchiveFilename::parse($filename);
@@ -653,9 +593,7 @@ class RemoteBackupService
         return empty($parts['source']) ? ArchiveFilename::withSource($filename, $baseUrl) : $filename;
     }
 
-    /**
-     * Two wikis archived in the same second would otherwise land on the same name.
-     */
+    // Finds a local name no archive uses, as two wikis archived in the same second would collide.
     protected function freeLocalName(string $filename): string
     {
         while (file_exists($this->localPath($filename))) {
@@ -671,11 +609,6 @@ class RemoteBackupService
         return $filename;
     }
 
-    /**
-     * @param array<string,mixed> $job
-     *
-     * @return array<string,mixed>
-     */
     protected function state(array $job): array
     {
         return [
@@ -695,9 +628,6 @@ class RemoteBackupService
         return $this->archiveService->getPrivateFolder() . DIRECTORY_SEPARATOR . self::JOB_FILENAME;
     }
 
-    /**
-     * @return array<string,mixed>
-     */
     protected function readJob(): array
     {
         $path = $this->jobPath();
@@ -709,9 +639,6 @@ class RemoteBackupService
         return is_array($job) ? $job : [];
     }
 
-    /**
-     * @param array<string,mixed> $job
-     */
     protected function writeJob(array $job): void
     {
         file_put_contents($this->jobPath(), json_encode($job));

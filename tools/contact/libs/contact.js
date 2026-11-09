@@ -11,13 +11,11 @@ $(document).ready(() => {
 
     if (inputsreq.length > 0) {
       inputsreq.each(function () {
-        if (
-          !(
-            $(this).val().length === 0 ||
-            $(this).val() === '' ||
-            $(this).val() === '0'
-          )
-        ) {
+        if (!(
+          $(this).val().length === 0 ||
+          $(this).val() === '' ||
+          $(this).val() === '0'
+        )) {
           $(this).parents('.form-group').removeClass('has-error')
         } else {
           atleastonefieldnotvalid = true

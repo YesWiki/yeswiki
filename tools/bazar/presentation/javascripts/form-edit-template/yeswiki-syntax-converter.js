@@ -58,8 +58,7 @@ function defaultLabel(wikiType, fieldObject) {
 export function parseWikiTextIntoJsonData(text) {
   const yesWikiMapping = getYesWikiMapping()
   const result = []
-  text = text.trim()
-  const textFields = text.split('\n')
+  const textFields = text.trim().split('\n')
   for (let i = 0; i < textFields.length; i++) {
     const textField = textFields[i]
     const fieldValues = textField.split('***')
@@ -78,21 +77,21 @@ export function parseWikiTextIntoJsonData(text) {
         wikiType in yesWikiTypes ? yesWikiTypes[wikiType].subtype : ''
       fieldObject.subtype2 =
         wikiType in yesWikiTypes ? yesWikiTypes[wikiType].subtype2 : ''
-      const start = fieldType == 'custom' ? 0 : 1
+      const start = fieldType === 'custom' ? 0 : 1
       for (let j = start; j < fieldValues.length; j++) {
         let value = fieldValues[j]
         const field = mapping && j in mapping ? mapping[j] : j
-        if (field == 'useWikiSyntax') {
+        if (field === 'useWikiSyntax') {
           if (value.trim().length === 0) {
             value = 'false'
           }
         }
-        if (field == 'required') value = value == '1'
+        if (field === 'required') value = value === '1'
         if (field) {
-          if (field == 'read' || field == 'write' || field == 'comment') {
+          if (field === 'read' || field === 'write' || field === 'comment') {
             fieldObject[field] =
               value.trim() === ''
-                ? field == 'comment'
+                ? field === 'comment'
                   ? [' + ']
                   : [' * ']
                 : value
@@ -100,7 +99,7 @@ export function parseWikiTextIntoJsonData(text) {
                     .map((e) =>
                       ['+', '*', '%'].includes(e.trim()) ? ` ${e.trim()} ` : e,
                     )
-          } else if (field == 'seeEmailAcls') {
+          } else if (field === 'seeEmailAcls') {
             fieldObject[field] =
               value.trim() === ''
                 ? ' % ' // if not define in tempalte, choose owner and admins
@@ -129,7 +128,7 @@ export function parseWikiTextIntoJsonData(text) {
 // transform a json object like "{ type: 'texte', name: 'bf_titre', label: 'Nom' .... }"
 // into wiki text like "texte***bf_titre***Nom***255***255*** *** *** ***1***0***"
 export function formatJsonDataIntoWikiText(formData) {
-  if (formData.length == 0) return null
+  if (formData.length === 0) return null
   let wikiText = ''
   const yesWikiMapping = getYesWikiMapping()
 
@@ -140,12 +139,12 @@ export function formatJsonDataIntoWikiText(formData) {
 
     for (const type in yesWikiTypes) {
       if (
-        formElement.type == yesWikiTypes[type].type &&
+        formElement.type === yesWikiTypes[type].type &&
         (!formElement.subtype ||
           !yesWikiTypes[type].subtype ||
-          formElement.subtype == yesWikiTypes[type].subtype) &&
+          formElement.subtype === yesWikiTypes[type].subtype) &&
         (!formElement.subtype2 ||
-          formElement.subtype2 == yesWikiTypes[type].subtype2)
+          formElement.subtype2 === yesWikiTypes[type].subtype2)
       ) {
         wikiProps[0] = type
         break
@@ -159,11 +158,11 @@ export function formatJsonDataIntoWikiText(formData) {
 
     for (const key in mapping) {
       const property = mapping[key]
-      if (property != 'type') {
+      if (property !== 'type') {
         let value = formElement[property]
         if (['required', 'access'].indexOf(property) > -1)
           value = value ? '1' : '0'
-        if (property == 'label') {
+        if (property === 'label') {
           wikiProps[key] = removeBR(value).replace(/\n$/gm, '')
         } else if (
           ['content_saisie', 'content_display'].includes(property) &&

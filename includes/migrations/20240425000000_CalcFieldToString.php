@@ -10,7 +10,7 @@ class CalcFieldToString extends YesWikiMigration
         $formManager = $this->wiki->services->get(FormManager::class);
 
         // find CalcField in forms
-        $forms = $formManager->getAll();
+        $forms = $this->legacyForms();
         if (!empty($forms)) {
             $fields = [];
             foreach ($forms as $form) {

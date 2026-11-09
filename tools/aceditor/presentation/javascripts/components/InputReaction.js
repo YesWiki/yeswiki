@@ -20,11 +20,11 @@ export default {
       return {
         labels: this.elements
           .map((g) => g.label)
-          .filter((e) => e != '')
+          .filter((e) => e !== '')
           .join(','),
         images: this.elements
           .map((g) => g.image)
-          .filter((e) => e != '')
+          .filter((e) => e !== '')
           .join(','),
       }
     },

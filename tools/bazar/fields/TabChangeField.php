@@ -25,7 +25,7 @@ class TabChangeField extends LabelField
         $this->maxChars = null;
         $this->default = null;
         $this->formChange = ($values[self::FIELD_FORM_CHANGE] ?? '') === 'formChange';
-        $this->viewChange =  ($values[self::FIELD_VIEW_CHANGE] ?? '') === 'viewChange';
+        $this->viewChange = ($values[self::FIELD_VIEW_CHANGE] ?? '') === 'viewChange';
     }
 
     protected function renderInput($entry)
@@ -56,7 +56,6 @@ class TabChangeField extends LabelField
         return $this->viewChange;
     }
 
-    // LANG_FIXME not sure about this function
     public static function mapToFieldArray($fieldProps): array
     {
         $new = parent::mapToFieldArray($fieldProps);
@@ -70,9 +69,9 @@ class TabChangeField extends LabelField
         } else {
             unset($new[self::FIELD_FORM_CHANGE]);
         }
-       ksort($new);
+        ksort($new);
 
-       return $new;
+        return $new;
     }
 
     // change return of this method to keep compatible with php 7.3 (mixed is not managed)
@@ -84,6 +83,7 @@ class TabChangeField extends LabelField
             [
                 'formChange' => $this->getFormChange(),
                 'viewChange' => $this->getViewChange(),
-            ] );
+            ]
+        );
     }
 }

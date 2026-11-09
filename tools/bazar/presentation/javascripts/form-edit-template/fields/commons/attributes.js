@@ -21,7 +21,7 @@ $('#form-builder-text')
           'radiofiche',
         ].includes(field) &&
         value &&
-        value != ' ' &&
+        value !== ' ' &&
         !(value in formAndListIds.forms) &&
         !(value in formAndListIds.lists)
       ) {
@@ -58,7 +58,7 @@ export const aclsOptions = {
 export const aclsCommentOptions = {
   ...{ 'comments-closed': _t('BAZ_FORM_EDIT_COMMENTS_CLOSED') },
   ...Object.fromEntries(
-    Object.entries(visibilityOptions).filter(([key]) => key != ' * '),
+    Object.entries(visibilityOptions).filter(([key]) => key !== ' * '),
   ),
   ...{ user: _t('BAZ_FORM_EDIT_USER') },
   ...formattedGroupList,

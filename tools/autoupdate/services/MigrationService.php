@@ -51,7 +51,6 @@ class MigrationService
         foreach ($folders as $folder) {
             $folder = $folder . 'migrations/';
             if (file_exists($folder) && $dh = opendir($folder)) {
-
                 while (($file = readdir($dh)) !== false) {
                     if ($file == '0000000000000_DemoMigration.php') {
                         continue;
@@ -72,20 +71,17 @@ class MigrationService
                 }
             }
         }
-        usort($vFiles, function ($a, $b) {
-            return strcmp($a['file'], $b['file']);
-        });
+        usort($vFiles, fn ($a, $b) => strcmp($a['file'], $b['file']));
         foreach ($vFiles as $vFile) {
             $vFilename = $vFile['file'] . '.php';
-            $filePath = $vFile['folder'] . $vFilename; // tools/publication/2024040500000_TestMigration.php
+            $filePath = $vFile['folder'] . $vFilename;
             require_once $filePath;
             preg_match("/^([\d]*)/", $vFile['file'], $vMatches);
             $vDate = $vMatches[1] ?? 'unknow date';
-            $className = preg_replace('/^[\d_]*/', '', $vFile['file']); // TestMigration
+            $className = preg_replace('/^[\d_]*/', '', $vFile['file']);
             if (!class_exists($className)) {
                 throw new \Exception("Error while loading $filePath. The class inside should be $className");
             }
-            // Run Migration
             try {
                 $instance = new $className();
                 $instance->setWiki($this->wiki);

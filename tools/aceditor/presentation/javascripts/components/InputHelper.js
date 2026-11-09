@@ -22,7 +22,7 @@ export default {
         for (const field in showIfConf) {
           const value = (this.values[field] || false).toString()
           const expectedValue = showIfConf[field].toString()
-          if (expectedValue == 'notNull')
+          if (expectedValue === 'notNull')
             showIfResult = showIfResult && !['', 'false'].includes(value)
           else if (Array.isArray(expectedValue))
             showIfResult = showIfResult && expectedValue.includes(value)
@@ -50,8 +50,8 @@ export default {
     refFrom(config) {
       if (!config) return ''
       return config.subproperties ||
-        config.type == 'geo' ||
-        config.type == 'query'
+        config.type === 'geo' ||
+        config.type === 'query'
         ? 'specialInput'
         : ''
     },
@@ -67,7 +67,7 @@ export default {
           if (
             fields.every(
               (f) =>
-                (!f.id && field.id) || (f.id && !field.id) || f.id != field.id,
+                (!f.id && field.id) || (f.id && !field.id) || f.id !== field.id,
             )
           ) {
             fields.push(field)

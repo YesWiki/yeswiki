@@ -3,7 +3,6 @@
 namespace YesWiki\Test\Core\Migration;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-use YesWiki\Bazar\Service\FormManager;
 use YesWiki\Core\Service\DbService;
 use YesWiki\Test\Core\YesWikiTestCase;
 
@@ -25,13 +24,13 @@ class GiveActivityPubDatesATimezoneTest extends YesWikiTestCase
     protected function tearDown(): void
     {
         foreach ($this->formIds as $id) {
-            $GLOBALS['wiki']->services->get(FormManager::class)->delete($id);
+            self::deleteLegacyForm($GLOBALS['wiki'], $id);
         }
     }
 
     private function formWith(string $template): string
     {
-        $id = (string)$GLOBALS['wiki']->services->get(FormManager::class)->create([
+        $id = self::createLegacyForm($GLOBALS['wiki'], [
             'bn_label_nature' => 'ActivityPub dates migration test form',
             'bn_template' => 'texte***bf_titre***Titre***60***255*** *** ***text***1*** *** *** * *** * *** *** *** ***',
             'bn_condition' => '',

@@ -958,34 +958,83 @@ class ThemeManager implements EventSubscriberInterface
         $request = $this->wiki->request;
         $post = $request->request;
         $query = $request->query;
-        if (!empty($data['data']['tag'])
-            && !empty($post->get('newpage'))
-            && $post->has('theme')) {
-            $tag = $data['data']['tag'];
-            $previousMetadata = $this->pageManager->getMetadata($tag);
+        if (empty($data['data']['tag']) || empty($post->get('newpage'))) {
+            return;
+        }
+        $tag = $data['data']['tag'];
+        $wikiParam = $query->get('wiki');
+        $tagIsCurrentPage = (
+            !empty($wikiParam)
+            && is_string($wikiParam)
+            && explode('/', $wikiParam, 2)[0] === $tag
+        ) || explode('/', (string)array_key_first($query->all()), 2)[0] === $tag;
+        if (!$tagIsCurrentPage || !empty($this->pageManager->getMetadata($tag))) {
+            return;
+        }
 
-            $wikiParam = $query->get('wiki');
-            $tagIsCurrentPage = (
-                !empty($wikiParam)
-                && is_string($wikiParam)
-                && explode('/', $wikiParam, 2)[0] === $tag
-            ) || explode('/', array_key_first($query->all()), 2)[0] === $tag;
-
-            if (empty($previousMetadata) // only if no previous metadata
-                && $tagIsCurrentPage) {
-                $metadata = [
-                    'theme' => $post->get('theme'),
-                    'style' => $post->get('style') ?? CSS_PAR_DEFAUT,
-                    'squelette' => $post->get('squelette') ?? SQUELETTE_PAR_DEFAUT,
-                    'bgimg' => $post->get('bgimg') ?? null,
-                ];
-                foreach (ThemeManager::SPECIAL_METADATA as $metadataName) {
-                    if (!empty($post->get($metadataName))) {
-                        $metadata[$metadataName] = $post->get($metadataName);
-                    }
-                }
-                $this->pageManager->setMetadata($tag, $metadata);
+        $metadata = [];
+        if (!empty($post->get('theme')) && !empty($post->get('style')) && !empty($post->get('squelette'))) {
+            $metadata = [
+                'theme' => $post->get('theme'),
+                'style' => $post->get('style'),
+                'squelette' => $post->get('squelette'),
+                'bgimg' => $post->get('bgimg') ?? null,
+            ];
+        }
+        foreach (ThemeManager::SPECIAL_METADATA as $metadataName) {
+            if (!empty($post->get($metadataName))) {
+                $metadata[$metadataName] = $post->get($metadataName);
             }
         }
+        if (!empty($metadata)) {
+            $this->pageManager->setMetadata($tag, $metadata);
+        }
+    }
+
+    /**
+     * Returns the theme a page keeps for itself instead of following the site's, or null.
+     */
+    public function getOwnTheme(string $tag): ?array
+    {
+        $metadata = $this->pageManager->getMetadata($tag) ?? [];
+        if (empty($metadata['theme']) || empty($metadata['style']) || empty($metadata['squelette'])) {
+            return null;
+        }
+
+        return [
+            'theme' => $metadata['theme'],
+            'style' => $metadata['style'],
+            'squelette' => $metadata['squelette'],
+        ];
+    }
+
+    /**
+     * Counts the pages that keep their own theme instead of following the site's.
+     */
+    public function countPagesWithOwnTheme(): int
+    {
+        $db = $this->wiki->services->get(DbService::class);
+        $row = $db->loadSingle(
+            'SELECT COUNT(DISTINCT t.resource) AS n FROM ' . $db->prefixTable('triples') . ' t'
+            . ' JOIN ' . $db->prefixTable('pages') . " p ON p.tag = t.resource AND p.latest = 'Y'"
+            . " WHERE t.property = 'http://outils-reseaux.org/_vocabulary/metadata'"
+            . " AND t.value LIKE '%\"theme\":\"_%'"
+        );
+
+        return (int)($row['n'] ?? 0);
+    }
+
+    /**
+     * Makes a page follow the site theme again, keeping its other settings.
+     */
+    public function useSiteTheme(string $tag): void
+    {
+        $this->pageManager->setMetadata($tag, [
+            'theme' => null,
+            'style' => null,
+            'squelette' => null,
+            'bgimg' => null,
+            'favorite_preset' => null,
+        ]);
     }
 }

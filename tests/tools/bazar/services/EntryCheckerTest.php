@@ -101,7 +101,7 @@ class EntryCheckerTest extends TestCase
         $listManager = $this->createStub(ListManager::class);
         $listManager->method('getOne')->willReturn(['nodes' => $nodes]);
 
-        $wiki = new class() {
+        $wiki = new class {
             public $config = [
                 'BAZ_MAX_CHECKBOXLIST_WITHOUT_FILTER' => false,
                 'BAZ_MAX_CHECKBOXLIST_WITHOUT_SELECTALL' => false,
@@ -162,7 +162,7 @@ class EntryCheckerTest extends TestCase
     private function captureSave(array $body): object
     {
         $this->pageManager->method('getOne')->willReturn(['tag' => $body['id_fiche'], 'body' => json_encode($body)]);
-        $saved = new class() {
+        $saved = new class {
             public $body = [];
             public $calls = 0;
         };

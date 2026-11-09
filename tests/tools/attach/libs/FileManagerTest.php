@@ -2,6 +2,7 @@
 
 namespace YesWiki\Test\Attach\Libs;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use YesWiki\Core\Service\PageManager;
 use YesWiki\Test\Core\YesWikiTestCase;
 
@@ -51,7 +52,7 @@ class FileManagerTest extends YesWikiTestCase
 
     protected function tearDown(): void
     {
-        foreach (glob($this->uploadPath . '/' . self::FILE_NAME . '*') as $leftover) {
+        foreach (glob($this->uploadPath . '/' . self::PAGE_TAG . '_*') as $leftover) {
             unlink($leftover);
         }
         if (file_exists($this->decoyPath)) {
@@ -122,6 +123,70 @@ class FileManagerTest extends YesWikiTestCase
             $output,
             'file manager delete button is not a POST form carrying a csrf token'
         );
+    }
+
+    public function testDeletingTrashesAFileWhoseNameHasAccentsOrQuotes()
+    {
+        $name = "FileManagerTestPage_été_l'ami_20260101000000_20260101000000.png";
+        file_put_contents($this->uploadPath . '/' . $name, 'content');
+        $_POST['file'] = $name;
+
+        $this->attach->fmDelete();
+
+        $this->assertFileDoesNotExist($this->uploadPath . '/' . $name);
+        $this->assertCount(1, glob($this->uploadPath . '/' . $name . 'trash*'));
+    }
+
+    public function testDeletingStaysInsideTheUploadDirectory()
+    {
+        $_POST['file'] = '../../' . self::DECOY_NAME;
+
+        $this->attach->fmDelete();
+
+        $this->assertFileExists($this->decoyPath);
+        $this->assertEmpty(glob($this->decoyPath . 'trash*'));
+    }
+
+    public static function extensions(): array
+    {
+        return array_combine(
+            ['png', 'mp3', 'mp4', 'wma', 'aac', 'webm', 'm4a', 'pdf_', 'MP3'],
+            array_map(fn ($ext) => [$ext], ['png', 'mp3', 'mp4', 'wma', 'aac', 'webm', 'm4a', 'pdf_', 'MP3'])
+        );
+    }
+
+    #[DataProvider('extensions')]
+    public function testAFileIsListedThenTrashedThenRestoredWhateverItsExtension(string $ext)
+    {
+        $name = self::PAGE_TAG . '_media_20260101000000_20260101000000.' . $ext;
+        $path = $this->uploadPath . '/' . $name;
+        file_put_contents($path, 'content');
+
+        $this->assertContains($name, $this->listedNames(false));
+        $this->assertNotContains($name, $this->listedNames(true));
+
+        $this->attach->fmDelete($name);
+        $trashed = basename(glob($path . 'trash*')[0]);
+        $this->assertNotContains($trashed, $this->listedNames(false));
+        $this->assertContains($trashed, $this->listedNames(true));
+
+        $_POST['file'] = $trashed;
+        $this->attach->fmRestore();
+        $this->assertFileExists($path);
+        $this->assertContains($name, $this->listedNames(false));
+    }
+
+    private function listedNames(bool $trash): array
+    {
+        return array_column($this->attach->fmGetFiles($trash), 'realname');
+    }
+
+    public function testADotInThePageTagMatchesOnlyADot()
+    {
+        $this->wiki->tag = 'FileManager.estPage';
+        $this->attach = new \attach($this->wiki);
+
+        $this->assertNotContains(self::FILE_NAME, $this->listedNames(false));
     }
 
     public function testErasingRemovesTheTrashedFile()

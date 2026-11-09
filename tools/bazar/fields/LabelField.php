@@ -33,8 +33,8 @@ class LabelField extends BazarField
         $this->formText = $values[self::FIELD_FORM_TEXT] ?? '';
         $this->viewText = $values[self::FIELD_VIEW_TEXT] ?? '';
         $this->useWikiSyntax = (
-            empty($values[self::FIELD_USE_WIKI_SYNTAX]) ||
-            $values[self::FIELD_USE_WIKI_SYNTAX] === false
+            empty($values[self::FIELD_USE_WIKI_SYNTAX])
+            || $values[self::FIELD_USE_WIKI_SYNTAX] === false
             || in_array($values[self::FIELD_USE_WIKI_SYNTAX], [0, '0', 'no', 'non', 'false'])
         ) ? false : true;
     }
@@ -81,13 +81,13 @@ class LabelField extends BazarField
     public static function mapToFieldArray($fieldProps): array
     {
         $new = parent::mapToFieldArray($fieldProps);
-        $new[self::FIELD_USE_WIKI_SYNTAX] = $fieldProps['useWikiSyntax'] ? true : '';
+        $new[self::FIELD_USE_WIKI_SYNTAX] = !empty($fieldProps['useWikiSyntax']) ? '1' : '';
         $new[self::FIELD_VIEW_TEXT] = $fieldProps['viewtext'] ?? '';
         $new[self::FIELD_FORM_TEXT] = $fieldProps['formtext'] ?? '';
         ksort($new);
+
         return $new;
     }
-
 
     // change return of this method to keep compatible with php 7.3 (mixed is not managed)
     #[\ReturnTypeWillChange]

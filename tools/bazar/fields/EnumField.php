@@ -219,6 +219,7 @@ abstract class EnumField extends BazarField
         $new[self::FIELD_KEYWORDS] = $fieldProps['keywords'] ?? '';
         $new[self::FIELD_NAME] = $fieldProps['name'];
         ksort($new);
+
         return $new;
     }
 

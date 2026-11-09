@@ -119,6 +119,54 @@ class HttpSignatureServiceTest extends TestCase
         $this->assertSame(self::ACTOR, $this->verifier($now)->verifySignature($this->signedRequest($now, '(request-target) host date digest', 'hs2019')));
     }
 
+    public function testASignatureWithoutAlgorithmIsReadAsHs2019()
+    {
+        $now = time();
+        $request = $this->signedRequest($now);
+        $request->headers->set('Signature', preg_replace('/algorithm="[^"]*",\s*/', '', $request->headers->get('Signature')));
+
+        $this->assertSame(self::ACTOR, $this->verifier($now)->verifySignature($request));
+    }
+
+    public function testSpacesBetweenSignatureParametersAreAllowed()
+    {
+        $now = time();
+        $request = $this->signedRequest($now);
+        $request->headers->set('Signature', str_replace('",', '", ', $request->headers->get('Signature')));
+
+        $this->assertSame(self::ACTOR, $this->verifier($now)->verifySignature($request));
+    }
+
+    public function testAnRfc9421SignatureIsRefusedPlainly()
+    {
+        $now = time();
+        $request = $this->signedRequest($now);
+        $request->headers->set('Signature-Input', 'sig1=("@method" "@target-uri" "content-digest");created=' . $now . ';keyid="' . self::ACTOR . '#main-key"');
+        $request->headers->set('Signature', 'sig1=:' . base64_encode(random_bytes(256)) . ':');
+
+        $this->expectExceptionMessage('RFC 9421 signatures are not supported');
+        $this->verifier($now)->verifySignature($request);
+    }
+
+    #[DataProvider('unreadableSignatures')]
+    public function testAnUnreadableSignatureIsRefusedAsMalformed(string $signature)
+    {
+        $request = $this->signedRequest(time());
+        $request->headers->set('Signature', $signature);
+
+        $this->expectExceptionMessage('Malformed signature');
+        $this->verifier(time())->verifySignature($request);
+    }
+
+    public static function unreadableSignatures(): array
+    {
+        return [
+            'base64 without quotes' => ['sig1=:YWJj==:'],
+            'unquoted value' => ['keyId=https://them.example/actors/1#main-key,headers="date",signature="YWJj"'],
+            'no keyId' => ['headers="date",signature="YWJj"'],
+        ];
+    }
+
     public function testAnUnknownAlgorithmIsRefused()
     {
         $now = time();

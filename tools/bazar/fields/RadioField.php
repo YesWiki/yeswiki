@@ -79,10 +79,10 @@ abstract class RadioField extends EnumField
         $new = parent::mapToFieldArray($fieldProps);
         $new[self::FIELD_DISPLAY_METHOD] = $fieldProps['displayMethod'];
         ksort($new);
+
         return $new;
     }
 
-    // change return of this method to keep compatible with php 7.3 (mixed is not managed)
     #[\ReturnTypeWillChange]
     public function jsonSerialize()
     {

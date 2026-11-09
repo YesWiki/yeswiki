@@ -21,6 +21,7 @@ return [
     'ATTACH_ACTION_FULLIMAGELINK_TEXT' => "Permettre de cliquer sur l'image pour l'afficher en grand",
     'ATTACH_FILE_MANAGEMENT' => 'Gestion des fichiers',
     'ATTACH_TRASH' => 'Corbeille',
+    'ATTACH_DOWNLOAD_NOT_FOUND' => 'Ce fichier n\'existe pas ou vous n\'y avez pas accès.',
     'ATTACH_NO_ATTACHED_FILES' => 'Pas de fichiers attachés à la page {tag} pour l\'instant.',
     'ATTACH_FILENAME' => 'Nom du fichier',
     'ATTACH_SIZE' => 'Taille',

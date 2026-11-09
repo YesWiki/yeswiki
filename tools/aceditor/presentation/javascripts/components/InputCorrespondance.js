@@ -39,8 +39,8 @@ export default {
         const value = this.mappingValues[propName]
         if (
           propName &&
-          value != (this.config.subproperties[propName] || {}).default &&
-          value != ',' &&
+          value !== (this.config.subproperties[propName] || {}).default &&
+          value !== ',' &&
           Object.keys(this.config.subproperties).includes(propName)
         ) {
           result.push(`${propName}=${value}`)

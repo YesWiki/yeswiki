@@ -30,6 +30,8 @@ return [
     'DB_CONNECT_FAIL' => 'Pour des raisons indépendantes de notre volonté, le contenu de ce YesWiki est temporairement inaccessible.<br>Probablement l\'accès à la base de données a échoué. <br><br>Veuillez réessayer ultérieurement, merci de votre compréhension.',
     'LOG_DB_CONNECT_FAIL' => 'YesWiki : la connexion BDD a echouee',
     'INCORRECT_PAGENAME' => 'Le nom de la page est incorrect.',
+    'INVALID_PAGE_TAG' => 'Le nom de page « %{tag} » est incorrect.',
+    'PAGE_TAG_ALLOWED_CHARACTERS' => 'Lettres, chiffres, « - », « _ » et « . » uniquement, sans espace.',
     'PERFORMABLE_ERROR' => 'Une erreur inattendue s\'est produite. Veuillez contacter l\'administrateur du site et lui communiquer l\'erreur suivante :',
     'HOMEPAGE_WIKINAME' => 'PagePrincipale',
     'MY_YESWIKI_SITE' => 'Mon site YesWiki',
@@ -706,5 +708,5 @@ return [
     'ADMIN_CONTENT_TYPE_PAGES' => 'Pages',
     'ADMIN_CONTENT_TYPE_SPECIAL_PAGE' => 'Page spéciale',
     'ADMIN_CONTENT_TYPE_SPECIAL_PAGES' => 'Pages spéciales',
-    'PERFORM_MIGRATIONS' => 'Éxecution des migrations',
+    'PERFORM_MIGRATIONS' => 'Exécution des migrations',
 ];

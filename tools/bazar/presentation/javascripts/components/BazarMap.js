@@ -111,7 +111,7 @@ const BazarMapComponent = {
             this.layers[label] = L.geoJson.ajax(url, {
               interactive: false,
               style(feature, _latlng) {
-                if (feature.geometry.type == 'Point') return
+                if (feature.geometry.type === 'Point') return
                 const props = feature.properties || {}
                 options.split(';').forEach((o) => {
                   if (!o.trim()) return
@@ -179,7 +179,7 @@ const BazarMapComponent = {
             this.isDirectLinkDisplay() ||
             this.isNewTabDisplay()
           const tagName = isLink ? 'a' : 'div'
-          const url = this.orderUrl(entry.url + (this.isModalDisplay() ? '/iframe' : ''))
+          const url = reorderUrl(entry.url + (this.isModalDisplay() ? '/iframe' : ''))
           const modalData = this.isModalDisplay()
             ? 'data-size="modal-lg" data-iframe="1" data-header="false"'
             : ''
@@ -214,7 +214,7 @@ const BazarMapComponent = {
             entry.marker.on('click', () => {
               window.event.preventDefault()
               window.location =
-                this.orderUrl(entry.url + (this.$root.isInIframe() ? '/iframe' : ''))
+                reorderUrl(entry.url + (this.$root.isInIframe() ? '/iframe' : ''))
             })
           } else if (this.isNewTabDisplay()) {
             entry.marker.on('click', function () {
@@ -239,19 +239,13 @@ const BazarMapComponent = {
       }
     },
     isModalDisplay() {
-      return (
-        this.params.entrydisplay != null && this.params.entrydisplay == 'modal'
-      )
+      return this.params.entrydisplay === 'modal'
     },
     isNewTabDisplay() {
-      return (
-        this.params.entrydisplay != null && this.params.entrydisplay == 'newtab'
-      )
+      return this.params.entrydisplay === 'newtab'
     },
     isDirectLinkDisplay() {
-      return (
-        this.params.entrydisplay != null && this.params.entrydisplay == 'direct'
-      )
+      return this.params.entrydisplay === 'direct'
     },
     openPopup(entry) {
       if (entry.marker == null) {
@@ -281,11 +275,11 @@ const BazarMapComponent = {
                   'icon',
                   'visual',
                   'marker',
-                ].indexOf(key) == -1 &&
-                necessaryFieldsArray.indexOf(key) == -1
+                ].indexOf(key) === -1 &&
+                necessaryFieldsArray.indexOf(key) === -1
               ) {
                 excludeFields =
-                  excludeFields.length == 0 ? key : `${excludeFields},${key}`
+                  excludeFields.length === 0 ? key : `${excludeFields},${key}`
               }
             }
           }
@@ -326,7 +320,11 @@ const BazarMapComponent = {
               .html()
           : $(this.$el).find('.popupentry-container > div').first().html()
       if (entry.marker.popup == null) {
-        if (renderedHtml != null && renderedHtml.length != 0) {
+        if (
+          renderedHtml !== null &&
+          renderedHtml !== undefined &&
+          renderedHtml.length !== 0
+        ) {
           entry.marker
             .bindPopup(renderedHtml, { keepInView: true })
             .on('popupopen', () => {
@@ -424,11 +422,11 @@ const BazarMapComponent = {
       if (oldVal && oldVal.marker && oldVal.marker._icon)
         oldVal.marker._icon.classList.remove('selected')
       if (this.selectedEntry) {
-        if (this.params.entrydisplay == 'newtab') {
+        if (this.params.entrydisplay === 'newtab') {
           this.$root.openEntry(this.selectedEntry)
-        } else if (this.params.entrydisplay == 'sidebar') {
+        } else if (this.params.entrydisplay === 'sidebar') {
           this.$root.getEntryRender(this.selectedEntry)
-        } else if (this.params.entrydisplay == 'popup') {
+        } else if (this.params.entrydisplay === 'popup') {
           this.openPopup(this.selectedEntry)
         } else if (this.isModalDisplay()) {
           this.$root.openEntryModal(this.selectedEntry)

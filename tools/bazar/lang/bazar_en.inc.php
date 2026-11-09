@@ -501,4 +501,13 @@ The created folder will be automatically linked to your account. Please log in t
     'BAZ_CHECKCONTENT_UNFETCHED_OVER_LIMIT' => 'past the 200 address limit for one run',
     'BAZ_CHECKCONTENT_TEXT_REPLACEMENT' => 'to be completed',
     'BAZ_CHECKCONTENT_TOO_MANY_SELECTED' => 'The browser sent more fields than this server accepts: the end of the form never arrived and nothing was repaired. Repair in several passes, or raise max_input_vars in the server PHP configuration.',
+    'BAZ_TRANSLATE' => 'Translate',
+    'BAZ_TRANSLATE_FORM' => 'Translate the form',
+    'BAZ_TRANSLATE_IN' => 'Translate into',
+    'BAZ_TRANSLATION' => 'Translation',
+    'TRANSLATE_MISSING_EXTRA_LANG' => 'The additional languages are not configured (supported_langs)',
+    'TRANSLATE_ACTION_ONLY_ALLOWED_FOR_ENTRY' => 'Only entries can be translated here',
+    'BAZ_TRANSLATE_MODIFIY_ERROR' => 'The translation of the entry could not be saved.',
+    'BAZ_FICHE_TRANSLATED' => 'Entry translated',
+    'BAZ_TRANSLATE_ENTRY_AGAIN' => 'Translate the entry again',
 ];

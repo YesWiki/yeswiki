@@ -86,7 +86,7 @@ export default {
           ...{ footer: true },
           ...{
             exportOptions: {
-              ...(option.extend != 'print'
+              ...(option.extend !== 'print'
                 ? {
                     orthogonal: 'sort', // use sort data for export
                     columns(idx, data, node) {
@@ -98,7 +98,7 @@ export default {
                       const isVisible = $(node).data('visible')
                       return (
                         !$(node).hasClass('not-export-this-col') &&
-                        (isVisible == null || isVisible != false) &&
+                        (isVisible == null || Number(isVisible) !== 0) &&
                         !$(node).hasClass('not-printable')
                       )
                     },

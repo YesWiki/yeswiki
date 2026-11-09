@@ -38,14 +38,14 @@ $(document).ready(() => {
       $(this).on('mousedown', function (_event) {
         const target = $(this).attr('target')
         if (
-          (!target || target.length == 0) &&
+          (!target || target.length === 0) &&
           !$(this).hasClass('modalbox') &&
           !$(this).hasClass('new-window')
         ) {
           window.location = $(this).attr('href')
         } else if (
-          target == 'blank' ||
-          target == '_blank' ||
+          target === 'blank' ||
+          target === '_blank' ||
           $(this).hasClass('modalbox') ||
           $(this).hasClass('new-window')
         ) {
@@ -86,7 +86,7 @@ $(document).ready(() => {
         .removeClass('btn-danger')
         .addClass('btn-add-point')
         .addClass('btn-primary')
-        .html(`<i class="fa fa-plus icon-plus"></i> ${labeladdpoint}</a>`)
+        .html(`<i class="fa fa-plus icon-plus"></i> ${escHtml(labeladdpoint)}`)
       $(this)
         .parents('.pointimage-container')
         .find('img')
