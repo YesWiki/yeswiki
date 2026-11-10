@@ -1,0 +1,24 @@
+{
+  "name": "YesWiki",
+  "dockerComposeFile": "../docker/docker-compose.yml",
+  "service": "yeswiki-app",
+  "workspaceFolder": "/var/www/html",
+  "remoteUser": "yeswiki",
+  // The image already runs as the host user, through UID and GID in docker/.env.
+  "updateRemoteUserUID": false,
+  // Runs on the host, before compose reads docker/.env. An existing file is left alone.
+  "initializeCommand": "test -f docker/.env || sed -e \"s/^UID=.*/UID=$(id -u)/\" -e \"s/^GID=.*/GID=$(id -g)/\" docker/.env.example > docker/.env",
+  // No postCreateCommand: docker/entrypoint.sh already installs dependencies and migrates,
+  // and a second install would race with it.
+  // No forwardPorts: compose publishes the ports on the host, and they vary per checkout.
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "esbenp.prettier-vscode",
+        "mhutchie.git-graph",
+        "junstyle.php-cs-fixer",
+        "dbaeumer.vscode-eslint"
+      ]
+    }
+  }
+}
