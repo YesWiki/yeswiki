@@ -269,7 +269,7 @@ class AdminSignInController extends YesWikiController
         $copyable = [];
         if ($id !== null) {
             $config = ProviderConfig::fromArray($id, $entry, $type->defaultAttributes());
-            $callback = $this->getService(SignInFlow::class)->callbackUrlFor($config);
+            $callback = $this->takesPassword($type, $config) ? null : $this->getService(SignInFlow::class)->callbackUrlFor($config);
             $published = $this->published($type, $config);
             if ($published !== null) {
                 $metadata = $this->getService(UrlFormatter::class)->href('', 'user/sign-in/' . rawurlencode($id) . '/metadata');
@@ -321,6 +321,16 @@ class AdminSignInController extends YesWikiController
             return $rows;
         } catch (\Throwable $unbuilt) {
             return null;
+        }
+    }
+
+    /** A provider checking a password typed into the wiki's form sends nobody back: it has no callback to give. One that cannot be built yet keeps it shown. */
+    private function takesPassword(ProviderType $type, ProviderConfig $config): bool
+    {
+        try {
+            return $type->create($config) instanceof PasswordProvider;
+        } catch (\Throwable) {
+            return false;
         }
     }
 

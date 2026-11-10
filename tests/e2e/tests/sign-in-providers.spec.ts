@@ -3,10 +3,13 @@ import { ADMIN_PASSWORD, ADMIN_USERNAME, login } from '../helpers/login'
 import {
   accountWithEmail,
   addToGroup,
+  directoryBinds,
   forgetAccounts,
+  forgetAttempts,
   groupsOf,
   journal,
   PASSWORD,
+  PASSWORD_TYPES,
   PEOPLE,
   personDn,
   PROVIDER_IDS,
@@ -16,27 +19,67 @@ import {
   setDirectoryValue,
   setProviders,
   signInAtPortal,
+  signInAtWikiForm,
+  testAtWikiForm,
 } from '../helpers/sso'
 
 /**
  * Every provider type against the real servers of the development stack (Step 0 of the SSO plan).
  * The task adding a type adds it here; the wiki is reset once for the file, so each test starts from the accounts it needs.
  */
-const TYPES: ProviderType[] = ['oidc', 'saml', 'cas']
+const TYPES: ProviderType[] = ['oidc', 'saml', 'cas', 'ldap']
 
 const GUEST_CARD = '.yw-account-guest__card'
 const MARIE_ACCOUNT = 'marie-dupont'
 const JEAN_ACCOUNT = 'jean-martin'
 
-/** From the account page, out to the provider and back. */
+/** From the account page, out to the provider and back; or, for a directory, through the wiki's own form under its tab. */
 const signInWith = async (page: Page, type: ProviderType, login: string) => {
   await page.goto('/?user')
+  const label = String(PROVIDERS[type].label)
+  if (PASSWORD_TYPES.includes(type)) {
+    await signInAtWikiForm(page, PROVIDER_IDS[type], login, PASSWORD)
+
+    return
+  }
   await page
-    .locator(`${GUEST_CARD} .yw-sign-in__provider`, {
-      hasText: String(PROVIDERS[type].label),
-    })
+    .locator(`${GUEST_CARD} .yw-sign-in__provider`, { hasText: label })
     .click()
   await signInAtPortal(page, login, PASSWORD)
+}
+
+/** Where an administrator's test asks for the person's credentials: the portal, or the test page's own form. */
+const enterTestCredentials = async (
+  page: Page,
+  type: ProviderType,
+  login: string,
+) =>
+  PASSWORD_TYPES.includes(type)
+    ? testAtWikiForm(page, login, PASSWORD)
+    : signInAtPortal(page, login, PASSWORD)
+
+/**
+ * What the wiki tells the person of a refusal: the refused page, or for a password provider the message the sign-in form
+ * comes back with (shown as a toast, from the page's flash).
+ */
+const refusalSays = async (
+  page: Page,
+  type: ProviderType,
+  expected: string | RegExp,
+) => {
+  if (!PASSWORD_TYPES.includes(type)) {
+    await expect(page.locator('body')).toContainText(expected)
+
+    return
+  }
+  const pattern =
+    typeof expected === 'string'
+      ? new RegExp(expected.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
+      : expected
+  await expect(page.locator('[data-yw-flash]')).toHaveAttribute(
+    'data-yw-flash',
+    pattern,
+  )
 }
 
 /** A field of the signed-in account's settings that its provider fills, shown as text since it cannot be edited there. */
@@ -128,17 +171,20 @@ for (const type of TYPES) {
       setProviders(sectionFor(type, { create_accounts: false }))
       const before = latestRow()
 
+      // a password provider records the login typed, which the attempt limit counts; the others the person's email
+      const who = PASSWORD_TYPES.includes(type)
+        ? PEOPLE.marie.login
+        : PEOPLE.marie.email
+
       await signInWith(page, type, PEOPLE.marie.login)
 
       await expect(page.locator('h1')).toBeVisible()
-      await expect(page.locator('body')).toContainText(
-        String(PROVIDERS[type].label),
-      )
-      await expect(page.locator('body')).toContainText(PEOPLE.marie.email)
+      await refusalSays(page, type, String(PROVIDERS[type].label))
+      await refusalSays(page, type, who)
 
       const rows = loginRows(before)
       const audit = rows.find((row) => row.action === 'login.failed')
-      expect(audit?.target).toBe(PEOPLE.marie.email)
+      expect(audit?.target).toBe(who)
       expect(audit?.context).toMatchObject({
         provider: id,
         reason: 'no_account',
@@ -155,6 +201,11 @@ for (const type of TYPES) {
         JSON.stringify(rows),
         'what was sent is never recorded, only what it said',
       ).not.toMatch(/SAMLResponse|saml2?p?:Assertion|BEGIN [A-Z ]*KEY/)
+      expect(
+        JSON.stringify(rows),
+        'nor the password, which a directory lets a person read of their own entry',
+      ).not.toContain(PASSWORD)
+      await expect(page.locator('body')).not.toContainText(PASSWORD)
 
       // and the screen reads it back: filter on the target, then open the detail
       await login(page, ADMIN_USERNAME, ADMIN_PASSWORD)
@@ -164,11 +215,11 @@ for (const type of TYPES) {
           response.url().includes('api/admin/logs') &&
           response.url().includes('target='),
       )
-      await page.locator('#yw-logs-target').fill(PEOPLE.marie.email)
+      await page.locator('#yw-logs-target').fill(who)
       await filtered
       const table = page.locator('#yw-logs-table')
       await expect(table).toContainText('login.refused.no_account.' + id)
-      await expect(table).toContainText(PEOPLE.marie.email)
+      await expect(table).toContainText(who)
       // the types tested before this one were refused for the same person
       const editLink = `a[href*="admin/sign-in/${id}/edit"]`
       const detail = table
@@ -205,13 +256,17 @@ for (const type of TYPES) {
 
       await page.goto('/?admin/sign-in')
       await page.locator(`a[href*="admin/sign-in/${id}/test"]`).click()
-      await signInAtPortal(page, PEOPLE.marie.login, PASSWORD)
+      await enterTestCredentials(page, type, PEOPLE.marie.login)
 
       await expect(page.locator('.yw-sign-in-test__banner')).toBeVisible()
       const attributes = page.locator('.yw-sign-in-test__attributes')
       await expect(attributes).toContainText('mail')
       await expect(attributes).toContainText(PEOPLE.marie.email)
       await expect(attributes).toContainText(PEOPLE.marie.lastName)
+      expect(
+        await page.content(),
+        'the password is on no page, not even among the attributes read',
+      ).not.toContain(PASSWORD)
       await expect(
         page.locator('.yw-sign-in-test__would'),
         'what a real sign-in would do',
@@ -239,7 +294,7 @@ for (const type of TYPES) {
 
       await signInWith(page, type, PEOPLE.nomail.login)
 
-      await expect(page.locator('body')).toContainText(/["«]\s?mail\s?["»]/)
+      await refusalSays(page, type, /["«]\s?mail\s?["»]/)
       const diagnostic = loginRows(before).find(
         (row) => row.action === `login.refused.missing_attribute.${id}`,
       )
@@ -358,3 +413,97 @@ for (const type of TYPES) {
     }
   })
 }
+
+/**
+ * The attempt limit (spec section 12): five wrong passwords for one login in 15 minutes, and the sixth attempt is refused without
+ * asking the directory, even with the right password. The directory's bind counter shows who was asked.
+ */
+test.describe('the attempt limit against the real directory', () => {
+  const LIMIT_MESSAGE =
+    /Too many failed attempts with this login|Trop de tentatives échouées avec cet identifiant/
+  const WRONG = 'not-the-password'
+
+  test.beforeEach(() => {
+    setProviders(sectionFor('ldap'))
+  })
+
+  test('ldap: LDAP and local both stop at the sixth attempt with the limit message', async ({
+    page,
+  }) => {
+    const cases = [
+      {
+        provider: PROVIDER_IDS.ldap,
+        login: PEOPLE.jean.login,
+        password: PASSWORD,
+        binds: 1,
+      },
+      {
+        provider: 'local',
+        login: ADMIN_USERNAME,
+        password: ADMIN_PASSWORD,
+        binds: 0,
+      },
+    ]
+    /** The message the sign-in form came back with. */
+    const flash = () => page.locator('[data-yw-flash]')
+    for (const { provider, login, password, binds } of cases) {
+      const attemptRows = () =>
+        journal('login.%').filter(
+          (row) =>
+            row.target.toLowerCase() === login.toLowerCase() &&
+            ['login.failed', 'login.throttled'].includes(row.action),
+        )
+      /** One attempt through the wiki's form, and how many binds the directory answered for it. */
+      const attempt = async (typed: string): Promise<number> => {
+        const before = directoryBinds()
+        await page.goto('/?user')
+        await signInAtWikiForm(page, provider, login, typed)
+        // the reading itself is one bind
+        return directoryBinds() - before - 1
+      }
+
+      forgetAttempts(login)
+      try {
+        for (let failure = 1; failure <= 5; failure++) {
+          expect(
+            await attempt(WRONG),
+            `${provider}, wrong password ${failure}: the directory is asked only for its own accounts`,
+          ).toBe(binds)
+          await expect(
+            flash(),
+            'the form says the password is wrong',
+          ).toHaveAttribute('data-yw-flash', /\S/)
+          await expect(flash()).not.toHaveAttribute(
+            'data-yw-flash',
+            LIMIT_MESSAGE,
+          )
+        }
+
+        expect(
+          await attempt(password),
+          `${provider}: the sixth attempt never reaches the directory`,
+        ).toBe(0)
+        await expect(flash()).toHaveAttribute('data-yw-flash', LIMIT_MESSAGE)
+        await page.goto('/?user')
+        await expect(
+          page.locator('form.login-form'),
+          'the right password did not sign anyone in',
+        ).toBeVisible()
+
+        const rows = attemptRows()
+        expect(rows.map((row) => row.action)).toEqual([
+          ...Array(5).fill('login.failed'),
+          'login.throttled',
+        ])
+        expect(rows.every((row) => row.context.provider === provider)).toBe(
+          true,
+        )
+        expect(JSON.stringify(rows)).not.toContain(WRONG)
+        expect(JSON.stringify(rows)).not.toContain(password)
+      } finally {
+        // the limit would stop every later sign-in of this login for 15 minutes
+        forgetAttempts(login)
+      }
+    }
+  })
+})

@@ -28,6 +28,13 @@
 
     <section class="yw-dashboard__card">
       <h2>{{ _t('SIGN_IN_ADMIN_CONNECTION') }}</h2>
+      {# A directory reached at ldap:// without StartTLS: the passwords typed into the sign-in form travel in clear. #}
+      {% set directoryUri = settings|filter(s => s.name == 'uri')|map(s => s.value|trim|lower)|join %}
+      {% set hasStartTls = settings|filter(s => s.name == 'start_tls')|length > 0 %}
+      {% set startTlsOn = settings|filter(s => s.name == 'start_tls' and s.checked)|length > 0 %}
+      {% if hasStartTls and directoryUri starts with 'ldap://' and not startTlsOn %}
+        <div class="yw-alert yw-alert--warning yw-sign-in-admin__unencrypted" role="status">{{ icon('alert-triangle') }} {{ _t('SIGN_IN_LDAP_UNENCRYPTED') }}</div>
+      {% endif %}
       {% if callback %}
         <div class="yw-form-group">
           <label class="yw-form-label" for="sign-in-callback">{{ _t('SIGN_IN_ADMIN_CALLBACK_URL') }}</label>

@@ -467,6 +467,37 @@ class ProvidersEditorTest extends YesWikiTestCase
         $this->assertSame($key, $this->written()['saml-a']['connection']['sp_private_key'], 'a blank one keeps it');
     }
 
+    public function testAnUnencryptedLdapConnectionIsWarnedOnTheEditScreen(): void
+    {
+        $ldap = fn (array $connection): array => ['type' => 'ldap', 'label' => 'Directory', 'enabled' => true, 'connection' => $connection + ['bind_dn_template' => 'uid={login},dc=acme']];
+        $this->seed([
+            'local' => ['type' => 'local'],
+            'plain' => $ldap(['uri' => ' LDAP://directory.acme:389']),
+            'tls' => $ldap(['uri' => 'ldap://directory.acme:389', 'start_tls' => true]),
+            'ldaps' => $ldap(['uri' => 'ldaps://directory.acme:636']),
+        ]);
+        $warning = '#<div class="yw-alert yw-alert--warning yw-sign-in-admin__unencrypted"[^>]*>#';
+
+        $html = $this->editPage('plain');
+        $this->assertMatchesRegularExpression($warning, $html, 'ldap:// without StartTLS sends passwords in clear');
+        $this->assertStringContainsString(htmlspecialchars(_t('SIGN_IN_LDAP_UNENCRYPTED'), ENT_QUOTES), $html);
+        $this->assertDoesNotMatchRegularExpression($warning, $this->editPage('tls'), 'StartTLS encrypts it');
+        $this->assertDoesNotMatchRegularExpression($warning, $this->editPage('ldaps'), 'ldaps:// encrypts it');
+        $this->assertMatchesRegularExpression('#<input[^>]*type="text"[^>]*name="connection\[uri\]"#', $html, 'an ldap:// address is not a web address');
+        $this->assertStringNotContainsString('user/sign-in/plain/callback', $html, 'a directory sends nobody back: there is no callback to give it');
+        $this->assertMatchesRegularExpression('#<input[^>]*name="connection\[search_password\]"[^>]*type="password"|<input[^>]*type="password"[^>]*name="connection\[search_password\]"#', $html);
+    }
+
+    public function testAnLdapAddressIsSavedAsTyped(): void
+    {
+        $this->seed(['local' => ['type' => 'local'], 'dir' => ['type' => 'ldap', 'label' => 'Directory', 'connection' => ['uri' => 'ldaps://old', 'bind_dn_template' => 'uid={login},dc=acme']]]);
+
+        $this->assertSame([], $this->editor->update('dir', ['connection' => ['uri' => 'ldap://yeswiki-ldap:1389', 'start_tls' => '1']]));
+
+        $this->assertSame('ldap://yeswiki-ldap:1389', $this->written()['dir']['connection']['uri']);
+        $this->assertTrue($this->written()['dir']['connection']['start_tls']);
+    }
+
     /** A type whose providers publish one value to copy, with characters that must be escaped; or one whose providers cannot be built. */
     private static function publishingType(string $name, bool $broken): ProviderType
     {

@@ -12,6 +12,7 @@ export const PORTAL_HOST = new URL(PORTAL).host
 
 export const LDAP_URI = 'ldap://yeswiki-ldap:1389'
 export const PEOPLE_BASE = 'ou=people,dc=acme,dc=example'
+export const GROUPS_BASE = 'ou=groups,dc=acme,dc=example'
 const ADMIN_DN = 'cn=admin,dc=acme,dc=example'
 const ADMIN_PASSWORD = 'AdminPassword1'
 
@@ -46,6 +47,9 @@ const ATTRIBUTES = {
 }
 
 export type ProviderType = 'oidc' | 'saml' | 'cas' | 'ldap'
+
+/** The types whose login and password are typed into the wiki's own form, not at the portal. */
+export const PASSWORD_TYPES: ProviderType[] = ['ldap']
 
 /** The identifier each type is registered under at the portal: it is part of the addresses the portal accepts. */
 export const PROVIDER_IDS: Record<ProviderType, string> = {
@@ -85,6 +89,8 @@ export const PROVIDERS: Record<ProviderType, Record<string, unknown>> = {
     connection: {
       uri: LDAP_URI,
       bind_dn_template: `uid={login},${PEOPLE_BASE}`,
+      // the directory has no memberOf: groups come from a search, by their cn, under the `groups` name the others use
+      group_base: GROUPS_BASE,
     },
     attributes: ATTRIBUTES,
   },
@@ -150,6 +156,11 @@ export const addToGroup = (group: string, account: string): void => {
   php('sso-wiki.php', ['add-to-group', group, account])
 }
 
+/** Deletes the failed and throttled sign-ins of these logins, so the attempt limit no longer counts them. */
+export const forgetAttempts = (...logins: string[]): void => {
+  php('sso-wiki.php', ['forget-attempts', ...logins])
+}
+
 /** Types the login and password into the portal's form, once the browser has been sent there. */
 export const signInAtPortal = async (
   page: Page,
@@ -163,6 +174,74 @@ export const signInAtPortal = async (
   await page.locator('#passwordfield').fill(password)
   await page.locator('#lform button[type="submit"]').click()
   await expect(page).not.toHaveURL((url) => url.host === PORTAL_HOST)
+}
+
+/**
+ * Types the login and password into the wiki's own sign-in form, on the page the browser is at, under the tab of the provider
+ * `providerId` when the form has several; then waits for the page the wiki answers with.
+ */
+export const signInAtWikiForm = async (
+  page: Page,
+  providerId: string,
+  login: string,
+  password: string,
+): Promise<void> => {
+  const form = page.locator('form.login-form')
+  if ((await form.locator('.yw-sign-in__tab').count()) > 0) {
+    // the radio is drawn under its label: a person clicks the label
+    const choice = `input[name="provider"][value="${providerId}"]`
+    const tab = form
+      .locator('.yw-sign-in__tab')
+      .filter({ has: page.locator(choice) })
+    await tab.click()
+    await expect(tab.locator(choice)).toBeChecked()
+  }
+  await form.locator('#inputWikiName').fill(login)
+  await form.locator('#inputPassword').fill(password)
+  await form.locator('button[type="submit"]').click()
+  await page.waitForLoadState('domcontentloaded')
+}
+
+/** Types the login and password into an administrator's test of a password provider, then waits for the result. */
+export const testAtWikiForm = async (
+  page: Page,
+  login: string,
+  password: string,
+): Promise<void> => {
+  await page.locator('#sign-in-test-login').fill(login)
+  await page.locator('#sign-in-test-password').fill(password)
+  await page.locator('#sign-in-test-password').press('Enter')
+  await page.waitForLoadState('domcontentloaded')
+}
+
+/**
+ * How many binds the directory has answered since it started, from its monitor backend. Reading it is itself a bind,
+ * counted in what it returns: two reads in a row differ by one.
+ */
+export const directoryBinds = (): number => {
+  const out = execFileSync(
+    'ldapsearch',
+    [
+      '-x',
+      '-LLL',
+      '-H',
+      LDAP_URI,
+      '-D',
+      ADMIN_DN,
+      '-w',
+      ADMIN_PASSWORD,
+      '-b',
+      'cn=Bind,cn=Operations,cn=Monitor',
+      '-s',
+      'base',
+      'monitorOpCompleted',
+    ],
+    { encoding: 'utf8' },
+  )
+  const count = out.match(/^monitorOpCompleted: (\d+)$/m)?.[1]
+  expect(count, 'the directory counts its binds').toBeTruthy()
+
+  return Number(count)
 }
 
 /** Whether the directory accepts this DN and password. */
