@@ -19,6 +19,7 @@ class RequestGuard
     public const OWN_SITE = ['same-origin', 'none'];
     public const LEGACY_FIELDS = ['csrfToken'];
     public const SCRIPT = 'javascripts/csrf-guard.js';
+    private const SIGN_IN_CALLBACK = '#^/?user/sign-in/[^/]+/callback$#D';
 
     public function __construct(
         private readonly ParameterBagInterface $params,
@@ -30,6 +31,9 @@ class RequestGuard
     /** Why the request must be refused, or null when it may go on. */
     public function refusal(Request $request): ?string
     {
+        if (self::isSignInCallback($request)) {
+            return null;
+        }
         if (in_array($request->getMethod(), self::SAFE_METHODS, true) || $this->carriesApiKey($request)) {
             return null;
         }
@@ -41,6 +45,18 @@ class RequestGuard
         }
 
         return null;
+    }
+
+    /** The address an identity server answers on, with a POST from its own site for SAML: the signed handshake is what protects it. */
+    public static function isSignInCallback(Request $request): bool
+    {
+        foreach ([$request->getPathInfo(), (string)array_key_first($request->query->all())] as $address) {
+            if (preg_match(self::SIGN_IN_CALLBACK, $address) === 1) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /** Whether a browser says, or lets us see, that another site started the request. */
