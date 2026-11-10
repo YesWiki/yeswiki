@@ -83,6 +83,24 @@ for _ in $(seq 1 60); do
 done
 [ "$status" = 200 ] || fail "a wiki the previous image had migrated answered $status after this one migrated it"
 
+docker pause "$name-db" >/dev/null
+inflight="$(mktemp)"
+curl -s --noproxy '*' --max-time 60 -o /dev/null -w '%{http_code}' "http://127.0.0.1:$port/readyz" > "$inflight" &
+request=$!
+sleep 1
+docker kill --signal TERM "$name-wiki" >/dev/null
+sleep 3
+docker unpause "$name-db" >/dev/null
+wait "$request" || true
+answered="$(cat "$inflight")"
+rm -f "$inflight"
+[ "$answered" = 200 ] || fail "a request in flight when SIGTERM came was answered $answered, not 200"
+for _ in $(seq 1 30); do
+    [ "$(docker inspect -f '{{.State.Running}}' "$name-wiki")" = false ] && break
+    sleep 1
+done
+[ "$(docker inspect -f '{{.State.Running}} {{.State.ExitCode}}' "$name-wiki")" = "false 0" ] || fail "the wiki did not exit cleanly on SIGTERM"
+
 if [ -n "${SMOKE_EXPECT_LOG:-}" ]; then
     logs="$(docker logs "$name-wiki" 2>&1)"
     case "$logs" in
@@ -92,4 +110,4 @@ if [ -n "${SMOKE_EXPECT_LOG:-}" ]; then
 fi
 
 passed=1
-echo "smoke: $image installs, serves, restarts, takes over a wiki from an older image, runs as 10001 on a read-only root"
+echo "smoke: $image installs, serves, restarts, takes over a wiki from an older image, finishes a request in flight on SIGTERM, runs as 10001 on a read-only root"

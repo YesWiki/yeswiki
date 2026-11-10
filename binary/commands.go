@@ -785,5 +785,14 @@ func (c caddyServer) Serve(instance, programDir string) error {
 	// The consumers first, while the wiki they write to is still served.
 	consumers.Stop(StopGrace)
 
-	return caddy.Stop()
+	return exitServing()
+}
+
+// exitServing hands the stop to Caddy's own exit path, which waits for the requests in flight up to the grace period; caddy.Stop() alone does not.
+func exitServing() error {
+	caddy.TrapSignals()
+	if err := syscall.Kill(os.Getpid(), syscall.SIGTERM); err != nil {
+		return caddy.Stop()
+	}
+	select {}
 }

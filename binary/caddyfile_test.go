@@ -274,3 +274,11 @@ func TestProbesAnswerEvenWhileTheWikiIsBeingUpgraded(t *testing.T) {
 		t.Errorf("both probes are matched:\n%s", file)
 	}
 }
+
+func TestAStopWaitsForTheRequestsInFlightButNotForever(t *testing.T) {
+	file := Caddyfile("/srv/wiki", Listen{Address: ":8080"}, Workers{}, Admin(""))
+
+	if !strings.Contains(file, "grace_period "+RequestGrace+"\n") {
+		t.Fatalf("a stop must give the requests in flight %s, bounded, before the process exits:\n%s", RequestGrace, file)
+	}
+}
