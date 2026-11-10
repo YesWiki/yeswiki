@@ -200,6 +200,19 @@ class SqliteDialect implements SqlDialect
         ];
     }
 
+    public function sessionsDdl(string $table): array
+    {
+        return [
+            "CREATE TABLE IF NOT EXISTS \"{$table}\" (
+                \"sess_id\" TEXT NOT NULL PRIMARY KEY,
+                \"sess_data\" BLOB NOT NULL,
+                \"sess_lifetime\" INTEGER NOT NULL,
+                \"sess_time\" INTEGER NOT NULL
+            )",
+            "CREATE INDEX IF NOT EXISTS \"{$table}_idx_sess_lifetime\" ON \"{$table}\" (\"sess_lifetime\")",
+        ];
+    }
+
     public function onConflictDoNothing(array $conflictColumns): string
     {
         return ' ON CONFLICT (' . implode(', ', array_map([$this, 'quoteIdentifier'], $conflictColumns)) . ') DO NOTHING';

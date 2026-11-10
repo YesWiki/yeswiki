@@ -53,6 +53,8 @@ abstract class BazarField implements \JsonSerializable
     protected const FIELD_WRITE_ACCESS = 12;
     protected const FIELD_HANDLE = 40;
 
+    protected ?string $formId = null;
+
     /**
      * @param array<int|string, mixed> $values one field's line of the form definition, by positional index
      */
@@ -73,6 +75,14 @@ abstract class BazarField implements \JsonSerializable
         $this->writeAccess = str_replace(',', "\n", $values[self::FIELD_WRITE_ACCESS]);
 
         $this->propertyName = $values[self::FIELD_NAME];
+    }
+
+    /** Tells the field which form it is part of, which an entry not created yet cannot say. */
+    public function belongsTo(string $formId): static
+    {
+        $this->formId = $formId;
+
+        return $this;
     }
 
     /**

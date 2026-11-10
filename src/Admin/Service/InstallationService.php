@@ -519,7 +519,7 @@ class InstallationService
         $this->pass(_t('CREATION_OF_JOURNAL'));
     }
 
-    /** Create the table of the background queue, so the first request of a fresh wiki can already dispatch (messenger / scheduler). */
+    /** Create the tables of the background queue, so the first request of a fresh wiki can already dispatch, and the one sessions live in. */
     private function installQueue(): void
     {
         $db = $this->dbLink;
@@ -528,6 +528,7 @@ class InstallationService
         }
 
         SchemaCreator::createQueue($db, $this->config['table_prefix']);
+        SchemaCreator::createSessions($db, $this->config['table_prefix']);
 
         $this->pass(_t('CREATION_OF_QUEUE'));
     }

@@ -1252,7 +1252,7 @@ class FormManager implements RequestScopedState
             $classField = $this->fieldFactory->create($field);
 
             if ($classField) {
-                $prepared[$i] = $classField;
+                $prepared[$i] = isset($form['id']) && is_scalar($form['id']) ? $classField->belongsTo((string)$form['id']) : $classField;
             } elseif (function_exists($field[0])) {
                 $functionName = $field[0];
                 $field[0] = 'old';

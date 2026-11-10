@@ -300,7 +300,6 @@ class EntryController extends YesWikiController
         if (!$form) {
             return '<div class="alert alert-danger">' . _t('BAZ_PAS_DE_FORM_AVEC_CET_ID') . ' : \'' . htmlspecialchars((string)$formId) . '\'</div>';
         }
-        $_SESSION['current_form_id'] = $form['id'];
 
         $results = $this->checkIfOnlyOneEntry($form);
         $incomingUrl = $this->getIncomingUrl();

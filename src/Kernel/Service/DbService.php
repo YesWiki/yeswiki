@@ -135,56 +135,32 @@ class DbService
         $this->afterReconnect[] = $retake;
     }
 
-    /**
-     * A database path as the Instance's own, the way Storage anchors every other path.
-     *
-     * SQLite resolves a relative path against the process working directory, which is shared by
-     * every wiki a farm serves from one process (single-binary 08).
-     */
-    private function inInstance(string $dbPath): string
-    {
-        if ($dbPath === '' || $dbPath === ':memory:' || str_starts_with($dbPath, '/')) {
-            return $dbPath;
-        }
-
-        if (!\defined('YESWIKI_INSTANCE_DIR')) {
-            return $dbPath;
-        }
-
-        return YESWIKI_INSTANCE_DIR . '/' . $dbPath;
-    }
-
     protected function buildDsn(): string
     {
-        switch ($this->driver) {
-            case 'sqlite':
-                $dbPath = $this->params->has('db_database') && $this->params->get('db_database')
-                    ? $this->stringParam('db_database')
-                    : 'private/yeswiki.db';
+        return self::dsnFor($this->params->all());
+    }
 
-                return 'sqlite:' . $this->inInstance($dbPath);
+    /**
+     * The PDO data source name of a wiki's database, from its configuration.
+     *
+     * @param array<array-key, mixed> $config
+     */
+    public static function dsnFor(array $config): string
+    {
+        $text = static fn (string $key, string $default = ''): string => isset($config[$key]) && is_scalar($config[$key]) && (string)$config[$key] !== '' ? (string)$config[$key] : $default;
+        $driver = $text('db_driver', 'mysql');
+        if ($driver === 'sqlite') {
+            $path = $text('db_database', 'private/yeswiki.db');
+            $absolute = $path === ':memory:' || str_starts_with($path, '/') || !\defined('YESWIKI_INSTANCE_DIR') ? $path : YESWIKI_INSTANCE_DIR . '/' . $path;
 
-            case 'pgsql':
-                $dsn = 'pgsql:host=' . $this->stringParam('db_host') . ';dbname=' . $this->stringParam('db_database');
-                if ($this->params->has('db_port') && $this->params->get('db_port')) {
-                    $dsn .= ';port=' . $this->stringParam('db_port');
-                }
-
-                return $dsn;
-
-            case 'mysql':
-            default:
-                $dsn = 'mysql:host=' . $this->stringParam('db_host') . ';dbname=' . $this->stringParam('db_database');
-                if ($this->params->has('db_port') && $this->params->get('db_port')) {
-                    $dsn .= ';port=' . $this->stringParam('db_port');
-                }
-                $charset = ($this->params->has('db_charset') && $this->params->get('db_charset'))
-                    ? $this->stringParam('db_charset')
-                    : 'utf8mb4';
-                $dsn .= ';charset=' . $charset;
-
-                return $dsn;
+            return 'sqlite:' . $absolute;
         }
+        $dsn = ($driver === 'pgsql' ? 'pgsql' : 'mysql') . ':host=' . $text('db_host') . ';dbname=' . $text('db_database');
+        if ($text('db_port') !== '') {
+            $dsn .= ';port=' . $text('db_port');
+        }
+
+        return $driver === 'pgsql' ? $dsn : $dsn . ';charset=' . $text('db_charset', 'utf8mb4');
     }
 
     protected function initDriverSpecific(): void
@@ -390,6 +366,10 @@ class DbService
         $queue = new QueueSchema($this);
         if (!$queue->exists()) {
             $queue->create();
+        }
+        $sessions = new SessionSchema($this);
+        if (!$sessions->exists()) {
+            $sessions->create();
         }
     }
 

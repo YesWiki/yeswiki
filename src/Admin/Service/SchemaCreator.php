@@ -5,18 +5,20 @@ namespace YesWiki\Admin\Service;
 use YesWiki\Kernel\Database\SqlDialectFactory;
 use YesWiki\Kernel\Service\JournalSchema;
 use YesWiki\Kernel\Service\Queue\QueueSchema;
+use YesWiki\Kernel\Service\SessionSchema;
 use YesWiki\Search\Service\SearchIndexSchema;
 
 /** The empty tables of one wiki on any supported engine, exactly as a fresh installation creates them. */
 class SchemaCreator
 {
-    /** Creates the content tables, the search index, the Journal and the queue under `$prefix` on `$db`. */
+    /** Creates the content tables, the search index, the Journal, the queue and the sessions under `$prefix` on `$db`. */
     public static function create(\PDO $db, string $prefix): void
     {
         self::createContentTables($db, $prefix);
         self::createSearchIndex($db, $prefix);
         self::createJournal($db, $prefix);
         self::createQueue($db, $prefix);
+        self::createSessions($db, $prefix);
     }
 
     /** The tables and indexes `installation-create-tables.sql.twig` describes for this engine, without the seed rows the installer adds. */
@@ -70,6 +72,14 @@ class SchemaCreator
     {
         $dialect = SqlDialectFactory::forDriver(self::driver($db));
         foreach ([...$dialect->queueDdl($prefix . QueueSchema::TABLE), ...$dialect->queueHistoryDdl($prefix . QueueSchema::HISTORY_TABLE)] as $statement) {
+            $db->exec($statement);
+        }
+    }
+
+    /** The table PHP sessions live in (replicas 02). */
+    public static function createSessions(\PDO $db, string $prefix): void
+    {
+        foreach (SqlDialectFactory::forDriver(self::driver($db))->sessionsDdl($prefix . SessionSchema::TABLE) as $statement) {
             $db->exec($statement);
         }
     }

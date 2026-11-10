@@ -872,6 +872,7 @@ You are on %{CURRENTPHPVERSION}.
     'MAINTENANCE_TASK_RECOVERY_KEYS' => 'Deletion of the expired password recovery keys',
     'MAINTENANCE_TASK_ACTIVATION_KEYS' => 'Deletion of the expired account activation keys',
     'MAINTENANCE_TASK_BOT_GUARD' => 'Clean-up of the anti-bot tokens and counters',
+    'MAINTENANCE_TASK_SESSIONS' => 'Clean-up of expired sessions',
     'CREATION_OF_TABLES' => 'Creation of tables, admin user and group',
     'ALREADY_CREATED' => 'Already created',
     'IMPORT_DB_BACKUP' => 'Import the database from the backup',

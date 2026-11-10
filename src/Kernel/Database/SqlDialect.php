@@ -121,6 +121,15 @@ interface SqlDialect
     public function queueHistoryDdl(string $table): array;
 
     /**
+     * The statements creating the table PHP sessions are kept in, in the shape Symfony's PdoSessionHandler reads (replicas 02).
+     *
+     * @param string $table already prefixed, unquoted
+     *
+     * @return list<string>
+     */
+    public function sessionsDdl(string $table): array;
+
+    /**
      * An INSERT that, when the unique key over $conflictColumns is already taken, applies $assignments to the row that is there instead of failing.
      *
      * @param string                $table           already prefixed, unquoted

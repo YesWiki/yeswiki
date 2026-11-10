@@ -3,6 +3,7 @@
 namespace YesWiki\Kernel\Database;
 
 use YesWiki\Kernel\Service\Queue\QueueSchema;
+use YesWiki\Kernel\Service\SessionSchema;
 
 class DumpRewriter
 {
@@ -168,7 +169,7 @@ class DumpRewriter
     }
 
     /**
-     * The tables a backup carries and a restore replaces: this wiki's own, less the queue's.
+     * The tables a backup carries and a restore replaces: this wiki's own, less the queue's and the sessions, since a restored session is a stolen one.
      *
      * @param list<string> $tables
      *
@@ -176,7 +177,7 @@ class DumpRewriter
      */
     public static function contentTables(array $tables, string $prefix): array
     {
-        $runtime = array_map(static fn (string $table): string => $prefix . $table, QueueSchema::TABLES);
+        $runtime = array_map(static fn (string $table): string => $prefix . $table, [...QueueSchema::TABLES, SessionSchema::TABLE]);
 
         return array_values(array_diff(self::ownTables($tables, $prefix), $runtime));
     }

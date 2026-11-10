@@ -63,7 +63,7 @@ class ImageField extends FileField
      */
     protected function getDefaultImageName($entry)
     {
-        $id = $entry['form_id'] ?? $_SESSION['current_form_id'] ?? 'no_id';
+        $id = $entry['form_id'] ?? $this->formId ?? 'no_id';
         $default_image_filename = "defaultimage{$id}_{$this->name}.jpg";
         if ($this->storage()->exists($this->getBasePath() . $default_image_filename)) {
             return $default_image_filename;

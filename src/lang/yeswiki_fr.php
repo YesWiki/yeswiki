@@ -791,6 +791,7 @@ return [
     'MAINTENANCE_TASK_RECOVERY_KEYS' => 'Suppression des clés de récupération de mot de passe expirées',
     'MAINTENANCE_TASK_ACTIVATION_KEYS' => 'Suppression des clés d\'activation de compte expirées',
     'MAINTENANCE_TASK_BOT_GUARD' => 'Nettoyage des jetons et compteurs anti-robots',
+    'MAINTENANCE_TASK_SESSIONS' => 'Nettoyage des sessions expirées',
     'CREATION_OF_TABLES' => 'Création des tables, de l\'administrateur et du groupe admins',
     'NOT_POSSIBLE_TO_CREATE_SQL_TABLES' => 'Impossible de créer les tables SQL.',
     'ALREADY_CREATED' => 'Déjà créée',

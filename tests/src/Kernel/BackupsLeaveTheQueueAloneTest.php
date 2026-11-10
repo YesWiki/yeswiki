@@ -58,7 +58,7 @@ class BackupsLeaveTheQueueAloneTest extends YesWikiTestCase
         $dump = $this->db->dumper()->dump();
 
         $this->assertSame('', $dump['error']);
-        $this->assertSame([self::PREFIX . 'pages', self::PREFIX . 'triples'], DumpRewriter::tables($dump['sql']));
+        $this->assertEqualsCanonicalizing([self::PREFIX . 'pages', self::PREFIX . 'triples'], DumpRewriter::tables($dump['sql']), 'PostgreSQL lists its tables in no particular order');
         $this->assertStringNotContainsString(self::PREFIX . 'queue', $dump['sql']);
     }
 

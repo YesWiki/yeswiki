@@ -216,6 +216,19 @@ class MySqlDialect implements SqlDialect
         ];
     }
 
+    public function sessionsDdl(string $table): array
+    {
+        return [
+            "CREATE TABLE IF NOT EXISTS `{$table}` (
+                `sess_id` VARBINARY(128) NOT NULL PRIMARY KEY,
+                `sess_data` BLOB NOT NULL,
+                `sess_lifetime` INTEGER UNSIGNED NOT NULL,
+                `sess_time` INTEGER UNSIGNED NOT NULL,
+                KEY `idx_sess_lifetime` (`sess_lifetime`)
+            ) ENGINE=InnoDB",
+        ];
+    }
+
     public function onConflictDoNothing(array $conflictColumns): string
     {
         $column = $this->quoteIdentifier($conflictColumns[0]);

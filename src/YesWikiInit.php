@@ -13,6 +13,7 @@ use YesWiki\Kernel\Service\ProgramVersion;
 use YesWiki\Kernel\Service\Replication;
 use YesWiki\Kernel\Service\TrustedProxies;
 use YesWiki\Kernel\Service\WikiUrls;
+use YesWiki\Kernel\Session\DatabaseSessions;
 
 /** Yeswiki initialization class. */
 class YesWikiInit
@@ -601,6 +602,9 @@ class YesWikiInit
             $_SESSION = [];
             $this->seedSessionKeysVendorSingletonsAssume();
         } elseif (session_status() !== PHP_SESSION_ACTIVE) {
+            ini_set('session.gc_probability', '1');
+            ini_set('session.gc_divisor', '1000');
+            session_set_save_handler(new DatabaseSessions($this->config), true);
             $cookiesParam = session_get_cookie_params();
             $cookiesParam['path'] = $CookiePath;
             $cookiesParam['httponly'] = true;

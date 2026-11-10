@@ -15,6 +15,7 @@ use YesWiki\Identity\Message\PurgeBotGuard;
 use YesWiki\Identity\Message\PurgeBotGuardHandler;
 use YesWiki\Identity\Message\PurgeRecoveryKeys;
 use YesWiki\Identity\Message\PurgeRecoveryKeysHandler;
+use YesWiki\Identity\Message\PurgeSessions;
 use YesWiki\Identity\Scheduler\IdentitySchedule;
 use YesWiki\Identity\Service\AccountActivationService;
 use YesWiki\Identity\Service\BotGuard;
@@ -50,7 +51,7 @@ class MaintenanceTasksTest extends YesWikiTestCase
 {
     private const NOW = '2026-10-23 12:00:00';
 
-    private const STEPS = ['revisions', 'journal', 'recovery-keys', 'activation-keys', 'bot-guard'];
+    private const STEPS = ['revisions', 'journal', 'recovery-keys', 'activation-keys', 'bot-guard', 'sessions'];
 
     private ?QueueTestKit $kit = null;
     private ?string $file = null;
@@ -78,6 +79,7 @@ class MaintenanceTasksTest extends YesWikiTestCase
         $this->assertInstanceOf(PurgeRecoveryKeys::class, $plan['recovery-keys']['message']);
         $this->assertInstanceOf(PurgeActivationKeys::class, $plan['activation-keys']['message']);
         $this->assertInstanceOf(PurgeBotGuard::class, $plan['bot-guard']['message']);
+        $this->assertInstanceOf(PurgeSessions::class, $plan['sessions']['message']);
     }
 
     /** A wiki that was not consumed for a day runs each step once when it is, not forty-eight times. */
