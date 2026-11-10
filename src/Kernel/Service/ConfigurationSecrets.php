@@ -12,6 +12,9 @@ final class ConfigurationSecrets implements EnvVarProcessorInterface
 {
     public const PREFIX = 'yeswiki_secret';
 
+    /** Sections of the configuration that never reach the compiled container: read at runtime only. */
+    public const RUNTIME_ONLY = ['sso_providers'];
+
     public const KEYS = [
         'db_password',
         'contact_smtp_pass',
@@ -42,6 +45,9 @@ final class ConfigurationSecrets implements EnvVarProcessorInterface
      */
     public static function withPlaceholders(array $config): array
     {
+        foreach (self::RUNTIME_ONLY as $key) {
+            unset($config[$key]);
+        }
         foreach (self::KEYS as $key) {
             if (isset($config[$key]) && is_scalar($config[$key]) && (string)$config[$key] !== '') {
                 $config[$key] = self::placeholder($key);
