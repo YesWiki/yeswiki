@@ -8,6 +8,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Event\ResponseEvent;
 use Symfony\Component\Security\Csrf\CsrfToken;
 use Symfony\Component\Security\Csrf\CsrfTokenManager;
+use YesWiki\Kernel\Routing\RequestedRoute;
 
 /** Refuses requests that change something when another site sent them, and gives the wiki's own forms and links the token they must carry. */
 class RequestGuard
@@ -19,7 +20,7 @@ class RequestGuard
     public const OWN_SITE = ['same-origin', 'none'];
     public const LEGACY_FIELDS = ['csrfToken'];
     public const SCRIPT = 'javascripts/csrf-guard.js';
-    private const SIGN_IN_CALLBACK = '#^/?user/sign-in/[^/]+/callback$#D';
+    private const SIGN_IN_CALLBACK = '#^user/sign-in/[^/]+/callback$#D';
 
     public function __construct(
         private readonly ParameterBagInterface $params,
@@ -47,16 +48,19 @@ class RequestGuard
         return null;
     }
 
-    /** The address an identity server answers on, with a POST from its own site for SAML: the signed handshake is what protects it. */
+    /**
+     * The address an identity server answers on, with a POST from its own site for SAML: the signed handshake is what protects it.
+     * Decided from what the dispatcher will run, whatever else the URL contains: exempting anything else would open every other route to forged requests.
+     */
     public static function isSignInCallback(Request $request): bool
     {
-        foreach ([$request->getPathInfo(), (string)array_key_first($request->query->all())] as $address) {
-            if (preg_match(self::SIGN_IN_CALLBACK, $address) === 1) {
-                return true;
-            }
+        $wiki = $request->query->all()['wiki'] ?? null;
+        if ($wiki !== null && !is_string($wiki)) {
+            return false;
         }
+        $route = RequestedRoute::parse((string)$request->server->get('REQUEST_URI', ''), (string)$request->server->get('SCRIPT_NAME', ''), $wiki);
 
-        return false;
+        return $route !== null && $route->isValid && preg_match(self::SIGN_IN_CALLBACK, $route->address()) === 1;
     }
 
     /** Whether a browser says, or lets us see, that another site started the request. */

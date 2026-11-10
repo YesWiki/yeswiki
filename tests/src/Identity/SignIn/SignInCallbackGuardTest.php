@@ -5,6 +5,7 @@ namespace YesWiki\Test\Identity\SignIn;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Component\HttpFoundation\Request;
 use YesWiki\Admin\Service\ApiService;
+use YesWiki\Core\YesWikiInit;
 use YesWiki\Identity\Service\RequestGuard;
 use YesWiki\Kernel\Service\CurrentRequest;
 use YesWiki\Test\Core\YesWikiTestCase;
@@ -53,6 +54,26 @@ class SignInCallbackGuardTest extends YesWikiTestCase
     }
 
     /** @return array<string, array{string}> */
+    public static function callbackAddresses(): array
+    {
+        return [
+            'the wiki parameter' => ['/?wiki=user/sign-in/x/callback'],
+            'the wiki parameter, leading slash' => ['/?wiki=/user/sign-in/x/callback'],
+            'through index.php' => ['/index.php?wiki=user/sign-in/x/callback'],
+            'parameters after it' => ['/?user/sign-in/x/callback&SAMLResponse=abc'],
+            'the equals sign a form can add' => ['/?user/sign-in/x/callback='],
+            'the reserved word in capitals' => ['/?USER/sign-in/x/callback'],
+        ];
+    }
+
+    #[DataProvider('callbackAddresses')]
+    public function testEveryFormTheDispatcherReadsAsTheCallbackIsAllowed(string $url): void
+    {
+        $request = Request::create($url, 'POST', server: ['HTTP_SEC_FETCH_SITE' => 'cross-site']);
+        $this->assertNull($this->guard->refusal($request), $url);
+    }
+
+    /** @return array<string, array{string}> */
     public static function urlsThatAreNotTheCallback(): array
     {
         return [
@@ -66,6 +87,11 @@ class SignInCallbackGuardTest extends YesWikiTestCase
             'no id' => ['/user/sign-in//callback'],
             'not the first query key' => ['/?PagePrincipale&user/sign-in/acme/callback'],
             'a trailing newline' => ['/?user/sign-in/acme/callback%0A'],
+            'the callback first, but wiki decides, query' => ['/?user/sign-in/x/callback&wiki=api/users/1'],
+            'the callback first, but wiki decides, path' => ['/user/sign-in/x/callback?wiki=api/users/1'],
+            'the callback as the first key of a page handler' => ['/SomePage/edit?user/sign-in/x/callback'],
+            'a wiki parameter that is no address' => ['/?user/sign-in/x/callback&wiki[]=api/users/1'],
+            'wiki names more than the callback' => ['/?wiki=user/sign-in/x/callback/extra'],
         ];
     }
 
@@ -76,13 +102,46 @@ class SignInCallbackGuardTest extends YesWikiTestCase
         $this->assertNotNull($this->guard->refusal($request), $url);
     }
 
+    /** The exemption is worth only what the dispatcher does with the same address. */
+    public function testTheExemptionHoldsExactlyWhenTheDispatcherRunsTheCallback(): void
+    {
+        $server = $_SERVER;
+        $get = $_GET;
+        $init = (new \ReflectionClass(YesWikiInit::class))->newInstanceWithoutConstructor();
+        $urls = array_filter(
+            array_merge(array_column(self::callbackAddresses(), 0), array_column(self::urlsThatAreNotTheCallback(), 0)),
+            fn (string $url): bool => !str_contains($url, 'wiki[]')
+        );
+
+        try {
+            foreach ($urls as $url) {
+                $request = Request::create($url, 'POST', server: ['SCRIPT_NAME' => '/index.php']);
+                $_SERVER['SCRIPT_NAME'] = '/index.php';
+                $_SERVER['REQUEST_URI'] = $request->server->get('REQUEST_URI');
+                $_SERVER['REQUEST_METHOD'] = 'POST';
+                $_GET = $request->query->all();
+                $init->getRoute();
+
+                $dispatched = preg_match('#^user/sign-in/[^/]+/callback$#D', $_GET['wiki'] ?? '') === 1;
+                $this->assertSame($dispatched, RequestGuard::isSignInCallback($request), $url);
+            }
+        } finally {
+            $_SERVER = $server;
+            $_GET = $get;
+        }
+    }
+
     /** @return array<string, array{string, bool}> */
     public static function routedRequests(): array
     {
         return [
             'the callback, path' => ['/user/sign-in/acme/callback', false],
             'the callback, query' => ['/?user/sign-in/acme/callback', false],
+            'the callback, wiki parameter' => ['/?wiki=user/sign-in/x/callback', false],
             'anything else' => ['/user/sign-in/acme/callback/extra', true],
+            'the callback first, but wiki decides, query' => ['/?user/sign-in/x/callback&wiki=api/users/1', true],
+            'the callback first, but wiki decides, path' => ['/user/sign-in/x/callback?wiki=api/users/1', true],
+            'the callback as the first key of a page handler' => ['/SomePage/edit?user/sign-in/x/callback', true],
         ];
     }
 
