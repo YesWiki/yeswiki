@@ -12,4 +12,6 @@ return [
     'HELLOWORLD_PAGE_NOT_ACCESSIBLE' => 'Page non accessible',
     'HELLOWORLD_FIELD_ALERT' => 'This will be saved in the entry',
     'HELLOWORLD_GREET_TASK' => 'Salue dans le Journal',
+    'HELLOWORLD_SIGN_IN_TYPE' => 'Mot de passe Bonjour (exemple)',
+    'HELLOWORLD_SIGN_IN_PASSWORD' => 'Le mot de passe commun à tous',
 ];

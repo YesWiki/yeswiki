@@ -24,6 +24,38 @@ YesWiki sur <http://localhost:8085>
 
 [Voir la documentation en anglais](/docs/en/dev)
 
+## Ajouter un fournisseur de connexion
+
+Un type de fournisseur de connexion (annuaire d'entreprise, service d'authentification unique,
+tout ce qui peut dire qui est quelqu'un) s'ajoute depuis une extension avec un seul service dans
+son dossier `services/`, qui implémente `YesWiki\Identity\SignIn\Contract\ProviderType`. Rien
+d'autre à déclarer : la classe est enregistrée et étiquetée comme type de fournisseur parce qu'elle
+implémente l'interface. L'exemple le plus court est dans l'extension fournie
+`extensions/helloworld/services/HelloPasswordType.php` (le code est dans
+[la documentation en anglais](/docs/en/dev)).
+
+`create()` renvoie le fournisseur. Un fournisseur qui vérifie un identifiant et un mot de passe
+implémente `PasswordProvider::authenticate()`, renvoie un `ProviderIdentity` avec les attributs
+qu'il connaît, et lève une `ProviderFailure` quand la personne ne peut pas se connecter. Celui qui
+envoie la personne sur un autre site implémente `RedirectProvider`. Une classe de fournisseur reçoit
+un `ProviderConfig` : elle porte `#[Exclude]`, car toutes les classes de `services/` sont sinon
+câblées automatiquement.
+
+Le cœur du wiki fournit alors au type :
+
+-   une place dans l'écran d'administration, avec un formulaire d'édition généré depuis
+    `connectionSettings()`, et un bouton pour essayer le fournisseur ;
+-   une place sur la page de connexion, et la connexion elle-même ;
+-   les règles des comptes : création, rattachement, rapprochement par email, correspondance des
+    groupes, attributs nommés. Une extension ne peut pas changer ces règles ;
+-   la limite de 5 échecs en 15 minutes, pour les fournisseurs à mot de passe ;
+-   les entrées du Journal pour les connexions refusées et les contrôles de santé de la
+    configuration.
+
+Quand l'extension est désactivée, la configuration de ses fournisseurs est conservée, mais ils ne
+sont plus proposés sur la page de connexion et l'écran d'administration signale le type absent.
+L'exemple ne connecte personne tant qu'un administrateur n'a pas choisi son mot de passe.
+
 ## Rendre votre wiki sémantique
 
 Une documentation détaillée en Français est disponible sur cette page
