@@ -151,6 +151,30 @@ for (const type of TYPES) {
       expect(JSON.stringify(diagnostic?.context)).not.toContain(
         'wiki-oidc-secret',
       )
+
+      // and the screen reads it back: filter on the target, then open the detail
+      await login(page, ADMIN_USERNAME, ADMIN_PASSWORD)
+      await page.goto('/?admin/logs')
+      const filtered = page.waitForResponse(
+        (response) =>
+          response.url().includes('api/admin/logs') &&
+          response.url().includes('target='),
+      )
+      await page.locator('#yw-logs-target').fill(PEOPLE.marie.email)
+      await filtered
+      const table = page.locator('#yw-logs-table')
+      await expect(table).toContainText('login.refused.no_account.' + id)
+      await expect(table).toContainText(PEOPLE.marie.email)
+      const detail = table.locator('.yw-logs__sign-in')
+      await expect(detail).toHaveCount(1)
+      const edit = detail.locator(`a[href*="admin/sign-in/${id}/edit"]`)
+      // the table is fetched again as the filter settles, which closes a detail opened too early
+      await expect(async () => {
+        if (!(await edit.isVisible())) await detail.locator('summary').click()
+        await expect(edit).toBeVisible({ timeout: 500 })
+      }).toPass()
+      await expect(detail).toContainText('mail')
+      await expect(detail).toContainText(PEOPLE.marie.email)
     })
 
     test(`${type}: a success writes nothing to the journal`, async ({

@@ -1,0 +1,42 @@
+{# A refused sign-in's diagnostic. Every value here comes from a provider or a user: nothing is |raw. #}
+{% set detail = entry.sign_in %}
+<details class="yw-logs__sign-in">
+  <summary>{{ _t('ADMIN_LOGS_SIGN_IN_DETAIL') }}</summary>
+  {% if detail.explanation is not empty %}<p>{{ detail.explanation }}</p>{% endif %}
+  {% if detail.last_step is not empty %}
+    <p><strong>{{ _t('ADMIN_LOGS_SIGN_IN_STEP') }}</strong> {{ detail.last_step }}</p>
+  {% endif %}
+  {% if detail.attributes is not empty %}
+    <table class="yw-table yw-table--condensed">
+      <caption>{{ _t('ADMIN_LOGS_SIGN_IN_ATTRIBUTES') }}</caption>
+      <thead>
+        <tr><th>{{ _t('SIGN_IN_ADMIN_NAME') }}</th><th>{{ _t('ADMIN_LOGS_DETAIL') }}</th><th>{{ _t('ADMIN_LOGS_SIGN_IN_USED_AS') }}</th></tr>
+      </thead>
+      <tbody>
+        {% for attribute in detail.attributes %}
+          <tr>
+            <td><code>{{ attribute.name }}</code></td>
+            <td>{{ attribute.values|join(', ') }}</td>
+            <td>{{ attribute.usedAs|join(', ') }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% endif %}
+  {% if detail.groups is not empty %}
+    <p><strong>{{ _t('ADMIN_LOGS_SIGN_IN_GROUPS') }}</strong> {{ detail.groups|join(', ') }}</p>
+  {% endif %}
+  {% if detail.account is not empty %}
+    <p><strong>{{ _t('ADMIN_LOGS_SIGN_IN_ACCOUNT') }}</strong> {{ detail.account }}</p>
+  {% endif %}
+  {% if detail.error is not empty %}
+    <p><strong>{{ _t('ADMIN_LOGS_SIGN_IN_ERROR') }}</strong></p>
+    <pre>{{ detail.error }}</pre>
+  {% endif %}
+  {% if detail.fix is not empty %}
+    <p><strong>{{ _t('ADMIN_LOGS_SIGN_IN_FIX') }}</strong> {{ detail.fix }}</p>
+  {% endif %}
+  {% if detail.provider is not empty %}
+    <p><a href="{{ url({ tag: 'admin/sign-in/' ~ detail.provider ~ '/edit' }) }}">{{ _t('ADMIN_LOGS_SIGN_IN_EDIT') }}</a></p>
+  {% endif %}
+</details>

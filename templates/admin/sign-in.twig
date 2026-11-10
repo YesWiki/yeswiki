@@ -61,6 +61,8 @@
     </table>
   </section>
 
+  <p><a href="{{ url({ tag: 'admin/logs', params: { action: 'login.failed' } }) }}">{{ icon('list') }} {{ _t('SIGN_IN_ADMIN_FAILURES') }}</a></p>
+
   <section class="yw-dashboard__card">
     <h2>{{ _t('SIGN_IN_ADMIN_ADD') }}</h2>
     <p class="yw-layout__hint">{{ _t('SIGN_IN_ADMIN_ADD_HINT') }}</p>
