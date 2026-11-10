@@ -12,8 +12,8 @@ The dev docker-compose contain the following images :
   Nothing points at it unless you ask -- the app installs against mysql by default. To run the
   browser suite against postgresql instead:
   ```
-  docker exec -e YESWIKI_TEST_DRIVER=pgsql yeswiki bash -c 'cd /var/www/html && bash tests/e2e/reset.sh'
-  docker exec yeswiki bash -lc 'cd /var/www/html && source /home/yeswiki/.nvm/nvm.sh && nvm use 22 \
+  docker exec -e YESWIKI_TEST_DRIVER=pgsql yeswiki-app bash -c 'cd /var/www/html && bash tests/e2e/reset.sh'
+  docker exec yeswiki-app bash -lc 'cd /var/www/html && source /home/yeswiki/.nvm/nvm.sh && nvm use 22 \
     && export PLAYWRIGHT_BROWSERS_PATH=0 YESWIKI_BASE_URL=http://yeswiki-web YESWIKI_TEST_DRIVER=pgsql \
     && npx playwright test'
   ```
@@ -35,12 +35,13 @@ The dev docker-compose contain the following images :
 > all commands have to be launched from docker directory
 
 To be able to develop locally without messing up with users and permissions, the dev dockerfile uses the same user and group as computer user.
-You need to create a file called `.env` within the `docker` directory with the following content :
+You need to create a file called `.env` within the `docker` directory from the provided example :
 
 ```
-UID="YOUR_USER_ID" # can be found with id -u
-GID="YOUR_USER_GID" # can be found with id -g
+cp .env.example .env
 ```
+
+Then set `UID` to the value of `id -u` and `GID` to the value of `id -g`.
 
 Then you can build the container with the following command :
 
@@ -68,6 +69,24 @@ Once on the install page, use the following values :
 
 > [!]tips
 > if you have a previous developpement installation you may need to change value accordingly in the yeswiki.config.php
+
+### Running several stacks side by side
+
+By default a stack uses the project name `yeswiki` and the ports 8085, 8086, 1080 and 8333, so a second stack would conflict with the first one.
+To run several at once, use one checkout per stack and set a project name and free ports in the `.env` of each additional one :
+
+```
+COMPOSE_PROJECT_NAME=yeswiki-other
+YESWIKI_WEB_PORT=8185
+YESWIKI_MYADMIN_PORT=8186
+YESWIKI_MAIL_PORT=1180
+YESWIKI_S3_PORT=8433
+```
+
+The project name also names the containers and volumes of that stack : use `yeswiki-other-app` in the `docker exec` commands of this page, and `yeswiki-other-db` and `yeswiki-other-pg` in the `docker volume rm` ones.
+`docker compose` commands and the service names used between containers, such as `yeswiki-db` on the install page, stay the same.
+
+The test docker-compose publishes the fixed port 8083, so only one test stack can run at a time.
 
 ## reinitialize yeswiki repo from dev
 
