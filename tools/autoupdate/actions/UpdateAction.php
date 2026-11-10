@@ -13,7 +13,6 @@ use YesWiki\Security\Controller\SecurityController;
 
 class UpdateAction extends YesWikiAction
 {
-    /** what installs, replaces or removes code, and may only be asked for by this wiki's own pages */
     public const CONFIRMED_ACTIONS = ['upgrade', 'delete', 'update_admin_pages'];
 
     public function formatArguments($arg)
@@ -92,7 +91,7 @@ class UpdateAction extends YesWikiAction
                             }
                             $vCanUpgrade = true;
                         } else {
-                            $vMessages->add('AU_PRIVATE_PATH_NOT_WRITABLE', 'AU_ERROR');
+                            $vMessages->add($vStatus['privatePathExists'] ? 'AU_PRIVATE_PATH_NOT_WRITABLE' : 'AU_PRIVATE_PATH_MISSING', 'AU_ERROR');
                         }
                     } else {
                         $vCanUpgrade = true;

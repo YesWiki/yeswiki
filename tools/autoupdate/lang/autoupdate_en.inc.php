@@ -46,4 +46,5 @@ return [
     'AU_ONE_THEME_UPDATE' => 'You have 1 theme to update',
     'AU_SEVERAL_TOOLS_UPDATE' => 'You have {nbMaj} extensions to update',
     'AU_ONE_TOOL_UPDATE' => 'You have 1 extension to update',
+    'AU_PRIVATE_PATH_MISSING' => 'The folder set by the \'privatePath\' configuration value (\'private/backups\' by default) does not exist and could not be created. Create it, or turn off the automatic backup by setting \'preupdate_backup_activated\' to \'false\'.',
 ];

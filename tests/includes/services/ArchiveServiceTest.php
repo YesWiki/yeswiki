@@ -22,6 +22,7 @@ require_once 'tests/YesWikiTestCase.php';
 #[CoversMethod(ArchiveService::class, 'archive')]
 #[CoversMethod(ArchiveService::class, 'setWikiStatus')]
 #[CoversMethod(ArchiveService::class, 'getUIDStatus')]
+#[CoversMethod(ArchiveService::class, 'getPrivateFolder')]
 class ArchiveServiceTest extends YesWikiTestCase
 {
     public function testArchiveServiceExisting(): array
@@ -48,6 +49,47 @@ class ArchiveServiceTest extends YesWikiTestCase
             $status['estimatedSize'],
             $services['archiveService']->estimateArchiveSize(['files', 'custom'])
         );
+    }
+
+    #[Depends('testArchiveServiceExisting')]
+    public function testAWikiWithoutTheDefaultPrivateFolderIsGivenOneClosedToTheWeb(array $services)
+    {
+        $back = getcwd();
+        $tmp = sys_get_temp_dir() . '/yeswiki-private-' . bin2hex(random_bytes(6));
+        mkdir($tmp . '/private', 0777, true);
+        $params = $services['wiki']->services->get(ParameterBagInterface::class);
+        $archiveParams = $params->get('archive');
+        $params->set('archive', array_merge($archiveParams, ['privatePath' => ArchiveService::PRIVATE_FOLDER_NAME_IN_ZIP]));
+        chdir($tmp);
+        try {
+            $folder = $services['archiveService']->getPrivateFolder();
+        } finally {
+            chdir($back);
+            $params->set('archive', $archiveParams);
+        }
+
+        $this->assertSame(ArchiveService::PRIVATE_FOLDER_NAME_IN_ZIP, $folder);
+        $this->assertDirectoryExists($tmp . '/private/backups');
+        $this->assertStringContainsString('DENY FROM ALL', (string)file_get_contents($tmp . '/private/.htaccess'));
+        exec('rm -rf ' . escapeshellarg($tmp));
+    }
+
+    #[Depends('testArchiveServiceExisting')]
+    public function testAMissingCustomPrivateFolderIsReportedAsMissingRatherThanNotWritable(array $services)
+    {
+        $params = $services['wiki']->services->get(ParameterBagInterface::class);
+        $archiveParams = $params->get('archive');
+        $params->set('archive', array_merge($archiveParams, ['privatePath' => sys_get_temp_dir() . '/yeswiki-absent-' . bin2hex(random_bytes(6))]));
+        try {
+            $status = $services['archiveService']->getArchivingStatus();
+            $details = $services['archiveService']->getCannotArchiveDetails($status);
+        } finally {
+            $params->set('archive', $archiveParams);
+        }
+
+        $this->assertFalse($status['privatePathExists']);
+        $this->assertContains(_t('AU_PRIVATE_PATH_MISSING'), $details);
+        $this->assertNotContains(_t('AU_PRIVATE_PATH_NOT_WRITABLE'), $details);
     }
 
     #[Depends('testArchiveServiceExisting')]

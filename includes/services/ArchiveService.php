@@ -276,7 +276,9 @@ class ArchiveService
         if ($pStatus['hibernated']) {
             $vMessages[] = _t('AU_SITE_IS_HIBERNATED');
         }
-        if (!$pStatus['privatePathWritable']) {
+        if (!($pStatus['privatePathExists'] ?? true)) {
+            $vMessages[] = _t('AU_PRIVATE_PATH_MISSING');
+        } elseif (!$pStatus['privatePathWritable']) {
             $vMessages[] = _t('AU_PRIVATE_PATH_NOT_WRITABLE');
         }
         if (!$pStatus['notAvailableOnTheInternet']) {
@@ -337,6 +339,7 @@ class ArchiveService
         $archiving = false;
         $hibernated = false;
         $privatePathWritable = true;
+        $privatePathExists = true;
         $notAvailableOnTheInternet = true;
         $canExec = false;
         $dB = false;
@@ -360,6 +363,7 @@ class ArchiveService
             $privatePath = $this->getPrivateFolder();
         } catch (\Exception $th) {
             $privatePathWritable = false;
+            $privatePathExists = false;
             $privatePath = '';
         }
         if (!empty($privatePath)) {
@@ -431,7 +435,7 @@ class ArchiveService
             && $enoughSpace
         );
 
-        return compact(['canArchive', 'archiving', 'hibernated', 'privatePathWritable', 'canExec', 'callAsync', 'notAvailableOnTheInternet', 'enoughSpace', 'estimatedSize', 'freeSpace', 'dB']);
+        return compact(['canArchive', 'archiving', 'hibernated', 'privatePathWritable', 'privatePathExists', 'canExec', 'callAsync', 'notAvailableOnTheInternet', 'enoughSpace', 'estimatedSize', 'freeSpace', 'dB']);
     }
 
     // Returns a token that allows forcing an update.
@@ -1468,6 +1472,9 @@ class ArchiveService
             : $archiveParams[self::KEY_FOR_PRIVATE_FOLDER];
 
         if ($folderPath != '%TMP') {
+            if ($folderPath === self::PRIVATE_FOLDER_NAME_IN_ZIP && !is_dir($folderPath)) {
+                $this->createDefaultPrivateFolder();
+            }
             if (
                 is_dir($folderPath)
             ) {
@@ -1513,6 +1520,18 @@ class ArchiveService
         }
 
         return (empty($archiveParams) || !is_array($archiveParams)) ? [] : $archiveParams;
+    }
+
+    // Creates the missing default private/backups folder, with the same .htaccess as the one shipped with the core.
+    private function createDefaultPrivateFolder(): void
+    {
+        if (!@mkdir(self::PRIVATE_FOLDER_NAME_IN_ZIP, 0755, true) && !is_dir(self::PRIVATE_FOLDER_NAME_IN_ZIP)) {
+            return;
+        }
+        $htaccess = dirname(self::PRIVATE_FOLDER_NAME_IN_ZIP) . '/.htaccess';
+        if (!file_exists($htaccess)) {
+            @file_put_contents($htaccess, "DENY FROM ALL\n");
+        }
     }
 
     private function canWriteFolder(string $path): bool
