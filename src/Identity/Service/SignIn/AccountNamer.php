@@ -6,6 +6,7 @@ use Symfony\Component\String\Slugger\AsciiSlugger;
 use YesWiki\Content\Service\FormPropertiesService;
 use YesWiki\Identity\SignIn\AttributeReader;
 use YesWiki\Identity\SignIn\Contract\ProviderConfig;
+use YesWiki\Kernel\Routing\ReservedTags;
 
 /** Suggests the name of an account created by a sign-in: always usable, never reserved or taken. */
 class AccountNamer
@@ -31,8 +32,9 @@ class AccountNamer
             $subject ?? '',
         ];
         foreach ($candidates as $candidate) {
-            // generateTag() answers `entry` for a name with no usable letter: such a candidate is skipped.
-            if ($candidate !== '' && (new AsciiSlugger())->slug($candidate)->toString() !== '') {
+            // generateTag() answers `entry` for a name with no usable letter, and a suffix for a reserved one: both candidates are skipped.
+            $slug = mb_strtolower((new AsciiSlugger())->slug($candidate)->toString());
+            if ($slug !== '' && !ReservedTags::isReserved($slug)) {
                 return $this->forms->generateTag($candidate);
             }
         }

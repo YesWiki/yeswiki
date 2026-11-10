@@ -68,6 +68,12 @@ class AccountNamerTest extends YesWikiTestCase
         $this->assertSame('s-42', $this->namer->suggest($this->config(), ['sub' => 'S 42']));
     }
 
+    public function testAReservedNameFallsThroughToTheNextCandidate(): void
+    {
+        $this->assertSame('marie', $this->namer->suggest($this->config(), ['given_name' => 'Admin', 'email' => 'marie@x', 'sub' => 's']));
+        $this->assertSame('marie', $this->namer->suggest($this->config(), ['given_name' => 'user', 'email' => 'marie@x', 'sub' => 's']));
+    }
+
     public function testNeverReturnsAReservedOrTakenName(): void
     {
         $name = $this->namer->suggest($this->config(), ['given_name' => 'Admin', 'family_name' => '', 'email' => 'admin@x', 'sub' => 's']);

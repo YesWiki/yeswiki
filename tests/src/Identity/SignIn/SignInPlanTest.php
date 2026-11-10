@@ -122,6 +122,7 @@ class SignInPlanTest extends YesWikiTestCase
         return [
             'no user id'               => [[],                                  ['email' => 'a@x'],                'none',              PlanAction::Refuse, FailureReason::MissingAttribute],
             'no email'                 => [[],                                  ['sub' => 's'],                    'none',              PlanAction::Refuse, FailureReason::MissingAttribute],
+            'linked here, provider stopped sending email' => [[], ['sub' => 's'], 'linked-here-s', PlanAction::Refuse, FailureReason::MissingAttribute],
             'linked here'              => [[],                                  ['sub' => 's', 'email' => 'a@x'],  'linked-here-s',     PlanAction::UseLinked, null],
             'unknown, creation on'     => [[],                                  ['sub' => 's', 'email' => 'new@x'], 'none',             PlanAction::Create, null],
             'unknown, creation off'    => [['create_accounts' => false],        ['sub' => 's', 'email' => 'new@x'], 'none',             PlanAction::Refuse, FailureReason::NoAccount],
@@ -209,6 +210,24 @@ class SignInPlanTest extends YesWikiTestCase
         $this->assertSame('Ann', $plan->profile['first_name']);
         $this->assertSame('email_collision', $plan->warnings[0]['kind']);
         $this->assertNotSame('', $plan->warnings[0]['message']);
+    }
+
+    public function testTheLastAdminIsNotRemovedFromAdminsAndWarns(): void
+    {
+        $groups = $this->services->get(GroupManager::class);
+        $original = $groups->getMembers('admins');
+        $this->links->link($this->makeUser('SsoPlanGroups', 'groups@x'), 'acme', 's');
+        try {
+            $groups->updateMembers('admins', ['SsoPlanGroups']);
+            $plan = $this->service->plan(
+                $this->config(['group_mapping' => [['provider' => 'boss', 'wiki' => 'admins']]]),
+                new ProviderIdentity(['sub' => 's', 'email' => 'groups@x', 'groups' => ['other']])
+            );
+            $this->assertNotContains('admins', $plan->groupsToRemove);
+            $this->assertSame('last_admin', $plan->warnings[0]['kind']);
+        } finally {
+            $groups->updateMembers('admins', $original);
+        }
     }
 
     public function testANewEmailNobodyUsesIsAccepted(): void

@@ -45,6 +45,10 @@ class SignInService
         // Link exists for this provider and user ID.
         $linked = $this->links->find($config->id, $subject);
         if ($linked !== null) {
+            if ($email === null && !$config->isUpgradedDirectory()) {
+                return $this->refuse($base, FailureReason::MissingAttribute, $this->missingDetail($names['email'], $attrs));
+            }
+
             return $this->accept($base, PlanAction::UseLinked, $linked, $email);
         }
 
@@ -214,7 +218,7 @@ class SignInService
         [$add, $remove, $ignored] = $this->groupDiff($config, $attrs, $current);
         if (in_array('admins', $remove, true) && array_diff($this->groups->getMembers('admins'), [$tag]) === []) {
             $remove = array_values(array_diff($remove, ['admins']));
-            $warnings[] = ['kind' => 'admins_kept', 'message' => 'the account stays in "admins": it is the last member'];
+            $warnings[] = ['kind' => 'last_admin', 'message' => 'the account stays in "admins": it is the last member'];
         }
 
         return new SignInPlan($config->id, $subject, $action, $tag, null, '', $profile, $add, $remove, $ignored, $warnings, $use, AttributeReader::forLog($attrs), $who);
