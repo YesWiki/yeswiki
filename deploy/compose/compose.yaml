@@ -1,0 +1,49 @@
+# One wiki on one machine from the published image, MariaDB beside it, the data in two volumes.
+name: yeswiki
+
+services:
+  wiki:
+    image: ${YESWIKI_IMAGE:-ghcr.io/yeswiki/yeswiki:latest}
+    read_only: true
+    tmpfs:
+      - /tmp
+    environment:
+      YESWIKI_INSTALL: "1"
+      BASE_URL: ${BASE_URL:?set BASE_URL in .env}
+      DB_DRIVER: mysql
+      DB_HOST: db
+      DB_DATABASE: yeswiki
+      DB_USER: yeswiki
+      DB_PASSWORD: ${DB_PASSWORD:?set DB_PASSWORD in .env}
+      ADMIN_NAME: ${ADMIN_NAME:-WikiAdmin}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:?set ADMIN_EMAIL in .env}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:?set ADMIN_PASSWORD in .env}
+    volumes:
+      - wiki:/srv/wiki
+    ports:
+      - "${LISTEN:-127.0.0.1:8080}:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+    stop_grace_period: 30s
+
+  db:
+    image: mariadb:11.4
+    environment:
+      MARIADB_DATABASE: yeswiki
+      MARIADB_USER: yeswiki
+      MARIADB_PASSWORD: ${DB_PASSWORD:?set DB_PASSWORD in .env}
+      MARIADB_RANDOM_ROOT_PASSWORD: "1"
+    volumes:
+      - db:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+    restart: unless-stopped
+
+volumes:
+  wiki:
+  db:

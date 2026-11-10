@@ -1403,6 +1403,21 @@ laissé tel quel. Les sauvegardes sont hors du lot par défaut, parce qu'elles
 sont en général le plus gros de ce qu'un wiki possède et le moins urgent à
 déplacer.
 
+## Avec Docker
+
+Chaque version publiée a son image, `ghcr.io/yeswiki/yeswiki` (et
+`docker.io/yeswiki/yeswiki`), pour amd64 et arm64, avec les étiquettes
+`5.1.2`, `5.1` et `latest`. Elle contient le binaire de la version et rien
+d'autre : elle tourne sous l'utilisateur 10001, avec un système de fichiers en
+lecture seule, et n'écrit que dans `/srv/wiki` (le dossier du wiki, à mettre
+dans un volume) et `/tmp`.
+
+`deploy/compose/` contient un `compose.yaml` qui fait tourner un wiki et sa
+base MariaDB sur une machine. Au premier démarrage, le conteneur installe le
+wiki avec les valeurs de son `.env` ; à chaque démarrage, il le migre vers la
+version de l'image avant de le servir. Le `README.md` de ce dossier dit comment
+le mettre à jour et vérifier la signature d'une image.
+
 ## Derrière un proxy, et sur plusieurs serveurs
 
 ### Le proxy qui termine le HTTPS

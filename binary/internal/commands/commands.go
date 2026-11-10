@@ -165,6 +165,21 @@ func neighbours(instance string) bool {
 	return false
 }
 
+// Prepare writes the Program and an Instance's entry points without installing anything, which is what an image does at build time.
+func Prepare(options Options) error {
+	instance, programDir, err := options.resolve()
+	if err != nil {
+		return err
+	}
+	if err := program.ProvisionInstance(instance, programDir); err != nil {
+		return err
+	}
+	options.say(fmt.Sprintf("program %s", programDir))
+	options.say(fmt.Sprintf("instance %s", instance))
+
+	return nil
+}
+
 // Serve writes the Program if it is not there and serves the Instance.
 func Serve(options Options, server Server) error {
 	instance, programDir, err := options.resolve()

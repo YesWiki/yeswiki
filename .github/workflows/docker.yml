@@ -1,20 +1,43 @@
-name: Docker Image
+name: Docker
 
 on:
   push:
     paths:
-      # the job builds docker/dockerfile-prod, and `COPY . /var/www/html/` pulls in
-      # everything else under docker/ (entrypoint.sh, nginx.conf), so watch the folder
       - docker/**
+      - deploy/compose/**
+      - .github/workflows/docker.yml
+  pull_request:
+    paths:
+      - docker/**
+      - deploy/compose/**
       - .github/workflows/docker.yml
 
 jobs:
-  build:
+  check:
     permissions:
       contents: read
     runs-on: ubuntu-26.04
     steps:
       - uses: actions/checkout@v5
 
-      - name: Build a Docker image able to run yeswiki
-        run: docker build -f docker/dockerfile-prod -t yeswiki/yeswiki .
+      - name: The compose files say what they mean
+        run: |
+          cp deploy/compose/.env.example deploy/compose/.env
+          docker compose -f docker/docker-compose.yml config --quiet
+          docker compose -f docker/docker-compose.yml -f docker/docker-compose-test.yml config --quiet
+          docker compose -f deploy/compose/compose.yaml config --quiet
+
+      - name: The scripts pass shellcheck
+        run: shellcheck docker/*.sh
+
+      - uses: docker/setup-buildx-action@v4
+
+      - name: The dev image builds
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: docker/dockerfile
+          build-args: |
+            UID=1000
+            GID=1000
+          push: false

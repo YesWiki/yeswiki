@@ -113,3 +113,24 @@ func TestTheShimActuallyRunsAScript(t *testing.T) {
 		t.Errorf("the shim did not stand in for php: %q", out)
 	}
 }
+
+func TestAShimAlreadyInPlaceIsLeftAloneOnAReadOnlyRoot(t *testing.T) {
+	if os.Geteuid() == 0 {
+		t.Skip("root writes anywhere")
+	}
+	root := t.TempDir()
+	if _, err := WriteShim(root, "/usr/local/bin/yeswiki"); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Chmod(root, 0o555); err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = os.Chmod(root, 0o755) })
+	if err := os.Chmod(ShimPath(root), 0o555); err != nil {
+		t.Fatal(err)
+	}
+
+	if _, err := WriteShim(root, "/usr/local/bin/yeswiki"); err != nil {
+		t.Fatalf("an image's read-only program root refused a shim it already holds: %v", err)
+	}
+}

@@ -582,3 +582,23 @@ func TestServingAFarmAlsoLeavesTheShim(t *testing.T) {
 		t.Fatalf("a farm with no shim serves wikis that cannot archive themselves: %v", err)
 	}
 }
+
+func TestPrepareWritesTheProgramAndTheEntryPointsAndInstallsNothing(t *testing.T) {
+	root := t.TempDir()
+	instance := filepath.Join(t.TempDir(), "image-wiki")
+
+	if err := Prepare(options(t, instance, root)); err != nil {
+		t.Fatal(err)
+	}
+
+	if !program.Complete(filepath.Join(root, "program-4.5.0"), "4.5.0") {
+		t.Fatal("the program was not written")
+	}
+	pointed, found := program.NamedBy(instance)
+	if !found || pointed != filepath.Join(root, "program-4.5.0") {
+		t.Fatalf("the entry point names %q", pointed)
+	}
+	if program.Configured(instance) {
+		t.Fatal("prepare installed a wiki")
+	}
+}
