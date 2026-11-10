@@ -4,7 +4,9 @@ ARG ALPINE_VERSION=3.24
 
 FROM alpine:${ALPINE_VERSION} AS prepare
 ARG TARGETARCH
+ARG EXTENSIONS=""
 COPY binary/dist/yeswiki-linux-* /dist/
+COPY --chmod=0755 docker/image-entrypoint.sh /usr/local/bin/yeswiki-entrypoint
 RUN set -eu; \
     case "$TARGETARCH" in \
         amd64) arch=x86_64 ;; \
@@ -12,7 +14,10 @@ RUN set -eu; \
         *) echo "no yeswiki binary for $TARGETARCH" >&2; exit 1 ;; \
     esac; \
     install -m 0755 "/dist/yeswiki-linux-$arch" /usr/local/bin/yeswiki; \
-    YESWIKI_PROGRAM_ROOT=/opt/yeswiki HOME=/nonexistent /usr/local/bin/yeswiki prepare /srv/wiki
+    YESWIKI_PROGRAM_ROOT=/opt/yeswiki HOME=/nonexistent /usr/local/bin/yeswiki prepare /srv/wiki; \
+    if [ -n "$EXTENSIONS" ]; then \
+        PATH="/usr/local/bin:$PATH" HOME=/nonexistent /usr/local/bin/yeswiki-entrypoint bundle $EXTENSIONS; \
+    fi
 
 FROM alpine:${ALPINE_VERSION}
 RUN apk add --no-cache ca-certificates tzdata \

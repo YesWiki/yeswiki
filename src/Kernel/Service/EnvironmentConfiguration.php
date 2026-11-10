@@ -46,6 +46,9 @@ class EnvironmentConfiguration
         'trusted_headers',
     ];
 
+    /** Operator settings the program derives from its own composer.json, which the environment never states. */
+    private const DERIVED = ['yeswiki_version', 'yeswiki_release'];
+
     public const ENV_ALIASES = [
         QueueSettings::ENV_MODE => 'queue_consumer',
     ];
@@ -112,14 +115,14 @@ class EnvironmentConfiguration
     }
 
     /**
-     * The environment variable names honored beyond private/.env, as an envName => configKey map.
+     * The environment variable names honored beyond private/.env, every operator setting among them (replicas 04), as an envName => configKey map.
      *
      * @return array<string,string>
      */
     public static function knownEnvNames(): array
     {
         $names = [];
-        foreach (self::KNOWN_KEYS as $key) {
+        foreach ([...self::KNOWN_KEYS, ...array_diff(SettingKinds::OPERATOR, self::DERIVED)] as $key) {
             $names[strtoupper($key)] = $key;
         }
 

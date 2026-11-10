@@ -1,8 +1,14 @@
 #!/usr/bin/env bash
 # Starts an image with MariaDB beside it, installs a wiki on its first start, and checks it serves as a non-root user on a read-only root.
+# Further NAME=value arguments go into the wiki's environment; SMOKE_EXPECT_LOG names a line its log must hold.
 set -euo pipefail
 
-image="${1:?usage: docker/smoke-image.sh <image>}"
+image="${1:?usage: docker/smoke-image.sh <image> [NAME=value ...]}"
+shift
+extra=()
+for setting in "$@"; do
+    extra+=(-e "$setting")
+done
 name="yw-smoke-$$"
 
 cleanup() {
@@ -36,7 +42,7 @@ docker run -d --name "$name-wiki" --network "$name" --read-only --tmpfs /tmp \
     -v "$name-data:/srv/wiki" -p 127.0.0.1::8080 \
     -e YESWIKI_INSTALL=1 -e DB_DRIVER=mysql -e DB_HOST="$name-db" -e DB_DATABASE=yeswiki -e DB_USER=yeswiki -e DB_PASSWORD=smoke-db \
     -e BASE_URL='http://localhost:8080/?' -e ADMIN_NAME=WikiAdmin -e ADMIN_EMAIL=admin@example.org -e ADMIN_PASSWORD=smoke-password \
-    "$image" >/dev/null
+    ${extra[@]+"${extra[@]}"} "$image" >/dev/null
 
 port="$(docker port "$name-wiki" 8080/tcp | head -1 | sed 's/.*://')"
 ready=''
@@ -66,5 +72,24 @@ for _ in $(seq 1 60); do
 done
 curl -fsS --noproxy '*' -o /dev/null "http://127.0.0.1:$port/?PagePrincipale" || fail "the wiki did not come back after a restart"
 
+docker exec "$name-wiki" sed -i "s|define('YESWIKI_PROGRAM_DIR', '[^']*')|define('YESWIKI_PROGRAM_DIR', '/opt/yeswiki/program-0.0.0-older')|" /srv/wiki/index.php
+docker restart "$name-wiki" >/dev/null
+port="$(docker port "$name-wiki" 8080/tcp | head -1 | sed 's/.*://')"
+status=''
+for _ in $(seq 1 60); do
+    status="$(curl -s --noproxy '*' -o /dev/null -w '%{http_code}' "http://127.0.0.1:$port/?PagePrincipale" 2>/dev/null || true)"
+    [ "$status" = 200 ] && break
+    sleep 2
+done
+[ "$status" = 200 ] || fail "a wiki the previous image had migrated answered $status after this one migrated it"
+
+if [ -n "${SMOKE_EXPECT_LOG:-}" ]; then
+    logs="$(docker logs "$name-wiki" 2>&1)"
+    case "$logs" in
+        *"$SMOKE_EXPECT_LOG"*) ;;
+        *) fail "the wiki's log never said: $SMOKE_EXPECT_LOG" ;;
+    esac
+fi
+
 passed=1
-echo "smoke: $image installs, serves, restarts, runs as 10001 on a read-only root"
+echo "smoke: $image installs, serves, restarts, takes over a wiki from an older image, runs as 10001 on a read-only root"

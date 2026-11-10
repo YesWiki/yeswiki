@@ -370,13 +370,21 @@ func TestAFailedMigrationStopsTheRunAndNamesTheWiki(t *testing.T) {
 }
 
 // Running it again after fixing whatever broke should pick up where it stopped, which it can.
-func TestUpgradingAgainSkipsTheWikisAlreadyAcross(t *testing.T) {
+// An extension switched on since the last run brings migrations of its own, with the same program.
+func TestUpgradingAgainRunsWhatAWikiAlreadyAcrossStillHasWithoutClosingIt(t *testing.T) {
 	farm := t.TempDir()
-	installedWiki(t, farm, "alpha", "alpha.example.org")
+	alpha := installedWiki(t, farm, "alpha", "alpha.example.org")
 	installedWiki(t, farm, "beta", "beta.example.org")
 	root := t.TempDir()
 
 	if err := Upgrade(options(t, farm, root), &migratingPHP{}, true); err != nil {
+		t.Fatal(err)
+	}
+	if err := program.OpenDoor(alpha); err != nil {
+		t.Fatal(err)
+	}
+	compiled := filepath.Join(alpha, "cache", "container")
+	if err := os.MkdirAll(compiled, 0o755); err != nil {
 		t.Fatal(err)
 	}
 
@@ -385,8 +393,38 @@ func TestUpgradingAgainSkipsTheWikisAlreadyAcross(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if len(again.ran) != 0 {
-		t.Errorf("nothing should have been migrated twice: %v", again.ran)
+	if len(again.ran) != 2 {
+		t.Errorf("both wikis should have been asked for their pending migrations: %v", again.ran)
+	}
+	if program.DoorClosed(alpha) {
+		t.Error("a wiki already across stays open: its program did not change")
+	}
+	if _, err := os.Stat(compiled); err != nil {
+		t.Error("a wiki already across keeps what its program compiled")
+	}
+}
+
+// A container has no farm to reload: serving the wiki is what opens it after a migrate.
+func TestServingAWikiOnItsOwnProgramOpensItsDoor(t *testing.T) {
+	root := t.TempDir()
+	instance := filepath.Join(t.TempDir(), "mywiki")
+	if err := Prepare(options(t, instance, root)); err != nil {
+		t.Fatal(err)
+	}
+	config := []byte("<?php\n$yeswikiConfig = ['base_url' => 'http://mywiki.test/?'];\n")
+	if err := os.WriteFile(filepath.Join(instance, "yeswiki.config.php"), config, 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if err := program.CloseDoor(instance); err != nil {
+		t.Fatal(err)
+	}
+
+	if err := Serve(options(t, instance, root), &recordingServer{}); err != nil {
+		t.Fatal(err)
+	}
+
+	if program.DoorClosed(instance) {
+		t.Fatal("the wiki would answer 503 for as long as it is served")
 	}
 }
 

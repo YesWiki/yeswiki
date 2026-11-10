@@ -107,6 +107,22 @@ class EnvironmentConfigurationTest extends TestCase
         $this->assertSame(['iframe', 'render'], $config['allowed_methods_in_iframe']);
     }
 
+    /** Replicas 04 puts the operator's settings in the environment, so a container's own variables must reach the configuration, a list included. */
+    public function testEveryOperatorSettingComesFromTheRealEnvironment(): void
+    {
+        $this->setRealEnv('ACTIVE_EXTENSIONS', '["lms","ferme"]');
+        $this->setRealEnv('MAX_FILE_SIZE', '64M');
+        $this->setRealEnv('YESWIKI_RELEASE', '9.9.9');
+
+        $config = EnvironmentConfiguration::apply(['active_extensions' => [], 'yeswiki_release' => '5.1.0'], []);
+
+        $this->assertSame(['lms', 'ferme'], $config['active_extensions']);
+        $this->assertSame('64M', $config['max_file_size']);
+        $this->assertSame('5.1.0', $config['yeswiki_release'], 'the release comes from composer.json, never from the environment');
+        $missing = array_diff(\YesWiki\Kernel\Service\SettingKinds::OPERATOR, array_values(EnvironmentConfiguration::knownEnvNames()), ['yeswiki_version', 'yeswiki_release']);
+        $this->assertSame([], array_values($missing), 'every operator setting can be set by the environment');
+    }
+
     public function testEnvironmentOnlyVariablesNeverBecomeConfig(): void
     {
         $config = EnvironmentConfiguration::apply([], [

@@ -130,9 +130,14 @@ docker exec -e PLAYWRIGHT_BROWSERS_PATH=0 -e YESWIKI_BASE_URL=http://yeswiki-web
 builds it for amd64 and arm64 from the binaries of the same tag, tries it with `smoke-image.sh`,
 then pushes it to `ghcr.io/yeswiki/yeswiki` and `docker.io/yeswiki/yeswiki` and signs it with cosign.
 
-To build it from a binary you built yourself with `binary/build-static.sh`:
+To build it from a binary you built yourself with `binary/build-static.sh`, with or without
+extensions:
 
 ```
 docker build -f docker/image.Dockerfile -t yeswiki:local .
+docker build -f docker/image.Dockerfile --build-arg EXTENSIONS="lms ferme" -t yeswiki:local-lms .
 docker/smoke-image.sh yeswiki:local
 ```
+
+`EXTENSIONS` runs `yeswiki-entrypoint bundle`, the same as an image built `FROM` the published one
+(see `deploy/compose/README.md`), which runs `./yeswicli core:bundle` in the program tree.

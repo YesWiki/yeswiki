@@ -27,6 +27,29 @@ docker compose up -d
 
 The new container migrates the wiki before it serves it.
 
+## Adding extensions
+
+The published image carries no extension. To add some, build an image on top of it, in a
+`Dockerfile` beside `compose.yaml`:
+
+```
+FROM ghcr.io/yeswiki/yeswiki:5.1
+USER root
+RUN yeswiki-entrypoint bundle lms ferme
+USER 10001:10001
+```
+
+`bundle` fetches them from the repository of the image's release line, with the same steps as the
+update screen, and fails the build when one of them cannot be installed. Then replace `image:` by
+`build: .` in `compose.yaml`, and switch the extensions on in the `wiki` service's environment:
+
+```
+      ACTIVE_EXTENSIONS: '["lms","ferme"]'
+```
+
+An extension installed this way is part of the image: the update screen lists it, and installing,
+updating or removing one is done by building the image again.
+
 ## What the container is
 
 - It runs as uid 10001, on a read-only root filesystem. `/srv/wiki` (the volume) and `/tmp` are the
