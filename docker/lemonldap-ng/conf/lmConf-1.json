@@ -8,11 +8,31 @@
             "givenName": "givenName",
             "sn": "sn",
             "groups": "groups"
+        },
+        "wiki-cas-8080": {
+            "uid": "uid",
+            "mail": "mail",
+            "givenName": "givenName",
+            "sn": "sn",
+            "groups": "groups"
+        },
+        "wiki-cas-8081": {
+            "uid": "uid",
+            "mail": "mail",
+            "givenName": "givenName",
+            "sn": "sn",
+            "groups": "groups"
         }
     },
     "casAppMetaDataOptions": {
         "wiki-cas": {
             "casAppMetaDataOptionsService": "http://wiki.yeswiki.test/"
+        },
+        "wiki-cas-8080": {
+            "casAppMetaDataOptionsService": "http://wiki.yeswiki.test:8080/"
+        },
+        "wiki-cas-8081": {
+            "casAppMetaDataOptionsService": "http://wiki.yeswiki.test:8081/"
         }
     },
     "casAttr": "uid",
@@ -85,7 +105,7 @@
         "wiki-oidc": {
             "oidcRPMetaDataOptionsClientID": "wiki-oidc",
             "oidcRPMetaDataOptionsClientSecret": "wiki-oidc-secret",
-            "oidcRPMetaDataOptionsRedirectUris": "http://wiki.yeswiki.test/?user/sign-in/oidc/callback http://wiki.yeswiki.test/?api/auth_sso/callback=",
+            "oidcRPMetaDataOptionsRedirectUris": "http://wiki.yeswiki.test/?user/sign-in/oidc/callback http://wiki.yeswiki.test/?api/auth_sso/callback= http://wiki.yeswiki.test:8080/?user/sign-in/oidc/callback http://wiki.yeswiki.test:8080/?api/auth_sso/callback= http://wiki.yeswiki.test:8081/?user/sign-in/oidc/callback http://wiki.yeswiki.test:8081/?api/auth_sso/callback=",
             "oidcRPMetaDataOptionsPublic": 0,
             "oidcRPMetaDataOptionsBypassConsent": 1,
             "oidcRPMetaDataOptionsIDTokenSignAlg": "RS256",
@@ -124,6 +144,34 @@
             "givenName": "0;givenName",
             "sn": "0;sn",
             "groups": "0;groups"
+        },
+        "saml-a-8080": {
+            "uid": "0;uid",
+            "mail": "0;mail",
+            "givenName": "0;givenName",
+            "sn": "0;sn",
+            "groups": "0;groups"
+        },
+        "saml-a-8081": {
+            "uid": "0;uid",
+            "mail": "0;mail",
+            "givenName": "0;givenName",
+            "sn": "0;sn",
+            "groups": "0;groups"
+        },
+        "saml-b-8080": {
+            "uid": "0;uid",
+            "mail": "0;mail",
+            "givenName": "0;givenName",
+            "sn": "0;sn",
+            "groups": "0;groups"
+        },
+        "saml-b-8081": {
+            "uid": "0;uid",
+            "mail": "0;mail",
+            "givenName": "0;givenName",
+            "sn": "0;sn",
+            "groups": "0;groups"
         }
     },
     "samlSPMetaDataOptions": {
@@ -144,6 +192,42 @@
             "samlSPMetaDataOptionsNameIDFormat": "unspecified",
             "samlSPMetaDataOptionsNameIDSessionKey": "uid",
             "samlSPMetaDataOptionsForceUTF8": 1
+        },
+        "saml-a-8080": {
+            "samlSPMetaDataOptionsCheckSSOMessageSignature": 0,
+            "samlSPMetaDataOptionsCheckSLOMessageSignature": 0,
+            "samlSPMetaDataOptionsSignSSOMessage": 1,
+            "samlSPMetaDataOptionsSignSLOMessage": 1,
+            "samlSPMetaDataOptionsNameIDFormat": "unspecified",
+            "samlSPMetaDataOptionsNameIDSessionKey": "uid",
+            "samlSPMetaDataOptionsForceUTF8": 1
+        },
+        "saml-a-8081": {
+            "samlSPMetaDataOptionsCheckSSOMessageSignature": 0,
+            "samlSPMetaDataOptionsCheckSLOMessageSignature": 0,
+            "samlSPMetaDataOptionsSignSSOMessage": 1,
+            "samlSPMetaDataOptionsSignSLOMessage": 1,
+            "samlSPMetaDataOptionsNameIDFormat": "unspecified",
+            "samlSPMetaDataOptionsNameIDSessionKey": "uid",
+            "samlSPMetaDataOptionsForceUTF8": 1
+        },
+        "saml-b-8080": {
+            "samlSPMetaDataOptionsCheckSSOMessageSignature": 0,
+            "samlSPMetaDataOptionsCheckSLOMessageSignature": 0,
+            "samlSPMetaDataOptionsSignSSOMessage": 1,
+            "samlSPMetaDataOptionsSignSLOMessage": 1,
+            "samlSPMetaDataOptionsNameIDFormat": "unspecified",
+            "samlSPMetaDataOptionsNameIDSessionKey": "uid",
+            "samlSPMetaDataOptionsForceUTF8": 1
+        },
+        "saml-b-8081": {
+            "samlSPMetaDataOptionsCheckSSOMessageSignature": 0,
+            "samlSPMetaDataOptionsCheckSLOMessageSignature": 0,
+            "samlSPMetaDataOptionsSignSSOMessage": 1,
+            "samlSPMetaDataOptionsSignSLOMessage": 1,
+            "samlSPMetaDataOptionsNameIDFormat": "unspecified",
+            "samlSPMetaDataOptionsNameIDSessionKey": "uid",
+            "samlSPMetaDataOptionsForceUTF8": 1
         }
     },
     "samlSPMetaDataXML": {
@@ -152,6 +236,18 @@
         },
         "saml-b": {
             "samlSPMetaDataXML": "<md:EntityDescriptor xmlns:md=\"urn:oasis:names:tc:SAML:2.0:metadata\" entityID=\"http://wiki.yeswiki.test/?user/sign-in/saml-b/metadata\"><md:SPSSODescriptor AuthnRequestsSigned=\"false\" WantAssertionsSigned=\"true\" protocolSupportEnumeration=\"urn:oasis:names:tc:SAML:2.0:protocol\"><md:NameIDFormat>urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified</md:NameIDFormat><md:AssertionConsumerService Binding=\"urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST\" Location=\"http://wiki.yeswiki.test/?user/sign-in/saml-b/callback\" index=\"1\" isDefault=\"true\"/></md:SPSSODescriptor></md:EntityDescriptor>"
+        },
+        "saml-a-8080": {
+            "samlSPMetaDataXML": "<md:EntityDescriptor xmlns:md=\"urn:oasis:names:tc:SAML:2.0:metadata\" entityID=\"http://wiki.yeswiki.test:8080/?user/sign-in/saml-a/metadata\"><md:SPSSODescriptor AuthnRequestsSigned=\"false\" WantAssertionsSigned=\"true\" protocolSupportEnumeration=\"urn:oasis:names:tc:SAML:2.0:protocol\"><md:NameIDFormat>urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified</md:NameIDFormat><md:AssertionConsumerService Binding=\"urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST\" Location=\"http://wiki.yeswiki.test:8080/?user/sign-in/saml-a/callback\" index=\"1\" isDefault=\"true\"/></md:SPSSODescriptor></md:EntityDescriptor>"
+        },
+        "saml-a-8081": {
+            "samlSPMetaDataXML": "<md:EntityDescriptor xmlns:md=\"urn:oasis:names:tc:SAML:2.0:metadata\" entityID=\"http://wiki.yeswiki.test:8081/?user/sign-in/saml-a/metadata\"><md:SPSSODescriptor AuthnRequestsSigned=\"false\" WantAssertionsSigned=\"true\" protocolSupportEnumeration=\"urn:oasis:names:tc:SAML:2.0:protocol\"><md:NameIDFormat>urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified</md:NameIDFormat><md:AssertionConsumerService Binding=\"urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST\" Location=\"http://wiki.yeswiki.test:8081/?user/sign-in/saml-a/callback\" index=\"1\" isDefault=\"true\"/></md:SPSSODescriptor></md:EntityDescriptor>"
+        },
+        "saml-b-8080": {
+            "samlSPMetaDataXML": "<md:EntityDescriptor xmlns:md=\"urn:oasis:names:tc:SAML:2.0:metadata\" entityID=\"http://wiki.yeswiki.test:8080/?user/sign-in/saml-b/metadata\"><md:SPSSODescriptor AuthnRequestsSigned=\"false\" WantAssertionsSigned=\"true\" protocolSupportEnumeration=\"urn:oasis:names:tc:SAML:2.0:protocol\"><md:NameIDFormat>urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified</md:NameIDFormat><md:AssertionConsumerService Binding=\"urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST\" Location=\"http://wiki.yeswiki.test:8080/?user/sign-in/saml-b/callback\" index=\"1\" isDefault=\"true\"/></md:SPSSODescriptor></md:EntityDescriptor>"
+        },
+        "saml-b-8081": {
+            "samlSPMetaDataXML": "<md:EntityDescriptor xmlns:md=\"urn:oasis:names:tc:SAML:2.0:metadata\" entityID=\"http://wiki.yeswiki.test:8081/?user/sign-in/saml-b/metadata\"><md:SPSSODescriptor AuthnRequestsSigned=\"false\" WantAssertionsSigned=\"true\" protocolSupportEnumeration=\"urn:oasis:names:tc:SAML:2.0:protocol\"><md:NameIDFormat>urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified</md:NameIDFormat><md:AssertionConsumerService Binding=\"urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST\" Location=\"http://wiki.yeswiki.test:8081/?user/sign-in/saml-b/callback\" index=\"1\" isDefault=\"true\"/></md:SPSSODescriptor></md:EntityDescriptor>"
         }
     },
     "samlServicePrivateKeySig": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQC/1nnijcamMGC8\ndV3AhAml/4YG+zgxr4Y7cpQ71VDMBQXzetPifNMxpofm0fruNwEr0H7YXOD6JIyH\ns0S2vBxtWLI0IxYpml/O4nwFlBk1/hWa2nF6TrbCAA9cXhL2VP3XppeQg+XtIdHd\nxZ489rPECVjQknIWjKmHkuMxApvM79jscJsrOLqMVsx2PuHvtzfakQERepE0mtgo\n3kaYdGA99w+Vh9EYvKO3dbrW7lxFQasnDRI/ycMd6yT7Eng4G35MPac92hcrJC4G\nzzABk26Spjx0EYlRTVyPGQsuMV9/cgaay5xxSovJlQ7s80mN7zyb4cQueh4T7WCb\ne6OjdohPAgMBAAECggEAH9o7HKyRD6ZiuYf8oWrgYJP1K2g/uV2Sj9ZY2eJzwEcT\n6OHmbT8aoK4s9zIQVHNaRMMhUfLXVtFbasC6UmPDjehh68Q+Ts7CGmDYBOPFQoYb\nYj3jr6eC3Y1oVNw4kSF65c6pxdC7YaHxmGgn+6leydhfddTgZUbFHgH7/8xAwEhy\nNfOIhkOBK6cGM7DaY+HAf8X+C5nv9jM+CMcmlPckvr8t6Dznrzqq0YBalHwbm33f\nJI7BXfeCc686kxEkgVpWtsbETtbrpS3a9gI9+1QQS3SNLo4K017lBYlteMjVVqNW\njylRiEO9RJGHsC0HebyvvzsqO+aOX14YwEGhcI1mcQKBgQDzUDOz85kp3Xmshttx\nYTPKPs+3BWtrCOe1oI6MbUA9D2pya25aoQuCndWVIKDRVkouXFz64+kG/yV8Ix0z\nYfoH+wM4ctcIQmVDbYc3CiQ3Gksb2e6bKqzGgEIR3KytsyWzv6wCwlgikBZmH7Yp\n+Cqf+f0q6Pl8z0Y6r4VzIKHoWQKBgQDJ1ysROTTpl1teHtq4sWwe7P5n3SYs61wV\neaSFfeM9LjC48EkIpVrl88a+T+kFyWyJdkmZUm5lvJk8miuXmrFIHiR1K4BodDHq\nQ8aWsZPQ5q4QegC0+zaLzmZbDCg2MLC8KVF5cnirCuUXsZA5iBqCRQ3qLtwhjmMv\n52+M9JDg5wKBgQDm4x6NDwYy8hX6H+axSpoIu14EwUHTyhmHAxsCKtIgnzZV6ZhI\nrDXt9rSs1M+GlqnCIKei9Q82MnxxtiiJj9niJNJDiMaA8fCB8be0BQ2ktHC9typz\nWCWoICGSLaQ3GJ8YWTRzUdSsx6pZspH8daCNOn6Bb58ATvjHy7OJMlgx0QKBgBFb\nk7STet1rysu5U432lBnEv8wm1JWgV/bw0xk3zkcApegBogZAUiTcZgcP0DZTMCZS\nKdopoJzXL0Zq67zJ7N0K2o/JAe35sCE5WuaytseMTwPTuiPWRsaXJW5HCV4/qbNE\nymDrWz06XqE+/+wyrDTvw1aUWRH5sMX53Tn9/keZAoGAc7FTwfz5gSmNE5wp6aQr\n8y8OokFmYzlD5+QqOT7g3/bmW60FO5GwRkG/STRvvx/San1Vv6DHt+vRzeW0Xqgj\nIRVP8WJvIwTfXSDyBL1BGfEheb9pLq9EmOnxM64uqxd+6xhHyWZMphil33ahUw6d\n/tA+21fHAKUwm5O+wD/ltYE=\n-----END PRIVATE KEY-----",

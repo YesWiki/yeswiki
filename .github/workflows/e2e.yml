@@ -179,11 +179,50 @@ jobs:
       - uses: actions/checkout@v5
         if: steps.covered.outputs.run == 'true'
 
+      # The identity servers of docker/docker-compose.yml, started here and not as `services:`
+      # entries: they need files from the checkout, and service containers start before it. The
+      # portal reaches the directory by its container name, so both share one network; the
+      # runner reaches the portal and the directory by name through /etc/hosts. The wiki is
+      # served as wiki.yeswiki.test:<port> for the sign-in specs, which makes it same-site with
+      # the portal: SAML's POST callback needs that on plain http.
+      - name: Start the identity servers
+        if: steps.covered.outputs.run == 'true'
+        run: |
+          echo '127.0.0.1 wiki.yeswiki.test auth.yeswiki.test yeswiki-ldap' | sudo tee -a /etc/hosts
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ldap-utils
+          docker network create yeswiki-sso
+          docker run -d --name yeswiki-ldap --network yeswiki-sso -p 1389:1389 \
+            -e LDAP_ROOT=dc=acme,dc=example \
+            -e LDAP_ADMIN_USERNAME=admin \
+            -e LDAP_ADMIN_PASSWORD=AdminPassword1 \
+            -e LDAP_CUSTOM_LDIF_DIR=/ldifs \
+            -v ${{ github.workspace }}/docker/openldap:/ldifs:ro \
+            bitnamilegacy/openldap:2.6.10-debian-12-r4
+          for _ in $(seq 1 60); do
+            ldapwhoami -x -H ldap://yeswiki-ldap:1389 -D cn=admin,dc=acme,dc=example -w AdminPassword1 > /dev/null 2>&1 && break
+            sleep 2
+          done
+          ldapwhoami -x -H ldap://yeswiki-ldap:1389 -D cn=admin,dc=acme,dc=example -w AdminPassword1 \
+            || { echo "the directory did not come up"; docker logs yeswiki-ldap; exit 1; }
+          # The entrypoint runs sed -i on the configuration directory, so it is mounted writable.
+          docker run -d --name yeswiki-sso --network yeswiki-sso --network-alias auth.yeswiki.test -p 80:80 \
+            -e SSODOMAIN=yeswiki.test \
+            -e PORTAL_HOSTNAME=auth.yeswiki.test \
+            -e MANAGER_HOSTNAME=manager.yeswiki.test \
+            -v ${{ github.workspace }}/docker/lemonldap-ng/conf:/var/lib/lemonldap-ng/conf \
+            lemonldapng/lemonldap-ng:2.23.4
+          for _ in $(seq 1 60); do
+            curl --silent --fail --max-time 5 http://auth.yeswiki.test/ > /dev/null && exit 0
+            sleep 2
+          done
+          echo "the portal did not come up"; docker logs yeswiki-sso; exit 1
+
       - uses: shivammathur/setup-php@v2
         if: steps.covered.outputs.run == 'true'
         with:
           php-version: '8.4'
-          extensions: ctype, curl, dom, fileinfo, filter, gd, iconv, mbstring, openssl, pdo, pdo_mysql, pdo_pgsql, pdo_sqlite, session, simplexml, tokenizer, xml, xmlreader, zip
+          extensions: ctype, curl, dom, fileinfo, filter, gd, iconv, mbstring, openssl, pdo, pdo_mysql, pdo_pgsql, pdo_sqlite, session, simplexml, tokenizer, xml, xmlreader, zip, ldap
           tools: composer:v2
 
       - run: composer install --prefer-dist --no-progress
@@ -236,15 +275,30 @@ jobs:
           YESWIKI_TEST_URL: http://127.0.0.1:8080/?PagePrincipale
         run: bash tests/e2e/runtime.sh start
 
+      # Everything but the sign-in specs, which run below at the address the portal knows.
       - name: Run the browser suite
         if: steps.covered.outputs.run == 'true'
-        run: yarn run test-e2e-all
+        run: yarn run test-e2e-all '^(?!.*sign-in-providers)'
+
+      # The portal only sends the browser back to wiki.yeswiki.test (ports 8080 and 8081 are
+      # registered in docker/lemonldap-ng/conf/lmConf-1.json), and the wiki builds its callback
+      # addresses from the base URL it was installed with: so this wiki is installed again
+      # under that name, which is why this step is not part of the suite above.
+      - name: Run the sign-in suite
+        if: ${{ !cancelled() && steps.covered.outputs.run == 'true' }}
+        env:
+          YESWIKI_TEST_BASE_URL: ${{ matrix.runtime == 'binary' && 'http://wiki.yeswiki.test:8081/?' || 'http://wiki.yeswiki.test:8080/?' }}
+          YESWIKI_BASE_URL: ${{ matrix.runtime == 'binary' && 'http://wiki.yeswiki.test:8081' || 'http://wiki.yeswiki.test:8080' }}
+        run: |
+          bash tests/e2e/reset.sh
+          npx playwright test tests/e2e/tests/sign-in-providers.spec.ts
 
       - name: Dump the runtime log
         if: failure() && steps.covered.outputs.run == 'true'
         run: |
           tail -200 /tmp/yeswiki-e2e-serve.log 2>/dev/null || true
           tail -200 "${{ runner.temp }}/fpm.log" 2>/dev/null || true
+          docker logs yeswiki-sso 2>&1 | tail -100 || true
 
       - name: Report runtime crashes
         if: always() && steps.covered.outputs.run == 'true'

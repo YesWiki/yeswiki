@@ -29,6 +29,11 @@ import {
  */
 const TYPES: ProviderType[] = ['oidc', 'saml', 'cas', 'ldap']
 
+/** The wiki as the portal knows it: CI serves it on a port, the development stack on the bare name. */
+const WIKI = (
+  process.env.YESWIKI_BASE_URL || 'http://wiki.yeswiki.test'
+).replace(/\/$/, '')
+
 const GUEST_CARD = '.yw-account-guest__card'
 const MARIE_ACCOUNT = 'marie-dupont'
 const JEAN_ACCOUNT = 'jean-martin'
@@ -306,7 +311,7 @@ for (const type of TYPES) {
       test('oidc: explicit endpoints and the legacy callback complete on /?api/auth_sso/callback=', async ({
         page,
       }) => {
-        const legacy = 'http://wiki.yeswiki.test/?api/auth_sso/callback='
+        const legacy = `${WIKI}/?api/auth_sso/callback=`
         setProviders(
           sectionFor('oidc', {
             connection: {
@@ -322,10 +327,7 @@ for (const type of TYPES) {
         const callbacks: string[] = []
         page.on('request', (request) => {
           const url = decodeURIComponent(request.url())
-          if (
-            url.startsWith('http://wiki.yeswiki.test/') &&
-            url.includes('callback')
-          ) {
+          if (url.startsWith(`${WIKI}/`) && url.includes('callback')) {
             callbacks.push(url)
           }
         })
@@ -346,8 +348,7 @@ for (const type of TYPES) {
       test('saml: the metadata names the callback, at the address the portal knows as entity ID', async ({
         request,
       }) => {
-        const entityId =
-          'http://wiki.yeswiki.test/?user/sign-in/saml-a/metadata'
+        const entityId = `${WIKI}/?user/sign-in/saml-a/metadata`
         const response = await request.get(entityId)
 
         expect(response.status()).toBe(200)
@@ -355,7 +356,7 @@ for (const type of TYPES) {
         const xml = await response.text()
         expect(xml).toContain(`entityID="${entityId}"`)
         expect(xml).toContain(
-          'Location="http://wiki.yeswiki.test/?user/sign-in/saml-a/callback"',
+          `Location="${WIKI}/?user/sign-in/saml-a/callback"`,
         )
       })
 
