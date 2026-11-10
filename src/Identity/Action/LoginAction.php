@@ -4,19 +4,23 @@ namespace YesWiki\Identity\Action;
 
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Core\YesWikiAction;
-use YesWiki\Identity\Exception\LoginException;
 use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Identity\Service\AvatarService;
 use YesWiki\Identity\Service\InputFilter;
 use YesWiki\Identity\Service\RequestGuard;
+use YesWiki\Identity\Service\SignIn\ProviderRegistry;
+use YesWiki\Identity\Service\SignIn\SignInFlow;
+use YesWiki\Identity\Service\SignIn\Type\LocalType;
 use YesWiki\Identity\Service\UserManager;
+use YesWiki\Identity\SignIn\Contract\PasswordProvider;
+use YesWiki\Identity\SignIn\Contract\RedirectProvider;
+use YesWiki\Identity\SignIn\SignInOutcome;
 use YesWiki\Kernel\Component\Category;
 use YesWiki\Kernel\Component\Component;
 use YesWiki\Kernel\Component\ProvidesComponents;
 use YesWiki\Kernel\Component\Setting;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\CurrentRequest;
-use YesWiki\Kernel\Service\Flash;
 use YesWiki\Kernel\Service\FlashMessageService;
 use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\Redirector;
@@ -300,7 +304,7 @@ class LoginAction extends YesWikiAction implements RegisteredAction, ProvidesCom
             'nobtn' => $this->arguments['nobtn'],
             'error' => $error,
             'context' => $this->arguments['context'],
-        ]);
+        ] + ($connected ? [] : $this->providersToOffer()));
 
         return $output;
     }
@@ -312,69 +316,51 @@ class LoginAction extends YesWikiAction implements RegisteredAction, ProvidesCom
             $incomingurl = $this->arguments['incomingurl'];
         }
 
-        $destination = $incomingurl;
-        try {
-            $post = $this->getRequest()->request;
-            $emailFallback = $post->get('email', '');
+        $post = $this->getRequest()->request;
+        $provider = $post->get('provider');
+        $outcome = $this->getService(SignInFlow::class)->password(
+            is_string($provider) && $provider !== '' ? $provider : LocalType::NAME,
+            strval($post->get('name') ?: $post->get('email', '')),
+            (string)$this->inputFilter->filterInput(INPUT_POST, 'password', FILTER_UNSAFE_RAW, false, 'string'),
+            (bool)$this->inputFilter->filterInput(INPUT_POST, 'remember', FILTER_VALIDATE_BOOL, false, 'bool')
+        );
 
-            if (!empty($post->get('name'))) {
-                $name = strval($post->get('name'));
-
-                $user = $this->userManager->getOneByName($name);
-
-                if (empty($user) && empty($emailFallback)) {
-                    $emailFallback = $post->get('name');
-                }
-            }
-
-            if (empty($user) && !empty($emailFallback)) {
-                $email = strval($emailFallback);
-
-                if (filter_var($email, FILTER_VALIDATE_EMAIL)) {
-                    $user = $this->userManager->getOneByEmail($email);
-                }
-            }
-
-            if (empty($user)) {
-                // Whatever they typed, not just the name field: signing in by email alone is
-                // offered, and recording an empty target for it would make the busiest kind of
-                // guessing the one the Journal says nothing about.
-                $this->authenticationService->recordFailedLogin(
-                    (string)($post->get('name') ?: $emailFallback),
-                    'unknown-user'
-                );
-
-                throw new LoginException(_t('LOGIN_WRONG_USER'));
-            }
-
-            $password = $this->inputFilter->filterInput(INPUT_POST, 'password', FILTER_UNSAFE_RAW, false, 'string');
-            if (!$this->authenticationService->checkPassword($password, $user)) {
-                if ($this->authenticationService->requiresPasswordReset($user)) {
-                    $this->authenticationService->recordFailedLogin((string)$user['name'], 'password-format-obsolete');
-
-                    throw new LoginException(boolval($this->params->get('contact_disable_email_for_password')) ? _t('LOGIN_PASSWORD_FORMAT_OBSOLETE_ASK_ADMIN') : _t('LOGIN_PASSWORD_FORMAT_OBSOLETE'));
-                }
-
-                $this->authenticationService->recordFailedLogin((string)$user['name'], 'wrong-password');
-
-                throw new LoginException(_t('LOGIN_WRONG_PASSWORD'));
-            }
-            $remember = $this->inputFilter->filterInput(INPUT_POST, 'remember', FILTER_VALIDATE_BOOL, false, 'bool');
-            $this->authenticationService->login($user, $remember);
-
-            $destination = (($post->get('userpage') == 'user') || $this->arguments['userpage'] == 'user')
-                && $this->pageManager->getOne($user['name'])
-                ? $this->getService(UrlFormatter::class)->href('', $user['name'])
-                : $this->arguments['loggedinurl'];
-        } catch (LoginException $ex) {
-            $this->getService(FlashMessageService::class)->setMessage($ex->getMessage());
-            $this->getService(Redirector::class)->redirect($incomingurl);
-        } catch (\Exception $ex) {
-            Flash::error($ex->getMessage());
+        if ($outcome->kind !== SignInOutcome::SIGNED_IN) {
+            $this->getService(FlashMessageService::class)->setMessage($outcome->kind === SignInOutcome::FORM_ERROR ? $outcome->message : $outcome->messageForPerson());
             $this->getService(Redirector::class)->redirect($incomingurl);
         }
 
-        $this->getService(Redirector::class)->redirect($destination);
+        $name = $this->authenticationService->signedInName();
+        $this->getService(Redirector::class)->redirect(
+            (($post->get('userpage') == 'user') || $this->arguments['userpage'] == 'user') && $this->pageManager->getOne($name)
+                ? $this->getService(UrlFormatter::class)->href('', $name)
+                : $this->arguments['loggedinurl']
+        );
+    }
+
+    /**
+     * Every enabled provider, as the sign-in form lists them: the ones that send the person away as buttons, the ones that take a password as the form's tabs.
+     *
+     * @return array{redirectProviders: list<array{id: string, label: string, url: string}>, passwordProviders: list<array{id: string, label: string, local: bool}>}
+     */
+    private function providersToOffer(): array
+    {
+        $urls = $this->getService(UrlFormatter::class);
+        $redirect = [];
+        $password = [];
+        foreach ($this->getService(ProviderRegistry::class)->enabled() as $provider) {
+            if ($provider instanceof RedirectProvider) {
+                $redirect[] = [
+                    'id' => $provider->id(),
+                    'label' => $provider->label(),
+                    'url' => $urls->href('', 'user/sign-in/' . rawurlencode($provider->id()), [self::RETURN_PARAM => $this->arguments['loggedinurl']], false),
+                ];
+            } elseif ($provider instanceof PasswordProvider) {
+                $password[] = ['id' => $provider->id(), 'label' => $provider->label(), 'local' => $provider->type() === LocalType::NAME];
+            }
+        }
+
+        return ['redirectProviders' => $redirect, 'passwordProviders' => $password];
     }
 
     private function logout(): void

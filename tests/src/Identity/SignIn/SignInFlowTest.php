@@ -132,14 +132,15 @@ final class FlowFakePassword implements PasswordProvider
             throw new ProviderFailure(FailureReason::WrongCredentials, 'bad password');
         }
 
-        return new ProviderIdentity(['sub' => 'flow-pw', 'email' => 'flow-pw@example.com']);
+        // local_account is what the local type reads; every other type ignores it.
+        return new ProviderIdentity(['sub' => 'flow-pw', 'email' => 'flow-pw@example.com', 'local_account' => 'FlowLocal']);
     }
 }
 
 class SignInFlowTest extends YesWikiTestCase
 {
-    private const EMAILS = ['flow-new@example.com', 'flow-pw@example.com', 'flow-linked@example.com', 'flow-taken@example.com'];
-    private const TAGS = ['FlowLinked', 'FlowOther'];
+    private const EMAILS = ['flow-local@example.com', 'flow-new@example.com', 'flow-pw@example.com', 'flow-linked@example.com', 'flow-taken@example.com'];
+    private const TAGS = ['FlowLinked', 'FlowOther', 'FlowLocal'];
     private const LOGINS = ['locked', 'x', 'flow', 'mixedcase'];
 
     private SignInFlow $flow;
@@ -161,6 +162,7 @@ class SignInFlowTest extends YesWikiTestCase
         $this->cookiesWere = $_COOKIE;
         unset($_COOKIE[HandshakeCookie::NAME], $_COOKIE[LoginCookie::NAME]);
         $this->cleanUp();
+        self::getWiki()->services->get(UserManager::class)->create('FlowLocal', 'flow-local@example.com', 'a-long-enough-password');
         $this->journalFloor = (int)$this->db()->scalar("SELECT COALESCE(MAX({$this->db()->quoteIdentifier('id')}), 0) FROM {$this->journal()}", 0);
 
         $this->fake = new FlowFakeRedirect();
@@ -219,7 +221,7 @@ class SignInFlowTest extends YesWikiTestCase
     }
 
     /** @param array<string, array<string, mixed>> $section */
-    private function flowFor(array $section): SignInFlow
+    private function flowFor(array $section, ?AuthenticationService $browser = null): SignInFlow
     {
         $services = self::getWiki()->services;
         $values = ['sso_providers' => $section];
@@ -232,7 +234,7 @@ class SignInFlowTest extends YesWikiTestCase
         ], $config);
         $journal = new SignInJournal($services->get(Journal::class), $services->get(AuthenticationService::class), $services->get(AttemptLimiter::class), $registry);
 
-        return new SignInFlow($registry, $services->get(SignInService::class), $journal, $services->get(AttemptLimiter::class), $services->get(HandshakeCookie::class), $this->browser(), $services->get(UrlFormatter::class));
+        return new SignInFlow($registry, $services->get(SignInService::class), $journal, $services->get(AttemptLimiter::class), $services->get(HandshakeCookie::class), $browser ?? $this->browser(), $services->get(UrlFormatter::class));
     }
 
     private function fakeType(string $name, FlowFakeRedirect|FlowFakePassword $provider): ProviderType
@@ -654,6 +656,27 @@ class SignInFlowTest extends YesWikiTestCase
         $this->assertSame('signed_in', $this->flow->password('local', 'flow', 'good', $remember)->kind);
 
         $this->assertSame($remember, $this->loginCookie()['remember']);
+    }
+
+    public function testAnAccountNotYetActivatedIsToldOnTheForm(): void
+    {
+        $notActivated = new class(_t('ACCOUNTACTIVATION_BY_EMAIL_WARNING', ['message' => 'sent'])) extends AuthenticationService {
+            public function __construct(private string $message)
+            {
+            }
+
+            public function login($user, $remember = 0): void
+            {
+                throw new \YesWiki\Identity\Exception\BadLoginException($this->message);
+            }
+        };
+        $flow = $this->flowFor(['local' => ['type' => 'local']], $notActivated);
+
+        $outcome = $flow->password('local', 'flow', 'good', false);
+
+        $this->assertSame('form_error', $outcome->kind);
+        $this->assertSame(_t('ACCOUNTACTIVATION_BY_EMAIL_WARNING', ['message' => 'sent']), $outcome->message);
+        $this->assertSame(0, $this->countJournal("action LIKE 'login.%'"), 'waiting for the activation mail is not a failure');
     }
 
     public function testADisabledPasswordProviderIsRefusedBeforeTheDirectoryIsAsked(): void

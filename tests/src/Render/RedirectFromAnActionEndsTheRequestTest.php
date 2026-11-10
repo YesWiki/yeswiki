@@ -85,7 +85,7 @@ class RedirectFromAnActionEndsTheRequestTest extends YesWikiTestCase
         $db->query("DELETE FROM {$table} WHERE {$action} = 'login.failed'");
 
         $this->assertCount(1, $rows, 'one attempt is one entry');
-        $this->assertSame('NoSuchPersonAtAll', $rows[0]['target'], 'whoever they tried to be');
+        $this->assertSame('nosuchpersonatall', $rows[0]['target'], 'whoever they tried to be, trimmed and lowercased like the attempt limit counts it');
         $this->assertSame('warning', $rows[0]['level'], 'an act, at a level that says it did not work');
     }
 }

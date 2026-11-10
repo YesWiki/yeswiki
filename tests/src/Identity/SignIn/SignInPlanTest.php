@@ -256,4 +256,53 @@ class SignInPlanTest extends YesWikiTestCase
         $this->assertSame(PlanAction::LinkExisting, $plan->action);
         $this->assertSame('CaseUser', $plan->accountTag);
     }
+
+    private function localConfig(): ProviderConfig
+    {
+        return ProviderConfig::fromArray('local', ['type' => 'local']);
+    }
+
+    public function testTheLocalTypeNamesTheAccountAndChangesNothing(): void
+    {
+        $this->prepareFixture('local');
+        $before = $this->countUserRevisions();
+
+        $plan = $this->service->plan($this->localConfig(), new ProviderIdentity(['local_account' => 'SsoPlanLocal']));
+        $applied = $this->service->apply($plan);
+
+        $this->assertSame(PlanAction::UseLocal, $plan->action);
+        $this->assertSame('SsoPlanLocal', $plan->accountTag);
+        $this->assertSame('SsoPlanLocal', $applied->user->getName());
+        $this->assertSame($before, $this->countUserRevisions(), 'a local sign-in writes nothing');
+    }
+
+    public function testTheLocalTypeWithoutAnAccountIsRefused(): void
+    {
+        $plan = $this->service->plan($this->localConfig(), new ProviderIdentity([]));
+
+        $this->assertSame(PlanAction::Refuse, $plan->action);
+        $this->assertSame(FailureReason::MissingAttribute, $plan->refusal);
+    }
+
+    public function testAnotherTypeCannotClaimAnAccountByTheLocalAttribute(): void
+    {
+        $this->prepareFixture('local');
+
+        $plan = $this->service->plan($this->config(), new ProviderIdentity(['sub' => 's', 'email' => 'new@x', 'local_account' => 'SsoPlanLocal']));
+        $this->assertNotSame(PlanAction::UseLocal, $plan->action);
+        $this->assertNotSame('SsoPlanLocal', $plan->accountTag, 'the attribute is just an attribute for a provider that is not local');
+
+        $alone = $this->service->plan($this->config(), new ProviderIdentity(['local_account' => 'SsoPlanLocal']));
+        $this->assertSame(PlanAction::Refuse, $alone->action);
+        $this->assertNull($alone->accountTag);
+    }
+
+    public function testALocalPlanCannotTakeAnAccountThatBelongsToAProvider(): void
+    {
+        $this->links->link($this->makeUser('SsoPlanHere', 'a@x'), 'acme', 's');
+        $plan = $this->service->plan($this->localConfig(), new ProviderIdentity(['local_account' => 'SsoPlanHere']));
+
+        $this->expectException(\YesWiki\Identity\SignIn\Contract\ProviderFailure::class);
+        $this->service->apply($plan);
+    }
 }

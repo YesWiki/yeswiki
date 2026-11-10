@@ -4,6 +4,7 @@ namespace YesWiki\Identity\Service\SignIn;
 
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use YesWiki\Identity\Exception\BadLoginException;
 use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Identity\Service\SignIn\Type\LocalType;
 use YesWiki\Identity\SignIn\AttributeReader;
@@ -159,6 +160,9 @@ class SignInFlow
             }
 
             return SignInOutcome::signedIn($url);
+        } catch (BadLoginException $notActivated) {
+            // the account is not activated yet: the person is told on the form, with the words the wiki always used.
+            return SignInOutcome::formError($notActivated->getMessage());
         } catch (\Throwable $thrown) {
             return $this->failed($config, $login ?? $plan?->who ?? '', $thrown, $step, $identity, $plan);
         }

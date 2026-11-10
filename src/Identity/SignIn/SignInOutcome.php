@@ -46,6 +46,19 @@ final class SignInOutcome
         return new self(self::FORM_ERROR, message: $message);
     }
 
+    /** What the person may read about a refusal: the provider's own message when it gave one, otherwise the translated one. Never the detail meant for an administrator. */
+    public function messageForPerson(): string
+    {
+        if ($this->message !== '') {
+            return $this->message;
+        }
+
+        return _t('SIGN_IN_REFUSED_' . strtoupper(($this->reason ?? FailureReason::InternalError)->value), [
+            'provider' => $this->config !== null ? $this->config->label : _t('SIGN_IN_PROVIDER_UNNAMED'),
+            'who' => $this->who,
+        ]);
+    }
+
     /** @param list<array<string, mixed>> $steps */
     public static function tested(ProviderConfig $config, SignInPlan $plan, array $steps, string $error): self
     {

@@ -4,6 +4,7 @@ namespace YesWiki\Identity\Service\SignIn;
 
 use YesWiki\Identity\Entity\User;
 use YesWiki\Identity\Service\GroupManager;
+use YesWiki\Identity\Service\SignIn\Type\LocalType;
 use YesWiki\Identity\Service\UserManager;
 use YesWiki\Identity\SignIn\AppliedSignIn;
 use YesWiki\Identity\SignIn\AttributeReader;
@@ -12,6 +13,7 @@ use YesWiki\Identity\SignIn\Contract\ProviderConfig;
 use YesWiki\Identity\SignIn\Contract\ProviderFailure;
 use YesWiki\Identity\SignIn\Contract\ProviderIdentity;
 use YesWiki\Identity\SignIn\PlanAction;
+use YesWiki\Identity\SignIn\Provider\LocalProvider;
 use YesWiki\Identity\SignIn\SignInPlan;
 use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Kernel\Service\Lock\Locks;
@@ -48,6 +50,11 @@ class SignInService
         $use = $this->attributeUse($config, $attrs);
         $who = $email ?? $subject ?? '';
         $base = [$config, $subject, $attrs, $use, $who];
+
+        // Only the local type may name an account directly: any other provider sending this attribute is just sending an attribute.
+        if ($config->type === LocalType::NAME) {
+            return $this->planLocal($base);
+        }
 
         if ($subject === null) {
             return $this->refuse($base, FailureReason::MissingAttribute, $this->missingDetail($names['id'], $attrs));
@@ -102,6 +109,18 @@ class SignInService
         return $this->accept($base, $action, $owner, $email);
     }
 
+    /** The local form has already checked the password: the plan names the account and nothing else changes. */
+    private function planLocal(array $base): SignInPlan
+    {
+        [$config, , $attrs, $use] = $base;
+        $tag = AttributeReader::one($attrs, LocalProvider::ACCOUNT_ATTRIBUTE);
+        if ($tag === null) {
+            return $this->refuse($base, FailureReason::MissingAttribute, $this->missingDetail(LocalProvider::ACCOUNT_ATTRIBUTE, $attrs));
+        }
+
+        return new SignInPlan($config->id, $tag, PlanAction::UseLocal, $tag, null, '', [], [], [], [], [], $use, AttributeReader::forLog($attrs), $tag);
+    }
+
     /**
      * Carries a plan out and writes only what changed. A known account signs in with its profile and groups refreshed; a new or linked one is made under a lock named after the provider and the user ID.
      *
@@ -125,6 +144,14 @@ class SignInService
             }
 
             return $this->refresh($plan, $user);
+        }
+        if ($plan->action === PlanAction::UseLocal) {
+            $user = $this->users->getOneByName((string)$plan->accountTag);
+            if ($user === null || $user->provider() !== null) {
+                throw new ProviderFailure(FailureReason::InternalError, 'the local account is gone or belongs to a provider', null, $plan->attributes);
+            }
+
+            return new AppliedSignIn($user, []);
         }
         if (!in_array($plan->action, $lockedActions, true) || $plan->subject === null) {
             throw new ProviderFailure(FailureReason::InternalError, 'the plan cannot be carried out', null, $plan->attributes);

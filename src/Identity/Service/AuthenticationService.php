@@ -12,6 +12,7 @@ use YesWiki\Identity\Exception\BadFormatPasswordException;
 use YesWiki\Identity\Exception\BadLoginException;
 use YesWiki\Identity\Exception\BadUserConnectException;
 use YesWiki\Identity\Security\LegacyPasswordHash;
+use YesWiki\Identity\Service\SignIn\ProviderRegistry;
 use YesWiki\Kernel\Entity\CookieData;
 use YesWiki\Kernel\Service\ActorSource;
 use YesWiki\Kernel\Service\CachesTheDatabase;
@@ -100,7 +101,13 @@ class AuthenticationService extends YesWikiController implements ActorSource, Ca
      */
     public function requiresPasswordReset(User $user): bool
     {
-        return LegacyPasswordHash::isMd5($user->getPassword());
+        return $user->provider() === null && LegacyPasswordHash::isMd5($user->getPassword());
+    }
+
+    /** What to tell someone whose stored password is an md5: the lost-password link, unless this wiki sends no such mail. */
+    public function obsoletePasswordMessage(): string
+    {
+        return boolval($this->params->get('contact_disable_email_for_password')) ? _t('LOGIN_PASSWORD_FORMAT_OBSOLETE_ASK_ADMIN') : _t('LOGIN_PASSWORD_FORMAT_OBSOLETE');
     }
 
     /**
@@ -258,6 +265,10 @@ class AuthenticationService extends YesWikiController implements ActorSource, Ca
         if ($user === null || $this->requiresPasswordReset($user) || $generation !== $this->generationOf($name)) {
             return null;
         }
+        $registry = $this->container->get(ProviderRegistry::class);
+        if (!($user->provider() === null ? $registry->localEnabled() : $registry->isEnabled($user->provider()))) {
+            return null;
+        }
 
         return $user;
     }
@@ -348,7 +359,7 @@ class AuthenticationService extends YesWikiController implements ActorSource, Ca
             $userName !== null
 
             && in_array($this->params->get('signup_email_activation'), [1, true, '1', 'true'], true)
-            && !$this->hasLoginExtensions()
+            && !$this->isLinked($user, $userName)
             && !$this->container->get(AclService::class)->isAdmin($userName)
             && !$this->accountActivationService->isActivated($userName)
             && $this->container->get(AccountJustCreated::class)->name() !== $userName
@@ -439,14 +450,12 @@ class AuthenticationService extends YesWikiController implements ActorSource, Ca
         return $firstAdmin;
     }
 
-    /**
-     * External auth extensions (CAS/LDAP/SSO) handle their own identity verification -- the email-activation gate in login() doesn't apply to accounts they authenticate.
-     */
-    private function hasLoginExtensions(): bool
+    /** An account tied to a sign-in provider has been vouched for by it: the email-activation gate is for local accounts. */
+    private function isLinked(array|User $user, string $name): bool
     {
-        return array_key_exists('logincas', $this->container->get(\YesWiki\Kernel\Service\ExtensionRegistry::class)->all())
-            || array_key_exists('loginldap', $this->container->get(\YesWiki\Kernel\Service\ExtensionRegistry::class)->all())
-            || array_key_exists('login-sso', $this->container->get(\YesWiki\Kernel\Service\ExtensionRegistry::class)->all());
+        $stored = $user instanceof User ? $user : $this->userManager->getOneByName($name);
+
+        return $stored?->provider() !== null;
     }
 
     public function setPersistentCookie(string $name, string $value, int $expires): void

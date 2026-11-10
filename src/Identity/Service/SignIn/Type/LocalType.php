@@ -2,6 +2,8 @@
 
 namespace YesWiki\Identity\Service\SignIn\Type;
 
+use YesWiki\Identity\Service\AuthenticationService;
+use YesWiki\Identity\Service\UserManager;
 use YesWiki\Identity\SignIn\Contract\IdentityProvider;
 use YesWiki\Identity\SignIn\Contract\ProviderConfig;
 use YesWiki\Identity\SignIn\Contract\ProviderType;
@@ -12,6 +14,12 @@ final class LocalType implements ProviderType
 {
     public const NAME = 'local';
 
+    public function __construct(
+        private readonly AuthenticationService $auth,
+        private readonly UserManager $users,
+    ) {
+    }
+
     public function name(): string
     {
         return self::NAME;
@@ -19,7 +27,7 @@ final class LocalType implements ProviderType
 
     public function label(): string
     {
-        return 'Local';
+        return _t('SIGN_IN_TYPE_LOCAL');
     }
 
     public function connectionSettings(): array
@@ -34,6 +42,6 @@ final class LocalType implements ProviderType
 
     public function create(ProviderConfig $config): IdentityProvider
     {
-        return new LocalProvider($config);
+        return new LocalProvider($config, $this->auth, $this->users);
     }
 }
