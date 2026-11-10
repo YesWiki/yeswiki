@@ -456,6 +456,11 @@
   margin-bottom: var(--yw-space-md-y);
 }
 
+/* The rule above must not undo `hidden`, which the tabs use to show what belongs to local accounts alone. */
+.login-form .yw-sign-in__local-only[hidden] {
+  display: none;
+}
+
 .yw-account-guest__card .checkbox {
   margin: 0 0 var(--yw-space-lg-y);
 }

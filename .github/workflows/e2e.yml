@@ -278,7 +278,7 @@ jobs:
       # Everything but the sign-in specs, which run below at the address the portal knows.
       - name: Run the browser suite
         if: steps.covered.outputs.run == 'true'
-        run: yarn run test-e2e-all '^(?!.*sign-in-providers)'
+        run: yarn run test-e2e-all '^(?!.*sign-in-)'
 
       # The portal only sends the browser back to wiki.yeswiki.test (ports 8080 and 8081 are
       # registered in docker/lemonldap-ng/conf/lmConf-1.json), and the wiki builds its callback
@@ -294,7 +294,7 @@ jobs:
           # Its own report and output folders: the run above leaves its failure evidence in the
           # defaults, and this one must not overwrite it.
           PLAYWRIGHT_HTML_OUTPUT_DIR=playwright-report-signin \
-            npx playwright test tests/e2e/tests/sign-in-providers.spec.ts --output=test-results-signin
+            npx playwright test tests/e2e/tests/sign-in- --output=test-results-signin
 
       - name: Dump the runtime log
         if: failure() && steps.covered.outputs.run == 'true'

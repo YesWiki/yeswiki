@@ -115,7 +115,7 @@ const php = (script: string, args: string[]): string =>
   })
 
 /** How long the web server's opcode cache may keep serving the previous configuration file (opcache.revalidate_freq). */
-const OPCACHE_REVALIDATE_MS = 2100
+const OPCACHE_REVALIDATE_MS = 3100
 
 /** Writes `sso_providers` into the wiki's configuration file, and waits until the web server reads the new one. */
 export const setProviders = (section: object): void => {

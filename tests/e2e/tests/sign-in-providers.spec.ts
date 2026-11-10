@@ -508,3 +508,50 @@ test.describe('the attempt limit against the real directory', () => {
     }
   })
 })
+
+/**
+ * Accounts of the wiki stay a way to sign in beside a provider (spec section 8.1): the form offers a tab for each, and what
+ * belongs to local accounts alone -- lost password, remember me, sign up -- shows under its tab only.
+ */
+test.describe('local accounts beside a provider', () => {
+  test.beforeEach(() => {
+    setProviders(sectionFor('ldap'))
+  })
+
+  test('lost password and sign-up show under the local tab only', async ({
+    page,
+  }) => {
+    await page.goto('/?user')
+    const form = page.locator('form.login-form')
+    const tab = (id: string) =>
+      form
+        .locator('.yw-sign-in__tab')
+        .filter({ has: page.locator(`input[name="provider"][value="${id}"]`) })
+    const localOnly = form.locator(
+      'a[href*="lost-password"], a[href*="user/signup"], #remember-default',
+    )
+    expect(await localOnly.count(), 'local has its extras').toBeGreaterThan(0)
+
+    await tab('local').click()
+    for (const extra of await localOnly.all()) {
+      await expect(extra).toBeVisible()
+    }
+
+    await tab(PROVIDER_IDS.ldap).click()
+    await expect(
+      form.locator(`input[name="provider"][value="${PROVIDER_IDS.ldap}"]`),
+    ).toBeChecked()
+    for (const extra of await localOnly.all()) {
+      await expect(extra).toBeHidden()
+    }
+  })
+
+  test('a local account still signs in through its tab', async ({ page }) => {
+    await page.goto('/?user')
+    await signInAtWikiForm(page, 'local', ADMIN_USERNAME, ADMIN_PASSWORD)
+
+    await page.goto('/?user')
+    await expect(page.locator(GUEST_CARD)).toHaveCount(0)
+    await expect(page.locator('body')).toContainText(ADMIN_USERNAME)
+  })
+})
