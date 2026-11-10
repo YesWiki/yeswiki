@@ -4,6 +4,7 @@
     "casAppMetaDataExportedVars": {
         "wiki-cas": {
             "uid": "uid",
+            "name": "uid",
             "mail": "mail",
             "givenName": "givenName",
             "sn": "sn",
@@ -11,6 +12,7 @@
         },
         "wiki-cas-8080": {
             "uid": "uid",
+            "name": "uid",
             "mail": "mail",
             "givenName": "givenName",
             "sn": "sn",
@@ -18,6 +20,7 @@
         },
         "wiki-cas-8081": {
             "uid": "uid",
+            "name": "uid",
             "mail": "mail",
             "givenName": "givenName",
             "sn": "sn",

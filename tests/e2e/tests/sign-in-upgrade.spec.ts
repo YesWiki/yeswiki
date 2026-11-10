@@ -7,7 +7,6 @@ import {
   accountWithEmail,
   forgetAttempts,
   groupsOf,
-  journal,
   LDAP_URI,
   PASSWORD,
   PEOPLE,
@@ -92,10 +91,6 @@ const converted = (): {
   providers: Record<string, Provider>
   doryphore_keys: string[]
 } => JSON.parse(fixture('providers'))
-
-/** The highest Journal id: the rows a sign-in writes come after it. */
-const latestRow = (): number =>
-  Math.max(0, ...journal('%').map((row) => Number(row.id)))
 
 /** Days from today to a `Y-m-d` date. */
 const daysUntil = (date: string): number =>
@@ -396,42 +391,15 @@ test.describe('the upgrade from Doryphore', () => {
     )
     const everyone = accounts()
 
-    // phpCAS only spoke https, and the development portal only http: the one setting this stack cannot keep
+    // NOT EXERCISED: the converted server URL. logincas's phpCAS only spoke https, so the conversion writes
+    // https://<cas_host>:<cas_port>/<cas_context> (checked above), but the development portal serves CAS on plain http only.
+    // That one value is replaced by the portal's http address; every other converted setting, the `name` user ID included, is used unchanged.
     const section = converted().providers
-    const overPlainHttp = {
-      ...provider,
-      connection: { ...provider.connection, server_url: `${PORTAL}/cas` },
-    }
-    setProviders({ ...section, cas: overPlainHttp })
-
-    // The development portal does not release `name`, the attribute logincas named accounts after: the converted ID is refused.
-    const since = latestRow()
-    const refused = await signInThroughPortal(browser, 'CAS')
-    await expect(refused.locator('h1')).toBeVisible()
-    await refused.context().close()
-    const diagnostic = journal('login.refused.missing_attribute.cas').find(
-      (row) => Number(row.id) > since,
-    )
-    expect(diagnostic, 'the portal released no `name`').toBeTruthy()
-    const received = Object.keys(
-      (diagnostic?.context.attributes as Record<string, unknown>) ?? {},
-    )
-    test
-      .info()
-      .annotations.push({
-        type: 'portal CAS attributes',
-        description: received.join(', '),
-      })
-    expect(received).not.toContain('name')
-    expect(received).toContain('uid')
-    expect(accounts(), 'a refusal creates nothing').toEqual(everyone)
-
-    // With the user ID the portal does release, the rest of the conversion finds her account by its name.
     setProviders({
       ...section,
       cas: {
-        ...overPlainHttp,
-        attributes: { ...provider.attributes, id: 'uid' },
+        ...provider,
+        connection: { ...provider.connection, server_url: `${PORTAL}/cas` },
       },
     })
     const page = await signInThroughPortal(browser, 'CAS')
