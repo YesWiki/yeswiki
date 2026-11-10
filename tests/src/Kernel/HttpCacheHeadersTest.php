@@ -8,14 +8,13 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 use Symfony\Component\HttpFoundation\Cookie;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use YesWiki\Core\YesWikiInit;
 use YesWiki\Kernel\Service\HttpCacheHeaders;
 use YesWiki\Kernel\Service\LanguageService;
-use YesWiki\Kernel\Service\LazySessionTokenStorage;
+use YesWiki\Kernel\Service\PersonalResponse;
 
 require_once 'tests/YesWikiTestCase.php';
 
-/** Only anonymous page views may be shared, and only a request that wrote to the session gets one. */
+/** Only anonymous page views may be shared, and core never opens a session to find out. */
 class HttpCacheHeadersTest extends TestCase
 {
     private bool $hadSession = false;
@@ -123,47 +122,43 @@ class HttpCacheHeadersTest extends TestCase
         $this->assertTrue($response->headers->hasCacheControlDirective('no-store'));
     }
 
-    public function testNothingWrittenMeansNoSession(): void
+    public function testAPersonalResponseIsNeverShared(): void
     {
-        $_SESSION = ['flash_messages' => [], '_csrf' => []];
+        $personal = new PersonalResponse();
+        $personal->mark();
+        $response = new Response('page');
 
-        $this->assertFalse(HttpCacheHeaders::persistDeferredSession());
-        $this->assertSame(PHP_SESSION_NONE, session_status());
+        $this->headers(60, ['fr'], $personal)->decide($this->pageView(), $response);
+
+        $this->assertTrue($response->headers->hasCacheControlDirective('private'), 'a CSRF token, a flash message or a signed-in reader is somebody\'s own');
+        $this->assertTrue($response->headers->hasCacheControlDirective('no-store'));
     }
 
-    public function testWhatARequestWroteIsKeptWhenTheSessionOpensLate(): void
+    public function testASignedInReaderIsNeverServedFromTheCache(): void
     {
-        (new LazySessionTokenStorage())->setToken('main', 'abc');
-        $_SESSION['message'] = 'Enregistré';
+        $request = $this->pageView();
+        $request->cookies->set(HttpCacheHeaders::SIGNED_IN_COOKIE, 'whoever');
+        $response = new Response('page');
 
-        $this->assertSame(PHP_SESSION_NONE, session_status(), 'writing a token must not open a session by itself');
-        $this->assertTrue(HttpCacheHeaders::persistDeferredSession());
-        $this->assertSame(PHP_SESSION_ACTIVE, session_status());
-        $this->assertSame('abc', $_SESSION['_csrf']['main']);
-        $this->assertSame('Enregistré', $_SESSION['message']);
+        $this->headers(60)->decide($request, $response);
+
+        $this->assertTrue($response->headers->hasCacheControlDirective('private'));
     }
 
-    public function testASessionOpensUpFrontOnlyForAReturningVisitorOrAChange(): void
+    public function testAnAnonymousPageViewStartsNoSession(): void
     {
-        $_SERVER['REQUEST_METHOD'] = 'GET';
-        unset($_COOKIE['YesWiki-main']);
-        $this->assertFalse(YesWikiInit::needsSessionNow('YesWiki-main'));
+        $this->headers(60)->decide($this->pageView(), new Response('page'));
 
-        $_COOKIE['YesWiki-main'] = 'someid';
-        $this->assertTrue(YesWikiInit::needsSessionNow('YesWiki-main'));
-
-        unset($_COOKIE['YesWiki-main']);
-        $_SERVER['REQUEST_METHOD'] = 'POST';
-        $this->assertTrue(YesWikiInit::needsSessionNow('YesWiki-main'));
+        $this->assertSame(PHP_SESSION_NONE, session_status(), 'core starts no session (replicas 16)');
     }
 
     /** @param list<string> $languages */
-    private function headers(int $ttl, array $languages = ['fr']): HttpCacheHeaders
+    private function headers(int $ttl, array $languages = ['fr'], ?PersonalResponse $personal = null): HttpCacheHeaders
     {
         $language = $this->createStub(LanguageService::class);
         $language->method('availableLanguages')->willReturn($languages);
 
-        return new HttpCacheHeaders(new ParameterBag([HttpCacheHeaders::TTL => $ttl]), $language);
+        return new HttpCacheHeaders(new ParameterBag([HttpCacheHeaders::TTL => $ttl]), $language, $personal ?? new PersonalResponse());
     }
 
     private function pageView(string $method = 'GET', bool $pageView = true, string $handler = ''): Request

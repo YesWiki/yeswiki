@@ -71,12 +71,12 @@ class FormScreenTest extends YesWikiTestCase
             PageBody::KEYWORDS => [self::KEYWORD],
         ], '', true);
 
-        unset($_SESSION['user']);
+        self::actAs(null);
     }
 
     protected function tearDown(): void
     {
-        unset($_SESSION['user']);
+        self::actAs(null);
         if ($this->form !== null) {
             $this->formManager->delete($this->form['id']);
         }

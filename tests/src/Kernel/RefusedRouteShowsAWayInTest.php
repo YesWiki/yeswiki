@@ -41,7 +41,7 @@ class RefusedRouteShowsAWayInTest extends YesWikiTestCase
 
     public function testASignedOutVisitorIsSentToSignInAndBack(): void
     {
-        unset($_SESSION['user']);
+        self::actAs(null);
 
         $response = $this->refuse('/admin/logs');
 
@@ -59,7 +59,7 @@ class RefusedRouteShowsAWayInTest extends YesWikiTestCase
     /** Offering a sign-in form for an account they are already using explains nothing. */
     public function testSomebodyAlreadySignedInIsToldTheyMayNot(): void
     {
-        $_SESSION['user'] = ['name' => self::signedInName()];
+        self::actAs(self::signedInName());
 
         $response = $this->refuse('/admin/logs');
 
@@ -71,7 +71,7 @@ class RefusedRouteShowsAWayInTest extends YesWikiTestCase
     /** A client asking for JSON wants a status code, not a page it cannot read. */
     public function testAnApiRouteStillAnswersWithAStatusCode(): void
     {
-        unset($_SESSION['user']);
+        self::actAs(null);
 
         foreach (['/api/admin/logs', '/api'] as $path) {
             $response = $this->refuse($path);

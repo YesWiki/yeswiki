@@ -13,7 +13,6 @@ use YesWiki\Kernel\Service\ProgramVersion;
 use YesWiki\Kernel\Service\Replication;
 use YesWiki\Kernel\Service\TrustedProxies;
 use YesWiki\Kernel\Service\WikiUrls;
-use YesWiki\Kernel\Session\DatabaseSessions;
 
 /** Yeswiki initialization class. */
 class YesWikiInit
@@ -574,9 +573,8 @@ class YesWikiInit
         return $yeswikiConfig;
     }
 
-    /** @return string $CookiePath path to the cookie */
-    /** @return string */
-    public function initCookies()
+    /** The path the wiki's cookies are sent under; core starts no session (replicas 16), an extension asks SessionRequirement for one. */
+    public function initCookies(): string
     {
         $urlParsed = parse_url(is_string($this->config['base_url'] ?? null) ? $this->config['base_url'] : '');
         $CookiePath = is_array($urlParsed) ? ($urlParsed['path'] ?? '') : '';
@@ -593,58 +591,11 @@ class YesWikiInit
             $CookiePath .= '/';
         }
 
-        $sessionName = 'YesWiki-main';
-        if ($CookiePath !== '/') {
-            $sessionName = 'YesWiki-' . str_replace('/', '-', substr($CookiePath, 1, -1));
-        }
-
-        if (session_status() !== PHP_SESSION_ACTIVE && !self::sessionCanStart()) {
+        if (session_status() !== PHP_SESSION_ACTIVE) {
             $_SESSION = [];
-            $this->seedSessionKeysVendorSingletonsAssume();
-        } elseif (session_status() !== PHP_SESSION_ACTIVE) {
-            ini_set('session.gc_probability', '1');
-            ini_set('session.gc_divisor', '1000');
-            session_set_save_handler(new DatabaseSessions($this->config), true);
-            $cookiesParam = session_get_cookie_params();
-            $cookiesParam['path'] = $CookiePath;
-            $cookiesParam['httponly'] = true;
-            $secure = preg_match('`^https://`', $this->config['base_url']) === 1;
-            if ($secure) {
-                $cookiesParam['secure'] = true;
-            }
-            $sameSite = strtolower((string)($this->config['cookies_samesite'] ?? 'None'));
-            $cookiesParam['samesite'] = $sameSite === 'strict' ? 'Strict' : (($sameSite === 'none' && $secure) ? 'None' : 'Lax');
-            session_set_cookie_params($cookiesParam);
-            session_name($sessionName);
-            session_cache_limiter('');
-            if (\PHP_SAPI === 'cli' || self::needsSessionNow($sessionName)) {
-                session_start();
-            } else {
-                $_SESSION = [];
-            }
-            $this->seedSessionKeysVendorSingletonsAssume();
         }
 
         return $CookiePath;
-    }
-
-    /** False under the binary's php-cli, whose embed SAPI reports the headers as sent before the script runs. */
-    public static function sessionCanStart(): bool
-    {
-        return \PHP_SAPI !== 'cli' || !headers_sent();
-    }
-
-    /** A session is opened up front only for a visitor who already has one or a request that changes something; the rest wait until they write to it. */
-    public static function needsSessionNow(string $sessionName): bool
-    {
-        return !empty($_COOKIE[$sessionName])
-            || !in_array(strtoupper((string)($_SERVER['REQUEST_METHOD'] ?? 'GET')), ['GET', 'HEAD'], true);
-    }
-
-    /** @return void */
-    private function seedSessionKeysVendorSingletonsAssume()
-    {
-        $_SESSION['flash_messages'] ??= [];
     }
 
     /** @return void */

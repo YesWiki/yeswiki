@@ -35,7 +35,9 @@ use YesWiki\Admin\Service\DoryphoreArrival;
 use YesWiki\Content\Controller\LegacyPageController;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Identity\Action\LoginAction;
+use YesWiki\Identity\Security\SignedCsrfTokenManager;
 use YesWiki\Identity\Service\AuthenticationService;
+use YesWiki\Identity\Service\CsrfVisitor;
 use YesWiki\Identity\Service\RequestGuard;
 use YesWiki\Kernel\Entity\ExtensionFolders;
 use YesWiki\Kernel\Exception\ExitException;
@@ -47,15 +49,17 @@ use YesWiki\Kernel\Service\ConfigurationWatch;
 use YesWiki\Kernel\Service\CurrentRequest;
 use YesWiki\Kernel\Service\EventDispatcher;
 use YesWiki\Kernel\Service\ExtensionRegistry;
+use YesWiki\Kernel\Service\Flash;
+use YesWiki\Kernel\Service\FlashMessages;
 use YesWiki\Kernel\Service\HttpCacheHeaders;
 use YesWiki\Kernel\Service\Journal;
 use YesWiki\Kernel\Service\LanguageService;
-use YesWiki\Kernel\Service\LazySessionTokenStorage;
 use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\Redirector;
 use YesWiki\Kernel\Service\RequestScope;
 use YesWiki\Kernel\Service\RouteProvider;
 use YesWiki\Kernel\Service\RuntimeConfig;
+use YesWiki\Kernel\Service\SignedTokens;
 use YesWiki\Kernel\Service\ThrowableFormatter;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Kernel\Service\WikiUrls;
@@ -279,10 +283,6 @@ class YesWikiRuntime
             $request->attributes->set('_method', $pageContext->getRawMethod());
 
             $this->handleWithHttpKernel($request)->send();
-
-            if (!empty($_SESSION['redirects'])) {
-                unset($_SESSION['redirects']);
-            }
         }
     }
 
@@ -663,8 +663,12 @@ class YesWikiRuntime
 
         $parameterBag = $container->getParameterBag();
         $this->services->set(ParameterBagInterface::class, $parameterBag);
-        $this->services->set(CsrfTokenManager::class, new CsrfTokenManager(null, new LazySessionTokenStorage()));
+        $this->services->set(CsrfTokenManager::class, new SignedCsrfTokenManager(
+            $container->get(SignedTokens::class),
+            static fn (): string => $container->get(CsrfVisitor::class)->current(),
+        ));
         $this->services->set(YesWikiRuntime::class, $this);
+        Flash::bind($container->get(FlashMessages::class));
         $GLOBALS['yeswikiServices'] = $this->services;
 
         $this->config = $parameterBag->all();

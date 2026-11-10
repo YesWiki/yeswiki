@@ -61,7 +61,7 @@ class RevisionsHandlerTest extends YesWikiTestCase
 
         $pageContext->setTag(self::PAGE_TAG);
         $pageContext->setMethod('revisions');
-        unset($_SESSION['user']);
+        self::actAs(null);
     }
 
     protected function tearDown(): void

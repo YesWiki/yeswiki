@@ -3,7 +3,6 @@
 namespace YesWiki\Content\Handler;
 
 use Symfony\Component\Security\Csrf\Exception\TokenNotFoundException;
-use Tamtamchik\SimpleFlash\Flash;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Core\YesWikiHandler;
 use YesWiki\Identity\Service\AclOptions;
@@ -11,6 +10,7 @@ use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\CsrfTokenChecker;
 use YesWiki\Identity\Service\UserManager;
 use YesWiki\Kernel\Performable\RegisteredHandler;
+use YesWiki\Kernel\Service\Flash;
 use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\Redirector;

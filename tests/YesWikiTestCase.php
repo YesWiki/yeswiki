@@ -230,6 +230,18 @@ class YesWikiTestCase extends TestCase
         $this->obLevelAtSetUp = ob_get_level();
     }
 
+    /** Who the wiki acts for in this process, as a sign-in would leave it: null for nobody. */
+    protected static function actAs(?string $name): void
+    {
+        self::getWiki()->services->get(\YesWiki\Identity\Service\AuthenticationService::class)->actAs($name);
+    }
+
+    /** The name the wiki acts for now, '' for nobody. */
+    protected static function signedIn(): string
+    {
+        return self::getWiki()->services->get(\YesWiki\Identity\Service\AuthenticationService::class)->signedInName();
+    }
+
     protected function tearDown(): void
     {
         while ($this->obLevelAtSetUp !== null && ob_get_level() > $this->obLevelAtSetUp) {

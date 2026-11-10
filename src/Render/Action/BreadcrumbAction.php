@@ -4,12 +4,13 @@ namespace YesWiki\Render\Action;
 
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Performable\RegisteredAction;
+use YesWiki\Kernel\Service\AssetRegistry;
 use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\PerformableArguments;
 use YesWiki\Kernel\Service\RuntimeConfig;
 use YesWiki\Kernel\Service\UrlFormatter;
 
-/** `{{breadcrumb}}` -- converted from the procedural actions/ariane.php by ticket 06. */
+/** `{{breadcrumb}}`: the current page, and the trail before it kept per tab by javascripts/breadcrumbs.js rather than in a session (replicas 15). */
 class BreadcrumbAction extends YesWikiAction implements RegisteredAction
 {
     public static function performableName(): string
@@ -39,77 +40,17 @@ class BreadcrumbAction extends YesWikiAction implements RegisteredAction
             $max = 4;
         }
 
-        $crumbs = [];
+        $tag = $this->getService(PageContext::class)->getTag();
+        $urls = $this->getService(UrlFormatter::class);
+        $this->getService(AssetRegistry::class)->addJsFile('javascripts/breadcrumbs.js');
 
-        $wikireq = $_REQUEST['wiki'];
-
-        $wikireq = preg_replace("/^\//", '', $wikireq);
-
-        if (preg_match(
-            '`^([A-Za-z0-9]+)/([A-Za-z0-9_-]*)$`',
-            $wikireq,
-            $matches
-        )) {
-            list($PageTag, $method) = $matches;
-        } elseif (preg_match('`^[A-Za-z0-9]+$`', $wikireq)) {
-            $PageTag = $wikireq;
-        } else {
-            $PageTag = $this->getService(PageContext::class)->getTag();
-        }
-
-        if (!isset($_SESSION['breadcrumbs'])) {
-            $crumbs[0] = $PageTag;
-        } else {
-            $crumbs = $_SESSION['breadcrumbs'];
-
-            if ($crumbs[count($crumbs) - 1] != $this->getService(PageContext::class)->getTag()) {
-                if (count($crumbs) >= $max and $PageTag != $crumbs[$max - 1]) {
-                    array_shift($crumbs);
-
-                    $crumbs[$max - 1] = $PageTag;
-                } else {
-                    $crumbs[count($crumbs)] = $PageTag;
-                }
-            }
-        }
-
-        $count = 1;
-        $temp = [];
-        $target = [];
-
-        if (count($crumbs) > 2) {
-            while ($count <= (count($crumbs) - 1)) {
-                $temp[$count - 1] = $crumbs[$count - 1];
-                $temp[$count] = $crumbs[$count];
-                $temp = array_unique($temp);
-                $target = $target + $temp;
-                $temp = [];
-                $count++;
-            }
-            $crumbs = $target;
-        } else {
-            $crumbs = array_unique($crumbs);
-        }
-
-        $_SESSION['breadcrumbs'] = $crumbs;
-
-        $page_trail = "<ol class=\"yw-breadcrumb\">\n"
-            . '<li><a href="'
-            . $this->getService(UrlFormatter::class)->href('', $this->getService(RuntimeConfig::class)['root_page'])
-            . '"><span class="fa fa-home"></span></a></li>'
-            . "\n";
-
-        foreach ($crumbs as $this_crumb) {
-            if ($this->getService(PageContext::class)->getTag() == $this_crumb) {
-                $page_trail .= '<li class="yw-breadcrumb__active">' . $this_crumb . '</li>' . "\n";
-            } else {
-                $page_trail .= '<li><a href="'
-                    . $this->getService(UrlFormatter::class)->href('', $this_crumb)
-                    . '">' . $this_crumb
-                    . "</a></li>\n";
-            }
-        }
-        $page_trail .= "</ol>\n";
+        $page_trail = '<ol class="yw-breadcrumb" data-yw-breadcrumbs'
+            . ' data-yw-breadcrumbs-current="' . htmlspecialchars($tag, ENT_QUOTES) . '"'
+            . ' data-yw-breadcrumbs-max="' . $max . '"'
+            . ' data-yw-breadcrumbs-href="' . htmlspecialchars($urls->href('', '__YW_BREADCRUMB_TAG__', null, false), ENT_QUOTES) . '">' . "\n"
+            . '<li><a href="' . $urls->href('', $this->getService(RuntimeConfig::class)['root_page']) . '"><span class="fa fa-home"></span></a></li>' . "\n"
+            . '<li class="yw-breadcrumb__active">' . htmlspecialchars($tag) . '</li>' . "\n"
+            . "</ol>\n";
 
         echo $page_trail;
     }

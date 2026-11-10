@@ -44,7 +44,7 @@ class PageListingsAclTest extends YesWikiTestCase
         // than by the save: the index carries the ACL it is filtered on.
         $this->wiki->services->get(SearchIndexer::class)->index(self::RESTRICTED_TAG);
         self::reindexWaitingContents($this->wiki);
-        unset($_SESSION['user']);
+        self::actAs(null);
     }
 
     protected function tearDown(): void

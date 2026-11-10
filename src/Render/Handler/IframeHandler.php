@@ -2,7 +2,6 @@
 
 namespace YesWiki\Render\Handler;
 
-use Tamtamchik\SimpleFlash\Flash;
 use YesWiki\Content\Controller\EntryController;
 use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Service\EntryManager;
@@ -13,6 +12,7 @@ use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Kernel\Performable\RegisteredHandler;
 use YesWiki\Kernel\Service\AssetRegistry;
+use YesWiki\Kernel\Service\Flash;
 use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\MarkdownFormatterService;

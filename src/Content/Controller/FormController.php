@@ -3,7 +3,6 @@
 namespace YesWiki\Content\Controller;
 
 use Symfony\Component\Security\Csrf\Exception\TokenNotFoundException;
-use Tamtamchik\SimpleFlash\Flash;
 use YesWiki\Content\Action\BazarAction;
 use YesWiki\Content\Entity\ContentTypeSchema;
 use YesWiki\Content\Entity\FieldRole;
@@ -32,6 +31,7 @@ use YesWiki\Identity\Service\CsrfTokenChecker;
 use YesWiki\Identity\Service\GroupOperationsService;
 use YesWiki\Identity\Service\Guard;
 use YesWiki\Identity\Service\RequestGuard;
+use YesWiki\Kernel\Service\Flash;
 use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Kernel\Service\LanguageService;
 use YesWiki\Kernel\Service\Redirector;

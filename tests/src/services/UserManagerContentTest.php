@@ -231,23 +231,19 @@ class UserManagerContentTest extends YesWikiTestCase
         $this->cleanupUser($userManager, $name);
         $this->cleanupUser($userManager, $other);
 
-        $previousSessionUser = $_SESSION['user'] ?? null;
+        $previousSessionUser = self::signedIn() ?: null;
 
         try {
             $userManager->create($name, 'umct-writeacl@example.tld', 'Aa1!aaaaRegression');
             $userManager->create($other, 'umct-writeacl-other@example.tld', 'Aa1!aaaaRegression');
 
-            $_SESSION['user'] = ['name' => $name, 'lastConnection' => time()];
+            self::actAs($name);
             $this->assertTrue($aclService->hasAccess('write', $name, ''), 'the owner can write to their own account page');
 
-            $_SESSION['user'] = ['name' => $other, 'lastConnection' => time()];
+            self::actAs($other);
             $this->assertFalse($aclService->hasAccess('write', $name, ''), 'an unrelated user cannot write to someone else\'s account page');
         } finally {
-            if ($previousSessionUser === null) {
-                unset($_SESSION['user']);
-            } else {
-                $_SESSION['user'] = $previousSessionUser;
-            }
+            self::actAs($previousSessionUser);
             $this->cleanupUser($userManager, $name);
             $this->cleanupUser($userManager, $other);
         }

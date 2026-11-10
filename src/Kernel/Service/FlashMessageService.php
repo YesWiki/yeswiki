@@ -2,20 +2,21 @@
 
 namespace YesWiki\Kernel\Service;
 
-/** The historic one-slot `$_SESSION['message']` flash channel (Wiki::SetMessage()/ GetMessage()). */
+/** The historic one-slot notice (Wiki::SetMessage()/GetMessage()), now the toast of FlashMessages, so it rides the same cookie. */
 class FlashMessageService
 {
+    public function __construct(private readonly FlashMessages $messages)
+    {
+    }
+
     public function setMessage(string $message): void
     {
-        $_SESSION['message'] = $message;
+        $this->messages->toast($message);
     }
 
     /** Return the pending message ('' when none) and clear the slot. */
     public function getMessage(): string
     {
-        $message = $_SESSION['message'] ?? '';
-        $_SESSION['message'] = '';
-
-        return is_string($message) ? $message : '';
+        return $this->messages->takeToast();
     }
 }

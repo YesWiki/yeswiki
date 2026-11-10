@@ -22,7 +22,7 @@ class PageManagerGetReadablePageTagsTest extends YesWikiTestCase
 
         $pageManager->save(self::RESTRICTED_TAG, [PageBody::CONTENT => 'secret content'], '', true);
         $aclService->save(self::RESTRICTED_TAG, 'read', '@admins');
-        unset($_SESSION['user']);
+        self::actAs(null);
 
         try {
             $tags = $pageManager->getReadablePageTags();

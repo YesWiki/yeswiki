@@ -54,7 +54,7 @@ class EntryCreationOverwriteTest extends YesWikiTestCase
         $this->pageManager->save(self::TARGET_TAG, [PageBody::CONTENT => self::TARGET_BODY], '', true);
         $this->aclService->save(self::TARGET_TAG, 'write', '@admins');
 
-        unset($_SESSION['user']);
+        self::actAs(null);
     }
 
     protected function tearDown(): void

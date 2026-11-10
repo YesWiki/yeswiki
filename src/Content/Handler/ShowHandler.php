@@ -21,11 +21,13 @@ use YesWiki\Federation\Service\ActivityPubService;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Performable\RegisteredHandler;
 use YesWiki\Kernel\Service\AssetRegistry;
+use YesWiki\Kernel\Service\CurrentRequest;
 use YesWiki\Kernel\Service\InclusionStack;
 use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\Redirector;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Kernel\Service\WikiUrls;
+use YesWiki\Render\Action\RedirectAction;
 use YesWiki\Render\Service\LinkRenderer;
 use YesWiki\Render\Service\MarkdownFormatterService;
 use YesWiki\Render\Service\TemplateEngine;
@@ -219,12 +221,10 @@ class ShowHandler extends YesWikiHandler implements RegisteredHandler
     {
         ob_start();
 
-        if (!empty($_SESSION['redirects'])) {
-            $trace = $_SESSION['redirects'];
-            $tag = $trace[count($trace) - 1];
-            $prevpage = $this->getService(PageManager::class)->getOne($tag);
+        $trace = RedirectAction::chain((string)$this->getService(CurrentRequest::class)->get()->query->get(RedirectAction::FROM, ''));
+        if ($trace !== []) {
+            $prevpage = $this->getService(PageManager::class)->getOne($trace[count($trace) - 1]);
             echo '<div class="redirectfrom"><em>(' . str_replace('{linkFrom}', $this->getService(LinkRenderer::class)->link($prevpage['tag'] ?? '', 'edit'), _t('REDIRECTED_FROM')) . ")</em></div>\n";
-            unset($_SESSION['redirects'][count($trace) - 1]);
         }
 
         $onboarding = $this->getService(Onboarding::class);

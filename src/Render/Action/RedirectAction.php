@@ -8,6 +8,7 @@ use YesWiki\Kernel\Component\Component;
 use YesWiki\Kernel\Component\ProvidesComponents;
 use YesWiki\Kernel\Component\Setting;
 use YesWiki\Kernel\Performable\RegisteredAction;
+use YesWiki\Kernel\Service\CurrentRequest;
 use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\PerformableArguments;
 use YesWiki\Kernel\Service\Redirector;
@@ -17,6 +18,20 @@ use YesWiki\Render\Service\LinkRenderer;
 /** `{{redirect}}` -- converted from the procedural actions/redirect.php by ticket 06. */
 class RedirectAction extends YesWikiAction implements RegisteredAction, ProvidesComponents
 {
+    public const FROM = 'redirected_from';
+
+    public const LONGEST_CHAIN = 5;
+
+    /**
+     * The pages a chain of redirects went through, as the URL carries them: no session holds them (replicas 15).
+     *
+     * @return list<string>
+     */
+    public static function chain(string $from): array
+    {
+        return array_values(array_filter(array_map('trim', explode(',', strtolower($from))), static fn (string $tag): bool => $tag !== ''));
+    }
+
     public static function performableName(): string
     {
         return 'redirect';
@@ -62,16 +77,14 @@ class RedirectAction extends YesWikiAction implements RegisteredAction, Provides
         } else {
             $pageContext = $this->getService(PageContext::class);
             if ($pageContext->getMethod() == 'show' && $pageContext->isRenderingRequestedPage()) {
-                if (!isset($_SESSION['redirects'])) {
-                    $_SESSION['redirects'] = [];
-                }
-                $_SESSION['redirects'][] = strtolower($this->getService(PageContext::class)->getTag());
+                $chain = self::chain((string)$this->getService(CurrentRequest::class)->get()->query->get(self::FROM, ''));
+                $chain[] = strtolower($pageContext->getTag());
 
-                if (in_array(strtolower($redirPageName), $_SESSION['redirects'])) {
+                if (in_array(strtolower($redirPageName), $chain, true) || count($chain) > self::LONGEST_CHAIN) {
                     echo '<div class="alert alert-danger"><strong>' . _t('ERROR_ACTION_REDIRECT') . '</strong> : ' . _t('CIRCULAR_REDIRECTION_FROM_PAGE') . " $redirPageName ( "
                     . $this->getService(LinkRenderer::class)->linkToPage($redirPageName, 'edit', call_user_func('_t', 'CLICK_HERE')) . ')</div>' . "\n";
                 } else {
-                    $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href('', $redirPageName));
+                    $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href('', $redirPageName, [self::FROM => implode(',', $chain)], false));
                 }
             } else {
                 echo '<span style="color: red; weight: bold">' . _t('PRESENCE_OF_REDIRECTION_TO') . ' "' . $this->getService(LinkRenderer::class)->link($redirPageName) . '"</span>';

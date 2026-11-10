@@ -130,57 +130,21 @@ class AuthenticationServiceTest extends YesWikiTestCase
 
         try {
             $authenticationService->login($user);
-            $this->assertSame($user['name'], $_SESSION['user']['name'] ?? null, 'fixture: signed in');
+            $this->assertSame($user['name'], self::signedIn(), 'fixture: signed in');
 
             $userManager->upgradePassword($user, md5('whatever was stored before'));
 
             $authenticationService->connectUser();
 
-            $this->assertArrayNotHasKey(
-                'user',
-                $_SESSION,
-                'a live session must not carry an md5 account past the sign-in refusal'
-            );
+            $this->assertSame('', $authenticationService->signedInName(), 'a live sign-in must not carry an md5 account past the sign-in refusal');
         } finally {
             $authenticationService->logout();
             $userManager->delete(self::requireUser($userManager->getOneByName($user['name'])));
         }
     }
 
-    /**
-     * connectUser()'s own comment calls the session the fast path -- "faster to connect from session" -- and it had never run.
-     */
     #[Depends('testAuthenticationServiceExisting')]
-    public function testTheSessionFastPathActuallyResolvesAUser(YesWikiRuntime $wiki): void
-    {
-        $userManager = $wiki->services->get(UserManager::class);
-        ['user' => $user] = $this->createRandomUser($wiki);
-
-        $exposed = new class($wiki->services->get(AccountActivationService::class), $wiki->services->get(HibernationService::class), $wiki->services->get(ParameterBagInterface::class), $wiki->services->get(PasswordHasherFactory::class), $userManager, $wiki->services) extends AuthenticationService {
-            /**
-             * @return array<string, mixed> the parent declares a bare `array`, so no shape to narrow to
-             */
-            public function resolveFromSession(): array
-            {
-                return $this->connectUserFromSession();
-            }
-        };
-
-        try {
-            $wiki->services->get(AuthenticationService::class)->login($user);
-
-            $data = $exposed->resolveFromSession();
-
-            $this->assertSame($user['name'], $data['user']['name']);
-            $this->assertInstanceOf(\DateTime::class, $data['lastConnectionDate']);
-        } finally {
-            $wiki->services->get(AuthenticationService::class)->logout();
-            $userManager->delete(self::requireUser($userManager->getOneByName($user['name'])));
-        }
-    }
-
-    #[Depends('testAuthenticationServiceExisting')]
-    public function testLoginSetsSessionAndLogoutClearsIt(YesWikiRuntime $wiki): void
+    public function testLoginSignsInAndLogoutSignsOut(YesWikiRuntime $wiki): void
     {
         $authenticationService = $wiki->services->get(AuthenticationService::class);
         $userManager = $wiki->services->get(UserManager::class);
@@ -189,8 +153,7 @@ class AuthenticationServiceTest extends YesWikiTestCase
         try {
             $authenticationService->login($user);
 
-            $this->assertSame($user['name'], $_SESSION['user']['name'] ?? null);
-            $this->assertNotEmpty($_SESSION['user']['lastConnection'] ?? null);
+            $this->assertSame($user['name'], self::signedIn());
             $this->assertSame($user['name'], $authenticationService->getLoggedUserName());
             $loggedUser = $authenticationService->getLoggedUser();
             $this->assertIsArray($loggedUser);
@@ -198,7 +161,7 @@ class AuthenticationServiceTest extends YesWikiTestCase
 
             $authenticationService->logout();
 
-            $this->assertArrayNotHasKey('user', $_SESSION);
+            $this->assertSame('', self::signedIn());
             $this->assertSame('', $authenticationService->getLoggedUser());
         } finally {
             $authenticationService->logout();
@@ -207,22 +170,27 @@ class AuthenticationServiceTest extends YesWikiTestCase
     }
 
     #[Depends('testAuthenticationServiceExisting')]
-    public function testSwitchingIdentityCleansSensitiveSessionDataButSameUserReloginDoesNot(YesWikiRuntime $wiki): void
+    public function testAFormTokenIsBoundToWhoeverItWasGivenTo(YesWikiRuntime $wiki): void
     {
         $authenticationService = $wiki->services->get(AuthenticationService::class);
+        $tokens = $wiki->services->get(\Symfony\Component\Security\Csrf\CsrfTokenManager::class);
         $userManager = $wiki->services->get(UserManager::class);
         ['user' => $userA] = $this->createRandomUser($wiki);
         ['user' => $userB] = $this->createRandomUser($wiki);
 
         try {
             $authenticationService->login($userA);
-            $_SESSION['_csrf'] = ['dummy-token-id' => 'dummy-token-value'];
+            $tokenOfA = $tokens->getToken('main');
 
             $authenticationService->login($userA);
-            $this->assertArrayHasKey('_csrf', $_SESSION);
+            $this->assertTrue($tokens->isTokenValid($tokenOfA), 'signing the same account in again keeps its tokens');
 
             $authenticationService->login($userB);
-            $this->assertArrayNotHasKey('_csrf', $_SESSION);
+            $this->assertFalse($tokens->isTokenValid($tokenOfA), 'a token of A is no token of B');
+
+            $authenticationService->login($userA);
+            $authenticationService->revokeEverySignIn($userA['name']);
+            $this->assertFalse($tokens->isTokenValid($tokenOfA), 'and revoking the sign-ins revokes the tokens');
         } finally {
             $authenticationService->logout();
             $userManager->delete($userA);
@@ -230,9 +198,6 @@ class AuthenticationServiceTest extends YesWikiTestCase
         }
     }
 
-    /**
-     * Regression test for the session-fixation fix: the session ID must be regenerated whenever the authenticated identity actually changes (anonymous -> user, or user A -> user B), but must stay stable across repeated calls for the same already-logged-in user, as happens on every request via AuthenticationService::connectUser().
-     */
     #[Depends('testAuthenticationServiceExisting')]
     public function testLoginRegeneratesSessionIdOnlyOnIdentityChange(YesWikiRuntime $wiki): void
     {
@@ -246,9 +211,10 @@ class AuthenticationServiceTest extends YesWikiTestCase
                 return false;
             }
         };
+        $authenticationService->setServices($wiki->services);
 
         try {
-            unset($_SESSION['user']);
+            self::actAs(null);
 
             $idAnonymous = session_id();
             $authenticationService->login($userA);
@@ -277,7 +243,7 @@ class AuthenticationServiceTest extends YesWikiTestCase
         ['user' => $user] = $this->createRandomUser($wiki);
 
         try {
-            unset($_SESSION['user']);
+            self::actAs(null);
             $idBefore = session_id();
             $authenticationService->login($user);
             $idAfter = session_id();
@@ -389,7 +355,7 @@ class AuthenticationServiceTest extends YesWikiTestCase
 
             $accountActivationService->activate($user['name'], '', true);
             $authenticationService->login($user);
-            $this->assertSame($user['name'], $_SESSION['user']['name'] ?? null);
+            $this->assertSame($user['name'], $authenticationService->signedInName());
         } finally {
             $authenticationService->logout();
             $userManager->delete(self::requireUser($userManager->getOneByName($user['name'])));

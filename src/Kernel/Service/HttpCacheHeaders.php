@@ -7,7 +7,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Event\ResponseEvent;
 
-/** Keeps the session only when a request put something in it, and tells shared caches which anonymous page views they may keep. */
+/** Tells shared caches which anonymous page views they may keep, and that nobody's own response is one of them. */
 class HttpCacheHeaders
 {
     public const TTL = 'http_cache_ttl';
@@ -18,54 +18,27 @@ class HttpCacheHeaders
     private const CACHEABLE_HANDLERS = ['', 'show', 'rss'];
     private const STALE_IF_ERROR = 86400;
 
+    public const SIGNED_IN_COOKIE = 'yw-auth';
+
     public function __construct(
         private readonly ParameterBagInterface $params,
         private readonly LanguageService $languageService,
+        private readonly ?PersonalResponse $personal = null,
     ) {
     }
 
-    /** kernel.response listener: persist a deferred session, then choose the response's cache headers. */
+    /** kernel.response listener: chooses the response's cache headers. */
     public function onResponse(ResponseEvent $event): void
     {
-        if (!$event->isMainRequest()) {
-            return;
+        if ($event->isMainRequest()) {
+            $this->decide($event->getRequest(), $event->getResponse());
         }
-        self::persistDeferredSession();
-        $this->decide($event->getRequest(), $event->getResponse());
     }
 
-    /** Opens the session a request did not start with if it wrote something worth keeping, merging what it wrote. */
-    public static function persistDeferredSession(): bool
-    {
-        if (session_status() !== PHP_SESSION_NONE || !self::holdsSomething($_SESSION ?? []) || headers_sent()) {
-            return false;
-        }
-        $pending = $_SESSION;
-        session_start();
-        $_SESSION = array_replace($_SESSION, $pending);
-
-        return true;
-    }
-
-    /** Whether a session array carries anything besides the empty keys vendor code seeds. */
-    public static function holdsSomething(mixed $value): bool
-    {
-        if (!is_array($value)) {
-            return $value !== null && $value !== '';
-        }
-        foreach ($value as $item) {
-            if (self::holdsSomething($item)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /** Public for an anonymous page view when a TTL is configured, private and unstored whenever a session is open. */
+    /** Public for an anonymous page view when a TTL is configured; private and unstored for somebody's own response, or while an extension's session is open. */
     public function decide(Request $request, Response $response): void
     {
-        if (session_status() === PHP_SESSION_ACTIVE) {
+        if ($this->personal?->isMarked() || $request->cookies->has(self::SIGNED_IN_COOKIE) || session_status() === PHP_SESSION_ACTIVE) {
             $response->setPrivate();
             $response->headers->addCacheControlDirective('no-store');
 

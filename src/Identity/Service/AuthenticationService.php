@@ -6,7 +6,6 @@ use Psr\Container\ContainerInterface;
 use Psr\Log\LogLevel;
 use Symfony\Component\DependencyInjection\Attribute\AsAlias;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-use Tamtamchik\SimpleFlash\Flash;
 use YesWiki\Core\YesWikiController;
 use YesWiki\Identity\Entity\User;
 use YesWiki\Identity\Exception\BadFormatPasswordException;
@@ -16,8 +15,12 @@ use YesWiki\Identity\Security\LegacyPasswordHash;
 use YesWiki\Kernel\Entity\CookieData;
 use YesWiki\Kernel\Service\ActorSource;
 use YesWiki\Kernel\Service\CachesTheDatabase;
+use YesWiki\Kernel\Service\Flash;
 use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Kernel\Service\Journal;
+use YesWiki\Kernel\Service\PersonalResponse;
+use YesWiki\Kernel\Service\TripleStore;
+use YesWiki\Kernel\Service\WikiCookies;
 
 #[AsAlias(ActorSource::class, public: true)]
 class AuthenticationService extends YesWikiController implements ActorSource, CachesTheDatabase
@@ -37,6 +40,11 @@ class AuthenticationService extends YesWikiController implements ActorSource, Ca
     protected UserManager $userManager;
     /** @var array<string, mixed>|string|null */
     private $loggedUserCache;
+
+    /** @var array{name: string, issued: int, remember: bool, generation: int}|null who this request acts for, read from `yw-auth` or set by login() */
+    private ?array $signedIn = null;
+
+    public const GENERATION_PROPERTY = 'auth_generation';
 
     /** Overridable seam: tests exercise the non-CLI branches under the CLI SAPI. */
     protected function isCli(): bool
@@ -66,6 +74,9 @@ class AuthenticationService extends YesWikiController implements ActorSource, Ca
     public function startNewRequest(): void
     {
         $this->loggedUserCache = null;
+        if (!$this->isCli()) {
+            $this->signedIn = null;
+        }
     }
 
     /**
@@ -127,6 +138,48 @@ class AuthenticationService extends YesWikiController implements ActorSource, Ca
         $passwordHasher = $this->passwordHasherFactory->getPasswordHasher($user);
         $newHashedPassword = $passwordHasher->hash($plainTextPassword);
         $this->userManager->upgradePassword($user, $newHashedPassword);
+        $this->revokeEverySignIn($user->getName());
+    }
+
+    /** Signs the account out of every browser at their next request; this one stays signed in when it is the account's own. */
+    public function revokeEverySignIn(string $name): void
+    {
+        $generation = $this->generationOf($name) + 1;
+        $tripleStore = $this->container->get(TripleStore::class);
+        $tripleStore->delete($name, self::GENERATION_PROPERTY);
+        $tripleStore->create($name, self::GENERATION_PROPERTY, (string)$generation);
+        if (($this->signedIn['name'] ?? null) === $name) {
+            $this->signedIn['generation'] = $generation;
+            $this->writeLoginCookie();
+        }
+    }
+
+    /** Who this process acts for, with no cookie: a command, or a test; null for nobody. */
+    public function actAs(?string $name): void
+    {
+        $this->loggedUserCache = null;
+        $this->signedIn = $name === null || $name === ''
+            ? null
+            : ['name' => $name, 'issued' => time(), 'remember' => false, 'generation' => $this->generationOf($name)];
+    }
+
+    /** The signed-in user's name, '' for nobody, never an address. */
+    public function signedInName(): string
+    {
+        return $this->signedIn['name'] ?? '';
+    }
+
+    /** The generation of the signed-in account's sign-ins, 0 for nobody: what a CSRF token is bound to, so revoking the one revokes the other. */
+    public function signedInGeneration(): int
+    {
+        return $this->signedIn['generation'] ?? 0;
+    }
+
+    private function generationOf(string $name): int
+    {
+        $stored = $this->container->get(TripleStore::class)->getOne($name, self::GENERATION_PROPERTY);
+
+        return max(1, (int)$stored);
     }
 
     /**
@@ -143,37 +196,82 @@ class AuthenticationService extends YesWikiController implements ActorSource, Ca
         return true;
     }
 
-    /** connect a user from SESSION or COOKIES. */
+    /** Finds who this request is for: the `yw-auth` cookie, checked by HMAC; for one release the old `name` and `token` pair, checked once by bcrypt and traded for one. */
     public function connectUser(): void
     {
         $this->cleanOldFormatCookie();
-        try {
-            try {
-                $data = $this->connectUserFromSession();
-                if ($this->getExpirationTimeStamp($data['lastConnectionDate'], false) < time()) {
-                    throw new BadUserConnectException('Session older than an hour, checking the cookies again');
-                }
-            } catch (BadUserConnectException $th) {
-                $data = $this->connectUserFromCookies();
-                if ($this->getExpirationTimeStamp($data['lastConnectionDate'], $data['remember']) < time()) {
-                    $this->logout();
-                }
+        if ($this->isCli()) {
+            if ($this->signedIn !== null && $this->stillValid($this->signedIn['name'], $this->signedIn['generation']) === null) {
+                $this->actAs(null);
             }
 
+            return;
+        }
+        try {
+            if ($this->connectUserFromLoginCookie()) {
+                return;
+            }
+            $data = $this->connectUserFromCookies();
+            if ($this->getExpirationTimeStamp($data['lastConnectionDate'], $data['remember']) < time()) {
+                throw new BadUserConnectException('The old cookie has expired');
+            }
             $this->login($data['user'], $data['remember'] ? 1 : 0);
         } catch (BadUserConnectException $th) {
-            if (
-                empty($_SESSION['user']['name'])
-                || empty($data['user']['name'])
-                || $data['user']['name'] != $_SESSION['user']['name']
-                || !$this->container->get(AclService::class)->isAdmin($data['user']['name'])
-            ) {
-                $this->logout();
-            }
+            $this->logout();
         } catch (BadLoginException $th) {
             Flash::error($th->getMessage());
             $this->logout();
         }
+    }
+
+    /** Signs the request in from a valid `yw-auth` and renews it once it is half-way to its expiry; false when there is none, after deleting one that is no longer good. */
+    private function connectUserFromLoginCookie(): bool
+    {
+        $cookie = $this->getRequest()->cookies->get(LoginCookie::NAME);
+        if (!is_string($cookie) || $cookie === '') {
+            return false;
+        }
+        $now = time();
+        $read = $this->container->get(LoginCookie::class)->read($cookie, $now);
+        $user = $read === null ? null : $this->stillValid($read['name'], $read['generation']);
+        if ($read === null || $user === null) {
+            $this->setPersistentCookie(LoginCookie::NAME, '', $now - 3600);
+            unset($_COOKIE[LoginCookie::NAME]);
+
+            return false;
+        }
+        $this->loggedUserCache = null;
+        $this->signedIn = ['name' => $read['name'], 'issued' => $read['issued'], 'remember' => $read['remember'], 'generation' => $read['generation']];
+        $this->container->get(PersonalResponse::class)->mark();
+        if (LoginCookie::isDueForRenewal($read, $now)) {
+            $this->signedIn['issued'] = $now;
+            $this->writeLoginCookie();
+        }
+
+        return true;
+    }
+
+    /** The account a sign-in names, when it still exists, may sign in and has not been revoked since; null otherwise. */
+    private function stillValid(string $name, int $generation): ?User
+    {
+        $user = $this->userManager->getOneByName($name);
+        if ($user === null || $this->requiresPasswordReset($user) || $generation !== $this->generationOf($name)) {
+            return null;
+        }
+
+        return $user;
+    }
+
+    /** Sends the `yw-auth` cookie for whoever is signed in now. */
+    private function writeLoginCookie(): void
+    {
+        if ($this->isCli() || $this->signedIn === null) {
+            return;
+        }
+        $now = $this->signedIn['issued'];
+        $value = $this->container->get(LoginCookie::class)->issue($this->signedIn['name'], $this->signedIn['remember'], $this->signedIn['generation'], $now);
+        $this->setPersistentCookie(LoginCookie::NAME, $value, $now + ($this->signedIn['remember'] ? LoginCookie::REMEMBERED_LIFETIME : LoginCookie::SHORT_LIFETIME));
+        $_COOKIE[LoginCookie::NAME] = $value;
     }
 
     /**
@@ -183,12 +281,13 @@ class AuthenticationService extends YesWikiController implements ActorSource, Ca
      */
     public function getLoggedUser()
     {
-        if (!isset($_SESSION['user']) || empty($_SESSION['user']['name'])) {
+        $name = $this->signedInName();
+        if ($name === '') {
             return '';
         }
 
-        if (!is_array($this->loggedUserCache) || $this->loggedUserCache['name'] !== $_SESSION['user']['name']) {
-            $user = $this->userManager->getOneByName($_SESSION['user']['name']);
+        if (!is_array($this->loggedUserCache) || $this->loggedUserCache['name'] !== $name) {
+            $user = $this->userManager->getOneByName($name);
             if (!empty($user)) {
                 $this->loggedUserCache = $user->getArrayCopy();
             } else {
@@ -261,31 +360,27 @@ class AuthenticationService extends YesWikiController implements ActorSource, Ca
             throw new BadLoginException(_t('ACCOUNTACTIVATION_BY_EMAIL_WARNING', ['message' => _t('ACCOUNTACTIVATION_BY_EMAIL_MESSAGE_SENT')]));
         }
 
-        $previousUserName = $_SESSION['user']['name'] ?? null;
-        if (isset($_SESSION['user']) && $_SESSION['user']['name'] != $user['name']) {
+        $previousUserName = $this->signedIn['name'] ?? null;
+        if ($previousUserName !== null && $previousUserName != $user['name']) {
             $this->cleanSensitiveDataFromSession();
         }
         $remember = filter_var($remember, FILTER_VALIDATE_BOOL);
 
-        $currentDateTime = new \DateTime();
-        $_SESSION['user'] =
-            empty($user['name'])
-            ? []
-            : [
-                'name' => $user['name'],
-                'lastConnection' => $currentDateTime->getTimestamp(),
-                'remember' => $remember,
-            ];
+        if (empty($user['name'])) {
+            $this->actAs(null);
 
-        if (!empty($user['name']) && $user['name'] !== $previousUserName && !$this->isCli()) {
+            return;
+        }
+        $this->loggedUserCache = null;
+        $this->signedIn = ['name' => (string)$user['name'], 'issued' => time(), 'remember' => $remember, 'generation' => $this->generationOf((string)$user['name'])];
+        $this->container->get(PersonalResponse::class)->mark();
+
+        if ($user['name'] !== $previousUserName && !$this->isCli() && session_status() === PHP_SESSION_ACTIVE) {
             session_regenerate_id(true);
         }
 
         if (!$this->isCli()) {
             if (!$user instanceof User) {
-                if (empty($user['name'])) {
-                    throw new \Exception("`\$user['name']` must not be empty when retrieving user from `\$user['name']`");
-                }
                 $storedUser = $this->userManager->getOneByName($user['name']);
                 if ($storedUser === null) {
                     throw new \Exception("no user named `{$user['name']}` to sign in");
@@ -293,33 +388,32 @@ class AuthenticationService extends YesWikiController implements ActorSource, Ca
                 $user = $storedUser;
             }
 
-            $hashedPassword = $user->getPassword();
-            if ($hashedPassword === null) {
-                throw new \Exception("user `{$user->getName()}` has no password to sign the auth cookie with");
+            $this->writeLoginCookie();
+            $this->forgetTheOldCookies();
+        }
+    }
+
+    /** Deletes the `name` and `token` pair a sign-in made before `yw-auth`. */
+    private function forgetTheOldCookies(): void
+    {
+        foreach (['name', 'token'] as $old) {
+            if (!empty($this->getRequest()->cookies->get($old))) {
+                $this->setPersistentCookie($old, '', time() - 3600);
+                unset($_COOKIE[$old]);
             }
-            $rawData = $this->prepareRawData($currentDateTime, $remember, $hashedPassword);
-
-            $passwordHasher = $this->passwordHasherFactory->getPasswordHasher('cookie');
-            $encryptedData = $passwordHasher->hash($rawData);
-
-            $expires = $this->getExpirationTimeStamp($currentDateTime, $remember);
-            $this->setPersistentCookie('name', $user->getName(), $expires);
-            $this->setPersistentCookie('token', $currentDateTime->format(self::DATE_FORMAT_IN_TOKEN) . ($remember ? '1' : '0') . $encryptedData, $expires);
         }
     }
 
     public function logout(): void
     {
         $this->cleanSensitiveDataFromSession();
+        $this->signedIn = null;
         $this->cleanOldFormatCookie();
         if (!$this->isCli()) {
-            if (!empty($this->getRequest()->cookies->get('name'))) {
-                $this->setPersistentCookie('name', '', time() - 3600);
-                unset($_COOKIE['name']);
-            }
-            if (!empty($this->getRequest()->cookies->get('token'))) {
-                $this->setPersistentCookie('token', '', time() - 3600);
-                unset($_COOKIE['token']);
+            $this->forgetTheOldCookies();
+            if (!empty($this->getRequest()->cookies->get(LoginCookie::NAME))) {
+                $this->setPersistentCookie(LoginCookie::NAME, '', time() - 3600);
+                unset($_COOKIE[LoginCookie::NAME]);
             }
         }
     }
@@ -354,38 +448,24 @@ class AuthenticationService extends YesWikiController implements ActorSource, Ca
             || array_key_exists('login-sso', $this->container->get(\YesWiki\Kernel\Service\ExtensionRegistry::class)->all());
     }
 
-    private function updateSessionCookieExpires(int $expires): void
-    {
-        $sessionName = session_name();
-        $sessionId = session_id();
-        if (session_status() !== PHP_SESSION_ACTIVE || $sessionName === false || $sessionId === false || $sessionId === '') {
-            return;
-        }
-
-        $this->setPersistentCookie($sessionName, $sessionId, $expires);
-    }
-
     public function setPersistentCookie(string $name, string $value, int $expires): void
     {
-        $sessionParams = session_get_cookie_params();
-        $newParams = array_filter($sessionParams, function ($v, $k) {
-            return in_array($k, ['path', 'domain', 'secure', 'httponly', 'samesite']);
-        }, ARRAY_FILTER_USE_BOTH);
-        $newParams['expires'] = $expires;
-        setcookie($name, $value, $newParams);
+        $this->container->get(WikiCookies::class)->set($name, $value, $expires);
+    }
+
+    /**
+     * How the wiki's own cookies are sent: its path, secure on https, never to scripts, and the SameSite the configuration asks for.
+     *
+     * @return array{expires: int, path: string, domain: string, secure: bool, httponly: bool, samesite: 'Lax'|'None'|'Strict'}
+     */
+    public function cookieOptions(int $expires): array
+    {
+        return $this->container->get(WikiCookies::class)->options($expires);
     }
 
     public function deleteOldCookie(string $name): void
     {
-        $cookiePath = $this->params->get('cookie_path');
-        setcookie($name, '', [
-            'path' => is_string($cookiePath) ? $cookiePath : '/',
-            'domain' => '',
-            'secure' => $this->getRequest()->isSecure() || session_get_cookie_params()['secure'],
-            'httponly' => true,
-            'samesite' => session_get_cookie_params()['samesite'],
-            'expires' => time() - 3600,
-        ]);
+        $this->setPersistentCookie($name, '', time() - 3600);
         if ($this->getRequest()->cookies->has($name)) {
             unset($_COOKIE[$name]);
         }
@@ -428,48 +508,6 @@ class AuthenticationService extends YesWikiController implements ActorSource, Ca
             'user' => $user,
             'remember' => $data->getRemember(),
             'lastConnectionDate' => $data->getLastConnectionDate(),
-        ];
-    }
-
-    /**
-     * connect a user from SESSION.
-     *
-     * @return array{user: User, remember: bool, lastConnectionDate: \DateTime}
-     *
-     * @throws BadUserConnectException
-     */
-    protected function connectUserFromSession(): array
-    {
-        $userFromSession = $this->getLoggedUser();
-        if (empty($userFromSession['name'])) {
-            throw new BadUserConnectException('No use in session');
-        }
-
-        $user = $this->userManager->getOneByName($userFromSession['name']);
-
-        if (empty($user)) {
-            throw new BadUserConnectException('Unknown name');
-        }
-
-        if ($this->requiresPasswordReset($user)) {
-            throw new BadUserConnectException('Password predates this version, must be reset');
-        }
-
-        $lastConnection = $_SESSION['user']['lastConnection'] ?? null;
-        if (empty($lastConnection)) {
-            throw new BadUserConnectException('No last connection date');
-        }
-
-        $lastConnectionDate = \DateTime::createFromFormat('U', (string)$lastConnection);
-
-        if ($lastConnectionDate === false) {
-            throw new BadUserConnectException('Last connection date badly formatted');
-        }
-
-        return [
-            'user' => $user,
-            'remember' => !empty($_SESSION['user']['remember']),
-            'lastConnectionDate' => $lastConnectionDate,
         ];
     }
 
@@ -517,14 +555,6 @@ class AuthenticationService extends YesWikiController implements ActorSource, Ca
     /** clean sensitive data from session. */
     protected function cleanSensitiveDataFromSession(): void
     {
-        if (!empty($_SESSION['user']['name'])) {
-            if (isset($_SESSION['_csrf'])) {
-                unset($_SESSION['_csrf']);
-            }
-        }
-        if (isset($_SESSION['user'])) {
-            unset($_SESSION['user']);
-        }
         $this->loggedUserCache = null;
     }
 
@@ -538,8 +568,6 @@ class AuthenticationService extends YesWikiController implements ActorSource, Ca
             if (!empty($this->getRequest()->cookies->get('remember'))) {
                 $this->deleteOldCookie('remember');
             }
-
-            $this->updateSessionCookieExpires(0);
         }
     }
 }

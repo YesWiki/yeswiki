@@ -85,7 +85,7 @@ abstract class YesWikiPerformable
         $data = array_merge($data, ['arguments' => $this->arguments]);
 
         $vUserManager = $this->services->get(UserManager::class);
-        $userName = (!isset($_SESSION['user']) || empty($_SESSION['user']['name'])) ? '' : $_SESSION['user']['name'];
+        $userName = $this->services->get(\YesWiki\Identity\Service\AuthenticationService::class)->signedInName();
         $this->twig->addGlobal('user', new class($vUserManager, $userName) {
             public string $name;
             private UserManager $userManager;

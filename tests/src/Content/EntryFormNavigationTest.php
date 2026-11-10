@@ -3,7 +3,6 @@
 namespace YesWiki\Test\Content;
 
 use Symfony\Component\HttpFoundation\Request;
-use Tamtamchik\SimpleFlash\Flash;
 use YesWiki\Content\Controller\EntryController;
 use YesWiki\Content\Service\EntryManager;
 use YesWiki\Content\Service\FormManager;
@@ -11,6 +10,7 @@ use YesWiki\Content\Service\PageManager;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Exception\ExitException;
 use YesWiki\Kernel\Service\CurrentRequest;
+use YesWiki\Kernel\Service\Flash;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Test\Core\YesWikiTestCase;
 
@@ -65,13 +65,13 @@ class EntryFormNavigationTest extends YesWikiTestCase
             ]),
         ]);
 
-        unset($_SESSION['user']);
-        Flash::clear();
+        self::actAs(null);
+        Flash::display();
     }
 
     protected function tearDown(): void
     {
-        Flash::clear();
+        Flash::display();
         self::restoreBotGuard($this->getWiki());
         $this->currentRequest->replace($this->previousRequest);
         $_SERVER = $this->server;
@@ -183,8 +183,8 @@ class EntryFormNavigationTest extends YesWikiTestCase
         $tag = $this->submit('Saved message entry');
 
         $this->assertTrue($this->entryManager->isEntry($tag));
-        $this->assertTrue(Flash::some('success'));
-        $message = Flash::display('success');
+        $message = Flash::display();
+        $this->assertStringContainsString('alert-success', $message);
         $this->assertStringContainsString(_t('BAZ_FICHE_ENREGISTREE'), $message);
         $this->assertStringContainsString('view=saisir', $message);
         $this->assertStringContainsString('id=' . self::FORM_ID, $message);

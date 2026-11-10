@@ -2,7 +2,6 @@
 
 namespace YesWiki\Identity\Action;
 
-use Tamtamchik\SimpleFlash\Flash;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Identity\Exception\LoginException;
@@ -17,6 +16,7 @@ use YesWiki\Kernel\Component\ProvidesComponents;
 use YesWiki\Kernel\Component\Setting;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\CurrentRequest;
+use YesWiki\Kernel\Service\Flash;
 use YesWiki\Kernel\Service\FlashMessageService;
 use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\Redirector;

@@ -41,7 +41,7 @@ class MenuTest extends YesWikiTestCase
             ]),
         ], self::MENU);
 
-        unset($_SESSION['user']);
+        self::actAs(null);
     }
 
     protected function tearDown(): void

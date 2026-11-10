@@ -3,7 +3,6 @@
 namespace YesWiki\Admin\Action;
 
 use Symfony\Component\Security\Csrf\Exception\TokenNotFoundException;
-use Tamtamchik\SimpleFlash\Flash;
 use YesWiki\Admin\Entity\PackageTool;
 use YesWiki\Admin\Service\ArchiveService;
 use YesWiki\Admin\Service\AutoUpdateService;
@@ -15,6 +14,7 @@ use YesWiki\Identity\Service\InputFilter;
 use YesWiki\Identity\Service\RequestGuard;
 use YesWiki\Kernel\Entity\Messages;
 use YesWiki\Kernel\Performable\RegisteredAction;
+use YesWiki\Kernel\Service\Flash;
 use YesWiki\Kernel\Service\MigrationService;
 use YesWiki\Kernel\Service\Redirector;
 use YesWiki\Kernel\Service\ThrowableFormatter;

@@ -42,7 +42,7 @@ class RequiredFieldsTest extends YesWikiTestCase
             ]),
         ]);
 
-        unset($_SESSION['user']);
+        self::actAs(null);
     }
 
     protected function tearDown(): void

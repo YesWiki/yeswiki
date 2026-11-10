@@ -26,8 +26,8 @@ class AclServiceUpdateRequestWithAclTest extends YesWikiTestCase
 
         $userManager->create(self::MALICIOUS_NAME, self::TEST_EMAIL, 'Aa1!aaaaRegression');
 
-        $previousSessionUser = $_SESSION['user'] ?? null;
-        $_SESSION['user'] = ['name' => self::MALICIOUS_NAME, 'lastConnection' => time()];
+        $previousSessionUser = self::signedIn() ?: null;
+        self::actAs(self::MALICIOUS_NAME);
 
         try {
             $fragment = $aclService->updateRequestWithACL();
@@ -56,11 +56,7 @@ class AclServiceUpdateRequestWithAclTest extends YesWikiTestCase
                 "getReadablePageTags() took {$elapsed}s: looks like the injected SLEEP(1) executed."
             );
         } finally {
-            if ($previousSessionUser === null) {
-                unset($_SESSION['user']);
-            } else {
-                $_SESSION['user'] = $previousSessionUser;
-            }
+            self::actAs($previousSessionUser);
             $createdUser = $userManager->getOneByEmail(self::TEST_EMAIL);
             if ($createdUser) {
                 $userManager->delete($createdUser);
@@ -75,8 +71,8 @@ class AclServiceUpdateRequestWithAclTest extends YesWikiTestCase
         $aclService = $wiki->services->get(AclService::class);
         $pageManager = $wiki->services->get(PageManager::class);
 
-        $previousSessionUser = $_SESSION['user'] ?? null;
-        unset($_SESSION['user']);
+        $previousSessionUser = self::signedIn() ?: null;
+        self::actAs(null);
 
         try {
             $pageManager->save(self::PRIVATE_TAG, [\YesWiki\Content\Entity\PageBody::CONTENT => 'secret'], '', true);
@@ -100,11 +96,7 @@ class AclServiceUpdateRequestWithAclTest extends YesWikiTestCase
                 . 'predicate stopped filtering, which no other assertion in the suite would notice'
             );
         } finally {
-            if ($previousSessionUser === null) {
-                unset($_SESSION['user']);
-            } else {
-                $_SESSION['user'] = $previousSessionUser;
-            }
+            self::actAs($previousSessionUser);
             $pageManager->deleteOrphaned(self::PRIVATE_TAG);
             $pageManager->deleteOrphaned(self::PUBLIC_TAG);
         }

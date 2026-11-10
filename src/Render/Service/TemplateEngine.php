@@ -127,11 +127,18 @@ class TemplateEngine
         ]);
         $this->twig->addGlobal('app', [
             'server' => $wikiRequest->server->all(),
-            'session' => $_SESSION,
+            'session' => $_SESSION ?? [],
         ]);
-        $this->twig->addGlobal('user', [
-            'name' => (!isset($_SESSION['user']) || empty($_SESSION['user']['name'])) ? '' : $_SESSION['user']['name'],
-        ]);
+        $this->twig->addGlobal('user', new class($this->container) {
+            public function __construct(private readonly ContainerInterface $container)
+            {
+            }
+
+            public function getName(): string
+            {
+                return $this->container->get(\YesWiki\Identity\Service\AuthenticationService::class)->signedInName();
+            }
+        });
         $this->twig->addGlobal('config', $this->container->get(RuntimeConfig::class)->all());
         $this->twig->addGlobal('isInIframe', WikiUrls::iframeSuffixFor());
 

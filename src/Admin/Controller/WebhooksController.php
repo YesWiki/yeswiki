@@ -14,6 +14,7 @@ use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\UserManager;
 use YesWiki\Kernel\Entity\Event;
 use YesWiki\Kernel\Service\EventDispatcher;
+use YesWiki\Kernel\Service\FlashMessages;
 use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\Redirector;
 use YesWiki\Kernel\Service\RuntimeConfig;
@@ -172,11 +173,12 @@ class WebhooksController extends YesWikiController implements EventSubscriberInt
                 ? get_class($function[0]) . '->' . $function[1]
                 : $function;
 
-            $_SESSION['message'] = ($_SESSION['message'] ?? '') . str_replace(
+            $flash = $this->getService(FlashMessages::class);
+            $flash->toast($flash->takeToast() . str_replace(
                 ['{method}', '{function}', "\n"],
                 [__METHOD__, $functionName, ''],
                 nl2br(_t('WEBHOOKS_POST_ERROR'))
-            );
+            ));
 
             $this->getService(RuntimeConfig::class)['toast_class'] = 'alert alert-warning';
             $this->getService(RuntimeConfig::class)['toast_duration'] = 10000;

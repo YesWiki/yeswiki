@@ -26,7 +26,7 @@ class RequestGuardTest extends YesWikiTestCase
         $this->guard = $services->get(RequestGuard::class);
         $this->baseUrl = (string)$services->get(RuntimeConfig::class)['base_url'];
         $this->guard->token();
-        unset($_SESSION['user']);
+        self::actAs(null);
         $userManager = $services->get(UserManager::class);
         if (!$userManager->getOneByName(self::MEMBER)) {
             $userManager->create(self::MEMBER, 'requestguardmember@example.org', 'Un mot de passe 1!');
@@ -35,7 +35,7 @@ class RequestGuardTest extends YesWikiTestCase
 
     protected function tearDown(): void
     {
-        unset($_SESSION['user']);
+        self::actAs(null);
         $userManager = $this->getWiki()->services->get(UserManager::class);
         if ($user = $userManager->getOneByName(self::MEMBER)) {
             $userManager->delete($user);
@@ -65,7 +65,7 @@ class RequestGuardTest extends YesWikiTestCase
 
     private function signIn(): void
     {
-        $_SESSION['user'] = ['name' => self::MEMBER];
+        self::actAs(self::MEMBER);
     }
 
     private function ownOrigin(): string

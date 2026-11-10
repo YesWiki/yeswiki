@@ -3,7 +3,6 @@
 namespace YesWiki\Content\Action;
 
 use League\HTMLToMarkdown\HtmlConverter;
-use Tamtamchik\SimpleFlash\Flash;
 use YesWiki\Content\Entity\Item;
 use YesWiki\Content\Entity\SuppliesItems;
 use YesWiki\Content\Service\EntryManager;
@@ -19,6 +18,7 @@ use YesWiki\Kernel\Component\Component;
 use YesWiki\Kernel\Component\ProvidesComponents;
 use YesWiki\Kernel\Component\Setting;
 use YesWiki\Kernel\Performable\RegisteredAction;
+use YesWiki\Kernel\Service\Flash;
 use YesWiki\Kernel\Service\PinnedFetcher;
 use YesWiki\Kernel\Service\Redirector;
 use YesWiki\Kernel\Service\StringUtilService;

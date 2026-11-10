@@ -70,7 +70,6 @@
     "symfony/security-csrf": "^7.4",
     "symfony/string": "^7.4",
     "symfony/yaml": "^7.4",
-    "tamtamchik/simple-flash": "^4.0",
     "twig/twig": "^3.0"
   },
   "conflict": {},

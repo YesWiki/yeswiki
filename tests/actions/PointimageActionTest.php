@@ -51,7 +51,7 @@ class PointimageActionTest extends YesWikiTestCase
         $this->aclService->save(self::TARGET_TAG, 'write', '@admins');
         $this->cleanDataPage();
 
-        unset($_SESSION['user']);
+        self::actAs(null);
         $_POST = [];
     }
 

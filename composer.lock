@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "f7067dd5a27e373bf5ebaf982347174b",
+    "content-hash": "d6bd1cf5134ce696ad6909103b2bed50",
     "packages": [
         {
             "name": "altcha-org/altcha",
@@ -567,8 +567,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-10-19T17:53:57+00:00",
-            "published-time": "2026-10-19T17:54:31+00:00"
+            "time": "2026-10-19T17:53:57+00:00"
         },
         {
             "name": "endroid/qr-code",
@@ -5286,71 +5285,6 @@
             "time": "2026-10-12T12:34:30+00:00"
         },
         {
-            "name": "tamtamchik/simple-flash",
-            "version": "4.0.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/tamtamchik/simple-flash.git",
-                "reference": "ecc161cd0ce3374db98a696666232b2044ff024e"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/tamtamchik/simple-flash/zipball/ecc161cd0ce3374db98a696666232b2044ff024e",
-                "reference": "ecc161cd0ce3374db98a696666232b2044ff024e",
-                "shasum": ""
-            },
-            "require": {
-                "php": ">=7.3"
-            },
-            "require-dev": {
-                "phpunit/phpunit": "^9"
-            },
-            "type": "library",
-            "extra": {
-                "branch-alias": {
-                    "1.0.x": "1.0.x-dev",
-                    "1.1.x": "1.1.x-dev",
-                    "1.2.x": "1.2.x-dev",
-                    "2.0.x": "2.0.x-dev",
-                    "3.0.x": "3.0.x-dev",
-                    "dev-4.0.x": "4.0.x-dev",
-                    "dev-master": "4.0.x-dev"
-                }
-            },
-            "autoload": {
-                "files": [
-                    "src/function.php"
-                ],
-                "psr-4": {
-                    "Tamtamchik\\SimpleFlash\\": "src"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Yuri Tkachenko",
-                    "email": "yuri.tam.tkachenko@gmail.com",
-                    "homepage": "https://tamtamchika.net"
-                }
-            ],
-            "description": "Easy, framework agnostic flash notifications for PHP.",
-            "homepage": "https://github.com/tamtamchik/simple-flash",
-            "keywords": [
-                "agnostic",
-                "flash",
-                "messages",
-                "notifications"
-            ],
-            "support": {
-                "issues": "https://github.com/tamtamchik/simple-flash/issues",
-                "source": "https://github.com/tamtamchik/simple-flash/tree/4.0.0"
-            },
-            "time": "2026-05-20T09:26:47+00:00"
-        },
-        {
             "name": "twig/twig",
             "version": "v3.30.0",
             "source": {
@@ -8823,5 +8757,5 @@
     "platform-overrides": {
         "php": "8.3.0"
     },
-    "plugin-api-version": "2.11.0"
+    "plugin-api-version": "2.9.0"
 }

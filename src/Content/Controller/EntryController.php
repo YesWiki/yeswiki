@@ -3,7 +3,6 @@
 namespace YesWiki\Content\Controller;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-use Tamtamchik\SimpleFlash\Flash;
 use YesWiki\Content\Entity\ContentTypeSchema;
 use YesWiki\Content\Entity\FieldRole;
 use YesWiki\Content\Entity\Translations;
@@ -31,6 +30,7 @@ use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Identity\Service\BotGuard;
 use YesWiki\Kernel\Service\EventDispatcher;
+use YesWiki\Kernel\Service\Flash;
 use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\Redirector;

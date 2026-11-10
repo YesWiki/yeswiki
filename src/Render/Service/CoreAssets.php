@@ -2,9 +2,11 @@
 
 namespace YesWiki\Render\Service;
 
+use Symfony\Component\DependencyInjection\Attribute\AutowireServiceClosure;
 use Symfony\Component\Security\Csrf\CsrfTokenManager;
 use YesWiki\Files\Service\ProgramFiles;
 use YesWiki\Files\Service\Storage;
+use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Identity\Service\RequestGuard;
 use YesWiki\Kernel\Service\AssetRegistry;
 use YesWiki\Kernel\Service\LanguageService;
@@ -31,6 +33,8 @@ class CoreAssets implements RequestScopedState
         private readonly LanguageService $languages,
         private readonly Storage $storage,
         private readonly ProgramFiles $programFiles,
+        #[AutowireServiceClosure(AuthenticationService::class)]
+        private readonly ?\Closure $authentication = null,
     ) {
     }
 
@@ -220,7 +224,7 @@ class CoreAssets implements RequestScopedState
             'baseUrl' => $this->config['base_url'],
             'pageTag' => $this->pageContext->getTag(),
             'isDebugEnabled' => ($this->config->getValue('debug') ? 'true' : 'false'),
-            'antiCsrfToken' => session_status() === PHP_SESSION_ACTIVE ? $this->csrfTokenManager->getToken('main')->getValue() : '',
+            'antiCsrfToken' => $this->authentication !== null && ($this->authentication)()->signedInName() !== '' ? $this->csrfTokenManager->getToken('main')->getValue() : '',
 
             'imageUpload' => [
                 'format' => (string)($this->config['image-upload-format'] ?? 'image/webp'),

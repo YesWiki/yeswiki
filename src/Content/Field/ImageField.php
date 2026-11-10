@@ -4,13 +4,13 @@ namespace YesWiki\Content\Field;
 
 use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-use Tamtamchik\SimpleFlash\Flash;
 use YesWiki\Content\Attribute\Field;
 use YesWiki\Content\Service\FileManager;
 use YesWiki\Files\Service\FileBrowser;
 use YesWiki\Files\Service\ImageResizer;
 use YesWiki\Files\Service\RemoteImageCache;
 use YesWiki\Kernel\Service\AssetRegistry;
+use YesWiki\Kernel\Service\Flash;
 use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\TemplateEngine;
