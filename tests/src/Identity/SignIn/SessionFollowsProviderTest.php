@@ -183,4 +183,34 @@ class SessionFollowsProviderTest extends YesWikiTestCase
         $this->expectException(\YesWiki\Identity\Exception\BadLoginException::class);
         $browser->login($local, 1);
     }
+
+    /** The pair of cookies `name` and `token` that wikis wrote before yw-auth. */
+    private function connectFromOldCookies(string $tag): AuthenticationService
+    {
+        $services = self::getWiki()->services;
+        $user = $services->get(UserManager::class)->getOneByName($tag);
+        $this->assertNotNull($user);
+        $date = new \DateTime('-5 minutes');
+        $raw = (string)$user->getPassword() . $date->format('Ymd-H-i-s') . '0';
+        $token = $date->format('Ymd-H-i-s') . '0' . $services->get(PasswordHasherFactory::class)->getPasswordHasher('cookie')->hash($raw);
+        unset($_COOKIE[LoginCookie::NAME]);
+        $_COOKIE = ['name' => $tag, 'token' => $token];
+        $services->get(CurrentRequest::class)->replace(new Request([], [], [], $_COOKIE));
+        $browser = $this->browser();
+        $browser->connectUser();
+
+        return $browser;
+    }
+
+    public function testAnOldCookiePairStillSignsALocalAccountInWhileLocalIsOn(): void
+    {
+        $this->installProviders(['local' => ['type' => 'local']]);
+        $this->assertSame('SessionLocal', $this->connectFromOldCookies('SessionLocal')->signedInName());
+    }
+
+    public function testAnOldCookiePairDoesNotSignALocalAccountInWhenLocalIsOff(): void
+    {
+        $this->installProviders(['acme' => ['type' => 'fakeredirect'], 'local' => ['type' => 'local', 'enabled' => false]]);
+        $this->assertSame('', $this->connectFromOldCookies('SessionLocal')->signedInName());
+    }
 }

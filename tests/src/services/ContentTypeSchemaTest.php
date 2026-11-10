@@ -31,7 +31,7 @@ class ContentTypeSchemaTest extends TestCase
     {
         return [
             'page' => [ContentTypeSchema::TYPE_PAGE, ['title', 'content', 'keywords']],
-            'user' => [ContentTypeSchema::TYPE_USER, ['username', 'password', 'email', 'profile_picture']],
+            'user' => [ContentTypeSchema::TYPE_USER, ['username', 'password', 'email', 'first_name', 'last_name', 'profile_picture']],
             'file' => [ContentTypeSchema::TYPE_FILE, ['file_content']],
         ];
     }

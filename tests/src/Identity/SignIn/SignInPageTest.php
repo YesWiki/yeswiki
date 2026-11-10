@@ -78,6 +78,19 @@ class SignInPageTest extends YesWikiTestCase
         $withLocal = $this->render(['local' => ['type' => 'local']]);
         $this->assertStringContainsString('user/signup', $withLocal);
         $this->assertStringContainsString('user/lost-password', $withLocal);
+        $this->assertStringContainsString('name="remember"', $withLocal);
+        $this->assertStringNotContainsString('name="remember"', $this->render(['dir' => ['type' => 'fakepw']]), 'a directory sign-in is always remembered: no box to tick');
+    }
+
+    public function testTheHorizontalFormPostsTheProviderToo(): void
+    {
+        $this->installProviders(['dir' => ['type' => 'fakepw']]);
+        $only = (string)self::getWiki()->services->get(MarkdownFormatterService::class)->format('{{login template="horizontal.twig"}}');
+        $this->assertMatchesRegularExpression('#name="provider"[^>]*value="dir"|value="dir"[^>]*name="provider"#', $only);
+
+        $this->installProviders(['local' => ['type' => 'local'], 'dir' => ['type' => 'fakepw']]);
+        $both = (string)self::getWiki()->services->get(MarkdownFormatterService::class)->format('{{login template="horizontal.twig"}}');
+        $this->assertStringContainsString('yw-sign-in__tabs', $both);
     }
 
     public function testNothingEnabledSaysSo(): void

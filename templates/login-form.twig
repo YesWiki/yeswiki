@@ -99,12 +99,14 @@
                                     <small class="yw-sign-in__local-only"><a href="{{ lostpasswordurl }}">{{ _t("LOGIN_LOST_PASSWORD") }}</a></small>
                                 {% endif %}
                             {% endblock %}
-                            <div class="checkbox yw-sign-in__local-only">
-                                <label>
-                                    <input type="checkbox" id="remember-default" name="remember" value="1">
-                                    <span>{{ _t("LOGIN_REMEMBER_ME") }}</span>
-                                </label>
-                            </div>
+                            {% if hasLocal %}
+                                <div class="checkbox yw-sign-in__local-only">
+                                    <label>
+                                        <input type="checkbox" id="remember-default" name="remember" value="1">
+                                        <span>{{ _t("LOGIN_REMEMBER_ME") }}</span>
+                                    </label>
+                                </div>
+                            {% endif %}
                             <button type="submit" class="yw-btn yw-btn--block {{ btnclass }} yw-btn--primary">{{ _t("LOGIN_LOGIN") }}</button>
                             {% block hidden %}
                                 <input type="hidden" name="context" value="{{ context }}" />

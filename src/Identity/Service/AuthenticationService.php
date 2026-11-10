@@ -265,12 +265,19 @@ class AuthenticationService extends YesWikiController implements ActorSource, Ca
         if ($user === null || $this->requiresPasswordReset($user) || $generation !== $this->generationOf($name)) {
             return null;
         }
-        $registry = $this->container->get(ProviderRegistry::class);
-        if (!($user->provider() === null ? $registry->localEnabled() : $registry->isEnabled($user->provider()))) {
+        if (!$this->placeIsOn($user)) {
             return null;
         }
 
         return $user;
+    }
+
+    /** Whether the place the account belongs to, local or a provider, is switched on and installed: every way of staying signed in asks. */
+    private function placeIsOn(User $user): bool
+    {
+        $registry = $this->container->get(ProviderRegistry::class);
+
+        return $user->provider() === null ? $registry->localEnabled() : $registry->isEnabled($user->provider());
     }
 
     /** Sends the `yw-auth` cookie for whoever is signed in now. */
@@ -496,6 +503,10 @@ class AuthenticationService extends YesWikiController implements ActorSource, Ca
 
         if (empty($user)) {
             throw new BadUserConnectException('Unknown name');
+        }
+
+        if (!$this->placeIsOn($user)) {
+            throw new BadUserConnectException('The place this account signs in through is switched off');
         }
 
         if ($this->requiresPasswordReset($user)) {
