@@ -23,12 +23,12 @@ class ButtondropdownAction extends YesWikiAction implements RegisteredAction
 
         $title = $this->arguments['title'] ?? '';
 
-        $caret = $this->arguments['caret'];
+        $caret = $this->arguments['caret'] ?? '1';
         if ($caret != '0') {
             $caret = '1';
         }
 
-        $icon = $this->getService(TemplateHelperService::class)->formatIconHtml($this->arguments['icon']);
+        $icon = $this->getService(TemplateHelperService::class)->formatIconHtml($this->arguments['icon'] ?? '');
         if (!empty($icon) && !empty($text)) {
             $icon = $icon . ' ';
         }

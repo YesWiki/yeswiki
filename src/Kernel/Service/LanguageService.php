@@ -9,6 +9,8 @@ namespace YesWiki\Kernel\Service {
 
         /** Where a reader's choice of language is kept. */
         public const COOKIE = 'yw-lang';
+
+        private bool $fromAcceptLanguage = false;
         private const COOKIE_LIFETIME = 31536000;
 
         private static ?LanguageService $instance = null;
@@ -234,6 +236,7 @@ namespace YesWiki\Kernel\Service {
                 return $pageMetadataLang;
             }
 
+            $this->fromAcceptLanguage = count($availableLanguages) > 1;
             preg_match_all(
                 '/([[:alpha:]]{1,8})(-([[:alpha:]|-]{1,8}))?'
                     . "(\s*;\s*q\s*=\s*(1\.0{0,3}|0\.\d{0,3}))?\s*(,|$)/i",
@@ -382,8 +385,15 @@ namespace YesWiki\Kernel\Service {
         }
 
         /** Put the catalogue back to the baseline, dropping the last reader's language. */
+        /** Whether this request's language was chosen from Accept-Language, so that a shared cache must keep one copy per language (replicas 17). */
+        public function dependsOnAcceptLanguage(): bool
+        {
+            return $this->fromAcceptLanguage;
+        }
+
         public function startNewRequest(): void
         {
+            $this->fromAcceptLanguage = false;
             if ($this->baselineTranslations === null) {
                 return;
             }

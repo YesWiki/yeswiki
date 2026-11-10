@@ -19,7 +19,7 @@ class ColAction extends YesWikiAction implements RegisteredAction
      */
     public function run()
     {
-        $size = $this->arguments['size'];
+        $size = $this->arguments['size'] ?? '';
         if (empty($size)) {
             return '<div><div class="yw-alert yw-alert--danger"><strong>' . _t('TEMPLATE_ACTION_COL') . '</strong> : '
                 . _t('TEMPLATE_SIZE_PARAMETER_REQUIRED') . '.</div>' . "\n";

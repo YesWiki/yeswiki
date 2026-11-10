@@ -57,7 +57,7 @@ class HttpCacheHeaders
         $response->setStaleWhileRevalidate($ttl);
         $response->setStaleIfError(self::STALE_IF_ERROR);
         $vary = ['Cookie', 'HX-Request'];
-        if (count($this->languageService->availableLanguages()) > 1) {
+        if ($this->languageService->dependsOnAcceptLanguage()) {
             $vary[] = 'Accept-Language';
         }
         $response->setVary($vary, false);

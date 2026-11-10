@@ -1402,3 +1402,22 @@ rien écrire au Journal :
   détail en JSON (`{"ready":false,"checks":{"database":"failed",...}}`). La
   raison exacte d'un échec va dans le journal d'erreurs du serveur, pas dans
   la réponse.
+
+### Un cache partagé devant le wiki
+
+`http_cache_ttl` (en secondes, `0` par défaut) laisse un cache partagé, un
+CDN ou un Varnish garder les pages vues par un lecteur anonyme. Une page
+n'est jamais déclarée publique quand elle est à quelqu'un : un lecteur
+connecté, un formulaire qui porte un jeton, un message affiché après un
+enregistrement. Le wiki répond alors `private, no-store`.
+
+Une page publique annonce `Vary: Cookie` et, quand la langue a été choisie
+d'après le navigateur, `Vary: Accept-Language`. Un cache qui ne respecte pas
+`Vary` servirait la page d'une langue à un lecteur d'une autre : dans ce cas,
+donnez une adresse par langue (`?lang=en`).
+
+Rien ne purge le cache quand une page change : sa durée est ce qui borne
+une page périmée. Pour un CDN qui offre une API de purge, le wiki émet
+l'événement `cache.stale` à chaque page ou fiche enregistrée ou supprimée,
+avec ses adresses (`tag` et `urls`). Une extension peut l'écouter et appeler
+cette API. Les listes qui montrent la fiche n'en font pas partie.

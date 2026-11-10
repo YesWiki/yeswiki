@@ -157,6 +157,7 @@ class HttpCacheHeadersTest extends TestCase
     {
         $language = $this->createStub(LanguageService::class);
         $language->method('availableLanguages')->willReturn($languages);
+        $language->method('dependsOnAcceptLanguage')->willReturn(count($languages) > 1);
 
         return new HttpCacheHeaders(new ParameterBag([HttpCacheHeaders::TTL => $ttl]), $language, $personal ?? new PersonalResponse());
     }

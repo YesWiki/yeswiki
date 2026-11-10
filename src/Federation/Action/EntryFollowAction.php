@@ -22,7 +22,7 @@ class EntryFollowAction extends YesWikiAction implements RegisteredAction
     {
         $activityPubService = $this->getService(ActivityPubService::class);
 
-        $formId = $this->arguments['id'];
+        $formId = $this->arguments['id'] ?? '';
         $form = $this->getService(FormManager::class)->getOne($formId);
         if (empty($form) || !$activityPubService->hasActor($form)) {
             return '';
