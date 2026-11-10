@@ -13,7 +13,6 @@ use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\Stamp\DelayStamp;
 use Symfony\Component\Messenger\Stamp\TransportMessageIdStamp;
 use Symfony\Component\Scheduler\RecurringMessage;
-use YesWiki\Files\Service\RuntimeLock;
 use YesWiki\Kernel\Queue\ProvidesSchedule;
 use YesWiki\Kernel\Queue\QueueConsumerMode;
 use YesWiki\Kernel\Queue\QueuePassLimits;
@@ -24,6 +23,7 @@ use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Kernel\Service\Journal;
 use YesWiki\Kernel\Service\JournalSchema;
+use YesWiki\Kernel\Service\Lock\FileLocks;
 use YesWiki\Kernel\Service\Queue\QueueBus;
 use YesWiki\Kernel\Service\Queue\QueueConsumer;
 use YesWiki\Kernel\Service\Queue\QueueHandlerLocator;
@@ -91,7 +91,7 @@ class QueueConsumerTest extends YesWikiTestCase
     {
         $this->file = tempnam(sys_get_temp_dir(), 'yw-queue-') . '.db';
         $this->lockDir = sys_get_temp_dir() . '/yw-queue-holders-' . bin2hex(random_bytes(4));
-        $this->holderLock = new QueueHolderLock(QueueTestKit::locksIn($this->lockDir));
+        $this->holderLock = new QueueHolderLock(new FileLocks(QueueTestKit::locksIn($this->lockDir)));
         $this->db = new DbService(new ParameterBag([
             'db_driver' => 'sqlite',
             'db_database' => $this->file,
@@ -360,7 +360,7 @@ class QueueConsumerTest extends YesWikiTestCase
             $transport = new YesWiki\Kernel\Service\Queue\QueueTransport($db, new YesWiki\Kernel\Service\Queue\QueueSchema($db), new Symfony\Component\Clock\NativeClock());
             $transport->claimAs(YesWiki\Kernel\Queue\QueueConsumerMode::Request);
             $holder = YesWiki\Kernel\Service\Queue\QueueHolderLock::newToken();
-            $locks = new YesWiki\Kernel\Service\Queue\QueueHolderLock(new YesWiki\Files\Service\RuntimeLock());
+            $locks = new YesWiki\Kernel\Service\Queue\QueueHolderLock(new YesWiki\Kernel\Service\Lock\FileLocks());
             $locks->hold($holder) or exit(2);
             $transport->workFor($holder);
             echo count([...$transport->get()]), "\n";
@@ -685,7 +685,7 @@ class QueueConsumerTest extends YesWikiTestCase
     public function testAPassRunsEvenWhenItsLockCannotBeCreated(): void
     {
         $notADirectory = (string)tempnam(sys_get_temp_dir(), 'yw-not-a-dir-');
-        $this->holderLock = new QueueHolderLock(QueueTestKit::locksIn($notADirectory));
+        $this->holderLock = new QueueHolderLock(new FileLocks(QueueTestKit::locksIn($notADirectory)));
         $this->build($this->db, $this->clock);
         $this->send(1);
 
@@ -1376,9 +1376,9 @@ class QueueConsumerTest extends YesWikiTestCase
             $recorder,
             $this->statistics,
             $this->passLimits ?? new QueuePassLimitsFactory(new NativeClock()),
-            $hibernation = new HibernationService($this->params, QueueTestKit::locksIn($this->lockDir)),
+            $hibernation = new HibernationService($this->params, new FileLocks(QueueTestKit::locksIn($this->lockDir))),
             $journal,
-            new QueueScheduleTicker([$provider], $bus, $this->history, $recorder, new RuntimeLock(), $clock, $hibernation, $journal),
+            new QueueScheduleTicker([$provider], $bus, $this->history, $recorder, new FileLocks(), $clock, $hibernation, $journal),
             $clock,
             $watch,
             $this->holderLock,
@@ -1409,7 +1409,7 @@ class QueueConsumerTest extends YesWikiTestCase
     /** The archive lock the consumer reads, in the test's own lock directory, as another process addresses it. */
     private function archiveLock(): string
     {
-        return $this->lockDir . '/' . HibernationService::ARCHIVING_LOCK;
+        return $this->lockDir . '/' . FileLocks::pathOf(HibernationService::ARCHIVING_LOCK);
     }
 
     /** A message m0 that a `request` consumer on another machine took and died with, with no lock file to tell, the hour and the minute run out: answers its id. */

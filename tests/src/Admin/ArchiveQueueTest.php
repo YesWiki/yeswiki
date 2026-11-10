@@ -22,6 +22,7 @@ use YesWiki\Kernel\Service\ConfigurationService;
 use YesWiki\Kernel\Service\ConsoleService;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\HibernationService;
+use YesWiki\Kernel\Service\Lock\FileLocks;
 use YesWiki\Kernel\Service\Queue\QueueBus;
 use YesWiki\Kernel\Service\Queue\QueueConsumer;
 use YesWiki\Kernel\Service\Queue\QueueRequestTrigger;
@@ -573,7 +574,7 @@ class ArchiveQueueTest extends YesWikiTestCase
         }
 
         $this->assertNotNull($refused, 'a backup ran without its lock');
-        $this->assertSame(_t('ARCHIVE_LOCK_UNAVAILABLE', ['path' => HibernationService::ARCHIVING_LOCK]), $refused->getMessage());
+        $this->assertSame(_t('ARCHIVE_LOCK_UNAVAILABLE', ['path' => FileLocks::pathOf(HibernationService::ARCHIVING_LOCK)]), $refused->getMessage());
         $this->assertStringContainsString('cache/archiving.lock', $refused->getMessage());
         $this->assertNotSame(_t('ARCHIVE_ALREADY_RUNNING'), $refused->getMessage());
         $this->assertSame($before, (string)file_get_contents($this->kit->configFile()), 'no status was set, and none lifted');
@@ -601,13 +602,13 @@ class ArchiveQueueTest extends YesWikiTestCase
             $console ?? $services->get(ConsoleService::class),
             $services->get(DbService::class),
             $services->get(ParameterBagInterface::class),
-            new HibernationService(new ParameterBag(['wiki_status' => 'running']), $this->kit->locks),
+            new HibernationService(new ParameterBag(['wiki_status' => 'running']), new FileLocks($this->kit->locks)),
             $services->get(UrlFormatter::class),
             $this->storage,
             new LocalFiles(),
             $bus ?? $this->bus,
             $this->statistics,
-            $locks ?? $this->kit->locks,
+            new FileLocks($locks ?? $this->kit->locks),
         );
 
         return $this->archives;
@@ -721,7 +722,7 @@ class ArchiveQueueTest extends YesWikiTestCase
     /** The archive lock this test's services take and read, as another process addresses it. */
     private function archiveLock(): string
     {
-        return $this->kit->lockDir . '/' . HibernationService::ARCHIVING_LOCK;
+        return $this->kit->lockDir . '/' . FileLocks::pathOf(HibernationService::ARCHIVING_LOCK);
     }
 
     private function wikiStatus(): string

@@ -28,6 +28,25 @@ by `QueueHandlerLocator`; a module declares its recurring work in its `Scheduler
 its `schedulers/`), through `ProvidesSchedule`, the way it declares Health checks. The last section
 of this ADR is the guide to adding either.
 
+## Amendment (replicas 03, 2026-11-10): the locks are the database's
+
+The queue shipped with its locks as `flock` on files under `cache/`, which exclude the processes of
+one machine. They now go through `Locks` (`src/Kernel/Service/Lock/`), whose `DatabaseLocks` holds
+them on the wiki's database connection: `GET_LOCK` on MySQL and MariaDB, a pair of advisory keys on
+PostgreSQL, both named from the database, the table prefix and the lock, so the wikis of a farm on
+one server never share one. The schedule tick (`queue-schedule`), each pass's holder lock
+(`queue-holders/<nonce>`), the archive lock and the Doryphore arrival take theirs there, so a lock
+held on one machine is held for every machine that reaches the database. A lock still goes when its
+holder dies, since the server drops it with the connection. A judge on another connection reads it
+as held or free, never absent, and a holder that let go is free at once: that is safe because a pass
+closes its rows before it releases, and every reaping is guarded by the claim or the open pass it
+reads. SQLite keeps the files, through `FileLocks`, since it serves one machine (ADR-0031).
+`QueueFallback`'s two stamps stay files on purpose: they keep, per machine and for a minute, the
+answer to a rule re-derived from the history, which is a cache any node may lose.
+
+Where the text below says `flock`, a lock file or "one host is assumed", read `Locks`: the reasoning
+about held, free and absent holds as written.
+
 ## Architecture
 
 Work enters the queue from two producers: module code that dispatches, and the Scheduler that turns

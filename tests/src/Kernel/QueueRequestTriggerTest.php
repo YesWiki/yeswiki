@@ -21,6 +21,7 @@ use YesWiki\Kernel\Service\ConfigurationService;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Kernel\Service\Journal;
+use YesWiki\Kernel\Service\Lock\FileLocks;
 use YesWiki\Kernel\Service\Queue\QueueConsumer;
 use YesWiki\Kernel\Service\Queue\QueueFallback;
 use YesWiki\Kernel\Service\Queue\QueuePassLimitsFactory;
@@ -609,7 +610,7 @@ class QueueRequestTriggerTest extends YesWikiTestCase
 
         $this->setWikiStatus('hibernate');
         $this->trigger('request', 'hibernate')->afterResponse();
-        $letGo = QueueTestHolders::lockHeldByAnotherProcess($this->kit->lockDir . '/' . HibernationService::ARCHIVING_LOCK);
+        $letGo = QueueTestHolders::lockHeldByAnotherProcess($this->kit->lockDir . '/' . FileLocks::pathOf(HibernationService::ARCHIVING_LOCK));
         $this->setWikiStatus('archiving');
         try {
             $this->trigger('request', 'archiving')->afterResponse();
@@ -668,7 +669,7 @@ class QueueRequestTriggerTest extends YesWikiTestCase
                 return $this->canFinishEarly;
             },
             self::wikiDir(),
-            new HibernationService(new ParameterBag(['wiki_status' => $wikiStatus]), $this->locks),
+            new HibernationService(new ParameterBag(['wiki_status' => $wikiStatus]), new FileLocks($this->locks)),
             fn (): bool => $this->canFinishEarly,
         );
     }

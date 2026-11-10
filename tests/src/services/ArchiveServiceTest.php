@@ -296,7 +296,7 @@ class ArchiveServiceTest extends YesWikiTestCase
         $previousStatus = $params->has('wiki_status') ? $params->get('wiki_status') : null;
         $previousStatus = is_string($previousStatus) ? $previousStatus : '';
         // `archiving` is a backup under way only while that run holds the archive lock: without it, the next reader lifts the status.
-        $letGo = $status === 'archiving' ? QueueTestHolders::lockHeldByAnotherProcess(YESWIKI_INSTANCE_DIR . '/' . HibernationService::ARCHIVING_LOCK) : null;
+        $letGo = $status === 'archiving' ? QueueTestHolders::wikiLockHeldElsewhere($params, HibernationService::ARCHIVING_LOCK) : null;
         $this->setWikiStatus($configService, $status);
 
         $defaultFoldersToInclude = constant('\\YesWiki\\Admin\\Service\\ArchiveService::FOLDERS_TO_INCLUDE');
@@ -364,7 +364,7 @@ class ArchiveServiceTest extends YesWikiTestCase
     {
         $configService = $services['wiki']->services->get(ConfigurationService::class);
         $before = $this->statusInTheConfig($configService);
-        $letGo = QueueTestHolders::lockHeldByAnotherProcess(YESWIKI_INSTANCE_DIR . '/' . HibernationService::ARCHIVING_LOCK);
+        $letGo = QueueTestHolders::wikiLockHeldElsewhere($services['wiki']->services->get(ParameterBagInterface::class), HibernationService::ARCHIVING_LOCK);
         $output = '';
         $location = '';
         $refused = null;

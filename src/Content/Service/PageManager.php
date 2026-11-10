@@ -13,6 +13,7 @@ use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Identity\Service\Guard;
 use YesWiki\Identity\Service\UserManager;
 use YesWiki\Kernel\Routing\ReservedTags;
+use YesWiki\Kernel\Service\CachesTheDatabase;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\EventDispatcher;
 use YesWiki\Kernel\Service\HibernationService;
@@ -20,7 +21,7 @@ use YesWiki\Kernel\Service\Journal;
 use YesWiki\Kernel\Service\TripleStore;
 use YesWiki\Search\Service\SearchIndexer;
 
-class PageManager
+class PageManager implements CachesTheDatabase
 {
     protected AclService $aclService;
     protected AuthenticationService $authenticationService;
@@ -73,6 +74,14 @@ class PageManager
 
         $this->ownersCache = [];
         $this->pageCache = [];
+    }
+
+    public function startNewRequest(): void
+    {
+        $this->ownersCache = [];
+        $this->pageCache = [];
+        $this->typeCache = [];
+        $this->rawPageCache = [];
     }
 
     /**

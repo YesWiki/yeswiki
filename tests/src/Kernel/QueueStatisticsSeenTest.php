@@ -8,6 +8,7 @@ use Symfony\Component\Clock\MockClock;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 use YesWiki\Kernel\Queue\QueueConsumerMode;
 use YesWiki\Kernel\Service\DbService;
+use YesWiki\Kernel\Service\Lock\FileLocks;
 use YesWiki\Kernel\Service\Queue\QueueHolderLock;
 use YesWiki\Kernel\Service\Queue\QueueSchema;
 use YesWiki\Kernel\Service\Queue\QueueStatistics;
@@ -184,7 +185,7 @@ class QueueStatisticsSeenTest extends YesWikiTestCase
     /** The statistics over those tables, the holders' locks under this test's own directory. */
     private function statisticsOn(DbService $db, QueueSchema $schema): QueueStatistics
     {
-        $transport = new QueueTransport($db, $schema, clock: $this->clock, holderLock: new QueueHolderLock(QueueTestKit::locksIn($this->lockDir)));
+        $transport = new QueueTransport($db, $schema, clock: $this->clock, holderLock: new QueueHolderLock(new FileLocks(QueueTestKit::locksIn($this->lockDir))));
 
         return new QueueStatistics($db, $schema, $transport, $this->clock);
     }

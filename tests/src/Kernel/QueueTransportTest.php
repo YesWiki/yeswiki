@@ -18,6 +18,7 @@ use Symfony\Component\Messenger\Stamp\SentToFailureTransportStamp;
 use Symfony\Component\Messenger\Stamp\TransportMessageIdStamp;
 use YesWiki\Kernel\Queue\QueueConsumerMode;
 use YesWiki\Kernel\Service\DbService;
+use YesWiki\Kernel\Service\Lock\FileLocks;
 use YesWiki\Kernel\Service\Queue\QueueHolderLock;
 use YesWiki\Kernel\Service\Queue\QueueSchema;
 use YesWiki\Kernel\Service\Queue\QueueTransport;
@@ -61,7 +62,7 @@ class QueueTransportTest extends YesWikiTestCase
         $this->schema->create();
         $this->transport = new QueueTransport($this->db, $this->schema, clock: $this->clock);
         $this->dir = sys_get_temp_dir() . '/yw-holders-' . bin2hex(random_bytes(4));
-        $this->holderLock = new QueueHolderLock(QueueTestKit::locksIn($this->dir));
+        $this->holderLock = new QueueHolderLock(new FileLocks(QueueTestKit::locksIn($this->dir)));
         $this->locked = new QueueTransport($this->db, $this->schema, clock: $this->clock, holderLock: $this->holderLock);
         $this->transport->workFor(QueueTestHolders::passToken());
         $this->locked->workFor(QueueTestHolders::passToken());

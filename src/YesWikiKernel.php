@@ -17,6 +17,8 @@ use YesWiki\Kernel\Performable\ActionRegistry;
 use YesWiki\Kernel\Service\ConfigurationFileProvider;
 use YesWiki\Kernel\Service\EnvironmentConfiguration;
 use YesWiki\Kernel\Service\LanguageService;
+use YesWiki\Kernel\Service\Lock\DatabaseLocks;
+use YesWiki\Kernel\Service\Lock\Locks;
 use YesWiki\Kernel\Service\ProgramVersion;
 use YesWiki\Kernel\Service\Queue\QueuePassLimitsFactory;
 use YesWiki\Kernel\Service\StringUtilService;
@@ -157,6 +159,7 @@ class YesWikiKernel extends Kernel
         $container->setAlias(ContainerInterface::class, 'service_container')->setPublic(true);
         $container->register(NativeClock::class)->setPublic(false);
         $container->setAlias(ClockInterface::class, NativeClock::class)->setPublic(true);
+        $container->setAlias(Locks::class, DatabaseLocks::class)->setPublic(true);
         $container->register(ActionRegistry::class)->setAutowired(true)->setPublic(true);
 
         $loader = new PhpFileLoader($container, new FileLocator(__DIR__));

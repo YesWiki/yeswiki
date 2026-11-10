@@ -6,6 +6,7 @@ use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Filesystem\Filesystem;
 use YesWiki\Kernel\Service\CacheClearer;
+use YesWiki\Kernel\Service\Lock\FileLocks;
 use YesWiki\Kernel\Service\Queue\QueueHolderLock;
 
 /** What a holder lock says, from another process, about whoever took a claim or runs a pass: still there, gone, or nothing to tell. */
@@ -20,7 +21,7 @@ class QueueHolderLockTest extends TestCase
     {
         $this->dir = sys_get_temp_dir() . '/yw-holder-lock-' . bin2hex(random_bytes(4));
         mkdir($this->dir, 0o777, true);
-        $this->lock = new QueueHolderLock(QueueTestKit::locksIn($this->dir));
+        $this->lock = new QueueHolderLock(new FileLocks(QueueTestKit::locksIn($this->dir)));
     }
 
     protected function tearDown(): void

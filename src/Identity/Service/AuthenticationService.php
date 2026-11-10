@@ -15,11 +15,12 @@ use YesWiki\Identity\Exception\BadUserConnectException;
 use YesWiki\Identity\Security\LegacyPasswordHash;
 use YesWiki\Kernel\Entity\CookieData;
 use YesWiki\Kernel\Service\ActorSource;
+use YesWiki\Kernel\Service\CachesTheDatabase;
 use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Kernel\Service\Journal;
 
 #[AsAlias(ActorSource::class, public: true)]
-class AuthenticationService extends YesWikiController implements ActorSource
+class AuthenticationService extends YesWikiController implements ActorSource, CachesTheDatabase
 {
     use LimitationsTrait;
 
@@ -60,6 +61,11 @@ class AuthenticationService extends YesWikiController implements ActorSource
         $this->userManager = $userManager;
         $this->container = $container;
         $this->initLimitations();
+    }
+
+    public function startNewRequest(): void
+    {
+        $this->loggedUserCache = null;
     }
 
     /**

@@ -23,6 +23,7 @@ use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Kernel\Service\Journal;
 use YesWiki\Kernel\Service\JournalSchema;
+use YesWiki\Kernel\Service\Lock\FileLocks;
 use YesWiki\Kernel\Service\Queue\QueueBus;
 use YesWiki\Kernel\Service\Queue\QueueHandlerLocator;
 use YesWiki\Kernel\Service\Queue\QueueRecorder;
@@ -337,7 +338,7 @@ class QueueScheduleTickerTest extends YesWikiTestCase
 
     public function testOnlyOneProcessTicksAtATime(): void
     {
-        $held = $this->locks->acquire(QueueScheduleTicker::LOCK);
+        $held = $this->locks->acquire(FileLocks::pathOf(QueueScheduleTicker::LOCK));
         $this->assertNotNull($held);
         $this->assertTrue($this->locks->tryLock($held));
 
@@ -522,7 +523,7 @@ class QueueScheduleTickerTest extends YesWikiTestCase
         };
         $ticker = $this->ticker([], null, $locks);
 
-        $this->assertThrows(static fn () => $ticker->tick(), 'cannot be created');
+        $this->assertThrows(static fn () => $ticker->tick(), 'cannot be taken');
         $this->assertSame(1, $locks->asked);
         $this->assertSame(0, $this->rows(), 'nothing was written');
 
@@ -531,7 +532,7 @@ class QueueScheduleTickerTest extends YesWikiTestCase
         $this->assertSame(1, $locks->asked, 'the lock is not asked for again within the minute');
 
         $this->clock->sleep(31);
-        $this->assertThrows(static fn () => $ticker->tick(), 'cannot be created');
+        $this->assertThrows(static fn () => $ticker->tick(), 'cannot be taken');
         $this->assertSame(2, $locks->asked);
     }
 
@@ -851,7 +852,7 @@ class QueueScheduleTickerTest extends YesWikiTestCase
             new QueueBus($this->transport, new QueueHandlerLocator([], new ServiceLocator([])), $journal, $recorder, QueueTestKit::noRequest()),
             $history ?? $this->history,
             $recorder,
-            $locks ?? $this->locks,
+            new FileLocks($locks ?? $this->locks),
             $this->clock,
             new HibernationService($this->params),
             $journal,

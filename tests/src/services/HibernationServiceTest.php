@@ -10,6 +10,8 @@ use YesWiki\Core\YesWikiRuntime;
 use YesWiki\Files\Service\RuntimeLock;
 use YesWiki\Kernel\Service\ConfigurationService;
 use YesWiki\Kernel\Service\HibernationService;
+use YesWiki\Kernel\Service\Lock\FileLocks;
+use YesWiki\Kernel\Service\Lock\Locks;
 use YesWiki\Render\Service\HibernationNotice;
 use YesWiki\Render\Service\TemplateEngine;
 use YesWiki\Test\Core\ForcedParameterBag;
@@ -227,7 +229,7 @@ class HibernationServiceTest extends YesWikiTestCase
             $ctor->getParameters()
         );
 
-        $this->assertSame([ParameterBagInterface::class, '?' . RuntimeLock::class], $types);
+        $this->assertSame([ParameterBagInterface::class, '?' . Locks::class], $types);
     }
 
     /**
@@ -272,7 +274,7 @@ class HibernationServiceTest extends YesWikiTestCase
             };
         }
 
-        return new HibernationService(new ParameterBag(['wiki_status' => $booted]), $locks);
+        return new HibernationService(new ParameterBag(['wiki_status' => $booted]), new FileLocks($locks));
     }
 
     /** Writes the status the way ArchiveService does, null for none. */
@@ -305,6 +307,6 @@ class HibernationServiceTest extends YesWikiTestCase
     {
         $this->assertNotNull($this->lockDir);
 
-        return $this->lockDir . '/' . HibernationService::ARCHIVING_LOCK;
+        return $this->lockDir . '/' . FileLocks::pathOf(HibernationService::ARCHIVING_LOCK);
     }
 }

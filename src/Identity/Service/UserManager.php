@@ -22,6 +22,7 @@ use YesWiki\Identity\Exception\UserEmailAlreadyUsedException;
 use YesWiki\Identity\Exception\UserNameAlreadyUsedException;
 use YesWiki\Identity\Exception\UserNameReservedException;
 use YesWiki\Kernel\Routing\ReservedTags;
+use YesWiki\Kernel\Service\CachesTheDatabase;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Kernel\Service\Mailer;
@@ -32,7 +33,7 @@ use YesWiki\Search\Service\SearchManager;
 /**
  * @implements UserProviderInterface<User>
  */
-class UserManager implements UserProviderInterface, PasswordUpgraderInterface
+class UserManager implements UserProviderInterface, PasswordUpgraderInterface, CachesTheDatabase
 {
     protected ContainerInterface $container;
     protected DbService $dbService;
@@ -68,6 +69,11 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
         $this->hibernationService = $hibernationService;
         $this->params = $params;
         $this->tripleStore = $tripleStore;
+    }
+
+    public function startNewRequest(): void
+    {
+        $this->associatedEntryCache = [];
     }
 
     /** See the note above the constructor: injecting it would be a cycle. */

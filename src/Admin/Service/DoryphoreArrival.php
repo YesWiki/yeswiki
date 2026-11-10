@@ -4,15 +4,15 @@ namespace YesWiki\Admin\Service;
 
 use YesWiki\Admin\Entity\PackageCore;
 use YesWiki\Files\Service\LocalFiles;
-use YesWiki\Files\Service\RuntimeLock;
 use YesWiki\Kernel\Entity\Messages;
 use YesWiki\Kernel\Service\DoryphoreLeftovers;
+use YesWiki\Kernel\Service\Lock\Locks;
 use YesWiki\Kernel\Service\MigrationService;
 
 /** Finishes what Doryphore's update screen leaves undone when it installs Ectoplasme: the default theme, then the migrations. */
 class DoryphoreArrival
 {
-    public const LOCK = 'cache/doryphore-arrival.lock';
+    public const LOCK = 'doryphore-arrival';
 
     public const IDLE = 'idle';
     public const BUSY = 'busy';
@@ -22,7 +22,7 @@ class DoryphoreArrival
     public function __construct(
         private readonly AutoUpdateService $updates,
         private readonly MigrationService $migrations,
-        private readonly RuntimeLock $locks,
+        private readonly Locks $locks,
         private readonly LocalFiles $files,
     ) {
     }
@@ -39,10 +39,7 @@ class DoryphoreArrival
         if (!$this->isPending($instanceDir)) {
             return [self::IDLE, new Messages()];
         }
-        $handle = $this->locks->acquire(self::LOCK);
-        if (!$this->locks->tryLock($handle)) {
-            $this->locks->release($handle);
-
+        if (!$this->locks->tryAcquire(self::LOCK)) {
             return [self::BUSY, new Messages()];
         }
         try {
@@ -62,7 +59,7 @@ class DoryphoreArrival
 
             return [self::DONE, $messages];
         } finally {
-            $this->locks->release($handle);
+            $this->locks->release(self::LOCK);
         }
     }
 

@@ -6,9 +6,10 @@ use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\Exception\NoHandlerForMessageException;
 use Symfony\Component\Messenger\Retry\MultiplierRetryStrategy;
 use Symfony\Component\Messenger\Retry\RetryStrategyInterface;
+use Symfony\Component\Messenger\Stamp\RedeliveryStamp;
 
 /**
- * When a failed message is tried again: 60 s, 5 min, 25 min (capped at 30 min), three times unless the message says otherwise (RetryPolicy).
+ * When a failed message is tried again: 60 s, 5 min, 25 min (capped at 30 min), three times unless the message says otherwise (RetryPolicy, RetryDelays).
  * A message nobody handles is never retried: it goes straight to `failed`.
  */
 final class QueueRetryStrategy implements RetryStrategyInterface
@@ -29,6 +30,13 @@ final class QueueRetryStrategy implements RetryStrategyInterface
 
     public function getWaitingTime(Envelope $message, ?\Throwable $throwable = null): int
     {
+        $own = $message->getMessage();
+        if ($own instanceof RetryDelays) {
+            $delays = $own->retryDelays();
+
+            return $delays[min(RedeliveryStamp::getRetryCountFromEnvelope($message), \count($delays) - 1)] * 1000;
+        }
+
         return self::strategyFor($message)->getWaitingTime($message, $throwable);
     }
 

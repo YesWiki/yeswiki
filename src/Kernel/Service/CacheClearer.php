@@ -5,6 +5,7 @@ namespace YesWiki\Kernel\Service;
 use YesWiki\Files\Exception\StorageException;
 use YesWiki\Files\Service\RuntimeLock;
 use YesWiki\Files\Service\Storage;
+use YesWiki\Kernel\Service\Lock\FileLocks;
 use YesWiki\Kernel\Service\Queue\QueueHolderLock;
 
 /** Empties the caches a code change can leave stale: the compiled container and the compiled templates. */
@@ -20,7 +21,7 @@ class CacheClearer
     public const ALL = [self::CONTAINER, self::TEMPLATES];
 
     /** The archive lock stays: unlinked between a backup's open and its flock, it would let the next reader lift `archiving` mid-backup and a second backup run. */
-    public const KEPT = ['.gitkeep', HibernationService::ARCHIVING_LOCK, QueueHolderLock::DIRECTORY];
+    public const KEPT = ['.gitkeep', FileLocks::DIRECTORY . HibernationService::ARCHIVING_LOCK . FileLocks::EXTENSION, QueueHolderLock::DIRECTORY];
 
     private ?Storage $storage;
 

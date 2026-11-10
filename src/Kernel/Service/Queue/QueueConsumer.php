@@ -9,6 +9,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\DependencyInjection\ServiceLocator;
 use Symfony\Component\EventDispatcher\EventDispatcher as PassDispatcher;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+use Symfony\Component\Messenger\Event\WorkerMessageReceivedEvent;
 use Symfony\Component\Messenger\Event\WorkerRunningEvent;
 use Symfony\Component\Messenger\EventListener\AddErrorDetailsStampListener;
 use Symfony\Component\Messenger\EventListener\SendFailedMessageForRetryListener;
@@ -27,6 +28,7 @@ use YesWiki\Kernel\Queue\ScheduledTask;
 use YesWiki\Kernel\Service\ConfigurationWatch;
 use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Kernel\Service\Journal;
+use YesWiki\Kernel\Service\RequestScope;
 
 /**
  * The only code that takes messages from the queue and runs their handlers, in every mode, over Messenger's Worker.
@@ -53,7 +55,14 @@ class QueueConsumer
         private readonly ClockInterface $clock,
         private readonly ConfigurationWatch $configuration,
         private readonly QueueHolderLock $holderLock,
+        private readonly ?RequestScope $requestScope = null,
     ) {
+    }
+
+    /** Before each message, the services forget what they cached of the database, since another process may have written since the one before. */
+    public function onMessageReceived(WorkerMessageReceivedEvent $event): void
+    {
+        $this->requestScope?->forgetTheDatabase();
     }
 
     /**
@@ -258,6 +267,7 @@ class QueueConsumer
             $events->addSubscriber($listener);
         }
         $events->addListener(WorkerRunningEvent::class, $onRunning);
+        $events->addListener(WorkerMessageReceivedEvent::class, $this->onMessageReceived(...));
 
         $worker = new Worker([self::RECEIVER => $receiver], $this->bus, $events, $logger);
 

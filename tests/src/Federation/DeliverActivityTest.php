@@ -3,6 +3,7 @@
 namespace YesWiki\Test\Federation;
 
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Psr\Container\ContainerInterface;
 use Symfony\Component\Clock\NativeClock;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
@@ -11,6 +12,7 @@ use Symfony\Component\HttpClient\MockHttpClient;
 use Symfony\Component\HttpClient\Response\MockResponse;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\Exception\UnrecoverableMessageHandlingException;
+use Symfony\Component\Messenger\Stamp\RedeliveryStamp;
 use Symfony\Component\Messenger\Stamp\TransportMessageIdStamp;
 use YesWiki\Content\Service\SemanticTransformer;
 use YesWiki\Federation\Message\DeliverActivity;
@@ -24,6 +26,7 @@ use YesWiki\Files\Service\Storage;
 use YesWiki\Kernel\Health\HealthCheck;
 use YesWiki\Kernel\Health\Severity;
 use YesWiki\Kernel\Queue\QueueConsumerMode;
+use YesWiki\Kernel\Queue\QueueRetryStrategy;
 use YesWiki\Kernel\Service\HealthService;
 use YesWiki\Kernel\Service\KeyPairGenerator;
 use YesWiki\Kernel\Service\Queue\QueuePassLimitsFactory;
@@ -64,6 +67,10 @@ class DeliverActivityTest extends YesWikiTestCase
     private array $followers = [];
     /** @var list<string> the actors whose inbox answers 500 */
     private array $dead = [];
+    /** @var array<string, int> the status an actor's inbox answers instead of 202 */
+    private array $answers = [];
+    /** @var list<string> the followers removed */
+    private array $removed = [];
     /** @var list<string> the inboxes that were posted to, one entry per attempt */
     private array $posted = [];
     /** @var list<string> the bodies of those posts */
@@ -164,6 +171,79 @@ class DeliverActivityTest extends YesWikiTestCase
             array_column($this->journal->records, 'context'),
             static fn (array $context): bool => $context['action'] === 'activitypub.delivery_failed'
         ), 'every attempt keeps feeding the ActivityPub log');
+    }
+
+    public function testAFollowerThatIsGoneIsRemovedAfterOneAttempt(): void
+    {
+        $this->followers = [self::ALICE];
+        $this->answers = [self::ALICE => 410];
+        $this->service()->notifyFollowers($this->form(), ['tag' => 'Fiche'], 'Create');
+
+        $this->kit->consumer->handleById($this->idOf($this->waiting()[0]));
+
+        $this->assertCount(1, $this->posted);
+        $this->assertSame(0, $this->kit->statistics->pendingCount(), 'not tried again');
+        $this->assertSame([self::ALICE], $this->removed, 'and no longer a follower');
+        $this->assertSame(['handled'], array_column($this->kit->statistics->history(10), 'status'));
+    }
+
+    /** @return iterable<string, array{int}> */
+    public static function refusals(): iterable
+    {
+        yield 'bad request' => [400];
+        yield 'unauthorized' => [401];
+        yield 'forbidden' => [403];
+        yield 'not found' => [404];
+    }
+
+    #[DataProvider('refusals')]
+    public function testARefusedDeliveryIsTriedOnce(int $status): void
+    {
+        $this->followers = [self::ALICE];
+        $this->answers = [self::ALICE => $status];
+        $this->service()->notifyFollowers($this->form(), ['tag' => 'Fiche'], 'Create');
+
+        $this->kit->consumer->handleById($this->idOf($this->waiting()[0]));
+
+        $this->assertCount(1, $this->posted);
+        $this->assertSame(0, $this->kit->statistics->pendingCount(), 'a refusal is not a failure to retry');
+        $this->assertSame([], $this->removed, 'and the follower stays');
+        $this->assertSame(['failed'], array_column($this->kit->statistics->history(10), 'status'));
+    }
+
+    /** @return iterable<string, array{int}> */
+    public static function passingFailures(): iterable
+    {
+        yield 'timeout' => [408];
+        yield 'too many requests' => [429];
+        yield 'unavailable' => [503];
+    }
+
+    #[DataProvider('passingFailures')]
+    public function testAPassingFailureIsRetried(int $status): void
+    {
+        $this->followers = [self::ALICE];
+        $this->answers = [self::ALICE => $status];
+        $this->service()->notifyFollowers($this->form(), ['tag' => 'Fiche'], 'Create');
+
+        $this->kit->consumer->handleById($this->idOf($this->waiting()[0]));
+
+        $this->assertCount(1, $this->waiting(), 'it waits for another attempt');
+        $this->assertSame(['retried'], array_column($this->kit->statistics->history(10), 'status'));
+    }
+
+    public function testTheRetriesOfADeliverySpreadOverADay(): void
+    {
+        $strategy = new QueueRetryStrategy();
+        $envelope = new Envelope(new DeliverActivity('1', self::ALICE, '{}'));
+        $waits = [];
+        for ($retry = 0; $retry < DeliverActivity::MAX_RETRIES; $retry++) {
+            $waits[] = $strategy->getWaitingTime($retry === 0 ? $envelope : $envelope->with(new RedeliveryStamp($retry)));
+        }
+
+        $this->assertSame([60_000, 600_000, 3_600_000, 21_600_000, 86_400_000], $waits);
+        $default = $strategy->getWaitingTime(new Envelope(new \stdClass()));
+        $this->assertTrue($default >= 54_000 && $default <= 66_000, "other messages keep the default, a minute give or take Symfony's jitter: {$default}");
     }
 
     /** Deleting a form deletes its entries first, each telling the followers, and then the form: the deliveries leave after it is gone. */
@@ -410,6 +490,9 @@ class DeliverActivityTest extends YesWikiTestCase
             return 0;
         });
         $tripleStore->method('delete')->willReturnCallback(function ($resource, $property, $value) use (&$triples) {
+            if ($resource === self::US . '/followers' && is_string($value)) {
+                $this->removed[] = $value;
+            }
             $triples = array_values(array_filter(
                 $triples,
                 static fn (array $triple): bool => !($triple['resource'] === $resource && $triple['property'] === $property && ($value === null || $triple['value'] === $value))
@@ -436,7 +519,7 @@ class DeliverActivityTest extends YesWikiTestCase
             $this->postedHeaders[] = $headers;
             $actor = substr($url, 0, -strlen('/inbox'));
 
-            return new MockResponse('', ['http_code' => in_array($actor, $this->dead, true) ? 500 : 202]);
+            return new MockResponse('', ['http_code' => $this->answers[$actor] ?? (in_array($actor, $this->dead, true) ? 500 : 202)]);
         });
         $httpSignatureService = new \YesWiki\Federation\Service\HttpSignatureService($this->createStub(SsrfUrlValidator::class));
         (new \ReflectionProperty($httpSignatureService, 'httpClient'))->setValue($httpSignatureService, $client);

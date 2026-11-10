@@ -6,8 +6,8 @@ use YesWiki\Content\Entity\MenuNode;
 use YesWiki\Content\Entity\PageType;
 use YesWiki\Content\Entity\Translations;
 use YesWiki\Identity\Service\AclService;
+use YesWiki\Kernel\Service\CachesTheDatabase;
 use YesWiki\Kernel\Service\HibernationService;
-use YesWiki\Kernel\Service\RequestScopedState;
 
 /**
  * Menus: navigation held as Content rather than as configuration (ticket 64 / ADR-0028).
@@ -16,7 +16,7 @@ use YesWiki\Kernel\Service\RequestScopedState;
  * it is versioned, revertable and carries its own ACL, none of which a config array could be.
  * Configuration says *which* menu the chrome draws; it no longer says what is in one.
  */
-class MenuManager implements RequestScopedState
+class MenuManager implements CachesTheDatabase
 {
     /** What the two menus configuration names are forced to, so a contributor cannot rewrite the site's navigation. */
     public const CHROME_WRITE_ACL = '@admins';

@@ -7,6 +7,7 @@ use Symfony\Component\HttpClient\HttpClient;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use YesWiki\Content\Service\SemanticTransformer;
+use YesWiki\Federation\Exception\DeliveryRefused;
 use YesWiki\Federation\Message\DeliverActivity;
 use YesWiki\Kernel\Service\SsrfUrlValidator;
 use YesWiki\Kernel\Service\TripleStore;
@@ -420,7 +421,7 @@ class ActivityPubService
             $statusCode = $response->getStatusCode();
             $responseBody = $response->getContent(false);
             if ($statusCode < 200 || $statusCode >= 300) {
-                throw new \Exception("HTTP $statusCode: " . $responseBody);
+                throw new DeliveryRefused($statusCode, "HTTP $statusCode: " . $responseBody);
             }
             $this->log->delivered($formId, $recipientUri, $inboxUri, $activity, $statusCode, null, $responseBody);
         } catch (\Throwable $e) {

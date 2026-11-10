@@ -10,7 +10,6 @@ use YesWiki\Admin\Exception\StopArchiveException;
 use YesWiki\Admin\Message\CreateArchive;
 use YesWiki\Admin\Message\RestoreArchive;
 use YesWiki\Files\Service\LocalFiles;
-use YesWiki\Files\Service\RuntimeLock;
 use YesWiki\Files\Service\Storage;
 use YesWiki\Kernel\Database\DumpRewriter;
 use YesWiki\Kernel\Database\SqlStatementSplitter;
@@ -20,6 +19,8 @@ use YesWiki\Kernel\Service\ConfigurationService;
 use YesWiki\Kernel\Service\ConsoleService;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\HibernationService;
+use YesWiki\Kernel\Service\Lock\FileLocks;
+use YesWiki\Kernel\Service\Lock\Locks;
 use YesWiki\Kernel\Service\Queue\QueueRecorder;
 use YesWiki\Kernel\Service\Queue\QueueStatistics;
 use YesWiki\Kernel\Service\UrlFormatter;
@@ -102,7 +103,7 @@ class ArchiveService
         private readonly LocalFiles $localFiles,
         private readonly MessageBusInterface $bus,
         private readonly QueueStatistics $queueStatistics,
-        private readonly RuntimeLock $locks = new RuntimeLock(),
+        private readonly Locks $locks = new FileLocks(),
     ) {
         $this->storage = $storage;
         $this->urlFormatter = $urlFormatter;
@@ -214,15 +215,11 @@ class ArchiveService
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
 
-        // Held from before `archiving` is set until after it is lifted, and let go with the process should it die:
-        // whoever reads `archiving` with this lock free lifts it (HibernationService). The file stays, only its lock comes and goes.
-        // Without the lock no status is set either: another backup holds it, or the lock cannot be taken here at all.
-        $lock = $this->locks->acquire(HibernationService::ARCHIVING_LOCK);
-        if (!$this->locks->tryLock($lock, $heldElsewhere)) {
-            $this->locks->release($lock);
+        $heldElsewhere = false;
+        if (!$this->locks->tryAcquire(HibernationService::ARCHIVING_LOCK, $heldElsewhere)) {
             $this->writeOutput($output, 'STOP', true, $outputFile);
 
-            throw new \Exception($heldElsewhere ? _t('ARCHIVE_ALREADY_RUNNING') : _t('ARCHIVE_LOCK_UNAVAILABLE', ['path' => HibernationService::ARCHIVING_LOCK]));
+            throw new \Exception($heldElsewhere ? _t('ARCHIVE_ALREADY_RUNNING') : _t('ARCHIVE_LOCK_UNAVAILABLE', ['path' => FileLocks::pathOf(HibernationService::ARCHIVING_LOCK)]));
         }
 
         try {
@@ -276,7 +273,7 @@ class ArchiveService
 
             throw $th;
         } finally {
-            $this->locks->release($lock);
+            $this->locks->release(HibernationService::ARCHIVING_LOCK);
         }
 
         return $location;

@@ -17,6 +17,7 @@ use YesWiki\Kernel\Queue\QueueConsumerMode;
 use YesWiki\Kernel\Queue\QueueWording;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\HibernationService;
+use YesWiki\Kernel\Service\Lock\FileLocks;
 use YesWiki\Kernel\Service\Queue\QueueBus;
 use YesWiki\Kernel\Service\Queue\QueueFallback;
 use YesWiki\Kernel\Service\Queue\QueueHealthChecks;
@@ -318,7 +319,7 @@ class QueueHealthChecksTest extends YesWikiTestCase
     {
         $this->mode = 'worker';
         $dir = sys_get_temp_dir() . '/yw-health-holders-' . bin2hex(random_bytes(4));
-        $this->statistics = new QueueStatistics($this->db, $this->schema, new QueueTransport($this->db, $this->schema, clock: $this->clock, holderLock: new QueueHolderLock(QueueTestKit::locksIn($dir))), $this->clock);
+        $this->statistics = new QueueStatistics($this->db, $this->schema, new QueueTransport($this->db, $this->schema, clock: $this->clock, holderLock: new QueueHolderLock(new FileLocks(QueueTestKit::locksIn($dir)))), $this->clock);
         $holder = QueueTestHolders::token();
         $this->message('default', '-40 minutes');
         QueueTestKit::recordPass($this->db, QueueConsumerMode::Worker, $this->at('-3 hours'), $this->at('-50 minutes'), '', holder: $holder);
@@ -685,7 +686,7 @@ class QueueHealthChecksTest extends YesWikiTestCase
     {
         $this->mode = 'request';
         $dir = sys_get_temp_dir() . '/yw-health-holders-' . bin2hex(random_bytes(4));
-        $this->statistics = new QueueStatistics($this->db, $this->schema, new QueueTransport($this->db, $this->schema, clock: $this->clock, holderLock: new QueueHolderLock(QueueTestKit::locksIn($dir))), $this->clock);
+        $this->statistics = new QueueStatistics($this->db, $this->schema, new QueueTransport($this->db, $this->schema, clock: $this->clock, holderLock: new QueueHolderLock(new FileLocks(QueueTestKit::locksIn($dir)))), $this->clock);
         $token = QueueTestHolders::token();
         $this->claimed('-10 minutes', mode: 'request', holder: $token);
         $letGo = QueueTestHolders::lockHeldByAnotherProcess($dir . '/' . QueueHolderLock::pathOf($token));
@@ -889,7 +890,7 @@ class QueueHealthChecksTest extends YesWikiTestCase
             $this->createStub(QueueBus::class),
             new ScheduleHistory($this->db, $this->schema),
             $this->recorder($this->clock),
-            new RuntimeLock(),
+            new FileLocks(),
             $this->clock,
             $this->createStub(HibernationService::class),
         );

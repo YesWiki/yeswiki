@@ -3,42 +3,32 @@
 namespace YesWiki\Kernel\Service;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-use YesWiki\Files\Service\RuntimeLock;
 use YesWiki\Kernel\Entity\ConfigurationFile;
+use YesWiki\Kernel\Service\Lock\FileLocks;
+use YesWiki\Kernel\Service\Lock\Locks;
 
 /**
- * Is the wiki hibernated?
- *
- * `archiving` is set and lifted by the backup that runs (ArchiveService::archive()), so a backup that dies leaves it behind. archive()
- * holds the archive lock while the status is set; whoever reads `archiving` and finds that lock free (or no lock file at all, as a
- * backup made before the lock leaves it) lifts the status: the run that set it is gone. It lifts it holding that lock, so that a backup
- * starting at that moment keeps the status it sets.
+ * Is the wiki hibernated? A backup holds ARCHIVING_LOCK while it has set `archiving`; whoever reads `archiving` with that lock free
+ * lifts the status, holding the lock, since the run that set it is gone.
  */
 class HibernationService
 {
     public const HIBERNATED = ['hibernate', 'archiving', 'updating'];
 
     /** The lock a backup holds from just before it sets `archiving` until it has lifted it. */
-    public const ARCHIVING_LOCK = 'cache/archiving.lock';
+    public const ARCHIVING_LOCK = 'archiving';
 
     protected ParameterBagInterface $params;
 
-    private RuntimeLock $locks;
+    private Locks $locks;
 
-    public function __construct(ParameterBagInterface $params, ?RuntimeLock $locks = null)
+    public function __construct(ParameterBagInterface $params, ?Locks $locks = null)
     {
         $this->params = $params;
-        $this->locks = $locks ?? new RuntimeLock();
+        $this->locks = $locks ?? new FileLocks();
     }
 
-    /**
-     * check if wiki_status is hibernated.
-     *
-     * The container's parameters are trusted, but for `archiving`: the config file and the archive lock are asked then, so that the first
-     * request after a backup died lifts what it left, without anyone opening the backups page.
-     *
-     * @return bool true is in hibernation
-     */
+    /** Whether the wiki is hibernated, from the container's parameters but for `archiving`, which is asked of the file and the archive lock. */
     public function isWikiHibernated(): bool
     {
         $status = $this->params->get('wiki_status');
@@ -64,28 +54,25 @@ class HibernationService
         $config->load();
         $status = self::statusIn($config);
 
-        if ($status === 'archiving' && $this->locks->probe(self::ARCHIVING_LOCK) !== true) {
-            return $this->liftArchiving($configuration, $file, $config);
+        if ($status === 'archiving') {
+            $held = $this->locks->probe(self::ARCHIVING_LOCK);
+            if ($held !== true) {
+                return $this->liftArchiving($configuration, $file, $config, $held === null);
+            }
         }
 
         return $status;
     }
 
-    /**
-     * Lifts the `archiving` a gone backup left, under the archive lock, so that a backup starting meanwhile keeps the status it sets:
-     * once the lock is taken the config file is read again, and the status lifted only if it still says `archiving`. A lock another
-     * run took first is that backup's, whose `archiving` stays. No lock file (a backup from before the lock; reading the status creates
-     * none), or one that cannot be opened or locked at all, tells nothing of a run: the status is lifted, since nothing may keep the wiki
-     * read-only forever. Answers the status the wiki is left in.
-     */
-    private function liftArchiving(ConfigurationService $configuration, string $file, ConfigurationFile $config): string
+    /** Lifts the `archiving` a gone backup left, under the archive lock and only if the file still says so; a lock nothing can tell of lifts it too. */
+    private function liftArchiving(ConfigurationService $configuration, string $file, ConfigurationFile $config, bool $nothingTells): string
     {
-        if ($this->locks->lastTaken(self::ARCHIVING_LOCK) === 0) {
+        if ($nothingTells) {
             return self::lift($configuration, $config);
         }
-        $lock = $this->locks->acquire(self::ARCHIVING_LOCK);
         try {
-            if (!$this->locks->tryLock($lock, $heldElsewhere)) {
+            $heldElsewhere = false;
+            if (!$this->locks->tryAcquire(self::ARCHIVING_LOCK, $heldElsewhere)) {
                 return $heldElsewhere ? 'archiving' : self::lift($configuration, $config);
             }
             $config = $configuration->getConfiguration($file);
@@ -94,7 +81,7 @@ class HibernationService
 
             return $status === 'archiving' ? self::lift($configuration, $config) : $status;
         } finally {
-            $this->locks->release($lock);
+            $this->locks->release(self::ARCHIVING_LOCK);
         }
     }
 

@@ -3,13 +3,14 @@
 namespace YesWiki\Identity\Service;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use YesWiki\Kernel\Service\CachesTheDatabase;
 use YesWiki\Kernel\Service\ConfigurationFileProvider;
 use YesWiki\Kernel\Service\ConfigurationService;
 
 /**
  * Per-module (action/handler) ACLs, stored under the `permissions` config key (historic Wiki::GetModuleACL()/SetModuleACL()/CheckModuleACL()).
  */
-class ModuleAclService
+class ModuleAclService implements CachesTheDatabase
 {
     protected ParameterBagInterface $params;
     protected ConfigurationService $configurationService;
@@ -28,6 +29,11 @@ class ModuleAclService
         $this->params = $params;
         $this->configurationService = $configurationService;
         $this->aclService = $aclService;
+    }
+
+    public function startNewRequest(): void
+    {
+        $this->cache = [];
     }
 
     /**

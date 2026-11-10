@@ -9,23 +9,20 @@ use Symfony\Component\Scheduler\Generator\MessageContext;
 use Symfony\Component\Scheduler\RecurringMessage;
 use Symfony\Component\Scheduler\Trigger\PeriodicalTrigger;
 use Symfony\Component\Scheduler\Trigger\TriggerInterface;
-use YesWiki\Files\Service\RuntimeLock;
 use YesWiki\Kernel\Queue\ProvidesSchedule;
 use YesWiki\Kernel\Queue\ScheduledTask;
 use YesWiki\Kernel\Queue\TaskHistory;
 use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Kernel\Service\Journal;
+use YesWiki\Kernel\Service\Lock\Locks;
 
 /**
- * Turns the recurring tasks that are due into messages in the queue (messenger / scheduler): a task is due at its trigger's next run
- * after its anchor, its last dispatch or its first sighting, as the history tells (ScheduleHistory). An every() runs a period after
- * its anchor; a cron() at its times in the wiki's timezone, PHP's. One process ticks at a time, under LOCK.
- * A provider that throws, or a trigger that does, leaves its tasks out and stops no other; only the tick journals it.
- * The schedule stands still while the wiki is hibernated; tick() returns at once while the next due time, held in memory, is ahead.
+ * Turns the recurring tasks that are due into messages in the queue: a task is due at its trigger's next run after its anchor,
+ * its last dispatch or its first sighting (ScheduleHistory). One process of any machine ticks at a time, under the database lock LOCK.
  */
 class QueueScheduleTicker
 {
-    public const LOCK = 'cache/queue-schedule.lock';
+    public const LOCK = 'queue-schedule';
 
     private const NAME = 'yeswiki';
 
@@ -47,7 +44,7 @@ class QueueScheduleTicker
         private readonly QueueBus $bus,
         private readonly ScheduleHistory $history,
         private readonly QueueRecorder $recorder,
-        private readonly RuntimeLock $locks,
+        private readonly Locks $locks,
         private readonly ClockInterface $clock,
         private readonly HibernationService $hibernation,
         private readonly ?Journal $journal = null,
@@ -217,12 +214,11 @@ class QueueScheduleTicker
      */
     private function dispatchDue(\DateTimeImmutable $now): ?int
     {
-        $lock = $this->locks->acquire(self::LOCK);
-        if ($lock === null) {
-            throw new \RuntimeException('The schedule lock ' . self::LOCK . ' cannot be created');
-        }
-        if (!$this->locks->tryLock($lock)) {
-            $this->locks->release($lock);
+        $heldElsewhere = false;
+        if (!$this->locks->tryAcquire(self::LOCK, $heldElsewhere)) {
+            if (!$heldElsewhere) {
+                throw new \RuntimeException('The schedule lock ' . self::LOCK . ' cannot be taken');
+            }
 
             return null;
         }
@@ -257,7 +253,7 @@ class QueueScheduleTicker
 
             return $dispatched;
         } finally {
-            $this->locks->release($lock);
+            $this->locks->release(self::LOCK);
         }
     }
 

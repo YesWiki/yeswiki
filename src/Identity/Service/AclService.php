@@ -8,10 +8,11 @@ use YesWiki\Content\Entity\PageType;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Kernel\Database\SqlFragment;
 use YesWiki\Kernel\Database\SqlParameters;
+use YesWiki\Kernel\Service\CachesTheDatabase;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\HibernationService;
 
-class AclService
+class AclService implements CachesTheDatabase
 {
     protected AuthenticationService $authenticationService;
     protected DbService $dbService;
@@ -50,6 +51,13 @@ class AclService
         $this->container = $container;
 
         $this->cache = [];
+    }
+
+    public function startNewRequest(): void
+    {
+        $this->cache = [];
+        $this->metadataAclsCache = [];
+        $this->isAdminCache = [];
     }
 
     /**
@@ -195,6 +203,11 @@ class AclService
         $acls[$privilege] = $list;
         $this->writeMetadataAcls($tag, $acls);
 
+        if ($list === '') {
+            unset($this->cache[$tag]);
+
+            return;
+        }
         $this->cache[$tag][$privilege] = [
             'page_tag' => $tag,
             'privilege' => $privilege,

@@ -23,6 +23,7 @@ use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Kernel\Service\Journal;
 use YesWiki\Kernel\Service\JournalSchema;
+use YesWiki\Kernel\Service\Lock\FileLocks;
 use YesWiki\Kernel\Service\Queue\QueueBus;
 use YesWiki\Kernel\Service\Queue\QueueConsumer;
 use YesWiki\Kernel\Service\Queue\QueueFallback;
@@ -126,7 +127,7 @@ final class QueueTestKit
         $configuration->write($config);
 
         $this->locks = $locks = self::locksIn($this->lockDir);
-        $this->holderLock = new QueueHolderLock($locks);
+        $this->holderLock = new QueueHolderLock(new FileLocks($locks));
         $this->transport = new QueueTransport($db, $schema, $clock, holderLock: $this->holderLock);
         $this->statistics = new QueueStatistics($db, $schema, $this->transport, $clock);
         $this->journal = $journal = new Journal(new ServiceLocator([
@@ -169,7 +170,7 @@ final class QueueTestKit
 
         // On the real clock whatever the queue's: PHP's limit is read against microtime() (QueuePassLimits).
         $this->passLimits = $passLimits ??= new QueuePassLimitsFactory(new NativeClock());
-        $this->hibernation = $hibernation ??= new HibernationService(new ParameterBag(['wiki_status' => 'running']), $locks);
+        $this->hibernation = $hibernation ??= new HibernationService(new ParameterBag(['wiki_status' => 'running']), new FileLocks($locks));
         $this->consumer = new QueueConsumer(
             $this->transport,
             $bus,
@@ -178,7 +179,7 @@ final class QueueTestKit
             $passLimits,
             $hibernation,
             $journal,
-            $this->ticker = new QueueScheduleTicker([$schedule], $bus, $this->history, $recorder, $locks, $clock, $hibernation, $journal),
+            $this->ticker = new QueueScheduleTicker([$schedule], $bus, $this->history, $recorder, new FileLocks($locks), $clock, $hibernation, $journal),
             $clock,
             $watch,
             $this->holderLock,
@@ -264,7 +265,7 @@ final class QueueTestKit
     public static function failAsKilled(DbService $db, QueueSchema $schema, ClockInterface $clock, int $id, QueueConsumerMode $mode): void
     {
         $dir = sys_get_temp_dir() . '/yw-killed-' . bin2hex(random_bytes(4));
-        $transport = new QueueTransport($db, $schema, $clock, holderLock: new QueueHolderLock(self::locksIn($dir)));
+        $transport = new QueueTransport($db, $schema, $clock, holderLock: new QueueHolderLock(new FileLocks(self::locksIn($dir))));
         $token = QueueTestHolders::gone($dir);
 
         try {

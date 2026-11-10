@@ -3,7 +3,10 @@
 namespace YesWiki\Test\Kernel;
 
 use PHPUnit\Framework\Assert;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Kernel\Service\DbService;
+use YesWiki\Kernel\Service\Lock\DatabaseLocks;
+use YesWiki\Kernel\Service\Lock\FileLocks;
 use YesWiki\Kernel\Service\Queue\QueueHolderLock;
 use YesWiki\Kernel\Service\Queue\QueueSchema;
 
@@ -55,6 +58,26 @@ final class QueueTestHolders
             fclose($pipes[2]);
 
             return proc_close($process);
+        };
+    }
+
+    /**
+     * Another holder takes that lock of the wiki and keeps it until the closure returns: a second connection to its server, or another process where locks are files.
+     *
+     * @return \Closure(): int lets it go and answers 0
+     */
+    public static function wikiLockHeldElsewhere(ParameterBagInterface $params, string $name): \Closure
+    {
+        if ($params->get('db_driver') === 'sqlite') {
+            return self::lockHeldByAnotherProcess(YESWIKI_INSTANCE_DIR . '/' . FileLocks::pathOf($name));
+        }
+        $locks = new DatabaseLocks(new DbService($params), $params);
+        Assert::assertTrue($locks->tryAcquire($name), "another connection could not take the lock {$name}");
+
+        return static function () use ($locks, $name): int {
+            $locks->release($name);
+
+            return 0;
         };
     }
 

@@ -4,7 +4,7 @@ namespace YesWiki\Kernel\Service;
 
 use YesWiki\Kernel\Database\SqlFragment;
 
-class TripleStore
+class TripleStore implements CachesTheDatabase
 {
     protected DbService $dbService;
     protected HibernationService $hibernationService;
@@ -22,6 +22,12 @@ class TripleStore
         $this->dbService = $dbService;
         $this->hibernationService = $hibernationService;
         $this->cacheByResource = [];
+    }
+
+    public function startNewRequest(): void
+    {
+        $this->cacheByResource = [];
+        $this->matchingCache = [];
     }
 
     /**

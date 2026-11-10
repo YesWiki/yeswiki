@@ -16,6 +16,7 @@ use YesWiki\Kernel\Queue\QueuePassReport;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Kernel\Service\JournalSchema;
+use YesWiki\Kernel\Service\Lock\FileLocks;
 use YesWiki\Kernel\Service\Queue\QueueFallback;
 use YesWiki\Kernel\Service\Queue\QueueHolderLock;
 use YesWiki\Kernel\Service\Queue\QueueRecorder;
@@ -851,7 +852,7 @@ echo $db->scalar("SELECT COUNT(*) FROM {$schema->historyTable()}");
             $this->schema->drop();
         }
         $this->schema->create();
-        $this->transport = new QueueTransport($db, $this->schema, clock: $this->clock, holderLock: new QueueHolderLock(QueueTestKit::locksIn($this->lockDir)));
+        $this->transport = new QueueTransport($db, $this->schema, clock: $this->clock, holderLock: new QueueHolderLock(new FileLocks(QueueTestKit::locksIn($this->lockDir))));
         $this->recorder = new QueueRecorder($db, $this->schema, $this->clock);
         $this->statistics = new QueueStatistics($db, $this->schema, $this->transport, $this->clock);
     }

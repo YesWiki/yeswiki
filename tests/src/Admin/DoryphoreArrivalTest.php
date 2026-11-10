@@ -9,6 +9,7 @@ use YesWiki\Files\Service\LocalFiles;
 use YesWiki\Files\Service\RuntimeLock;
 use YesWiki\Kernel\Entity\Messages;
 use YesWiki\Kernel\Service\DoryphoreLeftovers;
+use YesWiki\Kernel\Service\Lock\FileLocks;
 use YesWiki\Kernel\Service\MigrationService;
 use YesWiki\Test\Core\YesWikiTestCase;
 
@@ -69,7 +70,7 @@ class DoryphoreArrivalTest extends YesWikiTestCase
 
     private function arrival(AutoUpdateService $updates, MigrationService $migrations): DoryphoreArrival
     {
-        return new DoryphoreArrival($updates, $migrations, new RuntimeLock(), new LocalFiles());
+        return new DoryphoreArrival($updates, $migrations, new FileLocks(), new LocalFiles());
     }
 
     public function testAWikiWithNothingPendingIsLeftAlone(): void
@@ -148,7 +149,7 @@ class DoryphoreArrivalTest extends YesWikiTestCase
     public function testASecondRequestWaitsWhileTheFirstIsFinishing(): void
     {
         $locks = new RuntimeLock();
-        $held = $locks->acquire(DoryphoreArrival::LOCK);
+        $held = $locks->acquire(FileLocks::pathOf(DoryphoreArrival::LOCK));
         $this->assertTrue($locks->tryLock($held));
         try {
             [$state] = $this->arrival($this->noUpdates(), $this->noMigrations())->finish($this->instance, $this->program);
