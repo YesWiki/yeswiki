@@ -5,12 +5,16 @@ namespace YesWiki\Identity\Service\SignIn;
 use YesWiki\Identity\Entity\User;
 use YesWiki\Identity\Service\GroupManager;
 use YesWiki\Identity\Service\UserManager;
+use YesWiki\Identity\SignIn\AppliedSignIn;
 use YesWiki\Identity\SignIn\AttributeReader;
 use YesWiki\Identity\SignIn\Contract\FailureReason;
 use YesWiki\Identity\SignIn\Contract\ProviderConfig;
+use YesWiki\Identity\SignIn\Contract\ProviderFailure;
 use YesWiki\Identity\SignIn\Contract\ProviderIdentity;
 use YesWiki\Identity\SignIn\PlanAction;
 use YesWiki\Identity\SignIn\SignInPlan;
+use YesWiki\Kernel\Service\HibernationService;
+use YesWiki\Kernel\Service\Lock\Locks;
 
 /**
  * Decides everything about a sign-in and writes nothing. Admin test mode calls only plan(), so it cannot disagree with a real sign-in.
@@ -20,11 +24,18 @@ class SignInService
     /** Wiki fields refreshed from the provider at each sign-in, read through the provider's attribute mapping. */
     private const PROFILE_FIELDS = ['first_name', 'last_name'];
 
+    private const LOCK_ATTEMPTS = 5;
+    private const LOCK_WAIT_MICROSECONDS = 200000;
+
     public function __construct(
         private readonly AccountLinks $links,
         private readonly UserManager $users,
         private readonly GroupManager $groups,
-        private readonly AccountNamer $namer
+        private readonly AccountNamer $namer,
+        private readonly ProfileSync $profile,
+        private readonly GroupSync $groupSync,
+        private readonly Locks $locks,
+        private readonly HibernationService $hibernation
     ) {
     }
 
@@ -89,6 +100,108 @@ class SignInService
         $action = $provider === null ? PlanAction::LinkExisting : PlanAction::ReplaceSubject;
 
         return $this->accept($base, $action, $owner, $email);
+    }
+
+    /**
+     * Carries a plan out and writes only what changed. A known account signs in with its profile and groups refreshed; a new or linked one is made under a lock named after the provider and the user ID.
+     *
+     * @throws ProviderFailure
+     */
+    public function apply(SignInPlan $plan): AppliedSignIn
+    {
+        if ($plan->action === PlanAction::Refuse || $plan->refusal !== null) {
+            throw new ProviderFailure($plan->refusal ?? FailureReason::InternalError, $plan->refusalDetail, null, $plan->attributes);
+        }
+        $hibernated = $this->hibernation->isWikiHibernated();
+        $lockedActions = [PlanAction::Create, PlanAction::LinkExisting, PlanAction::ReplaceSubject];
+
+        if ($plan->action === PlanAction::UseLinked) {
+            $user = $this->users->getOneByName((string)$plan->accountTag);
+            if ($user === null) {
+                throw new ProviderFailure(FailureReason::InternalError, 'the linked account is gone', null, $plan->attributes);
+            }
+            if ($hibernated) {
+                return new AppliedSignIn($user, $plan->warnings);
+            }
+
+            return $this->refresh($plan, $user);
+        }
+        if (!in_array($plan->action, $lockedActions, true) || $plan->subject === null) {
+            throw new ProviderFailure(FailureReason::InternalError, 'the plan cannot be carried out', null, $plan->attributes);
+        }
+        if ($hibernated) {
+            throw new ProviderFailure(FailureReason::AccountCreationFailed, 'the wiki is in hibernation: no account can be created or linked', null, $plan->attributes);
+        }
+
+        $lock = 'sign-in:' . $plan->providerId . ':' . hash('sha256', $plan->subject);
+        for ($attempt = 1; $attempt <= self::LOCK_ATTEMPTS; ++$attempt) {
+            if ($this->locks->tryAcquire($lock)) {
+                try {
+                    // another sign-in may have finished while this one waited.
+                    $winner = $this->links->find($plan->providerId, $plan->subject);
+                    if ($winner !== null) {
+                        return $this->refresh($plan, $winner);
+                    }
+
+                    return $this->refresh($plan, $this->createOrLink($plan));
+                } finally {
+                    $this->locks->release($lock);
+                }
+            }
+            if ($attempt < self::LOCK_ATTEMPTS) {
+                usleep(self::LOCK_WAIT_MICROSECONDS);
+            }
+            $winner = $this->links->find($plan->providerId, $plan->subject);
+            if ($winner !== null) {
+                return $this->refresh($plan, $winner);
+            }
+        }
+
+        throw new ProviderFailure(FailureReason::AccountCreationFailed, 'another sign-in of this account did not finish in time', null, $plan->attributes);
+    }
+
+    private function createOrLink(SignInPlan $plan): User
+    {
+        $subject = (string)$plan->subject;
+        try {
+            if ($plan->action === PlanAction::Create) {
+                $profile = $plan->profile;
+                $email = (string)($profile['email'] ?? '');
+                unset($profile['email']);
+                $user = $this->users->createLinked((string)$plan->accountTag, $email, $profile, $plan->providerId, $subject);
+            } else {
+                $user = $this->users->getOneByName((string)$plan->accountTag);
+                if ($user !== null) {
+                    $this->links->link($user, $plan->providerId, $subject);
+                    $user = $this->users->getOneByName($user->getName());
+                }
+            }
+        } catch (\Throwable $e) {
+            throw new ProviderFailure(FailureReason::AccountCreationFailed, 'the account could not be written: ' . $e->getMessage(), null, $plan->attributes);
+        }
+        if ($user === null) {
+            throw new ProviderFailure(FailureReason::AccountCreationFailed, 'the account could not be written', null, $plan->attributes);
+        }
+
+        return $user;
+    }
+
+    /** Profile and groups, then the warnings of the plan and of the group update, the guard on "admins" said once. */
+    private function refresh(SignInPlan $plan, User $user): AppliedSignIn
+    {
+        // after a creation too: createLinked() stores the body fields it knows, and the sync adds the rest, writing nothing if all is there.
+        $this->profile->apply($user, $plan->profile);
+        $user = $this->users->getOneByName($user->getName()) ?? $user;
+        $warnings = $plan->warnings;
+        $known = array_column($warnings, 'kind');
+        foreach ($this->groupSync->apply($user, $plan->groupsToAdd, $plan->groupsToRemove) as $warning) {
+            if ($warning['kind'] === 'last_admin' && in_array('last_admin', $known, true)) {
+                continue;
+            }
+            $warnings[] = $warning;
+        }
+
+        return new AppliedSignIn($user, $warnings);
     }
 
     private function attributeName(ProviderConfig $config, string $field): string
