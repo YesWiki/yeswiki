@@ -41,6 +41,12 @@
           <input class="yw-input" id="sign-in-metadata" type="text" value="{{ metadata }}" readonly onfocus="this.select()">
         </div>
       {% endif %}
+      {% for row in copyable %}
+        <div class="yw-form-group">
+          <label class="yw-form-label" for="sign-in-copy-{{ loop.index }}">{{ row.label }}</label>
+          <input class="yw-input yw-sign-in-copy" id="sign-in-copy-{{ loop.index }}" type="text" value="{{ row.value }}" readonly onfocus="this.select()">
+        </div>
+      {% endfor %}
       {% for setting in settings %}
         {{ include('@core/admin/_sign-in-setting.twig', { setting: setting }) }}
       {% endfor %}

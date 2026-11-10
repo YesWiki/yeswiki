@@ -27,8 +27,9 @@ trait FakeProviderTypes
      * Puts a registry in the container in place of the real one. The container refuses to replace a service that is already built, and the real registry is built by the time any test runs, so this writes the service table directly: a test-only seam.
      *
      * @param array<string, array<string, mixed>> $section
+     * @param ProviderType                        ...$more types a test needs besides the fake ones
      */
-    private function installProviders(array $section): void
+    private function installProviders(array $section, ProviderType ...$more): void
     {
         $services = self::getWiki()->services;
         $table = new \ReflectionProperty(Container::class, 'services');
@@ -41,6 +42,7 @@ trait FakeProviderTypes
             $services->get(LocalType::class),
             self::fakeType('fakeredirect', true),
             self::fakeType('fakepw', false),
+            ...$more,
         ], $config);
         $table->setValue($services, $current);
     }

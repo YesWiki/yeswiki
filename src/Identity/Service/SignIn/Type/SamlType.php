@@ -35,12 +35,12 @@ final class SamlType implements ProviderType
     {
         return [
             Setting::url('metadata_url')->label(_t('SIGN_IN_SAML_METADATA_URL'))->hint(_t('SIGN_IN_SAML_METADATA_URL_HINT')),
-            Setting::text('metadata_xml')->label(_t('SIGN_IN_SAML_METADATA_XML')),
+            Setting::text('metadata_xml')->multiline()->label(_t('SIGN_IN_SAML_METADATA_XML')),
             Setting::text('idp_entity_id')->label(_t('SIGN_IN_SAML_IDP_ENTITY_ID'))->hint(_t('SIGN_IN_SAML_IDP_HINT')),
             Setting::url('idp_sso_url')->label(_t('SIGN_IN_SAML_IDP_SSO_URL')),
-            Setting::text('idp_certificate')->label(_t('SIGN_IN_SAML_IDP_CERTIFICATE')),
-            Setting::text('sp_certificate')->label(_t('SIGN_IN_SAML_SP_CERTIFICATE'))->hint(_t('SIGN_IN_SAML_SP_CERTIFICATE_HINT')),
-            Setting::secret('sp_private_key')->label(_t('SIGN_IN_SAML_SP_PRIVATE_KEY')),
+            Setting::text('idp_certificate')->multiline()->label(_t('SIGN_IN_SAML_IDP_CERTIFICATE')),
+            Setting::text('sp_certificate')->multiline()->label(_t('SIGN_IN_SAML_SP_CERTIFICATE'))->hint(_t('SIGN_IN_SAML_SP_CERTIFICATE_HINT')),
+            Setting::secret('sp_private_key')->multiline()->label(_t('SIGN_IN_SAML_SP_PRIVATE_KEY')),
         ];
     }
 

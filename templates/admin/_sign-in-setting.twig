@@ -1,4 +1,5 @@
-{# One connection setting of a provider type. A secret never carries a value: the field starts empty, and a blank one keeps the stored secret. #}
+{# One connection setting of a provider type. A secret never carries a value: the field starts empty, and a blank one keeps the stored secret.
+   A multi-line setting (pasted XML, PEM) is a textarea, a secret one included. #}
 {% set field = 'sign-in-connection-' ~ setting.name %}
 {% if setting.kind == 'checkbox' %}
   <div class="yw-form-group">
@@ -15,6 +16,12 @@
           <option value="{{ value }}"{{ value == setting.value ? ' selected' : '' }}>{{ label }}</option>
         {% endfor %}
       </select>
+    {% elseif setting.kind == 'secret' and setting.multiline %}
+      <textarea class="yw-input" id="{{ field }}" name="connection[{{ setting.name }}]" rows="6" spellcheck="false" autocomplete="off"
+                placeholder="{{ setting.secretStored ? _t('SIGN_IN_ADMIN_SECRET_KEPT') : '' }}"></textarea>
+    {% elseif setting.multiline %}
+      <textarea class="yw-input" id="{{ field }}" name="connection[{{ setting.name }}]" rows="6" spellcheck="false" autocomplete="off"
+                placeholder="{{ setting.placeholder }}">{{ setting.value }}</textarea>
     {% elseif setting.kind == 'secret' %}
       <input class="yw-input" id="{{ field }}" type="password" name="connection[{{ setting.name }}]" autocomplete="new-password"
              placeholder="{{ setting.secretStored ? _t('SIGN_IN_ADMIN_SECRET_KEPT') : '' }}">

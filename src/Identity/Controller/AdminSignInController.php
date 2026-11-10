@@ -235,6 +235,7 @@ class AdminSignInController extends YesWikiController
                 'value' => is_scalar($value) ? (string)$value : '',
                 'checked' => $kind === 'checkbox' && filter_var($value, FILTER_VALIDATE_BOOLEAN),
                 'secretStored' => $kind === 'secret' && isset($stored[$name]) && $stored[$name] !== '',
+                'multiline' => !empty($declared['multiline']),
             ];
         }
 
@@ -265,11 +266,14 @@ class AdminSignInController extends YesWikiController
 
         $callback = null;
         $metadata = null;
+        $copyable = [];
         if ($id !== null) {
             $config = ProviderConfig::fromArray($id, $entry, $type->defaultAttributes());
             $callback = $this->getService(SignInFlow::class)->callbackUrlFor($config);
-            if ($type->create($config) instanceof PublishesMetadata) {
+            $published = $this->published($type, $config);
+            if ($published !== null) {
                 $metadata = $this->getService(UrlFormatter::class)->href('', 'user/sign-in/' . rawurlencode($id) . '/metadata');
+                $copyable = $published;
             }
         }
 
@@ -285,6 +289,7 @@ class AdminSignInController extends YesWikiController
             'settings' => $settings,
             'callback' => $callback,
             'metadata' => $metadata,
+            'copyable' => $copyable,
             'attributes' => $attributes,
             'createAccounts' => array_key_exists('create_accounts', $source) ? filter_var($source['create_accounts'], FILTER_VALIDATE_BOOLEAN) : true,
             'matchByEmail' => array_key_exists('match_by_email', $source) && filter_var($source['match_by_email'], FILTER_VALIDATE_BOOLEAN),
@@ -293,6 +298,30 @@ class AdminSignInController extends YesWikiController
             'userFields' => $this->userFields(array_column($extras, 'field')),
             'errors' => $errors,
         ]);
+    }
+
+    /**
+     * What a provider publishing metadata gives the administrator to copy, as label and value rows; null when it publishes nothing.
+     * A provider still half configured may fail to be built: the page then shows nothing to copy, and stays there to fix it.
+     *
+     * @return ?list<array{label: string, value: string}>
+     */
+    private function published(ProviderType $type, ProviderConfig $config): ?array
+    {
+        try {
+            $provider = $type->create($config);
+            if (!$provider instanceof PublishesMetadata) {
+                return null;
+            }
+            $rows = [];
+            foreach ($provider->copyableValues() as $label => $value) {
+                $rows[] = ['label' => (string)$label, 'value' => (string)$value];
+            }
+
+            return $rows;
+        } catch (\Throwable $unbuilt) {
+            return null;
+        }
     }
 
     /**

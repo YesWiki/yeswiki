@@ -47,4 +47,11 @@ class ContractTest extends TestCase
     {
         $this->assertSame('secret', Setting::secret('api_key')->toArray()['type']);
     }
+
+    public function testAMultilineSettingKeepsItsKind(): void
+    {
+        $this->assertSame(['type' => 'text', 'multiline' => true], Setting::text('metadata_xml')->multiline()->toArray());
+        $this->assertSame(['type' => 'secret', 'multiline' => true], Setting::secret('private_key')->multiline()->toArray());
+        $this->assertArrayNotHasKey('multiline', Setting::text('name')->toArray());
+    }
 }

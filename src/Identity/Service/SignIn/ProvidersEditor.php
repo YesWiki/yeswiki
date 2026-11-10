@@ -180,6 +180,10 @@ class ProvidersEditor
             $declared = $setting->toArray();
             if (array_key_exists($name, $postedConnection)) {
                 $value = $postedConnection[$name];
+                if (!empty($declared['multiline']) && is_string($value)) {
+                    // a textarea posts CRLF: the value is stored with the line breaks it was typed with
+                    $value = trim(str_replace("\r\n", "\n", $value));
+                }
                 if ($type === 'checkbox') {
                     $connection[$name] = self::flag($value);
                 } elseif ($type === 'secret') {

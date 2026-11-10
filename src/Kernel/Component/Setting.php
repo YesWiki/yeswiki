@@ -249,6 +249,12 @@ final class Setting
         return $this->with('multiple', true);
     }
 
+    /** Several lines of text (a pasted XML document, a PEM certificate or key): a textarea, and a secret stays one that never shows its value. */
+    public function multiline(): self
+    {
+        return $this->with('multiline', true);
+    }
+
     public function min(int $min): self
     {
         return $this->with('min', $min);
