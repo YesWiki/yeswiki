@@ -344,6 +344,15 @@ class DoryphoreSsoConversionTest extends TestCase
         $this->assertSame('ldap://h:389', $r->providers['ldap-2']['connection']['uri']);
         $this->assertFalse($r->providers['ldap-2']['enabled'], 'what the administrator set up already is in charge');
         $this->assertNull($r->inCharge);
+        $this->assertSame('loginldap', $r->doryphoreInCharge, 'who signed people in on Doryphore does not depend on the section');
+    }
+
+    public function testDoryphoreInChargeIsThePrecedenceWinnerAmongInstalledExtensions(): void
+    {
+        $this->assertSame('loginsso', $this->convert($this->allThree(), ['loginsso', 'loginldap', 'logincas'])->doryphoreInCharge);
+        $this->assertSame('loginldap', $this->convert($this->allThree(), ['loginldap', 'logincas'])->doryphoreInCharge);
+        $this->assertNull($this->convert($this->ldap(), [])->doryphoreInCharge, 'an extension no longer installed signed nobody in');
+        $this->assertNull($this->convert([], ['loginldap'])->doryphoreInCharge);
     }
 
     public function testKeysAreRemovedAndDropsAreSaid(): void

@@ -51,19 +51,19 @@ final class DoryphoreSsoConversion
             $configured[] = self::LOGINCAS;
         }
         if ($configured === []) {
-            return new SsoConversionResult([], [], [], null, []);
+            return new SsoConversionResult([], [], [], null, [], null);
         }
 
         $existing = is_array($config['sso_providers'] ?? null) && $config['sso_providers'] !== [] ? $config['sso_providers'] : null;
-        $inCharge = null;
-        if ($existing === null) {
-            foreach ($configured as $tool) {
-                if (in_array($tool, $installedTools, true)) {
-                    $inCharge = $tool;
-                    break;
-                }
+        $doryphoreInCharge = null;
+        foreach ($configured as $tool) {
+            if (in_array($tool, $installedTools, true)) {
+                $doryphoreInCharge = $tool;
+                break;
             }
         }
+        // A section the administrator already wrote is what signs people in now: the converted providers join it switched off.
+        $inCharge = $existing === null ? $doryphoreInCharge : null;
 
         $taken = array_fill_keys(array_map('strval', array_keys($existing ?? [])), true) + [LocalType::NAME => true];
         $ldapId = in_array(self::LOGINLDAP, $configured, true) ? self::free(LdapType::NAME, $taken) : null;
@@ -98,7 +98,8 @@ final class DoryphoreSsoConversion
             $this->removedKeys($config, $origins),
             $this->messages($config, $converted, $origins, $inCharge, $existing !== null, $until),
             $inCharge,
-            $loginssoIds
+            $loginssoIds,
+            $doryphoreInCharge
         );
     }
 

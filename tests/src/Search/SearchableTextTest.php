@@ -3,9 +3,12 @@
 namespace YesWiki\Test\Search;
 
 use PHPUnit\Framework\Attributes\DataProvider;
+use YesWiki\Content\Entity\PageBody;
+use YesWiki\Content\Entity\PageType;
 use YesWiki\Content\Field\BazarField;
 use YesWiki\Content\Service\FieldFactory;
 use YesWiki\Content\Service\FormManager;
+use YesWiki\Search\Service\SearchableTextExtractor;
 use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';
@@ -106,5 +109,25 @@ class SearchableTextTest extends YesWikiTestCase
         $this->assertStringContainsString('premier', $text);
         $this->assertStringContainsString('deuxieme', $text);
         $this->assertStringContainsString('troisieme', $text);
+    }
+
+    /** An account's page is indexed through the User form: its names, never its password hash or its tie to a provider. */
+    public function testAnAccountPutsNoHashOrLinkInTheIndex(): void
+    {
+        $body = [
+            'email' => 'marie@example.com',
+            'first_name' => 'Marieindexee',
+            'password' => '5f4dcc3b5aa765d61d8327deb882cf99',
+            'loginsso_id' => 'subjectfromloginsso',
+            'sso_provider' => 'acmeprovider',
+            'sso_subject' => 'subjectfromprovider',
+        ];
+        $contents = $this->getWiki()->services->get(SearchableTextExtractor::class)->extractAll(['tag' => 'TestIndexedAccount', 'type' => PageType::USER, 'body' => PageBody::encode($body)]);
+
+        $indexed = implode(' ', array_merge(...array_map(fn ($content): array => array_values($content->buckets), $contents)));
+        $this->assertStringContainsString('Marieindexee', $indexed, 'the account is indexed at all');
+        foreach (['5f4dcc3b5aa765d61d8327deb882cf99', 'subjectfromloginsso', 'acmeprovider', 'subjectfromprovider', 'marie@example.com'] as $secret) {
+            $this->assertStringNotContainsString($secret, $indexed);
+        }
     }
 }

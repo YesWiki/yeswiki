@@ -6,6 +6,7 @@ use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Identity\Service\UserManager;
 use YesWiki\Kernel\Entity\ConfigurationFile;
+use YesWiki\Kernel\Service\ConfigurationService;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\DoryphoreLeftovers;
 use YesWiki\Test\Core\YesWikiTestCase;
@@ -218,6 +219,96 @@ class LoginExtensionsBecomeProvidersTest extends YesWikiTestCase
         $this->assertStringNotContainsString(self::MD5, $said);
     }
 
+    public function testMd5IsClearedOnAnLdapWikiEvenWithAnExistingSection(): void
+    {
+        $this->writeConfig(['sso_providers' => ['local' => ['type' => 'local', 'enabled' => true]], 'ldap_host' => 'h', 'ldap_port' => '389']);
+        $this->installTools('loginldap');
+        $this->account('TestLoginExtMarie', [['password' => self::MD5], ['password' => self::MD5]]);
+
+        $this->migrate();
+
+        $this->assertSame(['', ''], array_column($this->revisions('TestLoginExtMarie'), 'password'), 'loginldap signed people in on Doryphore, whatever the section says now');
+        $this->assertTrue($this->readConfig()['sso_providers']['local']['enabled'], 'the section the administrator wrote is kept');
+        $this->assertFalse($this->readConfig()['sso_providers']['ldap']['enabled']);
+    }
+
+    /** A migration whose account step dies on its second rewrite, after the plan is computed and a first account was rewritten. */
+    private function failingAccountStep(): \LoginExtensionsBecomeProviders
+    {
+        $migration = new class extends \LoginExtensionsBecomeProviders {
+            private int $rewrites = 0;
+
+            protected function rewriteBody(string $id, array $body): void
+            {
+                if (++$this->rewrites === 2) {
+                    throw new \RuntimeException('the account step failed');
+                }
+                parent::rewriteBody($id, $body);
+            }
+        };
+        $migration->setServices($this->getWiki()->services);
+        $migration->setDbService($this->db);
+
+        return $migration;
+    }
+
+    public function testAFailedAccountStepWritesNothingAndTheNextRunCompletes(): void
+    {
+        $this->writeConfig(['ldap_host' => 'h', 'ldap_port' => '389', 'ldap_base' => 'ou=u,dc=x']);
+        $this->installTools('loginldap');
+        $this->account('TestLoginExtMarie', [['password' => self::MD5], ['password' => self::MD5]]);
+        $this->account('TestLoginExtPaul', [['password' => self::MD5]]);
+        $config = (string)file_get_contents($this->config);
+
+        $failure = null;
+        try {
+            $this->failingAccountStep()->convertWiki($this->instance, $this->config, new \DateTimeImmutable('2026-11-11 10:00:00'), self::ACCOUNTS);
+        } catch (\RuntimeException $thrown) {
+            $failure = $thrown;
+        }
+        $this->assertSame('the account step failed', $failure?->getMessage(), 'the failure reaches the migration runner, which runs the migration again next time');
+
+        $this->assertSame($config, (string)file_get_contents($this->config), 'the configuration is written only once the accounts are');
+        $this->assertSame([self::MD5, self::MD5], array_column($this->revisions('TestLoginExtMarie'), 'password'), 'the first rewrite is rolled back');
+        $this->assertSame([self::MD5], array_column($this->revisions('TestLoginExtPaul'), 'password'));
+
+        $this->migrate();
+
+        $this->assertSame(['', ''], array_column($this->revisions('TestLoginExtMarie'), 'password'));
+        $this->assertSame([''], array_column($this->revisions('TestLoginExtPaul'), 'password'));
+        $this->assertTrue($this->readConfig()['sso_providers']['ldap']['enabled']);
+    }
+
+    public function testAConfigurationThatCannotBeWrittenLeavesTheAccountsAsTheyWere(): void
+    {
+        $this->writeConfig(['sso_config' => ['providers' => [$this->ssoEntry()]]]);
+        $this->installTools('loginsso');
+        $this->account('TestLoginExtMarie', [['password' => 'h', 'loginsso_id' => 'x']]);
+        $config = (string)file_get_contents($this->config);
+        $migration = new class extends \LoginExtensionsBecomeProviders {
+            protected function writeConfiguration(ConfigurationService $service, ConfigurationFile $configuration): bool
+            {
+                return false;
+            }
+        };
+        $migration->setServices($this->getWiki()->services);
+        $migration->setDbService($this->db);
+
+        $failure = null;
+        try {
+            $migration->convertWiki($this->instance, $this->config, new \DateTimeImmutable('2026-11-11 10:00:00'), self::ACCOUNTS);
+        } catch (\RuntimeException $thrown) {
+            $failure = $thrown;
+        }
+        $this->assertStringContainsString('could not be written', (string)$failure?->getMessage(), 'a configuration that cannot be written fails the migration, so it runs again');
+        $this->assertStringNotContainsString('sso-client-secret-value', (string)$failure?->getMessage());
+
+        $this->assertSame($config, (string)file_get_contents($this->config));
+        $body = $this->latest('TestLoginExtMarie');
+        $this->assertSame('x', $body['loginsso_id'] ?? null, 'the account keeps what the next run needs');
+        $this->assertArrayNotHasKey('sso_provider', $body);
+    }
+
     public function testMd5IsKeptOnACasWiki(): void
     {
         $this->writeConfig(['cas_host' => 'cas.example.org']);
@@ -325,17 +416,19 @@ class LoginExtensionsBecomeProvidersTest extends YesWikiTestCase
         $this->assertSame([], $migration->notes());
     }
 
+    /** CAS clears no hash and links no account, so run() walks none of the developer's accounts. */
     public function testRunUsesTheConfiguredFile(): void
     {
-        $this->writeConfig(['favorite_theme' => 'margot']);
-        $before = (string)file_get_contents($this->config);
+        $this->writeConfig(['cas_host' => 'cas.example.org']);
         $migration = new \LoginExtensionsBecomeProviders();
         $migration->setServices($this->getWiki()->services);
         $migration->setDbService($this->db);
 
         $migration->run();
 
-        $this->assertSame($before, (string)file_get_contents($this->config));
+        $config = $this->readConfig();
+        $this->assertArrayNotHasKey('cas_host', $config);
+        $this->assertSame('cas', $config['sso_providers']['cas']['type'] ?? null);
     }
 
     public function testBuildBodyKeepsLoginssoId(): void
