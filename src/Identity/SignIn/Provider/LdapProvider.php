@@ -80,6 +80,10 @@ final class LdapProvider implements PasswordProvider
             ? str_replace('{login}', ldap_escape($login, '', LDAP_ESCAPE_DN), $settings['template'])
             : $this->find($settings, $login, $password);
 
+        // a bind with an empty DN and a password is unauthenticated, and many directories answer it with success
+        if (trim($dn) === '') {
+            throw new ProviderFailure(FailureReason::InvalidResponse, 'no DN to bind the person as: the password is not sent');
+        }
         if (!$this->connection->bind($dn, $password)) {
             throw $this->bindFailure($settings, "the directory refused \"$dn\"", $password, FailureReason::WrongCredentials);
         }
@@ -153,6 +157,10 @@ final class LdapProvider implements PasswordProvider
         }
         if (count($found) > 1) {
             throw new ProviderFailure(FailureReason::ConfigurationInvalid, sprintf('%d entries under "%s" match %s: user_filter must find one person only', count($found), $settings['base_dn'], $filter));
+        }
+
+        if (trim($found[0]['dn']) === '') {
+            throw new ProviderFailure(FailureReason::InvalidResponse, "the entry under \"{$settings['base_dn']}\" matching $filter came back with no DN: there is nobody to bind as");
         }
 
         return $found[0]['dn'];

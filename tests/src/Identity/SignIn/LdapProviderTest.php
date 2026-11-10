@@ -225,6 +225,24 @@ class LdapProviderTest extends TestCase
         $this->assertCount(1, $this->directory->binds, 'nobody to bind as: only the anonymous bind of the search');
     }
 
+    /**
+     * An entry whose DN the client could not read comes back with an empty one. A bind with an empty DN and a password is an
+     * unauthenticated bind, which many directories answer with success: the person would be in without their password being checked.
+     */
+    public function testAFoundEntryWithoutDnIsRefusedBeforeAnyBindWithThePassword(): void
+    {
+        foreach (['', '   '] as $dn) {
+            $this->setUp();
+            $this->directory->personSearchAnswers = [['dn' => $dn, 'attributes' => self::MARIE]];
+
+            $failure = $this->failure(fn () => $this->provider(['base_dn' => 'ou=people,dc=acme'])->authenticate('marie', self::PASSWORD));
+
+            $this->assertSame(FailureReason::InvalidResponse, $failure->reason, "DN \"$dn\"");
+            $this->assertStringContainsString('no DN', $failure->adminDetail);
+            $this->assertSame([[null, null]], $this->directory->binds, 'only the anonymous bind of the search: the password is never sent');
+        }
+    }
+
     public function testSeveralEntriesForOneLoginIsConfigurationInvalid(): void
     {
         $this->directory->entries['uid=marie,ou=former,dc=acme'] = self::MARIE;
@@ -362,6 +380,8 @@ final class FakeLdapConnection implements LdapConnection
     /** @var ?array{0: int, 1: string} what every bind answers, whatever the password */
     public ?array $refuseWith = null;
     public bool $startTlsFails = false;
+    /** @var ?list<array{dn: string, attributes: array<string, list<string>>}> what the search for a person answers, whatever it asks */
+    public ?array $personSearchAnswers = null;
 
     /** @var ?array{0: string, 1: bool} */
     public ?array $connected = null;
@@ -394,7 +414,8 @@ final class FakeLdapConnection implements LdapConnection
 
             return false;
         }
-        if ($dn === null || (isset($this->accounts[$dn]) && $this->accounts[$dn] === $password)) {
+        // as many directories do: no DN, or an empty one, is an anonymous or unauthenticated bind, and succeeds whatever the password
+        if ($dn === null || trim($dn) === '' || (isset($this->accounts[$dn]) && $this->accounts[$dn] === $password)) {
             $this->bound = $dn;
             [$this->code, $this->message] = [0, 'Success'];
 
@@ -432,6 +453,9 @@ final class FakeLdapConnection implements LdapConnection
             }
 
             return $found;
+        }
+        if ($this->personSearchAnswers !== null && str_contains($filter, '(uid=')) {
+            return $this->personSearchAnswers;
         }
         if (preg_match('/\(uid=([^)]*)\)/', $filter, $uid)) {
             foreach ($this->entries as $dn => $attributes) {
