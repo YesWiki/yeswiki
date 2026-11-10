@@ -61,10 +61,13 @@ test.describe('a provider type added by an extension', () => {
     // the suite finds the extension as it left it, whatever happened above
     forgetAccounts(PERSON_EMAIL)
     forgetAttempts(PERSON)
-    setProviders({ local: { type: 'local' } })
-    if (!wasOn && helloworldIsOn()) {
+    if (wasOn && !helloworldIsOn()) {
+      yeswicli('extension:enable', 'helloworld')
+    } else if (!wasOn && helloworldIsOn()) {
       yeswicli('extension:disable', 'helloworld')
     }
+    // last: it waits until the web server reads the configuration, which the extension switch above changed too
+    setProviders({ local: { type: 'local' } })
   })
 
   test('signs in, is refused on a conflict, and is unavailable without its extension', async ({
