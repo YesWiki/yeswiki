@@ -105,6 +105,22 @@ interface SqlDialect
     public function journalDropDdl(string $table): array;
 
     /**
+     * Every statement needed to create the queue's table and its indexes, in execution order.
+     *
+     * @return list<string>
+     */
+    public function queueDdl(string $table): array;
+
+    /**
+     * Every statement needed to create the table of what the queue did (passes, runs, scheduled tasks) and its indexes, in execution order.
+     *
+     * @param string $table already prefixed, unquoted
+     *
+     * @return list<string>
+     */
+    public function queueHistoryDdl(string $table): array;
+
+    /**
      * An INSERT that, when the unique key over $conflictColumns is already taken, applies $assignments to the row that is there instead of failing.
      *
      * @param string                $table           already prefixed, unquoted
@@ -116,21 +132,25 @@ interface SqlDialect
     public function upsert(string $table, array $values, array $conflictColumns, array $assignments): string;
 
     /**
-     * Every statement needed to create the search index table, its ordinary indexes, its full-text index and the queue of Contents awaiting reindexing, in execution order.
+     * What ends an INSERT so that a taken unique key over $conflictColumns writes nothing (row count 0) instead of failing.
      *
-     * @param string $table      already prefixed, unquoted
-     * @param string $queueTable already prefixed, unquoted
+     * @param list<string> $conflictColumns
+     */
+    public function onConflictDoNothing(array $conflictColumns): string;
+
+    /**
+     * The statements creating the search index table (prefixed, unquoted), its indexes and the keywords table, in order.
      *
      * @return list<string>
      */
-    public function searchIndexDdl(string $table, string $queueTable, string $keywordsTable): array;
+    public function searchIndexDdl(string $table, string $keywordsTable): array;
 
     /**
      * Every statement needed to remove what searchIndexDdl() created, in execution order.
      *
      * @return list<string>
      */
-    public function searchIndexDropDdl(string $table, string $queueTable, string $keywordsTable): array;
+    public function searchIndexDropDdl(string $table, string $keywordsTable): array;
 
     /**
      * A boolean SQL expression selecting the index rows that match the query, each term matched as a prefix (`atelier` matches `ateliers`).

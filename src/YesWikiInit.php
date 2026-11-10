@@ -183,8 +183,9 @@ class YesWikiInit
 
             'journal_audit_purge_time' => 365,
             'journal_diagnostic_purge_time' => 14,
-
-            'maintenance_trigger' => 'request',
+            'queue_history_purge_time' => 7,
+            'queue_consumer' => '',
+            'queue_consume_secret' => '',
             'default_write_acl' => '*',
             'default_read_acl' => '*',
             'default_comment_acl' => 'comments-closed',
@@ -223,7 +224,6 @@ class YesWikiInit
                 ArchiveService::KEY_FOR_HIDE_CONFIG_VALUES => ArchiveService::DEFAULT_PARAMS_TO_ANONYMIZE,
                 'authorize_bypass_preupdate_backup' => false,
                 'preupdate_backup_activated' => true,
-                'call_archive_async' => true,
                 'max_nb_files' => 10,
             ],
 

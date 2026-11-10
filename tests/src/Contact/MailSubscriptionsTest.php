@@ -2,6 +2,7 @@
 
 namespace YesWiki\Test\Contact;
 
+use Psr\Container\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use YesWiki\Contact\Service\MailSubscriptions;
 use YesWiki\Content\Entity\PageBody;
@@ -13,9 +14,11 @@ use YesWiki\Identity\Service\UserManager;
 use YesWiki\Identity\Service\UserOperationsService;
 use YesWiki\Kernel\Service\CurrentRequest;
 use YesWiki\Kernel\Service\DbService;
+use YesWiki\Kernel\Service\Mailer;
 use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\TripleStore;
 use YesWiki\Render\Service\ActionRunner;
+use YesWiki\Render\Service\MarkdownFormatterService;
 use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';
@@ -34,6 +37,9 @@ class MailSubscriptionsTest extends YesWikiTestCase
 
     /** @var list<string> */
     private array $createdGroups = [];
+
+    /** @var list<string> the extra subscribers a test made */
+    private array $bulkUsers = [];
 
     private ?Request $previousRequest = null;
 
@@ -65,7 +71,7 @@ class MailSubscriptionsTest extends YesWikiTestCase
             }
         }
         $this->createdGroups = [];
-        foreach ([self::ANN, self::ANNA] as $name) {
+        foreach ([self::ANN, self::ANNA, ...$this->bulkUsers] as $name) {
             $this->subscriptions->forgetUser($name);
             if ($user = $this->userManager->getOneByName($name)) {
                 $this->userManager->delete($user);
@@ -169,6 +175,140 @@ class MailSubscriptionsTest extends YesWikiTestCase
         $this->assertStringNotContainsString('mail-period', $pageMail['html']);
     }
 
+    /**
+     * A digest that cannot reach everybody must say so, after it has tried everybody: the caller does not mark the period as served, and the mails that left must not be lost to the ones that did not.
+     */
+    public function testASendTriesEveryoneBeforeItSaysWhoWasNotReached(): void
+    {
+        $this->subscriptions->subscribe(self::PAGE_TAG, self::ANN, 'day');
+        $this->subscriptions->subscribe(self::PAGE_TAG, self::ANNA, 'day');
+        $this->subscriptions->subscribe(self::OTHER_PAGE_TAG, self::ANNA, 'day');
+        $reached = [];
+
+        try {
+            $this->sendCapturing('day', function (string $email, string $subject) use (&$reached): bool {
+                if (!str_contains($email, 'mailsubscriptions')) {
+                    return true;
+                }
+                if ($email === strtolower(self::ANN) . '@example.com') {
+                    throw new \RuntimeException('mailbox full');
+                }
+                $reached[] = $email . ' ' . (str_contains($subject, 'Other') ? 'other' : 'page');
+
+                return true;
+            });
+            $this->fail('a digest some recipients did not get must throw');
+        } catch (\RuntimeException $failed) {
+            $this->assertStringContainsString("'day' digest did not reach 1 of 3 recipient(s): ", $failed->getMessage());
+            $this->assertStringContainsString(self::PAGE_TAG . ' (' . self::ANN . ')', $failed->getMessage());
+            $this->assertStringContainsString('mailbox full', $failed->getMessage());
+            $this->assertStringNotContainsString('@example.com', $failed->getMessage(), 'user names, not addresses, end up in the journal');
+        }
+
+        sort($reached);
+        $this->assertSame([
+            strtolower(self::ANNA) . '@example.com other',
+            strtolower(self::ANNA) . '@example.com page',
+        ], $reached, 'the failure of one did not stop the others');
+    }
+
+    public function testAMailTheMailerRefusesIsAFailureToo(): void
+    {
+        $this->subscriptions->subscribe(self::PAGE_TAG, self::ANN, 'day');
+        $mailer = $this->createStub(Mailer::class);
+        $mailer->method('lastError')->willReturn('SMTP said: mailbox unavailable');
+
+        try {
+            $this->sendCapturing('day', static fn (string $email): bool => !str_contains($email, 'mailsubscriptions'), [Mailer::class => $mailer]);
+            $this->fail('a mail the mailer refuses must be reported');
+        } catch (\RuntimeException $failed) {
+            $this->assertStringContainsString(self::PAGE_TAG . ' (' . self::ANN . ')', $failed->getMessage());
+            $this->assertStringContainsString('. SMTP said: mailbox unavailable', $failed->getMessage(), 'the reason the mailer gave');
+        }
+    }
+
+    /** Only ten names are listed, the others are counted, and the total is what was attempted. */
+    public function testALongListOfFailuresIsCutAfterTenNames(): void
+    {
+        $this->subscribeBulk(12);
+
+        try {
+            $this->sendCapturing('day', static fn (string $email): bool => !str_contains($email, 'mailsubscriptions'));
+            $this->fail('twelve refused mails must be reported');
+        } catch (\RuntimeException $failed) {
+            $message = $failed->getMessage();
+            $this->assertStringContainsString('did not reach 12 of 12 recipient(s)', $message);
+            $this->assertSame(1, preg_match('/' . self::PAGE_TAG . ' \(([^)]*)\)/', $message, $names));
+            $this->assertCount(10, explode(', ', $names[1] ?? ''), 'ten names are listed');
+            $this->assertStringContainsString(') and 2 more', $message);
+        }
+    }
+
+    /** A subscriber with no mail address (or gone) is neither attempted nor a failure. */
+    public function testASubscriberWithoutAnAddressIsLeftOut(): void
+    {
+        $this->subscriptions->subscribe(self::PAGE_TAG, 'MailSubscriptionsNobody', 'day');
+        $this->subscriptions->subscribe(self::PAGE_TAG, self::ANN, 'day');
+
+        try {
+            $this->sendCapturing('day', static fn (string $email): bool => !str_contains($email, 'mailsubscriptions'));
+            $this->fail('the refused mail must be reported');
+        } catch (\RuntimeException $failed) {
+            $this->assertStringContainsString('did not reach 1 of 1 recipient(s)', $failed->getMessage());
+            $this->assertStringNotContainsString('MailSubscriptionsNobody', $failed->getMessage());
+        } finally {
+            $this->subscriptions->unsubscribe(self::PAGE_TAG, 'MailSubscriptionsNobody');
+        }
+    }
+
+    /** At most three reasons are given, each once, in the order they came. */
+    public function testTheReasonsAreMergedAndCutAfterThree(): void
+    {
+        $this->subscribeBulk(5);
+        $count = 0;
+
+        try {
+            $this->sendCapturing('day', static function (string $email) use (&$count): bool {
+                if (!str_contains($email, 'mailsubscriptions')) {
+                    return true;
+                }
+                throw new \RuntimeException('reason ' . ($count++ % 4));
+            });
+            $this->fail('refused mails must be reported');
+        } catch (\RuntimeException $failed) {
+            $this->assertStringEndsWith('. reason 0; reason 1; reason 2', $failed->getMessage());
+        }
+    }
+
+    /** A page that cannot be rendered fails its own subscribers with the reason, the other pages are still sent, and the next send is not left "sending". */
+    public function testAPageThatCannotBeRenderedFailsAloneAndLeavesTheSendingFlag(): void
+    {
+        $this->subscriptions->subscribe(self::PAGE_TAG, self::ANN, 'day');
+        $this->subscriptions->subscribe(self::OTHER_PAGE_TAG, self::ANNA, 'day');
+        $real = $this->wiki->services->get(MarkdownFormatterService::class);
+        $formatter = $this->createStub(MarkdownFormatterService::class);
+        $formatter->method('format')->willReturnCallback(static function (string $markup) use ($real): string {
+            if (str_contains($markup, self::OTHER_PAGE_TAG)) {
+                throw new \RuntimeException('include loop');
+            }
+
+            return $real->format($markup);
+        });
+        $mails = [];
+
+        try {
+            $this->sendCapturing('day', null, [MarkdownFormatterService::class => $formatter], $mails);
+            $this->fail('a page that cannot be rendered must be reported');
+        } catch (\RuntimeException $failed) {
+            $this->assertStringContainsString('did not reach 1 of 2 recipient(s): ' . self::OTHER_PAGE_TAG . ' (' . self::ANNA . ')', $failed->getMessage());
+            $this->assertStringContainsString('. include loop', $failed->getMessage());
+        }
+
+        $this->assertContains(strtolower(self::ANN) . '@example.com', array_column($mails, 'email'), 'the other page went out');
+        $this->assertNotContains(strtolower(self::ANNA) . '@example.com', array_column($mails, 'email'));
+        $this->assertFalse($this->subscriptions->isSending(), 'the flag that silences the subscribe buttons is down again');
+    }
+
     public function testTheMigrationMovesSubscriptionGroupsToTriples(): void
     {
         $this->createGroup('Mail' . self::PAGE_TAG . 'Week', [self::ANN, self::ANNA, '@admins']);
@@ -224,23 +364,68 @@ class MailSubscriptionsTest extends YesWikiTestCase
         );
     }
 
-    /** @return list<array{email: string, subject: string, html: string}> */
-    private function sendCapturing(string $period): array
+    /**
+     * @param (\Closure(string, string): bool)|null                     $outcome  whether a mail is delivered, or throws; every mail is by default
+     * @param array<string, object>                                     $replaced services the send reads instead of the wiki's, by class name
+     * @param list<array{email: string, subject: string, html: string}> $captured filled with the mails even when the send throws
+     *
+     * @return list<array{email: string, subject: string, html: string}>
+     */
+    private function sendCapturing(string $period, ?\Closure $outcome = null, array $replaced = [], array &$captured = []): array
     {
-        $service = new class($this->wiki->services->get(TripleStore::class), $this->wiki->services->get(DbService::class), $this->wiki->services) extends MailSubscriptions {
+        $real = $this->wiki->services;
+        $services = new class($real, $replaced) implements ContainerInterface {
+            /** @param array<string, object> $replaced */
+            public function __construct(private readonly ContainerInterface $real, private readonly array $replaced)
+            {
+            }
+
+            public function get(string $id): mixed
+            {
+                return $this->replaced[$id] ?? $this->real->get($id);
+            }
+
+            public function has(string $id): bool
+            {
+                return $this->real->has($id);
+            }
+        };
+        $service = new class($real->get(TripleStore::class), $real->get(DbService::class), $services, $outcome) extends MailSubscriptions {
             /** @var list<array{email: string, subject: string, html: string}> */
             public array $mails = [];
+
+            public function __construct(TripleStore $tripleStore, DbService $db, ContainerInterface $services, private readonly ?\Closure $outcome)
+            {
+                parent::__construct($tripleStore, $db, $services);
+            }
 
             protected function deliver(string $email, string $subject, string $text, string $html): bool
             {
                 $this->mails[] = compact('email', 'subject', 'html');
 
-                return true;
+                return $this->outcome === null || ($this->outcome)($email, $subject);
             }
         };
-        $service->send($period);
+        try {
+            $service->send($period);
+        } finally {
+            $captured = $service->mails;
+        }
 
         return $service->mails;
+    }
+
+    /** Subscribes that many extra users with an address to the page, at a day. */
+    private function subscribeBulk(int $count): void
+    {
+        for ($i = 1; $i <= $count; $i++) {
+            $name = sprintf('MailSubscriptionsBulk%02d', $i);
+            $this->bulkUsers[] = $name;
+            if (!$this->userManager->getOneByName($name)) {
+                $this->userManager->create($name, strtolower($name) . '@example.com', 'a-long-enough-password');
+            }
+            $this->subscriptions->subscribe(self::PAGE_TAG, $name, 'day');
+        }
     }
 
     /** @param list<string> $members */

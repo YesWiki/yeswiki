@@ -48,14 +48,10 @@ class AdminBackupsAction extends YesWikiAction implements RegisteredAction, Prov
                 $message = _t('ADMIN_BACKUPS_MESSAGE_HIBERNATION');
             } elseif ($status['privatePathWritable'] == false) {
                 $message = _t('ADMIN_BACKUPS_MESSAGE_WRITABLE_FILE');
-            } elseif ($status['canExec'] == false) {
-                $message = _t('ADMIN_BACKUPS_MESSAGE_CLI_NOT_WORKING');
             } elseif ($status['notAvailableOnTheInternet'] == false) {
                 $message = _t('ADMIN_BACKUPS_MESSAGE_PRIVATE_FOLDER_IS_PUBLIC');
             } elseif ($status['enoughSpace'] == false) {
                 $message = _t('ADMIN_BACKUPS_MESSAGE_NO_SPACE');
-            } elseif ($status['dB'] == false) {
-                $message = _t('ADMIN_BACKUPS_MESSAGE_DB_NOT_ARCHIVABLE');
             }
             $message = _t('ADMIN_BACKUPS_MESSAGE_ARCHIVE_CANNOT_BE_DONE') . ' ' . $message . '<br /><a href="?doc#/docs/fr/admin?id=résoudre-les-problèmes-de-sauvegarde">' . _t('ADMIN_BACKUPS_MESSAGE_SEE_DOC') . '</a>.';
         }

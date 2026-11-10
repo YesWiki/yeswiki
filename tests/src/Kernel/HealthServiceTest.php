@@ -150,4 +150,46 @@ class HealthServiceTest extends TestCase
 
         $this->assertSame([], $service->findings(), 'no acknowledgement, no state, no second run');
     }
+
+    /** The badge, the alerts of a screen and the screen itself all ask: the check is run once, however many lists want it, until the next request. */
+    public function testACheckIsRunOncePerRequestWhicheverListAsksForIt(): void
+    {
+        $log = new class {
+            public int $times = 0;
+        };
+        $service = $this->serviceWith([
+            HealthCheck::named('queue-failed')->linkedTo('admin/jobs')->runs(static function () use ($log) {
+                $log->times++;
+
+                return 'two messages failed';
+            }),
+        ]);
+
+        $service->findings();
+        $service->brokenCount();
+        $service->findings(route: 'admin/jobs');
+        $this->assertSame(1, $log->times);
+
+        $service->startNewRequest();
+        $service->findings();
+        $this->assertSame(2, $log->times, 'a new request asks again: a finding is a claim about the present');
+    }
+
+    /** A screen asks for its own alerts only, and what the whole wiki is asked for is not what a screen is. */
+    public function testAScreenIsOnlyToldOfTheChecksLinkedToIt(): void
+    {
+        $service = $this->serviceWith([
+            HealthCheck::named('on-jobs')->linkedTo('admin/jobs')->runs(static fn () => 'a'),
+            HealthCheck::named('on-updates')->linkedTo('admin/updates')->runs(static fn () => 'b'),
+            HealthCheck::named('on-nothing')->runs(static fn () => 'c'),
+        ]);
+
+        $everything = array_map(static fn ($finding): string => $finding->check->id(), $service->findings());
+        $jobs = array_map(static fn ($finding): string => $finding->check->id(), $service->findings(route: 'admin/jobs'));
+        $updates = array_map(static fn ($finding): string => $finding->check->id(), $service->findings(route: 'admin/updates'));
+
+        $this->assertEqualsCanonicalizing(['on-jobs', 'on-updates', 'on-nothing'], $everything);
+        $this->assertSame(['on-jobs'], $jobs, 'the answer for a screen is not the cached answer for the wiki');
+        $this->assertSame(['on-updates'], $updates);
+    }
 }

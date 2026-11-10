@@ -47,6 +47,8 @@ spl_autoload_register(function ($className) {
         'Field' => 'fields',
         'Commands' => 'commands',
         'Entity' => 'entities',
+        'Message' => 'messages',
+        'Scheduler' => 'schedulers',
         'Exception' => 'exceptions',
         'Trait' => 'traits',
     ];

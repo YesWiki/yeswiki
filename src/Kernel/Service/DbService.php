@@ -12,6 +12,7 @@ use YesWiki\Kernel\Database\SqlDialectFactory;
 use YesWiki\Kernel\Database\SqlDumper;
 use YesWiki\Kernel\Database\SqlParameters;
 use YesWiki\Kernel\Database\SqlStatementSplitter;
+use YesWiki\Kernel\Service\Queue\QueueSchema;
 
 class DbService
 {
@@ -264,7 +265,7 @@ class DbService
         if ($sourcePrefix === '') {
             throw new \Exception('SQL restore failed: no table in the dump names a prefix, so it is not a wiki backup');
         }
-        $own = DumpRewriter::ownTables($tables, $sourcePrefix);
+        $own = DumpRewriter::contentTables($tables, $sourcePrefix);
         $foreign = array_fill_keys(array_diff($tables, $own), true);
 
         $staging = $this->isolatedPrefix($livePrefix, 'staging');
@@ -338,6 +339,16 @@ class DbService
 
         $this->dropTablesWithPrefix($replaced);
         $this->renameStagedObjects($staging, $livePrefix);
+        $this->ensureQueueTables();
+    }
+
+    /** Create the queue's tables when a restore leaves the database without it (a new install from a backup). */
+    private function ensureQueueTables(): void
+    {
+        $queue = new QueueSchema($this);
+        if (!$queue->exists()) {
+            $queue->create();
+        }
     }
 
     /**
@@ -459,7 +470,7 @@ class DbService
         }
 
         $renames = [];
-        foreach ($this->withoutShadowTables($this->tablesWithPrefix($livePrefix)) as $table) {
+        foreach ($this->withoutShadowTables(DumpRewriter::contentTables($this->schema()->getTables(), $livePrefix)) as $table) {
             $renames[$table] = $replaced . substr($table, \strlen($livePrefix));
         }
         foreach ($staged as $table) {
@@ -514,7 +525,7 @@ class DbService
     }
 
     /**
-     * Drop this wiki's tables and replay $sqlContent into them.
+     * Drop this wiki's content tables and replay $sqlContent into them.
      *
      * @throws \Exception
      */
@@ -533,7 +544,7 @@ class DbService
         }
 
         $tables = DumpRewriter::tables($sqlContent);
-        $foreign = array_fill_keys(array_diff($tables, DumpRewriter::ownTables($tables, DumpRewriter::prefixOf($tables))), true);
+        $foreign = array_fill_keys(array_diff($tables, DumpRewriter::contentTables($tables, DumpRewriter::prefixOf($tables))), true);
 
         $session = $this->sessionSettings();
         $disable = $this->dialect->foreignKeyChecks(false);
@@ -542,7 +553,7 @@ class DbService
         }
 
         try {
-            foreach ($this->tablesWithPrefix($tablesPrefix) as $tableName) {
+            foreach (DumpRewriter::contentTables($this->schema()->getTables(), $tablesPrefix) as $tableName) {
                 $this->query('DROP TABLE IF EXISTS ' . $this->dialect->quoteIdentifier($tableName));
             }
 
@@ -565,6 +576,7 @@ class DbService
             }
             $this->restoreSessionSettings($session);
         }
+        $this->ensureQueueTables();
     }
 
     /**
@@ -958,6 +970,12 @@ class DbService
     public function inTransaction(): bool
     {
         return $this->transactionDepth > 0;
+    }
+
+    /** The id the last INSERT on this connection generated, never another process's (unlike `SELECT MAX(id)`). */
+    public function lastInsertId(): int
+    {
+        return (int)$this->link->lastInsertId();
     }
 
     /** A statement prepared once, to be executed many times with different values. */

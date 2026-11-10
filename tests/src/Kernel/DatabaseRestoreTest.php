@@ -159,7 +159,7 @@ class DatabaseRestoreTest extends TestCase
     private function seedCoHostedWiki(): void
     {
         $this->db->query('CREATE TABLE "probe_ecto__pages" (tag VARCHAR(190), body TEXT)');
-        $this->db->query('CREATE TABLE "probe_ecto__triples" (id INTEGER)');
+        $this->db->query('CREATE TABLE "probe_ecto__triples" (id INTEGER, resource TEXT)');
         $this->db->query("INSERT INTO probe_ecto__pages (tag, body) VALUES ('Theirs', 'not yours')");
     }
 
@@ -195,10 +195,10 @@ class DatabaseRestoreTest extends TestCase
         $old = "-- YesWiki-Dialect: sqlite\n"
             . "CREATE TABLE \"probe_pages\" (tag VARCHAR(190), body TEXT, note TEXT);\n"
             . "INSERT INTO \"probe_pages\" (tag, body, note) VALUES ('Restored', 'b', NULL);\n"
-            . "CREATE TABLE \"probe_triples\" (id INTEGER);\n"
+            . "CREATE TABLE \"probe_triples\" (id INTEGER, resource TEXT);\n"
             . "CREATE TABLE \"probe_ecto__pages\" (tag VARCHAR(190), body TEXT);\n"
             . "INSERT INTO \"probe_ecto__pages\" (tag, body) VALUES ('Stale', 'from the backup');\n"
-            . "CREATE TABLE \"probe_ecto__triples\" (id INTEGER);\n";
+            . "CREATE TABLE \"probe_ecto__triples\" (id INTEGER, resource TEXT);\n";
 
         $this->db->restoreStagedFromDump($old);
 
@@ -210,7 +210,7 @@ class DatabaseRestoreTest extends TestCase
     public function testRowsAreDumpedInBoundedBatches(): void
     {
         $this->db->query('CREATE TABLE "probe_pages" (tag VARCHAR(190), body TEXT)');
-        $this->db->query('CREATE TABLE "probe_triples" (id INTEGER)');
+        $this->db->query('CREATE TABLE "probe_triples" (id INTEGER, resource TEXT)');
         $rows = SqlDumper::MAX_INSERT_ROWS * 2 + 7;
         $this->db->transactional(function () use ($rows): void {
             for ($i = 0; $i < $rows; $i++) {
@@ -233,7 +233,7 @@ class DatabaseRestoreTest extends TestCase
     public function testADumpCanBeStreamedToAFileAndRestoredFromIt(): void
     {
         $this->seed();
-        $this->db->query('CREATE TABLE "probe_triples" (id INTEGER)');
+        $this->db->query('CREATE TABLE "probe_triples" (id INTEGER, resource TEXT)');
         $file = tempnam(sys_get_temp_dir(), 'yw-dump-');
         $handle = fopen($file, 'wb');
         if ($handle === false) {

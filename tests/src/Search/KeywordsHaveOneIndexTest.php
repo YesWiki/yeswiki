@@ -74,7 +74,7 @@ class KeywordsHaveOneIndexTest extends YesWikiTestCase
         ]);
         self::$entryTag = (string)($entry['tag'] ?? '');
 
-        $wiki->services->get(SearchIndexer::class)->drain(1000);
+        self::reindexWaitingContents($wiki);
     }
 
     public static function tearDownAfterClass(): void
@@ -157,7 +157,7 @@ class KeywordsHaveOneIndexTest extends YesWikiTestCase
             PageBody::CONTENT => 'to be stripped',
             PageBody::KEYWORDS => ['keptkeyword', 'removedkeyword'],
         ], '', true);
-        $wiki->services->get(SearchIndexer::class)->drain(1000);
+        self::reindexWaitingContents($wiki);
 
         try {
             $this->tagsManager()->remove([['keyword' => 'removedkeyword', 'tag' => $tag]]);
@@ -191,7 +191,7 @@ class KeywordsHaveOneIndexTest extends YesWikiTestCase
                 'originalTag' => self::PAGE_TAG,
                 'newTag' => $copy,
             ]);
-            $wiki->services->get(SearchIndexer::class)->drain(1000);
+            self::reindexWaitingContents($wiki);
 
             $this->assertSame([self::PAGE_KEYWORD], TagsManager::keywordsOf($pageManager->getOne($copy, null, false, true)));
             $this->assertContains(

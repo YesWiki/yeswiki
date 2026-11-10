@@ -11,9 +11,12 @@ use YesWiki\Core\YesWikiRuntime;
 use YesWiki\Kernel\Service\ConfigurationService;
 use YesWiki\Kernel\Service\ConsoleService;
 use YesWiki\Kernel\Service\DbService;
+use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Test\Core\YesWikiTestCase;
+use YesWiki\Test\Kernel\QueueTestHolders;
 
 require_once 'tests/YesWikiTestCase.php';
+require_once 'tests/src/Kernel/QueueTestHolders.php';
 
 #[CoversMethod(ArchiveService::class, '__construct')]
 #[CoversMethod(ArchiveService::class, 'archive')]
@@ -292,18 +295,26 @@ class ArchiveServiceTest extends YesWikiTestCase
         $consoleService = $services['wiki']->services->get(ConsoleService::class);
         $previousStatus = $params->has('wiki_status') ? $params->get('wiki_status') : null;
         $previousStatus = is_string($previousStatus) ? $previousStatus : '';
+        // `archiving` is a backup under way only while that run holds the archive lock: without it, the next reader lifts the status.
+        $letGo = $status === 'archiving' ? QueueTestHolders::lockHeldByAnotherProcess(YESWIKI_INSTANCE_DIR . '/' . HibernationService::ARCHIVING_LOCK) : null;
         $this->setWikiStatus($configService, $status);
 
         $defaultFoldersToInclude = constant('\\YesWiki\\Admin\\Service\\ArchiveService::FOLDERS_TO_INCLUDE');
 
-        $results = $consoleService->startConsoleSync('core:archive', [
-            '-f',
-            '-x', implode(',', $defaultFoldersToInclude),
-        ]);
-        if (empty($previousStatus)) {
-            $this->unsetWikiStatus($configService);
-        } else {
-            $this->setWikiStatus($configService, $previousStatus);
+        try {
+            $results = $consoleService->startConsoleSync('core:archive', [
+                '-f',
+                '-x', implode(',', $defaultFoldersToInclude),
+            ]);
+        } finally {
+            if (empty($previousStatus)) {
+                $this->unsetWikiStatus($configService);
+            } else {
+                $this->setWikiStatus($configService, $previousStatus);
+            }
+            if ($letGo !== null) {
+                $this->assertSame(0, $letGo());
+            }
         }
         $this->assertNotNull($results, 'the archive command produced no output at all');
         $atLeastOneStdErr = false;
@@ -341,6 +352,47 @@ class ArchiveServiceTest extends YesWikiTestCase
             'hibernate' => ['hibernate'],
             'updating' => ['updating'],
         ];
+    }
+
+    /**
+     * Two backups started at once both find the wiki `running`; the one that reaches the archive lock second is refused before it sets any status, so it lifts none either.
+     *
+     * @param array{wiki: YesWikiRuntime, archiveService: ArchiveService} $services
+     */
+    #[Depends('testArchiveServiceExisting')]
+    public function testAnArchiveRefusesToStartWhileAnotherHoldsTheLock(array $services): void
+    {
+        $configService = $services['wiki']->services->get(ConfigurationService::class);
+        $before = $this->statusInTheConfig($configService);
+        $letGo = QueueTestHolders::lockHeldByAnotherProcess(YESWIKI_INSTANCE_DIR . '/' . HibernationService::ARCHIVING_LOCK);
+        $output = '';
+        $location = '';
+        $refused = null;
+
+        try {
+            $location = $services['archiveService']->archive($output, true, false, [], ArchiveService::FOLDERS_TO_INCLUDE);
+        } catch (\Exception $exception) {
+            $refused = $exception;
+        } finally {
+            $this->assertSame(0, $letGo());
+            if ($location !== '' && is_file($location)) {
+                unlink($location);
+            }
+        }
+
+        $this->assertNotNull($refused, 'a backup ran while another held the archive lock: ' . (is_string($output) ? $output : ''));
+        $this->assertSame(_t('ARCHIVE_ALREADY_RUNNING'), $refused->getMessage());
+        $this->assertSame($before, $this->statusInTheConfig($configService), 'no status was set, and none lifted');
+    }
+
+    /** What the wiki's config file says of its status now, null when it says nothing. */
+    private function statusInTheConfig(ConfigurationService $configurationService): ?string
+    {
+        $config = $configurationService->getConfiguration('yeswiki.config.php');
+        $config->load();
+        $status = $config['wiki_status'] ?? null;
+
+        return $status === null ? null : (string)$status;
     }
 
     /**
@@ -407,6 +459,45 @@ class ArchiveServiceTest extends YesWikiTestCase
         $this->assertArrayNotHasKey('error', $data);
         $this->assertArrayHasKey('wakkaContent', $data);
         $this->checkWakkaContent($wakkaContent, $data['wakkaContent']);
+    }
+
+    /**
+     * Whoever holds a backup -- another wiki that fetched it, anyone who downloaded it -- could
+     * consume this wiki's queue with the secret, so no list of values to hide may let it through.
+     *
+     * @param array{wiki: YesWikiRuntime, archiveService: ArchiveService} $services
+     */
+    #[Depends('testArchiveServiceExisting')]
+    #[Depends('testArchive')]
+    public function testTheQueueSecretNeverLeavesWithABackup(array $services): void
+    {
+        $configService = $services['wiki']->services->get(ConfigurationService::class);
+        $config = $configService->getConfiguration('yeswiki.config.php');
+        $config->load();
+        $previous = $config['queue_consume_secret'] ?? null;
+        $config['queue_consume_secret'] = 'local-consume-secret';
+        $configService->write($config);
+        try {
+            $output = '';
+            $location = $services['archiveService']->archive(
+                $output,
+                true,
+                false,
+                [],
+                constant('\\YesWiki\\Admin\\Service\\ArchiveService::FOLDERS_TO_INCLUDE'),
+                ['db_password' => ''],
+            );
+        } finally {
+            $config = $configService->getConfiguration('yeswiki.config.php');
+            $config->load();
+            $config['queue_consume_secret'] = $previous;
+            $configService->write($config);
+        }
+
+        $data = $this->getDataFromLocation($location, $services['wiki']);
+        $this->assertArrayNotHasKey('error', $data);
+        $this->assertArrayHasKey('wakkaContent', $data);
+        $this->assertArrayNotHasKey('queue_consume_secret', $data['wakkaContent'], 'a hide list that does not name the secret still keeps it out');
     }
 
     /**

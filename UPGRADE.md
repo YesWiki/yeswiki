@@ -98,7 +98,7 @@ upgrading and keep that instead. Do not skip this step: everything below is a on
    release that adds a service class inside an existing module would otherwise keep serving the
    old container. `./yeswicli cache:clear` does the same on its own, whenever you pull code;
    `./yeswicli cache:clear --all` empties the whole of `cache/`, thumbnails and remote copies
-   included, keeping only the maintenance lock.
+   included, keeping only the lock files of the background queue and of a running backup.
 
    > **Read the output.** `migrate` prints one line per migration and **exits 0 even when a
    > migration fails** — `MigrationService` collects per-migration errors into a message list
@@ -106,8 +106,19 @@ upgrading and keep that instead. Do not skip this step: everything below is a on
 error ...`, and the migration stays pending, so fixing the cause and re-running is safe.
    > Do not read a zero exit status as success; grep the output for `AU_ERROR`.
 
-5. **Work through [Still by hand](#still-by-hand).**
-6. **Tell your users about passwords** (see [Passwords](#passwords)) — some of them will be
+5. **Restart the background queue's consumer, if it runs as a service** (the `worker` mode):
+
+   ```bash
+   systemctl restart yeswiki-queue
+   ```
+
+   It notices on its own that `migrate` emptied `cache/container/`, stops before its next message
+   and is started again by its unit (`Restart=always`), so it does not run old classes against the
+   new schema. Restarting it by hand makes that immediate and does not depend on the unit. Under
+   the binary there is nothing to do: the upgrade restarts everything.
+
+6. **Work through [Still by hand](#still-by-hand).**
+7. **Tell your users about passwords** (see [Passwords](#passwords)) — some of them will be
    signed out and unable to sign back in until they reset.
 
 Migrations are idempotent and re-runnable. `./yeswicli migrate` on an up-to-date wiki prints
@@ -115,7 +126,7 @@ Migrations are idempotent and re-runnable. `./yeswicli migrate` on an up-to-date
 
 ### If you run the self-contained binary
 
-The binary does all six steps as one command, and it replaces itself on the way:
+The binary does all seven steps as one command, and it replaces itself on the way:
 
 ```bash
 yeswiki upgrade
@@ -189,7 +200,23 @@ form properties.
 only thing that gives it a URL back. Its triples follow it.
 
 **The search index is created and every Content queued for it.** If it ever looks stale or
-incomplete, `./yeswicli search:reindex` rebuilds it.
+incomplete, `./yeswicli search:reindex --all` queues every Content again.
+
+**`maintenance_trigger` and `./yeswicli core:maintenance` are gone.** The housekeeping is a set of
+scheduled tasks of the background queue now, consumed as the queue's mode says (the end of page
+views by default). The migration removes the setting and chooses no mode in your place. A crontab
+that ran `./yeswicli core:maintenance` now fails with "command not defined": replace that line with
+`./yeswicli messenger:consume --drain`, run every minute, which leaves the mode at `request`. The
+other ways to consume the queue outside page views are the `worker` mode (a process kept alive by
+systemd or similar) and the `api` mode (an online cron calling `/api/queue/consume` every minute);
+see INSTALL.md, Housekeeping. A `MAINTENANCE_TRIGGER` line in `private/.env` is not migrated and does nothing any
+more: remove it. The migration says so as it runs, whenever it removed the setting.
+
+**The background queue keeps what it did in a table of its own,** `queue_history`, beside its
+`queue` table, not in the Journal: `/admin/jobs` shows it, and `/admin/logs` lists only the queue's
+errors. It keeps 7 days, set by `queue_history_purge_time`; a wiki that ran a development build of
+this version and set `journal_queue_purge_time` should rename that setting, which is no longer read.
+Backups leave both tables out, and a restore leaves them as they are.
 
 **Page markup becomes Markdown**, with the tags of block actions (`{{section}}`, `{{grid}}`,
 `{{col}}`, `{{panel}}`…) each on a line of its own, the only shape the editor shows as a
@@ -705,15 +732,17 @@ Check whether any page or template of yours depends on these, because nothing re
   - **`sendmail` was a cron job authenticated by `?key=<contact_passphrase>` in the URL**, which
     wrote your site-wide contact passphrase into web-server logs, proxy logs and browser history.
     Replace the cron line with `cd /path/to/wiki && ./yeswicli contact:send-digest -p day`. **A wiki
-    with no cron needs no line at all**: the digests now go out from the wiki's own housekeeping
-    pass. If you keep a real cron _and_ have mailing-list groups, set
+    with no cron needs no line at all**: the digests now go out from the wiki's background
+    queue, as one scheduled task per period (`digest-day`, `digest-week`, `digest-month`); a run
+    that could not reach everybody fails, naming who was missed, and is not retried, since the
+    others already had theirs. If you keep a real cron _and_ have mailing-list groups, set
     `contact_disable_periodic_digest` to true so both do not send.
   - **Keyword navigation moved into search.** A tag link at the bottom of a page now opens
     `?search&tags=<keyword>`, and `tags=` takes a comma-separated list that Content must carry
     _all_ of. This is a new capability, not just a relocation: keywords used to be folded into the
     index's free-text column, so a keyword could only be matched as loosely as any other word.
-    **The keyword index fills as the search queue drains** — a tag link finds nothing until then,
-    which `./yeswicli search:reindex` forces.
+    **The keyword index fills as the background queue reindexes** — a tag link finds nothing until then,
+    which `./yeswicli messenger:consume --drain` forces.
   - **`{{qrcodetroc}}` renders inside the page** rather than filling the window as the handler did.
     Give its page a minimal squelette for the old look — that is a `layout_*` setting now.
 
@@ -731,6 +760,14 @@ Check whether any page or template of yours depends on these, because nothing re
   `5.2.0`, or `dev` in a git checkout. The configuration keys `yeswiki_version` and
   `yeswiki_release` stay, and record the version this wiki's data was installed at or last
   migrated to.
+- **The `maintenance.before` and `maintenance.after` events**, published since alpha1. Nothing
+  fires them any more: an extension that listened to them does nothing after the upgrade. Declare
+  your own recurring task instead, in `schedulers/`: a class implementing `ProvidesSchedule`, whose
+  `recurringMessages()` returns Symfony's `RecurringMessage`s (`RecurringMessage::every()` for a
+  period, `RecurringMessage::cron()` for a time of day in the wiki's timezone), each of a message
+  implementing `ScheduledTask`, with its handler (`#[AsMessageHandler]`) in `messages/`. The task is
+  then listed, retried and alerted on at `/admin/jobs`. The `helloworld` extension shows one
+  (`schedulers/HelloworldSchedule.php`).
 
 ---
 
@@ -755,6 +792,15 @@ every wiki already put them, and there is no setting to move them. A migration r
 and says what it did as it runs; if yours pointed somewhere else, the archives
 already there are left alone — move them into `private/backups` if you want them listed. On an
 S3 instance the backups go to the bucket with everything else Protected.
+
+**`archive[call_archive_async]` is gone.** Backups and restores started from the backups page
+(or before an update) go through the wiki's background queue and show on `/admin/jobs`. In modes
+`request` (the default) and `api` they run in the admin's own request, once the page
+has been sent and without PHP's time limit where the host allows it; in `worker`
+the queue's consumer runs them. A migration removes the key. Where the page cannot leave before
+the work ends (mod_php, CGI), the backup still runs in a PHP process of its own; where none can be
+started (`proc_open` forbidden, no PHP CLI found), the admin's request runs it after all, so such a
+host can make one in the default mode. `core:archive` and `core:restore` stay, for use by hand.
 
 ---
 
@@ -796,5 +842,6 @@ proportion to how long the wiki has been running.
 - **An extension's features vanished** — it was set aside in `private/doryphore/tools/`, and
   `private/doryphore/README.md` says so. See
   [section 2](#2-custom-and-tools-are-set-aside-to-port-one-at-a-time).
-- **Search returns nothing** — `./yeswicli search:reindex`.
+- **Search returns nothing** — `./yeswicli search:reindex --all`, then
+  `./yeswicli messenger:consume --drain`.
 - **You need to go back** — restore the backup. There are no down migrations.

@@ -10,7 +10,7 @@ use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';
 
-/** core:exportdb hands mysqldump this wiki's tables, every one of them and no other wiki's. */
+/** core:exportdb hands mysqldump this wiki's tables, every one of them but the queue's, and no other wiki's. */
 class DbCommandExportsOwnTablesTest extends YesWikiTestCase
 {
     public function testTheDumpCreatesExactlyTheWikisOwnTables(): void
@@ -28,7 +28,7 @@ class DbCommandExportsOwnTablesTest extends YesWikiTestCase
             }
 
             $created = DumpRewriter::tables((string)file_get_contents($file));
-            $own = DumpRewriter::ownTables($db->schema()->getTables(), trim($db->prefixTable('')));
+            $own = DumpRewriter::contentTables($db->schema()->getTables(), trim($db->prefixTable('')));
             sort($created);
             sort($own);
 

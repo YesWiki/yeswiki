@@ -79,6 +79,8 @@ Per-Content events (`page.*`, `entry.*`, `comment.deleted`, `renameTag`) reindex
 
 New `form.updated` / `form.deleted` events mark those entries dirty and immediately spawn `search:reindex` through `ConsoleService::startConsoleAsync()`, under a lock so concurrent saves do not stampede. The **dirty mark is the source of truth**, not the spawn: `proc_open` is commonly disabled on shared hosting and `PhpExecutableFinder` can hand back the FPM binary — the `ASYNC_PHP_BINARY` escape hatch in that service exists because this has already bitten someone. When the spawn does not happen, the `YesWikiRuntime` maintenance hook drains the same rows in bounded batches, the way it already purges expired recovery keys. Every host converges; most converge fast.
 
+*Amended by ADR-0030:* nothing spawns a command, registers a shutdown function or drains in the maintenance sweep any more, and `search_queue` is gone. Queueing a Content dispatches one `ReindexContent` message for it (deduplicated while one is waiting for the same tag), which the background queue runs one at a time: all those waiting when a pass begins run in it, and one queued during a pass waits for the next. The waiting messages are the dirty marks.
+
 The same drain is how an existing wiki gets its index in the first place. The migration **creates schema and marks everything dirty; it indexes nothing** — a migration that decoded a million bodies inside the upgrade request would time out, and a half-applied migration on the upgrade path is precisely the failure class ticket 25 documented. Until the drain finishes, search reports that it is building rather than falling back to the `body LIKE` query this whole decision exists to kill.
 
 ## Considered Options
@@ -101,3 +103,19 @@ Search results change shape for everyone: substring matches disappear, and short
 The index stores the text rather than only tokens, because a MySQL `FULLTEXT` index is an index _on a column_: a contentless index is not reachable there whatever SQLite permits. At a million Contents that is a few gigabytes plus the full-text index, and it is the price of the design. It does mean excerpts are computed in PHP from the index text, uniformly, instead of three ways through `ts_headline`, `snippet()` and nothing.
 
 Acceptance requires evidence the existing suite structurally cannot produce: alongside phpunit and the MySQL e2e run, a seeded synthetic corpus with `EXPLAIN` assertions that each dialect _uses_ its full-text index. A full scan and an index scan return identical results, so nothing else distinguishes a correct index from a decorative one until the wiki is large.
+
+## Implementation notes
+
+- **`ReindexContent` carries the tag only.** Its handler reads the Content's latest revision when it
+  runs, and a Content gone by then leaves no rows. So two saves before it runs cost one reindex, the
+  second absorbed into the first while it waits, and the handler is idempotent.
+- **Nothing in Search runs the reindexing.** A save, `SearchIndexSubscriber` and `search:reindex` only
+  queue it, and the queue runs it in whatever mode the wiki consumes it, or at once with
+  `./yeswicli messenger:consume --drain`. The search page never fills an empty index itself and only
+  says where things stand (`SearchAction`). A queue that cannot be written to is journaled by the bus,
+  so saving a Content never fails for want of one.
+- **The migrations fill the index through the queue, once.** `CreateSearchIndex` only creates the index,
+  because it runs before the queue's table exists. The search migrations before
+  `ReindexingGoesThroughTheQueue` had no queue to send to, so their reindexing was lost.
+  `ReindexingGoesThroughTheQueue` queues every Content once, which covers both. `search_queue` was
+  dropped without carrying its rows over.

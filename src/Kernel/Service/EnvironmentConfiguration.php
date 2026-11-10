@@ -3,6 +3,7 @@
 namespace YesWiki\Kernel\Service;
 
 use YesWiki\Core\YesWikiLoader;
+use YesWiki\Kernel\Service\Queue\QueueSettings;
 
 /** Environment-variable overrides for the YesWiki configuration. */
 class EnvironmentConfiguration
@@ -41,6 +42,10 @@ class EnvironmentConfiguration
         'contact_dkim_selector',
         'contact_dkim_private_key',
         'contact_debug',
+    ];
+
+    public const ENV_ALIASES = [
+        QueueSettings::ENV_MODE => 'queue_consumer',
     ];
 
     /**
@@ -87,7 +92,7 @@ class EnvironmentConfiguration
             if (in_array($name, self::NOT_CONFIG, true)) {
                 continue;
             }
-            $key = $keysByUpperName[strtoupper($name)] ?? strtolower($name);
+            $key = self::ENV_ALIASES[$name] ?? $keysByUpperName[strtoupper($name)] ?? strtolower($name);
             self::override($config, $key, $value);
         }
 
@@ -113,7 +118,7 @@ class EnvironmentConfiguration
             $names[strtoupper($key)] = $key;
         }
 
-        return $names;
+        return array_merge($names, self::ENV_ALIASES);
     }
 
     /**

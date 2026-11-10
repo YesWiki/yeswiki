@@ -260,22 +260,47 @@ class ImporterManager
     }
 
     /**
+     * Imports one source by hand, answering a failure rather than throwing it, and keeps the run in its log.
+     *
      * @param array<string, mixed> $sourceOptions
+     *
+     * @return array{result: string, log: string}
+     */
+    public function syncByHand(string $source, array $sourceOptions): array
+    {
+        ob_start();
+        try {
+            $result = $this->syncSource($source, $sourceOptions);
+        } catch (\Throwable $failed) {
+            $result = $failed->getMessage();
+        }
+        $log = trim(ob_get_clean() . "\n" . $result);
+        $this->services->get(SyncLog::class)->recordRun($source, $log);
+
+        return ['result' => $result, 'log' => $log];
+    }
+
+    /**
+     * Imports one source and answers what to tell its admin; throws when the importer is unknown or the import failed.
+     *
+     * @param array<string, mixed> $sourceOptions
+     *
+     * @throws \RuntimeException
      */
     public function syncSource(string $source, array $sourceOptions): string
     {
         $startTime = microtime(true);
+        $importer = $this->findImporterClass($sourceOptions['importer'] ?? '', $source);
+        if (!$importer) {
+            throw new \RuntimeException('Importer ' . ($sourceOptions['importer'] ?? '') . ' not found');
+        }
         try {
-            $importer = $this->findImporterClass($sourceOptions['importer'], $source);
-            if (!$importer) {
-                return 'Importer ' . $sourceOptions['importer'] . ' not found';
-            }
             $data = $importer->getData();
             $data = $importer->mapData($data);
             $importer->syncFormModel();
             $importer->syncData($data);
         } catch (\Throwable $th) {
-            return $th->getMessage() . ' ' . _t('IMPORTER_ELAPSED_TIME', ['duration' => $this->formatDuration($startTime)]);
+            throw new \RuntimeException($th->getMessage() . ' ' . _t('IMPORTER_ELAPSED_TIME', ['duration' => $this->formatDuration($startTime)]), 0, $th);
         }
 
         return _t('SOURCE_SUCCESSFULLY_SYNCED', ['source' => $source])

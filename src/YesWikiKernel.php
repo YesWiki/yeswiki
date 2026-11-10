@@ -2,7 +2,9 @@
 
 namespace YesWiki\Core;
 
+use Psr\Clock\ClockInterface;
 use Psr\Container\ContainerInterface;
+use Symfony\Component\Clock\NativeClock;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\Config\Loader\LoaderInterface;
 use Symfony\Component\Config\Resource\FileResource;
@@ -16,6 +18,7 @@ use YesWiki\Kernel\Service\ConfigurationFileProvider;
 use YesWiki\Kernel\Service\EnvironmentConfiguration;
 use YesWiki\Kernel\Service\LanguageService;
 use YesWiki\Kernel\Service\ProgramVersion;
+use YesWiki\Kernel\Service\Queue\QueuePassLimitsFactory;
 use YesWiki\Kernel\Service\StringUtilService;
 
 /** Owns the DI container build/compile/cache lifecycle for a Wiki instance. */
@@ -44,13 +47,17 @@ class YesWikiKernel extends Kernel
         \YesWiki\Kernel\Health\ProvidesHealthChecks::class => 'yeswiki.health_check_provider',
         \Symfony\Component\EventDispatcher\EventSubscriberInterface::class => 'yeswiki.event_subscriber',
         \YesWiki\Kernel\Service\RequestScopedState::class => 'yeswiki.request_scoped',
+        \YesWiki\Kernel\Queue\ProvidesSchedule::class => 'yeswiki.schedule_provider',
     ];
 
     /** The folders of a module whose classes are services: every class in them is registered, autowired and autoconfigured. */
-    private const SERVICE_LAYERS = ['Service', 'Action', 'Handler', 'Controller', 'Api', 'Component'];
+    private const SERVICE_LAYERS = ['Service', 'Action', 'Handler', 'Controller', 'Api', 'Component', 'Scheduler'];
 
     /** The same layers in an extension, named after the folders src/autoload.inc.php maps them to. */
-    private const EXTENSION_SERVICE_FOLDERS = ['actions', 'handlers', 'services', 'controllers'];
+    private const EXTENSION_SERVICE_FOLDERS = ['actions', 'handlers', 'services', 'controllers', 'schedulers'];
+
+    private const MESSAGE_LAYER = 'Message';
+    private const EXTENSION_MESSAGE_FOLDER = 'messages';
 
     /** Services set from outside the container once it exists, see YesWikiRuntime::boot(). */
     private const SYNTHETIC = [
@@ -148,11 +155,14 @@ class YesWikiKernel extends Kernel
             $container->register($id)->setSynthetic(true)->setPublic(true);
         }
         $container->setAlias(ContainerInterface::class, 'service_container')->setPublic(true);
+        $container->register(NativeClock::class)->setPublic(false);
+        $container->setAlias(ClockInterface::class, NativeClock::class)->setPublic(true);
         $container->register(ActionRegistry::class)->setAutowired(true)->setPublic(true);
 
         $loader = new PhpFileLoader($container, new FileLocator(__DIR__));
         $prototype = (new Definition())->setAutowired(true)->setAutoconfigured(true)->setPublic(true)->setChanges([]);
         $loader->registerClasses($prototype, 'YesWiki\\', '*/{' . implode(',', self::SERVICE_LAYERS) . '}/*');
+        $loader->registerClasses($prototype, 'YesWiki\\', '*/' . self::MESSAGE_LAYER . '/*Handler.php');
 
         foreach ($this->runtime->extensions as $pluginBase) {
             foreach (self::EXTENSION_SERVICE_FOLDERS as $folder) {
@@ -160,6 +170,10 @@ class YesWikiKernel extends Kernel
                 if ($namespace !== null) {
                     $loader->registerClasses($prototype, $namespace . '\\', $pluginBase . $folder . '/*');
                 }
+            }
+            $namespace = self::namespaceOf($pluginBase . self::EXTENSION_MESSAGE_FOLDER);
+            if ($namespace !== null) {
+                $loader->registerClasses($prototype, $namespace . '\\', $pluginBase . self::EXTENSION_MESSAGE_FOLDER . '/*Handler.php');
             }
         }
 
@@ -234,10 +248,12 @@ class YesWikiKernel extends Kernel
         $container->addCompilerPass(new YesWikiEventCompilerPass());
         $container->addCompilerPass(new YesWikiPerformableCompilerPass());
         $container->addCompilerPass(new YesWikiRequestScopeCompilerPass());
+        $container->addCompilerPass(new YesWikiQueueCompilerPass());
 
         foreach (self::AUTOCONFIGURED as $interface => $tag) {
             $container->registerForAutoconfiguration($interface)->addTag($tag);
         }
+        YesWikiQueueCompilerPass::autoconfigure($container);
 
         $this->registerServices($container);
 

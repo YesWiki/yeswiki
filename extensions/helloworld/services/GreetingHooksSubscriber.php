@@ -3,7 +3,6 @@
 namespace YesWiki\HelloWorld\Service;
 
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
-use YesWiki\Kernel\Entity\Event;
 use YesWiki\Kernel\Performable\PerformableEvent;
 use YesWiki\Render\Service\TemplateEngine;
 
@@ -13,11 +12,6 @@ use YesWiki\Render\Service\TemplateEngine;
 class GreetingHooksSubscriber implements EventSubscriberInterface
 {
     private TemplateEngine $templateEngine;
-
-    /**
-     * @var list<array<string, mixed>>
-     */
-    private array $maintenanceSeen = [];
 
     public function __construct(TemplateEngine $templateEngine)
     {
@@ -30,30 +24,7 @@ class GreetingHooksSubscriber implements EventSubscriberInterface
             'action.greeting.before' => 'prepareArguments',
             'action.greeting.after' => 'appendSuffix',
             'handler.hello.after' => 'rewriteHelloOutput',
-            'maintenance.before' => 'onMaintenanceStarting',
-            'maintenance.after' => 'onMaintenanceDone',
         ];
-    }
-
-    /** Housekeeping of an extension's own, on the wiki's schedule. */
-    public function onMaintenanceStarting(Event $event): void
-    {
-        $this->maintenanceSeen[] = ['phase' => 'before'] + $event->getData();
-    }
-
-    public function onMaintenanceDone(Event $event): void
-    {
-        $this->maintenanceSeen[] = ['phase' => 'after'] + $event->getData();
-    }
-
-    /**
-     * What this listener saw, for the test that pins the contract.
-     *
-     * @return list<array<string, mixed>>
-     */
-    public function maintenanceSeen(): array
-    {
-        return $this->maintenanceSeen;
     }
 
     /** What the old __GreetingAction::formatArguments() did. */

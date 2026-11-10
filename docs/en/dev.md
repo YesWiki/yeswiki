@@ -376,9 +376,9 @@ class DateField extends CoreDateField
 
 Put the class in `custom/services` with `namespace YesWiki\Custom\Service;`, or in
 `custom/controllers` with `namespace YesWiki\Custom\Controller;`. Nothing needs declaring:
-every class in `actions/`, `handlers/`, `services/` and `controllers/` of `custom/` or of an
-extension is registered as an autowired, autoconfigured service. Run `./yeswicli cache:clear`
-after adding one.
+every class in `actions/`, `handlers/`, `services/`, `controllers/` and `schedulers/` of `custom/`
+or of an extension, and every `*Handler.php` in its `messages/`, is registered as an autowired,
+autoconfigured service. Run `./yeswicli cache:clear` after adding one.
 
 A class that needs something autowiring cannot guess says so with an attribute:
 `#[Exclude]` to keep it out of the container, `#[AutowireIterator('a.tag')]` on a

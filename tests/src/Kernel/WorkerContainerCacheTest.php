@@ -3,9 +3,11 @@
 namespace YesWiki\Test\Kernel;
 
 use YesWiki\Core\YesWikiKernel;
+use YesWiki\Core\YesWikiRuntime;
 use YesWiki\Files\Service\Storage;
 use YesWiki\Kernel\Service\CacheClearer;
 use YesWiki\Kernel\Service\ConfigurationFileProvider;
+use YesWiki\Kernel\Service\ConfigurationWatch;
 use YesWiki\Kernel\Service\EnvironmentConfiguration;
 use YesWiki\Test\Core\YesWikiTestCase;
 
@@ -55,20 +57,49 @@ class WorkerContainerCacheTest extends YesWikiTestCase
     public function testAWikiWhoseConfigurationChangedSaysSo(): void
     {
         $wiki = $this->getWiki();
-        $booted = new \ReflectionProperty($wiki, 'bootedCacheDir');
-        $was = $booted->getValue($wiki);
-        $booted->setValue($wiki, (new YesWikiKernel($wiki, $wiki->getEnvironment()))->getCacheDir());
 
-        $name = (string)array_key_first(EnvironmentConfiguration::knownEnvNames());
-        $value = getenv($name);
-        try {
+        $this->withBootedCacheDir($wiki, function () use ($wiki): void {
             $this->assertFalse($wiki->configurationChanged(), 'nothing changed since this worker booted');
-            putenv($name . '=changed-under-a-running-worker');
-            $this->assertTrue($wiki->configurationChanged());
-        } finally {
-            putenv($value === false ? $name : $name . '=' . $value);
-            $booted->setValue($wiki, $was);
-        }
+            $this->withChangedEnvironment(fn () => $this->assertTrue($wiki->configurationChanged()));
+        });
+    }
+
+    /** A blocking queue consumer is told the same thing, through the ConfigurationWatch the runtime binds at boot. */
+    public function testTheConfigurationWatchAsksTheRuntime(): void
+    {
+        $wiki = $this->getWiki();
+        $watch = $wiki->services->get(ConfigurationWatch::class);
+
+        $this->withBootedCacheDir($wiki, function () use ($watch): void {
+            $this->assertFalse($watch->changedSinceBoot());
+            $this->withChangedEnvironment(fn () => $this->assertTrue($watch->changedSinceBoot()));
+        });
+    }
+
+    public function testAWatchBuiltByHandNeverReportsAChange(): void
+    {
+        $this->withChangedEnvironment(fn () => $this->assertFalse((new ConfigurationWatch())->changedSinceBoot(), 'unbound, as a service built by hand is: never changed'));
+    }
+
+    /**
+     * An upgrade (`git pull && migrate`) or a `cache:clear` empties the container cache with the configuration unchanged: the consumer then runs old classes against a new schema, and is told to restart as FrankenPHP's worker is.
+     */
+    public function testTheConfigurationWatchSaysSoWhenTheContainerIsGone(): void
+    {
+        $wiki = $this->getWiki();
+        $watch = $wiki->services->get(ConfigurationWatch::class);
+        $directory = new \ReflectionProperty($wiki, 'containerDirectory');
+        $wasDirectory = $directory->getValue($wiki);
+
+        $this->withBootedCacheDir($wiki, function () use ($watch, $wiki, $directory, $wasDirectory): void {
+            try {
+                $this->assertFalse($watch->changedSinceBoot());
+                $directory->setValue($wiki, sys_get_temp_dir() . '/a-container-directory-that-was-cleared');
+                $this->assertTrue($watch->changedSinceBoot(), 'the configuration is the same, the code may not be');
+            } finally {
+                $directory->setValue($wiki, $wasDirectory);
+            }
+        });
     }
 
     /** A request that read the configuration before a save must not cache its old values under the new file's hash. */
@@ -99,6 +130,34 @@ class WorkerContainerCacheTest extends YesWikiTestCase
             $this->assertTrue($wiki->templatesChanged());
         } finally {
             $stamp->setValue($wiki, $was);
+        }
+    }
+
+    /** Runs $test as a worker that booted on the configuration as it is now would see it, then puts the wiki back. */
+    private function withBootedCacheDir(YesWikiRuntime $wiki, callable $test): void
+    {
+        $booted = new \ReflectionProperty($wiki, 'bootedCacheDir');
+        $was = $booted->getValue($wiki);
+        $booted->setValue($wiki, (new YesWikiKernel($wiki, $wiki->getEnvironment()))->getCacheDir());
+
+        try {
+            $test();
+        } finally {
+            $booted->setValue($wiki, $was);
+        }
+    }
+
+    /** Runs $test with one of the wiki's environment settings changed, then puts it back. */
+    private function withChangedEnvironment(callable $test): void
+    {
+        $name = (string)array_key_first(EnvironmentConfiguration::knownEnvNames());
+        $value = getenv($name);
+        putenv($name . '=changed-under-a-running-worker');
+
+        try {
+            $test();
+        } finally {
+            putenv($value === false ? $name : $name . '=' . $value);
         }
     }
 }

@@ -23,6 +23,8 @@ class ArchiveSpaceTest extends YesWikiTestCase
             $services->get(\YesWiki\Kernel\Service\UrlFormatter::class),
             $services->get(\YesWiki\Files\Service\Storage::class),
             $services->get(LocalFiles::class),
+            $services->get(\Symfony\Component\Messenger\MessageBusInterface::class),
+            $services->get(\YesWiki\Kernel\Service\Queue\QueueStatistics::class),
         );
         $service->free = $free;
 

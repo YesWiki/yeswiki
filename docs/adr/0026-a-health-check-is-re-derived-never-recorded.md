@@ -82,3 +82,10 @@ that says so.
 `pdo_pgsql` and `pdo_sqlite` are `suggest` entries because only one of them matters per wiki. For
 the wiki that is configured for it, it is not optional at all, so Kernel declares one check over
 whichever driver `db_driver` names.
+
+## Implementation notes
+
+- **`HealthService::findings()` memoises per request,** by severity and route, and each check's
+  answer by its id. So the badge's list and a screen's list share one run of each check, and a screen
+  filtered by `$route` lists its own alerts without paying for the others. `startNewRequest()` clears
+  it for worker mode.

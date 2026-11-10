@@ -7,7 +7,7 @@ use YesWiki\Core\YesWikiAction;
 use YesWiki\Files\Service\Storage;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Import\Service\ImporterManager;
-use YesWiki\Import\Service\SyncScheduler;
+use YesWiki\Import\Service\SyncLog;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\ConfigurationFileProvider;
 use YesWiki\Kernel\Service\ConfigurationService;
@@ -84,11 +84,7 @@ class AdminImportersAction extends YesWikiAction implements RegisteredAction
             $syncedSourceId = $syncSource;
 
             set_time_limit(0);
-            ob_start();
-            $result = $importerManager->syncSource($syncedSourceId, $dataSources[$syncedSourceId]);
-            $syncOutput = trim(ob_get_clean() . "\n" . $result);
-
-            $this->getService(SyncScheduler::class)->recordRun($syncedSourceId, $syncOutput);
+            $syncOutput = $importerManager->syncByHand($syncedSourceId, $dataSources[$syncedSourceId])['log'];
         } elseif (!empty($importer)) {
             $sourceOptions = $importerManager->collectSourceOptionsFromInput($importer, $importerFields, $request->request->all());
             $id = (string)($request->request->get('id') ?: $this->newSourceId($importer, $sourceOptions, $dataSources));
@@ -127,12 +123,12 @@ class AdminImportersAction extends YesWikiAction implements RegisteredAction
      */
     private function lastSyncStatus(array $dataSources): array
     {
-        $scheduler = $this->getService(SyncScheduler::class);
+        $log = $this->getService(SyncLog::class);
         $status = [];
         foreach ($dataSources as $id => $source) {
             $status[$id] = [
                 'enabled' => !empty($source['syncOnMaintenance']),
-                'last' => $scheduler->getLastSync((string)$id),
+                'last' => $log->getLastSync((string)$id),
             ];
         }
 

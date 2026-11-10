@@ -15,6 +15,7 @@
 
 use YesWiki\Core\YesWikiLoader;
 use YesWiki\Kernel\Service\AssetPublisher;
+use YesWiki\Kernel\Service\Queue\QueueRequestTrigger;
 
 // source/instance dirs separation + instance data folders provisioning
 require_once __DIR__ . '/src/bootstrap_paths.php';
@@ -26,4 +27,7 @@ AssetPublisher::interceptAssetRequest();
 
 require_once __DIR__ . '/src/YesWikiLoader.php';
 $wiki = YesWikiLoader::getWiki();
+// the queue's end-of-request work: a shutdown function, so that it runs however the request ends
+// (a page, a redirect, `exit`, an error), and registered first, before anything the request adds
+register_shutdown_function([$wiki->services->get(QueueRequestTrigger::class), 'afterResponse']);
 $wiki->run();

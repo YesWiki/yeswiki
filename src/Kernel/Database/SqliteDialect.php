@@ -158,13 +158,60 @@ class SqliteDialect implements SqlDialect
         return ["DROP TABLE IF EXISTS \"{$table}\""];
     }
 
+    public function queueDdl(string $table): array
+    {
+        return [
+            "CREATE TABLE IF NOT EXISTS \"{$table}\" (
+                \"id\" INTEGER PRIMARY KEY AUTOINCREMENT,
+                \"queue_name\" TEXT NOT NULL,
+                \"message_type\" TEXT NOT NULL,
+                \"body\" TEXT NOT NULL,
+                \"headers\" TEXT NOT NULL,
+                \"dedup_key\" TEXT DEFAULT NULL,
+                \"created_at\" TEXT NOT NULL,
+                \"available_at\" TEXT NOT NULL,
+                \"delivered_at\" TEXT DEFAULT NULL,
+                \"delivered_by\" TEXT DEFAULT NULL,
+                \"delivered_mode\" TEXT DEFAULT NULL,
+                \"attempts\" INTEGER NOT NULL DEFAULT 0,
+                \"last_error\" TEXT DEFAULT NULL,
+                \"killed_in\" TEXT DEFAULT NULL
+            )",
+            "CREATE INDEX IF NOT EXISTS \"{$table}_idx_queue_delivered_available\" ON \"{$table}\" (\"queue_name\", \"delivered_at\", \"available_at\")",
+            "CREATE UNIQUE INDEX IF NOT EXISTS \"{$table}_uniq_waiting_dedup_key\" ON \"{$table}\" (\"queue_name\", \"dedup_key\")",
+        ];
+    }
+
+    public function queueHistoryDdl(string $table): array
+    {
+        return [
+            "CREATE TABLE IF NOT EXISTS \"{$table}\" (
+                \"id\" INTEGER PRIMARY KEY AUTOINCREMENT,
+                \"at\" TEXT NOT NULL,
+                \"last_at\" TEXT NOT NULL,
+                \"action\" TEXT NOT NULL,
+                \"actor\" TEXT NOT NULL DEFAULT '',
+                \"target\" TEXT NOT NULL DEFAULT '',
+                \"context\" TEXT DEFAULT NULL
+            )",
+            "CREATE INDEX IF NOT EXISTS \"{$table}_idx_action_target\" ON \"{$table}\" (\"action\", \"target\")",
+            "CREATE INDEX IF NOT EXISTS \"{$table}_idx_action_at\" ON \"{$table}\" (\"action\", \"at\")",
+            "CREATE INDEX IF NOT EXISTS \"{$table}_idx_action_actor_last_at\" ON \"{$table}\" (\"action\", \"actor\", \"last_at\")",
+        ];
+    }
+
+    public function onConflictDoNothing(array $conflictColumns): string
+    {
+        return ' ON CONFLICT (' . implode(', ', array_map([$this, 'quoteIdentifier'], $conflictColumns)) . ') DO NOTHING';
+    }
+
     public function upsert(string $table, array $values, array $conflictColumns, array $assignments): string
     {
         return SqlUpsert::onConflict($this, $table, $values, $conflictColumns, $assignments);
     }
 
     /** An ordinary table plus an FTS5 **external-content** table over it, kept in sync by triggers. */
-    public function searchIndexDdl(string $table, string $queueTable, string $keywordsTable): array
+    public function searchIndexDdl(string $table, string $keywordsTable): array
     {
         return [
             "CREATE TABLE IF NOT EXISTS \"{$table}\" (
@@ -204,14 +251,6 @@ class SqliteDialect implements SqlDialect
                 VALUES ('delete', old.\"id\", old.\"title\", old.\"text\");
                 INSERT INTO \"{$table}_fts\"(rowid, \"title\", \"text\") VALUES (new.\"id\", new.\"title\", new.\"text\");
             END",
-            "CREATE TABLE IF NOT EXISTS \"{$queueTable}\" (
-                \"tag\" TEXT PRIMARY KEY,
-                \"queued_at\" TEXT NOT NULL,
-                \"claimed_at\" TEXT NULL,
-                \"claimed_by\" TEXT NULL
-            )",
-            "CREATE INDEX IF NOT EXISTS \"{$queueTable}_idx_claimed_by\" ON \"{$queueTable}\" (\"claimed_by\")",
-
             "CREATE TABLE IF NOT EXISTS \"{$keywordsTable}\" (
                 \"tag\" TEXT NOT NULL,
                 \"keyword\" TEXT NOT NULL,
@@ -221,11 +260,10 @@ class SqliteDialect implements SqlDialect
         ];
     }
 
-    public function searchIndexDropDdl(string $table, string $queueTable, string $keywordsTable): array
+    public function searchIndexDropDdl(string $table, string $keywordsTable): array
     {
         return [
             "DROP TABLE IF EXISTS \"{$keywordsTable}\"",
-            "DROP TABLE IF EXISTS \"{$queueTable}\"",
             "DROP TRIGGER IF EXISTS \"{$table}_ai\"",
             "DROP TRIGGER IF EXISTS \"{$table}_ad\"",
             "DROP TRIGGER IF EXISTS \"{$table}_au\"",
