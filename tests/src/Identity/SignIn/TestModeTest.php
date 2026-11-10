@@ -175,8 +175,8 @@ class TestModeTest extends YesWikiTestCase
 
     private int $journalFloor = 0;
 
-    /** @var array<string, array{0: bool, 1: ?object}> what the container held before a test swapped it */
-    private array $swapped = [];
+    /** @var array<string, array<string, object>>|null the container's service tables before a test put fakes in them */
+    private ?array $servicesWere = null;
 
     protected function setUp(): void
     {
@@ -210,8 +210,8 @@ class TestModeTest extends YesWikiTestCase
 
     protected function tearDown(): void
     {
-        $this->unswap();
         $this->restoreProviders();
+        $this->restoreServices();
         self::actAs(null);
         $services = self::getWiki()->services;
         $services->get(GroupManager::class)->removeMembers('admins', [self::OTHER_ADMIN]);
@@ -794,6 +794,7 @@ class TestModeTest extends YesWikiTestCase
     private function controllerWith(array $section, bool $tokenAccepted = false): AdminSignInController
     {
         $services = self::getWiki()->services;
+        $this->snapshotServices();
         $this->installProviders($section);
         $flow = new SignInFlow($services->get(ProviderRegistry::class), $this->service, $services->get(SignInJournal::class), $services->get(AttemptLimiter::class), $services->get(HandshakeCookie::class), $services->get(AuthenticationService::class), $services->get(UrlFormatter::class), $services->get(AclService::class));
         $this->swap(SignInFlow::class, $flow);
@@ -811,26 +812,33 @@ class TestModeTest extends YesWikiTestCase
         $services = self::getWiki()->services;
         $table = new \ReflectionProperty(Container::class, 'services');
         $current = $table->getValue($services);
-        if (!array_key_exists($id, $this->swapped)) {
-            $this->swapped[$id] = [array_key_exists($id, $current), $current[$id] ?? null];
-        }
         $current[$id] = $service;
         $table->setValue($services, $current);
     }
 
-    private function unswap(): void
+    /** Every service the container holds now, so that what a test builds on its fake providers (ProvidersEditor, SignInJournal...) is dropped afterwards. */
+    private function snapshotServices(): void
     {
-        $services = self::getWiki()->services;
-        $table = new \ReflectionProperty(Container::class, 'services');
-        $current = $table->getValue($services);
-        foreach ($this->swapped as $id => [$was, $service]) {
-            unset($current[$id]);
-            if ($was) {
-                $current[$id] = $service;
-            }
+        if ($this->servicesWere !== null) {
+            return;
         }
-        $table->setValue($services, $current);
-        $this->swapped = [];
+        $services = self::getWiki()->services;
+        $this->servicesWere = [];
+        foreach (['services', 'privates'] as $name) {
+            $this->servicesWere[$name] = (new \ReflectionProperty(Container::class, $name))->getValue($services);
+        }
+    }
+
+    private function restoreServices(): void
+    {
+        if ($this->servicesWere === null) {
+            return;
+        }
+        $services = self::getWiki()->services;
+        foreach ($this->servicesWere as $name => $table) {
+            (new \ReflectionProperty(Container::class, $name))->setValue($services, $table);
+        }
+        $this->servicesWere = null;
     }
 
     private function request(string $method, array $posted = []): void
@@ -913,6 +921,14 @@ class TestModeTest extends YesWikiTestCase
         $this->assertStringContainsString('admin/sign-in/acme/test', $html);
         $this->assertStringNotContainsString('admin/sign-in/local/test', $html, 'the wiki\'s own accounts are not tested');
         $this->assertStringNotContainsString('admin/sign-in/gone/test', $html, 'nor a provider whose type is gone');
+    }
+
+    /** Boosted, the link would fetch the provider's 302 as an XHR across origins: the browser must leave for real, as from the list. */
+    public function testTestingAgainLeavesWithoutBoostedNavigation(): void
+    {
+        $html = $this->renderTested($this->flow->callback($this->testCallback(), 'fake'));
+
+        $this->assertMatchesRegularExpression('#<a [^>]*href="[^"]*admin/sign-in/fake/test"[^>]*hx-boost="false"#', $html);
     }
 
     public function testTheStepsAreNamedOnTheScreen(): void

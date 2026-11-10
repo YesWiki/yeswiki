@@ -63,6 +63,7 @@ class SignInFlow
             if ($testing && $tester === null) {
                 return $this->notTheTester($config);
             }
+            $config = $this->known($config);
             $provider = $testing ? $this->testedProvider($config) : $this->provider($config);
             if (!$provider instanceof RedirectProvider) {
                 throw new ProviderFailure(FailureReason::ConfigurationInvalid, 'this provider does not redirect anyone: it takes a password on the sign-in form');
@@ -108,6 +109,7 @@ class SignInFlow
                 throw new ProviderFailure(FailureReason::InvalidResponse, 'no valid handshake for this provider: it expired, was altered, or the sign-in started in another browser');
             }
             $this->cookie->clear();
+            $config = $this->known($config);
             $provider = $testing ? $this->testedProvider($config) : $this->provider($config);
             if (!$provider instanceof RedirectProvider) {
                 throw new ProviderFailure(FailureReason::ConfigurationInvalid, 'this provider does not redirect anyone');
@@ -129,7 +131,7 @@ class SignInFlow
         $who = AttemptLimiter::normalize($login);
         $config = null;
         try {
-            $config = $this->registry->config($providerId);
+            $config = $this->known($this->registry->config($providerId));
             $provider = $this->provider($config);
             if (!$provider instanceof PasswordProvider) {
                 throw new ProviderFailure(FailureReason::ConfigurationInvalid, 'this provider takes no password: it redirects to its own sign-in');
@@ -160,23 +162,26 @@ class SignInFlow
         return $this->urls->href('', 'user/sign-in/' . rawurlencode($config->id) . '/callback');
     }
 
-    /** The provider, when it can be used right now. */
-    private function provider(?ProviderConfig $config): IdentityProvider
+    /** The configuration of a provider the section has; an unknown one ends the sign-in like a switched-off one. */
+    private function known(?ProviderConfig $config): ProviderConfig
     {
-        $provider = $config !== null && $this->registry->isEnabled($config->id) ? $this->registry->get($config->id) : null;
+        return $config ?? throw new ProviderFailure(FailureReason::ProviderDisabled, 'no provider has this identifier');
+    }
+
+    /** The provider, when it can be used right now. */
+    private function provider(ProviderConfig $config): IdentityProvider
+    {
+        $provider = $this->registry->isEnabled($config->id) ? $this->registry->get($config->id) : null;
         if ($provider === null) {
-            throw new ProviderFailure(FailureReason::ProviderDisabled, 'the provider is switched off, unknown, or its type is not installed');
+            throw new ProviderFailure(FailureReason::ProviderDisabled, 'the provider is switched off, or its type is not installed');
         }
 
         return $provider;
     }
 
     /** A test needs the provider's type, not the provider switched on: testing it before switching it on is the point. */
-    private function testedProvider(?ProviderConfig $config): IdentityProvider
+    private function testedProvider(ProviderConfig $config): IdentityProvider
     {
-        if ($config === null) {
-            throw new ProviderFailure(FailureReason::ProviderDisabled, 'no provider has this identifier');
-        }
         if ($config->type === LocalType::NAME) {
             // checking a local password can rewrite its stored hash, and a test changes nothing.
             throw new ProviderFailure(FailureReason::ConfigurationInvalid, 'the wiki\'s own accounts are not tested here');
@@ -219,7 +224,7 @@ class SignInFlow
             if ($this->tester() === null) {
                 return $this->notTheTester($this->registry->config($providerId));
             }
-            $config = $this->registry->config($providerId) ?? throw new ProviderFailure(FailureReason::ProviderDisabled, 'no provider has this identifier');
+            $config = $this->known($this->registry->config($providerId));
             $provider = $this->testedProvider($config);
             if (!$provider instanceof PasswordProvider) {
                 throw new ProviderFailure(FailureReason::ConfigurationInvalid, 'this provider takes no password: it redirects to its own sign-in');
@@ -309,7 +314,7 @@ class SignInFlow
             // the account is not activated yet: the person is told on the form, with the words the wiki always used.
             return SignInOutcome::formError($notActivated->getMessage());
         } catch (\Throwable $thrown) {
-            return $this->failed($config, $login ?? $plan?->who ?? '', $thrown, $step, $identity, $plan);
+            return $this->failed($config, $login ?? $plan->who ?? '', $thrown, $step, $identity, $plan);
         }
     }
 
@@ -348,8 +353,8 @@ class SignInFlow
 
     private function trace(ProviderConfig $config, ProviderFailure $failure, string $step, ?ProviderIdentity $identity, ?SignInPlan $plan): SignInTrace
     {
-        $attributes = $identity?->attributes ?? $failure->attributes;
-        $used = array_filter($plan?->attributeUse ?? [], fn (array $use): bool => $use['present']);
+        $attributes = $identity->attributes ?? $failure->attributes;
+        $used = array_filter($plan->attributeUse ?? [], fn (array $use): bool => $use['present']);
 
         return new SignInTrace(
             $step,

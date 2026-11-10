@@ -3651,4 +3651,5 @@ which gives 1 if bf_type == premiere_cle, and 0 otherwise).',
     'SIGN_IN_TEST_RUN' => 'Run the test',
     'SIGN_IN_TEST_AGAIN' => 'Test again',
     'SIGN_IN_TEST_SETTINGS' => 'Provider settings',
+    'SIGN_IN_ADMIN_SAVE_AND_TEST' => 'Save and test',
 ];

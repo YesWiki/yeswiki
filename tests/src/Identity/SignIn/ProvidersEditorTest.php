@@ -2,8 +2,11 @@
 
 namespace YesWiki\Test\Identity\SignIn;
 
+use Symfony\Component\DependencyInjection\Container;
+use Symfony\Component\HttpFoundation\RedirectResponse;
+use Symfony\Component\HttpFoundation\Request;
 use YesWiki\Identity\Controller\AdminSignInController;
-use YesWiki\Identity\Service\AuthenticationService;
+use YesWiki\Identity\Service\CsrfTokenChecker;
 use YesWiki\Identity\Service\SignIn\AccountLinks;
 use YesWiki\Identity\Service\SignIn\ProvidersEditor;
 use YesWiki\Identity\Service\UserManager;
@@ -23,6 +26,11 @@ class ProvidersEditorTest extends YesWikiTestCase
     private const SECRET = 'sup3r-s3cret-value';
 
     private string $config;
+
+    /** @var array{0: bool, 1: ?object}|null the token checker the container held before a test replaced it */
+    private ?array $checkerWas = null;
+
+    private ?Request $requestWas = null;
     private ProvidersEditor $editor;
 
     protected function setUp(): void
@@ -38,6 +46,7 @@ class ProvidersEditorTest extends YesWikiTestCase
     protected function tearDown(): void
     {
         self::actAs(null);
+        $this->restorePosting();
         $users = $this->getWiki()->services->get(UserManager::class);
         if ($user = $users->getOneByName(self::USER)) {
             $users->delete($user);
@@ -46,6 +55,47 @@ class ProvidersEditorTest extends YesWikiTestCase
         putenv('YESWIKI_CONFIG_FILE');
         @unlink($this->config);
         parent::tearDown();
+    }
+
+    /**
+     * The admin controller as a form posted to it sees it. filter_input() reads the SAPI's input, which a CLI run has none of,
+     * so the token checker is replaced in the container's table (the seam FakeProviderTypes uses): the token is not what is tested here.
+     *
+     * @param array<string, mixed> $form
+     */
+    private function posted(array $form): AdminSignInController
+    {
+        $services = $this->getWiki()->services;
+        $current = $services->get(CurrentRequest::class);
+        $this->requestWas ??= $current->get();
+        $current->replace(Request::create('/?admin/sign-in', 'POST', $form));
+        $table = new \ReflectionProperty(Container::class, 'services');
+        $built = $table->getValue($services);
+        $this->checkerWas ??= [array_key_exists(CsrfTokenChecker::class, $built), $built[CsrfTokenChecker::class] ?? null];
+        $built[CsrfTokenChecker::class] = $this->createStub(CsrfTokenChecker::class);
+        $table->setValue($services, $built);
+        self::actAs('WikiAdmin');
+
+        return $services->get(AdminSignInController::class);
+    }
+
+    private function restorePosting(): void
+    {
+        $services = $this->getWiki()->services;
+        if ($this->requestWas !== null) {
+            $services->get(CurrentRequest::class)->replace($this->requestWas);
+            $this->requestWas = null;
+        }
+        if ($this->checkerWas !== null) {
+            $table = new \ReflectionProperty(Container::class, 'services');
+            $built = $table->getValue($services);
+            unset($built[CsrfTokenChecker::class]);
+            if ($this->checkerWas[0]) {
+                $built[CsrfTokenChecker::class] = $this->checkerWas[1];
+            }
+            $table->setValue($services, $built);
+            $this->checkerWas = null;
+        }
     }
 
     /** @param array<string, array<string, mixed>> $section */
@@ -174,6 +224,61 @@ class ProvidersEditorTest extends YesWikiTestCase
         $this->assertStringContainsString('name="group_mapping_present"', $html);
         $this->assertStringContainsString('name="extra_fields_present"', $html);
     }
+
+    public function testTheEditFormOffersSaveAndTest(): void
+    {
+        $this->seed(['local' => ['type' => 'local'], 'acme' => $this->oidc()]);
+        $html = (string)$this->getWiki()->services->get(AdminSignInController::class)->edit('acme')->getContent();
+
+        $this->assertMatchesRegularExpression('#<button[^>]*type="submit"[^>]*name="then"[^>]*value="test"#', $html);
+        $this->assertStringContainsString(htmlspecialchars(_t('SIGN_IN_ADMIN_SAVE_AND_TEST'), ENT_QUOTES), $html);
+    }
+
+    public function testSaveAndTestSavesThenOpensTheTest(): void
+    {
+        $this->seed(['local' => ['type' => 'local'], 'acme' => $this->oidc()]);
+
+        $response = $this->posted(['label' => 'Acme renamed', 'enabled' => '1', 'connection' => ['discovery_url' => 'https://a/x', 'client_id' => 'c'], 'then' => 'test'])->edit('acme');
+
+        $this->assertInstanceOf(RedirectResponse::class, $response);
+        $this->assertStringEndsWith('admin/sign-in/acme/test', (string)$response->headers->get('Location'));
+        $this->assertSame('Acme renamed', $this->written()['acme']['label'], 'saved exactly like Save');
+        $this->assertSame(self::SECRET, $this->written()['acme']['connection']['client_secret']);
+        $this->assertArrayNotHasKey('then', $this->written()['acme']);
+    }
+
+    public function testSaveAndTestThatCannotSaveStaysOnTheForm(): void
+    {
+        $this->seed(['local' => ['type' => 'local'], 'acme' => $this->oidc()]);
+
+        $response = $this->posted(['label' => '', 'enabled' => '1', 'connection' => ['discovery_url' => 'https://a/x', 'client_id' => 'c'], 'then' => 'test'])->edit('acme');
+
+        $this->assertNotInstanceOf(RedirectResponse::class, $response);
+        $this->assertStringContainsString(htmlspecialchars(_t('SIGN_IN_ADMIN_LABEL_REQUIRED'), ENT_QUOTES), (string)$response->getContent());
+        $this->assertSame('Acme', $this->written()['acme']['label'], 'nothing was saved');
+    }
+
+    public function testSaveAloneStillGoesBackToTheList(): void
+    {
+        $this->seed(['local' => ['type' => 'local'], 'acme' => $this->oidc()]);
+
+        $response = $this->posted(['label' => 'Acme renamed', 'enabled' => '1', 'connection' => ['discovery_url' => 'https://a/x', 'client_id' => 'c']])->edit('acme');
+
+        $this->assertInstanceOf(RedirectResponse::class, $response);
+        $this->assertStringEndsWith('admin/sign-in', (string)$response->headers->get('Location'));
+    }
+
+    public function testSaveAndTestOnANewProviderOpensItsTest(): void
+    {
+        $this->seed(['local' => ['type' => 'local']]);
+
+        $response = $this->posted(['label' => 'Brand New', 'enabled' => '1', 'connection' => ['discovery_url' => 'https://a/x', 'client_id' => 'c', 'client_secret' => 's'], 'then' => 'test'])->add('oidc');
+
+        $this->assertInstanceOf(RedirectResponse::class, $response);
+        $this->assertStringEndsWith('admin/sign-in/brand-new/test', (string)$response->headers->get('Location'));
+        $this->assertArrayHasKey('brand-new', $this->written());
+    }
+
     public function testTheTypeCannotChange(): void
     {
         $this->seed(['local' => ['type' => 'local'], 'acme' => $this->oidc()]);

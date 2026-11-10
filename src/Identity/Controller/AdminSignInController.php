@@ -93,7 +93,7 @@ class AdminSignInController extends YesWikiController
                 if (is_string($created)) {
                     Flash::success(_t('SIGN_IN_ADMIN_CREATED'));
 
-                    return $this->toIndex();
+                    return $this->afterSave($created, $posted);
                 }
                 $errors = $created;
             }
@@ -124,7 +124,7 @@ class AdminSignInController extends YesWikiController
                 if ($errors === []) {
                     Flash::success(_t('SIGN_IN_ADMIN_SAVED'));
 
-                    return $this->toIndex();
+                    return $this->afterSave($id, $posted);
                 }
             }
         }
@@ -312,7 +312,7 @@ class AdminSignInController extends YesWikiController
                 continue;
             }
             $name = $field->getPropertyName();
-            if ($name !== '' && !in_array($name, $skipped, true)) {
+            if ($name !== null && $name !== '' && !in_array($name, $skipped, true)) {
                 $fields[$name] = ['name' => $name, 'label' => (string)($field->getLabel() ?: $name)];
             }
         }
@@ -335,6 +335,20 @@ class AdminSignInController extends YesWikiController
         }
 
         return [];
+    }
+
+    /**
+     * Back to the list after Save; on to the provider's test after "Save and Test".
+     *
+     * @param array<string, mixed> $posted
+     */
+    private function afterSave(string $id, array $posted): RedirectResponse
+    {
+        if (($posted['then'] ?? null) !== 'test') {
+            return $this->toIndex();
+        }
+
+        return new RedirectResponse($this->getService(UrlFormatter::class)->href('', self::CURRENT . '/' . rawurlencode($id) . '/test'));
     }
 
     private function toIndex(): RedirectResponse

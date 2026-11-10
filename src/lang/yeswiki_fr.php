@@ -3651,4 +3651,5 @@ qui rend 1 si bf_type == premiere_cle sinon 0).',
     'SIGN_IN_TEST_RUN' => 'Lancer le test',
     'SIGN_IN_TEST_AGAIN' => 'Tester à nouveau',
     'SIGN_IN_TEST_SETTINGS' => 'Réglages du fournisseur',
+    'SIGN_IN_ADMIN_SAVE_AND_TEST' => 'Enregistrer et tester',
 ];
