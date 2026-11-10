@@ -671,7 +671,8 @@ class YesWikiRuntime
         Flash::bind($container->get(FlashMessages::class));
         $GLOBALS['yeswikiServices'] = $this->services;
 
-        $this->config = $parameterBag->all();
+        // The sections the container never compiles come from the file this request read.
+        $this->config = $parameterBag->all() + ConfigurationSecrets::runtimeOnly($this->config);
         $this->service(RuntimeConfig::class)->bind($this->config);
         $this->service(CurrentRequest::class)->replace($this->request);
         $this->service(ExtensionRegistry::class)->bind($this->extensions);

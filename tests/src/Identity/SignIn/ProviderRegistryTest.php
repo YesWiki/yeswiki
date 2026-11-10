@@ -4,9 +4,11 @@ namespace YesWiki\Test\Identity\SignIn;
 
 use YesWiki\Identity\Service\SignIn\ProviderRegistry;
 use YesWiki\Identity\Service\SignIn\Type\LocalType;
+use YesWiki\Identity\Service\SignIn\Type\OidcType;
 use YesWiki\Identity\SignIn\Contract\IdentityProvider;
 use YesWiki\Identity\SignIn\Contract\ProviderConfig;
 use YesWiki\Identity\SignIn\Contract\ProviderType;
+use YesWiki\Identity\SignIn\Provider\OidcProvider;
 use YesWiki\Kernel\Service\RuntimeConfig;
 use YesWiki\Test\Core\YesWikiTestCase;
 
@@ -131,5 +133,16 @@ class ProviderRegistryTest extends YesWikiTestCase
         $registry = new ProviderRegistry([$this->fakeType('local'), $core], $config);
         $this->assertSame($core, $registry->types()['local']);
         $this->assertCount(1, $registry->problems());
+    }
+
+    public function testTheCoreShipsOidc(): void
+    {
+        $type = self::getWiki()->services->get(ProviderRegistry::class)->types()['oidc'] ?? null;
+        $this->assertInstanceOf(OidcType::class, $type);
+
+        $secrets = array_map(fn ($setting): string => $setting->name(), array_filter($type->connectionSettings(), fn ($setting): bool => $setting->type() === 'secret'));
+        $this->assertSame(['client_secret'], array_values($secrets), 'the secret is declared, so the screen never shows it and the Journal scrubs it');
+        $this->assertSame(['id' => 'sub', 'email' => 'email', 'first_name' => 'given_name', 'last_name' => 'family_name', 'groups' => 'groups'], $type->defaultAttributes());
+        $this->assertInstanceOf(OidcProvider::class, $type->create(ProviderConfig::fromArray('acme', ['type' => 'oidc', 'label' => 'Acme'])));
     }
 }

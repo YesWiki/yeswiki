@@ -177,7 +177,23 @@ class SignInFlow
             $this->journal->failure($config, $who, $failure->reason, $this->trace($config, $failure, $step, $identity, $plan));
         }
 
-        return SignInOutcome::refused($config, $failure->reason, $who, $failure->adminDetail, $failure->employeeMessage ?? '');
+        return SignInOutcome::refused($config, $failure->reason, $who, $failure->adminDetail, $failure->employeeMessage ?? $this->missingAttributeMessage($config, $failure, $plan));
+    }
+
+    /** A plan refused for lack of the user ID or the email names the attribute it looked for, so the person can pass it on. */
+    private function missingAttributeMessage(?ProviderConfig $config, ProviderFailure $failure, ?SignInPlan $plan): string
+    {
+        if ($config === null || $plan === null || $failure->reason !== FailureReason::MissingAttribute) {
+            return '';
+        }
+        foreach (['id', 'email'] as $field) {
+            $use = $plan->attributeUse[$field] ?? null;
+            if ($use !== null && !$use['present']) {
+                return _t('SIGN_IN_REFUSED_MISSING_NAMED_ATTRIBUTE', ['provider' => $config->label, 'attribute' => $use['attribute']]);
+            }
+        }
+
+        return '';
     }
 
     private function trace(ProviderConfig $config, ProviderFailure $failure, string $step, ?ProviderIdentity $identity, ?SignInPlan $plan): SignInTrace

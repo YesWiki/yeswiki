@@ -40,7 +40,8 @@
                 {% block form %}
                     {% block redirectProviders %}
                         {% if redirectProviders is not empty %}
-                            <div class="yw-sign-in__providers">
+                            {# A provider is another site: the browser goes there itself, never through a boosted request. #}
+                            <div class="yw-sign-in__providers" hx-boost="false">
                                 {% for provider in redirectProviders %}
                                     <a class="yw-btn yw-btn--block yw-sign-in__provider {{ btnclass }}"
                                        href="{{ provider.url }}">{{ _t("SIGN_IN_WITH_PROVIDER", {provider: provider.label}) }}</a>

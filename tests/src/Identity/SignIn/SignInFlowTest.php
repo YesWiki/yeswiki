@@ -541,6 +541,26 @@ class SignInFlowTest extends YesWikiTestCase
         $this->assertSame('sub', $context['attribute_use']['id']);
     }
 
+    public function testAMissingAttributeIsNamedToThePerson(): void
+    {
+        $this->flow = $this->flowFor(['fake' => ['type' => 'fake-redirect', 'label' => 'Fake SSO', 'attributes' => ['email' => 'mail']]]);
+        $this->fake->attributes = ['sub' => 'flow-nomail', 'given_name' => 'No'];
+
+        $outcome = $this->flow->callback($this->callbackRequest(), 'fake');
+
+        $this->assertSame(FailureReason::MissingAttribute, $outcome->reason);
+        $this->assertMatchesRegularExpression('/["«]\s?mail\s?["»]/u', $outcome->messageForPerson(), 'the attribute is named, quoted');
+        $this->assertStringContainsString('Fake SSO', $outcome->messageForPerson());
+        $this->assertStringContainsString('"mail"', (string)$this->diagnosticContext('login.refused.missing_attribute.fake')['error']);
+    }
+
+    public function testAMissingAttributeKeepsTheProvidersOwnMessage(): void
+    {
+        $this->fake->failWith(new ProviderFailure(FailureReason::MissingAttribute, 'no uid', 'Ask IT to release your uid'));
+
+        $this->assertSame('Ask IT to release your uid', $this->flow->callback($this->callbackRequest(), 'fake')->messageForPerson());
+    }
+
     public function testAnUnexpectedExceptionBecomesInternalError(): void
     {
         $this->fake->failWith(new \LogicException('boom'));

@@ -49,6 +49,13 @@ class SignInPageTest extends YesWikiTestCase
         $this->assertMatchesRegularExpression('#user/sign-in/acme[^"]*return=#', $html);
     }
 
+    /** htmx would fetch the provider's page into the wiki's, under the wiki's address: the browser must leave for real. */
+    public function testTheButtonLeavesWithoutBoostedNavigation(): void
+    {
+        $html = $this->render(['acme' => ['type' => 'fakeredirect']]);
+        $this->assertStringContainsString('<div class="yw-sign-in__providers" hx-boost="false">', $html);
+    }
+
     public function testOnePasswordProviderHasNoTabs(): void
     {
         $html = $this->render(['local' => ['type' => 'local']]);

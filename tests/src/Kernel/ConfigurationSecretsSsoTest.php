@@ -13,4 +13,13 @@ class ConfigurationSecretsSsoTest extends TestCase
         $this->assertArrayNotHasKey('sso_providers', $config);
         $this->assertSame('x', $config['base_url']);
     }
+
+    /** What the runtime puts back beside the compiled parameters, so a request reads the section from the file it read. */
+    public function testTheSectionIsReadAtRuntime(): void
+    {
+        $section = ['a' => ['type' => 'oidc', 'connection' => ['client_secret' => 'hunter2']]];
+
+        $this->assertSame(['sso_providers' => $section], ConfigurationSecrets::runtimeOnly(['sso_providers' => $section, 'base_url' => 'x', 'db_password' => 'p']));
+        $this->assertSame([], ConfigurationSecrets::runtimeOnly(['base_url' => 'x']));
+    }
 }

@@ -57,6 +57,18 @@ final class ConfigurationSecrets implements EnvVarProcessorInterface
         return $config;
     }
 
+    /**
+     * The runtime-only sections of the configuration read for the request: what the runtime adds back to the compiled parameters.
+     *
+     * @param array<string, mixed> $config
+     *
+     * @return array<string, mixed>
+     */
+    public static function runtimeOnly(array $config): array
+    {
+        return array_intersect_key($config, array_flip(self::RUNTIME_ONLY));
+    }
+
     public function getEnv(string $prefix, string $name, \Closure $getEnv): mixed
     {
         $value = $this->config[$name] ?? '';
