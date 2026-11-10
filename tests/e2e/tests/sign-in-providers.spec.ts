@@ -22,7 +22,7 @@ import {
  * Every provider type against the real servers of the development stack (Step 0 of the SSO plan).
  * The task adding a type adds it here; the wiki is reset once for the file, so each test starts from the accounts it needs.
  */
-const TYPES: ProviderType[] = ['oidc', 'saml']
+const TYPES: ProviderType[] = ['oidc', 'saml', 'cas']
 
 const GUEST_CARD = '.yw-account-guest__card'
 const MARIE_ACCOUNT = 'marie-dupont'

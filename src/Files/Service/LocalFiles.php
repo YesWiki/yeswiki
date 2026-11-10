@@ -40,6 +40,12 @@ class LocalFiles
         return is_writable($path);
     }
 
+    /** A file that is there and that this process may read. */
+    public function isReadableFile(string $path): bool
+    {
+        return is_file($path) && is_readable($path);
+    }
+
     /** The user id owning $path itself, a link not followed, or null when it is not there. */
     public function ownerOf(string $path): ?int
     {

@@ -106,3 +106,4 @@ parameters:
 
     stubFiles:
         - symfony-container.stub
+        - phpcas.stub

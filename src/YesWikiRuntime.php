@@ -669,6 +669,8 @@ class YesWikiRuntime
         ));
         $this->services->set(YesWikiRuntime::class, $this);
         Flash::bind($container->get(FlashMessages::class));
+        // phpCAS exits by default when it ends a request, which would end the worker: it throws instead, for CasProvider to catch
+        \CAS_GracefullTerminationException::throwInsteadOfExiting();
         $GLOBALS['yeswikiServices'] = $this->services;
 
         // The sections the container never compiles come from the file this request read.

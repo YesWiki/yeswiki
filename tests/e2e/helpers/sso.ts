@@ -76,7 +76,7 @@ export const PROVIDERS: Record<ProviderType, Record<string, unknown>> = {
   cas: {
     type: 'cas',
     label: 'Acme CAS',
-    connection: { server_url: `${PORTAL}/cas`, protocol: '3.0' },
+    connection: { server_url: `${PORTAL}/cas`, version: '3.0' },
     attributes: ATTRIBUTES,
   },
   ldap: {
