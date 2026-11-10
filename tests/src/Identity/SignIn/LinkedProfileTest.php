@@ -167,16 +167,67 @@ class LinkedProfileTest extends YesWikiTestCase
         $this->assertDoesNotMatchRegularExpression('/name="email"[^>]*disabled/', $html);
     }
 
-    public function testTheSettingsActionRefusesAPasswordChangeOnALinkedAccount(): void
+    /** An action ready to run one of its steps, as the request would have left it. */
+    private function actionFor(bool $loggedIn, bool $adminActing): array
     {
         $action = new \YesWiki\Identity\Action\UserSettingsAction();
         $action->setServices($this->services);
         $reflection = new \ReflectionClass($action);
-        $reflection->getProperty('userLoggedIn')->setValue($action, true);
         $reflection->getMethod('getServices')->invoke($action);
+        $reflection->getProperty('userLoggedIn')->setValue($action, $loggedIn);
+        $reflection->getProperty('adminIsActing')->setValue($action, $adminActing);
+        $reflection->getProperty('wantedUserName')->setValue($action, self::LINKED);
+        // filter_input() reads the SAPI's input, which a CLI run has none of: the token is not what is tested here.
+        $reflection->getProperty('csrfTokenChecker')->setValue($action, $this->createStub(\YesWiki\Identity\Service\CsrfTokenChecker::class));
+
+        return [$action, $reflection];
+    }
+
+    public function testTheSettingsActionRefusesAPasswordChangeOnALinkedAccount(): void
+    {
+        [$action, $reflection] = $this->actionFor(true, false);
         $reflection->getMethod('changePassword')->invoke($action, $this->linked, ['oldpass' => 'x', 'password' => 'Aa1!brandNewPassword']);
 
+        $this->assertStringContainsString(
+            _t('USERSETTINGS_MANAGED_BY_PROVIDER', ['provider' => 'Acme SSO']),
+            $reflection->getProperty('errorPasswordChange')->getValue($action)
+        );
         $this->assertSame('', $this->users->getOneByName(self::LINKED)->getPassword());
+    }
+
+    public function testTheSettingsActionSendsNoRecoveryKeyForALinkedAccount(): void
+    {
+        [$action, $reflection] = $this->actionFor(false, true);
+        $reflection->getMethod('resetPassword')->invoke($action, $this->linked, []);
+
+        $this->assertNull($this->services->get(\YesWiki\Kernel\Service\TripleStore::class)->getOne(self::LINKED, UserManager::KEY_VOCABULARY, '', ''));
+    }
+
+    /** @return array<string, array{bool, bool}> */
+    public static function whoSubmitsProvider(): array
+    {
+        return ['the account itself' => [true, false], 'an administrator' => [false, true]];
+    }
+
+    #[\PHPUnit\Framework\Attributes\DataProvider('whoSubmitsProvider')]
+    public function testSubmittingTheFormWithoutEmailSavesWhatIsOurs(bool $loggedIn, bool $adminActing): void
+    {
+        [$action, $reflection] = $this->actionFor($loggedIn, $adminActing);
+        $exited = false;
+        try {
+            // the disabled email input posts nothing: the other fields are what arrives.
+            $reflection->getMethod('update')->invoke($action, ['motto' => 'from the form', 'usersettings_action' => 'update'], $this->linked);
+        } catch (\YesWiki\Kernel\Exception\ExitException $e) {
+            $exited = true; // the redirect after a save
+        }
+
+        $this->assertSame('', $reflection->getProperty('errorUpdate')->getValue($action));
+        $this->assertTrue($exited, 'the save ends in its redirect');
+        $user = $this->users->getOneByName(self::LINKED);
+        $this->assertSame('from the form', $user['motto']);
+        $this->assertSame('linkedp@example.com', $user->getEmail());
+        $this->assertSame('Marie', $this->bodyOf($user)['first_name']);
+        $this->assertSame('Curie', $this->bodyOf($user)['last_name']);
     }
 
     private function renderSettingsFor(string $tag): string
