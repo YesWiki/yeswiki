@@ -22,7 +22,7 @@ import {
  * Every provider type against the real servers of the development stack (Step 0 of the SSO plan).
  * The task adding a type adds it here; the wiki is reset once for the file, so each test starts from the accounts it needs.
  */
-const TYPES: ProviderType[] = ['oidc']
+const TYPES: ProviderType[] = ['oidc', 'saml']
 
 const GUEST_CARD = '.yw-account-guest__card'
 const MARIE_ACCOUNT = 'marie-dupont'
@@ -151,6 +151,10 @@ for (const type of TYPES) {
       expect(JSON.stringify(diagnostic?.context)).not.toContain(
         'wiki-oidc-secret',
       )
+      expect(
+        JSON.stringify(rows),
+        'what was sent is never recorded, only what it said',
+      ).not.toMatch(/SAMLResponse|saml2?p?:Assertion|BEGIN [A-Z ]*KEY/)
 
       // and the screen reads it back: filter on the target, then open the detail
       await login(page, ADMIN_USERNAME, ADMIN_PASSWORD)
@@ -165,9 +169,13 @@ for (const type of TYPES) {
       const table = page.locator('#yw-logs-table')
       await expect(table).toContainText('login.refused.no_account.' + id)
       await expect(table).toContainText(PEOPLE.marie.email)
-      const detail = table.locator('.yw-logs__sign-in')
+      // the types tested before this one were refused for the same person
+      const editLink = `a[href*="admin/sign-in/${id}/edit"]`
+      const detail = table
+        .locator('.yw-logs__sign-in')
+        .filter({ has: page.locator(editLink) })
       await expect(detail).toHaveCount(1)
-      const edit = detail.locator(`a[href*="admin/sign-in/${id}/edit"]`)
+      const edit = detail.locator(editLink)
       // the table is fetched again as the filter settles, which closes a detail opened too early
       await expect(async () => {
         if (!(await edit.isVisible())) await detail.locator('summary').click()
@@ -276,6 +284,76 @@ for (const type of TYPES) {
         await page.goto('/?user')
         await expect(page.locator(GUEST_CARD)).toHaveCount(0)
         await expect(accountField(page, 'last_name')).toHaveText('Dupont')
+      })
+    }
+
+    if (type === 'saml') {
+      test('saml: the metadata names the callback, at the address the portal knows as entity ID', async ({
+        request,
+      }) => {
+        const entityId =
+          'http://wiki.yeswiki.test/?user/sign-in/saml-a/metadata'
+        const response = await request.get(entityId)
+
+        expect(response.status()).toBe(200)
+        expect(response.headers()['content-type']).toContain('xml')
+        const xml = await response.text()
+        expect(xml).toContain(`entityID="${entityId}"`)
+        expect(xml).toContain(
+          'Location="http://wiki.yeswiki.test/?user/sign-in/saml-a/callback"',
+        )
+      })
+
+      test('saml: two providers at once each link their own account', async ({
+        browser,
+      }) => {
+        const labels = { 'saml-a': 'Acme SAML A', 'saml-b': 'Acme SAML B' }
+        setProviders({
+          local: { type: 'local' },
+          'saml-a': { ...PROVIDERS.saml, label: labels['saml-a'] },
+          'saml-b': { ...PROVIDERS.saml, label: labels['saml-b'] },
+        })
+        // a new browser each time: the portal would otherwise remember who signed in last
+        const through = async (
+          provider: 'saml-a' | 'saml-b',
+          login: string,
+        ) => {
+          const page = await browser.newPage()
+          await page.goto('/?user')
+          await page
+            .locator(`${GUEST_CARD} .yw-sign-in__provider`, {
+              hasText: labels[provider],
+            })
+            .click()
+          await signInAtPortal(page, login, PASSWORD)
+
+          return page
+        }
+
+        for (const [provider, person, account] of [
+          ['saml-a', PEOPLE.marie, MARIE_ACCOUNT],
+          ['saml-b', PEOPLE.jean, JEAN_ACCOUNT],
+        ] as const) {
+          const page = await through(provider, person.login)
+          await page.goto('/?user')
+          await expect(page.locator(GUEST_CARD)).toHaveCount(0)
+          await expect(page.locator('body')).toContainText(account)
+          await expect(
+            page.locator('.alert-info', { hasText: labels[provider] }),
+            'the account says which provider it belongs to',
+          ).toHaveCount(1)
+          await page.context().close()
+        }
+
+        // marie's account is saml-a's: saml-b cannot take it over
+        const before = latestRow()
+        const refused = await through('saml-b', PEOPLE.marie.login)
+        await expect(refused.locator('body')).toContainText(labels['saml-b'])
+        const audit = journal('login.failed').find(
+          (row) => Number(row.id) > before && row.context.provider === 'saml-b',
+        )
+        expect(audit?.context.reason).toBe('linked_elsewhere')
+        await refused.context().close()
       })
     }
   })
