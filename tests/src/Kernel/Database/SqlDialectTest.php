@@ -46,6 +46,7 @@ class SqlDialectTest extends TestCase
         $this->assertSame('NOW()', $d->now());
         $this->assertSame('DATE_SUB(NOW(), INTERVAL 7 DAY)', $d->dateSubDays(7));
         $this->assertSame('DATE_SUB(NOW(), INTERVAL 3 HOUR)', $d->dateSubHours(3));
+        $this->assertSame('DATE_SUB(NOW(), INTERVAL 15 MINUTE)', $d->dateSubMinutes(15));
         $this->assertSame('`user`', $d->quoteIdentifier('user'));
         $this->assertSame(' COLLATE utf8mb4_unicode_ci', $d->collateClause());
         $this->assertSame('REGEXP', $d->regexpOperator());
@@ -60,6 +61,7 @@ class SqlDialectTest extends TestCase
         $d = new SqliteDialect();
         $this->assertSame("datetime('now')", $d->now());
         $this->assertSame("datetime('now', '-7 days')", $d->dateSubDays(7));
+        $this->assertSame("datetime('now', '-15 minutes')", $d->dateSubMinutes(15));
         $this->assertSame('"user"', $d->quoteIdentifier('user'));
         $this->assertSame(' COLLATE NOCASE', $d->collateClause());
 
@@ -94,6 +96,7 @@ class SqlDialectTest extends TestCase
     {
         $d = new PostgreSqlDialect();
         $this->assertSame("NOW() - INTERVAL '7 days'", $d->dateSubDays(7));
+        $this->assertSame("NOW() - INTERVAL '15 minutes'", $d->dateSubMinutes(15));
         $this->assertSame('"user"', $d->quoteIdentifier('user'));
         $this->assertSame('', $d->collateClause(), 'pgsql uses ILIKE rather than COLLATE');
         $this->assertSame('~', $d->regexpOperator());

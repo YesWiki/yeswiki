@@ -25,6 +25,11 @@ class PostgreSqlDialect implements SqlDialect
         return "NOW() - INTERVAL '" . intval($hours) . " hours'";
     }
 
+    public function dateSubMinutes(int $minutes): string
+    {
+        return "NOW() - INTERVAL '" . intval($minutes) . " minutes'";
+    }
+
     public function jsonColumnType(): string
     {
         return 'JSONB';

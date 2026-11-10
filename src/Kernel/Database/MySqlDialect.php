@@ -25,6 +25,11 @@ class MySqlDialect implements SqlDialect
         return 'DATE_SUB(NOW(), INTERVAL ' . intval($hours) . ' HOUR)';
     }
 
+    public function dateSubMinutes(int $minutes): string
+    {
+        return 'DATE_SUB(NOW(), INTERVAL ' . intval($minutes) . ' MINUTE)';
+    }
+
     public function jsonColumnType(): string
     {
         return 'JSON';

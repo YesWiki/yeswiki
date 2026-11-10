@@ -306,9 +306,10 @@ class AuthenticationService extends YesWikiController implements ActorSource, Ca
      * hundred failures from one place read as a hundred rows naming it, which is the whole reason
      * audit entries never collapse.
      */
-    public function recordFailedLogin(string $username, string $reason): void
+    public function recordFailedLogin(string $username, string $reason, ?string $provider = null): void
     {
-        $this->getService(Journal::class)->audit('login.failed', $username, ['reason' => $reason], null, LogLevel::WARNING);
+        $context = ['reason' => $reason] + ($provider === null ? [] : ['provider' => $provider]);
+        $this->getService(Journal::class)->audit('login.failed', $username, $context, null, LogLevel::WARNING);
     }
 
     /** ActorSource: the Journal names whoever acted, and off a request there is nobody to name. */

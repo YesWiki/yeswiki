@@ -17,6 +17,9 @@ interface SqlDialect
     /** SQL expression for "current timestamp minus $hours hours". */
     public function dateSubHours(int $hours): string;
 
+    /** SQL expression for "current timestamp minus $minutes minutes". */
+    public function dateSubMinutes(int $minutes): string;
+
     /** The column type a JSON document is declared as: native where the dialect has one. */
     public function jsonColumnType(): string;
 
