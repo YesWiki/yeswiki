@@ -1,0 +1,139 @@
+{% extends "@core/dashboard/layout.twig" %}
+
+{% block dashboard_content %}
+  <h1>{{ isNew ? _t('SIGN_IN_ADMIN_NEW_TITLE', { type: typeLabel }) : _t('SIGN_IN_ADMIN_EDIT_TITLE', { name: label }) }}</h1>
+
+  {% for error in errors %}
+    <div class="yw-alert yw-alert--danger">{{ icon('alert-triangle') }} {{ error }}</div>
+  {% endfor %}
+
+  <form method="post" action="{{ action }}" hx-boost="false" class="yw-sign-in-admin__form" data-yw-unsaved-guard>
+    <input type="hidden" name="csrf-token" value="{{ csrfToken({id: 'main', refresh: false}) }}">
+
+    <section class="yw-dashboard__card">
+      <div class="yw-form-group">
+        <label class="yw-form-label" for="sign-in-label">{{ _t('SIGN_IN_ADMIN_NAME') }} <span aria-hidden="true">*</span></label>
+        <input class="yw-input" id="sign-in-label" type="text" name="label" value="{{ label }}" required autocomplete="off">
+        <small class="yw-form-hint">{{ _t('SIGN_IN_ADMIN_NAME_HINT') }}</small>
+      </div>
+      <div class="yw-form-group">
+        <span class="yw-form-label">{{ _t('SIGN_IN_ADMIN_TYPE') }}</span>
+        <div>{{ typeLabel }} <small class="yw-form-hint">{{ _t('SIGN_IN_ADMIN_TYPE_FIXED') }}</small></div>
+      </div>
+      <div class="yw-form-group">
+        <input type="hidden" name="enabled" value="0">
+        <label class="yw-checkbox"><input type="checkbox" name="enabled" value="1"{{ enabled ? ' checked' : '' }}> {{ _t('SIGN_IN_ADMIN_ENABLED') }}</label>
+      </div>
+    </section>
+
+    <section class="yw-dashboard__card">
+      <h2>{{ _t('SIGN_IN_ADMIN_CONNECTION') }}</h2>
+      {% if callback %}
+        <div class="yw-form-group">
+          <label class="yw-form-label" for="sign-in-callback">{{ _t('SIGN_IN_ADMIN_CALLBACK_URL') }}</label>
+          <input class="yw-input" id="sign-in-callback" type="text" value="{{ callback }}" readonly onfocus="this.select()">
+          <small class="yw-form-hint">{{ _t('SIGN_IN_ADMIN_CALLBACK_HINT') }}</small>
+        </div>
+      {% endif %}
+      {% if metadata %}
+        <div class="yw-form-group">
+          <label class="yw-form-label" for="sign-in-metadata">{{ _t('SIGN_IN_ADMIN_METADATA_URL') }}</label>
+          <input class="yw-input" id="sign-in-metadata" type="text" value="{{ metadata }}" readonly onfocus="this.select()">
+        </div>
+      {% endif %}
+      {% for setting in settings %}
+        {{ include('@core/admin/_sign-in-setting.twig', { setting: setting }) }}
+      {% endfor %}
+    </section>
+
+    <section class="yw-dashboard__card">
+      <h2>{{ _t('SIGN_IN_ADMIN_ATTRIBUTES') }}</h2>
+      <p class="yw-layout__hint">{{ _t('SIGN_IN_ADMIN_ATTRIBUTES_HINT') }}</p>
+      {% for attribute in attributes %}
+        <div class="yw-form-group">
+          <label class="yw-form-label" for="sign-in-attribute-{{ attribute.name }}">{{ _t('SIGN_IN_ADMIN_ATTRIBUTE_' ~ attribute.name|upper) }}</label>
+          <input class="yw-input" id="sign-in-attribute-{{ attribute.name }}" type="text" name="attributes[{{ attribute.name }}]"
+                 value="{{ attribute.value }}" placeholder="{{ attribute.placeholder }}" autocomplete="off">
+        </div>
+      {% endfor %}
+    </section>
+
+    <section class="yw-dashboard__card">
+      <h2>{{ _t('SIGN_IN_ADMIN_ACCOUNT_RULES') }}</h2>
+      <div class="yw-form-group">
+        <input type="hidden" name="create_accounts" value="0">
+        <label class="yw-checkbox"><input type="checkbox" name="create_accounts" value="1"{{ createAccounts ? ' checked' : '' }}> {{ _t('SIGN_IN_ADMIN_CREATE_ACCOUNTS') }}</label>
+        <small class="yw-form-hint">{{ _t('SIGN_IN_ADMIN_CREATE_ACCOUNTS_HINT') }}</small>
+      </div>
+      <div class="yw-form-group">
+        <input type="hidden" name="match_by_email" value="0">
+        <label class="yw-checkbox"><input type="checkbox" name="match_by_email" value="1"{{ matchByEmail ? ' checked' : '' }}> {{ _t('SIGN_IN_ADMIN_MATCH_BY_EMAIL') }}</label>
+        <small class="yw-form-hint">{{ _t('SIGN_IN_ADMIN_MATCH_BY_EMAIL_HINT') }}</small>
+      </div>
+    </section>
+
+    <section class="yw-dashboard__card" data-yw-sign-in-rows>
+      <h2>{{ _t('SIGN_IN_ADMIN_GROUP_MAPPING') }}</h2>
+      <p class="yw-layout__hint">{{ _t('SIGN_IN_ADMIN_GROUP_MAPPING_HINT') }}</p>
+      <table class="yw-table">
+        <thead><tr><th>{{ _t('SIGN_IN_ADMIN_GROUP_PROVIDER') }}</th><th>{{ _t('SIGN_IN_ADMIN_GROUP_WIKI') }}</th><th></th></tr></thead>
+        <tbody data-yw-sign-in-rows-body>
+          {% for row in groupMapping %}
+            <tr>
+              <td><input class="yw-input" type="text" name="group_mapping[{{ loop.index0 }}][provider]" value="{{ row.provider }}" autocomplete="off"></td>
+              <td><input class="yw-input" type="text" name="group_mapping[{{ loop.index0 }}][wiki]" value="{{ row.wiki }}" autocomplete="off"></td>
+              <td><button type="button" class="yw-btn yw-btn--sm" data-yw-sign-in-remove aria-label="{{ _t('SIGN_IN_ADMIN_REMOVE_ROW') }}">{{ icon('trash') }}</button></td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      <template data-yw-sign-in-row-template>
+        <tr>
+          <td><input class="yw-input" type="text" name="group_mapping[__i__][provider]" autocomplete="off"></td>
+          <td><input class="yw-input" type="text" name="group_mapping[__i__][wiki]" autocomplete="off"></td>
+          <td><button type="button" class="yw-btn yw-btn--sm" data-yw-sign-in-remove aria-label="{{ _t('SIGN_IN_ADMIN_REMOVE_ROW') }}">{{ icon('trash') }}</button></td>
+        </tr>
+      </template>
+      <button type="button" class="yw-btn yw-btn--sm" data-yw-sign-in-add>{{ icon('plus') }} {{ _t('SIGN_IN_ADMIN_ADD_ROW') }}</button>
+    </section>
+
+    <section class="yw-dashboard__card" data-yw-sign-in-rows>
+      <h2>{{ _t('SIGN_IN_ADMIN_EXTRA_FIELDS') }}</h2>
+      <p class="yw-layout__hint">{{ _t('SIGN_IN_ADMIN_EXTRA_FIELDS_HINT') }}</p>
+      {% set fieldOptions %}
+        {% for field in userFields %}<option value="{{ field.name }}">{{ field.label }}</option>{% endfor %}
+      {% endset %}
+      <table class="yw-table">
+        <thead><tr><th>{{ _t('SIGN_IN_ADMIN_EXTRA_FIELD') }}</th><th>{{ _t('SIGN_IN_ADMIN_EXTRA_ATTRIBUTE') }}</th><th></th></tr></thead>
+        <tbody data-yw-sign-in-rows-body>
+          {% for row in extraFields %}
+            <tr>
+              <td>
+                <select class="yw-input" name="extra_fields[{{ loop.index0 }}][field]">
+                  {% for field in userFields %}<option value="{{ field.name }}"{{ field.name == row.field ? ' selected' : '' }}>{{ field.label }}</option>{% endfor %}
+                </select>
+              </td>
+              <td><input class="yw-input" type="text" name="extra_fields[{{ loop.index0 }}][attribute]" value="{{ row.attribute }}" autocomplete="off"></td>
+              <td><button type="button" class="yw-btn yw-btn--sm" data-yw-sign-in-remove aria-label="{{ _t('SIGN_IN_ADMIN_REMOVE_ROW') }}">{{ icon('trash') }}</button></td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      <template data-yw-sign-in-row-template>
+        <tr>
+          <td><select class="yw-input" name="extra_fields[__i__][field]">{{ fieldOptions|raw }}</select></td>
+          <td><input class="yw-input" type="text" name="extra_fields[__i__][attribute]" autocomplete="off"></td>
+          <td><button type="button" class="yw-btn yw-btn--sm" data-yw-sign-in-remove aria-label="{{ _t('SIGN_IN_ADMIN_REMOVE_ROW') }}">{{ icon('trash') }}</button></td>
+        </tr>
+      </template>
+      <button type="button" class="yw-btn yw-btn--sm" data-yw-sign-in-add>{{ icon('plus') }} {{ _t('SIGN_IN_ADMIN_ADD_ROW') }}</button>
+    </section>
+
+    <div class="yw-templates__actions">
+      <button type="submit" class="yw-btn yw-btn--primary">{{ _t('SAVE') }}</button>
+      <a class="yw-btn" href="{{ url({ tag: 'admin/sign-in' }) }}">{{ _t('SIGN_IN_ADMIN_BACK') }}</a>
+    </div>
+  </form>
+
+  {{ include_javascript('javascripts/admin-sign-in.js', false, true) }}
+{% endblock %}

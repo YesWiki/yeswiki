@@ -40,8 +40,8 @@ final class OidcType implements ProviderType
             Setting::url('userinfo_url')->label(_t('SIGN_IN_OIDC_USERINFO_URL')),
             Setting::text('issuer')->label(_t('SIGN_IN_OIDC_ISSUER'))->hint(_t('SIGN_IN_OIDC_ISSUER_HINT')),
             Setting::url('jwks_uri')->label(_t('SIGN_IN_OIDC_JWKS_URI')),
-            Setting::text('client_id')->label(_t('SIGN_IN_OIDC_CLIENT_ID')),
-            Setting::secret('client_secret')->label(_t('SIGN_IN_OIDC_CLIENT_SECRET')),
+            Setting::text('client_id')->label(_t('SIGN_IN_OIDC_CLIENT_ID'))->required(),
+            Setting::secret('client_secret')->label(_t('SIGN_IN_OIDC_CLIENT_SECRET'))->required(),
             Setting::text('scopes')->label(_t('SIGN_IN_OIDC_SCOPES'))->default('openid email profile'),
         ];
     }

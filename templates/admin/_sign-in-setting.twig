@@ -1,0 +1,27 @@
+{# One connection setting of a provider type. A secret never carries a value: the field starts empty, and a blank one keeps the stored secret. #}
+{% set field = 'sign-in-connection-' ~ setting.name %}
+{% if setting.kind == 'checkbox' %}
+  <div class="yw-form-group">
+    <input type="hidden" name="connection[{{ setting.name }}]" value="0">
+    <label class="yw-checkbox"><input type="checkbox" name="connection[{{ setting.name }}]" value="1"{{ setting.checked ? ' checked' : '' }}> {{ setting.label }}</label>
+    {% if setting.hint %}<small class="yw-form-hint">{{ setting.hint }}</small>{% endif %}
+  </div>
+{% else %}
+  <div class="yw-form-group">
+    <label class="yw-form-label" for="{{ field }}">{{ setting.label }}{% if setting.required %} <span aria-hidden="true">*</span>{% endif %}</label>
+    {% if setting.kind == 'list' %}
+      <select class="yw-input" id="{{ field }}" name="connection[{{ setting.name }}]">
+        {% for value, label in setting.options %}
+          <option value="{{ value }}"{{ value == setting.value ? ' selected' : '' }}>{{ label }}</option>
+        {% endfor %}
+      </select>
+    {% elseif setting.kind == 'secret' %}
+      <input class="yw-input" id="{{ field }}" type="password" name="connection[{{ setting.name }}]" autocomplete="new-password"
+             placeholder="{{ setting.secretStored ? _t('SIGN_IN_ADMIN_SECRET_KEPT') : '' }}">
+    {% else %}
+      <input class="yw-input" id="{{ field }}" type="{{ setting.kind in ['url', 'email', 'number'] ? setting.kind : 'text' }}"
+             name="connection[{{ setting.name }}]" value="{{ setting.value }}" placeholder="{{ setting.placeholder }}" autocomplete="off">
+    {% endif %}
+    {% if setting.hint %}<small class="yw-form-hint">{{ setting.hint }}</small>{% endif %}
+  </div>
+{% endif %}

@@ -1,0 +1,72 @@
+{% extends "@core/dashboard/layout.twig" %}
+
+{% block dashboard_content %}
+  <h1>{{ _t('DASHBOARD_ADMIN_SIGN_IN') }}</h1>
+
+  <p class="yw-dashboard__intro">{{ _t('SIGN_IN_ADMIN_INTRO') }}</p>
+
+  {% for problem in problems %}
+    <div class="yw-alert yw-alert--warning">{{ icon('alert-triangle') }} {{ problem }}</div>
+  {% endfor %}
+
+  <section class="yw-dashboard__card">
+    <table class="yw-table">
+      <thead>
+        <tr>
+          <th>{{ _t('SIGN_IN_ADMIN_NAME') }}</th>
+          <th>{{ _t('SIGN_IN_ADMIN_TYPE') }}</th>
+          <th>{{ _t('SIGN_IN_ADMIN_STATUS') }}</th>
+          <th>{{ _t('SIGN_IN_ADMIN_ACCOUNTS') }}</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for provider in providers %}
+          <tr>
+            <td>{{ provider.label }}<small class="yw-form-hint">{{ provider.id }}</small></td>
+            <td>{{ provider.typeLabel }}</td>
+            <td>
+              {% if not provider.available %}
+                <span class="yw-badge yw-badge--warning" title="{{ _t('SIGN_IN_ADMIN_UNAVAILABLE_HINT') }}">{{ _t('SIGN_IN_ADMIN_UNAVAILABLE') }}</span>
+              {% elseif provider.enabled %}
+                <span class="yw-badge yw-badge--success">{{ _t('SIGN_IN_ADMIN_ON') }}</span>
+              {% else %}
+                <span class="yw-badge">{{ _t('SIGN_IN_ADMIN_OFF') }}</span>
+              {% endif %}
+            </td>
+            <td>{{ provider.accounts }}</td>
+            <td class="yw-sign-in-admin__actions">
+              {% if provider.available and not provider.isLocal %}
+                <a class="yw-btn yw-btn--sm" href="{{ url({ tag: 'admin/sign-in/' ~ provider.id ~ '/edit' }) }}">{{ icon('pencil') }} {{ _t('EDIT') }}</a>
+              {% endif %}
+              {% if provider.enabled or provider.available %}
+                <form method="post" action="{{ url({ tag: 'admin/sign-in/' ~ provider.id ~ '/toggle' }) }}" hx-boost="false" class="yw-inline-form">
+                  <input type="hidden" name="csrf-token" value="{{ csrfToken({id: 'main', refresh: false}) }}">
+                  <input type="hidden" name="enabled" value="{{ provider.enabled ? '0' : '1' }}">
+                  <button type="submit" class="yw-btn yw-btn--sm">{{ provider.enabled ? _t('SIGN_IN_ADMIN_SWITCH_OFF') : _t('SIGN_IN_ADMIN_SWITCH_ON') }}</button>
+                </form>
+              {% endif %}
+              {% if not provider.isLocal and provider.accounts == 0 %}
+                <form method="post" action="{{ url({ tag: 'admin/sign-in/' ~ provider.id ~ '/delete' }) }}" hx-boost="false" class="yw-inline-form"
+                      data-yw-confirm="{{ _t('SIGN_IN_ADMIN_DELETE_CONFIRM') }}">
+                  <input type="hidden" name="csrf-token" value="{{ csrfToken({id: 'main', refresh: false}) }}">
+                  <button type="submit" class="yw-btn yw-btn--sm yw-btn--danger">{{ icon('trash') }} {{ _t('DELETE') }}</button>
+                </form>
+              {% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </section>
+
+  <section class="yw-dashboard__card">
+    <h2>{{ _t('SIGN_IN_ADMIN_ADD') }}</h2>
+    <p class="yw-layout__hint">{{ _t('SIGN_IN_ADMIN_ADD_HINT') }}</p>
+    {% for type in offered %}
+      <a class="yw-btn" href="{{ url({ tag: 'admin/sign-in/new/' ~ type.name }) }}">{{ icon('plus') }} {{ type.label }}</a>
+    {% endfor %}
+  </section>
+
+  {{ include_javascript('javascripts/admin-sign-in.js', false, true) }}
+{% endblock %}

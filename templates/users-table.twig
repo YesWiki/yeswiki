@@ -27,7 +27,7 @@
   <div class="clearfix"></div>
   <div id='users-table-link-change-password' class="form-row"></div>
   {% endif %}
-  <table class="yw-table" data-yw-datatable data-yw-datatable-sort="{{ isAdmin ? 4 : 2 }},desc">
+  <table class="yw-table" data-yw-datatable data-yw-datatable-sort="{{ isAdmin ? 5 : 2 }},desc">
     <thead>
       <tr>
         {% if isAdmin %}
@@ -37,6 +37,7 @@
         <th>{{ _t('GROUP_S') }}</th>
         {% if isAdmin %}
           <th>{{ _t('EMAIL') }}</th>
+          <th>{{ _t('SIGN_IN_ADMIN_PROVIDER_COLUMN') }}</th>
         {% endif %}
         <th>{{ _t('SUBSCRIPTION') }}</th>
         <th></th>
@@ -62,6 +63,7 @@
           <td class="users-table-break-word">{{ (isAdmin or userIsTheOneConnected) ? user.groups|join(', ') : ((user.groups is not empty) ? '***' : '') }}</td>
           {% if isAdmin %} 
             <td>{{ user.email }}</td>
+            <td>{{ user.provider ?: _t('SIGN_IN_LOCAL_LABEL') }}</td>
           {% endif %}
           <td>{{ user.signuptime }}</td>
           <td>
@@ -97,6 +99,7 @@
             <th></th>
             <th></th>
             {% if isAdmin %}
+              <th></th>
               <th></th>
             {% endif %}
             <th></th>
