@@ -850,6 +850,30 @@ Yeswiki n'ayant pas accès au serveur, cette page de configuration contourne ce
 problème. Il faut être identifié comme administrateurice pour visionner et
 modifier les informations de cet espace.
 
+### Où vont les modifications
+
+Le wiki n'écrit plus jamais `yeswiki.config.php` pendant qu'il tourne. Seule
+l'installation le crée. Ce que l'on enregistre ici va à l'un de ces deux
+endroits :
+
+- **les réglages du wiki** (titre, langue, thème, notifications, mise en
+  hibernation…) vont dans la base de données. Ils l'emportent sur la valeur du
+  fichier, et chaque copie du wiki les voit à la requête suivante ;
+- **les réglages de l'hébergeur** (base de données, `base_url`,
+  `rewrite_mode`, extensions actives ou interdites, envoi des mails et ses
+  secrets, file d'attente, proxys de confiance, cache HTTP…) vont dans
+  `private/.env`, une ligne `NOM='valeur'` par réglage. Une liste y est écrite
+  en JSON.
+
+Un wiki répliqué (`YESWIKI_REPLICATED=1`) refuse de changer depuis cet écran un
+réglage de l'hébergeur : sur ce genre d'hébergement, ces valeurs viennent des
+variables d'environnement de chaque copie, et le message d'erreur nomme les
+réglages refusés.
+
+Un wiki mis à jour garde tout ce qu'il avait : `yeswiki.config.php` reste la
+base, et seules les modifications faites après la mise à jour passent par la
+base de données ou par `private/.env`.
+
 ### Paramètres principaux
 
 - **Titre de votre wiki - yeswiki_name** : c'est le titre donné à la création de

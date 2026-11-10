@@ -14,6 +14,7 @@ use Symfony\Component\Config\FileLocator;
 use Symfony\Component\Config\Resource\FileResource;
 use Symfony\Component\DependencyInjection\Container;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -62,6 +63,7 @@ use YesWiki\Kernel\Service\RuntimeConfig;
 use YesWiki\Kernel\Service\SignedTokens;
 use YesWiki\Kernel\Service\ThrowableFormatter;
 use YesWiki\Kernel\Service\UrlFormatter;
+use YesWiki\Kernel\Service\WikiSettings;
 use YesWiki\Kernel\Service\WikiUrls;
 use YesWiki\Render\Service\BoostedNavigation;
 use YesWiki\Render\Service\TemplateEngine;
@@ -108,6 +110,8 @@ class YesWikiRuntime
     private ?string $containerDirectory = null;
 
     private ?string $bootedCacheDir = null;
+
+    private ?string $settingsVersion = null;
 
     private string $templatesStamp = '';
 
@@ -663,6 +667,10 @@ class YesWikiRuntime
 
         $parameterBag = $container->getParameterBag();
         $this->services->set(ParameterBagInterface::class, $parameterBag);
+        $settings = $container->get(WikiSettings::class);
+        $this->settingsVersion = $settings->version();
+        $parameterBag = new ParameterBag($settings->over($parameterBag->all()));
+        $this->services->set(ParameterBagInterface::class, $parameterBag);
         $this->services->set(CsrfTokenManager::class, new SignedCsrfTokenManager(
             $container->get(SignedTokens::class),
             static fn (): string => $container->get(CsrfVisitor::class)->current(),
@@ -713,7 +721,8 @@ class YesWikiRuntime
     public function configurationChanged(): bool
     {
         return $this->bootedCacheDir !== null
-            && (new YesWikiKernel($this, $this->environment))->getCacheDir() !== $this->bootedCacheDir;
+            && ((new YesWikiKernel($this, $this->environment))->getCacheDir() !== $this->bootedCacheDir
+                || $this->service(WikiSettings::class)->freshVersion() !== $this->settingsVersion);
     }
 
     /** @return void */

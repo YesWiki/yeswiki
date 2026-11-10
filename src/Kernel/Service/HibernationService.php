@@ -22,10 +22,13 @@ class HibernationService
 
     private Locks $locks;
 
-    public function __construct(ParameterBagInterface $params, ?Locks $locks = null)
+    private ConfigurationService $configuration;
+
+    public function __construct(ParameterBagInterface $params, ?Locks $locks = null, ?ConfigurationService $configuration = null)
     {
         $this->params = $params;
         $this->locks = $locks ?? new FileLocks();
+        $this->configuration = $configuration ?? new ConfigurationService();
     }
 
     /** Whether the wiki is hibernated, from the container's parameters but for `archiving`, which is asked of the file and the archive lock. */
@@ -48,7 +51,7 @@ class HibernationService
     /** `wiki_status` as the config file says it now, `running` when it says none, or when it says `archiving` and no run holds the archive lock: that status is then lifted. */
     public function wikiStatusNow(): string
     {
-        $configuration = new ConfigurationService();
+        $configuration = $this->configuration;
         $file = ConfigurationFileProvider::getConfigFileFromEnv();
         $config = $configuration->getConfiguration($file);
         $config->load();

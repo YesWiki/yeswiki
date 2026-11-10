@@ -101,29 +101,6 @@ class MigrationService
             }
         }
 
-        $this->recordProgramRelease($messages);
-
         return $messages;
-    }
-
-    /** Writes the Program's composer.json version as `yeswiki_release`, which a shared Program's upgrade leaves stale in every other instance. */
-    private function recordProgramRelease(Messages $messages): void
-    {
-        $configurationService = $this->container->get(ConfigurationService::class);
-        $configuration = $configurationService->getConfiguration(ConfigurationFileProvider::getConfigFileFromEnv());
-        $configuration->load();
-
-        $previous = (string)($configuration['yeswiki_release'] ?? '');
-        $release = $this->container->get(ProgramVersion::class)->release($previous);
-        if ($release === $previous) {
-            return;
-        }
-
-        $configuration['yeswiki_release'] = $release;
-        if ($configurationService->write($configuration)) {
-            $messages->add("yeswiki_release goes from '{$previous}' to '{$release}'", 'AU_OK');
-        } else {
-            $messages->add("yeswiki_release could not be written as '{$release}'", 'AU_ERROR');
-        }
     }
 }

@@ -131,6 +131,12 @@ class EnvironmentConfiguration
      */
     private static function override(array &$config, string $key, string $value): void
     {
+        $list = str_starts_with(ltrim($value), '[') || str_starts_with(ltrim($value), '{') ? json_decode($value, true) : null;
+        if (is_array($list)) {
+            $config[$key] = $list;
+
+            return;
+        }
         if (isset($config[$key]) && is_array($config[$key])) {
             return;
         }
