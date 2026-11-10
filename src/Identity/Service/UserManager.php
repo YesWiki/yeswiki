@@ -345,7 +345,11 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface, C
      */
     private function buildBody(array $fields): array
     {
-        return [
+        // Doryphore's loginsso kept its subject in this column: the conversion of its configuration turns it into the account's link (spec section 11).
+        $loginssoId = $fields['loginsso_id'] ?? null;
+        $legacy = is_scalar($loginssoId) && (string)$loginssoId !== '' ? ['loginsso_id' => (string)$loginssoId] : [];
+
+        return $legacy + [
             'email' => $fields['email'] ?? '',
             'motto' => $this->valueOrDefault($fields, 'motto', ''),
 

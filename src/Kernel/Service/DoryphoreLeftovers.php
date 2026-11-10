@@ -13,6 +13,8 @@ final class DoryphoreLeftovers
 
     public const CORE_TOOLS = [
         'aceditor', 'attach', 'autoupdate', 'bazar', 'contact', 'helloworld', 'lang', 'login',
+        // their settings become sign-in providers (spec section 11)
+        'logincas', 'loginldap', 'loginsso',
         'progressBar', 'rss', 'security', 'syndication', 'tableau', 'tags', 'templates', 'toc',
     ];
 
@@ -39,6 +41,20 @@ final class DoryphoreLeftovers
         }
 
         return @rename($doryphore, $ectoplasme);
+    }
+
+    /** @return list<string> the Doryphore tool folders an instance had, set aside in private/doryphore/tools or still in tools/, sorted */
+    public static function toolsHad(string $instanceDir): array
+    {
+        $tools = [];
+        foreach ([$instanceDir . '/' . self::ASIDE . '/tools', $instanceDir . '/tools'] as $directory) {
+            foreach (glob($directory . '/*', GLOB_ONLYDIR) ?: [] as $tool) {
+                $tools[basename($tool)] = basename($tool);
+            }
+        }
+        sort($tools);
+
+        return $tools;
     }
 
     /** @return list<string> what a Doryphore instance had moved aside, once, after its look was put back */
