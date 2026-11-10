@@ -66,7 +66,7 @@ class UpdateAction extends YesWikiAction implements RegisteredAction
 
         $vMigrationService = $this->getService(MigrationService::class);
 
-        if (count($vMigrationService->getCompletedMigrations()) === 0) {
+        if (!$vUpdateService->isImmutable() && count($vMigrationService->getCompletedMigrations()) === 0) {
             $vMessages = $vMigrationService->run();
             foreach ($vMessages as $vMessage) {
                 $text = $vMessage['text'] . ' : ' . $vMessage['status'];
@@ -125,8 +125,11 @@ class UpdateAction extends YesWikiAction implements RegisteredAction
 
         $vMessages = new Messages();
 
-        if (in_array($vAction, self::CONFIRMED_ACTIONS, true) && $vUpdateService->isImmutable()) {
+        if ((in_array($vAction, self::CONFIRMED_ACTIONS, true) || $vAction === 'post_install') && $vUpdateService->isImmutable()) {
             $vMessages->add('AU_PROGRAM_IMMUTABLE', 'AU_ERROR');
+            if ($vAction === 'post_install') {
+                $vMessages->add('AU_MIGRATIONS_ARE_A_JOB', 'AU_ERROR');
+            }
 
             return $this->getService(TemplateEngine::class)->renderSafely('@core/update-result.twig', [
                 'messages' => $vMessages->toArray(),

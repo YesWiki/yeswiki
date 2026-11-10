@@ -1439,7 +1439,28 @@ rien écrire au Journal :
 - `/readyz` vérifie la base et le stockage, et répond `200` ou `503` avec le
   détail en JSON (`{"ready":false,"checks":{"database":"failed",...}}`). La
   raison exacte d'un échec va dans le journal d'erreurs du serveur, pas dans
-  la réponse.
+  la réponse. Sur un wiki répliqué, elle compare aussi les migrations livrées
+  avec celles que la base a reçues (`"migrations"`) : `behind` (la base n'a
+  pas encore reçu les migrations de cette version) rend le serveur non prêt,
+  `ahead` (une version plus récente a déjà migré la base) le laisse prêt.
+
+### Mettre à jour un wiki répliqué
+
+Sur un wiki répliqué, ni l'écran de mise à jour ni la première requête après
+une arrivée depuis Doryphore ne lancent les migrations. Une mise à jour se
+déroule en deux temps :
+
+1. un Job lance `./yeswicli migrate` avec la nouvelle image. Deux `migrate`
+   lancés en même temps passent l'un après l'autre, et la commande sort en
+   erreur si une migration a échoué ;
+2. puis on déploie la nouvelle image.
+
+Tant que le code d'un serveur et la base ne sont pas d'accord, ce serveur
+refuse toute écriture (un formulaire envoyé, un lien signé qui modifie
+quelque chose) avec un `503` et `Retry-After: 10`, et continue de servir les
+pages en lecture. Un ancien serveur dont la base a déjà été migrée se vide
+donc doucement pendant le déploiement. Ce refus est normal pendant quelques
+secondes à chaque mise à jour, et le Journal n'en garde aucune trace.
 
 ### Un cache partagé devant le wiki
 

@@ -5,11 +5,16 @@ namespace YesWiki\Kernel\Service;
 use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Kernel\Entity\Messages;
+use YesWiki\Kernel\Service\Lock\Locks;
 
-/** Runs the migrations a wiki has not run yet (see src/migrations/README.md), then records the Program's release in its configuration. */
+/** Runs the migrations a wiki has not run yet (see src/migrations/README.md), one run at a time across every replica. */
 class MigrationService
 {
     public const TRIPLES_MIGRATION_ID = 'migration';
+
+    public const LOCK = 'migrations';
+
+    public const WAIT_SECONDS = 600;
     private DbService $dbService;
     private ParameterBagInterface $params;
 
@@ -40,6 +45,41 @@ class MigrationService
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
 
+        $locks = $this->container->get(Locks::class);
+        $held = $this->waitFor($locks);
+        try {
+            $messages = $this->runPending();
+            $this->container->get(SchemaStep::class)->record(YESWIKI_PROGRAM_DIR . '/src/');
+        } finally {
+            if ($held) {
+                $locks->release(self::LOCK);
+            }
+        }
+
+        return $messages;
+    }
+
+    /** Takes the migrations lock, waiting while another run holds it; false when this database offers no lock at all. */
+    private function waitFor(Locks $locks): bool
+    {
+        $deadline = microtime(true) + self::WAIT_SECONDS;
+        while (true) {
+            $heldElsewhere = false;
+            if ($locks->tryAcquire(self::LOCK, $heldElsewhere)) {
+                return true;
+            }
+            if (!$heldElsewhere) {
+                return false;
+            }
+            if (microtime(true) >= $deadline) {
+                throw new \RuntimeException('Another migrate has held the migrations lock for ' . self::WAIT_SECONDS . ' seconds');
+            }
+            usleep(250000);
+        }
+    }
+
+    private function runPending(): Messages
+    {
         $messages = new Messages();
         $tripleStore = $this->container->get(TripleStore::class);
         $completedMigrations = $this->getCompletedMigrations();

@@ -44,6 +44,6 @@ class MigrateCommand extends Command
             $output->writeln("{$cache} cleared ({$count} " . ($count === 1 ? 'entry' : 'entries') . ')');
         }
 
-        return Command::SUCCESS;
+        return $messages->hasError() ? Command::FAILURE : Command::SUCCESS;
     }
 }

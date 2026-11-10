@@ -59,7 +59,9 @@ use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\Redirector;
 use YesWiki\Kernel\Service\RequestScope;
 use YesWiki\Kernel\Service\RouteProvider;
+use YesWiki\Kernel\Service\Replication;
 use YesWiki\Kernel\Service\RuntimeConfig;
+use YesWiki\Kernel\Service\SchemaGate;
 use YesWiki\Kernel\Service\SignedTokens;
 use YesWiki\Kernel\Service\ThrowableFormatter;
 use YesWiki\Kernel\Service\UrlFormatter;
@@ -248,7 +250,7 @@ class YesWikiRuntime
     private function doRun($tag, $method)
     {
         $this->service(RequestScope::class)->startNewRequest();
-        if (!YesWikiKernel::isCli() && $this->service(DoryphoreArrival::class)->isPending() && $this->finishDoryphoreArrival()) {
+        if (!YesWikiKernel::isCli() && !Replication::isOn() && $this->service(DoryphoreArrival::class)->isPending() && $this->finishDoryphoreArrival()) {
             return;
         }
         $this->readThisRequest();
@@ -274,7 +276,7 @@ class YesWikiRuntime
         $this->applyPreferredLanguage();
 
         $this->service(AuthenticationService::class)->connectUser();
-        if ($this->refuseForgedRequest(ReservedTags::isReserved($tag))) {
+        if ($this->refuseForgedRequest(ReservedTags::isReserved($tag)) || $this->refuseWriteOutOfStep(ReservedTags::isReserved($tag))) {
             return;
         }
 
@@ -300,6 +302,22 @@ class YesWikiRuntime
         $response = $routed
             ? new ApiResponse(['error' => $refusal], Response::HTTP_FORBIDDEN)
             : new Response(htmlspecialchars($refusal), Response::HTTP_FORBIDDEN);
+        $response->send();
+
+        return true;
+    }
+
+    /** Answers 503 and returns true when this replica's code and its database disagree and the request would change something. */
+    private function refuseWriteOutOfStep(bool $routed): bool
+    {
+        $refusal = $this->service(SchemaGate::class)->refusal($this->service(CurrentRequest::class)->get());
+        if ($refusal === null) {
+            return false;
+        }
+        $headers = ['Retry-After' => (string)SchemaGate::RETRY_AFTER, 'Cache-Control' => 'no-store'];
+        $response = $routed
+            ? new ApiResponse(['error' => $refusal], Response::HTTP_SERVICE_UNAVAILABLE, $headers)
+            : new Response(htmlspecialchars($refusal), Response::HTTP_SERVICE_UNAVAILABLE, $headers);
         $response->send();
 
         return true;

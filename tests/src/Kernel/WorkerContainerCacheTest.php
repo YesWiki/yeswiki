@@ -9,6 +9,7 @@ use YesWiki\Kernel\Service\CacheClearer;
 use YesWiki\Kernel\Service\ConfigurationFileProvider;
 use YesWiki\Kernel\Service\ConfigurationWatch;
 use YesWiki\Kernel\Service\EnvironmentConfiguration;
+use YesWiki\Kernel\Service\WikiSettings;
 use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';
@@ -112,7 +113,7 @@ class WorkerContainerCacheTest extends YesWikiTestCase
 
         $this->assertNotSame($onDisk->getCacheDir(), $readBeforeTheSave->getCacheDir());
         $this->assertSame($onDisk->getCacheDir(), $readJustNow->getCacheDir());
-        $this->assertFalse($wiki->configurationChanged(), 'a wiki boots on the hash of what it loaded');
+        $this->onTheSettingsAsTheyAre($wiki, fn () => $this->assertFalse($wiki->configurationChanged(), 'a wiki boots on the hash of what it loaded'));
     }
 
     /** Twig keeps a compiled template's class in memory, so an override saved elsewhere is only seen by a fresh worker. */
@@ -141,9 +142,23 @@ class WorkerContainerCacheTest extends YesWikiTestCase
         $booted->setValue($wiki, (new YesWikiKernel($wiki, $wiki->getEnvironment()))->getCacheDir());
 
         try {
-            $test();
+            $this->onTheSettingsAsTheyAre($wiki, $test);
         } finally {
             $booted->setValue($wiki, $was);
+        }
+    }
+
+    /** Runs $test as a worker that read the wiki settings as they are now, whatever another test stored since this one booted. */
+    private function onTheSettingsAsTheyAre(YesWikiRuntime $wiki, callable $test): void
+    {
+        $settings = new \ReflectionProperty($wiki, 'settingsVersion');
+        $was = $settings->getValue($wiki);
+        $settings->setValue($wiki, $wiki->services->get(WikiSettings::class)->freshVersion());
+
+        try {
+            $test();
+        } finally {
+            $settings->setValue($wiki, $was);
         }
     }
 
