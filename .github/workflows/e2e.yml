@@ -291,7 +291,10 @@ jobs:
           YESWIKI_BASE_URL: ${{ matrix.runtime == 'binary' && 'http://wiki.yeswiki.test:8081' || 'http://wiki.yeswiki.test:8080' }}
         run: |
           bash tests/e2e/reset.sh
-          npx playwright test tests/e2e/tests/sign-in-providers.spec.ts
+          # Its own report and output folders: the run above leaves its failure evidence in the
+          # defaults, and this one must not overwrite it.
+          PLAYWRIGHT_HTML_OUTPUT_DIR=playwright-report-signin \
+            npx playwright test tests/e2e/tests/sign-in-providers.spec.ts --output=test-results-signin
 
       - name: Dump the runtime log
         if: failure() && steps.covered.outputs.run == 'true'
@@ -314,4 +317,13 @@ jobs:
         with:
           name: playwright-report-${{ matrix.driver }}-${{ matrix.runtime }}
           path: playwright-report
+          retention-days: 7
+
+      - uses: actions/upload-artifact@v6
+        if: failure() && steps.covered.outputs.run == 'true'
+        with:
+          name: playwright-report-signin-${{ matrix.driver }}-${{ matrix.runtime }}
+          path: |
+            playwright-report-signin
+            test-results-signin
           retention-days: 7
