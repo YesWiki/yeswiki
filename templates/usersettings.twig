@@ -3,6 +3,10 @@
 {% if adminIsActing %} <a href="{{ url({tag: 'admin/users'}) }}" class="btn btn-primary pull-right"><svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#arrow-left"/></svg> {{ _t('USER_GOTOADMIN') }}</a>{% endif %}
 <h2>{{ _t('USER_SETTINGS') }}{% if adminIsActing %} — {{ user.name }}{% endif %}</h2>
 
+{% if managedBy %}
+  <div class="alert alert-info">{{ _t('USERSETTINGS_MANAGED_BY_PROVIDER', {provider: managedBy}) }}</div>
+{% endif %}
+
 {% if errorUpdate is not empty %}
   <div class="alert alert-danger">{{ errorUpdate }}</div>
 {% endif %}
@@ -27,7 +31,7 @@
   <div class="yw-form-group">
         <label class="yw-form-label">{{ _t('USER_EMAIL_ADDRESS') }}</label>
         <div class="controls">
-            <input class="yw-input" name="email" value="{{ user.email }}" size="40" />
+            <input class="yw-input" name="email" value="{{ user.email }}" size="40"{{ managedBy ? ' disabled' : '' }} />
         </div>
     </div>
 
@@ -51,11 +55,13 @@
 {{ include('@core/aceditor-rails.twig') }}
 
 {% if adminIsActing %}
+  {% if not managedBy %}
   <form action="{{ url({params: {user: user.name, from: referrer}}) }}" method="post" class="">
     <input type="hidden" name="csrf-token-delete" value="{{ csrfToken({id: 'main', refresh: false})|e('html_attr') }}">
     <input type="hidden" name="usersettings_action" value="resetpass" />
     <input class="btn btn-neutral" type="submit" value="{{ _t('RESETTING_THE_PASSWORD') }}" />
   </form>
+  {% endif %}
   <form action="{{ url({params: {user: user.name, from: referrer}}) }}" method="post" class="">
     <input type="hidden" name="csrf-token-delete" value="{{ csrfToken({id: 'main', refresh: false})|e('html_attr') }}">
     <input type="hidden" name="usersettings_action" value="deleteByAdmin" />
@@ -63,7 +69,7 @@
   </form>
 {% endif %}
 
-{% if userLoggedIn %}
+{% if userLoggedIn and not managedBy %}
   <form action="{{ url({tag: ''}) }}" method="post" class="yw-entry-form">
       <hr>
       <input type="hidden" name="usersettings_action" value="changepass" />

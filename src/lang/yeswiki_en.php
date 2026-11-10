@@ -1268,6 +1268,7 @@ You are on %{CURRENTPHPVERSION}.
     'LOGIN_PASSWORD_LOST_FOR' => 'Lost password for',
     'USERSETTINGS_EMAIL_NOT_CHANGED' => 'Email not modified.',
     'USERSETTINGS_PASSWORD_NOT_CHANGED' => 'Password not changed.',
+    'USERSETTINGS_MANAGED_BY_PROVIDER' => 'Your name and email come from {provider}. They cannot be changed here: correct them at {provider}, and this wiki picks up the new values the next time you sign in.',
     'USERSETTINGS_USER_NOT_DELETED' => 'User not deleted.',
     'USERSETTINGS_SIGNUP_MISSING_INPUT' => 'The \'{parameters}\' parameters cannot be empty!',
     'USERSETTINGS_NAME_ALREADY_USED' => 'The identifier "{currentName}" already exists!',

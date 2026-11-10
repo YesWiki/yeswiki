@@ -1148,6 +1148,7 @@ return [
     'RECOVERY_LINK' => 'Lien pour réinitialiser le mot de passe',
     'USERSETTINGS_EMAIL_NOT_CHANGED' => 'E-mail non modifié.',
     'USERSETTINGS_PASSWORD_NOT_CHANGED' => 'Mot de passe non modifié.',
+    'USERSETTINGS_MANAGED_BY_PROVIDER' => 'Votre nom et votre adresse électronique viennent de {provider}. Ils ne peuvent pas être modifiés ici : corrigez-les chez {provider}, et ce wiki reprendra les nouvelles valeurs à votre prochaine connexion.',
     'USERSETTINGS_USER_NOT_DELETED' => 'Utilisateur non supprimé.',
     'USERSETTINGS_SIGNUP_MISSING_INPUT' => 'Les paramètres \'{parameters}\' ne peuvent être vides !',
     'USERSETTINGS_NAME_ALREADY_USED' => 'L\'identifiant "{currentName}" existe déjà !',
