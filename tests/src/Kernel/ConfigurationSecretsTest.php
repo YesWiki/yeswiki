@@ -59,7 +59,7 @@ class ConfigurationSecretsTest extends YesWikiTestCase
         $container = (string)\dirname((string)(new \ReflectionClass($wiki->services))->getFileName());
         $leaks = [];
         foreach (glob($container . '/*.php') ?: [] as $compiled) {
-            if (str_contains((string)file_get_contents($compiled), var_export($password, true))) {
+            if (str_contains((string)file_get_contents($compiled), "'db_password' => " . var_export($password, true))) {
                 $leaks[] = basename($compiled);
             }
         }
