@@ -21,7 +21,7 @@ class CacheClearer
     public const ALL = [self::CONTAINER, self::TEMPLATES];
 
     /** The archive lock stays: unlinked between a backup's open and its flock, it would let the next reader lift `archiving` mid-backup and a second backup run. */
-    public const KEPT = ['.gitkeep', FileLocks::DIRECTORY . HibernationService::ARCHIVING_LOCK . FileLocks::EXTENSION, QueueHolderLock::DIRECTORY];
+    public const KEPT = ['.gitkeep', '.htaccess', FileLocks::DIRECTORY . HibernationService::ARCHIVING_LOCK . FileLocks::EXTENSION, QueueHolderLock::DIRECTORY];
 
     private ?Storage $storage;
 

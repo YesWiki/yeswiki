@@ -6,6 +6,7 @@ use PHPUnit\Framework\Attributes\CoversMethod;
 use YesWiki\Admin\Controller\InstallationController;
 use YesWiki\Admin\Service\InstallationService;
 use YesWiki\Kernel\Service\ConfigurationService;
+use YesWiki\Kernel\Service\DataFolderGuard;
 use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';
@@ -120,7 +121,8 @@ class InstallWithoutABrowserTest extends YesWikiTestCase
                 $this->countRows($db, "SELECT COUNT(*) FROM yeswiki_queue WHERE message_type = 'YesWiki\\Search\\Message\\ReindexContent' AND delivered_at IS NULL"),
                 'every seeded Content waits in the queue to be indexed'
             );
-            $this->assertSame([], array_values(array_diff(scandir($dir . '/files') ?: [], ['.', '..'])), 'a fresh wiki has no files');
+            $this->assertSame([], array_values(array_diff(scandir($dir . '/files') ?: [], ['.', '..', '.htaccess'])), 'a fresh wiki has no files');
+            $this->assertStringContainsString(DataFolderGuard::BEGIN, (string)file_get_contents($dir . '/files/.htaccess'), 'and Apache runs no PHP out of files/');
             $this->assertSame(
                 2,
                 $this->countRows(

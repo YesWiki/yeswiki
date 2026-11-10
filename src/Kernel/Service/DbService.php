@@ -39,6 +39,13 @@ class DbService
     /** Lazily built by dumper(). */
     private ?SqlDumper $sqlDumper = null;
 
+    /** @var list<\Closure(): bool> */
+    private array $afterReconnect = [];
+
+    private bool $reconnecting = false;
+
+    private bool $connected = false;
+
     public function __construct(ParameterBagInterface $params)
     {
         $this->params = $params;
@@ -52,6 +59,27 @@ class DbService
 
     protected function initSqlConnection(): void
     {
+        try {
+            $this->link = $this->connect();
+        } catch (\Throwable $th) {
+            Journal::toStderr($this->stringParam('base_url'), [
+                'channel' => 'diagnostic',
+                'level' => 'critical',
+                'action' => 'database.unreachable',
+                'message' => $th->getMessage(),
+            ]);
+
+            if (in_array(php_sapi_name(), ['cli', 'cli-server', ' phpdbg'], true)) {
+                throw new \Exception(_t('DB_CONNECT_FAIL') . ': ' . $th->getMessage());
+            }
+            exit(_t('DB_CONNECT_FAIL'));
+        }
+    }
+
+    /** A new connection to the wiki's database, set up for this driver; throws when the server refuses it. */
+    private function connect(): \PDO
+    {
+        $previous = $this->connected ? $this->link : null;
         try {
             $dsn = $this->buildDsn();
             $username = null;
@@ -70,27 +98,23 @@ class DbService
             $this->link = method_exists(\PDO::class, 'connect')
                 ? \PDO::connect($dsn, $username, $password, $options)
                 : new \PDO($dsn, $username, $password, $options);
-            if (!$this->link) {
-                throw new \Exception('Not connected to database');
-            }
-
             $this->initDriverSpecific();
-        } catch (\Throwable $th) {
-            // The one error the Journal can never record, since the Journal is a table in the
-            // database that just refused. Written straight to the stream instead, which is the
-            // half of ADR-0025 that exists for exactly this case.
-            Journal::toStderr($this->stringParam('base_url'), [
-                'channel' => 'diagnostic',
-                'level' => 'critical',
-                'action' => 'database.unreachable',
-                'message' => $th->getMessage(),
-            ]);
+            $this->connected = true;
 
-            if (in_array(php_sapi_name(), ['cli', 'cli-server', ' phpdbg'], true)) {
-                throw new \Exception(_t('DB_CONNECT_FAIL') . ': ' . $th->getMessage());
+            return $this->link;
+        } catch (\Throwable $refused) {
+            if ($previous !== null) {
+                $this->link = $previous;
             }
-            exit(_t('DB_CONNECT_FAIL'));
+
+            throw $refused;
         }
+    }
+
+    /** Runs $retake once the connection was opened again; it answers whether everything the old connection held, its locks, is held again. */
+    public function afterReconnect(\Closure $retake): void
+    {
+        $this->afterReconnect[] = $retake;
     }
 
     /**
@@ -815,17 +839,13 @@ class DbService
         }
 
         try {
-            if ($params === []) {
-                $result = $this->link->query($query);
-            } else {
-                SqlParameters::assertPlaceholderCount($query, $params);
-                $result = $this->link->prepare($query);
-                SqlParameters::bind($result, $params);
-                $result->execute();
-            }
-            if ($result === false) {
-                $errorInfo = $this->link->errorInfo();
-                throw new \Exception('Query failed: ' . $query . ' (' . $errorInfo[2] . ')');
+            try {
+                $result = $this->run($query, $params);
+            } catch (\PDOException $lost) {
+                if (!$this->reconnectsAfter($lost) || !($this->diedBeforeTheStatement($lost) || self::isRead($query))) {
+                    throw $lost;
+                }
+                $result = $this->run($query, $params);
             }
         } catch (\PDOException $failed) {
             throw new \Exception($failed->getMessage() . ' -- while running: ' . $this->describeQuery($query, $params !== []), (int)$failed->getCode(), $failed);
@@ -836,6 +856,77 @@ class DbService
         }
 
         return $result;
+    }
+
+    /**
+     * @param array<array-key, mixed> $params
+     */
+    private function run(string $query, array $params): \PDOStatement
+    {
+        if ($params === []) {
+            $result = $this->link->query($query);
+        } else {
+            SqlParameters::assertPlaceholderCount($query, $params);
+            $result = $this->link->prepare($query);
+            SqlParameters::bind($result, $params);
+            $result->execute();
+        }
+        if ($result === false) {
+            $errorInfo = $this->link->errorInfo();
+            throw new \Exception('Query failed: ' . $query . ' (' . $errorInfo[2] . ')');
+        }
+
+        return $result;
+    }
+
+    /** Opens the connection again after the server dropped it, outside a transaction only; false when it cannot, or when a lock of the old one could not be taken back. */
+    private function reconnectsAfter(\PDOException $failure): bool
+    {
+        if ($this->reconnecting || $this->transactionDepth > 0 || !$this->isLostConnection($failure)) {
+            return false;
+        }
+        $this->reconnecting = true;
+        try {
+            $this->connect();
+            $retaken = true;
+            foreach ($this->afterReconnect as $retake) {
+                $retaken = $retake() && $retaken;
+            }
+
+            return $retaken;
+        } catch (\Throwable) {
+            return false;
+        } finally {
+            $this->reconnecting = false;
+        }
+    }
+
+    /** Whether the server closed the connection, rather than refused the statement. */
+    private function isLostConnection(\PDOException $failure): bool
+    {
+        $info = $failure->errorInfo ?? [];
+        $state = (string)($info[0] ?? $failure->getCode());
+        $code = (int)($info[1] ?? 0);
+
+        return match ($this->driver) {
+            'mysql' => in_array($code, [2006, 2013, 4031], true),
+            'pgsql' => str_starts_with($state, '08')
+                || in_array($state, ['57P01', '57P02', '57P03'], true)
+                || preg_match('/server closed the connection|no connection to the server|terminating connection/i', $failure->getMessage()) === 1,
+            default => false,
+        };
+    }
+
+    /** Whether the statement never reached the server, so running it again cannot run it twice: MySQL says so of a connection it found already gone. */
+    private function diedBeforeTheStatement(\PDOException $failure): bool
+    {
+        return $this->driver === 'mysql' && in_array((int)($failure->errorInfo[1] ?? 0), [2006, 4031], true);
+    }
+
+    /** Whether the statement only reads, so running it again changes nothing. */
+    private static function isRead(string $query): bool
+    {
+        return preg_match('/^\s*(SELECT|SHOW|WITH\s+(?!.*\b(INSERT|UPDATE|DELETE)\b))/is', $query) === 1;
     }
 
     /**
@@ -962,7 +1053,13 @@ class DbService
         } elseif ($verb === 'COMMIT') {
             $this->link->commit();
         } else {
-            $this->link->rollBack();
+            try {
+                $this->link->rollBack();
+            } catch (\PDOException $gone) {
+                if (!$this->isLostConnection($gone)) {
+                    throw $gone;
+                }
+            }
         }
     }
 

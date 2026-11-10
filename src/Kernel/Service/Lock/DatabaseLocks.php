@@ -19,6 +19,24 @@ final class DatabaseLocks implements Locks
         ?FileLocks $sqlite = null,
     ) {
         $this->sqlite = $sqlite ?? new FileLocks();
+        $db->afterReconnect($this->retake(...));
+    }
+
+    /** Takes back on a new connection every lock the dropped one held; false when another holder got one first, which is then no longer this instance's. */
+    public function retake(): bool
+    {
+        if ($this->onSqlite()) {
+            return true;
+        }
+        $all = true;
+        foreach (array_keys($this->held) as $name) {
+            if (!self::truthy($this->take($name))) {
+                unset($this->held[$name]);
+                $all = false;
+            }
+        }
+
+        return $all;
     }
 
     public function tryAcquire(string $name, bool &$heldElsewhere = false): bool
@@ -32,9 +50,7 @@ final class DatabaseLocks implements Locks
 
             return false;
         }
-        $answer = $this->onPostgres()
-            ? $this->db->scalar('SELECT pg_try_advisory_lock(CAST(? AS integer), CAST(? AS integer))', null, $this->pgKeys($name))
-            : $this->db->scalar('SELECT GET_LOCK(?, 0)', null, [$this->mysqlName($name)]);
+        $answer = $this->take($name);
         if ($answer === null) {
             return false;
         }
@@ -82,6 +98,13 @@ final class DatabaseLocks implements Locks
         }
 
         return $this->db->scalar('SELECT IS_USED_LOCK(?)', null, [$this->mysqlName($name)]) !== null;
+    }
+
+    private function take(string $name): mixed
+    {
+        return $this->onPostgres()
+            ? $this->db->scalar('SELECT pg_try_advisory_lock(CAST(? AS integer), CAST(? AS integer))', null, $this->pgKeys($name))
+            : $this->db->scalar('SELECT GET_LOCK(?, 0)', null, [$this->mysqlName($name)]);
     }
 
     public function forget(string $name): void

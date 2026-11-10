@@ -42,6 +42,7 @@ use YesWiki\Kernel\Exception\ExitException;
 use YesWiki\Kernel\Routing\ReservedTags;
 use YesWiki\Kernel\Service\CacheClearer;
 use YesWiki\Kernel\Service\ConfigurationFileProvider;
+use YesWiki\Kernel\Service\ConfigurationSecrets;
 use YesWiki\Kernel\Service\ConfigurationWatch;
 use YesWiki\Kernel\Service\CurrentRequest;
 use YesWiki\Kernel\Service\EventDispatcher;
@@ -657,6 +658,7 @@ class YesWikiRuntime
             throw new \RuntimeException('the kernel built a container with no parameter bag');
         }
         $this->services = $container;
+        $this->services->set(ConfigurationSecrets::class, new ConfigurationSecrets($this->config));
         $this->containerDirectory = $this->directoryOf($container);
 
         $parameterBag = $container->getParameterBag();

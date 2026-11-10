@@ -107,6 +107,25 @@ class BotGuardTest extends YesWikiTestCase
         $this->assertSame($key, file_get_contents($this->root . '/' . BotGuard::KEY_FILE));
     }
 
+    /** Replicas 10: an operator who states the key in the environment gives every replica the same one, and nothing is written. */
+    public function testAKeyStatedInTheEnvironmentWinsAndIsNotWritten(): void
+    {
+        $before = $this->names();
+        putenv(BotGuard::KEY_ENV . '=' . str_repeat('ab', 32));
+        try {
+            $elsewhere = sys_get_temp_dir() . '/botguard-env-' . bin2hex(random_bytes(6));
+            $this->guard->useForTests(Storage::rootedAt($elsewhere), fn () => $this->now, false);
+            $stated = $this->names();
+            $this->guard->useForTests(Storage::rootedAt($this->root), fn () => $this->now, false);
+
+            $this->assertSame($stated, $this->names(), 'two wikis given the same key name their fields alike');
+            $this->assertNotSame($before, $stated);
+            $this->assertFileDoesNotExist($elsewhere . '/' . BotGuard::KEY_FILE);
+        } finally {
+            putenv(BotGuard::KEY_ENV);
+        }
+    }
+
     public function testEachWikiOfAFarmHasItsOwnNames(): void
     {
         $here = $this->names();

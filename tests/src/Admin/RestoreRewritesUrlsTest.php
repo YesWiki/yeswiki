@@ -57,6 +57,7 @@ class RestoreRewritesUrlsTest extends YesWikiTestCase
             $services->get(\YesWiki\Files\Service\LocalFiles::class),
             $services->get(\Symfony\Component\Messenger\MessageBusInterface::class),
             $services->get(\YesWiki\Kernel\Service\Queue\QueueStatistics::class),
+            $services->get(\YesWiki\Admin\Service\ArchiveRuns::class),
         );
     }
 

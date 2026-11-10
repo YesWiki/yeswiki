@@ -24,7 +24,7 @@ class RestoreRemovesWhatTheBackupLacksTest extends YesWikiTestCase
             'files/added-since.jpg' => 'added since',
             'files/old/deeper.txt' => 'gone',
             'custom/kept.css' => 'kept',
-            'cache/archive/output-uid.log' => 'progress',
+            'cache/templates/compiled.php' => 'compiled',
             'private/backups/2026-01-01T00-00-00_archive.zip' => 'a backup',
             'private/.env' => 'SECRET=1',
             'tools/not-in-the-backup.php' => 'left alone',
@@ -121,7 +121,7 @@ class RestoreRemovesWhatTheBackupLacksTest extends YesWikiTestCase
             $zip->close();
         }
 
-        $this->assertFileExists($this->root . '/cache/archive/output-uid.log', 'the restore reports its progress there');
+        $this->assertFileExists($this->root . '/cache/templates/compiled.php', 'cache/ is this wiki\'s own');
         $this->assertFileExists($this->root . '/private/backups/2026-01-01T00-00-00_archive.zip');
         $this->assertFileExists($this->root . '/private/.env');
         $this->assertFileExists($this->root . '/tools/not-in-the-backup.php', 'a folder the backup does not hold is not its to empty');

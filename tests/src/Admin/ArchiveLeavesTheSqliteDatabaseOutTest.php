@@ -24,7 +24,7 @@ class ArchiveLeavesTheSqliteDatabaseOutTest extends YesWikiTestCase
         $output = '';
 
         try {
-            $created = (new \ReflectionMethod($archives, 'createZip'))->invokeArgs($archives, [$zipPath, [], [], &$output, '', false, null, '', '', ['private']]);
+            $created = (new \ReflectionMethod($archives, 'createZip'))->invokeArgs($archives, [$zipPath, [], [], &$output, '', false, null, '', ['private']]);
             $this->assertTrue($created, $output);
             $zip = new \ZipArchive();
             $this->assertTrue($zip->open($zipPath));

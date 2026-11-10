@@ -18,6 +18,8 @@ use YesWiki\Render\Service\TemplateEngine;
 class BotGuard
 {
     public const KEY_FILE = 'private/keys/bot-guard.key';
+
+    public const KEY_ENV = 'YESWIKI_BOT_GUARD_KEY';
     public const USED_TOKEN_PROPERTY = 'http://yeswiki.net/_vocabulary/botGuard/usedToken';
     public const REFUSED_PROPERTY = 'http://yeswiki.net/_vocabulary/botGuard/refused/';
     public const RESOURCE_PREFIX = 'botGuard:';
@@ -547,15 +549,19 @@ class BotGuard
         return $this->clock !== null ? (int)($this->clock)() : time();
     }
 
-    /** The wiki's key, created on first use; null when unavailable. */
+    /** The wiki's key: the operator's when the environment states one, otherwise created once, whoever creates it first; null when unavailable. */
     private function secret(): ?string
     {
         if ($this->secret !== null) {
             return $this->secret;
         }
+        $stated = getenv(self::KEY_ENV);
+        if (is_string($stated) && trim($stated) !== '') {
+            return $this->secret = trim($stated);
+        }
         try {
             if (!$this->storage->exists(self::KEY_FILE)) {
-                $this->storage->write(self::KEY_FILE, bin2hex(random_bytes(32)));
+                $this->storage->writeIfAbsent(self::KEY_FILE, bin2hex(random_bytes(32)));
             }
             $key = trim($this->storage->read(self::KEY_FILE));
         } catch (\Throwable) {

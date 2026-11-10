@@ -14,6 +14,7 @@ use Symfony\Component\Messenger\Stamp\TransportMessageIdStamp;
 use YesWiki\Admin\Api\RemoteBackupApiController;
 use YesWiki\Admin\Message\AdvanceRemoteBackup;
 use YesWiki\Admin\Message\AdvanceRemoteBackupHandler;
+use YesWiki\Admin\Service\ArchiveRuns;
 use YesWiki\Admin\Service\ArchiveService;
 use YesWiki\Admin\Service\RemoteBackupService;
 use YesWiki\Admin\Service\RemoteWikiArchive;
@@ -521,6 +522,7 @@ class RemoteBackupQueueTest extends YesWikiTestCase
             new LocalFiles(),
             $bus,
             $this->statistics,
+            new ArchiveRuns($this->kit->db, $this->kit->schema, $this->clock),
         );
         $this->remote = new StepByStepRemoteWiki(self::STORED);
         $this->service = new RemoteBackupService($this->archives, $this->storage, new LocalFiles(), $this->remote, $bus, $this->statistics);

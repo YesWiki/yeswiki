@@ -69,8 +69,6 @@ class ArchiveService
     public const KEY_FOR_HIDE_CONFIG_VALUES = 'hideConfigValues';
     protected const CODE_SIZE_ALLOWANCE = 300 * 1024 * 1024;
 
-    /** Where an archive being made reports on itself. */
-    public const PROGRESS_FOLDER = 'cache/archive';
     public const ARCHIVE_SUFFIX = '_archive';
     public const ARCHIVE_ONLY_FILES_SUFFIX = '_archive_only_files';
     public const ARCHIVE_ONLY_DATABASE_SUFFIX = '_archive_only_db';
@@ -103,6 +101,7 @@ class ArchiveService
         private readonly LocalFiles $localFiles,
         private readonly MessageBusInterface $bus,
         private readonly QueueStatistics $queueStatistics,
+        private readonly ArchiveRuns $runs,
         private readonly Locks $locks = new FileLocks(),
     ) {
         $this->storage = $storage;
@@ -139,27 +138,19 @@ class ArchiveService
     ): string {
         $vStatus = $this->getArchivingStatus();
 
-        $inputFile = '';
-        $outputFile = '';
+        $run = $uid !== '' && $this->runs->get($uid) !== null ? $uid : '';
 
         if (!$vStatus['canArchive']) {
             $vMessages = $this->getCannotArchiveDetails($vStatus);
 
-            $this->writeOutput($output, 'STOP', true, $outputFile);
+            $this->writeOutput($output, 'STOP', true, $run);
 
             throw new \Exception(_t('AU_CANNOT_ARCHIVE') . implode(', ', $vMessages));
         }
         $privatePath = $this->getPrivateFolder();
 
-        if (!empty($uid)) {
-            $info = $this->getInfoFromFile();
-            if (isset($info[$uid])) {
-                $inputFile = (string)$info[$uid]['input'];
-                $outputFile = (string)$info[$uid]['output'];
-            }
-        }
-        if (!empty($outputFile)) {
-            $this->storage->write($outputFile, '');
+        if ($run !== '') {
+            $this->runs->clearOutput($run);
         }
 
         $this->storage->write("$privatePath/tmpTestFile000.txt", 'test');
@@ -168,29 +159,29 @@ class ArchiveService
             $this->storage->delete("$privatePath/tmpTestFile000.txt");
         }
         if ($error) {
-            $this->writeOutput($output, '! Private folder available on the internet', true, $outputFile);
+            $this->writeOutput($output, '! Private folder available on the internet', true, $run);
             $this->unsetWikiStatus();
-            $this->writeOutput($output, 'STOP', true, $outputFile);
+            $this->writeOutput($output, 'STOP', true, $run);
 
             return '';
         }
 
-        $this->writeOutput($output, '=== Checking free space ===', true, $outputFile);
+        $this->writeOutput($output, '=== Checking free space ===', true, $run);
         $blacklistedRootFolders = $this->generateListRootFolders('black', $foldersToExclude);
         try {
             $this->assertEnoughtSpace($blacklistedRootFolders);
         } catch (\Throwable $th) {
-            $this->writeOutput($output, 'There is not enough free space.', true, $outputFile);
-            $this->writeOutput($output, "=> {$th->getMessage()}", true, $outputFile);
+            $this->writeOutput($output, 'There is not enough free space.', true, $run);
+            $this->writeOutput($output, "=> {$th->getMessage()}", true, $run);
             $this->unsetWikiStatus();
-            $this->writeOutput($output, 'STOP', true, $outputFile);
+            $this->writeOutput($output, 'STOP', true, $run);
             throw $th;
         }
-        $this->writeOutput($output, 'There is enough free space.', true, $outputFile);
+        $this->writeOutput($output, 'There is enough free space.', true, $run);
 
-        if ($this->checkIfNeedStop($inputFile)) {
+        if ($this->checkIfNeedStop($run)) {
             $this->unsetWikiStatus();
-            $this->writeOutput($output, 'STOP', true, $outputFile);
+            $this->writeOutput($output, 'STOP', true, $run);
 
             return '';
         }
@@ -217,7 +208,7 @@ class ArchiveService
 
         $heldElsewhere = false;
         if (!$this->locks->tryAcquire(HibernationService::ARCHIVING_LOCK, $heldElsewhere)) {
-            $this->writeOutput($output, 'STOP', true, $outputFile);
+            $this->writeOutput($output, 'STOP', true, $run);
 
             throw new \Exception($heldElsewhere ? _t('ARCHIVE_ALREADY_RUNNING') : _t('ARCHIVE_LOCK_UNAVAILABLE', ['path' => FileLocks::pathOf(HibernationService::ARCHIVING_LOCK)]));
         }
@@ -225,51 +216,51 @@ class ArchiveService
         try {
             $this->setWikiStatus();
 
-            $written = $this->storage->withTemporaryFile('sql', function (string $sqlPath) use ($savedatabase, $inputFile, $outputFile, &$output, $location, $foldersToInclude, $blacklistedRootFolders, $onlyDb, $hideConfigValuesParams, $onlyFolders): ?bool {
+            $written = $this->storage->withTemporaryFile('sql', function (string $sqlPath) use ($savedatabase, $run, &$output, $location, $foldersToInclude, $blacklistedRootFolders, $onlyDb, $hideConfigValuesParams, $onlyFolders): ?bool {
                 if ($savedatabase) {
                     $this->dumpDatabaseInto($sqlPath);
                 }
 
-                if ($this->checkIfNeedStop($inputFile)) {
+                if ($this->checkIfNeedStop($run)) {
                     return null;
                 }
 
-                $this->writeOutput($output, '=== Creating zip archive ===', true, $outputFile);
+                $this->writeOutput($output, '=== Creating zip archive ===', true, $run);
 
                 return $this->storage->withLocalTarget(
                     $location,
-                    fn (string $local) => $this->createZip($local, $foldersToInclude, $blacklistedRootFolders, $output, $savedatabase ? $sqlPath : '', $onlyDb, $hideConfigValuesParams, $inputFile, $outputFile, $onlyFolders)
+                    fn (string $local) => $this->createZip($local, $foldersToInclude, $blacklistedRootFolders, $output, $savedatabase ? $sqlPath : '', $onlyDb, $hideConfigValuesParams, $run, $onlyFolders)
                 );
             });
 
             if ($written === null) {
                 $this->unsetWikiStatus();
-                $this->writeOutput($output, 'STOP', true, $outputFile);
+                $this->writeOutput($output, 'STOP', true, $run);
 
                 return '';
             }
 
             if ($written) {
-                $this->writeOutput($output, "Archive \"$location\" successfully created !", true, $outputFile);
+                $this->writeOutput($output, "Archive \"$location\" successfully created !", true, $run);
 
                 $this->cleanOldestFiles();
 
                 $this->unsetWikiStatus();
 
-                $this->writeOutput($output, 'END', true, $outputFile);
+                $this->writeOutput($output, 'END', true, $run);
             } else {
                 throw new StopArchiveException('Stop archive : not saved !');
             }
         } catch (StopArchiveException $ex) {
             $this->forget($location);
             $this->unsetWikiStatus();
-            $this->writeOutput($output, 'STOP', true, $outputFile);
+            $this->writeOutput($output, 'STOP', true, $run);
 
             return '';
         } catch (\Throwable $th) {
             $this->forget($location);
             $this->unsetWikiStatus();
-            $this->writeOutput($output, 'STOP', true, $outputFile);
+            $this->writeOutput($output, 'STOP', true, $run);
 
             throw $th;
         } finally {
@@ -339,12 +330,12 @@ class ArchiveService
         }
 
         $privatePath = $this->getPrivateFolder();
-        $info = $this->getInfoFromFile();
+        $info = $this->runs->all();
         $result = ($info[$token]['isForcedUpdate'] ?? false) === true;
 
         foreach ($info as $uid => $data) {
             if (($data['isForcedUpdate'] ?? false) === true) {
-                $this->cleanUID($uid);
+                $this->runs->forget($uid);
             }
         }
 
@@ -424,15 +415,8 @@ class ArchiveService
     {
         $status = $this->getArchivingStatus();
         $privatePath = $this->getPrivateFolder();
-        $uidData = $this->getUID();
-        $info = $this->getInfoFromFile();
-        $uid = $uidData['uid'];
-        if (empty($uid) || !isset($info[$uid])) {
-            return '';
-        }
-
-        $info[$uid]['isForcedUpdate'] = true;
-        $this->setInfoToFile($info);
+        $uid = $this->runs->open();
+        $this->runs->note($uid, ['isForcedUpdate' => true]);
 
         return $uid;
     }
@@ -453,7 +437,7 @@ class ArchiveService
         array $foldersToExclude = [],
         ?array $onlyFolders = null
     ): string {
-        $uid = $this->getUID()['uid'];
+        $uid = $this->runs->open();
 
         return $this->queue(new CreateArchive(
             $uid,
@@ -480,16 +464,12 @@ class ArchiveService
     {
         $id = $this->bus->dispatch($run)->last(TransportMessageIdStamp::class)?->getId();
         if ($id === null) {
-            $this->cleanUID($run->uid);
+            $this->runs->forget($run->uid);
 
             return false;
         }
 
-        $info = $this->getInfoFromFile();
-        if (isset($info[$run->uid])) {
-            $info[$run->uid]['message'] = (int)$id;
-            $this->setInfoToFile($info);
-        }
+        $this->runs->note($run->uid, ['message' => (int)$id]);
 
         return true;
     }
@@ -556,33 +536,33 @@ class ArchiveService
      */
     public function restoreArchive(string $filename, bool $restoreFiles = true, bool $restoreDatabase = true, bool $rewriteUrls = true, string $uid = ''): void
     {
-        $outputFile = $this->outputFileFor($uid);
+        $run = $uid !== '' && $this->runs->get($uid) !== null ? $uid : '';
         $output = '';
-        if ($outputFile !== '') {
-            $this->storage->write($outputFile, '');
+        if ($run !== '') {
+            $this->runs->clearOutput($run);
         }
 
         $filePath = $this->getFilePath($filename);
         if (empty($filePath)) {
-            $this->writeOutput($output, "Archive not found: $filename", true, $outputFile);
-            $this->writeOutput($output, 'STOP', true, $outputFile);
+            $this->writeOutput($output, "Archive not found: $filename", true, $run);
+            $this->writeOutput($output, 'STOP', true, $run);
 
             throw new \Exception("Archive not found: $filename");
         }
 
-        $this->writeOutput($output, "=== Restoring $filename ===", true, $outputFile);
+        $this->writeOutput($output, "=== Restoring $filename ===", true, $run);
         try {
-            $this->storage->withLocalCopy($filePath, function (string $local) use ($filename, $restoreFiles, $restoreDatabase, $rewriteUrls, &$output, $outputFile): void {
-                $this->restoreFromLocalArchive($local, $filename, $restoreFiles, $restoreDatabase, $rewriteUrls, $output, $outputFile);
+            $this->storage->withLocalCopy($filePath, function (string $local) use ($filename, $restoreFiles, $restoreDatabase, $rewriteUrls, &$output, $run): void {
+                $this->restoreFromLocalArchive($local, $filename, $restoreFiles, $restoreDatabase, $rewriteUrls, $output, $run);
             });
         } catch (\Throwable $th) {
-            $this->writeOutput($output, '! ' . $th->getMessage(), true, $outputFile);
-            $this->writeOutput($output, 'STOP', true, $outputFile);
+            $this->writeOutput($output, '! ' . $th->getMessage(), true, $run);
+            $this->writeOutput($output, 'STOP', true, $run);
 
             throw $th;
         }
-        $this->writeOutput($output, 'Restore finished successfully', true, $outputFile);
-        $this->writeOutput($output, 'END', true, $outputFile);
+        $this->writeOutput($output, 'Restore finished successfully', true, $run);
+        $this->writeOutput($output, 'END', true, $run);
     }
 
     /**
@@ -600,20 +580,9 @@ class ArchiveService
             throw new \Exception("Archive not found: $filename");
         }
 
-        $uid = $this->getUID()['uid'];
+        $uid = $this->runs->open();
 
         return $this->queue(new RestoreArchive($uid, basename($filename), $restoreFiles, $restoreDatabase, $rewriteUrls)) ? $uid : '';
-    }
-
-    /** Where a run reports its progress, empty when it was not given a uid to report under. */
-    private function outputFileFor(string $uid): string
-    {
-        if ($uid === '') {
-            return '';
-        }
-        $info = $this->getInfoFromFile();
-
-        return isset($info[$uid]) ? (string)$info[$uid]['output'] : '';
     }
 
     /**
@@ -621,7 +590,7 @@ class ArchiveService
      *
      * @param string|OutputInterface &$output
      */
-    private function restoreFromLocalArchive(string $filePath, string $filename, bool $restoreFiles, bool $restoreDatabase, bool $rewriteUrls, &$output, string $outputFile): void
+    private function restoreFromLocalArchive(string $filePath, string $filename, bool $restoreFiles, bool $restoreDatabase, bool $rewriteUrls, &$output, string $run): void
     {
         $zip = new \ZipArchive();
         if ($zip->open($filePath) !== true) {
@@ -639,7 +608,7 @@ class ArchiveService
             }
 
             if ($restoreDatabase && !$onlyFiles) {
-                $this->writeOutput($output, '=== Reading the database backup ===', true, $outputFile);
+                $this->writeOutput($output, '=== Reading the database backup ===', true, $run);
                 $sqlName = self::PRIVATE_FOLDER_NAME_IN_ZIP . '/' . self::SQL_FILENAME_IN_PRIVATE_FOLDER_IN_ZIP;
                 if ($zip->locateName($sqlName) === false) {
                     throw new \Exception('SQL file not found in archive');
@@ -656,23 +625,23 @@ class ArchiveService
                 if ($rewriteUrls) {
                     $substitutions = $this->urlSubstitutionsFor($zip);
                     if (!empty($substitutions)) {
-                        $this->writeOutput($output, 'Pointing the stored addresses at this wiki', true, $outputFile);
+                        $this->writeOutput($output, 'Pointing the stored addresses at this wiki', true, $run);
                         $rewrite = static fn (string $statement): string => DumpRewriter::rewriteUrls($statement, $substitutions);
                     }
                 }
-                $this->writeOutput($output, '=== Restoring the database ===', true, $outputFile);
+                $this->writeOutput($output, '=== Restoring the database ===', true, $run);
                 $this->restoreDatabase($open, $rewrite);
             }
 
             if ($restoreFiles && !$onlyDb) {
-                $this->writeOutput($output, '=== Restoring the files ===', true, $outputFile);
+                $this->writeOutput($output, '=== Restoring the files ===', true, $run);
                 $this->restoreFilesFromZip($zip);
                 if ($this->restoreConfiguration($zip) > 0) {
-                    $this->writeOutput($output, 'Settings taken from the backup, keeping this wiki\'s own address, database and mail server', true, $outputFile);
+                    $this->writeOutput($output, 'Settings taken from the backup, keeping this wiki\'s own address, database and mail server', true, $run);
                 }
                 if (!$onlyFiles) {
                     $removed = $this->removeFilesAbsentFromArchive($zip, YESWIKI_INSTANCE_DIR);
-                    $this->writeOutput($output, "Removed $removed file(s) the backup does not hold", true, $outputFile);
+                    $this->writeOutput($output, "Removed $removed file(s) the backup does not hold", true, $run);
                 }
             }
         } finally {
@@ -1111,19 +1080,19 @@ class ArchiveService
             'error' => '',
             'output' => '',
         ];
-        $info = $this->getInfoFromFile();
+        $info = $this->runs->all();
         foreach ($info as $infoUid => $infoData) {
             if ($infoUid != $uid && !$this->isStillGoing($infoData)) {
-                $this->cleanUID((string)$infoUid);
+                $this->runs->forget((string)$infoUid);
             }
         }
-        $info = $this->getInfoFromFile();
+        $info = $this->runs->all();
         if (!isset($info[$uid])) {
             return $results;
         }
         $messageId = $info[$uid]['message'] ?? null;
         if (!is_int($messageId)) {
-            $this->cleanUID($uid);
+            $this->runs->forget($uid);
 
             return $results;
         }
@@ -1156,14 +1125,14 @@ class ArchiveService
         $results['state'] = $state;
         if (!$running) {
             $output = (string)preg_replace("/(^Archive \\\")(.*)(\\\" successfully created !(?:\s*END)?\s*$)/m", '$1---$3', $output);
-            $this->cleanUID($uid);
+            $this->runs->forget($uid);
         }
         $results['output'] = $output;
 
         return $results;
     }
 
-    /** Whether the run an info.json entry follows is waiting or under way: its message is in the queue, not handled nor failed. */
+    /** Whether the run those notes follow is waiting or under way: its message is in the queue, not handled nor failed. */
     private function isStillGoing(mixed $data): bool
     {
         $messageId = is_array($data) ? ($data['message'] ?? null) : null;
@@ -1195,34 +1164,16 @@ class ArchiveService
         if (empty($uid)) {
             return false;
         }
-        $info = $this->getInfoFromFile();
-        if (
-            !isset($info[$uid])
-            || empty($info[$uid]['input'])
-            || !$this->storage->fileExists((string)$info[$uid]['input'])
-        ) {
-            return false;
-        }
-        $this->storage->write((string)$info[$uid]['input'], 'STOP');
 
-        return true;
+        return $this->runs->stop($uid);
     }
 
     /**
      * check if need to stop archive.
      */
-    protected function checkIfNeedStop(string $inputFile = ''): bool
+    protected function checkIfNeedStop(string $run = ''): bool
     {
-        if (empty($inputFile) || !$this->storage->fileExists($inputFile)) {
-            return false;
-        }
-        $content = $this->storage->read($inputFile);
-
-        if (empty($content)) {
-            return false;
-        }
-
-        return preg_match('/^STOP.*/', $content) === 1;
+        return $this->runs->stopRequested($run);
     }
 
     /**
@@ -1265,8 +1216,7 @@ class ArchiveService
         string $sqlPath,
         bool $onlyDb = false,
         ?array $hideConfigValuesParams = null,
-        string $inputFile = '',
-        string $outputFile = '',
+        string $run = '',
         ?array $onlyFolders = null
     ) {
         $this->assertArchivableFrom(YESWIKI_INSTANCE_DIR, YESWIKI_PROGRAM_DIR);
@@ -1286,8 +1236,8 @@ class ArchiveService
         }
 
         if (method_exists($zip, 'registerCancelCallback')) {
-            $zip->registerCancelCallback(function () use ($inputFile, &$vCanceled) {
-                $vNeedStop = $this->checkIfNeedStop($inputFile);
+            $zip->registerCancelCallback(function () use ($run, &$vCanceled) {
+                $vNeedStop = $this->checkIfNeedStop($run);
 
                 if ($vNeedStop) {
                     $vCanceled = true;
@@ -1300,8 +1250,8 @@ class ArchiveService
         }
 
         if (method_exists($zip, 'registerProgressCallback')) {
-            $zip->registerProgressCallback(0.1, function ($r) use (&$output, $outputFile) {
-                $this->writeOutput($output, 'Zip file creation : ' . strval(round($r * 100, 0)) . ' %', true, $outputFile);
+            $zip->registerProgressCallback(0.1, function ($r) use (&$output, $run) {
+                $this->writeOutput($output, 'Zip file creation : ' . strval(round($r * 100, 0)) . ' %', true, $run);
             });
         }
 
@@ -1315,7 +1265,7 @@ class ArchiveService
                 $baseDirName = (string)preg_replace("/^\//", '', $baseDirName);
                 if (empty($baseDirName) || $this->shouldIncludeFolder($baseDirName, $whitelistedRootFolders, $blacklistedRootFolders)) {
                     if (!empty($baseDirName)) {
-                        $this->writeOutput($output, "Adding folder \"$baseDirName\"", true, $outputFile);
+                        $this->writeOutput($output, "Adding folder \"$baseDirName\"", true, $run);
                         $zip->addEmptyDir($baseDirName);
                     }
 
@@ -1332,8 +1282,8 @@ class ArchiveService
                             if ($this->shouldIncludeFolder($relativeName, $whitelistedRootFolders, $blacklistedRootFolders)) {
                                 $dirs[] = $dir . DIRECTORY_SEPARATOR . $file;
                             }
-                            if ($this->checkIfNeedStop($inputFile)) {
-                                $this->writeOutput($output, '== The archive processus need to be stopped ==', true, $outputFile);
+                            if ($this->checkIfNeedStop($run)) {
+                                $this->writeOutput($output, '== The archive processus need to be stopped ==', true, $run);
                                 $vCanceled = true;
                                 break;
                             }
@@ -1350,13 +1300,13 @@ class ArchiveService
         }
 
         if (!$vCanceled && $sqlPath !== '') {
-            $this->writeOutput($output, 'Adding SQL file', true, $outputFile);
+            $this->writeOutput($output, 'Adding SQL file', true, $run);
             $zip->addEmptyDir(self::PRIVATE_FOLDER_NAME_IN_ZIP);
             $zip->addFile(
                 $sqlPath,
                 self::PRIVATE_FOLDER_NAME_IN_ZIP . '/' . self::SQL_FILENAME_IN_PRIVATE_FOLDER_IN_ZIP
             );
-            $this->writeOutput($output, 'Adding .htaccess file in folder ' . self::PRIVATE_FOLDER_NAME_IN_ZIP, true, $outputFile);
+            $this->writeOutput($output, 'Adding .htaccess file in folder ' . self::PRIVATE_FOLDER_NAME_IN_ZIP, true, $run);
 
             $zip->addFromString(
                 self::PRIVATE_FOLDER_NAME_IN_ZIP . '/.htaccess',
@@ -1368,7 +1318,7 @@ class ArchiveService
                 self::PRIVATE_FOLDER_README_DEFAULT_CONTENT
             );
 
-            $this->writeOutput($output, 'Adding ' . self::INFO_FILENAME_IN_PRIVATE_FOLDER_IN_ZIP, true, $outputFile);
+            $this->writeOutput($output, 'Adding ' . self::INFO_FILENAME_IN_PRIVATE_FOLDER_IN_ZIP, true, $run);
             $zip->addFromString(
                 self::PRIVATE_FOLDER_NAME_IN_ZIP . '/' . self::INFO_FILENAME_IN_PRIVATE_FOLDER_IN_ZIP,
                 (string)json_encode([
@@ -1383,32 +1333,32 @@ class ArchiveService
         $vError = false;
 
         if (!$vCanceled) {
-            $this->writeOutput($output, 'Generating zip file', true, $outputFile);
+            $this->writeOutput($output, 'Generating zip file', true, $run);
 
             $vResult = $zip->close();
 
             $vClosed = true;
 
             if ($vResult) {
-                $this->writeOutput($output, 'Archive was created successfully', true, $outputFile);
+                $this->writeOutput($output, 'Archive was created successfully', true, $run);
 
                 return true;
             } elseif (!$vCanceled) {
-                $this->writeOutput($output, 'There was a problem closing archive', true, $outputFile);
+                $this->writeOutput($output, 'There was a problem closing archive', true, $run);
             }
         }
 
         if ($vCanceled) {
-            $this->writeOutput($output, 'Archive creation canceled', true, $outputFile);
+            $this->writeOutput($output, 'Archive creation canceled', true, $run);
         }
 
         if (!$vClosed) {
             $zip->unchangeAll();
 
             if ($zip->close()) {
-                $this->writeOutput($output, 'Archive was closed successfully', true, $outputFile);
+                $this->writeOutput($output, 'Archive was closed successfully', true, $run);
             } else {
-                $this->writeOutput($output, 'There was a problem closing archive', true, $outputFile);
+                $this->writeOutput($output, 'There was a problem closing archive', true, $run);
             }
         }
 
@@ -1486,19 +1436,6 @@ class ArchiveService
         return $this->storage->isWritable($path);
     }
 
-    /** Add a line to a progress log, which is the one thing Storage has no verb for. */
-    private function append(string $path, string $text): bool
-    {
-        try {
-            $kept = $this->storage->fileExists($path) ? $this->storage->read($path) : '';
-            $this->storage->write($path, $kept . $text);
-        } catch (\Throwable $th) {
-            return false;
-        }
-
-        return true;
-    }
-
     /** Remove a file if it is there, and say whether it is gone. */
     private function forget(string $path): bool
     {
@@ -1572,12 +1509,10 @@ class ArchiveService
      *
      * @param string|OutputInterface &$output
      */
-    private function writeOutput(&$output, string $text, bool $newline = true, string $outputFile = ''): void
+    private function writeOutput(&$output, string $text, bool $newline = true, string $run = ''): void
     {
-        if (!empty($outputFile) && $this->storage->fileExists($outputFile)) {
-            if (!$this->append($outputFile, $text . ($newline ? "\n" : ''))) {
-                throw new \Exception('Cannot write to output file. Please check file system access rights');
-            }
+        if ($run !== '') {
+            $this->runs->append($run, $text . ($newline ? "\n" : ''));
         }
         if ($output instanceof OutputInterface) {
             $output->write($text, $newline);
@@ -1955,83 +1890,15 @@ class ArchiveService
     }
 
     /**
-     * What is running, where each run says so, and the message in the queue that runs it (`message`).
+     * Whether that run is printing, has ended or was stopped, from what it printed.
      *
-     * @return array<string, mixed> the decoded info.json, keyed by uid
-     */
-    private function getInfoFromFile(): array
-    {
-        $file = self::PROGRESS_FOLDER . '/info.json';
-        if (!$this->storage->fileExists($file)) {
-            return [];
-        }
-        $content = json_decode($this->storage->read($file), true);
-
-        return (empty($content) || !is_array($content)) ? [] : $content;
-    }
-
-    /** @param array<string, mixed> $content */
-    private function setInfoToFile(array $content): void
-    {
-        $this->storage->write(self::PROGRESS_FOLDER . '/info.json', (string)json_encode($content));
-    }
-
-    /**
-     * A new uid for a run to report under, with its input (STOP) and output (progress) files created.
-     *
-     * @return array{uid: string, input: string|false, output: string|false}
-     */
-    private function getUID(): array
-    {
-        $info = $this->getInfoFromFile();
-        $usedIDS = array_keys($info);
-        do {
-            $uid = uniqid();
-        } while (in_array($uid, $usedIDS));
-
-        $input = self::PROGRESS_FOLDER . "/input-$uid.log";
-        $output = self::PROGRESS_FOLDER . "/output-$uid.log";
-        $this->storage->write($input, '');
-        $this->storage->write($output, '');
-
-        $info[$uid] = [
-            'input' => $input,
-            'output' => $output,
-        ];
-        $this->setInfoToFile($info);
-
-        return compact(['uid', 'input', 'output']);
-    }
-
-    /**
-     * clean uid info in info.json.
-     */
-    private function cleanUID(string $uid): void
-    {
-        $info = $this->getInfoFromFile();
-        if (isset($info[$uid])) {
-            foreach (['input', 'output'] as $key) {
-                $file = (string)($info[$uid][$key] ?? '');
-                if ($file !== '' && $this->storage->fileExists($file)) {
-                    $this->storage->delete($file);
-                }
-            }
-            unset($info[$uid]);
-            $this->setInfoToFile($info);
-        }
-    }
-
-    /** check id current uid is running.
-     * @param array<string, mixed> $info this uid's entry in info.json
+     * @param array<string, mixed> $info the run's notes
      *
      * @return array<string, mixed> ['running' => bool, 'finished' => bool, 'stopped' => bool,'output' => string]
      */
     private function getRunningUIDdata(string $uid, array $info): array
     {
-        if (empty($info['output']) || !$this->storage->fileExists((string)$info['output'])) {
-            return ['running' => false, 'finished' => false, 'stopped' => false, 'output' => ''];
-        }
-        $output = $this->storage->read((string)$info['output']);
+        $output = (string)($info['output'] ?? '');
 
         $running = !empty(trim($output));
         $finished = !$running

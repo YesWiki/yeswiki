@@ -32,6 +32,7 @@ final class InstanceEntryPoints
         if (!is_file($path . '/private/.htaccess') && is_file($programDir . '/private/.htaccess')) {
             @copy($programDir . '/private/.htaccess', $path . '/private/.htaccess');
         }
+        DataFolderGuard::guard($path);
 
         $console = $programDir . '/src/commands/console';
         $wrapper = <<<SH

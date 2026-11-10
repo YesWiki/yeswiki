@@ -36,6 +36,8 @@ unset($yeswikiDataFolder, $yeswikiDataDir);
 if (!is_file(YESWIKI_INSTANCE_DIR . '/private/.htaccess') && is_file(YESWIKI_PROGRAM_DIR . '/private/.htaccess')) {
     @copy(YESWIKI_PROGRAM_DIR . '/private/.htaccess', YESWIKI_INSTANCE_DIR . '/private/.htaccess');
 }
+require_once __DIR__ . '/Kernel/Service/DataFolderGuard.php';
+YesWiki\Kernel\Service\DataFolderGuard::provision(YESWIKI_INSTANCE_DIR);
 
 if (YESWIKI_INSTANCE_DIR !== YESWIKI_PROGRAM_DIR) {
     foreach (['src/assets/icons.svg'] as $yeswikiBareAsset) {

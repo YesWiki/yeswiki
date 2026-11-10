@@ -12,6 +12,7 @@ use YesWiki\Admin\Message\CreateArchive;
 use YesWiki\Admin\Message\CreateArchiveHandler;
 use YesWiki\Admin\Message\RestoreArchive;
 use YesWiki\Admin\Message\RestoreArchiveHandler;
+use YesWiki\Admin\Service\ArchiveRuns;
 use YesWiki\Admin\Service\ArchiveService;
 use YesWiki\Files\Service\LocalFiles;
 use YesWiki\Files\Service\RuntimeLock;
@@ -69,6 +70,7 @@ class ArchiveQueueTest extends YesWikiTestCase
     private QueueConsumer $consumer;
     private QueueBus $bus;
     private Storage $storage;
+    private ArchiveRuns $runs;
     private ?QueueRequestTrigger $trigger = null;
     private ?QueueArchiveService $archives = null;
 
@@ -98,6 +100,7 @@ class ArchiveQueueTest extends YesWikiTestCase
         $this->statistics = $this->kit->statistics;
         $this->consumer = $this->kit->consumer;
         $this->bus = $this->kit->bus;
+        $this->runs = new ArchiveRuns($this->db, $this->schema, $this->clock);
     }
 
     protected function tearDown(): void
@@ -230,8 +233,7 @@ class ArchiveQueueTest extends YesWikiTestCase
 
         $this->assertSame('', $uid, 'no uid for the browser to follow');
         $this->assertCount(1, $bus->asked);
-        $this->assertSame([], $this->info(), 'and none left in info.json');
-        $this->assertSame([], glob($this->root . '/' . ArchiveService::PROGRESS_FOLDER . '/*.log') ?: [], 'nor its progress files');
+        $this->assertSame([], $this->info(), 'and no run left to follow');
         $this->assertSame(0, $this->statistics->pendingCount());
     }
 
@@ -457,18 +459,30 @@ class ArchiveQueueTest extends YesWikiTestCase
         $this->assertSame('running', $this->wikiStatus());
     }
 
-    /** What a detached `core:archive` left in info.json before the update has no message to follow: it is forgotten. */
+    /** A run that never got a message to follow is forgotten. */
     public function testAnUidWithoutAMessageIsForgotten(): void
     {
         $archives = $this->archives('request');
-        $this->storage->write(ArchiveService::PROGRESS_FOLDER . '/info.json', (string)json_encode([
-            'old' => ['input' => ArchiveService::PROGRESS_FOLDER . '/input-old.log', 'output' => ArchiveService::PROGRESS_FOLDER . '/output-old.log', 'pid' => '1234'],
-        ]));
+        $old = $this->runs->open();
 
-        $status = $archives->getUIDStatus('old');
+        $status = $archives->getUIDStatus($old);
 
         $this->assertFalse($status['started']);
-        $this->assertSame('[]', $this->storage->read(ArchiveService::PROGRESS_FOLDER . '/info.json'));
+        $this->assertSame([], $this->runs->all());
+    }
+
+    /** What a run prints and a STOP asked of it are read from the database, so another replica answers the page that follows it. */
+    public function testARunIsFollowedFromAnotherConnection(): void
+    {
+        $archives = $this->archives('request');
+        $uid = $archives->startArchive();
+        $this->writeOutputOf($uid, "=== Checking free space ===\n");
+
+        $elsewhere = new ArchiveRuns($this->db, $this->schema, $this->clock);
+        $this->assertSame("=== Checking free space ===\n", $elsewhere->output($uid));
+        $this->assertTrue($archives->stopArchive($uid));
+        $this->assertTrue($elsewhere->stopRequested($uid));
+        $this->assertSame([], glob($this->root . '/cache/*') ?: [], 'and nothing of it is a file');
     }
 
     /** Backups run in the queue's consumer, so whether this host can start a process of its own no longer decides whether it can back up. */
@@ -608,6 +622,7 @@ class ArchiveQueueTest extends YesWikiTestCase
             new LocalFiles(),
             $bus ?? $this->bus,
             $this->statistics,
+            $this->runs,
             new FileLocks($locks ?? $this->kit->locks),
         );
 
@@ -678,21 +693,17 @@ class ArchiveQueueTest extends YesWikiTestCase
 
     private function messageOf(string $uid): int
     {
-        $info = json_decode($this->storage->read(ArchiveService::PROGRESS_FOLDER . '/info.json'), true);
-        $this->assertIsArray($info);
-        $this->assertArrayHasKey($uid, $info);
-        $this->assertIsInt($info[$uid]['message'] ?? null, 'the uid records the message that runs it');
+        $run = $this->runs->get($uid);
+        $this->assertIsArray($run);
+        $this->assertIsInt($run['message'] ?? null, 'the uid records the message that runs it');
 
-        return $info[$uid]['message'];
+        return $run['message'];
     }
 
     /** @return array<string, mixed> the runs this wiki follows, by uid */
     private function info(): array
     {
-        $info = json_decode($this->storage->read(ArchiveService::PROGRESS_FOLDER . '/info.json'), true);
-        $this->assertIsArray($info);
-
-        return $info;
+        return $this->runs->all();
     }
 
     private function stateOf(string $uid): string
@@ -702,7 +713,7 @@ class ArchiveQueueTest extends YesWikiTestCase
 
     private function writeOutputOf(string $uid, string $text): void
     {
-        $this->storage->write(ArchiveService::PROGRESS_FOLDER . "/output-$uid.log", $text);
+        $this->runs->note($uid, ['output' => $text]);
     }
 
     private function setWikiStatus(string $status): void

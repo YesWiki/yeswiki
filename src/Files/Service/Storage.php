@@ -2,6 +2,7 @@
 
 namespace YesWiki\Files\Service;
 
+use AsyncAws\Core\Exception\Http\HttpException;
 use AsyncAws\S3\Exception\NoSuchBucketException;
 use AsyncAws\S3\S3Client;
 use League\Flysystem\AsyncAwsS3\AsyncAwsS3Adapter;
@@ -50,7 +51,6 @@ class Storage
         'cache/routes/' => self::RUNTIME_TIER,
         'cache/assets/' => self::RUNTIME_TIER,
         'cache/importer/' => self::RUNTIME_TIER,
-        'cache/archive/' => self::RUNTIME_TIER,
         'cache/HTMLpurifier/' => self::RUNTIME_TIER,
         'cache/*.lock' => self::RUNTIME_TIER,
         'yeswiki.config.php' => self::RUNTIME_TIER,
@@ -132,6 +132,49 @@ class Storage
     public function write(string $path, string $contents): void
     {
         $this->guard(fn () => $this->filesystem($path)->write($this->normalise($path), $contents, $this->writeOptions($path)), $path);
+    }
+
+    /** Writes the file only if nothing is there yet, atomically on disk and on a bucket that honours If-None-Match; answers whether this call wrote it. */
+    public function writeIfAbsent(string $path, string $contents): bool
+    {
+        $this->tierOf($path);
+        if ($this->isRemote($path)) {
+            $settings = $this->remote;
+            if ($settings === null) {
+                throw new StorageException('No bucket is configured.');
+            }
+            $key = ($settings->prefix !== '' ? $settings->prefix . '/' : '') . $this->normalise($path);
+            try {
+                $this->s3Client($settings)->putObject(['Bucket' => $settings->bucket, 'Key' => $key, 'Body' => $contents, 'IfNoneMatch' => '*'])->resolve();
+            } catch (HttpException $refused) {
+                if (\in_array($refused->getResponse()->getStatusCode(), [409, 412], true)) {
+                    return false;
+                }
+
+                throw new StorageException($refused->getMessage(), 0, $refused);
+            }
+
+            return true;
+        }
+        $file = $this->root . '/' . $this->normalise($path);
+        if (!is_dir(\dirname($file)) && !@mkdir(\dirname($file), 0o777, true) && !is_dir(\dirname($file))) {
+            throw new StorageException("Cannot create the folder of '$path'.");
+        }
+        $draft = @tempnam(\dirname($file), '.draft-');
+        if ($draft === false || @file_put_contents($draft, $contents) !== \strlen($contents)) {
+            if (\is_string($draft)) {
+                @unlink($draft);
+            }
+
+            throw new StorageException("Cannot write '$path'.");
+        }
+        $linked = @link($draft, $file);
+        @unlink($draft);
+        if (!$linked && !file_exists($file)) {
+            throw new StorageException("Cannot write '$path'.");
+        }
+
+        return $linked;
     }
 
     /** @param resource $contents */

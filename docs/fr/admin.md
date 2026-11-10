@@ -1244,6 +1244,21 @@ YESWIKI_S3_PUBLIC_URL=https://cdn.example/mon-wiki   # où les objets publics so
 protégés, eux, continuent d'être servis par le wiki derrière son contrôle
 d'accès, et n'ont jamais d'URL.
 
+Les deux clés que le wiki crée lui-même, celle qui signe les jetons
+(`private/keys/signing.key`) et celle du bot guard
+(`private/keys/bot-guard.key`), peuvent aussi venir de l'environnement.
+Quand plusieurs serveurs servent un même wiki, c'est le moyen sûr de leur
+donner la même clé :
+
+```ini
+YESWIKI_SIGNING_KEY=...             # 64 caractères hexadécimaux, par exemple `openssl rand -hex 32`
+YESWIKI_BOT_GUARD_KEY=...
+```
+
+Sans elles, la première requête crée chaque clé, et une seule création
+l'emporte même si plusieurs serveurs démarrent en même temps. Changer une
+de ces clés invalide les jetons et les formulaires déjà affichés.
+
 Le bucket doit exister avant la première écriture (sauf sur SeaweedFS, qui le
 crée tout seul, et sauf si `core:install` l'a créé, voir plus bas), et sa
 politique doit autoriser la lecture anonyme des préfixes publics **et elle

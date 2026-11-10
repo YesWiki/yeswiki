@@ -81,7 +81,7 @@ func TestPrivateIsRefusedBeforeAnythingRewritesTheRequest(t *testing.T) {
 
 	private := strings.Index(file, "handle @private")
 	actor := strings.Index(file, "handle @actor")
-	fallback := strings.Index(file, "try_files {path}")
+	fallback := strings.Index(file, "try_files {path} {path}/")
 
 	if private < 0 || actor < 0 || fallback < 0 {
 		t.Fatalf("a rule is missing:\n%s", file)
@@ -237,5 +237,27 @@ func TestTheVersionNamesTheWikiAndTheEngine(t *testing.T) {
 	bare := wikiVersion()
 	if strings.Contains(bare, "(") {
 		t.Errorf("an unstamped build has no engine to name: %q", bare)
+	}
+}
+
+func TestOnlyTheFrontControllersRunAsPhp(t *testing.T) {
+	for _, workers := range []Workers{{}, {Classic: true}} {
+		file := Caddyfile("/wikis/mine", Listen{}, workers, "")
+
+		refused := strings.Index(file, "handle @foreignphp")
+		fallback := strings.Index(file, "try_files {path} {path}/")
+		if refused < 0 || fallback < 0 || refused > fallback {
+			t.Fatalf("a PHP file under cache/, custom/ or files/ is refused before php_server would run it:\n%s", file)
+		}
+		if !strings.Contains(file, "not path /index.php /"+workers.FrontController()) {
+			t.Errorf("the front controller itself must stay reachable:\n%s", file)
+		}
+		subindex := strings.Index(file, "handle @subindex")
+		if subindex < 0 || subindex > fallback {
+			t.Errorf("a folder's own index.php is refused before php_server's {path}/index.php would run it:\n%s", file)
+		}
+		if !strings.Contains(file, "try_files {path}/index.php {path}/"+workers.FrontController()) || !strings.Contains(file, "not path /\n") {
+			t.Errorf("only the root may reach an index through its folder:\n%s", file)
+		}
 	}
 }

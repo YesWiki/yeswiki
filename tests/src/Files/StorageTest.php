@@ -4,7 +4,6 @@ namespace YesWiki\Test\Files;
 
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
-use YesWiki\Admin\Service\ArchiveService;
 use YesWiki\Files\Exception\StorageException;
 use YesWiki\Files\Service\Storage;
 use YesWiki\Kernel\Service\Lock\FileLocks;
@@ -50,7 +49,6 @@ class StorageTest extends TestCase
             'the compiled container is runtime' => ['cache/container/prod/X.php', Storage::RUNTIME_TIER],
             'compiled twig is runtime' => ['cache/templates/ab/cd.php', Storage::RUNTIME_TIER],
             'a lock is runtime' => ['cache/anything.lock', Storage::RUNTIME_TIER],
-            'an archive\'s progress is runtime' => [ArchiveService::PROGRESS_FOLDER . '/output-abc.log', Storage::RUNTIME_TIER],
             'the queue schedule lock is runtime' => [FileLocks::pathOf(QueueScheduleTicker::LOCK), Storage::RUNTIME_TIER],
             'the queue fallback stamp is runtime' => [QueueFallback::CHECK_STAMP, Storage::RUNTIME_TIER],
             'extensions are runtime' => ['custom/extensions/lms/index.php', Storage::RUNTIME_TIER],

@@ -8,7 +8,7 @@ use YesWiki\Kernel\Queue\RunsForItsSender;
 
 /**
  * "Make this backup": an archive asked for from the backups page, before an update, or by another wiki fetching it (ADR-0030, "Backups and restores").
- * It reports under the uid ArchiveService::startArchive() handed the browser (its files under cache/archive, STOP included).
+ * It reports under the uid ArchiveService::startArchive() handed the browser, in ArchiveRuns, STOP included.
  * Never retried: a backup that failed half way left nothing worth finishing.
  */
 final class CreateArchive implements RetryPolicy, RunsForItsSender, NotReplayableByHand

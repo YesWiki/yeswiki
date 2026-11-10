@@ -15,6 +15,7 @@ use Symfony\Component\HttpKernel\Kernel;
 use YesWiki\Content\Service\FileManager;
 use YesWiki\Kernel\Performable\ActionRegistry;
 use YesWiki\Kernel\Service\ConfigurationFileProvider;
+use YesWiki\Kernel\Service\ConfigurationSecrets;
 use YesWiki\Kernel\Service\EnvironmentConfiguration;
 use YesWiki\Kernel\Service\LanguageService;
 use YesWiki\Kernel\Service\Lock\DatabaseLocks;
@@ -182,6 +183,7 @@ class YesWikiKernel extends Kernel
 
         $loader->registerAliasesForSinglyImplementedInterfaces();
         $container->getDefinition(LanguageService::class)->setFactory([LanguageService::class, 'getInstance']);
+        $container->register(ConfigurationSecrets::class, ConfigurationSecrets::class)->setSynthetic(true)->setPublic(true)->addTag('container.env_var_processor');
     }
 
     /** The namespace the PHP files of $directory declare, or null when it has none. */
@@ -278,7 +280,7 @@ class YesWikiKernel extends Kernel
         $config = array_replace_recursive($container->getParameterBag()->all(), $this->runtime->config);
         StringUtilService::replaceRecursivelyIndexedArrays($config, $this->runtime->config);
 
-        $config = EnvironmentConfiguration::apply($config ?? []);
+        $config = ConfigurationSecrets::withPlaceholders(EnvironmentConfiguration::apply($config ?? []));
         foreach ($config as $key => $value) {
             $container->setParameter($key, $value);
         }

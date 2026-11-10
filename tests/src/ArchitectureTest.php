@@ -51,6 +51,7 @@ class ArchitectureTest extends TestCase
         'Files/Service/RuntimeLock.php',
         'Render/Service/TwigSearchPath.php',
         'Kernel/Service/ClassDirectoryScanner.php',
+        'Kernel/Service/DataFolderGuard.php',
         'Admin/Service/InstallationService.php',
 
         // Loaded by index.php and worker.php with `require_once`, before there is a container to

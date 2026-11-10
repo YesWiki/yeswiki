@@ -260,6 +260,24 @@ func site(address, instance, frontController string) string {
 		}
 	}
 
+	@foreignphp {
+		path *.php *.phtml *.phar
+		not path /index.php /%[3]s
+	}
+	handle @foreignphp {
+		respond 404
+	}
+
+	@subindex {
+		not path /
+		file {
+			try_files {path}/index.php {path}/%[3]s
+		}
+	}
+	handle @subindex {
+		respond 404
+	}
+
 	handle {
 		php_server {
 			try_files {path} {path}/%[3]s %[3]s

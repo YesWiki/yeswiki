@@ -116,6 +116,54 @@ class StorageContractTest extends TestCase
     }
 
     #[DataProvider('homes')]
+    public function testAWriteIfAbsentNeverReplacesWhatIsThere(string $home): void
+    {
+        $storage = $this->storage($home);
+        $path = $this->path('keys/once.key');
+        $this->written[] = $path;
+
+        $this->assertTrue($storage->writeIfAbsent($path, 'first'));
+        $this->assertFalse($storage->writeIfAbsent($path, 'second'));
+        $this->assertSame('first', $storage->read($path));
+    }
+
+    /** Replicas 10: processes racing to create one key end with one key, the winner's, and every one of them reads it. */
+    public function testProcessesRacingForAKeyAllReadTheWinners(): void
+    {
+        $script = sys_get_temp_dir() . '/yw-race-' . bin2hex(random_bytes(4)) . '.php';
+        file_put_contents($script, '<?php
+require ' . var_export(getcwd() . '/vendor/autoload.php', true) . ';
+$storage = YesWiki\\Files\\Service\\Storage::rootedAt($argv[1]);
+time_sleep_until((float)$argv[2]);
+$won = $storage->writeIfAbsent("private/keys/race.key", $argv[3]);
+echo ($won ? "won" : "lost") . " " . $storage->read("private/keys/race.key");
+');
+        $start = microtime(true) + 1;
+        $processes = [];
+        $outputs = [];
+        foreach (range(1, 6) as $n) {
+            $process = proc_open([PHP_BINARY, $script, $this->root, (string)$start, "key-{$n}"], [1 => ['pipe', 'w']], $pipes);
+            $this->assertIsResource($process);
+            $processes[] = $process;
+            $outputs[$n] = $pipes[1];
+        }
+        $answers = [];
+        foreach ($outputs as $n => $pipe) {
+            $answers[] = trim((string)stream_get_contents($pipe));
+            proc_close($processes[$n - 1]);
+        }
+        unlink($script);
+
+        $won = array_filter($answers, static fn (string $answer): bool => str_starts_with($answer, 'won '));
+        $this->assertCount(1, $won, implode("\n", $answers));
+        $winner = substr((string)reset($won), 4);
+        foreach ($answers as $answer) {
+            $this->assertStringEndsWith(' ' . $winner, $answer, 'every process reads the key that won');
+        }
+        $this->assertSame([], glob($this->root . '/private/keys/.draft-*') ?: [], 'and no draft is left behind');
+    }
+
+    #[DataProvider('homes')]
     public function testDeletingWhatIsNotThereIsNotAnError(string $home): void
     {
         $storage = $this->storage($home);

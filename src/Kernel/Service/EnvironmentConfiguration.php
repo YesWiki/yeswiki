@@ -68,6 +68,8 @@ class EnvironmentConfiguration
         'YESWIKI_S3_PATH_STYLE',
         'YESWIKI_S3_PUBLIC_URL',
         'YESWIKI_S3_TIERS',
+        'YESWIKI_SIGNING_KEY',
+        'YESWIKI_BOT_GUARD_KEY',
     ];
 
     /**
