@@ -1,8 +1,17 @@
+# Everything this stack claims on the host can be set per checkout, so that several YesWiki
+# stacks can run side by side: Compose project, containers, volumes, published ports.
+# Service names stay generic on purpose: they are only DNS names on the project's own
+# network, and nginx.conf and tests/e2e rely on them.
+#
+# To run another stack at once (from another checkout), set these in its
+# docker/.env: COMPOSE_PROJECT_NAME and the YESWIKI_*_PORT variables.
+name: ${COMPOSE_PROJECT_NAME:-yeswiki}
+
 volumes:
   yeswiki-db:
-    name: yeswiki-db
+    name: ${COMPOSE_PROJECT_NAME}-db
   yeswiki-pg:
-    name: yeswiki-pg
+    name: ${COMPOSE_PROJECT_NAME}-pg
 
 services:
     yeswiki-app:
@@ -12,7 +21,7 @@ services:
           args:
             UID: "${UID:-1000}"
             GID: "${GID:-1000}"
-        container_name: yeswiki
+        container_name: ${COMPOSE_PROJECT_NAME}-app
         volumes:
           - ..:/var/www/html
         depends_on:
@@ -24,7 +33,7 @@ services:
 
     yeswiki-db:
         image: mysql:latest
-        container_name: yeswiki-db
+        container_name: ${COMPOSE_PROJECT_NAME}-db
         volumes:
           - yeswiki-db:/var/lib/mysql
         env_file: ./yeswiki.secrets
@@ -37,7 +46,7 @@ services:
     # untouched.
     yeswiki-pg:
         image: postgres:16-alpine
-        container_name: yeswiki-pg
+        container_name: ${COMPOSE_PROJECT_NAME}-pg
         volumes:
           - yeswiki-pg:/var/lib/postgresql/data
         environment:
@@ -54,37 +63,37 @@ services:
     # deployment step docs/fr/admin.md carries.
     yeswiki-s3:
         image: chrislusf/seaweedfs
-        container_name: yeswiki-s3
+        container_name: ${COMPOSE_PROJECT_NAME}-s3
         command: server -s3 -s3.config=/etc/seaweedfs/s3.json -dir=/data -master.volumeSizeLimitMB=64
         volumes:
           - ./seaweedfs-s3.json:/etc/seaweedfs/s3.json:ro
         ports:
-          - "8333:8333"
+          - "${YESWIKI_S3_PORT:-8333}:8333"
 
     yeswiki-web:
         image: nginx:alpine
-        container_name: yeswiki-web
+        container_name: ${COMPOSE_PROJECT_NAME}-web
         volumes:
           - ..:/var/www/html:ro
           - ./nginx.conf:/etc/nginx/nginx.conf:ro
         ports:
-          - "8085:80"
+          - "${YESWIKI_WEB_PORT:-8085}:80"
         depends_on:
           - yeswiki-app
           - myadmin
 
     myadmin:
       image: phpmyadmin:latest
-      container_name: myadmin
+      container_name: ${COMPOSE_PROJECT_NAME}-myadmin
       env_file: ./yeswiki.secrets
       environment:
         PMA_HOST: yeswiki-db
         PMA_PORT: 3306
       ports:
-        - "8086:80"
+        - "${YESWIKI_MYADMIN_PORT:-8086}:80"
 
     mail:
       image: maildev/maildev
-      container_name: mail
+      container_name: ${COMPOSE_PROJECT_NAME}-mail
       ports:
-        - "1080:1080"
+        - "${YESWIKI_MAIL_PORT:-1080}:1080"
