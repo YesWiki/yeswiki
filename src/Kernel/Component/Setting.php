@@ -25,6 +25,12 @@ final class Setting
         return new self($name, 'text');
     }
 
+    /** A value that must never be echoed back: the input starts empty and is only sent when the person types one. */
+    public static function secret(string $name): self
+    {
+        return new self($name, 'secret');
+    }
+
     public static function number(string $name): self
     {
         return new self($name, 'number');
