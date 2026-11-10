@@ -19,7 +19,11 @@ The dev docker-compose contain the following images :
   ```
   It exists because the search index (ADR-0015) commits to three dialects, and a dialect nothing
   can run is a dialect nobody tests -- the first run of it found four defects.
-- yeswiki-web : a nginx reverse-proxy. configuration can be found on nginx.conf file. Accessible on `localhost:8085`
+- yeswiki-web : a nginx reverse-proxy. configuration can be found on nginx.conf file. Accessible on `localhost:8085`, and as `wiki.yeswiki.test` inside the stack
+- yeswiki-ldap : an OpenLDAP directory reachable as `yeswiki-ldap:1389`, base `dc=acme,dc=example`, admin `cn=admin,dc=acme,dc=example` / `AdminPassword1`. People `marie`, `jean` and `nomail` have the password `TestPassword1`
+- yeswiki-sso : a LemonLDAP::NG portal, reachable as `auth.yeswiki.test` inside the stack, which answers OIDC, SAML and CAS for the people of the directory. Run `bash docker/sso-check.sh` from `yeswiki-app` to check both. Its keys and passwords are public test values.
+
+  The portal reloads its configuration every second, but only a higher configuration number counts. To change it without a restart, copy `docker/lemonldap-ng/conf/lmConf-1.json` to `lmConf-2.json` and raise `cfgNum` inside. Fold the change back into `lmConf-1.json` and delete the copy before committing.
 - myadmin : phpmyadmin accessible on `localhost:8086`
 - mail : container to intercept email send by yeswiki. Webmail is accessible on `localhost:1080`.You have to set the following in `yeswiki.config.php`
 

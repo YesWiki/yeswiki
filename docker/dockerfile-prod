@@ -23,12 +23,13 @@ RUN yarn install
 FROM php:8.4-fpm
 
 RUN apt-get update && apt-get install -y libpng-dev zlib1g-dev libzip-dev libfreetype6-dev \
-     libwebp-dev libjpeg62-turbo-dev unzip && \
+     libwebp-dev libjpeg62-turbo-dev unzip libldap-dev && \
      rm -rf /var/lib/apt/lists/*
 
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp
 
-RUN docker-php-ext-install mysqli zip gd
+RUN docker-php-ext-configure ldap --with-libdir=lib/$(uname -m)-linux-gnu/
+RUN docker-php-ext-install mysqli zip gd ldap
 
 COPY . /var/www/html/
 

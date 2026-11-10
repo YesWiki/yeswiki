@@ -1,0 +1,163 @@
+{
+    "applicationList": {},
+    "authentication": "LDAP",
+    "casAppMetaDataExportedVars": {
+        "wiki-cas": {
+            "uid": "uid",
+            "mail": "mail",
+            "givenName": "givenName",
+            "sn": "sn",
+            "groups": "groups"
+        }
+    },
+    "casAppMetaDataOptions": {
+        "wiki-cas": {
+            "casAppMetaDataOptionsService": "http://wiki.yeswiki.test/"
+        }
+    },
+    "casAttr": "uid",
+    "cfgAuthor": "YesWiki development stack",
+    "cfgDate": "1762790400",
+    "cfgNum": 1,
+    "cfgVersion": "2.23.4",
+    "cookieName": "lemonldap",
+    "domain": "yeswiki.test",
+    "exportedHeaders": {},
+    "exportedVars": {},
+    "globalStorage": "Apache::Session::File",
+    "globalStorageOptions": {
+        "Directory": "/var/lib/lemonldap-ng/sessions",
+        "LockDirectory": "/var/lib/lemonldap-ng/sessions/lock",
+        "generateModule": "Lemonldap::NG::Common::Apache::Session::Generate::SHA256"
+    },
+    "groups": {},
+    "issuerDBCASActivation": 1,
+    "issuerDBOpenIDConnectActivation": 1,
+    "issuerDBSAMLActivation": 1,
+    "key": "yeswiki-test-portal-key",
+    "ldapBase": "ou=people,dc=acme,dc=example",
+    "ldapExportedVars": {
+        "uid": "uid",
+        "cn": "cn",
+        "mail": "mail",
+        "givenName": "givenName",
+        "sn": "sn"
+    },
+    "ldapGroupAttributeName": "member",
+    "ldapGroupAttributeNameSearch": "cn",
+    "ldapGroupAttributeNameUser": "dn",
+    "ldapGroupBase": "ou=groups,dc=acme,dc=example",
+    "ldapGroupObjectClass": "groupOfNames",
+    "ldapServer": "ldap://yeswiki-ldap:1389",
+    "localSessionStorage": "Cache::FileCache",
+    "localSessionStorageOptions": {
+        "cache_depth": 3,
+        "cache_root": "/var/cache/lemonldap-ng",
+        "default_expires_in": 600,
+        "directory_umask": "007",
+        "namespace": "lemonldap-ng-sessions"
+    },
+    "locationRules": {
+        "auth.yeswiki.test": {
+            "default": "accept"
+        }
+    },
+    "loginHistoryEnabled": 0,
+    "macros": {},
+    "managerDn": "cn=admin,dc=acme,dc=example",
+    "managerPassword": "AdminPassword1",
+    "notification": 0,
+    "oidcRPMetaDataExportedVars": {
+        "wiki-oidc": {
+            "uid": "uid",
+            "mail": "mail",
+            "givenName": "givenName",
+            "sn": "sn",
+            "groups": "groups;string;always",
+            "preferred_username": "uid",
+            "email": "mail",
+            "given_name": "givenName",
+            "family_name": "sn",
+            "name": "cn"
+        }
+    },
+    "oidcRPMetaDataOptions": {
+        "wiki-oidc": {
+            "oidcRPMetaDataOptionsClientID": "wiki-oidc",
+            "oidcRPMetaDataOptionsClientSecret": "wiki-oidc-secret",
+            "oidcRPMetaDataOptionsRedirectUris": "http://wiki.yeswiki.test/?user/sign-in/oidc/callback http://wiki.yeswiki.test/?api/auth_sso/callback=",
+            "oidcRPMetaDataOptionsPublic": 0,
+            "oidcRPMetaDataOptionsBypassConsent": 1,
+            "oidcRPMetaDataOptionsIDTokenSignAlg": "RS256",
+            "oidcRPMetaDataOptionsIDTokenForceClaims": 1,
+            "oidcRPMetaDataOptionsUserIDAttr": "uid"
+        }
+    },
+    "oidcServiceIgnoreScopeForClaims": 1,
+    "oidcServiceKeyIdSig": "yeswiki-test-oidc",
+    "oidcServiceKeyTypeSig": "RSA",
+    "oidcServiceMetaDataIssuer": "http://auth.yeswiki.test",
+    "oidcServicePrivateKeySig": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQC7jLG/IhaO81co\nK6z2D30yfwiliGqhtXAKCuUp0s7Lr/y95at4n/mxK8J87h49w1KVB0503T7PX8HU\nr88GyajxeWsYKraI6ySmeFYb8ENc14Z/CSa7nrwSXFiR996m1JYRFGmyHuwprt8g\nMGNCLPjHNQWfq+Izc5d9b1FapzPVC6CavIAYWkYjOPZpIeOfnVd7j3NjS7wl6ZDe\nwZ/85Q/qcGtQN0zR70t5dEizdSgENifnoYdhip+0Ni+4vE/L+9CfHB12V8ogxM8k\neUHUZbGHfC5ojCIC4E0niozVVo10He9Pq9sj+5/qDB4T9FKtf9boYVno6MUJ7B8h\nRxSvRepTAgMBAAECggEAIc3jscwunbh9oqdwpu82xTXBdLioY5pE5gJ9uLKfBHal\niwLNC9Jl2onFJehzefVtOqBVA1pnelBLqw6/NX1+nnugknwMZ5ReiETTXHjLY34T\nZ21aVmHviy2q5zByqMZTgCOaQ3kwXvj+jZo7Ic/iTWGgsF12SYjRqtG4K6tMe98r\nSpJat9EMElPMKgu+2QtYpWnC/FJDDkq2pVlT0hW7vZ9CFYeV9roKIYDS7Mqh7lIb\nzvHpwlrkU96q1itXnadM8Jzt4jfsAQ3lreyT3zA3EvH2KeTmZp35m64AyybBLBv/\nnrbn+eu7o6k44087HJ0TTPMG9OsMl1+FXd4IXwJ51QKBgQD+AdFyEx3xJW+mYnUT\n7OA4MsXeL/sdmT0Mnl58Dczonb/Jx6JMBw7QnmUwW04bvIljWA+YtOQ6UQ5yjc+O\nmFctgDc9O7/5RR4fYfhy3GozCSO5nUb8KvrhRbkugX4MXzD6xX56TByrmY5i/vau\nEeFBy5GVWatjXtOlIfUci+wsDQKBgQC9BWTd1wlA7QPe03SQZiKQg8JCh+1+lQtV\nMINc5o3u/PV3rcGw2URY7WT4xtGy8DeCRqZi36bTVZa0qjuc3mi73za95bVLtL3D\nGxp3khyJxTODlphUSTXwTiSJAdD6H2DtgKmm6ZVNB+dm9iuylvS4Muu0eulOEVdq\n5PgiRHf33wKBgQDb/Ekf6eyZqBl9WXIacqFyKo7xsk5iwQ99eT9NY0pfABhVMj+e\nZtJu3W+3pKwOG4hFcMP5NlkfJIpFrgnfbpK6BnxQ3QmTYkgHV/srxzd2weid3dfX\nl4W2SoNqAp5fKqYp2ZeDZZ3DBHerxzNvaG7VY+/PEFz97+eO8czuD0TYlQKBgG4d\njVRbKG3lZcLSxu40QeCUkX+2thlu9IotV+mv+nGGde3BkLvY5qMzsQXotVMb9Ap1\n5ApnpkUpcEFRhqbtPnBsKfTYtBQleAMIcBPGT8/GzSrUeWtotv6GV2xlXXvI+euC\nb9Ln8u1MNHdb47sHjAsexwd+LxomqhmAyDkWUBlbAoGAUM3/c6kRcCA/J88AZVEX\nCqPVzJBSNryqV0nPFvSEVcgTTRPr+0fMtXxjc2m1qezrhHMH07OsaYh54g39Y1gT\nubqiYNR4j2ONk+S7G6AZPVlUWUO5KXUoPMxcQf5eCun6QmMykcwaR+jRvOvDPjfR\nNn4a4wdqQ1yyEpYVSN+YRL8=\n-----END PRIVATE KEY-----",
+    "oidcServicePublicKeySig": "-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAu4yxvyIWjvNXKCus9g99\nMn8IpYhqobVwCgrlKdLOy6/8veWreJ/5sSvCfO4ePcNSlQdOdN0+z1/B1K/PBsmo\n8XlrGCq2iOskpnhWG/BDXNeGfwkmu568ElxYkffeptSWERRpsh7sKa7fIDBjQiz4\nxzUFn6viM3OXfW9RWqcz1QugmryAGFpGIzj2aSHjn51Xe49zY0u8JemQ3sGf/OUP\n6nBrUDdM0e9LeXRIs3UoBDYn56GHYYqftDYvuLxPy/vQnxwddlfKIMTPJHlB1GWx\nh3wuaIwiAuBNJ4qM1VaNdB3vT6vbI/uf6gweE/RSrX/W6GFZ6OjFCewfIUcUr0Xq\nUwIDAQAB\n-----END PUBLIC KEY-----",
+    "passwordDB": "LDAP",
+    "persistentStorage": "Apache::Session::File",
+    "persistentStorageOptions": {
+        "Directory": "/var/lib/lemonldap-ng/psessions",
+        "LockDirectory": "/var/lib/lemonldap-ng/psessions/lock"
+    },
+    "portal": "http://auth.yeswiki.test/",
+    "portalSkin": "bootstrap",
+    "registerDB": "Null",
+    "reloadUrls": {},
+    "sameSite": "Lax",
+    "samlSPMetaDataExportedAttributes": {
+        "saml-a": {
+            "uid": "0;uid",
+            "mail": "0;mail",
+            "givenName": "0;givenName",
+            "sn": "0;sn",
+            "groups": "0;groups"
+        },
+        "saml-b": {
+            "uid": "0;uid",
+            "mail": "0;mail",
+            "givenName": "0;givenName",
+            "sn": "0;sn",
+            "groups": "0;groups"
+        }
+    },
+    "samlSPMetaDataOptions": {
+        "saml-a": {
+            "samlSPMetaDataOptionsCheckSSOMessageSignature": 0,
+            "samlSPMetaDataOptionsCheckSLOMessageSignature": 0,
+            "samlSPMetaDataOptionsSignSSOMessage": 1,
+            "samlSPMetaDataOptionsSignSLOMessage": 1,
+            "samlSPMetaDataOptionsNameIDFormat": "unspecified",
+            "samlSPMetaDataOptionsNameIDSessionKey": "uid",
+            "samlSPMetaDataOptionsForceUTF8": 1
+        },
+        "saml-b": {
+            "samlSPMetaDataOptionsCheckSSOMessageSignature": 0,
+            "samlSPMetaDataOptionsCheckSLOMessageSignature": 0,
+            "samlSPMetaDataOptionsSignSSOMessage": 1,
+            "samlSPMetaDataOptionsSignSLOMessage": 1,
+            "samlSPMetaDataOptionsNameIDFormat": "unspecified",
+            "samlSPMetaDataOptionsNameIDSessionKey": "uid",
+            "samlSPMetaDataOptionsForceUTF8": 1
+        }
+    },
+    "samlSPMetaDataXML": {
+        "saml-a": {
+            "samlSPMetaDataXML": "<md:EntityDescriptor xmlns:md=\"urn:oasis:names:tc:SAML:2.0:metadata\" entityID=\"http://wiki.yeswiki.test/?user/sign-in/saml-a/metadata\"><md:SPSSODescriptor AuthnRequestsSigned=\"false\" WantAssertionsSigned=\"true\" protocolSupportEnumeration=\"urn:oasis:names:tc:SAML:2.0:protocol\"><md:NameIDFormat>urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified</md:NameIDFormat><md:AssertionConsumerService Binding=\"urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST\" Location=\"http://wiki.yeswiki.test/?user/sign-in/saml-a/callback\" index=\"1\" isDefault=\"true\"/></md:SPSSODescriptor></md:EntityDescriptor>"
+        },
+        "saml-b": {
+            "samlSPMetaDataXML": "<md:EntityDescriptor xmlns:md=\"urn:oasis:names:tc:SAML:2.0:metadata\" entityID=\"http://wiki.yeswiki.test/?user/sign-in/saml-b/metadata\"><md:SPSSODescriptor AuthnRequestsSigned=\"false\" WantAssertionsSigned=\"true\" protocolSupportEnumeration=\"urn:oasis:names:tc:SAML:2.0:protocol\"><md:NameIDFormat>urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified</md:NameIDFormat><md:AssertionConsumerService Binding=\"urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST\" Location=\"http://wiki.yeswiki.test/?user/sign-in/saml-b/callback\" index=\"1\" isDefault=\"true\"/></md:SPSSODescriptor></md:EntityDescriptor>"
+        }
+    },
+    "samlServicePrivateKeySig": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQC/1nnijcamMGC8\ndV3AhAml/4YG+zgxr4Y7cpQ71VDMBQXzetPifNMxpofm0fruNwEr0H7YXOD6JIyH\ns0S2vBxtWLI0IxYpml/O4nwFlBk1/hWa2nF6TrbCAA9cXhL2VP3XppeQg+XtIdHd\nxZ489rPECVjQknIWjKmHkuMxApvM79jscJsrOLqMVsx2PuHvtzfakQERepE0mtgo\n3kaYdGA99w+Vh9EYvKO3dbrW7lxFQasnDRI/ycMd6yT7Eng4G35MPac92hcrJC4G\nzzABk26Spjx0EYlRTVyPGQsuMV9/cgaay5xxSovJlQ7s80mN7zyb4cQueh4T7WCb\ne6OjdohPAgMBAAECggEAH9o7HKyRD6ZiuYf8oWrgYJP1K2g/uV2Sj9ZY2eJzwEcT\n6OHmbT8aoK4s9zIQVHNaRMMhUfLXVtFbasC6UmPDjehh68Q+Ts7CGmDYBOPFQoYb\nYj3jr6eC3Y1oVNw4kSF65c6pxdC7YaHxmGgn+6leydhfddTgZUbFHgH7/8xAwEhy\nNfOIhkOBK6cGM7DaY+HAf8X+C5nv9jM+CMcmlPckvr8t6Dznrzqq0YBalHwbm33f\nJI7BXfeCc686kxEkgVpWtsbETtbrpS3a9gI9+1QQS3SNLo4K017lBYlteMjVVqNW\njylRiEO9RJGHsC0HebyvvzsqO+aOX14YwEGhcI1mcQKBgQDzUDOz85kp3Xmshttx\nYTPKPs+3BWtrCOe1oI6MbUA9D2pya25aoQuCndWVIKDRVkouXFz64+kG/yV8Ix0z\nYfoH+wM4ctcIQmVDbYc3CiQ3Gksb2e6bKqzGgEIR3KytsyWzv6wCwlgikBZmH7Yp\n+Cqf+f0q6Pl8z0Y6r4VzIKHoWQKBgQDJ1ysROTTpl1teHtq4sWwe7P5n3SYs61wV\neaSFfeM9LjC48EkIpVrl88a+T+kFyWyJdkmZUm5lvJk8miuXmrFIHiR1K4BodDHq\nQ8aWsZPQ5q4QegC0+zaLzmZbDCg2MLC8KVF5cnirCuUXsZA5iBqCRQ3qLtwhjmMv\n52+M9JDg5wKBgQDm4x6NDwYy8hX6H+axSpoIu14EwUHTyhmHAxsCKtIgnzZV6ZhI\nrDXt9rSs1M+GlqnCIKei9Q82MnxxtiiJj9niJNJDiMaA8fCB8be0BQ2ktHC9typz\nWCWoICGSLaQ3GJ8YWTRzUdSsx6pZspH8daCNOn6Bb58ATvjHy7OJMlgx0QKBgBFb\nk7STet1rysu5U432lBnEv8wm1JWgV/bw0xk3zkcApegBogZAUiTcZgcP0DZTMCZS\nKdopoJzXL0Zq67zJ7N0K2o/JAe35sCE5WuaytseMTwPTuiPWRsaXJW5HCV4/qbNE\nymDrWz06XqE+/+wyrDTvw1aUWRH5sMX53Tn9/keZAoGAc7FTwfz5gSmNE5wp6aQr\n8y8OokFmYzlD5+QqOT7g3/bmW60FO5GwRkG/STRvvx/San1Vv6DHt+vRzeW0Xqgj\nIRVP8WJvIwTfXSDyBL1BGfEheb9pLq9EmOnxM64uqxd+6xhHyWZMphil33ahUw6d\n/tA+21fHAKUwm5O+wD/ltYE=\n-----END PRIVATE KEY-----",
+    "samlServicePublicKeySig": "-----BEGIN CERTIFICATE-----\nMIIDGTCCAgGgAwIBAgIUTlDfYBMhlJxQuBkkIpMoOigIbtEwDQYJKoZIhvcNAQEL\nBQAwHDEaMBgGA1UEAwwReWVzd2lraS10ZXN0LXNhbWwwHhcNMjYxMTEwMTYyNjAy\nWhcNMzYxMTA3MTYyNjAyWjAcMRowGAYDVQQDDBF5ZXN3aWtpLXRlc3Qtc2FtbDCC\nASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAL/WeeKNxqYwYLx1XcCECaX/\nhgb7ODGvhjtylDvVUMwFBfN60+J80zGmh+bR+u43ASvQfthc4PokjIezRLa8HG1Y\nsjQjFimaX87ifAWUGTX+FZracXpOtsIAD1xeEvZU/deml5CD5e0h0d3Fnjz2s8QJ\nWNCSchaMqYeS4zECm8zv2Oxwmys4uoxWzHY+4e+3N9qRARF6kTSa2CjeRph0YD33\nD5WH0Ri8o7d1utbuXEVBqycNEj/Jwx3rJPsSeDgbfkw9pz3aFyskLgbPMAGTbpKm\nPHQRiVFNXI8ZCy4xX39yBprLnHFKi8mVDuzzSY3vPJvhxC56HhPtYJt7o6N2iE8C\nAwEAAaNTMFEwHQYDVR0OBBYEFLxu6PZaTmmhUmJDA/3wm884gqWiMB8GA1UdIwQY\nMBaAFLxu6PZaTmmhUmJDA/3wm884gqWiMA8GA1UdEwEB/wQFMAMBAf8wDQYJKoZI\nhvcNAQELBQADggEBALREhx5xXpPdY7dcbAz/uUiqQp33446roxRc+Yg5OWDACz09\n0dHpEJEuJCEUs6Bcd01T9JiU33un741MlBJUZiwmXncO2il/o4pVs4bEv3SKq3MX\nShwk52NFSXSF4DnO8swqtauj2tT2hd0W4KQ1ui1TSWUFG9RK8vpJZK4zABXwMRUb\n7jM60ni49HT+hBfhI0Zebpt1JqG6rS5gL1yx1o+jEXepzHZFV4afz+fgZpYodOXI\nw0QkuIvwd/pKbn9ZgmugcbZbe0FTcuNCFnyUEU+t39iNERBhgx9cIkUOqvFPFN7J\nY5tV40rWZfOtEmeBfySy1gwkLAHbww9WMuRH1X0=\n-----END CERTIFICATE-----",
+    "securedCookie": 0,
+    "timeout": 72000,
+    "userDB": "Same",
+    "whatToTrace": "uid"
+}

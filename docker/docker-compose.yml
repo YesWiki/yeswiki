@@ -70,6 +70,45 @@ services:
         ports:
           - "${YESWIKI_S3_PORT:-8333}:8333"
 
+    # A real company directory and a real identity server, so that the sign-in providers are
+    # tested against servers rather than against mocks. Test-only: nothing here reaches the
+    # binary or the production image.
+    yeswiki-ldap:
+        image: bitnamilegacy/openldap:2.6.10-debian-12-r4
+        container_name: ${COMPOSE_PROJECT_NAME}-ldap
+        environment:
+          LDAP_ROOT: dc=acme,dc=example
+          LDAP_ADMIN_USERNAME: admin
+          LDAP_ADMIN_PASSWORD: AdminPassword1
+          LDAP_CUSTOM_LDIF_DIR: /ldifs
+        volumes:
+          - ./openldap:/ldifs:ro
+        ports:
+          - "${YESWIKI_LDAP_PORT:-1389}:1389"
+
+    # One server for OIDC, SAML and CAS. The network alias shares a domain with the wiki's,
+    # so they are same-site on plain http and SAML's POST callback gets its Lax cookie.
+    # The conf directory is writable because the image's entrypoint runs sed -i on it, and it
+    # is a directory because sed -i cannot replace a file that is itself a mount point.
+    # PRESERVEFILES stays unset: the entrypoint would overwrite the configuration below.
+    yeswiki-sso:
+        image: lemonldapng/lemonldap-ng:2.23.4
+        container_name: ${COMPOSE_PROJECT_NAME}-sso
+        environment:
+          SSODOMAIN: yeswiki.test
+          PORTAL_HOSTNAME: auth.yeswiki.test
+          MANAGER_HOSTNAME: manager.yeswiki.test
+        volumes:
+          - ./lemonldap-ng/conf:/var/lib/lemonldap-ng/conf
+        ports:
+          - "${YESWIKI_SSO_PORT:-8087}:80"
+        depends_on:
+          - yeswiki-ldap
+        networks:
+          default:
+            aliases:
+              - auth.yeswiki.test
+
     yeswiki-web:
         image: nginx:alpine
         container_name: ${COMPOSE_PROJECT_NAME}-web
@@ -78,6 +117,10 @@ services:
           - ./nginx.conf:/etc/nginx/nginx.conf:ro
         ports:
           - "${YESWIKI_WEB_PORT:-8085}:80"
+        networks:
+          default:
+            aliases:
+              - wiki.yeswiki.test
         depends_on:
           - yeswiki-app
           - myadmin

@@ -20,9 +20,10 @@ RUN yarn install
 # Yeswiki image
 FROM php:8.4-fpm
 
-RUN apt-get update && apt-get install -y libpng-dev zlib1g-dev libzip-dev && \
+RUN apt-get update && apt-get install -y libpng-dev zlib1g-dev libzip-dev libldap-dev && \
      rm -rf /var/lib/apt/lists/*
 
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp
-RUN docker-php-ext-install pdo_mysql gd zip
+RUN docker-php-ext-configure ldap --with-libdir=lib/$(uname -m)-linux-gnu/
+RUN docker-php-ext-install pdo_mysql gd zip ldap
 COPY --from=yarn --chown=www-data:www-data /var/www/html /var/www/html
