@@ -88,6 +88,13 @@ The project name also names the containers and volumes of that stack : use `yesw
 
 The test docker-compose publishes the fixed port 8083, so only one test stack can run at a time.
 
+### Dev container
+
+`.devcontainer/devcontainer.json` runs this same stack from an editor that supports dev containers : use "Reopen in Container" in VS Code.
+It creates `docker/.env` with your `UID` and `GID` if the file does not exist yet, and an existing one is left alone.
+
+The editor attaches to `yeswiki-app` as soon as the container starts, while `entrypoint.sh` is still running `composer install` and `yarn install`. On the first launch, wait for these to finish before using the wiki.
+
 ## reinitialize yeswiki repo from dev
 
 docker create and populates the following folders files :

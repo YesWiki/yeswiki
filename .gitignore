@@ -17,6 +17,7 @@
 !themes/
 !extensions/
 !docker/
+!.devcontainer/
 !phpstan/
 !binary/
 
