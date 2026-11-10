@@ -139,6 +139,10 @@ export const forgetAccounts = (...emails: string[]): void => {
   php('sso-wiki.php', ['forget', ...emails])
 }
 
+/** The name of the account that has this email, null when none has. */
+export const accountWithEmail = (email: string): string | null =>
+  JSON.parse(php('sso-wiki.php', ['account', email]))
+
 export const groupsOf = (account: string): string[] =>
   JSON.parse(php('sso-wiki.php', ['groups', account]))
 

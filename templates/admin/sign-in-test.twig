@@ -1,0 +1,111 @@
+{% extends "@core/dashboard/layout.twig" %}
+
+{% block dashboard_content %}
+  <h1>{{ _t('SIGN_IN_TEST_TITLE', { name: label }) }}</h1>
+
+  {% if result %}
+    <div class="yw-alert yw-alert--info yw-sign-in-test__banner" role="status">
+      {{ icon('flask') }} <strong>{{ _t('SIGN_IN_TEST_BANNER') }}</strong>
+      <p class="yw-sign-in-test__would">{{ result.wouldDo }}</p>
+    </div>
+
+    <section class="yw-dashboard__card">
+      <h2>{{ _t('SIGN_IN_TEST_STEPS') }}</h2>
+      <ol class="yw-sign-in-test__steps">
+        {% for step in result.steps %}
+          <li class="yw-sign-in-test__step yw-sign-in-test__step--{{ step.state }}">
+            {% if step.state == 'done' %}{{ icon('check') }}{% elseif step.state == 'failed' %}{{ icon('x') }}{% else %}{{ icon('minus') }}{% endif %}
+            {{ _t('SIGN_IN_TEST_STEP_' ~ step.step|upper) }}
+            <small class="yw-form-hint">{{ _t('SIGN_IN_TEST_STATE_' ~ step.state|upper) }}</small>
+          </li>
+        {% endfor %}
+      </ol>
+      {% if result.error %}
+        <h3>{{ _t('SIGN_IN_TEST_ERROR') }}</h3>
+        <pre class="yw-sign-in-test__error">{{ result.error }}</pre>
+      {% endif %}
+    </section>
+
+    <section class="yw-dashboard__card">
+      <h2>{{ _t('SIGN_IN_TEST_ATTRIBUTES') }}</h2>
+      {% if result.attributes is empty %}
+        <p class="yw-layout__hint">{{ _t('SIGN_IN_TEST_NO_ATTRIBUTES') }}</p>
+      {% else %}
+        <table class="yw-table yw-sign-in-test__attributes">
+          <thead>
+            <tr>
+              <th>{{ _t('SIGN_IN_TEST_ATTRIBUTE') }}</th>
+              <th>{{ _t('SIGN_IN_TEST_VALUE') }}</th>
+              <th>{{ _t('SIGN_IN_TEST_USED_AS') }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for attribute in result.attributes %}
+              <tr>
+                <td><code>{{ attribute.name }}</code></td>
+                <td>{% for value in attribute.values %}<div>{{ value }}</div>{% endfor %}</td>
+                <td>{{ attribute.usedAs|join(', ') }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% endif %}
+      {% for missing in result.missing %}
+        <p class="yw-form-hint">{{ _t('SIGN_IN_TEST_NOT_SENT', { field: missing.field, attribute: missing.attribute }) }}</p>
+      {% endfor %}
+    </section>
+
+    {% if not result.refused %}
+      <section class="yw-dashboard__card">
+        <h2>{{ _t('SIGN_IN_TEST_PROFILE') }}</h2>
+        <table class="yw-table">
+          <tbody>
+            {% for field, value in result.profile %}
+              <tr><th><code>{{ field }}</code></th><td>{{ value }}</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+
+        <h2>{{ _t('SIGN_IN_ADMIN_GROUP_MAPPING') }}</h2>
+        <ul>
+          <li>{{ _t('SIGN_IN_TEST_GROUPS_ADD') }} {{ result.groupsToAdd is empty ? _t('SIGN_IN_TEST_NONE') : result.groupsToAdd|join(', ') }}</li>
+          <li>{{ _t('SIGN_IN_TEST_GROUPS_REMOVE') }} {{ result.groupsToRemove is empty ? _t('SIGN_IN_TEST_NONE') : result.groupsToRemove|join(', ') }}</li>
+          <li>{{ _t('SIGN_IN_TEST_GROUPS_IGNORED') }} {{ result.groupsIgnored is empty ? _t('SIGN_IN_TEST_NONE') : result.groupsIgnored|join(', ') }}</li>
+        </ul>
+
+        {% for warning in result.warnings %}
+          <div class="yw-alert yw-alert--warning">{{ icon('alert-triangle') }} {{ warning }}</div>
+        {% endfor %}
+      </section>
+    {% endif %}
+  {% endif %}
+
+  {% if form %}
+    <section class="yw-dashboard__card">
+      {% for error in form.errors %}
+        <div class="yw-alert yw-alert--danger">{{ icon('alert-triangle') }} {{ error }}</div>
+      {% endfor %}
+      <p class="yw-layout__hint">{{ _t('SIGN_IN_TEST_PASSWORD_HINT') }}</p>
+      <form method="post" action="{{ form.action }}" hx-boost="false" autocomplete="off">
+        <input type="hidden" name="csrf-token" value="{{ csrfToken({id: 'main', refresh: false}) }}">
+        <div class="yw-form-group">
+          <label class="yw-form-label" for="sign-in-test-login">{{ _t('SIGN_IN_TEST_LOGIN') }}</label>
+          <input class="yw-input" id="sign-in-test-login" type="text" name="login" required autocomplete="off">
+        </div>
+        <div class="yw-form-group">
+          <label class="yw-form-label" for="sign-in-test-password">{{ _t('SIGN_IN_TEST_PASSWORD') }}</label>
+          <input class="yw-input" id="sign-in-test-password" type="password" name="password" required autocomplete="new-password">
+        </div>
+        <button type="submit" class="yw-btn yw-btn--primary">{{ _t('SIGN_IN_TEST_RUN') }}</button>
+      </form>
+    </section>
+  {% endif %}
+
+  <p class="yw-sign-in-admin__actions">
+    {% if result %}
+      <a class="yw-btn" href="{{ url({ tag: 'admin/sign-in/' ~ id ~ '/test' }) }}">{{ icon('refresh') }} {{ _t('SIGN_IN_TEST_AGAIN') }}</a>
+    {% endif %}
+    <a class="yw-btn" href="{{ url({ tag: 'admin/sign-in/' ~ id ~ '/edit' }) }}">{{ icon('pencil') }} {{ _t('SIGN_IN_TEST_SETTINGS') }}</a>
+    <a href="{{ url({ tag: 'admin/sign-in' }) }}">{{ _t('SIGN_IN_ADMIN_BACK') }}</a>
+  </p>
+{% endblock %}

@@ -1,5 +1,7 @@
 import { expect, Page, test } from '@playwright/test'
+import { ADMIN_PASSWORD, ADMIN_USERNAME, login } from '../helpers/login'
 import {
+  accountWithEmail,
   addToGroup,
   forgetAccounts,
   groupsOf,
@@ -37,9 +39,9 @@ const signInWith = async (page: Page, type: ProviderType, login: string) => {
   await signInAtPortal(page, login, PASSWORD)
 }
 
-/** The settings form of the signed-in account. */
+/** A field of the signed-in account's settings that its provider fills, shown as text since it cannot be edited there. */
 const accountField = (page: Page, field: string) =>
-  page.locator(`form [name="${field}"]`).first()
+  page.locator(`[data-id="${field}"] .BAZ_texte`).first()
 
 for (const type of TYPES) {
   const id = PROVIDER_IDS[type]
@@ -65,8 +67,8 @@ for (const type of TYPES) {
 
       await page.goto('/?user')
       await expect(page.locator(GUEST_CARD)).toHaveCount(0)
-      await expect(accountField(page, 'first_name')).toHaveValue('Marie')
-      await expect(accountField(page, 'last_name')).toHaveValue('Dupont')
+      await expect(accountField(page, 'first_name')).toHaveText('Marie')
+      await expect(accountField(page, 'last_name')).toHaveText('Dupont')
       await expect(page.locator('body')).toContainText(MARIE_ACCOUNT)
     })
 
@@ -76,7 +78,7 @@ for (const type of TYPES) {
       const first = await browser.newPage()
       await signInWith(first, type, PEOPLE.jean.login)
       await first.goto('/?user')
-      await expect(accountField(first, 'last_name')).toHaveValue('Martin')
+      await expect(accountField(first, 'last_name')).toHaveText('Martin')
       await first.context().close()
 
       setDirectoryValue(personDn('jean'), 'sn', 'Martin-Durand')
@@ -84,7 +86,7 @@ for (const type of TYPES) {
         const again = await browser.newPage()
         await signInWith(again, type, PEOPLE.jean.login)
         await again.goto('/?user')
-        await expect(accountField(again, 'last_name')).toHaveValue(
+        await expect(accountField(again, 'last_name')).toHaveText(
           'Martin-Durand',
         )
         await expect(again.locator('body')).toContainText(JEAN_ACCOUNT)
@@ -163,8 +165,39 @@ for (const type of TYPES) {
       expect(loginRows(before)).toEqual([])
     })
 
-    test.fixme(`${type}: test mode signs nobody in`, async () => {
-      // Test mode arrives with Task 13.
+    test(`${type}: test mode signs nobody in`, async ({ page }) => {
+      // switched off: an administrator tries a provider out before anyone can use it.
+      setProviders(sectionFor(type, { enabled: false }))
+      await login(page, ADMIN_USERNAME, ADMIN_PASSWORD)
+      const before = latestRow()
+
+      await page.goto('/?admin/sign-in')
+      await page.locator(`a[href*="admin/sign-in/${id}/test"]`).click()
+      await signInAtPortal(page, PEOPLE.marie.login, PASSWORD)
+
+      await expect(page.locator('.yw-sign-in-test__banner')).toBeVisible()
+      const attributes = page.locator('.yw-sign-in-test__attributes')
+      await expect(attributes).toContainText('mail')
+      await expect(attributes).toContainText(PEOPLE.marie.email)
+      await expect(attributes).toContainText(PEOPLE.marie.lastName)
+      await expect(
+        page.locator('.yw-sign-in-test__would'),
+        'what a real sign-in would do',
+      ).toContainText(MARIE_ACCOUNT)
+      expect(
+        accountWithEmail(PEOPLE.marie.email),
+        'no account was created',
+      ).toBeNull()
+      expect(loginRows(before), 'nothing was written to the journal').toEqual(
+        [],
+      )
+
+      await page.goto('/?user')
+      await expect(page.locator(GUEST_CARD)).toHaveCount(0)
+      await expect(
+        page.locator('body'),
+        'the administrator is still the one signed in',
+      ).toContainText(ADMIN_USERNAME)
     })
 
     test(`${type}: nomail is refused naming the attribute`, async ({
@@ -218,7 +251,7 @@ for (const type of TYPES) {
         ).toEqual([expect.stringMatching(/\?api\/auth_sso\/callback=&.*code=/)])
         await page.goto('/?user')
         await expect(page.locator(GUEST_CARD)).toHaveCount(0)
-        await expect(accountField(page, 'last_name')).toHaveValue('Dupont')
+        await expect(accountField(page, 'last_name')).toHaveText('Dupont')
       })
     }
   })

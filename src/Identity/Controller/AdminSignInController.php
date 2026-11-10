@@ -17,6 +17,8 @@ use YesWiki\Identity\Service\SignIn\ProviderRegistry;
 use YesWiki\Identity\Service\SignIn\ProvidersEditor;
 use YesWiki\Identity\Service\SignIn\SignInFlow;
 use YesWiki\Identity\Service\SignIn\Type\LocalType;
+use YesWiki\Identity\SignIn\Contract\HandshakeMode;
+use YesWiki\Identity\SignIn\Contract\PasswordProvider;
 use YesWiki\Identity\SignIn\Contract\ProviderConfig;
 use YesWiki\Identity\SignIn\Contract\ProviderType;
 use YesWiki\Identity\SignIn\Contract\PublishesMetadata;
@@ -29,6 +31,7 @@ use YesWiki\Render\Service\TemplateEngine;
 class AdminSignInController extends YesWikiController
 {
     use DashboardShell;
+    use RendersSignInOutcome;
 
     private const ADMIN_ACL = ['@admins'];
     private const CURRENT = 'admin/sign-in';
@@ -156,6 +159,49 @@ class AdminSignInController extends YesWikiController
         }
 
         return $this->toIndex();
+    }
+
+    /**
+     * Runs the real protocol against the provider, as the signed-in administrator, and shows what came back (spec 8.3).
+     * A redirect provider is left for and comes back to its callback; a password provider first asks for a test login and password.
+     */
+    #[Route('/admin/sign-in/{id}/test', methods: ['GET', 'POST'], options: ['acl' => self::ADMIN_ACL])]
+    public function test(string $id): Response
+    {
+        $registry = $this->getService(ProviderRegistry::class);
+        $config = $registry->config($id);
+        if ($config === null) {
+            Flash::error(_t('SIGN_IN_ADMIN_UNKNOWN_PROVIDER'));
+
+            return $this->toIndex();
+        }
+        $flow = $this->getService(SignInFlow::class);
+        if (!$registry->get($id) instanceof PasswordProvider) {
+            return $this->renderSignInOutcome($flow->begin($id, '', HandshakeMode::Test));
+        }
+
+        $errors = [];
+        $request = $this->getRequest();
+        if ($request->isMethod('POST')) {
+            $errors = $this->guardedAgainstForgery();
+            if ($errors === []) {
+                $posted = $request->request->all();
+                $login = $posted['login'] ?? '';
+                $password = $posted['password'] ?? '';
+
+                return $this->renderSignInOutcome($flow->password($id, is_string($login) ? $login : '', is_string($password) ? $password : '', false, HandshakeMode::Test));
+            }
+        }
+
+        return $this->page('@core/admin/sign-in-test.twig', self::CURRENT, [
+            'id' => $id,
+            'label' => $config->label,
+            'result' => null,
+            'form' => [
+                'action' => $this->getService(UrlFormatter::class)->href('', 'admin/sign-in/' . rawurlencode($id) . '/test'),
+                'errors' => $errors,
+            ],
+        ]);
     }
 
     /**

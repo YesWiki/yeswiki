@@ -4,6 +4,7 @@
  * What the sign-in specs read or arrange in the wiki under test, run from its folder:
  *   journal <action pattern>        the Journal rows whose action is LIKE the pattern, oldest first, as JSON
  *   forget <email>...               deletes the accounts that have these emails
+ *   account <email>                 the name of the account that has this email, or null, as JSON
  *   groups <account>                the account's groups, as JSON
  *   add-to-group <group> <account>  creates the group when it does not exist
  */
@@ -36,6 +37,11 @@ switch ($argv[1] ?? '') {
         }
         break;
 
+    case 'account':
+        $user = $users->getOneByEmail((string)($arguments[0] ?? ''));
+        echo json_encode($user?->getName());
+        break;
+
     case 'groups':
         $user = $users->getOneByName((string)($arguments[0] ?? ''));
         echo json_encode($user === null ? [] : array_values($users->groupsWhereIsMember($user, false)));
@@ -48,6 +54,6 @@ switch ($argv[1] ?? '') {
         break;
 
     default:
-        fwrite(STDERR, "usage: php sso-wiki.php journal|forget|groups|add-to-group ...\n");
+        fwrite(STDERR, "usage: php sso-wiki.php journal|forget|account|groups|add-to-group ...\n");
         exit(1);
 }

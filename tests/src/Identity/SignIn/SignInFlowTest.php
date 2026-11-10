@@ -9,6 +9,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Identity\Service\AccountActivationService;
+use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Identity\Service\LoginCookie;
 use YesWiki\Identity\Service\PasswordHasherFactory;
@@ -234,7 +235,7 @@ class SignInFlowTest extends YesWikiTestCase
         ], $config);
         $journal = new SignInJournal($services->get(Journal::class), $services->get(AuthenticationService::class), $services->get(AttemptLimiter::class), $registry);
 
-        return new SignInFlow($registry, $services->get(SignInService::class), $journal, $services->get(AttemptLimiter::class), $services->get(HandshakeCookie::class), $browser ?? $this->browser(), $services->get(UrlFormatter::class));
+        return new SignInFlow($registry, $services->get(SignInService::class), $journal, $services->get(AttemptLimiter::class), $services->get(HandshakeCookie::class), $browser ?? $this->browser(), $services->get(UrlFormatter::class), $services->get(AclService::class));
     }
 
     private function fakeType(string $name, FlowFakeRedirect|FlowFakePassword $provider): ProviderType

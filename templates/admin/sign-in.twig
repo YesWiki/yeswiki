@@ -38,6 +38,7 @@
             <td class="yw-sign-in-admin__actions">
               {% if provider.available and not provider.isLocal %}
                 <a class="yw-btn yw-btn--sm" href="{{ url({ tag: 'admin/sign-in/' ~ provider.id ~ '/edit' }) }}">{{ icon('pencil') }} {{ _t('EDIT') }}</a>
+                <a class="yw-btn yw-btn--sm" href="{{ url({ tag: 'admin/sign-in/' ~ provider.id ~ '/test' }) }}" hx-boost="false">{{ icon('flask') }} {{ _t('SIGN_IN_ADMIN_TEST') }}</a>
               {% endif %}
               {% if provider.enabled or provider.available %}
                 <form method="post" action="{{ url({ tag: 'admin/sign-in/' ~ provider.id ~ '/toggle' }) }}" hx-boost="false" class="yw-inline-form">
