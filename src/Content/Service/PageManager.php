@@ -11,6 +11,7 @@ use YesWiki\Content\Exception\ReservedTagException;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Identity\Service\Guard;
+use YesWiki\Identity\Service\SignIn\AccountLinks;
 use YesWiki\Identity\Service\UserManager;
 use YesWiki\Kernel\Routing\ReservedTags;
 use YesWiki\Kernel\Service\CachesTheDatabase;
@@ -650,6 +651,7 @@ class PageManager implements CachesTheDatabase
                 }
 
                 $type ??= $parent ? PageType::COMMENT : PageType::DEFAULT;
+                $body = $this->guardedAccountLinks($tag, $body, $type);
             } else {
                 $owner = $oldPage['owner'];
 
@@ -658,6 +660,7 @@ class PageManager implements CachesTheDatabase
                 }
 
                 $type ??= (string)($oldPage['type'] ?? PageType::DEFAULT);
+                $body = $this->guardedAccountLinks($tag, $body, $type);
 
                 if (PageBody::equals($oldPage['body'], $body)) {
                     return 0;
@@ -706,6 +709,22 @@ class PageManager implements CachesTheDatabase
         }
 
         return 1;
+    }
+
+    /**
+     * A user page keeps the provider link it already has: no write but AccountLinks::link() may change it.
+     *
+     * @param array<array-key, mixed> $body
+     *
+     * @return array<array-key, mixed>
+     */
+    private function guardedAccountLinks(string $tag, array $body, ?string $type): array
+    {
+        if ($type !== PageType::USER) {
+            return $body;
+        }
+
+        return $this->container->get(AccountLinks::class)->guardBody($tag, $body);
     }
 
     /**

@@ -32,6 +32,8 @@ class ContentTypeSchema
 
             'password' => ['type' => 'mot_de_passe', 'label' => 'Mot de passe'],
             'email' => ['type' => 'champs_mail', 'label' => 'Adresse électronique'],
+            'first_name' => ['type' => 'texte', 'label' => 'Prénom'],
+            'last_name' => ['type' => 'texte', 'label' => 'Nom'],
             'profile_picture' => ['type' => 'image', 'label' => 'Photo de profil'],
         ],
         self::TYPE_FILE => [
