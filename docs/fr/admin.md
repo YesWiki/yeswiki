@@ -58,6 +58,20 @@ Astuces :
 - mettre à jour YesWiki mais aussi les thèmes et les tools (extensions)
 - n'hésitez pas à **mettre à jour les pages de gestion**
 
+Sur un wiki répliqué (`YESWIKI_REPLICATED=1`), le programme est construit dans
+une image et rien ne s'installe depuis cet écran. Il liste toujours ce qui est
+installé et ce qui est disponible, mais à la place des boutons il affiche :
+
+- pour installer ou mettre à jour une extension ou un thème, la commande à
+  lancer pendant la construction de l'image, par exemple
+  `./yeswicli upgrade lms`. La commande accepte plusieurs noms à la suite et
+  échoue si l'un d'eux n'a pas pu être installé ;
+- pour activer ou désactiver une extension, la ligne `ACTIVE_EXTENSIONS='[…]'`
+  à mettre dans les variables d'environnement de chaque réplique.
+
+La même commande refuse de tourner quand `YESWIKI_REPLICATED` est défini :
+l'image se construit sans cette variable.
+
 ### Sauvegardes
 
 Vous pourrez ici gérer les sauvegardes de votre wiki

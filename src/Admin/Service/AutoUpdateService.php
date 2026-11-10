@@ -11,6 +11,7 @@ use YesWiki\Files\Service\LocalFiles;
 use YesWiki\Kernel\Entity\Messages;
 use YesWiki\Kernel\Service\ConfigurationService;
 use YesWiki\Kernel\Service\Journal;
+use YesWiki\Kernel\Service\Replication;
 
 class AutoUpdateService
 {
@@ -42,6 +43,12 @@ class AutoUpdateService
         }
 
         return $this->isDesignatedUpdateInstance($instanceDir, $programDir);
+    }
+
+    /** Whether the program is built into an image, so nothing installs, updates or removes code or themes once it runs (replicas 05). */
+    public function isImmutable(): bool
+    {
+        return Replication::isOn();
     }
 
     /** Whether this Instance's `forbidden_extensions` keeps the extension $packageName off it. */
@@ -98,6 +105,11 @@ class AutoUpdateService
     public function delete(string $packageName): Messages
     {
         $messages = new Messages();
+        if ($this->isImmutable()) {
+            $messages->add('AU_PROGRAM_IMMUTABLE', 'AU_ERROR');
+
+            return $messages;
+        }
         $package = $this->repository->getPackage($packageName);
 
         if (!$package instanceof PackageExt) {
@@ -122,6 +134,11 @@ class AutoUpdateService
     public function upgrade(string $packageName): Messages
     {
         $messages = new Messages();
+        if ($this->isImmutable()) {
+            $messages->add('AU_PROGRAM_IMMUTABLE', 'AU_ERROR');
+
+            return $messages;
+        }
         $package = $this->repository->getPackage($packageName);
 
         if ($package instanceof PackageTool && $this->isForbiddenExtension($packageName)) {

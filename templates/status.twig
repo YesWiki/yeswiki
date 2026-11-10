@@ -1,3 +1,10 @@
+{% if immutable|default(false) %}
+	<div class="yw-alert yw-alert--info">
+		<p>{{ _t('AU_PROGRAM_IMMUTABLE') }}</p>
+		<p>{{ _t('AU_PROGRAM_IMMUTABLE_HOW') }}</p>
+	</div>
+{% endif %}
+
 {% include '@core/core.twig' %}
 
 {% set sections = [

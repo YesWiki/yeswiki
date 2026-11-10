@@ -93,8 +93,10 @@ class UpdateAction extends YesWikiAction implements RegisteredAction
                 fn ($tool): bool => $tool->installed || !in_array($tool->name, $vForbidden, true)
             ));
 
-            $vCanTriggerCoreUpdate = $vIsAdmin && !$vIsReadOnly && $vIsDesignatedUpdateInstance;
-            $vCanTriggerExtensionUpdate = $vIsAdmin && !$vIsReadOnly;
+            $vImmutable = $vUpdateService->isImmutable();
+            $vCanTriggerCoreUpdate = $vIsAdmin && !$vIsReadOnly && $vIsDesignatedUpdateInstance && !$vImmutable;
+            $vCanTriggerExtensionUpdate = $vIsAdmin && !$vIsReadOnly && !$vImmutable;
+            $vActive = $this->getService(ExtensionActivation::class)->active();
 
             return $this->render('@core/status.twig', [
                 'isAdmin' => $vIsAdmin,
@@ -108,7 +110,9 @@ class UpdateAction extends YesWikiAction implements RegisteredAction
                 'core' => $vUpdateService->repository->getCorePackage(),
                 'themes' => $vUpdateService->repository->getThemesPackages(),
                 'tools' => $vTools,
-                'activeExtensions' => $this->getService(ExtensionActivation::class)->active(),
+                'activeExtensions' => $vActive,
+                'immutable' => $vImmutable,
+                'activationLines' => $vImmutable ? $this->activationLines($vTools, $vActive) : [],
                 'forbiddenExtensions' => $vForbidden,
                 'phpVersion' => PHP_VERSION,
             ]);
@@ -120,6 +124,15 @@ class UpdateAction extends YesWikiAction implements RegisteredAction
         $vPackageName = $vSecurityController->filterInput(INPUT_GET, 'package', FILTER_DEFAULT, true);
 
         $vMessages = new Messages();
+
+        if (in_array($vAction, self::CONFIRMED_ACTIONS, true) && $vUpdateService->isImmutable()) {
+            $vMessages->add('AU_PROGRAM_IMMUTABLE', 'AU_ERROR');
+
+            return $this->getService(TemplateEngine::class)->renderSafely('@core/update-result.twig', [
+                'messages' => $vMessages->toArray(),
+                'action' => $vAction,
+            ]);
+        }
 
         if (in_array($vAction, ['upgrade', 'delete'], true) && !$vUpdateService->mayUpgrade((string)$vPackageName)) {
             $vMessages->add('AU_NOT_DESIGNATED_UPDATE_INSTANCE', 'AU_ERROR');
@@ -223,6 +236,30 @@ class UpdateAction extends YesWikiAction implements RegisteredAction
             'messages' => $vMessages->toArray(),
             'action' => $vAction,
         ]);
+    }
+
+    /**
+     * For each installed extension, the `ACTIVE_EXTENSIONS` line that switches it the other way, for an operator to set on every replica.
+     *
+     * @param list<mixed> $tools
+     * @param list<string> $active
+     *
+     * @return array<string, string>
+     */
+    private function activationLines(array $tools, array $active): array
+    {
+        $lines = [];
+        foreach ($tools as $tool) {
+            if (!$tool instanceof PackageTool || !$tool->installed) {
+                continue;
+            }
+            $switched = in_array($tool->name, $active, true)
+                ? array_values(array_diff($active, [$tool->name]))
+                : [...$active, $tool->name];
+            $lines[$tool->name] = "ACTIVE_EXTENSIONS='" . json_encode($switched, JSON_UNESCAPED_SLASHES) . "'";
+        }
+
+        return $lines;
     }
 
     private function isExtension(AutoUpdateService $updateService, string $packageName): bool

@@ -34,7 +34,11 @@
                 {{ ext.release }}
             </td>
             <td>
-                {% if isAdmin and ext.updateAvailable and ext.installed and not isForbidden %}
+                {% if isAdmin and immutable|default(false) %}
+                    {% if not isForbidden and (ext.updateAvailable or not ext.installed) %}
+                        <code>./yeswicli upgrade {{ ext.name }}</code>
+                    {% endif %}
+                {% elseif isAdmin and ext.updateAvailable and ext.installed and not isForbidden %}
                     {% if canTriggerExtensionUpdate %}
                         {% include '@core/update-action-button.twig' with {
                             params: {action: 'upgrade', package: ext.updateLink},
@@ -55,6 +59,11 @@
 
             </td>
             <td>
+                {% if isAdmin and immutable|default(false) %}
+                    {% if ext.installed %}
+                        <small>{{ _t('AU_PROGRAM_IMMUTABLE_REMOVE') }}</small>
+                    {% endif %}
+                {% else %}
                 {% if isAdmin and not ext.installed and not isForbidden %}
                     {% if canTriggerExtensionUpdate %}
                         {% include '@core/update-action-button.twig' with {
@@ -93,12 +102,16 @@
                         </button>
                     {% endif %}
                 {% endif %}
+                {% endif %}
             </td>
             {% if showSwitch|default(false) %}
                 <td>
                     {% set on = ext.name in activeExtensions %}
                     {% if isAdmin and ext.installed and isForbidden and not on %}
                         <small>{{ _t('AU_EXTENSION_FORBIDDEN', {name: ext.name}) }}</small>
+                    {% elseif isAdmin and ext.installed and immutable|default(false) %}
+                        {% if on %}<span class="badge">{{ _t('AU_ACTIVE') }}</span><br>{% endif %}
+                        <code>{{ activationLines[ext.name] ?? '' }}</code>
                     {% elseif isAdmin and ext.installed %}
                         {% include '@core/update-action-button.twig' with {
                             params: {action: on ? 'deactivate' : 'activate', package: ext.name},
