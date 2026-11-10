@@ -5,6 +5,9 @@ namespace YesWiki\Test\Identity\SignIn;
 use YesWiki\Identity\Service\SignIn\AccountLinks;
 use YesWiki\Identity\Service\SignIn\ProviderRegistry;
 use YesWiki\Identity\Service\SignIn\SignInHealthChecks;
+use YesWiki\Identity\Service\SignIn\Type\CasType;
+use YesWiki\Identity\Service\SignIn\Type\OidcType;
+use YesWiki\Identity\Service\SignIn\Type\SamlType;
 use YesWiki\Identity\SignIn\Contract\IdentityProvider;
 use YesWiki\Identity\SignIn\Contract\ProviderConfig;
 use YesWiki\Identity\SignIn\Contract\ProviderType;
@@ -147,6 +150,53 @@ class SignInHealthChecksTest extends YesWikiTestCase
         $this->assertNull($this->check('sign-in-ldap-module', $section, [], true)->failure());
         $disabled = ['local' => ['type' => 'local'], 'dir' => ['type' => 'ldap', 'enabled' => false]];
         $this->assertNull($this->check('sign-in-ldap-module', $disabled, [], false)->failure());
+    }
+
+    /** @return list<ProviderType> the redirect types core ships, with the connection settings they really declare */
+    private function coreTypes(): array
+    {
+        $services = self::getWiki()->services;
+
+        return [$this->type('local'), $services->get(OidcType::class), $services->get(SamlType::class), $services->get(CasType::class), $this->type('ldap')];
+    }
+
+    public function testAProviderReachedOverPlainHttpIsAWarning(): void
+    {
+        $section = [
+            'local' => ['type' => 'local'],
+            'corp-oidc' => ['type' => 'oidc', 'connection' => ['authorize_url' => 'https://idp.example/authorize', 'token_url' => 'http://idp.example/token', 'userinfo_url' => 'http://idp.example/userinfo', 'client_id' => 'wiki', 'scopes' => 'http://not-a-url-setting']],
+            'corp-saml' => ['type' => 'saml', 'connection' => ['metadata_url' => 'http://idp.example/saml/metadata']],
+            'corp-cas' => ['type' => 'cas', 'connection' => ['server_url' => ' HTTP://cas.example/cas']],
+            'safe-cas' => ['type' => 'cas', 'connection' => ['server_url' => 'https://cas.example/cas']],
+            'off-saml' => ['type' => 'saml', 'enabled' => false, 'connection' => ['idp_sso_url' => 'http://idp.example/sso']],
+            'dir' => ['type' => 'ldap', 'connection' => ['uri' => 'ldap://directory.example']],
+        ];
+
+        $check = $this->check('sign-in-plain-http', $section, [], true, $this->coreTypes());
+        $failure = (string)$check->failure();
+
+        $this->assertSame(Severity::Degraded, $check->severity(), 'a warning: development servers run on http');
+        $this->assertSame('admin/sign-in', $check->route());
+        $this->assertStringContainsString('corp-oidc (token_url, userinfo_url)', $failure);
+        $this->assertStringContainsString('corp-saml (metadata_url)', $failure);
+        $this->assertStringContainsString('corp-cas (server_url)', $failure);
+        $this->assertStringNotContainsString('authorize_url', $failure, 'an https address of an http provider is not named');
+        $this->assertStringNotContainsString('scopes', $failure, 'only the settings that are addresses');
+        $this->assertStringNotContainsString('safe-cas', $failure);
+        $this->assertStringNotContainsString('off-saml', $failure, 'a switched-off provider signs nobody in');
+        $this->assertStringNotContainsString('dir', $failure, 'ldap:// is not http, and has its own warning');
+    }
+
+    public function testProvidersReachedOverHttpsReportNothing(): void
+    {
+        $section = [
+            'local' => ['type' => 'local'],
+            'corp-oidc' => ['type' => 'oidc', 'connection' => ['discovery_url' => 'https://idp.example/.well-known/openid-configuration']],
+            'corp-saml' => ['type' => 'saml', 'connection' => ['metadata_xml' => '<xml/>', 'idp_sso_url' => 'https://idp.example/sso']],
+            'corp-cas' => ['type' => 'cas', 'connection' => ['server_url' => 'https://cas.example/cas']],
+        ];
+
+        $this->assertNull($this->check('sign-in-plain-http', $section, [], true, $this->coreTypes())->failure());
     }
 
     public function testAHealthyWikiReportsNothing(): void

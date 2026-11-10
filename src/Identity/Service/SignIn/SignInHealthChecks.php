@@ -71,7 +71,49 @@ class SignInHealthChecks implements ProvidesHealthChecks
 
                     return $ids === [] ? null : _t('HEALTH_SIGN_IN_LDAP_MISSING', ['providers' => implode(', ', $ids)]);
                 }),
+
+            // Accepted, since development and test servers run on http, but never silently: what crosses it can be read and changed on the way.
+            HealthCheck::named('sign-in-plain-http')
+                ->label(_t('HEALTH_SIGN_IN_PLAIN_HTTP'))
+                ->says(_t('HEALTH_SIGN_IN_PLAIN_HTTP_SAYS'))
+                ->linkedTo(self::ROUTE)
+                ->degraded()
+                ->runs(function (): ?string {
+                    $found = $this->plainHttp();
+
+                    return $found === [] ? null : _t('HEALTH_SIGN_IN_PLAIN_HTTP_FOUND', ['providers' => implode(', ', $found)]);
+                }),
         ];
+    }
+
+    /**
+     * Every enabled provider with an address setting of its type written in http://, as "id (setting, setting)".
+     * Read from each type's own settings, so an extension's type is covered as the core's are.
+     *
+     * @return list<string>
+     */
+    private function plainHttp(): array
+    {
+        $types = $this->registry->types();
+        $found = [];
+        foreach ($this->registry->configs() as $config) {
+            $type = $types[$config->type] ?? null;
+            if (!$config->enabled || $type === null) {
+                continue;
+            }
+            $names = [];
+            foreach ($type->connectionSettings() as $setting) {
+                $value = $config->connection($setting->name());
+                if ($setting->type() === 'url' && is_string($value) && str_starts_with(strtolower(trim($value)), 'http://')) {
+                    $names[] = $setting->name();
+                }
+            }
+            if ($names !== []) {
+                $found[] = sprintf('%s (%s)', $config->id, implode(', ', $names));
+            }
+        }
+
+        return $found;
     }
 
     /** A seam: the tests cannot unload the extension. */
