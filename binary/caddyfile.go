@@ -237,6 +237,12 @@ func site(address, instance, frontController string) string {
 	@static path *.js *.css *.png *.jpg *.jpeg *.gif *.ico *.woff *.woff2 *.svg
 	header @static Cache-Control "public, max-age=15778463"
 
+	@probes path /healthz /readyz
+	handle @probes {
+		rewrite * /%[3]s
+		php_server
+	}
+
 	@upgrading file %[4]s
 	handle @upgrading {
 		respond "This wiki is being upgraded, and will be back shortly." 503

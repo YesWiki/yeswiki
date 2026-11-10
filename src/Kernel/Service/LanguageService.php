@@ -318,7 +318,7 @@ namespace YesWiki\Kernel\Service {
                 'samesite' => 'Lax',
 
                 'httponly' => true,
-                'secure' => !empty($_SERVER['HTTPS']),
+                'secure' => \Symfony\Component\HttpFoundation\Request::createFromGlobals()->isSecure(),
             ]);
         }
 

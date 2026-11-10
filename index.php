@@ -15,6 +15,7 @@
 
 use YesWiki\Core\YesWikiLoader;
 use YesWiki\Kernel\Service\AssetPublisher;
+use YesWiki\Kernel\Service\Probes;
 use YesWiki\Kernel\Service\Queue\QueueRequestTrigger;
 
 // source/instance dirs separation + instance data folders provisioning
@@ -24,6 +25,19 @@ require_once __DIR__ . '/src/bootstrap_paths.php';
 // source asset absent from a farm instance's docroot) are served without booting the wiki
 require_once __DIR__ . '/src/Kernel/Service/AssetPublisher.php';
 AssetPublisher::interceptAssetRequest();
+
+require_once __DIR__ . '/src/Kernel/Service/Probes.php';
+$probe = Probes::asked();
+if ($probe === Probes::LIVENESS) {
+    Probes::live();
+
+    return;
+}
+if ($probe === Probes::READINESS) {
+    Probes::ready();
+
+    return;
+}
 
 require_once __DIR__ . '/src/YesWikiLoader.php';
 $wiki = YesWikiLoader::getWiki();

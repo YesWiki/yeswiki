@@ -1364,3 +1364,41 @@ La commande est **relançable** : un objet déjà présent à la même taille es
 laissé tel quel. Les sauvegardes sont hors du lot par défaut, parce qu'elles
 sont en général le plus gros de ce qu'un wiki possède et le moins urgent à
 déplacer.
+
+## Derrière un proxy, et sur plusieurs serveurs
+
+### Le proxy qui termine le HTTPS
+
+Quand un proxy (un ingress Kubernetes, Traefik, un répartiteur de charge)
+reçoit le HTTPS et transmet la requête en HTTP, le wiki ne voit que le proxy.
+Pour qu'il construise des adresses en `https://` et note l'adresse du vrai
+visiteur dans le Journal, dites-lui quel proxy croire :
+
+```ini
+TRUSTED_PROXIES=10.0.0.0/8,192.168.0.0/16   # ou REMOTE_ADDR : celui qui se connecte, ce qui convient dans un cluster
+TRUSTED_HEADERS=X-Forwarded-For,X-Forwarded-Proto,X-Forwarded-Host,X-Forwarded-Port   # la valeur par défaut
+```
+
+Les mêmes réglages existent dans `yeswiki.config.php` (`trusted_proxies`,
+`trusted_headers`). Sans eux, les en-têtes `X-Forwarded-*` sont ignorés : un
+visiteur ne peut pas se faire passer pour une autre adresse.
+
+### Plusieurs serveurs pour un même wiki
+
+`YESWIKI_REPLICATED=1` dit au wiki qu'il tourne sur plusieurs serveurs à la
+fois. Il refuse alors de démarrer sans `base_url`, plutôt que de déduire son
+adresse de la première requête reçue, et il refuse SQLite, qui est un fichier
+sur une seule machine.
+
+### Les sondes
+
+Deux adresses répondent sans session, sans passe de la file de fond et sans
+rien écrire au Journal :
+
+- `/healthz` répond `ok` tant que PHP répond, même base arrêtée. C'est la
+  sonde de vie : une bascule de base de données ne doit redémarrer aucun
+  serveur.
+- `/readyz` vérifie la base et le stockage, et répond `200` ou `503` avec le
+  détail en JSON (`{"ready":false,"checks":{"database":"failed",...}}`). La
+  raison exacte d'un échec va dans le journal d'erreurs du serveur, pas dans
+  la réponse.

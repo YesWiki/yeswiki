@@ -42,6 +42,8 @@ class EnvironmentConfiguration
         'contact_dkim_selector',
         'contact_dkim_private_key',
         'contact_debug',
+        'trusted_proxies',
+        'trusted_headers',
     ];
 
     public const ENV_ALIASES = [
@@ -70,6 +72,7 @@ class EnvironmentConfiguration
         'YESWIKI_S3_TIERS',
         'YESWIKI_SIGNING_KEY',
         'YESWIKI_BOT_GUARD_KEY',
+        'YESWIKI_REPLICATED',
     ];
 
     /**

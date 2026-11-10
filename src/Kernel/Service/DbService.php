@@ -46,7 +46,8 @@ class DbService
 
     private bool $connected = false;
 
-    public function __construct(ParameterBagInterface $params)
+    /** @param bool $connectNow false for a caller that asks ping() rather than be stopped when the server is down */
+    public function __construct(ParameterBagInterface $params, bool $connectNow = true)
     {
         $this->params = $params;
         $this->queryLog = [];
@@ -54,7 +55,24 @@ class DbService
         $this->driver = (is_string($driver) && $driver !== '') ? $driver : 'mysql';
         $this->dialect = SqlDialectFactory::forDriver($this->driver);
 
-        $this->initSqlConnection();
+        if ($connectNow) {
+            $this->initSqlConnection();
+        }
+    }
+
+    /** What the server said when it does not answer a `SELECT 1`, null when it does; it never stops the process, unlike a failed boot. */
+    public function ping(): ?string
+    {
+        try {
+            if (!$this->connected) {
+                $this->connect();
+            }
+            $this->run('SELECT 1', []);
+
+            return null;
+        } catch (\Throwable $unreachable) {
+            return $unreachable->getMessage();
+        }
     }
 
     protected function initSqlConnection(): void

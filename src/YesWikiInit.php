@@ -10,6 +10,8 @@ use YesWiki\Kernel\Service\ConfigurationFileProvider;
 use YesWiki\Kernel\Service\EnvironmentConfiguration;
 use YesWiki\Kernel\Service\HtmlPurifierService;
 use YesWiki\Kernel\Service\ProgramVersion;
+use YesWiki\Kernel\Service\Replication;
+use YesWiki\Kernel\Service\TrustedProxies;
 use YesWiki\Kernel\Service\WikiUrls;
 
 /** Yeswiki initialization class. */
@@ -174,7 +176,7 @@ class YesWikiInit
             'db_user' => '',
             'db_password' => '',
             'table_prefix' => 'yeswiki_',
-            'base_url' => WikiUrls::baseUrl($_rewrite_mode),
+            'base_url' => null,
             'rewrite_mode' => $_rewrite_mode,
             'meta_keywords' => '',
             'meta_description' => '',
@@ -471,7 +473,6 @@ class YesWikiInit
             'baz_marker_image_file' => 'src/assets/images/bazar/marker.png',
             'temp_tag_for_entry_creation' => 'unknown_entry_id',
         ];
-        unset($_rewrite_mode);
 
         if (file_exists($this->configFile)) {
             $this->configHash = (string)@md5_file($this->configFile);
@@ -510,6 +511,18 @@ class YesWikiInit
         $yeswikiConfig['debug'] = filter_var($yeswikiConfig['debug'], FILTER_VALIDATE_BOOLEAN);
 
         $yeswikiConfig = EnvironmentConfiguration::apply($yeswikiConfig);
+
+        TrustedProxies::apply($yeswikiConfig);
+        if (empty($yeswikiConfig['base_url'])) {
+            if (Replication::isOn()) {
+                throw new \RuntimeException('YESWIKI_REPLICATED is set and base_url is not: a replica must not learn its address from whoever reaches it first. State base_url.');
+            }
+            $yeswikiConfig['base_url'] = WikiUrls::baseUrl($_rewrite_mode);
+        }
+        unset($_rewrite_mode);
+        if (Replication::isOn() && ($yeswikiConfig['db_driver'] ?? '') === 'sqlite') {
+            throw new \RuntimeException('YESWIKI_REPLICATED is set and the database is SQLite, a file on one machine: replicas need MySQL, MariaDB or PostgreSQL.');
+        }
 
         $yeswikiConfig['yeswiki_release'] = (new ProgramVersion())->release((string)$yeswikiConfig['yeswiki_release']);
 

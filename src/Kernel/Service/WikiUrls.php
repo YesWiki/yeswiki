@@ -2,18 +2,15 @@
 
 namespace YesWiki\Kernel\Service;
 
+use Symfony\Component\HttpFoundation\Request;
+
 /** Where this wiki is, and where this request is, derived from the web server's own variables. */
 class WikiUrls
 {
-    /** Scheme and host, with no path: `https://example.org`. */
+    /** Scheme and host, with no path: `https://example.org`, as a trusted proxy says it when there is one (TrustedProxies). */
     public static function rootUrl(): string
     {
-        $protocol = 'http://';
-        if (!empty($_SERVER['HTTPS'])) {
-            $protocol = 'https://';
-        }
-
-        return $protocol . $_SERVER['HTTP_HOST'];
+        return Request::createFromGlobals()->getSchemeAndHttpHost();
     }
 
     /** Whether a base url serves the wiki from the root of its domain, the only place ActivityPub actors and WebFinger can live. */

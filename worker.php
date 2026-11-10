@@ -6,10 +6,12 @@
 
 use YesWiki\Core\YesWikiLoader;
 use YesWiki\Kernel\Service\AssetPublisher;
+use YesWiki\Kernel\Service\Probes;
 use YesWiki\Kernel\Service\Queue\QueueRequestTrigger;
 
 require_once __DIR__ . '/src/bootstrap_paths.php';
 require_once __DIR__ . '/src/Kernel/Service/AssetPublisher.php';
+require_once __DIR__ . '/src/Kernel/Service/Probes.php';
 require_once __DIR__ . '/src/YesWikiLoader.php';
 
 if (!function_exists('frankenphp_handle_request')) {
@@ -25,7 +27,8 @@ $requestsBeforeRestart = (int)(getenv('YESWIKI_WORKER_REQUESTS') ?: 500);
 $served = 0;
 $timeLimit = (int)ini_get('max_execution_time');
 
-$handler = static function () use ($wiki, $timeLimit): void {
+$probed = null;
+$handler = static function () use ($wiki, $timeLimit, &$probed): void {
     foreach (['SCRIPT_NAME', 'SCRIPT_FILENAME', 'PHP_SELF'] as $describesTheScript) {
         if (isset($_SERVER[$describesTheScript]) && is_string($_SERVER[$describesTheScript])) {
             $_SERVER[$describesTheScript] = str_replace('worker.php', 'index.php', $_SERVER[$describesTheScript]);
@@ -33,6 +36,18 @@ $handler = static function () use ($wiki, $timeLimit): void {
     }
 
     AssetPublisher::interceptAssetRequest();
+
+    $probed = Probes::asked();
+    if ($probed === Probes::LIVENESS) {
+        Probes::live();
+
+        return;
+    }
+    if ($probed === Probes::READINESS) {
+        Probes::ready();
+
+        return;
+    }
 
     try {
         $wiki->run();
@@ -52,8 +67,11 @@ while ($served < $requestsBeforeRestart) {
         break;
     }
 
+    $probed = null;
     $keepServing = frankenphp_handle_request($handler);
-    $queueTrigger->afterResponse();
+    if ($probed === null) {
+        $queueTrigger->afterResponse();
+    }
     // the queue ran on this request's time limit, and raised it: the next request gets its own
     if (function_exists('set_time_limit')) {
         @set_time_limit($timeLimit);

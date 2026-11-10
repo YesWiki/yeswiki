@@ -195,9 +195,9 @@ class RepeatedRequestTest extends YesWikiTestCase
 
         $this->assertMatchesRegularExpression('/servedByWorker\(\);.*while \(/s', $worker, 'the trigger is told it runs under a worker before the loop');
         $this->assertMatchesRegularExpression(
-            '/frankenphp_handle_request\(\$handler\);\s*\$queueTrigger->afterResponse\(\);.*?set_time_limit\(\$timeLimit\)/s',
+            '/frankenphp_handle_request\(\$handler\);\s*if \(\$probed === null\) \{\s*\$queueTrigger->afterResponse\(\);.*?set_time_limit\(\$timeLimit\)/s',
             $worker,
-            'the queue runs after the response, then the time limit is set back before the next request'
+            'the queue runs after the response unless it answered a probe, then the time limit is set back before the next request'
         );
     }
 

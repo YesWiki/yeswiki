@@ -261,3 +261,16 @@ func TestOnlyTheFrontControllersRunAsPhp(t *testing.T) {
 		}
 	}
 }
+
+func TestProbesAnswerEvenWhileTheWikiIsBeingUpgraded(t *testing.T) {
+	file := Caddyfile("/wikis/mine", Listen{}, Workers{}, "")
+
+	probes := strings.Index(file, "handle @probes")
+	upgrading := strings.Index(file, "handle @upgrading")
+	if probes < 0 || upgrading < 0 || probes > upgrading {
+		t.Fatalf("a kubelet asks /healthz during an upgrade too, and a 503 there restarts the pod:\n%s", file)
+	}
+	if !strings.Contains(file, "@probes path /healthz /readyz") {
+		t.Errorf("both probes are matched:\n%s", file)
+	}
+}
