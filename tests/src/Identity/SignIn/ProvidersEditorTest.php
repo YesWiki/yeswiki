@@ -153,6 +153,27 @@ class ProvidersEditorTest extends YesWikiTestCase
         $this->assertSame(['department' => 'service'], $saved['extra_fields']);
     }
 
+    public function testRemovingEveryRowOfATableEmptiesIt(): void
+    {
+        $acme = $this->oidc(['group_mapping' => [['provider' => 'a', 'wiki' => 'B']], 'extra_fields' => ['department' => 'service']]);
+        $this->seed(['local' => ['type' => 'local'], 'acme' => $acme]);
+
+        $this->assertSame([], $this->editor->update('acme', ['label' => 'Acme']), 'no flag: the tables are left as they are');
+        $this->assertSame([['provider' => 'a', 'wiki' => 'B']], $this->written()['acme']['group_mapping']);
+        $this->assertSame(['department' => 'service'], $this->written()['acme']['extra_fields']);
+
+        $this->assertSame([], $this->editor->update('acme', ['group_mapping_present' => '1', 'extra_fields_present' => '1']));
+        $this->assertSame([], $this->written()['acme']['group_mapping']);
+        $this->assertSame([], $this->written()['acme']['extra_fields']);
+    }
+
+    public function testTheEditFormPostsAPresenceFlagForEachTable(): void
+    {
+        $this->seed(['local' => ['type' => 'local'], 'acme' => $this->oidc()]);
+        $html = (string)$this->getWiki()->services->get(AdminSignInController::class)->edit('acme')->getContent();
+        $this->assertStringContainsString('name="group_mapping_present"', $html);
+        $this->assertStringContainsString('name="extra_fields_present"', $html);
+    }
     public function testTheTypeCannotChange(): void
     {
         $this->seed(['local' => ['type' => 'local'], 'acme' => $this->oidc()]);

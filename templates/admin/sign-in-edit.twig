@@ -75,6 +75,7 @@
     <section class="yw-dashboard__card" data-yw-sign-in-rows>
       <h2>{{ _t('SIGN_IN_ADMIN_GROUP_MAPPING') }}</h2>
       <p class="yw-layout__hint">{{ _t('SIGN_IN_ADMIN_GROUP_MAPPING_HINT') }}</p>
+      <input type="hidden" name="group_mapping_present" value="1">
       <table class="yw-table">
         <thead><tr><th>{{ _t('SIGN_IN_ADMIN_GROUP_PROVIDER') }}</th><th>{{ _t('SIGN_IN_ADMIN_GROUP_WIKI') }}</th><th></th></tr></thead>
         <tbody data-yw-sign-in-rows-body>
@@ -100,6 +101,7 @@
     <section class="yw-dashboard__card" data-yw-sign-in-rows>
       <h2>{{ _t('SIGN_IN_ADMIN_EXTRA_FIELDS') }}</h2>
       <p class="yw-layout__hint">{{ _t('SIGN_IN_ADMIN_EXTRA_FIELDS_HINT') }}</p>
+      <input type="hidden" name="extra_fields_present" value="1">
       {% set fieldOptions %}
         {% for field in userFields %}<option value="{{ field.name }}">{{ field.label }}</option>{% endfor %}
       {% endset %}

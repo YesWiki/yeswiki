@@ -228,9 +228,10 @@ class ProvidersEditor
             }
         }
 
-        if (is_array($posted['group_mapping'] ?? null)) {
+        // a table emptied in the browser posts no row at all: its presence flag says the table was there.
+        if (is_array($posted['group_mapping'] ?? null) || array_key_exists('group_mapping_present', $posted)) {
             $rows = [];
-            foreach ($posted['group_mapping'] as $row) {
+            foreach (is_array($posted['group_mapping'] ?? null) ? $posted['group_mapping'] : [] as $row) {
                 $provider = is_array($row) ? trim((string)($row['provider'] ?? '')) : '';
                 $wiki = is_array($row) ? trim((string)($row['wiki'] ?? '')) : '';
                 if ($provider !== '' && $wiki !== '') {
@@ -240,9 +241,9 @@ class ProvidersEditor
             $entry['group_mapping'] = $rows;
         }
 
-        if (is_array($posted['extra_fields'] ?? null)) {
+        if (is_array($posted['extra_fields'] ?? null) || array_key_exists('extra_fields_present', $posted)) {
             $extra = [];
-            foreach ($posted['extra_fields'] as $row) {
+            foreach (is_array($posted['extra_fields'] ?? null) ? $posted['extra_fields'] : [] as $row) {
                 $field = is_array($row) ? trim((string)($row['field'] ?? '')) : '';
                 $attribute = is_array($row) ? trim((string)($row['attribute'] ?? '')) : '';
                 if ($field !== '' && $attribute !== '') {
