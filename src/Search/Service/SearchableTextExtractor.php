@@ -43,8 +43,11 @@ class SearchableTextExtractor
             return [];
         }
 
-        $body = is_array($row['body'] ?? null) ? $row['body'] : PageBody::decode($row['body'] ?? null);
         $contentType = (string)($row['type'] ?? PageType::DEFAULT);
+        if ($contentType === PageType::TEMPLATE) {
+            return [];
+        }
+        $body = is_array($row['body'] ?? null) ? $row['body'] : PageBody::decode($row['body'] ?? null);
         $source = Translations::strip($body);
 
         $contents = [$this->content($row, $tag, $contentType, $source, $this->titleOf($contentType, $source, $tag), $this->keywordsOf($contentType, $source), '')];

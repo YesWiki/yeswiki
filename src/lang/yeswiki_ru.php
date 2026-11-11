@@ -2743,7 +2743,7 @@ Url: {{ baseUrl }}
     'AB_bazarliste_popupselectedfields_label' => 'Поля, которые оставить во всплывающем окне',
     'AB_bazarliste_popupneededfields_label' => 'Поля, которые добавить во всплывающее окно',
     'AB_bazarcarto_popupcustomtemplate_label' => 'Свой шаблон для маленького всплывающего окна',
-    'AB_bazarcarto_popupcustomtemplate_hint' => 'напр. \'custom_map_popup.twig\', положить в \'custom/templates/bazar/entries/index-dynamic-templates/\'',
+    'AB_bazarcarto_popupcustomtemplate_hint' => 'напр. \'custom_map_popup.twig\', положить в \'custom/templates/core/entries/index-dynamic-templates/\'',
     'AB_bazarcarto_displayfields_markhover_label' => 'Поле, показываемое при наведении на маркер',
     'AB_bazarcarto_smallmarker_label' => 'Маленькие маркеры',
     'AB_bazarcarto_zoommolette_label' => 'Разрешить масштабирование колесом мыши',

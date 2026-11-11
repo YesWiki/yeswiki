@@ -25,6 +25,8 @@ final class PageType
     public const MENU = 'menu';
     /** A comment: a page row whose `parent` names what it comments on. */
     public const COMMENT = 'comment';
+    /** A template override edited from the screens, `{"path": ..., "twig": ...}`, read before the files on disk (ticket 18). */
+    public const TEMPLATE = 'template';
 
     /** The column's default, and what `save()` writes when a caller names no type. */
     public const DEFAULT = self::PAGE;
@@ -48,7 +50,7 @@ final class PageType
      */
     public static function all(): array
     {
-        return [self::PAGE, self::ENTRY, self::USER, self::FILE, self::FORM, self::LIST, self::MENU, self::COMMENT];
+        return [self::PAGE, self::ENTRY, self::USER, self::FILE, self::FORM, self::LIST, self::MENU, self::COMMENT, self::TEMPLATE];
     }
 
     public static function isKnown(?string $type): bool

@@ -96,7 +96,7 @@ class ReactionsFormatter extends YesWikiController
         if (preg_match('/\\.(gif|jpeg|png|jpg|svg|webp)$/i', $raw)) {
             foreach (['custom/images', 'files'] as $dir) {
                 if ($this->storage->exists("$dir/$raw")) {
-                    return "$baseUrl/$dir/$raw";
+                    return $this->storage->url("$dir/$raw");
                 }
             }
 

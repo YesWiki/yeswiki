@@ -23,7 +23,9 @@ use YesWiki\Kernel\Service\Lock\FileLocks;
 use YesWiki\Kernel\Service\Lock\Locks;
 use YesWiki\Kernel\Service\Queue\QueueRecorder;
 use YesWiki\Kernel\Service\Queue\QueueStatistics;
+use YesWiki\Kernel\Service\Replication;
 use YesWiki\Kernel\Service\UrlFormatter;
+use YesWiki\Render\Service\TemplateImporter;
 
 class ArchiveService
 {
@@ -103,6 +105,7 @@ class ArchiveService
         private readonly QueueStatistics $queueStatistics,
         private readonly ArchiveRuns $runs,
         private readonly Locks $locks = new FileLocks(),
+        private readonly ?TemplateImporter $templates = null,
     ) {
         $this->storage = $storage;
         $this->urlFormatter = $urlFormatter;
@@ -642,6 +645,13 @@ class ArchiveService
                 if (!$onlyFiles) {
                     $removed = $this->removeFilesAbsentFromArchive($zip, YESWIKI_INSTANCE_DIR);
                     $this->writeOutput($output, "Removed $removed file(s) the backup does not hold", true, $run);
+                }
+                $folder = YESWIKI_INSTANCE_DIR . '/custom/templates';
+                if ($this->templates !== null && !Replication::isOn() && $this->localFiles->isDirectory($folder) && $this->localFiles->isWritable($folder)) {
+                    $imported = $this->templates->importFrom($folder);
+                    if ($imported[TemplateImporter::IMPORTED] !== []) {
+                        $this->writeOutput($output, count($imported[TemplateImporter::IMPORTED]) . ' template override(s) from the backup moved to the database', true, $run);
+                    }
                 }
             }
         } finally {

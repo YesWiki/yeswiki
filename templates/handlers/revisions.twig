@@ -5,15 +5,16 @@
 <div class="revisions-container" 
      data-revisions="{{ revisions|json_encode }}" 
      data-revisions-count="{{ revisionsCount }}"
-     data-is-entry="{{ isEntry }}">
+     data-is-entry="{{ isEntry }}"
+     data-is-template="{{ isTemplate ? '1' : '' }}">
   <template v-if="selectedRevision">
 
     <div class="revision-page-title">
-      <a class="btn btn-sm btn-default" href="{{ url({}) }}">
+      <a class="btn btn-sm btn-default" href="{{ isTemplate ? url({ tag: 'admin/custom-templates', params: {file: templatePath} }) : url({}) }}">
         <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#arrow-left"/></svg>{{  _t('GO_BACK') }}
       </a>
       <h1 class="text-center text-default">
-        {{ isEntry ? _t('TITLE_ENTRY_HISTORY') : _t('TITLE_PAGE_HISTORY') }}
+        {{ isTemplate ? _t('TITLE_TEMPLATE_HISTORY')|replace({'{path}': templatePath}) : (isEntry ? _t('TITLE_ENTRY_HISTORY') : _t('TITLE_PAGE_HISTORY')) }}
       </h1>
     </div>
 
@@ -48,7 +49,7 @@
             <span v-else>{{ _t('RESTORE_REVISION') }}</span>
           </button>
         </form>
-        <form v-if="!isLastRevision" method="post" action="{{ url({handler:'revisions'}) }}" style="display: inline">
+        <form v-if="!isLastRevision && !isTemplate" method="post" action="{{ url({handler:'revisions'}) }}" style="display: inline">
           <input type="hidden" name="csrf-token" value="{{ csrfToken({id:'main',refresh:false})|e('html_attr') }}">
           <input type="hidden" name="restoreRevisionId" :value="selectedRevision.id">
           <input type="hidden" name="fullRevert" value="1">
@@ -65,7 +66,7 @@
           v-show="type != 'diff' || !isLastRevision">
           <a v-text="label"></a>
       </li>
-      <label class="code-or-preview"> 
+      <label class="code-or-preview" v-if="!isTemplate">
         <input type="checkbox" v-model="displayWikiCode" />
         <span>{{ _t('DISPLAY_WIKI_CODE') }}</span>
       </span>

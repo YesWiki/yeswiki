@@ -72,6 +72,12 @@ class ShowHandler extends YesWikiHandler implements RegisteredHandler
             $this->getService(Redirector::class)->terminate((string)json_encode(['error' => 'Not found']));
         }
 
+        $tag = $this->getService(PageContext::class)->getTag();
+        if ($this->getService(PageManager::class)->typeOf($tag) === PageType::TEMPLATE && $this->getService(AclService::class)->hasAccess('read')) {
+            $path = (string)($this->getService(PageManager::class)->getOne($tag, null, false, true)['body']['path'] ?? '');
+            $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href('', 'admin/custom-templates', ['file' => $path], false));
+        }
+
         if ($entryManager->isEntry($this->getService(PageContext::class)->getTag()) && $this->getService(AclService::class)->hasAccess('read')) {
             if ($wantsActivity) {
                 $this->serveActivityObject($entryManager);

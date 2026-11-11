@@ -1129,7 +1129,7 @@ Zalantzarik izanez gero, ireki inprimaki hau orrialde propio batean esteka honet
     'AB_bazarliste_popupselectedfields_label' => 'Laster-leihoan gorde beharreko eremuak',
     'AB_bazarliste_popupneededfields_label' => 'Popupean gehitzeko eremuak',
     'AB_bazarcarto_popupcustomtemplate_label' => 'Popup txikiarentzako txantiloi pertsonalizatua',
-    'AB_bazarcarto_popupcustomtemplate_hint' => 'adib. \'custom_map_popup.twig\' jarri behar da \'custom/templates/bazar/entries/index-dynamic-templates/\'-en',
+    'AB_bazarcarto_popupcustomtemplate_hint' => 'adib. \'custom_map_popup.twig\' jarri behar da \'custom/templates/core/entries/index-dynamic-templates/\'-en',
     'AB_bazarcarto_displayfields_markhover_label' => 'Erakutsi beharreko eremua markatzailearen gainetik pasatzean',
     'AB_bazarcarto_smallmarker_label' => 'Markatzaile txikiak',
     'AB_bazarcarto_zoommolette_label' => 'Saguaren gurpilarekin zooma handitu ahal izatea',

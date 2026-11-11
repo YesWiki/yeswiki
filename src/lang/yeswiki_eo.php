@@ -2743,7 +2743,7 @@ Via konto %{userName} devas esti aktivigita klakante la suban ligilon aŭ kopian
     'AB_bazarliste_popupselectedfields_label' => 'Kampoj konservendaj en la ŝprucfenestro',
     'AB_bazarliste_popupneededfields_label' => 'Kampoj aldonendaj en la ŝprucfenestron',
     'AB_bazarcarto_popupcustomtemplate_label' => 'Propra ŝablono por la malgranda ŝprucfenestro',
-    'AB_bazarcarto_popupcustomtemplate_hint' => 'ekz. \'custom_map_popup.twig\' metenda en \'custom/templates/bazar/entries/index-dynamic-templates/\'',
+    'AB_bazarcarto_popupcustomtemplate_hint' => 'ekz. \'custom_map_popup.twig\' metenda en \'custom/templates/core/entries/index-dynamic-templates/\'',
     'AB_bazarcarto_displayfields_markhover_label' => 'Kampo montrenda ĉe la ŝvebo super la markilo',
     'AB_bazarcarto_smallmarker_label' => 'Malgrandaj markiloj',
     'AB_bazarcarto_zoommolette_label' => 'Povi zomi per la musrado',

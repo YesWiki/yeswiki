@@ -84,6 +84,7 @@ Follow <a href="{helpBaseUrl}?#/docs/en/admin?id=fixing-backup-problems" title="
     'REVISIONS_COMMIT_DIFF' => 'Changes done by this revision',
     'REVISIONS_DIFF' => 'Comparison to the current revision',
     'REVISIONS_PREVIEW' => 'Preview of this revision',
+    'REVISIONS_CODE' => 'Code of this revision',
     'FAVORITES_ADD' => 'Add to favorites',
     'FAVORITES_ALL_DELETED' => 'Favorites deleted',
     'FAVORITES_ERROR' => 'An error occurred : {error}',

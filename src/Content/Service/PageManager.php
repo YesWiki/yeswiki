@@ -596,25 +596,16 @@ class PageManager implements CachesTheDatabase
     }
 
     /**
-     * SavePage Sauvegarde un contenu dans une page donnee.
+     * Saves a revision; a new row takes $acls, its own read, write and comment lists, instead of the defaults.
      *
-     * @param string                  $tag         Nom de la page
-     * @param array<array-key, mixed> $body        decoded body -- one shape for every Content type
-     *                                             (ticket 09). Wiki markup goes under `content`.
-     * @param string                  $parent      the page this one comments on, if any
-     * @param bool                    $bypass_acls Indication si on bypasse les droits d'ecriture
-     * @param string|null             $forcedDate  if null use current date for page creation time,
-     *                                             otherwise use this value
-     * @param string|null             $type        the row's PageType (ticket 27). Null means
-     *                                             "whatever it already is" -- so an ordinary edit
-     *                                             cannot silently retype a Content, and only the
-     *                                             manager that creates a kind of row names it.
-     *                                             A brand-new row with no type named is a page,
-     *                                             or a comment when it has a parent.
-     *
-     * @return int Code d'erreur : 0 (succes), 1 (l'utilisateur n'a pas les droits)
+     * @param string                     $tag
+     * @param array<array-key, mixed>    $body
+     * @param string                     $parent
+     * @param bool                       $bypass_acls
+     * @param string|null                $forcedDate
+     * @param array<string, string>|null $acls
      */
-    public function save($tag, array $body, $parent = '', $bypass_acls = false, $forcedDate = null, ?string $type = null): int
+    public function save($tag, array $body, $parent = '', $bypass_acls = false, $forcedDate = null, ?string $type = null, ?array $acls = null): int
     {
         if ($this->hibernationService->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
@@ -637,7 +628,7 @@ class PageManager implements CachesTheDatabase
                 $defaultRead = $this->aclService->load($tag, 'read', true)['list'] ?? '';
                 $defaultComment = $this->aclService->load($tag, 'comment', true)['list'] ?? '';
 
-                $initialMetadata = ['acls' => [
+                $initialMetadata = ['acls' => $acls ?? [
                     'write' => $parent ? $user : $defaultWrite,
                     'read' => $defaultRead,
                     'comment' => $parent ? '' : $defaultComment,

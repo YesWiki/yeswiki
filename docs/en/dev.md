@@ -155,7 +155,7 @@ Tip: You can display the currently loaded data with `<pre v-html="entry"></pre>`
 Existing yeswiki templates contains block declaration so you can easily override specific parts, for example
 
 ```twig
-{# custom/templates/bazar/entries/index-dynamic-templates/my-template.twig #}
+{# custom/templates/core/entries/index-dynamic-templates/my-template.twig #}
 {% extends "@bazar/entries/index-dynamic-templates/card.twig" %}
 
 {% block area_footer %}
@@ -175,7 +175,7 @@ See the code of [existing templates](https://github.com/YesWiki/yeswiki/tree/dor
 You can also include dedicated Vue components, in order to introduce your own VueJs javascript code.
 
 ```twig
-{# custom/templates/bazar/entries/index-dynamic-templates/my-template.twig #}
+{# custom/templates/core/entries/index-dynamic-templates/my-template.twig #}
 {% extends "@bazar/entries/index-dynamic.twig" %}
 
 {% block assets %}
@@ -218,6 +218,17 @@ You can override any template used in yeswiki by mimicking the same folder struc
 | `templates/comment.twig`                      | `custom/templates/core/comment.twig`           |
 | `tools/login/templates/user-signup-form.twig` | `custom/templates/login/user-signup-form.twig` |
 | `templates/notify-email-text.twig`            | `custom/templates/core/notify-email-text.twig` |
+
+An override saved from **Administration > Templates** or the form's entry template editor goes to the wiki's database, as a `template` Content with its own history (`/<tag>/revisions`, the tag being the path without `.twig`, slashes turned into dots: `core.comment`). The wiki reads the database first, then `custom/templates/`, then its own templates. So a file you put in `custom/templates/` is the layer under what admins save. It is how an operator ships templates, in git or in an image built `FROM` the published one, and on replicas it is the only way, since the screens never write files there.
+
+Two commands move templates between the two:
+
+```bash
+./yeswicli templates:import [folder]   # .twig files become overrides; --dry-run, --force, --keep-files
+./yeswicli templates:export <folder>   # the database's overrides become .twig files
+```
+
+`templates:import` reads `custom/templates/` unless told otherwise, skips a path the database already holds unless `--force`, refuses a template that does not compile, and deletes the files it imported unless `--keep-files` or the folder is read-only. The upgrade to this version does the same, once, for a `custom/templates/` the wiki can write.
 
 **On the binary**, workers stay alive between requests and may not see a file you add by hand. After adding one, run this from the wiki's folder:
 

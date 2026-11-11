@@ -10,6 +10,7 @@ const app = createApp({
   data() {
     return {
       isEntry: false,
+      isTemplate: false,
       revisions: [],
       selectedRevision: null,
       viewTypes: {
@@ -52,6 +53,11 @@ const app = createApp({
   },
   mounted() {
     this.isEntry = elementDataset.isEntry === '1'
+    this.isTemplate = elementDataset.isTemplate === '1'
+    if (this.isTemplate) {
+      this.displayWikiCode = true
+      this.viewTypes.current = _t('REVISIONS_CODE')
+    }
     this.revisions = JSON.parse(elementDataset.revisions || '[]').map((rev) => {
       rev.id = parseInt(rev.id)
       rev.phpTime = rev.time

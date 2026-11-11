@@ -170,7 +170,7 @@ entries and older spellings of settings the port renamed. Both directions are as
 every `AB_*` key in the catalog is named somewhere in code, and every `AB_*` key named in
 code is defined in the French reference catalog. The single exception is written down in the
 test — `AB_bazar<name>_label`, which `EntryListAction` builds from a webmaster's own
-`custom/templates/bazar/*.twig` filename, the one palette key that cannot be a literal.
+`custom/templates/core/*.twig` filename, the one palette key that cannot be a literal.
 
 ## What is not a Component
 

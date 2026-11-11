@@ -71,7 +71,10 @@ class PageApiController extends YesWikiController
             return new ApiResponse(null, Response::HTTP_NOT_FOUND);
         }
 
-        if ($entryManager->isEntry($page['tag'])) {
+        if (($page['type'] ?? null) === PageType::TEMPLATE) {
+            $page['code'] = DiffService::templateCode($page);
+            $page['html'] = '<pre>' . $page['code'] . '</pre>';
+        } elseif ($entryManager->isEntry($page['tag'])) {
             $page['html'] = $entryController->view($page['tag'], $page['time'], false);
             $page['code'] = $diffService->formatJsonCodeIntoHtmlTable($page);
         } else {

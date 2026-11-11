@@ -2743,7 +2743,7 @@ Il tuo account %{userName} deve essere attivato cliccando sul link qui sotto o c
     'AB_bazarliste_popupselectedfields_label' => 'Campi da mantenere nel popup',
     'AB_bazarliste_popupneededfields_label' => 'Campi da aggiungere nel popup',
     'AB_bazarcarto_popupcustomtemplate_label' => 'Template personalizzato per il piccolo popup',
-    'AB_bazarcarto_popupcustomtemplate_hint' => 'es. \'custom_map_popup.twig\' da mettere in \'custom/templates/bazar/entries/index-dynamic-templates/\'',
+    'AB_bazarcarto_popupcustomtemplate_hint' => 'es. \'custom_map_popup.twig\' da mettere in \'custom/templates/core/entries/index-dynamic-templates/\'',
     'AB_bazarcarto_displayfields_markhover_label' => 'Campo da visualizzare al passaggio sul marker',
     'AB_bazarcarto_smallmarker_label' => 'Piccoli marcatori',
     'AB_bazarcarto_zoommolette_label' => 'Poter ingrandire con la rotella del mouse',

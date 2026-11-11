@@ -7,6 +7,7 @@ use Caxy\HtmlDiff\HtmlDiffConfig;
 use Psr\Container\ContainerInterface;
 use YesWiki\Content\Controller\EntryController;
 use YesWiki\Content\Entity\PageBody;
+use YesWiki\Content\Entity\PageType;
 use YesWiki\Render\Service\MarkdownFormatterService;
 
 class DiffService
@@ -36,7 +37,10 @@ class DiffService
     {
         $tag = (string)($pageA['tag'] ?? '');
         $isEntry = !empty($tag) && $this->entryManager->isEntry($tag);
-        if ($isEntry) {
+        if (self::isTemplate($pageA) || self::isTemplate($pageB)) {
+            $textA = self::templateCode($pageA);
+            $textB = self::templateCode($pageB);
+        } elseif ($isEntry) {
             if ($compareRender) {
                 $textA = empty($pageA['time']) ? '' : $this->entryController->view($tag, (string)$pageA['time'], false);
                 $textB = empty($pageB['time']) ? '' : $this->entryController->view($tag, (string)$pageB['time'], false);
@@ -109,5 +113,19 @@ class DiffService
     private static function body(array $page): array
     {
         return is_array($page['body'] ?? null) ? $page['body'] : [];
+    }
+
+    /** @param array<string, mixed> $page */
+    private static function isTemplate(array $page): bool
+    {
+        return ($page['type'] ?? null) === PageType::TEMPLATE;
+    }
+
+    /** @param array<string, mixed> $page a template revision, whose Twig comes back escaped so a diff shows the code and never runs it (ticket 18) */
+    public static function templateCode(array $page): string
+    {
+        $twig = self::body($page)['twig'] ?? '';
+
+        return htmlspecialchars(is_string($twig) ? $twig : '', ENT_QUOTES);
     }
 }

@@ -35,6 +35,7 @@ class PresentationCatalogTest extends YesWikiTestCase
     {
         @unlink(self::WITH_HEADER);
         @unlink(self::BARE);
+        $this->getWiki()->services->get(\YesWiki\Render\Service\TemplateOverrides::class)->delete('core/entries/index-dynamic-templates/zz-probe-saved.twig');
         parent::tearDown();
     }
 
@@ -49,6 +50,7 @@ class PresentationCatalogTest extends YesWikiTestCase
             $this->getWiki()->services->get(\YesWiki\Files\Service\Storage::class),
             $this->getWiki()->services->get(\YesWiki\Content\Service\FieldRoleResolver::class),
             $registry,
+            $this->getWiki()->services->get(\YesWiki\Render\Service\TemplateOverrides::class),
         );
     }
 
@@ -118,6 +120,19 @@ class PresentationCatalogTest extends YesWikiTestCase
         $this->assertSame('zz-probe-bare', $bare->label, 'a template with no header is not named after its file');
         $this->assertSame(Presentation::DEFAULT_CATEGORY, $bare->category);
         $this->assertSame([], $bare->requires);
+    }
+
+    /** Ticket 18: a list template an admin saved from the screens lives in the database, and is offered like a file. */
+    public function testAPresentationSavedInTheDatabaseIsListed(): void
+    {
+        $this->getWiki()->services->get(\YesWiki\Render\Service\TemplateOverrides::class)->save(
+            'core/entries/index-dynamic-templates/zz-probe-saved.twig',
+            "{# presentation\n   label: Enregistrée\n   category: list\n#}\n{% extends '@core/entries/index-dynamic.twig' %}\n"
+        );
+
+        $byName = array_column(array_map(fn ($p) => ['name' => $p->name, 'p' => $p], $this->catalog()->all()), 'p', 'name');
+        $this->assertArrayHasKey('zz-probe-saved', $byName);
+        $this->assertSame('Enregistrée', $byName['zz-probe-saved']->label);
     }
 
     public function testAFormIsOfferedOnlyWhatItsFieldsCanDraw(): void

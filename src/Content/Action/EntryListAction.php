@@ -48,6 +48,7 @@ use YesWiki\Kernel\Service\RuntimeConfig;
 use YesWiki\Kernel\Service\SignedTokens;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Kernel\Service\WikiUrls;
+use YesWiki\Render\Service\CustomTemplateService;
 use YesWiki\Render\Service\PresentationCatalog;
 use YesWiki\Render\Service\PresentationRenderer;
 use YesWiki\Search\Service\SearchManager;
@@ -1219,18 +1220,21 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
     }
 
     /**
-     * A presentation for every list template this wiki has added of its own.
+     * A presentation for every list template this wiki has added of its own: a top-level `core/` override that is no shipped template nor an entry template, which `@core/<file>` renders.
      *
      * @return list<Component>
      */
     private function customTemplateComponents(): array
     {
         $components = [];
-        foreach ($this->getService(Storage::class)->glob('custom/templates/bazar/*.twig') as $path) {
-            $file = str_replace('custom/templates/bazar/', '', $path);
-            if (str_starts_with($file, 'fiche')) {
-                continue;
+        $files = [];
+        foreach ($this->getService(CustomTemplateService::class)->overrides() as $override) {
+            $file = $override['target'];
+            if ($override['namespace'] === CustomTemplateService::CORE_NAMESPACE && !$override['shipped'] && !str_contains($file, '/') && !str_starts_with($file, 'fiche')) {
+                $files[] = $file;
             }
+        }
+        foreach ($files as $file) {
             $name = str_replace('.twig', '', $file);
             $translated = _t('AB_' . $name . '_label');
             $label = $translated === 'AB_' . $name . '_label'

@@ -649,7 +649,7 @@ class FormController extends YesWikiController
         return [
             'canEditTemplate' => true,
             'entryTemplate' => $inMarkdown ? MarkdownTemplate::unmark($contents) : $contents,
-            'entryTemplateFile' => CustomTemplateService::DIRECTORY . '/' . $name,
+            'entryTemplateFile' => $name,
             'entryTemplateWritable' => $writable,
             'entryTemplateInMarkdown' => $inMarkdown,
         ];

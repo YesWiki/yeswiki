@@ -29,6 +29,7 @@ use YesWiki\Render\Service\CustomTemplateService;
 use YesWiki\Render\Service\LayoutService;
 use YesWiki\Render\Service\PresetService;
 use YesWiki\Render\Service\TemplateEngine;
+use YesWiki\Render\Service\TemplateOverrides;
 
 /** `/admin/*` -- the wiki's administration, as routes rather than as pages. */
 class AdminController extends YesWikiController
@@ -440,6 +441,9 @@ class AdminController extends YesWikiController
             'directory' => CustomTemplateService::DIRECTORY,
             'writable' => $service->isWritable(),
             'editing' => $editing,
+            'editingInDatabase' => $editing !== '' && $service->inTheDatabase($editing),
+            'editingOnDisk' => $editing !== '' && $service->isOnDisk($editing),
+            'editingTag' => $editing === '' ? '' : TemplateOverrides::tagFor($editing),
             'contents' => $contents,
             'fieldCatalog' => $editing === '' ? null : $this->getService(TemplateFieldCatalog::class)->forTemplate($editing, $contents),
 

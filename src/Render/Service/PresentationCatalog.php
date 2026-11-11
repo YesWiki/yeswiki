@@ -31,6 +31,7 @@ class PresentationCatalog
         private readonly Storage $storage,
         private readonly FieldRoleResolver $roles,
         private readonly ExtensionRegistry $extensions,
+        private readonly TemplateOverrides $overrides,
     ) {
     }
 
@@ -165,6 +166,13 @@ class PresentationCatalog
             $name = self::nameOf($path);
             if ($name !== null) {
                 $files[$name] = [$this->storage->read($path), true];
+            }
+        }
+        $overrideDirectory = substr($customDirectory, \strlen(CustomTemplateService::DIRECTORY) + 1);
+        foreach ($this->overrides->all() as $override) {
+            $name = self::nameOf($override['path']);
+            if ($name !== null && \dirname($override['path']) === $overrideDirectory) {
+                $files[$name] = [(string)$this->overrides->read($override['path']), true];
             }
         }
         ksort($files);

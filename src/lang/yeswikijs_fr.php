@@ -84,6 +84,7 @@ return [
     'REVISIONS_COMMIT_DIFF' => 'Modifs apportées par cette version',
     'REVISIONS_DIFF' => 'Comparaison avec version actuelle',
     'REVISIONS_PREVIEW' => 'Aperçu de cette version',
+    'REVISIONS_CODE' => 'Code de cette version',
     'FAVORITES_ADD' => 'Ajouter aux favoris',
     'FAVORITES_ALL_DELETED' => 'Favoris supprimés',
     'FAVORITES_ERROR' => 'Une erreur est survenue : {error}',

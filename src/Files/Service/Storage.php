@@ -43,6 +43,11 @@ class Storage
         'private/keys/' => self::PROTECTED_TIER,
 
         'custom/extensions/' => self::RUNTIME_TIER,
+        'custom/themes/' => self::RUNTIME_TIER,
+        'custom/templates/' => self::RUNTIME_TIER,
+        'custom/fields/' => self::RUNTIME_TIER,
+        'custom/controllers/' => self::RUNTIME_TIER,
+        'custom/services/' => self::RUNTIME_TIER,
         'private/yeswiki.db' => self::RUNTIME_TIER,
         'private/search-indexes/' => self::RUNTIME_TIER,
         'private/.env' => self::RUNTIME_TIER,

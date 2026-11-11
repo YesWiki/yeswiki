@@ -3,11 +3,12 @@
 namespace YesWiki\Test\Render;
 
 use YesWiki\Render\Service\CustomTemplateService;
+use YesWiki\Render\Service\TemplateOverrides;
 use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';
 
-/** Template overrides as something the wiki can show and edit (ticket 30). */
+/** Template overrides as something the wiki can show and edit (ticket 30), saved in the database over the operator's files (ticket 18). */
 class CustomTemplateServiceTest extends YesWikiTestCase
 {
     /** Under the real directory, because the confinement being tested is about that path. */
@@ -29,6 +30,12 @@ class CustomTemplateServiceTest extends YesWikiTestCase
 
     protected function tearDown(): void
     {
+        $database = $this->getWiki()->services->get(TemplateOverrides::class);
+        foreach ($database->all() as $override) {
+            if (str_starts_with($override['path'], 'core/__probe__/') || str_starts_with($override['path'], 'core/admin/')) {
+                $database->delete($override['path']);
+            }
+        }
         foreach (glob(self::PROBE_DIR . '/*') ?: [] as $leftover) {
             @unlink($leftover);
         }
@@ -128,7 +135,41 @@ class CustomTemplateServiceTest extends YesWikiTestCase
         $this->assertSame('core', $listed[self::PROBE]['namespace']);
     }
 
-    public function testRevertingRemovesTheFileAndIsSafeToRepeat(): void
+    public function testAnOverrideGoesToTheDatabaseAndNoFileIsWritten(): void
+    {
+        $this->service()->write(self::PROBE, 'in the database');
+
+        $this->assertFileDoesNotExist(CustomTemplateService::DIRECTORY . '/' . self::PROBE);
+        $this->assertSame('in the database', $this->getWiki()->services->get(TemplateOverrides::class)->read(self::PROBE));
+        $this->assertSame(CustomTemplateService::IN_THE_DATABASE, array_column($this->service()->overrides(), null, 'path')[self::PROBE]['source']);
+    }
+
+    public function testTheOperatorsFileIsListedAndOnlyTheDatabaseCanTakeItsPlace(): void
+    {
+        @mkdir(self::PROBE_DIR, 0o755, true);
+        file_put_contents(CustomTemplateService::DIRECTORY . '/' . self::PROBE, 'from the operator');
+        $listed = array_column($this->service()->overrides(), null, 'path')[self::PROBE];
+        $this->assertSame(CustomTemplateService::ON_DISK, $listed['source']);
+        $this->assertSame('from the operator', $this->service()->read(self::PROBE));
+
+        try {
+            $this->service()->delete(self::PROBE);
+            $this->fail('the screens removed a file the operator ships');
+        } catch (\RuntimeException $refused) {
+            $this->assertFileExists(CustomTemplateService::DIRECTORY . '/' . self::PROBE);
+        }
+
+        $this->service()->write(self::PROBE, 'from the admin');
+        $listed = array_column($this->service()->overrides(), null, 'path')[self::PROBE];
+        $this->assertSame(CustomTemplateService::IN_THE_DATABASE, $listed['source']);
+        $this->assertTrue($listed['onDisk'], 'the screen can say it overrides the operator\'s file');
+        $this->assertSame('from the admin', $this->service()->read(self::PROBE));
+
+        $this->service()->delete(self::PROBE);
+        $this->assertSame('from the operator', $this->service()->read(self::PROBE));
+    }
+
+    public function testRevertingRemovesTheOverrideAndIsSafeToRepeat(): void
     {
         $service = $this->service();
         $service->write(self::PROBE, 'hello');
