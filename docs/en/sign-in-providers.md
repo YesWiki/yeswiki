@@ -35,10 +35,13 @@ they are switched on, and how many accounts belong to each. From there you can:
   switched off;
 - open **Failed sign-ins**, which is the Journal (`?admin/logs`) filtered on refused sign-ins.
 
-Two rules keep you from locking everyone out: the screen refuses to switch off, or delete, the
-**last provider that is switched on**, and local accounts can be switched on and off but never
-deleted. A new provider is added at the end of the list; to change the order of the sign-in page,
-change the order of the entries in the configuration file (see
+Three rules keep you from locking everyone out: the screen refuses to switch off, or delete, the
+**last provider that is switched on**; local accounts can be switched on and off but never
+deleted; and if you are signed in with a local account, the screen refuses to switch local accounts
+off unless a switched-on provider has **Connect to the existing account that has the same email**
+ticked, since you would be signed out with no way back in (see [Local accounts](#local-accounts)).
+A new provider is added at the end of the list; to change the order of the sign-in page, change
+the order of the entries in the configuration file (see
 [The configuration file](#the-configuration-file)).
 
 A provider whose type is no longer installed (its extension was switched off) stays in the list as
@@ -106,7 +109,8 @@ it: a provider that is switched off can still be [tested](#testing-a-provider).
 
 **Connection.** The settings of this type, described in the walkthroughs below. Secrets (client
 secret, private key, passwords) are never shown again once saved: leave the field blank to keep
-the stored one.
+the stored one, or tick **Remove the stored value** beside it to take it out (for instance the
+wiki's SAML key, to stop signing requests).
 
 Once the provider is saved, this section also shows what to give the provider: the **Callback
 URL** (where the provider sends people back), and for SAML the wiki's own **entity ID** and
@@ -167,6 +171,12 @@ off, the password form loses its local tab, sign-up and lost password are unavai
 Switch local off only once the other providers work, and keep in mind
 [how to get back in](#getting-back-in) if the company's server fails.
 
+If you are signed in with a local account yourself, switching local off signs you out too, so the
+screen asks you to confirm first. It refuses outright when no switched-on provider has **Connect to
+the existing account that has the same email** ticked: you could not sign in again. Tick it on the
+provider you will sign in with (your account is then connected to it at your first sign-in), or
+switch local off in the configuration file.
+
 ### OpenID Connect or OAuth2
 
 1. At the provider, create a client (sometimes called an application) of the "confidential" or
@@ -217,6 +227,15 @@ with its own entity ID.
    others to `mail`, `givenName`, `sn` and `groups`. Many identity providers send names like
    `urn:oid:0.9.2342.19200300.100.1.3`: an attribute that also has a friendly name can be used
    under either. Test shows exactly what arrives.
+
+   With the user ID left at `name_id`, the identity provider must send a **persistent** NameID
+   (format `urn:oasis:names:tc:SAML:2.0:nameid-format:persistent`), the same for a person at
+   every sign-in. A transient NameID changes each time: the person's first sign-in creates or
+   connects their account, and the second no longer finds it under that user ID, so it is refused
+   (`email_conflict`), or, with match by email on, rewrites the user ID at every sign-in. A
+   response with no NameID at all is refused as `missing_attribute`. If the identity provider
+   cannot send a persistent NameID, set the user ID to a stable attribute instead, like an
+   employee number or `uid`.
 5. **Save and test**, then switch the provider on.
 
 The wiki checks the signature, the audience, the time window, that the answer replies to the
@@ -266,9 +285,13 @@ and the **Health** page says so.
 1. On the wiki, **Add a provider › LDAP directory** and give it a name: it is the name of its tab
    on the password form.
 2. **Directory address**: `ldaps://ldap.example.org:636`, or `ldap://ldap.example.org:389` with
-   **Encrypt with StartTLS** ticked. The server's certificate is checked against the system's
-   authorities. An `ldap://` address without StartTLS sends every password across the network
-   unencrypted: the edit screen warns you.
+   **Encrypt with StartTLS** ticked. The server's certificate is always checked against the
+   system's authorities, whatever `TLS_REQCERT` in `ldap.conf` or the `LDAPTLS_REQCERT`
+   environment variable say: a self-signed certificate, or one from a private authority, is
+   refused (`provider_unreachable`, with `certificate verify failed` in the error) until the
+   server trusts that authority, through the system's store or `TLS_CACERT` in `ldap.conf`. An
+   `ldap://` address without StartTLS sends every password across the network unencrypted, and is
+   not checked at all: the edit screen warns you.
 3. Tell the wiki how to find the person, in one of two ways:
    - a **Bind DN template**, the DN people sign in as, with `{login}` where the login goes:
      `uid={login},ou=people,dc=example,dc=org`. This is the simplest;
@@ -314,9 +337,12 @@ it, still signed in: someone else coming back with it is refused. Test works on 
 switched off, which is the way to try a provider before anyone can use it. Local accounts are not
 tested from here.
 
-To test a SAML provider whose identity provider is on another site, the wiki's `cookies_samesite`
-setting must stay at its default, `None`: the identity provider answers with a cross-site POST,
-and your session must come back with it.
+A SAML test recognises you by your wiki session: the `yw-auth` cookie must come back with the
+identity provider's answer, which is a POST from the identity provider's site. On an `https://`
+wiki this works with the wiki's `cookies_samesite` setting at its default, `None`. Set to `Lax`
+or `Strict`, the browser leaves `yw-auth` out of that POST and the test is refused as not finished
+by the administrator who started it. Real sign-ins are not affected: their own short-lived cookie
+is always sent back.
 
 Test is also the quickest way to see what a working sign-in returns, before you write a group
 mapping or an extra attribute.
@@ -350,7 +376,7 @@ The reasons, and what to do:
 | `configuration_invalid`   | The provider's settings, or a PHP module they need, cannot be used.                           | Correct the settings, or install the module, then Test.                                         |
 | `missing_attribute`       | The provider did not send the user ID or the email under the configured name.                 | Test to see what it sends; correct the attribute names, or what the provider releases.          |
 | `email_conflict`          | An account already has this email, and match by email is off, or the provider does not vouch for the email. | Turn on match by email if the provider checks emails, or correct the existing account's email. |
-| `linked_elsewhere`        | The account with this email belongs to another provider.                                      | Decide which provider this person should use.                                                   |
+| `linked_elsewhere`        | The account with this email belongs to another provider.                                      | They sign in with the provider named in the error. Or delete the account: it is created again.  |
 | `no_account`              | No account has this email, and this provider does not create accounts.                        | Create the account by hand, or turn on account creation.                                        |
 | `provider_disabled`       | The provider is switched off, or its type is no longer installed.                             | Switch it on, or activate the extension that supplies its type.                                 |
 | `account_creation_failed` | The account could not be written (the wiki is in hibernation, for example).                   | Read the raw error, check the wiki accepts changes, and ask the person to try again.            |
@@ -376,9 +402,12 @@ or in the log. Attributes are cut down to a reasonable size before they are writ
 
 After **5 failed attempts for one login in 15 minutes**, further attempts with that login are
 refused without asking the provider, until the 15 minutes have passed. This applies to LDAP, to the
-local password form and to `/api/login`, which answers HTTP 429. Every refusal of a password
-provider counts, whatever its reason; an attempt stopped by the limit is recorded as such and does
-not count, so being blocked does not extend the block. Tests do not count.
+local password form and to `/api/login`, which answers HTTP 429. The count is every refusal
+recorded under that login or email in the [Journal](#what-is-recorded-and-where), from any
+provider and whatever its reason: five refused OpenID Connect sign-ins for `marie@example.org`
+also block the local form for the login `marie@example.org` for 15 minutes. An attempt stopped by
+the limit is recorded as such and does not count, so being blocked does not extend the block.
+Tests do not count.
 
 ## Health checks
 
@@ -393,8 +422,10 @@ The **Health** page (`?admin/health`) reports what keeps sign-in from working:
 | `sign-in-plain-http`       | A warning naming every switched-on provider reached at an `http://` address, and which setting it is.       |
 
 Plain `http://` addresses are accepted, because test and development servers often have nothing
-else, but not silently: what crosses an unencrypted connection, the identity of whoever signs in
-included, can be read and changed on the way. Use `https://` everywhere else.
+else, but not silently: the provider's edit screen shows a warning for each address that starts
+with `http://`, and this check names them on the Health page. What crosses an unencrypted
+connection, the identity of whoever signs in included, can be read and changed on the way. Use
+`https://` everywhere else.
 
 ## Changing server
 

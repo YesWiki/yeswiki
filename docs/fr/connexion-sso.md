@@ -39,10 +39,14 @@ leur état (activé ou non) et le nombre de comptes qui leur appartiennent. De l
 - ouvrir **Connexions refusées**, c'est-à-dire le Journal (`?admin/logs`) filtré sur les connexions
   refusées.
 
-Deux règles vous empêchent d'enfermer tout le monde dehors : l'écran refuse de désactiver, ou de
-supprimer, **le dernier fournisseur activé**, et les comptes locaux peuvent être activés et
-désactivés, jamais supprimés. Un nouveau fournisseur s'ajoute en fin de liste ; pour changer l'ordre
-de la page de connexion, changez l'ordre des entrées dans le fichier de configuration (voir
+Trois règles vous empêchent d'enfermer tout le monde dehors : l'écran refuse de désactiver, ou de
+supprimer, **le dernier fournisseur activé** ; les comptes locaux peuvent être activés et
+désactivés, jamais supprimés ; et si vous êtes connecté·e avec un compte local, l'écran refuse de
+désactiver les comptes locaux tant qu'aucun fournisseur activé n'a **Rattacher au compte existant
+qui a le même email** coché, puisque vous seriez déconnecté·e sans moyen de revenir (voir
+[Comptes du wiki](/docs/fr/connexion-sso?id=comptes-du-wiki-local)). Un nouveau fournisseur
+s'ajoute en fin de liste ; pour changer l'ordre de la page de connexion, changez l'ordre des
+entrées dans le fichier de configuration (voir
 [Le fichier de configuration](/docs/fr/connexion-sso?id=le-fichier-de-configuration)).
 
 Un fournisseur dont le type n'est plus installé (son extension a été désactivée) reste dans la
@@ -113,7 +117,8 @@ décocher la case : un fournisseur désactivé peut quand même être [testé](/
 
 **Connexion au fournisseur.** Les réglages propres au type, décrits plus bas. Les secrets (secret
 du client, clé privée, mots de passe) ne sont plus jamais affichés une fois enregistrés : laissez
-le champ vide pour garder celui qui est enregistré.
+le champ vide pour garder celui qui est enregistré, ou cochez **Supprimer la valeur enregistrée**
+à côté pour le retirer (par exemple la clé SAML du wiki, pour ne plus signer les demandes).
 
 Une fois le fournisseur enregistré, cette partie affiche aussi ce qu'il faut donner au
 fournisseur : l'**Adresse de retour (callback)**, où il renvoie les personnes, et pour SAML
@@ -179,6 +184,13 @@ déconnectés à la page suivante.
 Ne désactivez les comptes locaux qu'une fois les autres fournisseurs en état de marche, et gardez
 en tête [comment revenir dans le wiki](/docs/fr/connexion-sso?id=revenir-dans-le-wiki) si le serveur de l'entreprise tombe.
 
+Si vous êtes vous-même connecté·e avec un compte local, désactiver les comptes locaux vous
+déconnecte aussi : l'écran vous demande donc de confirmer. Il refuse tout net quand aucun
+fournisseur activé n'a **Rattacher au compte existant qui a le même email** coché : vous ne
+pourriez plus vous connecter. Cochez-le sur le fournisseur avec lequel vous vous connecterez (votre
+compte lui est alors rattaché à votre première connexion), ou désactivez les comptes locaux dans le
+fichier de configuration.
+
 ### OpenID Connect ou OAuth2
 
 1. Chez le fournisseur, créez un client (parfois appelé application) de type « confidentiel » ou
@@ -233,6 +245,15 @@ service à part, avec son propre identifiant d'entité.
    les autres `mail`, `givenName`, `sn` et `groups`. Beaucoup de fournisseurs d'identité envoient
    des noms comme `urn:oid:0.9.2342.19200300.100.1.3` : un attribut qui a aussi un nom court
    (_friendly name_) s'utilise sous l'un ou l'autre. Le test montre exactement ce qui arrive.
+
+   Avec l'identifiant laissé à `name_id`, le fournisseur d'identité doit envoyer un NameID
+   **persistant** (format `urn:oasis:names:tc:SAML:2.0:nameid-format:persistent`), le même pour
+   une personne à chaque connexion. Un NameID transitoire change à chaque fois : la première
+   connexion de la personne crée ou rattache son compte, et la deuxième ne le retrouve plus sous
+   cet identifiant, si bien qu'elle est refusée (`email_conflict`), ou, avec le rattachement par
+   email activé, réécrit l'identifiant à chaque connexion. Une réponse sans aucun NameID est
+   refusée en `missing_attribute`. Si le fournisseur d'identité ne peut pas envoyer de NameID
+   persistant, prenez plutôt pour identifiant un attribut stable, comme un matricule ou `uid`.
 5. **Enregistrer et tester**, puis activez le fournisseur.
 
 Le wiki vérifie la signature, l'audience, la période de validité, que la réponse répond bien à la
@@ -282,9 +303,13 @@ personne, et la page **Santé** le signale.
 1. Sur le wiki, **Ajouter un fournisseur › Annuaire LDAP**, et donnez-lui un nom : c'est celui de
    son onglet dans le formulaire à mot de passe.
 2. **Adresse de l'annuaire** : `ldaps://ldap.example.org:636`, ou `ldap://ldap.example.org:389`
-   avec **Chiffrer avec StartTLS** coché. Le certificat du serveur est vérifié avec les autorités du
-   système. Une adresse `ldap://` sans StartTLS fait passer chaque mot de passe en clair sur le
-   réseau : l'écran de modification vous en avertit.
+   avec **Chiffrer avec StartTLS** coché. Le certificat du serveur est toujours vérifié avec les
+   autorités du système, quoi que disent `TLS_REQCERT` dans `ldap.conf` ou la variable
+   d'environnement `LDAPTLS_REQCERT` : un certificat auto-signé, ou d'une autorité privée, est
+   refusé (`provider_unreachable`, avec `certificate verify failed` dans l'erreur) tant que le
+   serveur ne fait pas confiance à cette autorité, par le magasin du système ou `TLS_CACERT` dans
+   `ldap.conf`. Une adresse `ldap://` sans StartTLS fait passer chaque mot de passe en clair sur le
+   réseau, sans aucune vérification : l'écran de modification vous en avertit.
 3. Dites au wiki comment trouver la personne, de l'une de ces deux façons :
    - un **Modèle de DN de connexion**, le DN sous lequel les personnes se connectent, avec
      `{login}` à la place de l'identifiant : `uid={login},ou=people,dc=example,dc=org`. C'est le
@@ -334,9 +359,12 @@ l'administrateurice qui l'a lancé, toujours connecté·e : quelqu'un d'autre qu
 refusé. Un fournisseur désactivé peut être testé : c'est la façon d'essayer un fournisseur avant que
 quiconque puisse s'en servir. Les comptes locaux ne se testent pas ici.
 
-Pour tester un fournisseur SAML dont le fournisseur d'identité est sur un autre site, le réglage
-`cookies_samesite` du wiki doit garder sa valeur par défaut, `None` : le fournisseur d'identité
-répond par un envoi de formulaire depuis son site, et votre connexion au wiki doit l'accompagner.
+Un test SAML vous reconnaît à votre connexion au wiki : le cookie `yw-auth` doit revenir avec la
+réponse du fournisseur d'identité, qui est un envoi de formulaire depuis le site de celui-ci. Sur
+un wiki en `https://`, cela marche avec le réglage `cookies_samesite` du wiki à sa valeur par
+défaut, `None`. Réglé à `Lax` ou `Strict`, le navigateur n'envoie pas `yw-auth` avec ce formulaire
+et le test est refusé, comme non terminé par l'administrateurice qui l'a lancé. Les vraies
+connexions n'en souffrent pas : leur propre cookie de courte durée revient toujours.
 
 Le test est aussi le moyen le plus rapide de voir ce que renvoie une connexion qui marche, avant
 d'écrire une correspondance de groupes ou un attribut supplémentaire.
@@ -372,7 +400,7 @@ Les raisons, et que faire :
 | `configuration_invalid`   | Les réglages du fournisseur, ou un module PHP dont ils ont besoin, sont inutilisables.           | Corrigez les réglages ou installez le module, puis testez.                                         |
 | `missing_attribute`       | Le fournisseur n'a pas envoyé l'identifiant ou l'email sous le nom configuré.                    | Testez pour voir ce qu'il envoie ; corrigez les noms d'attributs, ou ce que le fournisseur envoie. |
 | `email_conflict`          | Un compte a déjà cet email, et le rattachement par email est désactivé, ou le fournisseur ne garantit pas l'adresse. | Activez le rattachement si le fournisseur vérifie les emails, ou corrigez l'email du compte existant. |
-| `linked_elsewhere`        | Le compte qui a cet email appartient à un autre fournisseur.                                     | Décidez par quel fournisseur cette personne doit passer.                                           |
+| `linked_elsewhere`        | Le compte qui a cet email appartient à un autre fournisseur.                                     | Elle se connecte avec le fournisseur nommé dans l'erreur. Ou supprimez le compte : il sera recréé. |
 | `no_account`              | Aucun compte n'a cet email, et ce fournisseur ne crée pas de comptes.                            | Créez le compte à la main, ou activez la création de comptes.                                      |
 | `provider_disabled`       | Le fournisseur est désactivé, ou son type n'est plus installé.                                   | Activez-le, ou activez l'extension qui fournit son type.                                           |
 | `account_creation_failed` | Le compte n'a pas pu être écrit (le wiki est en hibernation, par exemple).                       | Lisez l'erreur brute, vérifiez que le wiki accepte les modifications, et demandez de réessayer.    |
@@ -402,9 +430,12 @@ avant d'être écrits.
 Après **5 échecs pour un même identifiant en 15 minutes**, les tentatives suivantes avec cet
 identifiant sont refusées sans interroger le fournisseur, jusqu'à ce que les 15 minutes soient
 passées. Cela vaut pour LDAP, pour le formulaire à mot de passe local et pour `/api/login`, qui
-répond alors HTTP 429. Chaque refus d'un fournisseur à mot de passe compte, quelle que soit sa
-raison ; une tentative arrêtée par la limite est enregistrée comme telle et ne compte pas, si bien
-qu'être bloqué ne prolonge pas le blocage. Les tests ne comptent pas.
+répond alors HTTP 429. Le compte porte sur chaque refus enregistré sous cet identifiant ou cet
+email dans le [Journal](/docs/fr/connexion-sso?id=ce-qui-est-enregistré-et-où), quel que soit le
+fournisseur et quelle que soit la raison : cinq connexions OpenID Connect refusées pour
+`marie@example.org` bloquent aussi le formulaire local pour l'identifiant `marie@example.org`
+pendant 15 minutes. Une tentative arrêtée par la limite est enregistrée comme telle et ne compte
+pas, si bien qu'être bloqué ne prolonge pas le blocage. Les tests ne comptent pas.
 
 ## Contrôles de santé
 
@@ -419,7 +450,9 @@ La page **Santé** (`?admin/health`) signale ce qui empêche la connexion de fon
 | `sign-in-plain-http`       | Un avertissement qui nomme chaque fournisseur activé joint à une adresse `http://`, et le réglage concerné.     |
 
 Les adresses en `http://` simple sont acceptées, parce que les serveurs de test et de développement
-n'ont souvent rien d'autre, mais pas en silence : ce qui passe par une connexion non chiffrée,
+n'ont souvent rien d'autre, mais pas en silence : l'écran de modification du fournisseur affiche un
+avertissement pour chaque adresse qui commence par `http://`, et ce contrôle les nomme sur la page
+Santé. Ce qui passe par une connexion non chiffrée,
 l'identité de qui se connecte comprise, peut être lu et modifié en chemin. Utilisez `https://`
 partout ailleurs.
 

@@ -909,6 +909,13 @@ own: the migration names those pages, check them.
   as Doryphore used it: passwords cross the network in clear. Switch to an `ldaps://` address, or
   tick **Encrypt with StartTLS**; the edit screen warns until you do. LDAP also needs the PHP
   `ldap` extension, which the **Health** page checks.
+- **LDAP: the certificate is always checked.** With `ldaps://` or StartTLS, the directory's
+  certificate is checked against the system's authorities, whatever `TLS_REQCERT` in `ldap.conf` or
+  `LDAPTLS_REQCERT` say: a directory whose certificate is self-signed or from a private authority
+  fails as `provider_unreachable` until the server trusts that authority (`TLS_CACERT` in
+  `ldap.conf`, or the system's store).
+- **LDAP: spaces in the DN.** A `ldap_base` written with spaces after its commas becomes a bind DN
+  template without them, the way the directory stores DNs.
 - **Groups for LDAP and CAS.** The extensions mapped no groups: add a group mapping if you want
   one.
 - **Use Test on each provider**: it runs a real sign-in and shows what the provider returns,
