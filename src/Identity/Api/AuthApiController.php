@@ -18,11 +18,9 @@ class AuthApiController extends YesWikiController
 {
     /**
      * Attempt to login a user (ticket 08, relocated from tools/login's own ApiController), through the local provider like the form: the same attempt limit applies.
-     *
-     * @return string json
      */
     #[Route('/api/login', methods: ['POST'], options: ['acl' => ['public']])]
-    public function login()
+    public function login(): ApiResponse
     {
         if (!$this->getService(ProviderRegistry::class)->localEnabled()) {
             return new ApiResponse(['error' => _t('SIGN_IN_REFUSED_PROVIDER_DISABLED', ['provider' => _t('SIGN_IN_LOCAL_LABEL')])], Response::HTTP_FORBIDDEN);

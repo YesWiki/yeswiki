@@ -16,18 +16,22 @@ use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';
 
+/** A controller showing an outcome the way the sign-in routes do. */
+final class RefusedPageRenderer extends YesWikiController
+{
+    use RendersSignInOutcome;
+
+    public function show(Response|SignInOutcome $outcome): Response
+    {
+        return $this->renderSignInOutcome($outcome);
+    }
+}
+
 class SignInRefusedPageTest extends YesWikiTestCase
 {
-    private function renderer(): object
+    private function renderer(): RefusedPageRenderer
     {
-        $renderer = new class extends YesWikiController {
-            use RendersSignInOutcome;
-
-            public function show(Response|SignInOutcome $outcome): Response
-            {
-                return $this->renderSignInOutcome($outcome);
-            }
-        };
+        $renderer = new RefusedPageRenderer();
         $renderer->setServices(self::getWiki()->services);
 
         return $renderer;

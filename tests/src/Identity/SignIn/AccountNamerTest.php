@@ -2,6 +2,7 @@
 
 namespace YesWiki\Test\Identity\SignIn;
 
+use Symfony\Component\DependencyInjection\ContainerInterface;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Identity\Service\SignIn\AccountNamer;
 use YesWiki\Identity\Service\UserManager;
@@ -13,7 +14,7 @@ require_once 'tests/YesWikiTestCase.php';
 
 class AccountNamerTest extends YesWikiTestCase
 {
-    private $services;
+    private ContainerInterface $services;
     private UserManager $users;
     private AccountNamer $namer;
 
@@ -41,6 +42,7 @@ class AccountNamerTest extends YesWikiTestCase
         $this->services->get(PageManager::class)->deleteOrphaned('marie-dupont');
     }
 
+    /** @param array<string, mixed> $settings */
     private function config(array $settings = []): ProviderConfig
     {
         return ProviderConfig::fromArray('acme', array_merge(['type' => 'oidc'], $settings), [

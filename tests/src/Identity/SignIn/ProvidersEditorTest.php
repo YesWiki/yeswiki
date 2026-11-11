@@ -115,7 +115,11 @@ class ProvidersEditorTest extends YesWikiTestCase
         return $this->editor->all();
     }
 
-    /** @return array<string, mixed> */
+    /**
+     * @param array<string, mixed> $more
+     *
+     * @return array<string, mixed>
+     */
     private function oidc(array $more = []): array
     {
         return $more + [
@@ -309,6 +313,7 @@ class ProvidersEditorTest extends YesWikiTestCase
         $this->seed(['local' => ['type' => 'local'], 'used' => $this->oidc(), 'free' => $this->oidc()]);
         $services = $this->getWiki()->services;
         $user = $services->get(UserManager::class)->create(self::USER, 'ssoeditorused@example.com', 'Aa1!aaaaRegression');
+        $this->assertNotNull($user);
         $services->get(AccountLinks::class)->link($user, 'used', 'sub-1');
 
         $this->assertNotNull($this->editor->delete('used'));
@@ -573,6 +578,7 @@ class ProvidersEditorTest extends YesWikiTestCase
         $this->installProviders(['acme' => ['type' => 'fakeredirect', 'label' => 'Acme Single Sign-On'], 'local' => ['type' => 'local']]);
         $services = $this->getWiki()->services;
         $user = $services->get(UserManager::class)->create(self::USER, 'ssoeditorused@example.com', 'Aa1!aaaaRegression');
+        $this->assertNotNull($user);
         $services->get(AccountLinks::class)->link($user, 'acme', 'sub-1');
 
         self::actAs('WikiAdmin');

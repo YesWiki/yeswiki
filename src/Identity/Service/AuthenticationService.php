@@ -457,7 +457,11 @@ class AuthenticationService extends YesWikiController implements ActorSource, Ca
         return $firstAdmin;
     }
 
-    /** An account tied to a sign-in provider has been vouched for by it: the email-activation gate is for local accounts. */
+    /**
+     * An account tied to a sign-in provider has been vouched for by it: the email-activation gate is for local accounts.
+     *
+     * @param array<string, mixed>|User $user
+     */
     private function isLinked(array|User $user, string $name): bool
     {
         $stored = $user instanceof User ? $user : $this->userManager->getOneByName($name);

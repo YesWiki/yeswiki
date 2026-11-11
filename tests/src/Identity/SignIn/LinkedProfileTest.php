@@ -2,6 +2,7 @@
 
 namespace YesWiki\Test\Identity\SignIn;
 
+use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Identity\Entity\User;
@@ -23,7 +24,7 @@ class LinkedProfileTest extends YesWikiTestCase
     private const LOCAL = 'LocalP';
     private const PASSWORD = 'a-long-enough-password';
 
-    private $services;
+    private ContainerInterface $services;
     private UserManager $users;
     private UserOperationsService $ops;
     private User $linked;
@@ -77,6 +78,14 @@ class LinkedProfileTest extends YesWikiTestCase
         }
     }
 
+    private function account(string $name): User
+    {
+        $user = $this->users->getOneByName($name);
+        $this->assertNotNull($user, "$name exists");
+
+        return $user;
+    }
+
     /** @return array<string, mixed> */
     private function bodyOf(User $user): array
     {
@@ -113,7 +122,7 @@ class LinkedProfileTest extends YesWikiTestCase
         $this->assertNotNull($local);
         $this->ops->update($local, ['email' => 'localp2@example.com', 'first_name' => 'Pierre']);
 
-        $user = $this->users->getOneByName(self::LOCAL);
+        $user = $this->account(self::LOCAL);
         $this->assertSame('localp2@example.com', $user->getEmail());
         $this->assertSame('Pierre', $this->bodyOf($user)['first_name']);
         $this->assertSame([], $this->ops->managedKeys($user));
@@ -124,7 +133,7 @@ class LinkedProfileTest extends YesWikiTestCase
         $changed = $this->services->get(ProfileSync::class)->apply($this->linked, ['email' => 'fromidp@example.com', 'first_name' => 'Marie-Sklodowska']);
 
         $this->assertTrue($changed);
-        $user = $this->users->getOneByName(self::LINKED);
+        $user = $this->account(self::LINKED);
         $this->assertSame('fromidp@example.com', $user->getEmail());
         $this->assertSame('Marie-Sklodowska', $this->bodyOf($user)['first_name']);
     }
@@ -167,7 +176,11 @@ class LinkedProfileTest extends YesWikiTestCase
         $this->assertDoesNotMatchRegularExpression('/name="email"[^>]*disabled/', $html);
     }
 
-    /** An action ready to run one of its steps, as the request would have left it. */
+    /**
+     * An action ready to run one of its steps, as the request would have left it.
+     *
+     * @return array{0: \YesWiki\Identity\Action\UserSettingsAction, 1: \ReflectionClass<\YesWiki\Identity\Action\UserSettingsAction>}
+     */
     private function actionFor(bool $loggedIn, bool $adminActing): array
     {
         $action = new \YesWiki\Identity\Action\UserSettingsAction();
@@ -192,7 +205,7 @@ class LinkedProfileTest extends YesWikiTestCase
             _t('USERSETTINGS_MANAGED_BY_PROVIDER', ['provider' => 'Acme SSO']),
             $reflection->getProperty('errorPasswordChange')->getValue($action)
         );
-        $this->assertSame('', $this->users->getOneByName(self::LINKED)->getPassword());
+        $this->assertSame('', $this->account(self::LINKED)->getPassword());
     }
 
     public function testTheSettingsActionSendsNoRecoveryKeyForALinkedAccount(): void
@@ -223,7 +236,7 @@ class LinkedProfileTest extends YesWikiTestCase
 
         $this->assertSame('', $reflection->getProperty('errorUpdate')->getValue($action));
         $this->assertTrue($exited, 'the save ends in its redirect');
-        $user = $this->users->getOneByName(self::LINKED);
+        $user = $this->account(self::LINKED);
         $this->assertSame('from the form', $user['motto']);
         $this->assertSame('linkedp@example.com', $user->getEmail());
         $this->assertSame('Marie', $this->bodyOf($user)['first_name']);

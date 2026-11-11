@@ -58,6 +58,17 @@ require_once 'tests/YesWikiTestCase.php';
 require_once __DIR__ . '/FakeProviderTypes.php';
 
 /** A redirect provider whose answer each test decides. */
+/** A controller showing an outcome the way the sign-in routes do. */
+final class TestModeOutcomeRenderer extends YesWikiController
+{
+    use RendersSignInOutcome;
+
+    public function show(Response|SignInOutcome $outcome): Response
+    {
+        return $this->renderSignInOutcome($outcome);
+    }
+}
+
 final class TestModeFakeRedirect implements RedirectProvider
 {
     public ?ProviderConfig $config = null;
@@ -310,6 +321,7 @@ class TestModeTest extends YesWikiTestCase
     }
 
     /** The real service, counting the plans it is asked to carry out. */
+    /** @return SignInService&object{applied: int} */
     private function spyService(): SignInService
     {
         $services = self::getWiki()->services;
@@ -326,7 +338,11 @@ class TestModeTest extends YesWikiTestCase
         };
     }
 
-    /** The service as a web request has it: the one that really sends yw-auth, counting the sign-ins it is asked for. */
+    /**
+     * The service as a web request has it: the one that really sends yw-auth, counting the sign-ins it is asked for.
+     *
+     * @return AuthenticationService&object{logins: int}
+     */
     private function browser(): AuthenticationService
     {
         $services = self::getWiki()->services;
@@ -349,12 +365,24 @@ class TestModeTest extends YesWikiTestCase
         return $browser;
     }
 
+    /** What the flow answered, which this test expects to be an outcome rather than a redirect. */
+    private function outcome(Response|SignInOutcome $answer): SignInOutcome
+    {
+        $this->assertInstanceOf(SignInOutcome::class, $answer);
+
+        return $answer;
+    }
+
     private function issuedCookie(string $name): string
     {
         return (string)($_COOKIE[$name] ?? '');
     }
 
-    /** The browser's return from the provider, after a test the signed-in administrator started. */
+    /**
+     * The browser's return from the provider, after a test the signed-in administrator started.
+     *
+     * @param ?array<string, mixed> $attributes
+     */
     private function testCallback(?array $attributes = null, string $provider = 'fake'): Request
     {
         if ($attributes !== null) {
@@ -407,16 +435,9 @@ class TestModeTest extends YesWikiTestCase
         return array_map(fn (array $step): string => $step['step'] . ':' . $step['state'], $outcome->steps);
     }
 
-    private function renderer(): object
+    private function renderer(): TestModeOutcomeRenderer
     {
-        $renderer = new class extends YesWikiController {
-            use RendersSignInOutcome;
-
-            public function show(Response|SignInOutcome $outcome): Response
-            {
-                return $this->renderSignInOutcome($outcome);
-            }
-        };
+        $renderer = new TestModeOutcomeRenderer();
         $renderer->setServices(self::getWiki()->services);
 
         return $renderer;
@@ -434,14 +455,14 @@ class TestModeTest extends YesWikiTestCase
     /** A test of someone the wiki has never seen: a real sign-in would create their account. */
     private function createPlan(): SignInOutcome
     {
-        return $this->flow->callback($this->testCallback(['sub' => 'testmode-marie', 'email' => 'testmode-marie@example.com', 'given_name' => 'Marie', 'family_name' => 'Dupont']), 'fake');
+        return $this->outcome($this->flow->callback($this->testCallback(['sub' => 'testmode-marie', 'email' => 'testmode-marie@example.com', 'given_name' => 'Marie', 'family_name' => 'Dupont']), 'fake'));
     }
 
     public function testATestSignsNobodyInAndChangesNothing(): void
     {
         $before = $this->countUserRevisions();
 
-        $outcome = $this->flow->callback($this->testCallback(attributes: ['sub' => 's', 'email' => 'testmode-new@example.com']), 'fake');
+        $outcome = $this->outcome($this->flow->callback($this->testCallback(attributes: ['sub' => 's', 'email' => 'testmode-new@example.com']), 'fake'));
 
         $this->assertSame('tested', $outcome->kind);
         $this->assertSame(PlanAction::Create, $outcome->plan?->action, 'a real sign-in would have created the account');
@@ -462,7 +483,7 @@ class TestModeTest extends YesWikiTestCase
         $request = $this->testCallback(['sub' => 'testmode-linked-subject', 'email' => 'testmode-taken@example.com']);
         $since = $this->latestJournalRow();
 
-        $outcome = $this->flow->callback($request, 'fake');
+        $outcome = $this->outcome($this->flow->callback($request, 'fake'));
 
         $this->assertSame('tested', $outcome->kind);
         $this->assertSame(PlanAction::UseLinked, $outcome->plan?->action);
@@ -478,7 +499,7 @@ class TestModeTest extends YesWikiTestCase
         $this->fake->failure = new ProviderFailure(FailureReason::ProviderRejected, 'invalid_client: ' . self::SECRET . ' was refused', null, ['sub' => 'someone']);
         $since = $this->latestJournalRow();
 
-        $outcome = $this->flow->callback($request, 'fake');
+        $outcome = $this->outcome($this->flow->callback($request, 'fake'));
 
         $this->assertSame('tested', $outcome->kind);
         $this->assertStringContainsString('invalid_client', $outcome->error);
@@ -497,7 +518,7 @@ class TestModeTest extends YesWikiTestCase
         $this->fake->failure = new \LogicException('boom');
         $since = $this->latestJournalRow();
 
-        $outcome = $this->flow->callback($request, 'fake');
+        $outcome = $this->outcome($this->flow->callback($request, 'fake'));
 
         $this->assertSame('tested', $outcome->kind);
         $this->assertSame(FailureReason::InternalError, $outcome->plan?->refusal);
@@ -521,7 +542,7 @@ class TestModeTest extends YesWikiTestCase
 
     public function testTheStepsOfATestThatWentThrough(): void
     {
-        $outcome = $this->flow->callback($this->testCallback(), 'fake');
+        $outcome = $this->outcome($this->flow->callback($this->testCallback(), 'fake'));
 
         $this->assertSame(['sent_to_provider:done', 'provider_answered:done', 'attributes_read:done', 'account_matched:done', 'groups:done'], self::steps($outcome));
         $this->assertSame('', $outcome->error);
@@ -530,8 +551,8 @@ class TestModeTest extends YesWikiTestCase
     public function testARefusedPlanStopsTheStepsWhereItWasRefused(): void
     {
         $this->flow = $this->flowFor(['fake' => ['type' => 'fake-redirect', 'create_accounts' => false]]);
-        $missing = $this->flow->callback($this->testCallback(['sub' => 'testmode-nomail']), 'fake');
-        $noAccount = $this->flow->callback($this->testCallback(['sub' => 'testmode-new', 'email' => 'testmode-new@example.com']), 'fake');
+        $missing = $this->outcome($this->flow->callback($this->testCallback(['sub' => 'testmode-nomail']), 'fake'));
+        $noAccount = $this->outcome($this->flow->callback($this->testCallback(['sub' => 'testmode-new', 'email' => 'testmode-new@example.com']), 'fake'));
 
         $this->assertSame(FailureReason::MissingAttribute, $missing->plan?->refusal);
         $this->assertSame(['sent_to_provider:done', 'provider_answered:done', 'attributes_read:failed', 'account_matched:not_reached', 'groups:not_reached'], self::steps($missing));
@@ -558,7 +579,7 @@ class TestModeTest extends YesWikiTestCase
     {
         $this->browser->actAs(null);
 
-        $this->assertSame(FailureReason::InvalidResponse, $this->flow->begin('fake', '', HandshakeMode::Test)->reason);
+        $this->assertSame(FailureReason::InvalidResponse, $this->outcome($this->flow->begin('fake', '', HandshakeMode::Test))->reason);
     }
 
     /** @return array<string, array{?string}> */
@@ -578,7 +599,7 @@ class TestModeTest extends YesWikiTestCase
         $this->browser->actAs($whoComesBack);
         $since = $this->latestJournalRow();
 
-        $outcome = $this->flow->callback($request, 'fake');
+        $outcome = $this->outcome($this->flow->callback($request, 'fake'));
 
         $this->assertSame('refused', $outcome->kind);
         $this->assertSame(FailureReason::InvalidResponse, $outcome->reason);
@@ -595,7 +616,7 @@ class TestModeTest extends YesWikiTestCase
         $this->browser->actAs(self::PLAIN);
         $since = $this->latestJournalRow();
 
-        $outcome = $this->flow->callback($request, 'off');
+        $outcome = $this->outcome($this->flow->callback($request, 'off'));
 
         $this->assertSame('refused', $outcome->kind);
         $this->assertSame(FailureReason::InvalidResponse, $outcome->reason);
@@ -609,7 +630,7 @@ class TestModeTest extends YesWikiTestCase
         self::getWiki()->services->get(GroupManager::class)->removeMembers('admins', [self::OTHER_ADMIN]);
         self::getWiki()->services->get(AclService::class)->startNewRequest();
 
-        $this->assertSame(FailureReason::InvalidResponse, $this->flow->callback($request, 'fake')->reason);
+        $this->assertSame(FailureReason::InvalidResponse, $this->outcome($this->flow->callback($request, 'fake'))->reason);
         $this->assertSame(0, $this->fake->completed);
     }
 
@@ -618,13 +639,13 @@ class TestModeTest extends YesWikiTestCase
         $this->assertInstanceOf(Response::class, $this->flow->begin('fake', ''));
         $request = new Request(cookies: [HandshakeCookie::NAME => $this->issuedCookie(HandshakeCookie::NAME)]);
 
-        $this->assertSame('signed_in', $this->flow->callback($request, 'fake')->kind, 'only a test handshake is a test');
+        $this->assertSame('signed_in', $this->outcome($this->flow->callback($request, 'fake'))->kind, 'only a test handshake is a test');
         $this->assertSame(1, $this->service->applied);
     }
 
     public function testATestWorksOnASwitchedOffProvider(): void
     {
-        $outcome = $this->flow->callback($this->testCallback(provider: 'off'), 'off');
+        $outcome = $this->outcome($this->flow->callback($this->testCallback(provider: 'off'), 'off'));
 
         $this->assertSame('tested', $outcome->kind);
         $this->assertSame('', $outcome->error);
@@ -748,7 +769,7 @@ class TestModeTest extends YesWikiTestCase
     {
         $this->flow = $this->flowFor(['fake' => ['type' => 'fake-redirect', 'label' => 'Fake SSO', 'create_accounts' => false]]);
 
-        $html = $this->renderTested($this->flow->callback($this->testCallback(), 'fake'));
+        $html = $this->renderTested($this->outcome($this->flow->callback($this->testCallback(), 'fake')));
 
         $this->assertStringContainsString(htmlspecialchars(_t('SIGN_IN_TEST_WOULD_REFUSE', ['reason' => _t('SIGN_IN_ADMIN_NO_ACCOUNT')]), ENT_QUOTES), $html);
         $this->assertStringContainsString('no account has this email and account creation is off', $html, 'the raw error');
@@ -758,7 +779,7 @@ class TestModeTest extends YesWikiTestCase
     {
         $this->flow = $this->flowFor(['fake' => ['type' => 'fake-redirect', 'group_mapping' => [['provider' => 'testmode-editors', 'wiki' => 'TestModeEditors']]]]);
 
-        $html = $this->renderTested($this->flow->callback($this->testCallback(['sub' => 'testmode-new', 'email' => 'testmode-new@example.com', 'groups' => ['testmode-editors', 'testmode-unmapped']]), 'fake'));
+        $html = $this->renderTested($this->outcome($this->flow->callback($this->testCallback(['sub' => 'testmode-new', 'email' => 'testmode-new@example.com', 'groups' => ['testmode-editors', 'testmode-unmapped']]), 'fake')));
 
         $this->assertStringContainsString('TestModeEditors', $html, 'the group a real sign-in would add');
         $this->assertStringContainsString('testmode-unmapped', $html, 'a group no row names');
@@ -769,7 +790,7 @@ class TestModeTest extends YesWikiTestCase
         $request = $this->testCallback(['sub' => '<script>alert("sub")</script>', 'email' => 'testmode-new@example.com', '<b>odd</b>' => 'x']);
         $this->fake->failure = new ProviderFailure(FailureReason::ProviderRejected, '<img src=x onerror=alert(1)> ' . self::SECRET, null, ['sub' => '<script>alert("sub")</script>']);
 
-        $html = $this->renderTested($this->flow->callback($request, 'fake'));
+        $html = $this->renderTested($this->outcome($this->flow->callback($request, 'fake')));
 
         $this->assertStringNotContainsString('<script>alert', $html);
         $this->assertStringNotContainsString('<img src=x', $html);
@@ -780,7 +801,7 @@ class TestModeTest extends YesWikiTestCase
 
     public function testAnAttributeNameIsEscapedToo(): void
     {
-        $html = $this->renderTested($this->flow->callback($this->testCallback(['sub' => 's', 'email' => 'testmode-new@example.com', '<b>odd</b>' => 'x']), 'fake'));
+        $html = $this->renderTested($this->outcome($this->flow->callback($this->testCallback(['sub' => 's', 'email' => 'testmode-new@example.com', '<b>odd</b>' => 'x']), 'fake')));
 
         $this->assertStringNotContainsString('<b>odd</b>', $html);
         $this->assertStringContainsString('&lt;b&gt;odd&lt;/b&gt;', $html);
@@ -841,6 +862,7 @@ class TestModeTest extends YesWikiTestCase
         $this->servicesWere = null;
     }
 
+    /** @param array<string, mixed> $posted */
     private function request(string $method, array $posted = []): void
     {
         self::getWiki()->services->get(CurrentRequest::class)->replace(Request::create('/?admin/sign-in/x/test', $method, $posted));
@@ -926,7 +948,7 @@ class TestModeTest extends YesWikiTestCase
     /** Boosted, the link would fetch the provider's 302 as an XHR across origins: the browser must leave for real, as from the list. */
     public function testTestingAgainLeavesWithoutBoostedNavigation(): void
     {
-        $html = $this->renderTested($this->flow->callback($this->testCallback(), 'fake'));
+        $html = $this->renderTested($this->outcome($this->flow->callback($this->testCallback(), 'fake')));
 
         $this->assertMatchesRegularExpression('#<a [^>]*href="[^"]*admin/sign-in/fake/test"[^>]*hx-boost="false"#', $html);
     }

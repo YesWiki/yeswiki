@@ -26,6 +26,7 @@ trait OidcTestKeys
         self::assertNotFalse($key, 'openssl can make an RSA key');
         openssl_pkey_export($key, $pem);
         $details = openssl_pkey_get_details($key);
+        self::assertNotFalse($details, 'openssl describes the key it made');
         self::$privateKey = $pem;
         self::$publicKey = ['n' => JWT::urlsafeB64Encode($details['rsa']['n']), 'e' => JWT::urlsafeB64Encode($details['rsa']['e'])];
     }

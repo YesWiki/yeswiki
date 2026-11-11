@@ -24,7 +24,7 @@ class ApiLoginTest extends YesWikiTestCase
 
     private Request $requestWas;
 
-    private $sectionWas;
+    private mixed $sectionWas = null;
 
     private int $journalFloor = 0;
 

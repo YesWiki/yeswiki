@@ -91,7 +91,12 @@ final class OidcProvider implements RedirectProvider
         $endpoints = $this->discovery->endpoints($this->config);
         $client = $this->client($endpoints, $handshake->callbackUrl);
         $client->setPkceCode((string)$handshake->get('pkce'));
-        $token = $this->call('token', fn (): AccessToken => $client->getAccessToken('authorization_code', ['code' => $code]));
+        $token = $this->call('token', function () use ($client, $code): AccessToken {
+            $token = $client->getAccessToken('authorization_code', ['code' => $code]);
+
+            // the generic client always makes an AccessToken; anything else would carry no ID token to read
+            return $token instanceof AccessToken ? $token : throw new ProviderFailure(FailureReason::InvalidResponse, 'the token endpoint answered with no usable access token');
+        });
         $claims = $this->verifiedClaims($token, $endpoints, (string)$handshake->get('nonce'));
         $userinfo = $this->call('userinfo', fn (): array => $client->getResourceOwner($token)->toArray());
 

@@ -60,7 +60,7 @@ class HandshakeCookieTest extends YesWikiTestCase
     public function testIssuedCookieIsReadBackAndATamperedOneIsNot(): void
     {
         $value = $this->cookie->encode($this->handshake(expires: 2000));
-        $this->assertSame('acme', $this->cookie->read($this->requestWith($value), 1000)->providerId);
+        $this->assertSame('acme', $this->cookie->read($this->requestWith($value), 1000)?->providerId);
         $this->assertNull($this->cookie->read($this->requestWith($value . 'x'), 1000));
         $this->assertNull($this->cookie->read($this->requestWith($value), 2001));
     }
@@ -68,6 +68,7 @@ class HandshakeCookieTest extends YesWikiTestCase
     public function testEverythingTheHandshakeRemembersComesBack(): void
     {
         $read = $this->cookie->read($this->requestWith($this->cookie->encode($this->handshake(expires: 2000))), 1000);
+        $this->assertNotNull($read);
 
         $this->assertSame('/back', $read->returnUrl);
         $this->assertSame('https://w/callback', $read->callbackUrl);

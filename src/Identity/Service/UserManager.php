@@ -276,7 +276,8 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface, C
         if ($tag === '' || $email === '') {
             throw new \Exception('createLinked needs a tag and an email');
         }
-        if (!empty($this->getOneByName($tag))) {
+        $taken = $this->getOneByName($tag);
+        if ($taken !== null) {
             throw new UserNameAlreadyUsedException();
         }
         if (ReservedTags::isReserved($tag)) {

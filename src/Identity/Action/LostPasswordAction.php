@@ -216,6 +216,12 @@ class LostPasswordAction extends YesWikiAction implements RegisteredAction
         }
     }
 
+    /** Only a local account has a password, and only while local accounts can sign in: a linked account is signed in by its provider alone. */
+    private function hasAPasswordToRecover(User $user): bool
+    {
+        return $user->provider() === null && $this->getService(ProviderRegistry::class)->localEnabled();
+    }
+
     /**
      * In order to update h·er·is password, the user provides a key (sent using sendPasswordRecoveryEmail()) The new password is accepted only if the key matches with the value in triples table.
      *
@@ -226,13 +232,7 @@ class LostPasswordAction extends YesWikiAction implements RegisteredAction
      *
      * @throws BadFormatPasswordException if $password doesn't meet the site's password policy
      */
-    /** Only a local account has a password, and only while local accounts can sign in: a linked account is signed in by its provider alone. */
-    private function hasAPasswordToRecover(User $user): bool
-    {
-        return $user->provider() === null && $this->getService(ProviderRegistry::class)->localEnabled();
-    }
-
-    private function resetPassword(string $userName, string $key, string $password)
+    private function resetPassword(string $userName, string $key, string $password): bool
     {
         if ($this->hibernationService->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));

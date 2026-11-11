@@ -2,6 +2,7 @@
 
 namespace YesWiki\Test\Identity\SignIn;
 
+use Symfony\Component\DependencyInjection\ContainerInterface;
 use YesWiki\Content\Entity\ContentTypeSchema;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Identity\Entity\User;
@@ -16,7 +17,7 @@ class AccountLinksTest extends YesWikiTestCase
 {
     private const TAGS = ['SsoLinkA', 'SsoLinkB', 'SsoLinkC', 'SsoLinkD', 'SsoLinkE', 'SsoLinkF', 'SsoLinkG', 'SsoLinkH'];
 
-    private $services;
+    private ContainerInterface $services;
     private UserManager $users;
     private AccountLinks $links;
 
@@ -49,7 +50,32 @@ class AccountLinksTest extends YesWikiTestCase
 
     private function makeUser(string $tag, string $email): User
     {
-        return $this->users->create($tag, $email, 'Aa1!aaaaRegression');
+        $user = $this->users->create($tag, $email, 'Aa1!aaaaRegression');
+        $this->assertNotNull($user, "$tag was created");
+
+        return $user;
+    }
+
+    private function account(string $tag): User
+    {
+        $user = $this->users->getOneByName($tag);
+        $this->assertNotNull($user, "$tag exists");
+
+        return $user;
+    }
+
+    /**
+     * @param ?array<string, mixed> $page
+     *
+     * @return array<array-key, mixed>
+     */
+    private function bodyOf(?array $page): array
+    {
+        $this->assertNotNull($page);
+        $body = $page['body'] ?? null;
+        $this->assertIsArray($body);
+
+        return $body;
     }
 
     public function testFindsTheAccountByProviderAndSubject(): void
@@ -72,8 +98,8 @@ class AccountLinksTest extends YesWikiTestCase
     {
         $user = $this->makeUser('SsoLinkB', 'ssolinkb@example.com');
         $this->links->link($user, 'acme', 'sub-1');
-        $this->assertSame('', $this->users->getOneByName('SsoLinkB')->getPassword());
-        $this->assertSame('acme', $this->users->getOneByName('SsoLinkB')->provider());
+        $this->assertSame('', $this->account('SsoLinkB')->getPassword());
+        $this->assertSame('acme', $this->account('SsoLinkB')->provider());
     }
 
     public function testLinkIsSeenByTheNextReadOfTheSameRequest(): void
@@ -84,18 +110,18 @@ class AccountLinksTest extends YesWikiTestCase
         $pages->getOne('SsoLinkB', null, true, true);
         $pages->getOne('SsoLinkB');
         $this->links->link($user, 'acme', 'sub-1');
-        $this->assertSame('sub-1', $pages->getOne('SsoLinkB', null, true, true)['body']['sso_subject']);
-        $this->assertSame('sub-1', $this->links->subjectOf($this->users->getOneByName('SsoLinkB')));
-        $this->links->link($this->users->getOneByName('SsoLinkB'), 'acme', 'sub-2');
-        $this->assertSame('sub-2', $this->links->subjectOf($this->users->getOneByName('SsoLinkB')));
+        $this->assertSame('sub-1', $this->bodyOf($pages->getOne('SsoLinkB', null, true, true))['sso_subject']);
+        $this->assertSame('sub-1', $this->links->subjectOf($this->account('SsoLinkB')));
+        $this->links->link($this->account('SsoLinkB'), 'acme', 'sub-2');
+        $this->assertSame('sub-2', $this->links->subjectOf($this->account('SsoLinkB')));
     }
 
     public function testUserUpdateCannotSetTheKeys(): void
     {
         $user = $this->makeUser('SsoLinkC', 'ssolinkc@example.com');
         $this->users->update($user, ['sso_provider' => 'evil', 'sso_subject' => 'x', 'motto' => 'm']);
-        $this->assertNull($this->users->getOneByName('SsoLinkC')->provider());
-        $this->assertSame('m', $this->users->getOneByName('SsoLinkC')['motto']);
+        $this->assertNull($this->account('SsoLinkC')->provider());
+        $this->assertSame('m', $this->account('SsoLinkC')['motto']);
     }
 
     public function testAnyPageSaveKeepsTheStoredKeys(): void
@@ -103,22 +129,22 @@ class AccountLinksTest extends YesWikiTestCase
         $user = $this->makeUser('SsoLinkD', 'ssolinkd@example.com');
         $this->links->link($user, 'acme', 'sub-1');
         $pages = $this->services->get(PageManager::class);
-        $body = $pages->getOne('SsoLinkD', null, true, true)['body'];
+        $body = $this->bodyOf($pages->getOne('SsoLinkD', null, true, true));
         $body['sso_subject'] = 'stolen';
         unset($body['sso_provider']);
         $pages->save('SsoLinkD', $body, '', true);
-        $this->assertSame('sub-1', $this->links->subjectOf($this->users->getOneByName('SsoLinkD')));
-        $this->assertSame('acme', $this->users->getOneByName('SsoLinkD')->provider());
+        $this->assertSame('sub-1', $this->links->subjectOf($this->account('SsoLinkD')));
+        $this->assertSame('acme', $this->account('SsoLinkD')->provider());
     }
 
     public function testAPageSaveCannotLinkALocalAccount(): void
     {
         $this->makeUser('SsoLinkE', 'ssolinke@example.com');
         $pages = $this->services->get(PageManager::class);
-        $body = $pages->getOne('SsoLinkE', null, true, true)['body'];
+        $body = $this->bodyOf($pages->getOne('SsoLinkE', null, true, true));
         $body['sso_provider'] = 'acme';
         $pages->save('SsoLinkE', $body, '', true);
-        $this->assertNull($this->users->getOneByName('SsoLinkE')->provider());
+        $this->assertNull($this->account('SsoLinkE')->provider());
     }
 
     public function testTheKeysAreHiddenFromGenericReads(): void
@@ -128,8 +154,8 @@ class AccountLinksTest extends YesWikiTestCase
         $this->links->link($user, 'acme', 'sub-1');
         self::actAs(null);
         $page = $this->services->get(PageManager::class)->getOne('SsoLinkF');
-        $this->assertArrayNotHasKey('sso_provider', $page['body']);
-        $this->assertArrayNotHasKey('sso_subject', $page['body']);
+        $this->assertArrayNotHasKey('sso_provider', $this->bodyOf($page));
+        $this->assertArrayNotHasKey('sso_subject', $this->bodyOf($page));
     }
 
     public function testFirstAndLastNameAreLockedFieldsOfTheUserForm(): void
@@ -142,6 +168,7 @@ class AccountLinksTest extends YesWikiTestCase
     public function testCreateLinkedMakesAnAccountWithNoPassword(): void
     {
         $user = $this->users->createLinked('SsoLinkG', 'ssolinkg@example.com', ['first_name' => 'A', 'last_name' => 'B'], 'acme', 'sub-9');
+        $this->assertNotNull($user);
         $this->assertSame('', $user->getPassword());
         $this->assertSame('acme', $user->provider());
         $this->assertSame('sub-9', $this->links->subjectOf($user));

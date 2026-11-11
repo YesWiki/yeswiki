@@ -48,11 +48,17 @@ class OidcDiscovery
 
             throw new ProviderFailure(FailureReason::ConfigurationInvalid, "no discovery_url, and no $settings: set discovery_url, or authorize_url, token_url and userinfo_url");
         }
-        if ($missing !== []) {
+        if ($missing !== [] || $endpoints['authorize'] === null || $endpoints['token'] === null || $endpoints['userinfo'] === null) {
             throw new ProviderFailure(FailureReason::ConfigurationInvalid, "the discovery document at $url names no " . implode(', ', $missing) . ' endpoint');
         }
 
-        return $endpoints;
+        return [
+            'authorize' => $endpoints['authorize'],
+            'token' => $endpoints['token'],
+            'userinfo' => $endpoints['userinfo'],
+            'issuer' => $endpoints['issuer'],
+            'jwks_uri' => $endpoints['jwks_uri'],
+        ];
     }
 
     /** @return array<string, mixed> */

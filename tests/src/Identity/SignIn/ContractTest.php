@@ -38,6 +38,7 @@ class ContractTest extends TestCase
         $h = new Handshake('acme', '/back', 'https://w/cb', HandshakeMode::Test, 1000);
         $h->set('state', 'abc');
         $again = Handshake::fromPayload($h->toPayload());
+        $this->assertNotNull($again);
         $this->assertSame('abc', $again->get('state'));
         $this->assertSame(HandshakeMode::Test, $again->mode);
         $this->assertNull(Handshake::fromPayload(['p' => 'only']));

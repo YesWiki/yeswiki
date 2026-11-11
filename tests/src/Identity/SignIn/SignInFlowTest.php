@@ -289,6 +289,22 @@ class SignInFlowTest extends YesWikiTestCase
         return $browser;
     }
 
+    /** What the flow answered, which this test expects to be an outcome rather than a redirect. */
+    private function outcome(Response|SignInOutcome $answer): SignInOutcome
+    {
+        $this->assertInstanceOf(SignInOutcome::class, $answer);
+
+        return $answer;
+    }
+
+    /** What the flow answered, which this test expects to be a redirect rather than an outcome. */
+    private function response(Response|SignInOutcome $answer): Response
+    {
+        $this->assertInstanceOf(Response::class, $answer);
+
+        return $answer;
+    }
+
     private function issuedCookie(string $name): string
     {
         return (string)($_COOKIE[$name] ?? '');
@@ -370,7 +386,7 @@ class SignInFlowTest extends YesWikiTestCase
 
     public function testBeginRedirectsAndIssuesTheHandshake(): void
     {
-        $response = $this->flow->begin('fake', '/?PagePrincipale');
+        $response = $this->response($this->flow->begin('fake', '/?PagePrincipale'));
         $this->assertSame(302, $response->getStatusCode());
         $this->assertNotEmpty($this->issuedCookie('yw-sign-in'));
     }
@@ -403,13 +419,13 @@ class SignInFlowTest extends YesWikiTestCase
 
     public function testADisabledProviderIsRefused(): void
     {
-        $this->assertSame(FailureReason::ProviderDisabled, $this->flow->begin('off', '/')->reason);
+        $this->assertSame(FailureReason::ProviderDisabled, $this->outcome($this->flow->begin('off', '/'))->reason);
         $this->assertSame('', $this->issuedCookie('yw-sign-in'));
     }
 
     public function testAnUninstalledTypeIsRefusedLikeASwitchedOffProvider(): void
     {
-        $outcome = $this->flow->begin('orphan', '/');
+        $outcome = $this->outcome($this->flow->begin('orphan', '/'));
 
         $this->assertSame(FailureReason::ProviderDisabled, $outcome->reason);
         $this->assertSame('orphan', $outcome->config?->id);
@@ -417,7 +433,7 @@ class SignInFlowTest extends YesWikiTestCase
 
     public function testAnUnknownProviderIsRefusedAndNothingIsRecorded(): void
     {
-        $outcome = $this->flow->begin('nobody-configured-this', '/');
+        $outcome = $this->outcome($this->flow->begin('nobody-configured-this', '/'));
 
         $this->assertSame(FailureReason::ProviderDisabled, $outcome->reason);
         $this->assertNull($outcome->config);
@@ -426,7 +442,7 @@ class SignInFlowTest extends YesWikiTestCase
 
     public function testAPasswordProviderHasNoRedirectToBegin(): void
     {
-        $outcome = $this->flow->begin('fakepw', '/');
+        $outcome = $this->outcome($this->flow->begin('fakepw', '/'));
 
         $this->assertSame(FailureReason::ConfigurationInvalid, $outcome->reason);
         $this->assertSame('', $this->issuedCookie('yw-sign-in'));
@@ -436,7 +452,7 @@ class SignInFlowTest extends YesWikiTestCase
     {
         $this->fake->failureAtBegin = new ProviderFailure(FailureReason::ProviderUnreachable, 'discovery timed out');
 
-        $outcome = $this->flow->begin('fake', '/');
+        $outcome = $this->outcome($this->flow->begin('fake', '/'));
 
         $this->assertSame(FailureReason::ProviderUnreachable, $outcome->reason);
         $this->assertSame('', $this->issuedCookie('yw-sign-in'));
@@ -447,12 +463,12 @@ class SignInFlowTest extends YesWikiTestCase
     {
         $this->fake->failureAtBegin = new \LogicException('boom');
 
-        $this->assertSame(FailureReason::InternalError, $this->flow->begin('fake', '/')->reason);
+        $this->assertSame(FailureReason::InternalError, $this->outcome($this->flow->begin('fake', '/'))->reason);
     }
 
     public function testASuccessfulCallbackSignsInRememberedAndWritesNoJournal(): void
     {
-        $outcome = $this->flow->callback($this->callbackRequest(), 'fake');
+        $outcome = $this->outcome($this->flow->callback($this->callbackRequest(), 'fake'));
         $this->assertSame('signed_in', $outcome->kind);
         $this->assertSame(0, $this->countJournal("action LIKE 'login.%'"));
         $this->assertNotEmpty($this->issuedCookie('yw-auth'));
@@ -468,18 +484,18 @@ class SignInFlowTest extends YesWikiTestCase
         $this->flow->begin('fake', $url);
         $request = new Request(cookies: [HandshakeCookie::NAME => $this->issuedCookie(HandshakeCookie::NAME)]);
 
-        $this->assertSame($url, $this->flow->callback($request, 'fake')->url);
+        $this->assertSame($url, $this->outcome($this->flow->callback($request, 'fake'))->url);
     }
 
     public function testWithoutAnIdTheProviderComesFromTheHandshake(): void
     {
-        $this->assertSame('signed_in', $this->flow->callback($this->callbackRequest(), null)->kind);
+        $this->assertSame('signed_in', $this->outcome($this->flow->callback($this->callbackRequest(), null))->kind);
     }
 
     public function testAWarningIsRecordedWithoutRecordingTheSuccess(): void
     {
         // the account's new email is already used by another account
-        $this->assertSame('signed_in', $this->flow->callback($this->callbackRequestWithTakenEmail(), 'fake')->kind);
+        $this->assertSame('signed_in', $this->outcome($this->flow->callback($this->callbackRequestWithTakenEmail(), 'fake'))->kind);
         $this->assertSame(1, $this->countJournal("action = 'login.warning.email_collision.fake'"));
         $this->assertSame(0, $this->countJournal("action = 'login.failed'"));
     }
@@ -497,7 +513,7 @@ class SignInFlowTest extends YesWikiTestCase
     public function testAProviderFailureIsRefusedAndJournaled(): void
     {
         $this->fake->failWith(new ProviderFailure(FailureReason::ProviderRejected, 'access_denied'));
-        $outcome = $this->flow->callback($this->callbackRequest(), 'fake');
+        $outcome = $this->outcome($this->flow->callback($this->callbackRequest(), 'fake'));
         $this->assertSame(FailureReason::ProviderRejected, $outcome->reason);
         $this->assertSame(1, $this->countJournal("action = 'login.refused.provider_rejected.fake'"));
         $this->assertSame(1, $this->countJournal("action = 'login.failed'"));
@@ -507,7 +523,7 @@ class SignInFlowTest extends YesWikiTestCase
     {
         $this->fake->failWith(new ProviderFailure(FailureReason::ProviderRejected, 'admin text', 'Ask your manager'));
 
-        $outcome = $this->flow->callback($this->callbackRequest(), 'fake');
+        $outcome = $this->outcome($this->flow->callback($this->callbackRequest(), 'fake'));
 
         $this->assertSame('admin text', $outcome->detail);
         $this->assertSame('Ask your manager', $outcome->message);
@@ -529,7 +545,7 @@ class SignInFlowTest extends YesWikiTestCase
     {
         $this->flow = $this->flowFor(['fake' => ['type' => 'fake-redirect', 'create_accounts' => false]]);
 
-        $outcome = $this->flow->callback($this->callbackRequest(), 'fake');
+        $outcome = $this->outcome($this->flow->callback($this->callbackRequest(), 'fake'));
 
         $this->assertSame(FailureReason::NoAccount, $outcome->reason);
         $this->assertSame('flow-new@example.com', $outcome->who);
@@ -547,7 +563,7 @@ class SignInFlowTest extends YesWikiTestCase
         $this->flow = $this->flowFor(['fake' => ['type' => 'fake-redirect', 'label' => 'Fake SSO', 'attributes' => ['email' => 'mail']]]);
         $this->fake->attributes = ['sub' => 'flow-nomail', 'given_name' => 'No'];
 
-        $outcome = $this->flow->callback($this->callbackRequest(), 'fake');
+        $outcome = $this->outcome($this->flow->callback($this->callbackRequest(), 'fake'));
 
         $this->assertSame(FailureReason::MissingAttribute, $outcome->reason);
         $this->assertMatchesRegularExpression('/["«]\s?mail\s?["»]/u', $outcome->messageForPerson(), 'the attribute is named, quoted');
@@ -559,13 +575,13 @@ class SignInFlowTest extends YesWikiTestCase
     {
         $this->fake->failWith(new ProviderFailure(FailureReason::MissingAttribute, 'no uid', 'Ask IT to release your uid'));
 
-        $this->assertSame('Ask IT to release your uid', $this->flow->callback($this->callbackRequest(), 'fake')->messageForPerson());
+        $this->assertSame('Ask IT to release your uid', $this->outcome($this->flow->callback($this->callbackRequest(), 'fake'))->messageForPerson());
     }
 
     public function testAnUnexpectedExceptionBecomesInternalError(): void
     {
         $this->fake->failWith(new \LogicException('boom'));
-        $this->assertSame(FailureReason::InternalError, $this->flow->callback($this->callbackRequest(), 'fake')->reason);
+        $this->assertSame(FailureReason::InternalError, $this->outcome($this->flow->callback($this->callbackRequest(), 'fake'))->reason);
     }
 
     public function testASwitchedOffProviderIsRefusedOnTheWayBack(): void
@@ -573,7 +589,7 @@ class SignInFlowTest extends YesWikiTestCase
         $request = $this->callbackRequest();
         $this->flow = $this->flowFor(['fake' => ['type' => 'fake-redirect', 'enabled' => false]]);
 
-        $outcome = $this->flow->callback($request, 'fake');
+        $outcome = $this->outcome($this->flow->callback($request, 'fake'));
 
         $this->assertSame(FailureReason::ProviderDisabled, $outcome->reason);
         $this->assertSame(0, $this->fake->completed);
@@ -594,7 +610,7 @@ class SignInFlowTest extends YesWikiTestCase
     #[DataProvider('badHandshakes')]
     public function testNoValidHandshakeIsARefusedPageNotACrash(?string $cookie): void
     {
-        $outcome = $this->flow->callback($this->requestWithCookie($cookie), 'fake');
+        $outcome = $this->outcome($this->flow->callback($this->requestWithCookie($cookie), 'fake'));
         $this->assertSame('refused', $outcome->kind);
         $this->assertSame(FailureReason::InvalidResponse, $outcome->reason);
         $this->assertSame(0, $this->fake->completed, 'the provider is never asked');
@@ -602,7 +618,7 @@ class SignInFlowTest extends YesWikiTestCase
 
     public function testNoHandshakeAndNoIdIsARefusedPageNotACrash(): void
     {
-        $outcome = $this->flow->callback(new Request(), null);
+        $outcome = $this->outcome($this->flow->callback(new Request(), null));
 
         $this->assertSame(FailureReason::InvalidResponse, $outcome->reason);
         $this->assertNull($outcome->config);

@@ -95,7 +95,7 @@ class OidcProviderTest extends TestCase
 
     private function answer(string $path, Response|\Throwable ...$answers): void
     {
-        $this->answers[$path] = array_merge($this->answers[$path] ?? [], $answers);
+        $this->answers[$path] = array_values(array_merge($this->answers[$path] ?? [], $answers));
     }
 
     private function handshake(string $callback = self::CALLBACK): Handshake
@@ -168,7 +168,7 @@ class OidcProviderTest extends TestCase
     {
         parse_str((string)parse_url($url, PHP_URL_QUERY), $query);
 
-        return array_map('strval', $query);
+        return self::strings($query);
     }
 
     /** @return array<string, string> */
@@ -176,7 +176,26 @@ class OidcProviderTest extends TestCase
     {
         parse_str((string)$request->getBody(), $form);
 
-        return array_map('strval', $form);
+        return self::strings($form);
+    }
+
+    /**
+     * The single values of a parsed query: a key sent as a list is not one of the parameters these tests look at.
+     *
+     * @param array<array-key, mixed> $parsed
+     *
+     * @return array<string, string>
+     */
+    private static function strings(array $parsed): array
+    {
+        $strings = [];
+        foreach ($parsed as $key => $value) {
+            if (is_string($value)) {
+                $strings[(string)$key] = $value;
+            }
+        }
+
+        return $strings;
     }
 
     private function sentTo(string $path): RequestInterface
@@ -193,6 +212,7 @@ class OidcProviderTest extends TestCase
     {
         $h = $this->handshake();
         $url = $this->provider()->begin($h)->headers->get('Location');
+        $this->assertNotNull($url);
         $this->assertStringContainsString('code_challenge_method=S256', $url);
         $this->assertStringContainsString('state=' . $h->get('state'), $url);
         $this->assertStringContainsString('nonce=' . $h->get('nonce'), $url);

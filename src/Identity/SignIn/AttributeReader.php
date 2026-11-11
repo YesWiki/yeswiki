@@ -10,6 +10,8 @@ final class AttributeReader
 {
     /**
      * First usable value of an attribute, as a string.
+     *
+     * @param array<array-key, mixed> $attributes
      */
     public static function one(array $attributes, string $name): ?string
     {
@@ -18,6 +20,8 @@ final class AttributeReader
 
     /**
      * Every usable value of an attribute (a single value or a list).
+     *
+     * @param array<array-key, mixed> $attributes
      *
      * @return list<string>
      */
@@ -43,6 +47,10 @@ final class AttributeReader
      * A copy of the attributes safe to write to a log: binary values are
      * described, and the whole stays under $maxBytes once encoded as JSON.
      * When too large, the largest keys are dropped and listed under `_truncated`.
+     *
+     * @param array<array-key, mixed> $attributes
+     *
+     * @return array<array-key, mixed>
      */
     public static function forLog(array $attributes, int $maxBytes = 16384): array
     {

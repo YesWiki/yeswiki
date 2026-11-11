@@ -101,6 +101,11 @@ class SignInHealthChecksTest extends YesWikiTestCase
         };
     }
 
+    /**
+     * @param array<string, mixed>   $section
+     * @param array<string, int>     $counts
+     * @param ?list<ProviderType>    $types
+     */
     private function check(string $id, array $section, array $counts = [], bool $ldapLoaded = true, ?array $types = null): HealthCheck
     {
         foreach ($this->checks($section, $counts, $ldapLoaded, $types)->healthChecks() as $check) {
@@ -125,12 +130,15 @@ class SignInHealthChecksTest extends YesWikiTestCase
 
     public function testUnknownTypeIsReported(): void
     {
-        $this->assertStringContainsString('gone', $this->check('sign-in-config', ['a' => ['type' => 'gone']])->failure());
+        $failure = $this->check('sign-in-config', ['a' => ['type' => 'gone']])->failure();
+        $this->assertNotNull($failure);
+        $this->assertStringContainsString('gone', $failure);
     }
 
     public function testATypeNameCollisionIsReported(): void
     {
         $failure = $this->check('sign-in-config', [], [], true, [$this->type('local'), $this->type('local')])->failure();
+        $this->assertNotNull($failure);
         $this->assertStringContainsString('declared twice', $failure);
     }
 

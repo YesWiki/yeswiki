@@ -69,6 +69,7 @@ class ProviderRegistryTest extends YesWikiTestCase
         };
     }
 
+    /** @param array<string, mixed> $section */
     private function registry(array $section): ProviderRegistry
     {
         $values = ['sso_providers' => $section];

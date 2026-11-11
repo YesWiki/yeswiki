@@ -260,7 +260,11 @@ class ProvidersEditor
         return [$entry, $errors];
     }
 
-    /** At least one entry is on, and its type is installed. */
+    /**
+     * At least one entry is on, and its type is installed.
+     *
+     * @param array<string, array<string, mixed>> $entries
+     */
     private function hasEnabledProvider(array $entries): bool
     {
         $types = $this->registry->types();

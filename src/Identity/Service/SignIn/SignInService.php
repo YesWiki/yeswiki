@@ -20,6 +20,9 @@ use YesWiki\Kernel\Service\Lock\Locks;
 
 /**
  * Decides everything about a sign-in and writes nothing. Admin test mode calls only plan(), so it cannot disagree with a real sign-in.
+ * What every step of plan() starts from: the provider, the user ID, the attributes, how each field was read, and who the attempt is recorded under.
+ *
+ * @phpstan-type Base array{0: ProviderConfig, 1: ?string, 2: array<string, mixed>, 3: array<string, array{attribute: string, present: bool}>, 4: string}
  */
 class SignInService
 {
@@ -109,7 +112,11 @@ class SignInService
         return $this->accept($base, $action, $owner, $email);
     }
 
-    /** The local form has already checked the password: the plan names the account and nothing else changes. */
+    /**
+     * The local form has already checked the password: the plan names the account and nothing else changes.
+     *
+     * @param Base $base
+     */
     private function planLocal(array $base): SignInPlan
     {
         [$config, , $attrs, $use] = $base;
@@ -238,11 +245,12 @@ class SignInService
 
     private function nameMatchOpen(ProviderConfig $config): bool
     {
-        if (!$config->isUpgradedDirectory()) {
+        $until = $config->matchByNameUntil;
+        if ($until === null) {
             return false;
         }
         try {
-            $limit = new \DateTimeImmutable($config->matchByNameUntil);
+            $limit = new \DateTimeImmutable($until);
         } catch (\Exception) {
             return false;
         }
@@ -250,7 +258,11 @@ class SignInService
         return new \DateTimeImmutable() < $limit;
     }
 
-    /** email_verified arrives as a boolean or as a string, depending on the provider. */
+    /**
+     * email_verified arrives as a boolean or as a string, depending on the provider.
+     *
+     * @param array<string, mixed> $attrs
+     */
     private function isUnverified(array $attrs): bool
     {
         if (!array_key_exists('email_verified', $attrs)) {
@@ -322,7 +334,11 @@ class SignInService
         return $profile;
     }
 
-    /** An existing account signs in: refresh its profile and groups, guarding the email. */
+    /**
+     * An existing account signs in: refresh its profile and groups, guarding the email.
+     *
+     * @param Base $base
+     */
     private function accept(array $base, PlanAction $action, User $user, ?string $email): SignInPlan
     {
         [$config, , $attrs] = $base;
@@ -349,6 +365,8 @@ class SignInService
     }
 
     /**
+     * @param Base                                       $base
+     * @param array<string, string>                      $profile
      * @param list<array{kind: string, message: string}> $warnings
      * @param list<string>                               $current  wiki groups the account is in now
      */
@@ -364,6 +382,7 @@ class SignInService
         return new SignInPlan($config->id, $subject, $action, $tag, null, '', $profile, $add, $remove, $ignored, $warnings, $use, AttributeReader::forLog($attrs), $who);
     }
 
+    /** @param Base $base */
     private function refuse(array $base, FailureReason $reason, string $detail): SignInPlan
     {
         [$config, $subject, $attrs, $use, $who] = $base;

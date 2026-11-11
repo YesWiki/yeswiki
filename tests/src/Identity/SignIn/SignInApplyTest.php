@@ -2,6 +2,7 @@
 
 namespace YesWiki\Test\Identity\SignIn;
 
+use Symfony\Component\DependencyInjection\ContainerInterface;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Identity\Entity\User;
 use YesWiki\Identity\Service\GroupManager;
@@ -31,13 +32,14 @@ class SignInApplyTest extends YesWikiTestCase
     private const TAGS = ['SsoApplyAcct', 'Hib', 'winner-account'];
     private const GROUPS = ['Editors', 'Hand', 'Readers', 'SsoNewGroup'];
 
-    private $services;
+    private ContainerInterface $services;
     private UserManager $users;
     private AccountLinks $links;
     private GroupManager $groups;
     private SignInService $service;
     /** @var list<string> */
     private array $createdGroups = [];
+    /** @var array<string> */
     private array $adminsBefore = [];
 
     protected function setUp(): void
@@ -84,6 +86,7 @@ class SignInApplyTest extends YesWikiTestCase
         }
     }
 
+    /** @param array<string, mixed> $settings */
     private function config(array $settings = []): ProviderConfig
     {
         return ProviderConfig::fromArray('acme', array_merge(['type' => 'oidc'], $settings), [
@@ -91,6 +94,10 @@ class SignInApplyTest extends YesWikiTestCase
         ]);
     }
 
+    /**
+     * @param array<string, mixed> $attrs
+     * @param array<string, mixed> $settings
+     */
     private function applied(array $attrs, array $settings = [], ?SignInService $service = null): AppliedSignIn
     {
         $config = $this->config($settings);
@@ -99,6 +106,10 @@ class SignInApplyTest extends YesWikiTestCase
         return ($service ?? $this->service)->apply($plan);
     }
 
+    /**
+     * @param array<string, mixed> $attrs
+     * @param array<string, mixed> $settings
+     */
     private function apply(array $attrs, array $settings = []): User
     {
         return $this->applied($attrs, $settings)->user;
@@ -120,18 +131,34 @@ class SignInApplyTest extends YesWikiTestCase
 
     private function revisionsOf(string $email): int
     {
-        $tag = $this->users->getOneByEmail($email)->getName();
+        $user = $this->users->getOneByEmail($email);
+        $this->assertNotNull($user, "an account has $email");
         $db = $this->services->get(DbService::class);
-        $row = $db->loadSingle("SELECT COUNT(*) AS total FROM {$db->prefixTable('pages')} WHERE tag = ?", [$tag]);
+        $row = $db->loadSingle("SELECT COUNT(*) AS total FROM {$db->prefixTable('pages')} WHERE tag = ?", [$user->getName()]);
+        $this->assertNotNull($row);
 
         return (int)$row['total'];
     }
 
-    private function bodyOf(User $user): array
+    private function created(string $tag, string $email): User
     {
-        return $this->services->get(PageManager::class)->getOne($user->getName(), null, true, true)['body'];
+        $user = $this->users->create($tag, $email, 'Aa1!aaaaRegression');
+        $this->assertNotNull($user, "$tag was created");
+
+        return $user;
     }
 
+    /** @return array<array-key, mixed> */
+    private function bodyOf(User $user): array
+    {
+        $page = $this->services->get(PageManager::class)->getOne($user->getName(), null, true, true);
+        $this->assertNotNull($page);
+        $this->assertIsArray($page['body']);
+
+        return $page['body'];
+    }
+
+    /** @param list<string> $members */
     private function newGroup(string $name, array $members): void
     {
         $this->groups->create($name, $members);
@@ -187,7 +214,8 @@ class SignInApplyTest extends YesWikiTestCase
         $this->newGroup('Hand', ['SsoApplyAcct']);
         $this->newGroup('Readers', ['someone-else']);
         $this->apply(['sub' => 'a5', 'email' => 'apply5@x']);
-        $tag = $this->links->find('acme', 'a5')->getName();
+        $tag = $this->links->find('acme', 'a5')?->getName();
+        $this->assertNotNull($tag);
         $this->groups->addMembers('Editors', [$tag]);
         $this->groups->addMembers('Hand', [$tag]);
         $user = $this->apply(['sub' => 'a5', 'email' => 'apply5@x', 'groups' => ['wiki-readers']], [
@@ -245,8 +273,8 @@ class SignInApplyTest extends YesWikiTestCase
     public function testAFailedGroupUpdateWarnsAndDoesNotBlock(): void
     {
         $user = $this->apply(['sub' => 'a8', 'email' => 'apply8@x']);
-        $groups = new class($this->groups) extends GroupManager {
-            public function __construct(private GroupManager $real)
+        $groups = new class extends GroupManager {
+            public function __construct()
             {
             }
 
@@ -269,6 +297,7 @@ class SignInApplyTest extends YesWikiTestCase
         $self = $this;
         $locks = new class($self) implements Locks {
             public int $tries = 0;
+            /** @var list<string> */
             public array $released = [];
 
             public function __construct(private SignInApplyTest $test)
@@ -302,19 +331,21 @@ class SignInApplyTest extends YesWikiTestCase
         $applied = $this->serviceWith($locks, null)->apply($plan);
         $this->assertSame('winner-account', $applied->user->getName());
         $this->assertSame(3, $locks->tries);
-        $this->assertSame('winner-account', $this->users->getOneByEmail('racer@x')->getName());
+        $this->assertSame('winner-account', $this->users->getOneByEmail('racer@x')?->getName());
     }
 
     /** Called by the lock fake: another request finishes the first sign-in. */
     public function winnerSignsIn(): void
     {
-        $this->links->link($this->users->create('winner-account', 'winner@x', 'Aa1!aaaaRegression'), 'acme', 'race');
+        $this->links->link($this->created('winner-account', 'winner@x'), 'acme', 'race');
     }
 
     public function testTheLockIsTakenForACreationAndReleased(): void
     {
         $locks = new class implements Locks {
+            /** @var list<string> */
             public array $taken = [];
+            /** @var list<string> */
             public array $released = [];
 
             public function tryAcquire(string $name, bool &$heldElsewhere = false): bool
@@ -363,12 +394,12 @@ class SignInApplyTest extends YesWikiTestCase
 
     public function testHibernationSignsAKnownAccountWithoutWriting(): void
     {
-        $this->links->link($this->users->create('Hib', 'old@x', 'Aa1!aaaaRegression'), 'acme', 'hib');
+        $this->links->link($this->created('Hib', 'old@x'), 'acme', 'hib');
         $before = $this->revisionsOf('old@x');
         $service = $this->serviceWith(null, $this->hibernation(true));
         $applied = $this->applied(['sub' => 'hib', 'email' => 'hibnew@x', 'given_name' => 'Changed'], [], $service);
         $this->assertSame('Hib', $applied->user->getName());
-        $this->assertSame('old@x', $this->users->getOneByName('Hib')->getEmail());
+        $this->assertSame('old@x', $this->users->getOneByName('Hib')?->getEmail());
         $this->assertSame($before, $this->revisionsOf('old@x'));
     }
 

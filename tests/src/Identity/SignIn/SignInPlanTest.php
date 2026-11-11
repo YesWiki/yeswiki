@@ -2,6 +2,7 @@
 
 namespace YesWiki\Test\Identity\SignIn;
 
+use Symfony\Component\DependencyInjection\ContainerInterface;
 use PHPUnit\Framework\Attributes\DataProvider;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Identity\Entity\User;
@@ -23,7 +24,7 @@ class SignInPlanTest extends YesWikiTestCase
     private const TAGS = ['SsoPlanLocal', 'SsoPlanHere', 'SsoPlanOther', 'SsoPlanOld', 'SsoPlanTaken', 'SsoPlanGroups', 'jdupont', 'jmartin', 'nomail', 'CaseUser'];
     private const GROUPS = ['Editors', 'Hand', 'Readers', 'A', 'B'];
 
-    private $services;
+    private ContainerInterface $services;
     private UserManager $users;
     private AccountLinks $links;
     private SignInService $service;
@@ -67,9 +68,13 @@ class SignInPlanTest extends YesWikiTestCase
 
     private function makeUser(string $tag, string $email): User
     {
-        return $this->users->create($tag, $email, 'Aa1!aaaaRegression');
+        $user = $this->users->create($tag, $email, 'Aa1!aaaaRegression');
+        $this->assertNotNull($user, "$tag was created");
+
+        return $user;
     }
 
+    /** @param array<string, mixed> $settings */
     private function config(array $settings = []): ProviderConfig
     {
         return ProviderConfig::fromArray('acme', array_merge(['type' => 'oidc'], $settings), [
@@ -85,6 +90,7 @@ class SignInPlanTest extends YesWikiTestCase
             'linked-here-s' => $this->links->link($this->makeUser('SsoPlanHere', 'a@x'), 'acme', 's'),
             'linked-other' => $this->links->link($this->makeUser('SsoPlanOther', 'other@x'), 'other', 'z'),
             'linked-here-old' => $this->links->link($this->makeUser('SsoPlanOld', 'here@x'), 'acme', 'old'),
+            default => $this->fail("no fixture named $fixture"),
         };
     }
 
@@ -113,10 +119,12 @@ class SignInPlanTest extends YesWikiTestCase
     {
         $db = $this->services->get(DbService::class);
         $row = $db->loadSingle("SELECT COUNT(*) AS total FROM {$db->prefixTable('pages')} WHERE {$db->quoteIdentifier('type')} = 'user'");
+        $this->assertNotNull($row);
 
         return (int)$row['total'];
     }
 
+    /** @return array<string, array{0: array<string, mixed>, 1: array<string, mixed>, 2: string, 3: PlanAction, 4: ?FailureReason}> */
     public static function branches(): array
     {
         return [
@@ -138,6 +146,10 @@ class SignInPlanTest extends YesWikiTestCase
         ];
     }
 
+    /**
+     * @param array<string, mixed> $settings
+     * @param array<string, mixed> $attributes
+     */
     #[DataProvider('branches')]
     public function testBranch(array $settings, array $attributes, string $fixture, PlanAction $action, ?FailureReason $reason): void
     {
@@ -245,7 +257,9 @@ class SignInPlanTest extends YesWikiTestCase
         $plan = $this->service->plan($this->config(['match_by_email' => true]), new ProviderIdentity(['sub' => 's', 'email' => 'local@x']));
         $this->assertSame(PlanAction::LinkExisting, $plan->action);
         $this->assertSame($before, $this->countUserRevisions());
-        $this->assertNull($this->users->getOneByName('SsoPlanLocal')->provider());
+        $local = $this->users->getOneByName('SsoPlanLocal');
+        $this->assertNotNull($local);
+        $this->assertNull($local->provider());
         $this->assertNull($this->links->find('acme', 's'));
     }
 

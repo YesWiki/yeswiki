@@ -152,7 +152,9 @@ class SessionFollowsProviderTest extends YesWikiTestCase
         $this->assertNotNull($user);
         $users->upgradePassword($user, md5('left over'));
 
-        $this->assertTrue($services->get(AuthenticationService::class)->requiresPasswordReset($users->getOneByName('SessionLocal')));
+        $reloaded = $users->getOneByName('SessionLocal');
+        $this->assertNotNull($reloaded);
+        $this->assertTrue($services->get(AuthenticationService::class)->requiresPasswordReset($reloaded));
     }
 
     public function testActivationGateSkipsLinkedAccounts(): void
@@ -165,6 +167,7 @@ class SessionFollowsProviderTest extends YesWikiTestCase
                 parent::__construct();
             }
 
+            /** @return array<array-key, mixed>|bool|string|int|float|\UnitEnum|null */
             public function get(string $name): array|bool|string|int|float|\UnitEnum|null
             {
                 return $name === 'signup_email_activation' ? '1' : $this->real->get($name);

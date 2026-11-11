@@ -2,9 +2,11 @@
 
 namespace YesWiki\Test\Identity;
 
+use Symfony\Component\HttpFoundation\ParameterBag;
 use Symfony\Component\HttpFoundation\Request;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Identity\Action\LostPasswordAction;
+use YesWiki\Identity\Entity\User;
 use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Identity\Service\InputFilter;
 use YesWiki\Identity\Service\PasswordHasherFactory;
@@ -79,6 +81,15 @@ class LostPasswordProviderTest extends YesWikiTestCase
         return self::getWiki()->services->get(TripleStore::class)->getOne($tag, UserManager::KEY_VOCABULARY, '', '') !== null;
     }
 
+    private function account(string $name): User
+    {
+        $user = self::getWiki()->services->get(UserManager::class)->getOneByName($name);
+        $this->assertNotNull($user, "$name exists");
+
+        return $user;
+    }
+
+    /** @param array<string, string> $post */
     private function submit(int $subStep, array $post): void
     {
         $services = self::getWiki()->services;
@@ -97,7 +108,7 @@ class LostPasswordProviderTest extends YesWikiTestCase
         // filter_input() reads the SAPI's input, which a CLI test run has none of: read the request that was posted instead.
         $posted = $services->get(CurrentRequest::class)->get()->request;
         $reflection->getProperty('inputFilter')->setValue($action, new class($posted) extends InputFilter {
-            public function __construct(private $posted)
+            public function __construct(private ParameterBag $posted)
             {
             }
 
@@ -152,7 +163,7 @@ class LostPasswordProviderTest extends YesWikiTestCase
 
         $services = self::getWiki()->services;
         $this->assertSame('', $services->get(AuthenticationService::class)->signedInName());
-        $this->assertSame('', (string)$services->get(UserManager::class)->getOneByName(self::LINKED)->getPassword());
+        $this->assertSame('', (string)$this->account(self::LINKED)->getPassword());
     }
 
     public function testNothingIsResetWhenLocalIsOff(): void
@@ -160,11 +171,11 @@ class LostPasswordProviderTest extends YesWikiTestCase
         $key = $this->plantKey(self::LOCAL);
         $this->localOff();
         $services = self::getWiki()->services;
-        $before = $services->get(UserManager::class)->getOneByName(self::LOCAL)->getPassword();
+        $before = $this->account(self::LOCAL)->getPassword();
 
         $this->submit(2, ['userID' => self::LOCAL, 'key' => $key, 'pw0' => 'Aa1!brandNewPassword', 'pw1' => 'Aa1!brandNewPassword']);
 
         $this->assertSame('', $services->get(AuthenticationService::class)->signedInName());
-        $this->assertSame($before, $services->get(UserManager::class)->getOneByName(self::LOCAL)->getPassword());
+        $this->assertSame($before, $this->account(self::LOCAL)->getPassword());
     }
 }
