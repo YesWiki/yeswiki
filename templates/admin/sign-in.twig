@@ -41,7 +41,8 @@
                 <a class="yw-btn yw-btn--sm" href="{{ url({ tag: 'admin/sign-in/' ~ provider.id ~ '/test' }) }}" hx-boost="false">{{ icon('flask') }} {{ _t('SIGN_IN_ADMIN_TEST') }}</a>
               {% endif %}
               {% if provider.enabled or provider.available %}
-                <form method="post" action="{{ url({ tag: 'admin/sign-in/' ~ provider.id ~ '/toggle' }) }}" hx-boost="false" class="yw-inline-form">
+                <form method="post" action="{{ url({ tag: 'admin/sign-in/' ~ provider.id ~ '/toggle' }) }}" hx-boost="false" class="yw-inline-form"
+                      {%- if provider.isLocal and provider.enabled and adminIsLocal %} data-yw-confirm="{{ _t('SIGN_IN_ADMIN_LOCAL_OFF_CONFIRM') }}"{% endif %}>
                   <input type="hidden" name="csrf-token" value="{{ csrfToken({id: 'main', refresh: false}) }}">
                   <input type="hidden" name="enabled" value="{{ provider.enabled ? '0' : '1' }}">
                   <button type="submit" class="yw-btn yw-btn--sm">{{ provider.enabled ? _t('SIGN_IN_ADMIN_SWITCH_OFF') : _t('SIGN_IN_ADMIN_SWITCH_ON') }}</button>

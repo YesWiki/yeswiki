@@ -11,12 +11,15 @@ use YesWiki\Content\Field\BazarField;
 use YesWiki\Content\Service\FormManager;
 use YesWiki\Core\DashboardShell;
 use YesWiki\Core\YesWikiController;
+use YesWiki\Identity\Entity\User;
+use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Identity\Service\CsrfTokenChecker;
 use YesWiki\Identity\Service\SignIn\AccountLinks;
 use YesWiki\Identity\Service\SignIn\ProviderRegistry;
 use YesWiki\Identity\Service\SignIn\ProvidersEditor;
 use YesWiki\Identity\Service\SignIn\SignInFlow;
 use YesWiki\Identity\Service\SignIn\Type\LocalType;
+use YesWiki\Identity\Service\UserManager;
 use YesWiki\Identity\SignIn\Contract\HandshakeMode;
 use YesWiki\Identity\SignIn\Contract\PasswordProvider;
 use YesWiki\Identity\SignIn\Contract\ProviderConfig;
@@ -69,6 +72,8 @@ class AdminSignInController extends YesWikiController
             'providers' => $providers,
             'offered' => $offered,
             'problems' => $registry->problems(),
+            // switching local off signs a local account out: the toggle asks first
+            'adminIsLocal' => ($admin = $this->actingAdmin()) !== null && $admin->provider() === null,
         ]);
     }
 
@@ -120,7 +125,7 @@ class AdminSignInController extends YesWikiController
             $posted = $request->request->all();
             $errors = $this->guardedAgainstForgery();
             if ($errors === []) {
-                $errors = $this->getService(ProvidersEditor::class)->update($id, $posted);
+                $errors = $this->getService(ProvidersEditor::class)->update($id, $posted, $this->actingAdmin());
                 if ($errors === []) {
                     Flash::success(_t('SIGN_IN_ADMIN_SAVED'));
 
@@ -138,7 +143,7 @@ class AdminSignInController extends YesWikiController
         $errors = $this->guardedAgainstForgery();
         if ($errors === []) {
             $on = filter_var($this->getRequest()->request->get('enabled', '0'), FILTER_VALIDATE_BOOLEAN);
-            $refusal = $this->getService(ProvidersEditor::class)->setEnabled($id, $on);
+            $refusal = $this->getService(ProvidersEditor::class)->setEnabled($id, $on, $this->actingAdmin());
             $refusal === null ? Flash::success(_t($on ? 'SIGN_IN_ADMIN_SWITCHED_ON' : 'SIGN_IN_ADMIN_SWITCHED_OFF')) : Flash::error($refusal);
         } else {
             Flash::error($errors[0]);
@@ -362,6 +367,15 @@ class AdminSignInController extends YesWikiController
         }
 
         return array_values($fields);
+    }
+
+    /** The administrator using the screen, as an account: null when the session names nobody the wiki knows. */
+    private function actingAdmin(): ?User
+    {
+        $signedIn = $this->getService(AuthenticationService::class)->getLoggedUser();
+        $name = is_array($signedIn) && is_string($signedIn['name'] ?? null) ? $signedIn['name'] : '';
+
+        return $name === '' ? null : $this->getService(UserManager::class)->getOneByName($name);
     }
 
     /** @return list<string> */

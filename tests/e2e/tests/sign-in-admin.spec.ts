@@ -119,11 +119,37 @@ test.describe('the sign-in administration screen', () => {
     const local = rowOf(page, 'local')
     await expect(local.locator('.yw-badge--success')).toBeVisible()
 
+    // the administrator is a wiki account, which switching local off would sign out: the toggle asks first
+    page.once('dialog', (dialog) => dialog.accept())
     await local.locator('button[type="submit"]').click()
 
     await expect(page.locator(TOAST)).toContainText(
       /last provider that is switched on|dernier fournisseur activé/,
     )
+    await expect(
+      rowOf(page, 'local').locator('.yw-badge--success'),
+    ).toBeVisible()
+  })
+
+  test('local cannot be switched off by an administrator it would lock out', async ({
+    page,
+  }) => {
+    // OIDC is on, but does not connect to the existing account with the same email
+    setProviders(sectionFor('oidc'))
+    await asAdmin(page)
+    await page.goto('/?admin/sign-in')
+
+    let asked = ''
+    page.once('dialog', (dialog) => {
+      asked = dialog.message()
+      void dialog.accept()
+    })
+    await rowOf(page, 'local').locator('button[type="submit"]').click()
+
+    await expect(page.locator(TOAST)).toContainText(
+      /you could not sign in again|vous ne pourriez plus vous connecter/,
+    )
+    expect(asked).toMatch(/signed out|déconnecté/)
     await expect(
       rowOf(page, 'local').locator('.yw-badge--success'),
     ).toBeVisible()

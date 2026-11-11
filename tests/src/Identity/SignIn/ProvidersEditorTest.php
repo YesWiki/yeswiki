@@ -308,6 +308,70 @@ class ProvidersEditorTest extends YesWikiTestCase
         $this->assertNotEmpty($this->editor->update('local', ['enabled' => '0']), 'the edit form cannot do it either');
     }
 
+    /**
+     * An administrator signed in with a local account who switches local off loses their own way in, unless a provider they can use
+     * attaches their account by its email.
+     */
+    public function testSwitchingLocalOffIsRefusedWhenItLocksTheAdminOut(): void
+    {
+        $admin = $this->localAdmin();
+        $this->seed(['local' => ['type' => 'local'], 'acme' => $this->oidc(), 'off' => $this->oidc(['enabled' => false, 'match_by_email' => true])]);
+
+        $refusal = $this->editor->setEnabled('local', false, $admin);
+
+        $this->assertSame(_t('SIGN_IN_ADMIN_LOCAL_OFF_LOCKS_YOU_OUT'), $refusal, 'a switched-off provider matching by email does not count');
+        $this->assertTrue($this->written()['local']['enabled'] ?? true);
+        $this->assertNotEmpty($this->editor->update('local', ['enabled' => '0'], $admin), 'the edit form cannot do it either');
+        $this->assertTrue($this->written()['local']['enabled'] ?? true);
+    }
+
+    public function testSwitchingLocalOffIsAllowedWhenTheAdminKeepsAWayIn(): void
+    {
+        $admin = $this->localAdmin();
+        $this->seed(['local' => ['type' => 'local'], 'acme' => $this->oidc(['match_by_email' => true])]);
+        $this->assertNull($this->editor->setEnabled('local', false, $admin), 'acme attaches the local account by its email');
+        $this->assertFalse($this->written()['local']['enabled']);
+
+        $this->seed(['local' => ['type' => 'local'], 'acme' => $this->oidc()]);
+        $services = $this->getWiki()->services;
+        $linked = $services->get(UserManager::class)->create(self::USER, 'ssoeditorused@example.com', 'Aa1!aaaaRegression');
+        $this->assertNotNull($linked);
+        $services->get(AccountLinks::class)->link($linked, 'acme', 'sub-1');
+        $linked = $services->get(UserManager::class)->getOneByName(self::USER);
+        $this->assertSame('acme', $linked?->provider());
+        $this->assertNull($this->editor->setEnabled('local', false, $linked), 'an administrator signed in through acme keeps it');
+    }
+
+    public function testTheToggleRefusesToLockTheAdminOut(): void
+    {
+        $this->seed(['local' => ['type' => 'local'], 'acme' => $this->oidc()]);
+
+        $this->posted(['enabled' => '0'])->toggle('local');
+
+        $this->assertTrue($this->written()['local']['enabled'] ?? true, 'the controller passed the signed-in administrator');
+    }
+
+    public function testSwitchingLocalOffAsksForConfirmation(): void
+    {
+        $this->seed(['local' => ['type' => 'local'], 'acme' => $this->oidc(['match_by_email' => true])]);
+        self::actAs('WikiAdmin');
+
+        $html = (string)$this->getWiki()->services->get(AdminSignInController::class)->index()->getContent();
+
+        $confirm = htmlspecialchars(_t('SIGN_IN_ADMIN_LOCAL_OFF_CONFIRM'), ENT_QUOTES);
+        $this->assertMatchesRegularExpression('#<form[^>]*action="[^"]*admin/sign-in/local/toggle"[^>]*data-yw-confirm="' . preg_quote($confirm, '#') . '"#s', $html);
+        $this->assertDoesNotMatchRegularExpression('#action="[^"]*admin/sign-in/acme/toggle"[^>]*data-yw-confirm#s', $html, 'switching acme off needs no confirmation');
+    }
+
+    private function localAdmin(): \YesWiki\Identity\Entity\User
+    {
+        $admin = $this->getWiki()->services->get(UserManager::class)->getOneByName('WikiAdmin');
+        $this->assertNotNull($admin);
+        $this->assertNull($admin->provider(), 'a local account');
+
+        return $admin;
+    }
+
     public function testAProviderWithAccountsCannotBeDeleted(): void
     {
         $this->seed(['local' => ['type' => 'local'], 'used' => $this->oidc(), 'free' => $this->oidc()]);

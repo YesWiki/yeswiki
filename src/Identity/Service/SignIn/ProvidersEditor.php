@@ -2,6 +2,7 @@
 
 namespace YesWiki\Identity\Service\SignIn;
 
+use YesWiki\Identity\Entity\User;
 use YesWiki\Identity\Service\SignIn\Type\LocalType;
 use YesWiki\Kernel\Component\Setting;
 use YesWiki\Kernel\Service\ConfigurationFileProvider;
@@ -76,10 +77,11 @@ class ProvidersEditor
 
     /**
      * @param array<string, mixed> $posted
+     * @param ?User                $actingAdmin who saves, when someone signed in does: see setEnabled()
      *
      * @return list<string> what is wrong; empty when saved
      */
-    public function update(string $id, array $posted): array
+    public function update(string $id, array $posted, ?User $actingAdmin = null): array
     {
         $entries = $this->all();
         if (!isset($entries[$id])) {
@@ -100,12 +102,19 @@ class ProvidersEditor
         if (!self::flag($entry['enabled']) && !$this->hasEnabledProvider($entries)) {
             return [_t('SIGN_IN_ADMIN_LAST_ENABLED')];
         }
+        if ($this->locksOut($entries, $actingAdmin)) {
+            return [_t('SIGN_IN_ADMIN_LOCAL_OFF_LOCKS_YOU_OUT')];
+        }
 
         return $this->save($entries) ? [] : [_t('SIGN_IN_ADMIN_NOT_WRITABLE')];
     }
 
-    /** @return string|null why not; null when done */
-    public function setEnabled(string $id, bool $on): ?string
+    /**
+     * @param ?User $actingAdmin who switches, as the caller knows them; null when nobody signed in acts (a command)
+     *
+     * @return string|null why not; null when done
+     */
+    public function setEnabled(string $id, bool $on, ?User $actingAdmin = null): ?string
     {
         $entries = $this->all();
         if (!isset($entries[$id])) {
@@ -117,6 +126,9 @@ class ProvidersEditor
         $entries[$id]['enabled'] = $on;
         if (!$on && !$this->hasEnabledProvider($entries)) {
             return _t('SIGN_IN_ADMIN_LAST_ENABLED');
+        }
+        if ($this->locksOut($entries, $actingAdmin)) {
+            return _t('SIGN_IN_ADMIN_LOCAL_OFF_LOCKS_YOU_OUT');
         }
 
         return $this->save($entries) ? null : _t('SIGN_IN_ADMIN_NOT_WRITABLE');
@@ -275,6 +287,35 @@ class ProvidersEditor
         }
 
         return false;
+    }
+
+    /**
+     * Whether $entries, once saved, leave the administrator acting with no way back in: they are signed in with a local account,
+     * local is off, which signs them out, and no switched-on provider of an installed type attaches an account by its email.
+     *
+     * @param array<string, array<string, mixed>> $entries
+     */
+    private function locksOut(array $entries, ?User $actingAdmin): bool
+    {
+        if ($actingAdmin === null || $actingAdmin->provider() !== null) {
+            return false;
+        }
+        $types = $this->registry->types();
+        $localOn = false;
+        $byEmail = false;
+        foreach ($entries as $entry) {
+            $type = (string)($entry['type'] ?? '');
+            if (!self::flag($entry['enabled'] ?? true) || !isset($types[$type])) {
+                continue;
+            }
+            if ($type === LocalType::NAME) {
+                $localOn = true;
+            } elseif (self::flag($entry['match_by_email'] ?? false)) {
+                $byEmail = true;
+            }
+        }
+
+        return !$localOn && !$byEmail;
     }
 
     /** @param array<string, array<string, mixed>> $entries */
