@@ -637,6 +637,15 @@ class ProvidersEditorTest extends YesWikiTestCase
         $this->assertStringNotContainsString(self::SECRET, $html);
     }
 
+    public function testTheEditButtonIsTranslated(): void
+    {
+        $this->seed(['local' => ['type' => 'local'], 'acme' => $this->oidc()]);
+        $html = (string)$this->getWiki()->services->get(AdminSignInController::class)->index()->getContent();
+
+        $this->assertMatchesRegularExpression('#href="[^"]*admin/sign-in/acme/edit"[^>]*>.*?Modifier</a>#s', $html, 'the test wiki speaks French');
+        $this->assertStringNotContainsString('EDIT</a>', $html);
+    }
+
     public function testTheUsersTableShowsTheProviderOfALinkedAccount(): void
     {
         $this->installProviders(['acme' => ['type' => 'fakeredirect', 'label' => 'Acme Single Sign-On'], 'local' => ['type' => 'local']]);
