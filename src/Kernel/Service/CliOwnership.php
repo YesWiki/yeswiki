@@ -24,10 +24,10 @@ final class CliOwnership
     ) {
     }
 
-    /** The user owning the configuration file, which the web server wrote at install time. */
+    /** The user owning the configuration file, which the web server wrote at install time; none on a replica, whose file is mounted read-only. */
     public function owner(): ?int
     {
-        return $this->localFiles->ownerOf($this->configFile);
+        return Replication::isOn() ? null : $this->localFiles->ownerOf($this->configFile);
     }
 
     public function group(): ?int

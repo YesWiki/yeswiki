@@ -5,6 +5,7 @@ namespace YesWiki\Test\Kernel;
 use PHPUnit\Framework\TestCase;
 use YesWiki\Files\Service\LocalFiles;
 use YesWiki\Kernel\Service\CliOwnership;
+use YesWiki\Kernel\Service\Replication;
 
 /** The console runs as whoever owns the wiki, or says how to: sudo -u for anyone else, core:fix-ownership for what root already left behind. */
 class CliOwnershipTest extends TestCase
@@ -45,6 +46,21 @@ class CliOwnershipTest extends TestCase
     {
         $this->assertNull($this->ownership()->refusal(self::OWNER, ['console', 'migrate'], self::userName(...)));
         $this->assertNull($this->ownership()->warning(self::userName(...)));
+    }
+
+    /** A replica's configuration file is mounted read-only and belongs to whoever mounted it, not to the server, so it names no owner. */
+    public function testAReplicaHasNoOwnerToRunAs(): void
+    {
+        $was = getenv(Replication::ENV);
+        putenv(Replication::ENV . '=1');
+        $this->files->owners[$this->root . '/yeswiki.config.php'] = 0;
+
+        try {
+            $this->assertNull($this->ownership()->refusal(10001, ['console', 'migrate'], self::userName(...)));
+            $this->assertNull($this->ownership()->warning(self::userName(...)));
+        } finally {
+            putenv($was === false ? Replication::ENV : Replication::ENV . '=' . $was);
+        }
     }
 
     public function testAnotherUserIsToldToRunItAsTheOwner(): void

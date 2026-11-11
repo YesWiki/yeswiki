@@ -40,7 +40,8 @@ jobs:
             echo "### Browser suite coverage for this run"
             echo
             if [ "$full" = "true" ]; then
-              echo 'Running the full matrix: mysql, pgsql and sqlite, under php-fpm and under the binary.'
+              echo 'Running the full matrix: mysql, pgsql and sqlite, under php-fpm and under the binary,'
+              echo 'and the Helm chart on kind with three replicas, against MariaDB and PostgreSQL.'
             else
               echo '| driver | runtime | this run |'
               echo '| --- | --- | --- |'
@@ -50,6 +51,8 @@ jobs:
               echo '| pgsql | binary | skipped, runs nightly |'
               echo '| sqlite | fpm | skipped, runs nightly |'
               echo '| sqlite | binary | skipped, runs nightly |'
+              echo '| mariadb | kind, three replicas | skipped, runs nightly |'
+              echo '| postgresql | kind, three replicas | skipped, runs nightly |'
               echo
               echo 'The binary takes about half an hour to build, so a pull request covers one driver'
               echo 'under both runtimes rather than three drivers under one.'
@@ -261,3 +264,45 @@ jobs:
           name: playwright-report-${{ matrix.driver }}-${{ matrix.runtime }}
           path: playwright-report
           retention-days: 7
+
+  kind:
+    needs: [plan, binary]
+    if: needs.plan.outputs.full == 'true'
+    name: kind / ${{ matrix.database }}
+    runs-on: ubuntu-26.04
+    timeout-minutes: 40
+
+    strategy:
+      fail-fast: false
+      matrix:
+        database: [mariadb, postgresql]
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/download-artifact@v7
+        with:
+          name: yeswiki-e2e-binary
+          path: binary/dist
+
+      - run: chmod +x binary/dist/yeswiki-linux-x86_64
+
+      - uses: docker/setup-buildx-action@v4
+
+      - name: Build the image from this run's binary
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: docker/image.Dockerfile
+          platforms: linux/amd64
+          load: true
+          tags: yeswiki-kind:${{ github.sha }}
+
+      - uses: helm/kind-action@v1
+        with:
+          install_only: true
+
+      - uses: azure/setup-helm@v4
+
+      - name: Three replicas on kind with ${{ matrix.database }} and SeaweedFS, then a rolling upgrade
+        run: deploy/kind/run.sh "${{ matrix.database }}" "yeswiki-kind:${{ github.sha }}"

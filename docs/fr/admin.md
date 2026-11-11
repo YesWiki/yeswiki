@@ -1443,6 +1443,15 @@ fois. Il refuse alors de démarrer sans `base_url`, plutôt que de déduire son
 adresse de la première requête reçue, et il refuse SQLite, qui est un fichier
 sur une seule machine.
 
+Chaque worker PHP d'un serveur garde sa connexion à la base. Sans
+`YESWIKI_WORKERS`, le binaire en démarre deux par processeur de la machine,
+même dans un conteneur limité à moins : trois serveurs sur une machine de 32
+cœurs ouvrent 192 connexions, au-delà des 151 que MariaDB accepte par
+défaut. Fixez `YESWIKI_WORKERS` (le chart Helm met `4`) et comptez, pour
+`max_connections`, les workers de chaque serveur plus un pour son
+consommateur de la file de fond, avec un serveur de plus pendant un
+déploiement.
+
 ### Les sondes
 
 Deux adresses répondent sans session, sans passe de la file de fond et sans

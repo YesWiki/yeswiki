@@ -163,6 +163,12 @@ class DbService
         return $driver === 'pgsql' ? $dsn : $dsn . ';charset=' . $text('db_charset', 'utf8mb4');
     }
 
+    /** Whether queries are timed and logged: off when the configuration does not say, as in a probe's bare one. */
+    private function debugging(): bool
+    {
+        return $this->params->has('debug') && (bool)$this->params->get('debug');
+    }
+
     protected function initDriverSpecific(): void
     {
         switch ($this->driver) {
@@ -832,7 +838,7 @@ class DbService
      */
     public function query($query, array $params = [])
     {
-        if ($this->params->get('debug')) {
+        if ($this->debugging()) {
             $start = $this->getMicroTime();
         }
 
@@ -848,7 +854,7 @@ class DbService
         } catch (\PDOException $failed) {
             throw new \Exception($failed->getMessage() . ' -- while running: ' . $this->describeQuery($query, $params !== []), (int)$failed->getCode(), $failed);
         } finally {
-            if ($this->params->get('debug')) {
+            if ($this->debugging()) {
                 $this->addQueryLog($query, $this->getMicroTime() - $start, $params);
             }
         }
@@ -1087,7 +1093,7 @@ class DbService
             $statement,
             $query,
             function (string $sql, float $elapsed, array $params): void {
-                if ($this->params->get('debug')) {
+                if ($this->debugging()) {
                     $this->addQueryLog($sql, $elapsed, $params);
                 }
             }
@@ -1098,7 +1104,7 @@ class DbService
     private function describeQuery(string $query, bool $parameterised = false): string
     {
         $query = trim((string)preg_replace('/\s+/', ' ', $query));
-        if ($parameterised || $this->params->get('debug') || preg_match('/^\s*(CREATE|ALTER|DROP|TRUNCATE|RENAME)\b/i', $query)) {
+        if ($parameterised || $this->debugging() || preg_match('/^\s*(CREATE|ALTER|DROP|TRUNCATE|RENAME)\b/i', $query)) {
             return $query;
         }
 

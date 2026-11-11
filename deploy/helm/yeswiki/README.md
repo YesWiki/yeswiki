@@ -40,6 +40,7 @@ that lets the Service stop sending it traffic first.
 | --- | --- | --- |
 | `image.repository`, `image.tag` | `ghcr.io/yeswiki/yeswiki`, the chart's `appVersion` | The image. Build one `FROM` it to add extensions (`deploy/compose/README.md`). |
 | `replicaCount` | `3` | How many replicas serve the wiki |
+| `workers` | `4` | PHP workers per replica, each holding a database connection. Left empty, FrankenPHP starts two per CPU the node has, whatever the pod's limit. |
 | `podAnnotations` | `{}` | Annotations of the pods; changing one restarts them |
 | `baseUrl` | required | The address the wiki answers on, with its trailing `?` unless `rewriteMode` is on |
 | `rewriteMode` | `false` | Addresses without `?` |
@@ -79,6 +80,11 @@ CloudNativePG, mariadb-operator.
 the queue's schedule, archives) are session-level advisory locks, which a transaction pooler hands
 to another client between two statements. Use PgBouncer in session mode, or no pooler and a
 `max_connections` large enough for every worker of every replica.
+
+Each replica holds a connection per worker, one for its queue consumer and one per probe in
+flight, and a rolling update runs old and new pods side by side. Count `(replicaCount + 1) ×
+(workers + 2)`, plus the migrate Job's one: 37 with the defaults, under MariaDB's 151 and
+PostgreSQL's 100.
 
 ## The bucket
 

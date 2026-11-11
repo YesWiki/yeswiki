@@ -1,10 +1,11 @@
 #!/usr/bin/env bash
 # Proves the chart on a kind cluster: a database (mariadb or postgresql) and SeaweedFS in it, the image loaded, three replicas installed and answering, then an upgrade.
-# Usage: deploy/kind/run.sh <mariadb|postgresql> <image>; KEEP=1 leaves the cluster up.
+# Usage: deploy/kind/run.sh <mariadb|postgresql> <image> [helm --set ...]; KEEP=1 leaves the cluster up.
 set -euo pipefail
 
 driver="${1:?usage: deploy/kind/run.sh <mariadb|postgresql> <image>}"
 image="${2:?usage: deploy/kind/run.sh <mariadb|postgresql> <image>}"
+shift 2
 here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 chart="$here/../helm/yeswiki"
 cluster="yeswiki-$driver"
@@ -47,7 +48,7 @@ done
 platform="linux/$(docker info --format '{{.Architecture}}' | sed 's/x86_64/amd64/; s/aarch64/arm64/')"
 archive="$(mktemp)"
 for loaded in "$image" "$db_image" chrislusf/seaweedfs:4.53 "$curl_image"; do
-    docker save --platform "$platform" -o "$archive" "$loaded"
+    docker save --platform "$platform" -o "$archive" "$loaded" 2>/dev/null || docker save -o "$archive" "$loaded"
     kind load image-archive --name "$cluster" "$archive"
 done
 rm -f "$archive"
@@ -61,6 +62,7 @@ values=(
     --set storage.bucket=yeswiki --set storage.endpoint=http://s3:8333 --set storage.publicUrl=http://s3:8333/yeswiki
     --set storage.pathStyle=true --set storage.key=kind-key --set storage.secret=kind-secret
     --set install.adminEmail=admin@example.org --set install.adminPassword=kind-admin-password
+    "$@"
 )
 
 say "helm install: three replicas, the install Job"
@@ -73,7 +75,12 @@ ask() {
 }
 
 say "every replica answers, through the Service"
-ask "for i in \$(seq 1 30); do curl -s -o /dev/null -w '%{http_code}\n' 'http://$deployment/?PagePrincipale'; done | sort | uniq -c" | tee /dev/stderr | grep -qv ' 200$' && { echo 'a request through the Service was not answered 200' >&2; exit 1; }
+answers="$(ask "for i in \$(seq 1 30); do curl -s -o /dev/null -w '%{http_code}\n' 'http://$deployment/?PagePrincipale'; done | sort | uniq -c")"
+echo "$answers"
+if grep -qv ' 200$' <<<"$answers"; then
+    echo 'a request through the Service was not answered 200' >&2
+    exit 1
+fi
 for pod in $(kubectl get pods -l app.kubernetes.io/instance="$release",app.kubernetes.io/component!=install -o name); do
     ready="$(kubectl get "$pod" -o jsonpath='{.status.containerStatuses[0].ready}')"
     [ "$ready" = true ] || { echo "$pod is not ready" >&2; exit 1; }

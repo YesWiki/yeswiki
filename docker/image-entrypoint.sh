@@ -22,7 +22,11 @@ case "${1:-serve}" in
         if [ "${YESWIKI_REPLICATED:-}" != 1 ]; then
             yeswiki migrate "$wiki"
         fi
-        exec yeswiki serve "$wiki" --listen ":${PORT:-8080}"
+        set -- serve "$wiki" --listen ":${PORT:-8080}"
+        if [ -n "${YESWIKI_WORKERS:-}" ]; then
+            set -- "$@" --workers "$YESWIKI_WORKERS"
+        fi
+        exec yeswiki "$@"
         ;;
     migrate)
         yeswiki prepare "$wiki"

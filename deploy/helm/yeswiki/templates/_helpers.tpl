@@ -42,6 +42,8 @@ helm.sh/chart: {{ printf "%s-%s" .Chart.Name .Chart.Version }}
   value: "1"
 - name: YESWIKI_QUEUE_CONSUMER
   value: worker
+- name: YESWIKI_WORKERS
+  value: {{ .Values.workers | quote }}
 - name: BASE_URL
   value: {{ .Values.baseUrl | quote }}
 - name: TRUSTED_PROXIES
