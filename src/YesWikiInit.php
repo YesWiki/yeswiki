@@ -83,7 +83,7 @@ class YesWikiInit
                 }
             } else {
                 echo '<p>', _t('INCORRECT_PAGENAME'), '</p>';
-                exit;
+                exit(1);
             }
 
             if (!$this->method) {

@@ -50,10 +50,11 @@ $insideAnInstance = $configuredWiki && !$fixingOwnership;
 $services = null;
 
 if ($insideAnInstance) {
-    $_SERVER['REQUEST_URI'] = $yeswikiConfig['base_url'] . ($yeswikiConfig['root_page'] ?? '');
+    $rootPage = (string)($yeswikiConfig['root_page'] ?? 'PagePrincipale');
+    $_SERVER['REQUEST_URI'] = $yeswikiConfig['base_url'] . $rootPage;
     $_SERVER['HTTP_HOST'] = parse_url($yeswikiConfig['base_url'], PHP_URL_HOST);
     $_SERVER['REQUEST_METHOD'] = 'GET';
-    $_GET['wiki'] = $yeswikiConfig['root_page'] ?? '';
+    $_GET['wiki'] = $rootPage;
 
     try {
         $wiki = YesWikiLoader::getWiki();

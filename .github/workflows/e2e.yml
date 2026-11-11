@@ -268,7 +268,6 @@ jobs:
   kind:
     needs: [plan, binary]
     if: needs.plan.outputs.full == 'true'
-    name: kind / ${{ matrix.database }}
     runs-on: ubuntu-26.04
     timeout-minutes: 90
 

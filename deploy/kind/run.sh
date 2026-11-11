@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Proves the chart on a kind cluster: a database (mariadb or postgresql), SeaweedFS and Mailpit in it, the image loaded, three replicas installed and answering, then an upgrade.
+# Proves the chart on kind: a database (mariadb or postgresql), SeaweedFS and Mailpit, three replicas answering, an upgrade, then a rolling update to the image plus one migration while writer.sh saves pages, losing none.
 # Usage: deploy/kind/run.sh <mariadb|postgresql> <image> [helm --set ...]; KEEP=1 leaves the cluster up.
 # E2E=1 also runs the browser suite through a NodePort on 127.0.0.1:${E2E_PORT:-8380} (the bucket on the next port, Mailpit's UI on the one after), with PLAYWRIGHT_ARGS.
 set -euo pipefail
@@ -20,6 +20,9 @@ case "$driver" in
     postgresql) db_image=postgres:16-alpine db_driver=pgsql db_port=5432 ;;
     *) echo "no database called $driver" >&2; exit 1 ;;
 esac
+next="${image%:*}:rollout"
+admin_password=kind-admin-password
+[ "${E2E:-}" = 1 ] && admin_password=WikiAdminPassword
 
 say() {
     printf '\n== %s\n' "$*"
@@ -65,7 +68,8 @@ for needed in "$db_image" chrislusf/seaweedfs:4.53 "$curl_image" "$mail_image"; 
 done
 platform="linux/$(docker info --format '{{.Architecture}}' | sed 's/x86_64/amd64/; s/aarch64/arm64/')"
 archive="$(mktemp)"
-for loaded in "$image" "$db_image" chrislusf/seaweedfs:4.53 "$curl_image" "$mail_image"; do
+docker build -q --build-arg "IMAGE=$image" -t "$next" "$here/rollout" >/dev/null
+for loaded in "$image" "$next" "$db_image" chrislusf/seaweedfs:4.53 "$curl_image" "$mail_image"; do
     docker save --platform "$platform" -o "$archive" "$loaded" 2>/dev/null || docker save -o "$archive" "$loaded"
     kind load image-archive --name "$cluster" "$archive"
 done
@@ -101,8 +105,13 @@ helm install "$release" "$chart" "${values[@]}" --wait --timeout 10m
 kubectl rollout status "deployment/$deployment" --timeout=300s
 
 ask() {
-    kubectl run "probe-$RANDOM" --rm -i --restart=Never --quiet --image="$curl_image" --image-pull-policy=Never -- \
-        sh -c "$1"
+    local answer
+    for _ in 1 2 3; do
+        answer="$(kubectl run "probe-$RANDOM" --rm -i --restart=Never --quiet --image="$curl_image" --image-pull-policy=Never -- \
+            sh -c "$1" 2>/dev/null)" || true
+        [ -n "$answer" ] && break
+    done
+    echo "$answer"
 }
 
 say "every replica answers, through the Service"
@@ -124,6 +133,7 @@ if [ "${E2E:-}" = 1 ]; then
     say "the browser suite against the three replicas, through the NodePort"
     export YESWIKI_TEST_RUNTIME=cluster YESWIKI_TEST_DRIVER="$db_driver" YESWIKI_TEST_RELEASE="$release"
     export YESWIKI_TEST_BASE_URL="$base_url" YESWIKI_BASE_URL="http://127.0.0.1:$wiki_port"
+    export YESWIKI_TEST_MAILPIT_URL="http://127.0.0.1:$mail_port"
     bash "$here/../../tests/e2e/reset.sh"
     # shellcheck disable=SC2086
     (cd "$here/../.." && npx playwright test ${PLAYWRIGHT_ARGS:-}) || suite=$?
@@ -134,6 +144,33 @@ say "helm upgrade: the migrate Job, then a rolling restart"
 helm upgrade "$release" "$chart" "${values[@]}" --set-string "podAnnotations.restartedAt=$(date +%s)" --wait --timeout 10m
 kubectl rollout status "deployment/$deployment" --timeout=300s
 ask "for i in \$(seq 1 10); do curl -s -o /dev/null -w '%{http_code}\n' 'http://$deployment/?PagePrincipale'; done | sort | uniq -c"
+
+say "a rolling update to $next, one migration more, while a pod saves pages"
+kubectl run writer --restart=Never --image="$curl_image" --image-pull-policy=Never \
+    --env="WIKI=http://$deployment" --env="PASSWORD=$admin_password" -- sh -c "$(cat "$here/writer.sh")" >/dev/null
+kubectl wait --for=condition=ready pod/writer --timeout=60s >/dev/null
+sleep 5
+helm upgrade "$release" "$chart" "${values[@]}" --set image.tag=rollout --wait --timeout 10m
+kubectl rollout status "deployment/$deployment" --timeout=300s
+sleep 5
+kubectl exec writer -- touch /tmp/stop
+kubectl wait --for=jsonpath='{.status.phase}'=Succeeded pod/writer --timeout=300s >/dev/null
+writes="$(kubectl logs writer)"
+kubectl delete pod writer --wait=false >/dev/null
+unexpected="$(awk '$1 == "attempt" && $3 != 200 && $3 != 503' <<<"$writes")"
+lost="$(comm -23 <(awk '$1 == "saved" { print $2 }' <<<"$writes" | sort) <(awk '$1 == "kept" { print $2 }' <<<"$writes" | sort))"
+echo "$(grep -c '^saved ' <<<"$writes") pages saved, $(awk '$1 == "attempt" && $3 == 503' <<<"$writes" | wc -l) attempts refused with 503 and retried"
+case "$driver" in
+    mariadb) applied="$(kubectl exec deploy/db -- mariadb -N -uroot -pkind-root yeswiki -e "SELECT COUNT(*) FROM yeswiki_triples WHERE resource = 'kind_rollout'")" ;;
+    postgresql) applied="$(kubectl exec deploy/db -- psql -tA -U yeswiki -d yeswiki -c "SELECT COUNT(*) FROM yeswiki_triples WHERE resource = 'kind_rollout'")" ;;
+esac
+if ! grep -q '^saved ' <<<"$writes" || [ -n "$unexpected" ] || [ -n "$lost" ] || [ "$applied" != 1 ]; then
+    echo "$writes" | tail -20
+    [ -n "$unexpected" ] && echo "answers other than 200 and 503: $(echo "$unexpected" | awk '{ print $3 }' | sort | uniq -c | tr '\n' ' ')" >&2
+    [ -n "$lost" ] && echo "saves answered 200 and gone: $(echo "$lost" | tr '\n' ' ')" >&2
+    [ "$applied" != 1 ] && echo "the rollout's migration ran $applied times" >&2
+    exit 1
+fi
 
 if [ "$suite" != 0 ]; then
     echo "the browser suite failed against the replicas" >&2

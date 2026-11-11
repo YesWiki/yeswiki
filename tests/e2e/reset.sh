@@ -161,6 +161,14 @@ case "$RUNTIME" in
     DB_PASSWORD=kind-db
     DB_NAME=yeswiki
 
+    pod=""
+    for _ in $(seq 90); do
+      pod="$(kubectl get pods "${REPLICAS[@]}" -o jsonpath='{range .items[*]}{.metadata.deletionTimestamp}{.status.containerStatuses[0].ready} {.metadata.name}{"\n"}{end}' | awk '$1 == "true" { print $2; exit }')"
+      [ -n "$pod" ] && break
+      sleep 1
+    done
+    [ -n "$pod" ] || { echo "no ready replica to install from" >&2; exit 1; }
+
     case "$DRIVER" in
       mysql) kubectl exec deploy/db -- mariadb -uroot -pkind-root -e "DROP DATABASE IF EXISTS ${DB_NAME}; CREATE DATABASE ${DB_NAME};" ;;
       pgsql) kubectl exec deploy/db -- psql -q -U yeswiki -d template1 -c "DROP DATABASE IF EXISTS ${DB_NAME} WITH (FORCE);" -c "CREATE DATABASE ${DB_NAME};" ;;
@@ -169,8 +177,6 @@ case "$RUNTIME" in
     kubectl exec deploy/s3 -- sh -c 'echo "s3.bucket.delete -name yeswiki" | weed shell >/dev/null; echo "s3.bucket.create -name yeswiki" | weed shell >/dev/null'
 
     mapfile -t arguments < <(installer_arguments)
-    pod="$(kubectl get pods "${REPLICAS[@]}" -o jsonpath='{range .items[*]}{.metadata.deletionTimestamp}{.status.containerStatuses[0].ready} {.metadata.name}{"\n"}{end}' | awk '$1 == "true" { print $2; exit }')"
-    [ -n "$pod" ] || { echo "no ready replica to install from" >&2; exit 1; }
     # shellcheck disable=SC2016
     kubectl exec "$pod" -- env ONBOARDED="${YESWIKI_TEST_ONBOARDED:-1}" sh -c '
       set -e
@@ -192,7 +198,7 @@ case "$RUNTIME" in
     done
     [ "$ready" = "$wanted" ] || { echo "only ${ready} of ${wanted} replicas came back ready" >&2; exit 1; }
     for _ in $(seq 30); do
-      answers="$(for _ in 1 2 3 4 5 6; do curl -s --noproxy '*' -H 'Connection: close' -o /dev/null -w '%{http_code}\n' "${BASE_URL}PagePrincipale"; done | sort -u)"
+      answers="$(for _ in 1 2 3 4 5 6; do curl -s --max-time 5 --noproxy '*' -H 'Connection: close' -o /dev/null -w '%{http_code}\n' "${BASE_URL}PagePrincipale"; done | sort -u)"
       [ "$answers" = 200 ] && break
       sleep 1
     done

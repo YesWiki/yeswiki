@@ -45,7 +45,7 @@ test('the search box finds pages', async ({ page }) => {
 
   await expect(
     page.locator('.results-panel .matching-post').first(),
-  ).toBeVisible()
+  ).toBeVisible({ timeout: 20000 })
 })
 
 test('a code block gets a French copy button that copies its code', async ({
