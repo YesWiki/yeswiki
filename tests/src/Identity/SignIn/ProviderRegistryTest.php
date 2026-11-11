@@ -118,6 +118,48 @@ class ProviderRegistryTest extends YesWikiTestCase
         $this->assertNull($r->get('gone'));
     }
 
+    /** An extension's type that throws while building its provider leaves that provider out, not the sign-in page. */
+    public function testAProviderThatCannotBeBuiltIsLeftOutAndReported(): void
+    {
+        $broken = new class implements ProviderType {
+            public function name(): string
+            {
+                return 'broken';
+            }
+
+            public function label(): string
+            {
+                return 'Broken';
+            }
+
+            public function connectionSettings(): array
+            {
+                return [];
+            }
+
+            public function defaultAttributes(): array
+            {
+                return [];
+            }
+
+            public function create(ProviderConfig $config): IdentityProvider
+            {
+                throw new \TypeError('the extension expected a string');
+            }
+        };
+        $values = ['sso_providers' => ['local' => ['type' => 'local'], 'odd' => ['type' => 'broken'], 'ok' => ['type' => 'oidc']]];
+        $config = new RuntimeConfig();
+        $config->bind($values);
+        $registry = new ProviderRegistry([$this->fakeType('local'), $this->fakeType('oidc'), $broken], $config);
+
+        $this->assertSame(['local', 'ok'], array_map(fn ($p) => $p->id(), $registry->enabled()));
+        $this->assertNull($registry->get('odd'));
+        $this->assertNotNull($registry->get('ok'));
+        $this->assertCount(1, $registry->problems());
+        $this->assertStringContainsString('"odd"', $registry->problems()[0]);
+        $this->assertStringContainsString('the extension expected a string', $registry->problems()[0]);
+    }
+
     public function testLocalAcceptsOnlyTheKeyLocal(): void
     {
         $r = $this->registry(['mine' => ['type' => 'local']]);

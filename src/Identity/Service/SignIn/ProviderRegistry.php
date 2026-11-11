@@ -79,16 +79,52 @@ class ProviderRegistry
         return $this->isEnabled(LocalType::NAME);
     }
 
-    /** @return list<string> what is wrong with the types and the section, for an administrator */
+    /** @return list<string> what is wrong with the types, the section and the providers they build, for an administrator */
     public function problems(): array
     {
-        return array_merge($this->resolveTypes()[1], $this->read()[1]);
+        $types = $this->types();
+        $unbuilt = [];
+        foreach ($this->configs() as $config) {
+            if (isset($types[$config->type]) && ($failure = $this->buildFailure($config, $types)) !== null) {
+                $unbuilt[] = sprintf('%s: the provider "%s" of type "%s" could not be built, and is left out: %s', self::SECTION, $config->id, $config->type, $failure);
+            }
+        }
+
+        return array_merge($this->resolveTypes()[1], $this->read()[1], $unbuilt);
     }
 
-    /** @param array<string, ProviderType> $types */
+    /**
+     * The provider of $config, or null when its type is not installed or throws while building it: a type an extension supplies
+     * must not take the sign-in page down with it, and problems() names it.
+     *
+     * @param array<string, ProviderType> $types
+     */
     private function build(ProviderConfig $config, array $types): ?IdentityProvider
     {
-        return isset($types[$config->type]) ? $types[$config->type]->create($config) : null;
+        if (!isset($types[$config->type])) {
+            return null;
+        }
+        try {
+            return $types[$config->type]->create($config);
+        } catch (\Throwable) {
+            return null;
+        }
+    }
+
+    /**
+     * What went wrong building the provider of $config, or null when it builds.
+     *
+     * @param array<string, ProviderType> $types
+     */
+    private function buildFailure(ProviderConfig $config, array $types): ?string
+    {
+        try {
+            $types[$config->type]->create($config);
+
+            return null;
+        } catch (\Throwable $failed) {
+            return $failed::class . ': ' . mb_substr($failed->getMessage(), 0, 300);
+        }
     }
 
     /** @return array{0: array<string, ProviderType>, 1: list<string>} */
