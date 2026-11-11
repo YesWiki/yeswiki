@@ -733,6 +733,15 @@ class ProvidersEditorTest extends YesWikiTestCase
         $this->assertMatchesRegularExpression('#admin/sign-in/acme/toggle".*?name="enabled" value="1"#s', $html, 'acme is off: its button switches it on');
     }
 
+    /** The list names local as the confirmation of its switch does, and an entry without a label by its type. */
+    public function testTheListNamesProvidersAsPeopleReadThem(): void
+    {
+        $this->seed(['local' => ['type' => 'local'], 'bare' => ['type' => 'oidc', 'enabled' => true]]);
+        $html = (string)$this->getWiki()->services->get(AdminSignInController::class)->index()->getContent();
+
+        $this->assertMatchesRegularExpression('#<td>' . preg_quote(htmlspecialchars(_t('SIGN_IN_LOCAL_LABEL'), ENT_QUOTES), '#') . '<small class="yw-form-hint">local</small></td>#', $html);
+        $this->assertMatchesRegularExpression('#<td>' . preg_quote(htmlspecialchars(_t('SIGN_IN_TYPE_OIDC'), ENT_QUOTES), '#') . '<small class="yw-form-hint">bare</small></td>#', $html);
+    }
     public function testTheEditButtonIsTranslated(): void
     {
         $this->seed(['local' => ['type' => 'local'], 'acme' => $this->oidc()]);

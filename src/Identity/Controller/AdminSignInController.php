@@ -52,7 +52,8 @@ class AdminSignInController extends YesWikiController
             $type = $types[$typeName] ?? null;
             $providers[] = [
                 'id' => $id,
-                'label' => is_string($entry['label'] ?? null) && $entry['label'] !== '' ? $entry['label'] : $id,
+                // as people read it: local's translated name, or the type's label when the entry has none of its own
+                'label' => is_string($entry['label'] ?? null) && $entry['label'] !== '' ? $entry['label'] : ($typeName === LocalType::NAME ? _t('SIGN_IN_LOCAL_LABEL') : ($type?->label() ?? $id)),
                 'typeLabel' => $type?->label() ?? $typeName,
                 'available' => $type !== null,
                 'enabled' => filter_var($entry['enabled'] ?? true, FILTER_VALIDATE_BOOLEAN),
