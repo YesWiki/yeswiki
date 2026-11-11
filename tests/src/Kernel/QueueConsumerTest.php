@@ -1052,6 +1052,20 @@ class QueueConsumerTest extends YesWikiTestCase
         $this->assertSame(512 * 1024 * 1024, $pass['memoryLimit']);
     }
 
+    /** Replicas 19: a supervised consumer that found its queue empty leaves, its lock and its connection with it, and the binary starts it again later. */
+    public function testAConsumerToldToLeaveWhenEmptyDrainsThenLeaves(): void
+    {
+        $this->send(2);
+
+        $started = microtime(true);
+        $report = $this->consumer->consume(QueueConsumerMode::Worker, 30, 512 * 1024 * 1024, null, null, true);
+
+        $this->assertSame(2, $report->handled);
+        $this->assertSame(QueuePassReport::EMPTY, $report->stopReason);
+        $this->assertSame(0, $report->remaining);
+        $this->assertLessThan(10, microtime(true) - $started, 'it did not wait for its time limit');
+    }
+
     public function testConsumeWaitsUntilItsTimeLimit(): void
     {
         $this->build($this->db, new NativeClock());

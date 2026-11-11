@@ -56,9 +56,10 @@ updating or removing one is done by building the image again.
   only places it writes.
 - It answers `/healthz` when PHP runs and `/readyz` when the database and the storage answer.
   Docker's own healthcheck uses `/healthz`.
-- It runs as many PHP workers as `YESWIKI_WORKERS` says, each holding a database connection. Left
-  unset, FrankenPHP starts two per CPU the host has, which a container's CPU limit does not lower:
-  set it on a large machine.
+- It runs as many PHP workers as `YESWIKI_WORKERS` says, each holding a database connection while
+  it serves a request, and none while it waits (`YESWIKI_DB_KEEP_CONNECTION=1` keeps it open).
+  Left unset, FrankenPHP starts two per CPU the host has, which a container's CPU limit does not
+  lower: set it on a large machine.
 - Its tags are `5.1.2`, `5.1` and `latest`. A pre-release (`5.1.0-beta1`) gets its own tag and moves
   neither `5.1` nor `latest`.
 - It is signed by the release workflow. To check a tag before you run it:

@@ -6,6 +6,7 @@
 
 use YesWiki\Core\YesWikiLoader;
 use YesWiki\Kernel\Service\AssetPublisher;
+use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\Probes;
 use YesWiki\Kernel\Service\Queue\QueueRequestTrigger;
 
@@ -24,6 +25,7 @@ $queueTrigger = $wiki->services->get(QueueRequestTrigger::class);
 $queueTrigger->servedByWorker();
 
 $requestsBeforeRestart = (int)(getenv('YESWIKI_WORKER_REQUESTS') ?: 500);
+$database = getenv('YESWIKI_DB_KEEP_CONNECTION') === '1' ? null : $wiki->services->get(DbService::class);
 $served = 0;
 $timeLimit = (int)ini_get('max_execution_time');
 
@@ -67,6 +69,7 @@ while ($served < $requestsBeforeRestart) {
         break;
     }
 
+    $database?->disconnectIfIdle();
     $probed = null;
     $keepServing = frankenphp_handle_request($handler);
     if ($probed === null) {

@@ -221,6 +221,29 @@ class QueueCommandsTest extends YesWikiTestCase
         $this->assertStringContainsString('limit', $tester->getDisplay());
     }
 
+    /** Replicas 19: once its queue is empty, the supervised consumer leaves with 79, so that an idle wiki holds no connection; the binary starts it again a minute later. */
+    public function testASupervisedConsumerLeavesWith79OnceItsQueueIsEmpty(): void
+    {
+        $this->mode = 'worker';
+        $this->kit->send('a');
+
+        $tester = $this->execute('messenger:consume', ['--supervised' => true, '--time-limit' => '30', '--memory-limit' => '-1']);
+
+        $this->assertSame(79, $tester->getStatusCode());
+        $this->assertSame(['a'], $this->kit->handled);
+    }
+
+    /** Without --supervised, a consumer started by hand or by systemd waits for work as before. */
+    public function testAConsumerStartedByHandDoesNotLeaveWhenEmpty(): void
+    {
+        $this->mode = 'worker';
+
+        $tester = $this->execute('messenger:consume', ['--time-limit' => '2', '--memory-limit' => '-1']);
+
+        $this->assertSame(Command::SUCCESS, $tester->getStatusCode());
+        $this->assertStringContainsString('time-limit', $tester->getDisplay());
+    }
+
     /** The binary restarts a consumer the configuration change stopped like any that ends its life: it exits 0, with no code of its own. */
     public function testAConfigurationChangeEndsTheSupervisedConsumerWithZero(): void
     {

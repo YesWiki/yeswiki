@@ -1443,10 +1443,18 @@ fois. Il refuse alors de démarrer sans `base_url`, plutôt que de déduire son
 adresse de la première requête reçue, et il refuse SQLite, qui est un fichier
 sur une seule machine.
 
-Chaque worker PHP d'un serveur garde sa connexion à la base. Sans
+Un worker PHP n'ouvre sa connexion à la base que pour servir une requête,
+et la rend avant d'attendre la suivante, sauf si un verrou ou une
+transaction en a encore besoin. Le consommateur de la file de fond s'arrête
+quand sa file est vide et repart une minute plus tard. Un wiki que personne
+ne visite ne tient donc aucune connexion, ce qui compte dans une ferme de
+centaines de wikis. `YESWIKI_DB_KEEP_CONNECTION=1` garde la connexion de
+chaque worker ouverte, comme avant.
+
+Au plus fort de la charge, chaque worker occupé tient une connexion. Sans
 `YESWIKI_WORKERS`, le binaire en démarre deux par processeur de la machine,
 même dans un conteneur limité à moins : trois serveurs sur une machine de 32
-cœurs ouvrent 192 connexions, au-delà des 151 que MariaDB accepte par
+cœurs peuvent ouvrir 192 connexions, au-delà des 151 que MariaDB accepte par
 défaut. Fixez `YESWIKI_WORKERS` (le chart Helm met `4`) et comptez, pour
 `max_connections`, les workers de chaque serveur plus un pour son
 consommateur de la file de fond, avec un serveur de plus pendant un

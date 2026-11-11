@@ -336,6 +336,42 @@ func TestExitNotMyModeIsNotRestarted(t *testing.T) {
 	}
 }
 
+func TestAnEmptyQueueIsVisitedAgainAMinuteLater(t *testing.T) {
+	if ExitEmpty != 79 {
+		t.Fatalf("PHP exits with 79 once its queue is empty (QueueCommandsTest), got ExitEmpty = %d", ExitEmpty)
+	}
+	starter := newFakeStarter()
+	clock := &fakeClock{}
+	sleep := newRecordingSleep()
+	log := newLogLines()
+	supervisor := NewSupervisor(starter, clock.now, sleep.sleep, log)
+	defer supervisor.Stop(StopGrace)
+
+	supervisor.Reconcile([]program.Wiki{alpha})
+
+	for range 3 {
+		child := starter.next(t)
+		clock.advance(2 * time.Second)
+		child.exitWith(ExitEmpty)
+
+		if waited := sleep.next(t); waited != EmptyQueueDelay {
+			t.Fatalf("an empty queue is looked at again after %s, not after a backoff of %s", EmptyQueueDelay, waited)
+		}
+	}
+	select {
+	case line := <-log.lines:
+		t.Fatalf("leaving an empty queue is no failure to log, got %q", line)
+	default:
+	}
+
+	child := starter.next(t)
+	clock.advance(time.Second)
+	child.exitWith(255)
+	if waited := sleep.next(t); waited != firstDelay {
+		t.Fatalf("a crash after empty queues starts the backoff from its first step, got %s", waited)
+	}
+}
+
 func TestFastExitsBackOffUpToSixtySeconds(t *testing.T) {
 	starter := newFakeStarter()
 	clock := &fakeClock{}
