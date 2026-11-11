@@ -3,6 +3,7 @@
 namespace YesWiki\Test\Render;
 
 use YesWiki\Render\Service\TemplateEngine;
+use YesWiki\Render\Service\TemplateOverrides;
 use YesWiki\Render\Twig\MarkdownTemplate;
 use YesWiki\Test\Core\YesWikiTestCase;
 
@@ -11,28 +12,25 @@ require_once 'tests/YesWikiTestCase.php';
 /** A markdown template converts what its author wrote, and nothing of what it prints. */
 class MarkdownTemplateTest extends YesWikiTestCase
 {
-    private const DIRECTORY = 'custom/templates/core';
-
     /** @var list<string> */
     private array $written = [];
 
     protected function tearDown(): void
     {
-        array_map('unlink', $this->written);
+        foreach ($this->written as $path) {
+            $this->getWiki()->services->get(TemplateOverrides::class)->delete($path);
+        }
         parent::tearDown();
     }
 
     /** @param array<string, mixed> $values */
     private function render(string $body, array $values = []): string
     {
-        if (!is_dir(self::DIRECTORY)) {
-            mkdir(self::DIRECTORY, 0777, true);
-        }
-        $name = 'markdown-template-probe-' . md5($body) . '.twig';
-        $this->written[] = self::DIRECTORY . '/' . $name;
-        file_put_contents(self::DIRECTORY . '/' . $name, MarkdownTemplate::mark($body));
+        $path = 'core/markdown-template-probe-' . md5($body) . '.twig';
+        $this->written[] = $path;
+        $this->getWiki()->services->get(TemplateOverrides::class)->save($path, MarkdownTemplate::mark($body));
 
-        return $this->getWiki()->services->get(TemplateEngine::class)->render('@core/' . $name, $values);
+        return $this->getWiki()->services->get(TemplateEngine::class)->render('@' . $path, $values);
     }
 
     public function testMarkdownIsConverted(): void
