@@ -138,6 +138,15 @@ class ProvidersEditorTest extends YesWikiTestCase
         $this->assertSame(['local', 'acme-sso', 'acme-sso-2'], array_keys($this->written()));
     }
 
+    /** `/admin/sign-in/new/{type}` is the add screen: a provider called `new` could not be reached at `/admin/sign-in/new/edit`. */
+    public function testTheIdentifierIsNeverARouteSegment(): void
+    {
+        $posted = ['label' => 'New', 'connection' => ['discovery_url' => 'https://a/x', 'client_id' => 'c', 'client_secret' => 's']];
+
+        $this->assertSame('new-2', $this->editor->create('oidc', $posted));
+        $this->assertSame('new-3', $this->editor->create('oidc', ['label' => ' NEW! '] + $posted));
+    }
+
     public function testTheFirstSaveWritesLocalExplicitly(): void
     {
         $this->assertStringNotContainsString('sso_providers', (string)file_get_contents($this->config));

@@ -19,6 +19,9 @@ class ProvidersEditor
 
     private const NOT_AN_INPUT = ['divider', 'hint'];
 
+    /** Segments the routes of AdminSignInController give a meaning to where an identifier goes: `/admin/sign-in/new/{type}`. */
+    private const RESERVED_IDENTIFIERS = ['new'];
+
     public function __construct(
         private readonly ConfigurationService $configurationService,
         private readonly ProviderRegistry $registry,
@@ -324,7 +327,7 @@ class ProvidersEditor
         $slug = strtolower(trim((string)preg_replace('/[^a-zA-Z0-9]+/', '-', self::asciiOf($label)), '-'));
         $base = $slug === '' ? $type : $slug;
         $id = $base;
-        for ($n = 2; isset($entries[$id]); ++$n) {
+        for ($n = 2; isset($entries[$id]) || in_array($id, self::RESERVED_IDENTIFIERS, true); ++$n) {
             $id = $base . '-' . $n;
         }
 
