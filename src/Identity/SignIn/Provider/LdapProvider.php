@@ -175,14 +175,18 @@ final class LdapProvider implements PasswordProvider
      */
     private function entry(array $settings, string $dn, #[\SensitiveParameter] string $password): array
     {
-        foreach ($this->search($settings, $dn, '(objectClass=*)', $password, 'read the person\'s entry') as $entry) {
-            if (strcasecmp($entry['dn'], $dn) === 0) {
-                return array_filter(
-                    $entry['attributes'],
-                    static fn (string $name): bool => !in_array(strtolower($name), self::SECRET_ATTRIBUTES, true),
-                    ARRAY_FILTER_USE_KEY
-                );
-            }
+        // read by base scope: the directory compares the DN itself, so a template written with spaces still finds its entry
+        $entry = $this->connection->read($dn);
+        $code = $this->connection->lastErrorCode();
+        if ($entry === null && $code !== 0) {
+            throw $this->failure($settings, $code, "the directory could not read the person's entry \"$dn\"", $password, FailureReason::InvalidResponse);
+        }
+        if ($entry !== null) {
+            return array_filter(
+                $entry['attributes'],
+                static fn (string $name): bool => !in_array(strtolower($name), self::SECRET_ATTRIBUTES, true),
+                ARRAY_FILTER_USE_KEY
+            );
         }
 
         throw new ProviderFailure(FailureReason::InvalidResponse, "the directory let \"$dn\" in, but sent no entry for it: its access rules may not let a person read their own entry");

@@ -26,6 +26,15 @@ interface LdapConnection
      */
     public function search(string $base, string $filter): array;
 
+    /**
+     * The entry $dn names, read alone (base scope), as the connection is bound now. The directory compares DNs itself, so spaces
+     * around `,` and `=` or a different case still name the entry; its DN comes back as the directory stores it.
+     * Null with lastErrorCode() not 0 is a failed read; null with 0 is an entry the directory did not send.
+     *
+     * @return ?array{dn: string, attributes: array<string, list<string>>}
+     */
+    public function read(string $dn): ?array;
+
     /** The LDAP result code of the last operation: 0 for success, 49 for invalid credentials, negative when the server was not reached. */
     public function lastErrorCode(): int;
 

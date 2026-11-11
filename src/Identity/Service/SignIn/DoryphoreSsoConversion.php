@@ -197,6 +197,7 @@ final class DoryphoreSsoConversion
             }
             $template = implode(',', $parts);
         }
+        $template = self::dn($template);
 
         return [
             'type' => LdapType::NAME,
@@ -423,6 +424,18 @@ final class DoryphoreSsoConversion
     private static function slug(string $label): string
     {
         return mb_strtolower((new AsciiSlugger())->slug($label)->toString());
+    }
+
+    /**
+     * A DN without the spaces around its `,` and `=`, which loginldap's settings were often written with. A directory reads both as
+     * the same DN, but sends the entry back as it stores it, without them. An escaped `\,` or `\=`, and the spaces inside a value,
+     * are kept.
+     */
+    private static function dn(string $dn): string
+    {
+        $dn = (string)preg_replace('/(?<!\\\\)\s+(?=[,=])/', '', $dn);
+
+        return (string)preg_replace('/(?<!\\\\)([,=])\s+/', '$1', $dn);
     }
 
     private static function text(mixed $value): string

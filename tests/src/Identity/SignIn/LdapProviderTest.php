@@ -116,6 +116,19 @@ class LdapProviderTest extends TestCase
         $this->assertSame(['ou=groups,dc=acme', '(|(member=uid=o\28brien\29,ou=people,dc=acme)(memberUid=o\28brien\29))'], end($this->directory->searches));
     }
 
+    /**
+     * A template converted from Doryphore may keep the spaces of its ldap_base. The directory binds a DN with spaces as the same
+     * entry, and sends that entry back with the DN as it stores it: the entry must be found whatever the spaces.
+     */
+    public function testATemplateWithSpacesSignsIn(): void
+    {
+        $identity = $this->provider(['bind_dn_template' => 'uid={login}, ou=people , dc = acme'])->authenticate('marie', self::PASSWORD);
+
+        $this->assertSame('uid=marie, ou=people , dc = acme', $this->directory->binds[0][0], 'the template is bound as written');
+        $this->assertSame(['marie'], $identity->attributes['uid']);
+        $this->assertSame(['marie.dupont@acme.example'], $identity->attributes['mail']);
+    }
+
     public function testAttributesComeBackAfterBind(): void
     {
         $identity = $this->provider()->authenticate('marie', self::PASSWORD);
@@ -126,7 +139,7 @@ class LdapProviderTest extends TestCase
         $this->assertSame(['Dupont'], $identity->attributes['sn']);
         $this->assertSame(['cn=wiki-editors,ou=groups,dc=acme', 'cn=staff,ou=groups,dc=acme'], $identity->attributes['memberOf']);
         $this->assertSame([self::MARIE_DN], $identity->attributes['dn']);
-        $this->assertSame([self::MARIE_DN, '(objectClass=*)'], $this->directory->searches[0], 'the entry is read as the person, once bound');
+        $this->assertSame([self::MARIE_DN], $this->directory->reads, 'the entry is read alone, as the person, once bound');
         $this->assertSame(self::MARIE_DN, $this->directory->boundAs[0], 'and only once bound');
     }
 
@@ -147,7 +160,7 @@ class LdapProviderTest extends TestCase
 
         $identity = $this->provider(['group_base' => 'ou=groups,dc=acme'], ['groups' => 'groups'])->authenticate('marie', self::PASSWORD);
 
-        $this->assertSame(['ou=groups,dc=acme', '(member=uid=marie,ou=people,dc=acme)'], $this->directory->searches[1], 'the default group filter');
+        $this->assertSame(['ou=groups,dc=acme', '(member=uid=marie,ou=people,dc=acme)'], $this->directory->searches[0], 'the default group filter');
         $this->assertSame(['wiki-editors', 'staff'], $identity->attributes['groups'], 'each group by its cn');
         $this->assertSame(['marie'], $identity->attributes['uid'], 'beside the attributes');
     }
@@ -367,7 +380,8 @@ class LdapProviderTest extends TestCase
 
 /**
  * A directory in memory: entries by DN, the passwords that bind them, groups with a member list.
- * Searches understand only what the provider sends: `(objectClass=*)` on a DN, `(uid=...)` and `(member=...)` under a base.
+ * Searches understand only what the provider sends: `(uid=...)` and `(member=...)` under a base. A DN is compared as a directory
+ * does: whatever its case and the spaces around `,` and `=`.
  */
 final class FakeLdapConnection implements LdapConnection
 {
@@ -389,7 +403,9 @@ final class FakeLdapConnection implements LdapConnection
     public array $binds = [];
     /** @var list<array{0: string, 1: string}> */
     public array $searches = [];
-    /** @var list<?string> who the connection was bound as at each search */
+    /** @var list<string> */
+    public array $reads = [];
+    /** @var list<?string> who the connection was bound as at each search or read */
     public array $boundAs = [];
 
     private ?string $bound = null;
@@ -415,7 +431,9 @@ final class FakeLdapConnection implements LdapConnection
             return false;
         }
         // as many directories do: no DN, or an empty one, is an anonymous or unauthenticated bind, and succeeds whatever the password
-        if ($dn === null || trim($dn) === '' || (isset($this->accounts[$dn]) && $this->accounts[$dn] === $password)) {
+        // a DN names the same entry whatever its case and the spaces around its separators, as a directory compares them
+        $account = $dn === null ? null : $this->stored($dn, array_keys($this->accounts));
+        if ($dn === null || trim($dn) === '' || ($account !== null && $this->accounts[$account] === $password)) {
             $this->bound = $dn;
             [$this->code, $this->message] = [0, 'Success'];
 
@@ -433,18 +451,7 @@ final class FakeLdapConnection implements LdapConnection
         [$this->code, $this->message] = [0, 'Success'];
         $under = fn (string $dn): bool => str_ends_with(strtolower($dn), strtolower($base));
         $found = [];
-        if ($filter === '(objectClass=*)') {
-            foreach ($this->entries as $dn => $attributes) {
-                if ($dn === $base) {
-                    $found[] = ['dn' => $dn, 'attributes' => $attributes];
-                }
-            }
-            if ($found === []) {
-                [$this->code, $this->message] = [32, 'No such object'];
-            }
 
-            return $found;
-        }
         if (str_contains($filter, 'member=')) {
             foreach ($this->groups as $dn => $attributes) {
                 if ($under($dn)) {
@@ -468,6 +475,21 @@ final class FakeLdapConnection implements LdapConnection
         return $found;
     }
 
+    public function read(string $dn): ?array
+    {
+        $this->reads[] = $dn;
+        $this->boundAs[] = $this->bound;
+        $stored = $this->stored($dn, array_keys($this->entries));
+        if ($stored === null) {
+            [$this->code, $this->message] = [32, 'No such object'];
+
+            return null;
+        }
+        [$this->code, $this->message] = [0, 'Success'];
+
+        return ['dn' => $stored, 'attributes' => $this->entries[$stored]];
+    }
+
     public function lastErrorCode(): int
     {
         return $this->code;
@@ -476,5 +498,22 @@ final class FakeLdapConnection implements LdapConnection
     public function lastError(): string
     {
         return $this->message;
+    }
+
+    /**
+     * The DN among $stored that $dn names, as the directory stores it.
+     *
+     * @param list<string> $stored
+     */
+    private function stored(string $dn, array $stored): ?string
+    {
+        $normal = static fn (string $dn): string => strtolower((string)preg_replace('/\s*([,=])\s*/', '$1', trim($dn)));
+        foreach ($stored as $candidate) {
+            if ($normal($candidate) === $normal($dn)) {
+                return $candidate;
+            }
+        }
+
+        return null;
     }
 }

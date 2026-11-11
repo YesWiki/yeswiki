@@ -63,9 +63,27 @@ final class NativeLdapConnection implements LdapConnection
         }
         $result = @ldap_search($link, $base, $filter, self::ATTRIBUTES, 0, 0, self::TIMEOUT);
         $this->remember();
-        if (!$result instanceof \LDAP\Result) {
-            return [];
+
+        return $result instanceof \LDAP\Result ? $this->entries($link, $result) : [];
+    }
+
+    public function read(string $dn): ?array
+    {
+        $link = $this->link;
+        if ($link === null) {
+            $this->notConnected();
+
+            return null;
         }
+        $result = @ldap_read($link, $dn, '(objectClass=*)', self::ATTRIBUTES, 0, 0, self::TIMEOUT);
+        $this->remember();
+
+        return $result instanceof \LDAP\Result ? ($this->entries($link, $result)[0] ?? null) : null;
+    }
+
+    /** @return list<array{dn: string, attributes: array<string, list<string>>}> */
+    private function entries(\LDAP\Connection $link, \LDAP\Result $result): array
+    {
         $entries = [];
         for ($entry = @ldap_first_entry($link, $result); $entry instanceof \LDAP\ResultEntry; $entry = @ldap_next_entry($link, $entry)) {
             $dn = ldap_get_dn($link, $entry);

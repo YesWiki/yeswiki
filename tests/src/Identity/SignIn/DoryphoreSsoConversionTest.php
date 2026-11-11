@@ -214,6 +214,19 @@ class DoryphoreSsoConversionTest extends TestCase
         $this->assertSame('uid={login},ou=u,dc=x', $p['connection']['bind_dn_template']);
     }
 
+    /** Doryphore's ldap_base may be written with spaces after its commas: the template is written without them. */
+    public function testLdapBaseWithSpacesGivesANormalisedTemplate(): void
+    {
+        $p = $this->convert($this->ldap(['ldap_base' => ' ou = people, dc=acme ,  dc =example ']), ['loginldap'])->providers['ldap'];
+        $this->assertSame('uid={login},ou=people,dc=acme,dc=example', $p['connection']['bind_dn_template']);
+
+        $p = $this->convert(['ldap_host' => 'h', 'ldap_port' => '389', 'ldap_organisation' => ' Acme Corp ', 'ldap_group' => 'people , staff'], ['loginldap'])->providers['ldap'];
+        $this->assertSame('uid={login},ou=people,staff,o=Acme Corp', $p['connection']['bind_dn_template'], 'spaces inside a value are kept');
+
+        $p = $this->convert($this->ldap(['ldap_base' => 'o=Acme\, Inc , dc=x']), ['loginldap'])->providers['ldap'];
+        $this->assertSame('uid={login},o=Acme\, Inc,dc=x', $p['connection']['bind_dn_template'], 'so is the space after an escaped comma');
+    }
+
     public function testLdapWithOrganisationAndGroup(): void
     {
         $config = ['ldap_host' => 'h', 'ldap_port' => '389', 'ldap_organisation' => 'o', 'ldap_group' => 'g'];
