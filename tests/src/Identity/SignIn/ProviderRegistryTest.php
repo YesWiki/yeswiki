@@ -174,6 +174,7 @@ class ProviderRegistryTest extends YesWikiTestCase
         $this->assertSame('oidc', $label('bare'), 'the fake type\'s label is its name');
         $this->assertSame('gone', $label('gone'), 'with its type gone, the identifier is all there is');
     }
+
     public function testLocalAcceptsOnlyTheKeyLocal(): void
     {
         $r = $this->registry(['mine' => ['type' => 'local']]);

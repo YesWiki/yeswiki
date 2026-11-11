@@ -454,6 +454,7 @@ class SignInApplyTest extends YesWikiTestCase
             $this->assertStringContainsString("\"$provider\"", $f->adminDetail);
         }
     }
+
     public function testRefusalThrowsItsReason(): void
     {
         try {

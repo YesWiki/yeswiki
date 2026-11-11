@@ -53,6 +53,7 @@ class SignInPageTest extends YesWikiTestCase
         $this->assertStringContainsString('fakepw', $html);
         $this->assertStringContainsString(_t('SIGN_IN_LOCAL_LABEL'), $html);
     }
+
     public function testTheButtonCarriesTheReturnUrl(): void
     {
         $html = $this->render(['acme' => ['type' => 'fakeredirect']]);

@@ -16,7 +16,7 @@ use YesWiki\Identity\SignIn\Provider\NativeLdapConnection;
 class NativeLdapConnectionTest extends TestCase
 {
     /** @var resource|null */
-    private $server = null;
+    private $server;
     private string $pem = '';
 
     protected function tearDown(): void

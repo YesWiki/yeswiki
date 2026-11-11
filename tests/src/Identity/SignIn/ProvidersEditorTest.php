@@ -742,6 +742,7 @@ class ProvidersEditorTest extends YesWikiTestCase
         $this->assertMatchesRegularExpression('#<td>' . preg_quote(htmlspecialchars(_t('SIGN_IN_LOCAL_LABEL'), ENT_QUOTES), '#') . '<small class="yw-form-hint">local</small></td>#', $html);
         $this->assertMatchesRegularExpression('#<td>' . preg_quote(htmlspecialchars(_t('SIGN_IN_TYPE_OIDC'), ENT_QUOTES), '#') . '<small class="yw-form-hint">bare</small></td>#', $html);
     }
+
     public function testTheEditButtonIsTranslated(): void
     {
         $this->seed(['local' => ['type' => 'local'], 'acme' => $this->oidc()]);
@@ -765,6 +766,7 @@ class ProvidersEditorTest extends YesWikiTestCase
         $this->assertStringContainsString('fakeredirect', $html);
         $this->assertStringNotContainsString('acme-2', $html);
     }
+
     public function testTheUsersTableShowsTheProviderOfALinkedAccount(): void
     {
         $this->installProviders(['acme' => ['type' => 'fakeredirect', 'label' => 'Acme Single Sign-On'], 'local' => ['type' => 'local']]);

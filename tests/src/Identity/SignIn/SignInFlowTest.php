@@ -756,6 +756,7 @@ class SignInFlowTest extends YesWikiTestCase
         $this->assertStringContainsString('fake-password', $outcome->messageForPerson(), 'the type\'s label');
         $this->assertStringNotContainsString('fakepw', $outcome->messageForPerson());
     }
+
     public function testTheDirectoryGetsTheLoginAsTyped(): void
     {
         $this->assertSame('signed_in', $this->flow->password('fakepw', 'FLOW-Typed', 'good', false)->kind);
