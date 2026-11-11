@@ -121,7 +121,7 @@ final class SamlProvider implements RedirectProvider, PublishesMetadata
             throw new ProviderFailure(FailureReason::InvalidResponse, "the SAML response was sent to $destination, not to {$this->acsUrl}");
         }
 
-        return new ProviderIdentity(self::attributes($response));
+        return new ProviderIdentity($this->attributes($response));
     }
 
     public function metadataResponse(): Response
@@ -269,20 +269,53 @@ final class SamlProvider implements RedirectProvider, PublishesMetadata
      * The attributes under their names, those with a friendly name under it too, and the NameID under `name_id`.
      * A value sent once is a string; several stay a list.
      *
+     * php-saml refuses, while reading them, an attribute sent in two elements and an assertion with no NameID: a response the wiki
+     * cannot read, unless the NameID is the user ID, which is then the attribute missing.
+     *
      * @return array<string, mixed>
      */
-    private static function attributes(SamlResponse $response): array
+    private function attributes(SamlResponse $response): array
     {
-        $attributes = [];
-        foreach ([$response->getAttributes(), $response->getAttributesWithFriendlyName()] as $named) {
-            foreach ($named as $name => $values) {
-                $values = array_values((array)$values);
-                $attributes[(string)$name] ??= count($values) === 1 ? $values[0] : $values;
+        try {
+            $attributes = [];
+            foreach ([$response->getAttributes(), $response->getAttributesWithFriendlyName()] as $named) {
+                foreach ($named as $name => $values) {
+                    $values = array_values((array)$values);
+                    $attributes[(string)$name] ??= count($values) === 1 ? $values[0] : $values;
+                }
             }
+            $attributes['name_id'] = $response->getNameId();
+        } catch (ValidationError $unreadable) {
+            throw $this->unreadable($response, $unreadable);
         }
-        $attributes['name_id'] = $response->getNameId();
 
         return $attributes;
+    }
+
+    private function unreadable(SamlResponse $response, ValidationError $error): ProviderFailure
+    {
+        switch ($error->getCode()) {
+            case ValidationError::NO_NAMEID:
+            case ValidationError::EMPTY_NAMEID:
+                $id = $this->config->attributes['id'] ?? 'name_id';
+                $said = $error->getCode() === ValidationError::NO_NAMEID ? 'has no NameID' : 'has an empty NameID';
+
+                return $id === 'name_id'
+                    ? new ProviderFailure(FailureReason::MissingAttribute, "the SAML response $said, and the user ID is read from it (name_id): the identity provider must send a persistent NameID")
+                    : new ProviderFailure(FailureReason::InvalidResponse, "the SAML response $said, which an assertion must have even when the user ID is read from \"$id\"");
+            case ValidationError::DUPLICATED_ATTRIBUTE_NAME_FOUND:
+                $names = [];
+                foreach ($response->document->getElementsByTagNameNS(Constants::NS_SAML, 'Attribute') as $attribute) {
+                    $names[] = $attribute instanceof \DOMElement ? $attribute->getAttribute('Name') : '';
+                }
+                $twice = array_keys(array_filter(array_count_values(array_filter($names, 'strlen')), fn (int $count): bool => $count > 1));
+
+                return new ProviderFailure(FailureReason::InvalidResponse, $twice === []
+                    ? 'the SAML response sends an attribute in two Attribute elements'
+                    : 'the SAML response sends the attribute "' . implode('", "', $twice) . '" in two Attribute elements: the identity provider must send each attribute once, with all its values');
+            default:
+                return new ProviderFailure(FailureReason::InvalidResponse, 'the SAML response could not be read: ' . $error->getMessage());
+        }
     }
 
     /**

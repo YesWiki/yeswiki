@@ -156,6 +156,43 @@ class SamlProviderTest extends TestCase
         $this->assertSame(['wiki-editors', 'staff'], $identity->attributes['groups']);
     }
 
+    /** With the user ID read from the NameID, a response without one lacks the attribute the account is found by. */
+    public function testAMissingNameIdIsAMissingAttributeWhenItIsTheUserId(): void
+    {
+        foreach (['response-no-nameid.xml', 'response-empty-nameid.xml'] as $fixture) {
+            $failure = $this->failure(fn () => $this->provider()->complete(self::posted($fixture), self::handshake()));
+
+            $this->assertSame(FailureReason::MissingAttribute, $failure->reason, $fixture);
+            $this->assertStringContainsString('NameID', $failure->adminDetail, $fixture);
+        }
+    }
+
+    public function testAMissingNameIdIsAnInvalidResponseOtherwise(): void
+    {
+        $provider = new SamlProvider(
+            ProviderConfig::fromArray('saml-a', ['type' => 'saml', 'label' => 'Acme SAML', 'attributes' => ['id' => 'uid'], 'connection' => [
+                'idp_entity_id' => self::IDP_ENTITY_ID, 'idp_sso_url' => self::IDP_SSO_URL, 'idp_certificate' => self::fixture('idp.crt'),
+            ]]),
+            self::SP_ENTITY_ID,
+            self::ACS_URL,
+            self::BASE_URL,
+        );
+
+        $failure = $this->failure(fn () => $provider->complete(self::posted('response-no-nameid.xml'), self::handshake()));
+
+        $this->assertSame(FailureReason::InvalidResponse, $failure->reason);
+        $this->assertStringContainsString('NameID', $failure->adminDetail);
+    }
+
+    public function testADuplicatedAttributeIsAnInvalidResponse(): void
+    {
+        $failure = $this->failure(fn () => $this->provider()->complete(self::posted('response-duplicated-attribute.xml'), self::handshake()));
+
+        $this->assertSame(FailureReason::InvalidResponse, $failure->reason);
+        $this->assertStringContainsString('mail', $failure->adminDetail);
+        $this->assertStringNotContainsString('someone.else@acme.example', $failure->adminDetail);
+    }
+
     public function testAnUnsignedResponseIsRefused(): void
     {
         $failure = $this->failure(fn () => $this->provider()->complete(self::posted('response-unsigned.xml'), self::handshake()));
