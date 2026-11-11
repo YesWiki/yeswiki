@@ -204,12 +204,22 @@ class SignInService
                 unset($profile['email']);
                 $user = $this->users->createLinked((string)$plan->accountTag, $email, $profile, $plan->providerId, $subject);
             } else {
+                // read again under the lock: another sign-in may have tied the account to a provider since the plan was made
                 $user = $this->users->getOneByName((string)$plan->accountTag);
+                $linkedTo = $user?->provider();
+                $expected = $plan->action === PlanAction::ReplaceSubject ? $plan->providerId : null;
+                if ($user !== null && $linkedTo !== $expected) {
+                    $detail = $linkedTo === null ? 'the account is no longer tied to this provider' : "the account belongs to provider \"$linkedTo\"";
+
+                    throw new ProviderFailure(FailureReason::LinkedElsewhere, $detail, null, $plan->attributes);
+                }
                 if ($user !== null) {
                     $this->links->link($user, $plan->providerId, $subject);
                     $user = $this->users->getOneByName($user->getName());
                 }
             }
+        } catch (ProviderFailure $refused) {
+            throw $refused;
         } catch (\Throwable $e) {
             throw new ProviderFailure(FailureReason::AccountCreationFailed, 'the account could not be written: ' . $e->getMessage(), null, $plan->attributes);
         }

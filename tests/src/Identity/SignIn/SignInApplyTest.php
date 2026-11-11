@@ -415,6 +415,45 @@ class SignInApplyTest extends YesWikiTestCase
         $this->assertNull($this->users->getOneByEmail('hibfresh@x'));
     }
 
+    /**
+     * Between plan and apply another sign-in may have tied the account to a provider: the link is checked again under the lock,
+     * and the account is not taken from that provider.
+     */
+    public function testAnAccountLinkedSincePlanningIsNotTaken(): void
+    {
+        $account = $this->created('SsoApplyAcct', 'apply7@x');
+        $plan = $this->service->plan($this->config(['match_by_email' => true]), new ProviderIdentity(['sub' => 'a7', 'email' => 'apply7@x']));
+        $this->assertSame(PlanAction::LinkExisting, $plan->action);
+        $this->links->link($account, 'other', 'theirs');
+
+        $this->assertRefusedAsLinkedElsewhere($plan, 'other');
+        $kept = $this->users->getOneByName('SsoApplyAcct');
+        $this->assertNotNull($kept);
+        $this->assertSame(['other', 'theirs'], [$kept->provider(), $this->links->subjectOf($kept)]);
+    }
+
+    public function testASubjectIsNotReplacedOnAnAccountMovedSincePlanning(): void
+    {
+        $account = $this->created('SsoApplyAcct', 'apply8@x');
+        $this->links->link($account, 'acme', 'old-subject');
+        $plan = $this->service->plan($this->config(['match_by_email' => true]), new ProviderIdentity(['sub' => 'new-subject', 'email' => 'apply8@x']));
+        $this->assertSame(PlanAction::ReplaceSubject, $plan->action);
+        $this->links->link($this->users->getOneByName('SsoApplyAcct') ?? $account, 'other', 'theirs');
+
+        $this->assertRefusedAsLinkedElsewhere($plan, 'other');
+        $this->assertSame('other', $this->users->getOneByName('SsoApplyAcct')?->provider());
+    }
+
+    private function assertRefusedAsLinkedElsewhere(SignInPlan $plan, string $provider): void
+    {
+        try {
+            $this->service->apply($plan);
+            $this->fail('expected a refusal');
+        } catch (ProviderFailure $f) {
+            $this->assertSame(FailureReason::LinkedElsewhere, $f->reason);
+            $this->assertStringContainsString("\"$provider\"", $f->adminDetail);
+        }
+    }
     public function testRefusalThrowsItsReason(): void
     {
         try {
