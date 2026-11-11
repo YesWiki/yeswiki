@@ -1,0 +1,34 @@
+# A throwaway MariaDB for the kind proof: one pod, no volume, gone with the cluster.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: db
+spec:
+  replicas: 1
+  selector:
+    matchLabels: {app: db}
+  template:
+    metadata:
+      labels: {app: db}
+    spec:
+      enableServiceLinks: false
+      containers:
+        - name: mariadb
+          image: mariadb:11.4
+          env:
+            - {name: MARIADB_ROOT_PASSWORD, value: kind-root}
+            - {name: MARIADB_DATABASE, value: yeswiki}
+            - {name: MARIADB_USER, value: yeswiki}
+            - {name: MARIADB_PASSWORD, value: kind-db}
+          ports: [{containerPort: 3306}]
+          readinessProbe:
+            exec: {command: ["healthcheck.sh", "--connect", "--innodb_initialized"]}
+            periodSeconds: 3
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: db
+spec:
+  selector: {app: db}
+  ports: [{port: 3306}]

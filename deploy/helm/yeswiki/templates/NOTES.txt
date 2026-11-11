@@ -1,0 +1,8 @@
+{{ include "yeswiki.fullname" . }} runs {{ .Values.replicaCount }} replicas of the wiki at {{ .Values.baseUrl }}.
+
+{{- if .Values.install.enabled }}
+The install Job created the wiki in the database before the replicas started:
+  kubectl get pods -l app.kubernetes.io/instance={{ .Release.Name }}
+{{- end }}
+
+Every `helm upgrade` migrates the database with the new image before the rollout.

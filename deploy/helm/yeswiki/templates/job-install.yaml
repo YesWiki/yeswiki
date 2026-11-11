@@ -1,0 +1,52 @@
+{{/* The first `helm install` installs the wiki into the empty database before any replica starts: a worker cannot boot on a database without tables. */}}
+{{- if .Values.install.enabled }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "yeswiki.fullname" . }}-install
+  labels:
+    {{- include "yeswiki.labels" . | nindent 4 }}
+  annotations:
+    helm.sh/hook: pre-install
+    helm.sh/hook-weight: "0"
+    helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
+spec:
+  backoffLimit: 0
+  template:
+    metadata:
+      labels:
+        {{- include "yeswiki.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: install
+    spec:
+      restartPolicy: Never
+      automountServiceAccountToken: false
+      enableServiceLinks: false
+      securityContext:
+        {{- include "yeswiki.podSecurityContext" . | nindent 8 }}
+      containers:
+        - name: install
+          image: {{ include "yeswiki.image" . }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          args: ["install"]
+          env:
+            {{- include "yeswiki.env" . | nindent 12 }}
+            - name: ADMIN_NAME
+              value: {{ .Values.install.adminName | quote }}
+            - name: ADMIN_EMAIL
+              value: {{ required "install.adminEmail is required to install the wiki" .Values.install.adminEmail | quote }}
+          envFrom:
+            - secretRef:
+                name: {{ .Values.existingSecret | default (printf "%s-install" (include "yeswiki.fullname" .)) }}
+          securityContext:
+            {{- include "yeswiki.containerSecurityContext" . | nindent 12 }}
+          volumeMounts:
+            - name: wiki
+              mountPath: /srv/wiki
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: wiki
+          emptyDir: {}
+        - name: tmp
+          emptyDir: {}
+{{- end }}

@@ -1,0 +1,54 @@
+{{/* Every `helm upgrade` migrates the database with the new image before the rollout; meanwhile the old replicas serve reads and refuse writes with a 503. */}}
+{{- if .Values.migrate.enabled }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "yeswiki.fullname" . }}-migrate
+  labels:
+    {{- include "yeswiki.labels" . | nindent 4 }}
+  annotations:
+    helm.sh/hook: pre-upgrade
+    helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
+spec:
+  backoffLimit: 0
+  template:
+    metadata:
+      labels:
+        {{- include "yeswiki.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: migrate
+    spec:
+      restartPolicy: Never
+      automountServiceAccountToken: false
+      enableServiceLinks: false
+      securityContext:
+        {{- include "yeswiki.podSecurityContext" . | nindent 8 }}
+      containers:
+        - name: migrate
+          image: {{ include "yeswiki.image" . }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          args: ["migrate"]
+          env:
+            {{- include "yeswiki.env" . | nindent 12 }}
+          envFrom:
+            - secretRef:
+                name: {{ include "yeswiki.secretName" . }}
+          securityContext:
+            {{- include "yeswiki.containerSecurityContext" . | nindent 12 }}
+          volumeMounts:
+            - name: wiki
+              mountPath: /srv/wiki
+            - name: config
+              mountPath: /srv/wiki/yeswiki.config.php
+              subPath: yeswiki.config.php
+              readOnly: true
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: wiki
+          emptyDir: {}
+        - name: tmp
+          emptyDir: {}
+        - name: config
+          configMap:
+            name: {{ include "yeswiki.fullname" . }}
+{{- end }}

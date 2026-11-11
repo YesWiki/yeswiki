@@ -1,6 +1,6 @@
 #!/bin/sh
 # Starts the wiki in the image: puts back its entry points, installs it on a first start when YESWIKI_INSTALL=1, migrates it unless it is replicated, then serves it.
-# `bundle <names>` installs extensions and themes into the image's program, which an image built FROM this one runs as root.
+# `install` and `migrate` are what a cluster's Jobs run; `bundle <names>` adds extensions and themes to the program, as root in an image built FROM this one.
 set -eu
 
 wiki=/srv/wiki
@@ -26,6 +26,11 @@ case "${1:-serve}" in
         ;;
     migrate)
         yeswiki prepare "$wiki"
+        exec yeswiki migrate "$wiki"
+        ;;
+    install)
+        yeswiki prepare "$wiki"
+        yeswiki setup "$wiki" --no-interaction
         exec yeswiki migrate "$wiki"
         ;;
     bundle)

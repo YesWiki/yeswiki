@@ -26,6 +26,9 @@ class WikiSettingsTest extends YesWikiTestCase
 
     private ?string $envWas;
 
+    /** @var array<string, string|false> */
+    private array $variablesWere = [];
+
     /** @var array<string, mixed> */
     private array $storedWas;
 
@@ -36,15 +39,18 @@ class WikiSettingsTest extends YesWikiTestCase
         $this->fileWas = (string)file_get_contents($this->file());
         $env = $services->get(EnvFile::class)->path();
         $this->envWas = is_file($env) ? (string)file_get_contents($env) : null;
+        foreach ([Replication::ENV, 'CONTACT_SMTP_HOST', 'ACTIVE_EXTENSIONS'] as $name) {
+            $this->variablesWere[$name] = getenv($name);
+        }
         $this->storedWas = $services->get(WikiSettings::class)->all();
     }
 
     protected function tearDown(): void
     {
         $services = self::getWiki()->services;
-        putenv(Replication::ENV);
-        putenv('CONTACT_SMTP_HOST');
-        putenv('ACTIVE_EXTENSIONS');
+        foreach ($this->variablesWere as $name => $value) {
+            putenv($value === false ? $name : $name . '=' . $value);
+        }
         \YesWiki\Core\YesWikiLoader::forgetEnvFile();
         $env = $services->get(EnvFile::class)->path();
         if ($this->envWas === null) {

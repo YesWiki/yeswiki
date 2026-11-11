@@ -1,0 +1,49 @@
+# SeaweedFS with its S3 gateway, the project's bucket in tests: path-style, anonymous reads, the bucket made on the first write.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: s3-config
+data:
+  s3.json: |
+    {"identities": [
+      {"name": "yeswiki", "credentials": [{"accessKey": "kind-key", "secretKey": "kind-secret"}], "actions": ["Admin", "Read", "List", "Tagging", "Write"]},
+      {"name": "anonymous", "actions": ["Read"]}
+    ]}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: s3
+spec:
+  replicas: 1
+  selector:
+    matchLabels: {app: s3}
+  template:
+    metadata:
+      labels: {app: s3}
+    spec:
+      enableServiceLinks: false
+      containers:
+        - name: seaweedfs
+          image: chrislusf/seaweedfs:4.53
+          args: ["server", "-s3", "-s3.config=/etc/seaweedfs/s3.json", "-dir=/data", "-master.volumeSizeLimitMB=64"]
+          ports: [{containerPort: 8333}]
+          readinessProbe:
+            tcpSocket: {port: 8333}
+            periodSeconds: 3
+          volumeMounts:
+            - {name: config, mountPath: /etc/seaweedfs}
+            - {name: data, mountPath: /data}
+      volumes:
+        - name: config
+          configMap: {name: s3-config}
+        - name: data
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: s3
+spec:
+  selector: {app: s3}
+  ports: [{port: 8333}]

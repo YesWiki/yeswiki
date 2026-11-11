@@ -1,0 +1,16 @@
+{{/* No session affinity: any replica answers any request. */}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "yeswiki.fullname" . }}
+  labels:
+    {{- include "yeswiki.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.type }}
+  sessionAffinity: None
+  selector:
+    {{- include "yeswiki.selectorLabels" . | nindent 4 }}
+  ports:
+    - name: http
+      port: {{ .Values.service.port }}
+      targetPort: http
