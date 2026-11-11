@@ -55,7 +55,7 @@ class NativeLdapConnectionTest extends TestCase
         $key = openssl_pkey_new(['private_key_bits' => 2048, 'private_key_type' => OPENSSL_KEYTYPE_RSA]);
         $this->assertNotFalse($key);
         $csr = openssl_csr_new(['commonName' => '127.0.0.1'], $key);
-        $this->assertNotFalse($csr);
+        $this->assertInstanceOf(\OpenSSLCertificateSigningRequest::class, $csr);
         $certificate = openssl_csr_sign($csr, null, $key, 1);
         $this->assertNotFalse($certificate);
         openssl_x509_export($certificate, $pem);
@@ -73,8 +73,9 @@ class NativeLdapConnectionTest extends TestCase
                 fclose($client);
             }
             PHP;
-        $this->server = proc_open([PHP_BINARY, '-r', $script, $this->pem], [1 => ['pipe', 'w'], 2 => ['file', '/dev/null', 'w']], $pipes);
-        $this->assertIsResource($this->server);
+        $server = proc_open([PHP_BINARY, '-r', $script, $this->pem], [1 => ['pipe', 'w'], 2 => ['file', '/dev/null', 'w']], $pipes);
+        $this->assertIsResource($server);
+        $this->server = $server;
         $port = (int)trim((string)fgets($pipes[1]));
         $this->assertGreaterThan(0, $port, 'the TLS server started');
 

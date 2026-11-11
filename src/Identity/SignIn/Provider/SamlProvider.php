@@ -306,9 +306,12 @@ final class SamlProvider implements RedirectProvider, PublishesMetadata
             case ValidationError::DUPLICATED_ATTRIBUTE_NAME_FOUND:
                 $names = [];
                 foreach ($response->document->getElementsByTagNameNS(Constants::NS_SAML, 'Attribute') as $attribute) {
-                    $names[] = $attribute instanceof \DOMElement ? $attribute->getAttribute('Name') : '';
+                    $name = $attribute->getAttribute('Name');
+                    if ($name !== '') {
+                        $names[] = $name;
+                    }
                 }
-                $twice = array_keys(array_filter(array_count_values(array_filter($names, 'strlen')), fn (int $count): bool => $count > 1));
+                $twice = array_keys(array_filter(array_count_values($names), fn (int $count): bool => $count > 1));
 
                 return new ProviderFailure(FailureReason::InvalidResponse, $twice === []
                     ? 'the SAML response sends an attribute in two Attribute elements'
