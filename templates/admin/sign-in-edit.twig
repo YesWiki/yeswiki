@@ -35,6 +35,10 @@
       {% if hasStartTls and directoryUri starts with 'ldap://' and not startTlsOn %}
         <div class="yw-alert yw-alert--warning yw-sign-in-admin__unencrypted" role="status">{{ icon('alert-triangle') }} {{ _t('SIGN_IN_LDAP_UNENCRYPTED') }}</div>
       {% endif %}
+      {# An http:// address is accepted, but what goes through it travels in clear and can be changed on the way. #}
+      {% for setting in settings|filter(s => s.kind == 'url' and s.value|trim|lower starts with 'http://') %}
+        <div class="yw-alert yw-alert--warning yw-sign-in-admin__plain-http" role="status">{{ icon('alert-triangle') }} {{ _t('SIGN_IN_ADMIN_PLAIN_HTTP', { setting: setting.label }) }}</div>
+      {% endfor %}
       {% if callback %}
         <div class="yw-form-group">
           <label class="yw-form-label" for="sign-in-callback">{{ _t('SIGN_IN_ADMIN_CALLBACK_URL') }}</label>

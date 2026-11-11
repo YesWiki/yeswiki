@@ -602,6 +602,23 @@ class ProvidersEditorTest extends YesWikiTestCase
         $this->assertMatchesRegularExpression('#<input[^>]*name="connection\[search_password\]"[^>]*type="password"|<input[^>]*type="password"[^>]*name="connection\[search_password\]"#', $html);
     }
 
+    /** An http:// address is accepted, as the development portal needs, and the edit screen says what it costs. */
+    public function testAPlainHttpAddressIsWarnedOnTheEditScreen(): void
+    {
+        $warning = fn (string $setting): string => htmlspecialchars(_t('SIGN_IN_ADMIN_PLAIN_HTTP', ['setting' => $setting]), ENT_QUOTES);
+        $label = _t('SIGN_IN_OIDC_DISCOVERY_URL');
+
+        $this->seed(['local' => ['type' => 'local'], 'acme' => $this->oidc(['connection' => ['discovery_url' => 'HTTP://idp.example/.well-known/openid-configuration', 'client_id' => 'c', 'client_secret' => self::SECRET]])]);
+        $html = (string)$this->getWiki()->services->get(AdminSignInController::class)->edit('acme')->getContent();
+        $this->assertStringContainsString($warning($label), $html);
+        $this->assertSame('HTTP://idp.example/.well-known/openid-configuration', $this->written()['acme']['connection']['discovery_url'], 'and it is kept');
+
+        $this->seed(['local' => ['type' => 'local'], 'acme' => $this->oidc()]);
+        $html = (string)$this->getWiki()->services->get(AdminSignInController::class)->edit('acme')->getContent();
+        $this->assertStringNotContainsString($warning($label), $html, 'https:// is not warned about');
+        $this->assertStringNotContainsString('yw-sign-in-admin__plain-http', $html);
+    }
+
     public function testAnLdapAddressIsSavedAsTyped(): void
     {
         $this->seed(['local' => ['type' => 'local'], 'dir' => ['type' => 'ldap', 'label' => 'Directory', 'connection' => ['uri' => 'ldaps://old', 'bind_dn_template' => 'uid={login},dc=acme']]]);
