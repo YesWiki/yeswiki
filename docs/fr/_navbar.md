@@ -7,6 +7,7 @@
 - [📑 Formulaires](/docs/fr/bazar.md)
 - [😎 Administration](/docs/fr/admin.md)
 - [⚙️ Traitements en arrière-plan](/docs/fr/async.md)
+- [🔑 Connexion et SSO](/docs/fr/connexion-sso.md)
 - 🌱 Contribuer
   - [Participer à la communauté](/docs/fr/communaute.md)
   - [Améliorer la documentation](/docs/fr/documentation.md)
