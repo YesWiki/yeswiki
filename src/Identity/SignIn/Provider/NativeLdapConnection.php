@@ -3,7 +3,8 @@
 namespace YesWiki\Identity\SignIn\Provider;
 
 /**
- * LdapConnection through ext-ldap: LDAP v3, no referral followed (it would bind again, elsewhere), and 5 seconds to reach the server
+ * LdapConnection through ext-ldap: LDAP v3, no referral followed (it would bind again, elsewhere), the certificate of ldaps:// and
+ * StartTLS always checked against the system's authorities, and 5 seconds to reach the server
  * or answer a search. The module's warnings are kept quiet: what went wrong is read from lastErrorCode() and lastError().
  */
 final class NativeLdapConnection implements LdapConnection
@@ -22,6 +23,10 @@ final class NativeLdapConnection implements LdapConnection
         $this->link = null;
         $this->code = 0;
         $this->message = '';
+        // ldaps:// and StartTLS refuse a certificate the system's authorities do not vouch for, whatever TLS_REQCERT in ldap.conf or
+        // LDAPTLS_REQCERT say. libldap reads this option from its global settings at each handshake, and ext-ldap cannot make a
+        // connection its own TLS context (no LDAP_OPT_X_TLS_NEWCTX), so it is set there, to the same value, before every connection.
+        ldap_set_option(null, LDAP_OPT_X_TLS_REQUIRE_CERT, LDAP_OPT_X_TLS_DEMAND);
         $link = @ldap_connect($uri);
         if ($link === false) {
             $this->code = -1;
