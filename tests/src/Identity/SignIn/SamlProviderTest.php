@@ -225,13 +225,23 @@ class SamlProviderTest extends TestCase
         $this->assertStringContainsString('Responder', $failure->adminDetail);
     }
 
+    /**
+     * The fixture is a valid signed response with a document type put in front after signing: the document type is all that is
+     * wrong with it, so only the refusal of document types can refuse it.
+     */
     public function testAnXxePayloadIsRefused(): void
     {
         $failure = $this->failure(fn () => $this->provider()->complete(self::posted('response-xxe.xml'), self::handshake()));
 
         $this->assertSame(FailureReason::InvalidResponse, $failure->reason);
+        $this->assertStringContainsString('DOCTYPE', $failure->adminDetail, 'refused for its document type');
         $this->assertStringNotContainsString('root:', $failure->adminDetail);
         $this->assertSame([], $failure->attributes);
+
+        $withoutDoctype = (string)preg_replace('/<!DOCTYPE[^\[>]*(\[[^\]]*\])?\s*>\s*/', '', self::fixture('response-xxe.xml'));
+        $this->assertStringNotContainsString('<!DOCTYPE', $withoutDoctype);
+        $posted = Request::create(self::ACS_URL, 'POST', ['SAMLResponse' => base64_encode($withoutDoctype)]);
+        $this->assertSame('marie', $this->provider()->complete($posted, self::handshake())->attributes['name_id'], 'the rest of it is a valid, signed response');
     }
 
     public function testMetadataContainsTheAcsUrlAndCertificateWhenSet(): void
