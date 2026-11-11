@@ -17,6 +17,9 @@ class SignInJournal
 {
     private const SECRET_KEY = '/secret|password|private_key/i';
 
+    /** How much of a provider's error a diagnostic keeps: an answer may be a whole HTML page. */
+    public const ERROR_BYTES = 2048;
+
     public function __construct(
         private readonly Journal $journal,
         private readonly AuthenticationService $authentication,
@@ -48,7 +51,7 @@ class SignInJournal
                 'attribute_use' => $trace->attributeUse,
                 'groups' => $trace->groups,
                 'account' => $trace->account,
-                'error' => $this->scrub($trace->error, $config),
+                'error' => self::cut($this->scrub($trace->error, $config)),
             ]);
         } catch (\Throwable $unavailable) {
             // The Journal never stands between an employee and the wiki.
@@ -64,6 +67,16 @@ class SignInJournal
             ]);
         } catch (\Throwable $unavailable) {
         }
+    }
+
+    /** The first ERROR_BYTES of $error, cut between two characters, and marked when cut. Scrubbed first, so no secret is cut in two. */
+    private static function cut(string $error): string
+    {
+        if (strlen($error) <= self::ERROR_BYTES) {
+            return $error;
+        }
+
+        return mb_strcut($error, 0, self::ERROR_BYTES, 'UTF-8') . ' […]';
     }
 
     /** Hides the provider's secrets: the type's `secret` settings, and any connection value named like one, since a provider whose type is gone must be scrubbed too. */

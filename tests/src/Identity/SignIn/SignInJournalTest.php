@@ -101,6 +101,26 @@ class SignInJournalTest extends YesWikiTestCase
         $this->assertStringNotContainsString('hunter2', $rows[0]['context']);
     }
 
+    /** A provider may answer with a whole HTML page: the diagnostic keeps its start, and says it was cut. */
+    public function testALongErrorIsCut(): void
+    {
+        $page = '<html>' . str_repeat('é', 3000) . 'THE-END</html>';
+        $this->journal->failure($this->config('jrnl'), 'x', FailureReason::ProviderRejected, $this->trace([], $page));
+
+        $rows = $this->rows("action = 'login.refused.provider_rejected.jrnl'");
+        $this->assertCount(1, $rows);
+        $error = json_decode($rows[0]['context'], true)['error'];
+        $this->assertLessThanOrEqual(SignInJournal::ERROR_BYTES + 100, strlen($error));
+        $this->assertStringStartsWith('<html>éé', $error);
+        $this->assertStringNotContainsString('THE-END', $error);
+        $this->assertStringContainsString('[…]', $error);
+        $this->assertTrue(mb_check_encoding($error, 'UTF-8'), 'cut between characters');
+
+        $this->sweep();
+        $this->journal->failure($this->config('jrnl'), 'x', FailureReason::ProviderRejected, $this->trace([], 'short'));
+        $this->assertSame('short', json_decode($this->rows("action = 'login.refused.provider_rejected.jrnl'")[0]['context'], true)['error']);
+    }
+
     public function testAWarningIsRecordedUnderItsKind(): void
     {
         $this->journal->warning($this->config('jrnl', ['client_secret' => 'hunter2']), 'x', 'group_sync', 'could not read hunter2');
