@@ -41,9 +41,9 @@ final class ProviderConfig
             $id,
             (string)($raw['type'] ?? ''),
             $label,
-            (bool)($raw['enabled'] ?? true),
-            (bool)($raw['create_accounts'] ?? true),
-            (bool)($raw['match_by_email'] ?? false),
+            self::flag($raw['enabled'] ?? null, true),
+            self::flag($raw['create_accounts'] ?? null, true),
+            self::flag($raw['match_by_email'] ?? null, false),
             self::asArray($raw['connection'] ?? null),
             array_merge($defaultAttributes, self::asArray($raw['attributes'] ?? null)),
             array_values(self::asArray($raw['group_mapping'] ?? null)),
@@ -62,6 +62,15 @@ final class ProviderConfig
     public function isUpgradedDirectory(): bool
     {
         return $this->matchByNameUntil !== null;
+    }
+
+    /**
+     * A flag as the administration screen reads it: "false", "0", "no", "off" and anything else that is not a yes are false, so a
+     * hand-written value never switches on what it meant to keep off. Absent, it is the default.
+     */
+    private static function flag(mixed $value, bool $default): bool
+    {
+        return $value === null ? $default : filter_var($value, FILTER_VALIDATE_BOOLEAN);
     }
 
     /** @return array<array-key, mixed> */

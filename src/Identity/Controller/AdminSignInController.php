@@ -55,7 +55,7 @@ class AdminSignInController extends YesWikiController
                 'label' => is_string($entry['label'] ?? null) && $entry['label'] !== '' ? $entry['label'] : $id,
                 'typeLabel' => $type?->label() ?? $typeName,
                 'available' => $type !== null,
-                'enabled' => (bool)($entry['enabled'] ?? true),
+                'enabled' => filter_var($entry['enabled'] ?? true, FILTER_VALIDATE_BOOLEAN),
                 'accounts' => $accounts[$id] ?? 0,
                 'isLocal' => $typeName === LocalType::NAME,
             ];

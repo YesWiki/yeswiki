@@ -725,6 +725,14 @@ class ProvidersEditorTest extends YesWikiTestCase
         }
     }
 
+    public function testTheListReadsAFlagWrittenAsText(): void
+    {
+        $this->seed(['local' => ['type' => 'local'], 'acme' => $this->oidc(['enabled' => 'false'])]);
+        $html = (string)$this->getWiki()->services->get(AdminSignInController::class)->index()->getContent();
+
+        $this->assertMatchesRegularExpression('#admin/sign-in/acme/toggle".*?name="enabled" value="1"#s', $html, 'acme is off: its button switches it on');
+    }
+
     public function testTheEditButtonIsTranslated(): void
     {
         $this->seed(['local' => ['type' => 'local'], 'acme' => $this->oidc()]);
