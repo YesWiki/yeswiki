@@ -57,9 +57,9 @@ use YesWiki\Kernel\Service\Journal;
 use YesWiki\Kernel\Service\LanguageService;
 use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\Redirector;
+use YesWiki\Kernel\Service\Replication;
 use YesWiki\Kernel\Service\RequestScope;
 use YesWiki\Kernel\Service\RouteProvider;
-use YesWiki\Kernel\Service\Replication;
 use YesWiki\Kernel\Service\RuntimeConfig;
 use YesWiki\Kernel\Service\SchemaGate;
 use YesWiki\Kernel\Service\SignedTokens;
@@ -114,6 +114,11 @@ class YesWikiRuntime
     private ?string $bootedCacheDir = null;
 
     private ?string $settingsVersion = null;
+
+    private ?string $followedVersion = null;
+
+    /** @var array<string, mixed> */
+    private array $compiledParameters = [];
 
     private string $templatesStamp = '';
 
@@ -250,6 +255,7 @@ class YesWikiRuntime
     private function doRun($tag, $method)
     {
         $this->service(RequestScope::class)->startNewRequest();
+        $this->followStoredSettings();
         if (!YesWikiKernel::isCli() && !Replication::isOn() && $this->service(DoryphoreArrival::class)->isPending() && $this->finishDoryphoreArrival()) {
             return;
         }
@@ -687,7 +693,9 @@ class YesWikiRuntime
         $this->services->set(ParameterBagInterface::class, $parameterBag);
         $settings = $container->get(WikiSettings::class);
         $this->settingsVersion = $settings->version();
-        $parameterBag = new ParameterBag($settings->over($parameterBag->all()));
+        $this->followedVersion = $this->settingsVersion;
+        $this->compiledParameters = $parameterBag->all();
+        $parameterBag = new ParameterBag($settings->over($this->compiledParameters));
         $this->services->set(ParameterBagInterface::class, $parameterBag);
         $this->services->set(CsrfTokenManager::class, new SignedCsrfTokenManager(
             $container->get(SignedTokens::class),
@@ -733,6 +741,27 @@ class YesWikiRuntime
         $stamp = @file_get_contents(CacheClearer::TEMPLATES_STAMP);
 
         return $stamp === false ? '' : $stamp;
+    }
+
+    /** Lays the settings saved since this process booted, on another replica or by another worker, over its parameters before a request reads them; the worker still restarts after it for what the container compiled. */
+    public function followStoredSettings(): void
+    {
+        if (!$this->booted) {
+            return;
+        }
+        $settings = $this->service(WikiSettings::class);
+        $version = $settings->freshVersion();
+        if ($version === $this->followedVersion) {
+            return;
+        }
+        $parameters = $settings->over($this->compiledParameters);
+        $bag = $this->services->get(ParameterBagInterface::class);
+        if ($bag instanceof ParameterBag) {
+            $bag->clear();
+            $bag->add($parameters);
+        }
+        $this->config = $parameters;
+        $this->followedVersion = $version;
     }
 
     /** Whether what this container was built from -- the configuration, `.env`, the extensions -- has changed since this process booted. */

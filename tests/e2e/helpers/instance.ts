@@ -20,3 +20,7 @@ export const instanceUrl = (relative: string): string => {
 
   return `${base.replace(/\/?\?$/, '')}/${relative}`
 }
+
+/** Whether the wiki under test runs as replicas on a cluster, each with its own folder the suite cannot reach. */
+export const onReplicas = (): boolean =>
+  process.env.YESWIKI_TEST_RUNTIME === 'cluster'

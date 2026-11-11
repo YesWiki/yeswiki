@@ -19,7 +19,7 @@ To run a wiki in production with Docker, see [`deploy/compose/`](../deploy/compo
 | `yeswiki-pg` | PostgreSQL 16, as `yeswiki-pg` (user, password, database: `yeswiki`) | |
 | `yeswiki-s3` | SeaweedFS with its S3 gateway | <http://localhost:8333> |
 | `myadmin` | phpMyAdmin | <http://localhost:8086> |
-| `mail` | MailDev, which catches every mail the wiki sends | <http://localhost:1080> |
+| `mail` | Mailpit, which catches every mail the wiki sends | <http://localhost:1080> |
 
 Every port listens on `127.0.0.1` only. With the default project name, the containers are called
 `yeswiki-app`, `yeswiki-web`, `yeswiki-db` and so on.
@@ -53,12 +53,19 @@ On the install page, use:
 
 These come from `yeswiki.secrets`.
 
-To send mail to MailDev, add this to `yeswiki.config.php`:
+Mailpit is set up like a production relay: submission on port 587, STARTTLS required, user
+`yeswiki` with password `password`. Its certificate is self-signed, which is the one difference
+from a real relay: the wiki must not check it. To send mail to it, add this to
+`yeswiki.config.php`:
 
 ```
 'contact_mail_func' => 'smtp',
 'contact_smtp_host' => 'mail',
-'contact_smtp_port' => '1025',
+'contact_smtp_port' => '587',
+'contact_smtp_secure' => 'tls',
+'contact_smtp_user' => 'yeswiki',
+'contact_smtp_pass' => 'password',
+'contact_smtp_verify_peer' => false,
 ```
 
 ### Running several stacks side by side

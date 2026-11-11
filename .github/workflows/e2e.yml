@@ -41,7 +41,7 @@ jobs:
             echo
             if [ "$full" = "true" ]; then
               echo 'Running the full matrix: mysql, pgsql and sqlite, under php-fpm and under the binary,'
-              echo 'and the Helm chart on kind with three replicas, against MariaDB and PostgreSQL.'
+              echo 'and the browser suite against the Helm chart on kind with three replicas, on MariaDB and PostgreSQL.'
             else
               echo '| driver | runtime | this run |'
               echo '| --- | --- | --- |'
@@ -270,7 +270,7 @@ jobs:
     if: needs.plan.outputs.full == 'true'
     name: kind / ${{ matrix.database }}
     runs-on: ubuntu-26.04
-    timeout-minutes: 40
+    timeout-minutes: 90
 
     strategy:
       fail-fast: false
@@ -304,5 +304,22 @@ jobs:
 
       - uses: azure/setup-helm@v4
 
-      - name: Three replicas on kind with ${{ matrix.database }} and SeaweedFS, then a rolling upgrade
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '24'
+
+      - run: yarn install --frozen-lockfile
+
+      - run: npx playwright install --with-deps chromium
+
+      - name: Three replicas on kind with ${{ matrix.database }}, SeaweedFS and Mailpit, the browser suite, then a rolling upgrade
+        env:
+          E2E: '1'
         run: deploy/kind/run.sh "${{ matrix.database }}" "yeswiki-kind:${{ github.sha }}"
+
+      - uses: actions/upload-artifact@v6
+        if: failure()
+        with:
+          name: playwright-report-kind-${{ matrix.database }}
+          path: playwright-report
+          retention-days: 7

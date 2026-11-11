@@ -2,9 +2,11 @@ import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'fs'
 import { dirname } from 'path'
 import { expect, Page, test } from '@playwright/test'
 import { resetEnv } from '../helpers/db'
-import { instancePath } from '../helpers/instance'
+import { instancePath, onReplicas } from '../helpers/instance'
 import { createEntry } from '../helpers/bazar'
 import { ADMIN_PASSWORD, ADMIN_USERNAME, login } from '../helpers/login'
+
+test.skip(onReplicas(), "a template written to one replica's custom/ is not the other replicas'")
 
 const TEMPLATE = 'custom/templates/core/fiche-1.twig'
 const clearTemplate = () => rmSync(instancePath(TEMPLATE), { force: true })

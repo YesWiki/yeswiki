@@ -2,8 +2,10 @@ import { mkdirSync, rmSync, writeFileSync } from 'fs'
 import { dirname } from 'path'
 import { test, expect } from '@playwright/test'
 import { resetEnv } from '../helpers/db'
-import { instancePath } from '../helpers/instance'
+import { instancePath, onReplicas } from '../helpers/instance'
 import { ADMIN_PASSWORD, ADMIN_USERNAME, login } from '../helpers/login'
+
+test.skip(onReplicas(), "a template written to one replica's custom/ is not the other replicas'")
 
 const PROBES = [
   'core/admin/keywords.twig',

@@ -382,7 +382,7 @@ class LayoutService
      */
     public function isConfigWritable(): bool
     {
-        return $this->storage->isWritable(ConfigurationFileProvider::getConfigFileFromEnv());
+        return $this->configurationService->canSaveSettings();
     }
 
     private function assertChromePage(string $tag): void

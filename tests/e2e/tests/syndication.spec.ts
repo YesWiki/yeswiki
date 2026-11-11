@@ -1,10 +1,12 @@
 import { test, expect } from '@playwright/test'
 import { writeFileSync, rmSync } from 'fs'
 import { resetEnv } from '../helpers/db'
-import { instancePath, instanceUrl } from '../helpers/instance'
+import { instancePath, instanceUrl, onReplicas } from '../helpers/instance'
 import { attachConsole, watchConsole } from '../helpers/console'
 import { ADMIN_PASSWORD, ADMIN_USERNAME, login } from '../helpers/login'
 import { setPageContent } from '../helpers/page'
+
+test.skip(onReplicas(), "the feed fixture goes into the wiki's files/, which no replica serves")
 
 /** A feed, rendered as cards. */
 

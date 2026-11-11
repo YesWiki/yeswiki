@@ -1,6 +1,6 @@
 #!/bin/bash
-# Installs a fresh wiki for the next spec, on any driver and either runtime (fpm or the binary).
-# Usage: YESWIKI_TEST_DRIVER=mysql|pgsql|sqlite YESWIKI_TEST_RUNTIME=fpm|binary bash tests/e2e/reset.sh
+# Installs a fresh wiki for the next spec, on any driver and any runtime: fpm, the binary, or the replicas deploy/kind/run.sh puts on a cluster.
+# Usage: YESWIKI_TEST_DRIVER=mysql|pgsql|sqlite YESWIKI_TEST_RUNTIME=fpm|binary|cluster bash tests/e2e/reset.sh
 
 set -e
 
@@ -151,8 +151,55 @@ case "$RUNTIME" in
     fi
     ;;
 
+  cluster)
+    RELEASE="${YESWIKI_TEST_RELEASE:-wiki}"
+    REPLICAS=(-l "app.kubernetes.io/instance=${RELEASE},app.kubernetes.io/component!=install")
+    INSTANCE=/tmp/reset
+    BASE_URL="${YESWIKI_TEST_BASE_URL:?the address the browser reaches the replicas at}"
+    DB_HOST=db
+    DB_USER=yeswiki
+    DB_PASSWORD=kind-db
+    DB_NAME=yeswiki
+
+    case "$DRIVER" in
+      mysql) kubectl exec deploy/db -- mariadb -uroot -pkind-root -e "DROP DATABASE IF EXISTS ${DB_NAME}; CREATE DATABASE ${DB_NAME};" ;;
+      pgsql) kubectl exec deploy/db -- psql -q -U yeswiki -d template1 -c "DROP DATABASE IF EXISTS ${DB_NAME} WITH (FORCE);" -c "CREATE DATABASE ${DB_NAME};" ;;
+      *) echo "replicas need mysql or pgsql, not ${DRIVER}" >&2; exit 1 ;;
+    esac
+    kubectl exec deploy/s3 -- sh -c 'echo "s3.bucket.delete -name yeswiki" | weed shell >/dev/null; echo "s3.bucket.create -name yeswiki" | weed shell >/dev/null'
+
+    mapfile -t arguments < <(installer_arguments)
+    pod="$(kubectl get pods "${REPLICAS[@]}" -o jsonpath='{range .items[*]}{.metadata.deletionTimestamp}{.status.containerStatuses[0].ready} {.metadata.name}{"\n"}{end}' | awk '$1 == "true" { print $2; exit }')"
+    [ -n "$pod" ] || { echo "no ready replica to install from" >&2; exit 1; }
+    # shellcheck disable=SC2016
+    kubectl exec "$pod" -- env ONBOARDED="${YESWIKI_TEST_ONBOARDED:-1}" sh -c '
+      set -e
+      rm -rf "$0" && mkdir -p "$0"
+      yeswiki prepare "$0" >/dev/null
+      yeswiki setup "$0" "$@" >/dev/null
+      yeswiki migrate "$0" >/dev/null
+      if [ "$ONBOARDED" = 1 ]; then yeswiki onboarding:apply --all --instance "$0" >/dev/null; fi
+      yeswiki messenger:consume --drain --instance "$0" >/dev/null
+      rm -rf "$0"
+    ' "$INSTANCE" "${arguments[@]}"
+
+    kubectl delete pods "${REPLICAS[@]}" --grace-period=1 --wait=true --timeout=120s >/dev/null
+    wanted="$(kubectl get "deployment/${RELEASE}-yeswiki" -o jsonpath='{.spec.replicas}')"
+    for _ in $(seq 180); do
+      ready="$(kubectl get pods "${REPLICAS[@]}" -o jsonpath='{range .items[*]}{.metadata.deletionTimestamp}{.status.containerStatuses[0].ready}{"\n"}{end}' | grep -c '^true$' || true)"
+      [ "$ready" = "$wanted" ] && break
+      sleep 1
+    done
+    [ "$ready" = "$wanted" ] || { echo "only ${ready} of ${wanted} replicas came back ready" >&2; exit 1; }
+    for _ in $(seq 30); do
+      answers="$(for _ in 1 2 3 4 5 6; do curl -s --noproxy '*' -H 'Connection: close' -o /dev/null -w '%{http_code}\n' "${BASE_URL}PagePrincipale"; done | sort -u)"
+      [ "$answers" = 200 ] && break
+      sleep 1
+    done
+    ;;
+
   *)
-    echo "unknown YESWIKI_TEST_RUNTIME '${RUNTIME}' (expected fpm or binary)" >&2
+    echo "unknown YESWIKI_TEST_RUNTIME '${RUNTIME}' (expected fpm, binary or cluster)" >&2
     exit 1
     ;;
 esac

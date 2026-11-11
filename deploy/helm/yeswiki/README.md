@@ -56,7 +56,7 @@ that lets the Service stop sending it traffic first.
 | `install.enabled` | `true` | Install the wiki after the first `helm install`. Turn it off to take over a database that already holds one. |
 | `install.adminName`, `adminEmail`, `adminPassword` | email required | The first account |
 | `migrate.enabled` | `true` | Migrate before every upgrade |
-| `service.*`, `ingress.*` | ClusterIP on 80, no ingress | How the wiki is reached |
+| `service.*`, `ingress.*` | ClusterIP on 80, no ingress | How the wiki is reached; `service.nodePort` fixes the port of a `NodePort` Service |
 | `resources`, `nodeSelector`, `tolerations`, `affinity` | | Scheduling |
 | `podDisruptionBudget.minAvailable` | `1` | |
 | `terminationGracePeriodSeconds` | `40` | Leave it above 30: the binary's own stop takes up to 25s after the 5s `preStop` |

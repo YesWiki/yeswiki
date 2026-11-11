@@ -55,6 +55,7 @@ migrate:
 service:
   type: ClusterIP
   port: 80
+  nodePort: null
 
 ingress:
   enabled: false

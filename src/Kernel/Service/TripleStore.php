@@ -184,7 +184,7 @@ class TripleStore implements CachesTheDatabase
         $sql = 'SELECT * FROM ' . $this->dbService->prefixTable('triples') . ' WHERE ';
         $params = [];
         if (empty($res)) {
-            $sql .= '1';
+            $sql .= '1 = 1';
         } else {
             $sql .= 'resource = ?';
             $params[] = $res;

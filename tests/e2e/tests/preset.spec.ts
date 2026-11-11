@@ -203,6 +203,9 @@ test('editing a preset replaces it, renaming included', async ({ page }) => {
   )
 
   await clickTool(page, 'custom/essai-e2e.css', STAR)
+  await expect(card(page, 'custom/essai-e2e.css')).toHaveClass(
+    /yw-preset-card--default/,
+  )
   await page.goto('/?PagePrincipale')
   await expect(
     page.locator('link[href*="custom/css-presets/essai-e2e.css"]'),

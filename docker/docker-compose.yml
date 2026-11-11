@@ -90,7 +90,13 @@ services:
         condition: service_healthy
 
   mail:
-    image: maildev/maildev:2.2.1
+    image: axllent/mailpit:v1.27
     container_name: ${COMPOSE_PROJECT_NAME:-yeswiki}-mail
+    environment:
+      MP_SMTP_BIND_ADDR: 0.0.0.0:587
+      MP_SMTP_TLS_CERT: sans:mail
+      MP_SMTP_TLS_KEY: sans:mail
+      MP_SMTP_REQUIRE_STARTTLS: "true"
+      MP_SMTP_AUTH: yeswiki:password
     ports:
-      - "127.0.0.1:${YESWIKI_MAIL_PORT:-1080}:1080"
+      - "127.0.0.1:${YESWIKI_MAIL_PORT:-1080}:8025"

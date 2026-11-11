@@ -87,6 +87,12 @@ class ConfigurationService
         return $this->envFile?->store($operator) ?? false;
     }
 
+    /** Whether the wiki's settings can be saved: to its file, or on a replica, whose file is read-only, to the database. */
+    public function canSaveSettings(): bool
+    {
+        return Replication::isOn() || $this->localFiles->isWritable(ConfigurationFileProvider::getConfigFileFromEnv());
+    }
+
     public function getConfiguration(string $filePath): ConfigurationFile
     {
         return new ConfigurationFile($filePath, $this);
