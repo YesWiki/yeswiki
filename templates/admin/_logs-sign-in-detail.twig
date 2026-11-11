@@ -37,6 +37,6 @@
     <p><strong>{{ _t('ADMIN_LOGS_SIGN_IN_FIX') }}</strong> {{ detail.fix }}</p>
   {% endif %}
   {% if detail.provider is not empty %}
-    <p><a href="{{ url({ tag: 'admin/sign-in/' ~ detail.provider ~ '/edit' }) }}">{{ _t('ADMIN_LOGS_SIGN_IN_EDIT') }}</a></p>
+    <p><a href="{{ url({ tag: 'admin/sign-in/' ~ detail.provider|url_encode ~ '/edit' }) }}">{{ _t('ADMIN_LOGS_SIGN_IN_EDIT') }}</a></p>
   {% endif %}
 </details>

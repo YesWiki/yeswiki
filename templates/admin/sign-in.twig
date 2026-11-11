@@ -37,11 +37,11 @@
             <td>{{ provider.accounts }}</td>
             <td class="yw-sign-in-admin__actions">
               {% if provider.available and not provider.isLocal %}
-                <a class="yw-btn yw-btn--sm" href="{{ url({ tag: 'admin/sign-in/' ~ provider.id ~ '/edit' }) }}">{{ icon('pencil') }} {{ _t('SIGN_IN_ADMIN_EDIT') }}</a>
-                <a class="yw-btn yw-btn--sm" href="{{ url({ tag: 'admin/sign-in/' ~ provider.id ~ '/test' }) }}" hx-boost="false">{{ icon('flask') }} {{ _t('SIGN_IN_ADMIN_TEST') }}</a>
+                <a class="yw-btn yw-btn--sm" href="{{ url({ tag: 'admin/sign-in/' ~ provider.id|url_encode ~ '/edit' }) }}">{{ icon('pencil') }} {{ _t('SIGN_IN_ADMIN_EDIT') }}</a>
+                <a class="yw-btn yw-btn--sm" href="{{ url({ tag: 'admin/sign-in/' ~ provider.id|url_encode ~ '/test' }) }}" hx-boost="false">{{ icon('flask') }} {{ _t('SIGN_IN_ADMIN_TEST') }}</a>
               {% endif %}
               {% if provider.enabled or provider.available %}
-                <form method="post" action="{{ url({ tag: 'admin/sign-in/' ~ provider.id ~ '/toggle' }) }}" hx-boost="false" class="yw-inline-form"
+                <form method="post" action="{{ url({ tag: 'admin/sign-in/' ~ provider.id|url_encode ~ '/toggle' }) }}" hx-boost="false" class="yw-inline-form"
                       {%- if provider.isLocal and provider.enabled and adminIsLocal %} data-yw-confirm="{{ _t('SIGN_IN_ADMIN_LOCAL_OFF_CONFIRM') }}"{% endif %}>
                   <input type="hidden" name="csrf-token" value="{{ csrfToken({id: 'main', refresh: false}) }}">
                   <input type="hidden" name="enabled" value="{{ provider.enabled ? '0' : '1' }}">
@@ -49,7 +49,7 @@
                 </form>
               {% endif %}
               {% if not provider.isLocal and provider.accounts == 0 %}
-                <form method="post" action="{{ url({ tag: 'admin/sign-in/' ~ provider.id ~ '/delete' }) }}" hx-boost="false" class="yw-inline-form"
+                <form method="post" action="{{ url({ tag: 'admin/sign-in/' ~ provider.id|url_encode ~ '/delete' }) }}" hx-boost="false" class="yw-inline-form"
                       data-yw-confirm="{{ _t('SIGN_IN_ADMIN_DELETE_CONFIRM') }}">
                   <input type="hidden" name="csrf-token" value="{{ csrfToken({id: 'main', refresh: false}) }}">
                   <button type="submit" class="yw-btn yw-btn--sm yw-btn--danger">{{ icon('trash') }} {{ _t('DELETE') }}</button>
@@ -68,7 +68,7 @@
     <h2>{{ _t('SIGN_IN_ADMIN_ADD') }}</h2>
     <p class="yw-layout__hint">{{ _t('SIGN_IN_ADMIN_ADD_HINT') }}</p>
     {% for type in offered %}
-      <a class="yw-btn" href="{{ url({ tag: 'admin/sign-in/new/' ~ type.name }) }}">{{ icon('plus') }} {{ type.label }}</a>
+      <a class="yw-btn" href="{{ url({ tag: 'admin/sign-in/new/' ~ type.name|url_encode }) }}">{{ icon('plus') }} {{ type.label }}</a>
     {% endfor %}
   </section>
 

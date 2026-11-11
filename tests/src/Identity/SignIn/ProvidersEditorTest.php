@@ -637,6 +637,32 @@ class ProvidersEditorTest extends YesWikiTestCase
         $this->assertStringNotContainsString(self::SECRET, $html);
     }
 
+    /** An identifier written in the configuration file may hold anything: each one is a single, encoded segment of the links. */
+    public function testProviderIdsAreEncodedInTheLinks(): void
+    {
+        $id = 'a b&c/d';
+        $encoded = 'a%20b%26c%2Fd';
+        $section = ['local' => ['type' => 'local'], $id => ['type' => 'fakepw', 'label' => 'Dir', 'enabled' => true]];
+        $this->seed($section);
+        $this->installProviders($section);
+        self::actAs('WikiAdmin');
+        $services = $this->getWiki()->services;
+
+        $pages = [
+            'list' => (string)$services->get(AdminSignInController::class)->index()->getContent(),
+            'test' => (string)$services->get(AdminSignInController::class)->test($id)->getContent(),
+            'log' => $services->get(\YesWiki\Render\Service\TemplateEngine::class)->render('@core/admin/_logs-sign-in-detail.twig', ['entry' => ['sign_in' => ['provider' => $id]]]),
+        ];
+        foreach ($pages as $page => $html) {
+            $this->assertStringContainsString("admin/sign-in/$encoded/", $html, $page);
+            $this->assertStringNotContainsString('admin/sign-in/a b', $html, $page);
+            $this->assertStringNotContainsString('admin/sign-in/a%20b%26c/d', $html, $page);
+        }
+        foreach (['edit', 'test', 'toggle', 'delete'] as $action) {
+            $this->assertStringContainsString("admin/sign-in/$encoded/$action", $pages['list']);
+        }
+    }
+
     public function testTheEditButtonIsTranslated(): void
     {
         $this->seed(['local' => ['type' => 'local'], 'acme' => $this->oidc()]);

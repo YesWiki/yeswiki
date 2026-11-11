@@ -103,9 +103,9 @@
 
   <p class="yw-sign-in-admin__actions">
     {% if result %}
-      <a class="yw-btn" href="{{ url({ tag: 'admin/sign-in/' ~ id ~ '/test' }) }}" hx-boost="false">{{ icon('refresh') }} {{ _t('SIGN_IN_TEST_AGAIN') }}</a>
+      <a class="yw-btn" href="{{ url({ tag: 'admin/sign-in/' ~ id|url_encode ~ '/test' }) }}" hx-boost="false">{{ icon('refresh') }} {{ _t('SIGN_IN_TEST_AGAIN') }}</a>
     {% endif %}
-    <a class="yw-btn" href="{{ url({ tag: 'admin/sign-in/' ~ id ~ '/edit' }) }}">{{ icon('pencil') }} {{ _t('SIGN_IN_TEST_SETTINGS') }}</a>
+    <a class="yw-btn" href="{{ url({ tag: 'admin/sign-in/' ~ id|url_encode ~ '/edit' }) }}">{{ icon('pencil') }} {{ _t('SIGN_IN_TEST_SETTINGS') }}</a>
     <a href="{{ url({ tag: 'admin/sign-in' }) }}">{{ _t('SIGN_IN_ADMIN_BACK') }}</a>
   </p>
 {% endblock %}
