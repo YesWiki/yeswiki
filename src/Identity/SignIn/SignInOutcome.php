@@ -28,6 +28,7 @@ final class SignInOutcome
         public readonly array $steps = [],
         public readonly string $message = '',
         public readonly string $error = '',
+        public readonly string $providerLabel = '',
     ) {
     }
 
@@ -36,9 +37,10 @@ final class SignInOutcome
         return new self(self::SIGNED_IN, url: $url);
     }
 
-    public static function refused(?ProviderConfig $config, FailureReason $reason, string $who, string $detail = '', string $employeeMessage = ''): self
+    /** @param string $providerLabel the provider's name as people read it (ProviderRegistry::labelOf()); its config's label when empty */
+    public static function refused(?ProviderConfig $config, FailureReason $reason, string $who, string $detail = '', string $employeeMessage = '', string $providerLabel = ''): self
     {
-        return new self(self::REFUSED, config: $config, reason: $reason, who: $who, detail: $detail, message: $employeeMessage);
+        return new self(self::REFUSED, config: $config, reason: $reason, who: $who, detail: $detail, message: $employeeMessage, providerLabel: $providerLabel);
     }
 
     public static function formError(string $message): self
@@ -54,7 +56,7 @@ final class SignInOutcome
         }
 
         return _t('SIGN_IN_REFUSED_' . strtoupper(($this->reason ?? FailureReason::InternalError)->value), [
-            'provider' => $this->config !== null ? $this->config->label : _t('SIGN_IN_PROVIDER_UNNAMED'),
+            'provider' => $this->providerLabel !== '' ? $this->providerLabel : ($this->config !== null ? $this->config->label : _t('SIGN_IN_PROVIDER_UNNAMED')),
             'who' => $this->who,
         ]);
     }

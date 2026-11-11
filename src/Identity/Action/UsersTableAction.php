@@ -144,7 +144,7 @@ class UsersTableAction extends YesWikiAction implements RegisteredAction, Provid
 
             return array_merge($user->getArrayCopy(), [
                 'groups' => $userGroups,
-                'provider' => $providerId === null ? null : ($registry->config($providerId)->label ?? $providerId),
+                'provider' => $providerId === null ? null : (($config = $registry->config($providerId)) !== null ? $registry->labelOf($config) : $providerId),
             ]);
         }, $users);
     }

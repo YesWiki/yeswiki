@@ -246,7 +246,10 @@ class UserSettingsAction extends YesWikiAction implements RegisteredAction
             return null;
         }
 
-        return $this->getService(ProviderRegistry::class)->config($providerId)->label ?? $providerId;
+        $registry = $this->getService(ProviderRegistry::class);
+        $config = $registry->config($providerId);
+
+        return $config !== null ? $registry->labelOf($config) : $providerId;
     }
 
     private function renderProfileFields(User $user): string

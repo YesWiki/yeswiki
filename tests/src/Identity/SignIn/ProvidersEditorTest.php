@@ -742,6 +742,20 @@ class ProvidersEditorTest extends YesWikiTestCase
         $this->assertStringNotContainsString('EDIT</a>', $html);
     }
 
+    public function testTheUsersTableNamesAnUnlabelledProviderByItsType(): void
+    {
+        $this->installProviders(['acme-2' => ['type' => 'fakeredirect'], 'local' => ['type' => 'local']]);
+        $services = $this->getWiki()->services;
+        $user = $services->get(UserManager::class)->create(self::USER, 'ssoeditorused@example.com', 'Aa1!aaaaRegression');
+        $this->assertNotNull($user);
+        $services->get(AccountLinks::class)->link($user, 'acme-2', 'sub-1');
+
+        self::actAs('WikiAdmin');
+        $html = (string)$services->get(MarkdownFormatterService::class)->format('{{userstable}}');
+
+        $this->assertStringContainsString('fakeredirect', $html);
+        $this->assertStringNotContainsString('acme-2', $html);
+    }
     public function testTheUsersTableShowsTheProviderOfALinkedAccount(): void
     {
         $this->installProviders(['acme' => ['type' => 'fakeredirect', 'label' => 'Acme Single Sign-On'], 'local' => ['type' => 'local']]);

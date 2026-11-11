@@ -160,6 +160,20 @@ class ProviderRegistryTest extends YesWikiTestCase
         $this->assertStringContainsString('the extension expected a string', $registry->problems()[0]);
     }
 
+    /** What people read a provider as: its own label; local's translated name; otherwise its type's label, never its identifier. */
+    public function testTheLabelOfAProvider(): void
+    {
+        $values = ['sso_providers' => ['local' => ['type' => 'local'], 'acme' => ['type' => 'oidc', 'label' => 'Acme SSO'], 'bare' => ['type' => 'oidc'], 'gone' => ['type' => 'saml']]];
+        $config = new RuntimeConfig();
+        $config->bind($values);
+        $registry = new ProviderRegistry([self::getWiki()->services->get(LocalType::class), $this->fakeType('oidc')], $config);
+
+        $label = fn (string $id): string => $registry->labelOf($registry->config($id) ?? throw new \LogicException($id));
+        $this->assertSame(_t('SIGN_IN_LOCAL_LABEL'), $label('local'));
+        $this->assertSame('Acme SSO', $label('acme'));
+        $this->assertSame('oidc', $label('bare'), 'the fake type\'s label is its name');
+        $this->assertSame('gone', $label('gone'), 'with its type gone, the identifier is all there is');
+    }
     public function testLocalAcceptsOnlyTheKeyLocal(): void
     {
         $r = $this->registry(['mine' => ['type' => 'local']]);

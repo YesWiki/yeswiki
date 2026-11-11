@@ -742,6 +742,20 @@ class SignInFlowTest extends YesWikiTestCase
         $this->assertSame(1, $this->countJournal("action = 'login.failed' AND target = 'flow'"));
     }
 
+    /** A provider without a label of its own is named to the person by its type's label, not by its identifier. */
+    public function testThePersonReadsTheProvidersLabelNotItsIdentifier(): void
+    {
+        $services = self::getWiki()->services;
+        $owner = $services->get(UserManager::class)->create('FlowOther', 'flow-pw@example.com', 'a-long-enough-password');
+        $this->assertNotNull($owner);
+        $services->get(AccountLinks::class)->link($owner, 'fake', 'someone-else');
+
+        $outcome = $this->flow->password('fakepw', 'flow', 'good', false);
+
+        $this->assertSame(FailureReason::LinkedElsewhere, $outcome->reason);
+        $this->assertStringContainsString('fake-password', $outcome->messageForPerson(), 'the type\'s label');
+        $this->assertStringNotContainsString('fakepw', $outcome->messageForPerson());
+    }
     public function testTheDirectoryGetsTheLoginAsTyped(): void
     {
         $this->assertSame('signed_in', $this->flow->password('fakepw', 'FLOW-Typed', 'good', false)->kind);

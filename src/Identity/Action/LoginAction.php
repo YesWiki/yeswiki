@@ -12,6 +12,7 @@ use YesWiki\Identity\Service\SignIn\ProviderRegistry;
 use YesWiki\Identity\Service\SignIn\SignInFlow;
 use YesWiki\Identity\Service\SignIn\Type\LocalType;
 use YesWiki\Identity\Service\UserManager;
+use YesWiki\Identity\SignIn\Contract\IdentityProvider;
 use YesWiki\Identity\SignIn\Contract\PasswordProvider;
 use YesWiki\Identity\SignIn\Contract\RedirectProvider;
 use YesWiki\Identity\SignIn\SignInOutcome;
@@ -348,15 +349,18 @@ class LoginAction extends YesWikiAction implements RegisteredAction, ProvidesCom
         $urls = $this->getService(UrlFormatter::class);
         $redirect = [];
         $password = [];
-        foreach ($this->getService(ProviderRegistry::class)->enabled() as $provider) {
+        $registry = $this->getService(ProviderRegistry::class);
+        // the name people read: an entry without a label of its own goes by its type's
+        $labelOf = fn (IdentityProvider $provider): string => ($config = $registry->config($provider->id())) !== null ? $registry->labelOf($config) : $provider->label();
+        foreach ($registry->enabled() as $provider) {
             if ($provider instanceof RedirectProvider) {
                 $redirect[] = [
                     'id' => $provider->id(),
-                    'label' => $provider->label(),
+                    'label' => $labelOf($provider),
                     'url' => $urls->href('', 'user/sign-in/' . rawurlencode($provider->id()), [self::RETURN_PARAM => $this->arguments['loggedinurl']], false),
                 ];
             } elseif ($provider instanceof PasswordProvider) {
-                $password[] = ['id' => $provider->id(), 'label' => $provider->label(), 'local' => $provider->type() === LocalType::NAME];
+                $password[] = ['id' => $provider->id(), 'label' => $labelOf($provider), 'local' => $provider->type() === LocalType::NAME];
             }
         }
 

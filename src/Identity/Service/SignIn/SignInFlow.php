@@ -213,7 +213,7 @@ class SignInFlow
     /** Someone else than the administrator who started the test: refused, and nothing is written. */
     private function notTheTester(?ProviderConfig $config): SignInOutcome
     {
-        return SignInOutcome::refused($config, FailureReason::InvalidResponse, '', 'a test is finished only by the administrator who started it, still signed in');
+        return SignInOutcome::refused($config, FailureReason::InvalidResponse, '', 'a test is finished only by the administrator who started it, still signed in', '', $this->labelOf($config));
     }
 
     private function testPassword(string $providerId, string $login, #[\SensitiveParameter] string $password): SignInOutcome
@@ -325,7 +325,17 @@ class SignInFlow
             $this->journal->failure($config, $who, $failure->reason, $this->trace($config, $failure, $step, $identity, $plan));
         }
 
-        return SignInOutcome::refused($config, $failure->reason, $who, $failure->adminDetail, $failure->employeeMessage ?? $this->missingAttributeMessage($config, $failure, $plan));
+        return SignInOutcome::refused($config, $failure->reason, $who, $failure->adminDetail, $failure->employeeMessage ?? $this->missingAttributeMessage($config, $failure, $plan), $this->labelOf($config));
+    }
+
+    /** The provider's name as people read it; '' when there is no provider, or its name cannot be had. */
+    private function labelOf(?ProviderConfig $config): string
+    {
+        try {
+            return $config === null ? '' : $this->registry->labelOf($config);
+        } catch (\Throwable) {
+            return '';
+        }
     }
 
     private function asFailure(\Throwable $thrown): ProviderFailure
@@ -344,7 +354,7 @@ class SignInFlow
         foreach (['id', 'email'] as $field) {
             $use = $plan->attributeUse[$field] ?? null;
             if ($use !== null && !$use['present']) {
-                return _t('SIGN_IN_REFUSED_MISSING_NAMED_ATTRIBUTE', ['provider' => $config->label, 'attribute' => $use['attribute']]);
+                return _t('SIGN_IN_REFUSED_MISSING_NAMED_ATTRIBUTE', ['provider' => $this->labelOf($config) ?: $config->label, 'attribute' => $use['attribute']]);
             }
         }
 

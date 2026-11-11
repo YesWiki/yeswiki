@@ -43,6 +43,16 @@ class SignInPageTest extends YesWikiTestCase
         $this->assertStringContainsString('user/sign-in/acme', $html);
     }
 
+    /** An entry with no label of its own is offered under its type's label: "Sign in with acme-2" means nothing to anybody. */
+    public function testAnUnlabelledProviderIsNamedByItsType(): void
+    {
+        $html = $this->render(['acme-2' => ['type' => 'fakeredirect'], 'dir' => ['type' => 'fakepw'], 'local' => ['type' => 'local']]);
+
+        $this->assertMatchesRegularExpression('#<a[^>]*user/sign-in/acme-2[^>]*>\s*(<[^>]+>\s*)*[^<]*fakeredirect#', $html);
+        $this->assertDoesNotMatchRegularExpression('#>\s*[^<]*\bacme-2\s*<#', $html, 'the identifier is in the link only');
+        $this->assertStringContainsString('fakepw', $html);
+        $this->assertStringContainsString(_t('SIGN_IN_LOCAL_LABEL'), $html);
+    }
     public function testTheButtonCarriesTheReturnUrl(): void
     {
         $html = $this->render(['acme' => ['type' => 'fakeredirect']]);

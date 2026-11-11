@@ -67,6 +67,21 @@ class ProviderRegistry
         return $providers;
     }
 
+    /**
+     * The provider's name as people read it: the provider's own label (local's is translated), or, when the entry gives none, the
+     * label of its type. The identifier is used only when the type is not installed.
+     */
+    public function labelOf(ProviderConfig $config): string
+    {
+        $types = $this->types();
+        $label = $this->build($config, $types)?->label() ?? $config->label;
+        if ($label === $config->id && isset($types[$config->type])) {
+            $label = $types[$config->type]->label();
+        }
+
+        return $label;
+    }
+
     public function isEnabled(string $id): bool
     {
         $config = $this->config($id);
