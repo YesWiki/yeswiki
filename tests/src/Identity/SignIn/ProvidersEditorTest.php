@@ -177,6 +177,42 @@ class ProvidersEditorTest extends YesWikiTestCase
         $this->assertSame('Acme 2', $this->written()['acme']['label']);
     }
 
+    /** The wiki's SAML key pair is optional: an administrator who no longer wants requests signed takes both out. */
+    public function testATickedRemoveClearsTheStoredSecret(): void
+    {
+        $saml = ['type' => 'saml', 'label' => 'S', 'enabled' => true, 'connection' => ['metadata_url' => 'https://idp/m', 'sp_certificate' => 'CERT', 'sp_private_key' => 'KEY']];
+        $this->seed(['local' => ['type' => 'local'], 'saml' => $saml]);
+
+        $this->assertSame([], $this->editor->update('saml', ['connection' => ['sp_certificate' => '', 'sp_private_key' => ''], 'clear_secrets' => ['sp_private_key' => '1']]));
+
+        $connection = $this->written()['saml']['connection'];
+        $this->assertArrayNotHasKey('sp_private_key', $connection);
+        $this->assertArrayNotHasKey('sp_certificate', $connection);
+        $this->assertSame('https://idp/m', $connection['metadata_url']);
+    }
+
+    public function testRemovingARequiredSecretIsRefused(): void
+    {
+        $this->seed(['local' => ['type' => 'local'], 'acme' => $this->oidc()]);
+
+        $this->assertNotEmpty($this->editor->update('acme', ['connection' => ['client_secret' => ''], 'clear_secrets' => ['client_secret' => '1']]));
+        $this->assertSame(self::SECRET, $this->written()['acme']['connection']['client_secret']);
+        $this->assertSame([], $this->editor->update('acme', ['connection' => ['client_secret' => ''], 'clear_secrets' => ['client_secret' => '0']]), 'unticked, blank keeps it');
+        $this->assertSame(self::SECRET, $this->written()['acme']['connection']['client_secret']);
+    }
+
+    public function testAStoredSecretOffersToRemoveIt(): void
+    {
+        $this->seed(['local' => ['type' => 'local'], 'acme' => $this->oidc()]);
+        $html = (string)$this->getWiki()->services->get(AdminSignInController::class)->edit('acme')->getContent();
+        $this->assertMatchesRegularExpression('#<input[^>]*type="checkbox"[^>]*name="clear_secrets\[client_secret\]"[^>]*value="1"#', $html);
+        $this->assertStringContainsString(htmlspecialchars(_t('SIGN_IN_ADMIN_SECRET_CLEAR'), ENT_QUOTES), $html);
+
+        $this->seed(['local' => ['type' => 'local'], 'acme' => $this->oidc(['connection' => ['discovery_url' => 'https://a/x', 'client_id' => 'c']])]);
+        $html = (string)$this->getWiki()->services->get(AdminSignInController::class)->edit('acme')->getContent();
+        $this->assertStringNotContainsString('clear_secrets[client_secret]', $html, 'nothing stored, nothing to remove');
+    }
+
     public function testAFilledSecretReplacesIt(): void
     {
         $this->seed(['local' => ['type' => 'local'], 'acme' => $this->oidc()]);

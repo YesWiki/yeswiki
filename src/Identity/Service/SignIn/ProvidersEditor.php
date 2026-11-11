@@ -185,6 +185,8 @@ class ProvidersEditor
         }
 
         $postedConnection = is_array($posted['connection'] ?? null) ? $posted['connection'] : [];
+        // a secret is never shown, so a blank one keeps what is stored: its "remove" box is how it is taken out
+        $clearedSecrets = is_array($posted['clear_secrets'] ?? null) ? $posted['clear_secrets'] : [];
         $connection = is_array($entry['connection'] ?? null) ? $entry['connection'] : [];
         foreach ($settings as $setting) {
             $type = $setting->type();
@@ -215,6 +217,11 @@ class ProvidersEditor
                         $connection[$name] = $value;
                     }
                 }
+            }
+            // a value typed beside a ticked box replaces the secret, as it would alone
+            $typed = is_string($postedConnection[$name] ?? null) && trim($postedConnection[$name]) !== '';
+            if ($type === 'secret' && !$typed && self::flag($clearedSecrets[$name] ?? false)) {
+                unset($connection[$name]);
             }
             $filled = isset($connection[$name]) && $connection[$name] !== '';
             if (!empty($declared['required']) && !$filled && $type !== 'checkbox') {

@@ -1,4 +1,5 @@
-{# One connection setting of a provider type. A secret never carries a value: the field starts empty, and a blank one keeps the stored secret.
+{# One connection setting of a provider type. A secret never carries a value: the field starts empty, a blank one keeps the stored secret,
+   and a stored one has a box to remove it.
    A multi-line setting (pasted XML, PEM) is a textarea, a secret one included. #}
 {% set field = 'sign-in-connection-' ~ setting.name %}
 {% if setting.kind == 'checkbox' %}
@@ -28,6 +29,9 @@
     {% else %}
       <input class="yw-input" id="{{ field }}" type="{{ setting.kind in ['url', 'email', 'number'] ? setting.kind : 'text' }}"
              name="connection[{{ setting.name }}]" value="{{ setting.value }}" placeholder="{{ setting.placeholder }}" autocomplete="off">
+    {% endif %}
+    {% if setting.secretStored %}
+      <label class="yw-checkbox"><input type="checkbox" name="clear_secrets[{{ setting.name }}]" value="1"> {{ _t('SIGN_IN_ADMIN_SECRET_CLEAR') }}</label>
     {% endif %}
     {% if setting.hint %}<small class="yw-form-hint">{{ setting.hint }}</small>{% endif %}
   </div>
