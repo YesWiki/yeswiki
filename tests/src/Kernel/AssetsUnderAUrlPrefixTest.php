@@ -43,7 +43,7 @@ class AssetsUnderAUrlPrefixTest extends YesWikiTestCase
         });
     }
 
-    /** The documentation's markdown pages are fetched by docsify from the instance, outside the docs folders they stay private. */
+    /** The docs folders are served, their images with them; Markdown outside them stays private. */
     public function testDocumentationPagesAreServedAndOtherMarkdownIsNot(): void
     {
         $this->underAPrefix(function (): void {

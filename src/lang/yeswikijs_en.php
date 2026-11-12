@@ -107,7 +107,6 @@ Follow <a href="{helpBaseUrl}?#/docs/en/admin?id=fixing-backup-problems" title="
     'EDIT_OUPS_MSG' => 'INdeed, I would not double-click...',
     'COMMENT_NOT_DELETED' => 'Comment {comment} was not deleted.',
     'COMMENT_DELETED' => 'Comment deleted.',
-    'DOC_EDIT_THIS_PAGE_ON_GITHUB' => 'Edit this page on Github',
     'ADMIN_BACKUPS_FORCED_UPDATE_NOT_POSSIBLE' => 'Forced update not possible',
     'DELETE_COMMENT_AND_ANSWERS' => 'Delete this comment and associated answers ?',
     'REACTION_CONFIRM_DELETE_ALL' => 'Are you sure you want to delete all the reactions from this vote ?',

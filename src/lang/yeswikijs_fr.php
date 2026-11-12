@@ -112,7 +112,6 @@ return [
     'REACTION_NOT_POSSIBLE_TO_DELETE_REACTION' => "Impossible de supprimer la réaction en raison de l'erreur suivante : {error}!",
     'REACTION_CONFIRM_DELETE' => 'Etes-vous sur de vouloir supprimer cette réaction ?',
     'REACTION_CONFIRM_DELETE_ALL' => 'Etes-vous sur de vouloir supprimer toutes les réactions de ce vote ?',
-    'DOC_EDIT_THIS_PAGE_ON_GITHUB' => 'Modifier cette page sur Github',
     'NOT_VALID_URL' => 'Url non valide : {url}',
     'PAGE_AVAILABLE' => 'La page {tag} est disponible sur le YesWiki de destination',
     'PAGE_NOT_AVAILABLE' => 'La page {tag} n\'est pas disponible sur le YesWiki de destination',

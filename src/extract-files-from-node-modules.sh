@@ -64,25 +64,13 @@ mkdir -p javascripts/vendor/fullcalendar &&
 	cp -f node_modules/fullcalendar/LICENSE.txt javascripts/vendor/fullcalendar &&
 	cp -f node_modules/fullcalendar/README.md javascripts/vendor/fullcalendar
 
-mkdir -p javascripts/vendor/docsify && \
-  copy_js node_modules/docsify/dist/docsify.min.js javascripts/vendor/docsify/docsify.min.js && \
-  cp -f node_modules/docsify/LICENSE javascripts/vendor/docsify && \
-  cp -f node_modules/docsify/README.md javascripts/vendor/docsify
-mkdir -p javascripts/vendor/docsify/plugins && \
-  copy_js node_modules/docsify/dist/plugins/search.min.js javascripts/vendor/docsify/plugins/search.js && \
-  copy_js node_modules/docsify/dist/plugins/zoom-image.min.js javascripts/vendor/docsify/plugins/zoom-image.min.js && \
-  for f in node_modules/docsify-copy-code/dist/*.min.js; do
-    copy_js "$f" "javascripts/vendor/docsify/plugins/$(basename "$f")"
-  done
-cp -f node_modules/docsify-copy-code/LICENSE javascripts/vendor/docsify/plugins/LICENSE-docisfy-copy-code
-mkdir -p javascripts/vendor/docsify/prism && \
-  copy_js node_modules/prismjs/components/prism-php.js javascripts/vendor/docsify/prism/prism-php.js && \
-  copy_js node_modules/prismjs/components/prism-nginx.js javascripts/vendor/docsify/prism/prism-nginx.js
-mkdir -p styles/vendor/docsify && \
-  cat node_modules/docsify/themes/vue.css \
-    | sed -E "s|(@import url\(\"https://fonts.googleapis.com)|/*  \n  This file has been modified just to remove google font import on first line\n  It's based on Vue theme maintained by docsify\n  https://cdn.jsdelivr.net/npm/docsify/themes/vue.css\n */\n/* \1|g" \
-    | sed -E 's|("\);)(\*\{-webkit)|\1 */\n\2|g' \
-    > styles/vendor/docsify/vue-theme-modified.min.css
+rm -rf javascripts/vendor/docsify styles/vendor/docsify
+mkdir -p javascripts/vendor/prism && \
+  for c in core markup css clike javascript markup-templating php bash json yaml sql nginx twig ini docker; do
+    sed '/^[[:space:]]*\/\/#[[:space:]]*sourceMappingURL=/d' "node_modules/prismjs/components/prism-$c.min.js"
+    echo
+  done > javascripts/vendor/prism/prism.js && \
+  cp -f node_modules/prismjs/LICENSE javascripts/vendor/prism
 
 mkdir -p javascripts/vendor/lazysizes &&
 	copy_js node_modules/lazysizes/lazysizes.min.js javascripts/vendor/lazysizes/lazysizes.min.js &&

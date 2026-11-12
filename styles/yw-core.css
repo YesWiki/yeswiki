@@ -262,6 +262,12 @@ html {
   scroll-padding-top: calc(max(var(--yw-navbar-height), 4rem) + 4rem);
 }
 
+@media (prefers-reduced-motion: no-preference) {
+  html:focus-within {
+    scroll-behavior: smooth;
+  }
+}
+
 @media (max-width: 1200px) {
   html {
     font-size: calc(var(--yw-font-size-base) * 0.88) !important;

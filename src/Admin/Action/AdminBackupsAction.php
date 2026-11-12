@@ -53,7 +53,7 @@ class AdminBackupsAction extends YesWikiAction implements RegisteredAction, Prov
             } elseif ($status['enoughSpace'] == false) {
                 $message = _t('ADMIN_BACKUPS_MESSAGE_NO_SPACE');
             }
-            $message = _t('ADMIN_BACKUPS_MESSAGE_ARCHIVE_CANNOT_BE_DONE') . ' ' . $message . '<br /><a href="?doc#/docs/fr/admin?id=résoudre-les-problèmes-de-sauvegarde">' . _t('ADMIN_BACKUPS_MESSAGE_SEE_DOC') . '</a>.';
+            $message = _t('ADMIN_BACKUPS_MESSAGE_ARCHIVE_CANNOT_BE_DONE') . ' ' . $message . '<br /><a href="?doc/admin#résoudre-les-problèmes-de-sauvegarde">' . _t('ADMIN_BACKUPS_MESSAGE_SEE_DOC') . '</a>.';
         }
 
         if (!self::canReceiveBackups($status)) {

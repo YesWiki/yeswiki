@@ -28,8 +28,10 @@ en créer de nouveaux.
 
 ### 0.3 Présentation de l'interface Bazar
 
-?> Notez qu'il faut être connecté.e avec un compte administrateur du wiki pour
+::: info
+Notez qu'il faut être connecté.e avec un compte administrateur du wiki pour
 pouvoir utiliser certaines fonctionnalités _Bazar_.
+:::
 
 L'écran qui se présente ressemble à ceci (voir ci dessous).  
 ![image bazar.png (0.1MB)](images/DocBazarFormulaireGestion_formulaire_gestion_20220204173223_20220204163232.png)
@@ -81,8 +83,10 @@ modification.
 Concevoir le formulaire revient à choisir et agencer les différentes questions
 que vous allez poser.
 
-?> Si vous partez de zéro, cela peut être une excellente occasion de mettre en
+::: info
+Si vous partez de zéro, cela peut être une excellente occasion de mettre en
 œuvre de la coopération en co-élaborant votre formulaire.
+:::
 
 Les questions sont appelés "champs".
 
@@ -159,12 +163,14 @@ du bouton du même nom en bas de page.
 _Bazar_ propose de nombreux types de champs. Voici ceux auxquels vous aurez le
 plus souvent recours.
 
-?> **Onglet : code wiki** Lorsque vous modifiez un formulaire, un onglet permet
+::: info
+**Onglet : code wiki** Lorsque vous modifiez un formulaire, un onglet permet
 de consulter le **code wiki** qui a été généré. Il peut être utile de le
 consulter lorsque vous avez un problème d'affichage de votre formulaire. Souvent
 le problème vient d'un caractère invisible issu d'un copié collé sur les
 intitulés des champs. Afficher le code wiki permet de déceler ces caractères
 html.
+:::
 
 ### 1.2.1. Paramètres génériques
 
@@ -227,7 +233,7 @@ nombre à la fin du titre qu'il génère (ici, _LeTitreDeMaFiche1_).
 
 Il est possible d'utiliser un titre combiné : par exemple : "champ prénom +
 champ nom". Pour cela utiliser le champ de type
-**[Titre automatique](/docs/fr/bazar?id=titre-automatique)**
+**[Titre automatique](bazar.md#1215-titre-automatique)**
 
 ### 1.2.3. Texte court
 
@@ -411,9 +417,11 @@ premier niveau peut être des régions, et le second niveau les départements. C
 permettra lorsqu'une région est choisie de ne proposer ensuite qu'un choix parmi
 les départements rattachés à la région.
 
-?> L'utilisation de ce type de champ permettra ensuite de proposer aux
+::: info
+L'utilisation de ce type de champ permettra ensuite de proposer aux
 utilisateurices de filtrer les fiches parmi celles qui sont remplies (cf.
-[facettes](/docs/fr/bazar.md#afficher-des-filtres-facettes)).
+[facettes](bazar.md#321-afficher-des-filtres-facettes)).
+:::
 
 #### 1.2.11.1. Liste déroulante
 
@@ -516,14 +524,20 @@ Il est maintenant possible de placer sur les cartes :
 - **Des rectangles (rectangle)**
 - **Des cercles (circle)**
 
-!>Par défaut seul les points (marker) sont actifs.
+::: warning
+Par défaut seul les points (marker) sont actifs.
+:::
 
-?>**Exemple :** Pour utiliser les polygones et les points, renseigner dans les
+::: info
+**Exemple :** Pour utiliser les polygones et les points, renseigner dans les
 paramètres avancés de la géolocalisation en mode édition de formulaire les
 aramètres suivants : `marker,polygon`
+:::
 
-!>Si vous n'entrez que `polygon` il sera impossible en édition de fiche de
+::: warning
+Si vous n'entrez que `polygon` il sera impossible en édition de fiche de
 placer un simple point.
+:::
 
 ### 1.2.13. Mots clés
 
@@ -542,8 +556,10 @@ Il est destiné à compléter les intitulé des champs à informer l'utilisateur
 Le menu déroulant (mode édition de formulaire) intitulé : "Utiliser la syntaxe
 wiki plutot que du HTML" permet de choisir la synthaxe d'écriture.
 
-?> Depuis la version 4.6 de Doryphore il est possible de renseigner cela en wiki
+::: info
+Depuis la version 4.6 de Doryphore il est possible de renseigner cela en wiki
 et plus uniquement en HTML.
+:::
 
 Deux champs permettent de renseigner du texte :
 
@@ -551,13 +567,17 @@ Deux champs permettent de renseigner du texte :
   destinée à expliquer à l'utilisateur ce qu'on attend comme élément )
 - le contenu affiché lors de la consultation d'une fiche
 
-?>Pour avoir le même contenu à l'édition et à la consultation d'une fiche,
+::: info
+Pour avoir le même contenu à l'édition et à la consultation d'une fiche,
 renseigner le même contenu dans les deux champs.
+:::
 
 #### Quelques exemples (en HTML) de fonctionnalités avancées
 
-?> Le plus simple maintenant est d'écrire cela avec la synthaxe habituel de
+::: info
+Le plus simple maintenant est d'écrire cela avec la synthaxe habituel de
 YesWiki (voir la documentation de prise en main)
+:::
 
 ##### Ajout d'un encadré dans un formulaire
 
@@ -731,10 +751,12 @@ Utilisateurs identifiés, Membres du groupe admins, ou Propriétaire de la fiche
 et admins) peuvent lire, saisir ou modifier ou encore commenter des fiches de
 votre formulaire.
 
-!> Cette configuration des droits d'accès ne s'applique qu'aux fiches saisies
+::: warning
+Cette configuration des droits d'accès ne s'applique qu'aux fiches saisies
 après son paramétrage. Autrement dit, si vous ajoutez ce « champ » à votre
 formulaire, ou si vous le modifiez, seules les fiches saisies ou modifiées après
 cet ajout, ou cette modfication, auront les droits que vous avez définis.
+:::
 
 ### 1.2.23. Config thème de la fiche
 
@@ -749,12 +771,14 @@ Ce type de champs est utilisable dans le cas où un autre formulaire est lié à
 celui-ci. Il permet d'afficher les fiches liées. Son effet n'est visible que
 dans la phase 3 d'affichage des résultats du formulaire.
 
-?> **Exemple :** Un auteur a écrit plusieurs livres. On peut avoir un formulaire
+::: info
+**Exemple :** Un auteur a écrit plusieurs livres. On peut avoir un formulaire
 auteur (identifiant 1) et un formulaire livre (identifiant 2). Le formulaire
 livre contiendra un champ liste basé sur le formulaire auteur pour identifier
 son auteur Le formulaire auteur pourra contenir un champ liste des fiches liées
 afin d'afficher dans la fiche auteur tous les livres qui ont été écrits par
 l'auteur .
+:::
 
 #### 1.2.24.1 Paramètres spécifiques au type de champs « liste des fiches liées »
 
@@ -765,11 +789,11 @@ l'auteur .
 - **Query** : Ce paramètre permet de n'afficher qu'une partie des fiches liées.
   Il est facultatif, par défaut, toutes les fiches liées s'afficheront. La
   syntaxe du paramètre query est la même que dans bazar liste - voir
-  [afficher une partie des données - query](/docs/fr/bazar?id=afficher-une-partie-des-donn%c3%a9es-query)
+  [afficher une partie des données - query](bazar.md#323-afficher-une-partie-des-données-query)
 - **Params de l'action** : permet l'ordre d'affichage des fiches liées. Par
   défaut elles sont triées par ordre alphabétique croissant sur le champ
   titre.On peut modifier le champ de référence pour le tri ainsi que l'ordre de
-  tri - voir [ordre et champ](/docs/fr/bazar?id=ordre-et-champ) On notera que
+  tri - voir [ordre et champ](bazar.md#324-ordre-et-champ) On notera que
   les deux paramètres sont séparés par un espace.
 - **Nombre de fiches à afficher** vous pouvez préciser ici le nombre de fiches
   liées à afficher
@@ -784,8 +808,8 @@ l'auteur .
 ### 1.2.25. Custom
 
 Ce champ sera utile pour les développeurs qui ont recours à un champ custom.
-Plus de détails (dans la section
-développeurs)[/docs/fr/dev?id=custom-bazar-field]
+Plus de détails dans la
+[section développeurs](dev.md#utilisation-du-dossier-custom).
 
 ### 1.2.26. Navigation par onglet /Passage à l'onglet suivant
 

@@ -1,13 +1,17 @@
 # Installer un YesWiki
 
-?> **Si vous avez déjà un yeswiki en ligne**, passez directement à la section
-[prise en main](/docs/fr/prise-en-main.md)
+::: info
+**Si vous avez déjà un yeswiki en ligne**, passez directement à la section
+[prise en main](prise-en-main.md)
+:::
 
-?> **Si vous n'avez pas d'hébergement web**, ni les connaissances techniques
+::: info
+**Si vous n'avez pas d'hébergement web**, ni les connaissances techniques
 pour installer vous même YesWiki, vous pouvez aussi héberger votre wiki chez un
 hébergeur libre de confiance, comme
 [la ferme de l'association YesWiki](https://ferme.yeswiki.net), ou un collectif
 membre des [chatons](https://chatons.org).
+:::
 
 ## Installation
 
@@ -107,7 +111,7 @@ Le fichier de configuration est écrit. C'est terminé.
 
 Si vous souhaitez installer avec Docker ou avoir des informations plus
 techniques, rendez-vous dans la
-[rubrique Développement](/docs/fr/dev.md#installer-yeswiki-dans-un-environnement-de-développement-local).
+[rubrique Développement](dev.md#installer-yeswiki-dans-un-environnement-de-développement-local).
 
 ## Sécuriser YesWiki
 
@@ -148,8 +152,10 @@ location ~* /(.*/)?private/ {
 }
 ```
 
-!> Attention : tous les dossiers `private` n'importe où dans l'arborescence
+::: warning
+Attention : tous les dossiers `private` n'importe où dans l'arborescence
 seront inaccessibles publiquement.
+:::
 
 ### Mettre une herse sur son wiki
 
@@ -182,7 +188,7 @@ Cette interface d'administration permet :
 ### Appeler des actions depuis un gabarit
 
 Un squelette ou un gabarit Twig accepte la syntaxe des actions des pages, comme
-`{{button text="Ok"}}`. Voir [Les actions dans les gabarits](/docs/fr/actions-dans-les-gabarits.md).
+`{{button text="Ok"}}`. Voir [Les actions dans les gabarits](actions-dans-les-gabarits.md).
 
 ### Le fichier de configuration
 
@@ -409,7 +415,7 @@ nouvelle version d'un thème ou d'une extension existe.
 
 ### Lutter contre le spam
 
-[voir la rubrique dédiée](/docs/fr/admin?id=lutter-contre-le-spams)
+[voir la rubrique dédiée](admin.md#lutter-contre-le-spams)
 
 ### Réparer les wikis qui n'envoient pas les mails
 

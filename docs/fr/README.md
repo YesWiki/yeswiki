@@ -7,8 +7,10 @@ Vous êtes sur la page d'accueil de la documentation du
 pour vous aider à utiliser au mieux les
 [différentes fonctionnalités du logiciel](https://yeswiki.net/?Presentation).
 
-?>[Voir les notes de versions](https://yeswiki.net/?ChangeLog)
+::: info
+[Voir les notes de versions](https://yeswiki.net/?ChangeLog)
 (ce qui a changé au cours des différentes versions du logiciel)
+:::
 
 ## 🔎 Comment naviguer dans cette documentation?
 
@@ -16,24 +18,42 @@ Pour trouver l'aide dont vous avez besoin, plusieurs possibilités s'offrent à
 vous :
 
 - utiliser le menu du haut ⬆️ en fonction de votre besoin et de là où vous en êtes
-- utiliser la barre de recherche en haut dans le menu sur la gauche ↖️
+- utiliser la recherche en haut à droite 🔎
 - dans tous les cas, n'hésitez pas à user et abuser du `ctrl+f`
   (touche ctrl + touche f) qui permet de rechercher dans n'importe quelle page web
 
-## 📚 Trouver de l'aide ou d'autres informations
+## 🌱 Contribuer
+
+YesWiki est un logiciel libre fait par une communauté. Vous pouvez y prendre
+part de plusieurs façons :
+
+- [Participer à la communauté](communaute.md) : se rencontrer, s'entraider,
+  proposer des idées
+- [Améliorer la documentation](documentation.md) : chaque page a en bas un
+  lien "Modifier cette page sur GitHub" pour l'éditer (il faut un compte
+  GitHub) ; la [doc de la doc](documentation.md) donne le ton, la mise en page
+  et les grandes lignes
+- [Développer le code](dev.md) : installer un environnement de travail, créer
+  une extension, proposer des modifications
+- [Adhérer à l'association ou la soutenir financièrement](https://yeswiki.net/?Association)
+
+## 🧭 Autres espaces
 
 En plus de cette documentation et si vous ne trouvez pas de réponses
 (après avoir cherché quand même, hein 😉 ) vous pouvez consulter les sources
 suivantes :
 
-- [Le forum](https://forum.yeswiki.net/) qui **est LE lieu** pour poser des
-  questions de dépannage et trouver des solutions
+- [Le forum d'entraide](https://forum.yeswiki.net/) qui **est LE lieu** pour
+  poser des questions de dépannage et trouver des solutions
 - [Le tchat dédié](https://framateam.org/signup_user_complete/?id=iwtotxo7rpgsudhq63wxytaeoo)
   **Mattermost** qui permet d'échanger avec la communauté YesWiki et de
   s'organiser pour la vie associative et les projets
 - [Les tutoriels](https://yeswiki.net/?CommentFairePour) aussi appelés le
-  "Comment faire pour ?", ils expliquent des trucs et astuces
-- [Les formations](https://yeswiki.net/?SeFormer) pour se faire accompagner
+  "Comment faire pour ?", ils expliquent des trucs et astuces, et
+  [leur version vidéo](https://yeswiki.net/?Tutoriels-videos)
+- [La chaîne vidéo de YesWiki](https://videos.yeswiki.net/video-channels/yeswiki/videos)
+  avec des tutoriels et d'autres infos
+- [Les formations](https://formations.yeswiki.net) pour se faire accompagner
   par des super pédagogues qui vous permettront d'être autonomes avec votre YesWiki.
 
 ## ✔️ Copyleft
@@ -58,15 +78,6 @@ Cette documentation est publiée sous licence Creative Commons CCbySA qui permet
 Tout ça, dans le but de créer des communs de la connaissance que nous améliorons
 collectivement.
 ![image](images/Creative_Commons_by-sa_small.svg.png)
-
-## ✏️ Contribuer à la documentation de YesWiki
-
-Vous trouverez en bas de chaque page un bouton "Modifier cette page sur Github"
-vous permettant d'éditer la page courante de cette documentation.
-Il va vous falloir créer un compte sur github ou vous identifier pour faire des
-modifications.  
-Toutes les indications détaillées (tonalité, mise en page, grandes lignes) sont
-présentes sur la [doc de la doc: comment contribuer à cette doc](documentation.md).
 
 ## 🙏 Merci
 

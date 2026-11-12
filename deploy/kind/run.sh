@@ -159,16 +159,18 @@ writes="$(kubectl logs writer)"
 kubectl delete pod writer --wait=false >/dev/null
 unexpected="$(awk '$1 == "attempt" && $3 != 200 && $3 != 503' <<<"$writes")"
 lost="$(comm -23 <(awk '$1 == "saved" { print $2 }' <<<"$writes" | sort) <(awk '$1 == "kept" { print $2 }' <<<"$writes" | sort))"
-echo "$(grep -c '^saved ' <<<"$writes") pages saved, $(awk '$1 == "attempt" && $3 == 503' <<<"$writes" | wc -l) attempts refused with 503 and retried"
+refused="$(awk '$1 == "attempt" && $3 == 503' <<<"$writes" | wc -l)"
+echo "$(grep -c '^saved ' <<<"$writes") pages saved, $refused attempts refused with 503 and retried"
 case "$driver" in
     mariadb) applied="$(kubectl exec deploy/db -- mariadb -N -uroot -pkind-root yeswiki -e "SELECT COUNT(*) FROM yeswiki_triples WHERE resource = 'kind_rollout'")" ;;
     postgresql) applied="$(kubectl exec deploy/db -- psql -tA -U yeswiki -d yeswiki -c "SELECT COUNT(*) FROM yeswiki_triples WHERE resource = 'kind_rollout'")" ;;
 esac
-if ! grep -q '^saved ' <<<"$writes" || [ -n "$unexpected" ] || [ -n "$lost" ] || [ "$applied" != 1 ]; then
+if ! grep -q '^saved ' <<<"$writes" || [ -n "$unexpected" ] || [ -n "$lost" ] || [ "$applied" != 1 ] || [ "$refused" = 0 ]; then
     echo "$writes" | tail -20
     [ -n "$unexpected" ] && echo "answers other than 200 and 503: $(echo "$unexpected" | awk '{ print $3 }' | sort | uniq -c | tr '\n' ' ')" >&2
     [ -n "$lost" ] && echo "saves answered 200 and gone: $(echo "$lost" | tr '\n' ' ')" >&2
     [ "$applied" != 1 ] && echo "the rollout's migration ran $applied times" >&2
+    [ "$refused" = 0 ] && echo "no old pod refused a write once the database was ahead of it" >&2
     exit 1
 fi
 

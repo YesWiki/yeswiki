@@ -16,7 +16,6 @@ class GlobalsRatchetTest extends TestCase
      */
     private const REMAINING = [
         'Admin/Action/EditConfigAction.php' => 2,
-        'Admin/Controller/DocumentationController.php' => 1,
         'Content/Controller/FormController.php' => 1,
         'Kernel/Service/LanguageService.php' => 3,
         'Render/Service/CoreAssets.php' => 1,

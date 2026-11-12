@@ -76,7 +76,6 @@ Mesedez, berretsi ezabatzea, beheko laukia markatuz.
     'REACTION_NOT_POSSIBLE_TO_DELETE_REACTION' => 'Ezin izan da erreakzioa ezabatu, errore hau gertatu delako: {error}!',
     'REACTION_CONFIRM_DELETE' => 'Ziur zaude erreakzio hau ezabatu nahi duzula?',
     'REACTION_CONFIRM_DELETE_ALL' => 'Ziur zaude boto horren erreakzio guztiak ezabatu nahi dituzula?',
-    'DOC_EDIT_THIS_PAGE_ON_GITHUB' => 'Editatu orri hau Github-en',
     'NOT_VALID_URL' => 'Url baliogabea: {url}',
     'PAGE_AVAILABLE' => '{tag} orria eskuragarri dago helburuko YesWikian',
     'PAGE_NOT_AVAILABLE' => 'Ez dago {tag} orririk helburuko YesWikian',

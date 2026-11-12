@@ -5,47 +5,64 @@ test.beforeEach(async () => {
   resetEnv()
 })
 
-/** /doc, the documentation drawn by Docsify and its search and copy-code plugins. */
+/** /doc, the documentation's Markdown rendered by the wiki, searched by the wiki, with copy buttons on its code. */
 
-test('/doc renders the documentation home with its menus', async ({ page }) => {
+test('/doc renders the documentation home with its menu and contents', async ({
+  page,
+}) => {
   const errors: string[] = []
   page.on('pageerror', (error) => errors.push(error.message))
 
   await page.goto('/?doc')
 
-  await expect(page).toHaveURL(/#\/docs\/fr\/README/)
-  await expect(page.locator('.markdown-section h1')).toHaveText(
-    'Documentation YesWiki',
+  await expect(page.locator('.yw-doc__content h1')).toHaveText(
+    /^Documentation YesWiki/,
   )
   await expect(
-    page.locator('.app-nav a', { hasText: 'Prise en main' }),
-  ).toBeAttached()
+    page.locator('.yw-doc__menu a', { hasText: 'Prise en main' }),
+  ).toBeVisible()
   await expect(
-    page.locator('.sidebar-nav a', { hasText: 'Où suis-je' }),
+    page.locator('.yw-doc__toc a', { hasText: 'Où suis-je' }),
   ).toBeVisible()
   expect(errors).toEqual([])
 })
 
-test('a link in the top menu opens its page', async ({ page }) => {
+test('a link in the menu opens its page', async ({ page }) => {
   await page.goto('/?doc')
-  await page
-    .locator('.app-nav a', { hasText: 'Formulaires' })
-    .dispatchEvent('click')
+  await page.locator('.yw-doc__menu a', { hasText: 'Formulaires' }).click()
 
-  await expect(page).toHaveURL(/#\/docs\/fr\/bazar/)
-  await expect(page.locator('.markdown-section h1').first()).toBeVisible()
-  await expect(page.locator('.markdown-section h1').first()).not.toHaveText(
-    'Documentation YesWiki',
+  await expect(page).toHaveURL(/doc\/bazar/)
+  await expect(page.locator('.yw-doc__content h1').first()).not.toHaveText(
+    /^Documentation YesWiki/,
   )
+  await expect(
+    page.locator('.yw-doc__menu a.active', { hasText: 'Formulaires' }),
+  ).toBeVisible()
 })
 
-test('the search box finds pages', async ({ page }) => {
+test('the search box finds pages as you type', async ({ page }) => {
   await page.goto('/?doc')
-  await page.locator('.search input').fill('bazar')
+  await page.locator('.yw-doc__search input').fill('bazar')
 
+  const first = page.locator('.yw-doc__result').first()
+  await expect(first).toBeVisible()
+  await expect(first.locator('mark').first()).toHaveText(/bazar/i)
+
+  await page.locator('.yw-doc__search input').fill('zzqqxxwordnowhere')
+  await expect(page.locator('.yw-doc__no-result')).toBeVisible()
+})
+
+test('an old Docsify address opens its page at its heading', async ({
+  page,
+}) => {
+  await page.goto('/?doc#/docs/fr/admin?id=droit-d39accès')
+
+  await expect
+    .poll(() => decodeURIComponent(page.url()))
+    .toMatch(/doc\/admin#droit-daccès$/)
   await expect(
-    page.locator('.results-panel .matching-post').first(),
-  ).toBeVisible({ timeout: 20000 })
+    page.locator('h2#droit-daccès, h3#droit-daccès, h4#droit-daccès'),
+  ).toBeInViewport()
 })
 
 test('a code block gets a French copy button that copies its code', async ({
@@ -53,11 +70,11 @@ test('a code block gets a French copy button that copies its code', async ({
   context,
 }) => {
   await context.grantPermissions(['clipboard-read', 'clipboard-write'])
-  await page.goto('/?doc#/docs/fr/dev')
+  await page.goto('/?doc/dev')
 
-  const block = page.locator('.markdown-section pre').first()
-  const button = block.locator('.docsify-copy-code-button')
-  await expect(button.locator('.label')).toHaveText('Copier le code')
+  const block = page.locator('.yw-doc__content pre').first()
+  const button = block.locator('.yw-doc__copy')
+  await expect(button).toHaveText('Copier le code')
 
   await block.hover()
   await button.click()

@@ -1,0 +1,17 @@
+{% if query is not empty %}
+  {% if results is empty %}
+    <p class="yw-doc__no-result">{{ _t('DOC_NO_RESULT') }}</p>
+  {% else %}
+    <ul class="yw-doc__result-list">
+      {% for result in results %}
+        <li class="yw-doc__result">
+          <a href="{{ result.url }}">
+            <span class="yw-doc__result-title">{{ result.title }}</span>
+            {% if result.page != result.title %}<span class="yw-doc__result-page">{{ result.page }}</span>{% endif %}
+            <span class="yw-doc__result-excerpt">{{ result.excerpt|raw }}</span>
+          </a>
+        </li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+{% endif %}
