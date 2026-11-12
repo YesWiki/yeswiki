@@ -357,7 +357,7 @@ for (const type of TYPES) {
 
         expect(
           callbacks,
-          'the portal sent the browser back to the provider callback, and only there',
+          'the provider sent the browser back to the provider callback, and only there',
         ).toEqual([
           expect.stringMatching(/\?user\/sign-in\/oidc\/callback&.*code=/),
         ])
@@ -368,7 +368,7 @@ for (const type of TYPES) {
     }
 
     if (type === 'saml') {
-      test('saml: the metadata names the callback, at the address the portal knows as entity ID', async ({
+      test('saml: the metadata names the callback, at the address the identity provider knows as entity ID', async ({
         request,
       }) => {
         const entityId = `${WIKI}/?user/sign-in/saml-a/metadata`

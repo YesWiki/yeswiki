@@ -36,7 +36,7 @@ export const mockReady = async (): Promise<void> => {
     } catch (error) {
       if (Date.now() > until) {
         throw new Error(
-          `MockServer is not reachable at ${MOCKSERVER}: start it with \`docker compose up -d yeswiki-mock\` (${error})`,
+          `MockServer is not reachable at ${MOCKSERVER}: start it with \`docker compose up -d yeswiki-mock\`, or set YESWIKI_MOCKSERVER_URL to where it answers when this address does not resolve here (${error})`,
         )
       }
       await new Promise((resolve) => setTimeout(resolve, 500))

@@ -91,7 +91,10 @@ function writeConfiguration(ConfigurationService $service, mixed $configuration,
  */
 function forgetStoredProviders(): void
 {
-    YesWikiLoader::getWiki(true)->services->get(WikiSettings::class)->store([], [...DORYPHORE_KEYS, ProviderRegistry::SECTION]);
+    $wiki = YesWikiLoader::getWiki(true);
+    $wiki->services->get(WikiSettings::class)->store([], [...DORYPHORE_KEYS, ProviderRegistry::SECTION]);
+    // the wiki was started to reach the database: it reads its settings again, so what follows sees them gone
+    $wiki->followStoredSettings();
 }
 
 function withoutDoryphore(mixed $configuration): void

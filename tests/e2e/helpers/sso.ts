@@ -48,7 +48,7 @@ const ATTRIBUTES = {
 
 export type ProviderType = 'oidc' | 'saml' | 'cas' | 'ldap'
 
-/** The types whose login and password are typed into the wiki's own form, not at the portal. */
+/** The types whose login and password are typed into the wiki's own form, not at the provider's. */
 export const PASSWORD_TYPES: ProviderType[] = ['ldap']
 
 /** The identifier of each type's provider in `sso_providers`: it is part of the wiki's addresses for it. */
