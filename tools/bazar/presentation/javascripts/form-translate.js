@@ -1,6 +1,10 @@
 const { createApp } = Vue
 
-const { jsonform, __translation, defaultlanguage } = document.getElementById('translate-form').dataset
+const { jsonform, __translation, defaultlanguage } =
+  document.getElementById('translate-form').dataset
+const { captions } = document.querySelector(
+  '#translate-form .nodes-container',
+).dataset
 
 const app = createApp({
   data() {
@@ -26,20 +30,19 @@ const app = createApp({
       form,
       jsonForm: jsonform,
       jsonExtraLangs: '',
-      captions: JSON.parse(
-        document.querySelector('#translate-form .nodes-container').dataset
-          .captions
-      ),
-      extraLangsValues
+      captions: JSON.parse(captions),
+      extraLangsValues,
     }
   },
   watch: {
     extraLangsValues: {
       handler() {
-        this.jsonExtraLangs = JSON.stringify(this.filterData(this.extraLangsValues))
+        this.jsonExtraLangs = JSON.stringify(
+          this.filterData(this.extraLangsValues),
+        )
       },
-      deep: true
-    }
+      deep: true,
+    },
   },
   methods: {
     onSubmit(data) {
@@ -66,7 +69,7 @@ const app = createApp({
         return null
       }
       return data
-    }
-  }
+    },
+  },
 })
 app.mount('#translate-form')

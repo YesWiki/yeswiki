@@ -124,9 +124,10 @@ class Wiki
         if ($this->translationLanguages() === []) {
             return [];
         }
-        $sourceLanguage = $sourceLanguage ?: $this->defaultLanguage();
+        $primary = fn ($language) => strtolower(preg_split('/[-_]/', $language)[0]);
+        $source = $primary($sourceLanguage ?: $this->defaultLanguage());
 
-        return array_values(array_filter($this->availableLanguages(), fn ($language) => $language !== $sourceLanguage));
+        return array_values(array_filter($this->availableLanguages(), fn ($language) => $primary($language) !== $source));
     }
 
     /** A language code such as `fr` or `pt-BR` from $lang, else $default. */

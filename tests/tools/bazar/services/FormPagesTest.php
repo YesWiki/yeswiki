@@ -347,6 +347,14 @@ class FormPagesTest extends YesWikiTestCase
         $this->assertSame('fr', $this->wiki->defaultLanguage());
     }
 
+    public function testARegionalSourceLanguageIsNotItsOwnTarget(): void
+    {
+        $this->wiki->config['other_languages'] = ['en'];
+
+        $this->assertSame(['en'], $this->wiki->translationTargets('fr-FR'));
+        $this->assertSame(['fr'], $this->wiki->translationTargets('en_GB'));
+    }
+
     public function testNothingIsTranslatedWhileNoTranslationLanguageIsTurnedOn(): void
     {
         $id = $this->create(['bn_label_nature' => 'Sans langue', 'bn_template' => self::TITLE_ROW]);
