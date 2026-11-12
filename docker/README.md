@@ -78,9 +78,6 @@ servers. Their keys and passwords are public test values.
 The directory's base is `dc=acme,dc=example`, its admin `cn=admin,dc=acme,dc=example` with the
 password `AdminPassword1`. The people `marie`, `jean` and `nomail` have the password `TestPassword1`.
 
-The portal answers OIDC, SAML and CAS for the people of the directory. Run
-`bash docker/sso-check.sh` from `yeswiki-app` to check both servers.
-
 The portal reloads its configuration every second, but only a higher configuration number counts.
 To change it without a restart, copy `docker/lemonldap-ng/conf/lmConf-1.json` to `lmConf-2.json`
 and raise `cfgNum` inside. Fold the change back into `lmConf-1.json` and delete the copy before

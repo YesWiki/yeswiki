@@ -3,7 +3,7 @@ FROM node:24-trixie-slim AS node
 
 FROM php:8.4-fpm
 
-# libldap-dev builds the ldap extension for the LDAP sign-in provider; ldap-utils is for docker/sso-check.sh.
+# libldap-dev builds the ldap extension for the LDAP sign-in provider
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
         libfreetype-dev libjpeg-dev libpng-dev libwebp-dev zlib1g-dev libzip-dev libpq-dev libldap-dev \
