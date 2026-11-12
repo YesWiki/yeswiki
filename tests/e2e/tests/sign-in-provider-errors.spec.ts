@@ -21,9 +21,9 @@ import {
   PEOPLE,
   PROVIDER_IDS,
   PROVIDERS,
-  returnFromProvider,
   sectionFor,
   setProviders,
+  throughProvider,
 } from '../helpers/sso'
 
 /**
@@ -276,12 +276,13 @@ test.describe('a provider that fails', () => {
       // the mock answers as it should again: the failure was this sign-in's alone
       await mockReset()
       await idpSignsIn(type, marie)
-      await page
-        .locator(`${GUEST_CARD} .yw-sign-in__provider`, {
-          hasText: String(PROVIDERS[type].label),
-        })
-        .click()
-      await returnFromProvider(page)
+      await throughProvider(page, () =>
+        page
+          .locator(`${GUEST_CARD} .yw-sign-in__provider`, {
+            hasText: String(PROVIDERS[type].label),
+          })
+          .click(),
+      )
       await page.goto('/?user')
       await expect(page.locator(GUEST_CARD)).toHaveCount(0)
     })
@@ -294,10 +295,11 @@ test.describe('a provider that fails', () => {
     await oidcSignsIn(marie, { flags: ['tamperedSignature'] })
 
     await page.goto('/?admin/sign-in')
-    await page
-      .locator(`a[href*="admin/sign-in/${PROVIDER_IDS.oidc}/test"]`)
-      .click()
-    await returnFromProvider(page)
+    await throughProvider(page, () =>
+      page
+        .locator(`a[href*="admin/sign-in/${PROVIDER_IDS.oidc}/test"]`)
+        .click(),
+    )
 
     await expect(page.locator('body')).toContainText(
       'Signature verification failed',

@@ -8,10 +8,10 @@ import {
   PEOPLE,
   PROVIDER_IDS,
   PROVIDERS,
-  returnFromProvider,
   sectionFor,
   setProviders,
   signInAtWikiForm,
+  throughProvider,
 } from '../helpers/sso'
 
 /** The administration screens of the sign-in providers (spec section 8.3) and the profile of an account a provider owns (8.4). */
@@ -104,12 +104,13 @@ test.describe('the sign-in administration screen', () => {
       const visitor = await context.newPage()
       await idpSignsIn('oidc', PEOPLE.marie)
       await visitor.goto('/?user')
-      await visitor
-        .locator(`${GUEST_CARD} .yw-sign-in__provider`, {
-          hasText: `${NAME} renamed`,
-        })
-        .click()
-      await returnFromProvider(visitor)
+      await throughProvider(visitor, () =>
+        visitor
+          .locator(`${GUEST_CARD} .yw-sign-in__provider`, {
+            hasText: `${NAME} renamed`,
+          })
+          .click(),
+      )
       await visitor.goto('/?user')
       await expect(visitor.locator(GUEST_CARD)).toHaveCount(0)
     } finally {

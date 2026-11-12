@@ -19,9 +19,9 @@ import {
   PASSWORD,
   PEOPLE,
   PEOPLE_BASE,
-  returnFromProvider,
   setProviders,
   signInAtWikiForm,
+  throughProvider,
 } from '../helpers/sso'
 
 /**
@@ -153,10 +153,11 @@ const signInThroughProvider = async (
   await idpSignsIn(type, PEOPLE.marie)
   const page = await (await browser.newContext()).newPage()
   await page.goto('/?user')
-  await page
-    .locator(`${GUEST_CARD} .yw-sign-in__provider`, { hasText: label })
-    .click()
-  await returnFromProvider(page)
+  await throughProvider(page, () =>
+    page
+      .locator(`${GUEST_CARD} .yw-sign-in__provider`, { hasText: label })
+      .click(),
+  )
 
   return page
 }
@@ -270,13 +271,14 @@ test.describe('the upgrade from Doryphore', () => {
       request.url().startsWith(`${IDP}/authorize`),
     )
     await page.goto('/?user')
-    await page
-      .locator(`${GUEST_CARD} .yw-sign-in__provider`, { hasText: 'Acme SSO' })
-      .click()
+    await throughProvider(page, () =>
+      page
+        .locator(`${GUEST_CARD} .yw-sign-in__provider`, { hasText: 'Acme SSO' })
+        .click(),
+    )
     expect(
       new URL((await authorize).url()).searchParams.get('redirect_uri'),
     ).toBe(PROVIDER_CALLBACK)
-    await returnFromProvider(page)
 
     expect(
       sentBack,

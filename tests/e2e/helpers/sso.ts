@@ -1,6 +1,6 @@
 import { execFileSync } from 'child_process'
 import { fileURLToPath } from 'url'
-import { expect, Page } from '@playwright/test'
+import { expect, Page, Request } from '@playwright/test'
 import { IDP, WIKI } from './idp'
 import { instanceDir } from './instance'
 
@@ -169,13 +169,40 @@ export const addToGroup = (group: string, account: string): void => {
 }
 
 /**
- * Waits until the browser is back on the wiki, from the provider it was sent to: the mock identity provider answers with a
- * redirect or a form that posts itself, so the browser goes through it on its own.
+ * Does what sends the browser out to the identity provider (`leave`, a click), then waits until it has been there and is back
+ * on a page of the wiki: the mock answers with a redirect or a form that posts itself, so the browser goes through it alone.
+ * Watching starts before `leave`, since a redirect may be over by the time the click returns.
  */
-export const returnFromProvider = async (page: Page): Promise<void> => {
-  await page.waitForURL((url) => url.origin === new URL(WIKI).origin, {
-    waitUntil: 'domcontentloaded',
-  })
+export const throughProvider = async (
+  page: Page,
+  leave: () => Promise<unknown>,
+): Promise<void> => {
+  const idp = new URL(IDP).origin
+  const wiki = new URL(WIKI).origin
+  let wentThere = false
+  const watch = (request: Request) => {
+    if (
+      request.isNavigationRequest() &&
+      request.frame() === page.mainFrame() &&
+      new URL(request.url()).origin === idp
+    ) {
+      wentThere = true
+    }
+  }
+  page.on('request', watch)
+  try {
+    const back = page.waitForEvent('framenavigated', {
+      predicate: (frame) =>
+        wentThere &&
+        frame === page.mainFrame() &&
+        new URL(frame.url()).origin === wiki,
+    })
+    await leave()
+    await back
+    await page.waitForLoadState('domcontentloaded')
+  } finally {
+    page.off('request', watch)
+  }
 }
 
 /**

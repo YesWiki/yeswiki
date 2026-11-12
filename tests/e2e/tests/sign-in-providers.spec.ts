@@ -22,13 +22,13 @@ import {
   PROVIDER_IDS,
   PROVIDERS,
   ProviderType,
-  returnFromProvider,
   sectionFor,
   SENT_OR_SECRET,
   setDirectoryValue,
   setProviders,
   signInAtWikiForm,
   testAtWikiForm,
+  throughProvider,
 } from '../helpers/sso'
 
 /**
@@ -56,28 +56,30 @@ const signInWith = async (page: Page, type: ProviderType, person: Person) => {
     return
   }
   await idpSignsIn(type as RedirectType, person)
-  await page
-    .locator(`${GUEST_CARD} .yw-sign-in__provider`, { hasText: label })
-    .click()
-  await returnFromProvider(page)
+  await throughProvider(page, () =>
+    page
+      .locator(`${GUEST_CARD} .yw-sign-in__provider`, { hasText: label })
+      .click(),
+  )
 }
 
-/** Who an administrator's test signs in: the mock identity provider's person, set before the test leaves the wiki. */
-const beforeTesting = async (type: ProviderType, person: Person) => {
-  if (!PASSWORD_TYPES.includes(type)) {
-    await idpSignsIn(type as RedirectType, person)
+/**
+ * An administrator's test of the provider, from the sign-in screen, as `person`: out to the mock identity provider and back,
+ * or through the test page's own form for a password.
+ */
+const testAs = async (page: Page, type: ProviderType, person: Person) => {
+  const link = page.locator(
+    `a[href*="admin/sign-in/${PROVIDER_IDS[type]}/test"]`,
+  )
+  if (PASSWORD_TYPES.includes(type)) {
+    await link.click()
+    await testAtWikiForm(page, person.login, PASSWORD)
+
+    return
   }
+  await idpSignsIn(type as RedirectType, person)
+  await throughProvider(page, () => link.click())
 }
-
-/** Where an administrator's test asks for the person's credentials: nowhere for a redirect, the test page's own form for a password. */
-const enterTestCredentials = async (
-  page: Page,
-  type: ProviderType,
-  person: Person,
-) =>
-  PASSWORD_TYPES.includes(type)
-    ? testAtWikiForm(page, person.login, PASSWORD)
-    : returnFromProvider(page)
 
 /**
  * What the wiki tells the person of a refusal: the refused page, or for a password provider the message the sign-in form
@@ -282,10 +284,8 @@ for (const type of TYPES) {
       await login(page, ADMIN_USERNAME, ADMIN_PASSWORD)
       const before = latestRow()
 
-      await beforeTesting(type, PEOPLE.marie)
       await page.goto('/?admin/sign-in')
-      await page.locator(`a[href*="admin/sign-in/${id}/test"]`).click()
-      await enterTestCredentials(page, type, PEOPLE.marie)
+      await testAs(page, type, PEOPLE.marie)
 
       await expect(page.locator('.yw-sign-in-test__banner')).toBeVisible()
       const attributes = page.locator('.yw-sign-in-test__attributes')
@@ -401,12 +401,13 @@ for (const type of TYPES) {
           await samlSignsIn(person, { providerId: provider })
           const page = await browser.newPage()
           await page.goto('/?user')
-          await page
-            .locator(`${GUEST_CARD} .yw-sign-in__provider`, {
-              hasText: labels[provider],
-            })
-            .click()
-          await returnFromProvider(page)
+          await throughProvider(page, () =>
+            page
+              .locator(`${GUEST_CARD} .yw-sign-in__provider`, {
+                hasText: labels[provider],
+              })
+              .click(),
+          )
 
           return page
         }
