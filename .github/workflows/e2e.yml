@@ -40,7 +40,8 @@ jobs:
             echo "### Browser suite coverage for this run"
             echo
             if [ "$full" = "true" ]; then
-              echo 'Running the full matrix: mysql, pgsql and sqlite, under php-fpm and under the binary.'
+              echo 'Running the full matrix: mysql, pgsql and sqlite, under php-fpm and under the binary,'
+              echo 'and the browser suite against the Helm chart on kind with three replicas, on MariaDB and PostgreSQL.'
             else
               echo '| driver | runtime | this run |'
               echo '| --- | --- | --- |'
@@ -50,6 +51,8 @@ jobs:
               echo '| pgsql | binary | skipped, runs nightly |'
               echo '| sqlite | fpm | skipped, runs nightly |'
               echo '| sqlite | binary | skipped, runs nightly |'
+              echo '| mariadb | kind, three replicas | skipped, runs nightly |'
+              echo '| postgresql | kind, three replicas | skipped, runs nightly |'
               echo
               echo 'The binary takes about half an hour to build, so a pull request covers one driver'
               echo 'under both runtimes rather than three drivers under one.'
@@ -326,4 +329,65 @@ jobs:
           path: |
             playwright-report-signin
             test-results-signin
+          retention-days: 7
+
+  kind:
+    needs: [plan, binary]
+    if: needs.plan.outputs.full == 'true'
+    runs-on: ubuntu-26.04
+    timeout-minutes: 90
+
+    strategy:
+      fail-fast: false
+      matrix:
+        database: [mariadb, postgresql]
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/download-artifact@v7
+        with:
+          name: yeswiki-e2e-binary
+          path: binary/dist
+
+      - run: chmod +x binary/dist/yeswiki-linux-x86_64
+
+      - uses: docker/setup-buildx-action@v4
+
+      - name: Build the image from this run's binary
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: docker/image.Dockerfile
+          platforms: linux/amd64
+          load: true
+          tags: yeswiki-kind:${{ github.sha }}
+
+      - uses: helm/kind-action@v1
+        with:
+          install_only: true
+
+      - uses: azure/setup-helm@v4
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '24'
+
+      - run: yarn install --frozen-lockfile
+
+      - run: npx playwright install --with-deps chromium
+
+      - name: Three replicas on kind with ${{ matrix.database }}, SeaweedFS and Mailpit, the browser suite, then a rolling upgrade
+        env:
+          E2E: '1'
+          # The sign-in specs need the identity servers, which the browser job starts and the
+          # cluster does not have.
+          PLAYWRIGHT_ARGS: '^(?!.*sign-in-)'
+        run: deploy/kind/run.sh "${{ matrix.database }}" "yeswiki-kind:${{ github.sha }}"
+
+      - uses: actions/upload-artifact@v6
+        if: failure()
+        with:
+          name: playwright-report-kind-${{ matrix.database }}
+          path: playwright-report
           retention-days: 7

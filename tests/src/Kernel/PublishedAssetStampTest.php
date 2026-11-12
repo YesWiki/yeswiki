@@ -3,6 +3,7 @@
 namespace YesWiki\Test\Kernel;
 
 use YesWiki\Kernel\Service\AssetPublisher;
+use YesWiki\Kernel\Service\Replication;
 use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';
@@ -66,5 +67,21 @@ class PublishedAssetStampTest extends YesWikiTestCase
         AssetPublisher::publishedUrl($probe, '1');
 
         $this->assertNotSame($before, AssetPublisher::publishedStamp());
+    }
+
+    /** Replicas each publish their own folder, in whatever order requests reach them, yet a page from one names assets another must serve: the program is immutable there, so its version is the whole name. */
+    public function testEveryReplicaNamesTheSameFolderWhateverItPublishedBefore(): void
+    {
+        $was = getenv(Replication::ENV);
+        putenv(Replication::ENV . '=1');
+
+        try {
+            AssetPublisher::publishedUrl($this->source('stamp-probe-replica.js', time() - 3600), 'another-replicas-folder');
+            touch($this->instance . '/cache/assets/another-replicas-folder/.references-published', time());
+
+            $this->assertSame('0', AssetPublisher::publishedStamp());
+        } finally {
+            putenv($was === false ? Replication::ENV : Replication::ENV . '=' . $was);
+        }
     }
 }

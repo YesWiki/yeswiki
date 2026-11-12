@@ -15,7 +15,9 @@
     {{ _t('AU_VERSION_REPO') }} : <span class="label label-primary">{{ core.requestedVersion }} {{ core.release }}</span>
 </p>
 
-{% if core.newVersionRequested %}
+{% if immutable|default(false) %}
+    <p><code>./yeswicli upgrade</code></p>
+{% elseif core.newVersionRequested %}
     {% if canTriggerUpdate %}
         {% if core.PHPVersionEnoughHigh %}
             {% include '@core/update-action-button.twig' with {

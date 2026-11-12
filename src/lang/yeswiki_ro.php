@@ -1129,7 +1129,7 @@ La cea mai mică îndoială, deschide acest formular într-o pagină dedicată f
     'AB_bazarliste_popupselectedfields_label' => 'Câmpuri de păstrat în pop-up',
     'AB_bazarliste_popupneededfields_label' => 'Câmpuri de adăugat în pop-up',
     'AB_bazarcarto_popupcustomtemplate_label' => 'Șablon personalizat pentru pop-up mic',
-    'AB_bazarcarto_popupcustomtemplate_hint' => 'Ex. \'custom_map_popup.twig\' pentru a fi plasat în \'custom/templates/bazar/entries/index-dynamic-templates/\'',
+    'AB_bazarcarto_popupcustomtemplate_hint' => 'Ex. \'custom_map_popup.twig\' pentru a fi plasat în \'custom/templates/core/entries/index-dynamic-templates/\'',
     'AB_bazarcarto_displayfields_markhover_label' => 'Câmp de afișat la trecerea cursorului peste marcator',
     'AB_bazarcarto_smallmarker_label' => 'Marcatori mici',
     'AB_bazarcarto_zoommolette_label' => 'Zoom cu roata mouse-ului',

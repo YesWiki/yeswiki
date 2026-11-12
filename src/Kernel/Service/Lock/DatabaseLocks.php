@@ -20,6 +20,7 @@ final class DatabaseLocks implements Locks
     ) {
         $this->sqlite = $sqlite ?? new FileLocks();
         $db->afterReconnect($this->retake(...));
+        $db->holdOpenWhile(fn (): bool => $this->held !== [] && !$this->onSqlite());
     }
 
     /** Takes back on a new connection every lock the dropped one held; false when another holder got one first, which is then no longer this instance's. */

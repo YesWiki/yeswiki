@@ -1,29 +1,10 @@
-import { mkdirSync, rmSync, writeFileSync } from 'fs'
-import { dirname } from 'path'
 import { test, expect } from '@playwright/test'
 import { resetEnv } from '../helpers/db'
-import { instancePath } from '../helpers/instance'
 import { ADMIN_PASSWORD, ADMIN_USERNAME, login } from '../helpers/login'
-
-const PROBES = [
-  'core/admin/keywords.twig',
-  'core/admin/custom-templates.twig',
-  'core/fiche-1.twig',
-  'core/entries/index-dynamic-templates/picker-probe.twig',
-]
-const clearProbes = () => {
-  PROBES.forEach((probe) =>
-    rmSync(instancePath(`custom/templates/${probe}`), { force: true }),
-  )
-}
+import { saveOverride } from '../helpers/templates'
 
 test.beforeEach(async () => {
   resetEnv()
-  clearProbes()
-})
-
-test.afterEach(async () => {
-  clearProbes()
 })
 
 const FLASH = '[role="alert"]'
@@ -196,7 +177,7 @@ test('reverting puts the shipped template back', async ({ page }) => {
 })
 
 /** The safety net: the screen that removes overrides cannot itself be overridden. */
-test('the screen that fixes overrides renders as shipped, whatever is in custom/templates', async ({
+test('the screen that fixes overrides renders as shipped, whatever is overridden', async ({
   page,
 }) => {
   await login(page, ADMIN_USERNAME, ADMIN_PASSWORD)
@@ -227,14 +208,12 @@ test('the screen that fixes overrides renders as shipped, whatever is in custom/
   )
 })
 
-const writeProbe = (probe: string, source: string) => {
-  const path = instancePath(`custom/templates/${probe}`)
-  mkdirSync(dirname(path), { recursive: true })
-  writeFileSync(path, source)
+const writeProbe = async (page, probe: string, source: string) => {
+  await login(page, ADMIN_USERNAME, ADMIN_PASSWORD)
+  await saveOverride(page, probe, source)
 }
 
 const openProbe = async (page, probe: string) => {
-  await login(page, ADMIN_USERNAME, ADMIN_PASSWORD)
   await page.goto(`/?admin/custom-templates&file=${encodeURIComponent(probe)}`)
   await expect(page.locator('.yw-templates__ace')).toBeVisible()
 }
@@ -256,7 +235,7 @@ const pickFirstField = async (page, label: string) => {
 test('an entry template offers the fields of the form in its name', async ({
   page,
 }) => {
-  writeProbe('core/fiche-1.twig', '<div></div>\n')
+  await writeProbe(page, 'core/fiche-1.twig', '<div></div>\n')
   await openProbe(page, 'core/fiche-1.twig')
 
   await expect(page.locator('#yw-template-form')).toHaveCount(0)
@@ -269,7 +248,8 @@ test('a list template finds its form from what it reads, and loads what it inser
   page,
 }) => {
   const probe = 'core/entries/index-dynamic-templates/picker-probe.twig'
-  writeProbe(
+  await writeProbe(
+    page,
     probe,
     `{% extends "@core/entries/index-dynamic.twig" %}\n{% set necessary_fields = ['bf_prenom', 'bf_fonction'] %}\n`,
   )
@@ -289,7 +269,8 @@ test('a computed necessary_fields is left alone, with a word about it', async ({
   page,
 }) => {
   const probe = 'core/entries/index-dynamic-templates/picker-probe.twig'
-  writeProbe(
+  await writeProbe(
+    page,
     probe,
     `{% extends "@core/entries/index-dynamic.twig" %}\n{% set necessary_fields = (necessary_fields|default([]))|merge(['bf_prenom']) %}\n`,
   )
@@ -304,8 +285,53 @@ test('a computed necessary_fields is left alone, with a word about it', async ({
 test('a template with no form behind it has no field picker', async ({
   page,
 }) => {
-  writeProbe('core/admin/keywords.twig', '<div></div>\n')
+  await writeProbe(page, 'core/admin/keywords.twig', '<div></div>\n')
   await openProbe(page, 'core/admin/keywords.twig')
 
   await expect(page.locator('[data-yw-template-fields]')).toHaveCount(0)
+})
+
+/** Ticket 18: an override is versioned, and the revisions screen shows the code, the diff, and brings an old one back. */
+test('an override keeps its versions, shows their diff, and restores one', async ({
+  page,
+}) => {
+  await login(page, ADMIN_USERNAME, ADMIN_PASSWORD)
+  await saveOverride(
+    page,
+    'core/admin/keywords.twig',
+    '{% extends "@shipped/dashboard/layout.twig" %}{% block dashboard_content %}FIRST-VERSION{% endblock %}',
+  )
+  await page.waitForTimeout(1100)
+  await saveOverride(
+    page,
+    'core/admin/keywords.twig',
+    '{% extends "@shipped/dashboard/layout.twig" %}{% block dashboard_content %}SECOND-VERSION{% endblock %}',
+  )
+  await page.goto('/?admin/keywords')
+  await expect(page.locator('.yw-dashboard__canvas')).toContainText(
+    'SECOND-VERSION',
+  )
+
+  await page.goto(
+    `/?admin/custom-templates&file=${encodeURIComponent('core/admin/keywords.twig')}`,
+  )
+  await page.getByRole('link', { name: 'Versions' }).click()
+  await expect(page.locator('h1')).toContainText('core/admin/keywords.twig')
+  await expect(page.locator('.timeline-item')).toHaveCount(2)
+  await expect(page.locator('.preview-content')).toContainText('SECOND-VERSION')
+  await expect(page.locator('.code-or-preview')).toHaveCount(0)
+
+  await page.locator('.revision-title-container svg').first().click()
+  await expect(page.locator('.revision-title h3')).toContainText('1')
+  await page.locator('.view-types-selector li').nth(2).click()
+  await expect(
+    page.locator('.preview-content del, .preview-content ins'),
+  ).not.toHaveCount(0)
+
+  await page.locator('button.btn-restore').click()
+  await page.waitForURL(/admin\/custom-templates/)
+  await page.goto('/?admin/keywords')
+  await expect(page.locator('.yw-dashboard__canvas')).toContainText(
+    'FIRST-VERSION',
+  )
 })

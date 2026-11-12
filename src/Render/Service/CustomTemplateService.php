@@ -2,18 +2,14 @@
 
 namespace YesWiki\Render\Service;
 
-use YesWiki\Files\Exception\StorageException;
 use YesWiki\Files\Service\ProgramFiles;
 use YesWiki\Files\Service\Storage;
-use YesWiki\Kernel\Service\CacheClearer;
 
 /**
- * Template overrides in `custom/templates/`, as something a webmaster can see and edit (ticket 30).
+ * Template overrides as something a webmaster can see and edit (ticket 30): saved in the database (ticket 18), over the files the operator ships in `custom/templates/`.
  */
 class CustomTemplateService
 {
-    /** Instance-relative, matching the paths TemplateEngine adds to its loader. */
-    /** Where the shipped templates live in the Program tree. */
     public const SHIPPED_DIRECTORY = 'templates';
 
     public const DIRECTORY = 'custom/templates';
@@ -21,43 +17,70 @@ class CustomTemplateService
     /** Where the shipped originals are. */
     public const CORE_NAMESPACE = 'core';
 
-    /** The screen's own template, and it must stay on `@shipped`. */
     public const SCREEN_TEMPLATE = '@shipped/admin/custom-templates.twig';
 
-    private const COMPILED_CACHE = 'cache/templates';
+    public const IN_THE_DATABASE = 'database';
+
+    public const ON_DISK = 'disk';
 
     public function __construct(
-        protected TemplateEngine $templateEngine,
+        protected TemplateOverrides $database,
         protected Storage $storage,
         protected ProgramFiles $programFiles,
     ) {
     }
 
     /**
-     * Every override on this instance: what it is called, what it overrides, how big it is.
+     * Every override on this instance, the database's and the operator's files, each once.
      *
-     * @return list<array{path: string, namespace: string, target: string, size: int, modified: int, shipped: bool}>
+     * @return list<array{path: string, namespace: string, target: string, size: int, modified: int, shipped: bool, source: string, onDisk: bool, tag: string}>
      */
     public function overrides(): array
     {
         $found = [];
-        foreach ($this->storage->files(self::DIRECTORY, true) as $path) {
-            if (strtolower(pathinfo($path, PATHINFO_EXTENSION)) !== 'twig') {
+        foreach ($this->database->all() as $override) {
+            $found[$override['path']] = $this->describe($override['path'], self::IN_THE_DATABASE, strlen((string)$this->database->read($override['path'])), (int)strtotime($override['time']), $override['tag']);
+        }
+        foreach ($this->filesOnDisk() as $relative) {
+            if (isset($found[$relative])) {
+                $found[$relative]['onDisk'] = true;
                 continue;
             }
-            $relative = substr($path, strlen(self::DIRECTORY) + 1);
-            [$namespace, $target] = $this->splitOverride($relative);
-            $found[] = [
-                'path' => $relative,
-                'namespace' => $namespace,
-                'target' => $target,
-                'size' => $this->storage->fileSize($path),
-                'modified' => $this->storage->lastModified($path),
-                'shipped' => $namespace === self::CORE_NAMESPACE && $this->shippedPath($target) !== null,
-            ];
+            $path = self::DIRECTORY . '/' . $relative;
+            $found[$relative] = $this->describe($relative, self::ON_DISK, $this->storage->fileSize($path), $this->storage->lastModified($path), '');
         }
+        ksort($found);
 
-        usort($found, fn (array $a, array $b) => strcmp($a['path'], $b['path']));
+        return array_values($found);
+    }
+
+    /** @return array{path: string, namespace: string, target: string, size: int, modified: int, shipped: bool, source: string, onDisk: bool, tag: string} */
+    private function describe(string $relative, string $source, int $size, int $modified, string $tag): array
+    {
+        [$namespace, $target] = $this->splitOverride($relative);
+
+        return [
+            'path' => $relative,
+            'namespace' => $namespace,
+            'target' => $target,
+            'size' => $size,
+            'modified' => $modified,
+            'shipped' => $namespace === self::CORE_NAMESPACE && $this->shippedPath($target) !== null,
+            'source' => $source,
+            'onDisk' => $source === self::ON_DISK,
+            'tag' => $tag,
+        ];
+    }
+
+    /** @return list<string> the `.twig` files the operator put in `custom/templates/`, relative to it */
+    public function filesOnDisk(): array
+    {
+        $found = [];
+        foreach ($this->storage->files(self::DIRECTORY, true) as $path) {
+            if (strtolower(pathinfo($path, PATHINFO_EXTENSION)) === 'twig') {
+                $found[] = substr($path, strlen(self::DIRECTORY) + 1);
+            }
+        }
 
         return $found;
     }
@@ -80,12 +103,12 @@ class CustomTemplateService
         return $names;
     }
 
-    /** The contents of an override, or '' if it does not exist. */
+    /** The contents of an override, the database's before the operator's file, or '' if neither exists. */
     public function read(string $relative): string
     {
         $path = $this->overridePath($relative);
 
-        return $this->storage->fileExists($path) ? $this->storage->read($path) : '';
+        return $this->database->read($relative) ?? ($this->storage->fileExists($path) ? $this->storage->read($path) : '');
     }
 
     /** The shipped original of a `core/…` override, or null when there is none. */
@@ -102,52 +125,44 @@ class CustomTemplateService
 
     public function exists(string $relative): bool
     {
+        return $this->database->revisionOf($relative) !== null || $this->storage->fileExists($this->overridePath($relative));
+    }
+
+    /** Whether the database holds this override, which the screens can take away; the operator's file stays. */
+    public function inTheDatabase(string $relative): bool
+    {
+        return $this->database->revisionOf($relative) !== null;
+    }
+
+    public function isOnDisk(string $relative): bool
+    {
         return $this->storage->fileExists($this->overridePath($relative));
     }
 
-    /**
-     * Write an override, having first checked that it compiles.
-     *
-     * @throws \RuntimeException on a template that does not compile, or a write that fails
-     */
+    /** Saves an override in the database once it compiles; a RuntimeException says why it was not. */
     public function write(string $relative, string $contents): void
     {
-        $path = $this->overridePath($relative);
-        $this->check($relative, $contents);
+        $this->overridePath($relative);
 
         try {
-            $this->storage->write($path, $contents);
-        } catch (StorageException $exception) {
-            throw new \RuntimeException(sprintf('Cannot write %s', $path), 0, $exception);
+            $this->database->save($relative, $contents);
+        } catch (\InvalidArgumentException $refused) {
+            throw new \RuntimeException($refused->getMessage(), 0, $refused);
         }
-
-        [$namespace] = $this->splitOverride($relative);
-        $this->templateEngine->addOverrideDirectory(
-            $namespace === 'custom' ? self::DIRECTORY : self::DIRECTORY . '/' . $namespace,
-            $namespace
-        );
-        $this->clearCompiled();
     }
 
-    /**
-     * Put the shipped template back, by removing the override.
-     *
-     * @throws \RuntimeException when the file cannot be removed
-     */
+    /** Takes the database's override away, so the operator's file or the shipped template shows again; a file alone is the operator's to remove. */
     public function delete(string $relative): void
     {
-        $path = $this->overridePath($relative);
-        if (!$this->storage->fileExists($path)) {
+        $this->overridePath($relative);
+        if (!$this->inTheDatabase($relative)) {
+            if ($this->isOnDisk($relative)) {
+                throw new \RuntimeException(sprintf('%s is a file the operator ships in %s: only they can remove it', $relative, self::DIRECTORY));
+            }
+
             return;
         }
-
-        try {
-            $this->storage->delete($path);
-        } catch (StorageException $exception) {
-            throw new \RuntimeException(sprintf('Cannot remove %s', $path), 0, $exception);
-        }
-
-        $this->clearCompiled();
+        $this->database->delete($relative);
     }
 
     /**
@@ -174,7 +189,7 @@ class CustomTemplateService
 
     public function isWritable(): bool
     {
-        return $this->storage->isWritable(self::DIRECTORY);
+        return true;
     }
 
     /**
@@ -185,8 +200,8 @@ class CustomTemplateService
     public function check(string $relative, string $contents): void
     {
         try {
-            $this->templateEngine->parseTemplateSource($relative, $contents);
-        } catch (\Twig\Error\Error $broken) {
+            $this->database->check($relative, $contents);
+        } catch (\InvalidArgumentException $broken) {
             throw new \RuntimeException($broken->getMessage(), 0, $broken);
         }
     }
@@ -239,14 +254,5 @@ class CustomTemplateService
         return $at === false
             ? ['custom', $relative]
             : [substr($relative, 0, $at), substr($relative, $at + 1)];
-    }
-
-    /** Twig compiles to `cache/templates/`, keyed on the path. */
-    private function clearCompiled(): void
-    {
-        if ($this->storage->directoryExists(self::COMPILED_CACHE)) {
-            $this->storage->deleteDirectory(self::COMPILED_CACHE);
-        }
-        CacheClearer::stampTemplatesCleared($this->storage);
     }
 }

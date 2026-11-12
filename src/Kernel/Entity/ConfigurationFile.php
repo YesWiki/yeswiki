@@ -71,6 +71,9 @@ class ConfigurationFile implements \ArrayAccess, \Iterator, \Countable
         if (!empty($yeswikiConfig)) {
             $this->_parameters = $yeswikiConfig;
         }
+        if ($this->configurationService !== null) {
+            $this->_parameters = $this->configurationService->effective($this->_file, $this->_parameters);
+        }
     }
 
     /**

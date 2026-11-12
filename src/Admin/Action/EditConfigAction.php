@@ -3,7 +3,6 @@
 namespace YesWiki\Admin\Action;
 
 use YesWiki\Core\YesWikiAction;
-use YesWiki\Files\Service\Storage;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\BotGuard;
 use YesWiki\Kernel\Component\Category;
@@ -139,7 +138,7 @@ class EditConfigAction extends YesWikiAction implements RegisteredAction, Provid
                 'message' => get_class($this) . ' : ' . _t('BAZ_NEED_ADMIN_RIGHTS'),
             ]);
         }
-        if (!$this->getService(Storage::class)->isWritable(ConfigurationFileProvider::getConfigFileFromEnv())) {
+        if (!$this->getService(ConfigurationService::class)->canSaveSettings()) {
             return $this->render('@core/alert-message.twig', [
                 'type' => 'danger',
                 'message' => _t('ERROR_NO_ACCESS') . ' ' . _t('FILE_WRITE_PROTECTED'),

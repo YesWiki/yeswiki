@@ -220,7 +220,7 @@ class HibernationServiceTest extends YesWikiTestCase
         return ['hibernate' => ['hibernate'], 'updating' => ['updating']];
     }
 
-    public function testHibernationServiceDependsOnNothingButParametersAndTheArchiveLock(): void
+    public function testHibernationServiceDependsOnNothingButParametersTheArchiveLockAndTheConfiguration(): void
     {
         $ctor = (new \ReflectionClass(HibernationService::class))->getConstructor();
         $this->assertNotNull($ctor);
@@ -229,7 +229,7 @@ class HibernationServiceTest extends YesWikiTestCase
             $ctor->getParameters()
         );
 
-        $this->assertSame([ParameterBagInterface::class, '?' . Locks::class], $types);
+        $this->assertSame([ParameterBagInterface::class, '?' . Locks::class, '?' . ConfigurationService::class], $types, 'the configuration reads the status where the admin wrote it, the database');
     }
 
     /**

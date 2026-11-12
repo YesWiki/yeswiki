@@ -28,6 +28,7 @@ use YesWiki\Kernel\Service\StringUtilService;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Kernel\Service\WikiUrls;
 use YesWiki\Render\Entity\LayoutChrome;
+use YesWiki\Render\Twig\TemplateOverrideLoader;
 use YesWiki\Render\Twig\WikiActionLoader;
 use YesWiki\Render\Twig\WikiActionSyntax;
 
@@ -36,6 +37,7 @@ class TemplateEngine
     protected ContainerInterface $container;
     protected \Twig\Loader\FilesystemLoader $twigLoader;
     private WikiActionLoader $wikiActionLoader;
+    private TemplateOverrideLoader $loader;
     protected \Twig\Environment $twig;
     protected AssetRegistry $assetRegistry;
     protected CsrfTokenManager $csrfTokenManager;
@@ -110,8 +112,9 @@ class TemplateEngine
 
         $this->twigLoader->addPath(YESWIKI_PROGRAM_DIR . '/templates/', 'shipped');
 
+        $this->loader = new TemplateOverrideLoader(fn (): TemplateOverrides => $this->container->get(TemplateOverrides::class), $this->twigLoader);
         $this->wikiActionLoader = new WikiActionLoader(
-            $this->twigLoader,
+            $this->loader,
             fn (string $markdown): string => $this->container->get(MarkdownFormatterService::class)->format($markdown)
         );
         $this->twig = new \Twig\Environment($this->wikiActionLoader, [
@@ -787,7 +790,7 @@ class TemplateEngine
      */
     public function hasTemplate($templatePath): bool
     {
-        return $this->twigLoader->exists(self::resolveLegacyTemplateName($templatePath));
+        return $this->loader->exists(self::resolveLegacyTemplateName($templatePath));
     }
 
     /**
@@ -814,7 +817,7 @@ class TemplateEngine
     public function render($templatePath, $data = [])
     {
         $templatePath = self::resolveLegacyTemplateName($templatePath);
-        if (!$this->twigLoader->exists($templatePath)) {
+        if (!$this->loader->exists($templatePath)) {
             throw new TemplateNotFound(_t('TEMPLATE_FILE_NOT_FOUND') . " : $templatePath");
         }
         $data = array_merge($data, [

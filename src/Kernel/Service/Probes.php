@@ -34,7 +34,7 @@ final class Probes
         self::answer(200, 'text/plain', 'ok');
     }
 
-    /** Whether this replica can serve: its database answers and its storage does; 503 naming what does not. The wiki is not booted, since booting reads a page. */
+    /** Whether this replica can serve: its database and storage answer and, when replicated, its migrations have run; 503 naming what does not. The wiki is not booted. */
     public static function ready(): void
     {
         require_once \dirname(__DIR__, 2) . '/autoload.inc.php';
@@ -43,10 +43,14 @@ final class Probes
         YesWikiLoader::loadEnv();
 
         $checks = ['database' => 'ok', 'storage' => 'ok'];
-        $unreachable = (new DbService(new ParameterBag(self::configuration()), connectNow: false))->ping();
+        $config = self::configuration();
+        $db = new DbService(new ParameterBag($config), connectNow: false);
+        $unreachable = $db->ping();
         if ($unreachable !== null) {
             $checks['database'] = 'failed';
             error_log('readyz: the database does not answer: ' . $unreachable);
+        } elseif (Replication::isOn()) {
+            $checks['migrations'] = self::migrations($db, $config);
         }
         try {
             (new Storage())->exists('files/.yeswiki-readyz');
@@ -54,9 +58,27 @@ final class Probes
             $checks['storage'] = 'failed';
             error_log('readyz: the storage does not answer: ' . $storage->getMessage());
         }
-        $ready = !array_filter($checks, static fn (string $state): bool => $state !== 'ok');
+        $ready = !array_filter($checks, static fn (string $state): bool => $state !== 'ok' && $state !== SchemaStep::AHEAD);
 
         self::answer($ready ? 200 : 503, 'application/json', (string)json_encode(['ready' => $ready, 'checks' => $checks], JSON_UNESCAPED_SLASHES));
+    }
+
+    /**
+     * Whether this code's migrations have all run: `behind` keeps a new replica out until the migrate Job has run, `ahead` keeps an old one serving reads.
+     *
+     * @param array<string, mixed> $config
+     */
+    private static function migrations(DbService $db, array $config): string
+    {
+        try {
+            $state = (new SchemaStep($db))->state(SchemaStep::foldersFor($config));
+        } catch (\Throwable $failure) {
+            error_log('readyz: the migrations cannot be compared: ' . $failure->getMessage());
+
+            return 'failed';
+        }
+
+        return $state === SchemaStep::IN_STEP ? 'ok' : $state;
     }
 
     /** @return array<string, mixed> the configuration file, with what the environment overrides */

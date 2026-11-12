@@ -18,7 +18,7 @@ class DbService
 {
     protected ParameterBagInterface $params;
 
-    /** @var \PDO */
+    /** @var \PDO|null */
     protected $link;
     /** @var list<array{query: string, time: float}> */
     protected $queryLog;
@@ -45,6 +45,9 @@ class DbService
     private bool $reconnecting = false;
 
     private bool $connected = false;
+
+    /** @var list<\Closure(): bool> */
+    private array $holders = [];
 
     /** @param bool $connectNow false for a caller that asks ping() rather than be stopped when the server is down */
     public function __construct(ParameterBagInterface $params, bool $connectNow = true)
@@ -113,13 +116,14 @@ class DbService
                 \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC,
                 \PDO::ATTR_EMULATE_PREPARES => false,
             ];
-            $this->link = method_exists(\PDO::class, 'connect')
+            $link = method_exists(\PDO::class, 'connect')
                 ? \PDO::connect($dsn, $username, $password, $options)
                 : new \PDO($dsn, $username, $password, $options);
+            $this->link = $link;
             $this->initDriverSpecific();
             $this->connected = true;
 
-            return $this->link;
+            return $link;
         } catch (\Throwable $refused) {
             if ($previous !== null) {
                 $this->link = $previous;
@@ -127,6 +131,47 @@ class DbService
 
             throw $refused;
         }
+    }
+
+    /** Keeps the connection open while $holds answers true, for something the connection itself holds, such as a lock (replicas 19). */
+    public function holdOpenWhile(\Closure $holds): void
+    {
+        $this->holders[] = $holds;
+    }
+
+    /** Gives the connection back to the server, so that an idle worker holds none; false while a transaction or a holder still needs it. */
+    public function disconnectIfIdle(): bool
+    {
+        if (!$this->connected) {
+            return true;
+        }
+        if ($this->transactionDepth > 0) {
+            return false;
+        }
+        foreach ($this->holders as $holds) {
+            if ($holds()) {
+                return false;
+            }
+        }
+        $this->link = null;
+        $this->connected = false;
+
+        return true;
+    }
+
+    public function isConnected(): bool
+    {
+        return $this->connected;
+    }
+
+    /** The connection, opened at the first statement that needs it. */
+    private function pdo(): \PDO
+    {
+        if (!$this->connected || $this->link === null) {
+            $this->initSqlConnection();
+        }
+
+        return $this->link ?? throw new \RuntimeException('No connection to the database');
     }
 
     /** Runs $retake once the connection was opened again; it answers whether everything the old connection held, its locks, is held again. */
@@ -163,22 +208,29 @@ class DbService
         return $driver === 'pgsql' ? $dsn : $dsn . ';charset=' . $text('db_charset', 'utf8mb4');
     }
 
+    /** Whether queries are timed and logged: off when the configuration does not say, as in a probe's bare one. */
+    private function debugging(): bool
+    {
+        return $this->params->has('debug') && (bool)$this->params->get('debug');
+    }
+
     protected function initDriverSpecific(): void
     {
+        $link = $this->link ?? throw new \RuntimeException('No connection to set up');
         switch ($this->driver) {
             case 'mysql':
                 $charset = ($this->params->has('db_charset') && $this->params->get('db_charset'))
                     ? $this->params->get('db_charset')
                     : 'utf8mb4';
                 if ($charset === 'utf8mb4') {
-                    $this->link->exec('SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci');
+                    $link->exec('SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci');
                 }
                 break;
 
             case 'sqlite':
-                $this->link->exec('PRAGMA foreign_keys = ON');
-                $this->link->exec('PRAGMA journal_mode = WAL');
-                $this->link->exec('PRAGMA busy_timeout = 5000');
+                $link->exec('PRAGMA foreign_keys = ON');
+                $link->exec('PRAGMA journal_mode = WAL');
+                $link->exec('PRAGMA busy_timeout = 5000');
                 $regexp = function ($pattern, $value) {
                     if ($pattern === null || $value === null) {
                         return false;
@@ -186,15 +238,15 @@ class DbService
 
                     return preg_match('/' . $pattern . '/iu', $value) === 1;
                 };
-                if (method_exists($this->link, 'createFunction')) {
-                    $this->link->createFunction('REGEXP', $regexp, 2);
+                if (method_exists($link, 'createFunction')) {
+                    $link->createFunction('REGEXP', $regexp, 2);
                 } else {
-                    $this->link->sqliteCreateFunction('REGEXP', $regexp, 2);
+                    $link->sqliteCreateFunction('REGEXP', $regexp, 2);
                 }
                 break;
 
             case 'pgsql':
-                $this->link->exec("SET client_encoding TO 'UTF8'");
+                $link->exec("SET client_encoding TO 'UTF8'");
                 break;
         }
     }
@@ -342,7 +394,7 @@ class DbService
             $this->swapTables($livePrefix, $staging, $replaced);
         } catch (\Throwable $th) {
             if ($this->driver === 'pgsql' && $this->transactionDepth === 0) {
-                $this->link->exec('ROLLBACK');
+                $this->pdo()->exec('ROLLBACK');
             }
             $this->dropTablesWithPrefix($staging);
 
@@ -393,8 +445,8 @@ class DbService
         if ($session === null) {
             return;
         }
-        $this->query('SET SESSION sql_mode = ' . $this->link->quote((string)$session['sql_mode'])
-            . ', time_zone = ' . $this->link->quote((string)$session['time_zone'])
+        $this->query('SET SESSION sql_mode = ' . $this->pdo()->quote((string)$session['sql_mode'])
+            . ', time_zone = ' . $this->pdo()->quote((string)$session['time_zone'])
             . ', autocommit = ' . ((int)$session['autocommit'] === 0 ? '0' : '1'));
     }
 
@@ -823,7 +875,7 @@ class DbService
      */
     public function escape($string)
     {
-        $quoted = $this->link->quote((string)$string);
+        $quoted = $this->pdo()->quote((string)$string);
 
         return substr($quoted, 1, -1);
     }
@@ -838,7 +890,7 @@ class DbService
      */
     public function query($query, array $params = [])
     {
-        if ($this->params->get('debug')) {
+        if ($this->debugging()) {
             $start = $this->getMicroTime();
         }
 
@@ -854,7 +906,7 @@ class DbService
         } catch (\PDOException $failed) {
             throw new \Exception($failed->getMessage() . ' -- while running: ' . $this->describeQuery($query, $params !== []), (int)$failed->getCode(), $failed);
         } finally {
-            if ($this->params->get('debug')) {
+            if ($this->debugging()) {
                 $this->addQueryLog($query, $this->getMicroTime() - $start, $params);
             }
         }
@@ -868,15 +920,15 @@ class DbService
     private function run(string $query, array $params): \PDOStatement
     {
         if ($params === []) {
-            $result = $this->link->query($query);
+            $result = $this->pdo()->query($query);
         } else {
             SqlParameters::assertPlaceholderCount($query, $params);
-            $result = $this->link->prepare($query);
+            $result = $this->pdo()->prepare($query);
             SqlParameters::bind($result, $params);
             $result->execute();
         }
         if ($result === false) {
-            $errorInfo = $this->link->errorInfo();
+            $errorInfo = $this->pdo()->errorInfo();
             throw new \Exception('Query failed: ' . $query . ' (' . $errorInfo[2] . ')');
         }
 
@@ -996,9 +1048,9 @@ class DbService
     {
         if ($this->transactionDepth === 0) {
             if ($this->driver === 'sqlite') {
-                $this->link->exec('BEGIN IMMEDIATE');
+                $this->pdo()->exec('BEGIN IMMEDIATE');
             } else {
-                $this->link->beginTransaction();
+                $this->pdo()->beginTransaction();
             }
             $this->transactionRollbackOnly = false;
         }
@@ -1053,12 +1105,12 @@ class DbService
     private function endTransaction(string $verb): void
     {
         if ($this->driver === 'sqlite') {
-            $this->link->exec($verb);
+            $this->pdo()->exec($verb);
         } elseif ($verb === 'COMMIT') {
-            $this->link->commit();
+            $this->pdo()->commit();
         } else {
             try {
-                $this->link->rollBack();
+                $this->pdo()->rollBack();
             } catch (\PDOException $gone) {
                 if (!$this->isLostConnection($gone)) {
                     throw $gone;
@@ -1076,15 +1128,15 @@ class DbService
     /** The id the last INSERT on this connection generated, never another process's (unlike `SELECT MAX(id)`). */
     public function lastInsertId(): int
     {
-        return (int)$this->link->lastInsertId();
+        return (int)$this->pdo()->lastInsertId();
     }
 
     /** A statement prepared once, to be executed many times with different values. */
     public function prepare(string $query): PreparedStatement
     {
-        $statement = $this->link->prepare($query);
+        $statement = $this->pdo()->prepare($query);
         if ($statement === false) {
-            $errorInfo = $this->link->errorInfo();
+            $errorInfo = $this->pdo()->errorInfo();
 
             throw new \Exception('Prepare failed: ' . $query . ' (' . $errorInfo[2] . ')');
         }
@@ -1093,7 +1145,7 @@ class DbService
             $statement,
             $query,
             function (string $sql, float $elapsed, array $params): void {
-                if ($this->params->get('debug')) {
+                if ($this->debugging()) {
                     $this->addQueryLog($sql, $elapsed, $params);
                 }
             }
@@ -1104,7 +1156,7 @@ class DbService
     private function describeQuery(string $query, bool $parameterised = false): string
     {
         $query = trim((string)preg_replace('/\s+/', ' ', $query));
-        if ($parameterised || $this->params->get('debug') || preg_match('/^\s*(CREATE|ALTER|DROP|TRUNCATE|RENAME)\b/i', $query)) {
+        if ($parameterised || $this->debugging() || preg_match('/^\s*(CREATE|ALTER|DROP|TRUNCATE|RENAME)\b/i', $query)) {
             return $query;
         }
 

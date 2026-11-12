@@ -123,6 +123,9 @@ class FileApiController extends YesWikiController
 
         $storage = $this->getService(Storage::class);
 
+        header_remove('X-Frame-Options');
+        header_remove('Content-Security-Policy');
+
         return new StreamedResponse(
             function () use ($path, $storage) {
                 $bytes = $storage->readStream($path);
@@ -135,6 +138,8 @@ class FileApiController extends YesWikiController
                 'Content-Disposition' => $disposition . '; filename="' . $filename . '"',
                 'Content-Length' => (string)$storage->fileSize($path),
                 'Cache-Control' => 'no-store, no-cache, must-revalidate',
+                'Content-Security-Policy' => "frame-ancestors 'self'",
+                'X-Frame-Options' => 'SAMEORIGIN',
             ]
         );
     }

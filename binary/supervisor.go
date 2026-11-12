@@ -18,6 +18,12 @@ import (
 // starts is how it finds out, and the answer holds until the farm is reloaded or the binary restarts.
 const ExitNotMyMode = 78
 
+// ExitEmpty says the queue is empty: the consumer left with its lock and its connection, so an idle wiki holds none.
+const ExitEmpty = 79
+
+// EmptyQueueDelay is how long an empty queue waits before its consumer starts again.
+const EmptyQueueDelay = time.Minute
+
 // StopGrace is how long a consumer has to finish the message in hand once asked to stop, which
 // keeps a whole stop under the unit's TimeoutStopSec=30s with Caddy's own shutdown after it.
 const StopGrace = 10 * time.Second
@@ -222,6 +228,14 @@ func (s *Supervisor) keep(keeper *keeper) {
 				s.say(keeper.wiki, "background jobs are consumed in another mode: not restarted until the farm is reloaded or the binary restarts")
 
 				return
+			}
+			if code == ExitEmpty && err == nil {
+				delay = firstDelay
+				if !keeper.wait(s.sleep, EmptyQueueDelay) {
+					return
+				}
+
+				continue
 			}
 		}
 

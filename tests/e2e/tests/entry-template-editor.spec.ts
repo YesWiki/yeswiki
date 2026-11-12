@@ -1,18 +1,10 @@
-import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'fs'
-import { dirname } from 'path'
 import { expect, Page, test } from '@playwright/test'
 import { resetEnv } from '../helpers/db'
-import { instancePath } from '../helpers/instance'
 import { createEntry } from '../helpers/bazar'
 import { ADMIN_PASSWORD, ADMIN_USERNAME, login } from '../helpers/login'
+import { readOverride, saveOverride } from '../helpers/templates'
 
-const TEMPLATE = 'custom/templates/core/fiche-1.twig'
-const clearTemplate = () => rmSync(instancePath(TEMPLATE), { force: true })
-
-const writeTemplate = (source: string) => {
-  mkdirSync(dirname(instancePath(TEMPLATE)), { recursive: true })
-  writeFileSync(instancePath(TEMPLATE), source)
-}
+const TEMPLATE = 'core/fiche-1.twig'
 
 /** The form's own preview can hold a Vditor too, so every lookup stays in this section. */
 const templateSection = (page: Page) => page.locator('#entry-presentation')
@@ -21,11 +13,8 @@ const surface = (page: Page) =>
 
 test.beforeEach(async ({ page }) => {
   resetEnv()
-  clearTemplate()
   await login(page, ADMIN_USERNAME, ADMIN_PASSWORD)
 })
-
-test.afterEach(clearTemplate)
 
 const openTemplateSection = async (page) => {
   await page.goto('/?annuaire/edit')
@@ -73,8 +62,8 @@ test('a new template is written in Vditor, fields included, and survives a headi
   ).toBeVisible()
 
   await saveForm(page)
-  expect(existsSync(instancePath(TEMPLATE))).toBe(true)
-  const saved = readFileSync(instancePath(TEMPLATE), 'utf8')
+  const saved = await readOverride(page, TEMPLATE)
+  expect(saved).not.toBe('')
   expect(saved.startsWith('{# markdown #}\n')).toBe(true)
   expect(saved).toContain('## {{ html.bf_titre|raw }}')
   expect(saved).toContain('| {{ html.bf_titre|raw }} |')
@@ -96,7 +85,11 @@ test('a new template is written in Vditor, fields included, and survives a headi
 test('a handwritten HTML template stays in Ace, with the same field picker', async ({
   page,
 }) => {
-  writeTemplate('<div class="x">{{ html.bf_titre|raw }}</div>\n')
+  await saveOverride(
+    page,
+    TEMPLATE,
+    '<div class="x">{{ html.bf_titre|raw }}</div>\n',
+  )
   await openTemplateSection(page)
 
   await expect(page.locator('.yw-templates__ace')).toBeVisible()

@@ -1,0 +1,33 @@
+# A throwaway PostgreSQL for the kind proof: one pod, no volume, gone with the cluster.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: db
+spec:
+  replicas: 1
+  selector:
+    matchLabels: {app: db}
+  template:
+    metadata:
+      labels: {app: db}
+    spec:
+      enableServiceLinks: false
+      containers:
+        - name: postgres
+          image: postgres:16-alpine
+          env:
+            - {name: POSTGRES_USER, value: yeswiki}
+            - {name: POSTGRES_PASSWORD, value: kind-db}
+            - {name: POSTGRES_DB, value: yeswiki}
+          ports: [{containerPort: 5432}]
+          readinessProbe:
+            exec: {command: ["pg_isready", "-U", "yeswiki"]}
+            periodSeconds: 3
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: db
+spec:
+  selector: {app: db}
+  ports: [{port: 5432}]

@@ -1,0 +1,37 @@
+# Mailpit for the kind proof, set up like a production relay: submission on 587, STARTTLS required (a self-signed certificate), a login.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mail
+spec:
+  replicas: 1
+  selector:
+    matchLabels: {app: mail}
+  template:
+    metadata:
+      labels: {app: mail}
+    spec:
+      enableServiceLinks: false
+      containers:
+        - name: mailpit
+          image: axllent/mailpit:v1.27
+          env:
+            - {name: MP_SMTP_BIND_ADDR, value: "0.0.0.0:587"}
+            - {name: MP_SMTP_TLS_CERT, value: "sans:mail"}
+            - {name: MP_SMTP_TLS_KEY, value: "sans:mail"}
+            - {name: MP_SMTP_REQUIRE_STARTTLS, value: "true"}
+            - {name: MP_SMTP_AUTH, value: "yeswiki:kind-mail"}
+          ports: [{containerPort: 587}, {containerPort: 8025}]
+          readinessProbe:
+            tcpSocket: {port: 587}
+            periodSeconds: 3
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mail
+spec:
+  selector: {app: mail}
+  ports:
+    - {name: smtp, port: 587}
+    - {name: http, port: 8025}

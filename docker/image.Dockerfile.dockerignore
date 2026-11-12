@@ -1,0 +1,4 @@
+*
+!binary/dist/yeswiki-linux-x86_64
+!binary/dist/yeswiki-linux-aarch64
+!docker/image-entrypoint.sh

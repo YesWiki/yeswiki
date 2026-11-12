@@ -79,7 +79,7 @@ func (c caddyFarm) ServeFarm(farm string, wikis []program.Wiki, programDir strin
 			// The consumers first, while the wikis they write to are still served.
 			consumers.Stop(StopGrace)
 
-			return caddy.Stop()
+			return exitServing()
 		}
 	}
 }

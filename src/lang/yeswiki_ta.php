@@ -1207,7 +1207,7 @@ Url: {{ baseUrl }}
     'AB_bazarliste_popupselectedfields_label' => 'மேல்தோன்றும் சாளரத்தில் வைத்திருக்க வேண்டிய புலங்கள்',
     'AB_bazarliste_popupneededfields_label' => 'மேல்தோன்றும் சாளரத்தில் சேர்க்க வேண்டிய புலங்கள்',
     'AB_bazarcarto_popupcustomtemplate_label' => 'சிறிய மேல்தோன்றும் சாளரத்திற்கான தனிப்பயன் வார்ப்புரு',
-    'AB_bazarcarto_popupcustomtemplate_hint' => 'எ.கா. \'custom_map_popup.twig\', இதை \'custom/templates/bazar/entries/index-dynamic-templates/\' இல் வைக்க வேண்டும்',
+    'AB_bazarcarto_popupcustomtemplate_hint' => 'எ.கா. \'custom_map_popup.twig\', இதை \'custom/templates/core/entries/index-dynamic-templates/\' இல் வைக்க வேண்டும்',
     'AB_bazarcarto_displayfields_markhover_label' => 'குறிப்பான் மீது சுட்டி நிற்கும்போது காட்ட வேண்டிய புலம்',
     'AB_bazarcarto_smallmarker_label' => 'சிறிய குறிப்பான்கள்',
     'AB_bazarcarto_zoommolette_label' => 'சுட்டியின் உருளையால் பெரிதாக்க அனுமதி',

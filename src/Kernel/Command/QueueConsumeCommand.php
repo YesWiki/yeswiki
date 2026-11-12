@@ -22,6 +22,8 @@ class QueueConsumeCommand extends Command
 {
     public const EXIT_NOT_MY_MODE = 78;
 
+    public const EXIT_EMPTY = 79;
+
     private ContainerInterface $services;
 
     public function __construct(ContainerInterface $services)
@@ -38,7 +40,7 @@ class QueueConsumeCommand extends Command
             ->addOption('time-limit', null, InputOption::VALUE_REQUIRED, 'Stop after this many seconds', '3600')
             ->addOption('memory-limit', null, InputOption::VALUE_REQUIRED, 'Stop when memory use passes this (128M, 512K, bytes, -1 for none)', '128M')
             ->addOption('limit', null, InputOption::VALUE_REQUIRED, 'Stop after this many messages')
-            ->addOption('supervised', null, InputOption::VALUE_NONE, 'Started by the Go binary: only runs when the wiki\'s mode is `worker`, exits ' . self::EXIT_NOT_MY_MODE . ' otherwise')
+            ->addOption('supervised', null, InputOption::VALUE_NONE, 'Started by the Go binary: only runs when the wiki\'s mode is `worker`, exits ' . self::EXIT_NOT_MY_MODE . ' otherwise, and ' . self::EXIT_EMPTY . ' once its queue is empty, so that an idle wiki holds no database connection')
             ->addOption('drain', null, InputOption::VALUE_NONE, 'Queue the scheduled tasks that are due, consume what is in the queue, then exit: no wait')
             ->addOption('message', null, InputOption::VALUE_REQUIRED, 'Handle only the message of this id, which a request pinned (a backup or a restore an admin started)');
     }
@@ -72,7 +74,10 @@ class QueueConsumeCommand extends Command
             return Command::INVALID;
         }
 
-        $report = $this->services->get(QueueConsumer::class)->consume(QueueConsumerMode::Worker, $timeLimit, $memoryLimit, $messageLimit, $output);
+        $report = $this->services->get(QueueConsumer::class)->consume(QueueConsumerMode::Worker, $timeLimit, $memoryLimit, $messageLimit, $output, $supervised);
+        if ($supervised && $report->stopReason === QueuePassReport::EMPTY) {
+            return self::EXIT_EMPTY;
+        }
         $output->writeln($report->summary());
 
         return $report->stopReason === QueuePassReport::ERROR ? Command::FAILURE : Command::SUCCESS;

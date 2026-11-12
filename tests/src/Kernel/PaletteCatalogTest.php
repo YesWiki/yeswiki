@@ -10,7 +10,7 @@ require_once 'tests/YesWikiTestCase.php';
 class PaletteCatalogTest extends TestCase
 {
     /**
-     * The one place a palette `_t()` key is not a literal: `EntryListAction` names a webmaster's own `custom/templates/bazar/*.twig` after `AB_<file>_label` if the catalog carries one.
+     * The one place a palette `_t()` key is not a literal: `EntryListAction` names a webmaster's own `custom/templates/core/*.twig` after `AB_<file>_label` if the catalog carries one.
      */
     private const DYNAMIC_KEY_PATTERN = '/^AB_bazar[a-z0-9]+_label$/';
 

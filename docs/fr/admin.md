@@ -58,6 +58,20 @@ Astuces :
 - mettre à jour YesWiki mais aussi les thèmes et les tools (extensions)
 - n'hésitez pas à **mettre à jour les pages de gestion**
 
+Sur un wiki répliqué (`YESWIKI_REPLICATED=1`), le programme est construit dans
+une image et rien ne s'installe depuis cet écran. Il liste toujours ce qui est
+installé et ce qui est disponible, mais à la place des boutons il affiche :
+
+- pour installer ou mettre à jour une extension ou un thème, la commande à
+  lancer pendant la construction de l'image, par exemple
+  `./yeswicli upgrade lms`. La commande accepte plusieurs noms à la suite et
+  échoue si l'un d'eux n'a pas pu être installé ;
+- pour activer ou désactiver une extension, la ligne `ACTIVE_EXTENSIONS='[…]'`
+  à mettre dans les variables d'environnement de chaque réplique.
+
+La même commande refuse de tourner quand `YESWIKI_REPLICATED` est défini :
+l'image se construit sans cette variable.
+
 ### Sauvegardes
 
 Vous pourrez ici gérer les sauvegardes de votre wiki
@@ -850,6 +864,30 @@ Yeswiki n'ayant pas accès au serveur, cette page de configuration contourne ce
 problème. Il faut être identifié comme administrateurice pour visionner et
 modifier les informations de cet espace.
 
+### Où vont les modifications
+
+Le wiki n'écrit plus jamais `yeswiki.config.php` pendant qu'il tourne. Seule
+l'installation le crée. Ce que l'on enregistre ici va à l'un de ces deux
+endroits :
+
+- **les réglages du wiki** (titre, langue, thème, notifications, mise en
+  hibernation…) vont dans la base de données. Ils l'emportent sur la valeur du
+  fichier, et chaque copie du wiki les voit à la requête suivante ;
+- **les réglages de l'hébergeur** (base de données, `base_url`,
+  `rewrite_mode`, extensions actives ou interdites, envoi des mails et ses
+  secrets, file d'attente, proxys de confiance, cache HTTP…) vont dans
+  `private/.env`, une ligne `NOM='valeur'` par réglage. Une liste y est écrite
+  en JSON.
+
+Un wiki répliqué (`YESWIKI_REPLICATED=1`) refuse de changer depuis cet écran un
+réglage de l'hébergeur : sur ce genre d'hébergement, ces valeurs viennent des
+variables d'environnement de chaque copie, et le message d'erreur nomme les
+réglages refusés.
+
+Un wiki mis à jour garde tout ce qu'il avait : `yeswiki.config.php` reste la
+base, et seules les modifications faites après la mise à jour passent par la
+base de données ou par `private/.env`.
+
 ### Paramètres principaux
 
 - **Titre de votre wiki - yeswiki_name** : c'est le titre donné à la création de
@@ -1365,6 +1403,21 @@ laissé tel quel. Les sauvegardes sont hors du lot par défaut, parce qu'elles
 sont en général le plus gros de ce qu'un wiki possède et le moins urgent à
 déplacer.
 
+## Avec Docker
+
+Chaque version publiée a son image, `ghcr.io/yeswiki/yeswiki` (et
+`docker.io/yeswiki/yeswiki`), pour amd64 et arm64, avec les étiquettes
+`5.1.2`, `5.1` et `latest`. Elle contient le binaire de la version et rien
+d'autre : elle tourne sous l'utilisateur 10001, avec un système de fichiers en
+lecture seule, et n'écrit que dans `/srv/wiki` (le dossier du wiki, à mettre
+dans un volume) et `/tmp`.
+
+`deploy/compose/` contient un `compose.yaml` qui fait tourner un wiki et sa
+base MariaDB sur une machine. Au premier démarrage, le conteneur installe le
+wiki avec les valeurs de son `.env` ; à chaque démarrage, il le migre vers la
+version de l'image avant de le servir. Le `README.md` de ce dossier dit comment
+le mettre à jour et vérifier la signature d'une image.
+
 ## Derrière un proxy, et sur plusieurs serveurs
 
 ### Le proxy qui termine le HTTPS
@@ -1390,6 +1443,23 @@ fois. Il refuse alors de démarrer sans `base_url`, plutôt que de déduire son
 adresse de la première requête reçue, et il refuse SQLite, qui est un fichier
 sur une seule machine.
 
+Un worker PHP n'ouvre sa connexion à la base que pour servir une requête,
+et la rend avant d'attendre la suivante, sauf si un verrou ou une
+transaction en a encore besoin. Le consommateur de la file de fond s'arrête
+quand sa file est vide et repart une minute plus tard. Un wiki que personne
+ne visite ne tient donc aucune connexion, ce qui compte dans une ferme de
+centaines de wikis. `YESWIKI_DB_KEEP_CONNECTION=1` garde la connexion de
+chaque worker ouverte, comme avant.
+
+Au plus fort de la charge, chaque worker occupé tient une connexion. Sans
+`YESWIKI_WORKERS`, le binaire en démarre deux par processeur de la machine,
+même dans un conteneur limité à moins : trois serveurs sur une machine de 32
+cœurs peuvent ouvrir 192 connexions, au-delà des 151 que MariaDB accepte par
+défaut. Fixez `YESWIKI_WORKERS` (le chart Helm met `4`) et comptez, pour
+`max_connections`, les workers de chaque serveur plus un pour son
+consommateur de la file de fond, avec un serveur de plus pendant un
+déploiement.
+
 ### Les sondes
 
 Deux adresses répondent sans session, sans passe de la file de fond et sans
@@ -1401,7 +1471,28 @@ rien écrire au Journal :
 - `/readyz` vérifie la base et le stockage, et répond `200` ou `503` avec le
   détail en JSON (`{"ready":false,"checks":{"database":"failed",...}}`). La
   raison exacte d'un échec va dans le journal d'erreurs du serveur, pas dans
-  la réponse.
+  la réponse. Sur un wiki répliqué, elle compare aussi les migrations livrées
+  avec celles que la base a reçues (`"migrations"`) : `behind` (la base n'a
+  pas encore reçu les migrations de cette version) rend le serveur non prêt,
+  `ahead` (une version plus récente a déjà migré la base) le laisse prêt.
+
+### Mettre à jour un wiki répliqué
+
+Sur un wiki répliqué, ni l'écran de mise à jour ni la première requête après
+une arrivée depuis Doryphore ne lancent les migrations. Une mise à jour se
+déroule en deux temps :
+
+1. un Job lance `./yeswicli migrate` avec la nouvelle image. Deux `migrate`
+   lancés en même temps passent l'un après l'autre, et la commande sort en
+   erreur si une migration a échoué ;
+2. puis on déploie la nouvelle image.
+
+Tant que le code d'un serveur et la base ne sont pas d'accord, ce serveur
+refuse toute écriture (un formulaire envoyé, un lien signé qui modifie
+quelque chose) avec un `503` et `Retry-After: 10`, et continue de servir les
+pages en lecture. Un ancien serveur dont la base a déjà été migrée se vide
+donc doucement pendant le déploiement. Ce refus est normal pendant quelques
+secondes à chaque mise à jour, et le Journal n'en garde aucune trace.
 
 ### Un cache partagé devant le wiki
 

@@ -1558,7 +1558,7 @@ Bij de minste twijfel, open dit formulier in een eigen pagina door op deze link 
     'AB_bazarliste_popupselectedfields_label' => 'Velden om in de pop-up te behouden',
     'AB_bazarliste_popupneededfields_label' => 'Velden om aan de pop-up toe te voegen',
     'AB_bazarcarto_popupcustomtemplate_label' => 'Aangepaste template voor de kleine pop-up',
-    'AB_bazarcarto_popupcustomtemplate_hint' => 'bv. \'custom_map_popup.twig\' te plaatsen in \'custom/templates/bazar/entries/index-dynamic-templates/\'',
+    'AB_bazarcarto_popupcustomtemplate_hint' => 'bv. \'custom_map_popup.twig\' te plaatsen in \'custom/templates/core/entries/index-dynamic-templates/\'',
     'AB_bazarcarto_displayfields_markhover_label' => 'Veld om te tonen bij het zweven over de markering',
     'AB_bazarcarto_smallmarker_label' => 'Kleine markeringen',
     'AB_bazarcarto_zoommolette_label' => 'Kunnen zoomen met het muiswiel',

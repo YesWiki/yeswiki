@@ -39,6 +39,26 @@ class ConsoleWithoutAWikiTest extends YesWikiTestCase
         $this->assertStringNotContainsString('not a wiki', $output);
     }
 
+    /** A replica's file has no `root_page`, which its database holds: the console must still boot, and say so when it cannot. */
+    public function testAConfigWithoutARootPageStillBootsTheWiki(): void
+    {
+        $this->getWiki();
+        $bare = tempnam(sys_get_temp_dir(), 'yw-no-root-page-');
+        file_put_contents($bare, preg_replace('/^\s*\'root_page\'\s*=>.*$/m', '', (string)file_get_contents(\YESWIKI_INSTANCE_DIR . '/yeswiki.config.php')));
+        $was = getenv('YESWIKI_CONFIG_FILE');
+        putenv('YESWIKI_CONFIG_FILE=' . $bare);
+
+        try {
+            [$output, $status] = $this->console(\YESWIKI_INSTANCE_DIR, 'list');
+        } finally {
+            putenv($was === false ? 'YESWIKI_CONFIG_FILE' : 'YESWIKI_CONFIG_FILE=' . $was);
+            @unlink($bare);
+        }
+
+        $this->assertSame(0, $status, $output);
+        $this->assertStringContainsString('core:archive', $output);
+    }
+
     public function testWithoutAConfigItStillRunsAndSaysWhatIsMissing(): void
     {
         $folder = sys_get_temp_dir() . '/yeswiki-console-test-' . getmypid();

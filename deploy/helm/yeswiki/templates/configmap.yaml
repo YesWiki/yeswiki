@@ -1,0 +1,15 @@
+{{/* The configuration file, reduced to what the binary needs to serve the wiki; operator settings come from the environment, admin ones from the database. */}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "yeswiki.fullname" . }}
+  labels:
+    {{- include "yeswiki.labels" . | nindent 4 }}
+data:
+  yeswiki.config.php: |
+    <?php
+
+    $yeswikiConfig = [
+      'base_url' => '{{ .Values.baseUrl | replace "\\" "\\\\" | replace "'" "\\'" }}',
+      'rewrite_mode' => {{ .Values.rewriteMode | ternary "true" "false" }},
+    ];

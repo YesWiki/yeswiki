@@ -27,3 +27,14 @@ would still be saying it a year later. Declare it as a Health check in the modul
 subject (`ProvidesHealthChecks`) and run it here with `$this->reportCheck('its-id')`. The operator
 at the terminal hears it now, and `/admin/health` keeps answering it afterwards -- until it stops
 being true.
+
+## On a replicated wiki
+
+With `YESWIKI_REPLICATED=1`, `migrate` runs as a Job with the new image before the rollout, while the
+old replicas still serve. They keep reading, and refuse writes until they are replaced. So every
+migration must work with the code of the release before it: add a column, a table or a page, never
+rename or drop one that the previous release still reads. That is expand, then contract: the
+migration that removes the old shape ships in a later release than the one that adds the new shape.
+
+Two `migrate` runs started together take the `migrations` lock in turn: the second waits for the
+first and then finds nothing to do.

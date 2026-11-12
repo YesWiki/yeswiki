@@ -1,0 +1,81 @@
+# The values of the yeswiki chart; README.md says what each one does.
+
+image:
+  repository: ghcr.io/yeswiki/yeswiki
+  tag: ""
+  pullPolicy: IfNotPresent
+
+replicaCount: 3
+
+workers: 4
+
+podAnnotations: {}
+
+baseUrl: ""
+rewriteMode: false
+
+trustedProxies: "10.0.0.0/8,172.16.0.0/12,192.168.0.0/16"
+
+activeExtensions: []
+
+env: {}
+
+database:
+  driver: mysql
+  host: ""
+  port: ""
+  name: yeswiki
+  user: yeswiki
+  password: ""
+  tablePrefix: yeswiki_
+
+storage:
+  bucket: ""
+  region: ""
+  endpoint: ""
+  publicUrl: ""
+  pathStyle: false
+  prefix: ""
+  key: ""
+  secret: ""
+
+existingSecret: ""
+
+secretEnv: {}
+
+install:
+  enabled: true
+  adminName: WikiAdmin
+  adminEmail: ""
+  adminPassword: ""
+
+migrate:
+  enabled: true
+
+service:
+  type: ClusterIP
+  port: 80
+  nodePort: null
+
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+  host: ""
+  tls: []
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    memory: 1Gi
+
+podDisruptionBudget:
+  minAvailable: 1
+
+terminationGracePeriodSeconds: 40
+
+nodeSelector: {}
+tolerations: []
+affinity: {}

@@ -1141,7 +1141,7 @@ Ante la menor duda, abra este formulario en una página dedicada haciendo clic e
     'AB_bazarliste_popupselectedfields_label' => 'Campos a mantener en la ventana emergente',
     'AB_bazarliste_popupneededfields_label' => 'Campos para agregar en la ventana emergente',
     'AB_bazarcarto_popupcustomtemplate_label' => 'Plantilla personalizada para la ventana emergente pequeña',
-    'AB_bazarcarto_popupcustomtemplate_hint' => 'ej. \'custom_map_popup.twig\' a colocar en \'custom/templates/bazar/entries/index-dynamic-templates/\'',
+    'AB_bazarcarto_popupcustomtemplate_hint' => 'ej. \'custom_map_popup.twig\' a colocar en \'custom/templates/core/entries/index-dynamic-templates/\'',
     'AB_bazarcarto_displayfields_markhover_label' => 'Campo a mostrar al pasar el cursor sobre el marcador',
     'AB_bazarcarto_smallmarker_label' => 'Marcadores pequeños',
     'AB_bazarcarto_zoommolette_label' => 'Capacidad de hacer zoom con la rueda del ratón',

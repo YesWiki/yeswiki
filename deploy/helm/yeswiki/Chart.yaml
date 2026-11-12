@@ -1,0 +1,9 @@
+apiVersion: v2
+name: yeswiki
+description: A YesWiki on several replicas, with its database and its S3 bucket provided from outside.
+type: application
+version: 0.1.0
+appVersion: "5.0.0"
+home: https://yeswiki.net
+sources:
+  - https://github.com/YesWiki/yeswiki

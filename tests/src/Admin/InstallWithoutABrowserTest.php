@@ -163,6 +163,71 @@ class InstallWithoutABrowserTest extends YesWikiTestCase
         }
     }
 
+    /** A replica's install Job writes its configuration file where no replica reads it, so the wiki's own settings go to the database (replicas 04). */
+    public function testAReplicaInstallKeepsTheWikisSettingsInItsDatabase(): void
+    {
+        $config = self::getWiki()->config;
+        if (($config['db_driver'] ?? 'mysql') === 'sqlite') {
+            $this->markTestSkipped('a replica needs MySQL, MariaDB or PostgreSQL');
+        }
+        $dir = $this->instanceDir() . '-replica';
+        mkdir($dir, 0o755, true);
+        $prefix = 'ywreplica' . getmypid() . '_';
+        $db = new \PDO(
+            ($config['db_driver'] === 'pgsql' ? 'pgsql' : 'mysql') . ':host=' . $config['db_host'] . (empty($config['db_port']) ? '' : ';port=' . $config['db_port']) . ';dbname=' . $config['db_database'],
+            $config['db_user'],
+            $config['db_password'],
+            [\PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION]
+        );
+        $was = getenv('YESWIKI_REPLICATED');
+        putenv('YESWIKI_REPLICATED=1');
+
+        try {
+            $result = $this->install($dir, [
+                '--driver=' . $config['db_driver'],
+                '--db-host=' . $config['db_host'],
+                ...(empty($config['db_port']) ? [] : ['--db-port=' . $config['db_port']]),
+                '--db-database=' . $config['db_database'],
+                '--db-user=' . $config['db_user'],
+                '--db-password=' . $config['db_password'],
+                '--table-prefix=' . $prefix,
+                '--base-url=http://replica.test/?',
+                '--root-page=PagePrincipale',
+                '--wiki-name=Installed for replicas',
+                '--language=fr',
+                '--other-languages=en,es',
+                '--allow-raw-html',
+                '--admin-name=WikiAdmin',
+                '--admin-email=admin@example.tld',
+                '--admin-password=InstalledFromTheTerminal',
+            ]);
+            $this->assertSame(0, $result['status'], $result['out']);
+
+            $statement = $db->query("SELECT property, value FROM {$prefix}triples WHERE resource = 'yeswiki_settings' AND property LIKE 'setting:%'");
+            $this->assertNotFalse($statement);
+            $stored = [];
+            foreach ($statement->fetchAll(\PDO::FETCH_KEY_PAIR) as $property => $value) {
+                $stored[substr((string)$property, strlen('setting:'))] = json_decode((string)$value, true);
+            }
+
+            $this->assertSame('Installed for replicas', $stored['yeswiki_name'] ?? null);
+            $this->assertSame('fr', $stored['default_language'] ?? null);
+            $this->assertSame(['en', 'es'], $stored['other_languages'] ?? null);
+            $this->assertTrue($stored['allow_raw_html'] ?? null);
+            $this->assertSame('MenuNavigation', $stored['layout_navbar'] ?? null);
+            $this->assertSame([], array_values(array_intersect(array_keys($stored), ['base_url', 'db_driver', 'db_password', 'table_prefix', 'yeswiki_version'])), 'what the operator decides stays in the environment');
+        } finally {
+            putenv($was === false ? 'YESWIKI_REPLICATED' : 'YESWIKI_REPLICATED=' . $was);
+            $this->removeInstance($dir);
+            $tables = $config['db_driver'] === 'pgsql'
+                ? $db->query("SELECT tablename FROM pg_tables WHERE schemaname = current_schema() AND tablename LIKE '{$prefix}%'")
+                : $db->query("SHOW TABLES LIKE '{$prefix}%'");
+            foreach ($tables ? $tables->fetchAll(\PDO::FETCH_COLUMN) : [] as $table) {
+                $db->exec('DROP TABLE ' . $table . ($config['db_driver'] === 'pgsql' ? ' CASCADE' : ''));
+            }
+        }
+    }
+
     /** @return list<string> */
     private function tags(\PDO $db): array
     {

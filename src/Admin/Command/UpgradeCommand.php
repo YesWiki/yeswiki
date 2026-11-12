@@ -23,37 +23,41 @@ class UpgradeCommand extends Command
     {
         $this
             ->setName('upgrade')
-            ->addArgument('package', InputArgument::OPTIONAL, 'Specific extension or theme', 'yeswiki')
-            ->setDescription('Upgrade the wiki, or a specific extension if package name is provided');
+            ->addArgument('packages', InputArgument::IS_ARRAY, 'Extensions or themes, several at once when an image is built', ['yeswiki'])
+            ->setDescription('Upgrade the wiki, or install and upgrade the extensions and themes named');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $package = (string)$input->getArgument('package');
-
         $updateService = $this->services->get(AutoUpdateService::class);
-
-        if (!$updateService->mayUpgrade($package)) {
-            $output->writeln('<error>' . _t('AU_NOT_DESIGNATED_UPDATE_INSTANCE') . '</error>');
-
-            return Command::FAILURE;
-        }
-
-        if ($updateService->isForbiddenExtension($package)) {
-            $output->writeln('<error>' . _t('AU_EXTENSION_FORBIDDEN', ['name' => $package]) . '</error>');
+        if ($updateService->isImmutable()) {
+            $output->writeln('<error>' . _t('AU_PROGRAM_IMMUTABLE') . '</error>');
 
             return Command::FAILURE;
         }
-
-        $output->writeln("Starting Upgrading $package");
-
         $updateService->initRepository();
-        $messages = $updateService->upgrade($package);
+        $failed = false;
+        foreach ((array)$input->getArgument('packages') as $package) {
+            $package = (string)$package;
+            if (!$updateService->mayUpgrade($package)) {
+                $output->writeln('<error>' . _t('AU_NOT_DESIGNATED_UPDATE_INSTANCE') . '</error>');
 
-        foreach ($messages as $message) {
-            $output->writeln("{$message['status']} | {$message['text']}");
+                return Command::FAILURE;
+            }
+            if ($updateService->isForbiddenExtension($package)) {
+                $output->writeln('<error>' . _t('AU_EXTENSION_FORBIDDEN', ['name' => $package]) . '</error>');
+
+                return Command::FAILURE;
+            }
+
+            $output->writeln("Starting Upgrading $package");
+            $messages = $updateService->upgrade($package);
+            foreach ($messages as $message) {
+                $output->writeln("{$message['status']} | {$message['text']}");
+            }
+            $failed = $failed || $messages->hasError();
         }
 
-        return Command::SUCCESS;
+        return $failed ? Command::FAILURE : Command::SUCCESS;
     }
 }

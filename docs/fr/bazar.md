@@ -1092,9 +1092,9 @@ formulaire distant 1
 
 1. dupliquer le formulaire distant sur le YesWiki local en utilisant la
    fonctionnalité d'importation disponible en bas de la page BazaR
-2. copier le fichier //fiche-x.tpl.html// dans le dossier local
-   //custom/templates/bazar/// avec le nom //fiche-y.tpl.html// où y est le
-   numéro du formulaire dupliqué en local
+2. recopier le gabarit de fiche du formulaire x dans celui du formulaire y,
+   depuis l'écran du formulaire y (ou Administration > Gabarits, sous le nom
+   //core/fiche-y.twig//), y étant le numéro du formulaire dupliqué en local
 3. modifier le formulaire y en local en mode code en remplaçant, //z étant le
    numéro du formulaire distant//
 

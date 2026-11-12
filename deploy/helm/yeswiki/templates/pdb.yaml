@@ -1,0 +1,14 @@
+{{/* Keeps a replica serving while nodes are drained. */}}
+{{- if gt (int .Values.replicaCount) 1 }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "yeswiki.fullname" . }}
+  labels:
+    {{- include "yeswiki.labels" . | nindent 4 }}
+spec:
+  minAvailable: {{ .Values.podDisruptionBudget.minAvailable }}
+  selector:
+    matchLabels:
+      {{- include "yeswiki.selectorLabels" . | nindent 6 }}
+{{- end }}

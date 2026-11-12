@@ -172,6 +172,8 @@ class ApiControllerFilesTest extends YesWikiTestCase
             $authenticationService->logout();
             $downloadResponse = $controller->downloadFile(Request::create("/api/files/$tag/download"), $tag);
             $this->assertSame(200, $downloadResponse->getStatusCode());
+            $this->assertSame("frame-ancestors 'self'", $downloadResponse->headers->get('Content-Security-Policy'));
+            $this->assertSame('SAMEORIGIN', $downloadResponse->headers->get('X-Frame-Options'));
         } finally {
             $authenticationService->logout();
             if ($tag !== null) {

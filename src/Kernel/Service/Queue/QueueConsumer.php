@@ -114,12 +114,12 @@ class QueueConsumer
     }
 
     /** A blocking consumer: takes messages as they come until a limit, a signal or a configuration change stops it. */
-    public function consume(QueueConsumerMode $mode, int $timeLimit, int $memoryLimitBytes, ?int $messageLimit = null, ?OutputInterface $out = null): QueuePassReport
+    public function consume(QueueConsumerMode $mode, int $timeLimit, int $memoryLimitBytes, ?int $messageLimit = null, ?OutputInterface $out = null, bool $leaveWhenEmpty = false): QueuePassReport
     {
         $startedAt = microtime(true);
         $limits = new QueuePassLimits($memoryLimitBytes);
 
-        return $this->pass($mode, $limits, false, function (QueuePassObserver $observer, int $passId) use ($mode, $timeLimit, $memoryLimitBytes, $messageLimit, $out, $startedAt): string {
+        return $this->pass($mode, $limits, false, function (QueuePassObserver $observer, int $passId) use ($mode, $timeLimit, $memoryLimitBytes, $messageLimit, $out, $startedAt, $leaveWhenEmpty): string {
             $logger = $out === null ? null : new ConsoleLogger($out);
             $this->transport->claimAs($mode);
             $this->reapTheDead($observer, $passId);
@@ -147,14 +147,18 @@ class QueueConsumer
                 $stopListeners[] = new StopWorkerOnMessageLimitListener($messageLimit, $logger);
             }
 
-            $signalled = $this->work($receiver, $observer, $logger, function (WorkerRunningEvent $event) use ($observer, $passId, &$lastBeat, $hibernated, $receiver): void {
+            $emptied = false;
+            $signalled = $this->work($receiver, $observer, $logger, function (WorkerRunningEvent $event) use ($observer, $passId, &$lastBeat, $hibernated, $receiver, $leaveWhenEmpty, &$emptied): void {
                 if ($receiver->stopReason() === QueuePassReport::CONFIG_CHANGED) {
                     $event->getWorker()->stop();
 
                     return;
                 }
-                if ($event->isWorkerIdle() && !$hibernated) {
-                    $this->tick();
+                if ($event->isWorkerIdle() && ($hibernated || $this->tick() === 0) && $leaveWhenEmpty) {
+                    $emptied = true;
+                    $event->getWorker()->stop();
+
+                    return;
                 }
                 if (microtime(true) - $lastBeat >= self::HEARTBEAT_SECONDS) {
                     $lastBeat = microtime(true);
@@ -165,6 +169,7 @@ class QueueConsumer
 
             return match (true) {
                 $signalled => QueuePassReport::STOPPED,
+                $emptied => QueuePassReport::EMPTY,
                 $receiver->stopReason() === QueuePassReport::CONFIG_CHANGED => QueuePassReport::CONFIG_CHANGED,
                 $messageLimit !== null && $observer->handled() >= $messageLimit => QueuePassReport::LIMIT,
                 memory_get_usage(true) > $memoryLimitBytes => QueuePassReport::MEMORY,
@@ -419,15 +424,18 @@ class QueueConsumer
     }
 
     /** Dispatches the scheduled tasks that are due; a schedule that breaks is journaled and the pass goes on. */
-    private function tick(): void
+    /** Queues the scheduled tasks that are due, and says how many. */
+    private function tick(): int
     {
         try {
-            $this->scheduleTicker->tick();
+            return $this->scheduleTicker->tick();
         } catch (\Throwable $failed) {
             $this->journal->error('The schedule could not be ticked: ' . $failed->getMessage(), [
                 'action' => 'queue.tick_failed',
                 'exception' => $failed,
             ]);
+
+            return 0;
         }
     }
 

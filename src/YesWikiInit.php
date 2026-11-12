@@ -52,7 +52,7 @@ class YesWikiInit
         if ($route !== null) {
             if (!$route->isValid) {
                 echo '<p>', _t('INCORRECT_PAGENAME'), '</p>';
-                exit;
+                exit(1);
             }
             $this->page = $route->page;
             $this->method = $route->method;

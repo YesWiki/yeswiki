@@ -161,9 +161,12 @@ class AssetPublisher
         return $target === null ? null : self::PUBLISHED_PREFIX . $version . '/' . $relPath;
     }
 
-    /** The stamp appended to the published version: `0` for a set no source has changed under, else the mtime of the last source that did. */
+    /** The stamp appended to the published version: `0` for a set no source has changed under or on a replica, whose program never changes, else the mtime of the last source that did. */
     public static function publishedStamp(): string
     {
+        if (Replication::isOn()) {
+            return '0';
+        }
         $assetsDir = getcwd() . '/' . rtrim(self::PUBLISHED_PREFIX, '/');
         $stamp = trim((string)@file_get_contents($assetsDir . '/' . self::STAMP_FILE));
         if (preg_match('/^[0-9]{1,20}$/', $stamp)) {

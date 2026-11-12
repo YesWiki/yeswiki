@@ -165,6 +165,21 @@ func neighbours(instance string) bool {
 	return false
 }
 
+// Prepare writes the Program and an Instance's entry points without installing anything, which is what an image does at build time.
+func Prepare(options Options) error {
+	instance, programDir, err := options.resolve()
+	if err != nil {
+		return err
+	}
+	if err := program.ProvisionInstance(instance, programDir); err != nil {
+		return err
+	}
+	options.say(fmt.Sprintf("program %s", programDir))
+	options.say(fmt.Sprintf("instance %s", instance))
+
+	return nil
+}
+
 // Serve writes the Program if it is not there and serves the Instance.
 func Serve(options Options, server Server) error {
 	instance, programDir, err := options.resolve()
@@ -183,6 +198,9 @@ func Serve(options Options, server Server) error {
 			instance, filepath.Base(pointed), filepath.Base(programDir))
 	}
 
+	if err := program.OpenDoor(instance); err != nil {
+		return err
+	}
 	options.say(fmt.Sprintf("serving %s from %s", instance, programDir))
 	pruneAround(options, programDir, named(instance))
 
@@ -304,8 +322,12 @@ func Upgrade(options Options, php PHP, farm bool) error {
 	crossed := 0
 	for _, wiki := range wikis {
 		if named, found := program.NamedBy(wiki.Directory); found && named == programDir {
+			if err := php.Console(wiki.Directory, programDir, []string{"migrate"}); err != nil {
+				return fmt.Errorf("%s is already across but its pending migrations failed, so the farm stopped here with %d of %d across: %w",
+					wiki.Host, crossed, len(wikis), err)
+			}
 			crossed++
-			options.say(fmt.Sprintf("%s is already across", wiki.Host))
+			options.say(fmt.Sprintf("%s is already across; ran the migrations it still had, an extension switched on since among them", wiki.Host))
 
 			continue
 		}
@@ -330,6 +352,11 @@ func Upgrade(options Options, php PHP, farm bool) error {
 		options.say(fmt.Sprintf("migrated %s and pointed it at %s", wiki.Host, filepath.Base(programDir)))
 	}
 
+	if !farm {
+		options.say(fmt.Sprintf("%d wiki(s) across. `yeswiki serve` opens it again on the new program", crossed))
+
+		return nil
+	}
 	options.say(fmt.Sprintf("%d wiki(s) across. They stay closed until the farm runs the new program:", crossed))
 	options.say("    sudo systemctl reload " + program.UnitName)
 

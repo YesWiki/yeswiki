@@ -14,6 +14,7 @@ use Symfony\Component\Config\FileLocator;
 use Symfony\Component\Config\Resource\FileResource;
 use Symfony\Component\DependencyInjection\Container;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -56,12 +57,15 @@ use YesWiki\Kernel\Service\Journal;
 use YesWiki\Kernel\Service\LanguageService;
 use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\Redirector;
+use YesWiki\Kernel\Service\Replication;
 use YesWiki\Kernel\Service\RequestScope;
 use YesWiki\Kernel\Service\RouteProvider;
 use YesWiki\Kernel\Service\RuntimeConfig;
+use YesWiki\Kernel\Service\SchemaGate;
 use YesWiki\Kernel\Service\SignedTokens;
 use YesWiki\Kernel\Service\ThrowableFormatter;
 use YesWiki\Kernel\Service\UrlFormatter;
+use YesWiki\Kernel\Service\WikiSettings;
 use YesWiki\Kernel\Service\WikiUrls;
 use YesWiki\Render\Service\BoostedNavigation;
 use YesWiki\Render\Service\TemplateEngine;
@@ -108,6 +112,13 @@ class YesWikiRuntime
     private ?string $containerDirectory = null;
 
     private ?string $bootedCacheDir = null;
+
+    private ?string $settingsVersion = null;
+
+    private ?string $followedVersion = null;
+
+    /** @var array<string, mixed> */
+    private array $compiledParameters = [];
 
     private string $templatesStamp = '';
 
@@ -244,7 +255,8 @@ class YesWikiRuntime
     private function doRun($tag, $method)
     {
         $this->service(RequestScope::class)->startNewRequest();
-        if (!YesWikiKernel::isCli() && $this->service(DoryphoreArrival::class)->isPending() && $this->finishDoryphoreArrival()) {
+        $this->followStoredSettings();
+        if (!YesWikiKernel::isCli() && !Replication::isOn() && $this->service(DoryphoreArrival::class)->isPending() && $this->finishDoryphoreArrival()) {
             return;
         }
         $this->readThisRequest();
@@ -270,7 +282,7 @@ class YesWikiRuntime
         $this->applyPreferredLanguage();
 
         $this->service(AuthenticationService::class)->connectUser();
-        if ($this->refuseForgedRequest(ReservedTags::isReserved($tag))) {
+        if ($this->refuseForgedRequest(ReservedTags::isReserved($tag)) || $this->refuseWriteOutOfStep(ReservedTags::isReserved($tag))) {
             return;
         }
 
@@ -296,6 +308,22 @@ class YesWikiRuntime
         $response = $routed
             ? new ApiResponse(['error' => $refusal], Response::HTTP_FORBIDDEN)
             : new Response(htmlspecialchars($refusal), Response::HTTP_FORBIDDEN);
+        $response->send();
+
+        return true;
+    }
+
+    /** Answers 503 and returns true when this replica's code and its database disagree and the request would change something. */
+    private function refuseWriteOutOfStep(bool $routed): bool
+    {
+        $refusal = $this->service(SchemaGate::class)->refusal($this->service(CurrentRequest::class)->get());
+        if ($refusal === null) {
+            return false;
+        }
+        $headers = ['Retry-After' => (string)SchemaGate::RETRY_AFTER, 'Cache-Control' => 'no-store'];
+        $response = $routed
+            ? new ApiResponse(['error' => $refusal], Response::HTTP_SERVICE_UNAVAILABLE, $headers)
+            : new Response(htmlspecialchars($refusal), Response::HTTP_SERVICE_UNAVAILABLE, $headers);
         $response->send();
 
         return true;
@@ -663,6 +691,12 @@ class YesWikiRuntime
 
         $parameterBag = $container->getParameterBag();
         $this->services->set(ParameterBagInterface::class, $parameterBag);
+        $settings = $container->get(WikiSettings::class);
+        $this->settingsVersion = $settings->version();
+        $this->followedVersion = $this->settingsVersion;
+        $this->compiledParameters = $parameterBag->all();
+        $parameterBag = new ParameterBag($settings->over($this->compiledParameters));
+        $this->services->set(ParameterBagInterface::class, $parameterBag);
         $this->services->set(CsrfTokenManager::class, new SignedCsrfTokenManager(
             $container->get(SignedTokens::class),
             static fn (): string => $container->get(CsrfVisitor::class)->current(),
@@ -712,11 +746,33 @@ class YesWikiRuntime
         return $stamp === false ? '' : $stamp;
     }
 
+    /** Lays the settings saved since this process booted, on another replica or by another worker, over its parameters before a request reads them; the worker still restarts after it for what the container compiled. */
+    public function followStoredSettings(): void
+    {
+        if (!$this->booted) {
+            return;
+        }
+        $settings = $this->service(WikiSettings::class);
+        $version = $settings->freshVersion();
+        if ($version === $this->followedVersion) {
+            return;
+        }
+        $parameters = $settings->over($this->compiledParameters);
+        $bag = $this->services->get(ParameterBagInterface::class);
+        if ($bag instanceof ParameterBag) {
+            $bag->clear();
+            $bag->add($parameters);
+        }
+        $this->config = $parameters;
+        $this->followedVersion = $version;
+    }
+
     /** Whether what this container was built from -- the configuration, `.env`, the extensions -- has changed since this process booted. */
     public function configurationChanged(): bool
     {
         return $this->bootedCacheDir !== null
-            && (new YesWikiKernel($this, $this->environment))->getCacheDir() !== $this->bootedCacheDir;
+            && ((new YesWikiKernel($this, $this->environment))->getCacheDir() !== $this->bootedCacheDir
+                || $this->service(WikiSettings::class)->freshVersion() !== $this->settingsVersion);
     }
 
     /** @return void */

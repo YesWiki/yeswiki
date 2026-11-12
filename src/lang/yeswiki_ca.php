@@ -1509,7 +1509,7 @@ Davant del mínim dubte, obriu aquest formulari en una pàgina dedicada fent cli
     'AB_bazarliste_popupselectedfields_label' => 'Camps que cal conservar a la finestra emergent',
     'AB_bazarliste_popupneededfields_label' => 'Camps que cal afegir a la finestra emergent',
     'AB_bazarcarto_popupcustomtemplate_label' => 'Plantilla personalitzada per a la petita finestra emergent',
-    'AB_bazarcarto_popupcustomtemplate_hint' => 'p. ex. \'custom_map_popup.twig\' que cal posar a \'custom/templates/bazar/entries/index-dynamic-templates/\'',
+    'AB_bazarcarto_popupcustomtemplate_hint' => 'p. ex. \'custom_map_popup.twig\' que cal posar a \'custom/templates/core/entries/index-dynamic-templates/\'',
     'AB_bazarcarto_displayfields_markhover_label' => 'Camp que cal mostrar en passar sobre el marcador',
     'AB_bazarcarto_smallmarker_label' => 'Marcadors petits',
     'AB_bazarcarto_zoommolette_label' => 'Poder ampliar amb la roda del ratolí',

@@ -66,4 +66,28 @@ class ProbesTest extends YesWikiTestCase
 
         $this->assertSame(['ready' => true, 'checks' => ['database' => 'ok', 'storage' => 'ok']], $answer);
     }
+
+    /** A replica's configuration file states only what the install wrote, so the defaults a booted wiki adds must not be needed. */
+    public function testAReplicaWithABareConfigurationComparesItsMigrations(): void
+    {
+        self::getWiki();
+        $bare = tempnam(sys_get_temp_dir(), 'yw-readyz-');
+        file_put_contents($bare, preg_replace('/^\s*\'debug\'\s*=>.*$/m', '', (string)file_get_contents('yeswiki.config.php')));
+        $was = ['YESWIKI_CONFIG_FILE' => getenv('YESWIKI_CONFIG_FILE'), 'YESWIKI_REPLICATED' => getenv('YESWIKI_REPLICATED')];
+        putenv('YESWIKI_CONFIG_FILE=' . $bare);
+        putenv('YESWIKI_REPLICATED=1');
+
+        try {
+            ob_start();
+            Probes::ready();
+            $answer = json_decode((string)ob_get_clean(), true);
+        } finally {
+            foreach ($was as $name => $value) {
+                putenv($value === false ? $name : $name . '=' . $value);
+            }
+            @unlink($bare);
+        }
+
+        $this->assertSame('ok', $answer['checks']['migrations'] ?? null, (string)json_encode($answer));
+    }
 }

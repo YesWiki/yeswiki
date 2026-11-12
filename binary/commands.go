@@ -30,7 +30,7 @@ import (
 	"github.com/YesWiki/yeswiki/binary/internal/release"
 )
 
-var wikiCommands = map[string]bool{"setup": true, "serve": true, "upgrade": true, "migrate": true, "sign": true, "destroy": true, "unit": true, "version": true, "help": true}
+var wikiCommands = map[string]bool{"setup": true, "serve": true, "upgrade": true, "migrate": true, "prepare": true, "sign": true, "destroy": true, "unit": true, "version": true, "help": true}
 
 var firstRegistered *cobra.Command
 
@@ -165,6 +165,19 @@ two processes starting together would both try.`,
 	migrate.RunE = caddycmd.WrapCommandFuncForCobra(runMigrate)
 
 	root.AddCommand(migrate)
+
+	prepare := &cobra.Command{
+		Use:   "prepare [<directory>]",
+		Short: "Write the program and a wiki directory's entry points, installing nothing",
+		Long: `Write this binary's program and the entry points of a wiki directory, without installing
+a wiki or reaching a database. An image runs it at build time, so that its program and
+entry points are in place on a read-only filesystem.`,
+		Args: cobra.MaximumNArgs(1),
+	}
+	prepare.Flags().String("program-root", "", "Where to write the program ("+program.EnvRoot+")")
+	prepare.RunE = caddycmd.WrapCommandFuncForCobra(runPrepare)
+
+	root.AddCommand(prepare)
 
 	root.AddCommand(signCommand())
 }
@@ -457,6 +470,19 @@ func runMigrate(flags caddycmd.Flags) (int, error) {
 	}
 
 	if err := commands.Upgrade(options(flags, directory), phpConsole{}, flags.Bool("farm")); err != nil {
+		return caddy.ExitCodeFailedStartup, err
+	}
+
+	return caddy.ExitCodeSuccess, nil
+}
+
+func runPrepare(flags caddycmd.Flags) (int, error) {
+	directory := ""
+	if arguments := flags.Args(); len(arguments) > 0 {
+		directory = arguments[0]
+	}
+
+	if err := commands.Prepare(options(flags, directory)); err != nil {
 		return caddy.ExitCodeFailedStartup, err
 	}
 
@@ -759,5 +785,14 @@ func (c caddyServer) Serve(instance, programDir string) error {
 	// The consumers first, while the wiki they write to is still served.
 	consumers.Stop(StopGrace)
 
-	return caddy.Stop()
+	return exitServing()
+}
+
+// exitServing hands the stop to Caddy's own exit path, which waits for the requests in flight up to the grace period; caddy.Stop() alone does not.
+func exitServing() error {
+	caddy.TrapSignals()
+	if err := syscall.Kill(os.Getpid(), syscall.SIGTERM); err != nil {
+		return caddy.Stop()
+	}
+	select {}
 }

@@ -6,6 +6,7 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Admin\Action\EditConfigAction;
 use YesWiki\Identity\Service\AuthenticationService;
+use YesWiki\Kernel\Service\Replication;
 use YesWiki\Render\Service\TemplateEngine;
 use YesWiki\Test\Core\YesWikiTestCase;
 
@@ -63,6 +64,23 @@ class EditConfigLockedParamsTest extends YesWikiTestCase
         $this->assertStringContainsString('name="contact_smtp_port"', $output);
         $this->assertStringNotContainsString('name="contact_smtp_host"', $output);
         $this->assertStringNotContainsString('name="yeswiki_name"', $output);
+    }
+
+    /** A replica's file is mounted read-only and its settings save to the database (replicas 04), so the screen still opens. */
+    public function testAReplicaShowsTheFormOverItsReadOnlyFile(): void
+    {
+        chmod($this->configFile, 0o444);
+        $was = getenv(Replication::ENV);
+
+        try {
+            $this->assertStringNotContainsString('name="yeswiki_name"', $this->renderForm([]), 'a wiki that writes its file cannot save to a read-only one');
+
+            putenv(Replication::ENV . '=1');
+            $this->assertStringContainsString('name="yeswiki_name"', $this->renderForm([]));
+        } finally {
+            putenv($was === false ? Replication::ENV : Replication::ENV . '=' . $was);
+            chmod($this->configFile, 0o644);
+        }
     }
 
     public function testEveryParamIsShownWhenNothingIsLocked(): void

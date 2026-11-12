@@ -192,9 +192,13 @@ func redirects(wikis []program.Wiki) string {
 }
 
 // globals is the block every generated configuration opens with.
+// RequestGrace is how long a stop waits for the requests in flight after the consumers' StopGrace: both fit in 30s, a unit's TimeoutStopSec and a pod's terminationGracePeriodSeconds.
+const RequestGrace = "15s"
+
 func globals(admin Admin, automaticHTTPS string, workers string) string {
 	return fmt.Sprintf(`{
-%s%s%s	servers {
+%s	grace_period %s
+%s%s	servers {
 		timeouts {
 			read_body 300s
 			read_header 30s
@@ -202,7 +206,7 @@ func globals(admin Admin, automaticHTTPS string, workers string) string {
 		max_header_size 512kb
 	}
 }
-`, admin.block(), automaticHTTPS, workers)
+`, admin.block(), RequestGrace, automaticHTTPS, workers)
 }
 
 // closedSite is a wiki the farm will not serve, answering rather than refusing the connection.

@@ -52,6 +52,15 @@ class StorageTest extends TestCase
             'the queue schedule lock is runtime' => [FileLocks::pathOf(QueueScheduleTicker::LOCK), Storage::RUNTIME_TIER],
             'the queue fallback stamp is runtime' => [QueueFallback::CHECK_STAMP, Storage::RUNTIME_TIER],
             'extensions are runtime' => ['custom/extensions/lms/index.php', Storage::RUNTIME_TIER],
+            'a theme the operator ships is runtime' => ['custom/themes/margot/squelettes/1col.twig', Storage::RUNTIME_TIER],
+            'a template file the operator ships is runtime' => ['custom/templates/core/fiche-1.twig', Storage::RUNTIME_TIER],
+            'custom fields are runtime' => ['custom/fields/CareMembershipField.php', Storage::RUNTIME_TIER],
+            'custom controllers are runtime' => ['custom/controllers/CareController.php', Storage::RUNTIME_TIER],
+            'custom services are runtime' => ['custom/services/CareMembership.php', Storage::RUNTIME_TIER],
+            'the wiki stylesheet is public' => ['custom/styles/wiki.css', Storage::PUBLIC_TIER],
+            'a preset is public' => ['custom/css-presets/essai.css', Storage::PUBLIC_TIER],
+            'a custom script is public' => ['custom/javascripts/care-card.js', Storage::PUBLIC_TIER],
+            'a custom image is public' => ['custom/images/logo.png', Storage::PUBLIC_TIER],
             'the config is runtime' => ['yeswiki.config.php', Storage::RUNTIME_TIER],
         ];
     }

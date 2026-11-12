@@ -3,7 +3,6 @@
 namespace YesWiki\Render\Action;
 
 use YesWiki\Core\YesWikiAction;
-use YesWiki\Files\Service\Storage;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Component\Category;
 use YesWiki\Kernel\Component\Component;
@@ -53,7 +52,7 @@ class SetWikiDefaultThemeAction extends YesWikiAction implements RegisteredActio
                 'message' => _t('ERROR_NO_ACCESS') . ' setwikidefaulttheme',
             ]);
         }
-        if (!$this->getService(Storage::class)->isWritable(ConfigurationFileProvider::getConfigFileFromEnv())) {
+        if (!$this->getService(ConfigurationService::class)->canSaveSettings()) {
             return $this->render('@core/alert-message.twig', [
                 'type' => 'danger',
                 'message' => _t('ERROR_NO_ACCESS') . ' setwikidefaulttheme, ' . _t('FILE_WRITE_PROTECTED'),

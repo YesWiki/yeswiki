@@ -16,6 +16,9 @@ use YesWiki\Kernel\Service\EnvironmentConfiguration;
 use YesWiki\Kernel\Service\ProgramVersion;
 use YesWiki\Kernel\Service\Queue\QueueSchema;
 use YesWiki\Kernel\Service\Queue\QueueTransport;
+use YesWiki\Kernel\Service\Replication;
+use YesWiki\Kernel\Service\SettingKinds;
+use YesWiki\Kernel\Service\WikiSettings;
 use YesWiki\Render\Service\LayoutService;
 use YesWiki\Search\Message\ReindexContent;
 
@@ -796,6 +799,9 @@ class InstallationService
         }
 
         $this->config += $this->defaultLayout();
+        if (Replication::isOn()) {
+            $this->storeTheWikisSettings();
+        }
 
         try {
             $configurationService = new ConfigurationService();
@@ -811,6 +817,18 @@ class InstallationService
             throw new \Exception(_t('WRITE_CONFIG') . ' <tt>' . $this->configFile . '</tt> :<br />' . _t('CONFIGURATION_FILE_NOT_CREATED') . '. ' . _t('VERIFY_YOU_HAVE_RIGHTS_TO_WRITE_FILE') . '.<br />' . _t('ERROR') . ' "' . $th->getMessage() . '"');
         }
         $this->pass(_t('WRITE_CONFIG') . ' <tt>' . $this->configFile . '</tt>');
+    }
+
+    /** A replica reads its file from the operator, not from this install, so what the wiki decides goes to the database every replica reads (replicas 04). */
+    private function storeTheWikisSettings(): void
+    {
+        $forced = self::environmentForcedValues();
+        $settings = array_filter(
+            $this->config,
+            static fn (string $key): bool => !SettingKinds::isOperator($key) && !array_key_exists($key, $forced),
+            ARRAY_FILTER_USE_KEY
+        );
+        (new WikiSettings(new DbService(new ParameterBag($this->config + ['debug' => false]))))->store($settings);
     }
 
     /**

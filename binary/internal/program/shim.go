@@ -18,7 +18,7 @@ func ShimPath(root string) string {
 	return filepath.Join(root, shimName)
 }
 
-// WriteShim writes the little script that lets YesWiki start a background job.
+// WriteShim writes the little script that lets YesWiki start a background job, leaving one that already says the same alone.
 func WriteShim(root, executable string) (string, error) {
 	if strings.TrimSpace(executable) == "" {
 		return "", fmt.Errorf("no path to this binary, so background jobs cannot be started")
@@ -30,6 +30,9 @@ func WriteShim(root, executable string) (string, error) {
 
 	path := ShimPath(root)
 	script := "#!/bin/sh\nexec " + shellQuoted(executable) + " php-cli \"$@\"\n"
+	if written, err := os.ReadFile(path); err == nil && string(written) == script {
+		return path, nil
+	}
 
 	if err := os.WriteFile(path, []byte(script), 0o755); err != nil {
 		return "", err

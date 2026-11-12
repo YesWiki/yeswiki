@@ -23,6 +23,12 @@
     <section class="yw-dashboard__card">
       <h2><code>{{ editing }}</code></h2>
 
+      {% if editingInDatabase and editingOnDisk %}
+        <p class="yw-alert yw-alert--info">{{ _t('ADMIN_TEMPLATES_OVERRIDES_FILE')|replace({'{path}': directory ~ '/' ~ editing}) }}</p>
+      {% elseif editingOnDisk %}
+        <p class="yw-alert yw-alert--info">{{ _t('ADMIN_TEMPLATES_OPERATOR_FILE')|replace({'{path}': directory ~ '/' ~ editing}) }}</p>
+      {% endif %}
+
       <form method="post" action="{{ url({ tag: 'admin/custom-templates' }) }}" hx-boost="false">
         <input type="hidden" name="csrf-token" value="{{ csrfToken({id: 'main', refresh: false}) }}">
         <input type="hidden" name="file" value="{{ editing }}">
@@ -57,11 +63,13 @@
             {{ _t('SAVE') }}
           </button>
 
-          <button type="submit" name="revert" value="1" class="yw-btn yw-btn--danger"
-                  {{ writable ? '' : 'disabled' }}
-                  onclick="return confirm('{{ _t('ADMIN_TEMPLATES_REVERT_CONFIRM')|e('js') }}')">
-            {{ icon('arrow-back-up') }} {{ _t('ADMIN_TEMPLATES_REVERT') }}
-          </button>
+          {% if editingInDatabase %}
+            <button type="submit" name="revert" value="1" class="yw-btn yw-btn--danger"
+                    onclick="return confirm('{{ _t(editingOnDisk ? 'ADMIN_TEMPLATES_REVERT_TO_FILE_CONFIRM' : 'ADMIN_TEMPLATES_REVERT_CONFIRM')|e('js') }}')">
+              {{ icon('arrow-back-up') }} {{ _t(editingOnDisk ? 'ADMIN_TEMPLATES_REVERT_TO_FILE' : 'ADMIN_TEMPLATES_REVERT') }}
+            </button>
+            <a class="yw-btn" href="{{ url({ tag: editingTag, handler: 'revisions' }) }}">{{ icon('history') }} {{ _t('ADMIN_TEMPLATES_VERSIONS') }}</a>
+          {% endif %}
           <a class="yw-btn" href="{{ url({ tag: 'admin/custom-templates' }) }}">{{ _t('ADMIN_TEMPLATES_CANCEL') }}</a>
         </div>
       </form>
@@ -93,7 +101,10 @@
         <tbody>
           {% for override in overrides %}
             <tr{{ override.path == editing ? ' class="yw-templates__row--editing"' : '' }}>
-              <td><code>{{ override.path }}</code></td>
+              <td>
+                <code>{{ override.path }}</code>
+                <span class="yw-templates__source">{{ _t(override.source == 'database' ? (override.onDisk ? 'ADMIN_TEMPLATES_SOURCE_OVER_FILE' : 'ADMIN_TEMPLATES_SOURCE_DATABASE') : 'ADMIN_TEMPLATES_SOURCE_FILE') }}</span>
+              </td>
               <td>
                 {% if override.shipped or override.namespace != 'core' %}
 

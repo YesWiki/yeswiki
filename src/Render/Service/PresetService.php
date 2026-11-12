@@ -639,7 +639,7 @@ class PresetService
 
     public function isConfigWritable(): bool
     {
-        return $this->storage->isWritable(ConfigurationFileProvider::getConfigFileFromEnv());
+        return $this->configurationService->canSaveSettings();
     }
 
     public function arePresetsWritable(): bool
