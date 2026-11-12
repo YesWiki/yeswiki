@@ -195,3 +195,85 @@ export const idpSignsIn = (
     : type === 'saml'
       ? samlSignsIn(person, options)
       : casSignsIn(person)
+
+/** How an endpoint of the identity provider fails: an answer of its own, or a connection closed without one. */
+export type EndpointFailure = { status: number; body?: string } | 'drop'
+
+/** A failure that wins once over what the mock answers, then lets it answer again. */
+const once = { priority: 10, times: { remainingTimes: 1 } }
+
+/** Makes the next request to `path` (a MockServer path, which may be a regular expression) fail. */
+export const idpEndpointFails = async (
+  path: string,
+  failure: EndpointFailure,
+): Promise<void> => {
+  await mockExpect({
+    id: `fails ${path}`,
+    ...once,
+    httpRequest: { path },
+    ...(failure === 'drop'
+      ? { httpError: { dropConnection: true } }
+      : {
+          httpResponse: {
+            statusCode: failure.status,
+            body: failure.body ?? '',
+          },
+        }),
+  })
+}
+
+/** A SAML response saying the provider did not sign the person in: a status and no assertion, which nothing needs to sign. */
+const samlRefusal = (callback: string): string => {
+  const now = new Date().toISOString().replace(/\.\d+Z$/, 'Z')
+
+  return Buffer.from(
+    `<?xml version="1.0" encoding="UTF-8"?><samlp:Response xmlns:samlp="urn:oasis:names:tc:SAML:2.0:protocol" xmlns:saml="urn:oasis:names:tc:SAML:2.0:assertion" ID="_refused" Version="2.0" IssueInstant="${now}" Destination="${xml(callback)}"><saml:Issuer>${IDP}/saml/metadata</saml:Issuer><samlp:Status><samlp:StatusCode Value="urn:oasis:names:tc:SAML:2.0:status:Responder"><samlp:StatusCode Value="urn:oasis:names:tc:SAML:2.0:status:AuthnFailed"/></samlp:StatusCode><samlp:StatusMessage>The user cancelled</samlp:StatusMessage></samlp:Status></samlp:Response>`,
+  ).toString('base64')
+}
+
+/** Makes the provider refuse the person, the next time, the way its protocol says so. */
+export const idpDenies = async (
+  type: RedirectType,
+  providerId = 'saml-a',
+): Promise<void> => {
+  if (type === 'oidc') {
+    await mockExpect({
+      id: 'oidc.denies',
+      ...once,
+      httpRequest: { method: 'GET', path: '/authorize' },
+      httpResponseTemplate: {
+        templateType: 'VELOCITY',
+        // the wiki's callback always has a query (?user/sign-in/<id>/callback): the error follows it with &
+        template:
+          '{"statusCode":302,"headers":{"Location":["$!request.queryStringParameters.redirect_uri[0]&error=access_denied&error_description=refused&state=$!request.queryStringParameters.state[0]"]}}',
+      },
+    })
+
+    return
+  }
+  if (type === 'saml') {
+    const callback = `${WIKI}/?user/sign-in/${providerId}/callback`
+    await mockExpect({
+      id: 'saml.denies',
+      ...once,
+      httpRequest: { path: '/saml/sso' },
+      httpResponse: {
+        statusCode: 200,
+        headers: { 'content-type': ['text/html; charset=utf-8'] },
+        body: `<!doctype html><html><body onload="document.forms[0].submit()"><form method="post" action="${xml(callback)}"><input type="hidden" name="SAMLResponse" value="${samlRefusal(callback)}"></form></body></html>`,
+      },
+    })
+
+    return
+  }
+  await mockExpect({
+    id: 'cas.denies',
+    ...once,
+    httpRequest: { method: 'GET', path: CAS_VALIDATE },
+    httpResponse: {
+      statusCode: 200,
+      headers: { 'content-type': ['application/xml'] },
+      body: CAS_UNKNOWN_TICKET,
+    },
+  })
+}
