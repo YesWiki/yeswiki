@@ -17,6 +17,8 @@ on:
       # so no change under src/, actions/, handlers/ or tests/ ever triggered this
       # workflow. '**.php' is what was meant.
       - '**.php'
+      - '**.twig'
+      - '**.sql'
       - '.github/workflows/*.yml'
   pull_request:
     branches: [doryphore, doryphore-dev, ectoplasme]
@@ -26,6 +28,8 @@ on:
       # so no change under src/, actions/, handlers/ or tests/ ever triggered this
       # workflow. '**.php' is what was meant.
       - '**.php'
+      - '**.twig'
+      - '**.sql'
       - '.github/workflows/*.yml'
 
 env:
