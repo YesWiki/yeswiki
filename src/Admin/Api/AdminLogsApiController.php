@@ -77,7 +77,7 @@ class AdminLogsApiController extends YesWikiController
             $params[] = $level;
         }
 
-        foreach (['actor', 'action'] as $column) {
+        foreach (['actor', 'action', 'target'] as $column) {
             $value = trim((string)$request->query->get($column, ''));
             if ($value !== '') {
                 $clauses[] = $db->quoteIdentifier($column) . ' = ?';
@@ -126,7 +126,7 @@ class AdminLogsApiController extends YesWikiController
         $key = 'JOURNAL_ACTION_' . strtoupper(str_replace('.', '_', $action));
         $phrase = _t($key);
 
-        return [
+        $row = [
             'at' => (string)($row['at'] ?? ''),
             'last_at' => (string)($row['last_at'] ?? ''),
             'repeat' => (int)($row['repeat'] ?? 1),
@@ -138,6 +138,59 @@ class AdminLogsApiController extends YesWikiController
             'target' => (string)($row['target'] ?? ''),
             'message' => (string)($context['message'] ?? ''),
             'frames' => array_map('strval', is_array($context['frames'] ?? null) ? $context['frames'] : []),
+        ];
+
+        if (str_starts_with($action, 'login.refused.')) {
+            $row['sign_in'] = $this->signInDetail($action, $context);
+        }
+
+        return $row;
+    }
+
+    /**
+     * What a refused sign-in's diagnostic says, for the administrator who has to find out why.
+     * Everything here comes from a provider: the template escapes all of it.
+     *
+     * @param array<string, mixed> $context
+     *
+     * @return array<string, mixed>
+     */
+    private function signInDetail(string $action, array $context): array
+    {
+        // login.refused.<reason>.<provider>: a reason has no dot, a provider id might.
+        [, , $reason, $provider] = array_pad(explode('.', $action, 4), 4, '');
+        $code = strtoupper($reason);
+        $attributeUse = is_array($context['attribute_use'] ?? null) ? $context['attribute_use'] : [];
+
+        $attributes = [];
+        foreach (is_array($context['attributes'] ?? null) ? $context['attributes'] : [] as $name => $value) {
+            $usedAs = [];
+            foreach ($attributeUse as $field => $use) {
+                if (is_array($use) && ($use['present'] ?? false) && (string)($use['attribute'] ?? '') === (string)$name) {
+                    $label = 'SIGN_IN_ADMIN_ATTRIBUTE_' . strtoupper((string)$field);
+                    $usedAs[] = _t($label) === $label ? (string)$field : _t($label);
+                }
+            }
+            $attributes[] = [
+                'name' => (string)$name,
+                'values' => array_map(
+                    fn (mixed $one): string => is_string($one) ? $one : (string)json_encode($one, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
+                    is_array($value) ? array_values($value) : [$value]
+                ),
+                'usedAs' => $usedAs,
+            ];
+        }
+
+        return [
+            'reason' => $reason,
+            'provider' => $provider,
+            'last_step' => (string)($context['last_step'] ?? ''),
+            'attributes' => $attributes,
+            'groups' => array_map('strval', is_array($context['groups'] ?? null) ? $context['groups'] : []),
+            'account' => (string)($context['account'] ?? ''),
+            'error' => (string)($context['error'] ?? ''),
+            'explanation' => _t('SIGN_IN_ADMIN_' . $code) === 'SIGN_IN_ADMIN_' . $code ? '' : _t('SIGN_IN_ADMIN_' . $code),
+            'fix' => _t('SIGN_IN_FIX_' . $code) === 'SIGN_IN_FIX_' . $code ? '' : _t('SIGN_IN_FIX_' . $code),
         ];
     }
 

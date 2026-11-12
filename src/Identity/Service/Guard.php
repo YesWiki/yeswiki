@@ -97,7 +97,8 @@ class Guard
         return $page;
     }
 
-    private const USER_ALWAYS_HIDDEN_FIELDS = ['password', 'activation_status', 'activation_key'];
+    private const USER_ALWAYS_HIDDEN_FIELDS = ['password', 'activation_status', 'activation_key', ...self::USER_LINK_KEYS];
+    private const USER_LINK_KEYS = ['sso_provider', 'sso_subject'];
     private const USER_OWNER_OR_ADMIN_ONLY_FIELDS = ['email', 'revisioncount', 'changescount', 'doubleclickedit', 'show_comments'];
 
     /**
@@ -129,7 +130,14 @@ class Guard
 
         $modified = false;
         foreach ($fieldsToHide as $field) {
-            if (array_key_exists($field, $body) && $body[$field] !== '') {
+            if (!array_key_exists($field, $body)) {
+                continue;
+            }
+            if (in_array($field, self::USER_LINK_KEYS, true)) {
+                // the provider link is not a blank field, it is not there at all
+                unset($body[$field]);
+                $modified = true;
+            } elseif ($body[$field] !== '') {
                 $body[$field] = '';
                 $modified = true;
             }

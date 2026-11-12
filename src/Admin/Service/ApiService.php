@@ -6,6 +6,7 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Routing\RouteCollection;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\AuthenticationService;
+use YesWiki\Identity\Service\RequestGuard;
 use YesWiki\Identity\Service\UserManager;
 use YesWiki\Kernel\Service\CurrentRequest;
 
@@ -60,7 +61,7 @@ class ApiService
     public function isCrossOriginWrite(): bool
     {
         $request = $this->currentRequest->get();
-        if ($request->isMethodSafe() || $this->getBearerToken() !== null) {
+        if ($request->isMethodSafe() || $this->getBearerToken() !== null || RequestGuard::isSignInCallback($request)) {
             return false;
         }
         $site = $request->headers->get('Sec-Fetch-Site');

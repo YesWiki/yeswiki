@@ -21,6 +21,7 @@ use YesWiki\Identity\Exception\GroupNameDoesNotExistException;
 use YesWiki\Identity\Exception\UserEmailAlreadyUsedException;
 use YesWiki\Identity\Exception\UserNameAlreadyUsedException;
 use YesWiki\Identity\Exception\UserNameReservedException;
+use YesWiki\Identity\Service\SignIn\AccountLinks;
 use YesWiki\Kernel\Routing\ReservedTags;
 use YesWiki\Kernel\Service\CachesTheDatabase;
 use YesWiki\Kernel\Service\DbService;
@@ -260,6 +261,50 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface, C
     }
 
     /**
+     * Creates an account that only a provider signs in: no password, tied to the provider's subject.
+     *
+     * @param array<string, mixed> $profile
+     *
+     * @throws UserNameAlreadyUsedException|UserEmailAlreadyUsedException|\Exception
+     */
+    public function createLinked(string $tag, string $email, array $profile, string $providerId, string $subject): ?User
+    {
+        if ($this->hibernationService->isWikiHibernated()) {
+            throw new \Exception(_t('WIKI_IN_HIBERNATION'));
+        }
+        $tag = trim($tag);
+        if ($tag === '' || $email === '') {
+            throw new \Exception('createLinked needs a tag and an email');
+        }
+        $taken = $this->getOneByName($tag);
+        if ($taken !== null) {
+            throw new UserNameAlreadyUsedException();
+        }
+        if (ReservedTags::isReserved($tag)) {
+            throw new UserNameReservedException(_t('RESERVED_TAG_CANNOT_BE_USED', ['tag' => $tag]));
+        }
+        if (!empty($this->getOneByEmail($email))) {
+            throw new UserEmailAlreadyUsedException();
+        }
+
+        $body = array_merge(
+            $this->extraProfileFields($profile),
+            $this->buildBody(['email' => $email, 'password' => '', 'signuptime' => date('Y-m-d H:i:s')])
+        );
+        if (!$this->persistNewUserPage($tag, $body)) {
+            return null;
+        }
+        // the keys go in through AccountLinks' own guarded write: PageManager::save() refuses them from anywhere else.
+        $user = $this->getOneByName($tag);
+        if ($user === null) {
+            return null;
+        }
+        $this->container->get(AccountLinks::class)->link($user, $providerId, $subject);
+
+        return $this->getOneByName($tag);
+    }
+
+    /**
      * Migrates one row from the legacy `users` table, preserving its password hash VERBATIM -- unlike create(), which always hashes a fresh plaintext password and so must never be reused for migrating an already-hashed existing account (that would silently invalidate every existing user's password).
      */
     /** @param array<string, mixed> $legacyRow */
@@ -301,7 +346,11 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface, C
      */
     private function buildBody(array $fields): array
     {
-        return [
+        // Doryphore's loginsso kept its subject in this column: the conversion of its configuration turns it into the account's link (spec section 11).
+        $loginssoId = $fields['loginsso_id'] ?? null;
+        $legacy = is_scalar($loginssoId) && (string)$loginssoId !== '' ? ['loginsso_id' => (string)$loginssoId] : [];
+
+        return $legacy + [
             'email' => $fields['email'] ?? '',
             'motto' => $this->valueOrDefault($fields, 'motto', ''),
 
@@ -462,7 +511,7 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface, C
         ];
 
         $form = $this->container->get(FormManager::class)->getByContentType(ContentTypeSchema::TYPE_USER);
-        $never = ['name', 'username', 'password', 'activation_status', 'activation_key'];
+        $never = ['name', 'username', 'password', 'activation_status', 'activation_key', 'sso_provider', 'sso_subject'];
         foreach ($form['prepared'] ?? [] as $field) {
             if (!$field instanceof BazarField) {
                 continue;

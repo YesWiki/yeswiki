@@ -1,0 +1,13 @@
+{% extends "@core/account/guest-layout.twig" %}
+
+{% block dashboard_content %}
+  <h1>{{ _t('SIGN_IN_REFUSED_TITLE') }}</h1>
+  <p>{{ message }}</p>
+  <div class="yw-alert yw-alert--info" role="note">
+    <p>{{ _t('SIGN_IN_REFUSED_TODO') }}</p>
+    <p><strong>{{ time }}</strong>{% if who %} · <strong>{{ who }}</strong>{% endif %}</p>
+  </div>
+  <p class="yw-account__aside">
+    <a href="{{ url({ tag: 'user' }) }}">{{ _t('SIGN_IN_BACK') }}</a>
+  </p>
+{% endblock %}

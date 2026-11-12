@@ -12,6 +12,7 @@ use YesWiki\Identity\Exception\BadFormatPasswordException;
 use YesWiki\Identity\Exception\BadLoginException;
 use YesWiki\Identity\Exception\BadUserConnectException;
 use YesWiki\Identity\Security\LegacyPasswordHash;
+use YesWiki\Identity\Service\SignIn\ProviderRegistry;
 use YesWiki\Kernel\Entity\CookieData;
 use YesWiki\Kernel\Service\ActorSource;
 use YesWiki\Kernel\Service\CachesTheDatabase;
@@ -100,7 +101,13 @@ class AuthenticationService extends YesWikiController implements ActorSource, Ca
      */
     public function requiresPasswordReset(User $user): bool
     {
-        return LegacyPasswordHash::isMd5($user->getPassword());
+        return $user->provider() === null && LegacyPasswordHash::isMd5($user->getPassword());
+    }
+
+    /** What to tell someone whose stored password is an md5: the lost-password link, unless this wiki sends no such mail. */
+    public function obsoletePasswordMessage(): string
+    {
+        return boolval($this->params->get('contact_disable_email_for_password')) ? _t('LOGIN_PASSWORD_FORMAT_OBSOLETE_ASK_ADMIN') : _t('LOGIN_PASSWORD_FORMAT_OBSOLETE');
     }
 
     /**
@@ -258,8 +265,19 @@ class AuthenticationService extends YesWikiController implements ActorSource, Ca
         if ($user === null || $this->requiresPasswordReset($user) || $generation !== $this->generationOf($name)) {
             return null;
         }
+        if (!$this->placeIsOn($user)) {
+            return null;
+        }
 
         return $user;
+    }
+
+    /** Whether the place the account belongs to, local or a provider, is switched on and installed: every way of staying signed in asks. */
+    private function placeIsOn(User $user): bool
+    {
+        $registry = $this->container->get(ProviderRegistry::class);
+
+        return $user->provider() === null ? $registry->localEnabled() : $registry->isEnabled($user->provider());
     }
 
     /** Sends the `yw-auth` cookie for whoever is signed in now. */
@@ -306,9 +324,10 @@ class AuthenticationService extends YesWikiController implements ActorSource, Ca
      * hundred failures from one place read as a hundred rows naming it, which is the whole reason
      * audit entries never collapse.
      */
-    public function recordFailedLogin(string $username, string $reason): void
+    public function recordFailedLogin(string $username, string $reason, ?string $provider = null): void
     {
-        $this->getService(Journal::class)->audit('login.failed', $username, ['reason' => $reason], null, LogLevel::WARNING);
+        $context = ['reason' => $reason] + ($provider === null ? [] : ['provider' => $provider]);
+        $this->getService(Journal::class)->audit('login.failed', $username, $context, null, LogLevel::WARNING);
     }
 
     /** ActorSource: the Journal names whoever acted, and off a request there is nobody to name. */
@@ -347,7 +366,7 @@ class AuthenticationService extends YesWikiController implements ActorSource, Ca
             $userName !== null
 
             && in_array($this->params->get('signup_email_activation'), [1, true, '1', 'true'], true)
-            && !$this->hasLoginExtensions()
+            && !$this->isLinked($user, $userName)
             && !$this->container->get(AclService::class)->isAdmin($userName)
             && !$this->accountActivationService->isActivated($userName)
             && $this->container->get(AccountJustCreated::class)->name() !== $userName
@@ -439,13 +458,15 @@ class AuthenticationService extends YesWikiController implements ActorSource, Ca
     }
 
     /**
-     * External auth extensions (CAS/LDAP/SSO) handle their own identity verification -- the email-activation gate in login() doesn't apply to accounts they authenticate.
+     * An account tied to a sign-in provider has been vouched for by it: the email-activation gate is for local accounts.
+     *
+     * @param array<string, mixed>|User $user
      */
-    private function hasLoginExtensions(): bool
+    private function isLinked(array|User $user, string $name): bool
     {
-        return array_key_exists('logincas', $this->container->get(\YesWiki\Kernel\Service\ExtensionRegistry::class)->all())
-            || array_key_exists('loginldap', $this->container->get(\YesWiki\Kernel\Service\ExtensionRegistry::class)->all())
-            || array_key_exists('login-sso', $this->container->get(\YesWiki\Kernel\Service\ExtensionRegistry::class)->all());
+        $stored = $user instanceof User ? $user : $this->userManager->getOneByName($name);
+
+        return $stored?->provider() !== null;
     }
 
     public function setPersistentCookie(string $name, string $value, int $expires): void
@@ -486,6 +507,10 @@ class AuthenticationService extends YesWikiController implements ActorSource, Ca
 
         if (empty($user)) {
             throw new BadUserConnectException('Unknown name');
+        }
+
+        if (!$this->placeIsOn($user)) {
+            throw new BadUserConnectException('The place this account signs in through is switched off');
         }
 
         if ($this->requiresPasswordReset($user)) {

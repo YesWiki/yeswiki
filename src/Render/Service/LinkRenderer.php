@@ -4,6 +4,7 @@ namespace YesWiki\Render\Service;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Content\Service\PageManager;
+use YesWiki\Kernel\Routing\ReservedTags;
 use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\UrlFormatter;
 
@@ -50,7 +51,8 @@ class LinkRenderer
             $method = $options['method'] ?? $wikiLink['method'];
             $params = $options['params'] ?? $wikiLink['params'];
 
-            if ((empty($method) || $method == 'show') && !$this->pageManager->getOne((string)$tag)) {
+            // a route's name (`user`, `admin`, ...) is never a page waiting to be written
+            if ((empty($method) || $method == 'show') && !ReservedTags::isReserved((string)$tag) && !$this->pageManager->getOne((string)$tag)) {
                 $params = array_merge($params, $this->paramsForNewPageLink());
                 $method = 'edit';
                 $options['data-missing-tag'] = true;

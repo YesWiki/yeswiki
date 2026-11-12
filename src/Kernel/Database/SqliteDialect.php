@@ -25,6 +25,11 @@ class SqliteDialect implements SqlDialect
         return "datetime('now', '-" . intval($hours) . " hours')";
     }
 
+    public function dateSubMinutes(int $minutes): string
+    {
+        return "datetime('now', '-" . intval($minutes) . " minutes')";
+    }
+
     /** TEXT, and it means it. */
     public function jsonColumnType(): string
     {

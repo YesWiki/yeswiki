@@ -24,6 +24,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, \ArrayA
         'signuptime', ];
     /** @var array<string, mixed> */
     protected array $properties = [];
+    private ?string $provider = null;
 
     /** @param array<string, mixed> $properties */
     public function __construct(array $properties)
@@ -34,6 +35,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, \ArrayA
             }
             $this->properties[$key] = $properties[$key];
         }
+        $provider = $properties['sso_provider'] ?? null;
+        $this->provider = is_string($provider) && $provider !== '' ? $provider : null;
     }
 
     /** @return array<string, mixed> */
@@ -47,6 +50,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, \ArrayA
         $name = $this->properties['name'];
 
         return is_string($name) ? $name : '';
+    }
+
+    /** The id of the sign-in provider the account is tied to, null for a local account. */
+    public function provider(): ?string
+    {
+        return $this->provider;
     }
 
     public function getEmail(): string

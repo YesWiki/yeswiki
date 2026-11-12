@@ -8,6 +8,7 @@ use YesWiki\Identity\Exception\BadFormatPasswordException;
 use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Identity\Service\BotGuard;
 use YesWiki\Identity\Service\InputFilter;
+use YesWiki\Identity\Service\SignIn\ProviderRegistry;
 use YesWiki\Identity\Service\UserManager;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\HibernationService;
@@ -155,7 +156,7 @@ class LostPasswordAction extends YesWikiAction implements RegisteredAction
                     $startedAt = microtime(true);
                     $user = $this->userManager->getOneByEmail($email);
                     $this->typeOfRendering = 'successPage';
-                    if (!empty($user)) {
+                    if (!empty($user) && $this->hasAPasswordToRecover($user)) {
                         $this->userManager->sendPasswordRecoveryEmail($user);
                     }
                     $this->answerAfterConstantTime($startedAt);
@@ -179,7 +180,7 @@ class LostPasswordAction extends YesWikiAction implements RegisteredAction
                 ) {
                     $this->errorType = 'differentPasswords';
                 } else {
-                    if (!empty($user)) {
+                    if (!empty($user) && $this->hasAPasswordToRecover($user)) {
                         try {
                             $this->resetPassword(
                                 $user['name'],
@@ -215,6 +216,12 @@ class LostPasswordAction extends YesWikiAction implements RegisteredAction
         }
     }
 
+    /** Only a local account has a password, and only while local accounts can sign in: a linked account is signed in by its provider alone. */
+    private function hasAPasswordToRecover(User $user): bool
+    {
+        return $user->provider() === null && $this->getService(ProviderRegistry::class)->localEnabled();
+    }
+
     /**
      * In order to update h·er·is password, the user provides a key (sent using sendPasswordRecoveryEmail()) The new password is accepted only if the key matches with the value in triples table.
      *
@@ -225,7 +232,7 @@ class LostPasswordAction extends YesWikiAction implements RegisteredAction
      *
      * @throws BadFormatPasswordException if $password doesn't meet the site's password policy
      */
-    private function resetPassword(string $userName, string $key, string $password)
+    private function resetPassword(string $userName, string $key, string $password): bool
     {
         if ($this->hibernationService->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
@@ -235,7 +242,7 @@ class LostPasswordAction extends YesWikiAction implements RegisteredAction
         }
 
         $user = $this->userManager->getOneByName($userName);
-        if (empty($user)) {
+        if (empty($user) || !$this->hasAPasswordToRecover($user)) {
             $this->typeOfRendering = 'userNotFound';
 
             return false;

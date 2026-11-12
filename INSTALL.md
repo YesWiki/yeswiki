@@ -55,6 +55,7 @@ installer only offers a driver whose extension is loaded:
 | -------------- | --------------------------------------------------------------------------------------------- |
 | `imap`         | the IMAP importer can read a mailbox (with `php-imap/php-imap`)                               |
 | `intl`         | search folds accents across more scripts; without it, an `iconv` transliteration covers fewer |
+| `ldap`         | LDAP sign-in providers can ask a directory; without it, they sign nobody in                   |
 | `zend-opcache` | saving a setting takes effect at once instead of when the opcode cache next revalidates       |
 
 Most of the required list is compiled into any distribution's PHP. The ones a shared host

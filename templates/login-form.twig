@@ -38,12 +38,42 @@
                 {% endif %}
 
                 {% block form %}
+                    {% block redirectProviders %}
+                        {% if redirectProviders is not empty %}
+                            {# A provider is another site: the browser goes there itself, never through a boosted request. #}
+                            <div class="yw-sign-in__providers" hx-boost="false">
+                                {% for provider in redirectProviders %}
+                                    <a class="yw-btn yw-btn--block yw-sign-in__provider {{ btnclass }}"
+                                       href="{{ provider.url }}">{{ _t("SIGN_IN_WITH_PROVIDER", {provider: provider.label}) }}</a>
+                                {% endfor %}
+                            </div>
+                            {% if passwordProviders is not empty %}
+                                <p class="yw-sign-in__or">{{ _t("SIGN_IN_OR_WITH_PASSWORD") }}</p>
+                            {% endif %}
+                        {% endif %}
+                    {% endblock %}
+                    {% if passwordProviders is not empty %}
+                    {% set hasLocal = passwordProviders|filter(provider => provider.local)|length > 0 %}
                     <form class="{% block formClass %}login-form{% endblock %}"
                           action="{{ incomingurl }}"
                           method="post"
                           hx-boost="false">
                         {% block formContent %}
                             {% block formTitle %}<h2>{{ _t("LOGIN_LOGIN") }}</h2>{% endblock %}
+                            {% block providerTabs %}
+                                {% if passwordProviders|length > 1 %}
+                                    <div class="yw-sign-in__tabs" role="radiogroup" aria-label="{{ _t("SIGN_IN_PASSWORD_PROVIDERS") }}">
+                                        {% for provider in passwordProviders %}
+                                            <label class="yw-sign-in__tab">
+                                                <input type="radio" name="provider" value="{{ provider.id }}" data-local="{{ provider.local ? '1' : '0' }}"{{ loop.first ? ' checked' : '' }}>
+                                                <span>{{ provider.label }}</span>
+                                            </label>
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    <input type="hidden" name="provider" value="{{ passwordProviders[0].id }}" />
+                                {% endif %}
+                            {% endblock %}
                             {% block wikiNameInputGroup %}
                                 <div class="yw-form-group">
                                     <label for="inputWikiName" class="yw-form-label">{{ _t("LOGIN_WIKINAME") }}</label>
@@ -66,16 +96,18 @@
                                 </div>
                             {% endblock %}
                             {% block lostPassword %}
-                                {% if lostpasswordurl is not empty %}
-                                    <small><a href="{{ lostpasswordurl }}">{{ _t("LOGIN_LOST_PASSWORD") }}</a></small>
+                                {% if hasLocal and lostpasswordurl is not empty %}
+                                    <small class="yw-sign-in__local-only"><a href="{{ lostpasswordurl }}">{{ _t("LOGIN_LOST_PASSWORD") }}</a></small>
                                 {% endif %}
                             {% endblock %}
-                            <div class="checkbox">
-                                <label>
-                                    <input type="checkbox" id="remember-default" name="remember" value="1">
-                                    <span>{{ _t("LOGIN_REMEMBER_ME") }}</span>
-                                </label>
-                            </div>
+                            {% if hasLocal %}
+                                <div class="checkbox yw-sign-in__local-only">
+                                    <label>
+                                        <input type="checkbox" id="remember-default" name="remember" value="1">
+                                        <span>{{ _t("LOGIN_REMEMBER_ME") }}</span>
+                                    </label>
+                                </div>
+                            {% endif %}
                             <button type="submit" class="yw-btn yw-btn--block {{ btnclass }} yw-btn--primary">{{ _t("LOGIN_LOGIN") }}</button>
                             {% block hidden %}
                                 <input type="hidden" name="context" value="{{ context }}" />
@@ -86,14 +118,38 @@
                                 <input type="hidden" name="userpage" value="{{ userpage }}" />
                             {% endblock %}
                             {% block signupurl %}
-                                {% if signupurl is not empty and signupurl != "0" %}
-                                    {% block signupurlhead %}<hr>{% endblock %}
-                                    <a class="{% block signupurlbtnclass %}yw-btn yw-btn--block{% endblock %} {{ btnclass }}"
-                                       href="{{ signupurl }}">{{ _t("LOGIN_SIGNUP") }}</a>
+                                {% if hasLocal and signupurl is not empty and signupurl != "0" %}
+                                    <div class="yw-sign-in__local-only">
+                                        {% block signupurlhead %}<hr>{% endblock %}
+                                        <a class="{% block signupurlbtnclass %}yw-btn yw-btn--block{% endblock %} {{ btnclass }}"
+                                           href="{{ signupurl }}">{{ _t("LOGIN_SIGNUP") }}</a>
+                                    </div>
                                 {% endif %}
                             {% endblock %}
                         {% endblock %}
+                        {% if passwordProviders|length > 1 %}
+                            <script>
+                                (function (script) {
+                                    var form = script.closest('form')
+                                    var sync = function () {
+                                        var chosen = form.querySelector('.yw-sign-in__tabs input:checked')
+                                        var local = !chosen || chosen.getAttribute('data-local') === '1'
+                                        form.querySelectorAll('.yw-sign-in__local-only').forEach(function (part) {
+                                            part.hidden = !local
+                                        })
+                                        form.querySelectorAll('.yw-sign-in__tab').forEach(function (tab) {
+                                            tab.classList.toggle('yw-sign-in__tab--on', tab.contains(chosen))
+                                        })
+                                    }
+                                    form.addEventListener('change', sync)
+                                    sync()
+                                })(document.currentScript)
+                            </script>
+                        {% endif %}
                     </form>
+                    {% elseif redirectProviders is empty %}
+                        <div class="alert alert-warning">{{ _t("SIGN_IN_NO_PROVIDER") }}</div>
+                    {% endif %}
                 {% endblock %}
             {% endblock %}
         {% endif %}

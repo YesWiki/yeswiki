@@ -705,6 +705,12 @@ class DbService
         return $this->dialect->dateSubHours($hours);
     }
 
+    /** Returns a SQL expression for "current timestamp minus X minutes", whatever the driver. */
+    public function dateSubMinutes(int $minutes): string
+    {
+        return $this->dialect->dateSubMinutes($minutes);
+    }
+
     /** The column type a JSON document is declared as on this driver (ADR-0018). */
     public function jsonColumnType(): string
     {

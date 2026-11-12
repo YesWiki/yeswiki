@@ -396,6 +396,74 @@ A class that needs something autowiring cannot guess says so with an attribute:
 constructor argument, `#[Autoconfigure(autowire: false)]`, `#[AsAlias(SomeInterface::class)]`.
 An event subscriber only has to implement `EventSubscriberInterface`.
 
+### Add a sign-in provider
+
+A sign-in provider type (a company directory, a single sign-on service, anything that can say who
+someone is) is added by an extension with one service in its `services/` folder, implementing
+`YesWiki\Identity\SignIn\Contract\ProviderType`. Nothing else needs declaring: the class is
+registered and tagged as a provider type because it implements the interface. The bundled
+`extensions/helloworld/services/HelloPasswordType.php` is the smallest example:
+
+```php
+<?php
+
+namespace YesWiki\HelloWorld\Service;
+
+use YesWiki\Identity\SignIn\Contract\IdentityProvider;
+use YesWiki\Identity\SignIn\Contract\ProviderConfig;
+use YesWiki\Identity\SignIn\Contract\ProviderType;
+use YesWiki\Kernel\Component\Setting;
+
+class HelloPasswordType implements ProviderType
+{
+    public function name(): string
+    {
+        return 'hello-password'; // the value of `type` in `sso_providers`
+    }
+
+    public function label(): string
+    {
+        return _t('HELLOWORLD_SIGN_IN_TYPE');
+    }
+
+    public function connectionSettings(): array
+    {
+        // drawn on the administration screen; a secret is never shown again
+        return [Setting::secret('password')->label(_t('HELLOWORLD_SIGN_IN_PASSWORD'))];
+    }
+
+    public function defaultAttributes(): array
+    {
+        return ['id' => 'uid', 'email' => 'mail'];
+    }
+
+    public function create(ProviderConfig $config): IdentityProvider
+    {
+        return new HelloPasswordProvider($config);
+    }
+}
+```
+
+`create()` returns the provider. A provider that checks a login and a password implements
+`PasswordProvider::authenticate()`, returns a `ProviderIdentity` holding the attributes it knows
+about, and throws a `ProviderFailure` when the person cannot sign in. One that sends the person to
+another site implements `RedirectProvider` instead. A provider class takes a `ProviderConfig`, so
+it carries `#[Exclude]`: every class of `services/` is otherwise autowired.
+
+Core then gives the type:
+
+-   a place on the administration screen, with an edit form generated from `connectionSettings()`,
+    and a button to try the provider out;
+-   a place on the sign-in page, and the sign-in itself;
+-   the account rules: creating the account, linking it, matching by email, group mapping,
+    attributes mapped by name. An extension cannot change these rules;
+-   the limit of 5 failed attempts in 15 minutes, for password providers;
+-   the Journal entries for failed sign-ins and the health checks on the configuration.
+
+When the extension is switched off, the configuration of its providers is kept, but they are not
+offered on the sign-in page and the administration screen reports the unavailable type. The sample
+signs in nobody until an administrator sets its password.
+
 ### Custom api route
 
 YesWiki allows to define a new api route (url like [`?api/forms`](?api/forms ':ignore')).

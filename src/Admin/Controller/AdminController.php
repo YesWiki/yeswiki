@@ -60,10 +60,16 @@ class AdminController extends YesWikiController
     #[Route('/admin/logs', options: ['acl' => self::ADMIN_ACL])]
     public function logs(): Response
     {
+        $request = $this->getService(CurrentRequest::class)->get();
         $config = $this->getService(RuntimeConfig::class);
 
         return $this->page('@core/admin/logs.twig', 'admin/logs', [
             'levels' => AdminLogsApiController::levels(),
+            // a link from elsewhere (the sign-in screen) narrows the stream before it loads
+            'preset' => [
+                'action' => trim((string)$request->query->get('action', '')),
+                'target' => trim((string)$request->query->get('target', '')),
+            ],
             'auditDays' => (int)($config[Journal::AUDIT_PURGE_SETTING] ?? 365),
             'diagnosticDays' => (int)($config[Journal::DIAGNOSTIC_PURGE_SETTING] ?? 14),
         ]);

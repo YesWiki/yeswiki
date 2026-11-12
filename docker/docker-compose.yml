@@ -1,4 +1,5 @@
-# The dev stack: php-fpm on the checkout behind nginx, MySQL and PostgreSQL, SeaweedFS for S3, phpMyAdmin and a mail catcher.
+# The dev stack: php-fpm on the checkout behind nginx, MySQL and PostgreSQL, SeaweedFS for S3, phpMyAdmin, a mail catcher,
+# and an LDAP directory with an SSO portal for the sign-in providers.
 # COMPOSE_PROJECT_NAME and the YESWIKI_*_PORT variables in docker/.env let several checkouts run a stack side by side;
 # the service names stay the same in every stack, since nginx.conf and tests/e2e reach each other by them.
 name: ${COMPOSE_PROJECT_NAME:-yeswiki}
@@ -65,6 +66,45 @@ services:
     ports:
       - "127.0.0.1:${YESWIKI_S3_PORT:-8333}:8333"
 
+  # A real company directory and a real identity server, so that the sign-in providers are
+  # tested against servers rather than against mocks. Test-only: nothing here reaches the
+  # binary or the production image.
+  yeswiki-ldap:
+    image: bitnamilegacy/openldap:2.6.10-debian-12-r4
+    container_name: ${COMPOSE_PROJECT_NAME:-yeswiki}-ldap
+    environment:
+      LDAP_ROOT: dc=acme,dc=example
+      LDAP_ADMIN_USERNAME: admin
+      LDAP_ADMIN_PASSWORD: AdminPassword1
+      LDAP_CUSTOM_LDIF_DIR: /ldifs
+    volumes:
+      - ./openldap:/ldifs:ro
+    ports:
+      - "127.0.0.1:${YESWIKI_LDAP_PORT:-1389}:1389"
+
+  # One server for OIDC, SAML and CAS. The network alias shares a domain with the wiki's,
+  # so they are same-site on plain http and SAML's POST callback gets its Lax cookie.
+  # The conf directory is writable because the image's entrypoint runs sed -i on it, and it
+  # is a directory because sed -i cannot replace a file that is itself a mount point.
+  # PRESERVEFILES stays unset: the entrypoint would overwrite the configuration below.
+  yeswiki-sso:
+    image: lemonldapng/lemonldap-ng:2.23.4
+    container_name: ${COMPOSE_PROJECT_NAME:-yeswiki}-sso
+    environment:
+      SSODOMAIN: yeswiki.test
+      PORTAL_HOSTNAME: auth.yeswiki.test
+      MANAGER_HOSTNAME: manager.yeswiki.test
+    volumes:
+      - ./lemonldap-ng/conf:/var/lib/lemonldap-ng/conf
+    ports:
+      - "127.0.0.1:${YESWIKI_SSO_PORT:-8087}:80"
+    depends_on:
+      - yeswiki-ldap
+    networks:
+      default:
+        aliases:
+          - auth.yeswiki.test
+
   yeswiki-web:
     image: nginx:1.28-alpine
     container_name: ${COMPOSE_PROJECT_NAME:-yeswiki}-web
@@ -73,6 +113,10 @@ services:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
     ports:
       - "127.0.0.1:${YESWIKI_WEB_PORT:-8085}:80"
+    networks:
+      default:
+        aliases:
+          - wiki.yeswiki.test
     depends_on:
       - yeswiki-app
 

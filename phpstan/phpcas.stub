@@ -1,0 +1,18 @@
+<?php
+
+/**
+ * phpCAS documents both arguments of setExtraCurlOption() as strings, but hands them to curl_setopt_array():
+ * the key is a CURLOPT_* constant, an int, and the value is whatever that option takes.
+ */
+class CAS_Client
+{
+    /**
+     * @param int   $key   a CURLOPT_* constant
+     * @param mixed $value
+     *
+     * @return void
+     */
+    public function setExtraCurlOption($key, $value)
+    {
+    }
+}

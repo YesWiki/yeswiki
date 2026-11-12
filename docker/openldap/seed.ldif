@@ -1,0 +1,53 @@
+# The company directory of the development and e2e stacks. It is loaded when the container
+# is created. Every password is a test value: see docker/README.md.
+
+dn: dc=acme,dc=example
+objectClass: dcObject
+objectClass: organization
+dc: acme
+o: Acme
+
+dn: ou=people,dc=acme,dc=example
+objectClass: organizationalUnit
+ou: people
+
+dn: ou=groups,dc=acme,dc=example
+objectClass: organizationalUnit
+ou: groups
+
+dn: uid=marie,ou=people,dc=acme,dc=example
+objectClass: inetOrgPerson
+uid: marie
+cn: Marie Dupont
+givenName: Marie
+sn: Dupont
+mail: marie.dupont@acme.example
+userPassword: TestPassword1
+
+dn: uid=jean,ou=people,dc=acme,dc=example
+objectClass: inetOrgPerson
+uid: jean
+cn: Jean Martin
+givenName: Jean
+sn: Martin
+mail: jean.martin@acme.example
+userPassword: TestPassword1
+
+dn: uid=nomail,ou=people,dc=acme,dc=example
+objectClass: inetOrgPerson
+uid: nomail
+cn: No Mail
+givenName: No
+sn: Mail
+userPassword: TestPassword1
+
+dn: cn=wiki-editors,ou=groups,dc=acme,dc=example
+objectClass: groupOfNames
+cn: wiki-editors
+member: uid=marie,ou=people,dc=acme,dc=example
+
+dn: cn=staff,ou=groups,dc=acme,dc=example
+objectClass: groupOfNames
+cn: staff
+member: uid=marie,ou=people,dc=acme,dc=example
+member: uid=jean,ou=people,dc=acme,dc=example

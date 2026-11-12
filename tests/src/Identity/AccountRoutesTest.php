@@ -17,6 +17,7 @@ use YesWiki\Kernel\Exception\ExitException;
 use YesWiki\Kernel\Routing\ReservedTags;
 use YesWiki\Kernel\Service\CurrentRequest;
 use YesWiki\Kernel\Service\RouteProvider;
+use YesWiki\Kernel\Service\RuntimeConfig;
 use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';
@@ -133,6 +134,30 @@ class AccountRoutesTest extends YesWikiTestCase
             $probe = $userManager->getOneByName(self::PROBE);
             if (!empty($probe)) {
                 $userManager->delete($probe);
+            }
+        }
+    }
+
+    #[Depends('testWikiExisting')]
+    public function testSignupAndLostPasswordGoBackToTheSignInWhenLocalIsOff(YesWikiRuntime $wiki): void
+    {
+        $GLOBALS['yeswikiServices'] = $wiki->services;
+        $wiki->services->get(AuthenticationService::class)->logout();
+        $config = $wiki->services->get(RuntimeConfig::class);
+        $was = $config['sso_providers'];
+        $config['sso_providers'] = ['local' => ['type' => 'local', 'enabled' => false]];
+        try {
+            $account = $wiki->services->get(AccountController::class);
+            foreach (['signup', 'lostPassword'] as $method) {
+                $response = $account->{$method}();
+                $this->assertInstanceOf(RedirectResponse::class, $response, "/user/{$method} is for local accounts");
+                $this->assertStringEndsWith('user', $response->getTargetUrl());
+            }
+        } finally {
+            if ($was === null) {
+                unset($config['sso_providers']);
+            } else {
+                $config['sso_providers'] = $was;
             }
         }
     }

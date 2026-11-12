@@ -9,6 +9,7 @@ use YesWiki\Identity\Entity\User;
 use YesWiki\Identity\Exception\BadFormatPasswordException;
 use YesWiki\Identity\Exception\DeleteUserException;
 use YesWiki\Identity\Exception\UserEmailAlreadyUsedException;
+use YesWiki\Identity\Service\SignIn\ProviderRegistry;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\EventDispatcher;
 use YesWiki\Kernel\Service\HibernationService;
@@ -38,6 +39,7 @@ class UserOperationsService extends YesWikiController
     protected HibernationService $hibernationService;
     protected GroupManager $groupManager;
     protected UserManager $userManager;
+    protected ProviderRegistry $providerRegistry;
 
     public function __construct(
         AuthenticationService $authenticationService,
@@ -47,7 +49,8 @@ class UserOperationsService extends YesWikiController
         ParameterBagInterface $params,
         HibernationService $hibernationService,
         GroupManager $groupManager,
-        UserManager $userManager
+        UserManager $userManager,
+        ProviderRegistry $providerRegistry
     ) {
         $this->authenticationService = $authenticationService;
         $this->dbService = $dbService;
@@ -57,6 +60,7 @@ class UserOperationsService extends YesWikiController
         $this->hibernationService = $hibernationService;
         $this->groupManager = $groupManager;
         $this->userManager = $userManager;
+        $this->providerRegistry = $providerRegistry;
         $this->initLimitations();
     }
 
@@ -119,6 +123,8 @@ class UserOperationsService extends YesWikiController
      */
     public function update(User $user, array $newValues): bool
     {
+        // what a provider supplies is not ours to change, whoever asks; sign-in writes through UserManager::update() instead.
+        $newValues = array_diff_key($newValues, array_flip($this->managedKeys($user)));
         $newValues = $this->sanitizeValues($newValues);
         $this->userManager->update($user, $newValues);
         if (isset($newValues['password'])) {
@@ -130,6 +136,27 @@ class UserOperationsService extends YesWikiController
         }
 
         return true;
+    }
+
+    /**
+     * The account fields only the provider writes: names, email, mapped extra fields and the password of a linked account. Nothing for a local one.
+     *
+     * @return list<string>
+     */
+    public function managedKeys(User $user): array
+    {
+        $providerId = $user->provider();
+        if ($providerId === null) {
+            return [];
+        }
+        $keys = ['first_name', 'last_name', 'email', 'password'];
+        // a provider no longer configured still owns the basics; only the extras need its configuration.
+        $config = $this->providerRegistry->config($providerId);
+        foreach ($config->extraFields ?? [] as $field) {
+            $keys[] = (string)$field;
+        }
+
+        return array_values(array_unique($keys));
     }
 
     /**

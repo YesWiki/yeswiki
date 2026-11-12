@@ -18,6 +18,7 @@ use YesWiki\Identity\Service\AvatarService;
 use YesWiki\Identity\Service\BotGuard;
 use YesWiki\Identity\Service\CsrfTokenChecker;
 use YesWiki\Identity\Service\RequestGuard;
+use YesWiki\Identity\Service\SignIn\ProviderRegistry;
 use YesWiki\Identity\Service\UserManager;
 use YesWiki\Identity\Service\UserOperationsService;
 use YesWiki\Kernel\Exception\ExitException;
@@ -193,6 +194,7 @@ class UserSettingsAction extends YesWikiAction implements RegisteredAction
                 'userLoggedIn' => $this->userLoggedIn,
                 'avatar' => $user === null ? null : $this->getService(AvatarService::class)->forName((string)$user['name']),
                 'profileFields' => $user === null ? [] : $this->renderProfileFields($user),
+                'managedBy' => $user === null ? null : $this->providerLabelOf($user),
             ]);
         }
         $botGuard = $this->getService(BotGuard::class);
@@ -236,14 +238,32 @@ class UserSettingsAction extends YesWikiAction implements RegisteredAction
         return $fields;
     }
 
+    /** The name of the provider that owns this account's profile, null for a local account. */
+    private function providerLabelOf(User $user): ?string
+    {
+        $providerId = $user->provider();
+        if ($providerId === null) {
+            return null;
+        }
+
+        $registry = $this->getService(ProviderRegistry::class);
+        $config = $registry->config($providerId);
+
+        return $config !== null ? $registry->labelOf($config) : $providerId;
+    }
+
     private function renderProfileFields(User $user): string
     {
         $entry = $this->accountAsEntry($user);
+        $managed = $this->getService(UserOperationsService::class)->managedKeys($user);
 
-        return (string)$this->asAccountPage($user, function () use ($entry) {
+        return (string)$this->asAccountPage($user, function () use ($entry, $managed) {
             $rendered = '';
             foreach ($this->profileFields() as $field) {
-                $rendered .= (string)$field->renderInputIfPermitted($entry);
+                // the provider's to write: shown, not offered.
+                $rendered .= in_array($field->getPropertyName(), $managed, true)
+                    ? (string)$field->renderStaticIfPermitted($entry)
+                    : (string)$field->renderInputIfPermitted($entry);
             }
 
             return $rendered;
@@ -261,9 +281,14 @@ class UserSettingsAction extends YesWikiAction implements RegisteredAction
     {
         $entry = array_merge($this->accountAsEntry($user), $post, ['tag' => $user['name']]);
 
-        return (array)$this->asAccountPage($user, function () use ($entry) {
+        $managed = $this->getService(UserOperationsService::class)->managedKeys($user);
+
+        return (array)$this->asAccountPage($user, function () use ($entry, $managed) {
             $values = [];
             foreach ($this->profileFields() as $field) {
+                if (in_array($field->getPropertyName(), $managed, true)) {
+                    continue;
+                }
                 $formatted = $field->formatValuesBeforeSaveIfEditable($entry);
                 foreach ((array)($formatted['fields-to-remove'] ?? []) as $removed) {
                     if (is_string($removed) && !array_key_exists($removed, $values)) {
@@ -369,7 +394,8 @@ class UserSettingsAction extends YesWikiAction implements RegisteredAction
                     array_merge($sanitizedPost, $this->postedProfileValues($post, $user))
                 );
 
-                $user = $this->userManager->getOneByEmail((string)($sanitizedPost['email'] ?? ''));
+                // by name: a linked account posts no email, its own is not ours to ask for again.
+                $user = $this->userManager->getOneByName((string)$user['name']);
 
                 if (!empty($user)) {
                     if ($this->userLoggedIn) {
@@ -404,6 +430,11 @@ class UserSettingsAction extends YesWikiAction implements RegisteredAction
     private function changePassword(?User $user, array $post): void
     {
         if ($this->userLoggedIn && $user !== null) {
+            if (in_array('password', $this->getService(UserOperationsService::class)->managedKeys($user), true)) {
+                $this->errorPasswordChange = _t('USERSETTINGS_PASSWORD_NOT_CHANGED') . ' ' . _t('USERSETTINGS_MANAGED_BY_PROVIDER', ['provider' => (string)$this->providerLabelOf($user)]);
+
+                return;
+            }
             if (!$this->authenticationService->checkPassword($post['oldpass'], $user)) {
                 $this->errorPasswordChange = _t('USER_WRONG_PASSWORD') . ' !';
             } else {
@@ -438,6 +469,11 @@ class UserSettingsAction extends YesWikiAction implements RegisteredAction
     {
         if ($user === null) {
             $this->error = _t('USER_TRYING_TO_MODIFY_AN_INEXISTANT_USER') . ' !';
+
+            return;
+        }
+        if (in_array('password', $this->getService(UserOperationsService::class)->managedKeys($user), true)) {
+            Flash::error(_t('USERSETTINGS_MANAGED_BY_PROVIDER', ['provider' => (string)$this->providerLabelOf($user)]));
 
             return;
         }

@@ -456,6 +456,11 @@
   margin-bottom: var(--yw-space-md-y);
 }
 
+/* The rule above must not undo `hidden`, which the tabs use to show what belongs to local accounts alone. */
+.login-form .yw-sign-in__local-only[hidden] {
+  display: none;
+}
+
 .yw-account-guest__card .checkbox {
   margin: 0 0 var(--yw-space-lg-y);
 }
@@ -468,6 +473,55 @@
 
 .yw-account-guest__card hr {
   margin: var(--yw-space-lg-y) 0 var(--yw-space-md-y);
+}
+
+.yw-sign-in__providers {
+  display: flex;
+  flex-direction: column;
+  gap: var(--yw-space-sm-y);
+}
+
+.yw-sign-in__provider {
+  text-align: center;
+}
+
+.yw-sign-in__or {
+  margin: var(--yw-space-md-y) 0;
+  text-align: center;
+  color: var(--yw-text-muted);
+  font-size: 0.9em;
+}
+
+.yw-sign-in__tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--yw-space-sm-x);
+  margin-bottom: var(--yw-space-md-y);
+  border-bottom: var(--yw-border-width) solid var(--yw-border);
+}
+
+.yw-sign-in__tab {
+  position: relative;
+  margin: 0;
+  padding: 0.4em 0.8em;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+}
+
+.yw-sign-in__tab input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.yw-sign-in__tab:focus-within {
+  outline: 2px solid var(--yw-primary);
+  outline-offset: -2px;
+}
+
+.yw-sign-in__tab--on {
+  font-weight: 600;
+  border-bottom-color: var(--yw-primary);
 }
 
 .yw-account__section + .yw-account__section {

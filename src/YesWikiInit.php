@@ -5,7 +5,7 @@
 namespace YesWiki\Core;
 
 use YesWiki\Admin\Service\ArchiveService;
-use YesWiki\Kernel\Routing\ReservedTags;
+use YesWiki\Kernel\Routing\RequestedRoute;
 use YesWiki\Kernel\Service\ConfigurationFileProvider;
 use YesWiki\Kernel\Service\EnvironmentConfiguration;
 use YesWiki\Kernel\Service\HtmlPurifierService;
@@ -47,44 +47,15 @@ class YesWikiInit
     {
         $this->page = '';
         $this->method = '';
-        $scriptlocation = str_replace('/index.php', '', $_SERVER['SCRIPT_NAME']);
         $requestUri = $_SERVER['REQUEST_URI'] ?? '';
-        $uri = is_string($requestUri) ? str_replace($scriptlocation, '', $requestUri) : '';
-        $uri = preg_replace('~^/\??~', '', $uri) ?? '';
-        $uri = explode('&', $uri);
-        $uri = explode('?', $uri[0]);
-        $args = explode('/', rawurldecode($uri[0]));
-        if (!empty($args[0]) or !empty($_GET['wiki'])) {
-            if ($args[0] == 'index.php' or $args[0] == 'worker.php' or !empty($_GET['wiki'])) {
-                $wiki = empty($_GET['wiki']) ? '' : preg_replace('/^\//', '', urldecode($_GET['wiki']));
-            } else {
-                $a = explode('=', $args[0]);
-                $wiki = urldecode($a[0]);
-            }
-            if (empty($wiki)) {
-            } elseif (ReservedTags::isReserved(explode('/', $wiki)[0])) {
-                $this->page = ReservedTags::canonical(explode('/', $wiki)[0]);
-                if (strpos($wiki, '/') !== false) {
-                    $wikiParts = explode('/', $wiki);
-                    array_shift($wikiParts);
-                    $this->method = rtrim(implode('/', $wikiParts), '=');
-                } else {
-                    array_shift($args);
-                    $this->method = rtrim(implode('/', $args), '=');
-                }
-            } elseif (preg_match('`^' . WN_TAG_HANDLER_CAPTURE . '$`u', $wiki, $matches)) {
-                list(, $this->page, $this->method) = $matches;
-            } elseif (preg_match('`^' . WN_PAGE_TAG . '$`u', $wiki)) {
-                $this->page = $wiki;
-                if (isset($args[1]) and !empty($args[1])) {
-                    if (preg_match('#^[A-Za-z0-9_]*$#', $args[1])) {
-                        $this->method = $args[1];
-                    }
-                }
-            } else {
+        $route = RequestedRoute::parse(is_string($requestUri) ? $requestUri : '', $_SERVER['SCRIPT_NAME'], $_GET['wiki'] ?? null);
+        if ($route !== null) {
+            if (!$route->isValid) {
                 echo '<p>', _t('INCORRECT_PAGENAME'), '</p>';
                 exit(1);
             }
+            $this->page = $route->page;
+            $this->method = $route->method;
 
             if (!$this->method) {
                 $requestMethod = $_SERVER['REQUEST_METHOD'] ?? null;
@@ -101,7 +72,7 @@ class YesWikiInit
                 header('Access-Control-Allow-Methods: POST, GET, OPTIONS, DELETE, PUT, PATCH');
                 header('Access-Control-Max-Age: 86400');
             }
-            $_GET['wiki'] = $this->page . ($this->method ? '/' . $this->method : '');
+            $_GET['wiki'] = $route->address();
         }
     }
 
