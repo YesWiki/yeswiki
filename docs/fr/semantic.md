@@ -51,9 +51,11 @@ La configuration se fait en deux étapes:
 1.  on associe le formulaire à une classe de l'ontologie (ou modèle de données)
 2.  on associe chaque champ du formulaire aux attributs de l'ontologie
 
-?> Une page de documentation existe depuis un moment. Il peut arriver qu'elle ne
+::: info
+Une page de documentation existe depuis un moment. Il peut arriver qu'elle ne
 soit plus à jour : <https://yeswiki.net/?RendreYeswikiSemantique>, **les
 informations sont donc complétées ici**.
+:::
 
 ### 1. Activer le contexte sémantique
 
@@ -101,13 +103,15 @@ informations sont donc complétées ici**.
 - à ce stade, les données seront bien formatées en `json-ld` mais elles
   contiendront peut d'information
 
-?> _Info_ : dans les paramètres avancées, il existe une case à cochée
+::: info
+_Info_ : dans les paramètres avancées, il existe une case à cochée
 `Utiliser un template sémantique s'il est disponible pour ce type d'objet`. Son
 état n'a pour le moment pas d'importance car il n'est pas pris en compte. C'est
 une case dans l'idée de détecter automatiquement le type sémantique de chaque
 champ à partir de ce qu'il est (par exemple, un champ `url` pourrait être
 automatiquement considéré comme le type sémantique `url`). Donc, ne pas prendre
 en compte cette case, cochée ou non.
+:::
 
 ### 2. Configurer le contexte sémantique pour chaque champ du formulaire
 
@@ -141,14 +145,18 @@ champ ne sont pas diffusées**
     - date de début pour un `Event` : mettre `startTime,schema:startDate`
     - date de fin pour un `Event` : mettre `endTime,schema:endDate`
 
-?> **Astuce**: beaucoup des attributs sont hérités de la classe parente
+::: info
+**Astuce**: beaucoup des attributs sont hérités de la classe parente
 (`Extends`). Il est donc possible d'utiliser les attributs de la classe `Object`
 par exemple, même s'ils n'ont pas été indiqués dans la classe fille (ex.:
 `Person`)
+:::
 
-!> **Important**: il n'est pas nécessaire de définir un _type sémantique_ du
+::: warning
+**Important**: il n'est pas nécessaire de définir un _type sémantique_ du
 champ pour chaque champ. Dans le doute, il vaut mieux le laisser vide. Dans ce
 cas, le contenu du champ ne sera pas fourni dans le `json-ld`. Pour afficher un
 champ, il reste important de lui attribuer un type qui correspond. Ainsi, seul
 le champ titre ou nom devrait avoir le type `name`. Pour les autres champs, il
 faudra utiliser un autre type en respectant l'ontologie concernée.
+:::

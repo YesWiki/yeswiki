@@ -2,6 +2,6 @@
 ARG IMAGE
 FROM ${IMAGE}
 USER root
-COPY 20261111180000_KindRollingUpdate.php /tmp/
-RUN mv /tmp/20261111180000_KindRollingUpdate.php "$(echo /opt/yeswiki/program-*)/src/migrations/"
+COPY 99991231235959_KindRollingUpdate.php /tmp/
+RUN mv /tmp/99991231235959_KindRollingUpdate.php "$(echo /opt/yeswiki/program-*)/src/migrations/"
 USER 10001:10001

@@ -1,9 +1,13 @@
 # Personnalisation avancées
 
-?> Si vous cherchez la **documentation du code** de YesWiki,
+::: info
+Si vous cherchez la **documentation du code** de YesWiki,
 [c'est par ici](/docs/code/README.md)
+:::
 
-!> Des bases de programmation vous seront nécessaire pour suivre ces étapes
+::: warning
+Des bases de programmation vous seront nécessaire pour suivre ces étapes
+:::
 
 ## Installer yeswiki dans un environnement de développement local
 
@@ -59,7 +63,7 @@ L'exemple ne connecte personne tant qu'un administrateur n'a pas choisi son mot 
 ## Rendre votre wiki sémantique
 
 Une documentation détaillée en Français est disponible sur cette page
-[docs/fr/semantic](semantic)
+[docs/fr/semantic](semantic.md)
 
 ## Créer un widget bazar
 
@@ -97,10 +101,10 @@ doit se faire en local.
 ### Procédure
 
 1.  avoir une copie en local du dépôt `git` (cf.
-    [Créer un environnement de travail en local](#cr%c3%a9er-un-environnement-de-travail-en-local))
+    [Créer un environnement de travail en local](#créer-un-environnement-de-travail-en-local))
 2.  attendre la validation de la `pull-request` concernée
 3.  identifier la branche source ; exemple : `fix/new-fix`
-4.  identifier la branche cible ; exemple : `doryphore-dev`
+4.  identifier la branche cible ; exemple : `ectoplasme-dev`
 5.  importer en local toutes les modifications depuis le dépôt
     [`git fetch --all`](https://git-scm.com/docs/git-fetch)
 6.  vérifier qu'il n'y a pas de modifications en cours à l'aide de
@@ -111,14 +115,14 @@ doit se faire en local.
       [`git commit ...`](https://git-scm.com/docs/git-commit)
 7.  une fois qu'il n'y a plus de modifications en cours, basculer sur la branche
     cible
-    [`git checkout doryphore-dev`](https://www.git-scm.com/docs/git-checkout)
-8.  vérifier l'état de la branche cible (`doryphore-dev`) en local `git status`
+    [`git checkout ectoplasme-dev`](https://www.git-scm.com/docs/git-checkout)
+8.  vérifier l'état de la branche cible (`ectoplasme-dev`) en local `git status`
     - si la branche a des commits en retard et aucun commit en avance :
       [`git pull`](https://www.git-scm.com/docs/git-pull)
     - s'il y a des commits en avance et qu'il faut les ajouter au dépôt :
       `git pull -r` suivi de [`git push`](https://www.git-scm.com/docs/git-push)
     - si les commits en avance doivent être jetés :
-      [`git reset --hard origin/doryphore-dev`](https://www.git-scm.com/docs/git-reset)
+      [`git reset --hard origin/ectoplasme-dev`](https://www.git-scm.com/docs/git-reset)
 9.  une fois que la branche cible est à jour en local, on bascule sur la branche
     source en local :
     [`git checkout fix/new-fix`](https://www.git-scm.com/docs/git-checkout)
@@ -135,7 +139,7 @@ doit se faire en local.
 11. une fois que la branche source est à jour en local, on va la réécrire à la
     fin de la branche cible en gardant l'historique des fusions des
     sous-branches :
-    [`git rebase -r doryphore-dev`](https://www.git-scm.com/docs/git-rebase) (le
+    [`git rebase -r ectoplasme-dev`](https://www.git-scm.com/docs/git-rebase) (le
     `-r` est important pour garder l'historique des fusions des sous-branches)
     - il se peut qu'il y ait des conflits de fusion qu'il faut résoudre à la
       main
@@ -144,7 +148,7 @@ doit se faire en local.
     que la `pull-request` puisse suivre les modifications :
     [`git push --force-with-lease`](https://www.git-scm.com/docs/git-push)
 13. s'il n'y a pas eu d'erreur, alors on revient sur la branche cible en local
-    `git checkout doryphore-dev`
+    `git checkout ectoplasme-dev`
 14. ensuite, on réalise la fusion
     [`git merge --no-ff`](https://www.git-scm.com/docs/git-merge)
 
@@ -166,9 +170,9 @@ doit se faire en local.
 [EDI](https://fr.wikipedia.org/wiki/Environnement_de_d%C3%A9veloppement) préféré
 pour réaliser toutes ces opérations de façon automatique.**
 
-Pour fusionner la branche `doryphore-dev` dans la branche `doryphore`, il suffit
+Pour fusionner la branche `ectoplasme-dev` dans la branche `ectoplasme`, il suffit
 d'appliquer la même procédure sans adaptation mais en considérant cette fois-ci
-que la branche source est `doryphore-dev` et la branche cible `doryphore`.
+que la branche source est `ectoplasme-dev` et la branche cible `ectoplasme`.
 
 ## Créer une extension YesWiki
 
@@ -288,9 +292,11 @@ exemple,
 2.  puis faire une requête api dans le même contexte (les cookies devraient être
     envoyés automatiquement permettant de maintenir la connexion).
 
-!> **attention** : cette méthode d'authentification à l'api par les cookies
+::: warning
+**attention** : cette méthode d'authentification à l'api par les cookies
 risques de ne pas être stable au fil des versions et une nouvelle méthode
 d'authentification pourrait être mise en place.
+:::
 
 Une documentation technique sur l'api en Anglais est disponible dans ce fichier
 : [docs/code/api.md](/docs/code/api.md)

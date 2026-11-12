@@ -76,7 +76,6 @@ Confirme su eliminación marcando la casilla siguiente.
     'REACTION_NOT_POSSIBLE_TO_DELETE_REACTION' => '¡No se puede eliminar la reacción debido al siguiente error: {error}!',
     'REACTION_CONFIRM_DELETE' => '¿Estás seguro de que quieres suprimir esta reacción?',
     'REACTION_CONFIRM_DELETE_ALL' => '¿Estás seguro de que quieres borrar todas las reacciones a esta votación?',
-    'DOC_EDIT_THIS_PAGE_ON_GITHUB' => 'Editar esta página en Github',
     'NOT_VALID_URL' => 'URL no válida: {url}',
     'PAGE_AVAILABLE' => 'La página {tag} está disponible en la página de destino YesWiki',
     'PAGE_NOT_AVAILABLE' => 'La página {tag} no está disponible en la YesWiki de destino',

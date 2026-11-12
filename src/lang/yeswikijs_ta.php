@@ -72,7 +72,6 @@ return [
     'REACTION_NOT_POSSIBLE_TO_DELETE_REACTION' => 'பின்வரும் பிழை காரணமாக எதிர்வினையை நீக்க இயலாது: {error}!',
     'REACTION_CONFIRM_DELETE' => 'இந்த எதிர்வினையை நீக்க விரும்புகிறீர்களா?',
     'REACTION_CONFIRM_DELETE_ALL' => 'இந்த வாக்குகளிலிருந்து அனைத்து எதிர்வினைகளையும் அகற்ற விரும்புகிறீர்களா?',
-    'DOC_EDIT_THIS_PAGE_ON_GITHUB' => 'இந்த பக்கத்தை கிதுபில் மாற்றவும்',
     'LINK_TO_CHANGE_PASSWORD' => 'கடவுச்சொல்லை மாற்றுவதற்கான இணைப்பு',
 
     'ACTION_BUILDER_PREVIEW' => 'கண்ணோட்டம் (சொடுக்க முடியாதது)',

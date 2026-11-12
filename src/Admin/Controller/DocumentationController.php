@@ -4,11 +4,10 @@ namespace YesWiki\Admin\Controller;
 
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use YesWiki\Admin\Service\Documentation;
 use YesWiki\Core\DashboardShell;
 use YesWiki\Core\YesWikiController;
-use YesWiki\Files\Service\LocalFiles;
-use YesWiki\Kernel\Service\LanguageService;
-use YesWiki\Kernel\Service\RuntimeConfig;
+use YesWiki\Render\Service\TableOfContents;
 use YesWiki\Render\Service\TemplateEngine;
 
 /** `/doc` -- the documentation, rendered as a page of this wiki. */
@@ -17,31 +16,21 @@ class DocumentationController extends YesWikiController
     use DashboardShell;
 
     #[Route('/doc', options: ['acl' => ['public']])]
-    public function show(): Response
+    #[Route('/doc/{path}', requirements: ['path' => '.+'], options: ['acl' => ['public']])]
+    public function show(string $path = ''): Response
     {
+        $documentation = $this->getService(Documentation::class);
         $templateEngine = $this->getService(TemplateEngine::class);
+        $page = $documentation->page($path);
+        $books = $documentation->books();
+        unset($books['']);
 
         return new Response($templateEngine->renderPage($templateEngine->render('@core/doc.twig', $this->dashboardShell('doc', [
-            'config' => $this->getService(RuntimeConfig::class)->all(),
-            'i18n' => $GLOBALS['translations_js'],
-            'locale' => $this->getService(LanguageService::class)->preferredLanguage(),
-            'extensions' => $this->getExtensionsWithDocs(),
-        ]))));
-    }
-
-    /** @return list<array{name: string, docPath: string}> */
-    private function getExtensionsWithDocs(): array
-    {
-        $extensions = [];
-        foreach ($this->getService(\YesWiki\Kernel\Service\ExtensionRegistry::class)->all() as $extName => $extPath) {
-            $localizedPath = "{$extPath}docs/{$this->getService(LanguageService::class)->preferredLanguage()}/README.md";
-            $path = "{$extPath}docs/README.md";
-            $docPath = $this->getService(LocalFiles::class)->matching($localizedPath)[0] ?? $this->getService(LocalFiles::class)->matching($path)[0] ?? null;
-            if ($docPath) {
-                $extensions[] = ['name' => $extName, 'docPath' => $docPath];
-            }
-        }
-
-        return $extensions;
+            'page' => $page,
+            'menu' => $documentation->menu($page['url'] ?? ''),
+            'extensions' => array_map(fn (string $book): array => ['name' => $books[$book]['name'], 'url' => $documentation->url($book)], array_keys($books)),
+            'home' => $documentation->url(''),
+            'toc' => $this->getService(TableOfContents::class)->render($page['headings'] ?? [], 'Documentation', 'rail', _t('DOC_ON_THIS_PAGE'), true),
+        ]))), $page === null ? Response::HTTP_NOT_FOUND : Response::HTTP_OK);
     }
 }

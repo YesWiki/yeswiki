@@ -71,7 +71,6 @@ return [
     'REACTION_NOT_POSSIBLE_TO_DELETE_REACTION' => '',
     'REACTION_CONFIRM_DELETE' => '',
     'REACTION_CONFIRM_DELETE_ALL' => '',
-    'DOC_EDIT_THIS_PAGE_ON_GITHUB' => '',
     'SAVE' => '',
 
     'EDIT_LEAVE_WITHOUT_SAVING' => 'Du har ulagrede endringer. Forlate denne siden?',

@@ -73,7 +73,6 @@ return [
     'REACTION_NOT_POSSIBLE_TO_DELETE_REACTION' => 'Imposibil de șters reacția din cauza următoarei erori: {error}!',
     'REACTION_CONFIRM_DELETE' => 'Sunteți sigur că doriți să eliminați această reacție?',
     'REACTION_CONFIRM_DELETE_ALL' => 'Sunteţi sigur că doriţi să ştergeţi toate reacţiile din acest vot?',
-    'DOC_EDIT_THIS_PAGE_ON_GITHUB' => 'Editează această pagină pe Github',
     'NOT_VALID_URL' => 'Url nevalid: {url}',
     'PAGE_AVAILABLE' => 'Pagina {tag} este disponibilă pe destinația YesWiki',
     'PAGE_NOT_AVAILABLE' => 'Pagina {tag} nu este disponibilă pe destinația YesWiki',

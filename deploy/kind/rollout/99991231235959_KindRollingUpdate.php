@@ -1,6 +1,6 @@
 <?php
 
-/* The one migration run.sh adds to the image it rolls out under writes: it only adds a row, as a migration must on replicas. */
+/* The one migration run.sh adds to the image it rolls out under writes, dated last so the old pods see the database ahead of them; it only adds a row. */
 
 use YesWiki\Core\YesWikiMigration;
 

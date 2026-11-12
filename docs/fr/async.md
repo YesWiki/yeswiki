@@ -36,7 +36,7 @@ signale un problème.
 
 - les **sauvegardes** et les **restaurations**, y compris la sauvegarde faite
   avant une mise à jour (voir
-  [sauvegardes et restaurations](/docs/fr/async?id=sauvegardes-et-restaurations)) ;
+  [sauvegardes et restaurations](async.md#sauvegardes-et-restaurations)) ;
 - la récupération d'une **sauvegarde d'un autre wiki** : elle avance étape par
   étape dans la file (une tranche d'environ 20 secondes par passage, la suivante
   attendant le passage d'après), et continue même si vous fermez la page des
@@ -78,12 +78,12 @@ données et l'action `{{sync}}`.
 
 ## Choisir le mode de traitement
 
-| Mode                        | Qui traite la file                                                                   | Délai attendu                                                                           | Désavantage                                                                                                                                          | Hébergement                                        |
-| --------------------------- | ------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------- |
-| `request` (défaut, partout) | la fin de chaque visite, une fois la page envoyée                                    | dès la fin de la visite qui l'ajoute, sinon à la visite suivante (voir sous le tableau) | rien n'avance sans visite ; un traitement long garde un processus du serveur occupé tant qu'il dure ; sur certains serveurs, les visiteurs attendent | tous, même un mutualisé sans cron                  |
-| `api`                       | un service de cron en ligne                                                          | 1 min (appel toutes les minutes)                                                        | dépend d'un service extérieur ; un traitement long garde l'appel ouvert tant qu'il dure                                                              | mutualisé sans cron                                |
+| Mode                        | Qui traite la file                                                                     | Délai attendu                                                                           | Désavantage                                                                                                                                          | Hébergement                                        |
+| --------------------------- | -------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------- |
+| `request` (défaut, partout) | la fin de chaque visite, une fois la page envoyée                                      | dès la fin de la visite qui l'ajoute, sinon à la visite suivante (voir sous le tableau) | rien n'avance sans visite ; un traitement long garde un processus du serveur occupé tant qu'il dure ; sur certains serveurs, les visiteurs attendent | tous, même un mutualisé sans cron                  |
+| `api`                       | un service de cron en ligne                                                            | 1 min (appel toutes les minutes)                                                        | dépend d'un service extérieur ; un traitement long garde l'appel ouvert tant qu'il dure                                                              | mutualisé sans cron                                |
 | `--drain` par cron          | une ligne de crontab toutes les minutes, à côté de la fin des visites (mode `request`) | 1 min                                                                                   | une ligne à installer ; un processus PHP lancé chaque minute ; sur certains serveurs, les visiteurs attendent toujours                               | tout hébergement avec un crontab                   |
-| `worker`                    | un processus qui tourne en continu, relancé par le serveur ou par le binaire YesWiki | quelques secondes                                                                       | un processus PHP par wiki, gardé en mémoire en permanence ; hors du binaire, un service à installer et surveiller                                    | serveur privé ou dédié, conteneur, binaire YesWiki |
+| `worker`                    | un processus qui tourne en continu, relancé par le serveur ou par le binaire YesWiki   | quelques secondes                                                                       | un processus PHP par wiki, gardé en mémoire en permanence ; hors du binaire, un service à installer et surveiller                                    | serveur privé ou dédié, conteneur, binaire YesWiki |
 
 En `request`, ce qu'une visite ajoute à la file est traité
 dès la fin de cette visite, une fois la page envoyée : la page que vous venez
@@ -106,7 +106,7 @@ Comment choisir, en pratique :
   fois par jour. Préférez `--drain` par cron si vous avez un crontab, sinon
   `api`, ou `worker`.
 - **Hébergement avec un crontab, sans processus permanent possible** :
-  [`--drain` toutes les minutes](/docs/fr/async?id=traiter-la-file-par-cron-ou-à-la-main).
+  [`--drain` toutes les minutes](async.md#traiter-la-file-par-cron-ou-à-la-main).
 - **Traitements longs** (synchronisations de grosses sources, par exemple) :
   `worker`, ou `--drain` par cron : en ligne de commande, PHP n'a pas de limite
   de temps. Les autres modes relèvent la limite de temps de PHP au début de
@@ -118,7 +118,7 @@ Comment choisir, en pratique :
   processus tourne encore n'est jamais déclaré arrêté, quelle que soit sa
   durée. Les
   sauvegardes et restaurations sont un cas à part, voir
-  [plus bas](/docs/fr/async?id=sauvegardes-et-restaurations).
+  [plus bas](async.md#sauvegardes-et-restaurations).
 - **Wiki servi par le binaire YesWiki** : `request` suffit, comme ailleurs.
   Passez à `worker` si le wiki est peu visité ou si ses traitements sont longs :
   le binaire s'occupe alors du processus, il n'y a rien à installer.
@@ -130,10 +130,10 @@ serveur à l'autre, c'est si la page peut partir avant le traitement :
 
 | Le serveur lance PHP avec…                                            | La page part avant le traitement ?                      | Ce qu'il faut savoir                                                                                                                                                                                                             |
 | --------------------------------------------------------------------- | ------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| PHP-FPM (nginx, Apache avec `proxy_fcgi`, Caddy)                      | oui                                                     | le visiteur n'attend pas ; le passage dispose de 20 minutes de calcul au plus (voir sous le tableau)                                                                                                                  |
+| PHP-FPM (nginx, Apache avec `proxy_fcgi`, Caddy)                      | oui                                                     | le visiteur n'attend pas ; le passage dispose de 20 minutes de calcul au plus (voir sous le tableau)                                                                                                                             |
 | FrankenPHP, avec ou sans son mode worker                              | oui                                                     | rien                                                                                                                                                                                                                             |
 | LiteSpeed (fréquent en mutualisé)                                     | oui                                                     | si la page Traitements montre des traitements interrompus en fin de visite, LiteSpeed arrête sans doute PHP quand la connexion se ferme : ajoutez `<IfModule Litespeed>` `SetEnv noabort 1` `</IfModule>` au `.htaccess` du wiki |
-| PHP intégré à Apache (`mod_php`), PHP en CGI ou FastCGI par `php-cgi` | non                                                     | le visiteur attend la fin du passage, d'où l'alerte « Attente ajoutée aux pages »                                                                                                                                        |
+| PHP intégré à Apache (`mod_php`), PHP en CGI ou FastCGI par `php-cgi` | non                                                     | le visiteur attend la fin du passage, d'où l'alerte « Attente ajoutée aux pages »                                                                                                                                                |
 | serveur intégré de PHP (`php -S`)                                     | non                                                     | réservé au développement : il ne sert qu'une page à la fois, et chaque traitement bloque les autres visites                                                                                                                      |
 | plateforme « serverless » (AWS Lambda avec Bref, Cloud Run…)          | oui, mais l'exécution est gelée une fois la page partie | `request` ne convient pas : le traitement est figé puis compté comme interrompu. Choisissez `api`                                                                                                                                |
 
@@ -192,7 +192,7 @@ cette liste.
 1. Réglez `YESWIKI_QUEUE_CONSUMER=api` dans `private/.env`. Tant qu'aucun
    secret n'est défini, la page Traitements affiche une alerte rouge : l'adresse
    d'appel refuse tout le monde. L'alerte du
-   [mode de secours](/docs/fr/async?id=le-mode-de-secours) s'y ajoute jusqu'au
+   [mode de secours](async.md#le-mode-de-secours) s'y ajoute jusqu'au
    premier appel réussi : c'est normal pour un wiki qui vient de passer en `api`.
 
    ![Mode api sans secret : l'alerte « Réglage du mode de traitement » et le bouton Générer un secret](images/async-api-sans-secret.png)
@@ -236,14 +236,14 @@ commencé : le wiki ne le borne pas. Trois précautions en découlent :
 - le serveur web peut couper le passage lui-même : `request_terminate_timeout`
   de PHP-FPM, `fastcgi_read_timeout` de nginx, ou la limite d'un proxy. Le
   traitement en cours est alors coupé en route (voir
-  [Traitements trop longs pour le mode choisi](/docs/fr/async?id=traitements-trop-longs-pour-le-mode-choisi-rouge)) ;
+  [Traitements trop longs pour le mode choisi](async.md#traitements-trop-longs-pour-le-mode-choisi-rouge)) ;
 - si ces limites sont courtes et que vous ne pouvez pas les relever, préférez
   `worker`.
 
 ### Mettre en place `worker`
 
 Sous le binaire YesWiki, voir
-[plus bas](/docs/fr/async?id=worker-sous-le-binaire-yeswiki) : il suffit d'une
+[plus bas](async.md#worker-sous-le-binaire-yeswiki) : il suffit d'une
 ligne dans `private/.env`.
 
 Ailleurs, c'est un travail pour la personne qui administre le serveur : une
@@ -264,7 +264,7 @@ partie web : la ligne `YESWIKI_QUEUE_CONSUMER=worker` dans `private/.env` (ou
 `'queue_consumer' => 'worker'` dans `yeswiki.config.php`). Sans cela, les
 visites continuent de traiter la file en fin de page et la page Traitements
 affiche « fin de requête ». Un exemple complet de service est donné dans
-[INSTALL.md](https://github.com/YesWiki/yeswiki/blob/doryphore-dev/INSTALL.md#housekeeping).
+[INSTALL.md](https://github.com/YesWiki/yeswiki/blob/ectoplasme/INSTALL.md#housekeeping).
 
 #### Les limites du processus
 
@@ -275,11 +275,11 @@ de sortie 0). Elles ne bornent donc pas la durée d'un traitement : une
 synchronisation de deux heures va au bout avec `--time-limit=3600`. Leur rôle est
 de repartir régulièrement d'un processus propre.
 
-| Option           | Le processus s'arrête…                                     | Défaut            | Motif dans l'onglet _Consommateurs_ |
-| ---------------- | ---------------------------------------------------------- | ----------------- | ----------------------------------- |
-| `--time-limit`   | après ce nombre de secondes                                | `3600` (une heure) | « durée de vie atteinte »           |
-| `--memory-limit` | quand sa mémoire dépasse cette taille (`128M`, `512K`, `-1` pour aucune limite) | `128M`            | « mémoire pleine »                  |
-| `--limit`        | après ce nombre de traitements                             | aucune limite     | « nombre de traitements atteint »   |
+| Option           | Le processus s'arrête…                                                          | Défaut             | Motif dans l'onglet _Consommateurs_ |
+| ---------------- | ------------------------------------------------------------------------------- | ------------------ | ----------------------------------- |
+| `--time-limit`   | après ce nombre de secondes                                                     | `3600` (une heure) | « durée de vie atteinte »           |
+| `--memory-limit` | quand sa mémoire dépasse cette taille (`128M`, `512K`, `-1` pour aucune limite) | `128M`             | « mémoire pleine »                  |
+| `--limit`        | après ce nombre de traitements                                                  | aucune limite      | « nombre de traitements atteint »   |
 
 `--memory-limit` n'est pas la limite de PHP (`memory_limit`). La première demande
 un redémarrage propre une fois le traitement fini. La seconde arrête PHP net : le
@@ -306,7 +306,7 @@ Recommandations :
   exemple).
 - **Des limites trop basses déclenchent une fausse alerte** : plus de 5 démarrages
   en 10 minutes allument
-  [« Processus de traitement qui redémarre en boucle »](/docs/fr/async?id=processus-de-traitement-qui-redémarre-en-boucle-rouge).
+  [« Processus de traitement qui redémarre en boucle »](async.md#processus-de-traitement-qui-redémarre-en-boucle-rouge).
   Les redémarrages dus à un changement de configuration ne comptent pas.
 
 ### Traiter la file par cron ou à la main
@@ -415,7 +415,7 @@ mode choisi fonctionne. Si vous changez de mode, le secours de l'ancien mode
 prend fin.
 
 Pour savoir quoi vérifier, voir
-[l'alerte du mode de secours](/docs/fr/async?id=traitements-en-arrière-plan--mode-de-secours-rouge).
+[l'alerte du mode de secours](async.md#traitements-en-arrière-plan--mode-de-secours-rouge).
 
 ## Lire la page Traitements
 
@@ -479,7 +479,7 @@ Un traitement qui échoue est **retenté automatiquement trois fois** (après 1
 minute, puis 5, puis 25) avant d'être déclaré en échec. Les traitements en échec
 sont conservés 30 jours, puis supprimés. Chaque échec définitif est aussi écrit
 dans le Journal. Les livraisons ActivityPub font exception : voir
-[les alertes propres à une fonctionnalité](/docs/fr/async?id=alertes-propres-à-une-fonctionnalité).
+[les alertes propres à une fonctionnalité](async.md#alertes-propres-à-une-fonctionnalité).
 
 ### Onglet _Tâches planifiées_
 
@@ -578,7 +578,7 @@ qu'elle ne soit pas coupée en route.
 - En mode `worker`, c'est le processus qui traite la file qui l'exécute. La page
   des sauvegardes affiche « en attente de la file de traitements » jusqu'à ce
   qu'il la prenne. Si ce processus ne répond plus, la sauvegarde attend que le
-  wiki passe en [mode de secours](/docs/fr/async?id=le-mode-de-secours) (10
+  wiki passe en [mode de secours](async.md#le-mode-de-secours) (10
   minutes sans le voir), puis elle est traitée à la fin d'une visite, comme en
   `request`.
 
@@ -605,11 +605,11 @@ manqué de mémoire. Vous pouvez alors :
   seulement la base de données), pour que la sauvegarde tienne dans le temps
   accordé ;
 - ou passer à un mode où un processus séparé traite la file (`worker`) : voir
-  [choisir le mode de traitement](/docs/fr/async?id=choisir-le-mode-de-traitement).
+  [choisir le mode de traitement](async.md#choisir-le-mode-de-traitement).
 
 Les autres problèmes de sauvegarde (dossier non accessible en écriture,
 `mysqldump` absent...) sont décrits dans
-[la rubrique sauvegardes](/docs/fr/admin?id=résoudre-les-problèmes-de-sauvegarde).
+[la rubrique sauvegardes](admin.md#résoudre-les-problèmes-de-sauvegarde).
 
 ## Que faire pour chaque alerte
 
@@ -626,7 +626,7 @@ terminal). Si la base elle-même ne répond pas, contactez votre hébergeur.
 Le mode choisi ne traite plus la file : le processus `worker` est
 arrêté, ou le service de cron en ligne de `api` n'appelle plus. Le
 wiki traite alors la file à la fin des visites (voir
-[le mode de secours](/docs/fr/async?id=le-mode-de-secours)). Une sauvegarde ou
+[le mode de secours](async.md#le-mode-de-secours)). Une sauvegarde ou
 une restauration que vous lancez se fait, elle, à la fin de votre propre
 requête.
 
@@ -648,7 +648,7 @@ La même alerte apparaît sur la page **Santé** :
 Des traitements attendent et plus rien ne les traite depuis 24 heures : ni le
 mode choisi, ni la fin des visites. En `api` ou en `worker`, l'absence du mode
 choisi donne d'abord l'alerte du
-[mode de secours](/docs/fr/async?id=traitements-en-arrière-plan--mode-de-secours-rouge)
+[mode de secours](async.md#traitements-en-arrière-plan--mode-de-secours-rouge)
 (au bout de 3 heures ou de 10 minutes) ; celle-ci n'apparaît que si les visites,
 elles aussi, ne traitent plus rien. Conséquence : recherche pas à jour, e-mails
 récapitulatifs qui ne partent pas, synchronisations en suspens.
@@ -657,7 +657,7 @@ récapitulatifs qui ne partent pas, synchronisations en suspens.
    fonctionne et c'est le déclenchement automatique qui manque.
 2. Vérifiez ensuite selon le mode : `request` attend des visites, donc un wiki peu visité semble à l'arrêt ; pour les autres modes,
    faites les vérifications du
-   [mode de secours](/docs/fr/async?id=traitements-en-arrière-plan--mode-de-secours-rouge).
+   [mode de secours](async.md#traitements-en-arrière-plan--mode-de-secours-rouge).
 3. Si vous ne pouvez rien installer sur le serveur, repassez à `request`.
 
 ### Traitements en échec (rouge)
@@ -726,13 +726,13 @@ Le réglage est incohérent, et le wiki ne traite pas ses tâches comme prévu :
 - **valeur inconnue** : ce qui est écrit n'est pas un des trois modes (une faute de
   frappe, souvent). Le mode par défaut est utilisé à la place. Corrigez la
   valeur là où elle est écrite (voir
-  [où se règle le mode](/docs/fr/async?id=où-se-règle-le-mode)) ;
+  [où se règle le mode](async.md#où-se-règle-le-mode)) ;
 
   ![Une faute de frappe dans le mode : « comand » n'est pas un mode connu](images/async-reglage-inconnu.png)
 
 - **`api` sans secret** : l'adresse d'appel est fermée à tous. Cliquez sur
   **Générer un secret** et configurez votre service de cron en ligne (voir
-  [mettre en place `api`](/docs/fr/async?id=mettre-en-place-api)).
+  [mettre en place `api`](async.md#mettre-en-place-api)).
 
 ### Traitements en arrière-plan qui s'accumulent (orange)
 
@@ -799,11 +799,11 @@ Si votre wiki existait avant cette version :
 - **Vous aviez un cron de maintenance** (`'maintenance_trigger' => 'cron'`) :
   le réglage disparaît, et avec lui la commande `./yeswicli core:maintenance`.
   La ligne de votre crontab qui l'appelait échoue désormais : remplacez-la par
-  [`--drain` toutes les minutes](/docs/fr/async?id=traiter-la-file-par-cron-ou-à-la-main).
+  [`--drain` toutes les minutes](async.md#traiter-la-file-par-cron-ou-à-la-main).
   Sans elle, le wiki traite la file à la fin des visites, comme par défaut ;
   `worker` et `api` sont les autres façons de la traiter en dehors des visites
   (voir
-  [choisir le mode de traitement](/docs/fr/async?id=choisir-le-mode-de-traitement)).
+  [choisir le mode de traitement](async.md#choisir-le-mode-de-traitement)).
 - Une ligne `MAINTENANCE_TRIGGER` dans `private/.env` ne fait plus rien :
   supprimez-la.
 - **Une extension écrite pour les versions alpha** qui faisait son ménage à

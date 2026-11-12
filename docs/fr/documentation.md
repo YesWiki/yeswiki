@@ -23,15 +23,19 @@ documenter ?"
 **Identifiez votre niveau et référez-vous à la partie de cette documentation
 correspondante :**
 
-?> **😍 Documentator de Niveau 1** Vous souhaitez contribuer à la doc
+::: info
+**😍 Documentator de Niveau 1** Vous souhaitez contribuer à la doc
 officielle, mais github vous effraie ? ?> Un grand merci à vous votre
 contribution est nécessaire. On a une solution pour vous, rendez-vous en partie
 **Niveau 1**.
+:::
 
-!> **💪 Documentator de Niveau 2** Vous souhaitez aider à alimenter la
+::: warning
+**💪 Documentator de Niveau 2** Vous souhaitez aider à alimenter la
 documentation officielle et manipuler github de temps en temps c’est ok pour
 vous. On a besoin de vous pour mettre à jour la doc officielle avec les super
 contributions des documentators de **niveau 2**.
+:::
 
 ## 1. Documenter 😍 Niv 1
 
@@ -72,7 +76,7 @@ d'écran.
 
 Si cela est possible, il est préférable d'inclure directement des rendus de code
 yeswiki (en grisé par exemple),
-[voir plus bas](/docsREADME?id=afficher-du-code-yeswiki)
+[voir plus bas](#2322-petits-plus-à-connaître)
 
 #### 1.2.2 Ecriture inclusive
 
@@ -110,8 +114,10 @@ https://www.markdown-cheatsheet.com/
 La documentation officielle de YesWiki est organisée dans un menu. Chacune des
 pages accessibles via ce menu correspond à un fichier Markdown.
 
-?> **Exemple :** Pour modifier la page "installation" il conviendra de modifier
+::: info
+**Exemple :** Pour modifier la page "installation" il conviendra de modifier
 le fichier "webmaster.md".
+:::
 
 | Page                                  | Fichier            | Description                                                                                                                                                                                                                                     |
 | ------------------------------------- | ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -154,7 +160,9 @@ Le "dépôt", c'est-à-dire là où est stocké le code de Yeswiki est sur le si
 
 👉 [Le dépôt github de Yeswiki est ici.](https://github.com/YesWiki/yeswiki)
 
-?> Pour poursuivre, il vous faudra :
+::: info
+Pour poursuivre, il vous faudra :
+:::
 
 - Vous créer un compte sur github.com
 - Demander à un admin du dépôt github de Yeswiki de vous nommer contributeurice
@@ -162,22 +170,25 @@ Le "dépôt", c'est-à-dire là où est stocké le code de Yeswiki est sur le si
 
 #### 2.2.2 La bonne branche
 
-!> **Attention !** Un dépôt git est composé de plusieurs branches.
+::: warning
+**Attention !** Un dépôt git est composé de plusieurs branches.
+:::
 
-- La branche principale, où le logiciel distribué et donc utilisé porte le nom
-  des versions majeures de yeswiki (Anacoluthe, Bachibouzouk, Cercophithèque,
-  Dorpyphore,...)
-- Une branche de développement qui porte le nom de la version majeure suivie de
-  "dev". Il faut **toujours** modifier la branche de développement et jamais
+- La branche principale, d'où viennent les versions publiées, porte le nom de
+  la version majeure de YesWiki (Anacoluthe, Bachibouzouk, Cercopithèque,
+  Doryphore, Ectoplasme...)
+- Une branche de développement porte le nom de la version majeure suivi de
+  "-dev". Il faut **toujours** modifier la branche de développement et jamais
   directement la branche principale.
 
 Pour changer de branche, il convient de passer par le menu déroulant présent en
 haut à gauche.
 ![](https://md.yeswiki.net/uploads/ec48249b-7eb8-48c6-ba01-8e27243ed5e2.png)
 
-?>**Exemple** A l'heure de la rédaction de ce document, nous utilisons la
-version majeure "Doryphore", ainsi nous travaillerons sur la branche
-"Doryphore-dev"
+::: info
+**Exemple** : pour la version majeure Ectoplasme, la branche principale est
+`ectoplasme` et la documentation se modifie sur la branche `ectoplasme-dev`.
+:::
 
 L'ensemble des fichiers de documentation se trouvent dans le dossier `/docs` du
 dépôt. On y retrouve la série de fichiers en format Markdown (.md) détaillés
@@ -199,15 +210,17 @@ résultat sera le même. A vous de voir laquelle vous conviendra le mieux.
 ##### 2.3.1.1. Les fichiers de docs (Marckdown)
 
 Dans le dossier `/docs` du dépôt github de Yeswiki. 👉
-[Accessible aussi directement ici](https://github.com/YesWiki/yeswiki/tree/doryphore-dev/docs/)
+[Accessible aussi directement ici](https://github.com/YesWiki/yeswiki/tree/ectoplasme-dev/docs/)
 
 Accéder au dossier de la langue de votre choix pour voir l'ensemble des
 fichiers.
 
-!>**Autre solution :** On retrouvera en bas de chaque page de doc, un lien pour
+::: warning
+**Autre solution :** On retrouvera en bas de chaque page de doc, un lien pour
 éditer le fichier sur github.
+:::
 
-- Assurez-vous d'être sur la branche `doryphore-dev`
+- Assurez-vous d'être sur la branche `ectoplasme-dev`
 
 - Une fois que vous avez un compte, vous pouvez cliquer sur l'icone crayon pour
   éditer un fichier.
@@ -220,12 +233,16 @@ fichiers.
   description en anglais si possible.
   ![image](https://user-images.githubusercontent.com/17404254/191205273-03e18e6c-e22f-4376-b4ba-9c18aa51b1df.png)
 
-?> Il vaut mieux faire des petits changements à la fois, on peut ainsi plus
+::: info
+Il vaut mieux faire des petits changements à la fois, on peut ainsi plus
 facilement les comprendre et les annuler si besoin
+:::
 
-?> On peut visualiser l'historique d'un fichier sur github en cliquant sur
+::: info
+On peut visualiser l'historique d'un fichier sur github en cliquant sur
 `History`
 ![](https://md.yeswiki.net/uploads/45d42c45-a1d8-454f-b9be-81c1d278a1d0.png)
+:::
 
 ##### 2.3.2.2. Uploader une image
 
@@ -237,20 +254,29 @@ Si on souhaite ajouter des images dans la documentation, il faut faire 2 choses
   ![](https://md.yeswiki.net/uploads/96f4883a-88f5-46ac-8a11-95256690e203.png)
 - Ajouter, dans le fichier markdown à l'emplacement où l'on souhaite afficher
   l'image, le code suivant (remplacer les contenus en fonction de l'image
-  importée): `![Texte alternatif](/images/Nom_image.jpg)`
+  importée): `![Texte alternatif](images/Nom_image.jpg)`
 
 ##### 2.3.2.2. Petits plus à connaître
 
 **Gestion du menu**
 
-Le menu à gauche est construit automatiquement via les `## Titres de niveau 2`
-et `### Titres de niveau 3` utilisés dans la page.
+Le sommaire à côté de la page est construit automatiquement à partir des
+`## Titres de niveau 2` et `### Titres de niveau 3` utilisés dans la page.
 
-Si vous voulez empêcher un titre d'apparaître dans le menu, rajoutez
+**Encadrés**
+
+Pour mettre une information en valeur, entourez-la de `:::` suivi du type
+d'encadré : `info`, `success`, `warning` ou `danger`. C'est la même syntaxe que
+dans les pages du wiki.
 
 ```
-<!-- {docsify-ignore} -->
-# Mon titre caché <!-- {docsify-ignore} -->
+::: info
+Une astuce ou une information utile.
+:::
+
+::: warning
+Un point d'attention.
+:::
 ```
 
 **Afficher du code yeswiki**
@@ -285,16 +311,18 @@ Vous pouvez aussi afficher le rendu de code yeswiki en ajoutant le mot clé
 
 **Faire référence à une section dans une explication**
 
-Pour renvoyer vers une explication donnée dans un autre paragraphe, il faut
-cliquer sur le titre de la section concernée dans le site
-https://testing.yeswiki.net/doc et récupérer dans l'url ce qui est écrit à
-partir du /docs Exemple : pour faire référence au paragraphe "la composition
-d'une page", copier /docs/fr/prise-en-main?id=la-composition-d39une-page
+Pour renvoyer vers une explication donnée dans un autre paragraphe, faites un
+lien vers le fichier markdown suivi de l'ancre du titre :
+`[composition d'une page](prise-en-main.md#71-la-composition-dune-page)`.
+Pour connaître l'ancre d'un titre, survolez-le dans la documentation et
+cliquez sur le `#` qui apparaît à côté : l'adresse de la page se termine alors
+par l'ancre. Dans le même fichier, l'ancre seule suffit :
+`[voir plus bas](#3-copyleft)`.
 
 **Rendu dans la doc**
 
 Pour en savoir plus, aller voir la
-[composition d'une page](/docs/fr/prise-en-main?id=la-composition-d39une-page)
+[composition d'une page](prise-en-main.md#71-la-composition-dune-page)
 
 ## 3. Copyleft
 

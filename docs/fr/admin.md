@@ -20,7 +20,7 @@ C'est ici que vous pouvez indiquer "qui a le droit de faire quoi sur quelle
 page". Il faut être identifié comme administrateurice pour visionner et modifier
 les informations de cet espace.
 
-[Voir la rubrique dédiée](/docs/fr/admin?id=g%c3%a9rer-les-droits)
+[Voir la rubrique dédiée](admin.md#gérer-les-droits)
 
 ### Look
 
@@ -28,7 +28,7 @@ C'est par là que vous personnalisez le squelette et l'esthétique de votre wiki
 Il faut être identifié comme administrateurice pour visionner et modifier les
 informations de cet espace.
 
-[Voir la rubrique dédiée](/docs/fr/admin?id=g%c3%a9rer-le-look)
+[Voir la rubrique dédiée](admin.md#gérer-le-look)
 
 ### Utilisateurices
 
@@ -39,7 +39,7 @@ utilisateur et l'associer à un groupe, il suffira de lui envoyer ses
 identifiants et de lui proposer d'aller sur mot de passe perdu pour qu'il
 finalise la création de son compte.
 
-[Voir la rubrique dédiée](/docs/fr/admin?id=gestion-des-droits-par-utilisateurice-ou-par-groupe)
+[Voir la rubrique dédiée](admin.md#gestion-des-droits-par-utilisateurice-ou-par-groupe)
 
 ### Fichier de conf
 
@@ -76,7 +76,7 @@ l'image se construit sans cette variable.
 
 Vous pourrez ici gérer les sauvegardes de votre wiki
 
-[Voir la rubrique dédiée](/docs/fr/admin?id=sauvegardes)
+[Voir la rubrique dédiée](admin.md#sauvegardes)
 
 ### Traitements
 
@@ -86,7 +86,7 @@ quelque chose le traite. Une pastille rouge dans la barre d'administration vous
 y envoie dès qu'un problème demande votre attention. Il faut être identifié
 comme administrateurice pour la consulter.
 
-[Voir la rubrique dédiée](/docs/fr/async.md)
+[Voir la rubrique dédiée](async.md)
 
 ## Gérer les droits
 
@@ -267,7 +267,7 @@ ce qui va s'ajouter au wiki ?
 ![image Droitaccesfichierconf.png (67.1kB)](images/M22GererLesAccesDesPagesNonEncoreExi_Droitaccesfichierconf_20220223100943_20220223091008.png)
 
 Pour le détail, voir la partie
-[droit d'accès de la page Fichier de configuration](docs/fr/admin?id=droit-d39accès)
+[droit d'accès de la page Fichier de configuration](admin.md#droit-daccès)
 
 #### En ce qui concerne les fiches bazar
 
@@ -330,10 +330,10 @@ Ces opérations sont aussi réalisables pour les différents champs d'un formula
 L'onglet [Look](?GererThemes ':ignore') accessible via le menu "Gestion du site"
 permet de :
 
-- [créer une configuration graphique personnalisée (variante de couleur et de police)](/docs/fr/admin?id=cr%c3%a9er-une-configuration-graphique-personnalis%c3%a9e)
-- [ajouter du code CSS personnalisé](/docs/fr/admin?id=ajouter-du-code-css-personnalis%c3%a9)
-- [visualiser/modifier le thème graphique affecté à chaque page](/docs/fr/admin?id=visualisermodifier-le-th%c3%a8me-graphique-affect%c3%a9-%c3%a0-chaque-page-de-votre-wiki)
-- [modifier le thème par défaut](/docs/fr/admin.md#configuration-graphique-par-d%C3%A9faut)
+- [créer une configuration graphique personnalisée (variante de couleur et de police)](admin.md#créer-une-configuration-graphique-personnalisée)
+- [ajouter du code CSS personnalisé](admin.md#ajouter-du-code-css-personnalisé)
+- [visualiser/modifier le thème graphique affecté à chaque page](admin.md#visualisermodifier-le-thème-graphique-affecté-à-chaque-page-de-votre-wiki)
+- [modifier le thème par défaut](admin.md#configuration-graphique-par-défaut)
 
 ### Créer une configuration graphique personnalisée
 
@@ -725,7 +725,7 @@ la page n'existe pas encore, alors il faut tenter :
 https://www.example.com/?PageLogin/editiframe pour simuler la création de la
 page ce qui fera apparaître la page de connexion.
 
-#### Utiliser les paramètres de contrôle d'accès via le yeswiki config ou la page ["Fichier de conf"](/docs/fr/admin?id=droit-d39accès)
+#### Utiliser les paramètres de contrôle d'accès via le yeswiki config ou la page ["Fichier de conf"](admin.md#droit-daccès)
 
 Les formulaires (édition de page, fiches, commentaires, contact, abonnement à
 une liste, inscription, mot de passe perdu) sont protégés d'office, pour les
@@ -753,10 +753,10 @@ Les paramètres ajoutables au yeswiki config
     'password\_for\_editing\_message' => 'un message qui apparait au dessus du champ mot de passe',
     'altcha' => false,
 
-2. A partir de la page ["Fichier de conf"](/docs/fr/admin?id=droit-d39accès) Les
+2. A partir de la page ["Fichier de conf"](admin.md#droit-daccès) Les
 paramètres ci-dessus sont aussi activables de manière simple via la page de
 gestion du site, onglet "fichier de conf". Pour le détail, voir la partie
-["Fichier de configuration>droits d'accès"](/docs/fr/admin?id=droit-d39accès)
+["Fichier de configuration>droits d'accès"](admin.md#droit-daccès)
 
 #### Pour les ajouts dans une page isolée
 
@@ -957,7 +957,7 @@ base de données ou par `private/.env`.
 
 Cette partie permet de modifier les droits d'accès pour les pages à venir. Pour
 voir d'autres façons de gérer les droits d'accès, voir le paragraphe
-[Gérer les droits d'accès des pages non encore existantes](/docs/fr/admin?id=g%c3%a9rer-les-droits-d39acc%c3%a8s-des-pages-non-encore-existantes)
+[Gérer les droits d'accès des pages non encore existantes](admin.md#gérer-les-droits-daccès-des-pages-non-encore-existantes)
 
 - **Droits de lecture par défaut des pages (\* pour tous, + pour personnes
   identifiées, @admins pour groupe admin) - default_read_acl** : par défaut, les
@@ -1206,7 +1206,7 @@ internet.
   en arrière-plan, et apparaît sur la page **Traitements** comme les autres. Qui
   l'exécute selon le mode de traitement, ce qui se passe quand elle échoue et
   comment la relancer sont décrits dans
-  [sauvegardes et restaurations](/docs/fr/async?id=sauvegardes-et-restaurations).
+  [sauvegardes et restaurations](async.md#sauvegardes-et-restaurations).
 
 - **mysqldump inaccessible** Pour réaliser des sauvegardes de votre site,
   YesWiki utilise l'utilitaire `mysqldump`.
@@ -1241,7 +1241,7 @@ l'administration (`?admin/jobs`, menu « Système ») dit ce qui attend, ce qui 
 
 Le choix du mode de traitement, la lecture de cette page et ce qu'il faut faire
 pour chacune de ses alertes sont décrits dans
-[Traitements en arrière-plan](/docs/fr/async.md).
+[Traitements en arrière-plan](async.md).
 
 ## Stocker les fichiers dans un bucket S3
 

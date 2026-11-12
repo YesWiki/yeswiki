@@ -1,7 +1,8 @@
-// Scroll tracking for `{{toc display="rail"}}` and `{{toc display="graduated-rail"}}`.
+// Scroll tracking for `{{toc display="rail"}}` and `{{toc display="graduated-rail"}}`, and the folding of a long rail's sub-sections.
 
 ywInitEach('[data-yw-toc-rail]', (rail) => {
   const graduated = rail.classList.contains('yw-toc--graduated')
+  const foldable = rail.classList.contains('yw-toc--foldable')
   const marker = rail.querySelector('.yw-toc__marker')
   const list = rail.querySelector('.yw-toc__list')
   const heading = rail.querySelector('.yw-toc__heading')
@@ -22,8 +23,68 @@ ywInitEach('[data-yw-toc-rail]', (rail) => {
   let active = null
   let frame = 0
 
-  /** Where, below the top of the window, a heading counts as reached. */
-  const readingLine = () => window.innerHeight * 0.25
+  const sectionOf = new Map()
+  let head = null
+  Array.from(list.children).forEach((item) => {
+    if (item.hasAttribute('data-yw-toc-section')) head = item
+    sectionOf.set(item, head)
+  })
+  const sections = Array.from(sectionOf.values()).filter(
+    (section, index, all) => section && all.indexOf(section) === index,
+  )
+  const chosen = new Map()
+
+  /** Where, below the top of the window, a heading counts as reached: below the room an anchor jump leaves, at least a quarter down. */
+  const readingLine = () =>
+    Math.max(
+      window.innerHeight * 0.25,
+      (parseFloat(
+        getComputedStyle(document.documentElement).scrollPaddingTop,
+      ) || 0) + 48,
+    )
+
+  /** Opens the section being read and the ones opened by hand, and folds the others. */
+  const fold = () => {
+    if (!foldable) return
+    const reading = active ? sectionOf.get(active.item) : null
+    sections.forEach((section) => {
+      const open = chosen.has(section)
+        ? chosen.get(section)
+        : section === reading
+      section
+        .querySelector('.yw-toc__toggle')
+        ?.setAttribute('aria-expanded', String(open))
+    })
+    sectionOf.forEach((section, item) => {
+      if (section && item !== section) {
+        const button = section.querySelector('.yw-toc__toggle')
+        item.classList.toggle(
+          'yw-toc__item--folded',
+          button?.getAttribute('aria-expanded') === 'false',
+        )
+      }
+    })
+  }
+
+  /** Scrolls whatever holds the rail so the entry being read stays in sight. */
+  const keepInSight = (item) => {
+    let box = rail
+    while (box && box !== document.body) {
+      const overflow = getComputedStyle(box).overflowY
+      if (
+        (overflow === 'auto' || overflow === 'scroll') &&
+        box.scrollHeight > box.clientHeight
+      )
+        break
+      box = box.parentElement
+    }
+    if (!box || box === document.body) return
+    const frameBox = box.getBoundingClientRect()
+    const spot = item.getBoundingClientRect()
+    if (spot.top < frameBox.top || spot.bottom > frameBox.bottom) {
+      box.scrollTop += spot.top - frameBox.top - frameBox.height / 3
+    }
+  }
 
   /** Records where each section starts and where the last one ends, in page coordinates. */
   const measure = () => {
@@ -93,8 +154,18 @@ ywInitEach('[data-yw-toc-rail]', (rail) => {
       if (current) {
         current.item.classList.add('yw-toc__item--active')
         current.link.setAttribute('aria-current', 'location')
+        const section = sectionOf.get(current.item)
+        if (
+          section &&
+          section !== sectionOf.get(active?.item) &&
+          chosen.get(section) === false
+        ) {
+          chosen.delete(section)
+        }
       }
       active = current
+      fold()
+      if (current) keepInSight(current.item)
     }
 
     if (graduated) {
@@ -122,6 +193,21 @@ ywInitEach('[data-yw-toc-rail]', (rail) => {
   function remeasure() {
     measure()
     schedule()
+  }
+
+  if (foldable) {
+    rail.addEventListener('click', (event) => {
+      const button = event.target.closest('.yw-toc__toggle')
+      if (!button) return
+      chosen.set(
+        button.closest('li'),
+        button.getAttribute('aria-expanded') !== 'true',
+      )
+      fold()
+      schedule()
+    })
+    rail.classList.add('yw-toc--ready')
+    fold()
   }
 
   const observer = new ResizeObserver(remeasure)

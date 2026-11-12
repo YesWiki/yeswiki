@@ -73,7 +73,6 @@ return [
     'REACTION_NOT_POSSIBLE_TO_DELETE_REACTION' => 'Неможливо видалити реакцію через наступну помилку: {error}!',
     'REACTION_CONFIRM_DELETE' => 'Ви впевнені, що ви хочете видалити цю реакцію?',
     'REACTION_CONFIRM_DELETE_ALL' => 'Ви впевнені, що ви хочете видалити всі реакції цього голосу?',
-    'DOC_EDIT_THIS_PAGE_ON_GITHUB' => 'Редагувати цю сторінку на Github',
 
     'EDIT_LEAVE_WITHOUT_SAVING' => 'Є незбережені зміни. Залишити цю сторінку?',
 ];

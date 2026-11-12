@@ -10,8 +10,10 @@ Pour passer en mode édition, trois solutions :
 - Double cliquer dans la page
 - Ajouter l'handler /edit à la fin de l'adresse de la page
 
-!> Vous n'arrivez pas à éditer une page YesWiki, elle a certainement été fermée
+::: warning
+Vous n'arrivez pas à éditer une page YesWiki, elle a certainement été fermée
 en écriture
+:::
 
 ### 1.1 Syntaxe YesWiki
 
@@ -32,9 +34,11 @@ Deux solutions en cas de soucis :
 - supprimer tous les codes de la partie impactée et remettre les choses en place
   calmement
 
-?>**Exemple:** si tout le texte de ma page est en gras ou en italique, c'est
+::: info
+**Exemple:** si tout le texte de ma page est en gras ou en italique, c'est
 souvent une balise qui est ouverte et n'est pas fermée, par exemple :
 `**texte  en gras`
+:::
 
 ### 1.2 Mise en forme
 
@@ -72,8 +76,10 @@ Vous pouvez utiliser les syntaxes mardown suivante
  3) Liste énumérée
 ```
 
-?>**Remarque :** en mode édition, il faut parfois sauter une ligne après une
+::: info
+**Remarque :** en mode édition, il faut parfois sauter une ligne après une
 liste à puce pour garder la coloration syntaxique...
+:::
 
 #### 1.3.2 Tableaux
 
@@ -176,18 +182,24 @@ chaînon dans la barre d'édition, vous pourrez ainsi
    https://yeswiki.net/?MaNouvellePage). Comme elle n'existe pas encore on vous
    proposera de la créer.
 
-?> **Astuce 1** Une fois ma nouvelle page créée, je peux enlever le lien qui y
+::: info
+**Astuce 1** Une fois ma nouvelle page créée, je peux enlever le lien qui y
 mène sans que la page disparaisse pour autant. Je peux retrouver mes pages dans
 la roue crantée en haut à droite > Tableau de bord. Une bonne manière de cacher
 des pages ;-)
+:::
 
-?> **Attention !** Le nom des pages YesWiki ne doivent contenir ni espaces ni
+::: info
+**Attention !** Le nom des pages YesWiki ne doivent contenir ni espaces ni
 caractères spéciaux. Pour les rendre lisible, le mieux est d'utiliser des tirets
 `nom-de-ma-page`, ou des majuscules `NomDeLaPage` (c'est ce qu'on appelle un
 `ChatMot`)
+:::
 
-?> **Astuce 2** Un ChatMot écrit dans le texte reste du texte : pour en faire un
+::: info
+**Astuce 2** Un ChatMot écrit dans le texte reste du texte : pour en faire un
 lien vers la page, on l'écrit `[texte du lien](NomDeLaPage)`.
+:::
 
 ## 4. Revenir à la version précédente d'une page
 
@@ -199,8 +211,10 @@ antérieure.
 **Pour y accéder** il suffit de cliquer sur le lien en bas de page nommé :
 "Dernière édition : _jour_._mois_._année_"
 
-!> **Attention** L'historique est accessible uniquement aux personnes qui ont
+::: warning
+**Attention** L'historique est accessible uniquement aux personnes qui ont
 les droits en écriture sur la page concernée.
+:::
 
 ## 5. Insérer et gérer les médias (images, pdf...)
 
@@ -214,8 +228,10 @@ ressemble à cela
 {{attach file="mon_image.png" desc="Une jolie image" }}
 ```
 
-!> **Attention!** Pour les vidéos, il est préférable de les héberger sur un site
+::: warning
+**Attention!** Pour les vidéos, il est préférable de les héberger sur un site
 spécifique puis de les insérer via le composant "Vidéo intégrée"
+:::
 
 ### 5.2 Réutiliser le fichier sur une autre page
 
@@ -245,9 +261,11 @@ téléversés sur celle-ci. Par exemple https://yeswiki.net/?AccueiL/filemanager
 
 ## 6. Insérer des éléments d'un autre site (iframe)
 
-!> Une **iframe** est un petit bout de code qui permet à une page d'embarquer
+::: warning
+Une **iframe** est un petit bout de code qui permet à une page d'embarquer
 (encapsuler, intégrer... _embed_ en anglais) des contenus et fonctionalités
 issus d'autres sites internet.
+:::
 
 Vous pouvez ainsi profiter des fonctionnalités de cet autre site au sein même de
 votre wiki : lire une vidéo, écrire dans un pad et bien d'autre... Voici comment
@@ -336,10 +354,12 @@ l'on ajoute et déplace dans l'écran _Mise en page_.
 - un lien peut être un nom de page (`BacASable`), une route (`search`) ou une
   adresse complète (`https://…`)
 
-!> Avant cette version, ce menu était une page wiki nommée `PageMenuHaut`, écrite
+::: warning
+Avant cette version, ce menu était une page wiki nommée `PageMenuHaut`, écrite
 comme une liste à puces. Les wikis existants sont convertis automatiquement à la
 mise à jour, et ce qui n'a pas pu être converti est signalé dans le journal des
 actions administratives — la page, elle, est conservée telle quelle.
+:::
 
 ### 7.3 Visite de la roue crantée
 
@@ -434,18 +454,22 @@ Mise en forme propose 7 possibilités :
 - **Afficher plusieurs colonnes** : permet de créer plusieurs colonnes dans une
   page ou une partie de page, très utile pour des mises en page avancées.
 
-!> **Attention !** La somme des size (largeur) de vos colonnes doit être égal à
+::: warning
+**Attention !** La somme des size (largeur) de vos colonnes doit être égal à
 12, cela veut dire que vous pouvez faire 12 colonnes de size 1 ou 3 colonnes de
 size 4 et bien sur mixer les possibilités (une de 6 et deux de 3)
+:::
 
 ### 8.3 Syndication / Flux RSS
 
 YesWiki est capable d'afficher des informations émisent par d'autres sites-web
 sous forme de flux rss.
 
-!> Pour afficher un flux RSS il faut déjà disposer de son URL. Pour le trouver
+::: warning
+Pour afficher un flux RSS il faut déjà disposer de son URL. Pour le trouver
 on peut installer sur son naviguateur un détecteur de flux RSS comme par exemple
 "Awesome RSS" avec firefox.
+:::
 
 Cette option se trouve dans les composants, sélectionner "Syndication / Flux
 RSS".
@@ -464,12 +488,16 @@ RSS".
   le formulaire entrer la valeur suivante `id=xx` en remplaçant `xx` par l'ID du
   formulaire cible.
 
-!> Si le mapping est renseigné, il sera possible en cliquant sur le symbole "+"
+::: warning
+Si le mapping est renseigné, il sera possible en cliquant sur le symbole "+"
 à la fin de chaque article d'envoyer l'article en question dans le formulaire
 qui a été renseigné.
+:::
 
-!> Il est possible de modifier les paramètres par défaut suivant si les
+::: warning
+Il est possible de modifier les paramètres par défaut suivant si les
 identifiants différents des standarts.
+:::
 
 ```
 id=1400,title=bf_titre,url=bf_url,description=bf_description,image=imagebf_image,categories=bf_tags

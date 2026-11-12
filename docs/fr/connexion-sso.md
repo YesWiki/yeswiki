@@ -32,7 +32,7 @@ leur état (activé ou non) et le nombre de comptes qui leur appartiennent. De l
 - **ajouter un fournisseur** : les boutons en bas de l'écran proposent chaque type installé sur
   le wiki ;
 - **modifier** un fournisseur (le bouton au crayon) et le **Tester** (voir
-  [Tester un fournisseur](/docs/fr/connexion-sso?id=tester-un-fournisseur)) ;
+  [Tester un fournisseur](connexion-sso.md#tester-un-fournisseur)) ;
 - **Activer** ou **Désactiver** un fournisseur ;
 - **Supprimer** un fournisseur, seulement tant qu'aucun compte ne lui appartient. Un fournisseur
   qui a des comptes peut seulement être désactivé ;
@@ -44,10 +44,10 @@ supprimer, **le dernier fournisseur activé** ; les comptes locaux peuvent être
 désactivés, jamais supprimés ; et si vous êtes connecté·e avec un compte local, l'écran refuse de
 désactiver les comptes locaux tant qu'aucun fournisseur activé n'a **Rattacher au compte existant
 qui a le même email** coché, puisque vous seriez déconnecté·e sans moyen de revenir (voir
-[Comptes du wiki](/docs/fr/connexion-sso?id=comptes-du-wiki-local)). Un nouveau fournisseur
+[Comptes du wiki](connexion-sso.md#comptes-du-wiki-local)). Un nouveau fournisseur
 s'ajoute en fin de liste ; pour changer l'ordre de la page de connexion, changez l'ordre des
 entrées dans le fichier de configuration (voir
-[Le fichier de configuration](/docs/fr/connexion-sso?id=le-fichier-de-configuration)).
+[Le fichier de configuration](connexion-sso.md#le-fichier-de-configuration)).
 
 Un fournisseur dont le type n'est plus installé (son extension a été désactivée) reste dans la
 liste, marqué **Indisponible**. Ses réglages sont conservés, personne ne peut s'y connecter, et on
@@ -76,11 +76,11 @@ Quand un fournisseur dit qui est la personne, le wiki cherche son compte dans ce
    l'identifiant.
 
 Si rien de tout cela ne marche, la connexion est refusée, et la personne voit pourquoi (voir
-[Quand quelqu'un ne peut pas se connecter](/docs/fr/connexion-sso?id=quand-quelquun-ne-peut-pas-se-connecter)).
+[Quand quelqu'un ne peut pas se connecter](connexion-sso.md#quand-quelquun-ne-peut-pas-se-connecter)).
 
 À chaque connexion, le prénom, le nom, l'email et les éventuels
-[attributs supplémentaires](/docs/fr/connexion-sso?id=attributs-supplémentaires) du compte sont mis à jour depuis le
-fournisseur, et ses [groupes](/docs/fr/connexion-sso?id=correspondance-des-groupes) aussi. Rien n'est écrit si rien n'a
+[attributs supplémentaires](connexion-sso.md#attributs-supplémentaires) du compte sont mis à jour depuis le
+fournisseur, et ses [groupes](connexion-sso.md#correspondance-des-groupes) aussi. Rien n'est écrit si rien n'a
 changé.
 
 ### Ce qu'un compte lié ne peut plus faire
@@ -113,7 +113,7 @@ fournisseur en est tiré une fois pour toutes, au premier enregistrement (`Acme 
 personnes. Vous pouvez renommer le fournisseur plus tard ; l'identifiant reste.
 
 **Activé.** Un nouveau fournisseur est activé par défaut. Pendant que vous le réglez, vous pouvez
-décocher la case : un fournisseur désactivé peut quand même être [testé](/docs/fr/connexion-sso?id=tester-un-fournisseur).
+décocher la case : un fournisseur désactivé peut quand même être [testé](connexion-sso.md#tester-un-fournisseur).
 
 **Connexion au fournisseur.** Les réglages propres au type, décrits plus bas. Les secrets (secret
 du client, clé privée, mots de passe) ne sont plus jamais affichés une fois enregistrés : laissez
@@ -145,7 +145,7 @@ Un prénom ou un nom absent reste vide.
   le fournisseur peut prendre le compte du wiki qui l'utilise. Un fournisseur OpenID Connect qui
   envoie `email_verified: false` n'est jamais rattaché par email, quel que soit ce réglage. C'est
   aussi le réglage à activer quand le fournisseur change de serveur et que les identifiants
-  changent avec lui (voir [Changer de serveur](/docs/fr/connexion-sso?id=changer-de-serveur)).
+  changent avec lui (voir [Changer de serveur](connexion-sso.md#changer-de-serveur)).
 
 ### Correspondance des groupes
 
@@ -157,7 +157,7 @@ ligne ne nomme ne sont jamais touchés** : les groupes que vous gérez à la mai
 les avez réglés. Un groupe du wiki qui n'existe pas encore est créé.
 
 Les noms de groupes sont comparés à l'identique, majuscules comprises. Le
-[test](/docs/fr/connexion-sso?id=tester-un-fournisseur) montre les noms exacts que le fournisseur envoie.
+[test](connexion-sso.md#tester-un-fournisseur) montre les noms exacts que le fournisseur envoie.
 
 Une connexion ne vide jamais le groupe `admins` : le dernier administrateurice y reste.
 
@@ -182,7 +182,7 @@ passe perdu ne sont plus disponibles, `/api/login` refuse tout le monde, et les 
 déconnectés à la page suivante.
 
 Ne désactivez les comptes locaux qu'une fois les autres fournisseurs en état de marche, et gardez
-en tête [comment revenir dans le wiki](/docs/fr/connexion-sso?id=revenir-dans-le-wiki) si le serveur de l'entreprise tombe.
+en tête [comment revenir dans le wiki](connexion-sso.md#revenir-dans-le-wiki) si le serveur de l'entreprise tombe.
 
 Si vous êtes vous-même connecté·e avec un compte local, désactiver les comptes locaux vous
 déconnecte aussi : l'écran vous demande donc de confirmer. Il refuse tout net quand aucun

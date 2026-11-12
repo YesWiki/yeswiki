@@ -2,22 +2,59 @@
 
 {% block dashboard_content %}
   {{ include_css('styles/yw-admin.css') }}
+  {{ include_javascript('javascripts/vendor/prism/prism.js') }}
+  {{ include_javascript('javascripts/documentation.js') }}
 
-  <div id="yw-doc"></div>
+  <div class="yw-doc" data-home="{{ home }}" data-copy="{{ _t('DOC_COPY_CODE') }}" data-copied="{{ _t('DOC_COPIED') }}">
+    <nav class="yw-doc__menu" aria-label="{{ _t('DASHBOARD_DOC') }}">
+      <a class="yw-doc__home" href="{{ home }}">{{ _t('DOC_HOME') }}</a>
+      <form class="yw-doc__search" role="search" onsubmit="return false;">
+        {% include '@core/_searchbox.twig' with {
+          name: 'q',
+          button: '',
+          placeholder: _t('DOC_SEARCH'),
+          modifier: 'yw-searchbox--inline',
+          attrs: {
+            'hx-get': url({ tag: 'api/doc/search' }),
+            'hx-trigger': 'input changed delay:200ms, search',
+            'hx-target': '#yw-doc-results'
+          }
+        } only %}
+        <div id="yw-doc-results" class="yw-doc__results" aria-live="polite"></div>
+      </form>
+      <div class="yw-doc__sections">
+        {{ menu|raw }}
+        {% if extensions is not empty %}
+          <ul class="yw-doc__extensions">
+            <li>
+              {{ _t('DOC_EXTENSIONS') }}
+              <ul>
+                {% for extension in extensions %}
+                  <li><a href="{{ extension.url }}"{% if page and extension.url == page.url %} class="active"{% endif %}>{{ extension.name }}</a></li>
+                {% endfor %}
+              </ul>
+            </li>
+          </ul>
+        {% endif %}
+      </div>
+    </nav>
 
-  <script>
-    var locale = {{ locale|json_encode|raw }};
-    var baseUrl = {{ config.base_url|json_encode|raw }};
-    var i18n = {{ i18n|json_encode|raw }};
-    var extensions = {{ extensions|json_encode|raw }};
-  </script>
+    <article class="yw-doc__content">
+      {% if page %}
+        {{ page.html|raw }}
+        {% if page.edit %}
+          <footer class="yw-doc__footer">
+            <a href="{{ page.edit }}" target="_blank" rel="noopener">{{ _t('DOC_EDIT_ON_GITHUB') }}</a>
+          </footer>
+        {% endif %}
+      {% else %}
+        <h1>{{ _t('DOC_NOT_FOUND') }}</h1>
+        <p><a href="{{ home }}">{{ _t('DOC_HOME') }}</a></p>
+      {% endif %}
+    </article>
 
-  <script src="javascripts/documentation.js"></script>
-  <script src="javascripts/vendor/docsify/docsify.min.js"></script>
-  <script src="javascripts/vendor/docsify/prism/prism-php.js"></script>
-  <script src="javascripts/vendor/docsify/prism/prism-nginx.js"></script>
-  <script src="javascripts/vendor/lazysizes/lazysizes.min.js"></script>
-  <script src="javascripts/vendor/docsify/plugins/search.js"></script>
-  <script src="javascripts/vendor/docsify/plugins/zoom-image.min.js"></script>
-  <script src="javascripts/vendor/docsify/plugins/docsify-copy-code.min.js"></script>
+    <aside class="yw-doc__aside">
+      {{ toc|raw }}
+    </aside>
+  </div>
 {% endblock %}

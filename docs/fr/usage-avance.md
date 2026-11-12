@@ -121,4 +121,4 @@ utilisant le composant "Connexion"
 1.  faire un `/update` sur votre wiki (accessible avec
     [ce lien](?GererMisesAJour/update 'Forcer la finalisation de la mise à jour :ignore'))
 2.  vérifier si le problème est résolu. Sinon, suivre les
-    [instructions réservées aux webmasters](./webmaster?id=r%c3%a9parer-la-structure-de-vos-bases-de-donn%c3%a9es)
+    [instructions réservées aux webmasters](webmaster.md#réparer-la-structure-de-vos-bases-de-données)

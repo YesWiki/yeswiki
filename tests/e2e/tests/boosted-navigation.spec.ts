@@ -286,14 +286,10 @@ test.describe('boosted navigation', () => {
   })
 
   /**
-   * /doc and /api are dashboard routes, so moving between them is a boosted swap that
-   * re-runs every <script> the swapped body carries -- documentation.js among them.
-   *
-   * It declared `const docRoot` at top level, and a second run of the same file in the same
-   * global scope is a SyntaxError: the whole script died before its first statement. That
-   * statement is the empty <nav> it puts at the top of the body for docsify to claim, so
-   * docsify's `find('nav')` took the WIKI's navbar instead, emptied it into `_navbar.md`,
-   * and the site navigation vanished until a full reload. Nothing server-side can see this.
+   * /doc is a dashboard route, so moving to and from it is a boosted swap that re-runs every
+   * <script> the swapped body carries -- documentation.js among them. When the docs were drawn
+   * by docsify, a second run died on a redeclared global and docsify then took the wiki's
+   * navbar for its own and emptied it. The page is the server's now; the round trip stays.
    */
   test('leaving the documentation and coming back keeps the wiki navbar', async ({
     page,
@@ -305,8 +301,8 @@ test.describe('boosted navigation', () => {
 
     await page.goto('/?doc')
     await expect(
-      page.locator('.yw-dashboard__canvas main .markdown-section'),
-      'docsify did not render on a direct load',
+      page.locator('.yw-doc__content h1'),
+      'the documentation did not render on a direct load',
     ).toBeVisible({ timeout: 15000 })
     const linksBefore = await wikiMenuLinks()
     expect(
@@ -330,17 +326,18 @@ test.describe('boosted navigation', () => {
       await page.waitForTimeout(1500)
 
       await expect(
-        page.locator('.yw-dashboard__canvas main .markdown-section'),
-        `docsify did not render after round trip ${round + 1}`,
+        page.locator('.yw-doc__content h1'),
+        `the documentation did not render after round trip ${round + 1}`,
       ).toBeVisible({ timeout: 15000 })
       expect(
         await wikiMenuLinks(),
         `the wiki navbar was emptied after round trip ${round + 1}`,
       ).toBe(linksBefore)
-      expect(
-        await page.locator('#yw-topnav.app-nav').count(),
-        `docsify claimed the wiki navbar after round trip ${round + 1}`,
-      ).toBe(0)
+      await page.locator('.yw-doc__search input').fill('bazar')
+      await expect(
+        page.locator('.yw-doc__result').first(),
+        `the search box did not answer after round trip ${round + 1}`,
+      ).toBeVisible()
     }
 
     await attachConsole(watcher, testInfo)
