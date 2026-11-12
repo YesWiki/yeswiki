@@ -848,8 +848,9 @@ provider works again as soon as the server accepts it.
 
 ### What the migration converts
 
-`LoginExtensionsBecomeProviders` reads the old keys, writes `sso_providers`, removes the old keys
-and prints what it did. Every configured block becomes a provider:
+`LoginExtensionsBecomeProviders` reads the old keys, saves `sso_providers` in the wiki's database
+(where every setting an administration screen edits is kept), removes the old keys from
+`yeswiki.config.php` and prints what it did. Every configured block becomes a provider:
 
 | Doryphore                                                                                          | Provider                                                                                                    |
 | -------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
@@ -881,10 +882,10 @@ providers are added switched off.
 **Local accounts are switched off** when an extension was in charge, for all three types. For LDAP
 and CAS this is a change: on Doryphore they showed the wiki's own form whenever their server was
 down or refused someone. Now, **if the directory or the CAS server is down, nobody can sign in**,
-administrators included, until someone switches `local` back on in `sso_providers` in the
-configuration file and signs in with a local account (the admin guide's _Getting back in_ shows
-how, with `./yeswicli user:create`). Make sure someone with access to the server's files knows
-this before the upgrade.
+administrators included, until someone switches `local` back on with `./yeswicli sign-in:enable local`
+and signs in with a local account (the admin guide's _Getting back in_ shows how, with
+`./yeswicli user:create`). Editing `yeswiki.config.php` does not do it: the providers are read from
+the database. Make sure someone with a shell on the server knows this before the upgrade.
 
 **Accounts.**
 
@@ -902,9 +903,8 @@ this before the upgrade.
   sign-in links an unlinked account named after the person's user ID, as Doryphore did, and never
   touches an account already linked. After that date, only match by email does. A Doryphore user
   renamed by the upgrade because a page had the same name (`JeanDupont2`) is found by email,
-  which is why match by email is on for these providers. The key is not shown on the screen and can
-  be deleted from the file at any time; deleting it also ends the exception for a missing email
-  below.
+  which is why match by email is on for these providers. The key is not shown on the screen; the
+  exception for a missing email below ends with it.
 - **md5 passwords are cleared** on every account, every revision included, on a wiki where
   `loginldap` was in charge on Doryphore, because they may be the directory's own passwords, stored
   unsalted. This applies even if an `sso_providers` section already existed. Those people sign in
@@ -914,9 +914,11 @@ this before the upgrade.
   Doryphore accepted that; it keeps the email it has. Creating an account or matching by email
   still needs one. This lasts as long as the provider has a `match_by_name_until` key.
 
-The configuration and the accounts are converted together, in one database transaction that
-commits only once the configuration file is written. If the file cannot be written, the accounts
-are rolled back, the old keys stay, and the migration runs again next time.
+The providers and the accounts are converted together, in one database transaction: if either
+fails, nothing is changed and the migration runs again next time. The old keys are then removed
+from `yeswiki.config.php`, since `sso_config` holds the client secrets. If the file cannot be
+written (a replica's read-only file, for instance), the conversion still holds and the migration
+names the keys to delete from it by hand.
 
 **Pages.** `{{linktouserprofil}}` and `{{userentries}}`, which `loginsso` seeded into
 `PageMenuUser` and `UserEntries`, become Markdown links to the account screens `/user` and

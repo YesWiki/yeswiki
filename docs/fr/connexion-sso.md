@@ -53,9 +53,8 @@ désactivés, jamais supprimés ; et si vous êtes connecté·e avec un compte l
 désactiver les comptes locaux tant qu'aucun fournisseur activé n'a **Rattacher au compte existant
 qui a le même email** coché, puisque vous seriez déconnecté·e sans moyen de revenir (voir
 [Comptes du wiki](connexion-sso.md#comptes-du-wiki-local)). Un nouveau fournisseur
-s'ajoute en fin de liste ; pour changer l'ordre de la page de connexion, changez l'ordre des
-entrées dans le fichier de configuration (voir
-[Le fichier de configuration](connexion-sso.md#le-fichier-de-configuration)).
+s'ajoute en fin de liste, et l'écran ne permet pas encore de changer l'ordre de la page de
+connexion (voir [Où sont gardés les fournisseurs](connexion-sso.md#où-sont-gardés-les-fournisseurs)).
 
 Un fournisseur dont le type n'est plus installé (son extension a été désactivée) reste dans la
 liste, marqué **Indisponible**. Ses réglages sont conservés, personne ne peut s'y connecter, et on
@@ -196,8 +195,8 @@ Si vous êtes vous-même connecté·e avec un compte local, désactiver les comp
 déconnecte aussi : l'écran vous demande donc de confirmer. Il refuse tout net quand aucun
 fournisseur activé n'a **Rattacher au compte existant qui a le même email** coché : vous ne
 pourriez plus vous connecter. Cochez-le sur le fournisseur avec lequel vous vous connecterez (votre
-compte lui est alors rattaché à votre première connexion), ou désactivez les comptes locaux dans le
-fichier de configuration.
+compte lui est alors rattaché à votre première connexion), ou désactivez les comptes locaux en
+ligne de commande, dans le dossier du wiki : `./yeswicli sign-in:disable local`.
 
 ### OpenID Connect ou OAuth2
 
@@ -467,19 +466,18 @@ On ne peut pas déplacer un compte d'un fournisseur à un autre, ni le rendre lo
 ## Revenir dans le wiki
 
 Si le serveur d'un fournisseur est en panne et que les comptes locaux sont désactivés, personne ne
-peut se connecter, vous compris·e. Tout est dans le fichier de configuration : quiconque a accès
-aux fichiers du serveur peut réactiver les comptes locaux.
+peut se connecter, vous compris·e. Quiconque a un terminal sur le serveur peut réactiver les
+comptes locaux, dans le dossier du wiki :
 
-1. Dans `yeswiki.config.php`, mettez `'enabled' => true` sur l'entrée `local` de `sso_providers` :
+1. Réactivez les comptes locaux :
 
-   ```php
-   'sso_providers' => [
-       'local' => ['type' => 'local', 'enabled' => true],
-       // ... les autres fournisseurs, sans changement
-   ],
+   ```sh
+   ./yeswicli sign-in:enable local
    ```
 
-   Un wiki dont la section `sso_providers` est absente ou vide a ses comptes locaux activés.
+   Modifier `sso_providers` dans `yeswiki.config.php` n'y suffit pas : dès que l'écran de connexion
+   ou la mise à jour a enregistré les fournisseurs, le wiki les lit dans sa base de données (voir
+   [Où sont gardés les fournisseurs](connexion-sso.md#où-sont-gardés-les-fournisseurs)).
 
 2. Votre compte d'administrateurice est sans doute lié au fournisseur en panne, et un compte lié
    n'a pas de mot de passe. Créez un nouveau compte local d'administration en ligne de commande,
@@ -493,13 +491,21 @@ aux fichiers du serveur peut réactiver les comptes locaux.
    groupe : `./yeswicli user:add-to-group <nom> admins`.
 
 3. Connectez-vous avec ce compte. Une fois le fournisseur réparé, désactivez à nouveau les comptes
-   locaux si vous le souhaitez, et supprimez le compte de secours.
+   locaux si vous le souhaitez (`./yeswicli sign-in:disable local`, ou l'écran), et supprimez le
+   compte de secours.
 
-## Le fichier de configuration
+## Où sont gardés les fournisseurs
 
-Tout ce que l'écran de connexion modifie se trouve dans une seule section de `yeswiki.config.php`,
-`sso_providers`. L'écran écrit le fichier, comme les autres écrans d'administration, et un
-déploiement peut l'écrire directement à la place :
+Tout ce que l'écran de connexion modifie tient dans un seul réglage, `sso_providers`. Comme tout
+réglage qu'un écran d'administration enregistre, il est gardé dans la base de données du wiki,
+jamais dans `yeswiki.config.php` : chaque serveur d'un wiki répliqué voit un changement dès la
+requête suivante. La mise à jour depuis Doryphore y enregistre aussi les fournisseurs convertis.
+
+Un déploiement peut aussi écrire `sso_providers` dans `yeswiki.config.php`, sous la forme
+ci-dessous. Le fichier ne compte que tant que le réglage n'a pas été enregistré : ensuite, la
+valeur de la base remplace toute la section du fichier, et modifier le fichier ne change plus
+rien. Pour changer les fournisseurs d'un wiki en service, passez par l'écran, ou par
+`./yeswicli sign-in:enable` et `sign-in:disable` pour en activer ou désactiver un.
 
 ```php
 'sso_providers' => [
@@ -530,7 +536,8 @@ déploiement peut l'écrire directement à la place :
 ],
 ```
 
-- L'**ordre** des entrées est celui de la page de connexion.
+- L'**ordre** des entrées est celui de la page de connexion. L'écran ajoute un fournisseur à la
+  fin et ne permet pas encore de changer l'ordre.
 - La **clé** est l'identifiant du fournisseur. Elle figure dans l'adresse de retour enregistrée
   chez le fournisseur, et les comptes y sont liés : ne la changez pas.
 - `type` est le type du fournisseur ; `connection` contient les réglages de ce type, sous les noms
@@ -542,16 +549,11 @@ déploiement peut l'écrire directement à la place :
 - `match_by_name_until` (sans écran) n'existe que sur les fournisseurs convertis depuis les
   extensions LDAP et CAS de Doryphore : jusqu'à cette date, une première connexion retrouve aussi
   un compte non lié qui porte le nom de l'identifiant de la personne, comme le faisait Doryphore,
-  et un compte existant peut se connecter sans email, comme Doryphore l'acceptait. On peut le
-  supprimer à tout moment, ce qui met fin aux deux.
+  et un compte existant peut se connecter sans email, comme Doryphore l'acceptait. Les deux
+  prennent fin à cette date.
 - Les secrets de cette section sont lus au moment où il en faut, et jamais copiés dans le cache
-  compilé du wiki. Ils sont dans le fichier de configuration lui-même : protégez-le comme le mot de
-  passe de la base de données qui s'y trouve aussi.
-
-**Plusieurs serveurs.** L'écran écrit le fichier de configuration du serveur sur lequel il tourne.
-Si votre wiki tourne sur plusieurs serveurs (des répliques) qui ne partagent pas ce fichier,
-n'utilisez pas l'écran pour changer les fournisseurs : gérez `sso_providers` par votre
-déploiement, pour que chaque serveur ait la même section.
+  compilé du wiki. Ils sont gardés dans la base de données du wiki, avec les autres réglages :
+  protégez ses sauvegardes comme la base elle-même.
 
 **http simple et SAML.** En `https`, le wiki retient une connexion en cours dans un cookie,
 `yw-sign-in`, qui dure 10 minutes et est envoyé avec `SameSite=None; Secure`, pour que la réponse

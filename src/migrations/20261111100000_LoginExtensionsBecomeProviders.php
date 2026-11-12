@@ -19,6 +19,8 @@ use YesWiki\Kernel\Service\DoryphoreLeftovers;
  * installed), and a wiki LDAP signed in loses its md5 hashes, every revision included.
  * Bodies are rewritten in place, so no revision is added. The accounts and the configuration are one unit: the account rewrites
  * run in a transaction that commits only once the configuration is written, so a failure leaves the old keys for the next run to convert.
+ * On a wiki running on its own `yeswiki.config.php`, the configuration is written to the database (replicas 04), and the old keys --
+ * `sso_config` holds client secrets -- are then taken out of the file too, the one write to it the running wiki makes.
  * Neither the hashes nor `loginsso_id` nor the link keys reach the search index (the User form's password field contributes nothing), so no page is reindexed.
  */
 class LoginExtensionsBecomeProviders extends YesWikiMigration
@@ -65,6 +67,44 @@ class LoginExtensionsBecomeProviders extends YesWikiMigration
             $this->say($message);
         }
         $this->sayAccounts($result, $counts);
+
+        $left = $this->keysLeftInTheFile($configFile, $result->removedKeys);
+        if ($left !== [] && !$this->removeFromTheFile($configFile, $left)) {
+            $this->say('the converted settings are in the database, but ' . basename($configFile) . ' could not be written: delete '
+                . implode(', ', $left) . ' from it by hand' . (in_array('sso_config', $left, true) ? ', since sso_config holds client secrets' : '') . '.');
+        }
+    }
+
+    /**
+     * The converted keys the file still holds, when the configuration went to the database rather than to the file.
+     *
+     * @param list<string> $keys
+     *
+     * @return list<string>
+     */
+    private function keysLeftInTheFile(string $file, array $keys): array
+    {
+        $onDisk = new ConfigurationFile($file);
+        $onDisk->load();
+
+        return array_values(array_intersect($keys, array_keys($onDisk->__get('_parameters'))));
+    }
+
+    /**
+     * Takes those keys out of the file as it is on disk, whatever the database says over it.
+     *
+     * @param list<string> $keys
+     */
+    protected function removeFromTheFile(string $file, array $keys): bool
+    {
+        $onDisk = new ConfigurationFile($file);
+        $onDisk->load();
+        foreach ($keys as $key) {
+            unset($onDisk[$key]);
+        }
+
+        // built by hand, a ConfigurationService writes the file itself rather than the database
+        return (new ConfigurationService())->write($onDisk, $file);
     }
 
     /** Written last, inside the accounts' transaction: a write that fails rolls them back. */

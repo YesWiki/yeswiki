@@ -105,3 +105,14 @@ gives it a CA bundle, the configured one or the system's.
   module, and Providers reached over plain http.
 - phpCAS's confinement is a list of rules in `CasProvider`, and whoever upgrades phpCAS has to
   check them again: the failure classification reads phpCAS's English messages.
+
+## Amendment (2026-11-12): the section is a setting, kept in the database
+
+"One section of the configuration file" predates replicas 04, which made every setting an
+administration screen saves a row of the wiki's database: the running wiki never writes
+`yeswiki.config.php`. `sso_providers` is such a setting. The sign-in screen and the upgrade save it
+there, and from then on it replaces whatever section the file holds. The file is still read while
+nothing is stored, so a deployment can seed it. Two consequences were taken on rather than worked
+around: editing the file is no way back in, so `./yeswicli sign-in:enable` and `sign-in:disable`
+switch a Provider from a shell; and the upgrade removes the Doryphore keys from the file itself,
+the one write to it, since `sso_config` holds client secrets the database copy made redundant.

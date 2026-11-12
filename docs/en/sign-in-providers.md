@@ -47,9 +47,8 @@ Three rules keep you from locking everyone out: the screen refuses to switch off
 deleted; and if you are signed in with a local account, the screen refuses to switch local accounts
 off unless a switched-on provider has **Connect to the existing account that has the same email**
 ticked, since you would be signed out with no way back in (see [Local accounts](#local-accounts)).
-A new provider is added at the end of the list; to change the order of the sign-in page, change
-the order of the entries in the configuration file (see
-[The configuration file](#the-configuration-file)).
+A new provider is added at the end of the list, and the screen cannot change the order of the
+sign-in page yet (see [Where the providers are kept](#where-the-providers-are-kept)).
 
 A provider whose type is no longer installed (its extension was switched off) stays in the list as
 **Unavailable**. Its settings are kept, nobody can sign in with it, and it can only be switched off
@@ -182,7 +181,7 @@ If you are signed in with a local account yourself, switching local off signs yo
 screen asks you to confirm first. It refuses outright when no switched-on provider has **Connect to
 the existing account that has the same email** ticked: you could not sign in again. Tick it on the
 provider you will sign in with (your account is then connected to it at your first sign-in), or
-switch local off in the configuration file.
+switch local off from the command line, in the wiki's folder: `./yeswicli sign-in:disable local`.
 
 ### OpenID Connect or OAuth2
 
@@ -438,19 +437,17 @@ Accounts cannot be moved from one provider to another, or back to local.
 ## Getting back in
 
 If a provider's server is down and local accounts are switched off, nobody can sign in, you
-included. Everything is in the configuration file, so anyone with access to the server's files
-can switch local back on:
+included. Anyone with a shell on the server can switch local back on, in the wiki's folder:
 
-1. In `yeswiki.config.php`, set `'enabled' => true` on the `local` entry of `sso_providers`:
+1. Switch local accounts on:
 
-   ```php
-   'sso_providers' => [
-       'local' => ['type' => 'local', 'enabled' => true],
-       // ... the other providers, unchanged
-   ],
+   ```sh
+   ./yeswicli sign-in:enable local
    ```
 
-   A wiki whose `sso_providers` section is missing or empty has local accounts switched on.
+   Editing `sso_providers` in `yeswiki.config.php` does not do it: once the sign-in screen or the
+   upgrade has saved the providers, the wiki reads them from its database (see
+   [Where the providers are kept](#where-the-providers-are-kept)).
 
 2. Your administrator account is probably linked to the provider that is down, and a linked account
    has no password. Create a new local administrator from the command line, in the wiki's folder:
@@ -462,14 +459,21 @@ can switch local back on:
    `--ask-password` asks for the password without showing it. To add an existing account to a
    group, use `./yeswicli user:add-to-group <name> admins`.
 
-3. Sign in with that account. Once the provider works again, switch local off if you want, and
-   delete the rescue account.
+3. Sign in with that account. Once the provider works again, switch local off if you want
+   (`./yeswicli sign-in:disable local`, or the screen), and delete the rescue account.
 
-## The configuration file
+## Where the providers are kept
 
-Everything the sign-in screen edits is in one section of `yeswiki.config.php`, `sso_providers`.
-The screen writes the file, like the other administration screens, and a deployment can write it
-directly instead:
+Everything the sign-in screen edits is one setting, `sso_providers`. Like every setting an
+administration screen saves, it is kept in the wiki's database, never in `yeswiki.config.php`, so
+every server of a replicated wiki sees a change at its next request. The upgrade from Doryphore
+saves the converted providers there too.
+
+A deployment can also write `sso_providers` in `yeswiki.config.php`, with the shape below. The file
+only counts until the setting is saved: from then on, the value in the database replaces the whole
+section of the file, and editing the file changes nothing. To change the providers of a running
+wiki, use the screen, or `./yeswicli sign-in:enable` and `sign-in:disable` for switching one on or
+off.
 
 ```php
 'sso_providers' => [
@@ -500,7 +504,8 @@ directly instead:
 ],
 ```
 
-- The **order** of the entries is the order of the sign-in page.
+- The **order** of the entries is the order of the sign-in page. The screen adds a provider at the
+  end and cannot change the order yet.
 - The **key** is the provider's identifier. It is in the callback URL registered at the provider
   and the accounts are linked to it: do not change it.
 - `type` is the provider's type; `connection` holds that type's settings, under the names used
@@ -511,15 +516,10 @@ directly instead:
 - `match_by_name_until` (no screen) only exists on providers converted from Doryphore's LDAP and
   CAS extensions: until that date, a first sign-in also finds an unlinked account named after the
   person's user ID, as Doryphore did, and an existing account may sign in without an email, as
-  Doryphore allowed. It can be deleted at any time, which ends both.
+  Doryphore allowed. Both end on that date.
 - The secrets in this section are read when needed and never copied into the wiki's compiled
-  cache. They are in the configuration file itself: protect it as you protect the database
-  password next to them.
-
-**Several servers.** The screen writes the configuration file of the server it runs on. If your
-wiki runs on several servers (replicas) that do not share that file, do not use the screen to
-change providers: manage `sso_providers` with your deployment, so every server has the same
-section.
+  cache. They are stored in the wiki's database, with the other settings: protect its backups as
+  you protect the database itself.
 
 **Plain http and SAML.** On `https`, the wiki remembers a sign-in in progress in a cookie,
 `yw-sign-in`, which lasts 10 minutes and is sent with `SameSite=None; Secure`, so that SAML's
