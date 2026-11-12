@@ -13,6 +13,7 @@ import { instanceDir } from '../helpers/instance'
 import { mockReady, mockReset } from '../helpers/mockserver'
 import {
   accountWithEmail,
+  forgetAccounts,
   groupsOf,
   LDAP_URI,
   PASSWORD,
@@ -163,7 +164,11 @@ const signInThroughProvider = async (
 test.beforeAll(mockReady)
 
 test.describe('the upgrade from Doryphore', () => {
-  test.beforeEach(mockReset)
+  test.beforeEach(async () => {
+    await mockReset()
+    // what an earlier run left: the account logincas's test signs Marie in to has her email, which another test's must have
+    forgetAccounts(PEOPLE.marie.email, PEOPLE.jean.email)
+  })
 
   test.afterAll(() => {
     fixture('reset')
