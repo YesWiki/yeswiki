@@ -8,7 +8,7 @@
  *   accounts                   the tags of every account, sorted, as JSON
  *   providers                  the `sso_providers` section the wiki reads, client secrets left out, and the Doryphore keys still in
  *                              the file, as JSON
- *   reset                      takes the Doryphore keys and `sso_providers` out of the configuration, the database included.
+ *   reset                      takes the Doryphore keys and `sso_providers` out of the configuration, from the file and the database.
  *
  * `load` puts back what Doryphore had and the upgrade reads: the extension's folder among the tools set aside, its keys in the
  * configuration, a `users` table holding the accounts (loginsso's `loginsso_id` column included), pages calling loginsso's actions,
@@ -85,10 +85,13 @@ function writeConfiguration(ConfigurationService $service, mixed $configuration,
     }
 }
 
-/** Forgets the `sso_providers` the database holds, where the upgrade and the administration screen save them, over the file's. */
+/**
+ * Forgets what the database holds over the file for the keys the upgrade touches: the `sso_providers` it and the administration
+ * screen save, and the Doryphore keys it takes out, which the database then keeps as removed and would hide when they are back.
+ */
 function forgetStoredProviders(): void
 {
-    YesWikiLoader::getWiki(true)->services->get(WikiSettings::class)->store([], [ProviderRegistry::SECTION]);
+    YesWikiLoader::getWiki(true)->services->get(WikiSettings::class)->store([], [...DORYPHORE_KEYS, ProviderRegistry::SECTION]);
 }
 
 function withoutDoryphore(mixed $configuration): void
