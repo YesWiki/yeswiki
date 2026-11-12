@@ -1,13 +1,15 @@
 import { execFileSync } from 'child_process'
 import { fileURLToPath } from 'url'
 import { expect, Page } from '@playwright/test'
+import { IDP, WIKI } from './idp'
 import { instanceDir } from './instance'
 
 /**
- * The identity servers of the development stack (docker/README.md): LemonLDAP::NG as OpenID Connect
- * provider, SAML identity provider and CAS server, in front of one OpenLDAP directory.
+ * What the sign-in specs sign in against: a mock identity provider for OpenID Connect, SAML and CAS (MockServer, configured
+ * by idp.ts before each sign-in), and the OpenLDAP directory of the development stack for LDAP (docker/README.md).
  */
-export const PORTAL = 'http://auth.yeswiki.test'
+export { IDP, WIKI }
+export const PORTAL = IDP
 export const PORTAL_HOST = new URL(PORTAL).host
 
 export const LDAP_URI = 'ldap://yeswiki-ldap:1389'
@@ -37,7 +39,7 @@ export const PEOPLE = {
 
 export const personDn = (login: string): string => `uid=${login},${PEOPLE_BASE}`
 
-/** What every client of the portal exports, under the directory's names. */
+/** What every provider releases, under the directory's names. */
 const ATTRIBUTES = {
   id: 'uid',
   email: 'mail',
@@ -51,7 +53,7 @@ export type ProviderType = 'oidc' | 'saml' | 'cas' | 'ldap'
 /** The types whose login and password are typed into the wiki's own form, not at the portal. */
 export const PASSWORD_TYPES: ProviderType[] = ['ldap']
 
-/** The identifier each type is registered under at the portal: it is part of the addresses the portal accepts. */
+/** The identifier of each type's provider in `sso_providers`: it is part of the wiki's addresses for it. */
 export const PROVIDER_IDS: Record<ProviderType, string> = {
   oidc: 'oidc',
   saml: 'saml-a',
@@ -59,13 +61,13 @@ export const PROVIDER_IDS: Record<ProviderType, string> = {
   ldap: 'ldap',
 }
 
-/** One entry of `sso_providers` per type, against the portal and the directory. The task adding a type settles its `connection`. */
+/** One entry of `sso_providers` per type, against the mock identity provider and the directory. */
 export const PROVIDERS: Record<ProviderType, Record<string, unknown>> = {
   oidc: {
     type: 'oidc',
     label: 'Acme OIDC',
     connection: {
-      discovery_url: `${PORTAL}/.well-known/openid-configuration`,
+      discovery_url: `${IDP}/.well-known/openid-configuration`,
       client_id: 'wiki-oidc',
       client_secret: 'wiki-oidc-secret',
     },
@@ -74,13 +76,13 @@ export const PROVIDERS: Record<ProviderType, Record<string, unknown>> = {
   saml: {
     type: 'saml',
     label: 'Acme SAML',
-    connection: { metadata_url: `${PORTAL}/saml/metadata` },
+    connection: { metadata_url: `${IDP}/saml/metadata` },
     attributes: ATTRIBUTES,
   },
   cas: {
     type: 'cas',
     label: 'Acme CAS',
-    connection: { server_url: `${PORTAL}/cas`, version: '3.0' },
+    connection: { server_url: `${IDP}/cas`, version: '3.0' },
     attributes: ATTRIBUTES,
   },
   ldap: {
@@ -154,6 +156,16 @@ export const groupsOf = (account: string): string[] =>
 
 export const addToGroup = (group: string, account: string): void => {
   php('sso-wiki.php', ['add-to-group', group, account])
+}
+
+/**
+ * Waits until the browser is back on the wiki, from the provider it was sent to: the mock identity provider answers with a
+ * redirect or a form that posts itself, so the browser goes through it on its own.
+ */
+export const returnFromProvider = async (page: Page): Promise<void> => {
+  await page.waitForURL((url) => url.origin === new URL(WIKI).origin, {
+    waitUntil: 'domcontentloaded',
+  })
 }
 
 /** Types the login and password into the portal's form, once the browser has been sent there. */

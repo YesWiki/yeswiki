@@ -1,5 +1,14 @@
 import { expect, Page, test } from '@playwright/test'
+import {
+  idpSignsIn,
+  IDP,
+  Person,
+  RedirectType,
+  samlSignsIn,
+  WIKI,
+} from '../helpers/idp'
 import { ADMIN_PASSWORD, ADMIN_USERNAME, login } from '../helpers/login'
+import { mockReady, mockReset } from '../helpers/mockserver'
 import {
   accountWithEmail,
   addToGroup,
@@ -13,53 +22,61 @@ import {
   PROVIDER_IDS,
   PROVIDERS,
   ProviderType,
+  returnFromProvider,
   sectionFor,
   setDirectoryValue,
   setProviders,
-  signInAtPortal,
   signInAtWikiForm,
   testAtWikiForm,
 } from '../helpers/sso'
 
 /**
- * Every provider type against the real servers of the development stack (Step 0 of the SSO plan).
- * The task adding a type adds it here; the wiki is reset once for the file, so each test starts from the accounts it needs.
+ * Every provider type: OpenID Connect, SAML and CAS against the mock identity provider, LDAP against the directory of the
+ * development stack. The wiki is reset once for the file, so each test starts from the accounts it needs.
  */
 const TYPES: ProviderType[] = ['oidc', 'saml', 'cas', 'ldap']
 
-/** The wiki as the portal knows it: CI serves it on a port, the development stack on the bare name. */
-const WIKI = (
-  process.env.YESWIKI_BASE_URL || 'http://wiki.yeswiki.test'
-).replace(/\/$/, '')
+test.beforeAll(mockReady)
 
 const GUEST_CARD = '.yw-account-guest__card'
 const MARIE_ACCOUNT = 'marie-dupont'
 const JEAN_ACCOUNT = 'jean-martin'
 
-/** From the account page, out to the provider and back; or, for a directory, through the wiki's own form under its tab. */
-const signInWith = async (page: Page, type: ProviderType, login: string) => {
+/**
+ * From the account page, out to the provider and back as `person`, whom the mock identity provider signs in; or, for a
+ * directory, through the wiki's own form under its tab.
+ */
+const signInWith = async (page: Page, type: ProviderType, person: Person) => {
   await page.goto('/?user')
   const label = String(PROVIDERS[type].label)
   if (PASSWORD_TYPES.includes(type)) {
-    await signInAtWikiForm(page, PROVIDER_IDS[type], login, PASSWORD)
+    await signInAtWikiForm(page, PROVIDER_IDS[type], person.login, PASSWORD)
 
     return
   }
+  await idpSignsIn(type as RedirectType, person)
   await page
     .locator(`${GUEST_CARD} .yw-sign-in__provider`, { hasText: label })
     .click()
-  await signInAtPortal(page, login, PASSWORD)
+  await returnFromProvider(page)
 }
 
-/** Where an administrator's test asks for the person's credentials: the portal, or the test page's own form. */
+/** Who an administrator's test signs in: the mock identity provider's person, set before the test leaves the wiki. */
+const beforeTesting = async (type: ProviderType, person: Person) => {
+  if (!PASSWORD_TYPES.includes(type)) {
+    await idpSignsIn(type as RedirectType, person)
+  }
+}
+
+/** Where an administrator's test asks for the person's credentials: nowhere for a redirect, the test page's own form for a password. */
 const enterTestCredentials = async (
   page: Page,
   type: ProviderType,
-  login: string,
+  person: Person,
 ) =>
   PASSWORD_TYPES.includes(type)
-    ? testAtWikiForm(page, login, PASSWORD)
-    : signInAtPortal(page, login, PASSWORD)
+    ? testAtWikiForm(page, person.login, PASSWORD)
+    : returnFromProvider(page)
 
 /**
  * What the wiki tells the person of a refusal: the refused page, or for a password provider the message the sign-in form
@@ -102,14 +119,15 @@ for (const type of TYPES) {
   const latestRow = () =>
     Math.max(0, ...journal('%').map((row) => Number(row.id)))
 
-  test.describe(`${type} against the real server`, () => {
-    test.beforeEach(() => {
+  test.describe(`${type} against the mock identity provider`, () => {
+    test.beforeEach(async () => {
+      await mockReset()
       forgetAccounts(PEOPLE.marie.email, PEOPLE.jean.email)
       setProviders(sectionFor(type))
     })
 
     test(`${type}: a first sign-in creates the account`, async ({ page }) => {
-      await signInWith(page, type, PEOPLE.marie.login)
+      await signInWith(page, type, PEOPLE.marie)
 
       await page.goto('/?user')
       await expect(page.locator(GUEST_CARD)).toHaveCount(0)
@@ -122,15 +140,19 @@ for (const type of TYPES) {
       browser,
     }) => {
       const first = await browser.newPage()
-      await signInWith(first, type, PEOPLE.jean.login)
+      await signInWith(first, type, PEOPLE.jean)
       await first.goto('/?user')
       await expect(accountField(first, 'last_name')).toHaveText('Martin')
       await first.context().close()
 
-      setDirectoryValue(personDn('jean'), 'sn', 'Martin-Durand')
+      // the directory changes for LDAP; the mock identity provider is told the new name for the others
+      const renamed = { ...PEOPLE.jean, lastName: 'Martin-Durand' }
+      if (type === 'ldap') {
+        setDirectoryValue(personDn('jean'), 'sn', renamed.lastName)
+      }
       try {
         const again = await browser.newPage()
-        await signInWith(again, type, PEOPLE.jean.login)
+        await signInWith(again, type, renamed)
         await again.goto('/?user')
         await expect(accountField(again, 'last_name')).toHaveText(
           'Martin-Durand',
@@ -138,7 +160,9 @@ for (const type of TYPES) {
         await expect(again.locator('body')).toContainText(JEAN_ACCOUNT)
         await again.context().close()
       } finally {
-        setDirectoryValue(personDn('jean'), 'sn', PEOPLE.jean.lastName)
+        if (type === 'ldap') {
+          setDirectoryValue(personDn('jean'), 'sn', PEOPLE.jean.lastName)
+        }
       }
     })
 
@@ -151,7 +175,7 @@ for (const type of TYPES) {
         }),
       )
       const first = await browser.newPage()
-      await signInWith(first, type, PEOPLE.marie.login)
+      await signInWith(first, type, PEOPLE.marie)
       await first.context().close()
       expect(groupsOf(MARIE_ACCOUNT)).toContain('Editors')
 
@@ -162,7 +186,7 @@ for (const type of TYPES) {
         }),
       )
       const again = await browser.newPage()
-      await signInWith(again, type, PEOPLE.marie.login)
+      await signInWith(again, type, PEOPLE.marie)
       await again.context().close()
 
       const groups = groupsOf(MARIE_ACCOUNT)
@@ -179,7 +203,7 @@ for (const type of TYPES) {
         ? PEOPLE.marie.login
         : PEOPLE.marie.email
 
-      await signInWith(page, type, PEOPLE.marie.login)
+      await signInWith(page, type, PEOPLE.marie)
 
       await expect(page.locator('h1')).toBeVisible()
       await refusalSays(page, type, String(PROVIDERS[type].label))
@@ -244,7 +268,7 @@ for (const type of TYPES) {
     }) => {
       const before = latestRow()
 
-      await signInWith(page, type, PEOPLE.marie.login)
+      await signInWith(page, type, PEOPLE.marie)
       await page.goto('/?user')
       await expect(page.locator(GUEST_CARD)).toHaveCount(0)
 
@@ -257,9 +281,10 @@ for (const type of TYPES) {
       await login(page, ADMIN_USERNAME, ADMIN_PASSWORD)
       const before = latestRow()
 
+      await beforeTesting(type, PEOPLE.marie)
       await page.goto('/?admin/sign-in')
       await page.locator(`a[href*="admin/sign-in/${id}/test"]`).click()
-      await enterTestCredentials(page, type, PEOPLE.marie.login)
+      await enterTestCredentials(page, type, PEOPLE.marie)
 
       await expect(page.locator('.yw-sign-in-test__banner')).toBeVisible()
       const attributes = page.locator('.yw-sign-in-test__attributes')
@@ -295,7 +320,7 @@ for (const type of TYPES) {
     }) => {
       const before = latestRow()
 
-      await signInWith(page, type, PEOPLE.nomail.login)
+      await signInWith(page, type, PEOPLE.nomail)
 
       await refusalSays(page, type, /["«]\s?mail\s?["»]/)
       const diagnostic = loginRows(before).find(
@@ -312,9 +337,9 @@ for (const type of TYPES) {
         setProviders(
           sectionFor('oidc', {
             connection: {
-              authorize_url: 'http://auth.yeswiki.test/oauth2/authorize',
-              token_url: 'http://auth.yeswiki.test/oauth2/token',
-              userinfo_url: 'http://auth.yeswiki.test/oauth2/userinfo',
+              authorize_url: `${IDP}/authorize`,
+              token_url: `${IDP}/token`,
+              userinfo_url: `${IDP}/userinfo`,
               client_id: 'wiki-oidc',
               client_secret: 'wiki-oidc-secret',
             },
@@ -328,7 +353,7 @@ for (const type of TYPES) {
           }
         })
 
-        await signInWith(page, 'oidc', PEOPLE.marie.login)
+        await signInWith(page, 'oidc', PEOPLE.marie)
 
         expect(
           callbacks,
@@ -367,11 +392,12 @@ for (const type of TYPES) {
           'saml-a': { ...PROVIDERS.saml, label: labels['saml-a'] },
           'saml-b': { ...PROVIDERS.saml, label: labels['saml-b'] },
         })
-        // a new browser each time: the portal would otherwise remember who signed in last
+        // the mock identity provider serves one SAML provider at a time: it is told which before each sign-in
         const through = async (
           provider: 'saml-a' | 'saml-b',
-          login: string,
+          person: Person,
         ) => {
+          await samlSignsIn(person, { providerId: provider })
           const page = await browser.newPage()
           await page.goto('/?user')
           await page
@@ -379,7 +405,7 @@ for (const type of TYPES) {
               hasText: labels[provider],
             })
             .click()
-          await signInAtPortal(page, login, PASSWORD)
+          await returnFromProvider(page)
 
           return page
         }
@@ -388,7 +414,7 @@ for (const type of TYPES) {
           ['saml-a', PEOPLE.marie, MARIE_ACCOUNT],
           ['saml-b', PEOPLE.jean, JEAN_ACCOUNT],
         ] as const) {
-          const page = await through(provider, person.login)
+          const page = await through(provider, person)
           await page.goto('/?user')
           await expect(page.locator(GUEST_CARD)).toHaveCount(0)
           await expect(page.locator('body')).toContainText(account)
@@ -401,7 +427,7 @@ for (const type of TYPES) {
 
         // marie's account is saml-a's: saml-b cannot take it over
         const before = latestRow()
-        const refused = await through('saml-b', PEOPLE.marie.login)
+        const refused = await through('saml-b', PEOPLE.marie)
         await expect(refused.locator('body')).toContainText(labels['saml-b'])
         const audit = journal('login.failed').find(
           (row) => Number(row.id) > before && row.context.provider === 'saml-b',
