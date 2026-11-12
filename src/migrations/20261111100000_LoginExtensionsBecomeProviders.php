@@ -15,7 +15,8 @@ use YesWiki\Kernel\Service\DoryphoreLeftovers;
 
 /**
  * Doryphore's loginsso, loginldap and logincas settings become `sso_providers`, and the accounts follow (spec section 11):
- * a lone loginsso provider turns `loginsso_id` into the account's link, and a wiki LDAP signed in loses its md5 hashes, every revision included.
+ * a lone loginsso provider turns `loginsso_id` into the account's link (unless it is only the email loginsso copied there when it was
+ * installed), and a wiki LDAP signed in loses its md5 hashes, every revision included.
  * Bodies are rewritten in place, so no revision is added. The accounts and the configuration are one unit: the account rewrites
  * run in a transaction that commits only once the configuration is written, so a failure leaves the old keys for the next run to convert.
  * Neither the hashes nor `loginsso_id` nor the link keys reach the search index (the User form's password field contributes nothing), so no page is reindexed.
@@ -85,12 +86,13 @@ class LoginExtensionsBecomeProviders extends YesWikiMigration
     /**
      * @param ?list<string> $onlyAccounts
      *
-     * @return array{linked: int, unlinked: int, cleared: int}
+     * @return array{linked: int, unlinked: int, cleared: int, copied: int}
      */
     private function convertAccounts(SsoConversionResult $result, ?array $onlyAccounts): array
     {
-        $counts = ['linked' => 0, 'unlinked' => 0, 'cleared' => 0];
+        $counts = ['linked' => 0, 'unlinked' => 0, 'cleared' => 0, 'copied' => 0];
         $linkTo = $this->linkTarget($result);
+        $subjectIsTheEmail = $linkTo !== null && $this->identifiesByEmail($result->providers[$linkTo]);
         // who signed people in on Doryphore, not who is on now: the hashes may be the directory's unsalted passwords either way
         $clearMd5 = $result->doryphoreInCharge === DoryphoreSsoConversion::LOGINLDAP;
         if (($result->loginssoIds === [] && !$clearMd5) || $onlyAccounts === []) {
@@ -120,7 +122,11 @@ class LoginExtensionsBecomeProviders extends YesWikiMigration
                 unset($body[self::LEGACY_SUBJECT]);
                 $changed = true;
                 $alreadyLinked = is_string($body[AccountLinks::PROVIDER_KEY] ?? null) && $body[AccountLinks::PROVIDER_KEY] !== '';
-                if ($linkTo !== null && $subject !== '' && !$alreadyLinked && !isset($linked[$subject])) {
+                $email = is_string($body['email'] ?? null) ? trim($body['email']) : '';
+                if ($subject !== '' && !$alreadyLinked && !$subjectIsTheEmail && strcasecmp($subject, $email) === 0) {
+                    // loginsso's own migration copied every existing account's email here: nobody at the provider has that subject
+                    $counts['copied']++;
+                } elseif ($linkTo !== null && $subject !== '' && !$alreadyLinked && !isset($linked[$subject])) {
                     $body[AccountLinks::PROVIDER_KEY] = $linkTo;
                     $body[AccountLinks::SUBJECT_KEY] = $subject;
                     // as AccountLinks::link(): a linked account signs in through its provider only
@@ -140,6 +146,21 @@ class LoginExtensionsBecomeProviders extends YesWikiMigration
         return $counts;
     }
 
+    /**
+     * Whether the provider's user ID is the email itself, as with a loginsso `id_sso_field` naming the email's field: an ID equal to
+     * the account's email is then a real subject, and not the copy loginsso made when it was installed.
+     *
+     * @param array<string, mixed> $provider
+     */
+    private function identifiesByEmail(array $provider): bool
+    {
+        $attributes = is_array($provider['attributes'] ?? null) ? $provider['attributes'] : [];
+
+        $id = $attributes['id'] ?? null;
+
+        return $id !== null && $id === ($attributes['email'] ?? null);
+    }
+
     /** The lone loginsso provider, when it is the one switched on: a link to a provider that is off would lock its account out. */
     private function linkTarget(SsoConversionResult $result): ?string
     {
@@ -148,9 +169,12 @@ class LoginExtensionsBecomeProviders extends YesWikiMigration
             : null;
     }
 
-    /** @param array{linked: int, unlinked: int, cleared: int} $counts */
+    /** @param array{linked: int, unlinked: int, cleared: int, copied: int} $counts */
     private function sayAccounts(SsoConversionResult $result, array $counts): void
     {
+        if ($counts['copied'] > 0) {
+            $this->say("the user ID loginsso had stored for {$counts['copied']} account(s) was only their email, which loginsso copied into every existing account when it was installed: it was removed, and they keep their password. Match by email links them at their next sign-in through the provider.");
+        }
         if ($counts['linked'] > 0) {
             $this->say("{$counts['linked']} account(s) linked to the provider {$this->linkTarget($result)} through the user ID loginsso had stored.");
         }

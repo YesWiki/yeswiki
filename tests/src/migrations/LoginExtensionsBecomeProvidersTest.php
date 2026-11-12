@@ -172,6 +172,42 @@ class LoginExtensionsBecomeProvidersTest extends YesWikiTestCase
         $this->assertArrayNotHasKey('sso_provider', $this->latest('TestLoginExtPaul'), 'an account loginsso never saw stays local');
     }
 
+    /**
+     * loginsso's own migration filled `loginsso_id` with every existing account's email: that copy names nobody at the provider,
+     * so linking on it would lock out every account that never signed in through loginsso (their password goes with the link).
+     */
+    public function testAStoredIdThatIsOnlyTheAccountsEmailLinksNothing(): void
+    {
+        $this->writeConfig(['sso_config' => ['providers' => [$this->ssoEntry()]]]);
+        $this->installTools('loginsso');
+        $bcrypt = '$2y$10$abcdefghijklmnopqrstuuJf7kq0YhJ0fM8bRrN7l2QX0uWx1cGa';
+        $this->account('TestLoginExtPaul', [['password' => $bcrypt, 'email' => 'paul@doryphore.example', 'loginsso_id' => 'paul@doryphore.example']]);
+        $this->account('TestLoginExtMarie', [['password' => 'sso', 'email' => 'marie@doryphore.example', 'loginsso_id' => 'marie']]);
+
+        $migration = $this->migrate();
+
+        $paul = $this->latest('TestLoginExtPaul');
+        $this->assertArrayNotHasKey('sso_provider', $paul, 'the email loginsso copied is not a subject');
+        $this->assertArrayNotHasKey('loginsso_id', $paul);
+        $this->assertSame($bcrypt, $paul['password'], 'the account keeps the password it signs in with');
+        $this->assertSame('marie', $this->latest('TestLoginExtMarie')['sso_subject'] ?? null, 'a real subject still links');
+        $this->assertStringContainsString('1 account(s) linked', implode("\n", $migration->notes()));
+    }
+
+    public function testAnEmailIsTheSubjectWhenLoginssoIdentifiedPeopleByTheirEmail(): void
+    {
+        $entry = ['id_sso_field' => 'mail', 'email_sso_field' => 'mail'] + $this->ssoEntry();
+        $this->writeConfig(['sso_config' => ['providers' => [$entry]]]);
+        $this->installTools('loginsso');
+        $this->account('TestLoginExtPaul', [['password' => 'sso', 'email' => 'paul@doryphore.example', 'loginsso_id' => 'paul@doryphore.example']]);
+
+        $this->migrate();
+
+        $paul = $this->latest('TestLoginExtPaul');
+        $this->assertSame('my-auth-server', $paul['sso_provider'] ?? null);
+        $this->assertSame('paul@doryphore.example', $paul['sso_subject'] ?? null);
+    }
+
     public function testAnAccountAlreadyLinkedKeepsItsLink(): void
     {
         $this->writeConfig(['sso_config' => ['providers' => [$this->ssoEntry()]]]);

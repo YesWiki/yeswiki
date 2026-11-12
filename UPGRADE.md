@@ -893,6 +893,11 @@ this before the upgrade.
   providers, `loginsso` never recorded which one an account came from, so the stored ID is removed
   and match by email ties each account to its provider at its next sign-in; the same happens when
   the converted provider is off.
+  When `loginsso` was installed, it copied every existing account's email into `loginsso_id`. An ID
+  equal to the account's email is that copy and names nobody at the server, so it is removed and
+  the account keeps its password: match by email links it at its next sign-in through the
+  provider. It stays the account's link only when `id_sso_field` and `email_sso_field` were the
+  same field, since the server then identified people by their email.
 - **LDAP and CAS found accounts by wiki name.** Until the `match_by_name_until` date, a first
   sign-in links an unlinked account named after the person's user ID, as Doryphore did, and never
   touches an account already linked. After that date, only match by email does. A Doryphore user
