@@ -182,20 +182,20 @@ jobs:
       - uses: actions/checkout@v5
         if: steps.covered.outputs.run == 'true'
 
-      # The identity servers of docker/docker-compose.yml, started here and not as `services:`
-      # entries: they need files from the checkout, and service containers start before it. The
-      # portal reaches the directory by its container name, so both share one network; the
-      # runner reaches the portal and the directory by name through /etc/hosts. The wiki is
-      # served as wiki.yeswiki.test:<port> for the sign-in specs, which makes it same-site with
-      # the portal: SAML's POST callback needs that on plain http.
+      # The directory and the mock of docker/docker-compose.yml, started here and not as
+      # `services:` entries: the directory needs files from the checkout, and service containers
+      # start before it. OpenLDAP is the LDAP provider's server; MockServer plays the OpenID
+      # Connect, SAML and CAS providers as the specs tell it to. The runner reaches both by name
+      # through /etc/hosts. The wiki is served as wiki.yeswiki.test:<port> for the sign-in specs,
+      # which makes it same-site with auth.yeswiki.test: SAML's POST callback needs that on plain
+      # http.
       - name: Start the identity servers
         if: steps.covered.outputs.run == 'true'
         run: |
-          echo '127.0.0.1 wiki.yeswiki.test auth.yeswiki.test yeswiki-ldap' | sudo tee -a /etc/hosts
+          echo '127.0.0.1 wiki.yeswiki.test auth.yeswiki.test yeswiki-ldap yeswiki-mock' | sudo tee -a /etc/hosts
           sudo apt-get update -qq
           sudo apt-get install -y -qq ldap-utils
-          docker network create yeswiki-sso
-          docker run -d --name yeswiki-ldap --network yeswiki-sso -p 1389:1389 \
+          docker run -d --name yeswiki-ldap -p 1389:1389 \
             -e LDAP_ROOT=dc=acme,dc=example \
             -e LDAP_ADMIN_USERNAME=admin \
             -e LDAP_ADMIN_PASSWORD=AdminPassword1 \
@@ -208,18 +208,12 @@ jobs:
           done
           ldapwhoami -x -H ldap://yeswiki-ldap:1389 -D cn=admin,dc=acme,dc=example -w AdminPassword1 \
             || { echo "the directory did not come up"; docker logs yeswiki-ldap; exit 1; }
-          # The entrypoint runs sed -i on the configuration directory, so it is mounted writable.
-          docker run -d --name yeswiki-sso --network yeswiki-sso --network-alias auth.yeswiki.test -p 80:80 \
-            -e SSODOMAIN=yeswiki.test \
-            -e PORTAL_HOSTNAME=auth.yeswiki.test \
-            -e MANAGER_HOSTNAME=manager.yeswiki.test \
-            -v ${{ github.workspace }}/docker/lemonldap-ng/conf:/var/lib/lemonldap-ng/conf \
-            lemonldapng/lemonldap-ng:2.23.4
+          docker run -d --name yeswiki-mock -p 80:1080 mockserver/mockserver:9.2.0
           for _ in $(seq 1 60); do
-            curl --silent --fail --max-time 5 http://auth.yeswiki.test/ > /dev/null && exit 0
+            curl --silent --fail --max-time 5 -X PUT http://yeswiki-mock/mockserver/status > /dev/null && exit 0
             sleep 2
           done
-          echo "the portal did not come up"; docker logs yeswiki-sso; exit 1
+          echo "the mock did not come up"; docker logs yeswiki-mock; exit 1
 
       - uses: shivammathur/setup-php@v2
         if: steps.covered.outputs.run == 'true'
@@ -278,15 +272,16 @@ jobs:
           YESWIKI_TEST_URL: http://127.0.0.1:8080/?PagePrincipale
         run: bash tests/e2e/runtime.sh start
 
-      # Everything but the sign-in specs, which run below at the address the portal knows.
+      # Everything but the sign-in specs, which run below under the wiki's sign-in address.
       - name: Run the browser suite
         if: steps.covered.outputs.run == 'true'
         run: yarn run test-e2e-all '^(?!.*sign-in-)'
 
-      # The portal only sends the browser back to wiki.yeswiki.test (ports 8080 and 8081 are
-      # registered in docker/lemonldap-ng/conf/lmConf-1.json), and the wiki builds its callback
-      # addresses from the base URL it was installed with: so this wiki is installed again
-      # under that name, which is why this step is not part of the suite above.
+      # The wiki must be same-site with the mock identity provider, auth.yeswiki.test, for SAML's
+      # POST callback to carry its Lax cookie; and the SAML callback the specs give the mock comes
+      # from YESWIKI_BASE_URL, which must be the base URL the wiki builds its own addresses from:
+      # so this wiki is installed again as wiki.yeswiki.test, which is why this step is not part
+      # of the suite above.
       - name: Run the sign-in suite
         if: ${{ !cancelled() && steps.covered.outputs.run == 'true' }}
         env:
@@ -304,7 +299,7 @@ jobs:
         run: |
           tail -200 /tmp/yeswiki-e2e-serve.log 2>/dev/null || true
           tail -200 "${{ runner.temp }}/fpm.log" 2>/dev/null || true
-          docker logs yeswiki-sso 2>&1 | tail -100 || true
+          docker logs yeswiki-mock 2>&1 | tail -100 || true
 
       - name: Report runtime crashes
         if: always() && steps.covered.outputs.run == 'true'
@@ -380,8 +375,8 @@ jobs:
       - name: Three replicas on kind with ${{ matrix.database }}, SeaweedFS and Mailpit, the browser suite, then a rolling upgrade
         env:
           E2E: '1'
-          # The sign-in specs need the identity servers, which the browser job starts and the
-          # cluster does not have.
+          # The sign-in specs need the mock and the directory, which the browser job starts and
+          # the cluster does not have.
           PLAYWRIGHT_ARGS: '^(?!.*sign-in-)'
         run: deploy/kind/run.sh "${{ matrix.database }}" "yeswiki-kind:${{ github.sha }}"
 

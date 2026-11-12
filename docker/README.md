@@ -19,7 +19,7 @@ To run a wiki in production with Docker, see [`deploy/compose/`](../deploy/compo
 | `yeswiki-pg` | PostgreSQL 16, as `yeswiki-pg` (user, password, database: `yeswiki`) | |
 | `yeswiki-s3` | SeaweedFS with its S3 gateway | <http://localhost:8333> |
 | `yeswiki-ldap` | OpenLDAP, as `yeswiki-ldap:1389` from the app | `ldap://localhost:1389` |
-| `yeswiki-sso` | LemonLDAP::NG, an OIDC, SAML and CAS portal, as `auth.yeswiki.test` inside the stack | <http://localhost:8087> |
+| `yeswiki-mock` | MockServer, an HTTP mock the specs configure; `auth.yeswiki.test` inside the stack, the identity provider of the sign-in specs | <http://localhost:8087/mockserver/dashboard> |
 | `myadmin` | phpMyAdmin | <http://localhost:8086> |
 | `mail` | Mailpit, which catches every mail the wiki sends | <http://localhost:1080> |
 
@@ -72,16 +72,20 @@ from a real relay: the wiki must not check it. To send mail to it, add this to
 
 ### The sign-in servers
 
-`yeswiki-ldap` and `yeswiki-sso` are there so that the sign-in providers are tested against real
-servers. Their keys and passwords are public test values.
+`yeswiki-ldap` is there so that the LDAP provider is tested against a real directory. Its passwords
+are public test values. The directory's base is `dc=acme,dc=example`, its admin
+`cn=admin,dc=acme,dc=example` with the password `AdminPassword1`. The people `marie`, `jean` and
+`nomail` have the password `TestPassword1`.
 
-The directory's base is `dc=acme,dc=example`, its admin `cn=admin,dc=acme,dc=example` with the
-password `AdminPassword1`. The people `marie`, `jean` and `nomail` have the password `TestPassword1`.
+`yeswiki-mock` plays the OpenID Connect, SAML and CAS providers. It starts empty: the sign-in specs
+tell it who to sign in before each sign-in (`tests/e2e/helpers/idp.ts`), and the dashboard shows
+what it was asked and what it answered. To try a sign-in by hand, add an OpenID Connect provider
+whose discovery URL is `http://auth.yeswiki.test/.well-known/openid-configuration`, with the client
+`wiki-oidc` and the secret `wiki-oidc-secret`, then have the mock sign marie in:
 
-The portal reloads its configuration every second, but only a higher configuration number counts.
-To change it without a restart, copy `docker/lemonldap-ng/conf/lmConf-1.json` to `lmConf-2.json`
-and raise `cfgNum` inside. Fold the change back into `lmConf-1.json` and delete the copy before
-committing.
+```
+curl -X PUT http://localhost:8087/mockserver/oidc -d '{"issuer":"http://auth.yeswiki.test","clientId":"wiki-oidc","clientSecret":"wiki-oidc-secret","subject":"marie","additionalClaims":{"uid":"marie","mail":"marie.dupont@acme.example","givenName":"Marie","sn":"Dupont","groups":["wiki-editors","staff"]}}'
+```
 
 ### Running several stacks side by side
 
@@ -95,7 +99,7 @@ YESWIKI_WEB_PORT=8185
 YESWIKI_MYADMIN_PORT=8186
 YESWIKI_MAIL_PORT=1180
 YESWIKI_S3_PORT=8433
-YESWIKI_SSO_PORT=8187
+YESWIKI_MOCK_PORT=8187
 YESWIKI_LDAP_PORT=1489
 ```
 
