@@ -4,6 +4,7 @@ namespace YesWiki\Kernel\Service;
 
 use PHPMailer\PHPMailer\Exception as PHPMailerException;
 use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\SMTP;
 use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Files\Exception\StorageException;
@@ -14,6 +15,8 @@ class Mailer
 {
     /** How many recipients one message carries before the next batch. */
     private const BATCH_SIZE = 10;
+
+    protected const DIRECT_PORT = 25;
 
     protected ContainerInterface $container;
     protected ParameterBagInterface $params;
@@ -85,7 +88,11 @@ class Mailer
             }
 
             if (count($mailReceiver) === 1) {
-                $mail->addAddress((string)reset($mailReceiver));
+                $recipient = (string)reset($mailReceiver);
+                $mail->addAddress($recipient);
+                if ($keepSender && $this->deliverToMailServer($mail, $recipient)) {
+                    return true;
+                }
                 $mail->send();
 
                 return true;
@@ -102,10 +109,67 @@ class Mailer
 
             return true;
         } catch (PHPMailerException $e) {
-            $this->lastError = $e->errorMessage();
+            $this->lastError = self::failureMessage($mail, $e);
 
             return false;
         }
+    }
+
+    /** @param list<string>|null $servers the servers to try, the recipient domain's mail exchangers when null; hands $mail over with an empty envelope, for a requester's address no authenticated relay would send */
+    public function deliverToMailServer(PHPMailer $mail, string $recipient, ?array $servers = null, ?int $port = null): bool
+    {
+        $mail->preSend();
+        foreach ($servers ?? $this->mailServersOf(substr((string)strrchr($recipient, '@'), 1)) as $server) {
+            $smtp = new SMTP();
+            $smtp->Timeout = 10;
+            $steps = [
+                fn (): bool => $smtp->connect($server, $port ?? static::DIRECT_PORT, 10, ['ssl' => ['verify_peer' => false, 'verify_peer_name' => false]]),
+                fn (): bool => $smtp->hello($mail->Hostname),
+                fn (): bool => !$smtp->getServerExt('STARTTLS') || ($smtp->startTLS() && $smtp->hello($mail->Hostname)),
+                fn (): bool => $smtp->mail(''),
+                fn (): bool => $smtp->recipient($recipient),
+                fn (): bool => $smtp->data($mail->getSentMIMEMessage()),
+            ];
+            $accepted = true;
+            foreach ($steps as $step) {
+                if (!$step()) {
+                    $accepted = false;
+                    break;
+                }
+            }
+            $smtp->quit();
+            $smtp->close();
+            if ($accepted) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /** @return list<string> the mail servers of $domain, preferred first, or the domain itself when it publishes none */
+    protected function mailServersOf(string $domain): array
+    {
+        if ($domain === '') {
+            return [];
+        }
+        $servers = [];
+        $weights = [];
+        if (!getmxrr($domain, $servers, $weights)) {
+            return [$domain];
+        }
+        array_multisort($weights, SORT_ASC, SORT_NUMERIC, $servers);
+
+        return $servers;
+    }
+
+    /** What went wrong with a send, with the SMTP server's own words when PHPMailer left them out. */
+    private static function failureMessage(PHPMailer $mail, PHPMailerException $e): string
+    {
+        $message = $e->getMessage();
+        $reply = trim((string)($mail->getSMTPInstance()->getError()['detail'] ?? ''));
+
+        return $reply === '' || str_contains($message, $reply) ? $message : $message . ' ' . $reply;
     }
 
     /** A fresh message that throws on failure. */

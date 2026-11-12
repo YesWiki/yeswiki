@@ -161,7 +161,7 @@ class ContactApiController extends YesWikiController
                 }
             }
             $mailer = $this->getService(Mailer::class);
-            if ($writtenByARobot || $mailer->send($mailSender, $nameSender, $mailReceiver, $subject, $messageTxt, $messageHtml, in_array($type, ['subscribe', 'unsubscribe'], true))) {
+            if ($writtenByARobot || $mailer->send($mailSender, $nameSender, $mailReceiver, $subject, $messageTxt, $messageHtml, in_array($type, ['subscribe', 'unsubscribe'], true) && $mailingList !== 'ezmlm')) {
                 if (empty($type) || $type == 'contact' || $type == 'mail') {
                     $message['message'] = _t('CONTACT_MESSAGE_SUCCESSFULLY_SENT');
                 } elseif ($type == 'subscribe') {

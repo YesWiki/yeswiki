@@ -87,7 +87,191 @@ class MailerTest extends YesWikiTestCase
                     }
                 };
             }
+
+            protected function mailServersOf(string $domain): array
+            {
+                return [];
+            }
         };
+    }
+
+    /** A mailer that sends for real, handing direct deliveries to the fake server on $port. */
+    private function sendingMailer(int $port): Mailer
+    {
+        $services = $this->getWiki()->services;
+        $class = new class($services, $services->get(ParameterBagInterface::class)) extends Mailer {
+            public static int $port = 0;
+
+            protected function mailServersOf(string $domain): array
+            {
+                return ['127.0.0.1'];
+            }
+
+            public function deliverToMailServer(PHPMailer $mail, string $recipient, ?array $servers = null, ?int $port = null): bool
+            {
+                return parent::deliverToMailServer($mail, $recipient, $servers, $port ?? self::$port);
+            }
+        };
+        $class::$port = $port;
+
+        return $class;
+    }
+
+    /** @return array{0: resource, 1: resource, 2: int} a throwaway SMTP server answering $dataReply after the data, taking one connection per RCPT reply: its process, its output and its port */
+    private function fakeSmtpServer(string $dataReply, string ...$rcptReplies): array
+    {
+        $script = <<<'PHP'
+            [$rcptReplies, $dataReply] = json_decode($argv[1], true);
+            $server = stream_socket_server('tcp://127.0.0.1:0');
+            echo parse_url('tcp://' . stream_socket_get_name($server, false), PHP_URL_PORT), "\n";
+            foreach ($rcptReplies as $rcptReply) {
+                $client = @stream_socket_accept($server, 5);
+                if (!$client) {
+                    break;
+                }
+                fwrite($client, "220 fake\r\n");
+                $inData = false;
+                while (($line = fgets($client)) !== false) {
+                    $line = rtrim($line);
+                    echo $line, "\n";
+                    if ($inData) {
+                        if ($line === '.') {
+                            $inData = false;
+                            fwrite($client, "$dataReply\r\n");
+                        }
+                        continue;
+                    }
+                    $reply = match (strtoupper(substr($line, 0, 4))) {
+                        'RCPT' => $rcptReply,
+                        'DATA' => '354 go',
+                        'QUIT' => '221 bye',
+                        default => '250 ok',
+                    };
+                    $inData = str_starts_with($reply, '354');
+                    fwrite($client, "$reply\r\n");
+                    if (str_starts_with($reply, '221')) {
+                        break;
+                    }
+                }
+                fclose($client);
+            }
+            PHP;
+        $process = proc_open([PHP_BINARY, '-r', $script, (string)json_encode([array_values($rcptReplies), $dataReply])], [1 => ['pipe', 'w']], $pipes);
+        $this->assertIsResource($process);
+
+        return [$process, $pipes[1], (int)trim((string)fgets($pipes[1]))];
+    }
+
+    /** What the fake server was told, once it has stopped. */
+    private function dialogueOf(mixed $process, mixed $output): string
+    {
+        $dialogue = (string)stream_get_contents($output);
+        proc_close($process);
+
+        return $dialogue;
+    }
+
+    private function subscriptionMail(): PHPMailer
+    {
+        $mail = new PHPMailer(true);
+        $mail->isSMTP();
+        $mail->Hostname = 'wiki.example.org';
+        $mail->setFrom('visitor@example.net');
+        $mail->addAddress('sympa@example.com');
+        $mail->Subject = 'subscribe mylist';
+        $mail->Body = 'subscribe';
+
+        return $mail;
+    }
+
+    public function testASubscriptionReachesTheListServerUnderTheRequesterAddress(): void
+    {
+        [$process, $output, $port] = $this->fakeSmtpServer('250 queued', '250 ok');
+
+        $delivered = $this->mailer()->deliverToMailServer($this->subscriptionMail(), 'sympa@example.com', ['127.0.0.1'], $port);
+        $dialogue = $this->dialogueOf($process, $output);
+
+        $this->assertTrue($delivered);
+        $this->assertStringContainsString('EHLO wiki.example.org', $dialogue);
+        $this->assertStringContainsString('MAIL FROM:<>', $dialogue);
+        $this->assertStringContainsString('RCPT TO:<sympa@example.com>', $dialogue);
+        $this->assertStringContainsString('From: visitor@example.net', $dialogue);
+        $this->assertStringContainsString('Subject: subscribe mylist', $dialogue);
+    }
+
+    public function testTheNextServerIsTriedWhenOneRefuses(): void
+    {
+        [$process, $output, $port] = $this->fakeSmtpServer('250 queued', '421 try later', '250 ok');
+
+        $delivered = $this->mailer()->deliverToMailServer($this->subscriptionMail(), 'sympa@example.com', ['127.0.0.1', '127.0.0.1'], $port);
+        $dialogue = $this->dialogueOf($process, $output);
+
+        $this->assertTrue($delivered);
+        $this->assertSame(2, substr_count($dialogue, 'RCPT TO:'));
+        $this->assertSame(1, substr_count($dialogue, "\n.\n"));
+    }
+
+    public function testNoServerAcceptingMeansNotDelivered(): void
+    {
+        [$process, $output, $port] = $this->fakeSmtpServer('550 5.7.1 refused', '250 ok');
+
+        $delivered = $this->mailer()->deliverToMailServer($this->subscriptionMail(), 'sympa@example.com', ['127.0.0.1'], $port);
+        $this->dialogueOf($process, $output);
+
+        $this->assertFalse($delivered);
+    }
+
+    public function testSendingASubscriptionGoesStraightToTheListServer(): void
+    {
+        $this->config['contact_from'] = 'wiki@example.org';
+        [$process, $output, $port] = $this->fakeSmtpServer('250 queued', '250 ok');
+
+        $sent = $this->sendingMailer($port)->send('visitor@example.net', 'Visitor', 'sympa@example.com', 'subscribe mylist', 'subscribe', '', true);
+        $dialogue = $this->dialogueOf($process, $output);
+
+        $this->assertTrue($sent);
+        $this->assertStringContainsString('MAIL FROM:<>', $dialogue);
+        $this->assertStringContainsString('From: Visitor <visitor@example.net>', $dialogue);
+    }
+
+    public function testASubscriptionTheListServerRefusesGoesThroughTheTransport(): void
+    {
+        $this->mailer()->send('visitor@example.net', 'Visitor', 'sympa@example.com', 'subscribe mylist', 'subscribe', '', true);
+
+        $this->assertCount(1, $this->sent, 'with no list server taking it, the configured transport sends it');
+    }
+
+    public function testAnOrdinaryMailNeverGoesStraightToAServer(): void
+    {
+        [$process, $output, $port] = $this->fakeSmtpServer('250 queued', '250 ok');
+        $this->config['contact_mail_func'] = 'smtp';
+        $this->config['contact_smtp_host'] = '127.0.0.1';
+        $this->config['contact_smtp_port'] = $port;
+        $this->config['contact_smtp_user'] = '';
+
+        $sent = $this->sendingMailer(1)->send('visitor@example.net', 'Visitor', 'someone@example.com', 'Hello', 'Body');
+        $dialogue = $this->dialogueOf($process, $output);
+
+        $this->assertTrue($sent);
+        $this->assertStringNotContainsString('MAIL FROM:<>', $dialogue, 'the configured relay sends it, under its own envelope');
+    }
+
+    public function testAFailureReportsWhatTheServerAnswered(): void
+    {
+        [$process, $output, $port] = $this->fakeSmtpServer('550 5.7.1 Sender mismatch', '250 ok');
+        $this->config['contact_mail_func'] = 'smtp';
+        $this->config['contact_smtp_host'] = '127.0.0.1';
+        $this->config['contact_smtp_port'] = $port;
+        $this->config['contact_smtp_user'] = '';
+
+        $mailer = $this->sendingMailer(1);
+        $sent = $mailer->send('visitor@example.net', 'Visitor', 'someone@example.com', 'Hello', 'Body');
+        $this->dialogueOf($process, $output);
+
+        $this->assertFalse($sent);
+        $this->assertStringContainsString('data not accepted', $mailer->lastError());
+        $this->assertStringContainsString('Sender mismatch', $mailer->lastError());
+        $this->assertStringNotContainsString('<strong>', $mailer->lastError(), 'the reason is text, the caller escapes it');
     }
 
     public function testALoneRecipientIsInToAndNotInBcc(): void

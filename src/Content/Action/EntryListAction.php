@@ -55,6 +55,31 @@ use YesWiki\Search\Service\SearchManager;
 
 class EntryListAction extends YesWikiAction implements AliasesPerformable, RegisteredAction, ProvidesComponents, SuppliesItems
 {
+    public const TILE_BACKGROUNDS = [
+        'OpenStreetMap.Mapnik',
+        'OpenStreetMap.DE',
+        'OpenStreetMap.France',
+        'OpenStreetMap.HOT',
+        'OpenTopoMap',
+        'Stadia.AlidadeSmooth',
+        'Stadia.AlidadeSmoothDark',
+        'Stadia.OSMBright',
+        'Esri.WorldStreetMap',
+        'Esri.WorldTopoMap',
+        'Esri.WorldImagery',
+        'Esri.WorldTerrain',
+        'Esri.WorldShadedRelief',
+        'Esri.WorldPhysical',
+        'Esri.OceanBasemap',
+        'Esri.NatGeoWorldMap',
+        'Esri.WorldGrayCanvas',
+        'MtbMap',
+        'HikeBike.HikeBike',
+        'HikeBike.HillShading',
+        'BasemapAT.orthofoto',
+        'NASAGIBS.ViirsEarthAtNight2012',
+    ];
+
     /** What a `table` with columns means by default: one column per field, labels, the same link as any Presentation. */
     private const TABLE_COLUMNS_DEFAULTS = [
         'checkboxfieldsincolumns' => 'false',
@@ -604,45 +629,7 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
                 ->settings(self::formSetting())
                 ->group(self::commonSettings(), self::commonDisplaySettings())
                 ->settings(
-                    Setting::choice('provider', [
-                        'OpenStreetMap.Mapnik',
-                        'OpenStreetMap.BlackAndWhite',
-                        'OpenStreetMap.DE',
-                        'OpenStreetMap.France',
-                        'OpenStreetMap.HOT',
-                        'OpenTopoMap',
-                        'Stadia.AlidadeSmooth',
-                        'Stadia.AlidadeSmoothDark',
-                        'Stadia.OSMBright',
-                        'Stamen.Toner',
-                        'Stamen.TonerBackground',
-                        'Stamen.TonerLite',
-                        'Stamen.Watercolor',
-                        'Stamen.Terrain',
-                        'Stamen.TerrainBackground',
-                        'Esri.WorldStreetMap',
-                        'Esri.DeLorme',
-                        'Esri.WorldTopoMap',
-                        'Esri.WorldImagery',
-                        'Esri.WorldTerrain',
-                        'Esri.WorldShadedRelief',
-                        'Esri.WorldPhysical',
-                        'Esri.OceanBasemap',
-                        'Esri.NatGeoWorldMap',
-                        'Esri.WorldGrayCanvas',
-                        'HERE.normalDay',
-                        'MtbMap',
-                        'CartoDB.Positron',
-                        'CartoDB.PositronNoLabels',
-                        'CartoDB.PositronOnlyLabels',
-                        'CartoDB.DarkMatter',
-                        'CartoDB.DarkMatterNoLabels',
-                        'CartoDB.DarkMatterOnlyLabels',
-                        'HikeBike.HikeBike',
-                        'HikeBike.HillShading',
-                        'BasemapAT.orthofoto',
-                        'NASAGIBS.ViirsEarthAtNight2012',
-                    ])
+                    Setting::choice('provider', self::TILE_BACKGROUNDS)
                         ->label(_t('AB_bazarcarto_provider_label'))
                         ->default('OpenStreetMap.Mapnik')
                         ->required(),
@@ -1014,45 +1001,7 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
                 ->settings(self::formSetting())
                 ->group(self::commonSettings(), self::commonDisplaySettings())
                 ->settings(
-                    Setting::choice('provider', [
-                        'OpenStreetMap.Mapnik',
-                        'OpenStreetMap.BlackAndWhite',
-                        'OpenStreetMap.DE',
-                        'OpenStreetMap.France',
-                        'OpenStreetMap.HOT',
-                        'OpenTopoMap',
-                        'Stadia.AlidadeSmooth',
-                        'Stadia.AlidadeSmoothDark',
-                        'Stadia.OSMBright',
-                        'Stamen.Toner',
-                        'Stamen.TonerBackground',
-                        'Stamen.TonerLite',
-                        'Stamen.Watercolor',
-                        'Stamen.Terrain',
-                        'Stamen.TerrainBackground',
-                        'Esri.WorldStreetMap',
-                        'Esri.DeLorme',
-                        'Esri.WorldTopoMap',
-                        'Esri.WorldImagery',
-                        'Esri.WorldTerrain',
-                        'Esri.WorldShadedRelief',
-                        'Esri.WorldPhysical',
-                        'Esri.OceanBasemap',
-                        'Esri.NatGeoWorldMap',
-                        'Esri.WorldGrayCanvas',
-                        'HERE.normalDay',
-                        'MtbMap',
-                        'CartoDB.Positron',
-                        'CartoDB.PositronNoLabels',
-                        'CartoDB.PositronOnlyLabels',
-                        'CartoDB.DarkMatter',
-                        'CartoDB.DarkMatterNoLabels',
-                        'CartoDB.DarkMatterOnlyLabels',
-                        'HikeBike.HikeBike',
-                        'HikeBike.HillShading',
-                        'BasemapAT.orthofoto',
-                        'NASAGIBS.ViirsEarthAtNight2012',
-                    ])
+                    Setting::choice('provider', self::TILE_BACKGROUNDS)
                         ->label(_t('AB_bazarcarto_provider_label'))
                         ->default('OpenStreetMap.Mapnik')
                         ->required(),
@@ -2117,6 +2066,7 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
 				scrollWheelZoom:' . $params['zoom_molette'] . ',
 				zoomControl:' . $params['navigation'] . ',
 		fullscreenControl:' . $params['fullscreen'] . ',
+		fullscreenControlOptions: ' . json_encode(['title' => _t('BAZ_FULLSCREEN'), 'titleCancel' => _t('BAZ_BACK_TO_NORMAL_VIEW'), 'forceSeparateButton' => true], JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_APOS) . ',
 				iconAnchor:   [6, 20]
 		});';
 

@@ -525,6 +525,14 @@ puisque c'est elle que la liste doit inscrire. Elles restent signées pour le
 domaine du wiki, sans identité DKIM (`i=`), ce qui ne suffit pas toujours à
 passer le contrôle DMARC du domaine de cette personne.
 
+Un serveur SMTP authentifié refuse en général d'envoyer depuis une adresse qui
+n'est pas celle de son compte. Ces demandes partent donc directement vers les
+serveurs de mail (MX) du domaine de la liste, avec une enveloppe vide : le port
+25 doit être ouvert en sortie. Si aucun de ces serveurs ne les accepte, elles
+repassent par l'envoi configuré (`contact_mail_func`). Les listes ezmlm, qui
+reçoivent l'adresse à inscrire dans l'adresse de destination, passent toujours
+par l'envoi configuré.
+
 ### Migrer son wiki
 
 Il est possible de déplacer son wiki d'un serveur à un autre. Pour cela, il vous
