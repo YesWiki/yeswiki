@@ -5,7 +5,6 @@ import { Browser, expect, Page, test } from '@playwright/test'
 import { instanceDir } from '../helpers/instance'
 import {
   accountWithEmail,
-  forgetAttempts,
   groupsOf,
   LDAP_URI,
   PASSWORD,
@@ -159,10 +158,6 @@ const signInThroughPortal = async (
 }
 
 test.describe('the upgrade from Doryphore', () => {
-  test.beforeEach(() => {
-    forgetAttempts(PEOPLE.marie.login)
-  })
-
   test.afterAll(() => {
     fixture('reset')
     waitForTheConfiguration()

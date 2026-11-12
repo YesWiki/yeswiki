@@ -16,7 +16,7 @@ use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';
 
-/** POST /api/login goes through the same door as the form: the local provider and the attempt limit. */
+/** POST /api/login goes through the same door as the form: the local provider. */
 class ApiLoginTest extends YesWikiTestCase
 {
     private const TAG = 'ApiLoginUser';
@@ -56,7 +56,7 @@ class ApiLoginTest extends YesWikiTestCase
         }
         $services->get(PageManager::class)->deleteOrphaned(self::TAG);
         $db = $services->get(DbService::class);
-        $db->query("DELETE FROM {$this->journal()} WHERE {$db->quoteIdentifier('id')} > {$this->journalFloor} AND {$db->quoteIdentifier('action')} IN ('login.failed', 'login.throttled')");
+        $db->query("DELETE FROM {$this->journal()} WHERE {$db->quoteIdentifier('id')} > {$this->journalFloor} AND {$db->quoteIdentifier('action')} = 'login.failed'");
         parent::tearDown();
     }
 
@@ -94,16 +94,5 @@ class ApiLoginTest extends YesWikiTestCase
         self::getWiki()->services->get(RuntimeConfig::class)['sso_providers'] = ['local' => ['type' => 'local', 'enabled' => false]];
 
         $this->assertSame(403, $this->post(self::TAG, self::PASSWORD)->getStatusCode());
-    }
-
-    public function testItAnswers429OnceTheLoginIsBlocked(): void
-    {
-        for ($attempt = 0; $attempt < 5; ++$attempt) {
-            $this->assertSame(401, $this->post(self::TAG, 'nope')->getStatusCode());
-        }
-
-        $response = $this->post(self::TAG, self::PASSWORD);
-        $this->assertSame(429, $response->getStatusCode());
-        $this->assertSame('too_many_attempts', json_decode((string)$response->getContent(), true)['error']);
     }
 }

@@ -11,7 +11,6 @@ use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Identity\Service\LoginCookie;
 use YesWiki\Identity\Service\PasswordHasherFactory;
 use YesWiki\Identity\Service\SignIn\AccountLinks;
-use YesWiki\Identity\Service\SignIn\AttemptLimiter;
 use YesWiki\Identity\Service\SignIn\HandshakeCookie;
 use YesWiki\Identity\Service\SignIn\ProviderRegistry;
 use YesWiki\Identity\Service\SignIn\SignInFlow;
@@ -125,7 +124,7 @@ class ExtensionProviderTest extends YesWikiTestCase
     {
         $services = self::getWiki()->services;
         $registry = $this->registry($section);
-        $journal = new SignInJournal($services->get(Journal::class), $services->get(AuthenticationService::class), $services->get(AttemptLimiter::class), $registry);
+        $journal = new SignInJournal($services->get(Journal::class), $services->get(AuthenticationService::class), $registry);
         $browser = new class($services->get(AccountActivationService::class), $services->get(HibernationService::class), $services->get(ParameterBagInterface::class), $services->get(PasswordHasherFactory::class), $services->get(UserManager::class), $services) extends AuthenticationService {
             protected function isCli(): bool
             {
@@ -134,7 +133,7 @@ class ExtensionProviderTest extends YesWikiTestCase
         };
         $browser->setServices($services);
 
-        return new SignInFlow($registry, $services->get(SignInService::class), $journal, $services->get(AttemptLimiter::class), $services->get(HandshakeCookie::class), $browser, $services->get(UrlFormatter::class), $services->get(AclService::class));
+        return new SignInFlow($registry, $services->get(SignInService::class), $journal, $services->get(HandshakeCookie::class), $browser, $services->get(UrlFormatter::class), $services->get(AclService::class));
     }
 
     /** @return array<string, array<string, mixed>> */

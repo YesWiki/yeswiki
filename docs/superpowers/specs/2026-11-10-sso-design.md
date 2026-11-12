@@ -28,7 +28,6 @@ Success looks like this: a wiki admin can connect a company provider, test it, a
 - The employee gets a comprehensive error message. The admin gets the error and the attributes the provider returned.
 - Failed sign-ins are recorded for the admin through the existing Journal, with no new storage **(decided)**.
 - Successful sign-ins are not logged **(decided)**.
-- Failed password attempts are limited.
 - An extension can easily add a new type of provider (section 10).
 - An upgrade path from the last stable Doryphore with the corresponding extensions.
 
@@ -252,7 +251,7 @@ Failed sign-ins use the Journal's two existing channels, with no new table, sett
 | Channel | Written for | Holds | Kept |
 |---|---|---|---|
 | **Audit**: `login.failed`, through the existing `recordFailedLogin()` | Every refusal and every wrong password, on every provider | Who (target), provider, reason code. No attributes | 365 days, one row per attempt |
-| **Diagnostic**: `Journal::warning()` or `error()`, with action `login.refused.<reason>.<provider>` | Refusals after the provider has answered, and technical failures. Not wrong passwords or the attempt limit | Message, last step reached, attributes returned and their use, group mapping result, account matched, raw error after scrubbing | 14 days, one row per provider, reason and day |
+| **Diagnostic**: `Journal::warning()` or `error()`, with action `login.refused.<reason>.<provider>` | Refusals after the provider has answered, and technical failures. Not wrong passwords | Message, last step reached, attributes returned and their use, group mapping result, account matched, raw error after scrubbing | 14 days, one row per provider, reason and day |
 
 Consequences:
 
@@ -281,7 +280,6 @@ Reasons, each with a translated employee message, an admin explanation and a sug
 | `provider_disabled` | The provider was switched off |
 | `account_creation_failed` | The account could not be created |
 | `wrong_credentials` | A password provider rejected the login or password (shown inline on the form) |
-| `too_many_attempts` | The limit on failed password attempts was reached (section 12) |
 | `internal_error` | Anything unexpected |
 
 ## 10. Architecture
@@ -439,8 +437,7 @@ What core then gives it, identical to the built-in types **(author's call for th
 - an edit screen, generated from `connectionSettings()`;
 - the generic start and callback routes and the handshake cookie;
 - attribute mapping, account matching and creation, group mapping, and the read-only profile;
-- the refused page, the Journal entries and test mode;
-- the attempt limit, for a password provider.
+- the refused page, the Journal entries and test mode.
 
 An extension cannot change the account rules of section 5, so a new type cannot weaken them.
 
@@ -498,7 +495,6 @@ Rules **(author's call unless noted)**:
 - CAS: ticket validated over verified TLS, with the same service URL.
 - LDAP: DN and filter escaped; empty passwords refused before any bind (many servers accept an anonymous bind otherwise); the password is never stored; a warning on the screen when the connection is unencrypted.
 - The return URL is checked with `UrlFormatter::isInternal`.
-- Failed password attempts are limited **(decided)**: after 5 failures for one login in 15 minutes, further attempts on that login are refused without contacting the directory. This covers LDAP, the local form and `/api/login`. The count comes from the audit channel's `login.failed` rows of the last 15 minutes, which never collapse and which its `channel, at` index already serves, so no new storage is needed. LDAP records the login trimmed and lowercased. An attempt stopped by the limit is recorded as `login.throttled`, which is not counted. Test mode is not counted. If a Journal write fails, that attempt goes uncounted. Nothing limits these attempts today.
 - Test mode requires an admin and is bound to the handshake, so a test can never sign anyone in.
 - Raw provider errors are escaped when shown and scrubbed of secrets when stored.
 - Libraries must run on PHP 8.4, must be maintained, and must not keep per-request state in statics. They must not rely on `$_SESSION`, except phpCAS confined as in section 6.
@@ -520,7 +516,7 @@ Rules **(author's call unless noted)**:
 - **Protocols.** One portal acts as OIDC provider, SAML identity provider and CAS server at once. Two SAML registrations cover two providers of one type. Groups are exported explicitly for each protocol, as real multiple values, because LemonLDAP::NG keeps them as one `; `-separated string.
 - **LDAP (author's call).** LemonLDAP::NG only reads directories and cannot answer LDAP clients, and its demo backend has no groups. So an OpenLDAP service, `yeswiki-ldap`, seeded with test users and groups, is both its user and group backend and the directory the LDAP provider talks to. The same people and groups then exist for every type.
 - **Local** has no external server and goes through the same suite.
-- **Coverage for each external type.** A first sign-in that creates an account, a returning sign-in that refreshes the profile, a group added and a group removed, a refusal showing its reason to the employee and, in `/admin/logs`, its audit row and its diagnostic with attributes, and test mode. A successful sign-in writes nothing to the Journal. Password providers also cover the attempt limit.
+- **Coverage for each external type.** A first sign-in that creates an account, a returning sign-in that refreshes the profile, a group added and a group removed, a refusal showing its reason to the employee and, in `/admin/logs`, its audit row and its diagnostic with attributes, and test mode. A successful sign-in writes nothing to the Journal.
 - **Runtimes.** The suite runs under both php-fpm and the binary, because worker mode is where session and static-state problems appear.
 - **Hostnames.** The browser and the wiki must reach the portal under the same name. CI serves the wiki on plain `http://127.0.0.1`, where the handshake cookie falls back to `Lax`, so for SAML's POST callback the wiki and the portal must be same-site, or the stack must use https.
 

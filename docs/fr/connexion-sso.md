@@ -347,7 +347,7 @@ revenu au lieu de connecter qui que ce soit :
   compte existant, ouvrir un compte déjà lié, ou refuser, et pourquoi.
 
 Un bandeau rappelle que personne n'a été connecté et que rien n'a été modifié. Un test n'écrit rien
-dans le Journal et ne compte pas dans la [limite de tentatives](/docs/fr/connexion-sso?id=limite-de-tentatives).
+dans le Journal.
 
 Pour un fournisseur à bouton (OpenID Connect, SAML, CAS), vous êtes envoyé·e chez le fournisseur et
 vous vous y connectez **en tant que la personne que vous voulez tester** : un compte de test de
@@ -405,7 +405,6 @@ Les raisons, et que faire :
 | `provider_disabled`       | Le fournisseur est désactivé, ou son type n'est plus installé.                                   | Activez-le, ou activez l'extension qui fournit son type.                                           |
 | `account_creation_failed` | Le compte n'a pas pu être écrit (le wiki est en hibernation, par exemple).                       | Lisez l'erreur brute, vérifiez que le wiki accepte les modifications, et demandez de réessayer.    |
 | `wrong_credentials`       | Le fournisseur à mot de passe a rejeté l'identifiant ou le mot de passe.                         | Rien, sauf si cet identifiant ne marche jamais.                                                     |
-| `too_many_attempts`       | L'identifiant a atteint la [limite de tentatives](/docs/fr/connexion-sso?id=limite-de-tentatives).                        | Attendez 15 minutes. Si personne n'essaie avec cet identifiant, quelqu'un cherche peut-être son mot de passe. |
 | `internal_error`          | Un événement imprévu s'est produit dans le wiki.                                                 | Lisez l'erreur brute, ici et dans le journal du serveur, et signalez-la si elle persiste.          |
 
 **Les connexions réussies ne sont enregistrées nulle part.** Une connexion qui réussit mais
@@ -424,18 +423,6 @@ autres données personnelles du serveur, et sachez qui peut le lire.
 Les mots de passe, jetons, secrets de client, assertions SAML et cookies ne sont jamais écrits, ni
 dans le Journal ni dans le journal du serveur. Les attributs sont réduits à une taille raisonnable
 avant d'être écrits.
-
-## Limite de tentatives
-
-Après **5 échecs pour un même identifiant en 15 minutes**, les tentatives suivantes avec cet
-identifiant sont refusées sans interroger le fournisseur, jusqu'à ce que les 15 minutes soient
-passées. Cela vaut pour LDAP, pour le formulaire à mot de passe local et pour `/api/login`, qui
-répond alors HTTP 429. Le compte porte sur chaque refus enregistré sous cet identifiant ou cet
-email dans le [Journal](/docs/fr/connexion-sso?id=ce-qui-est-enregistré-et-où), quel que soit le
-fournisseur et quelle que soit la raison : cinq connexions OpenID Connect refusées pour
-`marie@example.org` bloquent aussi le formulaire local pour l'identifiant `marie@example.org`
-pendant 15 minutes. Une tentative arrêtée par la limite est enregistrée comme telle et ne compte
-pas, si bien qu'être bloqué ne prolonge pas le blocage. Les tests ne comptent pas.
 
 ## Contrôles de santé
 

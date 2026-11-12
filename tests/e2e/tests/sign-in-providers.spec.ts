@@ -3,9 +3,7 @@ import { ADMIN_PASSWORD, ADMIN_USERNAME, login } from '../helpers/login'
 import {
   accountWithEmail,
   addToGroup,
-  directoryBinds,
   forgetAccounts,
-  forgetAttempts,
   groupsOf,
   journal,
   PASSWORD,
@@ -176,7 +174,7 @@ for (const type of TYPES) {
       setProviders(sectionFor(type, { create_accounts: false }))
       const before = latestRow()
 
-      // a password provider records the login typed, which the attempt limit counts; the others the person's email
+      // a password provider records the login typed; the others the person's email
       const who = PASSWORD_TYPES.includes(type)
         ? PEOPLE.marie.login
         : PEOPLE.marie.email
@@ -414,100 +412,6 @@ for (const type of TYPES) {
     }
   })
 }
-
-/**
- * The attempt limit (spec section 12): five wrong passwords for one login in 15 minutes, and the sixth attempt is refused without
- * asking the directory, even with the right password. The directory's bind counter shows who was asked.
- */
-test.describe('the attempt limit against the real directory', () => {
-  const LIMIT_MESSAGE =
-    /Too many failed attempts with this login|Trop de tentatives échouées avec cet identifiant/
-  const WRONG = 'not-the-password'
-
-  test.beforeEach(() => {
-    setProviders(sectionFor('ldap'))
-  })
-
-  test('ldap: LDAP and local both stop at the sixth attempt with the limit message', async ({
-    page,
-  }) => {
-    const cases = [
-      {
-        provider: PROVIDER_IDS.ldap,
-        login: PEOPLE.jean.login,
-        password: PASSWORD,
-        binds: 1,
-      },
-      {
-        provider: 'local',
-        login: ADMIN_USERNAME,
-        password: ADMIN_PASSWORD,
-        binds: 0,
-      },
-    ]
-    /** The message the sign-in form came back with. */
-    const flash = () => page.locator('[data-yw-flash]')
-    for (const { provider, login, password, binds } of cases) {
-      const attemptRows = () =>
-        journal('login.%').filter(
-          (row) =>
-            row.target.toLowerCase() === login.toLowerCase() &&
-            ['login.failed', 'login.throttled'].includes(row.action),
-        )
-      /** One attempt through the wiki's form, and how many binds the directory answered for it. */
-      const attempt = async (typed: string): Promise<number> => {
-        const before = directoryBinds()
-        await page.goto('/?user')
-        await signInAtWikiForm(page, provider, login, typed)
-        // the reading itself is one bind
-        return directoryBinds() - before - 1
-      }
-
-      forgetAttempts(login)
-      try {
-        for (let failure = 1; failure <= 5; failure++) {
-          expect(
-            await attempt(WRONG),
-            `${provider}, wrong password ${failure}: the directory is asked only for its own accounts`,
-          ).toBe(binds)
-          await expect(
-            flash(),
-            'the form says the password is wrong',
-          ).toHaveAttribute('data-yw-flash', /\S/)
-          await expect(flash()).not.toHaveAttribute(
-            'data-yw-flash',
-            LIMIT_MESSAGE,
-          )
-        }
-
-        expect(
-          await attempt(password),
-          `${provider}: the sixth attempt never reaches the directory`,
-        ).toBe(0)
-        await expect(flash()).toHaveAttribute('data-yw-flash', LIMIT_MESSAGE)
-        await page.goto('/?user')
-        await expect(
-          page.locator('form.login-form'),
-          'the right password did not sign anyone in',
-        ).toBeVisible()
-
-        const rows = attemptRows()
-        expect(rows.map((row) => row.action)).toEqual([
-          ...Array(5).fill('login.failed'),
-          'login.throttled',
-        ])
-        expect(rows.every((row) => row.context.provider === provider)).toBe(
-          true,
-        )
-        expect(JSON.stringify(rows)).not.toContain(WRONG)
-        expect(JSON.stringify(rows)).not.toContain(password)
-      } finally {
-        // the limit would stop every later sign-in of this login for 15 minutes
-        forgetAttempts(login)
-      }
-    }
-  })
-})
 
 /**
  * Accounts of the wiki stay a way to sign in beside a provider (spec section 8.1): the form offers a tab for each, and what

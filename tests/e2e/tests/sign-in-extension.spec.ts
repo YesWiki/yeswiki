@@ -4,7 +4,6 @@ import { ADMIN_PASSWORD, ADMIN_USERNAME, login } from '../helpers/login'
 import { instanceDir } from '../helpers/instance'
 import {
   forgetAccounts,
-  forgetAttempts,
   journal,
   setProviders,
   signInAtWikiForm,
@@ -60,7 +59,6 @@ test.describe('a provider type added by an extension', () => {
   test.afterAll(() => {
     // the suite finds the extension as it left it, whatever happened above
     forgetAccounts(PERSON_EMAIL)
-    forgetAttempts(PERSON)
     if (wasOn && !helloworldIsOn()) {
       yeswicli('extension:enable', 'helloworld')
     } else if (!wasOn && helloworldIsOn()) {

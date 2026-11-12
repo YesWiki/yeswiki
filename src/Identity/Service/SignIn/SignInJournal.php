@@ -23,7 +23,6 @@ class SignInJournal
     public function __construct(
         private readonly Journal $journal,
         private readonly AuthenticationService $authentication,
-        private readonly AttemptLimiter $limiter,
         private readonly ProviderRegistry $registry,
     ) {
     }
@@ -31,12 +30,6 @@ class SignInJournal
     public function failure(ProviderConfig $config, string $who, FailureReason $reason, SignInTrace $trace): void
     {
         try {
-            if ($reason === FailureReason::TooManyAttempts) {
-                $this->limiter->recordThrottled($config->id, $who);
-
-                return;
-            }
-
             $this->authentication->recordFailedLogin($who, $reason->value, $config->id);
 
             if ($reason === FailureReason::WrongCredentials) {

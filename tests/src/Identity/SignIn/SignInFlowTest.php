@@ -14,7 +14,6 @@ use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Identity\Service\LoginCookie;
 use YesWiki\Identity\Service\PasswordHasherFactory;
 use YesWiki\Identity\Service\SignIn\AccountLinks;
-use YesWiki\Identity\Service\SignIn\AttemptLimiter;
 use YesWiki\Identity\Service\SignIn\HandshakeCookie;
 use YesWiki\Identity\Service\SignIn\ProviderRegistry;
 use YesWiki\Identity\Service\SignIn\SignInFlow;
@@ -182,7 +181,7 @@ class SignInFlowTest extends YesWikiTestCase
     protected function tearDown(): void
     {
         $this->cleanUp();
-        $this->db()->query("DELETE FROM {$this->journal()} WHERE {$this->db()->quoteIdentifier('id')} > {$this->journalFloor} AND {$this->db()->quoteIdentifier('action')} IN ('login.failed', 'login.throttled')");
+        $this->db()->query("DELETE FROM {$this->journal()} WHERE {$this->db()->quoteIdentifier('id')} > {$this->journalFloor} AND {$this->db()->quoteIdentifier('action')} = 'login.failed'");
         self::getWiki()->services->get(CurrentRequest::class)->replace($this->requestWas);
         $_COOKIE = $this->cookiesWere;
         parent::tearDown();
@@ -218,7 +217,7 @@ class SignInFlowTest extends YesWikiTestCase
         $target = $this->db()->quoteIdentifier('target');
         $logins = implode(',', array_map(fn (string $login): string => "'" . $login . "'", self::LOGINS));
         $this->db()->query("DELETE FROM {$this->journal()} WHERE {$action} LIKE 'login.%.fake' OR {$action} LIKE 'login.%.fakepw' OR {$action} LIKE 'login.%.off' OR {$action} LIKE 'login.%.orphan' OR {$action} LIKE 'login.%.local'"
-            . " OR ({$action} IN ('login.failed', 'login.throttled') AND ({$target} IN ({$logins}) OR {$target} LIKE 'flow-%'))");
+            . " OR ({$action} = 'login.failed' AND ({$target} IN ({$logins}) OR {$target} LIKE 'flow-%'))");
     }
 
     /** @param array<string, array<string, mixed>> $section */
@@ -233,9 +232,9 @@ class SignInFlowTest extends YesWikiTestCase
             $this->fakeType('fake-password', $this->fakePw),
             $this->fakeType('local', $this->fakePw),
         ], $config);
-        $journal = new SignInJournal($services->get(Journal::class), $services->get(AuthenticationService::class), $services->get(AttemptLimiter::class), $registry);
+        $journal = new SignInJournal($services->get(Journal::class), $services->get(AuthenticationService::class), $registry);
 
-        return new SignInFlow($registry, $services->get(SignInService::class), $journal, $services->get(AttemptLimiter::class), $services->get(HandshakeCookie::class), $browser ?? $this->browser(), $services->get(UrlFormatter::class), $services->get(AclService::class));
+        return new SignInFlow($registry, $services->get(SignInService::class), $journal, $services->get(HandshakeCookie::class), $browser ?? $this->browser(), $services->get(UrlFormatter::class), $services->get(AclService::class));
     }
 
     private function fakeType(string $name, FlowFakeRedirect|FlowFakePassword $provider): ProviderType
@@ -639,27 +638,12 @@ class SignInFlowTest extends YesWikiTestCase
         $this->assertNotEmpty($this->clearedCookie('yw-sign-in'));
     }
 
-    public function testBlockedLoginNeverReachesTheProvider(): void
-    {
-        for ($i = 0; $i < 5; $i++) {
-            $this->flow->password('fakepw', 'locked', 'bad', false);
-        }
-        $outcome = $this->flow->password('fakepw', 'locked', 'good', false);
-        $this->assertSame(FailureReason::TooManyAttempts, $outcome->reason);
-        $this->assertSame(5, $this->fakePw->calls);
-        $this->assertSame(1, $this->countJournal("action = 'login.throttled' AND target = 'locked'"));
-        $this->assertSame(5, $this->countJournal("action = 'login.failed' AND target = 'locked'"), 'being stopped does not count as a failure');
-    }
-
-    public function testTheCountCannotBeDodgedByCaseOrSpaces(): void
+    public function testAFailureIsRecordedUnderTheTrimmedLowercasedLogin(): void
     {
         foreach (['MixedCase', ' mixedcase', 'MIXEDCASE ', 'mixedCase', '  MiXeDcAsE  '] as $login) {
             $this->flow->password('fakepw', $login, 'bad', false);
         }
         $this->assertSame(5, $this->countJournal("action = 'login.failed' AND target = 'mixedcase'"));
-
-        $this->assertSame(FailureReason::TooManyAttempts, $this->flow->password('fakepw', ' MIXEDcase ', 'good', false)->reason);
-        $this->assertSame(5, $this->fakePw->calls);
     }
 
     public function testWrongCredentialsStayOnTheForm(): void

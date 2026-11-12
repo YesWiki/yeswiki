@@ -11,12 +11,12 @@ use YesWiki\Kernel\Component\Setting;
 
 class ContractTest extends TestCase
 {
-    public function testTheThirteenReasons(): void
+    public function testTheTwelveReasons(): void
     {
         $this->assertSame(
             ['provider_unreachable', 'provider_rejected', 'invalid_response', 'configuration_invalid',
                 'missing_attribute', 'email_conflict', 'linked_elsewhere', 'no_account', 'provider_disabled',
-                'account_creation_failed', 'wrong_credentials', 'too_many_attempts', 'internal_error'],
+                'account_creation_failed', 'wrong_credentials', 'internal_error'],
             array_column(FailureReason::cases(), 'value')
         );
     }

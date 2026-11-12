@@ -20,7 +20,6 @@ use YesWiki\Identity\Service\LoginCookie;
 use YesWiki\Identity\Service\PasswordHasherFactory;
 use YesWiki\Identity\Service\SignIn\AccountLinks;
 use YesWiki\Identity\Service\SignIn\AccountNamer;
-use YesWiki\Identity\Service\SignIn\AttemptLimiter;
 use YesWiki\Identity\Service\SignIn\GroupSync;
 use YesWiki\Identity\Service\SignIn\HandshakeCookie;
 use YesWiki\Identity\Service\SignIn\ProfileSync;
@@ -228,7 +227,7 @@ class TestModeTest extends YesWikiTestCase
         $services->get(GroupManager::class)->removeMembers('admins', [self::OTHER_ADMIN]);
         $services->get(AclService::class)->startNewRequest();
         $this->cleanUp();
-        $this->db()->query("DELETE FROM {$this->journal()} WHERE {$this->db()->quoteIdentifier('id')} > {$this->journalFloor} AND {$this->db()->quoteIdentifier('action')} IN ('login.failed', 'login.throttled')");
+        $this->db()->query("DELETE FROM {$this->journal()} WHERE {$this->db()->quoteIdentifier('id')} > {$this->journalFloor} AND {$this->db()->quoteIdentifier('action')} = 'login.failed'");
         $services->get(CurrentRequest::class)->replace($this->requestWas);
         $_COOKIE = $this->cookiesWere;
         parent::tearDown();
@@ -264,7 +263,7 @@ class TestModeTest extends YesWikiTestCase
         $target = $this->db()->quoteIdentifier('target');
         $logins = implode(',', array_map(fn (string $login): string => "'" . $login . "'", self::LOGINS));
         $this->db()->query("DELETE FROM {$this->journal()} WHERE {$action} LIKE 'login.%.fake' OR {$action} LIKE 'login.%.fakepw' OR {$action} LIKE 'login.%.off' OR {$action} LIKE 'login.%.orphan' OR {$action} LIKE 'login.%.local'"
-            . " OR ({$action} IN ('login.failed', 'login.throttled') AND ({$target} IN ({$logins}) OR {$target} LIKE 'testmode-%'))");
+            . " OR ({$action} = 'login.failed' AND ({$target} IN ({$logins}) OR {$target} LIKE 'testmode-%'))");
     }
 
     /** @param array<string, array<string, mixed>> $section */
@@ -279,9 +278,9 @@ class TestModeTest extends YesWikiTestCase
             $this->spiedType('fake-password', $this->fakePw),
             $this->spiedType('local', $this->fakePw),
         ], $config);
-        $journal = new SignInJournal($services->get(Journal::class), $services->get(AuthenticationService::class), $services->get(AttemptLimiter::class), $registry);
+        $journal = new SignInJournal($services->get(Journal::class), $services->get(AuthenticationService::class), $registry);
 
-        return new SignInFlow($registry, $this->service, $journal, $services->get(AttemptLimiter::class), $services->get(HandshakeCookie::class), $this->browser, $services->get(UrlFormatter::class), $services->get(AclService::class));
+        return new SignInFlow($registry, $this->service, $journal, $services->get(HandshakeCookie::class), $this->browser, $services->get(UrlFormatter::class), $services->get(AclService::class));
     }
 
     private function spiedType(string $name, TestModeFakeRedirect|TestModeFakePassword $provider): ProviderType
@@ -689,7 +688,7 @@ class TestModeTest extends YesWikiTestCase
         $this->assertNothingHappened();
     }
 
-    public function testAPasswordProviderTestDoesNotCountAgainstTheLimit(): void
+    public function testAPasswordProviderTestWritesNoFailure(): void
     {
         for ($i = 0; $i < 6; $i++) {
             $outcome = $this->flow->password('fakepw', 'locked', 'bad', false, HandshakeMode::Test);
@@ -700,24 +699,7 @@ class TestModeTest extends YesWikiTestCase
         }
 
         $this->assertSame(6, $this->fakePw->calls);
-        $this->assertFalse(self::getWiki()->services->get(AttemptLimiter::class)->isBlocked('locked'));
-        $this->assertSame(0, $this->journalSince($this->journalFloor), 'no login.failed, no login.throttled');
-    }
-
-    public function testAPasswordProviderTestIsNotStoppedByTheLimit(): void
-    {
-        for ($i = 0; $i < 5; $i++) {
-            $this->flow->password('fakepw', 'locked', 'bad', false);
-        }
-        $this->assertTrue(self::getWiki()->services->get(AttemptLimiter::class)->isBlocked('locked'));
-        $since = $this->latestJournalRow();
-
-        $outcome = $this->flow->password('fakepw', 'locked', 'good', false, HandshakeMode::Test);
-
-        $this->assertSame('tested', $outcome->kind);
-        $this->assertNull($outcome->plan?->refusal, 'the directory is asked: the limit is not consulted');
-        $this->assertSame(6, $this->fakePw->calls);
-        $this->assertSame(0, $this->journalSince($since), 'not even login.throttled');
+        $this->assertSame(0, $this->journalSince($this->journalFloor), 'no login.failed');
     }
 
     public function testAPasswordProviderTestRequiresAnAdmin(): void
@@ -817,7 +799,7 @@ class TestModeTest extends YesWikiTestCase
         $services = self::getWiki()->services;
         $this->snapshotServices();
         $this->installProviders($section);
-        $flow = new SignInFlow($services->get(ProviderRegistry::class), $this->service, $services->get(SignInJournal::class), $services->get(AttemptLimiter::class), $services->get(HandshakeCookie::class), $services->get(AuthenticationService::class), $services->get(UrlFormatter::class), $services->get(AclService::class));
+        $flow = new SignInFlow($services->get(ProviderRegistry::class), $this->service, $services->get(SignInJournal::class), $services->get(HandshakeCookie::class), $services->get(AuthenticationService::class), $services->get(UrlFormatter::class), $services->get(AclService::class));
         $this->swap(SignInFlow::class, $flow);
         if ($tokenAccepted) {
             // filter_input() reads the SAPI's input, which a CLI run has none of: the token is not what is tested here.

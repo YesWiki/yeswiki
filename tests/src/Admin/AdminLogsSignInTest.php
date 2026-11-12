@@ -154,9 +154,4 @@ class AdminLogsSignInTest extends YesWikiTestCase
         $this->assertStringNotContainsString('yw-logs__sign-in', $html);
         $this->assertStringNotContainsString('given_name', $html);
     }
-
-    public function testAJournalPhraseExistsForThrottled(): void
-    {
-        $this->assertNotSame('JOURNAL_ACTION_LOGIN_THROTTLED', _t('JOURNAL_ACTION_LOGIN_THROTTLED'));
-    }
 }

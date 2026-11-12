@@ -39,9 +39,7 @@ or purge task of their own. Every refusal and every wrong password is a `login.f
 refusal after the Provider has answered, or a technical failure, is also a diagnostic,
 `login.refused.<reason>.<provider>`, holding the last step reached, the attributes returned and
 what each was used as, the group mapping result and the raw error after scrubbing; it collapses
-per Provider, reason and day, and is kept 14 days. The audit rows are also the counter of the
-attempt limit (5 failures for one login in 15 minutes, on LDAP, the local form and `/api/login`),
-so the limit needs no storage either. Successful sign-ins and test runs write nothing.
+per Provider, reason and day, and is kept 14 days. Successful sign-ins and test runs write nothing.
 
 **phpCAS is used, and confined.** It is the protocol's official PHP client, maintained, and
 supports PHP 8.4. It was written for one request per process and a PHP session, so

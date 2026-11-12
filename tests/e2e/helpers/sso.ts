@@ -156,11 +156,6 @@ export const addToGroup = (group: string, account: string): void => {
   php('sso-wiki.php', ['add-to-group', group, account])
 }
 
-/** Deletes the failed and throttled sign-ins of these logins, so the attempt limit no longer counts them. */
-export const forgetAttempts = (...logins: string[]): void => {
-  php('sso-wiki.php', ['forget-attempts', ...logins])
-}
-
 /** Types the login and password into the portal's form, once the browser has been sent there. */
 export const signInAtPortal = async (
   page: Page,
@@ -212,36 +207,6 @@ export const testAtWikiForm = async (
   await page.locator('#sign-in-test-password').fill(password)
   await page.locator('#sign-in-test-password').press('Enter')
   await page.waitForLoadState('domcontentloaded')
-}
-
-/**
- * How many binds the directory has answered since it started, from its monitor backend. Reading it is itself a bind,
- * counted in what it returns: two reads in a row differ by one.
- */
-export const directoryBinds = (): number => {
-  const out = execFileSync(
-    'ldapsearch',
-    [
-      '-x',
-      '-LLL',
-      '-H',
-      LDAP_URI,
-      '-D',
-      ADMIN_DN,
-      '-w',
-      ADMIN_PASSWORD,
-      '-b',
-      'cn=Bind,cn=Operations,cn=Monitor',
-      '-s',
-      'base',
-      'monitorOpCompleted',
-    ],
-    { encoding: 'utf8' },
-  )
-  const count = out.match(/^monitorOpCompleted: (\d+)$/m)?.[1]
-  expect(count, 'the directory counts its binds').toBeTruthy()
-
-  return Number(count)
 }
 
 /** Whether the directory accepts this DN and password. */

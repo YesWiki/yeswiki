@@ -16,6 +16,5 @@ enum FailureReason: string
     case ProviderDisabled = 'provider_disabled';
     case AccountCreationFailed = 'account_creation_failed';
     case WrongCredentials = 'wrong_credentials';
-    case TooManyAttempts = 'too_many_attempts';
     case InternalError = 'internal_error';
 }

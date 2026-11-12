@@ -7,7 +7,6 @@
  *   account <email>                 the name of the account that has this email, or null, as JSON
  *   groups <account>                the account's groups, as JSON
  *   add-to-group <group> <account>  creates the group when it does not exist
- *   forget-attempts <login>...      deletes the failed and throttled sign-ins of these logins, which the attempt limit counts
  */
 
 use YesWiki\Core\YesWikiLoader;
@@ -54,16 +53,7 @@ switch ($argv[1] ?? '') {
         $groups->groupExists($group) ? $groups->addMembers($group, [$account]) : $groups->create($group, [$account]);
         break;
 
-    case 'forget-attempts':
-        $db = $services->get(DbService::class);
-        $q = fn (string $column): string => $db->quoteIdentifier($column);
-        $table = $q($services->get(JournalSchema::class)->table());
-        foreach ($arguments as $login) {
-            $db->query("DELETE FROM {$table} WHERE {$q('channel')} = 'audit' AND {$q('action')} IN ('login.failed', 'login.throttled') AND LOWER({$q('target')}) = ?", [mb_strtolower(trim($login))]);
-        }
-        break;
-
     default:
-        fwrite(STDERR, "usage: php sso-wiki.php journal|forget|account|groups|add-to-group|forget-attempts ...\n");
+        fwrite(STDERR, "usage: php sso-wiki.php journal|forget|account|groups|add-to-group ...\n");
         exit(1);
 }

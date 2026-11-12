@@ -326,7 +326,7 @@ provider, in your own browser, and show you what came back instead of signing an
   existing one, sign in to a linked one, or refuse it and why.
 
 A banner says that nobody was signed in and nothing was changed. A test writes nothing to the
-Journal and does not count towards the [attempt limit](#attempt-limit).
+Journal.
 
 For a button provider (OpenID Connect, SAML, CAS), you are sent to the provider and you sign in
 there **as the person you want to test**: you can use a test account of the company, or your own.
@@ -381,7 +381,6 @@ The reasons, and what to do:
 | `provider_disabled`       | The provider is switched off, or its type is no longer installed.                             | Switch it on, or activate the extension that supplies its type.                                 |
 | `account_creation_failed` | The account could not be written (the wiki is in hibernation, for example).                   | Read the raw error, check the wiki accepts changes, and ask the person to try again.            |
 | `wrong_credentials`       | The password provider rejected the login or the password.                                     | Nothing, unless this login never works.                                                          |
-| `too_many_attempts`       | The login reached the [attempt limit](#attempt-limit).                                        | Wait 15 minutes. If nobody at this login is trying, someone may be guessing its password.       |
 | `internal_error`          | Something unexpected happened in the wiki.                                                    | Read the raw error, here and in the server's log, and report it if it persists.                 |
 
 **Successful sign-ins are not recorded anywhere.** A sign-in that succeeds but hits a problem (the
@@ -397,17 +396,6 @@ data: keep that log as you keep the rest of the server's personal data, and know
 
 Passwords, tokens, client secrets, SAML assertions and cookies are never written, in the Journal
 or in the log. Attributes are cut down to a reasonable size before they are written.
-
-## Attempt limit
-
-After **5 failed attempts for one login in 15 minutes**, further attempts with that login are
-refused without asking the provider, until the 15 minutes have passed. This applies to LDAP, to the
-local password form and to `/api/login`, which answers HTTP 429. The count is every refusal
-recorded under that login or email in the [Journal](#what-is-recorded-and-where), from any
-provider and whatever its reason: five refused OpenID Connect sign-ins for `marie@example.org`
-also block the local form for the login `marie@example.org` for 15 minutes. An attempt stopped by
-the limit is recorded as such and does not count, so being blocked does not extend the block.
-Tests do not count.
 
 ## Health checks
 

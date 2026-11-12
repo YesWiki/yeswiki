@@ -17,7 +17,7 @@ use YesWiki\Identity\SignIn\SignInOutcome;
 class AuthApiController extends YesWikiController
 {
     /**
-     * Attempt to login a user (ticket 08, relocated from tools/login's own ApiController), through the local provider like the form: the same attempt limit applies.
+     * Attempt to login a user (ticket 08, relocated from tools/login's own ApiController), through the local provider like the form.
      */
     #[Route('/api/login', methods: ['POST'], options: ['acl' => ['public']])]
     public function login(): ApiResponse
@@ -39,9 +39,6 @@ class AuthApiController extends YesWikiController
                 'user' => $this->getService(AuthenticationService::class)->signedInName(),
                 'isAdmin' => $this->getService(AclService::class)->isAdmin(),
             ]);
-        }
-        if ($outcome->reason === FailureReason::TooManyAttempts) {
-            return new ApiResponse(['error' => FailureReason::TooManyAttempts->value, 'message' => $outcome->messageForPerson()], Response::HTTP_TOO_MANY_REQUESTS);
         }
 
         return new ApiResponse(

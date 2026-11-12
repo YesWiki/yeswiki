@@ -27,8 +27,8 @@ use YesWiki\Kernel\Service\UrlFormatter;
 /**
  * A sign-in from start to end, for every kind of provider. Whatever goes wrong ends as an outcome: nothing here reaches the visitor as a crash.
  *
- * In test mode an administrator runs the real protocol and only plan() is called: nobody is signed in, nothing is written,
- * nothing goes to the Journal and the attempt limit is neither counted nor consulted (spec 8.3, 9 and 12).
+ * In test mode an administrator runs the real protocol and only plan() is called: nobody is signed in, nothing is written
+ * and nothing goes to the Journal (spec 8.3 and 9).
  */
 class SignInFlow
 {
@@ -45,7 +45,6 @@ class SignInFlow
         private readonly ProviderRegistry $registry,
         private readonly SignInService $service,
         private readonly SignInJournal $journal,
-        private readonly AttemptLimiter $limiter,
         private readonly HandshakeCookie $cookie,
         private readonly AuthenticationService $authentication,
         private readonly UrlFormatter $urls,
@@ -128,16 +127,13 @@ class SignInFlow
         if ($mode === HandshakeMode::Test) {
             return $this->testPassword($providerId, $login, $password);
         }
-        $who = AttemptLimiter::normalize($login);
+        $who = mb_strtolower(trim($login));
         $config = null;
         try {
             $config = $this->known($this->registry->config($providerId));
             $provider = $this->provider($config);
             if (!$provider instanceof PasswordProvider) {
                 throw new ProviderFailure(FailureReason::ConfigurationInvalid, 'this provider takes no password: it redirects to its own sign-in');
-            }
-            if ($this->limiter->isBlocked($who)) {
-                throw new ProviderFailure(FailureReason::TooManyAttempts);
             }
             $identity = $provider->authenticate($login, $password);
         } catch (\Throwable $thrown) {
@@ -291,7 +287,7 @@ class SignInFlow
      * The provider has said who this is: decide, apply, sign in.
      *
      * @param int|bool $remember what AuthenticationService::login() takes
-     * @param ?string  $login    what a failure is recorded under, when it must be the login that the attempt limit counts
+     * @param ?string  $login    what a failure is recorded under, when it must be the login typed rather than the person's email
      */
     private function settle(ProviderConfig $config, ProviderIdentity $identity, int|bool $remember, string $url, ?string $login = null): SignInOutcome
     {
