@@ -24,9 +24,9 @@ mkdir -p styles/vendor/leaflet && copy_css node_modules/leaflet/dist/leaflet.css
 cp -f -r node_modules/leaflet/dist/images styles/vendor/leaflet
 mkdir -p javascripts/vendor/leaflet-markercluster && copy_js node_modules/leaflet.markercluster/dist/leaflet.markercluster.js javascripts/vendor/leaflet-markercluster/leaflet-markercluster.min.js
 mkdir -p styles/vendor/leaflet-markercluster && copy_css node_modules/leaflet.markercluster/dist/MarkerCluster.css styles/vendor/leaflet-markercluster/leaflet-markercluster.css
-mkdir -p javascripts/vendor/leaflet-providers && copy_js node_modules/leaflet-providers/leaflet-providers.js javascripts/vendor/leaflet-providers/leaflet-providers.js
-mkdir -p javascripts/vendor/leaflet-fullscreen && copy_js node_modules/leaflet.fullscreen/Control.FullScreen.js javascripts/vendor/leaflet-fullscreen/leaflet-fullscreen.js
-mkdir -p styles/vendor/leaflet-fullscreen && copy_css node_modules/leaflet.fullscreen/Control.FullScreen.css styles/vendor/leaflet-fullscreen/leaflet-fullscreen.css
+mkdir -p javascripts/vendor/leaflet-providers && copy_js node_modules/leaflet-providers/leaflet-providers.js javascripts/vendor/leaflet-providers/leaflet-providers.js && cat javascripts/leaflet-providers-fallback.js >> javascripts/vendor/leaflet-providers/leaflet-providers.js
+mkdir -p javascripts/vendor/leaflet-fullscreen && copy_js node_modules/leaflet.fullscreen/dist/Control.FullScreen.umd.js javascripts/vendor/leaflet-fullscreen/leaflet-fullscreen.js
+mkdir -p styles/vendor/leaflet-fullscreen && copy_css node_modules/leaflet.fullscreen/dist/Control.FullScreen.css styles/vendor/leaflet-fullscreen/leaflet-fullscreen.css
 mkdir -p javascripts/vendor/leaflet-draw && copy_js node_modules/leaflet-draw/dist/leaflet.draw.js javascripts/vendor/leaflet-draw/leaflet.draw.js
 mkdir -p styles/vendor/leaflet-draw && copy_css node_modules/leaflet-draw/dist/leaflet.draw.css styles/vendor/leaflet-draw/leaflet.draw.css
 mkdir -p styles/vendor/leaflet-draw/images && cp -f -r node_modules/leaflet-draw/dist/images/* styles/vendor/leaflet-draw/images

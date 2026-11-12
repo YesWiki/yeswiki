@@ -3065,16 +3065,6 @@ label input.filter-checkbox:focus ~ span {
   text-indent: 0;
 }
 
-.leaflet-control-container .leaflet-control-zoom-fullscreen.fullscreen-icon {
-  background-image: none;
-}
-
-.leaflet-control-container
-  .leaflet-control-zoom-fullscreen.fullscreen-icon::before {
-  content: '⇱';
-  font-weight: 600;
-}
-
 .popupentry-container {
   display: none;
 }
