@@ -816,6 +816,36 @@ sign-in says why, to the person and to you. The admin guide is `docs/en/sign-in-
 The three folders are listed as Doryphore core in `private/doryphore/README.md`: there is nothing
 to port, so do not bring them back from `private/doryphore/tools/`.
 
+### Before upgrading a wiki that uses `loginsso`: register the new callback URL
+
+The old callback, `?api/auth_sso/callback`, is gone. Each provider now sends people back to its
+own address, and nobody can sign in through a converted provider until that address is registered at
+the OAuth2 / OpenID Connect server. To avoid an outage, add it **before** the upgrade, next to the
+old one: most servers (Keycloak, LemonLDAP::NG, Authentik, Entra...) accept several redirect URIs
+per client.
+
+1. For each entry of `sso_config.providers` in `wakka.config.php`, work out the identifier the
+   upgrade will give it: its `button_style.button_label`, transliterated to ASCII, lowercased, with
+   every run of other characters replaced by a dash. `Acme SSO` gives `acme-sso`,
+   `Connexion à l'ENT` gives `connexion-a-l-ent`. No label gives `oidc`. When the identifier is
+   already taken, by `local`, by `ldap` or `cas` if `loginldap` or `logincas` were configured, or by
+   an earlier entry, `-2`, then `-3`, and so on, is appended.
+2. At the server, in the client the wiki uses, add the redirect URI
+   `https://wiki.example.org/?user/sign-in/<identifier>/callback`: the wiki's address (its
+   `base_url`, ending with `?`) followed by `user/sign-in/<identifier>/callback`, with no final `=`.
+   Keep the old `https://wiki.example.org/?api/auth_sso/callback=` for now: Doryphore still uses it
+   until the upgrade.
+3. Upgrade. The migration prints the identifier of each converted provider
+   (`the login extensions became sign-in providers in sso_providers: acme-sso (oidc, from loginsso, on)`);
+   it is also shown on **Administration › Sign-in**, and the provider's edit form shows its
+   **Callback URL**. If it differs from what you guessed, fix the redirect URI at the server, then
+   **Test** the provider.
+4. Once someone has signed in through it, remove the old `?api/auth_sso/callback` redirect URI from
+   the server.
+
+If the upgrade already ran, register the URL shown in the provider's edit form: sign-in through that
+provider works again as soon as the server accepts it.
+
 ### What the migration converts
 
 `LoginExtensionsBecomeProviders` reads the old keys, writes `sso_providers`, removes the old keys
@@ -825,7 +855,7 @@ and prints what it did. Every configured block becomes a provider:
 | -------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
 | each entry of `sso_config.providers`                                                               | an `oidc` provider, its identifier made from the button label                                               |
 | `auth_options` (`clientId`, `clientSecret`, `urlAuthorize`, `urlAccessToken`, `urlResourceOwnerDetails`, `scopes`, `scopeSeparator`) | `connection.*`, as explicit endpoints; no scopes means `openid` alone, as `loginsso` asked |
-| `addFinalEqual` and the old callback                                                               | `connection.legacy_callback`: the provider keeps sending people to `?api/auth_sso/callback`, which still works, so nothing changes at the provider |
+| `addFinalEqual` and the old callback `?api/auth_sso/callback`                                      | dropped: the provider sends people to `?user/sign-in/<identifier>/callback`, which must be registered at the server (see above) |
 | `id_sso_field`, `email_sso_field`, `groups_sso_field`                                              | the user ID, email and groups attributes (`id` and `email` when they were not set)                          |
 | `bazar_mapping.fields.bf_prenom` and `bf_nom`                                                      | the first and last name attributes, else `given_name` and `family_name`                                     |
 | `groups_sso_mapping`                                                                               | the group mapping                                                                                           |

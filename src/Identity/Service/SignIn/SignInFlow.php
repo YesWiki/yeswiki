@@ -88,8 +88,7 @@ class SignInFlow
         }
     }
 
-    /** @param ?string $providerId null when the URL does not say (a legacy callback): the handshake does */
-    public function callback(Request $request, ?string $providerId): Response|SignInOutcome
+    public function callback(Request $request, string $providerId): Response|SignInOutcome
     {
         $config = null;
         $step = SignInTrace::SENT_TO_PROVIDER;
@@ -97,8 +96,7 @@ class SignInFlow
         try {
             $handshake = $this->cookie->read($request, time());
             $testing = $handshake?->mode === HandshakeMode::Test;
-            $providerId ??= $handshake?->providerId;
-            $config = $providerId === null ? null : $this->registry->config($providerId);
+            $config = $this->registry->config($providerId);
             if ($testing && !$this->isTheTester($handshake)) {
                 $this->cookie->clear();
 
@@ -150,11 +148,6 @@ class SignInFlow
     /** What the provider must be told to send the person back to. */
     public function callbackUrlFor(ProviderConfig $config): string
     {
-        $legacy = $config->connection('legacy_callback');
-        if (is_string($legacy) && $legacy !== '') {
-            return $legacy;
-        }
-
         return $this->urls->href('', 'user/sign-in/' . rawurlencode($config->id) . '/callback');
     }
 

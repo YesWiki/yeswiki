@@ -237,13 +237,13 @@ class OidcProviderTest extends TestCase
         $this->assertSame('openid,groups', self::queryOf((string)$url)['scope']);
     }
 
-    public function testExplicitEndpointsUseConfiguredRedirectUri(): void
+    public function testExplicitEndpointsUseTheHandshakeRedirectUri(): void
     {
-        $legacy = 'https://wiki.example/?api/auth_sso/callback=';
-        $config = $this->config(self::EXPLICIT + ['legacy_callback' => $legacy]);
-        $handshake = $this->handshake($legacy);
+        $callback = 'https://wiki.example/?user/sign-in/acme/callback';
+        $config = $this->config(self::EXPLICIT);
+        $handshake = $this->handshake($callback);
         $url = (string)$this->provider($config)->begin($handshake)->headers->get('Location');
-        $this->assertSame($legacy, self::queryOf($url)['redirect_uri'], 'the address registered at the provider, final equal sign included');
+        $this->assertSame($callback, self::queryOf($url)['redirect_uri']);
 
         $this->answer('token', self::tokenResponse());
         $this->answer('userinfo', self::userinfoResponse());
@@ -251,7 +251,7 @@ class OidcProviderTest extends TestCase
 
         $token = self::formOf($this->sentTo('token'));
         $this->assertSame('POST', $this->sentTo('token')->getMethod());
-        $this->assertSame($legacy, $token['redirect_uri']);
+        $this->assertSame($callback, $token['redirect_uri']);
         $this->assertSame('the-code', $token['code']);
         $this->assertSame((string)$handshake->get('pkce'), $token['code_verifier'], 'the verifier comes back from the handshake');
         $this->assertSame(self::CLIENT_ID, $token['client_id']);

@@ -28,8 +28,8 @@ const WIKI = (
   process.env.YESWIKI_BASE_URL || 'http://wiki.yeswiki.test'
 ).replace(/\/$/, '')
 
-/** The address loginsso registered at its provider, which the converted provider keeps sending. */
-const LEGACY_CALLBACK = `${WIKI}/?api/auth_sso/callback=`
+/** The address the converted provider sends, which UPGRADE.md asks to register at the provider before upgrading. */
+const PROVIDER_CALLBACK = `${WIKI}/?user/sign-in/acme-sso/callback`
 
 const HANDMADE = 'DoryphoreTeam'
 const GUEST_CARD = '.yw-account-guest__card'
@@ -227,8 +227,8 @@ test.describe('the upgrade from Doryphore', () => {
     const provider = expectInCharge('acme-sso', 'oidc')
     expect(provider.connection).toMatchObject({
       authorize_url: `${PORTAL}/oauth2/authorize`,
-      legacy_callback: LEGACY_CALLBACK,
     })
+    expect(provider.connection).not.toHaveProperty('legacy_callback')
     const before = account(tag) as Account
     expect(before.body, "loginsso_id became the account's link").toMatchObject({
       sso_provider: 'acme-sso',
@@ -244,11 +244,11 @@ test.describe('the upgrade from Doryphore', () => {
     const page = await (await browser.newContext()).newPage()
     const sentBack: string[] = []
     page.on('request', (request) => {
-      // the portal escapes the slashes of the query it was given: `?api%2Fauth_sso%2Fcallback=&code=…`
+      // the portal escapes the slashes of the query it was given: `?user%2Fsign-in%2Facme-sso%2Fcallback&code=…`
       const url = new URL(request.url())
       if (
         url.origin === new URL(WIKI).origin &&
-        [...url.searchParams.keys()][0] === 'api/auth_sso/callback'
+        [...url.searchParams.keys()][0] === 'user/sign-in/acme-sso/callback'
       ) {
         sentBack.push(request.url())
       }
@@ -262,12 +262,12 @@ test.describe('the upgrade from Doryphore', () => {
       .click()
     expect(
       new URL((await authorize).url()).searchParams.get('redirect_uri'),
-    ).toBe(LEGACY_CALLBACK)
+    ).toBe(PROVIDER_CALLBACK)
     await signInAtPortal(page, PEOPLE.marie.login, PASSWORD)
 
     expect(
       sentBack,
-      'the portal sends the browser back to the legacy callback',
+      'the portal sends the browser back to the converted provider callback',
     ).toHaveLength(1)
     expect(new URL(sentBack[0]).searchParams.get('code')).toBeTruthy()
     await expectSignedInAs(page, tag)

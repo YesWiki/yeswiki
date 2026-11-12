@@ -41,7 +41,7 @@ class LoginExtensionsBecomeProviders extends YesWikiMigration
         $configuration->load();
         $values = $configuration->__get('_parameters');
 
-        $result = $this->getService(DoryphoreSsoConversion::class)->convert($values, DoryphoreLeftovers::toolsHad($instanceDir), $this->baseUrl($values), $now);
+        $result = $this->getService(DoryphoreSsoConversion::class)->convert($values, DoryphoreLeftovers::toolsHad($instanceDir), $now);
         if (!$result->changesTheConfiguration()) {
             return;
         }
@@ -163,16 +163,5 @@ class LoginExtensionsBecomeProviders extends YesWikiMigration
             $this->say("{$counts['cleared']} account(s) lost their md5 password hash, every revision included, because LDAP signed people in on Doryphore and these may be the directory's own passwords: "
                 . ($result->inCharge === DoryphoreSsoConversion::LOGINLDAP ? 'they sign in through LDAP, which links them.' : 'they sign in through their provider, or choose a new password if local accounts are on.'));
         }
-    }
-
-    /** @param array<array-key, mixed> $values */
-    private function baseUrl(array $values): string
-    {
-        if (is_string($values['base_url'] ?? null) && $values['base_url'] !== '') {
-            return $values['base_url'];
-        }
-        $configured = isset($this->params) && $this->params->has('base_url') ? $this->params->get('base_url') : '';
-
-        return is_string($configured) ? $configured : '';
     }
 }

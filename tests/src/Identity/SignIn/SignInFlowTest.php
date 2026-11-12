@@ -171,7 +171,6 @@ class SignInFlowTest extends YesWikiTestCase
         $this->flow = $this->flowFor([
             'fake' => ['type' => 'fake-redirect', 'label' => 'Fake SSO'],
             'off' => ['type' => 'fake-redirect', 'enabled' => false],
-            'legacy' => ['type' => 'fake-redirect', 'connection' => ['legacy_callback' => 'https://old.example/?api/auth_sso/callback=']],
             'fakepw' => ['type' => 'fake-password'],
             'local' => ['type' => 'local'],
             'orphan' => ['type' => 'not-installed'],
@@ -486,11 +485,6 @@ class SignInFlowTest extends YesWikiTestCase
         $this->assertSame($url, $this->outcome($this->flow->callback($request, 'fake'))->url);
     }
 
-    public function testWithoutAnIdTheProviderComesFromTheHandshake(): void
-    {
-        $this->assertSame('signed_in', $this->outcome($this->flow->callback($this->callbackRequest(), null))->kind);
-    }
-
     public function testAWarningIsRecordedWithoutRecordingTheSuccess(): void
     {
         // the account's new email is already used by another account
@@ -613,14 +607,6 @@ class SignInFlowTest extends YesWikiTestCase
         $this->assertSame('refused', $outcome->kind);
         $this->assertSame(FailureReason::InvalidResponse, $outcome->reason);
         $this->assertSame(0, $this->fake->completed, 'the provider is never asked');
-    }
-
-    public function testNoHandshakeAndNoIdIsARefusedPageNotACrash(): void
-    {
-        $outcome = $this->outcome($this->flow->callback(new Request(), null));
-
-        $this->assertSame(FailureReason::InvalidResponse, $outcome->reason);
-        $this->assertNull($outcome->config);
     }
 
     public function testAHandshakeCannotBeReplayed(): void
@@ -755,11 +741,12 @@ class SignInFlowTest extends YesWikiTestCase
         $this->assertSame($base . 'user/sign-in/fake/callback', $this->flow->callbackUrlFor(self::providerConfig('fake')));
     }
 
-    public function testALegacyCallbackStaysWhatTheProviderHasRegistered(): void
+    public function testALeftoverLegacyCallbackIsIgnored(): void
     {
-        $config = ProviderConfig::fromArray('legacy', ['type' => 'oidc', 'connection' => ['legacy_callback' => 'https://old.example/?api/auth_sso/callback=']]);
+        $base = (string)self::getWiki()->services->get(RuntimeConfig::class)['base_url'];
+        $config = ProviderConfig::fromArray('acme', ['type' => 'oidc', 'connection' => ['legacy_callback' => 'https://old.example/?api/auth_sso/callback=']]);
 
-        $this->assertSame('https://old.example/?api/auth_sso/callback=', $this->flow->callbackUrlFor($config));
+        $this->assertSame($base . 'user/sign-in/acme/callback', $this->flow->callbackUrlFor($config));
     }
 
     public function testRefusedAndSignedInOutcomesCarryOnlyWhatTheyAreFor(): void

@@ -227,7 +227,7 @@ class ProvidersEditorTest extends YesWikiTestCase
             'match_by_name_until' => '2027-11-10',
             'custom_unknown_key' => ['kept' => true],
         ]);
-        $acme['connection'] += ['legacy_callback' => 'https://old.example/callback', 'scope_separator' => ',', 'unknown_to_the_type' => 'x'];
+        $acme['connection'] += ['scope_separator' => ',', 'unknown_to_the_type' => 'x'];
         $this->seed(['local' => ['type' => 'local'], 'acme' => $acme]);
 
         $this->assertSame([], $this->editor->update('acme', [
@@ -245,7 +245,6 @@ class ProvidersEditorTest extends YesWikiTestCase
         $this->assertSame('{first_name}.{last_name}', $saved['account_name_template']);
         $this->assertSame('2027-11-10', $saved['match_by_name_until']);
         $this->assertSame(['kept' => true], $saved['custom_unknown_key']);
-        $this->assertSame('https://old.example/callback', $saved['connection']['legacy_callback']);
         $this->assertSame(',', $saved['connection']['scope_separator']);
         $this->assertSame('x', $saved['connection']['unknown_to_the_type']);
         $this->assertSame('https://b/y', $saved['connection']['discovery_url']);

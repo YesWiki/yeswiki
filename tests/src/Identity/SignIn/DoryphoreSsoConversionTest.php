@@ -15,9 +15,9 @@ class DoryphoreSsoConversionTest extends TestCase
      * @param array<string, mixed> $config
      * @param list<string>         $tools
      */
-    private function convert(array $config, array $tools, string $baseUrl = 'https://w/?'): SsoConversionResult
+    private function convert(array $config, array $tools): SsoConversionResult
     {
-        return (new DoryphoreSsoConversion())->convert($config, $tools, $baseUrl, new \DateTimeImmutable(self::NOW));
+        return (new DoryphoreSsoConversion())->convert($config, $tools, new \DateTimeImmutable(self::NOW));
     }
 
     /**
@@ -112,19 +112,12 @@ class DoryphoreSsoConversionTest extends TestCase
         $this->assertArrayNotHasKey('groups', $p['attributes']);
     }
 
-    public function testFinalEqualKeepsTheRegisteredCallback(): void
+    public function testTheOldCallbackIsNotCarriedOver(): void
     {
-        $with = $this->convert(['sso_config' => ['providers' => [$this->ssoEntry()]]], ['loginsso']);
-        $this->assertSame('https://w/?api/auth_sso/callback=', $with->providers['my-auth-server']['connection']['legacy_callback']);
+        $connection = $this->convert(['sso_config' => ['providers' => [$this->ssoEntry()]]], ['loginsso'])->providers['my-auth-server']['connection'];
 
-        $entry = $this->ssoEntry();
-        unset($entry['auth_options']['addFinalEqual']);
-        $unset = $this->convert(['sso_config' => ['providers' => [$entry]]], ['loginsso'], 'https://w/index.php?');
-        $this->assertSame('https://w/?api/auth_sso/callback=', $unset->providers['my-auth-server']['connection']['legacy_callback'], 'no addFinalEqual meant true');
-
-        $entry['auth_options']['addFinalEqual'] = false;
-        $without = $this->convert(['sso_config' => ['providers' => [$entry]]], ['loginsso'], 'https://w/sub/?');
-        $this->assertSame('https://w/sub/?api/auth_sso/callback', $without->providers['my-auth-server']['connection']['legacy_callback']);
+        $this->assertArrayNotHasKey('legacy_callback', $connection, 'the provider must register ?user/sign-in/<id>/callback: UPGRADE.md says so');
+        $this->assertArrayNotHasKey('addFinalEqual', $connection);
     }
 
     public function testTheSsoFieldsBecomeTheAttributes(): void

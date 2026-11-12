@@ -361,7 +361,7 @@ class LoginExtensionsBecomeProvidersTest extends YesWikiTestCase
         $this->assertSame(['local', 'my-auth-server', 'ldap'], array_keys($providers));
         $this->assertFalse($providers['local']['enabled']);
         $this->assertTrue($providers['my-auth-server']['enabled']);
-        $this->assertSame('https://w/?api/auth_sso/callback=', $providers['my-auth-server']['connection']['legacy_callback']);
+        $this->assertArrayNotHasKey('legacy_callback', $providers['my-auth-server']['connection']);
         $this->assertSame('sso-client-secret-value', $providers['my-auth-server']['connection']['client_secret']);
         $this->assertFalse($providers['ldap']['enabled']);
 

@@ -35,9 +35,8 @@ final class DoryphoreSsoConversion
     /**
      * @param array<string, mixed> $config         the whole configuration
      * @param list<string>         $installedTools the Doryphore tool folders this instance had
-     * @param string               $baseUrl        the configuration's `base_url`
      */
-    public function convert(array $config, array $installedTools, string $baseUrl, \DateTimeImmutable $now): SsoConversionResult
+    public function convert(array $config, array $installedTools, \DateTimeImmutable $now): SsoConversionResult
     {
         $ssoEntries = $this->ssoEntries($config);
         $configured = [];
@@ -76,7 +75,7 @@ final class DoryphoreSsoConversion
         foreach ($ssoEntries as $entry) {
             $label = self::text($entry['button_style']['button_label'] ?? null);
             $id = self::free(self::slug($label) ?: OidcType::NAME, $taken);
-            $converted[$id] = $this->oidc($entry, $label, $baseUrl, $inCharge === self::LOGINSSO);
+            $converted[$id] = $this->oidc($entry, $label, $inCharge === self::LOGINSSO);
             $origins[$id] = self::LOGINSSO;
             $loginssoIds[] = $id;
         }
@@ -123,7 +122,7 @@ final class DoryphoreSsoConversion
      *
      * @return array<string, mixed>
      */
-    private function oidc(array $entry, string $label, string $baseUrl, bool $enabled): array
+    private function oidc(array $entry, string $label, bool $enabled): array
     {
         $options = is_array($entry['auth_options'] ?? null) ? $entry['auth_options'] : [];
         $connection = [
@@ -139,7 +138,6 @@ final class DoryphoreSsoConversion
         if (is_string($separator) && $separator !== '') {
             $connection['scope_separator'] = $separator;
         }
-        $connection['legacy_callback'] = self::legacyCallback($baseUrl, (bool)($options['addFinalEqual'] ?? true));
 
         $fields = is_array($entry['bazar_mapping']['fields'] ?? null) ? $entry['bazar_mapping']['fields'] : [];
         $attributes = [
@@ -346,14 +344,6 @@ final class DoryphoreSsoConversion
         }
 
         return $messages;
-    }
-
-    /** `?api/auth_sso/callback`, exactly as loginsso registered it at the provider. */
-    private static function legacyCallback(string $baseUrl, bool $finalEqual): string
-    {
-        $url = (string)preg_replace(['/\/\?wiki=$/', '/\/\?$/', '/\/$/'], '', explode('index.php', $baseUrl)[0]);
-
-        return $url . '/?api/auth_sso/callback' . ($finalEqual ? '=' : '');
     }
 
     private static function ldapUri(string $host, string $port): string

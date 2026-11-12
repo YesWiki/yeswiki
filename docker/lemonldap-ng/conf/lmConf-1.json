@@ -108,7 +108,7 @@
         "wiki-oidc": {
             "oidcRPMetaDataOptionsClientID": "wiki-oidc",
             "oidcRPMetaDataOptionsClientSecret": "wiki-oidc-secret",
-            "oidcRPMetaDataOptionsRedirectUris": "http://wiki.yeswiki.test/?user/sign-in/oidc/callback http://wiki.yeswiki.test/?api/auth_sso/callback= http://wiki.yeswiki.test:8080/?user/sign-in/oidc/callback http://wiki.yeswiki.test:8080/?api/auth_sso/callback= http://wiki.yeswiki.test:8081/?user/sign-in/oidc/callback http://wiki.yeswiki.test:8081/?api/auth_sso/callback=",
+            "oidcRPMetaDataOptionsRedirectUris": "http://wiki.yeswiki.test/?user/sign-in/oidc/callback http://wiki.yeswiki.test/?user/sign-in/acme-sso/callback http://wiki.yeswiki.test:8080/?user/sign-in/oidc/callback http://wiki.yeswiki.test:8080/?user/sign-in/acme-sso/callback http://wiki.yeswiki.test:8081/?user/sign-in/oidc/callback http://wiki.yeswiki.test:8081/?user/sign-in/acme-sso/callback",
             "oidcRPMetaDataOptionsPublic": 0,
             "oidcRPMetaDataOptionsBypassConsent": 1,
             "oidcRPMetaDataOptionsIDTokenSignAlg": "RS256",

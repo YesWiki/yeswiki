@@ -11,7 +11,7 @@ use YesWiki\Kernel\Component\Setting;
 
 /**
  * OpenID Connect, and plain OAuth2 with explicit endpoints.
- * `scope_separator` and `legacy_callback` are read too, but only an upgrade from loginsso writes them: the screen does not offer them.
+ * `scope_separator` is read too, but only an upgrade from loginsso writes it: the screen does not offer it.
  */
 final class OidcType implements ProviderType
 {

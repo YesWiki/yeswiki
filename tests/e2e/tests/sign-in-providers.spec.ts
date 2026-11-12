@@ -306,10 +306,9 @@ for (const type of TYPES) {
     })
 
     if (type === 'oidc') {
-      test('oidc: explicit endpoints and the legacy callback complete on /?api/auth_sso/callback=', async ({
+      test('oidc: explicit endpoints complete on the provider callback', async ({
         page,
       }) => {
-        const legacy = `${WIKI}/?api/auth_sso/callback=`
         setProviders(
           sectionFor('oidc', {
             connection: {
@@ -318,7 +317,6 @@ for (const type of TYPES) {
               userinfo_url: 'http://auth.yeswiki.test/oauth2/userinfo',
               client_id: 'wiki-oidc',
               client_secret: 'wiki-oidc-secret',
-              legacy_callback: legacy,
             },
           }),
         )
@@ -334,8 +332,10 @@ for (const type of TYPES) {
 
         expect(
           callbacks,
-          'the portal sent the browser back to the old address, and only there',
-        ).toEqual([expect.stringMatching(/\?api\/auth_sso\/callback=&.*code=/)])
+          'the portal sent the browser back to the provider callback, and only there',
+        ).toEqual([
+          expect.stringMatching(/\?user\/sign-in\/oidc\/callback&.*code=/),
+        ])
         await page.goto('/?user')
         await expect(page.locator(GUEST_CARD)).toHaveCount(0)
         await expect(accountField(page, 'last_name')).toHaveText('Dupont')

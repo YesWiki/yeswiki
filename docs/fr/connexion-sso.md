@@ -20,6 +20,14 @@ les mêmes listes et fonctionnent de la même façon.
 > Ceci remplace les extensions de Doryphore `loginsso`, `loginldap` et `logincas`. Un wiki mis à
 > jour depuis Doryphore arrive avec ses réglages déjà convertis : voir `UPGRADE.md`, section
 > _Sign-in providers replace the login extensions_.
+>
+> **Avec `loginsso`, une étape est à faire avant la mise à jour.** L'ancienne adresse de retour
+> `?api/auth_sso/callback` n'existe plus : chaque fournisseur converti renvoie vers
+> `?user/sign-in/<identifiant>/callback`, où l'identifiant vient du libellé du bouton (`Acme SSO`
+> donne `acme-sso`). Ajoutez cette adresse chez le fournisseur OAuth2 / OpenID Connect **avant** la
+> mise à jour, à côté de l'ancienne, sinon plus personne ne peut se connecter par lui tant qu'elle
+> n'y est pas. Le calcul exact de l'identifiant est dans `UPGRADE.md`, sous _Before upgrading a
+> wiki that uses `loginsso`_.
 
 ## Où trouver l'écran
 
