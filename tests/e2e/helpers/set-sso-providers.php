@@ -4,10 +4,14 @@
  * Writes the `sso_providers` section of the wiki under test, the way the administration screen does.
  * Run from the wiki's folder: php set-sso-providers.php '<the section as JSON>'. `null` removes the section, which leaves local accounts alone.
  * The web server's opcode cache tells a new file by its modification time, so each write is given a later one than the file had.
+ * What an administration screen saved goes to the database and wins over the file: it is forgotten, so the file is what counts.
  */
 
+use YesWiki\Core\YesWikiLoader;
+use YesWiki\Identity\Service\SignIn\ProviderRegistry;
 use YesWiki\Kernel\Service\ConfigurationFileProvider;
 use YesWiki\Kernel\Service\ConfigurationService;
+use YesWiki\Kernel\Service\WikiSettings;
 
 require_once dirname(__DIR__, 3) . '/vendor/autoload.php';
 
@@ -30,3 +34,4 @@ clearstatcache();
 if ((int)filemtime($file) <= $before) {
     touch($file, $before + 1);
 }
+YesWikiLoader::getWiki(true)->services->get(WikiSettings::class)->store([], [ProviderRegistry::SECTION]);

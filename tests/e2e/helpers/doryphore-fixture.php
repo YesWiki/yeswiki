@@ -6,8 +6,9 @@
  *   load '<fixture as JSON>'   {tools, config, accounts, pages, groups}: see below; prints what the migrations said, as JSON
  *   account <tag>              the account's body as the spec checks it, and its revisions' hashes, as JSON (null when none)
  *   accounts                   the tags of every account, sorted, as JSON
- *   providers                  the `sso_providers` section, client secrets left out, and the Doryphore keys still there, as JSON
- *   reset                      takes the Doryphore keys and `sso_providers` out of the configuration.
+ *   providers                  the `sso_providers` section the wiki reads, client secrets left out, and the Doryphore keys still in
+ *                              the file, as JSON
+ *   reset                      takes the Doryphore keys and `sso_providers` out of the configuration, the database included.
  *
  * `load` puts back what Doryphore had and the upgrade reads: the extension's folder among the tools set aside, its keys in the
  * configuration, a `users` table holding the accounts (loginsso's `loginsso_id` column included), pages calling loginsso's actions,
@@ -33,6 +34,7 @@ use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\DoryphoreLeftovers;
 use YesWiki\Kernel\Service\MigrationService;
 use YesWiki\Kernel\Service\TripleStore;
+use YesWiki\Kernel\Service\WikiSettings;
 
 require_once dirname(__DIR__, 3) . '/vendor/autoload.php';
 
@@ -83,6 +85,12 @@ function writeConfiguration(ConfigurationService $service, mixed $configuration,
     }
 }
 
+/** Forgets the `sso_providers` the database holds, where the upgrade and the administration screen save them, over the file's. */
+function forgetStoredProviders(): void
+{
+    YesWikiLoader::getWiki(true)->services->get(WikiSettings::class)->store([], [ProviderRegistry::SECTION]);
+}
+
 function withoutDoryphore(mixed $configuration): void
 {
     foreach ([...DORYPHORE_KEYS, ProviderRegistry::SECTION] as $key) {
@@ -94,10 +102,12 @@ $command = $argv[1] ?? '';
 if ($command === 'reset') {
     withoutDoryphore($configuration);
     writeConfiguration($configService, $configuration, $configFile);
+    forgetStoredProviders();
     exit(0);
 }
 if ($command === 'providers') {
-    $section = $configuration[ProviderRegistry::SECTION] ?? null;
+    $stored = YesWikiLoader::getWiki(true)->services->get(WikiSettings::class)->all();
+    $section = array_key_exists(ProviderRegistry::SECTION, $stored) ? $stored[ProviderRegistry::SECTION] : $configuration[ProviderRegistry::SECTION] ?? null;
     foreach (is_array($section) ? $section : [] as $id => $provider) {
         unset($section[$id]['connection']['client_secret']);
     }
@@ -126,6 +136,7 @@ if ($fixture !== null) {
         $configuration[$key] = $value;
     }
     writeConfiguration($configService, $configuration, $configFile);
+    forgetStoredProviders();
 }
 
 $services = YesWikiLoader::getWiki(true)->services;
