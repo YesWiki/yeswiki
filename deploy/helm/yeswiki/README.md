@@ -14,9 +14,10 @@ helm install mywiki deploy/helm/yeswiki \
 
 ## What runs
 
-- **A Deployment** of `replicaCount` pods (3 by default). Each pod has its own wiki directory in an
-  `emptyDir`, where the image's entry points are written at start, and reads `yeswiki.config.php`
-  from a ConfigMap. Every other setting is in the environment or in the database, so the replicas
+- **A Deployment** of `replicaCount` pods (3 by default). Each pod runs the image's wiki directory,
+  with an `emptyDir` over each folder it writes to (`cache`, `files`, `private`), and reads
+  `yeswiki.config.php` from a ConfigMap. What an image built `FROM` this one puts in `custom/`
+  (themes, `custom/templates`, PHP) stays visible, read-only. Every other setting is in the environment or in the database, so the replicas
   share all of it.
 - **An install Job** before the first `helm install` starts anything else. It creates the wiki in
   the empty database, reading its credentials from a Secret of its own that goes once it succeeded,

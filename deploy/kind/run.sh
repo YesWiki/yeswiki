@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Proves the chart on kind: a database (mariadb or postgresql), SeaweedFS and Mailpit, three replicas answering, an upgrade, then a rolling update to the image plus one migration while writer.sh saves pages, losing none.
+# Proves the chart on kind: a database (mariadb or postgresql), SeaweedFS and Mailpit, three replicas answering, a template override seen on every pod, an upgrade, then a rolling update to the image plus one migration, a theme and a template while writer.sh saves pages, losing none.
 # Usage: deploy/kind/run.sh <mariadb|postgresql> <image> [helm --set ...]; KEEP=1 leaves the cluster up.
 # E2E=1 also runs the browser suite through a NodePort on 127.0.0.1:${E2E_PORT:-8380} (the bucket on the next port, Mailpit's UI on the one after), with PLAYWRIGHT_ARGS.
 set -euo pipefail
@@ -140,6 +140,25 @@ if [ "${E2E:-}" = 1 ]; then
     echo "Mailpit caught $(curl -s --noproxy '*' "http://127.0.0.1:$mail_port/api/v1/messages?limit=1" | sed -n 's/.*"messages_count":\([0-9]*\).*/\1/p') mails during the suite"
 fi
 
+overrides() {
+    local pods result
+    for _ in $(seq 60); do
+        pods="$(kubectl get pods -l app.kubernetes.io/instance="$release",app.kubernetes.io/component!=install -o jsonpath='{range .items[*]}{.status.podIP}:8080 {end}')"
+        [ "$(wc -w <<<"$pods")" = 3 ] && break
+        sleep 2
+    done
+    result="$(kubectl run "overrides-$RANDOM" --rm -i --restart=Never --quiet --image="$curl_image" --image-pull-policy=Never \
+        --env="WIKI=http://$deployment" --env="PASSWORD=$admin_password" --env="PODS=$pods" "$@" -- sh -c "$(cat "$here/overrides.sh")" 2>/dev/null)" || true
+    echo "$result"
+    if [ "$(grep -c '^overridden ' <<<"$result")" != 3 ] || [ -n "$(grep -E '^(missed|stale|broken|missed-operator|no-theme) ' <<<"$result")" ]; then
+        echo 'a template override, the template under it or a theme was not what every pod rendered' >&2
+        exit 1
+    fi
+}
+
+say "a template override saved through the Service, seen then reverted on every pod"
+overrides
+
 say "helm upgrade: the migrate Job, then a rolling restart"
 helm upgrade "$release" "$chart" "${values[@]}" --set-string "podAnnotations.restartedAt=$(date +%s)" --wait --timeout 10m
 kubectl rollout status "deployment/$deployment" --timeout=300s
@@ -173,6 +192,9 @@ if ! grep -q '^saved ' <<<"$writes" || [ -n "$unexpected" ] || [ -n "$lost" ] ||
     [ "$refused" = 0 ] && echo "no old pod refused a write once the database was ahead of it" >&2
     exit 1
 fi
+
+say "on $next: the theme and the template it ships in custom/ are found on every pod, under an override"
+overrides --env=OPERATOR=KIND-OPERATOR-TEMPLATE --env=THEME=kindtheme
 
 if [ "$suite" != 0 ]; then
     echo "the browser suite failed against the replicas" >&2

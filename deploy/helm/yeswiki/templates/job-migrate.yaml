@@ -35,8 +35,7 @@ spec:
           securityContext:
             {{- include "yeswiki.containerSecurityContext" . | nindent 12 }}
           volumeMounts:
-            - name: wiki
-              mountPath: /srv/wiki
+            {{- include "yeswiki.writableMounts" . | nindent 12 }}
             - name: config
               mountPath: /srv/wiki/yeswiki.config.php
               subPath: yeswiki.config.php
@@ -44,8 +43,7 @@ spec:
             - name: tmp
               mountPath: /tmp
       volumes:
-        - name: wiki
-          emptyDir: {}
+        {{- include "yeswiki.writableVolumes" . | nindent 8 }}
         - name: tmp
           emptyDir: {}
         - name: config

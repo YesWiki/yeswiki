@@ -1,4 +1,4 @@
-{{/* The replicas: each its own wiki directory in an emptyDir, the configuration file from the ConfigMap, everything shared in the database and the bucket. */}}
+{{/* The replicas: the image's wiki directory with an emptyDir over each folder it writes, the configuration file from the ConfigMap, everything shared in the database and the bucket. */}}
 {{- include "yeswiki.required" . }}
 apiVersion: apps/v1
 kind: Deployment
@@ -74,8 +74,7 @@ spec:
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           volumeMounts:
-            - name: wiki
-              mountPath: /srv/wiki
+            {{- include "yeswiki.writableMounts" . | nindent 12 }}
             - name: config
               mountPath: /srv/wiki/yeswiki.config.php
               subPath: yeswiki.config.php
@@ -83,8 +82,7 @@ spec:
             - name: tmp
               mountPath: /tmp
       volumes:
-        - name: wiki
-          emptyDir: {}
+        {{- include "yeswiki.writableVolumes" . | nindent 8 }}
         - name: tmp
           emptyDir: {}
         - name: config

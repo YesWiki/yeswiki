@@ -101,3 +101,22 @@ allowPrivilegeEscalation: false
 capabilities:
   drop: ["ALL"]
 {{- end -}}
+
+{{/* The wiki folders a pod writes to, each an emptyDir over the image's /srv/wiki, which keeps the entry points and the custom/ an operator shipped. */}}
+{{- define "yeswiki.writableMounts" -}}
+- name: cache
+  mountPath: /srv/wiki/cache
+- name: files
+  mountPath: /srv/wiki/files
+- name: private
+  mountPath: /srv/wiki/private
+{{- end -}}
+
+{{- define "yeswiki.writableVolumes" -}}
+- name: cache
+  emptyDir: {}
+- name: files
+  emptyDir: {}
+- name: private
+  emptyDir: {}
+{{- end -}}
