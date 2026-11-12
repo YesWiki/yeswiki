@@ -28,7 +28,7 @@ beneath() {
 for pod in $PODS; do
     echo "before $(beneath "$(on "$pod" admin/keywords)") $pod"
     if [ -n "${THEME:-}" ]; then
-        on "$pod" api/admin/pages | grep -q "$THEME" && echo "theme $pod" || echo "no-theme $pod"
+        on "$pod" PagePrincipale/edit | grep -q "<option value=\"$THEME\"" && echo "theme $pod" || echo "no-theme $pod"
     fi
 done
 
