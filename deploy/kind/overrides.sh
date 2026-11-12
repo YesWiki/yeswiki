@@ -4,11 +4,16 @@
 set -u
 
 jar=/tmp/jar
+host="${WIKI#http://}"
 file=core/admin/keywords.twig
 mark="KIND-OVERRIDE-$(date +%s)"
 curl -s -c "$jar" -b "$jar" -o /dev/null -d username=WikiAdmin --data-urlencode "password=$PASSWORD" "$WIKI/?api/login"
 token="$(curl -s -c "$jar" -b "$jar" "$WIKI/?admin/custom-templates" | sed -n 's/.*name="csrf-token" value="\([^"]*\)".*/\1/p' | head -1)"
 [ -n "$token" ] || { echo "no form token: the login failed"; exit 1; }
+
+on() {
+    curl -s -b "$jar" --connect-to "$host:80:$1" "$WIKI/?$2"
+}
 
 beneath() {
     if echo "$1" | grep -q "$mark"; then
@@ -21,9 +26,9 @@ beneath() {
 }
 
 for pod in $PODS; do
-    echo "before $(beneath "$(curl -s -b "$jar" "http://$pod/?admin/keywords")") $pod"
+    echo "before $(beneath "$(on "$pod" admin/keywords)") $pod"
     if [ -n "${THEME:-}" ]; then
-        curl -s -b "$jar" "http://$pod/?api/admin/pages" | grep -q "$THEME" && echo "theme $pod" || echo "no-theme $pod"
+        on "$pod" api/admin/pages | grep -q "$THEME" && echo "theme $pod" || echo "no-theme $pod"
     fi
 done
 
@@ -32,7 +37,7 @@ code="$(curl -s -o /dev/null -w '%{http_code}' -c "$jar" -b "$jar" --data-urlenc
     "$WIKI/?admin/custom-templates")"
 echo "save $code"
 for pod in $PODS; do
-    if curl -s -b "$jar" "http://$pod/?admin/keywords" | grep -q "$mark"; then
+    if on "$pod" admin/keywords | grep -q "$mark"; then
         echo "overridden $pod"
     else
         echo "missed $pod"
@@ -43,5 +48,5 @@ code="$(curl -s -o /dev/null -w '%{http_code}' -c "$jar" -b "$jar" --data-urlenc
     -d revert=1 "$WIKI/?admin/custom-templates")"
 echo "revert $code"
 for pod in $PODS; do
-    echo "after $(beneath "$(curl -s -b "$jar" "http://$pod/?admin/keywords")") $pod"
+    echo "after $(beneath "$(on "$pod" admin/keywords)") $pod"
 done
