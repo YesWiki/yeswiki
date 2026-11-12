@@ -1,0 +1,29 @@
+{% if display == 'block' %}
+<div id="{{ id }}" class="yw-toc{{ class ? ' ' ~ class }}">
+<details class="yw-accordion__item"{{ closed ? '' : ' open' }}>
+<summary class="yw-accordion__summary yw-toc__title"><strong>{{ title|raw }}</strong></summary>
+<div id="{{ menu_id }}" class="yw-accordion__body yw-toc__menu">
+{% if items is not empty %}
+<ul class="yw-list-unstyled">
+{% for item in items %}
+<li class="toc{{ item.level }}"><a href="#{{ item.id }}">{{ item.title }}</a></li>
+{% endfor %}
+</ul>
+{% endif %}
+</div>
+</details>
+</div>
+{% else %}
+{{ include_javascript('javascripts/toc-rail.js') }}
+<nav id="{{ id }}" class="yw-toc yw-toc--rail{{ display == 'graduated-rail' ? ' yw-toc--graduated' }}{{ foldable ? ' yw-toc--foldable' }}{{ class ? ' ' ~ class }}" aria-label="{{ title|striptags }}" data-yw-toc-rail>
+{% if show_title %}
+<div class="yw-toc__heading">{{ title|raw }}</div>
+{% endif %}
+<span class="yw-toc__marker" aria-hidden="true"></span>
+<ul class="yw-list-unstyled yw-toc__list">
+{% for item in items %}
+<li class="toc{{ item.level }}"{{ foldable and item.section ? ' data-yw-toc-section' }}><a href="#{{ item.id }}">{{ item.title }}</a>{% if foldable and item.children %}<button type="button" class="yw-toc__toggle" aria-expanded="true" aria-label="{{ _t('TOC_TOGGLE') }} : {{ item.title }}">{{ icon('chevron-right') }}</button>{% endif %}</li>
+{% endfor %}
+</ul>
+</nav>
+{% endif %}

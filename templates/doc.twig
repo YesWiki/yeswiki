@@ -54,16 +54,7 @@
     </article>
 
     <aside class="yw-doc__aside">
-      {% if page and page.headings is not empty %}
-        <nav class="yw-doc__toc" aria-label="{{ _t('DOC_ON_THIS_PAGE') }}">
-          <p class="yw-doc__toc-title">{{ _t('DOC_ON_THIS_PAGE') }}</p>
-          <ul>
-            {% for heading in page.headings %}
-              <li class="yw-doc__toc-level-{{ heading.level }}"><a href="#{{ heading.id }}">{{ heading.title }}</a></li>
-            {% endfor %}
-          </ul>
-        </nav>
-      {% endif %}
+      {{ toc|raw }}
     </aside>
   </div>
 {% endblock %}

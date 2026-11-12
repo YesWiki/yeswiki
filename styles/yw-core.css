@@ -4057,6 +4057,55 @@ progress.yw-progressbar::-moz-progress-bar {
   }
 }
 
+.yw-toc--foldable li[data-yw-toc-section] {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.yw-toc--foldable li[data-yw-toc-section] > a {
+  flex: 1 1 auto;
+}
+
+.yw-toc__toggle {
+  display: none;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  padding: 0;
+  border: none;
+  border-radius: var(--yw-radius-sm);
+  background: none;
+  color: var(--yw-text-muted);
+  cursor: pointer;
+}
+
+.yw-toc__toggle:hover,
+.yw-toc__toggle:focus-visible {
+  background: var(--yw-surface-sunken);
+  color: var(--yw-primary);
+}
+
+.yw-toc--foldable.yw-toc--ready .yw-toc__toggle {
+  display: inline-flex;
+}
+
+.yw-toc__toggle .yw-icon {
+  width: 0.9rem;
+  height: 0.9rem;
+  transition: transform 0.2s;
+}
+
+.yw-toc__toggle[aria-expanded='true'] .yw-icon {
+  transform: rotate(90deg);
+}
+
+.yw-toc__item--folded {
+  display: none;
+}
+
 .yw-list-unstyled {
   list-style: none;
   padding-left: 0;

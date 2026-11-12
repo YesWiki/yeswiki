@@ -960,6 +960,7 @@ You are on %{CURRENTPHPVERSION}.
     'THEME_MANAGER_NOT_FOUND' => ' is not found.',
     'THEME_MANAGER_ERROR_GETTING_FILE' => 'An error occured while loading the file : ',
     'TOC_TABLE_OF_CONTENTS' => 'Table of contents',
+    'TOC_TOGGLE' => 'Show or hide the subsections',
     'EDIT_CONFIG_TITLE' => 'Change configuration file',
     'EDIT_CONFIG_CURRENT_VALUE' => 'Current value ',
     'EDIT_CONFIG_SAVE' => 'Configuration saved',

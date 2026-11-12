@@ -2,6 +2,7 @@
 
 namespace YesWiki\Test\Admin;
 
+use YesWiki\Admin\Controller\DocumentationController;
 use YesWiki\Admin\Service\Documentation;
 use YesWiki\Test\Core\YesWikiTestCase;
 
@@ -40,12 +41,14 @@ class DocumentationTest extends YesWikiTestCase
         $this->assertMatchesRegularExpression('/<img loading="lazy" src="[^"]*docs\/fr\/images\/[^"]+\.png/', $this->documentation()->page('admin')['html'] ?? '');
     }
 
-    public function testTheTableOfContentsHoldsLevelTwoAndThreeHeadings(): void
+    public function testTheTableOfContentsIsTheWikisOwnRail(): void
     {
-        $headings = $this->documentation()->page('dev')['headings'] ?? [];
-
-        $this->assertNotEmpty($headings);
+        $headings = $this->documentation()->page('admin')['headings'] ?? [];
         $this->assertSame([2, 3], array_values(array_unique(array_map(fn (array $h): int => $h['level'], $headings))));
+
+        $html = self::getWiki()->services->get(DocumentationController::class)->show('admin')->getContent();
+        $this->assertMatchesRegularExpression('/<nav id="tocDocumentation" class="yw-toc yw-toc--rail yw-toc--foldable"[^>]*data-yw-toc-rail>/', (string)$html);
+        $this->assertStringContainsString('<li class="toc2" data-yw-toc-section><a href="#gérer-les-droits">', (string)$html);
     }
 
     public function testAPathOutsideTheBooksIsNoPage(): void

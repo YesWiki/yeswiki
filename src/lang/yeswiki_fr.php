@@ -892,6 +892,7 @@ return [
     'THEME_MANAGER_NOT_FOUND' => ' n\'a pas été trouvé.',
     'THEME_MANAGER_ERROR_GETTING_FILE' => 'Une erreur s\'est produite en chargeant ce fichier : ',
     'TOC_TABLE_OF_CONTENTS' => 'Table des matières',
+    'TOC_TOGGLE' => 'Afficher ou masquer les sous-parties',
     'EDIT_CONFIG_TITLE' => 'Modification du fichier de configuration',
     'EDIT_CONFIG_CURRENT_VALUE' => 'Valeur actuelle ',
     'EDIT_CONFIG_SAVE' => 'Configuration sauvegardée',

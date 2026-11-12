@@ -7,6 +7,7 @@ use Symfony\Component\Routing\Attribute\Route;
 use YesWiki\Admin\Service\Documentation;
 use YesWiki\Core\DashboardShell;
 use YesWiki\Core\YesWikiController;
+use YesWiki\Render\Service\TableOfContents;
 use YesWiki\Render\Service\TemplateEngine;
 
 /** `/doc` -- the documentation, rendered as a page of this wiki. */
@@ -29,6 +30,7 @@ class DocumentationController extends YesWikiController
             'menu' => $documentation->menu($page['url'] ?? ''),
             'extensions' => array_map(fn (string $book): array => ['name' => $books[$book]['name'], 'url' => $documentation->url($book)], array_keys($books)),
             'home' => $documentation->url(''),
+            'toc' => $this->getService(TableOfContents::class)->render($page['headings'] ?? [], 'Documentation', 'rail', _t('DOC_ON_THIS_PAGE'), true),
         ]))), $page === null ? Response::HTTP_NOT_FOUND : Response::HTTP_OK);
     }
 }

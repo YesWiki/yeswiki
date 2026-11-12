@@ -107,4 +107,29 @@ class TocActionTest extends YesWikiTestCase
         $this->assertStringContainsString('data-yw-toc-rail', $html);
         $this->assertStringContainsString('>English heading</a>', $html);
     }
+
+    public function testALongRailFoldsItsSubSectionsAndAShortOneDoesNot(): void
+    {
+        $wiki = $this->getWiki();
+        $pageManager = $wiki->services->get(PageManager::class);
+        $render = function (int $sections) use ($wiki, $pageManager): string {
+            $body = "{{toc display=\"rail\"}}\n\n";
+            for ($i = 1; $i <= $sections; $i++) {
+                $body .= "## Section $i\n\nText.\n\n### Detail $i\n\nMore.\n\n";
+            }
+            $pageManager->save(self::PAGE_TAG, [PageBody::CONTENT => $body], '', true);
+            $wiki->services->get(\YesWiki\Kernel\Service\PageContext::class)->assignPage($pageManager->getOne(self::PAGE_TAG));
+
+            return $wiki->services->get(\YesWiki\Render\Service\MarkdownFormatterService::class)->format($body);
+        };
+
+        $long = $render(7);
+        $this->assertStringContainsString('yw-toc--foldable', $long);
+        $this->assertStringContainsString('<li class="toc2" data-yw-toc-section><a href="#toc-section-1">Section 1</a><button type="button" class="yw-toc__toggle"', $long);
+        $this->assertStringContainsString('<li class="toc3"><a href="#toc-detail-1">Detail 1</a></li>', $long);
+
+        $short = $render(3);
+        $this->assertStringNotContainsString('yw-toc--foldable', $short);
+        $this->assertStringNotContainsString('yw-toc__toggle', $short);
+    }
 }

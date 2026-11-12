@@ -22,7 +22,7 @@ test('/doc renders the documentation home with its menu and contents', async ({
     page.locator('.yw-doc__menu a', { hasText: 'Prise en main' }),
   ).toBeVisible()
   await expect(
-    page.locator('.yw-doc__toc a', { hasText: 'Où suis-je' }),
+    page.locator('.yw-doc__aside .yw-toc a', { hasText: 'Où suis-je' }),
   ).toBeVisible()
   expect(errors).toEqual([])
 })
@@ -84,4 +84,25 @@ test('a code block gets a French copy button that copies its code', async ({
   expect(copied.trim()).toBe(
     (await block.locator('code').textContent())?.trim(),
   )
+})
+
+test('a long page folds its contents and opens the section being read', async ({
+  page,
+}) => {
+  const toc = page.locator('.yw-doc__aside .yw-toc')
+  const subsections = toc.locator('li.toc3:visible')
+
+  await page.goto('/?doc/admin')
+  await expect(page.locator('.yw-toc--foldable.yw-toc--ready')).toBeVisible()
+  await expect(subsections).toHaveCount(0)
+
+  await page.goto('/?doc/admin#droit-daccès')
+  const current = toc.locator('a[aria-current]')
+  await expect(current).toHaveText("Droit d'accès")
+  await expect(current).toBeVisible()
+  const opened = await subsections.count()
+  expect(opened).toBeGreaterThan(0)
+
+  await toc.locator('.yw-toc__toggle[aria-expanded="false"]').first().click()
+  await expect.poll(() => subsections.count()).toBeGreaterThan(opened)
 })

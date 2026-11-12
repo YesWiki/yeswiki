@@ -2363,8 +2363,7 @@ del img {
   border-bottom: none;
 }
 
-.yw-doc__result-list,
-.yw-doc__toc ul {
+.yw-doc__result-list {
   list-style: none;
   margin: 0;
   padding: 0;
@@ -2394,26 +2393,20 @@ del img {
   font-size: 0.9em;
 }
 
-.yw-doc__toc-title {
-  margin: 0 0 var(--yw-space-sm-y);
-  font-weight: 600;
-}
+@media (min-width: 1280px) {
+  .yw-doc__aside {
+    padding-left: 0;
+    border-left: none;
+  }
 
-.yw-doc__toc a {
-  display: block;
-  padding: var(--yw-space-sm-y) 0;
-  color: inherit;
-  text-decoration: none;
-  line-height: 1.3;
-}
-
-.yw-doc__toc a:hover {
-  color: var(--yw-primary);
-}
-
-.yw-doc__toc-level-3 {
-  padding-left: var(--yw-space-md-x);
-  font-size: 0.95em;
+  .yw-doc__aside .yw-toc--rail {
+    position: relative;
+    top: auto;
+    right: auto;
+    width: auto;
+    max-height: none;
+    overflow: visible;
+  }
 }
 
 .yw-doc .token.comment,
@@ -2462,7 +2455,7 @@ del img {
     border-left: none;
   }
 
-  .yw-doc__toc {
+  .yw-doc__aside .yw-toc {
     display: none;
   }
 
