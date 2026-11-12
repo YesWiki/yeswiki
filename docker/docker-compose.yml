@@ -1,5 +1,5 @@
 # The dev stack: php-fpm on the checkout behind nginx, MySQL and PostgreSQL, SeaweedFS for S3, phpMyAdmin, a mail catcher,
-# and an LDAP directory with an SSO portal for the sign-in providers.
+# an LDAP directory for the sign-in providers, and an HTTP mock for the tests.
 # COMPOSE_PROJECT_NAME and the YESWIKI_*_PORT variables in docker/.env let several checkouts run a stack side by side;
 # the service names stay the same in every stack, since nginx.conf and tests/e2e reach each other by them.
 name: ${COMPOSE_PROJECT_NAME:-yeswiki}
@@ -97,9 +97,19 @@ services:
     volumes:
       - ./lemonldap-ng/conf:/var/lib/lemonldap-ng/conf
     ports:
-      - "127.0.0.1:${YESWIKI_SSO_PORT:-8087}:80"
+      - "127.0.0.1:${YESWIKI_SSO_PORT:-8088}:80"
     depends_on:
       - yeswiki-ldap
+
+  # An HTTP mock for the tests: each spec configures what it answers (tests/e2e/helpers/mockserver.ts).
+  # auth.yeswiki.test is the identity provider of the sign-in specs, same-site with the wiki.
+  yeswiki-mock:
+    image: mockserver/mockserver:9.2.0
+    container_name: ${COMPOSE_PROJECT_NAME:-yeswiki}-mock
+    environment:
+      MOCKSERVER_SERVER_PORT: 80
+    ports:
+      - "127.0.0.1:${YESWIKI_MOCK_PORT:-8087}:80"
     networks:
       default:
         aliases:
