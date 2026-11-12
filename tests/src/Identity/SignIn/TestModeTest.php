@@ -159,7 +159,6 @@ class TestModeTest extends YesWikiTestCase
 {
     use FakeProviderTypes;
 
-    private const ADMIN = 'WikiAdmin';
     private const PLAIN = 'TestModePlain';
     private const OTHER_ADMIN = 'TestModeOtherAdmin';
     private const LINKED = 'TestModeLinked';
@@ -208,7 +207,7 @@ class TestModeTest extends YesWikiTestCase
         $this->cookie = $services->get(HandshakeCookie::class);
         $this->service = $this->spyService();
         $this->browser = $this->browser();
-        $this->browser->actAs(self::ADMIN);
+        $this->browser->actAs(self::adminName());
         $this->flow = $this->flowFor([
             'fake' => ['type' => 'fake-redirect', 'label' => 'Fake SSO', 'connection' => ['client_secret' => self::SECRET]],
             'off' => ['type' => 'fake-redirect', 'label' => 'Switched off', 'enabled' => false],
@@ -425,7 +424,7 @@ class TestModeTest extends YesWikiTestCase
         $this->assertSame(0, $this->service->applied, 'apply() is never called' . $message);
         $this->assertSame(0, $this->browser->logins, 'nobody is signed in' . $message);
         $this->assertSame('', $this->issuedCookie(LoginCookie::NAME), 'no yw-auth is issued' . $message);
-        $this->assertSame(self::ADMIN, $this->browser->signedInName(), 'the administrator is still who is signed in' . $message);
+        $this->assertSame(self::adminName(), $this->browser->signedInName(), 'the administrator is still who is signed in' . $message);
     }
 
     /** @return list<string> the steps of a tested outcome, as `step:state` */
@@ -805,7 +804,7 @@ class TestModeTest extends YesWikiTestCase
             // filter_input() reads the SAPI's input, which a CLI run has none of: the token is not what is tested here.
             $this->swap(CsrfTokenChecker::class, $this->createStub(CsrfTokenChecker::class));
         }
-        self::actAs(self::ADMIN);
+        self::actAs(self::adminName());
 
         return $services->get(AdminSignInController::class);
     }
@@ -861,7 +860,7 @@ class TestModeTest extends YesWikiTestCase
         $this->assertSame('https://idp.example/', $response->headers->get('Location'));
         $handshake = $this->cookie->read(new Request(cookies: [HandshakeCookie::NAME => $this->issuedCookie(HandshakeCookie::NAME)]), time());
         $this->assertSame(HandshakeMode::Test, $handshake?->mode);
-        $this->assertSame(self::ADMIN, $handshake->get('tested_by'), 'bound to the administrator who started it');
+        $this->assertSame(self::adminName(), $handshake->get('tested_by'), 'bound to the administrator who started it');
     }
 
     public function testTheScreenAsksAPasswordProviderForATestLogin(): void

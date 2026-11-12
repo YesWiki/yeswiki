@@ -118,7 +118,7 @@ class LostPasswordProviderTest extends YesWikiTestCase
             }
         });
         // the bot guard stands aside for an administrator; what is tested here is not the guard.
-        self::actAs($subStep === 1 ? 'WikiAdmin' : null);
+        self::actAs($subStep === 1 ? self::adminName() : null);
         try {
             $reflection->getMethod('manageSubStep')->invoke($action, $subStep);
         } finally {

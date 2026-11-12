@@ -79,7 +79,7 @@ class ProvidersEditorTest extends YesWikiTestCase
         $this->checkerWas ??= [array_key_exists(CsrfTokenChecker::class, $built), $built[CsrfTokenChecker::class] ?? null];
         $built[CsrfTokenChecker::class] = $this->createStub(CsrfTokenChecker::class);
         $table->setValue($services, $built);
-        self::actAs('WikiAdmin');
+        self::actAs(self::adminName());
 
         return $services->get(AdminSignInController::class);
     }
@@ -398,7 +398,7 @@ class ProvidersEditorTest extends YesWikiTestCase
     public function testSwitchingLocalOffAsksForConfirmation(): void
     {
         $this->seed(['local' => ['type' => 'local'], 'acme' => $this->oidc(['match_by_email' => true])]);
-        self::actAs('WikiAdmin');
+        self::actAs(self::adminName());
 
         $html = (string)$this->getWiki()->services->get(AdminSignInController::class)->index()->getContent();
 
@@ -409,7 +409,7 @@ class ProvidersEditorTest extends YesWikiTestCase
 
     private function localAdmin(): \YesWiki\Identity\Entity\User
     {
-        $admin = $this->getWiki()->services->get(UserManager::class)->getOneByName('WikiAdmin');
+        $admin = $this->getWiki()->services->get(UserManager::class)->getOneByName(self::adminName());
         $this->assertNotNull($admin);
         $this->assertNull($admin->provider(), 'a local account');
 
@@ -706,7 +706,7 @@ class ProvidersEditorTest extends YesWikiTestCase
         $section = ['local' => ['type' => 'local'], $id => ['type' => 'fakepw', 'label' => 'Dir', 'enabled' => true]];
         $this->seed($section);
         $this->installProviders($section);
-        self::actAs('WikiAdmin');
+        self::actAs(self::adminName());
         $services = $this->getWiki()->services;
 
         $pages = [
@@ -759,7 +759,7 @@ class ProvidersEditorTest extends YesWikiTestCase
         $this->assertNotNull($user);
         $services->get(AccountLinks::class)->link($user, 'acme-2', 'sub-1');
 
-        self::actAs('WikiAdmin');
+        self::actAs(self::adminName());
         $html = (string)$services->get(MarkdownFormatterService::class)->format('{{userstable}}');
 
         $this->assertStringContainsString('fakeredirect', $html);
@@ -774,7 +774,7 @@ class ProvidersEditorTest extends YesWikiTestCase
         $this->assertNotNull($user);
         $services->get(AccountLinks::class)->link($user, 'acme', 'sub-1');
 
-        self::actAs('WikiAdmin');
+        self::actAs(self::adminName());
         $html = (string)$services->get(MarkdownFormatterService::class)->format('{{userstable}}');
 
         $this->assertStringContainsString(self::USER, $html);

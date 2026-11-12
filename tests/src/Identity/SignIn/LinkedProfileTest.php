@@ -112,7 +112,7 @@ class LinkedProfileTest extends YesWikiTestCase
 
     public function testAnAdminIsBoundByTheSameRule(): void
     {
-        self::actAs('WikiAdmin');
+        self::actAs(self::adminName());
         $this->attemptToEditLinked();
     }
 
