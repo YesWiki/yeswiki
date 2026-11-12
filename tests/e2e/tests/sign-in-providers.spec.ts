@@ -24,6 +24,7 @@ import {
   ProviderType,
   returnFromProvider,
   sectionFor,
+  SENT_OR_SECRET,
   setDirectoryValue,
   setProviders,
   signInAtWikiForm,
@@ -227,7 +228,7 @@ for (const type of TYPES) {
       expect(
         JSON.stringify(rows),
         'what was sent is never recorded, only what it said',
-      ).not.toMatch(/SAMLResponse|saml2?p?:Assertion|BEGIN [A-Z ]*KEY/)
+      ).not.toMatch(SENT_OR_SECRET)
       expect(
         JSON.stringify(rows),
         'nor the password, which a directory lets a person read of their own entry',

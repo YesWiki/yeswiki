@@ -3,6 +3,7 @@
 /**
  * What the sign-in specs read or arrange in the wiki under test, run from its folder:
  *   journal <action pattern>        the Journal rows whose action is LIKE the pattern, oldest first, as JSON
+ *   forget-diagnostics              deletes the Journal rows of refused sign-ins (login.refused.%)
  *   forget <email>...               deletes the accounts that have these emails
  *   account <email>                 the name of the account that has this email, or null, as JSON
  *   groups <account>                the account's groups, as JSON
@@ -27,6 +28,12 @@ switch ($argv[1] ?? '') {
         $table = $db->quoteIdentifier($services->get(JournalSchema::class)->table());
         $rows = $db->loadAll("SELECT * FROM {$table} WHERE {$db->quoteIdentifier('action')} LIKE ? ORDER BY {$db->quoteIdentifier('id')}", [(string)($arguments[0] ?? '%')]);
         echo json_encode(array_map(fn (array $row): array => ['context' => json_decode((string)($row['context'] ?? ''), true)] + $row, $rows));
+        break;
+
+    case 'forget-diagnostics':
+        $db = $services->get(DbService::class);
+        $table = $db->quoteIdentifier($services->get(JournalSchema::class)->table());
+        $db->query("DELETE FROM {$table} WHERE {$db->quoteIdentifier('action')} LIKE ?", ['login.refused.%']);
         break;
 
     case 'forget':
@@ -54,6 +61,6 @@ switch ($argv[1] ?? '') {
         break;
 
     default:
-        fwrite(STDERR, "usage: php sso-wiki.php journal|forget|account|groups|add-to-group ...\n");
+        fwrite(STDERR, "usage: php sso-wiki.php journal|forget-diagnostics|forget|account|groups|add-to-group ...\n");
         exit(1);
 }

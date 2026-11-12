@@ -15,7 +15,9 @@ import { mockReady, mockReset } from '../helpers/mockserver'
 import {
   accountWithEmail,
   forgetAccounts,
+  forgetDiagnostics,
   journal,
+  SENT_OR_SECRET,
   PEOPLE,
   PROVIDER_IDS,
   PROVIDERS,
@@ -180,6 +182,21 @@ const CASES: Case[] = [
 
 const GUEST_CARD = '.yw-account-guest__card'
 
+/** The SAMLResponse values the browser posts to the wiki, as posted (base64). */
+const postedSamlResponses = (page: Page): string[] => {
+  const posted: string[] = []
+  page.on('request', (request) => {
+    const value = new URLSearchParams(request.postData() ?? '').get(
+      'SAMLResponse',
+    )
+    if (request.method() === 'POST' && value) {
+      posted.push(value)
+    }
+  })
+
+  return posted
+}
+
 const latestRow = () =>
   Math.max(0, ...journal('%').map((row) => Number(row.id)))
 
@@ -206,6 +223,9 @@ test.describe('a provider that fails', () => {
   test.beforeEach(async () => {
     await mockReset()
     forgetAccounts(marie.email)
+    // a diagnostic collapses into the day's row of its provider and reason: an earlier one would answer for this test's
+    forgetDiagnostics()
+    expect(journal('login.refused.%')).toEqual([])
   })
 
   test.afterAll(() => {
@@ -219,6 +239,7 @@ test.describe('a provider that fails', () => {
       setProviders(sectionFor(type))
       const before = latestRow()
       await arrange()
+      const posted = postedSamlResponses(page)
 
       await tryToSignIn(page, type)
 
@@ -230,19 +251,22 @@ test.describe('a provider that fails', () => {
       expect(
         rows.find((row) => row.action === 'login.failed')?.context,
       ).toMatchObject({ provider: id, reason })
-      // a diagnostic collapses into the day's row of its provider and reason, which takes the latest context: each case's
-      // detail tells this sign-in's from an earlier one
-      const diagnostic = journal(`login.refused.${reason}.${id}`).find(
+      const diagnostic = rows.find(
         (row) => row.action === `login.refused.${reason}.${id}`,
       )
       expect(diagnostic, 'a diagnostic beside the audit row').toBeTruthy()
       expect(String(diagnostic?.context.error)).toContain(detail)
       expect(
-        JSON.stringify([...rows, diagnostic]),
+        JSON.stringify(rows),
         'neither a secret, nor what was sent, nor a key is recorded',
-      ).not.toMatch(
-        /wiki-oidc-secret|SAMLResponse|saml2?p?:Assertion|BEGIN [A-Z ]*KEY/,
-      )
+      ).not.toMatch(SENT_OR_SECRET)
+      // the check above would see what was sent, had it been recorded
+      for (const response of posted) {
+        expect(response).toMatch(SENT_OR_SECRET)
+        expect(Buffer.from(response, 'base64').toString()).toMatch(
+          SENT_OR_SECRET,
+        )
+      }
       await page.goto('/?user')
       await expect(
         page.locator(GUEST_CARD),

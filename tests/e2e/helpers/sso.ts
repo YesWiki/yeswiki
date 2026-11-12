@@ -128,6 +128,13 @@ export const setProviders = (section: object): void => {
   )
 }
 
+/**
+ * What the journal must never hold: the test client secret, a key, or what a SAML provider sent, decoded or as posted (base64
+ * of `<samlp:Response` or of `<?xml `).
+ */
+export const SENT_OR_SECRET =
+  /wiki-oidc-secret|SAMLResponse|saml2?p?:(Response|Assertion)|PHNhbWxwOlJlc3BvbnNl|PD94bWwg|BEGIN [A-Z ]*KEY/
+
 export type JournalRow = {
   id: number | string
   action: string
@@ -139,6 +146,11 @@ export type JournalRow = {
 /** The Journal rows whose action is LIKE `pattern`, oldest first. */
 export const journal = (pattern: string): JournalRow[] =>
   JSON.parse(php('sso-wiki.php', ['journal', pattern]))
+
+/** Deletes the Journal's diagnostics of refused sign-ins, which collapse per provider and reason into one row a day. */
+export const forgetDiagnostics = (): void => {
+  php('sso-wiki.php', ['forget-diagnostics'])
+}
 
 /** Deletes the wiki accounts that have these emails, so a sign-in meets the wiki for the first time. */
 export const forgetAccounts = (...emails: string[]): void => {
