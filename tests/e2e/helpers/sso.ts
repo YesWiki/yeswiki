@@ -9,8 +9,6 @@ import { instanceDir } from './instance'
  * by idp.ts before each sign-in), and the OpenLDAP directory of the development stack for LDAP (docker/README.md).
  */
 export { IDP, WIKI }
-export const PORTAL = IDP
-export const PORTAL_HOST = new URL(PORTAL).host
 
 export const LDAP_URI = 'ldap://yeswiki-ldap:1389'
 export const PEOPLE_BASE = 'ou=people,dc=acme,dc=example'
@@ -166,21 +164,6 @@ export const returnFromProvider = async (page: Page): Promise<void> => {
   await page.waitForURL((url) => url.origin === new URL(WIKI).origin, {
     waitUntil: 'domcontentloaded',
   })
-}
-
-/** Types the login and password into the portal's form, once the browser has been sent there. */
-export const signInAtPortal = async (
-  page: Page,
-  login: string,
-  password: string,
-): Promise<void> => {
-  await page.waitForURL((url) => url.host === PORTAL_HOST, {
-    waitUntil: 'domcontentloaded',
-  })
-  await page.locator('#userfield').fill(login)
-  await page.locator('#passwordfield').fill(password)
-  await page.locator('#lform button[type="submit"]').click()
-  await expect(page).not.toHaveURL((url) => url.host === PORTAL_HOST)
 }
 
 /**

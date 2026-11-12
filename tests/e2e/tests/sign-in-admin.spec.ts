@@ -1,14 +1,16 @@
 import { BrowserContext, expect, Page, test } from '@playwright/test'
+import { idpSignsIn } from '../helpers/idp'
 import { ADMIN_PASSWORD, ADMIN_USERNAME, login } from '../helpers/login'
+import { mockReady, mockReset } from '../helpers/mockserver'
 import {
   forgetAccounts,
   PASSWORD,
   PEOPLE,
   PROVIDER_IDS,
   PROVIDERS,
+  returnFromProvider,
   sectionFor,
   setProviders,
-  signInAtPortal,
   signInAtWikiForm,
 } from '../helpers/sso'
 
@@ -17,7 +19,7 @@ import {
 const TOAST = '[role="alert"], .toast-message .alert'
 const GUEST_CARD = '.yw-account-guest__card'
 
-/** The identifier is made from the name once; the portal accepts the callback of the identifier `oidc` only. */
+/** The identifier is made from the name once: this one gives `oidc`, the identifier the other sign-in specs use. */
 const NAME = 'OIDC'
 
 const oidc = PROVIDERS.oidc as {
@@ -36,8 +38,11 @@ const rowOf = (page: Page, id: string) =>
     has: page.locator(`form[action*="admin/sign-in/${id}/toggle"]`),
   })
 
+test.beforeAll(mockReady)
+
 test.describe('the sign-in administration screen', () => {
-  test.beforeEach(() => {
+  test.beforeEach(async () => {
+    await mockReset()
     forgetAccounts(PEOPLE.marie.email)
     setProviders({ local: { type: 'local' } })
   })
@@ -93,17 +98,18 @@ test.describe('the sign-in administration screen', () => {
       /The provider was saved|Le fournisseur a été enregistré/,
     )
 
-    // the proof is a real sign-in: the portal only answers a client that presents the stored secret
+    // the proof is a real sign-in: the mock identity provider refuses a client that does not present the stored secret
     const context: BrowserContext = await browser.newContext()
     try {
       const visitor = await context.newPage()
+      await idpSignsIn('oidc', PEOPLE.marie)
       await visitor.goto('/?user')
       await visitor
         .locator(`${GUEST_CARD} .yw-sign-in__provider`, {
           hasText: `${NAME} renamed`,
         })
         .click()
-      await signInAtPortal(visitor, PEOPLE.marie.login, PASSWORD)
+      await returnFromProvider(visitor)
       await visitor.goto('/?user')
       await expect(visitor.locator(GUEST_CARD)).toHaveCount(0)
     } finally {

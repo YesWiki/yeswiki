@@ -120,6 +120,9 @@ const xml = (text: string): string =>
 
 const CAS = 'http://www.yale.edu/tp/cas'
 
+/** Where a CAS client validates a ticket: /serviceValidate for CAS 2.0, /p3/serviceValidate for 3.0. */
+export const CAS_VALIDATE = '/cas/(p3/)?serviceValidate'
+
 /** What a CAS server answers to a ticket it does not know. */
 export const CAS_UNKNOWN_TICKET = `<cas:serviceResponse xmlns:cas="${CAS}"><cas:authenticationFailure code="INVALID_TICKET">unknown ticket</cas:authenticationFailure></cas:serviceResponse>`
 
@@ -159,7 +162,7 @@ export const casSignsIn = async (person: Person): Promise<void> => {
       id: 'cas.validate',
       httpRequest: {
         method: 'GET',
-        path: '/cas/p3/serviceValidate',
+        path: CAS_VALIDATE,
         queryStringParameters: { ticket: [ticket] },
       },
       httpResponse: {
@@ -171,7 +174,7 @@ export const casSignsIn = async (person: Person): Promise<void> => {
     {
       id: 'cas.unknown-ticket',
       priority: -1,
-      httpRequest: { method: 'GET', path: '/cas/p3/serviceValidate' },
+      httpRequest: { method: 'GET', path: CAS_VALIDATE },
       httpResponse: {
         statusCode: 200,
         headers: { 'content-type': ['application/xml'] },

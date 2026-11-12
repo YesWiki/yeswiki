@@ -2,7 +2,15 @@ import { execFileSync } from 'child_process'
 import { createHash } from 'crypto'
 import { fileURLToPath } from 'url'
 import { Browser, expect, Page, test } from '@playwright/test'
+import {
+  IDP,
+  idpSignsIn,
+  oidcSignsIn,
+  RedirectType,
+  WIKI,
+} from '../helpers/idp'
 import { instanceDir } from '../helpers/instance'
+import { mockReady, mockReset } from '../helpers/mockserver'
 import {
   accountWithEmail,
   groupsOf,
@@ -10,23 +18,16 @@ import {
   PASSWORD,
   PEOPLE,
   PEOPLE_BASE,
-  PORTAL,
-  PORTAL_HOST,
+  returnFromProvider,
   setProviders,
-  signInAtPortal,
   signInAtWikiForm,
 } from '../helpers/sso'
 
 /**
  * The upgrade from Doryphore, for each login extension (spec section 13): a wiki that signed in through loginsso, loginldap or
- * logincas is put back as Doryphore left it, upgraded again, and its people sign in against the real servers of the development
- * stack. Marie reaches the account she had, nobody gets a second one, and loginsso's provider keeps the callback registered at it.
+ * logincas is put back as Doryphore left it, upgraded again, and its people sign in against the mock identity provider and the
+ * directory of the development stack. Marie reaches the account she had, nobody gets a second one, and loginsso's provider keeps the callback registered at it.
  */
-
-/** The wiki as the portal knows it: CI serves it on a port, the development stack on the bare name. */
-const WIKI = (
-  process.env.YESWIKI_BASE_URL || 'http://wiki.yeswiki.test'
-).replace(/\/$/, '')
 
 /** The address the converted provider sends, which UPGRADE.md asks to register at the provider before upgrading. */
 const PROVIDER_CALLBACK = `${WIKI}/?user/sign-in/acme-sso/callback`
@@ -142,22 +143,28 @@ const expectSignedInAs = async (page: Page, tag: string) => {
   await expect(page.locator('body')).toContainText(tag)
 }
 
-/** From the account page, out to the portal through the provider's button and back, in a browser of its own. */
-const signInThroughPortal = async (
+/** From the account page, out to the provider through its button and back as Marie, in a browser of its own. */
+const signInThroughProvider = async (
   browser: Browser,
   label: string,
+  type: RedirectType,
 ): Promise<Page> => {
+  await idpSignsIn(type, PEOPLE.marie)
   const page = await (await browser.newContext()).newPage()
   await page.goto('/?user')
   await page
     .locator(`${GUEST_CARD} .yw-sign-in__provider`, { hasText: label })
     .click()
-  await signInAtPortal(page, PEOPLE.marie.login, PASSWORD)
+  await returnFromProvider(page)
 
   return page
 }
 
+test.beforeAll(mockReady)
+
 test.describe('the upgrade from Doryphore', () => {
+  test.beforeEach(mockReset)
+
   test.afterAll(() => {
     fixture('reset')
     waitForTheConfiguration()
@@ -177,9 +184,9 @@ test.describe('the upgrade from Doryphore', () => {
               auth_options: {
                 clientId: 'wiki-oidc',
                 clientSecret: 'wiki-oidc-secret',
-                urlAuthorize: `${PORTAL}/oauth2/authorize`,
-                urlAccessToken: `${PORTAL}/oauth2/token`,
-                urlResourceOwnerDetails: `${PORTAL}/oauth2/userinfo`,
+                urlAuthorize: `${IDP}/authorize`,
+                urlAccessToken: `${IDP}/token`,
+                urlResourceOwnerDetails: `${IDP}/userinfo`,
                 scopes: ['openid'],
                 addFinalEqual: true,
               },
@@ -226,7 +233,7 @@ test.describe('the upgrade from Doryphore', () => {
 
     const provider = expectInCharge('acme-sso', 'oidc')
     expect(provider.connection).toMatchObject({
-      authorize_url: `${PORTAL}/oauth2/authorize`,
+      authorize_url: `${IDP}/authorize`,
     })
     expect(provider.connection).not.toHaveProperty('legacy_callback')
     const before = account(tag) as Account
@@ -244,7 +251,7 @@ test.describe('the upgrade from Doryphore', () => {
     const page = await (await browser.newContext()).newPage()
     const sentBack: string[] = []
     page.on('request', (request) => {
-      // the portal escapes the slashes of the query it was given: `?user%2Fsign-in%2Facme-sso%2Fcallback&code=…`
+      // the first key of the query, whether a provider sends its slashes as they are or escaped (`?user%2Fsign-in%2F…`)
       const url = new URL(request.url())
       if (
         url.origin === new URL(WIKI).origin &&
@@ -253,8 +260,9 @@ test.describe('the upgrade from Doryphore', () => {
         sentBack.push(request.url())
       }
     })
+    await oidcSignsIn(PEOPLE.marie)
     const authorize = page.waitForRequest((request) =>
-      request.url().startsWith(`${PORTAL}/oauth2/authorize`),
+      request.url().startsWith(`${IDP}/authorize`),
     )
     await page.goto('/?user')
     await page
@@ -263,11 +271,11 @@ test.describe('the upgrade from Doryphore', () => {
     expect(
       new URL((await authorize).url()).searchParams.get('redirect_uri'),
     ).toBe(PROVIDER_CALLBACK)
-    await signInAtPortal(page, PEOPLE.marie.login, PASSWORD)
+    await returnFromProvider(page)
 
     expect(
       sentBack,
-      'the portal sends the browser back to the converted provider callback',
+      'the provider sends the browser back to the converted provider callback',
     ).toHaveLength(1)
     expect(new URL(sentBack[0]).searchParams.get('code')).toBeTruthy()
     await expectSignedInAs(page, tag)
@@ -355,7 +363,7 @@ test.describe('the upgrade from Doryphore', () => {
     loadDoryphore({
       tool: 'logincas',
       config: {
-        cas_host: PORTAL_HOST,
+        cas_host: new URL(IDP).host,
         cas_port: '443',
         cas_context: '/cas',
         cas_server_ca_cert_path: '',
@@ -374,7 +382,7 @@ test.describe('the upgrade from Doryphore', () => {
 
     const provider = expectInCharge('cas', 'cas')
     expect(provider.connection).toEqual({
-      server_url: `https://${PORTAL_HOST}:443/cas`,
+      server_url: `https://${new URL(IDP).host}:443/cas`,
       version: '2.0',
     })
     expect(provider.attributes).toEqual({ id: 'name', email: 'mail' })
@@ -387,17 +395,17 @@ test.describe('the upgrade from Doryphore', () => {
     const everyone = accounts()
 
     // NOT EXERCISED: the converted server URL. logincas's phpCAS only spoke https, so the conversion writes
-    // https://<cas_host>:<cas_port>/<cas_context> (checked above), but the development portal serves CAS on plain http only.
-    // That one value is replaced by the portal's http address; every other converted setting, the `name` user ID included, is used unchanged.
+    // https://<cas_host>:<cas_port>/<cas_context> (checked above), but the mock serves CAS on plain http only.
+    // That one value is replaced by the mock's http address; every other converted setting, the `name` user ID included, is used unchanged.
     const section = converted().providers
     setProviders({
       ...section,
       cas: {
         ...provider,
-        connection: { ...provider.connection, server_url: `${PORTAL}/cas` },
+        connection: { ...provider.connection, server_url: `${IDP}/cas` },
       },
     })
-    const page = await signInThroughPortal(browser, 'CAS')
+    const page = await signInThroughProvider(browser, 'CAS', 'cas')
 
     await expectSignedInAs(page, tag)
     expectHerAccount(tag, before, everyone, 'cas')
