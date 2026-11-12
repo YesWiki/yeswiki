@@ -245,7 +245,7 @@ jobs:
           provenance: mode=max
           sbom: true
 
-      - uses: sigstore/cosign-installer@v4
+      - uses: sigstore/cosign-installer@v4.1.3
 
       - name: Sign the image with this workflow's identity
         env:
