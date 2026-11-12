@@ -178,6 +178,17 @@ const CASES: Case[] = [
     reason: 'provider_unreachable',
     detail: 'could not be reached to validate the ticket',
   },
+  {
+    // seen on MockServer 9.2.0 answering 404 to a validation path it had no expectation for: phpCAS read an empty body
+    type: 'cas',
+    name: 'ticket validation answers an empty body',
+    arrange: async () => {
+      await casSignsIn(marie)
+      await idpEndpointFails(CAS_VALIDATE, { status: 404 })
+    },
+    reason: 'invalid_response',
+    detail: 'is not a CAS 3.0 response: check server_url and version',
+  },
 ]
 
 const GUEST_CARD = '.yw-account-guest__card'

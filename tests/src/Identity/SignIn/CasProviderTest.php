@@ -162,6 +162,19 @@ class CasProviderTest extends YesWikiTestCase
         $this->assertStringNotContainsString('secret-looking', $failure->adminDetail);
     }
 
+    /** phpCAS takes an empty answer for a bad one, but PHP 8's DOMDocument::loadXML() throws on it before phpCAS can say so. */
+    public function testAnEmptyAnswerIsInvalidAndNamesTheValidationAddress(): void
+    {
+        CasCannedRequest::$body = '';
+
+        $failure = $this->failure(fn () => $this->provider()->complete(self::returning(), self::handshake()));
+
+        $this->assertSame(FailureReason::InvalidResponse, $failure->reason);
+        $this->assertStringContainsString('/p3/serviceValidate', $failure->adminDetail);
+        $this->assertStringContainsString('check server_url and version', $failure->adminDetail);
+        $this->assertSessionLeftNothing();
+    }
+
     public function testAnUnreachableServerIsUnreachableAndSaysWhy(): void
     {
         CasCannedRequest::$body = null;

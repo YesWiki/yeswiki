@@ -173,6 +173,11 @@ final class CasProvider implements RedirectProvider
         } catch (\CAS_AuthenticationException $refused) {
             throw $this->refusal($refused, $server, $ticket);
         } catch (\Throwable $error) {
+            // phpCAS takes an empty answer for a bad one, but DOMDocument::loadXML() throws on it since PHP 8, before phpCAS can say so
+            $thrower = $error->getTrace()[0] ?? [];
+            if ($error instanceof \ValueError && ($thrower['class'] ?? '') === \DOMDocument::class && $thrower['function'] === 'loadXML') {
+                throw $this->notACasResponse($server);
+            }
             // whatever else stopped phpCAS, said with the ticket taken out
             throw new ProviderFailure(FailureReason::InternalError, 'phpCAS stopped: ' . $error::class . ': ' . self::scrub($error->getMessage(), $ticket));
         } finally {
@@ -242,6 +247,12 @@ final class CasProvider implements RedirectProvider
             return new ProviderFailure(FailureReason::InvalidResponse, 'the ticket came through CAS proxies, which this wiki does not accept');
         }
 
+        return $this->notACasResponse($server);
+    }
+
+    /** @param array{base: string, host: string, port: int, path: string, version: string, login: string, validate: string, ca: string} $server */
+    private function notACasResponse(array $server): ProviderFailure
+    {
         return new ProviderFailure(FailureReason::InvalidResponse, "the CAS server's answer to the ticket validation at {$server['validate']} is not a CAS {$server['version']} response: check server_url and version");
     }
 
