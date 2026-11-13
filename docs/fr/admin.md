@@ -554,8 +554,8 @@ utiliser cette méthode pour sélectionner un preset pour une page seulement)
 
 Pour **changer le thème graphiques sur l'ensemble du site**, reportez-vous à la
 rubrique "Gérer le thème par défaut du wiki" en bas de la page
-[Look](/?GererThemes) Ce changement aura pour effet de mettre à jour le fichier
-de configuration yeswiki.config.php et rajouter les valeurs:
+[Look](/?GererThemes) Ce changement aura pour effet d'enregistrer dans la
+configuration du wiki les valeurs :
 
 'favorite_theme' => 'nom du thème correspondant au nom du sous-répertoire thème
 correspondant à ce thème personnalisé', 'favorite_squelette' => 'nom du
@@ -741,7 +741,7 @@ Administration > Spam les détaille jour par jour et par motif sur les 30
 derniers jours (action `{{adminbotguard}}`, `{{adminbotguard days="7"}}` pour
 une période plus courte).
 
-1. A partir du fichier yeswiki.config.php accessible via FTP, il est possible :
+1. Depuis la page de configuration du wiki, il est possible :
 
 - de désactiver le calcul ALTCHA (le jeton et le champ piège restent actifs)
 - d'ajouter un champ (mot de passe) en entrée du mode édition (+ un message
@@ -856,19 +856,18 @@ Pour découvrir l'ensemble des stratégies possibles face au spam =>
 
 ## Fichier de configuration
 
-Cette page permet de modifier la configuration de son Yeswiki sans passer par le
-fichier yeswiki.config.php. Dans les versions précédentes de Yeswiki, ces éléments
-n'étaient accessibles que par FTP, en éditant le fichier yeswiki.config.php, se
-trouvant à la racine du dossier du YesWiki. Tous les administrateurices de
+Cette page permet de modifier la configuration de son Yeswiki. Dans les versions
+précédentes de Yeswiki, ces éléments n'étaient accessibles que par FTP, en
+éditant le fichier yeswiki.config.php, se trouvant à la racine du dossier du
+YesWiki. Tous les administrateurices de
 Yeswiki n'ayant pas accès au serveur, cette page de configuration contourne ce
 problème. Il faut être identifié comme administrateurice pour visionner et
 modifier les informations de cet espace.
 
 ### Où vont les modifications
 
-Le wiki n'écrit plus jamais `yeswiki.config.php` pendant qu'il tourne. Seule
-l'installation le crée. Ce que l'on enregistre ici va à l'un de ces deux
-endroits :
+Un wiki n'a plus de fichier `yeswiki.config.php`. Ce que l'on enregistre ici
+va à l'un de ces deux endroits :
 
 - **les réglages du wiki** (titre, langue, thème, notifications, mise en
   hibernation…) vont dans la base de données. Ils l'emportent sur la valeur du
@@ -884,9 +883,16 @@ réglage de l'hébergeur : sur ce genre d'hébergement, ces valeurs viennent des
 variables d'environnement de chaque copie, et le message d'erreur nomme les
 réglages refusés.
 
-Un wiki mis à jour garde tout ce qu'il avait : `yeswiki.config.php` reste la
-base, et seules les modifications faites après la mise à jour passent par la
-base de données ou par `private/.env`.
+Un réglage que fixe une variable d'environnement, ou une ligne de
+`private/.env`, apparaît en lecture seule, marqué « défini par l'environnement »,
+sans sa valeur : il l'emporte sur la base de données, et seul l'hébergeur peut
+le changer.
+
+Un wiki mis à jour garde tout ce qu'il avait : la mise à jour range les réglages
+de son ancien `yeswiki.config.php` dans la base de données et dans
+`private/.env`, puis renomme le fichier `yeswiki.config.php.migrated`. Quand
+`private/.env` ne peut pas être écrit, le fichier reste lu et cet écran affiche
+un avertissement (voir [la page webmaster](webmaster.md#un-wiki-davant-avec-son-yeswikiconfigphp)).
 
 ### Paramètres principaux
 
@@ -1261,9 +1267,8 @@ est **refusé au démarrage**, avec le chemin fautif dans le message.
 
 ### Configuration
 
-Les identifiants se mettent dans `private/.env`, **jamais** dans
-`yeswiki.config.php` : ce dernier est dans la racine web. Une variable
-réellement présente dans l'environnement l'emporte sur le fichier.
+Les identifiants se mettent dans `private/.env`, hors de la racine web. Une
+variable réellement présente dans l'environnement l'emporte sur le fichier.
 
 ```ini
 YESWIKI_STORAGE=s3                  # local (défaut) | s3
@@ -1358,8 +1363,7 @@ Ce que la commande vérifie, dans cet ordre :
   d'identités chez SeaweedFS — donc c'est à vous de la créer, et YesWiki se
   contente de vous dire quand vous ne l'avez pas fait.
 
-Les identifiants sont écrits dans `private/.env` en `0600`, jamais dans
-`yeswiki.config.php`.
+Les identifiants sont écrits dans `private/.env` en `0600`.
 
 ### CORS : sans ça, les polices disparaissent
 
@@ -1432,8 +1436,8 @@ TRUSTED_PROXIES=10.0.0.0/8,192.168.0.0/16   # ou REMOTE_ADDR : celui qui se conn
 TRUSTED_HEADERS=X-Forwarded-For,X-Forwarded-Proto,X-Forwarded-Host,X-Forwarded-Port   # la valeur par défaut
 ```
 
-Les mêmes réglages existent dans `yeswiki.config.php` (`trusted_proxies`,
-`trusted_headers`). Sans eux, les en-têtes `X-Forwarded-*` sont ignorés : un
+Ces réglages se mettent dans `private/.env` ou dans l'environnement du serveur
+(`TRUSTED_PROXIES`, `TRUSTED_HEADERS`). Sans eux, les en-têtes `X-Forwarded-*` sont ignorés : un
 visiteur ne peut pas se faire passer pour une autre adresse.
 
 ### Plusieurs serveurs pour un même wiki

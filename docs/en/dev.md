@@ -505,7 +505,7 @@ The api access is closed by default (unless your route says otherwise), you need
 
 **⚠️ Be careful, in a public api, everybody can access to all data !**
 
-In `yeswiki.config.php`, add the parameter :
+In the wiki's settings (its settings page, or `API_ALLOWED_KEYS` as JSON in `private/.env`), add :
 
 ```php
 'api_allowed_keys' => ['public' => true],
@@ -513,7 +513,7 @@ In `yeswiki.config.php`, add the parameter :
 
 ### Private API scenario
 
-In `yeswiki.config.php`, set the parameter :
+In the wiki's settings, set :
 
 ```php
  'api_allowed_keys' =>

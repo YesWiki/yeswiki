@@ -235,7 +235,8 @@ Pré-requis : Authoriser les headers d'authentification dans
 
 Pour se connecter à une route api avec un `bearer`, il faut:
 
-1.  ajouter le paramètre suivant dans le fichier yeswiki.config.php
+1.  ajouter le réglage suivant dans la configuration du wiki (page de
+    configuration, ou `private/.env` en JSON : `API_ALLOWED_KEYS='{"UserName1":"a-complex-token-1"}'`)
 
 ```php
    'api_allowed_keys' => [

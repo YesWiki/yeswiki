@@ -48,13 +48,7 @@ final class InstanceConfiguration
      */
     public function store(array $set, array $unset = []): bool
     {
-        $host = array_filter($set, static fn (string $key): bool => SettingKinds::isOperator($key), ARRAY_FILTER_USE_KEY);
-        foreach ($unset as $key) {
-            if (SettingKinds::isOperator($key)) {
-                $host[$key] = null;
-            }
-        }
-        $wiki = array_diff_key($set, $host);
+        [$host, $wiki] = self::split($set + array_fill_keys(array_filter($unset, [SettingKinds::class, 'isOperator']), null));
         $this->database()->store($wiki, array_values(array_filter($unset, static fn (string $key): bool => !SettingKinds::isOperator($key))));
         $fromTheFile = $this->legacy()->wikiSettings();
         $removed = array_values(array_filter($unset, static fn (string $key): bool => !SettingKinds::isOperator($key) && array_key_exists($key, $fromTheFile)));
@@ -63,6 +57,20 @@ final class InstanceConfiguration
         }
 
         return (new EnvFile($this->files, $this->instanceDir))->store($host);
+    }
+
+    /**
+     * Where each setting goes, the one rule a wiki and a farm both follow: the host's to private/.env, the rest to the database.
+     *
+     * @param array<string, mixed> $settings
+     *
+     * @return array{0: array<string, mixed>, 1: array<string, mixed>} the host's, then the wiki's
+     */
+    public static function split(array $settings): array
+    {
+        $host = array_filter($settings, [SettingKinds::class, 'isOperator'], ARRAY_FILTER_USE_KEY);
+
+        return [$host, array_diff_key($settings, $host)];
     }
 
     /** @return array<string, mixed> what that wiki's database stores, a null value taking a key away */
@@ -75,7 +83,7 @@ final class InstanceConfiguration
     private function database(): WikiSettings
     {
         if ($this->settings === null) {
-            $db = new DbService(new ParameterBag($this->hostSettings() + ['debug' => false, 'base_url' => '', 'table_prefix' => 'yeswiki_']), false);
+            $db = new DbService(new ParameterBag($this->hostSettings() + ['debug' => false, 'base_url' => '', 'table_prefix' => 'yeswiki_', 'db_driver' => 'mysql', 'db_host' => 'localhost', 'db_port' => '', 'db_database' => '', 'db_user' => '', 'db_password' => '']), false);
             $refused = $db->ping();
             if ($refused !== null) {
                 throw new \RuntimeException('The database of ' . $this->instanceDir . ' does not answer: ' . $refused);

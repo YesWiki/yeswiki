@@ -93,6 +93,10 @@ class DbService
             if (in_array(php_sapi_name(), ['cli', 'cli-server', ' phpdbg'], true)) {
                 throw new \Exception(_t('DB_CONNECT_FAIL') . ': ' . $th->getMessage());
             }
+            if (!headers_sent()) {
+                http_response_code(503);
+                header('Retry-After: 10');
+            }
             exit(_t('DB_CONNECT_FAIL'));
         }
     }

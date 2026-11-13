@@ -124,10 +124,8 @@ Editez ce fichier et remplacez
 `User-Agent: \*     Disallow: /`
 
 ATTENTION - Pour une efficacité réelle (étant donné que google ne respecte plus
-trop le robot.txt, il convient de rajouter dans yeswiki.config.php, cette ligne
-:
-
-`'meta' => array('robots' => 'noindex, nofollow'),`
+trop le robot.txt, il convient de donner la valeur `noindex, nofollow` au
+réglage `meta[robots]` dans la page de configuration.
 
 Vous pouvez aussi réaliser cette opération via l'onglet fichier de conf de la
 page gestion du site de votre wiki (Balises meta pour l'indexation web).
@@ -190,61 +188,70 @@ Cette interface d'administration permet :
 Un squelette ou un gabarit Twig accepte la syntaxe des actions des pages, comme
 `{{button text="Ok"}}`. Voir [Les actions dans les gabarits](actions-dans-les-gabarits.md).
 
-### Le fichier de configuration
+### Où est la configuration
 
-Une fois le YesWiki créé / installé, on peut aller éditer le fichier
-**yeswiki.config.php**, se trouvant à la racine du dossier du YesWiki,
-accessible par FTP. Le fichier de configuration déclare un tableau avec des
-valeurs pour chaque élément de configuration.
+Un wiki n'a plus de fichier de configuration. Ses réglages sont à deux endroits :
 
-**Voici le contenu du fichier de configuration par défaut**, voir les
-commentaires en fin de ligne pour le détail de chaque élément de configuration :
+- **les réglages de l'hébergeur** (base de données, `base_url`, `rewrite_mode`,
+  envoi des mails et ses secrets, extensions, proxys de confiance…) sont dans
+  `private/.env`, une ligne `NOM='valeur'` par réglage, ou dans les variables
+  d'environnement du serveur ;
+- **les réglages du wiki** (titre, langue, thème, droits par défaut…) sont dans
+  sa base de données, et se changent depuis la page de configuration
+  (`{{editconfig}}`).
 
-```php
-<?php
-// yeswiki.config.php créée Fri Jun  8 20:58:37 2012
+Une variable d'environnement, ou une ligne de `private/.env`, l'emporte sur la
+base de données, quel que soit le réglage. Le champ correspondant apparaît alors
+en lecture seule dans la page de configuration, marqué « défini par
+l'environnement », sans sa valeur.
 
-$yeswikiConfig = array ( // tableau de configuration
-  'debug' => 'no', // active le mode de débogage si passé à la valeur 'yes' (infos sur le nombre de requêtes, le temps écoulé et force l'affichage des erreurs php pour les développeurs) astuce : on peut aussi passer &debug dans l'url pour debugguer
-  'mysql_host' => 'localhost',
-  'mysql_database' => 'yeswiki',
-  'mysql_user' => 'yeswiki',
-  'mysql_password' => '#######',
-  'table_prefix' => 'yeswiki_',
-  'root_page' => 'PagePrincipale',
-  'yeswiki_name' => 'YesWiki de présentation', // titre du YesWiki
-  'base_url' => 'http://localhost/?', // url d'accès au site
-  'rewrite_mode' => '0',
-  'meta_keywords' => 'yeswiki, wiki, gpl, php, super', // mot clé pour le référencement (séparés par des virgules, par plus de 20-30)
-  'meta_description' => 'Un site de présentation de ce merveilleux outil qu\'est YesWiki', // description du site en une phrase, pour le référencement (Attention : ne pas mettre de "." (point) dans ces méta descriptions
-  'action_path' => 'actions',
-  'handler_path' => 'handlers',
-  'header_action' => 'header',
-  'footer_action' => 'footer',
-  'navigation_links' => 'DerniersChangements :: DerniersCommentaires :: ParametresUtilisateur',
-  'pages_purge_time' => 90, // nbr de jours après lesquels les révisions sont effacées
-  'default_write_acl' => '*', // droits d'écriture par défaut des pages
-  'default_read_acl' => '*', // droits de lecture par défaut des pages
-  'default_comment_acl' => '*', // droits des commentaires
-  'preview_before_save' => '0',
-  'allow_raw_html' => '1', // autorise le html
-  'disable_wiki_links' => true, // ne pas transformer automatiquement les mots avec 2 majuscules en lien
-);
+```sh
+# private/.env
+DB_DRIVER='mysql'
+DB_HOST='localhost'
+DB_DATABASE='yeswiki'
+DB_USER='yeswiki'
+DB_PASSWORD='#######'
+TABLE_PREFIX='yeswiki_'
+BASE_URL='https://mon-wiki.example.org/?'
+REWRITE_MODE='false'
+TRUSTED_PROXIES='["10.0.0.0/8"]'
 ```
+
+Une liste s'écrit en JSON, comme `TRUSTED_PROXIES` ci-dessus.
+
+Un wiki est installé dès qu'il connaît sa base de données : `DB_DATABASE`, ou
+`DB_DRIVER='sqlite'`. Sans ces réglages, il affiche l'installateur. Avec eux,
+s'il trouve une base vide, il y crée lui-même ses tables et son contenu de
+départ, avec un compte administrateur si `ADMIN_NAME`, `ADMIN_EMAIL` et
+`ADMIN_PASSWORD` sont donnés. Sans eux, aucun compte n'est créé, et le journal
+du serveur donne la commande pour en ajouter un :
+`yeswiki user:create <nom> <email> --group admins`.
+
+#### Variables passées par Nginx ou Apache
+
+Un `fastcgi_param` d'Nginx ou un `SetEnv` d'Apache arrive bien jusqu'aux pages,
+mais pas aux commandes (`yeswicli`, le cron, les traitements de fond) : seul le
+serveur web les transmet, à chaque requête. Mettez donc les réglages de
+l'hébergeur dans `private/.env`, que tout le monde lit. La page « Santé » du
+wiki signale un réglage que seul le serveur web transmet.
+
+#### Un wiki d'avant, avec son `yeswiki.config.php`
+
+À la mise à jour, une migration déplace le fichier : les réglages du wiki vont
+dans la base de données, ceux de l'hébergeur dans `private/.env`, et le fichier
+est renommé `yeswiki.config.php.migrated`. Si `private/.env` ne peut pas être
+écrit, le fichier reste et le wiki continue de le lire, avec un avertissement
+dans la page de configuration. La commande `yeswiki config:export-env` affiche
+alors les lignes à mettre dans `private/.env` ; une fois le fichier écrit,
+supprimez `yeswiki.config.php`.
 
 #### Changer les droits de lecture et d'écriture par défaut
 
 Par défaut, les pages de votre wiki sont visibles et éditables par tout
 visiteur. Pour limiter la lecture et l'écriture aux seuls administrateurices par
-exemple, il faut changer les lignes
-
-      'default_write_acl' => '*', // droits d'écriture par défaut des pages
-      'default_read_acl' => '*', // droits de lecture par défaut des pages
-
-en
-
-      'default_write_acl' => '@admins', // droits d'écriture par défaut des pages
-      'default_read_acl' => '@admins', // droits de lecture par défaut des pages
+exemple, donnez la valeur `@admins` à `default_write_acl` et `default_read_acl`
+dans la page de configuration.
 
 #### Changer l'url de votre wiki
 
@@ -253,13 +260,13 @@ Mon wiki se trouve à l'adresse suivante
 qu'il se nomme maintenant
 [http://site-coop.net/Mathieu](http://site-coop.net/Mathieu)  
 \- Via ftp, il faut changer le nom du dossier Louise en le nommant Mathieu  
-\- dans le fichier yeswiki.config.php, il faut changer la ligne
+\- dans le fichier `private/.env`, il faut changer la ligne
 
-    'base_url' => 'http://site-coop.net/Louise/?"
+    BASE_URL='http://site-coop.net/Louise/?'
 
 en
 
-    'base_url' => 'http://site-coop.net/Mathieu/?"
+    BASE_URL='http://site-coop.net/Mathieu/?'
 
 et tester si tout fonctionne dans votre navigateur (attention les majuscules et
 minuscules ont leur importance)
@@ -271,8 +278,8 @@ Pour tous les détails sur les droits d'accès :
 
 On peut enlever le `?` des urls à condition de faire les bonnes règles de
 re-écriture dans votre serveur web (configuration d'Apache, Caddy, Nginx ou
-autre). Ensuite, dans le fichier `yeswiki.config.php`, on peut enlever le `?`
-dans le paramètre `base_url`, et passer `rewrite_mode`à `1`. Attention : mettre
+autre). Ensuite, dans le fichier `private/.env`, on peut enlever le `?`
+de `BASE_URL`, et passer `REWRITE_MODE` à `true`. Attention : mettre
 le paramètre `rewrite_mode` à `1` sans faire de re-écriture d'url, ni enlever le
 `?` de `base_url`, pourrait entrainer un dysfonctionnement de YesWiki, il suffit
 de remettre `rewrite_mode` à `0` pour corriger le problème.
@@ -344,8 +351,8 @@ la première fois, avant d'exister sur le disque.
 ##### Changer l'affichage par défaut des cartes
 
 Par défaut les cartes sont centrées sur le centre de la France et affiche
-l'intégralité de la France. On peut forcer le centre ailleurs en configurant
-dans `yeswiki.config.php` :
+l'intégralité de la France. On peut forcer le centre ailleurs depuis la page de
+configuration, avec ces réglages :
 
 ```php
 'baz_map_center_lat' => '50.725777', //permet de caler les cartes utilisées dans le wiki sur cette latitude
@@ -374,8 +381,8 @@ du port privé
 
 ##### Opengraph : choisir l'image utilisée pour le partage sur Facebook
 
-Pour ouvrir une image par défaut : il faut mettre un lien vers l'image dans le
-yeswiki.config.php  
+Pour ouvrir une image par défaut : il faut mettre un lien vers l'image dans la
+page de configuration  
 Idéalement, l'image doit faire 1200x630 selon les specs imposées par
 facedebouc  
 Par défaut il prend cette image, et si une image est présente dans la page (mise
@@ -421,16 +428,17 @@ nouvelle version d'un thème ou d'une extension existe.
 
 Sur certains hébergements, l'envoi de mail par défaut ne marche pas , il faut
 créer un compte smtp  
-et donc rajouter dans le fichier `yeswiki.config.php` les paramètres suivants :
+et donc rajouter dans le fichier `private/.env` les lignes suivantes :
 
-```php
-'contact_mail_func' => 'smtp',
-'contact_smtp_host' => 'ssl://<mon serveur smtp>',
- 'contact_smtp_port' => '465',
-'contact_smtp_user' => 'user@mail.ext',
-'contact_smtp_pass' => '<monpassword>',
-'contact_from' => 'user@mail.ext',
+```sh
+CONTACT_MAIL_FUNC='smtp'
+CONTACT_SMTP_HOST='ssl://<mon serveur smtp>'
+CONTACT_SMTP_PORT='465'
+CONTACT_SMTP_USER='user@mail.ext'
+CONTACT_SMTP_PASS='<monpassword>'
 ```
+
+puis donner l'adresse d'envoi (`contact_from`) dans la page de configuration.
 
 Attention, tous les serveurs mail n'acceptent pas de jouer ce jeu.
 
@@ -500,7 +508,7 @@ d'envoi (`mail`, `sendmail` ou `smtp`).
    suivi du contenu de `private/keys/dkim.public`, sans les lignes
    `-----BEGIN…` et `-----END…` ni les retours à la ligne.
 
-3. Dans `yeswiki.config.php`, ou depuis la page de configuration du wiki
+3. Dans `private/.env`, ou depuis la page de configuration du wiki
    (groupe « Envoi des e-mails ») :
 
    ```php

@@ -71,7 +71,7 @@ class ConfigurationService
                 $changed[(string)$key] = null;
             }
         }
-        $operator = array_filter($changed, static fn (string $key): bool => SettingKinds::isOperator($key), ARRAY_FILTER_USE_KEY);
+        [$operator, $wiki] = InstanceConfiguration::split($changed);
         if ($operator !== [] && Replication::isOn()) {
             throw new \RuntimeException('These settings belong to the operator of a replicated wiki, in its environment: ' . implode(', ', array_keys($operator)));
         }
@@ -80,7 +80,7 @@ class ConfigurationService
         $base = EnvironmentConfiguration::apply($plain->__get('_parameters'));
         $store = [];
         $forget = [];
-        foreach (array_diff_key($changed, $operator) as $key => $value) {
+        foreach ($wiki as $key => $value) {
             if ($value === null ? !array_key_exists($key, $base) : (array_key_exists($key, $base) && $base[$key] === $value)) {
                 $forget[] = $key;
             } else {

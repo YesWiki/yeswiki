@@ -2,9 +2,9 @@
 
 namespace YesWiki\Kernel\Service;
 
-use YesWiki\Files\Service\LocalFiles;
 use Symfony\Component\DependencyInjection\Attribute\Exclude;
 use YesWiki\Core\YesWikiLoader;
+use YesWiki\Files\Service\LocalFiles;
 use YesWiki\Kernel\Entity\ConfigurationFile;
 
 /** Whether a wiki folder is configured: its database settings come from the environment, its private/.env, or a configuration file from before (replicas 20). */

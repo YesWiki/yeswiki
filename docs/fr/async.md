@@ -176,11 +176,10 @@ celle-ci (modèle dans le fichier `.env.example` livré avec YesWiki) :
 YESWIKI_QUEUE_CONSUMER=worker
 ```
 
-Il peut aussi se lire dans l'environnement du serveur, ou dans le fichier de
-configuration (`'queue_consumer' => 'worker'` dans `yeswiki.config.php`). Il ne
-se règle pas depuis la page « Fichier de configuration » de la gestion du site.
-S'il est indiqué à plusieurs endroits, le premier de cette liste l'emporte :
-environnement du serveur, puis `private/.env`, puis `yeswiki.config.php`. La
+Il peut aussi se lire dans l'environnement du serveur. Il ne se règle pas
+depuis la page « Fichier de configuration » de la gestion du site. S'il est
+indiqué aux deux endroits, l'environnement du serveur l'emporte sur
+`private/.env`. La
 page Traitements indique le mode en vigueur, mais pas d'où vient le réglage : si
 une modification ne change rien, cherchez une autre définition plus haut dans
 cette liste.
@@ -260,8 +259,7 @@ du wiki change) : le service doit le relancer à chaque fois (`Restart=always`
 pour systemd).
 
 Dites aussi au wiki lui-même qu'il est dans ce mode, à l'endroit que lit sa
-partie web : la ligne `YESWIKI_QUEUE_CONSUMER=worker` dans `private/.env` (ou
-`'queue_consumer' => 'worker'` dans `yeswiki.config.php`). Sans cela, les
+partie web : la ligne `YESWIKI_QUEUE_CONSUMER=worker` dans `private/.env`. Sans cela, les
 visites continuent de traiter la file en fin de page et la page Traitements
 affiche « fin de requête ». Un exemple complet de service est donné dans
 [INSTALL.md](https://github.com/YesWiki/yeswiki/blob/ectoplasme/INSTALL.md#housekeeping).

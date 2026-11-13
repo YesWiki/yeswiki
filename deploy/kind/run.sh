@@ -196,6 +196,22 @@ fi
 say "on $next: the theme and the template it ships in custom/ are found on every pod, under an override"
 overrides --env=OPERATOR=KIND-OPERATOR-TEMPLATE --env=THEME=kindtheme
 
+say "the database goes out of reach: every replica answers 503, never the installer, and serves again once it is back"
+pods="$(kubectl get pods -l app.kubernetes.io/instance="$release",app.kubernetes.io/component!=install -o jsonpath='{range .items[*]}{.status.podIP}:8080 {end}')"
+kubectl patch service db -p '{"spec":{"selector":{"app":"nowhere"}}}' >/dev/null
+down="$(ask "for pod in $pods; do curl -s -o /tmp/body -w '%{http_code}' \"http://\$pod/?PagePrincipale/edit\"; grep -q installAction /tmp/body && echo ' installer' || echo; done")"
+echo "$down"
+kubectl patch service db -p '{"spec":{"selector":{"app":"db"}}}' >/dev/null
+for _ in $(seq 60); do
+    back="$(ask "curl -s -o /dev/null -w '%{http_code}' 'http://$deployment/?PagePrincipale'")"
+    [ "$back" = 200 ] && break
+    sleep 2
+done
+if [ "$(grep -c '^503$' <<<"$down")" != 3 ] || [ "$back" != 200 ]; then
+    echo "with its database down a replica must answer 503 and never the installer, then 200 once it is back (got: $(tr '\n' ' ' <<<"$down"), then $back)" >&2
+    exit 1
+fi
+
 if [ "$suite" != 0 ]; then
     echo "the browser suite failed against the replicas" >&2
     exit "$suite"

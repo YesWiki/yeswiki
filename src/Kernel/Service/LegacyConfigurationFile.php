@@ -2,9 +2,9 @@
 
 namespace YesWiki\Kernel\Service;
 
-use YesWiki\Files\Service\LocalFiles;
 use Symfony\Component\DependencyInjection\Attribute\Exclude;
 use YesWiki\Core\YesWikiLoader;
+use YesWiki\Files\Service\LocalFiles;
 use YesWiki\Kernel\Entity\ConfigurationFile;
 
 /** A configuration file from before replicas 20, split into what the wiki decides and what its host does, for the migration that moves it out and for config:export-env. */

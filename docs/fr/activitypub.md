@@ -202,10 +202,10 @@ Les échecs y sont toujours :
   pu importer.
 
 Pour comprendre pourquoi un abonnement ou une publication ne passe pas,
-activez le reste dans `yeswiki.config.php` :
+activez le reste avec cette ligne dans `private/.env` :
 
-```php
-'activitypub_log' => true,
+```sh
+ACTIVITYPUB_LOG='true'
 ```
 
 Le journal reçoit alors aussi, en `debug`, chaque activité acceptée

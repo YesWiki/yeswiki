@@ -2,8 +2,8 @@
 
 namespace YesWiki\Admin\Service;
 
-use YesWiki\Files\Service\LocalFiles;
 use Symfony\Component\DependencyInjection\Attribute\Exclude;
+use YesWiki\Files\Service\LocalFiles;
 use YesWiki\Kernel\Service\Journal;
 
 /** Creates a configured wiki's schema the first time its database answers without one, and answers 503 while it does not answer at all (replicas 20). */
