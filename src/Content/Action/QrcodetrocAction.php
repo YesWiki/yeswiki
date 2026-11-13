@@ -18,7 +18,6 @@ class QrcodetrocAction extends YesWikiAction implements RegisteredAction
     public function run(): string
     {
         $assets = $this->getService(AssetRegistry::class);
-        $assets->addJsFile('javascripts/vendor/p5.min.js');
         $assets->addJsFile('javascripts/qrcodetroc-visualisation.js');
 
         $config = $this->getService(RuntimeConfig::class)['qrcode_config'] ?? [];

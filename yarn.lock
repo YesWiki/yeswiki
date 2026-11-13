@@ -1603,11 +1603,6 @@ p-locate@^5.0.0:
   dependencies:
     p-limit "^3.0.2"
 
-p5@^1.11.13:
-  version "1.11.13"
-  resolved "https://registry.yarnpkg.com/p5/-/p5-1.11.13.tgz#1ee9fb1c79c0d97800f7ec6f7ebdaec8d73b1a17"
-  integrity sha512-gfGo4AkyuNMs6Ko7UNFM9K2edqFRGyLrFaYUB+XXF127JVdEPu0BIaC5uDDNJpsRMOD9hJMUpsOH4HkfuNhvhA==
-
 package-manager-detector@^1.8.0:
   version "1.9.0"
   resolved "https://registry.yarnpkg.com/package-manager-detector/-/package-manager-detector-1.9.0.tgz#217ed03645bfeb563e9efce4c5bbbfbb652754ab"

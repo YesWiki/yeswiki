@@ -114,8 +114,6 @@ mkdir -p javascripts/vendor/htmx && copy_js node_modules/htmx.org/dist/htmx.min.
 
 mkdir -p javascripts/vendor/altcha && copy_js node_modules/altcha/dist/main/altcha.i18n.min.js javascripts/vendor/altcha/altcha.i18n.min.js
 
-copy_js node_modules/p5/lib/p5.min.js javascripts/vendor/p5.min.js
-
 copy_js node_modules/html5-qrcode/html5-qrcode.min.js javascripts/vendor/html5-qrcode.min.js
 
 mkdir -p javascripts/vendor/leaflet-ajax &&

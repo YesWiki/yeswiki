@@ -40,7 +40,6 @@
     "leaflet.markercluster": "^1.5.3",
     "mermaid": "^12.2.0",
     "overlapping-marker-spiderfier-leaflet": "^0.2.7",
-    "p5": "^1.11.13",
     "prismjs": "^1.30.0",
     "sortablejs": "^1.15.2",
     "vditor": "^4.0.1",
