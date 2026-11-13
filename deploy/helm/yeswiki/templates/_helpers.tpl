@@ -46,6 +46,8 @@ helm.sh/chart: {{ printf "%s-%s" .Chart.Name .Chart.Version }}
   value: {{ .Values.workers | quote }}
 - name: BASE_URL
   value: {{ .Values.baseUrl | quote }}
+- name: REWRITE_MODE
+  value: {{ .Values.rewriteMode | ternary "true" "false" | quote }}
 - name: TRUSTED_PROXIES
   value: {{ .Values.trustedProxies | quote }}
 - name: ACTIVE_EXTENSIONS

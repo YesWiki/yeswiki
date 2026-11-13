@@ -100,12 +100,16 @@ CREATE INDEX IF NOT EXISTS "{{prefix}}triples_idx_property" ON "{{prefix}}triple
 INSERT INTO [[ q ]]{{prefix}}triples[[ q ]] ([[ q ]]id[[ q ]], [[ q ]]resource[[ q ]], [[ q ]]property[[ q ]], [[ q ]]value[[ q ]]) VALUES
 (1, 'ThisWikiGroup:admins', 'http://www.wikini.net/_vocabulary/acls', '{{WikiName}}');
 
+<% if admin %>
 INSERT INTO [[ q ]]{{prefix}}pages[[ q ]] ([[ q ]]tag[[ q ]], [[ q ]]time[[ q ]], [[ q ]]body[[ q ]], [[ q ]]owner[[ q ]], [[ q ]]user[[ q ]], [[ q ]]latest[[ q ]], [[ q ]]type[[ q ]], [[ q ]]parent[[ q ]], [[ q ]]metadata[[ q ]]) VALUES
 ('{{WikiName}}', [[ now ]], '{{adminUserBody}}', '{{WikiName}}', '{{WikiName}}', 'Y', 'user', '', '{{adminUserMetadata}}');
+<% endif %>
 <% else %>
 INSERT INTO [[ q ]]{{prefix}}triples[[ q ]] ([[ q ]]resource[[ q ]], [[ q ]]property[[ q ]], [[ q ]]value[[ q ]]) VALUES
 ('ThisWikiGroup:admins', 'http://www.wikini.net/_vocabulary/acls', '{{WikiName}}');
 
+<% if admin %>
 INSERT INTO [[ q ]]{{prefix}}pages[[ q ]] ([[ q ]]tag[[ q ]], [[ q ]]time[[ q ]], [[ q ]]body[[ q ]], [[ q ]]owner[[ q ]], [[ q ]]user[[ q ]], [[ q ]]latest[[ q ]], [[ q ]]type[[ q ]], [[ q ]]parent[[ q ]], [[ q ]]metadata[[ q ]]) VALUES
 ('{{WikiName}}', [[ now ]], '{{adminUserBody}}', '{{WikiName}}', '{{WikiName}}', 'Y', 'user', '', '{{adminUserMetadata}}');
+<% endif %>
 <% endif %>

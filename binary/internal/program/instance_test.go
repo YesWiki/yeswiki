@@ -97,3 +97,44 @@ func TestAnInstanceIsConfiguredOnlyWhenItHasABaseUrl(t *testing.T) {
 		t.Fatal("a wiki with a base_url is installed")
 	}
 }
+
+func TestAWikiWithoutAConfigurationFileIsFoundByItsEnvFile(t *testing.T) {
+	instance := t.TempDir()
+	if err := os.MkdirAll(filepath.Join(instance, "private"), 0o700); err != nil {
+		t.Fatal(err)
+	}
+	write := func(content string) {
+		if err := os.WriteFile(filepath.Join(instance, "private", ".env"), []byte(content), 0o600); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	write("YESWIKI_S3_BUCKET=files\n")
+	if Configured(instance) {
+		t.Fatal("a private/.env that names no database is not a wiki yet")
+	}
+
+	write("DB_DRIVER='mysql'\nDB_DATABASE='wiki'\nBASE_URL='https://it'\\''s.example.org/?'\n")
+	if !Configured(instance) {
+		t.Fatal("a private/.env that names a database is a wiki")
+	}
+	if stated, found := BaseURL(instance); !found || stated != "https://it's.example.org/?" {
+		t.Fatalf("the base URL is read as the wiki wrote it: %q", stated)
+	}
+
+	write("export DB_DRIVER=\"sqlite\" # the file beside it\n")
+	if !Configured(instance) {
+		t.Fatal("a SQLite driver needs no database name")
+	}
+}
+
+func TestTheProcessEnvironmentConfiguresOnlyTheWikiItServes(t *testing.T) {
+	instance := t.TempDir()
+	t.Setenv("DB_DATABASE", "wiki")
+	if Configured(instance) {
+		t.Fatal("a farm's shared environment configures none of its folders")
+	}
+	if !ConfiguredHere(instance) {
+		t.Fatal("the one wiki a container serves takes its database from the environment")
+	}
+}

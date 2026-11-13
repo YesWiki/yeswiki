@@ -11,6 +11,7 @@ use YesWiki\Kernel\Component\ProvidesComponents;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\ConfigurationFileProvider;
 use YesWiki\Kernel\Service\ConfigurationService;
+use YesWiki\Kernel\Service\EnvironmentConfiguration;
 use YesWiki\Kernel\Service\Journal;
 use YesWiki\Kernel\Service\LanguageService;
 use YesWiki\Kernel\Service\Redirector;
@@ -116,6 +117,9 @@ class EditConfigAction extends YesWikiAction implements RegisteredAction, Provid
     /** @var ConfigurationService */
     protected $configurationService;
 
+    /** @var array<string, string> the fields the environment sets, as field => the variable's name */
+    private array $setByTheEnvironment = [];
+
     public function formatArguments($arg)
     {
         return [
@@ -158,6 +162,14 @@ class EditConfigAction extends YesWikiAction implements RegisteredAction, Provid
             ]);
         }
 
+        $legacy = ConfigurationFileProvider::getConfigFileFromEnv();
+        if (is_file($legacy)) {
+            $output .= $this->render('@core/alert-message.twig', [
+                'type' => 'warning',
+                'message' => _t('EDIT_CONFIG_FILE_STILL_READ', ['file' => basename($legacy)]),
+            ]);
+        }
+
         list($data, $placeholders, $associatedExtensions) = $this->getDataFromConfigFile();
         $keysList = [];
         foreach ($data as $key => $value) {
@@ -174,6 +186,7 @@ class EditConfigAction extends YesWikiAction implements RegisteredAction, Provid
             'SAVE_NAME' => self::SAVE_NAME,
             'keysList' => $keysList,
             'placeholders' => $placeholders,
+            'setByTheEnvironment' => $this->setByTheEnvironment,
             'help' => $this->getHelp(),
             'languages' => $this->languageChoices(),
 
@@ -364,8 +377,9 @@ class EditConfigAction extends YesWikiAction implements RegisteredAction, Provid
         $config->load();
 
         $keysAsArray = $this->convertKeysAsArray($this->getAuthorizedKeys()[0]);
+        $forced = $this->forcedByTheEnvironment($keysAsArray);
         foreach ($keysAsArray as $keyAsArray) {
-            if (!empty($keyAsArray)) {
+            if (!empty($keyAsArray) && !isset($forced[(string)$keyAsArray[0]])) {
                 $length = count($keyAsArray);
                 $firstLevelKey = $keyAsArray[0];
                 switch ($length) {
@@ -468,6 +482,20 @@ class EditConfigAction extends YesWikiAction implements RegisteredAction, Provid
     }
 
     /**
+     * The first-level keys among those the environment or private/.env set, as key => the variable's name.
+     *
+     * @param list<list<array-key>> $keysAsArray
+     *
+     * @return array<string, string>
+     */
+    private function forcedByTheEnvironment(array $keysAsArray): array
+    {
+        $keys = array_values(array_unique(array_map(static fn (array $keyAsArray): string => (string)($keyAsArray[0] ?? ''), $keysAsArray)));
+
+        return array_intersect_key(EnvironmentConfiguration::forcedNames($keys), array_flip($keys));
+    }
+
+    /**
      * get data from config file.
      *
      * @return array{array<string, string>, array<string, string>, array<string, string>} [$data,$placeholders,$associatedExtensions] format ['name' => string $value,'name2'=> "['ee'=>'yy',...]"]
@@ -480,11 +508,18 @@ class EditConfigAction extends YesWikiAction implements RegisteredAction, Provid
         $placeholders = [];
         list($keys, $associatedExtensions) = $this->getAuthorizedKeys();
         $keysAsArray = $this->convertKeysAsArray($keys);
+        $forced = $this->forcedByTheEnvironment($keysAsArray);
+        $this->setByTheEnvironment = [];
         foreach ($keysAsArray as $keyAsArray) {
             if (!empty($keyAsArray)) {
                 $length = count($keyAsArray);
                 $firstLevelKey = $keyAsArray[0];
                 $keyName = $firstLevelKey . ($length > 1 ? '[' . implode('][', array_slice($keyAsArray, 1)) . ']' : '');
+                if (isset($forced[(string)$firstLevelKey])) {
+                    $data[$keyName] = '';
+                    $this->setByTheEnvironment[$keyName] = $forced[(string)$firstLevelKey];
+                    continue;
+                }
                 $hasDefault = $this->params->has($firstLevelKey);
                 $default = $hasDefault ? $this->params->get($firstLevelKey) : null;
                 switch ($length) {

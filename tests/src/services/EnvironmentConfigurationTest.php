@@ -76,13 +76,15 @@ class EnvironmentConfigurationTest extends TestCase
         $this->assertSame('from-real-env', $config['db_password']);
     }
 
-    public function testRealEnvIgnoredForUnknownVariables(): void
+    /** An environment variable wins over the database for any setting it names (replicas 20), but not the variables every process carries. */
+    public function testRealEnvWinsForAnySettingItNames(): void
     {
         $this->setRealEnv('FAVORITES_ACTIVATED', 'false');
 
-        $config = EnvironmentConfiguration::apply(['favorites_activated' => true], []);
+        $config = EnvironmentConfiguration::apply(['favorites_activated' => true, 'path' => 'kept'], []);
 
-        $this->assertTrue($config['favorites_activated']);
+        $this->assertFalse($config['favorites_activated']);
+        $this->assertSame('kept', $config['path'], 'PATH names no setting');
     }
 
     public function testValuesAreCastToTheReplacedType(): void

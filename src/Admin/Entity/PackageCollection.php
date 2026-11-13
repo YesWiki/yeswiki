@@ -3,7 +3,6 @@
 namespace YesWiki\Admin\Entity;
 
 use YesWiki\Kernel\Entity\Collection;
-use YesWiki\Kernel\Service\ConfigurationService;
 
 class PackageCollection extends Collection
 {
@@ -11,9 +10,8 @@ class PackageCollection extends Collection
     public const TOOL_CLASS = 'YesWiki\Admin\Entity\PackageTool';
     public const CORE_CLASS = 'YesWiki\Admin\Entity\PackageCore';
 
-    /** The version an admin asked for, when they asked for one, and the service that reads the configuration file. */
+    /** The version an admin asked for, when they asked for one. */
     protected string $requestedVersion = '';
-    protected ?ConfigurationService $configurationService = null;
 
     /**
      * @param Release     $release
@@ -36,7 +34,7 @@ class PackageCollection extends Collection
             $minimalPhpVersion
         );
         if ($package instanceof PackageCore) {
-            $package->updateContext($this->requestedVersion, $this->configurationService);
+            $package->updateContext($this->requestedVersion);
         }
         $this->list[$package->name] = $package;
     }

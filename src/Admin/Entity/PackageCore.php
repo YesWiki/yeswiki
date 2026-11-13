@@ -3,9 +3,6 @@
 namespace YesWiki\Admin\Entity;
 
 use YesWiki\Admin\Service\AutoUpdateService;
-use YesWiki\Kernel\Entity\ConfigurationFile;
-use YesWiki\Kernel\Service\ConfigurationFileProvider;
-use YesWiki\Kernel\Service\ConfigurationService;
 use YesWiki\Kernel\Service\ProgramVersion;
 
 class PackageCore extends Package
@@ -35,13 +32,10 @@ class PackageCore extends Package
     /** The version an admin asked for, empty when they asked for none. */
     private string $requestedVersion = '';
 
-    private ?ConfigurationService $configurationService = null;
-
-    /** The two facts this entity used to reach for through `$GLOBALS['yeswikiServices']`. */
-    public function updateContext(string $requestedVersion, ?ConfigurationService $configurationService): void
+    /** The version an admin asked for, the one fact this entity used to reach for through `$GLOBALS['yeswikiServices']`. */
+    public function updateContext(string $requestedVersion): void
     {
         $this->requestedVersion = $requestedVersion;
-        $this->configurationService = $configurationService;
     }
 
     /**
@@ -140,14 +134,10 @@ class PackageCore extends Package
         return $copied;
     }
 
+    /** Nothing to record: the version is the program's own, read from its composer.json (replicas 20). */
     public function upgradeInfos(): bool
     {
-        $configuration = new ConfigurationFile(ConfigurationFileProvider::getConfigFileFromEnv(), $this->configurationService);
-        $configuration->load();
-        $configuration['yeswiki_release'] = $this->release;
-        $configuration['yeswiki_version'] = $this->requestedVersion();
-
-        return $configuration->write();
+        return true;
     }
 
     public function name(): string
@@ -157,26 +147,14 @@ class PackageCore extends Package
 
     public function localVersion(): string
     {
-        $configuration = new ConfigurationFile(ConfigurationFileProvider::getConfigFileFromEnv(), $this->configurationService);
-        $configuration->load();
+        $line = (new ProgramVersion())->releaseLine();
 
-        $version = AutoUpdateService::DEFAULT_VERS;
-        if (!empty($configuration['yeswiki_version'])) {
-            $version = $configuration['yeswiki_version'];
-        }
-
-        return strtolower($version);
+        return strtolower($line !== '' ? $line : AutoUpdateService::DEFAULT_VERS);
     }
 
     public function requestedVersion(): string
     {
-        $configuration = new ConfigurationFile(ConfigurationFileProvider::getConfigFileFromEnv(), $this->configurationService);
-        $configuration->load();
-
-        $version = AutoUpdateService::DEFAULT_VERS;
-        if (isset($configuration['yeswiki_version'])) {
-            $version = $configuration['yeswiki_version'];
-        }
+        $version = $this->localVersion();
         if ($this->requestedVersion !== '') {
             $version = $this->requestedVersion;
         }
@@ -198,10 +176,7 @@ class PackageCore extends Package
 
     protected function localRelease(): Release
     {
-        $configuration = new ConfigurationFile(ConfigurationFileProvider::getConfigFileFromEnv(), $this->configurationService);
-        $configuration->load();
-
-        return new Release((new ProgramVersion())->release((string)($configuration['yeswiki_release'] ?? Release::UNKNOW_RELEASE)));
+        return new Release((new ProgramVersion())->release(Release::UNKNOW_RELEASE));
     }
 
     protected function updateAvailable(): bool

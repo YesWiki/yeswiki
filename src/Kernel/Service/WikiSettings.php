@@ -13,7 +13,7 @@ class WikiSettings implements RequestScopedState
 
     public const VERSION = 'version';
 
-    private const PREFIX = 'setting:';
+    public const PREFIX = 'setting:';
 
     /** @var array<string, mixed>|null */
     private ?array $read = null;
@@ -65,13 +65,13 @@ class WikiSettings implements RequestScopedState
     }
 
     /**
-     * Those settings over a configuration: a stored value replaces the configuration's, a stored null takes the key away.
+     * Those settings over a configuration, the environment over both: a stored value replaces the configuration's, a stored null takes the key away (replicas 20).
      *
      * @param array<string, mixed> $config
      *
      * @return array<string, mixed>
      */
-    public function over(array $config): array
+    public function over(array $config, bool $environment = true): array
     {
         foreach ($this->all() as $key => $value) {
             if ($value === null) {
@@ -81,14 +81,14 @@ class WikiSettings implements RequestScopedState
             }
         }
 
-        return $config;
+        return $environment ? EnvironmentConfiguration::apply($config) : $config;
     }
 
     /**
      * Stores those settings, null taking one away, forgets the ones the configuration file says already, and moves the version on.
      *
      * @param array<string, mixed> $settings
-     * @param list<string> $forget
+     * @param list<string>         $forget
      */
     public function store(array $settings, array $forget = []): void
     {

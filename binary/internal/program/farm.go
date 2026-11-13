@@ -30,6 +30,9 @@ var baseURL = regexp.MustCompile(`['"]base_url['"]\s*=>\s*['"]([^'"]*)['"]`)
 
 // BaseURL is what an Instance's configuration says it is reachable at.
 func BaseURL(instance string) (string, bool) {
+	if stated := EnvFile(instance)["BASE_URL"]; stated != "" {
+		return stated, true
+	}
 	content, err := os.ReadFile(filepath.Join(instance, "yeswiki.config.php"))
 	if err != nil {
 		return "", false

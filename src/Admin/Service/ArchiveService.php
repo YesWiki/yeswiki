@@ -24,7 +24,9 @@ use YesWiki\Kernel\Service\Lock\Locks;
 use YesWiki\Kernel\Service\Queue\QueueRecorder;
 use YesWiki\Kernel\Service\Queue\QueueStatistics;
 use YesWiki\Kernel\Service\Replication;
+use YesWiki\Kernel\Service\SettingKinds;
 use YesWiki\Kernel\Service\UrlFormatter;
+use YesWiki\Kernel\Service\WikiSettings;
 use YesWiki\Render\Service\TemplateImporter;
 
 class ArchiveService
@@ -222,6 +224,7 @@ class ArchiveService
             $written = $this->storage->withTemporaryFile('sql', function (string $sqlPath) use ($savedatabase, $run, &$output, $location, $foldersToInclude, $blacklistedRootFolders, $onlyDb, $hideConfigValuesParams, $onlyFolders): ?bool {
                 if ($savedatabase) {
                     $this->dumpDatabaseInto($sqlPath);
+                    $this->blankSettingsInDump($sqlPath, $this->hiddenSettings($hideConfigValuesParams));
                 }
 
                 if ($this->checkIfNeedStop($run)) {
@@ -633,7 +636,13 @@ class ArchiveService
                     }
                 }
                 $this->writeOutput($output, '=== Restoring the database ===', true, $run);
+                $hidden = $this->archiveInfo($zip)[self::KEY_FOR_HIDE_CONFIG_VALUES] ?? [];
+                $hidden = is_array($hidden) ? array_values(array_map('strval', $hidden)) : [];
+                $settings = new WikiSettings($this->dbService);
+                $local = array_intersect_key($settings->all(), array_flip($hidden));
                 $this->restoreDatabase($open, $rewrite);
+                $settings->startNewRequest();
+                $settings->store($local, array_values(array_diff($hidden, array_keys($local))));
             }
 
             if ($restoreFiles && !$onlyDb) {
@@ -687,17 +696,13 @@ class ArchiveService
         if ($stated === false) {
             return 0;
         }
-        $archived = self::archivedSettings($stated);
+        $archived = array_diff_key(self::archivedSettings($stated), array_flip(SettingKinds::OPERATOR));
         if ($archived === []) {
             return 0;
         }
 
         $configuration = $this->configurationService->getConfiguration($configFile);
         $configuration->load();
-        $before = \count($configuration);
-        if ($before === 0) {
-            throw new \Exception('this wiki\'s own configuration could not be read, so it was left alone');
-        }
         $local = [];
         foreach ($configuration as $key => $value) {
             if (is_string($key)) {
@@ -1196,9 +1201,6 @@ class ArchiveService
         if (!$this->localFiles->exists($instanceDir . '/index.php')) {
             throw new \Exception("no index.php in \"$instanceDir\": that is not a wiki instance");
         }
-        if (!$this->storage->exists(ConfigurationFileProvider::getConfigFileFromEnv())) {
-            throw new \Exception('the wiki has no configuration file: nothing to archive');
-        }
         foreach (['composer.json', 'composer.lock'] as $manifest) {
             if (!$this->localFiles->exists($programDir . '/' . $manifest)) {
                 throw new \Exception("no $manifest in \"$programDir\": that is not a yeswiki program tree");
@@ -1282,8 +1284,8 @@ class ArchiveService
                     foreach ($this->localFiles->entriesIn($dir) as $file) {
                         $localName = $dir . DIRECTORY_SEPARATOR . $file;
                         $relativeName = (empty($baseDirName) ? '' : "$baseDirName/") . $file;
-                        if (empty($baseDirName) && $file == ConfigurationFileProvider::getConfigFileFromEnv()) {
-                            $zip->addFromString($relativeName, $this->getWakkaConfigSanitized($whitelistedRootFolders, $blacklistedRootFolders, $hideConfigValuesParams));
+                        if (empty($baseDirName) && preg_match('/^(yeswiki|wakka)\.config\.php/', $file) === 1 || $relativeName === 'private/.env') {
+                            continue;
                         } elseif ($this->isDatabaseFile($relativeName)) {
                             continue;
                         } elseif ($this->localFiles->isFile($localName)) {
@@ -1335,6 +1337,7 @@ class ArchiveService
                     'base_url' => $this->configString('base_url'),
                     'table_prefix' => $this->configString('table_prefix'),
                     'archived_at' => date('Y-m-d H:i:s'),
+                    self::KEY_FOR_HIDE_CONFIG_VALUES => array_keys($this->hiddenSettings($hideConfigValuesParams)),
                 ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT)
             );
         }
@@ -1534,64 +1537,21 @@ class ArchiveService
     }
 
     /**
-     * sanitize yeswiki.config.php before saving it.
+     * The settings an archive empties in its dump, as key => the value it gets: the ones asked for, else those the wiki configured, else the defaults.
      *
-     * @param array<array-key, mixed>   $foldersToInclude
-     * @param array<array-key, mixed>   $foldersToExclude
-     * @param array<string, mixed>|null $hideConfigValuesParams
-     */
-    private function getWakkaConfigSanitized(array $foldersToInclude, array $foldersToExclude, ?array $hideConfigValuesParams = null): string
-    {
-        $config = $this->configurationService->getConfiguration(ConfigurationFileProvider::getConfigFileFromEnv());
-        $config->load();
-        if (
-            !isset($config[self::PARAMS_KEY_IN_WAKKA])
-            || !is_array($config[self::PARAMS_KEY_IN_WAKKA])
-        ) {
-            $data = [];
-        } else {
-            $data = $config[self::PARAMS_KEY_IN_WAKKA];
-        }
-        if (!empty($foldersToInclude)) {
-            $data[self::KEY_FOR_FOLDERS_TO_INCLUDE] = $foldersToInclude;
-        }
-        if (!empty($foldersToExclude)) {
-            $data[self::KEY_FOR_FOLDERS_TO_EXCLUDE] = $foldersToExclude;
-        }
-        if (!is_null($hideConfigValuesParams)) {
-            $data[self::KEY_FOR_HIDE_CONFIG_VALUES] = $hideConfigValuesParams;
-        } elseif (!isset($data[self::KEY_FOR_HIDE_CONFIG_VALUES]) || !is_array($data[self::KEY_FOR_HIDE_CONFIG_VALUES])) {
-            $data[self::KEY_FOR_HIDE_CONFIG_VALUES] = self::DEFAULT_PARAMS_TO_ANONYMIZE;
-        }
-        $config[self::PARAMS_KEY_IN_WAKKA] = $data;
-
-        $config = $this->setDefaultValuesRecursive($config[self::PARAMS_KEY_IN_WAKKA][self::KEY_FOR_HIDE_CONFIG_VALUES], $config);
-        unset($config['wiki_status']);
-        unset($config['queue_consume_secret']);
-
-        return $this->configurationService->getContentToWrite($config);
-    }
-
-    /**
-     * @param array<array-key, mixed> $defaultValues
+     * @param array<string, mixed>|null $asked
      *
-     * @return mixed $values with every key $defaultValues names reset to its default
+     * @return array<string, mixed>
      */
-    private function setDefaultValuesRecursive(array $defaultValues, mixed $values)
+    public function hiddenSettings(?array $asked = null): array
     {
-        foreach ($defaultValues as $key => $value) {
-            if (is_scalar($value)) {
-                if (isset($values[$key])) {
-                    $values[$key] = $value;
-                }
-            } elseif (is_array($value)) {
-                if (isset($values[$key])) {
-                    $values[$key] = $this->setDefaultValuesRecursive($value, $values[$key]);
-                }
-            }
+        if ($asked !== null) {
+            return $asked;
         }
+        $archive = $this->params->has(self::PARAMS_KEY_IN_WAKKA) ? $this->params->get(self::PARAMS_KEY_IN_WAKKA) : null;
+        $configured = is_array($archive) ? ($archive[self::KEY_FOR_HIDE_CONFIG_VALUES] ?? null) : null;
 
-        return $values;
+        return is_array($configured) ? $configured : self::DEFAULT_PARAMS_TO_ANONYMIZE;
     }
 
     protected function setWikiStatus(): void
@@ -1668,6 +1628,31 @@ class ArchiveService
             throw new \Exception($errorMessage . $th->getMessage(), 0, $th);
         } finally {
             fclose($handle);
+        }
+    }
+
+    /** @param array<string, mixed> $hidden empties those settings' rows in the dump, so the archive never holds their values */
+    private function blankSettingsInDump(string $sqlPath, array $hidden): void
+    {
+        $settings = array_diff_key($hidden, array_flip(SettingKinds::OPERATOR));
+        if ($settings === [] || !$this->localFiles->isFile($sqlPath)) {
+            return;
+        }
+        $in = $this->localFiles->openForReading($sqlPath);
+        $out = $this->localFiles->openForWriting($sqlPath . '.blanked');
+        if ($in === null || $out === null) {
+            throw new \Exception('Cannot empty the hidden settings in the database dump');
+        }
+        try {
+            while (($line = fgets($in)) !== false) {
+                fwrite($out, DumpRewriter::blankSettings($line, $settings));
+            }
+        } finally {
+            fclose($in);
+            fclose($out);
+        }
+        if (!rename($sqlPath . '.blanked', $sqlPath)) {
+            throw new \Exception('Cannot empty the hidden settings in the database dump');
         }
     }
 

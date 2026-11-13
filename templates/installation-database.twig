@@ -20,7 +20,7 @@
   </ul>
 {% endif %}
 
-{% if error %}
+{% if error and not written|default(false) %}
   <form id="form-actions" action="{{ baseUrl }}?PagePrincipale&installAction=install" method="POST">
     <input type="hidden" name="config" value="{{ configPosted }}">
     <input type="hidden" name="contentSQL" value="{{ contentSQL }}">

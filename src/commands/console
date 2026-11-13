@@ -13,6 +13,7 @@ use YesWiki\Kernel\Command\RunsOutsideAnInstance;
 use YesWiki\Kernel\Service\ConfigurationFileProvider;
 use YesWiki\Kernel\Service\EnvironmentConfiguration;
 use YesWiki\Kernel\Service\ExtensionRegistry;
+use YesWiki\Kernel\Service\InstanceSetup;
 
 require_once dirname(__DIR__) . '/bootstrap_paths.php';
 require_once dirname(__DIR__) . '/autoload.inc.php';
@@ -21,9 +22,11 @@ require_once dirname(__DIR__) . '/YesWikiLoader.php';
 YesWikiLoader::loadEnv();
 
 $configFile = ConfigurationFileProvider::getConfigFileFromEnv();
+$configured = InstanceSetup::isConfigured(YESWIKI_INSTANCE_DIR, $configFile);
+$ownedFile = file_exists($configFile) ? $configFile : YESWIKI_INSTANCE_DIR . '/private/.env';
 
-if (file_exists($configFile) && getenv(CliOwnership::ANY_USER) !== '1' && function_exists('posix_geteuid')) {
-    $ownership = new CliOwnership(new LocalFiles(), YESWIKI_INSTANCE_DIR, $configFile);
+if ($configured && file_exists($ownedFile) && getenv(CliOwnership::ANY_USER) !== '1' && function_exists('posix_geteuid')) {
+    $ownership = new CliOwnership(new LocalFiles(), YESWIKI_INSTANCE_DIR, $ownedFile);
     $userName = static fn (int $id): string => (posix_getpwuid($id) ?: [])['name'] ?? (string)$id;
     $refusal = $ownership->refusal(posix_geteuid(), array_values(array_map('strval', $_SERVER['argv'] ?? [])), $userName);
     if ($refusal !== null) {
@@ -40,17 +43,20 @@ $yeswikiConfig = [];
 if (file_exists($configFile)) {
     include_once $configFile;
     $yeswikiConfig = (is_array($yeswikiConfig) && $yeswikiConfig !== []) ? $yeswikiConfig : ($wakkaConfig ?? []);
-    $yeswikiConfig = EnvironmentConfiguration::apply($yeswikiConfig);
+}
+$yeswikiConfig = EnvironmentConfiguration::apply($yeswikiConfig + ['base_url' => '']);
+if (empty($yeswikiConfig['base_url'])) {
+    $yeswikiConfig['base_url'] = 'http://localhost/?';
 }
 
-$configuredWiki = !empty($yeswikiConfig['base_url']);
 $fixingOwnership = ($_SERVER['argv'][1] ?? '') === CliOwnership::FIX_COMMAND;
-$insideAnInstance = $configuredWiki && !$fixingOwnership;
+$installing = ($_SERVER['argv'][1] ?? '') === 'core:install';
+$insideAnInstance = $configured && !$fixingOwnership && !$installing;
 
 $services = null;
 
 if ($insideAnInstance) {
-    $rootPage = (string)($yeswikiConfig['root_page'] ?? 'PagePrincipale');
+    $rootPage = (string)($yeswikiConfig['root_page'] ?? '') ?: 'PagePrincipale';
     $_SERVER['REQUEST_URI'] = $yeswikiConfig['base_url'] . $rootPage;
     $_SERVER['HTTP_HOST'] = parse_url($yeswikiConfig['base_url'], PHP_URL_HOST);
     $_SERVER['REQUEST_METHOD'] = 'GET';
@@ -59,7 +65,7 @@ if ($insideAnInstance) {
     try {
         $wiki = YesWikiLoader::getWiki();
     } catch (\Throwable $bootFailure) {
-        fwrite(STDERR, "\e[31m" . basename($configFile) . ' configures a wiki in ' . YESWIKI_INSTANCE_DIR
+        fwrite(STDERR, "\e[31mA wiki is configured in " . YESWIKI_INSTANCE_DIR
             . ", but it does not boot:\e[0m\n" . $bootFailure->getMessage() . "\n");
         exit(1);
     }
@@ -122,18 +128,19 @@ $asked = isset($_SERVER['argv'][1]) && !str_starts_with((string)$_SERVER['argv']
     : '';
 if (!$insideAnInstance && ($asked === '' || $asked === 'list' || $asked === 'help')) {
     $inTheProgramTree = realpath(YESWIKI_INSTANCE_DIR) === realpath(YESWIKI_PROGRAM_DIR);
-    $halfWritten = file_exists($configFile) && !$configuredWiki;
+    $halfWritten = file_exists($configFile) && !$configured;
     if ($halfWritten) {
         $reason = "\e[33mThere is a " . basename($configFile) . ' in ' . YESWIKI_INSTANCE_DIR
             . ", but it configures no wiki (no base_url).\e[0m\n"
             . "An install that never finished leaves one behind. Finish it in a browser, or remove the file.\n\n";
     } elseif ($inTheProgramTree) {
-        $reason = "\e[33mNo yeswiki.config.php here: this is a YesWiki program tree, not a wiki.\e[0m\n"
+        $reason = "\e[33mNo database settings here: this is a YesWiki program tree, not a wiki.\e[0m\n"
             . "Only the commands that need no wiki are listed. Run this from a wiki folder for the rest,\n"
             . "or make one here: \e[32m./yeswicli core:create-instance <path>\e[0m\n\n";
     } else {
-        $reason = "\e[33mNo yeswiki.config.php in " . YESWIKI_INSTANCE_DIR . ": this wiki is not installed yet.\e[0m\n"
-            . "Visit it in a browser to install it; every command below the installer needs is listed then.\n\n";
+        $reason = "\e[33mNo db_* in the environment or in " . YESWIKI_INSTANCE_DIR . "/private/.env: no wiki is configured here.\e[0m\n"
+            . "If your web server passes them (fastcgi_param, SetEnv), put them in private/.env too: the command line does not see them.\n"
+            . "Otherwise visit the wiki in a browser to install it, or run core:install.\n\n";
     }
     fwrite(STDERR, $reason);
 }

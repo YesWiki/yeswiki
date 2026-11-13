@@ -149,6 +149,8 @@ docker/smoke-image.sh yeswiki:local
 `EXTENSIONS` runs `yeswiki-entrypoint bundle`, the same as an image built `FROM` the published one
 (see `deploy/compose/README.md`), which runs `./yeswicli core:bundle` in the program tree.
 
-`image-entrypoint.sh` reads four variables itself: `PORT` (8080), `YESWIKI_WORKERS` (passed to
-`yeswiki serve` as `--workers` when set), `YESWIKI_INSTALL=1` (install the wiki on a first start)
-and `YESWIKI_REPLICATED=1` (do not migrate on start). The rest of the environment is the wiki's.
+`image-entrypoint.sh` reads three variables itself: `PORT` (8080), `YESWIKI_WORKERS` (passed to
+`yeswiki serve` as `--workers` when set) and `YESWIKI_REPLICATED=1` (do not migrate on start). The
+rest of the environment is the wiki's. A first start on an empty database creates the wiki, with an
+admin account when `ADMIN_*` are set; `YESWIKI_INSTALL=1`, which used to allow it, is no longer
+needed and is ignored.

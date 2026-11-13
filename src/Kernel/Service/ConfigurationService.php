@@ -43,7 +43,12 @@ class ConfigurationService
         }
         $own = YESWIKI_INSTANCE_DIR . '/yeswiki.config.php';
 
-        $path = fn (string $candidate): string => $this->localFiles->realPath($candidate) ?: $candidate;
+        $path = function (string $candidate): string {
+            $absolute = str_starts_with($candidate, '/') ? $candidate : YESWIKI_INSTANCE_DIR . '/' . $candidate;
+            $folder = $this->localFiles->realPath(dirname($absolute));
+
+            return ($folder ?: dirname($absolute)) . '/' . basename($absolute);
+        };
 
         return $path($file) === $path($own) && $path(ConfigurationFileProvider::getConfigFileFromEnv()) === $path($own);
     }
@@ -87,10 +92,10 @@ class ConfigurationService
         return $this->envFile?->store($operator) ?? false;
     }
 
-    /** Whether the wiki's settings can be saved: to its file, or on a replica, whose file is read-only, to the database. */
+    /** Whether the wiki's settings can be saved: to its database once the container built this service, else to its file. */
     public function canSaveSettings(): bool
     {
-        return Replication::isOn() || $this->localFiles->isWritable(ConfigurationFileProvider::getConfigFileFromEnv());
+        return $this->settings !== null || Replication::isOn() || $this->localFiles->isWritable(ConfigurationFileProvider::getConfigFileFromEnv());
     }
 
     public function getConfiguration(string $filePath): ConfigurationFile

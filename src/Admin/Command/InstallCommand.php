@@ -15,6 +15,7 @@ use YesWiki\Files\Service\BucketProvisioner;
 use YesWiki\Kernel\Command\RunsOutsideAnInstance;
 use YesWiki\Kernel\Service\ConfigurationFileProvider;
 use YesWiki\Kernel\Service\EnvironmentConfiguration;
+use YesWiki\Kernel\Service\InstanceSetup;
 use YesWiki\Kernel\Service\LanguageService;
 
 /** Install a wiki from the terminal (ticket 44). */
@@ -213,7 +214,7 @@ class InstallCommand extends Command implements RunsOutsideAnInstance
         $io = new SymfonyStyle($input, $output);
         $configFile = ConfigurationFileProvider::getConfigFileFromEnv();
 
-        if (InstallationService::alreadyConfigured($configFile)) {
+        if (InstanceSetup::fileConfigures($configFile)) {
             $io->error("$configFile already configures a wiki. Remove it first if you mean to install over it.");
 
             return Command::FAILURE;

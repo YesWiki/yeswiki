@@ -8,7 +8,6 @@ services:
     tmpfs:
       - /tmp
     environment:
-      YESWIKI_INSTALL: "1"
       BASE_URL: ${BASE_URL:?set BASE_URL in .env}
       DB_DRIVER: mysql
       DB_HOST: db

@@ -5,7 +5,6 @@ namespace YesWiki\Test\Admin;
 use PHPUnit\Framework\Attributes\CoversMethod;
 use YesWiki\Admin\Controller\InstallationController;
 use YesWiki\Admin\Service\InstallationService;
-use YesWiki\Kernel\Service\ConfigurationService;
 use YesWiki\Kernel\Service\DataFolderGuard;
 use YesWiki\Test\Core\YesWikiTestCase;
 
@@ -63,6 +62,7 @@ class InstallWithoutABrowserTest extends YesWikiTestCase
      */
     private function console(string $dir, string $name, array $arguments): array
     {
+        self::getWiki();
         $command = 'cd ' . escapeshellarg($dir)
             . ' && YESWIKI_INSTANCE_DIR=' . escapeshellarg($dir)
             . ' YESWIKI_CONFIG_FILE=' . escapeshellarg($dir . '/yeswiki.config.php')
@@ -97,18 +97,22 @@ class InstallWithoutABrowserTest extends YesWikiTestCase
             ]);
 
             $this->assertSame(0, $result['status'], $result['out']);
-            $this->assertFileExists($dir . '/yeswiki.config.php', 'the installer writes the configuration file');
+            $this->assertFileDoesNotExist($dir . '/yeswiki.config.php', 'a wiki needs no configuration file (replicas 20)');
             $this->assertFileExists($dir . '/private/yeswiki.db');
             $this->assertFileExists($dir . '/robots.txt');
 
-            $written = (new ConfigurationService())->getConfiguration($dir . '/yeswiki.config.php');
-            $written->load();
-            $this->assertSame('http://cli-installed.test/?', $written['base_url']);
-            $this->assertSame('sqlite', $written['db_driver']);
-            $this->assertSame('cli-installed.test', $written['mail_domain']);
+            $env = (new \Symfony\Component\Dotenv\Dotenv())->parse((string)file_get_contents($dir . '/private/.env'));
+            $this->assertSame('http://cli-installed.test/?', $env['BASE_URL'] ?? null, 'the host settings go to private/.env');
+            $this->assertSame('sqlite', $env['DB_DRIVER'] ?? null);
+            $this->assertSame('yeswiki_', $env['TABLE_PREFIX'] ?? null);
+            $this->assertArrayNotHasKey('YESWIKI_NAME', $env, 'and nothing the admin decides');
 
-            $this->assertSame('MenuNavigation', $written['layout_navbar'], 'a fresh wiki has a navbar to draw');
-            $this->assertSame('MenuAccesRapide', $written['layout_quick_menu']);
+            $settings = $this->storedSettings(new \PDO('sqlite:' . $dir . '/private/yeswiki.db'), 'yeswiki_');
+            $this->assertSame('Installed without a browser', $settings['yeswiki_name'] ?? null, 'what the admin decides goes to the database');
+            $this->assertSame('PagePrincipale', $settings['root_page'] ?? null);
+            $this->assertSame('MenuNavigation', $settings['layout_navbar'] ?? null, 'a fresh wiki has a navbar to draw');
+            $this->assertSame('MenuAccesRapide', $settings['layout_quick_menu'] ?? null);
+            $this->assertSame([], array_values(array_intersect(array_keys($settings), ['base_url', 'db_driver', 'yeswiki_version', 'yeswiki_release'])), 'and nothing the host decides or the program knows');
 
             $db = new \PDO('sqlite:' . $dir . '/private/yeswiki.db');
             $this->assertSame(
@@ -213,7 +217,7 @@ class InstallWithoutABrowserTest extends YesWikiTestCase
             $this->assertSame('Installed for replicas', $stored['yeswiki_name'] ?? null);
             $this->assertSame('fr', $stored['default_language'] ?? null);
             $this->assertSame(['en', 'es'], $stored['other_languages'] ?? null);
-            $this->assertTrue($stored['allow_raw_html'] ?? null);
+            $this->assertTrue($stored['allow_raw_html'] ?? \YesWiki\Core\YesWikiInit::defaults()['allow_raw_html'], 'raw HTML is allowed, stored or by default');
             $this->assertSame('MenuNavigation', $stored['layout_navbar'] ?? null);
             $this->assertSame([], array_values(array_intersect(array_keys($stored), ['base_url', 'db_driver', 'db_password', 'table_prefix', 'yeswiki_version'])), 'what the operator decides stays in the environment');
         } finally {
@@ -226,6 +230,119 @@ class InstallWithoutABrowserTest extends YesWikiTestCase
                 $db->exec('DROP TABLE ' . $table . ($config['db_driver'] === 'pgsql' ? ' CASCADE' : ''));
             }
         }
+    }
+
+    /** A wiki that has database settings and finds no schema creates it, with an admin only when ADMIN_* name one (replicas 20). */
+    public function testAConfiguredWikiCreatesItsOwnSchema(): void
+    {
+        foreach (['without' => '', 'with' => "ADMIN_NAME=FirstAdmin\nADMIN_EMAIL=first@example.tld\nADMIN_PASSWORD=CreatedOnFirstStart\n"] as $case => $admin) {
+            $dir = $this->instanceDir() . '-bootstrap-' . $case;
+            mkdir($dir . '/private', 0o755, true);
+            file_put_contents($dir . '/private/.env', "DB_DRIVER=sqlite\nBASE_URL=http://bootstrap.test/?\nTABLE_PREFIX=boot_\n" . $admin);
+
+            try {
+                $listed = $this->console($dir, 'user:list', []);
+                $this->assertSame(0, $listed['status'], $listed['out']);
+                $this->assertFileDoesNotExist($dir . '/yeswiki.config.php');
+
+                $db = new \PDO('sqlite:' . $dir . '/private/yeswiki.db');
+                $this->assertContains('BacASable', $this->tagsUnder($db, 'boot_'), "the default content is there ($case an admin)");
+                $this->assertSame(
+                    $admin === '' ? 0 : 1,
+                    $this->countRows($db, "SELECT COUNT(*) FROM boot_pages WHERE type = 'user' AND latest = 'Y'"),
+                    $admin === '' ? 'no ADMIN_*, no account: nobody becomes admin by signing up first' : 'ADMIN_* make the first account'
+                );
+                $this->assertStringContainsString($admin === '' ? 'no admin account' : 'admin account FirstAdmin', $listed['out'], 'the log says where the schema went and who runs it');
+
+                $again = $this->console($dir, 'user:list', []);
+                $this->assertStringNotContainsString('schema created', $again['out'], 'a second start finds it there');
+            } finally {
+                exec('rm -rf ' . escapeshellarg($dir));
+            }
+        }
+    }
+
+    /** A wiki upgraded with a configuration file keeps every setting: the wiki's in its database, the host's in private/.env, and the file is renamed (replicas 20). */
+    public function testAnUpgradeMovesTheConfigurationFileOut(): void
+    {
+        $dir = $this->instanceDir() . '-upgrade';
+        mkdir($dir, 0o755, true);
+
+        try {
+            $installed = $this->install($dir, ['--driver=sqlite', '--table-prefix=up_', '--base-url=http://upgraded.test/?', '--root-page=PagePrincipale', '--admin-name=WikiAdmin', '--admin-email=admin@example.tld', '--admin-password=InstalledFromTheTerminal']);
+            $this->assertSame(0, $installed['status'], $installed['out']);
+            unlink($dir . '/private/.env');
+            file_put_contents($dir . '/yeswiki.config.php', "<?php\n\n\$wakkaConfig = [\n  'db_driver' => 'sqlite',\n  'table_prefix' => 'up_',\n  'base_url' => 'http://upgraded.test/?',\n  'yeswiki_name' => 'Named in the file',\n  'yeswiki_version' => 'doryphore',\n  'trusted_proxies' => ['10.0.0.0/8'],\n];\n");
+            $db = new \PDO('sqlite:' . $dir . '/private/yeswiki.db');
+            $db->exec("DELETE FROM up_triples WHERE resource LIKE '%TheConfigurationFileMovesOut%'");
+            $db->exec("DELETE FROM up_triples WHERE resource = 'yeswiki_settings' AND property = 'setting:yeswiki_name'");
+
+            $migrated = $this->console($dir, 'migrate', []);
+            $this->assertSame(0, $migrated['status'], $migrated['out']);
+
+            $this->assertFileDoesNotExist($dir . '/yeswiki.config.php', 'the file is gone');
+            $this->assertFileExists($dir . '/yeswiki.config.php.migrated', 'renamed, not deleted');
+            $env = (new \Symfony\Component\Dotenv\Dotenv())->parse((string)file_get_contents($dir . '/private/.env'));
+            $this->assertSame('http://upgraded.test/?', $env['BASE_URL'] ?? null, 'the host settings move to private/.env');
+            $this->assertSame('["10.0.0.0/8"]', $env['TRUSTED_PROXIES'] ?? null, 'a list too, as JSON');
+            $this->assertArrayNotHasKey('YESWIKI_VERSION', $env, 'what the program knows itself is carried nowhere');
+            $this->assertSame('Named in the file', $this->storedSettings($db, 'up_')['yeswiki_name'] ?? null, 'the wiki\'s settings move to its database');
+
+            $listed = $this->console($dir, 'user:list', []);
+            $this->assertSame(0, $listed['status'], 'and the wiki still boots without the file: ' . $listed['out']);
+        } finally {
+            exec('rm -rf ' . escapeshellarg($dir));
+        }
+    }
+
+    /** Another wiki's settings, opened from its folder, are read and written where that wiki keeps them: the host's in its private/.env, the rest in its database (replicas 20). */
+    public function testAnotherWikisSettingsAreReadAndWrittenWhereItKeepsThem(): void
+    {
+        $dir = $this->instanceDir() . '-child';
+        mkdir($dir, 0o755, true);
+
+        try {
+            $installed = $this->install($dir, ['--driver=sqlite', '--table-prefix=child_', '--base-url=http://child.test/?', '--root-page=PagePrincipale', '--wiki-name=The Child', '--admin-name=WikiAdmin', '--admin-email=admin@example.tld', '--admin-password=InstalledFromTheTerminal']);
+            $this->assertSame(0, $installed['status'], $installed['out']);
+
+            $child = new \YesWiki\Kernel\Service\InstanceConfiguration($dir);
+            $this->assertTrue($child->exists());
+            $loaded = $child->load();
+            $this->assertSame('The Child', $loaded['yeswiki_name'] ?? null, 'its own settings come from its database');
+            $this->assertSame('http://child.test/?', $loaded['base_url'] ?? null, 'the host\'s from its private/.env');
+            $this->assertNotSame(self::getWiki()->config['base_url'], $loaded['base_url'], 'and nothing from the wiki that opens it');
+
+            $this->assertTrue($child->store(['yeswiki_name' => 'Renamed by the farm', 'contact_smtp_host' => 'smtp.farm.test'], ['root_page']));
+            $this->assertSame('Renamed by the farm', $this->storedSettings(new \PDO('sqlite:' . $dir . '/private/yeswiki.db'), 'child_')['yeswiki_name'] ?? null);
+            $env = (new \Symfony\Component\Dotenv\Dotenv())->parse((string)file_get_contents($dir . '/private/.env'));
+            $this->assertSame('smtp.farm.test', $env['CONTACT_SMTP_HOST'] ?? null, 'a host setting goes to its private/.env');
+            $this->assertArrayNotHasKey('root_page', (new \YesWiki\Kernel\Service\InstanceConfiguration($dir))->load(), 'and a key taken away is gone');
+            $this->assertFalse(getenv('CONTACT_SMTP_HOST'), 'without touching the environment of the wiki that wrote it');
+        } finally {
+            exec('rm -rf ' . escapeshellarg($dir));
+        }
+    }
+
+    /** @return list<string> */
+    private function tagsUnder(\PDO $db, string $prefix): array
+    {
+        $statement = $db->query("SELECT tag FROM {$prefix}pages WHERE latest = 'Y'");
+        $this->assertNotFalse($statement);
+
+        return array_values(array_map('strval', $statement->fetchAll(\PDO::FETCH_COLUMN)));
+    }
+
+    /** @return array<string, mixed> the settings a wiki keeps in its database */
+    private function storedSettings(\PDO $db, string $prefix): array
+    {
+        $statement = $db->query("SELECT property, value FROM {$prefix}triples WHERE resource = 'yeswiki_settings' AND property LIKE 'setting:%'");
+        $this->assertNotFalse($statement);
+        $stored = [];
+        foreach ($statement->fetchAll(\PDO::FETCH_KEY_PAIR) as $property => $value) {
+            $stored[substr((string)$property, strlen('setting:'))] = json_decode((string)$value, true);
+        }
+
+        return $stored;
     }
 
     /** @return list<string> */
@@ -345,7 +462,7 @@ class InstallWithoutABrowserTest extends YesWikiTestCase
             $second = $this->install($dir, $options);
 
             $this->assertNotSame(0, $second['status'], 'installing over a wiki would drop what is in it');
-            $this->assertStringContainsString('already configures', $second['out']);
+            $this->assertStringContainsString('("yeswiki_")', $second['out'], 'the tables already under its prefix are what refuses it');
         } finally {
             $this->removeInstance($dir);
         }
@@ -407,13 +524,12 @@ class InstallWithoutABrowserTest extends YesWikiTestCase
 
             $this->assertSame(0, $restored['status'], $restored['out']);
             $this->assertFileExists($copy . '/custom/source.css', 'the files of the backup come along');
-            $written = (new ConfigurationService())->getConfiguration($copy . '/yeswiki.config.php');
-            $written->load();
-            $this->assertSame('http://copy.test/?', $written['base_url']);
-            $this->assertSame('copy_', $written['table_prefix']);
-            $this->assertSame('The Source Wiki', $written['yeswiki_name'], 'the settings of the backup come along');
-
+            $env = (new \Symfony\Component\Dotenv\Dotenv())->parse((string)file_get_contents($copy . '/private/.env'));
+            $this->assertSame('http://copy.test/?', $env['BASE_URL'] ?? null);
+            $this->assertSame('copy_', $env['TABLE_PREFIX'] ?? null);
             $db = new \PDO('sqlite:' . $copy . '/private/yeswiki.db');
+            $this->assertSame('The Source Wiki', $this->storedSettings($db, 'copy_')['yeswiki_name'] ?? null, 'the settings of the backup come along in its database');
+
             $this->assertSame(1, $this->countRows($db, "SELECT COUNT(*) FROM copy_pages WHERE tag = 'SourceAdmin' AND type = 'user' AND latest = 'Y'"), 'the accounts are the backup\'s');
             $this->assertSame(0, $this->countRows($db, "SELECT COUNT(*) FROM sqlite_master WHERE name LIKE 'yeswiki\\_%' ESCAPE '\\'"), 'nothing is left under the source prefix');
             $this->assertSame(0, $this->countRows($db, "SELECT COUNT(*) FROM copy_pages WHERE body LIKE '%source.test%'"), 'the links point at the new address');

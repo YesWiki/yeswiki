@@ -8,13 +8,14 @@ use YesWiki\Files\Service\LocalFiles;
 /** Writes operator settings into `private/.env`, keeping every other line as it was; a list is written as JSON, a file left empty is removed (replicas 04). */
 class EnvFile
 {
-    public function __construct(private readonly LocalFiles $files = new LocalFiles())
+    /** @param string|null $instanceDir another wiki's folder, whose file is written without touching this process's environment */
+    public function __construct(private readonly LocalFiles $files = new LocalFiles(), private readonly ?string $instanceDir = null)
     {
     }
 
     public function path(): string
     {
-        return (\defined('YESWIKI_INSTANCE_DIR') ? YESWIKI_INSTANCE_DIR : (string)getcwd()) . '/private/.env';
+        return ($this->instanceDir ?? (\defined('YESWIKI_INSTANCE_DIR') ? YESWIKI_INSTANCE_DIR : (string)getcwd())) . '/private/.env';
     }
 
     /**
@@ -28,6 +29,9 @@ class EnvFile
             return true;
         }
         $path = $this->path();
+        if (!is_dir(dirname($path)) && !@mkdir(dirname($path), 0o700, true) && !is_dir(dirname($path))) {
+            return false;
+        }
         $lines = $this->files->isFile($path) ? explode("\n", rtrim($this->files->read($path), "\n")) : [];
         foreach ($settings as $key => $value) {
             $name = strtoupper($key);
@@ -45,6 +49,11 @@ class EnvFile
         } elseif (!$this->files->writeAtomically($path, implode("\n", $lines) . "\n")) {
             return false;
         }
+        if ($this->instanceDir !== null) {
+            YesWikiLoader::forgetEnvFile($this->instanceDir);
+
+            return true;
+        }
         YesWikiLoader::forgetEnvFile();
         $fromTheFile = array_filter(explode(',', (string)getenv('SYMFONY_DOTENV_VARS')));
         foreach ($settings as $key => $value) {
@@ -55,6 +64,19 @@ class EnvFile
         }
 
         return true;
+    }
+
+    /** @param array<string, mixed> $settings the lines store() would write for them, for an operator to copy */
+    public function contentsFor(array $settings): string
+    {
+        $lines = [];
+        foreach ($settings as $key => $value) {
+            if ($value !== null) {
+                $lines[] = strtoupper($key) . '=' . self::quote($value);
+            }
+        }
+
+        return implode("\n", $lines) . "\n";
     }
 
     private static function quote(mixed $value): string

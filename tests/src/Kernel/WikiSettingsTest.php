@@ -22,7 +22,7 @@ class WikiSettingsTest extends YesWikiTestCase
 {
     private const SETTING = 'meta_description';
 
-    private string $fileWas;
+    private ?string $fileWas;
 
     private ?string $envWas;
 
@@ -36,7 +36,7 @@ class WikiSettingsTest extends YesWikiTestCase
     {
         parent::setUp();
         $services = self::getWiki()->services;
-        $this->fileWas = (string)file_get_contents($this->file());
+        $this->fileWas = is_file($this->file()) ? (string)file_get_contents($this->file()) : null;
         $env = $services->get(EnvFile::class)->path();
         $this->envWas = is_file($env) ? (string)file_get_contents($env) : null;
         foreach ([Replication::ENV, 'CONTACT_SMTP_HOST', 'ACTIVE_EXTENSIONS'] as $name) {
@@ -72,7 +72,7 @@ class WikiSettingsTest extends YesWikiTestCase
 
         $this->edit(self::SETTING, 'Edited from the admin');
 
-        $this->assertSame($this->fileWas, (string)file_get_contents($this->file()), 'the file is left as it was');
+        $this->assertSame($this->fileWas, is_file($this->file()) ? (string)file_get_contents($this->file()) : null, 'the file is left as it was, or never created');
         $this->assertSame('Edited from the admin', $services->get(WikiSettings::class)->all()[self::SETTING] ?? null);
         $this->assertNotSame($versionWas, $services->get(WikiSettings::class)->freshVersion(), 'the version moves, so a worker of another replica restarts');
         $this->assertSame('Edited from the admin', $this->reload()[self::SETTING] ?? null, 'and the next read sees it');
@@ -115,7 +115,7 @@ class WikiSettingsTest extends YesWikiTestCase
         $this->edit('contact_smtp_host', 'smtp.example.org');
         $this->edit('active_extensions', ['helloworld', 'lms']);
 
-        $this->assertSame($this->fileWas, (string)file_get_contents($this->file()));
+        $this->assertSame($this->fileWas, is_file($this->file()) ? (string)file_get_contents($this->file()) : null);
         $values = \YesWiki\Core\YesWikiLoader::envFileValues();
         $this->assertSame('smtp.example.org', $values['CONTACT_SMTP_HOST'] ?? null);
         $this->assertSame(['helloworld', 'lms'], EnvironmentConfiguration::apply(['active_extensions' => []], $values)['active_extensions'], 'a list goes as JSON and comes back as a list');

@@ -31,8 +31,8 @@ func wikiFor(arguments []string) (string, []string, error) {
 		if err != nil {
 			return "", nil, err
 		}
-		if !program.Configured(instance) {
-			return "", nil, fmt.Errorf("%s is not a wiki: no yeswiki.config.php with a base_url in it", instance)
+		if !program.ConfiguredHere(instance) {
+			return "", nil, fmt.Errorf("%s is not a wiki: no DB_* in the environment or in its private/.env", instance)
 		}
 
 		return instance, rest, nil

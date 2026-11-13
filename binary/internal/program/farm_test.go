@@ -65,6 +65,26 @@ func TestWhatIsNotAWikiIsSkippedAndNamed(t *testing.T) {
 	}
 }
 
+func TestAFarmFindsTheWikisThatHaveNoConfigurationFile(t *testing.T) {
+	farm := t.TempDir()
+	wikiAt(t, farm, "old", "https://old.example.org/?")
+	directory := filepath.Join(farm, "new", "private")
+	if err := os.MkdirAll(directory, 0o700); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(directory, ".env"), []byte("DB_DATABASE='new'\nBASE_URL='https://new.example.org/?'\n"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+
+	wikis, skipped, err := Wikis(farm)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(wikis) != 2 || wikis[0].Host != "new.example.org" || wikis[1].Host != "old.example.org" {
+		t.Fatalf("both the file and the private/.env wiki are served: %v, skipped %v", wikis, skipped)
+	}
+}
+
 func TestTwoWikisCannotClaimOneName(t *testing.T) {
 	farm := t.TempDir()
 	wikiAt(t, farm, "one", "https://same.example.org/?")

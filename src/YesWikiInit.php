@@ -9,8 +9,10 @@ use YesWiki\Kernel\Routing\ReservedTags;
 use YesWiki\Kernel\Service\ConfigurationFileProvider;
 use YesWiki\Kernel\Service\EnvironmentConfiguration;
 use YesWiki\Kernel\Service\HtmlPurifierService;
+use YesWiki\Kernel\Service\InstanceSetup;
 use YesWiki\Kernel\Service\ProgramVersion;
 use YesWiki\Kernel\Service\Replication;
+use YesWiki\Kernel\Service\SchemaBootstrap;
 use YesWiki\Kernel\Service\TrustedProxies;
 use YesWiki\Kernel\Service\WikiUrls;
 
@@ -36,10 +38,11 @@ class YesWikiInit
         $this->config = $this->getConfig($config);
         $this->setIframeHeaders();
 
-        if (!file_exists($this->configFile)) {
+        if (!InstanceSetup::isConfigured(YESWIKI_INSTANCE_DIR, $this->configFile)) {
             $this->doInstall();
             exit;
         }
+        SchemaBootstrap::ensure($this->config);
     }
 
     /** @return void */
@@ -155,15 +158,10 @@ class YesWikiInit
         return $merged;
     }
 
-    /**
-     * @param array<string, mixed> $yeswikiConfig initial config array (empty by default)
-     *
-     * @return array<string, mixed> the configuration
-     */
-    public function getConfig(array $yeswikiConfig = []): array
+    /** @return array<string, mixed> every setting a wiki starts with before its environment and its database have a say */
+    public static function defaults(): array
     {
-        $_rewrite_mode = WikiUrls::rewriteMode();
-        $yeswikiDefaultConfig = [
+        return [
             'yeswiki_version' => '',
             'yeswiki_release' => '',
             'charset' => 'UTF-8',
@@ -177,7 +175,7 @@ class YesWikiInit
             'db_password' => '',
             'table_prefix' => 'yeswiki_',
             'base_url' => null,
-            'rewrite_mode' => $_rewrite_mode,
+            'rewrite_mode' => WikiUrls::rewriteMode(),
             'meta_keywords' => '',
             'meta_description' => '',
             'navigation_links' => 'DerniersChangements :: DerniersCommentaires :: ParametresUtilisateur',
@@ -473,6 +471,17 @@ class YesWikiInit
             'baz_marker_image_file' => 'src/assets/images/bazar/marker.png',
             'temp_tag_for_entry_creation' => 'unknown_entry_id',
         ];
+    }
+
+    /**
+     * @param array<string, mixed> $yeswikiConfig initial config array (empty by default)
+     *
+     * @return array<string, mixed> the configuration
+     */
+    public function getConfig(array $yeswikiConfig = []): array
+    {
+        $_rewrite_mode = WikiUrls::rewriteMode();
+        $yeswikiDefaultConfig = self::defaults();
 
         if (file_exists($this->configFile)) {
             $this->configHash = (string)@md5_file($this->configFile);
@@ -524,7 +533,9 @@ class YesWikiInit
             throw new \RuntimeException('YESWIKI_REPLICATED is set and the database is SQLite, a file on one machine: replicas need MySQL, MariaDB or PostgreSQL.');
         }
 
-        $yeswikiConfig['yeswiki_release'] = (new ProgramVersion())->release((string)$yeswikiConfig['yeswiki_release']);
+        $program = new ProgramVersion();
+        $yeswikiConfig['yeswiki_version'] = $program->releaseLine() !== '' ? $program->releaseLine() : (string)$yeswikiConfig['yeswiki_version'];
+        $yeswikiConfig['yeswiki_release'] = $program->release((string)$yeswikiConfig['yeswiki_release']);
 
         if (!empty($yeswikiConfig['timezone'])) {
             date_default_timezone_set($yeswikiConfig['timezone']);

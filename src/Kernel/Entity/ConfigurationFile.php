@@ -56,17 +56,13 @@ class ConfigurationFile implements \ArrayAccess, \Iterator, \Countable
     /** @param string $arrayName name of the array the file assigns its values to */
     public function load(string $arrayName = 'yeswikiConfig'): void
     {
-        if (!is_file($this->_file)) {
-            return;
-        }
-
-        $rawContent = file_get_contents($this->_file);
+        $rawContent = is_file($this->_file) ? file_get_contents($this->_file) : '';
         if ($rawContent === false) {
             return;
         }
 
         $yeswikiConfig = [];
-        $content = str_replace([$arrayName, 'wakkaConfig', '<?php', '?>'], ['yeswikiConfig', 'yeswikiConfig', '', ''], $rawContent);
+        $content = $rawContent === '' ? '' : str_replace([$arrayName, 'wakkaConfig', '<?php', '?>'], ['yeswikiConfig', 'yeswikiConfig', '', ''], $rawContent);
         eval($content);
         if (!empty($yeswikiConfig)) {
             $this->_parameters = $yeswikiConfig;

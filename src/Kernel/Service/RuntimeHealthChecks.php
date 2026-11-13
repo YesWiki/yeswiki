@@ -2,6 +2,7 @@
 
 namespace YesWiki\Kernel\Service;
 
+use YesWiki\Core\YesWikiLoader;
 use YesWiki\Kernel\Health\HealthCheck;
 use YesWiki\Kernel\Health\ProvidesHealthChecks;
 
@@ -55,7 +56,31 @@ class RuntimeHealthChecks implements ProvidesHealthChecks
                         ? null
                         : _t('HEALTH_EXTENSION_MISSING', ['extension' => 'zend-opcache']);
                 }),
+
+            HealthCheck::named('settings-outside-requests')
+                ->label(_t('HEALTH_SETTINGS_OUTSIDE_REQUESTS'))
+                ->degraded()
+                ->says(_t('HEALTH_SETTINGS_OUTSIDE_REQUESTS_SAYS'))
+                ->runs(static function (): ?string {
+                    $names = self::onlyInTheRequest();
+
+                    return $names === [] ? null : _t('HEALTH_SETTINGS_ONLY_IN_THE_REQUEST', ['names' => implode(', ', $names)]);
+                }),
         ];
+    }
+
+    /** @return list<string> the host's settings the web server passes this request (fastcgi_param, SetEnv) that neither private/.env nor the process environment holds, so no command or worker sees them (replicas 20) */
+    public static function onlyInTheRequest(): array
+    {
+        $envFile = YesWikiLoader::envFileValues();
+        $names = [];
+        foreach (EnvironmentConfiguration::knownEnvNames() as $name => $key) {
+            if (SettingKinds::isOperator($key) && getenv($name) !== false && getenv($name, true) === false && !array_key_exists($name, $envFile)) {
+                $names[] = $name;
+            }
+        }
+
+        return $names;
     }
 
     /** composer.json's own sentence for an optional extension, which is the one the screen wants. */

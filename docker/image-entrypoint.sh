@@ -1,23 +1,22 @@
 #!/bin/sh
-# Starts the wiki in the image: puts back its entry points, installs it on a first start when YESWIKI_INSTALL=1, migrates it unless it is replicated, then serves it.
+# Starts the wiki in the image: puts back its entry points, migrates it unless it is replicated (a database with no schema gets one), then serves it.
 # `install` and `migrate` are what a cluster's Jobs run; `bundle <names>` adds extensions and themes to the program, as root in an image built FROM this one.
 set -eu
 
 wiki=/srv/wiki
 
-installed() {
-    grep -q "'base_url'" "$wiki/yeswiki.config.php" 2>/dev/null
+configured() {
+    [ -n "${DB_DATABASE:-}" ] || [ "${DB_DRIVER:-}" = sqlite ] \
+        || grep -qE '^(export )?DB_(DATABASE|DRIVER)=' "$wiki/private/.env" 2>/dev/null \
+        || grep -q "'base_url'" "$wiki/yeswiki.config.php" 2>/dev/null
 }
 
 case "${1:-serve}" in
     serve)
         yeswiki prepare "$wiki"
-        if ! installed; then
-            if [ "${YESWIKI_INSTALL:-}" != 1 ]; then
-                echo "no wiki in $wiki yet: set YESWIKI_INSTALL=1 with DB_*, BASE_URL and ADMIN_* to install one" >&2
-                exit 1
-            fi
-            yeswiki setup "$wiki" --no-interaction
+        if ! configured; then
+            echo "no wiki in $wiki: set DB_* and BASE_URL (and ADMIN_* for a first account), or put them in private/.env" >&2
+            exit 1
         fi
         if [ "${YESWIKI_REPLICATED:-}" != 1 ]; then
             yeswiki migrate "$wiki"

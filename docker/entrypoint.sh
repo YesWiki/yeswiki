@@ -9,7 +9,7 @@ fi
 if [ ! -f node_modules/.yarn-integrity ] || [ yarn.lock -nt node_modules/.yarn-integrity ]; then
     yarn install
 fi
-if [ -f yeswiki.config.php ]; then
+if [ -f yeswiki.config.php ] || grep -qE '^(export )?DB_(DATABASE|DRIVER)=' private/.env 2>/dev/null; then
     ./yeswicli migrate
 fi
 

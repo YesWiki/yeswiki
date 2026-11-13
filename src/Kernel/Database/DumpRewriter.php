@@ -301,6 +301,24 @@ class DumpRewriter
         return empty($substitutions) ? $sqlContent : strtr($sqlContent, $substitutions);
     }
 
+    /** @param array<string, mixed> $settings gives those settings' rows in a dump statement the values named instead of their own */
+    public static function blankSettings(string $statement, array $settings): string
+    {
+        if (!str_contains($statement, "'yeswiki_settings'")) {
+            return $statement;
+        }
+        foreach ($settings as $key => $value) {
+            $blank = str_replace(['\\', "'"], ['\\\\', "''"], (string)json_encode($value, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
+            $statement = (string)preg_replace_callback(
+                "/('yeswiki_settings',\\s*'setting:" . preg_quote((string)$key, '/') . "',\\s*)'(?:[^'\\\\]|\\\\.|'')*'/",
+                static fn (array $match): string => $match[1] . "'" . $blank . "'",
+                $statement
+            );
+        }
+
+        return $statement;
+    }
+
     /** An entry is json_encode'd into the page body, so slashes reach the dump escaped twice. */
     private static function escapeForDump(string $url): string
     {

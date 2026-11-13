@@ -9,7 +9,6 @@ use YesWiki\Admin\Entity\PackageTool;
 use YesWiki\Admin\Entity\Repository;
 use YesWiki\Files\Service\LocalFiles;
 use YesWiki\Kernel\Entity\Messages;
-use YesWiki\Kernel\Service\ConfigurationService;
 use YesWiki\Kernel\Service\Journal;
 use YesWiki\Kernel\Service\Replication;
 
@@ -62,8 +61,7 @@ class AutoUpdateService
     {
         $this->repository = new Repository(
             $this->repositoryAddress($requestedVersion),
-            $requestedVersion,
-            $this->container->get(ConfigurationService::class)
+            $requestedVersion
         );
 
         return $this->repository->load();

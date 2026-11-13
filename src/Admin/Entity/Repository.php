@@ -3,7 +3,6 @@
 namespace YesWiki\Admin\Entity;
 
 use YesWiki\Admin\Service\PackageTree;
-use YesWiki\Kernel\Service\ConfigurationService;
 
 class Repository extends PackageCollection
 {
@@ -15,12 +14,11 @@ class Repository extends PackageCollection
     /** @var PackageTree */
     private $fileHandler;
 
-    public function __construct(string $address, string $requestedVersion = '', ?ConfigurationService $configurationService = null)
+    public function __construct(string $address, string $requestedVersion = '')
     {
         $this->address = $address . '/';
         $this->fileHandler = new PackageTree();
         $this->requestedVersion = $requestedVersion;
-        $this->configurationService = $configurationService;
     }
 
     /** @return bool false when the index could not be reached or did not read as a package list */

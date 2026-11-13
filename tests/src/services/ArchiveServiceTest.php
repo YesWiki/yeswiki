@@ -12,6 +12,7 @@ use YesWiki\Kernel\Service\ConfigurationService;
 use YesWiki\Kernel\Service\ConsoleService;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\HibernationService;
+use YesWiki\Kernel\Service\WikiSettings;
 use YesWiki\Test\Core\YesWikiTestCase;
 use YesWiki\Test\Kernel\QueueTestHolders;
 
@@ -83,6 +84,8 @@ class ArchiveServiceTest extends YesWikiTestCase
             $this->assertArrayHasKey('wakkaContent', $data);
             $this->checkWakkaContent($wakkaContent, $data['wakkaContent']);
         }
+        $this->assertNotContains('yeswiki.config.php', $data['files'] ?? [], 'an archive holds no configuration file (replicas 20)');
+        $this->assertNotContains('private/.env', $data['files'] ?? [], 'nor the host\'s settings');
     }
 
     /**
@@ -97,14 +100,14 @@ class ArchiveServiceTest extends YesWikiTestCase
             'archive only root files' => [
                 true, false, [], $defaultFoldersToInclude,
                 'ARCHIVE_ONLY_FILES_SUFFIX', -1,
-                ['yeswiki.config.php'],
-                ['archive' => ['foldersToInclude' => $defaultFoldersToInclude, 'foldersToExclude' => array_merge($defaultFoldersToExclude, $defaultFoldersToInclude)]],
+                [],
+                null,
             ],
             'archive only root files with database' => [
                 true, true, [], $defaultFoldersToInclude,
                 'ARCHIVE_SUFFIX', -1,
-                ['yeswiki.config.php', 'private', 'private/backups', 'private/backups/.htaccess', 'private/backups/README.md', 'private/backups/content.sql', 'private/backups/restore.json'],
-                ['archive' => ['foldersToInclude' => $defaultFoldersToInclude, 'foldersToExclude' => array_merge($defaultFoldersToExclude, $defaultFoldersToInclude)]],
+                ['private', 'private/backups', 'private/backups/.htaccess', 'private/backups/README.md', 'private/backups/content.sql', 'private/backups/restore.json'],
+                null,
             ],
             'archive only database' => [
                 false, true, [], [],
@@ -220,6 +223,11 @@ class ArchiveServiceTest extends YesWikiTestCase
                         }, $files);
                         $data['files'] = $files;
 
+                        foreach (['sql' => 'private/backups/content.sql', 'info' => 'private/backups/restore.json'] as $part => $name) {
+                            if (is_file("cache/$tmpFolderName/$name")) {
+                                $data[$part] = (string)file_get_contents("cache/$tmpFolderName/$name");
+                            }
+                        }
                         if (file_exists("cache/$tmpFolderName/yeswiki.config.php") && is_file("cache/$tmpFolderName/yeswiki.config.php")) {
                             $configurationService = $wiki->services->get(ConfigurationService::class);
                             $config = $configurationService->getConfiguration("cache/$tmpFolderName/yeswiki.config.php");
@@ -396,231 +404,67 @@ class ArchiveServiceTest extends YesWikiTestCase
     }
 
     /**
-     * @param array<string, mixed>|null                                   $hideConfigValuesParam
-     * @param array<string, mixed>                                        $wakkaContent
+     * The settings an archive is told to hide are emptied in its dump, the rest travel with it (replicas 20).
+     *
+     * @param array<string, mixed>|null                                   $hidden
+     * @param list<string>|null                                           $emptied null for those the wiki is configured with
      * @param array{wiki: YesWikiRuntime, archiveService: ArchiveService} $services
      */
     #[Depends('testArchiveServiceExisting')]
     #[Depends('testArchive')]
     #[DataProvider('hideConfigValuesProvider')]
-    public function testhideConfigValuesParams(
-        bool $paramsFromWakka,
-        ?array $hideConfigValuesParam,
-        array $wakkaContent,
-        array $services
-    ): void {
-        $params = $services['wiki']->services->get(ParameterBagInterface::class);
-        $configService = $services['wiki']->services->get(ConfigurationService::class);
-        $consoleService = $services['wiki']->services->get(ConsoleService::class);
-
-        $defaultFoldersToInclude = constant('\\YesWiki\\Admin\\Service\\ArchiveService::FOLDERS_TO_INCLUDE');
-
-        $consoleParams = [
-            '-f',
-            '-x', implode(',', $defaultFoldersToInclude),
-        ];
-
-        $previoushideConfigValuesParams = $this->getHideConfigValuesParam($configService);
-        if ($paramsFromWakka) {
-            if (is_null($hideConfigValuesParam)) {
-                $this->unsetHideConfigValuesParam($configService);
-            } else {
-                $this->setHideConfigValuesParam($configService, $hideConfigValuesParam);
-            }
-        } else {
-            $encoded = json_encode($hideConfigValuesParam);
-            $this->assertNotFalse($encoded, 'the hideConfigValues fixture must be encodable');
-            $consoleParams[] = '-a';
-            $consoleParams[] = $encoded;
-        }
-        $results = $consoleService->startConsoleSync('core:archive', $consoleParams);
-        if (!is_null($previoushideConfigValuesParams)) {
-            $this->setHideConfigValuesParam($configService, $previoushideConfigValuesParams);
-        } else {
-            $this->unsetHideConfigValuesParam($configService);
+    public function testhideConfigValuesParams(?array $hidden, ?array $emptied, array $services): void
+    {
+        $emptied ??= array_values(array_intersect(['api_allowed_keys', 'custom_key'], array_keys($services['archiveService']->hiddenSettings())));
+        $settings = $services['wiki']->services->get(WikiSettings::class);
+        $before = $settings->all();
+        $settings->store(['api_allowed_keys' => ['kept-out-of-backups'], 'custom_key' => 'kept-out-too', 'yeswiki_name_hint' => 'travels-with-it']);
+        try {
+            $output = '';
+            $location = $services['archiveService']->archive($output, false, true, [], [], $hidden);
+        } finally {
+            $settings->store(array_intersect_key($before, array_flip(['api_allowed_keys', 'custom_key', 'yeswiki_name_hint'])), array_values(array_diff(['api_allowed_keys', 'custom_key', 'yeswiki_name_hint'], array_keys($before))));
         }
 
-        $location = '';
-        $this->assertNotNull($results, 'the archive command produced no output at all');
-        foreach ($results as $result) {
-            if (!empty($result['stdout'])) {
-                if (preg_match("/^Archive \\\"(.*)\\\" successfully created !\s*END\s*$/m", $result['stdout'], $matches)) {
-                    $location = $matches[1];
-                }
-                break;
-            }
-        }
-
-        $this->assertNotEmpty($location, 'Bad format of stdout; results: ' . json_encode($results));
-        $this->assertTrue(is_file($location), 'Extracted location is not a file !');
         $data = $this->getDataFromLocation($location, $services['wiki']);
-        $error = $data['error'] ?? '';
-        $this->assertEmpty($error, "There is an error : $error");
         $this->assertArrayNotHasKey('error', $data);
-        $this->assertArrayHasKey('wakkaContent', $data);
-        $this->checkWakkaContent($wakkaContent, $data['wakkaContent']);
+        $sql = (string)($data['sql'] ?? '');
+        $this->assertStringContainsString('travels-with-it', $sql, 'a setting nobody hides goes with the database');
+        foreach (['api_allowed_keys' => 'kept-out-of-backups', 'custom_key' => 'kept-out-too'] as $key => $value) {
+            if (in_array($key, $emptied, true)) {
+                $this->assertStringNotContainsString($value, $sql, "$key is emptied in the dump");
+            } else {
+                $this->assertStringContainsString($value, $sql, "$key is not hidden, so it stays");
+            }
+        }
+        $info = json_decode((string)($data['info'] ?? ''), true);
+        $this->assertIsArray($info);
+        $this->assertSame($emptied, array_values(array_intersect($emptied, $info['hideConfigValues'] ?? [])), 'the archive says which ones it emptied, for the restore to keep the local values');
     }
 
-    /**
-     * Whoever holds a backup -- another wiki that fetched it, anyone who downloaded it -- could
-     * consume this wiki's queue with the secret, so no list of values to hide may let it through.
-     *
-     * @param array{wiki: YesWikiRuntime, archiveService: ArchiveService} $services
-     */
+    /** @param array{wiki: YesWikiRuntime, archiveService: ArchiveService} $services */
     #[Depends('testArchiveServiceExisting')]
     #[Depends('testArchive')]
     public function testTheQueueSecretNeverLeavesWithABackup(array $services): void
     {
-        $configService = $services['wiki']->services->get(ConfigurationService::class);
-        $config = $configService->getConfiguration('yeswiki.config.php');
-        $config->load();
-        $previous = $config['queue_consume_secret'] ?? null;
-        $config['queue_consume_secret'] = 'local-consume-secret';
-        $configService->write($config);
-        try {
-            $output = '';
-            $location = $services['archiveService']->archive(
-                $output,
-                true,
-                false,
-                [],
-                constant('\\YesWiki\\Admin\\Service\\ArchiveService::FOLDERS_TO_INCLUDE'),
-                ['db_password' => ''],
-            );
-        } finally {
-            $config = $configService->getConfiguration('yeswiki.config.php');
-            $config->load();
-            $config['queue_consume_secret'] = $previous;
-            $configService->write($config);
-        }
+        $output = '';
+        $location = $services['archiveService']->archive($output, true, true, ['private'], [], ['db_password' => '']);
 
         $data = $this->getDataFromLocation($location, $services['wiki']);
         $this->assertArrayNotHasKey('error', $data);
-        $this->assertArrayHasKey('wakkaContent', $data);
-        $this->assertArrayNotHasKey('queue_consume_secret', $data['wakkaContent'], 'a hide list that does not name the secret still keeps it out');
-    }
-
-    /**
-     * @return array<string, mixed>|null
-     */
-    protected function getHideConfigValuesParam(ConfigurationService $configurationService): ?array
-    {
-        $config = $configurationService->getConfiguration('yeswiki.config.php');
-        $config->load();
-        $archiveParams = $config['archive'] ?? [];
-
-        return $archiveParams['hideConfigValues'] ?? null;
-    }
-
-    /**
-     * @param array<string, mixed> $hideConfigValuesParam
-     */
-    protected function setHideConfigValuesParam(ConfigurationService $configurationService, array $hideConfigValuesParam): void
-    {
-        $config = $configurationService->getConfiguration('yeswiki.config.php');
-        $config->load();
-        $archiveParams = $config['archive'] ?? [];
-        $archiveParams['hideConfigValues'] = $hideConfigValuesParam;
-        $config['archive'] = $archiveParams;
-        $configurationService->write($config);
-    }
-
-    protected function unsetHideConfigValuesParam(ConfigurationService $configurationService): void
-    {
-        $config = $configurationService->getConfiguration('yeswiki.config.php');
-        $config->load();
-        if (isset($config['archive'])) {
-            $archiveParams = $config['archive'];
-            unset($archiveParams['hideConfigValues']);
-            if (empty($archiveParams)) {
-                unset($config['archive']);
-            } else {
-                $config['archive'] = $archiveParams;
-            }
+        $this->assertNotContains('private/.env', $data['files'] ?? [], 'the host\'s settings, the queue secret among them, never leave with a backup');
+        $secret = (string)($services['wiki']->config['queue_consume_secret'] ?? '');
+        if ($secret !== '') {
+            $this->assertStringNotContainsString($secret, (string)($data['sql'] ?? ''));
         }
-        $configurationService->write($config);
     }
 
-    /**
-     * @return array<string, array<int, mixed>>
-     */
+    /** @return array<string, array<int, mixed>> */
     public static function hideConfigValuesProvider(): array
     {
         return [
-            'default' => [
-                true,
-                null,
-                [
-                    'db_host' => '',
-                    'db_database' => '',
-                    'db_user' => '',
-                    'db_password' => '',
-                    'archive' => [
-                        'hideConfigValues' => [
-                            'db_host' => '',
-                            'db_database' => '',
-                            'db_user' => '',
-                            'db_password' => '',
-                            'contact_smtp_host' => '',
-                            'contact_smtp_user' => '',
-                            'contact_smtp_pass' => '',
-                            'api_allowed_keys' => [],
-                        ],
-                    ],
-                ],
-            ],
-            'specific' => [
-                true,
-                [
-                    'db_host' => '',
-                    'db_database' => '',
-                    'db_user' => '',
-                    'db_password' => '',
-                    'custom_key' => '',
-                ],
-                [
-                    'db_host' => '',
-                    'db_database' => '',
-                    'db_user' => '',
-                    'db_password' => '',
-                    'archive' => [
-                        'hideConfigValues' => [
-                            'db_host' => '',
-                            'db_database' => '',
-                            'db_user' => '',
-                            'db_password' => '',
-                            'custom_key' => '',
-                        ],
-                    ],
-                ],
-            ],
-            'specific via command line' => [
-                false,
-                [
-                    'db_host' => '',
-                    'db_database' => '',
-                    'db_user' => '',
-                    'db_password' => '',
-                    'custom_key_2' => '',
-                    'custom_key_3' => '',
-                ],
-                [
-                    'db_host' => '',
-                    'db_database' => '',
-                    'db_user' => '',
-                    'db_password' => '',
-                    'archive' => [
-                        'hideConfigValues' => [
-                            'db_host' => '',
-                            'db_database' => '',
-                            'db_user' => '',
-                            'db_password' => '',
-                            'custom_key_2' => '',
-                            'custom_key_3' => '',
-                        ],
-                    ],
-                ],
-            ],
+            'configured' => [null, null],
+            'specific' => [['db_password' => '', 'custom_key' => ''], ['custom_key']],
         ];
     }
 }

@@ -36,17 +36,10 @@ spec:
             {{- include "yeswiki.containerSecurityContext" . | nindent 12 }}
           volumeMounts:
             {{- include "yeswiki.writableMounts" . | nindent 12 }}
-            - name: config
-              mountPath: /srv/wiki/yeswiki.config.php
-              subPath: yeswiki.config.php
-              readOnly: true
             - name: tmp
               mountPath: /tmp
       volumes:
         {{- include "yeswiki.writableVolumes" . | nindent 8 }}
         - name: tmp
           emptyDir: {}
-        - name: config
-          configMap:
-            name: {{ include "yeswiki.fullname" . }}
 {{- end }}

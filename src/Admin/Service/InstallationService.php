@@ -7,16 +7,16 @@ use Symfony\Component\DependencyInjection\Attribute\Exclude;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\PasswordHasher\Hasher\PasswordHasherFactory;
+use YesWiki\Core\YesWikiInit;
 use YesWiki\Core\YesWikiLoader;
 use YesWiki\Kernel\Database\DumpRewriter;
 use YesWiki\Kernel\Database\SqlDialectFactory;
-use YesWiki\Kernel\Service\ConfigurationService;
 use YesWiki\Kernel\Service\DbService;
+use YesWiki\Kernel\Service\EnvFile;
+use YesWiki\Kernel\Service\EnvFileNotWritten;
 use YesWiki\Kernel\Service\EnvironmentConfiguration;
-use YesWiki\Kernel\Service\ProgramVersion;
 use YesWiki\Kernel\Service\Queue\QueueSchema;
 use YesWiki\Kernel\Service\Queue\QueueTransport;
-use YesWiki\Kernel\Service\Replication;
 use YesWiki\Kernel\Service\SettingKinds;
 use YesWiki\Kernel\Service\WikiSettings;
 use YesWiki\Render\Service\LayoutService;
@@ -59,6 +59,7 @@ class InstallationService
     protected bool $restoreFiles = true;
     protected bool $rewriteUrls = true;
     protected bool $replaceExisting = false;
+    private bool $restoredDatabase = false;
 
     /** @var \PDO|null */
     protected $dbLink;
@@ -171,6 +172,7 @@ class InstallationService
         if ($archive !== '') {
             if ($restoresDatabase) {
                 $this->importArchiveDatabase($archive);
+                $this->restoredDatabase = true;
             } else {
                 $this->validateAdminAccount();
                 $this->validateRootPage();
@@ -187,7 +189,29 @@ class InstallationService
             $this->installDatabaseContent();
         }
         $this->writeRobotsTxtFile();
-        $this->writeConfigFile();
+        $this->writeSettings();
+    }
+
+    /** Creates the schema and the default content when this prefix holds no table yet, under a lock so one of several replicas does it; false when it was there. */
+    public function createIfMissing(): bool
+    {
+        $this->connectDatabase();
+        if ($this->ownTables() !== []) {
+            return false;
+        }
+
+        return $this->underSchemaLock(function (): bool {
+            if ($this->ownTables() !== []) {
+                return false;
+            }
+            if ($this->adminName !== '') {
+                $this->validateAdminAccount();
+            }
+            $this->validateRootPage();
+            $this->installDatabaseContent();
+
+            return true;
+        });
     }
 
     /**
@@ -220,19 +244,6 @@ class InstallationService
     public static function hasBackup(): bool
     {
         return file_exists(self::backupFile());
-    }
-
-    /** Whether this file already configures a wiki. */
-    public static function alreadyConfigured(string $configFile): bool
-    {
-        if (!file_exists($configFile)) {
-            return false;
-        }
-
-        $configuration = (new ConfigurationService())->getConfiguration($configFile);
-        $configuration->load();
-
-        return !empty($configuration['base_url']);
     }
 
     /**
@@ -401,8 +412,16 @@ class InstallationService
     /** Refuses a prefix whose tables already exist, telling another wiki's longer prefix apart from this one's own tables. */
     protected function checkTablePrefix(): void
     {
+        if ($this->ownTables() !== []) {
+            throw new \Exception(_t('CHECK_EXISTING_TABLE_PREFIX') . ' ("' . $this->config['table_prefix'] . '") :<br />' . _t('TABLE_PREFIX_ALREADY_USED'));
+        }
+        $this->pass(_t('CHECK_EXISTING_TABLE_PREFIX'));
+    }
+
+    /** @return list<string> the tables under this wiki's prefix */
+    private function ownTables(): array
+    {
         $driver = $this->dbDriver();
-        $prefix = (string)$this->config['table_prefix'];
         if ($driver === 'sqlite') {
             $query = "SELECT name FROM sqlite_master WHERE type='table'";
         } elseif ($driver === 'pgsql') {
@@ -417,12 +436,38 @@ class InstallationService
         } catch (\PDOException $th) {
             $tables = [];
         }
-        $existingTables = DumpRewriter::ownTables($tables, $prefix);
 
-        if (!empty($existingTables)) {
-            throw new \Exception(_t('CHECK_EXISTING_TABLE_PREFIX') . ' ("' . $prefix . '") :<br />' . _t('TABLE_PREFIX_ALREADY_USED'));
+        return DumpRewriter::ownTables($tables, (string)$this->config['table_prefix']);
+    }
+
+    /** @param \Closure(): bool $work run while holding the database's lock on this prefix's schema */
+    private function underSchemaLock(\Closure $work): bool
+    {
+        $name = 'yeswiki-schema-' . substr(sha1((string)$this->config['table_prefix']), 0, 16);
+        $driver = $this->dbDriver();
+        $handle = null;
+        if ($driver === 'mysql') {
+            $this->db()->query('SELECT GET_LOCK(' . $this->db()->quote($name) . ', 120)');
+        } elseif ($driver === 'pgsql') {
+            $this->db()->query('SELECT pg_advisory_lock(hashtext(' . $this->db()->quote($name) . '))');
+        } else {
+            $handle = fopen(YESWIKI_INSTANCE_DIR . '/private/' . $name . '.lock', 'c');
+            if ($handle !== false) {
+                flock($handle, LOCK_EX);
+            }
         }
-        $this->pass(_t('CHECK_EXISTING_TABLE_PREFIX'));
+        try {
+            return $work();
+        } finally {
+            if ($driver === 'mysql') {
+                $this->db()->query('SELECT RELEASE_LOCK(' . $this->db()->quote($name) . ')');
+            } elseif ($driver === 'pgsql') {
+                $this->db()->query('SELECT pg_advisory_unlock(hashtext(' . $this->db()->quote($name) . '))');
+            } elseif (is_resource($handle)) {
+                flock($handle, LOCK_UN);
+                fclose($handle);
+            }
+        }
     }
 
     protected function validateAdminAccount(): void
@@ -781,14 +826,12 @@ class InstallationService
         return $baseUrl;
     }
 
-    protected function writeConfigFile(): void
+    /** The host's settings an install writes to private/.env, the ones a wiki cannot start without. */
+    public const HOST_SETTINGS = ['db_driver', 'db_host', 'db_port', 'db_database', 'db_user', 'db_password', 'table_prefix', 'base_url', 'rewrite_mode'];
+
+    /** Stores what the wiki decides in its database, then the host's settings in private/.env, last, since database settings are what makes a wiki installed (replicas 20). */
+    protected function writeSettings(): void
     {
-        $program = new ProgramVersion();
-        $this->config['yeswiki_version'] = $program->releaseLine();
-        $this->config['yeswiki_release'] = $program->version();
-        if ($this->dbDriver() === 'mysql') {
-            $this->config['db_charset'] = 'utf8mb4';
-        }
         foreach (['allow_raw_html', 'rewrite_mode'] as $name) {
             if (isset($this->config[$name])) {
                 $this->config[$name] = in_array($this->config[$name], ['1', true, 'true'], true);
@@ -797,36 +840,59 @@ class InstallationService
         if (isset($this->config['base_url'], $this->config['rewrite_mode']) && is_string($this->config['base_url'])) {
             $this->config['base_url'] = self::baseUrlForRewriteMode(trim($this->config['base_url']), (bool)$this->config['rewrite_mode']);
         }
+        unset($this->config['yeswiki_version'], $this->config['yeswiki_release']);
 
-        $this->config += $this->defaultLayout();
-        if (Replication::isOn()) {
+        if (!$this->restoredDatabase && !$this->useBackup()) {
+            $this->config += $this->defaultLayout();
             $this->storeTheWikisSettings();
+            $this->pass(_t('WRITE_CONFIG'));
         }
 
-        try {
-            $configurationService = new ConfigurationService();
-            $configuration = $configurationService->getConfiguration($this->configFile);
-            foreach ($this->config as $key => $value) {
-                $configuration[$key] = $value;
-            }
-            if (!$configurationService->write($configuration)) {
-                throw new \Exception(_t('CONFIGURATION_FILE_NOT_WRITABLE'));
-            }
-            chmod($this->configFile, 0600);
-        } catch (\Throwable $th) {
-            throw new \Exception(_t('WRITE_CONFIG') . ' <tt>' . $this->configFile . '</tt> :<br />' . _t('CONFIGURATION_FILE_NOT_CREATED') . '. ' . _t('VERIFY_YOU_HAVE_RIGHTS_TO_WRITE_FILE') . '.<br />' . _t('ERROR') . ' "' . $th->getMessage() . '"');
+        $host = $this->hostSettings();
+        if ($host === []) {
+            return;
         }
-        $this->pass(_t('WRITE_CONFIG') . ' <tt>' . $this->configFile . '</tt>');
+        $envFile = new EnvFile();
+        if (!$envFile->store($host)) {
+            throw new EnvFileNotWritten($envFile->path(), $envFile->contentsFor($host));
+        }
+        $this->pass(_t('WRITE_CONFIG') . ' <tt>' . $envFile->path() . '</tt>');
     }
 
-    /** A replica reads its file from the operator, not from this install, so what the wiki decides goes to the database every replica reads (replicas 04). */
+    /** @return array<string, mixed> the host's settings this install decided, less those the process environment already states */
+    public function hostSettings(): array
+    {
+        $fromTheFile = array_filter(explode(',', (string)getenv('SYMFONY_DOTENV_VARS')));
+        $skipped = $this->dbDriver() === 'sqlite' ? ['db_host', 'db_port', 'db_database', 'db_user', 'db_password'] : [];
+        $host = [];
+        foreach (self::HOST_SETTINGS as $key) {
+            if (in_array($key, $skipped, true) || !array_key_exists($key, $this->config)) {
+                continue;
+            }
+            $name = strtoupper($key);
+            if (getenv($name) !== false && !in_array($name, $fromTheFile, true)) {
+                continue;
+            }
+            if ($key === 'db_port' && ($this->config[$key] === '' || $this->config[$key] === null)) {
+                continue;
+            }
+            $host[$key] = $this->config[$key];
+        }
+
+        return $host;
+    }
+
+    /** The wiki's own settings go to its database, less the defaults, the host's and what the environment forces (replicas 04 and 20). */
     private function storeTheWikisSettings(): void
     {
         $forced = self::environmentForcedValues();
+        $defaults = YesWikiInit::defaults();
         $settings = array_filter(
             $this->config,
-            static fn (string $key): bool => !SettingKinds::isOperator($key) && !array_key_exists($key, $forced),
-            ARRAY_FILTER_USE_KEY
+            static fn (mixed $value, string $key): bool => !SettingKinds::isOperator($key)
+                && !array_key_exists($key, $forced)
+                && (in_array($key, ['root_page', 'yeswiki_name', 'default_language'], true) || !array_key_exists($key, $defaults) || $defaults[$key] !== $value),
+            ARRAY_FILTER_USE_BOTH
         );
         (new WikiSettings(new DbService(new ParameterBag($this->config + ['debug' => false]))))->store($settings);
     }
@@ -923,6 +989,7 @@ class InstallationService
             YESWIKI_PROGRAM_DIR . '/templates/' . $templateName,
             [
                 'driver' => $this->dbDriver(),
+                'admin' => $this->adminName !== '',
 
                 'bodyType' => SqlDialectFactory::forDriver($this->dbDriver())->jsonColumnType(),
             ]

@@ -40,7 +40,7 @@ done
 
 docker run -d --name "$name-wiki" --network "$name" --read-only --tmpfs /tmp \
     -v "$name-data:/srv/wiki" -p 127.0.0.1::8080 \
-    -e YESWIKI_INSTALL=1 -e DB_DRIVER=mysql -e DB_HOST="$name-db" -e DB_DATABASE=yeswiki -e DB_USER=yeswiki -e DB_PASSWORD=smoke-db \
+    -e DB_DRIVER=mysql -e DB_HOST="$name-db" -e DB_DATABASE=yeswiki -e DB_USER=yeswiki -e DB_PASSWORD=smoke-db \
     -e BASE_URL='http://localhost:8080/?' -e ADMIN_NAME=WikiAdmin -e ADMIN_EMAIL=admin@example.org -e ADMIN_PASSWORD=smoke-password \
     ${extra[@]+"${extra[@]}"} "$image" >/dev/null
 

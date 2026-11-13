@@ -46,6 +46,9 @@ class EnvironmentConfiguration
         'trusted_headers',
     ];
 
+    /** Variables every process carries, which never name a setting even when a key spells the same. */
+    private const PROCESS_VARIABLES = ['PATH', 'HOME', 'USER', 'LOGNAME', 'SHELL', 'PWD', 'LANG', 'TERM', 'HOSTNAME', 'CHARSET', 'TZ', 'TMPDIR', 'MAIL', 'EDITOR'];
+
     /** Operator settings the program derives from its own composer.json, which the environment never states. */
     private const DERIVED = ['yeswiki_version', 'yeswiki_release'];
 
@@ -89,26 +92,72 @@ class EnvironmentConfiguration
      */
     public static function apply(array $config, ?array $fileValues = null): array
     {
-        $fileValues = $fileValues ?? YesWikiLoader::envFileValues();
-
+        $config = self::applyEnvFile($config, $fileValues ?? YesWikiLoader::envFileValues());
         $keysByUpperName = [];
         foreach (array_keys($config) as $key) {
-            $keysByUpperName[strtoupper($key)] = $key;
+            $keysByUpperName[strtoupper((string)$key)] = (string)$key;
         }
 
+        foreach (self::knownEnvNames() + array_diff_key($keysByUpperName, array_flip([...self::PROCESS_VARIABLES, ...array_map('strtoupper', self::DERIVED)])) as $name => $key) {
+            $value = getenv($name);
+            if ($value !== false) {
+                self::override($config, $key, $value);
+            }
+        }
+
+        return $config;
+    }
+
+    /**
+     * The settings the environment or private/.env state, as configKey => the variable that states it; $keys adds any of those keys the environment names in capitals.
+     *
+     * @param list<string> $keys
+     *
+     * @return array<string, string>
+     */
+    public static function forcedNames(array $keys = []): array
+    {
+        $names = [];
+        foreach (YesWikiLoader::envFileValues() as $name => $value) {
+            if (!in_array($name, self::NOT_CONFIG, true)) {
+                $names[self::ENV_ALIASES[$name] ?? strtolower($name)] = $name;
+            }
+        }
+        foreach (self::knownEnvNames() as $name => $key) {
+            if (getenv($name) !== false) {
+                $names[$key] = $name;
+            }
+        }
+        foreach ($keys as $key) {
+            $name = strtoupper($key);
+            if (!isset($names[$key]) && !in_array($name, self::PROCESS_VARIABLES, true) && getenv($name) !== false) {
+                $names[$key] = $name;
+            }
+        }
+
+        return $names;
+    }
+
+    /**
+     * The entries of a private/.env over a configuration, without the process's environment: how a farm reads another wiki's.
+     *
+     * @param array<string, mixed>  $config
+     * @param array<string, string> $fileValues
+     *
+     * @return array<string, mixed>
+     */
+    public static function applyEnvFile(array $config, array $fileValues): array
+    {
+        $keysByUpperName = [];
+        foreach (array_keys($config) as $key) {
+            $keysByUpperName[strtoupper((string)$key)] = $key;
+        }
         foreach ($fileValues as $name => $value) {
             if (in_array($name, self::NOT_CONFIG, true)) {
                 continue;
             }
             $key = self::ENV_ALIASES[$name] ?? $keysByUpperName[strtoupper($name)] ?? strtolower($name);
-            self::override($config, $key, $value);
-        }
-
-        foreach (self::knownEnvNames() as $name => $key) {
-            $value = getenv($name);
-            if ($value !== false) {
-                self::override($config, $key, $value);
-            }
+            self::override($config, (string)$key, $value);
         }
 
         return $config;

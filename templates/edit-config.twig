@@ -16,7 +16,12 @@
                 <label for="{{ key }}">{{ help[key] ?? key }}</label>
                 {% if help[key] %}<span> - {{ key }}</span>{% endif %}
 
-                {% if key == 'default_language' %}
+                {% if setByTheEnvironment[key] is defined %}
+
+                  <input type="text" class="yw-input" id="{{ key }}" value="" disabled
+                    placeholder="{{ _t('EDIT_CONFIG_SET_BY_THE_ENVIRONMENT', {name: setByTheEnvironment[key]}) }}" />
+
+                {% elseif key == 'default_language' %}
 
                   <select class="yw-input" id="{{ key }}" name="{{ key }}" data-yw-main-language>
                     {% for code, name in languages %}

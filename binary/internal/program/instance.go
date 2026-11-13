@@ -186,11 +186,20 @@ func OfInstance(instance string) (string, bool) {
 	return stated, true
 }
 
-// Configured reports whether an Instance has been installed already.
+// Configured reports whether an Instance's private/.env names its database, or a configuration file from before replicas 20 names its address.
 func Configured(instance string) bool {
+	values := EnvFile(instance)
+	if DatabaseStated(func(name string) string { return values[name] }) {
+		return true
+	}
 	content, err := os.ReadFile(filepath.Join(instance, "yeswiki.config.php"))
 
 	return err == nil && strings.Contains(string(content), "'base_url'")
+}
+
+// ConfiguredHere is Configured for the one wiki a process serves, whose database settings may also come from its environment.
+func ConfiguredHere(instance string) bool {
+	return Configured(instance) || DatabaseStated(os.Getenv)
 }
 
 func phpString(value string) string {

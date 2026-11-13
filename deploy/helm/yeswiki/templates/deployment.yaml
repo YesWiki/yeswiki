@@ -1,4 +1,4 @@
-{{/* The replicas: the image's wiki directory with an emptyDir over each folder it writes, the configuration file from the ConfigMap, everything shared in the database and the bucket. */}}
+{{/* The replicas: the image's wiki directory with an emptyDir over each folder it writes, settings in the environment, everything shared in the database and the bucket. */}}
 {{- include "yeswiki.required" . }}
 apiVersion: apps/v1
 kind: Deployment
@@ -20,11 +20,10 @@ spec:
     metadata:
       labels:
         {{- include "yeswiki.selectorLabels" . | nindent 8 }}
+      {{- with .Values.podAnnotations }}
       annotations:
-        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
-        {{- with .Values.podAnnotations }}
         {{- toYaml . | nindent 8 }}
-        {{- end }}
+      {{- end }}
     spec:
       automountServiceAccountToken: false
       enableServiceLinks: false
@@ -75,19 +74,12 @@ spec:
             {{- toYaml .Values.resources | nindent 12 }}
           volumeMounts:
             {{- include "yeswiki.writableMounts" . | nindent 12 }}
-            - name: config
-              mountPath: /srv/wiki/yeswiki.config.php
-              subPath: yeswiki.config.php
-              readOnly: true
             - name: tmp
               mountPath: /tmp
       volumes:
         {{- include "yeswiki.writableVolumes" . | nindent 8 }}
         - name: tmp
           emptyDir: {}
-        - name: config
-          configMap:
-            name: {{ include "yeswiki.fullname" . }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

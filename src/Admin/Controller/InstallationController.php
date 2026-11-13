@@ -5,6 +5,7 @@ namespace YesWiki\Admin\Controller;
 use Symfony\Component\DependencyInjection\Attribute\Exclude;
 use YesWiki\Admin\Service\InstallationService;
 use YesWiki\Files\Service\Storage;
+use YesWiki\Kernel\Service\EnvFileNotWritten;
 use YesWiki\Kernel\Service\EnvironmentConfiguration;
 use YesWiki\Kernel\Service\LanguageService;
 use YesWiki\Kernel\Service\ProgramVersion;
@@ -91,6 +92,14 @@ class InstallationController
 
         try {
             $service->install();
+        } catch (EnvFileNotWritten $notWritten) {
+            echo $this->render('installation-database.twig', [
+                'messages' => $service->messages(),
+                'error' => _t('WRITE_CONFIG') . ' <tt>' . htmlspecialchars($notWritten->path) . '</tt> :<br />' . _t('VERIFY_YOU_HAVE_RIGHTS_TO_WRITE_FILE') . '.<pre>' . htmlspecialchars($notWritten->contents) . '</pre>',
+                'written' => true,
+            ]);
+
+            return;
         } catch (\Exception $ex) {
             echo $this->render('installation-database.twig', [
                 'messages' => $service->messages(),

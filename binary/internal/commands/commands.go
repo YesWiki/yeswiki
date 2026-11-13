@@ -107,7 +107,7 @@ func Setup(options Options, php PHP, installerArguments []string) error {
 	options.say(fmt.Sprintf("instance %s", instance))
 
 	if program.Configured(instance) {
-		return fmt.Errorf("%s already holds a wiki; serve it, or remove its yeswiki.config.php to install another", instance)
+		return fmt.Errorf("%s already holds a wiki; serve it, or remove its private/.env to install another", instance)
 	}
 
 	clone, installerArguments := takeCloneArguments(installerArguments)
@@ -187,7 +187,7 @@ func Serve(options Options, server Server) error {
 		return err
 	}
 
-	if !program.Configured(instance) {
+	if !program.ConfiguredHere(instance) {
 		return fmt.Errorf("%s is not a wiki yet: run `yeswiki setup` there first", instance)
 	}
 
@@ -409,11 +409,14 @@ func upgrading(options Options, root string, farm bool) ([]program.Wiki, error) 
 		return wikis, nil
 	}
 
-	if !program.Configured(root) {
-		return nil, fmt.Errorf("%s is not a wiki", root)
+	if !program.ConfiguredHere(root) {
+		return nil, fmt.Errorf("%s is not a wiki: no DB_* in the environment or in its private/.env; if your web server passed them, put them in private/.env", root)
 	}
 
-	stated, _ := program.BaseURL(root)
+	stated, found := program.BaseURL(root)
+	if !found {
+		stated = os.Getenv("BASE_URL")
+	}
 	host, address := program.AddressOf(stated)
 
 	return []program.Wiki{{Directory: root, Host: host, Address: address}}, nil
@@ -426,11 +429,14 @@ func Destroy(options Options, php PHP, confirm string, archiveTo string, keep []
 		return err
 	}
 
-	if !program.Configured(instance) {
+	if !program.ConfiguredHere(instance) {
 		return fmt.Errorf("%s is not a wiki", instance)
 	}
 
-	stated, _ := program.BaseURL(instance)
+	stated, found := program.BaseURL(instance)
+	if !found {
+		stated = os.Getenv("BASE_URL")
+	}
 	host := program.HostOf(stated)
 	if host == "" {
 		return fmt.Errorf("%s has no base_url, so there is no name to confirm it by", instance)
