@@ -60,7 +60,7 @@ if (empty($list)) {
     }
     unset($_GET['query']);
 
-    $tabfiches = $entryManager->search(['queries' => $query, 'formsIds' => [$id_typeannonce]]);
+    $tabfiches = $entryManager->search(['queries' => $query, 'formsIds' => [$id_typeannonce]], true, true);
 
     $fiches['info_res'] = '';
     $fiches['pager_links'] = '';
@@ -78,7 +78,7 @@ if (empty($list)) {
             // lien de suppression visible pour le super admin
             if (baz_a_le_droit('supp_fiche', $fiche['owner'])) {
                 $fiche['lien_suppression'] = '<a class="modalbox" href="'
-                    . $this->href('deletepage', $fiche['id_fiche'], 'incoming=' . urlencode($this->getAbsolutePath())) . '"></a>' . "\n";
+                    . $this->href('deletepage', $fiche['id_fiche'], 'incoming=' . urlencode($this->Href("", $this->GetPageTag()))) . '"></a>' . "\n";
             }
             if (baz_a_le_droit('modif_fiche', $fiche['owner'])) {
                 $fiche['lien_edition'] = '<a class="BAZ_lien_modifier" href="' . $this->href('edit', $fiche['id_fiche']) . '"></a>' . "\n";
