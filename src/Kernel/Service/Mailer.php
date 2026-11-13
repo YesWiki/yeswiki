@@ -7,8 +7,10 @@ use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\SMTP;
 use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use Symfony\Component\Messenger\MessageBusInterface;
 use YesWiki\Files\Exception\StorageException;
 use YesWiki\Files\Service\Storage;
+use YesWiki\Kernel\Message\SendMail;
 
 /** Sends an email through the configured transport, and nothing about what is in it (ADR-0013). */
 class Mailer
@@ -48,6 +50,34 @@ class Mailer
             $text,
             empty($html) ? $html : $this->sanitizeLinksIfNeeded($html)
         );
+    }
+
+    /** Like sendEmailFromAdmin(), through the queue: the subject and links are prepared here, the handler only sends. */
+    public function queueEmailFromAdmin(string $address, string $subject, string $text, string $html = ''): void
+    {
+        $this->queue(
+            $this->stringParam('BAZ_ADRESSE_MAIL_ADMIN'),
+            $this->stringParam('BAZ_ADRESSE_MAIL_ADMIN'),
+            $address,
+            StringUtilService::withoutDiacritics($subject),
+            $text,
+            empty($html) ? $html : $this->sanitizeLinksIfNeeded($html)
+        );
+    }
+
+    /**
+     * Queues a mail to people other than the one on the screen, one message per batch of recipients, so a retry sends only its batch (ADR-0030).
+     *
+     * @param string|string[] $mailReceiver
+     */
+    public function queue(string $mailSender, string $nameSender, string|array $mailReceiver, string $subject, string $messageTxt, string $messageHtml = '', bool $keepSender = false): void
+    {
+        $recipients = is_array($mailReceiver) ? $mailReceiver : [$mailReceiver];
+        $recipients = array_values(array_filter(array_map('strval', $recipients), static fn (string $address): bool => filter_var($address, FILTER_VALIDATE_EMAIL) !== false));
+        $bus = $this->container->get(MessageBusInterface::class);
+        foreach (array_chunk($recipients, self::BATCH_SIZE) as $batch) {
+            $bus->dispatch(new SendMail($mailSender, $nameSender, $batch, $subject, $messageTxt, $messageHtml, $keepSender));
+        }
     }
 
     /**

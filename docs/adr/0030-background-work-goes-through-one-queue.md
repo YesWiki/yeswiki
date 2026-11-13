@@ -28,6 +28,22 @@ by `QueueHandlerLocator`; a module declares its recurring work in its `Scheduler
 its `schedulers/`), through `ProvidesSchedule`, the way it declares Health checks. The last section
 of this ADR is the guide to adding either.
 
+## Amendment (background-work 05, 2026-11-13): mail to other people goes through the queue
+
+A mail stays synchronous when the person on the screen is told whether it left, or is told to go and
+read it: the contact form, the `{{mailinglist}}` action, password recovery and account activation.
+Every other mail goes through the queue. `Mailer::queue()` and `queueEmailFromAdmin()` build the mail
+in the request (Twig rendered there, in the visitor's language and with their ACLs, the subject
+stripped of its accents and the links rewritten as `sendEmailFromAdmin()` does) and dispatch one
+`SendMail` per ten recipients, so a retry resends only its batch and nobody waits on the SMTP server
+or on the second between batches. `SendMailHandler` only sends, and throws what the server said when
+it refuses, so a refusal is retried three times, then kept in `failed`, shown on `/admin/jobs` and
+raised by the Health checks, where the synchronous send left a `lastError()` nobody read. A server
+that accepted a mail and then dropped the connection can make a retry send it twice: accepted for
+notifications. The callers are `ContentNotifier` (admin notifications, entry mails, the new user's
+mail and the mailing list subscription), `CommentService` (comment and mention mails) and
+`SubscribeField`. Digests already ran off the request and are still not retried.
+
 ## Amendment (replicas 03, 2026-11-10): the locks are the database's
 
 The queue shipped with its locks as `flock` on files under `cache/`, which exclude the processes of
@@ -458,7 +474,7 @@ is the recommended mode, that a crontab line that ran it is to be replaced by
 be removed, and where the documentation describes the other modes. Released in the alphas,
 `core:maintenance` is
 removed without an alias, which breaks those crontabs on purpose. What was synchronous
-on purpose stays so: mail sends, webhooks, thumbnails, ActivityPub Follow/Accept, the Doryphore
+on purpose stays so: the mails the person on the screen waits for (see the amendment on mail below), webhooks, thumbnails, ActivityPub Follow/Accept, the Doryphore
 arrival, and the explicit actions of a human or a webhook (`importer:sync`, `GET /api/import/sync`,
 `{{sync}}`, the sync button).
 

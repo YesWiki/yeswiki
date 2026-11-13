@@ -565,7 +565,7 @@ class CommentService implements EventSubscriberInterface, RequestScopedState
                 'comment' => $data['comment'],
                 'parentComment' => $parentComment,
             ];
-            $this->mailer->sendEmailFromAdmin(
+            $this->mailer->queueEmailFromAdmin(
                 $owner['email'],
                 $this->templateEngine->render('@core/comments/notify-email-subject.twig', $formattedData),
                 $this->templateEngine->render('@core/comments/notify-email-text.twig', $formattedData),
@@ -591,7 +591,7 @@ class CommentService implements EventSubscriberInterface, RequestScopedState
                 'parentComment' => $parentComment,
             ];
             foreach ($taggedUsers as $user) {
-                $this->mailer->sendEmailFromAdmin(
+                $this->mailer->queueEmailFromAdmin(
                     $user['email'],
                     $this->templateEngine->render('@core/comments/notify-tag-email-subject.twig', $formattedData),
                     $this->templateEngine->render('@core/comments/notify-tag-email-text.twig', $formattedData),

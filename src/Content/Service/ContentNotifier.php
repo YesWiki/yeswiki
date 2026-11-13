@@ -73,7 +73,7 @@ class ContentNotifier
         );
 
         foreach ($admins as $admin) {
-            $this->mailer->sendEmailFromAdmin($admin['email'], $sujet, $text, $html);
+            $this->mailer->queueEmailFromAdmin($admin['email'], $sujet, $text, $html);
         }
     }
 
@@ -108,7 +108,7 @@ class ContentNotifier
         );
 
         foreach ($this->getAdminsList() as $admin) {
-            $this->mailer->sendEmailFromAdmin($admin['email'], $sujet, $text, $html);
+            $this->mailer->queueEmailFromAdmin($admin['email'], $sujet, $text, $html);
         }
     }
 
@@ -161,7 +161,7 @@ class ContentNotifier
             ]
         );
 
-        $this->mailer->sendEmailFromAdmin($email, $sujet, $text, $html);
+        $this->mailer->queueEmailFromAdmin($email, $sujet, $text, $html);
     }
 
     /**
@@ -187,7 +187,7 @@ class ContentNotifier
             ]
         );
 
-        $this->mailer->sendEmailFromAdmin($email, $objetmail, $messagemail);
+        $this->mailer->queueEmailFromAdmin($email, $objetmail, $messagemail);
     }
 
     /**
@@ -196,10 +196,10 @@ class ContentNotifier
      */
     public function subscribeToMailingList($email, $mailingList): void
     {
-        $this->mailer->send(
-            $email,
-            $email,
-            $mailingList,
+        $this->mailer->queue(
+            (string)$email,
+            (string)$email,
+            (string)$mailingList,
             'inscription a la liste de discussion',
             'inscription',
             '',
