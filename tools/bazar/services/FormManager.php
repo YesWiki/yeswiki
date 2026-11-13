@@ -250,6 +250,9 @@ class FormManager
         if (!isset($data['label']) && isset($data['title'])) {
             $data['label'] = $data['title'];
         }
+        if (isset($data['lang'])) {
+            $data['lang'] = Wiki::sanitizeLang($data['lang'], '') ?: null;
+        }
 
         return $data;
     }

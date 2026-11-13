@@ -39,7 +39,7 @@ import {
   convertToBytes,
 } from './form-builder-helper.js'
 import { initListOrFormIdAttribute } from './attributes/list-form-id-attribute.js'
-import I18nOption from './i18n.js'
+import formBuilderLanguages from './i18n.js'
 
 const $formBuilderTextInput = $('#form-builder-text')
 window.formBuilder = undefined
@@ -100,7 +100,7 @@ function initializeFormbuilder() {
     inputSets,
     templates: mapFieldsConf((conf) => conf.renderInput),
     i18n: {
-      locale: I18nOption[wiki.locale] ?? 'fr-FR',
+      locale: formBuilderLanguages.includes(wiki.locale) ? wiki.locale : 'fr',
       location: `${wiki.baseUrl.replace('?', '')}javascripts/vendor/formbuilder-languages/`,
     },
     // Disable some default fields of Jquery formBuilder

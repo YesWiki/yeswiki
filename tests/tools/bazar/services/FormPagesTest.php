@@ -355,6 +355,14 @@ class FormPagesTest extends YesWikiTestCase
         $this->assertSame(['fr'], $this->wiki->translationTargets('en_GB'));
     }
 
+    public function testAFormLanguageIsReadAndStoredWithoutItsRegion(): void
+    {
+        $id = $this->create(['bn_label_nature' => 'Langue régionale', 'bn_template' => self::TITLE_ROW, 'bn_ce_i18n' => 'fr-FR']);
+
+        $this->assertSame('fr', $this->forms->getOne($id, 'all')['lang']);
+        $this->assertSame('fr', $this->storedBody($id)['lang']);
+    }
+
     public function testNothingIsTranslatedWhileNoTranslationLanguageIsTurnedOn(): void
     {
         $id = $this->create(['bn_label_nature' => 'Sans langue', 'bn_template' => self::TITLE_ROW]);
@@ -405,7 +413,8 @@ class FormPagesTest extends YesWikiTestCase
     public function testTheRequestLanguageCannotCarrySql(): void
     {
         $this->assertSame('en', Wiki::sanitizeLang('en', 'fr'));
-        $this->assertSame('pt-BR', Wiki::sanitizeLang('pt-BR#anchor', 'fr'));
+        $this->assertSame('pt', Wiki::sanitizeLang('pt-BR#anchor', 'fr'));
+        $this->assertSame('fr', Wiki::sanitizeLang('FR_fr', 'en'));
         $this->assertSame('fr', Wiki::sanitizeLang('en") OR 1=1 -- ', 'fr'));
         $this->assertSame('fr', Wiki::sanitizeLang("en'.", 'fr'));
         $this->assertSame('fr', Wiki::sanitizeLang(null, 'fr'));

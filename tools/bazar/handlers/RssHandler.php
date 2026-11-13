@@ -86,7 +86,7 @@ class RssHandler extends YesWikiHandler
             $xml .= "\r\n      ";
             $xml .= XML_Util::createTag('link', null, $this->sanitize($this->wiki->config['BAZ_RSS_ADRESSESITE']));
             $xml .= "\r\n      ";
-            $xml .= XML_Util::createTag('language', null, 'fr-FR');
+            $xml .= XML_Util::createTag('language', null, $this->wiki->defaultLanguage());
             $xml .= "\r\n      ";
             $xml .= XML_Util::createTag('copyright', null, 'Copyright (c) ' . date('Y') . ' ' . htmlentities(removeAccents($this->wiki->config['BAZ_RSS_NOMSITE'])));
             $xml .= "\r\n      ";

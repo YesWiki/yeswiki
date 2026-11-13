@@ -124,18 +124,17 @@ class Wiki
         if ($this->translationLanguages() === []) {
             return [];
         }
-        $primary = fn ($language) => strtolower(preg_split('/[-_]/', $language)[0]);
-        $source = $primary($sourceLanguage ?: $this->defaultLanguage());
+        $sourceLanguage = self::sanitizeLang($sourceLanguage, $this->defaultLanguage());
 
-        return array_values(array_filter($this->availableLanguages(), fn ($language) => $primary($language) !== $source));
+        return array_values(array_filter($this->availableLanguages(), fn ($language) => $language !== $sourceLanguage));
     }
 
-    /** A language code such as `fr` or `pt-BR` from $lang, else $default. */
+    /** The ISO 639 code of $lang without its region (`fr` for `fr-FR`), else $default. */
     public static function sanitizeLang($lang, string $default): string
     {
         $lang = explode('#', (string)$lang)[0];
 
-        return preg_match('/^[a-z]{2,3}(?:[-_][A-Za-z0-9]{2,8})?$/', $lang) === 1 ? $lang : $default;
+        return preg_match('/^([a-z]{2,3})(?:[-_][A-Za-z0-9]{2,8})?$/i', $lang, $matches) === 1 ? strtolower($matches[1]) : $default;
     }
 
     /**

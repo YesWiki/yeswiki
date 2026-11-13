@@ -65,7 +65,12 @@ mkdir -p styles/vendor/spectrum-colorpicker2 && copy_css node_modules/spectrum-c
 mkdir -p javascripts/vendor/formBuilder && copy_js node_modules/formBuilder/dist/form-builder.min.js javascripts/vendor/formBuilder/form-builder.min.js
 
 # formbuilder-languages
-mkdir -p javascripts/vendor/formbuilder-languages && cp -f node_modules/formbuilder-languages/*.lang javascripts/vendor/formbuilder-languages
+mkdir -p javascripts/vendor/formbuilder-languages && rm -f javascripts/vendor/formbuilder-languages/*.lang
+for file in node_modules/formbuilder-languages/*.lang; do
+	locale=$(basename "$file" .lang)
+	case "$locale" in ar-TN | zh-TW) continue ;; esac
+	cp -f "$file" "javascripts/vendor/formbuilder-languages/${locale%%-*}.lang"
+done
 
 #jquery-ui-sortable
 mkdir -p javascripts/vendor/jquery-ui-sortable && copy_js node_modules/jquery-ui-sortable/jquery-ui.min.js javascripts/vendor/jquery-ui-sortable/jquery-ui.min.js
