@@ -54,6 +54,12 @@ class YesWikiLoader
         return self::$envFiles[$instanceDir];
     }
 
+    /** @param array<string, string> $values what private/.env says from now on, for a test that stands for another wiki */
+    public static function useEnvFileValues(array $values, ?string $instanceDir = null): void
+    {
+        self::$envFiles[$instanceDir ?? YESWIKI_INSTANCE_DIR] = $values;
+    }
+
     /** Reads private/.env again at the next ask, once the wiki itself wrote it (EnvFile). */
     public static function forgetEnvFile(?string $instanceDir = null): void
     {

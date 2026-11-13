@@ -237,6 +237,28 @@ class YesWikiTestCase extends TestCase
     }
 
     /** The name the wiki acts for now, '' for nobody. */
+    /** @var array<string, string|false>|null the variables of the wiki's private/.env this test took out, to put back */
+    private ?array $envFileWas = null;
+
+    /** Runs the test as if the wiki under test had no private/.env, for one that builds the configuration of another wiki (replicas 20). */
+    protected function withoutTheWikisEnvFile(): void
+    {
+        $this->envFileWas = [];
+        foreach (array_keys(\YesWiki\Core\YesWikiLoader::envFileValues()) as $name) {
+            $this->envFileWas[$name] = getenv($name);
+            putenv($name);
+        }
+        \YesWiki\Core\YesWikiLoader::useEnvFileValues([]);
+    }
+
+    /** The `env -u` prefix that keeps the wiki under test's private/.env out of a console started for another wiki. */
+    protected static function withoutTheWikisEnvironment(): string
+    {
+        $names = array_unique([...array_keys(\YesWiki\Core\YesWikiLoader::envFileValues()), ...array_keys(\YesWiki\Kernel\Service\EnvironmentConfiguration::knownEnvNames()), 'SYMFONY_DOTENV_VARS']);
+
+        return 'env' . implode('', array_map(static fn (string $name): string => ' -u ' . escapeshellarg($name), $names)) . ' ';
+    }
+
     protected static function signedIn(): string
     {
         return self::getWiki()->services->get(\YesWiki\Identity\Service\AuthenticationService::class)->signedInName();
@@ -254,6 +276,13 @@ class YesWikiTestCase extends TestCase
             @rmdir($directory);
         }
         $this->createdDirectories = [];
+        if ($this->envFileWas !== null) {
+            foreach ($this->envFileWas as $name => $value) {
+                putenv($value === false ? $name : $name . '=' . $value);
+            }
+            \YesWiki\Core\YesWikiLoader::forgetEnvFile();
+            $this->envFileWas = null;
+        }
         parent::tearDown();
     }
 

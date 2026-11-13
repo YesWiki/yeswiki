@@ -1651,7 +1651,7 @@ class ArchiveService
             fclose($in);
             fclose($out);
         }
-        if (!rename($sqlPath . '.blanked', $sqlPath)) {
+        if (!$this->localFiles->rename($sqlPath . '.blanked', $sqlPath)) {
             throw new \Exception('Cannot empty the hidden settings in the database dump');
         }
     }

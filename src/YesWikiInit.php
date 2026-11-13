@@ -5,6 +5,7 @@
 namespace YesWiki\Core;
 
 use YesWiki\Admin\Service\ArchiveService;
+use YesWiki\Admin\Service\SchemaBootstrap;
 use YesWiki\Kernel\Routing\ReservedTags;
 use YesWiki\Kernel\Service\ConfigurationFileProvider;
 use YesWiki\Kernel\Service\EnvironmentConfiguration;
@@ -12,7 +13,6 @@ use YesWiki\Kernel\Service\HtmlPurifierService;
 use YesWiki\Kernel\Service\InstanceSetup;
 use YesWiki\Kernel\Service\ProgramVersion;
 use YesWiki\Kernel\Service\Replication;
-use YesWiki\Kernel\Service\SchemaBootstrap;
 use YesWiki\Kernel\Service\TrustedProxies;
 use YesWiki\Kernel\Service\WikiUrls;
 

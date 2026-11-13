@@ -89,7 +89,7 @@ final class InstanceConfiguration
     private function legacy(): LegacyConfigurationFile
     {
         foreach (['yeswiki.config.php', 'wakka.config.php'] as $name) {
-            if (is_file($this->instanceDir . '/' . $name)) {
+            if ($this->files->isFile($this->instanceDir . '/' . $name)) {
                 return new LegacyConfigurationFile($this->instanceDir . '/' . $name);
             }
         }

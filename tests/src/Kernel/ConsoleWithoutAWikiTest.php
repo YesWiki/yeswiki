@@ -17,7 +17,7 @@ class ConsoleWithoutAWikiTest extends YesWikiTestCase
         $this->getWiki();
 
         $command = sprintf(
-            'cd %s && %s %s %s 2>&1',
+            'cd %s && ' . ($workingDirectory === \YESWIKI_INSTANCE_DIR ? '' : self::withoutTheWikisEnvironment()) . '%s %s %s 2>&1',
             escapeshellarg($workingDirectory),
             escapeshellarg(PHP_BINARY),
             escapeshellarg(\YESWIKI_PROGRAM_DIR . '/src/commands/console'),
@@ -161,7 +161,7 @@ class ConsoleWithoutAWikiTest extends YesWikiTestCase
 
             [$itsOwn, $itsStatus] = $this->console($instance, 'list');
             $this->assertSame(0, $itsStatus, $itsOwn);
-            $this->assertStringContainsString('not installed yet', $itsOwn);
+            $this->assertStringContainsString('no wiki is configured here', $itsOwn);
         } finally {
             exec('rm -rf ' . escapeshellarg($folder));
         }

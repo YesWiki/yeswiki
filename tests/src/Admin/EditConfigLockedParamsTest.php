@@ -26,6 +26,7 @@ class EditConfigLockedParamsTest extends YesWikiTestCase
         $this->configFile = 'cache/editconfig-test-' . bin2hex(random_bytes(4)) . '.php';
         file_put_contents($this->configFile, "<?php\n\$yeswikiConfig = ['contact_smtp_pass' => 'LockedSecretValue', 'contact_smtp_host' => 'VisibleHostValue'];\n");
         putenv('YESWIKI_CONFIG_FILE=' . $this->configFile);
+        $this->withoutTheWikisEnvFile();
     }
 
     protected function tearDown(): void
@@ -66,14 +67,14 @@ class EditConfigLockedParamsTest extends YesWikiTestCase
         $this->assertStringNotContainsString('name="yeswiki_name"', $output);
     }
 
-    /** A replica's file is mounted read-only and its settings save to the database (replicas 04), so the screen still opens. */
+    /** Settings save to the database whatever the file's mode (replicas 04 and 20), so the screen opens over a read-only one. */
     public function testAReplicaShowsTheFormOverItsReadOnlyFile(): void
     {
         chmod($this->configFile, 0o444);
         $was = getenv(Replication::ENV);
 
         try {
-            $this->assertStringNotContainsString('name="yeswiki_name"', $this->renderForm([]), 'a wiki that writes its file cannot save to a read-only one');
+            $this->assertStringContainsString('name="yeswiki_name"', $this->renderForm([]), 'a wiki saves to its database, not to its file');
 
             putenv(Replication::ENV . '=1');
             $this->assertStringContainsString('name="yeswiki_name"', $this->renderForm([]));

@@ -43,6 +43,7 @@ robots.txt
 .yeswiki-version
 .php-version
 *.config.php
+*.config.php.migrated*
 info.php
 cache/*
 !cache/README.md

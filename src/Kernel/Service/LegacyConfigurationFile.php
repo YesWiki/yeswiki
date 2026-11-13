@@ -2,8 +2,8 @@
 
 namespace YesWiki\Kernel\Service;
 
+use YesWiki\Files\Service\LocalFiles;
 use Symfony\Component\DependencyInjection\Attribute\Exclude;
-use YesWiki\Admin\Service\InstallationService;
 use YesWiki\Core\YesWikiLoader;
 use YesWiki\Kernel\Entity\ConfigurationFile;
 
@@ -17,19 +17,38 @@ final class LegacyConfigurationFile
     /** @var array<string, mixed> */
     private array $values = [];
 
-    public function __construct(public readonly string $path)
+    public function __construct(public readonly string $path, private readonly LocalFiles $files = new LocalFiles())
     {
-        if (is_file($path)) {
+        if ($files->isFile($path)) {
             $file = new ConfigurationFile($path);
             $file->load();
             $values = $file->__get('_parameters');
-            $this->values = is_array($values) ? array_filter(InstallationService::mapLegacyKeys($values), 'is_string', ARRAY_FILTER_USE_KEY) : [];
+            $this->values = is_array($values) ? array_filter(self::mapLegacyKeys($values), 'is_string', ARRAY_FILTER_USE_KEY) : [];
         }
+    }
+
+    /**
+     * Doryphore's names for the settings that were renamed since.
+     *
+     * @param array<array-key, mixed> $values
+     *
+     * @return array<array-key, mixed>
+     */
+    public static function mapLegacyKeys(array $values): array
+    {
+        foreach (['mysql_host' => 'db_host', 'mysql_database' => 'db_database', 'mysql_user' => 'db_user', 'mysql_password' => 'db_password', 'mysql_port' => 'db_port', 'wakka_name' => 'yeswiki_name'] as $old => $new) {
+            if (isset($values[$old]) && !isset($values[$new])) {
+                $values[$new] = $values[$old];
+            }
+            unset($values[$old]);
+        }
+
+        return $values;
     }
 
     public function exists(): bool
     {
-        return is_file($this->path);
+        return $this->files->isFile($this->path);
     }
 
     /** @return array<string, mixed> every setting the file states, the old names mapped to the new */

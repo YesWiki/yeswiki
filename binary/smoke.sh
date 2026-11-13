@@ -67,7 +67,7 @@ main() {
         --admin-password=WikiAdminPassword \
         || fail "setup failed"
 
-    [ -f "$INSTANCE/yeswiki.config.php" ] || fail "setup wrote no configuration"
+    grep -qE "^DB_(DATABASE|DRIVER)=" "$INSTANCE/private/.env" 2>/dev/null || fail "setup wrote no private/.env"
 
     local firstProgram
     firstProgram="$(programDirectory)"

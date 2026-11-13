@@ -1,5 +1,6 @@
 <?php
 
+use YesWiki\Files\Service\LocalFiles;
 use YesWiki\Core\YesWikiMigration;
 use YesWiki\Kernel\Service\ConfigurationFileProvider;
 use YesWiki\Kernel\Service\EnvFile;
@@ -21,15 +22,16 @@ class TheConfigurationFileMovesOut extends YesWikiMigration
         $settings->store($copied);
         $this->say(count($copied) . ' setting(s) of ' . basename($file->path) . ' copied to the database');
 
-        if (realpath(dirname($file->path)) !== realpath(YESWIKI_INSTANCE_DIR)) {
+        $files = new LocalFiles();
+        if ($files->realPath(dirname($file->path)) !== $files->realPath(YESWIKI_INSTANCE_DIR)) {
             $this->say('YESWIKI_CONFIG_FILE names ' . $file->path . ', outside the wiki: it stays where the operator put it, read for the host\'s settings only');
 
             return;
         }
         $host = $file->hostSettingsToMove(YESWIKI_INSTANCE_DIR);
         $envFile = $this->getService(EnvFile::class);
-        $aside = $file->path . '.migrated' . (file_exists($file->path . '.migrated') ? '.' . date('Ymd-His') : '');
-        if ($envFile->store($host) && @rename($file->path, $aside)) {
+        $aside = $file->path . '.migrated' . ($files->exists($file->path . '.migrated') ? '.' . date('Ymd-His') : '');
+        if ($envFile->store($host) && $files->rename($file->path, $aside)) {
             $this->say(count($host) . ' host setting(s) written to ' . $envFile->path() . ', ' . basename($file->path) . ' renamed ' . basename($aside));
 
             return;

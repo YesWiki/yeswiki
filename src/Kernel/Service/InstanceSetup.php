@@ -2,6 +2,7 @@
 
 namespace YesWiki\Kernel\Service;
 
+use YesWiki\Files\Service\LocalFiles;
 use Symfony\Component\DependencyInjection\Attribute\Exclude;
 use YesWiki\Core\YesWikiLoader;
 use YesWiki\Kernel\Entity\ConfigurationFile;
@@ -37,7 +38,7 @@ final class InstanceSetup
     /** Whether a configuration file from before this ticket names the wiki's address. */
     public static function fileConfigures(string $configFile): bool
     {
-        if (!is_file($configFile)) {
+        if (!(new LocalFiles())->isFile($configFile)) {
             return false;
         }
         $configuration = new ConfigurationFile($configFile);

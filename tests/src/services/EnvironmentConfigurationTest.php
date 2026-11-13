@@ -15,8 +15,29 @@ class EnvironmentConfigurationTest extends TestCase
      */
     private array $putEnvNames = [];
 
+    /** @var array<string, string|false> the wiki's own private/.env, kept out of what these tests apply */
+    private array $wikisEnvWas = [];
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        if (\defined('YESWIKI_INSTANCE_DIR')) {
+            foreach (array_keys(\YesWiki\Core\YesWikiLoader::envFileValues()) as $name) {
+                $this->wikisEnvWas[$name] = getenv($name);
+                putenv($name);
+            }
+            \YesWiki\Core\YesWikiLoader::useEnvFileValues([]);
+        }
+    }
+
     protected function tearDown(): void
     {
+        foreach ($this->wikisEnvWas as $name => $value) {
+            putenv($value === false ? $name : $name . '=' . $value);
+        }
+        if (\defined('YESWIKI_INSTANCE_DIR')) {
+            \YesWiki\Core\YesWikiLoader::forgetEnvFile();
+        }
         foreach ($this->putEnvNames as $name) {
             putenv($name);
             unset($_ENV[$name], $_SERVER[$name]);

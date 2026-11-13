@@ -1,9 +1,10 @@
 <?php
 
-namespace YesWiki\Kernel\Service;
+namespace YesWiki\Admin\Service;
 
+use YesWiki\Files\Service\LocalFiles;
 use Symfony\Component\DependencyInjection\Attribute\Exclude;
-use YesWiki\Admin\Service\InstallationService;
+use YesWiki\Kernel\Service\Journal;
 
 /** Creates a configured wiki's schema the first time its database answers without one, and answers 503 while it does not answer at all (replicas 20). */
 #[Exclude]
@@ -13,7 +14,8 @@ final class SchemaBootstrap
     public static function ensure(array $config): void
     {
         $marker = self::marker($config);
-        if (is_file($marker)) {
+        $files = new LocalFiles();
+        if ($files->isFile($marker)) {
             return;
         }
 
@@ -45,10 +47,9 @@ final class SchemaBootstrap
             exit;
         }
 
-        if (!is_dir(dirname($marker))) {
-            @mkdir(dirname($marker), 0o755, true);
+        if ($files->makeDirectory(dirname($marker))) {
+            $files->touch($marker);
         }
-        @touch($marker);
     }
 
     /** @param array<string, mixed> $config the file whose presence says this database already holds the schema */

@@ -29,7 +29,7 @@ class EnvFile
             return true;
         }
         $path = $this->path();
-        if (!is_dir(dirname($path)) && !@mkdir(dirname($path), 0o700, true) && !is_dir(dirname($path))) {
+        if (!$this->files->makeDirectory(dirname($path))) {
             return false;
         }
         $lines = $this->files->isFile($path) ? explode("\n", rtrim($this->files->read($path), "\n")) : [];

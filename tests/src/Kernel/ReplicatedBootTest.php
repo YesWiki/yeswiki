@@ -17,6 +17,7 @@ class ReplicatedBootTest extends YesWikiTestCase
     {
         parent::setUp();
         self::getWiki();
+        $this->withoutTheWikisEnvFile();
         $this->configFile = sys_get_temp_dir() . '/yw-replicated-' . bin2hex(random_bytes(4)) . '.php';
     }
 

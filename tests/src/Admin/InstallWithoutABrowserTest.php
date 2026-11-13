@@ -64,7 +64,7 @@ class InstallWithoutABrowserTest extends YesWikiTestCase
     {
         self::getWiki();
         $command = 'cd ' . escapeshellarg($dir)
-            . ' && YESWIKI_INSTANCE_DIR=' . escapeshellarg($dir)
+            . ' && ' . self::withoutTheWikisEnvironment() . 'YESWIKI_INSTANCE_DIR=' . escapeshellarg($dir)
             . ' YESWIKI_CONFIG_FILE=' . escapeshellarg($dir . '/yeswiki.config.php')
             . ' ' . escapeshellarg(PHP_BINARY)
             . ' ' . escapeshellarg(\YESWIKI_PROGRAM_DIR . '/src/commands/console')
@@ -312,12 +312,13 @@ class InstallWithoutABrowserTest extends YesWikiTestCase
             $this->assertSame('http://child.test/?', $loaded['base_url'] ?? null, 'the host\'s from its private/.env');
             $this->assertNotSame(self::getWiki()->config['base_url'], $loaded['base_url'], 'and nothing from the wiki that opens it');
 
+            $hostWas = getenv('CONTACT_SMTP_HOST');
             $this->assertTrue($child->store(['yeswiki_name' => 'Renamed by the farm', 'contact_smtp_host' => 'smtp.farm.test'], ['root_page']));
             $this->assertSame('Renamed by the farm', $this->storedSettings(new \PDO('sqlite:' . $dir . '/private/yeswiki.db'), 'child_')['yeswiki_name'] ?? null);
             $env = (new \Symfony\Component\Dotenv\Dotenv())->parse((string)file_get_contents($dir . '/private/.env'));
             $this->assertSame('smtp.farm.test', $env['CONTACT_SMTP_HOST'] ?? null, 'a host setting goes to its private/.env');
             $this->assertArrayNotHasKey('root_page', (new \YesWiki\Kernel\Service\InstanceConfiguration($dir))->load(), 'and a key taken away is gone');
-            $this->assertFalse(getenv('CONTACT_SMTP_HOST'), 'without touching the environment of the wiki that wrote it');
+            $this->assertSame($hostWas, getenv('CONTACT_SMTP_HOST'), 'without touching the environment of the wiki that wrote it');
         } finally {
             exec('rm -rf ' . escapeshellarg($dir));
         }

@@ -2,6 +2,7 @@
 
 namespace YesWiki\Admin\Action;
 
+use YesWiki\Files\Service\LocalFiles;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\BotGuard;
@@ -163,7 +164,7 @@ class EditConfigAction extends YesWikiAction implements RegisteredAction, Provid
         }
 
         $legacy = ConfigurationFileProvider::getConfigFileFromEnv();
-        if (is_file($legacy)) {
+        if ((new LocalFiles())->isFile($legacy)) {
             $output .= $this->render('@core/alert-message.twig', [
                 'type' => 'warning',
                 'message' => _t('EDIT_CONFIG_FILE_STILL_READ', ['file' => basename($legacy)]),
