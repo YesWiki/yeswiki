@@ -30,8 +30,8 @@ class AssetRegistry implements RequestScopedState
         'tools/bazar/libs/vendor/leaflet/fullscreen/Control.FullScreen.js' => 'javascripts/vendor/leaflet-fullscreen/leaflet-fullscreen.js',
         'tools/bazar/libs/vendor/leaflet/ajax/dist/leaflet.ajax.min.js' => 'javascripts/vendor/leaflet-ajax/leaflet.ajax.min.js',
         'tools/bazar/libs/vendor/leaflet/spiderfier/oms.min.js' => 'javascripts/vendor/leaflet-spiderfier/oms.min.js',
-        'tools/templates/libs/vendor/iframeResizer.contentWindow.min.js' => 'javascripts/vendor/iframe-resizer/iframeResizer.contentWindow.min.js',
-        'tools/templates/libs/vendor/iframeResizer.min.js' => 'javascripts/vendor/iframe-resizer/iframeResizer.min.js',
+        'tools/templates/libs/vendor/iframeResizer.contentWindow.min.js' => 'javascripts/iframe-height.js',
+        'tools/templates/libs/vendor/iframeResizer.min.js' => 'javascripts/iframe-height.js',
         // ticket 12 (templates absorbed into core)
         'tools/templates/libs/vendor/wow.min.js' => 'javascripts/yw-core.js',
         'tools/templates/presentation/styles/animate.css' => 'styles/vendor/animate/animate.min.css',

@@ -55,14 +55,16 @@ mkdir -p javascripts/vendor/vditor/dist/js/highlight.js/styles &&
 	copy_css node_modules/vditor/dist/js/highlight.js/styles/github.min.css javascripts/vendor/vditor/dist/js/highlight.js/styles/github.min.css &&
 	copy_css node_modules/vditor/dist/js/highlight.js/styles/github-dark.min.css javascripts/vendor/vditor/dist/js/highlight.js/styles/github-dark.min.css
 
-mkdir -p styles/vendor/fullcalendar &&
-	copy_css node_modules/fullcalendar/main.min.css styles/vendor/fullcalendar/main.min.css
-
-mkdir -p javascripts/vendor/fullcalendar &&
-	copy_js node_modules/fullcalendar/main.min.js javascripts/vendor/fullcalendar/main.min.js &&
-	copy_js node_modules/fullcalendar/locales-all.min.js javascripts/vendor/fullcalendar/locales-all.min.js &&
-	cp -f node_modules/fullcalendar/LICENSE.txt javascripts/vendor/fullcalendar &&
-	cp -f node_modules/fullcalendar/README.md javascripts/vendor/fullcalendar
+rm -rf javascripts/vendor/fullcalendar styles/vendor/fullcalendar
+mkdir -p javascripts/vendor/fullcalendar styles/vendor/fullcalendar &&
+	node_modules/esbuild/bin/esbuild --minify --log-level=warning node_modules/temporal-polyfill/global.js --outfile=javascripts/vendor/fullcalendar/temporal-polyfill.min.js &&
+	node_modules/esbuild/bin/esbuild --minify --log-level=warning node_modules/fullcalendar/all/global.js --outfile=javascripts/vendor/fullcalendar/fullcalendar.min.js &&
+	node_modules/esbuild/bin/esbuild --minify --log-level=warning node_modules/fullcalendar/themes/classic/global.js --outfile=javascripts/vendor/fullcalendar/theme-classic.min.js &&
+	node_modules/esbuild/bin/esbuild --minify --log-level=warning node_modules/fullcalendar/locales-all/global.js --outfile=javascripts/vendor/fullcalendar/locales-all.min.js &&
+	cat node_modules/fullcalendar/skeleton.css node_modules/fullcalendar/themes/classic/theme.css node_modules/fullcalendar/themes/classic/palette.css |
+	node_modules/esbuild/bin/esbuild --minify --log-level=warning --loader=css > styles/vendor/fullcalendar/fullcalendar.min.css &&
+	cp -f node_modules/fullcalendar/LICENSE.md javascripts/vendor/fullcalendar/LICENSE.md &&
+	cp -f node_modules/temporal-polyfill/LICENSE javascripts/vendor/fullcalendar/LICENSE-temporal-polyfill
 
 rm -rf javascripts/vendor/docsify styles/vendor/docsify
 mkdir -p javascripts/vendor/prism && \
@@ -87,10 +89,6 @@ mkdir -p javascripts/vendor/ace &&
 	copy_js node_modules/ace-builds/src-min-noconflict/mode-twig.js javascripts/vendor/ace/mode-twig.js &&
 	copy_js node_modules/ace-builds/src-min-noconflict/ext-language_tools.js javascripts/vendor/ace/ext-language_tools.js
 copy_js node_modules/ace-builds/src-min-noconflict/ext-searchbox.js javascripts/ext-searchbox.js
-
-mkdir -p javascripts/vendor/iframe-resizer &&
-	copy_js node_modules/iframe-resizer/js/iframeResizer.min.js javascripts/vendor/iframe-resizer/iframeResizer.min.js &&
-	copy_js node_modules/iframe-resizer/js/iframeResizer.contentWindow.min.js javascripts/vendor/iframe-resizer/iframeResizer.contentWindow.min.js
 
 mkdir -p javascripts/vendor/opening_hours
 opening_hours_target=javascripts/vendor/opening_hours/opening_hours.js

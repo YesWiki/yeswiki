@@ -148,6 +148,7 @@ const BazarCalendar = {
           this.$el.classList.add('minical')
         }
         const calendarEl = document.createElement('div')
+        calendarEl.classList.add('yw-calendar')
         calendarEl.addEventListener('dblclick', (e) => {
           e.preventDefault()
           e.stopPropagation()
@@ -166,8 +167,10 @@ const BazarCalendar = {
       }
     },
     buildEventObject(entry, id, start, end) {
-      const backgroundColor =
-        entry.color == null || entry.color.length === 0 ? '' : entry.color
+      const color =
+        entry.color == null || entry.color.length === 0
+          ? {}
+          : { color: entry.color }
       return {
         id,
         groupId: entry.tag,
@@ -177,8 +180,7 @@ const BazarCalendar = {
         url: entry.url + (this.isModalDisplay() ? '/iframe' : ''),
         allDay: this.isAllDayDate(start),
         className: `bazar-entry${this.isModalDisplay() ? ' modalbox' : ''}`,
-        backgroundColor,
-        borderColor: backgroundColor,
+        ...color,
         extendedProps: {
           icon:
             entry.icon == null || entry.icon.length === 0
@@ -269,32 +271,15 @@ const BazarCalendar = {
       }
       if (!element.classList.contains('iconDefined')) {
         if (event.extendedProps.icon.length > 0) {
-          const title = element.classList.contains('fc-list-event')
-            ? element.querySelector('.fc-list-event-title a')
-            : element.querySelector('.fc-event-title')
+          const title = element.querySelector('.yw-cal-event-title')
           if (title) {
             title.insertAdjacentHTML('afterbegin', event.extendedProps.icon)
           }
         }
         element.classList.add('iconDefined')
       }
-      if (
-        element.classList.contains('fc-list-event') &&
-        this.isModalDisplay()
-      ) {
-        element.querySelectorAll('.fc-list-event-title a').forEach((link) => {
-          link.setAttribute('data-size', 'modal-lg')
-          link.setAttribute('data-iframe', '1')
-          link.setAttribute('title', event.title)
-        })
-      } else if (
-        element.classList.contains('fc-list-event') &&
-        this.isNewTabDisplay()
-      ) {
-        element.querySelectorAll('.fc-list-event-title a').forEach((link) => {
-          link.classList.add('new-window')
-          link.setAttribute('title', event.title)
-        })
+      if (this.isNewTabDisplay()) {
+        element.classList.add('new-window')
       }
       if (!element.classList.contains('toolTipDefined')) {
         element.classList.add('toolTipDefined')
@@ -342,10 +327,20 @@ const BazarCalendar = {
         eventMaxStack: 3,
         firstDay: 1,
         headerToolbar: {
-          left: 'prev today',
+          start: 'prev today',
           center: 'title',
-          right: `dayGridMonth,timeGridWeek,timeGridDay${extendedList} next`,
+          end: `dayGridMonth,timeGridWeek,timeGridDay${extendedList} next`,
         },
+        toolbarClass: 'yw-cal-toolbar',
+        toolbarTitleClass: 'yw-cal-title',
+        buttonGroupClass: 'yw-cal-button-group',
+        buttonClass: (button) =>
+          `yw-cal-button yw-cal-button--${button.name}${
+            button.isSelected ? ' yw-cal-button--active' : ''
+          }`,
+        inlineWeekNumberClass: 'yw-cal-week-number',
+        eventClass: 'yw-cal-event',
+        eventTitleClass: 'yw-cal-event-title',
         initialView,
         locale: wiki.locale,
         navLinks: true,

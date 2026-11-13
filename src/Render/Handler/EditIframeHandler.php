@@ -82,7 +82,7 @@ class EditIframeHandler extends YesWikiHandler implements RegisteredHandler
         if (isset($_GET['edit']) && $_GET['edit'] == '1') {
             $output .= $this->getService(MarkdownFormatterService::class)->format('{{editbar}}');
         }
-        $this->getService(AssetRegistry::class)->addJsFile('javascripts/vendor/iframe-resizer/iframeResizer.contentWindow.min.js');
+        $this->getService(AssetRegistry::class)->addJsFile('javascripts/iframe-height.js');
 
         return $this->getService(ThemeManager::class)->renderIframe($output, $bodyClass);
     }

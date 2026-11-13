@@ -6,6 +6,7 @@ use YesWiki\Content\Service\QrCodeService;
 use YesWiki\Core\YesWikiHandler;
 use YesWiki\Kernel\Performable\RegisteredHandler;
 use YesWiki\Kernel\Service\PageContext;
+use YesWiki\Kernel\Service\RuntimeConfig;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\TemplateEngine;
 
@@ -72,6 +73,7 @@ class ShareHandler extends YesWikiHandler implements RegisteredHandler
         $html .= '<div class="yw-alert yw-alert--info">' . _t('TEMPLATE_SHARE_INCLUDE_CODE') . '</div>' . "\n";
         $html .= "<pre id=\"htmlsharecode\">\n";
         $html .= htmlentities('<iframe class="auto-resize" width="100%" scroll="no" frameborder="0" src="' . $this->getService(UrlFormatter::class)->href('iframe') . '"></iframe>') . "\n";
+        $html .= htmlentities('<script src="' . $this->resizerUrl() . '"></script>') . "\n";
         $html .= "</pre>\n";
         $html .= '
         <div class="checkbox">
@@ -94,5 +96,13 @@ class ShareHandler extends YesWikiHandler implements RegisteredHandler
                 . $this->getService(PageContext::class)->getTag() . "</h2>\n$html\n<hr class=\"hr_clear\" />\n"
             );
         }
+    }
+
+    /** The script another site loads beside the iframe, so the frame takes the height of the page inside it. */
+    private function resizerUrl(): string
+    {
+        $baseUrl = (string)($this->getService(RuntimeConfig::class)['base_url'] ?? '');
+
+        return rtrim((string)preg_replace('~(index\.php)?\?.*$~', '', $baseUrl), '/') . '/javascripts/iframe-auto-resize.js';
     }
 }

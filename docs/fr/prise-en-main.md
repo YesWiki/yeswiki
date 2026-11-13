@@ -308,6 +308,15 @@ Pour que la **hauteur se calcule automatiquement**, utilisez le paramètre
 <iframe src="..." class="auto-resize"></iframe>
 ```
 
+Dans une page du wiki, cela suffit. Sur un autre site, ajoutez aussi le script
+qui reçoit la hauteur envoyée par la page du wiki ; le bouton « Partager » donne
+les deux lignes :
+
+```
+<iframe src="https://mon-wiki.example.org/?PagePrincipale/iframe" class="auto-resize" width="100%" frameborder="0"></iframe>
+<script src="https://mon-wiki.example.org/javascripts/iframe-auto-resize.js"></script>
+```
+
 Le paramètre `frameborder` permet de **gérer la bordure** noire du cadre (`1`
 pour activer, `0` pour désactiver)
 

@@ -228,15 +228,7 @@ function checkAll(state) {
 
   if (document.querySelector('iframe.auto-resize')) {
     const script = document.createElement('script')
-    script.src = 'javascripts/vendor/iframe-resizer/iframeResizer.min.js'
-    script.onload = () => {
-      window.iFrameResize({}, 'iframe.auto-resize')
-    }
-    script.onerror = () => {
-      console.log(
-        'Error getting script javascripts/vendor/iframe-resizer/iframeResizer.min.js',
-      )
-    }
+    script.src = 'javascripts/iframe-auto-resize.js'
     document.body.appendChild(script)
   }
 
