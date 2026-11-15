@@ -151,6 +151,9 @@ Please confirm their deletion by checking the box below.
 
     'DATATABLE_SEARCH_PLACEHOLDER' => 'Search...',
     'DATATABLE_NO_RESULTS' => 'No matching results',
+    'DATATABLE_PAGINATION' => 'Pages of the table',
+    'DATATABLE_PREVIOUS_PAGE' => 'Previous page',
+    'DATATABLE_NEXT_PAGE' => 'Next page',
     'DATATABLE_PAGE_SIZE_LABEL' => 'Show',
 
     'EDIT_LEAVE_WITHOUT_SAVING' => 'You have unsaved changes. Leave this page?',

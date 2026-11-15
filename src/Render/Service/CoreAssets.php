@@ -149,8 +149,8 @@ class CoreAssets implements RequestScopedState
         }
 
         $url = $this->storage->url('files/backgrounds/' . $image);
-        $extension = strtolower(substr($image, -4, 4));
-        if ($extension === '.jpg') {
+        $kind = ThemeManager::backgroundKind($image);
+        if ($kind === 'cover') {
             $this->assets->addCss(<<<CSS
                 body {
                     background-image: url("$url");
@@ -166,7 +166,7 @@ class CoreAssets implements RequestScopedState
                     background-position:center center;
                 }
                 CSS);
-        } elseif ($extension === '.png') {
+        } elseif ($kind === 'tile') {
             $this->assets->addCss(<<<CSS
                 body {
                     background-image: url("$url");

@@ -1,3 +1,8 @@
+const collator = new Intl.Collator(
+  document.documentElement.lang || navigator.language,
+  { numeric: true, sensitivity: 'base' },
+)
+
 export default {
   props: {
     columns: {
@@ -90,9 +95,7 @@ export default {
         const result =
           looksNumeric && !Number.isNaN(an) && !Number.isNaN(bn)
             ? an - bn
-            : String(av).localeCompare(String(bv), undefined, {
-                sensitivity: 'base',
-              })
+            : collator.compare(String(av), String(bv))
         return result * direction
       })
     },
@@ -206,8 +209,13 @@ export default {
                         :style="entry.col.width ? { width: entry.col.width } : {}"
                         :data-yw-sort="entry.col.orderable === false
                           ? null : headerSortState(entry.idx)"
-                        @click="toggleSort(entry)"
-                        v-html="entry.col.title"></th>
+                        :aria-sort="entry.col.orderable === false
+                          ? null : ({ asc: 'ascending', desc: 'descending' }[headerSortState(entry.idx)] || 'none')">
+                        <button v-if="entry.col.orderable !== false" type="button"
+                          class="yw-datatable__sort" @click="toggleSort(entry)"
+                          v-html="entry.col.title"></button>
+                        <span v-else v-html="entry.col.title"></span>
+                    </th>
                 </tr>
             </thead>
             <tbody>

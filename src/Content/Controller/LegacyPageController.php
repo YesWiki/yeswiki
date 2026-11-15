@@ -26,7 +26,7 @@ class LegacyPageController extends YesWikiController
         $tag = $request->attributes->get('_tag');
         $method = $request->attributes->get('_method');
 
-        $this->getService(PageContext::class)->assignPage($this->getService(PageManager::class)->getOne($tag, isset($_REQUEST['time']) ? $_REQUEST['time'] : ''));
+        $this->getService(PageContext::class)->assignPage($this->getService(PageManager::class)->getOne($tag, PageManager::revisionAsked($_REQUEST['revision'] ?? null, $_REQUEST['time'] ?? null)));
 
         $boosted = $this->getService(BoostedNavigation::class);
 

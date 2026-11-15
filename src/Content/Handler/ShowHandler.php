@@ -149,8 +149,10 @@ class ShowHandler extends YesWikiHandler implements RegisteredHandler
             $entry = $entryManager->getOne($this->getService(PageContext::class)->getTag());
 
             $replace = '<input type="hidden" name="body" value="' . htmlspecialchars((string)json_encode($entry), ENT_COMPAT, YW_CHARSET) . '" />';
-            if (isset($_GET['time'])) {
-                $replace = '<input type="hidden" name="time" value="' . htmlspecialchars($_GET['time'], ENT_COMPAT, YW_CHARSET) . '">' . "\n" . $replace;
+            foreach (['revision', 'time'] as $address) {
+                if (isset($_GET[$address]) && is_string($_GET[$address])) {
+                    $replace = '<input type="hidden" name="' . $address . '" value="' . htmlspecialchars($_GET[$address], ENT_COMPAT, YW_CHARSET) . '">' . "\n" . $replace;
+                }
             }
             $plugin_output_new = preg_replace(
                 '/\<input type=\"hidden\" name=\"body\" value=\".*\" \/\>/Uis',
@@ -263,9 +265,8 @@ class ShowHandler extends YesWikiHandler implements RegisteredHandler
                     if ($this->getService(AclService::class)->hasAccess('write')) {
                         $latest = $this->getService(PageManager::class)->getOne($this->getService(PageContext::class)->getTag()); ?>
                         <?php
-                        $time = isset($_GET['time']) ? $_GET['time'] : '';
                         echo $this->getService(TemplateEngine::class)->formOpen(WikiUrls::iframeSuffixFor() ? 'editiframe' : 'edit', '', 'get'); ?>
-                        <input type="hidden" name="time" value="<?php echo htmlspecialchars($time, ENT_QUOTES, YW_CHARSET); ?>" />
+                        <input type="hidden" name="revision" value="<?php echo (int)$this->getService(PageContext::class)->getPage()['id']; ?>" />
                         <input class="btn btn-primary" type="submit" value="<?php echo _t('EDIT_ARCHIVED_REVISION'); ?>" />
                         <?php echo $this->getService(TemplateEngine::class)->formClose(); ?>
         <?php
@@ -281,7 +282,8 @@ class ShowHandler extends YesWikiHandler implements RegisteredHandler
                     echo $this->getService(FormController::class)->show($form);
                 } elseif ($this->getService(ContentTypeResolver::class)->formFor($this->getService(PageContext::class)->getTag()) !== null) {
                     $entryController = $this->getService(EntryController::class);
-                    echo $entryController->view($this->getService(PageContext::class)->getTag(), $this->getService(PageContext::class)->getPage()['time'] ?? null);
+                    $shown = $this->getService(PageContext::class)->getPage();
+                    echo $entryController->view($this->getService(PageContext::class)->getTag(), ($shown['latest'] ?? 'Y') === 'Y' ? '' : (int)$shown['id']);
                 } else {
                     echo $this->getService(MarkdownFormatterService::class)->format(PageBody::content($this->getService(PageContext::class)->getPage()['body']));
                 }

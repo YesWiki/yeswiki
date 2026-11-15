@@ -27,6 +27,15 @@ use YesWiki\Search\Service\SearchManager;
  */
 class CSVManager
 {
+    /** What tells Excel a CSV is UTF-8 (end-users 02). */
+    public const UTF8_BOM = "\xEF\xBB\xBF";
+
+    /** @param string $cell the first cell of a file, whose byte order mark Excel needs on export and the header detection must not see on import */
+    public static function withoutBom(string $cell): string
+    {
+        return str_starts_with($cell, self::UTF8_BOM) ? substr($cell, 3) : $cell;
+    }
+
     protected bool $debug;
     protected EntryManager $entryManager;
     protected FormManager $formManager;
@@ -426,6 +435,7 @@ class CSVManager
                 if ($ext == 'csv') {
                     $handle = $this->storage->readForeignStream($filesData['tmp_name']);
                     if (($firstLine = fgetcsv($handle, 0, ',', '"', '')) !== false) {
+                        $firstLine[0] = self::withoutBom((string)($firstLine[0] ?? ''));
                         if ($columnIndexesForPropertyNames
                             = $this->getColumnIndexesForPropertyNames($firstLine, $headers, $detectColumnsOnHeaders)
                         ) {
@@ -967,7 +977,7 @@ class CSVManager
         foreach ($vFormIDs['locals'] as $vFormID) {
             $vFilename = $this->buildExportFilename($vFormID);
 
-            $csvFiles[$vFilename] = $this->arrayToCSV(
+            $csvFiles[$vFilename] = self::UTF8_BOM . $this->arrayToCSV(
                 $this->getCSVfromFormId(['locals' => [$vFormID], 'externals' => []], $pParams),
             );
         }
@@ -982,7 +992,7 @@ class CSVManager
             $fileName = key($csvFiles);
             $csvContent = reset($csvFiles);
 
-            header('Content-Type: text/csv');
+            header('Content-Type: text/csv; charset=UTF-8');
             header('Content-Disposition: attachment; filename="' . $fileName . '"');
             header('Content-Length: ' . strlen($csvContent));
             header('Connection: close');

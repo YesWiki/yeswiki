@@ -71,11 +71,11 @@ class DeletepageHandler extends YesWikiHandler implements RegisteredHandler
                 $msg .= str_replace('{tag}', $this->getService(LinkRenderer::class)->link($tag), _t('DELETEPAGE_CONFIRM')) . "\n";
                 $msg .= '</br></br>';
                 $msg .= '<input type="hidden" name="csrf-token" value="' . htmlentities($csrfTokenManager->getToken('main')) . '">';
-                $msg .= '<input type="submit" class="btn btn-danger" value="' . _t('DELETEPAGE_DELETE') . '" ';
+                $msg .= '<input type="submit" class="yw-btn yw-btn--danger" value="' . _t('DELETEPAGE_DELETE') . '" ';
                 $msg .= 'style="vertical-align: middle; display: inline" />' . "\n";
                 $msg .= "</form>\n";
                 $msg .= '<form action="' . $cancelUrl . '" method="post" style="display: inline">' . "\n";
-                $msg .= '<input type="submit" value="' . _t('DELETEPAGE_CANCEL') . '" class="btn btn-default" style="vertical-align: middle; display: inline" />' . "\n";
+                $msg .= '<input type="submit" value="' . _t('DELETEPAGE_CANCEL') . '" class="yw-btn" style="vertical-align: middle; display: inline" />' . "\n";
                 $msg .= "</form></span>\n";
             } else {
                 try {

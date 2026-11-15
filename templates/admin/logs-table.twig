@@ -61,7 +61,7 @@
             <td>{{ entry.phrase }}</td>
             <td>{{ entry.target }}</td>
             <td>
-              {{ entry.message }}
+              {% if entry.incident %}<code class="yw-logs__incident">{{ entry.incident }}</code> {% endif %}{{ entry.message }}
               {% if entry.frames is not empty %}
                 <details class="yw-logs__frames">
                   <summary>{{ entry.frames|length }}</summary>

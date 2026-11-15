@@ -61,18 +61,19 @@ ywInitEach('#template-edit, .template-edit-form, body', () => {
 
         unchoose()
         const hiddenimg = value('#hiddenbgimg') || ''
-        if (hiddenimg !== '') {
-          if (hiddenimg.substr(hiddenimg.length - 4) === '.jpg') {
-            const img = document.querySelector(
-              `#bgCarousel .bgimg[src$="${hiddenimg}"]`,
-            )
-            if (img) img.classList.add('choosen')
+        const chosen =
+          hiddenimg === ''
+            ? null
+            : [
+                ...document.querySelectorAll(
+                  '#bgCarousel [data-yw-background-file]',
+                ),
+              ].find((item) => item.dataset.ywBackgroundFile === hiddenimg)
+        if (chosen) {
+          chosen.classList.add('choosen')
+          if (chosen.dataset.ywBackgroundKind === 'cover') {
             coverBackground(`url(files/backgrounds/${hiddenimg})`)
-          } else if (hiddenimg.substr(hiddenimg.length - 4) === '.png') {
-            const img = document.querySelector(
-              `#bgCarousel .mozaicimg[style*="${hiddenimg}"]`,
-            )
-            if (img) img.classList.add('choosen')
+          } else {
             mozaicBackground(`url(files/backgrounds/${hiddenimg})`)
           }
         } else {
@@ -96,18 +97,8 @@ ywInitEach('#template-edit, .template-edit-form, body', () => {
         const style = value('[name=style_select]')
         const preset = value('[name=preset_select]')
         setValue('#hiddenstyle', style)
-        const choosen = document.querySelector('.choosen')
-        let bgimg = choosen ? choosen.style.backgroundImage : undefined
-        const imgsrc = choosen ? choosen.getAttribute('src') : null
-
-        if (bgimg && bgimg !== 'none') {
-          bgimg = bgimg.substr(bgimg.lastIndexOf('/') + 1)
-          bgimg = bgimg.replace(/["')]/g, '')
-        } else if (typeof imgsrc === 'string') {
-          bgimg = imgsrc.substr(imgsrc.lastIndexOf('/') + 1)
-        } else {
-          bgimg = ''
-        }
+        const choosen = document.querySelector('#bgCarousel .choosen')
+        const bgimg = choosen?.dataset.ywBackgroundFile ?? ''
 
         setValue('#hiddenbgimg', bgimg)
 

@@ -170,7 +170,7 @@ const BazarCalendar = {
       const color =
         entry.color == null || entry.color.length === 0
           ? {}
-          : { color: entry.color }
+          : { color: entry.color, contrastColor: entry.ink || undefined }
       return {
         id,
         groupId: entry.tag,

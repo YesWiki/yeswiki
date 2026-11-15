@@ -84,12 +84,22 @@ class PageManager implements CachesTheDatabase
         $this->rawPageCache = [];
     }
 
+    /** The revision a request asks for: `revision`, its id, else `time`, the deprecated address that pages saved twice in a second share (ticket 67). */
+    public static function revisionAsked(mixed $revision, mixed $time): int|string|null
+    {
+        if (is_numeric($revision) && (int)$revision > 0) {
+            return (int)$revision;
+        }
+
+        return is_string($time) && $time !== '' ? $time : null;
+    }
+
     /**
-     * @param string      $tag                    name of the page
-     * @param string|null $time                   choose only the page's revision corresponding to time, null = latest revision
-     * @param bool        $cache                  : use cache ?
-     * @param bool        $bypassAcls             : do not check acl
-     * @param string|null $userNameForCheckingACL userName used to check ACL, if empty uses the connected user
+     * @param string          $tag                    name of the page
+     * @param string|int|null $time                   a revision: its id, or (deprecated, ticket 67) its time, which two saves in one second share; null = latest revision
+     * @param bool            $cache                  : use cache ?
+     * @param bool            $bypassAcls             : do not check acl
+     * @param string|null     $userNameForCheckingACL userName used to check ACL, if empty uses the connected user
      *
      * @return array<string, mixed>|null
      */
@@ -101,7 +111,7 @@ class PageManager implements CachesTheDatabase
         if (!$bypassAcls && !$time && $cache && empty($userNameForCheckingACL) && (($cachedPage = $this->getCached($tag)) !== false)) {
             $page = $cachedPage;
         } else {
-            $timeQuery = $time ? "{$this->dbService->quoteIdentifier('time')} = ?" : "latest = 'Y'";
+            $timeQuery = is_int($time) ? 'id = ?' : ($time ? "{$this->dbService->quoteIdentifier('time')} = ?" : "latest = 'Y'");
             $revisionOrder = $time ? 'ORDER BY id DESC' : '';
             $page = $this->dbService->loadSingle("
                 SELECT * FROM {$this->dbService->prefixTable('pages')}
@@ -423,7 +433,7 @@ class PageManager implements CachesTheDatabase
         return $this->checkEntriesACL($this->dbService->loadAll("
             SELECT id, time, $userCol AS user FROM {$this->dbService->prefixTable('pages')}
             WHERE tag = ?
-            ORDER BY time DESC
+            ORDER BY time DESC, id DESC
             LIMIT ?
         ", [$pageTag, (int)$limit]), $pageTag);
     }

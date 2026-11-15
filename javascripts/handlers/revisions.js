@@ -46,7 +46,7 @@ const app = createApp({
     },
     previewUrl() {
       return wiki.url(`${wiki.pageTag}/iframe`, {
-        time: this.selectedRevision.phpTime,
+        revision: this.selectedRevision.id,
         iframelinks: 0,
       })
     },
@@ -86,7 +86,7 @@ const app = createApp({
     selectedRevision() {
       if (this.selectedRevision && !this.selectedRevision.fullyRetrieved) {
         const url = wiki.url(`?api/pages/${wiki.pageTag}`, {
-          time: this.selectedRevision.phpTime,
+          revision: this.selectedRevision.id,
           includeDiff: true,
         })
         fetch(url)

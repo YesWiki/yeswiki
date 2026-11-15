@@ -564,3 +564,66 @@
     }
   })
 })()
+
+;(function () {
+  function parsed(text) {
+    try {
+      return JSON.parse(text)
+    } catch {
+      return null
+    }
+  }
+
+  function messageFor(event) {
+    if (event.type === 'htmx:timeout') return _t('HTMX_ERROR_TIMEOUT')
+    if (event.type === 'htmx:sendError' || !navigator.onLine) {
+      return _t('HTMX_ERROR_OFFLINE')
+    }
+    const xhr = event.detail?.xhr
+    const status = xhr?.status ?? 0
+    const payload = parsed(xhr?.responseText ?? '')
+    if (payload && typeof payload.error === 'string' && payload.error) {
+      return payload.error
+    }
+    if (status === 403) return _t('HTMX_ERROR_FORBIDDEN')
+    if (status === 404) return _t('HTMX_ERROR_NOT_FOUND')
+
+    return _t('HTMX_ERROR_SERVER', { status: String(status) })
+  }
+
+  function toast(message) {
+    if (typeof toastMessage === 'function') {
+      toastMessage(message, 8000, 'alert alert-danger')
+      return
+    }
+    const inner = document.createElement('div')
+    inner.className = 'alert alert-danger'
+    inner.textContent = message
+    const toastEl = document.createElement('div')
+    toastEl.className = 'toast-message visible'
+    toastEl.style.opacity = 1
+    toastEl.appendChild(inner)
+    document.body.insertAdjacentElement('afterend', toastEl)
+    window.setTimeout(() => toastEl.remove(), 8300)
+  }
+
+  function announce(message) {
+    const announcer = document.getElementById('yw-navigation-announcer')
+    if (!announcer) return
+    announcer.textContent = ''
+    window.setTimeout(() => {
+      announcer.textContent = message
+    }, 50)
+  }
+
+  function onFailure(event) {
+    if (event.defaultPrevented) return
+    const message = messageFor(event)
+    toast(message)
+    announce(message)
+  }
+
+  ;['htmx:responseError', 'htmx:sendError', 'htmx:timeout'].forEach((name) =>
+    document.addEventListener(name, onFailure),
+  )
+})()

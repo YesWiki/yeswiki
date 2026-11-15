@@ -38,7 +38,7 @@ class BackgroundThumbnailsTest extends YesWikiTestCase
 
         $this->assertContains(
             self::DIR . '/thumbs/phpstan-ratchet-fixture.jpg',
-            $backgrounds,
+            array_column($backgrounds, 'path'),
             'the background was not thumbnailed, so the theme selector lists nothing for it'
         );
         $this->assertFileExists(
@@ -58,7 +58,7 @@ class BackgroundThumbnailsTest extends YesWikiTestCase
 
         $backgrounds = $prepare->invoke($renderer);
 
-        $this->assertContains(self::DIR . '/thumbs/phpstan-ratchet-fixture.jpg', $backgrounds);
+        $this->assertContains(self::DIR . '/thumbs/phpstan-ratchet-fixture.jpg', array_column($backgrounds, 'path'));
         $this->assertSame(
             $writtenAt,
             filemtime(self::DIR . '/thumbs/phpstan-ratchet-fixture.jpg'),

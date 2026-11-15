@@ -1,3 +1,5 @@
+import { contrastRatio, rgbOf } from './colour-contrast.js'
+
 const palettes = []
 
 const livePalettes = () => palettes.filter(({ box }) => box.isConnected)
@@ -217,39 +219,6 @@ ywInitEach('#yw-preset-rail', (rail) => {
   }
 
   const badges = [...rail.querySelectorAll('[data-yw-preset-contrast]')]
-
-  const probe = document.createElement('span')
-  probe.setAttribute('aria-hidden', 'true')
-  probe.style.display = 'none'
-  rail.appendChild(probe)
-
-  function rgbOf(value) {
-    probe.style.color = ''
-    probe.style.color = String(value ?? '').trim()
-    const computed = getComputedStyle(probe).color
-    const parts = computed.match(/[\d.]+/g)
-    if (!parts || parts.length < 3) return null
-    return parts.slice(0, 3).map(Number)
-  }
-
-  /** WCAG 2.1 relative luminance: sRGB linearised, then weighted. */
-  function luminance([r, g, b]) {
-    const channel = (value) => {
-      const v = value / 255
-      return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4
-    }
-    return 0.2126 * channel(r) + 0.7152 * channel(g) + 0.0722 * channel(b)
-  }
-
-  /** The WCAG ratio between two colours: 1 (identical) to 21 (black on white). */
-  function contrastRatio(a, b) {
-    const first = rgbOf(a)
-    const second = rgbOf(b)
-    if (!first || !second) return null
-    const light = Math.max(luminance(first), luminance(second))
-    const dark = Math.min(luminance(first), luminance(second))
-    return (light + 0.05) / (dark + 0.05)
-  }
 
   /** The WCAG 2.1 grade a contrast ratio earns. */
   function gradeOf(ratio) {

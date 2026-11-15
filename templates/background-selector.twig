@@ -2,17 +2,18 @@
 <div id="bgCarousel" class="carousel" data-interval="5000" data-pause="true">
     <!-- Carousel items -->
     <div class="carousel-inner">
-        {% for row in backgrounds|sort|batch(8) %}
+        {% for row in backgrounds|batch(8) %}
 
           <div class="item{{ ((favoriteBackgroundImage is empty and loop.first)
-            or (favoriteBackgroundImage is not empty and "files/backgrounds/#{favoriteBackgroundImage}" in row)) ? ' active' : ''}}">
+            or (favoriteBackgroundImage is not empty and favoriteBackgroundImage in row|map(b => b.file))) ? ' active' : ''}}">
             {% for background in row %}
-                {% set imgextension = background|slice(-4)|lower %}
-                {% set choosen = (background is same as "files/backgrounds/#{favoriteBackgroundImage}") %}
-                {% if imgextension == '.jpg' %}
-                    <img loading="lazy" class="bgimg{{ choosen ? ' choosen' : ''}}" src="{{ background }}" width="100" height="75" />
-                {% elseif imgextension == '.png' %}
-                    <div class="mozaicimg{{ choosen ? ' choosen' : ''}}" style="background:url({{ background }}) repeat top left;"></div>
+                {% set choosen = background.file is same as favoriteBackgroundImage %}
+                {% if background.kind == 'cover' %}
+                    <img loading="lazy" class="bgimg{{ choosen ? ' choosen' : ''}}" src="{{ background.path }}" width="100" height="75"
+                      data-yw-background-file="{{ background.file }}" data-yw-background-kind="cover" />
+                {% else %}
+                    <div class="mozaicimg{{ choosen ? ' choosen' : ''}}" style="background:url({{ background.path }}) repeat top left;"
+                      data-yw-background-file="{{ background.file }}" data-yw-background-kind="tile"></div>
                 {% endif %}
             {% endfor %}
           </div>

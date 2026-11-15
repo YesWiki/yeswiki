@@ -443,6 +443,16 @@ class ThemeManager implements EventSubscriberInterface
         return $this->favorites['preset'] ?? '';
     }
 
+    /** How a background image is laid out, read from its extension: a photo covers the page, a pattern is tiled, anything else is no background (end-users 04). */
+    public static function backgroundKind(string $file): ?string
+    {
+        return match (strtolower(pathinfo($file, PATHINFO_EXTENSION))) {
+            'jpg', 'jpeg', 'webp', 'avif' => 'cover',
+            'png', 'gif' => 'tile',
+            default => null,
+        };
+    }
+
     public function getFavoriteBackgroundImage(): string
     {
         return $this->favorites['background_image'];

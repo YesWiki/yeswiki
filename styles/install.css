@@ -9,9 +9,9 @@ li {
   font-family: 'DejaVu Sans', Arial, Helvetica, sans-serif;
 }
 
-a:active,
-a:focus {
-  outline: none;
+a:focus-visible {
+  outline: 2px solid var(--yw-focus-ring);
+  outline-offset: 2px;
 }
 
 .ok {

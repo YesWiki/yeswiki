@@ -31,6 +31,11 @@
     )
   }
 
+  const collator = new Intl.Collator(
+    document.documentElement.lang || navigator.language,
+    { numeric: true, sensitivity: 'base' },
+  )
+
   function compareRows(a, b, colIndex, direction) {
     const av = cellText(a.cells[colIndex])
     const bv = cellText(b.cells[colIndex])
@@ -40,7 +45,7 @@
     const result =
       looksNumeric && !Number.isNaN(an) && !Number.isNaN(bn)
         ? an - bn
-        : av.localeCompare(bv, undefined, { sensitivity: 'base' })
+        : collator.compare(av, bv)
     return direction === 'desc' ? -result : result
   }
 
@@ -55,23 +60,29 @@
         ? ' yw-pagination__item--disabled'
         : ''
       li.className = `yw-pagination__item${activeClass}${disabledClass}`
-      const a = document.createElement('a')
-      a.className = 'yw-pagination__link'
-      a.href = '#'
-      a.textContent = label
-      if (opts.disabled || opts.active) {
-        a.setAttribute('tabindex', '-1')
+      const button = document.createElement('button')
+      button.type = 'button'
+      button.className = 'yw-pagination__link'
+      button.textContent = label
+      if (opts.label) button.setAttribute('aria-label', opts.label)
+      if (opts.active) {
+        button.setAttribute('aria-current', 'page')
+      } else if (opts.disabled) {
+        button.disabled = true
       } else {
-        a.addEventListener('click', (e) => {
-          e.preventDefault()
+        button.addEventListener('click', () => {
           onGoTo(targetPage)
+          container.querySelector('[aria-current="page"]')?.focus()
         })
       }
-      li.appendChild(a)
+      li.appendChild(button)
       container.appendChild(li)
     }
 
-    addItem('«', page - 1, { disabled: page <= 1 })
+    addItem('«', page - 1, {
+      disabled: page <= 1,
+      label: translate('DATATABLE_PREVIOUS_PAGE', 'Previous page'),
+    })
 
     const windowSize = 2
     const start = Math.max(1, page - windowSize)
@@ -89,7 +100,10 @@
       addItem(String(totalPages), totalPages)
     }
 
-    addItem('»', page + 1, { disabled: page >= totalPages })
+    addItem('»', page + 1, {
+      disabled: page >= totalPages,
+      label: translate('DATATABLE_NEXT_PAGE', 'Next page'),
+    })
   }
 
   function initDataTable(table) {
@@ -184,9 +198,15 @@
 
     let paginationEl = null
     if (!noPaginate) {
+      const nav = document.createElement('nav')
+      nav.setAttribute(
+        'aria-label',
+        translate('DATATABLE_PAGINATION', 'Pages of the table'),
+      )
       paginationEl = document.createElement('ul')
       paginationEl.className = 'yw-pagination yw-datatable__pagination'
-      scroller.after(paginationEl)
+      nav.appendChild(paginationEl)
+      scroller.after(nav)
     }
 
     const emptyRow = document.createElement('tr')
@@ -202,10 +222,20 @@
     )
     emptyRow.appendChild(emptyCell)
 
+    const ariaSort = { asc: 'ascending', desc: 'descending' }
     headerCells.forEach((th, index) => {
       if (th.hasAttribute('data-yw-no-sort')) return
       th.setAttribute('data-yw-sort', index === sortCol ? sortDir : '')
-      th.addEventListener('click', () => {
+      th.setAttribute(
+        'aria-sort',
+        index === sortCol ? ariaSort[sortDir] || 'none' : 'none',
+      )
+      const button = document.createElement('button')
+      button.type = 'button'
+      button.className = 'yw-datatable__sort'
+      button.append(...th.childNodes)
+      th.appendChild(button)
+      button.addEventListener('click', () => {
         if (sortCol === index) {
           sortDir = sortDir === 'asc' ? 'desc' : 'asc'
         } else {
@@ -217,6 +247,10 @@
             otherTh.setAttribute(
               'data-yw-sort',
               otherIndex === sortCol ? sortDir : '',
+            )
+            otherTh.setAttribute(
+              'aria-sort',
+              otherIndex === sortCol ? ariaSort[sortDir] : 'none',
             )
           }
         })

@@ -47,6 +47,18 @@ class CSVImportOptionsTest extends YesWikiTestCase
         $this->formManager->delete(self::FORM_ID);
     }
 
+    /** An export starts with the byte order mark Excel needs, and reads back with every column found (end-users 02). */
+    public function testAFileStartingWithAByteOrderMarkImportsItsFirstColumn(): void
+    {
+        $extracted = $this->importRow(['Titre' => 'Été à Lyon'], false, CSVManager::UTF8_BOM);
+
+        $this->assertSame('Été à Lyon', $extracted['entry']['bf_titre'] ?? null, 'the first header is not taken for another one because of the mark before it');
+        $this->assertSame('', CSVManager::withoutBom(CSVManager::UTF8_BOM));
+        $this->assertSame('Thème', CSVManager::withoutBom(CSVManager::UTF8_BOM . 'Thème'));
+        $this->assertSame('Thème', CSVManager::withoutBom('Thème'));
+        $this->assertStringStartsNotWith(CSVManager::UTF8_BOM, $this->csvManager->arrayToCSV([['un', 'deux']]), 'a single cell or a preview never carries it');
+    }
+
     public function testRemoteFilesAreKeptAsUrlsWhenAsked(): void
     {
         $row = $this->importRow([
@@ -98,7 +110,7 @@ class CSVImportOptionsTest extends YesWikiTestCase
      *
      * @return array{entry: array<string, mixed>, errormsg: list<string>}
      */
-    private function importRow(array $cellsByHeader, bool $keepRemoteFilesAsUrl = false): array
+    private function importRow(array $cellsByHeader, bool $keepRemoteFilesAsUrl = false, string $prefix = ''): array
     {
         $csv = $this->csvManager->getCSVfromFormId(self::FORM_ID, [], ['fakeMode' => true]);
         if (!isset($csv[0])) {
@@ -115,7 +127,7 @@ class CSVImportOptionsTest extends YesWikiTestCase
             }
         }
         $path = tempnam(sys_get_temp_dir(), 'csvimportoptions') . '.csv';
-        file_put_contents($path, $this->csvManager->arrayToCSV([$headers, $row]));
+        file_put_contents($path, $prefix . $this->csvManager->arrayToCSV([$headers, $row]));
 
         try {
             $extracted = $this->csvManager->extractCSVfromCSVFile(

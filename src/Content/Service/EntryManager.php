@@ -133,12 +133,12 @@ class EntryManager
     /**
      * Get one specified fiche.
      *
-     * @param string      $tag
-     * @param bool        $semantic
-     * @param string      $time                   pour consulter une fiche dans l'historique
-     * @param bool        $cache                  if false, don't use the page cache
-     * @param bool        $bypassAcls             if true, all fields are loaded regardless of acls
-     * @param string|null $userNameForCheckingACL userName used to get entry, if empty uses the connected user
+     * @param string          $tag
+     * @param bool            $semantic
+     * @param string|int|null $time                   a revision, by its id or (deprecated, ticket 67) its time
+     * @param bool            $cache                  if false, don't use the page cache
+     * @param bool            $bypassAcls             if true, all fields are loaded regardless of acls
+     * @param string|null     $userNameForCheckingACL userName used to get entry, if empty uses the connected user
      *
      * @return array<string, mixed>|null the entry, or null when $tag names no entry
      *

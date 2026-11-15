@@ -10,6 +10,7 @@ import { recursivelyCalculateRelations, deepGet } from './utils.js'
 import { updateHash, parseSearchParams, serializeSearchParams } from './url.js'
 import { parseCondition } from './search.js'
 import ImageMixin from './entries-index-dynamic/image-mixin.js'
+import { inkOn } from './colour-contrast.js'
 import BazarSearch from './entries-index-dynamic/search-mixin.js'
 
 const { createApp } = Vue
@@ -248,6 +249,7 @@ const load = (domElement) => {
             this.params.colorfield,
             this.params.color,
           )
+          entry.ink = inkOn(entry.color)
           entry.icon = this.colorIconValueFor(
             entry,
             this.params.iconfield,

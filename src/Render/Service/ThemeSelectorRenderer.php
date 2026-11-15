@@ -144,7 +144,7 @@ class ThemeSelectorRenderer extends YesWikiController
         ];
     }
 
-    /** @return list<string> every background thumbnail on offer */
+    /** @return list<array{file: string, path: string, kind: string}> every background on offer, its file name, the image shown in the selector (a thumbnail for a photo) and how it is laid out */
     protected function prepareBackgrounds(): array
     {
         $backgrounds = [];
@@ -152,21 +152,17 @@ class ThemeSelectorRenderer extends YesWikiController
         $storage = $this->getService(Storage::class);
         foreach ($storage->files($backgroundsdir) as $path) {
             $file = basename($path);
-            $imgextension = strtolower(substr($file, -4, 4));
-
-            if ($imgextension == '.jpg') {
+            $kind = ThemeManager::backgroundKind($file);
+            if ($kind === 'tile') {
+                $backgrounds[] = ['file' => $file, 'path' => $backgroundsdir . '/' . $file, 'kind' => $kind];
+            } elseif ($kind === 'cover') {
                 $thumbnail = $backgroundsdir . '/thumbs/' . $file;
-                if (!$storage->fileExists($thumbnail)) {
-                    if ($this->getService(ImageResizer::class)->resize($backgroundsdir . '/' . $file, $thumbnail, 100, 75)) {
-                        $backgrounds[] = $thumbnail;
-                    }
-                } else {
-                    $backgrounds[] = $thumbnail;
+                if ($storage->fileExists($thumbnail) || $this->getService(ImageResizer::class)->resize($backgroundsdir . '/' . $file, $thumbnail, 100, 75)) {
+                    $backgrounds[] = ['file' => $file, 'path' => $thumbnail, 'kind' => $kind];
                 }
-            } elseif ($imgextension == '.png') {
-                $backgrounds[] = $backgroundsdir . '/' . $file;
             }
         }
+        usort($backgrounds, static fn (array $a, array $b): int => strcmp($a['file'], $b['file']));
 
         return $backgrounds;
     }

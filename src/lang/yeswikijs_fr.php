@@ -147,6 +147,9 @@ return [
 
     'DATATABLE_SEARCH_PLACEHOLDER' => 'Rechercher...',
     'DATATABLE_NO_RESULTS' => 'Aucun résultat',
+    'DATATABLE_PAGINATION' => 'Pages du tableau',
+    'DATATABLE_PREVIOUS_PAGE' => 'Page précédente',
+    'DATATABLE_NEXT_PAGE' => 'Page suivante',
     'DATATABLE_PAGE_SIZE_LABEL' => 'Afficher',
 
     'EDIT_LEAVE_WITHOUT_SAVING' => 'Vous avez des modifications non enregistrées. Quitter cette page ?',

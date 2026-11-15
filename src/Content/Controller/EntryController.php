@@ -110,7 +110,7 @@ class EntryController extends YesWikiController
      *                                                          already has it. Declared `string` until
      *                                                          ticket 40, which made the array branch below
      *                                                          unreachable as far as the analyser could see
-     * @param string|null                 $time                 choose only the entry's revision corresponding to time, null = latest revision
+     * @param string|int|null             $time                 a revision, by its id or (deprecated, ticket 67) its time; empty = latest revision
      * @param bool                        $showFooter
      * @param string|null                 $userNameForRendering userName used to render the entry, if empty uses the connected user
      * @param array<string, mixed>|null   $pLocalForm           the entry's own form, when the caller already has it
@@ -129,7 +129,7 @@ class EntryController extends YesWikiController
         } elseif ($entryId) {
             $entry = $this->entryManager->getOne($entryId, false, $time, empty($userNameForRendering), false, $userNameForRendering)
 
-                ?? $this->builtInContentAsEntry((string)$entryId, $time === '' ? null : $time, $userNameForRendering);
+                ?? $this->builtInContentAsEntry((string)$entryId, $time === '' || $time === null ? null : $time, $userNameForRendering);
             if (!$entry) {
                 return '<div class="alert alert-danger">' . _t('BAZ_PAS_DE_FICHE_AVEC_CET_ID') . ' : ' . $entryId . '</div>';
             }
@@ -521,7 +521,7 @@ class EntryController extends YesWikiController
      *
      * @return array<string, mixed>|null null for a row no form describes -- a form, a list
      */
-    private function builtInContentAsEntry(string $tag, ?string $time, ?string $userNameForRendering): ?array
+    private function builtInContentAsEntry(string $tag, string|int|null $time, ?string $userNameForRendering): ?array
     {
         $page = $this->pageManager->getOne($tag, $time ?: null, true, false, $userNameForRendering);
         if (empty($page)) {

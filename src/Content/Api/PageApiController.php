@@ -66,7 +66,7 @@ class PageApiController extends YesWikiController
         $diffService = $this->getService(DiffService::class);
         $entryManager = $this->getService(EntryManager::class);
         $entryController = $this->getService(EntryController::class);
-        $page = $pageManager->getOne($tag, CurrentRequest::input($request, 'time'));
+        $page = $pageManager->getOne($tag, PageManager::revisionAsked(CurrentRequest::input($request, 'revision'), CurrentRequest::input($request, 'time')));
         if (!$page) {
             return new ApiResponse(null, Response::HTTP_NOT_FOUND);
         }
@@ -75,7 +75,7 @@ class PageApiController extends YesWikiController
             $page['code'] = DiffService::templateCode($page);
             $page['html'] = '<pre>' . $page['code'] . '</pre>';
         } elseif ($entryManager->isEntry($page['tag'])) {
-            $page['html'] = $entryController->view($page['tag'], $page['time'], false);
+            $page['html'] = $entryController->view($page['tag'], ($page['latest'] ?? 'Y') === 'Y' ? '' : (int)$page['id'], false);
             $page['code'] = $diffService->formatJsonCodeIntoHtmlTable($page);
         } else {
             $page['code'] = PageBody::content($page['body']);

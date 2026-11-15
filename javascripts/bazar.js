@@ -691,7 +691,7 @@ ywInitEach('body', () => {
 })
 
 export function downloadCSV(csv, filename) {
-  const csvFile = new Blob([csv], { type: 'text/csv' })
+  const csvFile = new Blob(['\uFEFF', csv], { type: 'text/csv;charset=utf-8' })
   const downloadLink = document.createElement('a')
   downloadLink.download = filename
   downloadLink.href = window.URL.createObjectURL(csvFile)

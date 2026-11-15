@@ -189,7 +189,7 @@ const BazarMapComponent = {
               html:
                 `
 		          <div class="entry-name">
-		            <span style="background-color: ${entry.color}">
+		            <span style="background-color: ${entry.color}${entry.ink ? `; color: ${entry.ink}` : ''}">
 		              ${entry.markerhover || entry.title || entry.bf_titre || ''}
 		            </span>
 		          </div>

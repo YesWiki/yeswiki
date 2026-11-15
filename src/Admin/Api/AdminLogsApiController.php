@@ -85,8 +85,12 @@ class AdminLogsApiController extends YesWikiController
             }
         }
 
-        // A date range, not a timestamp one: the filter above the table is two date pickers, and
-        // "to" means the whole of that day.
+        $incident = strtolower(trim((string)$request->query->get('incident', '')));
+        if (preg_match('/^[0-9a-f]{8}$/', $incident) === 1) {
+            $clauses[] = $db->jsonAsText('context') . ' LIKE ?';
+            $params[] = '%"incident":"' . $incident . '"%';
+        }
+
         $from = $this->dateOrNull((string)$request->query->get('from', ''));
         if ($from !== null) {
             $clauses[] = $db->quoteIdentifier('at') . ' >= ?';
@@ -138,6 +142,7 @@ class AdminLogsApiController extends YesWikiController
             'target' => (string)($row['target'] ?? ''),
             'message' => (string)($context['message'] ?? ''),
             'frames' => array_map('strval', is_array($context['frames'] ?? null) ? $context['frames'] : []),
+            'incident' => is_string($context['incident'] ?? null) ? $context['incident'] : '',
         ];
     }
 

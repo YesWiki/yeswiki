@@ -53,6 +53,7 @@ use YesWiki\Kernel\Service\ExtensionRegistry;
 use YesWiki\Kernel\Service\Flash;
 use YesWiki\Kernel\Service\FlashMessages;
 use YesWiki\Kernel\Service\HttpCacheHeaders;
+use YesWiki\Kernel\Service\IncidentExplanation;
 use YesWiki\Kernel\Service\Journal;
 use YesWiki\Kernel\Service\LanguageService;
 use YesWiki\Kernel\Service\PageContext;
@@ -178,12 +179,12 @@ class YesWikiRuntime
         return $page;
     }
 
-    /** @return void */
-    public function report(\Throwable $throwable)
+    /** @param array<string, mixed> $context what the Journal and stderr carry beside the exception, an incident id among it */
+    public function report(\Throwable $throwable, array $context = []): void
     {
         if ($this->containerIsBuilt()) {
             try {
-                $this->service(Journal::class)->error($throwable->getMessage(), ['exception' => $throwable]);
+                $this->service(Journal::class)->error($throwable->getMessage(), ['exception' => $throwable] + $context);
 
                 return;
             } catch (\Throwable $noJournal) {
@@ -197,7 +198,7 @@ class YesWikiRuntime
             'message' => $throwable->getMessage(),
             'file' => $throwable->getFile(),
             'line' => $throwable->getLine(),
-        ]);
+        ] + $context);
     }
 
     public function getEnvironment(): string
@@ -574,9 +575,25 @@ class YesWikiRuntime
             }
             $event->setResponse(new Response($th->getMessage(), $th->getStatusCode(), $th->getHeaders()));
         } else {
-            $this->report($th);
-            $event->setResponse(new ApiResponse(['exceptionMessage' => $th->__toString()], Response::HTTP_INTERNAL_SERVER_ERROR));
+            $event->setResponse(new ApiResponse($this->incident($th), Response::HTTP_INTERNAL_SERVER_ERROR));
         }
+    }
+
+    /**
+     * Reports an exception a controller let through under an incident id, and says what the visitor may see of it: the id and a sentence, the trace only in debug, server paths hidden (end-users 01).
+     *
+     * @return array<string, string>
+     */
+    public function incident(\Throwable $th): array
+    {
+        $incident = bin2hex(random_bytes(4));
+        $this->report($th, ['incident' => $incident]);
+        $answer = ['error' => IncidentExplanation::of($th) . ' ' . _t('ERROR_INCIDENT', ['id' => $incident]), 'incident' => $incident];
+        if (!empty($this->config['debug'])) {
+            $answer['exceptionMessage'] = (new ThrowableFormatter())->dump($th);
+        }
+
+        return $answer;
     }
 
     /** Whether boot() has got as far as assigning the container this all hangs off. */

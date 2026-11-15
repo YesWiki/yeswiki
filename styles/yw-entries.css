@@ -2725,9 +2725,13 @@ label input.filter-checkbox:focus ~ span {
   transform: rotateX(90deg) translate(-50px, -50%);
 }
 
-.pbgallery a:active,
-.pbgallery a:focus {
+.pbgallery a:focus:not(:focus-visible) {
   outline: none;
+}
+
+.pbgallery a:focus-visible {
+  outline: 2px solid var(--yw-focus-ring);
+  outline-offset: 2px;
 }
 
 .pbgallery a img {
@@ -2886,7 +2890,7 @@ label input.filter-checkbox:focus ~ span {
 
 .bazar-map-container .bazar-marker .entry-name span {
   background-color: var(--yw-primary);
-  color: var(--yw-text-muted);
+  color: var(--yw-on-primary);
   padding: var(--yw-space-sm-y) var(--yw-space-md-x);
   border-radius: var(--yw-radius-sm);
   font-size: 0.95em;

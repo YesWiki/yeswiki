@@ -115,7 +115,7 @@ class DespamAction extends YesWikiAction implements RegisteredAction, ProvidesCo
                 $page['tag'] . ' ' .
                 '(' . $page['time'] . ') ' .
                 ' par ' . $page['user'] . ' ' .
-                '<a href="' . $this->getService(UrlFormatter::class)->href('iframe', $page['tag'], ['time' => urlencode($page['time'])]) . '" ' .
+                '<a href="' . $this->getService(UrlFormatter::class)->href('iframe', $page['tag'], isset($page['id']) ? ['revision' => (int)$page['id']] : ['time' => urlencode($page['time'])]) . '" ' .
                 "title=\"Voir la fiche {$page['tag']} ({$page['time']})\" " .
                 'class="btn btn-xs btn-default modalbox" ' .
                 'data-size="modal-lg" ' .
@@ -136,7 +136,7 @@ class DespamAction extends YesWikiAction implements RegisteredAction, ProvidesCo
                         }
                         echo '<tr><td><input name=  "rev[]" value="' . $revision['id'] . '" type="checkbox" /></td><td>';
                         echo str_replace(['{time}', '{user}'], [$revision['time'], $revision['user']], _t('DESPAM_RESTORE_FROM')) . ' ' .
-                  '<a href="' . $this->getService(UrlFormatter::class)->href('iframe', $page['tag'], ['time' => urlencode($revision['time'])]) . '" ' .
+                  '<a href="' . $this->getService(UrlFormatter::class)->href('iframe', $page['tag'], ['revision' => (int)$revision['id']]) . '" ' .
                   'title="' . _t('BAZ_SEE_ENTRY') . " {$page['tag']} ({$revision['time']})\" " .
                   'class="btn btn-xs btn-default modalbox" ' .
                   'data-size="modal-lg" ' .
