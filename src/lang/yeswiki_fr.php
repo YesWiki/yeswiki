@@ -1109,6 +1109,7 @@ return [
 
     'LOGIN_SIGNUP' => 'S\'inscrire',
     'LOGIN_LOGIN' => 'Se connecter',
+    'LOGIN_LOGIN_TO' => 'Se connecter à %{wiki}',
     'LOGIN_WIKINAME' => 'Email ou nom d\'utilisateur.ice',
     'LOGIN_EMAIL' => 'Email',
     'LOGIN_PASSWORD' => 'Mot de passe',
@@ -1232,6 +1233,7 @@ return [
     'ACEDITOR_LIST' => 'Liste à puce',
     'ACEDITOR_NEWPAGE' => 'Créer une page',
     'ACEDITOR_LINK' => 'Ajouter un lien au texte selectionné ou créer une page',
+    'EDITOR_EMOJI' => 'Émoji',
     'ACEDITOR_LINK_EDIT' => 'Modifier le lien',
     'ACEDITOR_LINK_ERROR' => 'Le nom de la page ne doit pas contenir de caractères spéciaux autre que - ou _ . Les URL doivent commencer par https://',
     'ACEDITOR_LINK_NEW_PAGE_NAME' => 'Nom de la page à créer',

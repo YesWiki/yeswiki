@@ -15,6 +15,7 @@ import {
   wysiwygMarkupItems,
 } from './editor-markup-syntax.js'
 import LinkPanel from './link-panel.js'
+import { emojiMenuItem } from './emoji-popover.js'
 import {
   FENCE_LANGUAGES,
   fenceComponents,
@@ -265,6 +266,7 @@ function initVditorWiki(textareaParam) {
             }),
           ]
         : []),
+      emojiMenuItem((emoji) => editor.insertValue(emoji)),
       {
         name: 'yw-component',
         tip: _t('ADD_COMPONENT'),

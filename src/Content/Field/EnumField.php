@@ -4,6 +4,7 @@ namespace YesWiki\Content\Field;
 
 use Psr\Container\ContainerInterface;
 use YesWiki\Content\Service\ListManager;
+use YesWiki\Kernel\Service\StringUtilService;
 use YesWiki\Search\Service\SearchManager;
 
 abstract class EnumField extends BazarField
@@ -107,7 +108,20 @@ abstract class EnumField extends BazarField
             $this->options[$linkedEntry['tag']] = $linkedEntry['title'] ?? $linkedEntry['bf_titre'] ?? $linkedEntry['tag'];
             $this->optionsEntries[$linkedEntry['tag']] = $linkedEntry;
         }
-        asort($this->options);
+        uasort($this->options, [self::class, 'naturalCompare']);
+    }
+
+    /** Natural comparison of two values, blind to case and accents. */
+    public static function naturalCompare(mixed $first, mixed $second): int
+    {
+        return strnatcasecmp(self::sortableText($first), self::sortableText($second));
+    }
+
+    private static function sortableText(mixed $value): string
+    {
+        $text = is_scalar($value) || $value === null ? (string)$value : (string)json_encode($value);
+
+        return StringUtilService::withoutDiacritics($text);
     }
 
     /** A linked form named by a URL is no longer resolvable (ticket 34). */

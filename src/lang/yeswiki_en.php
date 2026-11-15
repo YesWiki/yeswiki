@@ -1241,6 +1241,7 @@ You are on %{CURRENTPHPVERSION}.
 
     'LOGIN_SIGNUP' => 'Signup',
     'LOGIN_LOGIN' => 'Login',
+    'LOGIN_LOGIN_TO' => 'Log in to %{wiki}',
     'LOGIN_WIKINAME' => 'Email or username',
     'LOGIN_EMAIL' => 'Email',
     'LOGIN_PASSWORD' => 'Password',
@@ -1361,6 +1362,7 @@ You are on %{CURRENTPHPVERSION}.
     'ACEDITOR_LIST' => 'Bulleted list',
     'ACEDITOR_NEWPAGE' => 'Create a page',
     'ACEDITOR_LINK' => 'Add a link to the selected text or create a page',
+    'EDITOR_EMOJI' => 'Emoji',
     'ACEDITOR_LINK_EDIT' => 'Edit the link',
     'ACEDITOR_LINK_ERROR' => 'Page name should not contain any special characters other than - or _. URL must start with https://',
     'ACEDITOR_LINK_NEW_PAGE_NAME' => 'Page name to create',

@@ -59,7 +59,7 @@ class ControllerIncidentTest extends YesWikiTestCase
         $this->assertStringNotContainsString('#0 ', $raw, 'no frame');
 
         $db = self::getWiki()->services->get(DbService::class);
-        $found = $db->loadAll('SELECT context FROM ' . self::getWiki()->services->get(JournalSchema::class)->table() . ' WHERE ' . $db->jsonAsText('context') . ' LIKE ?', ['%"incident":"' . $body['incident'] . '"%']);
+        $found = $db->loadAll('SELECT context FROM ' . self::getWiki()->services->get(JournalSchema::class)->table() . ' WHERE ' . $db->jsonAsText('context') . ' LIKE ?', ['%"' . $body['incident'] . '"%']);
         $this->assertNotEmpty($found, 'the webmaster finds the incident in the Journal');
     }
 

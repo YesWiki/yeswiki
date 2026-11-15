@@ -1,7 +1,7 @@
 {% extends "@core/account/guest-layout.twig" %}
 
 {% block dashboard_content %}
-  <h1>{{ _t('LOGIN_LOGIN') }}</h1>
+  <h1>{{ _t('LOGIN_LOGIN_TO', {wiki: brand_title()}) }}</h1>
   {{login
     template="account-login-form.twig"
     signupurl="user/signup"

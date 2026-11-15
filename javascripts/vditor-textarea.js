@@ -1,5 +1,6 @@
 import { filePickerMenuItem, hasFilePicker } from './vditor-toolbar-file.js'
 import { followScheme, vditorThemeOptions } from './editor-scheme.js'
+import { emojiMenuItem } from './emoji-popover.js'
 
 const VDITOR_CDN = 'javascripts/vendor/vditor'
 
@@ -46,7 +47,7 @@ function initVditor(textareaParam) {
             '|',
           ]
         : []),
-      'emoji',
+      emojiMenuItem((emoji) => editor.insertValue(emoji)),
       '|',
       'undo',
       'redo',

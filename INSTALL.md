@@ -4,11 +4,30 @@ Not much to it (as long as it works, ahem). Unpack/upload the distribution files
 into a directory that can be accessed via the web. Then go to the corresponding URL.
 A web-based installer will walk you through the rest.
 
-**Requirements**: PHP >= 8.3, and a MySQL/MariaDB, PostgreSQL or SQLite database.
+**Requirements**: PHP 8.3 or newer, one of the databases below, and a browser from 2023 or later.
 
-PostgreSQL must be **12 or newer**: the search index is a generated column
-(`GENERATED ALWAYS AS (...) STORED`), which PostgreSQL 11 and older reject at install. CI tests
-PostgreSQL 16.
+### Minimum versions
+
+| | Minimum | Set by | Tested in CI |
+|---|---|---|---|
+| PHP | 8.3 | `composer.json` | 8.3 |
+| MySQL | 8.0 | `WITH RECURSIVE` in the search; 5.7 has no recursive queries | 8.4 |
+| MariaDB | 10.2.7 | recursive queries (10.2.2), the `JSON` column type and functions (10.2.7) | no |
+| PostgreSQL | 12 | the search index is a generated column (`GENERATED ALWAYS AS (...) STORED`) | 16 |
+| SQLite | 3.27, with FTS5 and JSON1 | `remove_diacritics 2` in the full-text index (3.27), `ON CONFLICT ... DO` (3.24), `json_extract` (JSON1) | the runner's |
+| Browsers, to run | Chrome/Edge 97, Firefox 104, Safari 15.4 | ES2022 loaded as native modules, `Array.prototype.findLastIndex()` and `.at()` | current Chromium, Firefox, WebKit |
+| Browsers, to look right | Chrome/Edge 111, Firefox 121, Safari 16.2 | `color-mix()` in the core colours, `:has()` in the stylesheets | same |
+
+What breaks below each one:
+
+- **MySQL 5.7**: the install runs, then the first search fails on the recursive query.
+- **MariaDB before 10.2.7**: the install fails at the migration that makes columns `JSON`.
+- **PostgreSQL 11 and older**: the install fails creating the search index.
+- **SQLite before 3.27, or without FTS5**: the install fails creating the full-text index. Without JSON1, every query on entry fields fails. JSON1 is built in since 3.38 and a compile option before it. Check your version with `php -r 'echo (new PDO("sqlite::memory:"))->query("select sqlite_version()")->fetchColumn();'`.
+- **Browsers before the "to run" line**: the scripts do not load, so editing, forms and the admin do not work.
+- **Browsers between the two lines**, Firefox ESR 115 among them: pages work but some rules are dropped. The facet menus, for one, open neither on hover nor on focus.
+
+The floors are what the SQL needs. Use a release its upstream still supports: MySQL 8.4, MariaDB 10.11 or later. MariaDB has no CI leg; it is covered by the MySQL leg and by `MySqlDialect` avoiding MySQL-only syntax, such as the 8.0.20 row alias in upserts.
 
 ### PHP extensions
 

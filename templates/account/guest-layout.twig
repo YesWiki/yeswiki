@@ -1,6 +1,6 @@
-
 <div class="yw-account-guest">
   <div class="yw-account-guest__card">
+    {% if brand_logo() %}<img class="yw-account-guest__logo" src="{{ brand_logo() }}" alt="">{% endif %}
     {% block dashboard_content %}{% endblock %}
   </div>
 </div>

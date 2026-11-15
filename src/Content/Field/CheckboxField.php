@@ -3,7 +3,6 @@
 namespace YesWiki\Content\Field;
 
 use Psr\Container\ContainerInterface;
-use YesWiki\Kernel\Service\StringUtilService;
 
 abstract class CheckboxField extends EnumField
 {
@@ -206,16 +205,9 @@ abstract class CheckboxField extends EnumField
     /** Natural, accent-blind comparison of two sort criteria, in the configured direction. */
     protected function compareForOrder(mixed $first, mixed $second): int
     {
-        $comparison = strnatcasecmp($this->sortableValue($first), $this->sortableValue($second));
+        $comparison = self::naturalCompare($first, $second);
 
         return $this->orderDirection === self::ORDER_DIRECTION_DESC ? -$comparison : $comparison;
-    }
-
-    protected function sortableValue(mixed $value): string
-    {
-        $text = is_scalar($value) || $value === null ? (string)$value : (string)json_encode($value);
-
-        return StringUtilService::withoutDiacritics($text);
     }
 
     /**

@@ -9,6 +9,7 @@ import { restoreStashedValue, switchEditorTo } from './editor-switch.js'
 import AceWrapper from './ace-wrapper.js'
 import ActionsBuilder from './actions-builder.js'
 import { fillSourceEditorToolbar } from './editor-markup-syntax.js'
+import { openEmojiPicker } from './emoji-popover.js'
 
 const PLAIN_TEXT_STORAGE_KEY = 'yeswiki-aceditor-plain-text'
 
@@ -183,6 +184,11 @@ class Aceditor {
           this.openLinkPanel({
             action: 'newpage',
             range: this.editor.selectionRange(),
+          })
+        } else if (btn.classList.contains('aceditor-btn-emoji')) {
+          openEmojiPicker(btn, (emoji) => {
+            this.editor.replaceSelectionBy(emoji, false)
+            this.editor.ace.focus()
           })
         } else if (btn.classList.contains('aceditor-btn-file')) {
           this.filePicker.open({

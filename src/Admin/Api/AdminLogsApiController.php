@@ -87,8 +87,9 @@ class AdminLogsApiController extends YesWikiController
 
         $incident = strtolower(trim((string)$request->query->get('incident', '')));
         if (preg_match('/^[0-9a-f]{8}$/', $incident) === 1) {
-            $clauses[] = $db->jsonAsText('context') . ' LIKE ?';
-            $params[] = '%"incident":"' . $incident . '"%';
+            $clauses[] = $db->jsonAsText('context') . ' LIKE ? AND ' . $db->jsonAsText('context') . ' LIKE ?';
+            $params[] = '%"incident"%';
+            $params[] = '%"' . $incident . '"%';
         }
 
         $from = $this->dateOrNull((string)$request->query->get('from', ''));

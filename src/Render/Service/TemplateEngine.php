@@ -301,6 +301,9 @@ class TemplateEngine
             return $this->container->get(ActionRunner::class)->action($actionString);
         });
 
+        $this->addTwigHelper('brand_logo', fn (): string => $this->brandLogoUrl());
+        $this->addTwigHelper('brand_title', fn (): string => $this->container->get(LayoutService::class)->current()->title);
+
         $this->twig->addFunction(new \Twig\TwigFunction('iconFromLegacy', function ($classString, $extraClass = '') {
             return $this->legacyIconToSprite(is_string($classString) ? $classString : null, $extraClass);
         }, ['is_safe' => ['html']]));
@@ -454,21 +457,26 @@ class TemplateEngine
         return '--yw-navbar-height: ' . $chrome->navbarHeight . 'px';
     }
 
+    /** The layout's logo as a URL, '' when it has none. */
+    public function brandLogoUrl(?LayoutChrome $chrome = null): string
+    {
+        $logo = ($chrome ?? $this->container->get(LayoutService::class)->current())->logo;
+
+        return ($logo === '' || preg_match('~^([a-z][a-z0-9+.-]*:|//|/)~i', $logo) === 1)
+            ? $logo
+            : $this->container->get(Storage::class)->url($logo);
+    }
+
     /** One of the three chrome parts, rendered from a LayoutChrome. */
     private function renderLayout(string $part, LayoutChrome $chrome): string
     {
         $current = $this->container->get(\YesWiki\Kernel\Service\PageContext::class)->getTag();
 
         if ($part === 'brand') {
-            $logo = $chrome->logo;
-
             return $this->render('@core/layout/brand.twig', [
                 'mode' => $chrome->brandMode,
                 'title' => $chrome->title,
-
-                'logo' => ($logo === '' || preg_match('~^([a-z][a-z0-9+.-]*:|//|/)~i', $logo) === 1)
-                    ? $logo
-                    : $this->container->get(Storage::class)->url($logo),
+                'logo' => $this->brandLogoUrl($chrome),
 
                 'home' => $this->urlFormatter->href('', (string)$this->container->get(RuntimeConfig::class)['root_page'], null, false),
             ]);
