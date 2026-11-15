@@ -126,6 +126,7 @@ class ArchiveService
      * @param array<array-key, mixed>      $foldersToExclude
      * @param array<string, mixed>|null    $hideConfigValuesParams the config keys to anonymize, null for the configured ones
      * @param array<array-key, mixed>|null $onlyFolders            the only folders the zip holds, instead of FOLDERS_TO_INCLUDE widened by $foldersToInclude
+     * @param bool                         $scheduled              whether the schedule takes it, which names it apart for the rotation
      *
      * @return string the path of the archive, or '' when the run stopped before writing one
      *
@@ -139,7 +140,8 @@ class ArchiveService
         array $foldersToExclude = [],
         ?array $hideConfigValuesParams = null,
         string $uid = '',
-        ?array $onlyFolders = null
+        ?array $onlyFolders = null,
+        bool $scheduled = false
     ): string {
         $vStatus = $this->getArchivingStatus();
 
@@ -202,7 +204,7 @@ class ArchiveService
             $type = 'full';
         }
 
-        $archiveFileName = ArchiveFilename::forNow($type, $this->configString('base_url'));
+        $archiveFileName = ArchiveFilename::forNow($type, $this->configString('base_url'), $scheduled);
         $location = $privatePath . '/' . $archiveFileName;
         if ($this->storage->fileExists($location)) {
             throw new \Exception('Zip file already existing !');
@@ -505,6 +507,7 @@ class ArchiveService
                     'minutes' => $minutes,
                     'seconds' => $seconds,
                     'type' => $parts['type'],
+                    'scheduled' => $parts['scheduled'],
                     'source' => $parts['source'],
                     'size' => $this->storage->fileSize("$privatePath/$filename"),
                     'link' => $this->urlFormatter->href('', "api/archives/$filename"),
@@ -1811,16 +1814,33 @@ class ArchiveService
 
     /**
      * The archives the rotation removes: only this wiki's own, since one fetched from another wiki was asked for by hand.
+     * Scheduled ones count apart, the newest `archive[scheduled_keep]` kept, so the nights never push out a manual or pre-update backup.
      *
      * @return list<string> $files the filenames to delete
      */
     public function archivesToDelete(bool $beforeArchive = false): array
     {
         $ownSource = ArchiveFilename::slug($this->configString('base_url'));
-        $archives = array_values(array_filter(
+        $own = array_values(array_filter(
             $this->getArchives(),
             static fn (array $archive): bool => empty($archive['source']) || $archive['source'] === $ownSource
         ));
+        $scheduled = array_values(array_filter($own, static fn (array $archive): bool => !empty($archive['scheduled'])));
+        $others = array_values(array_filter($own, static fn (array $archive): bool => empty($archive['scheduled'])));
+
+        return [
+            ...array_column(array_slice($scheduled, (new ArchiveSchedule($this->params))->keep()), 'filename'),
+            ...$this->othersToDelete($others, $beforeArchive),
+        ];
+    }
+
+    /**
+     * @param list<array<string, mixed>> $archives the manual and pre-update archives, newest first
+     *
+     * @return list<string>
+     */
+    private function othersToDelete(array $archives, bool $beforeArchive): array
+    {
         $maxNBFiles = $this->getMaxNbFiles();
         $nbFilesToRemove = count($archives) - $maxNBFiles + ($beforeArchive ? 1 : 0);
         if ($nbFilesToRemove > 0) {

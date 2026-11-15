@@ -225,6 +225,9 @@ class YesWikiInit
                 'authorize_bypass_preupdate_backup' => false,
                 'preupdate_backup_activated' => true,
                 'max_nb_files' => 10,
+                'schedule' => \YesWiki\Admin\Service\ArchiveSchedule::DEFAULT_CRON,
+                'schedule_type' => \YesWiki\Admin\Service\ArchiveSchedule::DEFAULT_TYPE,
+                'scheduled_keep' => \YesWiki\Admin\Service\ArchiveSchedule::DEFAULT_KEEP,
             ],
 
             'qrcode_config' => [

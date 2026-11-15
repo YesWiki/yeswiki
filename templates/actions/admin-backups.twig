@@ -4,6 +4,16 @@
 
 <div class="admin-backups admin-backups-container no-dblclick" data-csrf-token="{{ csrfToken({id:'main',refresh:false})|e('html_attr') }}">
   <h1>{{ _t('ADMIN_BACKUPS_TITLE') }}</h1>
+  <div class="alert {{ schedule and schedule.failed ? 'alert-danger' : 'alert-info' }} admin-backups-schedule">
+    {% if schedule %}
+      {{ _t('ADMIN_BACKUPS_SCHEDULED_ON', {type: _t(schedule.type == 'full' ? 'ADMIN_BACKUPS_ARCHIVE_TYPE_FULL' : 'ADMIN_BACKUPS_ARCHIVE_TYPE_ONLY_DATABASES'), keep: schedule.keep}) }}
+      {% if schedule.last %}{{ _t('ADMIN_BACKUPS_SCHEDULED_LAST', {when: schedule.last, status: schedule.status}) }}{% else %}{{ _t('ADMIN_BACKUPS_SCHEDULED_NEVER') }}{% endif %}
+      {% if schedule.failed and schedule.error %}<br><strong>{{ schedule.error }}</strong>{% endif %}
+      {% if schedule.next %}<br>{{ _t('ADMIN_BACKUPS_SCHEDULED_NEXT', {when: schedule.next}) }}{% endif %}
+    {% else %}
+      {{ _t('ADMIN_BACKUPS_SCHEDULED_OFF') }}
+    {% endif %}
+  </div>
   <div class="well">
     {% if not canArchive %}
     <div class="alert alert-warning">{{ cannotArchiveMessage|raw }}</div>
@@ -128,7 +138,7 @@
         </button>
       </div>
       <template v-for="archive in archives">
-        <div class="archive-item archive-filename" v-html="archive.filename"></div>
+        <div class="archive-item archive-filename"><span v-html="archive.filename"></span> <span v-if="archive.scheduled" class="admin-backups__scheduled">{{ _t('ADMIN_BACKUPS_SCHEDULED_BADGE') }}</span></div>
         <div class="archive-item" v-html="formatFileSize(archive.size)"></div>
         <div class="archive-item">
           <svg class="yw-icon" aria-hidden="true" v-if="archive.type == 'only_files' || archive.type == 'full'"   data-toggle="tooltip" title="{{ _t('ADMIN_BACKUPS_ARCHIVE_TYPE_ONLY_FILES') }}"><use href="src/assets/icons.svg#copy"/></svg>

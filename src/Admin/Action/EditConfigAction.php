@@ -42,7 +42,9 @@ class EditConfigAction extends YesWikiAction implements RegisteredAction, Provid
     private const SAVED_NAME = 'saved_config';
     private const CONFIG_POSTFIX = '_editable_config_params';
 
-    private const ARCHIVE_KEYS = ['max_nb_files', 'preupdate_backup_activated'];
+    private const ARCHIVE_KEYS = ['max_nb_files', 'preupdate_backup_activated', 'schedule', 'schedule_type', 'scheduled_keep'];
+
+    private const REFUSED_NAME = 'refused';
 
     private const META_KEYS = ['robots'];
 
@@ -126,6 +128,7 @@ class EditConfigAction extends YesWikiAction implements RegisteredAction, Provid
         return [
             'saving' => $this->formatBoolean($this->getRequest()->request->all(), false, self::SAVE_NAME),
             'saved' => $this->formatBoolean($this->getRequest()->query->all(), false, self::SAVED_NAME),
+            'refused' => (string)$this->getRequest()->query->get(self::REFUSED_NAME, ''),
             'post' => $this->getRequest()->request->all(),
         ];
     }
@@ -154,13 +157,20 @@ class EditConfigAction extends YesWikiAction implements RegisteredAction, Provid
 
         $output = '';
         if ($this->arguments['saving']) {
+            $refused = $this->refuseAnInvalidSchedule();
             $this->save();
-            $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href('', '', [self::SAVED_NAME => '1'], false));
+            $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href('', '', [self::SAVED_NAME => '1'] + ($refused === '' ? [] : [self::REFUSED_NAME => $refused]), false));
         } elseif ($this->arguments['saved']) {
             $output .= $this->render('@core/alert-message.twig', [
                 'type' => 'info',
                 'message' => _t('EDIT_CONFIG_SAVE'),
             ]);
+            if ($this->arguments['refused'] !== '') {
+                $output .= $this->render('@core/alert-message.twig', [
+                    'type' => 'warning',
+                    'message' => _t('EDIT_CONFIG_SCHEDULE_REFUSED', ['value' => htmlspecialchars($this->arguments['refused'])]),
+                ]);
+            }
         }
 
         $legacy = ConfigurationFileProvider::getConfigFileFromEnv();
@@ -372,6 +382,19 @@ class EditConfigAction extends YesWikiAction implements RegisteredAction, Provid
      *
      * @return bool true if successfull
      */
+    /** Puts the stored `archive[schedule]` back in the post when the posted one is no cron expression; answers the refused value. */
+    private function refuseAnInvalidSchedule(): string
+    {
+        $posted = $this->arguments['post']['archive']['schedule'] ?? null;
+        if (!is_string($posted) || \YesWiki\Admin\Service\ArchiveSchedule::acceptsCron($posted)) {
+            return '';
+        }
+        $archive = $this->params->has('archive') ? $this->params->get('archive') : [];
+        $this->arguments['post']['archive']['schedule'] = is_array($archive) && is_string($archive['schedule'] ?? null) ? $archive['schedule'] : '';
+
+        return $posted;
+    }
+
     private function save(): bool
     {
         $config = $this->configurationService->getConfiguration(ConfigurationFileProvider::getConfigFileFromEnv());

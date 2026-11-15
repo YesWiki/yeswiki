@@ -3016,3 +3016,13 @@ del img {
   flex-basis: 100%;
   margin: 0;
 }
+
+.admin-backups__scheduled {
+  display: inline-block;
+  padding: 0 0.4em;
+  font-size: 0.8em;
+  color: var(--yw-text);
+  background: var(--yw-surface-sunken);
+  border: var(--yw-border-width) solid var(--yw-border);
+  border-radius: var(--yw-radius-sm);
+}

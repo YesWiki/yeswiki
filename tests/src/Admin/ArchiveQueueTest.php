@@ -759,10 +759,10 @@ class QueueArchiveService extends ArchiveService
     /** Whether archive() is the real one, for a test of what it refuses. */
     public bool $real = false;
 
-    public function archive(&$output, bool $savefiles = true, bool $savedatabase = true, array $foldersToInclude = [], array $foldersToExclude = [], ?array $hideConfigValuesParams = null, string $uid = '', ?array $onlyFolders = null): string
+    public function archive(&$output, bool $savefiles = true, bool $savedatabase = true, array $foldersToInclude = [], array $foldersToExclude = [], ?array $hideConfigValuesParams = null, string $uid = '', ?array $onlyFolders = null, bool $scheduled = false): string
     {
         if ($this->real) {
-            return parent::archive($output, $savefiles, $savedatabase, $foldersToInclude, $foldersToExclude, $hideConfigValuesParams, $uid, $onlyFolders);
+            return parent::archive($output, $savefiles, $savedatabase, $foldersToInclude, $foldersToExclude, $hideConfigValuesParams, $uid, $onlyFolders, $scheduled);
         }
         $this->archived[] = compact('savefiles', 'savedatabase', 'foldersToInclude', 'foldersToExclude', 'uid', 'onlyFolders');
         if ($this->onArchive !== null) {

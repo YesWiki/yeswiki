@@ -2,14 +2,14 @@
 
 namespace YesWiki\Admin\Service;
 
-/** How a backup file is named: `2026-08-20T13-29-28_mydomain-ext-subfolder_archive.zip`, the source slug optional. */
+/** How a backup file is named: `2026-08-20T13-29-28_mydomain-ext-subfolder_archive.zip`, the source slug optional, `_scheduled` before `.zip` when the schedule took it. */
 class ArchiveFilename
 {
-    public const PATTERN = '/^(?P<date>\d{4}-\d{2}-\d{2})T(?P<time>\d{2}-\d{2}-\d{2})(?:_(?P<source>[a-z0-9-]+))?_archive(?:_(?P<type>only_files|only_db))?\.zip$/';
+    public const PATTERN = '/^(?P<date>\d{4}-\d{2}-\d{2})T(?P<time>\d{2}-\d{2}-\d{2})(?:_(?P<source>[a-z0-9-]+))?_archive(?:_(?P<type>only_files|only_db))?(?P<scheduled>_scheduled)?\.zip$/';
 
     public const MAX_SOURCE_LENGTH = 40;
 
-    /** @return array{date: string, time: string, source: string, type: string}|array{} empty when the name is not a backup's */
+    /** @return array{date: string, time: string, source: string, type: string, scheduled: bool}|array{} empty when the name is not a backup's */
     public static function parse(string $filename): array
     {
         if (!preg_match(self::PATTERN, $filename, $matches)) {
@@ -21,6 +21,7 @@ class ArchiveFilename
             'time' => $matches['time'],
             'source' => $matches['source'] ?? '',
             'type' => empty($matches['type']) ? 'full' : $matches['type'],
+            'scheduled' => !empty($matches['scheduled']),
         ];
     }
 
@@ -43,14 +44,15 @@ class ArchiveFilename
             return $filename;
         }
         $type = $parts['type'] === 'full' ? '' : "_{$parts['type']}";
+        $scheduled = $parts['scheduled'] ? '_scheduled' : '';
 
-        return "{$parts['date']}T{$parts['time']}_{$slug}_archive$type.zip";
+        return "{$parts['date']}T{$parts['time']}_{$slug}_archive$type$scheduled.zip";
     }
 
     /** A name for a backup taken now, of the given type, after the wiki at $baseUrl. */
-    public static function forNow(string $type, string $baseUrl): string
+    public static function forNow(string $type, string $baseUrl, bool $scheduled = false): string
     {
-        $suffix = in_array($type, ['only_files', 'only_db'], true) ? "_$type" : '';
+        $suffix = (in_array($type, ['only_files', 'only_db'], true) ? "_$type" : '') . ($scheduled ? '_scheduled' : '');
 
         return self::withSource((new \DateTime())->format('Y-m-d\TH-i-s') . "_archive$suffix.zip", $baseUrl);
     }

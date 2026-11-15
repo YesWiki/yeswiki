@@ -12,7 +12,7 @@ class ArchiveFilenameTest extends TestCase
     public function testABackupWithoutSourceStillParses(): void
     {
         $this->assertSame(
-            ['date' => '2026-08-20', 'time' => '13-29-28', 'source' => '', 'type' => 'full'],
+            ['date' => '2026-08-20', 'time' => '13-29-28', 'source' => '', 'type' => 'full', 'scheduled' => false],
             ArchiveFilename::parse('2026-08-20T13-29-28_archive.zip')
         );
         $this->assertSame('only_db', ArchiveFilename::parse('2026-08-20T13-29-28_archive_only_db.zip')['type'] ?? '');

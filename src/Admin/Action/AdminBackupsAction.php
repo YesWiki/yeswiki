@@ -2,13 +2,16 @@
 
 namespace YesWiki\Admin\Action;
 
+use YesWiki\Admin\Service\ArchiveSchedule;
 use YesWiki\Admin\Service\ArchiveService;
+use YesWiki\Admin\Service\JobsOverview;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Component\Category;
 use YesWiki\Kernel\Component\Component;
 use YesWiki\Kernel\Component\ProvidesComponents;
 use YesWiki\Kernel\Performable\RegisteredAction;
+use YesWiki\Kernel\Service\Queue\QueueScheduleTicker;
 
 class AdminBackupsAction extends YesWikiAction implements RegisteredAction, ProvidesComponents
 {
@@ -66,7 +69,38 @@ class AdminBackupsAction extends YesWikiAction implements RegisteredAction, Prov
         return $this->render('@core/actions/admin-backups.twig', [
             'canArchive' => $status['canArchive'],
             'cannotArchiveMessage' => $message,
+            'schedule' => $this->schedule(),
         ]);
+    }
+
+    /**
+     * The scheduled backup as the queue's history tells it, null when the schedule is off.
+     *
+     * @return array{type: string, keep: int, last: ?string, failed: bool, status: ?string, error: ?string, next: ?string}|null
+     */
+    private function schedule(): ?array
+    {
+        $schedule = $this->getService(ArchiveSchedule::class);
+        if ($schedule->cron() === '') {
+            return null;
+        }
+        try {
+            $task = $this->getService(QueueScheduleTicker::class)->task(ArchiveSchedule::TASK_ID);
+        } catch (\Throwable) {
+            $task = null;
+        }
+        $jobs = $this->getService(JobsOverview::class);
+        $status = $task['lastStatus'] ?? null;
+
+        return [
+            'type' => $schedule->type(),
+            'keep' => $schedule->keep(),
+            'last' => $jobs->ago($task['lastFinishedAt'] ?? null),
+            'failed' => $status !== null && $status !== 'handled',
+            'status' => $status === null ? null : _t('QUEUE_STATUS_' . strtoupper($status)),
+            'error' => $task['lastError'] ?? null,
+            'next' => $jobs->ago($task['nextDueAt'] ?? null),
+        ];
     }
 
     /**
