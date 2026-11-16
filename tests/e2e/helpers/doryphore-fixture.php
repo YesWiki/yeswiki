@@ -32,11 +32,13 @@ use YesWiki\Kernel\Service\ConfigurationFileProvider;
 use YesWiki\Kernel\Service\ConfigurationService;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\DoryphoreLeftovers;
+use YesWiki\Kernel\Service\InstanceConfiguration;
 use YesWiki\Kernel\Service\MigrationService;
 use YesWiki\Kernel\Service\TripleStore;
 use YesWiki\Kernel\Service\WikiSettings;
 
 require_once dirname(__DIR__, 3) . '/vendor/autoload.php';
+require_once dirname(__DIR__, 3) . '/src/bootstrap_paths.php';
 
 /** What an upgrade from Doryphore runs, and the fixture makes run again. */
 const UPGRADE_MIGRATIONS = [
@@ -61,14 +63,16 @@ $configuration = $configService->getConfiguration($configFile);
 $configuration->load();
 
 // Only the wiki installed for this run: the developer's own wiki lives in the same folder under php-fpm.
+// Its address and database are the host's settings, in private/.env since replicas 20, not in the file loaded above.
+$host = (new InstanceConfiguration(YESWIKI_INSTANCE_DIR))->hostSettings();
 $expectedBase = (string)getenv('YESWIKI_TEST_BASE_URL');
-$base = (string)($configuration['base_url'] ?? '');
+$base = (string)($host['base_url'] ?? '');
 if ($expectedBase === '' || $base !== $expectedBase) {
     refuse("this wiki's base_url is '{$base}', not the test wiki's YESWIKI_TEST_BASE_URL ('{$expectedBase}'): nothing was changed.");
 }
-$driver = (string)($configuration['db_driver'] ?? 'mysql');
+$driver = (string)($host['db_driver'] ?? 'mysql');
 $testDatabase = (string)(getenv('YESWIKI_TEST_DB_NAME') ?: 'yeswiki_test');
-if ($driver !== 'sqlite' && (string)($configuration['db_database'] ?? $configuration['mysql_database'] ?? '') !== $testDatabase) {
+if ($driver !== 'sqlite' && (string)($host['db_database'] ?? $host['mysql_database'] ?? '') !== $testDatabase) {
     refuse("this wiki's database is not the test database '{$testDatabase}': nothing was changed.");
 }
 
