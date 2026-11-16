@@ -216,15 +216,20 @@ class ArchiveServiceTest extends YesWikiTestCase
         $prefix = trim($db->prefixTable(''));
         $neighbours = self::neighbourTables($prefix);
         $extension = "{$prefix}myextension";
+        $dumpedTables = function () use ($db): array {
+            preg_match_all('/^CREATE TABLE `([^`]+)`/m', $db->getSQLContentBackupMethod()['sql'] ?? '', $matches);
+
+            return $matches[1];
+        };
 
         try {
-            self::createNeighbours($db, $neighbours);
+            self::dropNeighbours($db, $neighbours);
             $db->query("DROP TABLE IF EXISTS `$extension`");
-            $db->query("CREATE TABLE `$extension` (`id` int NOT NULL)");
+            $before = $dumpedTables();
 
-            $sql = $db->getSQLContentBackupMethod()['sql'] ?? '';
-            preg_match_all('/^CREATE TABLE `([^`]+)`/m', $sql, $matches);
-            $dumped = $matches[1];
+            self::createNeighbours($db, $neighbours);
+            $db->query("CREATE TABLE `$extension` (`id` int NOT NULL)");
+            $dumped = $dumpedTables();
 
             foreach (DumpRewriter::CORE_TABLES as $coreTable) {
                 $this->assertContains("$prefix$coreTable", $dumped, "the wiki's own $coreTable has to be in its backup");
@@ -233,7 +238,10 @@ class ArchiveServiceTest extends YesWikiTestCase
             foreach (array_keys($neighbours) as $table) {
                 $this->assertNotContains($table, $dumped, "$table belongs to another wiki");
             }
-            $this->assertCount(count(DumpRewriter::CORE_TABLES) + 1, $dumped, 'nothing else was swept in');
+            $expected = [...$before, $extension];
+            sort($expected);
+            sort($dumped);
+            $this->assertSame($expected, $dumped, 'nothing else was swept in');
         } finally {
             self::dropNeighbours($db, $neighbours);
             $db->query("DROP TABLE IF EXISTS `$extension`");
