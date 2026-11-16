@@ -14,7 +14,9 @@ final class SignInOutcome
     public const SIGNED_IN = 'signed_in';
     public const REFUSED = 'refused';
     public const FORM_ERROR = 'form_error';
+    public const TESTED = 'tested';
 
+    /** @param list<array<string, mixed>> $steps */
     private function __construct(
         public readonly string $kind,
         public readonly string $url = '',
@@ -22,7 +24,10 @@ final class SignInOutcome
         public readonly ?FailureReason $reason = null,
         public readonly string $who = '',
         public readonly string $detail = '',
+        public readonly ?SignInPlan $plan = null,
+        public readonly array $steps = [],
         public readonly string $message = '',
+        public readonly string $error = '',
         public readonly string $providerLabel = '',
     ) {
     }
@@ -54,5 +59,11 @@ final class SignInOutcome
             'provider' => $this->providerLabel !== '' ? $this->providerLabel : ($this->config !== null ? $this->config->label : _t('SIGN_IN_PROVIDER_UNNAMED')),
             'who' => $this->who,
         ]);
+    }
+
+    /** @param list<array<string, mixed>> $steps */
+    public static function tested(ProviderConfig $config, SignInPlan $plan, array $steps, string $error): self
+    {
+        return new self(self::TESTED, config: $config, plan: $plan, steps: $steps, error: $error);
     }
 }
