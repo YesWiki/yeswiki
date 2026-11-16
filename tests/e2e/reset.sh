@@ -95,7 +95,9 @@ case "$RUNTIME" in
     INSTANCE="$ROOT"
     BASE_URL="${YESWIKI_TEST_BASE_URL:-http://yeswiki-web/?}"
 
-    rm -f "${INSTANCE}/test.config.php" "${INSTANCE}/${YESWIKI_CONFIG_FILE:-yeswiki.config.php}"
+    # private/.env too: the installer takes what it states over its own options, so a base URL left by an earlier
+    # install (the sign-in suite reinstalls as wiki.yeswiki.test) would win over --base-url.
+    rm -f "${INSTANCE}/test.config.php" "${INSTANCE}/${YESWIKI_CONFIG_FILE:-yeswiki.config.php}" "${INSTANCE}/private/.env"
     rm -rf "${INSTANCE}/cache/"* 2>/dev/null || true
     drop_and_create
 
