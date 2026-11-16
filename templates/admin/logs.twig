@@ -36,8 +36,14 @@
 
       <div class="yw-form-group">
         <label for="yw-logs-action">{{ _t('ADMIN_LOGS_ACTION') }}</label>
-        <input id="yw-logs-action" name="action" type="search" class="yw-input"
+        <input id="yw-logs-action" name="action" type="search" class="yw-input" value="{{ preset.action }}"
                placeholder="{{ _t('ADMIN_LOGS_ACTION_PLACEHOLDER') }}">
+      </div>
+
+      <div class="yw-form-group">
+        <label for="yw-logs-target">{{ _t('ADMIN_LOGS_TARGET') }}</label>
+        <input id="yw-logs-target" name="target" type="search" class="yw-input" value="{{ preset.target }}"
+               placeholder="{{ _t('ADMIN_LOGS_TARGET_PLACEHOLDER') }}">
       </div>
 
       <div class="yw-form-group">

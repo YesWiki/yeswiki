@@ -6,6 +6,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use YesWiki\Core\YesWikiController;
+use YesWiki\Identity\SignIn\AttributeRows;
 use YesWiki\Kernel\Entity\JournalChannel;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\JournalSchema;
@@ -77,7 +78,7 @@ class AdminLogsApiController extends YesWikiController
             $params[] = $level;
         }
 
-        foreach (['actor', 'action'] as $column) {
+        foreach (['actor', 'action', 'target'] as $column) {
             $value = trim((string)$request->query->get($column, ''));
             if ($value !== '') {
                 $clauses[] = $db->quoteIdentifier($column) . ' = ?';
@@ -131,7 +132,7 @@ class AdminLogsApiController extends YesWikiController
         $key = 'JOURNAL_ACTION_' . strtoupper(str_replace('.', '_', $action));
         $phrase = _t($key);
 
-        return [
+        $row = [
             'at' => (string)($row['at'] ?? ''),
             'last_at' => (string)($row['last_at'] ?? ''),
             'repeat' => (int)($row['repeat'] ?? 1),
@@ -144,6 +145,43 @@ class AdminLogsApiController extends YesWikiController
             'message' => (string)($context['message'] ?? ''),
             'frames' => array_map('strval', is_array($context['frames'] ?? null) ? $context['frames'] : []),
             'incident' => is_string($context['incident'] ?? null) ? $context['incident'] : '',
+        ];
+
+        if (str_starts_with($action, 'login.refused.')) {
+            $row['sign_in'] = $this->signInDetail($action, $context);
+        }
+
+        return $row;
+    }
+
+    /**
+     * What a refused sign-in's diagnostic says, for the administrator who has to find out why.
+     * Everything here comes from a provider: the template escapes all of it.
+     *
+     * @param array<string, mixed> $context
+     *
+     * @return array<string, mixed>
+     */
+    private function signInDetail(string $action, array $context): array
+    {
+        // login.refused.<reason>.<provider>: a reason has no dot, a provider id might.
+        [, , $reason, $provider] = array_pad(explode('.', $action, 4), 4, '');
+        $code = strtoupper($reason);
+        $attributes = AttributeRows::of(
+            is_array($context['attributes'] ?? null) ? $context['attributes'] : [],
+            is_array($context['attribute_use'] ?? null) ? $context['attribute_use'] : [],
+        );
+
+        return [
+            'reason' => $reason,
+            'provider' => $provider,
+            'last_step' => (string)($context['last_step'] ?? ''),
+            'attributes' => $attributes,
+            'groups' => array_map('strval', is_array($context['groups'] ?? null) ? $context['groups'] : []),
+            'account' => (string)($context['account'] ?? ''),
+            'error' => (string)($context['error'] ?? ''),
+            'explanation' => _t('SIGN_IN_ADMIN_' . $code) === 'SIGN_IN_ADMIN_' . $code ? '' : _t('SIGN_IN_ADMIN_' . $code),
+            'fix' => _t('SIGN_IN_FIX_' . $code) === 'SIGN_IN_FIX_' . $code ? '' : _t('SIGN_IN_FIX_' . $code),
         ];
     }
 
