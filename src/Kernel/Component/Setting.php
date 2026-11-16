@@ -25,6 +25,12 @@ final class Setting
         return new self($name, 'text');
     }
 
+    /** A value that must never be echoed back: the input starts empty and is only sent when the person types one. */
+    public static function secret(string $name): self
+    {
+        return new self($name, 'secret');
+    }
+
     public static function number(string $name): self
     {
         return new self($name, 'number');
@@ -241,6 +247,12 @@ final class Setting
     public function multiple(): self
     {
         return $this->with('multiple', true);
+    }
+
+    /** Several lines of text (a pasted XML document, a PEM certificate or key): a textarea, and a secret stays one that never shows its value. */
+    public function multiline(): self
+    {
+        return $this->with('multiline', true);
     }
 
     public function min(int $min): self
