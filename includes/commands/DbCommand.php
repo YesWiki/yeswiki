@@ -1,5 +1,7 @@
 <?php
 
+// core:exportdb, the mysqldump export of the wiki's own tables and its connection test.
+
 namespace YesWiki\Core\Commands;
 
 use Symfony\Component\Console\Command\Command;
@@ -12,6 +14,9 @@ use YesWiki\Wiki;
 
 class DbCommand extends Command
 {
+    private const DUMP_EXECUTABLES = ['mariadb-dump', 'mysqldump'];
+    private const DUMP_VERSION_PATTERN = '#^(?:.*[/\\\\])?(?:mysqldump|mariadb-dump)(?:\.exe)?\s+(?:Ver\s*\d|from\s+\d)#i';
+
     protected $consoleService;
     protected $params;
     protected $wiki;
@@ -28,14 +33,9 @@ class DbCommand extends Command
     {
         $this
             ->setName('core:exportdb')
-            // the short description shown while running "./yeswicli list"
             ->setDescription('Manage database of the YesWiki.')
-
-            // the full command description shown when running the command with
-            // the "--help" option
             ->setHelp("Manage database of the YesWiki.\n" .
                 "To test use '--test'\n")
-
             ->addOption('test', 't', InputOption::VALUE_NONE, 'Test the connection to mysqldump (return OK/NOK)')
             ->addOption('filepath', 'f', InputOption::VALUE_REQUIRED, '.sql file path where export db')
         ;
@@ -59,19 +59,7 @@ class DbCommand extends Command
         return $this->export($output, $filepath);
     }
 
-    /**
-     * get params to connect to dB.
-     *
-     * @return array [
-     *               'hostArg' => array,
-     *               'databasename' => string
-     *               'tablePrefix' => string
-     *               'username' => string
-     *               'password' => string
-     *               ]
-     *
-     * @throws \Exception
-     */
+    // Reads the connection settings from wakka.config.php, as hostArg, databasename, tablePrefix, username and password.
     private function getDbParams(): array
     {
         $hostname = $this->params->get('mysql_host');
@@ -100,40 +88,33 @@ class DbCommand extends Command
         return compact(['hostArg', 'databasename', 'tablePrefix', 'username', 'password']);
     }
 
-    /**
-     * export db via mysqldump.
-     *
-     * @return int Command:code
-     *
-     * @throws \Exception
-     * @throws \Throwable
-     */
+    // Dumps the wiki's own tables into $filepath.
     private function export(OutputInterface $output, string $filepath): int
     {
         $realFilePath = realpath(dirname($filepath)) . DIRECTORY_SEPARATOR . basename($filepath);
         extract($this->getDbParams());
         try {
             $results = $this->consoleService->findAndStartExecutableSync(
-                'mysqldump',
+                $this->findDumpExecutable() ?? 'mysqldump',
                 array_merge(
                     $hostArg,
                     [
                         "--user=$username",
                         "--password=$password",
                         "--result-file=$realFilePath",
-                        $databasename, // databasename
-                        "{$tablePrefix}users", // tables
-                        "{$tablePrefix}pages", // tables
-                        "{$tablePrefix}nature", // tables
-                        "{$tablePrefix}triples", // tables
-                        "{$tablePrefix}acls", // tables
-                        "{$tablePrefix}links", // tables
-                        "{$tablePrefix}referrers", // tables
+                        $databasename,
+                        "{$tablePrefix}users",
+                        "{$tablePrefix}pages",
+                        "{$tablePrefix}nature",
+                        "{$tablePrefix}triples",
+                        "{$tablePrefix}acls",
+                        "{$tablePrefix}links",
+                        "{$tablePrefix}referrers",
                     ]
-                ), // args
-                '', // subfolder
-                $this->getExtaDirs(), // extraDirsWhereSearch
-                120 // timeoutInSec (2 minutes)
+                ),
+                '',
+                $this->getExtaDirs(),
+                120
             );
             $err = $this->getErr($results);
             try {
@@ -153,45 +134,29 @@ class DbCommand extends Command
         return Command::FAILURE;
     }
 
-    /**
-     * test connection to mysqldump.
-     *
-     * @return int Command:code
-     *
-     * @throws \Throwable
-     */
+    // Checks that mysqldump runs and reaches the wiki's pages table, without walking the other tables of a shared database.
     private function test(OutputInterface $output): int
     {
         extract($this->getDbParams());
         try {
-            $results = $this->consoleService->findAndStartExecutableSync(
-                'mysqldump',
-                [
-                    '-V', // output version
-                ], // args
-                '', // subfolder
-                $this->getExtaDirs(), // extraDirsWhereSearch
-                10 // timeoutInSec
-            );
-            $outputResult = $this->getOutput($results);
-            if (preg_match("/^mysqldump(?:\.exe)?\s*Ver\s*\d+\.?\d*.*/i", $outputResult)) {
-                // test connecting to database
-
+            $dump = $this->findDumpExecutable();
+            if ($dump !== null) {
                 $results = $this->consoleService->findAndStartExecutableSync(
-                    'mysqldump',
+                    $dump,
                     array_merge(
                         $hostArg,
                         [
                             "--user=$username",
                             "--password=$password",
-                            '-t', // no table info
-                            '-d', // no table data
-                            $databasename, // databasename
+                            '-t',
+                            '-d',
+                            $databasename,
+                            "{$tablePrefix}pages",
                         ]
-                    ), // args
-                    '', // subfolder
-                    $this->getExtaDirs(), // extraDirsWhereSearch
-                    10 // timeoutInSec
+                    ),
+                    '',
+                    $this->getExtaDirs(),
+                    10
                 );
                 $outputResult = $this->getOutput($results);
                 if (empty($outputResult)) {
@@ -207,6 +172,23 @@ class DbCommand extends Command
         $output->writeln('NOK');
 
         return Command::FAILURE;
+    }
+
+    // The first dump program found whose -V output is a known version line, mariadb-dump before its deprecated mysqldump alias.
+    private function findDumpExecutable(): ?string
+    {
+        foreach (self::DUMP_EXECUTABLES as $name) {
+            try {
+                $results = $this->consoleService->findAndStartExecutableSync($name, ['-V'], '', $this->getExtaDirs(), 10);
+            } catch (\Throwable $th) {
+                continue;
+            }
+            if (preg_match(self::DUMP_VERSION_PATTERN, $this->getOutput($results))) {
+                return $name;
+            }
+        }
+
+        return null;
     }
 
     private function getOutput($results): string
@@ -226,11 +208,7 @@ class DbCommand extends Command
         return '\\' === DIRECTORY_SEPARATOR ? ['c:\\xampp\\mysql\\bin\\'] : ['/usr/bin/', '/usr/local/bin/'];
     }
 
-    /**
-     * assert param is a not empty string.
-     *
-     * @throws \Exception
-     */
+    // Throws when a configuration value is empty or not a string.
     protected function assertParamIsNotEmptyString(string $name, $param)
     {
         if (empty($param)) {
@@ -239,11 +217,7 @@ class DbCommand extends Command
         $this->assertParamIsString($name, $param);
     }
 
-    /**
-     * assert param is a string.
-     *
-     * @throws \Exception
-     */
+    // Throws when a configuration value is not a string.
     protected function assertParamIsString(string $name, $param)
     {
         if (!is_string($param)) {
