@@ -11,6 +11,7 @@ use YesWiki\Identity\Entity\User;
 use YesWiki\Identity\Exception\BadFormatPasswordException;
 use YesWiki\Identity\Exception\BadLoginException;
 use YesWiki\Identity\Exception\BadUserConnectException;
+use YesWiki\Identity\Exception\PasswordManagedByProviderException;
 use YesWiki\Identity\Security\LegacyPasswordHash;
 use YesWiki\Identity\Service\SignIn\ProviderRegistry;
 use YesWiki\Kernel\Entity\CookieData;
@@ -137,10 +138,12 @@ class AuthenticationService extends YesWikiController implements ActorSource, Ca
     /**
      * force a new password when renewing password.
      *
+     * @throws PasswordManagedByProviderException when a provider is linked to the account: only it signs the account in
      * @throws BadFormatPasswordException
      */
     public function setPassword(User $user, string $plainTextPassword): void
     {
+        PasswordManagedByProviderException::refuseLinked($user);
         $this->checkPasswordValidateRequirements($plainTextPassword);
         $passwordHasher = $this->passwordHasherFactory->getPasswordHasher($user);
         $newHashedPassword = $passwordHasher->hash($plainTextPassword);
