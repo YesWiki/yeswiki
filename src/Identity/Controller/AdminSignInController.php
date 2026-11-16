@@ -9,7 +9,6 @@ use Symfony\Component\Security\Csrf\Exception\TokenNotFoundException;
 use YesWiki\Content\Entity\ContentTypeSchema;
 use YesWiki\Content\Field\BazarField;
 use YesWiki\Content\Service\FormManager;
-use YesWiki\Core\DashboardShell;
 use YesWiki\Core\YesWikiController;
 use YesWiki\Identity\Entity\User;
 use YesWiki\Identity\Service\AuthenticationService;
@@ -20,6 +19,7 @@ use YesWiki\Identity\Service\SignIn\ProvidersEditor;
 use YesWiki\Identity\Service\SignIn\SignInFlow;
 use YesWiki\Identity\Service\SignIn\Type\CasType;
 use YesWiki\Identity\Service\UserManager;
+use YesWiki\Identity\SignIn\Contract\HandshakeMode;
 use YesWiki\Identity\SignIn\Contract\PasswordProvider;
 use YesWiki\Identity\SignIn\Contract\ProviderConfig;
 use YesWiki\Identity\SignIn\Contract\ProviderType;
@@ -32,7 +32,7 @@ use YesWiki\Render\Service\TemplateEngine;
 /** `/admin/sign-in` -- the providers of `sso_providers`, listed, added, edited, switched and deleted (spec 8.3). */
 class AdminSignInController extends YesWikiController
 {
-    use DashboardShell;
+    use RendersSignInOutcome;
 
     private const ADMIN_ACL = ['@admins'];
     private const CURRENT = 'admin/sign-in';
@@ -101,7 +101,7 @@ class AdminSignInController extends YesWikiController
                 if (is_string($created)) {
                     Flash::success(_t('SIGN_IN_ADMIN_CREATED'));
 
-                    return $this->toIndex();
+                    return $this->afterSave($created, $posted);
                 }
                 $errors = $created;
             }
@@ -132,7 +132,7 @@ class AdminSignInController extends YesWikiController
                 if ($errors === []) {
                     Flash::success(_t('SIGN_IN_ADMIN_SAVED'));
 
-                    return $this->toIndex();
+                    return $this->afterSave($id, $posted);
                 }
             }
         }
@@ -167,6 +167,49 @@ class AdminSignInController extends YesWikiController
         }
 
         return $this->toIndex();
+    }
+
+    /**
+     * Runs the real protocol against the provider, as the signed-in administrator, and shows what came back (spec 8.3).
+     * A redirect provider is left for and comes back to its callback; a password provider first asks for a test login and password.
+     */
+    #[Route('/admin/sign-in/{id}/test', methods: ['GET', 'POST'], options: ['acl' => self::ADMIN_ACL])]
+    public function test(string $id): Response
+    {
+        $registry = $this->getService(ProviderRegistry::class);
+        $config = $registry->config($id);
+        if ($config === null) {
+            Flash::error(_t('SIGN_IN_ADMIN_UNKNOWN_PROVIDER'));
+
+            return $this->toIndex();
+        }
+        $flow = $this->getService(SignInFlow::class);
+        if (!$registry->get($id) instanceof PasswordProvider) {
+            return $this->renderSignInOutcome($flow->begin($id, '', HandshakeMode::Test));
+        }
+
+        $errors = [];
+        $request = $this->getRequest();
+        if ($request->isMethod('POST')) {
+            $errors = $this->guardedAgainstForgery();
+            if ($errors === []) {
+                $posted = $request->request->all();
+                $login = $posted['login'] ?? '';
+                $password = $posted['password'] ?? '';
+
+                return $this->renderSignInOutcome($flow->password($id, is_string($login) ? $login : '', is_string($password) ? $password : '', false, HandshakeMode::Test));
+            }
+        }
+
+        return $this->page('@core/admin/sign-in-test.twig', self::CURRENT, [
+            'id' => $id,
+            'label' => $config->label,
+            'result' => null,
+            'form' => [
+                'action' => $this->getService(UrlFormatter::class)->href('', 'admin/sign-in/' . rawurlencode($id) . '/test'),
+                'errors' => $errors,
+            ],
+        ]);
     }
 
     /**
@@ -344,6 +387,20 @@ class AdminSignInController extends YesWikiController
         }
 
         return [];
+    }
+
+    /**
+     * Back to the list after Save; on to the provider's test after "Save and Test".
+     *
+     * @param array<string, mixed> $posted
+     */
+    private function afterSave(string $id, array $posted): RedirectResponse
+    {
+        if (($posted['then'] ?? null) !== 'test') {
+            return $this->toIndex();
+        }
+
+        return new RedirectResponse($this->getService(UrlFormatter::class)->href('', self::CURRENT . '/' . rawurlencode($id) . '/test'));
     }
 
     private function toIndex(): RedirectResponse
