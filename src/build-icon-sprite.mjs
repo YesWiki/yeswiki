@@ -49,6 +49,7 @@ const EXTRAS = [
   'device-desktop',
   'circle-dot',
   'text-spellcheck',
+  'color-picker',
 ]
 const RENAMES = { loupe: 'search' }
 
