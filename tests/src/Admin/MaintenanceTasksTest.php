@@ -9,6 +9,7 @@ use Symfony\Component\Scheduler\Generator\MessageContext;
 use YesWiki\Admin\Message\PurgeRevisions;
 use YesWiki\Admin\Message\PurgeRevisionsHandler;
 use YesWiki\Admin\Scheduler\AdminSchedule;
+use YesWiki\Admin\Service\ArchiveSchedule;
 use YesWiki\Identity\Message\PurgeActivationKeys;
 use YesWiki\Identity\Message\PurgeActivationKeysHandler;
 use YesWiki\Identity\Message\PurgeBotGuard;
@@ -52,6 +53,8 @@ class MaintenanceTasksTest extends YesWikiTestCase
     private const NOW = '2026-10-23 12:00:00';
 
     private const STEPS = ['revisions', 'journal', 'recovery-keys', 'activation-keys', 'bot-guard', 'sessions'];
+
+    private const NOT_HOUSEKEEPING = ['queue-prune', ArchiveSchedule::TASK_ID];
 
     private ?QueueTestKit $kit = null;
     private ?string $file = null;
@@ -232,7 +235,7 @@ class MaintenanceTasksTest extends YesWikiTestCase
     {
         $kit = $this->kit = new QueueTestKit(clock: $clock, schedule: $provider);
 
-        return static fn (): array => array_values(array_diff($kit->tick(), ['queue-prune']));
+        return static fn (): array => array_values(array_diff($kit->tick(), self::NOT_HOUSEKEEPING));
     }
 
     /**
@@ -248,7 +251,7 @@ class MaintenanceTasksTest extends YesWikiTestCase
             $trigger = $recurring->getTrigger();
             foreach ($recurring->getMessages(new MessageContext('test', $recurring->getId(), $trigger, $now)) as $message) {
                 $this->assertInstanceOf(ScheduledTask::class, $message);
-                if ($message->taskId() === 'queue-prune') {
+                if (in_array($message->taskId(), self::NOT_HOUSEKEEPING, true)) {
                     continue;
                 }
                 $plan[$message->taskId()] = ['message' => $message];
