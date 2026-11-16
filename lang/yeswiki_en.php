@@ -144,6 +144,7 @@ return [
     'NO_RECENT_COMMENTS' => 'No recent comments',
     'TO_OBTAIN_COMMENTS_RSS_FEED_TO_GO_THIS_ADDRESS' => 'To obtain the RSS feed of latest comments, use this URL address',
     'LATEST_COMMENTS_ON' => 'Latest comments on',
+    'COMMENT_ON' => 'Comment on',
     'LAST COMMENT' => 'last comment',
     'NO_RECENT_COMMENTS_ON_PAGES' => 'No page was recently commented',
     'ERROR_ACTION_REDIRECT' => 'Error action {{redirect ...}}',

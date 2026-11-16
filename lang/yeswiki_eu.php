@@ -156,6 +156,7 @@ return [
     'HISTORY' => 'historikoa',
     'TO_OBTAIN_COMMENTS_RSS_FEED_TO_GO_THIS_ADDRESS' => 'Azken iruzkinen RSS haria eskuratzeko, erabili helbide hau',
     'LATEST_COMMENTS_ON' => 'Azken iruzkinak',
+    'COMMENT_ON' => 'Iruzkina:',
     'LAST COMMENT' => 'azken iruzkina',
     'NO_RECENT_COMMENTS_ON_PAGES' => 'Azken aldian ez da orririk iruzkindu',
     'ERROR_ACTION_REDIRECT' => 'Errore bat gertatu da {{redirect ..}}',

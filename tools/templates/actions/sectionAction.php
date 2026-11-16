@@ -1,5 +1,6 @@
 <?php
 
+use YesWiki\Core\Service\RestrictedBlocks;
 use YesWiki\Core\YesWikiAction;
 
 class SectionAction extends YesWikiAction
@@ -114,11 +115,16 @@ class SectionAction extends YesWikiAction
         if ($this->check_end_elem('section')) {
             $role = $this->arguments['visibility'] ?? '';
             $role = empty($role) ? $role : str_replace('\\n', "\n", $role);
-            $visible = !$role || $GLOBALS['wiki']->CheckACL($role, null, false);
+            $visible = !$role || $this->wiki->CheckACL($role, null, false);
+            $marker = $this->getService(RestrictedBlocks::class)->enter($visible);
+            if (!$visible) {
+                ob_end_clean();
+
+                return $marker;
+            }
             $class = ($backgroundimg || $patternborder ? 'background-image' : '')
                 . ($patternId && !$patternborder ? ' with-bg-pattern' : '')
                 . ($patternborder ? ' pattern-border' : '')
-                . ($visible ? '' : ' remove-this-div-on-page-load ')
                 . " pattern-$patternId"
                 . (!empty($class) ? ' ' . $class : '');
 
@@ -156,6 +162,10 @@ class SectionAction extends YesWikiAction
 
     public function end(): string
     {
-        return '</div></section><!-- end of section -->';
+        if (!$this->check_end_elem('section')) {
+            return '</div></section><!-- end of section -->';
+        }
+
+        return $this->getService(RestrictedBlocks::class)->leave() ?? '</div></section><!-- end of section -->';
     }
 }

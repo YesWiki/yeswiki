@@ -102,6 +102,7 @@ return [
     'LATEST_CHANGES_ON' => 'Laatste wijzigingen aan',
     'TO_OBTAIN_COMMENTS_RSS_FEED_TO_GO_THIS_ADDRESS' => 'Gebruik het volgende adres om de RSS-feed van de laatste commentaren te krijgen',
     'LATEST_COMMENTS_ON' => 'Laatste commentaren over',
+    'COMMENT_ON' => 'Commentaar op',
     'NO_RECENT_COMMENTS_ON_PAGES' => 'Geen pagina is onlangs gereageerd',
     'ERROR_ACTION_REDIRECT' => 'Actiefout {{redirect ...}}',
     'CIRCULAR_REDIRECTION_FROM_PAGE' => 'kringverwijzing van de pagina',

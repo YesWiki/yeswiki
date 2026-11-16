@@ -85,6 +85,7 @@ if (!class_exists('\YesWiki\WikiniFormatter')) {
 
             // we're cutting the last <br />
             $text = preg_replace("/<br \/>$/", '', trim($text));
+            $text = $this->wiki->services->get(\YesWiki\Core\Service\RestrictedBlocks::class)->strip($text);
 
             return $text;
         }

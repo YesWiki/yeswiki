@@ -164,6 +164,7 @@ return [
     'TO_OBTAIN_RSS_FEED_TO_GO_THIS_ADDRESS' => 'அண்மைக் கால மாற்றங்களின் RSS கம்பிக்கு, பின்வரும் முகவரியைப் பயன்படுத்தவும்',
     'LATEST_CHANGES_ON' => 'அண்மைக் கால மாற்றங்கள்',
     'LATEST_COMMENTS_ON' => 'அண்மைக் கால கருத்துகள்',
+    'COMMENT_ON' => 'கருத்து:',
     'LAST COMMENT' => 'கடைசி இடுகை',
     'NO_RECENT_COMMENTS_ON_PAGES' => 'எந்த பக்கமும் அண்மைக் காலத்தில் கருத்து தெரிவிக்கப்படவில்லை',
     'ERROR_ACTION_REDIRECT' => 'செயல் பிழை {{redirect ...}}',

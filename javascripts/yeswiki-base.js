@@ -343,8 +343,6 @@ function toastMessage(
 
   $('.modal').appendTo(document.body)
 
-  $('.remove-this-div-on-page-load').remove()
-
   $("[data-toggle='tooltip']").tooltip()
   $("[data-tooltip='tooltip']").tooltip()
 

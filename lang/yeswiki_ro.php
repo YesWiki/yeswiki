@@ -242,6 +242,7 @@ return [
     'SAVE' => 'Înregistra',
     'ADMIN_BACKUPS_ARCHIVE_FILENAME' => 'Nume fișier',
     'LATEST_COMMENTS_ON' => 'Ultimele comentarii privind',
+    'COMMENT_ON' => 'Comentariu la',
     'USER_UPDATE_QUERY_FAILED' => 'Cererea de actualizare a utilizatorului din baza de date a eșuat',
     'FAVORITES_LINK' => 'Link',
     'LAST COMMENT' => 'Ultimul comentariu',

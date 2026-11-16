@@ -177,6 +177,7 @@ return [
     'LATEST_CHANGES_ON' => 'Derniers changements sur',
     'TO_OBTAIN_COMMENTS_RSS_FEED_TO_GO_THIS_ADDRESS' => 'Pour obtenir le fil RSS des derniers commentaires, utilisez l\'adresse suivante',
     'LATEST_COMMENTS_ON' => 'Derniers commentaires sur',
+    'COMMENT_ON' => 'Commentaire sur',
     'LAST COMMENT' => 'dernier commentaire',
     'NO_RECENT_COMMENTS_ON_PAGES' => 'Aucune page n\'a été commentée récemment',
     'ERROR_ACTION_REDIRECT' => 'Erreur action {{redirect ...}}',

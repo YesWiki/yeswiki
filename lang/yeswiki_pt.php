@@ -95,6 +95,7 @@ return [
     'NO_RECENT_COMMENTS' => 'Nenhum comentário recente',
     'TO_OBTAIN_COMMENTS_RSS_FEED_TO_GO_THIS_ADDRESS' => 'Para obter o feed RSS dos últimos comentários, utilize o seguinte endereço',
     'LATEST_COMMENTS_ON' => 'Ultimos comentários sobre',
+    'COMMENT_ON' => 'Comentário sobre',
     'NO_RECENT_COMMENTS_ON_PAGES' => 'Nenhuma página foi comentada recentemente',
     'ERROR_ACTION_REDIRECT' => 'Erro ação {{redirect ...}}',
     'CIRCULAR_REDIRECTION_FROM_PAGE' => 'Redirecionamento circular a partir da página',

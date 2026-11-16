@@ -99,6 +99,7 @@ return [
     'NO_RECENT_COMMENTS' => 'No hi ha comentaris recents',
     'TO_OBTAIN_COMMENTS_RSS_FEED_TO_GO_THIS_ADDRESS' => 'Per obtenir el fil RSS dels darrers comentaris, utilitzeu l\'adreça següent',
     'LATEST_COMMENTS_ON' => 'Darrers comentaris a',
+    'COMMENT_ON' => 'Comentari a',
     'NO_RECENT_COMMENTS_ON_PAGES' => 'No s\'ha comentat cap pàgina',
     'ERROR_ACTION_REDIRECT' => 'Error d\'acció {{redirect ...}}',
     'CIRCULAR_REDIRECTION_FROM_PAGE' => 'redireccionament circular a partir de la pàgina',
