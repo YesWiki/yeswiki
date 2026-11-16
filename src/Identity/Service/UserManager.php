@@ -18,6 +18,7 @@ use YesWiki\Content\Service\PageManager;
 use YesWiki\Identity\Entity\User;
 use YesWiki\Identity\Exception\DeleteUserException;
 use YesWiki\Identity\Exception\GroupNameDoesNotExistException;
+use YesWiki\Identity\Exception\PasswordManagedByProviderException;
 use YesWiki\Identity\Exception\UserEmailAlreadyUsedException;
 use YesWiki\Identity\Exception\UserNameAlreadyUsedException;
 use YesWiki\Identity\Exception\UserNameReservedException;
@@ -384,9 +385,12 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface, C
      * Part of the Password recovery process: Handles the password recovery email process.
      *
      * @return string The link sent to the user
+     *
+     * @throws PasswordManagedByProviderException when a provider is linked to the account: it has no password to recover
      */
     public function sendPasswordRecoveryEmail(User $user)
     {
+        PasswordManagedByProviderException::refuseLinked($user);
         $passwordHasher = $this->passwordHasherFactory->getPasswordHasher($user);
         $plainKey = $user['name'] . '_' . $user['email'] . random_bytes(16) . date('Y-m-d H:i:s');
         $hashedKey = $passwordHasher->hash($plainKey);
