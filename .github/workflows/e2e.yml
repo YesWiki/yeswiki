@@ -182,11 +182,30 @@ jobs:
       - uses: actions/checkout@v5
         if: steps.covered.outputs.run == 'true'
 
+      # The mock of docker/docker-compose.yml: MockServer plays the OpenID Connect, SAML and CAS
+      # providers as the specs tell it to. The runner reaches it by name through /etc/hosts. The
+      # wiki is served as wiki.yeswiki.test:<port> for the sign-in specs, which makes it same-site
+      # with auth.yeswiki.test: SAML's POST callback needs that on plain http. There is no LDAP
+      # directory: PHPUnit tests the LDAP provider against a stub. A request no expectation matches
+      # answers 404, as a real server would: forwarded instead, to a name the mock's container cannot
+      # resolve, it came back 502, which the wiki rightly reads as a provider that is down.
+      - name: Start the identity provider mock
+        if: steps.covered.outputs.run == 'true'
+        run: |
+          echo '127.0.0.1 wiki.yeswiki.test auth.yeswiki.test yeswiki-mock' | sudo tee -a /etc/hosts
+          docker run -d --name yeswiki-mock -p 80:1080 \
+            -e MOCKSERVER_ATTEMPT_TO_PROXY_IF_NO_MATCHING_EXPECTATION=false mockserver/mockserver:9.2.0
+          for _ in $(seq 1 60); do
+            curl --silent --fail --max-time 5 -X PUT http://yeswiki-mock/mockserver/status > /dev/null && exit 0
+            sleep 2
+          done
+          echo "the mock did not come up"; docker logs yeswiki-mock; exit 1
+
       - uses: shivammathur/setup-php@v2
         if: steps.covered.outputs.run == 'true'
         with:
           php-version: '8.4'
-          extensions: ctype, curl, dom, fileinfo, filter, gd, iconv, mbstring, openssl, pdo, pdo_mysql, pdo_pgsql, pdo_sqlite, session, simplexml, tokenizer, xml, xmlreader, zip
+          extensions: ctype, curl, dom, fileinfo, filter, gd, iconv, mbstring, openssl, pdo, pdo_mysql, pdo_pgsql, pdo_sqlite, session, simplexml, tokenizer, xml, xmlreader, zip, ldap
           tools: composer:v2
 
       - run: composer install --prefer-dist --no-progress
@@ -239,15 +258,34 @@ jobs:
           YESWIKI_TEST_URL: http://127.0.0.1:8080/?PagePrincipale
         run: bash tests/e2e/runtime.sh start
 
+      # Everything but the sign-in specs, which run below under the wiki's sign-in address.
       - name: Run the browser suite
         if: steps.covered.outputs.run == 'true'
-        run: yarn run test-e2e-all
+        run: yarn run test-e2e-all '^(?!.*sign-in-)'
+
+      # The wiki must be same-site with the mock identity provider, auth.yeswiki.test, for SAML's
+      # POST callback to carry its Lax cookie; and the SAML callback the specs give the mock comes
+      # from YESWIKI_BASE_URL, which must be the base URL the wiki builds its own addresses from:
+      # so this wiki is installed again as wiki.yeswiki.test, which is why this step is not part
+      # of the suite above.
+      - name: Run the sign-in suite
+        if: ${{ !cancelled() && steps.covered.outputs.run == 'true' }}
+        env:
+          YESWIKI_TEST_BASE_URL: ${{ matrix.runtime == 'binary' && 'http://wiki.yeswiki.test:8081/?' || 'http://wiki.yeswiki.test:8080/?' }}
+          YESWIKI_BASE_URL: ${{ matrix.runtime == 'binary' && 'http://wiki.yeswiki.test:8081' || 'http://wiki.yeswiki.test:8080' }}
+        run: |
+          bash tests/e2e/reset.sh
+          # Its own report and output folders: the run above leaves its failure evidence in the
+          # defaults, and this one must not overwrite it.
+          PLAYWRIGHT_HTML_OUTPUT_DIR=playwright-report-signin \
+            npx playwright test tests/e2e/tests/sign-in- --output=test-results-signin
 
       - name: Dump the runtime log
         if: failure() && steps.covered.outputs.run == 'true'
         run: |
           tail -200 /tmp/yeswiki-e2e-serve.log 2>/dev/null || true
           tail -200 "${{ runner.temp }}/fpm.log" 2>/dev/null || true
+          docker logs yeswiki-mock 2>&1 | tail -100 || true
 
       - name: Report runtime crashes
         if: always() && steps.covered.outputs.run == 'true'
@@ -263,6 +301,15 @@ jobs:
         with:
           name: playwright-report-${{ matrix.driver }}-${{ matrix.runtime }}
           path: playwright-report
+          retention-days: 7
+
+      - uses: actions/upload-artifact@v6
+        if: failure() && steps.covered.outputs.run == 'true'
+        with:
+          name: playwright-report-signin-${{ matrix.driver }}-${{ matrix.runtime }}
+          path: |
+            playwright-report-signin
+            test-results-signin
           retention-days: 7
 
   kind:
@@ -314,6 +361,9 @@ jobs:
       - name: Three replicas on kind with ${{ matrix.database }}, SeaweedFS and Mailpit, the browser suite, then a rolling upgrade
         env:
           E2E: '1'
+          # The sign-in specs need the mock, which the browser job starts and the cluster does
+          # not have.
+          PLAYWRIGHT_ARGS: '^(?!.*sign-in-)'
         run: deploy/kind/run.sh "${{ matrix.database }}" "yeswiki-kind:${{ github.sha }}"
 
       - uses: actions/upload-artifact@v6
