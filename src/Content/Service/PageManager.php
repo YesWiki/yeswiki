@@ -11,6 +11,7 @@ use YesWiki\Content\Exception\ReservedTagException;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Identity\Service\Guard;
+use YesWiki\Identity\Service\SignIn\AccountLinks;
 use YesWiki\Identity\Service\UserManager;
 use YesWiki\Kernel\Routing\ReservedTags;
 use YesWiki\Kernel\Service\CachesTheDatabase;
@@ -617,6 +618,30 @@ class PageManager implements CachesTheDatabase
      */
     public function save($tag, array $body, $parent = '', $bypass_acls = false, $forcedDate = null, ?string $type = null, ?array $acls = null): int
     {
+        return $this->store($tag, $body, $parent, $bypass_acls, $forcedDate, $type, $acls, false);
+    }
+
+    /**
+     * Saves an account page with the provider link its body carries: the one write that may set or change it (AccountLinks).
+     * Every other write of a user page keeps the link already stored, whatever its body says.
+     *
+     * @param array<array-key, mixed> $body
+     */
+    public function saveAccountLink(string $tag, array $body): int
+    {
+        return $this->store($tag, $body, '', true, null, PageType::USER, null, true);
+    }
+
+    /**
+     * @param string                     $tag
+     * @param array<array-key, mixed>    $body
+     * @param string                     $parent
+     * @param bool                       $bypass_acls
+     * @param string|null                $forcedDate
+     * @param array<string, string>|null $acls
+     */
+    private function store($tag, array $body, $parent, $bypass_acls, $forcedDate, ?string $type, ?array $acls, bool $setsAccountLink): int
+    {
         if ($this->hibernationService->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
@@ -651,6 +676,7 @@ class PageManager implements CachesTheDatabase
                 }
 
                 $type ??= $parent ? PageType::COMMENT : PageType::DEFAULT;
+                $body = $setsAccountLink ? $body : $this->guardedAccountLinks($tag, $body, $type);
             } else {
                 $owner = $oldPage['owner'];
 
@@ -659,6 +685,7 @@ class PageManager implements CachesTheDatabase
                 }
 
                 $type ??= (string)($oldPage['type'] ?? PageType::DEFAULT);
+                $body = $setsAccountLink ? $body : $this->guardedAccountLinks($tag, $body, $type);
 
                 if (PageBody::equals($oldPage['body'], $body)) {
                     return 0;
@@ -707,6 +734,22 @@ class PageManager implements CachesTheDatabase
         }
 
         return 1;
+    }
+
+    /**
+     * A user page keeps the provider link it already has: only saveAccountLink() may change it.
+     *
+     * @param array<array-key, mixed> $body
+     *
+     * @return array<array-key, mixed>
+     */
+    private function guardedAccountLinks(string $tag, array $body, ?string $type): array
+    {
+        if ($type !== PageType::USER) {
+            return $body;
+        }
+
+        return $this->container->get(AccountLinks::class)->guardBody($tag, $body);
     }
 
     /**

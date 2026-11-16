@@ -7,6 +7,7 @@ use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Field\BazarField;
 use YesWiki\Content\Field\EmailField;
 use YesWiki\Content\Service\FormManager;
+use YesWiki\Identity\Service\SignIn\AccountLinks;
 
 class Guard
 {
@@ -97,7 +98,8 @@ class Guard
         return $page;
     }
 
-    private const USER_ALWAYS_HIDDEN_FIELDS = ['password', 'activation_status', 'activation_key'];
+    private const USER_ALWAYS_HIDDEN_FIELDS = ['password', 'activation_status', 'activation_key', ...self::USER_LINK_KEYS];
+    private const USER_LINK_KEYS = [AccountLinks::PROVIDER_KEY, AccountLinks::SUBJECT_KEY];
     private const USER_OWNER_OR_ADMIN_ONLY_FIELDS = ['email', 'revisioncount', 'changescount', 'doubleclickedit', 'show_comments'];
 
     /**
@@ -129,7 +131,14 @@ class Guard
 
         $modified = false;
         foreach ($fieldsToHide as $field) {
-            if (array_key_exists($field, $body) && $body[$field] !== '') {
+            if (!array_key_exists($field, $body)) {
+                continue;
+            }
+            if (in_array($field, self::USER_LINK_KEYS, true)) {
+                // the provider link is not a blank field, it is not there at all
+                unset($body[$field]);
+                $modified = true;
+            } elseif ($body[$field] !== '') {
                 $body[$field] = '';
                 $modified = true;
             }
