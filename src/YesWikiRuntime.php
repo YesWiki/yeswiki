@@ -484,8 +484,10 @@ class YesWikiRuntime
         ob_start();
         try {
             $attributes = $matcher->match($context->getPathInfo());
+            // read before the method is cleared: a route open to other sites is known by it
+            $crossOriginWrite = $this->service(ApiService::class)->isCrossOriginWrite();
             $pageContext->setMethod('');
-            if ($this->service(ApiService::class)->isCrossOriginWrite()) {
+            if ($crossOriginWrite) {
                 $response = new Response('', Response::HTTP_FORBIDDEN);
             } elseif ($this->service(ApiService::class)->isAuthorized($attributes, $this->getRoutes())) {
                 $request = $this->service(CurrentRequest::class)->get();
