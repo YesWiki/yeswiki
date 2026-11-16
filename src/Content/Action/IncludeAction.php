@@ -20,6 +20,7 @@ use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\PerformableArguments;
 use YesWiki\Kernel\Service\RuntimeConfig;
 use YesWiki\Kernel\Service\UrlFormatter;
+use YesWiki\Render\Service\EditZone;
 use YesWiki\Render\Service\LinkRenderer;
 use YesWiki\Render\Service\MarkdownFormatterService;
 use YesWiki\Render\Service\TemplateHelperService;
@@ -147,14 +148,9 @@ class IncludeAction extends YesWikiAction implements RegisteredAction, ProvidesC
             );
         }
 
-        if (
-            !empty($this->getService(RuntimeConfig::class)['allow_doubleclic']) && in_array($this->getService(RuntimeConfig::class)['allow_doubleclic'], ['1', 'yes', true])
-            && !empty($doubleClick) && $doubleClick == '1' && $this->getService(AclService::class)->hasAccess('write', $incPageName)
-        ) {
-            $doubleClickAttribute = ' ondblclick="document.location=\'' . $this->getService(UrlFormatter::class)->href('edit', $incPageName) . '\';"';
-        } else {
-            $doubleClickAttribute = '';
-        }
+        $doubleClickAttribute = !empty($doubleClick) && $doubleClick == '1'
+            ? $this->getService(EditZone::class)->attributes((string)$incPageName, false, true)
+            : '';
         $plugin_output_new = str_replace('<div class="include ', '<div' . $doubleClickAttribute . ' class="', $plugin_output_new);
 
         $plugin_output_new = str_replace('include_', '', $plugin_output_new);

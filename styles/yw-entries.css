@@ -800,6 +800,32 @@ a.yw-item__title:focus-visible {
   color: var(--yw-on-danger);
 }
 
+.list-form .list-node .input-color-pick {
+  position: absolute;
+  right: 1px;
+  bottom: 1px;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 0.95rem;
+  height: 0.95rem;
+  padding: 0;
+  border: var(--yw-border-width) solid var(--yw-border);
+  border-radius: 50%;
+  background: var(--yw-surface-raised);
+  color: var(--yw-text-muted);
+  font-size: 0.6rem;
+  cursor: pointer;
+}
+
+.list-form .list-node .input-color-pick:hover,
+.list-form .list-node .input-color-pick:focus-visible {
+  background: var(--yw-primary);
+  border-color: var(--yw-primary);
+  color: var(--yw-on-primary);
+}
+
 .list-form .list-node .input-icon {
   flex: 0 0 2.75rem;
   height: auto;

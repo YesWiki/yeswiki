@@ -2,6 +2,7 @@
 
 namespace YesWiki\Admin\Controller;
 
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request as SymfonyRequest;
 use Symfony\Component\HttpFoundation\Response;
@@ -339,6 +340,22 @@ class AdminController extends YesWikiController
                     );
 
                     Flash::success(_t('ADMIN_PRESET_SAVED', ['name' => $presets->nameOf($saved)]));
+                    break;
+
+                case 'import':
+                    $upload = $request->files->get('preset_file');
+                    if (!$upload instanceof UploadedFile || !$upload->isValid()) {
+                        throw new \InvalidArgumentException(_t('ADMIN_PRESET_IMPORT_NO_FILE'));
+                    }
+                    if ($upload->getSize() > PresetService::IMPORT_MAX_BYTES || strtolower($upload->getClientOriginalExtension()) !== 'css') {
+                        throw new \InvalidArgumentException(_t('ADMIN_PRESET_IMPORT_BAD_FILE'));
+                    }
+                    $imported = $presets->import($upload->getClientOriginalName(), $upload->getContent());
+                    Flash::success(_t('ADMIN_PRESET_IMPORTED', ['name' => $presets->nameOf($imported)]));
+                    $fonts = $presets->fontsNotInstalled($imported);
+                    if ($fonts !== []) {
+                        Flash::warning(_t('ADMIN_PRESET_IMPORT_FONTS_MISSING', ['fonts' => implode(', ', $fonts)]));
+                    }
                     break;
 
                 case 'install_font':

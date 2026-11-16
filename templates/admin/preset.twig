@@ -45,6 +45,17 @@
         {{ icon('plus') }} {{ _t('ADMIN_PRESET_NEW') }}
       </button>
 
+      {% if presetsWritable %}
+        <form method="post" action="{{ url({ tag: 'admin/preset' }) }}" hx-boost="false"
+              enctype="multipart/form-data" class="yw-preset-import">
+          <input type="hidden" name="csrf-token" value="{{ csrfToken({id: 'main', refresh: false}) }}">
+          <input type="hidden" name="preset_action" value="import">
+          <label class="yw-form-label" for="yw-preset-import-file">{{ _t('ADMIN_PRESET_IMPORT_FILE') }}</label>
+          <input type="file" id="yw-preset-import-file" name="preset_file" accept=".css,text/css" required>
+          <button type="submit" class="yw-btn yw-btn--block">{{ icon('upload') }} {{ _t('ADMIN_PRESET_IMPORT') }}</button>
+        </form>
+      {% endif %}
+
     <ul class="yw-preset-cards">
 
       <li class="yw-preset-card{{ defaultPreset == '' ? ' yw-preset-card--default' : '' }}"
@@ -104,6 +115,8 @@
           </button>
 
           <div class="yw-preset-card__tools">
+            <a class="yw-btn yw-btn--sm" href="{{ preset.href }}" download="{{ preset.name }}.css"
+               title="{{ _t('ADMIN_PRESET_DOWNLOAD') }}" aria-label="{{ _t('ADMIN_PRESET_DOWNLOAD') }}">{{ icon('download') }}</a>
             {% if preset.custom %}
               <button type="button" class="yw-btn yw-btn--sm" data-yw-preset-edit
                       data-preset-id="{{ preset.id }}"
@@ -206,6 +219,10 @@
                       <input type="color" class="yw-preset-rail__picker"
                              data-yw-preset-picker="light.{{ name }}"
                              aria-label="{{ _t(token.label) }}">
+                      <button type="button" class="yw-btn yw-btn--sm yw-eyedropper" hidden
+                              data-yw-eyedropper='[data-yw-preset-picker="light.{{ name }}"]'
+                              title="{{ _t('PICK_COLOUR_FROM_SCREEN') }}"
+                              aria-label="{{ _t('PICK_COLOUR_FROM_SCREEN') }}">{{ icon('color-picker') }}</button>
                       <input type="text" class="yw-input" id="yw-preset-light-{{ name }}"
                              name="light[{{ name }}]"
                              data-yw-preset-field="light.{{ name }}"
@@ -221,6 +238,10 @@
                           <input type="color" class="yw-preset-rail__picker"
                                  data-yw-preset-picker="{{ scheme }}.{{ name }}"
                                  aria-label="{{ _t(token.label) }}">
+                          <button type="button" class="yw-btn yw-btn--sm yw-eyedropper" hidden
+                                  data-yw-eyedropper='[data-yw-preset-picker="{{ scheme }}.{{ name }}"]'
+                                  title="{{ _t('PICK_COLOUR_FROM_SCREEN') }}"
+                                  aria-label="{{ _t('PICK_COLOUR_FROM_SCREEN') }}">{{ icon('color-picker') }}</button>
                           <input type="text" class="yw-input" id="yw-preset-{{ scheme }}-{{ name }}"
                                  name="{{ scheme }}[{{ name }}]"
                                  data-yw-preset-field="{{ scheme }}.{{ name }}"
@@ -381,4 +402,5 @@
 
   {{ include_css('styles/yw-admin.css') }}
   {{ include_javascript('javascripts/admin-preset.js', false, true) }}
+  {{ include_javascript('javascripts/eyedropper.js', false, true) }}
 {% endblock %}

@@ -9,6 +9,7 @@ use Symfony\Component\Security\Csrf\Exception\TokenNotFoundException;
 use YesWiki\Content\Entity\PageType;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Content\Service\PageOperationsService;
+use YesWiki\Content\Service\PageTemplates;
 use YesWiki\Core\YesWikiController;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\CsrfTokenChecker;
@@ -24,7 +25,7 @@ class AdminPagesApiController extends YesWikiController
     private const ALLOWED_SORTS = ['tag', 'time', 'owner', 'type'];
     private const SORT_COLUMNS = ['tag' => 'p.tag', 'time' => 'p.time', 'owner' => 'p.owner', 'type' => 'page_type'];
     private const ALLOWED_PERPAGES = [50, 100, 150, 200, 500];
-    private const ALLOWED_TYPES = ['all', 'pages', 'bazar', 'lists', 'special', 'comments'];
+    private const ALLOWED_TYPES = ['all', 'pages', 'templates', 'bazar', 'lists', 'special', 'comments'];
     private const SPECIAL_PAGES = LayoutService::PAGES;
 
     #[Route('/api/admin/pages', methods: ['GET'], options: ['acl' => ['@admins']])]
@@ -90,7 +91,8 @@ class AdminPagesApiController extends YesWikiController
         $defaultWrite = $this->getService(\YesWiki\Kernel\Service\RuntimeConfig::class)['default_write_acl'] ?? '*';
         $defaultComment = $this->getService(\YesWiki\Kernel\Service\RuntimeConfig::class)['default_comment_acl'] ?? '*';
 
-        $pages = array_map(function ($r) use ($defaultRead, $defaultWrite, $defaultComment) {
+        $templates = array_column($this->getService(\YesWiki\Kernel\Service\TripleStore::class)->getMatching(null, PageTemplates::PROPERTY, null, '=', '=', '='), 'resource');
+        $pages = array_map(function ($r) use ($defaultRead, $defaultWrite, $defaultComment, $templates) {
             $metadata = !empty($r['page_metadata']) ? (json_decode($r['page_metadata'], true) ?? []) : [];
             $acls = $metadata['acls'] ?? [];
 
@@ -107,6 +109,7 @@ class AdminPagesApiController extends YesWikiController
                 'form_id' => $r['form_id'] ?? '',
                 'tags' => !empty($r['page_tags']) ? explode(',', $r['page_tags']) : [],
                 'is_special' => in_array($r['tag'], self::SPECIAL_PAGES, true),
+                'is_template' => in_array($r['tag'], $templates, true),
                 'theme' => $metadata['theme'] ?? '',
                 'squelette' => $metadata['squelette'] ?? '',
                 'style' => $metadata['style'] ?? '',
@@ -369,6 +372,10 @@ class AdminPagesApiController extends YesWikiController
             case 'lists':
                 $conditions[] = "{$typeCol} = ?";
                 $params[] = PageType::LIST;
+                break;
+            case 'templates':
+                $conditions[] = 'p.tag IN (SELECT t.resource FROM ' . $db->prefixTable('triples') . ' t WHERE t.property = ?)';
+                $params[] = PageTemplates::PROPERTY;
                 break;
             case 'special':
                 $conditions[] = 'p.tag IN (' . SqlParameters::placeholders(count(self::SPECIAL_PAGES)) . ')';

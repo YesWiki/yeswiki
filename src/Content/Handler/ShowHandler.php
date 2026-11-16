@@ -162,8 +162,6 @@ class ShowHandler extends YesWikiHandler implements RegisteredHandler
             ) ?? $plugin_output_new;
         }
 
-        $plugin_output_new = str_replace('ondblclick="doubleClickEdit(event);"', '', $plugin_output_new);
-
         $plugin_output_new = str_replace('onload="alert(\'' . _t('EDIT_NO_CHANGE_MSG') . '\');"', '', $plugin_output_new);
 
         $missingTheme = $this->getService(ThemeResolutionError::class)->takeMissingTheme();

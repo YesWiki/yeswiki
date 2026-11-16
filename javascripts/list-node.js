@@ -1,4 +1,5 @@
 import { openIconPicker, iconHtml } from './icon-picker.js'
+import { canPickFromScreen, pickInto } from './eyedropper.js'
 
 export default {
   name: 'list-node',
@@ -8,6 +9,7 @@ export default {
     return {
       expanded: false,
       newNodeLabel: '',
+      canPickFromScreen: canPickFromScreen(),
       labels: {
         LIST_ADD_CHILD_NODE: _t('LIST_ADD_CHILD_NODE'),
         LIST_ADD_NODE: _t('LIST_ADD_NODE'),
@@ -16,10 +18,12 @@ export default {
         LIST_VALUE_COLOR: _t('LIST_VALUE_COLOR'),
         LIST_VALUE_COLOR_CLEAR: _t('LIST_VALUE_COLOR_CLEAR'),
         ICON_PICKER_TITLE: _t('ICON_PICKER_TITLE'),
+        PICK_COLOUR_FROM_SCREEN: _t('PICK_COLOUR_FROM_SCREEN'),
       },
     }
   },
   methods: {
+    pickInto,
     addChildNode() {
       this.node.children.push({
         label: this.newNodeLabel,
@@ -82,7 +86,12 @@ export default {
         <span class="input-color-field">
           <input type="color" v-model="node.color" class="yw-input input-color"
                  :class="{ 'input-color--empty': !node.color }"
-                 :title="labels.LIST_VALUE_COLOR" />
+                 :title="labels.LIST_VALUE_COLOR" ref="colorInput" />
+          <button v-if="canPickFromScreen" type="button" class="input-color-pick"
+                  @click="pickInto($refs.colorInput)"
+                  :title="labels.PICK_COLOUR_FROM_SCREEN" :aria-label="labels.PICK_COLOUR_FROM_SCREEN">
+            <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#color-picker"/></svg>
+          </button>
           <button v-if="node.color" type="button" class="input-color-clear" @click="node.color = ''"
                   :title="labels.LIST_VALUE_COLOR_CLEAR" :aria-label="labels.LIST_VALUE_COLOR_CLEAR">
             <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#x"/></svg>

@@ -1,0 +1,23 @@
+<section class="yw-template-chooser" aria-labelledby="yw-template-chooser-title">
+  <h1 id="yw-template-chooser-title">{{ _t('PAGE_TEMPLATE_CHOOSE_TITLE', {tag: tag}) }}</h1>
+  <p>{{ _t('PAGE_TEMPLATE_CHOOSE_INTRO') }}</p>
+  <ul class="yw-template-chooser__list">
+    <li>
+      <a class="yw-template-chooser__card" href="{{ blankUrl }}">
+        <span class="yw-template-chooser__title">{{ icon('file') }} {{ _t('PAGE_TEMPLATE_BLANK') }}</span>
+        <span class="yw-template-chooser__summary">{{ _t('PAGE_TEMPLATE_BLANK_HELP') }}</span>
+      </a>
+    </li>
+    {% for template in templates %}
+      <li>
+        <a class="yw-template-chooser__card" href="{{ template.url }}">
+          <span class="yw-template-chooser__title">{{ icon('file-text') }} {{ template.title }}</span>
+          {% if template.summary is not empty %}
+            <span class="yw-template-chooser__summary">{{ template.summary }}</span>
+          {% endif %}
+        </a>
+      </li>
+    {% endfor %}
+  </ul>
+  <p><a class="yw-btn yw-btn--quiet" href="{{ cancelUrl }}">{{ _t('YW_CANCEL') }}</a></p>
+</section>

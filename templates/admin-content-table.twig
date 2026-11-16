@@ -112,6 +112,8 @@
                                 {{- _t("ADMIN_CONTENT_TYPE_LIST") -}}
                             {%- elseif page.is_special -%}
                                 {{- _t("ADMIN_CONTENT_TYPE_SPECIAL_PAGE") -}}
+                            {%- elseif page.is_template -%}
+                                {{- _t("ADMIN_CONTENT_TYPE_TEMPLATE") -}}
                             {%- else -%}
                                 {{- _t("ADMIN_CONTENT_TYPE_PAGE") -}}
                             {%- endif -%}

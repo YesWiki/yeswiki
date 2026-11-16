@@ -43,6 +43,21 @@
 
   {% for input in fieldsAfterContent %}{{ input|raw }}{% endfor %}
 
+  {% if fromTemplate|default('') is not empty %}
+    <input type="hidden" name="from_template" value="{{ fromTemplate }}"/>
+  {% endif %}
+
+  {% if templateMark is defined and templateMark is not null %}
+    <div class="yw-page-template-mark">
+      <input type="hidden" name="page_template_shown" value="1"/>
+      <label>
+        <input type="checkbox" name="page_template" value="1"{% if templateMark %} checked{% endif %}/>
+        {{ _t('PAGE_TEMPLATE_MARK') }}
+      </label>
+      <p class="yw-form-help">{{ _t('PAGE_TEMPLATE_MARK_HELP') }}</p>
+    </div>
+  {% endif %}
+
   {% set incomingUrl = request.request.incomingurl|default(request.get.incomingurl|default('')) %}
   {% if incomingUrl is not empty %}
     <input type="hidden" name="incomingurl" value="{{ incomingUrl }}"/>

@@ -13,6 +13,7 @@ use YesWiki\Content\Service\ContentTypeResolver;
 use YesWiki\Content\Service\EntryManager;
 use YesWiki\Content\Service\FormManager;
 use YesWiki\Content\Service\PageManager;
+use YesWiki\Content\Service\PageTemplates;
 use YesWiki\Content\Service\TranslatableContent;
 use YesWiki\Core\YesWikiHandler;
 use YesWiki\Identity\Service\AclService;
@@ -158,16 +159,7 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
         return $this->getService(UrlFormatter::class)->href('deletepage', $tag);
     }
 
-    /**
-     * The fields of the form describing **this row's own Content type**, split around the one holding the markup.
-     *
-     * @return array{before: list<BazarField>, after: list<BazarField>, hasContent: bool}
-     */
-    /**
-     * The language this edit screen writes, and the language the body itself is written in. A page nobody has written yet has no source to translate, so it is written rather than translated.
-     *
-     * @return array{0: string, 1: string}
-     */
+    /** @return array{0: string, 1: string} the language this screen writes and the one the body is written in; a page nobody wrote yet is written, not translated */
     private function editingAndSourceLanguages(): array
     {
         $translatable = $this->getService(TranslatableContent::class);
@@ -186,11 +178,9 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
     }
 
     /**
-     * What the editor should show for $language: its translation, blank where it has none.
-     *
      * @param array<string, mixed> $stored
      *
-     * @return array<string, mixed>
+     * @return array<string, mixed> what the editor shows for that language: its translation, blank where it has none
      */
     private function bodyForEditing(array $stored, string $language, string $source): array
     {
@@ -207,12 +197,7 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
         return array_merge($shown, Translations::of($stored, $language));
     }
 
-    /**
-     * Put the source wording on each field a translator is asked to fill in: the input itself stays
-     * empty, since an empty translation is what makes a reader fall back to the source.
-     *
-     * @param array<string, mixed> $stored
-     */
+    /** @param array<string, mixed> $stored shows the source wording beside each field a translator fills, leaving the input empty so readers fall back to the source */
     private function showWhatIsBeingTranslated(array $stored): void
     {
         $source = Translations::strip($stored);
@@ -228,11 +213,7 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
         }
     }
 
-    /**
-     * What this page has to translate, in the shape the language switch counts a translation against.
-     *
-     * @return list<array{path: string, label: string, multiline: bool}>
-     */
+    /** @return list<array{path: string, label: string, multiline: bool}> what this page has to translate, as the language switch counts it */
     private function translatablePaths(): array
     {
         $form = $this->getService(ContentTypeResolver::class)->formForEditing($this->getService(PageContext::class)->getTag());
@@ -240,9 +221,7 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
         return $form === null ? [] : $this->getService(TranslatableContent::class)->entryPaths($form);
     }
 
-    /**
-     * @return array{before: list<BazarField>, after: list<BazarField>, hasContent: bool, translatable: list<string>}
-     */
+    /** @return array{before: list<BazarField>, after: list<BazarField>, hasContent: bool, translatable: list<string>} the Page form's fields, split around the one holding the markup */
     private function contentFormFields(): array
     {
         $split = ['before' => [], 'after' => [], 'hasContent' => false, 'translatable' => []];
@@ -290,12 +269,10 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
     }
 
     /**
-     * The rendered inputs of those fields, filled from the page's current body.
-     *
      * @param list<BazarField>     $fields
      * @param array<string, mixed> $body
      *
-     * @return list<string>
+     * @return list<string> the inputs of those fields, filled from that body
      */
     private function renderContentFields(array $fields, array $body): array
     {
@@ -313,11 +290,9 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
     }
 
     /**
-     * Merge the posted values of the Page form's fields into the body being saved.
-     *
      * @param array<string, mixed> $body
      *
-     * @return array<string, mixed>
+     * @return array<string, mixed> that body with the posted values of the Page form's fields
      */
     private function applyPostedPageFields(array $body): array
     {
@@ -447,6 +422,11 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
 
             [$editing, $source] = $this->editingAndSourceLanguages();
             $translating = $editing !== $source;
+            $isNewPage = empty($this->getService(PageContext::class)->getPage());
+            if ($isNewPage && $submit === false && $this->showsTemplateChooser()) {
+                return;
+            }
+            $fromTemplate = $isNewPage ? $this->templateStartedFrom() : '';
             $storedBody = $this->getService(PageContext::class)->getPage()['body'] ?? [];
             $this->getService(LanguageSwitch::class)->writing(
                 $this->getService(TranslatableContent::class)->editingLanguages(
@@ -456,7 +436,9 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
                     $this->translatablePaths()
                 )
             );
-            $shownBody = $this->bodyForEditing($storedBody, $editing, $source);
+            $shownBody = $fromTemplate !== ''
+                ? ($this->getService(PageTemplates::class)->bodyOf($fromTemplate) ?? [])
+                : $this->bodyForEditing($storedBody, $editing, $source);
 
             $body = (string)($request->request->get('body') ?: PageBody::content($shownBody));
 
@@ -488,6 +470,8 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
                     'editingTranslation' => $translating,
                     'fieldsBeforeContent' => $this->renderContentFields($pageFields['before'], $editedBody),
                     'fieldsAfterContent' => $this->renderContentFields($pageFields['after'], $editedBody),
+                    'fromTemplate' => $fromTemplate,
+                    'templateMark' => $this->templateMarkState($isNewPage),
                 ]);
                 $this->getService(InclusionStack::class)->replace($temp);
             } else {
@@ -527,11 +511,16 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
                     $after = $this->incomingUrl() ?? $this->getService(UrlFormatter::class)->href(WikiUrls::iframeSuffixFor());
 
                     if ($unchanged) {
+                        $this->applyTemplateMark();
                         $this->getService(FlashMessageService::class)->setMessage(_t('EDIT_NO_CHANGE_MSG'));
                         $this->getService(Redirector::class)->redirect($after);
                     } else {
                         $parent = (string)($this->getService(PageContext::class)->getPage()['parent'] ?? '');
                         $this->getService(PageManager::class)->save($this->getService(PageContext::class)->getTag(), $newBody, $parent);
+                        if ($fromTemplate !== '') {
+                            $this->getService(PageTemplates::class)->copyFiles($fromTemplate, (string)$this->getService(PageContext::class)->getTag());
+                        }
+                        $this->applyTemplateMark();
 
                         if ($parent !== '') {
                             $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href(WikiUrls::iframeSuffixFor(), $parent) . '#' . $this->getService(PageContext::class)->getTag());
@@ -563,6 +552,8 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
                         'editingTranslation' => $translating,
                         'fieldsBeforeContent' => $this->renderContentFields($pageFields['before'], $editedBody),
                         'fieldsAfterContent' => $this->renderContentFields($pageFields['after'], $editedBody),
+                        'fromTemplate' => $fromTemplate,
+                        'templateMark' => $this->templateMarkState($isNewPage),
                     ]);
                 }
             }
@@ -579,6 +570,82 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
             echo $this->getService(TemplateEngine::class)->renderPage($output);
         } else {
             echo $output;
+        }
+    }
+
+    /** Shows the choice between a blank page and the templates, before a new page's editor, when there are templates and none was chosen yet. */
+    private function showsTemplateChooser(): bool
+    {
+        $request = $this->getService(CurrentRequest::class)->get();
+        if ($request->query->has('template') || $request->request->has('body') || $request->query->has('body')) {
+            return false;
+        }
+        $templates = $this->getService(PageTemplates::class)->available();
+        if ($templates === []) {
+            return false;
+        }
+
+        $tag = (string)$this->getService(PageContext::class)->getTag();
+        $handler = WikiUrls::iframeSuffixFor() ? 'editiframe' : 'edit';
+        $query = array_filter(
+            $request->query->all(),
+            static fn ($value, $key): bool => is_string($value) && $key !== 'wiki' && !str_contains((string)$key, '/'),
+            ARRAY_FILTER_USE_BOTH
+        );
+        $urls = $this->getService(UrlFormatter::class);
+        $choices = array_map(fn (array $template): array => $template + [
+            'url' => $urls->href($handler, $tag, $query + $this->getService(PageTemplates::class)->lookOf($template['tag']) + ['newpage' => '1', 'template' => $template['tag']], false),
+        ], $templates);
+
+        $output = $this->getService(TemplateEngine::class)->render('@core/handlers/edit-choose-template.twig', [
+            'tag' => $tag,
+            'templates' => $choices,
+            'blankUrl' => $urls->href($handler, $tag, $query + ['template' => ''], false),
+            'cancelUrl' => $this->incomingUrl() ?? $urls->href(WikiUrls::iframeSuffixFor(), $tag, null, false),
+        ]);
+        echo WikiUrls::iframeSuffixFor() ? $output : $this->getService(TemplateEngine::class)->renderPage($output);
+
+        return true;
+    }
+
+    /** The template a new page is being written from, once the user may use it. */
+    private function templateStartedFrom(): string
+    {
+        $request = $this->getService(CurrentRequest::class)->get();
+        $tag = $request->request->get('from_template') ?? $request->query->get('template');
+        if (!is_string($tag) || $tag === '') {
+            return '';
+        }
+
+        return $this->getService(PageTemplates::class)->bodyOf($tag) === null ? '' : $tag;
+    }
+
+    /** Whether the page is a template, for an admin editing an ordinary page; null for anyone else. */
+    private function templateMarkState(bool $isNewPage): ?bool
+    {
+        $tag = (string)$this->getService(PageContext::class)->getTag();
+        $page = $this->getService(PageContext::class)->getPage();
+        if (!$this->getService(AclService::class)->isAdmin() || ($page['parent'] ?? '') !== ''
+            || ($isNewPage ? false : $this->getService(PageManager::class)->typeOf($tag) !== PageType::DEFAULT)) {
+            return null;
+        }
+        $request = $this->getService(CurrentRequest::class)->get();
+        if ($request->request->has('page_template_shown')) {
+            return $request->request->get('page_template') === '1';
+        }
+
+        return !$isNewPage && $this->getService(PageTemplates::class)->isTemplate($tag);
+    }
+
+    /** Marks or unmarks the page as a template, as the admin's checkbox says. */
+    private function applyTemplateMark(): void
+    {
+        $request = $this->getService(CurrentRequest::class)->get();
+        if ($request->request->has('page_template_shown')) {
+            $this->getService(PageTemplates::class)->mark(
+                (string)$this->getService(PageContext::class)->getTag(),
+                $request->request->get('page_template') === '1'
+            );
         }
     }
 

@@ -665,6 +665,45 @@ class PresetService
         $config->write();
     }
 
+    private const GENERIC_FAMILIES = ['serif', 'sans-serif', 'monospace', 'cursive', 'fantasy', 'system-ui', 'ui-serif', 'ui-sans-serif', 'ui-monospace', 'ui-rounded', 'inherit'];
+    public const IMPORT_MAX_BYTES = 65536;
+
+    /** Adds a preset another wiki exported, keeping only its token values, under a name no other preset has; returns its id. */
+    public function import(string $fileName, string $css): string
+    {
+        $values = $this->valuesOf($css);
+        foreach ($values as $scheme => $tokens) {
+            foreach ($tokens as $token => $value) {
+                if (preg_match('/url\s*\(|@import|[{}]/i', $value)) {
+                    throw new \InvalidArgumentException(_t('ADMIN_PRESET_IMPORT_REFUSED_VALUE', ['token' => $token, 'scheme' => $scheme]));
+                }
+            }
+        }
+        $name = pathinfo($fileName, PATHINFO_FILENAME);
+        $file = $this->freeFileName($name === '' ? 'preset' : $name);
+
+        return $this->save('', pathinfo($file, PATHINFO_FILENAME), $values);
+    }
+
+    /** @return list<string> the webfonts a preset names that this wiki could not install */
+    public function fontsNotInstalled(string $id): array
+    {
+        $values = $this->valuesFor($id);
+        $missing = [];
+        foreach (['yw-font-body', 'yw-font-heading', 'yw-font-mono'] as $token) {
+            $family = trim((string)($values['light'][$token] ?? ''));
+            if ($family === '' || self::isSystemStack($family) || str_starts_with($family, 'var(')) {
+                continue;
+            }
+            $name = trim(str_replace(['\'', '"'], '', explode(',', $family)[0]));
+            if ($name !== '' && !in_array(strtolower($name), self::GENERIC_FAMILIES, true) && $this->themeManager->fontFaces($name) === '' && !in_array($name, $missing, true)) {
+                $missing[] = $name;
+            }
+        }
+
+        return $missing;
+    }
+
     /** Copy a preset into the instance so it can be edited, and return the copy's id. */
     public function duplicate(string $id): string
     {

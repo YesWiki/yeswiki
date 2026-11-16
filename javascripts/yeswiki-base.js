@@ -130,6 +130,26 @@ function checkAll(state) {
     true,
   )
 
+  const canHover = () => window.matchMedia('(hover: hover)').matches
+
+  document.addEventListener('dblclick', (e) => {
+    if (!canHover()) return
+    const zone = e.target.closest('[data-yw-edit-href]')
+    if (zone) document.location = zone.dataset.ywEditHref
+  })
+
+  ywInitEach('[data-yw-edit-href]', (zone) => {
+    if (zone.querySelector(':scope > .yw-edit-zone__button')) return
+    const pencil = document.createElement('a')
+    pencil.className = 'yw-edit-zone__button'
+    pencil.href = zone.dataset.ywEditHref
+    pencil.setAttribute('aria-label', zone.dataset.ywEditLabel || '')
+    pencil.title = zone.dataset.ywEditLabel || ''
+    pencil.innerHTML =
+      '<svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#pencil"/></svg>'
+    zone.prepend(pencil)
+  })
+
   document.querySelectorAll('.modal, .yw-modal').forEach((modal) => {
     document.body.appendChild(modal)
   })
@@ -169,6 +189,8 @@ function checkAll(state) {
     navbar.addEventListener('dblclick', (e) => {
       e.preventDefault()
       e.stopPropagation()
+      const zones = [...navbar.querySelectorAll('[data-yw-edit-href]')]
+      if (!canHover() || zones.length === 0) return
       const modal = document.createElement('div')
       modal.className = 'yw-modal'
       modal.id = 'YesWikiModal'
@@ -188,22 +210,13 @@ function checkAll(state) {
       )
       const body = modal.querySelector('.yw-modal__body')
 
-      navbar.querySelectorAll('.include').forEach((include) => {
-        const href = (include.getAttribute('ondblclick') || '')
-          .replace("document.location='", '')
-          .replace("';", '')
-        if (!href) return
-        const pagewiki = href
-          .replace('/edit', '')
-          .replace('http://yeswiki.dev/wakka.php?wiki=', '')
+      zones.forEach((zone) => {
         const link = document.createElement('a')
-        link.href = href
+        link.href = zone.dataset.ywEditHref
         link.className = 'yw-btn yw-btn--block'
         link.innerHTML =
           '<svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#pencil"/></svg> '
-        link.appendChild(
-          document.createTextNode(`${_t('YESWIKIMODAL_EDIT_MSG')} ${pagewiki}`),
-        )
+        link.appendChild(document.createTextNode(zone.dataset.ywEditLabel))
         body.appendChild(link)
       })
 

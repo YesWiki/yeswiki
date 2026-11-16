@@ -648,6 +648,12 @@
   color: var(--yw-text);
 }
 
+.yw-preset-import {
+  display: grid;
+  gap: var(--yw-space-sm-y);
+  margin: var(--yw-space-md-y) 0;
+}
+
 .yw-preset-head {
   display: flex;
   align-items: baseline;
