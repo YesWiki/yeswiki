@@ -151,7 +151,6 @@ return [
     'ADMIN_FILES_DELETE' => 'Het bestand verwijderen',
     'ADMIN_FILES_DELETE_CONFIRM' => '{name} verwijderen? Alles wat er nog naar verwijst wordt kapot.',
     'ADMIN_FILES_NOT_FOUND' => 'Bestand niet gevonden.',
-    'ADMIN_FILES_UPLOADING' => 'Bezig met verzenden…',
     'ADMIN_FILES_UPLOADED' => '{count} bestanden toegevoegd.',
     'ADMIN_FILES_UPLOAD_FAILED' => '{count} konden niet worden toegevoegd.',
     'DASHBOARD_API' => 'API',
@@ -930,7 +929,6 @@ Inhoud van het tabblad "{tabName}"
     'ATTACH_FILE_PICKER_CHOOSE_OR_UPLOAD' => 'Een bestand kiezen of uploaden',
     'ATTACH_FILE_PICKER_USE_THIS_FILE' => 'Dit bestand gebruiken',
     'ATTACH_FILE_PICKER_WRONG_FAMILY' => 'Dit bestandstype past niet bij dit veld.',
-    'ATTACH_FILE_PICKER_UPLOADING' => 'Bezig met verzenden…',
     'CONTACT_SEND_PAGE_BY_MAIL' => 'De pagina per mail versturen',
     'CONTACT_NEW_USER_MESSAGE' => 'Hallo!
 

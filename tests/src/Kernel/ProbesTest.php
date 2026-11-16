@@ -130,9 +130,10 @@ class ProbesTest extends YesWikiTestCase
             @unlink($log);
         }
 
+        $onSqlite = (self::getWiki()->config['db_driver'] ?? '') === 'sqlite';
         $this->assertFalse($refused['ready'] ?? null);
-        $this->assertStringContainsString('YESWIKI_SIGNING_KEY', $logged, 'the reason goes to the server log, not the answer');
+        $this->assertStringContainsString($onSqlite ? 'SQLite' : 'YESWIKI_SIGNING_KEY', $logged, 'the reason goes to the server log, not the answer');
         $this->assertSame('failed', $refused['checks']['configuration'] ?? null, (string)json_encode($refused));
-        $this->assertSame('ok', $given['checks']['configuration'] ?? null, (string)json_encode($given));
+        $this->assertSame($onSqlite ? 'failed' : 'ok', $given['checks']['configuration'] ?? null, 'the keys are enough, except on SQLite, which no replica may use: ' . json_encode($given));
     }
 }

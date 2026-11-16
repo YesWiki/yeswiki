@@ -113,7 +113,6 @@ return [
     'ADMIN_FILES_DELETE' => 'கோப்பை நீக்கு',
     'ADMIN_FILES_DELETE_CONFIRM' => '{name} ஐ நீக்கவா? இன்னும் அதைச் சுட்டும் அனைத்தும் உடைந்துவிடும்.',
     'ADMIN_FILES_NOT_FOUND' => 'கோப்பு கிடைக்கவில்லை.',
-    'ADMIN_FILES_UPLOADING' => 'அனுப்பப்படுகிறது…',
     'ADMIN_FILES_UPLOADED' => '{count} கோப்புகள் சேர்க்கப்பட்டன.',
     'ADMIN_FILES_UPLOAD_FAILED' => '{count} சேர்க்க முடியவில்லை.',
     'DASHBOARD_API' => 'API',
@@ -656,7 +655,6 @@ return [
     'ATTACH_FILE_PICKER_CHOOSE_OR_UPLOAD' => 'ஒரு கோப்பைத் தேர்ந்தெடுக்கவும் அல்லது பதிவேற்றவும்',
     'ATTACH_FILE_PICKER_USE_THIS_FILE' => 'இந்தக் கோப்பைப் பயன்படுத்து',
     'ATTACH_FILE_PICKER_WRONG_FAMILY' => 'இந்த வகைக் கோப்பு இந்தப் புலத்திற்குப் பொருந்தாது.',
-    'ATTACH_FILE_PICKER_UPLOADING' => 'அனுப்பப்படுகிறது…',
     'CONTACT_SEND_PAGE_BY_MAIL' => 'பக்கத்தை மின்னஞ்சலில் அனுப்பு',
     'CONTACT_NEW_USER_MESSAGE' => 'வணக்கம்!
 

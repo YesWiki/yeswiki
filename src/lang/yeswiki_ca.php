@@ -239,7 +239,6 @@ return [
     'ADMIN_FILES_DELETE' => 'Suprimir el fitxer',
     'ADMIN_FILES_DELETE_CONFIRM' => 'Voleu suprimir {name}? Tot el que hi apunti encara quedarà trencat.',
     'ADMIN_FILES_NOT_FOUND' => 'Fitxer no trobat.',
-    'ADMIN_FILES_UPLOADING' => 'Enviament en curs…',
     'ADMIN_FILES_UPLOADED' => '{count} fitxers afegits.',
     'ADMIN_FILES_UPLOAD_FAILED' => '{count} no s\'han pogut afegir.',
     'DASHBOARD_API' => 'API',
@@ -864,7 +863,6 @@ Contingut de la pestanya "{tabName}"
     'ATTACH_FILE_PICKER_CHOOSE_OR_UPLOAD' => 'Triar o pujar un fitxer',
     'ATTACH_FILE_PICKER_USE_THIS_FILE' => 'Fer servir aquest fitxer',
     'ATTACH_FILE_PICKER_WRONG_FAMILY' => 'Aquest tipus de fitxer no convé a aquest camp.',
-    'ATTACH_FILE_PICKER_UPLOADING' => 'Enviament en curs…',
     'CONTACT_SEND_PAGE_BY_MAIL' => 'Enviar la pàgina per correu',
     'CONTACT_NEW_USER_MESSAGE' => 'Hola!
 

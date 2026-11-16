@@ -1,6 +1,7 @@
 import { filePickerMenuItem, hasFilePicker } from './vditor-toolbar-file.js'
 import { followScheme, vditorThemeOptions } from './editor-scheme.js'
 import { emojiMenuItem } from './emoji-popover.js'
+import { uploadIntoEditor, uploadTargetOf } from './editor-paste-upload.js'
 
 const VDITOR_CDN = 'javascripts/vendor/vditor'
 
@@ -43,6 +44,7 @@ function initVditor(textareaParam) {
         ? [
             filePickerMenuItem({
               onComplete: (markdown) => editor.insertValue(markdown),
+              target: () => uploadTargetOf(container),
             }),
             '|',
           ]
@@ -56,6 +58,17 @@ function initVditor(textareaParam) {
       'inline-code',
     ],
     cache: { enable: false },
+    upload: {
+      multiple: true,
+      handler(files) {
+        uploadIntoEditor(files, {
+          host: container,
+          format: 'markdown',
+          insert: (markdown) => editor.insertValue(markdown),
+        })
+        return null
+      },
+    },
     resize: { enable: true },
     customWysiwygToolbar() {},
     toolbarConfig: { pin: true },

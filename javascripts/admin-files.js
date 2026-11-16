@@ -1,11 +1,6 @@
-/**
- * The file manager, re-bound every time htmx swaps it in.
- *
- * A `type="module"` script is evaluated once per document, and boosted navigation swaps the body
- * without making a new one -- so leaving the screen and coming back used to give an empty grid,
- * because nothing ran the second time. `ywInitEach` is the codebase's answer: it fires on load,
- * on `htmx:load` and on `yw:assets-ready`, once per element.
- */
+// The file manager, bound through ywInitEach so that boosted navigation, which keeps the document, binds it again when it comes back.
+import { progressBlock, upload } from './upload.js'
+
 ywInitEach('#yw-files', (root) => {
   const endpoint = root.dataset.ywFilesUrl
   const grid = root.querySelector('[data-yw-files-grid]')
@@ -169,7 +164,6 @@ ywInitEach('#yw-files', (root) => {
     load()
   })
 
-  // One click: the button opens the file browser, and choosing is the upload.
   addButton?.addEventListener('click', () => input.click())
 
   input?.addEventListener('change', async () => {
@@ -179,15 +173,36 @@ ywInitEach('#yw-files', (root) => {
     addButton.disabled = true
     result.hidden = false
     result.className = 'yw-files__result'
-    result.textContent = _t('ADMIN_FILES_UPLOADING')
+    const progress = progressBlock()
+    result.replaceChildren(progress)
+    const label = progress.querySelector('.yw-upload-progress__label')
 
     let failed = 0
-    for (const file of chosen) {
+    const errors = []
+    for (const [index, file] of chosen.entries()) {
+      label.textContent =
+        chosen.length > 1
+          ? _t('UPLOAD_FILE_OF', {
+              index: String(index + 1),
+              count: String(chosen.length),
+              name: file.name,
+            })
+          : _t('UPLOAD_SENDING', { name: file.name })
       const body = new FormData()
       body.append('upFile', file)
       try {
-        const response = await fetch(endpoint, { method: 'POST', body })
-        if (!response.ok) failed += 1
+        const response = await upload(endpoint, body, { progress })
+        if (!response.ok) {
+          failed += 1
+          if (response.body?.error) {
+            errors.push(
+              _t('UPLOAD_FAILED', {
+                name: file.name,
+                error: response.body.error,
+              }),
+            )
+          }
+        }
       } catch {
         failed += 1
       }
@@ -198,10 +213,12 @@ ywInitEach('#yw-files', (root) => {
     result.classList.add(
       failed === 0 ? 'yw-files__result--ok' : 'yw-files__result--failed',
     )
-    result.textContent =
+    result.textContent = [
       failed === 0
         ? _t('ADMIN_FILES_UPLOADED').replace('{count}', String(chosen.length))
-        : _t('ADMIN_FILES_UPLOAD_FAILED').replace('{count}', String(failed))
+        : _t('ADMIN_FILES_UPLOAD_FAILED').replace('{count}', String(failed)),
+      ...errors,
+    ].join(' ')
 
     reload()
   })

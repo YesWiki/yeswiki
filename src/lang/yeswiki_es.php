@@ -237,7 +237,6 @@ return [
     'ADMIN_FILES_DELETE' => 'Eliminar el archivo',
     'ADMIN_FILES_DELETE_CONFIRM' => '¿Eliminar {name}? Todo lo que aún apunte a él quedará roto.',
     'ADMIN_FILES_NOT_FOUND' => 'Archivo no encontrado.',
-    'ADMIN_FILES_UPLOADING' => 'Envío en curso…',
     'ADMIN_FILES_UPLOADED' => '{count} archivos añadidos.',
     'ADMIN_PRESET_GROUP_NAVBAR' => 'Barra de menú',
     'ADMIN_PRESET_GROUP_FOOTER' => 'Pie de página',
@@ -648,7 +647,6 @@ Contenido de la pestaña "{tabName}"
     'ATTACH_FILE_PICKER_CHOOSE_OR_UPLOAD' => 'Elegir o subir un archivo',
     'ATTACH_FILE_PICKER_USE_THIS_FILE' => 'Utilizar este archivo',
     'ATTACH_FILE_PICKER_WRONG_FAMILY' => 'Este tipo de archivo no conviene a este campo.',
-    'ATTACH_FILE_PICKER_UPLOADING' => 'Envío en curso…',
     'CONTACT_SEND_PAGE_BY_MAIL' => 'Enviar la página por correo',
     'CONTACT_NEW_USER_MESSAGE' => '¡Hola!
 

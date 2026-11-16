@@ -10,6 +10,13 @@ import AceWrapper from './ace-wrapper.js'
 import ActionsBuilder from './actions-builder.js'
 import { fillSourceEditorToolbar } from './editor-markup-syntax.js'
 import { openEmojiPicker } from './emoji-popover.js'
+import {
+  dragsFiles,
+  droppedFiles,
+  pastedFiles,
+  uploadIntoEditor,
+  uploadTargetOf,
+} from './editor-paste-upload.js'
 
 const PLAIN_TEXT_STORAGE_KEY = 'yeswiki-aceditor-plain-text'
 
@@ -91,6 +98,64 @@ class Aceditor {
       placeholder: this.textarea.getAttribute('placeholder'),
     })
     this.initPlainTextToggle()
+    this.initPasteUpload()
+  }
+
+  /** A file pasted or dropped into the editor is uploaded, and its {{attach}} lands where the paste or the drop was. */
+  initPasteUpload() {
+    const { ace } = this.editor
+    const intoAce = (files, event, position) => {
+      if (!files.length) return
+      event.preventDefault()
+      event.stopPropagation()
+      const range = ace.getSelectionRange()
+      if (!position) ace.session.remove(range)
+      const anchor = ace.session.doc.createAnchor(position ?? range.start)
+      uploadIntoEditor(files, {
+        host: this.container,
+        insert: (code) => ace.session.insert(anchor.getPosition(), code),
+      }).finally(() => anchor.detach())
+    }
+    this.aceContainer.addEventListener(
+      'paste',
+      (event) => intoAce(pastedFiles(event.clipboardData), event),
+      true,
+    )
+    this.aceContainer.addEventListener(
+      'dragover',
+      (event) => {
+        if (!dragsFiles(event.dataTransfer)) return
+        event.preventDefault()
+        event.stopPropagation()
+        event.dataTransfer.dropEffect = 'copy'
+      },
+      true,
+    )
+    this.aceContainer.addEventListener(
+      'drop',
+      (event) =>
+        intoAce(
+          droppedFiles(event.dataTransfer),
+          event,
+          ace.renderer.screenToTextCoordinates(event.clientX, event.clientY),
+        ),
+      true,
+    )
+    this.textarea.addEventListener('paste', (event) => {
+      const files = pastedFiles(event.clipboardData)
+      if (!files.length) return
+      event.preventDefault()
+      let at = this.textarea.selectionStart
+      this.textarea.setRangeText('', at, this.textarea.selectionEnd)
+      uploadIntoEditor(files, {
+        host: this.container,
+        insert: (code) => {
+          this.textarea.setRangeText(code, at, at)
+          at += code.length
+          this.textarea.dispatchEvent(new Event('input', { bubbles: true }))
+        },
+      })
+    })
   }
 
   initPlainTextToggle() {
@@ -192,6 +257,7 @@ class Aceditor {
           })
         } else if (btn.classList.contains('aceditor-btn-file')) {
           this.filePicker.open({
+            ...uploadTargetOf(this.container),
             onComplete: (result) => {
               this.editor.replaceSelectionBy(result)
             },

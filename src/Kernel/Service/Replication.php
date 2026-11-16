@@ -4,14 +4,13 @@ namespace YesWiki\Kernel\Service;
 
 use YesWiki\Files\Entity\S3Settings;
 use YesWiki\Files\Service\Storage;
-use YesWiki\Identity\Service\BotGuard;
 
 /** Whether the operator runs this wiki on several replicas at once (ADR-0031), which `YESWIKI_REPLICATED=1` says. */
 final class Replication
 {
     public const ENV = 'YESWIKI_REPLICATED';
 
-    public const KEY_VARIABLES = [SignedTokens::KEY_ENV, BotGuard::KEY_ENV];
+    public const KEY_VARIABLES = [SignedTokens::KEY_ENV, 'YESWIKI_BOT_GUARD_KEY'];
 
     public static function isOn(): bool
     {

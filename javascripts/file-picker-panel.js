@@ -1,6 +1,12 @@
-import prepareImageForUpload from './image-upload.js'
 import { legacyIconToSprite } from './yw-icon-map.js'
 import { claimRailSlot, registerRail } from './editor-rails.js'
+import {
+  attachCode,
+  attachMarkdown,
+  downloadUrl,
+  uploadFile,
+} from './upload-file.js'
+import { progressBlock, readableSize } from './upload.js'
 
 /** Sprite icon standing in for a file that has no thumbnail of its own. */
 const FAMILY_ICONS = {
@@ -32,18 +38,6 @@ const FAMILY_MIME_PREFIX = {
   audio: 'audio/',
 }
 
-const readableSize = (bytes) => {
-  const size = Number(bytes) || 0
-  const units = ['B', 'kB', 'MB', 'GB']
-  let unit = 0
-  let value = size
-  while (value >= 1024 && unit < units.length - 1) {
-    value /= 1024
-    unit += 1
-  }
-  return `${unit === 0 ? value : value.toFixed(1)} ${units[unit]}`
-}
-
 export default class {
   onComplete
   onPick
@@ -58,6 +52,7 @@ export default class {
   family = ''
   /** 'browse' | 'upload' | 'chosen' -- see showView(). */
   view = 'browse'
+  uploading = null
 
   get panel() {
     return document.getElementById('YesWikiFilePickerPanel')
@@ -128,7 +123,6 @@ export default class {
         this.close()
       }),
     )
-    // One click: the button opens the file browser, and choosing is the upload.
     this.uploadOpenBtn.addEventListener(
       'click',
       () => this.isOpen && this.uploadInput.click(),
@@ -204,6 +198,7 @@ export default class {
 
   close() {
     if (!this.isOpen || !this.panel) return
+    this.uploading?.abort()
     this.panel.hidden = true
     this.isOpen = false
   }
@@ -220,8 +215,10 @@ export default class {
 
   /** Let the button be pressed again, whatever the upload did. */
   finishUploading() {
+    this.uploading = null
     this.uploadOpenBtn.disabled = false
     this.uploadBusy.hidden = true
+    this.uploadBusy.replaceChildren()
   }
 
   /** Back out of a choice, which unmakes it. */
@@ -426,49 +423,34 @@ export default class {
     }
 
     this.uploadOpenBtn.disabled = true
+    const progress = progressBlock(file.name)
+    this.uploadBusy.replaceChildren(progress)
     this.uploadBusy.hidden = false
-    let toUpload
+    const uploading = new AbortController()
+    this.uploading = uploading
+
+    let entry
     try {
-      toUpload = await prepareImageForUpload(file)
-    } catch {
+      entry = await uploadFile(file, {
+        pageTag: this.pageTag,
+        uploadToken: this.uploadToken,
+        progress,
+        signal: uploading.signal,
+      })
+    } catch (error) {
       this.finishUploading()
-      this.uploadError.textContent = _t('ERROR_NO_FILE_UPLOADED')
-      this.uploadError.hidden = false
       this.uploadInput.value = ''
+      if (uploading.signal.aborted) return
+      this.uploadError.textContent =
+        error?.message || _t('ERROR_NO_FILE_UPLOADED')
+      this.uploadError.hidden = false
 
       return
-    }
-
-    const formData = new FormData()
-    formData.append('upFile', toUpload)
-    formData.append('pageTag', this.pageTag)
-    if (this.uploadToken) formData.append('uploadToken', this.uploadToken)
-
-    let response
-    let body
-    try {
-      response = await fetch(wiki.url('api/files'), {
-        method: 'POST',
-        body: formData,
-      })
-      body = await response.json()
-    } catch {
-      response = null
     }
 
     this.finishUploading()
-
-    if (!response || !response.ok) {
-      this.uploadError.textContent =
-        (body && body.error) || _t('ERROR_NO_FILE_UPLOADED')
-      this.uploadError.hidden = false
-      this.uploadInput.value = ''
-
-      return
-    }
-
     this.uploadInput.value = ''
-    this.selectEntry(body)
+    this.selectEntry(entry)
     this.searchInput.value = ''
     this.extensionSelect.value = ''
     this.family = this.only
@@ -486,13 +468,7 @@ export default class {
     this.showView('chosen')
   }
 
-  /**
-   * What the chosen file looks like, at a size worth looking at.
-   *
-   * An image is the case that matters -- picking the wrong photo out of a list of thumbnails is
-   * easy, and the name alone does not catch it. Anything else shows its family glyph, so the box
-   * keeps its shape rather than jumping between two layouts.
-   */
+  /** What the chosen file looks like: a large preview for an image, its family glyph for anything else. */
   showPreview(entry) {
     const holder = this.selectedPreview
     holder.innerHTML = ''
@@ -546,6 +522,7 @@ export default class {
     }
   }
 
+  /** The {{attach}} for the chosen file, with what the options form says. */
   buildYesWikiCode() {
     const form = this.optionsForm
     const val = (name) => {
@@ -553,48 +530,20 @@ export default class {
       const field = checked || form.querySelector(`[name="${name}"]`)
       return (field && field.value) || ''
     }
-    const esc = (s) => String(s).replace(/"/g, '&quot;')
-
-    let desc =
-      form.querySelector('[name="attach_alt"]').value || val('attach_link_text')
-    if (!desc) desc = this.selectedEntry.original_filename
-
-    let result = `{{attach file="${esc(this.selectedTag)}" desc="${esc(desc)}"`
-
-    if (val('attach_action_display_pdf') === '1') {
-      result += ' displaypdf="1"'
-    }
-
-    const imagesize = val('attach_imagesize')
-    if (imagesize) {
-      result += ` size="${esc(imagesize)}"`
-    }
-
-    const align = val('attach_align')
-    const checkedEffects = form.querySelectorAll(
-      '[name="attach_css_class"]:checked',
-    )
-    const effects = Array.from(checkedEffects).map((el) => el.value)
-    if (align || effects.length) {
-      result += ` class="${esc([align, ...effects].filter(Boolean).join(' '))}"`
-    }
-
-    const link = form.querySelector('[name="attach_link"]').value
-    if (link) {
-      result += ` link="${esc(link)}"`
-    }
-
-    const caption = form.querySelector('[name="attach_caption"]').value
-    if (caption) {
-      result += ` caption="${esc(caption)}"`
-    }
-
-    if (val('attach_nofullimagelink') === '1') {
-      result += ' nofullimagelink="1"'
-    }
-
-    result += '}}'
-    return result
+    return attachCode(this.selectedEntry, {
+      desc:
+        form.querySelector('[name="attach_alt"]').value ||
+        val('attach_link_text'),
+      displayPdf: val('attach_action_display_pdf') === '1',
+      size: val('attach_imagesize'),
+      align: val('attach_align'),
+      effects: Array.from(
+        form.querySelectorAll('[name="attach_css_class"]:checked'),
+      ).map((element) => element.value),
+      link: form.querySelector('[name="attach_link"]').value,
+      caption: form.querySelector('[name="attach_caption"]').value,
+      noFullImageLink: val('attach_nofullimagelink') === '1',
+    })
   }
 
   /** Whether a file the browser is offering is of the family this rail was pinned to. */
@@ -606,22 +555,15 @@ export default class {
 
   /** Where the chosen file is served from -- the one address that survives a rename. */
   downloadUrl() {
-    return wiki.url(
-      `api/files/${encodeURIComponent(this.selectedTag)}/download`,
-    )
+    return downloadUrl(this.selectedEntry ?? { tag: this.selectedTag })
   }
 
+  /** The markdown for the chosen file, with what the options form says. */
   buildMarkdown() {
     const form = this.optionsForm
-    const isImage = this.selectedEntry.family === 'image'
-    const alt = form.querySelector('[name="attach_alt"]').value
-    const linkText = form.querySelector('[name="attach_link_text"]').value
-    const label =
-      (isImage ? alt : linkText || alt) || this.selectedEntry.original_filename
-    const url = this.downloadUrl()
-
-    const esc = (s) => String(s).replace(/([[\]()])/g, '\\$1')
-
-    return `${isImage ? '!' : ''}[${esc(label)}](${url})`
+    return attachMarkdown(this.selectedEntry, {
+      alt: form.querySelector('[name="attach_alt"]').value,
+      linkText: form.querySelector('[name="attach_link_text"]').value,
+    })
   }
 }

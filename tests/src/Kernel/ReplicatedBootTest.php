@@ -4,7 +4,9 @@ namespace YesWiki\Test\Kernel;
 
 use YesWiki\Core\YesWikiInit;
 use YesWiki\Files\Entity\S3Settings;
+use YesWiki\Identity\Service\BotGuard;
 use YesWiki\Kernel\Service\Replication;
+use YesWiki\Kernel\Service\SignedTokens;
 use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';
@@ -77,6 +79,11 @@ class ReplicatedBootTest extends YesWikiTestCase
         $this->assertSame([], Replication::unsharedKeys($s3('public', 'protected')));
         $this->assertSame(Replication::KEY_VARIABLES, Replication::unsharedKeys($s3('public')), 'public files on S3 do not carry the keys');
         $this->assertSame(Replication::KEY_VARIABLES, Replication::unsharedKeys(null));
+    }
+
+    public function testTheKeysAskedForAreTheOnesTheWikiReads(): void
+    {
+        $this->assertSame([SignedTokens::KEY_ENV, BotGuard::KEY_ENV], Replication::KEY_VARIABLES);
     }
 
     public function testASingleMachineStillLearnsItsAddressFromTheRequest(): void

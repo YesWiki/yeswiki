@@ -175,7 +175,6 @@ return [
     'ADMIN_FILES_DELETE' => 'Ezabatu fitxategia',
     'ADMIN_FILES_DELETE_CONFIRM' => '{name} ezabatu? Hona seinalatzen duen guztia hautsiko da.',
     'ADMIN_FILES_NOT_FOUND' => 'Fitxategia ez da aurkitu.',
-    'ADMIN_FILES_UPLOADING' => 'Bidaltzen…',
     'ADMIN_FILES_UPLOADED' => '{count} fitxategi gehitu dira.',
     'ADMIN_FILES_UPLOAD_FAILED' => '{count} ezin izan dira gehitu.',
     'DASHBOARD_API' => 'API',
@@ -542,7 +541,6 @@ return [
     'ATTACH_FILE_PICKER_CHOOSE_OR_UPLOAD' => 'Aukeratu edo igo fitxategi bat',
     'ATTACH_FILE_PICKER_USE_THIS_FILE' => 'Erabili fitxategi hau',
     'ATTACH_FILE_PICKER_WRONG_FAMILY' => 'Fitxategi mota hau ez da eremu honetarako egokia.',
-    'ATTACH_FILE_PICKER_UPLOADING' => 'Bidaltzen…',
     'CONTACT_SEND_PAGE_BY_MAIL' => 'Bidali orrialdea postaz',
     'CONTACT_NEW_USER_MESSAGE' => 'Kaixo!
 

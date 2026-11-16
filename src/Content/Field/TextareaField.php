@@ -3,6 +3,7 @@
 namespace YesWiki\Content\Field;
 
 use Psr\Container\ContainerInterface;
+use YesWiki\Content\Api\FileApiController;
 use YesWiki\Content\Attribute\Field;
 use YesWiki\Content\Entity\PageBody;
 use YesWiki\Files\Service\AttachedFilePaths;
@@ -11,6 +12,8 @@ use YesWiki\Kernel\Service\AssetRegistry;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\HtmlPurifierService;
 use YesWiki\Kernel\Service\LanguageService;
+use YesWiki\Kernel\Service\PageContext;
+use YesWiki\Kernel\Service\SignedTokens;
 use YesWiki\Kernel\Service\StringUtilService;
 
 #[Field(['textelong'])]
@@ -111,11 +114,15 @@ class TextareaField extends BazarField
             $tempTag .= '_' . bin2hex(random_bytes(10));
         }
 
+        $uploadPageTag = (string)$this->getService(PageContext::class)->getTag();
+
         return $output . $this->render('@core/inputs/textarea.twig', [
             'value' => $this->getValue($entry),
             'entryId' => $entry['tag'] ?? null,
             'tempTag' => $tempTag,
             'vditorLang' => $vditorLang,
+            'uploadPageTag' => $uploadPageTag,
+            'uploadToken' => $uploadPageTag === '' ? '' : $this->getService(SignedTokens::class)->sign(FileApiController::uploadTokenId($uploadPageTag)),
         ]);
     }
 
@@ -166,7 +173,7 @@ class TextareaField extends BazarField
 
         switch ($this->syntax) {
             case self::SYNTAX_WIKI:
-                $pageContext = $this->getService(\YesWiki\Kernel\Service\PageContext::class);
+                $pageContext = $this->getService(PageContext::class);
                 $oldPage = $pageContext->getTag();
                 $oldPageArray = $pageContext->getPage();
                 $pageContext->setTag($entry['tag'] ?? null);
@@ -223,10 +230,10 @@ class TextareaField extends BazarField
             foreach ($matches[0] as $key => $value) {
                 $paths = $this->getService(AttachedFilePaths::class);
                 $previousFile = $matches[2][$key];
-                $previousTag = $this->getService(\YesWiki\Kernel\Service\PageContext::class)->getTag();
-                $previousPage = $this->getService(\YesWiki\Kernel\Service\PageContext::class)->getPage();
-                $this->getService(\YesWiki\Kernel\Service\PageContext::class)->setTag($matches[3][$key]);
-                $this->getService(\YesWiki\Kernel\Service\PageContext::class)->setPage([
+                $previousTag = $this->getService(PageContext::class)->getTag();
+                $previousPage = $this->getService(PageContext::class)->getPage();
+                $this->getService(PageContext::class)->setTag($matches[3][$key]);
+                $this->getService(PageContext::class)->setPage([
                     'tag' => $matches[3][$key],
                     'body' => [PageBody::CONTENT => '{##}'],
                     'time' => date('YmdHis'),
@@ -235,8 +242,8 @@ class TextareaField extends BazarField
                 ]);
                 $previousFileName = $paths->fullFilename($previousFile);
                 $newFile = $matches[4][$key];
-                $this->getService(\YesWiki\Kernel\Service\PageContext::class)->setTag($entry['tag']);
-                $this->getService(\YesWiki\Kernel\Service\PageContext::class)->setPage([
+                $this->getService(PageContext::class)->setTag($entry['tag']);
+                $this->getService(PageContext::class)->setPage([
                     'tag' => $entry['tag'],
                     'body' => $entry,
                     'time' => $entryCreationTime,
@@ -251,8 +258,8 @@ class TextareaField extends BazarField
                 if ($storage->exists($from) && $this->moved($storage, $from, $to)) {
                     $text = str_replace($matches[0][$key], $matches[1][$key] . $matches[4][$key] . $matches[5][$key], $text);
                 }
-                $this->getService(\YesWiki\Kernel\Service\PageContext::class)->setTag($previousTag);
-                $this->getService(\YesWiki\Kernel\Service\PageContext::class)->setPage($previousPage);
+                $this->getService(PageContext::class)->setTag($previousTag);
+                $this->getService(PageContext::class)->setPage($previousPage);
             }
         }
 
@@ -267,8 +274,8 @@ class TextareaField extends BazarField
         $regExpSearch = '(<img(?>\s*style="[^"]*")?\s*)src="data:image\/(gif|jpeg|png|jpg|svg|webp);base64,([^"]*)"[^>]*>';
         if (preg_match_all("/$regExpSearch/", $text, $matches)) {
             $entryCreationTime = $this->getEntryCreationTime($entry);
-            $previousTag = $this->getService(\YesWiki\Kernel\Service\PageContext::class)->getTag();
-            $previousPage = $this->getService(\YesWiki\Kernel\Service\PageContext::class)->getPage();
+            $previousTag = $this->getService(PageContext::class)->getTag();
+            $previousPage = $this->getService(PageContext::class)->getPage();
             foreach ($matches[0] as $index => $textToReplace) {
                 $imageType = $matches[2][$index];
                 $imageContent = base64_decode($matches[3][$index]);
@@ -280,8 +287,8 @@ class TextareaField extends BazarField
 
                 $paths = $this->getService(AttachedFilePaths::class);
 
-                $this->getService(\YesWiki\Kernel\Service\PageContext::class)->setTag($entry['tag']);
-                $this->getService(\YesWiki\Kernel\Service\PageContext::class)->setPage([
+                $this->getService(PageContext::class)->setTag($entry['tag']);
+                $this->getService(PageContext::class)->setPage([
                     'tag' => $entry['tag'],
                     'page' => (string)json_encode($entry),
                     'time' => $entryCreationTime,
@@ -303,8 +310,8 @@ class TextareaField extends BazarField
                     $text = str_replace($textToReplace, $newText, $text);
                 }
             }
-            $this->getService(\YesWiki\Kernel\Service\PageContext::class)->setTag($previousTag);
-            $this->getService(\YesWiki\Kernel\Service\PageContext::class)->setPage($previousPage);
+            $this->getService(PageContext::class)->setTag($previousTag);
+            $this->getService(PageContext::class)->setPage($previousPage);
         }
 
         return $text;

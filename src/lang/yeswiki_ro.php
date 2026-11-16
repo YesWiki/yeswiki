@@ -225,7 +225,6 @@ return [
     'ADMIN_FILES_DELETE' => 'Șterge fișierul',
     'ADMIN_FILES_DELETE_CONFIRM' => 'Ștergi {name}? Tot ce mai trimite către el va fi stricat.',
     'ADMIN_FILES_NOT_FOUND' => 'Fișier negăsit.',
-    'ADMIN_FILES_UPLOADING' => 'Se trimite…',
     'ADMIN_FILES_UPLOADED' => '{count} fișiere adăugate.',
     'ADMIN_FILES_UPLOAD_FAILED' => '{count} nu au putut fi adăugate.',
     'DASHBOARD_API' => 'API',
@@ -631,7 +630,6 @@ return [
     'ATTACH_FILE_PICKER_CHOOSE_OR_UPLOAD' => 'Alege sau încarcă un fișier',
     'ATTACH_FILE_PICKER_USE_THIS_FILE' => 'Folosește acest fișier',
     'ATTACH_FILE_PICKER_WRONG_FAMILY' => 'Acest tip de fișier nu se potrivește acestui câmp.',
-    'ATTACH_FILE_PICKER_UPLOADING' => 'Se trimite…',
     'CONTACT_SEND_PAGE_BY_MAIL' => 'Trimite pagina prin e-mail',
     'CONTACT_NEW_USER_MESSAGE' => 'Bună ziua!
 

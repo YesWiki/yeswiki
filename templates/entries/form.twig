@@ -8,6 +8,7 @@
 <div class="yw-designer__canvas">
 
 {{ include_javascript('javascripts/unsaved-changes.js', false, true) }}
+{{ include_javascript('javascripts/entry-form-upload.js', false, true) }}
 
 <form action="{{ formAction }}" method="post" name="bazar-form-{{ form.id }}" id="bazar-form-{{ form.id }}" class="bazar-form yw-entry-form" enctype="multipart/form-data" hx-boost="false" novalidate data-yw-unsaved-guard>
   {% if editingTranslation ?? false and renderedInputs|filter(input => input|trim)|length == 0 %}

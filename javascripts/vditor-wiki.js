@@ -35,6 +35,7 @@ import {
 } from './vditor-components.js'
 import { followScheme, vditorThemeOptions } from './editor-scheme.js'
 import { maskTwig, unmaskTwig } from './twig-in-vditor.js'
+import { uploadIntoEditor, uploadTargetOf } from './editor-paste-upload.js'
 
 const VDITOR_CDN = 'javascripts/vendor/vditor'
 
@@ -258,6 +259,7 @@ function initVditorWiki(textareaParam) {
             filePickerMenuItem({
               format: 'wiki',
               labelled: true,
+              target: () => uploadTargetOf(container),
               onComplete: (wikiCode) =>
                 componentEditor.insertAt(
                   componentEditor.blockAtCursor(),
@@ -302,6 +304,18 @@ function initVditorWiki(textareaParam) {
           ]),
     ],
     cache: { enable: false },
+    upload: {
+      multiple: true,
+      handler(files) {
+        uploadIntoEditor(files, {
+          host: container,
+          format: 'wiki',
+          insert: (wikiCode) =>
+            componentEditor.insertAt(componentEditor.blockAtCursor(), wikiCode),
+        })
+        return null
+      },
+    },
     resize: { enable: true },
     customWysiwygToolbar() {},
     toolbarConfig: { pin: true },

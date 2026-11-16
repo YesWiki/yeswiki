@@ -529,7 +529,6 @@ Conteúdo do separador "{tabName}"
     'ATTACH_FILE_PICKER_CHOOSE_OR_UPLOAD' => 'Escolher ou carregar um ficheiro',
     'ATTACH_FILE_PICKER_USE_THIS_FILE' => 'Utilizar este ficheiro',
     'ATTACH_FILE_PICKER_WRONG_FAMILY' => 'Este tipo de ficheiro não é adequado a este campo.',
-    'ATTACH_FILE_PICKER_UPLOADING' => 'A enviar…',
     'CONTACT_SEND_PAGE_BY_MAIL' => 'Enviar a página por email',
     'CONTACT_NEW_USER_MESSAGE' => 'Olá!
 
@@ -762,7 +761,6 @@ Tem a versão %{CURRENTPHPVERSION}.
     'ADMIN_FILES_DELETE' => 'Apagar o ficheiro',
     'ADMIN_FILES_DELETE_CONFIRM' => 'Apagar {name}? Tudo o que ainda apontar para ele ficará quebrado.',
     'ADMIN_FILES_NOT_FOUND' => 'Ficheiro não encontrado.',
-    'ADMIN_FILES_UPLOADING' => 'A enviar…',
     'ADMIN_FILES_UPLOADED' => '{count} ficheiros adicionados.',
     'ADMIN_FILES_UPLOAD_FAILED' => 'Não foi possível adicionar {count}.',
     'DASHBOARD_API' => 'API',

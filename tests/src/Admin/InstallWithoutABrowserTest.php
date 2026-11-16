@@ -6,6 +6,7 @@ use PHPUnit\Framework\Attributes\CoversMethod;
 use YesWiki\Admin\Controller\InstallationController;
 use YesWiki\Admin\Service\InstallationService;
 use YesWiki\Kernel\Service\DataFolderGuard;
+use YesWiki\Kernel\Service\Replication;
 use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';
@@ -183,8 +184,12 @@ class InstallWithoutABrowserTest extends YesWikiTestCase
             $config['db_password'],
             [\PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION]
         );
-        $was = getenv('YESWIKI_REPLICATED');
+        $was = ['YESWIKI_REPLICATED' => getenv('YESWIKI_REPLICATED')];
         putenv('YESWIKI_REPLICATED=1');
+        foreach (Replication::KEY_VARIABLES as $name) {
+            $was[$name] = getenv($name);
+            putenv($name . '=' . bin2hex(random_bytes(32)));
+        }
 
         try {
             $result = $this->install($dir, [
@@ -221,7 +226,9 @@ class InstallWithoutABrowserTest extends YesWikiTestCase
             $this->assertSame('MenuNavigation', $stored['layout_navbar'] ?? null);
             $this->assertSame([], array_values(array_intersect(array_keys($stored), ['base_url', 'db_driver', 'db_password', 'table_prefix', 'yeswiki_version'])), 'what the operator decides stays in the environment');
         } finally {
-            putenv($was === false ? 'YESWIKI_REPLICATED' : 'YESWIKI_REPLICATED=' . $was);
+            foreach ($was as $name => $value) {
+                putenv($value === false ? $name : $name . '=' . $value);
+            }
             $this->removeInstance($dir);
             $tables = $config['db_driver'] === 'pgsql'
                 ? $db->query("SELECT tablename FROM pg_tables WHERE schemaname = current_schema() AND tablename LIKE '{$prefix}%'")

@@ -5414,3 +5414,59 @@ figcaption *:last-child {
   display: flex;
   justify-content: flex-end;
 }
+
+.yw-upload-progress {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: var(--yw-space-sm-y) var(--yw-space-sm-x);
+  align-items: center;
+  font-size: 0.875rem;
+  color: var(--yw-text);
+}
+
+.yw-upload-progress__label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.yw-upload-progress__amount {
+  color: var(--yw-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.yw-upload-progress__bar {
+  grid-column: 1 / -1;
+  width: 100%;
+  height: 0.5rem;
+  appearance: none;
+  border: 0;
+  border-radius: var(--yw-radius-full);
+  background: var(--yw-border);
+  accent-color: var(--yw-primary);
+  overflow: hidden;
+}
+
+.yw-upload-progress__bar::-webkit-progress-bar {
+  background: var(--yw-border);
+}
+
+.yw-upload-progress__bar::-webkit-progress-value {
+  background: var(--yw-primary);
+}
+
+.yw-upload-progress__bar::-moz-progress-bar {
+  background: var(--yw-primary);
+}
+
+.yw-upload-tray {
+  display: flex;
+  flex-direction: column;
+  gap: var(--yw-space-sm-y);
+  margin-top: var(--yw-space-sm-y);
+}
+
+.yw-upload-tray:empty {
+  display: none;
+}

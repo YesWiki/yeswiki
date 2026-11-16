@@ -22,7 +22,7 @@
 {% block input %}
 	{{ include_css('styles/yw-editor.css') }}
 
-	<div id="{{ field.name ~ 'Container' }}">
+	<div id="{{ field.name ~ 'Container' }}"{% if uploadPageTag|default('') %} data-yw-upload-page-tag="{{ uploadPageTag }}" data-yw-upload-token="{{ uploadToken }}"{% endif %}>
 		{% if field.syntax == 'wiki-textarea' %}
 			{{ renderAction(
               'aceditor',
