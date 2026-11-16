@@ -5,7 +5,16 @@
 {% block formDetails %}enctype="multipart/form-data" hx-boost="false"{% endblock %}
 
 {% block formContent %}
-  {% if mode == 'submitfile' %}
+  {% if mode == 'submitfile' and importProblem %}
+    {% if readAs %}
+      <p>{{ readAs }}</p>
+    {% endif %}
+    <div class="yw-alert yw-alert--danger" role="alert">{{ importProblem }}</div>
+    {{ parent() }}
+  {% elseif mode == 'submitfile' %}
+    {% if readAs %}
+      <p>{{ readAs }}</p>
+    {% endif %}
     <div class="checkbox">
       {% block checkboxAll %}
         <label class="checkbox">

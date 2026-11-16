@@ -4,7 +4,9 @@ namespace YesWiki\Content\Service;
 
 use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use YesWiki\Content\Entity\CsvDialect;
 use YesWiki\Content\Field\CheckboxField;
+use YesWiki\Content\Field\DateField;
 use YesWiki\Content\Field\EnumField;
 use YesWiki\Content\Field\FileField;
 use YesWiki\Content\Field\ImageField;
@@ -24,16 +26,69 @@ use YesWiki\Search\Service\SearchManager;
  * @phpstan-type CsvHeader array{field: \YesWiki\Content\Field\BazarField, fullHeader: string}
  * @phpstan-type CsvHeaders array<string, CsvHeader>
  * @phpstan-type CsvDetection array{columnIndexes: array<string, int>, firstLine: array<string, mixed>, headers: CsvHeaders, originalHeadersKeys: list<string>}
+ * @phpstan-type CsvExtracted list<array{entry: array<string, mixed>, errormsg: list<string>}>
+ * @phpstan-type CsvReading array{extracted: CsvExtracted|null, dialect: CsvDialect|null, problem: string|null}
  */
 class CSVManager
 {
     /** What tells Excel a CSV is UTF-8 (end-users 02). */
     public const UTF8_BOM = "\xEF\xBB\xBF";
 
-    /** @param string $cell the first cell of a file, whose byte order mark Excel needs on export and the header detection must not see on import */
-    public static function withoutBom(string $cell): string
+    public const IMPORTABLE_EXTENSIONS = ['csv', 'tsv', 'txt'];
+
+    private const SNIFFED_BYTES = 65536;
+    private const SNIFFED_LINES = 10;
+
+    /** The delimiter, encoding and byte order mark of a file, read from its first bytes. */
+    public static function sniff(string $head): CsvDialect
     {
-        return str_starts_with($cell, self::UTF8_BOM) ? substr($cell, 3) : $cell;
+        $hadBom = str_starts_with($head, self::UTF8_BOM);
+        if ($hadBom) {
+            $head = substr($head, strlen(self::UTF8_BOM));
+        }
+        $head = substr($head, 0, self::SNIFFED_BYTES);
+        $lastNewline = strrpos($head, "\n");
+        if (strlen($head) === self::SNIFFED_BYTES && $lastNewline !== false) {
+            $head = substr($head, 0, $lastNewline);
+        }
+        $encoding = mb_check_encoding($head, CsvDialect::UTF8) ? CsvDialect::UTF8 : CsvDialect::WINDOWS_1252;
+
+        $best = CsvDialect::DELIMITERS[0];
+        $bestScore = 0;
+        foreach (CsvDialect::DELIMITERS as $delimiter) {
+            $score = self::agreeingLines($head, $delimiter);
+            if ($score > $bestScore) {
+                [$best, $bestScore] = [$delimiter, $score];
+            }
+        }
+
+        return new CsvDialect($best, $encoding, $hadBom);
+    }
+
+    /** How many of the first lines split into the same number of fields, more than one, with that delimiter. */
+    private static function agreeingLines(string $head, string $delimiter): int
+    {
+        $stream = fopen('php://temp', 'r+');
+        if ($stream === false) {
+            return 0;
+        }
+        fwrite($stream, $head);
+        rewind($stream);
+        $counts = [];
+        for ($line = 0; $line < self::SNIFFED_LINES && ($fields = fgetcsv($stream, 0, $delimiter, '"', '')) !== false; $line++) {
+            if (count($fields) > 1) {
+                $counts[count($fields)] = ($counts[count($fields)] ?? 0) + 1;
+            }
+        }
+        fclose($stream);
+
+        return $counts === [] ? 0 : max($counts);
+    }
+
+    /** Whether the import takes a file by that name: `.csv`, `.tsv` or `.txt`, in any case. */
+    public static function isImportableFilename(string $filename): bool
+    {
+        return in_array(strtolower(pathinfo($filename, PATHINFO_EXTENSION)), self::IMPORTABLE_EXTENSIONS, true);
     }
 
     protected bool $debug;
@@ -334,6 +389,8 @@ class CSVManager
                 } else {
                     $line[] = 'ligne ' . $lineNumber . ' - champ ' . $columnNumber;
                 }
+            } elseif ($header['field'] instanceof DateField) {
+                $line[] = '2026-02-01';
             } elseif ($header['field'] instanceof TagsField) {
                 $line[] = implode(',', array_map(function ($index) use ($lineNumber, $columnNumber) {
                     return 'ligne ' . $lineNumber . ' - champ ' . $columnNumber . ' - tag ' . $index;
@@ -412,52 +469,86 @@ class CSVManager
     }
 
     /**
-     * extract CSV from csv file.
+     * The entries a CSV file holds, without saying how it was read.
      *
      * @param mixed                     $pFormId   a form id, or the shape getTheID() reads
      * @param array<string, mixed>|null $filesData one $_FILES entry
      * @param array<string, mixed>|null $pForm     the form the CSV describes
      *
-     * @return list<array{entry: array<string, mixed>, errormsg: list<string>}>|null
+     * @return CsvExtracted|null
      */
     public function extractCSVfromCSVFile($pFormId, $filesData, bool $detectColumnsOnHeaders = true, $pForm = null, bool $keepRemoteFilesAsUrl = false)
     {
-        $vBazarListService = $this->container->get(BazarListService::class);
+        return $this->readImportFile($pFormId, $filesData, $detectColumnsOnHeaders, $pForm, $keepRemoteFilesAsUrl)['extracted'];
+    }
 
-        $vID = $vBazarListService->getTheID($pFormId);
+    /**
+     * The entries a CSV file holds, how it was read, and why nothing was read when nothing was.
+     *
+     * @param mixed                     $pFormId   a form id, or the shape getTheID() reads
+     * @param array<string, mixed>|null $filesData one $_FILES entry
+     * @param array<string, mixed>|null $pForm     the form the CSV describes
+     *
+     * @return CsvReading
+     */
+    public function readImportFile($pFormId, $filesData, bool $detectColumnsOnHeaders = true, $pForm = null, bool $keepRemoteFilesAsUrl = false): array
+    {
+        $reading = ['extracted' => null, 'dialect' => null, 'problem' => null];
+        $vID = $this->container->get(BazarListService::class)->getTheID($pFormId);
+        if (empty($vID) || $pForm == null || empty($filesData) || $filesData['error'] != 0) {
+            return $reading;
+        }
+        $headers = $this->getHeaders($pForm);
+        $filename = basename((string)$filesData['name']);
+        if (!self::isImportableFilename($filename)) {
+            $reading['problem'] = _t('BAZ_CSV_UNSUPPORTED_FILE', [
+                'name' => $filename,
+                'extensions' => implode(', ', array_map(fn (string $extension): string => '.' . $extension, self::IMPORTABLE_EXTENSIONS)),
+            ]);
 
-        if (!empty($vID) && $pForm != null) {
-            $headers = $this->getHeaders($pForm);
-
-            if (!empty($filesData) && ($filesData['error'] == 0)) {
-                $filename = basename($filesData['name']);
-                $ext = substr($filename, strrpos($filename, '.') + 1);
-                if ($ext == 'csv') {
-                    $handle = $this->storage->readForeignStream($filesData['tmp_name']);
-                    if (($firstLine = fgetcsv($handle, 0, ',', '"', '')) !== false) {
-                        $firstLine[0] = self::withoutBom((string)($firstLine[0] ?? ''));
-                        if ($columnIndexesForPropertyNames
-                            = $this->getColumnIndexesForPropertyNames($firstLine, $headers, $detectColumnsOnHeaders)
-                        ) {
-                            $extracted = [];
-                            while (($data = fgetcsv($handle, 0, ',', '"', '')) !== false) {
-                                $this->errormsg = [];
-                                $extractedData = $this->getEntryFromCSVLine($data, $headers, $columnIndexesForPropertyNames, $vID['id'], $keepRemoteFilesAsUrl);
-                                $extracted[] = [
-                                    'entry' => $extractedData,
-                                    'errormsg' => $this->errormsg,
-                                ];
-                            }
-                        }
-                    }
-                    fclose($handle);
-
-                    return $extracted ?? null;
-                }
-            }
+            return $reading;
         }
 
-        return null;
+        $handle = $this->storage->readForeignStream($filesData['tmp_name']);
+        $content = (string)stream_get_contents($handle);
+        fclose($handle);
+        $dialect = $reading['dialect'] = self::sniff(substr($content, 0, self::SNIFFED_BYTES));
+
+        $stream = fopen('php://temp/maxmemory:' . (50 * 1024 * 1024), 'r+');
+        if ($stream === false) {
+            throw new \Exception('could not open a temporary stream to read the CSV');
+        }
+        fwrite($stream, $dialect->toUtf8($content));
+        unset($content);
+        rewind($stream);
+
+        $firstLine = fgetcsv($stream, 0, $dialect->delimiter, '"', '');
+        $columnIndexesForPropertyNames = $firstLine === false ? null : $this->getColumnIndexesForPropertyNames($firstLine, $headers, $detectColumnsOnHeaders);
+        if ($columnIndexesForPropertyNames === null) {
+            fclose($stream);
+            $reading['problem'] = _t('BAZ_CSV_NO_HEADER_MATCHED', [
+                'headers' => implode(', ', array_map(fn (array $header): string => '"' . $header['fullHeader'] . '"', $headers)),
+            ]);
+
+            return $reading;
+        }
+
+        $extracted = [];
+        while (($data = fgetcsv($stream, 0, $dialect->delimiter, '"', '')) !== false) {
+            if ($data === [null]) {
+                continue;
+            }
+            $this->errormsg = [];
+            $extractedData = $this->getEntryFromCSVLine($data, $headers, $columnIndexesForPropertyNames, $vID['id'], $keepRemoteFilesAsUrl);
+            $extracted[] = [
+                'entry' => $extractedData,
+                'errormsg' => $this->errormsg,
+            ];
+        }
+        fclose($stream);
+        $reading['extracted'] = $extracted;
+
+        return $reading;
     }
 
     /**
@@ -486,6 +577,9 @@ class CSVManager
             $data = $this->detectHeadersOnLabels($data);
             $data = $this->detectHeadersOnLabelsWithStar($data);
             $data = $this->detectHeadersOnPropertyName($data);
+            if ($data['columnIndexes'] === []) {
+                return null;
+            }
             $data = $this->detectHeadersModifiedAfterOneDetected($data);
             $columnIndexes = $data['columnIndexes'];
         } else {
@@ -691,16 +785,18 @@ class CSVManager
                         if (!($keepRemoteFilesAsUrl && StringUtilService::isWebAddress(trim($value)))) {
                             $value = $this->extractValueFromFileFieldData($value, $field);
                         }
-                    } elseif (in_array($propertyName, ['datetime_latest', 'datetime_create'])) {
-                        $datetime = \DateTime::createFromFormat(
-                            'd/m/Y H:i:s',
-                            $value,
-                            new \DateTimeZone($this->container->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['timezone']),
-                        );
-                        if ($datetime === false) {
+                    } elseif ($field instanceof DateField || in_array($propertyName, $skipFields, true)) {
+                        $zone = new \DateTimeZone($this->container->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['timezone']);
+                        $read = $field instanceof DateField ? CsvDateReader::storedValue((string)$value, $zone) : CsvDateReader::read((string)$value, $zone)?->getTimestamp();
+                        if ($read === null) {
+                            $this->errormsg[] = _t('BAZ_UNREADABLE_DATE', [
+                                'column' => $field instanceof DateField ? ($field->getLabel() ?: $propertyName) : $propertyName,
+                                'value' => (string)$value,
+                                'formats' => CsvDateReader::EXAMPLES,
+                            ]);
                             continue;
                         }
-                        $value = $datetime->getTimestamp();
+                        $value = $read;
                     }
                     $entry[$propertyName] = $value;
                 }
@@ -732,36 +828,23 @@ class CSVManager
      */
     private function getValueFromData(array $data, int $index)
     {
-        if (isset($data[$index])) {
-            $value = $data[$index];
-            $value = str_replace(
-                [
-                    '&sbquo;', '&fnof;', '&bdquo;',
-                    '&hellip;', '&dagger;', '&Dagger;',
-                    '&circ;', '&permil;', '&Scaron;',
-                    '&lsaquo;', '&OElig;', '&lsquo;',
-                    '&rsquo;', '&ldquo;', '&rdquo;',
-                    '&bull;', '&ndash;', '&mdash;',
-                    '&tilde;', '&trade;', '&scaron;',
-                    '&rsaquo;', '&oelig;', '&Yuml;',
-                ],
-                [
-                    chr(130), chr(131), chr(132),
-                    chr(133), chr(134), chr(135),
-                    chr(136),
-                    chr(137), chr(138), chr(139),
-                    chr(140), chr(145), chr(146),
-                    chr(147),
-                    chr(148), chr(149), chr(150),
-                    chr(151), chr(152), chr(153),
-                    chr(154),
-                    chr(155), chr(156), chr(159),
-                ],
-                $value,
-            );
-        }
+        $value = $data[$index] ?? null;
 
-        return $value ?? null;
+        return $value === null ? null : self::decodeTextEntities($value);
+    }
+
+    /** Typographic entities such as `&rsquo;` as the UTF-8 characters they name; the ones that spell markup stay as they are. */
+    private static function decodeTextEntities(string $value): string
+    {
+        return (string)preg_replace_callback(
+            '/&(?:[a-zA-Z][a-zA-Z0-9]*|#[0-9]+|#[xX][0-9a-fA-F]+);/',
+            static function (array $match): string {
+                $decoded = html_entity_decode($match[0], ENT_QUOTES | ENT_HTML5, 'UTF-8');
+
+                return in_array($decoded, ['<', '>', '&', '"', "'"], true) ? $match[0] : $decoded;
+            },
+            $value,
+        );
     }
 
     /**

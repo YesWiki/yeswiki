@@ -78,13 +78,19 @@ class EntryImportAction extends YesWikiAction implements RegisteredAction
 
                 $vForm = $vForms[$vID['key']];
 
-                if ($extracted = $csvManager->extractCSVfromCSVFile(
+                $reading = $csvManager->readImportFile(
                     $this->arguments['id'],
                     $this->arguments['filesData'],
                     $this->arguments['bazar-import-option-detect-columns-on-headers'],
                     $vForm,
                     $this->arguments['bazar-import-option-keep-remote-files-as-url']
-                )) {
+                );
+                $readAs = $reading['dialect'] === null ? null : _t('BAZ_CSV_READ_AS', [
+                    'delimiter' => $reading['dialect']->delimiter === "\t" ? _t('BAZ_CSV_TAB') : $reading['dialect']->delimiter,
+                    'encoding' => $reading['dialect']->encoding,
+                ]);
+                $importProblem = $reading['problem'];
+                if ($extracted = $reading['extracted']) {
                     $extracted = array_map(function ($extract) use ($vForm, $entryController) {
                         $extract['displayData'] = $entryController->view($extract['entry'], '', false, null, $vForm);
                         $extract['json'] = json_encode($extract['entry']);
@@ -132,6 +138,8 @@ class EntryImportAction extends YesWikiAction implements RegisteredAction
             'selectedForm' => $vForm ?? null,
             'importedEntries' => $importedEntries ?? null,
             'extracted' => $extracted ?? null,
+            'readAs' => $readAs ?? null,
+            'importProblem' => $importProblem ?? null,
             'mode' => $this->arguments['mode'],
             'optionNotDetectColumnsOnHeadersChecked' => !$this->arguments['bazar-import-option-detect-columns-on-headers'],
             'optionKeepRemoteFilesAsUrlChecked' => $this->arguments['bazar-import-option-keep-remote-files-as-url'],

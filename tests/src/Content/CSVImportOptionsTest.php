@@ -53,9 +53,6 @@ class CSVImportOptionsTest extends YesWikiTestCase
         $extracted = $this->importRow(['Titre' => 'Été à Lyon'], false, CSVManager::UTF8_BOM);
 
         $this->assertSame('Été à Lyon', $extracted['entry']['bf_titre'] ?? null, 'the first header is not taken for another one because of the mark before it');
-        $this->assertSame('', CSVManager::withoutBom(CSVManager::UTF8_BOM));
-        $this->assertSame('Thème', CSVManager::withoutBom(CSVManager::UTF8_BOM . 'Thème'));
-        $this->assertSame('Thème', CSVManager::withoutBom('Thème'));
         $this->assertStringStartsNotWith(CSVManager::UTF8_BOM, $this->csvManager->arrayToCSV([['un', 'deux']]), 'a single cell or a preview never carries it');
     }
 
