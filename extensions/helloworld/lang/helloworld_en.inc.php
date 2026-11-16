@@ -12,4 +12,6 @@ return [
     'HELLOWORLD_PAGE_NOT_ACCESSIBLE' => 'Page not reachable',
     'HELLOWORLD_FIELD_ALERT' => 'This will be saved in the entry',
     'HELLOWORLD_GREET_TASK' => 'Greets in the Journal',
+    'HELLOWORLD_SIGN_IN_TYPE' => 'Hello password (sample)',
+    'HELLOWORLD_SIGN_IN_PASSWORD' => 'The password everyone signs in with',
 ];
