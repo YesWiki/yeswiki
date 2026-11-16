@@ -1,0 +1,18 @@
+{# Why a list cannot be deleted yet, and where its fields are (end-users 20). #}
+<div class="yw-alert yw-alert--danger" role="alert">
+  <p>{{ message }}</p>
+  <ul>
+    {% for field in fields %}
+      <li>
+        <a href="{{ url({ tag: 'dashboard', params: { view: 'formulaire', action: 'modif', formid: field.formId }}) }}">{{ field.formLabel ?: field.formId }}</a>
+        : {{ field.fieldLabel ?: field.fieldName }}
+      </li>
+    {% endfor %}
+  </ul>
+  <p class="yw-text-muted">{{ _t('LIST_IN_USE_TEMPLATES') }}</p>
+</div>
+<p>
+  <a class="yw-btn yw-btn--sm" href="{{ url({ tag: 'dashboard/lists' }) }}">
+    <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#arrow-left"/></svg>{{ _t('GO_BACK') }}
+  </a>
+</p>

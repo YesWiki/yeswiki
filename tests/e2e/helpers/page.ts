@@ -36,5 +36,5 @@ export const removePage = async (page: Page, tag: string) => {
     .locator('#YesWikiModal.modal.in')
     .getByRole('button', { name: 'Supprimer' })
     .click()
-  await errorShouldBe(page, `La page ${tag} a définitivement été supprimée`)
+  await errorShouldBe(page, `La page ${tag} est dans la corbeille`)
 }

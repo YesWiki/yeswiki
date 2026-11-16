@@ -23,6 +23,16 @@
       <tr>
         <td>
           <strong>{{ list.title }}</strong>
+          {% if list.usedBy|default([]) is not empty %}
+            <details class="yw-list-usage">
+              <summary>{{ _t('LIST_USED_BY', {count: list.usedBy|length}) }}</summary>
+              <ul>
+                {% for field in list.usedBy %}
+                  <li><a href="{{ url({ tag: 'dashboard', params: { view: 'formulaire', action: 'modif', formid: field.formId }}) }}">{{ field.formLabel ?: field.formId }}</a> : {{ field.fieldLabel ?: field.fieldName }}</li>
+                {% endfor %}
+              </ul>
+            </details>
+          {% endif %}
         </td>
         <td>
           {% if list.options %}
@@ -47,7 +57,12 @@
             <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#pencil"/></svg>
           </a>
           {% endif %}
-          {% if list.canDelete %}
+          {% if list.canDelete and list.usedBy|default([]) is not empty %}
+          <button type="button" class="yw-btn yw-btn--sm yw-btn--danger" disabled
+                  title="{{ _t('LIST_IN_USE_CANNOT_DELETE', {count: list.usedBy|length}) }}" aria-label="{{ _t('LIST_IN_USE_CANNOT_DELETE', {count: list.usedBy|length}) }}">
+            <svg class="yw-icon icon-white" aria-hidden="true"><use href="src/assets/icons.svg#trash"/></svg>
+          </button>
+          {% elseif list.canDelete %}
           <a
             class="yw-btn yw-btn--sm yw-btn--danger"
             href="{{ signedUrl(url({ tag: 'dashboard/lists', params: { view: 'listes', action: 'supprimer_liste', listid: key }})) }}"

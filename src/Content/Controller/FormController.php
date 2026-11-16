@@ -809,7 +809,7 @@ class FormController extends YesWikiController
         if ($this->getService(AclService::class)->isAdmin()) {
             try {
                 $this->csrfTokenChecker->checkToken('main', 'POST', 'confirmDeleteToken', false);
-                $this->formManager->delete($id);
+                $this->formManager->delete($id, true);
 
                 return $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href('', '', ['view' => 'formulaire', 'msg' => 'BAZ_FORMULAIRE_ET_FICHES_SUPPRIMES'], false));
             } catch (TokenNotFoundException $th) {

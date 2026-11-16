@@ -5,6 +5,7 @@ namespace YesWiki\Content\Service;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Content\Entity\PageType;
 use YesWiki\Content\Entity\Translations;
+use YesWiki\Content\Exception\ListInUseException;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Routing\ReservedTags;
 use YesWiki\Kernel\Service\DbService;
@@ -36,6 +37,8 @@ class ListManager implements RequestScopedState
         AclService $aclService,
         WikiNameGenerator $wikiNames,
         private readonly TranslatableContent $translatableContent,
+        private readonly ?Trash $trash = null,
+        private readonly ?ListUsage $usage = null,
     ) {
         $this->wikiNames = $wikiNames;
         $this->aclService = $aclService;
@@ -289,7 +292,7 @@ class ListManager implements RequestScopedState
     }
 
     /** @param string $id */
-    public function delete($id): void
+    public function delete($id, bool $toTrash = false): void
     {
         if ($this->hibernationService->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
@@ -301,8 +304,16 @@ class ListManager implements RequestScopedState
         if (!$this->aclService->isAdmin() && !$this->aclService->isOwner($id)) {
             throw new \Exception('Unauthorized');
         }
+        $usedBy = $this->usage?->fieldsUsing((string)$id) ?? [];
+        if ($usedBy !== []) {
+            throw new ListInUseException((string)$id, $usedBy);
+        }
 
-        $this->pageManager->deleteOrphaned($id);
+        if ($toTrash) {
+            ($this->trash ?? throw new \LogicException('no trash to delete into'))->trash((string)$id);
+        } else {
+            $this->pageManager->deleteOrphaned($id);
+        }
 
         unset($this->cachedLists[$id]);
     }

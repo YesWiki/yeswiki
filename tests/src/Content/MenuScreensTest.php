@@ -7,6 +7,7 @@ use YesWiki\Content\Controller\ListScreensController;
 use YesWiki\Content\Controller\MenuController;
 use YesWiki\Content\Entity\MenuNode;
 use YesWiki\Content\Entity\Translations;
+use YesWiki\Content\Service\ListManager;
 use YesWiki\Content\Service\MenuManager;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Identity\Service\AuthenticationService;
@@ -116,13 +117,19 @@ class MenuScreensTest extends YesWikiTestCase
     public function testTheListsScreenGivesAnAdminTheButtons(): void
     {
         $this->asAdmin();
+        $lists = $this->getWiki()->services->get(ListManager::class);
+        $lists->create('Liste que personne n’utilise', [['id' => 'a', 'label' => 'A']], 'ListeMenuScreensTest');
         $this->request([]);
 
-        $html = (string)$this->getWiki()->services->get(ListScreensController::class)->lists()->getContent();
+        try {
+            $html = (string)$this->getWiki()->services->get(ListScreensController::class)->lists()->getContent();
+        } finally {
+            $this->getWiki()->services->get(PageManager::class)->deleteOrphaned('ListeMenuScreensTest');
+        }
 
         $this->assertStringContainsString('existing-lists-table', $html);
         $this->assertStringContainsString('action=modif_liste', $html);
-        $this->assertStringContainsString('action=supprimer_liste', $html);
+        $this->assertStringContainsString('action=supprimer_liste&amp;listid=ListeMenuScreensTest', $html, 'a list no field uses can be deleted');
     }
 
     /** A reader sees the same table with no button to change it. */

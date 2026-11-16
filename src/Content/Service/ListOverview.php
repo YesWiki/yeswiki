@@ -16,6 +16,7 @@ class ListOverview
         private readonly AclService $aclService,
         private readonly FieldFactory $fieldFactory,
         private readonly ParameterBagInterface $params,
+        private readonly ListUsage $usage,
     ) {
     }
 
@@ -46,13 +47,12 @@ class ListOverview
                 continue;
             }
             $lists[$key]['canEdit'] = $this->mayEdit((string)$key);
+            $lists[$key]['usedBy'] = $this->usage->fieldsUsing((string)$key);
             $lists[$key]['canDelete'] = $this->mayDelete((string)$key);
 
             $field = $this->fieldFactory->create(['liste', $list['id'] ?? '', '', '', '', '', '', '', '', '', '', '', '', '', '', '']);
             $lists[$key]['options'] = $field instanceof EnumField ? $field->getOptions() : [];
 
-            // Where the values came from, and whether this wiki has agreed to let that replace
-            // them: the badge is the feature, following is a separate decision (ticket 64).
             $origin = $this->listManager->originOf((string)$key);
             $lists[$key]['origin'] = $origin;
             $lists[$key]['followed'] = $origin !== '' && $this->isFollowed((string)$key);

@@ -854,7 +854,7 @@ class FormManager implements RequestScopedState
      *
      * @return bool|null true when the form was deleted, null when $id names no deletable form
      */
-    public function delete($id)
+    public function delete($id, bool $toTrash = false)
     {
         if ($this->hibernationService->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
@@ -871,11 +871,16 @@ class FormManager implements RequestScopedState
 
         $this->refuseIfBuiltIn((string)$id, 'delete');
 
-        foreach ($this->getEntryTagsForForm((string)$id) as $entryTag) {
-            $this->entryManager->delete($entryTag, true);
+        $entryTags = $this->getEntryTagsForForm((string)$id);
+        foreach ($entryTags as $entryTag) {
+            $this->entryManager->delete($entryTag, true, $toTrash, $tag);
         }
 
-        $this->pageManager->deleteOrphaned($tag);
+        if ($toTrash) {
+            $this->container->get(Trash::class)->trash($tag, $entryTags);
+        } else {
+            $this->pageManager->deleteOrphaned($tag);
+        }
 
         $this->cacheValidatedForAll = false;
         $this->cachedContentTypeTags = [];

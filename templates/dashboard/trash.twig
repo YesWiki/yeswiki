@@ -1,0 +1,51 @@
+{% extends "@core/dashboard/layout.twig" %}
+
+{% block dashboard_content %}
+  <h1>{{ _t('DASHBOARD_TRASH') }}</h1>
+  <p class="yw-dashboard__intro">{{ keepDays > 0 ? _t('TRASH_INTRO', {days: keepDays}) : _t('TRASH_INTRO_KEPT') }}</p>
+
+  <section class="yw-dashboard__card">
+    {% if items is empty %}
+      <p class="yw-trash__empty">{{ _t('TRASH_NOTHING') }}</p>
+    {% else %}
+      <div class="yw-table-scroll">
+        <table class="yw-table yw-trash">
+          <thead>
+            <tr>
+              <th>{{ _t('TRASH_COLUMN_TITLE') }}</th>
+              <th>{{ _t('TRASH_COLUMN_TYPE') }}</th>
+              <th>{{ _t('TRASH_COLUMN_DELETED') }}</th>
+              <th><span class="sr-only">{{ _t('TRASH_COLUMN_ACTIONS') }}</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for item in items %}
+              <tr>
+                <td>
+                  <strong>{{ item.title ?: item.tag }}</strong> <small class="yw-form-hint">{{ item.tag }}</small>
+                  {% if item.with is not empty %}<br><small>{{ _t('TRASH_WITH', {count: item.with|length}) }}</small>{% endif %}
+                </td>
+                <td>{{ _t('TRASH_TYPE_' ~ item.type|upper) }}</td>
+                <td><time datetime="{{ item.at }}">{{ item.at|localdate('short') }}</time>{% if item.by %}, {{ item.by }}{% endif %}</td>
+                <td class="yw-trash__actions">
+                  <form method="post" action="{{ url({ tag: 'dashboard/trash' }) }}" hx-boost="false">
+                    <input type="hidden" name="csrf-token" value="{{ csrfToken({id: 'main', refresh: false}) }}">
+                    <input type="hidden" name="tag" value="{{ item.tag }}">
+                    <button type="submit" name="do" value="restore" class="yw-btn yw-btn--sm yw-btn--primary">{{ _t('TRASH_RESTORE') }}</button>
+                    <button type="submit" name="do" value="erase" class="yw-btn yw-btn--sm yw-btn--danger"
+                            data-yw-confirm="{{ _t('TRASH_ERASE_CONFIRM', {title: item.title ?: item.tag}) }}" data-yw-confirm-destructive>{{ _t('TRASH_ERASE') }}</button>
+                  </form>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <form method="post" action="{{ url({ tag: 'dashboard/trash' }) }}" hx-boost="false" class="yw-trash__empty-all">
+        <input type="hidden" name="csrf-token" value="{{ csrfToken({id: 'main', refresh: false}) }}">
+        <button type="submit" name="do" value="empty" class="yw-btn yw-btn--danger"
+                data-yw-confirm="{{ _t('TRASH_EMPTY_CONFIRM', {count: items|length}) }}" data-yw-confirm-destructive>{{ _t('TRASH_EMPTY') }}</button>
+      </form>
+    {% endif %}
+  </section>
+{% endblock %}

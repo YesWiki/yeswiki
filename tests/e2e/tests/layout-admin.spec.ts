@@ -478,7 +478,9 @@ test('the indent button turns around, and links suggest pages', async ({
   await link.fill('Page')
   const suggestions = rows.first().locator('.yw-suggestions')
   await expect(suggestions).toBeVisible()
-  await expect(suggestions.locator('button').first()).toContainText(/Page/)
+  await expect(suggestions.locator('[role="option"]').first()).toContainText(
+    /Page/,
+  )
 
   const width = await rows.first().evaluate((row) => ({
     field: row.querySelector('.yw-menu-row__link').getBoundingClientRect()
@@ -486,7 +488,7 @@ test('the indent button turns around, and links suggest pages', async ({
     list: row.querySelector('.yw-suggestions').getBoundingClientRect().width,
   }))
   expect(width.list).toBeLessThan(width.field + 20)
-  await suggestions.locator('button').first().click()
+  await suggestions.locator('[role="option"]').first().click()
   await expect(link, 'picking a suggestion fills the field').toHaveValue(/Page/)
   await expect(topLevel.first()).toBeVisible()
 })

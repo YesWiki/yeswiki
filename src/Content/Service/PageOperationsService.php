@@ -21,17 +21,14 @@ class PageOperationsService extends YesWikiController
         $this->pageManager = $pageManager;
     }
 
-    /**
-     * delete a page from tag but be carefull entry or page.
-     *
-     * @return bool $done
-     *
-     * @throws \Exception if in hibernation or if entry not deleted
-     */
-    public function delete(string $tag): bool
+    /** Deletes a page or an entry, into the trash unless told otherwise (end-users 13); throws when hibernated or when the entry may not be deleted. */
+    public function delete(string $tag, bool $toTrash = true): bool
     {
         if ($this->entryManager->isEntry($tag)) {
-            return $this->entryController->delete($tag);
+            return $this->entryController->delete($tag, false, $toTrash);
+        }
+        if ($toTrash) {
+            return $this->getService(Trash::class)->trash($tag);
         }
         $this->pageManager->deleteOrphaned($tag);
 

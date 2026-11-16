@@ -15,6 +15,7 @@ use YesWiki\Content\Service\PageManager;
 use YesWiki\Content\Service\PageViewAppendices;
 use YesWiki\Content\Service\SemanticTransformer;
 use YesWiki\Content\Service\TranslatableContent;
+use YesWiki\Content\Service\Trash;
 use YesWiki\Core\YesWikiHandler;
 use YesWiki\Federation\Service\ActivityPubLog;
 use YesWiki\Federation\Service\ActivityPubService;
@@ -243,7 +244,13 @@ class ShowHandler extends YesWikiHandler implements RegisteredHandler
                 'activitypub_by_default' => $onboarding->publishesOnTheFediverseByDefault(),
             ]);
         } elseif ($HasAccessRead = $this->getService(AclService::class)->hasAccess('read')) {
-            if (!$this->getService(PageContext::class)->getPage()) {
+            if (!$this->getService(PageContext::class)->getPage() && $this->getService(PageManager::class)->isTrashed((string)$this->getService(PageContext::class)->getTag())) {
+                $tag = (string)$this->getService(PageContext::class)->getTag();
+                echo $this->getService(TemplateEngine::class)->render('@core/trashed-page.twig', [
+                    'tag' => $tag,
+                    'mayRestore' => $this->getService(Trash::class)->mayHandle($tag),
+                ]);
+            } elseif (!$this->getService(PageContext::class)->getPage()) {
                 echo str_replace(
                     ['{beginLink}', '{endLink}'],
                     ["<a href=\"{$this->getService(UrlFormatter::class)->href('edit')}\">", '</a>'],

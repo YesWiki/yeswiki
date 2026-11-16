@@ -170,7 +170,7 @@ class DespamAction extends YesWikiAction implements RegisteredAction, ProvidesCo
 
                 if (!empty($_POST['suppr'])) {
                     foreach ($_POST['suppr'] as $page) {
-                        if ($this->getService(PageOperationsService::class)->delete($page)) {
+                        if ($this->getService(PageOperationsService::class)->delete($page, false)) {
                             $deletedPages .= $page . ', ';
                         }
                     }

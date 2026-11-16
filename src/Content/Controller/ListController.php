@@ -4,6 +4,7 @@ namespace YesWiki\Content\Controller;
 
 use YesWiki\Content\Action\BazarAction;
 use YesWiki\Content\Entity\Translations;
+use YesWiki\Content\Exception\ListInUseException;
 use YesWiki\Content\Service\ContentNotifier;
 use YesWiki\Content\Service\ListManager;
 use YesWiki\Content\Service\ListOverview;
@@ -256,7 +257,11 @@ class ListController extends YesWikiController
         if (!$this->getService(RequestGuard::class)->linkIsSigned($this->getRequest())) {
             return '<div class="alert alert-danger">' . _t('CSRF_TOKEN_FAIL_ERROR') . '</div>';
         }
-        $this->listManager->delete($id);
+        try {
+            $this->listManager->delete($id, true);
+        } catch (ListInUseException $inUse) {
+            return $this->render('@core/lists/list-in-use.twig', ['message' => $inUse->getMessage(), 'fields' => $inUse->fields]);
+        }
 
         if ($this->getService(RuntimeConfig::class)['BAZ_ENVOI_MAIL_ADMIN']) {
             $this->getService(ContentNotifier::class)->notifyAdminsListDeleted($id);

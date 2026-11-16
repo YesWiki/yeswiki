@@ -565,7 +565,7 @@ class EntryManager
      *
      * @throws \Exception
      */
-    public function delete($tag, bool $forceEvenIfNotOwner = false): void
+    public function delete($tag, bool $forceEvenIfNotOwner = false, bool $toTrash = false, string $trashedWith = ''): void
     {
         if ($this->hibernationService->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
@@ -583,7 +583,11 @@ class EntryManager
 
         $isExternalEntry = !empty($this->tripleStore->getMatching($tag, TripleStore::SOURCE_URL_URI, null, '=', '=', ''));
 
-        $this->pageManager->deleteOrphaned($tag);
+        if ($toTrash) {
+            $this->container->get(Trash::class)->trash($tag, [], $trashedWith);
+        } else {
+            $this->pageManager->deleteOrphaned($tag);
+        }
         $this->announce('entry.deleted', $form, $entryToDelete, $isExternalEntry);
     }
 

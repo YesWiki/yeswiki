@@ -489,12 +489,12 @@ class EntryController extends YesWikiController
     /**
      * @param string $entryId
      */
-    public function delete($entryId, bool $redirectAfter = false): bool
+    public function delete($entryId, bool $redirectAfter = false, bool $toTrash = true): bool
     {
         if ($this->entryManager->isEntry($entryId)) {
             try {
                 $entry = $this->entryManager->getOne($entryId);
-                $this->entryManager->delete($entryId);
+                $this->entryManager->delete($entryId, false, $toTrash);
                 if (!$this->entryManager->isEntry($entryId)) {
                     if ($redirectAfter) {
                         Flash::success(_t('BAZ_FICHE_SUPPRIMEE') . " ($entryId)");

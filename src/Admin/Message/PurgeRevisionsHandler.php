@@ -3,6 +3,7 @@
 namespace YesWiki\Admin\Message;
 
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
+use YesWiki\Content\Service\PageManager;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Kernel\Service\RuntimeConfig;
@@ -29,6 +30,7 @@ final class PurgeRevisionsHandler
         }
 
         $pages = trim($this->dbService->prefixTable('pages'));
+        $triples = trim($this->dbService->prefixTable('triples'));
         $dateExpr = $this->dbService->dateSubDays($days);
         $ids = $this->dbService->loadAll(
             <<<SQL
@@ -39,7 +41,9 @@ final class PurgeRevisionsHandler
                     AND a.tag = b.tag
                     AND a.time < b.time
                     AND b.time < {$dateExpr}
-            SQL
+                    AND a.tag NOT IN (SELECT t.resource FROM {$triples} t WHERE t.property = ?)
+            SQL,
+            [PageManager::TRASH_PROPERTY]
         );
 
         if ($ids === []) {

@@ -180,6 +180,7 @@ class YesWikiInit
             'meta_description' => '',
             'navigation_links' => 'DerniersChangements :: DerniersCommentaires :: ParametresUtilisateur',
             'pages_purge_time' => 365,
+            'trash_keep_days' => 30,
 
             'journal_audit_purge_time' => 365,
             'journal_diagnostic_purge_time' => 14,

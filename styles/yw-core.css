@@ -3368,6 +3368,22 @@ table.yw-table--sortable th[data-yw-sort='desc']::after {
   font-weight: 600;
 }
 
+.yw-suggestions__option {
+  padding: var(--yw-space-sm-y) var(--yw-space-md-x);
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.yw-suggestions__option:hover,
+.yw-suggestions__option--active {
+  background: var(--yw-surface-hover);
+}
+
+.yw-suggestions__option--active {
+  box-shadow: inset 3px 0 0 var(--yw-primary);
+  font-weight: 600;
+}
+
 .yw-dropdown,
 .dropdown,
 .dropup {

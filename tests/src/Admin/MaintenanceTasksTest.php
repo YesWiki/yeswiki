@@ -8,8 +8,10 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 use Symfony\Component\Scheduler\Generator\MessageContext;
 use YesWiki\Admin\Message\PurgeRevisions;
 use YesWiki\Admin\Message\PurgeRevisionsHandler;
+use YesWiki\Admin\Message\PurgeTrash;
 use YesWiki\Admin\Scheduler\AdminSchedule;
 use YesWiki\Admin\Service\ArchiveSchedule;
+use YesWiki\Content\Service\PageManager;
 use YesWiki\Identity\Message\PurgeActivationKeys;
 use YesWiki\Identity\Message\PurgeActivationKeysHandler;
 use YesWiki\Identity\Message\PurgeBotGuard;
@@ -54,7 +56,7 @@ class MaintenanceTasksTest extends YesWikiTestCase
 
     private const STEPS = ['revisions', 'journal', 'recovery-keys', 'activation-keys', 'bot-guard', 'sessions'];
 
-    private const NOT_HOUSEKEEPING = ['queue-prune', ArchiveSchedule::TASK_ID];
+    private const NOT_HOUSEKEEPING = ['queue-prune', ArchiveSchedule::TASK_ID, PurgeTrash::TASK_ID];
 
     private ?QueueTestKit $kit = null;
     private ?string $file = null;
@@ -196,6 +198,19 @@ class MaintenanceTasksTest extends YesWikiTestCase
     }
 
     /** SQLite reads `-5 days` negated as no date at all, so the database cannot tell this from a purge that found nothing: the handler must not ask it anything. */
+    /** A page in the trash keeps every revision until it is restored or erased (end-users 13). */
+    public function testATrashedPageKeepsItsRevisions(): void
+    {
+        $db = $this->wikiDatabase();
+        $this->revisions($db, 'TrashedPage', ['2020-01-01 10:00:00', '2020-02-01 10:00:00', '2020-03-01 10:00:00']);
+        $db->query('UPDATE ' . $db->prefixTable('pages') . " SET latest = 'N'");
+        $db->query('INSERT INTO ' . $db->prefixTable('triples') . ' (resource, property, value) VALUES (?, ?, ?)', ['TrashedPage', PageManager::TRASH_PROPERTY, '{}']);
+
+        $this->purge($db, days: 30, hibernated: false);
+
+        $this->assertSame(3, $this->countRevisions($db));
+    }
+
     public function testANegativeWindowIsNoWindow(): void
     {
         $db = $this->createMock(DbService::class);
@@ -272,6 +287,7 @@ class MaintenanceTasksTest extends YesWikiTestCase
             'debug' => false,
         ]));
         $db->query('CREATE TABLE ' . $db->prefixTable('pages') . " (id INTEGER PRIMARY KEY AUTOINCREMENT, tag TEXT NOT NULL, time TEXT NOT NULL, latest TEXT NOT NULL DEFAULT 'N', body TEXT)");
+        $db->query('CREATE TABLE ' . $db->prefixTable('triples') . ' (id INTEGER PRIMARY KEY AUTOINCREMENT, resource TEXT NOT NULL, property TEXT NOT NULL, value TEXT NOT NULL)');
 
         return $db;
     }

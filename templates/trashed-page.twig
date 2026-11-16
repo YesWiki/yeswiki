@@ -1,0 +1,13 @@
+{# What a page in the trash shows instead of "create it?" (end-users 13). #}
+<div class="yw-alert yw-alert--info yw-trashed-page">
+  <p>{{ _t('TRASH_PAGE_IS_IN_IT') }}</p>
+  {% if mayRestore %}
+    <form method="post" action="{{ url({ tag: 'dashboard/trash' }) }}" hx-boost="false">
+      <input type="hidden" name="csrf-token" value="{{ csrfToken({id: 'main', refresh: false}) }}">
+      <input type="hidden" name="tag" value="{{ tag }}">
+      <input type="hidden" name="back" value="{{ url({ tag: tag }) }}">
+      <button type="submit" name="do" value="restore" class="yw-btn yw-btn--primary">{{ _t('TRASH_RESTORE') }}</button>
+      <a class="yw-btn" href="{{ url({ tag: 'dashboard/trash' }) }}">{{ _t('DASHBOARD_TRASH') }}</a>
+    </form>
+  {% endif %}
+</div>

@@ -8,6 +8,7 @@ use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Entity\PageType;
 use YesWiki\Content\Entity\Translations;
 use YesWiki\Content\Exception\ReservedTagException;
+use YesWiki\Content\Exception\TrashedTagException;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Identity\Service\Guard;
@@ -23,6 +24,8 @@ use YesWiki\Search\Service\SearchIndexer;
 
 class PageManager implements CachesTheDatabase
 {
+    public const TRASH_PROPERTY = 'http://outils-reseaux.org/_vocabulary/trash';
+
     protected AclService $aclService;
     protected AuthenticationService $authenticationService;
     protected DbService $dbService;
@@ -111,6 +114,9 @@ class PageManager implements CachesTheDatabase
         if (!$bypassAcls && !$time && $cache && empty($userNameForCheckingACL) && (($cachedPage = $this->getCached($tag)) !== false)) {
             $page = $cachedPage;
         } else {
+            if ($time && $this->isTrashed((string)$tag)) {
+                return null;
+            }
             $timeQuery = is_int($time) ? 'id = ?' : ($time ? "{$this->dbService->quoteIdentifier('time')} = ?" : "latest = 'Y'");
             $revisionOrder = $time ? 'ORDER BY id DESC' : '';
             $page = $this->dbService->loadSingle("
@@ -145,9 +151,13 @@ class PageManager implements CachesTheDatabase
         return $page;
     }
 
-    /**
-     * Returns whether $tag is already in use anywhere in the global Content tag namespace -- type-agnostic by construction, since every Content type (pages, bazar entries today; forms and users once tickets 05/06 land) is a row in this same `pages` table, so a single check against the `tag` column covers all of them without needing to know which type currently holds it.
-     */
+    /** Whether the tag is in the trash: its revisions are no one's to read until it is restored (end-users 13). */
+    public function isTrashed(string $tag): bool
+    {
+        return $tag !== '' && $this->tripleStore->getOne($tag, self::TRASH_PROPERTY, '', '') !== null;
+    }
+
+    /** Whether $tag is taken in the one Content tag namespace, by any type and in the trash too: every Content type is a row of `pages`. */
     public function tagExists(string $tag): bool
     {
         return (bool)$this->dbService->loadSingle("SELECT 1 FROM {$this->dbService->prefixTable('pages')} WHERE tag = ? LIMIT 1", [$tag]);
@@ -428,6 +438,9 @@ class PageManager implements CachesTheDatabase
      */
     public function getRevisions($pageTag, $limit = 10000)
     {
+        if ($this->isTrashed((string)$pageTag)) {
+            return [];
+        }
         $userCol = $this->dbService->quoteIdentifier('user');
 
         return $this->checkEntriesACL($this->dbService->loadAll("
@@ -445,6 +458,9 @@ class PageManager implements CachesTheDatabase
      */
     public function getPreviousRevision($page)
     {
+        if ($this->isTrashed((string)($page['tag'] ?? ''))) {
+            return null;
+        }
         $timeCol = $this->dbService->quoteIdentifier('time');
         $previous = $this->dbService->loadSingle("
             SELECT * FROM {$this->dbService->prefixTable('pages')}
@@ -469,6 +485,10 @@ class PageManager implements CachesTheDatabase
      */
     public function countRevisions($page)
     {
+        if ($this->isTrashed((string)$page)) {
+            return 0;
+        }
+
         return $this->dbService->countRows("
             SELECT * FROM {$this->dbService->prefixTable('pages')}
             WHERE tag = ?
@@ -623,6 +643,9 @@ class PageManager implements CachesTheDatabase
 
         if (ReservedTags::isReserved((string)$tag) || self::isGroupTag((string)$tag)) {
             throw new ReservedTagException(_t('RESERVED_TAG_CANNOT_BE_USED', ['tag' => $tag]));
+        }
+        if ($this->isTrashed((string)$tag)) {
+            throw new TrashedTagException(_t('TRASH_SAVE_REFUSED', ['tag' => $tag]));
         }
         $user = $this->authenticationService->getLoggedUserName();
 
