@@ -10,6 +10,7 @@ use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Identity\Service\AvatarService;
 use YesWiki\Identity\Service\CsrfTokenChecker;
+use YesWiki\Identity\Service\SignIn\ProviderRegistry;
 use YesWiki\Identity\Service\UserManager;
 use YesWiki\Identity\Service\UserOperationsService;
 use YesWiki\Kernel\Component\Category;
@@ -135,10 +136,17 @@ class UsersTableAction extends YesWikiAction implements RegisteredAction, Provid
      */
     private function addGroups(array $users): array
     {
-        return array_map(function ($user) {
-            $userGroups = $this->userManager->groupsWhereIsMember($user);
+        $registry = $this->getService(ProviderRegistry::class);
+        $labels = [];
 
-            return array_merge($user->getArrayCopy(), ['groups' => $userGroups]);
+        return array_map(function ($user) use ($registry, &$labels) {
+            $userGroups = $this->userManager->groupsWhereIsMember($user);
+            $providerId = $user->provider();
+
+            return array_merge($user->getArrayCopy(), [
+                'groups' => $userGroups,
+                'provider' => $providerId === null ? null : ($labels[$providerId] ??= $registry->labelFor($providerId)),
+            ]);
         }, $users);
     }
 
