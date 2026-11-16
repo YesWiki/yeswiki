@@ -8,6 +8,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Event\ResponseEvent;
 use Symfony\Component\Security\Csrf\CsrfToken;
 use Symfony\Component\Security\Csrf\CsrfTokenManager;
+use YesWiki\Kernel\Service\RouteProvider;
 
 /** Refuses requests that change something when another site sent them, and gives the wiki's own forms and links the token they must carry. */
 class RequestGuard
@@ -24,13 +25,14 @@ class RequestGuard
         private readonly ParameterBagInterface $params,
         private readonly CsrfTokenManager $csrfTokenManager,
         private readonly AuthenticationService $authenticationService,
+        private readonly RouteProvider $routes,
     ) {
     }
 
     /** Why the request must be refused, or null when it may go on. */
     public function refusal(Request $request): ?string
     {
-        if (in_array($request->getMethod(), self::SAFE_METHODS, true) || $this->carriesApiKey($request)) {
+        if (in_array($request->getMethod(), self::SAFE_METHODS, true) || $this->carriesApiKey($request) || $this->routes->acceptsCrossSite($request)) {
             return null;
         }
         if ($this->comesFromAnotherSite($request)) {

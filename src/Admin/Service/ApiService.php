@@ -8,6 +8,7 @@ use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Identity\Service\UserManager;
 use YesWiki\Kernel\Service\CurrentRequest;
+use YesWiki\Kernel\Service\RouteProvider;
 
 class ApiService
 {
@@ -18,7 +19,7 @@ class ApiService
 
     protected CurrentRequest $currentRequest;
 
-    public function __construct(AuthenticationService $authenticationService, ParameterBagInterface $params, AclService $aclService, UserManager $userManager, CurrentRequest $currentRequest)
+    public function __construct(AuthenticationService $authenticationService, ParameterBagInterface $params, AclService $aclService, UserManager $userManager, CurrentRequest $currentRequest, private readonly RouteProvider $routes)
     {
         $this->currentRequest = $currentRequest;
         $this->authenticationService = $authenticationService;
@@ -60,7 +61,7 @@ class ApiService
     public function isCrossOriginWrite(): bool
     {
         $request = $this->currentRequest->get();
-        if ($request->isMethodSafe() || $this->getBearerToken() !== null) {
+        if ($request->isMethodSafe() || $this->getBearerToken() !== null || $this->routes->acceptsCrossSite($request)) {
             return false;
         }
         $site = $request->headers->get('Sec-Fetch-Site');

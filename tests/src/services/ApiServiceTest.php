@@ -15,6 +15,8 @@ use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Identity\Service\UserManager;
 use YesWiki\Kernel\Service\CurrentRequest;
+use YesWiki\Kernel\Service\PageContext;
+use YesWiki\Kernel\Service\RouteProvider;
 
 require_once 'tests/YesWikiTestCase.php';
 
@@ -71,7 +73,7 @@ class ApiServiceTest extends TestCase
             ? Request::create('/')
             : Request::create('/', 'GET', [], [], [], ['HTTP_AUTHORIZATION' => 'Bearer ' . $bearerToken]));
 
-        return new ApiService($authenticationService, $params, $aclService, $userManager, $currentRequest);
+        return new ApiService($authenticationService, $params, $aclService, $userManager, $currentRequest, new RouteProvider(new PageContext()));
     }
 
     public function testGroupRestrictedRouteIsNotBypassedByPublicApiMode(): void
