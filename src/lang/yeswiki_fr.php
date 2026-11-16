@@ -3622,4 +3622,7 @@ qui rend 1 si bf_type == premiere_cle sinon 0).',
     'ADMIN_MENUS_TRANSLATE_HINT' => 'Pour traduire ce menu, changez de langue avec le sélecteur en bas de la page.',
     'ADMIN_MENUS_TRANSLATING_HINT' => 'Vous traduisez ce menu. Seuls les libellés se saisissent ici ; l\'ordre, les liens et les icônes se changent dans la langue d\'origine.',
     'AB_bazarliste_displayfields_footer_label' => 'Zone de pied de bloc',
+    'SIGN_IN_PROVIDER_UNNAMED' => 'votre fournisseur d\'identité',
+    'SIGN_IN_TYPE_LOCAL' => 'Comptes de ce wiki',
+    'SIGN_IN_LOCAL_LABEL' => 'Compte du wiki',
 ];

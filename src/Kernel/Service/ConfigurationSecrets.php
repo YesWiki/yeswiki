@@ -42,6 +42,8 @@ final class ConfigurationSecrets implements EnvVarProcessorInterface
      */
     public static function withPlaceholders(array $config): array
     {
+        // The sign-in providers (ProviderRegistry::SECTION) hold their secrets deep in their entries: YesWikiRuntime reads them at runtime
+        unset($config['sso_providers']);
         foreach (self::KEYS as $key) {
             if (isset($config[$key]) && is_scalar($config[$key]) && (string)$config[$key] !== '') {
                 $config[$key] = self::placeholder($key);

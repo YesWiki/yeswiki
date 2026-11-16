@@ -3621,4 +3621,7 @@ which gives 1 if bf_type == premiere_cle, and 0 otherwise).',
     'ADMIN_MENUS_TRANSLATE_HINT' => 'To translate this menu, change language with the switch at the foot of the page.',
     'ADMIN_MENUS_TRANSLATING_HINT' => 'You are translating this menu. Only the labels are typed here; the order, the links and the icons are changed in the source language.',
     'AB_bazarliste_displayfields_footer_label' => 'Footer area',
+    'SIGN_IN_PROVIDER_UNNAMED' => 'your identity provider',
+    'SIGN_IN_TYPE_LOCAL' => 'Accounts of this wiki',
+    'SIGN_IN_LOCAL_LABEL' => 'Wiki account',
 ];
