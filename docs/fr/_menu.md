@@ -3,3 +3,4 @@
 - [📑 Formulaires](bazar.md)
 - [😎 Administration](admin.md)
 - [⚙️ Traitements en arrière-plan](async.md)
+- [🔑 Connexion et SSO](connexion-sso.md)

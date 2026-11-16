@@ -804,6 +804,197 @@ host can make one in the default mode. `core:archive` and `core:restore` stay, f
 
 ---
 
+## Sign-in providers replace the login extensions
+
+Doryphore's `loginsso` (OAuth2 and OpenID Connect), `loginldap` and `logincas` are retired. Signing
+in is now done by **providers**, configured in one setting, `sso_providers`, kept in the wiki's
+database, and managed from **Administration › Sign-in** (`?admin/sign-in`). Local accounts
+are a provider like the others. Several providers can be on at once, SAML is new, and a refused
+sign-in says why, to the person and to you. The admin guide is `docs/en/sign-in-providers.md`
+(`docs/fr/connexion-sso.md` in French), and the decision is ADR-0031.
+
+The three folders are listed as Doryphore core in `private/doryphore/README.md`: there is nothing
+to port, so do not bring them back from `private/doryphore/tools/`.
+
+### Before upgrading a wiki that uses `loginsso`: register the new callback URL
+
+The old callback, `?api/auth_sso/callback`, is gone. Each provider now sends people back to its
+own address, and nobody can sign in through a converted provider until that address is registered at
+the OAuth2 / OpenID Connect server. To avoid an outage, add it **before** the upgrade, next to the
+old one: most servers (Keycloak, LemonLDAP::NG, Authentik, Entra...) accept several redirect URIs
+per client.
+
+1. For each entry of `sso_config.providers` in `wakka.config.php`, work out the identifier the
+   upgrade will give it: its `button_style.button_label`, transliterated to ASCII, lowercased, with
+   every run of other characters replaced by a dash. `Acme SSO` gives `acme-sso`,
+   `Connexion à l'ENT` gives `connexion-a-l-ent`. No label gives `oidc`. When the identifier is
+   already taken, by `local`, by `ldap` or `cas` if `loginldap` or `logincas` were configured, or by
+   an earlier entry, `-2`, then `-3`, and so on, is appended.
+2. At the server, in the client the wiki uses, add the redirect URI
+   `https://wiki.example.org/?user/sign-in/<identifier>/callback&sso_callback=<identifier>`: the
+   wiki's address (its `base_url`, ending with `?`) followed by `user/sign-in/<identifier>/callback`,
+   with no `=`, then `&sso_callback=` and the identifier again (it takes people back to the wiki
+   through servers that drop a query key without a value, such as authentik).
+   Keep the old `https://wiki.example.org/?api/auth_sso/callback=` for now: Doryphore still uses it
+   until the upgrade.
+3. Upgrade. The migration prints the identifier of each converted provider
+   (`the login extensions became sign-in providers in sso_providers: acme-sso (oidc, from loginsso, on)`);
+   it is also shown on **Administration › Sign-in**, and the provider's edit form shows its
+   **Callback URL**. If it differs from what you guessed, fix the redirect URI at the server, then
+   **Test** the provider.
+4. Once someone has signed in through it, remove the old `?api/auth_sso/callback` redirect URI from
+   the server.
+
+If the upgrade already ran, register the URL shown in the provider's edit form: sign-in through that
+provider works again as soon as the server accepts it.
+
+### What the migration converts
+
+`LoginExtensionsBecomeProviders` reads the old keys, saves `sso_providers` in the wiki's database
+(where every setting an administration screen edits is kept), removes the old keys from
+`yeswiki.config.php` and prints what it did. Every configured block becomes a provider:
+
+| Doryphore                                                                                          | Provider                                                                                                    |
+| -------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| each entry of `sso_config.providers`                                                               | an `oidc` provider, its identifier made from the button label                                               |
+| `auth_options` (`clientId`, `clientSecret`, `urlAuthorize`, `urlAccessToken`, `urlResourceOwnerDetails`, `scopes`, `scopeSeparator`) | `connection.*`, as explicit endpoints; no scopes means `openid` alone, as `loginsso` asked |
+| `addFinalEqual` and the old callback `?api/auth_sso/callback`                                      | dropped: the provider sends people to `?user/sign-in/<identifier>/callback&sso_callback=<identifier>`, which must be registered at the server (see above) |
+| `id_sso_field`, `email_sso_field`, `groups_sso_field`                                              | the user ID, email and groups attributes (`id` and `email` when they were not set)                          |
+| `groups_sso_mapping`                                                                               | the group mapping                                                                                           |
+| `create_user_from` set, or not                                                                     | accounts created, named from that template (`account_name_template`, see _Account names_); or not created  |
+| (`loginsso` attached accounts by email)                                                            | match by email on                                                                                           |
+| `button_style.button_label`                                                                        | the provider's name; `button_class` and `button_icon` are dropped                                           |
+| `ldap_host`, `ldap_port`                                                                           | an `ldap` provider, `connection.uri`: `ldap://host:port`, port 389 by default, or the host as written when it starts with `ldaps://` |
+| `ldap_base`, or `ldap_group` and `ldap_organisation`                                               | the bind DN template `uid={login},...`                                                                      |
+| (LDAP attributes)                                                                                  | `uid`, `mail`; no groups; new accounts named `#[uid]`, as sent                                             |
+| `cas_host`, `cas_port`, `cas_context`                                                              | a `cas` provider, `connection.server_url` `https://host:port/context`, protocol 2.0                         |
+| `cas_server_ca_cert_path`                                                                          | `connection.ca_cert` (an empty path now means the system's authorities, see below)                          |
+| (CAS attributes)                                                                                   | `name` as the user ID, `mail` as the email; new accounts named `#[name]`, as sent                           |
+| LDAP and CAS accounts                                                                              | accounts created, match by email on, and `match_by_name_until` set 12 months after the upgrade              |
+
+**Which provider is switched on.** Doryphore ran the login action of the last extension in
+alphabetical order, so `loginsso` won over `loginldap`, which won over `logincas`. The migration
+applies the same rule among the extensions that were still installed (in `tools/` or
+`private/doryphore/tools/`): that one's provider is switched on, and the others are created
+switched off. If none was still installed, every converted provider is off and local accounts stay
+on. If `sso_providers` already existed, its entries are left as they are and the converted
+providers are added switched off.
+
+**Local accounts are switched off** when an extension was in charge, for all three types. For LDAP
+and CAS this is a change: on Doryphore they showed the wiki's own form whenever their server was
+down or refused someone. Now, **if the directory or the CAS server is down, nobody can sign in**,
+administrators included, until someone switches `local` back on with `./yeswicli sign-in:enable local`
+and signs in with a local account (the admin guide's _Getting back in_ shows how, with
+`./yeswicli user:create`). Editing `yeswiki.config.php` does not do it: the providers are read from
+the database. Make sure someone with a shell on the server knows this before the upgrade.
+
+**Accounts.**
+
+- **`loginsso_id`** is kept through the move of accounts into pages, and becomes the account's
+  link when there was exactly one `loginsso` provider and it is the one switched on. With several
+  providers, `loginsso` never recorded which one an account came from, so the stored ID is removed
+  and match by email ties each account to its provider at its next sign-in; the same happens when
+  the converted provider is off.
+  When `loginsso` was installed, it copied every existing account's email into `loginsso_id`. An ID
+  equal to the account's email is that copy and names nobody at the server, so it is removed and
+  the account keeps its password: match by email links it at its next sign-in through the
+  provider. It stays the account's link only when `id_sso_field` and `email_sso_field` were the
+  same field, since the server then identified people by their email.
+- **LDAP and CAS found accounts by wiki name.** Until the `match_by_name_until` date, a first
+  sign-in links an unlinked account named after the person's user ID, as Doryphore did, and never
+  touches an account already linked. After that date, only match by email does. A Doryphore user
+  renamed by the upgrade because a page had the same name (`JeanDupont2`) is found by email,
+  which is why match by email is on for these providers. The key is not shown on the screen; the
+  exception for a missing email below ends with it.
+- **md5 passwords are cleared** on every account, every revision included, on a wiki where
+  `loginldap` was in charge on Doryphore, because they may be the directory's own passwords, stored
+  unsalted. This applies even if an `sso_providers` section already existed. Those people sign in
+  through LDAP, which links their account; if local accounts are on, they can also choose a new
+  password with **Lost password**.
+- An existing account on a provider converted from LDAP or CAS may sign in with no email, since
+  Doryphore accepted that; it keeps the email it has. Creating an account or matching by email
+  still needs one. This lasts as long as the provider has a `match_by_name_until` key.
+
+**Account names.** Accounts that already exist keep their name. A sign-in that creates an account
+names it from the provider's **account name template** (`account_name_template`), where each
+`#[attribute]` is replaced by what the server sent under that name; without a template, or when
+none of its attributes was sent, from the start of the email, then from the user ID. What the
+template gives is then either:
+
+- made into a WikiName, as `loginsso` did, when `account_name_pascalcase` is on (the default):
+  punctuation splits words, accents go, each word takes a capital, the spaces go, and a name with
+  fewer than two capitals gets its last letter capitalised;
+- kept as the server sent it, as `loginldap` and `logincas` did, when it is off: case and accents
+  stay, spaces become dashes, and the characters a page name cannot hold go.
+
+Either way the name is numbered when a page or an account already has it (`MarieDupont2`,
+`jdupont-2`), where `loginldap` and `logincas` signed the person in to that account instead.
+
+| Extension   | How Doryphore named a new account                                                                                   | The converted provider                                                  | Example                                                                      |
+| ----------- | ------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| `loginsso`  | `create_user_from` as a template, made into a WikiName and numbered; no template, no account                        | the same template, `account_name_pascalcase` on; no template, `create_accounts` off | `#[given_name] #[family_name]`: `MarieDupontLefevre`, `MarieDupontLefevre2` |
+| `loginldap` | the directory's `uid` as it was, else a WikiName made from `cn`; never numbered                                      | the template `#[uid]`, `account_name_pascalcase` off                    | `jdupont`: `jdupont`, `jdupont-2`                                            |
+| `logincas`  | the CAS attribute `name` as it was, empty when the server did not send it; never numbered                            | the template `#[name]`, `account_name_pascalcase` off                   | `jdupont`: `jdupont`, `jdupont-2`                                            |
+
+Both settings are on the provider's edit screen, under **Accounts**: **Name of the accounts
+created** and **Make the name a WikiName (automatic capitals)**. Changing them renames nobody.
+
+The providers and the accounts are converted together, in one database transaction: if either
+fails, nothing is changed and the migration runs again next time. The old keys are then removed
+from `yeswiki.config.php`, since `sso_config` holds the client secrets. If the file cannot be
+written (a replica's read-only file, for instance), the conversion still holds and the migration
+names the keys to delete from it by hand.
+
+**Pages.** `{{linktouserprofil}}` and `{{userentries}}`, which `loginsso` seeded into
+`PageMenuUser` and `UserEntries`, become Markdown links to the account screens `/user` and
+`/user/entries`, wherever they appear, in one new revision of each page (`LoginssoActionsBecomeLinks`).
+A `{{userentries username="..."}}` that listed someone else's entries now shows the reader their
+own: the migration names those pages, check them.
+
+### What to check after the upgrade
+
+- **CAS: the user ID is `name`.** The converted CAS provider takes the user ID from the `name`
+  attribute, as `logincas` read it. A CAS server that does not release `name` refuses the migrated
+  users with `missing_attribute`: use **Test** to see what the server sends, then change the
+  provider's **User ID** attribute (to `user`, the login the server validates, for example).
+- **CAS: an empty certificate path no longer disables checks.** An empty
+  `cas_server_ca_cert_path` turned certificate verification off on Doryphore. It now means the
+  system's authorities, so a CAS server whose certificate comes from a private authority fails, as
+  `provider_unreachable` with the TLS error, until the provider's **Certificate authority file**
+  (`connection.ca_cert`) names that authority's PEM file. Checks cannot be turned off.
+- **CAS: restricted servers must allow the new service URL.** The service the CAS server is told
+  about is now the provider's callback, `https://your.wiki/?user/sign-in/cas/callback&sso_callback=cas`
+  (the edit screen shows it). A CAS server that only accepts registered services must allow it.
+- **CAS: an outage is slower to show.** When the CAS server does not answer, a sign-in waits up to
+  10 seconds for it, twice, before the person sees the refusal.
+- **LDAP: the connection is not encrypted.** The converted address is `ldap://`, without StartTLS,
+  as Doryphore used it: passwords cross the network in clear. Switch to an `ldaps://` address, or
+  tick **Encrypt with StartTLS**; the edit screen warns until you do. LDAP also needs the PHP
+  `ldap` extension, which the **Health** page checks.
+- **LDAP: the certificate is always checked.** With `ldaps://` or StartTLS, the directory's
+  certificate is checked against the system's authorities, whatever `TLS_REQCERT` in `ldap.conf` or
+  `LDAPTLS_REQCERT` say: a directory whose certificate is self-signed or from a private authority
+  fails as `provider_unreachable` until the server trusts that authority (`TLS_CACERT` in
+  `ldap.conf`, or the system's store).
+- **LDAP: spaces in the DN.** A `ldap_base` written with spaces after its commas becomes a bind DN
+  template without them, the way the directory stores DNs.
+- **Groups for LDAP and CAS.** The extensions mapped no groups: add a group mapping if you want
+  one.
+- **Use Test on each provider**: it runs a real sign-in and shows what the provider returns,
+  without signing anyone in.
+
+### What was dropped
+
+- `login_username_initials`, `bazar_user_entry_id` and `fields_transformed`, with nothing to
+  replace them.
+- `loginsso`'s `bazar_mapping` and `logincas`'s `cas_bazar_mapping`: sign-ins no longer create a
+  bazar entry. The entries they created stay as ordinary content. Map provider attributes onto
+  fields of the user form instead (extra attributes, on the provider's edit screen).
+- `logincas`'s `/api/participant/*`, which listed the accounts' emails to anonymous visitors.
+- The buttons' `button_class` and `button_icon`.
+
+---
+
 ## Passwords
 
 **Passwords stored as md5 no longer sign anyone in.** md5 was listed as a legacy hasher, so an
