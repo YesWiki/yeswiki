@@ -48,6 +48,7 @@ use YesWiki\Kernel\Service\ConfigurationFileProvider;
 use YesWiki\Kernel\Service\ConfigurationSecrets;
 use YesWiki\Kernel\Service\ConfigurationWatch;
 use YesWiki\Kernel\Service\CurrentRequest;
+use YesWiki\Kernel\Service\ErrorFallbackPage;
 use YesWiki\Kernel\Service\EventDispatcher;
 use YesWiki\Kernel\Service\ExtensionRegistry;
 use YesWiki\Kernel\Service\Flash;
@@ -126,6 +127,7 @@ class YesWikiRuntime
     /** @param array<string, mixed> $config */
     public function __construct($config = [])
     {
+        self::answerWithTheFallbackUntilBooted();
         $this->init = new YesWikiInit($config);
         $init = $this->init;
         $this->config = $init->config;
@@ -154,29 +156,105 @@ class YesWikiRuntime
                 return;
             }
 
-            $this->report($throwable);
+            $incident = bin2hex(random_bytes(4));
+            $this->report($throwable, ['incident' => $incident]);
 
             if (YesWikiKernel::isCli()) {
                 return;
             }
 
-            if (!headers_sent()) {
-                http_response_code(Response::HTTP_INTERNAL_SERVER_ERROR);
-            }
-            echo $this->failurePage($throwable);
+            self::sendInPlaceOfThePage($this->errorResponse(Response::HTTP_INTERNAL_SERVER_ERROR, $incident, $throwable));
         });
     }
 
-    /** What a visitor sees instead of a blank page. The detail is debug-only: the trail a webmaster needs is on stderr and in the Journal, and a production wiki does not put it on the screen. */
-    private function failurePage(\Throwable $throwable): string
+    /** Until the wiki's own handler is in place, an exception during boot answers with the standalone page rather than a blank one. */
+    private static function answerWithTheFallbackUntilBooted(): void
     {
-        $page = '<h1>' . htmlspecialchars(_t('ERROR')) . '</h1>';
+        if (defined('PHPUNIT_COMPOSER_INSTALL') || YesWikiKernel::isCli()) {
+            return;
+        }
+        set_exception_handler(static function (\Throwable $throwable): void {
+            $incident = bin2hex(random_bytes(4));
+            Journal::toStderr('', [
+                'channel' => 'diagnostic',
+                'level' => 'error',
+                'action' => $throwable::class,
+                'message' => $throwable->getMessage(),
+                'file' => $throwable->getFile(),
+                'line' => $throwable->getLine(),
+                'incident' => $incident,
+            ]);
+            self::sendInPlaceOfThePage(ErrorFallbackPage::response(Response::HTTP_INTERNAL_SERVER_ERROR, $incident, '/'));
+        });
+    }
 
-        if (!empty($this->config['debug']) && $this->containerIsBuilt()) {
-            $page .= '<p>' . $this->service(ThrowableFormatter::class)->dump($throwable) . '</p>';
+    /** Sends an error page in place of whatever the request had started to print, or after it when the headers have already left. */
+    private static function sendInPlaceOfThePage(Response $response): void
+    {
+        if (headers_sent()) {
+            echo $response->getContent();
+
+            return;
+        }
+        while (ob_get_level() > 0) {
+            ob_end_clean();
+        }
+        $response->send();
+    }
+
+    /** The answer to a 403, 404, 405 or 500: JSON for an API call, the page in the wiki's layout and language when it can be drawn, a standalone page when it cannot (end-users 15). */
+    public function errorResponse(int $status, ?string $incident = null, ?\Throwable $failure = null, ?string $route = null): Response
+    {
+        $route ??= ltrim((string)($_GET['wiki'] ?? ''), '/');
+        if ($this->isApiRoute($route) || $this->request->headers->get('HX-Request') === 'true') {
+            $error = trim(self::errorText($status) . ' ' . ($incident === null ? '' : _t('ERROR_INCIDENT', ['id' => $incident])));
+
+            return new JsonResponse(array_filter(['error' => $error, 'incident' => $incident]), $status, ['Cache-Control' => 'no-store']);
+        }
+        if ($this->containerIsBuilt()) {
+            try {
+                $page = $this->service(TemplateEngine::class)->renderFullPage('@core/error-page.twig', [
+                    'status' => $status,
+                    'title' => $status === Response::HTTP_FORBIDDEN ? _t('ERROR_NO_ACCESS') : _t('ERROR_PAGE_' . (in_array($status, [404, 405], true) ? $status : 500) . '_TITLE'),
+                    'text' => self::errorText($status),
+                    'detail' => $this->errorDetail($failure),
+                    'incident' => $incident,
+                    'home' => $this->service(UrlFormatter::class)->href('', (string)$this->service(RuntimeConfig::class)['root_page'], null, false),
+                    'trace' => !empty($this->config['debug']) && $failure !== null ? $this->service(ThrowableFormatter::class)->dump($failure) : '',
+                ]);
+
+                return new Response($page, $status, ['Cache-Control' => 'no-store']);
+            } catch (\Throwable $layoutFailed) {
+                $this->report($layoutFailed, ['incident' => $incident]);
+            }
         }
 
-        return $page;
+        return ErrorFallbackPage::response($status, $incident, (string)($this->config['base_url'] ?? ''));
+    }
+
+    /** The sentence an error page says, the same as the toast an htmx request shows for that status (end-users 03). */
+    private static function errorText(int $status): string
+    {
+        return match ($status) {
+            Response::HTTP_FORBIDDEN => _t('HTMX_ERROR_FORBIDDEN'),
+            Response::HTTP_NOT_FOUND => _t('HTMX_ERROR_NOT_FOUND'),
+            Response::HTTP_METHOD_NOT_ALLOWED => _t('ERROR_PAGE_405_TEXT'),
+            default => _t('HTMX_ERROR_SERVER', ['status' => (string)$status]),
+        };
+    }
+
+    /** What the failure itself says to a reader, '' when it says nothing more than the page does. */
+    private function errorDetail(?\Throwable $failure): string
+    {
+        if ($failure === null) {
+            return '';
+        }
+        if ($failure instanceof HttpException) {
+            return $failure->getStatusCode() < Response::HTTP_INTERNAL_SERVER_ERROR ? $failure->getMessage() : '';
+        }
+        $explanation = IncidentExplanation::of($failure);
+
+        return $explanation === _t('INCIDENT_UNEXPECTED') ? '' : $explanation;
     }
 
     /** @param array<string, mixed> $context what the Journal and stderr carry beside the exception, an incident id among it */
@@ -416,9 +494,10 @@ class YesWikiRuntime
                 $response = $this->accessRefused($context->getPathInfo());
             }
         } catch (ResourceNotFoundException $exception) {
-            $response = new Response('', Response::HTTP_NOT_FOUND);
+            $response = $this->errorResponse(Response::HTTP_NOT_FOUND, route: ltrim($context->getPathInfo(), '/'));
         } catch (MethodNotAllowedException $exception) {
-            $response = new Response('', Response::HTTP_METHOD_NOT_ALLOWED);
+            $response = $this->errorResponse(Response::HTTP_METHOD_NOT_ALLOWED, route: ltrim($context->getPathInfo(), '/'));
+            $response->headers->set('Allow', implode(', ', $exception->getAllowedMethods()));
         }
         $rawOutput = ob_get_contents();
         ob_end_clean();
@@ -437,13 +516,7 @@ class YesWikiRuntime
         }
 
         if ($this->service(AuthenticationService::class)->getLoggedUser()) {
-            return new Response(
-                $this->service(TemplateEngine::class)->renderFullPage('@core/alert-message-with-back.twig', [
-                    'type' => 'danger',
-                    'message' => _t('ERROR_NO_ACCESS'),
-                ]),
-                Response::HTTP_FORBIDDEN
-            );
+            return $this->errorResponse(Response::HTTP_FORBIDDEN, route: $route);
         }
 
         return new Response('', Response::HTTP_FOUND, [
@@ -573,9 +646,16 @@ class YesWikiRuntime
             if ($th->getStatusCode() >= Response::HTTP_INTERNAL_SERVER_ERROR) {
                 $this->report($th);
             }
-            $event->setResponse(new Response($th->getMessage(), $th->getStatusCode(), $th->getHeaders()));
-        } else {
+            $route = self::routeOf($event->getRequest());
+            $event->setResponse($this->isApiRoute($route) || !in_array($th->getStatusCode(), [403, 404, 405], true)
+                ? new Response($th->getMessage(), $th->getStatusCode(), $th->getHeaders())
+                : $this->errorResponse($th->getStatusCode(), null, $th, $route));
+        } elseif ($this->isApiRoute(self::routeOf($event->getRequest()))) {
             $event->setResponse(new ApiResponse($this->incident($th), Response::HTTP_INTERNAL_SERVER_ERROR));
+        } else {
+            $incident = bin2hex(random_bytes(4));
+            $this->report($th, ['incident' => $incident]);
+            $event->setResponse($this->errorResponse(Response::HTTP_INTERNAL_SERVER_ERROR, $incident, $th, self::routeOf($event->getRequest())));
         }
     }
 
@@ -594,6 +674,28 @@ class YesWikiRuntime
         }
 
         return $answer;
+    }
+
+    /** The route a request asked for: its path with rewriting, otherwise the `wiki` parameter or the first key of the query string. */
+    private static function routeOf(Request $request): string
+    {
+        $path = ltrim($request->getPathInfo(), '/');
+        if ($path !== '') {
+            return $path;
+        }
+        $wiki = $request->query->get('wiki');
+        if (is_string($wiki) && $wiki !== '') {
+            return ltrim($wiki, '/');
+        }
+        $first = explode('&', (string)$request->server->get('QUERY_STRING', ''))[0];
+
+        return ltrim(rawurldecode(explode('=', $first)[0]), '/');
+    }
+
+    /** Whether a route is the JSON API's. */
+    private function isApiRoute(string $route): bool
+    {
+        return $route === 'api' || str_starts_with($route, 'api/');
     }
 
     /** Whether boot() has got as far as assigning the container this all hangs off. */

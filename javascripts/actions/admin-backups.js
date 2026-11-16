@@ -254,7 +254,11 @@ const app = createApp({
       return _t('ADMIN_BACKUPS_RESTORE_CONFIRM_FULL', params)
     },
     async restoreArchive(archive) {
-      if (!confirm(this.restoreConfirmation(archive))) {
+      if (
+        !(await window.ywConfirm(this.restoreConfirmation(archive), {
+          destructive: true,
+        }))
+      ) {
         return
       }
       this.updating = true

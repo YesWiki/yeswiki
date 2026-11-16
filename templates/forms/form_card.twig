@@ -24,7 +24,7 @@
       {% endif %}
       {% if form.stats.last ?? '' %}
         <span class="form-card__last" title="{{ form.stats.last }}">
-          {{ _t('BAZ_FORM_LAST_ENTRY', { date: form.stats.last|date(_t('BAZ_FORM_DATE_FORMAT')) }) }}
+          {{ _t('BAZ_FORM_LAST_ENTRY', { date: form.stats.last|localdate }) }}
         </span>
       {% endif %}
     </p>

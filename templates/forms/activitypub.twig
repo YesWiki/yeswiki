@@ -145,7 +145,7 @@
         </a>
         <a class="yw-btn yw-btn--sm yw-btn--danger" title="{{ _t('BAZ_CONFIRM_SUPPRIMER_ABONNEMENT') }}" aria-label="{{ _t('BAZ_CONFIRM_SUPPRIMER_ABONNEMENT') }}"
            href="{{ signedUrl(url({ params: { view: 'abonnements', action: 'remove', actor: actorUri, type: 'following', formid: form.id }})) }}"
-           onclick="return confirm('{{ _t('BAZ_CONFIRM_SUPPRIMER_ABONNEMENT')|e('js') }} ?');">
+           data-yw-confirm="{{ _t('BAZ_CONFIRM_SUPPRIMER_ABONNEMENT') }} ?" data-yw-confirm-destructive>
           <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#trash"/></svg>
         </a>
       </td>
@@ -160,7 +160,7 @@
       <td>
         <a class="yw-btn yw-btn--sm yw-btn--danger" title="{{ _t('BAZ_CONFIRM_SUPPRIMER_ABONNEMENT') }}" aria-label="{{ _t('BAZ_CONFIRM_SUPPRIMER_ABONNEMENT') }}"
            href="{{ signedUrl(url({ params: { view: 'abonnements', action: 'remove', actor: actorUri, type: 'following', formid: form.id }})) }}"
-           onclick="return confirm('{{ _t('BAZ_CONFIRM_SUPPRIMER_ABONNEMENT')|e('js') }} ?');">
+           data-yw-confirm="{{ _t('BAZ_CONFIRM_SUPPRIMER_ABONNEMENT') }} ?" data-yw-confirm-destructive>
           <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#trash"/></svg>
         </a>
       </td>
@@ -185,7 +185,7 @@
         </form>
         <a class="yw-btn yw-btn--sm yw-btn--danger"
            href="{{ signedUrl(url({ params: { view: 'abonnements', action: 'remove', actor: actorUri, type: 'followers', formid: form.id }})) }}"
-           onclick="return confirm('{{ _t('BAZ_ACTIVITYPUB_CONFIRM_REFUSE')|e('js') }}');">{{ _t('BAZ_ACTIVITYPUB_REFUSE') }}</a>
+           data-yw-confirm="{{ _t('BAZ_ACTIVITYPUB_CONFIRM_REFUSE') }}" data-yw-confirm-destructive>{{ _t('BAZ_ACTIVITYPUB_REFUSE') }}</a>
       </td>
     </tr>
   {% endfor %}
@@ -213,7 +213,7 @@
         {% endif %}
         <a class="yw-btn yw-btn--sm yw-btn--danger" title="{{ _t('BAZ_CONFIRM_SUPPRIMER_ABONNE') }}" aria-label="{{ _t('BAZ_CONFIRM_SUPPRIMER_ABONNE') }}"
            href="{{ signedUrl(url({ params: { view: 'abonnements', action: 'remove', actor: actorUri, type: 'followers', formid: form.id }})) }}"
-           onclick="return confirm('{{ _t('BAZ_CONFIRM_SUPPRIMER_ABONNE')|e('js') }} ?');">
+           data-yw-confirm="{{ _t('BAZ_CONFIRM_SUPPRIMER_ABONNE') }} ?" data-yw-confirm-destructive>
           <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#trash"/></svg>
         </a>
       </td>

@@ -17,7 +17,7 @@
             {% else %}
               <a class="yw-feed__who" href="{{ url({ tag: comment.user }) }}">{{ who }}</a>
             {% endif %}
-            <time datetime="{{ comment.time }}">{{ comment.time|date(_t('DASHBOARD_DATE_FORMAT')) }}</time>
+            <time datetime="{{ comment.time }}">{{ comment.time|localdate('short') }}</time>
           </span>
         </span>
       </li>

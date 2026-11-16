@@ -10,8 +10,10 @@
             name="{{ field.name }}"
             class="yw-input input-xxlarge"
             {% if field.type == 'number' -%}
-              {%- if field.maxChars != '' %}max="{{ field.maxChars }}"{% endif -%}
-              {%- if field.size != '' %}min="{{ field.size }}"{% endif -%}
+              {%- if field.maxChars != '' %}max="{{ field.maxChars }}"{% endif %}
+              {% if field.size != '' %}min="{{ field.size }}"{% endif %}
+              step="{{ field.step }}"
+              {%- if field.decimals is not null %} inputmode="{{ field.decimals == 0 ? 'numeric' : 'decimal' }}"{% endif -%}
             {%- else -%}
               {%- if field.maxChars != '' %}maxlength="{{ field.maxChars }}"{% endif -%}
               {%- if field.size != '' %}size="{{ field.size }}"{% endif -%}

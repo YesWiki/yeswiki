@@ -18,6 +18,7 @@ use YesWiki\Kernel\Component\Component;
 use YesWiki\Kernel\Component\ProvidesComponents;
 use YesWiki\Kernel\Component\Setting;
 use YesWiki\Kernel\Performable\RegisteredAction;
+use YesWiki\Kernel\Service\DateService;
 use YesWiki\Kernel\Service\Flash;
 use YesWiki\Kernel\Service\PinnedFetcher;
 use YesWiki\Kernel\Service\Redirector;
@@ -28,6 +29,13 @@ use YesWiki\Search\Service\SearchManager;
 
 class SyndicationAction extends YesWikiAction implements RegisteredAction, ProvidesComponents, SuppliesItems
 {
+    private const DATE_STYLES = [
+        'jm' => DateService::DAY_MONTH,
+        'jma' => DateService::DATE,
+        'jmh' => DateService::DAY_MONTH_TIME,
+        'jmah' => DateService::DATETIME,
+    ];
+
     private const IMAGE_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
 
     private const IMAGE_TYPES = [IMAGETYPE_JPEG, IMAGETYPE_PNG, IMAGETYPE_GIF, IMAGETYPE_WEBP];
@@ -253,22 +261,8 @@ class SyndicationAction extends YesWikiAction implements RegisteredAction, Provi
         $rawDate = $item->get_date('j M Y, g:i a');
         $timestamp = is_string($rawDate) ? strtotime($rawDate) : false;
         $feedItem['datestamp'] = $timestamp;
-        switch ($timestamp === false ? '' : $this->arguments['formatdate']) {
-            case 'jm':
-                $feedItem['date'] = date('d.m', (int)$timestamp);
-                break;
-            case 'jma':
-                $feedItem['date'] = date('d.m.Y', (int)$timestamp);
-                break;
-            case 'jmh':
-                $feedItem['date'] = date('d.m H:m', (int)$timestamp);
-                break;
-            case 'jmah':
-                $feedItem['date'] = date('d.m.Y H:m', (int)$timestamp);
-                break;
-            default:
-                $feedItem['date'] = '';
-        }
+        $style = self::DATE_STYLES[$timestamp === false ? '' : $this->arguments['formatdate']] ?? null;
+        $feedItem['date'] = $style === null ? '' : $this->getService(DateService::class)->display((int)$timestamp, $style);
 
         return $feedItem;
     }

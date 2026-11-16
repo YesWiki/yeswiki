@@ -6,6 +6,7 @@ use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Identity\Service\BotGuard;
 use YesWiki\Identity\Service\GroupManager;
 use YesWiki\Identity\Service\UserManager;
+use YesWiki\Kernel\Service\DateService;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Render\Service\ActionRunner;
 use YesWiki\Test\Core\YesWikiTestCase;
@@ -56,8 +57,9 @@ class AdminBotGuardActionTest extends YesWikiTestCase
 
         $this->assertStringContainsString(_t('BOT_GUARD_REASON_HONEYPOT'), $html);
         $this->assertStringContainsString(_t('BOT_GUARD_REASON_TOKEN_MISSING'), $html);
-        $this->assertStringContainsString('<td>' . date('d/m/Y', time() - 6 * 86400) . '</td>', $html);
-        $this->assertStringNotContainsString('<td>' . date('d/m/Y', time() - 7 * 86400) . '</td>', $html);
+        $dates = $services->get(DateService::class);
+        $this->assertStringContainsString('<td>' . $dates->display(time() - 6 * 86400) . '</td>', $html);
+        $this->assertStringNotContainsString('<td>' . $dates->display(time() - 7 * 86400) . '</td>', $html);
         $this->assertStringContainsString('<th>' . ($this->totalBefore + 48) . '</th>', $html);
     }
 

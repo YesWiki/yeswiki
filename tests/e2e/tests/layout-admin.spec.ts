@@ -2,6 +2,7 @@ import { test, expect, Page } from '@playwright/test'
 import { resetEnv } from '../helpers/db'
 import { ADMIN_PASSWORD, ADMIN_USERNAME, login } from '../helpers/login'
 import { editorReady } from '../helpers/editor'
+import { answerConfirmations } from '../helpers/dialogs'
 
 test.beforeEach(async () => {
   resetEnv()
@@ -213,24 +214,20 @@ test('leaving with unsaved changes asks, and typing does not', async ({
   await login(page, ADMIN_USERNAME, ADMIN_PASSWORD)
   await page.goto('/?admin/layout')
 
-  let asked = 0
-  page.on('dialog', (dialog) => {
-    asked += 1
-    dialog.dismiss()
-  })
+  const asked = await answerConfirmations(page, false)
 
   await page.locator('#yw-layout-title').fill('Un titre pas encore enregistré')
   await expect(page.locator('#yw-layout-chrome .navbar-brand')).toContainText(
     'Un titre pas encore enregistré',
     { timeout: 10000 },
   )
-  expect(asked, 'the preview must not ask whether you want to leave').toBe(0)
+  expect(asked(), 'the preview must not ask whether you want to leave').toBe(0)
 
   await page
     .locator('.yw-dashboard__sidebar a[href*="admin/preset"]')
     .first()
     .click()
-  await expect.poll(() => asked, { timeout: 10000 }).toBe(1)
+  await expect.poll(asked, { timeout: 10000 }).toBe(1)
 
   await expect(page).toHaveURL(/admin\/layout/)
   await expect(page.locator('#yw-layout-title')).toHaveValue(
@@ -244,11 +241,7 @@ test('saving clears the guard, so leaving afterwards asks nothing', async ({
   await login(page, ADMIN_USERNAME, ADMIN_PASSWORD)
   await page.goto('/?admin/layout')
 
-  let asked = 0
-  page.on('dialog', (dialog) => {
-    asked += 1
-    dialog.accept()
-  })
+  const asked = await answerConfirmations(page, true)
 
   await page.locator('#yw-layout-title').fill('Titre enregistré')
   await saveLayout(page)
@@ -259,7 +252,7 @@ test('saving clears the guard, so leaving afterwards asks nothing', async ({
     .first()
     .click()
   await expect(page).toHaveURL(/admin\/preset/)
-  expect(asked, 'nothing is unsaved once it is saved').toBe(0)
+  expect(asked(), 'nothing is unsaved once it is saved').toBe(0)
 })
 
 /** The two chrome pages left are written here, and nothing links out to a third. */

@@ -134,10 +134,9 @@ class DateField extends BazarField
             return '';
         }
 
-        if (strlen($value) > 10) {
-            $value = $this->getService(CoreDateService::class)->getDateTimeWithRightTimeZone($value)->format('d.m.Y - H:i');
-        } else {
-            $value = date('d.m.Y', strtotime($value));
+        $value = $this->getService(CoreDateService::class)->display($value, strlen($value) > 10 ? CoreDateService::DATETIME : CoreDateService::DATE);
+        if ($value === '') {
+            return '';
         }
 
         $matches = [];

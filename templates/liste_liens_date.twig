@@ -7,7 +7,7 @@
 {% set time = entry.updated_at|split(' ')|last %}
 {% if day != curday %}
 {% if curday %}<br>
-{% endif %}<strong>{{ day|date('d.m.Y') }}&nbsp;:</strong><br>
+{% endif %}<strong>{{ day|localdate }}&nbsp;:</strong><br>
 {% set curday = day %}
 {% endif %}
 {% set title %}{{ decoration.pellet(params, entry) }}{{ decoration.icon(params, entry) }}{{ entry.title|raw }}{% endset %}

@@ -5,6 +5,7 @@ namespace YesWiki\Content\Field;
 use Psr\Container\ContainerInterface;
 use YesWiki\Content\Attribute\Field;
 use YesWiki\Content\Service\FormManager;
+use YesWiki\Kernel\Service\NumberDisplay;
 
 /**
  * @phpstan-type CalcToken array{type: 'number', value: float}|array{type: 'op', value: string}|array{type: 'name', value: string}
@@ -14,6 +15,8 @@ class CalcField extends BazarField
 {
     protected const FIELD_DISPLAY_TEXT = 4;
     protected const FIELD_CALCFORMULA = 5;
+    protected const FIELD_DECIMALS = 13;
+    private const SIGNIFICANT_DIGITS = 10;
 
     private const ALLOWED_FUNCTIONS = [
         'sin' => 'sin', 'sinh' => 'sinh',
@@ -29,6 +32,7 @@ class CalcField extends BazarField
 
     protected string $calcFormula;
     protected string $displayText;
+    protected ?int $decimals = null;
 
     protected ?FormManager $formManager = null;
 
@@ -47,6 +51,12 @@ class CalcField extends BazarField
         $this->default = '';
         $this->maxChars = '';
         $this->formManager = null;
+        $this->decimals = NumberDisplay::decimalsFrom($values[self::FIELD_DECIMALS] ?? null);
+    }
+
+    public function getDecimals(): ?int
+    {
+        return $this->decimals;
     }
 
     protected function renderInput($entry)
@@ -61,8 +71,10 @@ class CalcField extends BazarField
             return '';
         }
 
+        $number = htmlspecialchars($this->getService(NumberDisplay::class)->format((string)$value, $this->decimals));
+
         return $this->render('@core/fields/text.twig', [
-            'value' => str_replace('{value}', strval($value), $this->displayText),
+            'value' => str_replace('{value}', $number, $this->displayText),
         ]);
     }
 
@@ -105,7 +117,17 @@ class CalcField extends BazarField
             $value = 0;
         }
 
-        return [$this->getPropertyName() => strval($value)];
+        return [$this->getPropertyName() => strval(self::significant((float)$value))];
+    }
+
+    /** The value kept to ten significant digits, so that 10/3 is stored as 3.333333333 rather than with the float's noise. */
+    private static function significant(float $value): float
+    {
+        if ($value == 0.0) {
+            return 0.0;
+        }
+
+        return round($value, self::SIGNIFICANT_DIGITS - 1 - (int)floor(log10(abs($value))));
     }
 
     /**
@@ -379,6 +401,7 @@ class CalcField extends BazarField
             [
                 'calcFormula' => $this->getCalcFormula(),
                 'displayText' => $this->getDisplayText(),
+                'decimals' => $this->getDecimals(),
             ]
         );
     }

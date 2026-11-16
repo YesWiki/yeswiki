@@ -1,0 +1,23 @@
+{# The page a 403, 404, 405 or 500 answers with, in the wiki's layout and language (end-users 15). #}
+<section class="yw-error-page" aria-labelledby="yw-error-page-title">
+  <p class="yw-error-page__status">{{ status }}</p>
+  <h1 id="yw-error-page-title">{{ title }}</h1>
+  <p>{{ text }}</p>
+  {% if detail %}<p>{{ detail }}</p>{% endif %}
+  {% if incident %}<p class="yw-text-muted">{{ _t('ERROR_INCIDENT', {id: incident}) }}</p>{% endif %}
+  {% if status == 404 %}
+    <form class="yw-error-page__search" method="get" action="{{ url({tag: 'search'}) }}" role="search">
+      <input type="hidden" name="wiki" value="search">
+      {% include '@core/_searchbox.twig' with { name: 'q', id: 'yw-error-page-search' } %}
+    </form>
+  {% endif %}
+  <p class="yw-error-page__actions">
+    <a class="yw-btn yw-btn--primary" href="{{ home }}">{{ _t('ERROR_PAGE_HOME') }}</a>
+  </p>
+  {% if trace %}
+    <details class="yw-error-page__trace" open>
+      <summary>{{ _t('ERROR_PAGE_TRACE') }}</summary>
+      {{ trace|raw }}
+    </details>
+  {% endif %}
+</section>

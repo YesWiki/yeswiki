@@ -4,6 +4,7 @@ namespace YesWiki\Admin\Service;
 
 use Symfony\Component\DependencyInjection\Attribute\Exclude;
 use YesWiki\Files\Service\LocalFiles;
+use YesWiki\Kernel\Service\ErrorFallbackPage;
 use YesWiki\Kernel\Service\Journal;
 
 /** Creates a configured wiki's schema the first time its database answers without one, and answers 503 while it does not answer at all (replicas 20). */
@@ -40,10 +41,9 @@ final class SchemaBootstrap
             if (PHP_SAPI === 'cli') {
                 throw new \RuntimeException('The database does not answer: ' . $message, 0, $failed);
             }
-            http_response_code(503);
-            header('Retry-After: 10');
-            header('Content-Type: text/plain; charset=UTF-8');
-            echo _t('DB_CONNECT_FAIL') . "\n";
+            $page = ErrorFallbackPage::response(503, null, (string)($config['base_url'] ?? ''));
+            $page->headers->set('Retry-After', '10');
+            $page->send();
             exit;
         }
 

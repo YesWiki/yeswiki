@@ -9,7 +9,7 @@
             {{ multidelete.insertSelectAll('entry-list-'~ params.listindex,'top') }}
           {% endif %}
       {% for index,info in columnsInfo %}
-        <th class="{{ (info.propertyName in sumFieldsIds) ? 'sum-activated' : '' }} {{ (info.propertyName in averageFieldsIds) ? 'average-activated' : '' }}"
+        <th class="{{ (info.propertyName in sumFieldsIds) ? 'sum-activated' : '' }} {{ (info.propertyName in averageFieldsIds) ? 'average-activated' : '' }}{{ info.numeric|default(false) ? ' yw-num' : '' }}"
           {% if columnswidth[info.propertyName] is not empty %}
             data-width="{{ columnswidth[info.propertyName] }}"
           {% elseif params.defaultcolumnwidth is not empty %}
@@ -63,7 +63,7 @@
             {% set val = val|html_to_text %}
             {% set exportval = val %}
           {% endif %}
-          <td data-sort="{{ exportval }}">
+          <td data-sort="{{ exportval }}"{% if info.numeric|default(false) %} class="yw-num"{% endif %}>
             {% if loop.first %}
               <span class="bazar-entry" {{ entry.html_data|raw }}></span>
             {% endif %}
@@ -93,6 +93,8 @@
                 <div class="tableau-thumbnail" style="width:{{ width }}px;height:{{ size }}px">
                   <img loading="lazy" src="{{ urlImage({fileName:val matches '#^(https?:)?//#i' ? val : "files/#{val}",width:width,height:size,mode:"fit"})}}"/>
                 </div>
+              {% elseif info.numeric|default(false) %}
+                {{ val|number(info.decimals) }}
               {% else %}
                 {{ val|nl2br }}
               {% endif %}
@@ -159,7 +161,7 @@
             {{ multidelete.insertSelectAll('entry-list-'~ params.listindex,'bottom') }}
           {% endif %}
           {% for index,info in columnsInfo %}
-            <th>
+            <th{% if info.numeric|default(false) %} class="yw-num"{% endif %}>
               {% if sumFieldsIds is not empty %}
                 {{ loop.first and (info.propertyName not in sumFieldsIds) ? _t('SUM'):''}}
               {% endif %}
@@ -176,7 +178,7 @@
             <th class="not-export-this-col"></th>
           {% endif %}
           {% for index,info in columnsInfo %}
-            <th>{{ loop.first and (info.propertyName not in averageFieldsIds) ? _t('AVERAGE'):''}}</th>
+            <th{% if info.numeric|default(false) %} class="yw-num"{% endif %}>{{ loop.first and (info.propertyName not in averageFieldsIds) ? _t('AVERAGE'):''}}</th>
           {% endfor %}
           {% if displayadmincol %}
             <th class="not-export-this-col"></th>

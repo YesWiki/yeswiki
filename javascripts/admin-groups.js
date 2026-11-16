@@ -31,11 +31,10 @@ ywInitEach('#yw-groups-rail', (rail) => {
     })
   })
 
-  // One form per card carries both buttons, so which one was pressed decides whether to ask.
   rail.querySelectorAll('[data-yw-groups-form]').forEach((form) => {
     form.addEventListener('submit', (event) => {
       if (!event.submitter?.hasAttribute('data-yw-groups-delete')) return
-      if (!window.confirm(form.dataset.confirm)) event.preventDefault()
+      window.ywConfirmSubmit(event, form.dataset.confirm, { destructive: true })
     })
   })
 })

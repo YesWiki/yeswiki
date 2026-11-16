@@ -13,14 +13,24 @@ const TableHelper = {
   },
   cellText(row, index) {
     const cell = row.cells[index]
-    return (cell ? cell.textContent.trim() : '').replace(',', '.')
+    if (!cell) return ''
+    const raw = cell.hasAttribute('data-sort')
+      ? cell.getAttribute('data-sort')
+      : cell.textContent
+    return raw.trim().replace(',', '.')
+  },
+  formatted(value) {
+    if (value === '' || typeof value !== 'number') return value
+    return new Intl.NumberFormat(document.documentElement.lang || undefined, {
+      maximumFractionDigits: 6,
+    }).format(value)
   },
   sum(matchedRows, index) {
     const total = matchedRows.reduce((acc, row) => {
       const value = Number(this.cellText(row, index))
       return acc + (Number.isNaN(value) ? 1 : value)
     }, 0)
-    return Number(total.toFixed(10))
+    return this.formatted(Number(total.toFixed(10)))
   },
   average(matchedRows, index) {
     const values = matchedRows
@@ -29,7 +39,7 @@ const TableHelper = {
       .map(Number)
     if (values.length === 0) return ''
     const total = values.reduce((acc, value) => acc + value, 0)
-    return Math.round((total / values.length) * 100) / 100
+    return this.formatted(Math.round((total / values.length) * 100) / 100)
   },
   fillFooterRow(table, rowName, headerClass, compute, matchedRows) {
     const footerRow = table.tFoot.querySelector(`[data-yw-footer="${rowName}"]`)

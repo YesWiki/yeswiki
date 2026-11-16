@@ -9,6 +9,7 @@ use YesWiki\Kernel\Component\Component;
 use YesWiki\Kernel\Component\ProvidesComponents;
 use YesWiki\Kernel\Component\Setting;
 use YesWiki\Kernel\Performable\RegisteredAction;
+use YesWiki\Kernel\Service\DateService;
 
 class ListusersAction extends YesWikiAction implements RegisteredAction, ProvidesComponents
 {
@@ -109,8 +110,6 @@ class ListusersAction extends YesWikiAction implements RegisteredAction, Provide
     /** The day part of a signup time, as a date -- or verbatim, when it does not parse as one. */
     private function formatDay(string $day): string
     {
-        $timestamp = strtotime($day);
-
-        return $timestamp === false ? $day : date('d.m.Y', $timestamp);
+        return $this->getService(DateService::class)->display($day) ?: $day;
     }
 }

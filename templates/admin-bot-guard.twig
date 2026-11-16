@@ -16,7 +16,7 @@
         <tbody>
           {% for day, counts in perDay %}
             <tr>
-              <td>{{ day|date('d/m/Y') }}</td>
+              <td>{{ day|localdate }}</td>
               {% for reason in reasons|keys %}
                 <td>{{ counts[reason] ?? 0 }}</td>
               {% endfor %}

@@ -18,6 +18,11 @@ export default {
       label: _t('BAZ_FORM_EDIT_FORMULA_LABEL'),
       value: '',
     },
+    decimals: {
+      label: _t('BAZ_FORM_EDIT_DECIMALS'),
+      value: '',
+      placeholder: _t('BAZ_FORM_EDIT_DECIMALS_PLACEHOLDER'),
+    },
     read_access: readConf,
   },
   disabledAttributes: ['required', 'default'],

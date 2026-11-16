@@ -16,7 +16,7 @@
             {% else %}
               <a class="yw-feed__who" href="{{ url({ tag: page.user }) }}">{{ who }}</a>
             {% endif %}
-            <time datetime="{{ page.time }}">{{ page.time|date(_t('DASHBOARD_DATE_FORMAT')) }}</time>
+            <time datetime="{{ page.time }}">{{ page.time|localdate('short') }}</time>
           </span>
         </span>
         <a class="yw-feed__aside" href="{{ page.history }}" title="{{ _t('HISTORY') }}">{{ icon('history') }}</a>

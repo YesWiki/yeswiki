@@ -96,12 +96,13 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
                 });
 
                 document.addEventListener('htmx:confirm', function(e) {
-                    if (!showPopup) return;
+                    if (!showPopup || e.detail.question) return;
                     e.preventDefault();
-                    if (window.confirm(_t('EDIT_LEAVE_WITHOUT_SAVING'))) {
+                    window.ywConfirm(_t('EDIT_LEAVE_WITHOUT_SAVING'), { destructive: true }).then(function(confirmed) {
+                        if (!confirmed) return;
                         showPopup = false;
                         e.detail.issueRequest(true);
-                    }
+                    });
                 });";
 
                 $this->getService(AssetRegistry::class)->addJs($js);

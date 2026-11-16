@@ -29,12 +29,15 @@ window.addEventListener('beforeunload', (event) => {
 })
 
 document.addEventListener('htmx:confirm', (event) => {
-  if (!dirty) return
+  if (!dirty || event.detail.question) return
   if (guardedFormOf(event.detail.elt)) return
 
   event.preventDefault()
-  if (window.confirm(_t('EDIT_LEAVE_WITHOUT_SAVING'))) {
-    dirty = null
-    event.detail.issueRequest(true)
-  }
+  window
+    .ywConfirm(_t('EDIT_LEAVE_WITHOUT_SAVING'), { destructive: true })
+    .then((confirmed) => {
+      if (!confirmed) return
+      dirty = null
+      event.detail.issueRequest(true)
+    })
 })

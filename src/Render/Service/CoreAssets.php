@@ -180,10 +180,9 @@ class CoreAssets implements RequestScopedState
         $this->assets->addJsFile('javascripts/yw-init.js', true);
         $this->assets->addJsFile('javascripts/yeswiki-base-no-defer.js', true);
         $this->assets->addJsFile(RequestGuard::SCRIPT, true);
+        $this->assets->addJsFile('javascripts/submit-guard.js', true);
+        $this->assets->addJsFile('javascripts/confirm.js', true);
 
-        // A wiki's own copy of a theme's scripts wins over the shipped one, and the two live in
-        // different filesystems: `custom/` is the Instance's and may be a bucket, `themes/` is the
-        // Program's and never is. Which one this is has to be decided before anything is listed.
         $themeJsDir = 'themes/' . $this->themeManager->getFavoriteTheme() . '/javascripts';
         $themeScripts = !$this->themeManager->getUseFallbackTheme() && $this->storage->directoryExists('custom/' . $themeJsDir)
             ? $this->filesInInstance('custom/' . $themeJsDir, '.js')

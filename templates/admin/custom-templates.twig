@@ -65,7 +65,7 @@
 
           {% if editingInDatabase %}
             <button type="submit" name="revert" value="1" class="yw-btn yw-btn--danger"
-                    onclick="return confirm('{{ _t(editingOnDisk ? 'ADMIN_TEMPLATES_REVERT_TO_FILE_CONFIRM' : 'ADMIN_TEMPLATES_REVERT_CONFIRM')|e('js') }}')">
+                    data-yw-confirm="{{ _t(editingOnDisk ? 'ADMIN_TEMPLATES_REVERT_TO_FILE_CONFIRM' : 'ADMIN_TEMPLATES_REVERT_CONFIRM') }}" data-yw-confirm-destructive>
               {{ icon('arrow-back-up') }} {{ _t(editingOnDisk ? 'ADMIN_TEMPLATES_REVERT_TO_FILE' : 'ADMIN_TEMPLATES_REVERT') }}
             </button>
             <a class="yw-btn" href="{{ url({ tag: editingTag, handler: 'revisions' }) }}">{{ icon('history') }} {{ _t('ADMIN_TEMPLATES_VERSIONS') }}</a>

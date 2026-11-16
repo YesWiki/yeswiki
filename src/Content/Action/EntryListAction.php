@@ -9,6 +9,7 @@ use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Entity\SuppliesItems;
 use YesWiki\Content\Exception\ParsingMultipleException;
 use YesWiki\Content\Field\BazarField;
+use YesWiki\Content\Field\CalcField;
 use YesWiki\Content\Field\CheckboxField;
 use YesWiki\Content\Field\DateField;
 use YesWiki\Content\Field\EmailField;
@@ -16,6 +17,7 @@ use YesWiki\Content\Field\EnumField;
 use YesWiki\Content\Field\ImageField;
 use YesWiki\Content\Field\MapField;
 use YesWiki\Content\Field\TextareaField;
+use YesWiki\Content\Field\TextField;
 use YesWiki\Content\Service\BazarListService;
 use YesWiki\Content\Service\EntryDisplay;
 use YesWiki\Content\Service\EntryManager;
@@ -2283,6 +2285,8 @@ ywInitEach(\'#osmmap' . $params['listindex'] . '\', function() {
             'mapFieldId' => null,
             'multivalues' => $field instanceof CheckboxField,
             'htmlAsText' => $field instanceof TextareaField && $field->getSyntax() === TextareaField::SYNTAX_HTML,
+            'numeric' => ($field instanceof TextField && $field->isNumeric()) || $field instanceof CalcField,
+            'decimals' => $field instanceof TextField || $field instanceof CalcField ? $field->getDecimals() : null,
         ] + ($displayImagesAsThumbnails && $field instanceof ImageField ? ['imageAsThumbnail' => true] : [])];
     }
 

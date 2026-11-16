@@ -69,6 +69,7 @@ class ArchitectureTest extends TestCase
         // a question asked to work out whether Storage can be constructed.
         'YesWikiLoader.php',
         'YesWikiRuntime.php',
+        'Kernel/Service/ErrorFallbackPage.php',
         'YesWikiKernel.php',
         'Kernel/Entity/ExtensionFolders.php',
         'Kernel/Entity/ExtensionManifest.php',

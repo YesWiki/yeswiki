@@ -12,7 +12,7 @@
 		    {% for page in pages %}
 		        <tr>
 		            <td>{{ format('[[' ~ page.tag ~ ' ' ~ page.tag ~ ']]')|raw }}</td>
-		            <td>{{ page.time|date('d-m-Y H:i:s') }}</td>
+		            <td>{{ page.time|localdate('short') }}</td>
 		            <td>{{ format('[[' ~ page.owner ~ ' ' ~ page.owner ~ ']]')|raw }}</td>
 		            <td>
 		            {% if hasAccess('write', page.tag) %}
@@ -21,7 +21,7 @@
             				</a>
 		            {% endif %}
 		            {% if userIsAdmin() or userIsOwner() %}
-		                <a class="yw-btn yw-btn--sm yw-btn--danger" href="{{ url({tag: page.tag, handler: 'deletepage'}) }}"  onclick="javascript:return confirm('{{ _t('TEMPLATE_CONFIRM_DELETE_PAGE')|e('js') }} ?');">
+		                <a class="yw-btn yw-btn--sm yw-btn--danger" href="{{ url({tag: page.tag, handler: 'deletepage'}) }}"  data-yw-confirm="{{ _t('TEMPLATE_CONFIRM_DELETE_PAGE') }} ?" data-yw-confirm-destructive>
             					  <svg class="yw-icon icon-trash icon-white" aria-hidden="true"><use href="src/assets/icons.svg#trash"/></svg>
             				</a>
 		            {% endif %}

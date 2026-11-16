@@ -18,10 +18,12 @@ use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\RequestGuard;
 use YesWiki\Kernel\Exception\TemplateNotFound;
 use YesWiki\Kernel\Service\AssetRegistry;
+use YesWiki\Kernel\Service\DateService;
 use YesWiki\Kernel\Service\FlashMessageService;
 use YesWiki\Kernel\Service\HealthService;
 use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Kernel\Service\LanguageService;
+use YesWiki\Kernel\Service\NumberDisplay;
 use YesWiki\Kernel\Service\RuntimeConfig;
 use YesWiki\Kernel\Service\SignedTokens;
 use YesWiki\Kernel\Service\StringUtilService;
@@ -558,6 +560,10 @@ class TemplateEngine
 
             return trim((string)preg_replace("~[ \t]*\n\s*\n+~", "\n", $text));
         }));
+
+        $this->twig->addFilter(new \Twig\TwigFilter('number', fn ($value, mixed $decimals = null): string => is_scalar($value) ? $this->container->get(NumberDisplay::class)->format((string)$value, NumberDisplay::decimalsFrom($decimals)) : ''));
+
+        $this->twig->addFilter(new \Twig\TwigFilter('localdate', fn ($date, string $style = DateService::DATE): string => $this->container->get(DateService::class)->display(is_int($date) || is_string($date) || $date instanceof \DateTimeInterface ? $date : null, $style)));
 
         $this->twig->addFilter(new \Twig\TwigFilter('moment', function ($stamp, string $format = 'LL'): string {
             if (!is_string($stamp) || trim($stamp) === '') {

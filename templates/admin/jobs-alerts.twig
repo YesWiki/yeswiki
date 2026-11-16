@@ -1,7 +1,7 @@
 {# The part of /admin/jobs a pass changes: the mode, the alerts, the tiles. Swapped whole by every action. #}
 {% set mode = status.mode %}
 {% set docUrl = url({ tag: 'doc' }) ~ '#/docs/fr/async' %}
-{% set statusSwap = 'hx-target="#yw-jobs-status" hx-swap="outerHTML" hx-disabled-elt="this"' %}
+{% set statusSwap = 'hx-target="#yw-jobs-status" hx-swap="outerHTML"' %}
 
 <div class="yw-jobs__status" id="yw-jobs-status">
   <section class="yw-jobs__mode" aria-label="{{ _t('ADMIN_JOBS_MODE') }}">
@@ -20,7 +20,7 @@
           <small>{{ mode.hasSecret ? _t('ADMIN_JOBS_SECRET_SET') : _t('ADMIN_JOBS_SECRET_MISSING') }}</small>
           <button type="button" class="yw-btn yw-btn--sm"
                   hx-post="{{ url({ tag: 'api/admin/jobs/secret' }) }}"
-                  hx-target="#yw-jobs-secret" hx-swap="innerHTML" hx-disabled-elt="this"
+                  hx-target="#yw-jobs-secret" hx-swap="innerHTML"
                   {% if mode.hasSecret %}hx-confirm="{{ _t('ADMIN_JOBS_SECRET_REPLACE_CONFIRM') }}"{% endif %}>
             {{ mode.hasSecret ? _t('ADMIN_JOBS_SECRET_REPLACE') : _t('ADMIN_JOBS_SECRET_GENERATE') }}
           </button>
@@ -80,7 +80,7 @@
               {% elseif action == 'secret' %}
                 <button type="button" class="yw-btn yw-btn--sm yw-btn--primary"
                         hx-post="{{ url({ tag: 'api/admin/jobs/secret' }) }}"
-                        hx-target="#yw-jobs-secret" hx-swap="innerHTML" hx-disabled-elt="this">{{ _t('ADMIN_JOBS_SECRET_GENERATE') }}</button>
+                        hx-target="#yw-jobs-secret" hx-swap="innerHTML">{{ _t('ADMIN_JOBS_SECRET_GENERATE') }}</button>
               {% elseif action == 'docs' %}
                 <a class="yw-btn yw-btn--sm" href="{{ docUrl }}">{{ _t('ADMIN_JOBS_HOW') }}</a>
               {% endif %}

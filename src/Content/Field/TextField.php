@@ -5,6 +5,7 @@ namespace YesWiki\Content\Field;
 use Psr\Container\ContainerInterface;
 use YesWiki\Content\Attribute\Field;
 use YesWiki\Kernel\Service\HtmlPurifierService;
+use YesWiki\Kernel\Service\NumberDisplay;
 
 #[Field(['texte'])]
 class TextField extends BazarField
@@ -16,8 +17,11 @@ class TextField extends BazarField
     /** @var string|null */
     protected $placeholder;
 
+    protected ?int $decimals = null;
+
     protected const FIELD_PATTERN = 6;
     protected const FIELD_SUB_TYPE = 7;
+    protected const FIELD_DECIMALS = 13;
     protected const FIELD_PLACEHOLDER = 15;
 
     protected const ALLOWED_SUB_TYPES = ['text', 'date', 'email', 'url', 'range', 'password', 'number', 'color'];
@@ -39,6 +43,7 @@ class TextField extends BazarField
         }
 
         $this->placeholder = $values[self::FIELD_PLACEHOLDER];
+        $this->decimals = NumberDisplay::decimalsFrom($values[self::FIELD_DECIMALS] ?? null);
         $this->maxChars = $this->maxChars ?? 255;
 
         if ($this->type === 'range') {
@@ -82,9 +87,32 @@ class TextField extends BazarField
             ]);
         }
 
+        if ($this->isNumeric()) {
+            return $this->render('@core/fields/text.twig', [
+                'value' => htmlspecialchars($this->getService(NumberDisplay::class)->format((string)$value, $this->decimals)),
+            ]);
+        }
+
         return $this->render('@core/fields/text.twig', [
             'value' => $value,
         ]);
+    }
+
+    /** Whether the field holds a number, which is written in the reader's language and lined up in tables. */
+    public function isNumeric(): bool
+    {
+        return in_array($this->type, ['number', 'range'], true);
+    }
+
+    public function getDecimals(): ?int
+    {
+        return $this->decimals;
+    }
+
+    /** The input's `step`, so that a value with the decimals the field asks for is valid. */
+    public function getStep(): string
+    {
+        return NumberDisplay::step($this->decimals);
     }
 
     public function formatValuesBeforeSave($entry)
@@ -124,6 +152,7 @@ class TextField extends BazarField
                 'subType' => $this->getSubType(),
                 'pattern' => $this->getPattern(),
                 'placeholder' => $this->getPlaceholder(),
+                'decimals' => $this->getDecimals(),
             ]
         );
     }

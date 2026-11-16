@@ -31,7 +31,7 @@
         <span>{{ _t('BAZ_FORM_ENTRY_COUNT', { count: form.stats.count }) }}</span>
       {% endif %}
       {% if form.stats.last ?? '' %}
-        <span title="{{ form.stats.last }}">{{ _t('BAZ_FORM_LAST_ENTRY', { date: form.stats.last|date(_t('BAZ_FORM_DATE_FORMAT')) }) }}</span>
+        <span title="{{ form.stats.last }}">{{ _t('BAZ_FORM_LAST_ENTRY', { date: form.stats.last|localdate }) }}</span>
       {% endif %}
     </p>
   </div>

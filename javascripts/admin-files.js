@@ -93,9 +93,10 @@ ywInitEach('#yw-files', (root) => {
 
   async function remove(file) {
     if (
-      !window.confirm(
+      !(await window.ywConfirm(
         _t('ADMIN_FILES_DELETE_CONFIRM').replace('{name}', file.name),
-      )
+        { destructive: true },
+      ))
     )
       return
     const response = await fetch(

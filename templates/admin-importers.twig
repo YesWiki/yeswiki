@@ -21,7 +21,7 @@
         {% if lastSync[id].last is null %}
         {{ _t('IMPORTER_SYNC_NEVER') }}
         {% else %}
-        <a href="#" class="importer-sync-log" data-id="{{ id }}">{{ lastSync[id].last.time|date('d/m/Y H:i') }}</a>
+        <a href="#" class="importer-sync-log" data-id="{{ id }}">{{ lastSync[id].last.time|localdate('short') }}</a>
         {% endif %}
         {% if lastSync[id].enabled %}
         <svg class="yw-icon" aria-hidden="true"><title>{{ _t('IMPORTER_FIELD_SYNCONMAINTENANCE') }}</title><use href="src/assets/icons.svg#repeat"/></svg>
@@ -253,9 +253,7 @@
 
   document.querySelectorAll('.importer-delete-form').forEach(function (deleteForm) {
     deleteForm.addEventListener('submit', function (event) {
-      if (!window.confirm(labels.confirmDelete)) {
-        event.preventDefault()
-      }
+      window.ywConfirmSubmit(event, labels.confirmDelete, { destructive: true })
     })
   })
 

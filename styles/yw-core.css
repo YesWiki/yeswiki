@@ -5470,3 +5470,91 @@ figcaption *:last-child {
 .yw-upload-tray:empty {
   display: none;
 }
+
+.yw-btn--busy {
+  position: relative;
+  cursor: progress;
+  opacity: 0.85;
+}
+
+.yw-btn--busy::after {
+  content: '';
+  display: inline-block;
+  width: 0.9em;
+  height: 0.9em;
+  margin-inline-start: 0.5em;
+  vertical-align: -0.1em;
+  border: 2px solid currentColor;
+  border-inline-end-color: transparent;
+  border-radius: 50%;
+  animation: yw-icon-spin 0.8s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .yw-btn--busy::after {
+    animation: none;
+  }
+}
+
+.yw-dialog {
+  max-width: min(32rem, calc(100vw - 2rem));
+  padding: 0;
+  border: 1px solid var(--yw-border);
+  border-radius: var(--yw-radius-md);
+  background: var(--yw-surface-raised);
+  color: var(--yw-text);
+  box-shadow: 0 1rem 3rem var(--yw-shadow-color);
+}
+
+.yw-dialog::backdrop {
+  background: rgb(0 0 0 / 40%);
+}
+
+.yw-dialog__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--yw-space-md-y);
+  margin: 0;
+  padding: var(--yw-space-lg-y) var(--yw-space-lg-x) var(--yw-space-md-y);
+}
+
+.yw-dialog__message {
+  margin: 0;
+  white-space: pre-line;
+}
+
+.yw-dialog__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--yw-space-sm-x);
+}
+
+.yw-error-page {
+  max-width: 40rem;
+  margin: var(--yw-space-lg-y) auto;
+  text-align: center;
+}
+
+.yw-error-page__status {
+  margin: 0;
+  font-size: 3rem;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--yw-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.yw-error-page__search {
+  max-width: 28rem;
+  margin: var(--yw-space-md-y) auto;
+}
+
+.yw-error-page__actions {
+  margin-top: var(--yw-space-md-y);
+}
+
+.yw-error-page__trace {
+  margin-top: var(--yw-space-lg-y);
+  text-align: start;
+}

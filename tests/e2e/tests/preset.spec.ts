@@ -1,6 +1,7 @@
 import { test, expect, Page } from '@playwright/test'
 import { resetEnv } from '../helpers/db'
 import { ADMIN_PASSWORD, ADMIN_USERNAME, login } from '../helpers/login'
+import { answerConfirmations } from '../helpers/dialogs'
 
 test.beforeEach(async () => {
   resetEnv()
@@ -108,7 +109,7 @@ test('a theme preset cannot be edited, only copied into the wiki', async ({
   page,
 }) => {
   await login(page, ADMIN_USERNAME, ADMIN_PASSWORD)
-  page.on('dialog', (dialog) => dialog.accept())
+  await answerConfirmations(page, true)
   await page.goto('/?admin/preset')
 
   await expect(
@@ -136,7 +137,7 @@ test('a theme preset cannot be edited, only copied into the wiki', async ({
 
 test('editing a preset replaces it, renaming included', async ({ page }) => {
   await login(page, ADMIN_USERNAME, ADMIN_PASSWORD)
-  page.on('dialog', (dialog) => dialog.accept())
+  await answerConfirmations(page, true)
   await page.goto('/?admin/preset')
 
   const rail = page.locator('#yw-preset-rail')

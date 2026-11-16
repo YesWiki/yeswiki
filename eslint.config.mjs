@@ -84,7 +84,21 @@ export default defineConfig([
       eqeqeq: ['error', 'smart'],
       'no-empty': ['error', { allowEmptyCatch: true }],
       'no-param-reassign': 'error',
-      'no-restricted-globals': ['error', 'event', 'isNaN', 'isFinite'],
+      'no-restricted-globals': [
+        'error',
+        'event',
+        'isNaN',
+        'isFinite',
+        { name: 'confirm', message: 'Ask with window.ywConfirm().' },
+      ],
+      'no-restricted-properties': [
+        'error',
+        {
+          object: 'window',
+          property: 'confirm',
+          message: 'Ask with window.ywConfirm().',
+        },
+      ],
       'no-eval': 'error',
       'no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
     },

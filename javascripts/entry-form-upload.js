@@ -55,6 +55,7 @@ document.addEventListener('submit', async (event) => {
   } catch (error) {
     progress.remove()
     releaseButtons(form)
+    window.ywSubmitGuard?.release(form)
     const message = _t('UPLOAD_ENTRY_FAILED', {
       error: error?.message || _t('ERROR_NO_FILE_UPLOADED'),
     })

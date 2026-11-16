@@ -1,5 +1,5 @@
 {# The tabs of /admin/jobs: the nav and the open one, swapped whole when another is picked, and reloaded when an action says something changed. #}
-{% set statusSwap = 'hx-target="#yw-jobs-status" hx-swap="outerHTML" hx-disabled-elt="this"' %}
+{% set statusSwap = 'hx-target="#yw-jobs-status" hx-swap="outerHTML"' %}
 
 <div class="yw-jobs__tabs" id="yw-jobs-tabs"
      hx-get="{{ url({ tag: 'api/admin/jobs/tab/' ~ tab.name }) }}"

@@ -20,8 +20,10 @@ document.addEventListener('submit', (event) => {
   const selected = form.querySelectorAll(
     'input[name="checkcontent-repair[]"]:checked',
   )
-  if (selected.length > 0 && !window.confirm(form.dataset.confirm)) {
-    event.preventDefault()
+  if (
+    selected.length > 0 &&
+    !window.ywConfirmSubmit(event, form.dataset.confirm, { destructive: true })
+  ) {
     return
   }
   form.querySelectorAll('tbody tr').forEach((row) => {

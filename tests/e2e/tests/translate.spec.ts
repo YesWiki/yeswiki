@@ -9,6 +9,7 @@ import {
 } from '../helpers/editor'
 import { setPageContent } from '../helpers/page'
 import { createEntry } from '../helpers/bazar'
+import { answerConfirmations } from '../helpers/dialogs'
 
 test.beforeEach(async () => {
   resetEnv()
@@ -132,14 +133,10 @@ test('switching language with unsaved changes asks first', async ({ page }) => {
   await editorReady(page)
   await replaceEditorTextNewContent(page, 'Une modification non enregistrée')
 
-  let asked = false
-  page.on('dialog', (dialog) => {
-    asked = true
-    dialog.dismiss().catch(() => {})
-  })
+  const asked = await answerConfirmations(page, false)
 
   await clickSwitch(page, 'en')
   await page.waitForTimeout(500)
 
-  expect(asked, 'the unsaved-changes guard spoke up').toBe(true)
+  expect(asked(), 'the unsaved-changes guard spoke up').toBeGreaterThan(0)
 })

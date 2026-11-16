@@ -3138,3 +3138,8 @@ img.popup-visual {
 .image-url-preview:empty {
   display: none;
 }
+
+.yw-num {
+  text-align: end;
+  font-variant-numeric: tabular-nums;
+}

@@ -675,7 +675,9 @@ ywInitEach('#yw-preset-rail', (rail) => {
     .querySelectorAll('[data-yw-preset-delete-form]')
     .forEach((deleteForm) => {
       deleteForm.addEventListener('submit', (event) => {
-        if (!window.confirm(deleteForm.dataset.confirm)) event.preventDefault()
+        window.ywConfirmSubmit(event, deleteForm.dataset.confirm, {
+          destructive: true,
+        })
       })
     })
 })

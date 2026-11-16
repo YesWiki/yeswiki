@@ -23,6 +23,11 @@ export default {
         color: _t('BAZ_FORM_EDIT_TEXT_TYPE_COLOR'),
       },
     },
+    decimals: {
+      label: _t('BAZ_FORM_EDIT_DECIMALS'),
+      value: '',
+      placeholder: _t('BAZ_FORM_EDIT_DECIMALS_PLACEHOLDER'),
+    },
     placeholder: { label: _t('BAZ_FORM_EDIT_PLACEHOLDER'), value: '' },
     read_access: readConf,
     write_access: writeConf,
@@ -42,6 +47,11 @@ export default {
       } else {
         api.setLabel('max_chars', _t('BAZ_FORM_EDIT_MAX_LENGTH'))
         api.setLabel('size', _t('BAZ_FORM_EDIT_NB_CHARS'))
+      }
+      if (subtype === 'range' || subtype === 'number') {
+        api.show('decimals')
+      } else {
+        api.hide('decimals')
       }
       if (subtype === 'color') {
         api.hide('max_chars')

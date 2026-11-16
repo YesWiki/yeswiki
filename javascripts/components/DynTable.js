@@ -123,7 +123,13 @@ export default {
           this.matchedRows.forEach((row) => {
             sum += this.sanitizeValue(row.rowData[col.data])
           })
-          return { kind: 'sum', content: String(sum) }
+          return {
+            kind: 'sum',
+            content: new Intl.NumberFormat(
+              document.documentElement.lang || undefined,
+              { maximumFractionDigits: 6 },
+            ).format(Number(sum.toFixed(10))),
+          }
         }
         if ('footer' in col && col.footer && col.footer.length > 0) {
           return { kind: 'html', content: col.footer }
@@ -228,7 +234,7 @@ export default {
             </tbody>
             <tfoot v-if="showFooter">
                 <tr>
-                    <th v-for="(cell, position) in footerCells" :key="position">
+                    <th v-for="(cell, position) in footerCells" :key="position" :class="cell.kind === 'sum' ? 'yw-num' : ''">
                         <template v-if="cell.kind === 'total'">
                             <slot name="sumtranslate">Total</slot>
                         </template>

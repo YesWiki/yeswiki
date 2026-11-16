@@ -466,7 +466,13 @@ function checkAll(state) {
     const link = e.target.closest('.btn-delete-comment')
     if (!link) return
     e.preventDefault()
-    if (!window.confirm(_t('DELETE_COMMENT_AND_ANSWERS'))) return
+    window
+      .ywConfirm(_t('DELETE_COMMENT_AND_ANSWERS'), { destructive: true })
+      .then((confirmed) => confirmed && deleteComment(link))
+  })
+
+  /** Deletes a comment and its answers, then takes it off the page. */
+  function deleteComment(link) {
     fetch(link.getAttribute('href'), { method: 'POST' })
       .then((response) =>
         response
@@ -481,7 +487,7 @@ function checkAll(state) {
       .catch((payload) => {
         toastMessage(requestFailureMessage(payload), 3000, 'alert alert-danger')
       })
-  })
+  }
 
   document.querySelectorAll('.reactions-container').forEach((container) => {
     const userReaction = container.querySelectorAll('.user-reaction').length
@@ -653,13 +659,17 @@ function checkAll(state) {
     const button = e.target.closest('.btn-delete-reaction')
     if (!button) return
     e.preventDefault()
-    if (!button.classList.contains('btn-delete-all')) {
-      if (window.confirm(_t('REACTION_CONFIRM_DELETE'))) {
-        reactionManagementHelper.deleteATag(button)
-      }
-    } else if (window.confirm(_t('REACTION_CONFIRM_DELETE_ALL'))) {
-      reactionManagementHelper.deleteTags(button)
-    }
+    const all = button.classList.contains('btn-delete-all')
+    window
+      .ywConfirm(
+        all ? _t('REACTION_CONFIRM_DELETE_ALL') : _t('REACTION_CONFIRM_DELETE'),
+        { destructive: true },
+      )
+      .then((confirmed) => {
+        if (!confirmed) return
+        if (all) reactionManagementHelper.deleteTags(button)
+        else reactionManagementHelper.deleteATag(button)
+      })
   })
 
   const commentsDeleteModal = document.getElementById(

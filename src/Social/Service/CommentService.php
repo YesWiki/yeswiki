@@ -14,6 +14,7 @@ use YesWiki\Identity\Service\BotGuard;
 use YesWiki\Identity\Service\UserManager;
 use YesWiki\Kernel\Entity\Event;
 use YesWiki\Kernel\Service\CurrentRequest;
+use YesWiki\Kernel\Service\DateService;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\EventDispatcher;
 use YesWiki\Kernel\Service\HtmlPurifierService;
@@ -188,7 +189,7 @@ class CommentService implements EventSubscriberInterface, RequestScopedState
             $this->pageContext->setPage($oldPageArray);
             $this->setUserData($comment, 'user', $com);
             $this->setUserData($comment, 'owner', $com);
-            $com['date'] = 'le ' . date('d.m.Y à H:i:s', strtotime($comment['time']));
+            $com['date'] = $this->container->get(DateService::class)->display($comment['time'], DateService::DATETIME);
             if ($this->aclService->hasAccess('comment', $comment['tag'])) {
                 $com['linkcomment'] = $this->urlFormatter->href('pages/' . $comment['tag'] . '/comments', 'api');
             }
@@ -325,7 +326,7 @@ class CommentService implements EventSubscriberInterface, RequestScopedState
                 $com['comments'][$i]['body'] = $this->container->get(MarkdownFormatterService::class)->format($com['comments'][$i]['rawbody']);
                 $this->setUserData($comment, 'user', $com['comments'][$i]);
                 $this->setUserData($comment, 'owner', $com['comments'][$i]);
-                $com['comments'][$i]['date'] = 'le ' . date('d.m.Y à H:i:s', strtotime($comment['time']));
+                $com['comments'][$i]['date'] = $this->container->get(DateService::class)->display($comment['time'], DateService::DATETIME);
                 if ($this->aclService->hasAccess('comment', $comment['tag'])) {
                     $com['comments'][$i]['linkcomment'] = $this->urlFormatter->href('pages/' . $comment['tag'] . '/comments', 'api');
                 }

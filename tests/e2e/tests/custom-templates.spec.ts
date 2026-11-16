@@ -2,6 +2,7 @@ import { test, expect } from '@playwright/test'
 import { resetEnv } from '../helpers/db'
 import { ADMIN_PASSWORD, ADMIN_USERNAME, login } from '../helpers/login'
 import { saveOverride } from '../helpers/templates'
+import { answerConfirmations } from '../helpers/dialogs'
 
 test.beforeEach(async () => {
   resetEnv()
@@ -166,7 +167,7 @@ test('reverting puts the shipped template back', async ({ page }) => {
     'core/admin/keywords.twig',
   )
 
-  page.on('dialog', (dialog) => dialog.accept())
+  await answerConfirmations(page, true)
   await page.locator('button[name="revert"]').click()
 
   await expect(

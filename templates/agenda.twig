@@ -21,8 +21,7 @@
         {% endif %}
       </div>
       <fig-caption>
-        {% set moisfr = entry.bf_date_debut_evenement|date('M')|replace({'Feb': 'fev', 'Apr': 'avr', 'May': 'mai', 'Jun': 'jui', 'Aug': 'aou'}) %}
-        <div class="date"><span class="day">{{ entry.bf_date_debut_evenement|slice(8, 2) }}</span><span class="month">{{ moisfr }}</span></div>
+        <div class="date"><span class="day">{{ entry.bf_date_debut_evenement|slice(8, 2) }}</span><span class="month">{{ entry.bf_date_debut_evenement|moment('MMM')|trim('.', 'right') }}</span></div>
         <h5>{{ entry.title|raw }}</h5>
         {% if entry.soustitre is defined and entry.soustitre is not empty %}
           {% set soustitre = format(entry.soustitre)|striptags('<br>')|nl2br %}

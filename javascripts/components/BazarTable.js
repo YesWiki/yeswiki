@@ -405,7 +405,8 @@ const componentParams = {
       ) {
         const className =
           (printable ? '' : 'not-printable') +
-          (sumfieldsids.includes(field.propertyname) ? ' sum-activated' : '')
+          (sumfieldsids.includes(field.propertyname) ? ' sum-activated' : '') +
+          (['number', 'range', 'calc'].includes(field.type) ? ' yw-num' : '')
         const width =
           field.propertyname in columnswidth
             ? { width: columnswidth[field.propertyname] }

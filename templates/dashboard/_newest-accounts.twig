@@ -11,7 +11,7 @@
           </a>
           <span class="yw-feed__meta">
             <time datetime="{{ account.signuptime }}">
-              {{ account.signuptime|date(_t('DASHBOARD_DATE_FORMAT')) }}
+              {{ account.signuptime|localdate('short') }}
             </time>
           </span>
         </span>

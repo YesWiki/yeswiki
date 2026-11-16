@@ -10,6 +10,7 @@ use YesWiki\Kernel\Component\Component;
 use YesWiki\Kernel\Component\ProvidesComponents;
 use YesWiki\Kernel\Component\Setting;
 use YesWiki\Kernel\Performable\RegisteredAction;
+use YesWiki\Kernel\Service\DateService;
 use YesWiki\Kernel\Service\PerformableArguments;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\LinkRenderer;
@@ -103,8 +104,7 @@ class RecentchangesAction extends YesWikiAction implements RegisteredAction, Pro
                         if ($curday) {
                             echo "<br>\n";
                         }
-                        $dayTimestamp = strtotime($day);
-                        echo '<strong>' . ($dayTimestamp === false ? $day : date('d.m.Y', $dayTimestamp)) . '&nbsp;:</strong><br>' . "\n";
+                        echo '<strong>' . htmlspecialchars($this->getService(DateService::class)->display($day) ?: $day) . '&nbsp;:</strong><br>' . "\n";
                         $curday = $day;
                     }
 
