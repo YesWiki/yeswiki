@@ -41,10 +41,10 @@ class LoginCookie
      */
     public function read(string $cookie, int $now): ?array
     {
-        $parts = explode('.', $cookie);
-        if (count($parts) !== 2 || !$this->tokens->verify(self::NAME . ':' . $parts[0], $parts[1])) {
+        if (!$this->isSignedHere($cookie)) {
             return null;
         }
+        $parts = explode('.', $cookie);
         $data = json_decode((string)base64_decode(strtr($parts[0], '-_', '+/'), true), true);
         if (!is_array($data) || !is_string($data['n'] ?? null) || $data['n'] === '' || !is_int($data['i'] ?? null) || !is_int($data['e'] ?? null) || !is_int($data['g'] ?? null)) {
             return null;
@@ -54,6 +54,14 @@ class LoginCookie
         }
 
         return ['name' => $data['n'], 'issued' => $data['i'], 'expires' => $data['e'], 'remember' => !empty($data['r']), 'generation' => $data['g']];
+    }
+
+    /** Whether this wiki's key signed the cookie, expired or not: one it did not sign is another key's, or forged, and is not this replica's to delete. */
+    public function isSignedHere(string $cookie): bool
+    {
+        $parts = explode('.', $cookie);
+
+        return count($parts) === 2 && $this->tokens->verify(self::NAME . ':' . $parts[0], $parts[1]);
     }
 
     /**

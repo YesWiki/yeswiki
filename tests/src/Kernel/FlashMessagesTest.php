@@ -81,6 +81,27 @@ class FlashMessagesTest extends YesWikiTestCase
         $this->assertSame('', $this->request([FlashMessages::COOKIE => $forged])->display());
     }
 
+    /** A replica whose key differs shows nothing from another one's cookie and leaves it for the replica that wrote it. */
+    public function testACookieThisWikiDidNotSignIsLeftWhereItIs(): void
+    {
+        $forged = rtrim(strtr(base64_encode((string)json_encode([['success', 'ailleurs']])), '+/', '-_'), '=') . '.forged';
+        $messages = $this->request([FlashMessages::COOKIE => $forged]);
+
+        $this->assertSame('', $messages->display());
+        $this->assertSame('', $messages->takeToast());
+        $this->assertSame($forged, $_COOKIE[FlashMessages::COOKIE] ?? null);
+    }
+
+    public function testAMessageAddedBesideAnotherKeysCookieIsShownOnceAndCleared(): void
+    {
+        $forged = rtrim(strtr(base64_encode((string)json_encode([['success', 'ailleurs']])), '+/', '-_'), '=') . '.forged';
+        $messages = $this->request([FlashMessages::COOKIE => $forged]);
+        $messages->add('info', 'ici');
+
+        $this->assertStringContainsString('ici', $messages->display());
+        $this->assertArrayNotHasKey(FlashMessages::COOKIE, $_COOKIE, 'the message this replica wrote does not come back on the next page');
+    }
+
     public function testTheToastIsTheOldOneSlotNoticeAndSurvivesTheRedirect(): void
     {
         $messages = $this->request();

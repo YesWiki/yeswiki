@@ -525,16 +525,14 @@ class YesWikiInit
         $yeswikiConfig = EnvironmentConfiguration::apply($yeswikiConfig);
 
         TrustedProxies::apply($yeswikiConfig);
+        $refusal = Replication::refusal($yeswikiConfig);
+        if ($refusal !== null) {
+            throw new \RuntimeException($refusal);
+        }
         if (empty($yeswikiConfig['base_url'])) {
-            if (Replication::isOn()) {
-                throw new \RuntimeException('YESWIKI_REPLICATED is set and base_url is not: a replica must not learn its address from whoever reaches it first. State base_url.');
-            }
             $yeswikiConfig['base_url'] = WikiUrls::baseUrl($_rewrite_mode);
         }
         unset($_rewrite_mode);
-        if (Replication::isOn() && ($yeswikiConfig['db_driver'] ?? '') === 'sqlite') {
-            throw new \RuntimeException('YESWIKI_REPLICATED is set and the database is SQLite, a file on one machine: replicas need MySQL, MariaDB or PostgreSQL.');
-        }
 
         $program = new ProgramVersion();
         $yeswikiConfig['yeswiki_version'] = $program->releaseLine() !== '' ? $program->releaseLine() : (string)$yeswikiConfig['yeswiki_version'];

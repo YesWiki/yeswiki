@@ -5,6 +5,7 @@ namespace YesWiki\Test\Kernel;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use YesWiki\Kernel\Service\Probes;
+use YesWiki\Kernel\Service\Replication;
 use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';
@@ -76,6 +77,10 @@ class ProbesTest extends YesWikiTestCase
         $was = ['YESWIKI_CONFIG_FILE' => getenv('YESWIKI_CONFIG_FILE'), 'YESWIKI_REPLICATED' => getenv('YESWIKI_REPLICATED')];
         putenv('YESWIKI_CONFIG_FILE=' . $bare);
         putenv('YESWIKI_REPLICATED=1');
+        foreach (Replication::KEY_VARIABLES as $name) {
+            $was[$name] = getenv($name);
+            putenv($name . '=' . str_repeat('d', 64));
+        }
 
         try {
             ob_start();
@@ -89,5 +94,45 @@ class ProbesTest extends YesWikiTestCase
         }
 
         $this->assertSame('ok', $answer['checks']['migrations'] ?? null, (string)json_encode($answer));
+    }
+
+    /** A replica that would refuse to boot is not ready, so no load balancer sends it a visitor. */
+    public function testAReplicaWhoseBootWouldRefuseIsNotReady(): void
+    {
+        self::getWiki();
+        $was = ['YESWIKI_REPLICATED' => getenv('YESWIKI_REPLICATED')];
+        foreach (Replication::KEY_VARIABLES as $name) {
+            $was[$name] = getenv($name);
+            putenv($name);
+        }
+        putenv('YESWIKI_REPLICATED=1');
+        $log = (string)tempnam(sys_get_temp_dir(), 'yw-readyz-log-');
+        $logWas = ini_set('error_log', $log);
+        $readiness = static function (): array {
+            ob_start();
+            Probes::ready();
+
+            return (array)json_decode((string)ob_get_clean(), true);
+        };
+
+        try {
+            $refused = $readiness();
+            foreach (Replication::KEY_VARIABLES as $name) {
+                putenv($name . '=' . str_repeat('c', 64));
+            }
+            $given = $readiness();
+        } finally {
+            foreach ($was as $name => $value) {
+                putenv($value === false ? $name : $name . '=' . $value);
+            }
+            ini_set('error_log', $logWas === false ? '' : $logWas);
+            $logged = (string)file_get_contents($log);
+            @unlink($log);
+        }
+
+        $this->assertFalse($refused['ready'] ?? null);
+        $this->assertStringContainsString('YESWIKI_SIGNING_KEY', $logged, 'the reason goes to the server log, not the answer');
+        $this->assertSame('failed', $refused['checks']['configuration'] ?? null, (string)json_encode($refused));
+        $this->assertSame('ok', $given['checks']['configuration'] ?? null, (string)json_encode($given));
     }
 }

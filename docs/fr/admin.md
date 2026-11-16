@@ -1302,6 +1302,14 @@ Sans elles, la première requête crée chaque clé, et une seule création
 l'emporte même si plusieurs serveurs démarrent en même temps. Changer une
 de ces clés invalide les jetons et les formulaires déjà affichés.
 
+Avec `YESWIKI_REPLICATED=1` et le stockage protégé sur le disque local, le
+wiki refuse de démarrer tant que ces deux variables ne sont pas posées :
+chaque serveur créerait sa propre clé dans son `private/keys/`, et celui qui
+ne reconnaît pas la signature d'un autre traiterait la personne connectée en
+visiteur anonyme. Avec le stockage protégé sur S3, les serveurs lisent tous la
+clé du bucket et les variables restent facultatives. Le chart Helm les fournit
+déjà.
+
 Le bucket doit exister avant la première écriture (sauf sur SeaweedFS, qui le
 crée tout seul, et sauf si `core:install` l'a créé, voir plus bas), et sa
 politique doit autoriser la lecture anonyme des préfixes publics **et elle
@@ -1479,6 +1487,10 @@ rien écrire au Journal :
   avec celles que la base a reçues (`"migrations"`) : `behind` (la base n'a
   pas encore reçu les migrations de cette version) rend le serveur non prêt,
   `ahead` (une version plus récente a déjà migré la base) le laisse prêt.
+  Elle vérifie enfin que le serveur démarrerait (`"configuration"`) : sans
+  `base_url`, sur SQLite, ou sans les deux clés quand le stockage protégé est
+  sur le disque, le wiki refuse de démarrer, et `/readyz` répond `503` au
+  lieu de laisser le répartiteur lui envoyer des visiteurs.
 
 ### Mettre à jour un wiki répliqué
 

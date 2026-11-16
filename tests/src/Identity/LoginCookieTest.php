@@ -81,6 +81,28 @@ class LoginCookieTest extends YesWikiTestCase
         $this->assertNull($cookies->read($payload, 1_000_001), 'a cookie with no signature');
     }
 
+    /** A replica with another key does not sign the visitor out of the replicas that share the right one. */
+    public function testACookieAnotherKeySignedIsLeftForTheReplicaThatSignedIt(): void
+    {
+        $elsewhere = sys_get_temp_dir() . '/yw-other-key-' . bin2hex(random_bytes(4));
+        $foreign = (new LoginCookie(new SignedTokens(Storage::rootedAt($elsewhere))))->issue(self::NAME, false, 1, time());
+
+        $next = $this->nextRequest([LoginCookie::NAME => $foreign]);
+
+        $this->assertSame('', $next->signedInName(), 'anonymous here');
+        $this->assertSame($foreign, $_COOKIE[LoginCookie::NAME] ?? null, 'and the cookie stays');
+        $this->assertFalse(self::getWiki()->services->get(LoginCookie::class)->isSignedHere($foreign));
+    }
+
+    public function testAnExpiredCookieThisWikiSignedIsDeleted(): void
+    {
+        $expired = self::getWiki()->services->get(LoginCookie::class)->issue(self::NAME, false, 1, time() - 2 * LoginCookie::SHORT_LIFETIME);
+
+        $this->nextRequest([LoginCookie::NAME => $expired]);
+
+        $this->assertArrayNotHasKey(LoginCookie::NAME, $_COOKIE);
+    }
+
     public function testACookieIsRenewedOnceHalfWayToItsExpiry(): void
     {
         $read = ['issued' => 1_000_000, 'expires' => 1_003_600];

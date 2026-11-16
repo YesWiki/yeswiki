@@ -208,7 +208,7 @@ class AuthenticationService extends YesWikiController implements ActorSource, Ca
             return;
         }
         try {
-            if ($this->connectUserFromLoginCookie()) {
+            if ($this->connectUserFromLoginCookie() || $this->holdsALoginCookieSignedElsewhere()) {
                 return;
             }
             $data = $this->connectUserFromCookies();
@@ -224,15 +224,19 @@ class AuthenticationService extends YesWikiController implements ActorSource, Ca
         }
     }
 
-    /** Signs the request in from a valid `yw-auth` and renews it once it is half-way to its expiry; false when there is none, after deleting one that is no longer good. */
+    /** Signs the request in from a valid `yw-auth` and renews it once it is half-way to its expiry; false when there is none, after deleting one this wiki signed that is no longer good. */
     private function connectUserFromLoginCookie(): bool
     {
         $cookie = $this->getRequest()->cookies->get(LoginCookie::NAME);
         if (!is_string($cookie) || $cookie === '') {
             return false;
         }
+        $loginCookie = $this->container->get(LoginCookie::class);
+        if (!$loginCookie->isSignedHere($cookie)) {
+            return false;
+        }
         $now = time();
-        $read = $this->container->get(LoginCookie::class)->read($cookie, $now);
+        $read = $loginCookie->read($cookie, $now);
         $user = $read === null ? null : $this->stillValid($read['name'], $read['generation']);
         if ($read === null || $user === null) {
             $this->setPersistentCookie(LoginCookie::NAME, '', $now - 3600);
@@ -249,6 +253,14 @@ class AuthenticationService extends YesWikiController implements ActorSource, Ca
         }
 
         return true;
+    }
+
+    /** Whether the request brings a `yw-auth` this wiki's key did not sign: the visitor is anonymous here, and the cookie stays for the replica that signed it. */
+    private function holdsALoginCookieSignedElsewhere(): bool
+    {
+        $cookie = $this->getRequest()->cookies->get(LoginCookie::NAME);
+
+        return is_string($cookie) && $cookie !== '' && !$this->container->get(LoginCookie::class)->isSignedHere($cookie);
     }
 
     /** The account a sign-in names, when it still exists, may sign in and has not been revoked since; null otherwise. */

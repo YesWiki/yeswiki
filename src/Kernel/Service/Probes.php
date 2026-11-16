@@ -34,7 +34,7 @@ final class Probes
         self::answer(200, 'text/plain', 'ok');
     }
 
-    /** Whether this replica can serve: its database and storage answer and, when replicated, its migrations have run; 503 naming what does not. The wiki is not booted. */
+    /** Whether this replica can serve: its database and storage answer and, when replicated, its configuration would boot and its migrations have run; 503 naming what does not. The wiki is not booted. */
     public static function ready(): void
     {
         require_once \dirname(__DIR__, 2) . '/autoload.inc.php';
@@ -44,6 +44,13 @@ final class Probes
 
         $checks = ['database' => 'ok', 'storage' => 'ok'];
         $config = self::configuration();
+        if (Replication::isOn()) {
+            $refusal = Replication::refusal($config);
+            $checks['configuration'] = $refusal === null ? 'ok' : 'failed';
+            if ($refusal !== null) {
+                error_log('readyz: the wiki would not boot: ' . $refusal);
+            }
+        }
         $db = new DbService(new ParameterBag($config), connectNow: false);
         $unreachable = $db->ping();
         if ($unreachable !== null) {
