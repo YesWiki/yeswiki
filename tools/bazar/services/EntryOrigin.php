@@ -59,6 +59,30 @@ class EntryOrigin
         );
     }
 
+    /**
+     * The URL each imported entry was first written at, following imports of imports, by entry tag.
+     */
+    public function originUrls(): array
+    {
+        return $this->valuesByResource(TripleStore::ORIGIN_URL_URI) + $this->valuesByResource(TripleStore::SOURCE_URL_URI);
+    }
+
+    /**
+     * Adds an 'origin_url' to each imported entry, so a wiki importing it can pass it on.
+     */
+    public function withOriginUrls(array $entries): array
+    {
+        $originUrls = $this->originUrls();
+        foreach ($entries as $key => $entry) {
+            $tag = $entry['id_fiche'] ?? '';
+            if (isset($originUrls[$tag])) {
+                $entries[$key]['origin_url'] = $originUrls[$tag];
+            }
+        }
+
+        return $entries;
+    }
+
     private function origin(array $entry, ?string $actorUri, ?string $profile, ?string $sourceUrl, bool $generatedTitle): array
     {
         return [

@@ -137,6 +137,7 @@ class BazarListService
         }
 
         $vEntries = $this->filterOnOrigin(array_merge($vLocalEntries, $vExternalEntries), $pOptions['origin'] ?? null);
+        $vEntries = $this->excludeSource($vEntries, $pOptions['excludeSource'] ?? null);
 
         // filter entries on datefilter parameter
         if (!empty($pOptions['datefilter'])) {
@@ -192,6 +193,21 @@ class BazarListService
         return array_values(array_filter(
             $entries,
             fn ($entry) => (!empty($entry['external-data']) || isset($remoteTags[$entry['id_fiche'] ?? ''])) === $wantRemote
+        ));
+    }
+
+    // Drops the entries first written at a URL starting with $prefix, so a wiki importing from here doesn't get its own entries back.
+    private function excludeSource(array $entries, $prefix): array
+    {
+        $prefix = is_string($prefix) ? trim($prefix) : '';
+        if ($prefix === '') {
+            return $entries;
+        }
+        $originUrls = $this->wiki->services->get(EntryOrigin::class)->originUrls();
+
+        return array_values(array_filter(
+            $entries,
+            fn ($entry) => strpos($originUrls[$entry['id_fiche'] ?? ''] ?? '', $prefix) !== 0
         ));
     }
 

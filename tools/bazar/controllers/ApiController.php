@@ -18,6 +18,7 @@ use YesWiki\Bazar\Service\BazarListService;
 use YesWiki\Bazar\Service\CSVManager;
 use YesWiki\Bazar\Service\EntryExtraFieldsService;
 use YesWiki\Bazar\Service\EntryManager;
+use YesWiki\Bazar\Service\EntryOrigin;
 use YesWiki\Bazar\Service\FormManager;
 use YesWiki\Bazar\Service\HttpSignatureService;
 use YesWiki\Bazar\Service\SearchManager;
@@ -302,6 +303,7 @@ class ApiController extends YesWikiController
                 'champ' => $vChamp,
                 'nb' => $vNb,
                 'minDate' => $vMinDate,
+                'excludeSource' => $get->has('excludeSource') ? urldecode($get->get('excludeSource')) : null,
             ]);
 
             $acceptHeader = $this->getRequest()->headers->get('accept', '');
@@ -333,6 +335,8 @@ class ApiController extends YesWikiController
                 }
 
                 return new ApiResponse(empty($lightEntries) ? null : $lightEntries);
+            } else {
+                $entries = $this->getService(EntryOrigin::class)->withOriginUrls($entries);
             }
         }
 
