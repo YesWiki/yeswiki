@@ -144,6 +144,24 @@
   --yw-on-warning: #14171a;
   --yw-on-info: #ffffff;
   --yw-focus-ring: var(--yw-primary);
+  --yw-category-1: var(--yw-primary);
+  --yw-category-2: var(--yw-secondary);
+  --yw-category-3: var(--yw-tertiary);
+  --yw-category-4: oklch(
+    from var(--yw-primary) 0.5 clamp(0.1, c, 0.18) calc(h + 60)
+  );
+  --yw-category-5: oklch(
+    from var(--yw-primary) 0.62 clamp(0.1, c, 0.18) calc(h + 120)
+  );
+  --yw-category-6: oklch(
+    from var(--yw-primary) 0.45 clamp(0.1, c, 0.18) calc(h + 180)
+  );
+  --yw-category-7: oklch(
+    from var(--yw-primary) 0.58 clamp(0.1, c, 0.18) calc(h + 240)
+  );
+  --yw-category-8: oklch(
+    from var(--yw-primary) 0.5 clamp(0.1, c, 0.18) calc(h + 300)
+  );
   --yw-shadow-color: rgb(
     0 0 0 / calc(var(--yw-shadow-alpha) * var(--yw-shadow-strength))
   );

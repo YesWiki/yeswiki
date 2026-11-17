@@ -2018,7 +2018,7 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
                 $vGeometries
             );
 
-            $color = $this->getService(EntryDisplay::class)->customValueFor($params['color'], $params['colorfield'], $entry, $this->getService(RuntimeConfig::class)['baz_marker_color']);
+            $color = $this->getService(EntryDisplay::class)->markerColorFor($params['color'], $params['colorfield'], $entry);
 
             $icon = $params['iconprefix']
                     . $this->getService(EntryDisplay::class)->customValueFor($params['icon'], $params['iconfield'], $entry, $this->getService(RuntimeConfig::class)['baz_marker_icon']);
@@ -2036,7 +2036,7 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
 										popupAnchor: ' . $params['popupAnchor'] . ',
 										className: \'bazar-marker' . $params['smallmarker'] . '\',
 										html: \'<div class="bazar-entry" '
-                                        . str_replace('\'', '', $entry['html_data']) . ' style="color:' . $color . ';">'
+                                        . str_replace('\'', '', $entry['html_data']) . ($color !== '' ? ' style="color:' . htmlspecialchars($color, ENT_QUOTES) . ';"' : '') . '>'
                                         . (!empty($icon) ? ($this->getService(\YesWiki\Render\Service\TemplateEngine::class)->legacyIconToSprite($icon) ?? '<i class="' . $icon . '"></i>') : '')
                                         . '</div>\'
 								}),

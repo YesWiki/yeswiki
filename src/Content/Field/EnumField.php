@@ -18,6 +18,9 @@ abstract class EnumField extends BazarField
     /** @var array<int|string, array<string, mixed>> the linked entries the options were built from, keyed by tag */
     protected $optionsEntries = [];
 
+    /** @var array<int|string, string> the colour a list value states, keyed by its id */
+    protected $optionColors = [];
+
     /** @var string name of the list, or id of the form, the options come from */
     protected $linkedObjectName;
 
@@ -57,6 +60,7 @@ abstract class EnumField extends BazarField
         if (!empty($this->getLinkedObjectName())) {
             $list = $this->getService(ListManager::class)->getOne($this->getLinkedObjectName());
             $this->options = [];
+            $this->optionColors = [];
             foreach ($list['nodes'] ?? [] as $node) {
                 $this->loadOptionsFromListNode($node);
                 if (isset($node['children']) && count($node['children']) > 0) {
@@ -72,6 +76,10 @@ abstract class EnumField extends BazarField
     private function loadOptionsFromListNode(array $node, string $parentLabel = ''): void
     {
         $this->options[$node['id']] = $parentLabel . $node['label'];
+        $color = is_string($node['color'] ?? null) ? trim($node['color']) : '';
+        if ($color !== '') {
+            $this->optionColors[$node['id']] = $color;
+        }
         if (!empty($node['children'])) {
             foreach ($node['children'] as $childNode) {
                 $this->loadOptionsFromListNode($childNode, "$parentLabel {$node['label']} ➤ ");
@@ -192,6 +200,7 @@ abstract class EnumField extends BazarField
                 'linkedObjectName' => $this->getLinkedObjectName(),
                 'queries' => $this->queries,
                 'options' => $this->getOptions(),
+                'optionColors' => (object)$this->optionColors,
             ]
         );
     }

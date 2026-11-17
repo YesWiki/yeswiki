@@ -11,6 +11,7 @@ import { updateHash, parseSearchParams, serializeSearchParams } from './url.js'
 import { parseCondition } from './search.js'
 import ImageMixin from './entries-index-dynamic/image-mixin.js'
 import { inkOn } from './colour-contrast.js'
+import { colourForValues } from './category-colour.js'
 import BazarSearch from './entries-index-dynamic/search-mixin.js'
 
 const { createApp } = Vue
@@ -244,11 +245,7 @@ const load = (domElement) => {
       },
       formatEntries() {
         this.paginatedEntries.forEach((entry) => {
-          entry.color = this.colorIconValueFor(
-            entry,
-            this.params.colorfield,
-            this.params.color,
-          )
+          entry.color = this.colourFor(entry)
           entry.ink = inkOn(entry.color)
           entry.icon = this.colorIconValueFor(
             entry,
@@ -489,15 +486,25 @@ const load = (domElement) => {
         const url = `${entry.url}/iframe`
         entry.html_render = `<iframe src="${url}" width="500px" height="600px" style="border:none;"></iframe>`
       },
+      shownValuesOf(entry, field) {
+        if (!field || !entry[field] || typeof entry[field] != 'string')
+          return []
+        const values = entry[field].split(',')
+        if (!this.computedFilters[field]) return values
+        return values.filter((val) => this.computedFilters[field].includes(val))
+      },
       colorIconValueFor(entry, field, mapping) {
-        if (!entry[field] || typeof entry[field] != 'string') return null
-        let values = entry[field].split(',')
-        if (this.computedFilters[field]) {
-          values = values.filter((val) =>
-            this.computedFilters[field].includes(val),
-          )
-        }
-        return mapping[values[0]]
+        const values = this.shownValuesOf(entry, field)
+        if (!values.length || !mapping || typeof mapping !== 'object')
+          return null
+        return mapping[values[0]] ?? null
+      },
+      colourFor(entry) {
+        const field = this.params.colorfield
+        return colourForValues(this.shownValuesOf(entry, field), {
+          mapping: this.params.color,
+          nodeColours: this.fieldInfo(field).optionColors,
+        })
       },
     },
     mounted() {
@@ -632,7 +639,6 @@ const load = (domElement) => {
     },
   )
 
-  // Expose YesWiki globals to all Vue templates in this app
   app.config.globalProperties.wiki = window.wiki
   app.config.globalProperties._t = window._t
 

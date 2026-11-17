@@ -11,7 +11,7 @@ require_once 'tests/YesWikiTestCase.php';
 /** The Preset vocabulary (ticket 30, rewritten onto Design tokens by ADR-0020). */
 class PresetServiceTest extends YesWikiTestCase
 {
-    /** The eighteen properties ADR-0021 took out of a Preset's hands, and the two it always computed. */
+    /** The properties core derives and a Preset may not state. */
     private const DERIVED = [
         'yw-text',
         'yw-text-inverse',
@@ -29,6 +29,8 @@ class PresetServiceTest extends YesWikiTestCase
         'yw-navbar-border', 'yw-navbar-active',
         'yw-shadow-color', 'yw-shadow-color-strong',
         'yw-radius-sm', 'yw-radius-md', 'yw-radius-lg', 'yw-radius-full',
+        'yw-category-1', 'yw-category-2', 'yw-category-3', 'yw-category-4',
+        'yw-category-5', 'yw-category-6', 'yw-category-7', 'yw-category-8',
     ];
 
     private function service(): PresetService

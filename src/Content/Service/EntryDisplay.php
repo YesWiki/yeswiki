@@ -99,11 +99,7 @@ class EntryDisplay
     }
 
     /**
-     * The colour a value carries, read off the list that defines it (ticket 64).
-     *
-     * A colour used to be mapped to a value inside every action call that drew it, so the same list
-     * shown as cards and as a map was coloured twice and could disagree with itself. The value
-     * knows what colour it is now; the call only says which field to look at.
+     * The colour a value carries, read off the list that defines it.
      *
      * @param array<string, mixed> $entry
      */
@@ -113,6 +109,41 @@ class EntryDisplay
         $color = is_string($node['color'] ?? null) ? trim($node['color']) : '';
 
         return $color !== '' ? $color : $default;
+    }
+
+    /**
+     * The colour a map draws an entry in, by the order category-colour.js follows, or '' for the stylesheet's.
+     *
+     * @param array<string, mixed> $entry
+     */
+    public function markerColorFor(mixed $parameter, ?string $field, array $entry): string
+    {
+        $values = empty($field) ? [] : array_values(array_filter(self::valuesOf($entry, $field), fn ($value) => $value !== ''));
+        $first = $values[0] ?? null;
+        if ($first === null) {
+            return is_string($parameter) ? trim($parameter) : '';
+        }
+        $mapped = is_array($parameter) ? ($parameter[$first] ?? null) : null;
+        if (is_string($mapped) && trim($mapped) !== '') {
+            return trim($mapped);
+        }
+        $stated = $this->colorForEntry($field, [$field => $first, 'form_id' => $entry['form_id'] ?? null]);
+        if (is_string($stated) && $stated !== '') {
+            return $stated;
+        }
+
+        return self::categoryColorFor($first);
+    }
+
+    /** The palette token a value id always lands on: FNV-1a of its UTF-8 bytes, modulo eight. */
+    public static function categoryColorFor(string $id): string
+    {
+        $hash = 0x811C9DC5;
+        foreach (unpack('C*', $id) ?: [] as $byte) {
+            $hash = (($hash ^ $byte) * 0x01000193) & 0xFFFFFFFF;
+        }
+
+        return 'var(--yw-category-' . (($hash % 8) + 1) . ')';
     }
 
     /**
@@ -231,12 +262,7 @@ class EntryDisplay
     }
 
     /**
-     * One entry rendered whole, or nothing at all.
-     *
-     * The difference from renderEntry() is what a failure means to the caller. A page that renders
-     * an entry wants to see the error. Something deriving text *about* an entry -- a meta
-     * description, a summary, a search excerpt -- does not: an alert box stripped of its tags
-     * would become the description, which is worse than having none.
+     * One entry rendered whole, or nothing at all when it fails.
      *
      * @param mixed $entryId the entry, by tag or already loaded
      */
@@ -266,8 +292,6 @@ class EntryDisplay
         return [
             'lists' => $lists,
             'forms' => $forms,
-            // Ticket 64: the palette offers the wiki's menus the way it offers its lists, so
-            // `{{nav}}` is picked from rather than typed.
             'menus' => $this->services->get(MenuManager::class)->readable(),
         ];
     }

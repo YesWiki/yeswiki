@@ -464,7 +464,7 @@ class YesWikiInit
             'baz_provider_id' => '',
             'baz_provider_pass' => '',
             'baz_marker_icon' => 'bullseye',
-            'baz_marker_color' => 'darkred',
+            'baz_marker_color' => '',
             'baz_small_marker' => '',
             'baz_map_zoom' => 5,
             'baz_map_width' => '100%',

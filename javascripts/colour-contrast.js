@@ -1,5 +1,6 @@
 // WCAG contrast between two CSS colours, and which ink reads best on a fill, as PresetService::inkOn() does in PHP (end-users 09).
 let probe = null
+let pixel = null
 
 /** The red, green and blue of any CSS colour, as the browser resolves it, or null. */
 export function rgbOf(value) {
@@ -11,9 +12,30 @@ export function rgbOf(value) {
   }
   probe.style.color = ''
   probe.style.color = String(value ?? '').trim()
-  const parts = getComputedStyle(probe).color.match(/[\d.]+/g)
-  if (!parts || parts.length < 3) return null
-  return parts.slice(0, 3).map(Number)
+  if (probe.style.color === '') return null
+  const computed = getComputedStyle(probe).color
+  if (/^rgba?\(/.test(computed)) {
+    const parts = computed.match(/[\d.]+/g)
+    return parts && parts.length >= 3 ? parts.slice(0, 3).map(Number) : null
+  }
+  return rgbThroughCanvas(computed)
+}
+
+/** A colour the browser computes outside sRGB syntax, oklch for one, painted on a pixel and read back. */
+function rgbThroughCanvas(colour) {
+  if (!pixel) {
+    const canvas = document.createElement('canvas')
+    canvas.width = 1
+    canvas.height = 1
+    pixel = canvas.getContext('2d', { willReadFrequently: true })
+  }
+  if (!pixel) return null
+  pixel.clearRect(0, 0, 1, 1)
+  pixel.fillStyle = '#000'
+  pixel.fillStyle = colour
+  pixel.fillRect(0, 0, 1, 1)
+  const [r, g, b] = pixel.getImageData(0, 0, 1, 1).data
+  return [r, g, b]
 }
 
 /** WCAG 2.1 relative luminance: sRGB linearised, then weighted. */

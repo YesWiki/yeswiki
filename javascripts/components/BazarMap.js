@@ -189,12 +189,12 @@ const BazarMapComponent = {
               html:
                 `
 		          <div class="entry-name">
-		            <span style="background-color: ${entry.color}${entry.ink ? `; color: ${entry.ink}` : ''}">
+		            <span${entry.color ? ` style="background-color: ${entry.color}${entry.ink ? `; color: ${entry.ink}` : ''}"` : ''}>
 		              ${entry.markerhover || entry.title || entry.bf_titre || ''}
 		            </span>
 		          </div>
 		          <${tagName} class="bazar-entry ${this.isModalDisplay() ? 'modalbox' : ''}" ` +
-                `${isLink ? `href="${url}" tabindex="-1"` : ''} style="color: ${entry.color}" ${modalData}>
+                `${isLink ? `href="${url}" tabindex="-1"` : ''} ${entry.color ? `style="color: ${entry.color}"` : ''} ${modalData}>
 		            ${legacyIconToSprite(entry.icon) || (entry.icon ? `<i class="${entry.icon}"></i>` : legacyIconToSprite('bullseye'))}
 		          </${tagName}>`,
             }),
