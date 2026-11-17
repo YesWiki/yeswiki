@@ -195,9 +195,26 @@ class RepeatedRequestTest extends YesWikiTestCase
 
         $this->assertMatchesRegularExpression('/servedByWorker\(\);.*while \(/s', $worker, 'the trigger is told it runs under a worker before the loop');
         $this->assertMatchesRegularExpression(
-            '/frankenphp_handle_request\(\$handler\);\s*if \(\$probed === null\) \{\s*\$queueTrigger->afterResponse\(\);.*?set_time_limit\(\$timeLimit\)/s',
+            '/frankenphp_handle_request\(\$handler\);\s*if \(\$outOfDate\) \{[^}]*break;\s*\}\s*if \(\$probed === null\) \{\s*\$queueTrigger->afterResponse\(\);.*?set_time_limit\(\$timeLimit\)/s',
             $worker,
             'the queue runs after the response unless it answered a probe, then the time limit is set back before the next request'
+        );
+    }
+
+    /** A configuration changed while the worker sat idle is checked before the wiki runs, so no visitor is answered from the old container. */
+    public function testTheWorkerSendsARequestBackWhenItCannotServeIt(): void
+    {
+        $worker = (string)file_get_contents(\YESWIKI_PROGRAM_DIR . '/worker.php');
+
+        $this->assertMatchesRegularExpression(
+            '/if \(\$wiki->cannotServeTheNextRequest\(\)\) \{\s*\$outOfDate = true;.*?, 307\);.*?return;\s*\}\s*try \{\s*\$wiki->run\(\);/s',
+            $worker,
+            'the check runs as the request arrives and answers 307 instead of running the wiki'
+        );
+        $this->assertMatchesRegularExpression(
+            '/\$served\+\+;\s*if \(\$wiki->containerCacheIsGone\(\) \|\| \$wiki->configurationChanged\(\)/s',
+            $worker,
+            'a request that saved settings restarts its worker after the response, with nobody sent back'
         );
     }
 

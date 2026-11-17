@@ -883,12 +883,24 @@ class YesWikiRuntime
         $this->followedVersion = $version;
     }
 
-    /** Whether what this container was built from -- the configuration, `.env`, the extensions -- has changed since this process booted. */
+    /** Whether what this container was built from -- the configuration, `.env`, the extensions -- or the stored settings have changed since this process booted. */
     public function configurationChanged(): bool
     {
+        return $this->filesChanged()
+            || ($this->bootedCacheDir !== null && $this->service(WikiSettings::class)->freshVersion() !== $this->settingsVersion);
+    }
+
+    /** Whether a request served now would be wrong: the container is gone, its files changed, or the compiled templates were cleared; stored settings are laid over each request and do not count. */
+    public function cannotServeTheNextRequest(): bool
+    {
+        return $this->containerCacheIsGone() || $this->filesChanged() || $this->templatesChanged();
+    }
+
+    /** Whether the configuration file, `.env` or the extensions the container was built from have changed since this process booted. */
+    private function filesChanged(): bool
+    {
         return $this->bootedCacheDir !== null
-            && ((new YesWikiKernel($this, $this->environment))->getCacheDir() !== $this->bootedCacheDir
-                || $this->service(WikiSettings::class)->freshVersion() !== $this->settingsVersion);
+            && (new YesWikiKernel($this, $this->environment))->getCacheDir() !== $this->bootedCacheDir;
     }
 
     /** @return void */

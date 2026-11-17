@@ -198,7 +198,7 @@ class YesWikiKernel extends Kernel
         return null;
     }
 
-    /** Remove containers built from configurations this wiki is no longer in, keeping one spare. */
+    /** Remove containers built from configurations this wiki is no longer in, keeping one spare; a worker still running on one has every factory in memory. */
     private function pruneOldContainers(): void
     {
         $root = \dirname($this->getCacheDir());
@@ -284,6 +284,7 @@ class YesWikiKernel extends Kernel
         foreach ($config as $key => $value) {
             $container->setParameter($key, $value);
         }
+        $container->setParameter('.container.dumper.inline_factories', true);
 
         $this->addInvalidationResources($container);
 

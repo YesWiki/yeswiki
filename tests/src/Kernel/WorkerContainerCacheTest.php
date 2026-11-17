@@ -27,10 +27,11 @@ class WorkerContainerCacheTest extends YesWikiTestCase
 
         $this->assertIsString($path, 'the container directory could not be derived at all');
         $this->assertDirectoryExists($path);
-        $this->assertNotEmpty(
-            glob($path . '/get*Service.php'),
-            'that is not the directory the container requires its services from'
+        $this->assertFileExists(
+            $path . '/' . (new \ReflectionClass($wiki->services))->getShortName() . '.php',
+            'that is not the directory the container was dumped to'
         );
+        $this->assertSame([], glob($path . '/get*Service.php'), 'every factory is in the container class, so a pruned directory breaks no worker');
     }
 
     public function testAWikiWhoseContainerIsStillThereKeepsServing(): void
@@ -63,6 +64,37 @@ class WorkerContainerCacheTest extends YesWikiTestCase
             $this->assertFalse($wiki->configurationChanged(), 'nothing changed since this worker booted');
             $this->withChangedEnvironment(fn () => $this->assertTrue($wiki->configurationChanged()));
         });
+    }
+
+    /** The worker checks as a request arrives, so a file changed while it sat idle is never answered from the old container. */
+    public function testAWikiWhoseFilesChangedCannotServeTheNextRequest(): void
+    {
+        $wiki = $this->getWiki();
+
+        $this->withBootedCacheDir($wiki, function () use ($wiki): void {
+            $this->assertFalse($wiki->cannotServeTheNextRequest());
+            $this->withChangedEnvironment(fn () => $this->assertTrue($wiki->cannotServeTheNextRequest()));
+        });
+    }
+
+    /** Stored settings are laid over each request, so a save on another worker sends no visitor back: the worker restarts after serving. */
+    public function testStoredSettingsSavedElsewhereDoNotSendTheNextRequestBack(): void
+    {
+        $wiki = $this->getWiki();
+        $settings = new \ReflectionProperty($wiki, 'settingsVersion');
+        $booted = new \ReflectionProperty($wiki, 'bootedCacheDir');
+        $wasSettings = $settings->getValue($wiki);
+        $wasBooted = $booted->getValue($wiki);
+        $booted->setValue($wiki, (new YesWikiKernel($wiki, $wiki->getEnvironment()))->getCacheDir());
+        $settings->setValue($wiki, 'a version saved before another worker stored new settings');
+
+        try {
+            $this->assertTrue($wiki->configurationChanged());
+            $this->assertFalse($wiki->cannotServeTheNextRequest());
+        } finally {
+            $settings->setValue($wiki, $wasSettings);
+            $booted->setValue($wiki, $wasBooted);
+        }
     }
 
     /** A blocking queue consumer is told the same thing, through the ConfigurationWatch the runtime binds at boot. */

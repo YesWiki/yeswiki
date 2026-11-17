@@ -1,7 +1,8 @@
 <?php
 
 /*
- * FrankenPHP worker entry point (ADR-0024): boots the wiki once and serves requests until its container is cleared.
+ * FrankenPHP worker entry point (ADR-0024): boots the wiki once and serves requests until its container is out of date,
+ * checked as each request arrives (that request is sent back with a 307 for the restarted worker) and after each one.
  */
 
 use YesWiki\Core\YesWikiLoader;
@@ -30,7 +31,8 @@ $served = 0;
 $timeLimit = (int)ini_get('max_execution_time');
 
 $probed = null;
-$handler = static function () use ($wiki, $timeLimit, &$probed): void {
+$outOfDate = false;
+$handler = static function () use ($wiki, $timeLimit, &$probed, &$outOfDate): void {
     foreach (['SCRIPT_NAME', 'SCRIPT_FILENAME', 'PHP_SELF'] as $describesTheScript) {
         if (isset($_SERVER[$describesTheScript]) && is_string($_SERVER[$describesTheScript])) {
             $_SERVER[$describesTheScript] = str_replace('worker.php', 'index.php', $_SERVER[$describesTheScript]);
@@ -51,6 +53,15 @@ $handler = static function () use ($wiki, $timeLimit, &$probed): void {
         return;
     }
 
+    if ($wiki->cannotServeTheNextRequest()) {
+        $outOfDate = true;
+        header('Location: ' . ($_SERVER['REQUEST_URI'] ?? '/'), true, 307);
+        header('Retry-After: 0');
+        header('Cache-Control: no-store');
+
+        return;
+    }
+
     try {
         $wiki->run();
     } finally {
@@ -64,18 +75,16 @@ $handler = static function () use ($wiki, $timeLimit, &$probed): void {
 };
 
 while ($served < $requestsBeforeRestart) {
-    if ($wiki->containerCacheIsGone() || $wiki->configurationChanged() || $wiki->templatesChanged()) {
-        error_log('the compiled container is out of date; restarting this worker');
-        break;
-    }
-
     $database?->disconnectIfIdle();
     $probed = null;
     $keepServing = frankenphp_handle_request($handler);
+    if ($outOfDate) {
+        error_log('the compiled container is out of date; sent the request back and restarting this worker');
+        break;
+    }
     if ($probed === null) {
         $queueTrigger->afterResponse();
     }
-    // the queue ran on this request's time limit, and raised it: the next request gets its own
     if (function_exists('set_time_limit')) {
         @set_time_limit($timeLimit);
     }
@@ -83,6 +92,11 @@ while ($served < $requestsBeforeRestart) {
         break;
     }
     $served++;
+
+    if ($wiki->containerCacheIsGone() || $wiki->configurationChanged() || $wiki->templatesChanged()) {
+        error_log('the container went out of date during this request; restarting this worker');
+        break;
+    }
 
     if (function_exists('gc_collect_cycles')) {
         gc_collect_cycles();

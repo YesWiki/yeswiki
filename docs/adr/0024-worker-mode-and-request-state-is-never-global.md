@@ -78,3 +78,37 @@ the failure class worth spending a rule on.
 - **Classic mode stays supported**, because php-fpm and shared hosting stay supported. Two
   execution models both have to stay correct, and the repeated-request tests are what keeps the
   second one honest.
+
+## Amendment: when a worker restarts on a changed configuration
+
+A worker serves on the container it compiled at boot. A PHP process cannot load a second compiled
+container, because the class name does not depend on the configuration, so a worker whose
+configuration file, `.env` or extensions changed has to restart. Settings saved through the admin
+screens do not need this: `followStoredSettings()` lays them over each request.
+
+Two bugs showed up under the browser suite on the binary (`feat/sso`, 2026-11).
+
+- The worker checked for a change after serving a request, then blocked until the next one. A
+  file edited while it sat idle was answered once from the old configuration before the restart.
+- Any process that compiles a container (`yeswicli`, `migrate`, the test helpers) prunes all but
+  one spare directory under `cache/container/<env>/`, and `CacheClearer` empties it. The dumped
+  container loaded each service factory from that directory on first use, so an idle worker whose
+  directory went failed its next request with `Failed opening required`, exited with status 255
+  and sent FrankenPHP into its restart back-off.
+
+We decided:
+
+- **The kernel dumps every factory into the container class**
+  (`.container.dumper.inline_factories`). Once booted, a worker requires nothing from its
+  directory, so a prune or a clear from another process or another replica cannot break it.
+- **`worker.php` checks as a request arrives.** If `cannotServeTheNextRequest()` says the
+  container is gone, its files changed or the templates were cleared, the worker answers
+  `307` to the same URI with `Retry-After: 0` and restarts. The restarted worker serves the
+  retry. A browser follows a 307 on its own and replays a POST body with it.
+- **It still checks after each response** for everything `configurationChanged()` covers,
+  stored settings included. A worker that saved settings itself restarts without sending
+  anyone back, and it always serves a request before it exits, which is what FrankenPHP
+  counts as a successful restart.
+
+We left out a grace period or in-use marker for pruning. With the factories inlined, pruning a
+live worker's directory costs nothing.
