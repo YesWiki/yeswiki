@@ -22,6 +22,7 @@ use YesWiki\Content\Service\IcalFormatter;
 use YesWiki\Content\Service\SemanticTransformer;
 use YesWiki\Core\ApiResponse;
 use YesWiki\Core\YesWikiController;
+use YesWiki\Federation\Service\EntryOrigin;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Asset\AssetEntry;
 use YesWiki\Kernel\Asset\AssetSet;
@@ -97,6 +98,7 @@ class EntryApiController extends YesWikiController
                 'field' => $vField,
                 'nb' => $vNb,
                 'minDate' => $vMinDate,
+                'excludeSource' => $get->has('excludeSource') ? urldecode((string)$get->get('excludeSource')) : null,
             ]);
             $entries = $vBazarListService->filterEntriesOnFacets($entries);
 
@@ -136,6 +138,8 @@ class EntryApiController extends YesWikiController
                 }
 
                 return new ApiResponse(empty($lightEntries) ? null : $lightEntries);
+            } else {
+                $entries = $this->getService(EntryOrigin::class)->withOriginUrls($entries);
             }
         }
 

@@ -3550,9 +3550,16 @@ qui rend 1 si bf_type == premiere_cle sinon 0).',
     'IMPORTER_FIELD_FILESMODE' => 'Images et fichiers des fiches',
     'IMPORTER_FIELD_KEEPREMOTEUPDATEDATE' => 'Conserver aussi la date de modification des fiches distantes',
     'IMPORTER_FIELD_KEEPREMOTEUPDATEDATE_HELP' => 'La date de création est toujours reprise du wiki source. '
-        . 'La date de modification, elle, sert aussi à repérer les fiches modifiées ici depuis la dernière '
-        . 'synchronisation (mode "synchronisation souple") : ne la reprendre que si les fiches importées ne '
-        . 'sont pas modifiées localement.',
+        . 'La date de modification, elle, sert encore à repérer les fiches importées avant la fusion champ par champ '
+        . 'et modifiées ici depuis (mode "synchronisation souple") : ne la reprendre que si ces fiches ne sont pas '
+        . 'modifiées localement.',
+    'IMPORTER_FIELD_CONFLICTPOLICY' => 'En cas de conflit (synchronisation souple)',
+    'IMPORTER_FIELD_CONFLICTPOLICY_HELP' => 'Un conflit, c\'est un champ modifié ici et sur le wiki distant depuis le dernier import. '
+        . 'Les champs modifiés d\'un seul côté sont toujours fusionnés. Le conflit est noté une fois dans le journal de synchro.',
+    'IMPORTER_CONFLICTPOLICY_LOCAL' => 'Garder la valeur de ce wiki',
+    'IMPORTER_CONFLICTPOLICY_REMOTE' => 'Prendre la valeur du wiki distant',
+    'IMPORTER_SOURCE_WIPED' => 'Formulaire %{formId} effacé avec ses fiches avant réimport.',
+    'IMPORTER_WIPE_SKIPPED' => 'La source n\'a rien renvoyé : le formulaire %{formId} n\'est pas effacé.',
     'IMPORTER_FILESMODE_DOWNLOAD' => 'Télécharger les images et fichiers sur ce wiki',
     'IMPORTER_FILESMODE_URL' => 'Garder un lien vers les images et fichiers du wiki distant',
     'IMPORTER_FIELD_TIMEOUTINSEC' => 'Délai maximum des requêtes vers le wiki distant, en secondes (optionnel, 120 par défaut)',

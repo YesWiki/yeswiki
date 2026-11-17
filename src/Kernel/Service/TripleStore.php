@@ -16,6 +16,7 @@ class TripleStore implements CachesTheDatabase
 
     public const TYPE_URI = 'http://outils-reseaux.org/_vocabulary/type';
     public const SOURCE_URL_URI = 'http://outils-reseaux.org/_vocabulary/sourceUrl';
+    public const ORIGIN_URL_URI = 'http://outils-reseaux.org/_vocabulary/originUrl';
 
     public function __construct(DbService $dbService, HibernationService $hibernationService)
     {

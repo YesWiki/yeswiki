@@ -331,7 +331,7 @@ class SyncDataSourceTest extends YesWikiTestCase
                 return ['Rss' => FailingImporter::class];
             }
 
-            public function syncSource(string $source, array $sourceOptions): string
+            public function syncSource(string $source, array $sourceOptions, bool $wipe = false): string
             {
                 echo "reading the feed\n";
 
@@ -407,7 +407,7 @@ class SyncDataSourceTest extends YesWikiTestCase
                 $this->services = new ServiceLocator([SyncLog::class => static fn (): SyncLog => $log]);
             }
 
-            public function syncSource(string $source, array $sourceOptions): string
+            public function syncSource(string $source, array $sourceOptions, bool $wipe = false): string
             {
                 return ($this->sync)($source);
             }

@@ -7,6 +7,7 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Content\Service\EntryManager;
 use YesWiki\Content\Service\FormManager;
 use YesWiki\Content\Service\ListManager;
+use YesWiki\Content\Service\PageManager;
 
 abstract class Importer
 {
@@ -61,6 +62,12 @@ abstract class Importer
         return null;
     }
 
+    /** Whether getData() brought something back, which a wipe waits for. */
+    public function sourceAnswered(mixed $data): bool
+    {
+        return is_array($data) && $data !== [];
+    }
+
     /** Turn what getData() fetched into what syncData() writes. */
     public function mapData(mixed $data): mixed
     {
@@ -79,7 +86,7 @@ abstract class Importer
     }
 
     /**
-     * Declare the config fields this importer needs, so AdminImportersAction (from this extension) can render/save them for the admin, even when the importer itself lives in another extension.
+     * The config fields this importer needs, for AdminImportersAction to render and save.
      *
      * @return array<string, array<string, mixed>>
      */
@@ -95,7 +102,7 @@ abstract class Importer
     }
 
     /**
-     * Declare the fixed set of fields this importer writes into an entry, so AdminImportersAction can offer a field-mapping table when the admin points it at an already-existing Bazar form instead of letting it create its own.
+     * The fields this importer writes into an entry, for the mapping table of an existing form.
      *
      * @return list<array{key: string, label: string}>
      */
@@ -155,7 +162,27 @@ abstract class Importer
     }
 
     /**
-     * Rename this importer's own field keys to the local form's field keys, per config['fieldsMapping'] (built from the admin's field-mapping table, itself populated from getOwnFields()).
+     * Creates or updates a list and says whether it was 'created', 'updated' or left 'unchanged'.
+     *
+     * @param array<mixed> $nodes
+     */
+    protected function writeList(string $id, string $title, array $nodes, ?string $origin = null): string
+    {
+        if (!$this->listManager->isList($id)) {
+            $this->listManager->create($title, $nodes, $id, $origin);
+
+            return 'created';
+        }
+        $pageManager = $this->getService(PageManager::class);
+        $before = $pageManager->getOne($id, null, false, true)['body'] ?? null;
+        $this->listManager->update($id, $title, $nodes, $origin);
+        $after = $pageManager->getOne($id, null, false, true)['body'] ?? null;
+
+        return $after === $before ? 'unchanged' : 'updated';
+    }
+
+    /**
+     * Renames this importer's own field keys to the local form's, per config['fieldsMapping'].
      *
      * @param array<string, mixed> $entry
      *

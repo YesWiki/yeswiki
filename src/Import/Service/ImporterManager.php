@@ -266,11 +266,11 @@ class ImporterManager
      *
      * @return array{result: string, log: string}
      */
-    public function syncByHand(string $source, array $sourceOptions): array
+    public function syncByHand(string $source, array $sourceOptions, bool $wipe = false): array
     {
         ob_start();
         try {
-            $result = $this->syncSource($source, $sourceOptions);
+            $result = $this->syncSource($source, $sourceOptions, $wipe);
         } catch (\Throwable $failed) {
             $result = $failed->getMessage();
         }
@@ -287,7 +287,7 @@ class ImporterManager
      *
      * @throws \RuntimeException
      */
-    public function syncSource(string $source, array $sourceOptions): string
+    public function syncSource(string $source, array $sourceOptions, bool $wipe = false): string
     {
         $startTime = microtime(true);
         $importer = $this->findImporterClass($sourceOptions['importer'] ?? '', $source);
@@ -296,6 +296,9 @@ class ImporterManager
         }
         try {
             $data = $importer->getData();
+            if ($wipe) {
+                $this->wipe($importer, $sourceOptions, $importer->sourceAnswered($data));
+            }
             $data = $importer->mapData($data);
             $importer->syncFormModel();
             $importer->syncData($data);
@@ -305,6 +308,26 @@ class ImporterManager
 
         return _t('SOURCE_SUCCESSFULLY_SYNCED', ['source' => $source])
             . ' ' . _t('IMPORTER_ELAPSED_TIME', ['duration' => $this->formatDuration($startTime)]);
+    }
+
+    /**
+     * Deletes the target form and its entries before a rebuild, unless the source brought nothing back.
+     *
+     * @param array<string, mixed> $sourceOptions
+     */
+    private function wipe(Importer $importer, array $sourceOptions, bool $sourceAnswered): void
+    {
+        $formId = (string)($sourceOptions['formId'] ?? '');
+        if (!$importer::needsBazarForm() || $formId === '') {
+            return;
+        }
+        if (!$sourceAnswered) {
+            echo _t('IMPORTER_WIPE_SKIPPED', ['formId' => $formId]) . "\n";
+
+            return;
+        }
+        $this->formManager->delete($formId);
+        echo _t('IMPORTER_SOURCE_WIPED', ['formId' => $formId]) . "\n";
     }
 
     private function formatDuration(float $startTime): string

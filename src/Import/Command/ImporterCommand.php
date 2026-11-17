@@ -28,7 +28,8 @@ class ImporterCommand extends Command
             ->setDescription('Sync selected data sources to this YesWiki.')
             ->setHelp('Synchronize selected data sources to this YesWiki.' . "\n" .
                 "If no source indicated it will sync them all\n")
-            ->addOption('source', 's', InputOption::VALUE_OPTIONAL, 'The key name in the config file for source, leave empty for all sources');
+            ->addOption('source', 's', InputOption::VALUE_OPTIONAL, 'The key name in the config file for source, leave empty for all sources')
+            ->addOption('wipe', 'w', InputOption::VALUE_NONE, 'Delete the target form and its entries, then rebuild them from the source');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
@@ -55,9 +56,10 @@ class ImporterCommand extends Command
             $output->writeln('Importing all sources');
         }
 
+        $wipe = (bool)$input->getOption('wipe');
         foreach ($dataSources as $id => $sourceOptions) {
             $output->writeln("Importing source \"{$id}\"");
-            $this->syncSource((string)$id, $sourceOptions, $output);
+            $this->syncSource((string)$id, $sourceOptions, $wipe, $output);
         }
 
         return Command::SUCCESS;
@@ -66,9 +68,9 @@ class ImporterCommand extends Command
     /**
      * @param array<string, mixed> $sourceOptions
      */
-    private function syncSource(string $id, array $sourceOptions, OutputInterface $output): void
+    private function syncSource(string $id, array $sourceOptions, bool $wipe, OutputInterface $output): void
     {
-        $output->writeln($this->services->get(ImporterManager::class)->syncByHand($id, $sourceOptions)['log']);
+        $output->writeln($this->services->get(ImporterManager::class)->syncByHand($id, $sourceOptions, $wipe)['log']);
     }
 
     /**

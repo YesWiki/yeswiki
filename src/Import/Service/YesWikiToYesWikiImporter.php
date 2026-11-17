@@ -20,6 +20,8 @@ use YesWiki\Kernel\Service\TripleStore;
 #[Autoconfigure(autowire: false)]
 class YesWikiToYesWikiImporter extends Importer
 {
+    private const PASS_KEYS = ['antispam', 'created_at', 'updated_at'];
+
     protected string $source;
     protected string $cookie = '';
     /**
@@ -93,6 +95,10 @@ class YesWikiToYesWikiImporter extends Importer
         if (!in_array($config['syncMode'], ['source_of_truth', 'allow_local'], true)) {
             throw new \Exception('Le paramètre "syncMode" doit valoir "source_of_truth" ou "allow_local".');
         }
+        $config['conflictPolicy'] = $config['conflictPolicy'] ?? EntryMerger::POLICY_LOCAL;
+        if (!in_array($config['conflictPolicy'], [EntryMerger::POLICY_LOCAL, EntryMerger::POLICY_REMOTE], true)) {
+            throw new \Exception('Le paramètre "conflictPolicy" doit valoir "local" ou "remote".');
+        }
         $config['filesMode'] = $config['filesMode'] ?? 'download';
         if (!in_array($config['filesMode'], ['download', 'url'], true)) {
             throw new \Exception('Le paramètre "filesMode" doit valoir "download" ou "url".');
@@ -126,6 +132,15 @@ class YesWikiToYesWikiImporter extends Importer
                     'allow_local' => 'IMPORTER_SYNCMODE_ALLOW_LOCAL',
                 ],
             ],
+            'conflictPolicy' => [
+                'type' => 'select',
+                'required' => false,
+                'help' => 'IMPORTER_FIELD_CONFLICTPOLICY_HELP',
+                'options' => [
+                    EntryMerger::POLICY_LOCAL => 'IMPORTER_CONFLICTPOLICY_LOCAL',
+                    EntryMerger::POLICY_REMOTE => 'IMPORTER_CONFLICTPOLICY_REMOTE',
+                ],
+            ],
             'filesMode' => [
                 'type' => 'select',
                 'required' => true,
@@ -150,7 +165,7 @@ class YesWikiToYesWikiImporter extends Importer
     }
 
     /**
-     * The admin pastes a single url, the remote form's entries API url (as displayed by the remote wiki itself, e.g.
+     * Splits the entries API URL the admin pasted into base URL, form id and query.
      */
     public static function normalizeAdminOptions(array $options): array
     {
@@ -256,6 +271,10 @@ class YesWikiToYesWikiImporter extends Importer
         if (!empty($this->config['entriesQuery'])) {
             $entriesPath .= '&' . $this->config['entriesQuery'];
         }
+        $baseUrl = $this->params->has('base_url') ? $this->params->get('base_url') : null;
+        if (is_string($baseUrl) && $baseUrl !== '') {
+            $entriesPath .= '&excludeSource=' . rawurlencode($baseUrl);
+        }
         $form = $this->remoteGet('api/forms/' . $this->config['remoteFormId']);
         $entries = $this->remoteGet($entriesPath);
 
@@ -263,6 +282,11 @@ class YesWikiToYesWikiImporter extends Importer
             'form' => is_array($form) ? $form : [],
             'entries' => is_array($entries) ? $entries : [],
         ];
+    }
+
+    public function sourceAnswered(mixed $data): bool
+    {
+        return is_array($data) && !empty($data['form']) && !empty($data['entries']);
     }
 
     /**
@@ -341,6 +365,7 @@ class YesWikiToYesWikiImporter extends Importer
 
             $mappedEntry['_remote_created_at'] = $remoteEntry['created_at'] ?? $remoteEntry['date_creation_fiche'] ?? null;
             $mappedEntry['_remote_updated_at'] = $remoteEntry['updated_at'] ?? $remoteEntry['date_maj_fiche'] ?? null;
+            $mappedEntry['_remote_origin'] = is_string($remoteEntry['origin_url'] ?? null) ? $remoteEntry['origin_url'] : null;
             $mappedEntries[] = $mappedEntry;
         }
 
@@ -389,36 +414,52 @@ class YesWikiToYesWikiImporter extends Importer
 
         $seenLocalIds = [];
         $unchangedCount = 0;
+        $localIdsByOrigin = $this->localIdsByOrigin();
         foreach ($data as $mappedEntry) {
             $remoteUrl = $mappedEntry['_remote_url'];
             $remoteCreatedAt = $mappedEntry['_remote_created_at'] ?? null;
             $remoteUpdatedAt = $mappedEntry['_remote_updated_at'] ?? null;
-            unset($mappedEntry['_remote_url'], $mappedEntry['_remote_created_at'], $mappedEntry['_remote_updated_at']);
+            $remoteOrigin = $mappedEntry['_remote_origin'] ?? null;
+            unset($mappedEntry['_remote_url'], $mappedEntry['_remote_created_at'], $mappedEntry['_remote_updated_at'], $mappedEntry['_remote_origin']);
             $title = $mappedEntry['title'] ?? $mappedEntry['bf_titre'] ?? $remoteUrl;
 
             try {
                 $localId = $this->findLocalEntryByRemoteUrl($remoteUrl);
                 $localEntry = empty($localId) ? null : $this->entryManager->getOne($localId);
                 if (!empty($localId) && empty($localEntry)) {
-                    $this->getService(TripleStore::class)->delete($localId, TripleStore::SOURCE_URL_URI, null, '', '');
+                    $this->forgetSyncTriples($localId, false);
                     $localId = null;
                 }
 
-                if (empty($localId)) {
-                    $newValues = $this->withRemoteDates($this->importEntryFiles($mappedEntry), $remoteCreatedAt, $remoteUpdatedAt);
+                if (empty($localId) || empty($localEntry)) {
+                    $sameOriginId = $localIdsByOrigin[$remoteOrigin ?? $remoteUrl] ?? null;
+                    if (!empty($sameOriginId) && !empty($this->entryManager->getOne($sameOriginId))) {
+                        $seenLocalIds[] = $sameOriginId;
+                        echo 'Entrée "' . $title . '" déjà présente ici par un autre chemin (fiche ' . $sameOriginId
+                            . ') : ignorée, la source qui l\'a importée en premier la met à jour.' . "\n";
+                        continue;
+                    }
+                    $newValues = $this->withRemoteDates($this->importEntryFiles($mappedEntry, null), $remoteCreatedAt, $remoteUpdatedAt);
                     $created = $this->entryManager->create($this->config['formId'], $newValues, false, $remoteUrl);
                     if (!empty($created['tag'])) {
                         $seenLocalIds[] = $created['tag'];
+                        $localIdsByOrigin[$remoteOrigin ?? $remoteUrl] = $created['tag'];
                         $this->markSynced($created['tag'], date('Y-m-d H:i:s'));
+                        $this->markOrigin($created['tag'], $remoteOrigin);
+                        if (!$isSourceOfTruth) {
+                            $stored = $this->entryManager->getOne($created['tag'], false, null, false) ?? [];
+                            $this->setBase($created['tag'], EntryMerger::base($newValues, $stored, self::PASS_KEYS));
+                        }
                         echo 'Entrée "' . $title . '" créée.' . "\n";
                     }
                     continue;
                 }
 
                 $seenLocalIds[] = $localId;
+                $this->markOrigin($localId, $remoteOrigin);
 
                 if ($isSourceOfTruth) {
-                    $newValues = $this->withRemoteDates($this->importEntryFiles($mappedEntry), $remoteCreatedAt, $remoteUpdatedAt);
+                    $newValues = $this->withRemoteDates($this->importEntryFiles($mappedEntry, $localEntry), $remoteCreatedAt, $remoteUpdatedAt);
                     $changed = $this->changedFields($localEntry, $newValues);
                     if (empty($changed)) {
                         $unchangedCount++;
@@ -429,21 +470,34 @@ class YesWikiToYesWikiImporter extends Importer
                     continue;
                 }
 
-                $lastSync = $this->getLastSyncTime($localId);
-                $localUpdatedAt = $localEntry['updated_at'] ?? null;
-                if ($lastSync !== null && $localUpdatedAt !== null && $localUpdatedAt > $lastSync) {
-                    echo 'Entrée "' . $title . '" modifiée localement, non synchronisée.' . "\n";
+                $remoteValues = $this->withRemoteDates($this->importEntryFiles($mappedEntry, $localEntry), $remoteCreatedAt, $remoteUpdatedAt);
+                $base = $this->getBase($localId);
+                if ($base === null && $this->modifiedLocallySinceSync($localId, $localEntry)) {
+                    $this->setBase($localId, EntryMerger::base($remoteValues, $remoteValues, self::PASS_KEYS));
+                    echo 'Entrée "' . $title . '" modifiée localement, non synchronisée : '
+                        . 'version de référence enregistrée, les prochaines synchros fusionneront.' . "\n";
                     continue;
                 }
-                $newValues = $this->withRemoteDates($this->importEntryFiles($mappedEntry), $remoteCreatedAt, $remoteUpdatedAt);
-                $changed = $this->changedFields($localEntry, $newValues);
+                $merge = EntryMerger::merge($localEntry, $remoteValues, $base ?? [], $this->config['conflictPolicy'], self::PASS_KEYS);
+                foreach ($merge['conflicts'] as $key => $conflict) {
+                    $kept = $this->config['conflictPolicy'] === EntryMerger::POLICY_REMOTE ? 'distante' : 'locale';
+                    echo 'Entrée "' . $title . '" : conflit sur "' . $key . '", valeur ' . $kept . ' gardée '
+                        . '(locale : "' . $this->excerpt($conflict['local']) . '", distante : "' . $this->excerpt($conflict['remote']) . '").' . "\n";
+                }
+                $changed = $this->changedFields($localEntry, $merge['values']);
+                $stored = $localEntry;
                 if (empty($changed)) {
                     $unchangedCount++;
-                    continue;
+                } else {
+                    $this->entryManager->update($localId, $merge['values'], false, true);
+                    $this->markSynced($localId, date('Y-m-d H:i:s'));
+                    $stored = $this->entryManager->getOne($localId, false, null, false) ?? $merge['values'];
+                    echo 'Entrée "' . $title . '" mise à jour : ' . implode(', ', $changed) . '.' . "\n";
                 }
-                $this->entryManager->update($localId, $newValues, false, true);
-                $this->markSynced($localId, date('Y-m-d H:i:s'));
-                echo 'Entrée "' . $title . '" mise à jour : ' . implode(', ', $changed) . '.' . "\n";
+                $newBase = EntryMerger::storedInto($merge['base'], $stored, $merge['taken']);
+                if ($newBase !== $base) {
+                    $this->setBase($localId, $newBase);
+                }
             } catch (\Throwable $ex) {
                 echo 'Erreur sur l\'entrée "' . $title . '" : ' . $ex->getMessage() . "\n";
             }
@@ -497,7 +551,7 @@ class YesWikiToYesWikiImporter extends Importer
     }
 
     /**
-     * True for a field backed by a YesWiki List (checkbox/radio/liste), false for the "*fiche" variants (checkboxfiche/radiofiche/listefiche) that link to another Bazar form's entries instead: both share the EnumField base class and its getLinkedObjectName(), but only the former points to an actual List page tag.
+     * True for a field backed by a List, false for the "*fiche" variants that link to another form's entries.
      *
      * @phpstan-assert-if-true EnumField $field
      */
@@ -527,18 +581,23 @@ class YesWikiToYesWikiImporter extends Importer
     }
 
     /**
-     * Replace, in an entry about to be written locally, each remote file name by something the local wiki can serve: either the name of a copy downloaded into the local upload directory, or an absolute url to the file left on the source wiki (which the file/image fields of recent YesWiki versions accept as a value).
+     * Replaces each remote file name by a downloaded copy or the remote URL, keeping the local file when a download fails.
      *
-     * @param array<string, mixed> $mappedEntry
+     * @param array<string, mixed>      $mappedEntry
+     * @param array<string, mixed>|null $localEntry
      *
      * @return array<string, mixed>
      */
-    private function importEntryFiles(array $mappedEntry): array
+    private function importEntryFiles(array $mappedEntry, ?array $localEntry): array
     {
         foreach ($this->fileFieldKeys as $key) {
             $value = $mappedEntry[$key] ?? null;
 
             if (empty($value) || !is_string($value) || filter_var($value, FILTER_VALIDATE_URL) !== false) {
+                continue;
+            }
+            if (str_starts_with($value, 'defaultimage')) {
+                $mappedEntry[$key] = '';
                 continue;
             }
             $remoteFileUrl = $this->remoteFileUrl($value);
@@ -554,6 +613,11 @@ class YesWikiToYesWikiImporter extends Importer
                 $value,
                 empty($this->cookie) ? [] : ['Cookie: ' . $this->cookie]
             );
+            $currentValue = (string)($localEntry[$key] ?? '');
+            if ($localFileName === '' && $currentValue !== '') {
+                echo 'Fichier "' . $value . '" non récupéré : le fichier local "' . $currentValue . '" est conservé.' . "\n";
+                $localFileName = $currentValue;
+            }
 
             $mappedEntry[$key] = $localFileName;
         }
@@ -589,10 +653,7 @@ class YesWikiToYesWikiImporter extends Importer
     }
 
     /**
-     * @param array        $template a form's fields, either as this wiki stores them (named field
-     *                               objects) or as FormManager::parseTemplate() returns them from a
-     *                               remote wiki's raw template (positional arrays, ADR-0009)
-     * @param array<mixed> $template
+     * @param array<mixed> $template a form's fields, stored or parsed from a remote raw template
      *
      * @return array<string, BazarField> [propertyName => BazarField]
      */
@@ -661,20 +722,17 @@ class YesWikiToYesWikiImporter extends Importer
         }
         $remoteNodes = $remoteList['nodes'] ?? [];
         $remoteTitle = $remoteList['title'] ?? $localTag;
-        $exists = $this->listManager->isList($localTag);
 
         if ($mirror) {
-            if ($exists) {
-                $this->listManager->update($localTag, $remoteTitle, $remoteNodes);
-            } else {
-                $this->listManager->create($remoteTitle, $remoteNodes, $localTag);
-            }
-            echo 'Liste "' . $localTag . '" synchronisée (miroir) avec ' . count($remoteNodes) . ' valeur(s).' . "\n";
+            $result = $this->writeList($localTag, $remoteTitle, $remoteNodes);
+            echo $result === 'unchanged'
+                ? 'Liste "' . $localTag . '" déjà à jour (miroir, ' . count($remoteNodes) . ' valeur(s)), non réécrite.' . "\n"
+                : 'Liste "' . $localTag . '" synchronisée (miroir) avec ' . count($remoteNodes) . ' valeur(s).' . "\n";
 
             return;
         }
 
-        $existingList = $exists ? $this->listManager->getOne($localTag) : null;
+        $existingList = $this->listManager->isList($localTag) ? $this->listManager->getOne($localTag) : null;
         $byId = [];
         foreach (($existingList['nodes'] ?? []) as $node) {
             $byId[$node['id']] = $node;
@@ -684,25 +742,14 @@ class YesWikiToYesWikiImporter extends Importer
         }
         $mergedNodes = array_values($byId);
         $title = $existingList['title'] ?? $remoteTitle;
-        if ($exists) {
-            $this->listManager->update($localTag, $title, $mergedNodes);
-        } else {
-            $this->listManager->create($title, $mergedNodes, $localTag);
-        }
-        echo 'Liste "' . $localTag . '" fusionnée (total local : ' . count($mergedNodes) . ' valeur(s)).' . "\n";
+        $result = $this->writeList($localTag, $title, $mergedNodes);
+        echo $result === 'unchanged'
+            ? 'Liste "' . $localTag . '" déjà à jour (total local : ' . count($mergedNodes) . ' valeur(s)), non réécrite.' . "\n"
+            : 'Liste "' . $localTag . '" fusionnée (total local : ' . count($mergedNodes) . ' valeur(s)).' . "\n";
     }
 
     /**
-     * The fields writing $newValues would actually change in the local entry (empty: nothing to do).
-     *
-     * @return list<string>
-     */
-    /**
-     * Stamp an entry about to be written with the dates it carries on the source wiki.
-     *
-     * The creation date is always the remote one. An imported entry that claims to have been created the day the import ran is simply wrong, and it shows the moment anything sorts or filters by creation date, which is most of what an entry list does.
-     *
-     * The modification date is only copied when the source asks for it ('keepRemoteUpdateDate'), because it is not only a date: in 'allow_local' mode it is also what tells an entry a human edited here from one this importer last wrote.
+     * Stamps an entry with its remote creation date, and its modification date when 'keepRemoteUpdateDate' asks for it.
      *
      * @param array<string, mixed> $values
      *
@@ -738,7 +785,7 @@ class YesWikiToYesWikiImporter extends Importer
             if (in_array($key, ['antispam', 'updated_at'], true)) {
                 continue;
             }
-            if ($this->comparableValue($value) !== $this->comparableValue($localEntry[$key] ?? null)) {
+            if (EntryMerger::comparable($value) !== EntryMerger::comparable($localEntry[$key] ?? null)) {
                 $changed[] = $key;
             }
         }
@@ -747,23 +794,25 @@ class YesWikiToYesWikiImporter extends Importer
     }
 
     /**
-     * A field's value as a string that can be compared between what the remote api returned (json: nulls, numbers, and multi-valued fields possibly as arrays) and what bazar stored locally (always strings, multi-valued fields comma separated).
+     * The local entry already holding each origin URL, whichever source imported it first.
+     *
+     * @return array<string, string>
      */
-    private function comparableValue(mixed $value): string
+    private function localIdsByOrigin(): array
     {
-        if (is_array($value)) {
-            $value = implode(',', array_map(function ($item) {
-                return is_scalar($item) ? (string)$item : json_encode($item);
-            }, array_values($value)));
-        } elseif (is_bool($value)) {
-            $value = $value ? '1' : '';
-        } elseif ($value === null) {
-            $value = '';
-        } elseif (!is_scalar($value)) {
-            $value = json_encode($value);
+        $tripleStore = $this->getService(TripleStore::class);
+        $originById = [];
+        foreach ([TripleStore::ORIGIN_URL_URI, TripleStore::SOURCE_URL_URI] as $property) {
+            foreach ($tripleStore->getMatching(null, $property, null, '=', '=', '=') as $triple) {
+                $originById[(string)$triple['resource']] ??= (string)$triple['value'];
+            }
+        }
+        $idsByOrigin = [];
+        foreach ($originById as $id => $origin) {
+            $idsByOrigin[$origin] ??= (string)$id;
         }
 
-        return trim((string)$value);
+        return $idsByOrigin;
     }
 
     private function findLocalEntryByRemoteUrl(string $remoteUrl): ?string
@@ -771,6 +820,90 @@ class YesWikiToYesWikiImporter extends Importer
         $matches = $this->getService(TripleStore::class)->getMatching(null, TripleStore::SOURCE_URL_URI, $remoteUrl);
 
         return $matches[0]['resource'] ?? null;
+    }
+
+    private function baseProperty(): string
+    {
+        return 'sync_base_' . $this->source;
+    }
+
+    /**
+     * The fingerprint of the entry as the last import wrote it, or null if none was recorded.
+     *
+     * @return array<string, array{r: string, l: string}>|null
+     */
+    private function getBase(string $localId): ?array
+    {
+        $json = $this->getService(TripleStore::class)->getOne($localId, $this->baseProperty(), '', '');
+        $base = $json === null ? null : json_decode($json, true);
+
+        return is_array($base) ? $base : null;
+    }
+
+    /**
+     * @param array<string, array{r: string, l: string}> $base
+     */
+    private function setBase(string $localId, array $base): void
+    {
+        $tripleStore = $this->getService(TripleStore::class);
+        $property = $this->baseProperty();
+        $existing = $tripleStore->getOne($localId, $property, '', '');
+        $json = (string)json_encode($base);
+        if ($existing === null) {
+            $tripleStore->create($localId, $property, $json, '', '');
+        } elseif ($existing !== $json) {
+            $tripleStore->update($localId, $property, $existing, $json, '', '');
+        }
+    }
+
+    /**
+     * Whether the entry was edited here after the last sync, for entries imported before merging existed.
+     *
+     * @param array<string, mixed> $localEntry
+     */
+    private function modifiedLocallySinceSync(string $localId, array $localEntry): bool
+    {
+        $lastSync = $this->getLastSyncTime($localId);
+        $localUpdatedAt = $localEntry['updated_at'] ?? null;
+
+        return $lastSync !== null && $localUpdatedAt !== null && $localUpdatedAt > $lastSync;
+    }
+
+    /** A value shortened for the sync log. */
+    private function excerpt(mixed $value): string
+    {
+        $text = EntryMerger::comparable($value);
+
+        return mb_strlen($text) > 80 ? mb_substr($text, 0, 80) . '…' : $text;
+    }
+
+    /** Records where the remote entry was first written, when it was itself imported, so the next wiki can pass it on. */
+    private function markOrigin(string $localId, ?string $originUrl): void
+    {
+        $tripleStore = $this->getService(TripleStore::class);
+        $existing = $tripleStore->getOne($localId, TripleStore::ORIGIN_URL_URI, '', '');
+        if ($existing === $originUrl) {
+            return;
+        }
+        if ($existing !== null) {
+            $tripleStore->delete($localId, TripleStore::ORIGIN_URL_URI, null, '', '');
+        }
+        if ($originUrl !== null && $originUrl !== '') {
+            $tripleStore->create($localId, TripleStore::ORIGIN_URL_URI, $originUrl, '', '');
+        }
+    }
+
+    /** Drops the triples this source keeps about a local entry, its type too when the entry itself is gone. */
+    private function forgetSyncTriples(string $localId, bool $withType): void
+    {
+        $tripleStore = $this->getService(TripleStore::class);
+        $properties = [TripleStore::SOURCE_URL_URI, TripleStore::ORIGIN_URL_URI, $this->baseProperty()];
+        if ($withType) {
+            $properties = [TripleStore::TYPE_URI, ...$properties, $this->syncTimeProperty()];
+        }
+        foreach ($properties as $property) {
+            $tripleStore->delete($localId, $property, null, '', '');
+        }
     }
 
     private function syncTimeProperty(): string
@@ -795,9 +928,7 @@ class YesWikiToYesWikiImporter extends Importer
         }
     }
 
-    /**
-     * EntryManager::update() (unlike create(), which always bypasses ACLs) enforces the write ACL against the current logged-in user, and our CLI/console sync normally runs with no logged-in user at all: without impersonating a local admin, every update on a pre-existing entry would be rejected.
-     */
+    /** Signs in as the configured local admin so updates pass the write ACL; returns whether it did. */
     private function impersonateLocalAdmin(): bool
     {
         if (empty($this->config['localAdminUser'])) {
@@ -837,10 +968,7 @@ class YesWikiToYesWikiImporter extends Importer
     {
         try {
             $this->getService(PageManager::class)->deleteOrphaned($localId);
-            $tripleStore = $this->getService(TripleStore::class);
-            $tripleStore->delete($localId, TripleStore::TYPE_URI, null, '', '');
-            $tripleStore->delete($localId, TripleStore::SOURCE_URL_URI, null, '', '');
-            $tripleStore->delete($localId, $this->syncTimeProperty(), null, '', '');
+            $this->forgetSyncTriples($localId, true);
             echo 'Entrée "' . $title . '" supprimée (disparue de la source).' . "\n";
         } catch (\Throwable $ex) {
             echo 'Erreur lors de la suppression de "' . $title . '" : ' . $ex->getMessage() . "\n";

@@ -7,6 +7,7 @@ use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use YesWiki\Content\Controller\EntryController;
 use YesWiki\Content\Field\BazarField;
 use YesWiki\Content\Field\EnumField;
+use YesWiki\Federation\Service\EntryOrigin;
 use YesWiki\Files\Service\AttachedFilePaths;
 use YesWiki\Files\Service\Storage;
 use YesWiki\Kernel\Service\StringUtilService;
@@ -140,6 +141,7 @@ class BazarListService
         );
 
         $vEntries = $this->filterOnOrigin($vEntries, $pOptions['origin'] ?? null);
+        $vEntries = $this->excludeSource($vEntries, $pOptions['excludeSource'] ?? null);
 
         if (!empty($pOptions['datefilter'])) {
             $vEntries = $this->container->get(EntryController::class)->filterEntriesOnDate($vEntries, $pOptions['datefilter']);
@@ -195,6 +197,27 @@ class BazarListService
         return array_values(array_filter(
             $entries,
             fn (array $entry) => isset($remoteTags[$entry['tag'] ?? '']) === $wantRemote
+        ));
+    }
+
+    /**
+     * Drops the entries first written at a URL starting with $prefix, so a wiki importing from here does not get its own entries back.
+     *
+     * @param array<array-key, array<string, mixed>> $entries
+     *
+     * @return array<array-key, array<string, mixed>>
+     */
+    private function excludeSource(array $entries, mixed $prefix): array
+    {
+        $prefix = is_string($prefix) ? trim($prefix) : '';
+        if ($prefix === '') {
+            return $entries;
+        }
+        $originUrls = $this->container->get(EntryOrigin::class)->originUrls();
+
+        return array_values(array_filter(
+            $entries,
+            fn (array $entry) => !str_starts_with($originUrls[$entry['tag'] ?? ''] ?? '', $prefix)
         ));
     }
 
