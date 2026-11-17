@@ -13,8 +13,29 @@ func TestABareServeReachesNoCertificateAuthority(t *testing.T) {
 	if !strings.Contains(file, "auto_https off") {
 		t.Fatal("a first run must not involve a certificate authority")
 	}
-	if !strings.Contains(file, "http://localhost:8080 {") {
-		t.Fatalf("the default site is not localhost:8080:\n%s", file)
+	if !strings.Contains(file, "http://:8080 {\n\tbind localhost\n") {
+		t.Fatalf("the default site is not port 8080, bound to localhost:\n%s", file)
+	}
+}
+
+// A host in a Caddy site address is a Host matcher: under any other name that reaches the socket the wiki
+// answered an empty 200. --listen says where to bind, so the site is the port alone, whatever name it is reached by.
+func TestAListenAddressBindsWithoutMatchingTheHost(t *testing.T) {
+	file := Caddyfile("/wikis/mine", Listen{Address: "127.0.0.1:8081"}, Workers{}, "")
+
+	if strings.Contains(file, "http://127.0.0.1:8081 {") {
+		t.Fatalf("the listen address became a Host matcher, so other names get an empty answer:\n%s", file)
+	}
+	if !strings.Contains(file, "http://:8081 {\n\tbind 127.0.0.1\n") {
+		t.Fatalf("the site is not port 8081, bound to 127.0.0.1:\n%s", file)
+	}
+}
+
+func TestAListenPortAloneBindsEverywhere(t *testing.T) {
+	file := Caddyfile("/wikis/mine", Listen{Address: ":9000"}, Workers{}, "")
+
+	if !strings.Contains(file, "http://:9000 {") || strings.Contains(file, "\tbind ") {
+		t.Fatalf("a bare port is served on every address:\n%s", file)
 	}
 }
 
@@ -184,7 +205,7 @@ func TestCaddyfileServesTheChosenPort(t *testing.T) {
 	}
 
 	config := Caddyfile("/wikis/mine", Listen{Address: address}, Workers{Classic: true}, "")
-	if !strings.Contains(config, "http://localhost:8099 {") {
+	if !strings.Contains(config, "http://:8099 {\n\tbind localhost\n") {
 		t.Errorf("the Caddyfile does not serve the chosen port:\n%s", config)
 	}
 }
