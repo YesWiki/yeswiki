@@ -1406,17 +1406,21 @@ class SearchManager
             }
         }
 
-        $vResult = implode(
-            '|',
-            array_unique(
-                array_filter(
-                    $vQueries,
-                    function ($vValue) {
-                        return trim($vValue) != '';
-                    },
-                ),
-            ),
-        );
+        $vQueries = array_values(array_unique(array_filter(
+            $vQueries,
+            function ($vValue) {
+                return trim($vValue) != '';
+            },
+        )));
+
+        if (count($vQueries) > 1) {
+            $vQueries = array_map(
+                fn ($pQuery) => preg_match('/ OR /', $pQuery) === 1 ? '(' . $pQuery . ')' : $pQuery,
+                $vQueries,
+            );
+        }
+
+        $vResult = implode('|', $vQueries);
 
         if (isset($vResult)) {
             return $vResult;

@@ -125,6 +125,7 @@ class UserField extends BazarField
         }
 
         if ($value && $this->isUserByName($value)) {
+            $value = $userManager->getOneByName($value)['name'];
             if (!$this->mayActAs($value)) {
                 throw new UserFieldException(_t('BAZ_USER_FIELD_NOT_YOUR_ACCOUNT'));
             }

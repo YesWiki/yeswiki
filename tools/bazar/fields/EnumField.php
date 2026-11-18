@@ -135,20 +135,14 @@ abstract class EnumField extends BazarField
     {
         $vSearchManager = $this->getService(SearchManager::class);
 
-        if (!empty($this->queries)) {
-            $vQueries = $vSearchManager->parseQuery($this->queries);
-        } else {
-            $vQueries = [];
-        }
-
         return $vSearchManager->search(
             [
-                'queries' => $vQueries,
+                'queries' => $this->queries ?? '',
                 'formsIds' => $this->getLinkedObjectName(),
                 'keywords' => (!empty($this->keywords)) ? $this->keywords : '',
             ],
-            true, // filter on read ACL
-            true  // use Guard
+            true,
+            true
         );
     }
 

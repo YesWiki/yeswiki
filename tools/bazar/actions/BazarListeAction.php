@@ -149,8 +149,7 @@ class BazarListeAction extends YesWikiAction
             // to be able to refresh cache for external json
             'refresh' => $this->formatBoolean($get->all(), false, 'refresh'),
 
-            // Paramètres pour une requete specifique
-            'queries' => $vSearchManager->parseQuery($vSearchManager->aggregateQueries($arg, $get->all())),
+            'queries' => $vSearchManager->aggregateQueries($arg, $get->all()),
             // filtrer sur des mots clefs
             'keywords' => $vKeywords,
             // filtrer les resultats sur une periode données si une date est indiquée

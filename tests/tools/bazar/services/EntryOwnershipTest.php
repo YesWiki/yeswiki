@@ -23,6 +23,7 @@ class EntryOwnershipTest extends YesWikiTestCase
 
     private $wiki;
     private $formIds = [];
+    private $createdUsers = [];
 
     protected function setUp(): void
     {
@@ -52,8 +53,10 @@ class EntryOwnershipTest extends YesWikiTestCase
             $formManager->delete($formId);
         }
         $userManager = $this->wiki->services->get(UserManager::class);
-        if ($user = $userManager->getOneByName(self::VICTIM)) {
-            $userManager->delete($user);
+        foreach (array_merge([self::VICTIM], $this->createdUsers) as $name) {
+            if ($user = $userManager->getOneByName($name)) {
+                $userManager->delete($user);
+            }
         }
     }
 
@@ -80,6 +83,31 @@ class EntryOwnershipTest extends YesWikiTestCase
 
         $this->assertSame(self::VICTIM, $entry['nomwiki']);
         $this->assertSame(self::VICTIM, $authController->getLoggedUserName());
+    }
+
+    public function testAnAccountEditsItsEntryWhenTheEntrySpellsItsNameInAnotherCase()
+    {
+        $formId = $this->createForm();
+        $authController = $this->wiki->services->get(AuthController::class);
+        $userManager = $this->wiki->services->get(UserManager::class);
+        $entryManager = $this->wiki->services->get(EntryManager::class);
+
+        $entry = $entryManager->create($formId, $this->entry(['bf_titre' => 'Owner Edits Entry', 'bf_mail' => 'ownereditsentry@example.com']));
+        $this->createdUsers[] = $entry['nomwiki'];
+        $storedSpelling = strtolower($entry['nomwiki']);
+        if (empty($userManager->getOneByName($storedSpelling))) {
+            $this->markTestSkipped('user names are case-sensitive on this database');
+        }
+        $authController->logout();
+        $authController->login($userManager->getOneByName($entry['nomwiki']));
+
+        $updated = $entryManager->update($entry['id_fiche'], [
+            'bf_titre' => 'Owner Edits Entry',
+            'bf_mail' => 'ownereditsentry@example.com',
+            'nomwiki' => $storedSpelling,
+        ]);
+
+        $this->assertSame($entry['nomwiki'], $updated['nomwiki']);
     }
 
     public function testAFormFetchedFromAnotherWikiCannotBeSavedInto()
