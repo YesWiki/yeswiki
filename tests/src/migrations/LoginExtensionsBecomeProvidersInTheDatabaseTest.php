@@ -19,6 +19,12 @@ class LoginExtensionsBecomeProvidersInTheDatabaseTest extends YesWikiTestCase
 
     private string $fileWas = '';
 
+    private bool $fileMade = false;
+
+    private string $envFile = '';
+
+    private ?string $envWas = null;
+
     /** @var array<string, mixed> */
     private array $storedWas = [];
 
@@ -38,8 +44,11 @@ class LoginExtensionsBecomeProvidersInTheDatabaseTest extends YesWikiTestCase
         $this->configFileWas = getenv('YESWIKI_CONFIG_FILE');
         putenv('YESWIKI_CONFIG_FILE');
         $this->file = YESWIKI_INSTANCE_DIR . '/yeswiki.config.php';
+        $this->envFile = YESWIKI_INSTANCE_DIR . '/private/.env';
+        $this->envWas = is_file($this->envFile) ? (string)file_get_contents($this->envFile) : null;
         if (!is_file($this->file)) {
-            $this->markTestSkipped('this wiki runs on another configuration file, so its settings are not stored in the database');
+            $this->fileMade = true;
+            $this->replaceTheFile("<?php\n\n\$yeswikiConfig = [];\n");
         }
         $this->fileWas = (string)file_get_contents($this->file);
         $settings = self::getWiki()->services->get(WikiSettings::class);
@@ -51,8 +60,13 @@ class LoginExtensionsBecomeProvidersInTheDatabaseTest extends YesWikiTestCase
 
     protected function tearDown(): void
     {
-        if ($this->fileWas !== '') {
+        if ($this->fileMade) {
+            @unlink($this->file);
+        } elseif ($this->fileWas !== '') {
             $this->replaceTheFile($this->fileWas);
+        }
+        if ($this->envWas !== null && @file_get_contents($this->envFile) !== $this->envWas) {
+            file_put_contents($this->envFile, $this->envWas);
         }
         $services = self::getWiki()->services;
         $db = $services->get(DbService::class);
@@ -135,6 +149,19 @@ class LoginExtensionsBecomeProvidersInTheDatabaseTest extends YesWikiTestCase
         $this->assertArrayNotHasKey('sso_config', $onDisk, 'the old section leaves the file');
         $this->assertStringNotContainsString(self::SECRET, (string)file_get_contents($this->file), 'and the client secret with it');
         $this->assertSame($baseUrl, $onDisk['base_url'] ?? null, 'the rest of the file is kept');
+    }
+
+    public function testTheOperatorSettingsInPrivateEnvAreKept(): void
+    {
+        if ($this->envWas === null) {
+            $this->markTestSkipped('this wiki has no private/.env');
+        }
+        $this->giveTheFileLoginssoKeys();
+
+        $this->migrate($this->migration());
+
+        $this->assertArrayNotHasKey('sso_config', $this->onDisk(), 'the old section leaves the file');
+        $this->assertSame($this->envWas, @file_get_contents($this->envFile), 'private/.env is not the file the old keys leave');
     }
 
     public function testAFileThatCannotBeWrittenIsNamedWithTheKeysToDelete(): void

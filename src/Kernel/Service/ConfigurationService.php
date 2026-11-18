@@ -116,6 +116,13 @@ class ConfigurationService
         if ($this->routes($file)) {
             return $this->route($config, $file);
         }
+
+        return $this->writeTheFile($config, $file, $arrayName);
+    }
+
+    /** Writes the file as it is given, whatever the database and `private/.env` say over it. */
+    public function writeTheFile(ConfigurationFile $config, string $file, string $arrayName = 'yeswikiConfig'): bool
+    {
         $content = $this->getContentToWrite($config, $arrayName);
 
         if (!$this->localFiles->writeAtomically($file, $content)) {

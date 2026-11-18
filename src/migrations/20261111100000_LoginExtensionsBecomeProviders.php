@@ -94,7 +94,7 @@ class LoginExtensionsBecomeProviders extends YesWikiMigration
             unset($onDisk[$key]);
         }
 
-        return $this->getService(ConfigurationService::class)->write($onDisk, $file);
+        return $this->getService(ConfigurationService::class)->writeTheFile($onDisk, $file);
     }
 
     /** Written last, inside the accounts' transaction: a write that fails rolls them back. */
