@@ -13,10 +13,7 @@ use GuzzleHttp\Psr7\Request;
 use YesWiki\Identity\SignIn\Contract\FailureReason;
 use YesWiki\Identity\SignIn\Contract\ProviderFailure;
 
-/**
- * Checks an OpenID Connect ID token: its signature against the provider's published keys, then its issuer, audience, lifetime and nonce.
- * php-jwt reads its clock tolerance from a static, which is left alone: the tolerance is applied here, to the payload its exceptions carry once the signature is good.
- */
+/** Checks an OpenID Connect ID token's signature, issuer, audience, lifetime and nonce. */
 final class IdTokenVerifier
 {
     /** How far the provider's clock may be from ours, in seconds. */
@@ -107,7 +104,6 @@ final class IdTokenVerifier
         try {
             $payload = JWT::decode($jwt, $keys);
         } catch (BeforeValidException|ExpiredException $timing) {
-            // php-jwt checks the times after the signature: the payload it carries is signed.
             $payload = $timing->getPayload();
         } catch (\Throwable $refused) {
             throw self::invalid('the ID token was refused: ' . $refused->getMessage());

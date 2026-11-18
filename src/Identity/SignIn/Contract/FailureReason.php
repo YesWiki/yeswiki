@@ -2,7 +2,7 @@
 
 namespace YesWiki\Identity\SignIn\Contract;
 
-/** Why a sign-in was refused. The value is the code recorded in the Journal and shown to administrators. */
+/** Why a sign-in was refused. */
 enum FailureReason: string
 {
     case ProviderUnreachable = 'provider_unreachable';

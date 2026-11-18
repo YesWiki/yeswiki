@@ -22,7 +22,7 @@ use YesWiki\Test\Core\YesWikiTestCase;
 require_once 'tests/YesWikiTestCase.php';
 require_once __DIR__ . '/FakeProviderTypes.php';
 
-/** The administration screen of the providers (spec 8.3). It writes a temporary configuration file, never the developer's. */
+/** The administration screen of the providers (spec 8.3). */
 class ProvidersEditorTest extends YesWikiTestCase
 {
     use FakeProviderTypes;
@@ -63,8 +63,7 @@ class ProvidersEditorTest extends YesWikiTestCase
     }
 
     /**
-     * The admin controller as a form posted to it sees it. filter_input() reads the SAPI's input, which a CLI run has none of,
-     * so the token checker is replaced in the container's table (the seam FakeProviderTypes uses): the token is not what is tested here.
+     * The admin controller as a form posted to it sees it.
      *
      * @param array<string, mixed> $form
      */
@@ -374,10 +373,7 @@ class ProvidersEditorTest extends YesWikiTestCase
         $this->assertNotEmpty($this->editor->update('local', ['enabled' => '0']), 'the edit form cannot do it either');
     }
 
-    /**
-     * An administrator signed in with a local account who switches local off loses their own way in, unless a provider they can use
-     * attaches their account by its email.
-     */
+    /** An administrator who switches local off loses their way in, unless a provider attaches them. */
     public function testSwitchingLocalOffIsRefusedWhenItLocksTheAdminOut(): void
     {
         $admin = $this->localAdmin();
@@ -725,7 +721,7 @@ class ProvidersEditorTest extends YesWikiTestCase
     {
         $this->seed(['local' => ['type' => 'local'], 'acme' => $this->oidc()]);
         $services = $this->getWiki()->services;
-        $local = $services->get(\YesWiki\Identity\Service\SignIn\AccountLinks::class)->countLocal();
+        $local = $services->get(AccountLinks::class)->countLocal();
         $this->assertGreaterThan(0, $local, 'the test wiki has a local administrator');
 
         $html = (string)$services->get(AdminSignInController::class)->index()->getContent();

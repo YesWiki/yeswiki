@@ -23,10 +23,7 @@ use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';
 
-/**
- * phpCAS confined (spec section 6): a client per call, the ticket from the Request, the session started by the wiki and destroyed
- * afterwards, nothing printed, the certificates always checked. The CAS server is CasCannedRequest, which phpCAS calls instead of curl.
- */
+/** phpCAS confined to one call. */
 class CasProviderTest extends YesWikiTestCase
 {
     private const SERVER = 'https://cas.example.org/cas';
@@ -41,10 +38,7 @@ class CasProviderTest extends YesWikiTestCase
     protected function setUp(): void
     {
         parent::setUp();
-        // the boot is where phpCAS is told to throw instead of exiting
         self::getWiki();
-        // each test starts as a request does, with no session open: one an earlier test left open (tests.sh runs some classes
-        // twice, the second time after HTTP tests that leave theirs) would be a session the provider must leave alone
         if (session_status() === PHP_SESSION_ACTIVE) {
             session_write_close();
         }
@@ -93,10 +87,7 @@ class CasProviderTest extends YesWikiTestCase
         $this->assertSame(10, CasCannedRequest::$curlOptions[0][CURLOPT_TIMEOUT] ?? null, 'a server that does not answer does not hold the request forever');
     }
 
-    /**
-     * A server that releases no attribute to the service may still send an attributes element, empty but for the layout
-     * (LemonLDAP::NG): the identity is the user alone, and the wiki goes on to say which attribute is missing.
-     */
+    /** An empty attributes element gives the user alone. */
     public function testAnEmptyAttributesElementGivesTheUserAlone(): void
     {
         foreach (['2.0', '3.0'] as $version) {
@@ -148,7 +139,6 @@ class CasProviderTest extends YesWikiTestCase
 
     public function testTheTicketIsReadFromTheRequestNeverFromGet(): void
     {
-        // phpCAS reads $_GET['ticket'] when a client is made, and prints an error page for one it finds ill-formed
         $_GET = ['ticket' => 'ill-formed<script>'];
         CasCannedRequest::$body = self::success();
         $this->expectOutputString('');
@@ -163,7 +153,6 @@ class CasProviderTest extends YesWikiTestCase
     {
         $this->expectOutputString('');
         $level = ob_get_level();
-        // phpCAS prints its error pages when verbose, a static anything in the process may have switched on
         \phpCAS::setVerbose(true);
         try {
             foreach ([self::refusal('INVALID_SERVICE', 'wrong service'), '<html>not CAS</html>', 'not even XML <', null] as $body) {
@@ -187,10 +176,7 @@ class CasProviderTest extends YesWikiTestCase
         $this->assertStringNotContainsString('secret-looking', $failure->adminDetail);
     }
 
-    /**
-     * LemonLDAP::NG writes attribute values into its answer unescaped: a value with "&" makes it malformed XML. The reason says
-     * the answer is not well-formed XML, with the parser's error, and does not send the administrator to server_url and version.
-     */
+    /** LemonLDAP::NG writes attribute values into its answer unescaped: a value with "&" makes it malformed XML. */
     public function testAMalformedAnswerSaysItIsNotWellFormedXml(): void
     {
         CasCannedRequest::$body = "<cas:serviceResponse xmlns:cas='http://www.yale.edu/tp/cas'>\n\t<cas:authenticationSuccess>\n"
@@ -208,7 +194,6 @@ class CasProviderTest extends YesWikiTestCase
         $this->assertStringNotContainsString('marie.dupont@acme.example', $failure->adminDetail, 'what the server sent is not quoted');
         $this->assertSessionLeftNothing();
 
-        // an HTML page from an address that is not the validation endpoint is not well-formed either: that is still a wrong server_url
         CasCannedRequest::reset();
         CasCannedRequest::$status = 404;
         CasCannedRequest::$body = '<!DOCTYPE html><html><body>Not&nbsp;Found<br></body></html>';
@@ -233,10 +218,7 @@ class CasProviderTest extends YesWikiTestCase
         $this->assertSessionLeftNothing();
     }
 
-    /**
-     * SimpleSAMLphp's casserver, with PHP's display_errors on, prints its warning about an unescaped "&" before the XML; asked
-     * again without a ticket, its validation address answers 400 (INVALID_SERVICE, "Missing ticket parameter").
-     */
+    /** SimpleSAMLphp's casserver printing a warning before its XML. */
     public function testAMalformedAnswerFromAnEndpointThatRefusesATicketlessRequestSaysItIsNotWellFormedXml(): void
     {
         CasCannedRequest::$body = "<br />\n<b>Warning</b>:  DOMDocument::createElementNS(): unterminated entity reference D in <b>Cas20.php</b>"
@@ -252,10 +234,7 @@ class CasProviderTest extends YesWikiTestCase
         $this->assertSessionLeftNothing();
     }
 
-    /**
-     * A wrong server_url whose ticketed address is an HTML page (a login page, an application) while the bare address answers 400
-     * (an application that checks its parameters): the answer is no CAS answer at all, so it is still the settings.
-     */
+    /** A wrong server_url that answers HTML is still a wrong server_url. */
     public function testAnHtmlPageFromAnAddressAnswering400WithoutATicketStillSaysCheckServerUrl(): void
     {
         CasCannedRequest::$body = "<!DOCTYPE html>\n<html><head><title>Sign in</title></head>\n<body><p>Welcome&nbsp;back<br></p>\n"
@@ -295,10 +274,7 @@ class CasProviderTest extends YesWikiTestCase
         $this->assertStringNotContainsString('ticket=', implode(' ', array_slice(CasCannedRequest::$urls, 1)), 'asking why carries no ticket');
     }
 
-    /**
-     * Stopped behind its reverse proxy, the CAS server answers the validation with the proxy's status and page (LemonLDAP::NG
-     * behind Caddy: a 502 with an empty body). The server is unreachable: nothing is wrong with server_url or the version.
-     */
+    /** A CAS server stopped behind its reverse proxy. */
     public function testAValidationThatTheProxyAnswersForAServerThatIsDownIsUnreachable(): void
     {
         foreach (ServerDown::STATUSES as $status) {
@@ -318,7 +294,6 @@ class CasProviderTest extends YesWikiTestCase
             }
         }
 
-        // any other status with a page that is no CAS answer is still a bad answer
         CasCannedRequest::reset();
         CasCannedRequest::$status = 404;
         CasCannedRequest::$body = '<html><body>Not Found</body></html>';
@@ -346,7 +321,6 @@ class CasProviderTest extends YesWikiTestCase
         $this->assertSessionLeftNothing();
         $this->assertSame($cookies, ini_get('session.use_cookies'), 'the session settings are put back for the next request of the worker');
 
-        // the user validated above is not carried into the next sign-in
         CasCannedRequest::$body = self::refusal('INVALID_TICKET', 'not recognized');
         $failure = $this->failure(fn () => $this->provider()->complete(self::returning(), self::handshake()));
         $this->assertSame(FailureReason::ProviderRejected, $failure->reason);
@@ -511,10 +485,7 @@ class CasProviderTest extends YesWikiTestCase
     }
 }
 
-/**
- * The CAS server, as phpCAS's request interface: it answers $body, or fails like curl when it is null.
- * phpCAS makes it with `new`, so what a test sets and reads is static; the test resets it.
- */
+/** The CAS server, as phpCAS's request interface: it answers $body, or fails like curl when it is null. */
 class CasCannedRequest extends \CAS_Request_AbstractRequest
 {
     public const ERROR = 'CURL error #60: SSL certificate problem: unable to get local issuer certificate';

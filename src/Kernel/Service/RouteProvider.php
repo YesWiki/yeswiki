@@ -43,10 +43,7 @@ class RouteProvider
         return ($this->resolver)();
     }
 
-    /**
-     * Whether the route the dispatcher runs for this request declares CROSS_SITE: the page and method YesWikiInit read from its
-     * address (PageContext), whatever else the URL contains. Exempting anything else would open every other route to forged requests.
-     */
+    /** Whether the route the dispatcher runs for this request declares CROSS_SITE. */
     public function acceptsCrossSite(Request $request): bool
     {
         $tag = $this->pageContext->getRequestedTag();

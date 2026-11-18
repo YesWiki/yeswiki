@@ -5,10 +5,7 @@ namespace YesWiki\Identity\SignIn;
 use YesWiki\Identity\SignIn\Contract\FailureReason;
 use YesWiki\Identity\SignIn\Contract\ProviderConfig;
 
-/**
- * How a sign-in ended, for whoever has to answer the browser.
- * `detail` is for an administrator and is never shown to the person; `message` is what the person may read in place of the translated one.
- */
+/** How a sign-in ended, for whoever has to answer the browser. */
 final class SignInOutcome
 {
     public const SIGNED_IN = 'signed_in';
@@ -48,7 +45,7 @@ final class SignInOutcome
         return new self(self::FORM_ERROR, message: $message);
     }
 
-    /** What the person may read about a refusal: the provider's own message when it gave one, otherwise the translated one. Never the detail meant for an administrator. */
+    /** What the person may read about a refusal: the provider's own message when it gave one, otherwise the translated one. */
     public function messageForPerson(): string
     {
         if ($this->message !== '') {

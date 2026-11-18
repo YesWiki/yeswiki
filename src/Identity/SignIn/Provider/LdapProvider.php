@@ -9,17 +9,7 @@ use YesWiki\Identity\SignIn\Contract\ProviderFailure;
 use YesWiki\Identity\SignIn\Contract\ProviderIdentity;
 use YesWiki\Identity\SignIn\Provider\LdapConnection\LdapConnection;
 
-/**
- * A company directory checking the login and password typed into the wiki's form (spec sections 6 and 12).
- *
- * - The person is found by `bind_dn_template`, or by a search under `base_dn` with `user_filter`, bound as `search_dn` or anonymously.
- * - The login is escaped where it goes: LDAP_ESCAPE_DN in a DN, LDAP_ESCAPE_FILTER in a filter; so is the DN in `group_filter`.
- * - An empty password is refused before any bind: a directory takes a DN with no password as an anonymous bind, and says yes.
- * - The entry is read once the person is bound, as them. Groups are its `memberOf`, or with `group_base` the cn of each group a search
- *   with `group_filter` finds, put under the attribute the provider's `groups` names. LDAP compares attribute names whatever their
- *   case, and some directories send them lowercased (lldap): an attribute the provider names comes under the name it gives.
- * - The password is never kept: no failure, attribute or message holds it, and password attributes of the entry are left out.
- */
+/** A company directory checking the login and password typed into the wiki's form (spec sections 6 and 12). */
 final class LdapProvider implements PasswordProvider
 {
     public const DEFAULT_USER_FILTER = '(uid={login})';
@@ -28,10 +18,10 @@ final class LdapProvider implements PasswordProvider
     /** A wrong password, or an account the directory will not let in. */
     private const REFUSED_CODES = [49, 50];
 
-    /** Busy, unavailable, server down, timeout, connect error: the directory was not there to answer. Negative codes are the client's. */
+    /** Busy, unavailable, server down, timeout, connect error: the directory was not there to answer. */
     private const UNREACHABLE_CODES = [51, 52, 81, 85, 91];
 
-    /** Attributes an entry may hold a password or a key in, which a person can sometimes read of their own entry. Compared lowercased. */
+    /** Attributes an entry may hold a password or a key in, which a person can sometimes read of their own entry. */
     private const SECRET_ATTRIBUTES = ['userpassword', 'authpassword', 'unicodepwd', 'sambantpassword', 'sambalmpassword', 'userpkcs12', 'krbprincipalkey'];
 
     /** @var \Closure(): bool */
@@ -82,7 +72,6 @@ final class LdapProvider implements PasswordProvider
             ? str_replace('{login}', ldap_escape($login, '', LDAP_ESCAPE_DN), $settings['template'])
             : $this->find($settings, $login, $password);
 
-        // a bind with an empty DN and a password is unauthenticated, and many directories answer it with success
         if (trim($dn) === '') {
             throw new ProviderFailure(FailureReason::InvalidResponse, 'no DN to bind the person as: the password is not sent');
         }
@@ -177,7 +166,6 @@ final class LdapProvider implements PasswordProvider
      */
     private function entry(array $settings, string $dn, #[\SensitiveParameter] string $password): array
     {
-        // read by base scope: the directory compares the DN itself, so a template written with spaces still finds its entry
         $entry = $this->connection->read($dn);
         $code = $this->connection->lastErrorCode();
         if ($entry === null && $code !== 0) {
@@ -195,8 +183,7 @@ final class LdapProvider implements PasswordProvider
     }
 
     /**
-     * The entry with each attribute the provider names (attributes, extra fields, account name template) under the name it gives,
-     * whatever case the directory sent it in (sent under two spellings: the values merged, in order, each once); the others as sent.
+     * The entry's attributes under the names the provider gives, whatever their case.
      *
      * @param array<string, list<string>> $attributes
      *
@@ -214,7 +201,6 @@ final class LdapProvider implements PasswordProvider
                 $spelling[strtolower($name)] ??= $name;
             }
         }
-        // an attribute sent under two spellings (not conformant) keeps every value, in the order sent, each once: none is dropped
         $named = [];
         foreach ($attributes as $name => $values) {
             $key = $spelling[strtolower($name)] ?? $name;
@@ -254,7 +240,6 @@ final class LdapProvider implements PasswordProvider
     {
         $found = $this->connection->search($base, $filter);
         $code = $this->connection->lastErrorCode();
-        // 4: the size limit was reached, and what came back is still the server's answer
         if ($found === [] && $code !== 0 && $code !== 4) {
             throw $this->failure($settings, $code, "the directory could not $doing under \"$base\" with $filter", $password, FailureReason::InvalidResponse);
         }
@@ -285,10 +270,7 @@ final class LdapProvider implements PasswordProvider
         return new ProviderFailure($otherwise, "$what: $said ($code)");
     }
 
-    /**
-     * What the server or the client said, unless it quotes the password: then none of it, since taking the password out of it would
-     * still tell where it was.
-     */
+    /** What the server or the client said, or nothing when it quotes the password. */
     private function scrub(string $said, #[\SensitiveParameter] string $password): string
     {
         $said = trim(preg_replace('/\s+/', ' ', $said) ?? '');

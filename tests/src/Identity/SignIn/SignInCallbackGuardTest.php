@@ -75,18 +75,13 @@ class SignInCallbackGuardTest extends YesWikiTestCase
             'parameters after it' => ['/?user/sign-in/x/callback&SAMLResponse=abc'],
             'the equals sign a form can add' => ['/?user/sign-in/x/callback='],
             'the reserved word in capitals' => ['/?USER/sign-in/x/callback'],
-            // a server that rebuilds the query as a form (Pocket ID: Go's url.Values.Encode sorts the keys) keeps the callback key last
             'the answer first, the encoded callback key last' => ['/?code=abc&iss=https%3A%2F%2Fidp.example&scope=openid+email&state=xyz&user%2Fsign-in%2Fx%2Fcallback='],
             'the answer first, the callback key last' => ['/?code=abc&state=xyz&user/sign-in/x/callback'],
-            // deliberate: a page given a value first gives way to the callback key, which refuses without a sign-in in progress
             'a page given a value first, the callback key later' => ['/?SomePage=x&code=abc&user/sign-in/x/callback'],
             'the callback as built, its pair after the key' => ['/?user/sign-in/x/callback&sso_callback=x&SAMLResponse=abc'],
-            // authentik (parse_qs) drops the key without a value and keeps the pair
             'the pair alone, before the answer' => ['/?sso_callback=x&code=abc&state=xyz'],
             'the pair alone, after the answer' => ['/?code=abc&sso_callback=x&state=xyz'],
-            // LemonLDAP::NG 2.21 and 2.16 (URI::QueryParam) keep the key encoded
             'the encoded key first, then the pair' => ['/?user%2Fsign-in%2Fx%2Fcallback&sso_callback=x&code=abc'],
-            // authentik glues its error onto the pair with a second `?`
             'an error glued onto the pair' => ['/?user/sign-in/x/callback&sso_callback=x?error=invalid_request&state=xyz'],
             'a page given a value first, the pair later' => ['/?SomePage=x&sso_callback=x'],
         ];

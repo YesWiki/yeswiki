@@ -17,8 +17,7 @@ use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Kernel\Service\Lock\Locks;
 
 /**
- * Decides everything about a sign-in and writes nothing. Admin test mode calls only plan(), so it cannot disagree with a real sign-in.
- * What every step of plan() starts from: the provider, the user ID, the attributes, how each field was read, and who the attempt is recorded under.
+ * Decides everything about a sign-in and writes nothing.
  *
  * @phpstan-type Base array{0: ProviderConfig, 1: ?string, 2: array<string, mixed>, 3: array<string, array{attribute: string, present: bool, unusable?: 'binary'|'not_text'|'not_one_address'}>, 4: string}
  */
@@ -45,14 +44,11 @@ class SignInService
         $names = ['id' => $this->attributeName($config, 'id'), 'email' => $this->attributeName($config, 'email')];
         $subject = AttributeReader::one($attrs, $names['id']);
         $email = AttributeReader::one($attrs, $names['email']);
-        // an email of spaces only is no email: treated as one that was not sent
         $email = $email === null || trim($email) === '' ? null : trim($email);
         $use = $this->attributeUse($config, $attrs);
         if ($email === null && $use['email']['present']) {
             $use['email']['present'] = false;
         }
-        // Several emails joined in one value (by spaces, as Shibboleth's OIDC provider does by default, or by commas or
-        // semicolons) are no address to give an account; whitespace around a single address is only trimmed.
         $notOneAddress = $email !== null && preg_match('/^[^\s@,;]+@[^\s@,;]+\z/u', $email) !== 1;
         if ($notOneAddress) {
             $use['email'] = ['attribute' => $use['email']['attribute'], 'present' => false, 'unusable' => 'not_one_address'];
@@ -60,7 +56,6 @@ class SignInService
         $who = $email ?? $subject ?? '';
         $base = [$config, $subject, $attrs, $use, $who];
 
-        // Only a type checking the wiki's own accounts may name an account directly: any other provider sending this attribute is just sending an attribute.
         if ($this->registry->checksTheWikisOwnAccounts($config->type)) {
             return $this->planLocal($base);
         }
@@ -69,12 +64,10 @@ class SignInService
             return $this->refuse($base, FailureReason::MissingAttribute, $this->missingDetail($names['id'], $attrs));
         }
 
-        // checked before the link: an already linked person is refused too, rather than signed in with an address that is none
         if ($notOneAddress) {
             return $this->refuse($base, FailureReason::MissingAttribute, sprintf('the attribute "%s" is not one email address: "%s"', $names['email'], $email));
         }
 
-        // Link exists for this provider and user ID.
         $linked = $this->links->find($config->id, $subject);
         if ($linked !== null) {
             if ($email === null && !$config->isUpgradedDirectory()) {
@@ -84,7 +77,6 @@ class SignInService
             return $this->accept($base, PlanAction::UseLinked, $linked, $email);
         }
 
-        // Upgrade-only: an unlinked account named after the user ID, within the time limit.
         if ($this->nameMatchOpen($config)) {
             $named = $this->users->getOneByName($subject);
             if ($named !== null && $named->provider() === null) {
@@ -140,7 +132,7 @@ class SignInService
     }
 
     /**
-     * Carries a plan out and writes only what changed. A known account signs in with its profile and groups refreshed; a new or linked one is made under a lock named after the provider and the user ID.
+     * Carries a plan out and writes only what changed.
      *
      * @throws ProviderFailure
      */
@@ -179,10 +171,9 @@ class SignInService
         }
 
         $lock = 'sign-in:' . $plan->providerId . ':' . hash('sha256', $plan->subject);
-        for ($attempt = 1; $attempt <= self::LOCK_ATTEMPTS; ++$attempt) {
+        for ($attempt = 1; $attempt <= self::LOCK_ATTEMPTS; $attempt++) {
             if ($this->locks->tryAcquire($lock)) {
                 try {
-                    // another sign-in may have finished while this one waited.
                     $winner = $this->links->find($plan->providerId, $plan->subject);
                     if ($winner !== null) {
                         return $this->refresh($plan, $winner);
@@ -215,7 +206,6 @@ class SignInService
                 unset($profile['email']);
                 $user = $this->users->createLinked((string)$plan->accountTag, $email, $profile, $plan->providerId, $subject);
             } else {
-                // read again under the lock: another sign-in may have tied the account to a provider since the plan was made
                 $user = $this->users->getOneByName((string)$plan->accountTag);
                 $linkedTo = $user?->provider();
                 $expected = $plan->action === PlanAction::ReplaceSubject ? $plan->providerId : null;
@@ -244,7 +234,6 @@ class SignInService
     /** Profile and groups, then the warnings of the plan and of the group update, the guard on "admins" said once. */
     private function refresh(SignInPlan $plan, User $user): AppliedSignIn
     {
-        // after a creation too: createLinked() stores the body fields it knows, and the sync adds the rest, writing nothing if all is there.
         $this->profile->apply($user, $plan->profile);
         $user = $this->users->getOneByName($user->getName()) ?? $user;
         $warnings = $plan->warnings;
@@ -300,8 +289,7 @@ class SignInService
     }
 
     /**
-     * Why an attribute could not be read: not sent at all, or sent with a value the reader leaves out, binary (Active Directory's
-     * objectGUID) or of a shape it cannot read (an object); the value is not copied here.
+     * Why an attribute could not be read.
      *
      * @param array<string, mixed> $attrs
      */
@@ -333,7 +321,6 @@ class SignInService
         $use = [];
         foreach ($names as $field => $name) {
             $use[$field] = ['attribute' => $name, 'present' => AttributeReader::many($attrs, $name) !== []];
-            // sent, but with a value that cannot be used: the admin Test says so instead of "not sent"
             $unusable = AttributeReader::unusable($attrs, $name);
             if ($unusable !== null) {
                 $use[$field]['unusable'] = $unusable;

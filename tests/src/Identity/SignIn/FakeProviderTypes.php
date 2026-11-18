@@ -24,7 +24,7 @@ trait FakeProviderTypes
     private ?array $registryWas = null;
 
     /**
-     * Puts a registry in the container in place of the real one. The container refuses to replace a service that is already built, and the real registry is built by the time any test runs, so this writes the service table directly: a test-only seam.
+     * Puts a registry in the container in place of the real one.
      *
      * @param array<string, array<string, mixed>> $section
      * @param ProviderType                        ...$more types a test needs besides the fake ones

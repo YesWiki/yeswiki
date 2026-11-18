@@ -10,10 +10,7 @@ use YesWiki\Identity\SignIn\SignInCallback;
 use YesWiki\Kernel\Component\Setting;
 use YesWiki\Kernel\Service\UrlFormatter;
 
-/**
- * SAML 2.0, the wiki being the service provider.
- * Each provider is its own service provider: its entity ID is the address of its metadata, and its callback is where responses are posted.
- */
+/** SAML 2.0, the wiki being the service provider. */
 final class SamlType implements ProviderType
 {
     public const NAME = 'saml';

@@ -12,10 +12,10 @@ final class SignInTrace
     public const GROUPS = 'groups';
 
     /**
-     * @param array<string, mixed>        $attributes   what the provider sent
-     * @param array<string, string>       $attributeUse which attribute fed which field
-     * @param list<string>                $groups       the groups the provider sent
-     * @param string|null                 $account      the account the sign-in matched, if any
+     * @param array<string, mixed>  $attributes   what the provider sent
+     * @param array<string, string> $attributeUse which attribute fed which field
+     * @param list<string>          $groups       the groups the provider sent
+     * @param string|null           $account      the account the sign-in matched, if any
      */
     public function __construct(
         public readonly string $lastStep = self::SENT_TO_PROVIDER,

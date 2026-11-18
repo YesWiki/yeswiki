@@ -1,11 +1,6 @@
 <?php
 
-/**
- * phpCAS documents both arguments of setExtraCurlOption() as strings, but hands them to curl_setopt_array():
- * the key is a CURLOPT_* constant, an int, and the value is whatever that option takes.
- * It documents getAttributes() as an array, but an attributes element with no attribute in it (LemonLDAP::NG's, when it
- * releases none) comes back as that element's text.
- */
+/** The types phpCAS really hands back for getAttributes() and takes for setExtraCurlOption(). */
 class CAS_Client
 {
     /**

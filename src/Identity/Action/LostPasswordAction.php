@@ -161,7 +161,6 @@ class LostPasswordAction extends YesWikiAction implements RegisteredAction
                         try {
                             $this->userManager->sendPasswordRecoveryEmail($user);
                         } catch (PasswordManagedByProviderException) {
-                            // a linked account has no password: answered like any other address, so nobody learns it has an account
                         }
                     }
                     $this->answerAfterConstantTime($startedAt);
@@ -225,10 +224,7 @@ class LostPasswordAction extends YesWikiAction implements RegisteredAction
         }
     }
 
-    /**
-     * A password is recovered only while local accounts can sign in. A linked account has none at all, which setPassword() and
-     * sendPasswordRecoveryEmail() refuse themselves: its provider alone signs it in.
-     */
+    /** A password is recovered only while local accounts can sign in. */
     private function recoveryIsOpen(): bool
     {
         return $this->getService(ProviderRegistry::class)->localEnabled();

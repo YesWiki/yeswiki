@@ -6,10 +6,7 @@ use YesWiki\Files\Service\LocalFiles;
 use YesWiki\Identity\SignIn\Contract\FailureReason;
 use YesWiki\Identity\SignIn\Contract\ProviderFailure;
 
-/**
- * The certificate authorities a server's certificate is checked against: the file an administrator configured, else the system's.
- * The system's is looked for at run time, since a static binary carries the path of the machine it was built on, where none may be.
- */
+/** The certificate authorities a server's certificate is checked against: the file an administrator configured, else the system's. */
 final class CaBundle
 {
     private const LAST_RESORT = '/etc/ssl/certs/ca-certificates.crt';

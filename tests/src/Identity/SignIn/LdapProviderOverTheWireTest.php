@@ -8,16 +8,12 @@ use YesWiki\Identity\Service\SignIn\Type\LdapType;
 use YesWiki\Identity\SignIn\Contract\FailureReason;
 use YesWiki\Identity\SignIn\Contract\ProviderConfig;
 use YesWiki\Identity\SignIn\Contract\ProviderFailure;
-use YesWiki\Identity\SignIn\Provider\LdapProvider;
 use YesWiki\Identity\SignIn\Provider\LdapConnection\NativeLdapConnection;
+use YesWiki\Identity\SignIn\Provider\LdapProvider;
 
 require_once __DIR__ . '/LdapStubServer.php';
 
-/**
- * A sign-in through the LDAP provider and ext-ldap, against a directory that answers as the company directory of the guides
- * does (LdapStubServer): what the provider asks of it, in order, and what it makes of the answers. LdapProviderTest covers
- * each rule of the provider against a fake connection; NativeLdapConnectionTest covers the connection alone.
- */
+/** A sign-in through the LDAP provider and ext-ldap against LdapStubServer. */
 #[RequiresPhpExtension('ldap')]
 class LdapProviderOverTheWireTest extends TestCase
 {

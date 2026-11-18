@@ -1,14 +1,6 @@
 <?php
 
-/**
- * What the sign-in specs read or arrange in the wiki under test, run from its folder:
- *   journal <action pattern>        the Journal rows whose action is LIKE the pattern, oldest first, as JSON
- *   forget-diagnostics              deletes the Journal rows of refused sign-ins (login.refused.%)
- *   forget <email>...               deletes the accounts that have these emails
- *   account <email>                 the name of the account that has this email, or null, as JSON
- *   groups <account>                the account's groups, as JSON
- *   add-to-group <group> <account>  creates the group when it does not exist
- */
+/** What the sign-in specs read or arrange in the wiki under test. */
 
 use YesWiki\Core\YesWikiLoader;
 use YesWiki\Identity\Service\GroupManager;

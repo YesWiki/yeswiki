@@ -5,14 +5,11 @@ namespace YesWiki\Identity\Service\SignIn\Type;
 use YesWiki\Identity\SignIn\Contract\IdentityProvider;
 use YesWiki\Identity\SignIn\Contract\ProviderConfig;
 use YesWiki\Identity\SignIn\Contract\ProviderType;
-use YesWiki\Identity\SignIn\Provider\LdapProvider;
 use YesWiki\Identity\SignIn\Provider\LdapConnection\NativeLdapConnection;
+use YesWiki\Identity\SignIn\Provider\LdapProvider;
 use YesWiki\Kernel\Component\Setting;
 
-/**
- * A company directory, asked over LDAP with the login and password typed into the wiki's form.
- * The address is not a web address, so it is a text setting: the edit screen warns when it is ldap:// without StartTLS.
- */
+/** A company directory, asked over LDAP with the login and password typed into the wiki's form. */
 final class LdapType implements ProviderType
 {
     public const NAME = 'ldap';

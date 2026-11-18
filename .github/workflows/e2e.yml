@@ -182,11 +182,6 @@ jobs:
       - uses: actions/checkout@v5
         if: steps.covered.outputs.run == 'true'
 
-      # The mock of docker/docker-compose.yml: MockServer plays the OpenID Connect, SAML and CAS
-      # providers as the specs tell it to. The runner reaches it by name through /etc/hosts. The
-      # wiki is served as wiki.yeswiki.test:<port> for the sign-in specs, which makes it same-site
-      # with auth.yeswiki.test: SAML's POST callback needs that on plain http. There is no LDAP
-      # directory: PHPUnit tests the LDAP provider against a stub.
       - name: Start the identity provider mock
         if: steps.covered.outputs.run == 'true'
         run: |
@@ -255,16 +250,10 @@ jobs:
           YESWIKI_TEST_URL: http://127.0.0.1:8080/?PagePrincipale
         run: bash tests/e2e/runtime.sh start
 
-      # Everything but the sign-in specs, which run below under the wiki's sign-in address.
       - name: Run the browser suite
         if: steps.covered.outputs.run == 'true'
         run: yarn run test-e2e-all '^(?!.*sign-in-)'
 
-      # The wiki must be same-site with the mock identity provider, auth.yeswiki.test, for SAML's
-      # POST callback to carry its Lax cookie; and the SAML callback the specs give the mock comes
-      # from YESWIKI_BASE_URL, which must be the base URL the wiki builds its own addresses from:
-      # so this wiki is installed again as wiki.yeswiki.test, which is why this step is not part
-      # of the suite above.
       - name: Run the sign-in suite
         if: ${{ !cancelled() && steps.covered.outputs.run == 'true' }}
         env:
@@ -272,8 +261,6 @@ jobs:
           YESWIKI_BASE_URL: ${{ matrix.runtime == 'binary' && 'http://wiki.yeswiki.test:8081' || 'http://wiki.yeswiki.test:8080' }}
         run: |
           bash tests/e2e/reset.sh
-          # Its own report and output folders: the run above leaves its failure evidence in the
-          # defaults, and this one must not overwrite it.
           PLAYWRIGHT_HTML_OUTPUT_DIR=playwright-report-signin \
             npx playwright test tests/e2e/tests/sign-in- --output=test-results-signin
 
@@ -358,8 +345,6 @@ jobs:
       - name: Three replicas on kind with ${{ matrix.database }}, SeaweedFS and Mailpit, the browser suite, then a rolling upgrade
         env:
           E2E: '1'
-          # The sign-in specs need the mock, which the browser job starts and the cluster does
-          # not have.
           PLAYWRIGHT_ARGS: '^(?!.*sign-in-)'
         run: deploy/kind/run.sh "${{ matrix.database }}" "yeswiki-kind:${{ github.sha }}"
 

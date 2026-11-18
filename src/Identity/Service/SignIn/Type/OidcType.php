@@ -9,10 +9,7 @@ use YesWiki\Identity\SignIn\Contract\ProviderType;
 use YesWiki\Identity\SignIn\Provider\OidcProvider;
 use YesWiki\Kernel\Component\Setting;
 
-/**
- * OpenID Connect, and plain OAuth2 with explicit endpoints.
- * `scope_separator` is read too, but only an upgrade from loginsso writes it: the screen does not offer it.
- */
+/** OpenID Connect, and plain OAuth2 with explicit endpoints. */
 final class OidcType implements ProviderType
 {
     public const NAME = 'oidc';

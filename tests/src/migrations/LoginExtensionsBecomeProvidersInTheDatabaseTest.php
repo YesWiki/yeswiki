@@ -10,11 +10,7 @@ use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';
 
-/**
- * The conversion on a wiki as it really runs: its own `yeswiki.config.php`, so what the migration writes goes to the database
- * (replicas 04), and the Doryphore keys left in the file -- a client secret among them -- are taken out of it.
- * The file and the stored settings are put back as they were after each test.
- */
+/** The conversion on a wiki with its own `yeswiki.config.php`. */
 class LoginExtensionsBecomeProvidersInTheDatabaseTest extends YesWikiTestCase
 {
     private const SECRET = 'sso-client-secret-value';
@@ -122,7 +118,6 @@ class LoginExtensionsBecomeProvidersInTheDatabaseTest extends YesWikiTestCase
 
     private function migrate(\LoginExtensionsBecomeProviders $migration): void
     {
-        // no account is walked: only the configuration is under test here
         $migration->convertWiki($this->instance, $this->file, new \DateTimeImmutable('2026-11-11 10:00:00'), []);
         self::getWiki()->services->get(WikiSettings::class)->startNewRequest();
     }

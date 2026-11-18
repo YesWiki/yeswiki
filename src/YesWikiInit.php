@@ -54,7 +54,6 @@ class YesWikiInit
         $scriptlocation = str_replace('/index.php', '', $_SERVER['SCRIPT_NAME']);
         $requestUri = $_SERVER['REQUEST_URI'] ?? '';
         $uri = is_string($requestUri) ? str_replace($scriptlocation, '', $requestUri) : '';
-        // An identity server may send the sign-in callback back with its key moved after its answer, or dropped
         $uri = SignInCallback::routeIn($uri, $_GET['wiki'] ?? null) ?? $uri;
         $uri = preg_replace('~^/\??~', '', $uri) ?? '';
         $uri = explode('&', $uri);

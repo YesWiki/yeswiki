@@ -156,7 +156,6 @@ class AdminLogsApiController extends YesWikiController
 
     /**
      * What a refused sign-in's diagnostic says, for the administrator who has to find out why.
-     * Everything here comes from a provider: the template escapes all of it.
      *
      * @param array<string, mixed> $context
      *
@@ -164,7 +163,6 @@ class AdminLogsApiController extends YesWikiController
      */
     private function signInDetail(string $action, array $context): array
     {
-        // login.refused.<reason>.<provider>: a reason has no dot, a provider id might.
         [, , $reason, $provider] = array_pad(explode('.', $action, 4), 4, '');
         $code = strtoupper($reason);
         $attributes = AttributeRows::of(

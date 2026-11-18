@@ -13,7 +13,6 @@ final class DoryphoreLeftovers
 
     public const CORE_TOOLS = [
         'aceditor', 'attach', 'autoupdate', 'bazar', 'contact', 'helloworld', 'lang', 'login',
-        // their settings become sign-in providers (spec section 11)
         'logincas', 'loginldap', 'loginsso',
         'progressBar', 'rss', 'security', 'syndication', 'tableau', 'tags', 'templates', 'toc',
     ];

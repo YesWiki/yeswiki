@@ -33,7 +33,7 @@ trait RendersSignInOutcome
         return $this->renderSignInRefused($outcome);
     }
 
-    /** Only translated text, or the provider's message for the person: never what is meant for an administrator. Twig escapes all of it. */
+    /** Only translated text, or the provider's message for the person: never what is meant for an administrator. */
     private function renderSignInRefused(SignInOutcome $outcome): Response
     {
         $templateEngine = $this->getService(TemplateEngine::class);
@@ -45,10 +45,7 @@ trait RendersSignInOutcome
         ])), Response::HTTP_FORBIDDEN);
     }
 
-    /**
-     * What a test returned, for the administrator who ran it: every value comes from the provider, and Twig escapes all of it.
-     * The error was scrubbed of the provider's secrets by the flow.
-     */
+    /** What a test returned, for the administrator who ran it: every value comes from the provider, and Twig escapes all of it. */
     private function renderSignInTested(SignInOutcome $outcome, ProviderConfig $config, SignInPlan $plan): Response
     {
         $current = 'admin/sign-in';

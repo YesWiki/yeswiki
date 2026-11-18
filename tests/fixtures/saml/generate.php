@@ -1,13 +1,6 @@
 <?php
 
-/**
- * Writes the SAML responses SamlProviderTest reads, signed with idp.key, the identity provider's test key.
- * They are committed: run this again only to change them, with `php tests/fixtures/saml/generate.php`.
- *
- * Every response but the expired one is valid until 2099, so the fixtures do not age.
- * The keys were made with `openssl req -x509 -newkey rsa:2048 -nodes -keyout idp.key -out idp.crt -days 36500 -subj /CN=yeswiki-test-saml-idp`
- * (and the same for sp). They are public and protect nothing: never use them outside the tests.
- */
+/** Writes the SAML responses SamlProviderTest reads, signed with idp.key, the identity provider's test key. */
 
 use OneLogin\Saml2\Constants;
 use RobRichards\XMLSecLibs\XMLSecurityDSig;
@@ -15,7 +8,6 @@ use RobRichards\XMLSecLibs\XMLSecurityKey;
 
 require dirname(__DIR__, 3) . '/vendor/autoload.php';
 
-// what SamlProviderTest configures
 const SP_ENTITY_ID = 'http://wiki.yeswiki.test/?user/sign-in/saml-a/metadata';
 const ACS_URL = 'http://wiki.yeswiki.test/?user/sign-in/saml-a/callback';
 const IDP_ENTITY_ID = 'http://idp.yeswiki.test/saml/metadata';
@@ -49,7 +41,6 @@ foreach ($fixtures as $file => $values) {
     file_put_contents("$dir/$file", response($values, (string)file_get_contents("$dir/idp.key"), (string)file_get_contents("$dir/idp.crt")));
 }
 
-// the identity provider refused: a status and no assertion, which nothing needs to sign
 $request = REQUEST_ID;
 $idp = IDP_ENTITY_ID;
 file_put_contents("$dir/response-status-failure.xml", <<<XML
@@ -58,8 +49,6 @@ file_put_contents("$dir/response-status-failure.xml", <<<XML
 
     XML);
 
-// the valid, signed response, with a document type declaring a file of the server put in front once signed: the signature still
-// holds, so the refusal of document types is the only thing that can refuse it
 $xxe = (string)file_get_contents("$dir/response-valid.xml");
 $xxe = (string)preg_replace('/^<\?xml[^>]*>\s*/', '', $xxe);
 file_put_contents("$dir/response-xxe.xml", "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<!DOCTYPE samlp:Response [<!ENTITY xxe SYSTEM \"file:///etc/passwd\">]>\n" . $xxe);
@@ -107,7 +96,6 @@ function response(array $v, string $key, string $certificate): string
     $signature->addReference($assertion, XMLSecurityDSig::SHA256, ['http://www.w3.org/2000/09/xmldsig#enveloped-signature', XMLSecurityDSig::EXC_C14N], ['id_name' => 'ID', 'overwrite' => false]);
     $signature->sign($privateKey);
     $signature->add509Cert($certificate);
-    // the schema wants the signature right after the issuer
     $signature->insertSignature($assertion, $issuer->nextSibling);
 
     return (string)$document->saveXML();

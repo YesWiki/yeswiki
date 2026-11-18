@@ -26,11 +26,7 @@ import {
   throughProvider,
 } from '../helpers/sso'
 
-/**
- * What a person and an administrator get when an identity provider fails (spec section 7.2 of the MockServer design): the mock
- * identity provider is made to fail in one way, Marie tries to sign in, and the wiki refuses her for the reason that fits,
- * with a diagnostic that says what went wrong.
- */
+/** What a person and an administrator get when an identity provider fails. */
 type Case = {
   type: RedirectType
   name: string
@@ -44,10 +40,7 @@ type Case = {
 
 const marie = PEOPLE.marie
 
-/**
- * One row per failure. A regression seen on a real server is one more row, with a comment naming the server and its version,
- * and an `arrange` that makes the mock answer as that server did.
- */
+/** One row per failure. */
 const CASES: Case[] = [
   {
     type: 'oidc',
@@ -81,7 +74,6 @@ const CASES: Case[] = [
     detail: 'access_denied',
   },
   {
-    // authentik 2026.8.5 and 2026.5.8 (OAuth2Error.create_uri): the error glued onto the callback's last pair with a second `?`
     type: 'oidc',
     name: 'the person refuses, the error appended with a second ?',
     arrange: async () => {
@@ -190,7 +182,6 @@ const CASES: Case[] = [
     detail: 'could not be reached to validate the ticket',
   },
   {
-    // seen on MockServer 9.2.0 answering 404 to a validation path it had no expectation for: phpCAS read an empty body
     type: 'cas',
     name: 'ticket validation answers an empty body',
     arrange: async () => {
@@ -230,7 +221,6 @@ const tryToSignIn = async (page: Page, type: RedirectType) => {
       hasText: String(PROVIDERS[type].label),
     })
     .click()
-  // a failure before the browser leaves the wiki is shown at the sign-in's own address
   await page.waitForURL(
     (url) =>
       url.origin === new URL(WIKI).origin &&
@@ -245,7 +235,6 @@ test.describe('a provider that fails', () => {
   test.beforeEach(async () => {
     await mockReset()
     forgetAccounts(marie.email)
-    // a diagnostic collapses into the day's row of its provider and reason: an earlier one would answer for this test's
     forgetDiagnostics()
     expect(journal('login.refused.%')).toEqual([])
   })
@@ -282,7 +271,6 @@ test.describe('a provider that fails', () => {
         JSON.stringify(rows),
         'neither a secret, nor what was sent, nor a key is recorded',
       ).not.toMatch(SENT_OR_SECRET)
-      // the check above would see what was sent, had it been recorded
       for (const response of posted) {
         expect(response).toMatch(SENT_OR_SECRET)
         expect(Buffer.from(response, 'base64').toString()).toMatch(
@@ -295,7 +283,6 @@ test.describe('a provider that fails', () => {
         'nobody is signed in',
       ).toBeVisible()
 
-      // the mock answers as it should again: the failure was this sign-in's alone
       await mockReset()
       await idpSignsIn(type, marie)
       await throughProvider(page, () =>
@@ -311,7 +298,6 @@ test.describe('a provider that fails', () => {
   }
 
   test("oidc: an administrator's test shows what failed", async ({ page }) => {
-    // switched off: an administrator tries a provider out before anyone can use it
     setProviders(sectionFor('oidc', { enabled: false }))
     await login(page, ADMIN_USERNAME, ADMIN_PASSWORD)
     await oidcSignsIn(marie, { flags: ['tamperedSignature'] })

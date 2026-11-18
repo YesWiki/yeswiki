@@ -24,12 +24,7 @@ use YesWiki\Identity\SignIn\SignInPlan;
 use YesWiki\Identity\SignIn\SignInTrace;
 use YesWiki\Kernel\Service\UrlFormatter;
 
-/**
- * A sign-in from start to end, for every kind of provider. Whatever goes wrong ends as an outcome: nothing here reaches the visitor as a crash.
- *
- * In test mode an administrator runs the real protocol and only plan() is called: nobody is signed in, nothing is written
- * and nothing goes to the Journal (spec 8.3 and 9).
- */
+/** A sign-in from start to end, for every kind of provider. */
 class SignInFlow
 {
     /** A provider sign-in lasts the remembered lifetime; only one checking the wiki's own accounts has a checkbox for it. */
@@ -172,7 +167,6 @@ class SignInFlow
     private function testedProvider(ProviderConfig $config): IdentityProvider
     {
         if ($this->registry->checksTheWikisOwnAccounts($config->type)) {
-            // checking a local password can rewrite its stored hash, and a test changes nothing.
             throw new ProviderFailure(FailureReason::ConfigurationInvalid, 'the wiki\'s own accounts are not tested here');
         }
         $provider = $this->registry->get($config->id);
@@ -245,7 +239,7 @@ class SignInFlow
         return SignInOutcome::tested($config, $plan, $this->steps($refusedAt, true), $this->journal->scrub($plan->refusalDetail, $config));
     }
 
-    /** A test that did not get as far as a plan: what a real sign-in would do is be refused, for this reason. Nothing is recorded. */
+    /** A test that did not get as far as a plan: what a real sign-in would do is be refused, for this reason. */
     private function testFailed(?ProviderConfig $config, \Throwable $thrown, string $step, ?ProviderIdentity $identity = null): SignInOutcome
     {
         $failure = $this->asFailure($thrown);
@@ -300,7 +294,6 @@ class SignInFlow
 
             return SignInOutcome::signedIn($url);
         } catch (BadLoginException $notActivated) {
-            // the account is not activated yet: the person is told on the form, with the words the wiki always used.
             return SignInOutcome::formError($notActivated->getMessage());
         } catch (\Throwable $thrown) {
             return $this->failed($config, $login ?? $plan->who ?? '', $thrown, $step, $identity, $plan);
@@ -343,7 +336,6 @@ class SignInFlow
         foreach (['id', 'email'] as $field) {
             $use = $plan->attributeUse[$field] ?? null;
             if ($use !== null && !$use['present']) {
-                // one that came, but cannot be used, is not said to be missing: the person would ask for what is already sent
                 return _t(isset($use['unusable']) ? 'SIGN_IN_REFUSED_UNUSABLE_NAMED_ATTRIBUTE' : 'SIGN_IN_REFUSED_MISSING_NAMED_ATTRIBUTE', ['provider' => $this->labelOf($config) ?: $config->label, 'attribute' => $use['attribute']]);
             }
         }

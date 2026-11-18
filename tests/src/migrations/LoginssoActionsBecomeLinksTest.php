@@ -10,10 +10,7 @@ use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';
 
-/**
- * loginsso's `{{linktouserprofil}}` and `{{userentries}}` become links to the account screens (spec section 11), in one new revision of each page using them.
- * Only the pages the test creates are walked.
- */
+/** loginsso's `{{linktouserprofil}}` and `{{userentries}}` become links to the account screens. */
 class LoginssoActionsBecomeLinksTest extends YesWikiTestCase
 {
     private const MENU = 'TestLoginssoActionsMenu';

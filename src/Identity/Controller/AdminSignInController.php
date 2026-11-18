@@ -56,7 +56,6 @@ class AdminSignInController extends YesWikiController
                 'typeLabel' => $type?->label() ?? $config->type,
                 'available' => $type !== null,
                 'enabled' => $config->enabled,
-                // a local account names no provider, so countByProvider() never has a row for it
                 'accounts' => $isLocal ? $localAccounts : ($accounts[$id] ?? 0),
                 'isLocal' => $isLocal,
             ];
@@ -73,7 +72,6 @@ class AdminSignInController extends YesWikiController
             'providers' => $providers,
             'offered' => $offered,
             'problems' => $registry->problems(),
-            // switching local off signs a local account out: the toggle asks first
             'adminIsLocal' => ($admin = $this->actingAdmin()) !== null && $admin->provider() === null,
         ]);
     }
@@ -168,10 +166,7 @@ class AdminSignInController extends YesWikiController
         return $this->toIndex();
     }
 
-    /**
-     * Runs the real protocol against the provider, as the signed-in administrator, and shows what came back (spec 8.3).
-     * A redirect provider is left for and comes back to its callback; a password provider first asks for a test login and password.
-     */
+    /** Runs the real protocol against the provider, as the signed-in administrator, and shows what came back (spec 8.3). */
     #[Route('/admin/sign-in/{id}/test', methods: ['GET', 'POST'], options: ['acl' => self::ADMIN_ACL])]
     public function test(string $id): Response
     {
@@ -212,7 +207,7 @@ class AdminSignInController extends YesWikiController
     }
 
     /**
-     * The add and edit screen. A secret is never put in it: the field starts empty, and a stored one is only announced.
+     * The add and edit screen.
      *
      * @param array<string, mixed> $entry  the entry as stored; empty for a new provider
      * @param array<string, mixed> $posted what was just sent, shown again when it was refused
@@ -265,7 +260,6 @@ class AdminSignInController extends YesWikiController
         $extras = [];
         $extraSource = is_array($source['extra_fields'] ?? null) ? $source['extra_fields'] : [];
         foreach ($extraSource as $key => $row) {
-            // stored as field => attribute; posted as rows.
             $extras[] = is_array($row)
                 ? ['field' => (string)($row['field'] ?? ''), 'attribute' => (string)($row['attribute'] ?? '')]
                 : ['field' => (string)$key, 'attribute' => (string)$row];
@@ -276,13 +270,11 @@ class AdminSignInController extends YesWikiController
         $copyable = [];
         if ($id !== null) {
             $config = ProviderConfig::fromArray($id, $entry, $type->defaultAttributes());
-            // a provider still half configured may fail to be built: it keeps its callback shown, and has nothing to copy yet
             try {
                 $provider = $type->create($config);
             } catch (\Throwable) {
                 $provider = null;
             }
-            // a provider checking a password typed into the wiki's form sends nobody back: it has no callback to give
             $callback = $provider instanceof PasswordProvider ? null : $this->getService(SignInFlow::class)->callbackUrlFor($config);
             $published = $provider instanceof PublishesMetadata ? $this->published($provider) : null;
             if ($published !== null) {

@@ -9,10 +9,7 @@ use YesWiki\Identity\Service\SignIn\Type\LocalType;
 use YesWiki\Identity\Service\SignIn\Type\OidcType;
 use YesWiki\Identity\SignIn\SsoConversionResult;
 
-/**
- * Doryphore's loginsso, loginldap and logincas settings, as `sso_providers` entries (spec section 11).
- * Pure: it reads the configuration array it is given and returns what to write, the database and the files are the migration's.
- */
+/** Doryphore's loginsso, loginldap and logincas settings, as `sso_providers` entries (spec section 11). */
 final class DoryphoreSsoConversion
 {
     public const LOGINSSO = 'loginsso';
@@ -61,7 +58,6 @@ final class DoryphoreSsoConversion
                 break;
             }
         }
-        // A section the administrator already wrote is what signs people in now: the converted providers join it switched off.
         $inCharge = $existing === null ? $doryphoreInCharge : null;
 
         $taken = array_fill_keys(array_map('strval', array_keys($existing ?? [])), true) + [LocalType::NAME => true];
@@ -131,7 +127,6 @@ final class DoryphoreSsoConversion
             'userinfo_url' => self::text($options['urlResourceOwnerDetails'] ?? null),
             'client_id' => self::text($options['clientId'] ?? null),
             'client_secret' => self::text($options['clientSecret'] ?? null),
-            // loginsso asked for `openid` alone when nothing was set: asking for more could change what the provider consents to.
             'scopes' => isset($options['scopes']) && (is_array($options['scopes']) || is_string($options['scopes'])) ? $options['scopes'] : ['openid'],
         ];
         $separator = $options['scopeSeparator'] ?? null;
@@ -157,7 +152,6 @@ final class DoryphoreSsoConversion
             'connection' => $connection,
             'attributes' => $attributes,
             'create_accounts' => false,
-            // loginsso attached an account by its email whenever it had no link yet.
             'match_by_email' => true,
             'group_mapping' => self::groupMapping($entry['groups_sso_mapping'] ?? null),
         ];
@@ -204,7 +198,6 @@ final class DoryphoreSsoConversion
             ],
             'attributes' => ['id' => 'uid', 'email' => 'mail'],
             'create_accounts' => true,
-            // loginldap named a new account after its uid, as it was
             'account_name_template' => '#[uid]',
             'account_name_pascalcase' => false,
             'match_by_email' => true,
@@ -232,7 +225,6 @@ final class DoryphoreSsoConversion
             $connection['ca_cert'] = $ca;
         }
 
-        // logincas named the account after the `name` attribute and read the email from `mail`.
         $attributes = ['id' => 'name', 'email' => 'mail'];
 
         return [
@@ -242,7 +234,6 @@ final class DoryphoreSsoConversion
             'connection' => $connection,
             'attributes' => $attributes,
             'create_accounts' => true,
-            // logincas named a new account after its `name` attribute, as it was
             'account_name_template' => '#[name]',
             'account_name_pascalcase' => false,
             'match_by_email' => true,
@@ -393,11 +384,7 @@ final class DoryphoreSsoConversion
         return mb_strtolower((new AsciiSlugger())->slug($label)->toString());
     }
 
-    /**
-     * A DN without the spaces around its `,` and `=`, which loginldap's settings were often written with. A directory reads both as
-     * the same DN, but sends the entry back as it stores it, without them. An escaped `\,` or `\=`, and the spaces inside a value,
-     * are kept.
-     */
+    /** A DN without the spaces around its `,` and `=`, which loginldap's settings were often written with. */
     private static function dn(string $dn): string
     {
         $dn = (string)preg_replace('/(?<!\\\\)\s+(?=[,=])/', '', $dn);

@@ -2,10 +2,7 @@
 
 namespace YesWiki\Identity\SignIn;
 
-/**
- * Reads attributes sent by an identity provider, whatever their shape:
- * missing, scalar, list, nested or binary.
- */
+/** Reads attributes sent by an identity provider, whatever their shape: missing, scalar, list, nested or binary. */
 final class AttributeReader
 {
     /**
@@ -44,9 +41,7 @@ final class AttributeReader
     }
 
     /**
-     * Why an attribute that was sent gives no usable value: `binary` for a value that is not text (Active Directory's objectGUID),
-     * `not_text` for a shape the reader cannot read (an object, like ZITADEL's roles, a nested list, a boolean). Null when the
-     * attribute was not sent, was sent empty, or has a usable value.
+     * Why an attribute that was sent gives no usable value.
      *
      * @param array<array-key, mixed> $attributes
      *
@@ -77,9 +72,7 @@ final class AttributeReader
     }
 
     /**
-     * A copy of the attributes safe to write to a log: binary values are
-     * described, and the whole stays under $maxBytes once encoded as JSON.
-     * When too large, the largest keys are dropped and listed under `_truncated`.
+     * A copy of the attributes safe to write to a log, under $maxBytes.
      *
      * @param array<array-key, mixed> $attributes
      *

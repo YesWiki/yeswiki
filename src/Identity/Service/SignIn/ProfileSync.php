@@ -37,7 +37,6 @@ class ProfileSync
             return false;
         }
 
-        // the internal write path: the user-facing update refuses the fields a provider owns.
         return $this->users->update($user, $changed);
     }
 }

@@ -82,10 +82,7 @@ class YesWikiInitRouteTest extends YesWikiTestCase
         $this->assertSame(['SomePage', ''], [$init->page, $init->method]);
     }
 
-    /**
-     * A page given a value first gives way to a later sign-in callback key: deliberate, and harmless, since the callback refuses
-     * whatever has no sign-in in progress (SignInFlowTest::testNoValidHandshakeIsARefusedPageNotACrash).
-     */
+    /** A page given a value first gives way to a later sign-in callback key. */
     public function testAPageGivenAValueFirstGivesWayToALaterSignInCallbackKey(): void
     {
         $init = (new \ReflectionClass(YesWikiInit::class))->newInstanceWithoutConstructor();
@@ -106,22 +103,17 @@ class YesWikiInitRouteTest extends YesWikiTestCase
         $this->assertSame(['', ''], [$init->page, $init->method]);
     }
 
-    /**
-     * A server that rebuilds the callback's query and drops its key without a value (authentik: Python's parse_qs; LemonLDAP::NG
-     * 2.21 and 2.16: Perl's URI::QueryParam) keeps the `sso_callback=<id>` pair the callback address carries: it names the route.
-     */
+    /** A server that drops the callback's key keeps the `sso_callback=<id>` pair. */
     public function testTheSignInCallbackNamedOnlyByItsPairIsTheRoute(): void
     {
         $init = (new \ReflectionClass(YesWikiInit::class))->newInstanceWithoutConstructor();
 
-        // authentik: the key gone, the pair first, its answer after it
         $this->route($init, '/?sso_callback=authentik-oidc&code=XYZ&state=ABC');
         $this->assertSame(['user', 'sign-in/authentik-oidc/callback'], [$init->page, $init->method]);
 
         $this->route($init, '/?code=XYZ&sso_callback=authentik-oidc&state=ABC');
         $this->assertSame(['user', 'sign-in/authentik-oidc/callback'], [$init->page, $init->method]);
 
-        // a page given a value first gives way to the pair, as it does to a later callback key: the callback refuses without a sign-in in progress
         $this->route($init, '/?SomePage=x&sso_callback=acme');
         $this->assertSame(['user', 'sign-in/acme/callback'], [$init->page, $init->method]);
     }
@@ -134,15 +126,12 @@ class YesWikiInitRouteTest extends YesWikiTestCase
         $this->route($init, '/?user/sign-in/acme/callback&sso_callback=acme&code=XYZ&state=ABC');
         $this->assertSame(['user', 'sign-in/acme/callback'], [$init->page, $init->method]);
 
-        // LemonLDAP::NG 2.21 and 2.16 keep a key without a value only once encoded
         $this->route($init, '/?user%2Fsign-in%2Flemonldap-oidc%2Fcallback&sso_callback=lemonldap-oidc&code=XYZ&state=ABC&session_state=SS');
         $this->assertSame(['user', 'sign-in/lemonldap-oidc/callback'], [$init->page, $init->method]);
 
-        // authentik appends an error with a second `?`, after the pair: the key is still first
         $this->route($init, '/?user/sign-in/authentik-oidc/callback&sso_callback=authentik-oidc?error=invalid_request&error_description=Invalid%20grant_type%20for%20provider&state=ABC');
         $this->assertSame(['user', 'sign-in/authentik-oidc/callback'], [$init->page, $init->method]);
 
-        // the key wins over a pair that names another provider
         $this->route($init, '/?user/sign-in/acme/callback&sso_callback=other&code=XYZ');
         $this->assertSame(['user', 'sign-in/acme/callback'], [$init->page, $init->method]);
     }

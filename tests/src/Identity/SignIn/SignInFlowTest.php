@@ -133,7 +133,6 @@ final class FlowFakePassword implements PasswordProvider
             throw new ProviderFailure(FailureReason::WrongCredentials, 'bad password');
         }
 
-        // local_account is what the local type reads; every other type ignores it.
         return new ProviderIdentity(['sub' => 'flow-pw', 'email' => 'flow-pw@example.com', 'local_account' => 'FlowLocal']);
     }
 }
@@ -488,7 +487,6 @@ class SignInFlowTest extends YesWikiTestCase
 
     public function testAWarningIsRecordedWithoutRecordingTheSuccess(): void
     {
-        // the account's new email is already used by another account
         $this->assertSame('signed_in', $this->outcome($this->flow->callback($this->callbackRequestWithTakenEmail(), 'fake'))->kind);
         $this->assertSame(1, $this->countJournal("action = 'login.warning.email_collision.fake'"));
         $this->assertSame(0, $this->countJournal("action = 'login.failed'"));
@@ -576,8 +574,7 @@ class SignInFlowTest extends YesWikiTestCase
     }
 
     /**
-     * A user ID or email that came, but cannot be used, is not said to the person to be missing: they would ask their IT to
-     * release an attribute that is already released.
+     * An attribute that came but cannot be used is not said to be missing.
      *
      * @param array<string, mixed> $names
      * @param array<string, mixed> $attributes
@@ -618,7 +615,6 @@ class SignInFlowTest extends YesWikiTestCase
         $this->assertSame(0, $this->fake->completed);
     }
 
-    // Review Focus: a callback with no valid handshake.
     /** @return array<string, array{?string}> */
     public static function badHandshakes(): array
     {

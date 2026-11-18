@@ -240,17 +240,14 @@ class SignInApplyTest extends YesWikiTestCase
         $this->groups->updateMembers('admins', [$user->getName()]);
         $mapping = ['group_mapping' => [['provider' => 'boss', 'wiki' => 'admins']]];
 
-        // through the plan: it keeps admins out of the removals and says so, once
         $applied = $this->applied(['sub' => 'a7', 'email' => 'apply7@x', 'groups' => ['other']], $mapping);
         $this->assertContains($user->getName(), $this->groups->getMembers('admins'));
         $this->assertSame(['last_admin'], array_column($applied->warnings, 'kind'));
 
-        // a stale plan that still asks for the removal meets the guard at apply time
         $warnings = $this->services->get(GroupSync::class)->apply($user, [], ['admins']);
         $this->assertContains($user->getName(), $this->groups->getMembers('admins'));
         $this->assertSame(['last_admin'], array_column($warnings, 'kind'));
 
-        // with another member left, the removal goes through
         $this->groups->updateMembers('admins', [$user->getName(), 'SomeoneElse']);
         $this->assertSame([], $this->services->get(GroupSync::class)->apply($user, [], ['admins']));
         $this->assertNotContains($user->getName(), $this->groups->getMembers('admins'));
@@ -372,7 +369,6 @@ class SignInApplyTest extends YesWikiTestCase
         $this->applied(['sub' => 'lk1', 'email' => 'apply1@x'], [], $service);
         $this->assertSame(['sign-in:acme:' . hash('sha256', 'lk1')], $locks->taken);
         $this->assertSame($locks->taken, $locks->released);
-        // a known account needs no lock
         $this->applied(['sub' => 'lk1', 'email' => 'apply1@x'], [], $service);
         $this->assertCount(1, $locks->taken);
     }
@@ -414,10 +410,7 @@ class SignInApplyTest extends YesWikiTestCase
         $this->assertNull($this->users->getOneByEmail('hibfresh@x'));
     }
 
-    /**
-     * Between plan and apply another sign-in may have tied the account to a provider: the link is checked again under the lock,
-     * and the account is not taken from that provider.
-     */
+    /** A link made between plan and apply is checked again under the lock. */
     public function testAnAccountLinkedSincePlanningIsNotTaken(): void
     {
         $account = $this->created('SsoApplyAcct', 'apply7@x');

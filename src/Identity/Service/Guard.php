@@ -135,7 +135,6 @@ class Guard
                 continue;
             }
             if (in_array($field, self::USER_LINK_KEYS, true)) {
-                // the provider link is not a blank field, it is not there at all
                 unset($body[$field]);
                 $modified = true;
             } elseif ($body[$field] !== '') {

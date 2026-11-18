@@ -15,19 +15,7 @@ use YesWiki\Identity\SignIn\Contract\RedirectProvider;
 use YesWiki\Identity\SignIn\ServerDown;
 use YesWiki\Kernel\Service\SessionRequirement;
 
-/**
- * CAS 2.0 or 3.0 through phpCAS, which was written for one request per process and keeps its state in `$_SESSION`. It is confined (spec section 6):
- *
- * - a CAS_Client is made for each call, never the static one of phpCAS, and with changeSessionID false;
- * - the wiki's own session is started for it, without a cookie, emptied of phpCAS's key first, and destroyed when the call ends, success or failure;
- * - phpCAS throws instead of exiting, which would end the worker, never redirects by itself, and prints into a buffer that is thrown away;
- * - the ticket comes from the Request, and `$_GET`, where phpCAS would look for one, is hidden from it while the client is made;
- * - the certificates are always checked, against ca_cert or the system's authorities;
- * - the service is the handshake's callback, at the login and at the validation alike.
- *
- * phpCAS builds https addresses from a host and a port: the login and validation addresses are given whole from server_url instead.
- * What a failure says is the CAS error code and message, with any ticket taken out; never the ticket, the session or what the server sent.
- */
+/** CAS 2.0 or 3.0 through phpCAS, which was written for one request per process and keeps its state in `$_SESSION`. */
 final class CasProvider implements RedirectProvider
 {
     private const TIMEOUT = 10;
@@ -91,7 +79,6 @@ final class CasProvider implements RedirectProvider
             if (!$client->isAuthenticated()) {
                 throw new ProviderFailure(FailureReason::InvalidResponse, 'phpCAS validated no ticket');
             }
-            // an attributes element with no attribute in it (LemonLDAP::NG's, when it releases none) comes back from phpCAS as its text
             $attributes = $client->getAttributes();
             $attributes = array_diff_key(is_array($attributes) ? $attributes : [], array_flip(self::NOT_ATTRIBUTES));
 
@@ -153,9 +140,7 @@ final class CasProvider implements RedirectProvider
     private function confined(array $server, string $service, callable $use, string $ticket = ''): mixed
     {
         \CAS_GracefullTerminationException::throwInsteadOfExiting();
-        // a session another part of the wiki opened is left to it, emptied of phpCAS's key only
         $foreign = session_status() === PHP_SESSION_ACTIVE;
-        // one started here is known by no browser: no cookie is read, so an extension's session is never taken, and none is sent
         $cookies = ini_get('session.use_cookies');
         if (!$foreign) {
             ini_set('session.use_cookies', '0');
@@ -164,7 +149,6 @@ final class CasProvider implements RedirectProvider
         $buffers = ob_get_level();
         ob_start();
         $libxml = libxml_use_internal_errors(true);
-        // only this call's parse errors are read when the answer is not well-formed (notACasResponse)
         libxml_clear_errors();
         try {
             $opened = $this->sessions->start() && !$foreign;
@@ -179,12 +163,10 @@ final class CasProvider implements RedirectProvider
         } catch (\CAS_AuthenticationException $refused) {
             throw $this->refusal($refused, $server, $ticket);
         } catch (\Throwable $error) {
-            // phpCAS takes an empty answer for a bad one, but DOMDocument::loadXML() throws on it since PHP 8, before phpCAS can say so
             $thrower = $error->getTrace()[0] ?? [];
             if ($error instanceof \ValueError && ($thrower['class'] ?? '') === \DOMDocument::class && $thrower['function'] === 'loadXML') {
                 throw $this->notACasResponse($server);
             }
-            // whatever else stopped phpCAS, said with the ticket taken out
             throw new ProviderFailure(FailureReason::InternalError, 'phpCAS stopped: ' . $error::class . ': ' . self::scrub($error->getMessage(), $ticket));
         } finally {
             if ($opened) {
@@ -207,7 +189,6 @@ final class CasProvider implements RedirectProvider
     /** @param array{base: string, host: string, port: int, path: string, version: string, login: string, validate: string, ca: string} $server */
     private function client(array $server, string $service): \CAS_Client
     {
-        // phpCAS takes a ticket from $_GET when it is made, and stops on one it finds ill-formed: the ticket is the Request's, given below
         $get = $_GET;
         $post = $_POST;
         $_GET = [];
@@ -233,7 +214,6 @@ final class CasProvider implements RedirectProvider
 
     /**
      * What an administrator reads of a validation that failed: the CAS code and message, or what kept the server from answering.
-     * phpCAS's own message quotes the address it asked, ticket included, and the whole response: neither is kept.
      *
      * @param array{base: string, host: string, port: int, path: string, version: string, login: string, validate: string, ca: string} $server
      */
@@ -265,13 +245,10 @@ final class CasProvider implements RedirectProvider
     }
 
     /**
-     * An answer phpCAS could not read. phpCAS keeps the HTTP status to itself, so the validation address is asked again, without
-     * the ticket: a reverse proxy answering 502, 503 or 504 for a server that is down is not a wrong server_url or version. An
-     * answer that is not well-formed XML, but meant as a CAS answer, says so, with the parser's error: that is the server's fault,
-     * not the settings'.
+     * An answer phpCAS could not read.
      *
      * @param array{base: string, host: string, port: int, path: string, version: string, login: string, validate: string, ca: string} $server
-     * @param bool $casLooking the answer has a serviceResponse element (an HTML page at a wrong address has none)
+     * @param bool                                                                                                                     $casLooking the answer has a serviceResponse element (an HTML page at a wrong address has none)
      */
     private function notACasResponse(array $server, bool $casLooking = false): ProviderFailure
     {
@@ -280,8 +257,6 @@ final class CasProvider implements RedirectProvider
             return new ProviderFailure(FailureReason::ProviderUnreachable, "the CAS server's ticket validation at {$server['validate']} answered HTTP $status: the provider's server is down or overloaded, or its proxy cannot reach it");
         }
 
-        // the parser's first error, where it is (a warning before it, about the XML version for instance, is not why it failed):
-        // never the text, which is what the server sent
         $error = null;
         foreach (libxml_get_errors() as $entry) {
             if ($entry->level >= LIBXML_ERR_ERROR) {
@@ -289,9 +264,6 @@ final class CasProvider implements RedirectProvider
                 break;
             }
         }
-        // only a CAS answer (a serviceResponse element) from an address that answers 200, or 400, its refusal of the ticketless request
-        // (SimpleSAMLphp's casserver), is the validation endpoint's: another page that is no XML (a 404, a login page, an application
-        // that refuses the bare request) is still a wrong server_url
         if ($casLooking && ($status === 200 || $status === 400) && $error instanceof \LibXMLError) {
             return new ProviderFailure(FailureReason::InvalidResponse, "the CAS server's answer to the ticket validation at {$server['validate']} is not well-formed XML: " . trim($error->message) . " (line {$error->line}, column {$error->column}); an attribute value the server did not escape, like a \"&\", is a frequent cause");
         }

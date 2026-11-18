@@ -21,7 +21,6 @@ use YesWiki\Kernel\Service\LanguageService;
 use YesWiki\Kernel\Service\Lock\DatabaseLocks;
 use YesWiki\Kernel\Service\Lock\Locks;
 use YesWiki\Kernel\Service\ProgramVersion;
-use YesWiki\Kernel\Service\Queue\QueuePassLimitsFactory;
 use YesWiki\Kernel\Service\StringUtilService;
 
 /** Owns the DI container build/compile/cache lifecycle for a Wiki instance. */

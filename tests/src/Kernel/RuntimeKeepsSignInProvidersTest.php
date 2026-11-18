@@ -10,13 +10,7 @@ use YesWiki\Core\YesWikiRuntime;
 use YesWiki\Kernel\Service\Journal;
 use YesWiki\Kernel\Service\RuntimeConfig;
 
-/**
- * The container never compiles `sso_providers` (ConfigurationSecretsSsoTest): the runtime puts the section back beside the compiled
- * parameters, from the configuration it read, whenever it sets them. Each test boots or refreshes the wiki, so it runs on its own.
- *
- * Not a YesWikiTestCase: its shutdown sweep deletes the fixture accounts, the suite's admin among them, and would run here at the end
- * of this process, in the middle of the suite.
- */
+/** The runtime puts `sso_providers` back beside the compiled parameters. */
 class RuntimeKeepsSignInProvidersTest extends TestCase
 {
     private const SECTION = ['acme' => ['type' => 'oidc', 'connection' => ['client_secret' => 'hunter2']]];

@@ -12,13 +12,13 @@ use YesWiki\Identity\SignIn\Contract\FailureReason;
 final class SignInPlan
 {
     /**
-     * @param array<string, string>                                                                  $profile        wiki field => value to store
-     * @param list<string>                                                                           $groupsToAdd
-     * @param list<string>                                                                           $groupsToRemove
-     * @param list<string>                                                                           $groupsIgnored  provider groups no mapping row names
-     * @param list<array{kind: string, message: string}>                                             $warnings
+     * @param array<string, string>                                                                                    $profile        wiki field => value to store
+     * @param list<string>                                                                                             $groupsToAdd
+     * @param list<string>                                                                                             $groupsToRemove
+     * @param list<string>                                                                                             $groupsIgnored  provider groups no mapping row names
+     * @param list<array{kind: string, message: string}>                                                               $warnings
      * @param array<string, array{attribute: string, present: bool, unusable?: 'binary'|'not_text'|'not_one_address'}> $attributeUse   how each wiki field was read; `unusable` when sent with a value that cannot be used
-     * @param array<string, mixed>                                                                   $attributes     what the provider sent, safe to log
+     * @param array<string, mixed>                                                                                     $attributes     what the provider sent, safe to log
      */
     public function __construct(
         public readonly string $providerId,

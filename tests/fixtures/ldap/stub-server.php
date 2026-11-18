@@ -1,19 +1,5 @@
 <?php
 
-/*
- * A directory that says what it is told to: an LDAPv3 server over plain TCP that answers each request with the next reply of a
- * script, so that NativeLdapConnection is tested through ext-ldap and libldap without a real directory. Run by LdapStubServer:
- *
- *     php stub-server.php <replies.json> <requests.log>
- *
- * It listens on a free port of 127.0.0.1, prints it on a line, then serves one connection after the other until every reply is
- * used, or 10 seconds pass without a connection. A reply is {"op": "bind"|"search"|"starttls", "code": int, "diagnostic"?: string,
- * "matchedDn"?: string, "entries"?: [{"dn": string, "attributes": {name: [values]}}]}, or {"op": ..., "close": true} to drop the
- * connection instead of answering. Each request is appended to the log as a line of JSON, before the reply is sent; a request the
- * script did not expect is logged as {"error": ...} and ends the connection. A bind's password is never logged, only whether
- * there was one.
- */
-
 const TIMEOUT = 10;
 const START_TLS = '1.3.6.1.4.1.1466.20037';
 
@@ -206,7 +192,7 @@ function entry(array $entry): string
 }
 
 /**
- * The next BER element of the connection: its tag and its content. Null at the end of the connection.
+ * The next BER element of the connection: its tag and its content.
  *
  * @param resource $client
  *

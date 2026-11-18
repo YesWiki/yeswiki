@@ -105,7 +105,6 @@ class AccountLinksTest extends YesWikiTestCase
     {
         $user = $this->makeUser('SsoLinkB', 'ssolinkb@example.com');
         $pages = $this->services->get(PageManager::class);
-        // warm both per-request caches before the write
         $pages->getOne('SsoLinkB', null, true, true);
         $pages->getOne('SsoLinkB');
         $this->links->link($user, 'acme', 'sub-1');
@@ -148,7 +147,6 @@ class AccountLinksTest extends YesWikiTestCase
 
     public function testTheKeysAreHiddenFromGenericReads(): void
     {
-        // through Guard, the path every generic page read uses
         $user = $this->makeUser('SsoLinkF', 'ssolinkf@example.com');
         $this->links->link($user, 'acme', 'sub-1');
         self::actAs(null);

@@ -51,7 +51,6 @@ class LinkRenderer
             $method = $options['method'] ?? $wikiLink['method'];
             $params = $options['params'] ?? $wikiLink['params'];
 
-            // a route's name (`user`, `admin`, ...) is never a page waiting to be written
             if ((empty($method) || $method == 'show') && !ReservedTags::isReserved((string)$tag) && !$this->pageManager->getOne((string)$tag)) {
                 $params = array_merge($params, $this->paramsForNewPageLink());
                 $method = 'edit';

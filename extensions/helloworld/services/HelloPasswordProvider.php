@@ -9,10 +9,7 @@ use YesWiki\Identity\SignIn\Contract\ProviderConfig;
 use YesWiki\Identity\SignIn\Contract\ProviderFailure;
 use YesWiki\Identity\SignIn\Contract\ProviderIdentity;
 
-/**
- * Anyone signs in with the one password of the connection settings, whatever the login: a toy, to show what a provider has to do.
- * `#[Exclude]` because every class of `services/` is autowired, and this one is built by the type with a ProviderConfig.
- */
+/** Anyone signs in with the one password of the connection settings, whatever the login: a toy, to show what a provider has to do. */
 #[Exclude]
 final class HelloPasswordProvider implements PasswordProvider
 {
@@ -39,7 +36,6 @@ final class HelloPasswordProvider implements PasswordProvider
     {
         $expected = $this->config->connection('password');
         $login = trim($login);
-        // No password configured, or none typed: nothing signs in, so the sample does nothing until it is set up.
         if (!is_string($expected) || $expected === '' || $password === '' || $login === '' || !hash_equals($expected, $password)) {
             throw new ProviderFailure(FailureReason::WrongCredentials, 'wrong login or password');
         }

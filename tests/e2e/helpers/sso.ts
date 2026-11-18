@@ -4,11 +4,7 @@ import { expect, Page, Request } from '@playwright/test'
 import { IDP, RedirectType, WIKI } from './idp'
 import { instanceDir } from './instance'
 
-/**
- * What the sign-in specs sign in against: a mock identity provider for OpenID Connect, SAML and CAS (MockServer, configured
- * by idp.ts before each sign-in). There is no LDAP directory: PHPUnit tests the LDAP provider against a stub
- * (tests/fixtures/ldap/stub-server.php), and the specs only write an LDAP provider where nothing asks it anything.
- */
+/** What the sign-in specs sign in against. */
 export { IDP, WIKI }
 
 /** A directory's address where none answers: nothing the specs do with an LDAP provider reaches it. */
@@ -120,10 +116,7 @@ export const setProviders = (section: object): void => {
   )
 }
 
-/**
- * What the journal must never hold: the test client secret, a key, or what a SAML provider sent, decoded or as posted (base64
- * of `<samlp:Response` or of `<?xml `).
- */
+/** What the journal must never hold. */
 export const SENT_OR_SECRET =
   /wiki-oidc-secret|SAMLResponse|saml2?p?:(Response|Assertion)|PHNhbWxwOlJlc3BvbnNl|PD94bWwg|BEGIN [A-Z ]*KEY/
 
@@ -160,11 +153,7 @@ export const addToGroup = (group: string, account: string): void => {
   php('sso-wiki.php', ['add-to-group', group, account])
 }
 
-/**
- * Does what sends the browser out to the identity provider (`leave`, a click), then waits until it has been there and is back
- * on a page of the wiki: the mock answers with a redirect or a form that posts itself, so the browser goes through it alone.
- * Watching starts before `leave`, since a redirect may be over by the time the click returns.
- */
+/** Runs `leave`, then waits until the browser is back on the wiki from the identity provider. */
 export const throughProvider = async (
   page: Page,
   leave: () => Promise<unknown>,
@@ -197,10 +186,7 @@ export const throughProvider = async (
   }
 }
 
-/**
- * Types the login and password into the wiki's own sign-in form, on the page the browser is at, under the tab of the provider
- * `providerId` when the form has several; then waits for the page the wiki answers with.
- */
+/** Signs in through the wiki's own form, under the tab of `providerId`. */
 export const signInAtWikiForm = async (
   page: Page,
   providerId: string,
@@ -209,7 +195,6 @@ export const signInAtWikiForm = async (
 ): Promise<void> => {
   const form = page.locator('form.login-form')
   if ((await form.locator('.yw-sign-in__tab').count()) > 0) {
-    // the radio is drawn under its label: a person clicks the label
     const choice = `input[name="provider"][value="${providerId}"]`
     const tab = form
       .locator('.yw-sign-in__tab')

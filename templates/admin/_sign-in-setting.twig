@@ -1,6 +1,4 @@
-{# One connection setting of a provider type. A secret never carries a value: the field starts empty, a blank one keeps the stored secret,
-   and a stored one has a box to remove it.
-   A multi-line setting (pasted XML, PEM) is a textarea, a secret one included. #}
+{# One connection setting of a provider type. #}
 {% set field = 'sign-in-connection-' ~ setting.name %}
 {% if setting.kind == 'checkbox' %}
   <div class="yw-form-group">

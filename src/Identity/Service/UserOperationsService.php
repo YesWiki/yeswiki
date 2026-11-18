@@ -123,7 +123,6 @@ class UserOperationsService extends YesWikiController
      */
     public function update(User $user, array $newValues): bool
     {
-        // what a provider supplies is not ours to change, whoever asks; sign-in writes through UserManager::update() instead.
         $newValues = array_diff_key($newValues, array_flip($this->managedKeys($user)));
         $newValues = $this->sanitizeValues($newValues);
         $this->userManager->update($user, $newValues);
@@ -139,7 +138,7 @@ class UserOperationsService extends YesWikiController
     }
 
     /**
-     * The account fields only the provider writes: email, mapped extra fields and the password of a linked account. Nothing for a local one.
+     * The account fields only the provider writes: email, mapped extra fields and the password of a linked account.
      *
      * @return list<string>
      */
@@ -150,9 +149,7 @@ class UserOperationsService extends YesWikiController
             return [];
         }
         $keys = ['email', 'password'];
-        // a provider no longer configured still owns the basics; only the extras need its configuration.
         $config = $this->providerRegistry->config($providerId);
-        // extra_fields maps a field of the user form (the key) to the attribute that fills it: the field is what the provider writes
         foreach (array_keys($config->extraFields ?? []) as $field) {
             $keys[] = (string)$field;
         }
