@@ -42,6 +42,7 @@ final class ConfigurationSecrets implements EnvVarProcessorInterface
      */
     public static function withPlaceholders(array $config): array
     {
+        unset($config['sso_providers']);
         foreach (self::KEYS as $key) {
             if (isset($config[$key]) && is_scalar($config[$key]) && (string)$config[$key] !== '') {
                 $config[$key] = self::placeholder($key);

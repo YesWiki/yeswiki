@@ -236,6 +236,12 @@ class YesWikiTestCase extends TestCase
         self::getWiki()->services->get(\YesWiki\Identity\Service\AuthenticationService::class)->actAs($name);
     }
 
+    /** The name of an administrator this wiki already has. */
+    protected static function adminName(): string
+    {
+        return self::getWiki()->services->get(\YesWiki\Identity\Service\UserOperationsService::class)->getFirstAdmin();
+    }
+
     /** The name the wiki acts for now, '' for nobody. */
     /** @var array<string, string|false>|null the variables of the wiki's private/.env this test took out, to put back */
     private ?array $envFileWas = null;

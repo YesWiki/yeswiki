@@ -6,6 +6,7 @@ namespace YesWiki\Core;
 
 use YesWiki\Admin\Service\ArchiveService;
 use YesWiki\Admin\Service\SchemaBootstrap;
+use YesWiki\Identity\SignIn\SignInCallback;
 use YesWiki\Kernel\Routing\ReservedTags;
 use YesWiki\Kernel\Service\ConfigurationFileProvider;
 use YesWiki\Kernel\Service\EnvironmentConfiguration;
@@ -53,6 +54,7 @@ class YesWikiInit
         $scriptlocation = str_replace('/index.php', '', $_SERVER['SCRIPT_NAME']);
         $requestUri = $_SERVER['REQUEST_URI'] ?? '';
         $uri = is_string($requestUri) ? str_replace($scriptlocation, '', $requestUri) : '';
+        $uri = SignInCallback::routeIn($uri, $_GET['wiki'] ?? null) ?? $uri;
         $uri = preg_replace('~^/\??~', '', $uri) ?? '';
         $uri = explode('&', $uri);
         $uri = explode('?', $uri[0]);

@@ -30,7 +30,9 @@ class SessionRequirement
         }
         $options = $this->cookies->options(0);
         session_set_save_handler(new DatabaseSessions($this->params->all()), true);
-        session_set_cookie_params(['lifetime' => 0, 'path' => $options['path'], 'domain' => '', 'secure' => $options['secure'], 'httponly' => true, 'samesite' => $options['samesite']]);
+        if (filter_var(ini_get('session.use_cookies'), FILTER_VALIDATE_BOOLEAN)) {
+            session_set_cookie_params(['lifetime' => 0, 'path' => $options['path'], 'domain' => '', 'secure' => $options['secure'], 'httponly' => true, 'samesite' => $options['samesite']]);
+        }
         session_name(self::nameFor($options['path']));
         session_cache_limiter('');
         ini_set('session.gc_probability', '1');

@@ -20,9 +20,16 @@ class LostPasswordKeepsThePasswordTypedTest extends YesWikiTestCase
 {
     private const NAME = 'LostPasswordProbeAccount';
 
+    /** the request the wiki served before submitReset() posted the form: the next test class must not inherit a POST */
+    private ?Request $requestWas = null;
+
     protected function tearDown(): void
     {
         $wiki = $this->getWiki();
+        if ($this->requestWas !== null) {
+            $wiki->services->get(CurrentRequest::class)->replace($this->requestWas);
+            $this->requestWas = null;
+        }
         $users = $wiki->services->get(UserManager::class);
         if ($user = $users->getOneByName(self::NAME)) {
             $users->delete($user);
@@ -96,6 +103,7 @@ class LostPasswordKeepsThePasswordTypedTest extends YesWikiTestCase
             'pw0' => $password,
             'pw1' => $password,
         ]);
+        $this->requestWas ??= $services->get(CurrentRequest::class)->get();
         $services->get(CurrentRequest::class)->replace($request);
 
         $action = new LostPasswordAction();

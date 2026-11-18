@@ -70,16 +70,44 @@ func (w Workers) block(instances []string) string {
 	return "\tfrankenphp {\n" + workers + "\t}\n"
 }
 
-// site is the address line: a domain when there is one, so Caddy obtains a certificate for it.
+// defaultListen is where a bare `serve` listens: this machine only.
+const defaultListen = "localhost:8080"
+
+// site is the address line: a domain when there is one, so Caddy obtains a certificate for it, else the port alone.
+// A host in a site address is a Host matcher, and the wiki would answer an empty 200 under any other name that reaches the
+// socket: the host --listen names is where to bind (see bind), as a farm given --listen does.
 func (l Listen) site() string {
 	if strings.TrimSpace(l.Domain) != "" {
 		return l.Domain
 	}
-	if strings.TrimSpace(l.Address) != "" {
-		return "http://" + strings.TrimPrefix(l.Address, "http://")
+
+	_, port := l.hostAndPort()
+
+	return "http://:" + port
+}
+
+// bind is the host --listen names, or nothing when it names a port alone or a domain was given.
+func (l Listen) bind() string {
+	if strings.TrimSpace(l.Domain) != "" {
+		return ""
 	}
 
-	return "http://localhost:8080"
+	host, _ := l.hostAndPort()
+
+	return host
+}
+
+func (l Listen) hostAndPort() (string, string) {
+	address := strings.TrimPrefix(strings.TrimSpace(l.Address), "http://")
+	if address == "" {
+		address = defaultListen
+	}
+	host, port, err := net.SplitHostPort(address)
+	if err != nil {
+		return "", strings.TrimPrefix(address, ":")
+	}
+
+	return host, port
 }
 
 // automaticHTTPS is off unless a domain was named, so a first run reaches no certificate authority.
@@ -106,7 +134,7 @@ func CaddyfileFor(instance string, listen Listen, workers Workers, admin Admin) 
 // Caddyfile is docker/nginx.conf's rules, as the webserver configuration core ships.
 func Caddyfile(instance string, listen Listen, workers Workers, admin Admin) string {
 	return globals(admin, listen.automaticHTTPS(), workers.block([]string{instance})) +
-		"\n" + site(listen.site(), instance, workers.FrontController())
+		"\n" + bound(site(listen.site(), instance, workers.FrontController()), listen.bind())
 }
 
 // FarmCaddyfile serves every wiki in a farm from one process, each on its own name, over plain HTTP at listen when one is given, telling PHP the relay's https.

@@ -1,0 +1,22 @@
+<?php
+
+/** The types phpCAS really hands back for getAttributes() and takes for setExtraCurlOption(). */
+class CAS_Client
+{
+    /**
+     * @return array<string, mixed>|string
+     */
+    public function getAttributes()
+    {
+    }
+
+    /**
+     * @param int   $key   a CURLOPT_* constant
+     * @param mixed $value
+     *
+     * @return void
+     */
+    public function setExtraCurlOption($key, $value)
+    {
+    }
+}

@@ -40,6 +40,7 @@ use YesWiki\Identity\Security\SignedCsrfTokenManager;
 use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Identity\Service\CsrfVisitor;
 use YesWiki\Identity\Service\RequestGuard;
+use YesWiki\Identity\Service\SignIn\ProviderRegistry;
 use YesWiki\Kernel\Entity\ExtensionFolders;
 use YesWiki\Kernel\Exception\ExitException;
 use YesWiki\Kernel\Routing\ReservedTags;
@@ -483,8 +484,9 @@ class YesWikiRuntime
         ob_start();
         try {
             $attributes = $matcher->match($context->getPathInfo());
+            $crossOriginWrite = $this->service(ApiService::class)->isCrossOriginWrite();
             $pageContext->setMethod('');
-            if ($this->service(ApiService::class)->isCrossOriginWrite()) {
+            if ($crossOriginWrite) {
                 $response = new Response('', Response::HTTP_FORBIDDEN);
             } elseif ($this->service(ApiService::class)->isAuthorized($attributes, $this->getRoutes())) {
                 $request = $this->service(CurrentRequest::class)->get();
@@ -824,7 +826,7 @@ class YesWikiRuntime
         Flash::bind($container->get(FlashMessages::class));
         $GLOBALS['yeswikiServices'] = $this->services;
 
-        $this->config = $parameterBag->all();
+        $this->config = $this->withSignInProviders($parameterBag->all());
         $this->service(RuntimeConfig::class)->bind($this->config);
         $this->service(CurrentRequest::class)->replace($this->request);
         $this->service(ExtensionRegistry::class)->bind($this->extensions);
@@ -879,8 +881,20 @@ class YesWikiRuntime
             $bag->clear();
             $bag->add($parameters);
         }
-        $this->config = $parameters;
+        $this->config = $this->withSignInProviders($parameters);
         $this->followedVersion = $version;
+    }
+
+    /**
+     * Those parameters, with the sign-in providers of the configuration this process read.
+     *
+     * @param array<string, mixed> $parameters
+     *
+     * @return array<string, mixed>
+     */
+    private function withSignInProviders(array $parameters): array
+    {
+        return $parameters + array_intersect_key($this->config, [ProviderRegistry::SECTION => true]);
     }
 
     /** Whether what this container was built from -- the configuration, `.env`, the extensions -- or the stored settings have changed since this process booted. */

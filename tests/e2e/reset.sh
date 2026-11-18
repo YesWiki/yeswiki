@@ -95,7 +95,7 @@ case "$RUNTIME" in
     INSTANCE="$ROOT"
     BASE_URL="${YESWIKI_TEST_BASE_URL:-http://yeswiki-web/?}"
 
-    rm -f "${INSTANCE}/test.config.php" "${INSTANCE}/${YESWIKI_CONFIG_FILE:-yeswiki.config.php}"
+    rm -f "${INSTANCE}/test.config.php" "${INSTANCE}/${YESWIKI_CONFIG_FILE:-yeswiki.config.php}" "${INSTANCE}/private/.env"
     rm -rf "${INSTANCE}/cache/"* 2>/dev/null || true
     drop_and_create
 

@@ -9,6 +9,7 @@ use YesWiki\Core\DashboardShell;
 use YesWiki\Core\YesWikiController;
 use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Identity\Service\RequestGuard;
+use YesWiki\Identity\Service\SignIn\ProviderRegistry;
 use YesWiki\Kernel\Service\FlashMessageService;
 use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\UrlFormatter;
@@ -43,11 +44,11 @@ class AccountController extends YesWikiController
         return $this->page('@core/account/reactions.twig', 'user/reactions');
     }
 
-    /** Creating an account -- the other half of the sign-in screen. */
+    /** Creating an account -- the other half of the sign-in screen, which only local accounts have. */
     #[Route('/user/signup', options: ['acl' => ['public']])]
     public function signup(): Response
     {
-        if ($this->isConnected()) {
+        if ($this->isConnected() || !$this->getService(ProviderRegistry::class)->localEnabled()) {
             return $this->toAccount();
         }
 
@@ -57,7 +58,7 @@ class AccountController extends YesWikiController
     #[Route('/user/lost-password', options: ['acl' => ['public']])]
     public function lostPassword(): Response
     {
-        if ($this->isConnected()) {
+        if ($this->isConnected() || !$this->getService(ProviderRegistry::class)->localEnabled()) {
             return $this->toAccount();
         }
 

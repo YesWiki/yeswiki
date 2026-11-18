@@ -14,10 +14,11 @@ To run a wiki in production with Docker, see [`deploy/compose/`](../deploy/compo
 | Service | What it is | Address |
 | --- | --- | --- |
 | `yeswiki-app` | php-fpm with Node 24 and Yarn, your checkout mounted at `/var/www/html` | |
-| `yeswiki-web` | nginx in front of it (`nginx.conf`) | <http://localhost:8085> |
+| `yeswiki-web` | nginx in front of it (`nginx.conf`), also `wiki.yeswiki.test` inside the stack | <http://localhost:8085> |
 | `yeswiki-db` | MySQL 8.4, as `yeswiki-db` from the app | |
 | `yeswiki-pg` | PostgreSQL 16, as `yeswiki-pg` (user, password, database: `yeswiki`) | |
 | `yeswiki-s3` | SeaweedFS with its S3 gateway | <http://localhost:8333> |
+| `yeswiki-mock` | MockServer, an HTTP mock the specs configure; `auth.yeswiki.test` inside the stack, the identity provider of the sign-in specs | <http://localhost:8087/mockserver/dashboard> |
 | `myadmin` | phpMyAdmin | <http://localhost:8086> |
 | `mail` | Mailpit, which catches every mail the wiki sends | <http://localhost:1080> |
 
@@ -68,9 +69,24 @@ from a real relay: the wiki must not check it. To send mail to it, add this to
 'contact_smtp_verify_peer' => false,
 ```
 
+### The sign-in servers
+
+`yeswiki-mock` plays the OpenID Connect, SAML and CAS providers. It starts empty: the sign-in specs
+tell it who to sign in before each sign-in (`tests/e2e/helpers/idp.ts`), and the dashboard shows
+what it was asked and what it answered. To try a sign-in by hand, add an OpenID Connect provider
+whose discovery URL is `http://auth.yeswiki.test/.well-known/openid-configuration`, with the client
+`wiki-oidc` and the secret `wiki-oidc-secret`, then have the mock sign marie in:
+
+```
+curl -X PUT http://localhost:8087/mockserver/oidc -d '{"issuer":"http://auth.yeswiki.test","clientId":"wiki-oidc","clientSecret":"wiki-oidc-secret","subject":"marie","additionalClaims":{"uid":"marie","mail":"marie.dupont@acme.example","givenName":"Marie","sn":"Dupont","groups":["wiki-editors","staff"]}}'
+```
+
+The stack has no LDAP directory. PHPUnit tests the LDAP provider against a stub that answers as each
+test tells it to (`tests/fixtures/ldap/stub-server.php`).
+
 ### Running several stacks side by side
 
-A stack uses the project name `yeswiki` and the ports 8085, 8086, 1080 and 8333 by default, so a
+A stack uses the project name `yeswiki` and the ports 8085, 8086, 1080, 8333 and 8087 by default, so a
 second one would conflict with the first. To run several at once, use one checkout per stack and set
 a project name and free ports in the `.env` of each additional one:
 
@@ -80,6 +96,7 @@ YESWIKI_WEB_PORT=8185
 YESWIKI_MYADMIN_PORT=8186
 YESWIKI_MAIL_PORT=1180
 YESWIKI_S3_PORT=8433
+YESWIKI_MOCK_PORT=8187
 ```
 
 The project name also names the containers and volumes of that stack: use `yeswiki-other-app` in the
