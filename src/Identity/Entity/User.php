@@ -6,7 +6,7 @@ use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use YesWiki\Identity\Exception\UserNotAuthorizedToSetOffset;
 use YesWiki\Identity\Exception\UserNotExistingOffset;
-use YesWiki\Identity\Service\SignIn\AccountLinks;
+use YesWiki\Identity\Service\SignIn\AccountLinkKeys;
 
 /**
  * @implements \ArrayAccess<string, mixed>
@@ -36,7 +36,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, \ArrayA
             }
             $this->properties[$key] = $properties[$key];
         }
-        $provider = $properties[AccountLinks::PROVIDER_KEY] ?? null;
+        $provider = $properties[AccountLinkKeys::PROVIDER_KEY] ?? null;
         $this->provider = is_string($provider) && $provider !== '' ? $provider : null;
     }
 

@@ -11,15 +11,19 @@ final class CaBundle
 {
     private const LAST_RESORT = '/etc/ssl/certs/ca-certificates.crt';
 
+    public function __construct(private readonly LocalFiles $files)
+    {
+    }
+
     /** The configured path as written, which the caller checks; without one, the first system bundle that can be read. */
-    public static function path(?string $configured): string
+    public function path(?string $configured): string
     {
         $configured = trim((string)$configured);
         if ($configured !== '') {
             return $configured;
         }
         foreach (self::systemCandidates() as $candidate) {
-            if (self::isReadable($candidate)) {
+            if ($this->isReadable($candidate)) {
                 return $candidate;
             }
         }
@@ -28,9 +32,9 @@ final class CaBundle
     }
 
     /** Whether curl will be able to open that bundle: a path of this machine, which curl opens itself. */
-    public static function isReadable(string $path): bool
+    public function isReadable(string $path): bool
     {
-        return (new LocalFiles())->isReadableFile($path);
+        return $this->files->isReadableFile($path);
     }
 
     /** @return list<string> */

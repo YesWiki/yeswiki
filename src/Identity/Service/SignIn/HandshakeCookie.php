@@ -29,9 +29,7 @@ class HandshakeCookie
 
     public function issue(Handshake $h): void
     {
-        $value = $this->encode($h);
-        $this->send($value, $h->expiresAt);
-        $_COOKIE[self::NAME] = $value;
+        $this->send($this->encode($h), $h->expiresAt);
     }
 
     /** The handshake a request brought back, when this wiki signed it and it has not expired; null otherwise. */
@@ -50,7 +48,6 @@ class HandshakeCookie
     public function clear(): void
     {
         $this->send('', time() - 3600);
-        unset($_COOKIE[self::NAME]);
     }
 
     /**
@@ -66,7 +63,7 @@ class HandshakeCookie
         return $options;
     }
 
-    private function send(string $value, int $expires): void
+    protected function send(string $value, int $expires): void
     {
         if (!headers_sent()) {
             setcookie(self::NAME, $value, $this->options($expires));

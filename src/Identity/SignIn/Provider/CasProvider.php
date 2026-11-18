@@ -39,6 +39,7 @@ final class CasProvider implements RedirectProvider
     public function __construct(
         private readonly ProviderConfig $config,
         private readonly SessionRequirement $sessions,
+        private readonly CaBundle $caBundle,
         private readonly string $baseUrl,
         private readonly string $requestClass = \CAS_Request_CurlRequest::class,
     ) {
@@ -132,8 +133,8 @@ final class CasProvider implements RedirectProvider
         }
 
         $configured = $this->config->connection('ca_cert');
-        $ca = CaBundle::path(is_string($configured) ? $configured : null);
-        if (!CaBundle::isReadable($ca)) {
+        $ca = $this->caBundle->path(is_string($configured) ? $configured : null);
+        if (!$this->caBundle->isReadable($ca)) {
             throw new ProviderFailure(FailureReason::ConfigurationInvalid, "ca_cert \"$ca\" cannot be read: it must be the PEM file of the authority that signed the CAS server's certificate");
         }
 

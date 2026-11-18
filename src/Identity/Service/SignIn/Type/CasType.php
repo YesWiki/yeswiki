@@ -2,6 +2,8 @@
 
 namespace YesWiki\Identity\Service\SignIn\Type;
 
+use YesWiki\Files\Service\LocalFiles;
+use YesWiki\Identity\SignIn\CaBundle;
 use YesWiki\Identity\SignIn\Contract\IdentityProvider;
 use YesWiki\Identity\SignIn\Contract\ProviderConfig;
 use YesWiki\Identity\SignIn\Contract\ProviderType;
@@ -18,6 +20,7 @@ final class CasType implements ProviderType
     public function __construct(
         private readonly SessionRequirement $sessions,
         private readonly UrlFormatter $urls,
+        private readonly LocalFiles $files,
     ) {
     }
 
@@ -47,6 +50,6 @@ final class CasType implements ProviderType
 
     public function create(ProviderConfig $config): IdentityProvider
     {
-        return new CasProvider($config, $this->sessions, $this->urls->getBaseUrl() . '/');
+        return new CasProvider($config, $this->sessions, new CaBundle($this->files), $this->urls->getBaseUrl() . '/');
     }
 }

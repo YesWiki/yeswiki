@@ -2,6 +2,7 @@
 
 namespace YesWiki\Identity\Service\SignIn;
 
+use YesWiki\Identity\Service\SignIn\Type\LdapType;
 use YesWiki\Kernel\Health\HealthCheck;
 use YesWiki\Kernel\Health\ProvidesHealthChecks;
 
@@ -63,7 +64,7 @@ class SignInHealthChecks implements ProvidesHealthChecks
                     }
                     $ids = [];
                     foreach ($this->registry->configs() as $config) {
-                        if ($config->enabled && $config->type === 'ldap') {
+                        if ($config->enabled && $config->type === LdapType::NAME) {
                             $ids[] = $config->id;
                         }
                     }

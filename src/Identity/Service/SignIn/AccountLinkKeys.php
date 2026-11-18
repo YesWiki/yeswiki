@@ -4,11 +4,30 @@ namespace YesWiki\Identity\Service\SignIn;
 
 use YesWiki\Kernel\Service\DbService;
 
-/** Keeps the provider link stored in a user page whatever a write puts in its body. */
-class AccountLinkGuard
+/** The two keys tying a user page to its provider, and the guard that keeps them through any other write. */
+class AccountLinkKeys
 {
+    public const PROVIDER_KEY = 'sso_provider';
+    public const SUBJECT_KEY = 'sso_subject';
+
     public function __construct(private readonly DbService $db)
     {
+    }
+
+    /**
+     * An account page's body, tied to the provider's subject and without a password.
+     *
+     * @param array<array-key, mixed> $body
+     *
+     * @return array<array-key, mixed>
+     */
+    public static function linked(array $body, string $providerId, string $subject): array
+    {
+        $body[self::PROVIDER_KEY] = $providerId;
+        $body[self::SUBJECT_KEY] = $subject;
+        $body['password'] = '';
+
+        return $body;
     }
 
     /**
@@ -20,7 +39,7 @@ class AccountLinkGuard
      */
     public function guardBody(string $tag, array $body): array
     {
-        unset($body[AccountLinks::PROVIDER_KEY], $body[AccountLinks::SUBJECT_KEY]);
+        unset($body[self::PROVIDER_KEY], $body[self::SUBJECT_KEY]);
 
         return array_merge($body, $this->storedKeys($tag));
     }
@@ -29,18 +48,18 @@ class AccountLinkGuard
     public function storedKeys(string $tag): array
     {
         $row = $this->db->loadSingle(
-            "SELECT {$this->db->jsonExtract('p.body', '$.' . AccountLinks::PROVIDER_KEY)} AS provider,
-                {$this->db->jsonExtract('p.body', '$.' . AccountLinks::SUBJECT_KEY)} AS subject
+            "SELECT {$this->db->jsonExtract('p.body', '$.' . self::PROVIDER_KEY)} AS provider,
+                {$this->db->jsonExtract('p.body', '$.' . self::SUBJECT_KEY)} AS subject
             FROM {$this->db->prefixTable('pages')} p
             WHERE p.tag = ? AND p.latest = 'Y' LIMIT 1",
             [$tag]
         );
         $keys = [];
         if (is_string($row['provider'] ?? null) && $row['provider'] !== '') {
-            $keys[AccountLinks::PROVIDER_KEY] = $row['provider'];
+            $keys[self::PROVIDER_KEY] = $row['provider'];
         }
         if (is_string($row['subject'] ?? null) && $row['subject'] !== '') {
-            $keys[AccountLinks::SUBJECT_KEY] = $row['subject'];
+            $keys[self::SUBJECT_KEY] = $row['subject'];
         }
 
         return $keys;

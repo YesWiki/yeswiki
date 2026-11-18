@@ -38,7 +38,8 @@ rules for a test to drift from.
 `sso_provider` and `sso_subject`, tie an account to the one Provider it belongs to and to that
 Provider's stable user ID. An account without them is local. They sit outside the User form and
 join the keys no profile edit may set (`UserManager::updatableKeys()`, beside `activation_status`),
-and only `AccountLinks` writes them, with one exception: the upgrade from `loginsso`
+and only `PageManager::saveAccountLink()` writes them, for `AccountLinks::link()` and
+`UserManager::createLinked()`, with one exception: the upgrade from `loginsso`
 (`LoginExtensionsBecomeProviders`) writes them once, turning each account's `loginsso_id` into a
 link while it converts the configuration.
 

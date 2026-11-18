@@ -5,6 +5,7 @@ namespace YesWiki\Test\Identity\SignIn;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
+use YesWiki\Files\Service\LocalFiles;
 use YesWiki\Identity\Service\SignIn\Type\CasType;
 use YesWiki\Identity\SignIn\CaBundle;
 use YesWiki\Identity\SignIn\Contract\FailureReason;
@@ -432,7 +433,7 @@ class CasProviderTest extends YesWikiTestCase
 
         CasCannedRequest::$body = self::success();
         $this->provider()->complete(self::returning(), self::handshake());
-        $this->assertSame([[CaBundle::path(null), true]], CasCannedRequest::$certificates, 'the system CAs, and the name checked');
+        $this->assertSame([[self::caBundle()->path(null), true]], CasCannedRequest::$certificates, 'the system CAs, and the name checked');
 
         CasCannedRequest::reset();
         CasCannedRequest::$body = self::success();
@@ -443,11 +444,11 @@ class CasProviderTest extends YesWikiTestCase
 
     public function testConfiguredCaIsUsedElseTheSystemOne(): void
     {
-        $this->assertSame('/x', CaBundle::path('/x'));
-        $this->assertSame('/x', CaBundle::path(' /x '));
-        $system = CaBundle::path(null);
+        $this->assertSame('/x', self::caBundle()->path('/x'));
+        $this->assertSame('/x', self::caBundle()->path(' /x '));
+        $system = self::caBundle()->path(null);
         $this->assertFileIsReadable($system);
-        $this->assertSame($system, CaBundle::path(''));
+        $this->assertSame($system, self::caBundle()->path(''));
     }
 
     public function testAnUnreadableConfiguredCaIsAConfigurationError(): void
@@ -488,7 +489,7 @@ class CasProviderTest extends YesWikiTestCase
     public function testTheTypeBuildsAProviderAtTheWikisAddress(): void
     {
         $urls = new UrlFormatter(new ParameterBag(['base_url' => 'http://wiki.yeswiki.test/?', 'rewrite_mode' => false]), new PageContext(), new CurrentRequest());
-        $type = new CasType(self::getWiki()->services->get(SessionRequirement::class), $urls);
+        $type = new CasType(self::getWiki()->services->get(SessionRequirement::class), $urls, self::getWiki()->services->get(LocalFiles::class));
 
         $provider = $type->create(ProviderConfig::fromArray('cas', ['type' => 'cas', 'connection' => ['server_url' => self::SERVER]], $type->defaultAttributes()));
 
@@ -506,7 +507,12 @@ class CasProviderTest extends YesWikiTestCase
             'connection' => $connection + ['server_url' => self::SERVER, 'version' => '3.0'],
         ]);
 
-        return new CasProvider($config, self::getWiki()->services->get(SessionRequirement::class), self::BASE_URL, CasCannedRequest::class);
+        return new CasProvider($config, self::getWiki()->services->get(SessionRequirement::class), self::caBundle(), self::BASE_URL, CasCannedRequest::class);
+    }
+
+    private static function caBundle(): CaBundle
+    {
+        return new CaBundle(self::getWiki()->services->get(LocalFiles::class));
     }
 
     private static function handshake(): Handshake

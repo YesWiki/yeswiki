@@ -22,7 +22,7 @@ use YesWiki\Identity\Exception\PasswordManagedByProviderException;
 use YesWiki\Identity\Exception\UserEmailAlreadyUsedException;
 use YesWiki\Identity\Exception\UserNameAlreadyUsedException;
 use YesWiki\Identity\Exception\UserNameReservedException;
-use YesWiki\Identity\Service\SignIn\AccountLinks;
+use YesWiki\Identity\Service\SignIn\AccountLinkKeys;
 use YesWiki\Kernel\Routing\ReservedTags;
 use YesWiki\Kernel\Service\CachesTheDatabase;
 use YesWiki\Kernel\Service\DbService;
@@ -288,7 +288,7 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface, C
             throw new UserEmailAlreadyUsedException();
         }
 
-        $body = AccountLinks::linked(array_merge(
+        $body = AccountLinkKeys::linked(array_merge(
             $this->extraProfileFields($profile),
             $this->buildBody(['email' => $email, 'password' => '', 'signuptime' => date('Y-m-d H:i:s')])
         ), $providerId, $subject);
@@ -508,7 +508,7 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface, C
         ];
 
         $form = $this->container->get(FormManager::class)->getByContentType(ContentTypeSchema::TYPE_USER);
-        $never = ['name', 'username', 'password', 'activation_status', 'activation_key', AccountLinks::PROVIDER_KEY, AccountLinks::SUBJECT_KEY];
+        $never = ['name', 'username', 'password', 'activation_status', 'activation_key', AccountLinkKeys::PROVIDER_KEY, AccountLinkKeys::SUBJECT_KEY];
         foreach ($form['prepared'] ?? [] as $field) {
             if (!$field instanceof BazarField) {
                 continue;

@@ -54,6 +54,8 @@ use YesWiki\Kernel\Service\RuntimeConfig;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Test\Core\YesWikiTestCase;
 
+require_once __DIR__ . '/RecordingHandshakeCookie.php';
+
 require_once 'tests/YesWikiTestCase.php';
 require_once __DIR__ . '/FakeProviderTypes.php';
 
@@ -168,7 +170,7 @@ class TestModeTest extends YesWikiTestCase
     private SignInFlow $flow;
     private TestModeFakeRedirect $fake;
     private TestModeFakePassword $fakePw;
-    private HandshakeCookie $cookie;
+    private RecordingHandshakeCookie $cookie;
     private Request $requestWas;
 
     /** @var SignInService&object{applied: int} */
@@ -202,7 +204,7 @@ class TestModeTest extends YesWikiTestCase
 
         $this->fake = new TestModeFakeRedirect();
         $this->fakePw = new TestModeFakePassword();
-        $this->cookie = $services->get(HandshakeCookie::class);
+        $this->cookie = RecordingHandshakeCookie::from($services);
         $this->service = $this->spyService();
         $this->browser = $this->browser();
         $this->browser->actAs(self::adminName());
@@ -277,7 +279,7 @@ class TestModeTest extends YesWikiTestCase
         ], $config);
         $journal = new SignInJournal($services->get(Journal::class), $services->get(AuthenticationService::class), $registry);
 
-        return new SignInFlow($registry, $this->service, $journal, $services->get(HandshakeCookie::class), $this->browser, $services->get(UrlFormatter::class), $services->get(AclService::class));
+        return new SignInFlow($registry, $this->service, $journal, $this->cookie, $this->browser, $services->get(UrlFormatter::class), $services->get(AclService::class));
     }
 
     private function spiedType(string $name, TestModeFakeRedirect|TestModeFakePassword $provider): ProviderType
@@ -371,7 +373,7 @@ class TestModeTest extends YesWikiTestCase
 
     private function issuedCookie(string $name): string
     {
-        return (string)($_COOKIE[$name] ?? '');
+        return $name === HandshakeCookie::NAME ? (string)$this->cookie->sent : (string)($_COOKIE[$name] ?? '');
     }
 
     /**
@@ -873,7 +875,7 @@ class TestModeTest extends YesWikiTestCase
         $services = self::getWiki()->services;
         $this->snapshotServices();
         $this->installProviders($section);
-        $flow = new SignInFlow($services->get(ProviderRegistry::class), $this->service, $services->get(SignInJournal::class), $services->get(HandshakeCookie::class), $services->get(AuthenticationService::class), $services->get(UrlFormatter::class), $services->get(AclService::class));
+        $flow = new SignInFlow($services->get(ProviderRegistry::class), $this->service, $services->get(SignInJournal::class), $this->cookie, $services->get(AuthenticationService::class), $services->get(UrlFormatter::class), $services->get(AclService::class));
         $this->swap(SignInFlow::class, $flow);
         if ($tokenAccepted) {
             $this->swap(CsrfTokenChecker::class, $this->createStub(CsrfTokenChecker::class));

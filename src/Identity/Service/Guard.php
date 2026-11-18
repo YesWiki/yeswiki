@@ -7,7 +7,7 @@ use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Field\BazarField;
 use YesWiki\Content\Field\EmailField;
 use YesWiki\Content\Service\FormManager;
-use YesWiki\Identity\Service\SignIn\AccountLinks;
+use YesWiki\Identity\Service\SignIn\AccountLinkKeys;
 
 class Guard
 {
@@ -99,7 +99,7 @@ class Guard
     }
 
     private const USER_ALWAYS_HIDDEN_FIELDS = ['password', 'activation_status', 'activation_key', ...self::USER_LINK_KEYS];
-    private const USER_LINK_KEYS = [AccountLinks::PROVIDER_KEY, AccountLinks::SUBJECT_KEY];
+    private const USER_LINK_KEYS = [AccountLinkKeys::PROVIDER_KEY, AccountLinkKeys::SUBJECT_KEY];
     private const USER_OWNER_OR_ADMIN_ONLY_FIELDS = ['email', 'revisioncount', 'changescount', 'doubleclickedit', 'show_comments'];
 
     /**

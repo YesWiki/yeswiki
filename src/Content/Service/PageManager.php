@@ -12,7 +12,7 @@ use YesWiki\Content\Exception\TrashedTagException;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Identity\Service\Guard;
-use YesWiki\Identity\Service\SignIn\AccountLinkGuard;
+use YesWiki\Identity\Service\SignIn\AccountLinkKeys;
 use YesWiki\Identity\Service\UserManager;
 use YesWiki\Kernel\Routing\ReservedTags;
 use YesWiki\Kernel\Service\CachesTheDatabase;
@@ -65,7 +65,7 @@ class PageManager implements CachesTheDatabase
         TripleStore $tripleStore,
         UserManager $userManager,
         ContainerInterface $container,
-        private readonly AccountLinkGuard $accountLinkGuard
+        private readonly AccountLinkKeys $accountLinkKeys
     ) {
         $this->aclService = $aclService;
         $this->container = $container;
@@ -772,7 +772,7 @@ class PageManager implements CachesTheDatabase
             return $body;
         }
 
-        return $this->accountLinkGuard->guardBody($tag, $body);
+        return $this->accountLinkKeys->guardBody($tag, $body);
     }
 
     /**

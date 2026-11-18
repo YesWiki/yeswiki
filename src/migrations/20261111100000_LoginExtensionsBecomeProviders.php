@@ -4,7 +4,7 @@ use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Entity\PageType;
 use YesWiki\Core\YesWikiMigration;
 use YesWiki\Identity\Security\LegacyPasswordHash;
-use YesWiki\Identity\Service\SignIn\AccountLinks;
+use YesWiki\Identity\Service\SignIn\AccountLinkKeys;
 use YesWiki\Identity\Service\SignIn\DoryphoreSsoConversion;
 use YesWiki\Identity\Service\SignIn\ProviderRegistry;
 use YesWiki\Identity\SignIn\SsoConversionResult;
@@ -94,7 +94,7 @@ class LoginExtensionsBecomeProviders extends YesWikiMigration
             unset($onDisk[$key]);
         }
 
-        return (new ConfigurationService())->write($onDisk, $file);
+        return $this->getService(ConfigurationService::class)->write($onDisk, $file);
     }
 
     /** Written last, inside the accounts' transaction: a write that fails rolls them back. */
@@ -150,13 +150,13 @@ class LoginExtensionsBecomeProviders extends YesWikiMigration
                 $subject = is_scalar($body[self::LEGACY_SUBJECT]) ? trim((string)$body[self::LEGACY_SUBJECT]) : '';
                 unset($body[self::LEGACY_SUBJECT]);
                 $changed = true;
-                $alreadyLinked = is_string($body[AccountLinks::PROVIDER_KEY] ?? null) && $body[AccountLinks::PROVIDER_KEY] !== '';
+                $alreadyLinked = is_string($body[AccountLinkKeys::PROVIDER_KEY] ?? null) && $body[AccountLinkKeys::PROVIDER_KEY] !== '';
                 $email = is_string($body['email'] ?? null) ? trim($body['email']) : '';
                 if ($subject !== '' && !$alreadyLinked && !$subjectIsTheEmail && strcasecmp($subject, $email) === 0) {
                     $counts['copied']++;
                 } elseif ($linkTo !== null && $subject !== '' && !$alreadyLinked && !isset($linked[$subject])) {
-                    $body[AccountLinks::PROVIDER_KEY] = $linkTo;
-                    $body[AccountLinks::SUBJECT_KEY] = $subject;
+                    $body[AccountLinkKeys::PROVIDER_KEY] = $linkTo;
+                    $body[AccountLinkKeys::SUBJECT_KEY] = $subject;
                     $body['password'] = '';
                     $linked[$subject] = true;
                 } elseif ($subject !== '' && !$alreadyLinked) {

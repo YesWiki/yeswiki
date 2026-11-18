@@ -119,12 +119,10 @@ class HandshakeCookieTest extends YesWikiTestCase
         $this->assertTrue($options['httponly']);
     }
 
-    public function testIssuingAndClearingAreSeenInTheSameRequest(): void
+    public function testIssuingAndClearingLeaveTheGlobalsAlone(): void
     {
-        $handshake = $this->handshake(expires: time() + HandshakeCookie::LIFETIME);
-
-        $this->cookie->issue($handshake);
-        $this->assertSame($this->cookie->encode($handshake), $_COOKIE[HandshakeCookie::NAME] ?? null);
+        $this->cookie->issue($this->handshake(expires: time() + HandshakeCookie::LIFETIME));
+        $this->assertArrayNotHasKey(HandshakeCookie::NAME, $_COOKIE);
 
         $this->cookie->clear();
         $this->assertArrayNotHasKey(HandshakeCookie::NAME, $_COOKIE);
